@@ -827,13 +827,43 @@ void World::indexRoads()
     roadSeams_.clear();
     roadExits_.clear();
     stepsCache_.clear();
-    const auto road = [](char code) {
-        const auto* info = terrainInfo(code);
-        if (!info || info->solid || !info->name)
-            return false;
-        const std::string name = info->name;
-        return name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
-               name.find("flagstones") != std::string::npos;
+    roadMaps_.clear();
+    roadWays_.clear();
+    crossings_.clear();
+    grounds_.clear();
+    climatesFor_ = std::size_t(-1);
+    const auto road = [](char code) { return roadTerrain(code); };
+    // An outdoor cell's road map, from its glyphs: kept only where there is a road to keep to. And what its land is
+    // (for its climate: RatwWeather.cpp): the shares of it under snow and ice, marsh, and sand.
+    const auto mapOf = [&](const std::string& id, int width, int height, const auto& glyphAt) {
+        auto map = std::make_shared<RoadMap>();
+        map->width = width;
+        map->height = height;
+        map->weight.assign(std::size_t(width) * std::size_t(height), 0);
+        bool any = false;
+        std::size_t land = 0, snow = 0, marsh = 0, sand = 0;
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
+            {
+                const char g = glyphAt(x, y);
+                if (g != 'W' && g != '~')
+                {
+                    ++land;
+                    snow += g == '*' || g == 'J' || g == '1' || g == '-';
+                    marsh += g == 'w' || g == 'E' || g == 'D';
+                    sand += g == '0';
+                }
+                const auto* info = terrainInfo(g);
+                if (!info || info->solid)
+                    continue;
+                any = any || road(g);
+                map->weight[std::size_t(y) * std::size_t(width) + std::size_t(x)] =
+                    std::uint8_t(std::clamp(std::lround(routeWeight(g, info->cost) * 10), 1L, 255L));
+            }
+        if (land)
+            grounds_[id] = {double(snow) / double(land), double(marsh) / double(land), double(sand) / double(land)};
+        if (any)
+            roadMaps_[id] = std::move(map);
     };
     // Each seam whose own tile is a road, with the seam it pairs with on the far side.
     std::map<std::string, std::pair<std::string, std::string>> onRoad;   // Seam -> (its cell, the far cell).
@@ -842,6 +872,8 @@ void World::indexRoads()
     {
         if (c.loaded)
         {
+            if (c.outdoors)
+                mapOf(id, c.width, c.height, [&](int x, int y) { return c.tile(x, y)->glyph; });
             for (const Door* d : doorsIn(id))
                 if (d->boundary && d->passage)
                 {
@@ -866,6 +898,18 @@ void World::indexRoads()
             const auto next = text.find('\n', at + 1);
             rows.emplace_back(std::string_view(text).substr(at + 1, (next == std::string::npos ? text.size() : next) - at - 1));
             at = next;
+        }
+        while (!rows.empty() && rows.back().empty())
+            rows.pop_back();
+        if (text.find("\noutdoors: true") != std::string::npos && !rows.empty())
+        {
+            std::size_t width = 0;
+            for (const auto& row : rows)
+                width = std::max(width, row.size());
+            mapOf(id, int(width), int(rows.size()), [&](int x, int y) {
+                const auto& row = rows[std::size_t(y)];
+                return std::size_t(x) < row.size() ? row[std::size_t(x)] : ' ';
+            });
         }
         // Its crossings are learned on the way, as moveOffstage would learn them by loading it: once, never fetched again
         // for that.

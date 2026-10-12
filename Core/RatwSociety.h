@@ -95,13 +95,45 @@ struct WorkGround
 };
 // What a spell of work at a ground brings in, given by the world (from the same finite sources players use).
 using Harvest = std::function<std::vector<std::pair<std::string, int>>(const std::string& who, const WorkGround& ground, int season)>;
+// A city's markets (Docs/Design/60-the-new-map.md): where a community has more than one, each keeps its own Marketday,
+// and a resident goes to the one nearest home, a merchant to the one nearest the shop. Worked out by the world.
+struct Markets
+{
+    struct Place
+    {
+        std::string community;
+        double x = 0, y = 0;                        // Where it is on the map: an outdoor cell's corner, or an interior's door.
+        bool outdoors = false;                      // (Outdoors, a spot's own position is added.)
+    };
+    std::unordered_map<std::string, Place> places;  // By cell, in communities with more than one market.
+    std::unordered_map<std::string, std::vector<std::pair<std::string, Spot>>> squares;   // By community: plan key, middle
+                                                                                          // on the map (the first its own).
+    // The plan key of the market nearest a spot (null where its community has one market, or none).
+    const std::string* nearest(const std::string& cell, double x, double y) const
+    {
+        const auto place = places.find(cell);
+        if (place == places.end())
+            return nullptr;
+        const auto list = squares.find(place->second.community);
+        if (list == squares.end())
+            return nullptr;
+        const double px = place->second.x + (place->second.outdoors ? x : 0), py = place->second.y + (place->second.outdoors ? y : 0);
+        const std::string* best = nullptr;
+        double nearest = 0;
+        for (const auto& [key, at] : list->second)
+            if (const double d = std::hypot(at.x - px, at.y - py); !best || d < nearest)
+                best = &key, nearest = d;
+        return best;
+    }
+};
 struct LifeDay
 {
-    std::map<std::string, DayPlan> plans;           // By community (a region).
+    std::map<std::string, DayPlan> plans;           // By community (a region), and a city's other markets ("<city>#1"...).
+    std::shared_ptr<const Markets> markets;         // (Null: one market to a community.)
     std::shared_ptr<const std::map<std::string, std::vector<WorkGround>>> grounds;   // By community (doc 42, 3b).
     Harvest harvest;
     std::function<std::string(const std::string& cell)> communityOf;
-    std::function<int(const std::string& cell)> sky; // -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
+    std::function<int(const Spot& at)> sky;  // There: -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
 };
 // Careers (Docs/Design/26-living-npcs.md, Phase 4). A position is a job the town has, built from the authored
 // residents (the job each founding resident was written with); it outlives whoever holds it.

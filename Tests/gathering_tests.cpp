@@ -339,7 +339,7 @@ void stalls()
     auto said = stall(t.ash, {{"verb", "rent"}});
     expect(contains(said, "Marketday mornings"), "no stall on another day: " + said);
     toHour(calendar::Marketday, 8);
-    const_cast<Cell*>(w.cell(spot.cell))->weather = Weather::Clear;
+    w.setWeather(spot.cell, Weather::Clear);
     expect(t.selfOf(t.ash).object("stall").has("offer"), "at a free spot on Marketday morning: RENT THIS STALL");
     const auto treasury = society.treasuryOf(community);
     const auto town = society.account(treasury)->cash, purse = society.account(t.ash.entityId)->cash;
@@ -433,12 +433,12 @@ void stalls()
     w.advanceCalendar(6);
     toHour(calendar::Marketday, 8);
     t.place(t.ash, 1, spot.x, spot.y);
-    const_cast<Cell*>(w.cell(spot.cell))->weather = Weather::Clear;
+    w.setWeather(spot.cell, Weather::Clear);
     t.run(1);
     said = stall(t.ash, {{"verb", "rent"}});
     expect(contains(said, "You rent the stall"), "a stall next Marketday: " + said);
     const auto rented = society.account(t.ash.entityId)->cash;
-    const_cast<Cell*>(w.cell(spot.cell))->weather = Weather::Storm;
+    w.setWeather(spot.cell, Weather::Storm);
     t.run(2);
     expect(society.account(t.ash.entityId)->cash == rented + 3, "a storm: the stall cleared and the fee returned");
     said = stall(t.ash, {{"verb", "rent"}});

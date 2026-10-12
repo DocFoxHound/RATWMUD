@@ -137,6 +137,34 @@ void World::setupTowns()
         if (p.role == "guard")
             ++guards[region];
     }
+    // Where each place is on the map: an outdoor cell by its corner, an interior by its door (one upstairs, or further
+    // in, by the door that leads to it in turn); and so where each merchant works.
+    std::map<std::string, std::pair<Vec2, bool>> placeOf;           // Cell -> (where, outdoors).
+    for (const auto& [id, c] : cells_)
+        if (c.outdoors)
+            placeOf[id] = {{c.worldX, c.worldY}, true};
+    for (int depth = 0; depth < 4; ++depth)
+    {
+        bool more = false;
+        for (const auto& [id, d] : doors_)
+            if (const auto from = placeOf.find(d.cellId); from != placeOf.end() && !placeOf.count(d.targetCell))
+            {
+                const auto& [at, outdoors] = from->second;
+                placeOf[d.targetCell] = {outdoors ? Vec2{at.x + d.position.x, at.y + d.position.y} : at, false};
+                more = true;
+            }
+        if (!more)
+            break;
+    }
+    std::map<std::string, std::vector<std::pair<std::string, Vec2>>> merchantsAt;   // Region -> (cell, where) each.
+    for (const auto& p : society_.positions())
+        if (p.role == "merchant")
+            if (const auto region = regionOf(p.work.cell); !region.empty())
+                if (const auto place = placeOf.find(p.work.cell); place != placeOf.end())
+                {
+                    const auto& [at, outdoors] = place->second;
+                    merchantsAt[region].push_back({p.work.cell, outdoors ? Vec2{at.x + p.work.x, at.y + p.work.y} : at});
+                }
     for (const auto& [region, count] : living)
     {
         if (count < 5 || !markets.count(region))
@@ -145,10 +173,36 @@ void World::setupTowns()
         t.id = region;
         t.residents = count;
         t.guards = guards[region];
+        // The market is in the thick of the town's merchants (the user, 2026-10-12): the place with the most of them
+        // (the first of two alike, as ever), of those with another place's merchant within ClusterReach and at least
+        // half as many merchants within reach as the busiest. A mill or a press out in the town's fields, with two
+        // merchants to a town shop's one, never is.
+        constexpr double ClusterReach = 40;
+        const auto& theirs = merchantsAt[region];
+        std::map<std::string, std::pair<int, int>> around;   // Cell -> merchants within reach, and other places' of them.
+        int busiest = 0;
+        bool anyNeighbours = false;
+        for (const auto& [cellId, n] : markets[region])
+        {
+            const auto first = std::find_if(theirs.begin(), theirs.end(), [&](const auto& m) { return m.first == cellId; });
+            if (first == theirs.end())
+                continue;
+            auto& [near, others] = around[cellId];
+            for (const auto& m : theirs)
+                if (std::hypot(m.second.x - first->second.x, m.second.y - first->second.y) <= ClusterReach)
+                    ++near, others += m.first != cellId;
+            busiest = std::max(busiest, near);
+            anyNeighbours = anyNeighbours || others > 0;
+        }
         int best = -1;
         for (const auto& [cellId, n] : markets[region])
-            if (n > best)
+        {
+            const auto found = around.find(cellId);
+            const bool thick = around.empty() || (found != around.end() && found->second.first * 2 >= busiest &&
+                                                  (found->second.second > 0 || !anyNeighbours));
+            if (n > best && thick)
                 best = n, t.market = cellId;
+        }
         for (const auto& p : society_.positions())
             if (p.role == "merchant" && p.work.cell == t.market)
             {
@@ -645,7 +699,7 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
                 best = std::max(best, strength);
         return best >= 1 || (best > 0 && std::int64_t(std::floor(calendarDays_)) % 2 == 0);
     };
-    if (c.status != "arrived" && skyOf(wagon.cellId) == 2 && (works_.waystations.empty() || !stationed()))
+    if (c.status != "arrived" && skyAt(wagon.cellId, wagon.position) == 2 && (works_.waystations.empty() || !stationed()))
     {
         stormWaits_[homeward(c) ? c.from : c.to][wagon.cellId].insert(std::int64_t(std::floor(calendarDays_)));
         wagon.activity = "waiting out the weather";

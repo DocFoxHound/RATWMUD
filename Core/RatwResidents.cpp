@@ -282,7 +282,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         return found->second;
     };
     const auto planFor = [&](const std::string& cell) -> const DayPlan& { return *place(cell).plan; };
-    const auto sky = [&](const std::string& cell) { return day_.sky && !cell.empty() ? day_.sky(cell) : 0; };
+    // The plan at a spot: its community's, or in a city of several markets, the nearest market's (doc 60).
+    const auto marketPlan = [&](const std::string& cell, double x, double y) -> const DayPlan* {
+        if (day_.markets)
+            if (const auto* key = day_.markets->nearest(cell, x, y))
+                if (const auto plan = day_.plans.find(*key); plan != day_.plans.end())
+                    return &plan->second;
+        return nullptr;
+    };
+    const auto sky = [&](const Spot& at) { return day_.sky && !at.cell.empty() ? day_.sky(at) : 0; };
     const auto pick = [](const std::vector<Spot>& spots, const std::string& id) -> const Spot* {
         return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
     };
@@ -290,7 +298,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     // shop. Only a city has stalls built (Docs/Design/39), and its own stallholders keep them every day; a town has
     // none, and no market day.
     const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
-        const auto& plan = planFor(p.work.cell);
+        const auto* nearest = marketPlan(p.work.cell, p.work.x, p.work.y);
+        const auto& plan = nearest ? *nearest : planFor(p.work.cell);
         if (plan.kind == "market"sv && !plan.foul && hour >= 7 && hour < 14)
             if (const auto* stall = pick(plan.stalls, holder))
                 return *stall;
@@ -490,6 +499,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (day_.communityOf)
             if (const auto plan = day_.plans.find(c.home.community); plan != day_.plans.end())
                 c.home.plan = &plan->second;
+        if (const auto* nearest = marketPlan(life.homeCell, life.homeX, life.homeY))
+            c.home.plan = nearest;
         const Place& homePlace = c.home;
         c.larder = c.record->larder;
         c.larderAccount = c.record->larderAccount;
@@ -653,7 +664,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         };
         // The day and the sky (Phase 9). The watch keeps its hours whatever the day and the weather.
         const auto& plan = *homePlace.plan;
-        const int workSky = sky(job->work.cell);
+        const int workSky = sky(job->work);
         const bool festival = plan.kind == "festival"sv && hour >= 12 && hour < 23;
         double endHour = job->endHour;
         if (!guard && workSky == 1)
@@ -914,9 +925,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (!resting.empty() && within(hour, job->startHour, job->endHour))
         {
             // A day off: with friends where the evenings are spent, unless the sky sends everyone home.
-            task = workSky == 2 || sky(r->evening.cell) == 2 ? "sheltering" : "resting";
+            task = workSky == 2 || sky(r->evening) == 2 ? "sheltering" : "resting";
             if (task == "resting"sv)
-                goal = sky(r->evening.cell) >= 1 ? Spot{life.homeCell, life.homeX, life.homeY} : r->evening;
+                goal = sky(r->evening) >= 1 ? Spot{life.homeCell, life.homeX, life.homeY} : r->evening;
             reason = resting;
         }
         else if (within(hour, job->startHour, job->endHour) && workSky == 1)
@@ -929,7 +940,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             task = "socialize";
             goal = r->evening;
             reason = "Work is done; spending the evening in company.";
-            if (const int evening = sky(r->evening.cell); evening >= 1)
+            if (const int evening = sky(r->evening); evening >= 1)
             {
                 task = "at home";
                 goal = {life.homeCell, life.homeX, life.homeY};

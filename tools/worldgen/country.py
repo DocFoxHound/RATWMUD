@@ -24,7 +24,9 @@ import numpy as np
 import terrain_catalog as catalog
 from . import residents as R
 from .buildings import WORKS, Building, house, tenement, works
-from .canvas import DEFAULT_HEIGHT, Canvas, code, reachable
+import heapq
+
+from .canvas import DEFAULT_HEIGHT, Canvas, code, reachable, walkable_steps
 from .cities import fp, grow
 from .site import Site
 
@@ -354,6 +356,145 @@ def place_lone(plot, b, rng):
     return None
 
 
+# Tracks (the user, 2026-10-12: NPCs keep to the roads between the towns, the farms and the city): a dirt track from
+# every door of the country's sites to the nearest road of its cell, laid once every site is placed, so that no site
+# moves for it. Painted only over open country, two tiles wide, joining the tracks laid before it where that is shorter.
+TRACKABLE = OPEN | set('&B5D0rs*.!J')
+ROADS = set('d_8f')
+
+
+def lay_tracks(plot: Plot, left=None):
+    """Tracks from the plot's doors to its roads. Returns how many were laid and the tiles painted; a door with no road
+    to reach in its cell is added to `left` (its cell's id, x, y) for lay_far_tracks."""
+    c = plot.canvas
+    H, W = c.codes.shape
+    east, south = walkable_steps(c.codes, c.heights)
+    paintable = plot.mask(TRACKABLE)
+    laid = painted = 0
+    for link in plot.site.links:
+        if link['kind'] != 'door' or link['a']['cell'] != plot.cell['id']:
+            continue
+        sx, sy = link['a']['x'], link['a']['y']
+        road = plot.mask(ROADS)
+        if not road.any():
+            if left is not None:
+                left.append((plot.cell['id'], sx, sy))
+            continue
+        best = {(sx, sy): 0.0}
+        came = {}
+        queue = [(0.0, sx, sy)]
+        end = None
+        while queue:
+            cost, x, y = heapq.heappop(queue)
+            if cost > best.get((x, y), math.inf):
+                continue
+            if road[y, x] and (x, y) != (sx, sy):
+                end = (x, y)
+                break
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < W and 0 <= ny < H):
+                    continue
+                if not (east[y, x] if dx == 1 else east[y, nx] if dx == -1 else south[y, x] if dy == 1 else south[ny, x]):
+                    continue
+                # Along a road or a track already laid, cheap; over open country, a step; across anything else (a
+                # yard, a field, another site's ground), dear, and left as it is.
+                step = .3 if road[ny, nx] else 1.0 if paintable[ny, nx] and not plot.taken[ny, nx] else \
+                    2.0 if paintable[ny, nx] else 4.0
+                step += abs(float(c.heights[ny, nx]) - float(c.heights[y, x])) * 2
+                if cost + step < best.get((nx, ny), math.inf):
+                    best[(nx, ny)] = cost + step
+                    came[(nx, ny)] = (x, y)
+                    heapq.heappush(queue, (cost + step, nx, ny))
+        if end is None:
+            if left is not None:
+                left.append((plot.cell['id'], sx, sy))
+            continue
+        laid += 1
+        path = []
+        at = end
+        while at in came:
+            path.append(at)
+            at = came[at]
+        for x, y in path:
+            for px, py in ((x, y), (min(x + 1, W - 1), y), (x, min(y + 1, H - 1))):
+                if paintable[py, px] and not road[py, px]:
+                    c.codes[py, px] = code('d')
+                    painted += 1
+    if laid:
+        plot.changed = True
+    return laid, painted
+
+
+def lay_far_tracks(project, left):
+    """Tracks from doors whose own cell has no road they can reach (a farm out on the coast): over the cells around, to
+    the nearest road there, painted into each cell's terrain. Returns how many were laid and the tiles painted."""
+    from .realm import CELL
+    cells = {(c['x'], c['y']): c for c in project['cells'] if c.get('z', 0) == 0}
+    by_id = {c['id']: c for c in cells.values()}
+    laid = painted = 0
+    for cid, sx, sy in left:
+        home = by_id[cid]
+        x0, y0 = home['x'] - CELL, home['y'] - CELL
+        n = 3 * CELL
+        codes = np.full((n, n), code('W'), dtype=np.uint8)
+        heights = np.zeros((n, n), dtype=np.float32)
+        parts = []
+        for j in range(3):
+            for i in range(3):
+                c = cells.get((x0 + i * CELL, y0 + j * CELL))
+                if c is None:
+                    continue
+                parts.append((i, j, c))
+                for y, row in enumerate(c['terrain']):
+                    codes[j * CELL + y, i * CELL:i * CELL + len(row)] = np.frombuffer(row.encode('ascii'), dtype=np.uint8)
+                block = (slice(j * CELL, j * CELL + c['height']), slice(i * CELL, i * CELL + c['width']))
+                heights[block] = DEFAULT_HEIGHT[codes[block]]
+                for key, value in c.get('heights', {}).items():
+                    hx, hy = map(int, key.split(','))
+                    heights[j * CELL + hy, i * CELL + hx] = value
+        east, south = walkable_steps(codes, heights)
+        road = np.isin(codes, [code(ch) for ch in ROADS])
+        paintable = np.isin(codes, [code(ch) for ch in TRACKABLE])
+        start = (CELL + sx, CELL + sy)
+        best, came, queue, end = {start: 0.0}, {}, [(0.0, *start)], None
+        while queue:
+            cost, x, y = heapq.heappop(queue)
+            if cost > best.get((x, y), math.inf):
+                continue
+            if road[y, x]:
+                end = (x, y)
+                break
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < n and 0 <= ny < n):
+                    continue
+                if not (east[y, x] if dx == 1 else east[y, nx] if dx == -1 else south[y, x] if dy == 1 else south[ny, x]):
+                    continue
+                step = .3 if road[ny, nx] else 1.0 if paintable[ny, nx] else 4.0
+                step += abs(float(heights[ny, nx]) - float(heights[y, x])) * 2
+                if cost + step < best.get((nx, ny), math.inf):
+                    best[(nx, ny)] = cost + step
+                    came[(nx, ny)] = (x, y)
+                    heapq.heappush(queue, (cost + step, nx, ny))
+        if end is None:
+            continue
+        laid += 1
+        at = end
+        while at in came:
+            x, y = at
+            for px, py in ((x, y), (min(x + 1, n - 1), y), (x, min(y + 1, n - 1))):
+                if paintable[py, px] and not road[py, px]:
+                    codes[py, px] = code('d')
+                    road[py, px] = True
+                    painted += 1
+            at = came[at]
+        for i, j, c in parts:
+            c['terrain'] = [codes[j * CELL + y, i * CELL:i * CELL + c['width']].tobytes().decode('ascii')
+                            for y in range(c['height'])]
+    return laid, painted
+
+
 def cell_at(project, cx, cy):
     from .realm import CELL, OX, OY
     x, y = cx * CELL + OX, cy * CELL + OY
@@ -425,12 +566,20 @@ def build(project, report=print):
                 site.update(sid=sid, kind=kind, n=n, spec=spec, bunk=bunk_rooms or [], plot=plot)
                 sites.append(site)
                 report(f'  {sid}: {site["name"]} in {site["cell"]}')
+    tracks = painted = 0
+    left = []
+    for plot in plots.values():
+        n, tiles = lay_tracks(plot, left)
+        tracks, painted = tracks + n, painted + tiles
     for plot in plots.values():
         if plot.changed:
             plot.write_back()
             out['rooms'] += [{**r, 'worldX': r['worldX'] + plot.cell['x'], 'worldY': r['worldY'] + plot.cell['y']}
                              for r in plot.site.rooms]
             out['links'] += plot.site.links
+    far, far_tiles = lay_far_tracks(out, left)
+    report(f'  tracks: {tracks} from the sites\' doors to the roads of their cells, {far} on to a road further off; '
+           f'{painted + far_tiles} tiles ({len(left) - far} doors with none)')
     # The people: a farm's family in its farmhouse, a works' keeper, and the hands in the bunkhouse.
     folks = {}
     added = []

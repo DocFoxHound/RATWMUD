@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <sstream>
 #include <stdexcept>
 
 using namespace ratw;
@@ -16,6 +18,7 @@ void expect(bool value, const char* message)
     if (!value)
         throw std::runtime_error(message);
 }
+void expect(bool value, const std::string& message) { expect(value, message.c_str()); }
 bool near(double a, double b, double epsilon = 1e-7)
 {
     return std::abs(a - b) < epsilon;
@@ -392,6 +395,98 @@ void regionalField()
     expect(cols * rows == int(grid.size()) && cols >= 5 && rows >= 3, "a grid of the field for the client");
 }
 
+// Climates (the user, 2026-10-12: weather fit for each region, changing gradually between them). A row of four cells
+// from a wet coast to snowy mountains: what a cell is called says nothing (the coast is named "Frost North"), its
+// authored weather and its ground do. The land grows colder smoothly across the middle, with no step at the cells'
+// edge; through autumn, the world's own rain is rain on the coast and snow in the mountains, never the other way.
+void climatesAndTheSnowLine()
+{
+    constexpr int Side = 128;
+    struct Strip
+    {
+        std::string manifest;
+        std::map<std::string, std::string> cells, seams;
+    } f;
+    const char* ids[] = {"coast", "shore", "foothills", "peaks"};
+    const char* names[] = {"Frost North", "The Shore", "The Foothills", "The Peaks"};
+    const char* usual[] = {"rain", "rain", "snow", "snow"};
+    std::ostringstream m;
+    m << "RATW_WORLD 3\n";
+    for (int i = 0; i < 4; ++i)
+    {
+        std::ostringstream cell;
+        cell << "id: " << ids[i] << "\nname: " << names[i] << "\ndescription: Open ground.\nworld: " << i * Side
+             << " 0 0\noutdoors: true\nweather: " << usual[i] << "\nsize: " << Side << ' ' << Side << "\ngrid:\n";
+        for (int y = 0; y < Side; ++y)
+            cell << std::string(Side, i < 2 ? ',' : '*') << '\n';
+        f.cells[ids[i]] = cell.str();
+        m << "area \"" << ids[i] << "\"\n";
+    }
+    for (int i = 0; i + 1 < 4; ++i)
+        for (int k = 0; k < Side; ++k)
+        {
+            const std::string a = std::string(ids[i]) + "_e" + std::to_string(k), b = std::string(ids[i + 1]) + "_w" + std::to_string(k);
+            std::ostringstream one, two;
+            one << "door \"" << a << "\" \"Open boundary\" \"" << ids[i] << "\" " << Side - .5 << ' ' << k + .5 << " \"" << ids[i + 1]
+                << "\" .5 " << k + .5 << " \"" << b << "\" 1 0 1 1 \"E\"\n";
+            two << "door \"" << b << "\" \"Open boundary\" \"" << ids[i + 1] << "\" .5 " << k + .5 << " \"" << ids[i] << "\" "
+                << Side - .5 << ' ' << k + .5 << " \"" << a << "\" 1 0 1 1 \"W\"\n";
+            f.seams[ids[i]] += one.str();
+            f.seams[ids[i + 1]] += two.str();
+        }
+    m << "exits \"coast\" 1 \"shore\"\nexits \"shore\" 2 \"coast\" \"foothills\"\nexits \"foothills\" 2 \"shore\" \"peaks\"\n"
+      << "exits \"peaks\" 1 \"foothills\"\nspawn \"coast\" 8.5 8.5\n";
+    f.manifest = m.str();
+    World world;
+    world.setCellSource({[&](const std::string& cell, std::string& header) {
+                             const auto found = f.cells.find(cell);
+                             if (found == f.cells.end())
+                                 return std::string("no such cell");
+                             header = found->second.substr(0, found->second.find("grid:") + 5);
+                             return std::string();
+                         },
+                         [&](const std::string& cell, std::string& text, std::string& sides) {
+                             const auto found = f.cells.find(cell);
+                             if (found == f.cells.end())
+                                 return std::string("no such cell");
+                             text = found->second;
+                             sides = f.seams[cell];
+                             return std::string();
+                         }});
+    expect(world.loadWorldFiles({{"world.ratw", f.manifest}}, "strip").ok, "the strip loads");
+    expect(world.advanceCalendar(1).ok, "and its weather is worked out");
+    const double coast = world.warmthAt(Side * .5, 64), peaks = world.warmthAt(Side * 3.5, 64);
+    expect(coast > .3, "the wet coast is mild, whatever it is called: " + std::to_string(coast));
+    expect(peaks < -1, "the snowy peaks are cold: " + std::to_string(peaks));
+    double before = world.warmthAt(0, 64), biggestStep = 0;
+    bool colder = true;
+    for (double x = 4; x < Side * 4; x += 4)
+    {
+        const double here = world.warmthAt(x, 64);
+        colder = colder && here <= before + 1e-9;
+        biggestStep = std::max(biggestStep, before - here);
+        before = here;
+    }
+    expect(colder, "colder and colder from the coast to the peaks");
+    expect(biggestStep < .15, "gradually: no step at a cell's edge (at most " + std::to_string(biggestStep) + " in 4 tiles)");
+    // Forty days of autumn, four looks a day: the world's own weather as it falls on the coast and on the peaks.
+    int coastRain = 0, coastSnow = 0, peakRain = 0, peakSnow = 0;
+    expect(world.advanceCalendar(204 - 1.5).ok, "on into autumn");
+    for (int look = 0; look < 160; ++look)
+        {
+            expect(world.advanceCalendar(.25).ok, "six hours on");
+            const auto onCoast = world.weatherAt("coast", {64, 64}), onPeaks = world.weatherAt("peaks", {64, 64});
+            coastRain += onCoast.kind == Weather::Rain;
+            coastSnow += onCoast.kind == Weather::Snow;
+            peakRain += onPeaks.kind == Weather::Rain;
+            peakSnow += onPeaks.kind == Weather::Snow;
+        }
+    expect(coastRain > 0 && coastSnow == 0, "autumn on the coast: rain, never snow (" + std::to_string(coastRain) + " rain, " +
+                                                std::to_string(coastSnow) + " snow)");
+    expect(peakSnow > 0 && peakRain == 0, "autumn on the peaks: snow, never rain (" + std::to_string(peakSnow) + " snow, " +
+                                              std::to_string(peakRain) + " rain)");
+}
+
 int main()
 {
     try
@@ -402,6 +497,7 @@ int main()
         actualMovementAndStamina();
         persistenceAndAtomicValidation();
         regionalField();
+        climatesAndTheSnowLine();
         std::cout << "PASS " << checks << " weather/day-night checks\n";
         return 0;
     }

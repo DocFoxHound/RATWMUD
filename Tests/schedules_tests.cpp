@@ -95,9 +95,8 @@ void theWeek()
 }
 
 
-// Restday's service (Docs/Design/42-money-in-circulation.md, Phase 6): Greyfen with Maple keeping a chapel in the Long
-// House. From nine to eleven a third of the town sits there while she preaches; the plate goes round at the end.
-void restdayService()
+// Greyfen's files, to change before loading.
+std::map<std::string, std::string> greyfenFiles()
 {
     namespace fs = std::filesystem;
     std::map<std::string, std::string> files;
@@ -110,6 +109,14 @@ void restdayService()
             text << in.rdbuf();
             files[fs::relative(f.path(), root).generic_string()] = text.str();
         }
+    return files;
+}
+
+// Restday's service (Docs/Design/42-money-in-circulation.md, Phase 6): Greyfen with Maple keeping a chapel in the Long
+// House. From nine to eleven a third of the town sits there while she preaches; the plate goes round at the end.
+void restdayService()
+{
+    auto files = greyfenFiles();
     auto& manifest = files["world.ratw"];
     const auto line = manifest.find("resident \"maple\"");
     expect(line != std::string::npos, "Maple is in Greyfen");
@@ -199,6 +206,77 @@ void marketday()
     expect(life(foul, "wren").goalCell == "shop", "the stalls don't go out");
 }
 
+// A city of several markets (Docs/Design/60-the-new-map.md): Greyfen with Aster keeping stalls of her own at the far
+// east end of the street, beyond the reach of Brann's square by the shop. Each keeps its own Marketday: the shopkeeper
+// sets up at the one nearest her shop, and the townsfolk go to the one nearest home.
+void cityMarkets()
+{
+    auto files = greyfenFiles();
+    auto& manifest = files["world.ratw"];
+    const auto line = manifest.find("resident \"brann\"");
+    expect(line != std::string::npos, "Brann is in Greyfen");
+    auto aster = manifest.substr(line, manifest.find('\n', line) + 1 - line);
+    aster.replace(0, std::string("resident \"brann\" \"Brann\"").size(), "resident \"aster\" \"Aster\"");
+    for (const auto& [from, to] : {std::pair{"\"longhouse\" 21.5 9.5", "\"longhouse\" 18.5 9.5"},
+                                   std::pair{"\"town\" 20.5 17.5", "\"town\" 61.5 37.5"}})
+        aster.replace(aster.find(from), std::string(from).size(), to);
+    manifest.insert(line, aster);                   // (First of the merchants in the street: hers is the town's square.)
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "greyfen");
+    expect(loaded.ok, "Greyfen with two markets loads: " + loaded.message);
+    buildStalls(w);
+    for (const auto [x, y] : {std::pair{62, 36}, std::pair{62, 38}})
+    {
+        auto* t = w.cell("town")->tile(x, y);
+        t->glyph = 'u';
+        t->solid = true;
+    }
+    expect(w.advanceCalendar(5 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(9).ok, "Marketday morning");
+    const auto plan = w.dayPlan("greyfen");
+    expect(plan.kind == "market" && !plan.stalls.empty(), "Marketday at Aster's square");
+    for (const auto& s : plan.stalls)
+        expect(s.x > 55, "its stalls are hers, at the east end");
+    const Vec2 east{61.5, 37.5}, west{20.5, 17.5};
+    const auto near = [&](const Spot& s, Vec2 m) { return std::hypot(s.x - m.x, s.y - m.y); };
+    run(w, 5);
+    expect(life(w, "wren").task == "trade" && life(w, "wren").goalCell == "town" && life(w, "wren").goalX < 30,
+           "Wren sets up at the market nearest her shop, by Brann (" + std::to_string(life(w, "wren").goalX) + ")");
+    // Each of the townsfolk goes to the one nearest home (by its door into the street).
+    const auto doorOf = [&](const std::string& home) {
+        for (const auto& [id, d] : w.doors())
+            if (d.cellId == "town" && d.targetCell == home)
+                return Spot{"town", d.position.x, d.position.y};
+        return Spot{"town", -1000, -1000};
+    };
+    std::set<std::string> sides;
+    for (double hour = 8.5; hour < 13; hour += 1)
+    {
+        auto h = World();
+        expect(h.loadWorldFiles(files, "greyfen").ok, "loads again");
+        buildStalls(h);
+        for (const auto [x, y] : {std::pair{62, 36}, std::pair{62, 38}})
+        {
+            auto* t = h.cell("town")->tile(x, y);
+            t->glyph = 'u';
+            t->solid = true;
+        }
+        expect(h.advanceCalendar(5 - std::floor(h.calendarDays())).ok && h.setTimeOfDay(hour).ok, "the hour is set");
+        run(h, 3);
+        for (const auto& id : civilians(h))
+        {
+            const auto& r = life(h, id);
+            if (r.task != "at the market")
+                continue;
+            const Spot goal{r.goalCell, r.goalX, r.goalY}, home = doorOf(r.homeCell);
+            const bool eastward = near(home, east) < near(home, west);
+            sides.insert(eastward ? "east" : "west");
+            expect(goal.cell == "town" && (near(goal, east) < near(goal, west)) == eastward,
+                   id + " goes to the market nearest home (" + std::to_string(goal.x) + ", " + std::to_string(goal.y) + ")");
+        }
+    }
+    expect(sides.size() == 2, "Both markets have their crowd");
+}
+
 void festivals()
 {
     auto w = at(45, 13);
@@ -275,6 +353,7 @@ int main()
         restday();
         restdayService();
         marketday();
+        cityMarkets();
         festivals();
         weather();
     }

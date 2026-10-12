@@ -198,9 +198,17 @@ keeper, and its hands in the bunkhouse. They belong to the settlement the site s
 
 - **Scenes** (`Data/Voice/scenes`): the region whitelist in `Core/RatwScenes.cpp` is now the new towns and `wild`;
   the groups, the town scenes and every scene that named an old place are rewritten or retired.
-- **Weather** (`Core/RatwWeather.cpp`, `climateOf`): climate words for the new regions. Fixed on the way: "mere" was a
-  marsh word, so Ridgemere came out marsh, not wet.
+- **Weather** (`Core/RatwWeather.cpp`): climates by region, changing gradually between them; see "Roads and weather"
+  below (it replaced the climate words, which had made every ", North" cell cold).
 - **Ambient talk** (`Core/RatwAmbient.cpp`): Upper Accord's sub-regions and Hollowmere's special name are gone.
+- **Every market its Marketday** (`Core/RatwSchedules.cpp`, `World::findMarkets`; the user's decision): a city's
+  square is still its market (the board, festivals, stalls let to players, the market cover), but every other place
+  its stallholders keep built stalls (more than `StallReach`, 40 tiles, from it) is a market too, with its own
+  Marketday stalls and crowd, the same day. A resident goes to the one nearest home, a shopkeeper sets up at the one
+  nearest the shop (an interior placed by its door into the street; `Markets` in `RatwSociety.h`). On festival days
+  and Restdays the whole city keeps its square's plan. In Ridgemere on a Marketday morning about 49 go to the Heights
+  Market, 26 to the Sump Market and 23 to the Commons Market, and shopkeepers trade at all three; ticks are unchanged.
+  Tested in `Tests/schedules_tests.cpp` (`cityMarkets`: Greyfen with a second stallholder at the east end).
 - **Newcomers** (`Data/Social/newcomers.json`): start in Ridgemere, Larkfield or Oakhaven.
 - **Sermons, lore fragments, item descriptions, the chronicle's vouch lines, training regions**: rewritten for the
   new world.
@@ -256,8 +264,61 @@ rewritten for the new city; new scenes for its quarters and each town. Sermons: 
 Saint's and the First Oath's are gone. Lore: Ridgemere's fragments rewritten, a few for the towns. Training: the
 Watch House and watch posts.
 
+## Roads and weather (2026-10-12)
+
+The user: NPCs must use the roads between the towns, the farms and the city, not go overland the whole time; and the
+weather must suit each region and change gradually between them.
+
+**Keeping to the roads.** Between cells, routes already preferred roads (`firstSteps`: a road hop 1, overland 3).
+Within a cell they didn't: a road cost the same as bare ground, the path search ran nearly straight, and offstage
+walkers hopped in straight lines from crossing to crossing.
+- **On whole tiles, dearer off the road** (`World::roadAstar`, `roadWalk`): an NPC's walk of 16 tiles or more in an
+  outdoor cell with a road is planned on whole tiles, ground costing more than a floor (open country) counting
+  `OffRoad` (1.8) times its cost, roads and made ground their own (`routeWeight`). Walking speed is unchanged; players'
+  paths are as before. A sixteenth of the nodes of the quarter-tile search, so routes got cheaper.
+- **Offstage, along the road** (`World::roadWay`, `OffstageLeg::way`): each cell's road map is read at load with the
+  seams (`indexRoads`); an unseen walker's leg follows it, and where it stands moves along it (the DM's map shows
+  them on the road).
+- **The crossing the road takes** (`roadCrossing`): the crossings on a road into the next cell are weighed with the
+  nearest by the way there along the roads, and the cheapest kept to. Bridges count as road now.
+- **Tracks to every farm and works** (`tools/worldgen/country.py`, `lay_tracks`, `lay_far_tracks`): a two-tile dirt
+  track from each site's doors to the nearest road, laid after every site is placed (no site, door or resident moves);
+  103 doors, 9,301 tiles in 33 cells, the Folds' farms across to the Southway. Doors from a road: median 38 tiles,
+  some over 300, before; 1 tile, at most 14, after.
+- **A town's market is in the town** (`World::setupTowns`): it had gone to whichever place had the most merchants,
+  and a mill or press with two beat a town shop with one: Larkfield's, Coldwater's, Southmeadow's and Mirebridge's
+  caravans loaded at a mill, a wine press and a brickworks out in the fields, overland. Now the market is among places
+  with another place's merchant within 40 tiles and at least half as many as the busiest. Ridgemere's is unchanged.
+
+Measured (`world_check --simulate 6.5 9 --players 20`, which now reports it): share of outdoor walking within a tile
+of a road, before → after: seen NPCs 65% → 80%, unseen 31% → 79%; travellers ("on the road to", "going") 92%. What
+is left off the road is mostly pottering at home, the wall and street patrols, and work in yards (hives, fishing);
+the one overland hop left between towns is Ridgemere → Frosthollow across the Rainward Hills. Ticks: mean 10.4 →
+9.2 ms, p99 23.2 → 19.3 ms; route search work 16.2M → 2.5M nodes. Tested: `Tests/stream_tests.cpp`
+(`aWalkKeepsToTheRoad`, seen and unseen), `Tests/roads_tests.cpp` (`aTownsMarketIsInTheTown`).
+
+**Climates.** A cell's climate came from words in its name (", North" made a southern meadow cold; "Rainward" made
+snowy hills wet), and a weather system kept the kind it was born with wherever it drifted.
+- **Climate from what the cell is** (`climateOf`): its authored weather (the generator writes snow, rain, fog or
+  overcast by biome), and where that is plain clear, its ground (a quarter under snow: cold; a quarter marsh: marsh).
+- **How warm the land is** (`World::warmthAt`): each cell's warmth by climate (cold the colder the more snow;
+  elsewhere chilled by the cold country within about 400 tiles; the wet coast mildest), blended across the cells'
+  edges on a 32-tile grid; with the season's warmth (`seasonalWarmth`, a smooth curve, warmest at midsummer), the
+  world's own rain falls as snow wherever the sum is below zero. So the snow line lies across the land, moves with
+  the year, and a rain off the Sound turns to snow as it reaches the mountains. Fronts a DM calls up keep their kind.
+- **The weather where it matters** (`World::skyAt`): markets, residents' work and evenings, caravans and talk read
+  the weather at the place itself, not the middle of its 256-tile cell.
+
+A year on the map (rain / snow / fog % of the time): Ridgemere rains 11–23% in every season and never snows; the
+Rainward Hills beside the mountains see a little winter snow; the mountains snow 5–19% from autumn to spring, rain in
+summer; the downs under the Greyteeth snow in winter; the south and west (Warmwood, Sunfields, Orchard Vale,
+Southern Meads) have mild wet winters, no snow; the fens and the delta are foggy (8–17%). Tested:
+`Tests/weather_tests.cpp` (`climatesAndTheSnowLine`).
+
+**Still to do:** the tracks are in the generator but not yet in DEV or PROD: writing DEV's world was left to the user
+(a script puts the 33 cells' new terrain in, refusing unless DEV is still at revision 22 and those cells untouched;
+then `world_build.py dev`, and a push to PROD). The code changes need no world push.
+
 ## Open questions
 
 1. **The towns' character**: they are generic for now; each could get its own trade, people and look later.
-2. **Ridgemere's three markets**: the game has one market (and one market day) per town; the stallholders of all three
-   squares sell every day, but only one square (the busiest) gets Marketday's crowd. Should every square have its day?

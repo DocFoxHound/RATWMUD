@@ -44,6 +44,145 @@ std::string slurp(const fs::path& path)
     text << file.rdbuf();
     return text.str();
 }
+// Keeping to the roads: the outdoor world as one grid of whether a road is within a tile (read from the export's cells,
+// by the game's own rule: a terrain named road, street or flagstones, or a bridge), and how far residents walked on it
+// and off it, sampled every second along the straight line between where they were and where they are.
+struct RoadTally
+{
+    int size = 0;
+    std::vector<std::uint8_t> near;                 // 1: a road within a tile; 2: open ground; 0: no outdoor cell.
+    std::map<std::string, std::pair<double, double>> offsets;   // Outdoor cell -> its world position.
+    std::map<std::string, Vec2> last;               // Resident -> where it was last (world tiles); NaN when indoors.
+    double on[2] = {0, 0}, off[2] = {0, 0};         // By [onstage, offstage].
+    std::map<std::string, double> offBy;            // Off-road distance by what the walker was doing,
+    std::map<std::string, double> offIn;            // and by where (the cell; for travellers, those "on the road").
+    double travel[2] = {0, 0};                      // Travellers' ("on the road", "going ...") [on, off] the road.
+
+    static bool road(char code)
+    {
+        const auto* info = terrainInfo(code);
+        if (!info || info->solid || !info->name)
+            return false;
+        const std::string name = info->name;
+        return code == '8' || name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
+               name.find("flagstones") != std::string::npos;
+    }
+    void load(const fs::path& root)
+    {
+        std::vector<std::tuple<int, int, std::vector<std::string>>> grids;
+        for (const auto& file : fs::directory_iterator(root / "cells"))
+        {
+            const std::string text = slurp(file.path());
+            if (text.find("\noutdoors: true") == std::string::npos)
+                continue;
+            std::istringstream lines(text);
+            std::string line, id;
+            int wx = 0, wy = 0;
+            std::vector<std::string> rows;
+            bool grid = false;
+            while (std::getline(lines, line))
+            {
+                if (grid)
+                    rows.push_back(line);
+                else if (line.rfind("id: ", 0) == 0)
+                    id = line.substr(4);
+                else if (line.rfind("world: ", 0) == 0)
+                    std::istringstream(line.substr(7)) >> wx >> wy;
+                else if (line == "grid:")
+                    grid = true;
+            }
+            offsets[id] = {wx, wy};
+            for (std::size_t y = 0; y < rows.size(); ++y)
+                size = std::max({size, wx + int(rows[y].size()), wy + int(y) + 1});
+            grids.emplace_back(wx, wy, std::move(rows));
+        }
+        std::vector<std::uint8_t> isRoad(std::size_t(size) * std::size_t(size), 0);
+        near.assign(isRoad.size(), 0);
+        for (const auto& [wx, wy, rows] : grids)
+            for (std::size_t y = 0; y < rows.size(); ++y)
+                for (std::size_t x = 0; x < rows[y].size(); ++x)
+                {
+                    const auto at = std::size_t(wy + int(y)) * std::size_t(size) + std::size_t(wx + int(x));
+                    near[at] = 2;
+                    isRoad[at] = road(rows[y][x]);
+                }
+        auto spread = near;
+        for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x)
+                if (isRoad[std::size_t(y) * std::size_t(size) + std::size_t(x)])
+                    for (int dy = -1; dy <= 1; ++dy)
+                        for (int dx = -1; dx <= 1; ++dx)
+                            if (x + dx >= 0 && y + dy >= 0 && x + dx < size && y + dy < size &&
+                                near[std::size_t(y + dy) * std::size_t(size) + std::size_t(x + dx)])
+                                spread[std::size_t(y + dy) * std::size_t(size) + std::size_t(x + dx)] = 1;
+        near = std::move(spread);
+    }
+    void sample(const World& world)
+    {
+        for (const auto& [id, e] : world.entities())
+        {
+            if (!e.npc || e.dead)
+                continue;
+            const auto cell = offsets.find(e.cellId);
+            const Vec2 now = cell == offsets.end() ? Vec2{NAN, NAN}
+                                                   : Vec2{cell->second.first + e.position.x, cell->second.second + e.position.y};
+            auto& before = last[id];
+            const Vec2 then = before;
+            before = now;
+            if (!std::isfinite(now.x) || !std::isfinite(then.x))
+                continue;
+            const double length = std::hypot(now.x - then.x, now.y - then.y);
+            if (length < .25 || length > 400)
+                continue;
+            const int steps = std::max(1, int(std::ceil(length)));
+            double onRoad = 0, offRoad = 0;
+            for (int s = 0; s < steps; ++s)
+            {
+                const double f = (s + .5) / steps;
+                const int x = int(std::floor(then.x + (now.x - then.x) * f)), y = int(std::floor(then.y + (now.y - then.y) * f));
+                if (x < 0 || y < 0 || x >= size || y >= size)
+                    continue;
+                const auto n = near[std::size_t(y) * std::size_t(size) + std::size_t(x)];
+                (n == 1 ? onRoad : offRoad) += length / steps;
+            }
+            on[e.offstage] += onRoad;
+            off[e.offstage] += offRoad;
+            if (e.activity.rfind("on the road", 0) == 0 || e.activity.rfind("going ", 0) == 0)
+                travel[0] += onRoad, travel[1] += offRoad;
+            if (offRoad > 0)
+            {
+                offBy[e.activity.substr(0, e.activity.find(" — "))] += offRoad;
+                if (e.activity.rfind("on the road", 0) == 0)
+                    offIn[e.cellId + (e.offstage ? " (offstage)" : "")] += offRoad;
+            }
+        }
+    }
+    void report() const
+    {
+        const auto share = [](double a, double b) { return a + b > 0 ? 100.0 * a / (a + b) : 0.0; };
+        std::cout << "  keeping to the roads, outdoors: onstage " << long(on[0] + off[0]) << " tiles walked, " << share(on[0], off[0])
+                  << "% within a tile of a road; offstage " << long(on[1] + off[1]) << " tiles, " << share(on[1], off[1]) << "%\n";
+        std::vector<std::pair<double, std::string>> most;
+        for (const auto& [what, d] : offBy)
+            most.emplace_back(d, what);
+        std::sort(most.rbegin(), most.rend());
+        std::cout << "    off the road most, by what they were doing (tiles):";
+        for (std::size_t i = 0; i < most.size() && i < 8; ++i)
+            std::cout << " " << most[i].second << " " << long(most[i].first) << ";";
+        std::cout << "\n";
+        most.clear();
+        for (const auto& [where, d] : offIn)
+            most.emplace_back(d, where);
+        std::sort(most.rbegin(), most.rend());
+        std::cout << "    travellers (on the road to somewhere, going somewhere): " << long(travel[0] + travel[1]) << " tiles, "
+                  << share(travel[0], travel[1]) << "% within a tile of a road\n";
+        std::cout << "    travellers off the road, by where (tiles):";
+        for (std::size_t i = 0; i < most.size() && i < 8; ++i)
+            std::cout << " " << most[i].second << " " << long(most[i].first) << ";";
+        std::cout << "\n";
+    }
+};
+
 // Where the money is (doc 42): each kind of holder's total, how many hold it, and the median of the people among them.
 void moneyReport(const World& server, const char* when)
 {
@@ -291,6 +430,8 @@ int main(int argc, char** argv)
     std::size_t picked = 0;
     times.reserve(std::size_t(ticks));
     std::size_t mostLoaded = 0;
+    RoadTally roads;
+    roads.load(root);
     for (int i = 0; i < ticks; ++i)
     {
         const auto begin = std::chrono::steady_clock::now();
@@ -301,6 +442,8 @@ int main(int argc, char** argv)
         const auto profileBefore = server.tickProfile();
         server.tick(0.05);
         const auto& profileAfter = server.tickProfile();
+        if (i % 20 == 0)
+            roads.sample(server);
         if (i % 100 == 0 && !std::getenv("RATW_NO_AMBIENT_LOOK"))
         {
             // Only looked at, never spoken: the simulation goes on exactly as without it.
@@ -569,6 +712,7 @@ int main(int argc, char** argv)
         out << "}}\n";
         std::cout << "  events: " << events.size() << " written to " << eventsFile << '\n';
     }
+    roads.report();
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';
     for (const auto& who : lost)

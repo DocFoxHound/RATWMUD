@@ -138,6 +138,9 @@ struct WeatherSystem
     double radius = 300, peak = 1;      // Reach in tiles; strength at its middle, 0..1.
     double vx = 0, vy = 0;              // Drift, tiles a game day.
     double born = 0, life = .5;         // Calendar days.
+    // The world's own (not a front called up): its rain falls as snow where the land is cold enough (warmthAt), and
+    // as rain where it isn't, whichever it set out as.
+    bool byClimate = false;
 };
 // The weather at a point: the strongest kind there and how strong (0..1), and the next strongest (where two meet).
 struct WeatherSample
@@ -160,6 +163,12 @@ struct Environment
     double intensity = 0;
 };
 
+// What an outdoor cell's land is, for its climate (RatwWeather.cpp): the shares of it under snow and ice, marsh, sand.
+struct CellGround
+{
+    double snow = 0, marsh = 0, sand = 0;
+};
+
 struct Cell
 {
     std::string id, name, description;
@@ -167,6 +176,7 @@ struct Cell
     double worldX = 0.0, worldY = 0.0, worldZ = 0.0;
     bool outdoors = false;
     Weather weather = Weather::Clear;
+    Weather usual = Weather::Clear;  // The weather its author gave it (its `weather:` header): its climate, kept as it was.
     Wind wind; // Base wind; windAt() adds deterministic outdoor variation.
     Lighting lighting;
     bool seasonalWeather = true;
@@ -1324,6 +1334,14 @@ class World
     // At a point in the cell: the weather there, as strong as it is there (doc 29, phase 7).
     Environment environmentAt(const std::string& cellId, Vec2 at) const;
     WeatherSample weatherAt(const std::string& cellId, Vec2 at) const;
+    // How warm the land is at a point of the world (world tiles): its cell's climate's warmth, blended across the cells'
+    // edges (0 a temperate country's, below it colder). With the season's (seasonalWarmth, below 0 in winter), the
+    // world's own rain falls as snow where the sum is below 0.
+    double warmthAt(double x, double y) const;
+    double seasonalWarmth() const;
+    // The sky at a place, for what's done under it (its own weather there, as weatherAt): -1 indoors, 0 fair, 1 wet
+    // (rain), 2 harsh (snow, storm, sandstorm).
+    int skyAt(const std::string& cellId, Vec2 at) const;
     // A sample of the field over a cell for the client: one each `step` tiles, row by row.
     std::vector<WeatherSample> weatherGrid(const std::string& cellId, int step, int& cols, int& rows) const;
     const std::vector<WeatherSystem>& weatherSystems() const { return systems_; }
@@ -1398,6 +1416,32 @@ class World
     std::map<std::string, std::set<std::string>> roadExits_;
     static constexpr int OverlandCost = 3;
     void indexRoads();
+    // Within a cell (the user, 2026-10-12: NPCs keep to the roads, not overland the whole way): each outdoor cell with
+    // a road, as a grid of what a step on each tile costs one planning a way (tenths; 0: not to be walked), off the
+    // road dearer than on it (routeWeight). Read at load like the seams, so unseen walkers keep to the roads too.
+    struct RoadMap
+    {
+        int width = 0, height = 0;
+        std::vector<std::uint8_t> weight;
+    };
+    std::map<std::string, std::shared_ptr<const RoadMap>> roadMaps_;
+    // The cheapest of `targets` to walk to from `from` on a cell's road map, and the way there (from `from`, straight
+    // runs only, ending on the target): `which` is the target's index, or npos where none can be reached.
+    struct RoadWay
+    {
+        std::size_t which = std::size_t(-1);
+        std::vector<Vec2> way;
+    };
+    RoadWay roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const;
+    static Vec2 alongWay(Vec2 from, const std::vector<Vec2>& way, double fraction);   // That far along it (0 to 1).
+    mutable std::map<std::tuple<std::string, int, int, std::uint64_t>, RoadWay> roadWays_;   // By cell, start tile, targets.
+    // Of the ways into the next cell, the one the roads make cheapest to reach (the first given, where the cell has no
+    // road map); kept for each walker while it stays in that cell bound for the same next one, so it holds to it.
+    const Door* roadCrossing(const std::string& walker, const std::string& cellId, Vec2 from, const std::vector<const Door*>& ways);
+    std::map<std::string, std::tuple<std::string, std::string, std::string>> crossings_;   // Walker -> cell, next, way.
+    // An NPC's walk this long or longer, outdoors in a cell with roads, is planned on whole tiles keeping to the roads
+    // (roadAstar), not on the quarter-tile grid.
+    bool roadWalk(const Entity& a, const Cell& c, Vec2 goal) const;
     bool roadLink(const std::string& from, const std::string& to) const
     {
         const auto found = roadExits_.find(from);
@@ -1482,6 +1526,13 @@ class World
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
     const MarketSquare& square(const std::string& community);
+    void fillSquare(MarketSquare& sq, std::string at, Vec2 where);
+    // A city's other markets (doc 60): every other place its stallholders keep built stalls, by community, and where
+    // each community's cells are on the map (for the market nearest each). Worked out once a day, by planDays.
+    std::map<std::string, std::vector<MarketSquare>> otherSquares_;
+    std::shared_ptr<const Markets> markets_;
+    std::int64_t marketsDay_ = -1;
+    void findMarkets();
     std::map<std::string, Spot> boards_;            // By community: its notice board (doc 54, 2), placed once.
 
   public:
@@ -1541,7 +1592,6 @@ class World
     std::map<std::string, Chapel> chapels_;
     std::int64_t chapelsDay_ = -1;
     const Chapel& chapel(const std::string& community);
-    int skyOf(const std::string& cellId) const;            // -1 indoors, 0 fair, 1 wet, 2 harsh.
     void planDays();
     std::int64_t crimeHour_ = -1;
     std::map<std::string, double> stealReady_;              // When each may try again.
@@ -1994,6 +2044,9 @@ class World
         std::string intoCell;
         Vec2 to, arrival;
         double arriveAt = 0;
+        std::vector<Vec2> way;                      // Along the roads (roadWay), from where it set off; empty: straight.
+        Vec2 from;
+        double setOff = 0;
     };
     std::map<std::string, OffstageLeg> legs_;
     // Each streamed cell's seams (its side of every crossing into a neighbour), kept from the first time it loaded
@@ -2113,6 +2166,20 @@ class World
     std::uint64_t frontNext_ = 1;
     void refreshWeatherField(bool force = false);
     WeatherSample sampleField(double x, double y) const;
+    // Climates (the user, 2026-10-12: weather fit for each region, changing gradually between them). What each outdoor
+    // cell's ground is (shares of its land under snow and ice, marsh, and sand; read with the roads, indexRoads), each
+    // cell's climate (from its usual weather and its ground), and how warm the land is everywhere: each cell's warmth
+    // blended across the cells' edges, on a grid of WarmthStep tiles.
+    std::map<std::string, CellGround> grounds_;
+    std::map<std::string, int> climates_;           // Cell -> climate (RatwWeather.cpp).
+    struct WarmthGrid
+    {
+        double x0 = 0, y0 = 0;
+        int cols = 0, rows = 0;
+        std::vector<float> values;
+    } warmth_;
+    std::size_t climatesFor_ = std::size_t(-1);     // How many cells the climates were worked out for.
+    void mapClimates();
     Society society_;
     double scheduleAccumulator_ = 0.0;
     std::string spawnCell_ = "tavern";
@@ -2155,6 +2222,10 @@ class World
     struct NavScratch;
     static std::vector<Vec2> astar(const Cell& cell, Vec2 origin, Vec2 goal, bool allowClosed, const std::vector<char>& closedTiles,
                                    NavScratch& nav, std::size_t& expanded);
+    // The same search on whole tiles, a step off the road counting dearer (routeWeight): an NPC's long walk outdoors.
+    // Empty where it finds no way (astar then searches as ever).
+    static std::vector<Vec2> roadAstar(const Cell& cell, Vec2 origin, Vec2 goal, bool allowClosed,
+                                       const std::vector<char>& closedTiles, NavScratch& nav, std::size_t& expanded);
     // Paths already found, by everything a search depends on: the cell, its ground (the region checksum), which of
     // its doors are closed, the exact start and goal, and whether closed doors may be passed. Residents walk the same
     // ways every day (home, work, the shop); a repeat is a lookup. The same inputs always give the same path.
@@ -2164,10 +2235,11 @@ class World
         double startX, startY, goalX, goalY;
         bool allowClosed;
         std::uint64_t ground, closed;
+        bool roads = false;                         // Planned keeping to the roads (roadWalk).
         bool operator<(const PathKey& o) const
         {
-            return std::tie(cellId, startX, startY, goalX, goalY, allowClosed, ground, closed) <
-                   std::tie(o.cellId, o.startX, o.startY, o.goalX, o.goalY, o.allowClosed, o.ground, o.closed);
+            return std::tie(cellId, startX, startY, goalX, goalY, allowClosed, ground, closed, roads) <
+                   std::tie(o.cellId, o.startX, o.startY, o.goalX, o.goalY, o.allowClosed, o.ground, o.closed, o.roads);
         }
     };
     static constexpr std::size_t PathsKept = 16384;
@@ -2218,6 +2290,13 @@ class World
 
 Tile tileFromGlyph(char glyph); // Terrain rules shared by built-in and authored cells.
 const TerrainInfo* terrainInfo(char code); // Null for a code the catalog does not know.
+// A road to keep to: a terrain named road, street or flagstones, or a bridge (World::indexRoads, roadAstar).
+bool roadTerrain(char code);
+// What a step on a tile costs an NPC planning a long walk (World::roadAstar, the road maps): its own cost on a road or
+// made ground, and OffRoad times it on open country (any ground dearer than a floor), so a way along the road wins over
+// one straight across the fields unless the road goes far out of the way.
+constexpr double OffRoad = 1.8;
+double routeWeight(char code, double cost);
 const std::vector<TerrainInfo>& terrainCatalog();
 const char* weatherName(Weather value);
 bool parseWeather(const std::string& name, Weather& out); // False for an unknown name; `out` is then unchanged.

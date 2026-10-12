@@ -193,8 +193,8 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
     if (const auto* c = cell(ea->cellId))
     {
         day.push_back("They are in " + c->name + ".");
-        if (c->outdoors && skyOf(c->id) >= 1)
-            day.push_back(c->weather == Weather::Rain ? "It is raining." : "The weather is foul.");
+        if (c->outdoors && skyAt(c->id, ea->position) >= 1)
+            day.push_back(weatherAt(c->id, ea->position).kind == Weather::Rain ? "It is raining." : "The weather is foul.");
     }
     // `source` names who opens: the one who knows (gossip, news) or bears the grudge.
     const auto consider = [&](AmbientTopic topic) {
@@ -327,7 +327,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         consider(std::move(t));
     }
     // Acquaintances, and a day worth remarking on.
-    if (ab.familiarity >= 10 && (plan.kind != "work" || (cell(ea->cellId) && skyOf(ea->cellId) >= 1)))
+    if (ab.familiarity >= 10 && (plan.kind != "work" || (cell(ea->cellId) && skyAt(ea->cellId, ea->position) >= 1)))
     {
         AmbientTopic t;
         t.kind = "day";
@@ -540,8 +540,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     const auto* jb = society_.jobOf(b);
     if ((ja && jb && (ja->work.cell == jb->work.cell || ja->title == jb->title)) || (ja && ja->work.cell == ea->cellId))
         consider(topic("work", 1.1 + jitter(2)));
-    if (const auto* c = cell(ea->cellId); c && c->outdoors && (skyOf(c->id) >= 1 || c->weather == Weather::Fog))
-        consider(topic("weather", 1.0 + jitter(3)));
+    if (const auto* c = cell(ea->cellId); c && c->outdoors)
+        if (const auto here = weatherAt(c->id, ea->position); skyAt(c->id, ea->position) >= 1 || (here.kind == Weather::Fog && here.intensity >= .3))
+            consider(topic("weather", 1.0 + jitter(3)));
     consider(topic("lore", .7 + jitter(4)));
     consider(topic("smalltalk", .8 + jitter(5)));
     (void)eb;

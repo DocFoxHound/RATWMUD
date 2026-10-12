@@ -323,6 +323,28 @@ const TerrainInfo* terrainInfo(char code)
     return slot < index.size() ? index[slot] : nullptr;
 }
 
+bool roadTerrain(char code)
+{
+    static const auto table = [] {
+        std::array<bool, 128> roads{};
+        for (const auto& info : terrainCatalog())
+        {
+            const std::string name = info.name ? info.name : "";
+            roads[static_cast<unsigned char>(info.code)] =
+                !info.solid && (name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
+                                name.find("flagstones") != std::string::npos || name == "Bridge");
+        }
+        return roads;
+    }();
+    const auto slot = static_cast<unsigned char>(code);
+    return slot < table.size() && table[slot];
+}
+
+double routeWeight(char code, double cost)
+{
+    return roadTerrain(code) || cost <= 1.0 ? cost : cost * OffRoad;
+}
+
 const char* weatherName(Weather w)
 {
     switch (w)
@@ -828,6 +850,88 @@ bool stepAllowed(const Tile* from, const Tile& to)
     const auto ground = from ? groundOf(*from) : step::Ground{};
     return step::stepAllowed(from ? &ground : nullptr, groundOf(to));
 }
+// Whether a walker may stand at `p`, stepping there from `from`: step::passable for one cell, with the tiles closed
+// doors stand in (`closedTiles`, empty for none) shut.
+bool footprintClear(const Cell& c, const std::vector<char>& closedTiles, Vec2 p, const Tile* from)
+{
+    const bool anyClosed = !closedTiles.empty();
+    // The footprint is tiny (Radius): nearly always all five points are on one tile, and one look will do.
+    const int cx = int(std::floor(p.x)), cy = int(std::floor(p.y));
+    if (int(std::floor(p.x - Radius)) == cx && int(std::floor(p.x + Radius)) == cx &&
+        int(std::floor(p.y - Radius)) == cy && int(std::floor(p.y + Radius)) == cy)
+    {
+        const auto* t = c.tile(cx, cy);
+        return t && !t->solid && stepAllowed(from, *t) && !(anyClosed && closedTiles[std::size_t(cy * c.width + cx)]);
+    }
+    const Tile* centre = nullptr;
+    for (Vec2 s : {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
+    {
+        const int tx = int(std::floor(s.x)), ty = int(std::floor(s.y));
+        const auto* t = c.tile(tx, ty);
+        if (!t || t->solid || !stepAllowed(from, *t))
+            return false;
+        if (anyClosed && closedTiles[std::size_t(ty * c.width + tx)])
+            return false;
+        if (!centre)
+            centre = t;                     // The first sample is the centre: it must be stood on (step::passable).
+        else if (!stepAllowed(centre, *t))
+            return false;
+    }
+    return true;
+}
+// What a step on a tile costs a path: its movement cost, or (keeping to the roads) its routeWeight.
+double pathWeight(const Tile& t, bool roads)
+{
+    return roads ? routeWeight(t.glyph, t.movementCost) : t.movementCost;
+}
+// Remove the visible zigzag of a searched path, preserving static clearance and approximately preserving the cost the
+// search chose (by pathWeight). Looking a bounded way ahead and stopping at the first blocked line keeps this linear in
+// the path's length; long city walks made it cubic.
+void smoothPath(const Cell& c, const std::vector<char>& closedTiles, Vec2 origin, std::vector<Vec2>& path, bool roads,
+                std::size_t lookahead)
+{
+    std::vector<Vec2> smooth;
+    Vec2 anchor = origin;
+    std::size_t first = 0;
+    while (first < path.size())
+    {
+        std::size_t chosen = first;
+        double routeCost = 0;
+        Vec2 priorWaypoint = anchor;
+        for (std::size_t candidate = first; candidate < path.size() && candidate < first + lookahead; ++candidate)
+        {
+            const auto* rt = c.tile(int(path[candidate].x), int(path[candidate].y));
+            routeCost += distance(priorWaypoint, path[candidate]) * pathWeight(*rt, roads);
+            priorWaypoint = path[candidate];
+            const int samples = std::max(1, int(std::ceil(distance(anchor, path[candidate]) / .1)));
+            Vec2 prior = anchor;
+            double directCost = 0;
+            bool clear = true;
+            for (int sample = 1; sample <= samples; ++sample)
+            {
+                const double f = double(sample) / samples;
+                const Vec2 p{anchor.x + (path[candidate].x - anchor.x) * f, anchor.y + (path[candidate].y - anchor.y) * f};
+                const auto* pt = c.tile(int(prior.x), int(prior.y));
+                if (!pt || !footprintClear(c, closedTiles, p, pt))
+                {
+                    clear = false;
+                    break;
+                }
+                const auto* nt = c.tile(int(p.x), int(p.y));
+                directCost += distance(prior, p) * pathWeight(*nt, roads);
+                prior = p;
+            }
+            if (!clear)
+                break;
+            if (directCost <= routeCost + .025)
+                chosen = candidate;
+        }
+        smooth.push_back(path[chosen]);
+        anchor = path[chosen];
+        first = chosen + 1;
+    }
+    path = std::move(smooth);
+}
 } // namespace
 
 // A cell as walking sees it (RatwStep.h): its tiles, and its closed doors.
@@ -1124,6 +1228,7 @@ class World::RouteWorker
         Vec2 from, goal;
         bool allowClosed;
         std::vector<char> closedTiles;
+        bool roads = false;                         // Keeping to the roads (roadWalk).
     };
     struct Done
     {
@@ -1173,7 +1278,11 @@ class World::RouteWorker
             }
             std::size_t expanded = 0;
             const auto begun = std::chrono::steady_clock::now();
-            auto path = astar(*job.cell, job.from, job.goal, job.allowClosed, job.closedTiles, nav, expanded);
+            std::vector<Vec2> path;
+            if (job.roads)
+                path = roadAstar(*job.cell, job.from, job.goal, job.allowClosed, job.closedTiles, nav, expanded);
+            if (path.empty())
+                path = astar(*job.cell, job.from, job.goal, job.allowClosed, job.closedTiles, nav, expanded);
             const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begun).count();
             std::lock_guard<std::mutex> guard(lock_);
             done_.push_back({std::move(job.key), std::move(path), expanded, ms});
@@ -1234,7 +1343,8 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
                 if (const auto* d = door(id); d && !d->open)
                     for (const unsigned char ch : id + '\n')
                         closed = (closed ^ ch) * 1099511628211ULL;
-    PathKey key{a.cellId, a.position.x, a.position.y, goal.x, goal.y, allowClosed, regions_.at(c->id).checksum, closed};
+    PathKey key{a.cellId, a.position.x, a.position.y, goal.x, goal.y, allowClosed, regions_.at(c->id).checksum, closed,
+                roadWalk(a, *c, goal)};
     if (const auto found = pathCache_.find(key); found != pathCache_.end())
     {
         ++pathHits_;
@@ -1264,7 +1374,7 @@ std::vector<Vec2> World::findPath(const Entity& a, Vec2 goal, bool allowClosed) 
                     copy->tiles = c->tiles;
                     ground = {key.ground, std::move(copy)};
                 }
-                routes_.worker->add({key, ground.second, a.position, goal, allowClosed, std::move(closedTiles)});
+                routes_.worker->add({key, ground.second, a.position, goal, allowClosed, std::move(closedTiles), key.roads});
             }
             return {};
         }
@@ -1282,7 +1392,17 @@ std::vector<Vec2> World::searchPath(const Entity& a, Vec2 goal, bool allowClosed
     std::vector<char> closedTiles;
     if (!searchable(a, goal, allowClosed, closedTiles))
         return {};
-    return astar(*cell(a.cellId), a.position, goal, allowClosed, closedTiles, nav_, searchExpanded_);
+    const auto& c = *cell(a.cellId);
+    if (roadWalk(a, c, goal))
+        if (auto path = roadAstar(c, a.position, goal, allowClosed, closedTiles, nav_, searchExpanded_); !path.empty())
+            return path;
+    return astar(c, a.position, goal, allowClosed, closedTiles, nav_, searchExpanded_);
+}
+
+bool World::roadWalk(const Entity& a, const Cell& c, Vec2 goal) const
+{
+    constexpr double RoadTrip = 16;
+    return a.npc && c.outdoors && roadMaps_.count(c.id) && distance(a.position, goal) >= RoadTrip;
 }
 
 bool World::searchable(const Entity& a, Vec2 goal, bool allowClosed, std::vector<char>& closedTiles) const
@@ -1345,32 +1465,7 @@ std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool al
     if (start < 0 || end < 0)
         return {};
     const bool anyClosed = !closedTiles.empty();
-    auto allowed = [&](Vec2 p, const Tile* from) {
-        // The footprint is tiny (Radius): nearly always all five points are on one tile, and one look will do.
-        const int cx = int(std::floor(p.x)), cy = int(std::floor(p.y));
-        if (int(std::floor(p.x - Radius)) == cx && int(std::floor(p.x + Radius)) == cx &&
-            int(std::floor(p.y - Radius)) == cy && int(std::floor(p.y + Radius)) == cy)
-        {
-            const auto* t = c->tile(cx, cy);
-            return t && !t->solid && stepAllowed(from, *t) && !(anyClosed && closedTiles[std::size_t(cy * c->width + cx)]);
-        }
-        const Tile* centre = nullptr;
-        for (Vec2 s :
-             {p, Vec2{p.x - Radius, p.y}, Vec2{p.x + Radius, p.y}, Vec2{p.x, p.y - Radius}, Vec2{p.x, p.y + Radius}})
-        {
-            const int tx = int(std::floor(s.x)), ty = int(std::floor(s.y));
-            const auto* t = c->tile(tx, ty);
-            if (!t || t->solid || !stepAllowed(from, *t))
-                return false;
-            if (anyClosed && closedTiles[std::size_t(ty * c->width + tx)])
-                return false;
-            if (!centre)
-                centre = t;                     // The first sample is the centre: it must be stood on (step::passable).
-            else if (!stepAllowed(centre, *t))
-                return false;
-        }
-        return true;
-    };
+    auto allowed = [&](Vec2 p, const Tile* from) { return footprintClear(*c, closedTiles, p, from); };
     // allowed() for a node's centre, which the search asks of each node many times over (once for every neighbour
     // it is reached from, and again for diagonal corners). A node's footprint is five points on at most five tiles;
     // what they are is found once per search. Off ramps, a step is allowed when no footprint tile rises or falls
@@ -1503,54 +1598,127 @@ std::vector<Vec2> World::astar(const Cell& cell, Vec2 origin, Vec2 goal, bool al
     if (path.empty() || distance(path.back(), goal) > .01)
         path.push_back(goal);
     if (!allowClosed && path.size() > 1)
+        smoothPath(*c, closedTiles, origin, path, false, SmoothLookahead);   // (The quarter-grid zigzag.)
+    return path;
+}
+
+// An NPC's long walk outdoors (roadWalk): A* on whole tiles, 8-connected, by the same step rules as astar, each step
+// costing its routeWeight, so the way keeps to the roads where they go the right way. A cell has a sixteenth as many
+// tiles as quarter-tile nodes, so this is cheaper than astar's search for the same walk, though its estimate is nearly
+// exact (RoadGreed) where astar's is doubled.
+std::vector<Vec2> World::roadAstar(const Cell& cell, Vec2 origin, Vec2 goal, bool allowClosed, const std::vector<char>& closedTiles,
+                                   NavScratch& nav, std::size_t& expanded)
+{
+    constexpr double RoadGreed = 1.1;
+    constexpr std::size_t RoadLookahead = 24;       // Tiles a smoothed path may skip in one straight line.
+    const auto& c = cell;
+    const int w = c.width, h = c.height;
+    const int sx = int(std::floor(origin.x)), sy = int(std::floor(origin.y));
+    const int gx = int(std::floor(goal.x)), gy = int(std::floor(goal.y));
+    if (sx < 0 || sy < 0 || sx >= w || sy >= h || gx < 0 || gy < 0 || gx >= w || gy >= h)
+        return {};
+    const auto* dest = c.tile(gx, gy);
+    if (!dest || !footprintClear(c, closedTiles, goal, dest))
+        return {};
+    const bool anyClosed = !closedTiles.empty();
+    const auto open = [&](int x, int y) -> const Tile* {
+        const auto* t = c.tile(x, y);
+        return t && !t->solid && !(anyClosed && closedTiles[std::size_t(y * w + x)]) ? t : nullptr;
+    };
+    const auto nodes = static_cast<std::size_t>(w * h);
+    if (nav.seen.size() < nodes)
     {
-        // Remove the visible quarter-grid zigzag, preserving static clearance
-        // and approximately preserving the terrain cost chosen by A*. Looking a bounded way ahead and stopping at
-        // the first blocked line keeps this linear in the path's length; long city walks made it cubic.
-        std::vector<Vec2> smooth;
-        Vec2 anchor = origin;
-        std::size_t first = 0;
-        while (first < path.size())
-        {
-            std::size_t chosen = first;
-            double routeCost = 0;
-            Vec2 priorWaypoint = anchor;
-            for (std::size_t candidate = first; candidate < path.size() && candidate < first + SmoothLookahead;
-                 ++candidate)
-            {
-                const auto* rt = c->tile(int(path[candidate].x), int(path[candidate].y));
-                routeCost += distance(priorWaypoint, path[candidate]) * rt->movementCost;
-                priorWaypoint = path[candidate];
-                const int samples = std::max(1, int(std::ceil(distance(anchor, path[candidate]) / .1)));
-                Vec2 prior = anchor;
-                double directCost = 0;
-                bool clear = true;
-                for (int sample = 1; sample <= samples; ++sample)
-                {
-                    const double f = double(sample) / samples;
-                    const Vec2 p{anchor.x + (path[candidate].x - anchor.x) * f,
-                                 anchor.y + (path[candidate].y - anchor.y) * f};
-                    const auto* pt = c->tile(int(prior.x), int(prior.y));
-                    if (!pt || !allowed(p, pt))
-                    {
-                        clear = false;
-                        break;
-                    }
-                    const auto* nt = c->tile(int(p.x), int(p.y));
-                    directCost += distance(prior, p) * nt->movementCost;
-                    prior = p;
-                }
-                if (!clear)
-                    break;
-                if (directCost <= routeCost + .025)
-                    chosen = candidate;
-            }
-            smooth.push_back(path[chosen]);
-            anchor = path[chosen];
-            first = chosen + 1;
-        }
-        path = std::move(smooth);
+        nav.g.resize(nodes);
+        nav.previous.resize(nodes);
+        nav.seen.assign(nodes, 0);
+        nav.closed.assign(nodes, 0);
+        nav.footprintSearch.assign(nodes, 0);
+        nav.footprintFlags.resize(nodes);
+        nav.footprintLow.resize(nodes);
+        nav.footprintHigh.resize(nodes);
+        nav.search = 0;
     }
+    if (++nav.search == 0)
+    {
+        std::fill(nav.seen.begin(), nav.seen.end(), 0);
+        std::fill(nav.closed.begin(), nav.closed.end(), 0);
+        std::fill(nav.footprintSearch.begin(), nav.footprintSearch.end(), 0);
+        nav.search = 1;
+    }
+    const std::uint32_t search = nav.search;
+    const auto estimate = [&](int x, int y) {
+        const double dx = std::abs(x - gx), dy = std::abs(y - gy);
+        return RoadGreed * (std::max(dx, dy) + (std::sqrt(2.0) - 1) * std::min(dx, dy));
+    };
+    const int start = sy * w + sx, end = gy * w + gx;
+    using QueueItem = std::pair<double, int>;
+    std::priority_queue<QueueItem, std::vector<QueueItem>, std::greater<QueueItem>> queue;
+    nav.seen[std::size_t(start)] = search;
+    nav.g[std::size_t(start)] = 0;
+    nav.previous[std::size_t(start)] = -1;
+    queue.push({estimate(sx, sy), start});
+    bool found = start == end;
+    while (!queue.empty() && !found)
+    {
+        const int current = queue.top().second;
+        queue.pop();
+        if (nav.closed[std::size_t(current)] == search)
+            continue;
+        if (current == end)
+        {
+            found = true;
+            break;
+        }
+        nav.closed[std::size_t(current)] = search;
+        ++expanded;
+        const int x = current % w, y = current / w;
+        const auto* tile = c.tile(x, y);
+        for (int dy = -1; dy <= 1; ++dy)
+            for (int dx = -1; dx <= 1; ++dx)
+            {
+                if (!dx && !dy)
+                    continue;
+                const int nx = x + dx, ny = y + dy;
+                if (nx < 0 || ny < 0 || nx >= w || ny >= h)
+                    continue;
+                const int next = ny * w + nx;
+                if (nav.closed[std::size_t(next)] == search)
+                    continue;
+                const auto* nt = open(nx, ny);
+                if (!nt || !stepAllowed(tile, *nt))
+                    continue;
+                if (dx && dy)
+                {
+                    // The diagonal's corners: both tiles beside it open, and stepped to from here.
+                    const auto *a = open(x, ny), *b = open(nx, y);
+                    if (!a || !b || !stepAllowed(tile, *a) || !stepAllowed(tile, *b))
+                        continue;
+                }
+                const double cost = std::hypot(dx, dy) * pathWeight(*nt, true) + std::abs(nt->height - tile->height) * .3;
+                const double through = nav.g[std::size_t(current)] + cost;
+                if (nav.seen[std::size_t(next)] != search || through + Epsilon < nav.g[std::size_t(next)])
+                {
+                    nav.seen[std::size_t(next)] = search;
+                    nav.g[std::size_t(next)] = through;
+                    nav.previous[std::size_t(next)] = current;
+                    queue.push({through + estimate(nx, ny), next});
+                }
+            }
+    }
+    if (!found)
+        return {};
+    std::vector<Vec2> path;
+    for (int i = end; i != start; i = nav.previous[std::size_t(i)])
+    {
+        if (i < 0)
+            return {};
+        if (i != end)
+            path.push_back({i % w + .5, i / w + .5});
+    }
+    std::reverse(path.begin(), path.end());
+    path.push_back(goal);
+    if (!allowClosed && path.size() > 1)
+        smoothPath(c, closedTiles, origin, path, true, RoadLookahead);
     return path;
 }
 
@@ -2868,7 +3036,12 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     if (!leg.goalCell.empty())
     {
         if (time_ < leg.arriveAt)
+        {
+            // Along the road, where it is by now: seen from afar (the DM's map) and wherever it is caught up with.
+            if (!leg.way.empty() && leg.arriveAt > leg.setOff)
+                e.position = alongWay(leg.from, leg.way, (time_ - leg.setOff) / (leg.arriveAt - leg.setOff));
             return;
+        }
         const bool there = !leg.crossing;           // (The last leg ends at the goal.)
         if (leg.crossing)
         {
@@ -2884,10 +3057,22 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         // Over the crossing, on at once from when it was reached: looked at only every few seconds (the unseen's
         // step, Society::UnseenStep), a walker loses no time between legs.
     }
+    // Along the roads, where the cell has them (roadWay): a little longer than the way's straight runs.
+    constexpr double RoadDetour = 1.1;
     const double speed = std::max(.5, paceSpeed(e));
+    const auto timed = [&](Vec2 to, const std::vector<Vec2>& way) {
+        if (way.empty())
+            return distance(e.position, to) * Detour / speed;
+        double length = 0;
+        Vec2 at = e.position;
+        for (const Vec2 p : way)
+            length += distance(at, p), at = p;
+        return length * RoadDetour / speed;
+    };
     if (e.cellId == goalCell)
     {
-        leg = {goalCell, goal, false, {}, goal, {}, setOff + distance(e.position, goal) * Detour / speed};
+        auto way = roadWay(e.cellId, e.position, {goal}).way;
+        leg = {goalCell, goal, false, {}, goal, {}, setOff + timed(goal, way), std::move(way), e.position, setOff};
         return;
     }
     const auto& steps = cachedSteps(e.cellId);
@@ -2945,8 +3130,197 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         e.activity = task + " — route unavailable";
         return;
     }
-    leg = {goalCell, goal, true, way->targetCell, way->position, way->arrival,
-           setOff + distance(e.position, way->position) * Detour / speed};
+    // The road may lead to a better crossing than the nearest: the crossings on a road into the next cell are weighed
+    // with it, by the way there along the roads, and the cheapest taken.
+    std::vector<Vec2> along;
+    if (roadMaps_.count(e.cellId))
+    {
+        std::vector<const Door*> ways{way};
+        const auto consider = [&](const Door& other) {
+            if (&other != way && other.portal && !other.locked && other.targetCell == step->second && roadSeams_.count(other.id) &&
+                !pocket(other))
+                ways.push_back(&other);
+        };
+        for (const Door* other : doorsIn(e.cellId))
+            consider(*other);
+        if (const auto* here = cell(e.cellId); here && !here->loaded)
+            if (const auto known = seamAnchors_.find(e.cellId); known != seamAnchors_.end())
+                for (const auto& other : known->second)
+                    consider(other);
+        std::vector<Vec2> targets;
+        for (const Door* option : ways)
+            targets.push_back(option->position);
+        auto planned = roadWay(e.cellId, e.position, targets);
+        if (planned.which < ways.size())
+        {
+            way = ways[planned.which];
+            along = std::move(planned.way);
+        }
+    }
+    leg = {goalCell, goal, true, way->targetCell, way->position, way->arrival, setOff + timed(way->position, along), along,
+           e.position, setOff};
+}
+
+Vec2 World::alongWay(Vec2 from, const std::vector<Vec2>& way, double fraction)
+{
+    double total = 0;
+    Vec2 at = from;
+    for (const Vec2 p : way)
+        total += distance(at, p), at = p;
+    double left = std::clamp(fraction, 0.0, 1.0) * total;
+    at = from;
+    for (const Vec2 p : way)
+    {
+        const double d = distance(at, p);
+        if (d >= left && d > 0)
+            return {at.x + (p.x - at.x) * left / d, at.y + (p.y - at.y) * left / d};
+        left -= d;
+        at = p;
+    }
+    return at;
+}
+
+World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const
+{
+    constexpr std::size_t Lookahead = 32;           // Tiles a straight run may skip.
+    constexpr std::size_t WaysKept = 8192;
+    const auto found = roadMaps_.find(cellId);
+    if (found == roadMaps_.end() || targets.empty())
+        return {};
+    const auto& m = *found->second;
+    const int w = m.width, h = m.height;
+    if (w <= 0 || h <= 0)
+        return {};
+    const auto tileOf = [&](Vec2 p) {
+        const int x = std::clamp(int(std::floor(p.x)), 0, w - 1), y = std::clamp(int(std::floor(p.y)), 0, h - 1);
+        return y * w + x;
+    };
+    const int start = tileOf(from);
+    std::uint64_t which = 1469598103934665603ULL;
+    for (const Vec2 t : targets)
+        which = (which ^ std::uint64_t(tileOf(t))) * 1099511628211ULL;
+    const auto key = std::make_tuple(cellId, start % w, start / w, which);
+    if (const auto known = roadWays_.find(key); known != roadWays_.end())
+    {
+        // (The same tiles, but the walker stands where it stands and the target is exactly where it is.)
+        auto way = known->second;
+        if (way.which < targets.size() && !way.way.empty())
+            way.way.back() = targets[way.which];
+        return way;
+    }
+    std::map<int, std::size_t> wanted;
+    for (std::size_t i = 0; i < targets.size(); ++i)
+        wanted.emplace(tileOf(targets[i]), i);
+    const auto weight = [&](int i) { return double(m.weight[std::size_t(i)]) / 10.0; };
+    // Where it starts and where it may end may be on tiles not to be walked (a door's step): they count as made ground.
+    const auto walkable = [&](int i) { return m.weight[std::size_t(i)] > 0 || i == start || wanted.count(i); };
+    std::vector<float> g(std::size_t(w) * std::size_t(h), std::numeric_limits<float>::infinity());
+    std::vector<int> previous(g.size(), -1);
+    using Item = std::pair<float, int>;
+    std::priority_queue<Item, std::vector<Item>, std::greater<Item>> queue;
+    g[std::size_t(start)] = 0;
+    queue.push({0.f, start});
+    int reached = -1;
+    while (!queue.empty())
+    {
+        const auto [cost, current] = queue.top();
+        queue.pop();
+        if (cost > g[std::size_t(current)])
+            continue;
+        if (wanted.count(current))
+        {
+            reached = current;
+            break;
+        }
+        const int x = current % w, y = current / w;
+        for (int dy = -1; dy <= 1; ++dy)
+            for (int dx = -1; dx <= 1; ++dx)
+            {
+                const int nx = x + dx, ny = y + dy;
+                if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= w || ny >= h)
+                    continue;
+                const int next = ny * w + nx;
+                if (!walkable(next) || (dx && dy && (!walkable(y * w + nx) || !walkable(ny * w + x))))
+                    continue;
+                const double step = std::hypot(dx, dy) * (m.weight[std::size_t(next)] ? weight(next) : 1.0);
+                if (const float through = float(cost + step); through < g[std::size_t(next)])
+                {
+                    g[std::size_t(next)] = through;
+                    previous[std::size_t(next)] = current;
+                    queue.push({through, next});
+                }
+            }
+    }
+    RoadWay result;
+    if (reached >= 0)
+    {
+        result.which = wanted.at(reached);
+        std::vector<int> tiles;
+        for (int i = reached; i >= 0 && i != start; i = previous[std::size_t(i)])
+            tiles.push_back(i);
+        std::reverse(tiles.begin(), tiles.end());
+        // Straight runs: from each corner, on to the furthest tile ahead in a clear line no dearer than the way.
+        const auto centre = [&](int i) { return Vec2{i % w + .5, i / w + .5}; };
+        Vec2 anchor = from;
+        std::size_t first = 0;
+        while (first < tiles.size())
+        {
+            std::size_t chosen = first;
+            double routeCost = 0;
+            Vec2 prior = anchor;
+            for (std::size_t k = first; k < tiles.size() && k < first + Lookahead; ++k)
+            {
+                const Vec2 p = centre(tiles[k]);
+                routeCost += distance(prior, p) * (m.weight[std::size_t(tiles[k])] ? weight(tiles[k]) : 1.0);
+                prior = p;
+                const int samples = std::max(1, int(std::ceil(distance(anchor, p) / .25)));
+                double direct = 0;
+                bool clear = true;
+                for (int sample = 1; sample <= samples && clear; ++sample)
+                {
+                    const double f = double(sample) / samples;
+                    const int t = tileOf({anchor.x + (p.x - anchor.x) * f, anchor.y + (p.y - anchor.y) * f});
+                    clear = walkable(t);
+                    direct += distance(anchor, p) / samples * (m.weight[std::size_t(t)] ? weight(t) : 1.0);
+                }
+                if (!clear)
+                    break;
+                if (direct <= routeCost + .05)
+                    chosen = k;
+            }
+            anchor = centre(tiles[chosen]);
+            result.way.push_back(anchor);
+            first = chosen + 1;
+        }
+        if (result.way.empty())
+            result.way.push_back(targets[result.which]);
+        else
+            result.way.back() = targets[result.which];
+    }
+    if (roadWays_.size() >= WaysKept)
+        roadWays_.clear();
+    roadWays_.emplace(key, result);
+    return result;
+}
+
+const Door* World::roadCrossing(const std::string& walker, const std::string& cellId, Vec2 from, const std::vector<const Door*>& ways)
+{
+    if (ways.empty())
+        return nullptr;
+    if (ways.size() == 1 || !roadMaps_.count(cellId))
+        return ways.front();
+    auto& kept = crossings_[walker];
+    if (std::get<0>(kept) == cellId && std::get<1>(kept) == ways.front()->targetCell)
+        for (const Door* way : ways)
+            if (way->id == std::get<2>(kept))
+                return way;
+    std::vector<Vec2> targets;
+    for (const Door* way : ways)
+        targets.push_back(way->position);
+    const auto best = roadWay(cellId, from, targets);
+    const Door* chosen = best.which < ways.size() ? ways[best.which] : ways.front();
+    kept = {cellId, ways.front()->targetCell, chosen->id};
+    return chosen;
 }
 
 bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
@@ -3764,6 +4138,16 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                 if (const int lands = landing(*way);
                     lands > ranked || (lands == ranked && (onRoad(way) > onRoad(d) || (onRoad(way) == onRoad(d) && nearer(way, d)))))
                     d = way, ranked = lands;
+        // The road may lead to a better crossing than the nearest: those on a road into the next cell, landing as well,
+        // are weighed with it by the way there along the roads (roadCrossing), and the cheapest kept to.
+        if (d && ranked > 0 && roadMaps_.count(e.cellId))
+        {
+            std::vector<const Door*> ways{d};
+            for (const Door* way : doorsIn(e.cellId))
+                if (way != d && roadSeams_.count(way->id) && way->targetCell == next && usable(way) && landing(*way) == ranked)
+                    ways.push_back(way);
+            d = roadCrossing(e.id, e.cellId, e.position, ways);
+        }
     };
     choose();
     if (d && ranked == 0 && region >= 0 && current && region == mainRegion(*current))
@@ -5155,6 +5539,7 @@ Result World::parseCell(std::istream& file, const std::string& path, Cell& candi
         {
             if (!parseWeather(value, candidate.weather))
                 return {false, "Unknown weather value.", path};
+            candidate.usual = candidate.weather;
         }
         else if (key == "wind")
         {

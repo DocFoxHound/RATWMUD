@@ -397,6 +397,88 @@ void badSourcesAreRefused()
 }
 } // namespace
 
+// Keeping to the roads (the user, 2026-10-12: NPCs use the roads, not overland the whole way). Two cells side by side,
+// of heather, a road along the top of both and down the far side of each. Pip lives at the foot of one road and
+// works at the foot of the other: straight across the heather is shorter, but she goes up the road, along it and down,
+// whether a player is there to see her walk it (onstage, on tiles) or nobody is (offstage, in hops along the way).
+void aWalkKeepsToTheRoad()
+{
+    constexpr int W = 96;
+    const auto roadAt = [](int cell, int x, int y) {
+        return (y >= 10 && y <= 12) || (cell == 0 && x >= 10 && x <= 12 && y >= 10) || (cell == 1 && x >= 84 && x <= 86 && y >= 10);
+    };
+    for (const bool seen : {true, false})
+    {
+        Fixture f;
+        std::ostringstream manifest;
+        manifest << "RATW_WORLD 3\n";
+        for (int c = 0; c < 2; ++c)
+        {
+            std::ostringstream cell;
+            cell << "id: r_" << c << "\nname: Heath " << c << "\ndescription: Heather.\nworld: " << c * W << " 0 0\noutdoors: true\n"
+                 << "weather: clear\nsize: " << W << ' ' << W << "\ngrid:\n";
+            for (int y = 0; y < W; ++y)
+            {
+                for (int x = 0; x < W; ++x)
+                    cell << (roadAt(c, x, y) ? 'd' : '5');
+                cell << '\n';
+            }
+            f.cells["r_" + std::to_string(c)] = cell.str();
+            manifest << "area \"r_" << c << "\"\n";
+        }
+        for (int k = 0; k < W; ++k)
+        {
+            std::ostringstream one, two;
+            one << "door \"s" << k << "a\" \"Open boundary\" \"r_0\" " << W - .5 << ' ' << k + .5 << " \"r_1\" .5 " << k + .5
+                << " \"s" << k << "b\" 1 0 1 1 \"E\"\n";
+            two << "door \"s" << k << "b\" \"Open boundary\" \"r_1\" .5 " << k + .5 << " \"r_0\" " << W - .5 << ' ' << k + .5
+                << " \"s" << k << "a\" 1 0 1 1 \"W\"\n";
+            f.seams["r_0"] += one.str();
+            f.seams["r_1"] += two.str();
+        }
+        manifest << "exits \"r_0\" 1 \"r_1\"\nexits \"r_1\" 1 \"r_0\"\nspawn \"r_0\" 11.5 11.5\n"
+                 << "economy 1000 100 50 10 12\n"
+                 << "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+                    "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"r_0\" 11.5 88.5 \"r_1\" 85.5 88.5 \"r_0\" 11.5 87.5\n";
+        f.manifest = manifest.str();
+        auto world = load(f, true);
+        if (seen)
+            world.addPlayer("player-ada", "Ada", "r_0", {48.5, 60.5});   // Both cells on the stage.
+        world.setTimeOfDay(5.75);                   // Off to work, from home.
+        world.ensureLoaded("r_0");
+        if (auto* pip = world.entity("pip"))
+        {
+            pip->cellId = "r_0";
+            pip->position = {11.5, 88.5};
+            pip->path.clear();
+        }
+        int onRoad = 0, offRoad = 0, seconds = 0;
+        for (; seconds < 1800; ++seconds)
+        {
+            world.tick(1);
+            const auto* pip = world.entity("pip");
+            if (pip->cellId == "r_1" && std::hypot(pip->position.x - 85.5, pip->position.y - 88.5) < 2)
+                break;
+            const int cell = pip->cellId == "r_1", x = int(std::floor(pip->position.x)), y = int(std::floor(pip->position.y));
+            bool near = false;
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                    near = near || roadAt(cell, x + dx, y + dy);
+            (near ? onRoad : offRoad) += 1;
+        }
+        const auto* pip = world.entity("pip");
+        const std::string how = seen ? "Seen" : "Unseen";
+        expect(pip->offstage != seen, how + ": Pip is " + (seen ? "onstage" : "offstage"));
+        expect(pip->cellId == "r_1" && std::hypot(pip->position.x - 85.5, pip->position.y - 88.5) < 2,
+               how + ", Pip gets to work: " + pip->cellId + " " + std::to_string(pip->position.x) + "," + std::to_string(pip->position.y) +
+                   " " + pip->activity);
+        expect(onRoad >= 4 * offRoad, how + ", she keeps to the road: " + std::to_string(onRoad) + " s on it, " +
+                                          std::to_string(offRoad) + " s off it");
+        // The road is the long way round (about 320 tiles to 170 straight): at a walk, minutes, not hours.
+        expect(seconds > 150 && seconds < 900, how + ", it takes walking time along the road: " + std::to_string(seconds) + " s");
+    }
+}
+
 int main()
 {
     try
@@ -409,6 +491,7 @@ int main()
         noOneIsStrandedInAPocket();
         aPairedPocketIsClamberedOutOf();
         badSourcesAreRefused();
+        aWalkKeepsToTheRoad();
     }
     catch (const std::exception& error)
     {

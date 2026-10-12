@@ -34,26 +34,6 @@ std::string World::festivalName(const std::string& community, int season) const
     return FestivalNames[season][fnv(community) % 3];
 }
 
-int World::skyOf(const std::string& cellId) const
-{
-    const auto* c = cell(cellId);
-    if (!c)
-        return 0;
-    if (!c->outdoors)
-        return -1;
-    switch (c->weather)
-    {
-    case Weather::Rain:
-        return 1;
-    case Weather::Snow:
-    case Weather::Storm:
-    case Weather::Sandstorm:
-        return 2;
-    default:
-        return 0;
-    }
-}
-
 const World::MarketSquare& World::square(const std::string& community)
 {
     const auto today = std::int64_t(std::floor(calendarDays_));
@@ -89,8 +69,15 @@ const World::MarketSquare& World::square(const std::string& community)
                 break;
             }
     }
+    fillSquare(sq, at, where);
+    return sq;
+}
+
+// A market square's middle, stalls and crowd, around `where` in `at` (found: false where there is none).
+void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
+{
     if (at.empty() || !ensureLoaded(at).ok)
-        return sq;
+        return;
     // A market indoors (a shop) spills out of its door: the square is the street before it.
     if (const auto* c = cell(at); c && !c->outdoors)
         for (const Door* d : doorsIn(at))
@@ -103,7 +90,7 @@ const World::MarketSquare& World::square(const std::string& community)
                 }
     const auto* c = cell(at);
     if (!c || !c->loaded)
-        return sq;
+        return;
     sq.found = true;
     sq.at = {at, std::floor(where.x) + .5, std::floor(where.y) + .5};
     // Where people can stand around it: open ground reachable from the square, not a bed, not in a doorway.
@@ -154,7 +141,6 @@ const World::MarketSquare& World::square(const std::string& community)
                 if (int(sq.crowd.size()) < Crowd)
                     sq.crowd.push_back({at, p.x, p.y});
             }
-    return sq;
 }
 
 const World::Chapel& World::chapel(const std::string& community)
@@ -225,7 +211,7 @@ DayPlan World::dayPlan(const std::string& community)
             plan.stalls.erase(std::remove_if(plan.stalls.begin(), plan.stalls.end(),
                                              [&](const Spot& s) { return letStalls_.count(stallKey(s)) > 0; }),
                               plan.stalls.end());
-        plan.foul = skyOf(sq.at.cell) == 2;
+        plan.foul = skyAt(sq.at.cell, {sq.at.x, sq.at.y}) == 2;   // (The weather over the square itself.)
         // A market cover standing (doc 57, Phase 4): stalls set up under it in snow and storms (worn, every other day).
         if (plan.foul)
             if (const auto cover = works_.covers.find(community);
@@ -297,6 +283,99 @@ Result World::callFestival(const std::string& community, const std::string& name
             community};
 }
 
+void World::findMarkets()
+{
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    if (today == marketsDay_)
+        return;
+    marketsDay_ = today;
+    otherSquares_.clear();
+    markets_.reset();
+    // Stallholders: merchants who work in the open, in a community. Those close together keep one market.
+    struct Market
+    {
+        std::string community;
+        double x = 0, y = 0;                        // (Its first stall, on the map.)
+        std::map<std::string, int> cells;
+        std::vector<const Position*> stands;
+    };
+    std::vector<Market> found;
+    for (const auto& p : society_.positions())
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto* c = cell(p.work.cell);
+        if (!c || !c->outdoors)
+            continue;
+        const auto community = lawTown(p.work.cell);
+        if (community.empty())
+            continue;
+        const double x = c->worldX + p.work.x, y = c->worldY + p.work.y;
+        auto m = std::find_if(found.begin(), found.end(), [&](const Market& m) {
+            return m.community == community && std::hypot(m.x - x, m.y - y) <= StallReach;
+        });
+        if (m == found.end())
+            m = found.insert(found.end(), Market{community, x, y, {}, {}});
+        ++m->cells[p.work.cell];
+        m->stands.push_back(&p);
+    }
+    // Each besides its community's square, with stalls built: a square of its own, in the cell most of it is in.
+    auto markets = std::make_shared<Markets>();
+    for (const auto& m : found)
+    {
+        const auto& main = square(m.community);
+        if (!main.found)
+            continue;
+        const auto* mainCell = cell(main.at.cell);
+        if (!mainCell || std::hypot(mainCell->worldX + main.at.x - m.x, mainCell->worldY + main.at.y - m.y) <= StallReach)
+            continue;
+        const auto most = std::max_element(m.cells.begin(), m.cells.end(), [](const auto& a, const auto& b) { return a.second < b.second; });
+        const auto stand = std::find_if(m.stands.begin(), m.stands.end(), [&](const Position* p) { return p->work.cell == most->first; });
+        MarketSquare sq;
+        fillSquare(sq, most->first, {(*stand)->work.x, (*stand)->work.y});
+        if (!sq.found || sq.stalls.empty())
+            continue;
+        auto& others = otherSquares_[m.community];
+        others.push_back(std::move(sq));
+        auto& list = markets->squares[m.community];
+        if (list.empty())
+            list.push_back({m.community, {main.at.cell, mainCell->worldX + main.at.x, mainCell->worldY + main.at.y}});
+        const auto* c = cell(others.back().at.cell);
+        list.push_back({m.community + "#" + std::to_string(others.size()),
+                        {others.back().at.cell, c->worldX + others.back().at.x, c->worldY + others.back().at.y}});
+    }
+    if (markets->squares.empty())
+        return;
+    // Where those communities' places are on the map: an outdoor cell by its corner, an interior by its door (one
+    // upstairs, or further in, by the door that leads to it in turn).
+    for (const auto& [id, c] : cells_)
+        if (c.outdoors)
+            if (auto community = lawTown(id); markets->squares.count(community))
+                markets->places[id] = {std::move(community), c.worldX, c.worldY, true};
+    for (int depth = 0; depth < 4; ++depth)
+    {
+        bool more = false;
+        for (const auto& [id, d] : doors_)
+        {
+            if (markets->places.count(d.targetCell))
+                continue;
+            const auto from = markets->places.find(d.cellId);
+            if (from == markets->places.end())
+                continue;
+            if (auto community = lawTown(d.targetCell); markets->squares.count(community))
+            {
+                const auto& f = from->second;
+                markets->places[d.targetCell] = {std::move(community), f.outdoors ? f.x + d.position.x : f.x,
+                                                 f.outdoors ? f.y + d.position.y : f.y, false};
+                more = true;
+            }
+        }
+        if (!more)
+            break;
+    }
+    markets_ = std::move(markets);
+}
+
 void World::planDays()
 {
     // Again every ten game minutes (the weather at the squares changes), and whenever a festival is called.
@@ -305,6 +384,7 @@ void World::planDays()
         return;
     plannedAt_ = at;
     plannedFor_ = festivalsChanged_;
+    findMarkets();
     LifeDay day;
     std::set<std::string> communities{""};
     for (const auto& [id, life] : society_.state().residents)
@@ -317,8 +397,23 @@ void World::planDays()
         if (plan.kind == "festival" && hour >= 12 && !community.empty() &&
             festivalsBegun_.insert(community + "|" + std::to_string(today)).second)
             recordEvent({"festival", community, {}, square(community).at.cell, 0, 0, {}, 0, 0, plan.name});
+        // A city's other markets (doc 60): the same day, each with its own stalls and crowd on Marketday.
+        if (const auto others = otherSquares_.find(community); others != otherSquares_.end())
+            for (std::size_t i = 0; i < others->second.size(); ++i)
+            {
+                auto theirs = plan;
+                if (plan.kind == "market")
+                {
+                    const auto& sq = others->second[i];
+                    theirs.stalls = sq.stalls;
+                    theirs.crowd = sq.crowd;
+                    theirs.foul = skyAt(sq.at.cell, {sq.at.x, sq.at.y}) == 2;
+                }
+                day.plans.emplace(community + "#" + std::to_string(i + 1), std::move(theirs));
+            }
         day.plans.emplace(community, std::move(plan));
     }
+    day.markets = markets_;
     if (festivalsBegun_.size() > 4096)
         festivalsBegun_.clear();
     if (!workGrounds_ && townsReady_)
@@ -326,7 +421,7 @@ void World::planDays()
     day.grounds = workGrounds_;
     day.harvest = [this](const std::string& who, const WorkGround& at, int season) { return harvestAt(who, at, season); };
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
-    day.sky = [this](const std::string& cellId) { return skyOf(cellId); };
+    day.sky = [this](const Spot& at) { return skyAt(at.cell, {at.x, at.y}); };   // The weather where they'd be.
     society_.setDay(std::move(day));
 }
 } // namespace ratw

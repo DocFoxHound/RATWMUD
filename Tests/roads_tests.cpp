@@ -2084,11 +2084,31 @@ void priceSupport()
     expect(s.conserved(), "Money stays conserved");
 }
 
+// A town's market is in the town (the user, 2026-10-12): west's two shops stand side by side, and out in its fields,
+// eighty tiles off, a mill has two merchants of its own. Caravans load at the shops, not at the mill, though the mill
+// has more merchants than either shop; and the town's Marketday is held there too.
+void aTownsMarketIsInTheTown()
+{
+    const std::string extra = resident("wb", "Bram Reed", "merchant", "keeping the shop", 3, 9.5, 5, 4.5) +
+                              resident("mill1", "Mill One", "merchant", "keeping the mill", 9, 3.5, 9, 8.5) +
+                              resident("mill2", "Mill Two", "merchant", "keeping the mill", 9, 4.5, 9, 9.5);
+    auto f = strip("EE.WWWWWWW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    const Town* west = nullptr;
+    for (const auto& t : w.towns())
+        if (t.id == "west")
+            west = &t;
+    expect(west != nullptr, "West is a town");
+    expect(west->market == id(4), "West's market is its shop in the town, not the mill in its fields: " + west->market);
+}
+
 int main()
 {
     try
     {
         travelKeepsToTheRoads();
+        aTownsMarketIsInTheTown();
         standingOrdersAreRenegotiated();
         shopkeepersDontHoard();
         theOwnersShare();
