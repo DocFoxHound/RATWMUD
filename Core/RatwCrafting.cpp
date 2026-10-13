@@ -160,6 +160,57 @@ bool Society::produce(const std::string& id, double absoluteDay)
     return any;
 }
 
+double Society::useRate(const std::string& till, const std::string& item) const
+{
+    const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+    const auto* business = p ? items::businessFor(p->title) : nullptr;
+    const auto rates = sellRate_.find(till);
+    if (!business || rates == sellRate_.end())
+        return 0;
+    const auto rate = [&](const std::string& good) {
+        const auto found = rates->second.find(good);
+        return found == rates->second.end() ? 0. : found->second;
+    };
+    double use = 0;
+    for (const auto* k : items::craftsFor(business->id))
+    {
+        const auto in = std::find_if(k->in.begin(), k->in.end(), [&](const auto& i) { return i.first == item; });
+        if (in != k->in.end() && !k->out.empty())
+            use += rate(k->out.front().first) / std::max(1, k->out.front().second) * in->second;
+    }
+    const auto& supplies = items::suppliesFor(business->id);
+    if (std::find(supplies.begin(), supplies.end(), item) != supplies.end())
+        use += rate(item);
+    return use;
+}
+
+void Society::setStandingOrders(const std::map<std::pair<std::string, std::string>, int>& perWeek,
+                                std::map<std::string, std::int64_t> costs)
+{
+    // Each of a town's makers of the good keeps its share: kept whole by every one, Ridgemere's six smiths each made
+    // the city's week of nails for the towns, and sat on them.
+    std::map<std::pair<std::string, std::string>, int> makers;
+    for (const auto& p : positions_)
+        if (const auto* business = p.role == "merchant" ? items::businessFor(p.title) : nullptr)
+        {
+            std::set<std::string> made;
+            for (const auto* k : items::craftsFor(business->id))
+                if (!k->out.empty())
+                    made.insert(k->out.front().first);
+            const auto town = communityOfResident(p.founder);
+            for (const auto& item : made)
+                if (perWeek.count({town, item}))
+                    ++makers[{town, item}];
+        }
+    ordersFrom_.clear();
+    for (const auto& [key, n] : perWeek)
+    {
+        const int shares = std::max(1, makers.count(key) ? makers.at(key) : 0);
+        ordersFrom_[key] = (n + shares - 1) / shares;
+    }
+    ordersCost_ = std::move(costs);
+}
+
 void Society::craft(const std::string& id, const std::string& workCell, double absoluteDay)
 {
     const auto* r = spec(id);
@@ -270,9 +321,15 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
         }();
         // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
-        const double trade = items::townGoodOf(communityOfResident(id), made) ? items::tradeKeep() : 1;
-        const bool low = stockAll(*account(till), made) < (items::traded(made) && keeps ? SuppliesKept * trade
-                                                           : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept);
+        const auto town = communityOfResident(id);
+        const double trade = items::townGoodOf(town, made) ? items::tradeKeep() : 1;
+        double kept = items::traded(made) && keeps ? SuppliesKept * trade
+                      : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
+        // And its share of a week of what the roads' standing orders take of it from this town, over what a caravan
+        // leaves (doc 61): kept at its usual store, a smelter had 60 bars to send whatever was ordered of it.
+        if (const auto ordered = ordersFrom_.find({town, made}); ordered != ordersFrom_.end() && keeps)
+            kept = std::max(kept, double(ordered->second + SuppliesKept / 2));
+        const bool low = stockAll(*account(till), made) < kept;
         if (!low)
             continue;
         // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.

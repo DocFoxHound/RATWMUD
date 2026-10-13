@@ -132,6 +132,31 @@ descriptions; nobody else changed.
   ironworks and smelters burn their own charcoal. (Other businesses are still the rescue fund's, doc 46.)
 - Linseed oil at the water mills unsettled their buying of wheat; it is the colour works' alone.
 
+**Iron on the roads (standing orders, 2026-10-12).** Iron bars were still short after the fixes above, though
+Frosthollow had ore piled up (600 in store) and its smelter could make a bar in four minutes. Each link was choked:
+- **What a town could spare.** A maker's want of a material was counted once for each craft that takes it: a smith's
+  fourteen iron crafts made fourteen stores of bars wanted, so Frosthollow's own smith left it nothing to spare and no
+  town but Ridgemere ever had iron from it. Now one store of each material a maker (`World::marketOf`).
+- **What an order promised.** A trade town's makers keep making its goods all week, so an order takes only half of
+  its spare from what is left to promise (`promised`): Frosthollow could promise twice what it had on the day.
+- **The size of an order.** Signed for what a shop was short that moment, a few bars. Now for a week of what it
+  uses (`Society::useRate`: through each of its crafts, as fast as their goods sell), when it is signed and when it is
+  agreed again. It is raised only when the shop runs low (under half a week of its use): raised too when the seller
+  fell short, or for use alone, orders for fruit and fish grew past what the shops could sell or the seller send, and
+  the rescue fund kept the shops open.
+- **How soon it grows.** An order signed on the first day is sized before anyone has sold anything, and was looked at
+  again a month on. Now a new or raised order is looked at again in a week (`OrderSettles`), a settled one monthly.
+- **Nobody to go.** An order is agreed again by a porter of the buyer's town walking to the seller's market; the towns'
+  people all have work, so their orders never were. Now the trader whose caravan brings it agrees it again on arrival
+  (`World::agreeAgain`, shared with the porters).
+- **The smelter's store.** It stopped at its usual store (80 bars) and a weekly caravan could take only what was over
+  half of it. Now a town's makers of a good that keeps share a week of the orders on it, kept besides (World tells
+  Society the orders each day, `Society::setStandingOrders`). Shared: kept whole by each, Ridgemere's six smiths each
+  made the towns' week of nails, and sat on 1,800 of them.
+- **The buyer's till.** A house's smithy kept a float of three days' wages and a batch of materials; the rest went to
+  its house each night, and a caravan's 77 bars cost four times what was left. Now its float holds a week of its
+  standing orders too (`Society::floatOf`).
+
 ## Results (28-day runs, `econ_watch --deterministic`, compared by `tools/econ_compare.py`)
 
 | | Before | Phases 1–3 | + new works | + the iron fixes |
@@ -149,12 +174,33 @@ descriptions; nobody else changed.
 (The first two columns on DEV's build; the last two on the regenerated world, exported the same way; "+ new works" on
 the old world gave the same figures within a few percent.)
 
+**56-day runs** (the regenerated world; "makers short" counts each craft lacking a material each hour, so a smith's
+fourteen iron crafts count fourteen times: read it for direction, not size):
+
+| | Iron fixes, want once | + the standing-order fixes |
+|---|---|---|
+| Iron bars smelted / used, 56 days | 2,530 / 2,396 | 3,897 / 3,060 |
+| Nails made / in store at the end | 4,896 / 747 | 5,040 / 842 |
+| Makers short of vegetables / oats / fish (last week) | 1,152 / 1,281 / 1,218 | 524 / 434 / 619 |
+| Food on Ridgemere's / Oakhaven's shelves at the end | 308 / 62 | 545 / 145 |
+| Frosthollow's standing orders (coins; goods) | 10.6k; 3,896 | 16.4k; 6,629 |
+| Median purse, day 28 / day 56 | 199p / 242p | 179p / 206p |
+| Gini, day 56 | 0.399 | 0.397 |
+| Broke / hungry / starving, day 56 | 0 / 0 / 0 | 4 / 0 / 0 |
+| Rescue loans to shops, 56 days | 55k | 86k |
+| Residents' money / shops' tills / houses' businesses' tills, day 56 | 244k / 56k / 4.8k | 208k / 81k / 11.8k |
+
+Goods move: twice the iron reaches the smiths and the towns' food shortages fell by half or more. But residents end
+the run poorer: what they spend on the goods now to be had stays in the shops' and the houses' tills (and the rescue
+fund's loans to the shops that buy dear on the roads, at the road's 40% over the selling town's price, and sell to
+the town at its own). The money isn't lost; it isn't paid back out as wages.
+
 **Still to do.**
-1. **Iron to the towns.** A standing order is sized by what a smith is short of that moment (8 bars a week): the
-   roads carry far less iron than the towns' smiths use. Size orders by use (a maker's weekly consumption), and grow
-   them faster after a shortfall.
-2. **Ore to the city.** Ridgemere's ironworks has coal and money now, but too little ore; most of the ore is mined at
-   Frosthollow. The same: orders by use.
+1. **Money back to the residents.** Shops' tills hold 25k more, houses' businesses' 7k more: their takings from the
+   new trade aren't paid out. Candidates: a shop's help shares its takings over its float (doc 46), wages by takings
+   in the city as in the towns, the road's markup (40%, a placeholder) lower for standing orders.
+2. **The smelter's working money.** Keeping a week of the orders in bars ties up its till (6 rescue loans). Paid on
+   delivery; perhaps half paid when the order is signed.
 3. **PROD**: a push (the user's).
 4. **Longer runs**: 90 days, then a year (the user runs year-long tests), and doc 46's health targets.
 5. **The towns' own works** for their trades: Oakhaven's charcoal burners and joiners, Mirebridge's brickworks crew,

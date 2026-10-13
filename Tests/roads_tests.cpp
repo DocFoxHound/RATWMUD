@@ -59,8 +59,9 @@ std::string resident(const std::string& who, const std::string& name, const std:
     return r.str();
 }
 
-// A strip of cells in a row, one letter each: 'E' the capital "east", 'M' a town "mid", 'W' the town "west", '.'
-// wild country. Each town's first cell is where its people live, its second its market.
+// A strip of cells in a row, one letter each: 'E' the capital "east", 'M' a town "mid", 'W' the town "west", 'F'
+// Frosthollow (a town with a trade, Data/Economy/specialties.json: its people and shops are the test's own), '.' wild
+// country. Each town's first cell is where its people live, its second its market.
 Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra = "")
 {
     Fixture f;
@@ -90,7 +91,9 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
                 ++seam;
             }
     }
-    const auto region = [](char c) { return c == 'E' ? "east" : c == 'M' ? "mid" : c == 'W' ? "west" : "wilds"; };
+    const auto region = [](char c) {
+        return c == 'E' ? "east" : c == 'M' ? "mid" : c == 'W' ? "west" : c == 'F' ? "frosthollow" : "wilds";   // (F: a town with a trade.)
+    };
     for (int i = 0; i < cells; ++i)
     {
         m << "exits \"" << id(i) << "\" " << ((i > 0) + (i + 1 < cells));
@@ -2153,6 +2156,246 @@ void housesKeepToTheirTrades()
     expect(soc.conserved(), "Money is conserved");
 }
 
+// A town's trade on the roads (Docs/Design/61): iron is Frosthollow's. Its smelter has 30 bars and can make no more
+// today; the smiths of east and west have none. A town promises only what it has to spare, but a town whose trade the
+// good is keeps making it all week, so it may promise twice that: both smiths sign standing orders with Frosthollow.
+void aTradeTownSuppliesTheRoads()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("eastsmith", "Edda Anvil", "merchant", "smith at The East Forge", 0, 12.5, 1, 12.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    auto& soc = w.society();
+    const auto clear = [&](const std::string& who, const std::string& item) {
+        const auto till = soc.tillOf(who);
+        for (const auto& kind : Society::kindsHeld(*soc.account(till), item))
+            soc.consume(till, kind, Society::stock(*soc.account(till), kind), "test: none left");
+    };
+    for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+        clear("smelter", item);
+    clear("eastsmith", "iron_bar");
+    clear("westsmith", "iron_bar");
+    soc.create(soc.tillOf("smelter"), "iron_bar", 30, "test: the week's bars");
+    nextMorning(w);
+    std::set<std::string> buyers;
+    for (const auto& o : w.roads().orders)
+        if (o.item == "iron_bar" && o.from == "frosthollow")
+            buyers.insert(o.buyer);
+    expect(buyers.count(soc.tillOf("eastsmith")) && buyers.count(soc.tillOf("westsmith")),
+           "Both smiths order their iron from Frosthollow (" + std::to_string(buyers.size()) + " orders)");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A maker wants one store of each material, whatever it goes into (doc 61): Frosthollow's own smith, with fourteen
+// crafts that take iron, wants a store of bars, not fourteen; counted fourteen times over, it left its town nothing to
+// spare, and no other town ever had iron from Frosthollow.
+void aSmithWantsOneStoreOfIron()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("frostsmith", "Hild Anvil", "merchant", "smith at The Pick and Hammer", 3, 10.5, 4, 12.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    auto& soc = w.society();
+    const auto clear = [&](const std::string& who, const std::string& item) {
+        const auto till = soc.tillOf(who);
+        for (const auto& kind : Society::kindsHeld(*soc.account(till), item))
+            soc.consume(till, kind, Society::stock(*soc.account(till), kind), "test: none left");
+    };
+    for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+        clear("smelter", item);
+    clear("frostsmith", "iron_bar");
+    clear("westsmith", "iron_bar");
+    soc.create(soc.tillOf("smelter"), "iron_bar", 60, "test: the week's bars");
+    nextMorning(w);
+    bool west = false;
+    for (const auto& o : w.roads().orders)
+        west |= o.item == "iron_bar" && o.from == "frosthollow" && o.buyer == soc.tillOf("westsmith");
+    expect(west, "and the west's smith has its iron from Frosthollow");
+}
+
+// A town with nobody free to go (doc 61): an order due is agreed again by the trader whose caravan brings it. (The towns'
+// people all have work; no porter ever went, and their iron stayed at the few bars a week of its first day.)
+void theTraderAgreesItAgain()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto smith = soc.tillOf("westsmith");
+    for (const auto& kind : Society::kindsHeld(*soc.account(smith), "iron_bar"))
+        soc.consume(smith, kind, Society::stock(*soc.account(smith), kind), "test: none left");
+    soc.create(soc.tillOf("smelter"), "iron_bar", 60, "test: the week's bars");
+    soc.shift("treasury", smith, "", 0, 500, "test: takings");
+    nextMorning(w);
+    auto order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(),
+                              [&](const StandingOrder& o) { return o.buyer == smith && o.item == "iron_bar"; });
+    expect(order != w.roads().orders.end(), "The west's smith orders iron from Frosthollow; its caravan sets out");
+    const auto id = order->id;
+    order->review = 0;                             // (Due.)
+    w.takeEvents();
+    bool agreed = false, sent = false;
+    for (int t = 0; t < 20000 && !agreed; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+        {
+            sent |= e.kind == "sent to renegotiate";
+            agreed |= e.kind == "standing order renegotiated" && e.target == smith && e.detail.find("with the trader") != std::string::npos;
+        }
+    }
+    expect(!sent && agreed, "Nobody in the west is free to go: the trader agrees it again when the caravan comes");
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    expect(order == w.roads().orders.end() || order->review > w.calendarDays(), "and it is not due again at once");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A town's makers keep what the roads take of them (doc 61): Frosthollow's two smelters, their bars ordered 180 a week,
+// smelt past their usual store (twice a supplier's, a trade good's), each toward its share of a week of the orders, so
+// the caravan has them to take; not each the whole of it (the city's smiths had each kept the towns' week of nails).
+// And a house's business keeps a week of its own orders' cost in its till, not swept to the house each night.
+void makersKeepWhatIsOrdered()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("smelter2", "Bera Ore", "merchant", "runs The Low Smelter", 3, 10.5, 4, 10.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    auto& soc = w.society();
+    const std::string smelters[] = {soc.tillOf("smelter"), soc.tillOf("smelter2")};
+    for (const auto& smelter : smelters)
+    {
+        for (int n = 0; n < 4; ++n)
+            soc.create(smelter, "iron_ore", 99, "test: a good month at the mine");
+        for (int n = 0; n < 2; ++n)
+            soc.create(smelter, "charcoal", 99, "test: the burners' month");
+    }
+    StandingOrder o;
+    o.id = "so-test";
+    o.buyer = soc.tillOf("westsmith");
+    o.town = "west";
+    o.item = "iron_bar";
+    o.from = "frosthollow";
+    o.perWeek = 180;
+    o.price = 12;
+    o.review = 1e9;
+    w.roads().orders.push_back(o);
+    nextMorning(w);
+    const int usual = int(Society::SuppliesKept * items::tradeKeep()), share = 180 / 2 + Society::SuppliesKept / 2;
+    int most[2] = {0, 0};
+    for (int t = 0; t < 14 * 3600 && (most[0] < share || most[1] < share); ++t)
+    {
+        w.tick(1);
+        for (int k = 0; k < 2; ++k)
+            most[k] = std::max(most[k], Society::stockAll(*soc.account(smelters[k]), "iron_bar"));
+    }
+    for (int k = 0; k < 2; ++k)
+        expect(most[k] > usual && most[k] <= share, "Each smelter smelts past its usual store of bars, to its share (" +
+                                                       std::to_string(most[k]) + ": usual " + std::to_string(usual) + ", share " +
+                                                       std::to_string(share) + ")");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+void aHousesTillKeepsItsOrders()
+{
+    const auto unpaid = [](std::string line) { line.replace(line.find(" 1 8 17 "), 8, " 0 8 17 "); return line; };
+    auto f = strip("EE.....WW", unpaid(resident("gray", "Lady Grayrock", "civilian", "keeping Grayrock Hall", 0, 10.5, 0, 10.5)) +
+                                    resident("forge", "Ash Smith", "merchant", "smith at The Gray Forge", 0, 14.5, 1, 6.5));
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);
+    run(w, 2);
+    auto& soc = w.society();
+    const auto position = soc.jobOf("forge")->id;
+    expect(soc.ownerOf(position) == "house:grayrock_hall", "The forge is Grayrock's");
+    const auto before = soc.floatOf(position);
+    soc.setStandingOrders({}, {{"till:" + position, 400}});
+    expect(soc.floatOf(position) == before + 400, "and its till keeps a week of its standing orders besides (" +
+                                                    std::to_string(soc.floatOf(position)) + "p, from " + std::to_string(before) + "p)");
+}
+
+// An order catches up with what its shop uses (doc 61): signed on the first day, before a smith has sold anything, it is
+// for a few bars; it is looked at again a week on (not four), and raised to a week of the smith's use, and looked at
+// again a week after that, till it has caught up. (Left a month, the towns' smiths had 8 bars a week while they used 30.)
+void anOrderCatchesUpWithUse()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5) +
+                        resident("porter", "Pell Strap", "civilian", "carries loads for hire", 7, 11.5, 7, 11.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto smith = soc.tillOf("westsmith");
+    const auto clear = [&](const std::string& till, const std::string& item) {
+        for (const auto& kind : Society::kindsHeld(*soc.account(till), item))
+            soc.consume(till, kind, Society::stock(*soc.account(till), kind), "test: none left");
+    };
+    for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+        clear(soc.tillOf("smelter"), item);
+    clear(smith, "iron_bar");
+    soc.create(soc.tillOf("smelter"), "iron_bar", 60, "test: the week's bars");
+    soc.shift("treasury", smith, "", 0, 500, "test: takings");
+    nextMorning(w);
+    auto order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(),
+                              [&](const StandingOrder& o) { return o.buyer == smith && o.item == "iron_bar"; });
+    expect(order != w.roads().orders.end(), "The west's smith orders iron from Frosthollow");
+    const auto id = order->id;
+    const int first = order->perWeek;
+    expect(order->review - order->since <= 7.01, "to be looked at again in a week (" + std::to_string(order->review - order->since) + " days)");
+    // A week on (the order due), a busy day: nails by the hundred (a bar makes six), counted into the smith's sales at the
+    // turn of the day, when the porter is sent. (A day passes as nextMorning's does, the sale made after the restore,
+    // which doesn't keep a day's sales.)
+    auto saved = w.save();
+    saved.calendarDays = std::floor(saved.calendarDays) + 1.3;
+    expect(w.restore(saved).ok, "A day passes");
+    soc.create(smith, "nails", 96, "test: made");
+    soc.shift("treasury", "porter", "", 0, 96, "test: a builder's errand");
+    expect(soc.sale(smith, "porter", "nails", 96, 1, "test: sold"), "A busy day: the smith sells 96 nails");
+    soc.consume("porter", "nails", 96, "test: a roof mended");
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    order->review = 0;
+    w.takeEvents();
+    for (int t = 0; t < 3; ++t)
+        w.tick(1);
+    const int weekly = int(std::ceil(soc.useRate(smith, "iron_bar") * 7));
+    expect(weekly > first, "The smith now uses more than the order brings (" + std::to_string(weekly) + " a week, against " +
+                               std::to_string(first) + ")");
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    expect(order != w.roads().orders.end() && order->negotiator == "porter", "The order is due: the porter is sent");
+    bool agreed = false;
+    for (int t = 0; t < 8000 && !agreed; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            agreed |= e.kind == "standing order renegotiated" && e.target == smith;
+    }
+    expect(agreed, "The porter agrees it again at Frosthollow");
+    order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
+    expect(order != w.roads().orders.end() && order->perWeek >= weekly,
+           "raised to a week of the smith's use (" + std::to_string(order == w.roads().orders.end() ? 0 : order->perWeek) + ")");
+    expect(order->review - w.calendarDays() <= 7.01, "and looked at again in a week, being raised");
+    expect(soc.conserved(), "Money is conserved");
+}
+
 int main()
 {
     try
@@ -2160,6 +2403,12 @@ int main()
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();
+        aTradeTownSuppliesTheRoads();
+        aSmithWantsOneStoreOfIron();
+        anOrderCatchesUpWithUse();
+        makersKeepWhatIsOrdered();
+        aHousesTillKeepsItsOrders();
+        theTraderAgreesItAgain();
         standingOrdersAreRenegotiated();
         shopkeepersDontHoard();
         theOwnersShare();

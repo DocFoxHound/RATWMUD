@@ -82,6 +82,10 @@ std::int64_t Society::floatOf(const std::string& positionId) const
             for (const auto& [item, n] : crafts.front()->in)
                 if (const auto* good = items::good(item))
                     materials += std::int64_t(good->price) * n * MaterialBatches;
+    // And a week of its standing orders on the roads (doc 61), paid when the caravan comes: swept to the house each
+    // night, a city smith's till held a quarter of what its iron cost when the caravan came.
+    if (const auto orders = ordersCost_.find("till:" + positionId); orders != ordersCost_.end())
+        materials += orders->second;
     return FloatDays * (ManagerWage + 6 * help) + 30 + materials;
 }
 

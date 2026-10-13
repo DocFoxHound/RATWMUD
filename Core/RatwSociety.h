@@ -526,6 +526,13 @@ class Society
     // A shop of food (a general store, a provisioner, a stall, a bakery, a butcher, a fishmonger, a brewery, an inn): it
     // sells any wholesome food it has in, besides its own wares (Docs/Design/42, "Food between towns").
     bool foodShop(const std::string& merchant) const;
+    // How many of a good a business uses a day (doc 61), by its till ("till:<position>"): through each of its crafts that
+    // takes it, as fast as what the craft makes sells (missed sales too); a supplier, as fast as it sells the good.
+    double useRate(const std::string& till, const std::string& item) const;
+    // The roads' standing orders (doc 61), told by World each day: by selling town and good, how many go a week (its
+    // makers share that much more of a good that keeps, kept for the caravan); by buyer's till, what its orders cost a
+    // week (a house's business keeps that in its till, floatOf, to pay for them when they come).
+    void setStandingOrders(const std::map<std::pair<std::string, std::string>, int>& perWeek, std::map<std::string, std::int64_t> costs);
     bool sellsFood(const std::string& merchant, const std::string& item, const std::vector<std::string>& wares) const;
     // Producers sell their town's food shops what food they bring in beyond ProduceKept, daily, a shop taking up to
     // FoodShelf of a food, at a shop's buying price (doc 15: a little over half), as far as it can pay.
@@ -628,6 +635,8 @@ class Society
     // What each shop sells of each good a day, and the sales it missed for having none (a running average; Society::spoil
     // keeps it daily): a maker short of materials makes first what is wanted (TRIAL make_what_sells, doc 42). Not saved.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> sellRate_;
+    std::map<std::pair<std::string, std::string>, int> ordersFrom_;    // (Town, good) -> each maker's share of a week's orders.
+    std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
     // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
     // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.

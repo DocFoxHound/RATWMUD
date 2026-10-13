@@ -16,6 +16,13 @@ namespace
 constexpr double Markup = 1.4;                       // What carted goods sell for, against the catalog price.
 constexpr int MostOfAGood = 30, MostALoad = 80;      // A wagon's load (placeholders).
 constexpr int TradeCaravansADay = 12;
+constexpr double OrderSettles = 7;                   // Days before a new or raised standing order is looked at again.
+// What a week's order holds back of the seller's spare: all of it, but half for a town whose trade the good is (doc 61),
+// whose makers and producers keep making it all week, so that it can promise twice what it has to spare on the day.
+int promised(const std::string& town, const std::string& item, int perWeek)
+{
+    return items::townGoodOf(town, item) ? (perWeek + 1) / 2 : perWeek;
+}
 constexpr std::int64_t GuardsHire = 6;               // Two guards for the road, paid to the town.
 }
 
@@ -69,6 +76,7 @@ World::Market World::marketOf(const std::string& town) const
         if (society_.foodShop(r.id))
             m.foodShops.push_back(till);
         const auto& supplies = items::suppliesFor(business->id);
+        std::map<std::string, int> tillWant;            // What this shop wants, by good.
         for (const auto* k : items::craftsFor(business->id))
         {
             for (const auto& [item, n] : k->out)
@@ -80,15 +88,16 @@ World::Market World::marketOf(const std::string& town) const
                     m.holders[item].push_back({till, spare});
                 }
             }
+            // (One store of each material, whichever crafts it goes into: a smith's iron for its nails, tools and
+            // fittings is one store of bars, not one for each, doc 61; it was counted fourteen times over, and a town
+            // with a smith never had iron to spare.)
             for (const auto& [item, n] : k->in)
-                if (const int want = n * Society::MaterialBatches - Society::stockAll(*shelves, item); want > 0)
-                {
-                    m.want[item] += want;
-                    m.wanters[item].push_back({till, want});
-                }
+                tillWant[item] = std::max(tillWant[item], n * Society::MaterialBatches - Society::stockAll(*shelves, item));
         }
         for (const auto& item : supplies)
-            if (const int want = Society::SuppliesKept / 2 - Society::stockAll(*shelves, item); want > 0)
+            tillWant[item] = std::max(tillWant[item], Society::SuppliesKept / 2 - Society::stockAll(*shelves, item));
+        for (const auto& [item, want] : tillWant)
+            if (want > 0)
             {
                 m.want[item] += want;
                 m.wanters[item].push_back({till, want});
@@ -162,7 +171,7 @@ void World::tradeCaravans()
     {
         ordered[{o.town, o.item}] += o.perWeek;
         buyers.insert({o.buyer, o.item});
-        markets[o.from].spare[o.item] -= o.perWeek;       // (Promised already.)
+        markets[o.from].spare[o.item] -= promised(o.from, o.item, o.perWeek);   // (Promised already.)
     }
     // New standing orders: a shop short of a good its own town can't spare, signed with the town that has the most of
     // it to spare, for about what it is short.
@@ -202,12 +211,14 @@ void World::tradeCaravans()
                 o.town = to.id;
                 o.item = item;
                 o.from = best->id;
-                o.perWeek = std::clamp(wanted, 4, std::min(MostOfAGood, bestSpare));
+                // For a week of what it uses (doc 61), or what it is short now if that is more.
+                const int weekly = int(std::ceil(society_.useRate(buyer, item) * 7));
+                o.perWeek = std::clamp(std::max(wanted, weekly), 4, std::min(MostOfAGood, bestSpare));
                 o.price = orderPrice(*best, item);
                 o.since = calendarDays_;
-                o.review = calendarDays_ + MonthDays;
-                bestSpare -= o.perWeek;
-                markets[best->id].spare[item] -= o.perWeek;
+                o.review = calendarDays_ + OrderSettles;      // (Looked at again once a week of its use is known.)
+                bestSpare -= promised(best->id, item, o.perWeek);
+                markets[best->id].spare[item] -= promised(best->id, item, o.perWeek);
                 buyers.insert({buyer, item});
                 signedToday.insert({best->id, to.id});
                 recordEvent({"standing order", buyer, best->id, to.market, 0, 0, item, o.perWeek, o.price,
@@ -215,6 +226,16 @@ void World::tradeCaravans()
                 roads_.orders.push_back(std::move(o));
             }
         }
+    // What the orders come to, told to the towns' makers and the houses (doc 61): how many of each good each town sends a
+    // week, kept in store for the caravan; what each buyer's cost a week, kept in its till to pay for them.
+    std::map<std::pair<std::string, std::string>, int> perWeek;
+    std::map<std::string, std::int64_t> costs;
+    for (const auto& o : roads_.orders)
+    {
+        perWeek[{o.from, o.item}] += o.perWeek;
+        costs[o.buyer] += o.price * o.perWeek;
+    }
+    society_.setStandingOrders(std::move(perWeek), std::move(costs));
     // Each road with standing orders sends its trader's caravan once a week (on a day of its own), and at once when an
     // order is new; a wagon still on the road goes again next week.
     std::map<std::pair<std::string, std::string>, std::map<std::string, int>> loads;
@@ -298,8 +319,9 @@ void World::tradeCaravans()
 
 void World::residentsRenegotiate(std::set<std::string>& busy)
 {
-    // A standing order due to be looked at again (four weeks on, or deliveries well short): a porter of the buyer's
-    // town walks to the selling town's market to renegotiate it, with food for the road from the shop.
+    // A standing order due to be looked at again (a week after it was signed or raised, else four weeks on, or
+    // deliveries well short): a porter of the buyer's town walks to the selling town's market to renegotiate it, with
+    // food for the road from the shop.
     const auto today = std::int64_t(std::floor(calendarDays_));
     for (auto& o : roads_.orders)
     {
@@ -337,9 +359,9 @@ void World::residentsRenegotiate(std::set<std::string>& busy)
 
 void World::tendNegotiators()
 {
-    // At the selling town's market: the order agreed again. A shop that has piled up more than two weeks' worth wants
-    // a quarter less; one that went short or ran low, a quarter more; at the price the goods fetch there now. One that
-    // wants next to nothing ends it.
+    // At the selling town's market: the order agreed again (agreeAgain). A shop that has piled up more than two weeks'
+    // worth wants less; one that ran low, more; at the price the goods fetch there now. One that wants next to nothing
+    // ends it.
     for (auto it = roads_.orders.begin(); it != roads_.orders.end();)
     {
         auto& o = *it;
@@ -353,18 +375,9 @@ void World::tendNegotiators()
             ++it;
             continue;
         }
-        const auto* shelves = society_.account(o.buyer);
-        const int held = shelves ? Society::stockAll(*shelves, o.item) : 0;
-        const int before = o.perWeek;
-        if (held > o.perWeek * 2)
-            o.perWeek = o.perWeek * 3 / 4;
-        else if (o.shortfall > 0 || held < o.perWeek / 2)
-            o.perWeek = std::min(60, o.perWeek * 5 / 4 + 1);
-        o.price = orderPrice(*from, o.item);
-        o.review = calendarDays_ + MonthDays;
-        o.delivered = o.shortfall = 0;
-        if (shelves && society_.shift(o.buyer, o.negotiator, "", 0, std::min<std::int64_t>(3, shelves->cash), "a negotiator's pay"))
-            {}
+        const int before = agreeAgain(o, *from);
+        if (const auto* shelves = society_.account(o.buyer))
+            society_.shift(o.buyer, o.negotiator, "", 0, std::min<std::int64_t>(3, shelves->cash), "a negotiator's pay");
         recordEvent({o.perWeek < 2 ? "standing order ends" : "standing order renegotiated", o.negotiator, o.buyer, porter->cellId, 0, 0,
                      o.item, o.perWeek, o.price,
                      o.item + " from " + o.from + ": " + std::to_string(before) + " a week, now " + std::to_string(o.perWeek) + " at " +
@@ -375,6 +388,28 @@ void World::tendNegotiators()
         else
             ++it;
     }
+}
+
+int World::agreeAgain(StandingOrder& o, const Town& from)
+{
+    const auto* shelves = society_.account(o.buyer);
+    const int held = shelves ? Society::stockAll(*shelves, o.item) : 0;
+    const int before = o.perWeek;
+    // What a week of its use comes to (doc 61): an order is brought toward it, a shop running low (under half a week's
+    // worth) raising it a quarter at least, one with more than two weeks' worth piled up lowering it a quarter at
+    // most. (Not raised because the seller fell short, nor for use alone: looked at weekly, that raised orders the
+    // seller couldn't fill and shops stocked from their own town, fruit and fish by the hundred, till the rescue fund
+    // kept them open.)
+    const int weekly = int(std::ceil(society_.useRate(o.buyer, o.item) * 7 * 1.1));
+    if (held > std::max(o.perWeek, weekly) * 2)
+        o.perWeek = std::max(weekly, o.perWeek * 3 / 4);
+    else if (held < std::max(o.perWeek, weekly) / 2)
+        o.perWeek = std::min(MostOfAGood * 3, std::max(weekly, o.perWeek * 5 / 4 + 1));
+    o.price = orderPrice(from, o.item);
+    // Raised, it is looked at again in a week, till it has caught up with the shop's use; else in a month.
+    o.review = calendarDays_ + (o.perWeek > before ? OrderSettles : MonthDays);
+    o.delivered = o.shortfall = 0;
+    return before;
 }
 
 void World::tradeCaravanArrived(Caravan& c)
@@ -407,6 +442,29 @@ void World::tradeCaravanArrived(Caravan& c)
         o.delivered += given;
         o.shortfall += o.perWeek - given;
     }
+    // An order due to be looked at again that no porter has gone for (a town whose people all have work to do): the
+    // trader agrees it again here, on the same terms a porter would have had (doc 61; the towns' iron stayed at the few
+    // bars of its first week).
+    if (const auto* from = town(c.from))
+        for (auto it = roads_.orders.begin(); it != roads_.orders.end();)
+        {
+            auto& o = *it;
+            if (o.from != c.from || o.town != c.to || !o.negotiator.empty() ||
+                (calendarDays_ < o.review && o.shortfall < o.perWeek * 2))
+            {
+                ++it;
+                continue;
+            }
+            const int before = agreeAgain(o, *from);
+            recordEvent({o.perWeek < 2 ? "standing order ends" : "standing order renegotiated", c.trader, o.buyer, to->market, 0, 0,
+                         o.item, o.perWeek, o.price,
+                         o.item + " from " + o.from + ": " + std::to_string(before) + " a week, now " + std::to_string(o.perWeek) +
+                             " at " + std::to_string(o.price) + "p, with the trader"});
+            if (o.perWeek < 2)
+                it = roads_.orders.erase(it);
+            else
+                ++it;
+        }
     load = society_.account(c.account);
     for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
     {

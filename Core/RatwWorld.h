@@ -1781,6 +1781,10 @@ class World
     std::int64_t orderPrice(const Town& from, const std::string& item) const;
     void residentsRenegotiate(std::set<std::string>& busy);
     void tendNegotiators();
+    // An order agreed again (doc 61), by a porter at the selling town's market or, in a town with nobody free to go, by
+    // the trader whose caravan brings it: brought toward a week of the buyer's use, at the selling town's price now.
+    // Returns how many a week it was before.
+    int agreeAgain(StandingOrder& o, const Town& from);
     // Food for the road for one going from `town` to `toCell` and back, paid by `payer` up to `budget`: a meal for every
     // ten places of the way, two at least, bought at its town's shops; what can't be bought, the money for it. Returns
     // what it cost. Never made.
