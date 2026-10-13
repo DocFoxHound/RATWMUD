@@ -63,3 +63,71 @@ opener[self.tone=gruff] = ~ | Hmph. | Listen.
 opener[self.tone=formal] = Certainly. | Of course. | Allow me.
 opener[self.tone=sly] = For you? | Ah, well now. | Since you ask,
 opener[self.tone=shy] = Oh, um. | I, well. | Oh!
+
+# Phase 7's words (the conversations written for the main factors and the everyday topics). Each is one kind of word:
+# things take their article where shown ("#watch# took them", "in #gaol#", "after #supper#"); a person without one
+# ("a #thief#", "a #stranger#"); words like "busy" or "poorly" fit where "cold" does ("you look #poorly#"); whole
+# sayings stand alone (#toast#, #blessing#, #bless#).
+# Work and trade.
+wages = wages | pay | pennies
+boss = the master | the boss | the old wolf
+busy = busy | rushed | run ragged
+slow = slow | quiet | dead
+takings = takings | the till | the day's money
+cheated = cheated | robbed blind | done
+# Family: what one calls their mother and father (habits: always the same), grandparents, the evening meal.
+mum! = Mum | Mam | Mother | Ma
+dad! = Dad | Da | Father | Pa
+gran = Gran | Granny | Nan | Grandmother
+grandad = Grandad | Gramps | Grandfather | Grandda
+supper = supper | dinner | tea
+# Town and class: the rich as the rest see them, the poor as the rich see them, out of money, grand, a tattler, a
+# polite word to one's betters.
+toffs = the toffs | the nobs | the quality | the fine folk
+rabble = the rabble | the riff-raff | that lot | the gutter crowd
+skint = skint | broke | cleaned out | short
+posh = posh | grand | fancy | la-di-da
+busybody = busybody | nosy parker | gossip | tattler
+sir = sir^m | madam^f
+# Friends and rivals: a rival to their face, a friend teased, mad, a toast, a drink to stand someone, a fool.
+insult = you mangy cur | you lout | you sour old stick | you flea-bitten so-and-so
+fool = you daft lump | you great fool | you muttonhead | you soft article
+daft = daft | soft in the head | cracked | barmy
+toast = Your health | Here's to us | Fur and fortune | Down the hatch
+drink = a jar | a drink | a pint | a cup of cider | a drop of something
+lump = great lump | oaf | lummox | daft article
+later = later | by and by | another time
+# The moment.
+fog = fog | mist | murk
+snow = snow | white stuff
+mud = mud | muck | mire
+wind = wind | gale | blow
+ale = ale | beer | brown ale
+# Hard times: the law and the want.
+watch = the Watch | the watch
+thief = thief | cutpurse | light-pawed sort
+bandits = bandits | robbers | road wolves
+gaol = the gaol | the cells | the lock-up
+dole = the dole | the parish bread | the parish loaf
+grave = the ground | the grave | the churchyard
+# Food and the house.
+grub = food | grub | victuals
+tasty = tasty | toothsome | lovely
+mess = mess | state | tip
+snug = snug | cosy | warm
+# Pastimes and beasts.
+beasts = the beasts | the stock | the animals
+bet = a wager | a bet | a flutter
+# Health and the past.
+poorly = poorly | under the weather | off colour | out of sorts
+chill = a chill | a cold | the sniffles
+remedy = willow bark | a mustard poultice | goose grease | honey and onion | a nettle brew | a hot brick in a cloth
+olddays = the old days | days gone by | the good old days
+# Blessings, and someday.
+blessing = The Bright One keep you | Bless you | Blessings on you | Bright One watch over you
+bless = Gods keep you | Bright One bless you | The gods go with you
+someday = someday | one day | one fine day
+# Travel.
+far = a long way | a fair step | miles off
+stranger = stranger | outsider | newcomer
+journey = journey | trek | long haul

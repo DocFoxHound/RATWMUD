@@ -821,10 +821,36 @@ checked by the game's loader and sampled with `talk_check` against DEV's residen
 **The engine:** a rule may test that a speaker has words to say (`self.spouse`, `!self.child`), as it could a memory,
 so it names only those who exist.
 
-**Still to do with you:** the dialects' words (the four new ones, and those each dialect lacks: `talk_report.py` lists
-them; the database's dialects are what's used, edited in the Dungeon Master), the quirk lines (drafts), and a listen
-through these for tone. Found while sampling: the wealth line (rich from 42 days' food) makes the head of House
-Greatly only "comfortable", since household food days don't measure a House's fortune.
+**A hundred hours (the user, 2026-10-13: "I don't want a player hearing the same conversation twice within 100
+hours of gameplay"; expand the topics: everyday life, the weather, the region).** Written the same day, by twelve
+writers in parallel each on a theme (Claude's hand, no paid drafting), every file checked by the game's loader:
+
+- **Eleven new everyday topics** (`World::sceneTopics`): `food`, `home`, `pastimes`, `animals`, `health`,
+  `memories`, `dreams`, `faith`, `travel`, `land`, `season`, each with a little chance an hour like `smalltalk` and
+  `lore`, so two residents wander from one subject to another.
+- **About 4,400 new entries** (45 files, `*7*.talk`): work and trade (`w7_`), family and home (`f7_`), neighbours,
+  class and the town (`n7_`), friends, rivals and feelings (`r7_`), the moment: weather, the day, festivals, lore,
+  accents (`m7_`), hard times and danger (`h7_`), reactions, barks and answers to players (`x7_`), food and home
+  (`e1_`), pastimes and animals (`e2_`), health and memories (`e3_`), dreams and faith (`e4_`), travel, the land and
+  the season (`e5_`, with scenes for each region). About half are broad (any two residents may say them), half
+  specific; many are chains whose replies are chosen by the replier (82 new answer concepts).
+- **The library**: 3,751 scenes and 3,439 rules; `talk_report.py` estimates **about 115 hours** of listening before
+  an everyday conversation repeats (was 50). A sample of 400 random pairs across the everyday topics gave 278
+  different conversations, none more than six times.
+- **50 new words** in the plain grammar (wages, boss, takings, mum and dad as habits, toffs, rabble, skint, the Watch,
+  gaol, the dole, fog, snow, mud, wind, ale, supper, remedies, blessings...), and every dialect's words for most of
+  them, chosen for each region's speech; every dialect now has every word plain had before phase 7.
+- **The engine:** a whole tier already heard falls to the nearest tier with something not heard, before any repeat;
+  a shrug ends a chain (`settings.json` `ends`: "Mm.", "Aye.", "..."), so the next beat never answers what wasn't
+  said; the voice card keeps its habits whole (oath, saying, spouse first).
+- **Wealth** (the user agreed): relative and by standing. Rich is the top twentieth of the world's households by food
+  in hand (never under six weeks), and a great House's head and family; poor the bottom fifth (never above the
+  society's own line), and the Sump; comfortable at least, a thriving business's owner and the Heights' and estates'
+  residents (not their servants); destitute, the homeless. DEV after a day: 41 rich, 712 comfortable, 323 poor, 7
+  destitute (before: 685 rich, one poor). `pair.richer` compares standing first.
+
+**Still to do with you:** a listen-through (the twelve writers stopped at the account's limit before their own
+read-through: the lines load and play, but haven't all been read), the dialects' words (chosen by Claude at the user's word; tune by ear), the quirk lines (drafts).
 
 ## Phases
 

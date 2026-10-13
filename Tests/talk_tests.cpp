@@ -213,6 +213,17 @@ void choosing()
     const auto heardAll = [](const std::string&) { return true; };
     expect(!lib.pick(q, 3, heardAll, {}).id.empty(), "with all heard, one is still said");
     expect(lib.pick(q, 3, None, {"needs_subject", "anywhere_talk"}).id.empty(), "never one said here lately");
+    // A whole tier heard: the nearest tier with one not heard, before any repeat (phase 7).
+    auto fall = foundation();
+    expect(fall.parse("rule specific\nwhen concept=talk.smalltalk self.job=baker\nsay Flour.\n"
+                      "rule general\nwhen concept=talk.smalltalk\nsay Weather.\n", "fall.talk", problem), problem);
+    const auto heardSpecific = [](const std::string& id) { return id == "specific"; };
+    for (std::uint64_t seed = 0; seed < 50; ++seed)
+        expect(fall.pick(moment("talk.smalltalk"), seed, heardSpecific, {}).id == "general", "the best tier heard: the next");
+    int best = 0;
+    for (std::uint64_t seed = 0; seed < 50; ++seed)
+        best += fall.pick(moment("talk.smalltalk"), seed, heardAll, {}).id == "specific";
+    expect(best > 30, "all heard: as if none were (" + std::to_string(best) + "/50)");
     auto bark = moment("bark");
     bark.alone = true;
     bark.b = {};
@@ -525,6 +536,14 @@ say First time I've told you.
                       "loop.talk", problem), problem);
     const auto lines = loop.converse(moment("talk.smalltalk"), 1, None, {}).lines;
     expect(lines.size() == 8 && lines[7] == std::pair<int, std::string>{1, "Pong."}, "eight beats at most, turn and turn about");
+
+    // A shrug ends it (settings.json "ends"): the next beat would answer what wasn't said.
+    auto shrug = foundation();
+    expect(shrug.parse("rule ask\nwhen concept=talk.smalltalk\nsay How's the leg?\nthen other: talk.day\n"
+                       "rule mm\nwhen concept=talk.day\nsay Mm.\nthen other: talk.festival\n"
+                       "rule advice\nwhen concept=talk.festival\nsay Then see the healer.\n", "shrug.talk", problem), problem);
+    const auto short_ = shrug.converse(moment("talk.smalltalk"), 1, None, {}).lines;
+    expect(short_.size() == 2 && short_[1].second == "Mm.", "a shrug, and that's the end of it");
 
     // Marks: a scene's branches, written in one place.
     auto marks = foundation();

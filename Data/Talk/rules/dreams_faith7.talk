@@ -1,0 +1,802 @@
+# Dreams and faith (doc 62, phase 7): rules and chains. One asks after the other's hopes, or tells their own, or a
+# dream, or an omen, or asks about chapel; the other answers as they are (their drive, wealth, stage, job, quarter,
+# piety, where they're from), and the first answers that in kind (warmth, humour, piety, wealth). Concepts:
+# dreams.answer (what I want), dreams.reply (to someone's hope or dream), dreams.progress (any nearer it?),
+# faith.answer (asked about chapel, prayer, belief), faith.reply (to an omen, a belief, a sermon). Sad answers end in
+# keeping.sorry, glad ones in keeping.glad. Prefix e4_.
+
+## ================================================================ DREAMS: asking
+
+rule e4_rd_ask
+when concept=talk.dreams
+cooldown 1d
+say If you could have anything at all, what would it be? | What do you want out of life, #address#? Truly. | Ever think about what's next? For you, I mean. | Got any plans? Big ones?
+then other: dreams.answer
+remember pair: e4_hopes 14d
+
+rule e4_rd_ask_close
+when concept=talk.dreams pair.band=friends|family|spouses
+cooldown 2d
+say Tell me something you want, #pet#. Something just for you. | What's your dream these days? You never say. | If it all went right, where would you be in ten years?
+then other: dreams.answer
+remember pair: e4_hopes 14d
+
+rule e4_rd_ask_windfall
+when concept=talk.dreams
+cooldown 2d
+say Say you found a purse of silver in the road. What then? | If an old aunt left you a fortune, what's the first thing you'd do? | Say your ship came in tomorrow. What would you buy?
+then other: dreams.answer
+
+rule e4_rd_ask_pup
+when concept=talk.dreams other.stage=young self.stage=adult|old
+cooldown 1d
+say What'll you be when you're grown, #address#? | Do you know what you want to be yet? | When you're big, what will you do?
+then other: dreams.answer
+
+rule e4_rd_ask_old
+when concept=talk.dreams other.stage=old self.stage!=old
+cooldown 2d
+say Anything you've still a mind to do? | If you could have one more thing, what would it be? | Is there anything you always meant to do and never did?
+then other: dreams.answer
+
+rule e4_rd_ask_spouse
+when concept=talk.dreams pair.band=spouses
+cooldown 3d
+say When the pups are grown, what'll we do, #dear#? | If we'd the coin, where would you want us to live? | Tell me what you want for us. Not the roof. Us.
+then other: dreams.answer
+
+rule e4_rd_ask_apprentice
+when concept=talk.dreams pair.band=apprentice
+cooldown 3d
+say What sort of master will you be, when it's your turn? | Where do you see yourself, when your time's done here? | You've got a dream in that head. Out with it.
+then other: dreams.answer
+
+rule e4_rd_progress
+when concept=talk.dreams pair.mem.e4_hopes
+cooldown 3d
+say Any nearer that dream of yours? | How's the big plan coming? | Still set on what you told me?
+then other: dreams.progress
+
+## ================================================================ DREAMS: telling one's own
+
+rule e4_rd_tell_night
+when concept=talk.dreams
+cooldown 1d
+say Had the strangest dream last night. I was a fish, and I was late. | Dreamt I was at my own wedding and couldn't find my boots. | I dreamt the moon came down and sat in the square. Nobody minded. | Dreamt my old dog came back. Just sat by the fire. Same as ever.
+then other: dreams.reply
+
+rule e4_rd_tell_bad
+when concept=talk.dreams here.time=dawn|day
+cooldown 2d
+say Bad dream. I'm still shaking it off. | Didn't sleep well. Dreamt I was lost in the fog and couldn't find my door. | Dreamt the floor gave way. Woke on the boards.
+then other: dreams.reply
+
+rule e4_rd_tell_omen
+when concept=talk.dreams self.piety=devout
+cooldown 2d
+say I dreamt of a white bird on the chapel roof. That means something. | Three nights, the same dream. A lamp in a window. It's a sign. | I dream true, you know. My mother did too.
+then other: dreams.reply
+
+rule e4_rd_tell_ambitious
+when concept=talk.dreams self.drive=ambitious
+cooldown 2d
+say By spring I'll have my own name over a door. You'll see. | I've a plan, and it's a good one, and I'm not telling. | Two years. Two years and I'll be the one hiring.
+then other: dreams.reply
+
+rule e4_rd_tell_restless
+when concept=talk.dreams self.drive=restless
+cooldown 2d
+say I can't stay here much longer. I'll go mad. | Every time a cart goes by I want to be on it. | I keep looking at the road like it owes me something.
+then other: dreams.reply
+
+rule e4_rd_tell_content
+when concept=talk.dreams self.drive=content
+cooldown 2d
+say Know what I want? Nothing. I've got it. | Folk keep asking about my plans. My plan is supper. | I sat in the sun this morning and thought, this'll do.
+then other: dreams.reply
+
+rule e4_rd_tell_sump
+when concept=talk.dreams self.quarter=sump
+cooldown 2d
+say One day I'll have a room on the hill. Windows. Air. | My pups won't grow up down here. I swear it. | Getting out of the Sump. That's the only dream down here.
+then other: dreams.reply
+
+rule e4_rd_tell_poor
+when concept=talk.dreams self.wealth=poor|destitute
+cooldown 2d
+say If I were rich, I'd have a fire all night. Every night. | One day I'll buy bread without counting the pennies first. | A whole pie. To myself. That's my dream, these days.
+then other: dreams.reply
+
+rule e4_rd_tell_rich
+when concept=talk.dreams self.wealth=rich
+cooldown 3d
+say I'm thinking of a summer house. Southmeadow, perhaps. | Do you know, I'd like to do something useful with it all. Just once. | Money's a dull dream once you've got it. I want something else.
+then other: dreams.reply
+
+rule e4_rd_tell_young
+when concept=talk.dreams self.stage=young
+cooldown 1d
+say When I'm big I'm going to be a guard and catch everyone. | I'm going to have a boat and a hat and a sword. | I'm going to be a hero. A real one. With a song.
+then other: dreams.reply
+
+rule e4_rd_tell_adolescent
+when concept=talk.dreams self.stage=adolescent
+cooldown 2d
+say Soon as I'm old enough I'm off to Ridgemere. | Everyone's decided who I'll be. They're all wrong. | I'm not doing what my parents did. Not for anything.
+then other: dreams.reply
+
+rule e4_rd_tell_old
+when concept=talk.dreams self.stage=old
+cooldown 2d
+say One more good summer. That's all I'm asking for. | I'd like to see the grandpups settled before I go. | I'd like to go in my own bed, with the window open. Not yet, mind.
+then other: dreams.reply
+
+rule e4_rd_tell_unwed
+when concept=talk.dreams self.married=no self.stage=adult
+cooldown 3d
+say I'd like to be married, #someday#. A full house, a loud one. | I keep thinking I should find someone. Then I don't. | There's someone. I'm not saying who. One day I'll say.
+then other: dreams.reply
+
+rule e4_rd_tell_parent
+when concept=talk.dreams self.parent=yes self.child
+cooldown 3d
+say #self.child# wants to be a guard. Breaks my heart and makes me proud. | All I want is for #self.child# to have it better than me. | #self.child# says they'll buy me a house one day. I'm holding them to it.
+then other: dreams.reply
+
+rule e4_rd_tell_house
+when concept=talk.dreams self.house
+cooldown 3d
+say #self.house# notices those who work. I mean them to notice me. | I'll be steward in #self.house# one day. Mark me. | There's a place at #self.house#'s table with my name on it. Nearly.
+then other: dreams.reply
+
+rule e4_rd_tell_apprentice
+when concept=talk.dreams self.apprentice=yes
+cooldown 2d
+say When I've my own mark, I'll put it on everything. Even spoons. | Two more years and I'm my own master. | I'm going to be better than my master. Don't tell them.
+then other: dreams.reply
+
+rule e4_rd_tell_widowed
+when concept=talk.dreams self.widowed=yes
+cooldown 3d
+say I had my dream. Twenty years of it. I don't need another. | I dream of my #dear# most nights. I don't mind. | We always meant to see the sea, the two of us. I might go yet. For both of us.
+then other: keeping.sorry
+
+rule e4_rd_tell_owes
+when concept=talk.dreams self.owes=yes
+cooldown 3d
+say My dream? To owe nobody a penny. Just once. | One day I'll walk down the street and not cross over to avoid anyone. | If I could clear my debts I'd sleep a week.
+then other: keeping.sorry
+
+rule e4_rd_tell_failing
+when concept=talk.dreams self.business=failing
+cooldown 3d
+say I dreamed of this shop for ten years. Now look at it. | I just want the shop open past the month. That's my whole dream now. | Funny. You get the dream, and then you have to keep it.
+then other: keeping.sorry
+
+rule e4_rd_tell_thriving
+when concept=talk.dreams self.business=thriving
+cooldown 3d
+say Another year like this and I'll open a second shop. | I've dreamed of this since I was a pup. And here it is. | Next I want a sign. Painted. Gold letters.
+then other: keeping.glad
+
+rule e4_rd_tell_festival
+when concept=talk.dreams world.festival=soon
+cooldown 2d
+say I'm going to win something at #here.festival#. Don't know what yet. | I've a plan for #here.festival#. It involves dancing. | This #here.festival# I'm going to tell someone something. Brave, me.
+then other: dreams.reply
+
+rule e4_rd_tell_restday
+when concept=talk.dreams here.day=work|market self.shift=after
+cooldown 2d
+say Restday, I'm doing nothing. I've planned it all out. | I'm going to sleep through Restday. Chapel can come to me. | Restday I'm going up the hill with bread and cheese and nobody.
+then other: dreams.reply
+
+rule e4_rd_tell_north
+when concept=talk.dreams self.from=frosthollow
+cooldown 3d
+say I dream of being warm. Properly warm, all through. | One summer in the south, that's my wish. Just one. | Everyone up home dreams of the big seam. Me too, still.
+then other: dreams.reply
+
+rule e4_rd_tell_fen
+when concept=talk.dreams self.from=mirebridge
+cooldown 3d
+say Dry boots. That's a fen wolf's whole dream. Dry boots. | A house on a hill. Any hill. | One day I'll live where the floor doesn't squelch.
+then other: dreams.reply
+
+rule e4_rd_tell_south
+when concept=talk.dreams self.from=southmeadow|larkfield
+cooldown 3d
+say I'd like to see real snow. Mountains of it. | I want my own orchard. Twenty trees. Every one with a name. | Some day I'll sell my own wool at the big fair, no middle-wolf.
+then other: dreams.reply
+
+rule e4_rd_tell_city
+when concept=talk.dreams self.from=ridgemere here.region!=ridgemere
+cooldown 3d
+say I miss the Sound, you know. I'll go back one day. | One day I'll have a house on Harbour Hill. Just you see. | Funny. I left the city to get away, and now I dream of it.
+then other: dreams.reply
+
+## ================================================================ DREAMS: answering (self answers)
+
+rule e4_rd_ans_plain
+when concept=dreams.answer
+say Honestly? A bit of peace. A chair by a fire that's mine. | A roof that doesn't leak. Start there. | Oh, I don't know. Something. Somewhere. | Good boots and no debts. | #saying#. I'll take what comes.
+then other: dreams.reply
+
+rule e4_rd_ans_shop
+when concept=dreams.answer
+say My own shop. Small. My name over the door. | A cottage. Low roof, a garden, a bench by the door. | To see the sea, just once. | A boat. Painted. Mine.
+then other: dreams.reply
+
+rule e4_rd_ans_content
+when concept=dreams.answer drive=content
+say This. I've got it. A roof, a fire, folk to talk to. | Nothing much. Same again, a bit warmer. | Why? What's wrong with now?
+then other: dreams.reply
+
+rule e4_rd_ans_steady
+when concept=dreams.answer drive=steady
+say Same as now, but a bit better. A good winter. | Keep on as I am, put a bit by. Nothing fancy. | A steady year. No surprises. I hate surprises.
+then other: dreams.reply
+
+rule e4_rd_ans_restless
+when concept=dreams.answer drive=restless
+say Out. Anywhere. The sea, the mountains, I don't mind which. | To go where the roads go. All of them. | Something different. Every day the same is killing me.
+then other: dreams.reply
+
+rule e4_rd_ans_ambitious
+when concept=dreams.answer drive=ambitious
+say My name over three doors, not one. | A seat on the council. Then we'll see who listens. | Everything. In order. Starting this year.
+then other: dreams.reply
+
+rule e4_rd_ans_poor
+when concept=dreams.answer wealth=poor
+say Meat on a weekday. Every weekday. | A second coat, for when the first's wet. | Bread without counting. That's all.
+then other: dreams.reply
+
+rule e4_rd_ans_destitute
+when concept=dreams.answer wealth=destitute
+priority 1
+say A full belly. Ask me after that. | A dry corner. Tonight, if you've got one. | Dreams cost money, #address#. I've none.
+then other: keeping.sorry
+
+rule e4_rd_ans_rich
+when concept=dreams.answer wealth=rich
+say I've most things. I'd like some time, I suppose. | A summer house, perhaps. Everyone seems to have one. | Something money can't buy. Don't laugh.
+then other: dreams.reply
+
+rule e4_rd_ans_sump
+when concept=dreams.answer quarter=sump
+say Out of the Sump. Up the hill. Air. | A door that locks, and nobody on the other side of the wall. | My pups up the hill. Me too, if there's room.
+then other: dreams.reply
+
+rule e4_rd_ans_heights
+when concept=dreams.answer quarter=heights
+say One season without a dinner to go to. | To paint, if Mother would allow it. | Truthfully? To be ordinary for a week.
+then other: dreams.reply
+
+rule e4_rd_ans_young
+when concept=dreams.answer stage=young
+priority 1
+say A guard! With a spear! | A sailor, and go everywhere, and have a parrot. | A hero. Or a baker. Bakers get cake. | The captain of everything.
+then other: dreams.reply
+
+rule e4_rd_ans_adolescent
+when concept=dreams.answer stage=adolescent
+priority 1
+say Anything but what they want me to be. | Ridgemere. Anywhere bigger than here. | I don't know. That's the worst of it.
+then other: dreams.reply
+
+rule e4_rd_ans_old
+when concept=dreams.answer stage=old
+say To see the grandpups wed. That's all I'm waiting for. | One more good summer. Warm, and slow. | To go in my own bed, with the window open. Not yet, mind.
+then other: dreams.reply
+
+rule e4_rd_ans_merchant
+when concept=dreams.answer job=merchant
+say A second shop. On the square. | Ships. Real trade, out of Ridgemere. | A lad behind the counter and me in a chair.
+then other: dreams.reply
+
+rule e4_rd_ans_farmer
+when concept=dreams.answer job=farmer|herder
+say Twenty acres of my own. Nobody's tenant. | A flock that's mine, not the master's. | Rain at night and sun by day. Every day.
+then other: dreams.reply
+
+rule e4_rd_ans_fisher
+when concept=dreams.answer job=fisher|sailor
+say My own boat. Paid for. | A cottage on the shore, and never get wet again. | Somewhere nobody's drawn on a chart.
+then other: dreams.reply
+
+rule e4_rd_ans_miner
+when concept=dreams.answer job=miner
+say Daylight. All day, every day. | Enough put by that I never go down again. | My pups never going down the shaft.
+then other: dreams.reply
+
+rule e4_rd_ans_guard
+when concept=dreams.answer job=guard|soldier
+say A sergeant's stripe. Then my own shifts. | A quiet gate and a chair. | One year without a blade drawn on me.
+then other: dreams.reply
+
+rule e4_rd_ans_servant
+when concept=dreams.answer job=servant|laborer
+say A house where someone brings me tea. Just once. | My own place. My own fire. Nobody's bell. | To sit down. A whole day, sat down.
+then other: dreams.reply
+
+rule e4_rd_ans_crafter
+when concept=dreams.answer job=crafter|smith|apprentice
+say My own mark, on good work. | To make one thing that lasts a hundred years. | My own bench. My own door. My own tools.
+then other: dreams.reply
+
+rule e4_rd_ans_priest
+when concept=dreams.answer job=priest
+say A full chapel on an ordinary Restday. | A new roof. I dream of slates. Truly. | To see the Chapel of the Tide before I die.
+then other: dreams.reply
+
+rule e4_rd_ans_beggar
+when concept=dreams.answer job=beggar
+priority 1
+say A door that's mine. Somebody to knock on it. | My old trade back. My paws don't shake so much in summer. | One winter indoors.
+then other: keeping.sorry
+
+rule e4_rd_ans_unwed
+when concept=dreams.answer married=no stage=adult
+say Somebody to come home to. | A wedding in the orchard. Somebody else's first, to practise. | A spouse, a full house, and a dog that barks at nothing.
+then other: dreams.reply
+
+rule e4_rd_ans_parent
+when concept=dreams.answer parent=yes
+say For my pups to have it better than me. That's all. | To see mine grown and happy. Then I'll dream for myself. | Honestly? A night's sleep.
+then other: dreams.reply
+
+rule e4_rd_ans_spouse
+when concept=dreams.answer married=yes self.spouse
+say Me and #self.spouse#, old and grumpy, in the same chairs. | Somewhere sunny for #self.spouse# and me. One day. | Ask #self.spouse#. They do the dreaming for both of us.
+then other: dreams.reply
+
+rule e4_rd_ans_owes
+when concept=dreams.answer owes=yes
+say To owe nobody. Not a penny. | Clear my debts and sleep for a week. | Ask me when I've paid what I owe.
+then other: keeping.sorry
+
+rule e4_rd_ans_guarded
+when concept=dreams.answer honesty=guarded
+say That's my business. | I'll tell you when I've got it. | Not saying. Then it can't be laughed at.
+then other: dreams.reply
+
+rule e4_rd_ans_merry
+when concept=dreams.answer humour=merry
+say A barrel that never empties and a chair that never breaks. | To be taller. Failing that, richer. | A bed big enough to lose someone in.
+then other: dreams.reply
+
+rule e4_rd_ans_dry
+when concept=dreams.answer humour=dry
+say Fewer questions like this one. | To win an argument with my mother. Just once. Posthumously would do. | A quiet life. Clearly I'm in the wrong town.
+then other: dreams.reply
+
+rule e4_rd_ans_devout
+when concept=dreams.answer piety=devout
+say Whatever the Bright One has for me. | A good death, a long way off. And a clean conscience. | To do some good before I go.
+then other: dreams.reply
+
+rule e4_rd_ans_north
+when concept=dreams.answer from=frosthollow
+say To be warm. Just once, all through. | The big seam. Everyone up home dreams it. | A summer somewhere they've never heard of snow.
+then other: dreams.reply
+
+rule e4_rd_ans_fen
+when concept=dreams.answer from=mirebridge
+say Dry boots. That's it. Dry boots. | A house on a hill. Any hill. | A floor that doesn't squelch.
+then other: dreams.reply
+
+rule e4_rd_ans_south
+when concept=dreams.answer from=southmeadow|larkfield
+say My own orchard. Every tree with a name. | To see snow. Real snow. Mountains of it. | My own flock on the downs. The biggest.
+then other: dreams.reply
+
+## ================================================================ DREAMS: replying (self heard the other's hope or dream)
+
+rule e4_rd_rep_plain
+when concept=dreams.reply
+say Here's hoping. | You'll get there. | That's a good one. | I hope you get it. | Good dream, that.
+
+rule e4_rd_rep_plain2
+when concept=dreams.reply
+say Strange old world#tag#. | Hold onto that. | Mine's sillier. | #someday.capitalize#, eh? | And why not.
+
+rule e4_rd_rep_warm
+when concept=dreams.reply warmth=warm
+say I'd come and visit. I'd bring a cake. | You deserve it, #pet#. You do. | Oh, I hope so. I really do.
+
+rule e4_rd_rep_cold
+when concept=dreams.reply warmth=cold
+say Dream on. | Hm. | Well. Dreams are cheap.
+
+rule e4_rd_rep_dry
+when concept=dreams.reply humour=dry
+say And a pony, I suppose. | Good. Write when you're famous. | I'll hold your coat.
+
+rule e4_rd_rep_merry
+when concept=dreams.reply humour=merry
+say Ha! And me there with you, I hope. | Make room for me. I'll bring the ale. | I'll dance at that. Badly.
+
+rule e4_rd_rep_poor
+when concept=dreams.reply wealth=poor|destitute other.wealth=rich
+say Must be nice, dreaming that big. | Some of us dream of supper. | Lucky you.
+
+rule e4_rd_rep_rich
+when concept=dreams.reply wealth=rich other.wealth=poor|destitute
+say If you ever need a start, come and see me. | I'll keep it in mind. Truly. | That's not so much to want. Shame on us.
+
+rule e4_rd_rep_ambitious
+when concept=dreams.reply drive=ambitious
+say Aim higher. I always do. | Then start tomorrow. Don't wait. | Good. Nobody gets anywhere by wishing.
+
+rule e4_rd_rep_content
+when concept=dreams.reply drive=content
+say Why? What's wrong with now? | Sounds like a lot of bother. | Each to their own.
+
+rule e4_rd_rep_restless
+when concept=dreams.reply drive=restless
+say Take me with you. | Don't wait too long. I did. | Go. Before you can't.
+
+rule e4_rd_rep_old
+when concept=dreams.reply stage=old
+say Do it before your knees go. | I wanted that, at your age. | Don't leave it too long. It goes quick.
+
+rule e4_rd_rep_young
+when concept=dreams.reply stage=young
+say Can I come? | That's the best one I've heard. | Me too! Me too!
+
+rule e4_rd_rep_to_pup
+when concept=dreams.reply other.stage=young stage=adult|old
+priority 1
+say Eat your greens, then. Heroes eat greens. | Stand up straight, then. Start now. | You'll be the best one. Off you go.
+
+rule e4_rd_rep_devout
+when concept=dreams.reply piety=devout
+say If the Bright One wills it. | I'll pray you get it. | #blessing#. And your dream.
+
+rule e4_rd_rep_frank
+when concept=dreams.reply honesty=frank
+say You said that last year. | Then stop telling me and do it. | Odd dream. Eat less cheese.
+
+rule e4_rd_rep_rival
+when concept=dreams.reply pair.band=rivals
+say Not before me, you won't. | We'll see. | Good luck. You'll need it.
+
+rule e4_rd_rep_spouse
+when concept=dreams.reply pair.band=spouses
+say Then we'll do it. Together. | I'll start saving. Don't tell me it's daft. | You've never told me that. I like it.
+
+## ================================================================ DREAMS: any nearer? (self answers)
+
+rule e4_rd_prog_plain
+when concept=dreams.progress
+say Not a step. But I've not let go. | Bit nearer. A penny nearer. | Ask me next year. | Still set on it. Still a long way off.
+then other: dreams.reply
+
+rule e4_rd_prog_thriving
+when concept=dreams.progress business=thriving
+priority 1
+say Nearer! Good season. I can nearly touch it. | It's coming. I can feel it coming. | Closer than I've ever been.
+then other: keeping.glad
+
+rule e4_rd_prog_poor
+when concept=dreams.progress wealth=poor|destitute
+priority 1
+say Further, if anything. | I spent the jar on the rent. | Dreams don't pay rent.
+then other: keeping.sorry
+
+rule e4_rd_prog_content
+when concept=dreams.progress drive=content
+say I've decided I'm happy as I am. | Gave it up. Didn't miss it. | I sit by the fire and think about it. That's near enough.
+then other: keeping.nod
+
+rule e4_rd_prog_ambitious
+when concept=dreams.progress drive=ambitious
+say Half there. The hard half. | Ahead of where I said I'd be. | I've a new one now. Bigger.
+then other: keeping.glad
+
+## ================================================================ FAITH: asking and telling
+
+rule e4_rf_ask_chapel
+when concept=talk.faith
+cooldown 1d
+say Were you at chapel on Restday? | Do you go to chapel much? | Do you pray, #address#? Honestly? | Do you believe it all? The Bright One and that?
+then other: faith.answer
+
+rule e4_rf_ask_close
+when concept=talk.faith pair.band=friends|family|spouses
+cooldown 2d
+say Do you ever pray, #pet#? When nobody's looking? | Do you think the Bright One's listening? Really? | What do you think happens to us, after?
+then other: faith.answer
+
+rule e4_rf_ask_restday
+when concept=talk.faith here.day=rest
+cooldown 1d
+say Chapel this morning? | Bell's going. You coming? | Are you keeping Restday, then?
+then other: faith.answer
+
+rule e4_rf_ask_priest
+when concept=talk.faith self.job=priest pair.flock=a
+cooldown 2d
+say I've missed you on the benches, #address#. | Will I see you Restday? | How's your soul, #address#? And your knees?
+then other: faith.answer
+
+rule e4_rf_ask_pup
+when concept=talk.faith other.stage=young self.stage=adult|old
+cooldown 2d
+say Do you know your prayers, #address#? | What did you learn at chapel? | Do you know who the Bright One is?
+then other: faith.answer
+
+rule e4_rf_tell_omen
+when concept=talk.faith
+cooldown 1d
+say Crow on my roof all morning. I don't like it. | Spilled the salt at breakfast. There'll be a quarrel today. | Dropped a knife. Somebody's coming. | My right paw's itching. Money coming, or so they say.
+then other: faith.reply
+
+rule e4_rf_tell_sermon
+when concept=talk.faith self.priest
+cooldown 2d
+say #self.priest# preached for an hour on Restday. On patience. Mine ran out. | Did you hear #self.priest# on the Dark One? Gave me the shivers. | #self.priest# says we should all give more. I gave a yawn.
+then other: faith.reply
+
+rule e4_rf_tell_sermon_plain
+when concept=talk.faith
+cooldown 2d
+say Long sermon last Restday. Counted the beams. | The priest said something on Restday I can't stop thinking about. | Did you hear the singing on Restday? Like cats in a sack.
+then other: faith.reply
+
+rule e4_rf_tell_devout
+when concept=talk.faith self.piety=devout
+cooldown 2d
+say I said the dawn prayer on the step this morning. It sets the day right. | The Bright One answered me this week. I'm sure of it. | I've been lighting a candle every night. For everyone.
+then other: faith.reply
+
+rule e4_rf_tell_doubt
+when concept=talk.faith self.piety=ordinary self.honesty=frank
+cooldown 3d
+say I'll be honest. I don't know if anyone's up there. | If the Bright One's so good, why's my roof leaking? | I go for the singing. And the warm.
+then other: faith.reply
+
+rule e4_rf_tell_charm
+when concept=talk.faith
+cooldown 2d
+say See this red thread on my wrist? Luck. Never take it off. | I carry my grandsire's tooth on a string. Never been robbed. | Touch wood. Go on. I'll wait.
+then other: faith.reply
+
+rule e4_rf_tell_moon
+when concept=talk.faith here.time=dusk|night
+cooldown 2d
+say Full moon. My paws want to howl. | They say if you howl at the moon, the old pack hears you. | Red moon tonight. Bad sign, my mother'd say.
+then other: faith.reply
+
+rule e4_rf_tell_mourning
+when concept=talk.faith self.mourning=kin|friend
+priority 2
+cooldown 1d
+say I keep lighting candles for them. Does it help, do you think? | The priest says they're with the Bright One. I hope he's kind. | I talk to them at night. Is that daft?
+then other: keeping.sorry
+
+rule e4_rf_tell_poor
+when concept=talk.faith self.wealth=poor|destitute
+cooldown 3d
+say Loaves on the altar at harvest, and folk going hungry. Funny sort of thanks. | The chapel bread's what keeps me. I'll say that for it. | I pray for supper. Some nights he listens.
+then other: faith.reply
+
+rule e4_rf_tell_rich
+when concept=talk.faith self.wealth=rich
+cooldown 3d
+say I've given slates for the chapel roof. My name's on a beam. | The priest sits me at the front. I think he wants something. | Charity's a duty, Mother said. So I do it. Mostly.
+then other: faith.reply
+
+rule e4_rf_tell_north
+when concept=talk.faith self.from=frosthollow
+cooldown 3d
+say Up home we leave a crust for the Stone Fathers at the shaft-head. Still do it. | I add a stone to the cairn on the pass, every time. | My gran said the old gods were in the mountain before the Bright One came.
+then other: faith.reply
+
+rule e4_rf_tell_fen
+when concept=talk.faith self.from=mirebridge
+cooldown 3d
+say Milk on the step for the Fen Mother. I still do it, even here. | Never follow the fen lights. My uncle did. | Fen folk say a prayer before they pole out. Old words. Older than chapel.
+then other: faith.reply
+
+rule e4_rf_tell_south
+when concept=talk.faith self.from=southmeadow|larkfield
+cooldown 3d
+say At home we plait the last sheaf into a corn wolf. Hang it in the barn till spring. | We sing to the apple trees at midwinter. To wake them. | Nobody wants to cut the last sheaf. The corn wolf's in it.
+then other: faith.reply
+
+rule e4_rf_tell_lake
+when concept=talk.faith self.from=coldwater
+cooldown 3d
+say I made a reed cross for the boat. Like my mother did. | Glasswater takes one a year, they say. I throw in a coin. | Back home they ring a bell for the drowned. Every spring.
+then other: faith.reply
+
+rule e4_rf_tell_woods
+when concept=talk.faith self.from=oakhaven
+cooldown 3d
+say I tied a ribbon on the wishing oak before I left home. | Never cut a tree with a face in the bark. Never. | The Warmwood has its own old ones. You feel them, under the trees.
+then other: faith.reply
+
+rule e4_rf_tell_tide
+when concept=talk.faith here.region=ridgemere
+cooldown 3d
+say Lit a candle at the Chapel of the Tide for the boats. | The tide bell rang last night. A ship overdue. | Have you been in the Chapel of the Tide? The windows!
+then other: faith.reply
+
+rule e4_rf_tell_storm
+when concept=talk.faith here.weather=storm
+cooldown 1d
+say Hear it? The Dark One's in a temper. | My mother covered the mirrors in a storm. | Somebody's done something wicked, for thunder like that.
+then other: faith.reply
+
+rule e4_rf_tell_festival
+when concept=talk.faith world.festival=soon|today
+cooldown 2d
+say The priest's blessing the fields for #here.festival#. | Candles in the procession for #here.festival#. Best bit. | #here.festival#'s a holy day, before it's a feast. Folk forget.
+then other: faith.reply
+
+## ================================================================ FAITH: answering (self answers)
+
+rule e4_rf_ans_plain
+when concept=faith.answer
+say When I can. Most weeks. Some weeks. | I go. I don't always listen. | Now and then. When things are bad, mostly. | I pray. I don't know who to.
+then other: faith.reply
+
+rule e4_rf_ans_plain2
+when concept=faith.answer
+say I believe in something. Ask me what on a better day. | I was there. Back bench. Half asleep. | Mother made us go. I still go, out of habit. | I say the words. I hope they land.
+then other: faith.reply
+
+rule e4_rf_ans_devout
+when concept=faith.answer piety=devout
+say Every Restday. Front bench. | Every morning and every night, and in between. | With all my heart. He's never let me down.
+then other: faith.reply
+
+rule e4_rf_ans_dry
+when concept=faith.answer piety=ordinary humour=dry
+say I go for the singing. And the warm. | I believe in the Bright One. I just don't think he believes in me. | I've a standing arrangement. I don't ask, he doesn't tell.
+then other: faith.reply
+
+rule e4_rf_ans_frank
+when concept=faith.answer piety=ordinary honesty=frank
+say No. I can't say I do. Not since my mother. | I don't know. Nobody does, if they're honest. | Not much. I work Restdays.
+then other: faith.reply
+
+rule e4_rf_ans_sly
+when concept=faith.answer honesty=sly
+say Course I was. Back row. Very quiet. | Every week, without fail. Ask anyone. Not the priest. | Devoutly. In spirit.
+then other: faith.reply
+
+rule e4_rf_ans_priest
+when concept=faith.answer job=priest
+priority 1
+say I'd hope so. I was giving the sermon. | Every hour of the day. It's rather the job. | I believe. Some days it's hard work. Most days it's joy.
+then other: faith.reply
+
+rule e4_rf_ans_guard
+when concept=faith.answer job=guard|soldier
+say On duty. The Bright One knows where I was. | Say the watchman's prayer every shift. That counts. | Seen too much to believe in much. But I pray. Just in case.
+then other: faith.reply
+
+rule e4_rf_ans_innkeeper
+when concept=faith.answer job=innkeeper|brewer
+say Restday's my busiest. They come straight from chapel to me. | I pray the barrels last. | I keep a candle in the window. That's my chapel.
+then other: faith.reply
+
+rule e4_rf_ans_working
+when concept=faith.answer working=yes
+say I'm working, #address#. Somebody has to. | Can't. Not today. I'll say one here. | Chapel doesn't sweep floors.
+then other: faith.reply
+
+rule e4_rf_ans_poor
+when concept=faith.answer wealth=poor|destitute
+say For the bread after, if I'm honest. | I pray every night. For supper. | They don't look at you kindly in rags.
+then other: faith.reply
+
+rule e4_rf_ans_rich
+when concept=faith.answer wealth=rich
+say Our family pew. Six generations. | Every Restday. Mother would rise from the grave otherwise. | I give. Generously. I'm told that's believing.
+then other: faith.reply
+
+rule e4_rf_ans_heights
+when concept=faith.answer quarter=heights
+say At the Chapel of the Tide. Our window's the blue one. | Of course. Everyone who's anyone goes. | Front pew. Where else?
+then other: faith.reply
+
+rule e4_rf_ans_sump
+when concept=faith.answer quarter=sump
+say Down here? A room and a candle and a tired priest. It does. | They look at your boots up at the big chapel. | The street preacher at the steps. Free and loud.
+then other: faith.reply
+
+rule e4_rf_ans_young
+when concept=faith.answer stage=young
+priority 1
+say I know the start of the prayer. Not the middle. | We learned the Bright One went up. Up where? | I fidgeted. Mother pinched me.
+then other: faith.reply
+
+rule e4_rf_ans_old
+when concept=faith.answer stage=old
+say Seventy years of Restdays. I've a few questions saved for him. | I go. My knees complain all through it. | More than I used to. You do, when it's nearer.
+then other: faith.reply
+
+rule e4_rf_ans_mourning
+when concept=faith.answer mourning=kin|friend
+priority 2
+say I sat by them at the end, and prayed. I don't know if it helped. | I've been every day this week. Lighting candles. | I can't go. I'll cry in front of everyone.
+then other: keeping.sorry
+
+rule e4_rf_ans_north
+when concept=faith.answer from=frosthollow
+say Chapel, aye. And a crust for the Stone Fathers. Both, to be safe. | Up home we keep the old ways and the new. | The mountain's older than any chapel. I pray to both.
+then other: faith.reply
+
+rule e4_rf_ans_fen
+when concept=faith.answer from=mirebridge
+say Chapel, and the Fen Mother's prayer before I sleep. | Fen folk believe in everything. Safer. | I go. And I never follow the lights. That's my faith.
+then other: faith.reply
+
+rule e4_rf_ans_south
+when concept=faith.answer from=southmeadow|larkfield
+say Harvest thanks, Restdays, all of it. And the corn wolf, quietly. | Every Restday. Then the orchard. | We bless the flocks at lambing. That's my chapel.
+then other: faith.reply
+
+## ================================================================ FAITH: replying (self heard the answer, omen or belief)
+
+rule e4_rf_rep_plain
+when concept=faith.reply
+say Fair enough. | Each to their own. | Can't hurt. | I'm much the same. | Well. There it is.
+
+rule e4_rf_rep_plain2
+when concept=faith.reply
+say I've heard that. | My gran said the same. | Strange, the things we hold to. | Who's to say? | #saying#.
+
+rule e4_rf_rep_devout
+when concept=faith.reply piety=devout
+say The Bright One sees you. Remember that. | Come Restday. Sit by me. | I'll pray for you. No, I will.
+
+rule e4_rf_rep_doubt
+when concept=faith.reply piety=ordinary honesty=frank
+say Crows are birds, #address#. That's all. | I'll believe it when he pays my rent. | Superstition. Lovely, but superstition.
+
+rule e4_rf_rep_dry
+when concept=faith.reply humour=dry
+say Or fleas. | The Bright One's got a lot to answer for. | I'll put in a word. Small one.
+
+rule e4_rf_rep_merry
+when concept=faith.reply humour=merry
+say Ha! You'll be first through the gate, you. | Bless you. And your knees. | Say one for me while you're at it.
+
+rule e4_rf_rep_priest
+when concept=faith.reply job=priest
+priority 1
+say Come Restday. I'll save you a bench. | The Bright One hears more than you'd think. | My door's open. Any hour.
+
+rule e4_rf_rep_priest_omen
+when concept=faith.reply job=priest other.piety=ordinary
+priority 1
+say Superstition. But say a prayer anyway. Just in case. | The Bright One is the only luck. Still, I'd not walk under a ladder. | Old wives' talk. My old wife talked it too.
+
+rule e4_rf_rep_old
+when concept=faith.reply stage=old
+say My mother said the same. Her mother too. | We all did it, in my day. | You'll understand it better when you're my age.
+
+rule e4_rf_rep_young
+when concept=faith.reply stage=young
+say Is that true? Really true? | Can I have a lucky thread too? | Does the Bright One see everything? Even under the bed?
+
+rule e4_rf_rep_warm
+when concept=faith.reply warmth=warm
+say I'll light a candle with you, if you like. | That's a comfort. Hold onto it. | Bless you, #pet#.
+
+rule e4_rf_rep_cold
+when concept=faith.reply warmth=cold
+say Hm. | If you say so. | Whatever gets you through.
+
+rule e4_rf_rep_north
+when concept=faith.reply from=frosthollow
+say Up home we'd leave a crust for that. | The old gods would understand. | Lamp lit, crust left. Can't go wrong.
+
+rule e4_rf_rep_fen
+when concept=faith.reply from=mirebridge
+say Fen folk'd say the same. | Never follow, never call, never look back. | Put out milk. Can't hurt.

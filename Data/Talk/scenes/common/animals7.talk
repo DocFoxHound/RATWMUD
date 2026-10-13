@@ -1,0 +1,644 @@
+# Animals (Docs/Design/62-talk.md, phase 7): the beasts the realm lives beside. Livestock and the beasts of the road,
+# the granary cat and the rats, crows and gulls, the fox at the hens, the hunt (deer, hare, boar), fish and eels, bees,
+# the wild things of the woods, birdsong, omens; herders, farmers, fishers and carters talking stock; each region's
+# own creatures. Alternatives are written in parallel: the second reply answers the second remark.
+
+# ---------------------------------------------------------------- Livestock
+
+scene e2_an_sheep_escape
+when topic=animals
+a : The sheep were in the lane again this morning. | Who leaves a gate open and walks off? | One ewe got through the hedge and the rest followed.
+b[job=herder] : Sheep don't need a gate. Sheep need an idea, and they only ever have the one.
+b[job=guard] : I had to stop the cart road for them. Twenty sheep. One very proud ram.
+b : Whose were they? | Pups, mostly. | They always do.
+a : Nobody's, to hear anyone tell it. | And carters. | Follow-the-leader, and the leader's a fool.
+
+scene e2_an_sheep_stupid
+when topic=animals
+a : A sheep is the stupidest beast the gods ever made. | Watched a sheep stare at a fence for an hour. | Sheep are cleverer than folk think.
+b[job=herder] #herder : Stupid? They know my step from a stranger's. They know the weather before I do.
+b[humour=dry] : An hour? It was thinking.
+b : Second stupidest. Geese are first. | Did it get anywhere? | Name one clever thing a sheep's done.
+a@herder : All right. Second stupidest.
+a : They walk into the same ditch every year. | No. Neither did the fence. | Stayed alive with wolves about. That's clever enough.
+
+scene e2_an_cow_calving
+when topic=animals
+a : The brindle cow calved in the night. | Sat up with a cow all night. She wouldn't settle. | A heifer, out of the black cow. Wobbly as a drunk.
+b[job=farmer|herder] : Easy, was it? The first ones never are.
+b[stage=young] : Can I see it? Can I give it a name?
+b : All well? | Is she all right? | They all are, the first day.
+a : Mother and calf both standing. | By dawn. I'm not. | She'll be running by morning.
+
+scene e2_an_cow_milk
+when topic=animals
+a : The cow's milk's gone thin. | Our cow kicked the pail over. Twice. | Fresh milk, still warm. Nothing like it.
+b[job=farmer] : She'll be wanting better grass. Move her down to the water meadow.
+b[stage=old] : Sing to her. My mother always sang to the cow.
+b : Is she sick? | Temper on her. | Not for me. Gives me the gripes.
+a : Sulking, I think. | She didn't like the pail. | More for me, then.
+
+scene e2_an_goats
+when topic=animals
+a : The goat ate my washing. Off the line. | That goat's been on the roof again. | Goats would eat the chapel if you let them.
+b[job=herder] : Goats are only clever sheep with a grudge.
+b[humour=merry] : Was it good washing? Did it like it?
+b : All of it? | How does it get up there? | The priest'd stop it.
+a : A shirt and half a sheet. | Nobody's ever seen it climb. It's just there. | The priest's tried. It ate his hat.
+
+scene e2_an_lost_goat
+when topic=animals
+a : Have you seen a brown goat, one horn? | Our goat's been gone two days. | Found a goat in my kitchen. Nobody's claiming it.
+b[job=guard] #gaol : There's a goat in the gaol yard. It butted the sergeant.
+b[stage=young] : I saw a goat! Up by the well! Or it was a sheep. It was brown.
+b : Not today. | It'll come back hungry. | Keep it. Free goat.
+a@gaol : Gods. Goats everywhere this week.
+a : If you do, grab its horn and shout. | They always come back angry, not hungry. | It's eaten the bread. It's not free.
+
+scene e2_an_pigs
+when topic=animals
+a : Pig got loose and ran the length of the market. | Our sow had eleven. Eleven! | Never stand behind a pig. Or in front. Or near.
+b[job=cook] : Pigs! Good. I've a pot that wants filling.
+b[job=farmer] : Pigs. Clever as you, and twice as stubborn.
+b : Did they catch it? | How many'll live? | Wise.
+a : Took six of us and a net. | All of them, if I sleep in the sty. | I learned it the hard way.
+
+scene e2_an_pig_sale
+when topic=animals here.season=autumn
+a : Pig-killing time again. | Fattened that pig all summer. Couldn't look it in the eye today. | Bacon this winter. Hams, sausage, the lot.
+b[stage=young] : Not Turnip! You didn't! Not Turnip!
+b[job=cook] : Save me the blood for puddings.
+b : The squealing's the worst of it. | You named it, didn't you. | Smoke it slow.
+a : The squealing and the mess. | Course I named it. | Slow and over oak.
+
+scene e2_an_hens
+when topic=animals
+a : Hens have stopped laying. | One of my hens laid an egg with two yolks. | A hen walked into the chapel on Restday. Sat in the front.
+b[job=farmer] : Hens are moody things. Keep them warm and they'll do right by you.
+b[piety=devout] : Bless them. Hens know more than we credit.
+b : All of them? | That's luck, that is. | Did the priest mind?
+a : Every one. Sulking in a row. | Fried it. Shared it. | He preached at it.
+
+scene e2_an_mad_goose
+when topic=animals
+a : That goose by the mill chased me half the way home. | Somebody's goose has taken the bridge. Nobody can cross. | I've been bitten by a goose. In the tail.
+b[job=guard] : That goose has a longer record than half the thieves in town.
+b[stage=old] : Geese never forget a face. Whatever you did to it, you did it years ago.
+b : Not just you. | Not even the Watch? | Hurts, doesn't it.
+a : I'm not walking that way again. | The Watch went round the long way. | Like a smith's tongs.
+
+scene e2_an_geese_market
+when topic=animals here.place=market
+a : Goose market's loud today. | That gander there's worth more than my boots. | A goose stole a cake off the baker's tray.
+b[job=merchant] : Loud and good trade. You can't have one without the other.
+b[job=baker] : Geese and a bakery. Never again. One took a whole cake last week.
+b : Always is. | Your boots aren't worth much. | And got away with it?
+a : My ears ring. | Fair point. | With crumbs on its beak.
+
+scene e2_an_horse_lame
+when topic=animals
+a : My pony's gone lame. | Have you seen that grey in the stable yard? Beauty. | A horse trod on my foot at the forge.
+b[job=smith] : Horses. Half my work's their feet.
+b[job=carter] : Never trust a horse's feet, nor a horse's temper.
+b[wealth=rich] : I keep four. Each one's a fortune and a worry.
+b : Bad luck. | Whose is it? | They're heavier than they look.
+a : She's the only one I've got. | Nobody'll say. Somebody rich. | Every pound of it.
+
+scene e2_an_carter_horses
+when topic=animals a.job=carter
+a : My old mare knows the road better than I do. | One of the horses threw a shoe on the hill. | Horses are better company than most passengers.
+b[job=carter] : Mine stops at every tavern. I never taught him that.
+b[job=smith] : Bring them by. I'll look at their feet.
+b : She's earned her oats. | Long walk, then. | Quieter, at least.
+a : I could sleep and she'd get me home. | I led her the last mile. | And they don't ask how far.
+
+scene e2_an_oxen
+when topic=animals
+a : The oxen are slow, but they never stop. | Watched two oxen pull a felled oak out of the mud. | Oxen don't spook. That's the whole of it.
+b[job=woodcutter] : I'd not move half the timber in the woods without them.
+b[job=carter] : Slow is right. I could walk to the coast and back.
+b : Like the mill. | Can't beat them for that. | Unlike horses.
+a : Like the mill. | Not even with horses. | Horses spook at their own shadow.
+
+scene e2_an_cats_granary
+when topic=animals
+a : The granary cat had kittens. | Best mouser in town, that one-eyed cat. | That cat's been sleeping on my sacks again.
+b[stage=young] : Can I have one? Please? I'll feed it. I'll love it.
+b[job=baker] : Worth more than the granary keeper.
+b : How many? | It earns its keep. | Better than the rats on them.
+a : Five, and one all black. | Keeps its own hours, too. | That's true. That's very true.
+
+scene e2_an_rats
+when topic=animals
+a : Rats in the grain again. | Biggest rat I've ever seen in my cellar. | Saw a rat as big as a cat on the wharf.
+b[job=baker] : They've had a sack of flour off me this month.
+b[quarter=sump] : Rats. In the Sump we name them.
+b : Get a cat. | How big? | It was a cat, probably.
+a : The cat's scared of them. | Bigger than my boot. | It had a tail like a rope.
+
+scene e2_an_rat_catcher
+when topic=animals a.wealth=poor|destitute
+a : Rat-catcher's paying a farthing a tail. | I've been catching rats for the miller. Pays more than you'd think. | If I eat another rat I'll start squeaking.
+b[wealth=rich] : That can't be... no, I suppose it is honest work.
+b : Not many'd do it. | Does it? | It's meat.
+a : It's money. | Not much more. | I know. That's the trouble.
+
+scene e2_an_crows
+when topic=animals
+a : Crows took half the seed before it went in. | A crow followed me all down the lane. | The crows have learned to open the bins.
+b[job=farmer] : I've a scarecrow in every field. The crows sit on them.
+b[piety=devout] : Crows carry news for the Dark One, my mother said.
+b : Thieving birds. | What did it want? | Clever devils.
+a : Black thieves. | My bread. It got it. | Cleverer than the pups.
+
+scene e2_an_crows_clever
+when topic=animals pair.band=friends|acquaintances|family
+a : A crow brought me a button. Just set it down and looked at me. | I fed a crow once. Now it brings its friends. | They say a crow never forgets a face.
+b[humour=merry] : Crows! Cleverest folk in town, and they pay no tax.
+b[stage=old] : Crows remember. Be kind to them, they'll be kind to you.
+b : What did you do? | How many now? | Then mind your face.
+a : Gave it a crust. Seemed fair. | Seven. They wait on the roof. | I always do.
+
+scene e2_an_foxes_hens
+when topic=animals
+a : Fox was in the hen house last night. | Saw the fox in the lane at dawn. Bold as a bishop. | The fox took one hen and killed six.
+b[job=farmer] : They kill for the pleasure. I've no pity for a fox.
+b[stage=young] : Was it red? Was it a red one?
+b : How many? | Didn't run? | Wasteful beast.
+a : Two, and the cockerel's sulking. | Looked at me like I was in his way. | Six. And left them.
+
+scene e2_an_fox_watch
+when topic=animals a.job=farmer|herder
+a : I'm sitting up for that fox tonight. | Put a new latch on the hen house. Fox'll not get in. | Fox has dug under the coop. Again.
+b[job=guard] : Foxes. I'd rather a thief. A thief you can catch.
+b[humour=dry] : The fox'll be delighted. It loves a challenge.
+b : Good luck. | Wager it does. | Wire it.
+a : Luck's got nothing to do with it. | Wager it doesn't. | With what money?
+
+# ---------------------------------------------------------------- The hunt
+
+scene e2_an_hunt_deer
+when topic=animals
+a : Saw a stag at the wood's edge, at first light. | Venison. Months since I've tasted it. | They say there's deer coming down from the hills.
+b[job=woodcutter] : There's deer in the far clearings. I see them every dawn.
+b[wealth=poor|destitute] : Deer are for lords. I'll have the smell of it.
+b : Did you go after it? | Me too. | Hungry, maybe.
+a : Barely moved before it was gone. | Rabbit's nearly as good. Nearly. | So am I.
+
+scene e2_an_hunt_hare
+when topic=animals
+a : Ran down a hare in the long grass. | Hare's the fastest thing on four legs. | A hare stood and watched me. Didn't run.
+b[stage=young] : Teach me to hunt hares! I'm fast!
+b[stage=old] : I could catch a hare once. Now I catch my breath.
+b : Good meat? | Bar none. | A bold one.
+a : Stewed with barley. | Gods, they can turn. | Or a ghost.
+
+scene e2_an_hunt_boar
+when topic=animals
+a : Boar tracks by the stream. Big. | They're getting up a hunt for the boar. | A boar charged my cart.
+b[job=healer] : I stitched a hunter after a boar last spring. Tusk right through the leg.
+b[temper=nervy] : I'll leave boar to the brave. I'll eat what they bring.
+b : How big? | Who's going? | Did it tip?
+a : Wide as a door. | The usual fools. And me. | Nearly. The horse ran.
+
+scene e2_an_hunt_together
+when topic=animals pair.band=friends|family
+a : We should go out together. Run something down, like the old days. | When did you last hunt? Properly? | My paws want the chase.
+b[stage=old] : I'd slow you.
+b[job=guard] : No time. Watch, watch, sleep, watch.
+b : Name the day. | Too long. | So do mine.
+a : Then you'll hold the bag. | Same. | First frost, then.
+
+scene e2_an_hunt_lords
+when topic=animals a.wealth=poor|destitute
+a : The lords hunt all the deer and we get the bones. | Hunt in the wrong wood and they'll hang you for a hare. | Saw the House hunting party go by. Twenty horses.
+b[wealth=rich] #manage : Someone has to manage the herds.
+b : Always the way. | Watch where you go, then. | Twenty? For one deer?
+a@manage : Managed onto your plates, you mean.
+a : Always. | I always do. | And they lost it.
+
+scene e2_an_hunt_tale
+when topic=animals a.stage=old
+a : I once ran a stag for half a day across the downs. | When I was young we hunted the old way, in a pack, singing. | I've a scar from a boar. Want to see?
+b[stage=young] : Did you catch it? Did you?
+b : Catch it? | Singing? | Go on, then.
+a : It caught me in a ditch. Let's call it even. | Under the moon. You've never heard the like. | There. Ugly, isn't it? Proud of it.
+
+# ---------------------------------------------------------------- Fish, eels, water
+
+scene e2_an_fish_talk
+when topic=animals
+a : Fish are biting. | Pike in the river took a duckling, right off the top. | What's the cleverest fish, would you say?
+b[job=fisher] : Fish are never where you want them. That's fishing.
+b[job=cook] : Bring me trout. I'll make a meal you'll weep over.
+b : Off you go then. | Gods. | A dead one. Can't be caught.
+a : After work. | Pike are devils. | Ha.
+
+scene e2_an_eels
+when topic=animals
+a : Eels everywhere, after the rain. | Ever eaten jellied eel? | An eel got out of the pot and under the stove.
+b[job=fisher] : Eel traps in the mud. Best catch of the year.
+b[stage=young] : Eels are snakes. I won't. I won't!
+b : Good eating. | Once. Never again. | Still there?
+a : Better smoked. | You've no taste. | Somewhere. I hear it at night.
+
+scene e2_an_fisher_stock
+when topic=animals a.job=fisher
+a : The herring are early. | Seals took half my net. | The fish have gone somewhere and not told me.
+b[job=fisher] : Early's good, if it lasts. | Seals. I'd skin every one. | They do that. They come back.
+b[job=merchant] : I'll take every barrel you land.
+b : Good news? | Half? | Where'd they go?
+a : Good if they stay. | And looked pleased with themselves. | If I knew that I'd be rich.
+
+scene e2_an_trout
+when topic=animals here.region=mountains|lake
+a : Trout in the stream, fat as loaves. | Tickled a trout this morning. Right out of the water. | Glasswater char's the best fish there is.
+b[job=fisher] : Char, aye. Not trout. Char.
+b : Good eating. | With your paws? | There's no arguing with that.
+a : Fried in butter. | Slow and gentle. | Then don't.
+
+# ---------------------------------------------------------------- Bees, birds, wild things
+
+scene e2_an_bees
+when topic=animals
+a : The bees swarmed this morning. Hung off the pear tree like a beard. | Got stung twice getting the honey. | Bees know when someone dies, you know. You have to tell them.
+b[job=healer] : Bees. Mind the stings. Mud on them, and don't scratch.
+b[stage=old] : Always tell the bees your news. A death, a wedding. They sulk if you don't.
+b : Did you catch them? | Worth it? | Do they?
+a : In a basket, with smoke. | Every drop. | You tell the bees. Everyone knows that.
+
+scene e2_an_bee_keeping
+when topic=animals here.season=summer
+a : Hives are heavy this summer. | Telling the bees the news, that's my evening. | There's a wild hive in the old oak.
+b[stage=young] : Can I help? I'll be careful. I won't get stung. Much.
+b : Good honey year? | What did you tell them? | Leave it be.
+a : The best I've seen. | That the summer's good and we're grateful. | I'll leave it. Mostly.
+
+scene e2_an_birdsong
+when topic=animals here.time=dawn
+a : Listen to the birds. Like they've never seen a morning. | Blackbird on the roof every dawn, same song. | Birds woke me before the bell.
+b[stage=old] : I count them now. Fewer every year, it seems.
+b[tired=yes] : I'd wring every bird's neck in town. Some of us sleep.
+b : Lovely. | Same bird? | Me too.
+a : It is, isn't it. | Same bird, same roof. | Better than the bell.
+
+scene e2_an_owls
+when topic=animals here.time=night
+a : Owl's calling. | Hear that? Something screaming in the dark. | An owl came down right in front of me. Took a mouse.
+b[temper=nervy] : I hate the night noises. Hate them.
+b[stage=old] : An owl calling three times. Somebody's going.
+b : Hunting. | A fox. Just a fox. | Quick?
+a : Rather it than me. | Just a fox. You're sure. | Quicker than you'd believe.
+
+scene e2_an_swallows
+when topic=animals here.season=spring|summer
+a : Swallows are back. | The swallows are flying low. Rain coming. | Swallows nesting in the stable eaves again.
+b[job=farmer] : Swallows know the weather. Watch how low they fly.
+b : Summer, then. | Is it? | Lucky stable.
+a : Summer. | That's what they say. | Lucky for the horses.
+
+scene e2_an_wild_bear
+when topic=animals here.region=woods|mountains
+a : Bear sign by the old track. Claw marks high on the bark. | A bear had our honey hive. All of it. | Saw a bear cross the river. Never seen one so close.
+b[job=woodcutter] : Keep to the track. Talk loud. Bears don't want you.
+b[temper=nervy] : I'm not going in the woods again.
+b : How high? | All of it? | Close?
+a : Above my head. Well above. | Honey, comb, and the hive with it. | Close enough to smell it.
+
+scene e2_an_boar_woods
+when topic=animals here.region=woods
+a : The boar have been rooting up the clearings. | Mother boar with stripes behind her, eight of them. | Boar ran through the camp in the night.
+b[job=woodcutter] : Turned the ground over like a plough.
+b : Ruined, then. | Did she see you? | Anyone hurt?
+a : Ruined. | She saw. I climbed. | Just our pride.
+
+scene e2_an_wild_woods_noises
+when topic=animals here.place=wild
+a : Something's been following us. | Tracks, fresh. Deer. | Quiet. Listen.
+b[temper=nervy] : Don't say that. Don't.
+b[job=guard|soldier] : Keep walking. Don't look round.
+b : A fox, likely. | We could follow. | What?
+a : A fox. A big fox. | Not with the light going. | A woodpecker. Never mind.
+
+scene e2_an_hedgehog
+when topic=animals here.place=home|street|field
+a : Hedgehog under the woodpile. | Found a hedgehog asleep in my boot. | Something's eating the slugs. Good.
+b[stage=young] : Can I see? Does it bite?
+b : Leave it be. | Did you wear the boot? | A hedgehog, I'd say.
+a : I am leaving it be. | Not with it in. | Then I owe it.
+
+scene e2_an_moles
+when topic=animals here.place=field|home
+a : Moles in the garden. Hills everywhere. | Molehills right across the green. | The mole-catcher's coming next market day.
+b[job=farmer] : Nothing worse. Except rabbits.
+b : Get a cat. | The ball game'll be a mess. | What's he charge?
+a : Cats don't care. | Twisted ankles, every one of us. | A penny a mole.
+
+# ---------------------------------------------------------------- Omens and lore
+
+scene e2_an_omen_magpie
+when topic=animals
+a : One magpie on the gate this morning. | Black cat crossed the road in front of me. | A crow on the chapel roof, looking in.
+b[piety=devout] : Bless yourself and go a different way.
+b[humour=dry] : Beasts don't know they're meant to be omens.
+b : Wave at it. Two hands. | Good luck, or bad? | It's cold. It wants in.
+a : I waved. I felt daft. | Depends on who you ask. | It wants in, says you.
+
+scene e2_an_omen_hare
+when topic=animals a.stage=old
+a : A hare crossed my path at dawn. A white one. | The cows lay down at noon. Storm by night. | The cattle are restless. Something's coming.
+b[stage=young] : What does it mean?
+b[humour=dry] : Or the beasts are just beasts.
+b : What does that mean? | Truly? | What?
+a : Somebody will marry, or somebody will die. | Mark me. | I'll know it when it comes.
+
+scene e2_an_omen_bird_window
+when topic=animals here.place=home
+a : A bird flew into the window. | Robin came right into the house today. | There's a swallow nesting by the door. Good luck, that.
+b[piety=devout] : I'll say a prayer for the house.
+b[stage=old] : A bird in the house. My mother'd have been frightened white.
+b : Is it alive? | Did you get it out? | So they say.
+a : Flew off, dazed. | With a broom and a lot of shouting. | I believe it.
+
+# ---------------------------------------------------------------- Pups and beasts
+
+scene e2_an_pup_lamb
+when topic=animals a.stage=young
+a : The lambs are jumping in the field! | I fed a lamb from a bottle! | Can I have a goat? A small one?
+b[job=herder] : Lambs! Best thing in spring, and the loudest.
+b[parent=yes] #nogoat : No goats. We've talked about the goat.
+b : Are they? | Did it drink it all? | What would you do with a goat?
+a@nogoat : I didn't even say goat! ...Can I have a goat?
+a : All four legs off the ground! | And bit my paw. | Love it! And feed it! And name it!
+
+scene e2_an_pup_frog
+when topic=animals a.stage=young b.stage=young
+a : I caught a toad in the well bucket! | Do worms feel things? | I saw a crow eat a whole mouse!
+b : Let's see! | No. Maybe. | Ew! Was it all of it?
+a : It got away. It went that way. | I'm being nice to them just in case. | Tail last!
+
+scene e2_an_pup_questions
+when topic=animals a.stage=young b.stage=adult|old
+a : Why do sheep say baa? | Where do the birds go in winter? | Are cats scared of us?
+b[job=scholar] #sch : That's a better question than you know. Ask me again when you're grown.
+b : Because they've nothing better to say. | Somewhere warm. | Cats aren't scared of anything.
+a@sch : I'll be grown tomorrow. I'll ask then.
+a : What would they say if they did? | Can we go? | I'm scared of cats.
+
+# ---------------------------------------------------------------- Talking stock
+
+scene e2_an_herders_stock
+when topic=animals a.job=herder b.job=herder|farmer
+a : How many did you lose over the winter? | I've a ram that'll fetch twenty at market. | Foot-rot again. Half the flock.
+b : Three. And an old one I'd been expecting. | Twenty? He's a ram, not a horse. | Sorry to hear it. Pare and tar them.
+a : Lucky. I lost six. | You'll see when you see him. | I've been at it since dawn.
+b?[humour=dry] : Sheep. The gods' own joke on herders.
+
+scene e2_an_farmers_stock
+when topic=animals a.job=farmer
+a : The new heifer's a kicker. | Cockerel crows at midnight. Every night. Since the moon. | Bought a pig at market. It's a different pig now I've got it home.
+b[job=farmer] : Every beast's trouble the first month. Then it's just trouble.
+b[humour=merry] : Ha! Beasts. They've more character than half the town.
+b : Sell her on. | Pot him. | How different?
+a : She's a good milker. When she lets me. | He'd be tough. | Smaller. Louder. Meaner.
+
+scene e2_an_market_stock
+when topic=animals here.day=market
+a : Beast market's packed. | Price of a cow's gone silly. | Bought a goose. Already regretting it.
+b[job=farmer|herder] : I've four ewes going. Fair price, if you want them.
+b[job=merchant] : Silly up or silly down?
+b : Selling or buying? | Has it? | Why?
+a : Looking. | Silly up. | It's looking at me.
+
+scene e2_an_fisher_farmer
+when topic=animals a.job=fisher b.job=farmer|herder
+a : At least your stock stays where you put it. | You know where your beasts sleep. Mine could be anywhere. | I'd swap you. One day.
+b : Mine stay where they like. | In my bed, some nights. | You'd not last a lambing.
+a : Better than the sea, though. | Lucky. | You'd not last a winter on the boats.
+
+scene e2_an_guard_beasts
+when topic=animals a.role=guard
+a : Spent the whole watch chasing a pig through the streets. | Arrested a goose. Well. Removed it. | Somebody's ox is blocking the gate.
+b[job=guard] : Beasts on the watch. Worse than drunks.
+b[humour=dry] : Charges?
+b : Catch it? | Did it come quietly? | Whose?
+a : Caught it. Smelt of it all night. | Disturbing the peace. | Nobody's, apparently. Like the goose.
+
+scene e2_an_cook_beasts
+when topic=animals a.job=cook|baker|innkeeper
+a : Cat's on the meat again. | Rats in the stores. | The geese came in this morning. Plump.
+b[job=cook] : Kitchens and beasts. Never a quiet day.
+b : Shoo it. | Bait them. | Good.
+a : It knows the door. It waits. | They know bait. | I'll have them roasted by Restday.
+
+scene e2_an_priest_beasts
+when topic=animals a.job=priest|healer
+a : Folk bring me sick beasts like I'm a horse-leech. | Blessed a mule today. | Everything the gods made has a soul, you know. Even goats.
+b[job=herder] : We pray for the flock every lambing.
+b[humour=dry] : Goats would argue with a god.
+b : Can you help them? | Did it work? | Even goats.
+a : Sometimes. Mostly I pray. | It kicked the deacon. | Even goats.
+
+scene e2_an_scholar_beasts
+when topic=animals a.job=scholar
+a : I've been counting the swallows on the chapel. For a book. | Did you know an eel's born in the sea? Far out in it. | I've drawn every beetle in the yard.
+b[humour=dry] : A busy life.
+b : Why? | No. | All of them?
+a : To know where they go. | So they say. Nobody knows how. | Seventy kinds. One bit me.
+
+# ---------------------------------------------------------------- Seasons and weather
+
+scene e2_an_lambing
+when topic=animals here.season=spring
+a : Lambing's started. No sleep for a month, #address#. | Twin lambs in the snow this morning. | First lamb's always the best day of the year.
+b[job=herder] : Seventeen last night. My paws are raw.
+b[stage=young] : Can I see them? Please? I'll be quiet!
+b : Good luck to you. | Both alive? | It is.
+a : I'll need it. | Under my coat, both. | Every year.
+
+scene e2_an_spring_nests
+when topic=animals here.season=spring
+a : Birds nesting everywhere. | A blackbird's built in my gutter. | The rooks are loud this spring.
+b : Spring for you. | Leave it till they're flown. | Rooks are always loud.
+a : And the cats know it. | I'll have to. | This is louder.
+
+scene e2_an_summer_flies
+when topic=animals here.season=summer
+a : Flies are bad this year. | Horseflies the size of thumbs. | The cows are mad with the heat.
+b[job=herder] : Moved them into the shade. Doesn't stop the flies.
+b : Swat them. | Bit me twice. | Move them.
+a : There's a thousand. | The beast. | Where to?
+
+scene e2_an_autumn_geese
+when topic=animals here.season=autumn
+a : Geese flying south. Hear them? | Count the geese. More of them, colder winter. | The wild geese came over low last night.
+b[stage=old] : Every autumn I watch them and wonder where.
+b : Off they go. | How many? | Rain coming, then.
+a : Lucky things. | I lost count. | Or snow.
+
+scene e2_an_winter_beasts
+when topic=animals here.season=winter
+a : Brought the beasts in for the winter. | The deer are coming into the gardens. They're hungry. | Fox tracks in the snow, right to the door.
+b[job=farmer|herder] : House smells of cow till spring.
+b : Warm in with them? | Poor things. | Bold.
+a : Warm and loud. | Hungry's hungry. | Bolder every winter.
+
+scene e2_an_storm_beasts
+when topic=animals here.weather=storm|rain
+a : The horses hate this #rain#. | Cattle are huddled in the corner of the field. | Hens won't come out.
+b : Who doesn't? | Clever. | Clever hens.
+a : The ducks. | Like us at the tavern. | Cleverer than us.
+
+scene e2_an_fog_crows
+when topic=animals here.weather=fog
+a : Crows calling in the fog. You can't see them. | Something big moved in the fog by the field. | Sheep in fog look like ghosts.
+b[temper=nervy] : Don't. I've to walk home.
+b : I hate it. | A cow, I hope. | Ghosts don't baa.
+a : Gives me the shivers. | Probably a cow. | These ones do.
+
+# ---------------------------------------------------------------- Regions
+
+scene e2_an_larkfield_sheep
+when topic=animals here.region=larkfield
+a : The downs are white with sheep this year. | Larkfield wool's the best in the realm. Ask anyone. | Count the sheep on the downs, you'd fall asleep before the tenth hill.
+b[job=herder] : More sheep than folk in Larkfield. And they've more sense.
+b[from=ridgemere] : Sheep everywhere. Even in the inn, last night.
+b : Good year. | That's what they say here. | And wake up in the eleventh.
+a : Good wool year. | And they say it everywhere else. | Herded by pups, mostly. With sticks.
+
+scene e2_an_larkfield_shearing
+when topic=animals here.region=larkfield here.season=spring|summer
+a : Shearing starts Monday. | Sheared forty yesterday. Back like a hoop. | A ewe kicked my shears into the pond.
+b[job=herder] : Forty. Good. I'll do forty-five.
+b : You ready? | Forty! | Good shears?
+a : Never. | And forty more today. | The best. Were.
+
+scene e2_an_mirebridge_eels
+when topic=animals here.region=mirebridge
+a : Eel-run's started on the Long River. | Herons on every post this morning. | The eel traps were full. Writhing.
+b[job=fisher] : Smoked eels by the barrel. Good year.
+b[from=ridgemere] : I don't know how you eat them. They look like rope that hates you.
+b : Good. | Counting them? | Good news.
+a : The town smells of smoke for a month. | One each. Like old priests. | Eel pie on Restday.
+
+scene e2_an_mirebridge_herons
+when topic=animals here.region=fens
+a : That old heron's been on the same post all week. | Herons took the frog-spawn. All of it. | The bitterns are booming in the reeds.
+b[stage=old] : My grandmother said that heron's older than the bridge.
+b[temper=nervy] : Booming. Is that what that is? I thought it was the bog.
+b : Is it the same one? | Hungry beggars. | Spring, then.
+a : Same scowl. | Every one. | Spring in the fen.
+
+scene e2_an_frosthollow_beasts
+when topic=animals here.region=frosthollow
+a : Elk on the mine road this morning. Stood there like a toll-keeper. | The reindeer herd's coming down the valley. | Ponies in the mines are going blind, poor things.
+b[job=miner] : Pit ponies. Best friends a miner has. I give mine an apple every shift.
+b[job=herder] : Beasts know the winter before we do.
+b : Did it move? | Early. | Bring them up into the light.
+a : When it was ready. | Snow early, then. | They won't come. They're used to the dark.
+
+scene e2_an_frosthollow_wolves_cold
+when topic=animals here.region=frosthollow here.season=winter
+a : Snow hares out on the slope, white as anything. | Lynx tracks by the woodpile. | Elk are stripping the bark off the pines.
+b[stage=old] : We ran snow hares in my youth. Best hunting in the realm.
+b : Catch any? | Lynx! | Hungry.
+a : You can't see them till they move. | Big ones. | Hungry as us.
+
+scene e2_an_southmeadow_bees
+when topic=animals here.region=southmeadow
+a : Orchard bees are fierce this year. | Hives in every orchard and the honey's flowing. | Wasps in the pears again.
+b[job=farmer] : Good blossom, good bees. Good bees, good fruit.
+b : Got stung? | Southmeadow honey. Best there is. | Wasps aren't bees.
+a : Twice. Once on the nose. | Ask anyone. | Tell them that.
+
+scene e2_an_southmeadow_birds
+when topic=animals here.region=southmeadow here.season=summer|autumn
+a : Starlings in the vines. Thousands. | Pigeons have had the cherries. | The nightingale's back in the orchard.
+b[job=farmer] : Pots and pans. Bang them. Only thing that works.
+b : Bang a pot. | All of them? | Sit out tonight.
+a : Banging since dawn. | Every last one. | With cider.
+
+scene e2_an_oakhaven_deer
+when topic=animals here.region=oakhaven
+a : The deer are thick in the Warmwood this year. | A white hart, they say, in the deep wood. | Boar's been at the acorns under the big oaks.
+b[job=woodcutter] : Deep wood's full of things. I saw a white hart myself, once. Bright as a candle.
+b[temper=nervy] : The deep wood's no place to go looking for beasts.
+b : Good hunting, then. | Who says? | They always are.
+a : For them as knows. | The charcoal burners. | Fat boar in autumn.
+
+scene e2_an_coldwater_birds
+when topic=animals here.region=coldwater
+a : Swans back on Glasswater. | Ospreys over the lake, diving. | The lake fish are rising.
+b[job=fisher] : Ospreys take the best ones. Before me.
+b : Beautiful. | Lucky shot? | Evening fishing.
+a : And mean. | They don't miss. | My rod's ready.
+
+scene e2_an_ridgemere_gulls
+when topic=animals here.region=ridgemere
+a : Gull took the pie right out of my paw. | The gulls are screaming like the city's theirs. | Gulls on the fish market like a snowstorm.
+b[job=fisher|sailor] : It is theirs. We just rent it.
+b[quarter=heights] : They come up as far as the Heights now. Shocking.
+b : The whole pie? | It is, nearly. | Thieving devils.
+a : Crust and all. | They pay no rent. | Bigger every year.
+
+scene e2_an_ridgemere_rats
+when topic=animals here.region=ridgemere
+a : Rats on the wharf as big as cats. | The ship rats came off the southern barque. Bold as sailors. | Rat-catchers are making a fortune in the Sump.
+b[quarter=sump] : Fortune. In rat tails. Lucky them.
+b[job=sailor] : Every ship's got them. You get used to them.
+b : Bigger. | Mind your grain. | Good luck to them.
+a : Big enough to ride. | And my boots. | They'll need it.
+
+scene e2_an_ridgemere_harbour_seals
+when topic=animals here.region=ridgemere here.place=shore|street|market
+a : Seal on the harbour steps again. | Porpoises in the Sound this morning. | Gulls are fighting over the fish-heads.
+b[job=fisher] : Seals eat more than I catch.
+b : Fat one? | Good luck, porpoises. | Always.
+a : Fat and smug. | Means fair weather, they say. | The big one wins.
+
+# ---------------------------------------------------------------- More everyday
+
+scene e2_an_favourite_beast
+when topic=animals pair.band=friends|acquaintances|strangers
+a : If you could be any beast but a wolf, what would you be? | Which is the best animal? Not counting us. | I've always wanted a cat.
+b[humour=merry] : A cat in a granary. Fat and warm and paid in mice.
+b[job=sailor] : A gull. Go anywhere, eat anything.
+b : A hawk. | Horses. | Cats want themselves.
+a : You'd make a good hawk. | Horses, fair. | Then a cat it is.
+
+scene e2_an_beasts_fear
+when topic=animals pair.band=friends|acquaintances
+a : Do you think the beasts are frightened of us? | The sheep don't trust me. I can feel it. | Cows look at you like they know something.
+b[stage=old] : Sheep remember what we were, before the towns.
+b[humour=dry] : They know what's for supper.
+b : They've reason. | Smart sheep. | They know you.
+a : Fair. | Very. | I've nothing to hide from a cow.
+
+scene e2_an_beast_names
+when topic=animals
+a : What do you call your cow? | Named my pig Councillor. | Our goat's called Trouble.
+b[job=farmer] : Cows have numbers, not names. Except the brindle. She's Duchess.
+b : She's not named. | Why? | That figures.
+a : She'll want one. | He's fat and loud. | Got it from the priest.
+
+scene e2_an_vermin_rich_poor
+when topic=animals a.quarter=heights
+a : Found a mouse in the pantry. The whole house screamed. | Our cook's got a cat now, since the mice. | We've no rats in the Heights. Well. Hardly.
+b[quarter=sump] : One mouse? Lucky you. We've a family of rats that pay no rent.
+b : Just one? | Good cat? | Hardly?
+a : One's enough. | Lazy cat. | Hardly any.
+
+scene e2_an_bird_feeding
+when topic=animals pair.band=friends|family|spouses
+a : I feed the robin crumbs. It comes to my paw now. | Sparrows on the sill every morning. | You feed the birds better than you feed yourself.
+b : Lucky robin. | Pretty. | They need it more.
+a : Lucky me. | Noisy. | Do they?
+
+scene e2_an_animal_tale_disbelief
+when topic=animals pair.band=friends|rivals|acquaintances
+a : I saw a pig climb a ladder. | A crow said my name. Clear as you. | The miller's cat caught a fish. In the river.
+b[honesty=frank] #doubt : You did not.
+b[humour=merry] : I believe every word. I once saw a goose read.
+b : Did it get to the top? | What did it want? | Swam for it?
+a@doubt : I did! Ask anyone!
+a : Top rung. Then it sat there. | It wanted my bread. | Dived like a heron.

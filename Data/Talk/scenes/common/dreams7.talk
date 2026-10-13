@@ -1,0 +1,704 @@
+# Dreams (doc 62, phase 7): hopes and plans, wishes, last night's dreams, ambitions by drive, pups' dreams, the old's
+# last wishes, regrets, windfalls, Restday and festival plans; by wealth, quarter, job and region. Topic talk.dreams.
+# Prefix e4_. Alternatives are written in parallel; a turn ends with an untagged line.
+
+# ---------------------------------------------------------------- Last night's dreams
+
+scene e4_dr_teeth
+when topic=dreams
+a : Dreamt my teeth fell out last night. All of them, like hail. | Had the teeth dream again. | Woke up feeling my teeth with my tongue. That dream.
+b[old] #old : Mine did fall out. It's not so bad. You eat a lot of soup.
+b[healer] #heal : Means you're grinding them. Worry, mostly. Chew a willow twig before bed.
+b : Means money, my gran said. | Again? You want to see someone about that. | Still there?
+a@old : Soup. There's a thought.
+a@heal : Willow. I'll try it.
+a : Money! I'll hold her to it. | Who, a tooth-puller? | All of them. I counted twice.
+
+scene e4_dr_flying
+when topic=dreams
+a : I could fly, in my dream. Just ran and kept going, up over the roofs. | Ever dream you can fly? | Flew over #here.town# last night. In my sleep, I mean.
+b[child] #pup : I do that every night! I flew to the moon once and it was cheese.
+b[sailor] #fall : I dream of falling. Off the yard-arm, every time.
+b : What did it look like from up there? | Every wolf does, I think. | Did you land?
+a@pup : Was it good cheese, at least?
+a@fall : Falling's the other side of it, I suppose.
+a : Small. Everyone's roof needs fixing. | Then we all wake up in our own beds. | Woke up before I could.
+
+scene e4_dr_chase
+when topic=dreams
+a : My spouse says my paws ran all night. | Was I yelping in my sleep? Someone said I was. | Dreamt I was chasing a hare across the downs. Never caught it.
+b[pair.band=spouses] #kick : All night. You kicked me twice. I've the bruise to show.
+b : Chasing something, were you? | Only a little. Like a pup. | You never do, in dreams.
+a@kick : Sorry. It was a very fast hare.
+a : Something with a white tail. | How embarrassing. | Always nearly. Always nearly.
+
+scene e4_dr_mother
+when topic=dreams a.stage=adult|old
+a : My mother came to me last night. In a dream. Sat on the end of the bed like she used to. | Dreamt of my old mother. She was shelling peas and telling me off.
+b[warmth=warm] #soft : Oh, #pet#. Did she say anything?
+b[piety=devout] #dev : The Bright One lets them visit, sometimes. That's what I think.
+b : That'll be a good dream, then. | Telling you off for what?
+a@soft : To eat properly. It was her, all right.
+a@dev : I'd like to think so. I'd like that very much.
+a : It was. I lay there after, not wanting to move. | My boots on the table. She always hated that.
+
+scene e4_dr_mayor
+when topic=dreams
+a : Dreamt the watch captain was dancing in a bonnet. In the market. Very seriously. | I had the daftest dream about #b.name#. You were in it. | Dreamt I married a goose.
+b[humour=merry] #more : Oh, tell me everything. Leave nothing out.
+b[humour=dry] #dry : And you're telling me this in the street.
+b : No you didn't. | Was I any good? | Was she a good wife?
+a@more : That's all of it. It was very short and very strange.
+a@dry : Where else would I tell it?
+a : Yellow. With ribbons. He was quite good. | You were a cart. Don't ask. | Better than some.
+
+scene e4_dr_prophetic_fish
+when topic=dreams
+a : Dreamt of fish. A great silver one. | I dreamt of a full net last night. | Fish in the bed, in my dream.
+b[old] #omen : Fish? Somebody's expecting, then. Mark my words.
+b : Hungry, were you? | Good catch tomorrow, maybe. | Strange thing to dream of.
+a@omen : Expecting? Who? | Not me, I hope! | Well, it isn't me.
+a : Could be. | We'll see. | Strange is the word.
+
+scene e4_dr_naked_market
+when topic=dreams
+a : Dreamt I went to market without my coat. Or breeches. Nothing but my fur, and everyone staring. | That dream where you're at work and you've forgotten your boots? Had it.
+b[humour=merry] : And nobody said a word! That's the worst part, isn't it?
+b[humour=dry] : Just your fur. Same as every wolf for a thousand years, and now it's a nightmare.
+b : Everyone has that one. | Every week, me.
+a : Mortifying. I woke up and checked. | My feet were cold when I woke, too.
+
+scene e4_dr_falling
+when topic=dreams here.time=dawn|day
+a : Woke with a jump. Dreamt I fell down the well. | Fell off something in my sleep and kicked the bed-board. | You know the falling dream? That.
+b : Never land, do you? | Hurt? | Always just before you hit.
+a : Never. That's the only mercy. | Only my pride. And my toe. | Right before. Every time.
+
+scene e4_dr_colour
+when topic=dreams
+a : Do you dream in colour? | Can you smell in dreams, do you think? | My cousin swears she dreams in words, not pictures.
+b[old] #old : I used to. Now it's all brown, like an old painting.
+b[child] #pup : I dream in all the colours and some new ones.
+b : I never thought about it. | I dreamt of bread once and woke up starving, so yes. | Like reading? How odd.
+a@old : Brown. That's sad, that.
+a@pup : New colours! What are they called?
+a : Pay attention tonight. | There you are, then. | That's what I said.
+b?@pup : They don't have names. That's how you know they're new.
+
+scene e4_dr_door
+when topic=dreams
+a : There's a door I keep dreaming about. Blue, in a wall. I never open it. | Same dream three nights running. A road, and I'm late. | Keep dreaming I've got a room in my house I never knew about.
+b[piety=devout] #pray : The Bright One's telling you something. Pray on it.
+b[honesty=frank] #frank : Open the door next time. What's the worst that happens?
+b : What's behind it, do you think? | Late for what? | A whole room? Lucky.
+a@pray : I'll try. It can't hurt.
+a@frank : The worst? I find out what's behind it.
+a : I'm frightened to know. | Never find out. | It's always full of other folk's things.
+
+scene e4_dr_fire
+when topic=dreams
+a : Bad dream last night. The house was burning and I couldn't find the door. | Had a nightmare. Water rising in the house. | I dreamt everyone I knew forgot my name.
+b[warmth=warm] #warm : Come here. It was only a dream. You're all right.
+b[warmth=cold] : Well. You're awake now.
+b : Those are the worst. | Gods, I hate those. | That's a sad one.
+a@warm : I know. Stay a bit, though.
+a : I checked the hearth twice before I came out. | I'm still cold from it. | I keep turning it over.
+
+scene e4_dr_pupagain
+when topic=dreams a.stage=adult|old
+a : Dreamt I was a pup again. My father carrying me home on his back. | Dreamt I was young and could run all day. | Had a dream I was back at lessons and hadn't learned my letters.
+b[old] #old : I have that one more and more. They come back to you at the end.
+b : Was it good? | Then you woke up. | You never have learned them.
+a@old : At the end. Cheerful, you are.
+a : I didn't want to wake. | And my knees told me the truth. | Cheek.
+
+scene e4_dr_food_hungry
+when topic=dreams a.hungry=yes
+a : Dreamt of a whole roast. Woke up chewing my blanket. | All I dream of lately is bread. | Had a dream about pie. Just pie. Lots of it.
+b[wealth=rich] #feed : Come by the kitchen door later. I'll see what's left.
+b : When did you last eat? | Who doesn't. | That's not a dream, that's a wish.
+a@feed : #thanks#. I'll be there.
+a : Don't ask. | Yesterday. Maybe. | It's both.
+
+scene e4_dr_spouse_dead
+when topic=dreams a.widowed=yes
+a : My #dear# was in my dreams again. Just talking, the way we used to. | I dreamt we were young, the two of us, at the harvest dance.
+b[warmth=warm] : That's them keeping you company. Hold onto it.
+b : Was it a comfort? | Did you dance?
+a : It was. Then I woke, and the bed was cold. | We did. Badly. Like always.
+
+scene e4_dr_dreamreader
+when topic=dreams
+a : There's an old wolf by the well reads dreams for a penny. | My aunt can tell what your dream means. Never wrong, she says. | Do you think dreams mean anything?
+b[scholar] : The mind sorting its drawers in the dark. That's all.
+b[piety=devout] #dev : Some do. The Bright One spoke through dreams, in the old books.
+b : A penny to be told you're worried. I can do that for free. | Ever proved wrong? | Mine mean I ate cheese late.
+a@dev : Did he, now? I never read that far.
+a : You've no romance. | She says not. | That's a meaning.
+
+scene e4_dr_recurring_exam
+when topic=dreams a.job=apprentice|scholar|crafter
+a : Dreamt my master gave me a test and I'd forgotten my own paws. | I dream I've made a piece and it falls apart on the bench. | Every night, the same: the guild inspector and a broken joint.
+b[master=yes] #master : Good. Means you care. The ones who don't dream it, I worry about.
+b : You'll be fine. | Has it ever? | Wake up and check your joints, then.
+a@master : So I'm all right, then? Good to know.
+a : Easy for you. | Once. Before I learned. | I do. Every morning.
+
+scene e4_dr_love
+when topic=dreams a.stage=adolescent|adult a.married=no
+a : I had a dream about someone. I'm not saying who. | Dreamt I was dancing with somebody at the festival. | Somebody was in my dream last night and now I can't look at them.
+b[humour=merry] #tease : Somebody, is it? Somebody with a name?
+b[stage=old] : Ah. I remember those. Enjoy the blushing.
+b : Oh, aye? | Who was it? | Can't look at them? Oh dear.
+a@tease : Not telling. Stop grinning. | Not telling you. | Leave it.
+a : Never you mind. | Nobody. | It'll pass.
+
+scene e4_dr_dreamt_you
+when topic=dreams pair.band=friends|family
+a : You were in my dream last night. | Dreamt about you, #pet#. You were a baker. | I had a dream we were pups again, the two of us.
+b[humour=merry] : Tell me I was magnificent.
+b : Was I behaving myself? | Was I any good? | Up to no good, were we?
+a : No. Not at all. | Burnt everything. | Stealing apples. Same as ever.
+
+scene e4_dr_winter_summer
+when topic=dreams here.season=winter
+a : All I dream about is summer. Warm stones, long evenings. | Dreamt of cherries last night. In this weather. | Winter dreams are always warm, have you noticed?
+b[from=frosthollow] #frost : Odd. I dream of snow in summer. Must be the other way round for me.
+b : Not long now. | Cruel, that. | The body wants what it hasn't got.
+a@frost : Contrary lot, you mountain folk.
+a : Long enough. | Very cruel. | Mine wants a fire and a pie.
+
+scene e4_dr_omen_death
+when topic=dreams
+a : I dreamt of a wedding. My gran said that means a funeral. | Dreamt somebody gave me a white flower. Bad, that, they say. | Dreamt of a black dog at the door. I don't like it.
+b[piety=devout] : Say a prayer and put it out of your head.
+b[honesty=frank] #frank : Your gran said a lot of things.
+b : Old wives' talk. | Who says? | Just a dream.
+a@frank : She was right about the roof, mind.
+a : I'll try. | She was right about the roof. | I hope so.
+
+# ---------------------------------------------------------------- Hopes and plans
+
+scene e4_dr_own_shop
+when topic=dreams
+a : One day I'll have my own shop. My name over the door. | If I could save enough, I'd open a little shop. Nothing grand. | What would you sell, if you had a shop?
+b[merchant] #seller : Don't. The rent, the stock, the folk who want it on tick. Well. Do. But know.
+b[wealth=poor] #stall : Shop! I'd settle for a stall.
+b : What would you sell? | You'd be good at it. | Pies. Everyone buys pies.
+a@seller : You talk like it's a bad thing. You've got one.
+a@stall : A stall's a start. Shops grow out of stalls.
+a : Bits. Thread, buttons. Things folk always run out of. | You think? | Pies. That's not daft.
+
+scene e4_dr_cottage
+when topic=dreams
+a : I want a cottage. Low roof, a garden, a bench by the door. | Someday I'll have a place with an apple tree. | All I want is a house with a door that shuts properly.
+b[quarter=sump] #door : A door. Imagine. A door that's yours.
+b[wealth=rich] #lane : Have the one on the lane. It's been empty a year. Only, the price...
+b : And hens. | You'll need a ladder. | Not too much to ask.
+a@door : That's it exactly.
+a@lane : Only, the price. Aye. There's always that.
+a : Hens, yes. And quiet. | For the apples? Fine. | You'd think.
+
+scene e4_dr_sea
+when topic=dreams a.from!=ridgemere
+remember self: e4_wants_sea 30d
+remember pair: e4_told_sea 30d
+a : I'd like to see the sea before I die. Never have. | They say the sea goes on till it meets the sky. I want to see that. | Have you ever seen the sea?
+b[from=ridgemere] : It's grey and it smells. You're not missing much. Go anyway.
+b[sailor] : It's bigger than you think. It's always bigger than you think.
+b : Me neither. | I've heard that too. | Once. When I was small.
+a : Someday. I'll smell it for myself. | One day I'll stand there and look. | Then I'll go and see for myself.
+
+scene e4_dr_sea_followup
+when topic=dreams pair.mem.e4_told_sea b.mem.e4_wants_sea
+a : Still set on seeing the sea? | Any nearer your sea, then? | Did you ever go and look at that sea?
+b[travelling=yes] : I'm on the road now. Who knows where it ends.
+b : Still set. One day. | Not a step. | Not yet. But I've not forgotten.
+a : Bring me a shell. | You will. | Good. Don't.
+
+scene e4_dr_sump_out
+when topic=dreams a.quarter=sump
+a : I'm getting out of the Sump. Mark me. One way or another. | My pups won't grow up down here. I swear it. | A room on the hill. That's all I want. Windows that open on air, not on the next wall.
+b[quarter=sump] #stuck : We all say that. Then we're forty and still here.
+b[quarter=heights] #hill : It's not so very grand up the hill. The rain's the same.
+b : Good. Go. | They'll thank you. | That's not much to want.
+a@stuck : Not me. You watch.
+a@hill : Easy to say from up there.
+a : Not me. You watch. | They will. | It's everything.
+
+scene e4_dr_house_rise
+when topic=dreams a.house
+a : I'm going to rise in #a.house#. Steward, maybe, one day. | The House notices those who work. I mean them to notice me. | There's a seat at the House table I've got my eye on.
+b[drive=content] #wind : Why? The higher the perch, the colder the wind.
+b[b.house] #queue : Join the queue. We all want that.
+b : Then work like it. | Good luck to you. | Bold.
+a@wind : And the better the view.
+a@queue : Then I'll push.
+a : And the better the view. | Thank you. I'll need it. | Bold is the point.
+
+scene e4_dr_marry
+when topic=dreams a.married=no a.stage=adolescent|adult
+a : I'd like to be married before winter. | I want a spouse and a full house and a dog that barks at nothing. | When I marry, it'll be in summer, in the orchard.
+b[married=yes] #wed : Marriage. It's lovely. Mostly. Ask me on a good day.
+b[humour=dry] #dry : Before winter? Have you told anyone? The other party, say?
+b : Anyone in mind? | That's a good life. | That sounds nice.
+a@wed : And today's not a good day?
+a@dry : Not yet. Details.
+a : Maybe. | It is. | It would be.
+
+scene e4_dr_windfall
+when topic=dreams
+a : If you found a purse of a hundred coin in the road, what would you do? | Say an old aunt died and left you a fortune. First thing you'd buy? | If I came into money, I'd not tell a soul.
+b[wealth=destitute|poor] #eat : Eat. Sit down and eat till I can't move.
+b[wealth=rich] #rich : Hand it to the watch, of course. A hundred? Is that all?
+b[honesty=frank] #frank : Hand it in. Then go home and cry about it.
+b : Pay what I owe, and then something silly. | Boots. Good ones. | You'd tell me.
+a@eat : Then eat again, I'd think.
+a@rich : Is that all. Listen to you.
+a@frank : That's honest. Daft, but honest.
+a : Same. Then sleep. | Boots! That's sensible. | Maybe you.
+
+scene e4_dr_rich_if
+when topic=dreams a.wealth=poor|destitute
+a : If I were rich, I'd have meat on a weekday. Every weekday. | If I were rich I'd buy a feather bed and never get out of it. | Rich folk, do they even know what they've got?
+b[wealth=rich] #rich : We know. We just worry about losing it instead.
+b[wealth=poor|destitute] #poor : Meat. And a fire all night. And a second coat for wash day.
+b : Imagine. | You'd get bored. | Some do.
+a@rich : Poor you.
+a@poor : And a lock on the door. Dreaming now, aren't we.
+a : Poor you. | Not me. | Most don't.
+
+scene e4_dr_rich_bored
+when topic=dreams a.wealth=rich
+a : Sometimes I wish I'd been born a crofter. Simple life. | Do you know, I envy the fishers. Out on the water at dawn. | I dream of giving it all up and keeping bees.
+b[wealth=poor|destitute] #swap : Swap you. Today. I'll even throw in my boots.
+b[humour=dry] #funny : The crofters dream of being you. Funny old world.
+b : You'd last a week. | Cold work. | Bees sting.
+a@swap : Ah. Well. Perhaps not today.
+a@funny : Do they? Poor things.
+a : I might surprise you. | Is it? | So do creditors.
+
+scene e4_dr_windfall_split
+when topic=dreams pair.band=friends|family|spouses
+a : If we ever came into money, we'd go halves. Promise? | Remember when we said we'd run a tavern together? | When we're old, we'll get a place by the water, you and me.
+b : Halves. Shake on it. | We'd drink the profits. | Fishing all day.
+a : Done. Now we just need the money. | We would. Happily. | And complaining all night.
+
+scene e4_dr_tavern
+when topic=dreams
+a : I've always wanted to run a tavern. | I'd like an inn on a crossroads. Somewhere carters stop. | Everyone wants a tavern, don't they? I want one with a garden.
+b[innkeeper] #inn : Then come and scrub my floors for a week. Cure you of it.
+b[brewer] #brew : Brew your own. Never buy it in. That's my advice.
+b : Everyone does. | Good spot for one. | A garden's nice.
+a@inn : I'd still want one.
+a@brew : Noted. Brew my own.
+a : I'd still want one. | Exactly. | Benches under the trees.
+
+scene e4_dr_read
+when topic=dreams a.job=laborer|servant|farmer|herder|miner|fisher|carter|woodcutter|beggar
+a : I'd like to learn my letters. Before I'm too old. | I want to read a book, just once, the whole way through. | If I could read, I'd read every notice on the board.
+b[scholar] #teach : Come to me in the evenings. It's not so hard. A season, maybe two.
+b[priest] #teach : The chapel teaches. Restday afternoons. Come.
+b : Never too late. | Which book? | Most of them are about tolls.
+a@teach : You mean that? I'll come.
+a : You mean that? | Any. A long one. | Even so.
+
+scene e4_dr_build_own
+when topic=dreams a.job=crafter|laborer|smith|woodcutter
+a : One day I'll build my own house. Every beam with these paws. | I want to make one thing that lasts a hundred years. | I'd like my name carved somewhere. On a lintel. Somewhere it'll stay.
+b[old] #old : The houses I built are all still up. Some of them, anyway. Nobody remembers who built them.
+b : You could, too. | A bridge? | Carve it under a step. Nobody'll stop you.
+a@old : Somebody knows. You do.
+a : I'll know. | A good door, even. | Under a step! I might.
+
+scene e4_dr_caravan
+when topic=dreams a.stage=adolescent|adult
+a : I nearly ran off with a caravan once. Still think about it. | Every time the carts leave, I want to go with them. | I'd like to go where the roads go. Just once, all of it.
+b[carter] : It's mostly mud and arguing about where to stop. But aye. It gets in you.
+b[drive=content] : Every road ends up back home. I've saved myself the walk.
+b : Why didn't you? | Go, then. | All of it? That's a lot of road.
+a : Someone needed me here. | One of these days. | I've good boots.
+
+scene e4_dr_retire
+when topic=dreams a.stage=adult|old
+a : When I stop working, I'm going to sleep till noon. Every day. | When I'm done with work I'll sit by the door and judge everyone who walks past. | I've a few years left in me, then I'll rest.
+b[old] : I said that. Then I stopped, and I was bored by noon.
+b : You'll never stop. | You do that already. | Or more.
+a : Watch me. | Now I'll do it with a cushion. | We'll see.
+
+scene e4_dr_regret_road
+when topic=dreams a.stage=old
+a : I had a chance to go to the city once. I didn't. I wonder, sometimes. | There was a lass, before. I didn't ask. I still think of her. | Never learned the fiddle. I always meant to.
+b[stage=young] #pup : You can still go! Can't you?
+b[stage=old] #old : We all have one of those. Most of us more than one.
+b : Would you go now? | What happened to her? | Not too late.
+a@pup : Bless you. No. But bless you.
+a@old : More than one. Aye.
+a : My knees say no. | Married a cooper. Happy as anything. | It is for these paws.
+
+scene e4_dr_regret_trade
+when topic=dreams a.stage=adult
+a : I should have been a sailor. I'd have been good at it. | My father wanted me to take the shop. I wonder how that went, in another life. | Sometimes I think I picked the wrong trade.
+b[drive=content] #same : You'd only be saying the same about this.
+b : Not too late. | Wonder away. | What would you have done?
+a@same : Probably. You're right, curse you.
+a : It is for me. | Probably. | Anything but this.
+
+scene e4_dr_saving
+when topic=dreams a.wealth!=rich
+a : I've a jar under the bed. Every week, a penny or two. | I'm saving. Not saying what for. | Three years I've been saving. Nearly there.
+b[honesty=sly] : Under the bed? You'd better hope I don't know which bed.
+b[wealth=destitute] #nopenny : A penny a week. I'd have to have a penny a week first.
+b : What's it for? | Go on, say. | Nearly where?
+a@nopenny : Sorry. I didn't think.
+a : Something nice. | No. | That's my business.
+
+scene e4_dr_restday_plans
+when topic=dreams here.day=work|market
+a : Restday, I'm not getting up. Not for anything. | I've plans for Restday. Fishing. Alone. | Restday I'm going up the hill to see the view, and nobody's coming with me.
+b[job=priest] : Chapel first. Then the hill. Or the fishing.
+b[pair.band=spouses] #roof : You said that last Restday, and the roof needed doing.
+b : Lucky you. | Good plan. | Fine by me.
+a@roof : The roof can wait a week.
+a : I'll pray in bed. | This time it's my day. | Fine.
+
+scene e4_dr_festival_plans
+when topic=dreams world.festival=soon
+a : I'm going to win the race at #here.festival# this year. Been training. | I've a new coat for #here.festival#. Not saying what colour. | I mean to dance with everyone at #here.festival#.
+b[stage=young] #pup : Me too! I'm going to win it!
+b[stage=old] #cheese : I won it once. Long ago. They gave me a cheese.
+b : You were last last year. | Red, I bet. | Everyone? Pace yourself.
+a@pup : We'll see, pup. We'll see.
+a@cheese : A cheese! Is that still the prize?
+a : Second last. | Blue. | Everyone.
+
+scene e4_dr_festival_today
+when topic=dreams world.festival=today
+a : Next year, I'm wearing ribbons. All the ribbons. | Today's the day I tell #b.name# a secret. Later. When it's dark. | Every #here.festival# I make a wish at the bonfire. Never comes true.
+b : Ribbons suit you. | Go on, tell me now. | What did you wish for?
+a : I know. | Later. | I'm not saying, then it won't.
+
+# ---------------------------------------------------------------- Drive
+
+scene e4_dr_ambitious_content
+when topic=dreams a.drive=ambitious b.drive=content
+a : Don't you want more? A bigger house, a better trade? | Where do you see yourself in ten years? | You could do so much more than this.
+b : No. I like my house. | Right here. Older. | I could. I won't.
+a : I don't understand you. | That's it? | Why?
+b : I know. That's all right. | That's it. It's plenty. | Because I'm happy, #address#.
+
+scene e4_dr_restless
+when topic=dreams a.drive=restless
+a : I can't sit still. Every morning I look at the road. | I've done every job in this town and I'm bored of all of them. | I keep thinking there's something else, somewhere else.
+b[drive=restless] #go : Same. We should go together.
+b[drive=content] #same : There isn't, mostly. It's the same everywhere, only further.
+b : Then go. | Not every job. | There usually is.
+a@go : We should. We won't, but we should.
+a@same : Then I'll see that for myself.
+a : One day I will. | Near enough. | Exactly.
+
+scene e4_dr_ambitious_boast
+when topic=dreams a.drive=ambitious
+a : Five years, I'll have three shops. Mark me. | They'll know my name in Ridgemere one day. | I'm going to be on the town council. Then we'll see.
+b[pair.band=rivals] : They'll know it for something, I'll grant.
+b[drive=ambitious] #race : Only five? I'll have four.
+b : I believe it. | For good reasons? | We'll see indeed.
+a@race : Then it's a race.
+a : You'll see. | Good, mostly. | We will.
+
+scene e4_dr_content
+when topic=dreams a.drive=content
+a : I've everything I want, near enough. A roof, a fire, folk to talk to. | Dreams? I've a warm bed and bread. That'll do me. | People keep asking what I want. I want this. Exactly this.
+b[drive=ambitious] #pity : That's... I can't tell if I envy you or pity you.
+b : Lucky. | That'll do anyone. | Then you've won.
+a@pity : Envy. Definitely envy.
+a : I've been lucky. | It should. | I have, haven't I.
+
+# ---------------------------------------------------------------- Pups
+
+scene e4_dr_pup_guard
+when topic=dreams a.stage=young
+a : When I'm big I'm going to be a guard. With a spear. | I'm going to be the captain of the watch! | I'm going to catch bandits when I grow up. Loads of them.
+b[guard] #guard : Are you now? Stand up straight, then. Guards stand straight.
+b[stage=old] : You'll be a fine one. Eat your greens.
+b : Are you? | Captain! | Loads?
+a@guard : Like this?
+a : Yes! | The best one. | Hundreds.
+b?@guard : Like that. You'll do.
+
+scene e4_dr_pup_hero
+when topic=dreams a.stage=young
+a : I'm going to fight a bear and win. | I want to be a hero in a story. A long one. | I'm going to be Quickened and nobody will catch me.
+b[stage=adult] #water : Not today, though. Today you're fetching water.
+b[stage=young] #save : Me too! I'll be the one who saves you.
+b : Big bear? | What would you do in it? | Can't catch you now.
+a@water : Heroes don't fetch water.
+a@save : I don't need saving. I'm the hero.
+a : Biggest. | Win, obviously. | See? I'm practising.
+
+scene e4_dr_pup_sea
+when topic=dreams a.stage=young b.stage=adult|old
+a : I'm going to be a sailor and go everywhere. | When I'm grown I'm going to have a boat, and a parrot. | I'm going to find treasure. Real treasure, in a box.
+b[sailor] #cat : A parrot's a lot of noise. Get a cat. Ships want cats.
+b : Everywhere? | A parrot! | Bring me some.
+a@cat : A cat AND a parrot.
+a : Everywhere. Even the edge. | A green one. | If you're good.
+
+scene e4_dr_pup_parent
+when topic=dreams a.parent=yes
+a : My #child# wants to be a guard. Breaks my heart and makes me proud. | My little one wants to be a merchant. She sells pebbles to the neighbours. | They'll have better than I had. That's all I want.
+b[parent=yes] #cloud : Mine wants to be a cloud. I'll take a guard.
+b : They grow out of it. | Good at it? | They will.
+a@cloud : A cloud! I'll take a guard too, then.
+a : I hope not. | Very. | They'd better.
+
+scene e4_dr_adolescent_leave
+when topic=dreams a.stage=adolescent
+a : Soon as I'm old enough, I'm gone. Ridgemere, maybe. | I'm not staying here all my life, like my father. | Everyone here's already decided who I'll be. Well, they're wrong.
+b[stage=old] #father : Your father said that too. Ask him.
+b[stage=adolescent] #both : Take me with you.
+b : Good for you. | He seems happy. | Who'll you be, then?
+a@father : He did? He never said.
+a@both : Pack light.
+a : We'll see. | He would say that. | I don't know yet. Someone.
+
+# ---------------------------------------------------------------- The old
+
+scene e4_dr_old_last
+when topic=dreams a.stage=old
+a : I'd like to see my grandpups wed. That's all I'm waiting for now. | I want to die in my own bed, in my own house, with the window open. | One more summer. I'd like one more good summer.
+b[stage=young] #pup : You're not going to die. You're just old.
+b[warmth=warm] : You'll have it. And a few besides.
+b : That's not much to ask. | You will. | Not too much to want.
+a@pup : Not today, pup. Not today.
+a : From your lips. | Bless you. | Not much, is it?
+
+scene e4_dr_old_wish_travel
+when topic=dreams a.stage=old
+a : I never once left #here.town#. Seventy years. | I always meant to see the mountains. | Somebody told me there's a city where the roofs are white. I'd have liked that.
+b[travelling=yes] #tell : I've seen a few places. Shall I tell you about them, one evening?
+b : Was that so bad? | Still could. | Sounds pretty.
+a@tell : I'd like that. A story a night.
+a : No. But I wonder. | Not on these legs. | It does, doesn't it.
+
+scene e4_dr_old_advice
+when topic=dreams a.stage=old b.stage=young|adolescent|adult
+a : What do you want out of life, then? | You've a dream, I can see it. Out with it. | Don't waste your young years. I did, some.
+b : I don't know yet. | My own place. | How?
+a : Good. Don't let anyone hurry you. | Then save. Start now. | Being careful. Be less careful.
+
+# ---------------------------------------------------------------- By wealth, quarter and job
+
+scene e4_dr_destitute
+when topic=dreams a.wealth=destitute
+a : Dreams. A full belly's my dream. A dry corner. | I don't dream of much. Tomorrow, mainly. | Don't ask me what I want. I'll cry.
+b[wealth=rich] #given : Here. It's not much. Buy something hot.
+b[warmth=warm] #given : Come home with me. There's soup.
+b : I'm sorry. | That's honest. | All right. I won't.
+a@given : #thanks#. Truly.
+a : Not your fault. | It is. | #thanks#.
+
+scene e4_dr_heights
+when topic=dreams a.quarter=heights
+a : Mother wants me to marry into one of the Houses. I want to paint. | I'd like one day without a dinner to go to. | A summer house in the south. Everyone else has one.
+b[quarter=sump] #other : One day without a dinner. I know that one. From the other side.
+b : Then paint. | Say you're ill. | Do they?
+a@other : I didn't... Sorry. That was a stupid thing to say.
+a : She'll have a fit. | They'd send a healer. | Well. Two families.
+
+scene e4_dr_dole
+when topic=dreams a.on_dole=yes
+a : One day I'll walk past the dole queue and not stop. | I'd like to give bread at the chapel, not take it. | When I'm right again, I'll pay the parish back every crust.
+b[job=priest] : The dole isn't a debt. Take it and hold your head up.
+b : You will. | You will. | They don't keep count.
+a : I keep count. | I'd like to believe you. | I do.
+
+scene e4_dr_merchant
+when topic=dreams a.job=merchant
+a : A second shop. On the square. Then I can stop counting buttons. | I want to trade in Ridgemere one day. Real trade, ships. | Some day I'll hire a lad to stand behind the counter, and I'll sit.
+b[business=failing] #fail : Second shop! I'd like customers in the first.
+b : On the square? Rent's terrible. | Ships sink. | You'd be back behind it in a day.
+a@fail : Slow, is it? I'm sorry.
+a : So are the profits. | So do shops. | Probably.
+
+scene e4_dr_farmer
+when topic=dreams a.job=farmer|herder
+a : Twenty acres of my own. That's all. | I want a flock that's mine, not the master's. | Own land. Nobody's tenant. That's the dream.
+b[job=farmer|herder] : Twenty acres. And the rain at night, not on market day.
+b : And a good dog. | A big one? | Good dream.
+a : And a good dog. | Big enough. | The only one.
+
+scene e4_dr_fisher
+when topic=dreams a.job=fisher|sailor
+a : I want my own boat. Paid for. Painted blue. | One day I'll sail somewhere nobody's ever drawn on a chart. | A cottage on the shore, and I'll never get in a boat again.
+b[job=fisher|sailor] #red : Blue's bad luck on a hull. Paint her red.
+b : Name her after me. | Is there anywhere left? | You'd miss it in a week.
+a@red : Red, then. Superstitious lot.
+a : I'll name her after my mother. | Must be. | Maybe two.
+
+scene e4_dr_miner
+when topic=dreams a.job=miner
+a : I dream about daylight. Proper daylight, all day. | When I've enough put by, I'll never go down again. | My pups won't go down the shaft. That's my one dream.
+b[job=miner] : We all say that. Then the seam's good and you stay.
+b : You've earned it. | How long? | They won't.
+a : I know. | A year. Maybe two. | Not while I'm breathing.
+
+scene e4_dr_guard
+when topic=dreams a.job=guard|soldier
+a : Sergeant's stripe by next winter. Then I'll pick my own shifts. | All I want is a quiet gate and a chair. | I'd like one year where nobody draws a blade on me.
+b[job=guard|soldier] #hide : A chair! Captain'd have your hide.
+b : You'll get it. | Not here, then. | Ask the bandits.
+a@hide : Captain can have my hide. I'll keep the chair.
+a : I'll get it. | Somewhere, then. | They never write back.
+
+scene e4_dr_servant
+when topic=dreams a.job=servant
+a : I'd like a house where somebody brings me tea. Just once. | I clean other folk's silver. One day I'll have one spoon of my own. | Mistress says I'll be housekeeper if I'm good. I'm very good.
+b[job=noble] #tea : I'd bring you tea. Badly, mind.
+b : Just once? | One good spoon. | Very modest of you.
+a@tea : Badly would be lovely.
+a : Once would do. | Silver. | I'm good, not modest.
+
+scene e4_dr_beggar
+when topic=dreams a.job=beggar
+a : I had a trade once. I dream of it, sometimes. The smell of the shop. | One more good winter and I'll be up off this step. | I'd like a door. Somebody to knock on it for me.
+b[warmth=warm] #trade : What trade? Maybe someone wants a pair of paws.
+b : What happened? | I hope so. | One day.
+a@trade : Cooper. Long ago. My paws shake now.
+a : Nobody wants me now. | It's the same every year. | Kind of you.
+
+scene e4_dr_priest
+when topic=dreams a.job=priest
+a : I'd like to see the chapel full on an ordinary Restday. Not just funerals. | I dream of a new roof for the chapel. Literally. I dream of slates. | Some day I'd like to go and see the Chapel of the Tide.
+b[piety=devout] #sis : I'll bring my sisters. All five.
+b : You'd need free ale. | Slates! | It's grand, they say.
+a@sis : Five! Bless you. Bring them all.
+a : Don't tempt me. | Grey ones. Lovely. | So I've heard.
+
+# ---------------------------------------------------------------- By region
+
+scene e4_dr_frost_warm
+when topic=dreams here.region=frosthollow
+a : I'd like to live somewhere warm. Southmeadow, with the orchards. | I dream of being warm. Properly warm, all through. | One summer in the south, that's my wish. Just one.
+b[from=frosthollow] : You'd melt. We're made for the cold.
+b : You'd miss the snow. | Wouldn't we all. | Go, then.
+a : I would not. | Once a year, even. | I'm saving.
+
+scene e4_dr_frost_seam
+when topic=dreams here.region=frosthollow
+a : Everyone here dreams of a silver seam. The big one. | My grandsire swore there's a cave of crystal under the pass. | One strike of the pick, and I'm rich. That's the dream.
+b[job=miner] #rock : Dream all you like. The rock doesn't care.
+b : Everyone. | Swore? | And then?
+a@rock : Still dream it.
+a : Still dream it. | On his life. | Then I'd buy a warm house.
+
+scene e4_dr_cold_lake
+when topic=dreams here.region=coldwater
+a : I want a cottage on the far shore of Glasswater, where nobody goes. | One day I'll swim right across the lake. | I dream of a boat that never leaks. That's all.
+b[from=coldwater] #midge : The far shore's all midges. You'll learn.
+b : Lonely. | It's colder than it looks. | No such thing.
+a@midge : Midges I can live with.
+a : That's the point. | I've heard. | Then a bucket.
+
+scene e4_dr_oak_city
+when topic=dreams here.region=oakhaven
+a : I'd like to see Ridgemere. Just once. All those roofs. | I want to be a forester. Walk the whole Warmwood, every path. | Some day I'll plant a tree my great-grandpups will sit under.
+b[from=ridgemere] #rain : It rains. It always rains. Stay in the woods.
+b : All that noise. | Every path? | That's a good wish.
+a@rain : Rain I've got. I want roofs.
+a : I'd like the noise. | Every one. | Takes a while to come true.
+
+scene e4_dr_mire_dry
+when topic=dreams here.region=mirebridge
+a : A house where the floor's dry. That's my dream. A dry floor. | One day I'll live on a hill. Any hill. | I dream of my boots being dry when I put them on.
+b[from=mirebridge] : Dry feet. Hah. Our only prayer.
+b : Big dream. | Bit of a walk. | Nobody's are.
+a : The biggest. | Worth it. | Exactly.
+
+scene e4_dr_lark_flock
+when topic=dreams here.region=larkfield
+a : I'll have the biggest flock on the downs one day. | I want to sell my wool in Ridgemere, not to the middle-wolf. | A stall at the big fair, my own. That's my plan.
+b[job=merchant] #mid : Cut out the middle-wolf? I am the middle-wolf.
+b : Biggest? | Good luck with the toll. | Good plan.
+a@mid : Then sorry. Nothing personal.
+a : Biggest. | Sorry. | I've the paws for it.
+
+scene e4_dr_south_snow
+when topic=dreams here.region=southmeadow
+a : I've never seen proper snow. I dream about it. | I'd like to see the mountains up north. Snow on top, all year. | One day my orchard will be the best in Southmeadow.
+b[from=frosthollow] #send : I'll send you some. A whole cart. See how you like it then.
+b : It's just cold rain that stays. | Cold up there. | It's close already.
+a@send : I'd still like it.
+a : I'd still like it. | I'd wear two coats. | Close isn't best.
+
+scene e4_dr_ridge_sun
+when topic=dreams here.region=ridgemere
+a : I dream of a week without rain. One week. | A house on Harbour Hill, looking out at the Sound. | I'd like to sail out past the heads one day and see what's there.
+b[quarter=heights|harbour_hill] #view : It's lovely, the view. The rain's the same, mind.
+b : You'll be waiting. | Expensive view. | More sea.
+a@view : Easy said, from up there.
+a : I'll wait. | One day. | That's what they say.
+
+# ---------------------------------------------------------------- Couples and friends
+
+scene e4_dr_couple
+when topic=dreams pair.band=spouses
+a : When the pups are grown, let's go south. Somewhere sunny. | I want us to grow old in this house. Same chairs. Same arguments. | Let's save for a little boat. You and me, Restdays.
+b : You hate the heat. | The arguments, yes. | You get seasick.
+a : I'll learn to love it. | I mean it. | I'll learn.
+b : Then yes. | I know you do. | All right. Yes.
+
+scene e4_dr_friends_someday
+when topic=dreams pair.band=friends
+a : We'll go to Ridgemere together one day, you and me. | Remember when we swore we'd be rich by thirty? | Some day we'll look back on all this and laugh.
+b : We keep saying. | How did that go? | I'm laughing now, a bit.
+a : This year. I mean it. | Thirty came and went. | That's the spirit.
+
+scene e4_dr_rival
+when topic=dreams pair.band=rivals
+a : I hear you want my post. | You'll never get that shop, you know. Not before me. | Funny. We both want the same thing.
+b : I want better than your post. | Watch me. | Only one of us will get it.
+a : Ha. | I am watching. | We'll see which.
+
+# ---------------------------------------------------------------- Night, wishing
+
+scene e4_dr_first_star
+when topic=dreams here.time=dusk|night here.weather=clear
+a : First star. Make a wish. | Wish on that one, it's the brightest. | Do you still wish on stars?
+b[stage=young] #pony : I wished for a pony. I wish it every night.
+b[humour=dry] #dry : I wished you'd stop telling me to wish.
+b : Done. | Done. Not telling. | Every night.
+a@pony : Still no pony?
+a@dry : Fair.
+a : What was it? | Fair. | Me too.
+
+scene e4_dr_sleepless
+when topic=dreams here.time=night
+a : Can't sleep. Too much in my head. | I lie awake making plans I never keep. | Do you ever lie awake and plan your whole life over?
+b[tired=yes] : I could sleep on this step. Go home and count sheep.
+b : What sort of things? | Same. | Every night.
+a : Everything. | Good plans, though. | And then morning comes.
+
+scene e4_dr_tomorrow
+when topic=dreams
+a : Tomorrow I'm going to do everything differently. | I've decided. Tomorrow I start saving. | From tomorrow, I'm a new wolf.
+b[honesty=frank] #said : You said that yesterday.
+b : Good. | How much? | What was wrong with the old one?
+a@said : And I meant it then too.
+a : I'll be better. | A penny. For a start. | Lazy.
+
+scene e4_dr_small_wish
+when topic=dreams
+a : My wish? A good pair of boots. Nothing grander. | All I want is one morning with nowhere to be. | I'd like to be good at one thing. Really good.
+b : Small wishes come true. | Never happens. | You're good at talking.
+a : That's what I'm counting on. | Never. | Ha. Thank you.
+
+scene e4_dr_whats_yours
+when topic=dreams pair.band!=strangers
+a : What do you want, really? If you could have anything? | Have you got a dream, #b.name#? A proper one? | What did you want to be, as a pup?
+b[drive=ambitious] #all : Everything. In order.
+b[drive=content] #this : Nothing much. This, I think.
+b : Somewhere quiet. Somewhere mine. | Not one I'd say out loud. | Tall.
+a@all : Starting with?
+a@this : Lucky.
+a : Sounds right. | Fair enough. | Well, you managed that.

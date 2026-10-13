@@ -1,0 +1,449 @@
+# The town (theme n7, Docs/Design/62-talk.md phase 7): civic grumbles, the Watch and the law, and the last word.
+# A grumble remembers what it was about (pair.mem.grumble), so the answer can be about the same thing, and a
+# grumble a day or two later can say it's still not mended. Every reply is the replier's own best rule. Drafts.
+
+## Grumbles about the town (the opener; each remembers its subject for the answer and a later follow-up)
+
+rule n7_gr_roads
+when concept=talk.smalltalk|talk.lore|talk.day
+cooldown 2d
+say The road by the well's more hole than road. | Turned my ankle in a rut on the way here. Again. | They mended that road last spring. You'd never know. | Somebody ought to fill those potholes before one swallows a cart.
+remember pair: grumble=roads 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_roads_wet
+when concept=talk.smalltalk|talk.weather|talk.day here.weather=rain|storm here.place=street|market|gate
+cooldown 1d
+say There's a puddle at the corner you could drown a calf in. | The street's a river. Look at my boots. | Every rut's a pond. Mind your step, #address#.
+remember pair: grumble=roads 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_drains
+when concept=talk.smalltalk|talk.lore|talk.day here.region=ridgemere
+cooldown 2d
+say Drains are backing up again. You can smell it from the stair. | The gutter on our row's been blocked a week. | Every rain, the drains give back what they were given. | Who do you even tell about the drains?
+remember pair: grumble=drains 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_drains_sump
+when concept=talk.smalltalk|talk.day here.region=ridgemere self.quarter=sump
+cooldown 2d
+say Water came up through the boards again. Grey water. Not the clean sort. | The Heights' drains all run downhill. Guess where downhill is. | Three days the gutter's been full. The pups play in it. What can you do?
+remember pair: grumble=drains 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_lamps
+when concept=talk.smalltalk|talk.day here.time=dusk|night
+cooldown 2d
+say Lamp's out on our street again. | Black as a pocket out there. Where's the lamplighter? | Walked into a post in the dark. A post! | They light the lamps up the hill first and run out of oil by ours.
+remember pair: grumble=lamps 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_taxes
+when concept=talk.smalltalk|talk.lore
+cooldown 2d
+say Another levy. What for, this time? | They've a new toll on the gate. Pay to come home! | Hearth tax, door tax, they'll tax the smoke next. | Where does it all go, the #money#? Not on our street.
+remember pair: grumble=taxes 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_taxes_rich
+when concept=talk.smalltalk|talk.lore self.wealth=rich
+cooldown 2d
+say The levy's come again. Do they think it grows on trees? | Our steward says the assessor counted the windows. The windows! | One does one's share. One does rather more than one's share.
+remember pair: grumble=taxes 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_market_fee
+when concept=talk.smalltalk|talk.work self.role=merchant
+cooldown 2d
+say Pitch fee's up again. For the same square of mud. | The market warden moved my stall behind the well. Nobody finds me now. | They want a licence for the awning now. The awning!
+remember pair: grumble=market 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_market_day
+when concept=talk.smalltalk|talk.day here.day=market
+cooldown 2d
+say Market rules say no carts after the bell. Then how do the goods get in? | The weights inspector came round. Half the stalls packed up quick. | Can't move for stalls on market day, and who sweeps up after? Not them.
+remember pair: grumble=market 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_watch
+when concept=talk.smalltalk|talk.lore|talk.crime
+cooldown 2d
+say Never a watchman when you want one. | The Watch walks the good streets twice and ours never. | Saw two of the Watch asleep on the steps at noon. | What do we pay the Watch for, I ask you?
+remember pair: grumble=watch 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_watch_crime
+when concept=talk.smalltalk|talk.crime|talk.day world.crime=recent
+cooldown 1d
+say Somebody robbed, and the Watch strolls up an hour after. | Crime in the street and the Watch drinking at the inn. | They'll catch nobody. They never do.
+remember pair: grumble=watch 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_council
+when concept=talk.smalltalk|talk.lore here.region=ridgemere
+cooldown 2d
+say The Council's sat a month in the Rain Hall and decided nothing. | Four Houses round a table and not one of them's walked our street. | The Council's to debate the drains. Again. Since my father was a pup.
+remember pair: grumble=council 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_rent
+when concept=talk.smalltalk|talk.day self.wealth=poor|destitute
+cooldown 2d
+say Landlord's put the rent up and the roof still leaks. | Rent's due Restday. I've half of it. | They want more for that hole than I paid for my first coat.
+remember pair: grumble=rent 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_smoke
+when concept=talk.smalltalk|talk.weather here.region=ridgemere self.quarter=works|commons|sump|wharf
+cooldown 2d
+say The kilns were going all night. My washing's grey. | Lime dust on everything. Greatly's dust. | You can taste the Tileworks today. Bricks for breakfast.
+remember pair: grumble=smoke 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_noise_works
+when concept=talk.smalltalk|talk.day here.region=ridgemere self.quarter=works|wharf|docks
+cooldown 2d
+say The hammering starts before the gulls. | Carts on the cobbles all night. I sleep with my paws over my ears. | Foundry bell, wharf bell, chapel bell. A wolf can't hear herself think.
+remember pair: grumble=noise 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_dole
+when concept=talk.smalltalk|talk.day self.on_dole=yes
+cooldown 2d
+say The dole loaf's smaller than last month's. I measured. | Two hours in the line and the loaf was yesterday's. | They ask your name, your trade, your mother's trade. For bread.
+remember pair: grumble=dole 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_bandit_roads
+when concept=talk.smalltalk|talk.bandits|talk.lore world.bandits=near
+cooldown 1d
+say Bandits on the road and not a soldier sent. | We pay for the roads to be kept safe. Who's keeping them? | If the Houses' wagons were robbed, there'd be riders out by noon.
+remember pair: grumble=roads 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_city_takes
+when concept=talk.smalltalk|talk.lore here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+cooldown 2d
+say The city takes our goods cheap and sends back its prices dear. | Ridgemere this, Ridgemere that. Who ever came up from Ridgemere to mend our bridge? | The levy goes down the road to the city and never comes back up.
+remember pair: grumble=city 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_old_ways
+when concept=talk.smalltalk|talk.lore self.stage=old
+cooldown 2d
+say When I was young the street was swept every Restday. By us. Nobody asked. | We had one watchman in the old days and he knew every name. | Folk used to mend things. Now they write to the Council about them.
+remember pair: grumble=oldways 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_chapel_roof
+when concept=talk.smalltalk|talk.lore self.piety=devout
+cooldown 2d
+say The chapel roof drips on the altar and nobody will pay to mend it. | Half the town at the festival, a handful at chapel. | The poor box was light again. Shameful, with what some folk have.
+remember pair: grumble=chapel 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_young_rules
+when concept=talk.smalltalk self.stage=adolescent
+cooldown 2d
+say The Watch moved us off the steps. We weren't doing anything! | You can't sit anywhere in this town without a grown-up saying move along. | They've shut the old yard where we used to play. For a wall.
+remember pair: grumble=rules 3d
+remember pair: on=grumble 1h
+then other: town.grumble
+
+## A grumble, again (the same two, a day or two on)
+
+rule n7_gr_again_roads
+when concept=talk.smalltalk|talk.day pair.mem.grumble=roads
+priority 1
+cooldown 2d
+say That hole's still there, you know. Bigger. | Remember the road? Lost a cartwheel in it this morning. Not mine, thank the gods. | Still not mended. I'm going to plant a tree in it.
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_again_lamps
+when concept=talk.smalltalk|talk.day pair.mem.grumble=lamps
+priority 1
+cooldown 2d
+say Still dark on our street. I've started carrying a candle. | The lamp. Still out. I've written to nobody, since nobody listens. | They lit it! For one night. Then nothing.
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_again_drains
+when concept=talk.smalltalk|talk.day pair.mem.grumble=drains
+priority 1
+cooldown 2d
+say The drain's no better. Worse, if anything. | I poured lime down ours. Now it smells of lime and the other thing. | Still blocked. Someone's put a sign on it: Council's Pond.
+remember pair: on=grumble 1h
+then other: town.grumble
+
+rule n7_gr_again_taxes
+when concept=talk.smalltalk|talk.day pair.mem.grumble=taxes
+priority 1
+cooldown 2d
+say Paid the levy. I've never been so poor and so official. | They came for the levy. I gave them a look and the coin. | That levy we spoke of? It's gone up since.
+remember pair: on=grumble 1h
+then other: town.grumble
+
+## Answering a grumble (self answers; pair.mem.grumble says what about)
+
+rule n7_ga_plain
+when concept=town.grumble
+say #agree#. Someone ought to do something. | Don't get me started. | Every year the same. | It's a disgrace, that's what it is.
+then other: town.close
+
+rule n7_ga_shrug
+when concept=town.grumble
+say What can you do? | Nobody listens to the likes of us. | That's the town for you. | Write it on a stone and throw it at the Rain Hall.
+
+rule n7_ga_official
+when concept=town.grumble self.job=official
+say There's a proper way to raise it, you know. A written petition. | These things take time. The money's voted, it's just... not spent. | Leave it with me. No, truly. I'll mention it.
+then other: town.close
+
+rule n7_ga_official_taxes
+when concept=town.grumble self.job=official pair.mem.grumble=taxes
+say The levy pays for the lamps, the Watch, the wall. You'd miss them. | I only count it. I don't spend it. | Everyone hates the levy until the wall falls down.
+then other: town.close
+
+rule n7_ga_guard
+when concept=town.grumble self.role=guard
+say Take it up with the Council, not me. I just walk the streets. | We've enough to do keeping the peace. | I'll mention it at the Watch House. They'll laugh, but I'll mention it.
+then other: town.close
+
+rule n7_ga_guard_watch
+when concept=town.grumble self.role=guard pair.mem.grumble=watch
+say Twelve of us for the whole quarter. You try it. | I was on my feet fourteen hours yesterday. Asleep on the steps, was I? | Next time you're robbed, call me. See how fast I come.
+then other: town.close
+
+rule n7_ga_rich
+when concept=town.grumble self.wealth=rich
+say Have you tried writing to the Council? | Really? Our street's lovely. I hadn't heard. | One pays one's levies and one assumes it's seen to. | How dreadful. Someone should complain.
+then other: town.close
+
+rule n7_ga_poor
+when concept=town.grumble self.wealth=poor|destitute
+say And who pays to mend it? Us. Always us. | They'll fix it on the Heights first and run out of money by ours. | I'd complain, but they'd charge me for the ink.
+then other: town.close
+
+rule n7_ga_homeless
+when concept=town.grumble self.homeless=yes
+priority 1
+say At least you've a street to have a lamp on. | I sleep under that road, #address#. I know every hole. | Mm. Try it from a doorway.
+then other: town.close
+
+rule n7_ga_heights
+when concept=town.grumble self.quarter=heights here.region=ridgemere
+cooldown 1d
+say Ours was seen to the same morning. I suppose that's not helpful. | Is it really so bad down there? | We pay a man to see to ours. Perhaps you could... no. No, I see.
+then other: town.close
+
+rule n7_ga_sump_drains
+when concept=town.grumble self.quarter=sump pair.mem.grumble=drains
+say Drains? We'd settle for a floor that stays dry. | Down in the Sump we are the drain. | You get a smell. We get the whole river.
+then other: town.close
+
+rule n7_ga_sump
+when concept=town.grumble self.quarter=sump here.region=ridgemere
+cooldown 1d
+say Come down the Sump and say that. | That's a good street's trouble, that. | Up your way you've got streets? Ours are mostly puddle.
+then other: town.close
+
+rule n7_ga_old
+when concept=town.grumble self.stage=old
+say In my day we fixed it ourselves and didn't moan. | It was worse when I was a pup. No, it was. Mostly. | I've heard that complaint for sixty years. Still not mended.
+then other: town.close
+
+rule n7_ga_young
+when concept=town.grumble self.stage=young
+say Can I have the old lamp if they throw it out? | I jumped in that puddle. It was really deep! | Why don't you just mend it yourself?
+then other: town.close
+
+rule n7_ga_dry
+when concept=town.grumble self.humour=dry
+say I hear they're forming a committee to look into forming a committee. | Write to the Council. They love a letter. Keeps the fire going. | Give it time. Another forty years.
+then other: town.close
+
+rule n7_ga_merry
+when concept=town.grumble self.humour=merry
+say Look on the bright side. Nothing to steal on a dark street. | We could sell tickets. See the famous Pothole! | I'll drink to the day they mend it. I'll drink to it now, to be safe.
+then other: town.close
+
+rule n7_ga_short
+when concept=town.grumble self.temper=short
+say Then do something about it instead of moaning at me. | I've my own troubles. | Moan, moan. Everyone moans. Nobody picks up a shovel.
+then other: town.close
+
+rule n7_ga_nervy
+when concept=town.grumble self.temper=nervy
+say Not so loud. You don't know who's listening. | Don't. Folk who complain get noticed. | I'd rather not say anything against anyone, thank you.
+then other: town.close
+
+rule n7_ga_sly
+when concept=town.grumble self.honesty=sly
+say I know a fellow who can see to it. For a small consideration. | Things get mended if the right paw is crossed. | Leave it with me. And a penny or two.
+then other: town.close
+
+rule n7_ga_ambitious
+when concept=town.grumble self.drive=ambitious
+say One day I'll have a seat in that hall, and then you'll see things mended. | Somebody should get the street together and go to the Council. Somebody like me. | That's the sort of thing a wolf could make a name fixing.
+then other: town.close
+
+rule n7_ga_devout
+when concept=town.grumble self.piety=devout
+say Pray on it. And write to the Council. Both. | The Bright One sees every hole in every road. | We bear what we must. But aye, it's a disgrace.
+then other: town.close
+
+rule n7_ga_merchant_market
+when concept=town.grumble self.role=merchant pair.mem.grumble=market
+say Fees go up, prices go up. Don't look at me. | The warden takes his cut and the rain takes the rest. | We'd all trade from the gutter if they'd let us. Free gutter.
+then other: town.close
+
+rule n7_ga_worker_roads
+when concept=town.grumble self.job=laborer|crafter pair.mem.grumble=roads
+say I laid half those cobbles. They paid us in promises. | Give me a cart of stone and a week. I'd have it flat. | They hire the cheapest gang and wonder why it sinks.
+then other: town.close
+
+rule n7_ga_carter_roads
+when concept=town.grumble self.job=carter pair.mem.grumble=roads
+say Lost a wheel on that road. Third this year. | My horse knows every hole by name. | You walk it. I drive it, loaded, in the dark.
+then other: town.close
+
+rule n7_ga_incomer
+when concept=town.grumble self.from!=ridgemere here.region=ridgemere
+cooldown 1d
+say In #self.from.capitalize# we'd have had it mended by now. Or not, but we'd not have a Council to blame. | Back home there's one road and everybody looks after it. | You should see how we do it in #self.from.capitalize#.
+then other: town.close
+
+rule n7_ga_townfolk_city
+when concept=town.grumble pair.mem.grumble=city
+say Aye, and they call us the backwater. | Let them come up here and try living off what they leave us. | The day the city feeds itself, I'll eat my hat.
+then other: town.close
+
+rule n7_ga_quiet
+when concept=town.grumble self.talk=quiet
+say Mm. | Aye. | It is.
+
+rule n7_ga_warm
+when concept=town.grumble self.warmth=warm
+say Come in and sit down; we'll grumble properly over a pot of something. | Oh, you poor thing. Here, mind the step. | We'll go to the Council together, you and I. Hold my arm.
+then other: town.close
+
+## The last word (the one who began; pair.mem.on says what the talk was about)
+
+rule n7_close
+when concept=town.close
+say Hm. Well. | Right. | Aye. | Well, there it is. | Mm.
+
+rule n7_close_agree
+when concept=town.close
+say #agree#. | #saying#. | Right you are. | Fair enough.
+
+rule n7_close_dry
+when concept=town.close self.humour=dry
+say Well. There's the news. | And so the world turns. | Well. Now we both know.
+
+rule n7_close_merry
+when concept=town.close self.humour=merry
+say Ha! You're a tonic, you are. | Ha. We should do this more. | Ha. Well. Good to see you.
+
+rule n7_close_short
+when concept=town.close self.temper=short
+say Hmph. | Right. Well. | Fine.
+
+rule n7_close_warm
+when concept=town.close self.warmth=warm
+say You're good to talk to. | Ah, it does me good, a word with you. | Come by for supper one night. I mean it.
+
+rule n7_close_devout
+when concept=town.close self.piety=devout
+say The Bright One keep us. | Gods willing. | We'll pray on it.
+
+rule n7_close_sly
+when concept=town.close self.honesty=sly
+say I'll remember that. | Good to know. | Hm. Good to know.
+
+rule n7_close_quiet
+when concept=town.close self.talk=quiet
+say Mm. | Aye. | ...Aye.
+
+## The last word on a grumble
+
+rule n7_close_gr
+when concept=town.close pair.mem.on=grumble
+say That's the town. | You're not wrong. | That's what I said. | Nobody listens.
+
+rule n7_close_gr_dry
+when concept=town.close pair.mem.on=grumble self.humour=dry
+say I'll hold my breath. | Lovely. I'll tell the pothole. | Wonderful. Sleep easy, everyone.
+
+rule n7_close_gr_merry
+when concept=town.close pair.mem.on=grumble self.humour=merry
+say We should run the place, you and I. | Ha. Well, it's a better joke than the Council. | Ha! I'll stand for the Council on a promise of more puddles.
+
+rule n7_close_gr_short
+when concept=town.close pair.mem.on=grumble self.temper=short
+say Useless, the lot of them. | Don't know why I bother. | Hmph. Somebody'll break their neck before it's seen to.
+
+rule n7_close_gr_warm
+when concept=town.close pair.mem.on=grumble self.warmth=warm
+say Ah, it's nice to have a moan with you. | Come by for supper. We'll moan more comfortably. | Well, at least we've each other to grumble at.
+
+rule n7_close_gr_old
+when concept=town.close pair.mem.on=grumble self.stage=old
+say I'll be dead before it's mended. | Mark my words. | Things were better. Different. Better.
+
+rule n7_close_gr_poor
+when concept=town.close pair.mem.on=grumble self.wealth=poor|destitute
+say It's always us that pays. | Easy for some. | Aye. Well. We manage.
+
+rule n7_close_gr_rich
+when concept=town.close pair.mem.on=grumble self.wealth=rich
+say Quite. | One does what one can. | I'll mention it at dinner.
+
+## The last word between neighbours
+
+rule n7_close_nb
+when concept=town.close pair.mem.on=nb
+say Good. Well. Neighbours, eh? | We'll say no more about it. | Right. Good night, then. | That's settled, then.
+
+rule n7_close_nb_short
+when concept=town.close pair.mem.on=nb self.temper=short
+say See that you do. | Hmph. We'll see. | I'll be listening.
+
+rule n7_close_nb_warm
+when concept=town.close pair.mem.on=nb self.warmth=warm
+say Knock any time. I mean it. | Best neighbours on the row, you lot. | Ah, I'm glad you're next door.
+
+rule n7_close_nb_dry
+when concept=town.close pair.mem.on=nb self.humour=dry
+say Lovely. I'll tell the wall. | Good. I'll stop drafting the letter. | Peace in our time.
+
+rule n7_close_nb_cold
+when concept=town.close pair.mem.on=nb self.warmth=cold
+say Good. | Very well. | Quite.
+
+rule n7_close_nb_old
+when concept=town.close pair.mem.on=nb self.stage=old
+say I've had worse neighbours. I've outlived most of them. | Your mother'd have said the same. | You'll do.

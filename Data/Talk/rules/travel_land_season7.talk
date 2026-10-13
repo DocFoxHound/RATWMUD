@@ -1,0 +1,728 @@
+# Travel, the land and the turning year (Docs/Design/62-talk.md, phase 7): chains. One asks where the other grew up,
+# or whether they've ever been far, or what the country round here is good for, or says the season's turning; the
+# other answers as they are (where they grew up and where they stand now, their work, their age, their purse, their
+# temper), and the first answers that in turn. Every beat is the speaker's own best rule, so a question has dozens of
+# answers. Concepts: travel.from, travel.from_reply, travel.been, land.answer, season.answer, tale.react. Drafts.
+
+# ===================================================================================== Where are you from?
+
+rule e5_ask_from_stranger
+when concept=talk.travel pair.band=strangers
+cooldown 1d
+say Not from round here, are you? Or are you? | Where do you hail from, #address#? | I don't know your face. Where's home for you? | Your voice isn't from this street. Where are you from?
+then other: travel.from
+
+rule e5_ask_from_acquaintance
+when concept=talk.travel pair.band=acquaintances|rivals
+cooldown 2d
+say I never asked: where did you grow up? | You're not from here to start with, are you? | Where's your family from, then? Originally.
+then other: travel.from
+
+rule e5_ask_from_chatty
+when concept=talk.travel self.talk=chatty pair.band!=family|spouses
+cooldown 2d
+say Now settle something for me. Where were you born? I've a bet on with myself. | I'm guessing... no, you tell me. Where are you from?
+then other: travel.from
+
+# Answering, as they are (self answers). At home:
+rule e5_from_home_ridgemere
+when concept=travel.from self.from=ridgemere here.region=ridgemere
+say Here. Born under the rain, like everyone. | Ridgemere, born and bred. Webbed paws, near enough. | Up the hill from the wharf. Never lived anywhere else. | Here. My fur's never been properly dry.
+then other: travel.from_reply
+
+rule e5_from_home_frosthollow
+when concept=travel.from self.from=frosthollow here.region=frosthollow
+say Here. Up the pass, where the snow lives. | Frosthollow. My father dug, his father dug. | Here, under the Whitefangs. Born in a snowdrift, Mam says.
+then other: travel.from_reply
+
+rule e5_from_home_coldwater
+when concept=travel.from self.from=coldwater here.region=coldwater
+say Here, on the lake. I could row before I could walk. | Coldwater. The lake's in my blood, cold as it is. | Born in a boat-shed, three doors down.
+then other: travel.from_reply
+
+rule e5_from_home_oakhaven
+when concept=travel.from self.from=oakhaven here.region=oakhaven
+say Here, in the Warmwood. Under the oaks. | Oakhaven, and my grandmother before me. | Here. I've never seen the sky without leaves in it.
+then other: travel.from_reply
+
+rule e5_from_home_mirebridge
+when concept=travel.from self.from=mirebridge here.region=mirebridge
+say Here. Fen-born, fen-bred, damp all through. | Mirebridge. Where else grows folk with webbed toes? | Out on the causeway, the house with the eel traps.
+then other: travel.from_reply
+
+rule e5_from_home_larkfield
+when concept=travel.from self.from=larkfield here.region=larkfield
+say Here, on the downs. Lambs and larks. | Larkfield. Born on a market day, so they say I came out haggling. | Here. Up past the mill, where the chalk shows.
+then other: travel.from_reply
+
+rule e5_from_home_southmeadow
+when concept=travel.from self.from=southmeadow here.region=southmeadow
+say Here, among the apples. | Southmeadow. Born in harvest, under a hay cart. | Here. Why would anyone be from anywhere else?
+then other: travel.from_reply
+
+# Grown elsewhere:
+rule e5_from_away_ridgemere
+when concept=travel.from self.from=ridgemere here.region!=ridgemere
+say Ridgemere. The city. Don't hold it against me. | The city, down by the Sound. I still dream of rain. | Ridgemere. You can tell, can't you? It's the airs.
+then other: travel.from_reply
+
+rule e5_from_away_frosthollow
+when concept=travel.from self.from=frosthollow here.region!=frosthollow
+say Frosthollow. Up in the snow. | The mining town, up the Pass Road. It's warm down here. Too warm. | Frosthollow. That's why I never wear a scarf.
+then other: travel.from_reply
+
+rule e5_from_away_coldwater
+when concept=travel.from self.from=coldwater here.region!=coldwater
+say Coldwater, on Glasswater. Lake folk. | Coldwater. I still miss the water. Clear to the bottom, it is. | The lake, under the mountains. Coldwater.
+then other: travel.from_reply
+
+rule e5_from_away_oakhaven
+when concept=travel.from self.from=oakhaven here.region!=oakhaven
+say Oakhaven, in the Warmwood. | The woods. Oakhaven. Too much sky out here for me. | Oakhaven. I grew up under the oaks.
+then other: travel.from_reply
+
+rule e5_from_away_mirebridge
+when concept=travel.from self.from=mirebridge here.region!=mirebridge
+say Mirebridge, in the fens. Go on, say it. | The Sallow Fens. Mirebridge. My feet have only just dried. | Mirebridge. Eels and mist, and proud of it.
+then other: travel.from_reply
+
+rule e5_from_away_larkfield
+when concept=travel.from self.from=larkfield here.region!=larkfield
+say Larkfield, on the downs. | The downs. Larkfield. Sheep country. | Larkfield. Market town. I can still smell the fleeces.
+then other: travel.from_reply
+
+rule e5_from_away_southmeadow
+when concept=travel.from self.from=southmeadow here.region!=southmeadow
+say Southmeadow, down south. | Southmeadow. The orchards. I miss the sun. | The far south, among the apples. Southmeadow.
+then other: travel.from_reply
+
+# The first answers that (self is the first again).
+rule e5_from_reply_same
+when concept=travel.from_reply pair.same_from=yes
+priority 1
+say Same as me! Then we're near enough cousins. | Never! Which street? We'll know someone. | I knew it. I could hear it the moment you spoke. | Same here. Small realm, isn't it?
+
+rule e5_from_reply
+when concept=travel.from_reply
+say Is that so. | Ah. That explains the voice. | Then you'll know where the decent ale is. | Lucky you, having one place to call home.
+
+rule e5_from_reply_ridgemere
+when concept=travel.from_reply other.from=ridgemere here.region!=ridgemere
+say The city! Is it true it rains every day? | Ridgemere. All those Houses and their airs. | Fancy. Did you live up on the Heights, then? | A city wolf. You'll find us slow.
+then other: travel.been
+
+rule e5_from_reply_frosthollow
+when concept=travel.from_reply other.from=frosthollow here.region!=frosthollow
+say Frosthollow! No wonder you never feel the cold. | Up the pass? I'd freeze solid in a week. | Miners' country. Hard folk, they say. | Is it true the snow comes up to the eaves?
+then other: travel.been
+
+rule e5_from_reply_coldwater
+when concept=travel.from_reply other.from=coldwater here.region!=coldwater
+say Coldwater. Lake folk. You'll have webbed toes. | Glasswater! Is it as clear as they say? | Trout country. I'm jealous. | They say you can see your own reflection from a mile off there.
+then other: travel.been
+
+rule e5_from_reply_oakhaven
+when concept=travel.from_reply other.from=oakhaven here.region!=oakhaven
+say Oakhaven? In the Warmwood? I'd lose myself in an hour. | Woods folk. Is it true the old oaks talk? | All those trees. Doesn't it get dark? | Oakhaven. Honey and acorn bread, I hear.
+then other: travel.been
+
+rule e5_from_reply_mirebridge
+when concept=travel.from_reply other.from=mirebridge here.region!=mirebridge
+say Mirebridge! Have you ever had dry feet? | The fens. Damp, eels, and lights at night, they say. | You don't look boggy. | I've heard about the lights out there. Are they real?
+then other: travel.been
+
+rule e5_from_reply_larkfield
+when concept=travel.from_reply other.from=larkfield here.region!=larkfield
+say Larkfield. Sheep, and more sheep. | The downs! All that sky. | Market folk. I'll mind my purse, then. | Larkfield. Is the chalk wolf still on the hill?
+then other: travel.been
+
+rule e5_from_reply_southmeadow
+when concept=travel.from_reply other.from=southmeadow here.region!=southmeadow
+say Southmeadow! Why ever did you leave? Sun and apples. | The south. Easy living, I hear. | Cider country. Lucky dog. | All that sun and you came here?
+then other: travel.been
+
+# ===================================================================================== Ever been far?
+
+rule e5_ask_been
+when concept=talk.travel
+cooldown 2d
+say Ever been far from here? | Where's the furthest you've ever been? | Have you travelled much, #address#? | Ever been on the road? Properly, I mean.
+then other: travel.been
+
+rule e5_ask_been_close
+when concept=talk.travel pair.band=friends|family|spouses
+cooldown 2d
+say Did I ever ask you where you'd go, if you could go anywhere? | You've been about a bit, haven't you? Tell me again. | If we packed up tomorrow, #pet#, where would we go?
+then other: travel.been
+
+# Answering (self answers). Those who came from elsewhere:
+rule e5_been_moved_ridgemere
+when concept=travel.been self.from=ridgemere here.region!=ridgemere
+say Only here, from the city. That was far enough. The quiet nearly killed me. | Left Ridgemere with one bag. Never went back for the rest. | From the Sound to here. I still look for the sea of a morning.
+then other: tale.react
+
+rule e5_been_moved_frosthollow
+when concept=travel.been self.from=frosthollow here.region!=frosthollow
+say Down the Pass Road with my pack, and here I stopped. | The mines took my father. I took the road. | Walked out of the snow one spring and kept walking till it was warm.
+then other: tale.react
+
+rule e5_been_moved_coldwater
+when concept=travel.been self.from=coldwater here.region!=coldwater
+say Off the lake and down here. I don't know why. Love, I think. | Coldwater to here. Took a week and a ruined pair of boots. | I rowed for twenty years. Then I walked. You can't row everywhere.
+then other: tale.react
+
+rule e5_been_moved_oakhaven
+when concept=travel.been self.from=oakhaven here.region!=oakhaven
+say Out of the Warmwood, up the Southway. First time I'd seen a horizon. | From Oakhaven. Took me a month to stop ducking under branches that weren't there. | I left the woods for work. The trees didn't miss me.
+then other: tale.react
+
+rule e5_been_moved_mirebridge
+when concept=travel.been self.from=mirebridge here.region!=mirebridge
+say Out of the fens. Took me three days to stop squelching. | Mirebridge to here, on the back of an eel cart. | I left the fens for dry ground. Still not used to it.
+then other: tale.react
+
+rule e5_been_moved_larkfield
+when concept=travel.been self.from=larkfield here.region!=larkfield
+say Off the downs with a drover's caravan, and I never went back. | From Larkfield. Every carter's road starts there, so I took one. | Larkfield to here. Missed the wind for a year.
+then other: tale.react
+
+rule e5_been_moved_southmeadow
+when concept=travel.been self.from=southmeadow here.region!=southmeadow
+say Up from the south. Every mile colder than the last. | From Southmeadow. Came for a sweetheart. The sweetheart went; I stayed. | I walked up the South Road and the sun got smaller every day.
+then other: tale.react
+
+# By what they do and are:
+rule e5_been_carter
+when concept=travel.been self.job=carter
+say Every road in the realm, and every rut in them. | The Southway, the High Road, the Downs Road. Name one I haven't. | Too far, too often. My back knows every pothole.
+then other: tale.react
+
+rule e5_been_sailor
+when concept=travel.been self.job=sailor
+say Round the headland and down the coast, more times than I can count. | Out past the Sound where the water goes black. You don't come back the same. | Every harbour with a tavern. Which is every harbour.
+then other: tale.react
+
+rule e5_been_merchant
+when concept=travel.been self.role=merchant
+say Larkfield market, the city, the towns. Where the coin goes, I go. | Far enough to know the prices are better somewhere else. | Every market day in three towns, some years.
+then other: tale.react
+
+rule e5_been_soldier
+when concept=travel.been self.job=soldier|guard
+say Marched the Southway twice. My feet still remember. | Escorted a caravan up the Pass Road once. Never again. | Wherever I was sent. You don't ask.
+then other: tale.react
+
+rule e5_been_priest
+when concept=travel.been self.job=priest
+say I walked to the Snow Chapel once, as a novice. Barefoot, as was the custom. | A pilgrimage, when I was young. The road is a prayer, they say. My paws said otherwise. | Where the Bright One sent me. Here, mostly.
+then other: tale.react
+
+rule e5_been_young
+when concept=travel.been self.stage=young
+say Not past the gate! Mam won't let me. | I went to the mill once. That's far. | Not yet. But I will. All the way to the sea!
+
+rule e5_been_old
+when concept=travel.been self.stage=old
+say Once, when I was young and foolish. Didn't think much of it. | Far enough to know home's best. | My travelling days are done. My knees did the deciding.
+then other: tale.react
+
+rule e5_been_old_broad
+when concept=travel.been self.stage=old self.accent=broad
+say Never. Never needed to. Everything I want's in sight of my door. | Been to the next village, once. For a funeral. Didn't care for it. | Why would I? The world comes past my gate if I wait.
+then other: tale.react
+
+rule e5_been_rich
+when concept=travel.been self.wealth=rich
+say We go up to the city for the season, of course. | Here and there. One must keep an eye on one's interests. | Oh, everywhere worth going. Which isn't many places.
+then other: tale.react
+
+rule e5_been_poor
+when concept=travel.been self.wealth=poor|destitute
+say On what? Travelling's for those with coin. | Furthest I've been is the pawnshop. | I walk enough to the dole queue, thanks.
+
+rule e5_been_restless
+when concept=travel.been self.drive=restless
+say Not far enough. Never far enough. | Not yet. I lie awake and plan it, though. | One day I'll just go. Down the road and not stop.
+then other: tale.react
+
+rule e5_been_content
+when concept=travel.been self.drive=content
+say Why would I? Everything I want's in walking distance. | No. I've a chair, a fire, and a view. That'll do. | Here's fine. Here's always been fine.
+
+rule e5_been_nervy
+when concept=travel.been self.temper=nervy
+say Gods, no. Bandits, wolves, #mud#. No. | I went as far as the toll gate once and had to sit down. | The road's full of strangers. No thank you.
+
+rule e5_been_plain
+when concept=travel.been
+say Not really. A wedding in the next town, once. | Far enough. Once. Came home with blisters and a cold. | I've been meaning to. For about twenty years. | Not far. I had a cousin who went everywhere. Came back poorer.
+then other: tale.react
+
+# ===================================================================================== Hearing a tale
+
+rule e5_react
+when concept=tale.react
+say Is that so. | Fancy that. | Huh. I never knew that. | Well, well.
+
+rule e5_react_warm
+when concept=tale.react self.warmth=warm
+say I love hearing you talk about it. | You should tell that one more often. | You make me want to see it for myself.
+
+rule e5_react_cold
+when concept=tale.react self.warmth=cold
+say If you say so. | Hm. | And?
+
+rule e5_react_dry
+when concept=tale.react self.humour=dry
+say Fascinating. Truly. I'll treasure it. | Remind me never to ask you anything again. | Well. That's my afternoon gone.
+
+rule e5_react_merry
+when concept=tale.react self.humour=merry
+say Ha! You should write it down. Someone would pay for that. | Ha! I'd pay to see that. | Ha! You never change.
+
+rule e5_react_restless
+when concept=tale.react self.drive=restless
+say Gods, that makes me want to be off somewhere. | Don't. You're making me itch to leave. | Next time, take me. I mean it.
+
+rule e5_react_nervy
+when concept=tale.react self.temper=nervy
+say You wouldn't get me out there. | My fur's standing up just hearing it. | Rather you than me.
+
+rule e5_react_quiet
+when concept=tale.react self.talk=quiet
+say Mm. | Hm. Far. | ...Huh.
+
+rule e5_react_young
+when concept=tale.react self.stage=young
+say Take me next time! | Really? Really really? | That's the best thing ever.
+
+rule e5_react_old
+when concept=tale.react self.stage=old
+say I said much the same, at your age. | Things were different in my day. Worse, mostly. | Aye. The world's wide. Home's narrow. Both have their uses.
+
+rule e5_react_guarded
+when concept=tale.react self.honesty=guarded|sly
+say Is that so. Is that so. | Funny how every traveller's tale gets taller. | I'll believe half.
+
+rule e5_react_devout
+when concept=tale.react self.piety=devout
+say The Bright One's hand is in all of it. | Give thanks for it, then. | Every road's a prayer, and every field.
+
+# ===================================================================================== The road (talk.travel, one speaker on)
+
+rule e5_road_bandits
+when concept=talk.travel world.bandits=near
+priority 1
+cooldown 1d
+say Nobody sensible's on the roads this week. Not with bandits about. | Bandits on the road again. My cousin's waiting till they're gone. | I was going to visit my sister. Not now. Not with them out there.
+then other: tale.react
+
+rule e5_road_carter_complaint
+when concept=talk.travel self.job=carter
+cooldown 1d
+say Three days to Larkfield and two of them in the #mud#. | Lost a wheel on the Fen Road again. Third this year. | The inns on the High Road charge like they own the mountain.
+then other: tale.react
+
+rule e5_road_restless_wish
+when concept=talk.travel self.drive=restless
+cooldown 2d
+say One of these mornings I'm just going to walk out the gate and keep going. | I watch the caravans leave and something in me pulls at the lead. | Where does the road go after the last town? Anyone ever find out?
+then other: tale.react
+
+rule e5_road_homesick
+when concept=talk.travel pair.band=friends|family|spouses self.accent=light|broad
+cooldown 3d
+say I dreamt of home again last night. The proper one, where I grew up. | Do you ever miss where you grew up? I do. More each year. | Funny. The older I get, the more I want to go back.
+then other: tale.react
+
+# ===================================================================================== The country round here (talk.land)
+
+rule e5_land_ask
+when concept=talk.land
+cooldown 2d
+say What do you make of the land round here? | Is it good ground, round here? I can never tell. | You know this country. What's it good for? | What's out past the fields, anyway? I've never looked.
+then other: land.answer
+
+rule e5_land_ask_stranger
+when concept=talk.land pair.band=strangers
+cooldown 1d
+say I'm new to this country. Anything I should know about it? | Is it far to anywhere, from here? | Fine country. Is it as good as it looks?
+then other: land.answer
+
+rule e5_land_view
+when concept=talk.land here.place=street|field|gate|shore|wild here.time=day|dawn
+cooldown 2d
+say Look at that. You could see half the realm today. | Clear enough to see the far hills. Gods, it's a fine country. | Stand here a moment. Just look at it.
+then other: land.answer
+
+# By where they stand (self answers):
+rule e5_land_ridgemere
+when concept=land.answer here.region=ridgemere
+say Wet. Steep. Lovely, if you like moss. | The Rainward Hills behind us, the Sound in front, and rain in between. | The Rainwood's thick as fur up past the Houses' lands. Folk get lost in it. | Every street's a hill and every hill's a stream.
+then other: tale.react
+
+rule e5_land_frosthollow
+when concept=land.answer here.region=frosthollow
+say Rock and snow and pines. Good for ore, bad for cabbages. | The mountain gives, and the mountain takes. Mostly takes. | Up here the land's mostly sky and stone. | Short summer, long winter, and a view to make your heart stop.
+then other: tale.react
+
+rule e5_land_coldwater
+when concept=land.answer here.region=coldwater
+say Water. The lake, the streams, the snowmelt. Everything here is water. | Glasswater on one side, the mountains on the other, and us squeezed between. | The Long River starts here, you know. Every drop in the fens was ours first.
+then other: tale.react
+
+rule e5_land_oakhaven
+when concept=land.answer here.region=oakhaven
+say Trees. Then more trees. Then a clearing, and more trees. | The Warmwood. It gives you everything, if you know where to look. | The oaks are older than the town. Older than the realm, some say.
+then other: tale.react
+
+rule e5_land_mirebridge
+when concept=land.answer here.region=mirebridge
+say Half of it's water and the other half's lying about it. | The fens. Step wrong and they keep your boot. | Peat, reed and eel. Rich, if you can stand the damp. | Flat as a plate and twice as wet.
+then other: tale.react
+
+rule e5_land_larkfield
+when concept=land.answer here.region=larkfield
+say Grass and chalk and sky. Sheep think it's heaven. | The downs roll on forever. You can see weather coming a day off. | Thin soil, sweet grass. Good for wool, hard on ploughs.
+then other: tale.react
+
+rule e5_land_southmeadow
+when concept=land.answer here.region=southmeadow
+say Best soil in the realm. Shame about the rain, or the lack of it. | Grain to the horizon, apples in the vale. Hard to go hungry here. | Warm and gold and flat. You could see a wagon coming from a day away.
+then other: tale.react
+
+rule e5_land_wild
+when concept=land.answer here.region=wild
+say Out here? It belongs to nobody, and it knows it. | Wild ground. Keep to the road. | No fences, no fields. Just the land minding its own business.
+
+# By their work (self answers):
+rule e5_land_farmer
+when concept=land.answer self.job=farmer
+say Depends which field. The low one's clay, the top one's stones. | Good enough, if you break your back for it. | The soil's fine. It's the weather that's the liar. | Give me a dry week and a sharp plough and I'll tell you.
+
+rule e5_land_woodcutter
+when concept=land.answer self.job=woodcutter
+say I see trees, I see timber. Can't help it. | There's a stand of old oak past the brook that'd make a fortune. Not mine to cut. | The woods are thinning on the near side. Too many of us.
+
+rule e5_land_miner
+when concept=land.answer self.job=miner
+say Every hill's got something in it. Question is how deep. | I don't look at the land. I look under it. | Rock's honest. Grass lies about what's under it.
+
+rule e5_land_fisher
+when concept=land.answer self.job=fisher
+say Land's just the bit between the water. | I couldn't tell you. I'm always looking the other way, at the water. | Good banks, poor banks. That's all land is to me.
+
+rule e5_land_herder
+when concept=land.answer self.job=herder
+say Good grazing on the slopes, sour in the bottoms. Ask any ewe. | The beasts know it better than I do. I just follow them. | There's a spring up top that never fails. Worth more than gold, that.
+
+rule e5_land_carter
+when concept=land.answer self.job=carter
+say Ruts. I know every rut in it. | Too many hills and not enough bridges. | Land's fine. It's the roads across it that are the trouble.
+
+rule e5_land_priest
+when concept=land.answer self.job=priest
+say The Bright One made it. It's not for us to grumble at it. | Every field's a sermon, if you listen. | Bountiful, when we're grateful for it.
+
+rule e5_land_young
+when concept=land.answer self.stage=young
+say There's a den in the woods! Don't tell anyone. | There's a stream where you can catch frogs. And a tree you can climb right up. | It's big. Is it all ours?
+
+rule e5_land_rich
+when concept=land.answer self.wealth=rich
+say We own a fair bit of it, as it happens. | Good investment, land. It doesn't run off. | I prefer it from a carriage window.
+
+rule e5_land_laborer
+when concept=land.answer self.job=laborer
+say Heavy. All of it. I've carried most. | I've dug it, hauled it and cursed it. Fine land. | Every ditch round here, I dug. Ask me about ditches.
+
+rule e5_land_plain
+when concept=land.answer
+say Good enough for us. | It's home. That's all I need it to be. | Pretty, when the light's right. | I don't think about it much. I suppose I should.
+
+# Their work where they are (self answers; these win, so they rest a day):
+rule e5_land_farmer_southmeadow
+when concept=land.answer self.job=farmer here.region=southmeadow
+cooldown 1d
+say Black loam two spades deep. Push a stick in and it sprouts. | The Sunfields would feed the realm if the sky would only rain. | Rich ground. Thirsty ground. We carry water half the summer.
+then other: tale.react
+
+rule e5_land_farmer_larkfield
+when concept=land.answer self.job=farmer here.region=larkfield
+cooldown 1d
+say Chalk an inch down. Every furrow turns up flints. | Thin. You plough round the flints and pray. | The bottom fields by the Lark are good. The rest are for sheep.
+then other: tale.react
+
+rule e5_land_farmer_mirebridge
+when concept=land.answer self.job=farmer here.region=mirebridge
+cooldown 1d
+say Black and wet. Dig a ditch and it fills before supper. | The peat grows anything, if you can keep the water off. | We farm on stilts, near enough.
+then other: tale.react
+
+rule e5_land_farmer_oakhaven
+when concept=land.answer self.job=farmer here.region=oakhaven
+cooldown 1d
+say Every field here was forest once. The roots still fight the plough. | Leaf mould, good and soft. But the shade steals the sun. | We grubbed out stumps for three winters to make that field.
+then other: tale.react
+
+rule e5_land_herder_larkfield
+when concept=land.answer self.job=herder here.region=larkfield
+cooldown 1d
+say Best grazing in the realm, the high downs. Short sweet grass, thyme in it. | The sheep get fat and the shepherd gets wind-burnt. Fair trade. | The fold on the top is older than the town. The grass knows it.
+then other: tale.react
+
+rule e5_land_herder_ridgemere
+when concept=land.answer self.job=herder here.region=ridgemere
+cooldown 1d
+say The Folds are wet but green. Sheep with damp feet, rabbits everywhere. | Grass grows quick in the rain. So does foot rot. | The Folds are good to beasts. Bad to the wolves who mind them.
+then other: tale.react
+
+rule e5_land_miner_frosthollow
+when concept=land.answer self.job=miner here.region=frosthollow
+cooldown 1d
+say The Whitefangs are full of iron. You just have to ask nicely, with a pick. | There's a seam in the high mine runs like a vein in a wrist. | The mountain's generous. It's also patient. It'll have us all back one day.
+then other: tale.react
+
+rule e5_land_miner_ridgemere
+when concept=land.answer self.job=miner here.region=ridgemere
+cooldown 1d
+say The Rainward Hills are honeycombed with Grayrock's tunnels. Wet ones. | Good stone, poor ore. And water in every shaft. | Grayrock's mine goes deeper every year. The hill doesn't like it.
+then other: tale.react
+
+rule e5_land_fisher_coldwater
+when concept=land.answer self.job=fisher here.region=coldwater
+cooldown 1d
+say Glasswater's deep as the mountains are high. Nobody's found the bottom. | Clear as air, and cold enough to stop your heart. The trout love it. | The lake's kind in summer. In winter it freezes thick enough to walk to the middle.
+then other: tale.react
+
+rule e5_land_fisher_ridgemere
+when concept=land.answer self.job=fisher|sailor here.region=ridgemere
+cooldown 1d
+say The Sound's kind inside the headland and cruel past it. | Seals on the rocks, herring in the bay, and fog whenever it likes. | The tide out there could take a ship to the end of the world. Took a few.
+then other: tale.react
+
+rule e5_land_fisher_mirebridge
+when concept=land.answer self.job=fisher here.region=mirebridge
+cooldown 1d
+say The channels shift every spring. Learn them again or lose your boat. | The Long River slows here and goes lazy. The eels love it. | Down past the town it's all delta. Water every way you look.
+then other: tale.react
+
+rule e5_land_woodcutter_oakhaven
+when concept=land.answer self.job=woodcutter here.region=oakhaven
+cooldown 1d
+say The Warmwood grows back faster than we cut it. Nearly. | Oak for beams, beech for the fire, hazel for everything else. | There's a stand of oaks past the second clearing nobody cuts. Bad luck. Don't ask why.
+then other: tale.react
+
+rule e5_land_woodcutter_frosthollow
+when concept=land.answer self.job=woodcutter here.region=frosthollow
+cooldown 1d
+say Pine, pine and more pine. It burns hot and spits. | The pines grow slow up here. Cut one and you've cut a hundred winters. | We only fell in winter, when the sap's down and the sledges run.
+then other: tale.react
+
+rule e5_land_woodcutter_ridgemere
+when concept=land.answer self.job=woodcutter here.region=ridgemere
+cooldown 1d
+say The Rainwood's cedar. Smells like a chapel when you cut it. | Fell's camps own most of the Rainwood. We just swing the axes. | Moss on everything. Even the axe handles grow it if you leave them.
+then other: tale.react
+
+# ===================================================================================== The turning year (talk.season)
+
+rule e5_season_turn_spring
+when concept=talk.season here.season=spring
+cooldown 1d
+say Smell that? Spring. Finally. | The light's come back. Have you noticed? | Buds on the old tree by the well. Every year I think it's dead.
+then other: season.answer
+
+rule e5_season_turn_summer
+when concept=talk.season here.season=summer
+cooldown 1d
+say Long days. I could work till midnight and still see. | High summer. Everything's buzzing. | The evenings go on forever this time of year.
+then other: season.answer
+
+rule e5_season_turn_autumn
+when concept=talk.season here.season=autumn
+cooldown 1d
+say Smell that? Autumn. Smoke and wet leaves. | Nights are drawing in. | There's a bite in the morning air now.
+then other: season.answer
+
+rule e5_season_turn_winter
+when concept=talk.season here.season=winter
+cooldown 1d
+say Dark by teatime. I hate it. | Winter's dug its claws in. | Frost on the inside of the shutters this morning.
+then other: season.answer
+
+rule e5_season_old_bones
+when concept=talk.season self.stage=old
+cooldown 2d
+say My bones told me the season was turning before the trees did. | Another turn of the year. They come quicker now. | I've seen a lot of these. Each one shorter.
+then other: season.answer
+
+# The answer, as the season falls on them (self answers):
+rule e5_season_spring
+when concept=season.answer here.season=spring
+say Mud and lambs and everything green. | About time. I was sick of grey. | The ground's waking up. So am I, slowly.
+
+rule e5_season_summer
+when concept=season.answer here.season=summer
+say Too hot to sleep and too light to try. | Make hay while the sun shines. Or sit in the shade. | Flies. That's summer to me. Flies.
+
+rule e5_season_autumn
+when concept=season.answer here.season=autumn
+say Best time of year. Everything's ripe and nothing's frozen. | It's the leaves I love. And the cider. | Makes me sad, a bit. Everything getting ready to sleep.
+
+rule e5_season_winter
+when concept=season.answer here.season=winter
+say Get by the fire and stay there. That's my plan. | Short days, long nights, and soup. | It'll turn. It always turns. Just not soon enough.
+
+rule e5_season_farmer_spring
+when concept=season.answer self.job=farmer here.season=spring
+cooldown 1d
+say Ploughing, sowing, and praying for no late frost. | I've been behind the plough since dawn. My arms are rope. | Seed's in. Now we wait and fret.
+
+rule e5_season_farmer_summer
+when concept=season.answer self.job=farmer here.season=summer
+cooldown 1d
+say Haymaking. Every paw in the parish, while the weather holds. | Hoeing, weeding, and watching the sky for hail. | Good growing weather. Don't say it too loud.
+
+rule e5_season_farmer_autumn
+when concept=season.answer self.job=farmer here.season=autumn
+cooldown 1d
+say Harvest. Don't talk to me till it's in. | Every sheaf counted twice. Then the tithe. Then what's left. | Barns full, backs broken. A good year.
+
+rule e5_season_farmer_winter
+when concept=season.answer self.job=farmer here.season=winter
+cooldown 1d
+say Mending fences and sharpening blades. The land's asleep, I'm not. | Muck-spreading and waiting. Mostly waiting. | Winter's when you find out if you stored enough.
+
+rule e5_season_herder_spring
+when concept=season.answer self.job=herder here.season=spring
+cooldown 1d
+say Lambing. I've slept in the fold four nights running. | Twins, twins and a triplet last night. I'm dead on my feet. | Every lamb's a worry till it's standing.
+
+rule e5_season_herder_summer
+when concept=season.answer self.job=herder here.season=summer
+cooldown 1d
+say Shearing. My paws are greasy to the elbow with wool fat. | Up on the high grazing till the grass gives out. | Shorn sheep look so offended. Every year.
+
+rule e5_season_herder_autumn
+when concept=season.answer self.job=herder here.season=autumn
+cooldown 1d
+say Bringing them down off the tops before the weather turns. | Counting, culling, and choosing who goes to market. Hard days. | The tups go in with the ewes. Lambs in spring, gods willing.
+
+rule e5_season_herder_winter
+when concept=season.answer self.job=herder here.season=winter
+cooldown 1d
+say Hay to the fold twice a day and break the ice on the troughs. | Lost one in a drift last week. Found her alive, the stubborn thing. | The beasts are hungry and so am I.
+
+rule e5_season_fisher_summer
+when concept=season.answer self.job=fisher|sailor here.season=summer
+cooldown 1d
+say Good fishing. Calm water, long light. | Out before dawn, back after dusk, and still light both ends. | Summer's when we earn the winter.
+
+rule e5_season_fisher_winter
+when concept=season.answer self.job=fisher|sailor here.season=winter
+cooldown 1d
+say Nets mending by the fire. Nobody goes out in this. | Ice on the ropes. My paws crack open. | The water doesn't care that it's winter. It just gets crueller.
+
+rule e5_season_woodcutter_winter
+when concept=season.answer self.job=woodcutter here.season=winter
+cooldown 1d
+say Felling season. Sap's down, ground's hard, sledges run. | Best time to cut. Worst time to be cutting. | Every house wants wood at once. I'm worked to the bone.
+
+rule e5_season_woodcutter_autumn
+when concept=season.answer self.job=woodcutter here.season=autumn
+cooldown 1d
+say Marking the trees for winter. Choose wrong and they rot. | Gathering kindling for half the town. | The woods are loud with acorns falling. Like rain.
+
+rule e5_season_miner
+when concept=season.answer self.job=miner
+cooldown 1d
+say What season? Down the pit it's always the same. Dark. | I come up and it's spring, I go down and it's winter. Every day. | Seasons are for those who see the sun.
+
+rule e5_season_cook_autumn
+when concept=season.answer self.job=cook|baker|innkeeper here.season=autumn
+cooldown 1d
+say Pies. Apple, pear, blackberry. My kitchen smells like heaven. | Salting and pickling till my paws sting. | Game season. Everyone wants venison. Nobody wants to pay for it.
+
+rule e5_season_cook_winter
+when concept=season.answer self.job=cook|baker|innkeeper here.season=winter
+cooldown 1d
+say Stews. Every pot in the place, stew. | Everyone wants something hot and nobody wants to come out for it. | The salt meat's going fast. Hope it lasts to spring.
+
+rule e5_season_cook_spring
+when concept=season.answer self.job=cook|baker|innkeeper here.season=spring
+cooldown 1d
+say First greens! Nettles, wild garlic. I could weep. | The stores are bare. Spring's the hungry gap. | New cheese, new milk. Everyone's sick of salt.
+
+rule e5_season_young_winter
+when concept=season.answer self.stage=young here.season=winter
+say Snow! Well, maybe. I hope. | Snowball fights! I'm going to win. | I made a slide on the ice. Don't tell.
+
+rule e5_season_young_summer
+when concept=season.answer self.stage=young here.season=summer
+say Swimming! And no lessons! | I caught a frog yesterday! | It's light till bedtime. Better than light, it's still light AFTER bedtime.
+
+rule e5_season_old_winter
+when concept=season.answer self.stage=old here.season=winter
+cooldown 1d
+say Another one to get through. I've got through a few. | The cold's in my hips. It'll stay till spring. | Winter's the old wolf's enemy. I keep my fire high.
+
+rule e5_season_old_spring
+when concept=season.answer self.stage=old here.season=spring
+cooldown 1d
+say Made it through another winter. I count that a win. | I love the spring more each year. You never know which is your last. | My mother used to say spring was a promise kept.
+
+rule e5_season_priest
+when concept=season.answer self.job=priest
+cooldown 1d
+say Every season has its feast and its fast. We keep them all. | The Bright One turns the year. We just follow. | I bless the plough in spring and the sheaves in autumn. The rest is the same.
+
+rule e5_season_carter
+when concept=season.answer self.job=carter
+cooldown 1d
+say Seasons are just which kind of #mud#. | Summer's dust, autumn's #mud#, winter's ice, spring's #mud# again. | Any season the roads are open's a good one.
+
+rule e5_season_frosthollow_winter
+when concept=season.answer here.region=frosthollow here.season=winter
+cooldown 1d
+say Snowed in. The pass is shut till the thaw. | Snow to the eaves. We dig tunnels to the neighbours. | Winter up here isn't a season. It's a siege.
+
+rule e5_season_frosthollow_summer
+when concept=season.answer here.region=frosthollow here.season=summer
+cooldown 1d
+say Three weeks of summer. Blink and it's gone. | Flowers on the scree, just for a fortnight. Then snow. | Summer up here is when the snow's only on the peaks.
+
+rule e5_season_southmeadow_summer
+when concept=season.answer here.region=southmeadow here.season=summer
+cooldown 1d
+say Hot and dry, and the wells getting low. Same as every year. | The Sunfields are gold. Pray for one good rain before harvest. | Too hot to work past noon. We sleep under the hedges.
+
+rule e5_season_southmeadow_autumn
+when concept=season.answer here.region=southmeadow here.season=autumn
+cooldown 1d
+say Apple-picking. The whole vale smells of cider. | Grain in, apples in, grapes in. Then we sleep for a month. | The press runs day and night. Everything's sticky.
+
+rule e5_season_coldwater_winter
+when concept=season.answer here.region=coldwater here.season=winter
+cooldown 1d
+say The lake's frozen. We fish through holes now. | Glasswater's iced over. You can hear it groan at night. | Ice fishing, and lying about how thick it is.
+
+rule e5_season_mirebridge_autumn
+when concept=season.answer here.region=mirebridge here.season=autumn|winter
+cooldown 1d
+say Fog every morning till noon. Can't see your own tail. | The eels are running. Every trap full. | Peat-cutting's done. Now we burn it and cough.
+
+rule e5_season_larkfield_spring
+when concept=season.answer here.region=larkfield here.season=spring
+cooldown 1d
+say Lambs on every slope. The downs are bleating. | Larks up over the downs at dawn. That's what the town's named for. | Spring on the downs, the wind's soft for once.
+
+rule e5_season_ridgemere_autumn
+when concept=season.answer here.region=ridgemere here.season=autumn|winter
+cooldown 1d
+say Storm season. The Sound's throwing itself at the wharf. | Rain. Same as summer, only colder. | The fishing boats stay tied up and the taverns stay full.
+
+rule e5_season_oakhaven_autumn
+when concept=season.answer here.region=oakhaven here.season=autumn
+cooldown 1d
+say Mast year. Acorns everywhere. The pigs are in heaven. | The Warmwood goes red and gold. Best sight in the realm. | Mushrooms, nuts, honey. The woods are giving everything away.

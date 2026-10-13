@@ -8,6 +8,13 @@
 # Never #other.name# here: a resident knows a player only by a name they were given (#topic.player#, doc 32).
 
 
+# Their own greeting (a shop's welcome, a resident's own words), where they have one: as likely as any of the new
+# greetings by trade, weather or day (phase 7) that share its score.
+rule player_greet_own
+when concept=player.greet topic.meeting=stranger topic.greeting
+priority 1
+say #topic.greeting#
+
 rule player_greet_stranger_plain
 when concept=player.greet topic.meeting=stranger
 priority 1

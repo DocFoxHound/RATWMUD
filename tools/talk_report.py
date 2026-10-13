@@ -19,7 +19,8 @@ import talk_files
 
 REGIONS = ['ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow']
 EVENTS = ['prices', 'caravan', 'bandits', 'crime', 'life', 'festival', 'newcomer', 'deed', 'price_cause']
-EVERYDAY = ['smalltalk', 'work', 'family', 'weather', 'lore', 'player', 'gossip', 'news', 'quarrel', 'friends', 'day']
+EVERYDAY = ['smalltalk', 'work', 'family', 'weather', 'lore', 'player', 'gossip', 'news', 'quarrel', 'friends', 'day',
+            'food', 'home', 'pastimes', 'animals', 'health', 'memories', 'dreams', 'faith', 'travel', 'land', 'season']
 
 
 def renderings(entry):

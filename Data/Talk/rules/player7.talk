@@ -1,0 +1,514 @@
+# A resident answering a player, more ways (Docs/Design/62-talk.md, phase 5 and 7): greetings, thanks, goodbyes, "what's
+# wrong?" and "what day is it?" by the resident's traits, job, age, quarter and means, and the hour, weather and day.
+# These take only their best tier (best_only), so each is written to join the tone's own lines at the same score,
+# never to outrank them:
+#   greet:  topic.meeting + one fact + priority 1 = 3, as a tone's greeting (the plain tone's own copy is here too)
+#   thanks: one fact = 1, as a tone's thanks (and the plain tone's copy)
+#   bye:    one fact = 1, as a tone's goodbye; to a known wolf, topic.meeting=known + one fact = 2, as the plain one
+#   trouble, day: one fact = 1, wrapped around the game's own answer (#topic.answer#)
+# Never #other.name#: a resident knows a player only by a name they were given (#topic.player#, doc 32).
+
+## ---------------------------------------------------------------- The plain tone's own (so the rest mix in with it)
+
+rule x7_pg_stranger_plain
+when concept=player.greet topic.meeting=stranger tone=plain
+priority 1
+say #topic.greeting# | Well met, traveller. | Hello there. | #greet#, traveller. | #greet#. Passing through?
+
+rule x7_pg_known_plain
+when concept=player.greet topic.meeting=known tone=plain
+priority 1
+say Hello again, #topic.player#. | #topic.player#. Good to see you. | Back again, #topic.player#? | #greet#, #topic.player#.
+
+rule x7_pt_plain
+when concept=player.thanks tone=plain
+say You're welcome. | Glad to help. | Think nothing of it. | No trouble at all.
+
+rule x7_pb_plain
+when concept=player.bye tone=plain
+say Farewell. | Go well. | Safe travels. | #farewell#.
+
+## ---------------------------------------------------------------- Greeting a stranger
+
+rule x7_pg_s_warm
+when concept=player.greet topic.meeting=stranger warmth=warm
+priority 1
+say Hello, love! You look like you've come a long way. | Welcome! Have you eaten? You look like you haven't. | #greet#! Come in, come in, don't stand there.
+
+rule x7_pg_s_cold
+when concept=player.greet topic.meeting=stranger warmth=cold
+priority 1
+say Hm. | Yes? | I don't know you.
+
+rule x7_pg_s_merry
+when concept=player.greet topic.meeting=stranger humour=merry
+priority 1
+say Hello, stranger! Lost, or just lucky? | A new face! Wonderful. I was tired of all the old ones. | #greet#! Don't mind the smell, it's the town.
+
+rule x7_pg_s_dry
+when concept=player.greet topic.meeting=stranger humour=dry
+priority 1
+say A traveller. How exciting for us both. | Hello. You've found #here.town#. Commiserations. | Ah. Someone new to disappoint.
+
+rule x7_pg_s_nervy
+when concept=player.greet topic.meeting=stranger temper=nervy
+priority 1
+say Oh! Hello. You gave me a start. | Who... oh. Hello. | Hello? Can I... is something wrong?
+
+rule x7_pg_s_short
+when concept=player.greet topic.meeting=stranger temper=short
+priority 1
+say What? | Make it quick. | Yes, yes, hello. What?
+
+rule x7_pg_s_chatty
+when concept=player.greet topic.meeting=stranger self.talk=chatty
+priority 1
+say Hello! New in town? Where from? Staying long? Sorry, I do go on. | Oh, hello! I've not seen you before, and I see everyone.
+
+rule x7_pg_s_quiet
+when concept=player.greet topic.meeting=stranger self.talk=quiet
+priority 1
+say Hello. | Mm. Hello. | #greet#.
+
+rule x7_pg_s_devout
+when concept=player.greet topic.meeting=stranger piety=devout
+priority 1
+say Bright One keep you, traveller. | Peace on your road. | #greet#, and blessings.
+
+rule x7_pg_s_sly
+when concept=player.greet topic.meeting=stranger honesty=sly
+priority 1
+say Well now. And what might you be looking for? | Hello, friend. New in town? I know everyone worth knowing. | A stranger with a purse. Welcome.
+
+rule x7_pg_s_old
+when concept=player.greet topic.meeting=stranger stage=old
+priority 1
+say Eh? Speak up, pup. | Hello, young one. Don't see many new faces now. | #greet#. Mind, I won't remember you tomorrow.
+
+rule x7_pg_s_young
+when concept=player.greet topic.meeting=stranger stage=young
+priority 2
+say Hello! Are you a knight? | Who are you? Mum says not to talk to strangers. Hello! | Hello! Want to see my stick?
+
+rule x7_pg_s_adolescent
+when concept=player.greet topic.meeting=stranger stage=adolescent
+priority 1
+say What? | Oh. Hi. | You're not from here, are you? Lucky.
+
+rule x7_pg_s_guard
+when concept=player.greet topic.meeting=stranger role=guard
+priority 1
+say Traveller. Keep the peace and we'll get on. | #greet#. Your business in #here.town#? | Hello. No trouble, now.
+
+rule x7_pg_s_merchant
+when concept=player.greet topic.meeting=stranger role=merchant
+priority 1
+say #greet#! Buying? | Hello, hello! First time in? Have a look. | Welcome, welcome! Coin's welcome too.
+
+rule x7_pg_s_priest
+when concept=player.greet topic.meeting=stranger job=priest
+priority 1
+say Welcome, child of the road. | The Bright One's peace on you. | Hello, traveller. You're welcome at the chapel any day.
+
+rule x7_pg_s_beggar
+when concept=player.greet topic.meeting=stranger job=beggar
+priority 1
+say Spare a penny, kind traveller? | Hello, friend. You've a generous face. | Bless you, bless you. A coin?
+
+rule x7_pg_s_innkeeper
+when concept=player.greet topic.meeting=stranger job=innkeeper
+priority 1
+say Welcome! Looking for a bed? | Hello, traveller! Ale, food, or both? | Come in, come in. You look thirsty.
+
+rule x7_pg_s_sailor
+when concept=player.greet topic.meeting=stranger job=sailor|fisher
+priority 1
+say Ahoy. | Hello, landlubber. | Fair winds, stranger.
+
+rule x7_pg_s_rich
+when concept=player.greet topic.meeting=stranger wealth=rich
+priority 1
+say Yes? Good day. | Ah. A traveller. How quaint. | Good day. Do I know you? No.
+
+rule x7_pg_s_poor
+when concept=player.greet topic.meeting=stranger wealth=poor|destitute
+priority 1
+say Hello. You've not got a spare crust, have you? No. Hello. | Morning. Don't mind me. | #greet#. You look better fed than me.
+
+rule x7_pg_s_sump
+when concept=player.greet topic.meeting=stranger quarter=sump
+priority 1
+say Lost, are you? You look lost. | Hello. Keep your purse close down here. | New to the Sump? Don't stay long.
+
+rule x7_pg_s_heights
+when concept=player.greet topic.meeting=stranger quarter=heights
+priority 1
+say Good day. Are you expected? | Hello. You're a long way up the hill. | Good day. The tradesmen's door is round the side.
+
+rule x7_pg_s_dawn
+when concept=player.greet topic.meeting=stranger here.time=dawn
+priority 1
+say Morning! You're up early. | Good morning. On the road at this hour? | Morning. Barely.
+
+rule x7_pg_s_night
+when concept=player.greet topic.meeting=stranger here.time=night
+priority 1
+say Late to be wandering, stranger. | Evening. Got somewhere to sleep? | #greet#. Mind the dark.
+
+rule x7_pg_s_rain
+when concept=player.greet topic.meeting=stranger here.weather=rain|storm
+priority 1
+say Hello! Come out of the wet. | Lovely weather for travelling, eh? | Hello. You're soaked through.
+
+rule x7_pg_s_snow
+when concept=player.greet topic.meeting=stranger here.weather=snow
+priority 1
+say Hello! Get by a fire, you're half frozen. | Snow on your ears, traveller. | #greet#. Cold one, isn't it?
+
+rule x7_pg_s_market
+when concept=player.greet topic.meeting=stranger here.day=market
+priority 1
+say Hello! Here for the market? | Market day! Mind your purse. | #greet#. Busy one today.
+
+rule x7_pg_s_festival
+when concept=player.greet topic.meeting=stranger here.day=festival
+priority 1
+say Happy festival! Come and join in! | #greet#! You picked a good day to arrive. | Hello! Have a cake. Everyone's having cake.
+
+rule x7_pg_s_rest
+when concept=player.greet topic.meeting=stranger here.day=rest
+priority 1
+say Blessed Restday. | Hello. Quiet today. Everyone's resting. | #greet#. Shops are shut, mostly.
+
+rule x7_pg_s_working
+when concept=player.greet topic.meeting=stranger working=yes
+priority 1
+say Hello. I'm working, but go on. | #greet#. Can't stop long. | Hello. Mind, I'm busy.
+
+rule x7_pg_s_tired
+when concept=player.greet topic.meeting=stranger tired=yes
+priority 1
+say Mm. Hello. Long day. | Hello. Forgive me, I'm dead on my feet. | #greet#. Is it bedtime yet?
+
+## ---------------------------------------------------------------- Greeting a wolf they know
+
+rule x7_pg_k_warm
+when concept=player.greet topic.meeting=known warmth=warm
+priority 1
+say #topic.player#! Come here! | Oh, #topic.player#, you've made my day. | #topic.player#, love! How are you keeping?
+
+rule x7_pg_k_cold
+when concept=player.greet topic.meeting=known warmth=cold
+priority 1
+say #topic.player#. | Oh. #topic.player#. | Hm. You.
+
+rule x7_pg_k_merry
+when concept=player.greet topic.meeting=known humour=merry
+priority 1
+say #topic.player#! What trouble have you brought me today? | Look who it is! Hide the cakes! | #topic.player#! I was just talking about you. All lies, don't worry.
+
+rule x7_pg_k_dry
+when concept=player.greet topic.meeting=known humour=dry
+priority 1
+say #topic.player#. Again. What a treat. | Ah, #topic.player#. My day was too peaceful anyway. | You keep coming back, #topic.player#. People will talk.
+
+rule x7_pg_k_chatty
+when concept=player.greet topic.meeting=known self.talk=chatty
+priority 1
+say #topic.player#! You'll never guess what's happened since you were here! | Oh, #topic.player#, I've so much to tell you!
+
+rule x7_pg_k_quiet
+when concept=player.greet topic.meeting=known self.talk=quiet
+priority 1
+say #topic.player#. | Hello, #topic.player#. | Mm. #topic.player#.
+
+rule x7_pg_k_nervy
+when concept=player.greet topic.meeting=known temper=nervy
+priority 1
+say Oh! #topic.player#. You startled me. | #topic.player#! Is everything all right? | Oh, it's you. Thank the gods.
+
+rule x7_pg_k_devout
+when concept=player.greet topic.meeting=known piety=devout
+priority 1
+say #topic.player#! Bright One keep you. | Blessings, #topic.player#. | Good to see you safe, #topic.player#.
+
+rule x7_pg_k_old
+when concept=player.greet topic.meeting=known stage=old
+priority 1
+say Ah, #topic.player#. Come and sit with an old wolf. | #topic.player#! I remembered your name. See? | #topic.player#. You look tired. Young ones always look tired.
+
+rule x7_pg_k_young
+when concept=player.greet topic.meeting=known stage=young
+priority 2
+say #topic.player#! #topic.player#! Look what I found! | It's #topic.player#! Hello! | #topic.player#, can you lift me up?
+
+rule x7_pg_k_guard
+when concept=player.greet topic.meeting=known role=guard
+priority 1
+say #topic.player#. Behaving yourself? | #topic.player#. Quiet shift so far. Keep it that way. | Evening, #topic.player#. Anything to report?
+
+rule x7_pg_k_merchant
+when concept=player.greet topic.meeting=known role=merchant
+priority 1
+say #topic.player#! Buying today? | My favourite customer! Well, one of them. #topic.player#! | #topic.player#. I've got just the thing for you.
+
+rule x7_pg_k_dawn
+when concept=player.greet topic.meeting=known here.time=dawn
+priority 1
+say Morning, #topic.player#! Early again? | #topic.player#, you're up with the larks. | Morning, #topic.player#. Don't talk to me till I've woken up.
+
+rule x7_pg_k_night
+when concept=player.greet topic.meeting=known here.time=night
+priority 1
+say #topic.player#! Out late again? | Evening, #topic.player#. Mind the dark. | #topic.player#. Can't sleep either?
+
+rule x7_pg_k_rain
+when concept=player.greet topic.meeting=known here.weather=rain|storm
+priority 1
+say #topic.player#! You're drenched! | Come out of the rain, #topic.player#. | #topic.player#, you look like a drowned rat.
+
+rule x7_pg_k_festival
+when concept=player.greet topic.meeting=known here.day=festival
+priority 1
+say #topic.player#! Happy festival! | #topic.player#, dance with me later! | Happy #here.festival#, #topic.player#!
+
+rule x7_pg_k_market
+when concept=player.greet topic.meeting=known here.day=market
+priority 1
+say #topic.player#! Here for the market? | Market day, #topic.player#. Got your purse? | #topic.player#! Good timing, the stalls are full.
+
+rule x7_pg_k_poor
+when concept=player.greet topic.meeting=known wealth=poor|destitute
+priority 1
+say #topic.player#. Good to see a friendly face. | Hello, #topic.player#. Hard times. Don't mind me. | #topic.player#. Got a moment for a poor wolf?
+
+## ---------------------------------------------------------------- Thanks
+
+rule x7_pt_warm
+when concept=player.thanks warmth=warm
+say Oh, it was nothing, love. | Anything for you. | Go on with you. My pleasure.
+
+rule x7_pt_cold
+when concept=player.thanks warmth=cold
+say Hm. | Yes. | Fine.
+
+rule x7_pt_merry
+when concept=player.thanks humour=merry
+say I'll put it on your tab! | Thank me with cake. | Ha! Don't mention it. Well, mention it to everyone.
+
+rule x7_pt_dry
+when concept=player.thanks humour=dry
+say I'll treasure that. | High praise. I'll have it carved over the door. | Yes, I'm wonderful. We all know.
+
+rule x7_pt_devout
+when concept=player.thanks piety=devout
+say Thank the Bright One, not me. | The gods' work, not mine. | Bless you for saying so.
+
+rule x7_pt_sly
+when concept=player.thanks honesty=sly
+say Remember it, that's all. | Thanks are free. Favours aren't. | One day I'll ask you for something.
+
+rule x7_pt_frank
+when concept=player.thanks honesty=frank
+say It was nothing. Honestly. | You'd have managed. | Don't thank me, I'd have done it for anyone.
+
+rule x7_pt_quiet
+when concept=player.thanks self.talk=quiet
+say Mm. | Welcome. | Aye.
+
+rule x7_pt_chatty
+when concept=player.thanks self.talk=chatty
+say Oh, think nothing of it! I'd do it for anyone, well, almost anyone, my cousin, no. | You're welcome! Come back and tell me how it goes!
+
+rule x7_pt_short
+when concept=player.thanks temper=short
+say Yes, yes. | Fine. Off you go. | Don't make a fuss.
+
+rule x7_pt_nervy
+when concept=player.thanks temper=nervy
+say Oh! Was it all right? Good. Good. | You're welcome. I hope it helps. | Oh, it was nothing. Was it?
+
+rule x7_pt_old
+when concept=player.thanks stage=old
+say Manners! Nice to see, in the young. | You're a good pup. | My pleasure. Come back and visit an old wolf.
+
+rule x7_pt_young
+when concept=player.thanks stage=young
+priority 1
+say You're welcome! | I helped! I helped! | Can I have a penny?
+
+rule x7_pt_merchant
+when concept=player.thanks role=merchant
+say Thank you! Come again! | Pleasure doing business. | Tell your friends!
+
+rule x7_pt_guard
+when concept=player.thanks role=guard
+say Just doing my job. | That's what the Watch is for. | Keep out of trouble, and that's thanks enough.
+
+## ---------------------------------------------------------------- Goodbye
+
+rule x7_pb_warm
+when concept=player.bye warmth=warm
+say Look after yourself, love. | Come back soon, won't you? | Safe roads! And eat something!
+
+rule x7_pb_cold
+when concept=player.bye warmth=cold
+say Mm. | Goodbye. | Right.
+
+rule x7_pb_merry
+when concept=player.bye humour=merry
+say Off you go! Don't do anything I wouldn't. | Bye! Don't let the door hit your tail. | Go on! Come back with a story.
+
+rule x7_pb_dry
+when concept=player.bye humour=dry
+say I'll try to bear it. | Leaving so soon? Good. Ha. | Do come back. Or don't. I'll cope.
+
+rule x7_pb_devout
+when concept=player.bye piety=devout
+say #bless.capitalize#. | Go in peace. | May the Bright One light your road.
+
+rule x7_pb_nervy
+when concept=player.bye temper=nervy
+say Be careful out there! | Mind the roads. They say there's bandits. | Oh. Bye. Take care. Really take care.
+
+rule x7_pb_chatty
+when concept=player.bye self.talk=chatty
+say Oh, already? I had more to tell you! Next time, then. | Bye! Come back and I'll tell you about my sister.
+
+rule x7_pb_old
+when concept=player.bye stage=old
+say Go on, then. Don't keep the road waiting. | Come back while I'm still here. | Safe roads, pup.
+
+rule x7_pb_young
+when concept=player.bye stage=young
+priority 1
+say Bye! Bye! | Come back tomorrow! | Can I come too?
+
+rule x7_pb_guard
+when concept=player.bye role=guard
+say Keep the peace. | Off you go. Stay out of trouble. | Mind yourself on the road.
+
+rule x7_pb_merchant
+when concept=player.bye role=merchant
+say Come again! | Thank you, come back soon! | Tell your friends where you bought it!
+
+rule x7_pb_night
+when concept=player.bye here.time=night|dusk
+say Mind the dark. | Get yourself indoors. | Sleep well, wherever you sleep.
+
+rule x7_pb_rain
+when concept=player.bye here.weather=rain|storm
+say Keep dry, if you can. | Mind the puddles. | Go on, run for it.
+
+rule x7_pb_snow
+when concept=player.bye here.weather=snow
+say Keep your paws warm. | Mind the ice. | Wrap up. It's bitter out.
+
+rule x7_pb_bandits
+when concept=player.bye world.bandits=near
+say Mind the roads. Bandits about. | Go in company, if you're travelling. | Keep off the road after dark. They've hit a caravan.
+
+rule x7_pbk_warm
+when concept=player.bye topic.meeting=known warmth=warm
+say Look after yourself, #topic.player#! | Come back soon, #topic.player#. | Safe roads, #topic.player#, love.
+
+rule x7_pbk_merry
+when concept=player.bye topic.meeting=known humour=merry
+say Off you go, #topic.player#! Bring me back a story. | Bye, #topic.player#! Behave! Or don't, and tell me about it.
+
+rule x7_pbk_devout
+when concept=player.bye topic.meeting=known piety=devout
+say Bright One keep you, #topic.player#. | Go in peace, #topic.player#. | Blessings on your road, #topic.player#.
+
+rule x7_pbk_old
+when concept=player.bye topic.meeting=known stage=old
+say Come back soon, #topic.player#. I'm not getting younger. | Off you go, #topic.player#. Mind yourself.
+
+rule x7_pbk_night
+when concept=player.bye topic.meeting=known here.time=night|dusk
+say Sleep well, #topic.player#. | Mind the dark, #topic.player#. | Night, #topic.player#.
+
+rule x7_pbk_dry
+when concept=player.bye topic.meeting=known humour=dry
+say Until next time, #topic.player#. I'll count the hours. | Goodbye, #topic.player#. Try not to get famous.
+
+## ---------------------------------------------------------------- What's wrong? (the game's answer, wrapped)
+
+rule x7_ptr_warm
+when concept=player.trouble warmth=warm
+say That's kind of you to ask. #topic.answer# | Oh, love. #topic.answer#
+
+rule x7_ptr_cold
+when concept=player.trouble warmth=cold
+say Why do you ask? #topic.answer# | Hm. #topic.answer#
+
+rule x7_ptr_quiet
+when concept=player.trouble self.talk=quiet
+say Mm. #topic.answer# | ... #topic.answer#
+
+rule x7_ptr_chatty
+when concept=player.trouble self.talk=chatty
+say Oh, where do I start? #topic.answer# | You want to know? Really? Well. #topic.answer#
+
+rule x7_ptr_short
+when concept=player.trouble temper=short
+say #topic.answer# There. Happy? | Since you're asking. #topic.answer#
+
+rule x7_ptr_nervy
+when concept=player.trouble temper=nervy
+say Oh. Is it that obvious? #topic.answer# | Does it show? #topic.answer#
+
+rule x7_ptr_dry
+when concept=player.trouble humour=dry
+say Where to begin. #topic.answer# | Apart from everything? #topic.answer#
+
+rule x7_ptr_devout
+when concept=player.trouble piety=devout
+say The Bright One knows. And now you. #topic.answer# | I've prayed on it. #topic.answer#
+
+rule x7_ptr_old
+when concept=player.trouble stage=old
+say Ah, pup. #topic.answer# | When you're my age, something always is. #topic.answer#
+
+rule x7_ptr_guarded
+when concept=player.trouble honesty=guarded
+say Hm. #topic.answer# | I don't say this to many. #topic.answer#
+
+## ---------------------------------------------------------------- What day is it? (the game's answer, and a word on it)
+
+rule x7_pd_market
+when concept=player.day here.day=market
+say #opener# #topic.answer# Get there early, the good stuff goes. | #opener# #topic.answer# Mind your purse in the crush.
+
+rule x7_pd_rest
+when concept=player.day here.day=rest
+say #opener# #topic.answer# Chapel at noon, if you're minded. | #opener# #topic.answer# Shops shut by noon, mind.
+
+rule x7_pd_festival
+when concept=player.day here.day=festival
+say #opener# #topic.answer# Have you not heard the music? | #topic.answer# Go on, enjoy yourself!
+
+rule x7_pd_work
+when concept=player.day here.day=work
+say #opener# #topic.answer# Just another working day. | #opener# #topic.answer# Same as yesterday, near enough.
+
+rule x7_pd_old
+when concept=player.day stage=old
+say Let me think. #topic.answer# | Ask me the year next, go on. #topic.answer#
+
+rule x7_pd_young
+when concept=player.day stage=young
+priority 1
+say I know this one! #topic.answer# | #topic.answer# Mum told me!
+
+rule x7_pd_dry
+when concept=player.day humour=dry
+say Lost track, have you? #topic.answer# | #topic.answer# All day, I'm told.
+
+rule x7_pd_devout_rest
+when concept=player.day here.day=rest piety=devout
+say #topic.answer# The Bright One's day. You'll come to chapel? | #topic.answer# A day for giving thanks.
+
+rule x7_pd_festival_soon
+when concept=player.day world.festival=soon here.day=work|market
+say #opener# #topic.answer# And the festival's soon! | #opener# #topic.answer# Not long till the festival, mind.

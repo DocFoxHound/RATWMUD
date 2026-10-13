@@ -664,6 +664,13 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             consider(topic("weather", 1.0 + jitter(3)));
     consider(topic("lore", .7 + jitter(4)));
     consider(topic("smalltalk", .8 + jitter(5)));
+    // More of everyday life (doc 62, phase 7: no conversation heard twice in a hundred hours): each its own topic,
+    // so the two wander from one subject to another hour by hour.
+    static const char* const Everyday[] = {"food", "home", "pastimes", "animals", "health", "memories",
+                                           "dreams", "faith", "travel", "land", "season"};
+    int salt = 20;
+    for (const char* kind : Everyday)
+        consider(topic(kind, .7 + jitter(salt++)));
     (void)eb;
 }
 

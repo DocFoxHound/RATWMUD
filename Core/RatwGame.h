@@ -1653,6 +1653,11 @@ class Game
         std::int64_t window = -1;
         double used[5] = {0, 0, 0, 0, 0};
     };
+    // The food-days lines above which a household is rich (the top twentieth of the world's households) and below which
+    // it is poor (the bottom fifth), worked out once a game day (doc 62, phase 7). Not saved.
+    double talkRichLine();
+    double richLine_ = 42, poorLine_ = Society::PoorDays;    // (And the bottom fifth's: poor.)
+    std::int64_t richLineDay_ = -1;
     std::map<std::string, RegardBudget> regardBudget_;                  // "holder|other|source" (not saved).
     std::set<std::string> voiceLayers_, voiceRules_;   // Residents with their own grammar, their own rules, loaded.
     // People residents know of who aren't in the game yet (live.figures, doc 62 decision 8).

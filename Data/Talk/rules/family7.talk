@@ -1,0 +1,1733 @@
+# Family and home (Docs/Design/62-talk.md, phase 7, the family theme): chains. One of a family says what's on their
+# mind (talk.family), and the other answers as they are; then the first settles it. The answers are concepts of their
+# own, so each is the answerer's best rule:
+#
+#   family.worry_answer   answering a worry (the rent, a child, an illness, a parent; pair.mem.f7_worry says which)
+#   family.tease_answer   answering a tease, a grumble, a bicker
+#   family.share_answer   answering news, a memory, a plan, a fond word (self.mem.f7_asked says what a friend asked of)
+#   family.answer_parent  a son or daughter answering their mother or father
+#   family.answer_child   a mother or father answering their son or daughter
+#   family.settle         the last word, by temper, warmth and humour
+#   life.answer           answering the town's news of a death, a wedding, an apprenticeship, a new head of a business
+#
+# Careful with names: between spouses, self.spouse is the one spoken to (say #dear# or #pet#); between a parent and
+# child, self.child may be the one spoken to. Everyday remarks keep a cooldown of a day or two, serious ones half a day.
+
+# =============================================================================================== Spouses: worries
+
+rule f7_sp_rent
+when concept=talk.family pair.band=spouses self.wealth=poor|destitute
+cooldown 2d
+say Rent's due on Restday and the jar's light, #dear#. | I counted the jar twice. It came out the same both times. | We're short for the rent again. Not by much. By enough.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_sp_rent_home
+when concept=talk.family pair.band=spouses self.wealth=poor|destitute here.place=home here.time=dusk|night
+cooldown 2d
+say Don't light the second candle. We'll manage with one. | I watered the soup. Don't tell me you can taste it. | The landlord's boy was at the door. I said you were out.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_sp_owes
+when concept=talk.family pair.band=spouses self.owes=yes
+cooldown 2d
+say I saw the one we owe in the street. I crossed over. | How long can we keep putting them off, #dear#? | I had a letter about the debt. I've not opened it.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_sp_dole
+when concept=talk.family pair.band=spouses self.on_dole=yes
+cooldown 2d
+say I queued for the parish bread. Don't say anything. | Two hours in the line for one loaf. One. | The priest looked at me kindly. I nearly threw the loaf at him.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_sp_failing
+when concept=talk.family pair.band=spouses self.business=failing
+cooldown 1d
+priority 1
+say Not one customer today. Not one. | I did the sums. Then I did them again, hoping. | If the shop goes, what do we do? Truly?
+then other: family.worry_answer
+remember pair: f7_worry=work 10m
+
+rule f7_sp_homeless
+when concept=talk.family pair.band=spouses self.homeless=yes
+cooldown 12h
+priority 1
+say Another night in the doorway, #dear#. Lie close. | I found a barn with half a roof. It's something. | Don't look at me like that. We'll have a door again.
+then other: family.worry_answer
+remember pair: f7_worry=house 10m
+
+rule f7_sp_hungry
+when concept=talk.family pair.band=spouses self.hungry=yes self.wealth=poor|destitute
+cooldown 1d
+say There's nothing in the pot but water and hope. | You have the heel of the loaf. I'm not hungry. | I could eat the table. We may have to.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_sp_sump_damp
+when concept=talk.family pair.band=spouses self.quarter=sump
+cooldown 2d
+say The damp's in the bedding again. | Water came under the door in the night. My boots are swimming. | The rats have found the meal sack. Again.
+then other: family.worry_answer
+remember pair: f7_worry=house 10m
+
+rule f7_sp_nervy_night
+when concept=talk.family pair.band=spouses self.temper=nervy here.time=night
+cooldown 1d
+say Did you bar the door? Are you sure? | What was that? Listen. | I heard someone on the stair. I did.
+then other: family.worry_answer
+remember pair: f7_worry=house 10m
+
+rule f7_sp_child_worry
+when concept=talk.family pair.band=spouses self.child
+cooldown 2d
+say #self.child# hardly ate a thing at #supper#. | Did #self.child# seem quiet to you? Too quiet? | #self.child# came home with a split lip and won't say who.
+then other: family.worry_answer
+remember pair: f7_worry=child 10m
+
+rule f7_sp_child_worry_nervy
+when concept=talk.family pair.band=spouses self.child self.temper=nervy
+cooldown 2d
+say #self.child# is late. #self.child# is never late. | Is #self.child# warm enough, do you think? That blanket's thin. | I keep dreaming #self.child# falls in the river.
+then other: family.worry_answer
+remember pair: f7_worry=child 10m
+
+rule f7_sp_hurt
+when concept=talk.family pair.band=spouses other.injured=light|bad
+cooldown 6h
+priority 1
+say Sit down. Let me see it. | You're limping. Don't tell me you're not. | Who did this to you? | Hold still. I'll bind it.
+then other: family.worry_answer
+remember pair: f7_worry=health 10m
+
+rule f7_sp_hurt_self
+when concept=talk.family pair.band=spouses self.injured=bad
+cooldown 6h
+priority 2
+say Help me to the chair, #dear#. Slowly. | I'll be no use at work for days. | Don't fuss. Well. Fuss a bit.
+then other: family.worry_answer
+remember pair: f7_worry=health 10m
+
+rule f7_sp_grief
+when concept=talk.family pair.band=spouses self.mourning=kin
+cooldown 6h
+priority 3
+say I keep waiting for the door to open. | I can't do the funeral things. I can't. | Hold me a while. Don't say anything.
+then other: family.worry_answer
+remember pair: f7_worry=grief 10m
+
+rule f7_sp_grief_friend
+when concept=talk.family pair.band=spouses self.mourning=friend
+cooldown 12h
+priority 1
+say I keep thinking of the last thing I said to them. It was about the weather. | We were meant to drink together at the festival. | Funny. I'd not seen them in a month, and now I miss them every hour.
+then other: family.worry_answer
+remember pair: f7_worry=grief 10m
+
+rule f7_sp_mother_ill
+when concept=talk.family pair.band=spouses self.mother
+cooldown 2d
+say I should look in on #self.mother#. She sounded chesty. | #self.mother# says she's fine. She always says she's fine. | I'm worried about #self.mother# on those stairs.
+then other: family.worry_answer
+remember pair: f7_worry=kin 10m
+
+rule f7_sp_father_old
+when concept=talk.family pair.band=spouses self.father
+cooldown 2d
+say #self.father# forgot my name yesterday. Just for a breath. | #self.father# won't stop working. He'll drop at the bench. | Should #self.father# come and live with us?
+then other: family.worry_answer
+remember pair: f7_worry=kin 10m
+
+rule f7_sp_restless
+when concept=talk.family pair.band=spouses self.drive=restless
+cooldown 3d
+say What if we went? Somewhere new. Just packed and went. | I can't spend my whole life on this street, #dear#. | They say there's work in the other towns. Land, even.
+then other: family.worry_answer
+remember pair: f7_worry=move 10m
+
+rule f7_sp_guard
+when concept=talk.family pair.band=spouses self.role=guard
+cooldown 2d
+say Night watch again this week. | There was a knife out by the gate today. I'm fine. I'm fine. | The captain wants more of us on the walls.
+then other: family.worry_answer
+remember pair: f7_worry=work 10m
+
+rule f7_sp_old_death
+when concept=talk.family pair.band=spouses self.stage=old other.stage=old world.death=recent
+cooldown 3d
+say Another one gone. Promise me you'll go second. | When it's my turn, don't let them sing that dreary hymn. | Which of us will it be first, do you think?
+then other: family.worry_answer
+remember pair: f7_worry=death 10m
+
+rule f7_sp_worn
+when concept=talk.family pair.band=spouses self.tired=yes self.working=yes
+cooldown 2d
+say I can't keep these hours, #dear#. Something has to give. | I fell asleep standing up today. Standing! | My paws are worn to the pads.
+then other: family.worry_answer
+remember pair: f7_worry=work 10m
+
+# =============================================================================================== Spouses: teasing and bickering
+
+rule f7_sp_inlaw_mother
+when concept=talk.family pair.band=spouses other.mother
+cooldown 2d
+say #other.mother# came by. She moved all the pots. | Your mother asked when we're giving her more grandpups. In the street. | #other.mother# says I put too much salt in. To my face.
+then other: family.tease_answer
+remember pair: f7_tease=kin 10m
+
+rule f7_sp_inlaw_father
+when concept=talk.family pair.band=spouses other.father
+cooldown 2d
+say #other.father# told me how to hold a broom. A broom. | Your father's been at the bench telling everyone about his knee. | #other.father# shook my paw today. Like he meant it, for once.
+then other: family.tease_answer
+remember pair: f7_tease=kin 10m
+
+rule f7_sp_short_door
+when concept=talk.family pair.band=spouses self.temper=short here.place=home
+cooldown 2d
+say Who left the door wide open? Were you raised in a field? | Mud. On the floor. Paw-shaped mud. | Is it so hard to put the knife back where it lives?
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_merry
+when concept=talk.family pair.band=spouses self.humour=merry
+cooldown 2d
+say Marry me. | Remind me, did I marry you for your looks or your cooking? | If you were a pie, I'd eat you. | Run away with me. Not far. Just to the tavern.
+then other: family.tease_answer
+remember pair: f7_tease=fond 10m
+
+rule f7_sp_dry
+when concept=talk.family pair.band=spouses self.humour=dry
+cooldown 2d
+say You were snoring so loud the neighbours paid us a call. | I've decided to forgive you. For what, I'll think of later. | I'm told marriage is a partnership. Which part's yours?
+then other: family.tease_answer
+remember pair: f7_tease=fond 10m
+
+rule f7_sp_winter_feet
+when concept=talk.family pair.band=spouses here.season=winter here.place=home
+cooldown 2d
+say Put your cold feet anywhere but on me. | You've had the blanket all night. All of it. | The fire's out and it's your turn.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_summer_fur
+when concept=talk.family pair.band=spouses here.season=summer here.place=home
+cooldown 2d
+say You're shedding on everything. The bread had fur in it. | Don't lie so close, it's like sleeping by an oven. | Brush yourself outside, I'm begging you.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_dawn_snore
+when concept=talk.family pair.band=spouses here.time=dawn here.place=home
+cooldown 2d
+say You were snoring again. Like a saw through wet wood. | You talked in your sleep. Who's Hettie? | You kicked me twice. I counted.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_rich_spend
+when concept=talk.family pair.band=spouses self.wealth=rich
+cooldown 2d
+say I've ordered new hangings for the front room. Don't look like that. | You spent how much on that collar? | The silversmith sent his bill. I want to know what we bought.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_heights_dinner
+when concept=talk.family pair.band=spouses self.quarter=heights
+cooldown 2d
+say We're asked to dine with the Ashcombes again. Do try to be pleasant. | Their daughter would suit our eldest. Think of the alliance. | Must you talk about drains at dinner?
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_house
+when concept=talk.family pair.band=spouses self.house
+cooldown 3d
+say The House expects us at the head's table on the festival. Both of us. Smiling. | Your cousin's been made a steward. They'll be impossible now. | Everything we have is the House's. Don't forget that in company.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_chapel
+when concept=talk.family pair.band=spouses self.piety=devout other.piety=ordinary here.day=rest
+cooldown 3d
+say You'll come to chapel with me. Won't you? | The priest asked after you. Kindly. Pointedly. | One hour on Restday, #dear#. The gods give us the other hundred.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_from_apart
+when concept=talk.family pair.band=spouses pair.same_from=no
+cooldown 3d
+say You said it again. That word from your home. | Your lot eat that with honey? Truly? | Sometimes I can't understand a word your family says.
+then other: family.tease_answer
+remember pair: f7_tease=fond 10m
+
+rule f7_sp_short_tired
+when concept=talk.family pair.band=spouses self.temper=short self.tired=yes
+cooldown 2d
+say Don't. Whatever it is, not now. | If one more person asks me for something today. | I'm going to sit here, and nobody is going to speak.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_chores
+when concept=talk.family pair.band=spouses here.place=home
+cooldown 2d
+say Whose turn is it on the water? | The shutter's still hanging off. Since spring. | I scrubbed the step. Did you notice? You didn't notice. | You said you'd mend the chair. The chair remembers.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sp_tavern
+when concept=talk.family pair.band=spouses here.place=tavern
+cooldown 2d
+say One more and then home. One. | You've had three. I've been counting even if you haven't. | Dance with me. Nobody's looking. Everybody's looking.
+then other: family.tease_answer
+
+# =============================================================================================== Spouses: fond words, news and plans
+remember pair: f7_tease=fond 10m
+
+rule f7_sp_old_years
+when concept=talk.family pair.band=spouses self.stage=old other.stage=old
+cooldown 2d
+say How many years is it now? I've lost count. | Do you remember the day we met? You had mud to the knees. | You were a terror when you were young. You still are.
+then other: family.share_answer
+
+rule f7_sp_old_hands
+when concept=talk.family pair.band=spouses self.stage=old other.stage=old here.time=dusk|night
+cooldown 2d
+say Give me your paw. There. Just like that. | We've done all right, haven't we. All things considered. | Still here. Both of us. Who'd have thought.
+then other: family.share_answer
+
+rule f7_sp_young
+when concept=talk.family pair.band=spouses self.age<=26 other.age<=26
+cooldown 2d
+say I still can't get used to your boots by my door. Our door. | Say it again. Husband^m. Wife^f. | I woke and forgot we were married. Then I remembered. Good morning.
+then other: family.share_answer
+
+rule f7_sp_young_home
+when concept=talk.family pair.band=spouses self.age<=26 other.age<=26 here.place=home
+cooldown 2d
+say I burned the porridge. Our first burned porridge. | We need a second chair. People will think we're poor. | Where do we keep the salt? Where do we keep anything?
+then other: family.share_answer
+
+rule f7_sp_middle
+when concept=talk.family pair.band=spouses self.stage=adult other.stage=adult self.age>=40
+cooldown 3d
+say Do you ever think about how fast it all went? | I found a grey hair. On you, I mean. Mine are silver. | Twenty years and you still leave the lid off.
+then other: family.share_answer
+
+rule f7_sp_proud_child
+when concept=talk.family pair.band=spouses self.child
+cooldown 2d
+say Did you see #self.child# carry the water in? Both buckets! | #self.child# said thank you to the baker without being told. | #self.child#'s got your stubborn streak. Don't smile.
+then other: family.share_answer
+
+rule f7_sp_thriving
+when concept=talk.family pair.band=spouses self.business=thriving
+cooldown 2d
+say We should take on a second pair of paws. | Sold out by noon. I nearly hugged the last customer. | We could put something by this year. Real savings.
+then other: family.share_answer
+
+rule f7_sp_ambitious
+when concept=talk.family pair.band=spouses self.drive=ambitious
+cooldown 3d
+say A bigger place by spring. I mean it. | I've an eye on the empty shop on the corner. | We won't always be counting pennies. Not if I can help it.
+then other: family.share_answer
+
+rule f7_sp_content
+when concept=talk.family pair.band=spouses self.drive=content
+cooldown 3d
+say A warm fire, a full pot, and you. What else is there? | I wouldn't change a thing. Well. The roof. | This is enough, isn't it? It's enough for me.
+then other: family.share_answer
+
+rule f7_sp_dayoff
+when concept=talk.family pair.band=spouses self.shift=day_off
+cooldown 2d
+say A whole day. What shall we do with it? | Don't get up. Nobody needs us today. | Shall we walk out like we used to?
+then other: family.share_answer
+
+rule f7_sp_tired_evening
+when concept=talk.family pair.band=spouses self.tired=yes here.time=dusk|night
+cooldown 2d
+say Rub my shoulders and I'll love you forever. | I'm asleep. This is me talking in my sleep. | #supper.capitalize#, then #bed#, then nothing at all.
+then other: family.share_answer
+
+rule f7_sp_wedding_news
+when concept=talk.family pair.band=spouses world.wedding=recent
+cooldown 3d
+say All this wedding talk. Remember ours? | Their wedding had a fiddler. Ours had your uncle singing. | Would you marry me again? Think carefully.
+then other: family.share_answer
+
+rule f7_sp_birth_news
+when concept=talk.family pair.band=spouses world.birth=recent self.parent=no
+cooldown 3d
+say Did you see the new pup? Tiny paws. | Do you ever think... about one of our own? | A new pup on the street. The whole street's gone soft.
+then other: family.share_answer
+
+rule f7_sp_festival
+when concept=talk.family pair.band=spouses here.day=festival
+cooldown 2d
+say Dance with me at #here.festival#. Just one. | Wear the blue. You look well in the blue. | Let's stay out till the lamps go.
+then other: family.share_answer
+
+rule f7_sp_market
+when concept=talk.family pair.band=spouses here.day=market
+cooldown 2d
+say What do we need? I had a list and I've lost it. | Don't buy anything with a ribbon on it. | Meet me at the bread stall at noon.
+then other: family.share_answer
+
+rule f7_sp_rain
+when concept=talk.family pair.band=spouses here.weather=rain|storm
+cooldown 2d
+say Let's not go out. Let's stay in and let it pour. | The roof's holding. Mostly. Put the pot under the corner. | Listen to it on the shutters. I love that sound.
+then other: family.share_answer
+
+rule f7_sp_snow
+when concept=talk.family pair.band=spouses here.weather=snow
+cooldown 2d
+say Snowed in, near enough. Just us and the fire. | Your nose is frozen. Come here. | The pups'll be out in that till they turn blue.
+then other: family.share_answer
+
+rule f7_sp_far_home
+when concept=talk.family pair.band=spouses self.from!=ridgemere here.region=ridgemere
+cooldown 3d
+say I dreamt of home last night. The old home. | Ridgemere's never quiet, is it? Not once. | Do you think we'll ever go back? Even for a visit?
+then other: family.share_answer
+
+rule f7_sp_back_home
+when concept=talk.family pair.band=spouses self.from=ridgemere here.region!=ridgemere
+cooldown 3d
+say I miss the city some days. The noise, even. | You'd never get bread like this in Ridgemere. I'll give it that. | Do you think my sister's well? She never writes.
+then other: family.share_answer
+
+rule f7_sp_plain
+when concept=talk.family pair.band=spouses
+cooldown 1d
+say Did you sleep? | I saw your cousin at the well. She's let her fur go. | What shall we have for #supper#? | I was thinking about you today. Nothing bad. | I've lost a sock. I suspect you.
+then other: family.share_answer
+
+# =============================================================================================== Parents to their children
+# The opener remembers what kind of remark it was (pair.mem.f7_pc: order, ask, comfort, fret, tease), so the son or
+# daughter answers that (family.answer_parent), and the parent has the last word on it (family.settle).
+
+rule f7_pc_young_order
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young
+cooldown 1d
+say Show me your paws. Both of them. | Boots off at the door. Off. | Fetch the kindling in before dark. | Don't you dare go near the river today.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_ask
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young
+cooldown 1d
+say What did you learn today? | Who've you been playing with? | Why is there a frog in the washtub? | Where did all that mud come from?
+then other: family.answer_parent
+remember pair: f7_pc=ask 10m
+
+rule f7_pc_young_poor
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.wealth=poor|destitute
+cooldown 2d
+say No sweets this week, pup. Next market day, maybe. | Mind your boots. They've got to last the winter. | Go easy on the bread. It has to last till Restday.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_hungry
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.hungry=yes
+cooldown 1d
+priority 1
+say Here, have mine. I ate earlier. | You finish it. I'm not hungry. | Eat up. I had mine on the way home.
+then other: family.answer_parent
+remember pair: f7_pc=comfort 10m
+
+rule f7_pc_young_rich
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.wealth=rich
+cooldown 2d
+say Your tutor says you drew whiskers on the lessons again. Stop it. | You'll greet the guests and then you'll go upstairs. Quietly. | Don't play with the stable pups in your good clothes.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_sump
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.quarter=sump
+cooldown 2d
+say Stay off the steps by the water after dark. | Don't talk to the ones by the old warehouse. Ever. | If anyone offers you anything, you run home.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_docks
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.quarter=docks|wharf|harbour_hill
+cooldown 2d
+say Keep away from the ropes when they're loading. | Don't you go aboard anything. Not for a dare, not for anything. | If a sailor gives you a sweet, give it back.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_short
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.temper=short
+cooldown 2d
+say What did I say about the mud? What did I say? | Inside. Now. I'm not asking twice. | Put that down. No. Down.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_merry
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.humour=merry
+cooldown 2d
+say Who's this stranger at my table? Oh! It's you. You've grown a whole tail. | I'll race you home. Loser washes the pots. | Eat your greens and you'll grow ears like mine. Enormous.
+then other: family.answer_parent
+remember pair: f7_pc=tease 10m
+
+rule f7_pc_young_devout
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.piety=devout here.day=rest
+cooldown 2d
+say Paws washed. We're going to chapel. | Sit still in chapel today and there's honey after. | Say your thanks before you eat. All of them.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_work
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.shift=before
+cooldown 1d
+say I'm off to work. Be good till I'm home. | Bar the door behind me. And no fire till I'm back. | I'll be home before dark. Mind the house.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_young_grief
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young self.mourning=kin
+cooldown 6h
+priority 3
+say Come here. Just sit with me a while. | It's all right to cry. I am. | They loved you very much. You know that?
+then other: family.answer_parent
+remember pair: f7_pc=comfort 10m
+
+rule f7_pc_young_night
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=young here.time=night
+cooldown 1d
+say Eyes shut. I can see them open from here. | That was the last story. The very last. | Into bed. Tail and all.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_teen_trade
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent other.apprentice=no
+cooldown 3d
+say Have you given any thought to a trade? | The cooper wants a pair of paws. Will you go and see him? | You can't sit about forever. What do you want to do?
+then other: family.answer_parent
+remember pair: f7_pc=trade 10m
+
+rule f7_pc_teen_master
+when concept=talk.family pair.kin=parent self.stage=adult|old other.apprentice=yes
+cooldown 2d
+say How's your master treating you? | Are you minding what you're told at the shop? | You look worn out. Are they working you too hard?
+then other: family.answer_parent
+remember pair: f7_pc=master 10m
+
+rule f7_pc_teen_night
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent here.time=night
+cooldown 2d
+say Where were you till this hour? | Who was that walking you to the door? | I've been sat up waiting. Where were you?
+then other: family.answer_parent
+remember pair: f7_pc=ask 10m
+
+rule f7_pc_teen_short
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent self.temper=short
+cooldown 2d
+say Take that look off your face. | You'll speak to me properly under my roof. | Your room. Now. It's a midden.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_teen_restless
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent other.drive=restless|ambitious
+cooldown 3d
+say I know you're itching to be off. I was too. | The world's not going anywhere. It'll wait a year. | Don't be in such a hurry to leave us.
+then other: family.answer_parent
+remember pair: f7_pc=leave 10m
+
+rule f7_pc_teen_heights
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent self.quarter=heights
+cooldown 3d
+say The Ashcombes' youngest would make a sound match. Think of the families. | You'll dance with whoever you're asked to dance with at the ball. | Your marriage isn't only yours, you know. It never is, up here.
+then other: family.answer_parent
+remember pair: f7_pc=match 10m
+
+rule f7_pc_teen_poor
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent self.wealth=poor|destitute
+cooldown 3d
+say You'll need to bring in some coin soon. I'm sorry. | Ask at the wharf. They take on youngsters for the carrying. | I wanted you to have longer before you worked. I did.
+then other: family.answer_parent
+remember pair: f7_pc=trade 10m
+
+rule f7_pc_teen_order
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent
+cooldown 1d
+say Your room smells like a wet badger. Open a shutter. | Help your #gran# with the stairs. | Home before the lamps, and I mean before.
+then other: family.answer_parent
+remember pair: f7_pc=order 10m
+
+rule f7_pc_teen_ask
+when concept=talk.family pair.kin=parent self.stage=adult|old other.stage=adolescent
+cooldown 1d
+say Talk to me. What's going on in that head? | Who's this friend you keep going on about? | You've been quiet all week. What is it?
+then other: family.answer_parent
+remember pair: f7_pc=ask 10m
+
+rule f7_pc_adult_grandpups
+when concept=talk.family pair.kin=parent self.stage=old other.stage=adult other.parent=no other.married=yes
+cooldown 3d
+say When are you giving me grandpups? I'm not getting younger. | Your cousin's on her third. Just saying. | I've knitted a little blanket. No reason.
+then other: family.answer_parent
+remember pair: f7_pc=fret 10m
+
+rule f7_pc_adult_grandchild
+when concept=talk.family pair.kin=parent self.stage=old other.child
+cooldown 2d
+say Bring #other.child# round on Restday. I've saved the honey. | #other.child# has your father's ears. It's uncanny. | Is #other.child# eating properly? You never did.
+then other: family.answer_parent
+remember pair: f7_pc=grandpup 10m
+
+rule f7_pc_adult_widowed
+when concept=talk.family pair.kin=parent self.stage=old self.widowed=yes
+cooldown 2d
+say I set out two cups again this morning. | The bed's too big. Isn't that silly? | I keep saving them the warm side of the fire.
+then other: family.answer_parent
+remember pair: f7_pc=fret 10m
+
+rule f7_pc_adult_hurt
+when concept=talk.family pair.kin=parent self.stage=old self.injured=light|bad
+cooldown 1d
+say My hip's playing up. Don't make a face. | I took a tumble on the step. It's nothing. It's something. | The healer says rest. I say rubbish.
+then other: family.answer_parent
+remember pair: f7_pc=fret 10m
+
+rule f7_pc_adult_help
+when concept=talk.family pair.kin=parent self.stage=adult|old self.wealth=rich|comfortable other.wealth=poor|destitute
+cooldown 3d
+say Let me help with the rent. Don't argue. | I put something in your coat pocket. Don't look. | There's a sack of meal by the door. It's yours.
+then other: family.answer_parent
+remember pair: f7_pc=help 10m
+
+rule f7_pc_adult_unwed
+when concept=talk.family pair.kin=parent self.stage=old other.stage=adult other.married=no
+cooldown 3d
+say Has anyone caught your eye? | The miller's girl^m asked after you. The miller's son^f asked after you. | You can't marry your work, you know.
+then other: family.answer_parent
+remember pair: f7_pc=match 10m
+
+rule f7_pc_adult_fret
+when concept=talk.family pair.kin=parent self.stage=old other.stage=adult
+cooldown 1d
+say You look thin. Are you eating? | You never visit. You're here now. Never mind. | You work too hard. You get that from me.
+then other: family.answer_parent
+remember pair: f7_pc=fret 10m
+
+# =============================================================================================== Children to their parents
+# The opener remembers what kind (pair.mem.f7_cp: ask, want, fear, grief, news, care), so the mother or father answers
+# that (family.answer_child), and the son or daughter has the last word (family.settle).
+
+rule f7_cp_young_ask
+when concept=talk.family pair.kin=parent self.stage=young other.stage=adult|old
+cooldown 1d
+say Why do we have tails? | Where does the rain go after? | Were you ever little? Really little? | Why can't I stay up? You stay up.
+then other: family.answer_child
+remember pair: f7_cp=ask 10m
+
+rule f7_cp_young_poor
+when concept=talk.family pair.kin=parent self.stage=young self.wealth=poor|destitute
+cooldown 2d
+say Are we poor? Brindle said we're poor. | Why don't I get new boots like the others? | Why do we only have bread?
+then other: family.answer_child
+remember pair: f7_cp=poor 10m
+
+rule f7_cp_young_hungry
+when concept=talk.family pair.kin=parent self.stage=young self.hungry=yes
+cooldown 1d
+priority 1
+say My belly's growling. Listen. | Is there anything to eat? Anything? | When's #supper#? Is it soon? Is it now?
+then other: family.answer_child
+remember pair: f7_cp=hungry 10m
+
+rule f7_cp_young_night
+when concept=talk.family pair.kin=parent self.stage=young here.time=night
+cooldown 1d
+say Can I sleep in your bed? There's a noise. | Leave the door open. A crack. A bigger crack. | Is there such a thing as the Fen Hag? Really?
+then other: family.answer_child
+remember pair: f7_cp=fear 10m
+
+rule f7_cp_young_grief
+when concept=talk.family pair.kin=parent self.stage=young self.mourning=kin
+cooldown 6h
+priority 3
+say Where did they go? Are they coming back? | Is it my fault? I was naughty that day. | Can I keep their scarf?
+then other: family.answer_child
+remember pair: f7_cp=grief 10m
+
+rule f7_cp_young_rich
+when concept=talk.family pair.kin=parent self.stage=young self.wealth=rich
+cooldown 2d
+say Why can't I play by the river with the others? | The cook's pup says we're rich. Are we? What's rich? | I don't want to go to dancing. Can I go to the docks?
+then other: family.answer_child
+remember pair: f7_cp=want 10m
+
+rule f7_cp_young_merry
+when concept=talk.family pair.kin=parent self.stage=young self.humour=merry
+cooldown 2d
+say Guess what I've got in my pocket. Guess. | I can whistle! Nearly. Listen. | I told a joke at the well and everybody laughed. Even the old ones.
+then other: family.answer_child
+remember pair: f7_cp=news 10m
+
+rule f7_cp_young_want
+when concept=talk.family pair.kin=parent self.stage=young
+cooldown 1d
+say Can I have a hen of my own? I'll feed it. | Can I have a penny? I'll give it back. One day. | I found a beetle. Can it live with us? | Can I go and play at the well? Please?
+then other: family.answer_child
+remember pair: f7_cp=want 10m
+
+rule f7_cp_young_news
+when concept=talk.family pair.kin=parent self.stage=young
+cooldown 1d
+say When I'm big I'm going to be a guard. Or a baker. Or both. | I found a stone with a hole in it. It's lucky. | The baker's dog licked me. On the face. | I can count to a hundred. Nearly.
+then other: family.answer_child
+remember pair: f7_cp=news 10m
+
+rule f7_cp_teen_leave
+when concept=talk.family pair.kin=parent self.stage=adolescent self.drive=restless|ambitious
+cooldown 3d
+say I want to go to Ridgemere. There's work there. Real work. | I'm not a pup any more. I want to see something. Anything. | I'm going to leave one day. You know that, don't you?
+then other: family.answer_child
+remember pair: f7_cp=leave 10m
+
+rule f7_cp_teen_room
+when concept=talk.family pair.kin=parent self.stage=adolescent self.quarter=sump
+cooldown 3d
+say Can I not have a corner of my own? A curtain, even? | I'm sick of sleeping four to a mattress. | When I've money we're moving up the hill. All of us.
+then other: family.answer_child
+remember pair: f7_cp=want 10m
+
+rule f7_cp_teen_apprentice
+when concept=talk.family pair.kin=parent self.apprentice=yes
+cooldown 2d
+say My master made me sweep the same floor three times. | I made a thing today. A whole thing. It was crooked, but. | I'm going to be better at it than my master one day.
+then other: family.answer_child
+remember pair: f7_cp=work 10m
+
+rule f7_cp_teen_want
+when concept=talk.family pair.kin=parent self.stage=adolescent
+cooldown 1d
+say Can I borrow the good cloak? I'll be careful. | Everyone else gets to go to the dance. | Can I stay at Fennick's tonight? Their mother says yes.
+then other: family.answer_child
+remember pair: f7_cp=want 10m
+
+rule f7_cp_teen_complain
+when concept=talk.family pair.kin=parent self.stage=adolescent
+cooldown 1d
+say You're embarrassing me. You're standing there embarrassingly. | Why do you always ask where I'm going? | You never let me do anything.
+then other: family.answer_child
+remember pair: f7_cp=sulk 10m
+
+rule f7_cp_adult_care
+when concept=talk.family pair.kin=parent self.stage=adult other.stage=old
+cooldown 2d
+say You should come and live with us. There's room. | Did you take what the healer gave you? | Let me carry that. Please. Just let me.
+then other: family.answer_child
+remember pair: f7_cp=care 10m
+
+rule f7_cp_adult_widowed
+when concept=talk.family pair.kin=parent self.stage=adult other.widowed=yes
+cooldown 2d
+say Have you eaten today? Properly? | Come for #supper#. Every night, if you like. | I miss them too. Every day.
+then other: family.answer_child
+remember pair: f7_cp=care 10m
+
+rule f7_cp_adult_richer
+when concept=talk.family pair.kin=parent self.stage=adult self.wealth=rich|comfortable other.wealth=poor|destitute
+cooldown 3d
+say I've paid your coal for the winter. It's done. Don't argue. | Let me do this. You did everything for me. | I'll not have you queuing for parish bread. Not while I've breath.
+then other: family.answer_child
+remember pair: f7_cp=help 10m
+
+rule f7_cp_adult_news
+when concept=talk.family pair.kin=parent self.stage=adult self.child
+cooldown 2d
+say #self.child# took a step today. Two steps! | #self.child# asked for you by name. | #self.child# bit the neighbour's pup. I don't know where that came from. Yes I do.
+then other: family.answer_child
+remember pair: f7_cp=grandpup 10m
+
+rule f7_cp_adult_work
+when concept=talk.family pair.kin=parent self.stage=adult self.business=thriving|failing
+cooldown 2d
+say The shop's had a month. I'll tell you about it. | I've been doing the books. I wish I'd listened when you showed me. | You always said trade was a fickle thing. You were right.
+then other: family.answer_child
+remember pair: f7_cp=work 10m
+
+# =============================================================================================== Brothers and sisters
+
+rule f7_sib_mother
+when concept=talk.family pair.kin=siblings self.stage=adult|old self.mother
+cooldown 2d
+say Have you been to see #self.mother#? She says you haven't. | #self.mother#'s sorted the attic. She found your drawings. | #self.mother# asked me which of us is her favourite. I said you. To be kind.
+then other: family.share_answer
+
+rule f7_sib_father_worry
+when concept=talk.family pair.kin=siblings self.stage=adult|old self.father
+cooldown 2d
+say #self.father#'s worse. He won't say, but he's worse. | Somebody should talk to #self.father# about the stairs. Somebody meaning you. | #self.father# gave me his old knife. Did he give you anything?
+then other: family.worry_answer
+remember pair: f7_worry=kin 10m
+
+rule f7_sib_richer
+when concept=talk.family pair.kin=siblings self.stage=adult pair.richer=a
+cooldown 3d
+say If you're short, you only have to say. | I heard about your roof. Let me send someone. | You're too proud to ask. You always were.
+then other: family.share_answer
+
+rule f7_sib_poorer
+when concept=talk.family pair.kin=siblings self.stage=adult pair.richer=b
+cooldown 3d
+say Nice coat. New, is it? | I suppose you'll be too grand for us at the festival. | Could you... no. Never mind.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sib_young
+when concept=talk.family pair.kin=siblings self.stage=young|adolescent other.stage=young|adolescent
+cooldown 1d
+say I'm telling #mum#. | That's mine. I had it first. | Bet you can't climb the wall. | You've got jam on your ear.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_sib_adult_plain
+when concept=talk.family pair.kin=siblings self.stage=adult|old other.stage=adult|old
+cooldown 1d
+say Remember when we hid in the woodpile and they called the watch? | You still owe me for the good bowl. | You've gone grey at the muzzle. When did that happen?
+then other: family.share_answer
+
+rule f7_sib_mourning
+when concept=talk.family pair.kin=siblings self.mourning=kin
+cooldown 6h
+priority 3
+say We're the old ones now, you and me. | I keep thinking of us as pups, all of us round the table. | Who's going to sort their things? I can't. I can't yet.
+then other: family.worry_answer
+remember pair: f7_worry=grief 10m
+
+# =============================================================================================== Kin and the household
+
+rule f7_hh_plain
+when concept=talk.family pair.kin=household
+cooldown 1d
+say Whose turn is it on the water? | Your snoring comes through the wall like a cart. | Somebody's been at my bread. I marked it. | Did you lock the door, or did you just look at it?
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_hh_rent
+when concept=talk.family pair.kin=household self.wealth=poor|destitute
+cooldown 2d
+say Have you got your share of the rent? I'm short myself. | The landlord says he's raising it at the new month. | If one of us goes, the other can't make the rent alone.
+then other: family.worry_answer
+remember pair: f7_worry=money 10m
+
+rule f7_hh_sump
+when concept=talk.family pair.kin=household self.quarter=sump
+cooldown 2d
+say Seven of us and one pot. Something has to change. | The family upstairs had a row till dawn. Did you sleep? | The bucket's full again. Your turn to carry it down.
+then other: family.tease_answer
+remember pair: f7_tease=grumble 10m
+
+rule f7_kin_old_young
+when concept=talk.family pair.kin=family self.stage=old other.stage=young
+cooldown 1d
+say Come and sit by me. Tell me what you did today. | Your #dad# was just as bad at your age. Worse. | Shall I tell you about the winter the river froze?
+then other: family.answer_parent
+remember pair: f7_pc=ask 10m
+
+rule f7_kin_young_old
+when concept=talk.family pair.kin=family self.stage=young other.stage=old
+cooldown 1d
+say #gran.capitalize#^f, tell me the one about the wolf in the well. #grandad.capitalize#^m, tell me the one about the wolf in the well. | Why are your paws so wrinkly? | Can I have one of your sweets? The red ones?
+then other: family.answer_child
+remember pair: f7_cp=want 10m
+
+rule f7_kin_adults
+when concept=talk.family pair.kin=family self.stage=adult other.stage=adult
+cooldown 1d
+say Is your lot coming to us for the festival, or are we going to you? | Your brother still owes my brother a pig. | I heard about the trouble at yours. Is it sorted?
+then other: family.share_answer
+
+# =============================================================================================== Asking after each other's families (friends, acquaintances)
+
+rule f7_ask_spouse
+when concept=talk.smalltalk|talk.friends|talk.day pair.band=friends|acquaintances other.spouse
+cooldown 2d
+say And how's #other.spouse# keeping? | Give my best to #other.spouse#. Is all well there? | I saw #other.spouse# at the market. Looking well, I thought.
+then other: family.share_answer
+remember other: f7_asked=spouse 10m
+
+rule f7_ask_child
+when concept=talk.smalltalk|talk.friends|talk.day pair.band=friends|acquaintances other.child
+cooldown 2d
+say How's young #other.child#? | Is #other.child# behaving? | #other.child#'s getting so big. What are you feeding them?
+then other: family.share_answer
+remember other: f7_asked=child 10m
+
+rule f7_ask_mother
+when concept=talk.smalltalk|talk.friends pair.band=friends other.mother other.stage=adult|old
+cooldown 2d
+say How's your mother? Still going strong? | Is #other.mother# well? I've not seen her at the well. | Tell #other.mother# I'll bring the jar back. I've not forgotten.
+then other: family.share_answer
+remember other: f7_asked=mother 10m
+
+rule f7_ask_widowed
+when concept=talk.friends|talk.day pair.band=friends other.widowed=yes
+cooldown 3d
+say How are you managing, on your own? | Are you eating? You look thin. | Come to us for #supper#. You shouldn't be alone every night.
+then other: family.share_answer
+remember other: f7_asked=alone 10m
+
+rule f7_tell_inlaws
+when concept=talk.smalltalk|talk.friends self.married=yes
+cooldown 3d
+say My wife's^m husband's^f family are coming for the festival. All of them. | My mother-in-law has opinions about my cooking. Loud ones. | We've the in-laws staying. Can I sleep at yours?
+then other: family.share_answer
+
+rule f7_tell_child_trouble
+when concept=talk.smalltalk|talk.friends self.child self.stage=adult|old
+cooldown 3d
+say #self.child# wants to go off to Ridgemere. I'm not ready. | #self.child# has a sweetheart. Don't tell anyone I told you. | #self.child# broke a window. With a cabbage. Don't ask me how.
+then other: family.share_answer
+
+rule f7_tell_childless
+when concept=talk.friends self.married=yes self.parent=no self.stage=adult
+cooldown 4d
+say Everyone asks when we'll have pups. Everyone. | We'd hoped there'd be little ones by now. | It'll happen or it won't. That's what I tell myself.
+then other: family.share_answer
+
+rule f7_tell_family_house
+when concept=talk.smalltalk|talk.friends self.house
+cooldown 4d
+say The House has us all at the head's table this month. Dreadful food. | Everyone in my family works for the House. Cousins, aunts, the dog. | You never get away from the family when the family's the House.
+then other: family.share_answer
+
+# =============================================================================================== family.worry_answer (self answers the worry)
+
+rule f7_wa_plain
+when concept=family.worry_answer
+say We'll manage. We always do. | Don't fret yet. Fret tomorrow. | Hm. Let me think on it. | One thing at a time.
+then other: family.settle
+
+rule f7_wa_warm
+when concept=family.worry_answer self.warmth=warm
+say Come here. We'll sort it, you and me. | Whatever comes, it comes to both of us. | Don't carry it on your own. Give me half.
+then other: family.settle
+
+rule f7_wa_cold
+when concept=family.worry_answer self.warmth=cold
+say Worrying won't fix it. | Then do something about it. | I heard you the first time.
+then other: family.settle
+
+rule f7_wa_dry
+when concept=family.worry_answer self.humour=dry
+say Well, it can't get worse. Don't quote me. | Good. I was short of things to lie awake over. | Shall I panic now, or after #supper#?
+then other: family.settle
+
+rule f7_wa_merry
+when concept=family.worry_answer self.humour=merry
+say Chin up. Nobody ever died of a worry. A few came close. | Come on, give us a smile. A small one. There. | We'll laugh about this. Not yet. But we will.
+then other: family.settle
+
+rule f7_wa_short
+when concept=family.worry_answer self.temper=short
+say And what do you want me to do about it? | Every day, something. Every single day. | Fine. I'll deal with it. Like always.
+then other: family.settle
+
+rule f7_wa_nervy
+when concept=family.worry_answer self.temper=nervy
+say Oh, don't. Now I'll not sleep either. | I knew it. I knew something was wrong. | What do we do? What do we do?
+then other: family.settle
+
+rule f7_wa_calm
+when concept=family.worry_answer self.temper=calm
+say Breathe. Now tell me again, slowly. | It looks big tonight. It'll look smaller in the morning. | Sit. I'll put the pot on, and then we'll see.
+then other: family.settle
+
+rule f7_wa_devout
+when concept=family.worry_answer self.piety=devout
+say We'll take it to chapel. The gods have seen worse. | I'll light a candle for it. Two. | Have faith. I know. But have it anyway.
+then other: family.settle
+
+rule f7_wa_money_poor
+when concept=family.worry_answer pair.mem.f7_worry=money self.wealth=poor|destitute
+say I'll ask at the wharf for a day's carrying. | We could sell the good pot. We never use it good. | I can go without the ale. I'll go without the ale.
+then other: family.settle
+
+rule f7_wa_money_ambitious
+when concept=family.worry_answer pair.mem.f7_worry=money self.drive=ambitious
+say I'll find more work. I'll find two lots of work. | This won't be us forever. I promise you that. | Next year we'll laugh at this. I'll make sure of it.
+then other: family.settle
+
+rule f7_wa_money_short
+when concept=family.worry_answer pair.mem.f7_worry=money self.temper=short
+say If you didn't spend it on ribbons. | Don't look at me. I bring it home. | Then we eat less. Simple.
+then other: family.settle
+
+rule f7_wa_money_sly
+when concept=family.worry_answer pair.mem.f7_worry=money self.honesty=sly
+say Leave the landlord to me. He owes me a favour. Sort of. | There's ways. Don't ask what ways. | I know a fellow. I always know a fellow.
+then other: family.settle
+
+rule f7_wa_money_rich
+when concept=family.worry_answer pair.mem.f7_worry=money self.wealth=rich|comfortable
+say Then we'll spend a little less on hangings, won't we. | It's a lean month, not a lean life. | We've put by. It's what putting by is for.
+then other: family.settle
+
+rule f7_wa_child
+when concept=family.worry_answer pair.mem.f7_worry=child
+say I'll talk to them tonight. Gently. | They're growing. It takes them strange. | We were the same at that age. Worse.
+then other: family.settle
+
+rule f7_wa_child_warm
+when concept=family.worry_answer pair.mem.f7_worry=child self.warmth=warm
+say I'll take them fishing. They talk when their paws are busy. | Leave a candle in the window. They'll come home to it. | I'll sit with them after #supper#. Just sit.
+then other: family.settle
+
+rule f7_wa_child_short
+when concept=family.worry_answer pair.mem.f7_worry=child self.temper=short
+say They'll get a piece of my mind, is what they'll get. | You coddle them. That's what this is. | When I was that age I'd have had a clip round the ear.
+then other: family.settle
+
+rule f7_wa_child_old
+when concept=family.worry_answer pair.mem.f7_worry=child self.stage=old
+say They all go through it. Ours did, and theirs will. | It passes. Most of it passes. | Feed them and love them. The rest sorts itself.
+then other: family.settle
+
+rule f7_wa_health
+when concept=family.worry_answer pair.mem.f7_worry=health
+say It's nothing. A knock. | Don't look at it like that. It looks worse than it is. | Ow. Yes. All right, it's something.
+then other: family.settle
+
+rule f7_wa_health_bad
+when concept=family.worry_answer pair.mem.f7_worry=health self.injured=bad
+say I can't feel my paw, #pet#. I'm frightened. | Stay with me a while. Don't go. | Fetch the healer. Please. I'm not being brave about this one.
+then other: family.settle
+
+rule f7_wa_health_healer
+when concept=family.worry_answer pair.mem.f7_worry=health self.job=healer
+say Let me look properly. Hold still. Hm. Yes. You'll live. | Clean it, bind it, rest it. And no, you can't skip the rest. | I've seen this a hundred times. You'll mend.
+then other: family.settle
+
+rule f7_wa_house
+when concept=family.worry_answer pair.mem.f7_worry=house
+say I'll stuff the gap with rags. It'll hold till spring. | We've had worse roofs. Remember the first one? | I'll speak to the landlord. Again.
+then other: family.settle
+
+rule f7_wa_house_homeless
+when concept=family.worry_answer pair.mem.f7_worry=house self.homeless=yes
+say At least we're together. At least that. | The chapel porch is dry. We'll try there. | One day a door of our own. With a lock. And a step.
+then other: family.settle
+
+rule f7_wa_house_night
+when concept=family.worry_answer pair.mem.f7_worry=house here.time=night
+say It's the cat from next door. It's always the cat. | I barred it. I barred it twice. Go to sleep. | I'll look. Stay here. No, don't come. Fine, come.
+then other: family.settle
+
+rule f7_wa_kin
+when concept=family.worry_answer pair.mem.f7_worry=kin
+say Then we'll go round on Restday. Both of us. | Bring them here. We'll find the room. | Old folk are tougher than they look. But aye. Let's go.
+then other: family.settle
+
+rule f7_wa_kin_cold
+when concept=family.worry_answer pair.mem.f7_worry=kin self.warmth=cold
+say Your family, your worry. | They've others to look in on them. Let them do something for once. | We can't take in everyone.
+then other: family.settle
+
+rule f7_wa_grief
+when concept=family.worry_answer pair.mem.f7_worry=grief
+priority 1
+say I know. I know. | Come here. You don't have to talk. | We'll get through it. Not over it. Through it.
+then other: family.settle
+
+rule f7_wa_grief_devout
+when concept=family.worry_answer pair.mem.f7_worry=grief self.piety=devout
+priority 1
+say They're with the gods now. Warm, and waiting. | I'll ask the priest to say their name on Restday. | We'll see them again. I believe that. I have to.
+then other: family.settle
+
+rule f7_wa_grief_mourning
+when concept=family.worry_answer pair.mem.f7_worry=grief self.mourning=kin
+priority 2
+say I keep laying out their bowl. | I've no comfort to give. I've none for me. | Hold on to me, then. And I'll hold on to you.
+then other: family.settle
+
+rule f7_wa_move
+when concept=family.worry_answer pair.mem.f7_worry=move
+say And go where? With what? | Everyone we know is here. | Maybe. When the little ones are grown. Maybe.
+then other: family.settle
+
+rule f7_wa_move_restless
+when concept=family.worry_answer pair.mem.f7_worry=move self.drive=restless
+say Yes. Gods, yes. When? | I've been waiting years for you to say that. | Pack tonight. Before either of us changes our mind.
+then other: family.settle
+
+rule f7_wa_move_content
+when concept=family.worry_answer pair.mem.f7_worry=move self.drive=content
+say Everything I want's under this roof. Why would I go? | You'd miss the bakery inside a week. | Go if you must. I'll keep your side of the bed warm.
+then other: family.settle
+
+rule f7_wa_work
+when concept=family.worry_answer pair.mem.f7_worry=work
+say Talk to them. You're worth more than they pay you. | It's only work. You're what matters. | Come home safe. That's all I ask. That's all.
+then other: family.settle
+
+rule f7_wa_work_guard
+when concept=family.worry_answer pair.mem.f7_worry=work other.role=guard
+say Come home safe. That's all I'll ever ask. | Stand at the back. For me. | I hate that sword. I hate that it's yours.
+then other: family.settle
+
+rule f7_wa_death
+when concept=family.worry_answer pair.mem.f7_worry=death
+say Don't talk like that. Not tonight. | You'll go second. I've decided. I'm too stubborn. | Whoever it is, the other one has to eat properly. Promise.
+then other: family.settle
+
+# =============================================================================================== family.tease_answer
+# The opener remembers what kind (pair.mem.f7_tease: grumble, fond, kin): a grumble is answered as a grumble.
+
+rule f7_ta_plain
+when concept=family.tease_answer
+say Hm. | Is that so. | Well, there it is.
+then other: family.settle
+
+rule f7_ta_grumble
+when concept=family.tease_answer pair.mem.f7_tease=grumble
+say It wasn't me. | And whose fault is that? | I'll get to it. | I'll pretend I didn't hear that.
+then other: family.settle
+
+rule f7_ta_grumble_merry
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.humour=merry
+say You love it really. | Guilty. Lock me up. | And yet here you are. Still. | I'll have you know I'm a delight.
+then other: family.settle
+
+rule f7_ta_grumble_dry
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.humour=dry
+say Noted. Filed. Ignored. | Shocking. Someone should do something. | I'll add it to the list. It's a long list.
+then other: family.settle
+
+rule f7_ta_grumble_short
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.temper=short
+say Don't start. | Every time. Every single time. | You do it then, if you're so clever.
+then other: family.settle
+
+rule f7_ta_grumble_warm
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.warmth=warm
+say Sorry, #pet#. I'll do it now. | You're right. You're always right. It's very annoying. | Come here, you grump.
+then other: family.settle
+
+rule f7_ta_grumble_cold
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.warmth=cold
+say Mm. | If you say so. | Is that all?
+then other: family.settle
+
+rule f7_ta_grumble_sly
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.honesty=sly
+say Must've been the neighbours. | I'd never. Who says I did? | I'll tell you what I'll do. Nothing. But nicely.
+then other: family.settle
+
+rule f7_ta_grumble_quiet
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.talk=quiet
+say ... | Hm. | Aye.
+then other: family.settle
+
+rule f7_ta_grumble_chatty
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.talk=chatty
+say Well, that's rich from you, after the business with the goose. | Oh, I could tell you a thing or two about that. And I will. At length. | That reminds me, did I tell you what the baker said?
+then other: family.settle
+
+rule f7_ta_grumble_old
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.stage=old
+say Forty years I've heard that. Forty. | At my age I'll do as I please. | I've forgotten what you said already. Lucky me.
+then other: family.settle
+
+rule f7_ta_grumble_young
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.stage=young
+say Did not! | You did it first! | I'm telling!
+then other: family.settle
+
+rule f7_ta_grumble_teen
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.stage=adolescent
+say Whatever. | You're so annoying. | Fine. Fine! Happy?
+then other: family.settle
+
+rule f7_ta_grumble_devout
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.piety=devout
+say The gods give us patience for a reason. | I'll pray for you. Truly. | Mind your tongue, it's nearly Restday.
+then other: family.settle
+
+rule f7_ta_grumble_rich
+when concept=family.tease_answer pair.mem.f7_tease=grumble self.wealth=rich pair.band=spouses
+say We can afford it. That's rather the point of us. | It's quality, #dear#. Quality lasts. | Would you rather we looked like the neighbours?
+then other: family.settle
+
+rule f7_ta_fond
+when concept=family.tease_answer pair.mem.f7_tease=fond
+say Go on with you. | You're a fool. My fool. | Ha! Behave.
+then other: family.settle
+
+rule f7_ta_fond_merry
+when concept=family.tease_answer pair.mem.f7_tease=fond self.humour=merry
+say Yes. Again. Every day. | My looks, obviously. Your cooking's a crime. | Only if I can be the pie.
+then other: family.settle
+
+rule f7_ta_fond_dry
+when concept=family.tease_answer pair.mem.f7_tease=fond self.humour=dry
+say I'll think about it. I've thought. No. | Neither. You were the last wolf left. | Charming. Truly. Pass the bread.
+then other: family.settle
+
+rule f7_ta_fond_warm
+when concept=family.tease_answer pair.mem.f7_tease=fond self.warmth=warm
+say I'd marry you a hundred times. | You still make me laugh. After all this. | Come here, then.
+then other: family.settle
+
+rule f7_ta_fond_cold
+when concept=family.tease_answer pair.mem.f7_tease=fond self.warmth=cold
+say Don't be soft. | People are looking. | Mm. Later.
+then other: family.settle
+
+rule f7_ta_fond_short
+when concept=family.tease_answer pair.mem.f7_tease=fond self.temper=short self.tired=yes
+say Not now. I'm too #tired# for charm. | Lovely. Now let me sit. | Save it for tomorrow.
+then other: family.settle
+
+rule f7_ta_kin
+when concept=family.tease_answer pair.mem.f7_tease=kin
+say That's family for you. | They mean well. Mostly. | Ignore them. I do.
+then other: family.settle
+
+rule f7_ta_kin_spouse
+when concept=family.tease_answer pair.mem.f7_tease=kin pair.band=spouses
+say She means well. She does. Somewhere deep down. | That's my family you're talking about. You're not wrong, but still. | I'll have a word. A gentle one. A very gentle one.
+then other: family.settle
+
+rule f7_ta_kin_short
+when concept=family.tease_answer pair.mem.f7_tease=kin self.temper=short
+say Then don't let them in. | I'm not my father. Don't take it out on me. | Every visit. Every single visit.
+then other: family.settle
+
+rule f7_ta_kin_merry
+when concept=family.tease_answer pair.mem.f7_tease=kin self.humour=merry
+say Next time hide the pots first. | They like you really. They just show it oddly. | Married the wolf, married the pack.
+then other: family.settle
+
+# =============================================================================================== family.share_answer
+
+rule f7_sa_plain
+when concept=family.share_answer
+say Is that so? | Well, there's a thing. | Ha. Go on. | I'd not thought of it like that.
+then other: family.settle
+
+rule f7_sa_warm
+when concept=family.share_answer self.warmth=warm
+say Oh, that does my heart good. | Come here. Come here, you. | That's lovely. That's just lovely.
+then other: family.settle
+
+rule f7_sa_cold
+when concept=family.share_answer self.warmth=cold
+say Mm. | If you say so. | Right.
+
+rule f7_sa_dry
+when concept=family.share_answer self.humour=dry
+say Steady. You'll have me weeping into the soup. | And to think I nearly married the miller. | Remarkable. Truly. Pass the salt.
+then other: family.settle
+
+rule f7_sa_merry
+when concept=family.share_answer self.humour=merry
+say Ha! Isn't that the best thing you've heard all week? | Oh, I could kiss you. I will, in fact. | We should have a song about it. I'll start.
+then other: family.settle
+
+rule f7_sa_old
+when concept=family.share_answer self.stage=old
+say I remember when it was like that for us. | Make the most of it. It goes by so quick. | Sit down a while. Tell me more.
+then other: family.settle
+
+rule f7_sa_tired
+when concept=family.share_answer self.tired=yes
+say Tell me tomorrow. I'll be awake tomorrow. | Mm. Lovely. Wake me if I snore. | That's nice. That's... mm.
+
+rule f7_sa_poor
+when concept=family.share_answer self.wealth=poor|destitute
+say If only wishes were pennies. | Be nice, that. Be nice. | We'll see. We always say we'll see.
+then other: family.settle
+
+rule f7_sa_spouse
+when concept=family.share_answer self.mem.f7_asked=spouse self.spouse
+say #self.spouse#? Well. Snoring like a mill, but well. | #self.spouse#'s grand. Working too hard. As ever. | Oh, #self.spouse# is a treasure. Don't tell them I said so.
+then other: family.settle
+
+rule f7_sa_spouse_merry
+when concept=family.share_answer self.mem.f7_asked=spouse self.spouse self.humour=merry
+say #self.spouse#? Still putting up with me. The saint. | Still there when I get home. I keep checking. | #self.spouse#'s well. Says I'm the cross they bear.
+then other: family.settle
+
+rule f7_sa_spouse_short
+when concept=family.share_answer self.mem.f7_asked=spouse self.spouse self.temper=short
+say Ask #self.spouse# yourself. | Fine. We had words. We're fine. | Same as ever. Infuriating.
+then other: family.settle
+
+rule f7_sa_spouse_guarded
+when concept=family.share_answer self.mem.f7_asked=spouse self.honesty=guarded
+say Well enough. Why do you ask? | Oh, you know. We get on. | That's our business, I think.
+then other: family.settle
+
+rule f7_sa_child
+when concept=family.share_answer self.mem.f7_asked=child self.child
+say #self.child#? Into everything. Pots, puddles, other folk's gardens. | Growing out of every boot I buy. | #self.child# asked me where the sun sleeps. I'd no answer.
+then other: family.settle
+
+rule f7_sa_child_poor
+when concept=family.share_answer self.mem.f7_asked=child self.child self.wealth=poor|destitute
+say Hungry, mostly. Growing, so hungry. | #self.child#'s a good pup. Better than we can give them. | I made #self.child# a ball from rags. Best toy in the street, they say.
+then other: family.settle
+
+rule f7_sa_child_proud
+when concept=family.share_answer self.mem.f7_asked=child self.child self.warmth=warm
+say #self.child# is the best thing I ever did. | Clever as anything. Doesn't get it from me. | #self.child# made me a necklace from acorns. I'm wearing it. Look.
+then other: family.settle
+
+rule f7_sa_child_alone
+when concept=family.share_answer self.mem.f7_asked=child self.child self.married=no
+say Just the two of us, and we manage. | #self.child# is all I've got, and all I need. | Hard, on your own. Worth it.
+then other: family.settle
+
+rule f7_sa_mother
+when concept=family.share_answer self.mem.f7_asked=mother self.mother
+say #self.mother#? Bossing the whole street, last I saw. | Still sharp as a needle. Sharper. | Slowing down. She won't admit it.
+then other: family.settle
+
+rule f7_sa_alone
+when concept=family.share_answer self.mem.f7_asked=alone
+say I talk to the cat. The cat's no great talker. | It's the evenings. The days are all right. | I'd like that. I'd like that very much.
+then other: family.settle
+
+rule f7_sa_alone_proud
+when concept=family.share_answer self.mem.f7_asked=alone self.temper=short
+say I can boil an egg, you know. | I'm not made of glass. | I manage. Don't fuss.
+then other: family.settle
+
+# =============================================================================================== family.answer_parent (a son or daughter answers)
+
+rule f7_ap_plain
+when concept=family.answer_parent
+say Mm. | All right. | I heard you.
+then other: family.settle
+
+rule f7_ap_young_order
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=order
+say Do I have to? | In a minute! | But whyyy? | All right. All right!
+then other: family.settle
+
+rule f7_ap_young_order_sly
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=order self.honesty=sly|guarded
+say I already did. Before. When you weren't looking. | Can I do it after? Long after? | If I do it, can I have a honey cake?
+then other: family.settle
+
+rule f7_ap_young_order_merry
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=order self.humour=merry
+say Yes, captain! | Only if you say please. In a funny voice. | I'll do it hopping. Watch!
+then other: family.settle
+
+rule f7_ap_young_ask
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=ask
+say Nothing! | It wasn't me. It was the frog. | Pip and the baker's twins and a goose. | I don't know. It just happened.
+then other: family.settle
+
+rule f7_ap_young_ask_chatty
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=ask self.talk=chatty
+say Well, first we went to the well, and then Pip fell in, not all the way, and then. | Everything! I learned everything! Ask me anything! | The frog wanted a bath. I asked him.
+then other: family.settle
+
+rule f7_ap_young_ask_quiet
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=ask self.talk=quiet
+say ... Nobody. | Just things. | Can I sit on your lap instead?
+then other: family.settle
+
+rule f7_ap_young_tease
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=tease
+say It's me! Silly! | Race you! Go! I'm going! | Enormous? Like a donkey's?
+then other: family.settle
+
+rule f7_ap_young_comfort
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=comfort
+say Thank you. Are you sure? | Can we share it? Half each? | Are you sad too?
+then other: family.settle
+
+rule f7_ap_young_grief
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=comfort self.mourning=kin
+priority 2
+say Are you sad too? | I drew them a picture. Can we give it to them? | Will you go away too?
+then other: family.settle
+
+rule f7_ap_young_hungry
+when concept=family.answer_parent self.stage=young pair.mem.f7_pc=comfort self.hungry=yes
+priority 1
+say Are you sure? You're not hungry? Truly? | Thank you! Thank you! | I'll save you the crust. The best bit.
+then other: family.settle
+
+rule f7_ap_teen_order
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=order
+say Fine. | Why is it always me? | I was going to. I was literally about to. | Can it wait till later?
+then other: family.settle
+
+rule f7_ap_teen_order_short
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=order self.temper=short
+say You never ask the others. | Fine! I'll do everything, then! | Stop telling me what to do.
+then other: family.settle
+
+rule f7_ap_teen_ask
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=ask
+say Out. | Nobody. Just a friend. | Nothing. Why does it matter? | Can we not do this now?
+then other: family.settle
+
+rule f7_ap_teen_ask_sly
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=ask self.honesty=sly
+say At Fennick's. Studying. | Me? I was home by dark. You must have dozed off. | Just a friend. A friend who happens to be very handsome^f. A friend who happens to be very pretty^m.
+then other: family.settle
+
+rule f7_ap_teen_ask_warm
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=ask self.warmth=warm
+say There's someone. Don't laugh. | I'm worried I'll never be good at anything. | Can I tell you later? When it's just us?
+then other: family.settle
+
+rule f7_ap_teen_trade
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=trade
+say I don't know what I want. | Not barrels. Anything but barrels. | Maybe. I'll go and look. Just look.
+then other: family.settle
+
+rule f7_ap_teen_trade_ambitious
+when concept=family.answer_parent self.stage=adolescent pair.mem.f7_pc=trade self.drive=ambitious|restless
+say I want my own shop. Not to sweep someone else's. | There's work in Ridgemere that pays three times. | I'll find my own. Better than the cooper's.
+then other: family.settle
+
+rule f7_ap_master
+when concept=family.answer_parent pair.mem.f7_pc=master
+say Hard, but fair. Mostly fair. | I ruined a whole day's work. Nobody shouted. That was worse. | I'm learning. My paws are learning faster than my head.
+then other: family.settle
+
+rule f7_ap_master_short
+when concept=family.answer_parent pair.mem.f7_pc=master self.temper=short
+say I'm sick of sweeping. I didn't come to sweep. | They shout. All day. At everything. | Too hard. And they never say well done.
+then other: family.settle
+
+rule f7_ap_leave
+when concept=family.answer_parent pair.mem.f7_pc=leave
+say I'll come back. I'll always come back. | A year's forever. | You did it. You left your home.
+then other: family.settle
+
+rule f7_ap_match
+when concept=family.answer_parent pair.mem.f7_pc=match
+say I'll marry who I like. | Must we talk about this? | There's someone. Maybe. Don't ask me any more.
+then other: family.settle
+
+rule f7_ap_match_heights
+when concept=family.answer_parent pair.mem.f7_pc=match self.quarter=heights
+say I've met the Ashcombe pup. It has the conversation of a turnip. | Is that what you and #dad# were? An alliance? | I know my duty. I don't have to like it.
+then other: family.settle
+
+rule f7_ap_fret
+when concept=family.answer_parent pair.mem.f7_pc=fret
+say I'm fine. Truly. | You worry too much. | I'll come Restday. I promise.
+then other: family.settle
+
+rule f7_ap_fret_warm
+when concept=family.answer_parent pair.mem.f7_pc=fret self.warmth=warm
+say Come here. Let me hold you a minute. | I'll stay for #supper#. Shall I? | I know. I know you miss them. So do I.
+then other: family.settle
+
+rule f7_ap_fret_short
+when concept=family.answer_parent pair.mem.f7_pc=fret self.temper=short
+say Not this again. | Must we, every time? | I'm a grown wolf. I'll live as I please.
+then other: family.settle
+
+rule f7_ap_fret_parent
+when concept=family.answer_parent pair.mem.f7_pc=fret self.parent=yes
+say Now I've my own, I understand you. Every word. | I say the things you said. In your voice. It's horrible. | You raised me. Let me look after you a bit.
+then other: family.settle
+
+rule f7_ap_grandpup
+when concept=family.answer_parent pair.mem.f7_pc=grandpup
+say Restday, then. Hide the breakables. | #self.child# talks about you all week. | They eat like a horse. Takes after you.
+then other: family.settle
+
+rule f7_ap_help
+when concept=family.answer_parent pair.mem.f7_pc=help
+say I'll not take your money. I can manage. | You've done enough. Keep it for yourself. | ...Thank you. I'll pay it back. I will.
+then other: family.settle
+
+rule f7_ap_help_warm
+when concept=family.answer_parent pair.mem.f7_pc=help self.warmth=warm
+say I don't know what to say. Thank you. | I'll make it up to you. All of it. | You always did look after us.
+then other: family.settle
+
+# =============================================================================================== family.answer_child (a mother or father answers)
+
+rule f7_ac_plain
+when concept=family.answer_child
+say We'll see. | Hm. | Is that so?
+then other: family.settle
+
+rule f7_ac_ask
+when concept=family.answer_child pair.mem.f7_cp=ask
+say Because the gods made it so. | Ask me again after #supper#. | When you're bigger, you'll know. | Now there's a question.
+then other: family.settle
+
+rule f7_ac_ask_merry
+when concept=family.answer_child pair.mem.f7_cp=ask self.humour=merry
+say The moon told me, and the moon doesn't lie. | Ask the hens. Hens know everything. | Little? I was born this size. It was a difficult day for your #gran#.
+then other: family.settle
+
+rule f7_ac_ask_dry
+when concept=family.answer_child pair.mem.f7_cp=ask self.humour=dry
+say Good question. Ask your #gran#. She'll take a week to answer. | When you find out, tell me. | Because the world is strange, pup, and so are you.
+then other: family.settle
+
+rule f7_ac_ask_short
+when concept=family.answer_child pair.mem.f7_cp=ask self.temper=short
+say Because I said so. | Not now. Not now! | Enough questions. Wash.
+then other: family.settle
+
+rule f7_ac_ask_scholar
+when concept=family.answer_child pair.mem.f7_cp=ask self.job=scholar|priest|healer
+say Well. Sit down. It's rather a long answer. | Now that's a proper question. Let me draw it for you. | Nobody knows. But here's what some think.
+then other: family.settle
+
+rule f7_ac_want
+when concept=family.answer_child pair.mem.f7_cp=want
+say We'll see. | Not today. | Ask me when your chores are done. | What did I say last time?
+then other: family.settle
+
+rule f7_ac_want_warm
+when concept=family.answer_child pair.mem.f7_cp=want self.warmth=warm
+say Go on, then. Just this once. | If you're good all week. All week, mind. | Yes. Don't tell your #gran# I said so.
+then other: family.settle
+
+rule f7_ac_want_poor
+when concept=family.answer_child pair.mem.f7_cp=want self.wealth=poor|destitute
+say Not this week, pup. Next week. I hope. | We'll see what market day brings. | If I had it, it'd be yours.
+then other: family.settle
+
+rule f7_ac_want_rich
+when concept=family.answer_child pair.mem.f7_cp=want self.wealth=rich
+say Because we have a name to think of. | The docks are no place for you. Nor for me, come to that. | You'll understand when you're older. Probably.
+then other: family.settle
+
+rule f7_ac_want_short
+when concept=family.answer_child pair.mem.f7_cp=want self.temper=short
+say No. | What did I say? I said no. | Ask once more and it's no forever.
+then other: family.settle
+
+rule f7_ac_poor
+when concept=family.answer_child pair.mem.f7_cp=poor
+say We've each other, and that's more than coin. | We're not poor. We're careful. There's a difference. | Brindle's father owes us a penny. Tell him that.
+then other: family.settle
+
+rule f7_ac_poor_warm
+when concept=family.answer_child pair.mem.f7_cp=poor self.warmth=warm
+say We're rich in the ways that count. Come here. | Poor's just a word. You've got a warm bed and me. | One day you'll have boots that shine. I promise you.
+then other: family.settle
+
+rule f7_ac_hungry
+when concept=family.answer_child pair.mem.f7_cp=hungry
+say Here. Take mine. | I'll find something. Wait here. | There's an apple in my coat. Don't tell the others.
+then other: family.settle
+
+rule f7_ac_hungry_poor
+when concept=family.answer_child pair.mem.f7_cp=hungry self.wealth=poor|destitute
+say Soon, pup. Drink some water. It fills you. | I'll go to the chapel. They'll have bread. | Here. The last of it. I've eaten.
+then other: family.settle
+
+rule f7_ac_fear
+when concept=family.answer_child pair.mem.f7_cp=fear
+say There's nothing out there but the wind. | All right. Just tonight. Bring your blanket. | The Fen Hag's scared of me. Everyone knows that.
+then other: family.settle
+
+rule f7_ac_fear_nervy
+when concept=family.answer_child pair.mem.f7_cp=fear self.temper=nervy
+say I heard it too. Stay here. Stay close. | Shh. Let's listen together. | It's nothing. It's surely nothing. Come in with me.
+then other: family.settle
+
+rule f7_ac_grief
+when concept=family.answer_child pair.mem.f7_cp=grief
+priority 2
+say No, love. No. It wasn't anything you did. | They're resting now. Not hurting any more. | Keep it. Keep it always. They'd want you to.
+then other: family.settle
+
+rule f7_ac_grief_devout
+when concept=family.answer_child pair.mem.f7_cp=grief self.piety=devout
+priority 2
+say They're with the gods, in the warm. Waiting for us. | The Bright One has them now. | We'll see them again. A long, long time from now.
+then other: family.settle
+
+rule f7_ac_news
+when concept=family.answer_child pair.mem.f7_cp=news
+say Is that so! | Well, look at you. | Clever pup. | Show me later.
+then other: family.settle
+
+rule f7_ac_news_warm
+when concept=family.answer_child pair.mem.f7_cp=news self.warmth=warm
+say Oh, you clever thing. Come here. | That's my pup! | Show me! Show me now!
+then other: family.settle
+
+rule f7_ac_news_tired
+when concept=family.answer_child pair.mem.f7_cp=news self.tired=yes
+say Mm. Lovely, pup. | Tell me in the morning. All of it. | That's nice. Let me sit a minute.
+then other: family.settle
+
+rule f7_ac_leave
+when concept=family.answer_child pair.mem.f7_cp=leave
+say Not yet. Not quite yet. | I know. I've always known. | And who'll eat my cooking?
+then other: family.settle
+
+rule f7_ac_leave_restless
+when concept=family.answer_child pair.mem.f7_cp=leave self.drive=restless
+say I wanted to go too, at your age. I wish I had. | Go. See the world. Write to me. | Don't end up like me, nailed to one street.
+then other: family.settle
+
+rule f7_ac_leave_content
+when concept=family.answer_child pair.mem.f7_cp=leave self.drive=content
+say The world's not so grand as you think. Home's here. | There's nothing out there we haven't got. | You'll come back. They all come back.
+then other: family.settle
+
+rule f7_ac_leave_short
+when concept=family.answer_child pair.mem.f7_cp=leave self.temper=short
+say You'll go when I say you'll go. | Not while you're under my roof. | And live on what? Air?
+then other: family.settle
+
+rule f7_ac_sulk
+when concept=family.answer_child pair.mem.f7_cp=sulk
+say I was young once. I know that look. | We'll talk about it when you've calmed down. | Where you go, I worry. That's all it is.
+then other: family.settle
+
+rule f7_ac_sulk_merry
+when concept=family.answer_child pair.mem.f7_cp=sulk self.humour=merry
+say Embarrassing? I've not even started. Watch me dance. | I'll stop when you're forty. | I let you breathe. Isn't that enough?
+then other: family.settle
+
+rule f7_ac_work
+when concept=family.answer_child pair.mem.f7_cp=work
+say Learn all you can. Then learn some more. | Do as you're told, and watch what's done. | That's how it starts. Crooked, then straight.
+then other: family.settle
+
+rule f7_ac_work_old
+when concept=family.answer_child pair.mem.f7_cp=work self.stage=old
+say My master had me sweep for a year before I touched a tool. | Every master's hard. The good ones are hard. | Trade's a river. Up, down. You keep rowing.
+then other: family.settle
+
+rule f7_ac_care
+when concept=family.answer_child pair.mem.f7_cp=care
+say I'm not dead yet. | Don't you fuss over me. I'm fine. | You're a good #child#. You always were.
+then other: family.settle
+
+rule f7_ac_care_short
+when concept=family.answer_child pair.mem.f7_cp=care self.temper=short
+say I'll live where I like, thank you. | I'm old, not foolish. | I raised you. I'll not be raised by you.
+then other: family.settle
+
+rule f7_ac_care_widowed
+when concept=family.answer_child pair.mem.f7_cp=care self.widowed=yes
+say I'll come for #supper#. Just tonight. Maybe tomorrow. | I talk to them, you know. In the evenings. | They'd be so proud of you. So proud.
+then other: family.settle
+
+rule f7_ac_care_hurt
+when concept=family.answer_child pair.mem.f7_cp=care self.injured=light|bad
+say It's nothing. A bruise. Stop looking at it. | Fetch me the stick, then. Not a word. | Fine. You can carry it. Just this once.
+then other: family.settle
+
+rule f7_ac_help
+when concept=family.answer_child pair.mem.f7_cp=help
+say I'll not take charity from my own pup. | Keep it for yours. I've managed this long. | ...You're a good one. You always were.
+then other: family.settle
+
+rule f7_ac_grandpup
+when concept=family.answer_child pair.mem.f7_cp=grandpup
+say Bring them round. I'll spoil them rotten. | That's my grandpup. That's my blood. | You did the very same at that age. The very same.
+then other: family.settle
+
+# =============================================================================================== family.settle: the parent's last word (after asking or telling)
+
+rule f7_st_pc_order
+when concept=family.settle pair.mem.f7_pc=order other.stage=young|adolescent
+say Now, please. | Good. | Because I said so. | Don't make me say it again.
+
+rule f7_st_pc_order_merry
+when concept=family.settle pair.mem.f7_pc=order other.stage=young|adolescent self.humour=merry
+say Go on. Last one there's a turnip. | Quick march! | And sing while you do it.
+
+rule f7_st_pc_ask
+when concept=family.settle pair.mem.f7_pc=ask other.stage=young|adolescent
+say Hm. I'll believe that when I see it. | That's not an answer. | All right. I'm listening, whenever you want.
+
+rule f7_st_pc_comfort
+when concept=family.settle pair.mem.f7_pc=comfort
+say Hush now. | I'm here. I'm right here. | There. There. | Eat. All of it.
+
+rule f7_st_pc_tease
+when concept=family.settle pair.mem.f7_pc=tease
+say Ha! Got you. | Come here, you. | That's my pup.
+
+rule f7_st_pc_trade
+when concept=family.settle pair.mem.f7_pc=trade|master|leave|match
+say Think on it. That's all I ask. | We'll talk again. | You're your father's^f pup, all right. You're your mother's^m pup, all right. | I only want you happy.
+
+rule f7_st_pc_fret
+when concept=family.settle pair.mem.f7_pc=fret|grandpup|help self.stage=old
+say Hm. We'll see. | You're a good #child#. | Off with you, then. Come back soon. | That's all I wanted to hear.
+
+# =============================================================================================== family.settle (the last word)
+
+rule f7_st_plain
+when concept=family.settle
+say Hm. | Well. There it is. | We'll see. | #saying#.
+
+rule f7_st_warm
+when concept=family.settle self.warmth=warm
+say Come here, you. | What would I do without you? | Love you. Even now.
+
+rule f7_st_cold
+when concept=family.settle self.warmth=cold
+say Fine. | Right. | Enough said.
+
+rule f7_st_merry
+when concept=family.settle self.humour=merry
+say Ha! You'll be the end of me. | Kiss and make up? Go on. | I'll remember that one.
+
+rule f7_st_dry
+when concept=family.settle self.humour=dry
+say Wonderful. Another fine family moment. | I'll have that put on my stone. | And they say family life is dull.
+
+rule f7_st_short
+when concept=family.settle self.temper=short
+say Fine! | Don't push it. | We'll talk later. Maybe.
+
+rule f7_st_young
+when concept=family.settle self.stage=young
+say Okay! | Promise? | Can I have a cake now?
+
+rule f7_st_teen
+when concept=family.settle self.stage=adolescent
+say Fine. | Can I go now? | Whatever you say.
+
+rule f7_st_old
+when concept=family.settle self.stage=old
+say Ah, well. We've seen worse. | At my age, nothing surprises. | Put the kettle on, then.
+
+rule f7_st_devout
+when concept=family.settle self.piety=devout
+say Gods keep us. | We'll pray on it. | The gods see. They always see.
+
+rule f7_st_spouses
+when concept=family.settle pair.band=spouses
+say Come here. | I married you anyway. | You and me, #dear#. Always.
+
+rule f7_st_grief
+when concept=family.settle self.mourning=kin
+priority 1
+say Thank you. | Stay a while. | ... Aye.
+
+rule f7_st_grumble
+when concept=family.settle pair.mem.f7_tease=grumble
+say Hmph. | I mean it, mind. | We'll see. | Just do it, please.
+
+rule f7_st_grumble_short
+when concept=family.settle pair.mem.f7_tease=grumble self.temper=short
+say Don't you take that tone. | Today. Not tomorrow. Today. | Gods give me strength.
+
+rule f7_st_fond
+when concept=family.settle pair.mem.f7_tease=fond
+say Ha! | That's why I keep you. | You'll do.

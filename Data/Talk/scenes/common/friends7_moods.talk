@@ -1,0 +1,247 @@
+# Friends (doc 62, phase 7), continued: the tavern at night, grief, weariness, two from the same town far from home,
+# a long time apart, and how one character plays off another (merry and humourless, frank and sly, calm and short,
+# devout and doubting, content and ambitious, warm and cold).
+
+# ---------------------------------------------------------------- The tavern, late
+
+scene r7_fr_tavern_love_you
+when topic=friends here.place=tavern here.time=night
+a : You know what? You know what you are? You're my best friend. | I love you. I do. I love this whole tavern. | Have I ever told you... have I told you you've a lovely face? | Listen. Listen to me. Listen.
+b[humour=dry] : How many have you had? | And the tavern loves you. Till you pay. | Many times. Tonight. | I'm listening. I've been listening for an hour.
+b : And you're mine. Sit down before you fall down. | Course you do. Drink some water. | You have. Twice. | I am listening.
+a : I mean it. I mean it more than... than anything. | Water's for fish. | Three times, then. It's true. | I forgot what I was going to say.
+b : I know you do. Come on. Home. | Ha. | Thank you. Home, now. | It'll come back. Sit.
+
+scene r7_fr_tavern_one_more
+when topic=friends here.place=tavern here.time=night
+a : One more. | Just one more. Then home. | The night's young! | Who's buying the next? You're buying the next.
+b[tired=yes] : I'm asleep. I'm talking in my sleep. | One more and I'll sleep under the table. | The night's young. I'm not. | Not me. I'm off.
+b[piety=devout] : Chapel in the morning. I'll be grey. | No. I've a soul to keep. | The night's for sleeping. | Not me. I've had my cup.
+b : That's what you said three ago. | You always say that. | The night's old. Look at it. | I bought the last two.
+a : This time I mean it. | This time I mean it. | Then we'll keep it company. | Did you? Then I'm buying. Somebody lend me a penny.
+b : Ha. One. | One, then. | Ha. | #toast#.
+
+scene r7_fr_tavern_song
+when topic=friends here.place=tavern here.time=dusk|night
+a : Sing the one about the ferryman. | Give us a song. Go on. | That fiddler's a cat in a sack. You sing better. | Do you know the drinking song from the hills?
+b[talk=quiet] : No. | I don't sing. | Not in front of folk. | I know it. I'll not sing it.
+b[humour=merry] : Only if you do the high bit. | Clear the tables! | I'll do the hill one, you do the hiccups. | Know it? I wrote it. Well. I sang it once.
+b : I'll need another drink first. | One verse. | Ha. | Only the first bit.
+a : Bring her a jar! Bring him a jar! Bring a jar! | One's enough. | Go on! | That's the best bit.
+b : ...Oh, the ferryman rowed and the ferryman sang... | Hm hm, the ferry, the ferry... | Oh, the hill was high and the ale was low! | All right! All right.
+
+scene r7_fr_tavern_regret
+when topic=friends here.place=tavern here.time=night
+a : My head's going to hate me tomorrow. | I shouldn't have had the last one. | Why did I let you buy the cider? | I've a feeling I'll be sorry in the morning.
+b : Tomorrow's a long way off. | You say that every time. | You didn't let me. You asked me. | Sorry's for the morning. Tonight's for this.
+a : Not far enough. | And I'm right every time. | Did I? | Wise. That's wise, that is.
+b[humour=merry] : Then have another and push it further. | You're right every time and you never listen. Like me. | You begged. I've witnesses. | I'm very wise. #toast#!
+b : Home, then? | Home, then. | You did. Home. | Home.
+
+scene r7_fr_tavern_secret
+when topic=friends here.place=tavern here.time=night
+a : I'll tell you something I've never told anyone. | Shall I tell you a secret? A real one? | I can tell you this because you're drunk too. | I've always wanted to be a sailor. Never told anyone.
+b[honesty=sly] : Go on. I'm a closed box. I'm locked. | Oh yes. Oh, please. | I'm not drunk. Go on. | A sailor! Who else knows?
+b : Go on. I'll not remember it. | Go on, then. | I'm not that drunk. | A sailor?
+a : I can't swim. | I can't whistle. Never could. | I'm afraid of geese. | And I get sick on a pond.
+b : That's your secret? | That's it? | Everybody's afraid of geese. | Ha! Best sailor in the realm.
+a?[temper=nervy] : Don't tell anyone. Please.
+
+scene r7_fr_tavern_toast
+when topic=friends here.place=tavern
+a : #toast#! | To us. And no one else. | To the ones who aren't here. | To your terrible singing.
+b[mourning=kin|friend] #grief : To the ones who aren't here. | To them. | To the ones who aren't here. | To the ones we've lost.
+b : #toast#! | To us. | To them. | To your terrible dancing.
+a@grief : To them. | To them. | To them. | To them.
+a : And to the next one. | And to cider. | May they be drinking somewhere better. | It's not terrible. It's spirited.
+
+# ---------------------------------------------------------------- Grief, and comfort
+
+scene r7_fr_console_kin
+when topic=friends b.mourning=kin
+priority 3
+a : I heard. I'm so sorry. | I don't know what to say. So I'll just sit here. | I brought bread. You won't eat it. I'll leave it anyway. | How are you holding up?
+b[talk=quiet] : ... | *nods* | *doesn't look up* | ...
+b[temper=short] : Everyone's sorry. Sorry doesn't bring them back. | Then don't say anything. | I'm not hungry. | How do you think?
+b : Thank you. | Thank you for coming. | Thank you. | I'm not. I'm not holding up.
+a[warmth=warm] : I'm here. Day or night. You hear me? | I'm not going anywhere. | I'll come back tomorrow. And the day after. | You don't have to. Lean on me.
+a[piety=devout] : The gods have them now. They're held. | I'll light a candle tonight. | Eat a little. For them. | The gods hold them. And I'll hold you.
+a : I'm here, if you want. | I'll sit a while, then. | Eat a little. | You don't have to be.
+
+scene r7_fr_console_friend
+when topic=friends b.mourning=friend
+priority 1
+a : I heard about your friend. I'm sorry. | You've lost someone. Talk if you want. | They were a good one. Everyone says so. | Do you want company? Or not?
+b : They were the best of us. | We were going to go fishing. On Restday. | They were. They really were. | Company. I think.
+a : Tell me about them. | Go anyway. For them. | Tell me something they did. | Then I'll stay.
+b[humour=merry|dry] : They once ate a candle for a bet. A whole one. | They'd have laughed at me for crying. | They stole a goose from the Heights. Rode it home. | Thank you. They'd have teased you for being soft.
+b : They were kind. That's all. Just kind. | Maybe I will. | They looked after people. | Thank you.
+a : Then they'll be missed. | Do. | That's a good thing to be remembered for. | Then I'll be soft.
+
+scene r7_fr_console_widow
+when topic=friends b.widowed=yes
+a : You're looking better. A little. | Have you been eating? | Come out with us tonight. You need it. | Do you still talk to them? Out loud?
+b : A little. Some days. | Some. | I don't know. | Every night. Is that mad?
+a[warmth=warm] : One day at a time. And I'll be here for each one. | I'll bring a pie round. You'll eat it and like it. | We'll sit in the corner. No dancing. | Not mad. I'd talk to mine, too.
+a : Some days is good. | Good. Keep at it. | Think about it. | No.
+b : Thank you. | Thank you. | Maybe. | Thank you.
+
+scene r7_fr_mourner_cheered
+when topic=friends a.mourning=kin|friend
+a : I can't stop thinking about them. | I keep turning to tell them things. | The house is so quiet. | I laughed today. Then I felt terrible.
+b[humour=merry] : They'd want you to laugh. They'd want you to laugh at me. | Tell me instead. I'm worse company, but I'm here. | Come and stay with us. It's never quiet. | Good. Laugh more. Laugh at me.
+b[warmth=cold] : It gets easier. | You'll stop, in time. | Get a dog. | Don't feel terrible.
+b : Of course you can't. | Tell me, then. | Come to ours tonight. | They'd have wanted you to.
+a : Maybe. | Thank you. | I might. | I know. I know.
+
+# ---------------------------------------------------------------- Weary
+
+scene r7_fr_both_tired
+when topic=friends a.tired=yes b.tired=yes
+a : I'm so tired I could sleep standing. | My eyes keep closing on their own. | I sat down and forgot to get up. | Is it night yet? Please say it's night.
+b : Me too. Lean on me. No, don't, I'll fall over. | Mine too. Who's watching us? | Me too. We're a pair. | It's barely noon.
+a : Ha. | Nobody. | A pair of what? | Don't.
+b : Ha. | Good. | Old boots. | Sorry.
+
+scene r7_fr_tired_friend
+when topic=friends b.tired=yes
+a : You look done in. | When did you last sleep? | Go home. Sleep. That's an order. | You're swaying.
+b[working=yes] : I can't. I've to finish. | I slept... yesterday? | I can't, I'm on till dark. | Am I? It's the floor that's moving.
+b : I am. | Don't remember. | Soon. | Am I?
+a[warmth=warm] : Give me half. I'll help. | Then sleep at mine. It's closer. | I'll walk you home after. | Here. Sit. Just for a moment.
+a : Then finish quick. | That's not good. | Go on. | Like a tree in the wind.
+b : Thank you. | Maybe. | Soon. | Thank you.
+
+# ---------------------------------------------------------------- Two from the same town, far from home
+
+scene r7_fr_same_from_bread
+when topic=friends pair.same_from=yes a.from!=ridgemere here.region=ridgemere
+a : They don't make bread here like back home. | Nobody in the city knows how to make a proper stew. | I miss the quiet back home. | City folk walk too fast.
+b : Too soft. Bread should fight back. | Too thin. You could read through it. | Me too. Here you can't hear yourself think. | And talk too fast. And think too fast.
+a : I'd give a week's pay for a loaf from the old bakehouse. | My mother's stew. The whole pot. | The frogs at night. I miss the frogs. | They do. I'm out of breath watching.
+b[accent=broad] : Aye. Aye, and some. #saying#. | #oath#, I'd give two. | Frogs. Aye. And the wind. | #saying#.
+b : Two weeks'. | With the dumplings. | The frogs. Gods. | Me too.
+
+scene r7_fr_same_from_news
+when topic=friends pair.same_from=yes
+a : Any news from home? | Did you hear from your mother? | Have you been back home lately? | Who's left back home, now? Of our lot?
+b : Nothing. You? | She says the roof's still leaking. | Not since the spring. | Hardly anyone. They've all gone. Like us.
+a : Not a word. | Twenty years that roof's leaked. | Nor me. | Like us.
+b : No news is good news, my gran said. | It'll outlast us. | We should go. Together. Once. | Aye.
+a?[warmth=warm] : We should. One day. You and me.
+
+scene r7_fr_same_from_accent
+when topic=friends pair.same_from=yes here.region=ridgemere a.from!=ridgemere
+a : Say something. In the old way. I want to hear it. | Do you still talk like home, when no one's listening? | My accent's going. I heard myself today. I sounded like a city wolf. | They laughed at how I said "water" today.
+b[accent=broad] : #greet#. There. Like home. | I talk like home all the time. I never stopped. | Yours is going. Mine never will. | Let them laugh. It's how water's said.
+b : #greet#. | Only to myself. | Mine too. It slips. | Let them laugh.
+a : That's it. That's home. | Me too. | We should talk more. Keep it. | Let them.
+
+scene r7_fr_same_from_rivalry
+when topic=friends pair.same_from=no a.from!=ridgemere b.from!=ridgemere
+a : Your lot couldn't grow a turnip if it came with instructions. | At least where I'm from, folk know how to cook. | My town's better than yours. Everyone knows it. | You talk funny. Did you know?
+b : At least my lot can swim. | Cook? Boil, you mean. | Everyone in your town, maybe. | You talk funnier.
+a : Swimming's for fish. | Boiling's cooking. | All of them. | I talk proper.
+b : Ha. | Ha. | All four of them. | You talk like a duck with a cold.
+
+# ---------------------------------------------------------------- A long time apart
+
+scene r7_fr_long_apart
+when topic=friends pair.days_since>=14
+priority 1
+a : Look at you! Where have you been? | You've been gone an age! | I thought you'd moved away and not told me. | I'd forgotten your face. Nearly.
+b[travelling=yes] : On the road. I've seen half the realm. | Out with the carts. Don't ask about the mud. | Never moved. Just never stopped. | Remember it now?
+b : I know. I'm sorry. | Busy. Too busy. | Never. I'd tell you first. | Remember it now?
+a : Well, you're here now. Come on. Tell me everything. | Too busy for me? | You'd better. | It's thinner. Are you eating?
+b : Over a jar? | Never again. | I swear it. | Mostly cider.
+
+scene r7_fr_back_again
+when topic=friends pair.days_since>=7
+a : Haven't seen you all week! | Where've you been hiding? | I've had no one to complain to. | I came by your door twice.
+b : Busy. You know how it is. | Nowhere. Home. | Complain now. I'm here. | I wasn't in. Either time.
+a : I know how it is. Too well. | Hiding, then. | I've saved it all up. Sit down. | Clearly.
+b : Ha. | Hiding from you. | Gods help me. | Sorry.
+
+# ---------------------------------------------------------------- One character against another
+
+scene r7_fr_merry_and_humourless
+when topic=friends a.humour=merry b.humour=none
+a : Why did the goose cross the market? | Did you hear about the miller who lost his wheel? | What do you call a wolf with no ears? | Knock knock.
+b : I don't know. Why? | No. Did he find it? | I don't know. | Who's there?
+a : To get to the other stall! | He's still going round in circles! | Anything you like, he can't hear you! | A goose. Goose who? Goose you didn't see that coming!
+b[warmth=warm] : Ha. Ha! I see. Very good. | I don't follow, but you're happy, and that's nice. | Oh, because he can't hear. Yes. Good. | Oh, you. Ha.
+b : Is that a joke? | I don't see it. | That's not funny. That's sad. | I did see it coming. You said goose.
+a : It was. | I'll explain it later. | It's a bit funny. | Tough crowd.
+
+scene r7_fr_dry_and_merry
+when topic=friends a.humour=dry b.humour=merry
+a : Lovely weather for it. | I see you're in a good mood. Again. | You're very loud this morning. | How do you stay so cheerful? Is it a disease?
+b : Isn't it! | Always! | Am I? HA! I am! | Ha! It's catching! Come here!
+a : It's raining. | Unbearable. | Yes. | Keep away from me.
+b : Exactly! Lovely! | You love it really. | You love it. | Too late! You're smiling!
+a : I'm not smiling. | I tolerate it. | I'm grimacing. | It's wind.
+
+scene r7_fr_frank_and_sly
+when topic=friends a.honesty=frank b.honesty=sly
+a : Did you sell the cooper that cracked barrel? | Where did you really get that coin? | You weren't really ill yesterday, were you? | Tell me straight. Did you take the last pie?
+b : Cracked? It was seasoned. | Here and there. | I was very ill. Very. Briefly. | Which pie?
+a : It leaked like a sieve. | Straight. | You were at the river. I saw you. | You've crumbs on your chin.
+b : Seasoned barrels breathe. | Fine. Won it at bones. Fairly. Mostly. | The river's healing. Everyone knows. | Ah. That pie.
+a : You're a rogue. | Mostly. | I'll not cover for you again. | I'll want half of the next one.
+b : A friendly one. | Mostly. | You will. | Fair.
+
+scene r7_fr_calm_and_short
+when topic=friends a.temper=calm b.temper=short
+a : Something's got your hackles up. | Breathe. Whatever it is, breathe. | You're growling. Do you know you're growling? | Sit down. You'll wear a rut in the street.
+b : The cooper. Again. The cooper! | I am breathing! | I'm not growling! | I'll sit when I'm good and ready!
+a : What's he done this time? | Slower. | You are. Listen. | Ready now?
+b : Nothing. Breathing. Too loudly. | Fine. | ...Fine. I'm growling. | ...Fine.
+a : Ah. A crime. | There. | Better. | There.
+
+scene r7_fr_devout_and_doubter
+when topic=friends a.piety=devout b.piety=ordinary
+a : You should come to chapel. | I prayed for you this Restday. | The gods are good to us, you know. | Did you see the new candles at chapel?
+b[honesty=frank] : I don't believe the gods are listening. | Did it help? | Are they? I hadn't noticed. | No. I don't go. You know I don't.
+b : Maybe. Some Restday. | Did you? Thank you. I think. | When they remember. | Are they nice?
+a : They're listening. You're not. | It'll help. Give it time. | Look about you. | Beautiful. Come and see.
+b : We'll see. | I'll take your word. | I'm looking. | Some Restday.
+a?[warmth=warm] : I'll save you a seat. Always.
+
+scene r7_fr_content_and_ambitious
+when topic=friends a.drive=content b.drive=ambitious
+a : Sit down. You never sit down. | What's the hurry? | Look at that sky. Isn't that enough? | You'll work yourself into the ground.
+b : Sitting doesn't buy shops. | Everything. Everything's the hurry. | Not for me. Never enough. | Not before I've made something.
+a : Neither does running about. | The sky'll be here tomorrow. So will the shop. | That's sad. | Made what?
+b : It does. Faster. | You don't know that. | Maybe. | Something with my name on.
+a : Well. Sit for a moment anyway. | Then sit for a bit. | Sit. | Your name's on my door. Painted. Badly. That's enough for me.
+
+scene r7_fr_warm_and_cold
+when topic=friends a.warmth=warm b.warmth=cold
+a : I've missed you! | Give us a hug. | You look lovely today. | I made you something.
+b : Hm. It's been a day. | No. | Do I. | Why?
+a : A whole day! | Too late. There. | You do. | Because I like you.
+b : ...You're impossible. | Get off. | ...Thank you. | ...Hm. Thank you.
+
+scene r7_fr_restless_and_steady
+when topic=friends a.drive=restless
+a : I'm going to go. This time I'm really going. | There's a caravan leaving for the coast. I could be on it. | How do you stand it? Same street, same faces? | I need something to happen. Anything.
+b[drive=content] : You said that last year. And the year before. | And then what? | I like the faces. Yours is one of them. | Something happens every day. You don't look.
+b : Where would you go? | You'd miss us. | I don't stand it. I sit. | Something will.
+a : Anywhere. Over there. | Would I? | Sitting's worse. | When?
+b : Over there's just another here. | You would. And I'd miss you. | Then walk with me. That's something. | Soon. Maybe. Have a cider while you wait.
+
+scene r7_fr_nervy_and_calm
+when topic=friends a.temper=nervy
+a : Did you lock your door? I can't remember if I locked mine. | Do you think it'll storm? It looks like it'll storm. | I've a feeling something bad's going to happen. | Did that wolf just look at me?
+b[temper=calm] : You locked it. You always lock it. You check it three times. | It might. We'll get wet. We've been wet before. | Something bad happens every day. Somewhere else. | He looked at the pie stall. You're near the pie stall.
+b : Probably. | Probably not. | Like what? | Which wolf?
+a : Probably isn't certainly. | Probably not isn't no. | I don't know. That's the worst part. | Him! Now he's gone.
+b : Go and check, then. I'll wait. | Then we'll get wet. | Have a cider. It'll go. | There. All gone. Nothing happened.
+
+scene r7_fr_chatty_and_quiet
+when topic=friends a.talk=chatty b.talk=quiet
+a : So then I said to her, I said, you can't put that there, and she said... are you listening? | Did you hear about the cooper's daughter? And the goat? And the goat's owner? | I've so much to tell you. Where do I start? | Nice day. Nice day! Isn't it? Say something.
+b : Mm. | No. | The beginning. | Mm.
+a : Good. Where was I. | Well! You'll never believe it. | Right. So. Last Restday... | That'll do.
+b : ... | ... | ... | *smiles*
+a?[warmth=warm] : I do love our talks.

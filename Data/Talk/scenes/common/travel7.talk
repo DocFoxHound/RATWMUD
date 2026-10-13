@@ -1,0 +1,382 @@
+# Travel (doc 62, phase 7): journeys made and wanted, the roads and what's on them (bandits, mud, inns, tolls), carters
+# and caravans, the other towns as folk here see them, the sea out of Ridgemere, pilgrims, those who never left, the
+# travellers who pass through, and the pull of where you grew up. Region-only scenes: regions/land7_regions.talk.
+# Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Journeys wanted
+
+scene e5_tr_one_day
+when topic=travel
+a : One day I'm going to see the whole realm. Every town. | I've a mind to walk the Southway end to end, just to say I have. | If I had a month and a mule, I'd be gone tomorrow.
+b[old] : That's what I said at your age. Then I got a roof and a back that aches.
+b[carter] : Every town's the same inn with a different name over the door. Take it from me.
+b[child] : Can I come? I'll carry the bag!
+b : And who'd mind your house while you're gone? | Your feet would give out by Oakhaven. | You'd be back in a week, missing your bed.
+a : Then I'll go before I get a roof. | It's the idea of it. | Maybe. But I'd have been.
+
+scene e5_tr_sea_edge
+when topic=travel
+a : Do you think there's anything past the sea? | Sailors say there's land past the edge of the water. | I'd like to see the sea just once. Properly. Not a picture.
+b[sailor] : Water, then more water, then more. Then you turn round, if you're lucky.
+b[priest] : The Bright One's lands go further than any boat.
+b : Sailors say a lot of things. | I'd not get in a boat to find out. | Go to Ridgemere and stand on the wharf. It's all there.
+a : Somebody must know. | Nor me, really. | Maybe I will.
+
+scene e5_tr_where_would_you_go
+when topic=travel pair.band=friends|spouses|family
+a : If you could go anywhere, #pet#, where would it be? | Close your eyes. You're somewhere else. Where? | Tell me the place you'd go, if nobody needed you.
+b[from=frosthollow] : Up the pass again. Just to breathe that cold, clean air.
+b[from=southmeadow] : Home to the south. Lie in an orchard and let the apples fall on me.
+b[from=coldwater] : Out on Glasswater at dawn with the mist lifting. Nothing in the world better.
+b[from=mirebridge] : Back to the fens. Don't laugh. I miss the mist.
+b[from=oakhaven] : Under the oaks of the Warmwood. Where it's green and warm and quiet.
+b[from=larkfield] : Up on the high downs, with the larks and nothing else.
+b : The sea. Just to sit and look at it. | Somewhere it doesn't rain. | Nowhere. I'm happy here with you.
+a : I'd come with you. | I'll take you, one day. | Well. Good answer.
+
+scene e5_tr_saving_for
+when topic=travel a.wealth=poor|comfortable
+a : I've been putting a penny a week by for the journey. | Got a little jar for my travelling money. | I'm saving to go and see my sister. Three years now.
+b[wealth=rich] : Gracious. A penny a week. How long will that take?
+b[wealth=poor] : I had a jar like that once. Then the winter came.
+b : How much have you got? | Don't tell anyone where it is. | Nearly there?
+a : Enough for the boots. Not the road. | Under the floor. Don't you tell. | Halfway. Maybe next year.
+
+scene e5_tr_restless_gate
+when topic=travel a.drive=restless
+a : I watched the caravan go out the gate this morning and nearly ran after it. | Every road out of town is calling me and I can't answer any of them. | I'm itching. Everywhere. In my feet mostly.
+b[drive=content] : Sit down and have some soup. It passes.
+b[drive=restless] : I know. Gods, I know. Let's just go.
+b : Then go. What's stopping you? | You've always been like this. | Have you tried rolling in something?
+a : Everything. Everyone. | Since I was a pup. | Ha. Maybe.
+
+scene e5_tr_too_old
+when topic=travel a.stage=old
+a : I meant to travel. I meant to see the mountains, the sea, the south. | When I was young I'd a map pinned over my bed. | I never did go anywhere. Strange, at the end.
+b[young] : You could still go! Grandsires can travel.
+b[old] : Nor me. We were busy, weren't we? Living.
+b : There's still time. | What happened to it? | Did you mind?
+a : Not with these knees. | The damp got it. And the dreams. | Not really. I had all this instead.
+
+scene e5_tr_wedding_far
+when topic=travel pair.band=friends|acquaintances|family
+a : My cousin's marrying in another town. I've to walk three days for a dance. | We've a funeral up the road. Two days there and two back for an afternoon. | My aunt wants us all for her birthday. All the way out there.
+b : That's family. | Take a cart if you can. | Go. You'll be glad you did.
+a : That's what I'm afraid of. | Can't afford the cart. | Probably.
+
+# ---------------------------------------------------------------- The roads and what's on them
+
+scene e5_tr_mud_roads
+when topic=travel
+a : The roads are all #mud# after the rain. Wheel-deep. | I came in on the Fen Road. I'm still finding #mud# in my ears. | A wagon sank to the axle on the road this morning.
+b[carter] : Don't. I spent an hour behind my oxen pushing. They looked at me like it was my fault.
+b : The Houses should pave them. | Brush it out before you come in. | They should put stones down.
+a : The Houses don't use them. | Too late. | Who pays for stones?
+
+scene e5_tr_inns
+when topic=travel
+a : The worst inn I ever stayed at had a goat in the common room. | Best bed I ever had was at a roadside inn. Never found it again. | Do you know any inns on the road worth stopping at?
+b[innkeeper] : Every inn has a goat, if you look. Mine's just behind the bar.
+b[carter] : The Glass Lantern for beds, the Singing Lark for ale, the Eel and Lantern for a story.
+b : Was the goat paying? | Probably a dream. | Sleep in the cart. Cheaper.
+a : More than me. | Probably. | And colder.
+
+scene e5_tr_bandits_road
+when topic=travel world.bandits=near
+a : Bandits on the road again. Nobody's going anywhere. | I'll not travel this month. Not with them out there. | They say bandits stopped a cart and took the very boots off the driver.
+b[guard] : We've sent word. Travel in daylight and in company till it's sorted.
+b[carter] : I go armed. Not that it's much use against twelve.
+b : Then we stay home. | Good. Neither will I. | Barefoot home, poor soul.
+a : At least home has a fire. | Not worth it. | I'd die of shame.
+
+scene e5_tr_bandits_tale
+when topic=travel a.stage=adult|old
+a : I was robbed on the road once. Years back. | Did I ever tell you about the time I met bandits? | I've only seen bandits once, and they were the politest thieves you'd ever meet.
+b[temper=nervy] : Don't. I'll not sleep tonight.
+b : What happened? | Go on. | Polite?
+a : They took my purse and gave me back my lunch. | They wanted the cart. The horse didn't want to go with them. | Said please and thank you, and took the lot.
+b : Generous of them. | Good horse. | Better manners than the toll-keeper.
+
+scene e5_tr_toll
+when topic=travel
+a : Another toll at the gate. Pay to come in, pay to go out. | They've raised the toll again. | The toll-keeper wanted a penny for my shadow.
+b[merchant] : Tolls are why everything costs what it costs.
+b[guard] : Somebody has to pay for the wall.
+b : #robbery#. | Of course they have. | And did you pay?
+a : I'll climb over it next time. | Next they'll toll the air. | I stood in the shade.
+
+scene e5_tr_walking
+when topic=travel
+a : I walked here from the next town. My paws are blistered raw. | Walked all day yesterday. My legs are still walking. | Nothing like a long walk to make you love a chair.
+b[healer] : Soak them in salt water. And put your boots by the fire.
+b : You should have taken a cart. | Sit down then. | True enough.
+a : And pay? Never. | I'll never stand again. | Twice true.
+
+scene e5_tr_lost_way
+when topic=travel
+a : Took a short cut through the woods and got lost for a day. | I followed a footpath on a carter's say-so. It went to a pigsty. | Ever been lost? Properly lost?
+b[woodcutter] : Never trust a footpath in a wood. Half of them are made by deer.
+b : Short cuts never are. | Carters lie. | Once. In my own town, drunk.
+a : I know that now. | Every one of them. | That counts.
+
+scene e5_tr_night_road
+when topic=travel here.time=dusk|night
+a : Wouldn't want to be on the road tonight. | Someone's still out there, walking in the dark. Poor soul. | You can hear the road at night. Wagons, and other things.
+b[temper=nervy] : Don't say that. Shut the shutters.
+b[guard] : Nobody honest walks after dark.
+b : Not me. | I hope they've a lantern. | Owls, mostly.
+a : Not anyone with sense. | Me too. | I'll say owls.
+
+scene e5_tr_journey_weather
+when topic=travel here.weather=rain|storm|snow
+a : Anyone travelling in this will be soaked to the bone. | Pity anyone on the road today. | The roads will be #mud# for a week after this.
+b[carter] : I'm meant to go out tomorrow. I'll be a drowned rat by the gate.
+b : Pity them. | Inns will be full. | Two weeks.
+a : Poor souls. | Good for the inns. | At least.
+
+# ---------------------------------------------------------------- Carters and caravans
+
+scene e5_tr_carter_life
+when topic=travel a.job=carter
+a : Larkfield in two days, the city in four, home by Restday if the axle holds. | I've slept under this cart more than in my own bed. | My oxen know the road better than I do. I just hold the reins.
+b[carter] : Same here. Mine know which inns give them oats.
+b : Doesn't your family mind? | Is it lonely? | Then what are you for?
+a : They say I'm better company in small doses. | The oxen are good listeners. | Singing. Somebody has to sing.
+
+scene e5_tr_caravan_coming
+when topic=travel
+a : There's a caravan due in. You can hear the bells from the hill. | Look, dust on the road. Caravan coming. | The caravan's late. Somebody's worried.
+b[merchant] : Finally. I've an order on that.
+b[child] : Can I go and see the oxen?
+b : Good. We need the salt. | Bells! I love the bells. | They're always late.
+a : Everyone does. | Off you go, then. | Not always.
+
+scene e5_tr_caravan_guard
+when topic=travel a.job=guard|soldier
+a : I've been asked to guard a caravan to the city. Double pay. | I rode with a caravan once. Never been so bored in my life. Then never so frightened. | Caravan guard's an easy job till it isn't.
+b : Will you go? | What happened? | Nothing ever happens though, surely.
+a : For double pay I'd guard a cabbage. | A night on the downs, and eyes in the gorse. Nothing came. But the eyes. | Once in ten trips. That's when.
+
+scene e5_tr_ride_along
+when topic=travel pair.band=acquaintances|friends
+a : I've begged a ride on the carter's wagon next week. | A carter said I could sit up front if I paid in pies. | I'm going with the wool wagon. Sitting on the fleeces.
+b[carter] : Pies, is it? That's my going rate now, is it?
+b : Hope you've a cushion. | Good pies? | Smell like sheep when you get there.
+a : I'll sit on my coat. | My best. | I always smell like sheep.
+
+# ---------------------------------------------------------------- The other towns, as folk here say
+
+scene e5_tr_about_ridgemere
+when topic=travel here.region!=ridgemere
+a : Been to Ridgemere? All those Houses with their noses in the air. | My cousin went to the city. Came back saying "rather" all the time. | They say it rains every single day in Ridgemere.
+b[from=ridgemere] : We're not all on the Heights, you know. Some of us grew up in the Sump.
+b[wealth=rich] : The city has its charms. The Heights are lovely in summer.
+b : Pigs on silk cushions, the lot of them. | Ridiculous. | It does. I've been. I was damp for a month.
+a : Never been. Never want to. | Rather. | Bless them.
+
+scene e5_tr_about_frosthollow
+when topic=travel here.region!=frosthollow
+a : Can you imagine living in Frosthollow? Snow half the year. | Frosthollow folk eat their porridge cold, they say, to stay tough. | They say the miners in Frosthollow can see in the dark.
+b[from=frosthollow] : We eat it hot like anyone. And we don't feel the cold. Much.
+b[miner] : Seeing in the dark's just knowing where you put things.
+b : Rather them than me. | Mad, the lot of them. | Hard folk.
+a : Rather them than me. | Mad. | Hard as their rock.
+
+scene e5_tr_about_coldwater
+when topic=travel here.region!=coldwater
+a : Coldwater's the prettiest place in the realm. That lake. | They say Coldwater folk swim in that lake in winter. On purpose. | You can drink straight from the lake in Coldwater, they say.
+b[from=coldwater] : Once a year, at the new year. It's tradition. We shout a lot.
+b[fisher] : Best trout in the realm come out of Glasswater. Don't tell my customers.
+b : Too cold for me. | Fools. | Lucky them.
+a : Pretty, though. | Brave fools. | Ours tastes of mud.
+
+scene e5_tr_about_oakhaven
+when topic=travel here.region!=oakhaven
+a : Oakhaven's dark. All those trees. You can't see the sky. | They say in Oakhaven the woods move when you aren't looking. | Oakhaven folk talk to trees. I've seen them do it.
+b[from=oakhaven] : We do not. We talk near trees. Very different.
+b[woodcutter] : The Warmwood's honest wood. Best oak in the realm.
+b : I'd get lost. | Nonsense. | Somebody has to.
+a : We'd never find you. | So they say. | The trees are probably grateful.
+
+scene e5_tr_about_mirebridge
+when topic=travel here.region!=mirebridge
+a : Mirebridge. Wet feet from birth to burial. | They eat eels in Mirebridge. Every day. Every meal. | I went to Mirebridge once. Mist so thick I walked into the chapel.
+b[from=mirebridge] : We eat eels because they're good. You've just never had them done right.
+b[healer] : Mirebridge herbs are the best there are. The fens grow everything.
+b : Poor souls. | Gods. | Did you pray while you were in there?
+a : Poor damp souls. | Every one. | I did. For dry feet.
+
+scene e5_tr_about_larkfield
+when topic=travel here.region!=larkfield
+a : Larkfield's all sheep. More sheep than wolves. | Larkfield folk would sell you your own coat back. | Every carter in the realm ends up in Larkfield sooner or later.
+b[from=larkfield] : And you'd thank us for a good price on it.
+b[herder] : Larkfield wool's the best in the realm. The downs make it.
+b : The sheep probably run it. | Market folk. | All roads lead there.
+a : Better than the Council. | Sharp as tacks. | And none lead back.
+
+scene e5_tr_about_southmeadow
+when topic=travel here.region!=southmeadow
+a : Southmeadow's soft. Sun every day and apples falling in your lap. | They say nobody in Southmeadow's ever been cold. | If I had any sense I'd move to Southmeadow.
+b[from=southmeadow] : Soft! You try harvest in that heat. Then call me soft.
+b[farmer] : The Sunfields grow grain like nowhere else. But they're dry as a bone.
+b : Must be nice. | Lucky things. | Take me with you.
+a : Must be. | Spoilt. | I'll pack.
+
+scene e5_tr_best_town
+when topic=travel pair.band=friends|acquaintances
+a : Which is the best town, do you think? Honestly. | If you had to live in any other town but this one, which? | Name the worst town in the realm. Go on.
+b[from=frosthollow] : Frosthollow. You'd say different, but you've not seen the snow at dawn.
+b[from=southmeadow] : Southmeadow. Obviously. Have you seen the orchards?
+b[from=mirebridge] : Mirebridge. Nobody bothers you there. Nobody can find you.
+b : This one, of course. | Coldwater, for the lake. | Ridgemere. Somebody has to.
+a : Spoken like a local. | I'll grant you the lake. | Ha. The Council's nephew, are you?
+
+# ---------------------------------------------------------------- From elsewhere, standing here
+
+scene e5_tr_homesick_frosthollow
+when topic=travel a.from=frosthollow here.region!=frosthollow
+a : It's too warm here. Even in winter. I miss the snow. | Nobody here knows how to light a proper fire. | I miss the sound of the picks in the morning.
+b[from=frosthollow] : Me too. Pass Road's not that far. We could go back for midwinter.
+b : Too warm? You're mad. | Show me, then. | That's a noise to miss?
+a : Probably. | Pine, not oak. And bank it high. | It means everyone's alive.
+
+scene e5_tr_homesick_coldwater
+when topic=travel a.from=coldwater here.region!=coldwater
+a : The water here tastes wrong. Too soft. | I keep looking for the lake when I wake up. | Nobody here knows what a proper trout tastes like.
+b[fisher] : I've got trout. Not lake trout, but trout.
+b : Water's water. | Must be strange. | We have fish.
+a : It is not. | It is. | You have mud with fins.
+
+scene e5_tr_homesick_oakhaven
+when topic=travel a.from=oakhaven here.region!=oakhaven
+a : Too much sky here. It makes me dizzy. | I miss the trees. The smell of leaf mould after rain. | Where I come from, the light comes down green.
+b[woodcutter] : There's a copse past the fields. It's not the Warmwood, but it's trees.
+b : There's sky everywhere. | It just smells of #mud# here. | Green light? Sounds like a hangover.
+a : Not like this. | Exactly. | It's lovely, you rogue.
+
+scene e5_tr_homesick_mirebridge
+when topic=travel a.from=mirebridge here.region!=mirebridge
+a : Everything's so dry here. My skin's cracking. | No mist in the morning. It feels naked. | Nobody here can cook an eel to save their life.
+b[from=mirebridge] : I bought a jellied eel off a cart last week. I cried. Not from joy.
+b : Most folk like dry. | Most folk like seeing where they're going. | Thank the Bright One.
+a : Most folk are wrong. | Overrated. | You'd love a proper eel.
+
+scene e5_tr_homesick_larkfield
+when topic=travel a.from=larkfield here.region!=larkfield
+a : No wind here. On the downs the wind never stops. I can't sleep without it. | I miss market day back home. The noise of it. | I hear a lark and I'm home again, just for a moment.
+b : Leave a window open. | We have markets. | They're only birds.
+a : It's not the same window. | Not like ours. | Not to me.
+
+scene e5_tr_homesick_southmeadow
+when topic=travel a.from=southmeadow here.region!=southmeadow
+a : I've not been warm since I came here. Not once. | Your apples are sour. Sorry. They are. | In Southmeadow it's sun on your back from spring to harvest.
+b[from=southmeadow] : Every apple north of the Sunfields is sour. I've stopped buying them.
+b : Wear another coat. | Then don't eat them. | And here it's rain on your back.
+a : I've two on. | I can't stop. | Don't I know it.
+
+scene e5_tr_homesick_ridgemere
+when topic=travel a.from=ridgemere here.region!=ridgemere
+a : It's so quiet here at night. No bells, no carts, no shouting. I can't sleep. | I miss the rain. Strange thing to miss. | I miss the city. The wharf, the smell of fish and tar.
+b[from=ridgemere] : I miss the noise too. You never think you will.
+b : You'll get used to it. | We have rain. | Fish and tar? Truly?
+a : I hope not. | Not like the city's. | Home's home.
+
+scene e5_tr_what_keeps_you
+when topic=travel pair.band=acquaintances|friends
+a : What keeps you here, anyway? You could go anywhere. | Ever think of just leaving? Starting over somewhere? | Why do any of us stay put, do you think?
+b[married=yes] : Love. Where my other half is, I am.
+b[wealth=poor] : Coin. Or the lack of it. You can't eat the road.
+b[drive=restless] : Nothing keeps me. I'm off one of these days. You watch.
+b[stage=old] : My bones. And my friends' graves. Can't leave them.
+b : Habit, mostly. | Every day. Then I have breakfast. | Because it's home. What else?
+a : Fair enough. | Ha. Me too. | That's an answer.
+
+scene e5_tr_accent_lost
+when topic=travel here.region=ridgemere a.from=ridgemere b.from!=ridgemere b.accent=light
+a : You've nearly lost your accent, you know. | I can only hear where you're from on certain words. | You sound more like us every year.
+b[from=frosthollow] : I still say 'deep' for very. Can't help it.
+b[from=mirebridge] : Only when I'm tired. Then the fens come back.
+b : Have I? I hadn't noticed. | Which ones? | That's sad, somehow.
+a : I'm sorry. Did you want to keep it? | All the important ones. | You're still you.
+
+# ---------------------------------------------------------------- Never left
+
+scene e5_tr_never_left
+when topic=travel a.stage=old a.accent=broad
+a : All my years and never slept a night out of this town. | I've never been past the boundary stone. Never had to. | Folk ask where I've travelled. I tell them: to the well and back.
+b[young] : Never? Not even once? Why?
+b[drive=restless] : How? I'd go mad.
+b : Proud of it? | And never wanted to? | That's an answer, I suppose.
+a : The world comes here. I sit and watch it. | Everything I love is in this town. | Twice a day, every day. Long way, that.
+
+scene e5_tr_never_left_cousin
+when topic=travel a.stage=old
+a : My brother went off to see the world. Came back with a cough and a wife. | My sister went away and never came back. Wrote once. Happy, she said. | Every family loses one to the road.
+b[old] : Mine went to the city and came back talking posh.
+b : Which did he regret? | Did you believe her? | Some come back.
+a : He'd not say. | I chose to. | Some.
+
+scene e5_tr_young_away
+when topic=travel a.stage=adolescent|young
+a : When I'm older I'm going to Ridgemere and getting on a ship! | I'm going to be a carter. See everywhere. | My friend's going away to be apprenticed. In another town!
+b[old] : Wait till you've a few years on you before you sail off anywhere.
+b[parent=yes] : Not before your chores, you're not.
+b : Good for you. | Mind the bandits. | Lucky friend.
+a : I will! | I'll fight them. | Not lucky. Lonely, I'll be.
+
+# ---------------------------------------------------------------- Travellers who pass through
+
+scene e5_tr_travellers_now
+when topic=travel here.player_near=yes
+a : More travellers through this week than all last season. | Here's another one, look. Dusty boots. | Where do they all come from, these travellers?
+b[merchant] : The road brings coin. I'll not complain.
+b[guard] : Travellers. We keep an eye. Most of them are honest.
+b : The road's busy. | Fresh from the road. | And where do they go?
+a : Busy, and noisy. | They always are. | Off somewhere better, I expect.
+
+scene e5_tr_traveller_tale
+when topic=travel
+a : A traveller told me at the inn there's a lake in the south that's warm as a bath. | Met a traveller who said she'd been to every town in a single month. | A traveller swore he'd seen a wolf with three tails up in the mountains.
+b[honesty=guarded] : Travellers say a lot after a third pint.
+b : I'd like to swim in that. | Liar. Or very good boots. | How much had he drunk?
+a : So would I. | Very good boots, I think. | Not enough to explain it.
+
+scene e5_tr_strangers_ask
+when topic=travel pair.band=strangers here.player_near=no
+a : Are you passing through or stopping? | You've the look of someone who's been on the road. | Long way from home, are you?
+b[travelling=yes] : Passing through. Off again at first light.
+b : Stopping. For now. | A fair way. | Not so far.
+a : Safe road. | Rest your feet, then. | Ah.
+
+# ---------------------------------------------------------------- Pilgrims and holy roads
+
+scene e5_tr_pilgrimage
+when topic=travel
+a : My mother walked to the Snow Chapel once, on her knees the last mile. | Some folk walk to every chapel in the realm. One a season. | I keep meaning to go on pilgrimage. My knees keep meaning not to.
+b[priest] : The road teaches what the chapel can't.
+b[piety=devout] : I went once. The best thing I ever did. And the coldest.
+b : On her knees? In the snow? | That's devotion. | Go in summer.
+a : Never walked right again. Said it was worth it. | Or boredom. | The Bright One won't mind.
+
+scene e5_tr_pilgrim_passing
+when topic=travel a.piety=devout
+a : Saw pilgrims on the road this morning. Barefoot, singing. | A pilgrim stopped at my door for water. Blessed my house in return. | I've been thinking I should walk to a holy place before I'm too old.
+b[piety=devout] : I'll walk with you. We'd keep each other honest.
+b : Barefoot? In this? | Fair trade, water for a blessing. | Before your knees go.
+a : That's the point, I think. | I thought so. | Exactly.
+
+# ---------------------------------------------------------------- The sea
+
+scene e5_tr_sailor_voyage
+when topic=travel a.job=sailor
+a : We sailed out past the headland and the sea went black as ink. | Saw a whale once, past the Sound. Big as the Rain Hall. | Twelve days out, no land, no wind. Longest days of my life.
+b[young] : A whale! Was it scary?
+b : What's out there? | You're having me on. | What did you do?
+a : Water, and the fear of it. | It looked at me. Then it was gone. | Prayed. Then the wind came.
+
+scene e5_tr_ship_dreams
+when topic=travel here.region=ridgemere
+a : I watch the ships go out of the Sound and wonder where they end up. | I nearly signed on a ship once. Got as far as the gangplank. | A ship came in from down the coast with oranges. Oranges!
+b[sailor] : They end up somewhere wet and loud, then they come back.
+b : Somewhere warmer, I hope. | What stopped you? | I've never had one.
+a : I hope so too. | My mother, on the wharf, crying. | Nor me. I just smelled it.

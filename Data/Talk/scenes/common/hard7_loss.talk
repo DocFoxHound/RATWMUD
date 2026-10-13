@@ -1,0 +1,154 @@
+# Hard times: deaths and loss (phase 7, the h7_ lines). A death in town (talk.life, topic.kind=death: topic.subject the
+# dead, topic.where the one who mourns them most), one's own loss told (talk.news, topic.kind=loss), and grief as it
+# sits in everyday talk (mourning, widowed, world.death=recent). Broad first, then particular people. Lines in parallel
+# answer each other.
+
+## A death in town, for anyone
+
+scene h7_death_how
+when topic=life topic.kind=death
+a : #topic.subject#'s gone. Did you hear? | They say #topic.subject# died in the night. | #topic.subject#. Gone, just like that. | I heard the bell. It was for #topic.subject#.
+b : How? | In their sleep? | Just like that? Nobody goes just like that. | I wondered who it was for.
+a : Nobody's saying. Their heart, maybe. | In their sleep. | They'd been poorly. Nobody noticed. | Now you know.
+b : Hearts give out. | That's the kindest way. | Nobody ever does. | I wish I didn't.
+
+scene h7_death_mourner
+when topic=life topic.kind=death
+a : #topic.where# is taking #topic.subject#'s death hard. | Have you seen #topic.where#? Since #topic.subject#? | Someone should look in on #topic.where#. After #topic.subject#. | #topic.where# hasn't left the house since they buried #topic.subject#.
+b : They were close. | I saw them at the well. Like a ghost. | I'll go. I'll take something. | Can you blame them?
+a : Closer than anyone knew. | Grief does that. | Take bread. Nobody eats, but take it. | No. I'd do the same.
+b : Then it's the worst kind. | It hollows you. | I'll take bread. | So would I.
+
+scene h7_death_good_one
+when topic=life topic.kind=death
+a : #topic.subject#'s dead. They were a good one. | We lost #topic.subject#. One of the decent ones. | Gods. #topic.subject#. They never had a bad word for anyone. | #topic.subject#, gone. They lent me a coat once and never asked for it back.
+b[honesty=frank] #frank : They had plenty of bad words. They just said them kindly.
+b : The good ones always go first. | There's not many of those. | Not one. Not even for me. | That sounds like them.
+a@frank : Ha. They did. They did, at that.
+a : It feels like it. | Fewer now. | And you deserved a few. | I've still got it. I'll keep it now.
+b@frank : That's how I'll remember them.
+b : Then the rest of us will last forever. | Fewer every year. | I did. Plenty. | Wear it to the burial.
+
+scene h7_death_burial_cost
+when topic=life topic.kind=death
+a : Who's paying to bury #topic.subject#? | They'll need a box for #topic.subject#. Who's got the coin? | #topic.subject#'s family can't afford the burial. | The parish will bury #topic.subject#, if nobody else.
+b : The family, if they've anything. | Everyone'll put in a penny. | Then the parish. Plain box. No stone. | Plain box, plain hole.
+a : They've nothing. | I'll put in two. | Plain's fine. They were plain folk. | That's how most of us go.
+b : Then we all put something in. | I'll put in what I can. | Plain and honest. | Plain's how I'll go. Cheaper.
+
+scene h7_death_who_gets
+when topic=life topic.kind=death
+a : Who gets #topic.subject#'s house, I wonder? | I suppose #topic.where# gets everything now. From #topic.subject#. | #topic.subject#'s barely cold and the cousins are counting spoons. | There'll be a fight over #topic.subject#'s things. You watch.
+b : Don't. Not yet. | Everything's not much. | Always the way. | There always is.
+a : Somebody's wondering. Better aloud. | Then they'll not fight. | Like crows. | Ugly.
+b : Wonder after the burial. | There'll be a fight over the kettle. | Worse than crows. Crows wait. | Death makes folk greedy.
+
+scene h7_death_gallows_humour
+when topic=life topic.kind=death
+a : #topic.subject# is dead. | They're burying #topic.subject# tomorrow. | We lost #topic.subject#. | #topic.subject#'s gone to #grave#.
+b[old] #old : Another one before me. They're cutting the line.
+b : Well. It comes to us all. | Will there be food after? | Lucky them. No more rent. | Gone where we're all going.
+a@old : There's no line. You'll outlive the lot of us.
+a : Not that soon, I hope. | Is that all you think of? | That's grim. | Slower, I hope.
+b@old : Out of spite. I've earned it.
+b : Not if I can help it. | There's always food after a burial. | Grim and true. | Slow as I can manage.
+
+scene h7_death_last_seen
+when topic=life topic.kind=death
+a : I saw #topic.subject# only on Restday. Laughing. | #topic.subject# bought bread from the same stall as me. Last week. | I spoke to #topic.subject# at the well. I don't remember what about. | #topic.subject# waved at me the other morning. I didn't wave back. I was in a hurry.
+b : That's how it goes. Laughing, then gone. | Just bread. Just an ordinary day. | It doesn't matter what about. | Don't. You couldn't know.
+a : I keep hearing it. | Ordinary. I can't get over that. | It matters now. | I'll always know now.
+b : You will for a while. | They're all ordinary, till they're not. | Then remember the laughing. | Wave at everyone. That's all you can do.
+
+scene h7_death_pups_ask
+when topic=life topic.kind=death a.stage=young
+a : Where's #topic.subject# gone? | Is #topic.subject# sleeping in #grave#? | Will #topic.subject# come back in spring, like the swallows? | Did #topic.subject# know they were going to die?
+b : Somewhere quiet, pup. | Something like sleeping. | No, pup. Not like the swallows. | I don't think so.
+a : Can I go too? | Do they dream? | Not even a bit? | That's sad. And good.
+b : Not for a long, long time. | Good dreams, I hope. | Not even a bit. Come here. | Both. That's what it mostly is.
+
+scene h7_death_priest
+when topic=life topic.kind=death a.job=priest
+a : I'll say the words for #topic.subject# tomorrow. | I sat with #topic.subject# at the end. | #topic.subject# asked for me. I came too late. | I've buried four this season. #topic.subject# makes five.
+b : Say good ones. | Did they go easy? | You came. That's what matters. | Five. Gods.
+a : There are only so many words. I'll find the right ones. | Easier than most. | It doesn't feel like it. | Five, and the winter not yet in.
+b : You always do. | Thank you for that. | It will, later. | Then save some words for us.
+
+scene h7_death_healer
+when topic=life topic.kind=death a.job=healer
+a : I couldn't save #topic.subject#. | I tried with #topic.subject#. Everything I had. | #topic.subject# called me too late. | I should have seen it sooner, with #topic.subject#.
+b : Nobody thinks you didn't try. | Everything's sometimes not enough. | They always do. | You're not the gods.
+a : I think it. | It never is, at the end. | Every time. | No. I'm the one they send for.
+b : Then stop thinking it, for one night. | Then rest. You look worse than they did. | Then go and tell them sooner. | And you come. That's the job.
+
+scene h7_death_ridgemere_tide
+when topic=life topic.kind=death here.region=ridgemere a.quarter=sump
+a : They'll put #topic.subject# in the paupers' row. | No stone for #topic.subject#. The Sump doesn't get stones. | #topic.subject# was Sump born and Sump buried. | Up the hill they bury them in silk. Down here, sacking.
+b : Better a row than the river. | Stones are for the Heights. | Like the rest of us. | Sacking keeps the worms off. Some.
+a : The river's free. | We'll remember where. | Born wet, buried wet. | You've a way with comfort.
+b : Not for long. | We will. | That's the Sump. | I try.
+
+scene h7_death_rich_grief
+when topic=life topic.kind=death a.wealth=rich b.wealth=poor|destitute
+a : Such a sad business, #topic.subject#. I'm sending flowers. | Poor #topic.subject#. I'll pay for the stone, I think. | We'll go into black for #topic.subject#. A week. | A dreadful loss, #topic.subject#.
+b : Flowers. Lovely. Their household could use bread. | That's good of you. Truly. | Black's dear. | Dreadful for some.
+a : Bread as well, then. Of course. | It's the least one can do. | It is. One does what's right. | For all of us, surely.
+b : Of course. | It's more than most do. | For you. | Some more than others.
+
+## One's own loss, told (talk.news)
+
+scene h7_news_loss_listen
+when topic=news topic.kind=loss
+a : #topic.news#. I don't know what to do with my paws. | #topic.news#. I keep laying out two cups. | #topic.news#. Everyone's very kind. I hate it. | #topic.news#. I've not cried yet. Is that wrong?
+b : Give them something to do. Bake. | Lay them out. Nobody's counting. | Then I'll be rude to you. If it helps. | No. It comes when it comes.
+a : I burned the bread. | I will. | It might. | I'm waiting for it.
+b : Then we'll eat it burnt. | Pour the second for me. | You look terrible. Better? | It'll find you. I'll be there when it does.
+
+scene h7_news_loss_practical
+when topic=news topic.kind=loss
+a : #topic.news#. There's so much to do. | #topic.news#. Their things are everywhere. | #topic.news#. The house is full of their smell. | #topic.news#. The burial's tomorrow.
+b : Tell me one thing I can do. | Leave the things. They'll keep. | Don't air it out. Not yet. | I'll be there.
+a : Feed the hens. I forget. | I keep moving them about. | I won't. | Stand near me. I'll fall over otherwise.
+b : Every morning, till you remember. | Then let me move them for a while. | Good. | I'll stand close.
+
+scene h7_news_loss_old
+when topic=news topic.kind=loss a.stage=old
+a : #topic.news#. That's all of us now. All but me. | #topic.news#. We were pups together. | #topic.news#. I'm the last who remembers the old bridge. | #topic.news#. Who'll argue with me now?
+b : Then you'll tell me about all of them. | Pups! Tell me. | Tell me about the bridge, then. | I will. I'll try.
+a : It'd take a winter. | We stole apples off the priest. | It was wood. It creaked. It was lovely. | You'll lose.
+b : I've a winter. | The priest! | I'd like to have seen it. | I'll lose gladly.
+
+## Grief in everyday talk
+
+scene h7_mourning_sit
+when topic=smalltalk|day|friends a.mourning=kin
+a : ... | I can't talk today. | Sit with me a bit? Don't say anything. | I keep forgetting, and then remembering.
+b : I'll sit. | Then don't. I'll stand here. | I'll sit. | That's the worst part.
+a : ... Thank you. | Thank you. | ... | Every time it's new.
+b : Any time. | I'm here. | ... | I know.
+priority 2
+cooldown 12h
+
+scene h7_mourning_friend_drink
+when topic=smalltalk|friends|day a.mourning=friend here.place=tavern
+a : One for them. They'd have had three. | Raise it. To an empty stool. | They owed me a drink. I'll have it anyway. | This was their bench. Nobody sit there.
+b : To them. | To the stool. | They owed everyone a drink. | Nobody will.
+a : And one more. | It's a good stool. | Generous with debts, they were. | Not tonight.
+b : And one for the road they've gone on. | The best in the house. | And with laughter. | Not ever, if you like.
+cooldown 12h
+
+scene h7_widowed_evenings
+when topic=smalltalk|friends|day a.widowed=yes
+a : The evenings are the worst. | I still cook for two. Out of habit. | I talk to them sometimes. Out loud. | I sleep on my side of the bed still.
+b : Come by in the evenings, then. | Bring the other half to us. | Do they answer? | Their side's still theirs.
+a : I might. | I might at that. | Sometimes I know what they'd say. | It is.
+b : Do. We've a chair. | We'll eat it. | Then they do. | It always will be.
+cooldown 2d
+
+scene h7_world_death_mood
+when topic=smalltalk|day world.death=recent
+a : Town's quiet since the death. | Everyone's walking soft since the burial. | The bell's done ringing, but you still hear it. | Strange how one death stills a whole street.
+b : It'll lift. | It's right that they should. | I hear it. | For a few days.
+a : It does, after a while. | For a day or two. | It sits in the stones. | Then the carts come back.
+b : Then we forget. | Then back to shouting. | It'll wash out. | And we forget, and we're sorry.
+cooldown 1d

@@ -1,0 +1,509 @@
+# Rich and poor, the Heights and the Sump, the Houses (theme n7): deference, resentment, charity, snobbery. The opener
+# remembers the kind of remark (pair.mem.st), the other answers as they stand, and the opener has the last word. Drafts.
+
+## The opener
+
+rule n7_st_snob
+when concept=talk.smalltalk|talk.day self.wealth=rich other.wealth=poor|destitute self.warmth=cold
+cooldown 2d
+say Do mind the coat. It's new. | Might you stand a little downwind? It's the fish, I think. | One sees all sorts in the street these days.
+remember pair: st=snub 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_rich_kind
+when concept=talk.smalltalk|talk.day self.wealth=rich other.wealth=poor|destitute self.warmth=warm
+cooldown 2d
+say Have you eaten today? Truly? | You look cold. Here, I've a scarf I never wear. | Is there anything the house could send round? Don't be proud.
+remember pair: st=charity 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_rich_frank
+when concept=talk.smalltalk self.wealth=rich other.wealth=poor|destitute self.honesty=frank
+cooldown 2d
+say I don't know how you manage. I'd not last a week. | Is it true you eat the same thing every day? I'd go mad. | My cook spends more on butter than you earn. That's wrong, isn't it.
+remember pair: st=pity 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_rich_advice
+when concept=talk.smalltalk self.wealth=rich other.wealth=poor self.drive=ambitious|steady
+cooldown 3d
+say You ought to put a penny by each week. That's how my father started. | Have you thought of a trade? A trade's the thing. | Buy cheap in the morning, sell dear at night. There, that's my secret.
+remember pair: st=advice 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_poor_resent
+when concept=talk.smalltalk|talk.day self.wealth=poor|destitute other.wealth=rich self.temper=short
+cooldown 2d
+say Nice boots. Cost more than my roof? | Out slumming, are we? | Must be a hard life, all that sitting.
+remember pair: st=resent 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_poor_defer
+when concept=talk.smalltalk|talk.day self.wealth=poor|destitute other.wealth=rich self.temper=calm|even|nervy
+cooldown 2d
+say Good day to you, #sir#. | Lovely coat, #sir#, if I may say. | Begging your pardon, #sir#. Am I in your way?
+remember pair: st=defer 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_poor_work
+when concept=talk.smalltalk|talk.work self.wealth=poor|destitute other.wealth=rich self.drive=ambitious|restless
+cooldown 2d
+say If you've need of a strong back up at your place, I'm your wolf. | Your house wants any work done? I'm cheap and I'm quick. | I can carry, scrub, mend, anything. Just ask.
+remember pair: st=work 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_beg
+when concept=talk.smalltalk|talk.day self.homeless=yes other.wealth=rich|comfortable
+cooldown 1d
+priority 1
+say Spare a penny, #sir#? For bread, I swear it. | Anything for a cold wolf? Anything at all? | I'll not drink it. I'll eat it. Honest.
+remember pair: st=beg 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_beg_sly
+when concept=talk.smalltalk self.honesty=sly self.wealth=poor|destitute other.wealth=rich
+cooldown 2d
+say You've a kind face. Has anyone told you? A generous face. | A wolf like you wouldn't miss a penny. Would you? | I knew your father. Lovely wolf. Lent me money once.
+remember pair: st=beg 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_sump_heights
+when concept=talk.smalltalk|talk.lore self.quarter=sump other.quarter=heights
+cooldown 2d
+priority 1
+say Come down the hill to see how the rest live? | Lost, are you? The Heights are that way. Up. | Mind your shoes. The street bites, down here.
+remember pair: st=resent 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_heights_sump
+when concept=talk.smalltalk|talk.lore self.quarter=heights other.quarter=sump
+cooldown 2d
+priority 1
+say Is it true the water comes up through the floors down there? | I've never been below the Commons, you know. Is it very bad? | My aunt does good works in the Sump. Do you know her? She wears a hat.
+remember pair: st=pity 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_commons
+when concept=talk.smalltalk|talk.lore self.quarter=commons
+cooldown 3d
+say Too poor for the Heights, too proud for the Sump. That's the Commons. | The Commons: where everyone's one bad winter from the Sump and one good one from nothing. | Middle of the hill, middle of the purse.
+remember pair: st=middle 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_heights
+when concept=talk.smalltalk|talk.lore self.quarter=heights
+cooldown 3d
+say The Heights Market's dearer every week. They call it fashion. | Three dinners this week and the same soup at every one. | They're painting the whole terrace blue now. Greatly's blue, of course.
+remember pair: st=heights 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_sump
+when concept=talk.smalltalk|talk.lore self.quarter=sump
+cooldown 3d
+say Soup Kitchen ran out by noon. Again. | Somebody's taken the boards off the empty house for firewood. Good luck to them. | They say the Sump's sinking a finger a year. I believe it.
+remember pair: st=sump 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_wharf
+when concept=talk.smalltalk|talk.lore self.quarter=wharf|docks|harbour_hill
+cooldown 3d
+say The Customs House takes its cut before the ropes are tied. | Ships full of things none of us will ever own. | Every crate up the hill, every penny with it.
+remember pair: st=wharf 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_works
+when concept=talk.smalltalk|talk.lore self.quarter=works
+cooldown 3d
+say We make the bricks for the Heights and live in the dust of them. | Greatly's kilns, Grayrock's furnaces, and us in between, coughing. | Every House in the city has its paw in the Works and not one lives here.
+remember pair: st=works 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_office
+when concept=talk.smalltalk|talk.lore self.quarter=office
+cooldown 3d
+say Up the hill they call us ink-paws. Down the hill they call us worse. | The City Office quarter: we write it all down and own none of it. | Clerks, stewards and the Watch House. Quiet street. Nobody laughs.
+remember pair: st=middle 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_estate
+when concept=talk.smalltalk|talk.lore self.quarter=estate|suburbs
+cooldown 3d
+say Lovely and quiet out our way. Too quiet. | We've a garden now. I keep forgetting it's ours. | It's a long walk in, but you don't smell the Sump.
+remember pair: st=heights 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_greatly
+when concept=talk.smalltalk|talk.lore|talk.work self.house=greatly_house
+cooldown 3d
+say Greatly built half this city. Folk forget that. | Every brick, every tile, every lick of whitewash. Ours. | The Yard's never been busier. Say what you like about the House, it builds.
+remember pair: st=house 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_grayrock
+when concept=talk.smalltalk|talk.lore|talk.work self.house=grayrock_hall
+cooldown 3d
+say Without Grayrock iron this city'd be held up with string. | The foundry ran all night. That's the House's heart beating. | Grayrock: stone and iron. Not pretty. Lasts.
+remember pair: st=house 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_fell
+when concept=talk.smalltalk|talk.lore|talk.work self.house=house_fell
+cooldown 3d
+say Every beam over every head in Ridgemere came through the Fell mill. | The House is buying the whole Rainwood stand. Mark me. | Timber's honest. Fell's honest. More or less.
+remember pair: st=house 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_mossgrave
+when concept=talk.smalltalk|talk.lore|talk.work self.house=mossgrave_court
+cooldown 3d
+say Look at your coat. Mossgrave wool, I'd bet. | The Blue Vats are dyeing for the festival. Whole street's blue to the knee. | Mossgrave clothes the city. Somebody has to.
+remember pair: st=house 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_house
+when concept=talk.smalltalk|talk.work self.house
+cooldown 3d
+say The House expects. The House always expects. | When you're the House's, folk talk to the House, not to you. | Our steward counted the candles. Every candle.
+remember pair: st=house 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_to_house
+when concept=talk.smalltalk|talk.lore other.house !self.house
+cooldown 3d
+say You're the House's, aren't you? Tell your masters the lime's killing our gardens. | When's your House going to pay a fair wage, then? | Is it true what they say? That the Houses dine on gold plates?
+remember pair: st=house_ask 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_poor_friends
+when concept=talk.smalltalk|talk.friends self.wealth=poor|destitute other.wealth=poor|destitute pair.band=friends|family
+cooldown 3d
+say We'll be rich one day, you and I. Or dead. One of the two. | When I'm rich I'll buy you a hat. A stupid one. | Remember when we thought a silver penny was a fortune? It still is.
+remember pair: st=poorfriends 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_friend_richer
+when concept=talk.smalltalk|talk.friends pair.band=friends self.wealth=poor|comfortable other.wealth=rich
+cooldown 3d
+say You've done well for yourself. Don't forget the rest of us. | I knew you when you'd one shirt. | Is it true you've a cook now? A cook!
+remember pair: st=envy 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_rival_rich
+when concept=talk.smalltalk pair.band=rivals self.wealth=rich other.wealth!=rich
+cooldown 3d
+say How's the little business? Still going? | I see you've mended your coat. Again. | We're having the front done. You must come and look. From the street.
+remember pair: st=snub 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_servant
+when concept=talk.smalltalk|talk.work self.job=servant
+cooldown 3d
+say The mistress had me polish the silver twice. It was clean the first time. | They've guests tonight. Forty. I'll be up till dawn. | Up the hill, you learn to be a chair. Nobody sees a chair.
+remember pair: st=servant 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_noble
+when concept=talk.smalltalk self.job=noble
+cooldown 3d
+say One is so terribly busy doing nothing at all. | Mother wants me married by the Greening. To whom, she won't say. | The Council has asked my opinion. Imagine. I haven't one.
+remember pair: st=heights 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_old_service
+when concept=talk.smalltalk|talk.lore self.stage=old self.wealth=poor|destitute
+cooldown 3d
+say Forty years in service up the hill. Never once learned my name. | I scrubbed the Greatly steps when the old lord was a pup. He kicked me once. | They gave me a pot of jam when I left. Forty years. Jam.
+remember pair: st=servant 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_country_city
+when concept=talk.smalltalk|talk.lore self.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow here.region=ridgemere
+cooldown 3d
+say In Ridgemere a beggar sleeps by a lord's gate. At home, the beggar would be fed and the lord would know his name. | Back home rich and poor drink at the same well. Here they've a well each. | Nobody looks at anybody here. At home I'd know every face on this street.
+remember pair: st=country 1h
+remember pair: on=station 1h
+then other: town.station
+
+rule n7_st_town_city
+when concept=talk.smalltalk|talk.lore self.from=ridgemere here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+cooldown 3d
+say In the city you can buy anything at any hour. Here they shut when the baker's tired. | I miss the lamps. The whole city lit up on the hill. | Folk here know everything about you. In Ridgemere nobody cared.
+remember pair: st=city 1h
+remember pair: on=station 1h
+then other: town.station
+
+## Answering, as they stand (self answers; pair.mem.st says what the remark was)
+
+rule n7_sa_plain
+when concept=town.station
+say Hm. That's the way of it. | Is that so. | Well. There it is. | If you say so.
+then other: town.close
+
+rule n7_sa_snub_poor
+when concept=town.station pair.mem.st=snub pair.band!=rivals
+say Sorry, #sir#. | Right you are. I'll stand over here, then. | Course. Wouldn't want to dirty anything.
+then other: town.close
+
+rule n7_sa_snub_short
+when concept=town.station pair.mem.st=snub self.temper=short
+say Your coat's safe. I'd not be seen dead in it. | And you mind your nose, it's in the air. | Downwind of you's where I'd rather be.
+regard self: affinity -1
+then other: town.close
+
+rule n7_sa_snub_rival
+when concept=town.station pair.mem.st=snub pair.band=rivals
+say Still going. Still taking your customers, too. | Mended, aye. Paid for, too. Can you say the same? | I'll look from the street. I'll be the one laughing.
+regard self: affinity -1
+then other: town.close
+
+rule n7_sa_snub_dry
+when concept=town.station pair.mem.st=snub self.humour=dry
+say I'll try to be poor further away. | Of course. My fleas are very particular about company. | Kind of you to notice me.
+then other: town.close
+
+rule n7_sa_charity
+when concept=town.station pair.mem.st=charity|beg self.wealth=poor|destitute
+say Bless you. Truly. | I... thank you. The pups will eat. | You're a good soul. There's not many up the hill.
+regard self: affinity +1
+then other: town.close
+
+rule n7_sa_charity_proud
+when concept=town.station pair.mem.st=charity|pity self.warmth=cold|reserved self.wealth=poor|destitute
+say We manage, thank you. | I'll not be anyone's good deed. | Keep your scarf. I've a coat.
+then other: town.close
+
+rule n7_sa_pity
+when concept=town.station pair.mem.st=pity
+say We manage. Somehow we manage. | You'd be surprised what you can do without. | It's not so bad. It's bad. But not so bad.
+then other: town.close
+
+rule n7_sa_pity_dry
+when concept=town.station pair.mem.st=pity self.humour=dry
+say You'd last a day. We'd lay bets. | Oh, it's lovely. You should visit. Bring boots. Bring a boat. | We eat porridge, then porridge. Then for a treat, porridge.
+then other: town.close
+
+rule n7_sa_pity_sump
+when concept=town.station pair.mem.st=pity self.quarter=sump
+say Only in spring. And autumn. And when it rains. | Ask your aunt. She'll tell you, from under her hat. | Come down and see. Nobody'll bite. Much.
+then other: town.close
+
+rule n7_sa_advice
+when concept=town.station pair.mem.st=advice
+say Easy said. | I'll start tomorrow. With what, I don't know. | Put by what? The air?
+then other: town.close
+
+rule n7_sa_advice_ambitious
+when concept=town.station pair.mem.st=advice self.drive=ambitious
+say I've been saving. Two years. I'll have a stall by spring. | Teach me, then. I mean it. | I'll take that. And one day I'll give it back to you, with interest.
+then other: town.close
+
+rule n7_sa_resent_rich
+when concept=town.station pair.mem.st=resent self.wealth=rich
+say I'll thank you to mind your tongue. | I work for what I have, the same as you. | There's no call for that.
+regard self: affinity -1
+then other: town.close
+
+rule n7_sa_resent_warm
+when concept=town.station pair.mem.st=resent self.wealth=rich self.warmth=warm
+say They pinch, if it helps. Terribly. | Fair. I'd say it too, in your boots. | I suppose I deserve that. Walk with me a bit?
+then other: town.close
+
+rule n7_sa_resent_dry
+when concept=town.station pair.mem.st=resent self.humour=dry
+say More than your roof. Less than my sister's. | Slumming, yes. The guide said you'd be friendlier. | Sitting's harder than it looks. Ask my backside.
+then other: town.close
+
+rule n7_sa_resent
+when concept=town.station pair.mem.st=resent
+say Steady on. | Who rattled your cage? | No need for that.
+then other: town.close
+
+rule n7_sa_defer
+when concept=town.station pair.mem.st=defer
+say Good day. | Not at all. Carry on. | Hm? Oh. Yes. Good day.
+then other: town.close
+
+rule n7_sa_defer_warm
+when concept=town.station pair.mem.st=defer self.warmth=warm
+say No need for sirs with me. My grandmother sold fish. | Good day to you too. How's your family? | Please. Call me by my name.
+regard other: affinity +1
+then other: town.close
+
+rule n7_sa_work_rich
+when concept=town.station pair.mem.st=work self.wealth=rich
+say Come to the kitchen door on Restday. The steward may have something. | We've people for that. But I'll ask. | Can you lift a cask? Come and lift one for me, then.
+then other: town.close
+
+rule n7_sa_work_cold
+when concept=town.station pair.mem.st=work self.wealth=rich self.warmth=cold
+say We have people for that. | Speak to the steward. Not me. | I don't hire in the street.
+then other: town.close
+
+rule n7_sa_beg_cold
+when concept=town.station pair.mem.st=beg self.warmth=cold
+say Off with you. | I don't carry pennies. | Find some work.
+then other: town.close
+
+rule n7_sa_beg_warm
+when concept=town.station pair.mem.st=beg self.warmth=warm self.wealth=rich|comfortable
+say Here. For bread, mind. | Take this. And go round to the Kitchen; tell them I sent you. | I've not much, but have half.
+regard other: affinity +1
+then other: town.close
+
+rule n7_sa_beg_guard
+when concept=town.station pair.mem.st=beg self.role=guard
+say Move along now. No begging in the street. | Go to the chapel; they'll feed you. Go on. | I'll not see it, this once. Be gone when I look again.
+then other: town.close
+
+rule n7_sa_beg_sly
+when concept=town.station pair.mem.st=beg self.honesty=sly
+say Nice try. I've used that one. | My father? He lent money to no one. | A generous face, have I? You've a clever tongue.
+then other: town.close
+
+rule n7_sa_middle
+when concept=town.station pair.mem.st=middle
+say And proud of it. | Better than the Office quarter. They think they're the Heights. | One good winter. I'm still waiting.
+then other: town.close
+
+rule n7_sa_middle_sump
+when concept=town.station pair.mem.st=middle self.quarter=sump
+say Proud of what, exactly? | We'd swap with you. Today. | Middle of the hill's still on the hill.
+then other: town.close
+
+rule n7_sa_middle_heights
+when concept=town.station pair.mem.st=middle self.quarter=heights
+say The Commons is perfectly charming. I've driven through. | We were Commons once. Grandfather never let us forget. | It's so... honest, down there.
+then other: town.close
+
+rule n7_sa_heights_poor
+when concept=town.station pair.mem.st=heights self.wealth=poor|destitute
+say Must be dreadful for you. | Same soup three times. I should be so lucky. | My heart bleeds. Into my one bowl.
+then other: town.close
+
+rule n7_sa_heights_rich
+when concept=town.station pair.mem.st=heights self.wealth=rich
+say Dreadful, isn't it. And nobody new to talk about. | One must suffer for one's standing. | You should come to ours. Different soup.
+then other: town.close
+
+rule n7_sa_sump
+when concept=town.station pair.mem.st=sump
+say Soup was water anyway. | Somebody'll be warm tonight, then. | The Sump's been sinking since my granddam's day. We're still here.
+then other: town.close
+
+rule n7_sa_sump_rich_warm
+when concept=town.station pair.mem.st=sump self.wealth=rich self.warmth=warm
+say I'll send something to the Kitchen. Bread, a cask. Something. | That's not right. Who runs it? I'll speak to them. | We'd a sack of meal going spare. I'll see it goes down.
+then other: town.close
+
+rule n7_sa_sump_devout
+when concept=town.station pair.mem.st=sump self.piety=devout
+say The chapel's taking bread down on Restday. Come and help. | The Bright One walks in the Sump as much as anywhere. More, maybe. | Pray for them. Then carry a sack.
+then other: town.close
+
+rule n7_sa_wharf
+when concept=town.station pair.mem.st=wharf|works
+say And the rest goes up the hill. | That's the city: our paws, their pockets. | Aye. Same as it ever was.
+then other: town.close
+
+rule n7_sa_wharf_sailor
+when concept=town.station pair.mem.st=wharf self.job=sailor|fisher|laborer
+say And the Fish Hall takes the rest. | I've unloaded a lord's carpet. Smelt better than my bed. | One day I'll own one crate. Just one. I'll sit on it.
+then other: town.close
+
+rule n7_sa_house_member
+when concept=town.station pair.mem.st=house|house_ask self.house
+say I'll tell them. They won't listen, but I'll tell them. | The House pays what it pays. I don't set it. | Gold plates? Tin, mostly. Polished.
+then other: town.close
+
+rule n7_sa_house_worker
+when concept=town.station pair.mem.st=house !self.house self.wealth=poor|destitute
+say Built with whose paws? | And the House gives back what? | Funny how the House always gets the credit and we get the dust.
+then other: town.close
+
+rule n7_sa_house
+when concept=town.station pair.mem.st=house|house_ask
+say The Houses do as they please. Always have. | I keep out of House business. Healthier. | Hm. Good for them.
+then other: town.close
+
+rule n7_sa_poorfriends
+when concept=town.station pair.mem.st=poorfriends
+say Rich first, then dead. Let's do it in order. | A stupid hat. With a feather. Promise me. | It is. I've got one. Look. No, I'll not spend it.
+regard other: affinity +1
+then other: town.close
+
+rule n7_sa_envy_rich
+when concept=town.station pair.mem.st=envy self.wealth=rich
+say I've not forgotten. Who paid for the last jug? | One shirt and a lot of nerve. I still have the nerve. | A cook. She's terrifying. Come to supper and see.
+then other: town.close
+
+rule n7_sa_servant
+when concept=town.station pair.mem.st=servant
+say Twice! The rich have strange ideas of clean. | They'll not know your name, but they'll know if the spoon's crooked. | Did you get the leftovers, at least?
+then other: town.close
+
+rule n7_sa_servant_rich
+when concept=town.station pair.mem.st=servant self.wealth=rich
+say Oh dear. I hope our people aren't so put upon. | Is it so very hard? I've never asked ours. | Hm. I suppose someone polishes ours.
+then other: town.close
+
+rule n7_sa_country
+when concept=town.station pair.mem.st=country|city
+say Every place has its ways. | Then why'd you come? | Aye. And every place has its gossips too.
+then other: town.close
+
+rule n7_sa_country_local
+when concept=town.station pair.mem.st=country self.from=ridgemere
+say Then go home, if it's so grand. | You get used to it. Then you get to like it. Then you're one of us. | A city's not a village. That's the point of it.
+then other: town.close
+
+## The last word on station
+
+rule n7_close_st
+when concept=town.close pair.mem.on=station
+say Well. That's the world. | Hm. Some are born to it. | Aye. Up the hill and down. | So it goes, top to bottom.
+
+rule n7_close_st_rich
+when concept=town.close pair.mem.on=station self.wealth=rich
+say Quite. Well. Good day. | I must be getting on. | Yes. Well. Do take care.
+
+rule n7_close_st_poor
+when concept=town.close pair.mem.on=station self.wealth=poor|destitute
+say Easy for some. | Aye. And the rain falls on us all. Harder on some. | Well. Back to it.
+
+rule n7_close_st_short
+when concept=town.close pair.mem.on=station self.temper=short
+say Hmph. | We'll see who's laughing. | Fine. Good day.
+
+rule n7_close_st_defer
+when concept=town.close pair.mem.on=station pair.mem.st=defer
+say Good day, #sir#. | Thank you, #sir#. | Mind how you go, #sir#.

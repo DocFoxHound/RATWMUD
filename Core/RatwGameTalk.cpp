@@ -20,6 +20,35 @@ bool within(double start, double end, double hour)
 }
 } // namespace
 
+double Game::talkRichLine()
+{
+    const auto today = std::int64_t(std::floor(world_.calendarDays()));
+    if (today == richLineDay_)
+        return richLine_;
+    richLineDay_ = today;
+    const auto& society = world_.society();
+    // (Households as talkSpeaker counts them: those sharing a home, or one alone in a communal one.)
+    std::map<std::string, std::pair<std::string, std::vector<std::string>>> homes;
+    for (const auto& [id, life] : society.state().residents)
+        if (const auto* who = world_.entity(id); who && !who->dead)
+        {
+            auto& home = homes[Society::communalHome(life.homeCell) || life.homeCell.empty() ? "alone:" + id : life.homeCell];
+            home.first = life.homeCell;
+            home.second.push_back(id);
+        }
+    const auto reads = troubleReads();
+    std::vector<double> days;
+    for (const auto& [key, home] : homes)
+        days.push_back(troubles::foodDays(home.second, home.first, reads));
+    if (days.size() >= 20)
+    {
+        std::sort(days.begin(), days.end());
+        richLine_ = std::max(42.0, days[days.size() * 19 / 20]);
+        poorLine_ = std::max(double(Society::PoorDays), days[days.size() / 5]);
+    }
+    return richLine_;
+}
+
 talk::Speaker Game::talkSpeaker(const Entity& e)
 {
     talk::Speaker p;
@@ -97,9 +126,10 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     std::int64_t held = 0;
     const double days = troubles::foodDays(household, life->homeCell, troubleReads(), &held);
     f["wealth_days"] = std::to_string(int(std::floor(days)));
-    // (Lines: under three days destitute; the society's own poor line; six weeks' food in hand is rich, about the top
-    // twentieth of DEV's households when this was written. Placeholders, to tune by ear.)
-    f["wealth"] = days < 3 ? "destitute" : days < Society::PoorDays ? "poor" : days < 42 ? "comfortable" : "rich";
+    // (Lines: under three days destitute; poor, the bottom fifth of the world's households (never under the society's
+    // own poor line); rich, the top twentieth (never under six weeks' food). Standing is added below.)
+    const double richLine = talkRichLine();
+    int wealth = days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
     std::int64_t cash = 0;
     for (const auto& id : household)
         if (const auto* a = society.account(id))
@@ -124,6 +154,27 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     }
     f["owes"] = yes(owes);
     f["business"] = business;
+    // Standing (doc 62, phase 7; the user, 2026-10-13): food in hand doesn't measure a fortune. A great House's head
+    // and the head's family are rich, whatever their own purse; the owner of a thriving business, and those who live
+    // in the Heights or on an estate (not their servants), are comfortable at least; the Sump's are poor at most; the
+    // homeless are destitute.
+    for (const auto& h : society.houses())
+    {
+        const auto head = society.state().careers.positions.find(h.head);
+        const auto& holder = head != society.state().careers.positions.end() ? head->second.holder : std::string();
+        if ((post && post->id == h.head) || (!holder.empty() && (holder == e.id || society.family(e.id, holder))))
+            wealth = 3;
+    }
+    const auto quarter = f.find("quarter");
+    if (business == "thriving" ||
+        (quarter != f.end() && (quarter->second == "heights" || quarter->second == "estate") && job != "servant"))
+        wealth = std::max(wealth, 2);
+    else if (quarter != f.end() && quarter->second == "sump")
+        wealth = std::min(wealth, 1);           // (The Sump is poor, whatever's in the larder.)
+    if (life->homeCell.empty() || job == "beggar")
+        wealth = 0;
+    static const char* const Wealth[] = {"destitute", "poor", "comfortable", "rich"};
+    f["wealth"] = Wealth[wealth];
     f["hungry"] = yes(life->hunger >= 55);
     f["homeless"] = yes(life->homeCell.empty() || job == "beggar");
 
@@ -338,8 +389,16 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
         const auto wa = q.a.facts.find("wealth_days"), wb = q.b.facts.find("wealth_days");
         if (wa != q.a.facts.end() && wb != q.b.facts.end())
         {
+            // (Standing first: a House's lord is the richer of the two whatever is in the larder; doc 62, phase 7.)
+            static const std::map<std::string, int> Rank{{"destitute", 0}, {"poor", 1}, {"comfortable", 2}, {"rich", 3}};
+            const auto rank = [&](const talk::Speaker& p) {
+                const auto w = p.facts.find("wealth");
+                const auto r = w == p.facts.end() ? Rank.end() : Rank.find(w->second);
+                return r == Rank.end() ? 1 : r->second;
+            };
             const double x = std::stod(wa->second), y = std::stod(wb->second);
-            q.facts["pair.richer"] = x > y * 1.5 + 1 ? "a" : y > x * 1.5 + 1 ? "b" : "same";
+            const int ra = rank(q.a), rb = rank(q.b);
+            q.facts["pair.richer"] = ra != rb ? (ra > rb ? "a" : "b") : x > y * 1.5 + 1 ? "a" : y > x * 1.5 + 1 ? "b" : "same";
         }
     }
     if (!q.alone)

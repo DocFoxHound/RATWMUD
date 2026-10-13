@@ -1,0 +1,277 @@
+# Hard times: travellers seen, and their deeds (phase 7, the h7_ lines). Two residents talk of a traveller standing
+# near (talk.player: topic.subject is the traveller as the opener knows them, a name they were given when
+# topic.known=yes, else how they look, so it sits mid-sentence: "#topic.subject# over there"), or of a deed one has
+# heard of (talk.deed: topic.deed after "who" or "they"; topic.nickname when folk have given them one). Fear,
+# suspicion, admiration, and wanting to hire them. Broad first, then particular people. Lines in parallel answer each
+# other. Never name a traveller but by topic.subject.
+
+## A stranger near, for anyone
+
+scene h7_stranger_armed
+when topic=player topic.known=no
+a : Look at the blade on #topic.subject#. That's not for cutting bread. | #topic.subject#'s carrying steel. In town. | See how #topic.subject# keeps a paw near the hilt? | #topic.subject# walks like someone who's had to fight.
+b : Road's dangerous. Everyone carries something. | So long as it stays sheathed. | Habit. Or nerves. | Or someone who's had to run.
+a : Not like that, they don't. | So long as. | Both, I'd say. | Running wolves don't stand like that.
+b : Then let's be polite to them. | Smile, then. Nicely. | Then don't startle them. | Then we're glad they're on our side. Are they?
+
+scene h7_stranger_hire_road
+when topic=player topic.known=no
+a : Somebody should hire #topic.subject# to clear the road. | I'd pay #topic.subject# to walk my cart to the next town. | #topic.subject# looks like they could see off a few #bandits#. | Wonder what #topic.subject# charges.
+b : With what money? | You'd pay? You? | Looks aren't everything. | More than you've got.
+a : I'd find it. | For a safe road? Gladly. | They're a start. | I've a little put by.
+b : Then go and ask. | Then go and ask them. Go on. | Then ask what they've done, first. | Keep it put by.
+
+scene h7_stranger_thief_eye
+when topic=player topic.known=no
+a : Keep a paw on your purse. #topic.subject# is new. | I've had my eye on #topic.subject#. Just in case. | Any trouble, and it's always the new face that's blamed. Poor #topic.subject#. | Strangers and thieves look the same from behind.
+b : New's not guilty. | In case of what? | Poor them? Why? | And from the front?
+a : New's not innocent either. | In case. | Because they'll be blamed whatever. | From the front they look like strangers.
+b : You'd hang your own shadow. | You're a suspicious old thing. | Unfair, that. | Then say hello, and see.
+
+scene h7_stranger_rumours
+when topic=player topic.known=no
+a : They say a traveller like #topic.subject# killed a bear bare-pawed. | I heard there's a traveller in town who's wanted in three towns. Could be #topic.subject#. | #topic.subject#? I heard they came up the river road. Nobody comes up the river road. | Folk are saying all sorts about #topic.subject#.
+b : A bear? Bare-pawed? | Could be anyone, then. | Somebody did. | Folk say all sorts about everyone.
+a : A small bear. | Could be them, though. | They did. Look at them. | Not like this.
+b : Still a bear. | Could be you. | They look tired, that's all. | Then I'll listen harder.
+
+scene h7_stranger_tired
+when topic=player topic.known=no
+a : #topic.subject# looks done in. | Poor #topic.subject#. When did they last sleep? | #topic.subject#'s been walking a long while, by the look of the paws. | Somebody give #topic.subject# a stool.
+b : The road does that. | Not in a bed, by the look. | Thin, too. | Give them yours.
+a : The road does worse. | Should we say something? | And dusty to the ears. | I need mine.
+b : I'll point them to the inn. | Say they look well. Folk like that. | Point them to the well, then. | Then we'll both stand.
+
+scene h7_stranger_fear
+when topic=player topic.known=no
+a : I don't like how #topic.subject# looks at folk. | Something about #topic.subject# puts my fur up. | #topic.subject#'s been watching the street a long time. | #topic.subject# hasn't smiled once.
+b : Like what? | Your fur goes up at the cat. | Watching for what? | Nor have you.
+a : Like they're counting. | This is different. | That's what worries me. | I've reasons.
+b : Counting what? | Then keep away from them. | Then watch them back. | So might they.
+
+scene h7_stranger_kind_word
+when topic=player topic.known=no
+a : We should be kind to #topic.subject#. Nobody's kind to travellers. | I was a stranger once. Somebody gave me bread. | #topic.subject# could use a friendly face. | Let's say good day to #topic.subject#. Watch them jump.
+b : Kind costs nothing. Go on, then. | Did you pay them back? | Mine's not friendly. It's tired. | Ha! Let's.
+a : You first. | I'm paying it on now. | Tired's friendly enough. | Watch.
+b : Together, then. | Good. | Then let's be tired at them. | They jumped!
+
+## A traveller they know
+
+scene h7_known_help
+when topic=player topic.known=yes
+a : #topic.subject#'s back. Good. We could use the help. | There's #topic.subject#. I'd ask them about the road. | If anyone can sort out our troubles, it's #topic.subject#. | Look who's here. #topic.subject#.
+b : What help? We've nothing to pay them. | Ask, then. They don't bite. | One wolf can't sort everything. | I see them.
+a : They might not want paying. | They might. You never know. | One's more than none. | Don't be sour.
+b : Everyone wants paying. | You ask. You're braver. | Fair. | I'm not sour. I'm careful.
+
+scene h7_known_sus
+when topic=player topic.known=yes
+a : There's #topic.subject# again. Where do they go, all day? | #topic.subject# is always about when there's trouble. Have you noticed? | #topic.subject# never says where they've been. | Every time #topic.subject# comes, something goes missing. Or is that me?
+b : Here and there. Like everyone. | Maybe they're the one stopping it. | Would you? To us? | It's you. You lose everything.
+a : Nobody's everywhere. | Or starting it. | I'd tell anyone who asked. | I don't lose things. Things leave.
+b : They are, if they're a traveller. | You want them to be a villain. | That's the trouble with you. | Ha.
+
+scene h7_known_fond
+when topic=player topic.known=yes
+a : #topic.subject#! I'd know that walk anywhere. | #topic.subject# looks well. Better than last time. | It's good to see #topic.subject# still in one piece. | #topic.subject# was kind to me once. I don't forget that.
+b : They've a distinctive walk. | Last time they looked dead. | So far. | That's the kind of thing that sticks.
+a : Like a heron in a hurry. | Well, they're alive now. | Long may it last. | It does.
+b : Don't tell them that. | Good. | Out there? It won't. | Then say so, next time.
+
+## A traveller, and particular people
+
+scene h7_stranger_guard_eye
+when topic=player a.role=guard
+a : I'll keep an eye on #topic.subject#. | Know anything about #topic.subject#? | #topic.subject#. Any trouble from that one? | Did #topic.subject# come in by the gate? I didn't see.
+b : Polite enough, so far. | Nothing. Should I? | Not a lick. | Through the market end, I think.
+a : So far's all I've got. | Not yet. | Good. Let's keep it so. | Then someone wasn't watching.
+b : Then keep watching. | Then I'll listen out. | Leave them be, then. | Wasn't me.
+cooldown 1d
+
+scene h7_stranger_merchant_coin
+when topic=player a.role=merchant
+a : #topic.subject#'s got coin. Look at the purse. | I'd sell #topic.subject# my whole stall if they asked. | Travellers pay what you ask. They don't know the price. | #topic.subject# looked at my goods. Didn't buy. Looked though.
+b : Don't fleece them. It gets about. | You'd sell me your stall too, if I asked. | That's a shameful thing to say. True, but shameful. | Looking's the first step.
+a : A little fleece. A trim. | Not at your price. | I'm not proud. I'm hungry. | Then the second step's coin.
+b : They'll be back, if you're fair. | That's because I know your prices. | Then be hungry and honest. | Smile, then. It helps.
+cooldown 1d
+
+scene h7_stranger_bandits_hire
+when topic=player world.bandits=near
+a : With #bandits# on the road, I'd hire #topic.subject# today. | #topic.subject# could earn good coin guarding carts, the way things are. | I wonder if #topic.subject# would go after the road wolves. For a price. | The roads are bad, and here's #topic.subject#. Maybe the gods sent them.
+b : Today's too late. Yesterday. | If they're any good. | Everyone has a price. | Or the #bandits# did. Spying.
+a : Then today will have to do. | Look at them. They're good. | Then let's find theirs. | You see knives in every shadow.
+b : Ask them. Go on. | Looks lie. | We can't afford it. | There are knives in every shadow, lately.
+cooldown 1d
+
+scene h7_stranger_crime_blame
+when topic=player world.crime=recent topic.known=no
+a : There's been thieving, and now #topic.subject# turns up. | Funny, isn't it? Robbery in town, and a new face. | Folk are already muttering about #topic.subject#. | They'll blame #topic.subject# for the thefts. You watch.
+b : Funny how? | Strangers aren't the only thieves. | Folk mutter about everything. | Easier than looking at ourselves.
+a : Funny as in odd. | No. But they're the easiest. | This is louder. | That's a dark thing to say.
+b : Odd's not proof. | Easiest for who? | Then let them mutter. | It's a dark week.
+cooldown 1d
+
+scene h7_stranger_robbed_ask
+when topic=player a.robbed=yes
+a : Maybe #topic.subject# could find who robbed me. | I'd pay #topic.subject# to get my things back. If I had anything left to pay. | #topic.subject# looks like they could find a #thief#. | Travellers hear things. Maybe #topic.subject# heard who robbed me.
+b : #watch# can't. Maybe a traveller can. | Pay them in thanks. | Or be one. | Ask them. What's the harm?
+a : Worth asking. | Thanks don't feed anyone. | Don't. | They might laugh.
+b : Go on, then. | They might take it anyway. | You're too trusting. Or not enough. | Then they laugh. You've been robbed already.
+cooldown 1d
+
+scene h7_stranger_poor_envy
+when topic=player a.wealth=poor|destitute
+a : #topic.subject# goes where they like, eats where they like. | I'd give a lot for #topic.subject#'s boots. | Travellers. No rent, no master, no debts. | Must be nice, being #topic.subject#.
+b : Sleeps in ditches, too. | They're good boots. | Debts, I'd bet. Everyone's got debts. | You don't know their troubles.
+a : I sleep in worse than a ditch. | I could walk out of here in them. | Not ones that knock on your door. | I'd swap mine for them.
+b : Then go. The road's free. | And go where? | Ones that wait at the next town, then. | Careful. They might say yes.
+cooldown 1d
+
+scene h7_stranger_rich_bodyguard
+when topic=player a.wealth=rich
+a : I've half a mind to engage #topic.subject#. For the house. | One needs someone capable about these days. #topic.subject# looks capable. | Would #topic.subject# take a position, do you think? | One hears travellers can be hired. By the week.
+b : Engage them for what? | Capable of what, though? | They don't look like the sort who takes positions. | By the week, like a horse.
+a : For peace of mind. | That's what I'd be paying to find out. | Everyone takes something, for enough. | A good horse is worth it.
+b : That costs more than a guard. | Then ask for references. | Then offer enough. | Then feed them well.
+cooldown 1d
+
+scene h7_stranger_young_hero
+when topic=player a.stage=young|adolescent
+a : I'm going to be like #topic.subject# when I'm grown. | Do you think #topic.subject#'s killed a bandit? | Can I go and ask #topic.subject# about the road? | #topic.subject# has a scar. Did you see? A real one!
+b : Grown, and then we'll see. | I hope not. | No. Leave them be. | I saw. Don't stare at it.
+a : I'll have a sword. | I hope so! | Just one question! | I want one.
+b : You'll have chores. Start there. | Killing's not a game, pup. | One. Then home. | No you don't.
+cooldown 1d
+
+scene h7_stranger_restless
+when topic=player a.drive=restless|ambitious
+a : I could go with #topic.subject#. Out there. | What if I asked #topic.subject# to take me along? | Ever think of doing what #topic.subject# does? Just walking off? | #topic.subject# must have seen everything.
+b : And get your throat cut by the first bend. | They'd laugh. | Every day. Then I eat supper. | Everything, and slept on most of it.
+a : At least it'd be a bend I'd never seen. | Let them. | Supper's not enough. | I'd sleep on stones to see the sea.
+b : You'd miss your bed by nightfall. | Then ask. Go on. | It is when you're hungry. | Stones don't care what you see.
+cooldown 2d
+
+scene h7_stranger_devout
+when topic=player a.piety=devout
+a : The Bright One sends strangers to test us. Be kind to #topic.subject#. | I'll pray for #topic.subject#. For their road. | #topic.subject# should come to chapel. Travellers need it most. | Did #topic.subject# come by the chapel? I didn't see them.
+b : And the Dark One? | They'd thank you, if they knew. | Ask them, then. | Not everyone comes to chapel.
+a : Sends them too. That's the test. | They needn't know. | I might. | More's the pity.
+b : Then which is this one? | Then it's a quiet kindness. | Tell them the bread's free after. | Bread brings more than prayers.
+cooldown 2d
+
+scene h7_stranger_tavern_drink
+when topic=player here.place=tavern
+a : #topic.subject#'s drinking alone. That's never good. | Buy #topic.subject# one and ask about the roads. | #topic.subject#'s on their second. Hard day, maybe. | Hear #topic.subject# laugh? Not a laugh you'd want aimed at you.
+b : Leave them. Some like alone. | You buy it. You're curious. | Or a good one. | I'd not want any of it aimed at me.
+a : Nobody likes alone that much. | I'm curious and poor. | Nobody drinks like that on a good day. | Sit with your back to the wall, then.
+b : Then go and sit near. Not with. Near. | Then stay curious. | Then let them drink. | I always do.
+cooldown 1d
+
+scene h7_stranger_night
+when topic=player here.time=night topic.known=no
+a : Who's #topic.subject#, out at this hour? | Nobody good walks about this late. Except us. | #topic.subject# shouldn't be in the street at night. Not with things as they are. | Should we tell #topic.subject# where the inn is?
+b : Somebody who can't sleep. Like us. | Speak for yourself. | They look like they can handle it. | They'll find it. Everyone does.
+a : I'm not a stranger. | I am. I'm good. | Looks aren't steel. | Not everyone.
+b : You're strange enough. | Mostly. | They've steel too, look. | Then go and tell them. I'll wait here.
+cooldown 1d
+
+## A deed, for anyone
+
+scene h7_deed_who_now
+when topic=deed
+a : Have you heard? #topic.subject# #topic.deed#. | Word is #topic.subject# #topic.deed#. | They're all talking about #topic.subject#. Seems they #topic.deed#. | You'll want to hear this. #topic.subject# #topic.deed#.
+b : Did they, now. Good. | That's something, in times like these. | Doesn't sound like most folk. | Then somebody's doing something right.
+a : That's what they say. | It is. | No. Not most. | For once.
+b : Well, I'll drink to it. | Hold on to that. | Let's hope it catches. | Let's not get used to it.
+
+scene h7_deed_what_for
+when topic=deed
+a : #topic.subject# #topic.deed#. Didn't ask for anything, they say. | I heard #topic.subject# #topic.deed#. For nothing. | Seems #topic.subject# #topic.deed#. No payment. | #topic.subject# #topic.deed#, and walked off without a word.
+b[honesty=sly] #sly : Nobody does anything for nothing. They're after something.
+b : For nothing? Who does that? | Then they're mad, or kind. | That's rare. | Walked off? Didn't stay for the thanks?
+a@sly : Maybe they're after being thanked. That's allowed.
+a : Somebody, it seems. | Both, maybe. | Rarer every year. | Didn't want it, they said.
+b@sly : We'll see. When they send the bill.
+b : Then I'll believe it when I see it twice. | Kind and mad. The best sort. | Then hold on to them. | The odd sort.
+
+scene h7_deed_nickname
+when topic=deed topic.has_nickname=yes
+a : They've a name for them now. #topic.nickname#. | Folk call #topic.subject# #topic.nickname# now. Because they #topic.deed#. | You know #topic.nickname#? That's #topic.subject#. They #topic.deed#. | They're calling them #topic.nickname#. Suits them, I'd say.
+b : #topic.nickname#! That'll stick. | Bit grand, isn't it? | I've heard the name. Not the why. | Folk do love a name.
+a : They always do. | They earned it. | Now you know. | Better than what they call me.
+b : Like mud. | Then let them wear it. | Well. I'll say it with feeling. | What do they call you?
+a : Stuck already. | They will. | Do. | Never you mind.
+
+scene h7_deed_doubter
+when topic=deed
+a : #topic.subject# #topic.deed#, so they say. | Everyone's saying #topic.subject# #topic.deed#. | I heard #topic.subject# #topic.deed#. From three different wolves. | They're telling it at the well. #topic.subject# #topic.deed#.
+b : So they say. Did anyone see? | Everyone says everything. | Three wolves who heard it from one. | The well's a liar.
+a : Somebody saw. | Not like this, they don't. | Maybe. | The well's usually right.
+b : Somebody always saw. | Then I'll wait for the fourth. | Then it's a good story either way. | Usually.
+
+scene h7_deed_wish
+when topic=deed
+a : #topic.subject# #topic.deed#. I wish someone would do that for me. | Heard #topic.subject# #topic.deed#. Lucky them. | #topic.subject# #topic.deed#. And here's me, nobody looking. | They say #topic.subject# #topic.deed#. Where was that wolf when I needed one?
+b : Do something worth noticing, then. | Lucky's what you make it. | I'm looking. You're a mess. | On the road. Doing that, apparently.
+a : I'm too tired to be noticed. | I'm making nothing. | Thank you. | Then I'll go out on the road.
+b : Then rest, and try tomorrow. | Then you've nothing to lose. | I'm here. | And get your throat cut. Stay here.
+
+## A deed, and particular people
+
+scene h7_deed_guard
+when topic=deed a.role=guard
+a : I heard #topic.subject# #topic.deed#. Doing our job for us. | #topic.subject# #topic.deed#. Captain's not pleased. Makes us look slow. | Somebody tell #topic.subject# to stop. Folk will start asking why we don't. | #topic.subject# #topic.deed#. Credit where it's due.
+b : Somebody has to. | Are you slow? | Why don't you? | That's big of you.
+a : Oi. | Slower than a traveller with no orders. | We've rules. They don't. | I'm a big wolf.
+b : Well. Somebody does now. | Then get orders. | Rules and no bread. | You are.
+cooldown 1d
+
+scene h7_deed_bandits_near
+when topic=deed world.bandits=near
+a : #topic.subject# #topic.deed#. Now if they'd only do something about the road. | We could use #topic.subject# on the road, after hearing they #topic.deed#. | Someone who #topic.deed# might see off #bandits#, too. | #topic.subject# #topic.deed#. Wonder if they'd take on the road wolves?
+b : One wolf, against a camp? | Ask them. | Might. Might get killed doing it. | For a price, anything's possible.
+a : One good one. | I'll ask. Will you come? | They've lived so far. | We'd all chip in.
+b : One good one and a lot of luck. | I'll hold your coat. | So far. | All of us? With what?
+cooldown 1d
+
+scene h7_deed_poor
+when topic=deed a.wealth=poor|destitute
+a : #topic.subject# #topic.deed#. Does the good stop at my door, I wonder? | They say #topic.subject# #topic.deed#. I've a door they could knock on. | #topic.subject# #topic.deed#. Some folk have all the luck. | #topic.subject# #topic.deed#. I'd settle for a loaf.
+b : It might, if you knock. | Then leave it open. | The ones they helped weren't lucky before. | A loaf's not much to ask.
+a : Knocking's begging. | It's always open. Nothing to steal. | They are now. | It's too much, these days.
+b : Asking isn't. | Then they'll come in. | Then your turn'll come. | Then I'll get you half of mine.
+cooldown 1d
+
+scene h7_deed_rich_hire
+when topic=deed a.wealth=rich
+a : #topic.subject# #topic.deed#. I must have them to dinner. | Somebody who #topic.deed# is somebody worth knowing. | I wonder what it would cost to have #topic.subject# in one's service. | #topic.subject# #topic.deed#. One ought to reward that.
+b : Would they come? | Worth knowing, or worth using? | More than a dinner. | Then reward it.
+a : Everyone comes to dinner. | Both. Why not? | One can afford a great deal. | One might. In time.
+b : Not everyone. | Ha. Honest, at least. | Then afford it. | Time's not reward.
+cooldown 1d
+
+scene h7_deed_devout
+when topic=deed a.piety=devout
+a : #topic.subject# #topic.deed#. That's the Bright One's work. | I'll give thanks for #topic.subject# on Restday. | #topic.subject# #topic.deed#. See? The gods haven't forgotten us. | #topic.subject# #topic.deed#. I'll light a candle.
+b : It's #topic.subject#'s work. | Give thanks to them, too. | Then where've they been? | Light two. One's for me.
+a : Same thing, sometimes. | I will. | Busy. | One for you, then.
+b : Then the gods should pay them. | Good. | Busy with someone else. | Thank you.
+cooldown 1d
+
+scene h7_deed_young
+when topic=deed a.stage=young|adolescent
+a : Did you hear #topic.subject# #topic.deed#? I want to be them! | #topic.subject# #topic.deed#! Can we meet them? | When I'm big I'll do what #topic.subject# did! | Is #topic.subject# a hero? A real one?
+b : Be yourself first. Then see. | If they come by. | That's a mouthful. | A real wolf, who did a good thing.
+a : I'd rather be them. | Please! | It's a good one! | That's what a hero is!
+b : They'd rather be asleep, I'd bet. | We'll see. | It is. | Then yes. A real one.
+cooldown 1d
+
+scene h7_deed_spouses
+when topic=deed pair.band=spouses
+a : #topic.subject# #topic.deed#. Why don't you ever do things like that? | Did you hear what #topic.subject# did? They #topic.deed#. | #topic.subject# #topic.deed#, #dear#. Just thought you'd like to know. | Imagine, #topic.subject# #topic.deed#.
+b : I mended the roof. | I heard. Why? | I'd like to know why you're telling me. | I'm imagining. Done.
+a : Badly. | No reason. | No reason. | Imagine harder.
+b : It's still on. | No reason. Right. | Right. | I'm tired, #dear#.
+cooldown 2d

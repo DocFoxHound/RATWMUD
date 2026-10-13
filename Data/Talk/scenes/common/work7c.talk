@@ -1,0 +1,599 @@
+# Prices, why they fell, caravans, and more everyday work (Docs/Design/62-talk.md, phase 7; the work theme): broad
+# scenes nearly any two can have when the topic comes up. topic.what is "a meal" or "herbs" for prices (so "the price
+# of #topic.what#" reads right), the good itself for a fall's cause ("timber", "meals"); topic.who is a name or a look;
+# topic.where is the other town of a caravan.
+
+## ---------------------------------------------------------------- Prices up
+
+scene w7c_up_purse
+when topic=prices topic.dir=up
+a : I took #topic.price# to market and came home with change of nothing. | Have you priced #topic.what# lately? Don't. | My purse is lighter and my basket's lighter. How's that work?
+b[wealth=rich] : Is it so much? I suppose it is, for some. | I'll take your word for it. | Magic, I expect.
+b[wealth=poor|destitute] : I didn't take anything. I hadn't anything to take. | I don't price. I look and walk on. | Mine's been light all year.
+b[role=merchant] : Don't look at me. I only pass it on. | Somebody upstream's greedy. Not me. | Costs, #address#. Everyone's costs.
+b : Same here. | I have. I wept. | It's a riddle.
+a : It's not right. | Wept, and paid. | A cruel one.
+
+scene w7c_up_blame
+when topic=prices topic.dir=up
+a : Whose fault is it, then? #topic.price# for #topic.what#. | Somebody's getting rich off #topic.what#, and it isn't me. | They say it's the roads. They always say it's the roads.
+b[temper=short] : The Houses. It's always the Houses. | Find them and I'll tell them. | Then fix the roads!
+b[honesty=sly] : Me. I've been buying it all up. Ha. | Not me. Well. A little me. | It's the roads. Mostly.
+b[stage=old] : It was the weather in my day. Now it's the roads. | Nobody's fault. Everybody's fault. | They said it then, too.
+b : The carters, I heard. | Someone, somewhere. | And they're right, sometimes.
+a : Carters, Houses, the moon. | Somewhere far from here. | Sometimes.
+
+scene w7c_up_cut_back
+when topic=prices topic.dir=up
+a : We'll be cutting back this week. | No more #topic.what# till it drops. | I'll have to choose: #topic.what#, or boots.
+b[parent=yes] : The pups don't understand cutting back. | We've cut back so far there's no back left. | Mine need both.
+b[warmth=warm] : Come and eat with us one night. | I'll share mine. No, I insist. | Boots. Then come to me for #topic.what#.
+b : Wise. | Good luck to you. | Boots last longer.
+a : Needs must. | And to you. | Boots, then.
+
+scene w7c_up_story
+when topic=prices topic.dir=up
+a : I asked for #topic.what# and the stallholder laughed when I counted out my coin. | A wolf ahead of me at the stall just turned round and left. | I heard someone haggle for #topic.what# for half an hour.
+b[humour=merry] : Laughed? Laugh back louder. | Wise wolf. I'll follow them. | Did they win?
+b[warmth=warm] : That's cruel. I'd not stand for it. | Poor soul. | Good for them. Somebody has to.
+b : The cheek of it. | Can't blame them. | And?
+a : I laughed too. Then I left. | Nor me. | They saved a penny. Lost the morning.
+
+scene w7c_up_market_talk
+when topic=prices topic.dir=up here.place=market
+a : #topic.price#. Look at the board. #topic.price#! | Every stall's put #topic.what# up the same. Funny, that. | Shall we buy now, or wait for worse?
+b[role=merchant] : Don't shout it. You'll scare the buyers. | Not mine. Mine's honest. Slightly. | Buy now. Tomorrow's dearer.
+b : I see it. I wish I didn't. | Not so funny. | Wait. It can't get worse.
+a : It can. It always can. | Somebody's talking to somebody. | Can't it?
+
+scene w7c_up_tavern
+when topic=prices topic.dir=up here.place=tavern
+a : At #topic.price#, I'll be drinking slower. | Cheers to dear #topic.what#. | Everything's going up but my #wages#.
+b[humour=dry] : Slower drinking. Longer evenings. Every cloud. | Cheers. To our empty purses. | Your #wages# and the river in summer.
+b : Drink up while you can. | Cheers. | Ain't that the way.
+a : I intend to. | Cheers. | Every week.
+
+scene w7c_up_meal
+when topic=prices topic.item=meal topic.dir=up
+a : #topic.price# for a bowl of stew. A bowl! | The pie-wife wants #topic.price# a pie now. | Last week a meal was cheaper. I counted.
+b[job=cook|innkeeper] : And the onions cost me double. Someone has to pay. | Flour's dear. Pies are flour. | Not my doing. I'm losing on it.
+b[stage=young] : Can we still have pie? | Is pie a lot of #money#? | Can I have half a pie?
+b : Cook at home, then. | Bake your own. | You counted?
+a : On what fire? | With what flour? | Every penny.
+
+scene w7c_up_herbs
+when topic=prices topic.item=herbs topic.dir=up
+a : Herbs at #topic.price#. A cough's a luxury now. | I'll not be ill this month. Can't afford it. | They want #topic.price# for a twist of willow bark.
+b[job=healer] : I know. I'm paying it too. Come to me if it's bad. | Don't wait till it's bad. Bad's dearer. | Bark grows by the river, free. Take a knife.
+b[stage=old] : My knees cost #topic.price# a week now. | Neither will I. I'll lie about it. | I remember it growing on every bank.
+b : Gather your own. | Wise. | It's robbery.
+a : I don't know which is which. | Very. | Robbery.
+
+## ---------------------------------------------------------------- Prices down
+
+scene w7c_down_glad
+when topic=prices topic.dir=down
+a : #topic.what.capitalize#, #topic.price#! Down! | Something got cheaper. Write down the day. | Good news for the purse. Prices are down.
+b[wealth=poor|destitute] : Gods be thanked. I can eat. | Down? I'll believe it. | My purse needs it.
+b[role=merchant] : Good for you. Not for me. | I'm writing it. With tears. | Not for the seller's.
+b[stage=old] : Won't last. Buy now. | I'll remember it. Won't be many. | Down till Restday, maybe.
+b : About time. | Marvellous. | Good.
+a : Hurry, then. | It's a rare day. | Very good.
+
+scene w7c_down_why
+when topic=prices topic.dir=down
+a : Why's #topic.what# cheaper? What's wrong with it? | Down to #topic.price#. Somebody's flooding the market. | Cheap. I don't trust cheap.
+b[honesty=guarded] : Nothing's cheap for nothing. Look for the worm. | Somebody's dumping. Wait and see who. | Nor me.
+b[humour=merry] : Maybe someone was nice. It happens! Rarely. | Floods are lovely if you've a bucket. | Trust it long enough to buy some.
+b : A good harvest, I heard. | Carts came in, I think. | Cheap's cheap.
+a : I hope you're right. | Maybe. | Cheap's cheap.
+
+scene w7c_down_stock
+when topic=prices topic.dir=down a.stage=adult|old
+a : I'll stock up while it's #topic.price#. | Buy now and keep it, that's what my mother did. | Cheap #topic.what#. I'll have the cellar full.
+b[drive=ambitious] : Buy it all. Sell it back at the turn. | Your mother was clever. | Fill two.
+b[wealth=poor|destitute] : With what? | Mine did too, when we had a cellar. | What cellar?
+b : Good thinking. | Wise woman. | Don't let it spoil.
+a : I'll try. | She was. | I won't.
+
+scene w7c_down_meal
+when topic=prices topic.item=meal topic.dir=down
+a : A hot meal for #topic.price#. I'll eat out tonight! | Pie's cheaper. Pie's cheaper! | Supper's on me. At these prices.
+b[job=cook|innkeeper] : And who's paying the cook? | Cheaper for you. Thinner for me. | Come to mine. I'm matching it.
+b[wealth=poor|destitute] : I'll have two. | Pie! | I'll hold you to it.
+b : Treat yourself. | Pie. Lovely. | Generous.
+a : I will. | Pie! | It's cheap.
+
+scene w7c_down_herbs
+when topic=prices topic.item=herbs topic.dir=down
+a : Herbs are down. My chest'll thank me. | Cheap herbs! I'll buy for the whole winter. | Willow bark at #topic.price#. Glory be.
+b[job=healer] : Good. Come and get the right ones. Not the wrong ones. | Dry them well, or they'll rot. | Now folk might come before it's too late.
+b : Good. | Clever. | At last.
+a : I will. | I'll dry them. | At last.
+
+## ---------------------------------------------------------------- Why it fell
+
+scene w7c_cause_grateful
+when topic=price_cause
+a : We've #topic.who# to thank for cheaper #topic.what#. | #topic.who# brought #topic.what# in, and down it came. | You know why #topic.what#'s cheap? #topic.who#.
+b[role=merchant] : Thank them? They've cut my margin to the bone. | And down came my profits. | I know. I'm not pleased.
+b[wealth=poor|destitute] : Bless them. Truly. | Bless whoever it was. | Bless them, then.
+b[honesty=guarded] : Where'd they get it, though? | Brought it from where? | Hm. I'd ask questions.
+b : Well! Good of them. | Lucky us. | Is that so.
+a : It was. | Very lucky. | That's so.
+
+scene w7c_cause_who
+when topic=price_cause topic.known=no
+a : A stranger, #topic.who#, came with #topic.what#. | Some traveller sold the shops #topic.what#. #topic.who#, it was. | Did you see #topic.who#? Brought a load of #topic.what#.
+b[stage=young] : Are they still here? Can I see? | Was it a pirate? | I saw them! I think.
+b[temper=nervy] : Strangers. I don't like strangers. | What else did they bring? | I'll keep my door locked.
+b : Never seen them. | Who's that, then? | I missed them.
+a : Passing through, I think. | Nobody knows. | You did.
+
+scene w7c_cause_named
+when topic=price_cause topic.known=yes
+a : #topic.who# did the town a good turn. #topic.what.capitalize#, cheap. | That #topic.who#'s been bringing #topic.what# in. | Prices fell, and it's #topic.who# did it.
+b[pair.band=friends|family] : I always liked them. | Good. They need the trade. | Did they? Good for them.
+b : Good of them. | Has she? Has he? | So I heard.
+a : Very good. | Loads of it. | So you did.
+
+scene w7c_cause_more
+when topic=price_cause
+a : Let's hope they bring more #topic.what#. | I'd pay #topic.who# to come again. | If #topic.who# comes back, prices'll fall again.
+b[role=merchant] : Let's hope they don't. | I'd pay them to stay away. | Then I'll shut my stall.
+b : I'll drink to that. | Me too. | Here's hoping.
+a : So will I. | Pay them, then. | Hoping.
+
+## ---------------------------------------------------------------- Caravans arrived
+
+scene w7c_cv_in_noise
+when topic=caravan topic.kind=arrived
+a : The #topic.where# wagons rolled in. Woke the whole street. | Mules braying since dawn. #topic.where# carts. | You hear them? #topic.where# caravan's in.
+b[tired=yes] : I heard. Every wheel. | Mules. I hate mules. | Heard them? I dreamed them.
+b[role=merchant] : Lovely sound. Lovely, lovely sound. | Bless those mules. | Music.
+b : Worth the noise. | Mules always bray. | I did.
+a : Maybe. | Always. | Who didn't?
+
+scene w7c_cv_in_goods
+when topic=caravan topic.kind=arrived
+a : What've they brought from #topic.where#, do you know? | There's cloth on the #topic.where# carts. Good cloth. | Salt fish from #topic.where#, I hope.
+b[role=merchant] : My order, gods willing. | I'll have it on my stall by noon. | Hope away. I've bought it all.
+b[stage=young] : Sweets? Are there sweets? | Can I have a ribbon? | Fish. Yuck.
+b : Everything and nothing. | Good. | Fish!
+a : Everything, then. | Very. | Fish.
+
+scene w7c_cv_in_news
+when topic=caravan topic.kind=arrived
+a : The drivers say the road from #topic.where# was quiet. | Carters from #topic.where# have news. | The #topic.where# lot say prices are worse there.
+b[temper=nervy] : Quiet? Truly? | Good news, I hope. | Worse? How?
+b : Good. | What news? | Can't be.
+a : Truly. | Weddings and weather. | It can.
+
+scene w7c_cv_in_carters
+when topic=caravan topic.kind=arrived
+a : Those carters'll drink the inn dry tonight. | Look at them. Dust from ears to tail. | Poor beasts. They look half dead.
+b[job=innkeeper] : Let them. They pay. | I'll have the water hot. | So do the drivers.
+b[job=carter] : We earn it. | You'd be dusty too. | That road does it.
+b : Let them. | Long road. | Rest them.
+a : They will. | Long. | Rest them all.
+
+## Caravans left
+
+scene w7c_cv_out_wave
+when topic=caravan topic.kind=left
+a : The #topic.where# wagons pulled out at dawn. | Saw the #topic.where# carts off. Long way. | That's the caravan gone for #topic.where#.
+b[pair.band=family|spouses] : I hope your cousin's safe on it. | Long way for anyone. | Safe road.
+b[role=merchant] : My goods on it, too. | I'll not sleep till they're back. | With my coin.
+b : Safe road to them. | Long way. | Good.
+a : Safe road. | Long. | Good.
+
+scene w7c_cv_out_quiet
+when topic=caravan topic.kind=left
+a : Town's quiet with the caravan gone. | No carters in the inn tonight. | Streets are empty without the wagons.
+b[job=innkeeper] : Quiet and poor. | No carters, no coin. | Empty, and my till too.
+b : Nice, for a change. | Quieter. | I like it.
+a : For a change. | Much. | It's nice.
+
+## Caravans raided
+
+scene w7c_cv_raid_who
+when topic=caravan topic.kind=raided
+a : Raided on the #topic.where# road. Do they know who? | Who'd rob a caravan from #topic.where#? Desperate wolves. | The #topic.where# caravan's lost. Bandits.
+b[role=guard] : We've an idea. Not enough of us to act on it. | Desperate, and armed. | Lost, and we were told too late.
+b[stage=old] : There's always someone. | Hungry ones. | It's always the same.
+b : Nobody knows. | Bandits. | Terrible.
+a : Nobody does. | Desperate. | Terrible.
+
+scene w7c_cv_raid_prices
+when topic=caravan topic.kind=raided
+a : Prices will jump now. Mark me. | No goods from #topic.where# for a month, I'd bet. | Everything dear again, all because of a few thieves.
+b[role=merchant] : They already have. I put mine up this morning. | A month? Two. | A few thieves and a lazy Watch.
+b[wealth=poor|destitute] : We'll go hungry, then. | Can't afford it anyway. | Thieves rob all of us.
+b : I fear you're right. | Two, more like. | Aye.
+a : I'm always right. | Two. | Aye.
+
+scene w7c_cv_raid_fear
+when topic=caravan topic.kind=raided
+a : I've a cousin who drives that road. | Do you think they'll come here? | I'll not travel this season.
+b[warmth=warm] : Is your cousin all right? Have you heard? | No. Not with the Watch at the gate. | Stay home. Safe.
+b[temper=short] : Then your cousin should've stayed home. | Let them try. | Coward.
+b : I hope he's all right. | Never. | Nor me.
+a : So do I. | I hope. | Nor me.
+
+## ---------------------------------------------------------------- More everyday work, for anyone
+
+scene w7c_early_bird
+when topic=work
+a : I was here before the cock. | First in, every day. Nobody notices. | Who opened up? I thought I'd be first.
+b[humour=dry] : The cock's lazy. | I notice. I don't care, but I notice. | A ghost. A very punctual ghost.
+b[drive=ambitious] : Second. I'll beat you tomorrow. | Somebody does. Somebody important. | Me. I'm always first.
+b : Well done. | I notice. | Me, I think.
+a : Thank you. | Do you? | You!
+
+scene w7c_counting
+when topic=work
+a : Seven, eight... Don't talk, I'm counting. | Lost count. Thanks. | Count it for me, would you? My head's soup.
+b[humour=merry] : Twelve, nine, forty... | You're welcome. | Nine. It's always nine.
+b[honesty=sly] : I'll count. Trust me. | Sorry. Nine. | I'll keep a few for my trouble.
+b : Sorry. | Start again. | Give it here.
+a : Hush. | From one. | Thank you.
+
+scene w7c_heavy
+when topic=work
+a : This is heavier than it looks. | Who packed this? A bear? | My back's gone. Somewhere. I'll find it later.
+b[stage=old] : Lift with your legs. I learnt too late. | A careless bear. | Mine went years ago.
+b[warmth=warm] : Let me take an end. | Here, together. | Sit. I'll do it.
+b : Everything is. | Some fool. | Go easy.
+a : Ha. | Some fool. | I'll try.
+
+scene w7c_sharpen
+when topic=work
+a : Can I use your whetstone? | My blade's dull as a sermon. | Who's had my good knife? It's chipped.
+b[honesty=sly] : For a penny. | Dull? Ask the priest. | Not me. Probably.
+b[temper=short] : Use your own. | Sharpen it, then. | Look elsewhere.
+b : Go on. | Mine too. | Not me.
+a : Thanks. | Ha. | Hm.
+
+scene w7c_closing
+when topic=work here.time=dusk|night
+a : Shall we shut up shop? | That's enough for one day. | Put the shutters up. I'm done.
+b[drive=ambitious] : One more hour. | Never enough. | Not yet.
+b[tired=yes] : Please. Yes. Please. | More than enough. | Gladly.
+b : Aye. | Aye, it is. | Right.
+a : One hour. | Home. | Good.
+
+scene w7c_opening
+when topic=work here.time=dawn
+a : Shutters up. Another day. | Sweep the step and we're open. | Light the fire, will you? My paws are frozen.
+b[tired=yes] : Already? I only just shut them. | My broom's asleep. | I'm frozen too.
+b : Another day. | Done. | Done.
+a : Another. | Open. | Bless you.
+
+scene w7c_coin
+when topic=work
+a : Is this coin real? Bite it. | Somebody paid me with a clipped penny. | Look at this. Never seen a coin like it.
+b[job=official|merchant] : Clipped. Take it to the official. | It's light. Weigh it. | Foreign. Worth half.
+b[stage=young] : Can I keep it? | Can I bite it? | Shiny!
+b : Looks real enough. | Clipped? Who? | Foreign, I'd say.
+a : I'll bite it. | I wish I knew. | Worth something?
+
+scene w7c_rain_day
+when topic=work here.weather=rain|storm
+a : Nobody's out in this. Dead day. | Rain's kept them all at home. | Stand by the fire. Nobody's coming.
+b[role=merchant] : Dead as a doornail. | Not a soul. | Not one.
+b[job=farmer|herder|woodcutter|laborer] : Dead? I'm soaked to the bone, out there. | Lucky them. | Lucky you, indoors.
+b : Nice and quiet, then. | Let it rain. | Good.
+a : Too quiet. | Let it. | Warm.
+
+scene w7c_fog_day
+when topic=work here.weather=fog
+a : Can't see the end of my own nose. | Fog's so thick I walked into the wall. | Lost the street in this.
+b[humour=merry] : Your nose is long. Good. | The wall started it. | Follow your nose.
+b : Mind yourself. | Ouch. | Wait for it to lift.
+a : I am. | Ouch. | I'll wait.
+
+scene w7c_hot_day
+when topic=work here.weather=clear here.season=summer
+a : Too hot to think. | My fur's a blanket in this. | Is there any water left?
+b[job=smith|baker|cook] : Too hot? Come and stand at my fire. | Shed it. | Drink mine.
+b : Sit in the shade. | Shear it off. | A little.
+a : No shade. | Ha. | Thanks.
+
+scene w7c_snow_day
+when topic=work here.weather=snow
+a : Snowed in the path again. | My paws are blocks of ice. | Nobody's buying in this.
+b[job=woodcutter] : They'll buy firewood. | Wrap them. | Wood. They're buying wood.
+b : Shovel it. | Warm them by the fire. | Cold keeps them home.
+a : I did. Twice. | Thanks. | Wood. Lucky you.
+
+scene w7c_crowd_busy
+when topic=work here.crowd=crowd
+a : Who are all these folk? | Can't move in here. | Somebody tell them to queue.
+b[role=merchant] : Customers! Bless every one. | Good. Busy is good. | Queue? They'll walk.
+b[temper=short] : Too many. Out! | Move, then. | Queue!
+b : Busy day. | Squeeze through. | They never queue.
+a : Too busy. | I'll try. | Never.
+
+scene w7c_crowd_quiet
+when topic=work here.crowd=quiet
+a : Quiet today. | Not a soul. | You could hear a pin drop.
+b[role=merchant] : Too quiet. | Not a sale, either. | Drop a coin. I'd hear that.
+b : Nice, for once. | Rest, then. | Peaceful.
+a : For once. | Rest. | Very.
+
+scene w7c_good_tool
+when topic=work
+a : Look at this. New. Finest I've ever owned. | Bought myself a proper set at last. | Feel the balance on that.
+b[wealth=poor|destitute] : Must have cost a fortune. | Lucky you. | Lovely. I'll never own one.
+b[stage=old] : Look after it and it'll see you out. | Proper tools, proper work. | Balanced. Nice.
+b : Lovely. | About time. | Nice weight.
+a : It did. | About time. | Lovely.
+
+scene w7c_burnt
+when topic=work
+a : Burnt my paw on it. | Ow. Ow ow ow. | Don't touch that. Hot.
+b[job=healer] : Cold water. Now. Don't argue. | Let me see. | Thanks for the warning.
+b[humour=merry] : That'll teach you. | Kiss it better? | Too late!
+b : Cold water. | Ouch. | Thanks.
+a : Ow. | Ouch. | Hot.
+
+scene w7c_tidy
+when topic=work
+a : Who left this mess? | You could tidy, you know. | Somebody's been at my bench.
+b[honesty=frank] : Me. Sorry. | I could. I won't. | I borrowed your bench. Sorry.
+b[honesty=sly] : Rats. | Could I? | Rats again.
+b : Not me. | I'll tidy later. | Not me.
+a : Somebody. | Later. | Somebody.
+
+scene w7c_stranger_ask_work
+when topic=work|smalltalk pair.band=strangers a.wealth=poor|destitute
+a : Any work going? I'll do anything. | Does your master need a pair of paws? | I'm new in town. Know anyone hiring?
+b[warmth=warm] : Ask at the yard. Tell them I sent you. | I'll ask. Come back tomorrow. | The docks, always. Ask for the foreman.
+b[warmth=cold] : No. | Ask him yourself. | No.
+b : Try the market. | Not that I know. | Ask at the inn.
+a : Thank you. | I'll try. | Thank you.
+
+scene w7c_lunch
+when topic=work here.time=day
+a : What's in your pail today? | Swap you half? | I've brought too much bread.
+b[wealth=poor|destitute] : Nothing much. | Gladly. | I'll take any.
+b[wealth=rich] : Cold pie. Have some. | Swap? Have it. | Bread? I've cheese.
+b : Bread and onion. | Half's fair. | Share it.
+a : Same. | Half. | Here.
+
+## ---------------------------------------------------------------- Still more of the everyday, for anyone at work
+
+scene w7c_boots
+when topic=work
+a : My boots have gone through at the toe. | Look at this coat. More patch than coat. | I've worn a hole in my apron the shape of my belly.
+b[wealth=rich] : Buy new, for pity's sake. | Get a proper one made. I'll tell you who. | Well, it's a handsome belly.
+b[wealth=poor|destitute] : Stuff them with straw. Mine are. | Patches are honest. | Turn it round. Wear the back.
+b[job=crafter] : Bring them by. I'll do it at cost. | I can fix that. Restday. | Leave it with me.
+b : Get them mended. | Patch the patches. | Ha! So you have.
+a : Next month. | I will. | Laugh, go on.
+
+scene w7c_mouser
+when topic=work
+a : The cat caught three rats in the store last night. | Somebody's been feeding the yard cat. It's useless now. | There's a dog sleeping on the sacks again.
+b[warmth=warm] : Good cat. Give it a bit of something. | Me. Sorry. It looked so thin. | Let it sleep. It's cold out.
+b[temper=short] : Good. Now catch the rest. | Stop it, whoever it is. | Kick it off.
+b : Earns its keep, that one. | Fat cats don't hunt. | Shoo it off.
+a : Better than some of us. | They don't. | It won't shoo.
+
+scene w7c_wasp
+when topic=work here.season=summer|autumn
+a : There's a wasp in here. Where'd it go? | Something stung me! | Don't move. It's on your ear.
+b[temper=nervy] : Where? Where? Get it out! | Ow! Me too! | Get it off. Get it off!
+b[humour=merry] : It's behind you. No, the other behind. | Rub dock leaf on it and cry. | It likes you.
+b : Open the door. | Show me. | ...Has it gone?
+a : It's gone. I think. | Here. Swelling. | Gone.
+
+scene w7c_read_order
+when topic=work
+a : Can you read this? Somebody's left an order. | What does this word say? | My letters are poor. Read me this.
+b[job=scholar|official|priest] : Of course. "Twelve, by Restday, and no excuses." | That says "urgent". It's underlined. | Give it here. Hm. Rude, but clear.
+b[talk=quiet] : ...Sorry. I can't. | I don't know. | No.
+b : Twelve of something, by Restday. | "Urgent", I think. | Something about pay.
+a : Twelve! | Lovely. | Pay? Good.
+
+scene w7c_measure
+when topic=work
+a : It's too short. I measured it twice! | Who cut this? It's crooked as a dog's leg. | It doesn't fit. Nothing fits today.
+b[temper=short] : Then measure three times. | Not me. | Make it fit.
+b[humour=dry] : Twice wrong, then. | A crooked dog, by the look. | Nothing ever fits. That's the trade.
+b : Start again. | Ask who had the saw. | Shave a bit off.
+a : I'll start again. | Nobody owns up. | Fine.
+
+scene w7c_late_delivery
+when topic=work
+a : The delivery's late again. | Where's that cart? It said dawn. | I've nothing to work with till it comes.
+b[job=carter] : Don't look at me. Mine's on time. Mostly. | The north road's half mud. | Sit tight. They're coming.
+b[temper=short] : Then shout at the carter. | Dawn where? | Find something.
+b : It'll come. | Bad roads. | Sweep, then.
+a : When? | Always. | Sweep. Lovely.
+
+scene w7c_payday_plans
+when topic=work a.shift=during|after
+a : What'll you do with your #wages#? | Paid tomorrow. I've spent it already, in my head. | One more day to pay.
+b[wealth=poor|destitute] : Rent. Then nothing. | So have I. On rent. | It'll be gone by the next day.
+b[humour=merry] : Ale. Then more ale. Then soup. | On what? Tell me. | One more day of being poor.
+b[drive=ambitious] : Save it. Every penny. | I'm putting it by for a stall. | Spend it on a better tool.
+b : Pay what I owe. | Same. | Hold on.
+a : Sensible. | Same. | Hold on.
+
+scene w7c_saving
+when topic=work a.stage=adolescent|adult
+a : I'm saving for a good coat. | Six more months and I'll have enough for a stall. | I'm putting by a penny a day. For the wedding.
+b[warmth=warm] : Good for you! I'll help you choose. | You'll get there. | A wedding! Whose?
+b[honesty=sly] : Keep it under the floor. Not in the house. | A stall? Mine's for sale. | A penny a day? Lend me one.
+b : Good. | Six months goes quick. | Whose wedding?
+a : Thank you. | I hope. | Mine. Maybe.
+
+scene w7c_own_shop
+when topic=work a.drive=ambitious|restless
+a : One day, my own name over a door. | I'll not work for another wolf forever. | When I'm my own master, I'll do it properly.
+b[drive=content] : Why? It's a bother. Let others worry. | I like working for someone. Less to fret over. | Properly's hard.
+b[stage=old] : I said that. Forty years ago. | Save first. Then dream. | We'll see.
+b : Good. | Go on, then. | Will you?
+a : You'll see. | Watch me. | I will.
+
+scene w7c_shop_closing
+when topic=work
+a : Did you hear the chandler's shutting? | They say the old bakery's closing for good. | Another shop boarded on our street.
+b[business=failing] : That'll be me soon. | Don't. I'm next. | Next week, mine.
+b[role=merchant] : Their customers'll come to me. | Good. Less competition. Sorry. | Shame. Good spot, too.
+b : Shame. | Twenty years they had it. | Hard times.
+a : Shame. | Twenty. | Hard.
+
+scene w7c_weights
+when topic=work
+a : The official's coming round to check the weights. | They're testing scales today. Is yours honest? | Somebody was fined for short weight.
+b[honesty=sly] : Mine's honest. Very honest. Let me just adjust it. | As honest as anyone's. | Unlucky.
+b[honesty=frank] : Let them. I've nothing to hide. | Always. | Good. Serves them right.
+b : Let them. | Course. | Who?
+a : Good. | Good. | The one on the corner.
+
+scene w7c_pickpocket
+when topic=work here.place=market|street
+a : Watch your purse. There's a light paw about. | Saw a pup lift a purse just now. Quick as a fish. | Somebody's been at my takings.
+b[role=guard] : Point them out. | Which way did they go? | I'll watch your stall.
+b[honesty=sly] : I saw nothing. | Clever pup. | Not me.
+b : Thanks for the warning. | Where? | Lock it away.
+a : Keep it close. | Gone. | I will.
+
+scene w7c_lend_coin
+when topic=work pair.band=acquaintances|friends
+a : Lend me a penny till Restday? | Could you spare a few coppers? | I'm short. Just this week.
+b[wealth=rich] : Here. Don't worry about it. | A few? Here's more. | Take it.
+b[wealth=poor|destitute] : I've less than you. | Spare? Ha. | Me too.
+b[honesty=guarded] : What for? | For what? | Again?
+b : Restday. Promise? | Here. | Just this week.
+a : Promise. | Bless you. | Just this week.
+
+scene w7c_old_tool
+when topic=work
+a : This hammer was my grandfather's. | Old tool, this. Older than me. | The handle's been changed five times. The head never.
+b[stage=old] : They made them proper then. | Like me. | Same as my axe.
+b : Still works. | Look after it. | Then is it the same hammer?
+a : Better than new. | I will. | ...Don't.
+
+scene w7c_pups_underfoot
+when topic=work a.parent=yes
+a : The pups were underfoot all morning. | Mine wants to help. Helping is worse. | Brought the little one. Couldn't leave her.
+b[stage=young] : I'm not underfoot! I'm helping! | I can help! | Hello!
+b[warmth=warm] : Let them. They learn by watching. | Give them a broom. | She's welcome.
+b[temper=short] : Keep them clear of the fire. | Send them home. | Mind she doesn't touch anything.
+b : They're quick, at that age. | It's sweet. | Fair enough.
+a : Too quick. | It's slow. | She's good.
+
+scene w7c_caught_napping
+when topic=work
+a : Were you asleep? | Wake up! | You're snoring on the job.
+b[tired=yes] : I was resting my eyes. Hard. | I'm awake. I'm awake. | Only a little.
+b[humour=merry] : Thinking. Deeply. | I was listening to the wood grow. | Snoring's a kind of singing.
+b : No. | I'm up! | Was I?
+a : Hm. | Good. | Loudly.
+
+scene w7c_customer_gossip
+when topic=work
+a : A customer told me the strangest thing today. | You hear everything behind a counter. | Old so-and-so came in. Talked an hour.
+b[talk=chatty] : What? Tell me! | Tell me everything. | Talked! About what?
+b[honesty=guarded] : Best not repeat it. | Then keep it there. | Did they buy anything?
+b : Oh? | I bet. | Did they buy?
+a : I'll tell you later. | It's true. | A button.
+
+scene w7c_steward
+when topic=work a.house
+a : The House steward came round with his ledger. | Steward's counted every nail in the yard. | They want the accounts by Restday.
+b[self.house] : Ours too. Counted twice. | He's always counting. | Again?
+b : Did he find anything? | Every nail? | Restday!
+a : Nothing. This time. | Every one. | Restday.
+
+scene w7c_other_towns
+when topic=work
+a : In Larkfield, they say, a stall pays twice what it does here. | Ridgemere work pays better, I'm told. | Southmeadow folk work half as hard. All that sun.
+b[from=larkfield] : True. And the rent's three times. | So I'm told. | We work in the sun!
+b[from=southmeadow] : Half as hard? We work twice as long. | Ridgemere pays. Ridgemere charges. | Come and pick apples and say that.
+b[from=frosthollow] : Try a day in the mines. Then tell me who works. | Pays more, costs more. | Sun's lovely. Try snow.
+b[from=ridgemere] : And costs double. | It does. Ask anyone. | Half as hard. Twice as happy.
+b : They say a lot. | Is it? | I've heard.
+a : They do. | I've heard. | They do.
+
+scene w7c_lamp_oil
+when topic=work here.time=dusk|night
+a : Lamp oil's half gone already. | Can't see a thing. More light! | My eyes are going in this light.
+b[wealth=poor|destitute] : Work in the dark. I do. | Light costs. | Mine went years ago.
+b : Fill it, then. | Here. | Rest them.
+a : With what? | Thanks. | I'll try.
+
+scene w7c_big_job_done
+when topic=work
+a : Done! The big one's done! | Finished it. Three weeks I've been at it. | It's done. Come and look.
+b[warmth=warm] : Oh, it's beautiful! Well done! | Three weeks! You must be proud. | Show me!
+b[warmth=cold] : About time. | Took you long enough. | I'll look later.
+b[humour=merry] : Let's drink to it! | Three weeks? I'd have done it in two. | Ooh!
+b : Well done. | At last. | Let's see.
+a : Thank you. | At last. | There.
+
+scene w7c_charm
+when topic=work
+a : Where's my lucky stone? I always work with it on the bench. | I touched wood this morning and still dropped everything. | My lucky nail's gone missing.
+b[piety=devout] : Pray. Stones don't listen. | The gods don't need wood. | Trust in the gods, not nails.
+b[humour=dry] : It's lucky somewhere else now. | Should've touched more wood. | A nail can't be lucky. It's a nail.
+b : Under the bench? | Bad luck. | It'll turn up.
+a : Not there. | Very bad. | Hope so.
+
+scene w7c_teach_me
+when topic=work pair.band=acquaintances|friends|strangers
+a : Could you teach me your trade? | How long did it take you to learn that? | Would you take an apprentice?
+b[master=yes] : I've one already. One's plenty. | Years. Still learning. | I've one. Ask me in a year.
+b[warmth=warm] : I could show you a little. Come by. | Years. But you'd be quicker. | Maybe. Come and watch.
+b[warmth=cold] : No. | Too long for you. | No.
+b : It's not easy. | Years. | Perhaps.
+a : I'm a quick learner. | Years! | Perhaps.
+
+scene w7c_mud
+when topic=work here.weather=rain|storm|snow
+a : Who tracked mud all through? | Wipe your paws! | The floor's a pig-sty.
+b[humour=merry] : Mud's free. Enjoy it. | They don't wipe. Nobody wipes. | Oink.
+b : Customers. | Sorry. | I'll sweep.
+a : Customers. | Wipe them. | Please.
+
+scene w7c_quiet_moment
+when topic=work
+a : Listen. Nothing. Lovely. | This is the best part of the day. The quiet part. | I like it when it's just us.
+b[talk=chatty] : Isn't it? Now, did I tell you... | It is. Let me tell you why. | Me too! Now then...
+b : Lovely. | It is. | Me too.
+a : ...It was. | It is. | Mm.
+
+scene w7c_wrong_order
+when topic=work
+a : They ordered blue. I made blue. Now they want green. | Customer changed his mind. Again. | They wanted it smaller. After I'd finished.
+b[temper=short] : Charge them double. | Throw it at him. | Tell them no.
+b[humour=dry] : Make it blue-green. Everyone loses. | His mind's like the weather. | Cut it in half. Two small ones.
+b : Customers. | Typical. | Charge for it.
+a : Customers. | Every time. | I will.
+
+scene w7c_good_customer
+when topic=work
+a : A customer paid me extra. Just because. | Somebody said my work was the best in town. | Old dear brought me a pie for mending her chair.
+b[warmth=warm] : Oh, that's lovely. You deserve it. | You are, you know. | Bless her.
+b[honesty=sly] : Did they? I'll send them more of mine. | Who? I'll pay them to say it of me. | Share the pie?
+b : That's rare. | Nice. | That's kind.
+a : Rare as hen's teeth. | It was. | It was.
+
+scene w7c_thief_tools
+when topic=work
+a : Somebody stole my best saw. | Lost a whole morning looking for my mallet. | Tools keep walking off.
+b[role=guard] : Report it. We'll look. | Lock them up. | I'll ask about.
+b[honesty=sly] : Walking off? Funny that. | Look in the river. | Tools have legs.
+b : Lock them up. | Found it? | Thieves.
+a : I will. | No. | Thieves.
+
+scene w7c_sore_back
+when topic=work a.stage=adult|old
+a : My back's not right. | Bent over all day. I'll be crooked as a crook. | I creak when I stand.
+b[job=healer] : Warm stones on it tonight. | Lie flat. Not soft. Flat. | Come and see me.
+b[stage=old] : Wait till it's every day. | Mine's been crooked for years. | Me too.
+b : Stretch it. | Stand up straight now and then. | Rest it.
+a : I'll try. | Easy said. | I'll try.

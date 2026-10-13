@@ -1,0 +1,589 @@
+# Health (doc 62, phase 7): aches and coughs, teeth and sleep, cures and the healer's bills, by age, trade, trait and
+# place. Alternatives are written in parallel: the second reply answers the second remark. Specific variants first,
+# each turn ends with one anyone can say. Rules and chains for the same topic: rules/health_memories7.talk.
+
+# ---------------------------------------------------------------- Anyone
+
+scene e3_h_back
+when topic=health
+a : My back's gone again. Bent to pick up a spoon. | Slept on my back wrong. Now it won't unbend. | Lifted a sack I had no business lifting.
+b[healer] : Heat on it, and no lifting for three days. I mean three. Not one.
+b[farmer] : Welcome to every harvest of my life.
+b[old] : Wait till it goes for good. Then you'll know what a back is.
+b : A spoon! It's always something small. | Lie on the floor. Flat as a rug. | Whose sack?
+a : A wooden one. Not even full. | I'll lie on the floor and never get up. | The baker's. I was being helpful.
+
+scene e3_h_sneezing
+when topic=health
+a : #oath#, I can't stop sneezing. | My nose has been running since Restday. | I think I've caught #chill#.
+b[temper=nervy] : Stand over there. No, further. I can't afford to be ill.
+b[child] : Do it again! You sound like a goose.
+b : There's a lot of it going round. | Mutton broth. Hot as you can bear. | Off to bed with you.
+a : Half the street's got it. | I've drunk a whole pot. | Bed won't pay the rent.
+
+scene e3_h_bad_night
+when topic=health
+a : I didn't sleep a wink. | Lay awake counting the roof beams. | Woke four times and every time it was dark.
+b[old] : I haven't slept a whole night since I was forty.
+b[parent=yes] : Try sleeping with a pup who kicks.
+b[guard] : Sleep's for folk without a night watch.
+b : Something on your mind? | How many beams? | That's the worst of it, the dark.
+a : Everything, all at once. | Twelve. I counted them twice. | And the owls. Don't forget the owls.
+
+scene e3_h_healer_bill
+when topic=health
+a : Do you know what the healer charged me for a bit of bandage? | Three pennies for a pot of salve. Three! | I'd rather be ill than pay that healer again.
+b[healer] : You're paying for twenty years of knowing which salve. The pot's free.
+b[wealth=poor] : That's why I never go. I just get better or I don't.
+b : Tell me. I'll not faint. | Daylight robbery, that. | You say that till the fever comes.
+a : A whole day's bread, for a strip of linen. | My grandmother made it for nothing. | Then I'll say it louder.
+
+scene e3_h_grandmothers_cure
+when topic=health
+a : My grandmother put goose grease on every chest in the family. | Red flannel round the throat. That's what my mother swore by. | Onion in your socks draws out a fever. Don't laugh.
+b[healer] : Grease does no harm. The flannel keeps you warm. The onion I can't speak for.
+b[old] : My grandmother did that. And I'm still here.
+b : Did it work? | Did it work? | I'm not laughing. I'm smelling.
+a : We all smelled like the kitchen till spring. | Nobody dared be ill in our house. | It's working on me now. I think.
+
+scene e3_h_fleas
+when topic=health
+a : I've got fleas. Don't move away. | Something's living in my scruff. | Scratched all night. It's in the blanket.
+b[herder] : Pennyroyal in the bedding. Works for the dogs, works for us.
+b[old] : Roll in the woodsmoke. That's how we did it.
+b[merchant] : I've a flea comb, very reasonable.
+b : I'm moving away. | Fleas. Wash your bedding. | Burn the blanket.
+a : Charming. | It's the pups, they bring them home. | It's my best blanket!
+
+scene e3_h_ears
+when topic=health
+a : My ear's been aching since the wind changed. | Can't hear a thing out of this side. | Got water in my ear and now it rings.
+b[healer] : Warm oil, a few drops. And keep out of the wind.
+b : What? | What? | Hop on one leg.
+a : Very funny. | Oh, not you as well. | I did. Now my leg aches too.
+
+scene e3_h_belly
+when topic=health
+a : Something I ate's not agreeing with me. | That pie from the stall. Never again. | My belly's growling like a dog in a cupboard.
+b[cook] : It wasn't my cooking. I'll say that now.
+b[child] : I ate a beetle once. It was fine.
+b : What did you have? | I warned you about that stall. | Mint tea. Small sips.
+a : I'd rather not remember. | You did. I didn't listen. | Small sips. I'll try.
+
+scene e3_h_hiccups
+when topic=health
+a : I've had hiccups since breakfast. | How do you get rid of hiccups? | Hic. Sorry. Hic.
+b[child] : Hold your breath and hop!
+b[old] : Somebody frighten you. That's the only cure.
+b : Drink from the wrong side of the cup. | Hold your breath till you see stars. | Boo!
+a : I'll try that. | Stars, but still hiccups. | Hic. It didn't work.
+
+scene e3_h_eat_greens
+when topic=health
+a : My mother made us eat liver every Restday. For the blood. | Do you think eating fish makes you clever? | They say an apple a day keeps the healer away.
+b[healer] : Liver, greens and sleep. And a bit less ale.
+b[fisher] : I eat fish every day. Ask me anything.
+b : Liver. I can taste it from here. | It's done nothing for my brother. | It's an onion that does that. Keeps everyone away.
+a : Strong as an ox, I was. | Your brother doesn't eat fish. | Onions, then.
+
+scene e3_h_keep_moving
+when topic=health
+a : I walk to the well and back every morning. Keeps me young. | They say if you sit down too long, you set. | The old smith walked every day till he was ninety.
+b[old] : I walk every day. To the chair and back.
+b[tired=yes] : I'd walk if my legs agreed with me.
+b : Twice, if you want to live forever. | Like mortar. | And then what happened?
+a : Once is enough for anyone. | I'd better stand up, then. | He walked into a wall. But he was ninety.
+
+scene e3_h_healer_vs_priest
+when topic=health
+a : The healer says rest. The priest says pray. Who do I listen to? | The priest told my aunt her cough was a sin. | I lit a candle and took the healer's draught. Belt and braces.
+b[priest] : Pray, and then rest. The gods aren't jealous of a good bed.
+b[healer] : Pray all you like. But take the draught.
+b : Whoever's cheaper. | What sin gives you a cough? | Very wise.
+a : The candle's dearer. | She didn't ask. She was too busy coughing. | One of them'll work.
+
+scene e3_h_always_ill
+when topic=health
+a : #b.name#, you look #poorly#. | Is that a rash? On your neck, there. | Feeling better today?
+b[temper=nervy] #worrier : Do I? I knew it. I knew it this morning.
+b[temper=short] : I'm fine. Stop looking at me.
+b : Do I? I feel all right. | Where? | A little, thanks.
+a@worrier : I didn't mean anything by it. You look grand. Really.
+a : It's the light, maybe. | Oh. It's a shadow. Never mind. | Good.
+
+scene e3_h_head
+when topic=health
+a : My head's pounding like a smithy. | Got a headache behind my eyes. | Somebody's hammering in my skull.
+b[smith] : That's no smithy. A smithy has rhythm.
+b[innkeeper] : Too much of my ale last night, was it?
+b : Lie in the dark. | Willow bark. Chew it. | Was it the ale?
+a : I'd love to. | Tastes of bark. | It was the ale.
+
+scene e3_h_eyes
+when topic=health
+a : My eyes are going. I can't read the price boards. | I can't see a thing past the end of my muzzle anymore. | Everything's gone a bit misty at the edges.
+b[scholar] : A glass lens, from the city. Expensive, but a miracle.
+b[old] : Mine went years ago. My nose does the work now.
+b : Squint harder. | Just as well, with some of the faces round here. | That's the fog. Look again.
+a : I'll have a squint like old Hob. | Ha. True. | Oh. So it is.
+
+scene e3_h_claws
+when topic=health
+a : I split a claw on a crate. Right to the quick. | My dewclaw's caught on everything today. | Need my claws trimmed. I click like a cart on the cobbles.
+b[healer] : Wrap it and leave it. Claws grow back, patience doesn't.
+b[young] : My mama bites mine off. Is that normal?
+b : Ow. Don't show me. | Tape it down. | I heard you coming from the corner.
+a : I won't. It's horrible. | It's taped. Now it's caught on the tape. | Everyone did.
+
+scene e3_h_tail
+when topic=health
+a : Somebody shut a door on my tail. | My tail's gone stiff. Can't wag it. | I sat on my own tail. Don't ask how.
+b[humour=merry] : Your whole family's tails were always too long.
+b : Ow! Whose door? | Not much to wag about anyway. | I won't. But I want to.
+a : Mine. I did it myself. | Fair. | I was tired.
+
+scene e3_h_dry_nose
+when topic=health
+a : Feel my nose. Dry as a biscuit. | My mother always said a dry nose means a fever. | I woke with a hot nose and a cold tail.
+b[healer] : An old tale. A dry nose means a dry room. Drink some water.
+b[old] : A dry nose, a sick wolf. Bed.
+b : I'm not touching your nose. | Mothers know. | That's the wrong way round.
+a : Suit yourself. | She did. And she checked. Every morning. | That's what worries me.
+
+scene e3_h_washing
+when topic=health
+a : A cold bath every morning. Best thing for the health. | I don't hold with too much washing. It thins the coat. | My aunt's never washed in her life, and she's ninety.
+b[old] : Once a season, whether we need it or not.
+b : You'll catch your death. | I can tell. | Nobody stands close enough to ask her.
+a : I'll catch nothing. I'm too cold. | Thank you. | That's how she's lasted.
+
+scene e3_h_tonic_seller
+when topic=health
+a : A fellow at the market's selling a tonic for everything. Gout, grief and baldness. | Bought a bottle of tonic off a carter. It's mostly vinegar. | I took a tonic for my knees. Now my knees are fine and I can't feel my tongue.
+b[healer] : I've tasted that tonic. It's mostly brandy, and a bit of pond.
+b[merchant] : There's money in tonics. I'll grant him that.
+b : Did it work on him? He looked bald. | Vinegar's good for you, they say. | Well, the knees are better.
+a : Very bald. And sad. | They say a lot. | That's what I tell myself.
+
+scene e3_h_bled
+when topic=health
+a : The healer wanted to bleed me for a sore throat. | I've been cupped. You don't want to know where. | They put leeches on me. I named one.
+b[healer] : Not my method. I'd rather keep your blood where it is.
+b : I'd have run. | Then don't tell me. | What did you name it?
+a : I did. Down the stairs. | I'll tell you anyway. | Sir Gulp. He was very loyal.
+
+scene e3_h_expecting
+when topic=health
+a : My sister's expecting. She wants salt fish and honey. Together. | My cousin's due any day now. She's as round as a barrel. | She's carrying high, so it's a boy, they say.
+b[healer] : Let her eat what she likes and keep her off ladders.
+b[old] : I wanted coal, with my first. Coal! Ate a whole lump.
+b : Together? On a plate? | Any day? Then any minute. | They say everything.
+a : On a plate. With a spoon. | She'd agree. | They're wrong half the time.
+
+scene e3_h_sweet_tooth
+when topic=health
+a : I've a tooth that sings when I eat honey. | My teeth are all crooked from chewing bones. | I lost a back tooth to a walnut.
+b[healer] : Sing it a song back and come and see me.
+b[child] : I've got a wobbly one! Look! Look!
+b : Stop eating honey. | Show me. Gods. | Walnuts are vicious.
+a : Never. | I'm proud of them. | I've never trusted one since.
+
+scene e3_h_moult
+when topic=health here.season=spring|summer
+a : I'm moulting so hard I leave a trail. | Pulled a whole fistful of fur off my flank. | My summer coat's come in patchy.
+b[old] : When you get old the fur comes out and doesn't come back.
+b : I could follow you home. | Stuff a cushion. | Patchy's the fashion.
+a : Don't. | It's a big cushion now. | Then I'm the height of it.
+
+# ---------------------------------------------------------------- The old
+
+scene e3_h_old_weather_knees
+when topic=health a.stage=old
+a : My knees say rain by nightfall. | My hip woke me before the cock did. | Every bone in me has an opinion today.
+b[young] : Can your knees really tell the weather?
+b[old] : Mine say snow. We'll see who's right.
+b : Your knees are never wrong. | Rub it with liniment. | What are they saying?
+a : Nor is my back. | It's liniment that keeps me upright. | Mostly rude things.
+
+scene e3_h_old_two
+when topic=health a.stage=old b.stage=old
+a : My hands are so stiff this morning I couldn't hold my cup. | I've a pain in my side that comes and goes. | The healer says I've the heart of a younger wolf.
+b : You think that's stiff? I couldn't lift the cup to try. | Mine comes and stays. | Give it back to him, then.
+a : Well, you always were the worse off. | You win again. | Ha. You never change.
+
+scene e3_h_old_remember
+when topic=health a.stage=old
+a : The healer asked my age. I told her. She didn't believe me. | I've buried three healers. They all said I'd go first. | I can't remember the last time nothing hurt.
+b[healer] : I believe you. I've seen your knees.
+b[child] : How old ARE you?
+b : She was being kind. | You'll bury the next one too. | I can. It was yesterday. Then I stood up.
+a : Kindness, at my age. | I'll try my best. | Ha. Wait till it's your turn.
+
+# ---------------------------------------------------------------- Pups
+
+scene e3_h_pup_tooth
+when topic=health a.stage=young
+a : My tooth's wobbly! Look! | I fell over and there's blood on my knee. Real blood! | I've got a cough. Can I stay home from chores?
+b[old] : Leave it under your pillow. The Bright One sends a penny.
+b[parent=yes] : Mine had one like that. A string and a door, that's all it takes.
+b : Don't fiddle with it. | Spit on it. It'll heal. | You sound fine to me.
+a : I'm going to fiddle with it. | Ew. | Cough. Cough. Hear that?
+
+scene e3_h_pup_brave
+when topic=health a.stage=young
+a : I didn't cry when the healer pulled the splinter. Not even once. | Mama gave me bitter tea and I drank it ALL. | I've got spots! The healer said I'm not allowed to scratch.
+b[healer] : You were the bravest patient I had all day.
+b : That's very brave. | All of it? | Don't scratch, then.
+a : Maybe once. A small one. | Nearly all. The dog had some. | I'm only scratching a little.
+
+scene e3_h_pups_ill_parent
+when topic=health a.parent=yes
+a : The little one's got a temperature. I was up all night with her. | My youngest has spots. All the pups in the street have them. | My pup's got a cough like a seal.
+b[healer] : Cool cloths and plenty to drink. It'll pass in three days.
+b[parent=yes] : Ours had the same. Three bad nights and then they're climbing the walls.
+b[old] : They all get it. Better now than when they're grown.
+b : Poor mite. | It goes round like a song, that. | A seal?
+a : Poor me, more like. | Better them all at once. | You've never heard a seal.
+
+# ---------------------------------------------------------------- Hurt and tired
+
+scene e3_h_hurt_light
+when topic=health a.injured=light
+a : Don't touch my arm. I took a knock. | Twisted my paw on the step. | I've a lump on my head like an egg.
+b[healer] : Show me. Hm. Bruised, not broken. Keep it moving.
+b[guard] : Who did it? Point them out.
+b : What happened? | Those steps are a menace. | What did you walk into?
+a : I'd rather not say. It was a door. | I've told the landlord a hundred times. | A beam. It's always a beam.
+
+scene e3_h_hurt_bad
+when topic=health b.injured=bad
+a : You should be lying down, not standing about. | Gods, look at you. Who did that? | Can you walk? Lean on me.
+b[temper=short] : I'll lie down when I'm dead. Which won't be today.
+b : I can't lie still. It hurts more. | Doesn't matter now. | I can manage.
+a : Then sit, at least. | It matters to me. | You can't. Lean.
+
+scene e3_h_hurt_bad_self
+when topic=health a.injured=bad
+a : I'm in a bad way, #address#. | It hurts to breathe. | I can't feel my paw.
+b[healer] : Sit down. Now. Let me look at you.
+b[warmth=warm] : Sit. I'll fetch someone. Don't you move.
+b[warmth=cold] : You should see to that.
+b : You need the healer. | Then don't talk. | Gods. Sit down.
+a : I can't pay the healer. | I'll try not to. | I'm sitting.
+
+scene e3_h_tired
+when topic=health a.tired=yes
+a : I'm so #tired# I could sleep standing like a horse. | My eyes are closing on their own. | I'm running on nothing.
+b[parent=yes] : Join the club. We meet at night. Nobody sleeps.
+b[young] : Grown-ups are always tired.
+b : Go home. | Splash some water on your face. | When did you last sleep?
+a : After this. | It'll go straight back to sleep. | What day is it?
+
+# ---------------------------------------------------------------- By trait
+
+scene e3_h_devout
+when topic=health a.piety=devout
+a : I had a fever. I prayed, and it broke. | I pray for my knees every night. | The gods sent this cough to teach me patience.
+b[priest] : The gods hear us. They heard you.
+b[healer] : The gods and the draught I gave you. Let's share the credit.
+b[piety=devout] : I'll pray for you too. Two prayers can't hurt.
+b : Glad it broke. | Do the knees listen? | It's teaching me patience too.
+a : The gods are good. | Not yet. But they're being prayed for. | Then it's working.
+
+scene e3_h_short_patient
+when topic=health a.temper=short
+a : The healer told me to rest. Rest! Who'll do my work? | If one more person tells me to sit down, I'll bite them. | I'm not ill. I'm annoyed.
+b[healer] : I'd tell you to sit down, but I value my paw.
+b[temper=calm] : Sit down.
+b : Your work'll keep. | Sit down. | Can't you be both?
+a : It won't. | ... Fine. | I'm managing it.
+
+scene e3_h_nervy_plague
+when topic=health a.temper=nervy
+a : I've a spot on my paw. Do you think it's the plague? | I heard a cough in the night. Is something going round? | My heart's beating fast. Is that normal? Is it too fast?
+b[healer] : It's a spot. It will be gone by Restday. I promise you.
+b[humour=dry] : Yes. We'll write to your family.
+b : It's a spot. | It's always going round. | Hearts beat. That's their job.
+a : Are you sure it's a spot? | Then I'm not going out. | It's beating faster now.
+
+scene e3_h_merry_patient
+when topic=health a.humour=merry
+a : The healer says I'll live. I've asked for a second opinion. | I've a cough so loud the dogs answer it. | I've been bled, cupped and prayed over. Next week I'll try sleep.
+b : Get a third, to be safe. | Let's hear it. | Sleep! Steady on.
+a : Ha. I'll pay for none of them. | ... Hear that? A dog. | I'll try anything once.
+
+# ---------------------------------------------------------------- By trade
+
+scene e3_h_miner_lungs
+when topic=health a.job=miner
+a : Every miner coughs. It's the dust. | I cough black in the mornings. Doesn't hurt. | My father had the miner's chest. Went at fifty.
+b[miner] : I've had it twenty years. It's like an old dog now. It follows me about.
+b[healer] : Wet your mask. Breathe through cloth. I know you won't.
+b : Should you not stop? | That doesn't sound right. | I'm sorry.
+a : And eat what? | It's right for a miner. | Fifty's not bad, for us.
+
+scene e3_h_smith_burns
+when topic=health a.job=smith
+a : Look at my forearms. Not a hair on them. | Caught a spark in my eye this morning. | I've burned my paws so often I can't feel them.
+b[smith] : Same. You learn to count the burns as years.
+b[healer] : Butter's no good on a burn. Cold water. I've told you.
+b : Ugh. Like a plucked goose. | Can you see? | Useful, I suppose.
+a : Plucked goose. Thank you. | Mostly. | For picking up pies.
+
+scene e3_h_farmer_back
+when topic=health a.job=farmer
+a : Thirty years of bending over turnips. My back's the shape of a sickle. | I can tell the weather by my shoulders now. | The ox stood on my foot.
+b[farmer] : My knees are the same. Stiff as fence posts by harvest.
+b[old] : Wait till you can't straighten at all.
+b : Stand up straight. | Like an old wolf. | On purpose?
+a : I am standing straight. | I'm not old. Yet. | Oxen don't do anything on purpose.
+
+scene e3_h_healer_shop
+when topic=health a.job=healer
+a : Everyone comes to me with a cold, and then they don't take my draught. | Third broken paw this week. What is everyone doing? | Willow bark's up again at the market. Then they ask why my cures are dear.
+b[healer] : They want the cure, not the rest. They never want the rest.
+b[wealth=poor] : Some of us can't afford the draught.
+b : Why don't they? | Tripping, mostly. | It's the caravans, they say.
+a : It tastes of mud. I won't lie. | Running from creditors. | It's the caravans. It's always the caravans.
+
+scene e3_h_two_healers
+when topic=health a.job=healer b.job=healer
+a : Do you use comfrey for a sprain, or arnica? | Had a wolf in with a fish-hook through the lip. | I've stopped bleeding anyone. It never helped.
+b : Comfrey. Arnica's for the rich. | I've had worse. A hook in the ear. | Nor me. But they ask for it.
+a : I'll try the comfrey. | Every summer, the hooks. | Then I tell them it's been done. And I don't.
+
+scene e3_h_fisher_hands
+when topic=health a.job=fisher
+a : The salt's cracked my pads to bits. | Fingers so cold this morning I couldn't tie a knot. | I got finned by a perch. Swollen like a sausage.
+b[fisher] : Lard and a sock at night. Every fisher's cure.
+b : Rub fat into them. | Warm them under your arms. | Like a sausage. Charming.
+a : I smell like a candle now. | Under my arms? In front of the boat? | It's not charming. It throbs.
+
+scene e3_h_sailor
+when topic=health a.job=sailor
+a : I've been ashore three days and the ground's still rolling. | Last voyage half the crew had their gums go soft. | I've a cough from the bilge. Everyone does.
+b[sailor] : Limes, if you can get them. Onions, if you can't.
+b : Sit down, then. | Gums? Gods. | Nasty place, a bilge.
+a : It's the sitting that's worst. | Everything tasted of iron. | Nastier than you'd think.
+
+scene e3_h_guard_feet
+when topic=health a.job=guard|soldier
+a : Twelve hours on the gate. My feet are howling. | My armour's rubbed my shoulder raw. | Got a crick in my neck from watching the road.
+b[guard] : Put your boots by the fire, not on it. I learned that.
+b : Sit down while you can. | Pad it with wool. | Seen anything?
+a : I'm not allowed. | And sweat like a pig. | A cart. And another cart.
+
+scene e3_h_cook_burns
+when topic=health a.job=cook|baker
+a : Burned my wrist on the oven door again. | I've cut my thumb so many times I've lost count. | Breathed in flour all day. I sneeze dough.
+b[cook] : Same as me. The oven always wins.
+b[baker] : The oven's mark. Every baker has a dozen.
+b : Cold water, quick. | Let me see. | Sneeze dough. Ha.
+a : I know, I know. | It's fine. Mostly. | It's not funny when it's real.
+
+scene e3_h_woodcutter
+when topic=health a.job=woodcutter|laborer|carter
+a : The axe glanced off a knot. Missed my paw by a whisker. | My shoulders are like knotted rope. | Every bump in that road went straight up my spine.
+b[woodcutter] : Glanced? You need a sharper axe. A blunt one bites you.
+b[healer] : Rest the shoulders, not just the paws.
+b : A whisker's plenty. | Want me to rub them? | Roads are a crime.
+a : I've still got all my toes. I counted. | Would you? | Like a crime against my back.
+
+scene e3_h_scholar_eyes
+when topic=health a.job=scholar|official
+a : I've been reading by one candle. My eyes have given up. | Ink in my fur, ink in my food. | I sit at a desk all day and my knees think I'm dead.
+b[laborer] : Come and dig a ditch with me. That'll cure you.
+b : Buy another candle. | You're a walking scroll. | Walk about at noon.
+a : The office won't pay for another. | At least I'm literate. | Noon is my best reading time.
+
+scene e3_h_herder
+when topic=health a.job=herder
+a : A ewe kicked me in the shin. I'm black and blue. | Got a tick off a sheep. As big as a pea. | My hands smell of sheep dip. Forever, I think.
+b[herder] : It's ewes. It's always ewes. The rams are honest at least.
+b : Ow. | Ugh. Where? | Wash them in vinegar.
+a : She knew what she was doing. | Behind my ear. I'll not say more. | Then I'll smell of sheep and vinegar.
+
+# ---------------------------------------------------------------- Wealth and quarter
+
+scene e3_h_poor_cant_pay
+when topic=health a.wealth=poor|destitute
+a : I can't afford the healer. I'll just wait it out. | The draught costs more than I eat in a week. | My chest's bad, but rent's due.
+b[healer] : Come at the end of the day. I'll find something for you.
+b[wealth=rich] : That's no way to live.
+b : The chapel sometimes gives out medicine. | Then it's sleep and soup. | Rent can wait a day.
+a : I'll try the chapel. | Soup I can do. | Tell my landlord that.
+
+scene e3_h_rich_physician
+when topic=health a.wealth=rich
+a : I've had the physician up from the city. He says it's nerves. | Mine's prescribed a winter by the sea. | Our healer comes twice a week, to be safe.
+b[wealth=poor|destitute] : Must be nice, being ill somewhere warm.
+b[healer] : He says nerves to everyone who pays.
+b : Nerves? | How dreadful for you. | Safe from what?
+a : Expensive nerves. | You're mocking me. | Everything.
+
+scene e3_h_sump_damp
+when topic=health a.quarter=sump
+a : Everyone in the Sump coughs. It's the water. | The walls run wet all winter. My pups wheeze. | I can smell the drains in my sleep.
+b[quarter=heights] : Surely the House could do something.
+b[quarter=sump] : Mine too. We cough in chorus.
+b : Someone should do something about that. | That's no place for pups. | Shut the window.
+a : Someone should. Nobody does. | Where else would we go? | The window doesn't shut.
+
+scene e3_h_heights_air
+when topic=health a.quarter=heights here.region=ridgemere
+a : The physician says I must take the sea air. Daily. | Our cook does nothing but fuss over my diet. | I've had a slight chill. Bedridden for a week.
+b[quarter=sump|wharf|docks] : The sea air's free down our way. Comes with the fish.
+b : Very good for the lungs, they say. | Lucky you, to have a cook. | A week? For a chill?
+a : I find it rather salty. | You'd think so. | It was a very slight week.
+
+# ---------------------------------------------------------------- The seasons and the hour
+
+scene e3_h_winter_fever
+when topic=health here.season=winter
+a : There's a fever going round. Three in our street have it. | My chest's tight with the cold. | My paws have chilblains. They itch like murder.
+b[healer] : Keep warm, keep apart and drink something hot. I'm run off my feet.
+b : I'm staying in. | Breathe through your scarf. | Don't scratch them.
+a : Wise. | I've no scarf. | Too late.
+
+scene e3_h_summer_heat
+when topic=health here.season=summer
+a : This heat's no good for a wolf. I'm panting like a dog. | A carter fell down in the road from the sun yesterday. | My nose is burnt from the sun. Look.
+b[old] : Keep in the shade at noon. Pups never listen.
+b[farmer] : Drink, drink and drink. And a hat.
+b : Lie in the shade. | Is he all right? | It's pink!
+a : There is no shade. | Wet cloth and he was up again. | I know it's pink.
+
+scene e3_h_spring_tonic
+when topic=health here.season=spring
+a : Time for the spring tonic. Nettle and dandelion. | My mother gave us sulphur and treacle every spring. | I've a cold every spring. Regular as the swallows.
+b[healer] : Nettle's good. The sulphur I'd leave alone.
+b[old] : Sulphur and treacle. I still taste it.
+b : Tastes like a ditch. | Did it work? | The swallows at least leave.
+a : A healthy ditch. | We never dared be ill. | So does the cold. Eventually.
+
+scene e3_h_autumn_damp
+when topic=health here.season=autumn here.weather=rain|fog|overcast
+a : The damp's got into my bones. | This weather's made my old break ache. | Everything smells of mould and my nose won't stop.
+b[old] : The damp's always in my bones. It pays rent.
+b : Sit by a fire. | Which break? | Close your nose.
+a : I'd have to own a fire. | The one from the ice, years back. | How?
+
+scene e3_h_morning_after
+when topic=health here.time=dawn|day here.place=tavern|street|market
+a : My head. Don't talk loudly. | Never again. Never. Not one more cup. | What was in that ale?
+b[innkeeper] : Same thing as always. You just drank more of it.
+b[humour=merry] : WHAT'S THAT? I CAN'T HEAR YOU!
+b : Sorry. | You said that last week. | Everything you asked for.
+a : Thank you. | Last week I meant it. | I'd like to speak to whoever asked.
+
+scene e3_h_tavern_medicine
+when topic=health here.place=tavern
+a : A drop of brandy's good for the chest. Medicinal. | My healer says one cup a day. I'm saving them up. | Is ale good for you? Asking for my health.
+b[innkeeper] : Medicine at two pennies a cup. Best price in town.
+b[healer] : One cup. One.
+b : Medicinal, aye. | Saving them. Clever. | Very good. Have another.
+a : Two drops, to be safe. | Seven days. That's seven cups. | I'll trust you.
+
+scene e3_h_chapel_prayer
+when topic=health here.place=chapel
+a : I've come to pray for my brother. He's very low. | I light a candle for the sick every Restday. | The priest blessed my knees. Can't hurt.
+b[priest] : The gods hear prayers for others first. Sit with me.
+b : I'll pray with you. | That's kind. | Couldn't hurt.
+a : Thank you. | Someone has to. | And it's warm in here.
+
+scene e3_h_crowd_cough
+when topic=health here.crowd=busy|crowd
+a : Somebody's coughing right down my neck. | Too many wolves in one place. That's how sickness spreads. | I'll catch something in this crowd.
+b[temper=nervy] : Don't. Don't say that.
+b : Turn round and glare. | Breathe through your sleeve. | Catch a purse instead.
+a : I did. They coughed at me. | It smells of onion. | I'm honest. Unfortunately.
+
+# ---------------------------------------------------------------- Places
+
+scene e3_h_frost_snowblind
+when topic=health here.region=frosthollow
+a : The snow's glare had me blind half a day. | Frostbite took the tip of my ear, years back. | The mine's damp and the valley's freezing. My chest can't win.
+b[miner] : Soot under the eyes. That's the trick. Every miner knows it.
+b[old] : We all lose a bit to the cold up here. It's the rent for living.
+b : Did you have your hood up? | I wondered about that ear. | Nobody's chest wins up here.
+a : Down. Like a fool. | It's my good ear now. Hears everything. | It doesn't even draw.
+
+scene e3_h_coldwater_swim
+when topic=health here.region=coldwater
+a : A swim in the lake every morning. Nothing ever ails me. | My grandfather swam the Glasswater in autumn and lived to ninety. | I went in the lake and now I can't stop shivering.
+b[quirk=swims_in_the_lake_even_in_autumn] : There's nothing like it. It wakes the blood.
+b : You're mad. | Did he ever get warm? | What did you expect?
+a : Mad, but never ill. | Not once, my mother said. | Less cold, somehow.
+
+scene e3_h_oakhaven_ticks
+when topic=health here.region=oakhaven
+a : Pulled three ticks off me after the woods. | My arm's come up in a rash from some leaf. | A bee stung me under the eye.
+b[woodcutter] : Twist them, don't pull. Leave the head in and you'll know about it.
+b : Check behind your ears. | Which leaf? | Let me see. Ooh.
+a : I'm checking now. | A green one. | Don't laugh.
+
+scene e3_h_fens_ague
+when topic=health here.region=mirebridge
+a : The fen ague's back. Shivering one day, burning the next. | The mist gets in your chest and stays. | Leeches in the ditch again. I had four on my leg.
+b[healer] : Bark of the willow, and keep out of the evening mist.
+b[from=mirebridge] : Fen folk don't get the ague. We get the ague and carry on.
+b : Every summer. | That's the fens. | Four! Did you name them?
+a : Every summer and most autumns. | It does. | I ate one. No, I didn't.
+
+scene e3_h_larkfield_sheep
+when topic=health here.region=larkfield
+a : All the wool dust at the market. I sneeze for days after. | Got my paw stood on by a ram. | The shearers all have bad backs by forty.
+b[herder] : Sheep don't care about your paw. Remember that.
+b : Wrap your muzzle. | Did you hit him back? | And good arms.
+a : I'll look a fool. | He's bigger than me. | And good beer.
+
+scene e3_h_southmeadow_fruit
+when topic=health here.region=southmeadow
+a : I ate too many plums. Don't ask what happened next. | Got stung by a wasp in the orchard. Right in the paw. | The sun's burned the top of my head. Look at it.
+b[farmer] : Plums are honest. They tell you straight away.
+b : I won't. | They're drunk on the windfalls. | Wear a hat.
+a : Thank you for not asking. | So was I, nearly. | Hats are for the north.
+
+scene e3_h_ridgemere_rain
+when topic=health here.region=ridgemere
+a : This city's rain gets into your chest. | Everyone in Ridgemere sniffles from autumn to spring. | I've had wet feet since I arrived.
+b[from=ridgemere] : We call it the Ridgemere cough. You'll get used to it. We did.
+b : Dry socks. | We're born with it. | Buy oilskin boots.
+a : What socks? | Lucky you. | With what?
+
+# ---------------------------------------------------------------- Pairs
+
+scene e3_h_spouses_nurse
+when topic=health pair.band=spouses
+a : You were coughing all night. I'm making you a poultice. | Don't you dare go to work with that fever. | Sit. I'll do it. Your back's bad.
+b : I'm fine. Don't fuss. | I'm going. | I can do it.
+a : You're not fine and I will fuss. | You're not. I've hidden your boots. | Sit, I said.
+
+scene e3_h_friends_ill
+when topic=health pair.band=friends
+a : You look awful, #pet#. | You've been #poorly# again, haven't you? | When did you last eat a proper meal?
+b : Thank you. Very kind. | A bit. It's passing. | Does bread count?
+a : I mean it. Go home and sleep. | Come for supper. I'm not asking. | Not on its own.
+
+scene e3_h_mourning_appetite
+when topic=health a.mourning=kin|friend
+a : I can't eat. Food tastes of nothing. | I haven't slept since the burial. | My chest aches. The healer says there's nothing wrong.
+b[warmth=warm] : Then I'll sit with you while you don't eat. A bite, maybe.
+b[old] : Grief sits in the body. It takes its time.
+b : Try a little broth. | Sleep will come back. | There isn't. It's grief.
+a : Maybe. A little. | I'll try. | I know.
+
+# ---------------------------------------------------------------- Quirks
+
+scene e3_h_quirk_cough
+when topic=health a.quirk=coughs_in_the_damp_and_pretends_not_to
+a : *coughs* Nothing. It's nothing. | I'm not coughing. Something in my throat. | It's the dust. *coughs*
+b[healer] : That's not nothing. Come by.
+b : That's not nothing. | That's what coughing is. | It's the damp. Again.
+a : It's nothing. | Hardly at all. | It's never the damp.
+
+scene e3_h_quirk_storm
+when topic=health a.quirk=sleeps_badly_before_storms
+a : There's a storm coming. I didn't sleep. | Lay awake all night. A storm's on its way, mark me. | My fur's crackling. Storm by tonight.
+b : The sky's clear. | You and your storms. | Whatever you say.
+a : It won't be by supper. | I've never been wrong. | You'll see.

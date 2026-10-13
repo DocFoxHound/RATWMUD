@@ -1,0 +1,410 @@
+# Friends (Docs/Design/62-talk.md, phase 7): old friends passing the time. Most of these fit any two friends, so the
+# pool any pair can draw from is deep; the tagged lines colour them by who is speaking (their humour, temper, warmth,
+# honesty, drive), and a few scenes are for one situation only (the tavern at night, a friend in mourning, two from the
+# same town far from home, a long time apart). Rules for the same topic: rules/friends7.talk.
+
+scene r7_fr_borrowed_cloak
+when topic=friends
+a : Is that my cloak? | Are those my good boots you're wearing? | That's my knife on your belt. | Is that my blue scarf?
+b[honesty=sly] #sly : Yours? I don't see your name on it.
+b : You lent it me. In spring. | You said I could keep them till they fit you again. | You gave it me! You said, keep it. | You said it suited me better.
+a@sly : My name's on the inside. I sewed it there. For you.
+a : I said till Restday. A spring Restday. | They fit me now. | I said keep it safe. | It does. That's not the point.
+b : Did you? I don't remember that. | Did they? Pity. | Safe's what it is. On me. | It's exactly the point.
+a?[humour=merry] : Keep it, then. You owe me a pie.
+
+scene r7_fr_trimmed_ruff
+when topic=friends
+a : You've had your ruff trimmed. | Who did your ears? | You've brushed your tail. You never brush your tail. | Something's different. Is it the whiskers?
+b : Do you like it? | My niece. She's learning. | I'm a changed wolf. | I trimmed them. One side.
+a[honesty=frank] : No. | Tell her to stop learning on you. | Changed for the worse. | It shows.
+a[warmth=warm] : It suits you. Truly. | She's doing well. Mostly. | You look grand. | It's very, er, brave.
+a : It's... different. | Tell her she's nearly there. | Who are you trying to impress? | Do the other side.
+b : Different good? | I'll tell her. | Nobody. | I'm working up to it.
+
+scene r7_fr_who_pays
+when topic=friends here.place=tavern
+a : Your round. | I paid last time. | Whose turn is it? Yours. | Don't look at me, I bought the last two.
+b[wealth=poor|destitute] : Can I owe you one? I'm owed two by someone else.
+b[honesty=sly] : Is it? I'm sure it's yours. I've a good memory for these things.
+b : Fine. Fine! | You did not. | Mine? I never. | You bought one. And drank both.
+a : Thank you. | Did so. | Every time. | I'm thirsty. It's a thirsty job, talking to you.
+
+scene r7_fr_youre_quiet
+when topic=friends
+a : You're quiet today. | Something's on your mind. I can see it in your ears. | You've not said a word since you sat down. | What's wrong? And don't say nothing.
+b[talk=quiet] : I'm always quiet. | Nothing's on my mind. That's the trouble. | I don't need to talk. You do enough. | Nothing.
+b[mourning=kin|friend] #grief : I keep thinking about them. | I can't stop thinking about them. | I can't find the words. | You know what's wrong.
+b : Am I? Just tired. | It's nothing. Really. | Thinking. | Nothing. Honestly.
+a@grief : I know. I'm here. As long as you like. | Then think. I'll sit with you. | You don't need words. | I know. Sit with me.
+a : You're a terrible liar. | Then I'll wait till it's something. | Well, I'm here when you're done thinking. | All right. But I'm watching you.
+
+scene r7_fr_song_stuck
+when topic=friends
+a : I've had that song in my head since yesterday. | Do you know the one about the miller's daughter? | Hum it. Go on. The one from the tavern. | Who wrote that dreadful song? The one about the goat?
+b : Which one? | Everyone knows it. Everyone's sick of it. | Hm-hm, hm hm-hm... | Nobody wrote it. It just happened, like weather.
+a : Hm-hm, hmm, the bridge, the bridge... | And the goat runs off with the... | That's the one! Now it's in mine too. | It's back. It's in my head again.
+b[humour=merry] : AND THE GOAT WAS NEVER SEEN AGAIN! | ...and the goat comes back with a wife! Ha! | La la la! There. Now it's in everyone's. | You're welcome.
+b : Oh, now I've got it. Thank you. Thank you so much. | Stop. Please. | That's it. That's the one. | Now we'll both hum it till Restday.
+
+scene r7_fr_dare
+when topic=friends
+a : I dare you to howl. Right here. | Bet you won't touch the chapel bell. | I dare you to ask the baker for a kiss. | Go on. Jump the trough.
+b[temper=nervy] : No! Someone'll see. | They'll put me in the cells! | I'd die. I'd simply die. | I'll fall in. I always fall in.
+b[humour=merry] : Watch me. AWOOOO! | Hold my cloak. | Watch and learn. | Stand back.
+b : Not on your life. | You do it. | I'd sooner kiss a goat. | Not in these boots.
+a : Coward. | Fair. | The goat's the better offer. | Excuses.
+
+scene r7_fr_getting_old
+when topic=friends
+a : When did we get old? | I found a grey hair in my tail. | My knees made a noise getting up today. Both of them. | Do you remember when we could run all day?
+b[stage=young|adolescent] : You're not old. You're just... older. | Only one? | Mine don't do that. | I still can.
+b[stage=old] : We got old a long time ago. You weren't paying attention. | Only one? I've given up counting. | Mine sing. Every morning. | I remember when I could walk all day.
+b : Last winter, I think. Overnight. | Just the one? Pull it out. | Mine too. A duet. | No. And I don't want to.
+a : Rude. | I did. Two came to the funeral. | We should sell tickets. | Me neither.
+
+scene r7_fr_matchmaker
+when topic=friends a.married=no|yes b.married=no
+a : I know someone you should meet. | You need someone. Don't look at me like that. | My cousin's in town. Lovely wolf. Laughs like a donkey, but lovely. | When are you going to settle down?
+b[drive=content] : I'm happy as I am. Really. | I've got someone. Me. | Is it the one with the laugh? | When I find someone who can stand me.
+b[warmth=cold] : No. | Don't. | No. | Never, if I can help it.
+b : Who? | Who says I need anyone? | Which cousin? The one with the laugh? | When I'm good and ready.
+a : Someone kind. You'd like them. | Me. I say it. | The laugh's not so bad, once you're used to it. | You've been good and ready for years.
+
+scene r7_fr_snoring
+when topic=friends
+a : You snore. Did you know? | I could hear you through the wall at the inn. | You talk in your sleep. | You kicked me all night. Like a hare.
+b : I do not. | That was someone else. | What did I say? | I was dreaming. I was winning.
+a : Like a mill wheel. With a stone in it. | It was you. You said my name. | You said, "not the turnips". Twice. | Winning what? I've got bruises.
+b[humour=dry] : I'll have it looked at. | Well, you're very dear to me. | Sound advice, usually. | A race. Against you. I won.
+b : Liar. | Liar. | Fair. | Sorry. Not very sorry.
+
+scene r7_fr_best_town
+when topic=friends
+a : There's nowhere in the realm like this town. | I'd never live anywhere else. | You can keep the city. | Everyone thinks their own town's the best. They're wrong. This one is.
+b[from=frosthollow] : You've not seen Frosthollow under snow. | You've never stood at the top of the pass. | Keep it? I'd give it away. | Frosthollow. Under snow. Then tell me.
+b[from=coldwater] : Not like the lake at dawn. | You've never seen the lake go silver. | The city's no lake. | The lake at dawn. That's the best.
+b[from=southmeadow] : Southmeadow in blossom? Nothing like it. | You've never smelt the orchards. | Keep it. I'll take an orchard. | Southmeadow. No contest.
+b : You've not been anywhere else. | You've never tried. | Who'd want it? | That's what everyone says.
+a : Don't need to go anywhere else. | Don't need to try. | Ridgemere folk, mostly. | And everyone's right. About here.
+
+scene r7_fr_own_family
+when topic=friends
+a : My brother's at it again. | My mother wants me to visit. Every day. | My sister's borrowed my good pot. Again. | My uncle's decided he's a poet.
+b : What now? | And will you? | Will you see it again? | Oh no. Has he read you any?
+a : Says I owe him. I don't. | Every day. She means it. | Not in this life. | One. It was about cheese. It was long.
+b[humour=merry] : Ha! Tell him I'll be his witness. For a penny. | Go once. Take a pie. She'll forget the rest. | Buy a new pot and hide it at mine. | Long cheese poems are the best kind.
+b[warmth=warm] : He loves you really. Somewhere deep. | Go once. You'll be glad. | I'll lend you mine. | Poor thing. Poor you.
+b : Families. | Families. | Families. | Families.
+
+scene r7_fr_advice_quarrel
+when topic=friends
+a : I had words with the cooper. | I think my neighbour hates me. | Someone said something about me, and I said something back. | I've fallen out with my oldest friend. Well. Second oldest.
+b[honesty=frank] : Then go and say sorry. You know you were wrong. | Do you deserve it? | What did you say back? Tell me exactly. | Then fix it, before it sets.
+b[temper=short] : Want me to have a word? | Good. Hate them back. | Good for you. | Their loss.
+b : What about? | Why? What've you done? | What did they say? | What happened?
+a : Nothing. Something. I don't know. | Nothing! I think. | It doesn't matter now. | It's daft. It's too daft to say.
+b : Leave it a day. Then go round. | Bake them something. Works every time. | Then let it go. | Daft ones are the easiest to mend.
+
+scene r7_fr_fish_boast
+when topic=friends
+a : I caught a fish this long. | I ate a whole pie in one go. A whole one. | I carried two sacks up the hill on my own. | I won at bones last night. Five times.
+b : This long? | A whole pie? | Two? | Five?
+a : This long. Nearly. | Nearly whole. | Nearly two. | Nearly five. Four. Twice.
+b[humour=dry] : So, a small fish. | So, a slice. | So, one. | So, you lost.
+b : I believe you. Nearly. | Course you did. | Hero. | That's still twice.
+
+scene r7_fr_cover_story
+when topic=friends
+a : If anyone asks, I was with you last night. | You haven't seen me today. Understand? | Tell my mother I was helping you. | If my master asks, I was ill.
+b[honesty=frank] #frank : I'll not lie for you. | I'm not lying for you. | I'll not lie to your mother. | I'll not lie. Not even for you.
+b[honesty=sly] : That'll cost you. | Seen who? | Helping me with what? I'd better know. | Ill with what? Make it something good.
+b : Were you? Where were we? | Of course. Why? | Helping me with what? | Why? Where were you?
+a@frank : Fine. I'll tell the truth. Gods help me. | Then don't see me. | Then don't say anything. | Then say nothing at all.
+a : Don't ask. | Don't ask. | Something. Anything. | It's better you don't know.
+b?[warmth=warm] : Mind yourself, whatever it is.
+
+scene r7_fr_leave_town
+when topic=friends
+a : Do you think we'll ever leave this town? | Where would you go, if you could go anywhere? | I'd like to see the sea, before I die. | Ever wanted to just walk off down the road?
+b[drive=restless] : Every day. Every single day. | Over the hills. All of them. | Let's go. Tomorrow. I mean it. | I've packed twice. Unpacked twice.
+b[drive=content] : Why would I? Everything's here. | Nowhere. I'm happy here. | The sea's wet. So's the river. | No. Never once.
+b : Someday, maybe. | Somewhere warm. | Me too. | Some days.
+a : Someday. | Somewhere. | Before we die. | Some days.
+b : We'll be here forever, won't we? | Aye. | Aye. | Aye.
+
+scene r7_fr_crumbs
+when topic=friends
+a : You've crumbs on your muzzle. | Have you been eating honey? You're all sticky. | You smell of onions. | Is that pie on your coat?
+b : Where? | A little. | It was a big onion. | It was a good pie.
+a : Everywhere. Here. Let me. | Your whiskers are stuck together. | I can tell. | I can see that. From here.
+b[humour=merry] : Saving it for later. | It's the fashion now. | Want some? I've got more in my pocket. | I'm wearing it. It's the fashion.
+b : Thanks. | Don't tell anyone. | Sorry. | It was worth it.
+
+scene r7_fr_childhood_name
+when topic=friends
+a : Morning, Puddles. | Remember when everyone called you Little Ears? | Your mother still calls you Bun, doesn't she? | Do you still answer to Scrap?
+b : Don't. Not in the street. | I grew into them. | Only when she's cross. Which is always. | Nobody's called me that in years.
+a : Puddles. Puddles! | Mostly. | Bun. | Scrap.
+b[temper=short] : Say it again and I'll tell them what we called you. | I'll tell everyone yours. Everyone. | Careful. | Careful. I know yours.
+b : I'll get you for that. | Stop. | Stop it. | Fine. Fine.
+
+scene r7_fr_who_would_win
+when topic=friends
+a : Who'd win, a bear or the whole Watch? | Could you outrun a horse? Over a short way? | If you had to fight a goose, would you? | Could you eat a whole sheep? If you had to?
+b : The bear. Every time. | Over a very short way. | No. Nobody wins against a goose. | If I had to. And had a week.
+a : Even with spears? | How short? | Not even with a stick? | A week's cheating.
+b[job=guard|soldier] : Especially with spears. I've seen the Watch with spears. | From here to the door. | I've fought geese. Never again. | It's a big sheep.
+b : Especially with spears. | Across the street. | Especially with a stick. | It's a big sheep.
+a : Fair. | That's not a race. | Fair. | Fair.
+
+scene r7_fr_fleas
+when topic=friends
+a : Stop scratching. | You've been scratching since you sat down. | Have you got fleas? | Why are you itching like that?
+b : I'm not scratching. | It's the wool. | No! | It's the weather.
+a : You are. Your leg's going like a drum. | It's not the wool. | You have, haven't you. Move over there. | Weather doesn't itch.
+b[honesty=frank] : Fine. I've got fleas. | It's fleas. | Yes. | Fleas. It's fleas.
+b : I'm not! | It's the wool. | No! | It is in my house.
+a : I'm sitting over here. | Wash it, then. | Over there. Further. | I'm going home.
+
+scene r7_fr_howl_contest
+when topic=friends here.time=dusk|night
+a : Bet I can howl longer than you. | Listen. That's the old dog by the river howling. Let's answer. | Remember when we used to howl at the moon from the roof? | Shall we wake the street?
+b[temper=nervy] : The neighbours! The Watch! | Don't, they'll think something's wrong! | We'll get in trouble. We always did. | No! No. Well. Quietly.
+b : You've never beaten me yet. | Go on, then. | And your father threw a boot at us. | Let's.
+a : AWOOOOO... | AWOOOO! | AWOOO... I miss that roof. | Ready? AWOOOOO!
+b : ...ooooooo! Ha! | AWOOOOOOOOO! | AWOOOOO! There. Still got it. | Ha! Someone's lighting a lamp. Run!
+
+scene r7_fr_dream
+when topic=friends
+a : I dreamt I could fly last night. | I had the strangest dream. You were in it. | I dreamt my teeth fell out. All of them. | Did you ever dream you were back at school?
+b : Where did you fly to? | Was I handsome? | That means money, they say. Or death. One of the two. | Every week. And I've not done my letters.
+a : The bakery. Obviously. | You were a goose. | Which? | Never. Not once.
+b[humour=merry] : Honk. | I'd be a lovely goose. | I'll take the money. | Me neither. Ha!
+b[piety=devout] : Dreams are the gods speaking. Mind what they say. | The gods have a sense of humour. | The priest would know. Ask her. | The gods know you never did.
+b : Sensible. | Hm. | Money, then. Let's say money. | Me neither.
+
+scene r7_fr_wedding_clothes
+when topic=friends
+a : What are you wearing to the wedding? | Will you lend me a good coat? For the wedding? | I've nothing fit to wear. Nothing. | My good cloak's got moth.
+b : Whatever's clean. | Which wedding? | You've a whole chest of things. | Moth? In your good one?
+a : That's not an answer. | The tanner's girl! Keep up. | Nothing fit, I said. | Moth. In my only good one.
+b[wealth=rich] : Come round, take your pick. I've too many. | Ah. Hers. Come round, borrow anything. | Come round. I've more than I can wear. | Have mine. I've three.
+b[wealth=poor|destitute] : Clean's all I've got. | Oh, hers. Doesn't matter, I've nothing either. | Same here. We'll go as we are. | Turn it inside out. Nobody looks.
+b : It's an answer for me. | Oh, hers. Wear your blue. | Wear the blue. You always look well in blue. | Wear it with your arm over the hole.
+a : Thank you. | I'll try. | All right. | You're a wise wolf.
+
+scene r7_fr_people_watching
+when topic=friends here.place=street|market|gate
+a : See him? With the hat? I bet he's running from a wife. | That one's late for something. Look at her tail go. | Those two are courting. Look how they don't look at each other. | He's lost. He's walked past three times.
+b : Two wives. | She's late for her own wedding. | Courting? They're married. Twenty years. That's how married looks. | He's not lost, he's counting the stones. I know him.
+a : Three. One's in the cart. | She's the bride? | Is it? | Counting the stones?
+b : She's in the cart and she's not happy. | No, she's the cook. The bride's late too. | That's how. | Every one. Every day. Nobody knows why.
+a?[humour=merry] : I love this town.
+
+scene r7_fr_new_boots
+when topic=friends
+a : New boots! | Look at you. New coat. | Is that a new belt? | You've a new hat.
+b[wealth=rich] : I had them made. Larkfield leather. | The tailor came to me. Isn't it fine? | Silver buckle. Feel the weight of it. | It's from the city. The good part.
+b[wealth=poor|destitute] : Not new. New to me. | My cousin's. She died. It's fine, she wouldn't mind. | Found it. Don't ask. | Swapped it for a chicken.
+b : Saved for them all season. | Do you like it? | It was my father's. | It was cheap. Don't tell anyone how cheap.
+a : They're beautiful. | Turn round. Very fine. | It suits you. | It looks dear.
+b : They pinch. | Not too much? | Thank you. | It isn't. Shh.
+
+scene r7_fr_worst_job
+when topic=friends
+a : Worst job you ever had? | What's the worst thing you've ever had to clean? | Ever had a master you couldn't stand? | Ever done something just for the coin and hated every hour?
+b : Mucking out the tannery pits. Never again. | The chapel privy. On a feast day. | One. He shouted at the walls. | Gutting fish in winter. My paws still ache.
+a : I can smell it from here. | No more. Please. | The walls? | Your poor paws.
+b[humour=dry] : So could the whole town. For a month. | You asked. | He said they never listened. He was right. | They've forgiven me. I haven't.
+b : It doesn't wash out. | Sorry. | They never answered. | They're fine. Mostly.
+
+scene r7_fr_proud_of_you
+when topic=friends
+a : I'm proud of you. I don't say it. | You've done well. You know that? | I tell folk I know you. Did you know? | You've come a long way.
+b[warmth=cold] : Hm. Thank you. | I suppose. | Why? | A long way from where?
+b[talk=quiet] : ... Thank you. | Mm. | *looks at their paws* | ...
+b : Where's this come from? | Have I? | You do? Why? | Have I?
+a : I mean it. | You have. | Because I'm proud of you. Keep up. | From where we started. That ditch.
+b : ...Thank you. | Don't make me cry in the street. | Stop it. | That ditch. Ha. That ditch.
+regard other: affinity +1
+
+scene r7_fr_ghost_story
+when topic=friends here.time=dusk|night
+a : Did you hear the old mill's haunted? | Someone saw a light in the empty house again. | They say a wolf walks the walls at night, with no feet. | My gran swore she saw a ghost at the ford.
+b[temper=nervy] : Don't. I have to walk home. | Don't say that. Not now. | Please don't. | Stop it. I mean it.
+b[piety=devout] : The dead rest. The gods see to that. | Lights are just lights. Say a prayer and walk on. | The gods keep the walls. | Your gran liked a story.
+b : Haunted by what? | Probably thieves. | No feet? How does it walk? | Your gran saw a lot of things.
+a : A miller. Still grinding. | Thieves, with no shadows. | It floats. Slowly. Behind you. | She did. Most of them were there.
+b : I'm going home. The long way. | Thieves have shadows. | Behind me? Don't. | Ha. Most.
+
+scene r7_fr_prank
+when topic=friends
+a : Let's put a goose in the baker's back room. | We could swap the signs on the inn and the chapel. | Let's tell everyone it's a festival tomorrow. | Shall we hide the smith's hammer?
+b[temper=nervy] : We'd be caught. We'd be caught in an hour. | The priest would know. Priests always know. | They'd find out it was us. | He'd kill us.
+b[humour=merry] : I know where there's a goose. | Oh, yes. Oh, that's good. | Ha! Everyone would believe it. | Where? Somewhere high.
+b : Where would we get a goose? | We'd hang for it. | Nobody would believe it. | He'd know it was us.
+a : I know a goose. | Only a little. | They would if the priest said it. | He'd suspect. He'd never know.
+b : You know a goose. Of course you know a goose. | Only a little hanged. | Fine. We'll ask the priest. | Tonight, then.
+
+scene r7_fr_heartfelt
+when topic=friends
+a : You're the only one who ever listens. | I'd not have got through last winter without you. | Whatever happens, you and me. | I don't say it enough. Thank you. For everything.
+b[humour=merry] : I'm not listening now, I'm thinking about pie. | Last winter was nothing. Wait till this one. | You and me and a jar. | Steady. You'll make me blush.
+b[warmth=warm] : I always will. Always. | Nor me, without you. | You and me. Always. | You'd do the same for me. You have.
+b : I listen. Mostly. | You'd have managed. | You and me. | What's brought this on?
+a : That's enough. | Not without you. | Swear it. | Nothing. Just thinking.
+b : Then I'll keep listening. | You'll never have to. | I swear it. | Think less. It frightens me.
+
+scene r7_fr_stars
+when topic=friends here.time=night here.weather=clear
+a : See that bright one? That's the Hunter. | My father said the stars are wolves who howled too long. | Which one's the Plough? I never can find it. | Look at them all. Makes you feel small.
+b : That's a lamp in a window. | And the moon's the one who won? | There. No. There. Follow my claw. | Speak for yourself. I feel enormous.
+a : It's not! | Ha! I'll take that. | Oh! There! | Because you ate two suppers.
+b[piety=devout] : The gods hung every one of them. Think of that. | The gods' lanterns, my mother said. | The gods put the Plough up so farmers know when to sow. | Small, and seen. Both.
+b : It is. It's the baker's. | He was a clever wolf. | Found it? | Three.
+
+scene r7_fr_soup_sick
+when topic=friends
+a : You sound awful. | Have you got that cough? Half the street has it. | Your nose is hot. Are you ill? | You should be in bed.
+b[temper=short] : I'm fine. Stop fussing. | It's nothing. | It's always hot. | I'll go to bed when I'm dead.
+b : Bit of a chill. | I think so. | A little. | I can't. Work.
+a[warmth=warm] : I'll bring you soup tonight. No arguing. | I'm bringing you honey and you'll take it. | I'm walking you home. Now. | Work can wait. You can't.
+a : Get yourself home. | See the healer. | Drink something hot. | Don't give it to me.
+b : Yes, mother. | Fine. | I will. | Too late.
+
+scene r7_fr_terrible_poem
+when topic=friends
+a : I've written a poem. Can I read it to you? | I've been making a song. For the festival. | I wrote some words for my sweetheart. Tell me if they're good. | Listen to this. "O river, O river, you're wet."
+b : Is it long? | Sing it, then. | Go on. | Is that it?
+a : "O moon, O moon, you're round." | "Hey for the harvest, hey for the hay." | "Your eyes are like two pennies." | "And so are you."
+b[honesty=frank] : That's dreadful. | Change everything but the hey. | Pennies? | No. Just no.
+b[warmth=warm] : It's lovely. It's honest. | Catchy! | They'll love it. They'll love you for trying. | Beautiful. In its way.
+b : It is round. | Hey. | Pennies are nice. | That's very true.
+
+scene r7_fr_knucklebones
+when topic=friends here.season=winter|autumn
+a : Fancy a game of bones while the light lasts? | Long evenings. I've played every game I know twice. | Teach me that game with the five stones. | Shall we play for pennies, or for pride?
+b : Only if you don't cheat. | Then play them three times. | You throw, then catch. Don't drop them. | Pride. I've no pennies.
+a : I never cheat. | That's what I'm afraid of. | Like this? | Pride, then.
+b[honesty=sly] : You always cheat. So do I. It's fair. | Ha. | Wrong paw. Give them here. | You'll lose your pride. I'll keep it on a shelf.
+b : Ha! You always cheat. | Ha. | No. Watch. | You'll lose it.
+
+scene r7_fr_weather_together
+when topic=friends
+a : Gods, this weather. | Will it ever change? | My fur's not been dry since Restday. | I'm sick of grey.
+b[here.weather=clear] : What's wrong with it? It's lovely! | It's fine! Look at it. | It's dry now! | It's blue! Look up!
+b[here.weather=rain|storm] : I know. My boots are ponds. | Not till spring, the way it's going. | Mine's a sponge. | Grey and wet. Lovely.
+b[here.weather=snow] : My ears have frozen. Feel them. | When the snow goes. If it goes. | Mine's frozen solid. | White, now. White's worse.
+b : It's no worse than last year. | It always does. | Dry's overrated. | Grey's a colour.
+a : I'm going home to sit by the fire till spring. | Hm. | Is it? | Barely.
+
+scene r7_fr_gift
+when topic=friends
+a : I brought you something. | Here. Don't open it till I'm gone. | I saw this and thought of you. | It's nothing much. Just a little thing.
+b[warmth=cold] : What for? | Why? | Why? | You shouldn't have.
+b : For me? | What is it? | You thought of me? | You shouldn't have!
+a : For you. | A comb. For your tail. | I always think of you. Not always. Often. | Well, I did. Too late now.
+b[humour=merry] : Are you saying my tail needs a comb? | A comb! I'll treasure it. And use it. Sometimes. | Often's plenty. | Ha! Thank you.
+b : Thank you. Really. | It's lovely. | That's... thank you. | Thank you.
+regard other: affinity +1
+
+scene r7_fr_old_teacher
+when topic=friends
+a : I saw our old teacher today. | Do you remember the old priest who taught us letters? | Old Hessa's still alive, you know. The schoolmistress. | Remember who taught us to swim?
+b : Is she still terrifying? | The one who smelt of candles? | She was old when we were pups! | Your uncle. By throwing us in.
+a : Worse. She asked if I'd practised. | Still does. | She's still old. Older. | And pulling us out. Eventually.
+b : Had you? | Some things never change. | She'll outlive us both. | Eventually.
+a?[humour=dry] : I said yes. She knew.
+
+scene r7_fr_quiet_together
+when topic=friends a.talk=quiet b.talk=quiet
+a : ... | Mm. | Nice, this. | *sits*
+b : ... | Mm. | Aye. | *sits too*
+a : ... | Mm. | ... | ...
+b : Good talk. | Mm. | Aye. | ...
+
+scene r7_fr_coat_opinion
+when topic=friends
+a : Tell me honestly, what do you think of this coat? | Is this colour right for me? | Does this hat make my ears look big? | Be honest. Is it too much?
+b[honesty=frank] : Honestly? No. | No. It makes you look like a plum. | Your ears are big. The hat is honest. | It's far too much.
+b[honesty=sly] : It's lovely. Lend it me sometime. | It's perfect. Wear it to the market. | Not at all. Wear it every day. | Not at all. Wear it everywhere.
+b : It's fine. It's warm. | It's... a colour. | A bit. | A bit.
+a : Fine? | A colour. | A bit? | A bit?
+b : Fine. Warm. Not ugly. | A bright one. | A small bit. | Nobody will notice. Everybody will notice.
+
+scene r7_fr_better_wolf
+when topic=friends
+a : I've decided to be a better wolf. | No more cider. From today. | I'm going to start getting up at dawn. | I'm going to be nicer to my brother.
+b[humour=dry] : How long's that going to last? Till noon? | From today. Until tonight. | Dawn. Ha. | Nicer. Ha.
+b : Good for you. | Truly? | Dawn? You? | Really?
+a : Watch me. | From today. | Every day. | Starting tomorrow.
+b : I'll watch. | I'll hold your cup tonight, then. | I'll knock and see. | Tomorrow's good. Tomorrow's always good.
+
+scene r7_fr_best_pie
+when topic=friends
+a : Best pie in town. Go. | Apple or plum? Choose. | Is the baker's pie better than your mother's? Careful. | What's the best thing you've ever eaten?
+b : The baker's mutton. No question. | Apple, and fight me. | My mother's. Always. Even when it isn't. | My grandmother's eel stew.
+a : Wrong. It's the fish pie at the inn. | Plum, and I will. | Wise. | Eel? Truly?
+b[humour=merry] : Wrong! Fight me. Then buy me a pie. | Ha! Fight you after pie. | She'd skin me otherwise. | Truly! Don't make that face.
+b : That's not a pie. That's a punishment. | Plum's for old wolves. | She has ears everywhere. | Truly.
+
+scene r7_fr_slept_in_chapel
+when topic=friends
+a : I fell asleep in chapel again. | Did you see me nod off at the sermon? | The priest looked right at me while I was yawning. | Was that you snoring in the back pew?
+b[piety=devout] : I saw. The gods saw. | Every word of it was meant for you, you know. | You deserved that look. | It was. Shame on you. Ha.
+b : So did half the town. | I saw. Your chin was on your chest. | Was it a long yawn? | No. Maybe. Who's asking?
+a : Was I loud? | Was I loud? | A long one. | The priest is asking.
+b : Not as loud as the old miller. | Only at the end. | Long enough to see your back teeth. | Then it wasn't me.
+
+scene r7_fr_pact
+when topic=friends
+a : Remember what we swore, when we were pups? | We said we'd always look after each other. | We made a pact. Blood and everything. | We promised we'd grow old together.
+b[warmth=warm] : I remember. I meant it. I still mean it. | We have. We always will. | I've still got the scar. | We are. Look at us.
+b[warmth=cold] : We were pups. | Pups say a lot of things. | A scratch. | Did we?
+b : I remember. | We have, haven't we? | We nicked our paws on a thorn. | We're doing it.
+a : I still mean it. | We have. | It counted. | We are, aren't we?
+b : So do I. | Good. | It counted. | Badly. But we are.
+
+scene r7_fr_lent_money
+when topic=friends
+a : Could you lend me a few pennies? Just till market day. | I'm short. Don't laugh. Just a little. | You've not got two pennies, have you? | I hate to ask. I'm going to ask.
+b[wealth=poor|destitute] : I've barely one. You can have half. | I'm shorter. | Two? I've not seen two together all week. | Ask. I'll have to say no.
+b[honesty=sly] : I might. What'll you give me back? Three? | I won't laugh. Much. | For you? Two. And a favour. | Ask. Then I'll ask something back.
+b : Here. Pay me when you can. | How much? | Here. | Go on. Ask.
+a : Thank you. Truly. | Not much. | You're a friend. | Ah, forget it.
+
+scene r7_fr_goose_attack
+when topic=friends
+a : I was chased by a goose this morning. | Some goose went for me by the pond. | A goose took my bread. Right out of my paw. | I'm never going near the green again. There's a goose.
+b : A goose? You? | What did you do? | Did you fight it? | It's always the same goose.
+a : A big goose. | Ran. | I let it have the bread. | It knows me now. It waits.
+b[humour=merry] : I'd have paid to see that. I'd pay now. | Ha! Wolf-hunter. | Wise. Very wise. | You've got an enemy for life. Ha!
+b : They're vicious. | Fair. | Fair. | Take a stick.
+
+scene r7_fr_letter
+when topic=friends
+a : I had a letter today. | My cousin wrote from the coast. | Someone left a note under my door. | I got word from my sister.
+b : Who from? | What does she say? | Who? | Good news?
+a : My aunt. She wants money. | She's married a sailor. | Unsigned. Just "Thinking of you." | She's having a pup.
+b[honesty=sly] : Unsigned? Oh, that's interesting. Who've you been smiling at? | A sailor! Is he rich? | Ooh. Who? | A pup!
+b : They always do. | A sailor! | Someone's sweet on you. | Wonderful!
+a : Don't. | We'll see. | I wish I knew. | Wonderful. Terrifying.
+
+scene r7_fr_cutpurse
+when topic=friends
+a : Someone tried to cut my purse in the market. | I nearly lost my coin to a pickpocket. | A little pup tried to dip my pocket. | Hold your purse tight today. They're about.
+b[role=guard] : Where? What did they look like? | Which way did they go? | I'll keep an eye out. | Thanks. I'll tell the others.
+b : Did they get anything? | What did you do? | Did you catch them? | They always are, market days.
+a : A button. | Shouted. They ran. | By the ear. | They are.
+b : A good button? | Good. | And? | I've mine in my boot.
+a : My best one. | It worked. | Let them go. Gave them a penny. Daft of me. | Clever.
+
+scene r7_fr_jealous
+when topic=friends
+a : You've been spending a lot of time with the potter. | Saw you laughing with the new one. Very friendly. | Got a new best friend, have you? | You were at the tavern without me.
+b[humour=merry] : Jealous? Ha! You're jealous! | I laugh with everyone. I laugh at you. | Never. Well. Sometimes. | You were asleep. I checked.
+b : We work near each other. That's all. | Just being friendly. | Don't be daft. | You were busy.
+a : Right. | Very friendly. | I'm not being daft. | I wasn't that busy.
+b[warmth=warm] : There's no one like you. You know that. | You're my oldest friend. Nobody comes close. | Come here, you daft thing. | Next time I'll drag you out. I promise.
+b : You're impossible. | Right. | You are a bit. | You were.

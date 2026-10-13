@@ -1,0 +1,350 @@
+# The moment (Docs/Design/62-talk.md, phase 7): the weather, as two residents see it. Many fit nearly anyone (a topic
+# and at most one fact), so any pair has a deep pool; the rest are the sharp, rare moments (snow at dawn on a market
+# day, fog on the shore at night). Tagged answers set a mark so the reply fits them. Drafts, to tune by ear.
+
+# ================================================================ Anyone, any sky
+
+scene m7_wx_sky_reading
+when topic=weather
+a : Red sky last night. What's that mean again? | Swallows flying low. Rain coming. | My tail's itching. Weather's on the turn. | Cat's washing behind its ears. That's rain, that is.
+b[old] #lore : Depends who you ask. My mother had a saying for every cloud, and half of them disagreed.
+b[farmer] #lore : Means nothing. I've watched skies forty years. They lie like merchants.
+b : Means somebody's selling almanacs. | Swallows fly where the flies are. That's all. | Mine itches when I've fleas. | That cat washes every day.
+a@lore : Then why do we all keep saying them?
+a : You've no poetry in you. | Spoilsport. | Rude. | Well, it'll rain some day, and I'll be right.
+
+scene m7_wx_what_to_wear
+when topic=weather
+a : I never know what to wear this time of year. | Coat or no coat? I've changed my mind three times. | I came out in my thin cloak. Mistake. | Sweating in my good wool. Should've known.
+b[wealth=rich] #rich : I have a boy who carries the other coat.
+b[young] #pup : I've got my brother's boots on. They're huge.
+b : Wear both and take one off. | Coat. Always the coat. | Learn from it. | Shed a layer, then.
+a@rich : Must be nice.
+a@pup : You'll grow into them.
+a : Wise. | I'll learn when I'm dead. | Next time. | I'll shed my temper first.
+
+scene m7_wx_almanac
+when topic=weather
+a : The old almanac says a hard winter. | Somebody at the inn swore it'd be a wet year. | Heard the weather's turning for good, this year. | Somebody's goose stood on one leg all day. Means something.
+b : The almanac's never been right. | Somebody at the inn swears a lot of things. | They say that every year. | It means the goose was tired.
+a : Once. It was right once. | True. He swore at me. | And one year they'll be right. | You're no fun.
+b?[humour=dry] : I'll put it in my diary. "Goose tired. Doom near."
+
+scene m7_wx_old_days
+when topic=weather
+a : Summers were hotter when I was young. | Winters were whiter when I was a pup. | We never had rain like this. Never. | Seasons used to come when they were told.
+b[old] #old : Everything was more, when we were young. Including us.
+b : You were shorter. Everything looks bigger. | You say that every year. | You did. You just don't remember it. | They still don't listen to you.
+a@old : Ha. True enough.
+a : I'll grant you that. | And I'll keep saying it. | I remember everything. | Nobody does.
+
+scene m7_wx_brief
+when topic=weather
+a : Weather. | Nice day. | Grim day. | Day, at least.
+b : Weather. | Is it? | Grim. | So it is.
+a : That's settled, then. | It is. | Grim. | Right.
+
+scene m7_wx_wet_dog
+when topic=weather here.weather=rain|storm|snow
+a : I smell like wet dog. | My fur's gone flat as a pond. | I've rain in my ears. Both of them. | Shake off before you come in, my mother'd say.
+b[young] #shake : Watch! *shakes all over*
+b : We all do, in this. | Mine's in ringlets. Don't laugh. | Tip your head. It runs out. | Mine still does.
+a@shake : Oi! I was nearly dry!
+a : Small comfort. | I'm laughing inside. | It's running in, not out. | Mothers know.
+
+scene m7_wx_umbrella
+when topic=weather here.weather=rain
+a : Saw a Heights wolf with an umbrella. | Somebody's selling oiled hoods at the corner. | My hat's a bucket now. | I tried a sack over my head. Worked till it didn't.
+b : An umbrella? In this wind? | Buy two. One for your tail. | Tip it out, then. | Fashion.
+a : It went inside out. He went with it. | My tail's past saving. | Into my boot. | High fashion.
+
+scene m7_wx_rain_sounds
+when topic=weather here.weather=rain
+a : I like the sound of it on the roof. Don't tell anyone. | The drainpipe's playing a tune. | Rain on the shutters sends me straight to sleep. | Hear the gutters? Like a river.
+b[tone=gruff] #gruff : It's water falling. That's all.
+b : Your secret's safe. | Same tune as yesterday. | Lucky. Keeps me awake. | It'll be in my cellar by dark.
+a@gruff : You've a heart of slate.
+a : Thank you. | It only knows the one. | Count the drips. | Bail fast.
+
+scene m7_wx_rain_steaming
+when topic=weather here.weather=rain here.season=summer|spring
+a : Warm rain. You can almost drink it. | Steam's coming off the cobbles. | Smells like hot stone and green things. | Rain this warm feels like cheating.
+b : I've stopped bothering with a hood. | Like a laundry. | Best smell there is. | Cheat away. I'll take it.
+a : Me too. Freedom. | Without the soap. | After bread. | Cheers to it.
+
+scene m7_wx_rain_cold
+when topic=weather here.weather=rain here.season=autumn|winter
+a : Cold rain finds every gap in a coat. | My paws are ice to the wrist. | It's that rain that goes sideways. | Sleet, nearly. Mean stuff.
+b[job=healer] #heal : Get dry tonight, properly dry. I've coughs enough.
+b : Every gap, and some it makes. | Sit on them. Works for me. | Turn your back to it. | Nearly snow, nearly rain. Worst of both.
+a@heal : Yes, healer.
+a : Truly. | Rude, but true. | Then it goes round. | Worst of all.
+
+scene m7_wx_snow_first_flake
+when topic=weather here.weather=snow
+a : Caught one on my tongue. Don't tell. | Look, each flake's different. Right on my sleeve. | The snow's squeaking under my boots. | Hush. Listen. You can hear it falling.
+b[young] #pup : I've caught nine! Ten! Ten!
+b : I caught three. We're even. | They melt before I can look. | Means it's proper cold. | I can't hear anything. Just my teeth.
+a@pup : Champion of the snow.
+a : Deal. | Quick, then. | Proper cold. | That's the snow, then.
+
+scene m7_wx_snow_shovels
+when topic=weather here.weather=snow here.time=dawn|day
+a : Who's clearing the lane? | Took me an hour to dig out the door. | Somebody's built a snow wolf by the well. Rude one. | The roofs are groaning.
+b[job=laborer] #dig : Me, if they pay. They never pay.
+b : Not me. | An hour? Mine's still shut. | Did it have a pipe? | Knock it off before it caves in.
+a@dig : They'll pay in thanks.
+a : Nor me. | Use the window. | And a hat. | With what? My tail?
+
+scene m7_wx_snow_tracks
+when topic=weather here.weather=snow
+a : Fox tracks right across the yard. | Somebody's been round the back. Tracks to the door. | You can read the whole street's comings and goings in the snow. | Snow tells tales.
+b[job=guard] #watch : Handy, that. Burglars hate snow.
+b : Bold fox. | Let's hope it's a friend. | I know who went to the tavern. Twice. | Mine went straight home. Believe me.
+a@watch : Do they get cold, burglars?
+a : Hungry fox. | Let's hope. | Shh. | I believe you.
+
+scene m7_wx_fog_voices
+when topic=weather here.weather=fog
+a : I can hear wolves talking but I can't see them. | Somebody just said my name. Was that you? | The #fog#'s got everyone whispering. | A bell somewhere. Can't tell where.
+b[temper=nervy] #nervy : Don't. Please don't. I'm jumpy enough.
+b : Odd, isn't it. Voices with no bodies. | Wasn't me. | Feels rude to shout. | Chapel bell. Or a cow.
+a@nervy : Sorry. Sorry.
+a : Ghosts with gossip. | Then who? | Like a chapel. | Or a ghost cow.
+
+scene m7_wx_fog_lost
+when topic=weather here.weather=fog
+a : I walked past my own door. | I followed a cart into a yard and the cart went home. | I've walked the same lane twice now. | I'm navigating by bakery smell.
+b : Count the doors. | Tie yourself to a fence. | It's the same lane. You're going round. | Best nose in town.
+a : I can't see the doors to count. | Very funny. | I know. That's the trouble. | Second best. You've seen my belly.
+
+scene m7_wx_fog_clearing
+when topic=weather here.weather=fog here.time=day
+a : It's lifting. Look, there's the roofline. | Sun's trying to burn through. | Half the town's come back out of the #fog#. | I can see the hill again.
+b : There's the chapel. I was worried. | Go on, sun. | Wasn't missing much. | Hill looks surprised to be back.
+a : Never left. | Go on! | Hush. | Ha.
+
+scene m7_wx_storm_counting
+when topic=weather here.weather=storm
+a : One... two... three... | That flash lit the whole street. | Thunder rolling round the hills like a barrel. | Lightning's walking closer.
+b[young] #pup : Make it stop! Can you make it stop?
+b : Three miles. Or three streets. I forget which. | Like day. Then darker. | Somebody's moving furniture up there. | Then let's walk away from it.
+a@pup : It's only noise, little one. It's only noise.
+a : Streets, I hope. | Darker than before. | Big furniture. | Faster than it.
+
+scene m7_wx_storm_after
+when topic=weather here.weather=storm
+a : There goes somebody's washing. | That's a tile off the roof. | Hear the shutters? Bang, bang, bang. | Hold on to something.
+b : Into the next street. | Not mine. Please not mine. | Nailed mine this morning. | I'm holding you.
+a : Their shirts'll be in the river by dusk. | It's yours. | Smart. | I noticed.
+
+scene m7_wx_clear_lazy
+when topic=weather here.weather=clear
+a : Too nice to work. | Look at the cat. Flat out in the sun. | I could lie on these warm stones all day. | The sun's made everyone friendly.
+b[working=yes] #work : Some of us don't get the choice.
+b : Too nice not to. | Wise cat. | Do it. I'll guard you. | Even old Grumbles smiled.
+a@work : I'll sun myself for you.
+a : That's not how it works. | Wiser than us. | You'd sell me. | Mark the day.
+
+scene m7_wx_clear_washing
+when topic=weather here.weather=clear here.time=dawn|day
+a : Washing day! Every line in town's full. | Sheets out, rugs out, pups out. | Good drying wind. | I've beaten the rug till it begged.
+b : Mine went out at dawn. | Pups dry quickest. | Get the blankets out while it lasts. | It'll thank you.
+a : Early bird. | And smell best. | All of them. | It won't.
+
+scene m7_wx_overcast_mood
+when topic=weather here.weather=overcast
+a : Grey days make me sleepy. | Sky's the colour of old porridge. | Can't tell if it's morning or evening. | Not a shadow anywhere.
+b : Everything does, you. | Cold porridge. | Neither can the cockerel. | Good. Shadows make me nervous.
+a : Fair. | Lumpy, too. | He's been crowing all day. | Odd one.
+
+scene m7_wx_overcast_waiting
+when topic=weather here.weather=overcast
+a : It's going to pour. Any minute. | Take your washing in. | Feels like a storm sitting on the roof. | Close, isn't it? Heavy air.
+b[job=farmer] #farm : Let it. The ground's waiting.
+b : It's been any minute since dawn. | Already did. | It's waiting for us to leave the house. | Like breathing soup.
+a@farm : Not my washing.
+a : Then it's due. | Smart. | Then stay in. | Lentil soup.
+
+scene m7_wx_wind
+when topic=weather here.weather=overcast|storm|clear here.season=autumn|winter|spring
+a : The #wind#'s got teeth today. | Blew my hat clean off. | The weathercock's spinning like it's mad. | Hear it in the chimney? Moaning.
+b : Keep your mouth shut, it gets in. | Where'd it land? | It is mad. Old bird. | That's my mother-in-law.
+a : Mm-hm. | In the trough. | Madder by the day. | Ha! Don't let her hear.
+
+# ================================================================ By the hour
+
+scene m7_wx_dawn_birds
+when topic=weather here.time=dawn
+a : Birds are loud this morning. | Look at the light coming up over the roofs. | Cold dawn. My breath's a cloud. | Dew on everything. My boots are soaked.
+b[tired=yes] #tired : Shut them up, would you?
+b : Fighting over worms. | Pink and gold. Pretty. | Mine too. | Mine too. And the hem.
+a@tired : Late night?
+a : Tell me about it. | Every day, and I forget. | Breathe at the cat. | Everything wet before work.
+
+scene m7_wx_dusk_light
+when topic=weather here.time=dusk here.weather=clear|overcast
+a : Look at that sky. Orange as a fox. | Lamps coming on, one by one. | The bats are out. | Light's going early now.
+b[old] #old : I've seen ten thousand of them. Still stop for every one.
+b : Shepherd's delight. | That's the day done. | They'll have the moths. | It is. Mind the step.
+a@old : So you should.
+a : Shepherds can keep it. I'll look. | Done and dusted. | Good luck to them. | Ta.
+
+scene m7_wx_night_stars
+when topic=weather here.time=night here.weather=clear
+a : Clear night. Frost by morning. | So many stars. You'd think someone spilled them. | The moon's bright enough to read by. | #cold.capitalize# one. Can see my breath.
+b : Cover the beds, then. | Spilled salt, my grandmother said. | If you could read. | Can see everyone's.
+a : Already did. | Throw some over your shoulder. | Rude. | It's a breathing town.
+
+scene m7_wx_night_rain
+when topic=weather here.time=night here.weather=rain|storm
+a : Bed's the only sensible place on a night like this. | Every lamp's gone out on the street. | Hear that? Somebody's roof is losing. | Wet and dark. Perfect.
+b[job=guard] #watch : Tell the captain. He'll have me in mine.
+b : Then why aren't we in it? | Leave them. Saves oil. | Not my problem till it's mine. | For burglars.
+a@watch : I'll tell him. He won't listen.
+a : Good question. | Penny-pincher. | It'll be yours. | Exactly.
+
+# ================================================================ By the place
+
+scene m7_wx_gate_watch
+when topic=weather here.place=gate
+a : No travellers today. Not in this. | The road's empty both ways. | Saw a cart turn back at the bend. | Mud to the gate posts.
+b[job=guard] #guard : Good. Fewer to search.
+b : Nobody sensible. | Empty road, quiet gate. | Wise driver. | Somebody'll get stuck. Watch.
+a@guard : You'd search the wind.
+a : Then where are the fools? | Suits me. | Wiser than us. | Bet you a penny.
+
+scene m7_wx_market_awning
+when topic=weather here.place=market
+a : The awnings are earning their keep today. | Stallholders all huddled under the cloth. | Everything on the stall's wet or warm. | Fewer buyers when it's like this.
+b[role=merchant] #trade : I'd pay the weather to stay mild. Gladly.
+b : Mine's leaking at the seam. | Like sheep in a fold. | Warm's worse. The cheese sweats. | More haggling, then.
+a@trade : Who do you pay?
+a : Tar it. | Baa. | Cheese has feelings too. | Worse haggling.
+
+scene m7_wx_shore_sea
+when topic=weather here.place=shore
+a : The water's got a mood on it today. | Look at the waves, white tops all over. | Calm as a pond. Never trust it. | Smell the salt in that wind.
+b[job=fisher|sailor] #sea : Mood's for wolves. Water just is. Respect it.
+b : Moods like my aunt. | Somebody's out there in it. | Calm water hides things. | Clears your head.
+a@sea : I respect it. From here.
+a : Leave it be, then. | Gods keep them. | That's what I said. | And your sinuses.
+
+scene m7_wx_field_sky
+when topic=weather here.place=field
+a : Big sky out here. | You can see the weather coming from a mile off. | Wind across the field like a hand on fur. | Clouds racing their shadows.
+b[job=farmer|herder] #farm : And I can tell you which bit will land on my crop.
+b : Makes you feel small. | Can't hide from it, though. | Pretty. | Shadows are winning.
+a@farm : Always your crop.
+a : Small and windblown. | No. | It is. | Always do.
+
+scene m7_wx_wild_road
+when topic=weather here.place=wild
+a : Long way to a roof from here. | Not a soul on the road. Just us and the sky. | The trees are talking in this #wind#. | You can smell the weather out here before it comes.
+b : Walk faster, then. | Suits me. | Saying what? | I smell rain.
+a : My legs are short. | Me too. | Hurry, probably. | Rain and pine.
+
+scene m7_wx_tavern_door
+when topic=weather here.place=tavern
+a : Shut the door! You're letting the weather in. | Every wolf who comes in brings a puddle. | Listen to it out there. And us in here. | Fire's roaring. Let it do what it likes outside.
+b : It came in on its own. | I'll mop with your tail. | Best sound in the world. | Cheers to the fire.
+a : Then show it out. | You won't. | Second best. Best is ale pouring. | Cheers.
+
+scene m7_wx_chapel_steps
+when topic=weather here.place=chapel
+a : Wet on the way in, wet on the way out. | Nice to be indoors for the sermon. | The chapel roof's dripping again. | Even the candles shiver today.
+b[job=priest] #priest : The roof fund box is by the door. Just mentioning.
+b : Dry in the middle, at least. | The sermon or the roof? | Into the font. Blessed rain. | So do I.
+a@priest : Mentioned and heard.
+a : Small mercies. | Both. | Holy drips. | We'll all shiver together.
+
+# ================================================================ By the season and its work
+
+scene m7_wx_spring_mud
+when topic=weather here.season=spring here.weather=rain|overcast
+a : #mud.capitalize# season. | The lanes are soup. | I lost a boot in the yard. The yard kept it. | Thaw's turned everything to porridge.
+b[job=farmer] #plough : Can't plough wet. We wait. Always wait.
+b : Every year. Every single year. | Walk the stones. | Leave it, it's the yard's now. | Lumpy porridge.
+a@plough : Waiting's half of farming.
+a : Like clockwork. | There aren't any. | It was a good boot. | And cold.
+
+scene m7_wx_spring_blossom
+when topic=weather here.season=spring here.weather=clear|overcast
+a : Blossom on the hedges. | Lambs bleating everywhere. | Everything's waking up. | The days are getting longer. You can feel it.
+b : Snow in spring, but sweeter. | And everyone else's lambs. | Not me. | Light till supper now.
+a : Just as messy. | Sheep make noise. | You never wake. | At last.
+
+scene m7_wx_summer_flies
+when topic=weather here.season=summer
+a : The flies are thick as soup. | Midges everywhere. They're eating me. | Bees in the lavender, loud as a mill. | Wasps at the jam again.
+b : Swat them. | They like you. | Busy bees. | They like jam. Fair enough.
+a : There are thousands. | They're welcome to me. | Busier than me. | They'll get a swat too.
+
+scene m7_wx_summer_drought
+when topic=weather here.season=summer here.weather=clear
+a : The well's low. | Not a drop for three weeks. | The grass has gone the colour of straw. | The river's showing its stones.
+b[job=farmer] #farm : My beans are begging. I've been carrying buckets since dawn.
+b : We'll be fighting for water soon. | Pray for rain. | Dry as a biscuit. | Saw a fish waving for help.
+a@farm : I'll pray for your beans.
+a : Hope not. | Every night. | A dry biscuit. | Ha. Poor fish.
+
+scene m7_wx_autumn_leaves
+when topic=weather here.season=autumn
+a : The leaves are coming down like rain. | Everything smells of bonfires. | Conkers everywhere. The pups are at war. | Geese going over. Heard them at dawn.
+b[young] #pup : I've got a conker that's beaten twenty!
+b : Pretty, though. | Best smell of the year. | Mine won. | Going south. Lucky geese.
+a@pup : Twenty? Show me. Is it baked? That's cheating.
+a : Messy, though. | Second to bread. | Course it did. | Take me with you, geese.
+
+scene m7_wx_autumn_harvest_race
+when topic=weather here.season=autumn here.weather=overcast|rain
+a : They're racing the rain in the fields. | Every hand in town's out cutting. | Last of the apples are falling. | They'll have to bring it in wet.
+b[job=farmer|herder] #farm : Don't. Just don't. I've not slept.
+b : Hope they win. | Except mine. | Wasps'll have them. | Wet grain rots.
+a@farm : Go and sleep. I'll pray for dry.
+a : Me too. | Lazy. | Not if I get there first. | Everyone knows.
+
+scene m7_wx_winter_dark
+when topic=weather here.season=winter
+a : Dark by teatime. | I've not seen the sun all week. | The days are short as tempers. | I light the lamp at dawn and again at dusk.
+b : Dark at breakfast too. | It's up there. Somewhere. | Shorter. | Oil's dear.
+a : I'm living in a cellar. | Sulking. | Ha. Fair. | Everything's dear.
+
+scene m7_wx_winter_ice
+when topic=weather here.season=winter here.weather=clear|overcast|snow
+a : The trough's iced over. Had to break it with a hammer. | Ice on the inside of the window this morning. | The pump's frozen. | Watch the steps. Glass, all of them.
+b[old] #slip : I went down on those steps last winter. Still feel it.
+b : Horses were thirsty. | Mine too. Pretty, though. | Hot water and patience. | Ash on them. Somebody should.
+a@slip : Give me your arm, then.
+a : Poor things. | Pretty and cold. | No patience left. | Somebody, aye.
+
+# ================================================================ Who's speaking
+
+scene m7_wx_pup_questions
+when topic=weather a.stage=young
+a : Where does rain come from? | Why is snow cold? | Is the wind a wolf? | Does the sun get tired?
+b[old] #tale : My grandmother said the sky wolves shake their coats. That's rain.
+b : The sky. | Because it's snow. | No. It's air. Being rude. | Every evening. Same as us.
+a@tale : That's silly. Is it true?
+a : Why? | That's not an answer. | Rude air. | Then it goes to bed?
+b?@tale : Truer than most things.
+
+scene m7_wx_old_complaint
+when topic=weather a.stage=old
+a : I don't like the look of that sky. | Cold's in my bones today. | Weather's gone wrong. It's all wrong this year. | My knees are forecasting.
+b[young] #pup : Why don't you like it? It's just sky.
+b : When do you like the look of a sky? | Sit by the fire. | It's always wrong, to you. | What do they say?
+a@pup : You'll see. When you're my age, you'll see.
+a : When it's over. | I will. | Because it is. | Rain by noon. Mark me.
+
+scene m7_wx_lovers_rain
+when topic=weather pair.band=spouses here.weather=rain|snow|storm
+a : Come here, you're soaked. | Share my cloak. | You'll catch your death. | Your paws are ice, #pet#.
+b : Fuss. | It's not big enough for two. | Not today. | Warm them, then.
+a : Somebody has to. | It is if we're close. | Tomorrow, then? | Gladly.
+
+scene m7_wx_strangers_polite
+when topic=weather pair.band=strangers
+a : #greet#. Weather, eh? | Not a day to be out. | Turned out mild, at least. | Bit of a #wind#.
+b : Indeed. | No. | Mild enough. | A bit.
+a : Well. | #farewell#. | Good day, then. | Mind how you go.

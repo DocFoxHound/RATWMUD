@@ -1,0 +1,191 @@
+# Hard times: the roads (phase 7, the h7_ lines). Bandits: a caravan raided on the road to topic.where (another town),
+# or a camp seen at topic.where (a place's name); the caravans raided (talk.caravan); and the bandits as they weigh on
+# everyday talk (world.bandits=near). Broad first, then particular people. Lines in parallel answer each other.
+
+## A caravan raided, for anyone
+
+scene h7_raid_what_taken
+when topic=bandits topic.kind=raided
+a : They hit the #topic.where# carts. Took the lot. | #bandits.capitalize# on the #topic.where# road. Cleaned out a whole wagon. | The #topic.where# caravan came in light. Very light. | Did you hear? Robbed on the way from #topic.where#.
+b : The lot? Even the mules? | What was on it? | Light of goods, or light of carters? | Again?
+a : The mules came home by themselves. Clever mules. | Salt and cloth, they say. | Goods. The carters are all there. Shaking. | Again. Third time this season.
+b : Smarter than the guards, then. | Salt'll be dear by Restday. | Thank the gods for that. | Then it's not luck. It's a trade.
+
+scene h7_raid_prices_follow
+when topic=bandits topic.kind=raided
+a : The #topic.where# carts were robbed. Watch the prices go. | That's the #topic.where# goods gone to #bandits#. We'll pay for it. | #topic.where# road's been hit. Buy what you need today. | Robbers on the #topic.where# road, and my purse already weeping.
+b : They'll go up before the carts are cold. | We always pay. One way or another. | With what? | Your purse weeps at a sneeze.
+a : Faster than that. | That's the joke of it. | Good question. | It's a sensitive purse.
+b : Merchants never miss a chance. | Some joke. | I'll go without. Again. | So's mine. They should marry.
+
+scene h7_raid_carters
+when topic=bandits topic.kind=raided
+a : Was anyone hurt on the #topic.where# road? | Did the carters fight back, from #topic.where#? | The #topic.where# carters ran for it. Can't blame them. | One of the #topic.where# drivers took a blade, I heard.
+b : One carter. Head cut. He'll mend. | Two did. One's limping. | I'd have run faster. | Badly?
+a : Thank the gods. | Brave fools. | You'd have run first. | Bad enough. He won't drive again this year.
+b : The gods weren't there. The carter was. | Brave and limping. Usual. | I'd have been home by now. | Gods help the family.
+
+scene h7_raid_who_are_they
+when topic=bandits topic.kind=raided
+a : Who are they, these #bandits# on the #topic.where# road? | Where do they come from, the ones who hit the #topic.where# carts? | Wolves don't just turn #bandits#. Something makes them. | Somebody's feeding those road wolves. You don't last out there alone.
+b : Hungry wolves. That's all they ever are. | Out of work, out of luck. | Debt, mostly. Debt and a grudge. | Somebody in town, you mean?
+a : Hungry wolves with knives. | Then put them to work. | We've all got those. | I mean nothing. I'm only saying.
+b : Knives are cheaper than bread. | Who'd hire them now? | And we don't rob carts. Yet. | Say it quieter.
+
+scene h7_raid_ride_out
+when topic=bandits topic.kind=raided
+a : Somebody should ride out after the #topic.where# raiders. | Will #watch# go after them, the #topic.where# lot? | They're asking for wolves to go after the #topic.where# #bandits#. | I'd go after them myself if I had a horse. And a sword. And courage.
+b : Somebody. Not me. | #watch# doesn't leave the walls. | Who's asking? Who's paying? | Three things you'll never have.
+a : Somebody's always someone else. | Then what are they for? | Nobody, yet. | I've a good stick.
+b : That's how it works. | Keeping us in, I think. | Then nobody'll go. | Then it's a stick against a band. Stay home.
+
+scene h7_raid_gallows
+when topic=bandits topic.kind=raided
+a : The #topic.where# carts are gone. | Robbed again, the #topic.where# road. | They raided the #topic.where# caravan. | No goods from #topic.where# this week.
+b : Well. Nobody's robbing me. I've nothing on a cart. | Good thing I can't afford anything. | More #worthless# news. | I'll not miss what I couldn't buy.
+a : Poverty's a fine guard. | The best lock there is. | You've a gift for cheer. | Nor me.
+b : Cheaper than a sword. | And it never sleeps. | It's free, cheer. Unlike salt. | We're safe as houses, us.
+
+scene h7_raid_old
+when topic=bandits topic.kind=raided
+a : #bandits.capitalize# hit the #topic.where# carts. | The road to #topic.where#'s not safe. They robbed a wagon. | Another raid on the #topic.where# road. | There's road wolves out by #topic.where#.
+b[old] #old : They hanged them at the crossroads in my day. The crows were fat that year.
+b : Not again. | It's never safe. Not really. | Every year it's worse. | Every year somebody says that.
+a@old : And the roads were safe?
+a : Again. | Safer than the sea. | It feels it. | And every year they're right.
+b@old : No. But the crows were happy.
+b : They'll get bolder. | Says you. | It's the feeling that costs. | Then it's very bad by now.
+
+## A camp seen
+
+scene h7_camp_smoke
+when topic=bandits topic.kind=camp
+a : There's smoke at #topic.where#. They're camped there. | Somebody saw a camp at #topic.where#. Not hunters. | #bandits.capitalize# at #topic.where#. Bold as you like. | They say there's a camp at #topic.where#, and the fire's never out.
+b : How many? | How do they know it's not hunters? | Bold, or stupid? | Then they mean to stay.
+a : Six. Twelve. Depends who's telling. | Hunters don't post a lookout. | Bold. They know nobody comes. | That's what frightens me.
+b : Six is enough. | Fair point. | Then somebody should. | It should frighten the Watch.
+
+scene h7_camp_avoid
+when topic=bandits topic.kind=camp
+a : I'll not go past #topic.where# now. | Is there another road round #topic.where#? | My cousin goes by #topic.where# every week. I've told her. | I used to pick berries out by #topic.where#.
+b : Nobody will. | The long way. Two days more. | Did she listen? | Pick them somewhere else.
+a : Then the camp's got the road. | Two days. On my feet. | She laughed. | They were the good berries.
+b : Until someone takes it back. | Better than none at all. | Then she'll learn. Gods keep her. | Berries'll keep. You might not.
+
+scene h7_camp_fed
+when topic=bandits topic.kind=camp
+a : Somebody's feeding that camp at #topic.where#. They don't live on air. | The camp at #topic.where# buys bread somewhere. | Where do they get their beer, the #topic.where# lot? | Somebody in town's selling to them at #topic.where#.
+b : A farm, I'd bet. Too frightened to say no. | From someone who'd rather sell than be robbed. | Same place we do. | That's a hanging matter, that.
+a : I'd say no. | Can you blame them? | Then they're drinking our beer. | Only if they're caught.
+b : You'd say no once. | Yes. And no. | And paying better for it. | They always are, in the end.
+
+scene h7_camp_night_lights
+when topic=bandits topic.kind=camp here.time=dusk|night
+a : You can see their fire from here, some nights. At #topic.where#. | Look. That glow. That's #topic.where#. | Don't light the lamp near the window. The #topic.where# lot might be watching. | Hear that? Could be them. From #topic.where#.
+b : I'd rather not see it. | Don't point. | They can't see us. Can they? | It's an owl.
+a : It's there whether you see it or not. | They can't see me pointing. | I don't know. That's the trouble. | An owl with a knife.
+b : Then let it be there without me. | You don't know that. | Then dark it is. | An owl. Go to sleep.
+
+scene h7_camp_children
+when topic=bandits topic.kind=camp a.stage=young|adolescent
+a : Is it true there's #bandits# at #topic.where#? | I want to see the camp at #topic.where#. Just from the hill. | Do #bandits# have pups too? At #topic.where#? | If they come I'll fight them. I've a stick.
+b : True. And you're not going near it. | You'll see the back of my paw. | I... suppose they might. | A stick. Gods help us.
+a : I wasn't going to. Much. | Just from the hill! | Then are they bad too? | It's a good stick!
+b : Not at all. | No hill. Home. | Hush. Eat your supper. | Put it by the door, then.
+
+## The caravans, raided
+
+scene h7_caravan_raided_order
+when topic=caravan topic.kind=raided
+a : My order was on the #topic.where# carts. | I'd a cask coming from #topic.where#. Gone to the robbers. | Everything I paid for in #topic.where#, gone. | My cousin sent a parcel from #topic.where#. Some #thief# is wearing it now.
+b : Did you pay ahead? | Will the House make it good? | All of it? | What was in it?
+a : Half. Half up front. | They'll laugh. | All. | Her good shawl.
+b : Then you've lost half, and the rest's a lesson. | They'll laugh and keep the half. | Gods. Sit down. | Somebody's warm tonight.
+
+scene h7_caravan_raided_guards
+when topic=caravan topic.kind=raided
+a : They're saying the #topic.where# carts had no guards. | Where were the caravan guards, from #topic.where#? | The guards on the #topic.where# carts threw down their spears. | The #topic.where# carts went with two guards. Two!
+b : Guards cost money. | Running, by the sound of it. | I'd have done the same. | Two's a lot of guards to lose.
+a : So do robbed carts. | Fast, I hope. | You'd have dropped it first. | Two's nothing against a band.
+b : The House pays for one, the carter for the other. | Faster than the carts. | Before they asked. | Then it's three next time.
+
+scene h7_caravan_raided_wait
+when topic=caravan topic.kind=raided
+a : I'll wait for the next #topic.where# carts, then. | When's the next caravan from #topic.where#, after this? | The next #topic.where# caravan's waiting till the road's clear. | Nobody's sending carts from #topic.where# now.
+b : If there is one. | When the road's safe. So, never. | It'll wait a long while. | Then we eat what's here.
+a : There's always another. | Never's a long time. | Till something runs out. | What's here is turnips.
+b : Hope so. | It is. | Salt, then. Always salt. | Turnips it is.
+
+## Bandits near: everyday talk with the roads in it
+
+scene h7_near_smalltalk_road
+when topic=smalltalk|day world.bandits=near
+a : I've a mind to visit my sister. If the road's safe. | Are you going to the next market? With the road like it is? | My brother's due back from the road. Any day now. | I was going to walk out to the farms. Not now.
+b : It isn't. Write to her. | I'll go. I'll go fast. | Any day's a long day, these days. | Nothing's safe outside the walls.
+a : She can't read. | Fast and scared. | Every day. | Not even the farms?
+b : Then the carter can read it to her. | Best way to travel. | He'll come. They always come. | The farms most of all.
+cooldown 1d
+
+scene h7_near_smalltalk_rumour
+when topic=smalltalk|day world.bandits=near
+a : There's talk the #bandits# are wolves from our town. | They say the #bandits# have a leader now. A clever one. | Somebody said the road wolves pay the Watch to look away. | They say the #bandits# give to the poor. Rubbish, I say.
+b : Our town? Who? | Clever's worse than cruel. | Somebody says a lot. | They give the poor a fright. That's all.
+a : Nobody's saying names. | Much worse. | That was me. | That's what I said.
+b : Then don't say it at all. | Gods help us. | Then hush, before someone hears. | And they take the rest.
+cooldown 1d
+
+scene h7_near_night_bolts
+when topic=smalltalk|day|friends world.bandits=near here.time=dusk|night
+a : Bolt your doors tonight. | Did you hear the gate shut early? | Don't walk out past the last lamp. | My door's barred and my axe is under the bed.
+b : I always do. | Early's sensible. | I wasn't going to. | An axe? Can you lift it?
+a : Twice, then. | Sensible's frightened, dressed up. | Good. | Lift it? No. But they don't know that.
+b : Three times. And a chair against it. | Fine. I'm frightened. Happy? | I'll be in by dark. | Don't tell them.
+cooldown 1d
+
+## The travelling and the road
+
+scene h7_road_travelling_pair
+when topic=smalltalk|day|work a.travelling=yes world.bandits=near
+a : I've to be on the road tomorrow. With #bandits# about. | I leave at dawn. I'd rather not. | The road's out there waiting, and so are they. | My route goes right past where they hit the carts.
+b : Travel with the carts. Safety in numbers. | Then don't. | Then go in daylight. All daylight. | Go another way.
+a : The carts are what they hit. | It's that or no pay. | Daylight's when they hit the last ones. | There's no other way. That's why it's a route.
+b : Then walk behind them. Far behind. | Then go, and come back. | Then go in prayer. | Then go quickly.
+cooldown 1d
+
+scene h7_road_guard_pair
+when topic=bandits a.role=guard b.role=guard
+a : Captain wants volunteers for the road. | They're saying we'll ride out. Against the camp. | I'd go. If they paid for it. | Did you see the carter they brought in? Stuck like a pig.
+b : Volunteers. That's what they call it when nobody wants to. | With what? Twelve of us and a lame horse? | They won't. They never do. | I saw. I've not eaten since.
+a : Put my name down. | With what we've got. | Then I'll stay on the gate. | Nor me.
+b : Your funeral. Literally. | Then gods help the twelve. | Warm on the gate. | Then we'll go hungry together. And then we'll go after them.
+
+scene h7_road_merchant_hire
+when topic=bandits|caravan topic.kind=raided a.role=merchant
+a : I'll need guards for the next run. Real ones. | I've a load for #topic.where# and nobody'll drive it. | Who do I pay to get my goods through? | The raid's cost me a month. A whole month.
+b : Real ones cost real money. | Drive it yourself. | Pay the #bandits#. Cheaper. | A month's only a month.
+a : I've nothing but real money. Well. Some. | Me? On a cart? With them out there? | That's not funny. | It's my month. I'd plans for it.
+b : Then spend it, or lose it on the road. | Then it sits. | It's a little funny. | Make new ones. Cheaper ones.
+
+scene h7_road_poor_shrug
+when topic=bandits|caravan topic.kind=raided a.wealth=poor|destitute
+a : The rich lost their goods on the road. I'll try to weep. | Robbed carts. The Houses will feel it. Not much. | Silk and wine stolen. Oh, my heart. | They took a cart of good things. Things I've never tasted.
+b[wealth=rich] #rich : That's ugly talk. Those carts carry bread too.
+b : The tears won't come, will they? | They'll feel it in their purses. Briefly. | Mind it doesn't break. | Nor will you now.
+a@rich : Not to my door, they don't.
+a : Not a drop. | And we'll feel it in the price. | It's harder than it looks. | Nor would I have.
+b@rich : Then go to the chapel's door. That's what it's for.
+b : Never mind. Practice. | Always. | Ha. | Then we've lost nothing.
+
+scene h7_road_devout
+when topic=bandits a.piety=devout
+a : I pray for the carters every Restday. Now I'll pray harder. | The Bright One keeps the road. Mostly. | Pray for them on the road. And pray for the robbers, too. | I lit a candle for every cart that went out this week.
+b : Pray louder. They're not hearing. | Mostly's not a comfort. | The robbers? | That's a lot of candles.
+a : Gods hear soft as well as loud. | It's what we've got. | They're wolves. Lost ones. | Every one came back but one.
+b : Then they're choosing not to. | I'll take mostly, then. | Lost and armed. | Then light one more for that one.
+
+scene h7_road_robbed_self
+when topic=bandits a.robbed=yes
+a : They took from me too, you know. Not on the road. In town. | Bandits on the road and thieves in the street. I've met both. | I was robbed this week. Now the road too. Is anything ours? | Robbed in town, and now the carts. I'm sick of it.
+b : Then you know what they feel. | One sort's the same as the other. | Only what we keep in our heads. | Sick's fair.
+a : I know it too well. | Hungry, and taking. | Then I'll keep my coin there. | Sick and poor.
+b : I'm sorry. | Aye. | It'd fit. | Come and eat with us.

@@ -1,0 +1,697 @@
+# Pastimes (Docs/Design/62-talk.md, phase 7): what residents do when the work's done. Games, songs, music, dancing,
+# tall tales, riddles, wagers, sports, idle crafts, the pups' games and the old's, courting, gossip as a sport; by
+# temper and humour, by wealth (the Heights' cards and concerts, the Sump's dice), by season, place and region.
+# Alternatives are written in parallel: the second reply answers the second remark. Tagged single lines keep the
+# thread, so the closing line answers the opener whatever was said between.
+
+# ---------------------------------------------------------------- Games: dice, knucklebones, the board
+
+scene e2_pt_knucklebones
+when topic=pastimes
+a : Fancy a round of knucklebones? | Where'd I put my knucklebones? | I was the best at knucklebones on our street, once.
+b[child] : Yes! I can do onesies AND twosies!
+b[old] : My paws are too stiff for it now. I'll watch, and tell you what you did wrong.
+b[humour=none] : It's a pups' game.
+b : Go on, then. One round. | Pocket. Other pocket. | Once? What happened?
+a : Loser buys the cider. | Found them. Your throw. | Grew up. Lost my touch and two of the bones.
+
+scene e2_pt_fox_and_geese
+when topic=pastimes
+a : You moved that fox backwards. Foxes don't go backwards. | Fox-and-geese tonight? I've a new board. | I've never once beaten my mother at fox-and-geese.
+b[humour=merry] : Mine do. Mine are clever foxes.
+b[honesty=sly] : Did I? Must have been the board. It's warped.
+b : They do in our house. | Who carved it? | Nobody beats mothers at fox-and-geese.
+a : Then your house plays it wrong. | A carter, for a sack of oats. | She plays the geese like a general.
+b?[temper=short] : Fine. Have your game. I'm going home.
+
+scene e2_pt_board_argument
+when topic=pastimes pair.band=friends|family|spouses
+a : That last game. You cheated and we both know it. | I've been thinking about that game all day. | Rematch. Tonight. No excuses.
+b[honesty=frank] #owned : I did. I'm sorry. I'd do it again.
+b[honesty=sly] #sly : Prove it.
+b : I won fair. | Still sore? | You'll only lose again.
+a@sly : I will, one day, and you'll be sorry.
+a@owned : Well. At least you're honest about it.
+a : The geese were a square off and you know it. | You took my fox with a goose that wasn't there. | Bring the board. Bring your excuses too.
+
+scene e2_pt_dice_cup
+when topic=pastimes
+a : The dice hate me. Truly. | Lucky dice, these. Bone, older than my grandmother. | Seven throws without a six. Seven.
+b[wealth=poor] #warned : Don't play for #money# you haven't got. I learned that one the hard way.
+b[piety=devout] #devout : The Bright One frowns on dice, they say. Not very hard, mind.
+b : Dice hate everyone equally. | Lucky for who? | Then the eighth is yours.
+a@warned : I know. I know.
+a@devout : Not hard enough to stop me.
+a : Not equally. Me more. | For whoever's holding them. | That's what I said the last six times.
+
+scene e2_pt_dice_sump
+when topic=pastimes a.quarter=sump
+a : Dice behind the rope-walk tonight. You in? | Lost my boots at dice. Won them back. Lost them again. | Old Tanner's using loaded dice. Everyone knows.
+b[quarter=sump] : I'm in. I've two pennies and a feeling.
+b[quarter=heights] : Dice? In an alley? How very... lively.
+b : Not tonight. | Where are they now? | And everyone still plays him?
+a : Your loss. Or your gain. | On a sailor's feet. | Where else would we play?
+
+scene e2_pt_cards_heights
+when topic=pastimes a.quarter=heights
+a : The Ashfords play whist till three in the morning. Ruinous. | Cards at Lady Merrow's again. I lost a brooch. | One more evening of polite cards and I'll scream.
+b[quarter=heights] : And you'll go again next week. We all will.
+b[quarter=sump] : A brooch. Lost at cards. Imagine.
+b : Who won? | Why go? | Then scream. It'd liven them up.
+a : Her, of course. Always her. | One goes. That's the Heights. | They'd only think it was a song.
+
+scene e2_pt_concert_heights
+when topic=pastimes a.wealth=rich
+a : There's a concert in the Sound Hall on Restday. Strings from the south. | The harpist last night was divine. | I fell asleep at the concert. In the front row.
+b[wealth=rich] : We've a box. Join us, next time.
+b[wealth=poor|destitute] : I hear music free, from the street outside.
+b : Strings? What, fiddles? | Divine how? | Did anyone see?
+a : Fiddles in better coats. | Like rain, if rain were gold. | The harpist. She glared at me all through the second half.
+
+scene e2_pt_wager_rain
+when topic=pastimes
+a : Bet you a penny it rains before noon. | I'll wager you can't stand on one leg till the bell. | I bet the baker's late opening tomorrow.
+b[wealth=destitute] : I haven't a penny to bet. I'll bet you a turnip.
+b[humour=merry] : Done! And double if it's hail.
+b[humour=none] #nobet : I don't bet.
+b : Done. | Easy. Watch me. | He's never late.
+a@nobet : Suit yourself. I'd have won.
+a : Shake on it, then. | I'm counting. Loudly. | He was late Restday last. And the one before.
+
+scene e2_pt_wager_lost
+when topic=pastimes pair.band=friends|acquaintances|rivals
+a : You owe me a penny from that wager. | I lost the bet. Here. Don't gloat. | Double or nothing?
+b[honesty=sly] : What wager? I don't remember any wager.
+b[wealth=rich] : A penny! You'd think it was the Greatly fortune.
+b : I know. Tomorrow. | I'll gloat a little. | Nothing it is.
+a : You said that yesterday. | A little's too much. | Heads or tails. Call it.
+
+# ---------------------------------------------------------------- Songs, music, dancing
+
+scene e2_pt_song_stuck
+when topic=pastimes
+a : I've had that miller's song in my head since dawn. | Who taught the pups that rhyme? It's everywhere. | Hum something. Anything. Get this tune out of my head.
+b[humour=merry] : The one about the miller's daughter? Oh, she went down to the mill...
+b[talk=quiet] : Mm. I know the one.
+b : Which one? | Some fool at the well. | Hm hm hmm. Better?
+a : Don't you start. | I'll find them. | Worse. Now I've got both.
+
+scene e2_pt_singing_badly
+when topic=pastimes
+a : My neighbour sings when they wash. Every morning. | Was that you singing last night? | I sang at the tavern. They clapped. I think they clapped.
+b[humour=dry] : The neighbourhood's been praying for rain, to drown it.
+b[warmth=warm] : Singing's singing. Better than a silent house.
+b : Well? Any good? | That was a dying cat. Wasn't it? | Clapped, or clapped you out?
+a : Like a gull with a cold. | I'm not saying. | Clapped. I'm choosing clapped.
+
+scene e2_pt_fiddle_learning
+when topic=pastimes
+a : I'm learning the fiddle. | Somebody's been sawing at a fiddle three nights running. | My grandfather's fiddle's sat on the wall for years.
+b[old] : Took me ten winters to play a tune worth hearing.
+b[humour=dry] : Fiddles. The cat's natural enemy.
+b : How's it going? | Learner, by the sound. | Take it down. Play it.
+a : The cat leaves the room. | It was me. Don't. | It's got three strings. It wants four.
+
+scene e2_pt_pipes
+when topic=pastimes
+a : Hear the pipes down the lane? | I made a pipe from a willow stick. It plays two notes. | There's no sound sadder than pipes at dusk.
+b[stage=young] : I want a pipe! Can I have a pipe? I'll only play it a little.
+b[humour=merry] : Nothing like pipes. Makes my tail go.
+b : Someone's courting, I'll bet. | Which two? | Fiddle at dusk. That's sadder.
+a : Or someone's lost a bet. | High and wrong. | You've a hard heart.
+
+scene e2_pt_dance_paws
+when topic=pastimes
+a : Are you dancing at the next gathering? | I've two left hind paws. Always have. | I trod on three tails at the last dance.
+b[stage=old] : I'll dance one. Slowly. Then I'll sit and judge the rest of you.
+b[talk=quiet] : I'll hold the coats.
+b : If someone asks. | Everyone does. | Only three?
+a : Someone will. | Some more than others. | Three that complained.
+
+scene e2_pt_jig_learning
+when topic=pastimes a.stage=young|adolescent
+a : Will you teach me the long jig? | Is it true you used to dance in the market? | My sister won't dance with me. She says I hop.
+b[stage=old] #taught : Stand up. Paw there. No, there. Now the turn.
+b : I'm no dancer. | Once, a long time ago. | You do hop.
+a@taught : Like this? Like this!
+a : Please? Just the first steps. | Show me! Just one turn! | Everyone hops at first!
+
+scene e2_pt_ballad_drowned
+when topic=pastimes here.place=tavern|home
+a : Sing the one about the drowned sailor. | Who knows the end of the Lighthouse Keeper? | Not that song. Not tonight.
+b[humour=merry] #goose : Something cheerful! The goose that married a duke!
+b[job=sailor] #sailor : Not the sea songs. Bad luck on land and worse at sea.
+b : I only know the chorus. | Nobody. That's why it's sad. | Then which?
+a@goose : Not the goose. Anything but the goose.
+a@sailor : Sorry. Forgot. Something else, then.
+a : Then sing the chorus loud. | Make one up. | Something with a dance in it.
+
+scene e2_pt_round
+when topic=pastimes pair.band=friends|family
+a : Start a round. I'll come in after you. | You always come in early in a round. | Remember singing rounds on the cart home?
+b[humour=merry] : Row, row, row the punt...
+b : You start. You're louder. | I come in when I'm ready. | Till the carter told us to hush.
+a : Louder isn't better. | Ready's too soon. | We sang it worse after that.
+
+# ---------------------------------------------------------------- Tales, riddles, gossip
+
+scene e2_pt_tall_tale_fish
+when topic=pastimes
+a : Caught a pike yesterday as long as my arm. | My uncle once fought a bear for a ham. | I knew a wolf who outran a horse.
+b[humour=dry] : And it grows every time you tell it.
+b[honesty=frank] #doubt : You didn't.
+b : Did you eat it? | Did he win? | Over what distance?
+a@doubt : Did! Near enough.
+a : Every bit, and the head. | He got half. The bear got the other half. | To the next tavern. He was thirsty.
+
+scene e2_pt_tall_tale_contest
+when topic=pastimes here.place=tavern
+a : Tall tale contest at the tavern, last night. You missed it. | Old Brindle won the tall tales again. | I'm entering the tall tales next time. I've a good one.
+b : Who won? | What did he tell? | Tell me, then. Practise.
+a : A fisher. Said he caught the moon in a net. | That he'd been to the bottom of the Sound and back. | It starts with a goose. You'll see.
+b?[humour=merry] : I once caught the sun. Burnt my paws.
+
+scene e2_pt_storytelling_winter
+when topic=pastimes here.season=winter
+a : Long nights. Good for stories. | Tell us a story, the one with the frost giant. | My grandmother told stories till the fire went out.
+b[stage=old] : I'll tell you one about a winter worse than this.
+b[talk=quiet] : I'm no teller. I'll listen.
+b : They are. | Which one? | Mine fell asleep halfway through hers.
+a : Every winter's worse than this one, to hear the old tell it. | The one where he eats the mountain. | And we'd finish them ourselves.
+
+scene e2_pt_storyteller_visit
+when topic=pastimes here.place=tavern|street|market
+a : There's a storyteller come to town. | A tale-teller in the square, all hat and voice. | That teller last night had me crying in my cup.
+b[stage=young] : Does he do monsters? I like monsters.
+b[humour=none] : Paid to lie. Good work if you can get it.
+b : Is he any good? | What did he tell? | What was it about?
+a : Good enough to get my penny. | The drowned bells of Glasswater. | A mother and her lost pup. Don't make me tell it.
+
+scene e2_pt_riddle_mouth
+when topic=pastimes
+a : Riddle for you. What has a mouth but never eats? | What runs but never walks? | What's yours but everyone else uses it?
+b[job=scholar] #knew : That's an old one. You'll have to try harder than that.
+b[stage=young] : Ooh! Ooh! Is it... a ghost?
+b : A sack? | A pup at bedtime? | My cart?
+a@knew : Fine. Clever paws. I'll find a harder one.
+a : A river. | A river. Water, anyway. | Your name. Everyone uses it.
+
+scene e2_pt_riddle_trade
+when topic=pastimes pair.band=friends|acquaintances|family
+a : Riddle that's beaten the whole street. The more you take, the more you leave behind. What? | Riddle me this. What gets wetter the more it dries? | Here's one. What can you catch but never throw?
+b[drive=ambitious] #quick : Easy. Next.
+b[job=scholar] #quick : Ha. I had that one off my grandmother.
+b : A purse? | A fish? | A ball?
+a@quick : Fine, clever paws. I'll find a harder one.
+a : Footsteps. Nobody gets it. | A towel. Everyone forgets the towel. | A cold. Nobody's ever thrown one.
+b?[humour=merry] : I've thrown a cold. At my brother.
+
+scene e2_pt_gossip_sport
+when topic=pastimes
+a : Bench by the well, an hour, best entertainment in town. | Gossip's free and better than any play. | I've heard three things this morning, and one of them's true.
+b[talk=chatty] : Oh, sit down, sit down. Have you heard about the cooper?
+b[talk=quiet] : I just listen. You'd be amazed what folk say in front of a quiet one.
+b : What's the news? | Better than the priest's, anyway. | Which one?
+a : Not here. Later. | And shorter. | I'll tell you when I've worked it out.
+
+scene e2_pt_gossip_well
+when topic=pastimes here.place=street|market
+a : That's two days running the cooper's wife has gone to the mill alone. | Did you see who walked home with who last night? | Somebody's bought a new coat and won't say how.
+b[honesty=frank] : Leave folk be. It's their business.
+b[talk=chatty] : I saw! I nearly dropped my basket.
+b : Has she now. | No. Who? | Has he now.
+a : I'm only saying. | Not here. Folk listen. | Not saying. Just wondering. Aloud.
+
+# ---------------------------------------------------------------- Quiet pastimes: walks, carving, needles, books, fishing
+
+scene e2_pt_carving
+when topic=pastimes
+a : I've been whittling a little fox. | What are you carving there? | Cut my thumb carving a spoon. A spoon!
+b[job=woodcutter|crafter] : Mind the grain. The grain decides. You just follow.
+b[stage=young] : Can I see? Can you make a wolf? A big one?
+b : Show me. | A spoon. Or a ladle. It hasn't decided. | Spoons are dangerous.
+a : It's got three legs so far. | It'll tell me. | Never again. Bowls next.
+
+scene e2_pt_needlework
+when topic=pastimes
+a : I've been at this sampler since midwinter. | My stitching's gone wonky again. | Embroidered a hen on my apron. Looks like a cloud.
+b[stage=old] : Small stitches, steady paw. And a good lamp, or you'll go blind as I am.
+b[job=sailor] : Sailors sew better than anyone. Sails, wounds, buttons.
+b : Nearly done? | Unpick it. | Clouds are nice.
+a : Two letters to go. | Not again. | A cloud with a beak.
+
+scene e2_pt_reading
+when topic=pastimes
+a : I've been reading of an evening. | Can you read? Honestly? | I borrowed a book from the chapel. Don't tell anyone.
+b[job=scholar] : Books! Good. Whatever it is, skip the third volume. There's always a third volume.
+b[wealth=poor|destitute] : Never learned. Who had the time?
+b[job=priest] : The chapel's books are there to be read. Mind the candle wax.
+b : What sort of book? | Bits. My name, and prices. | Why not?
+a : A long one, about ships. | Same as me, then. | The priest's quick to ask what you thought.
+
+scene e2_pt_scholar_reading
+when topic=pastimes a.job=scholar
+a : I've found a book of old songs, every verse written down. | I sat up reading till the candle drowned. | Someone's torn pages from the chapel's almanac.
+b[job=scholar] : Lend it. I'll give you the herbal for it.
+b[humour=dry] : Exciting life you lead.
+b : Can you sing any? | Good book? | Who'd do that?
+a : Not well. Not at all, really. | Bad book. Couldn't stop. | Someone who needed kindling.
+
+scene e2_pt_walk
+when topic=pastimes
+a : I walked out past the last houses after supper. | A walk does you more good than any healer. | I like walking when everyone's abed.
+b[stage=old] : Lap round the chapel's my limit now.
+b[temper=nervy] : Alone? After dark? I couldn't.
+b : See anything? | True. | Every noise a robber, though.
+a : A hare and two stars. | The healer said that, too. | Mostly owls.
+
+scene e2_pt_evening_stroll
+when topic=pastimes here.time=dusk pair.band=friends|spouses
+a : Walk with me a while? | Round the long way home? | Let's go up the hill and watch the light go.
+b[tired=yes] : My feet say no. My heart says yes. My feet win.
+b : Go on. | Why not. | Last one up buys the cider.
+a : Slowly, then. | The long way's prettier. | You'll lose. You always stop for breath.
+
+scene e2_pt_fishing_pleasure
+when topic=pastimes
+a : Took a line down to the water after work. Just to sit. | Nothing beats an afternoon with a rod. | Fished all day. Caught a boot.
+b[job=fisher] : Fishing for fun. I'll never understand it. That's my workday.
+b[drive=restless] : All day sitting? I'd go mad.
+b : Catch anything? | Nothing. | Whose boot?
+a : Didn't want to. | Two things. Fish and sleep. | Mine, from last summer. Good boot, still.
+
+scene e2_pt_pond_fishing_pups
+when topic=pastimes a.stage=young b.stage=old
+a : Will you take me fishing? | What's the best worm? | I caught a fish! It got away. But I caught it!
+b : When the weather turns. | A red one. Fat. | Then it counts.
+a : Promise? | I'll find a red one! | It counts! It counts!
+
+scene e2_pt_reading_aloud
+when topic=pastimes pair.band=family|spouses
+a : Read to me tonight? | You do the voices so well. | Where did we get to in that book?
+b[job=scholar] : One chapter. One. I've work to do.
+b : Which bit? | Only the funny ones. | The storm. The ship in the storm.
+a : The bit with the cook. | You do the captain like the old priest. | Then the ship sinks, I bet.
+
+# ---------------------------------------------------------------- Sports: wrestling, races, the ball
+
+scene e2_pt_wrestling
+when topic=pastimes
+a : Wrestling on the green Restday. Coming? | Who's the best wrestler in town, would you say? | I threw the smith's boy on the green. Once.
+b[job=smith] : Me. Next question.
+b[sex=female] : I could put you down before you'd tied your belt.
+b[stage=old] : I was, in my day. Ask anyone old enough to remember.
+b : Who's wrestling? | Depends who's sober. | Once?
+a : Anyone fool enough. | The smith, sober. Anyone, drunk. | And then he threw me twice.
+
+scene e2_pt_race
+when topic=pastimes
+a : Race you to the well. | Who won the race at the last fair? | I ran the hill race. Never again.
+b[stage=old] : Race me? Pup, I'll walk there and meet you.
+b[stage=young] : Go! I'm already going!
+b : On three. | A carter's lass. Flew. | Did you finish?
+a : One, two... you went early! | Never seen legs like it. | Last. But I finished.
+
+scene e2_pt_ball_game
+when topic=pastimes
+a : The ball game's on, our street against the next. | Somebody kicked the ball through the chapel window. | My tail's still sore from the ball game.
+b[temper=short] : Their lot cheat. Every year.
+b[job=guard] : I'll be there, and I'll be breaking it up by dusk.
+b : Who's carrying the ball? | Who? | Who stood on it?
+a : Whoever's daft enough. | Everyone, by now. Everyone's sure it was someone else. | Half their team.
+
+scene e2_pt_ball_game_parish
+when topic=pastimes here.season=spring|summer here.region=towns
+a : Is the parish ball on this year? Town against the farms? | Last year's ball game went on till dark. | The farms are training. I've seen them.
+b[job=farmer|herder] : We'll win. We carry sheep all year. A ball's nothing.
+b[job=guard] : Mind the walls and the windows.
+b : They say so. | And two days after. | Training? For a ball?
+a : Good. I'll bring a stick. | My knees remember it. | They mean it this year.
+
+scene e2_pt_skittles
+when topic=pastimes here.place=tavern
+a : Skittles in the yard after? | Who set the pins up crooked? | I knocked eight down with one throw. Eight!
+b[job=innkeeper] : Not in my yard. The last pin went through my window.
+b : If you're paying. | You did, last round. | Out of nine?
+a : Loser pays. That's how it works. | I never. | Out of nine. Don't spoil it.
+
+# ---------------------------------------------------------------- The pups and the old
+
+scene e2_pt_pups_tag
+when topic=pastimes a.stage=young
+a : Play hunter and hare with me? | You're it! | I hid in the woodpile and nobody found me. All day.
+b[stage=young] #play : I'm the hunter! I'm always the hunter!
+b[stage=old] : My hunting days are done, little one. I'll count for you.
+b[stage=adult] : Later. After the chores.
+b : Not now. | Am not! | Nobody looked, maybe.
+a@play : No, I'm the hunter! You're the hare!
+a : Please! | Are too! | They did! They didn't find me!
+
+scene e2_pt_pups_hide
+when topic=pastimes a.stage=adult|old
+a : The pups have been at hide-and-seek in the yard all day. | Found a pup asleep in a barrel. Hiding, they said. | The young ones made up a new game. Rules change every turn.
+b[parent=yes] : Mine came home with half the yard in his fur.
+b[stage=old] : We played the same game. Different barrels.
+b : Who's winning? | From whom? | Sounds like the market.
+a : Whoever shouts loudest. | From his sister. Since noon. | Or the town council.
+
+scene e2_pt_pup_marbles
+when topic=pastimes a.stage=young b.stage=young|adolescent
+a : I won six marbles off Pip! | Want to see my blue marble? | Pip cheats at marbles. She flicks with her whole arm.
+b : Six! | Is it glass? | Everyone does that.
+a : He cried. A bit. | Real glass. From the city. | I don't! Not much.
+
+scene e2_pt_old_bench
+when topic=pastimes a.stage=old
+a : I sit on the bench by the chapel and watch the world. | Draughts with the miller's father, every afternoon. Forty years. | I've taken up nothing. I'm good at it.
+b[stage=old] : Room on the bench for two?
+b[stage=young] : Isn't that boring?
+b : Sounds restful. | Who wins? | It suits you.
+a : It's the best seat in town. | He says him. I say me. | Took me years of practice.
+
+scene e2_pt_old_youth_games
+when topic=pastimes a.stage=old b.stage=young|adolescent
+a : When I was a pup we played stones and sticks till dark. | Do you lot still play hunter and hare? | We made our own fun, in my day.
+b : What's stones and sticks? | Hunter and hare's for babies. | With what?
+a : Stones. And sticks. Mostly sticks. | I'll have you know it's a fine game. | Mud. Mostly mud.
+
+scene e2_pt_old_regret
+when topic=pastimes a.stage=old pair.band=friends|family
+a : I always meant to learn the pipes. Never did. | My dancing days. Gods, what dancing days. | I used to sing in the chapel, you know.
+b[warmth=warm] : It's not too late. Come round. I'll find you a pipe.
+b : Still could. | Tell me. | Sing something now.
+a : These paws? | The harvest of the long summer. I wore out my boots. | Ha! You'd run.
+
+# ---------------------------------------------------------------- Courting, festivals
+
+scene e2_pt_courting_dance
+when topic=pastimes a.stage=adolescent|adult
+a : Who are you asking to dance at the festival? | Somebody asked me to walk out. I said maybe. | They danced together three times last night. Three.
+b[married=yes] #wed : I've done my asking, thank the gods. I just watch now.
+b[talk=quiet] #shy : I... nobody. Maybe. Nobody.
+b : Not telling. | Maybe! Who? | Three's an announcement.
+a@wed : Smug, that's what you are.
+a@shy : Ah. Somebody, then.
+a : I'll find out. | Not telling. | The whole street's counting.
+
+scene e2_pt_courting_advice
+when topic=pastimes a.stage=adolescent b.stage=adult|old
+a : How did you know? With your mate, I mean. | How do you ask someone to dance? | Is it daft to pick wildflowers for someone?
+b[married=yes] : They laughed at the same thing I did. That was all.
+b[widowed=yes] : You just know. And you don't stop knowing.
+b : You just ask. | You hold out your paw and say nothing clever. | It's daft. Do it anyway.
+a : That's no help. | Nothing clever. I can do that. | Which flowers?
+
+scene e2_pt_festival_dance_soon
+when topic=pastimes world.festival=soon
+a : Festival's coming. Have you practised your steps? | They're hanging the lanterns for the dancing. | I need new boots for the festival dance.
+b[stage=old] : I'll be on a bench with a cup, watching.
+b[wealth=poor|destitute] : Same boots as last year. They know the steps by now.
+b : I'll trip either way. | It's always pretty. | Your boots are #good#.
+a : Then we'll trip together. | Prettier this year, I hope. | They're held with string.
+
+scene e2_pt_festival_today
+when topic=pastimes here.festival
+a : #here.festival#! Are you dancing? | Did you see the fiddler at #here.festival#? Fingers like smoke. | They've got races going for #here.festival#.
+b[stage=young] : I'm going to win the sack race! I've practised!
+b[humour=none] : I'll watch. Somebody has to.
+b : After a cup. | I danced to him. | Who's in it?
+a : After two. | Badly, I saw. | Half the town and a goat.
+
+# ---------------------------------------------------------------- By character
+
+scene e2_pt_merry_vs_dry
+when topic=pastimes a.humour=merry b.humour=dry
+a : What we need is a song and a jig. | Let's get the whole street dancing! | I've a new joke. It's about a goose.
+b : Do we. | Let's not. | Do the goose a favour. Keep it.
+a : We do! | Too late, I'm halfway down it. | A goose walks into a tavern...
+b : And orders the soup. I know it. | Mind the Watch. | And leaves. Wisely.
+
+scene e2_pt_humourless
+when topic=pastimes a.humour=none
+a : I don't hold with games. Waste of daylight. | What's the point of a riddle? You just tell them the answer. | Dancing. Jumping about for no reason.
+b[humour=merry] : The point is the fun of it!
+b[humour=dry] : Strong views, for a quiet afternoon.
+b : Some folk like it. | That's the point. | There's a reason. You just haven't found it.
+a : Some folk like mud. | Strange point. | I'll keep not looking.
+
+scene e2_pt_chatty_quiet
+when topic=pastimes a.talk=chatty b.talk=quiet
+a : What do you do with yourself, of an evening? I sing. Badly. And I talk. Well, you know. | Do you never go to the tavern? It's lively. You'd like it. | You should come to the dancing.
+b : Sit. | Not often. | Maybe.
+a : Sit! Just sit? | Is that a no? | That's a yes. I heard a yes.
+b : Sit. It's nice. | It's a no. | It was a maybe.
+
+scene e2_pt_restless
+when topic=pastimes a.drive=restless
+a : I can't sit still of an evening. Never could. | I've tried carving, cards, singing. Bored of all of them. | I need something to do. Anything.
+b[drive=content] : I sit by the fire and I'm happy as a cat.
+b[drive=ambitious] : Learn a second trade. That's what evenings are for.
+b : Walk, then. | What's next? | Help me with my woodpile.
+a : Walked everywhere. | Wrestling, maybe. Or the pipes. | Not that anything.
+
+scene e2_pt_content
+when topic=pastimes a.drive=content
+a : Fire, a cup, a chair. That's all I ask of an evening. | I like my evenings dull. Dull and warm. | Same thing every night. Wouldn't change it.
+b[drive=restless] #skin : I'd go out of my skin.
+b : Can't argue. | Sounds lovely. | No?
+a@skin : Then go out of it. I'll keep my chair.
+a : Nobody can. | It is. | Not one bit of it.
+
+scene e2_pt_short_temper_game
+when topic=pastimes a.temper=short
+a : I've thrown the fox-and-geese board in the fire. | Lost at cards again. Somebody's cheating. | Don't talk to me about skittles.
+b[temper=calm] : And did that help?
+b : Why? | Who? | What happened at skittles?
+a : It burned well. | Everyone. | Don't talk to me about it.
+
+scene e2_pt_devout_restday
+when topic=pastimes here.day=rest a.piety=devout
+a : Restday's for the chapel and the hearth, not dice. | I spend Restday reading the hymns. | The pups were playing ball in the chapel yard. On Restday.
+b[piety=devout] : Rightly said.
+b : One game won't hurt. | All of it? | Better than in the chapel.
+a : That's how it starts. | Twice, some weeks. | Small mercies.
+
+# ---------------------------------------------------------------- By wealth and quarter
+
+scene e2_pt_poor_cheap_fun
+when topic=pastimes a.wealth=poor|destitute
+a : Best things are free. Songs. Gossip. Watching the rich fall in the mud. | Can't afford the tavern. We sing on the step instead. | A night out costs a week's bread.
+b[wealth=rich] #mud : I've never fallen in mud.
+b : True enough. | Better singing anyway. | Then stay in. Sing.
+a@mud : Not yet. I've hopes.
+a : And the rich don't know it. | Echoes better. | That's what I do.
+
+scene e2_pt_rich_bored
+when topic=pastimes a.wealth=rich
+a : I've had a new spinet sent from the south. Nobody plays it. | Hunting party next week. Do come. | Our musicians cost more than the cook.
+b[wealth=poor|destitute] : I'd swap you a week of mine for an hour of that.
+b[wealth=rich] : One does what one can.
+b : Learn it, then. | What are you hunting? | Do they cook?
+a : At my age? | Whatever the beaters find. | They'd burn water.
+
+scene e2_pt_sump_music
+when topic=pastimes here.region=ridgemere a.quarter=sump
+a : There's a squeezebox down the Sump every night now. | Blind Harl plays the whistle for pennies by the drain-mouth. | Sump songs are rude. Best songs there are.
+b[quarter=heights] #go : You go down there? For music?
+b[quarter=sump] : Best nights in the city, and nobody's wearing shoes.
+b : I've heard it. | Is he any good? | Sing me one.
+a@go : The best music in Ridgemere's in its worst streets.
+a : Every night till the Watch comes. | The best in the city, they say. | Not with the priest about.
+
+scene e2_pt_wharf_racing
+when topic=pastimes here.region=ridgemere a.quarter=wharf|docks|harbour_hill
+a : Boat race in the harbour on Restday. Wharf against the docks. | Rowed in the harbour race once. Came last, upside down. | Gulls make better rowers than the dock crew.
+b[job=sailor] : The docks have it. Every year. Stronger backs.
+b : Who's favoured? | Upside down? | Don't say that on the docks.
+a : The wharf, if they stay sober. | Swam the last half. | I'll whisper it.
+
+scene e2_pt_theatre_ridgemere
+when topic=pastimes here.region=ridgemere
+a : The players are doing a comedy in the Commons yard. | Saw a play last night. A king, a ghost and a goose. | A play about Ridgemere's founding. Very long.
+b[quarter=heights] : We had them at the house. Private, of course.
+b[quarter=sump] : Snuck in under the stage. Best seat in the yard.
+b : Is it funny? | The goose was best, I'll bet. | How long?
+a : The goose is. | It was. | Three hours, and that's without the singing.
+
+# ---------------------------------------------------------------- Seasons, weather, places
+
+scene e2_pt_rain_indoors
+when topic=pastimes here.weather=rain|storm
+a : #rain.capitalize# all day. Nothing for it but cards. | Too wet for the green. Knucklebones by the fire, then. | Wet day. The pups are climbing the walls.
+b[stage=young] #puddle : Can we play in the puddles? Can we?
+b : Deal me in. | You'll lose. | Mine too. Send them round.
+a@puddle : Go on, then. Boots off first.
+a : Penny a hand. | I'll take that bet. | Take them yourself.
+
+scene e2_pt_winter_fire
+when topic=pastimes here.season=winter here.time=dusk|night
+a : Fire's lit. Who's telling the first story? | It's #very# #cold# out there. Mulled cider and a song in here. | Nothing to do of a winter night but sing and sleep.
+b[stage=old] : Me. I've been saving one all year.
+b : You. You always do. | Pour me a cup. | And talk.
+a : Fine. Once upon a frost... | Two cups. | And argue.
+
+scene e2_pt_skating
+when topic=pastimes here.season=winter here.region=mountains
+a : Ice is thick on the pond. Skating tomorrow? | Fell flat on my tail on the ice. | The pups have made a slide down the lane.
+b[stage=old] : I'll watch. My skating days ended with a broken hip.
+b : Bone skates or plain paws? | Everyone does, once. | Someone'll break a leg.
+a : Bone. I tied them on myself. | Twice. Three times. | Someone already did. Twice.
+
+scene e2_pt_glasswater_skating
+when topic=pastimes here.region=coldwater here.season=winter
+a : Glasswater's frozen to the island. Half the town's out on it. | Races on the ice at first light. | Someone's set up a stall on the ice. Hot cider.
+b[temper=nervy] : I don't trust it. I heard it groan last night.
+b : Is it safe? | Who's racing? | On the ice? Clever.
+a : Safe as the gods want it. | The fishers. They know the ice. | Clever and cold.
+
+scene e2_pt_frosthollow_sledges
+when topic=pastimes here.region=frosthollow
+a : Sledges on the mine road after the shift. | The pups have taken the ore trays to sledge on. Again. | Snowball fight in the square. Miners against the guards.
+b[job=miner] : Best part of the day, that. Bar none.
+b[job=guard] : And I'll be the one picking pups out of the drifts.
+b : Mind the bend. | The foreman'll skin them. | Who won?
+a : The bend's the best bit. | He went down on one himself. | Miners, by a mile.
+
+scene e2_pt_summer_swim
+when topic=pastimes here.season=summer
+a : Swim in the river after work? | The pups jumped off the bridge all afternoon. | Lying in the long grass. That's my summer.
+b[temper=nervy] : The current's stronger than it looks.
+b : I'll race you across. | Into what depth? | Watch for adders.
+a : I'll beat you. | Deep enough. They lived. | I'll watch for nothing. Too warm.
+
+scene e2_pt_summer_evening
+when topic=pastimes here.season=summer here.time=dusk
+a : Long evenings. Fiddle on the green after supper. | Too warm to sleep. Let's sit out. | They're playing quoits by the inn.
+b : I'll bring the cider. | Till the moths drive us in. | Quoits? Who's winning?
+a : And I'll bring the cups. | Till the stars, then. | The innkeeper. Funny, that.
+
+scene e2_pt_spring_green
+when topic=pastimes here.season=spring
+a : First dance on the green since autumn. | The pups are making daisy chains. | Spring. Everyone's courting again.
+b[stage=old] : Spring makes fools of us all. Lovely fools.
+b : About time. | Bless them. | Everyone always is.
+a : Rain held off, too. | One for my tail, they said. | In spring it shows.
+
+scene e2_pt_autumn_harvest_games
+when topic=pastimes here.season=autumn here.region=farmland
+a : Harvest games next week. Sheaf-tossing. | I won the sheaf-toss once. Over the barn. | The last sheaf's for the dance.
+b[job=farmer] : I've tossed sheaves all month. I'm ready.
+b : Who's favoured? | Over the barn? | And the last cup's for me.
+a : Anyone but me. | Nearly over the barn. | We'll see who's standing.
+
+scene e2_pt_tavern_evening
+when topic=pastimes here.place=tavern
+a : Fiddler's late. We'll have to make our own noise. | Dice or darts? | Somebody's started a song. We're lost now.
+b[job=innkeeper] : Make it something they'll drink to.
+b : I'll make it. | Darts. Dice cost too much. | Join in, then.
+a : Loud enough? | Darts it is. Mind your fingers. | I don't know the words.
+b?[humour=merry] : Nobody does. That's never stopped this tavern.
+
+scene e2_pt_market_juggler
+when topic=pastimes here.place=market
+a : There's a juggler by the fish stalls. Five knives! | A puppet show by the well. The pups are mad for it. | Someone's selling song-sheets. A penny each.
+b[stage=young] : Can I see? Lift me up!
+b[humour=dry] : Everyone's a performer, come market day.
+b : Five? | Is it the one with the king? | Any good ones?
+a : And an apple. | And the crocodile. | One about a goose. Rude.
+
+scene e2_pt_shore_stones
+when topic=pastimes here.place=shore
+a : Skimmed a stone seven times. Seven. | Pups are building forts on the beach. | Nothing like a walk by the water.
+b[stage=young] #pup : Can I come? Can I throw stones?
+b : Sure it wasn't six? | The tide'll take them. | Unless it's raining.
+a@pup : Flat ones only. Mind the gulls.
+a : Seven. I counted out loud. | They know. That's the game. | Even then.
+
+scene e2_pt_field_rest
+when topic=pastimes here.place=field
+a : When the work's done, I'll lie in this grass and not move. | Wrestle for the last apple? | Somebody bring a pipe tomorrow. Music for the work.
+b[job=farmer|herder] : Done? It's never done.
+b : I'll lie beside you. | It's yours. I'm too tired. | Work songs, then.
+a : It's done when I say. | Hah. Easy. | The one about the farmer's boots.
+
+# ---------------------------------------------------------------- Regions
+
+scene e2_pt_larkfield_shearing_race
+when topic=pastimes here.region=larkfield
+a : Shearing race on the downs next month. | The Larkfield fiddlers are the best in the realm. | Morris dancers came over from Southmeadow. Bells on their boots.
+b[job=herder] : I'll shear three while they shear two.
+b[from=southmeadow] : Larkfield thinks a lot of itself. Southmeadow knows better.
+b : Who's in it? | Says Larkfield. | They'll be bells on everything soon.
+a : Every herder on the downs. | Says everyone who's heard them. | Bells on the sheep, next.
+
+scene e2_pt_mirebridge_punts
+when topic=pastimes here.region=mirebridge
+a : Punt races on the Long River, Restday. | Lost my pole in the punt race. Stood there, drifting. | Who'll win the eel-throwing this year?
+b[job=fisher] : Waste of a good Restday, the lot of it. I'll be there.
+b : Who's racing? | Did you get it back? | Whoever's mad enough.
+a : The ferry crews, and anyone with a punt. | A heron was standing on it. | Mad's the whole fen.
+
+scene e2_pt_mirebridge_fen_songs
+when topic=pastimes here.region=fens here.time=dusk|night
+a : Hear them singing out on the fen? | Somebody's playing the reed pipe out on the boards. | Sing me the one about the lantern-lights.
+b[stage=old] : Fen songs. The words are older than anyone knows.
+b[temper=nervy] : I don't like songs out in the dark.
+b : Somebody's coming home late. | Sounds like a heron. | Not that one. Not after dark.
+a : Coming home happy, then. | A heron with a tune. | Fine. The one about the eel.
+
+scene e2_pt_oakhaven_tree
+when topic=pastimes here.region=woods
+a : The pups climb the big oak like squirrels. | Carving in the Warmwood. Everyone does it here. | I found a dancing ring in the woods. Mushrooms in a circle.
+b[job=woodcutter] : The Warmwood's older than all of us. Mind it.
+b[temper=nervy] : The deep wood's not for playing in. Not after dark.
+b : One'll fall. | What do you carve? | Did you step in it?
+a : They never do. | Owls and spoons. | Course not. Mostly not.
+
+scene e2_pt_southmeadow_cider
+when topic=pastimes here.region=southmeadow
+a : Cider and fiddles in the orchard tonight. | Grape-stomping on Restday. Purple to the knees. | The orchard dance went till the cocks crowed.
+b[stage=old] : The orchard dances are the best thing about growing old here.
+b : I'll be there. | Every year. | Every year.
+a : Bring a cup. | And smelling of it a week. | And every year the same sore head.
+
+scene e2_pt_coldwater_lake
+when topic=pastimes here.region=lake here.season=summer|spring
+a : Boats on Glasswater all afternoon. Bliss. | Swam to the island and back. | Night fishing with lanterns on the lake.
+b[temper=nervy] : The water's deep. Deeper than folk think.
+b : Whose boat? | All the way? | Catch anything?
+a : The ferryman's, borrowed. Mostly. | Most of the way. A boat took me the rest. | The moon, in the water.
+
+# ---------------------------------------------------------------- More everyday
+
+scene e2_pt_new_game
+when topic=pastimes
+a : Somebody's brought a new game from the city. Cards with painted beasts. | Learned a card game from a sailor. Nobody else knows it. | There's a game going round with pebbles and a board of holes.
+b[stage=old] : New games. In my day there were three games, and that was plenty.
+b : How's it played? | Teach me. | Ah. I lost my supper at that.
+a : Nobody's sure. That's half the fun. | I'll win, though. | It's a hard game on suppers.
+
+scene e2_pt_sore_loser
+when topic=pastimes pair.band=friends|rivals|family
+a : You sulked for a day when I beat you. | You'll not win twice. | Admit it. I'm the better player.
+b[temper=short] : I didn't sulk. I was tired. Sulkily tired.
+b : I never sulk. | Once was luck. | Never.
+a : A whole day. | Luck's a skill. | Then play me again.
+
+scene e2_pt_a_hobby
+when topic=pastimes pair.band=acquaintances|strangers
+a : What do you do when the work's done? | Have you any pastimes yourself? | Do you play anything? Dice, cards?
+b[job=scholar] : Read. Then read some more.
+b[job=smith] : Sleep. Then work.
+b[stage=young] : Everything!
+b[wealth=rich] : Music. And whatever the household's arranged.
+b : Not much. Sit. Talk. | A bit of carving. | Dice, when I've coin.
+a : Can't beat it. | Nice, that. | Mind the dice.
+
+scene e2_pt_songs_of_home
+when topic=pastimes pair.same_from=yes a.from!=ridgemere here.region=ridgemere
+a : Do you remember the songs from home? | Heard a song from home in the tavern. Nearly cried. | Nobody here dances the way we did at home.
+b[from=frosthollow] : The miners' hymn. I still hum it.
+b[from=larkfield] : The shearing songs. You never forget those.
+b[from=mirebridge] : The fen songs. Every one.
+b[from=southmeadow] : The orchard songs. Nobody here knows a single one.
+b[from=oakhaven] : The woodcutters' calls. Half song, half shout.
+b[from=coldwater] : The boat songs. You row in time or you go round in circles.
+b : Some. | Which one? | Nobody could.
+a : We should sing them, the two of us. | The one about the long road. | We should show them.

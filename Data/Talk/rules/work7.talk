@@ -1,0 +1,1309 @@
+# Work and trade between residents (Docs/Design/62-talk.md, phase 7): chains. One asks after the other's work, or
+# tells their own unasked; the other answers as their trade, their till, their purse and their temper make them; the
+# first answers that in kind (work.reply, which reads how the news was told: pair.mem.w7_tone), and some close it
+# (work.end). Bosses give orders (work.order) and hear pleas for pay or rest (work.plea).
+#
+# Tones a beat leaves for the reply (pair.mem.w7_tone, half an hour): low (bad news), high (good news), tired, busy,
+# idle (slow but not ruinous), plain (nothing much).
+
+## ---------------------------------------------------------------- Asking after the work
+
+rule w7_ask_trade
+when concept=talk.work|talk.smalltalk pair.band=acquaintances|friends other.business=thriving|steady|failing pair.boss=no
+cooldown 1d
+say How's trade? | Selling much? | Shop keeping you? | Is the till singing or sulking? | Busy, are you?
+then other: work.answer
+
+rule w7_ask_trade_close
+when concept=talk.work|talk.smalltalk pair.band=friends|family|spouses other.business=thriving|steady|failing self.warmth=warm
+cooldown 1d
+say And the shop, #pet#? Truly, now. | How's the shop treating you, #pet#? | Tell me straight. How's business?
+then other: work.answer
+
+rule w7_ask_rival
+when concept=talk.work|talk.smalltalk pair.band=rivals other.business=thriving|steady|failing
+cooldown 2d
+say Still open, are you? | Heard your shelves were full. Nobody buying? | Keeping the doors open, I see. Just.
+then other: work.answer
+
+rule w7_ask_workmate
+when concept=talk.work other.working=yes
+cooldown 1d
+say How's your end going? | You nearly done there? | Getting anywhere with it? | How's it looking your side?
+then other: work.answer
+
+rule w7_ask_boss_checks
+when concept=talk.work pair.boss=a other.working=yes self.temper=calm|even
+cooldown 1d
+say How are you getting on? | All going to plan? | Anything you need from me?
+then other: work.answer
+
+rule w7_ask_boss_short
+when concept=talk.work pair.boss=a other.working=yes self.temper=short|nervy
+cooldown 1d
+say Is it done yet? | Why's that not finished? | What have you been doing all morning?
+then other: work.answer
+
+rule w7_ask_after_shift
+when concept=talk.work|talk.smalltalk|talk.day other.shift=after
+cooldown 1d
+say Long day? | Finished for the day, then? | How did the day go? | Knocked off at last?
+then other: work.answer
+
+rule w7_ask_before_shift
+when concept=talk.work|talk.smalltalk other.shift=before
+cooldown 1d
+say Off to it, then? | Ready for the day? | What's waiting for you today?
+then other: work.answer
+
+rule w7_ask_chatty
+when concept=talk.work|talk.smalltalk self.talk=chatty pair.band=acquaintances|friends other.working=yes
+cooldown 2d
+say Now then, what are you at? Tell me everything. | Ooh, what's that you're doing? Is it hard? | Don't let me stop you, but how's the work?
+then other: work.answer
+
+## Broad askings: almost anyone, to almost anyone (few criteria, many words)
+
+rule w7_ask_any
+when concept=talk.work
+cooldown 1d
+say How's the work? | Keeping busy? | Much on today? | How goes it? | Getting on all right?
+then other: work.answer
+
+rule w7_ask_any_day
+when concept=talk.work|talk.day here.time=day
+cooldown 1d
+say Half the day gone already. How's yours? | Got much done? | What's the day thrown at you so far?
+then other: work.answer
+
+rule w7_ask_any_dusk
+when concept=talk.work|talk.day here.time=dusk|night
+cooldown 1d
+say Done for the day? | Was it a long one? | Getting home at last?
+then other: work.answer
+
+rule w7_ask_any_dawn
+when concept=talk.work|talk.day here.time=dawn
+cooldown 1d
+say Up early as ever. Big day? | What's on for today? | You look half asleep. Long day ahead?
+then other: work.answer
+
+rule w7_ask_any_friend
+when concept=talk.work pair.band=friends|family|spouses
+cooldown 1d
+say How's it going, #pet#? Really. | Are they working you hard? | Tell me about your day.
+then other: work.answer
+
+## Same trade, asking shop talk
+
+rule w7_ask_smith
+when concept=talk.work self.job=smith other.job=smith pair.band!=rivals
+cooldown 1d
+say How's your iron behaving? | Fire drawing well your end? | Many orders in?
+then other: work.answer
+
+rule w7_ask_baker
+when concept=talk.work self.job=baker other.job=baker pair.band!=rivals
+cooldown 1d
+say Did your dough rise this morning? Mine sulked. | How's the oven? | What flour are you on now?
+then other: work.answer
+
+rule w7_ask_farmer
+when concept=talk.work self.job=farmer other.job=farmer pair.band!=rivals
+cooldown 1d
+say How's your ground? | Anything coming up your side? | How are the beasts?
+then other: work.answer
+
+rule w7_ask_fisher
+when concept=talk.work self.job=fisher other.job=fisher
+cooldown 1d
+say Fish biting for you? | Any luck this morning? | How were the nets?
+then other: work.answer
+
+rule w7_ask_guard
+when concept=talk.work self.role=guard other.role=guard
+cooldown 1d
+say Quiet on your beat? | Anything doing? | Trouble your way?
+then other: work.answer
+
+rule w7_ask_healer
+when concept=talk.work self.job=healer other.job=healer
+cooldown 1d
+say How are your patients? | Many in today? | Is the cough still going round your end?
+then other: work.answer
+
+rule w7_ask_merchant
+when concept=talk.work self.role=merchant other.role=merchant pair.band!=rivals
+cooldown 1d
+say Moving much? | How's the counting going? | Selling or just standing?
+then other: work.answer
+
+## ---------------------------------------------------------------- Answering about the work (self answers)
+
+rule w7_ans_plain
+when concept=work.answer
+say Steady. | Can't grumble. | Same as ever. | Ticking over. | Oh, you know. #work.capitalize#.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_short
+when concept=work.answer temper=short
+say Busy. Why? | It'd go faster without questions. | Fine. Is that all? | Don't ask.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_merry
+when concept=work.answer humour=merry
+say Oh, wonderful. Nothing's caught fire since breakfast. | Grand! I've only cursed twice. | Splendid. Ask me again in an hour.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_dry
+when concept=work.answer humour=dry
+say Thrilling. I can hardly contain myself. | Much as yesterday. And the day before that. | It's #work#. It does what it does.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_guarded
+when concept=work.answer honesty=guarded
+say Well enough. | Can't say much. You know how it is. | It goes. | Why do you ask?
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_ambitious
+when concept=work.answer drive=ambitious
+say Well, and it'll be better. I've plans. | Good. Not good enough. Not yet. | Growing. You'll see.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_content
+when concept=work.answer drive=content
+say Suits me fine. Always has. | I've no complaints. The work's honest. | Same as my father had it. That's no bad thing.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_restless
+when concept=work.answer drive=restless
+say Same as ever. That's the trouble. | I could do this in my sleep. Some days I do. | Bored stiff, if you want the truth.
+remember pair: w7_tone=idle 30m
+then other: work.reply
+
+rule w7_ans_quiet
+when concept=work.answer talk=quiet
+say Fine. | Mm. Good. | Going.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_chatty
+when concept=work.answer talk=chatty
+say Oh, where to start! First the cart was late, then the cart was early, then... | Busy, busy. Did I tell you about the new stool? It wobbles. | Good! Mostly. You'd not believe the morning I've had.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+## The till
+
+rule w7_ans_steady
+when concept=work.answer business=steady
+say Steady. Pays the rent. | Not rich, not ruined. | Regulars keep me going. | Enough coming in, just.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_failing
+when concept=work.answer business=failing
+priority 1
+say Badly. Nobody's buying. | Three days without a sale. Three. | I'll be shut by the month's end, the way it's going. | I count the till and it doesn't take long.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_thriving
+when concept=work.answer business=thriving
+priority 1
+say Run off my paws! | Can't keep the shelves full. | Best month I've had. Touch wood. | Turning folk away, nearly.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_failing_proud
+when concept=work.answer business=failing temper=short warmth=cold|reserved
+priority 1
+say Fine. It's fine. | Never better. | It'll pick up. It always picks up. | Mind your own till.
+remember pair: w7_tone=proud 30m
+then other: work.reply
+
+rule w7_ans_thriving_guarded
+when concept=work.answer business=thriving honesty=guarded|sly
+priority 1
+say Oh, slow. Terribly slow. | Mustn't grumble. | Getting by, getting by.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_owes
+when concept=work.answer owes=yes business=steady|failing
+priority 1
+say I'm working for the lender, not for me. | Everything I take goes out the door again. Debts. | I'd be fine if I didn't owe half the street.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_destitute
+when concept=work.answer wealth=destitute
+priority 2
+say I'm working and still can't eat. Tell me how that's right. | There isn't enough work in the world to dig me out. | Every #money# is gone before I've earned it.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_tired
+when concept=work.answer tired=yes working=yes
+priority 1
+say I'm asleep on my paws. | #tired.capitalize#. Ask me after I've slept. | Long. Very long. And not done yet. | I could lie down on this floor.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_ans_tired_after
+when concept=work.answer tired=yes shift=after
+priority 1
+say Done. Done in, too. | I've nothing left. Not a whisker. | Over. Thank the gods it's over.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_ans_before
+when concept=work.answer shift=before
+say Not started. Don't remind me. | Off to it now. Wish me luck. | Ask me tonight.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_after
+when concept=work.answer shift=after
+say Done for the day, and glad of it. | Finished. Feet up soon. | It's behind me now. That's the best part.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_day_off
+when concept=work.answer shift=day_off
+say Not today! Day off. Don't spoil it. | I'm not thinking about it. Not one thought. | Ask me tomorrow. Today I'm a wolf of leisure.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_hurt
+when concept=work.answer injured=light working=yes
+priority 1
+say Working one-pawed today. Took a knock. | Slower than usual. The arm. | Fine, if I don't lift anything. Which is the whole job.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+## The day's kind
+
+rule w7_ans_market_merchant
+when concept=work.answer here.day=market role=merchant
+priority 1
+say Market day! Don't ask me now. | Haven't sat since dawn. | Busy. It's market day. Everyone wants everything.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_market_food
+when concept=work.answer here.day=market job=baker|cook|brewer|innkeeper
+priority 1
+say Market day. Cleared out by noon, I'll be. | Feeding half the county today. | Every stallholder wants feeding and every farmer wants a drink.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_restday
+when concept=work.answer here.day=rest working=yes
+priority 1
+say Working Restday. Again. | Restday, they call it. Not for me. | Somebody has to.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_festival
+when concept=work.answer here.day=festival working=yes
+priority 1
+say Working through the festival. Can you hear them out there? | Everyone's dancing but me. | Feast days are work days, for some of us.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+## The asker is the answerer's boss (work.answer comes second in a talk: the asker is a)
+
+rule w7_ans_to_boss
+when concept=work.answer pair.boss=a working=yes
+say Getting there. | Nearly done, I promise. | On it. Right on it. | Going well. Honest.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_to_boss_tired
+when concept=work.answer pair.boss=a working=yes tired=yes
+priority 1
+say Fine! Fine. Not tired at all. | Wide awake. Never better. *yawns* | Going well. Why, do I look tired?
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_ans_to_boss_short
+when concept=work.answer pair.boss=a working=yes temper=short
+say It'll be done when it's done. | Faster if you'd stop asking. | I've two paws. Not four.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_to_boss_ambitious
+when concept=work.answer pair.boss=a working=yes drive=ambitious
+say Done, and I've started the next. | Finished early. Give me more. | Done. Have you thought about what I said? More hours?
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_apprentice
+when concept=work.answer apprentice=yes
+say Learning. Slowly. | I've ruined less than yesterday. | My master says I'm improving. Then sighs.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_master
+when concept=work.answer master=yes
+say Good, but the apprentice will be the death of me. | Teaching takes twice as long as doing. | Well. My pupil's coming on.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_house
+when concept=work.answer self.house
+say The House keeps us busy. Walls don't build themselves. | Steady. The House always has work. Pays when it pays. | Can't complain. It's House work. Regular.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_greatly
+when concept=work.answer self.house=house_greatly working=yes
+say Brick, lime, brick, lime. Greatly builds and I carry. | They're putting up another wall for House Greatly. My shoulders know. | Greatly's paint in my fur again. Never comes out.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_fell
+when concept=work.answer self.house=house_fell working=yes
+say Sawdust in everything. House Fell's got orders stacked to the roof. | Planks, staves, wheels. Fell wants all of it yesterday. | Timber's wet. Fell says cut it anyway.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_grayrock
+when concept=work.answer self.house=house_grayrock working=yes
+say Grayrock's furnaces don't sleep. Nor do we, much. | Iron in, iron out. Grayrock counts every bar. | Hot, loud, and Grayrock's steward watching.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_mossgrave
+when concept=work.answer self.house=house_mossgrave working=yes
+say Dye to the elbows. Mossgrave blue, this week. | The tannery stinks and Mossgrave pays. That's the deal. | Wool, wool and more wool. Mossgrave's never short of sheep.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+## By trade (self answers)
+
+rule w7_ans_smith
+when concept=work.answer job=smith
+say Iron's poor this month. Brittle. | Hinges, nails, hinges. Never a sword. | Burnt the same finger three times. Otherwise good.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_baker
+when concept=work.answer job=baker
+say Up since the third hour. | Dough sulked this morning, but it came round. | Flour in my ears, flour in my fur. Same as ever.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_brewer
+when concept=work.answer job=brewer
+say The new batch is working. You can smell it from the street. | Barrels to scrub. Always barrels to scrub. | Good brew this time. Don't tell anyone.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_innkeeper
+when concept=work.answer job=innkeeper
+say Full last night, and not one of them paid on time. | Rooms let, stools broken. A good week. | Quiet. Too quiet. The cellar's full and the room's empty.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_guard
+when concept=work.answer role=guard
+say Quiet. I like quiet. | Two drunks and a lost goat. | Boots wearing through. Otherwise fine.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_soldier
+when concept=work.answer job=soldier
+say Drill, polish, drill. | They march us up the hill and march us down again. | Waiting. Soldiering's mostly waiting.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_farmer
+when concept=work.answer job=farmer
+say The ground's good, if the sky behaves. | Weeds grow faster than wages. | Beasts are fed. That's a day.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_farmer_spring
+when concept=work.answer job=farmer here.season=spring
+priority 1
+say Sowing. My back's in two pieces. | Seed's in. Now we wait and pray. | Ploughing till dark, every day.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_farmer_summer
+when concept=work.answer job=farmer here.season=summer
+priority 1
+say Haymaking. Every dry day counts. | Hoeing. Endless hoeing. | Watching the sky and the barley, both.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_farmer_autumn
+when concept=work.answer job=farmer here.season=autumn
+priority 1
+say Harvest. Don't talk to me till it's in. | Every paw in the field and still not enough. | Good yield this year. Or it will be, if the rain holds off.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_farmer_winter
+when concept=work.answer job=farmer here.season=winter
+priority 1
+say Mending fences and staring at the snow. | Winter. Nothing to do but feed the beasts and worry. | Sharpening everything I own, twice.
+remember pair: w7_tone=idle 30m
+then other: work.reply
+
+rule w7_ans_herder
+when concept=work.answer job=herder
+say Flock's well. One wanders, but there's always one. | Counted them twice. Same number both times. | Ewes are fat and the dogs are lazy.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_herder_spring
+when concept=work.answer job=herder here.season=spring
+priority 1
+say Lambing. I've not slept in a week. | Twins in the night, both living. | Up to my elbows in ewe. Don't shake my paw.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_ans_herder_winter
+when concept=work.answer job=herder here.season=winter
+priority 1
+say Hay's going faster than I'd like. | Brought them all down off the hill before the snow. | Breaking ice on the troughs every morning.
+remember pair: w7_tone=idle 30m
+then other: work.reply
+
+rule w7_ans_fisher
+when concept=work.answer job=fisher
+say Nets came up half full. Half empty, my wife says. | Fish are deep today. Sulking, like the rest of us. | Good catch. Smell my paws if you don't believe me.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_fisher_storm
+when concept=work.answer job=fisher here.weather=storm|fog
+priority 1
+say No boats out in this. Not mine, anyway. | Sat on the shore mending nets and watching the water. | The water's angry. I'll not argue with it.
+remember pair: w7_tone=idle 30m
+then other: work.reply
+
+rule w7_ans_miner
+when concept=work.answer job=miner
+say Seam's thinning. | Dark and wet and the lamp keeps guttering. Normal, then. | Brought up good ore today. My back paid for it.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_healer
+when concept=work.answer job=healer
+say Coughs, cuts and one broken tail. | Busy. Everyone's ill at once, as usual. | Lost none today. That's a good day.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_healer_winter
+when concept=work.answer job=healer here.season=winter
+priority 1
+say Coughs. Every chest in town is rattling. | Chilblains and fevers, door to door. | I've run out of willow bark twice this week.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_priest
+when concept=work.answer job=priest
+say The chapel's full on Restday and empty the rest. | Two weddings to plan and one burial. | The roof leaks on the altar. The gods are testing me.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_scholar
+when concept=work.answer job=scholar
+say I've read the same page eleven times. | Ink's run out and so has my patience. | I found an error in a book two hundred years old. Wonderful day.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_laborer
+when concept=work.answer job=laborer
+say Carried things from there to here. Tomorrow, from here to there. | Shoulders aching. Pay's coming, they say. | Work's work. It's #money#.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_carter
+when concept=work.answer job=carter
+say Road's rutted to the axle. | Mule's in a mood, I'm in a mood. | Two loads today and a wheel that squeals.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_crafter
+when concept=work.answer job=crafter
+say Three orders, and every one wanted yesterday. | Steady paws, steady work. | Spoiled a piece this morning. Started again.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_servant
+when concept=work.answer job=servant
+say The mistress has changed her mind about the curtains. Again. | Fetch, carry, polish, smile. | Silver's polished. The family's not.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_servant_heights
+when concept=work.answer job=servant quarter=heights
+priority 1
+say Three dinners this week. Thirty guests. One of me. | They've guests from the other Houses. Everything has to shine. | The young master's back from the south. Heaven help us.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_ans_cook
+when concept=work.answer job=cook
+say Burnt the onions, saved the stew. | The pot's been on since dawn. | Everyone wants feeding and nobody wants to pay.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_woodcutter
+when concept=work.answer job=woodcutter
+say Felled two and split one. | Axe needs grinding. So do I. | The wood's wet and so am I.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_official
+when concept=work.answer job=official
+say Paper. Mountains of it. | Three petitions, two complaints and a lost seal. | Every wolf in town wants a stamp on something.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_sailor
+when concept=work.answer job=sailor
+say Ashore till the cargo's loaded. Bored stiff. | Rigging to mend, decks to scrub. | Good wind coming. We'll be off soon.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_beggar
+when concept=work.answer job=beggar
+say Three pennies and a crust. Good day, for me. | Folk walk faster when they see me. | It's a trade like any other. Worse pay.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_merchant
+when concept=work.answer role=merchant
+say Buying cheap, selling dear, or trying to. | The counting's the hard part. | Customers come in waves. Today's a dry tide.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_noble
+when concept=work.answer job=noble
+say Work? I sign things. Then I sign other things. | The steward does the work. I do the worrying. | Petitions, accounts, and a cousin who wants money.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_ans_young
+when concept=work.answer stage=young
+say I fed the hens! All of them! | I carried a bucket all the way without spilling. Mostly. | I'm helping. Mum says I'm helping.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+## A trade and its till: the specific news
+
+rule w7_ans_smith_failing
+when concept=work.answer job=smith business=failing
+priority 1
+say Forge is cold half the day. No orders. | Nobody's mending anything. They're making do. | I've more hinges on the shelf than doors in town.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_smith_thriving
+when concept=work.answer job=smith business=thriving
+priority 1
+say Orders till the month's end. Can't hammer fast enough. | Hinges, blades, shoes. The anvil hasn't been quiet in days. | Good iron and good custom. Mark the day.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_baker_failing
+when concept=work.answer job=baker business=failing
+priority 1
+say Yesterday's loaves are today's loaves. And tomorrow's. | Baked forty, sold twelve. | They're buying from the other one. Cheaper, they say.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_baker_thriving
+when concept=work.answer job=baker business=thriving
+priority 1
+say Sold out by mid-morning. Every day this week. | They queue in the dark for my loaves now. | Another oven, that's what I need.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_brewer_failing
+when concept=work.answer job=brewer business=failing
+priority 1
+say Barrels full, purse empty. | The inns are buying elsewhere. | I'll be drinking my own stock at this rate. All of it.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_brewer_thriving
+when concept=work.answer job=brewer business=thriving
+priority 1
+say Every barrel spoken for before it's tapped. | The town's thirsty and I'm the well. | Can't brew it fast enough. Lovely problem.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_inn_failing
+when concept=work.answer job=innkeeper business=failing
+priority 1
+say Empty rooms. Empty stools. Full cellar. | One guest all week, and he left without paying. | The fire's lit for nobody.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_inn_thriving
+when concept=work.answer job=innkeeper business=thriving
+priority 1
+say Every bed taken. I've had them sleeping on the benches. | Can't pour fast enough. | Full house every night. My feet hate me.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_merchant_failing
+when concept=work.answer role=merchant business=failing
+priority 1
+say Stock's gathering dust. I could sell the dust. | Folk look, folk touch, folk leave. | I've cut my prices to the bone and still nothing.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_merchant_thriving
+when concept=work.answer role=merchant business=thriving
+priority 1
+say Sold out of half the stock. Waiting on the carts. | Couldn't be better. Don't tell my rivals. | I'm thinking of a second stall.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_ans_crafter_failing
+when concept=work.answer job=crafter business=failing
+priority 1
+say Made it beautiful, and nobody wants beautiful. | No orders. I'm making things for the shelf now. | Folk mend their old ones instead.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_ans_cook_thriving
+when concept=work.answer job=cook|innkeeper business=thriving here.day=market|festival
+priority 1
+say The pot's emptied twice already. | Fed two hundred if I fed one. | Out of bread, out of stew, still they come.
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+## ---------------------------------------------------------------- Replying to what the other said of their work (self replies)
+
+rule w7_rep_plain
+when concept=work.reply pair.mem.w7_tone=plain
+say Same as ever, then. | Aye, it goes. | Well, that's something. | #agree#. | That's #work# for you.
+
+rule w7_rep_low
+when concept=work.reply pair.mem.w7_tone=low
+say I'm sorry to hear it. | That's hard. | It'll turn. These things turn. | #oath#. That's no good.
+
+rule w7_rep_high
+when concept=work.reply pair.mem.w7_tone=high
+say Good for you. | Glad to hear it. | Long may it last. | Well! Somebody's doing well.
+
+rule w7_rep_tired
+when concept=work.reply pair.mem.w7_tone=tired
+say Get some sleep. | You look it. | Go home. Lie down. | Don't fall asleep standing.
+
+rule w7_rep_busy
+when concept=work.reply pair.mem.w7_tone=busy
+say I'll let you get on. | Don't let me keep you. | Better busy than idle. | Rather you than me.
+
+rule w7_rep_idle
+when concept=work.reply pair.mem.w7_tone=idle
+say It'll come. | Quiet days are rest days. | Enjoy it while it lasts. | Put your feet up, then.
+
+rule w7_rep_proud
+when concept=work.reply pair.mem.w7_tone=proud
+say If you say so. | That's not what I heard. | Course it is. | Right you are.
+
+rule w7_rep_proud_warm
+when concept=work.reply pair.mem.w7_tone=proud warmth=warm pair.band=friends|family|spouses
+say You can tell me, you know. I'll not tell a soul. | #pet.capitalize#. I've seen the shelves. | Say it as it is. It's only me.
+then other: work.end
+
+## Bad news, answered as the replier is
+
+rule w7_rep_low_warm
+when concept=work.reply pair.mem.w7_tone=low warmth=warm
+say If it comes to it, you come to me first. You hear? | Oh, #pet#. It'll turn. I'll send folk your way. | Don't carry it alone. Come by tonight.
+then other: work.end
+
+rule w7_rep_low_cold
+when concept=work.reply pair.mem.w7_tone=low warmth=cold
+say Hm. Well, that's trade. | Some do, some don't. | Then work harder.
+then other: work.end
+
+rule w7_rep_low_rival
+when concept=work.reply pair.mem.w7_tone=low pair.band=rivals
+say Is it? Shame. | Oh dear. Oh dear, oh dear. | I'd offer to help, but you'd only refuse.
+then other: work.end
+
+rule w7_rep_low_thriving
+when concept=work.reply pair.mem.w7_tone=low business=thriving
+say Mine's doing well, if that helps. It doesn't, does it. | Odd. My till's never been fuller. | Funny, I can't keep up. Want my overflow?
+
+rule w7_rep_low_failing
+when concept=work.reply pair.mem.w7_tone=low business=failing
+say Mine too. It's the whole town. | You and me both. Nobody's spending. | Don't. I could have said the same word for word.
+
+rule w7_rep_low_poor
+when concept=work.reply pair.mem.w7_tone=low wealth=poor|destitute
+say Join the club. Plenty of room. | We're all scraping, #address#. | Welcome to my life.
+
+rule w7_rep_low_rich
+when concept=work.reply pair.mem.w7_tone=low wealth=rich warmth=warm
+say If it's a matter of #money#, come and see me. Quietly. | I could put something your way. No, I mean it. | Let me buy a few things. It's no charity, I need them.
+then other: work.end
+
+rule w7_rep_low_devout
+when concept=work.reply pair.mem.w7_tone=low piety=devout
+say I'll say a word for you on Restday. | The gods see honest work. They do. | Light a candle. It can't hurt.
+
+rule w7_rep_low_dry
+when concept=work.reply pair.mem.w7_tone=low humour=dry
+say Could be worse. You could be me. | Well, the rats will be pleased. | At least it's quiet.
+
+rule w7_rep_low_merry
+when concept=work.reply pair.mem.w7_tone=low humour=merry
+say Chin up! Worse things happen at sea. I've seen them. | Come on, I'll buy you a cup. A small one. | You'll laugh about it in a year. I'll laugh now, to save time.
+then other: work.end
+
+rule w7_rep_low_ambitious
+when concept=work.reply pair.mem.w7_tone=low drive=ambitious
+say Then change something. Sell something else. | Move the stall. Lower the price. Shout louder. | Sitting still is how shops die.
+then other: work.end
+
+rule w7_rep_low_boss
+when concept=work.reply pair.mem.w7_tone=low pair.boss=b
+say Does that mean... are my wages safe? | Should I be looking for other work? | We'll pull through. Won't we?
+then other: work.plea
+
+rule w7_rep_low_old
+when concept=work.reply pair.mem.w7_tone=low stage=old
+say I've seen worse years. You'll come through. | It was the same when I was your age. It passed. | Lean years and fat years. Hold on.
+
+## Good news, answered as the replier is
+
+rule w7_rep_high_poor
+when concept=work.reply pair.mem.w7_tone=high wealth=poor|destitute
+say Must be nice. | Good for some. | Spare a thought for the rest of us.
+
+rule w7_rep_high_failing
+when concept=work.reply pair.mem.w7_tone=high business=failing
+say While mine starves. Lovely. | Glad someone's selling. | Teach me, then. Go on.
+
+rule w7_rep_high_rival
+when concept=work.reply pair.mem.w7_tone=high pair.band=rivals
+say Luck. It won't last. | Funny. I heard different. | Enjoy it. Fashions change.
+then other: work.end
+
+rule w7_rep_high_sly
+when concept=work.reply pair.mem.w7_tone=high honesty=sly
+say Then you can buy the ale. | Lend us a penny, then. | Remember your friends, eh? Me, specifically.
+then other: work.end
+
+rule w7_rep_high_ambitious
+when concept=work.reply pair.mem.w7_tone=high drive=ambitious
+say Tell me how. I mean it. | What's the secret? Prices? The spot? | Lucky. I'll make my own.
+then other: work.end
+
+rule w7_rep_high_warm
+when concept=work.reply pair.mem.w7_tone=high warmth=warm
+say Oh, that's lovely. You've earned it. | That does my heart good. | Didn't I tell you it'd come right?
+
+rule w7_rep_high_devout
+when concept=work.reply pair.mem.w7_tone=high piety=devout
+say Thank the gods for it. And tithe, mind. | Blessings come to honest paws. | Don't forget the chapel box.
+
+rule w7_rep_high_boss
+when concept=work.reply pair.mem.w7_tone=high pair.boss=b
+say Then a little extra in my #wages# wouldn't hurt? | Good. So you'll be wanting more help? | And who sold most of it, I wonder?
+then other: work.plea
+
+## Tired, busy, idle: answered as the replier is
+
+rule w7_rep_tired_old
+when concept=work.reply pair.mem.w7_tone=tired stage=old
+say Wait till you're my age. | You're young. You'll bounce. | I remember being that tired. Now I'm just old.
+
+rule w7_rep_tired_tired
+when concept=work.reply pair.mem.w7_tone=tired tired=yes
+say You and me both. | Don't talk to me about tired. | We'll sleep standing, like horses.
+
+rule w7_rep_tired_merry
+when concept=work.reply pair.mem.w7_tone=tired humour=merry
+say Sleep's for the rich and the dead. | I'll prop you up with a broom. | Go and lie in the cart. Nobody'll notice.
+
+rule w7_rep_tired_warm
+when concept=work.reply pair.mem.w7_tone=tired warmth=warm pair.boss=no
+say Sit. Just for a moment. I'll not tell. | Here, lean on the wall. | Go to #bed# early tonight. Promise me.
+then other: work.end
+
+rule w7_rep_tired_boss_warm
+when concept=work.reply pair.mem.w7_tone=tired pair.boss=a warmth=warm
+say Then finish that and get home. I'll manage. | Go on, knock off early. Just today. | Sit down a moment. The work will wait.
+then other: work.end
+
+rule w7_rep_tired_boss_cold
+when concept=work.reply pair.mem.w7_tone=tired pair.boss=a warmth=cold|reserved
+say Tired? There's an hour yet. | I don't pay you to yawn. | Sleep on your own time.
+then other: work.end
+
+rule w7_rep_busy_merchant
+when concept=work.reply pair.mem.w7_tone=busy role=merchant
+say Lucky. My side's dead. | Send the overflow my way. | Same here. Don't stop to talk.
+
+rule w7_rep_busy_failing
+when concept=work.reply pair.mem.w7_tone=busy business=failing
+priority 1
+say Busy? Mine's dead as a doornail. | Send a few my way. Please. | I'd give a paw for busy.
+
+rule w7_rep_busy_rival
+when concept=work.reply pair.mem.w7_tone=busy pair.band=rivals
+priority 1
+say Busy losing money, I expect. | Enjoy it. They'll be back with me by Restday. | Folk try everything once.
+
+rule w7_rep_busy_idle_self
+when concept=work.reply pair.mem.w7_tone=busy shift=day_off|after
+say And here's me with my feet up. Sorry. | I'd help, but I'm enjoying watching. | Busy's good. Busy pays.
+
+rule w7_rep_idle_restless
+when concept=work.reply pair.mem.w7_tone=idle drive=restless
+say Quiet's worse than busy. I'd go mad. | I'd be climbing the walls. | Then do something else. I would.
+
+rule w7_rep_plain_chatty
+when concept=work.reply pair.mem.w7_tone=plain talk=chatty
+say Oh, I know just what you mean. Mine's the same. Let me tell you... | Isn't it always! My cousin says the same. | Same here, same here. Did you hear about the miller?
+
+rule w7_rep_plain_dry
+when concept=work.reply pair.mem.w7_tone=plain humour=dry
+say Thrilling news. | Stop, I can't take the excitement. | I'll write it in my book of wonders.
+
+rule w7_rep_plain_boss
+when concept=work.reply pair.mem.w7_tone=plain pair.boss=a
+say Good. Keep at it. | Right. Shout if you need me. | Mind you do it properly.
+then other: work.end
+
+rule w7_rep_plain_young
+when concept=work.reply pair.mem.w7_tone=plain stage=young
+say When I'm big I'm going to do that too. | Can I help? I'm good at helping. | Is it hard? It looks hard.
+
+## ---------------------------------------------------------------- Closing (self speaks the last word)
+
+rule w7_end_plain
+when concept=work.end
+say Aye. Well. | Right. | Back to it, then. | #saying#. | We'll see.
+
+rule w7_end_working
+when concept=work.end working=yes shift=during
+say Right. Back to it. | Better get on. | This won't do itself. | I'll get on, then.
+
+rule w7_end_thanks_warm
+when concept=work.end warmth=warm
+say #thanks#. Really. | You're good to me. | I'll remember that.
+
+rule w7_end_short
+when concept=work.end temper=short
+say Hmph. | We'll see. | If you say so.
+
+rule w7_end_merry
+when concept=work.end humour=merry
+say Ha! Go on with you. | You're a tonic, you are. | I'll hold you to that, mind.
+
+rule w7_end_tired
+when concept=work.end tired=yes
+say Mm. Bed. Soon. | If I live that long. | Yes. Right. *yawns*
+
+rule w7_end_proud
+when concept=work.end business=failing honesty=guarded|frank warmth=cold|reserved
+say I don't need help. I'll manage. | It'll come right on its own. | Keep your pity.
+
+rule w7_end_dusk
+when concept=work.end here.time=dusk shift=during|after
+say Nearly lamp-lighting. Nearly home. | Not long now. | One more hour. One.
+
+## ---------------------------------------------------------------- Telling, unasked (self opens with their own news)
+
+rule w7_tell_failing
+when concept=talk.work|talk.smalltalk business=failing pair.band=friends|family|spouses
+cooldown 12h
+say I've to tell someone. The shop's going under. | I counted the till twice this morning. It didn't help. | If nothing changes, I'm shut by the month's end.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_thriving
+when concept=talk.work|talk.smalltalk business=thriving pair.band=friends|family|spouses|acquaintances
+cooldown 2d
+say Sold out again. Third day running. | I've had to turn folk away. Turn them away! | Best week the shop's ever had.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_tell_boast_rival
+when concept=talk.work|talk.smalltalk business=thriving pair.band=rivals
+cooldown 2d
+say Queue outside my door again this morning. Did you see? | Funny how folk know quality when they taste it. | I may have to hire. Business is that good.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_tell_tired
+when concept=talk.work tired=yes working=yes
+cooldown 1d
+say I could sleep on this bench. | If I sit down, I'll not get up. | My eyes keep closing on their own.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_tell_restday
+when concept=talk.work|talk.day here.day=rest working=yes
+cooldown 1d
+say Restday, and here we are. | Everyone at chapel but us. | I'll rest when I'm dead, apparently.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_market_rush
+when concept=talk.work here.day=market role=merchant other.role=merchant
+cooldown 1d
+say Market day and I've three paws too few. | I've sold more by noon than all last week. | Who are all these folk? Where do they come from?
+remember pair: w7_tone=busy 30m
+then other: work.reply
+
+rule w7_tell_owes
+when concept=talk.work|talk.smalltalk owes=yes pair.band=friends|family|spouses
+cooldown 12h
+say Every #money# I make goes to the lender. Every one. | I owe more than the shop's worth. Don't tell anyone. | I lie awake doing sums.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_apprentice_grumble
+when concept=talk.work|talk.smalltalk apprentice=yes pair.boss=no
+cooldown 1d
+say My master had me sweep the yard three times. Three. | Five years of this before I'm my own wolf. | I've learnt more from watching than from being told.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_master_grumble
+when concept=talk.work|talk.smalltalk master=yes pair.band!=apprentice
+cooldown 1d
+say My apprentice dropped a whole tray. A whole tray. | I was that clumsy once. I'm sure I wasn't. | Teaching's harder than the trade.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_ambitious
+when concept=talk.work|talk.smalltalk drive=ambitious business=thriving|steady pair.band=friends|acquaintances
+cooldown 2d
+say I'm going to buy the shop next door. You watch. | One stall's a living. Two's a business. | Five years from now, my name over a proper door.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_tell_restless
+when concept=talk.work drive=restless working=yes
+cooldown 2d
+say I've done this same thing every day for six years. | Do you ever think of just walking out the gate? | One day I'll leave all this and go to sea.
+remember pair: w7_tone=idle 30m
+then other: work.reply
+
+rule w7_tell_content
+when concept=talk.work drive=content working=yes
+cooldown 2d
+say Good honest work, this. I'd not swap it. | My father did this, and his. Suits me. | There's a rhythm to it. I like the rhythm.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_poor_wages
+when concept=talk.work|talk.smalltalk wealth=poor|destitute working=yes
+cooldown 1d
+say Worked all week and I've four pennies to show. | The #wages# don't cover the rent. Not near. | Working and still hungry. How's that right?
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_old_hands
+when concept=talk.work stage=old working=yes
+cooldown 2d
+say My paws aren't what they were. The work's the same. | Forty years at this. My knees know every one. | The young ones do it faster. Not better. Faster.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_tell_young_hand
+when concept=talk.work stage=adolescent working=yes other.stage=adult|old
+cooldown 2d
+say Is it always this hard? | They gave me the worst job again. Because I'm new. | I did it right first time today! Nobody saw.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_hurt
+when concept=talk.work injured=light working=yes
+cooldown 12h
+say Caught my paw in it this morning. Still throbbing. | Working with a #hurt# shoulder. Don't laugh. | Pulled something lifting. Pulled everything, maybe.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_dusk
+when concept=talk.work here.time=dusk working=yes shift=during
+cooldown 1d
+say Light's going. Can't see what I'm doing. | Almost lamp-lighting. Almost free. | Another hour and I'm done. One more.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_tell_dawn
+when concept=talk.work here.time=dawn working=yes
+cooldown 1d
+say Too early for this. Far too early. | Sun's not up and nor am I, properly. | First one in again. Nobody else wants dawn.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_tell_rain_outdoor
+when concept=talk.work here.weather=rain|storm job=farmer|laborer|woodcutter|herder|carter|fisher
+cooldown 1d
+say Soaked to the skin and the work's not half done. | My fur's never going to dry. | This #rain# gets in everywhere. Everywhere.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_snow_outdoor
+when concept=talk.work here.weather=snow job=farmer|laborer|woodcutter|herder|carter|guard
+cooldown 1d
+say Can't feel my paws. | Snow in my boots, snow in my ears. | Everything takes twice as long in this.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_heat_forge
+when concept=talk.work here.season=summer here.weather=clear job=smith|baker|cook|brewer
+cooldown 1d
+say Summer and a fire all day. I'm cooked. | My tongue's out like a dog's. | Who wants hot work in this? Me, apparently.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+rule w7_tell_comfortable_steady
+when concept=talk.work business=steady pair.band=friends|acquaintances
+cooldown 2d
+say Steady week. I'll take steady. | Nothing grand, nothing awful. Paid the rent. | Regulars came, regulars paid. That's a good week.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_rich_bored
+when concept=talk.work|talk.smalltalk wealth=rich business=thriving|steady
+cooldown 2d
+say Honestly, I could stop. I just don't know what I'd do. | The ledgers keep me busier than the trade now. | I've hired another pair of paws. Strange, being the one who pays.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+## Broad tellings: almost anyone (few criteria)
+
+rule w7_tell_any_plain
+when concept=talk.work
+cooldown 1d
+say Same old, same old. | Another day, another #money#. Well, half a one. | I swear the work grows when I'm not looking. | Thought I'd finish early. Thought wrong.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_any_good_day
+when concept=talk.work
+cooldown 2d
+say Good day today. Everything went right, for once. | Do you know, I think I did good work today. | Not one thing broke. Not one. I'm suspicious.
+remember pair: w7_tone=high 30m
+then other: work.reply
+
+rule w7_tell_any_bad_day
+when concept=talk.work
+cooldown 2d
+say Everything I touched today went wrong. | One of those days. You know the sort. | If the morning's anything to go by, I should go home now.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_any_tools
+when concept=talk.work stage=adult|old
+cooldown 2d
+say Broke my best tool this morning. Twenty years I had it. | Someone's moved my things again. Nobody admits it. | New tool. Stiff as a board. It'll learn.
+remember pair: w7_tone=low 30m
+then other: work.reply
+
+rule w7_tell_any_customer
+when concept=talk.work stage=adult|old
+cooldown 2d
+say Had a customer today who wanted it cheaper, quicker and better. Pick two, I said. | Somebody paid me in buttons. Buttons! | A pup came in and asked if I was rich. I laughed for an hour.
+remember pair: w7_tone=plain 30m
+then other: work.reply
+
+rule w7_tell_any_weekend
+when concept=talk.work here.day=work
+cooldown 2d
+say How many days to Restday? Don't tell me. I'll cry. | I'm counting the hours to Restday. | Restday can't come soon enough.
+remember pair: w7_tone=tired 30m
+then other: work.reply
+
+## ---------------------------------------------------------------- The boss and the worker
+
+rule w7_boss_order
+when concept=talk.work pair.boss=a other.working=yes self.temper=calm|even
+cooldown 1d
+say When you're done there, the yard wants sweeping. | Leave that. I need you on the front today. | Take your time with it. Do it right.
+then other: work.order
+
+rule w7_boss_order_short
+when concept=talk.work pair.boss=a other.working=yes self.temper=short|nervy
+cooldown 1d
+say Faster. We're behind. | Not like that. Like I showed you. | I said before noon. It's past noon.
+then other: work.order
+
+rule w7_boss_order_market
+when concept=talk.work pair.boss=a here.day=market self.role=merchant
+cooldown 1d
+say Market day. Smile at everyone. Even the ones who don't buy. | Watch the front. Watch the pockets. | Stack them high. Folk buy what looks plenty.
+then other: work.order
+
+rule w7_boss_order_failing
+when concept=talk.work pair.boss=a self.business=failing
+cooldown 1d
+say Mind the waste. Every scrap counts now. | We'll have to tighten belts a while. | Don't light the second lamp. We can't spare it.
+then other: work.plea
+
+rule w7_boss_order_thriving
+when concept=talk.work pair.boss=a self.business=thriving self.warmth=warm|reserved
+cooldown 2d
+say Good work this week. I mean that. | We're doing well. You've helped. | Keep this up and we'll talk about your #wages#.
+then other: work.order
+
+rule w7_boss_praise_warm
+when concept=talk.work pair.boss=a self.warmth=warm other.working=yes
+cooldown 2d
+say That's good work. Neat. | You've a knack for that. | I'd not have done it better myself.
+then other: work.order
+
+rule w7_boss_scold_cold
+when concept=talk.work pair.boss=a self.warmth=cold other.tired=yes
+cooldown 1d
+say You're dragging your tail. | Are you working or dreaming? | If you're tired, there's others who'd want your place.
+then other: work.order
+
+rule w7_worker_asks_wage
+when concept=talk.work pair.boss=b self.wealth=poor|destitute
+cooldown 1d
+say Any chance of my #wages# early? Just this once. | The rent's due. Could you pay me a few days ahead? | Could I have what I've earned so far?
+then other: work.plea
+
+rule w7_worker_asks_raise
+when concept=talk.work pair.boss=b self.drive=ambitious
+cooldown 3d
+say I've been here long enough to earn a bit more. | I do the work of two. Pay me for one and a half? | Others pay better, you know. I've stayed.
+then other: work.plea
+
+rule w7_worker_asks_rest
+when concept=talk.work pair.boss=b self.tired=yes
+cooldown 1d
+say Could I have the afternoon? I'm dead on my paws. | Can I sit a moment? Just a moment. | Can I go home early? I'll come in at dawn.
+then other: work.plea
+
+rule w7_worker_asks_festival
+when concept=talk.work pair.boss=b world.festival=soon
+cooldown 2d
+say Can I have the festival day? My family's expecting me. | Will we shut for the festival? | I'd work the festival if you paid double.
+then other: work.plea
+
+rule w7_worker_asks_late_pay
+when concept=talk.work pair.boss=b other.business=failing
+cooldown 1d
+say I've not been paid this week. | Will there be #wages# on Restday? | Folk are saying the shop's in trouble. Is it?
+then other: work.plea
+
+## The worker answers an order (self is the worker, or whoever was asked)
+
+rule w7_ord_plain
+when concept=work.order
+say Right away. | Aye. On it. | I'll see to it. | Yes, all right.
+
+rule w7_ord_short
+when concept=work.order temper=short
+say I'm doing it. | Yes, yes. | I heard you the first time.
+then other: work.end
+
+rule w7_ord_tired
+when concept=work.order tired=yes
+say Yes. Right. In a moment. | If my legs agree. | ...Yes. Sorry. Yes.
+then other: work.end
+
+rule w7_ord_merry
+when concept=work.order humour=merry
+say At once, your lordship! | Your wish, my command. My aching command. | I'll sweep it so clean you can eat off it. Don't, though.
+
+rule w7_ord_ambitious
+when concept=work.order drive=ambitious
+say Done by noon. And then what? | Leave it with me. And the rest, if you like. | I'll do it. Then can I try the hard work?
+
+rule w7_ord_sly
+when concept=work.order honesty=sly
+say Of course. Who'd notice if I took a little longer? | Yes, yes. Will you be watching? | Right away. More or less.
+then other: work.end
+
+rule w7_ord_apprentice
+when concept=work.order apprentice=yes
+say Yes, master. | Like this? Is this right? | I'll get it right this time. I will.
+then other: work.end
+
+rule w7_ord_young
+when concept=work.order stage=adolescent
+say Why do I always get the sweeping? | Fine. But I'm doing the good bit after. | Can't someone else? ...Fine.
+
+rule w7_ord_praised
+when concept=work.order warmth=warm|reserved drive=steady|ambitious pair.boss=a
+say Thank you. That means something. | I've been trying. | I'll keep it up.
+
+## The boss answers a plea (self is the boss, or the one asked)
+
+rule w7_plea_plain
+when concept=work.plea
+say We'll see. | Let me think on it. | Not today. Ask me again. | Perhaps.
+then other: work.end
+
+rule w7_plea_warm
+when concept=work.plea warmth=warm
+say Go on, then. Just this once. | Of course. You've earned it. | I'll do what I can. I promise.
+then other: work.end
+
+rule w7_plea_cold
+when concept=work.plea warmth=cold
+say No. | You'll get what you're owed when it's owed. | If you don't like it, there's the door.
+then other: work.end
+
+rule w7_plea_failing
+when concept=work.plea business=failing
+priority 1
+say There's nothing to give. I'm sorry. Truly. | I'm paying you before I pay myself, as it is. | If it picks up. If.
+then other: work.end
+
+rule w7_plea_thriving_warm
+when concept=work.plea business=thriving warmth=warm|reserved
+priority 1
+say Fair's fair. A bit more from next week. | Business is good. You'll see some of it. | I'll not forget who carried the load.
+then other: work.end
+
+rule w7_plea_thriving_cold
+when concept=work.plea business=thriving warmth=cold
+priority 1
+say Good trade is my reward for my risk. Not yours. | We'll see how the month ends. | You're paid what we agreed.
+then other: work.end
+
+rule w7_plea_short
+when concept=work.plea temper=short
+say Don't push your luck. | Ask me again and I'll halve it. | Back to work.
+then other: work.end
+
+rule w7_plea_sly
+when concept=work.plea honesty=sly
+say Course. Next week. Definitely next week. | Remind me Restday. I'll have forgotten, mind. | Leave it with me. I'll see what I can see.
+then other: work.end
+
+rule w7_plea_rich
+when concept=work.plea wealth=rich warmth!=cold
+say Here. Don't make a habit of it. | Fine. I can spare it. | Go on. I'll not miss it.
+then other: work.end
+
+rule w7_plea_poor_boss
+when concept=work.plea wealth=poor|destitute
+say With what? I've less than you. | I'd pay you if I could pay me. | Look in the till. Go on, look.
+then other: work.end
+
+rule w7_plea_devout_restday
+when concept=work.plea piety=devout here.day=rest
+say It's Restday. Go. Go home. I shouldn't have kept you. | Go to chapel. The work can wait for the gods. | Of course. Rest. It's what the day's for.
+then other: work.end

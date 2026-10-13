@@ -163,6 +163,7 @@ struct Settings
     int namedPerson = 5;                        // What `self.id=...` counts for in a score.
     std::set<std::string> concepts, repeat, alone;
     std::set<std::string> bestOnly;             // Concepts that always take their best tier (answers to players).
+    std::set<std::string> ends;                 // Lines that end a chain when said ("Mm.": a shrug is the end of it).
 };
 
 // The facts there are, and the values each may take.

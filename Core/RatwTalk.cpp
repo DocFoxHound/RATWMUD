@@ -315,7 +315,8 @@ bool Library::readSettings(const std::string& text, std::string& problem)
     settings_.strict = int(doc.number("strict_priority", settings_.strict));
     settings_.namedPerson = int(doc.number("named_person", settings_.namedPerson));
     for (const auto& [key, set] : {std::pair<const char*, std::set<std::string>*>{"concepts", &settings_.concepts},
-                                   {"repeat", &settings_.repeat}, {"alone", &settings_.alone}, {"best_only", &settings_.bestOnly}})
+                                   {"repeat", &settings_.repeat}, {"alone", &settings_.alone}, {"best_only", &settings_.bestOnly},
+                                   {"ends", &settings_.ends}})
         for (const auto& v : doc.array(key))
             set->insert(v.asString(""));
     const double sum = settings_.best + settings_.next + settings_.lower;
@@ -1616,7 +1617,9 @@ Said Library::converse(const Query& q, std::uint64_t seed, const std::function<b
         remembered(e, next);
     const Entry* e = find(all.id);
     int speaker = 0;
-    for (int beat = 1; e && !e->scene && !e->thenConcept.empty() && !q.alone && beat < 8; ++beat)
+    // A shrug ("Mm.") ends it, whatever the rule hands on: the next beat would answer something not said (phase 7).
+    const auto shrugged = [&] { return !all.lines.empty() && settings_.ends.count(all.lines.back().second) > 0; };
+    for (int beat = 1; e && !e->scene && !e->thenConcept.empty() && !q.alone && beat < 8 && !shrugged(); ++beat)
     {
         speaker = e->thenWho == "self" ? speaker : 1 - speaker;
         next.concept = e->thenConcept;
@@ -1737,13 +1740,38 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
             tier = 2 + std::min(scores.size() - 3, std::size_t((roll - best - settings_.next) / lower * double(scores.size() - 2)));
     }
     std::vector<Option*> in, fresh;
-    for (auto& o : options)
-        if (o.entry->score == scores[tier])
+    const auto gather = [&] {
+        in.clear();
+        fresh.clear();
+        for (auto& o : options)
+            if (o.entry->score == scores[tier])
+            {
+                in.push_back(&o);
+                if (!o.heard)
+                    fresh.push_back(&o);
+            }
+    };
+    gather();
+    // Everything in that tier heard already: the nearest tier with something not heard, rather than a repeat (phase 7:
+    // no conversation heard twice in a hundred hours). Not where only the best will do.
+    if (fresh.empty() && scores.size() > 1 && top < settings_.strict && !chained && !settings_.bestOnly.count(q.concept))
+    {
+        const std::size_t chosenTier = tier;
+        for (std::size_t step = 1; step < scores.size() && fresh.empty(); ++step)
+            for (const std::size_t t : {chosenTier + step, chosenTier >= step ? chosenTier - step : scores.size()})
+                if (t < scores.size() && fresh.empty())
+                {
+                    tier = t;
+                    gather();
+                }
+        if (fresh.empty())
         {
-            in.push_back(&o);
-            if (!o.heard)
-                fresh.push_back(&o);
+            tier = chosenTier;
+            gather();
         }
+        else
+            why += "all heard in tier " + std::to_string(chosenTier + 1) + "; ";
+    }
     auto& from = fresh.empty() ? in : fresh;
     double total = 0;
     for (const auto* o : from)
@@ -1868,7 +1896,8 @@ std::string Library::voiceCard(const Speaker& speaker) const
         {"worthless", "worthless"}, {"luck", "luck"}, {"child", "a child"}, {"pet", "a friend"}, {"money", "money"},
         {"cold", "cold"}, {"hot", "hot"}, {"rain", "rain"}, {"tired", "tired"}, {"drunk", "drunk"},
         {"nonsense", "nonsense"}, {"tag", "a question at the end"}, {"home", "home"}, {"thanks", "thanks"},
-        {"dear", "name for their spouse"}, {"saying", "saying"}};
+        {"dear", "name for their spouse"}, {"saying", "saying"}, {"mum", "word for their mother"},
+        {"dad", "word for their father"}};
     const auto quoted = [](const std::vector<Alt>& alts, std::size_t most) {
         std::string out;
         for (std::size_t i = 0; i < alts.size() && i < most; ++i)
@@ -1944,14 +1973,22 @@ std::string Library::voiceCard(const Speaker& speaker) const
             for (const auto& [name, symbol] : g->second)
                 if (symbol.habit && !symbol.pairHabit && name.find('.') == std::string::npos)
                     habits.insert(name);
-    for (const auto& h : habits)
+    // (The oath, the saying and the name for a spouse first; the rest while there's room, each whole.)
+    std::vector<std::string> order;
+    for (const char* first : {"oath", "saying", "dear"})
+        if (habits.erase(first))
+            order.push_back(first);
+    order.insert(order.end(), habits.begin(), habits.end());
+    for (const auto& h : order)
     {
         std::string said;
-        if (expand("#" + h + "#", alone, 0, 1, said) && !said.empty())
-            card += std::string(card.empty() ? "" : " ") + "Their own " + (Glosses.count(h) ? Glosses.at(h) : h) + ", always: '" + said + "'.";
+        if (!expand("#" + h + "#", alone, 0, 1, said) || said.empty())
+            continue;
+        const auto sentence = std::string(card.empty() ? "" : " ") + "Their own " + (Glosses.count(h) ? Glosses.at(h) : h) +
+                              ", always: '" + said + "'.";
+        if (card.size() + sentence.size() <= 480)
+            card += sentence;
     }
-    if (card.size() > 480)
-        card = card.substr(0, card.rfind(';', 476)) + ".";
     return card;
 }
 

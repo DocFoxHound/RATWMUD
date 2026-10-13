@@ -1,0 +1,2517 @@
+# Reactions, richer (Docs/Design/62-talk.md, phase 7): a fight seen, a blow taken, a theft seen, the rain coming on, a
+# customer at the door (and the keeper going on, shop.pitch), and two friends passing (react.friend, then greet.answer,
+# friend.where, friend.tease, friend.invite, friend.news, friend.close, friend.parting). Broad pools first, so anyone
+# has plenty to say; then the specific, by job, stage, traits, wealth, place, hour and the day.
+#
+# Marks for passing talk: an opener that asks about something sets pair.mem.fq (what was asked), and an answer that
+# expects a reply sets pair.mem.fx (how it went), both for 30 minutes, so the next beat answers what was actually said.
+
+## ---------------------------------------------------------------- A fight, seen
+
+rule x7_fight_any
+when concept=react.fight
+say Oi! Pack it in! | Somebody fetch the Watch, quick! | Not here, not in the street! | Look at them go. Daft beggars. | Mind yourselves, there's pups about!
+
+rule x7_fight_any2
+when concept=react.fight
+say Gods, there's blood on the cobbles. | Somebody'll lose an ear in a minute. | Leave off! Leave off, the pair of you! | Who started it? Did anyone see who started it?
+
+rule x7_fight_any3
+when concept=react.fight
+say Over what, though? Over what? | Step back, give them room, before someone's knocked flat. | That's the Watch's business, not mine. | Ooh. That one felt it.
+
+rule x7_fight_watch
+when concept=react.fight self.role=guard self.on_watch=yes
+cooldown 10m
+say Watch! Lay down your arms! | You two! Apart, now, or it's the cells! | Paws where I can see them! Both of you! | Enough! Next one to swing spends the night in irons.
+
+rule x7_fight_guard_off
+when concept=react.fight self.role=guard self.on_watch=no
+cooldown 30m
+say I'm off duty. I'm off duty. Oh, for... OI! | Can't a wolf have one hour's peace? Break it up! | Right. Somebody hold my cup.
+
+rule x7_fight_guard_night
+when concept=react.fight self.role=guard here.time=night
+cooldown 30m
+say Every night. Every blessed night. | Lanterns! Bring a lantern, I can't see who's who! | That's it, the both of you, sleep it off in the cells.
+
+rule x7_fight_soldier
+when concept=react.fight self.job=soldier
+cooldown 20m
+say Feet planted, you fool, you'll go over. | Terrible guard. Who taught you, your gran? | Keep your elbow in! Elbow! | Sloppy. Very sloppy. I'd have had them both by now.
+
+rule x7_fight_tavern_keeper
+when concept=react.fight self.job=innkeeper here.place=tavern
+cooldown 20m
+say Not in my house! Out, the both of you! | Who's paying for that stool? Who? | Take it outside or I'll take it out of your hides! | That's my good table!
+
+rule x7_fight_tavern
+when concept=react.fight here.place=tavern
+cooldown 20m
+say Mind the drinks! Mind the drinks! | Every night, somebody. | Ha! Didn't spill a drop, look. | Duck!
+
+rule x7_fight_healer
+when concept=react.fight self.job=healer
+cooldown 20m
+say Don't kill each other, I've only so much linen. | One of you'll be on my table by supper. | Somebody bring me water and clean rags. I'll be needed.
+
+rule x7_fight_priest
+when concept=react.fight self.job=priest
+cooldown 20m
+say Peace! Peace, in the Bright One's name! | Put it down, children. Put it down. | Is this how wolves behave? Is it? | The Bright One sees you. Both of you.
+
+rule x7_fight_chapel
+when concept=react.fight here.place=chapel
+priority 1
+cooldown 20m
+say In a chapel! In a chapel! | Not here! Not before the Bright One! | Have you no shame at all?
+
+rule x7_fight_market_stall
+when concept=react.fight self.role=merchant here.place=market
+cooldown 20m
+say Not near my stall! Not near my stall! | Mind the eggs! Mind the... oh, the eggs. | If that table goes over, somebody's paying for it. | Take it elsewhere, you're scaring off my custom!
+
+rule x7_fight_merchant
+when concept=react.fight self.role=merchant
+cooldown 30m
+say Bad for trade, that is. | Shutters! Somebody help me with the shutters! | Not on my step. Anywhere but my step.
+
+rule x7_fight_young
+when concept=react.fight self.stage=young
+cooldown 15m
+say Fight! Fight! Fight! | Hit 'im! Go on! | Mum! Mum! Come and look! | I could take them both. Easy. | Whoa! Did you see his ear?
+
+rule x7_fight_adolescent
+when concept=react.fight self.stage=adolescent
+cooldown 15m
+say Penny on the big one. | Ooh, that's gone in the ribs. | Two pennies says the short one wins. Who's in? | Ha! He went down like a sack of meal.
+
+rule x7_fight_old
+when concept=react.fight self.stage=old
+cooldown 20m
+say In my day we settled it with words. And sticks. | Young fools. No sense, the lot of them. | Disgraceful. Somebody tell their mothers. | I've seen better fights between hens.
+
+rule x7_fight_nervy
+when concept=react.fight self.temper=nervy
+cooldown 20m
+say Oh gods, oh gods. Someone stop them. | I'm not watching. I'm not watching. | Should we run? Should we run? | Somebody do something!
+
+rule x7_fight_short
+when concept=react.fight self.temper=short
+cooldown 20m
+say Right, that's it, I'll knock their heads together myself. | Break it up before I join in! | Some of us are trying to get by here!
+
+rule x7_fight_calm
+when concept=react.fight self.temper=calm
+cooldown 20m
+say Let them tire. They will. | Stand back. It'll be over in a moment. | Hm. That one's no fighter. | No sense getting in the middle of it.
+
+rule x7_fight_merry
+when concept=react.fight self.humour=merry
+cooldown 20m
+say Ha! He's dancing better than he's fighting! | Ten pennies on the one with the ears! | Do it again, I missed that! | Lovely. Better than the players at the festival.
+
+rule x7_fight_dry
+when concept=react.fight self.humour=dry
+cooldown 30m
+say Well. That's one way to settle a bill. | I see the debate has reached its natural end. | Ah, conversation.
+
+rule x7_fight_devout
+when concept=react.fight self.piety=devout
+cooldown 30m
+say Bright One, put peace in their paws. | They'll answer for this on Restday. | Gods forgive them. I'm not sure I will.
+
+rule x7_fight_sly
+when concept=react.fight self.honesty=sly
+cooldown 30m
+say While everyone's looking... no. No. | That purse on the ground isn't anybody's, is it? | Keep it going, lads. Keep it going.
+
+rule x7_fight_warm
+when concept=react.fight self.warmth=warm
+cooldown 30m
+say Somebody help the one who's down! | Oh, stop, stop, he's hurt! | Enough! You'll kill each other!
+
+rule x7_fight_quiet
+when concept=react.fight self.talk=quiet
+cooldown 30m
+say Mm. Trouble. | Oh dear. | Not my business.
+
+rule x7_fight_rich
+when concept=react.fight self.wealth=rich
+cooldown 30m
+say How vulgar. | Is there no Watch in this town? What do we pay for? | Somebody remove them from my path. | Brawling in the street like dockhands.
+
+rule x7_fight_heights
+when concept=react.fight self.quarter=heights here.region=ridgemere
+cooldown 30m
+say On the Heights? Here? | This is what comes of letting the Commons up the hill. | I shall be writing to the captain.
+
+rule x7_fight_poor
+when concept=react.fight self.wealth=poor|destitute
+cooldown 30m
+say Not again. Third this week. | Keep your head down and your purse closer. | Somebody'll be robbing the loser in a minute.
+
+rule x7_fight_sump
+when concept=react.fight self.quarter=sump here.region=ridgemere
+cooldown 30m
+say Sump's waking up, then. | Nobody's calling the Watch, are they? No. Didn't think so. | Mind your back. They'll be on the rest of us next.
+
+rule x7_fight_beggar
+when concept=react.fight self.job=beggar
+cooldown 30m
+say Spare a coin for the show? | Bet one of them drops a penny or two. | I'll keep out of it, thanks. I've nothing left to lose but teeth.
+
+rule x7_fight_sailor
+when concept=react.fight self.job=sailor
+cooldown 30m
+say Ha! Call that a brawl? Should see a ship's crew on pay day. | Swing low, matey! Low! | I've seen better fights over a herring.
+
+rule x7_fight_shore
+when concept=react.fight here.place=shore
+cooldown 30m
+say Somebody's going in the water! | Not by the boats! Not by the nets! | Throw 'em both in, cool 'em off.
+
+rule x7_fight_carter
+when concept=react.fight self.job=carter
+cooldown 30m
+say Out of the road! You'll spook the mule! | Not in front of the cart! | Mind the wheel, you'll lose a paw!
+
+rule x7_fight_smith
+when concept=react.fight self.job=smith|miner|laborer
+cooldown 30m
+say Want me to settle it? I've arms for it. | Shall I fetch the big hammer? | Break it up before I break it up.
+
+rule x7_fight_farm
+when concept=react.fight self.job=farmer|herder here.place=field
+cooldown 30m
+say Daft as rams in spring. | Not in the crop! Not in the crop! | You'll scatter the flock, you fools!
+
+rule x7_fight_night
+when concept=react.fight here.time=night
+cooldown 30m
+say Gods, at this hour? | Fighting in the dark like rats. | Someone'll end up in the river before morning. | Keep it down! People are sleeping!
+
+rule x7_fight_festival
+when concept=react.fight here.day=festival
+cooldown 30m
+say Every festival, someone. Every single one. | Too much cider, that's what that is. | Not today! It's #here.festival#!
+
+rule x7_fight_market_day
+when concept=react.fight here.day=market here.crowd=busy|crowd
+cooldown 30m
+say Mind the stalls! | Somebody'll lose more than a tooth in this crush. | Make room! Make room or they'll have us all over!
+
+rule x7_fight_parent
+when concept=react.fight self.parent=yes self.stage!=young
+cooldown 30m
+say Pups, inside! Now! | Don't look, #child#. Come away. | And there's pups watching! Shame on you!
+
+rule x7_fight_fought
+when concept=react.fight self.fought=yes
+cooldown 1h
+say Not again. I've had my fill of fists this week. | My ribs ache just watching. | Seen enough of that for a lifetime.
+
+rule x7_fight_hurt
+when concept=react.fight self.injured=light|bad
+cooldown 1h
+say I can't help. I'm hurt myself. | Don't come this way, I'm in no state. | Somebody else. I've had mine.
+
+rule x7_fight_ridgemere
+when concept=react.fight here.region=ridgemere
+cooldown 1h
+say City wolves. No sense. | That's the third fight on this street since Restday. | And the Watch is never here when you want them.
+
+rule x7_fight_town
+when concept=react.fight here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+cooldown 1h
+say Here? In #here.town#? | Everybody'll know about this by supper. | Their mothers will hear of it. Everyone's mothers will.
+
+## ---------------------------------------------------------------- Struck
+
+rule x7_struck_any
+when concept=react.struck
+say Ow! | You'll regret that! | That's it. That is it! | Hah! Missed the important bits. | Right. Right!
+
+rule x7_struck_any2
+when concept=react.struck
+say My ear! My good ear! | Is that the best you've got? | Come on, then! | You #lump#!
+
+rule x7_struck_any3
+when concept=react.struck
+say Hey! I felt that! | Not the face! | Ugh. Again? | Stop! Stop it!
+
+rule x7_struck_young
+when concept=react.struck self.stage=young
+priority 1
+say Ow! I'm telling! | That's not fair! | Mum! | I didn't do nothing!
+
+rule x7_struck_adolescent
+when concept=react.struck self.stage=adolescent
+say Didn't hurt! Didn't hurt! | You're dead, you are! | That all you've got?
+
+rule x7_struck_old
+when concept=react.struck self.stage=old
+priority 1
+say I'm too old for this! | My hip! You've done my hip! | Hit an old wolf, would you? | When I was your age I'd have had you!
+
+rule x7_struck_guard
+when concept=react.struck self.role=guard
+say Striking the Watch! That's the cells for you! | That's another charge on your sheet. | Assault on the Watch. Remember I said it.
+
+rule x7_struck_soldier
+when concept=react.struck self.job=soldier
+say Good. Now mine. | Felt that. Barely. | That's how you want it? Fine.
+
+rule x7_struck_nervy
+when concept=react.struck self.temper=nervy
+say Stop! Please stop! | Help! Somebody! | I didn't do anything!
+
+rule x7_struck_short
+when concept=react.struck self.temper=short
+say Right, you've asked for it! | I'll have your ears for that! | Come here! Come here!
+
+rule x7_struck_calm
+when concept=react.struck self.temper=calm
+say Hm. Fine. | Steady. Steady. | That's one.
+
+rule x7_struck_merry
+when concept=react.struck self.humour=merry
+say Ha! Tickles! | You hit like my gran. | Ooh, that'll be a bruise worth showing off.
+
+rule x7_struck_dry
+when concept=react.struck self.humour=dry
+say Ah. Yes. That's how that feels. | Lovely. Thank you. | I'll put that on your account.
+
+rule x7_struck_devout
+when concept=react.struck self.piety=devout
+say Bright One, give me strength. | Gods forgive you. I won't. | Bright One, guide my paw.
+
+rule x7_struck_rich
+when concept=react.struck self.wealth=rich
+say Do you know who I am? | My coat! This is Ridgemere wool! | You'll answer for that, you guttersnipe!
+
+rule x7_struck_house
+when concept=react.struck self.house
+say House #self.house# will hear of this! | You'll answer to #self.house# for that! | Strike #self.house#'s own, would you?
+
+rule x7_struck_light
+when concept=react.struck self.injured=light
+priority 1
+say Not the same paw! Not the same paw! | That's on top of the last one! | Ow. That's twice now.
+
+rule x7_struck_bad_old
+when concept=react.struck self.injured=bad self.stage=old
+priority 3
+say No more. No more, please. | I'm an old wolf... leave me be. | Fetch my... fetch someone.
+
+rule x7_struck_bad_young
+when concept=react.struck self.injured=bad self.stage=young
+priority 3
+say Mum... | It hurts, it hurts! | I want to go home.
+
+rule x7_struck_bad
+when concept=react.struck self.injured=bad
+priority 2
+say I yield! I yield! | Enough... I'm done. | Somebody stop them...
+
+rule x7_struck_fought
+when concept=react.struck self.fought=yes
+say Twice in two days! What is it with me? | Not again! | I've not healed from the last one!
+
+rule x7_struck_strong
+when concept=react.struck self.job=smith|miner|laborer|woodcutter
+say I lift more than you for a living, pup. | Paws like mine, and you want to fight? | That's a mistake, friend.
+
+rule x7_struck_sailor
+when concept=react.struck self.job=sailor|fisher
+say Blood and brine! | Right, you've earned a dunking. | I've been hit harder by a wave.
+
+rule x7_struck_tavern
+when concept=react.struck self.job=innkeeper here.place=tavern
+say In my own house! | You're barred! Barred! | That's the last drink you'll have under my roof!
+
+## ---------------------------------------------------------------- A theft, seen
+
+rule x7_theft_any
+when concept=react.theft
+say Thief! Stop that wolf! | Hey! Hey! Drop it! | Did you see that? Bold as brass! | Somebody grab them!
+
+rule x7_theft_any2
+when concept=react.theft
+say Watch your purses, everyone! | Gone, just like that. | Right in front of us! | That's not theirs! That's not theirs!
+
+rule x7_theft_any3
+when concept=react.theft
+say Watch! Where's the Watch? | Which way did they go? | After them, someone! | Quick paws on that one.
+
+rule x7_theft_watch
+when concept=react.theft self.role=guard self.on_watch=yes
+cooldown 10m
+say Halt! Stop, thief! | After them! Cut them off at the corner! | You! Stop in the name of the Watch! | I saw your face! I'll know it again!
+
+rule x7_theft_guard_off
+when concept=react.theft self.role=guard self.on_watch=no
+cooldown 30m
+say Off duty, and now this. Stop! | Right in front of a guard. The cheek of it. | I'll remember you. I never forget a tail.
+
+rule x7_theft_merchant
+when concept=react.theft self.role=merchant
+cooldown 20m
+say Paws off the goods! Everyone, mind your stalls! | That's the third this month! | Who's watching my table? Somebody!
+
+rule x7_theft_failing
+when concept=react.theft self.role=merchant self.business=failing
+priority 1
+cooldown 30m
+say I can't afford that, not now! | That's my week gone. My whole week. | Of all the weeks to be robbed.
+
+rule x7_theft_young
+when concept=react.theft self.stage=young
+cooldown 15m
+say Thief! I saw! I saw the thief! | Ooh, they're fast! | I'll catch 'em! | Mum, a robber!
+
+rule x7_theft_adolescent
+when concept=react.theft self.stage=adolescent
+cooldown 15m
+say Ha! Nice paws. | Bet they get away. | Should I chase them? I'm fast.
+
+rule x7_theft_old
+when concept=react.theft self.stage=old
+cooldown 20m
+say In my day they'd have had a paw off for that. | Nothing's safe any more. Nothing. | Is there no Watch? There used to be a Watch.
+
+rule x7_theft_nervy
+when concept=react.theft self.temper=nervy
+cooldown 20m
+say Is my purse... oh, thank the gods. | I'm going home. I'm going straight home. | They could be anywhere. Anyone!
+
+rule x7_theft_short
+when concept=react.theft self.temper=short
+cooldown 20m
+say I'll have them! Come back here! | Let me get my paws on them! | Thieving little rat!
+
+rule x7_theft_calm
+when concept=react.theft self.temper=calm
+cooldown 20m
+say Mark the coat. Brown, patched at the elbow. | They'll not get far. | Tell the Watch what you saw. Exactly what you saw.
+
+rule x7_theft_devout
+when concept=react.theft self.piety=devout
+cooldown 30m
+say Bright One, turn their heart. | Thou shalt not, it says. Plain as day. | They'll answer for it, if not here then after.
+
+rule x7_theft_restday
+when concept=react.theft here.day=rest
+cooldown 30m
+say On Restday! Have they no shame? | Stealing on the Bright One's day. | Chapel bell's barely stopped!
+
+rule x7_theft_rich
+when concept=react.theft self.wealth=rich
+cooldown 30m
+say Robbed in broad day! What is this town coming to? | I shall write to the council. | Somebody find a guard. A competent one.
+
+rule x7_theft_poor
+when concept=react.theft self.wealth=poor|destitute
+cooldown 30m
+say Can't blame them, at the price of bread. | Hope it was worth it, friend. | Didn't see a thing. Not a thing.
+
+rule x7_theft_sly
+when concept=react.theft self.honesty=sly
+cooldown 30m
+say Clean work, that. Very clean. | Not bad. Not bad at all. | Amateur. You go round, not through.
+
+rule x7_theft_frank
+when concept=react.theft self.honesty=frank
+cooldown 30m
+say I saw you! I saw your face! | That one! There! The one running! | Thief! I'll swear to it before anyone!
+
+rule x7_theft_robbed
+when concept=react.theft self.robbed=yes
+priority 1
+cooldown 30m
+say Same as me! That's how they got me too! | Another one! There's a gang of them! | Was it them? Was it the same one?
+
+rule x7_theft_beggar
+when concept=react.theft self.job=beggar
+cooldown 30m
+say Weren't me! I was here the whole time! | Now they'll blame us lot. | Ha. Some have all the luck.
+
+rule x7_theft_night
+when concept=react.theft here.time=night|dusk
+cooldown 30m
+say In the dark, of course. | Lock your doors tonight. | Can't see a thing. Which way?
+
+rule x7_theft_market
+when concept=react.theft here.day=market
+cooldown 30m
+say Market day. Cutpurses' holiday. | Keep your purses inside your coats! | Every market day, regular as bells.
+
+rule x7_theft_tavern
+when concept=react.theft here.place=tavern
+cooldown 30m
+say Somebody's lifted a purse! Nobody leaves! | Bar the door! | Check your coats, all of you.
+
+rule x7_theft_merry
+when concept=react.theft self.humour=merry
+cooldown 30m
+say Ha! Off like a hare! | Look at that one go! | Somebody give them a prize for speed.
+
+rule x7_theft_dry
+when concept=react.theft self.humour=dry
+cooldown 30m
+say Well. Someone's having a good day. | Ah. Commerce. | That's one way to do your shopping.
+
+rule x7_theft_warm
+when concept=react.theft self.warmth=warm
+cooldown 30m
+say Are you all right? Did they hurt you? | Oh, the poor thing. Was it much? | Sit down, sit down. I'll fetch someone.
+
+rule x7_theft_parent
+when concept=react.theft self.parent=yes self.stage!=young
+cooldown 30m
+say Hold my paw, #child#. Tight. | Stay close to me. | See? That's why we don't wander off.
+
+rule x7_theft_sump
+when concept=react.theft self.quarter=sump|docks|wharf here.region=ridgemere
+cooldown 1h
+say Welcome to the waterfront. | Nobody saw nothing. That's the rule down here. | They'll have sold it twice before the Watch hears.
+
+rule x7_theft_town
+when concept=react.theft here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+cooldown 1h
+say Not in #here.town#! We don't do that here! | That's no local, mark me. | Everybody'll hear of this by dark.
+
+## ---------------------------------------------------------------- Rain coming on
+
+rule x7_rain_any
+when concept=react.rain
+say And there's the sky opened. | That's the end of the dry. | Oh, lovely. Lovely. | Under the eaves, quick!
+
+rule x7_rain_any2
+when concept=react.rain
+say Here we go. | Smelled it coming. | Well, that's me soaked. | Somebody's washing'll be ruined.
+
+rule x7_rain_any3
+when concept=react.rain
+say Run for it! | Ugh. Down my collar. | Felt a drop. Two. Oh, here it comes.
+
+rule x7_rain_young
+when concept=react.rain self.stage=young
+say Rain! Puddles! | Catch it on your tongue! | Mum'll kill me, these are my good boots. | I'm a fish! Look, I'm a fish!
+
+rule x7_rain_adolescent
+when concept=react.rain self.stage=adolescent
+say Ugh. My fur. | Race you to the arch! | Great. Just great.
+
+rule x7_rain_old
+when concept=react.rain self.stage=old
+say Told you. My knee told me this morning. | Inside, before it gets in my bones. | Rain, rain. More rain. Always rain.
+
+rule x7_rain_market
+when concept=react.rain self.role=merchant here.place=market
+cooldown 2h
+say Cover the goods! Cover the goods! | Oilcloth, quick! | That's my custom gone home.
+
+rule x7_rain_merchant_failing
+when concept=react.rain self.role=merchant self.business=failing
+priority 1
+cooldown 2h
+say That's the day done, then. | Course it's raining. Course it is. | Nobody'll come out in this.
+
+rule x7_rain_fisher
+when concept=react.rain self.job=fisher|sailor
+cooldown 2h
+say Rain's fine. It's wind I mind. | Call this rain? You should see the Sound in winter. | Wet's wet. I'm wet already.
+
+rule x7_rain_farmer_grow
+when concept=react.rain self.job=farmer here.season=spring|summer
+cooldown 2h
+say Good for the barley. | About time. The ground was cracking. | Drink it up, my lovelies.
+
+rule x7_rain_farmer_harvest
+when concept=react.rain self.job=farmer here.season=autumn
+priority 1
+cooldown 2h
+say Not now, the harvest's half in! | Get the sheaves under cover! | Rain on the stooks. That's half lost.
+
+rule x7_rain_watch
+when concept=react.rain self.role=guard self.on_watch=yes
+cooldown 2h
+say Wonderful. Another wet watch. | Wet fur and a long shift. | Rain on the helmet. Lovely music.
+
+rule x7_rain_rich
+when concept=react.rain self.wealth=rich
+cooldown 2h
+say My good coat! | Somebody fetch me a carriage. Not that there's ever one. | Servants. Where are the servants when it rains?
+
+rule x7_rain_homeless
+when concept=react.rain self.homeless=yes
+priority 1
+cooldown 2h
+say Nowhere dry tonight. | Where now, then? | The arch by the chapel. If it's not taken.
+
+rule x7_rain_devout
+when concept=react.rain self.piety=devout
+cooldown 2h
+say The Bright One waters the fields. Be thankful. | A blessing, this. A wet one, but a blessing. | Give thanks. Even for this.
+
+rule x7_rain_merry
+when concept=react.rain self.humour=merry
+cooldown 2h
+say Free bath! | Smells better already, this street. | Dance with me! No? Suit yourselves!
+
+rule x7_rain_dry
+when concept=react.rain self.humour=dry
+cooldown 2h
+say Splendid. I'd nearly dried from yesterday. | Ah. The weather. Here it is again. | Who ordered this?
+
+rule x7_rain_dry_summer
+when concept=react.rain self.humour=dry here.season=summer
+cooldown 6h
+say Ah. Summer. | Another glorious summer's day. | And they say the south is warm.
+
+rule x7_rain_nervy
+when concept=react.rain self.temper=nervy
+cooldown 2h
+say Is that thunder? Is it going to thunder? | Oh, I left the shutters open! | Hurry, hurry!
+
+rule x7_rain_short
+when concept=react.rain self.temper=short
+cooldown 2h
+say Oh, of course. | Of course it's raining. Of course! | Every time I step outside!
+
+rule x7_rain_calm
+when concept=react.rain self.temper=calm
+cooldown 2h
+say Rain. Well, it'll pass. | No point running. You'll only be wet and tired. | Nice sound, rain.
+
+rule x7_rain_winter
+when concept=react.rain here.season=winter
+cooldown 2h
+say Sleet. Proper sleet. | Freezing rain. The worst kind. | It'll be ice by dark, mark me.
+
+rule x7_rain_summer
+when concept=react.rain here.season=summer
+cooldown 2h
+say Thank the gods. It's been close all week. | Ah, that's better. Cools the stones. | Warm rain. Not so bad.
+
+rule x7_rain_autumn
+when concept=react.rain here.season=autumn
+cooldown 2h
+say Leaves'll be down after this. | And so it starts. Rain till spring. | Autumn's here, then.
+
+rule x7_rain_storm
+when concept=react.rain here.weather=storm
+priority 1
+cooldown 1h
+say Shutters! That's a storm, not a shower! | Get inside! All of you, inside! | Hear that wind? That's no shower.
+
+rule x7_rain_ridgemere
+when concept=react.rain here.region=ridgemere
+cooldown 2h
+say Ridgemere weather. As promised. | When doesn't it rain here? | The gutters'll be over the step by noon.
+
+rule x7_rain_mirebridge
+when concept=react.rain here.region=mirebridge
+cooldown 2h
+say Wetter fens. Just what we needed. | The river'll be up by morning. | Nobody in Mirebridge has been dry since spring.
+
+rule x7_rain_frost
+when concept=react.rain here.region=frosthollow|coldwater
+cooldown 2h
+say Rain, not snow? Mountain's gone soft. | Cold rain off the peaks. Brr. | That'll freeze on the path tonight.
+
+rule x7_rain_home
+when concept=react.rain here.place=home|street self.parent=yes
+cooldown 2h
+say Washing! Who's bringing the washing in? | Pups, in! In! | Shut the window, it's coming in sideways.
+
+rule x7_rain_carter
+when concept=react.rain self.job=carter
+cooldown 2h
+say Roads'll be soup by noon. | Cover the load! | Wet wheels, heavy mud, slow going.
+
+rule x7_rain_laborer
+when concept=react.rain self.job=laborer self.working=yes
+cooldown 2h
+say Mortar won't set in this. | Tarp! Tarp over the lime! | That's the scaffold slippery. Careful up there.
+
+rule x7_rain_night
+when concept=react.rain here.time=night
+cooldown 2h
+say Rain in the dark. Good sleeping weather, at least. | Lanterns out, and now this. | Get home, get home.
+
+rule x7_rain_festival
+when concept=react.rain here.day=festival
+priority 1
+cooldown 2h
+say Not on #here.festival#! | The bunting! Save the bunting! | Dance anyway! Dance in it!
+
+rule x7_rain_market_day
+when concept=react.rain here.day=market
+cooldown 2h
+say There goes market day. | Stalls down! Everybody under cover! | Market's done. Thanks, sky.
+
+rule x7_rain_tired
+when concept=react.rain self.tired=yes
+cooldown 2h
+say Fine. I'll just stand here and get wet. Too tired to run. | Wet and tired. Lovely combination. | Couldn't hurry if I tried.
+
+## ---------------------------------------------------------------- A customer at the door (a: the keeper; b: the player)
+## Every greeting remembers the customer (pair.mem.served, as the first rules do); many go on (then self: shop.pitch).
+
+rule x7_cust_any
+when concept=react.customer self.role=merchant
+say #greet#. Look all you like. | Come in, come in, mind the step. | #greet#. Anything catch your eye, just shout. | In you come. Shut the door, there's a draught.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_any2
+when concept=react.customer
+say #greet#! What can I do for you? | Hello, hello. Don't be shy. | There you are. I was beginning to think the town had emptied. | Yes? Come in, come in.
+remember pair: served 7d
+
+rule x7_cust_any3
+when concept=react.customer self.role=merchant
+say One moment, one moment. Right. #greet#. | Be with you in a breath. | #greet#. Mind the floor, it's just swept.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_smith
+when concept=react.customer self.job=smith
+cooldown 1h
+say Mind the forge, it bites. | #greet#. Something mended, or something new? | Stand back of the anvil and say your piece. | Shout, I'm half deaf from the hammer.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_baker
+when concept=react.customer self.job=baker
+cooldown 1h
+say #greet#! Shut the door, keep the heat in. | Smell that? That's the next batch. | Come in, it's warm by the ovens. | Flour on everything, sorry. Comes with the trade.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_baker_dawn
+when concept=react.customer self.job=baker here.time=dawn
+cooldown 1h
+say You're early! Loaves are still in. | Up with the bakers, are you? | First through the door. You get the pick.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_brewer
+when concept=react.customer self.job=brewer
+cooldown 1h
+say #greet#. Tasting's not free, before you ask. | Come in. Mind the barrels, they're full. | Thirsty? Course you are.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_inn_night
+when concept=react.customer self.job=innkeeper here.time=night|dusk
+cooldown 1h
+say Late one, is it? There's a bed if you've coin. | Come in out of the dark. Fire's still in. | Sit by the hearth. Supper's nearly gone, but not quite.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_inn_morning
+when concept=react.customer self.job=innkeeper here.time=dawn
+cooldown 1h
+say Breakfast's porridge. It's always porridge. | Early riser? Sit, sit. | Kettle's on. Mind the one asleep on the bench.
+remember pair: served 7d
+
+rule x7_cust_healer
+when concept=react.customer self.job=healer
+cooldown 1h
+say #greet#. Where does it hurt? | Sit, sit. Let's have a look at you. | Nothing catching, I hope? | Come in. Mind the jars.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_cook
+when concept=react.customer self.job=cook
+cooldown 1h
+say Hungry? Course you are. | Pot's on. Sit where you like. | Come in, come in. Nobody leaves my door hungry.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_crafter
+when concept=react.customer self.job=crafter
+cooldown 1h
+say #greet#. Careful of the shelves. | Everything here made by my own paws. | Come in. Touch what you like, break nothing.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_merchant
+when concept=react.customer self.job=merchant
+cooldown 1h
+say #greet#! Everything priced fair. More or less. | Come in! Browse, browse. | A new face! Come in, come in.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_farmer
+when concept=react.customer self.job=farmer|herder
+cooldown 1h
+say Buying straight from the field? Sensible. | Mind where you step. | You're a long way from the market, friend.
+remember pair: served 7d
+
+rule x7_cust_fisher
+when concept=react.customer self.job=fisher
+cooldown 1h
+say Mind the bucket. Fresh in this morning. | Smell's free. The fish isn't. | Come for the catch? Good timing.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_guard
+when concept=react.customer self.role=guard
+cooldown 1h
+say Visitors wait by the door. | You here to report something? | State your business. | Lost something? Found something? Done something?
+remember pair: served 7d
+
+rule x7_cust_priest
+when concept=react.customer self.job=priest
+cooldown 1h
+say Welcome to the Bright One's house. | Come in. All are welcome here. | Rest a while. The benches don't bite. | Peace on you, traveller.
+remember pair: served 7d
+
+rule x7_cust_official
+when concept=react.customer self.job=official
+cooldown 1h
+say Have you an appointment? | Petitions on the left, complaints on the right, nonsense outside. | Take a seat. We'll get to you. Eventually.
+remember pair: served 7d
+
+rule x7_cust_scholar
+when concept=react.customer self.job=scholar
+cooldown 1h
+say Quietly, please. | Ah. A visitor. Don't touch the books. | Hm? Oh. Yes. Hello. Is it noon already?
+remember pair: served 7d
+
+rule x7_cust_servant
+when concept=react.customer self.job=servant
+cooldown 1h
+say Tradesmen round the back. Oh, you're not? Then what? | The master's not receiving. | Wipe your paws, please. I've only just done the floor.
+remember pair: served 7d
+
+rule x7_cust_noble
+when concept=react.customer self.job=noble
+cooldown 1h
+say Who let you in? | Hm. One of the servants will see to you. | Yes? Be brief.
+remember pair: served 7d
+
+rule x7_cust_labour
+when concept=react.customer self.job=laborer|miner|woodcutter
+cooldown 1h
+say Looking for work? There's always work. | Mind your head, they're hoisting. | You're not dressed for this.
+remember pair: served 7d
+
+rule x7_cust_apprentice
+when concept=react.customer self.job=apprentice
+cooldown 1h
+say Master's out the back. I can help! Probably. | Oh! Customer! Um. Hello! | Welcome! I'm only learning, so be kind.
+remember pair: served 7d
+
+rule x7_cust_carter
+when concept=react.customer self.job=carter
+cooldown 1h
+say Going somewhere? I'm off at first light. | Room on the cart, if you pay. | Mind the mule. She bites.
+remember pair: served 7d
+
+rule x7_cust_sailor
+when concept=react.customer self.job=sailor
+cooldown 1h
+say Looking for passage? Ask the mate. | Mind the ropes. | Landlubber, eh? Come in, come in.
+remember pair: served 7d
+
+rule x7_cust_gruff
+when concept=react.customer self.tone=gruff
+cooldown 1h
+say What? | Well? | Buying, or looking? | Shut the door.
+remember pair: served 7d
+
+rule x7_cust_formal
+when concept=react.customer self.tone=formal
+cooldown 1h
+say Good day. How may I serve? | Welcome. Please, take your time. | Good day to you. Do let me know what you require.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_sly
+when concept=react.customer self.tone=sly
+cooldown 1h
+say Ah, a discerning sort. I can always tell. | Come in. I've just the thing, whatever it is. | Well now. What brings you to my door?
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_shy
+when concept=react.customer self.tone=shy
+cooldown 1h
+say Oh! Um. Hello. Let me know if... yes. | H-hello. Welcome. | Oh. A customer. Hello.
+remember pair: served 7d
+
+rule x7_cust_warm
+when concept=react.customer self.tone=warm
+cooldown 1h
+say Come in, come in, out of the cold! | Welcome, welcome! Sit if you like. | Oh, hello! Lovely to see a face.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_chatty
+when concept=react.customer self.talk=chatty
+cooldown 1h
+say Come in! You'll never guess what happened this morning. No, never mind. What are you after? | Hello! Busy day, busy day, I've not sat down once. Now, what can I do you for?
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_quiet
+when concept=react.customer self.talk=quiet
+cooldown 1h
+say Mm. | Hello. | Mm. Look around.
+remember pair: served 7d
+
+rule x7_cust_merry
+when concept=react.customer self.humour=merry
+cooldown 1h
+say Welcome! Leave your troubles at the door. I'll mind them. | Come in! Mind the cat. There's no cat. Come in! | Ha! A visitor! Quick, everyone look busy.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_dry
+when concept=react.customer self.humour=dry
+cooldown 1h
+say A customer. I'll mark it on the calendar. | Ah. Someone. | Come in. Don't mind the silence, it's the fashion.
+remember pair: served 7d
+
+rule x7_cust_short
+when concept=react.customer self.temper=short
+cooldown 1h
+say Shut the door. Were you born in a barn? | Wipe your paws. | Yes, yes, I see you.
+remember pair: served 7d
+
+rule x7_cust_nervy
+when concept=react.customer self.temper=nervy
+cooldown 1h
+say Oh! You startled me. | Gods, I didn't hear the door. Hello. | Oh. Oh, hello. Sorry. Hello.
+remember pair: served 7d
+
+rule x7_cust_dawn
+when concept=react.customer here.time=dawn
+cooldown 2h
+say Barely open, mind. | Early bird. Come in. | Give me a moment, I've not even had my tea.
+remember pair: served 7d
+
+rule x7_cust_night
+when concept=react.customer here.time=night
+cooldown 2h
+say We're closing soon, be quick. | Late, isn't it? Come in, then. | Lamp's low. What'll it be?
+remember pair: served 7d
+
+rule x7_cust_market
+when concept=react.customer here.day=market self.role=merchant
+cooldown 2h
+say Market day! Quick, before it's gone. | Busy one today. Who's next? You? Good. | Mind the crush. What'll it be?
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_rest
+when concept=react.customer here.day=rest self.role=merchant
+cooldown 2h
+say Shut, really, for Restday. Oh, go on. | Restday. Half the stock's away. | Come in. Don't tell the priest.
+remember pair: served 7d
+
+rule x7_cust_festival
+when concept=react.customer here.day=festival
+cooldown 2h
+say Happy #here.festival#! | Shouldn't you be out dancing? | Come in! The whole town's at the market, it's lovely and quiet in here.
+remember pair: served 7d
+
+rule x7_cust_winter
+when concept=react.customer here.season=winter
+cooldown 2h
+say Shut that door, you're letting the winter in! | Come by the fire. Brr. | Stamp your boots. You're snowing on my floor.
+remember pair: served 7d
+
+rule x7_cust_visit
+when concept=react.customer self.role!=merchant
+say #greet#. Looking for someone? | Can I help you? | Hello. Lost, are you? | Yes? What can I do for you?
+remember pair: served 7d
+
+rule x7_cust_visit2
+when concept=react.customer self.role!=merchant
+say Oh! A visitor. #greet#. | Come in, if you're coming. | Hello there. Mind where you tread.
+remember pair: served 7d
+
+rule x7_cust_thriving
+when concept=react.customer self.business=thriving
+cooldown 1h
+say Busy, mind. Wait your turn. | Come in! Can't stop, but come in. | Everyone's in today. Squeeze in.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_failing2
+when concept=react.customer self.business=failing
+cooldown 1h
+say Oh! Come in! Please, take your time. | You're my first today. First all day. | Anything you want, I'll find a price.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_crowd
+when concept=react.customer here.crowd=crowd
+cooldown 1h
+say Bit of a crush. Wait your turn. | One at a time! One at a time! | Squeeze in, squeeze in.
+remember pair: served 7d
+
+rule x7_cust_frost
+when concept=react.customer here.region=frosthollow|coldwater here.season=autumn|winter
+cooldown 2h
+say Stamp the snow off, there's a dear. | Come in, quick, the cold follows you. | Paws to the stove. You look frozen.
+remember pair: served 7d
+
+rule x7_cust_fens
+when concept=react.customer here.region=mirebridge
+cooldown 2h
+say Wipe the mud, please. Everyone brings the fen in. | Come in. Mind the wet patch. There's always a wet patch.
+remember pair: served 7d
+
+## How they feel about this customer
+
+rule x7_cust_hostile
+when concept=react.customer pair.disposition=hostile
+priority 2
+say You. Out. | I've nothing for you. | Not you. Not in here. | Don't touch anything. Better yet, leave.
+remember pair: served 7d
+
+rule x7_cust_wary
+when concept=react.customer pair.disposition=wary
+priority 1
+say Paws where I can see them. | Hm. I'm watching you. | What do you want? | You. Hm. Go on, then.
+remember pair: served 7d
+
+rule x7_cust_cool
+when concept=react.customer pair.disposition=cool
+priority 1
+say Aye. | Oh. It's you. | Hm. What'll it be?
+remember pair: served 7d
+
+rule x7_cust_warm_known
+when concept=react.customer pair.disposition=warm topic.player
+priority 1
+say #topic.player#! Come in, come in. | Ah, #topic.player#. Good to see you. | There's #topic.player#. What'll it be today?
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_fond
+when concept=react.customer pair.disposition=fond
+priority 1
+say My favourite customer! | There you are! I was hoping you'd come by. | Oh, come in! Sit down, sit down. | You! Come in, sit, sit.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_fond_known
+when concept=react.customer pair.disposition=fond topic.player
+priority 1
+say #topic.player#! My favourite customer! | #topic.player#, #pet#! Come in! | Oh, #topic.player#! You've made my day.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_served_known
+when concept=react.customer pair.mem.served topic.player
+priority 1
+cooldown 1h
+say #topic.player#! The usual? | Back again, #topic.player#? I'll start thinking you like me. | #topic.player#. Thought I'd see you today.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_served
+when concept=react.customer pair.mem.served
+priority 1
+cooldown 1h
+say You again! Can't keep away, can you? | Ah, I know that face. Welcome back. | Back for more? Good. | Twice in a week. I'll give you a stool of your own.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_thief
+when concept=react.customer pair.rumour=thief
+priority 2
+say Everything's counted, just so you know. | Paws in your pockets where I can see them. | I've heard about you. Look with your eyes.
+remember pair: served 7d
+
+rule x7_cust_violent
+when concept=react.customer pair.rumour=violent
+priority 2
+say No trouble in here. I mean it. | I've heard what you did. Not in my shop. | Easy. Easy. What do you want?
+remember pair: served 7d
+
+rule x7_cust_promises
+when concept=react.customer pair.rumour=breaks_promises
+priority 1
+say Coin first, talk after. | No credit. Not for you. | I'll believe it when it's paid.
+remember pair: served 7d
+
+rule x7_cust_famous
+when concept=react.customer pair.famous=yes
+priority 1
+say It's you! The one they all talk about! | Well! In my shop! Wait till I tell the neighbours. | I know you. Everyone knows you. Come in!
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_they_owe
+when concept=react.customer pair.owed=b
+priority 1
+say You'll be settling up today, I trust? | Before anything else: what you owe me. | Good. You've come to pay, then.
+remember pair: served 7d
+
+rule x7_cust_i_owe
+when concept=react.customer pair.owed=a
+priority 1
+say I've not forgotten what I owe you. Soon, I promise. | Ah. Yes. About the money. Soon. | Don't look at me like that, I'll pay you back.
+remember pair: served 7d
+
+rule x7_cust_long_gone
+when concept=react.customer pair.mem.served pair.days_since>=14
+priority 2
+say Well! Haven't seen you in an age! | Thought you'd found another shop. | There you are! I'd near given you up.
+then self: shop.pitch
+remember pair: served 7d
+
+rule x7_cust_mourning
+when concept=react.customer self.mourning=kin
+priority 3
+say Oh. Come in. Forgive me, it's been a hard week. | We're open. Just. What do you need? | Come in. Don't mind me.
+remember pair: served 7d
+
+rule x7_cust_hurt
+when concept=react.customer self.injured=bad|light
+priority 2
+say Come in. You'll forgive me if I don't get up. | Mind, I'm a bit slow today. Took a knock. | Ooh. Hello. Don't make me reach for anything high.
+remember pair: served 7d
+
+rule x7_cust_robbed
+when concept=react.customer self.robbed=yes
+priority 2
+say Come in. Mind, I've been robbed this week, so I'm watching everyone. | Not you, I hope? No. Sorry. Come in. | Everything's counted twice now. Thieves.
+remember pair: served 7d
+
+## ---------------------------------------------------------------- The keeper goes on (shop.pitch; self: the keeper)
+## Those who sell nothing (the watch at their post, a priest in the chapel, a clerk) go on as hosts, not sellers.
+
+rule x7_pitch_host
+when concept=shop.pitch self.role!=merchant self.job=guard|priest|official|scholar|servant|noble|laborer|miner|woodcutter|herder|farmer|soldier|apprentice|carter|sailor|none|child|beggar
+priority 3
+say Anyway. What brings you? | Well. Say what you need. | I'm not selling anything, mind, if that's what you're after. | Sit if you like. Or don't.
+
+rule x7_pitch_any
+when concept=shop.pitch
+say Ask if you want anything. I'll be right here. | Prices on the board. Well, in my head. Ask. | Take your time. No hurry. | Everything's fair priced, whatever they tell you up the street.
+
+rule x7_pitch_any2
+when concept=shop.pitch
+say If you don't see it, ask. I might have it out back. | Nothing here'll fall apart in a week, I promise you that. | Don't mind the dust. The goods are clean.
+
+rule x7_pitch_baker
+when concept=shop.pitch self.job=baker
+say Rye's good today. Honey loaf if you're feeling rich. | Barley rolls a penny, and worth two. | Seed cake, fresh. Don't tell the neighbours. | Crust's the best part. Fight me.
+
+rule x7_pitch_baker_dusk
+when concept=shop.pitch self.job=baker here.time=dusk|night
+say What's left is half price. Yesterday's is a gift. | Last loaves. Take two, I'll not sell them tomorrow.
+
+rule x7_pitch_smith
+when concept=shop.pitch self.job=smith
+say Good knife there, holds an edge. | Hinges, nails, a pot if you need one. | Bring me anything bent and I'll make it straight. | Bronze is cheap, iron's better, steel's for the rich.
+
+rule x7_pitch_brewer
+when concept=shop.pitch self.job=brewer
+say The dark's strong, the pale's sweet, the cider's from Southmeadow. | New barrel tapped yesterday. | Small beer for the thirsty, strong for the sad.
+
+rule x7_pitch_inn
+when concept=shop.pitch self.job=innkeeper
+say Stew's mutton today. Again. | Bed's two pennies, with a blanket three. | Ale's honest measure. Nobody waters it but the rain.
+
+rule x7_pitch_healer
+when concept=shop.pitch self.job=healer
+say Willow bark for the head, comfrey for bruises. | Got a salve for sore pads that'd make you weep with joy. | If it's a cough, I've just the thing. If it's a broken heart, try the tavern.
+
+rule x7_pitch_cook
+when concept=shop.pitch self.job=cook
+say Pie, broth, or both? | Mutton pie's hot. The broth'll stand a spoon up. | Sit. Eat. Talk after.
+
+rule x7_pitch_crafter
+when concept=shop.pitch self.job=crafter
+say Baskets, belts, a comb for your ruff. | That jug's my best. Don't drop it. | I'll make anything to order, give me a week.
+
+rule x7_pitch_fisher
+when concept=shop.pitch self.job=fisher
+say Herring, eel, a crab if you're brave. | Smoked or fresh. The smoked keeps. | Caught at dawn. Eat it by dusk.
+
+rule x7_pitch_merchant
+when concept=shop.pitch self.job=merchant
+say Meal and herbs, and fair prices for both. | Herbs are fresh in. Meals as long as they last. | I've what the road brings. Today it brought plenty.
+
+rule x7_pitch_winter
+when concept=shop.pitch here.season=winter
+say Got wool in, if you're cold. | Warm something? Everything warm's by the stove. | Winter prices, I'm afraid. Blame the roads.
+
+rule x7_pitch_summer
+when concept=shop.pitch here.season=summer
+say Everything's fresh, it has to be in this heat. | Cool in here, at least. Stay a while.
+
+rule x7_pitch_failing
+when concept=shop.pitch self.business=failing
+priority 1
+say Everything's a bit cheaper today. Don't ask why. | I'll do you a good price. A very good price. | Buy two, I'll... I'll think of something.
+
+rule x7_pitch_thriving
+when concept=shop.pitch self.business=thriving
+say Going fast today. Don't dither. | Last of that, it's been flying. | Can't keep it on the shelves.
+
+rule x7_pitch_dawn
+when concept=shop.pitch here.time=dawn
+say Everything's fresh. First come, first served. | You've first pick. Lucky you.
+
+rule x7_pitch_night
+when concept=shop.pitch here.time=night
+say What's left is cheap. Make me an offer. | Be quick. My bed's calling.
+
+rule x7_pitch_sly
+when concept=shop.pitch self.honesty=sly
+say For you, a special price. Don't tell anyone. | That one? Oh, you've an eye. Everyone wants that one. | I'd not sell this to just anybody.
+
+rule x7_pitch_frank
+when concept=shop.pitch self.honesty=frank
+say The herbs are good. The meal's yesterday's. I'll not lie to you. | Don't buy the cheap one. It's cheap for a reason. | That's overpriced. Everyone's is. Mine's less.
+
+rule x7_pitch_chatty
+when concept=shop.pitch self.talk=chatty
+say My cousin swears by these, and she swears by everything, so. | Did you hear about the miller? No? Well, buy something and I'll tell you.
+
+rule x7_pitch_merry
+when concept=shop.pitch self.humour=merry
+say Buy one, get one. The second one costs the same, but still. | Everything here's guaranteed until you leave the shop.
+
+rule x7_pitch_market
+when concept=shop.pitch here.day=market
+say Market prices today. Which is to say, same as always but louder. | Everyone's buying today. Don't get left out.
+
+rule x7_pitch_famous
+when concept=shop.pitch pair.famous=yes
+say Take anything. Well, not anything. But look! | Tell folk you got it here. That's all I ask.
+
+## ---------------------------------------------------------------- Friends passing (a greets b; b answers; sometimes more)
+
+rule x7_fr_hello
+when concept=react.friend
+cooldown 3h
+say #other.name#! | Well, look who it is. | There's a face I know. | #greet#, #pet#! | Oi! #other.name#!
+then other: greet.answer
+
+rule x7_fr_hello2
+when concept=react.friend
+cooldown 3h
+say Still alive, then? | Haven't seen you in an age. Where've you been hiding? | You look well. Annoyingly well. | #other.name#! The very wolf.
+then other: greet.answer
+
+rule x7_fr_hello3
+when concept=react.friend
+cooldown 3h
+say How goes it, #pet#? | All well with you? | And how's the world treating you? | What news, #other.name#?
+then other: greet.answer
+
+rule x7_fr_where
+when concept=react.friend
+cooldown 3h
+say Where are you off to in such a hurry? | Off somewhere? | Where are you going, #pet#? | Where's the fire, #other.name#?
+then other: friend.where
+
+rule x7_fr_where_night
+when concept=react.friend here.time=night
+cooldown 6h
+say What are you doing out at this hour? | Up late, aren't you? Where to? | You're never out this late. What's happened?
+then other: friend.where
+
+rule x7_fr_where_rest
+when concept=react.friend here.day=rest
+cooldown 6h
+say Blessed Restday! Chapel, or idleness? | Restday! Where are you off to? | Off to chapel, or off to the tavern?
+then other: friend.where
+
+rule x7_fr_tease
+when concept=react.friend
+cooldown 6h
+say Is that a new coat, or did you sleep in it? | You've got something on your muzzle. No, the other side. | Walking like you own the street again. | Look at the state of your fur.
+then other: friend.tease
+
+rule x7_fr_tease_merry
+when concept=react.friend self.humour=merry
+cooldown 6h
+say Here comes trouble! | Hide the pies, #other.name#'s about. | Ah! The best-looking wolf in #here.town#. After me.
+then other: friend.tease
+
+rule x7_fr_tease_dry
+when concept=react.friend self.humour=dry
+cooldown 6h
+say Ah. You. My day was going so well. | You look like you've been dragged here backwards. | I see you've dressed for the occasion. Which occasion, I couldn't say.
+then other: friend.tease
+
+rule x7_fr_tease_owe
+when concept=react.friend self.temper=short|even self.tone=gruff other.stage=adult|old
+cooldown 6h
+say You still owe me #drink#. | Don't think I've forgotten the cards. | You. Still got my good knife?
+then other: friend.tease
+
+rule x7_fr_tease_old
+when concept=react.friend self.stage=old other.stage=young|adolescent
+cooldown 6h
+say Look at you! Grown a paw since last week! | Mind your manners, pup. | Still causing trouble, are you?
+then other: friend.tease
+
+rule x7_fr_invite
+when concept=react.friend other.stage=adult|old
+cooldown 6h
+say Come round tonight. I've #drink# with your name on it. | We should sit down properly, the two of us. Restday? | Supper, mine, soon. No excuses. | Come by later. I've something to show you.
+then other: friend.invite
+
+rule x7_fr_invite_tavern
+when concept=react.friend here.time=dusk|night self.stage=adult|old other.stage=adult|old
+cooldown 6h
+say One at the tavern? Just one. | Come on, I'm buying. Once. | Tavern? My throat's dry as a chapel floor.
+then other: friend.invite
+
+rule x7_fr_invite_young
+when concept=react.friend self.stage=young other.stage=young
+cooldown 3h
+say Coming to play? | Race you to the well! | Want to see a frog? I've got a frog. | Let's play Watch and thieves! You're the thief.
+then other: friend.invite
+
+rule x7_fr_invite_festival
+when concept=react.friend here.day=festival
+cooldown 6h
+say Happy #here.festival#! Dance with me later? | Coming to the market for the fun? | Save me a place by the fire tonight!
+then other: friend.invite
+
+rule x7_fr_news_tease
+when concept=react.friend self.talk=chatty
+cooldown 6h
+say Wait, wait, I've news. No, it'll keep. No, it won't. Later! | You'll never guess who I saw at the market. Never! | Did you hear the row last night? Half the street did.
+then other: friend.news
+remember pair: fq=gossip 30m
+
+rule x7_fr_news_wedding
+when concept=react.friend world.wedding=recent
+cooldown 1d
+say Were you at the wedding? | Lovely wedding, wasn't it? | Did you see the bride's mother cry? Buckets!
+then other: friend.news
+remember pair: fq=wedding 30m
+
+rule x7_fr_news_death
+when concept=react.friend world.death=recent
+cooldown 1d
+say Sad news, wasn't it. | You heard, I suppose. About the death. | Will you be at the burying?
+then other: friend.news
+remember pair: fq=death 30m
+
+rule x7_fr_news_birth
+when concept=react.friend world.birth=recent
+cooldown 1d
+say Heard about the new pup? | There's a new little one in town! Have you seen? | Another pup! The town's growing.
+then other: friend.news
+remember pair: fq=birth 30m
+
+rule x7_fr_news_bandits
+when concept=react.friend world.bandits=near
+cooldown 1d
+say Heard about the bandits on the road? | You're not going out on the road, are you? With the bandits? | They hit another caravan, did you hear?
+then other: friend.news
+remember pair: fq=bandits 30m
+
+rule x7_fr_news_crime
+when concept=react.friend world.crime=recent
+cooldown 1d
+say Did you hear about the thieving? | Lock your door tonight. There's been trouble. | The Watch was round asking questions. About the crime.
+then other: friend.news
+remember pair: fq=crime 30m
+
+rule x7_fr_news_festival
+when concept=react.friend world.festival=soon
+cooldown 1d
+say Festival soon! Are you going? | Got your festival coat brushed yet? | Only days till the festival!
+then other: friend.news
+remember pair: fq=festival 30m
+
+rule x7_fr_news_prices
+when concept=react.friend world.meal_price=up
+cooldown 1d
+say Have you seen what a meal costs now? | Prices! Did you see the prices? | I paid near double for supper yesterday.
+then other: friend.news
+remember pair: fq=prices 30m
+
+rule x7_fr_news_herbs
+when concept=react.friend world.herbs_price=up
+cooldown 1d
+say Herbs are up again, did you see? | What's a bundle of herbs now? A week's wages? | My mother's tea costs more than my supper now.
+then other: friend.news
+remember pair: fq=prices 30m
+
+rule x7_fr_ask_child
+when concept=react.friend other.child
+cooldown 1d
+say How's #other.child#? | And how's young #other.child#? Still a terror? | Give #other.child# my love.
+then other: friend.news
+remember pair: fq=child 30m
+
+rule x7_fr_ask_spouse
+when concept=react.friend other.spouse
+cooldown 1d
+say And how's #other.spouse#? | Give my best to #other.spouse#. | #other.spouse# keeping well?
+then other: friend.news
+remember pair: fq=spouse 30m
+
+rule x7_fr_ask_shop_good
+when concept=react.friend other.business=thriving
+cooldown 1d
+say Doing well, I hear! The shop's always full. | Look at you, a wolf of business! | They say you can't keep the shelves stocked.
+then other: friend.news
+remember pair: fq=shop 30m
+
+rule x7_fr_ask_shop_bad
+when concept=react.friend other.business=failing
+cooldown 1d
+say How's the shop? Truly? | Quiet at yours, I hear. Holding up? | If you need a paw at the shop, you say.
+then other: friend.news
+remember pair: fq=shop 30m
+
+rule x7_fr_ask_work
+when concept=react.friend other.working=yes other.shift=during
+cooldown 6h
+say Don't let me keep you from your work. | Hard at it? | Busy, I see. I'll not stop you.
+then other: friend.parting
+
+rule x7_fr_see_tired
+when concept=react.friend other.tired=yes
+cooldown 6h
+say You look done in. | Gods, you look like you've not slept in a week. | When did you last sleep?
+then other: greet.answer
+
+rule x7_fr_see_hurt
+when concept=react.friend other.injured=light|bad
+priority 1
+cooldown 6h
+say What've you done to yourself? | Gods! Who did that? | You're limping. What happened?
+then other: greet.answer
+
+rule x7_fr_see_grief
+when concept=react.friend other.mourning=kin|friend
+priority 2
+cooldown 1d
+say I'm so sorry, #pet#. If you need anything. Anything. | I heard. I'm sorry. | Come here. I'm so sorry.
+then other: greet.answer
+
+rule x7_fr_see_robbed
+when concept=react.friend other.robbed=yes
+priority 1
+cooldown 1d
+say I heard they robbed you! Are you all right? | Robbed! You! Did they hurt you? | Any word from the Watch, about your things?
+then other: greet.answer
+
+rule x7_fr_see_hungry
+when concept=react.friend other.hungry=yes self.wealth=comfortable|rich
+cooldown 1d
+say You look half starved. Have you eaten? | When did you last eat? Truly? | Come and eat with us. I mean it.
+then other: friend.invite
+
+rule x7_fr_self_errand
+when concept=react.friend self.errand=letter|goods|order
+cooldown 6h
+say Can't stop! Errand to run. | Morning! Can't talk, I'm late with this. | Ha, can't stop, #pet#. Business!
+then other: friend.parting
+
+rule x7_fr_self_wedding
+when concept=react.friend self.errand=wedding
+cooldown 6h
+say Can't stop! Wedding! | Do I look all right? Tell me I look all right. It's a wedding. | Off to the wedding! See you there?
+then other: friend.parting
+
+rule x7_fr_self_funeral
+when concept=react.friend self.errand=funeral
+priority 1
+cooldown 6h
+say Off to the burying. | Can't stop. The funeral. | Keep them in your thoughts today, will you?
+then other: friend.parting
+
+rule x7_fr_neighbours
+when concept=react.friend pair.neighbours=yes
+cooldown 6h
+say Was that your lot banging at midnight? | Your gutter's dripping on my step again. | Morning, neighbour. Saw your lamp on late. | Neighbour! Your cat's been in my yard.
+then other: friend.tease
+
+rule x7_fr_neighbours_hello
+when concept=react.friend pair.neighbours=yes
+cooldown 6h
+say Morning, neighbour! | There's my neighbour. All well next door? | Hello, next door!
+then other: greet.answer
+
+rule x7_fr_flock_priest
+when concept=react.friend pair.flock=a
+cooldown 1d
+say I missed you at chapel, #other.name#. | Bright One keep you. Will we see you Restday? | You look troubled, child. Come and sit in the chapel a while.
+then other: friend.news
+remember pair: fq=chapel 30m
+
+rule x7_fr_flock_faithful
+when concept=react.friend pair.flock=b
+cooldown 1d
+say Blessings to you. | Good day! I'll be at chapel Restday, I promise. | The candle you lit for us, thank you. It helped.
+then other: friend.parting
+
+rule x7_fr_customer_buyer
+when concept=react.friend pair.customer=a
+cooldown 1d
+say Save me a loaf tomorrow? | Is my order ready yet? | I'll be by the shop later. Keep me the good one.
+then other: friend.news
+remember pair: fq=order 30m
+
+rule x7_fr_customer_seller
+when concept=react.friend pair.customer=b
+cooldown 1d
+say Coming by the shop? I've something put aside for you. | You've not been in this week. Found another shop, have you? | Got your favourite in, if you're passing.
+then other: friend.news
+remember pair: fq=shop_visit 30m
+
+rule x7_fr_dawn
+when concept=react.friend here.time=dawn
+cooldown 6h
+say Up early! | You're up before the larks. | Morning! Have you slept at all?
+then other: greet.answer
+
+rule x7_fr_rain
+when concept=react.friend here.weather=rain|storm
+cooldown 6h
+say Wet enough for you? | Lovely day for it! | You look like a drowned rat. A friendly drowned rat.
+then other: greet.answer
+
+rule x7_fr_cold
+when concept=react.friend here.season=winter here.weather!=indoors
+cooldown 6h
+say Cold enough for you? | Brr! Keep moving or you'll freeze to the spot. | Is your nose as cold as mine?
+then other: greet.answer
+
+rule x7_fr_market
+when concept=react.friend here.day=market self.stage!=young
+cooldown 6h
+say Going to the market? Get me some onions. | Market! If you see good eggs, get me six. | If you're passing the stalls, a bit of cheese for me?
+then other: friend.news
+remember pair: fq=favour 30m
+
+rule x7_fr_chatty
+when concept=react.friend self.talk=chatty
+cooldown 6h
+say Oh, I'm glad I caught you, I've been meaning to tell you, no, wait, how are you first? | #other.name#! Stop, stop, I've not talked to a soul all morning.
+then other: greet.answer
+
+rule x7_fr_warm
+when concept=react.friend self.warmth=warm
+cooldown 6h
+say Come here, #pet#. | Oh, it does my heart good to see you. | There you are! I was only thinking of you.
+then other: greet.answer
+
+rule x7_fr_quiet
+when concept=react.friend self.talk=quiet
+cooldown 6h
+say #other.name#. | Mm. Hello. | All right?
+then other: friend.parting
+
+rule x7_fr_formal
+when concept=react.friend self.tone=formal
+cooldown 6h
+say Good day, #other.name#. You are well, I trust? | Ah, #other.name#. A pleasure, as ever. | Good day to you. Well, I hope?
+then other: greet.answer
+
+rule x7_fr_cold_warmth
+when concept=react.friend self.warmth=cold
+cooldown 6h
+say #other.name#. | Oh. You. Hello. | Hm. Hello.
+then other: friend.parting
+
+rule x7_fr_rivals
+when concept=react.friend pair.band=rivals
+priority 2
+cooldown 6h
+say Oh. You. | Thought I smelled something. | Still in business? Surprising. | Out of my way.
+then other: friend.tease
+
+rule x7_fr_family
+when concept=react.friend pair.band=family|spouses
+priority 1
+cooldown 6h
+say There you are! Supper's at dusk, don't be late. | Did you remember the bread? | Your mother's looking for you.
+then other: friend.parting
+
+## b answers a greeting (greet.answer; self: the one answering). An answer that wants a reply marks it (fx).
+
+rule x7_ga_any
+when concept=greet.answer
+say Can't complain. Well, I can, but I won't. | Mustn't grumble. | Still here, still standing. | Oh, you know. Same as ever.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_any2
+when concept=greet.answer
+say Better for seeing you. | Busy, busy. You? | Not so bad, #pet#. Not so bad. | Can't stop long, but hello!
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_any3
+when concept=greet.answer
+say #greet#! Good to see you. | Ha! You again. | There's a sight for sore eyes. | Well, well. Hello yourself.
+
+rule x7_ga_any4
+when concept=greet.answer
+say Fair to middling. | Oh, hanging on. | Well enough, well enough. And you?
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_tired
+when concept=greet.answer self.tired=yes
+say Dead on my feet. | I could sleep in a puddle. | Tired. Bone tired.
+then other: friend.close
+remember pair: fx=tired 30m
+
+rule x7_ga_hungry
+when concept=greet.answer self.hungry=yes
+say Starving. Haven't eaten since dawn. | Hungry enough to eat the cart. | Ask me after supper. If there is one.
+then other: friend.close
+remember pair: fx=hungry 30m
+
+rule x7_ga_poor
+when concept=greet.answer self.wealth=poor|destitute
+say Scraping by. Just. | Counting pennies. Same as always. | Oh, you know. Thin week. Thin month.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_ga_dole
+when concept=greet.answer self.on_dole=yes
+say Living on the dole, and grateful for it. | Getting by on the town's coin. Don't tell anyone. | Better than last month. The dole helps.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_ga_owes
+when concept=greet.answer self.owes=yes
+say Owing half the street, but otherwise fine. | Hiding from my creditors. Don't say you saw me. | In debt to my ears. Ears and tail.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_ga_homeless
+when concept=greet.answer self.homeless=yes
+priority 1
+say Sleeping rough. Don't fuss. | No roof, but I'm alive. | Found a dry doorway last night. Luxury.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_ga_rich
+when concept=greet.answer self.wealth=rich
+say Very well indeed, thank you. | Splendid. Couldn't be better. | Oh, can't complain. Truly can't.
+then other: friend.close
+remember pair: fx=good 30m
+
+rule x7_ga_thriving
+when concept=greet.answer self.business=thriving
+say Run off my paws! Shop's never been busier. | Good! Busy! Too busy! | Selling faster than I can stock.
+then other: friend.close
+remember pair: fx=good 30m
+
+rule x7_ga_failing
+when concept=greet.answer self.business=failing
+say Don't ask about the shop. | Quiet. Too quiet. | I've sold three things this week. Three.
+then other: friend.close
+remember pair: fx=bad 30m
+
+rule x7_ga_hurt
+when concept=greet.answer self.injured=light|bad
+priority 1
+say Bit sore. Took a knock. | Don't ask. Don't touch, either. | Walked into a fist. You should see the fist.
+then other: friend.close
+remember pair: fx=hurt 30m
+
+rule x7_ga_robbed
+when concept=greet.answer self.robbed=yes
+priority 1
+say Robbed! Took the lot. | Somebody had my purse. I'll find them. | Not good. Thieves had my things.
+then other: friend.close
+remember pair: fx=robbed 30m
+
+rule x7_ga_grief_friend
+when concept=greet.answer self.mourning=friend
+priority 2
+say Not well. I lost a friend this week. | We buried a friend. I'm still... | Sad, #pet#. Just sad.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_ga_grief_kin
+when concept=greet.answer self.mourning=kin
+priority 3
+say Not good. We buried them on Stoneday. | I keep setting a place at the table. | It's hard. It's very hard.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_ga_widowed
+when concept=greet.answer self.widowed=yes
+say Lonely, if I'm honest. | House is quiet these days. | Getting on. One day and then the next.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_ga_fought
+when concept=greet.answer self.fought=yes
+say Had a scrap. You should see the other one. | Bit bruised. Won, though. Mostly. | Don't ask about my eye.
+then other: friend.close
+remember pair: fx=fought 30m
+
+rule x7_ga_spouse
+when concept=greet.answer self.spouse
+say #self.spouse# has me painting the shutters. | Oh, #self.spouse# and I are well. Mostly. | #self.spouse# sends their love. Probably.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_child
+when concept=greet.answer self.child
+say #self.child# has me run ragged. | Tired. #self.child# was up all night. | Ask #self.child#. They run the house now.
+then other: friend.close
+remember pair: fx=child 30m
+
+rule x7_ga_apprentice
+when concept=greet.answer self.apprentice=yes
+say Master's working me to the bone. | Learning. Slowly. Painfully. | Swept the shop twice before dawn. Living the dream.
+then other: friend.close
+remember pair: fx=work 30m
+
+rule x7_ga_master
+when concept=greet.answer self.master=yes
+say My apprentice burnt the batch again. | Teaching. Gods give me patience. | The pup's coming along. Don't tell them I said so.
+then other: friend.close
+remember pair: fx=work 30m
+
+rule x7_ga_working
+when concept=greet.answer self.working=yes self.shift=during
+say Run off my paws. Can't stop! | Working, working. Always working. | On the job. Walk with me.
+then other: friend.close
+remember pair: fx=busy 30m
+
+rule x7_ga_after
+when concept=greet.answer self.shift=after
+say Done for the day, thank the gods. | Free! Free till dawn. | Just finished. Every bone aches.
+then other: friend.close
+remember pair: fx=free 30m
+
+rule x7_ga_before
+when concept=greet.answer self.shift=before
+say On my way to work. Don't remind me. | Off to it. Wish me luck. | Late, as usual.
+then other: friend.close
+remember pair: fx=busy 30m
+
+rule x7_ga_day_off
+when concept=greet.answer self.shift=day_off
+say Day off! Doing nothing at all. | Resting. Officially. | Not working today. Isn't it lovely?
+then other: friend.close
+remember pair: fx=free 30m
+
+rule x7_ga_travelling
+when concept=greet.answer self.travelling=yes
+say Just off the road. Every bone rattled. | Back from the road, thank the gods. | On the move again. Never stop, me.
+then other: friend.close
+remember pair: fx=road 30m
+
+rule x7_ga_wedding
+when concept=greet.answer self.errand=wedding
+priority 1
+say Off to a wedding! Do I look all right? | Wedding! Can't stop! | Busy! There's a wedding!
+then other: friend.close
+remember pair: fx=wedding 30m
+
+rule x7_ga_funeral
+when concept=greet.answer self.errand=funeral
+priority 2
+say Off to a burying. | Not good. It's the funeral today. | I'm going to the funeral.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_ga_errand
+when concept=greet.answer self.errand=letter|goods|order|caravan
+say Running about for other folk, as ever. | On an errand. Always an errand. | Can't stop, I've things to carry.
+then other: friend.close
+remember pair: fx=busy 30m
+
+rule x7_ga_merry
+when concept=greet.answer self.humour=merry
+say Never better! Never worse, either. | Grand! Splendid! Middling! | Better now. You always make me laugh. I don't know why. It's your face.
+then other: friend.close
+remember pair: fx=merry 30m
+
+rule x7_ga_dry
+when concept=greet.answer self.humour=dry
+say Alive. Mostly. | Oh, thriving. Can't you tell? | As well as can be expected, and I expect very little.
+then other: friend.close
+remember pair: fx=merry 30m
+
+rule x7_ga_quiet
+when concept=greet.answer self.talk=quiet
+say Mm. Well. | Fine. | All right.
+
+rule x7_ga_chatty
+when concept=greet.answer self.talk=chatty
+say Oh, don't get me started! Well, all right, since you ask, the roof's leaking, my sister's coming, and the cat's had kittens. | Fine, fine! Busy! You'll never guess what I heard!
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_gruff
+when concept=greet.answer self.tone=gruff
+say Fine. | Same as ever. | What's it to you? Ha. Fine.
+
+rule x7_ga_formal
+when concept=greet.answer self.tone=formal
+say Very well, thank you for asking. | Quite well. And yourself? | Well, thank you. Most kind.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_shy
+when concept=greet.answer self.tone=shy
+say Oh! Um. Fine, thank you. | Oh, hello. Yes. Fine. | Me? Oh. All right, I think.
+
+rule x7_ga_nervy
+when concept=greet.answer self.temper=nervy
+say Oh! You startled me. Fine, fine. | Jumpy. Didn't sleep. Fine otherwise. | Is something wrong? No? Oh, good. Fine.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_short
+when concept=greet.answer self.temper=short
+say Don't ask. | Fine, before you ask again. | Who wants to know? Oh. You. Fine.
+
+rule x7_ga_devout
+when concept=greet.answer self.piety=devout
+say Blessed, #pet#. Truly. | Well, by the Bright One's grace. | The gods are good. Mostly.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_ambitious
+when concept=greet.answer self.drive=ambitious
+say Busy. Going places. | Got plans, #pet#. Big ones. | Can't stop. Things to do, coin to make.
+then other: friend.close
+remember pair: fx=busy 30m
+
+rule x7_ga_restless
+when concept=greet.answer self.drive=restless
+say Bored stiff. This town. | Same street, same faces. Not yours, I mean. | Itching to be off somewhere. Anywhere.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_old
+when concept=greet.answer self.stage=old
+say Creaking. But here. | Another day above ground. | Old, #pet#. Old. But well.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_young
+when concept=greet.answer self.stage=young
+priority 1
+say I found a beetle! | I'm not allowed to talk to... oh, it's you. Hello! | Look, I lost a tooth!
+
+rule x7_ga_adolescent
+when concept=greet.answer self.stage=adolescent
+say Ugh. Fine. | Fine. Whatever. | Don't tell my mum you saw me.
+
+rule x7_ga_rain
+when concept=greet.answer here.weather=rain|storm
+say Damp. Like everyone. | Wet through. You? | Half drowned, thanks for asking.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_winter
+when concept=greet.answer here.season=winter here.weather!=indoors
+say Frozen to the marrow. | Can't feel my paws. Otherwise grand. | Cold. Cold, cold, cold.
+then other: friend.close
+remember pair: fx=cold 30m
+
+rule x7_ga_summer
+when concept=greet.answer here.season=summer here.weather=clear
+say Melting. | Too hot to talk. | Lovely weather. For lizards.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_ga_sump
+when concept=greet.answer self.quarter=sump here.region=ridgemere
+say Still alive in the Sump. That's something. | Surviving. Down there, that's winning. | Nobody's knifed me this week.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_ga_heights
+when concept=greet.answer self.quarter=heights here.region=ridgemere
+say Oh, splendid. The view, you know. | Very well. The Heights agree with me. | Tolerably well.
+then other: friend.close
+remember pair: fx=good 30m
+
+## Where they're off to (friend.where; self: the one asked)
+
+rule x7_fw_any
+when concept=friend.where
+say Nowhere special. Walking. | Just stretching my legs. | Round and about. | Off to see a wolf about a thing.
+then other: friend.close
+remember pair: fx=nowhere 30m
+
+rule x7_fw_any2
+when concept=friend.where
+say Home, if my feet hold out. | Errands. Always errands. | Where am I not going, more like.
+then other: friend.close
+remember pair: fx=errand 30m
+
+rule x7_fw_work
+when concept=friend.where self.shift=before|during
+say Work. Where else? | To work, and I'm late. | The usual. The grind.
+then other: friend.close
+remember pair: fx=working 30m
+
+rule x7_fw_home
+when concept=friend.where self.shift=after here.time=dusk|night
+say Home. Supper and bed. | Home, if I can find it in the dark. | Home. Don't keep me, my feet are dying.
+then other: friend.close
+remember pair: fx=home 30m
+
+rule x7_fw_market
+when concept=friend.where here.day=market
+say Market, like everyone. | The stalls, before the good stuff goes. | Market. I need eggs and a new pot.
+then other: friend.close
+remember pair: fx=market 30m
+
+rule x7_fw_chapel
+when concept=friend.where here.day=rest self.piety=devout
+priority 1
+say Chapel, of course. Come with me. | To give thanks. You should too. | Chapel. I'm lighting a candle.
+then other: friend.close
+remember pair: fx=chapel 30m
+
+rule x7_fw_chapel_ordinary
+when concept=friend.where here.day=rest self.piety=ordinary
+say Chapel. Probably. Eventually. | I told my mother I'd go to chapel. | Wherever the chapel isn't.
+then other: friend.close
+remember pair: fx=chapel 30m
+
+rule x7_fw_tavern
+when concept=friend.where here.time=dusk|night self.stage=adult|old
+say The tavern. Don't judge me. | Wherever there's ale. | One drink. Just one. You know.
+then other: friend.close
+remember pair: fx=tavern 30m
+
+rule x7_fw_festival
+when concept=friend.where here.day=festival
+say Where do you think? The fun! | Dancing! Come on! | Following the smell of roasting.
+then other: friend.close
+remember pair: fx=festival 30m
+
+rule x7_fw_letter
+when concept=friend.where self.errand=letter
+priority 1
+say Letter to deliver. Very important, apparently. | Carrying a letter. Don't ask, I've not read it. | Post. Somebody's got news.
+then other: friend.close
+remember pair: fx=errand 30m
+
+rule x7_fw_goods
+when concept=friend.where self.errand=goods|order
+priority 1
+say Fetching an order. Heavy one. | Goods for the shop. | Picking up what somebody forgot.
+then other: friend.close
+remember pair: fx=errand 30m
+
+rule x7_fw_wedding
+when concept=friend.where self.errand=wedding
+priority 2
+say A wedding! Can you tell? I've brushed my tail! | The wedding! I'm late! | To see two fools wed. Lovely.
+then other: friend.close
+remember pair: fx=wedding 30m
+
+rule x7_fw_funeral
+when concept=friend.where self.errand=funeral
+priority 2
+say The burying. | To say goodbye. | Funeral. I'd rather not talk about it.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_fw_healer
+when concept=friend.where self.injured=light|bad
+priority 1
+say The healer's. Look at this. | To get this seen to. | Healer. Don't laugh.
+then other: friend.close
+remember pair: fx=hurt 30m
+
+rule x7_fw_food
+when concept=friend.where self.hungry=yes
+say Food. Anywhere with food. | To eat. I've been dreaming of pie. | Supper. Late supper.
+then other: friend.close
+remember pair: fx=hungry 30m
+
+rule x7_fw_road
+when concept=friend.where self.travelling=yes
+say On the road again. | Out of town for a bit. | Off along the road. Back in a few days.
+then other: friend.close
+remember pair: fx=road 30m
+
+rule x7_fw_young
+when concept=friend.where self.stage=young
+priority 1
+say Nowhere! | It's a secret. | To find frogs. Want to come?
+
+rule x7_fw_sly
+when concept=friend.where self.honesty=sly
+say Ah, that would be telling. | Here and there. Mostly there. | Off to make some coin. Don't ask how.
+then other: friend.close
+remember pair: fx=nowhere 30m
+
+rule x7_fw_short
+when concept=friend.where self.temper=short
+say Out. Why? | Somewhere you're not. Ha. | Does it matter?
+
+## A tease, answered (friend.tease; self: the one teased)
+
+rule x7_ft_any
+when concept=friend.tease
+say Oh, very funny. | Says you! Have you looked in a puddle lately? | Ha! Takes one to know one. | Watch it, you.
+then other: friend.close
+remember pair: fx=tease 30m
+
+rule x7_ft_any2
+when concept=friend.tease
+say Rich, coming from you. | I'll remember that. | Charming. Absolutely charming.
+then other: friend.close
+remember pair: fx=tease 30m
+
+rule x7_ft_any3
+when concept=friend.tease
+say Go on, get it out of your system. | Ha! Fair. Fair. | Is that the best you've got this morning?
+remember pair: fx=tease 30m
+
+rule x7_ft_merry
+when concept=friend.tease self.humour=merry
+say Ha! You're one to talk, you look like a wet hedge. | Jealous. You're jealous. I understand. | I'll take that as a compliment.
+then other: friend.close
+remember pair: fx=tease 30m
+
+rule x7_ft_dry
+when concept=friend.tease self.humour=dry
+say I'll have you know I spent minutes on this. | Thank you. I work very hard at it. | Coming from the expert.
+then other: friend.close
+remember pair: fx=tease 30m
+
+rule x7_ft_short
+when concept=friend.tease self.temper=short
+say Watch your mouth. | Say that again. Go on. | Not today. I'm not in the mood.
+then other: friend.close
+remember pair: fx=sore 30m
+
+rule x7_ft_shy
+when concept=friend.tease self.tone=shy
+say Oh. Um. Is it that bad? | Stop it! People are looking. | Oh no, really? Where?
+then other: friend.close
+remember pair: fx=shy 30m
+
+rule x7_ft_young
+when concept=friend.tease self.stage=young|adolescent
+priority 1
+say Have not! | Did not! | You're the trouble! | Shut up! Ha!
+
+rule x7_ft_neighbour
+when concept=friend.tease pair.neighbours=yes
+say Your lot are worse, and you know it. | I'll fix it when you fix your fence. | That wasn't us. That was the other neighbours.
+then other: friend.close
+remember pair: fx=tease 30m
+
+rule x7_ft_rivals
+when concept=friend.tease pair.band=rivals
+priority 2
+say Out of my way. | I'd not waste my breath on you. | Funny. You're still not welcome.
+
+## An invitation, answered (friend.invite; self: the one invited)
+
+rule x7_fi_any
+when concept=friend.invite
+say Go on, then. | I'd like that. | You're on. | Twist my paw, why don't you.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fi_any2
+when concept=friend.invite
+say Can't tonight. Another time? | Oh, I wish I could. | Not tonight, #pet#. Soon.
+then other: friend.close
+remember pair: fx=no 30m
+
+rule x7_fi_any3
+when concept=friend.invite
+say Maybe. If I'm not dead on my feet. | Ask me later. | We'll see, we'll see.
+then other: friend.close
+remember pair: fx=maybe 30m
+
+rule x7_fi_occasion
+when concept=friend.invite
+say What's the occasion? | What are we celebrating? | Why, what's happened?
+then other: friend.close
+remember pair: fx=occasion 30m
+
+rule x7_fi_tired
+when concept=friend.invite self.tired=yes
+priority 1
+say I'd fall asleep in my cup. Another night. | Gods, I'd love to, but I'm done in. | Only if there's a bed at the end of it.
+then other: friend.close
+remember pair: fx=no 30m
+
+rule x7_fi_working
+when concept=friend.invite self.working=yes
+say After work. If there's an after. | Can't, I'm working. Save me a seat. | When I'm done here. Which is never.
+then other: friend.close
+remember pair: fx=maybe 30m
+
+rule x7_fi_spouse
+when concept=friend.invite self.spouse
+say I'll have to ask #self.spouse#. | #self.spouse#'ll want to come too. That all right? | If #self.spouse# lets me out.
+then other: friend.close
+remember pair: fx=maybe 30m
+
+rule x7_fi_chatty
+when concept=friend.invite self.talk=chatty
+say Yes! Yes! I've so much to tell you! | Try and stop me! | Oh, yes. And you'll never guess what I heard.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fi_quiet
+when concept=friend.invite self.talk=quiet
+say Maybe. | If it's quiet. | We'll see.
+then other: friend.close
+remember pair: fx=maybe 30m
+
+rule x7_fi_poor
+when concept=friend.invite self.wealth=poor|destitute
+say If you're buying. I'm skint. | I've not a penny, mind. | I'd come, but I can't stand a round.
+then other: friend.close
+remember pair: fx=poor 30m
+
+rule x7_fi_hungry
+when concept=friend.invite self.hungry=yes
+priority 1
+say Is there food? Then yes. | You'd do that? Gods. Thank you. | I'll not say no to a meal.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fi_grief
+when concept=friend.invite self.mourning=kin|friend
+priority 2
+say Not yet. Not yet. But thank you. | Maybe in a week or two. | I couldn't. I'm not fit company.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_fi_young
+when concept=friend.invite self.stage=young
+priority 1
+say Yes! | Can't, I'm in trouble. | Only if I can be the Watch this time!
+
+rule x7_fi_devout_rest
+when concept=friend.invite here.day=rest self.piety=devout
+priority 1
+say After chapel. Not before. | On Restday? Well. After prayers. | Chapel first, then gladly.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fi_old
+when concept=friend.invite self.stage=old
+say Early, mind. I'm in bed by dusk. | Only if there's a chair with a back to it. | Ha! I'll come. I'll not dance.
+then other: friend.close
+remember pair: fx=yes 30m
+
+## A piece of news, answered (friend.news; self: the one told; pair.mem.fq: what was raised)
+
+rule x7_fn_any
+when concept=friend.news
+say Never! | You don't say. | Is that so? | Go on!
+then other: friend.close
+remember pair: fx=news 30m
+
+rule x7_fn_gossip
+when concept=friend.news pair.mem.fq=gossip
+priority 2
+say Who? Tell me! Don't you dare walk off! | You can't say that and leave! | You're cruel, you are. Cruel.
+then other: friend.close
+remember pair: fx=gossip 30m
+
+rule x7_fn_wedding
+when concept=friend.news pair.mem.fq=wedding
+priority 2
+say Lovely, wasn't it? I cried. Don't tell anyone. | I was! Danced till my paws ached. | Missed it. Was the food good?
+then other: friend.close
+remember pair: fx=news 30m
+
+rule x7_fn_death
+when concept=friend.news pair.mem.fq=death
+priority 2
+say I heard. Terrible. | Aye. I'll be at the burying. | Gods rest them. They were good folk.
+then other: friend.close
+remember pair: fx=grief 30m
+
+rule x7_fn_birth
+when concept=friend.news pair.mem.fq=birth
+priority 2
+say I saw! Tiny little thing. All ears. | Another pup! Bless them. | Ha! Good luck to the parents, they'll not sleep for a year.
+then other: friend.close
+remember pair: fx=news 30m
+
+rule x7_fn_bandits
+when concept=friend.news pair.mem.fq=bandits
+priority 2
+say I heard. I'm not setting a paw on that road. | The Watch should be out there. What do we pay them for? | Gods. Anyone hurt?
+then other: friend.close
+remember pair: fx=worry 30m
+
+rule x7_fn_bandits_carter
+when concept=friend.news pair.mem.fq=bandits self.job=carter|merchant|sailor
+priority 3
+say I'm on that road Riverday. Don't. | That's my trade gone if it keeps on. | I'll go the long way. Twice as long, half as dead.
+then other: friend.close
+remember pair: fx=worry 30m
+
+rule x7_fn_crime
+when concept=friend.news pair.mem.fq=crime
+priority 2
+say I heard. I've put a second bolt on. | Nobody's safe. Nobody. | The Watch'll have them. I hope.
+then other: friend.close
+remember pair: fx=worry 30m
+
+rule x7_fn_festival
+when concept=friend.news pair.mem.fq=festival
+priority 2
+say Wouldn't miss it! | Course I'm going. I've been practising my dancing. | If I can get the day off.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fn_prices
+when concept=friend.news pair.mem.fq=prices
+priority 2
+say Robbery. Plain robbery. | I saw. I'll be eating turnips till spring. | Don't. Don't, I'll weep.
+then other: friend.close
+remember pair: fx=worry 30m
+
+rule x7_fn_prices_rich
+when concept=friend.news pair.mem.fq=prices self.wealth=rich
+priority 3
+say Have they? I hadn't noticed. | Oh, is it dear? I suppose it would be. | Hm. The cook sees to that.
+then other: friend.close
+remember pair: fx=rich 30m
+
+rule x7_fn_prices_merchant
+when concept=friend.news pair.mem.fq=prices self.role=merchant
+priority 3
+say Don't look at me. I pay more too. | It's the roads. Blame the roads. | You think I like it? I'm selling less.
+then other: friend.close
+remember pair: fx=worry 30m
+
+rule x7_fn_child
+when concept=friend.news pair.mem.fq=child
+priority 2
+say A terror. A loving terror. | Growing like a weed, eating like a horse. | I'll tell them. They'll be thrilled. Or sulk. One of the two.
+then other: friend.close
+remember pair: fx=child 30m
+
+rule x7_fn_spouse
+when concept=friend.news pair.mem.fq=spouse
+priority 2
+say Oh, well. Nagging me about the roof. | Busy. We pass in the doorway. | Very well! I'll tell them you asked.
+then other: friend.close
+remember pair: fx=ok 30m
+
+rule x7_fn_shop_good
+when concept=friend.news pair.mem.fq=shop self.business=thriving
+priority 3
+say Can't complain! Can't stop, either. | Run off my paws. Wouldn't change it. | Doing well, aye. Touch wood.
+then other: friend.close
+remember pair: fx=good 30m
+
+rule x7_fn_shop_bad
+when concept=friend.news pair.mem.fq=shop self.business=failing
+priority 3
+say Honestly? I don't know how long we'll last. | Holding on. Just. | Don't. I lie awake over it.
+then other: friend.close
+remember pair: fx=bad 30m
+
+rule x7_fn_chapel
+when concept=friend.news pair.mem.fq=chapel
+priority 2
+say I'll be there, I'll be there. | I've been meaning to. Truly. | Restday. I promise.
+then other: friend.close
+remember pair: fx=chapel_promise 30m
+
+rule x7_fn_order
+when concept=friend.news pair.mem.fq=order
+priority 2
+say Tomorrow. First thing. | It's ready. Come by after noon. | Give me till Restday. Sorry!
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fn_shop_visit
+when concept=friend.news pair.mem.fq=shop_visit
+priority 2
+say I'll come by! I've been meaning to. | Have you? Oh, go on then. | Never found another shop. Just no coin.
+then other: friend.close
+remember pair: fx=yes 30m
+
+rule x7_fn_favour
+when concept=friend.news pair.mem.fq=favour
+priority 2
+say Onions. Fine. How many? | If there's any left. | You'll owe me. Again.
+then other: friend.close
+remember pair: fx=favour 30m
+
+## The last word (friend.close; self: the first speaker again; pair.mem.fx: how the other answered)
+
+rule x7_fc_any
+when concept=friend.close
+say Ha! Well, mind how you go. | Right. Good. Off I go. | Can't stand here all day. #later.capitalize#! | Look after yourself.
+
+rule x7_fc_any2
+when concept=friend.close
+say I'll let you get on. | Right you are. | Go on then, #pet#.
+
+rule x7_fc_ok
+when concept=friend.close pair.mem.fx=ok
+priority 2
+say Good. That's good. | Glad to hear it. | Keep it that way. | That's all we can ask.
+
+rule x7_fc_tired
+when concept=friend.close pair.mem.fx=tired
+priority 2
+say Get some sleep, #pet#. | Go home and put your feet up. | Bed. Now. I mean it.
+
+rule x7_fc_hungry
+when concept=friend.close pair.mem.fx=hungry
+priority 2
+say Come by later, there's broth on. | Here, I've half a loaf. Take it. | Go eat something before you fall over.
+
+rule x7_fc_hungry_poor
+when concept=friend.close pair.mem.fx=hungry self.wealth=poor|destitute
+priority 3
+say Me too. Me too. | Join the club. We meet at the soup kitchen. | If I had a crust I'd split it with you.
+
+rule x7_fc_poor
+when concept=friend.close pair.mem.fx=poor
+priority 2
+say If it gets bad, you come to me. | It'll turn. It always turns. | Chin up. Spring's coming. Or something is.
+
+rule x7_fc_poor_rich
+when concept=friend.close pair.mem.fx=poor self.wealth=rich
+priority 3
+say Here. No, take it. Don't argue. | Come and see me. I'll find you some work. | You should have said. You should always say.
+
+rule x7_fc_good
+when concept=friend.close pair.mem.fx=good
+priority 2
+say Well, look at you! | Don't forget us little folk. | Good for you. Truly.
+
+rule x7_fc_good_poor
+when concept=friend.close pair.mem.fx=good self.wealth=poor|destitute
+priority 3
+say Must be nice. | Lend us a penny, then. | Some of us, eh?
+
+rule x7_fc_bad
+when concept=friend.close pair.mem.fx=bad
+priority 2
+say It'll pick up. | Chin up. Market day's coming. | I'll send folk your way. Promise.
+
+rule x7_fc_hurt
+when concept=friend.close pair.mem.fx=hurt
+priority 2
+say See a healer, you daft thing. | Keep off it a few days. | Who was it? Just tell me who.
+
+rule x7_fc_grief
+when concept=friend.close pair.mem.fx=grief
+priority 2
+say Anything you need. Anything. | I'm so sorry, #pet#. | I'll bring something round. Don't argue.
+
+rule x7_fc_grief_devout
+when concept=friend.close pair.mem.fx=grief self.piety=devout
+priority 3
+say The Bright One keeps them now. | I'll light a candle tonight. | #bless.capitalize#, #pet#.
+
+rule x7_fc_robbed
+when concept=friend.close pair.mem.fx=robbed
+priority 2
+say Did you tell the Watch? | Scum. I'll keep an ear out. | Thieves. Hanging's too good.
+
+rule x7_fc_fought
+when concept=friend.close pair.mem.fx=fought
+priority 2
+say Ha! You never could keep out of trouble. | Next time, walk away. Or win properly. | Put something cold on that eye.
+
+rule x7_fc_child
+when concept=friend.close pair.mem.fx=child
+priority 2
+say They grow so fast. | Ha! Wait till they're older. | Give them a hug from me.
+
+rule x7_fc_work
+when concept=friend.close pair.mem.fx=work
+priority 2
+say Ha! We all started somewhere. | It gets easier. Well, it doesn't, but you get used to it. | Patience. That's the trade.
+
+rule x7_fc_busy
+when concept=friend.close pair.mem.fx=busy
+priority 2
+say Go on then, don't let me keep you. | Off you go! | Don't work too hard.
+
+rule x7_fc_free
+when concept=friend.close pair.mem.fx=free
+priority 2
+say Lucky you! | Enjoy it. You've earned it. | Some of us still have work.
+
+rule x7_fc_road
+when concept=friend.close pair.mem.fx=road
+priority 2
+say Glad you're back in one piece. | Safe roads, then. | Tell me everything later.
+
+rule x7_fc_wedding
+when concept=friend.close pair.mem.fx=wedding
+priority 2
+say You look grand. Go on! | Dance once for me. | Bring me back some cake!
+
+rule x7_fc_merry
+when concept=friend.close pair.mem.fx=merry
+priority 2
+say Ha! You never change. | Fool. I love you. Go away. | Ha! Get on with you.
+
+rule x7_fc_cold
+when concept=friend.close pair.mem.fx=cold
+priority 2
+say Get yourself by a fire. | Keep moving. Keep moving! | Spring, #pet#. It'll come.
+
+rule x7_fc_nowhere
+when concept=friend.close pair.mem.fx=nowhere|errand
+priority 2
+say Fair enough. | Mind how you go, then. | Well, don't get lost.
+
+rule x7_fc_work_where
+when concept=friend.close pair.mem.fx=working
+priority 2
+say Better you than me. | Go on, earn your crust. | See you at the end of it.
+
+rule x7_fc_home
+when concept=friend.close pair.mem.fx=home
+priority 2
+say Sleep well. | Rest those feet. | Off with you, then. #later.capitalize#.
+
+rule x7_fc_market
+when concept=friend.close pair.mem.fx=market
+priority 2
+say Don't let them rob you. | If you see good eggs, get me six. | Mind your purse in the crush.
+
+rule x7_fc_chapel
+when concept=friend.close pair.mem.fx=chapel
+priority 2
+say Say a prayer for me. | Light one for my mother, will you? | I'll be along. Maybe.
+
+rule x7_fc_tavern
+when concept=friend.close pair.mem.fx=tavern
+priority 2
+say Don't drink it all. Save me one. | One, you said. I'll be counting. | Ha! I'll be along.
+
+rule x7_fc_festival
+when concept=friend.close pair.mem.fx=festival
+priority 2
+say Save me a dance! | Ha! Wait for me! | Don't eat all the cakes!
+
+rule x7_fc_tease
+when concept=friend.close pair.mem.fx=tease
+priority 2
+say Ha! Fair. | Got me there. | You'll keep. | Ha! I walked into that.
+then other: friend.parting
+
+rule x7_fc_sore
+when concept=friend.close pair.mem.fx=sore
+priority 2
+say All right, all right. Only teasing. | Someone's in a mood. | Sorry. Sorry! Gods.
+
+rule x7_fc_shy
+when concept=friend.close pair.mem.fx=shy
+priority 2
+say I'm only teasing! You look fine. | No, no, you look lovely. Honest. | Ha! Don't fret, #pet#.
+
+rule x7_fc_yes
+when concept=friend.close pair.mem.fx=yes
+priority 2
+say I'll hold you to it! | Good. Don't be late. | Wonderful! I'll get #drink# in.
+then other: friend.parting
+
+rule x7_fc_no
+when concept=friend.close pair.mem.fx=no
+priority 2
+say Another time, then. | I'll ask again, mind. | Your loss. Ha!
+
+rule x7_fc_maybe
+when concept=friend.close pair.mem.fx=maybe
+priority 2
+say Maybe's as good as yes. | I'll take a maybe. | I'll save you a seat anyway.
+
+rule x7_fc_occasion
+when concept=friend.close pair.mem.fx=occasion
+priority 2
+say Does there have to be one? | Being alive. That's the occasion. | You. You're the occasion. Ha!
+then other: friend.parting
+
+rule x7_fc_news
+when concept=friend.close pair.mem.fx=news
+priority 2
+say Ha! Well, there it is. | That's the talk of the street, anyway. | I'll tell you the rest later.
+
+rule x7_fc_gossip
+when concept=friend.close pair.mem.fx=gossip
+priority 2
+say Later! Later! | Ha! Come by tonight and I'll tell you. | Can't. Not here. Walls have ears.
+then other: friend.parting
+
+rule x7_fc_worry
+when concept=friend.close pair.mem.fx=worry
+priority 2
+say Mind yourself, that's all. | Strange times. | Keep your door barred.
+
+rule x7_fc_rich
+when concept=friend.close pair.mem.fx=rich
+priority 2
+say Of course you hadn't. | Must be lovely up there. | Ha! Course not.
+
+rule x7_fc_chapel_promise
+when concept=friend.close pair.mem.fx=chapel_promise
+priority 2
+say I'll keep a place for you. | The Bright One's patient. I'm less so. | See that you do.
+
+rule x7_fc_favour
+when concept=friend.close pair.mem.fx=favour
+priority 2
+say Six! Six onions! You're a treasure. | I'll owe you. Again. | Ha! Put it on my tab.
+
+## The other's last word (friend.parting; self: the second speaker again)
+
+rule x7_fp_any
+when concept=friend.parting
+say Go on, then. | #later.capitalize#, #pet#. | Mind how you go. | Off you pop.
+
+rule x7_fp_any2
+when concept=friend.parting
+say Aye, aye. | Ha! Get on. | See you, then.
+
+rule x7_fp_warm
+when concept=friend.parting self.warmth=warm
+say Look after yourself, #pet#! | Come by soon, mind! | #bless.capitalize#.
+
+rule x7_fp_devout
+when concept=friend.parting self.piety=devout
+say #bless.capitalize#. | Bright One keep you. | Go in peace.
+
+rule x7_fp_cold
+when concept=friend.parting self.warmth=cold
+say Mm. | Right. | Hm.
+
+rule x7_fp_working
+when concept=friend.parting self.working=yes
+say Aye, back to it. | Can't stop. #later.capitalize#! | Work calls.
+
+rule x7_fp_young
+when concept=friend.parting self.stage=young
+say Bye! | Bye bye! | See you!
+
+rule x7_fp_merry
+when concept=friend.parting self.humour=merry
+say Ha! Don't do anything I wouldn't! | Off you go, trouble! | Ha! Go on!

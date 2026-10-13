@@ -1,0 +1,1288 @@
+# The moment (Docs/Design/62-talk.md, phase 7): the weather, the day, festivals, lore and where you're from, as
+# chains. One remarks on the moment; the other answers as they are (moment.reply_weather, _day, _festival, _lore,
+# _home: chosen by the answerer's job, home, age, means and temper); the first closes it (moment.close), in kind with
+# what the answer was (a pair memory the answer leaves for half an hour: m7_moan, m7_glad, m7_home, m7_fear, m7_joke,
+# m7_work, m7_poor, m7_tale). Openers that fit many have cooldowns. Drafts, to tune by ear.
+
+# ================================================================ The weather: openers
+
+rule m7_wx_open_any
+when concept=talk.weather
+cooldown 1d
+say Look at it. Just look at it. | What do you make of this sky? | Strange weather for the time of year#tag#. | I can't make my mind up about today. | Well, the sky's in a mood.
+then other: moment.reply_weather
+
+rule m7_wx_open_rain
+when concept=talk.weather here.weather=rain
+cooldown 1d
+say It's coming down in rods. | My hood's given up. | Another day of this #rain#. | I've had drier baths. | I can feel it in my boots.
+then other: moment.reply_weather
+
+rule m7_wx_open_snow
+when concept=talk.weather here.weather=snow
+cooldown 1d
+say #snow.capitalize# up to my hocks already. | It's settling. That's the trouble, it's settling. | I can't feel my paw pads. | Everything's gone quiet under it. | Snowing again. Sideways, this time.
+then other: moment.reply_weather
+
+rule m7_wx_open_fog
+when concept=talk.weather here.weather=fog
+cooldown 1d
+say I said good morning to a post just now. | You can taste this #fog#. | Can't see the end of the street. | Every sound's coming from the wrong side. | My whiskers are dripping.
+then other: moment.reply_weather
+
+rule m7_wx_open_storm
+when concept=talk.weather here.weather=storm
+cooldown 1d
+say #oath#! Did you hear that one? Shook my teeth. | This #wind# wants the roof off. | I counted three between the flash and the bang. | Something's loose and banging up the street. | Hold on to your hat.
+then other: moment.reply_weather
+
+rule m7_wx_open_clear
+when concept=talk.weather here.weather=clear
+cooldown 1d
+say Not a cloud. I don't trust it. | Now that's a sky. | Sun on my back for once. | You can see for miles today. | Look at that. Blue as a jay.
+then other: moment.reply_weather
+
+rule m7_wx_open_overcast
+when concept=talk.weather here.weather=overcast
+cooldown 1d
+say Grey as a pot lid. | It can't decide whether to rain. | The sky's sulking. | Heavy, isn't it? Like it's holding its breath. | No sun, no rain. Just grey.
+then other: moment.reply_weather
+
+rule m7_wx_open_sandstorm
+when concept=talk.weather here.weather=sandstorm
+cooldown 1d
+say I've dust in places dust shouldn't be. | Cover your eyes. | Can't see the field for the dirt in the air. | It's in my teeth. Grit, all of it.
+then other: moment.reply_weather
+
+rule m7_wx_open_dawn_frost
+when concept=talk.weather here.time=dawn here.season=winter|autumn here.weather=clear|overcast
+cooldown 1d
+say Frost on everything. The pump handle bit me. | White on the roofs this morning. | My breath's coming out in clouds. | The puddles have lids on.
+then other: moment.reply_weather
+
+rule m7_wx_open_dusk_summer
+when concept=talk.weather here.time=dusk here.season=summer here.weather=clear
+cooldown 1d
+say Warm evening. The stones are still giving off the day. | Swifts screaming over the roofs. | Light till all hours, this time of year. | Lovely, this. Don't tell anyone I said so.
+then other: moment.reply_weather
+
+rule m7_wx_open_night_rain
+when concept=talk.weather here.time=night here.weather=rain|storm
+cooldown 1d
+say Only fools and the watch out in this. | Lamps are all guttering. | I'll be dripping on the floor till morning. | Can't hear yourself think for it.
+then other: moment.reply_weather
+
+rule m7_wx_open_spring_rain
+when concept=talk.weather here.season=spring here.weather=rain|overcast
+cooldown 1d
+say Green rain. You can smell things growing. | The buds won't mind it. | Smells of earth and wet blossom. | Every gutter's got a song today.
+then other: moment.reply_weather
+
+rule m7_wx_open_summer_heat
+when concept=talk.weather here.season=summer here.time=day here.weather=clear
+cooldown 1d
+say My tongue's out like a dog's. | Too hot for fur. | The tar's soft between the stones. | I've been panting since breakfast.
+then other: moment.reply_weather
+
+rule m7_wx_open_autumn_wind
+when concept=talk.weather here.season=autumn here.weather=overcast|storm|rain
+cooldown 1d
+say Leaves everywhere. In my collar, even. | The #wind#'s got a bite to it now. | Summer's packed up and gone without a word. | Smell that? Woodsmoke and wet leaves.
+then other: moment.reply_weather
+
+# Openers by who's speaking: their work, their home, their age.
+
+rule m7_wx_open_farmer_dry
+when concept=talk.weather self.job=farmer|herder here.weather=clear here.season=summer
+cooldown 2d
+say The ground's cracking. We want rain. | Lovely day if you're not a turnip. | Another dry one. The beans are begging.
+then other: moment.reply_weather
+
+rule m7_wx_open_farmer_wet
+when concept=talk.weather self.job=farmer|herder here.weather=rain here.season=autumn
+cooldown 2d
+say Can't get the last of it in. Not in this. | The stooks are sodden. | Rain at harvest. Every year, the same prayer, the same answer.
+then other: moment.reply_weather
+
+rule m7_wx_open_fisher
+when concept=talk.weather self.job=fisher|sailor here.weather=storm|fog
+cooldown 2d
+say No boats out today. Not one. | I'd not take a rowboat across a puddle in this. | Somebody's out there in it. Somebody always is.
+then other: moment.reply_weather
+
+rule m7_wx_open_guard
+when concept=talk.weather self.job=guard|soldier here.weather=rain|snow|storm
+cooldown 2d
+say Eight hours in this, and the captain wants the boots polished. | My mail's rusting as I stand here. | Nobody causes trouble in weather like this. Small mercies.
+then other: moment.reply_weather
+
+rule m7_wx_open_carter
+when concept=talk.weather self.job=carter here.weather=rain|snow|storm
+cooldown 2d
+say The road'll be #mud# to the axles. | I've a load due by dusk and no hope of it. | Horses hate it. I hate it. We're agreed.
+then other: moment.reply_weather
+
+rule m7_wx_open_old
+when concept=talk.weather self.stage=old here.weather=rain|fog|overcast
+cooldown 2d
+say My knees told me yesterday. | Weather's not what it was. Wetter. | I've seen sixty of these, and I like this one least.
+then other: moment.reply_weather
+
+rule m7_wx_open_young
+when concept=talk.weather self.stage=young
+cooldown 1d
+say Is it going to snow? Say it's going to snow. | Can clouds fall down? | Why's the sky grey? Who painted it?
+then other: moment.reply_weather
+
+rule m7_wx_open_south_in_snow
+when concept=talk.weather here.weather=snow self.from=oakhaven|mirebridge|larkfield|southmeadow
+cooldown 2d
+say Where I come from this is a story you tell children. | I didn't know cold went this deep. | How do you live like this? Honestly. How?
+then other: moment.reply_weather
+remember pair: m7_far 30m
+
+rule m7_wx_open_north_in_heat
+when concept=talk.weather here.region=south here.season=summer here.weather=clear self.from=frosthollow|coldwater
+cooldown 2d
+say I'm melting. I'm a mountain wolf and I'm melting. | Is it always this hot down here? | My fur was made for snow, not this.
+then other: moment.reply_weather
+remember pair: m7_far 30m
+
+rule m7_wx_open_city_rain_away
+when concept=talk.weather here.weather=rain here.region!=ridgemere self.from=ridgemere
+cooldown 2d
+say Ah. Rain. Almost feels like home. | You call this rain? In Ridgemere we'd call it a dry spell. | Smells like the Sound, this.
+then other: moment.reply_weather
+
+rule m7_wx_open_poor_cold
+when concept=talk.weather self.wealth=destitute|poor here.season=winter here.weather=snow|rain|overcast|storm
+cooldown 2d
+priority 1
+say No wood till Restday. We sleep in our coats. | The damp's in the walls again. | Cold's dearer for some than others.
+then other: moment.reply_weather
+remember pair: m7_need 30m
+
+rule m7_wx_open_homeless
+when concept=talk.weather self.homeless=yes here.weather=rain|snow|storm
+cooldown 1d
+priority 2
+say Where'll I sleep tonight, in this? | Every doorway's taken. | I've been wet three days now. You stop noticing. Almost.
+then other: moment.reply_weather
+remember pair: m7_need 30m
+
+# ================================================================ The weather: answers (self is the one answering)
+
+rule m7_wx_re_any
+when concept=moment.reply_weather
+say Could be worse. Could be raining frogs. | It'll change. It always does. | I've stopped looking up. Saves disappointment. | Weather's weather. You can't argue with it. | I'll believe it when it's over.
+then other: moment.close
+
+rule m7_wx_re_any2
+when concept=moment.reply_weather
+say Mm. Same sky over all of us. | My mother said you can't eat weather, so stop chewing it. | It is what it is. | Keeps us talking, at least.
+then other: moment.close
+
+rule m7_wx_re_rain
+when concept=moment.reply_weather here.weather=rain
+say Ducks are happy. Someone ought to be. | The water butt's full, so that's one thing. | Drink it in. Keeps the fleas down. | #annoyed#. Wet as a fish's elbow.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_wx_re_snow
+when concept=moment.reply_weather here.weather=snow
+say It'll be grey slush by noon. | Pretty for an hour. Then it's just #cold#. | Mind the eaves. They drop it on you. | Snowball me and you'll regret it.
+then other: moment.close
+
+rule m7_wx_re_fog
+when concept=moment.reply_weather here.weather=fog
+say Stay near the walls. | I heard the cart before I saw it. Nearly lost a tail. | Fog's good for one thing: nobody sees you yawn. | It'll lift. Or we'll all wander off and get lost.
+then other: moment.close
+
+rule m7_wx_re_storm
+when concept=moment.reply_weather here.weather=storm
+say Inside, and quick about it. | I've tied everything down that'll tie. | The gods are moving furniture. | That one was close. Too close.
+then other: moment.close
+remember pair: m7_fear 30m
+
+rule m7_wx_re_clear
+when concept=moment.reply_weather here.weather=clear
+say Make the most of it. That's #luck#, that is. | Washing day, then. | Don't say it out loud. You'll scare it off. | I'll take it. I'll take every minute of it.
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_wx_re_overcast
+when concept=moment.reply_weather here.weather=overcast
+say It'll rain by dusk. | It's thinking about it. | Grey's restful, if you let it be. | No shadows, at least. Can't see your own gloom.
+then other: moment.close
+
+rule m7_wx_re_sandstorm
+when concept=moment.reply_weather here.weather=sandstorm
+say Shut your mouth and walk. | It'll blow through. | Keep a wet cloth over your nose.
+then other: moment.close
+
+# By their work.
+
+rule m7_wx_re_farmer_rain
+when concept=moment.reply_weather self.job=farmer|herder here.weather=rain here.season=spring|summer
+cooldown 1d
+say Don't curse it. That's bread falling. | My fields have been begging for this. | Every drop's a loaf in the autumn.
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_wx_re_farmer_harvest_rain
+when concept=moment.reply_weather self.job=farmer|herder here.weather=rain|storm here.season=autumn
+cooldown 1d
+say Half my barley's still standing out in it. | It'll sprout in the stook if it keeps on. | Don't. Just don't.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_farmer_snow
+when concept=moment.reply_weather self.job=farmer|herder here.weather=snow
+cooldown 1d
+say I was up at three digging the ewes out. | Snow's a blanket for the winter wheat. | The beasts want feeding whatever falls.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_fisher_fog
+when concept=moment.reply_weather self.job=fisher|sailor here.weather=fog
+cooldown 1d
+say No boat goes out in this. Not if they want to come back. | Fog on the water's the worst. You row in circles. | I've lost the shore in fog. Never again.
+then other: moment.close
+remember pair: m7_fear 30m
+
+rule m7_wx_re_fisher_storm
+when concept=moment.reply_weather self.job=fisher|sailor here.weather=storm|rain
+cooldown 1d
+say I've doubled the lines on the boat. | The water's white out there. Nobody's fool enough. | Wind's the killer, not the wet.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_fisher_clear
+when concept=moment.reply_weather self.job=fisher|sailor here.weather=clear
+cooldown 1d
+say Flat water. Good for the nets. | Clear sky, cold night. Fish go deep. | I should be out. Why am I talking to you?
+then other: moment.close
+
+rule m7_wx_re_guard
+when concept=moment.reply_weather self.job=guard|soldier here.weather=rain|snow|storm|fog
+cooldown 1d
+say I'm on the wall in it tonight. Lucky me. | Thieves stay in when it's like this. So should I. | My cloak's been wet since Dawnday.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_carter
+when concept=moment.reply_weather self.job=carter here.weather=rain|snow|storm|fog
+cooldown 1d
+say The roads'll be ruined. Three days late, everything. | My wheels will be #mud# to the hub. | I've a horse with a cough and a load of slate. Wish me luck.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_miner
+when concept=moment.reply_weather self.job=miner
+cooldown 1d
+say I'll be under the hill soon. It's always the same weather down there. | Sun, snow, it's all one in the dark. | Lucky you, to care what the sky does.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_smith_cold
+when concept=moment.reply_weather self.job=smith here.season=winter
+cooldown 1d
+say Come stand by my forge. Warmest place in town. | I've the only warm paws for a mile. | Everyone's my friend in winter. Funny, that.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_smith_heat
+when concept=moment.reply_weather self.job=smith|baker|cook here.season=summer here.weather=clear
+cooldown 1d
+say Try a day by the fire in this. | I've been cooking along with the bread. | I'd trade you for the shade.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_innkeeper_wet
+when concept=moment.reply_weather self.job=innkeeper|brewer here.weather=rain|snow|storm
+cooldown 1d
+say Good for trade. Wet wolves want a fire and a jar. | I shouldn't say it, but I love a wet night. Full house. | Keep it coming, I say. My taproom thanks it.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_merchant_wet
+when concept=moment.reply_weather self.role=merchant here.weather=rain|storm|snow
+cooldown 1d
+say Nobody buys when they're wet. | My awning's a waterfall. | I've sold one thing all day, and that was a hood.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_wx_re_healer_winter
+when concept=moment.reply_weather self.job=healer here.season=winter|autumn
+cooldown 1d
+say Every chest in town's rattling. I'm run off my paws. | Wrap up. I've no room for one more cough. | Cold brings me trade I'd rather not have.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_priest
+when concept=moment.reply_weather self.job=priest
+cooldown 1d
+say We take what's sent, and give thanks for a roof. | The Bright One sends the rain on the deserving and the rest alike. | Weather keeps us humble.
+then other: moment.close
+
+rule m7_wx_re_woodcutter_storm
+when concept=moment.reply_weather self.job=woodcutter here.weather=storm
+cooldown 1d
+say I'll be clearing windfall for a week. | Trees down everywhere tomorrow, you watch. | Never stand under an old tree in a #wind# like this.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_laborer_heat
+when concept=moment.reply_weather self.job=laborer|miner|woodcutter here.season=summer here.weather=clear here.time=day
+cooldown 1d
+say I've hauled sacks since dawn in it. My tongue's dragging. | Try carrying stone in this. | Water. I need water and a cellar.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_wx_re_beggar
+when concept=moment.reply_weather self.job=beggar here.weather=rain|snow|storm
+cooldown 1d
+priority 1
+say Easy for some to talk about it. | Spare a copper for a dry crust? | I'll be under the bridge again tonight.
+then other: moment.close
+remember pair: m7_poor 30m
+
+# By their home: the weather as it falls on one from elsewhere.
+
+rule m7_wx_re_south_snow
+when concept=moment.reply_weather here.weather=snow self.from=oakhaven|mirebridge|larkfield|southmeadow
+priority 1
+cooldown 1d
+say Back home we'd be pruning the orchards in our shirtsleeves. | In the south we get two snows a lifetime. I've had two this week. | I'll never get used to it. Never.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_wx_re_south_cold
+when concept=moment.reply_weather here.season=winter here.region=north self.from=southmeadow|larkfield|oakhaven
+cooldown 1d
+say Winter down south is a brisk autumn up here. | I've worn every coat I own. At once. | My blood's too thin for the north. Always was.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_wx_re_north_snow
+when concept=moment.reply_weather here.weather=snow self.from=frosthollow
+priority 1
+cooldown 1d
+say Call this snow? Up the valley it's to the eaves. | This is a dusting. Come back when you can't find the door. | Snow's a friend if you know it. Treat it right.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_north_heat
+when concept=moment.reply_weather here.season=summer here.weather=clear self.from=frosthollow|coldwater here.region!=frosthollow|coldwater
+priority 1
+cooldown 1d
+say Up home there'd still be snow in the gullies. I'd give a week's wage to roll in it. | I'm cooking in my own fur. | Glasswater would be cold enough to stop your heart right now. Lovely.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_wx_re_fen_fog
+when concept=moment.reply_weather here.weather=fog self.from=mirebridge
+priority 1
+cooldown 1d
+say This? In the fens this is a clear morning. | Fog's only air with something to say. | You learn to walk by smell in Mirebridge.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_city_rain
+when concept=moment.reply_weather here.weather=rain self.from=ridgemere
+cooldown 1d
+say I'm Ridgemere born. Rain's just air you can see. | We've a word for this in the city. We call it Dawnday. | Rain doesn't count till it's coming up from the cobbles.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_lake_clear
+when concept=moment.reply_weather here.weather=clear|overcast self.from=coldwater here.region!=coldwater
+cooldown 1d
+say On a day like this Glasswater goes still as a plate. I miss it. | Nothing here to look into. At home you'd see your face in the lake. | I keep looking for the water and finding walls.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_wx_re_downs_wind
+when concept=moment.reply_weather here.weather=overcast|storm|clear self.from=larkfield here.region!=larkfield
+cooldown 1d
+say On the downs you'd feel this wind from a day off. | I miss a good wind across open grass. Here it just whistles round corners. | Larks'd be up in this at home.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_wx_re_wood_rain
+when concept=moment.reply_weather here.weather=rain self.from=oakhaven here.region!=oakhaven
+cooldown 1d
+say Under the Warmwood you'd barely feel it. The leaves take it all. | Rain's nicer with a roof of oak over you. | I miss the smell of wet leaf mould. Sounds daft.
+then other: moment.close
+remember pair: m7_home 30m
+
+# By age, means and mood.
+
+rule m7_wx_re_old_bones
+when concept=moment.reply_weather self.stage=old here.weather=rain|fog|snow|overcast
+cooldown 1d
+say My hip told me this a day ago. Hip's never wrong. | I've seen worse. I've seen the winter the Sound froze. | At my age you're grateful for any weather you wake up to.
+then other: moment.close
+
+rule m7_wx_re_young_snow
+when concept=moment.reply_weather self.stage=young here.weather=snow
+cooldown 1d
+say Snow wolves! Can we make snow wolves? | I ate some. It tastes of nothing. | I'm going to slide down the lane on my tail!
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_wx_re_young_rain
+when concept=moment.reply_weather self.stage=young here.weather=rain|storm
+cooldown 1d
+say Puddles! The big one by the well's up to my knees! | Is the thunder angry at us? | I'm not cold. I'm not. My teeth just do that.
+then other: moment.close
+
+rule m7_wx_re_adolescent
+when concept=moment.reply_weather self.stage=adolescent
+cooldown 1d
+say Who cares? It's weather. | Can we not talk about the weather? Please? | Everyone always talks about the weather. Every single day.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_poor
+when concept=moment.reply_weather self.wealth=destitute|poor here.weather=rain|snow|storm here.season=autumn|winter
+priority 1
+cooldown 1d
+say Roof's leaking over the pups' bed again. | I can't buy wood and bread both this week. | We'll huddle. We always huddle.
+then other: moment.close
+remember pair: m7_poor 30m
+
+rule m7_wx_re_rich
+when concept=moment.reply_weather self.wealth=rich here.weather=rain|snow|storm
+cooldown 1d
+say I've had the fires lit in every room. | The carriage leaks, if you can believe it. | Tiresome. I'll stay in and read.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_wx_re_tired
+when concept=moment.reply_weather self.tired=yes
+cooldown 1d
+say I'm too #tired# to mind what the sky does. | Rain, shine, I'll sleep through it given half a chance. | Don't care. I want #bed#.
+then other: moment.close
+
+rule m7_wx_re_mourning
+when concept=moment.reply_weather self.mourning=kin|friend
+priority 2
+cooldown 1d
+say Suits me, this. Grey. | They loved weather like this. | I hadn't noticed. I don't notice much this week.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_wx_re_dry
+when concept=moment.reply_weather self.humour=dry
+cooldown 1d
+say Remarkable. Weather, happening, outdoors. | Next you'll tell me it's dark at night. | I'll write to the Council. They'll sort it.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_merry
+when concept=moment.reply_weather self.humour=merry
+cooldown 1d
+say Lovely day for a duck! Or a fish. Or a wet wolf. | I've given up being dry. It's very freeing. | Sky's having a worse day than us, and that's saying something.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_wx_re_short
+when concept=moment.reply_weather self.temper=short
+cooldown 1d
+say Talking about it won't change it. | #agree#, I can see it. I've got eyes. | And?
+then other: moment.close
+
+rule m7_wx_re_quiet
+when concept=moment.reply_weather self.talk=quiet
+cooldown 1d
+say Mm. | Aye. | It is.
+then other: moment.close
+
+rule m7_wx_re_devout
+when concept=moment.reply_weather self.piety=devout here.weather=storm|snow|rain
+cooldown 1d
+say I'll light a candle for the ones out in it. | Pray for the boats and the shepherds. | It's sent. We bear it.
+then other: moment.close
+
+# ================================================================ Answering the opener's own plight (any of the moment's
+# answers): in need (m7_need), far from home (m7_far), working while others rest (m7_busy). Priority 2, so the answer
+# meets what was said.
+
+rule m7_re_need
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_need
+priority 2
+say #bad.capitalize# times. Harder for some. | The chapel's giving out bread on Restday. Go early. | I'm sorry. I truly am. | It won't always be like this. It can't be.
+then other: moment.close
+
+rule m7_re_need_warm
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_need self.warmth=warm
+priority 2
+say Come to ours tonight. There's a fire and a pot, and room for you. | Here. Don't argue. Take it. | You'll eat with us. That's settled. Bring whoever's yours.
+then other: moment.close
+remember pair: m7_offer 30m
+
+rule m7_re_need_rich
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_need self.wealth=rich
+priority 2
+say Here. For wood. No, I insist. | Take this. Buy something hot. | My steward will send something round. I'll see that he does.
+then other: moment.close
+remember pair: m7_offer 30m
+
+rule m7_re_need_poor
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_need self.wealth=destitute|poor
+priority 2
+say Same boat, you and me. Leaking the same. | We'll share what there is. Which is nothing, twice. | Don't I know it.
+then other: moment.close
+remember pair: m7_same 30m
+
+rule m7_re_need_cold
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_need self.warmth=cold
+priority 2
+say Should've put some by. | Everyone's got troubles. | Work harder, then.
+then other: moment.close
+remember pair: m7_snub 30m
+
+rule m7_re_far
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_far
+priority 2
+say You'll get used to it. Everyone does. | Give it a year. It'll be home before you know it. | Miss it, do you? | Bit different from home, eh?
+then other: moment.close
+
+rule m7_re_far_same
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_far pair.same_from=yes
+priority 2
+say Don't. I'll start missing it too. | I know. I think of it every day. | One day we'll both go back. You'll see.
+then other: moment.close
+remember pair: m7_together 30m
+
+rule m7_re_far_local
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7_far self.from=frosthollow|coldwater here.region=frosthollow|coldwater here.weather=snow
+priority 2
+say Soft. You're soft. You'll harden up. | This is mild. Wait till midwinter. | Wrap up and stop whining. We'll make a mountain wolf of you.
+then other: moment.close
+remember pair: m7_tease 30m
+
+rule m7_re_busy
+when concept=moment.reply_day|moment.reply_festival|moment.reply_weather pair.mem.m7_busy
+priority 2
+say Rather you than me. | Somebody has to, I suppose. | Shall I bring you something? | You'll rest when it's done.
+then other: moment.close
+
+# ================================================================ Closing (self is the one who began)
+
+rule m7_close_offer
+when concept=moment.close pair.mem.m7_offer
+priority 2
+say I... #thanks#. Truly. | Bless you. I'll not forget it. | You're too good. I'll pay you back. Somehow.
+
+rule m7_close_same
+when concept=moment.close pair.mem.m7_same
+priority 2
+say Two leaky boats, then. | We'll keep each other afloat. | Ha. Misery loves company.
+
+rule m7_close_snub
+when concept=moment.close pair.mem.m7_snub
+priority 2
+say #annoyed#. Thanks for nothing. | I'll remember that. | Easy for you to say.
+
+rule m7_close_together
+when concept=moment.close pair.mem.m7_together
+priority 2
+say One day. | Till then, there's two of us. | Aye. Together.
+
+rule m7_close_tease
+when concept=moment.close pair.mem.m7_tease
+priority 2
+say I'll never be a mountain wolf. | Harden up yourself. | Gods help me.
+
+rule m7_close_any
+when concept=moment.close
+say Well. There it is. | #farewell#. | Ah well. | I'll let you get on. | So it goes.
+
+rule m7_close_any2
+when concept=moment.close
+say #saying#. | True enough. | Can't argue with that. | We'll see, won't we?
+
+rule m7_close_moan
+when concept=moment.close pair.mem.m7_moan
+say Chin up. It can't last forever. | We'll all dry out in the end. | Cheer up, #address#. Nearly Restday.
+
+rule m7_close_moan_warm
+when concept=moment.close pair.mem.m7_moan self.warmth=warm
+say Come by mine later. There's a fire and a pot on. | Here, take my scarf. Go on. | Tomorrow'll be better. I'll see that it is.
+
+rule m7_close_glad
+when concept=moment.close pair.mem.m7_glad
+say That's the spirit. | Ha. You've cheered me up. | #agree#. Let's have more days like this.
+
+rule m7_close_home
+when concept=moment.close pair.mem.m7_home
+say Long way from home, then. | Tell me about it some time. Properly. | I'd like to see it one day. | Well, you're one of ours now. Like it or not.
+
+rule m7_close_home_cold
+when concept=moment.close pair.mem.m7_home self.warmth=cold
+say Nobody made you come. | Go back, then. | Everyone's from somewhere.
+
+rule m7_close_fear
+when concept=moment.close pair.mem.m7_fear
+say Stay safe. | Get indoors, then. Both of us. | Gods keep everyone out on the water.
+
+rule m7_close_joke
+when concept=moment.close pair.mem.m7_joke
+say Ha! | You're a hard one to sympathise with. | I'll remember that next time I'm moaning. | Get away with you.
+
+rule m7_close_work
+when concept=moment.close pair.mem.m7_work
+say Rather you than me. | Keep warm out there. | I'll stand you a pot of #ale# when it's done. | Gods, and I thought I had it bad.
+
+rule m7_close_poor_warm
+when concept=moment.close pair.mem.m7_poor self.warmth=warm
+say Come by ours. There's always a bowl. | Here. It's not much, but take it. | Don't you sleep out tonight. You hear me?
+
+rule m7_close_poor_cold
+when concept=moment.close pair.mem.m7_poor self.warmth=cold|reserved
+say Hm. Well. | Hard times all round. | The chapel takes folk in, I hear.
+
+rule m7_close_poor_rich
+when concept=moment.close pair.mem.m7_poor self.wealth=rich
+say The Soup Kitchen does good work, I'm told. | Ah. Well. One hears it's dreadful. | I'll mention it to someone.
+
+rule m7_close_tale
+when concept=moment.close pair.mem.m7_tale
+say Laugh all you like. | Well, that's how I heard it. | Sleep well, then. Ha. | Believe what you want. My grandmother did.
+
+rule m7_close_tale_devout
+when concept=moment.close pair.mem.m7_tale self.piety=devout
+say The Bright One keeps us, tales or no. | I'll light a candle tonight all the same. | Tales are tales. Prayers are better.
+
+rule m7_close_dry
+when concept=moment.close self.humour=dry
+say Riveting. | We should do this more often. Or less. | Well, that's the morning's excitement.
+
+rule m7_close_quiet
+when concept=moment.close self.talk=quiet
+say Mm. | Aye. | ...Aye.
+
+# ================================================================ The day: openers (talk.day: two who know each other)
+
+rule m7_day_open_any
+when concept=talk.day
+cooldown 1d
+say Where's the day gone? | Feels like a long one already. | Is it only #here.weekday#? | Funny sort of day#tag#. | Days are getting away from me.
+then other: moment.reply_day
+
+rule m7_day_open_market
+when concept=talk.day here.day=market
+cooldown 1d
+say Marketday. The whole town's out with its purse. | Have you been round the stalls yet? | I've been elbowed three times and I've bought nothing. | Market crowd's thick as porridge today.
+then other: moment.reply_day
+
+rule m7_day_open_rest
+when concept=talk.day here.day=rest
+cooldown 1d
+say Restday at last. My paws thank the gods. | Quiet, isn't it? You can hear the birds. | I don't know what to do with myself on a Restday. | Nothing to do but sit. Lovely.
+then other: moment.reply_day
+
+rule m7_day_open_work
+when concept=talk.day here.day=work here.time=dawn
+cooldown 1d
+say Up with the birds again. | Another day, another sack. | #here.weekday.capitalize#, and already I'm counting to Restday.
+then other: moment.reply_day
+
+rule m7_day_open_dusk
+when concept=talk.day here.time=dusk
+cooldown 1d
+say Lamps going on. Day's done. | That's the light gone. | Home, supper, #bed#. In that order. | Long shadows. My favourite hour.
+then other: moment.reply_day
+
+rule m7_day_open_night
+when concept=talk.day here.time=night
+cooldown 1d
+say What are you doing out at this hour? | Late, isn't it. | The town's asleep but us. | Even the dogs have given up barking.
+then other: moment.reply_day
+
+rule m7_day_open_crowd
+when concept=talk.day here.crowd=crowd
+cooldown 1d
+say Where's everyone come from? | Can't swing a cat for wolves today. | Mind your purse in this crush.
+then other: moment.reply_day
+
+rule m7_day_open_quiet
+when concept=talk.day here.crowd=quiet here.place=street|market
+cooldown 1d
+say Dead quiet. Where is everybody? | Just you and me and the pigeons. | Quiet as a chapel out here.
+then other: moment.reply_day
+
+rule m7_day_open_rest_working
+when concept=talk.day here.day=rest self.working=yes
+cooldown 2d
+say Restday, and here I am. | Somebody has to work while the rest of you pray. | I'll rest when I'm dead. Or Hearthday.
+then other: moment.reply_day
+remember pair: m7_busy 30m
+
+rule m7_day_open_market_merchant
+when concept=talk.day here.day=market self.role=merchant
+cooldown 2d
+say Good day for it. I've sold out of half the stall. | They're haggling like it's a sport. | Marketday's the only day that pays the rent.
+then other: moment.reply_day
+
+rule m7_day_open_after_shift
+when concept=talk.day self.shift=after
+cooldown 1d
+say That's me done. Done, done, done. | Off my feet, finally. | Day's work's behind me. Don't mention it.
+then other: moment.reply_day
+
+rule m7_day_open_day_off
+when concept=talk.day self.shift=day_off
+cooldown 1d
+say Day off. I keep thinking I've forgotten something. | Nothing to do and all day to do it. | I slept till the bells. Shameless.
+then other: moment.reply_day
+
+# ================================================================ The day: answers (self is the one answering)
+
+rule m7_day_re_any
+when concept=moment.reply_day
+say Same as ever. One foot, then the other. | I've stopped counting them. | Another day closer to something. | Aye, there's always tomorrow. | Days are like beans. All the same till you need one.
+then other: moment.close
+
+rule m7_day_re_any2
+when concept=moment.reply_day
+say Can't complain. Well, I can. | Mustn't grumble, so I won't. Much. | It's had its moments. | So far, so ordinary.
+then other: moment.close
+
+rule m7_day_re_market_merchant
+when concept=moment.reply_day here.day=market self.role=merchant
+cooldown 1d
+say I've not sat down since dawn. Don't keep me. | Busy's good. Busy's rent. | One more haggler and I'll give it away to be rid of them.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_day_re_market_poor
+when concept=moment.reply_day here.day=market self.wealth=destitute|poor
+cooldown 1d
+say I look. Looking's free. | Smelled the pies. That'll do me. | I've a penny and a list as long as my tail.
+then other: moment.close
+remember pair: m7_poor 30m
+
+rule m7_day_re_market_young
+when concept=moment.reply_day here.day=market self.stage=young
+cooldown 1d
+say There's a wolf with a dancing bird! A real one! | I'm allowed one honey cake. Just one. | I lost my mother twice already.
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_day_re_rest_devout
+when concept=moment.reply_day here.day=rest self.piety=devout
+cooldown 1d
+say I've been to chapel twice. I'll go again at dusk. | Rest's a gift. You should take it. | A good sermon this morning. You missed it.
+then other: moment.close
+
+rule m7_day_re_rest_working
+when concept=moment.reply_day here.day=rest self.working=yes
+cooldown 1d
+say Easy for you. I've been at it since dawn. | Restday's for those who can afford it. | Someone has to keep the fires in.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_day_re_rest_restless
+when concept=moment.reply_day here.day=rest self.drive=restless|ambitious
+cooldown 1d
+say I hate Restdays. Nothing gets done. | I've tidied the house twice. | Tomorrow can't come soon enough.
+then other: moment.close
+
+rule m7_day_re_guard
+when concept=moment.reply_day self.on_watch=yes
+cooldown 1d
+say Can't stop. I'm on watch. | Long one. Ask me at the end of it. | Quiet so far. Don't say it. You'll jinx it.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_day_re_tired
+when concept=moment.reply_day self.tired=yes
+cooldown 1d
+say #tired.capitalize#. Long. Longer than me. | I could sleep standing, like a horse. | Don't ask. I'll cry.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_day_re_hungry
+when concept=moment.reply_day self.hungry=yes
+cooldown 1d
+say I'll tell you after I've eaten. | Hungry. That's my whole day. Hungry. | My belly's been talking louder than me.
+then other: moment.close
+remember pair: m7_moan 30m
+
+rule m7_day_re_dusk_old
+when concept=moment.reply_day here.time=dusk self.stage=old
+cooldown 1d
+say At my age you're glad of every one. | Days go quicker the fewer you've got. | I watched the sun down. I always do.
+then other: moment.close
+
+rule m7_day_re_night
+when concept=moment.reply_day here.time=night
+cooldown 1d
+say Couldn't sleep. | Walking it off. | Better out here than staring at the rafters.
+then other: moment.close
+
+rule m7_day_re_crowd_nervy
+when concept=moment.reply_day here.crowd=crowd self.temper=nervy
+cooldown 1d
+say Too many. Far too many. I can't breathe. | Everyone's touching my tail. | I'm going home. I'll come back when it thins.
+then other: moment.close
+remember pair: m7_fear 30m
+
+rule m7_day_re_chatty
+when concept=moment.reply_day self.talk=chatty
+cooldown 1d
+say Well! Where to begin. The baker's daughter, first of all. No, wait, the cart. | You'll never guess who I saw at the well. | Busy! I'll tell you all of it. Sit.
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_day_re_rich
+when concept=moment.reply_day self.wealth=rich
+cooldown 2d
+say Pleasant enough. Calls and letters. | A dull dinner, a duller visit. | One does what one must.
+then other: moment.close
+
+rule m7_day_re_mourning
+when concept=moment.reply_day self.mourning=kin|friend
+priority 2
+cooldown 1d
+say I get through them. That's all. | Every day's long, this week. | I keep thinking I'll tell them about it.
+then other: keeping.sorry
+
+# ================================================================ Festivals: openers
+
+rule m7_fest_open_today
+when concept=talk.festival topic.when=today
+cooldown 1d
+say #greet#, and a happy #here.festival#! | #here.festival.capitalize# at last. | You've a ribbon on, I see. Proper #here.festival# spirit. | Smell that? That's a feast cooking.
+then other: moment.reply_festival
+
+rule m7_fest_open_soon
+when concept=talk.festival topic.when=soon
+cooldown 1d
+say #here.festival.capitalize#'s nearly on us. | Ready for #here.festival#? | Not long now till #here.festival#. | Have you been asked to bring anything for #here.festival#?
+then other: moment.reply_festival
+
+rule m7_fest_open_today_spring
+when concept=talk.festival topic.when=today here.season=spring
+cooldown 1d
+say Blossom in every doorway. | They've hung green boughs over the gate. | First feast after the lean months. My belly cheered.
+then other: moment.reply_festival
+
+rule m7_fest_open_today_summer
+when concept=talk.festival topic.when=today here.season=summer
+cooldown 1d
+say Longest day, and they'll dance through all of it. | The fires'll be lit at dusk. | Too hot to dance, they'll dance anyway.
+then other: moment.reply_festival
+
+rule m7_fest_open_today_autumn
+when concept=talk.festival topic.when=today here.season=autumn
+cooldown 1d
+say The last of it's in. Now we eat it. | Corn dollies on every door. | Bread, cider, more bread. That's the plan.
+then other: moment.reply_festival
+
+rule m7_fest_open_today_winter
+when concept=talk.festival topic.when=today here.season=winter
+cooldown 1d
+say Longest night of the year. We'll need every candle. | Every window lit. Look at it. | The cold can't get in tonight. Not with all those fires.
+then other: moment.reply_festival
+
+rule m7_fest_open_soon_poor
+when concept=talk.festival topic.when=soon self.wealth=destitute|poor
+cooldown 2d
+priority 1
+say How's a body to feast on nothing? | The pups want new ribbons. I've not a penny for them. | Festivals are for those with full purses.
+then other: moment.reply_festival
+remember pair: m7_need 30m
+
+rule m7_fest_open_soon_cook
+when concept=talk.festival topic.when=soon self.job=cook|baker|innkeeper|brewer
+cooldown 2d
+say I'll be baking from tonight till it's over. | Three days' work for one day's feast. | Order your pies now or go without.
+then other: moment.reply_festival
+remember pair: m7_busy 30m
+
+rule m7_fest_open_young
+when concept=talk.festival self.stage=young
+cooldown 1d
+say Is it festival yet? Is it now? | Will there be honey cakes? Say there will. | I'm going to stay up till the end. All of it.
+then other: moment.reply_festival
+
+# ================================================================ Festivals: answers
+
+rule m7_fest_re_any
+when concept=moment.reply_festival
+say Wouldn't miss it for all the #money# in Ridgemere. | I've my good coat brushed and ready. | Aye. Eat, dance, regret it in the morning. | It comes round quicker every year. | I'll be there. Somewhere near the food.
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_fest_re_any2
+when concept=moment.reply_festival
+say Same as every year, and I'll love it the same. | Gods, the noise there'll be. | They'd better not run out of cider like last time.
+then other: moment.close
+
+rule m7_fest_re_priest
+when concept=moment.reply_festival self.job=priest
+cooldown 1d
+say Remember why we keep it, between the cups. | I've the blessing to say. Pray they listen. | The chapel first, then the feast. That's the order.
+then other: moment.close
+
+rule m7_fest_re_guard
+when concept=moment.reply_festival self.job=guard|soldier
+cooldown 1d
+say I'm on duty. Somebody's got to pick the drunks out of the trough. | Double watch. Every festival, the same fights. | I'll hear it from the wall. Lovely.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_fest_re_cook
+when concept=moment.reply_festival self.job=cook|baker|innkeeper|brewer
+cooldown 1d
+say I'll be feeding the lot of you. Don't expect me to dance. | Every oven in town's going. | I've not seen my bed since yesterday.
+then other: moment.close
+remember pair: m7_work 30m
+
+rule m7_fest_re_merchant
+when concept=moment.reply_festival self.role=merchant
+cooldown 1d
+say Best trade of the season. Ribbons sell themselves. | I've laid in triple stock. Pray I sell it. | Festivals are good to merchants. Very good.
+then other: moment.close
+
+rule m7_fest_re_poor
+when concept=moment.reply_festival self.wealth=destitute|poor
+priority 1
+cooldown 1d
+say I'll watch. Watching's free. | The chapel feeds folk at festival. I'll be in the line. | Not this year. Maybe next.
+then other: moment.close
+remember pair: m7_poor 30m
+
+rule m7_fest_re_rich
+when concept=moment.reply_festival self.wealth=rich
+cooldown 1d
+say We'll give a little something to the town, of course. | I've a dinner to host. Twelve covers. Exhausting. | Our House always puts on a show.
+then other: moment.close
+
+rule m7_fest_re_mourning
+when concept=moment.reply_festival self.mourning=kin|friend
+priority 2
+cooldown 1d
+say I'll not go this year. | They loved this festival. I can't face it. | Maybe I'll sit at the back. Maybe.
+then other: keeping.sorry
+
+rule m7_fest_re_old
+when concept=moment.reply_festival self.stage=old
+cooldown 1d
+say In my day it went three days, not one. | I've danced at sixty of them. I'll sit this one out. Maybe. | They don't sing the old songs any more. Nobody knows them.
+then other: moment.close
+
+rule m7_fest_re_young
+when concept=moment.reply_festival self.stage=young
+cooldown 1d
+say I'm going to eat SIX honey cakes. | Can I stay up? Can I? | I've practised the dance. Watch! No, watch!
+then other: moment.close
+remember pair: m7_glad 30m
+
+rule m7_fest_re_adolescent
+when concept=moment.reply_festival self.stage=adolescent
+cooldown 1d
+say There's dancing after dark. Everyone's going. Everyone. | I'm not wearing that ribbon. I'm not. | Maybe someone'll ask me to dance. Maybe.
+then other: moment.close
+
+rule m7_fest_re_from_away
+when concept=moment.reply_festival pair.same_from=no self.from!=ridgemere here.region=ridgemere
+cooldown 2d
+say At home we do it different. More singing, less shoving. | It's not the same as at home. Bigger, but not the same. | Back home my mother'll be setting the long table.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_fest_re_short
+when concept=moment.reply_festival self.temper=short
+cooldown 1d
+say Noise, drink and fools. I'll stay in. | Wake me when it's over. | Every year someone's sick on my step.
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_fest_re_devout
+when concept=moment.reply_festival self.piety=devout
+cooldown 1d
+say I'll be at the chapel first. Give thanks before you feast. | It's a holy day, before it's a drinking one. | I've a candle ready for the window.
+then other: moment.close
+
+# ================================================================ Lore: openers (talk.lore: the realm's tales, by anyone)
+
+rule m7_lore_open_any
+when concept=talk.lore
+cooldown 1d
+say My grandmother used to say the hills were sleeping giants. | They say the first wolves came over the mountains following a star. | They say the old roads were laid by wolves who never slept. | Put your ear to the ground on a still night, they say, and you'll hear the dead talking.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+rule m7_lore_open_night
+when concept=talk.lore here.time=night|dusk
+cooldown 1d
+say Don't whistle after dark. It calls things. | Count the stars and you'll go blind, my mother said. | Somebody's walking on my grave. Felt it. | Never answer a voice in the dark that knows your name.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+rule m7_lore_open_wardens
+when concept=talk.lore
+cooldown 2d
+say Folk say the Wardens watch the Quickened from somewhere past the mountains. | Ever seen a Warden? My uncle swore he did. Grey cloak, no face. | If you've a gift, they say, the Wardens hear of it.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+rule m7_lore_open_houses
+when concept=talk.lore here.region=ridgemere
+cooldown 2d
+say Four Houses and a council, and all of them older than sense. | They say the first Greatly came ashore with a boat and a bag of salt. | Fell, Grayrock, Mossgrave, Greatly. Wood, stone, wool, water. That's the city.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+rule m7_lore_open_old
+when concept=talk.lore self.stage=old
+cooldown 2d
+say When I was a pup the winters were longer and the wolves were kinder. | I remember when this was all fields. | My father saw the comet. Said the sky burned a week.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+rule m7_lore_open_young
+when concept=talk.lore self.stage=young
+cooldown 1d
+say Is it true there's a dragon under the hill? | Where do the stars go in the day? | Do the dead come back on the longest night? Brindle says so.
+then other: moment.reply_lore
+remember pair: m7_tale 30m
+
+# ================================================================ Lore: answers
+
+rule m7_lore_re_any
+when concept=moment.reply_lore
+say I heard it different. There was a fox in it, my version. | Every grandmother says that. | Maybe. Old tales have a grain of something in them. | Who told you that? | Don't. I'll never sleep.
+then other: moment.close
+
+rule m7_lore_re_any2
+when concept=moment.reply_lore
+say My mother told it the same. Word for word. | That's nonsense, and I believe every word. | Hush. Somebody'll hear.
+then other: moment.close
+
+rule m7_lore_re_frank
+when concept=moment.reply_lore self.honesty=frank
+cooldown 1d
+say #nonsense.capitalize#. Pure #nonsense#. | Tales are for pups and drunks. | I'll believe it when it pays my rent.
+then other: moment.close
+
+rule m7_lore_re_devout
+when concept=moment.reply_lore self.piety=devout
+cooldown 1d
+say The Bright One made the world. The rest is gossip. | Don't speak lightly of such things. | There's more in heaven than the priests tell us. I'll grant that.
+then other: moment.close
+
+rule m7_lore_re_old
+when concept=moment.reply_lore self.stage=old
+cooldown 1d
+say That's not how it goes. Sit down, I'll tell it right. | I knew a wolf who knew a wolf who was there. | They told it better when I was young. Slower.
+then other: moment.close
+
+rule m7_lore_re_young
+when concept=moment.reply_lore self.stage=young
+cooldown 1d
+say Is that true? Truly true? | I'm not scared. I'm just going to stand behind you. | Tell it again! The scary bit!
+then other: moment.close
+
+rule m7_lore_re_scholar
+when concept=moment.reply_lore self.job=scholar|priest|official
+cooldown 1d
+say There's a record of it in the Hall of Records, if you can read the hand. | The old rolls say something like it. Duller, mind. | Tales grow in the telling. The truth's usually smaller.
+then other: moment.close
+
+rule m7_lore_re_nervy
+when concept=moment.reply_lore self.temper=nervy here.time=night|dusk
+cooldown 1d
+say Why would you say that? Now? Here? | I'm going home. Right now. With a lamp. | Did you hear that? Behind us?
+then other: moment.close
+remember pair: m7_fear 30m
+
+rule m7_lore_re_from_frost
+when concept=moment.reply_lore self.from=frosthollow
+cooldown 2d
+say Up the valley they'd say it's the mountain breathing. Everything's the mountain, with us. | We've a tale like it. Ends with a cave-in. They all do. | In Frosthollow we'd knock on the mine door for luck before we said that aloud.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_cold
+when concept=moment.reply_lore self.from=coldwater
+cooldown 2d
+say At Coldwater we'd say the lake knows. The lake knows everything. | My grandfather would throw a fish back for saying that. | There's a tale like it about Glasswater. Colder, mind.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_oak
+when concept=moment.reply_lore self.from=oakhaven
+cooldown 2d
+say In the Warmwood we'd say an oak saw it. Oaks see everything. | We tell that one round the fire at story night. Better, mind. | My granddam told it with a ghost in it. Always a ghost, in Oakhaven.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_mire
+when concept=moment.reply_lore self.from=mirebridge
+cooldown 2d
+say In the fens we'd say: don't follow the lights. That's the end of every tale. | Fen folk know a dozen like it, and every one's true. Mostly. | My aunt would spit three times and turn her coat inside out.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_lark
+when concept=moment.reply_lore self.from=larkfield
+cooldown 2d
+say A carter told me that one. Taller, it was. | In Larkfield you'd pay a penny for a tale like that, and get change. | Every tale passes through Larkfield market. That one came back muddier.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_south
+when concept=moment.reply_lore self.from=southmeadow
+cooldown 2d
+say Down south we'd tell that at harvest, with the cider going round. | Every field in Southmeadow has its story. That's a field tale if ever I heard one. | We'd say a scarecrow saw it. Don't laugh.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_lore_re_from_city
+when concept=moment.reply_lore self.from=ridgemere here.region!=ridgemere
+cooldown 2d
+say In the city they'd say it was a House that did it. It's always a House. | We've a tale like that in Ridgemere. Ends with somebody owing money. | City folk don't believe tales. We believe rumours. Different thing.
+then other: moment.close
+remember pair: m7_home 30m
+
+# ================================================================ Where you're from (talk.accent): b's voice noticed
+
+rule m7_acc_open_any
+when concept=talk.accent
+cooldown 1d
+say Where's that voice from? | You don't sound like round here. | Say that again. I like how you say it. | #surprise#! Not a local voice, that.
+then other: moment.reply_home
+
+rule m7_acc_open_rude
+when concept=talk.accent self.warmth=cold
+cooldown 2d
+say Can't understand a word you say. | Talk properly, will you? | Where'd you learn to talk like that? A barn?
+then other: moment.reply_home
+
+rule m7_acc_open_warm
+when concept=talk.accent self.warmth=warm
+cooldown 2d
+say I love that voice. Where's it from? | You've a lovely way of talking. Like music. | Go on, say something else. I could listen all day.
+then other: moment.reply_home
+
+rule m7_acc_open_young
+when concept=talk.accent self.stage=young
+cooldown 1d
+say Why do you talk funny? | Say "water" again! Ha! | Are you from far away? Like, really far?
+then other: moment.reply_home
+
+rule m7_acc_open_city
+when concept=talk.accent here.region=ridgemere self.from=ridgemere
+cooldown 2d
+say Fresh off the road, are you? | You'll lose that voice in a year. The city wears it off. | Not from the city, are you? I can always tell.
+then other: moment.reply_home
+
+rule m7_acc_open_merchant
+when concept=talk.accent self.role=merchant
+cooldown 2d
+say A #topic.accent_town# voice! I buy from your folk. Honest dealers, mostly. | I'd know that voice in a crowd. I trade with #topic.accent_town#. | You'll be wanting a fair price, then, talking like that.
+then other: moment.reply_home
+
+# Answers about home (self is the one whose voice was noticed; topic.accent_of is where they grew up)
+
+rule m7_home_re_any
+when concept=moment.reply_home
+say #topic.accent_town#. Long way off. | #topic.accent_town#, if you must know. | From #topic.accent_town#. It shows, does it? | #topic.accent_town#. Born there, and I'll die talking like it.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_frost
+when concept=moment.reply_home self.from=frosthollow
+say Frosthollow. Up the Pass Road, under the Whitefangs. Where the snow lives. | The valley. Frosthollow. We say what we mean, and not much of it. | Miner's voice, that. Frosthollow. Grew up with the lamp.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_cold
+when concept=moment.reply_home self.from=coldwater
+say Coldwater. On Glasswater, under the mountains. You'd love it. Or freeze. | Lake country. We talk slow. The fish don't hurry, why should we? | Coldwater. I can still smell the reeds when I close my eyes.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_oak
+when concept=moment.reply_home self.from=oakhaven
+say Oakhaven. The Warmwood. Green all summer, and then some. | From under the oaks. We take our time, in Oakhaven. | The Warmwood, aye. You can hear the leaves in it, can you?
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_mire
+when concept=moment.reply_home self.from=mirebridge
+say Mirebridge. The fens. You can hear the mud in it, can you? | Fen-born. Sallow Fens, by the Long River. Wet feet and long memories. | Mirebridge. Don't make the face. Everyone makes the face.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_lark
+when concept=moment.reply_home self.from=larkfield
+say Larkfield. The downs. I was raised shouting prices over sheep. | Larkfield. Every carter in the realm drinks in our inn. | The Larkdowns. Wide skies, quick tongues.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_south
+when concept=moment.reply_home self.from=southmeadow
+say Southmeadow! Orchards and cider and sun on your back. Why did I leave? | The far south. Southmeadow. We grow your bread. | Southmeadow. Where the apples come from. You're welcome.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_city
+when concept=moment.reply_home self.from=ridgemere
+say Ridgemere. The city. Rain and Houses and too many stairs. | City-born. You can't scrub it off. | Ridgemere. Don't hold it against me.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_broad_old
+when concept=moment.reply_home self.accent=broad self.stage=old
+priority 1
+cooldown 1d
+say Sixty years here and I still talk like #topic.accent_town#. I'll not change now. | My voice never left home, even when I did. | They'll bury me sounding like #topic.accent_town#. And proud.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_defensive
+when concept=moment.reply_home self.temper=short
+priority 1
+cooldown 1d
+say What of it? | I talk how I talk. You talk like a gate hinge. | #topic.accent_town#. Got a problem with that?
+then other: moment.close
+remember pair: m7_joke 30m
+
+rule m7_home_re_shy
+when concept=moment.reply_home self.tone=shy
+priority 1
+cooldown 1d
+say Oh. Is it that plain? #topic.accent_town#. Sorry. | I try to talk like you lot. It doesn't take. | #topic.accent_town#. I don't, um. I don't say much, usually.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_young
+when concept=moment.reply_home self.stage=young|adolescent
+priority 1
+cooldown 1d
+say We moved here. I didn't want to. | #topic.accent_town#. The other pups laugh at how I talk. | I'm from #topic.accent_town#! I'm going back when I'm big.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_homesick
+when concept=moment.reply_home self.drive=content|steady self.warmth=warm
+priority 1
+cooldown 2d
+say #topic.accent_town#. I miss it every day. Some days more. | I left for work. I'll go back for good one day. | You'd like it there. Everyone does. Except me, apparently, since I left.
+then other: moment.close
+remember pair: m7_home 30m
+
+rule m7_home_re_glad_gone
+when concept=moment.reply_home self.drive=restless|ambitious
+priority 1
+cooldown 2d
+say #topic.accent_town#. And glad to be shot of it. | Nothing ever happens in #topic.accent_town#. That's why I'm here. | I left as soon as I could walk the road.
+then other: moment.close
+remember pair: m7_joke 30m
