@@ -1,7 +1,7 @@
 {
   "format": "ratw-terrain",
   "version": 1,
-  "about": "The one list of terrain tiles. Each tile is stored as its one-character ASCII `code` (cell files, Postgres, the wire) and drawn as its Unicode `glyph`; `ascii` is the plain-text fallback. kind: floor|grass|water|wall|table|counter|stairs|slope|cliff|feature. height: default ground height (half steps). stature: how far the tile stands above its ground, for sight. cost: movement time multiplier. ramp: a full step to or from it is walkable. Run `python3 tools/terrain_catalog.py` after editing.",
+  "about": "The one list of terrain tiles. Each tile is stored as its one-character ASCII `code` (cell files, Postgres, the wire) and drawn as its Unicode `glyph`; `ascii` is the plain-text fallback. kind: floor|grass|water|wall|table|counter|stairs|slope|cliff|feature. height: default ground height (half steps). stature: how far the tile stands above its ground, for sight. cost: movement time multiplier. ramp: a full step to or from it is walkable. way: a road, street, path or bridge: NPCs walking overland keep to tiles marked so (the game prefers them by itself; Atlas's Road tool lays them). Run `python3 tools/terrain_catalog.py` after editing.",
   "categories": [
     {"id": "ground", "name": "Ground & floors"},
     {"id": "nature", "name": "Nature"},
@@ -12,9 +12,10 @@
   ],
   "tiles": [
     {"code": ".", "glyph": "·", "ascii": ".", "name": "Floor / packed earth", "category": "ground", "kind": "floor", "cost": 1, "fg": "#6f7d74", "bg": "#1b2420", "effect": "Open ground"},
-    {"code": "d", "glyph": "·", "ascii": ".", "name": "Dirt road", "category": "ground", "kind": "floor", "cost": 1, "fg": "#a78d62", "bg": "#2a2419", "effect": "Open ground"},
-    {"code": "_", "glyph": "∷", "ascii": "_", "name": "Cobbled street", "category": "ground", "kind": "floor", "cost": 1, "fg": "#a39e90", "bg": "#262521", "effect": "Open ground"},
-    {"code": "f", "glyph": "▫", "ascii": ".", "name": "Worn flagstones", "category": "ground", "kind": "floor", "cost": 1, "fg": "#8d8878", "bg": "#22211d", "effect": "Open ground"},
+    {"code": "d", "glyph": "·", "ascii": ".", "name": "Dirt road", "category": "ground", "kind": "floor", "cost": 1, "fg": "#a78d62", "bg": "#2a2419", "way": true, "effect": "Open ground"},
+    {"code": "/", "glyph": "∙", "ascii": ":", "name": "Footpath", "category": "ground", "kind": "floor", "cost": 1, "way": true, "fg": "#9c8b67", "bg": "#1f2219", "effect": "A beaten path: open ground walkers keep to"},
+    {"code": "_", "glyph": "∷", "ascii": "_", "name": "Cobbled street", "category": "ground", "kind": "floor", "cost": 1, "fg": "#a39e90", "bg": "#262521", "way": true, "effect": "Open ground"},
+    {"code": "f", "glyph": "▫", "ascii": ".", "name": "Worn flagstones", "category": "ground", "kind": "floor", "cost": 1, "fg": "#8d8878", "bg": "#22211d", "way": true, "effect": "Open ground"},
     {"code": "m", "glyph": "⋄", "ascii": ".", "name": "Marble floor", "category": "ground", "kind": "floor", "cost": 1, "fg": "#ddd5c4", "bg": "#2e2c28", "effect": "Open ground"},
     {"code": "R", "glyph": "░", "ascii": ":", "name": "Carpet runner", "category": "ground", "kind": "floor", "cost": 1, "fg": "#9c4a44", "bg": "#2c1a19", "effect": "Open ground"},
     {"code": ",", "glyph": ",", "ascii": ",", "name": "Grass", "category": "nature", "kind": "grass", "cost": 1.12, "fg": "#6f9a6d", "bg": "#18261b", "effect": "Slightly slower"},
@@ -79,7 +80,7 @@
     {"code": "O", "glyph": "◍", "ascii": "o", "name": "Barrel", "category": "furniture", "kind": "feature", "solid": true, "stature": 1, "fg": "#9c7b55", "bg": "#271e15", "effect": "Solid"},
     {"code": "u", "glyph": "⌂", "ascii": "u", "name": "Market stall", "category": "furniture", "kind": "feature", "solid": true, "stature": 1.2, "fg": "#c29a62", "bg": "#2c2318", "effect": "Solid"},
     {"code": "4", "glyph": "║", "ascii": "|", "name": "Crop field", "category": "ground", "kind": "grass", "cost": 1.3, "fg": "#c9b25a", "bg": "#2a2616", "effect": "Slow"},
-    {"code": "8", "glyph": "╫", "ascii": "#", "name": "Bridge", "category": "structure", "kind": "floor", "cost": 1, "fg": "#b08a5a", "bg": "#2a1f14", "effect": "Planks over water"},
+    {"code": "8", "glyph": "╫", "ascii": "#", "name": "Bridge", "category": "structure", "kind": "floor", "cost": 1, "fg": "#b08a5a", "bg": "#2a1f14", "way": true, "effect": "Planks over water"},
     {"code": "6", "glyph": "▮", "ascii": "I", "name": "Standing stone", "category": "civic", "kind": "feature", "solid": true, "stature": 2, "fg": "#b9b7ad", "bg": "#26251f", "effect": "Solid; tall"},
     {"code": "9", "glyph": "☼", "ascii": "&", "name": "Campfire", "category": "civic", "kind": "feature", "solid": true, "stature": 0.4, "fg": "#e08a4a", "bg": "#2c1c14", "effect": "Solid, low"},
     {"code": "{", "glyph": "◘", "ascii": "&", "name": "Furnace", "category": "civic", "kind": "feature", "solid": true, "stature": 1.6, "fg": "#f07a3a", "bg": "#2b1b14", "effect": "Solid; hot"},

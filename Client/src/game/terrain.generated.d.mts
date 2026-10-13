@@ -8,7 +8,10 @@ export interface TerrainTile {
     readonly code: string; readonly glyph: string; readonly ascii: string; readonly name: string;
     readonly category: TerrainCategoryId; readonly kind: TerrainKind;
     readonly solid: boolean; readonly opaque: boolean; readonly height: number; readonly stature: number;
-    readonly cost: number; readonly ramp: boolean; readonly fg: string; readonly bg: string; readonly effect: string;
+    readonly cost: number; readonly ramp: boolean;
+    /** A road, street, path or bridge: what NPCs walking overland keep to. */
+    readonly way: boolean;
+    readonly fg: string; readonly bg: string; readonly effect: string;
 }
 export const TERRAIN_CATEGORIES: readonly TerrainCategory[];
 export const TERRAIN: readonly TerrainTile[];

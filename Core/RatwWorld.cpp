@@ -303,8 +303,8 @@ Tile tileFromGlyph(char glyph)
 const std::vector<TerrainInfo>& terrainCatalog()
 {
     static const std::vector<TerrainInfo> catalog = {
-#define RATW_TERRAIN(code, kind, solid, opaque, height, stature, cost, ramp, glyph, ascii, fg, bg, name)                 \
-    {char(code), Terrain::kind, solid, opaque, height, stature, cost, ramp, char16_t(glyph), char(ascii), fg, bg, name},
+#define RATW_TERRAIN(code, kind, solid, opaque, height, stature, cost, ramp, way, glyph, ascii, fg, bg, name)            \
+    {char(code), Terrain::kind, solid, opaque, height, stature, cost, ramp, way, char16_t(glyph), char(ascii), fg, bg, name},
 #include "RatwTerrainCatalog.inc"
 #undef RATW_TERRAIN
     };
@@ -325,19 +325,8 @@ const TerrainInfo* terrainInfo(char code)
 
 bool roadTerrain(char code)
 {
-    static const auto table = [] {
-        std::array<bool, 128> roads{};
-        for (const auto& info : terrainCatalog())
-        {
-            const std::string name = info.name ? info.name : "";
-            roads[static_cast<unsigned char>(info.code)] =
-                !info.solid && (name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
-                                name.find("flagstones") != std::string::npos || name == "Bridge");
-        }
-        return roads;
-    }();
-    const auto slot = static_cast<unsigned char>(code);
-    return slot < table.size() && table[slot];
+    const auto* info = terrainInfo(code);
+    return info && info->way && !info->solid;
 }
 
 double routeWeight(char code, double cost)

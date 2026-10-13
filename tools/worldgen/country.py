@@ -360,7 +360,7 @@ def place_lone(plot, b, rng):
 # every door of the country's sites to the nearest road of its cell, laid once every site is placed, so that no site
 # moves for it. Painted only over open country, two tiles wide, joining the tracks laid before it where that is shorter.
 TRACKABLE = OPEN | set('&B5D0rs*.!J')
-ROADS = set('d_8f')
+ROADS = set(catalog.WAYS)                             # Roads, streets, paths, bridges (the catalog's ways).
 
 
 def lay_tracks(plot: Plot, left=None):

@@ -4,6 +4,8 @@ import * as M from '../model/model.mjs';
 import {api, download} from './api';
 import {ELEVATION_LABEL, ELEVATION_MODES, nextElevation} from './elevation';
 import {glyphRender, setPlainAscii} from './glyphFont';
+import {planRoad} from './roads';
+import {surfaceFor} from './surface';
 import {allGround, anyPending} from './lazyGround';
 import {commit, getState, isRoomView, openView, redo, setState, setWorkspace, toast, undo, useTool, type Tool} from './store';
 
@@ -104,10 +106,11 @@ export const COMMANDS: Command[] = [
 
     {id: 'view.world', label: 'World overview', menu: 'View', group: 'a', keys: 'Home', match: e => e.key === 'Home', run: () => openView({kind: 'world'})},
     {id: 'view.fit', label: 'Fit to window', menu: 'View', group: 'a', keys: 'F', match: plain('f'), run: () => setState(s => ({fitRequest: s.fitRequest + 1}))},
-    ...(['cuts', 'grid', 'links', 'people', 'territory', 'camps'] as const).map((k): Command => ({
+    ...(['cuts', 'grid', 'links', 'people', 'territory', 'camps', 'ways'] as const).map((k): Command => ({
         id: `view.${k}`, menu: 'View', group: 'b', run: () => setState(s => ({overlays: {...s.overlays, [k]: !s.overlays[k]}})),
         checked: () => getState().overlays[k],
-        label: {cuts: 'Cell boundaries', grid: 'Tile grid', links: 'Doors, spawn & herbs', people: 'People', territory: 'Territory claims', camps: "Chapters' camps (from the game)"}[k],
+        label: {cuts: 'Cell boundaries', grid: 'Tile grid', links: 'Doors, spawn & herbs', people: 'People', territory: 'Territory claims', camps: "Chapters' camps (from the game)",
+            ways: 'NPC ways (roads, streets and paths NPCs keep to)'}[k],
     })),
     {id: 'view.relief', label: 'Cycle elevation relief (off / shading / full)', menu: 'View', group: 'b2', keys: 'E', match: plain('e'),
         run: () => { const next = nextElevation(getState().elevation); setState({elevation: next}); toast(`${ELEVATION_LABEL[next]}.`); }},
@@ -151,6 +154,11 @@ export const COMMANDS: Command[] = [
     tool('brush', 'Brush', 'b', 'b'),
     tool('rect', 'Rectangle', 'r', 'b'),
     tool('line', 'Line', 'l', 'b'),
+    tool('road', 'Road (a way NPCs keep to)', 'w', 'b'),
+    {id: 'tool.roadLay', label: 'Lay the road', menu: 'Tools', group: 'b', keys: 'Enter', match: e => e.key === 'Enter' && !e.ctrlKey && !e.metaKey,
+        enabled: () => getState().tool === 'road' && getState().roadPoints.length >= 2, run: layPendingRoad},
+    {id: 'tool.roadBack', label: 'Take back the last road point', menu: 'Tools', group: 'b', keys: 'Backspace', match: e => e.key === 'Backspace',
+        enabled: () => getState().tool === 'road' && getState().roadPoints.length > 0, run: () => setState(s => ({roadPoints: s.roadPoints.slice(0, -1)}))},
     tool('fill', 'Fill', 'g', 'b'),
     tool('pick', 'Eyedropper', 'i', 'b'),
     tool('height', 'Elevation', 'h', 'b'),
@@ -212,6 +220,20 @@ export function deleteCell(id: string) {
     if (commit(`Deleted ${cell.name}.`, p => M.removeCell(p, id))) setState(st => ({selection: null, view: st.view.kind === 'cell' && st.view.id === id ? {kind: 'world'} : st.view}));
 }
 
+/** Lays the Road tool's road through the points clicked (lib/roads.ts): the way, its bridges, as one edit. */
+export function layPendingRoad() {
+    const s = getState();
+    if (s.tool !== 'road' || s.roadPoints.length < 2) return;
+    const surface = surfaceFor(s.project, s.view);
+    const plan = planRoad(surface, s.roadPoints, s.road);
+    if (plan.problem) { toast(plan.problem, 'error'); return; }
+    if (!plan.tiles.length) { toast('Nothing to lay: the road is already there.', 'error'); setState({roadPoints: []}); return; }
+    const way = M.TERRAIN_BY_CODE.get(s.road.glyph)?.name.toLowerCase() ?? 'road';
+    const tiles = plan.tiles.map(t => ({...t, x: t.x + surface.ox, y: t.y + surface.oy}));
+    const label = `Laid ${plan.tiles.length - plan.bridges} tiles of ${way}${plan.bridges ? ` and a bridge of ${plan.bridges}` : ''}: NPCs will keep to it.`;
+    if (commit(label, p => M.layRoad(p, tiles, surface.roomId)) !== undefined) setState({roadPoints: []});
+}
+
 export function handleShortcut(e: KeyboardEvent): boolean {
     const target = e.target as HTMLElement | null;
     const typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
@@ -219,6 +241,7 @@ export function handleShortcut(e: KeyboardEvent): boolean {
         const s = getState();
         if (s.palette || s.dialog) return false;
         if (s.tool === 'cell') useTool('select');           // Cancels placing a new cell.
+        else if (s.tool === 'road' && s.roadPoints.length) setState({roadPoints: []});   // Clears the road being drawn.
         else if (s.pending) setState({pending: null});
         else if (s.selection) setState({selection: null});
         else if (s.view.kind === 'cell' && s.workspace !== 'interiors') openView({kind: 'world'});

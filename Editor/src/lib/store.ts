@@ -14,7 +14,7 @@ export type View = {kind: 'world'} | {kind: 'cell'; id: string};
 export type Workspace = 'map' | 'interiors' | 'people' | 'characters';
 /** The workspaces that show the map canvas. */
 export type MapSpace = Exclude<Workspace, 'characters'>;
-export type Tool = 'select' | 'brush' | 'rect' | 'line' | 'fill' | 'pick' | 'height' | 'door' | 'cell'
+export type Tool = 'select' | 'brush' | 'rect' | 'line' | 'fill' | 'road' | 'pick' | 'height' | 'door' | 'cell'
     | 'person' | 'slot' | 'post' | 'spawn' | 'herb' | 'building' | 'pan';
 export type Selection =
     | {kind: 'cells'; ids: string[]}
@@ -31,7 +31,7 @@ export type Pending =
     | null;
 export type Dialog = 'identity' | 'conflict' | 'publish' | 'cut' | 'split' | 'room' | 'politics' | 'play' | 'shortcuts' | 'about' | 'generate' | null;
 export interface Toast { id: number; text: string; tone: 'info' | 'error' | 'success' }
-export interface Overlays { cuts: boolean; links: boolean; territory: boolean; people: boolean; routes: boolean; grid: boolean; camps: boolean }
+export interface Overlays { cuts: boolean; links: boolean; territory: boolean; people: boolean; routes: boolean; grid: boolean; camps: boolean; ways: boolean }
 
 /** Where someone else just edited, drawn briefly in their color: world tiles, or tiles of one interior. */
 export interface Mark { area: 'world' | string; x: number; y: number; w: number; h: number; color: string; at: number }
@@ -63,6 +63,10 @@ export interface EditorState {
     side: 'S' | 'N';
     /** The New cell tool's size, in tiles. */
     cellSize: {w: number; h: number};
+    /** The Road tool: the way it lays (a catalog way), how wide, and whether it bridges water; and the points clicked
+     *  so far (surface tiles), until it is laid. */
+    road: {glyph: string; width: number; bridges: boolean};
+    roadPoints: [number, number][];
     pending: Pending;
     dialog: Dialog;
     palette: boolean;
@@ -87,8 +91,8 @@ let state: EditorState = {
     project: M.createProject(64, 48, 'Loading the world…'), past: [], future: [], loaded: false,
     live: {state: 'connecting', pending: 0, error: ''}, identity: null, editors: [], camps: [], conflict: null, marks: [],
     view: {kind: 'world'}, selection: null, tool: 'select', glyph: '#', brush: 1,
-    height: 1, filled: true, role: 'civilian', building: 'house', side: 'S', cellSize: {w: 64, h: 64}, pending: null, dialog: null,
-    palette: false, overlays: {cuts: true, links: true, territory: false, people: true, routes: true, grid: false, camps: true},
+    height: 1, filled: true, role: 'civilian', building: 'house', side: 'S', cellSize: {w: 64, h: 64}, road: {glyph: 'd', width: 3, bridges: true}, roadPoints: [], pending: null, dialog: null,
+    palette: false, overlays: {cuts: true, links: true, territory: false, people: true, routes: true, grid: false, camps: true, ways: false},
     elevation: 'shade', toasts: [], hover: null, fitRequest: 0,
     workspace: 'map', lastView: {}, roster: null, savedRoster: null, character: null, profession: 'guard', preview: null,
 };
@@ -291,7 +295,7 @@ export const isRosterDirty = (s: EditorState) => s.roster !== s.savedRoster;
 const TERRAIN: MapSpace[] = ['map', 'interiors'];
 export const TOOL_SPACE: Record<Tool, MapSpace[]> = {
     select: ['map', 'interiors', 'people'], pan: ['map', 'interiors', 'people'],
-    brush: TERRAIN, rect: TERRAIN, line: TERRAIN, fill: TERRAIN, pick: TERRAIN, height: TERRAIN, door: TERRAIN,
+    brush: TERRAIN, rect: TERRAIN, line: TERRAIN, fill: TERRAIN, pick: TERRAIN, height: TERRAIN, door: TERRAIN, road: ['map'],
     building: ['map'], cell: ['map'], spawn: ['map'], herb: ['map'], person: ['people'], slot: ['people'], post: ['people'],
 };
 /** Which map workspaces edit each kind of selection. */
@@ -325,7 +329,7 @@ export function setWorkspace(workspace: Workspace) {
 export function useTool(tool: Tool) {
     const spaces = TOOL_SPACE[tool];
     if (!spaces.includes(state.workspace as MapSpace)) setWorkspace(spaces[0]);
-    setState({tool, pending: null});
+    setState({tool, pending: null, roadPoints: []});
 }
 /** Selects something, moving to the workspace that edits it. */
 export function selectThing(selection: Selection) {

@@ -9,6 +9,9 @@ export const TERRAIN_BY_CODE = new Map(TERRAIN.map(t => [t.code, t]));
 /** Every stored terrain code, in palette order. */
 export const TERRAIN_CODES = TERRAIN.map(t => t.code);
 const SOLID = new Set(TERRAIN.filter(t => t.solid).map(t => t.code));
+/** The catalog's ways (roads, streets, paths, bridges): what NPCs walking overland keep to, and what the Road tool
+ *  lays. The game reads the same flag (roadTerrain): a way painted is a way preferred, with nothing more to do. */
+export const WAYS = new Set(TERRAIN.filter(t => t.way).map(t => t.code));
 const RAMP = new Set(TERRAIN.filter(t => t.ramp).map(t => t.code));
 /** Whether `code` is one catalog terrain code. */
 export const isTerrainCode = code => typeof code === 'string' && TERRAIN_BY_CODE.has(code);
@@ -933,6 +936,26 @@ export function paintTiles(project, tiles, glyph, roomId = null) {
         checkGlyph(glyph);
         if (!Array.isArray(tiles) || tiles.length > 1048576) fail('Too many tiles in one paint operation.');
         editGround(next, roomId, tiles, () => ({glyph}));
+    });
+    return project;
+}
+
+/** Lays a road (Atlas's Road tool, lib/roads.ts): each tile its glyph and, where given, its height (a bridge's deck,
+ *  level with its banks), as one edit, undone as one. World tiles, or the room's own with `roomId`. */
+export function layRoad(project, tiles, roomId = null) {
+    atomic(project, next => {
+        if (!Array.isArray(tiles) || tiles.length > 262144) fail('Too many tiles in one road.');
+        const want = new Map();
+        for (const t of tiles) {
+            if (!t || !Number.isInteger(t.x) || !Number.isInteger(t.y)) fail('A road tile needs whole-tile x and y.');
+            checkGlyph(t.glyph);
+            if (t.height !== undefined) checkElevation(t.height);
+            want.set(`${t.x},${t.y}`, t);
+        }
+        editGround(next, roomId, [...want.values()].map(t => [t.x, t.y]), (x, y) => {
+            const t = want.get(`${x},${y}`);
+            return t.height === undefined ? {glyph: t.glyph} : {glyph: t.glyph, height: t.height};
+        });
     });
     return project;
 }

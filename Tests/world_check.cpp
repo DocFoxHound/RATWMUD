@@ -45,7 +45,7 @@ std::string slurp(const fs::path& path)
     return text.str();
 }
 // Keeping to the roads: the outdoor world as one grid of whether a road is within a tile (read from the export's cells,
-// by the game's own rule: a terrain named road, street or flagstones, or a bridge), and how far residents walked on it
+// by the game's own rule, roadTerrain: a tile the catalog marks a way), and how far residents walked on it
 // and off it, sampled every second along the straight line between where they were and where they are.
 struct RoadTally
 {
@@ -58,15 +58,7 @@ struct RoadTally
     std::map<std::string, double> offIn;            // and by where (the cell; for travellers, those "on the road").
     double travel[2] = {0, 0};                      // Travellers' ("on the road", "going ...") [on, off] the road.
 
-    static bool road(char code)
-    {
-        const auto* info = terrainInfo(code);
-        if (!info || info->solid || !info->name)
-            return false;
-        const std::string name = info->name;
-        return code == '8' || name.find("road") != std::string::npos || name.find("street") != std::string::npos ||
-               name.find("flagstones") != std::string::npos;
-    }
+    static bool road(char code) { return roadTerrain(code); }
     void load(const fs::path& root)
     {
         std::vector<std::tuple<int, int, std::vector<std::string>>> grids;

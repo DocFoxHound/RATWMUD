@@ -104,6 +104,7 @@ struct TerrainInfo
     bool solid, opaque;
     double height, stature, cost;
     bool ramp;
+    bool way;            // A road, street, path or bridge: what NPCs walking overland keep to (roadTerrain).
     char16_t glyph;
     char ascii;
     std::uint32_t fg, bg;
@@ -2290,7 +2291,8 @@ class World
 
 Tile tileFromGlyph(char glyph); // Terrain rules shared by built-in and authored cells.
 const TerrainInfo* terrainInfo(char code); // Null for a code the catalog does not know.
-// A road to keep to: a terrain named road, street or flagstones, or a bridge (World::indexRoads, roadAstar).
+// A road to keep to: a tile the terrain catalog marks a way (roads, streets, paths, flagstones, bridges; the user,
+// 2026-10-12: whatever is laid as a way is what NPCs prefer, with nothing more to do). World::indexRoads, roadAstar.
 bool roadTerrain(char code);
 // What a step on a tile costs an NPC planning a long walk (World::roadAstar, the road maps): its own cost on a road or
 // made ground, and OffRoad times it on open country (any ground dearer than a floor), so a way along the road wins over

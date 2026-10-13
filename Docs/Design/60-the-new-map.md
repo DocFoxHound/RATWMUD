@@ -281,6 +281,9 @@ walkers hopped in straight lines from crossing to crossing.
   them on the road).
 - **The crossing the road takes** (`roadCrossing`): the crossings on a road into the next cell are weighed with the
   nearest by the way there along the roads, and the cheapest kept to. Bridges count as road now.
+- **What a way is** is the terrain catalog's `way` flag (roads, streets, flagstones, bridges, and a new Footpath), read
+  by the game, the generator and Atlas alike; Atlas has a Road tool that lays one between points clicked, and an NPC
+  ways overlay (Docs/Design/12-map-editor.md, "Roads and NPC ways"). A way laid is a way preferred, with nothing more.
 - **Tracks to every farm and works** (`tools/worldgen/country.py`, `lay_tracks`, `lay_far_tracks`): a two-tile dirt
   track from each site's doors to the nearest road, laid after every site is placed (no site, door or resident moves);
   103 doors, 9,301 tiles in 33 cells, the Folds' farms across to the Southway. Doors from a road: median 38 tiles,
@@ -315,9 +318,9 @@ summer; the downs under the Greyteeth snow in winter; the south and west (Warmwo
 Southern Meads) have mild wet winters, no snow; the fens and the delta are foggy (8–17%). Tested:
 `Tests/weather_tests.cpp` (`climatesAndTheSnowLine`).
 
-**Still to do:** the tracks are in the generator but not yet in DEV or PROD: writing DEV's world was left to the user
-(a script puts the 33 cells' new terrain in, refusing unless DEV is still at revision 22 and those cells untouched;
-then `world_build.py dev`, and a push to PROD). The code changes need no world push.
+**In DEV** (2026-10-12): revision 23, build 32: the tracks' 9,301 tiles in 33 cells, put in by
+`tools/apply_terrain.py` (only the ground of cells whose terrain changed, refusing if anyone had edited them; the old
+ground backed up under `artifacts/backups/`). PROD needs a push. The code changes need no world push.
 
 ## Open questions
 

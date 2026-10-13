@@ -407,6 +407,12 @@ void aWalkKeepsToTheRoad()
     const auto roadAt = [](int cell, int x, int y) {
         return (y >= 10 && y <= 12) || (cell == 0 && x >= 10 && x <= 12 && y >= 10) || (cell == 1 && x >= 84 && x <= 86 && y >= 10);
     };
+    // Any tile the terrain catalog marks a way will do (the user: what is laid as a road or a path is preferred, with
+    // nothing more to do): a dirt road, and a footpath.
+    expect(roadTerrain('d') && roadTerrain('/') && roadTerrain('_') && roadTerrain('f') && roadTerrain('8') && !roadTerrain(',') &&
+               !roadTerrain('4') && !roadTerrain('#'),
+           "The catalog's ways are roads, streets, flagstones, bridges and footpaths, and nothing else");
+    for (const char way : {'d', '/'})
     for (const bool seen : {true, false})
     {
         Fixture f;
@@ -420,7 +426,7 @@ void aWalkKeepsToTheRoad()
             for (int y = 0; y < W; ++y)
             {
                 for (int x = 0; x < W; ++x)
-                    cell << (roadAt(c, x, y) ? 'd' : '5');
+                    cell << (roadAt(c, x, y) ? way : '5');
                 cell << '\n';
             }
             f.cells["r_" + std::to_string(c)] = cell.str();
@@ -467,7 +473,7 @@ void aWalkKeepsToTheRoad()
             (near ? onRoad : offRoad) += 1;
         }
         const auto* pip = world.entity("pip");
-        const std::string how = seen ? "Seen" : "Unseen";
+        const std::string how = std::string(seen ? "Seen" : "Unseen") + (way == '/' ? " on a footpath" : " on a road");
         expect(pip->offstage != seen, how + ": Pip is " + (seen ? "onstage" : "offstage"));
         expect(pip->cellId == "r_1" && std::hypot(pip->position.x - 85.5, pip->position.y - 88.5) < 2,
                how + ", Pip gets to work: " + pip->cellId + " " + std::to_string(pip->position.x) + "," + std::to_string(pip->position.y) +

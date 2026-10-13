@@ -184,3 +184,37 @@ export function drawGround(g: CanvasRenderingContext2D, surface: Surface, cam: C
         }
     }
 }
+
+// --------------------------------------------------------------------------- NPC ways
+
+const wayMasks = new Map<string, {terrain: string[]; canvas: HTMLCanvasElement}>();
+
+/** The cell's ways (the catalog's roads, streets, paths and bridges: what NPCs keep to) as a mask, a pixel a tile. */
+function wayMask(cell: AnyCell, ways: ReadonlySet<string>): HTMLCanvasElement {
+    const old = wayMasks.get(cell.id);
+    if (old && old.terrain === cell.terrain) return old.canvas;
+    const canvas = old?.canvas.width === cell.width && old.canvas.height === cell.height ? old.canvas : document.createElement('canvas');
+    canvas.width = cell.width; canvas.height = cell.height;
+    const g = canvas.getContext('2d')!, data = g.createImageData(cell.width, cell.height);
+    for (let y = 0; y < cell.height; y++) {
+        const row = cell.terrain[y] ?? '';
+        for (let x = 0; x < cell.width; x++)
+            if (ways.has(row[x])) {
+                const i = (y * cell.width + x) * 4;
+                data.data[i] = 255; data.data[i + 1] = 196; data.data[i + 2] = 92; data.data[i + 3] = 150;
+            }
+    }
+    g.putImageData(data, 0, 0);
+    wayMasks.set(cell.id, {terrain: cell.terrain, canvas});
+    return canvas;
+}
+
+/** Shows every way in view (the NPC ways overlay): what NPCs walking overland will keep to. */
+export function drawWays(g: CanvasRenderingContext2D, surface: Surface, cam: Camera, w: number, h: number, ways: ReadonlySet<string>) {
+    const {s, x: ox, y: oy} = cam, view = visibleTiles(cam, w, h);
+    const smooth = g.imageSmoothingEnabled;
+    g.imageSmoothingEnabled = false;
+    for (const {cell, x, y} of surface.pieces(view.x0, view.y0, view.x1, view.y1))
+        g.drawImage(wayMask(cell, ways), ox + x * s, oy + y * s, cell.width * s, cell.height * s);
+    g.imageSmoothingEnabled = smooth;
+}

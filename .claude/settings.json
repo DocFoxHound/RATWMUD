@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm test --silent)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx tsc --noEmit -p .)",
+      "Bash(npm run typecheck)",
+      "Bash(ctest)",
+      "Bash(ctest -j8)",
+      "Bash(python3 tools/world_db.py status)",
+      "Bash(python3 tools/world_build.py latest)",
+      "Bash(python3 tools/terrain_catalog.py --check)",
+      "mcp__codeagentswarm-tasks__check_active",
+      "mcp__claude_ai_Claude_Docs__read"
+    ]
+  }
+}

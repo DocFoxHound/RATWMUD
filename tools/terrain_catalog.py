@@ -39,7 +39,7 @@ def load(path: Path = SOURCE) -> list[dict]:
     categories = {c['id'] for c in data['categories']}
     tiles, seen = [], set()
     for raw in data['tiles']:
-        t = {'solid': False, 'opaque': False, 'height': 0.0, 'stature': 0.0, 'cost': 1.0, 'ramp': False, **raw}
+        t = {'solid': False, 'opaque': False, 'height': 0.0, 'stature': 0.0, 'cost': 1.0, 'ramp': False, 'way': False, **raw}
         code = t['code']
         _check(isinstance(code, str) and len(code) == 1 and '!' <= code <= '~', f'{code!r}: a code is one printable ASCII character.')
         _check(code not in seen, f'{code!r}: duplicate code.')
@@ -52,6 +52,7 @@ def load(path: Path = SOURCE) -> list[dict]:
         _check(t['height'] * 2 == int(t['height'] * 2) and -16 <= t['height'] <= 16, f'{code!r}: height is a half step.')
         _check(0 <= t['stature'] <= 8 and 0.5 <= t['cost'] <= 5, f'{code!r}: stature or cost out of range.')
         _check(not (t['opaque'] and not t['solid']), f'{code!r}: an opaque tile must be solid.')
+        _check(isinstance(t['way'], bool) and not (t['way'] and t['solid']), f'{code!r}: way is true or false, and never solid.')
         tiles.append(t)
     return tiles
 
@@ -62,18 +63,19 @@ GLYPHS = frozenset(BY_CODE)
 SOLID = frozenset(c for c, t in BY_CODE.items() if t['solid'])
 RAMPS = frozenset(c for c, t in BY_CODE.items() if t['ramp'])
 DEFAULT_HEIGHTS = {c: t['height'] for c, t in BY_CODE.items() if t['height']}
+WAYS = frozenset(c for c, t in BY_CODE.items() if t['way'])   # Roads, streets, paths, bridges: what NPCs keep to.
 
 
 def cpp_table(tiles) -> str:
     def num(v):
         return repr(float(v))
     rows = [f'// {HEADER}',
-            '// RATW_TERRAIN(code, Kind, solid, opaque, height, stature, cost, ramp, glyph, ascii, fg, bg, name)']
+            '// RATW_TERRAIN(code, Kind, solid, opaque, height, stature, cost, ramp, way, glyph, ascii, fg, bg, name)']
     for t in tiles:
         rows.append(
             f'RATW_TERRAIN({ord(t["code"]):#04x}, {t["kind"].capitalize()}, {str(t["solid"]).lower()}, '
             f'{str(t["opaque"]).lower()}, {num(t["height"])}, {num(t["stature"])}, {num(t["cost"])}, '
-            f'{str(t["ramp"]).lower()}, {ord(t["glyph"]):#06x}, {ord(t["ascii"]):#04x}, 0x{t["fg"][1:]}, '
+            f'{str(t["ramp"]).lower()}, {str(t["way"]).lower()}, {ord(t["glyph"]):#06x}, {ord(t["ascii"]):#04x}, 0x{t["fg"][1:]}, '
             f'0x{t["bg"][1:]}, {json.dumps(t["name"], ensure_ascii=True)})')
     return '\n'.join(rows) + '\n'
 
@@ -81,7 +83,7 @@ def cpp_table(tiles) -> str:
 def js_module(path: Path, tiles) -> str:
     data = json.loads(path.read_text(encoding='utf-8'))
     fields = ('code', 'glyph', 'ascii', 'name', 'category', 'kind', 'solid', 'opaque', 'height', 'stature', 'cost',
-              'ramp', 'fg', 'bg', 'effect')
+              'ramp', 'way', 'fg', 'bg', 'effect')
     lines = [f'// {HEADER}', '/** Terrain categories, in palette order. */',
              f'export const TERRAIN_CATEGORIES = {json.dumps(data["categories"], ensure_ascii=False)};',
              '/** Every terrain tile, in palette order. */', 'export const TERRAIN = [']

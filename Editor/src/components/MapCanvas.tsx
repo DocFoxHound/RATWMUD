@@ -4,13 +4,14 @@ import type {Place, PlaceRef, Project} from '../model/model.mjs';
 import {buildingById} from '../model/templates.mjs';
 import {flood, line, rect, square, type Tile} from '../lib/geometry';
 import {placeCell} from '../lib/cellPlacement';
-import {deleteCell} from '../lib/commands';
+import {deleteCell, layPendingRoad} from '../lib/commands';
 import {glyphInfo, glyphLabel, ROLE_INFO} from '../lib/glyphs';
 import {useGlyphRender} from '../lib/glyphFont';
 import {commit, getState, openView, setState, toast, useStore, useTool, type EditorState, type Mark} from '../lib/store';
 import type {Editor} from '../lib/live';
 import {surfaceFor, type Surface} from '../lib/surface';
-import {drawGlyph, drawGround, glyphFont, swatch, visibleTiles, type Camera} from '../lib/ground';
+import {drawGlyph, drawGround, drawWays, glyphFont, swatch, visibleTiles, type Camera} from '../lib/ground';
+import {planRoad} from '../lib/roads';
 import {drawRelief} from '../lib/elevation';
 import {ElevationControl} from './Elevation';
 
@@ -47,6 +48,8 @@ export function MapCanvas() {
     const cellSize = useStore(s => s.cellSize);
     const opts = {brush: useStore(s => s.brush), filled: useStore(s => s.filled), building: useStore(s => s.building), side: useStore(s => s.side)};
     const surface = useMemo(() => surfaceFor(project, view), [project, view]);
+    const road = useStore(s => s.road);
+    const roadPoints = useStore(s => s.roadPoints);
 
     const wrap = useRef<HTMLDivElement>(null);
     const canvas = useRef<HTMLCanvasElement>(null);
@@ -80,6 +83,22 @@ export function MapCanvas() {
     // --- Markers (people, posts, doors, spawn, herbs) -------------------------
     const camps = useStore(s => s.camps);
     const markers = useMemo(() => buildMarkers(project, surface, selection, overlays, workspace, camps), [project, surface, selection, overlays, workspace, camps]);
+
+    // --- The Road tool: the road through the points clicked and on to the pointer (lib/roads.ts) ---------------
+    // The pointer's tile settles a moment before the road to it is worked out: a long stretch takes a little while.
+    const [roadAim, setRoadAim] = useState<Tile | null>(null);
+    useEffect(() => {
+        if (tool !== 'road' || !roadPoints.length) { setRoadAim(null); return; }
+        const t = setTimeout(() => setRoadAim(hover), 90);
+        return () => clearTimeout(t);
+    }, [tool, hover, roadPoints.length]);
+    useEffect(() => { if (getState().roadPoints.length) setState({roadPoints: []}); }, [surface.kind, surface.cell?.id]);
+    const roadPlan = useMemo(() => {
+        if (tool !== 'road' || !roadPoints.length) return null;
+        const points = roadAim && (roadAim[0] !== roadPoints[roadPoints.length - 1][0] || roadAim[1] !== roadPoints[roadPoints.length - 1][1])
+            ? [...roadPoints, roadAim] : roadPoints;
+        return points.length >= 2 ? planRoad(surface, points, road) : null;
+    }, [tool, roadPoints, roadAim, surface, road]);
 
     // --- Tool previews ----------------------------------------------------------
     const preview = useMemo((): {tiles: Tile[]; ghost?: {x: number; y: number; w: number; h: number; ok: boolean; door: Tile}} => {
@@ -129,6 +148,7 @@ export function MapCanvas() {
             }
             g.stroke();
         }
+        if (overlays.ways) drawWays(g, surface, camera, size.w, size.h, M.WAYS);
         if (surface.kind === 'world') drawCells(g, surface, camera, size, selection, overlays, project);
         if (workspace === 'people') drawRoutes(g, project, surface, camera, selection, overlays);
         // Tool previews.
@@ -160,13 +180,14 @@ export function MapCanvas() {
             g.fillText(`${w} × ${h}${ok ? (placement.touching ? ' · snapped to its neighbour' : ' · on the 16-tile grid') : ` · ${placement.problem}`}`,
                 ox + x * s + 4, oy + (y + h) * s + 4);
         }
+        if (tool === 'road') drawRoad(g, camera, roadPlan, roadPoints, road.glyph);
         drawMarkers(g, markers, camera, hover);
         drawOthers(g, surface, camera, editors, marks);
         if (st.pending?.kind === 'link' && st.pending.a) {
             const at = surface.fromPlace(st.pending.a);
             if (at) { g.strokeStyle = '#f0d79a'; g.setLineDash([4, 3]); g.lineWidth = 2; g.strokeRect(ox + at[0] * s - 2, oy + at[1] * s - 2, s + 4, s + 4); g.setLineDash([]); }
         }
-    }, [camera, size, surface, project, selection, overlays, elevation, markers, preview, placement, hover, tool, pending, workspace, editors, marks, fade, glyphs]);
+    }, [camera, size, surface, project, selection, overlays, elevation, markers, preview, placement, hover, tool, pending, workspace, editors, marks, fade, glyphs, roadPlan, roadPoints, road.glyph]);
 
     // --- Pointer input ----------------------------------------------------------
     const tileAt = (e: {clientX: number; clientY: number}): Tile => {
@@ -234,6 +255,12 @@ export function MapCanvas() {
                 return;
             }
             case 'rect': case 'line': setGesture({mode: 'shape', x0: t[0], y0: t[1], x1: t[0], y1: t[1]}); return;
+            case 'road': {
+                if (!inside(t)) { toast('A road runs on the ground of the cells.', 'error'); return; }
+                const last = st.roadPoints[st.roadPoints.length - 1];
+                if (!last || last[0] !== t[0] || last[1] !== t[1]) setState({roadPoints: [...st.roadPoints, t]});
+                return;
+            }
             case 'cell': {
                 if (surface.kind === 'room') { toast('New cells go on the world map; open the world overview (Home).', 'error'); return; }
                 const at = placeCell(project, t[0] + surface.ox, t[1] + surface.oy, st.cellSize);
@@ -335,6 +362,7 @@ export function MapCanvas() {
     };
 
     const onDoubleClick = (e: React.MouseEvent) => {
+        if (tool === 'road') { layPendingRoad(); return; }
         const t = tileAt(e);
         const m = markerAt(e);
         const link = m?.linkId ? project.links.find(l => l.id === m.linkId) : undefined;
@@ -454,6 +482,40 @@ function zoomAt(c: Camera, size: {w: number; h: number}, factor: number): Camera
 }
 
 /** Everyone else: where their pointer is (if they are looking at this surface) and what they just changed. */
+/** The Road tool's road as it would be laid: its tiles in the way's colour (bridges in theirs), its middle, the points
+ *  clicked, and why there is none where none can be found. */
+function drawRoad(g: CanvasRenderingContext2D, cam: Camera, plan: ReturnType<typeof planRoad> | null, points: Tile[], glyph: string) {
+    const {s, x: ox, y: oy} = cam;
+    if (plan) {
+        g.globalAlpha = .8;
+        for (const t of plan.tiles) {
+            const info = glyphInfo(t.glyph);
+            g.fillStyle = s >= 7 ? info.bg : swatch(info); g.fillRect(ox + t.x * s, oy + t.y * s, s, s);
+            if (s >= 7) { glyphFont(g, s); drawGlyph(g, info, ox + t.x * s, oy + t.y * s, s); }
+        }
+        g.globalAlpha = 1;
+        if (plan.route.length > 1) {
+            g.strokeStyle = 'rgba(240,215,154,.9)'; g.lineWidth = Math.max(1.5, Math.min(3, s / 4));
+            g.beginPath();
+            plan.route.forEach(([x, y], i) => (i ? g.lineTo : g.moveTo).call(g, ox + (x + .5) * s, oy + (y + .5) * s));
+            g.stroke();
+        }
+    }
+    const info = glyphInfo(glyph);
+    points.forEach(([x, y], i) => {
+        const cx = ox + (x + .5) * s, cy = oy + (y + .5) * s, r = Math.max(5, Math.min(9, s / 2));
+        g.fillStyle = swatch(info); g.strokeStyle = '#f0d79a'; g.lineWidth = 2;
+        g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.fillStyle = '#10140f'; g.font = '600 10px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(String(i + 1), cx, cy + .5);
+    });
+    if (plan?.problem && points.length) {
+        const [x, y] = points[points.length - 1];
+        g.font = '600 12px Inter, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillStyle = '#efa296'; g.fillText(plan.problem, ox + (x + 1.5) * s, oy + (y + 1) * s);
+    }
+}
+
 function drawOthers(g: CanvasRenderingContext2D, surface: Surface, cam: Camera, editors: Editor[], marks: Mark[]) {
     const now = Date.now();
     for (const m of marks) {

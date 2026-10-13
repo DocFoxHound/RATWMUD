@@ -53,6 +53,33 @@ Export automatically generates reciprocal open boundary passages wherever touchi
 
 These generated passages preserve the established runtime behavior: reaching an open edge changes cell automatically, preserves the connection point/lateral offset where safe, and stops movement. Closed explicit doors still require **Open**, and cross-cell door traversal still lands at the authored arrival. Cutting a continuous landscape does not make the local gameplay renderer a continuous-world camera.
 
+## Roads and NPC ways (2026-10-12)
+
+The user: whatever is laid as a road, a street, a path or a pavement is what NPCs prefer when they walk overland, and
+Atlas makes that automatic, not something to ask for each time.
+
+- **The catalog decides** (`Data/Terrain/terrain.json`, `way: true`): Dirt road `d`, Footpath `/` (new), Cobbled
+  street `_`, Worn flagstones `f` and Bridge `8`. The game reads the same flag (`roadTerrain`, `Core/RatwWorld.cpp`):
+  NPCs plan long outdoor walks on whole tiles with open country dearer than a way (`roadAstar`, `OffRoad` 1.8), unseen
+  ones follow the ways too (`roadWay`), and crossings into the next cell are chosen by the way along them
+  (`roadCrossing`; Docs/Design/60-the-new-map.md, "Roads and weather"). So a way painted with any tool, the Brush or
+  Line included, is preferred from the moment the world is next built; a new tile marked `way` in the catalog is a way
+  everywhere at once (`python3 tools/terrain_catalog.py` regenerates the tables). Nothing is drawn or stored for
+  NPCs besides the tiles themselves: they keep to the road loosely, not to a line.
+- **The Road tool** (`W`, `Editor/src/lib/roads.ts`): click points along the way and it finds its own line between
+  them: round walls, trees and buildings, up and down only what can be walked (the game's step rule), gently over
+  slopes, joining ways already there and avoiding fields and doorways. It lays the chosen way (Dirt road, Footpath,
+  Cobbled street or Worn flagstones) one to five tiles wide, only on open ground (buildings, furniture and existing
+  ways are left alone), and, with **Bridge water**, carries it over water on a bridge level with its banks. The road
+  it would lay shows as you go; Enter or double-click lays it as one edit (one undo); Backspace takes back a point;
+  Esc clears. It works on the world overview and in a world cell, across cell seams.
+- **NPC ways overlay** (View menu): every way tile in view, highlighted: what NPCs will keep to.
+
+Tested: `Editor/src/lib/roads.test.ts` (the catalog's ways; straight on open ground; round a wall; joining a street
+without digging it up; never a whole step at once; bridges level with their banks; laying it as one edit) and
+`Tests/stream_tests.cpp` (`aWalkKeepsToTheRoad`: a resident keeps to a dirt road and to a footpath, seen and unseen).
+Checked in the browser on a throwaway database: three clicks, Enter, and the road and its bridge were saved.
+
 ## Architecture and validation
 
 - `Editor/src/model/model.mjs` is the pure editing model (plain JS, tested with `node --test`). Its public mutators validate a candidate and commit only on success. Selection uses IDs because successful edits replace nested cell objects. `templates.mjs` holds the building templates.

@@ -126,6 +126,7 @@ export const TOOLS: {id: Tool; icon: string; label: string; key: string; group: 
     {id: 'brush', icon: '✎', label: 'Brush', key: 'B', group: 1},
     {id: 'rect', icon: '▭', label: 'Rectangle', key: 'R', group: 1},
     {id: 'line', icon: '╱', label: 'Line', key: 'L', group: 1},
+    {id: 'road', icon: '═', label: 'Road', key: 'W', group: 1},
     {id: 'fill', icon: '◧', label: 'Fill', key: 'G', group: 1},
     {id: 'pick', icon: '⊙', label: 'Eyedropper', key: 'I', group: 1},
     {id: 'height', icon: '≋', label: 'Elevation', key: 'H', group: 1},
@@ -183,6 +184,7 @@ export function ToolOptions() {
                 {['brush', 'rect', 'line', 'fill'].includes(tool) && palette}
                 {(tool === 'brush' || tool === 'height') && sizes}
                 {tool === 'rect' && <label className="inline"><input type="checkbox" checked={filled} onChange={e => setState({filled: e.target.checked})} /> Filled</label>}
+                {tool === 'road' && <RoadOptions />}
                 {tool === 'height' && <label className="inline">Height <select value={String(height)} onChange={e => setState({height: parseHeightBrush(e.target.value)})}>
                     {HEIGHT_CHOICES.map(h => <option key={String(h.value)} value={String(h.value)}>{h.label}</option>)}</select></label>}
                 {tool === 'person' && <div className="segmented">{(['civilian', 'guard', 'merchant'] as const).map(r =>
@@ -215,6 +217,7 @@ const HELP: Record<Tool, string> = {
     pan: 'Drag to pan (or hold Space / middle mouse with any tool)',
     brush: 'Drag to paint · [ and ] change size · 1–0 and - pick terrain (Shift for more) · All terrain lists every tile',
     rect: 'Drag a rectangle', line: 'Drag a line', fill: 'Click to fill a same-terrain area', pick: 'Click a tile to copy its terrain',
+    road: 'Click points along the way; it finds its own line between them · Enter or double-click lays it · Backspace takes back a point · Esc clears · NPCs keep to roads, streets and paths by themselves',
     height: 'Drag to set elevation in half steps, or raise / lower by ½; “Glyph default” clears it · E cycles the relief view',
     building: 'Click a world cell to place a building with its interior and door',
     cell: 'Click to place a cell of the chosen size; it snaps beside the cells already there (or to a 16-tile grid) · X turns it · right-click or Esc cancels',
@@ -225,6 +228,20 @@ const HELP: Record<Tool, string> = {
     spawn: 'Click where new characters appear',
     herb: 'Click to move the herb patch: the one spot where players Gather herbs (a shared stock that regrows daily)',
 };
+
+/** The Road tool's options: which way to lay (the catalog's roads, streets, paths and bridges), how wide, bridging. */
+function RoadOptions() {
+    const road = useStore(s => s.road);
+    const set = (patch: Partial<typeof road>) => setState(s => ({road: {...s.road, ...patch}}));
+    return <>
+        <select aria-label="Way to lay" value={road.glyph} onChange={e => set({glyph: e.target.value})}>
+            {M.TERRAIN.filter(t => t.way && t.code !== '8').map(t => <option key={t.code} value={t.code}>{t.name}</option>)}
+        </select>
+        <label className="inline">Width <select value={road.width} onChange={e => set({width: Number(e.target.value)})}>
+            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}</select></label>
+        <label className="inline"><input type="checkbox" checked={road.bridges} onChange={e => set({bridges: e.target.checked})} /> Bridge water</label>
+    </>;
+}
 
 function SlotProfessionPicker() {
     const roster = useStore(s => s.roster);

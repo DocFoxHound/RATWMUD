@@ -8,6 +8,8 @@ export type Glyph = string;
 export const TERRAIN: readonly TerrainTile[];
 export const TERRAIN_CATEGORIES: readonly TerrainCategory[];
 export const TERRAIN_BY_CODE: ReadonlyMap<string, TerrainTile>;
+/** The catalog's ways (roads, streets, paths, bridges): what NPCs keep to, and what the Road tool lays. */
+export const WAYS: ReadonlySet<string>;
 export const TERRAIN_CODES: readonly string[];
 export function isTerrainCode(code: unknown): code is Glyph;
 export function terrainTile(code: string | null | undefined): TerrainTile | undefined;
@@ -110,6 +112,10 @@ export function cellTerrain(project: Project, id: string): string[];
 
 export function paint(project: Project, x: number, y: number, glyph: string, size?: number, roomId?: string | null): Project;
 export function paintTiles(project: Project, tiles: [number, number][], glyph: string, roomId?: string | null): Project;
+/** One tile of a road (Atlas's Road tool): its glyph, and its height where it has one (a bridge's deck). */
+export interface RoadTile { x: number; y: number; glyph: string; height?: number }
+/** Lays a road: each tile its glyph (and height), as one edit. */
+export function layRoad(project: Project, tiles: RoadTile[], roomId?: string | null): Project;
 export function setHeight(project: Project, x: number, y: number, value: number | null, roomId?: string | null): Project;
 export function setHeights(project: Project, tiles: [number, number][], value: number | null, roomId?: string | null): Project;
 export function adjustHeights(project: Project, tiles: [number, number][], delta: number, roomId?: string | null): Project;
