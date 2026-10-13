@@ -67,6 +67,8 @@
     {"id": "lime", "trade": "mason", "station": "lime_kiln", "skill": 0, "seconds": 240, "in": {"limestone": 2, "@fuel": 1}, "out": {"lime": 3}, "wait": 1},
     {"id": "mortar", "trade": "mason", "station": "mason_banker", "skill": 0, "seconds": 60, "in": {"lime": 1, "sand": 1}, "out": {"mortar": 2}},
     {"id": "plaster", "trade": "mason", "station": "mason_banker", "skill": 10, "seconds": 90, "in": {"lime": 1, "sand": 1}, "out": {"plaster": 1}},
+    {"id": "whitewash", "trade": "mason", "station": "mason_banker", "skill": 0, "seconds": 90, "in": {"lime": 1}, "out": {"whitewash": 3}},
+    {"id": "paint", "trade": "colourman", "station": "workbench", "skill": 15, "seconds": 150, "in": {"linseed_oil": 1, "clay": 1}, "out": {"paint": 2}},
     {"id": "cut_marble", "trade": "mason", "station": "mason_banker", "skill": 40, "seconds": 600, "in": {"marble": 1}, "out": {"cut_marble": 1}},
     {"id": "cut_stone", "trade": "mason", "station": "mason_banker", "skill": 20, "seconds": 300, "in": {"stone": 1}, "out": {"cut_stone": 1}},
     {"id": "bricks", "trade": "potter", "station": "kiln", "skill": 10, "seconds": 240, "in": {"clay": 3, "@fuel": 1}, "out": {"bricks": 1}, "wait": 1},

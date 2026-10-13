@@ -1,0 +1,15 @@
+{
+  "format": "ratw-houses",
+  "version": 1,
+  "about": "The great houses' trades (Docs/Design/61-industry-of-the-realm.md). A house is found by its head's work label (\"ruling House Fell\", \"keeping Grayrock Hall\"); this says which is which, by a word of its name (names), and what it owns in its city: a business whose keeper's label or workplace carries one of its names (the Grayrock Foundry), else one whose kind (businesses.json) is among its businesses. Any other business is its keeper's own. A house a world has no entry for owns as before (industry, and half the shops, by lot). Change it and a save's businesses are given out again, once.",
+  "houses": [
+    {"id": "greatly", "name": "House Greatly", "names": ["greatly"], "trade": "building materials: walls, roofs, plaster and paint, and the ships that carry them",
+     "businesses": ["builders_yard", "brickworks", "mason", "plasterworks", "paintworks", "glassworks"]},
+    {"id": "fell", "name": "House Fell", "names": ["fell"], "trade": "timber and woodwork",
+     "businesses": ["sawmill", "charcoal", "cartwright", "cooperage", "carpenter"]},
+    {"id": "grayrock", "name": "House Grayrock", "names": ["grayrock"], "trade": "stone and iron",
+     "businesses": ["ironworks", "foundry", "smithy", "armory"]},
+    {"id": "mossgrave", "name": "House Mossgrave", "names": ["mossgrave"], "trade": "wool, cloth and leather",
+     "businesses": ["weaver", "dyeworks", "tannery", "ropewalk", "tailor", "saddlery"]}
+  ]
+}

@@ -37,6 +37,10 @@ struct Catalog
     double institutionDays = 3, premium = 1.3;
     int reserve = 6;
     std::map<std::string, std::vector<std::string>> supplies, buys;
+    std::vector<HouseTrade> houses;                 // Data/Economy/houses.json (doc 61).
+    std::string houseRules;
+    std::vector<TownTrade> towns;                   // Data/Economy/specialties.json (doc 61).
+    double tradeYield = 1, tradeKeep = 1;
 };
 
 bool readJson(const std::filesystem::path& path, json::Value& out, std::string& error)
@@ -274,6 +278,52 @@ Catalog build()
                 if (known(g.asString({})))
                     c.supplies[business].push_back(g.asString({}));
     }
+    // The great houses' trades (doc 61), beside the items in Data/Economy; a world without the file has none.
+    if (const auto file = dir.parent_path() / "Economy" / "houses.json"; std::filesystem::exists(file))
+    {
+        json::Value houses;
+        std::string problem;
+        if (readJson(file, houses, problem))
+            for (const auto& h : houses.array("houses"))
+            {
+                HouseTrade t{h.string("id"), h.string("name"), h.string("trade"), {}, {}};
+                for (const auto& w : h.array("names"))
+                    if (!w.asString({}).empty())
+                        t.names.push_back(w.asString({}));
+                for (const auto& b : h.array("businesses"))
+                    t.businesses.push_back(b.asString({}));
+                c.houseRules += t.id + ":";
+                for (const auto& w : t.names)
+                    c.houseRules += w + ",";
+                c.houseRules += ":";
+                for (const auto& b : t.businesses)
+                    c.houseRules += b + ",";
+                c.houseRules += ";";
+                if (!t.id.empty() && !t.names.empty())
+                    c.houses.push_back(std::move(t));
+            }
+    }
+    // The towns' trades (doc 61), likewise.
+    if (const auto file = dir.parent_path() / "Economy" / "specialties.json"; std::filesystem::exists(file))
+    {
+        json::Value towns;
+        std::string problem;
+        if (readJson(file, towns, problem))
+        {
+            c.tradeYield = std::clamp(towns.number("yield", 1), 1.0, 4.0);
+            c.tradeKeep = std::clamp(towns.number("keep", 1), 1.0, 4.0);
+            for (const auto& t : towns.array("towns"))
+            {
+                TownTrade trade{t.string("town"), t.string("trade"), {}, {}};
+                for (const auto& g : t.array("goods"))
+                    trade.goods.push_back(g.asString({}));
+                for (const auto& g : t.array("needs"))
+                    trade.needs.push_back(g.asString({}));
+                if (!trade.town.empty())
+                    c.towns.push_back(std::move(trade));
+            }
+        }
+    }
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
         c.error = "no wearables in " + (dir / "items.json").string();
@@ -329,6 +379,69 @@ const Catalog& catalog()
     return c;
 }
 } // namespace
+
+const std::vector<HouseTrade>& houseTrades()
+{
+    return catalog().houses;
+}
+
+bool holdsWord(const std::string& text, const std::string& word)
+{
+    if (word.empty())
+        return false;
+    const auto lower = [](std::string s) {
+        for (auto& ch : s)
+            ch = char(std::tolower(static_cast<unsigned char>(ch)));
+        return s;
+    };
+    const auto t = lower(text), w = lower(word);
+    for (auto at = t.find(w); at != std::string::npos; at = t.find(w, at + 1))
+    {
+        const bool before = at == 0 || !std::isalpha(static_cast<unsigned char>(t[at - 1]));
+        const bool after = at + w.size() >= t.size() || !std::isalpha(static_cast<unsigned char>(t[at + w.size()]));
+        if (before && after)
+            return true;
+    }
+    return false;
+}
+
+const HouseTrade* houseTradeOf(const std::string& houseName)
+{
+    for (const auto& h : houseTrades())
+        for (const auto& w : h.names)
+            if (holdsWord(houseName, w))
+                return &h;
+    return nullptr;
+}
+
+const std::string& houseRules()
+{
+    return catalog().houseRules;
+}
+
+const TownTrade* townTrade(const std::string& town)
+{
+    for (const auto& t : catalog().towns)
+        if (t.town == town)
+            return &t;
+    return nullptr;
+}
+
+bool townGoodOf(const std::string& town, const std::string& item)
+{
+    const auto* t = townTrade(town);
+    return t && std::find(t->goods.begin(), t->goods.end(), baseOf(item)) != t->goods.end();
+}
+
+double tradeYield()
+{
+    return catalog().tradeYield;
+}
+
+double tradeKeep()
+{
+    return catalog().tradeKeep;
+}
 
 bool load(std::string* error)
 {

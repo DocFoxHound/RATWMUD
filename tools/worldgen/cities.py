@@ -75,6 +75,8 @@ class City:
         self.rng = random.Random(seed)
         # Doc 35's additions draw from their own sequence, so the buildings that were already here keep their sizes.
         self.new_rng = random.Random(seed * 7 + 35)
+        # Doc 61's additions (House Greatly's works): their own sequence, so nothing built before or after them moves.
+        self.doc61_rng = random.Random(seed * 7 + 61)
         self.prefix, self.region = prefix, region
         self.placed = []                    # (building id, Building, manifest record)
         self.districts = {}                 # name -> anchor (canvas x, y)
@@ -235,7 +237,7 @@ class City:
     # -- buildings -----------------------------------------------------------------------------------------------
     def place_all(self, lots, wanted, gap_jitter=16):
         for b in wanted:
-            rng = self.new_rng if getattr(b, 'fresh', False) else self.rng
+            rng = getattr(b, 'rng', None) or (self.new_rng if getattr(b, 'fresh', False) else self.rng)
             near = self.districts[b.district]
             jitter = (near[0] + rng.uniform(-gap_jitter, gap_jitter), near[1] + rng.uniform(-gap_jitter, gap_jitter))
             fw, fh = b.footprint
@@ -304,12 +306,15 @@ class City:
                 places.append((x, y + behind))
         return places
 
-    def a_works(self, kind, name, text, district, style, hands=3, roof=''):
-        """One of doc 35's workshops: its stations laid out, the trade recorded so its master and hands are found."""
+    def a_works(self, kind, name, text, district, style, hands=3, roof='', rng=None):
+        """One of doc 35's workshops: its stations laid out, the trade recorded so its master and hands are found.
+        With `rng`, laid out and placed from that sequence (a later addition, doc 61)."""
         b = self.building('works', name, f'{name}: {WORKS[kind][1]}. {text}',
-                          [works(self.new_rng, 'works' if style == 'ridgemere' else style, kind, hands)], district,
+                          [works(rng or self.new_rng, 'works' if style == 'ridgemere' else style, kind, hands)], district,
                           style, roof=roof or STYLE_ROOFS.get(style, ''), trade=kind)
         b.fresh = True
+        if rng is not None:
+            b.rng = rng
         return b
 
     def a_house(self, name, text, district, style, people=3, kind='house', fresh=False):
@@ -392,9 +397,10 @@ ZONES = {'works': (1, (34, 26), 3), 'sump': (1, (18, 13), 2), 'office': (2, (28,
          'heights': (3, (36, 28), 3)}
 ZONE_GROUND = {'works': '>', 'sump': '.', 'office': 'f', 'commons': '.', 'heights': ','}
 HOUSES = {  # House: (seat, colour words, its trade, blurb, where its estate would like to be, the cells to try, size)
-    'greatly': ('Greatly House', 'the Greatlys', 'ships, the wharf and the bank',
-                'The richest of the Houses and the only one inside the walls: Greatly ships carry Ridgemere\'s iron, '
-                'timber and wool away, and Greatly money lends the city what it needs.', None, None, (88, 66)),
+    'greatly': ('Greatly House', 'the Greatlys', 'building: brick and tile, lime, plaster, paint and dressed stone',
+                'The richest of the Houses and the only one inside the walls: whatever is built in Ridgemere, a wall, a '
+                'roof, a coat of plaster or paint, is built of Greatly goods, and Greatly ships carry them down the coast; '
+                'Greatly money lends the city the rest.', None, None, (88, 66)),
     'fell': ('Fellhall', 'the Fells', 'timber',
              'Fell men fell the cedar: the House owns the logging camps of the Rainwood and the great saw on the '
              'Rainrun.', (720, 110), [(2, 0), (3, 0), (2, 1)], (150, 112)),
@@ -753,6 +759,8 @@ class Ridgemere(City):
         k = out['works']
         for kind, name, text, hands in WORKS_SECTOR:
             k.append(self.a_works(kind, name, text, 'works' if hands > 3 else 'works_w', S, hands))
+        for kind, name, text, hands in GREATLY_WORKS:     # (Doc 61: last of the works, from their own sequence.)
+            k.append(self.a_works(kind, name, text, 'works_w', S, hands, rng=self.doc61_rng))
         k.append(self.a_tavern('The Slag & Anchor', 'A forgehands\' tavern: loud, hot and cheap, the floor gritty with '
                                'cinder.', 'works', S))
         for trade, name, text in WORKS_SHOPS:
@@ -1181,6 +1189,16 @@ WORKS_SECTOR = [  # kind, name, text, hands
     ('limeworks', 'The Lime Kilns', 'Grayrock limestone burnt for the mortar of the whole city.', 2),
     ('kilnhouse', 'The Charcoal Store', 'Fell charcoal for the forges and the glassworks.', 3),
     ('saltworks', 'The Salt Pans', 'Sea brine boiled grey over coal fires; the salt that keeps the smokehouses going.', 3),
+]
+# House Greatly's building trade (doc 61, the user, 2026-10-12: walls, paint, plasterworks): beside the Tileworks and
+# the Lime Kilns, the plaster, the paint and the dressed stone. Added after the rest, so nothing else moved.
+GREATLY_WORKS = [  # kind, name, text, hands
+    ('plasterworks', 'The Greatly Plasterworks', 'Lime plaster and whitewash for every wall in Ridgemere, from the Lime '
+     'Kilns next door; the Greatly ships take the rest down the coast.', 3),
+    ('colour_works', 'The Greatly Colour Works', 'Ochre, umber and Greatly green ground into linseed oil: the doors and '
+     'shutters of the Heights, and the signs of half the city.', 2),
+    ('masons_yard', "The Greatly Masons' Yard", 'Rainward stone dressed square, and mortar by the tub: walls, steps and '
+     'bridges, to the Council\'s order or any House\'s.', 3),
 ]
 WORKS_SHOPS = [
     ('smith', 'The Anchor Forge', 'Chain, anchors and boat-iron for the docks.'),

@@ -2103,12 +2103,63 @@ void aTownsMarketIsInTheTown()
     expect(west->market == id(4), "West's market is its shop in the town, not the mill in its fields: " + west->market);
 }
 
+// The Houses keep to their trades (Docs/Design/61; Data/Economy/houses.json). In the capital: House Fell (timber),
+// Grayrock Hall (stone and iron), Mossgrave Court (wool and cloth), and the Rain Hall, whose caretaker is no House.
+// A sawmill is Fell's by its trade; a forge named for Fell is Fell's by its name, though forges are Grayrock's trade;
+// a foundry is Grayrock's; a weaver is Mossgrave's; a bakery is its keeper's own. A save from before, in which the
+// Rain Hall was a House and owned the bakery, is sorted out once: the bakery its keeper's, the Rain Hall's money the
+// treasury's, every penny still there.
+void housesKeepToTheirTrades()
+{
+    const auto unpaid = [](std::string line) { line.replace(line.find(" 1 8 17 "), 8, " 0 8 17 "); return line; };
+    auto f = strip("EE.....WW",
+                   unpaid(resident("fell", "Lord Fell", "civilian", "ruling House Fell", 0, 9.5, 0, 9.5)) +
+                   unpaid(resident("gray", "Lady Grayrock", "civilian", "keeping Grayrock Hall", 0, 10.5, 0, 10.5)) +
+                   unpaid(resident("moss", "Lord Mossgrave", "civilian", "keeping Mossgrave Court", 0, 11.5, 0, 11.5)) +
+                   unpaid(resident("rain", "Old Gerrit", "civilian", "keeping the Rain Hall", 0, 12.5, 0, 12.5)) +
+                   resident("saw", "Saw Master", "merchant", "runs The Old Sawmill", 0, 13.5, 1, 5.5) +
+                   resident("forge", "Fell Smith", "merchant", "smith at The Fell Forge", 0, 14.5, 1, 6.5) +
+                   resident("found", "Bell Founder", "merchant", "runs The Bell Foundry", 0, 3.5, 1, 7.5) +
+                   resident("weave", "Weaver Wren", "merchant", "weaver at The Wool Loft", 0, 4.5, 1, 10.5) +
+                   resident("bake", "Baker Bryn", "merchant", "baker at The Loaf", 0, 5.5, 1, 12.5));
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);
+    run(w, 2);
+    auto& soc = w.society();
+    std::set<std::string> ids;
+    for (const auto& h : soc.houses())
+        ids.insert(h.id + ":" + h.trade);
+    expect(ids == std::set<std::string>{"house:house_fell:fell", "house:grayrock_hall:grayrock", "house:mossgrave_court:mossgrave"},
+           "Three great houses, each with its trade; the Rain Hall's caretaker is no House");
+    const auto owner = [&](const std::string& who) { return soc.ownerOf(soc.jobOf(who)->id); };
+    expect(owner("saw") == "house:house_fell", "A sawmill is Fell's, by its trade: " + owner("saw"));
+    expect(owner("forge") == "house:house_fell", "A forge named for Fell is Fell's, by its name: " + owner("forge"));
+    expect(owner("found") == "house:grayrock_hall", "A foundry is Grayrock's: " + owner("found"));
+    expect(owner("weave") == "house:mossgrave_court", "A weaver is Mossgrave's: " + owner("weave"));
+    expect(owner("bake").empty(), "A bakery is its keeper's own: " + owner("bake"));
+    // A save from before doc 61: the Rain Hall a House, with money, owning the bakery.
+    auto old = soc.state();
+    old.houses.plan.clear();
+    old.houses.owner[soc.jobOf("bake")->id] = "house:the_rain_hall";
+    old.accounts["house:the_rain_hall"].cash = 500;
+    old.accounts["treasury"].cash -= 500;
+    expect(soc.restore(old), "The old save restores");
+    nextMorning(w);
+    run(w, 2);
+    expect(owner("bake").empty(), "Sorted out: the bakery is its keeper's again");
+    expect(!soc.account("house:the_rain_hall") || soc.account("house:the_rain_hall")->cash == 0, "The Rain Hall keeps no money");
+    expect(!soc.state().houses.plan.empty() && owner("saw") == "house:house_fell", "and the rest stay as they were");
+    expect(soc.conserved(), "Money is conserved");
+}
+
 int main()
 {
     try
     {
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
+        housesKeepToTheirTrades();
         standingOrdersAreRenegotiated();
         shopkeepersDontHoard();
         theOwnersShare();

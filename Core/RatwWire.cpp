@@ -1024,6 +1024,7 @@ Value houseState(const HouseState& h)
     }
     o.add("owner", owner);
     o.add("propped", propped);
+    o.add("plan", h.plan);
     return o;
 }
 
@@ -1045,6 +1046,8 @@ HouseState readHouseState(const Value& o)
         for (const auto& d : list.items())
             if (d.isNumber() && h.propped[pid].size() < 64)
                 h.propped[pid].push_back(d.asNumber());
+    if (o["plan"].isString())
+        h.plan = o["plan"].asString();
     return h;
 }
 

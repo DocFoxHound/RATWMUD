@@ -139,10 +139,24 @@ bool Society::produce(const std::string& id, double absoluteDay)
     const auto* job = jobOf(id);
     produceNext_[id] = absoluteDay + producer->seconds / 86400. * (1 - ImprovementPace * (job ? improvement(job->id) : 0));
     bool any = false;
+    // A town's trade (doc 61): its producers bring in more of its goods, the fraction by a lot fixed by the producer and
+    // the spell (so a run repeats), and keep more of them in store to send away.
+    const auto town = communityOfResident(id);
+    const auto spell = std::uint64_t(std::floor(absoluteDay * 96));
     // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
     for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
-        if (const int held = stock(*account(till), item); held < ProducerKept)
-            any = create(till, item, std::min(count, ProducerKept - held), "brought in") || any;
+    {
+        int brought = count, kept = ProducerKept;
+        if (items::townGoodOf(town, item))
+        {
+            const double more = count * items::tradeYield();
+            const double lot = double(std::hash<std::string>{}(id + "|" + item + "|" + std::to_string(spell)) % 1000) / 1000;
+            brought = int(std::floor(more)) + (lot < more - std::floor(more) ? 1 : 0);
+            kept = int(std::lround(ProducerKept * items::tradeKeep()));
+        }
+        if (const int held = stock(*account(till), item); held < kept)
+            any = create(till, item, std::min(brought, kept - held), "brought in") || any;
+    }
     return any;
 }
 
@@ -255,8 +269,10 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             const auto* in = items::good(k->in.front().first);
             return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
         }();
-        const bool low = stockAll(*account(till), made) < (items::traded(made) && keeps ? SuppliesKept
-                                                           : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 : GoodsKept);
+        // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
+        const double trade = items::townGoodOf(communityOfResident(id), made) ? items::tradeKeep() : 1;
+        const bool low = stockAll(*account(till), made) < (items::traded(made) && keeps ? SuppliesKept * trade
+                                                           : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept);
         if (!low)
             continue;
         // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.

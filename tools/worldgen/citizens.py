@@ -14,7 +14,7 @@ import random
 
 from . import residents as R
 from .buildings import WORKS_TRADE, keeper_label
-from .cities import HOUSES, MARKETS
+from .cities import GREATLY_WORKS, HOUSES, MARKETS
 
 SEED = 5151
 FACTIONS = [
@@ -188,7 +188,8 @@ def stallholders(P, city, key, rng, home, evening):
 HEADS = {
     'greatly': [
         ('Ambrose', 'male', 63, 'counting the House\'s money', 'counting',
-         'Lord of House Greatly, the richest wolf in Ridgemere, who owns the ships, the wharf and half the city\'s debts',
+         'Lord of House Greatly, the richest wolf in Ridgemere, whose brick, lime and paint built half the city and who '
+         'holds the other half\'s debts',
          'Courteous, patient and utterly without mercy in business; he never raises his voice and never forgets.',
          'Ambrose made House Greatly the first of the Houses with loans the others could not refuse; he means his '
          'heir to inherit a city, not a fortune.'),
@@ -197,7 +198,7 @@ HEADS = {
          'Gracious, sharp-tongued and the best-informed wolf in the city.',
          'Celestine hosts the only salon in Ridgemere that every House attends, and remembers everything said there.'),
         ('Julian', 'male', 29, 'keeping the wharf\'s books', 'wharf',
-         'the Greatly heir, who runs the House\'s wharf and ships',
+         'the Greatly heir, who runs the House\'s yards and the ships that carry its brick and lime',
          'Clever, restless and a little too fond of the Sailors\' Rest.',
          'Julian wants to sail with the ships rather than count them, and his father knows it.'),
         ('Rosalind', 'female', 22, 'reading in the gardens', 'home',
@@ -457,7 +458,8 @@ def ridgemere(project, manifest, city, world, rng):
                   work=P.at(city.spots[gate], share=False), evening=bed, hours=hours, job='a gate guard of the Watch',
                   greeting_line='Name and business.')
     # -- The works, the wharf and the docks --------------------------------------------------------------------
-    for b in [b for b in mine if b['kind'] == 'works']:
+    later = {name for _, name, _, _ in GREATLY_WORKS}    # (Doc 61's works: their crews come last, below.)
+    for b in [b for b in mine if b['kind'] == 'works' and b['name'] not in later]:
         stations = sum(len(r['work']) for r in b['rooms'])
         word = WORKS_TRADE.get(b['trade'], 'master')
         crew = [('merchant', f'runs {b["name"]}'[:40], f'the {word} who runs {b["name"]}')] + \
@@ -521,6 +523,39 @@ def grayrock_journey(P, world, city):
     rid = P.prefix + 'grayrock_journey'
     P.routes.append({'id': rid, 'name': 'Lord Grayrock\'s road', 'posts': places})
     return rid
+
+
+def later_crews(project, manifest, world, seed=SEED):
+    """House Greatly's building trade (doc 61): the crews of the Plasterworks, the Colour Works and the Masons' Yard,
+    made after everyone else in the world (the city filled out, the towns, the country), from their own sequence, in
+    the beds still free in the works' lodgings and the Sump, so that nobody already there moves or is renamed."""
+    rng = random.Random(f'{seed}:doc61')
+    city = next(c for c in world.cities if c.region == 'ridgemere')
+    P = Folk(project, manifest, rng, 'rm_', RM_FEMALE, RM_MALE, RM_HEADS, RM_TAILS, RM_QUIRKS, RM_HOOKS)
+    for p in project.get('people', []):
+        P.names.add(p['name'])
+        P.taken.add((p['home']['cell'], p['home']['x'], p['home']['y']))
+    mine = [b for b in manifest if b.get('city') == 'ridgemere']
+    district = lambda b: b['district']
+    tenements = [b for b in mine if b['kind'] == 'tenement' and not district(b).startswith('estate_')]
+    houses = [b for b in mine if b['kind'] == 'house' and not district(b).startswith('estate_')]
+    pool = [b for b in tenements if district(b).startswith(('works', 'docks', 'wharf', 'sump'))] + tenements + houses
+    taverns = [b for b in mine if b['kind'] in ('tavern', 'inn')]
+    later = {name for _, name, _, _ in GREATLY_WORKS}
+    for b in [b for b in mine if b['kind'] == 'works' and b['name'] in later]:
+        stations = sum(len(r['work']) for r in b['rooms'])
+        word = WORKS_TRADE.get(b['trade'], 'master')
+        crew = [('merchant', f'runs {b["name"]}'[:40], f'the {word} who runs {b["name"]}, for House Greatly')] + \
+               [('civilian', f'works at {b["name"]}'[:40], f'a hand at {b["name"]}')] * min(3, max(0, stations - 1))
+        for role, label, job in crew:
+            home = next((bed for bed in (P.bed(x) for x in pool) if bed), None)
+            if home is None:
+                break
+            evening = P.floor(rng.choice(taverns)['rooms'][0]['id'], share=True) if taverns and rng.random() < .55 \
+                else P.at(city.spots[rng.choice(list(MARKETS))])
+            P.add(role=role, work_label=label, home=home, work=P.work(b), evening=evening, hours=(6, 18), job=job,
+                  greeting_line='Mind the lime. It burns.')
+    return P.people
 
 
 def populate(project, manifest, world, seed=SEED):

@@ -577,6 +577,11 @@ WORKS = {  # kind: (size, what fills it)
     # Doc 42's plaster works (the user, 2026-10-06): Ser Ferro's, from the mines' quicklime and the farms' fur.
     'plasterworks': ((20, 12), 'a lime kiln at the back, troughs of slaked lime, bales of combed fur and tubs of plaster '
                      'by the door'),
+    # Doc 61's building trade (House Greatly's): the masons' yard and the colour works.
+    'masons_yard': ((22, 13), 'bankers in rows under an open roof, blocks waiting to be dressed, and mortar boards by '
+                    'the door'),
+    'colour_works': ((18, 12), 'grinding slabs and mullers, crocks of ochre and umber, and linseed oil warming by the '
+                     'stove'),
 }
 
 # Each new works kind: its stations in order of importance, and how many of each.
@@ -603,6 +608,8 @@ WORKS_STATIONS = {
     'barn': [],
     'rabbitry': [],
     'plasterworks': [('lime_kiln', 2), ('mason_banker', 2)],
+    'masons_yard': [('mason_banker', 4), ('lime_kiln', 1)],
+    'colour_works': [('workbench', 3), ('press', 1)],
 }
 # What its keeper is called (towns use it for the work label) and the trade whose skill it uses.
 WORKS_TRADE = {
@@ -613,7 +620,8 @@ WORKS_TRADE = {
     'mill': 'miller', 'arsenal': 'engineer', 'cartwright': 'cartwright', 'weaving_shed': 'weaver',
     'brewery': 'brewer', 'stables': 'horse-dealer', 'dairy': 'dairy keeper', 'press_house': 'vintner',
     'mine_head': 'mine captain', 'fold': 'shepherd', 'bee_shed': 'beekeeper', 'logging_camp': 'logging boss',
-    'barn': 'shepherd', 'rabbitry': 'rabbit keeper', 'plasterworks': 'plasterer',
+    'barn': 'shepherd', 'rabbitry': 'rabbit keeper', 'plasterworks': 'plasterer', 'masons_yard': 'mason',
+    'colour_works': 'colourman',
 }
 
 

@@ -148,6 +148,31 @@ const std::vector<Institution>& institutions();
 double institutionDays();                           // Days of its basket an institution keeps in stock.
 double contractPremium();                           // A contract's reward against the goods' price.
 int householdReserve();                             // Pennies a head a household keeps back for food.
+// The great houses' trades (Docs/Design/61-industry-of-the-realm.md; Data/Economy/houses.json): which house is which,
+// by a word of its name, and the kinds of business it owns in its city. Empty for a world without the file.
+struct HouseTrade
+{
+    std::string id, name, trade;
+    std::vector<std::string> names;                 // Words of its name: "grayrock" (in "Grayrock Hall", "the Grayrock Foundry").
+    std::vector<std::string> businesses;            // The kinds of business (businesses.json ids) that are its trade.
+};
+const std::vector<HouseTrade>& houseTrades();
+// The trade of a house, by its name ("Grayrock Hall", "House Fell"), or null.
+const HouseTrade* houseTradeOf(const std::string& houseName);
+// Whether `text` holds `word` as a word of its own (letters on neither side), ignoring case.
+bool holdsWord(const std::string& text, const std::string& word);
+// What houses.json says, as text that changes whenever it does (a save gives its businesses out again then).
+const std::string& houseRules();
+// A town's trade (doc 61; Data/Economy/specialties.json): the goods it is known for and sends out, and what it needs.
+struct TownTrade
+{
+    std::string town, trade;
+    std::vector<std::string> goods, needs;
+};
+const TownTrade* townTrade(const std::string& town);         // Null for a town with none.
+bool townGoodOf(const std::string& town, const std::string& item);   // Whether the good is the town's trade.
+double tradeYield();                                // How much more a town's producers bring in of its goods.
+double tradeKeep();                                 // How much more of them they keep in store to send away.
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

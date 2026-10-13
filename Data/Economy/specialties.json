@@ -1,0 +1,24 @@
+{
+  "format": "ratw-specialties",
+  "version": 1,
+  "about": "Each town's trade (Docs/Design/61-industry-of-the-realm.md): the goods it is known for and sends out, and what it needs from elsewhere (needs: told, not enforced). A town's producers of its goods (farms, mines, fisheries...) bring in `yield` times as much of them, and keep `keep` times as much in store to send; when a town needs a good, the roads buy it first from a town whose trade it is, if that town has any to spare. Towns are the game's communities (region ids). Numbers are placeholders.",
+  "yield": 1.5,
+  "keep": 2,
+  "towns": [
+    {"town": "frosthollow", "trade": "iron: ore from its mines and bars from its smelter; charcoal and furs",
+     "goods": ["iron_ore", "iron_bar", "charcoal", "timber", "small_pelt"], "needs": ["flour", "bread", "oats", "wool_cloth", "salt"]},
+    {"town": "coldwater", "trade": "the lake's fish, fresh and smoked; flour from its mill; horses",
+     "goods": ["fish", "smoked_fish", "flour", "horse", "hay"], "needs": ["iron_bar", "nails", "salt", "wool_cloth"]},
+    {"town": "oakhaven", "trade": "timber, planks and charcoal from the warm forest; joinery; pork; herbs",
+     "goods": ["timber", "planks", "beam", "charcoal", "firewood", "oak_bark", "raw_meat", "herbs", "honey"], "needs": ["iron_bar", "nails", "salt", "wool_cloth"]},
+    {"town": "mirebridge", "trade": "clay and sand, bricks and tiles from the Clayholt works; reeds and eels from the fens",
+     "goods": ["clay", "sand", "bricks", "roof_tiles", "reeds", "fish"], "needs": ["flour", "timber", "iron_bar", "nails"]},
+    {"town": "larkfield", "trade": "the granary of the downs: grain and flour, milk, cheese and butter, wool, mutton and hides",
+     "goods": ["wheat", "oats", "barley", "flour", "milk", "cheese", "butter", "wool", "mutton", "hide", "vegetables", "straw", "hay"], "needs": ["iron_bar", "nails", "salt", "whitewash"]},
+    {"town": "southmeadow", "trade": "cider and wine, apples, honey and beeswax, and the south's grain",
+     "goods": ["cider", "wine", "apples", "grapes", "honey", "beeswax", "wheat", "rabbit"], "needs": ["iron_bar", "barrel", "wool_cloth", "salt"]},
+    {"town": "ridgemere", "trade": "the city's industry: building materials (House Greatly), timber and woodwork (Fell), iron and steel (Grayrock), wool, cloth and leather (Mossgrave); salt, glass, paper and rope",
+     "goods": ["cut_stone", "bricks", "roof_tiles", "lime", "mortar", "plaster", "whitewash", "paint", "glass_pane", "planks", "beam", "barrel", "iron_bar", "steel_bar", "nails", "wool_cloth", "linen_cloth", "leather", "rope", "paper", "salt", "stone", "limestone"],
+     "needs": ["iron_ore", "charcoal", "timber", "clay", "grain", "wool", "food"]}
+  ]
+}

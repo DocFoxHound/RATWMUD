@@ -1250,6 +1250,10 @@ def assemble(base, world, cells, report=print):
     # The towns built out and peopled, Ridgemere filled out, and the country's farms and works.
     project, _ = towns.build_all(project, report=lambda line: report(f'  towns: {line}'))
     project, _ = country.build(project, report=lambda line: report(f'  country: {line}'))
+    # House Greatly's building trade (doc 61): its crews last of all, so that nobody made before them moves.
+    crews = citizens.later_crews(project, site.manifest, world)
+    project['people'] = project['people'] + crews
+    report(f'ridgemere: {len(crews)} at House Greatly\'s new works (doc 61)')
     # The herb patch: by the Southway, outside the city.
     gx, gy = world.gates[(CITY, 'S')]
     from .residents import People
@@ -1376,6 +1380,26 @@ def main(argv=None):
         import world_db
         import world_store
         saved, bodies = saved_residents(base['id'])
+        # Someone made again keeps the ID the world gave them (doc 61): a resident whose generated ID the game's save
+        # remembers from an older world was given trailing underscores at its first import (below); made again, they
+        # are known by their name and the ID's stem, and given the ID they were given then (the first with underscores
+        # that the save doesn't remember), so that a regeneration renames nobody.
+        # The IDs given are kept in artifacts/realm/ids.json (by stem and name), written after every import; failing
+        # that, the world's own.
+        ids_file = Path(__file__).resolve().parents[2] / 'artifacts/realm/ids.json'
+        given = json.loads(ids_file.read_text(encoding='utf-8')) if ids_file.exists() else {}
+        known = {}
+        for p in base.get('people', []):
+            known.setdefault(f"{p['id'].rstrip('_')}|{p['name']}", p['id'])
+        known.update(given)
+        made = {p['id'] for p in project['people']}
+        for p in project['people']:
+            new = known.get(f"{p['id'].rstrip('_')}|{p['name']}")
+            if not new or new == p['id'] or (new in made and new != p['id']):
+                continue
+            made.discard(p['id'])
+            made.add(new)
+            p['id'] = new
         old_ids = {p['id'] for p in base.get('people', [])} | set(saved)
         # Someone this world already had stays: the same ID and name (a world made by this generator, made again), and,
         # if the game's save knows the ID, it still has their body, in the same home (else it is someone else's saved
@@ -1393,6 +1417,9 @@ def main(argv=None):
         with world_db.connect('dev', 'editor') as conn:
             new = world_store.save_world(conn, project, revision)
         print(f'Saved to DEV, revision {new}.')
+        ids_file.parent.mkdir(parents=True, exist_ok=True)
+        ids_file.write_text(json.dumps({f"{p['id'].rstrip('_')}|{p['name']}": p['id'] for p in project['people']}, indent=0),
+                            encoding='utf-8')
         with world_db.connect('dev', 'owner') as conn:
             with conn.transaction():
                 cleared = clear_old_state(conn, project['id'], old_ids - kept)

@@ -76,8 +76,10 @@ bool Society::houseHead(const std::string& title)
     if (const auto found = known.find(title); found != known.end())
         return found->second;
     const auto t = lower(title);
+    // (Keeping a house's own seat: "keeping Grayrock Hall", "keeping Mossgrave Court"; not a caretaker of a public
+    // hall, "keeping the Rain Hall" (doc 61).)
     const bool is = t.rfind("ruling ", 0) == 0 || t.rfind("holding court", 0) == 0 ||
-                    (t.rfind("keeping ", 0) == 0 && hasAny(title, {" Hall", " House", " Manor"}));
+                    (t.rfind("keeping ", 0) == 0 && t.rfind("keeping the ", 0) != 0 && hasAny(title, {" Hall", " House", " Manor", " Court"}));
     return known.emplace(title, is).first->second;
 }
 

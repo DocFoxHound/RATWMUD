@@ -145,6 +145,8 @@
     {"id": "lime", "name": "Quicklime (sack)", "category": "component", "weight": 10, "price": 2, "stack": 20, "desc": "Burnt limestone: mortar, plaster, tanning."},
     {"id": "mortar", "name": "Mortar (tub)", "category": "component", "weight": 15, "price": 2, "stack": 10, "desc": "Lime and sand."},
     {"id": "plaster", "name": "Plaster (tub)", "category": "component", "weight": 12, "price": 3, "stack": 10, "desc": "Lime plaster for the walls of Ridgemere's houses."},
+    {"id": "whitewash", "name": "Whitewash (pail)", "category": "component", "weight": 8, "price": 2, "stack": 10, "desc": "Slaked lime in water: the walls of cottages, barns and byres, a fresh coat every spring."},
+    {"id": "paint", "name": "Paint (pot)", "category": "component", "weight": 3, "price": 5, "stack": 20, "desc": "Linseed oil ground with colour: doors, shutters, signs and the fronts of the Heights."},
     {"id": "cut_marble", "name": "Dressed marble", "category": "component", "weight": 50, "price": 20, "stack": 5, "desc": "Steps, columns and floors for the fine houses of the Heights."},
     {"id": "cut_stone", "name": "Dressed stone", "category": "component", "weight": 50, "price": 5, "stack": 5, "desc": "Squared and faced: walls, bridges, steps."},
     {"id": "bricks", "name": "Bricks (hod of 20)", "category": "component", "weight": 40, "price": 4, "stack": 5, "desc": "Kiln-fired."},

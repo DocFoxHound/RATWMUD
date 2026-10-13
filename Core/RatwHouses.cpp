@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <set>
 
 namespace ratw
 {
@@ -37,8 +38,9 @@ const std::vector<House>& Society::houses() const
         std::string name = p.title.rfind("ruling ", 0) == 0 ? p.title.substr(7) : p.title.rfind("keeping ", 0) == 0 ? p.title.substr(8)
                                                                                                                     : "the Court of " + community;
         const auto id = "house:" + slug(name);
+        const auto* trade = items::houseTradeOf(name);
         if (std::none_of(houses_.begin(), houses_.end(), [&](const House& h) { return h.id == id; }))
-            houses_.push_back({id, name, p.id, community});
+            houses_.push_back({id, name, p.id, community, trade ? trade->id : std::string()});
     }
     return houses_;
 }
@@ -72,7 +74,15 @@ std::int64_t Society::floatOf(const std::string& positionId) const
     if (business->role == "merchant")
         for (const auto& p : positions_)
             help += p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell;
-    return FloatDays * (ManagerWage + 6 * help) + 30;
+    // And its materials (doc 61): a maker's store of them for its first craft (MaterialBatches batches, at the catalog's
+    // prices), so that a night's takings swept to its house never leave it unable to buy its ore and coal.
+    std::int64_t materials = 0;
+    if (const auto* kind = business->role == "merchant" ? items::businessFor(business->title) : nullptr)
+        if (const auto crafts = items::craftsFor(kind->id); !crafts.empty())
+            for (const auto& [item, n] : crafts.front()->in)
+                if (const auto* good = items::good(item))
+                    materials += std::int64_t(good->price) * n * MaterialBatches;
+    return FloatDays * (ManagerWage + 6 * help) + 30 + materials;
 }
 
 void Society::foundHouses()
@@ -101,13 +111,10 @@ void Society::foundHouses()
         const auto town = byTown.find(communityOfResident(p.founder));
         if (town == byTown.end() || town->second.empty())
             continue;                               // A town without a great house: its shops are their keepers' own.
-        // The industry (workshops, yards) is the houses'; the shops, about half of them, by lot.
-        const auto* business = items::businessFor(p.title);
-        const auto lot = std::hash<std::string>{}(p.id + "|house");
-        const bool industry = business && (business->kind == "works" || business->kind == "yard");
-        if (!industry && lot % 2)
+        const auto owner = ownerFor(p, town->second);
+        if (owner.empty())
             continue;
-        const auto& house = *town->second[lot / 2 % town->second.size()];
+        const House& house = **std::find_if(town->second.begin(), town->second.end(), [&](const House* h) { return h->id == owner; });
         const auto till = "till:" + p.id;
         openAccount(house.id);
         openAccount(till);
@@ -129,6 +136,120 @@ void Society::foundHouses()
         // Its starting money (2026-10-05): the till begins with its float, so filling it doesn't drain the house.
         startingMoney(till, floatOf(p.id) - account(till)->cash);
     }
+    state.plan = housePlan();
+}
+
+std::string Society::ownerFor(const Position& p, const std::vector<const House*>& town) const
+{
+    const auto* business = items::businessFor(p.title);
+    if (std::any_of(town.begin(), town.end(), [](const House* h) { return !h->trade.empty(); }))
+    {
+        // By name: the Grayrock Foundry is Grayrock's, whatever it makes; then by trade: a sawmill is Fell's.
+        for (const auto* h : town)
+            if (const auto* trade = items::houseTradeOf(h->name))
+                for (const auto& word : trade->names)
+                    if (items::holdsWord(p.title, word) || items::holdsWord(p.work.cell, word))
+                        return h->id;
+        if (business)
+            for (const auto* h : town)
+                if (const auto* trade = items::houseTradeOf(h->name);
+                    trade && std::find(trade->businesses.begin(), trade->businesses.end(), business->id) != trade->businesses.end())
+                    return h->id;
+        return {};
+    }
+    // The industry (workshops, yards) is the houses'; the shops, about half of them, by lot.
+    const auto lot = std::hash<std::string>{}(p.id + "|house");
+    const bool industry = business && (business->kind == "works" || business->kind == "yard");
+    if (!industry && lot % 2)
+        return {};
+    return town[lot / 2 % town.size()]->id;
+}
+
+bool Society::ownTrade(const std::string& positionId, const std::string& houseId) const
+{
+    // A business of its owner's trade, or named for it (doc 61).
+    const auto* p = position(positionId);
+    const auto found = std::find_if(houses().begin(), houses().end(), [&](const House& h) { return h.id == houseId; });
+    const auto* trade = p && found != houses().end() ? items::houseTradeOf(found->name) : nullptr;
+    if (!trade)
+        return false;
+    for (const auto& word : trade->names)
+        if (items::holdsWord(p->title, word) || items::holdsWord(p->work.cell, word))
+            return true;
+    const auto* business = items::businessFor(p->title);
+    return business && std::find(trade->businesses.begin(), trade->businesses.end(), business->id) != trade->businesses.end();
+}
+
+std::string Society::housePlan() const
+{
+    std::string plan = items::houseRules() + "|";
+    for (const auto& h : houses())
+        plan += h.id + ",";
+    return plan;
+}
+
+void Society::sortHouses()
+{
+    // The rules have changed since ownership was given out (doc 61: houses.json; a house no longer counted one, or
+    // one counted now that wasn't): each business goes to the house it belongs to now, or to its keeper. A house no
+    // longer a house gives its money and goods to its town's treasury; a new one gets its founding fortune. Only
+    // ownership moves: every business keeps its till.
+    auto& state = state_.houses;
+    std::map<std::string, std::vector<const House*>> byTown;
+    std::set<std::string> live;
+    for (const auto& h : houses())
+    {
+        byTown[h.community].push_back(&h);
+        live.insert(h.id);
+        if (!account(h.id))
+        {
+            openAccount(h.id);
+            state_.accounts.at(h.id).cash = HouseFortune;
+            state_.minted += HouseFortune;
+            record("a great house's fortune", "outside", h.id, "", 0, HouseFortune);
+        }
+    }
+    std::map<std::string, std::string> gone;        // A house no more -> where its money goes.
+    for (const auto& [id, purse] : state_.accounts)
+        if (id.rfind("house:", 0) == 0 && !live.count(id))
+            gone[id] = treasuryOf(capital());
+    for (const auto& [pid, house] : state.owner)
+        if (gone.count(house))
+            if (const auto* p = position(pid))
+                gone[house] = treasuryOf(communityOfResident(p->founder));
+    for (const auto& [house, treasury] : gone)
+    {
+        openAccount(treasury);
+        if (const auto* purse = account(house))
+        {
+            std::vector<std::pair<std::string, int>> goods(purse->stock.begin(), purse->stock.end());
+            for (const auto& [item, n] : goods)
+                if (n > 0)
+                    shift(house, treasury, item, n, 0, "a house no more");
+            if (account(house)->cash > 0)
+                shift(house, treasury, "", 0, account(house)->cash, "a house no more");
+        }
+    }
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto town = byTown.find(communityOfResident(p.founder));
+        const auto now = town == byTown.end() ? std::string() : ownerFor(p, town->second);
+        const auto was = ownerOf(p.id);
+        if (now == was)
+            continue;
+        if (now.empty())
+            state.owner.erase(p.id);
+        else
+        {
+            openAccount("till:" + p.id);
+            state.owner[p.id] = now;
+        }
+        state.propped.erase(p.id);
+    }
+    state.plan = housePlan();
+    ++state.revision;
 }
 
 bool Society::sellBusiness(const std::string& positionId, const std::string& house, std::int64_t price)
@@ -155,6 +276,8 @@ void Society::tendHouses(std::int64_t day)
     ++state.revision;
     if (!state.founded)
         foundHouses();
+    else if (state.plan != housePlan())
+        sortHouses();
     const std::vector<std::pair<std::string, std::string>> owned(state.owner.begin(), state.owner.end());
     for (const auto& [pid, house] : owned)
     {
@@ -174,8 +297,17 @@ void Society::tendHouses(std::int64_t day)
         propped.erase(std::remove_if(propped.begin(), propped.end(), [&](double d) { return d <= day - MonthDays; }), propped.end());
         if (cash > floatCash)
             shift(till, house, "", 0, cash - floatCash, "house takings");
-        // (A struggling business is rescued by its town's rescue fund now, which counts its days in `propped`: doc 46,
-        // Phase 6. The house no longer props its own businesses to keep the money in the family.)
+        // A house invests in its own trade (doc 61, the user, 2026-10-12: each House an industry): a business of its trade
+        // run low is filled back up to its float from the house's own purse, while the house can afford it, and is never
+        // sold off for it. (Any other business that struggles is rescued by its town's rescue fund, which counts its days
+        // in `propped`: doc 46, Phase 6. The house no longer props those to keep the money in the family.)
+        if (ownTrade(pid, house))
+        {
+            if (const auto* purse = account(house); cash < floatCash / 2 && purse && purse->cash > HouseFortune / 4)
+                shift(house, till, "", 0, std::min<std::int64_t>(floatCash - cash, purse->cash - HouseFortune / 4),
+                      "a house invests in its trade");
+            continue;
+        }
         if (propped.empty())
             state.propped.erase(pid);
         else if (int(propped.size()) >= ProppedDays)

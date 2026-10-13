@@ -174,16 +174,19 @@ void World::tradeCaravans()
             const auto covered = ordered.count({to.id, item}) ? ordered.at({to.id, item}) : 0;
             if (want - local - covered < 4)
                 continue;
+            // A town whose trade the good is (doc 61) comes first, if it has any to spare; else the most to spare.
             const Town* best = nullptr;
             int bestSpare = 3;
+            bool bestTrade = false;
             for (const auto& from : towns_)
             {
                 if (&from == &to)
                     continue;
                 auto& fm = markets[from.id];
                 const int spare = (fm.spare.count(item) ? fm.spare.at(item) : 0) - (fm.want.count(item) ? fm.want.at(item) : 0);
-                if (spare > bestSpare)
-                    best = &from, bestSpare = spare;
+                const bool trade = items::townGoodOf(from.id, item);
+                if (spare > 3 && ((trade && !bestTrade) || (trade == bestTrade && spare > bestSpare)))
+                    best = &from, bestSpare = spare, bestTrade = trade;
             }
             if (!best)
                 continue;

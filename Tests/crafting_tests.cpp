@@ -476,6 +476,33 @@ void townsfolkBuy()
 }
 } // namespace
 
+// A town's trade (Docs/Design/61; Data/Economy/specialties.json): iron is Frosthollow's. A miner at Frosthollow's
+// pit and one at a pit elsewhere work the same hours; Frosthollow's brings in more ore (yield), and keeps more of it to
+// send away (keep), the fraction by a lot fixed by the spell, so the run repeats.
+void aTownsTradeBringsInMore()
+{
+    expect(items::townGoodOf("frosthollow", "iron_ore") && !items::townGoodOf("larkfield", "iron_ore"), "Iron is Frosthollow's trade");
+    AuthoredRoster roster;
+    roster.residents = {person("north", "digs ore at the high pit", {"north_pit", 2.5, 2.5}, "civilian"),
+                        person("south", "digs ore at the low pit", {"south_pit", 2.5, 2.5}, "civilian")};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    LifeDay day;
+    day.communityOf = [](const std::string& cell) { return cell == "north_pit" ? std::string("frosthollow") : std::string("elsewhere"); };
+    s.setDay(day);
+    double when = 10. / 24;
+    work(s, 4 * 3600, when);
+    const int north = held(s, "north", "iron_ore"), south = held(s, "south", "iron_ore");
+    expect(north > south * 1.25 && north < south * 1.75 + 2, "Frosthollow's miner brings in about half as much again: " +
+                                                                 std::to_string(north) + " to " + std::to_string(south));
+    set(s, "north", "iron_ore", Society::ProducerKept - 1);       // Both nearly as much as a producer keeps.
+    set(s, "south", "iron_ore", Society::ProducerKept - 1);
+    work(s, 4 * 3600, when);
+    expect(held(s, "south", "iron_ore") <= Society::ProducerKept && held(s, "north", "iron_ore") > Society::ProducerKept,
+           "and keeps more of it to send away: " + std::to_string(held(s, "north", "iron_ore")) + " to " + std::to_string(held(s, "south", "iron_ore")));
+}
+
 int main()
 {
     try
@@ -488,6 +515,7 @@ int main()
         smithForges();
         olderSavesGetTheirGrantOnce();
         farmerBringsIn();
+        aTownsTradeBringsInMore();
         millGrindsForTheStall();
         cartedInFromAnotherTown();
         qualities();

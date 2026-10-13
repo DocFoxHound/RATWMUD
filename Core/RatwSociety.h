@@ -226,10 +226,14 @@ struct HouseState
     std::map<std::string, std::vector<double>> propped;   // Position -> the days its till ran low lately.
     std::int64_t day = -1;                          // The last day the houses were tended.
     std::int64_t revision = 0;                      // Counts changes, for the save's journal.
+    // The rules ownership was last given out by (the houses there were, and Data/Economy/houses.json, doc 61): when
+    // they change, a save's businesses are given out again, once (Society::sortHouses).
+    std::string plan;
 };
 struct House
 {
     std::string id, name, head, community;          // id: "house:fell"; head: the head's position.
+    std::string trade;                              // Its trade (Data/Economy/houses.json, doc 61), or none.
 };
 
 // What the economy remembers from day to day (doc 42): who has gone unpaid since when (Phase 3), and each treasury's,
@@ -1120,6 +1124,12 @@ class Society
     mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).
     mutable bool housesKnown_ = false;
     void foundHouses();
+    // The house a business belongs to (doc 61): the one named in it, else the one whose trade it is, else none (its
+    // keeper's own); houses with no trade (a world without houses.json) own industry, and half the shops, by lot.
+    std::string ownerFor(const Position& business, const std::vector<const House*>& townHouses) const;
+    std::string housePlan() const;                  // The rules ownership is given out by now (HouseState::plan).
+    bool ownTrade(const std::string& positionId, const std::string& houseId) const;   // Of the house's trade (doc 61).
+    void sortHouses();                              // Gives a save's businesses out again by the rules of now.
     mutable std::map<std::string, std::size_t> outwork_;   // Resident -> its ground's index in its community's list.
     mutable std::map<std::string, std::map<std::size_t, int>> outworkTaken_;   // Community -> ground -> how many.
     mutable std::int64_t outworkDay_ = -1;
