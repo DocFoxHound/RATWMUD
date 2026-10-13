@@ -792,6 +792,40 @@ will have); copying from live brings PROD's back. **Not yet:** Atlas's own panel
 then), and the figures themselves: the lore names no ruler or lord beyond the four Houses' heads (in the game) and the
 Wardens (off the map), so the table is empty for you to fill.
 
+## Phase 7 as begun (2026-10-13)
+
+**Rules for the main factors,** written in Claude's hand (no paid drafting), 139 rules and about 430 lines, every one
+checked by the game's loader and sampled with `talk_check` against DEV's residents:
+
+- `rules/keeping.talk`: **how they're keeping.** Acquaintances and friends ask after each other (`talk.day`,
+  `talk.friends`); the other answers as they are today (`keeping.answer`: grieving, hurt, robbed, roofless, hungry,
+  destitute or rich, on the dole, in debt, a business thriving or failing, tired, at work or a day off, their spouse
+  and child by name, apprentice or master, old, on the road, and by trait and Ridgemere quarter); the first answers
+  that in kind (`keeping.sorry`, `keeping.glad`, `keeping.nod`, by warmth, humour, temper, piety, wealth). Or one tells
+  the other, unasked, what's on their mind (`talk.smalltalk`, `talk.day`, `talk.work`, `talk.family`). Everyday
+  remarks have a two-day cooldown, serious ones half a day, asking after someone a day: without them a married wolf
+  spoke of their spouse in most small talk (a rule with one fact outranks the many scenes with none).
+- `rules/days.talk`: **the day as each lives it,** barks by shift (before, after, a day off, worked hard), the day's
+  kind as it falls on them (working on Restday, at a festival, on market day; the devout on Restday; the poor at a
+  feast), the hour (the old at dawn, the street at dusk and night, the nervy in the dark, the tavern), errands (each
+  kind), the road and the watch; and how they are (rich, the Heights and the Sump, hungry, roofless, on the dole, in
+  debt, lightly hurt, mourning a friend, widowed, fought, fighting, apprentice and master, the ambitious, the
+  chatty, the dry).
+- `rules/regard.talk`: **how a resident feels about a player,** in greetings, thanks, goodbyes and answers: hostility
+  always shows (priority 3; by name when known); wariness, coolness, warmth and fondness join the tone's own lines at
+  the same score, so they show often but not always; a long absence (`pair.days_since>=28`); the resident's own grief,
+  hurt, or a robbery.
+
+**New words** in the plain grammar: `hungry`, `hurt`, `work`, `bed`. No dialect has them yet, so they fall back to plain.
+
+**The engine:** a rule may test that a speaker has words to say (`self.spouse`, `!self.child`), as it could a memory,
+so it names only those who exist.
+
+**Still to do with you:** the dialects' words (the four new ones, and those each dialect lacks: `talk_report.py` lists
+them; the database's dialects are what's used, edited in the Dungeon Master), the quirk lines (drafts), and a listen
+through these for tone. Found while sampling: the wealth line (rich from 42 days' food) makes the head of House
+Greatly only "comfortable", since household food days don't measure a House's fortune.
+
 ## Phases
 
 1. **The engine and the conversion.** *(Built 2026-10-13.)* Facts and the schema, rules, tiered choice with chance, grammar with layers
@@ -811,7 +845,7 @@ Wardens (off the map), so the table is empty for you to fill.
    gets the voice card.
 6. *(Built 2026-10-13, but for Atlas's own panel and the full run of personalities: see "Phase 6 as built".)* **Character.** `live.npc_voice` and its migration, the Atlas and DM editors with validation, live reload,
    traits from personality. What goes in the tables was settled 2026-10-13: see "Character, as settled".
-7. **Writing.** Grammar by hand (with you). Rules drafted in bulk for the main factors: wealth, working,
+7. *(Begun 2026-10-13: the main factors' rules, see "Phase 7 as begun"; the dialects' words and a listen with you remain.)* **Writing.** Grammar by hand (with you). Rules drafted in bulk for the main factors: wealth, working,
    injured, mourning, fought, saw a player, the day's kind, the time (paid; ask first).
 
 ## Open questions

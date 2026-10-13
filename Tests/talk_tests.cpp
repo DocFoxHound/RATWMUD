@@ -554,6 +554,18 @@ a : Good. That's good.
         std::string p;
         expect(!l.parse(text, "bad.talk", p) && p.find(says) != std::string::npos, "refused (" + says + "): " + p);
     };
+    // Words a speaker may or may not have (phase 7): self.spouse is there to name, !self.spouse isn't.
+    auto named = foundation();
+    expect(named.parse("rule wed\nwhen concept=bark self.spouse\nsay #self.spouse# snores.\nrule single\nwhen concept=bark !self.spouse\nsay Hm.\n",
+                       "named.talk", problem), problem);
+    auto alone = moment("bark");
+    alone.alone = true;
+    expect(named.pick(alone, 1, None, {}).id == "single", "no spouse: not named");
+    alone.a.facts["spouse"] = "Edda";
+    const auto wed = named.pick(alone, 1, None, {});
+    expect(wed.id == "wed" && wed.lines.at(0).second == "Edda snores.", "a spouse: named");
+    bad("rule x\nwhen concept=bark self.wealth\nsay Hm.\n", "is not a sex");
+
     bad("rule x\nwhen concept=bark\nsay Hm.\nthen other: talk.nowhere\n", "is not a concept");
     bad("rule x\nwhen concept=bark\nsay Hm.\nthen everyone: talk.day\n", "then is 'then other");
     bad("rule x\nwhen concept=bark\nsay Hm.\nremember self: Bad-Key 1d\n", "lower-case");

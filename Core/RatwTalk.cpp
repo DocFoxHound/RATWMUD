@@ -858,9 +858,14 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
     const auto test = [&](const std::string& token, Where where, int speaker, std::vector<Criterion>& into) {
         Criterion c;
         std::string error;
-        // Something remembered: self.mem.x (it is), !self.mem.x (it isn't).
+        // Something remembered: self.mem.x (it is), !self.mem.x (it isn't). So too any words a speaker may or may not
+        // have (phase 7): self.spouse (they have one, to name), !self.child.
         const auto bare = token[0] == '!' ? token.substr(1) : token;
-        if (bare.find_first_of("=<>!") == std::string::npos && bare.find("mem.") != std::string::npos)
+        Criterion probe;
+        std::string unused;
+        const bool words = bare.find_first_of("=<>!") == std::string::npos && bare.find('.') != std::string::npos &&
+                           criterion(bare + "=x", where, speaker, probe, unused);
+        if (bare.find_first_of("=<>!") == std::string::npos && (bare.find("mem.") != std::string::npos || words))
         {
             if (!criterion(bare + "=yes", where, speaker, c, error))
             {

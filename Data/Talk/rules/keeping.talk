@@ -1,0 +1,424 @@
+# How they're keeping (Docs/Design/62-talk.md, phase 7): one asks after the other, who answers as they are today (hurt,
+# grieving, hungry, flush, run off their feet, newly a parent), and the first answers that in kind (keeping.sorry,
+# keeping.glad, keeping.nod), as they are: the warm offer soup, the cold shrug, the poor envy the rich. Or one tells
+# the other, unasked, what's on their mind. Every beat is the speaker's own best rule, so one question has a hundred
+# answers. Drafts (phase 7), to tune by ear.
+
+## Asking after them
+
+rule keep_ask
+when concept=talk.day|talk.friends pair.band=acquaintances|friends|rivals|apprentice
+cooldown 1d
+say How are you keeping? | And how are you, #address#? | Keeping well? | All well with you?
+then other: keeping.answer
+
+rule keep_ask_close
+when concept=talk.day|talk.friends pair.band=friends|family|spouses
+cooldown 1d
+say How are you keeping, #pet#? | You look done in, #pet#. All well? | Tell me how you are. Truly.
+then other: keeping.answer
+
+rule keep_ask_chatty
+when concept=talk.day|talk.friends|talk.smalltalk self.talk=chatty pair.band=acquaintances|friends|rivals
+cooldown 1d
+say Now, how are you? I've not seen you in an age. | Come here, tell me everything. How are you? | You first. How are things?
+then other: keeping.answer
+
+rule keep_ask_formal
+when concept=talk.day self.tone=formal pair.band!=family|spouses
+cooldown 1d
+say I trust you're keeping well? | And how do you fare? | I hope I find you well.
+then other: keeping.answer
+
+rule keep_ask_gruff
+when concept=talk.day self.tone=gruff
+cooldown 1d
+say Still breathing, then? | You look terrible. | How's things.
+then other: keeping.answer
+
+## Answering, as they are (self is the one answering)
+
+rule keep_well
+when concept=keeping.answer
+say Well enough. | Mustn't grumble. | Can't complain. Well, I can, but I won't. | Much the same as ever. | #saying#.
+then other: keeping.nod
+
+rule keep_mourning_kin
+when concept=keeping.answer mourning=kin
+priority 4
+say ... Not well. Not well at all. | I keep setting a place at the table. | We buried one of ours. I'm still not right. | Don't. Please. I'll cry in the street.
+then other: keeping.sorry
+
+rule keep_mourning_friend
+when concept=keeping.answer mourning=friend
+priority 3
+say Lost a friend this week. It's sat on me. | Not so good. We lost someone. | You heard? About my friend? Aye. That.
+then other: keeping.sorry
+
+rule keep_widowed
+when concept=keeping.answer widowed=yes
+say Quiet house, since. You get used to it. Mostly. | I talk to the walls now. They don't answer back, at least. | Getting by. It's the evenings.
+then other: keeping.sorry
+
+rule keep_hurt_bad
+when concept=keeping.answer injured=bad
+priority 3
+say Not well. #hurt.capitalize# all over. | Can you not see? I can barely stand. | I've been better. Much better. Gods.
+then other: keeping.sorry
+
+rule keep_hurt_light
+when concept=keeping.answer injured=light
+priority 1
+say Bit #hurt#. Took a knock, nothing more. | Mending. Mind the paw. | Fine, but for the arm. It'll heal.
+then other: keeping.nod
+
+rule keep_robbed
+when concept=keeping.answer robbed=yes
+priority 2
+say Robbed! Took the lot. #robbery#. | Someone's been in my things. Took my #money#. | Furious. Robbed, in my own town.
+then other: keeping.sorry
+
+rule keep_fought
+when concept=keeping.answer fought=yes
+priority 1
+say Got into a scrap. You should see the other one. | Sore. There was a fight. Don't ask. | Better than the last one who tried me.
+then other: keeping.nod
+
+rule keep_homeless
+when concept=keeping.answer homeless=yes
+priority 3
+say I've no roof, #address#. Sleeping where I can. | Out on my ear. Doorways, mostly. | Cold. Every night's cold without a door.
+then other: keeping.sorry
+
+rule keep_hungry
+when concept=keeping.answer hungry=yes
+priority 2
+say #hungry.capitalize#, if I'm honest. | Haven't eaten since yesterday. | My belly's eating itself.
+then other: keeping.sorry
+
+rule keep_destitute
+when concept=keeping.answer wealth=destitute
+priority 2
+say Down to my last pennies. Lower. | Nothing left to sell but the shirt. | Scraping, #address#. Scraping the pot.
+then other: keeping.sorry
+
+rule keep_poor
+when concept=keeping.answer wealth=poor
+say Getting by. Just. | Every #money# counted twice. | Making it last, as ever.
+then other: keeping.nod
+
+rule keep_rich
+when concept=keeping.answer wealth=rich
+say Very well indeed. | Couldn't be better, thank you. | Oh, splendidly. A good year.
+then other: keeping.glad
+
+rule keep_dole
+when concept=keeping.answer on_dole=yes
+priority 1
+say Living on the parish bread. It's bread. | On the dole. Don't look at me like that. | Queuing for loaves, like half the town.
+then other: keeping.sorry
+
+rule keep_owes
+when concept=keeping.answer owes=yes
+priority 1
+say I owe more than I'm owed. Lie awake over it. | Debts, #address#. Debts on debts. | Ask me when I've paid what I owe.
+then other: keeping.sorry
+
+rule keep_business_thriving
+when concept=keeping.answer business=thriving
+priority 1
+say Run off my feet! Customers all day. | Never better. Can't keep the shelves full. | Busy, busy, busy. And glad of it.
+then other: keeping.glad
+
+rule keep_business_failing
+when concept=keeping.answer business=failing
+priority 2
+say The shop's dying. Nobody's buying. | Three days without a sale. Three. | I'll be shut by the month's end, the way it's going.
+then other: keeping.sorry
+
+rule keep_tired
+when concept=keeping.answer tired=yes
+say #tired.capitalize#. #very.capitalize# #tired#. | Ready for #bed#, and it's not even dark. | Dead on my paws.
+then other: keeping.nod
+
+rule keep_at_work
+when concept=keeping.answer working=yes shift=during
+say Busy. I'm at it now, look. | Can't stop long. #work.capitalize#. | Well, but working.
+then other: keeping.nod
+
+rule keep_day_off
+when concept=keeping.answer shift=day_off
+say Day off! I mean to do nothing at all. | Grand. No #work# today. | A day to myself. Imagine.
+then other: keeping.glad
+
+rule keep_spouse
+when concept=keeping.answer self.spouse
+cooldown 1d
+say We're well, #self.spouse# and I. Thank you. | Well. #self.spouse# sends their best, I'm sure. | Can't complain. #self.spouse# does that for both of us.
+then other: keeping.glad
+
+rule keep_parent
+when concept=keeping.answer self.child
+cooldown 1d
+say Busy. #self.child# keeps me on my toes. | Tired. #self.child# was up half the night. | #self.child#'s growing like a weed. I'm well.
+then other: keeping.glad
+
+rule keep_apprentice
+when concept=keeping.answer apprentice=yes
+say My master works me to the bone. But I'm learning. | Sore hands. Learning, though. | Still sweeping more than making.
+then other: keeping.nod
+
+rule keep_master
+when concept=keeping.answer master=yes
+say Well, but for my apprentice. Ruined a day's work. | Teaching. It's harder than doing. | The young one's coming along.
+then other: keeping.nod
+
+rule keep_old
+when concept=keeping.answer stage=old
+say Old, #address#. Old and creaking. But here. | Still above ground. | My hips know the weather before the sky does.
+then other: keeping.nod
+
+rule keep_travelling
+when concept=keeping.answer travelling=yes
+say On the road again. Feet like boards. | Passing through. Always passing through. | Glad to sit a moment.
+then other: keeping.nod
+
+rule keep_short
+when concept=keeping.answer temper=short
+say Why does everyone keep asking me that? | Fine. Is that all? | Same as yesterday.
+then other: keeping.nod
+
+rule keep_merry
+when concept=keeping.answer humour=merry
+cooldown 1d
+say Better for seeing you! | Still handsome, still poor. | Grand! Ask me again and I'll tell you a lie.
+then other: keeping.glad
+
+rule keep_devout
+when concept=keeping.answer piety=devout
+say Blessed, thank the gods. | Well, by the gods' grace. | Content. I've been to chapel.
+then other: keeping.nod
+
+rule keep_restless
+when concept=keeping.answer drive=restless
+cooldown 1d
+say Same as ever. Same as ever. I need a change. | Bored, if I'm honest. Itching for something. | Wondering what's over the hill.
+then other: keeping.nod
+
+rule keep_guarded
+when concept=keeping.answer honesty=guarded
+say Well enough. And you? | Oh, you know. | Can't say I've anything to tell.
+then other: keeping.nod
+
+rule keep_sump
+when concept=keeping.answer quarter=sump
+cooldown 1d
+say Water came up through the floor again. | Damp, #address#. It's the Sump. | Surviving. That's the Sump for you.
+then other: keeping.sorry
+
+rule keep_heights
+when concept=keeping.answer quarter=heights
+cooldown 1d
+say Perfectly well. The Heights are dreadfully dull this season. | Very well, thank you. Such a bore at present. | Well. A great many dinners.
+then other: keeping.nod
+
+## Telling them, unasked
+
+rule tell_rent
+when concept=talk.smalltalk|talk.day wealth=poor|destitute
+cooldown 2d
+say Rent's due and I've not got it. | Bread's gone up again and my purse hasn't. | I sold my good boots. Good boots!
+then other: keeping.sorry
+
+rule tell_flush
+when concept=talk.smalltalk|talk.day wealth=rich
+cooldown 2d
+say Bought a new coat. Larkfield wool. Feel that. | Had the roof done. Finally. | We're thinking of taking on another servant.
+then other: keeping.glad
+
+rule tell_failing
+when concept=talk.smalltalk|talk.work business=failing
+cooldown 12h
+priority 1
+say Third day without a sale. | Nobody's buying. I've stock rotting. | I may have to let the shop go.
+then other: keeping.sorry
+
+rule tell_thriving
+when concept=talk.smalltalk|talk.work business=thriving
+cooldown 2d
+say Sold out by noon. Again. | I can't make it fast enough. | Best season I've had.
+then other: keeping.glad
+
+rule tell_hurt
+when concept=talk.smalltalk|talk.day injured=bad
+cooldown 12h
+priority 1
+say Look at this. Can't lift a thing. | Every step's a knife up the leg. | The healer says weeks. Weeks!
+then other: keeping.sorry
+
+rule tell_fought
+when concept=talk.smalltalk|talk.day fought=yes
+cooldown 12h
+say Did you hear? I was in a fight. Still shaking. | I've a lump on my head the size of an egg. | Someone came at me. I gave as good as I got.
+then other: keeping.sorry
+
+rule tell_robbed
+when concept=talk.smalltalk|talk.day|talk.crime robbed=yes
+cooldown 12h
+priority 1
+say They robbed me. In my own town! | Someone took my things. Who does that? | #robbery#. I'm still shaking.
+then other: keeping.sorry
+
+rule tell_hungry
+when concept=talk.smalltalk hungry=yes
+cooldown 2d
+say My belly's been talking all morning. | You've not got a crust on you? | I could eat a boot.
+then other: keeping.sorry
+
+rule tell_mourning
+when concept=talk.smalltalk|talk.day|talk.friends mourning=kin
+cooldown 12h
+priority 2
+say I can't stop thinking about them. | The house is so quiet. | I keep meaning to tell them things.
+then other: keeping.sorry
+
+rule tell_owes
+when concept=talk.smalltalk owes=yes
+cooldown 2d
+say I owe money to people I'd rather not. | If anyone asks, you've not seen me. | Do you know anyone lending?
+then other: keeping.sorry
+
+rule tell_dole
+when concept=talk.smalltalk on_dole=yes
+cooldown 2d
+say Queued two hours for the parish loaf. | The dole bread's stale again. | Never thought I'd take the parish's bread.
+then other: keeping.sorry
+
+rule tell_homeless
+when concept=talk.smalltalk|talk.day homeless=yes
+cooldown 12h
+priority 1
+say Slept in a doorway again. | Know anywhere dry to sleep? | They put my things in the street.
+then other: keeping.sorry
+
+rule tell_child
+when concept=talk.smalltalk|talk.family|talk.friends self.child
+cooldown 2d
+say #self.child# said the funniest thing this morning. | #self.child# lost a milk tooth! | You'll not believe what #self.child# got into.
+then other: keeping.glad
+
+rule tell_spouse
+when concept=talk.smalltalk|talk.family|talk.friends self.spouse
+cooldown 2d
+say #self.spouse# burnt the bread again. Don't tell anyone. | #self.spouse# snores like a mill. | #self.spouse# brought me flowers. No reason. I'm suspicious.
+then other: keeping.nod
+
+rule tell_long_day
+when concept=talk.smalltalk|talk.work tired=yes working=yes
+cooldown 2d
+say On my feet since dawn. | My back. My back! | One more hour. One more.
+then other: keeping.nod
+
+rule tell_day_off
+when concept=talk.smalltalk|talk.day shift=day_off
+cooldown 2d
+say Day off. I've no idea what to do with myself. | No #work# today. I could sing. | I slept till the sun was up. Bliss.
+then other: keeping.glad
+
+rule tell_restless
+when concept=talk.smalltalk drive=restless
+cooldown 2d
+say Ever think of just going? Walking off down the road? | I'm sick of this town. Don't tell anyone. | One day I'll see the sea. Or the mountains. Somewhere.
+then other: keeping.nod
+
+rule tell_ambitious
+when concept=talk.smalltalk|talk.work drive=ambitious
+cooldown 2d
+say I'll have my own shop inside two years. Watch me. | I mean to be somebody. | There's money in this town if you're quick.
+then other: keeping.nod
+
+## Answering that (self is the one who asked, or listened)
+
+rule sorry_plain
+when concept=keeping.sorry
+say I'm sorry to hear it. | That's hard. | Gods, I'm sorry. | That's no good at all.
+
+rule sorry_warm
+when concept=keeping.sorry warmth=warm
+say Come by mine tonight. There'll be soup. | Anything you need, you say it. | Oh, #pet#. Come here.
+
+rule sorry_cold
+when concept=keeping.sorry warmth=cold
+say Mm. Well. | That's how it goes. | We all have our troubles.
+
+rule sorry_close
+when concept=keeping.sorry pair.band=friends|family|spouses
+say You should have come to me, #pet#. | Why didn't you say? | We'll sort it. Together.
+
+rule sorry_richer
+when concept=keeping.sorry self.wealth=rich|comfortable other.wealth=poor|destitute warmth=warm
+say If it's a matter of #money#, come and see me. | Let me help. No, I mean it. | Don't be proud. Not with me.
+
+rule sorry_devout
+when concept=keeping.sorry piety=devout
+say I'll pray for you. I mean it. | The gods see it. They do. | Light a candle. It helps. It does.
+
+rule sorry_dry
+when concept=keeping.sorry humour=dry
+say Could be worse. Not much, mind. | Well, at least you've your looks. | Cheer up. Tomorrow could be worse still.
+
+rule sorry_short
+when concept=keeping.sorry temper=short
+say Well, don't stand there telling me, sort it. | And whose fault is that? | Everyone's got troubles.
+
+rule sorry_same
+when concept=keeping.sorry wealth=poor|destitute
+say Me too, #address#. Me too. | We're all in it. | You and half the town.
+
+rule glad_plain
+when concept=keeping.glad
+say Good. Glad to hear it. | That's good. | Good for you. | Well, that's something.
+
+rule glad_poor
+when concept=keeping.glad wealth=poor|destitute
+say Must be nice. | Some of us aren't so lucky. | Good for some.
+
+rule glad_warm
+when concept=keeping.glad warmth=warm
+say Oh, that's lovely to hear. | That does my heart good. | Isn't that grand!
+
+rule glad_sly
+when concept=keeping.glad honesty=sly
+say Then you can buy the ale. | Lend us a penny, then. | Remember your friends, eh?
+
+rule glad_ambitious
+when concept=keeping.glad drive=ambitious
+say Tell me how. I mean it. | I'll have what you're having. | Lucky. I'll make my own luck.
+
+rule glad_cold
+when concept=keeping.glad warmth=cold
+say Hm. | Fine. | Good.
+
+rule nod_plain
+when concept=keeping.nod
+say Aye. | Same as ever, then. | Mm. Well. | #agree#.
+
+rule nod_merry
+when concept=keeping.nod humour=merry
+say Ha! Aren't we all. | And me without a drink in my hand. | You'll outlive us all.
+
+rule nod_tired
+when concept=keeping.nod tired=yes
+say You and me both. | Don't talk to me about it. | Aye. #tired.capitalize#, the lot of us.
+
+rule nod_old
+when concept=keeping.nod stage=old
+say Wait till you're my age. | You're young. It passes. | I remember being like that.
+
+rule nod_chatty
+when concept=keeping.nod self.talk=chatty
+say Oh, I know just what you mean. My cousin was the same. | Don't I know it! Now, let me tell you... | Isn't that just the way? Same with me.
+
+rule nod_quiet
+when concept=keeping.nod self.talk=quiet
+say Mm. | Aye. | ...
