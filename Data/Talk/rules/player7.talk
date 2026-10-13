@@ -13,27 +13,27 @@
 rule x7_pg_stranger_plain
 when concept=player.greet topic.meeting=stranger tone=plain
 priority 1
-say #topic.greeting# | Well met, traveller. | Hello there. | #greet#, traveller. | #greet#. Passing through?
+say #topic.greeting# | #greet#. Passing through? | Hello. Not from round here, are you? | #greet#, traveller. Fair road behind you? | Well met.
 
 rule x7_pg_known_plain
 when concept=player.greet topic.meeting=known tone=plain
 priority 1
-say Hello again, #topic.player#. | #topic.player#. Good to see you. | Back again, #topic.player#? | #greet#, #topic.player#.
+say #topic.player#! There you are. | #greet#, #topic.player#. Keeping well? | Ah, #topic.player#. What can I do for you? | Hello, #topic.player#. Still about, then?
 
 rule x7_pt_plain
 when concept=player.thanks tone=plain
-say You're welcome. | Glad to help. | Think nothing of it. | No trouble at all.
+say No trouble at all. | Happy to. | Any time. | Not at all. Glad it helped.
 
 rule x7_pb_plain
 when concept=player.bye tone=plain
-say Farewell. | Go well. | Safe travels. | #farewell#.
+say Take care, then. | Off you go. Mind how you go. | #farewell#. | Good luck to you.
 
 ## ---------------------------------------------------------------- Greeting a stranger
 
 rule x7_pg_s_warm
 when concept=player.greet topic.meeting=stranger warmth=warm
 priority 1
-say Hello, love! You look like you've come a long way. | Welcome! Have you eaten? You look like you haven't. | #greet#! Come in, come in, don't stand there.
+say Hello, love! You look like you've come a long way. | Welcome! Have you eaten? You look like you haven't. | #greet#! Don't be shy, I don't bite.
 
 rule x7_pg_s_cold
 when concept=player.greet topic.meeting=stranger warmth=cold
@@ -48,7 +48,7 @@ say Hello, stranger! Lost, or just lucky? | A new face! Wonderful. I was tired o
 rule x7_pg_s_dry
 when concept=player.greet topic.meeting=stranger humour=dry
 priority 1
-say A traveller. How exciting for us both. | Hello. You've found #here.town#. Commiserations. | Ah. Someone new to disappoint.
+say A traveller. How exciting for us both. | Hello. You've found us, then. Commiserations. | Ah. Someone new to disappoint.
 
 rule x7_pg_s_nervy
 when concept=player.greet topic.meeting=stranger temper=nervy
@@ -88,22 +88,22 @@ say Eh? Speak up, pup. | Hello, young one. Don't see many new faces now. | #gree
 rule x7_pg_s_young
 when concept=player.greet topic.meeting=stranger stage=young
 priority 2
-say Hello! Are you a knight? | Who are you? Mum says not to talk to strangers. Hello! | Hello! Want to see my stick?
+say Hello! Are you a bandit? You look like a bandit! | Who are you? #mum# says not to talk to strangers. Hello! | Hello! Want to see my stick?
 
 rule x7_pg_s_adolescent
 when concept=player.greet topic.meeting=stranger stage=adolescent
 priority 1
-say What? | Oh. Hi. | You're not from here, are you? Lucky.
+say What? | Oh. 'Lo. | You're not from here, are you? Lucky.
 
 rule x7_pg_s_guard
 when concept=player.greet topic.meeting=stranger role=guard
 priority 1
-say Traveller. Keep the peace and we'll get on. | #greet#. Your business in #here.town#? | Hello. No trouble, now.
+say Traveller. Keep the peace and we'll get on. | #greet#. Your business here? | Hello. No trouble, now.
 
 rule x7_pg_s_merchant
 when concept=player.greet topic.meeting=stranger role=merchant
 priority 1
-say #greet#! Buying? | Hello, hello! First time in? Have a look. | Welcome, welcome! Coin's welcome too.
+say #greet#! Buying? | Hello, hello! First time here? Have a look at what I've got. | Welcome, welcome! Coin's welcome too.
 
 rule x7_pg_s_priest
 when concept=player.greet topic.meeting=stranger job=priest
@@ -113,7 +113,7 @@ say Welcome, child of the road. | The Bright One's peace on you. | Hello, travel
 rule x7_pg_s_beggar
 when concept=player.greet topic.meeting=stranger job=beggar
 priority 1
-say Spare a penny, kind traveller? | Hello, friend. You've a generous face. | Bless you, bless you. A coin?
+say Spare a penny, kind traveller? | Hello, friend. You've a generous face. | Spare something for the hungry? Thank you kindly.
 
 rule x7_pg_s_innkeeper
 when concept=player.greet topic.meeting=stranger job=innkeeper
@@ -123,7 +123,7 @@ say Welcome! Looking for a bed? | Hello, traveller! Ale, food, or both? | Come i
 rule x7_pg_s_sailor
 when concept=player.greet topic.meeting=stranger job=sailor|fisher
 priority 1
-say Ahoy. | Hello, landlubber. | Fair winds, stranger.
+say Tide's with you, stranger. | Hello, landlubber. | Fair winds, stranger.
 
 rule x7_pg_s_rich
 when concept=player.greet topic.meeting=stranger wealth=rich
@@ -133,17 +133,17 @@ say Yes? Good day. | Ah. A traveller. How quaint. | Good day. Do I know you? No.
 rule x7_pg_s_poor
 when concept=player.greet topic.meeting=stranger wealth=poor|destitute
 priority 1
-say Hello. You've not got a spare crust, have you? No. Hello. | Morning. Don't mind me. | #greet#. You look better fed than me.
+say Hello. You've not got a spare crust, have you? No. Hello. | Don't mind me. I'm nobody. | #greet#. You look better fed than me.
 
 rule x7_pg_s_sump
 when concept=player.greet topic.meeting=stranger quarter=sump
 priority 1
-say Lost, are you? You look lost. | Hello. Keep your purse close down here. | New to the Sump? Don't stay long.
+say Lost, are you? You look lost. | Hello. Keep your purse close round here. | New to Ridgemere? Keep out of the Sump after dark.
 
 rule x7_pg_s_heights
 when concept=player.greet topic.meeting=stranger quarter=heights
 priority 1
-say Good day. Are you expected? | Hello. You're a long way up the hill. | Good day. The tradesmen's door is round the side.
+say Good day. Are you expected? | Hello. Visiting someone on the Heights? | Good day. Tradesmen use the side door, as a rule.
 
 rule x7_pg_s_dawn
 when concept=player.greet topic.meeting=stranger here.time=dawn
@@ -225,7 +225,7 @@ say #topic.player#. | Hello, #topic.player#. | Mm. #topic.player#.
 rule x7_pg_k_nervy
 when concept=player.greet topic.meeting=known temper=nervy
 priority 1
-say Oh! #topic.player#. You startled me. | #topic.player#! Is everything all right? | Oh, it's you. Thank the gods.
+say Oh! #topic.player#. I didn't hear you come up. | #topic.player#! Is everything all right? | Oh, it's you. Thank the gods.
 
 rule x7_pg_k_devout
 when concept=player.greet topic.meeting=known piety=devout
@@ -245,7 +245,7 @@ say #topic.player#! #topic.player#! Look what I found! | It's #topic.player#! He
 rule x7_pg_k_guard
 when concept=player.greet topic.meeting=known role=guard
 priority 1
-say #topic.player#. Behaving yourself? | #topic.player#. Quiet shift so far. Keep it that way. | Evening, #topic.player#. Anything to report?
+say #topic.player#. Behaving yourself? | #topic.player#. Quiet shift so far. Keep it that way. | #greet#, #topic.player#. Anything to report?
 
 rule x7_pg_k_merchant
 when concept=player.greet topic.meeting=known role=merchant
@@ -265,12 +265,12 @@ say #topic.player#! Out late again? | Evening, #topic.player#. Mind the dark. | 
 rule x7_pg_k_rain
 when concept=player.greet topic.meeting=known here.weather=rain|storm
 priority 1
-say #topic.player#! You're drenched! | Come out of the rain, #topic.player#. | #topic.player#, you look like a drowned rat.
+say #topic.player#! You're drenched! | Come out of the rain, #topic.player#. | #topic.player#, you're wet to the skin!
 
 rule x7_pg_k_festival
 when concept=player.greet topic.meeting=known here.day=festival
 priority 1
-say #topic.player#! Happy festival! | #topic.player#, dance with me later! | Happy #here.festival#, #topic.player#!
+say #topic.player#! Happy festival! | #topic.player#! Have you had a cake yet? | #topic.player#! Isn't it a grand day?
 
 rule x7_pg_k_market
 when concept=player.greet topic.meeting=known here.day=market
@@ -294,7 +294,7 @@ say Hm. | Yes. | Fine.
 
 rule x7_pt_merry
 when concept=player.thanks humour=merry
-say I'll put it on your tab! | Thank me with cake. | Ha! Don't mention it. Well, mention it to everyone.
+say I'll add it to your slate! | Thank me with cake. | Ha! Don't mention it. Well, mention it to everyone.
 
 rule x7_pt_dry
 when concept=player.thanks humour=dry
@@ -330,7 +330,7 @@ say Oh! Was it all right? Good. Good. | You're welcome. I hope it helps. | Oh, i
 
 rule x7_pt_old
 when concept=player.thanks stage=old
-say Manners! Nice to see, in the young. | You're a good pup. | My pleasure. Come back and visit an old wolf.
+say Manners! Nice to see, these days. | You're a good pup. | My pleasure. Come back and visit an old wolf.
 
 rule x7_pt_young
 when concept=player.thanks stage=young
@@ -390,7 +390,7 @@ say Keep the peace. | Off you go. Stay out of trouble. | Mind yourself on the ro
 
 rule x7_pb_merchant
 when concept=player.bye role=merchant
-say Come again! | Thank you, come back soon! | Tell your friends where you bought it!
+say Next time, buy something! Ha! | Come back soon! | Off you go. Tell your friends about me.
 
 rule x7_pb_night
 when concept=player.bye here.time=night|dusk
@@ -478,7 +478,7 @@ say Hm. #topic.answer# | I don't say this to many. #topic.answer#
 
 rule x7_pd_market
 when concept=player.day here.day=market
-say #opener# #topic.answer# Get there early, the good stuff goes. | #opener# #topic.answer# Mind your purse in the crush.
+say #opener# #topic.answer# Early's best, mind. | #opener# #topic.answer# Watch your purse, the cutpurses love a market.
 
 rule x7_pd_rest
 when concept=player.day here.day=rest
@@ -499,7 +499,7 @@ say Let me think. #topic.answer# | Ask me the year next, go on. #topic.answer#
 rule x7_pd_young
 when concept=player.day stage=young
 priority 1
-say I know this one! #topic.answer# | #topic.answer# Mum told me!
+say I know this one! #topic.answer# | #topic.answer# #mum# told me!
 
 rule x7_pd_dry
 when concept=player.day humour=dry
@@ -510,5 +510,5 @@ when concept=player.day here.day=rest piety=devout
 say #topic.answer# The Bright One's day. You'll come to chapel? | #topic.answer# A day for giving thanks.
 
 rule x7_pd_festival_soon
-when concept=player.day world.festival=soon here.day=work|market
+when concept=player.day world.festival=soon
 say #opener# #topic.answer# And the festival's soon! | #opener# #topic.answer# Not long till the festival, mind.

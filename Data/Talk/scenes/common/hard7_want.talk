@@ -56,8 +56,8 @@ scene h7_times_honest_work
 when topic=smalltalk|work|day
 a : There's no honest work going. Ask anyone. | They took on two at the yard and fifty came. | I'd scrub floors if anyone wanted floors scrubbed. | Work's like hen's teeth this season.
 b : There's plenty. It just doesn't pay. | Fifty! For two! | Nobody can afford a clean floor. | Hens have no teeth.
-a : Then it's not work, it's a hobby. | And the two were cousins of the foreman. | Or a dirty one. | That's my point.
-b : An expensive hobby. | Course they were. | It's not the floors, it's the coin. | Ah. I see it now.
+a : Then it's not work, it's a pastime. | And the two were cousins of the foreman. | Or a dirty one. | That's my point.
+b : A dear pastime. | Course they were. | It's not the floors, it's the coin. | Ah. I see it now.
 
 scene h7_times_sickness
 when topic=smalltalk|day
@@ -156,7 +156,7 @@ b : Here. It's only a crust. | Then eat something now. Here. | Have my heel of b
 cooldown 1d
 
 scene h7_hungry_child
-when topic=smalltalk|family|day a.stage=young|adolescent a.hungry=yes
+when topic=smalltalk|family|day a.stage=young|adolescent a.hungry=yes b.stage=adult|old
 a : Is there anything to eat? Anything? | My belly hurts. | Can we have supper early? Just this once? | I'm so hungry I could eat the cat.
 b : Soon, pup. Soon. | Drink some water. It helps. | There's no early tonight. | Leave the cat be.
 a : That's what you said before. | It doesn't. | Why not? | The cat's fat. I'm not.
@@ -164,8 +164,8 @@ b : And I meant it then too. | It helps a little. | Because there's nothing earl
 cooldown 1d
 
 scene h7_homeless_where
-when topic=smalltalk|day|friends a.homeless=yes
-a : Where did you sleep last night? I was under the bridge. | The church porch is taken. Every night now. | They moved me on twice last night. | Found a dry doorway. Dry, mind. That's a palace.
+when topic=smalltalk|day|friends a.homeless=yes b.homeless=no
+a : Where did you sleep last night? I was under the bridge. | The chapel porch is taken. Every night now. | They moved me on twice last night. | Found a dry doorway. Dry, mind. That's a palace.
 b : Not under the bridge. It's too wet. | Taken by who? | Who did? | A palace with a draught.
 a : Wet's all there is. | Others like me. More every night. | #watch#. Polite, though. | All palaces have draughts.
 b : Come to mine. The floor's yours. | Gods. | Polite doesn't keep you warm. | I've heard. Stay at mine tonight.
@@ -226,7 +226,7 @@ priority 2
 ## The Watch on duty
 
 scene h7_watch_night_round
-when topic=smalltalk|day|work a.on_watch=yes here.time=night
+when topic=smalltalk|day|work a.on_watch=yes b.on_watch=yes here.time=night
 a : All quiet your end? | Saw a light in the old store. Turned out to be a cat with a candle. | Cold one tonight. | Nothing yet. I hate nothing. Nothing's waiting.
 b : Quiet as a grave. | A cat with a candle? | Bitter. My ears are numb. | Nothing's nothing. Enjoy it.
 a : Don't say grave on the night round. | Well. Near the candle. | Keep your hood up. | I'll enjoy it when it's dawn.
@@ -238,7 +238,7 @@ when topic=work|smalltalk a.role=guard b.role=guard
 a : Pay's late again. | They want us on double rounds for the same coin. | My boots have holes, and the captain says buy new. With what? | I've not been paid since the last market day.
 b : It always is. | Same coin, half the sleep. | With the money we're not paid. | Nobody has. They say next week.
 a : I've rent due. | We should say something. | Exactly. | They said that last week.
-b : Tell your landlord you're keeping the peace. | Say it, then. I'll stand behind you. Far behind. | Paper them. | And next week they'll say it again.
+b : Tell your landlord you're keeping the peace. | Say it, then. I'll stand behind you. Far behind. | Stuff them with straw. | And next week they'll say it again.
 cooldown 2d
 
 scene h7_watch_civilian_thanks

@@ -11,47 +11,47 @@ cooldown 4h
 say Bread! Bread for the hungry, cake for the greedy! | Barley loaves! Rye loaves! Loaves for every belly! | Buns, a penny! Two for a penny if you look sad enough!
 
 rule x7_bk_baker_winter
-when concept=bark self.job=baker here.season=winter
+when concept=bark self.job=baker here.season=winter self.working=yes
 cooldown 6h
-say Hot buns! Warm your paws on a hot bun! | Spice bread! A slice'll keep the winter out! | Straight from the oven, steaming in the cold!
+say Hot buns! Hot as a hearthstone! | Spice bread! A slice'll keep the winter out! | Straight from the oven, steaming in the cold!
 
 rule x7_bk_baker_festival
-when concept=bark self.job=baker here.day=festival
+when concept=bark self.job=baker here.day=festival here.festival self.working=yes
 cooldown 6h
 say Festival cakes! Honey and seed! | Sweet buns for #here.festival#! | Cakes for the pups, cakes for the grans, cakes for all!
 
 rule x7_bk_smith_market
 when concept=bark self.job=smith here.place=market
 cooldown 4h
-say Knives sharpened while you wait! | Bring me your blunt, take home your sharp! | Pots mended! Nails by the hundred!
+say Knives sharpened while you wait! | Hinges! Hooks! Hasps! | Your old pot mended good as new, for a penny!
 
 rule x7_bk_smith_cold
-when concept=bark self.job=smith here.season=winter here.region=frosthollow|coldwater
+when concept=bark self.job=smith here.season=winter here.region=frosthollow|coldwater self.working=yes
 cooldown 6h
 say Skates! Iron runners for the ice! | Crampons for the high path! Don't slip, buy iron! | Shovel blades, hammered thick for the snow!
 
 rule x7_bk_brewer_festival
-when concept=bark self.job=brewer here.day=festival
+when concept=bark self.job=brewer here.day=festival here.festival self.working=yes
 cooldown 6h
 say Festival ale! Strong enough to dance on! | First cup for luck, second for love! | Drink to #here.festival#! Drink to anything!
 
 rule x7_bk_brewer_summer
-when concept=bark self.job=brewer here.season=summer here.time=day
+when concept=bark self.job=brewer here.season=summer here.time=day self.working=yes
 cooldown 6h
-say Cold cider from the cellar! | Small beer, cool as a cave! | Thirsty? Course you are. It's summer!
+say Cold cider from the cellar! | Small beer, cool as a cave! | Thirsty work, summer! Wet your whistle!
 
 rule x7_bk_cook_market
-when concept=bark self.job=cook here.place=market|street
+when concept=bark self.job=cook here.place=market|street self.working=yes
 cooldown 4h
 say Pies! Pork pies, mutton pies, mystery pies! | Hot pasties! Hold 'em by the crust! | Sausage in a roll! Eat it walking!
 
 rule x7_bk_cook_winter
-when concept=bark self.job=cook here.season=winter|autumn
+when concept=bark self.job=cook here.season=winter|autumn self.working=yes
 cooldown 6h
 say Hot broth! A penny warms you to the tail! | Stew! Thick enough to plaster a wall! | Roast chestnuts! Hot in the paw!
 
 rule x7_bk_fisher_market
-when concept=bark self.job=fisher here.place=market here.time=dawn|day
+when concept=bark self.job=fisher here.place=market here.time=dawn|day here.region=ridgemere
 cooldown 4h
 say Fresh off the boats! Still blinking! | Herring by the dozen! Mackerel by the pair! | Crab! Who's brave enough for crab?
 
@@ -61,12 +61,12 @@ cooldown 6h
 say Boats in! Boats in! | Nets up, lads! Let's see what the night gave us. | Good haul! Good haul, look at that!
 
 rule x7_bk_fisher_lake
-when concept=bark self.job=fisher here.region=coldwater
+when concept=bark self.job=fisher here.region=coldwater self.working=yes
 cooldown 6h
 say Glasswater trout! Cold water, sweet flesh! | Lake perch! Lake pike! Fresh from the deep! | Smoked trout, keeps a month!
 
 rule x7_bk_fisher_fens
-when concept=bark self.job=fisher here.region=mirebridge
+when concept=bark self.job=fisher here.region=mirebridge self.working=yes
 cooldown 6h
 say Eels! Live eels, jellied eels! | Pike from the Long River! | Fen eels, fat as your arm!
 
@@ -83,7 +83,7 @@ say Strawberries! Sweet as summer! | Beans, peas, lettuces! | Cherries! Spit the
 rule x7_bk_farmer_autumn
 when concept=bark self.job=farmer here.place=market here.season=autumn
 cooldown 6h
-say Apples, pears, the last of the plums! | Pumpkins! Squash! Marrows the size of pups! | Nuts! Cobnuts and walnuts!
+say Apples, pears, the last of the plums! | Marrows! Marrows the size of pups! | Nuts! Cobnuts and walnuts!
 
 rule x7_bk_farmer_winter
 when concept=bark self.job=farmer here.place=market here.season=winter
@@ -91,62 +91,62 @@ cooldown 6h
 say Turnips, onions, good keeping roots! | Cabbages, hard as stones and twice as good! | Salt pork! Hams! Winter's best!
 
 rule x7_bk_crafter_festival
-when concept=bark self.job=crafter here.day=festival
+when concept=bark self.job=crafter here.day=festival here.festival self.working=yes
 cooldown 6h
 say Ribbons for your ruff! Bells for your tail! | Masks! Be someone else for #here.festival#! | Garlands, a penny! Flower crowns, two!
 
 rule x7_bk_crafter_market
 when concept=bark self.job=crafter here.place=market
 cooldown 4h
-say Baskets that won't leak! Well, not much! | Pots, jugs and cups! Drop one, buy another! | Leather, good leather! Belts, collars, purses!
+say Baskets that won't leak! Well, not much! | Pots, jugs and cups! Drop one, buy another! | Leather, good leather! Belts, straps, purses!
 
 rule x7_bk_healer_winter
-when concept=bark self.job=healer here.season=winter|autumn
+when concept=bark self.job=healer here.season=winter|autumn self.working=yes
 cooldown 6h
 say Cough syrup! Honey and horehound! | Chest rub for the damp! | Willow bark for aches! Sore joints, sore heads!
 
 rule x7_bk_woodcutter_autumn
-when concept=bark self.job=woodcutter here.season=autumn|winter
+when concept=bark self.job=woodcutter here.season=autumn|winter here.place=market|street
 cooldown 6h
 say Kindling! Get your winter wood before the snow! | Firewood! Oak burns long, ash burns hot! | Logs! Split, dry, stacked if you pay extra!
 
 rule x7_bk_woodcutter_oakhaven
-when concept=bark self.job=woodcutter here.region=oakhaven
+when concept=bark self.job=woodcutter here.region=oakhaven self.working=yes
 cooldown 6h
-say Warmwood oak! Best timber south of the mountains! | Mind your heads, she's coming down! | Old tree, that. Older than the town.
+say Mind your heads, she's coming down! | Old tree, that. Older than the town. | Warmwood oak. You'll not find a better grain anywhere.
 
 rule x7_bk_herder_spring
-when concept=bark self.job=herder here.season=spring
+when concept=bark self.job=herder here.season=spring self.working=yes
 cooldown 6h
 say Lambing! Watch for the little ones! | Come on, mother, come on, you can do it. | Twins! Twins again!
 
 rule x7_bk_herder_downs
-when concept=bark self.job=herder here.region=larkfield|southmeadow
+when concept=bark self.job=herder here.region=larkfield|southmeadow self.working=yes
 cooldown 6h
-say Fleeces! Downs wool, warmest in the realm! | Away to me! Away! | Up the hill, you daft beasts! Up!
+say Fleeces! Downs wool, warmest in the realm! | Hup! Hup, the lot of you! | Up the hill, you daft beasts! Up!
 
 rule x7_bk_miner_frost
-when concept=bark self.job=miner here.region=frosthollow
+when concept=bark self.job=miner here.region=frosthollow self.working=yes
 cooldown 6h
-say Ore cart! Mind your tails! | Down we go. Lamps lit, prayers said. | Good seam, this. Good seam.
+say Ore cart coming through! | Down we go. Lamps lit, prayers said. | Good seam, this. Good seam.
 
 rule x7_bk_orchard
-when concept=bark self.job=farmer here.region=southmeadow here.season=autumn
+when concept=bark self.job=farmer here.region=southmeadow here.season=autumn self.working=yes
 cooldown 6h
 say Apples! Southmeadow apples, crisp as frost! | Pickers wanted! A penny a basket! | Cider apples, sour as a debt!
 
 rule x7_bk_merchant_festival
-when concept=bark self.role=merchant here.day=festival
+when concept=bark self.role=merchant here.day=festival here.festival self.working=yes
 cooldown 6h
 say #here.festival# prices! Today only! | Gifts for your sweetheart! Gifts for your mother! Gifts for yourself! | Come and spend, it's festival!
 
 rule x7_bk_merchant_rest
-when concept=bark self.role=merchant here.day=rest
+when concept=bark self.role=merchant here.day=rest self.working=yes
 cooldown 1d
 say Mornings only, Restday! Get it while I'm open! | Restday. Half the town at chapel, the other half asleep. | Shutting at noon. The Bright One insists.
 
 rule x7_bk_merchant_dusk
-when concept=bark self.role=merchant here.time=dusk
+when concept=bark self.role=merchant here.time=dusk self.working=yes
 cooldown 6h
 say Last call! Everything cheap before I shut! | Closing up! Bargains for the quick! | Going, going, going home!
 
@@ -165,22 +165,22 @@ say Who goes there? | Speak up, whoever you are. | Keep to the lanterns, everyon
 rule x7_bk_watch_crowd
 when concept=bark self.role=guard self.on_watch=yes here.crowd=crowd
 cooldown 4h
-say Keep the way clear! | Move along, move along! | No pushing! I see you pushing!
+say Single file past the cart! | Make way! Make way there! | No pushing! I see you pushing!
 
 rule x7_bk_watch_festival_night
-when concept=bark self.role=guard here.day=festival here.time=night
+when concept=bark self.role=guard self.on_watch=yes here.day=festival here.time=night
 cooldown 6h
 say Fires out! Home, the lot of you! | Festival's over! Over! | Who's that singing? Home, before I sing you to the cells!
 
 rule x7_bk_watch_rest
-when concept=bark self.role=guard here.day=rest
+when concept=bark self.role=guard self.on_watch=yes here.day=rest
 cooldown 1d
 say Quiet day. Too quiet. | Restday for everyone but the Watch. | Even the thieves take Restday off. Mostly.
 
 rule x7_bk_watch_winter_night
-when concept=bark self.role=guard here.season=winter here.time=night
+when concept=bark self.role=guard self.on_watch=yes here.season=winter here.time=night
 cooldown 6h
-say Cold enough to freeze the bell. | Third bell and my tail's an icicle. | Anyone got a brazier? No? Course not.
+say Cold enough to freeze the bell. | Frost on my whiskers and half the night to go. | Anyone got a brazier? No? Course not.
 
 rule x7_bk_watch_city
 when concept=bark self.role=guard here.region=ridgemere here.time=dusk|night self.on_watch=yes
@@ -188,9 +188,9 @@ cooldown 6h
 say Keep moving. No loitering. | Lamps on the corners! Who's put out the lamp? | I see you in that doorway. Out.
 
 rule x7_bk_watch_crime
-when concept=bark self.role=guard world.crime=recent
+when concept=bark self.role=guard self.on_watch=yes world.crime=recent
 cooldown 6h
-say Anyone seen anything, you tell the Watch. | Lock up tonight. There's thieves about. | Eyes open, everyone. Eyes open.
+say Seen a stranger with full pockets? Tell the Watch. | Lock up tonight. There's thieves about. | Eyes open, everyone. Eyes open.
 
 rule x7_bk_watch_bandits
 when concept=bark self.role=guard world.bandits=near here.place=gate
@@ -217,7 +217,7 @@ say Leaf pile! Jump! | Conkers! Who's got conkers? | I found a big acorn! The bi
 rule x7_bk_child_summer
 when concept=bark self.stage=young here.season=summer
 cooldown 6h
-say Race you to the river! | It's too hot to wear boots! | I got stung! It doesn't even hurt! It hurts!
+say Race you to the pond! | It's too hot to wear boots! | I got stung! It doesn't even hurt! It hurts!
 
 rule x7_bk_child_spring
 when concept=bark self.stage=young here.season=spring
@@ -232,7 +232,7 @@ say Can I have a sweet? One sweet? | Look at that one's hat! | I want the wooden
 rule x7_bk_child_night
 when concept=bark self.stage=young here.time=night
 cooldown 1d
-say I'm not scared of the dark. I'm not. | Mum? Mum, where are you? | Was that a ghost? It was a ghost!
+say I'm not scared of the dark. I'm not. | #mum#? #mum#, where are you? | Was that a ghost? It was a ghost!
 
 rule x7_bk_child_chapel
 when concept=bark self.stage=young here.place=chapel
@@ -242,7 +242,7 @@ say Is the Bright One really watching? All the time? | How long is it till it's 
 rule x7_bk_adolescent_dusk
 when concept=bark self.stage=adolescent here.time=dusk|night
 cooldown 6h
-say Nobody's looking. Let's climb the roof. | Bet you won't knock on the old miser's door and run. | Back before my dad notices. Easy.
+say Nobody's looking. Let's climb the roof. | Bet you won't knock on the old miser's door and run. | Back before my #dad# notices. Easy.
 
 rule x7_bk_adolescent_festival
 when concept=bark self.stage=adolescent here.day=festival
@@ -259,7 +259,7 @@ say Alms! Alms on market day! | Spare a penny from your change, friend! | A copp
 rule x7_bk_beggar_rest
 when concept=bark self.job=beggar here.day=rest
 cooldown 6h
-say A penny for Restday, for the Bright One's sake. | Bless you, bless you, a penny blesses twice. | The chapel's feeding at dusk. Until then, a penny?
+say A penny for Restday, for the Bright One's sake. | A penny given on Restday blesses twice. | The chapel's feeding at dusk. Until then, a penny?
 
 rule x7_bk_beggar_night
 when concept=bark self.job=beggar here.time=night|dusk
@@ -267,7 +267,7 @@ cooldown 6h
 say Spare a corner by your fire? | Cold night coming. A coin for a blanket? | Anything. Anything at all.
 
 rule x7_bk_beggar_festival
-when concept=bark self.job=beggar here.day=festival
+when concept=bark self.job=beggar here.day=festival here.festival
 cooldown 6h
 say Spare a crumb of the feast? | Merry #here.festival#! Merrier with a penny! | Even beggars dance at festival. Pay the piper?
 
@@ -278,7 +278,7 @@ cooldown 6h
 say Another night like the last and I'll not wake. | Doorways. All the doorways are taken. | Paws gone numb. Don't feel them at all.
 
 rule x7_bk_priest_market
-when concept=bark self.job=priest here.day=market
+when concept=bark self.job=priest here.day=market here.place=market|street
 cooldown 6h
 say Honest weights, merchants! The Bright One sees your scales! | Give to the chapel's pot, and the Bright One gives back! | Buy what you need, give what you can!
 
@@ -288,12 +288,12 @@ cooldown 6h
 say Give thanks, friends, between the cakes! | The Bright One loves a feast! Within reason! | Remember the hungry, as you eat!
 
 rule x7_bk_priest_dawn
-when concept=bark self.job=priest here.time=dawn
+when concept=bark self.job=priest here.time=dawn here.place=chapel|street
 cooldown 1d
 say Morning prayers! The light returns! | Wake, and be thankful! | Come in, come in, the chapel's warm and the Bright One's listening.
 
 rule x7_bk_priest_dusk
-when concept=bark self.job=priest here.time=dusk
+when concept=bark self.job=priest here.time=dusk here.place=chapel|street
 cooldown 1d
 say Evening prayers. Light a candle against the dark. | The kitchen's open for the hungry! | Rest well, all of you. The night's in good paws.
 
@@ -310,19 +310,19 @@ say Remember the dead, and be kind to the living. | Prayers at dusk for the one 
 ## ---------------------------------------------------------------- Carters, sailors, the road
 
 rule x7_bk_carter_rain
-when concept=bark self.job=carter here.weather=rain|storm
+when concept=bark self.job=carter here.weather=rain|storm self.working=yes
 cooldown 6h
 say Mud to the axles! | Push! Push, she's stuck! | Every road in the realm's a river today.
 
 rule x7_bk_carter_dawn
-when concept=bark self.job=carter here.time=dawn
+when concept=bark self.job=carter here.time=dawn self.working=yes
 cooldown 6h
 say Wagon leaving! Room for two more! | Load up, load up, we're off at sunrise! | Who's riding? Penny a mile, or walk!
 
 rule x7_bk_carter_winter
 when concept=bark self.job=carter here.season=winter
 cooldown 6h
-say Road's iced from here to Larkfield. | Chains on the wheels, or we'll be in the ditch. | Nobody travels in this but fools and carters.
+say Road's iced from here to the next town. | Chains on the wheels, or we'll be in the ditch. | Nobody travels in this but fools and carters.
 
 rule x7_bk_sailor_dawn
 when concept=bark self.job=sailor here.place=shore here.time=dawn
@@ -367,9 +367,9 @@ cooldown 6h
 say La la la... which way's home? | This way. No. That way. | Hello, lamp post! Lovely night!
 
 rule x7_bk_bench_clear
-when concept=bark self.stage=old here.place=street|market here.weather=clear
+when concept=bark self.stage=old here.place=street|market here.weather=clear here.time=day
 cooldown 6h
-say Sit down, sit down, there's room on the bench. | Watch them all rush. Rush, rush. Where to? | Sun on my face. Can't ask for more.
+say Sit down, sit down, there's room on the bench. | Watch them all rush. Rush, rush. Where to? | Sun on my face. That'll do me.
 
 rule x7_bk_old_spring
 when concept=bark self.stage=old here.season=spring
@@ -401,7 +401,7 @@ say Young ones everywhere. Where did they all come from? | Walk, don't run! Nobo
 rule x7_bk_heights
 when concept=bark self.quarter=heights here.region=ridgemere self.wealth=rich
 cooldown 1d
-say Servants! Where are the servants? | Such a view. Shame about the smell from below. | One can't get decent tea anywhere.
+say Servants! Where are the servants? | Such a view. Shame about the smell from below. | One can't get a decent cheese anywhere any more.
 
 rule x7_bk_works
 when concept=bark self.quarter=works here.region=ridgemere
@@ -411,7 +411,7 @@ say Smoke in my lungs again. | Furnace never sleeps, so neither do we. | Soot on
 rule x7_bk_office
 when concept=bark self.quarter=office here.region=ridgemere
 cooldown 1d
-say Forms in triplicate. Always triplicate. | Stamp, sign, file, stamp. | If one more wolf asks me for a permit...
+say Three copies of everything. Always three. | Stamp, sign, file, stamp. | Permit for this, permit for that. Permit to breathe, next.
 
 rule x7_bk_suburbs
 when concept=bark self.quarter=suburbs here.region=ridgemere
@@ -421,7 +421,7 @@ say Quiet out here. Just how I like it. | Long walk into the city. Worth it. | H
 rule x7_bk_estate
 when concept=bark self.quarter=estate here.region=ridgemere
 cooldown 1d
-say The master's hounds are out again. | Lawns to cut, hedges to trim, never a thank you. | Big house. Small wages.
+say The master's horses are on the lawn again. | Lawns to cut, hedges to trim, never a thank you. | Big house. Small wages.
 
 rule x7_bk_commons
 when concept=bark self.quarter=commons here.region=ridgemere
@@ -456,7 +456,7 @@ cooldown 1d
 say Same street. Same street, every day. | One day I'll take the road and not look back. | What's over the hills? I'd like to know.
 
 rule x7_bk_content
-when concept=bark self.drive=content here.weather=clear
+when concept=bark self.drive=content here.weather=clear here.time=dawn|day
 cooldown 1d
 say Ah. Can't ask for more than this. | Good day. Good, plain day. | Nothing wrong with the world this morning.
 
@@ -468,7 +468,7 @@ say Ah, market day. Everything a penny dearer and twice the shouting. | Wonderfu
 rule x7_bk_warm
 when concept=bark self.warmth=warm here.crowd=busy|crowd
 cooldown 1d
-say Mind how you go, everyone! | Lovely to see the street full. | Morning, all! Morning!
+say Mind how you go, everyone! | Lovely to see the street full. | #greet#, all! #greet#!
 
 rule x7_bk_cold
 when concept=bark self.warmth=cold here.crowd=busy|crowd

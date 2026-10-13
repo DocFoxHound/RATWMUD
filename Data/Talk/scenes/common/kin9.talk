@@ -143,8 +143,8 @@ a : Be more than careful. | Be more careful. | Good.
 
 scene kn_rg_wm_traders
 when topic=friends here.region=frosthollow
-a : A trapper came down from the mountains with furs. | Nothing up there but rocks and trouble. | Want to ride the boundary with me on rest day?
-b : Good furs? | And furs. | On rest day? Are you mad?
+a : A trapper came down from the mountains with furs. | Nothing up there but rocks and trouble. | Want to ride the boundary with me on Restday?
+b : Good furs? | And furs. | On Restday? Are you mad?
 a : The best I've seen. | Furs are trouble with good collars. | Quiet. Free air.
 b : Then I'll want a look. | Ha. | Fine. Bring food.
 

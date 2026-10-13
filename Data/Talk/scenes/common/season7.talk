@@ -6,12 +6,14 @@
 # ---------------------------------------------------------------- Any season
 
 scene e5_se_years_go
-when topic=season
+when topic=season a.stage=adult|old
 a : Where does the year go? It was spring a moment ago. | Every year goes quicker than the one before. | I swear the seasons were longer when I was a pup.
-b[old] : Wait till you're my age. They go by like carts on a hill.
-b[young] : The year's forever! It's ages till my birthday.
+b[old] #old : Wait till you're my age. They go by like carts on a hill.
+b[young] #pup : The year's forever! It's ages till my birthday.
 b : It's the work. Eats the days. | They do, don't they. | They were. Everything was.
-a : And the nights. | Like sand. | Everything was.
+a@old : I'll take your word for it.
+a@pup : Enjoy it while it lasts.
+a : And the nights. | Like sand. | Bigger, too.
 
 scene e5_se_favourite
 when topic=season pair.band=friends|family|spouses|acquaintances
@@ -25,80 +27,97 @@ a : Can't argue. | Lovely. | A good choice.
 scene e5_se_almanac
 when topic=season a.stage=old
 a : My grandmother could tell the turn of the season by the ache in her tail. | The swallows came late this year. That means a long one. | You can read the year in the berries. Thick berries, hard winter.
-b[honesty=guarded] : And the berries are wrong half the time.
-b[farmer] : The berries are never wrong. Mark me.
+b[honesty=guarded] #doubt : Signs are wrong half the time, mind.
+b[farmer] #sure : The old signs are never wrong. Mark me.
 b : Clever woman. | Long what? | Thick, this year.
+a@doubt : Then half the time they're right.
+a@sure : I'll mark you.
 a : Never wrong, either. | You'll see. | Then get the wood in.
 
 scene e5_se_count_feasts
 when topic=season
 a : I count the year by its feasts. Spring cakes, harvest home, midwinter goose. | Every season has its smell. Have you noticed? | The year's a wheel. We just hang on.
-b[cook] : Me too. By what's on the stove. That's my almanac.
-b[priest] : The Bright One's wheel. Every turn a blessing.
+b[cook] #cook : Me too. By what's on the stove. That's my almanac.
+b[priest] #priest : The Bright One's wheel. Every turn a blessing.
 b : Midwinter goose. I'm already hungry. | Smells, yes. Some better than others. | Some of us barely.
-a : It's months off. | Harvest's the best. | Hold tight, then.
+a@cook : Then you eat best of all of us.
+a@priest : Some turns more than others.
+a : Save me a leg. | Harvest's the best. | Hold tight, then.
 
 # ---------------------------------------------------------------- Spring
 
 scene e5_se_spring_smell
 when topic=season here.season=spring
 a : Smell that? Earth. Wet earth. Spring's here. | The blackbirds have started. Proper spring. | First primroses on the bank. I counted eleven.
-b[farmer] : The ground's warm enough to plough. You can tell by putting your paw in.
-b[young] : I found a nest! Three blue eggs!
+b[farmer] #plough : The ground's warm enough to plough. You can tell by putting your paw in.
+b[young] #nest : I found a nest! Three blue eggs!
 b : About time. | Noisy things. | Eleven? You had time to count?
+a@plough : Then off you go.
+a@nest : Leave them be, mind. Look, don't touch.
 a : Long winter. | Lovely noise. | I made time.
 
 scene e5_se_spring_ploughing
 when topic=season here.season=spring a.job=farmer|laborer
 a : Ploughing since first light. I've furrows in my sleep. | Oxen are sulky this year. Don't want to plough any more than I do. | The plough share broke on a stone. Third time this spring.
-b[farmer] : Same field? That stone's got a grudge.
-b[smith] : Bring it round. I'll do it today.
-b : Hard work. | Clever oxen. | Bad luck.
-a : Good work. | Clever and stubborn. | Bad ground.
+b[farmer] #farm : Spring's the same for all of us. Plough, curse, plough.
+b[smith] #smith : Break anything, bring it to me. I'll have it mended by dusk.
+b : You'll sleep tonight, at least. | Clever oxen. | That stone's got a grudge.
+a@farm : Curse, mostly.
+a@smith : I'll hold you to dusk.
+a : Like a log. | Cleverer than me. They lie down. | It'll lose. I've a bigger grudge.
 
 scene e5_se_spring_lambing
 when topic=season here.season=spring
 a : The lambs are out. Did you see them leaping? | First lambs in the fold today. Wobbly little things. | Lambing season. The shepherds look half dead.
-b[herder] : Three nights in the fold. Twin lambs at midnight, a breech at dawn. Don't talk to me.
-b[child] : Can I hold one? Please?
+b[herder] #shep : Three nights in the fold. Twin lambs at midnight, a breech at dawn. Don't talk to me.
+b[child] #pup : Can I hold one? Please?
 b : Makes you glad to be alive. | They'll be mutton by autumn. | They are half dead.
+a@shep : I'll not say another word.
+a@pup : Ask the shepherd. Nicely.
 a : It does. | Must you? | Poor souls.
 
 scene e5_se_spring_hungry_gap
 when topic=season here.season=spring a.wealth=poor|destitute
 a : Last of the winter stores went yesterday. Nothing new till summer. | The hungry gap. Everything's growing and none of it's ripe. | Nettle soup again. Third day.
-b[wealth=poor] : Same at ours. We're eating the seed potatoes.
-b[warmth=warm] : Come round tonight. We've a bit of bacon left.
+b[wealth=poor] #same : Same at ours. We're eating the seed potatoes.
+b[warmth=warm] #warm : Come round tonight. We've a bit of bacon left.
 b : Hard time of year. | It'll ease. | Nettles are good for you.
+a@same : Then there'll be nothing to plant. Gods help us both.
+a@warm : You'd do that? ...I'll come.
 a : The hardest. | It always does. Eventually. | So they tell me.
 
 scene e5_se_spring_cleaning
 when topic=season here.season=spring
 a : Shook out every blanket in the house. The dust! | Opened all the windows today. The house was sour with winter. | I found a mouse nest in my winter coat. Living in the sleeve.
-b[wealth=rich] : We have a girl for that, thank heavens.
+b[wealth=rich] #rich : We've a maid for that, thank heavens.
 b : Spring cleaning. Good. | Smells of fresh air now? | Charge him rent.
+a@rich : Lucky you. And lucky her.
 a : Good, and sneezy. | Air and dog. | He's paid in droppings.
 
 scene e5_se_spring_frost
 when topic=season here.season=spring here.time=dawn
 a : Late frost last night. The blossom's turned brown. | Frost again! In spring! Who ordered that? | White on the grass this morning. Thought we were done with that.
-b[farmer] : That's the early beans gone. Every year I sow too soon.
+b[farmer] #farm : That's the early beans gone. Every year I sow too soon.
 b : Cruel. | Not me. | Winter's last kick.
+a@farm : Every year you say that.
 a : Very cruel. | Somebody did. | Let it be the last.
 
 scene e5_se_spring_restday
 when topic=season here.season=spring here.day=rest
 a : First warm Restday of the year. Everybody's out of doors. | Look at them all, lying on the grass like seals. | I'm going to sit on the wall in the sun and do nothing at all.
-b[piety=devout] : After chapel, mind.
+b[piety=devout] #chapel : After chapel, mind.
 b : Join them. | Sensible seals. | That's the spirit.
+a@chapel : After chapel. Then the wall.
 a : I intend to. | Very sensible. | Join me.
 
 scene e5_se_spring_moult
 when topic=season here.season=spring
 a : I'm moulting like a haystack. Fur everywhere. | My winter coat's coming out in tufts. I look motheaten. | Brushed out enough fur this morning to stuff a pillow.
-b[young] : I'm making a nest with mine!
-b[stage=old] : At my age it comes out and doesn't come back.
+b[young] #nest : I'm making a nest with mine!
+b[stage=old] #old : Mine comes out grey and goes back in greyer.
 b : Everyone's shedding. The streets are full of it. | You do look motheaten. | Make a pillow, then.
+a@nest : Of course you are.
+a@old : Ha. Mine's thinking about it.
 a : Lovely. | Thank you so much. | I might.
 
 # ---------------------------------------------------------------- Summer
@@ -106,54 +125,63 @@ a : Lovely. | Thank you so much. | I might.
 scene e5_se_summer_haymaking
 when topic=season here.season=summer
 a : Haymaking. Everybody into the fields while the weather holds. | Smell that? Cut grass. Best smell there is. | The hay's in rows. If it rains now I'll weep.
-b[farmer] : Three dry days. That's all I ask. Three.
-b[laborer] : Haymaking pays by the day. Never had arms so sore or a purse so fat.
+b[farmer] #farm : Three dry days. That's all I ask. Three.
+b[laborer] #lab : Haymaking pays by the day. Never had arms so sore or a purse so fat.
 b : Go and help, then. | Second best. After bread. | It won't. Have faith.
+a@farm : I'll pray for three.
+a@lab : Spend it before the arms heal.
 a : I've no rake. | Fair enough. | Faith doesn't turn hay.
 
 scene e5_se_summer_shearing
 when topic=season here.season=summer
 a : Shearing week. The sheep look so offended without their coats. | Saw a shearer do a sheep in less time than it takes to sneeze. | Wool everywhere. On the hedges, on the road, in my bread.
-b[herder] : My back's bent like a shepherd's crook. Ask me next week.
+b[herder] #shep : My back's bent like a shepherd's crook. Ask me next week.
 b : They'd be offended too in this heat with a coat on. | Show-off. | Fleece in the bread. Extra filling.
+a@shep : Next week, then.
 a : True. | Clever, though. | Very funny.
 
 scene e5_se_summer_long_light
 when topic=season here.season=summer here.time=dusk|night
-a : Gone ten and still light. My body doesn't know when to sleep. | The children won't sleep. "But it's still day!" | Look at that sky. Midsummer's nearly here.
-b[parent=yes] : Mine neither. They think bedtime's a lie we made up.
-b : Hang a blanket on the window. | Nor would I at their age. | Pretty, isn't it.
-a : Done that. Still light. | Me neither. | It is.
+a : Near bedtime and still light. My body doesn't know when to sleep. | The children won't sleep. "But it's still day!" | Longest evenings of the year, these.
+b[parent=yes] #parent : Mine neither. They think bedtime's a lie we made up.
+b : Hang a blanket on the window. | Nor would I at their age. | Make the most of them.
+a@parent : Ha. It is, a bit.
+a : Done that. Still light. | Me neither. | I'm trying.
 
 scene e5_se_summer_heat
 when topic=season here.season=summer
-a : In this coat of fur? Summer's no friend of mine. | I'd shave myself bald if it wouldn't scare the pups. | Too hot to eat. Too hot to sleep. Too hot to argue.
-b[humour=merry] : Do it! Let's both shave. We'll start a fashion.
-b : Find a stream and lie in it. | It would scare them. | Thank the gods for that.
-a : I'd never come out. | Probably. | Hmph.
+a : In this coat of fur? Summer's no friend of mine. | I'd take my coat off if it came off. | Even the flies are lying down.
+b[humour=merry] #merry : Let's all shave and start a fashion. Bald wolves!
+b : Find a stream and lie in it. | It would, if you pulled hard enough. | Lucky flies.
+a@merry : You first.
+a : I'd never come out. | I'll leave it. | Hmph.
 
 scene e5_se_summer_storms
 when topic=season here.season=summer
 a : Thunder over the hills last night. The milk turned. | Hot all week and then a storm. Every summer the same. | Lightning hit a tree out past the fields. Split it like kindling.
-b[farmer] : Pray it doesn't flatten the corn.
-b[child] : I hid under the table. I wasn't scared.
+b[farmer] #farm : Pray it doesn't flatten the corn.
+b[child] #pup : I hid under the table. I wasn't scared.
 b : Clears the air. | It does. Every time. | Did anyone see it?
-a : Clears the heads too. | Like clockwork. | The whole town, near enough.
+a@farm : I'll pray.
+a@pup : Course you weren't.
+a : Clears the heads too. | Every summer. | The whole town, near enough.
 
 scene e5_se_summer_fruit
 when topic=season here.season=summer
-a : First strawberries in the market today. I ate a whole basket walking home. | The cherries are ripe. The birds got half. | Gooseberries everywhere. Sour as a priest's face.
-b[priest] : I'll have you know my face is perfectly pleasant.
-b[cook] : Gooseberry fool. That's the only use for them.
+a : First strawberries in the market today. I ate a whole basket walking home. | The cherries are ripe. The birds got half. | Gooseberries everywhere. Sour as an old debt.
+b[cook] #cook : Fruit's for pies. Bring me whatever's left.
 b : Without me? | Birds have to eat too. | Sugar, lots of it.
+a@cook : If there's any left.
 a : You were busy. | Not my cherries. | Lots and lots.
 
 scene e5_se_summer_swimming
 when topic=season here.season=summer a.stage=young|adolescent
-a : We're going swimming in the river! Coming? | I jumped off the big rock into the deep bit! | My fur's still wet from swimming. Don't tell Mam.
-b[parent=yes] : Not past the willow, you hear? The current's strong there.
-b[stage=old] : We used to swim in that same bend. Mind the eels.
+a : We're going swimming in the river! Coming? | I jumped off the big rock into the deep bit! | My fur's still wet from swimming. Don't tell #mum#.
+b[parent=yes] #parent : Not past the willow, you hear? The current's strong there.
+b[stage=old] #old : We used to swim in that same bend. Mind the eels.
 b : Have fun. | Brave. | She'll smell it.
+a@parent : We won't! ...Much.
+a@old : Eels? Real ones?
 a : Bye! | Very. | She won't!
 
 # ---------------------------------------------------------------- Autumn
@@ -161,69 +189,83 @@ a : Bye! | Very. | She won't!
 scene e5_se_autumn_smell
 when topic=season here.season=autumn
 a : Smell that? Autumn. Bonfires and wet leaves. | The light's gone gold in the evenings. | Mist on the fields this morning. Autumn's come in the night.
-b[farmer] : That's harvest weather. Get it in quick.
-b[old] : My mother used to say autumn smells like your grandmother's kitchen.
+b[farmer] #farm : That's harvest weather. Get it in quick.
+b[old] #old : My mother used to say autumn smells like your grandmother's kitchen.
 b : My favourite smell. | Pretty. Sad, too. | Snuck in.
+a@farm : It's going in as fast as it can.
+a@old : She was right.
 a : Mine too. | A bit of both. | Like a thief.
 
 scene e5_se_autumn_harvest
 when topic=season here.season=autumn
-a : Harvest. Everyone's in the fields, even the priest. | Last sheaf's in. They're dressing it for harvest home. | I've stooked so many sheaves I see them when I shut my eyes.
-b[priest] : Somebody has to bless it. And I can swing a scythe.
-b[farmer] : Good year. Better than last. Don't tell the tithe-wolf.
+a : Harvest. Everyone who can stand is in the fields. | Last sheaf's in. They're dressing it for harvest home. | I've stooked so many sheaves I see them when I shut my eyes.
+b[priest] #priest : I'll bless every sheaf, if they bring them past the chapel.
+b[farmer] #farm : Good year. Better than last. Don't tell the tithe-wolf.
 b : Good. We'll eat this winter. | Harvest home! Dancing! | Get some sleep.
+a@priest : They'll bring them past at a run.
+a@farm : Not a word.
 a : We will. | And ale. | When it's in.
 
 scene e5_se_autumn_apples
 when topic=season here.season=autumn
 a : Apple-picking. My arms are scratched to the shoulder. | The windfalls are rotting in the grass. Wasps everywhere, drunk on them. | Apples in the loft, wrapped in paper. The whole house smells sweet.
-b[child] : I ate seven! I feel sick!
-b[brewer] : Send me your windfalls. Cider doesn't care what they look like.
+b[child] #pup : I ate seven! I feel sick!
+b[brewer] #brew : Send me your windfalls. Cider doesn't care what they look like.
 b : And a barrel to show for it. | Drunk wasps are the worst wasps. | Lovely. Till one rots.
+a@pup : Seven? No wonder.
+a@brew : They're yours, wasps and all.
 a : Two barrels. | They sting sideways. | Then you smell nothing else.
 
 scene e5_se_autumn_pig
 when topic=season here.season=autumn|winter
 a : We're killing the pig next week. Poor old Bramble. | Pig-killing time. The street smells of singed bristle. | Salted the hams today. My paws are raw.
-b[young] : Not Bramble! He knows his name!
-b[cook] : Save me the trotters. Best jelly in the world.
+b[young] #pup : Poor pig! Does it know?
+b[cook] #cook : Save me the trotters. Best jelly in the world.
 b : Black pudding, though. | Bacon for winter. | Worth it come midwinter.
-a : He did. Bacon now. | Hope so. | Every bit.
+a@pup : It knows it's had a good life. Eat your supper.
+a@cook : They're spoken for. Sorry.
+a : There's that. | Hope so. | Every bit.
 
 scene e5_se_autumn_salting
 when topic=season here.season=autumn
 a : Salting, pickling, drying. The cellar's full of jars. | Strung onions all afternoon. I'll cry for a week. | Herring in the barrel, beans in the jar. We'll not starve.
-b[wealth=poor] : Wish I had enough to salt. We eat it as it comes.
+b[wealth=poor] #poor : Wish I had enough to salt. We eat it as it comes.
 b : Proper winter stores. | Good onions? | Good.
+a@poor : Come by. I've a jar spare.
 a : Not enough, never enough. | Strong ones. | We hope.
 
 scene e5_se_autumn_leaves
 when topic=season here.season=autumn
 a : The leaves are turning. Red and gold all along the lane. | Swept the step three times today. Still leaves. | Look at that tree. It's on fire with colour.
-b[young] : I jumped in a pile of leaves! There was a hedgehog in it!
+b[young] #pup : I jumped in a pile of leaves! There was a hedgehog in it!
 b : Beautiful. | Give up. They'll win. | Lovely.
+a@pup : Poor hedgehog.
 a : Every year. | They will. | Lovely, and gone in a week.
 
 scene e5_se_autumn_mushrooms
 when topic=season here.season=autumn
 a : Found mushrooms on the common. A basket full. | My uncle picked the wrong mushroom once. Saw colours for a week. | Mushroom season. Half the town's in the woods at dawn.
-b[healer] : Bring them to me before you eat them. Please.
+b[healer] #heal : Bring them to me before you eat them. Please.
 b : Lucky! | Was he all right? | Their secret spots.
+a@heal : I'll bring you one. Fried.
 a : Fried with butter. | Never quite. | Nobody tells.
 
 scene e5_se_autumn_geese
 when topic=season here.season=autumn
 a : Geese going over this morning. Long lines of them, calling. | The swallows have gone. When did they go? | The birds know when to leave. Wish I did.
-b[drive=restless] : I'd go with them, if I could fly.
+b[drive=restless] #rest : I'd go with them, if I could fly.
 b : Winter's on their tails. | In the night, quiet like. | Where would you go?
+a@rest : You'd come back. They always do.
 a : And on ours. | Never even said goodbye. | Somewhere warm.
 
 scene e5_se_autumn_rent
 when topic=season here.season=autumn a.wealth=poor|destitute
-a : Quarter day coming. Rent, and coal, and boots for the pup. | Autumn's dear. Everything wants buying before winter. | I've got the wood or the rent. Not both.
-b[warmth=warm] : We'll find a way. We always have.
-b[wealth=rich] : Have you considered a little less spending through the year?
+a : Quarter day coming. Rent, and wood, and new boots. | Autumn's dear. Everything wants buying before winter. | I've got the wood or the rent. Not both.
+b[warmth=warm] #warm : We'll find a way. We always have.
+b[wealth=rich] #rich : Have you considered a little less spending through the year?
 b : It's hard this time of year. | The same here. | Wood. You can't burn rent.
+a@warm : We. I like the sound of that.
+a@rich : ...I'll consider it.
 a : We'll find a way. | We'll manage. | True.
 
 # ---------------------------------------------------------------- Winter
@@ -231,63 +273,77 @@ a : We'll find a way. | We'll manage. | True.
 scene e5_se_winter_first_frost
 when topic=season here.season=winter|autumn here.time=dawn
 a : First frost. The puddles crunched under my paws. | White roofs this morning. Lovely and cruel. | The water butt's iced over. Had to break it with a stone.
-b[child] : I slid all the way down the lane!
-b[old] : The frost's in my knees before it's on the roofs.
+b[child] #pup : I slid all the way down the lane!
+b[old] #old : The frost's in my knees before it's on the roofs.
 b : Winter, then. | Pretty, from indoors. | Pity the birds.
-a : Winter. | From indoors. | And us.
+a@pup : Mind your tail.
+a@old : Your knees should sell almanacs.
+a : Get the big coat down. | Everything is. | And us.
 
 scene e5_se_winter_dark
 when topic=season here.season=winter
-a : Dark at four. I hate it. | Up in the dark, home in the dark. When do I see the sun? | Candles cost more than food this time of year.
-b[miner] : Welcome to my life, all year.
-b[wealth=rich] : We burn wax all winter. I hadn't thought about the cost.
+a : Dark before supper. I hate it. | Up in the dark, home in the dark. When do I see the sun? | Candles cost more than food this time of year.
+b[miner] #miner : Welcome to my life, all year.
+b[wealth=rich] #rich : We burn wax all winter. I hadn't thought about the cost.
 b : Midwinter's coming. Then it turns. | Restday, if you're lucky. | Go to bed early. Free.
+a@miner : I don't know how you stand it.
+a@rich : No. You wouldn't have.
 a : Can't come soon enough. | If it's not raining. | Too right.
 
 scene e5_se_winter_wood
 when topic=season here.season=winter|autumn
 a : Is your wood in? I'm short already. | Stacked wood all afternoon. Enough to see us to spring, I hope. | Wood's dear this year. Dearer than bread.
-b[woodcutter] : I've a cord left. For a friend, a fair price.
-b[wealth=poor] : We're burning the fence. Don't tell the landlord.
+b[woodcutter] #wood : I've a cord left. For a friend, a fair price.
+b[wealth=poor] #poor : We're burning the fence. Don't tell the landlord.
 b : Not near enough. | Good. | Wear more coats.
+a@wood : Friend? Since when?
+a@poor : I never heard a thing.
 a : Get it in soon. | Hope's cheap. | I wear four.
 
 scene e5_se_winter_snow_pups
 when topic=season here.season=winter here.weather=snow
 a : The pups have built a snow wolf by the well. It's got my hat. | Snowball hit me in the ear. Nobody's owned up. | Snow! Look at the pups go.
-b[young] : It was me. Sorry. It was a good shot though.
+b[young] #pup : We're having a war! You can be on my side!
 b : It suits it better than you. | Children. | They'll be soaked.
+a@pup : Only if I get a fort.
 a : Cheek. | Little monsters. | And happy.
 
 scene e5_se_winter_midwinter
 when topic=season here.season=winter
-a : Midwinter's nearly here. Long night, then the light comes back. | We'll burn the midwinter log tonight. All night, if it lasts. | Goose for midwinter. If I can afford a goose.
-b[priest] : The longest night. Then the Bright One turns back to us.
-b[young] : Will there be sweets? Will there?
-b : The best night of the year. | Big log, I hope. | Duck, then.
-a : Because it's the end of the worst. | Biggest yet. | Chicken, maybe.
+a : Midwinter's nearly here. Long night, then the light comes back. | We've the midwinter log cut and drying. Biggest yet. | Goose for midwinter. If I can afford a goose.
+b[priest] #priest : The longest night. Then the Bright One turns back to us.
+b[young] #pup : Will there be sweets? Will there?
+b : The best night of the year. | It'll need to burn all night. | Duck, then.
+a@priest : Bright One be thanked.
+a@pup : If you're good. Are you?
+a : Because it's the end of the worst. | It will. | Chicken, maybe.
 
 scene e5_se_winter_ill
 when topic=season here.season=winter
 a : Half the street's coughing. Winter sickness. | My chest's full of winter. I sound like a cart. | Keep warm. Everyone's falling ill.
-b[healer] : Honey and onions, and stay in. I'm run off my feet.
-b[stage=old] : Every winter I wonder if I'll see the spring.
+b[healer] #heal : Honey and onions, and stay in. I'm run off my paws.
+b[stage=old] #old : Every winter I wonder if I'll see the spring.
 b : Not me yet. Touch wood. | Go to bed. | I'm trying.
-a : Touch wood. | I'd lose wages. | Try harder.
+a@heal : Honey and onions it is.
+a@old : You'll see twenty more. You're too stubborn not to.
+a : Keep it that way. | I'd lose wages. | Try harder.
 
 scene e5_se_winter_lean
 when topic=season here.season=winter a.wealth=poor|destitute|comfortable
 a : Long winter. The salt meat's half gone and it's not midwinter yet. | We're on porridge twice a day till spring. | The pantry's looking thin.
-b[wealth=rich] : Have you thought of buying more in the autumn?
-b[warmth=warm] : I've a sack of turnips. Take some, I insist.
+b[wealth=rich] #rich : Ours is full to the rafters. Cook overdid it, as usual.
+b[warmth=warm] #warm : I've a sack of turnips. Take some, I insist.
 b : It's the same everywhere. | Better than nothing. | Spring'll come.
-a : Thank you so much. | Just. | Not soon enough.
+a@rich : How nice for you.
+a@warm : Thank you. Truly.
+a : Small comfort. | Just. | Not soon enough.
 
 scene e5_se_winter_tales
 when topic=season here.season=winter here.time=dusk|night
-a : Winter nights are for stories by the fire. | My grandfather told ghost stories every winter night. Scared us stupid. | Long dark nights. Good for sleeping, or for talk.
-b[talk=chatty] : Come round tonight. I've a new one about a drowned miller.
-b : That's the best of winter. | Did they work? | Talk, then.
+a : Long nights want a fire and a good lie or two. | My grandfather told the one about the drowned bell every winter. I still hear it. | Long dark nights. Good for sleeping, or for talk.
+b[talk=chatty] #chat : Come round tonight. I've a new one about a drowned miller.
+b : That's the best of winter. | Do you still? | Talk, then.
+a@chat : I'll bring the ale.
 a : The very best. | I still check under the bed. | Gladly.
 
 # ---------------------------------------------------------------- The turn itself
@@ -296,36 +352,40 @@ scene e5_se_turning_spring_summer
 when topic=season here.season=spring
 a : Can you feel it? Spring's tipping into summer. | The may's out. Summer's on its way. | The cuckoo's been calling all week.
 b : Already? | Ah, lovely. | Cuckoo means summer.
-a : Already. | Lovely. | And lazy days.
+a : Already. Feel that sun. | Lovely, and short. | And lazy days.
 
 scene e5_se_turning_autumn_winter
 when topic=season here.season=autumn
 a : There's winter on the wind tonight. Can you smell it? | The last leaves are down. That's autumn done. | Saw my breath this morning. First time this year.
-b[from=frosthollow] : This? This is spring weather where I'm from.
+b[from=frosthollow] #frost : This? This is spring weather where I'm from.
 b : Snow on the way. | Bare trees. | It'll be ice soon.
+a@frost : Then you can lend me your coat.
 a : I'll fetch the big coat. | Bare as bones. | Don't.
 
 scene e5_se_turning_winter_spring
 when topic=season here.season=winter
 a : The days are getting longer. Just a bit. I noticed. | Snowdrops under the hedge. Winter's losing. | Felt warm sun on my face today. Only for a moment.
-b[stage=old] : Another winter beaten. I'll take it.
+b[stage=old] #old : Another winter beaten. I'll take it.
 b : A bit is plenty. | Brave little things. | The first of it.
-a : Plenty. | Very brave. | The first.
+a@old : And the next one. You'll see.
+a : It is, after this winter. | Braver than me. | More to come, I hope.
 
 # ---------------------------------------------------------------- Where they grew up, in the season here
 
 scene e5_se_south_in_winter
 when topic=season here.season=winter a.from=southmeadow|oakhaven|mirebridge here.region=ridgemere|frosthollow|coldwater
 a : Back home we'd still be eating apples off the tree. | I'll never get used to winter up here. Never. | Snow. Again. In the south we had one snow in my whole life.
-b[from=frosthollow] : This? Lowland weather. You should see a real winter.
+b[from=frosthollow] #frost : This? Lowland weather. You should see a real winter.
 b : You've had time to get used to it. | You'll learn. | Lucky south.
+a@frost : I'll take your word for it, and stay by the fire.
 a : Never. | I won't. | Lucky, yes.
 
 scene e5_se_north_in_summer
 when topic=season here.season=summer a.from=frosthollow|coldwater here.region=southmeadow|oakhaven|mirebridge|larkfield
 a : This heat. Up home we'd still have snow on the peaks. | I'm melting. I'm a Frosthollow wolf in an oven. | I sleep in the cellar in summer. Folk think I'm mad.
-b[from=southmeadow] : This is cool. You should feel the Sunfields in harvest.
+b[from=southmeadow] #south : This is cool. You should feel the Sunfields in harvest.
 b : You get used to it. | Drink more water. | You are mad.
+a@south : I'll stay north of the Sunfields, thanks.
 a : Never. | I'm made of it now. | Cool and mad.
 
 # ---------------------------------------------------------------- By the season's work
@@ -333,8 +393,9 @@ a : Never. | I'm made of it now. | Cool and mad.
 scene e5_se_fisher_season
 when topic=season a.job=fisher|sailor
 a : The fish know the season better than any almanac. | The herring are running early this year. | The water's turned. Colder underneath. You can feel it on the oars.
-b[fisher] : Same with mine. Gone deep, sulking.
+b[fisher] #fish : Aye. The water tells you, if you listen.
 b : They're cleverer than us. | Good catch, then? | Time for your winter coat.
+a@fish : And the fish tell you the rest.
 a : Most fish are. | Good enough. | My fur is my coat.
 
 scene e5_se_herder_season

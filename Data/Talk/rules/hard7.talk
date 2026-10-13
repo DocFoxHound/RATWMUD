@@ -2,14 +2,15 @@
 # stranger or a deed, or of their own want; the other answers as they are (crime.answer, loss.answer, road.answer,
 # want.answer, stranger.answer, deed.answer: by role, means, traits, age and how they are today); and the first answers
 # that in turn (the *.close concepts), knowing how it was taken: each answer remembers its stance for the pair for half
-# an hour (pair.mem.h7_said = hang, pity, fear, duty, pray, joke, shrug, care...), and the close is chosen by that
-# stance and the closer's own facts. Every reply is its speaker's best rule, so one opener has a hundred turns.
+# an hour (pair.mem.h7_said), and the close is chosen by that stance and the closer's own facts. A chain's later beats
+# always take their best tier, so every answer is keyed to the kind of thing it answers (topic.kind, or pair.mem.wn for
+# the want openers), and every close to a stance.
 
-############################################################################ Crime: openers
+############################################################################ Crime: openers (talk.crime: theft, assault, arrest)
 
 rule h7_cr_open_theft
 when concept=talk.crime topic.kind=theft
-say Did you hear? #topic.victim# was robbed. | #topic.victim#'s been robbed, they're saying. | Somebody had #topic.victim#'s purse. | There's a #thief# about. #topic.victim# found out the hard way. | #topic.victim# came home to their things gone.
+say Have you heard? #topic.victim# was robbed. | #topic.victim#'s been robbed, they're saying. | Somebody had #topic.victim#'s purse. | There's a #thief# about. #topic.victim# found out the hard way. | #topic.victim# came home to their things gone.
 then other: crime.answer
 
 rule h7_cr_open_assault
@@ -37,7 +38,7 @@ then other: crime.answer
 rule h7_cr_open_rich
 when concept=talk.crime topic.kind=theft self.wealth=rich
 cooldown 1d
-say What do we pay #watch# for? #topic.victim#, robbed! | I've had the locks changed. After #topic.victim#. All of them. | It's the Sump. It's always the Sump. Poor #topic.victim#. | A #thief# in our street. One feels quite exposed.
+say What do we pay #watch# for? #topic.victim#, robbed! | I've had the locks changed. After #topic.victim#. All of them. | It'll be someone from outside. It always is. Poor #topic.victim#. | A #thief# in our street. One feels quite exposed.
 then other: crime.answer
 
 rule h7_cr_open_poor
@@ -56,19 +57,19 @@ then other: crime.answer
 rule h7_cr_open_nervy
 when concept=talk.crime topic.kind=theft|assault self.temper=nervy
 cooldown 1d
-say #topic.victim#! That's our street! That's right by us! | I heard about #topic.victim# and I haven't stopped shaking. | What if they come back? For #topic.victim#? For us? | #topic.victim#. I knew it. I knew something would happen.
+say #topic.victim#! That's practically on our doorstep! | I heard about #topic.victim# and I haven't stopped shaking. | What if they come back? For #topic.victim#? For us? | #topic.victim#. I knew it. I knew something would happen.
 then other: crime.answer
 
 rule h7_cr_open_old
 when concept=talk.crime topic.kind=theft|assault self.stage=old
 cooldown 1d
-say #topic.victim#, robbed. In my day, the whole street would've chased them down. | Sixty years in this town and I've never seen it so bad. Poor #topic.victim#. | They got #topic.victim#. Nobody looks out for anyone now. | #topic.victim#. Ah. My knees aren't up to chasing #thief# folk any more.
+say #topic.victim#. In my day, the whole street would've chased them down. | Sixty years in this town and I've never seen it so bad. Poor #topic.victim#. | They got #topic.victim#. Nobody looks out for anyone now. | #topic.victim#. Ah. Forty years ago I'd have had them by the scruff.
 then other: crime.answer
 
 rule h7_cr_open_devout
 when concept=talk.crime topic.kind=theft|assault self.piety=devout
 cooldown 1d
-say I prayed for #topic.victim# this morning. | Somebody robbed #topic.victim#. The gods see it. | #topic.victim#, of all folk. A chapel-goer! | There's wickedness in this town. Look at #topic.victim#.
+say I prayed for #topic.victim# this morning. | Somebody did wrong by #topic.victim#. The gods saw it. | #topic.victim#, of all folk. A chapel-goer! | There's wickedness in this town. Look at #topic.victim#.
 then other: crime.answer
 
 rule h7_cr_open_dry
@@ -80,13 +81,13 @@ then other: crime.answer
 rule h7_cr_open_short
 when concept=talk.crime topic.kind=theft|assault self.temper=short
 cooldown 1d
-say If I get my paws on whoever did #topic.victim#... | #topic.victim#! Robbed! And #watch# drinking somewhere! | Somebody hurt #topic.victim# and walks about free. It makes my blood boil. | #topic.victim#. I'm so angry I could bite something.
+say If I get my paws on whoever did #topic.victim#... | #topic.victim#! In broad day! And #watch# drinking somewhere! | Whoever did #topic.victim# walks about free. It makes my blood boil. | #topic.victim#. I'm so angry I could bite something.
 then other: crime.answer
 
 rule h7_cr_open_sump
 when concept=talk.crime topic.kind=theft|assault here.region=ridgemere self.quarter=sump
 cooldown 1d
-say #topic.victim#'s been done. They'll be down here looking by noon. | They'll blame the Sump for #topic.victim#. Watch. | Done #topic.victim#, did they? Not one of ours. We've nothing to sell it to. | #watch# will kick in a few Sump doors over #topic.victim#. Ours first.
+say #topic.victim#'s been done. They'll be down here looking by noon. | They'll blame the Sump for #topic.victim#. Watch. | Not one of ours did #topic.victim#. We'd have heard. | #watch# will kick in a few Sump doors over #topic.victim#. Ours first.
 then other: crime.answer
 
 rule h7_cr_open_someone
@@ -100,12 +101,12 @@ then other: crime.answer
 rule h7_cr_ans_any
 when concept=crime.answer topic.kind=theft|assault
 say Gods. Poor #topic.victim#. | That's a bad business. | I heard. It's everywhere. | Nobody's safe any more. | And in daylight, too, I'll bet.
-remember pair: h7_said=shrug 30m
+remember pair: h7_said=sorry 30m
 then other: crime.close
 
 rule h7_cr_ans_any_arrest
 when concept=crime.answer topic.kind=arrest
-say About time someone was. | Poor #topic.subject#. Whatever they did. | Arrested? What for? | Well. That's them done for. | I'd not want to be #topic.subject# tonight.
+say Well. That's them done for. | I'd not want to be #topic.subject# tonight. | So they caught someone, for once. | There's always more to it than you hear.
 remember pair: h7_said=shrug 30m
 then other: crime.close
 
@@ -118,12 +119,12 @@ then other: crime.close
 rule h7_cr_ans_guard_arrest
 when concept=crime.answer topic.kind=arrest self.role=guard
 say And they'll stay there till the magistrate's had a look. | I held the door. They bit #topic.where#. | Don't feel sorry for them. You don't know what they did. | That's one. There's more.
-remember pair: h7_said=duty 30m
+remember pair: h7_said=duty_arrest 30m
 then other: crime.close
 
 rule h7_cr_ans_rich
 when concept=crime.answer topic.kind=theft|assault self.wealth=rich
-say Flog them, when they're caught. In the square. | They should hang a few. The rest would learn. | I'll have my doors seen to. And a dog. Two dogs. | One pays a fortune in taxes for this?
+say Flog them, when they're caught. In the square. | They should hang a few. The rest would learn. | I'll have a wolf on the gate from now on. Two wolves. | One pays a fortune in levies for this?
 remember pair: h7_said=hang 30m
 then other: crime.close
 
@@ -135,14 +136,14 @@ then other: crime.close
 
 rule h7_cr_ans_poor
 when concept=crime.answer topic.kind=theft self.wealth=poor|destitute
-say Hungry, I'd bet. Whoever did it. | I can't say I blame them. Don't look at me like that. | When a wolf's starving, a purse looks like supper. | Robbing the comfortable. Some'd call it sharing.
+say Hungry, I'd bet. Whoever did it. | I can't say I blame them. Don't look at me like that. | When a wolf's starving, a purse looks like supper. | Robbing the comfortable. Some would call it sharing.
 remember pair: h7_said=pity 30m
 then other: crime.close
 
 rule h7_cr_ans_poor_arrest
 when concept=crime.answer topic.kind=arrest self.wealth=poor|destitute
-say Poor sod. They'll get no lawyer. | The rich steal more and nobody takes them. | Somebody'll go hungry with them in #gaol#. | They take our sort. Never theirs.
-remember pair: h7_said=pity 30m
+say Poor sod. There'll be nobody to speak up for them. | The rich steal more and nobody takes them. | Somebody'll go hungry with them in #gaol#. | They take our sort. Never theirs.
+remember pair: h7_said=pity_arrest 30m
 then other: crime.close
 
 rule h7_cr_ans_hungry
@@ -166,19 +167,19 @@ then other: crime.close
 rule h7_cr_ans_robbed
 when concept=crime.answer topic.kind=theft self.robbed=yes
 priority 1
-say Same as me. Same as me! | Join the club. We'll meet on Restday. | Now will #watch# listen? Now? | I know just how they feel. Sick. Sick and stupid.
-remember pair: h7_said=fear 30m
+say Same as me. Same as me! | Join the club. Nobody wants to be in it. | Now will #watch# listen? Now? | I know just how they feel. Sick. Sick and stupid.
+remember pair: h7_said=same 30m
 then other: crime.close
 
 rule h7_cr_ans_devout
 when concept=crime.answer topic.kind=theft|assault self.piety=devout
-say I'll pray for #topic.victim#. And for whoever did it. | The gods will settle it. In their time. | There's a wolf out there with a heavy soul tonight. | Light a candle with me, on Restday? For #topic.victim#.
+say I'll pray for #topic.victim#. And for whoever did it. | The gods will settle it. In their time. | There's a wolf out there with a heavy soul tonight. | I'll light a candle for #topic.victim# on Restday.
 remember pair: h7_said=pray 30m
 then other: crime.close
 
 rule h7_cr_ans_devout_arrest
 when concept=crime.answer topic.kind=arrest self.piety=devout
-say I'll pray they repent in there. | The gods forgive. Magistrates don't. | Somebody should take them a prayer book. | We're all a step from #gaol#, if the gods look away.
+say I'll pray they repent in there. | The gods forgive. Magistrates don't. | Somebody should take them a blessing, at least. | We're all a step from #gaol#, if the gods look away.
 remember pair: h7_said=pray 30m
 then other: crime.close
 
@@ -189,8 +190,14 @@ remember pair: h7_said=joke 30m
 then other: crime.close
 
 rule h7_cr_ans_merry
-when concept=crime.answer topic.kind=theft|arrest self.humour=merry
+when concept=crime.answer topic.kind=theft self.humour=merry
 say Ha! Hope they took the ugly chair too. | Somebody's having a grand day. Not #topic.victim#. | Oh, no. Oh, that's terrible. Did they take the goose? | Ha. Sorry. Sorry. It's not funny. It's a bit funny.
+remember pair: h7_said=joke 30m
+then other: crime.close
+
+rule h7_cr_ans_merry_arrest
+when concept=crime.answer topic.kind=arrest self.humour=merry
+say Ha! Somebody's having a worse day than me, then. | Free bed and board. There's worse ways to spend a week. | Ha. I'll bet they went kicking.
 remember pair: h7_said=joke 30m
 then other: crime.close
 
@@ -203,25 +210,31 @@ then other: crime.close
 rule h7_cr_ans_cold
 when concept=crime.answer topic.kind=theft|assault self.warmth=cold
 say Should've locked their door. | Happens. | Not my business. | They'll live.
-remember pair: h7_said=shrug 30m
+remember pair: h7_said=cold 30m
 then other: crime.close
 
 rule h7_cr_ans_old
 when concept=crime.answer topic.kind=theft|assault self.stage=old
-say In my day we'd have known who it was by supper. | There was a #thief# like that when I was a pup. Hanged at the crossroads. | It's always been so. You just hear it more now. | I've been robbed three times in my life. You get over it. Mostly.
-remember pair: h7_said=shrug 30m
+say In my day we'd have known who it was by supper. | There was a wolf like that when I was a pup. Hanged at the crossroads. | It's always been so. You just hear it more now. | I've been robbed three times in my life. You get over it. Mostly.
+remember pair: h7_said=past 30m
 then other: crime.close
 
 rule h7_cr_ans_young
-when concept=crime.answer topic.kind=theft|assault|arrest self.stage=young
-say Was it a real #thief#? With a mask? | Will they come to our house? | I'd bite them! I'd bite them on the tail! | Will #watch# put them in a cage?
-remember pair: h7_said=fear 30m
+when concept=crime.answer topic.kind=theft|assault self.stage=young
+say Will they come to our house? | I'd bite them! Right on the tail! | Is #topic.victim# all right? | Why did they do it?
+remember pair: h7_said=pup 30m
+then other: crime.close
+
+rule h7_cr_ans_young_arrest
+when concept=crime.answer topic.kind=arrest self.stage=young
+say Will they put them in a cage? | Did they fight? I'd have fought. | Can I go and look at #gaol#?
+remember pair: h7_said=pup 30m
 then other: crime.close
 
 rule h7_cr_ans_sly
 when concept=crime.answer topic.kind=theft self.honesty=sly
 say Hm. Wonder where they'll sell it. | Clever. Nobody saw? Very clever. | What did they get, do you know? Exactly? | #topic.victim# had a lot more than they let on, then.
-remember pair: h7_said=joke 30m
+remember pair: h7_said=sly 30m
 then other: crime.close
 
 rule h7_cr_ans_merchant
@@ -233,37 +246,41 @@ then other: crime.close
 rule h7_cr_ans_healer
 when concept=crime.answer topic.kind=assault self.job=healer
 say I was up with #topic.victim# half the night. | I've seen to them. They'll mend. Slowly. | Whoever did it knew where to kick. | I'll go back this evening. They're not to get up.
-remember pair: h7_said=care 30m
+remember pair: h7_said=mend 30m
 then other: crime.close
 
 rule h7_cr_ans_mourning
 when concept=crime.answer topic.kind=theft|assault self.mourning=kin|friend
 priority 1
 say I can't think about it. Not this week. | Everything's bad news this week. | I've no room left for more sorrow. | Things. They're only things. I know that now.
-remember pair: h7_said=shrug 30m
+remember pair: h7_said=grief 30m
 then other: crime.close
 
 rule h7_cr_ans_sump
 when concept=crime.answer topic.kind=theft|assault here.region=ridgemere self.quarter=sump
 say And they'll blame us. Watch them. | Not one of ours. We'd have heard. | Up the hill, that's news. Down here it's the weather. | They'll come kicking our doors in for it.
-remember pair: h7_said=shrug 30m
+remember pair: h7_said=blame 30m
 then other: crime.close
 
 rule h7_cr_ans_heights
-when concept=crime.answer topic.kind=theft here.region=ridgemere self.quarter=heights
+when concept=crime.answer topic.kind=theft here.region=ridgemere self.quarter=heights self.wealth=rich|comfortable
 say One will speak to the captain. Personally. | Was it someone from below, do they think? | Dreadful. One's own servants, quite possibly. | The city's going to the dogs.
 remember pair: h7_said=hang 30m
 then other: crime.close
 
-############################################################################ Crime: closes (self opened)
+############################################################################ Crime: closes (self opened; pair.mem.h7_said says how it was taken)
 
 rule h7_cr_close_any
 when concept=crime.close
 say Aye. Well. | Bad times. | Keep your door shut. | Mind how you go.
 
+rule h7_cr_close_sorry
+when concept=crime.close pair.mem.h7_said=sorry
+say Aye. Bad business. | It could be any of us. | I'll go round later. | Poor soul.
+
 rule h7_cr_close_shrug
 when concept=crime.close pair.mem.h7_said=shrug
-say I suppose so. | That's all anyone says. | Nothing to be done, then. | No. I suppose not.
+say Aye. | We'll hear soon enough. | Hm. We'll see. | So it goes.
 
 rule h7_cr_close_duty
 when concept=crime.close pair.mem.h7_said=duty
@@ -273,9 +290,13 @@ rule h7_cr_close_duty_short
 when concept=crime.close pair.mem.h7_said=duty self.temper=short
 say On it? You're stood here talking to me. | Then get off it and find them. | Leave it with you? I'd sooner leave it with the cat.
 
+rule h7_cr_close_duty_arrest
+when concept=crime.close pair.mem.h7_said=duty_arrest
+say Good. Keep them there. | Well done, then. | Was it them, though, truly? | I'll sleep easier.
+
 rule h7_cr_close_hang
 when concept=crime.close pair.mem.h7_said=hang
-say Hanging's a hard cure. | Hanging won't bring the things back. | Steady. | That's strong.
+say Hanging's a hard cure. | Hanging won't mend anything. | Steady. | That's strong.
 
 rule h7_cr_close_hang_poor
 when concept=crime.close pair.mem.h7_said=hang self.wealth=poor|destitute
@@ -283,19 +304,23 @@ say Easy said from a full belly. | And when it's a hungry pup? Hang them too? | 
 
 rule h7_cr_close_hang_devout
 when concept=crime.close pair.mem.h7_said=hang self.piety=devout
-say The gods judge. Not us. | That's not mercy. That's anger. | Pray on that before you say it again.
+say The gods judge. Not us. | That's not justice. That's anger. | Pray on that before you say it again.
 
 rule h7_cr_close_pity
 when concept=crime.close pair.mem.h7_said=pity
 say Hungry's no excuse. | Don't let #watch# hear you say that. | Maybe. Still wrong. | I suppose. I suppose.
 
 rule h7_cr_close_pity_rich
-when concept=crime.close pair.mem.h7_said=pity self.wealth=rich
+when concept=crime.close pair.mem.h7_said=pity|pity_arrest self.wealth=rich
 say There's always honest work. | That's dangerous talk. | Then they should apply to the parish. | One gives to the chapel for exactly this.
 
 rule h7_cr_close_pity_poor
-when concept=crime.close pair.mem.h7_said=pity self.wealth=poor|destitute
+when concept=crime.close pair.mem.h7_said=pity|pity_arrest self.wealth=poor|destitute
 say Aye. It's not hard to see how. | I know. Gods, I know. | We've all stood at that door. | Hush. But aye.
+
+rule h7_cr_close_pity_arrest
+when concept=crime.close pair.mem.h7_said=pity_arrest
+say Maybe. Still, the law's the law. | Aye. It's always our sort. | They did something, though. They must have.
 
 rule h7_cr_close_fear
 when concept=crime.close pair.mem.h7_said=fear
@@ -305,43 +330,75 @@ rule h7_cr_close_fear_dry
 when concept=crime.close pair.mem.h7_said=fear self.humour=dry
 say Cheer up. They'll probably rob someone richer. | You're safe. You've nothing anyone wants. | Sleep with a pan by the bed. Hit anything that moves. Except me.
 
+rule h7_cr_close_same
+when concept=crime.close pair.mem.h7_said=same
+say Then you know. | Did they ever find yours? | Gods, I'd forgotten. I'm sorry. | We should go to #watch# together.
+
 rule h7_cr_close_pray
 when concept=crime.close pair.mem.h7_said=pray
-say Pray for me while you're at it. | If the gods are listening. | I'll come with you. | A candle won't catch a #thief#.
+say Pray for me while you're at it. | If the gods are listening. | Aye. And for all of us. | Prayers are well and good. A bolt's better.
 
 rule h7_cr_close_joke
 when concept=crime.close pair.mem.h7_said=joke
-say That's not funny. | Ha. Don't let #topic.victim# hear you. | You're terrible. | Wicked. Wicked and right.
+say That's not funny. | Ha. Don't. | You're terrible. | Wicked. Wicked and right.
 
 rule h7_cr_close_joke_short
 when concept=crime.close pair.mem.h7_said=joke self.temper=short
-say It's not a joke. Somebody was robbed. | Laugh, then. Laugh when it's you. | I don't find that funny at all.
+say It's not a joke. | Laugh, then. Laugh when it's you. | I don't find that funny at all.
 
 rule h7_cr_close_care
 when concept=crime.close pair.mem.h7_said=care
-say I'll come with you. | That's kind. Take bread, too. | Yes. Let's. | You're a good soul.
+say I'll come with you. | That's kind. Take bread, too. | Let's go round this evening. | You're a good soul.
 
 rule h7_cr_close_care_cold
 when concept=crime.close pair.mem.h7_said=care self.warmth=cold
 say Do what you like. | They've family for that. | Suit yourself.
 
-############################################################################ Loss: openers (talk.life, a death; talk.news, one's own)
+rule h7_cr_close_cold
+when concept=crime.close pair.mem.h7_said=cold
+say That's hard, even for you. | Hm. Charming. | I'll remember that, when it's your door.
+
+rule h7_cr_close_past
+when concept=crime.close pair.mem.h7_said=past
+say Times change. | Maybe so. | Things were simpler then, I suppose.
+
+rule h7_cr_close_pup
+when concept=crime.close pair.mem.h7_said=pup
+say They'll be all right. Don't you fret. | Hush, now. Nobody's coming to ours. | No biting anybody, mind. | Never you mind. Run along.
+
+rule h7_cr_close_sly
+when concept=crime.close pair.mem.h7_said=sly
+say You'd know, would you? | I don't like the way you said that. | Funny thing to ask. | Hm. I'll keep my purse closer.
+
+rule h7_cr_close_mend
+when concept=crime.close pair.mem.h7_said=mend
+say Thank the gods you were there. | Give them my best. | You're a good sort.
+
+rule h7_cr_close_grief
+when concept=crime.close pair.mem.h7_said=grief
+say Of course. Forgive me. | I'm sorry. I forgot. | I shouldn't have said. Not this week.
+
+rule h7_cr_close_blame
+when concept=crime.close pair.mem.h7_said=blame
+say Nobody's blaming you. | They'll not, this time. | Aye. They always do.
+
+############################################################################ Loss: openers (talk.life, a death in town; talk.news, one's own)
 
 rule h7_ls_open
 when concept=talk.life topic.kind=death
-say #topic.subject# died. | The bell was for #topic.subject#. | #topic.subject#'s gone. Last night. | They're burying #topic.subject# tomorrow. | Did you hear about #topic.subject#? Gone.
+say #topic.subject# died. | The bell was for #topic.subject#. | #topic.subject#'s gone. Last night. | #topic.subject#'s to be buried tomorrow. | Did you hear about #topic.subject#? Gone.
 then other: loss.answer
 
 rule h7_ls_open_old
 when concept=talk.life topic.kind=death self.stage=old
 cooldown 1d
-say #topic.subject#. I knew them when they were a pup. | Another one. They keep going before me. | #topic.subject#'s gone. I remember their wedding. | That's #topic.subject# gone. I'll be next, mark me.
+say #topic.subject#. I knew them when they were a pup. | Another one. They keep going before me. | #topic.subject#'s gone. I remember them at their first festival. | That's #topic.subject# gone. I'll be next, mark me.
 then other: loss.answer
 
 rule h7_ls_open_priest
 when concept=talk.life topic.kind=death self.job=priest
 cooldown 1d
-say I'll say the words over #topic.subject# tomorrow. | I sat with #topic.subject# at the end. | #topic.subject# is with the gods now. Or so I'll say. | I've #topic.subject#'s burial and two more this week.
+say I'll say the words over #topic.subject# tomorrow. | I was with #topic.subject# at the last. | #topic.subject# is with the Bright One now. | I've #topic.subject#'s burial and two more this week.
 then other: loss.answer
 
 rule h7_ls_open_mourning
@@ -352,40 +409,58 @@ say And #topic.subject# now too. I can't. | Another one. As if this week weren't
 then other: loss.answer
 
 rule h7_ls_open_dry
-when concept=talk.life topic.kind=death self.humour=dry
+when concept=talk.life topic.kind=death self.humour=dry self.mourning=no
 cooldown 1d
-say #topic.subject#'s died. Finally beat them to a seat at the chapel. | #topic.subject#'s gone. Still owes me a penny. I'll let it go. | #topic.subject#. Gone and missed the rent day. Clever. | They're burying #topic.subject#. They'd have hated the fuss.
+say #topic.subject#'s died. Owed me a penny, too. I'll let it go. | #topic.subject#. Gone and missed the rent day. Clever. | They're burying #topic.subject#. They'd have hated the fuss. | #topic.subject# never could stand a queue. Went early.
 then other: loss.answer
 
 rule h7_ls_open_poor
 when concept=talk.life topic.kind=death self.wealth=poor|destitute
 cooldown 1d
-say #topic.subject#'s gone, and nothing to bury them with. | #topic.subject#. The parish'll do it. Plain box. | They'll put #topic.subject# in the paupers' row. Same as we'll go. | #topic.subject# died. Cold took them, I'd bet. Cold and an empty pot.
+say #topic.subject#'s gone, and nothing to bury them with. | #topic.subject#. The parish'll do it. Plain box. | They'll put #topic.subject# in the paupers' row. Same as we'll go. | #topic.subject# died. Cold and an empty pot, I'd bet.
 then other: loss.answer
 
 rule h7_ls_open_news
 when concept=talk.news topic.kind=loss
 priority 1
-say #topic.news#. | #topic.news#. I keep thinking I'll see them. | I've had bad news. #topic.news#. | You'll hear it anyway. #topic.news#.
+say I've lost someone. This week. | We buried one of ours. I keep thinking I'll see them. | I've had bad news. The worst sort. | You'll hear it anyway. We've had a death.
 then other: loss.answer
 
-############################################################################ Loss: answers
+############################################################################ Loss: answers (topic.kind=death, someone in town; topic.kind=loss, the teller's own)
 
 rule h7_ls_ans_any
 when concept=loss.answer
-say Gods. I'm sorry. | Ah, no. | That's hard news. | I hadn't heard. I'm sorry. | Rest them.
+say Ah, no. | That's hard news. | I hadn't heard. I'm sorry. | Rest them.
+remember pair: h7_said=sorry 30m
+then other: loss.close
+
+rule h7_ls_ans_own
+when concept=loss.answer topic.kind=loss
+say Oh, I'm so sorry. | I'd no idea. I'm so sorry. | That's hard. Gods, that's hard. | Is there anything I can do?
 remember pair: h7_said=sorry 30m
 then other: loss.close
 
 rule h7_ls_ans_warm
-when concept=loss.answer self.warmth=warm
-say Oh, #pet#. Come here. | I'll bring food round. Don't argue. | Whatever you need. Anything. | I'm so sorry. I'll sit with them, if they'd like.
+when concept=loss.answer topic.kind=loss self.warmth=warm
+say Oh, #pet#. Come here. | I'll bring food round. Don't argue. | Whatever you need. Anything. | I'm so sorry. Sit with me a while.
 remember pair: h7_said=care 30m
+then other: loss.close
+
+rule h7_ls_ans_warm_death
+when concept=loss.answer topic.kind=death self.warmth=warm
+say Oh, their poor family. I'll take something round. | Who's seeing to the family? | I'll sit with them tonight, if they'd like.
+remember pair: h7_said=kind 30m
 then other: loss.close
 
 rule h7_ls_ans_cold
 when concept=loss.answer self.warmth=cold
-say Everyone goes. | Mm. | Hardly knew them. | Well. That's that.
+say Everyone goes. | Mm. These things happen. | Well. That's that.
+remember pair: h7_said=cold 30m
+then other: loss.close
+
+rule h7_ls_ans_cold_death
+when concept=loss.answer topic.kind=death self.warmth=cold
+say Hardly knew them. | Everyone goes. | Mm.
 remember pair: h7_said=cold 30m
 then other: loss.close
 
@@ -408,14 +483,14 @@ remember pair: h7_said=young 30m
 then other: loss.close
 
 rule h7_ls_ans_dry
-when concept=loss.answer self.humour=dry
-say Well. They always said they'd go first. | Gone to a better place. Couldn't be much worse than here. | Lucky them. No more winters. | Death and taxes. And they've beaten the taxes.
+when concept=loss.answer topic.kind=death self.humour=dry other.mourning=no
+say Well. They always said they'd go first. | Gone to a better place. Couldn't be much worse than here. | Lucky them. No more winters. | Death and levies, and they've beaten the levies.
 remember pair: h7_said=joke 30m
 then other: loss.close
 
 rule h7_ls_ans_poor
-when concept=loss.answer self.wealth=poor|destitute
-say Who'll pay for the burial? | At least they're warm now. Wherever they are. | One less mouth, they'll say up the hill. | It's the cold. It's always the cold, for our sort.
+when concept=loss.answer topic.kind=death self.wealth=poor|destitute
+say Who'll pay for the burying? | At least they're warm now. Wherever they are. | One less mouth, they'll say at the big houses. | It's always our sort that go first.
 remember pair: h7_said=poor 30m
 then other: loss.close
 
@@ -423,13 +498,13 @@ rule h7_ls_ans_mourning
 when concept=loss.answer self.mourning=kin|friend
 priority 1
 say Not another. I can't hold another. | I know how it sits. Gods, I know. | I've no tears left. I'm sorry. | We're all burying someone this season.
-remember pair: h7_said=sorry 30m
+remember pair: h7_said=grief 30m
 then other: loss.close
 
 rule h7_ls_ans_widowed
-when concept=loss.answer self.widowed=yes
+when concept=loss.answer topic.kind=loss self.widowed=yes
 say It doesn't get easier. It gets quieter. | You'll talk to them. Everyone does. | I still set two cups. Don't tell anyone. | The first winter's the worst.
-remember pair: h7_said=sorry 30m
+remember pair: h7_said=grief 30m
 then other: loss.close
 
 rule h7_ls_ans_short
@@ -445,14 +520,14 @@ remember pair: h7_said=pray 30m
 then other: loss.close
 
 rule h7_ls_ans_healer
-when concept=loss.answer self.job=healer
+when concept=loss.answer topic.kind=death self.job=healer
 say I should've been called sooner. | I did what I could. It wasn't enough. | There was nothing in the jar for that. | I'll not sleep tonight.
-remember pair: h7_said=sorry 30m
+remember pair: h7_said=healer 30m
 then other: loss.close
 
 rule h7_ls_ans_rich
 when concept=loss.answer self.wealth=rich
-say How dreadful. I'll send something. | One must pay one's respects. | I'll see the stone's paid for. | Such a shame. Were they insured with anyone?
+say How dreadful. I'll send something. | One must pay one's respects. | I'll see the stone's paid for. | Such a shame. Did they leave the family anything?
 remember pair: h7_said=rich 30m
 then other: loss.close
 
@@ -466,6 +541,10 @@ rule h7_ls_close_care
 when concept=loss.close pair.mem.h7_said=care
 say Thank you. Truly. | You're good to me. | I'd like that. | I'll not argue. Not today.
 
+rule h7_ls_close_kind
+when concept=loss.close pair.mem.h7_said=kind
+say That's good of you. | They'd be glad of it. | I'll come with you.
+
 rule h7_ls_close_cold
 when concept=loss.close pair.mem.h7_said=cold
 say Is that all? | Well, I knew them. | Gods, you're a stone. | Thank you for nothing.
@@ -474,48 +553,52 @@ rule h7_ls_close_pray
 when concept=loss.close pair.mem.h7_said=pray
 say Say one for me too. | I hope so. | If anyone's listening. | Thank you. That helps. A little.
 
-rule h7_ls_close_pray_ordinary
+rule h7_ls_close_pray_short
 when concept=loss.close pair.mem.h7_said=pray self.piety=ordinary self.temper=short
 say The gods took them. They can keep their light. | Pray if you like. I'll drink. | Don't tell me about the gods today.
 
 rule h7_ls_close_old
 when concept=loss.close pair.mem.h7_said=old
-say Don't you go anywhere. | You'll outlast us all. | Then tell me about them. The old ones. | Wrong order. Aye.
+say Don't you go anywhere. | You'll outlast us all. | Then tell me about them. The old ones. | Aye. You've seen more of it than most.
 
 rule h7_ls_close_young
 when concept=loss.close pair.mem.h7_said=young
-say No, pup. They're not coming back. | Not cold. Sleeping. | Yes. That's why. | Nor do I, pup. Come here.
+say Hush, pup. Come here. | It's sad, pup. That's all. It's just sad. | You'll understand when you're older. Come here. | It's all right. It's all right.
 
 rule h7_ls_close_joke
 when concept=loss.close pair.mem.h7_said=joke
 say Ha. They'd have laughed at that. | Don't. I'll laugh at the burial. | That's dreadful. Say it again. | You're awful.
 
-rule h7_ls_close_joke_warm
-when concept=loss.close pair.mem.h7_said=joke self.warmth=warm self.mourning=kin|friend
-say Not today. Please. Not today. | I can't laugh yet. Soon, maybe.
-
 rule h7_ls_close_poor
 when concept=loss.close pair.mem.h7_said=poor
-say We'll pass a hat. | The parish, I suppose. | Aye. It's always the cold. | We'll go the same way.
+say We'll pass a hat. | The parish, I suppose. | Aye. It's always us. | We'll go the same way.
 
 rule h7_ls_close_angry
 when concept=loss.close pair.mem.h7_said=angry
-say No. It's not. | Hit the wall, then. I'll hold your coat. | Curse it with you. | Aye. Curse it.
+say I know. I know. | Hit the wall, then. I'll hold your coat. | Curse it with you. | Aye. Curse it.
 
 rule h7_ls_close_rich
 when concept=loss.close pair.mem.h7_said=rich
-say That's... generous. | Insured? They were a carter. | Send bread. Not flowers. | One must, mustn't one.
+say That's... generous. | Send bread, not flowers. They'll need feeding. | Aye. Well. Thank you.
+
+rule h7_ls_close_grief
+when concept=loss.close pair.mem.h7_said=grief
+say I know. I'm sorry. | We'll get through it. Somehow. | Come here. Both of us, then.
+
+rule h7_ls_close_healer
+when concept=loss.close pair.mem.h7_said=healer
+say It's not your fault. | You did all anyone could. | Nobody blames you.
 
 ############################################################################ The road: openers (talk.bandits, talk.caravan raided)
 
 rule h7_rd_open
 when concept=talk.bandits topic.kind=raided
-say #bandits.capitalize# hit the #topic.where# carts. | The road to #topic.where#'s been robbed again. | They raided a caravan out of #topic.where#. | Nothing's coming from #topic.where# this week. Robbed.
+say #bandits.capitalize# again. They had the #topic.where# carts. | The road to #topic.where#'s been robbed again. | They raided a caravan out of #topic.where#. | Nothing's coming from #topic.where# this week. Robbed.
 then other: road.answer
 
 rule h7_rd_open_camp
 when concept=talk.bandits topic.kind=camp
-say There's a camp at #topic.where#. #bandits.capitalize#. | Somebody saw fires at #topic.where#. | They're camped out by #topic.where#, bold as you like. | Stay off the road past #topic.where#.
+say There's a camp out by #topic.where#. #bandits.capitalize#. | Somebody saw fires out by #topic.where#. | They're camped out by #topic.where#, bold as you like. | Stay off the road past #topic.where#.
 then other: road.answer
 
 rule h7_rd_open_caravan
@@ -533,7 +616,7 @@ rule h7_rd_open_travelling
 when concept=talk.bandits topic.kind=raided|camp self.travelling=yes
 cooldown 1d
 priority 1
-say I'm on that road tomorrow. That very road. | I've to go past #topic.where#. Gods help me. | I'd hoped to be out by dawn. Now I don't know. | Is there another way? Any other way?
+say I'm on that road tomorrow. That very road. | I've to go out past #topic.where#. Gods help me. | I'd hoped to be away by dawn. Now I don't know. | Is there another way? Any other way?
 then other: road.answer
 
 rule h7_rd_open_guard
@@ -564,21 +647,21 @@ then other: road.close
 
 rule h7_rd_ans_merchant
 when concept=road.answer self.role=merchant
-say Then prices go up. Don't look at me. | I'll be selling turnips and hope. | Guards cost more than goods, now. | My next order's sitting in #topic.where#, too frightened to move.
+say Then prices go up. Don't look at me. | I'll be selling turnips and hope. | Guards cost more than goods, now. | My next order's sitting in a yard somewhere, too frightened to move.
 remember pair: h7_said=trade 30m
 then other: road.close
 
 rule h7_rd_ans_carter
 when concept=road.answer self.job=carter
 say I'll not drive that road. Not for double. | I know those carters. I'll go and see them. | That's my road. That's my road! | Next run's mine. Gods.
-remember pair: h7_said=fear 30m
+remember pair: h7_said=fear_road 30m
 then other: road.close
 
 rule h7_rd_ans_travelling
 when concept=road.answer self.travelling=yes
 priority 1
 say And I've to go out there. | Don't tell me that. I leave at dawn. | Then I'm walking with the carts. Close. | I'll go the long way. Three days more.
-remember pair: h7_said=fear 30m
+remember pair: h7_said=fear_road 30m
 then other: road.close
 
 rule h7_rd_ans_poor
@@ -613,12 +696,12 @@ then other: road.close
 
 rule h7_rd_ans_devout
 when concept=road.answer self.piety=devout
-say I'll pray for the carters. | Gods keep the road. | Pray for them, on Restday. All of us. | The Dark One walks the roads this season.
+say I'll pray for the carters. | Gods keep the road. | We'll pray for them on Restday. All of us. | There's evil on the roads this season.
 remember pair: h7_said=pray 30m
 then other: road.close
 
 rule h7_rd_ans_ambitious
-when concept=road.answer self.drive=ambitious|restless
+when concept=road.answer self.drive=ambitious|restless self.stage=adult
 say Someone's going to make good money guarding carts. | Whoever clears that road will be a name. | I'd go. With the right pay. | That's a chance, if you look at it right.
 remember pair: h7_said=chance 30m
 then other: road.close
@@ -641,11 +724,15 @@ say Then what are you for? | So we sit and wait. | Ask again. Ask louder. | Wall
 
 rule h7_rd_close_trade
 when concept=road.close pair.mem.h7_said=trade
-say You'd put them up anyway. | Turnips and hope. Lovely. | Then we go without. Again. | Blame the road. Always the road.
+say You'd put them up anyway. | Lovely. Dearer everything. | Then we go without. Again. | Blame the road. Always the road.
+
+rule h7_rd_close_fear_road
+when concept=road.close pair.mem.h7_said=fear_road
+say Go in daylight. All of it. | Go with others. Never alone. | Gods keep you. | Stay, if you can.
 
 rule h7_rd_close_fear
 when concept=road.close pair.mem.h7_said=fear
-say Go in daylight. All of it. | Go with others. Never alone. | Gods keep you. | Stay, if you can.
+say They'll not come here. Not with the walls. | Calm yourself. They're miles off. | Bolt your door, if it helps.
 
 rule h7_rd_close_poor
 when concept=road.close pair.mem.h7_said=poor
@@ -661,11 +748,11 @@ say And who'd follow you? | Twelve wolves. Name eleven. | Burn and be burnt. | C
 
 rule h7_rd_close_old
 when concept=road.close pair.mem.h7_said=old
-say And the roads were safe? | Spring's a long way. | Were they? | Like the weather. Aye.
+say Maybe so. | I hope you're right. | Times change, and not for the better.
 
 rule h7_rd_close_pray
 when concept=road.close pair.mem.h7_said=pray
-say Pray harder. | And a spear, with the prayer. | Pray they come home. | I'll come with you.
+say Pray harder. | And a spear, with the prayer. | Pray they come home. | Aye. Gods keep them.
 
 rule h7_rd_close_chance
 when concept=road.close pair.mem.h7_said=chance
@@ -675,31 +762,35 @@ rule h7_rd_close_joke
 when concept=road.close pair.mem.h7_said=joke
 say That's grim. | Ha. Don't. | You'd joke at your own wake. | Very funny.
 
-############################################################################ Want: openers (one in want tells or asks)
+############################################################################ Want: openers (one in want tells or asks; pair.mem.wn says what)
 
 rule h7_wn_open_loan
-when concept=talk.friends|talk.smalltalk self.wealth=destitute other.wealth=comfortable|rich pair.band=friends|family|acquaintances
-cooldown 3d
+when concept=talk.friends|talk.smalltalk self.wealth=destitute other.wealth=comfortable|rich pair.band=friends|family|acquaintances self.stage=adult|old
 priority 1
+cooldown 3d
 say I hate to ask. Could you lend me a little? | Just till Restday. A few pennies. I'll pay it back. | I'm short. Very short. Could you see your way? | I've never asked you for anything. I'm asking now.
+remember pair: wn=loan 30m
 then other: want.answer
 
 rule h7_wn_open_hungry
 when concept=talk.friends|talk.smalltalk|talk.day self.hungry=yes self.wealth=poor|destitute
 cooldown 2d
 say I've not eaten since yesterday morning. | You've not got a crust? Anything? | I'm that hungry I could eat the cobbles. | Is it wrong to steal bread? Asking for a friend. The friend is me.
+remember pair: wn=hungry 30m
 then other: want.answer
 
 rule h7_wn_open_dole
-when concept=talk.smalltalk|talk.day self.on_dole=yes
+when concept=talk.smalltalk|talk.day self.on_dole=yes self.stage=adult|old
 cooldown 2d
-say I'm on #dole# now. You'll have seen me in the line. | Two hours for the parish loaf. And it was yesterday's. | Never thought I'd queue for bread. | The priest knows my name now. From the line.
+say I'm on #dole# now. You'll have seen me in the line. | Two hours for the parish loaf, and it was yesterday's. | Never thought I'd queue for bread. | The priest knows my name now. From the line.
+remember pair: wn=dole 30m
 then other: want.answer
 
 rule h7_wn_open_owes
-when concept=talk.smalltalk|talk.friends self.owes=yes
+when concept=talk.smalltalk|talk.friends self.owes=yes self.stage=adult|old
 cooldown 2d
 say The lender came round. With a friend. A big friend. | I owe more than I own. Don't tell anyone. | I can't pay. I can't. What do I do? | If I go missing, the lender's had me.
+remember pair: wn=owes 30m
 then other: want.answer
 
 rule h7_wn_open_homeless
@@ -707,20 +798,23 @@ when concept=talk.smalltalk|talk.friends|talk.day self.homeless=yes
 cooldown 1d
 priority 1
 say I've nowhere to sleep tonight. | They put my things out in the street. | I've been sleeping in the market. Under a stall. | You've not got a corner? A floor? Anything?
+remember pair: wn=homeless 30m
 then other: want.answer
 
 rule h7_wn_open_failing
 when concept=talk.smalltalk|talk.work self.business=failing self.wealth=poor|destitute
 cooldown 2d
 priority 1
-say The shop's finished. I'll be selling the shelves next. | Nobody's buying, and the rent's due. | I've stock rotting and no coin for bread. | I'll be on #dole# by the month's end. Me. With a shop.
+say The business is finished. I'll be selling the shelves next. | Nobody's buying, and the rent's due. | I've stock rotting and no coin for bread. | I'll be on #dole# by the month's end. Me. With a trade.
+remember pair: wn=failing 30m
 then other: want.answer
 
 rule h7_wn_open_hurt
-when concept=talk.smalltalk|talk.day|talk.friends self.injured=bad
-cooldown 12h
+when concept=talk.smalltalk|talk.day|talk.friends self.injured=bad self.stage=adult|old
 priority 1
+cooldown 12h
 say I can't work like this. And if I don't work, I don't eat. | Look at my arm. How do I lift a sack with that? | The healer wants paying. With what? | I'll lose my place if I'm off a week.
+remember pair: wn=hurt 30m
 then other: want.answer
 
 rule h7_wn_open_robbed
@@ -728,18 +822,21 @@ when concept=talk.smalltalk|talk.day|talk.friends self.robbed=yes self.wealth=po
 cooldown 12h
 priority 1
 say They took the little I had. All of it. | Robbed. And I'd nothing to start with. | The rent was in that purse. The rent! | Whoever took it, I hope they choke on it.
+remember pair: wn=robbed 30m
 then other: want.answer
 
 rule h7_wn_open_old_poor
 when concept=talk.smalltalk|talk.day self.stage=old self.wealth=poor|destitute
 cooldown 2d
-say Sixty years' work and nothing to show. Nothing. | I'm too old for the work and too young to die. | My pups are gone and the pot's empty. | When I can't work, I'll go to the chapel steps. That's all.
+say A lifetime's work and nothing to show. Nothing. | I'm too old for the work and too young to die. | My pups are grown and gone, and the pot's empty. | When I can't work, I'll go to the chapel steps. That's all there is.
+remember pair: wn=old 30m
 then other: want.answer
 
 rule h7_wn_open_parent
-when concept=talk.smalltalk|talk.family|talk.friends self.parent=yes self.wealth=poor|destitute
+when concept=talk.smalltalk|talk.family|talk.friends self.parent=yes self.age<=45 self.wealth=poor|destitute
 cooldown 2d
 say The pups went to bed hungry again. | I gave mine my supper. They didn't know. | How do you tell a pup there's no more? | My little one asked why we're poor. I'd no answer.
+remember pair: wn=pups 30m
 then other: want.answer
 
 ############################################################################ Want: answers (self is the one answering)
@@ -764,37 +861,37 @@ then other: want.close
 
 rule h7_wn_ans_rich
 when concept=want.answer self.wealth=rich
-say A few pennies. Here. Don't mention it. | Perhaps I could find you some work. Something. | Dreadful. The times are dreadful. | You should have come to me sooner.
+say A few pennies. Here. Don't mention it. | Perhaps I could find you some work. Something. | Here. Take this, and don't argue. | You should have come to me sooner. Here.
 remember pair: h7_said=give 30m
 then other: want.close
 
 rule h7_wn_ans_comfortable
 when concept=want.answer self.wealth=comfortable
-say I can spare a little. Not much. | I've a loaf at home. It's yours. | We're not flush ourselves, but here. | I'll ask about. Someone needs a pair of paws.
+say I can spare a little. Not much. Here. | I've a loaf at home. It's yours. | We're not flush ourselves, but here. | Here. It's not much, but it's yours.
 remember pair: h7_said=give 30m
 then other: want.close
 
 rule h7_wn_ans_poor
 when concept=want.answer self.wealth=poor|destitute
-say I'd give you half if I had a whole. | Me too. Me too. | We'll starve together, then. Better company. | I've a turnip. A small one. It's yours.
+say I'd give you half if I had a whole. | We're in the same boat, you and I. Both bailing. | I've a turnip. A small one. It's yours. | If I had it, it'd be yours.
 remember pair: h7_said=same 30m
 then other: want.close
 
 rule h7_wn_ans_sly
-when concept=want.answer self.honesty=sly
+when concept=want.answer self.honesty=sly pair.mem.wn=loan|hungry|owes|failing|robbed|dole
 say I could lend. At a fair rate. Very fair. | I might know someone who pays for odd jobs. Don't ask what. | What have you got to sell? | There's always a way. If you're not fussy.
 remember pair: h7_said=sly 30m
 then other: want.close
 
 rule h7_wn_ans_frank
-when concept=want.answer self.honesty=frank
+when concept=want.answer self.honesty=frank pair.mem.wn=loan|owes|failing|dole
 say You should've come to me before it got this bad. | You've known this was coming. So have I. | I'll help. But you'll listen first. | Pride got you here. Leave it at the door.
 remember pair: h7_said=scold 30m
 then other: want.close
 
 rule h7_wn_ans_devout
 when concept=want.answer self.piety=devout
-say The chapel feeds anyone who asks. I'll take you. | The gods test the ones they love. | Pray with me. Then we'll find you bread. | The Bright One sees. I'll speak to the priest.
+say The chapel feeds anyone who asks. I'll take you. | The gods test the ones they love. | Pray with me. Then we'll find you bread. | The Bright One sees. I'll speak to the chaplain.
 remember pair: h7_said=pray 30m
 then other: want.close
 
@@ -805,13 +902,19 @@ remember pair: h7_said=refuse 30m
 then other: want.close
 
 rule h7_wn_ans_guard
-when concept=want.answer self.role=guard
-say The captain's hiring porters for the watch-house. It's work. | Don't do anything stupid. I'd have to take you in. | Go to the chapel before dark. Tell them I sent you. | If anyone gives you trouble over it, you send for me.
+when concept=want.answer self.role=guard pair.mem.wn=hungry|dole|owes|homeless|loan|pups|old|failing
+say The captain wants porters at the watch post. It's work. | Don't do anything stupid. I'd have to take you in. | Go to the chapel before dark. Tell them I sent you. | If anyone gives you trouble over it, you send for me.
 remember pair: h7_said=duty 30m
 then other: want.close
 
+rule h7_wn_ans_guard_robbed
+when concept=want.answer self.role=guard pair.mem.wn=robbed
+say Did you see who took it? Tell me everything. | When was this? Where? | Come by the watch post and we'll write it down.
+remember pair: h7_said=ask 30m
+then other: want.close
+
 rule h7_wn_ans_dry
-when concept=want.answer self.humour=dry
+when concept=want.answer self.humour=dry pair.mem.wn=loan|hungry|dole|owes|failing|robbed|homeless
 say Cheer up. You can't get much poorer. | At least you're not rich. All that worry. | Look on the bright side. There isn't one. | Think how thin you'll be.
 remember pair: h7_said=joke 30m
 then other: want.close
@@ -823,14 +926,20 @@ remember pair: h7_said=same 30m
 then other: want.close
 
 rule h7_wn_ans_baker
-when concept=want.answer self.job=baker|cook
+when concept=want.answer self.job=baker|cook pair.mem.wn=hungry|dole|pups|homeless|old|robbed|loan
 say There's ends at the back. Come by at dusk. | I've a loaf with a burnt bottom. It's yours. | I'll put something by. Don't tell the others. | Bread I've got. Coin I haven't.
 remember pair: h7_said=give 30m
 then other: want.close
 
+rule h7_wn_ans_healer_hurt
+when concept=want.answer self.job=healer pair.mem.wn=hurt
+say Come and see me. No charge. Don't argue. | Keep it still, keep it clean, and come to me tomorrow. | I'll see to you. Pay me when you can. Or don't.
+remember pair: h7_said=mend 30m
+then other: want.close
+
 rule h7_wn_ans_healer
-when concept=want.answer self.job=healer
-say Come and see me. No charge. Don't argue. | Eat something before you fall. That's a healer's order. | I'll see to you. Pay me when you can. Or don't. | Hunger's a sickness too. I'll write you to the chapel.
+when concept=want.answer self.job=healer pair.mem.wn=hungry|pups|dole|homeless
+say Eat something before you fall. That's a healer's order. | Hunger's a sickness too. I'll send word to the chapel for you. | Come by mine. There's broth, and nobody counts the bowls.
 remember pair: h7_said=give 30m
 then other: want.close
 
@@ -851,8 +960,8 @@ when concept=want.close pair.mem.h7_said=give
 say I... thank you. I'll not forget it. | You're too good to me. | I'll pay it back. Every penny. | I don't know what to say.
 
 rule h7_wn_close_give_proud
-when concept=want.close pair.mem.h7_said=give self.temper=short|even
-say I didn't ask for charity. ... Thank you. | I'll take it. I hate taking it. Thank you. | Don't tell anyone. Please.
+when concept=want.close pair.mem.h7_said=give self.temper=short
+say I'll take it. I hate taking it. Thank you. | Don't tell anyone. Please. | I'll pay it back. I will. Don't look at me like that.
 
 rule h7_wn_close_refuse
 when concept=want.close pair.mem.h7_said=refuse
@@ -868,7 +977,7 @@ say Look at us. | Two of a kind. | We'll get through. Somehow. | At least we've 
 
 rule h7_wn_close_sly
 when concept=want.close pair.mem.h7_said=sly
-say I'm not that desperate. Yet. | What sort of jobs? | Never mind. Never mind. | Your rates'd bury me.
+say I'm not that desperate. Yet. | What sort of jobs? | Never mind. Never mind. | I'd sooner starve honest.
 
 rule h7_wn_close_scold
 when concept=want.close pair.mem.h7_said=scold
@@ -880,7 +989,11 @@ say Bread first. Then the gods. | I'll go. Thank you. | The gods can test someon
 
 rule h7_wn_close_duty
 when concept=want.close pair.mem.h7_said=duty
-say I'll go. Thank you. | Stupid? Me? | I'll go before dark. | I might. Thank you.
+say I'll go. Thank you. | I'm not a thief. Not yet. | I'll go before dark. | I might. Thank you.
+
+rule h7_wn_close_ask
+when concept=want.close pair.mem.h7_said=ask
+say It was too quick. I saw nothing. | Last night. By the well. | Everything I had. Everything.
 
 rule h7_wn_close_joke
 when concept=want.close pair.mem.h7_said=joke
@@ -888,13 +1001,17 @@ say Ha. Thank you. I think. | That's cruel. And true. | You're no help at all. |
 
 rule h7_wn_close_old
 when concept=want.close pair.mem.h7_said=old
-say Nettles. Gods. | I'll try. | It had better pass. | Tail down. Aye.
+say I'll try. | It had better pass. | Easy said, at your age. | Aye. I suppose you've seen worse.
 
-############################################################################ Strangers: openers (talk.player)
+rule h7_wn_close_mend
+when concept=want.close pair.mem.h7_said=mend
+say Thank you. I'll come tomorrow. | Bless you. I'll come. | You're a good soul.
+
+############################################################################ Strangers: openers (talk.player; topic.subject is a name they were given, or "that grey stranger")
 
 rule h7_st_open
-when concept=talk.player
-say Who's #topic.subject#, do you think? | See #topic.subject#? | There's #topic.subject# again. | Look. #topic.subject#.
+when concept=talk.player topic.known=yes
+say #topic.subject#'s about again. | Look. #topic.subject#. | Look who's back. #topic.subject#. | See #topic.subject# over there?
 then other: stranger.answer
 
 rule h7_st_open_unknown
@@ -917,7 +1034,7 @@ then other: stranger.answer
 rule h7_st_open_guard
 when concept=talk.player self.role=guard
 cooldown 1d
-say I've been told to keep an eye on #topic.subject#. | #topic.subject#. Know anything? | Seen #topic.subject# making trouble? | I like to know who's in my streets. Who's #topic.subject#?
+say I've been told to keep an eye on #topic.subject#. | #topic.subject#. Know anything? | Seen #topic.subject# making trouble? | I like to know who's in my streets. What about #topic.subject#?
 then other: stranger.answer
 
 rule h7_st_open_robbed
@@ -996,7 +1113,7 @@ then other: stranger.close
 
 rule h7_st_ans_devout
 when concept=stranger.answer self.piety=devout
-say Kindness to the stranger. It's written. | The gods send travellers to test us. | I'll pray for their road. | They should come to the chapel. All are welcome.
+say We were all strangers somewhere once. | The gods send travellers to test us. | I'll pray for their road. | They should come to the chapel. All are welcome.
 remember pair: h7_said=kind 30m
 then other: stranger.close
 
@@ -1004,6 +1121,10 @@ then other: stranger.close
 
 rule h7_st_close_any
 when concept=stranger.close
+say Maybe. | We'll see. | Aye. | Hm.
+
+rule h7_st_close_shrug
+when concept=stranger.close pair.mem.h7_said=shrug
 say Maybe. | We'll see. | Aye. | Well. There they are.
 
 rule h7_st_close_duty
@@ -1032,11 +1153,11 @@ say And sleep in ditches? | The wind gets cold. | You'd last a day. | Go, then. 
 
 rule h7_st_close_young
 when concept=stranger.close pair.mem.h7_said=young
-say Leave them be, pup. | Maybe. Maybe not. | Not now. | Only if they're nice.
+say Ha. Maybe, pup. | You'll have to ask them. | Calm down, little one. | One day, maybe.
 
 rule h7_st_close_hire
 when concept=stranger.close pair.mem.h7_said=hire
-say Everyone has a price. | Then ask. | And trust them how? | You'd hire the moon if it'd carry your parcels.
+say Everyone can be bought. The question's how dear. | Then ask. | And trust them how? | You'd hire the moon if it'd carry your parcels.
 
 rule h7_st_close_admire
 when concept=stranger.close pair.mem.h7_said=admire
@@ -1044,11 +1165,11 @@ say Good. We need more like that. | I'll buy them a drink, if I see them. | Let'
 
 rule h7_st_close_outdone
 when concept=stranger.close pair.mem.h7_said=outdone
-say Then ride out yourselves. | Be friendly, mind. | Sour suits them. | Saves you a ride and a fright.
+say Then ride out yourselves next time. | Sour suits you. | Somebody had to. | Ha. Jealous?
 
 rule h7_st_close_pray
 when concept=stranger.close pair.mem.h7_said=pray
-say Amen to that. | Thank them too. Not just the gods. | The gods and a strong arm. | If you say so.
+say Bless them, aye. | Thank them too. Not just the gods. | The gods and a strong arm. | If you say so.
 
 rule h7_st_close_doubt
 when concept=stranger.close pair.mem.h7_said=doubt
@@ -1058,16 +1179,20 @@ rule h7_st_close_doubt_frank
 when concept=stranger.close pair.mem.h7_said=doubt self.honesty=frank
 say I know the wolf who saw it. I'd trust them with my life. | You weren't there. Nor was I. But I believe them.
 
-############################################################################ Deeds: openers and answers
+rule h7_st_close_road
+when concept=stranger.close pair.mem.h7_said=road
+say Aye. If only. | Someone should ask them. | I'd chip in, if somebody asked.
+
+############################################################################ Deeds: openers and answers (talk.deed: topic.subject, topic.deed, topic.nickname)
 
 rule h7_dd_open
 when concept=talk.deed
-say You'll like this. #topic.subject# #topic.deed#. | Did you hear what #topic.subject# did? They #topic.deed#. | They're saying #topic.subject# #topic.deed#. | I heard #topic.subject# #topic.deed#.
+say You'll like this. #topic.subject# #topic.deed#. | Have you heard about #topic.subject#? They #topic.deed#. | Word is #topic.subject# #topic.deed#. | I heard #topic.subject# #topic.deed#.
 then other: deed.answer
 
 rule h7_dd_open_nickname
 when concept=talk.deed topic.has_nickname=yes
-say #topic.nickname#, they call them now. Because they #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. They #topic.deed#. | They've a name now. #topic.nickname#. | #topic.subject# #topic.deed#. Folk call them #topic.nickname# for it.
+say #topic.nickname#, they call them now. Because they #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. They #topic.deed#. | #topic.subject# #topic.deed#. Folk call them #topic.nickname# for it.
 then other: deed.answer
 
 rule h7_dd_open_poor
@@ -1096,7 +1221,7 @@ then other: stranger.close
 
 rule h7_dd_ans_guard
 when concept=deed.answer self.role=guard
-say Doing our job. Better than us, apparently. | I'd like a word with them. A friendly one. | The captain'll hear of it. They'll be sour. | Good. Saves us a ride.
+say Doing our job. Better than us, apparently. | Saves us a ride, I suppose. | Hmph. They should've left it to the Watch. | Well. I'll not complain.
 remember pair: h7_said=outdone 30m
 then other: stranger.close
 
@@ -1108,7 +1233,7 @@ then other: stranger.close
 
 rule h7_dd_ans_devout
 when concept=deed.answer self.piety=devout
-say The gods work through such folk. | I'll give thanks on Restday. | That's the Bright One's hand. | Bless them. Bless them.
+say The gods work through such folk. | I'll give thanks on Restday. | That's the Bright One's paw in it. | Bless them. Bless them.
 remember pair: h7_said=pray 30m
 then other: stranger.close
 
@@ -1121,45 +1246,48 @@ then other: stranger.close
 rule h7_dd_ans_bandits
 when concept=deed.answer world.bandits=near
 say Now if they'd do the same for the road. | Ask them to have a go at the #bandits#. | We could use them here. With the road as it is. | Someone like that, and the road might open.
-remember pair: h7_said=hire 30m
+remember pair: h7_said=road 30m
 then other: stranger.close
 
-############################################################################ How they're keeping, in hard times (more answers to keeping.sorry)
+############################################################################ How they're keeping, in hard times (more answers to keeping.sorry and keeping.nod)
+# keeping.sorry follows the other's own answer, which is about the worst thing they have (mourning, then a bad
+# injury or no home, then a robbery, hunger, want or a failing business, then the dole or debts): each of these
+# answers holds only when that is what the other will have spoken of.
 
 rule h7_sorry_healer
-when concept=keeping.sorry self.job=healer other.injured=light|bad
-say Come by. Let me look at it properly. | Keep it clean and keep it still. I mean it. | That wants a poultice. Tonight. | You're walking on it? Sit down this minute.
+when concept=keeping.sorry self.job=healer other.injured=bad other.mourning=no other.homeless=no
+say Come by. Let me look at it properly. | Keep it clean and keep it still. I mean it. | That wants a poultice. Tonight. | You're walking on it? Sit down this instant.
 
 rule h7_sorry_guard_robbed
-when concept=keeping.sorry self.role=guard other.robbed=yes
-say Tell me everything. Slowly. What, where, when. | We'll find them. Or I'll know why not. | Did you see their face? Their coat? Anything? | Come by the watch-house. We'll write it down.
+when concept=keeping.sorry self.role=guard other.robbed=yes other.mourning=no other.injured!=bad other.homeless=no other.hungry=no other.wealth!=destitute other.business!=failing
+say Tell me everything. Slowly. What, where, when. | We'll find them. Or I'll know why not. | Did you see their face? Their coat? Anything? | Come by the watch post. We'll write it down.
 
 rule h7_sorry_priest_mourning
-when concept=keeping.sorry self.job=priest other.mourning=kin|friend
+when concept=keeping.sorry self.job=priest other.mourning=kin|friend other.injured!=bad other.homeless=no
 say Come to the chapel tonight. Just to sit. | They're at peace. You're the one I worry for. | Grief's the price of love. You paid it gladly. | I'll come by tomorrow. Leave the door on the latch.
 
 rule h7_sorry_homeless_both
-when concept=keeping.sorry self.homeless=yes other.homeless=yes
+when concept=keeping.sorry self.homeless=yes other.homeless=yes other.mourning=no other.injured!=bad
 say There's a dry spot under the granary eaves. Room for two. | Stay near me tonight. It's warmer, two. | The chapel porch, if we're quick. | We'll find somewhere. We always do.
 
 rule h7_sorry_hungry_both
-when concept=keeping.sorry self.hungry=yes other.hungry=yes
+when concept=keeping.sorry self.hungry=yes other.hungry=yes other.mourning=no other.injured!=bad other.homeless=no other.robbed=no
 say Me too. My belly's been arguing all day. | We'll find something. Together. | Two empty pots. | Don't talk about it. It makes it worse.
 
 rule h7_sorry_rich_cold_dole
-when concept=keeping.sorry self.wealth=rich self.warmth=cold other.on_dole=yes
+when concept=keeping.sorry self.wealth=rich self.warmth=cold other.on_dole=yes other.mourning=no other.injured!=bad other.robbed=no other.homeless=no
 say Well. That's what the parish is for. | One does give to the chapel, you know. | I'm sure it's only temporary. | Hm. Quite.
 
 rule h7_sorry_dole_both
-when concept=keeping.sorry self.on_dole=yes other.on_dole=yes
+when concept=keeping.sorry self.on_dole=yes other.on_dole=yes other.mourning=no other.injured!=bad other.robbed=no other.homeless=no
 say I'll save you a place in the line. | See you at the chapel door, then. | At least the line's good company. | Bring a sack. They've turnips Restday.
 
 rule h7_sorry_owes_both
-when concept=keeping.sorry self.owes=yes other.owes=yes
+when concept=keeping.sorry self.owes=yes other.owes=yes other.mourning=no other.injured!=bad other.robbed=no other.homeless=no other.hungry=no other.wealth!=destitute other.business!=failing other.on_dole=no
 say Same lender? | We should hide together. Cheaper. | I owe too. We'll go down together. | Don't answer the door. That's my advice.
 
-rule h7_sorry_fought_short
-when concept=keeping.sorry self.temper=short other.fought=yes
+rule h7_nod_fought_short
+when concept=keeping.nod self.temper=short other.fought=yes other.injured!=light
 say Who was it? Tell me who. | Did you win, at least? | Next time, call me first. | I'd have finished it for you.
 
 ############################################################################ Reactions and barks, in hard times
@@ -1194,7 +1322,7 @@ say Gods forgive them. Stop! | Peace! In the gods' names, peace! | Brothers! Sis
 
 rule h7_react_fight_dry
 when concept=react.fight humour=dry
-say Lovely. Entertainment. | Two coppers on the short one. | Ah. The evening's begun. | Somebody fetch a bucket. Of water. Or ale.
+say Lovely. Entertainment. | Two pennies on the short one. | Ah. The evening's begun. | Somebody fetch a bucket. Of water. Or ale.
 
 rule h7_react_struck_light
 when concept=react.struck injured=light
@@ -1213,7 +1341,7 @@ say Nobody out past the milestones after dusk! | Travelling? In company only. He
 rule h7_bark_merchant_bandits
 when concept=bark role=merchant world.bandits=near here.place=market
 cooldown 6h
-say Buy now! Next cart may never come! | Salt! Last of the salt till the road's clear! | Prices are the road's fault, not mine! | Get it while there's some to get!
+say Buy now! Next cart may never come! | Last of the stock till the road's clear! | Prices are the road's fault, not mine! | Get it while there's some to get!
 
 rule h7_bark_destitute_beg
 when concept=bark wealth=destitute here.place=street|market|gate|chapel

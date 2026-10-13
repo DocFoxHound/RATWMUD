@@ -8,7 +8,7 @@
 scene h7_theft_inventory
 when topic=crime topic.kind=theft
 a : #topic.victim# was robbed. Took the good kettle, they say. | They cleaned out #topic.victim#. Down to the spoons. | #topic.victim# lost a purse. A fat one, apparently. | Somebody had #topic.victim#'s winter coat off the peg.
-b : A kettle? Who steals a kettle? | Spoons. Gods. Were they silver? | Fat? #topic.victim#? Since when? | In this #cold#? That's cruel.
+b : A kettle? Who steals a kettle? | Spoons. Gods. Were they silver? | Fat? #topic.victim#? Since when? | With winter coming? That's cruel.
 a : Someone with no kettle, I suppose. | Tin. That's what makes it sad. | That's what I said. Must've been saving. | Cruel and warm, now.
 b : Well. Lock yours up. | Tin. Gods help us. | Not anymore, they're not. | Warm and wicked. Lovely.
 
@@ -16,11 +16,11 @@ scene h7_theft_night_noise
 when topic=crime topic.kind=theft
 a : Did you hear anything the night #topic.victim# was robbed? | I heard dogs going, the night of #topic.victim#. | My ears pricked at something that night. Thought it was the wind. | Funny. I slept like a log the night they robbed #topic.victim#.
 b : I sleep like the dead. | Dogs always go. Means nothing. | Probably was the wind. | Lucky you. I never sleep.
-a : That's what worries me. | They went for a reason that night. | Wind doesn't take purses. | I will now. Ears open all night.
+a : That's what worries me. | They went for a reason that night. | Wind doesn't take purses. | Nor will I, now. Ears open all night.
 b : Get a bell on your door. | Ask the dogs, then. | Nor does it give them back. | You'll be no good to anyone.
 
 scene h7_theft_safest_house
-when topic=crime topic.kind=theft
+when topic=crime topic.kind=theft b.wealth=poor|destitute
 a : Thieves about. #topic.victim#'s been done. | They robbed #topic.victim#. Should I worry? | Lock your door tonight. #topic.victim# got robbed. | #topic.victim#. Robbed. Who's next, eh?
 b : Let them come to mine. They'll leave me something. | Have you anything worth taking? | I've nothing to lock in. | Not me. I've a hole in the roof and nothing under it.
 a : Ha! A thief with a conscience. | A good pot and my mother's ring. | Lock yourself in, then. | Safest house in town, yours.
@@ -37,8 +37,8 @@ scene h7_theft_rumour_grows
 when topic=crime topic.kind=theft
 a : I heard three of them did #topic.victim#. | #topic.victim# says it was a gang. | They say it happened at noon, bold as you like. | #topic.victim#'s been telling it at every door.
 b : I heard one. A small one. | A gang of one, I heard. | Noon? I heard midnight. | It'll be ten thieves by Restday.
-a : Three by the time it got to me. | That's how it starts. | By supper it'll be dawn and dragons. | And a dragon by market day.
-b : Ten by the time it gets to the next street. | Then it's a gang of twelve. | Whatever it was, it's gone. | With a crown on.
+a : Three by the time it got to me. | That's how it starts. | By supper it'll be dawn and a troop of horsemen. | And a bear by market day.
+b : Ten by the time it gets to the next street. | Then it's a gang of twelve. | Whatever it was, it's gone. | A bear with a crown on.
 
 scene h7_theft_victim_character
 when topic=crime topic.kind=theft
@@ -54,8 +54,8 @@ scene h7_theft_paws
 when topic=crime topic.kind=theft
 a : I keep my purse inside my coat since #topic.victim#. | Since #topic.victim# was robbed I count my coins twice. | I sewed a pocket in my shirt after what happened to #topic.victim#. | I've started carrying everything I own. Since #topic.victim#.
 b : Inside the coat's where they look first. | And you still come up short. | Clever. Show me. | That's not much to carry, is it?
-a : Where, then? My boot? | Every time. That's the dole for you. | Later. There's eyes everywhere. | Thank you. It's a comfort.
-b : Under your tongue. | It's the counting that's short. | You trust nobody now. Good. | It's light, at least.
+a : Where, then? My boot? | Every time. I'm no good at sums. | Later. There's eyes everywhere. | Thank you. It's a comfort.
+b : Under your tongue. | It's the counting that's short, then. | You trust nobody now. Good. | It's light, at least.
 
 scene h7_theft_market_watch
 when topic=crime topic.kind=theft here.place=market|street
@@ -106,9 +106,9 @@ b@guard : Dream quietly.
 b : Makes you wonder about everyone. | I might. | Folk with grudges, more like. | Let #watch# prove it, then.
 
 scene h7_theft_named_friend
-when topic=crime topic.kind=theft topic.subject!=someone pair.band=friends|family|spouses
+when topic=crime topic.kind=theft topic.subject!=someone pair.band=family|spouses
 a : They say #topic.subject# did #topic.victim#. We've had #topic.subject# at our fire. | #topic.subject#. Robbing #topic.victim#. Did you ever think it? | #topic.subject# sat at our table last month. And now this. | Do you think #topic.subject# really robbed #topic.victim#?
-b : I counted the spoons after they left. I'm only now saying. | No. And I still don't. | Then count what's missing from ours. | Folk do things when they're desperate.
+b : I counted the spoons after they left. Never told you. | No. And I still don't. | Then count what's missing from ours. | Folk do things when they're desperate.
 a : You never said! | Me neither. Someone's lying. | I've checked. Nothing gone. | So they do. So they do.
 b : I'm saying now. | Then let's find out who. | Then they liked us. | Doesn't make it right.
 
@@ -161,9 +161,9 @@ when topic=crime topic.kind=assault
 a : The healer's been with #topic.victim# all morning. | Did you see #topic.victim# go by? Carried. | #topic.victim#'s abed and the healer won't say how long. | They had to fetch the healer to #topic.victim# in the night.
 b[healer] #healer : Ribs. Two cracked. They'll live, if they lie still. They won't lie still.
 b : That's never good. | Carried! | That means a long time. | In the night. Then it was bad.
-a@healer : Then sit on them. You've the weight for it.
+a@healer : Then sit on them. Somebody has to.
 a : No. | Like a sack of meal. | It does. | It was.
-b@healer : Cheek. I might, at that.
+b@healer : I might, at that.
 b : Send them something. | I hope they've folk to sit with them. | Gods mend them. | Poor soul.
 
 scene h7_assault_named
@@ -185,7 +185,7 @@ b : Look at everyone's paws tomorrow. | Watch your back. | Then I'll listen at t
 scene h7_arrest_what_now
 when topic=crime topic.kind=arrest
 a : They took #topic.subject#. What happens to them now? | #topic.subject#'s in #gaol#. Will they hang? | #watch# has #topic.subject#. What'll it be? | #topic.subject#, locked up. What do you think they'll get?
-b : A fine, if they're lucky. | Not for that. A flogging, maybe. | Depends who they know. | Depends who they robbed.
+b : A fine, if they're lucky. | Not for that. A flogging, maybe. | Depends who they know. | Depends who they crossed.
 a : They've never had a penny for a fine. | Gods. | Nobody, I should think. | Then it'll be bad.
 b : Then the stocks. | They'll mend. Backs do. | Then they'll learn what the cells smell like. | Very bad.
 
@@ -193,7 +193,7 @@ scene h7_arrest_guard_named
 when topic=crime topic.kind=arrest
 a : It was #topic.where# who took #topic.subject#. | #topic.where# of #watch# brought #topic.subject# in. | #topic.where# collared #topic.subject# in the street. | Did you see #topic.where# marching #topic.subject# off?
 b : #topic.where#? Good for them. | I'd not want #topic.where# after me. | In the street, for all to see. | I saw. #topic.subject# went quiet as a lamb.
-a : They'll be buying no drinks tonight. Everyone will. | Nor me. Jaws like a trap. | That's the point of it, I suppose. | Lambs go quiet too, before.
+a : They'll not buy their own drinks for a week. | Nor me. Jaws like a trap. | That's the point of it, I suppose. | Lambs go quiet too, before.
 b : I might buy one myself. | Then keep your nose clean. | Shame them into behaving. | Don't. That's grim.
 
 scene h7_arrest_family_left
@@ -248,12 +248,12 @@ when topic=life topic.kind=assault
 a : #topic.subject# and #topic.where# came to blows. | You heard #topic.subject# went for #topic.where#? | #topic.subject# struck #topic.where#. In the street. | Did you see #topic.where#'s face? That was #topic.subject#.
 b : Over what? | Went for them? With what? | In the street? Shameless. | I saw. #topic.subject#? Truly?
 a : Nobody can agree. | Paws and teeth, I heard. | Not a shred of shame. | Truly.
-b : Then I'll not guess. | Wolves, then. Not neighbours. | Some folk. | I'll never look at them the same.
+b : Then I'll not guess. | Like beasts. And they call themselves neighbours. | Some folk. | I'll never look at them the same.
 
 ## One's own crime news (talk.news, topic.news: robbed, struck, or a guard's arrest)
 
 scene h7_news_crime_after
-when topic=news topic.kind=crime
+when topic=news topic.kind=crime a.role!=guard
 a : #topic.news#. I keep checking the door. | #topic.news#. I've not slept right since. | You'll hear it anyway. #topic.news#. | #topic.news#. I feel such a fool.
 b[guard] #guard : Come by the watch-house. Tell it all again, slowly.
 b : Anyone would. | Nor would I. | Gods. Are you hurt? | Why a fool? It was done to you.
@@ -283,7 +283,7 @@ b@poor : And dogs behind them.
 b : I'm so sorry. | Then we'll start again. | Have mine. I've two. | No. But it's something.
 
 scene h7_news_crime_struck
-when topic=news topic.kind=crime a.fought=yes
+when topic=news topic.kind=crime a.fought=yes a.role!=guard
 a : #topic.news#. Look at me. | #topic.news#. I gave as good as I got. Nearly. | #topic.news#. Over nothing. | #topic.news#. My jaw's still clicking.
 b : Gods. Sit down. | Nearly? | It's never over nothing. | Stop talking, then.
 a : I'll not sit. I'll stiffen. | Nearly. They're worse. | It was nothing. Truly. | I can't. I'm too angry.
@@ -308,7 +308,7 @@ b : So does my pay. | Fair. I'm going. | Then you're as much use as I am. | It's
 scene h7_crime_rich_hang
 when topic=crime topic.kind=theft a.wealth=rich
 a : Another theft. #topic.victim#. They should make an example. | #topic.victim#'s robbed. The rope's the only cure. | They want flogging, these thieves. | The Watch is too soft. Look at #topic.victim#.
-b[wealth=poor|destitute] #poor : Easy to say from up the hill. Some of them steal to eat.
+b[wealth=poor|destitute] #poor : Easy to say with a full larder. Some of them steal to eat.
 b[guard] #guard : We do what the law lets us. No more.
 b : An example of what? | The rope's a hard cure. | Flogging doesn't put food in a belly. | Soft? They're run off their feet.
 a@poor : Then let them eat what's theirs.
@@ -329,7 +329,7 @@ scene h7_crime_also_robbed
 when topic=crime topic.kind=theft b.robbed=yes
 a : #topic.victim#'s been robbed too. | Did you hear? #topic.victim#. Same as you. | Another one, #topic.victim#. Like you. | They've done #topic.victim# now.
 b : Same #thief#, I'd bet my teeth. | Then it's the same one. Has to be. | Good. Now they'll listen. | I hope #topic.victim# gets theirs back. I won't.
-a : Your teeth's all you've got left. | Tell #watch#. | Somebody had better. | You might.
+a : Your teeth are all you've got left. | Tell #watch#. | Somebody had better. | You might.
 b : Don't. It's not funny. Well. A little. | I've told them twice. | They won't. | I won't.
 
 scene h7_crime_bandits_in_town
@@ -349,13 +349,13 @@ b : I'm walking. | And ears. | I'm not. | It's a cat. Come on.
 scene h7_crime_devout
 when topic=crime topic.kind=theft a.piety=devout
 a : I'll light a candle for #topic.victim#. And one for the #thief#. | The Bright One sees who robbed #topic.victim#. | I'll pray for #topic.victim#'s #thief#. Truly. | They robbed #topic.victim#. On a chapel day, near enough.
-b : The #thief#? Why them? | Then the Bright One should tell #watch#. | Pray they're caught, I hope. | Thieves don't keep the calendar.
+b : The #thief#? Why them? | Then the Bright One should tell #watch#. | Pray they're caught, I hope you mean. | Thieves don't keep the calendar.
 a : They need it more. | Ha. Don't. | Pray they're sorry. | All the more reason.
 b : Not my candles, they don't. | I'll not. | Sorry and caught, then. | If you say so.
 
 scene h7_crime_dry
 when topic=crime topic.kind=theft a.humour=dry
-a : #topic.victim#'s robbed. At last, someone in this town's doing well. | Someone's done well out of #topic.victim#. Good for the economy. | A #thief# took #topic.victim#'s things. Hope they like them. | Robbed #topic.victim#. They must've been desperate.
+a : #topic.victim#'s robbed. At last, someone in this town's doing well. | Someone's done well out of #topic.victim#. Good for trade. | A #thief# took #topic.victim#'s things. Hope they like them. | Robbed #topic.victim#. They must've been desperate.
 b : That's wicked. | Don't let #topic.victim# hear you. | They'll have a fine time with the old chair. | Why?
 a : It's true, though. | They've heard worse. From me. | Takes a strong #thief# to carry that. | Have you seen what #topic.victim# owns?
 b : True and wicked. | I'm sure. | Ha. | I'll not laugh. I won't.
@@ -387,14 +387,14 @@ b : Sometimes it is. Come here. | The best toys. | Big pups tell fibs. | When yo
 scene h7_crime_merchant
 when topic=crime topic.kind=theft a.role=merchant
 a : #topic.victim# robbed. Who's next, I ask you, but a stall? | Thieves and no customers. What a week. | A #thief# about, and I've a cash box like a drum. | After #topic.victim#, I sleep on the stock.
-b : Don't keep a box. Keep a dog. | Business that bad? | Then empty it more often. | Your back'll thank you.
-a : Dogs eat. | Worse. | I'd love to. Nothing to empty it into. | My back's past thanking.
-b : So do thieves. | It'll turn. | Then the #thief# gets nothing. | Then sleep on a softer stock.
+b : Don't keep a box. Keep it in your boot. | Business that bad? | Then empty it more often. | Your back'll thank you.
+a : Boots get stolen too. | Worse. | I'd love to. Nothing to empty it into. | My back's past thanking.
+b : Not off your feet, they don't. | It'll turn. | Then the #thief# gets nothing. | Then sleep on a softer stock.
 
 scene h7_crime_sump
 when topic=crime topic.kind=theft|assault here.region=ridgemere a.quarter=sump
-a : Down here they'd rob #topic.victim# and sell them back their own shoes. | Robbed? In the Sump that's called a Tuesday. | The Heights'll hear #topic.victim# was robbed and blame the Sump. | They always come looking in the Sump first.
-b : And they'd charge for the laces. | Today's a Tuesday. | They do anyway. | Because it's usually here.
+a : Down here they'd rob #topic.victim# and sell them back their own shoes. | Robbed? In the Sump that's just a Hearthday. | The Heights'll hear #topic.victim# was robbed and blame the Sump. | They always come looking in the Sump first.
+b : And they'd charge for the laces. | It is a Hearthday. | They do anyway. | Because it's usually here.
 a : Twice. | Then mind your shoes. | Let them. We've nothing. | Usually isn't always.
 b : We're a trading quarter, then. | I've none. | And they still take it. | Tell #watch# that.
 
@@ -405,5 +405,5 @@ b[wealth=poor|destitute] #poor : Thinkable enough to them, by the look of it.
 b : They keep to the hill already. | One pays for a great deal. | They kept two. | Clearly not.
 a@poor : I beg your pardon?
 a : Then they must keep to it harder. | And receives so little. | Then one's not enough. Three. | One must speak to someone.
-b@poor : Nothing. Nothing at all, ma'am^f. Sir^m.
+b@poor : Nothing. Nothing at all, #sir#.
 b : I'll mention it. | Quite. | Four, to be safe. | One always does.

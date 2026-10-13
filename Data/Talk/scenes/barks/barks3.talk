@@ -301,12 +301,15 @@ when concept=bark here.region=rain_coast
 a : Smoked herring! Wharf-smoked! | Rope! Ropewalk rope! | Mind the gutters, they're overflowing! | Rain again. Of course.
 
 scene bk3_ridgemere_sump
-when concept=bark here.region=ridgemere here.time=dusk|night
-a : Keep your purse close, friend. Sump's awake. | Lamp oil, cheap, no questions! | Who's got a dry corner for the night?
+when concept=bark here.region=ridgemere here.time=dusk|night a.quarter=sump
+a[guard] : Purses close, now. The Sump's awake. | Move along. Nothing for you down here after dark.
+a[merchant] : Lamp oil, cheap, no questions! | Candle-ends, a penny the bundle!
+a[wealth=destitute] : Who's got a dry corner for the night? | Spare a corner, anyone? Just till morning.
+a : Keep your purse close, friend. Sump's awake. | Mind the steps. Mind who's on them.
 
 scene bk3_serferro_river
-when concept=bark here.region=ridgemere
-a : Wine from the south! | Silk, real silk! | Fish from the Sound, still flapping! | Clean your boots before the chapel steps!
+when concept=bark here.region=ridgemere a.role=merchant a.working=yes
+a : Wine from the south! | Silk, real silk! | Fish from the Sound, still flapping! | Cider from Southmeadow, sweet as summer!
 
 scene bk3_serferro_official
 when concept=bark here.region=ridgemere a.job=official

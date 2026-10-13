@@ -102,6 +102,7 @@
     "has_nickname": ["yes", "no"],
     "subject": "text",
     "claim": "text",
+    "claim_kind": ["death", "marriage", "violence", "theft", "victim", "wanted", "bandit", "promise_kept", "promise_broken", "prowling", "other"],
     "news": "text",
     "what": "text",
     "price": "text",

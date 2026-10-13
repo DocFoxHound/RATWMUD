@@ -2,38 +2,43 @@
 # grieving, hungry, flush, run off their feet, newly a parent), and the first answers that in kind (keeping.sorry,
 # keeping.glad, keeping.nod), as they are: the warm offer soup, the cold shrug, the poor envy the rich. Or one tells
 # the other, unasked, what's on their mind. Every beat is the speaker's own best rule, so one question has a hundred
-# answers. Drafts (phase 7), to tune by ear.
+# answers.
+#
+# Other files hand to keeping.sorry, keeping.glad and keeping.nod too, so their unkeyed rules must fit anything sad,
+# glad or ordinary. The lines here remember what kind of thing was said (pair.mem.k: grief, want, hurt, robbed, scrap,
+# good, family, jest, weary, old, hopes), and the replies keyed to it have priority 1, so a chain's best tier is always
+# a reply to what was actually said ("If it's a matter of money" never answers a death).
 
 ## Asking after them
 
 rule keep_ask
 when concept=talk.day|talk.friends pair.band=acquaintances|friends|rivals|apprentice
 cooldown 1d
-say How are you keeping? | And how are you, #address#? | Keeping well? | All well with you?
+say How are you keeping? | And how are you, #address#? | Keeping well? | All well with you? | How's the world treating you?
 then other: keeping.answer
 
 rule keep_ask_close
-when concept=talk.day|talk.friends pair.band=friends|family|spouses
+when concept=talk.day|talk.friends pair.band=friends|family|spouses self.stage=adult|old
 cooldown 1d
-say How are you keeping, #pet#? | You look done in, #pet#. All well? | Tell me how you are. Truly.
+say How are you keeping, #pet#? | Come on, then. How are you really? | Tell me how you are. Truly. | You've a look about you. All well?
 then other: keeping.answer
 
 rule keep_ask_chatty
 when concept=talk.day|talk.friends|talk.smalltalk self.talk=chatty pair.band=acquaintances|friends|rivals
 cooldown 1d
-say Now, how are you? I've not seen you in an age. | Come here, tell me everything. How are you? | You first. How are things?
+say Now, how are you? I've not seen you in an age. | Come here, tell me everything. How are you? | You first. How are things? | Well? Well? Don't keep me waiting. How are you?
 then other: keeping.answer
 
 rule keep_ask_formal
 when concept=talk.day self.tone=formal pair.band!=family|spouses
 cooldown 1d
-say I trust you're keeping well? | And how do you fare? | I hope I find you well.
+say I trust you're keeping well? | And how do you fare? | I hope I find you well. | I hope the season has been kind to you.
 then other: keeping.answer
 
 rule keep_ask_gruff
-when concept=talk.day self.tone=gruff
+when concept=talk.day self.tone=gruff pair.band!=strangers
 cooldown 1d
-say Still breathing, then? | You look terrible. | How's things.
+say Still breathing, then? | You look terrible. How are you? | How's things. | Not dead yet?
 then other: keeping.answer
 
 ## Answering, as they are (self is the one answering)
@@ -46,302 +51,357 @@ then other: keeping.nod
 rule keep_mourning_kin
 when concept=keeping.answer mourning=kin
 priority 4
-say ... Not well. Not well at all. | I keep setting a place at the table. | We buried one of ours. I'm still not right. | Don't. Please. I'll cry in the street.
+say ... Not well. Not well at all. | Their coat's still on the peg. I can't move it. | We buried one of ours. I'm still not right. | Don't. Please. I'll cry in the street.
 then other: keeping.sorry
+remember pair: k=grief 1m
 
 rule keep_mourning_friend
 when concept=keeping.answer mourning=friend
 priority 3
-say Lost a friend this week. It's sat on me. | Not so good. We lost someone. | You heard? About my friend? Aye. That.
+say Lost a friend this week. It's sat on me. | Not so good. We lost someone. | You heard? About my friend? Aye. That. | Every joke I hear, I think: they'd have liked that.
 then other: keeping.sorry
+remember pair: k=grief 1m
 
 rule keep_widowed
 when concept=keeping.answer widowed=yes
-say Quiet house, since. You get used to it. Mostly. | I talk to the walls now. They don't answer back, at least. | Getting by. It's the evenings.
+say Quiet house, since. You get used to it. Mostly. | I talk to the walls now. They don't answer back, at least. | Getting by. It's the evenings. | I still cook for two. The neighbour's dog is very fat.
 then other: keeping.sorry
+remember pair: k=grief 1m
 
 rule keep_hurt_bad
 when concept=keeping.answer injured=bad
 priority 3
-say Not well. #hurt.capitalize# all over. | Can you not see? I can barely stand. | I've been better. Much better. Gods.
+say Not well. #hurt.capitalize# all over. | Can you not see? I can barely stand. | I've been better. Much better. #oath#. | Every breath's a knife. Don't make me laugh.
 then other: keeping.sorry
+remember pair: k=hurt 1m
 
 rule keep_hurt_light
 when concept=keeping.answer injured=light
 priority 1
-say Bit #hurt#. Took a knock, nothing more. | Mending. Mind the paw. | Fine, but for the arm. It'll heal.
-then other: keeping.nod
+say Bit #hurt#. Took a knock, nothing more. | Mending. Mind the paw. | Fine, but for the foreleg. It'll heal. | Bruised. My pride most of all.
+then other: keeping.sorry
+remember pair: k=hurt 1m
 
 rule keep_robbed
 when concept=keeping.answer robbed=yes
 priority 2
-say Robbed! Took the lot. #robbery#. | Someone's been in my things. Took my #money#. | Furious. Robbed, in my own town.
+say Robbed! Took the lot. #robbery#. | Someone's been in my things. Took my #money#. | Furious. Robbed, in my own town. | I'd a purse this morning. I've a string now.
 then other: keeping.sorry
+remember pair: k=robbed 1m
 
 rule keep_fought
 when concept=keeping.answer fought=yes
 priority 1
-say Got into a scrap. You should see the other one. | Sore. There was a fight. Don't ask. | Better than the last one who tried me.
-then other: keeping.nod
+say Sore. There was a fight. Don't ask. | Got into a scrap. You should see the other one. | Someone came at me. I gave as good as I got. | Still shaking, if I'm honest. There was a fight.
+then other: keeping.sorry
+remember pair: k=scrap 1m
 
 rule keep_homeless
 when concept=keeping.answer homeless=yes
 priority 3
-say I've no roof, #address#. Sleeping where I can. | Out on my ear. Doorways, mostly. | Cold. Every night's cold without a door.
+say I've no roof, #address#. Sleeping where I can. | Out on my ear. Doorways, mostly. | Cold. Every night's cold without a door. | I sleep in the lee of the chapel. The stones keep the day's warmth a while.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_hungry
 when concept=keeping.answer hungry=yes
 priority 2
-say #hungry.capitalize#, if I'm honest. | Haven't eaten since yesterday. | My belly's eating itself.
+say #hungry.capitalize#, if I'm honest. | Haven't eaten since yesterday. | My belly's eating itself. | Light-headed. It's nothing a loaf wouldn't fix.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_destitute
 when concept=keeping.answer wealth=destitute
 priority 2
-say Down to my last pennies. Lower. | Nothing left to sell but the shirt. | Scraping, #address#. Scraping the pot.
+say Down to my last pennies. Lower. | Nothing left to sell but my coat. | Scraping, #address#. Scraping the pot. | I've pawned everything that'd pawn.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_poor
-when concept=keeping.answer wealth=poor
-say Getting by. Just. | Every #money# counted twice. | Making it last, as ever.
-then other: keeping.nod
+when concept=keeping.answer wealth=poor stage=adult|old
+say Getting by. Just. | Every #money# counted twice. | Making it last, as ever. | Rent's paid. That's the best I can say.
+then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_rich
 when concept=keeping.answer wealth=rich
-say Very well indeed. | Couldn't be better, thank you. | Oh, splendidly. A good year.
+say Very well indeed. | Couldn't be better, thank you. | Oh, splendidly. A good year. | Very well. We've had the house done.
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule keep_dole
 when concept=keeping.answer on_dole=yes
 priority 1
-say Living on the parish bread. It's bread. | On the dole. Don't look at me like that. | Queuing for loaves, like half the town.
+say Living on the parish bread. It's bread. | On the dole. Don't look at me like that. | Queuing for loaves, like half the town. | The parish feeds me. I'm grateful. I hate it.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_owes
 when concept=keeping.answer owes=yes
 priority 1
-say I owe more than I'm owed. Lie awake over it. | Debts, #address#. Debts on debts. | Ask me when I've paid what I owe.
+say I owe more than I'm owed. Lie awake over it. | Debts, #address#. Debts on debts. | Ask me when I've paid what I owe. | There's a fellow I owe who's taken to waiting by my door.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_business_thriving
 when concept=keeping.answer business=thriving
 priority 1
-say Run off my feet! Customers all day. | Never better. Can't keep the shelves full. | Busy, busy, busy. And glad of it.
+say Run off my feet! Customers all day. | Never better. Can't keep the shelves full. | Busy, busy, busy. And glad of it. | Sold out before noon three days running.
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule keep_business_failing
 when concept=keeping.answer business=failing
 priority 2
-say The shop's dying. Nobody's buying. | Three days without a sale. Three. | I'll be shut by the month's end, the way it's going.
+say The shop's dying. Nobody's buying. | Not a coin in the till since Fiveday. | Another month like this and I'm shut. | I stand at the counter and listen to the street go by.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_tired
 when concept=keeping.answer tired=yes
-say #tired.capitalize#. #very.capitalize# #tired#. | Ready for #bed#, and it's not even dark. | Dead on my paws.
+say #tired.capitalize#. #very.capitalize# #tired#. | Ready for #bed#, and it's not even dark. | Dead on my paws. | I could sleep on a fence.
 then other: keeping.nod
+remember pair: k=weary 1m
 
 rule keep_at_work
 when concept=keeping.answer working=yes shift=during
-say Busy. I'm at it now, look. | Can't stop long. #work.capitalize#. | Well, but working.
+say Busy. I'm at it now, look. | Can't stop long. #work.capitalize#. | Well, but working. | Well, if they'd let me finish a thing.
 then other: keeping.nod
 
 rule keep_day_off
 when concept=keeping.answer shift=day_off
-say Day off! I mean to do nothing at all. | Grand. No #work# today. | A day to myself. Imagine.
+say Day off! I mean to do nothing at all. | Grand. No #work# today. | A day to myself. Imagine. | Lovely. I slept till the sun was full up.
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule keep_spouse
 when concept=keeping.answer self.spouse
 cooldown 1d
-say We're well, #self.spouse# and I. Thank you. | Well. #self.spouse# sends their best, I'm sure. | Can't complain. #self.spouse# does that for both of us.
+say We're well, #self.spouse# and I. Thank you. | Well. #self.spouse# sends their best, I'm sure. | Can't complain. #self.spouse# does that for both of us. | Well. #self.spouse#'s cooking, so well fed.
 then other: keeping.glad
+remember pair: k=family 1m
 
 rule keep_parent
-when concept=keeping.answer self.child
+when concept=keeping.answer self.child self.age<=36
 cooldown 1d
-say Busy. #self.child# keeps me on my toes. | Tired. #self.child# was up half the night. | #self.child#'s growing like a weed. I'm well.
+say Busy. #self.child# keeps me on my toes. | Tired. #self.child# was up half the night. | #self.child#'s growing like a weed. I'm well. | Muddy. #self.child# found a puddle and brought it home.
 then other: keeping.glad
+remember pair: k=family 1m
+
+rule keep_parent_grown
+when concept=keeping.answer self.child self.age>=48
+cooldown 1d
+say Well. #self.child# came by on Restday. That makes a good week. | Proud. #self.child#'s doing well for themselves. | Well enough. #self.child# fusses over me now. Imagine. | Well. I've a grandpup on the way, they tell me.
+then other: keeping.glad
+remember pair: k=family 1m
 
 rule keep_apprentice
 when concept=keeping.answer apprentice=yes
-say My master works me to the bone. But I'm learning. | Sore hands. Learning, though. | Still sweeping more than making.
+say My master works me to the bone. But I'm learning. | Sore paws. Learning, though. | Still sweeping more than making. | I made a thing today that nobody threw away.
 then other: keeping.nod
 
 rule keep_master
 when concept=keeping.answer master=yes
-say Well, but for my apprentice. Ruined a day's work. | Teaching. It's harder than doing. | The young one's coming along.
+say Well, but for my apprentice. Ruined a day's work. | Teaching. It's harder than doing. | The young one's coming along. | My apprentice asks a question a breath. I've no breath left.
 then other: keeping.nod
 
 rule keep_old
 when concept=keeping.answer stage=old
-say Old, #address#. Old and creaking. But here. | Still above ground. | My hips know the weather before the sky does.
+say Old, #address#. Old and creaking. But here. | Still above ground. | My hips know the weather before the sky does. | I've outlived my knees. The rest of me's holding.
 then other: keeping.nod
+remember pair: k=old 1m
 
 rule keep_travelling
 when concept=keeping.answer travelling=yes
-say On the road again. Feet like boards. | Passing through. Always passing through. | Glad to sit a moment.
+say On the road again. Feet like boards. | Passing through. Always passing through. | Glad to sit a moment. | Three towns in four days. I've forgotten which this is.
 then other: keeping.nod
 
 rule keep_short
 when concept=keeping.answer temper=short
-say Why does everyone keep asking me that? | Fine. Is that all? | Same as yesterday.
-then other: keeping.nod
+say Why does everyone keep asking me that? | Fine. Is that all? | Same as yesterday. | Busy. Too busy for this.
 
 rule keep_merry
 when concept=keeping.answer humour=merry
 cooldown 1d
-say Better for seeing you! | Still handsome, still poor. | Grand! Ask me again and I'll tell you a lie.
+say Better for seeing you! | Still handsome, still here. | Grand! Ask me again and I'll tell you a lie. | Never better. Well, once. I was nineteen.
 then other: keeping.glad
+remember pair: k=jest 1m
 
 rule keep_devout
 when concept=keeping.answer piety=devout
-say Blessed, thank the gods. | Well, by the gods' grace. | Content. I've been to chapel.
+say Blessed, thank the Bright One. | Well, by the gods' grace. | Content. I've been to chapel. | Well. Every day's a gift, they say. Some are odd gifts.
 then other: keeping.nod
 
 rule keep_restless
 when concept=keeping.answer drive=restless
 cooldown 1d
-say Same as ever. Same as ever. I need a change. | Bored, if I'm honest. Itching for something. | Wondering what's over the hill.
+say Same as ever. Same as ever. I need a change. | Bored, if I'm honest. Itching for something. | Wondering what's over the hill. | Restless. Like a dog before thunder.
 then other: keeping.nod
+remember pair: k=hopes 1m
 
 rule keep_guarded
 when concept=keeping.answer honesty=guarded
-say Well enough. And you? | Oh, you know. | Can't say I've anything to tell.
+say Well enough. | Oh, you know. | Can't say I've anything to tell. | Same as anyone.
 then other: keeping.nod
 
 rule keep_sump
 when concept=keeping.answer quarter=sump
 cooldown 1d
-say Water came up through the floor again. | Damp, #address#. It's the Sump. | Surviving. That's the Sump for you.
+say Water came up through the floor again. | Damp, #address#. It's the Sump. | Surviving. That's the Sump for you. | There's a crack in our wall you could post a letter through.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule keep_heights
 when concept=keeping.answer quarter=heights
 cooldown 1d
-say Perfectly well. The Heights are dreadfully dull this season. | Very well, thank you. Such a bore at present. | Well. A great many dinners.
+say Perfectly well. The Heights are dreadfully dull this season. | Very well, thank you. Such a bore at present. | Well. A great many dinners. | Well. I've been to three musical evenings this week. Three.
 then other: keeping.nod
 
 ## Telling them, unasked
 
 rule tell_rent
-when concept=talk.smalltalk|talk.day wealth=poor|destitute
+when concept=talk.smalltalk|talk.day wealth=poor|destitute stage=adult|old
 cooldown 2d
-say Rent's due and I've not got it. | Bread's gone up again and my purse hasn't. | I sold my good boots. Good boots!
+say Rent's due and I've not got it. | Bread's gone up again and my purse hasn't. | I sold my good boots. Good boots! | I've let the fire go out to save the wood. In this.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_flush
 when concept=talk.smalltalk|talk.day wealth=rich
 cooldown 2d
-say Bought a new coat. Larkfield wool. Feel that. | Had the roof done. Finally. | We're thinking of taking on another servant.
+say Bought a new coat. Mossgrave wool. Feel that. | Had the roof done. Finally. | We're thinking of taking on another servant. | I've put by enough for three winters. I sleep like a pup.
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule tell_failing
 when concept=talk.smalltalk|talk.work business=failing
 cooldown 12h
 priority 1
-say Third day without a sale. | Nobody's buying. I've stock rotting. | I may have to let the shop go.
+say Third day without a sale. | Nobody's buying. I've stock going stale. | I may have to let the shop go. | I've marked everything down. Still nobody.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_thriving
 when concept=talk.smalltalk|talk.work business=thriving
 cooldown 2d
-say Sold out by noon. Again. | I can't make it fast enough. | Best season I've had.
+say Sold out by noon. Again. | I can't make it fast enough. | Best season I've had. | I had a queue out the door. A queue!
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule tell_hurt
 when concept=talk.smalltalk|talk.day injured=bad
 cooldown 12h
 priority 1
-say Look at this. Can't lift a thing. | Every step's a knife up the leg. | The healer says weeks. Weeks!
+say Look at this. Can't lift a thing. | Every step's a knife up the leg. | The healer says weeks. Weeks! | I slept sitting up. Lying down's worse.
 then other: keeping.sorry
+remember pair: k=hurt 1m
 
 rule tell_fought
 when concept=talk.smalltalk|talk.day fought=yes
 cooldown 12h
-say Did you hear? I was in a fight. Still shaking. | I've a lump on my head the size of an egg. | Someone came at me. I gave as good as I got.
+say I was in a fight. I'm still shaking. | I've a lump on my head the size of an egg. | Somebody jumped me by the well. They'll think twice next time. | My ear's torn. Look. Somebody's teeth did that.
 then other: keeping.sorry
+remember pair: k=scrap 1m
 
 rule tell_robbed
 when concept=talk.smalltalk|talk.day|talk.crime robbed=yes
 cooldown 12h
 priority 1
-say They robbed me. In my own town! | Someone took my things. Who does that? | #robbery#. I'm still shaking.
+say They robbed me. In my own town! | Someone took my things. Who does that? | #robbery#. I'm still shaking. | Cut my purse clean off my belt. I never felt a thing.
 then other: keeping.sorry
+remember pair: k=robbed 1m
 
 rule tell_hungry
 when concept=talk.smalltalk hungry=yes
 cooldown 2d
-say My belly's been talking all morning. | You've not got a crust on you? | I could eat a boot.
+say My belly's been talking all morning. | I could eat a boot. Laces and all. | I keep walking past the bakery to smell it. | I've had a turnip since yesterday. Half a turnip.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_mourning
 when concept=talk.smalltalk|talk.day|talk.friends mourning=kin
 cooldown 12h
 priority 2
-say I can't stop thinking about them. | The house is so quiet. | I keep meaning to tell them things.
+say I can't stop thinking about them. | The house is so quiet. | I keep meaning to tell them things. | I found their boots by the door this morning. I can't move them.
 then other: keeping.sorry
+remember pair: k=grief 1m
 
 rule tell_owes
-when concept=talk.smalltalk owes=yes
+when concept=talk.smalltalk owes=yes stage=adult|old
 cooldown 2d
-say I owe money to people I'd rather not. | If anyone asks, you've not seen me. | Do you know anyone lending?
+say I owe money to people I'd rather not. | If anyone asks, you've not seen me. | I borrowed to pay what I'd borrowed. It doesn't work. | Every knock at the door, I jump.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_dole
 when concept=talk.smalltalk on_dole=yes
 cooldown 2d
-say Queued two hours for the parish loaf. | The dole bread's stale again. | Never thought I'd take the parish's bread.
+say Queued two hours for the parish loaf. | The dole bread's stale again. | Never thought I'd take the parish's bread. | The parish clerk wrote my name in his book. Like a debt.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_homeless
 when concept=talk.smalltalk|talk.day homeless=yes
 cooldown 12h
 priority 1
-say Slept in a doorway again. | Know anywhere dry to sleep? | They put my things in the street.
+say Slept in a doorway again. | They put my things in the street. All of it. | The watch moved me on twice last night. | I had a door once. Blue. I miss the door.
 then other: keeping.sorry
+remember pair: k=want 1m
 
 rule tell_child
-when concept=talk.smalltalk|talk.family|talk.friends self.child
+when concept=talk.smalltalk|talk.family|talk.friends self.child self.age<=36
 cooldown 2d
-say #self.child# said the funniest thing this morning. | #self.child# lost a milk tooth! | You'll not believe what #self.child# got into.
+say #self.child# asked me why the sky doesn't fall down. I'd no answer. | #self.child# lost a milk tooth! Kept it in a walnut shell. | #self.child# got into the flour bin. Came out white from ears to tail. | #self.child# has decided to be a horse. All day. Neighing.
 then other: keeping.glad
+remember pair: k=family 1m
+
+rule tell_child_grown
+when concept=talk.smalltalk|talk.family|talk.friends self.child self.age>=48
+cooldown 3d
+say #self.child# came for #supper#. Ate everything, left nothing, as ever. | #self.child#'s courting. At last. | #self.child# sent me a ham. A whole ham! | #self.child# asked my advice. Mine! I nearly fell over.
+then other: keeping.glad
+remember pair: k=family 1m
 
 rule tell_spouse
 when concept=talk.smalltalk|talk.family|talk.friends self.spouse
 cooldown 2d
-say #self.spouse# burnt the bread again. Don't tell anyone. | #self.spouse# snores like a mill. | #self.spouse# brought me flowers. No reason. I'm suspicious.
-then other: keeping.nod
+say #self.spouse# burnt the bread again. Don't tell anyone. | #self.spouse# snores like a mill. | #self.spouse# brought me flowers. No reason. I'm suspicious. | #self.spouse# has taken up the whistle. Badly.
+then other: keeping.glad
+remember pair: k=family 1m
 
 rule tell_long_day
 when concept=talk.smalltalk|talk.work tired=yes working=yes
 cooldown 2d
-say On my feet since dawn. | My back. My back! | One more hour. One more.
+say On my feet since dawn. | My back. My back! | One more hour. One more. | I've stopped feeling my paws. That's good, I think.
 then other: keeping.nod
+remember pair: k=weary 1m
 
 rule tell_day_off
 when concept=talk.smalltalk|talk.day shift=day_off
 cooldown 2d
-say Day off. I've no idea what to do with myself. | No #work# today. I could sing. | I slept till the sun was up. Bliss.
+say Day off. I've no idea what to do with myself. | No #work# today. I could sing. | I slept till the sun was up. Bliss. | A whole day and nobody wanting anything of me.
 then other: keeping.glad
+remember pair: k=good 1m
 
 rule tell_restless
 when concept=talk.smalltalk drive=restless
 cooldown 2d
-say Ever think of just going? Walking off down the road? | I'm sick of this town. Don't tell anyone. | One day I'll see the sea. Or the mountains. Somewhere.
+say Some days I think I'll walk off down the road and not stop. | I'm sick of this town. Don't tell anyone. | One day I'll see the sea. Or the mountains. Somewhere. | Every cart that leaves, I watch it all the way out.
 then other: keeping.nod
+remember pair: k=hopes 1m
 
 rule tell_ambitious
 when concept=talk.smalltalk|talk.work drive=ambitious
 cooldown 2d
-say I'll have my own shop inside two years. Watch me. | I mean to be somebody. | There's money in this town if you're quick.
+say I'll have my own shop inside two years. Watch me. | I mean to be somebody. | There's money in this town if you're quick. | I've a plan. I'll not tell you it. But I've a plan.
 then other: keeping.nod
+remember pair: k=hopes 1m
 
-## Answering that (self is the one who asked, or listened)
+## keeping.sorry (self is the one who asked, or listened). Unkeyed: fits any trouble, from any file.
 
 rule sorry_plain
 when concept=keeping.sorry
-say I'm sorry to hear it. | That's hard. | Gods, I'm sorry. | That's no good at all.
+say I'm sorry to hear it. | That's hard. | #oath#. I'm sorry. | That's no good at all.
 
 rule sorry_warm
 when concept=keeping.sorry warmth=warm
@@ -353,72 +413,277 @@ say Mm. Well. | That's how it goes. | We all have our troubles.
 
 rule sorry_close
 when concept=keeping.sorry pair.band=friends|family|spouses
-say You should have come to me, #pet#. | Why didn't you say? | We'll sort it. Together.
-
-rule sorry_richer
-when concept=keeping.sorry self.wealth=rich|comfortable other.wealth=poor|destitute warmth=warm
-say If it's a matter of #money#, come and see me. | Let me help. No, I mean it. | Don't be proud. Not with me.
+say You should have come to me sooner. | Why didn't you say? | I'm here. Whatever you need.
 
 rule sorry_devout
 when concept=keeping.sorry piety=devout
-say I'll pray for you. I mean it. | The gods see it. They do. | Light a candle. It helps. It does.
+say I'll pray for you. I mean it. | The gods see it. They do. | I'll light a candle for you.
 
-rule sorry_dry
-when concept=keeping.sorry humour=dry
-say Could be worse. Not much, mind. | Well, at least you've your looks. | Cheer up. Tomorrow could be worse still.
+rule sorry_grief
+when concept=keeping.sorry pair.mem.k=grief
+priority 1
+say #oath#. I'm so sorry. | Take all the time it takes. | Is there anything I can do? Anything at all? | I'm sorry. I've no better words than that.
 
-rule sorry_short
-when concept=keeping.sorry temper=short
+rule sorry_grief_warm
+when concept=keeping.sorry pair.mem.k=grief warmth=warm
+priority 1
+say Come here. Come here. | I'll bring something round tonight. You'll not have to cook. | Oh, #pet#. I'm so sorry.
+
+rule sorry_grief_cold
+when concept=keeping.sorry pair.mem.k=grief warmth=cold
+priority 1
+say These things happen. I'm sorry. | It comes to all of us. | Well. You'll get through it. People do.
+
+rule sorry_grief_old
+when concept=keeping.sorry pair.mem.k=grief stage=old
+priority 1
+say I've lost a few myself. It gets quieter. It's never gone. | At my age you know half the churchyard. It doesn't get easier. | Talk about them. That's what helps. Talk about them.
+
+rule sorry_grief_devout
+when concept=keeping.sorry pair.mem.k=grief piety=devout
+priority 1
+say They're with the Bright One now. I'm sure of it. | I'll say their name at chapel. | The Bright One keeps them warm now.
+
+rule sorry_grief_short
+when concept=keeping.sorry pair.mem.k=grief temper=short
+priority 1
+say Aye. Well. These things. | Hard luck. Truly. | I'm no good at this. I'm sorry.
+
+rule sorry_want
+when concept=keeping.sorry pair.mem.k=want
+priority 1
+say Times are hard. For too many. | That's no way to live. It's not right. | Something'll turn. It has to. | That's a bad business.
+
+rule sorry_want_helps
+when concept=keeping.sorry pair.mem.k=want self.wealth=rich|comfortable other.wealth=poor|destitute warmth=warm
+priority 1
+say If it's a matter of #money#, come and see me. | Let me help. No, I mean it. | Don't be proud. Not with me.
+
+rule sorry_want_same
+when concept=keeping.sorry pair.mem.k=want wealth=poor|destitute
+priority 1
+say Me too, #address#. Me too. | We're all in it. | You and half the town.
+
+rule sorry_want_short
+when concept=keeping.sorry pair.mem.k=want temper=short
+priority 1
 say Well, don't stand there telling me, sort it. | And whose fault is that? | Everyone's got troubles.
 
-rule sorry_same
-when concept=keeping.sorry wealth=poor|destitute
-say Me too, #address#. Me too. | We're all in it. | You and half the town.
+rule sorry_want_dry
+when concept=keeping.sorry pair.mem.k=want humour=dry
+priority 1
+say Could be worse. Not much, mind. | Cheer up. Tomorrow could be worse still. | Well, at least you've your looks.
+
+rule sorry_want_rich_cold
+when concept=keeping.sorry pair.mem.k=want self.wealth=rich warmth=cold
+priority 1
+say Have you thought of working harder? | I'm sure the parish will see you right. | One must cut one's coat, I suppose.
+
+rule sorry_hurt
+when concept=keeping.sorry pair.mem.k=hurt
+priority 1
+say Let me see. Gods, that looks sore. | Sit down before you fall down. | You want that looked at. Properly. | Go easy. Let it mend.
+
+rule sorry_hurt_warm
+when concept=keeping.sorry pair.mem.k=hurt warmth=warm
+priority 1
+say Lean on me. Where are you going? I'll walk you. | Let me carry that for you. | I've a salve at home. I'll fetch it round.
+
+rule sorry_hurt_dry
+when concept=keeping.sorry pair.mem.k=hurt humour=dry
+priority 1
+say You'll do anything to get out of work. | Lost an argument with a staircase? | Well, it's improved your walk.
+
+rule sorry_hurt_short
+when concept=keeping.sorry pair.mem.k=hurt temper=short
+priority 1
+say What did you do to yourself? | Then why are you out? Go home. | You'll make it worse, hobbling about.
+
+rule sorry_robbed
+when concept=keeping.sorry pair.mem.k=robbed
+priority 1
+say Robbed! In broad day! It's not safe anywhere now. | Tell the watch. For all the good it'll do. | #oath#. I'll keep my purse closer. | That's wicked. Plain wicked.
+
+rule sorry_robbed_short
+when concept=keeping.sorry pair.mem.k=robbed temper=short
+priority 1
+say I'd have their ears for it. | If I find them, they'll wish the watch had. | Hanging's too good.
+
+rule sorry_robbed_poor
+when concept=keeping.sorry pair.mem.k=robbed wealth=poor|destitute
+priority 1
+say They'd get nothing off me. Nothing to get. | Robbing the likes of us. Have they no shame? | It's always us they rob. Never the Heights.
+
+rule sorry_scrap
+when concept=keeping.sorry pair.mem.k=scrap
+priority 1
+say Keep your head down a while. | Somebody'll get hurt one of these days. Mind it's not you. | Fighting. It never ends well. | Let it lie, now. Let it lie.
+
+rule sorry_scrap_warm
+when concept=keeping.sorry pair.mem.k=scrap warmth=warm
+priority 1
+say Let me see that eye. | Are you all right? Truly? Sit down. | Come home with me. I'll clean you up.
+
+rule sorry_scrap_short
+when concept=keeping.sorry pair.mem.k=scrap temper=short
+priority 1
+say Did you win, at least? | Next time, call me. | I'd have finished it for you.
+
+## keeping.glad. Unkeyed: fits any good news or pleasant remark, from any file.
 
 rule glad_plain
 when concept=keeping.glad
-say Good. Glad to hear it. | That's good. | Good for you. | Well, that's something.
-
-rule glad_poor
-when concept=keeping.glad wealth=poor|destitute
-say Must be nice. | Some of us aren't so lucky. | Good for some.
+say Ha! Good. | Well, there's a thing. | That's something, anyway. | Good. Good.
 
 rule glad_warm
 when concept=keeping.glad warmth=warm
 say Oh, that's lovely to hear. | That does my heart good. | Isn't that grand!
 
-rule glad_sly
-when concept=keeping.glad honesty=sly
-say Then you can buy the ale. | Lend us a penny, then. | Remember your friends, eh?
-
-rule glad_ambitious
-when concept=keeping.glad drive=ambitious
-say Tell me how. I mean it. | I'll have what you're having. | Lucky. I'll make my own luck.
-
 rule glad_cold
 when concept=keeping.glad warmth=cold
 say Hm. | Fine. | Good.
 
+rule glad_good
+when concept=keeping.glad pair.mem.k=good
+priority 1
+say Good. Glad to hear it. | About time something went right. | Good for you. You've earned it. | Well, that's a fine thing.
+
+rule glad_good_poor
+when concept=keeping.glad pair.mem.k=good wealth=poor|destitute
+priority 1
+say Must be nice. | Some of us aren't so lucky. | Good for some.
+
+rule glad_good_sly
+when concept=keeping.glad pair.mem.k=good honesty=sly
+priority 1
+say Then you can buy the ale. | Lend us a penny, then. | Remember your friends, eh?
+
+rule glad_good_ambitious
+when concept=keeping.glad pair.mem.k=good drive=ambitious
+priority 1
+say Good. I'll catch you up, mind. | Lucky. I'll make my own luck. | Enjoy it. I'm coming for it.
+
+rule glad_good_merry
+when concept=keeping.glad pair.mem.k=good humour=merry
+priority 1
+say Then the ale's on you! | Ha! Let's have a song about it. | Grand! I'll tell everyone you're rich.
+
+rule glad_good_devout
+when concept=keeping.glad pair.mem.k=good piety=devout
+priority 1
+say The Bright One's been kind. Give thanks. | Blessings, all of them. Don't forget the chapel box. | That's the gods' favour, that is.
+
+rule glad_family
+when concept=keeping.glad pair.mem.k=family
+priority 1
+say Ha! That's family for you. | Give them my best. | Bless them. | They'll keep you young. Or old. One of the two.
+
+rule glad_family_old
+when concept=keeping.glad pair.mem.k=family stage=old
+priority 1
+say Make the most of it. It goes by quicker than you think. | Ah. I remember that. All of that. | Enjoy them. Even the noise.
+
+rule glad_family_single
+when concept=keeping.glad pair.mem.k=family !self.spouse !self.child pair.band!=spouses|family
+say Sounds like a full house. Mine's just me and the mice. | I'll take your word for it. | And here's me with nobody to burn my bread.
+
+rule glad_family_dry
+when concept=keeping.glad pair.mem.k=family humour=dry
+priority 1
+say And you'd not change a thing, I suppose. | Family life. They write songs about it. Sad ones. | That's love, that is. Apparently.
+
+rule glad_family_warm
+when concept=keeping.glad pair.mem.k=family warmth=warm
+priority 1
+say Oh, I love that. Tell them I said hello. | That's made my day, that has. | Bring them by. I've honey cakes.
+
+rule glad_jest
+when concept=keeping.glad pair.mem.k=jest
+priority 1
+say Ha! You never change. | Get away with you. | You're a tonic, you are. | Ha! Some things stay the same, thank the gods.
+
+## keeping.nod. Unkeyed: fits any ordinary remark, from any file.
+
 rule nod_plain
 when concept=keeping.nod
-say Aye. | Same as ever, then. | Mm. Well. | #agree#.
+say Aye. | Is that so. | Mm. Well. | #agree#.
 
 rule nod_merry
 when concept=keeping.nod humour=merry
-say Ha! Aren't we all. | And me without a drink in my hand. | You'll outlive us all.
+say Ha! That's the way of it. | Ha! Isn't it always. | Well, there's life for you.
 
 rule nod_tired
 when concept=keeping.nod tired=yes
-say You and me both. | Don't talk to me about it. | Aye. #tired.capitalize#, the lot of us.
+say Mm. I'm too #tired# to say more than aye. | I could sleep where I stand, myself. | Aye. Is it #bed# yet?
 
 rule nod_old
-when concept=keeping.nod stage=old
-say Wait till you're my age. | You're young. It passes. | I remember being like that.
+when concept=keeping.nod stage=old other.stage!=old
+say Ah. I remember. | Ha. Same as it ever was. | You're young yet.
 
 rule nod_chatty
 when concept=keeping.nod self.talk=chatty
-say Oh, I know just what you mean. My cousin was the same. | Don't I know it! Now, let me tell you... | Isn't that just the way? Same with me.
+say Oh, I know just what you mean. My cousin was the same. | Isn't that just the way? Same with me, near enough. | Don't I know it! Now, let me tell you...
 
 rule nod_quiet
 when concept=keeping.nod self.talk=quiet
 say Mm. | Aye. | ...
+
+rule nod_weary
+when concept=keeping.nod pair.mem.k=weary
+priority 1
+say You and me both. | Get off your feet, then. | Sit a minute. The work'll wait. | Go home and sleep. That's an order.
+
+rule nod_weary_tired
+when concept=keeping.nod pair.mem.k=weary tired=yes
+priority 1
+say Don't talk to me about it. | Aye. #tired.capitalize#, the lot of us. | If you find a bed, tell me where.
+
+rule nod_weary_old
+when concept=keeping.nod pair.mem.k=weary stage=old other.stage!=old
+priority 1
+say Wait till you're my age. | Tired? You've no idea, pup. | At your age I worked two days in one. Or so I tell everyone.
+
+rule nod_old_answer
+when concept=keeping.nod pair.mem.k=old
+priority 1
+say You look well on it. | Still the sharpest one in the street. | Here's to many more creaks. | You'll see us all out.
+
+rule nod_old_answer_old
+when concept=keeping.nod pair.mem.k=old stage=old
+priority 1
+say Aye. Me too. We'll creak together. | Don't talk to me about knees. | We're the last of the old lot, you and me.
+
+rule nod_old_answer_young
+when concept=keeping.nod pair.mem.k=old stage=young
+priority 1
+say Are you very old? Older than the chapel? | My #gran# creaks too. | Can I hear you creak?
+
+rule nod_hopes
+when concept=keeping.nod pair.mem.k=hopes
+priority 1
+say Big talk. Good luck to you. | Mind you don't forget us when you do. | Ha! Well, someone should. | I'll believe it when I see it.
+
+rule nod_hopes_content
+when concept=keeping.nod pair.mem.k=hopes drive=content
+priority 1
+say Not me. I like it here. | Grass is greener, they say. It isn't. | What's wrong with here?
+
+rule nod_hopes_restless
+when concept=keeping.nod pair.mem.k=hopes drive=restless|ambitious
+priority 1
+say Take me with you. | I've thought the same. More than once. | Let me know when. I mean it.
+
+rule nod_hopes_old
+when concept=keeping.nod pair.mem.k=hopes stage=old other.stage!=old
+priority 1
+say I said that at your age. Here I still am. | Go while your legs are good. | Dream it while you can.
+
+rule nod_hopes_short
+when concept=keeping.nod pair.mem.k=hopes temper=short
+priority 1
+say Talk's cheap. | Then stop talking and do it. | You've said that before.
+
+rule nod_hopes_warm
+when concept=keeping.nod pair.mem.k=hopes warmth=warm
+priority 1
+say You will, too. I can see it in you. | Go on, then. I'll cheer you off. | You deserve it. Whatever it is.

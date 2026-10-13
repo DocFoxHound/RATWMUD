@@ -13,7 +13,7 @@ b?[friends] : Supper's on me tonight. Call it interest.
 
 scene kn_fr_owe_favour
 when topic=friends
-a : I need a favour. | You know how you owe me for the thing with the cart? | Are you busy on rest day?
+a : I need a favour. | You know how you owe me for the thing with the cart? | Are you busy on Restday?
 b : How big a favour? | I knew that would come back. | Why do I feel I'm about to be?
 a : Big. Moving my mother's furniture. | It's come back. My roof needs patching. | Because you are. Roof. Mine.
 b : Your mother has a lot of furniture. | That's a big thing for a cart. | I'll bring the tar.
@@ -229,7 +229,7 @@ a : Together. | For now. | And the honey cake.
 
 scene kn_fr_men
 when topic=friends a.sex=male b.sex=male
-a : My mate's furious with me again. | Have you been fishing lately? | Fancy helping me with the shed on rest day?
+a : My mate's furious with me again. | Have you been fishing lately? | Fancy helping me with the shed on Restday?
 b : What did you do? | Not since spring. | Will there be cider?
 a : Nothing. Something. I'm not sure. | Let's go. The river's high. | If you work.
 b : That's the worst kind. | High means nothing bites. | I always work.
@@ -239,7 +239,7 @@ scene kn_fr_guard_friends
 when topic=friends a.role=guard b.role=guard
 a : Long night. | Did you see the sergeant's face? | Captain's in a mood again.
 b : Long and cold. | Like a slapped cat. | When isn't he?
-a : Two more till rest day. | Somebody's in trouble. | He smiled once. I saw it.
+a : Two more till Restday. | Somebody's in trouble. | He smiled once. I saw it.
 b : Then we'll sleep a whole day. | As long as it's not us. | You were dreaming.
 a : A whole day. | Not this time. | Maybe.
 

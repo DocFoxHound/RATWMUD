@@ -1,6 +1,10 @@
 # Gossip, debts and promises, the people one deals with (priest, shopkeeper, leader, neighbour), the realm's figures,
 # and the town's news (theme n7). Each opener remembers what it was about (pair.mem.on, and its own key), the other
-# answers as they are, and the opener has the last word. Drafts.
+# answers as they are and remembers how they took it, and the opener has the last word (town.close).
+#
+# Gossip: topic.claim is whatever was heard ("died", "married", "is new in town", "keeps promises", "stole from Hild",
+# "was robbed by someone they couldn't make out"...). Only the one-word claims can be tested, so a death and a
+# wedding have their own lines; everything else is told and taken in words that suit good news and bad.
 
 ## Gossip, told as the teller is (talk.gossip: topic.subject, topic.claim)
 
@@ -14,21 +18,21 @@ then other: town.gossip
 rule n7_go_chatty
 when concept=talk.gossip self.talk=chatty
 cooldown 1d
-say Oh, you'll love this. #topic.subject# #topic.claim#! I know! | Sit down, sit down. #topic.subject#. You'll never guess. #topic.subject# #topic.claim#. | Have you heard? You haven't! #topic.subject# #topic.claim#!
+say Oh, you'll love this. #topic.subject# #topic.claim#! | Sit down, sit down. You'll never guess. #topic.subject# #topic.claim#. | Have you heard? You haven't! #topic.subject# #topic.claim#!
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_devout
 when concept=talk.gossip self.piety=devout
 cooldown 1d
-say I don't hold with tattle. But you ought to know. #topic.subject# #topic.claim#. | Gods forgive me for repeating it: #topic.subject# #topic.claim#. | I'll pray for them. They say #topic.subject# #topic.claim#.
+say I don't hold with tattle. But you ought to know. #topic.subject# #topic.claim#. | I'll say it once and say no more: #topic.subject# #topic.claim#. | It was all the talk after chapel. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_quiet
 when concept=talk.gossip self.talk=quiet
 cooldown 1d
-say ...#topic.subject# #topic.claim#. That's all I'll say. | Heard something. #topic.subject# #topic.claim#, they say. | Mm. #topic.subject# #topic.claim#. Thought you'd want to know.
+say #topic.subject# #topic.claim#. That's all I'll say. | Heard something. #topic.subject# #topic.claim#, they say. | Mm. #topic.subject# #topic.claim#. Thought you'd want to know.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -37,15 +41,6 @@ when concept=talk.gossip self.temper=nervy
 cooldown 1d
 say Don't look round. #topic.subject# #topic.claim#. I'm not saying it's true. | I'm only saying what I heard. #topic.subject# #topic.claim#. Don't tell anyone I said. | Is anyone listening? Right. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
-then other: town.gossip
-
-rule n7_go_died
-when concept=talk.gossip topic.claim=died
-priority 1
-cooldown 1d
-say Did you hear? #topic.subject# died. | #topic.subject#'s gone. Died, they said. I can't take it in. | They're saying #topic.subject# died. Is it true?
-remember pair: on=gossip 1h
-remember pair: gs=death 1h
 then other: town.gossip
 
 rule n7_go_neighbours
@@ -58,28 +53,28 @@ then other: town.gossip
 rule n7_go_chapel
 when concept=talk.gossip here.place=chapel
 cooldown 1d
-say *whispers* #topic.subject# #topic.claim#. | Not here. Well, quickly: #topic.subject# #topic.claim#. | The whole back pew knows: #topic.subject# #topic.claim#.
+say Not here. Well, quickly: #topic.subject# #topic.claim#. | The whole back pew knows. #topic.subject# #topic.claim#. | Lean in. Quietly. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_tavern
 when concept=talk.gossip here.place=tavern
 cooldown 1d
-say Lean in. #topic.subject# #topic.claim#. Straight from the barwolf. | Another jug and I'll tell you. No, I'll tell you now: #topic.subject# #topic.claim#. | Whole tavern's buzzing. #topic.subject# #topic.claim#.
+say Lean in. #topic.subject# #topic.claim#. Straight from behind the bar. | Another jug and I'll tell you. No, I'll tell you now: #topic.subject# #topic.claim#. | The whole room's buzzing. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_old
 when concept=talk.gossip self.stage=old
 cooldown 1d
-say In my day we'd not say such things out loud. #topic.subject# #topic.claim#. | I've seen a lot of years. I've not seen this. #topic.subject# #topic.claim#. | You young ones won't believe it. #topic.subject# #topic.claim#.
+say I've seen a lot of years, and this one's new to me. #topic.subject# #topic.claim#. | You young ones won't credit it. #topic.subject# #topic.claim#. | Now then. #topic.subject# #topic.claim#. What do you make of that?
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_young
 when concept=talk.gossip self.stage=young|adolescent
 cooldown 1d
-say Mum says #topic.subject# #topic.claim#! Is that bad? | Everyone at the well says #topic.subject# #topic.claim#. | I heard the grown-ups. #topic.subject# #topic.claim#! I'm not supposed to know.
+say #mum# says #topic.subject# #topic.claim#! Is that bad? | The big pups at the well say #topic.subject# #topic.claim#. | I heard the grown-ups. #topic.subject# #topic.claim#! I'm not supposed to know.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -93,14 +88,14 @@ then other: town.gossip
 rule n7_go_guard
 when concept=talk.gossip self.role=guard
 cooldown 1d
-say I shouldn't, being the Watch. But #topic.subject# #topic.claim#. | Came up at the Watch House. #topic.subject# #topic.claim#. | Word in the barracks: #topic.subject# #topic.claim#.
+say I shouldn't, being the Watch. But #topic.subject# #topic.claim#. | It came up at the watch post. #topic.subject# #topic.claim#. | Word among the Watch: #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_merchant
 when concept=talk.gossip self.role=merchant here.place=market|work
 cooldown 1d
-say Every customer today, same story. #topic.subject# #topic.claim#. | Sold more gossip than goods this morning. #topic.subject# #topic.claim#. | A stall hears everything. #topic.subject# #topic.claim#.
+say Every customer today, same story. #topic.subject# #topic.claim#. | Sold more gossip than goods this morning. #topic.subject# #topic.claim#. | A counter hears everything. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -114,7 +109,38 @@ then other: town.gossip
 rule n7_go_spouses
 when concept=talk.gossip pair.band=spouses
 cooldown 1d
-say #dear.capitalize#, you'll never guess. #topic.subject# #topic.claim#. | Don't make that face. #topic.subject# #topic.claim#. | You were right about #topic.subject#. They say #topic.subject# #topic.claim#.
+say #dear.capitalize#, you'll never guess. #topic.subject# #topic.claim#. | Don't make that face. #topic.subject# #topic.claim#. | Guess what I heard at the well. #topic.subject# #topic.claim#.
+remember pair: on=gossip 1h
+then other: town.gossip
+
+rule n7_go_married
+when concept=talk.gossip topic.claim=married
+cooldown 1d
+say #topic.subject#'s married! Did you know? | Well, #topic.subject#'s gone and married. | Wedding bells for #topic.subject#. Who'd have thought it?
+remember pair: on=gossip 1h
+then other: town.gossip
+
+rule n7_go_died
+when concept=talk.gossip topic.claim=died
+priority 10
+cooldown 1d
+say Did you hear? #topic.subject# died. | #topic.subject#'s gone. Died, they said. I can't take it in. | They're saying #topic.subject# died. Is it true?
+remember pair: on=gossip 1h
+then other: town.gossip
+
+rule n7_go_died_old
+when concept=talk.gossip topic.claim=died self.stage=old
+priority 10
+cooldown 1d
+say #topic.subject#'s gone. Another one. They're dropping like leaves this year. | Have you heard about #topic.subject#? Died. I'd have bet on me going first. | #topic.subject# died. I remember them as a pup, tumbling in the street.
+remember pair: on=gossip 1h
+then other: town.gossip
+
+rule n7_go_died_warm
+when concept=talk.gossip topic.claim=died self.warmth=warm
+priority 10
+cooldown 1d
+say Oh, have you heard? #topic.subject#. They died. I can't stop thinking about it. | I've had sad news. #topic.subject# died. | It's #topic.subject#. They've died. I keep wanting to go round with a pie.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -122,118 +148,188 @@ then other: town.gossip
 
 rule n7_ga2_plain
 when concept=town.gossip
-say #topic.subject#? Never. | Who told you that? | Well I never. | I'd not have thought it of #topic.subject#.
+say #topic.subject#? Never. | Who told you that? | Well, I never. | Is that so? Well, well.
+remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_plain2
 when concept=town.gossip
-say #surprise#. | Is that so. | Huh. Fancy that. | Can't say I'm surprised.
+say #surprise#. | Huh. Fancy that. | Hm. | Mm.
 
 rule n7_ga2_frank
 when concept=town.gossip self.honesty=frank
-say I'll ask #topic.subject# myself, then. | Rubbish. I'll not have it said without proof. | If it's true, say it to their face.
+say I'll ask #topic.subject# myself, then. | I'll believe it when I hear it from #topic.subject#. | Then I'll hear it from #topic.subject#, not from the well.
+remember pair: ha=doubt 1h
 then other: town.close
 
 rule n7_ga2_guarded
 when concept=town.gossip self.honesty=guarded
 say I'd not repeat that, if I were you. | Hm. I'll keep that to myself. | I didn't hear it. Nor did you.
+remember pair: ha=hush 1h
 then other: town.close
 
 rule n7_ga2_sly
 when concept=town.gossip self.honesty=sly
 say And? There's always more. What else? | Interesting. Who else knows? | That's worth knowing. Thank you. Very much.
+remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_chatty
 when concept=town.gossip self.talk=chatty
 say No! Wait till I tell my sister. | I knew it! Didn't I say? I said! | Tell me everything. Slowly. From the start.
+remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_warm
-when concept=town.gossip self.warmth=warm
-say Poor soul. Whatever the truth of it. | Oh, I hope it isn't so. They've enough on. | We shouldn't. But oh, poor #topic.subject#.
+when concept=town.gossip self.warmth=warm topic.claim!=married
+say Oh. Well, I hope they're all right, whatever's what. | I'll call on #topic.subject#. See how they are. | We shouldn't talk. But oh, #topic.subject#.
+remember pair: ha=kind 1h
 then other: town.close
 
 rule n7_ga2_cold
 when concept=town.gossip self.warmth=cold
 say Not my business. | And? | Doesn't surprise me.
+remember pair: ha=cold 1h
 then other: town.close
 
 rule n7_ga2_devout
-when concept=town.gossip self.piety=devout
+when concept=town.gossip self.piety=devout topic.claim!=married
 say The gods hear tattle too, you know. | Judge not. Well. A little. | I'll pray for #topic.subject#. And for us, for listening.
+remember pair: ha=pious 1h
 then other: town.close
 
 rule n7_ga2_guard
-when concept=town.gossip self.role=guard
-say Has anyone told the Watch? | I'll make a note of that. | Hm. I'll keep my eyes on #topic.subject#.
+when concept=town.gossip self.role=guard topic.claim!=married
+say I'll keep an ear open. | I'll make a note of that. | Hm. I'll keep my eye on #topic.subject#.
+remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_priest
-when concept=town.gossip self.job=priest
-say I'll not hear it. And nor should you. | If #topic.subject# needs help, I'll go. If not, I'll not hear another word. | Words are stones, child. Be careful who you throw them at.
+when concept=town.gossip self.job=priest topic.claim!=married
+say I'll not hear it. And nor should you. | If #topic.subject# needs help, I'll go. If not, I'll not hear another word. | Words are stones. Be careful where you throw them.
+remember pair: ha=pious 1h
 then other: town.close
 
 rule n7_ga2_old
 when concept=town.gossip self.stage=old
-say I've heard worse of better folk. | It'll be forgotten by the Greening. Everything is. | Ha. Their grandmother was just the same.
+say I've heard it all in my time. Most of it twice. | It'll be forgotten by the next festival. Everything is. | Ha. Their grandmother was just the same.
+remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_young
 when concept=town.gossip self.stage=young
 say What does that mean? | Is that bad? It sounds bad. | I'm telling everyone!
+remember pair: ha=pup 1h
 then other: town.close
 
 rule n7_ga2_dry
 when concept=town.gossip self.humour=dry
-say And the moon's made of cheese, I suppose. | Gossip travels fast. Truth's still putting its boots on. | Fascinating. Tell me again slower, so I can not believe it properly.
+say And the moon's made of cheese, I suppose. | Gossip travels fast. The truth's still putting its boots on. | Fascinating. Tell me again, slower, so I can not believe it properly.
+remember pair: ha=doubt 1h
 then other: town.close
 
 rule n7_ga2_merry
 when concept=town.gossip self.humour=merry
 say Ha! No! | Oh, that's too good. Is it true? Don't tell me. Tell me. | Ha! I'll never look at #topic.subject# the same.
+remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_nervy
 when concept=town.gossip self.temper=nervy
 say Don't. If they hear we said it... | Shh! Not so loud. | Oh, I wish you hadn't told me. Now I'll have to not tell people.
+remember pair: ha=hush 1h
+then other: town.close
+
+rule n7_ga2_married
+when concept=town.gossip topic.claim=married
+say Good for them. | Married! Well, well. Who to? | About time, I'd say. | Married? I'll believe it when I see the cake.
+remember pair: ha=glad 1h
+then other: town.close
+
+rule n7_ga2_married_warm
+when concept=town.gossip topic.claim=married self.warmth=warm
+say Oh, that's lovely. I'll take them something. | Bless them. Bless them both. | Oh! I do love a wedding.
+remember pair: ha=glad 1h
+then other: town.close
+
+rule n7_ga2_married_dry
+when concept=town.gossip topic.claim=married self.humour=dry
+say Married. They'll learn. | Poor soul. Whichever one it is. | Married. Well. Somebody had to.
+remember pair: ha=glad 1h
 then other: town.close
 
 rule n7_ga2_death
-when concept=town.gossip pair.mem.gs=death
-priority 1
-say Gods. When? | No. I saw them only the other day. | Dead? #topic.subject#? Oh, that's hard.
+when concept=town.gossip topic.claim=died
+priority 3
+say Gods. I'd no idea. | No. I saw them only the other day. | Dead? #topic.subject#? Oh, that's hard.
+remember pair: ha=dead 1h
 then other: town.close
 
 rule n7_ga2_death_devout
-when concept=town.gossip pair.mem.gs=death self.piety=devout
-priority 1
-say The Bright One keep them. I'll light a candle tonight. | May they find the warm hearth. | We'll pray for them at Restday. All of us.
+when concept=town.gossip topic.claim=died self.piety=devout
+priority 3
+say The Bright One keep them. I'll light a candle tonight. | May they find their rest. | We'll pray for them at Restday. All of us.
+remember pair: ha=dead 1h
 then other: town.close
 
 rule n7_ga2_death_old
-when concept=town.gossip pair.mem.gs=death self.stage=old
-priority 1
-say They go so fast now. All of them. | Younger than me. It's never the right ones. | Another. I'll be next, mark me.
+when concept=town.gossip topic.claim=died self.stage=old
+priority 3
+say They go so fast now. All of them. | It's never the right ones. | Another. I'll be next, mark me.
+remember pair: ha=dead 1h
 then other: town.close
 
-## The last word on gossip
+rule n7_ga2_death_cold
+when concept=town.gossip topic.claim=died self.warmth=cold
+priority 3
+say Hm. Everyone goes. | I hardly knew them. | Well. That's that.
+remember pair: ha=dead 1h
+then other: town.close
+
+## The last word on gossip (the teller; pair.mem.ha says how it was taken)
 
 rule n7_close_go
 when concept=town.close pair.mem.on=gossip
-say Well. You didn't hear it from me. | Not a word, mind. | That's what they're saying, anyway. | I'm only telling you what I heard.
+say Well. That's what they're saying. | I'm only telling you what I heard. | Make of it what you like.
 
-rule n7_close_go_sly
-when concept=town.close pair.mem.on=gossip self.honesty=sly
-say Remember: you heard it here first. | There's more, but it'll cost you a drink. | Keep it close. It's worth more that way.
+rule n7_close_go_doubt
+when concept=town.close pair.mem.on=gossip pair.mem.ha=doubt
+say Suit yourself. You'll see. | Believe what you like. I know what I heard. | Ask anyone.
 
-rule n7_close_go_devout
-when concept=town.close pair.mem.on=gossip self.piety=devout
-say Gods forgive me for saying it. | I'll say a prayer for loose tongues. Mine first. | We'll speak no more of it.
+rule n7_close_go_hush
+when concept=town.close pair.mem.on=gossip pair.mem.ha=hush
+say Not a word, then. | You're right. Forget I said it. | My lips are sealed. From now.
+
+rule n7_close_go_eager
+when concept=town.close pair.mem.on=gossip pair.mem.ha=eager
+say That's all I know. Honest. | I'll tell you the rest when I have it. | I knew you'd like that one.
+
+rule n7_close_go_eager_sly
+when concept=town.close pair.mem.on=gossip pair.mem.ha=eager self.honesty=sly
+say There's more, but it'll cost you a drink. | Keep it close. It's worth more that way. | Remember: you heard it here first.
+
+rule n7_close_go_kind
+when concept=town.close pair.mem.on=gossip pair.mem.ha=kind
+say Aye. Let's hope so. | You're kinder than most. | You're right. We shouldn't.
+
+rule n7_close_go_cold
+when concept=town.close pair.mem.on=gossip pair.mem.ha=cold
+say Please yourself. | I only thought you'd want to know. | Fine. I'll tell someone who cares.
+
+rule n7_close_go_pious
+when concept=town.close pair.mem.on=gossip pair.mem.ha=pious
+say I know. I know. Gods forgive me. | I'll say no more of it. | You're right. I'll say a prayer for loose tongues. Mine first.
+
+rule n7_close_go_pup
+when concept=town.close pair.mem.on=gossip pair.mem.ha=pup
+say Never you mind. And don't repeat it! | Hush now. Forget I said. | Not bad. Just grown-up business.
+
+rule n7_close_go_glad
+when concept=town.close pair.mem.on=gossip pair.mem.ha=glad
+say There'll be a feast, I'd think. | It's nice to hear good news for once. | I'll find out who to, don't you worry.
 
 rule n7_close_go_death
-when concept=town.close pair.mem.on=gossip pair.mem.gs=death
-priority 1
+when concept=town.close pair.mem.on=gossip pair.mem.ha=dead
 say Aye. Gone, just like that. | I'll miss seeing them about. | It makes you think.
 
 ## Debts and promises between the two (pair.owed and pair.promise name the one who owes, the one who promised)
@@ -258,7 +354,7 @@ rule n7_db_dun_poor
 when concept=talk.smalltalk|talk.day pair.owed=b self.wealth=poor|destitute
 cooldown 2d
 priority 1
-say I'd not ask, but I need what you owe me. The pups... | I'm #skint#, #address#. Even a little of what you owe would help. | I've not eaten since yesterday. That money. Please.
+say I'd not ask, but I need what you owe me. | I'm #skint#, #address#. Even a little of what you owe would help. | I've not eaten since yesterday. That money. Please.
 remember pair: on=debt 1h
 remember pair: db=dun 1h
 then other: town.debt
@@ -276,13 +372,13 @@ when concept=talk.smalltalk|talk.day pair.owed=a self.honesty=sly
 cooldown 2d
 say Before you say anything: lovely day, isn't it? | You're looking well! Very well! Prosperous, even. | Friend! Old friend! Have I told you how much I value you?
 remember pair: on=debt 1h
-remember pair: db=pay 1h
+remember pair: db=flatter 1h
 then other: town.debt
 
 rule n7_db_promise_due
 when concept=talk.smalltalk|talk.day|talk.friends pair.promise=b
 cooldown 2d
-say You said you'd help with the roof. | Still coming Restday, like you promised? | I'm holding you to your word, you know.
+say You said you'd give me a paw with the roof. | Still coming Restday, like you promised? | I'm holding you to your word, you know.
 remember pair: on=debt 1h
 remember pair: db=promised 1h
 then other: town.debt
@@ -299,7 +395,7 @@ rule n7_db_word_bad
 when concept=talk.smalltalk|talk.day pair.rumour=breaks_promises
 cooldown 3d
 priority 1
-say Folk say your word's worth nothing. Tell me they're wrong. | I heard you let someone down. Badly. | They say if you promise, start counting the days.
+say Folk say your word's worth nothing. Tell me they're wrong. | I heard you let someone down. Badly. | They say if you promise something, start counting the days.
 remember pair: on=debt 1h
 remember pair: db=word_bad 1h
 then other: town.debt
@@ -313,9 +409,9 @@ remember pair: db=word_good 1h
 then other: town.debt
 
 rule n7_db_lend_ask
-when concept=talk.smalltalk|talk.friends self.owes=yes pair.band=friends|family
+when concept=talk.smalltalk|talk.friends self.owes=yes pair.band=friends|family self.stage=adult|old
 cooldown 3d
-say You couldn't lend me a little? Only till Restday. | I'm in a hole, #pet#. A small loan would get me out. | I hate this. Could you spare me a few #money#?
+say You couldn't lend me a little? Only till Restday. | I'm in a hole, #pet#. A small loan would get me out. | I hate this. Could you spare me a few pennies?
 remember pair: on=debt 1h
 remember pair: db=lend 1h
 then other: town.debt
@@ -323,7 +419,7 @@ then other: town.debt
 rule n7_db_slate_ask
 when concept=talk.smalltalk|talk.prices pair.customer=a self.wealth=poor|destitute
 cooldown 2d
-say Could you put it on my slate? Just this week. | I'll pay Restday. Can I take the loaf now? | You know I'm good for it. Mostly.
+say Could you put it on my slate? Just this week. | I'll pay Restday. Can I take it now? | You know I'm good for it. Mostly.
 remember pair: on=debt 1h
 remember pair: db=slate 1h
 then other: town.debt
@@ -336,159 +432,240 @@ remember pair: on=debt 1h
 remember pair: db=slate_due 1h
 then other: town.debt
 
-## Answering about money and promises
+## Answering about money and promises (each remembers its stance, pair.mem.da)
 
 rule n7_da_plain
 when concept=town.debt
 say Aye. I know. | Fair enough. | Right. Restday, then.
+remember pair: da=promise 1h
 then other: town.close
 
 rule n7_da_dun
 when concept=town.debt pair.mem.db=dun
 say Restday. I swear it. | I've not forgotten. Give me a few days. | I know. I'm ashamed. Month's end, every penny.
+remember pair: da=promise 1h
 then other: town.close
 
 rule n7_da_dun_poor
 when concept=town.debt pair.mem.db=dun self.wealth=poor|destitute
-say I've nothing. Take my coat, if you want it. | If I had it you'd have it. I swear. | I'm worse off than you. Can you wait? Please.
+say I've nothing. Take my coat, if you want it. | If I had it you'd have it. I swear. | Can you wait? Please. Just a little longer.
+remember pair: da=plead 1h
 then other: town.close
 
 rule n7_da_dun_rich
 when concept=town.debt pair.mem.db=dun self.wealth=rich|comfortable
 say Is it so much? Here. Take it now and we'll say no more. | Gods, I'd forgotten entirely. How embarrassing. Here. | Of course. With something for the wait.
 regard other: trust +1
+remember pair: da=paid 1h
 then other: town.close
 
 rule n7_da_dun_sly
 when concept=town.debt pair.mem.db=dun self.honesty=sly
 say What money? Oh, that. Of course. Soon. | I thought we'd agreed that was a gift. | I paid you. Didn't I? I'm sure I did.
 regard other: trust -1
+remember pair: da=dodge 1h
 then other: town.close
 
 rule n7_da_dun_short
 when concept=town.debt pair.mem.db=dun self.temper=short
 say You'll get it when you get it. | Don't hound me in the street. | I said I'd pay. Stop asking.
+remember pair: da=bite 1h
 then other: town.close
 
 rule n7_da_pay
 when concept=town.debt pair.mem.db=pay
-say I know you're good for it. | No rush. Well. Some rush. | Restday's fine.
+say I know you're good for it. | No rush. Well. Some rush. | That'll do. Pay when you can.
+remember pair: da=ease 1h
 then other: town.close
 
 rule n7_da_pay_warm
 when concept=town.debt pair.mem.db=pay self.warmth=warm
 say Don't fret over it. Pay when you can. | Keep it a while. You need it more. | Friends first, money after.
 regard other: affinity +1
+remember pair: da=ease 1h
 then other: town.close
 
 rule n7_da_pay_rich
 when concept=town.debt pair.mem.db=pay self.wealth=rich
-say Keep it. Buy your pups something. | It's nothing. Truly. Forget it. | Half, then, and we'll call it square.
+say Keep it. Buy yourself something hot. | It's nothing. Truly. Forget it. | Half, then, and we'll call it square.
 regard other: affinity +1
+remember pair: da=ease 1h
 then other: town.close
 
 rule n7_da_pay_cold
 when concept=town.debt pair.mem.db=pay self.warmth=cold
 say See that you do. | I've written it down. | Restday. Not the one after.
+remember pair: da=stern 1h
+then other: town.close
+
+rule n7_da_flatter
+when concept=town.debt pair.mem.db=flatter
+say And my money? | Very nice. Where's what you owe me? | You only talk like that when you owe me.
+remember pair: da=stern 1h
+then other: town.close
+
+rule n7_da_flatter_warm
+when concept=town.debt pair.mem.db=flatter self.warmth=warm
+say Ha. I know what you're doing. Pay me Restday and I'll forget it. | Flattery and no pennies. Typical. | Go on with you. I know you're good for it. Eventually.
+remember pair: da=ease 1h
 then other: town.close
 
 rule n7_da_promised
 when concept=town.debt pair.mem.db=promised
 say I said I would and I will. | Restday. I've not forgotten. | My word's my word.
+remember pair: da=promise 1h
 then other: town.close
 
 rule n7_da_promised_sly
 when concept=town.debt pair.mem.db=promised self.honesty=sly
 say Did I say this Restday? | Help, yes. I didn't say how much help. | Something came up. Something will always come up, I'm afraid.
 regard other: trust -1
+remember pair: da=dodge 1h
 then other: town.close
 
 rule n7_da_promised_nervy
 when concept=town.debt pair.mem.db=promised self.temper=nervy
-say Oh gods. I forgot. I'm sorry. I'm so sorry. | I'll be there! I will! What time did I say? | I haven't forgotten. I had forgotten. I've remembered now.
+say Oh gods. I forgot. I'm sorry. I'm so sorry. | I'll be there! I will! What day did I say? | I haven't forgotten. I had forgotten. I've remembered now.
+remember pair: da=promise 1h
 then other: town.close
 
 rule n7_da_promising
 when concept=town.debt pair.mem.db=promising
-say I'll hold you to it. | Good. I'll put the kettle on. | Don't make me come looking.
+say I'll hold you to it. | Good. I'll have the kettle on. | Don't make me come looking.
+remember pair: da=ease 1h
 then other: town.close
 
 rule n7_da_word_bad
 when concept=town.debt pair.mem.db=word_bad
 say They're wrong. | One time. One time, and the town never forgets. | Who's been talking?
+remember pair: da=deny 1h
 then other: town.close
 
 rule n7_da_word_bad_short
 when concept=town.debt pair.mem.db=word_bad self.temper=short
 say Say that again and see what I keep. | Who said that? Name them. | I keep my word to those who deserve it.
 regard self: affinity -1
+remember pair: da=bite 1h
 then other: town.close
 
 rule n7_da_word_good
 when concept=town.debt pair.mem.db=word_good
 say I keep it when I can. What is it you need? | What I say, I do. Simple as that. | My father taught me. Say less, do more.
 regard other: trust +1
+remember pair: da=assure 1h
 then other: town.close
 
 rule n7_da_lend
 when concept=town.debt pair.mem.db=lend
-say How much? | I can spare a little. Not a lot. | Here. Don't make me ask for it.
+say Here. Don't make me ask for it back. | I can spare a little. Not a lot. Here. | Here's what I have on me. Restday, mind.
 regard other: affinity +1
+remember pair: da=give 1h
 then other: town.close
 
 rule n7_da_lend_cold
 when concept=town.debt pair.mem.db=lend self.warmth=cold
-say I don't lend to friends. Keeps them friends. | No. Sorry. No. | Ask the moneychanger. That's what he's for.
+say I don't lend to friends. Keeps them friends. | No. Sorry. No. | Go to a moneylender. That's what they're for.
+remember pair: da=refuse 1h
 then other: town.close
 
 rule n7_da_lend_poor
 when concept=town.debt pair.mem.db=lend self.wealth=poor|destitute
 say I'm as #skint# as you are. | I've three pennies. Want one? | If I had it. You know I would.
+remember pair: da=none 1h
 then other: town.close
 
 rule n7_da_slate
 when concept=town.debt pair.mem.db=slate
 say Just this week, mind. | Go on. I'll write it down. | Take it. Pay when you can.
 regard other: affinity +1
+remember pair: da=give 1h
 then other: town.close
 
 rule n7_da_slate_failing
 when concept=town.debt pair.mem.db=slate self.business=failing
 priority 1
-say I can't. I'm sorry. Half the street owes me already. | If I give credit to one more, I'll be on the slate myself. | I'd love to. I can't. Look at my shelves.
+say I can't. I'm sorry. Half the street owes me already. | If I give credit to one more, I'll be on somebody's slate myself. | I'd love to. I can't. Look at my shelves.
+remember pair: da=refuse 1h
 then other: town.close
 
 rule n7_da_slate_due
 when concept=town.debt pair.mem.db=slate_due
 say I'll pay Restday. Every penny. | I know. I'm sorry. Things are tight. | Can I work it off? I can sweep, carry, anything.
+remember pair: da=promise 1h
 then other: town.close
+
+## The last word on money and promises (pair.mem.da says how it was taken)
 
 rule n7_close_debt
 when concept=town.close pair.mem.on=debt
-say Right. Restday, then. | Good. That's settled. | I'll hold you to it. | Well. We'll see.
+say Right. | Well. We'll see. | Hm.
 
-rule n7_close_debt_short
-when concept=town.close pair.mem.on=debt self.temper=short
-say We'll see. | Don't make me ask again. | Hmph. Restday.
+rule n7_close_debt_promise
+when concept=town.close pair.mem.on=debt pair.mem.da=promise
+say Right. Restday, then. | I'll hold you to it. | Good. That's all I ask. | See that you do.
 
-rule n7_close_debt_warm
-when concept=town.close pair.mem.on=debt self.warmth=warm
-say Don't lose sleep over it. | We're square in my book. Near enough. | You're a good sort.
+rule n7_close_debt_promise_warm
+when concept=town.close pair.mem.on=debt pair.mem.da=promise self.warmth=warm
+say Don't lose sleep over it. | I know you will. | Good. Now, let's talk of something nicer.
+
+rule n7_close_debt_plead
+when concept=town.close pair.mem.on=debt pair.mem.da=plead
+say ...All right. Restday. Do your best. | Keep your coat. I'll wait. | We're both in a hole, then.
+
+rule n7_close_debt_paid
+when concept=town.close pair.mem.on=debt pair.mem.da=paid
+say Thank you. That's a weight off. | You're a good sort. | That'll see me through the week.
+
+rule n7_close_debt_dodge
+when concept=town.close pair.mem.on=debt pair.mem.da=dodge
+say Don't give me that. | I'll remember this. | Nice try. I'll be round Restday. | You know full well what you said.
+
+rule n7_close_debt_bite
+when concept=town.close pair.mem.on=debt pair.mem.da=bite
+say Hmph. Restday, then. And not a day after. | Don't take that tone with me. | Fine. I'll ask again tomorrow. And the day after.
+
+rule n7_close_debt_ease
+when concept=town.close pair.mem.on=debt pair.mem.da=ease
+say You're good to me. | Thank you. I'll not forget it. | I'll not keep you waiting long. | Restday. Truly.
+
+rule n7_close_debt_stern
+when concept=town.close pair.mem.on=debt pair.mem.da=stern
+say Restday. I swear. | I know. I know. | Gods, you'd have the pennies off a dead wolf's eyes.
+
+rule n7_close_debt_deny
+when concept=town.close pair.mem.on=debt pair.mem.da=deny
+say I hope that's so. | I'll judge for myself. | Then show me.
+
+rule n7_close_debt_assure
+when concept=town.close pair.mem.on=debt pair.mem.da=assure
+say Good. I may need you, then. | That's what I hoped to hear. | I'll come to you, then. Soon.
+
+rule n7_close_debt_give
+when concept=town.close pair.mem.on=debt pair.mem.da=give
+say Thank you. Truly. | You've saved me. | Restday. Every penny.
+
+rule n7_close_debt_refuse
+when concept=town.close pair.mem.on=debt pair.mem.da=refuse
+say Right. Forget I asked. | I understand. | I'll manage somehow.
+
+rule n7_close_debt_none
+when concept=town.close pair.mem.on=debt pair.mem.da=none
+say I know. Thank you anyway. | Keep your pennies. | We'll muddle through, the pair of us.
 
 ## The people they deal with: their priest, their shopkeeper, their leader, their neighbour by name
 
 rule n7_ro_priest_devout
-when concept=talk.smalltalk|talk.day self.priest self.piety=devout
+when concept=talk.smalltalk|talk.day self.priest self.piety=devout pair.flock=no
 cooldown 3d
-say #self.priest# preached on charity last Restday. Half the Heights left early. | #self.priest# blessed our door. I feel safer. Is that silly? | Have you heard #self.priest# sing? Like a bell. A cracked bell, but a bell.
+say #self.priest# preached on charity last Restday. Half the front pews left early. | #self.priest# blessed our door. I feel safer. Is that silly? | Have you heard #self.priest# sing? Like a bell. A cracked bell, but a bell.
 remember pair: on=answer 1h
 remember pair: ans=priest 1h
 then other: town.answer
 
 rule n7_ro_priest_ordinary
-when concept=talk.smalltalk|talk.day self.priest self.piety=ordinary
+when concept=talk.smalltalk|talk.day self.priest self.piety=ordinary pair.flock=no
 cooldown 3d
-say #self.priest# caught me nodding off in chapel. Again. | #self.priest# asked why I wasn't at chapel. I said my knees. My knees were at the tavern. | #self.priest# goes on, doesn't she? He? Goes on, anyway.
+say #self.priest# caught me nodding off in chapel. Again. | #self.priest# asked why I wasn't at chapel. I said my knees. My knees were at the tavern. | #self.priest# went on for an hour last Restday. An hour!
 remember pair: on=answer 1h
 remember pair: ans=priest 1h
 then other: town.answer
@@ -504,7 +681,7 @@ then other: town.answer
 rule n7_ro_priest_to_flock
 when concept=talk.smalltalk|talk.day pair.flock=a
 cooldown 3d
-say I've not seen you at chapel lately. | Your mother asks after your soul. So do I. | Come Restday. There's bread after, if nothing else.
+say I've not seen you at chapel lately. | How's your soul, these days? I ask everyone. Nobody answers. | Come Restday. There's bread after, if nothing else.
 remember pair: on=answer 1h
 remember pair: ans=flock 1h
 then other: town.answer
@@ -515,37 +692,53 @@ cooldown 3d
 priority 1
 say There's bread at the chapel door after the bell. Come. No questions. | The poor box isn't only for putting in. You know that? | If the rent's the trouble, come and talk to me. The chapel has a little.
 remember pair: on=answer 1h
-remember pair: ans=flock 1h
+remember pair: ans=flock_poor 1h
 then other: town.answer
 
 rule n7_ro_shopkeeper_short
-when concept=talk.smalltalk|talk.prices self.shopkeeper
+when concept=talk.smalltalk|talk.prices self.shopkeeper pair.customer=no
 cooldown 3d
-say #self.shopkeeper# gave me short weight again. I'm sure of it. | Went to #self.shopkeeper#'s for candles. Price had grown legs. | #self.shopkeeper# never smiles. Not once in ten years.
+say #self.shopkeeper# gave me short weight again. I'm sure of it. | Went to #self.shopkeeper#'s for candles. The price had grown legs. | #self.shopkeeper# never smiles. Not once in ten years.
 remember pair: on=answer 1h
 remember pair: ans=shop 1h
 then other: town.answer
 
 rule n7_ro_shopkeeper_kind
-when concept=talk.smalltalk|talk.prices self.shopkeeper self.warmth=warm
+when concept=talk.smalltalk|talk.prices self.shopkeeper self.warmth=warm pair.customer=no
 cooldown 3d
-say #self.shopkeeper# kept a loaf back for me. Didn't even ask. | #self.shopkeeper# let me off a penny. Said I'd a honest face. | Say what you like about #self.shopkeeper#, they'd give you the shirt off their back. Then charge you for the buttons.
+say #self.shopkeeper# kept a loaf back for me. Didn't even ask. | #self.shopkeeper# let me off a penny. Said I'd an honest face. | Say what you like about #self.shopkeeper#, they'd give you the coat off their back. Then charge you for the buttons.
 remember pair: on=answer 1h
-remember pair: ans=shop 1h
+remember pair: ans=shopgood 1h
 then other: town.answer
 
-rule n7_ro_customer
+rule n7_ro_customer_ask
 when concept=talk.smalltalk|talk.prices pair.customer=a
 cooldown 2d
-say Keep me back a loaf on Restday? | Is it up again? The price? Don't tell me. | Got any of the good stuff in? The stuff you keep under the counter?
+say Keep one back for me on Restday? | Got any of the good stuff in? The stuff you keep under the counter? | Put something by for me, would you? I'll be in tomorrow.
 remember pair: on=answer 1h
 remember pair: ans=customer 1h
 then other: town.answer
 
-rule n7_ro_keeper
+rule n7_ro_customer_price
+when concept=talk.smalltalk|talk.prices pair.customer=a
+cooldown 2d
+say Is it up again? The price? Don't tell me. | What's it to be this week? Same as last, I pray. | Tell me it's not gone up again.
+remember pair: on=answer 1h
+remember pair: ans=customer_price 1h
+then other: town.answer
+
+rule n7_ro_keeper_miss
 when concept=talk.smalltalk|talk.prices pair.customer=b
 cooldown 2d
-say You've not been in this week. Found somewhere else? | Your usual's put by. Didn't even have to ask. | I've something new in. You'll want to see it.
+say You've not been in this week. Found somewhere else? | Not seen you in a while. I was starting to worry. | You've gone off me, haven't you? Nine days without a visit.
+remember pair: on=answer 1h
+remember pair: ans=keeper_miss 1h
+then other: town.answer
+
+rule n7_ro_keeper_offer
+when concept=talk.smalltalk|talk.prices pair.customer=b
+cooldown 2d
+say Your usual's put by. Didn't even have to ask. | I've something new in. You'll want to see it. | Come by later. I've kept something back for you.
 remember pair: on=answer 1h
 remember pair: ans=keeper 1h
 then other: town.answer
@@ -559,11 +752,11 @@ remember pair: ans=leader 1h
 then other: town.answer
 
 rule n7_ro_leader_house
-when concept=talk.smalltalk|talk.work self.leader self.house
+when concept=talk.smalltalk|talk.work self.leader self.house self.wealth!=rich
 cooldown 3d
 say #self.leader# wants the books by Restday. Every page. | #self.leader# came down to the floor today. Everyone stood straighter. | You don't argue with #self.leader#. You nod, and then you do it.
 remember pair: on=answer 1h
-remember pair: ans=leader 1h
+remember pair: ans=leader_house 1h
 then other: town.answer
 
 rule n7_ro_neighbour_name
@@ -577,9 +770,9 @@ then other: town.answer
 rule n7_ro_neighbour_kind
 when concept=talk.smalltalk|talk.day self.neighbour pair.neighbours=no self.warmth=warm
 cooldown 3d
-say #self.neighbour# brought round a pie when I was poorly. Good sort. | Lucky with my neighbour. #self.neighbour# minds the pups when I'm late. | #self.neighbour# and I share a wall and a teapot. Half each.
+say #self.neighbour# brought round a pie when I was poorly. Good sort. | Lucky with my neighbour. #self.neighbour# keeps an eye on the place when I'm late. | #self.neighbour# and I share a wall and a teapot. Half each.
 remember pair: on=answer 1h
-remember pair: ans=neighbour 1h
+remember pair: ans=neighbourgood 1h
 then other: town.answer
 
 ## The realm's figures, where they're known (empty until the table is filled)
@@ -587,7 +780,7 @@ then other: town.answer
 rule n7_fg_ruler
 when concept=talk.smalltalk|talk.lore world.figure_ruler
 cooldown 3d
-say They say #world.figure_ruler# means to raise the levy again. | #world.figure_ruler# is to pass through, they say. They'll sweep the streets for once. | Do you think #world.figure_ruler# knows our town's name?
+say They say #world.figure_ruler# means to raise the levy again. | #world.figure_ruler# is to pass through, they say. They'll sweep the streets for once. | Do you think #world.figure_ruler# even knows our town's name?
 remember pair: on=answer 1h
 remember pair: ans=figure 1h
 then other: town.answer
@@ -611,7 +804,7 @@ then other: town.answer
 rule n7_fg_high_priest
 when concept=talk.smalltalk|talk.lore world.figure_high_priest
 cooldown 3d
-say #world.figure_high_priest# is to bless the harbour at the festival. | They say #world.figure_high_priest# fasts a whole week every winter. | #world.figure_high_priest# wrote to every chapel. More candles, fewer excuses.
+say #world.figure_high_priest# is to lead the prayers at the festival, they say. | They say #world.figure_high_priest# fasts a whole week every winter. | #world.figure_high_priest# wrote to every chapel. More candles, fewer excuses.
 remember pair: on=answer 1h
 remember pair: ans=figure 1h
 then other: town.answer
@@ -619,9 +812,9 @@ then other: town.answer
 rule n7_fg_hero
 when concept=talk.smalltalk|talk.lore world.figure_hero
 cooldown 3d
-say My pup wants to be #world.figure_hero# when she's grown. | They sing about #world.figure_hero# in the tavern now. Badly. | Did #world.figure_hero# really do all that? Or is it the songs?
+say Every pup in the street wants to be #world.figure_hero# when they're grown. | They sing about #world.figure_hero# in the tavern now. Badly. | Did #world.figure_hero# really do all that? Or is it the songs?
 remember pair: on=answer 1h
-remember pair: ans=figure 1h
+remember pair: ans=hero 1h
 then other: town.answer
 
 rule n7_fg_villain
@@ -629,7 +822,7 @@ when concept=talk.smalltalk|talk.lore|talk.bandits world.figure_villain
 cooldown 3d
 say Lock up tonight. They say #world.figure_villain# has been seen on the roads. | Mothers frighten their pups with #world.figure_villain# now. Works, too. | If #world.figure_villain# ever comes here, I'm hiding in the well.
 remember pair: on=answer 1h
-remember pair: ans=figure 1h
+remember pair: ans=villain 1h
 then other: town.answer
 
 ## The town's news, as it falls on each (world.*, newcomers, crime, news of their own)
@@ -661,7 +854,7 @@ then other: town.answer
 rule n7_wd_festival_levy
 when concept=talk.smalltalk|talk.festival world.festival=soon
 cooldown 3d
-say The Council's paying for the festival lamps. With our levy, mind. | They're putting up bunting in the good streets. Ours get the leftover string. | Festival's coming. Every price in the market's gone up a hand already.
+say They're paying for the festival lamps out of the levy, mind. | They're putting up bunting in the good streets. Ours get the leftover string. | Festival's coming. Every price in the market's gone up a paw's width already.
 remember pair: on=answer 1h
 remember pair: ans=festival 1h
 then other: town.answer
@@ -669,7 +862,7 @@ then other: town.answer
 rule n7_wd_festival_poor
 when concept=talk.festival|talk.smalltalk world.festival=today self.wealth=poor|destitute
 cooldown 2d
-say Feast for the Heights, crumbs for the rest. | Free ale till noon. I've been here since dawn. | I've no festival coat. I've a coat. It'll do.
+say Feast for some, crumbs for the rest. | Free ale till noon, they said. I've been here since dawn and seen none of it. | I've no festival coat. I've a coat. It'll do.
 remember pair: on=answer 1h
 remember pair: ans=festival 1h
 then other: town.answer
@@ -701,7 +894,7 @@ then other: town.answer
 rule n7_nc_neighbours
 when concept=talk.newcomer pair.neighbours=yes
 cooldown 2d
-say #topic.subject#'s taking the empty place on our row. | So we've a new neighbour. #topic.subject#. Heard them unpacking at midnight. | Have you met #topic.subject#? They'll be through our wall soon enough.
+say #topic.subject#'s taking the empty place on our row. | So we've a new neighbour. #topic.subject#. Heard them unpacking at midnight. | Have you met #topic.subject#? We'll hear them through the wall soon enough.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -709,7 +902,7 @@ then other: town.answer
 rule n7_nc_guard
 when concept=talk.newcomer self.role=guard
 cooldown 2d
-say I'll be keeping an eye on #topic.subject#. Nothing against them. Habit. | #topic.subject# came in through the gate. Asked the way to the inn. Polite enough. | New faces mean new trouble, nine times in ten. The tenth's all right.
+say I'll be keeping an eye on #topic.subject#. Nothing against them. Habit. | #topic.subject# came in through the gate with a cartload. Polite enough. | New faces mean new trouble, nine times in ten. The tenth's all right.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -725,31 +918,31 @@ then other: town.answer
 rule n7_nc_merchant
 when concept=talk.newcomer self.role=merchant
 cooldown 2d
-say A new customer, I hope. #topic.subject#. Has coin, has #topic.subject#? | I'll send #topic.subject# a little something. First purchase half price. Second, full. | Every newcomer needs a pot, a broom and a blanket. I've all three.
+say A new customer, I hope. #topic.subject#. Have they coin, do you know? | I'll send #topic.subject# a little something. First purchase half price. Second, full. | Every newcomer needs a pot, a broom and a blanket. I've all three.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
 
-rule n7_cr_guard
-when concept=talk.crime self.role=guard
+rule n7_cr_lock
+when concept=talk.crime topic.kind=theft|assault self.business!=none
 cooldown 1d
-say We'll have whoever did it. Mark me. | I was two streets off. Two streets! | The Watch House is in a fury. The captain wants a name by dusk.
+say After #topic.victim#, I've put a second bar on the door. | I'm sleeping in the back room till they've caught whoever did #topic.victim#. | I've moved the takings since #topic.victim#. Don't ask me where.
 remember pair: on=answer 1h
 remember pair: ans=crime 1h
 then other: town.answer
 
-rule n7_cr_rich
-when concept=talk.crime self.wealth=rich
+rule n7_cr_parent
+when concept=talk.crime topic.kind=theft|assault self.parent=yes self.age<=45
 cooldown 1d
-say And the Watch does what, exactly? We pay for them. | We've hired a wolf for the gate. One can't be too careful. | It's the Sump, you know. It creeps up the hill.
+say After #topic.victim#, I've told the pups to come straight home. Straight home. | The little ones keep asking about #topic.victim#. What do I tell them? | I walked mine to the well this morning, after #topic.victim#. They thought I'd gone soft.
 remember pair: on=answer 1h
 remember pair: ans=crime 1h
 then other: town.answer
 
-rule n7_cr_sump
-when concept=talk.crime self.quarter=sump
+rule n7_cr_night
+when concept=talk.crime topic.kind=theft|assault here.time=dusk|night
 cooldown 1d
-say The Watch'll come down here looking. They always do. | Whatever happened, they'll say it was one of ours. | Crime up the hill and the Sump gets the knock on the door.
+say I'll not walk home alone tonight, after #topic.victim#. | Every shadow's somebody tonight. Poor #topic.victim#. | Walk with me as far as the corner? Only after #topic.victim#...
 remember pair: on=answer 1h
 remember pair: ans=crime 1h
 then other: town.answer
@@ -759,7 +952,7 @@ when concept=talk.crime topic.kind=arrest self.temper=short
 cooldown 1d
 say Good. Lock #topic.subject# up and lose the key. | About time the Watch earned their bread. | Hang them in the square, I say. Well. Lock them up.
 remember pair: on=answer 1h
-remember pair: ans=crime 1h
+remember pair: ans=arrest 1h
 then other: town.answer
 
 rule n7_cr_arrest_warm
@@ -767,13 +960,13 @@ when concept=talk.crime topic.kind=arrest self.warmth=warm
 cooldown 1d
 say Poor #topic.subject#. Whatever they did, there's a family. | I knew #topic.subject#'s mother. She'll be heartbroken. | Arrested. Gods. I hope they're fed in there.
 remember pair: on=answer 1h
-remember pair: ans=crime 1h
+remember pair: ans=arrest 1h
 then other: town.answer
 
 rule n7_nw_work_poor
 when concept=talk.news topic.kind=work self.wealth=poor|destitute
 cooldown 2d
-say #topic.news#. Steady wages, at last. | #topic.news#. We'll eat proper this winter. | #topic.news#. I could cry. I did cry, a little.
+say #topic.news#. Things are looking up, for once. | #topic.news#. We'll eat properly this winter. | #topic.news#. I could cry. I did cry, a little.
 remember pair: on=answer 1h
 remember pair: ans=goodnews 1h
 then other: town.answer
@@ -781,202 +974,332 @@ then other: town.answer
 rule n7_nw_marriage_neighbours
 when concept=talk.news topic.kind=marriage pair.neighbours=yes
 cooldown 2d
-say #topic.news#. You'll hear the wedding through the wall, I'm afraid. | #topic.news#. We'll be one more on the row. | #topic.news#. Come to the feast. You'll hear it anyway, you might as well eat.
+say #topic.news#. You'll have heard the wedding through the wall, I'm afraid. | #topic.news#. There'll be one more of us on the row now. | #topic.news#. There's cake left over. Come and help us with it.
 remember pair: on=answer 1h
 remember pair: ans=goodnews 1h
 then other: town.answer
 
 rule n7_nw_crime_neighbours
-when concept=talk.news topic.kind=crime pair.neighbours=yes
+when concept=talk.news topic.kind=crime pair.neighbours=yes self.role!=guard
 cooldown 2d
-say #topic.news#. Right next to you. Did you hear nothing? | #topic.news#. Lock your door tonight. I mean it. | #topic.news#. In our own street.
+say #topic.news#. Right next door to you. Did you hear nothing? | #topic.news#. Lock your door tonight. I mean it. | #topic.news#. In our own street.
 remember pair: on=answer 1h
-remember pair: ans=crime 1h
+remember pair: ans=crime_me 1h
 then other: town.answer
 
-## Answering a remark about the town's people and news (self answers; pair.mem.ans says what about)
+## Answering a remark about the town's people and news (self answers; pair.mem.ans says what about; each
+## remembers its stance, pair.mem.aa: chat, glad, grave, ask, pup)
 
 rule n7_aa_plain
 when concept=town.answer
 say Is that so. | Hm. Sounds about right. | Well, well. | You don't say.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_plain2
 when concept=town.answer
-say #agree#. | So I heard. | Mm. | Fancy.
+say #agree#. | So I heard. | Mm.
+
+rule n7_aa_priest
+when concept=town.answer pair.mem.ans=priest
+say A good soul, all told. | They mean well. They go on, but they mean well. | You could do worse for a priest.
+remember pair: aa=chat 1h
+then other: town.close
 
 rule n7_aa_priest_devout
-when concept=town.answer pair.mem.ans=priest|flock self.piety=devout
+when concept=town.answer pair.mem.ans=priest self.piety=devout
 say A good soul. We're lucky in our priest. | I never miss a Restday. Not one in twenty years. | It does you good, a sermon. Even a long one.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_priest_ordinary
-when concept=town.answer pair.mem.ans=priest|flock self.piety=ordinary
-say I go for the singing. And the bread after. | I'll go Restday. Probably. Possibly. | The gods know where I live. They can call.
+when concept=town.answer pair.mem.ans=priest self.piety=ordinary
+say I go for the singing. And the bread after. | I'll go Restday. Probably. Possibly. | I keep meaning to go. Then it's Restday and I'm asleep.
+remember pair: aa=chat 1h
 then other: town.close
 
-rule n7_aa_priest_self
-when concept=town.answer pair.mem.ans=to_priest self.job=priest
+rule n7_aa_flock
+when concept=town.answer pair.mem.ans=flock
+say I've been meaning to come. My knees. | Restday. I'll be there. Near the back. | I know, I know. Work. Always work.
+remember pair: aa=excuse 1h
+then other: town.close
+
+rule n7_aa_flock_devout
+when concept=town.answer pair.mem.ans=flock self.piety=devout
+say I'll be there. I've not missed one I could help. | Bless you for asking. Truly. | I've been praying at home. It's not the same, I know.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_flock_poor
+when concept=town.answer pair.mem.ans=flock_poor
+say Thank you. I might. | I'll not say no. Not this week. | You're kind. I'll come by after the bell.
+remember pair: aa=glad 1h
+then other: town.close
+
+rule n7_aa_flock_poor_proud
+when concept=town.answer pair.mem.ans=flock_poor self.warmth=cold
+say We're managing. | Give it to someone who needs it. | I'll not take the chapel's bread.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_to_priest
+when concept=town.answer pair.mem.ans=to_priest
 say An hour, no more. Bring a cushion. | Come by the chapel after the bell. We'll talk. | The Bright One keep you, and your knees.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_shop
 when concept=town.answer pair.mem.ans=shop
 say They're all the same, shopkeepers. Thumb on the scale. | Go elsewhere, then. Oh. There is nowhere else. | Mine's worse. Mine sells me last week's bread at this week's price.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_shop_merchant
 when concept=town.answer pair.mem.ans=shop self.role=merchant
 say Try running a shop. Every penny's argued over. | Short weight? Never. Well. Not on purpose. | We're not the enemy, #address#. The carters are.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_shopgood
+when concept=town.answer pair.mem.ans=shopgood
+say Good sort, that one. | You're lucky. Mine would charge you for the smile. | Hold on to a shopkeeper like that.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_keeper_to_customer
 when concept=town.answer pair.mem.ans=customer
-say For you, aye. I'll put it by. | Up again, I'm afraid. It's the roads. | Under the counter? I don't know what you mean. Come back after dark.
+say For you, aye. I'll put it by. | I'll see what I can do. | I might. If you ask nicely.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_keeper_price
+when concept=town.answer pair.mem.ans=customer_price
+say Up again, I'm afraid. It's the roads. | Don't ask. I'll only cry. | Not this week. Next week, maybe.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_keeper_failing
-when concept=town.answer pair.mem.ans=customer self.business=failing
-say Anything you want. Anything. Please. | I'll do you a good price. A very good price. | You're the first through the door all day.
+when concept=town.answer pair.mem.ans=customer|customer_price self.business=failing
+say Anything you want. Anything. Please. | Name your price. Go on. Anything. | You're the first through the door all day.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_customer_miss
+when concept=town.answer pair.mem.ans=keeper_miss
+say I've been busy, that's all. | Never! I'd not go anywhere else. | Money's tight, that's all. It's not you.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_customer_reply
 when concept=town.answer pair.mem.ans=keeper
-say I've been busy, that's all. | Put it by, I'll be in. | Something new? Go on, then. Show me.
+say I'll come by later. | You know me too well. | Go on, then. What is it?
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_customer_poor
-when concept=town.answer pair.mem.ans=keeper self.wealth=poor|destitute
-say Nothing for me this week. I'm #skint#. | I've been going without. It's not you. | Show me. I'll not buy, but show me.
-then other: town.close
-
-rule n7_aa_leader_poor
-when concept=town.answer pair.mem.ans=leader self.wealth=poor|destitute
-say Counting doors means a new levy. Mark me. | They don't look left or right because they'd see us. | Silver plates. And we've a cracked bowl between three.
-then other: town.close
-
-rule n7_aa_leader_house
-when concept=town.answer pair.mem.ans=leader self.house
-say Careful. You're talking about the family. | They're stern, but they're fair. Mostly. | I'd not say that where the steward can hear.
+when concept=town.answer pair.mem.ans=keeper|keeper_miss self.wealth=poor|destitute
+say Nothing for me this week. I'm #skint#. | I've been going without. It's not you. | I'll look. I'll not buy, but I'll look.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_leader
-when concept=town.answer pair.mem.ans=leader|figure
+when concept=town.answer pair.mem.ans=leader|leader_house|figure
 say The great don't think of us. Why should we think of them? | Their business. Not mine. | I'd like a day in their boots. Just one.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_leader_poor
+when concept=town.answer pair.mem.ans=leader|figure self.wealth=poor|destitute
+say Whatever it is, it'll cost us. | Must be nice, being them. | And not one of them's ever been down our street.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_leader_house
+when concept=town.answer pair.mem.ans=leader|leader_house self.house
+say Careful. You're talking about the family. | Stern, but fair. Mostly. | I'd not say that where the steward can hear.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_figure_young
-when concept=town.answer pair.mem.ans=figure self.stage=young|adolescent
+when concept=town.answer pair.mem.ans=figure|hero self.stage=young|adolescent
 say Have you seen them? Really seen them? | I'm going to meet them one day. | Are they tall? I bet they're tall.
+remember pair: aa=pup 1h
+then other: town.close
+
+rule n7_aa_hero
+when concept=town.answer pair.mem.ans=hero
+say Half of it's true. That's still a lot. | Good. We could do with a few like that. | I'd buy them a drink, if they ever came in.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_villain
+when concept=town.answer pair.mem.ans=villain
+say Don't. I'll be up all night listening. | Let them try it here. | The Watch'll have them. Sooner or later.
+remember pair: aa=grave 1h
+then other: town.close
+
+rule n7_aa_villain_young
+when concept=town.answer pair.mem.ans=villain self.stage=young|adolescent
+say I'm not scared. I'm not. | Would they eat me? | I'd fight them. With a stick.
+remember pair: aa=pup 1h
 then other: town.close
 
 rule n7_aa_neighbour
 when concept=town.answer pair.mem.ans=neighbour
 say Every row has one. | Better that than the other sort. | Mine sings. At dawn. Every dawn.
+remember pair: aa=chat 1h
+then other: town.close
+
+rule n7_aa_neighbourgood
+when concept=town.answer pair.mem.ans=neighbourgood
+say You're lucky. Hold on to that one. | A good neighbour's worth more than a good roof. | Mine wouldn't lend me a candle.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_wedding
 when concept=town.answer pair.mem.ans=wedding|goodnews
-say Good. There's not enough of that. | Lovely. I do like a wedding. Well. The food. | Here's to them.
+say Good. There's not enough of that. | Lovely. I do like good news. | Here's to that.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_wedding_widowed
 when concept=town.answer pair.mem.ans=wedding self.widowed=yes
-say Lovely. I was married in that chapel. Long time ago. | Good. Let them be happy while they can. | I went. Sat at the back. It was lovely.
+say Lovely. I was married in that chapel. A long time ago. | Good. Let them be happy while they can. | I went. Sat at the back. It was lovely.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_wedding_dry
 when concept=town.answer pair.mem.ans=wedding self.humour=dry
 say Give it a year. | Love's grand. So's a sound roof. | Weddings: the town's way of getting a free meal out of you.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_birth
 when concept=town.answer pair.mem.ans=birth
 say Good. The town needs pups. | Loud ones are healthy, my mother said. | Bless it. Bless the mother more.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_birth_parent
 when concept=town.answer pair.mem.ans=birth self.parent=yes
-say They'll not sleep for a year. I remember. | Lovely. I'll send round our old cradle. | Ah. Enjoy it while they're small. They don't stay.
+say They'll not sleep for a year. I remember. | Lovely. I'll send round our old cradle. | Ah. Enjoy it while they're small. They don't stay small.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_death
 when concept=town.answer pair.mem.ans=death
 say It comes for us all. | I'll go to the burying. | The town'll be the poorer.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_death_mourning
 when concept=town.answer pair.mem.ans=death self.mourning=kin|friend
 priority 1
 say Don't. I've had my own this week. | Every bell, I think it's for mine. | I can't talk about burying. Not now.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_festival
 when concept=town.answer pair.mem.ans=festival
-say Still. A festival's a festival. | I'll be there, levy or no. | Ah, let them have their fun. Let us have ours.
+say Still. A festival's a festival. | Ah, let them have their fun. Let us have ours. | I'll dance anyway. Nobody can levy that.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_festival_merry
 when concept=town.answer pair.mem.ans=festival self.humour=merry
-say I'll dance with you. I'll dance with anyone. | Free ale. Did you say free ale? | I've been practising my singing. Hide.
+say I'll dance with you. I'll dance with anyone. | Free ale? Did somebody say free ale? | I've been practising my singing. Hide.
+remember pair: aa=glad 1h
 then other: town.close
 
 rule n7_aa_newcomer
 when concept=town.answer pair.mem.ans=newcomer
 say Give them a week. We'll see. | Seems decent enough. | New faces. The town needs them.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_newcomer_cold
 when concept=town.answer pair.mem.ans=newcomer self.warmth=cold
 say I'll wait and see. | Newcomers come and go. | Let them prove themselves.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_newcomer_incomer
-when concept=town.answer pair.mem.ans=newcomer self.from!=ridgemere here.region=ridgemere
+when concept=town.answer pair.mem.ans=newcomer self.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow here.region=ridgemere
 say I was new once. Nobody brought me a pie. | Be kind. I remember my first winter here. | They'll learn. Took me three years to stop getting lost.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_crime
 when concept=town.answer pair.mem.ans=crime
 say Lock your doors. I'm locking mine. | It's getting worse. Every season. | Nobody's safe. Not even in the good streets.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_crime_guard
-when concept=town.answer pair.mem.ans=crime self.role=guard
-say We're on it. Give us a day. | I'll ask about. Someone always saw something. | Tell your street: anything odd, come to the Watch House.
+when concept=town.answer pair.mem.ans=crime|crime_me self.role=guard
+say We're on it. Give us a day. | I'll ask about. Someone always saw something. | Tell your street: anything odd, come to the Watch.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_crime_sump
-when concept=town.answer pair.mem.ans=crime self.quarter=sump
+when concept=town.answer pair.mem.ans=crime self.quarter=sump here.region=ridgemere
 say And they'll come knocking down our way. You'll see. | Never the Heights they search. Never. | Wasn't us. It's never us. Somehow it's always us.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_crime_nervy
-when concept=town.answer pair.mem.ans=crime self.temper=nervy
+when concept=town.answer pair.mem.ans=crime|crime_me self.temper=nervy
 say I'll not sleep tonight. | I've put a chair against my door. Two chairs. | What if they come back? What if they come to ours?
+remember pair: aa=grave 1h
+then other: town.close
+
+rule n7_aa_crime_me
+when concept=town.answer pair.mem.ans=crime_me
+say Gods! Are you hurt? | What did they take? | I'm so sorry. Did you see them?
+remember pair: aa=ask 1h
+then other: town.close
+
+rule n7_aa_arrest
+when concept=town.answer pair.mem.ans=arrest
+say What did they do, do you know? | They'll be out by Restday, I'd bet. | The gaol's no place to get better.
+remember pair: aa=grave 1h
 then other: town.close
 
 rule n7_aa_dry
-when concept=town.answer self.humour=dry pair.mem.ans=shop|neighbour|leader|figure|festival|wedding|newcomer
+when concept=town.answer self.humour=dry pair.mem.ans=shop|neighbour|leader|figure|festival|newcomer|hero
 say Riveting. | The town never sleeps. Worse luck. | And the world keeps turning.
+remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_merry
-when concept=town.answer self.humour=merry pair.mem.ans=shop|neighbour|leader|figure|festival|wedding|newcomer|goodnews|birth
+when concept=town.answer self.humour=merry pair.mem.ans=shop|neighbour|leader|figure|festival|wedding|newcomer|goodnews|birth|hero
 say Ha! This town. | Never a dull day. | You do hear things, don't you!
+remember pair: aa=chat 1h
 then other: town.close
 
-## The last word on the town's people and news
+## The last word on the town's people and news (pair.mem.aa says how it was taken)
 
 rule n7_close_ans
 when concept=town.close pair.mem.on=answer
 say Aye. Well. That's the town. | So it goes. | Hm. We'll see. | There's always something.
 
 rule n7_close_ans_grave
-when concept=town.close pair.mem.on=answer pair.mem.ans=crime|death
+when concept=town.close pair.mem.on=answer pair.mem.aa=grave
 priority 1
-say Aye. Lock up tonight. | Gods keep us. | Strange times. | Mind how you go.
+say Aye. Bad times. | Gods keep us. | Strange times. | Mind how you go.
 
 rule n7_close_ans_glad
-when concept=town.close pair.mem.on=answer pair.mem.ans=wedding|birth|goodnews|festival
+when concept=town.close pair.mem.on=answer pair.mem.aa=glad
 say Good times, for once. | We'll drink to it. | Something to smile about.
+
+rule n7_close_ans_excuse
+when concept=town.close pair.mem.on=answer pair.mem.aa=excuse
+say I'll hold you to that. | Near the back's still in the chapel. | I'll keep a place for you.
+
+rule n7_close_ans_ask
+when concept=town.close pair.mem.on=answer pair.mem.aa=ask
+say I'm all right. Shaken, that's all. | Everything I had on me. | It was too dark. I'd not know them again. | I'll live. That's the main thing.
+
+rule n7_close_ans_pup
+when concept=town.close pair.mem.on=answer pair.mem.aa=pup
+say Maybe one day. | Ha. You and every pup in town. | Off you go, now.

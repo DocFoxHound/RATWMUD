@@ -125,8 +125,8 @@ a : I'm your only one. | Eat it before she sees. | Of course she is.
 scene kn_gran_old_ways
 when topic=family pair.band=family a.stage=old b.stage=young|adolescent
 a : In my day, pups bowed their head to their elders. | Why are you lying around? The sun's up. | Pups these days don't know how to howl properly.
-b : Why? | It's rest day. | I can howl!
-a : Respect. It costs nothing and buys a lot. | Rest day was for chapel, in my time. | Let's hear it, then.
+b : Why? | It's Restday. | I can howl!
+a : Respect. It costs nothing and buys a lot. | Restday was for chapel, in my time. | Let's hear it, then.
 b : I respect you. Lots. | Chapel was boring in your time too. | Owooo!
 a : Then bow your head, cheeky. | ...It was. Don't tell the brother. | That's a pup with a cold. From the belly!
 
@@ -181,7 +181,7 @@ a : You'll have both, for a while yet. | Stubborn. Good. | Ha. Help me up.
 
 scene kn_cousins_visit
 when topic=family pair.band=family a.stage=young|adolescent b.stage=young|adolescent
-a : Our cousins are coming from #here.town# on rest day. | Do you remember our cousin Lark? | Mother says the cousins are staying a whole week.
+a : Our cousins are coming from #here.town# on Restday. | Do you remember our cousin Lark? | Mother says the cousins are staying a whole week.
 b : The one who bites? | The one who cheats at stones? | A whole week? Where will they sleep?
 a : He doesn't bite any more. He's older. | He doesn't cheat. He just wins. | In our bed. With us.
 b : Older biters bite harder. | Nobody wins that much. | Then I'm sleeping in the barn.

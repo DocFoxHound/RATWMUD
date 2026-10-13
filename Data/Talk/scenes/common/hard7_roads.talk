@@ -27,7 +27,7 @@ b : The gods weren't there. The carter was. | Brave and limping. Usual. | I'd ha
 
 scene h7_raid_who_are_they
 when topic=bandits topic.kind=raided
-a : Who are they, these #bandits# on the #topic.where# road? | Where do they come from, the ones who hit the #topic.where# carts? | Wolves don't just turn #bandits#. Something makes them. | Somebody's feeding those road wolves. You don't last out there alone.
+a : Who are they, these #bandits# on the #topic.where# road? | Where do they come from, the ones who hit the #topic.where# carts? | Nobody's born a robber. Something makes them. | Somebody's feeding those road wolves. You don't last out there alone.
 b : Hungry wolves. That's all they ever are. | Out of work, out of luck. | Debt, mostly. Debt and a grudge. | Somebody in town, you mean?
 a : Hungry wolves with knives. | Then put them to work. | We've all got those. | I mean nothing. I'm only saying.
 b : Knives are cheaper than bread. | Who'd hire them now? | And we don't rob carts. Yet. | Say it quieter.
@@ -42,7 +42,7 @@ b : That's how it works. | Keeping us in, I think. | Then nobody'll go. | Then i
 scene h7_raid_gallows
 when topic=bandits topic.kind=raided
 a : The #topic.where# carts are gone. | Robbed again, the #topic.where# road. | They raided the #topic.where# caravan. | No goods from #topic.where# this week.
-b : Well. Nobody's robbing me. I've nothing on a cart. | Good thing I can't afford anything. | More #worthless# news. | I'll not miss what I couldn't buy.
+b : Well. Nobody's robbing me. I've nothing on a cart. | Good thing I can't afford anything. | More bad news. I'm full up with it. | I'll not miss what I couldn't buy.
 a : Poverty's a fine guard. | The best lock there is. | You've a gift for cheer. | Nor me.
 b : Cheaper than a sword. | And it never sleeps. | It's free, cheer. Unlike salt. | We're safe as houses, us.
 
@@ -70,7 +70,7 @@ when topic=bandits topic.kind=camp
 a : I'll not go past #topic.where# now. | Is there another road round #topic.where#? | My cousin goes by #topic.where# every week. I've told her. | I used to pick berries out by #topic.where#.
 b : Nobody will. | The long way. Two days more. | Did she listen? | Pick them somewhere else.
 a : Then the camp's got the road. | Two days. On my feet. | She laughed. | They were the good berries.
-b : Until someone takes it back. | Better than none at all. | Then she'll learn. Gods keep her. | Berries'll keep. You might not.
+b : Until someone takes it back. | Better than never getting there. | Then she'll learn. Gods keep her. | Berries'll keep. You might not.
 
 scene h7_camp_fed
 when topic=bandits topic.kind=camp
@@ -87,7 +87,7 @@ a : It's there whether you see it or not. | They can't see me pointing. | I don'
 b : Then let it be there without me. | You don't know that. | Then dark it is. | An owl. Go to sleep.
 
 scene h7_camp_children
-when topic=bandits topic.kind=camp a.stage=young|adolescent
+when topic=bandits topic.kind=camp a.stage=young|adolescent b.stage=adult|old
 a : Is it true there's #bandits# at #topic.where#? | I want to see the camp at #topic.where#. Just from the hill. | Do #bandits# have pups too? At #topic.where#? | If they come I'll fight them. I've a stick.
 b : True. And you're not going near it. | You'll see the back of my paw. | I... suppose they might. | A stick. Gods help us.
 a : I wasn't going to. Much. | Just from the hill! | Then are they bad too? | It's a good stick!
@@ -180,7 +180,7 @@ scene h7_road_devout
 when topic=bandits a.piety=devout
 a : I pray for the carters every Restday. Now I'll pray harder. | The Bright One keeps the road. Mostly. | Pray for them on the road. And pray for the robbers, too. | I lit a candle for every cart that went out this week.
 b : Pray louder. They're not hearing. | Mostly's not a comfort. | The robbers? | That's a lot of candles.
-a : Gods hear soft as well as loud. | It's what we've got. | They're wolves. Lost ones. | Every one came back but one.
+a : The Bright One hears soft as well as loud. | It's what we've got. | They're wolves. Lost ones. | Every one came back but one.
 b : Then they're choosing not to. | I'll take mostly, then. | Lost and armed. | Then light one more for that one.
 
 scene h7_road_robbed_self

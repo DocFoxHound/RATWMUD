@@ -6,7 +6,7 @@
 # ================================================================ Any day
 
 scene m7_day_where_gone
-when topic=day
+when topic=day here.time=day|dusk
 a : Is it #here.weekday# already? | Where did the morning go? | I've been busy all day and done nothing. | This week's lasting a month.
 b : All day, apparently. | Same place as yesterday's. | That's a talent. | Feels like two.
 a : It sneaks up. | Gone with my patience. | I should be paid for it. | At least.
@@ -23,15 +23,15 @@ a : The best kind. | Wise. | Same here. | I'll spread the word.
 
 scene m7_day_small_wins
 when topic=day
-a : Found a penny in the gutter this morning. | The baker gave me the end of a loaf. Free. | Got the knot out of my tail at last. | Slept all night. Didn't wake once.
-b : Spend it wisely. | Lucky dog. | Took you long enough. | I'd kill for that.
-a : On nothing. | The heel too. | It was a stubborn knot. | Don't. I'll tell you how.
+a : Found a silver button off somebody's fine coat this morning. | The baker gave me the end of a loaf. Free. | Got the knot out of my tail at last. | Slept all night. Didn't wake once.
+b : Sell it, then. | Lucky dog. | Took you long enough. | I'd kill for that.
+a : Wear it, more like. | The heel too. | It was a stubborn knot. | Don't. I'll tell you how.
 
 scene m7_day_small_woes
 when topic=day
-a : Stubbed my paw on the doorstep. Twice. | Burned the porridge. | Lost a button and an hour looking for it. | Pup's got the hiccups. All morning.
-b : Move the step. | Burnt's a flavour. | Did you find it? | Give it a fright.
-a : It moves itself. | A bad one. | The hour's gone. | I did. They screamed at me.
+a : Stubbed my paw on the doorstep. Twice. | Burned the porridge. | Lost a button and an hour looking for it. | I've had the hiccups since breakfast.
+b : Move the step. | Burnt's a flavour. | Did you find it? | Want me to give you a fright?
+a : It moves itself. | A bad one. | The hour's gone. | You just did. Gone. Thank you.
 
 scene m7_day_gossip_light
 when topic=day pair.band=friends|family|spouses
@@ -50,10 +50,10 @@ a : Wouldn't miss it. | Let them. | Funny old town. | Wouldn't have it any other
 scene m7_day_market_bargain
 when topic=day here.day=market
 a : Got a cabbage for a smile today. | Paid too much for eggs. Knew it while I did it. | There's a stall selling ribbons from the south. | Somebody's selling a goat that sings. Claims to.
-b[role=merchant] #trade : A smile's no currency at my stall.
+b[role=merchant] #trade : Whoever sold you that, I'll beat their price next week.
 b : What did the cabbage cost the smile? | We all do. | Pretty? | Does it?
-a@trade : Then your cabbages stay home.
-a : Some dignity. | Eggs know when you're weak. | Too pretty for my purse. | It brays. Close enough.
+a@trade : I'll hold you to that.
+a : Some dignity. | Eggs know when you're weak. | Too pretty for my purse. | It bleats in tune. Nearly.
 
 scene m7_day_market_noise
 when topic=day here.day=market here.place=market|street
@@ -64,9 +64,9 @@ a : I'm hoarse already. | Day before. | Natural order. | Two pies, then.
 scene m7_day_market_pups
 when topic=day here.day=market a.parent=yes
 a : Lost the pups twice already. | Mine want everything they see. | I promised one sweet each. They've had four. | The pups have found the puppet stall. I'll never get them home.
-b[stage=young] #pup : Can I have a sweet? Just one?
-b : Find them at the honey stall. | Mine too. And I want it all too. | Four's a festival. | Leave them there. Collect them later.
-a@pup : Ask your own mother.
+b[stage=young] #pup : Can I have a honey cake? A small one?
+b : Find them at the honey stall. | Pups and parents both. I want it all too. | Four's a festival. | Leave them there. Collect them later.
+a@pup : We'll see. If you're good.
 a : Already looked there. | We're all pups on Marketday. | Five, then. | Tempting.
 
 scene m7_day_market_end
@@ -79,11 +79,11 @@ a : Too late. All gone. | Run, then. | Thank the gods. | And pigeons.
 
 scene m7_day_rest_quiet
 when topic=day here.day=rest
-a : The forge is quiet. Strange, without it. | No carts on a Restday. You can hear the river. | Everyone's moving slow. | I had a lie-in. A real one.
+a : The forge is quiet. Strange, without it. | No carts on a Restday. You can hear the well chain creak. | Everyone's moving slow. | I had a lie-in. A real one.
 b[piety=devout] #church : Were you at chapel? I didn't see you.
-b : I keep hearing it anyway. | And the birds. | Rest's hard work. | Lucky. Mine woke me at dawn.
+b : I keep hearing it anyway. | And the birds. | Rest's hard work. | Lucky. The neighbour's cockerel had me up at dawn.
 a@church : At the back. Very at the back.
-a : Odd, isn't it. | Lovely. | Hard as any. | Pups are a curse.
+a : Odd, isn't it. | Lovely. | Hard as any. | Stew it.
 
 scene m7_day_rest_chores
 when topic=day here.day=rest
@@ -107,8 +107,8 @@ a : Generous. | Very unfair. | Nor anyone, really. | You're a master.
 
 scene m7_day_work_dawn
 when topic=day here.day=work here.time=dawn
-a : Up before the bells. | Another week. | I'd give a penny for another hour asleep. | The town's yawning.
-b[stage=old] #old : At my age you sleep less. Grown used to it.
+a : Up before the bells. | Another day of it. | I'd give a penny for another hour asleep. | The town's yawning.
+b[stage=old] #old : At my age you sleep less. You get used to it.
 b : The bells are lazy. | Same as the last. | I'd take your penny. | So am I.
 a@old : Lucky. I'm still learning.
 a : Lazy bells. | And the next. | Keep it. Buy sleep. | Cover your mouth.
@@ -124,8 +124,8 @@ a : Earned it. | Longer. | High. | Or two.
 scene m7_day_festival_day
 when topic=day here.day=festival
 a : Bunting on every house. | Not one shop open. | The whole town's dressed in its best. | Feels like a holiday. Oh. It is.
-b : Even the gaol, I heard. | Except the inns. | Even old Thorn. In a ribbon. | Ha.
-a : Festive gaolers. | They know their trade. | Ribbon? Thorn? | Took me a minute.
+b : Even the watch post, I saw. | Except the inns. | Even old Thorn. In a ribbon. | Ha.
+a : Festive guards. | They know their trade. | Ribbon? Thorn? | Took me a minute.
 
 # ================================================================ The hour
 
@@ -136,16 +136,16 @@ b : I could live on that smell. | I'll be first in the line. | Loudest of all cr
 a : Many do. | Second. I was here first. | Except my uncle. | Lazy cow.
 
 scene m7_day_dusk_lamps
-when topic=day here.time=dusk
-a : There goes the lamplighter. | Swallows going over. | The light's gone gold. | Supper smells from every door.
-b : Earliest one yet. | Late tonight. | Pretty, that. | Mine's cabbage.
-a : Winter's coming. | They know something. | Enjoy it. | Mine's cabbage too.
+when topic=day here.time=dusk here.place=street|market|gate
+a : There goes the lamplighter. | Rooks going home over the roofs. | The light's gone gold. | Supper smells from every door.
+b : Early, isn't he? | Late tonight. | Pretty, that. | Mine's cabbage.
+a : He's got a sweetheart on the far street. | They know something. | Enjoy it. | Mine's cabbage too.
 
 scene m7_day_night_walk
 when topic=day here.time=night
-a : Can't sleep? | The town looks different at night. | Only us and the cats. | Quiet enough to hear the river.
-b[temper=nervy] #nervy : I don't like the dark. I'm just quick about it.
-b : Never can. | Smaller, somehow. | And the watch. | And the snoring.
+a : Can't sleep? | The town looks different at night. | Only us and the cats. | Quiet enough to hear the whole town breathing.
+b[temper=nervy] #nervy : I don't like the dark. I'm only out because I must be.
+b : Never can. | Smaller, somehow. | And the watch. | And snoring.
 a@nervy : Walk with me, then.
 a : Me neither. | Kinder too. | They'll find us. | Ha. Old Grist.
 
@@ -153,16 +153,16 @@ scene m7_day_night_tavern
 when topic=day here.time=night here.place=tavern
 a : One more #ale#? | They'll be calling time soon. | Who's singing? That's awful. | Last fire of the night.
 b : One more. | They always say that. | Me. | Stir it up.
-a : Then home. | They never mean it. | Oh. Lovely. Lovely singing. | Logs?
+a : Then home. | They never mean it. | Oh. Lovely. Lovely singing. | Another log, then.
 
 # ================================================================ The crowd
 
 scene m7_day_crowd_crush
 when topic=day here.crowd=crowd
 a : Who are all these wolves? | Somebody's trodden on my tail twice. | I've lost my sister in this. | Mind your purse.
-b[job=guard] #guard : My job, today. Keep your hands where I can see them.
+b[job=guard] #guard : My job, today. Keep your paws where I can see them.
 b : Half the country. | Only twice? | Look for her ears. | Already am.
-a@guard : My hands are innocent.
+a@guard : My paws are innocent.
 a : Too many. | It's a big tail. | They're all ears. | Good.
 
 scene m7_day_crowd_busy
@@ -182,17 +182,17 @@ a : We've none. | Shh. | Our secret. | I won't.
 
 scene m7_place_tavern_fire
 when topic=day|weather|smalltalk here.place=tavern
-a : Best seat in the house, this. | Fire's good tonight. | Who let the dog sit at the hearth? | My boots are steaming.
-b[job=innkeeper] #keep : Best seat, best price. That's the rule.
-b : I've had my eye on it all week. | They've put a whole oak on. | He was here first. | Don't put them on the table.
-a@keep : Since when?
-a : Too late. | Good oak. | Fair, then. | They're comfy there.
+a : Best seat in the house, this. | Fire's drawing well. | I could sit by this fire till spring. | My boots are steaming.
+b[job=innkeeper] #keep : Sit as long as you like. Drink as long as you sit.
+b : I've had my eye on it all week. | They've put a whole log on. | You'd have to fight the dog for it. | Don't put them on the table.
+a@keep : That's the rule, is it?
+a : Too late. | Good log. | The dog can share. | They're comfy there.
 
 scene m7_place_tavern_song
 when topic=day|festival here.place=tavern here.time=dusk|night
 a : Somebody start a song. | Not that one. Anything but that one. | Who taught the fiddler that tune? | They're singing the drowned sailor again.
-b[humour=merry] #sing : *starts singing* Oh the Sound was grey and the—
-b : You start it. | Too late, he's started. | His mother. A cruel woman. | Every night. Every single night.
+b[humour=merry] #sing : Oh, the Sound was grey and the wind was high, and the...
+b : You start it. | Too late, he's started. | His mother. A cruel woman. | Every night, and worse each time.
 a@sing : Gods help us all.
 a : I sing like a gate. | Gods. | It shows. | Join in. It's quicker.
 
@@ -211,7 +211,7 @@ a@devout : I'll feed it, then.
 a : Don't spoil it. | Good. | I hope so. | And mice.
 
 scene m7_place_gate_road
-when topic=day|smalltalk here.place=gate
+when topic=day|smalltalk here.place=gate here.time=dawn|day
 a : Who's coming in today? | Carts queued to the bend. | Gate's quiet. | Watched a caravan go out this morning.
 b[job=guard] #gate : All sorts. I check them all. Even the sheep.
 b : Nobody worth watching. | Tolls'll be fat. | Too quiet. | Long way, wherever it's going.
@@ -222,7 +222,7 @@ scene m7_place_gate_leaving
 when topic=day|weather here.place=gate here.time=dawn
 a : Early travellers. | Gates open. | The road's already busy. | Carters off before sun-up.
 b : Early or late. | Here we go again. | Always. | Long days for them.
-a : Never both. | Another day. | Some of it. | Long and dusty.
+a : Never both. | Another day. | Some of it. | Long, whatever the weather.
 
 scene m7_place_field_harvest
 when topic=day|weather here.place=field here.season=autumn
@@ -236,51 +236,51 @@ a : Even the old ones. | Always more. | Rub it in. | A bit.
 
 scene m7_place_field_spring
 when topic=day|weather here.place=field here.season=spring
-a : Furrows straight as a ruler. | Rooks following the plough. | Seed's in. Now we wait. | Lambs all over the near field.
-b : Who ploughed them? | Free worm supper. | And pray. | Noisy little things.
-a : Old Harrow. Proud of it. | Greedy birds. | Mostly pray. | Sweet, though.
+a : Furrows straight as a plumb line. | Rooks following the plough. | Seed's in. Now the rooks have a go. | Lambs all over the near field.
+b : Who ploughed them? | Free worm supper. | Scare them, then. | Noisy little things.
+a : Old Harrow. Proud of it. | Greedy birds. | With what? My face? | Sweet, though.
 
 scene m7_place_field_summer
 when topic=day|weather here.place=field here.season=summer
 a : Hay's cut. Smell it. | Too hot to bend. | Corn's up to my chest. | Poppies all through the barley.
-b : Best smell there is. | Bend anyway. | Mine too. | Pretty weeds.
-a : After bread. | I'll break. | Good year. | Weeds are pretty.
+b : Like summer in a jar. | Bend anyway. | Mine too. | Pretty weeds.
+a : I'd bottle it if I could. | I'll break. | Good year. | Pretty, and the miller curses every one.
 
 scene m7_place_shore_tide
-when topic=day|weather|lore here.place=shore
+when topic=day|weather here.place=shore here.region=ridgemere
 a : Tide's out. | Shells all over the strand. | Smell the weed. | Gulls are fighting over something.
 b[job=fisher|sailor] #sea : Tide's out, boats are in. That's the rule.
 b : It'll be back. | The pups'll be out for them. | Low tide pong. | Dead crab.
 a@sea : I'll remember.
-a : It always is. | Collecting. | Lovely. | Lucky crab.
+a : It always is. | Collecting. | Lovely. | Lucky gulls.
 
 scene m7_place_shore_dusk
 when topic=day|weather here.place=shore here.time=dusk|night
-a : Lamps out on the water. | Hear the boats knocking together? | The tide's coming in. | Water's black as ink.
-b : Night fishing. | Like a slow drum. | Watch your boots. | Nobody goes in.
-a : Hope they come home. | Puts me to sleep. | Too late. | Nobody sane.
+a : Lamps out on the water. | Hear the boats knocking together? | Mist coming off the water. | Water's black as ink.
+b : Night fishing. | Like a slow drum. | It'll be on us in a breath. | Nobody goes in.
+a : Hope they come home. | Puts me to sleep. | Then let's not stand in it. | Nobody sane.
 
 scene m7_place_hall_waiting
 when topic=day here.place=hall
-a : Been waiting an hour. | Every bench is taken. | The clerk's on his fourth cup. | Somebody's arguing about a fence. Again.
-b[job=official] #clerk : The clerk is doing his best. The clerk is me.
-b : Two, me. | Sit on the floor. | Fifth, I count. | It's always a fence.
+a : Been waiting an hour. | Every bench is taken. | The clerk's sharpened that quill four times. | Somebody's arguing about a fence. Again.
+b[job=official] #clerk : We're doing our best, you know. I'm a clerk here, as it happens.
+b : Two, me. | Sit on the floor. | Five. I've been counting. | It's always a fence.
 a@clerk : Oh. Sorry.
-a : Gods. | Floor's taken. | Lucky clerk. | Fences start wars.
+a : Gods. | Floor's taken. | Sharpest quill in the realm. | Fences start wars.
 
 scene m7_place_barracks
 when topic=day here.place=barracks
 a : Bunk's harder than the floor. | Who left the boots there? | Sergeant's in a mood. | Ration bread's like slate.
-b[job=guard|soldier] #guard : Soak it. In ale. Works.
-b : Sleep on the floor, then. | Not me. | Sergeant's always in a mood. | Like Grayrock's slate.
-a@guard : Good tip.
+b[job=guard|soldier] #guard : Welcome to the Watch.
+b : Swap with the dog. | Not me. | Sergeant's always in a mood. | Like Grayrock's slate.
+a@guard : Some welcome.
 a : Might. | Somebody. | Always. | Cheaper.
 
 scene m7_place_home_kettle
 when topic=day here.place=home
-a : Kettle's on. | Put your feet up. | Mind the cat. | Don't look at the mess.
+a : There's broth on the fire. | Put your feet up. | Mind the cat. | Don't look at the mess.
 b : Bless you. | Gladly. | Which cat? | What mess?
-a : Two cups. | Stay a while. | All of them. | Kind.
+a : Two bowls, then. | Stay a while. | All of them. | Kind.
 
 scene m7_place_work_grind
 when topic=day here.place=work
@@ -295,10 +295,10 @@ a : And tomorrow. | Don't remind me. | Good. | Never is.
 scene m7_fest_soon_any
 when topic=festival topic.when=soon
 a : #here.festival.capitalize# in a few days. | Are you going to #here.festival#? | They're getting ready for #here.festival# already. | I've not a thing to wear for #here.festival#.
-b[stage=young] #pup : I'm going to stay up all night! All of it!
-b : Already? Where does the year go? | Wouldn't miss it. | They start earlier every year. | Wear what you wore last year.
-a@pup : We'll see about that.
-a : Behind the stove. | Me neither. | Earlier every year. | Somebody'll notice.
+b[stage=young] #pup : Will there be a bonfire? There has to be a bonfire!
+b : Already? I've only just got over the last one. | Wouldn't miss it. | They start earlier every year. | Wear what you wore last year.
+a@pup : There's always a bonfire.
+a : Pace yourself this time. | Me neither. | Next year they'll start the day after. | Somebody'll notice.
 
 scene m7_fest_soon_prepare
 when topic=festival topic.when=soon
@@ -308,9 +308,9 @@ a : Or butter. | Shocking. | Eager or drunk. | Then I'll brush it again.
 
 scene m7_fest_soon_poor
 when topic=festival topic.when=soon a.wealth=destitute|poor
-a : I can't afford the festival. | The pups want ribbons. I've no coin. | We'll eat what we have. Which isn't much. | Festivals cost.
-b[warmth=warm] #warm : Come to ours. There's always room. Bring the pups.
-b : Nobody can. | Make them out of rags. They won't know. | The chapel feeds folk. | They do.
+a : I can't afford the festival. | Everyone's buying ribbons. I've no coin. | We'll eat what we have. Which isn't much. | Festivals cost.
+b[warmth=warm] #warm : Come to ours. There's always room. Bring whoever's yours.
+b : Nobody can. | Wear a bit of rag. Nobody'll know. | The chapel feeds folk. | They do.
 a@warm : You mean that? Truly?
 a : Some can. | They'll know. | I'll go. | And then some.
 b?@warm : Every word.
@@ -323,24 +323,24 @@ a : Paper blossom. Shameful. | Never too old. | Bruised eggs, lovely. | Small bo
 
 scene m7_fest_soon_summer
 when topic=festival topic.when=soon here.season=summer
-a : They're piling wood for the #here.festival# fire. | Who's jumping the fire this year? | Midsummer dancing. My feet ache already. | Long light coming.
-b[stage=adolescent] #young : Me. I'm jumping it. Don't tell my mother.
+a : They're piling wood for the #here.festival# fire. | Who's jumping the fire this year? | Dancing for #here.festival#. My feet ache already. | Long light coming.
+b[stage=adolescent] #young : I'm jumping the fire this year. Don't tell my mother.
 b : Taller than last year. | Fools and lovers. | Ache now, dance then. | Longest day.
 a@young : Your mother will know. Mothers always know.
-a : They'll see it in Larkfield. | Which are you? | Exactly. | Shortest night.
+a : They'll see it from the hills. | Which are you? | Exactly. | Shortest night.
 
 scene m7_fest_soon_autumn
 when topic=festival topic.when=soon here.season=autumn
 a : Harvest's nearly in. Then #here.festival#. | Who's making the corn dolly? | Cider's ready for the feast. | They'll want every table in town.
-b[job=farmer|herder] #farm : Nearly in. Don't jinx it.
+b[job=farmer|herder] #farm : If the harvest's in by then. Don't count on it.
 b : Then we eat. | Old Mother Sheaf. Always. | Tested it. It's ready. | And every bench.
-a@farm : I said nearly.
+a@farm : It'll be in. It always is.
 a : Then sleep. | She's good. | Tested much? | And every pup.
 
 scene m7_fest_soon_winter
 when topic=festival topic.when=soon here.season=winter
 a : Candles for #here.festival#. I've bought a dozen. | The longest night's coming. | Gathering greens for the doors. | Everyone's hoarding for the feast.
-b[stage=old] #old : Long nights were longer once. We sat up with the dead.
+b[stage=old] #old : In my day we sat up the whole long night with a candle lit for the dead.
 b : A dozen? Lighting the street? | Then the days grow. | Holly scratches. | Me included.
 a@old : We still do, some of us.
 a : My window. Proudly. | Thank the gods. | Ivy then. | You and everyone.
@@ -349,18 +349,18 @@ a : My window. Proudly. | Thank the gods. | Ivy then. | You and everyone.
 
 scene m7_fest_today_any
 when topic=festival topic.when=today
-a : Happy #here.festival#. | Look at the town. All dressed up. | Somebody's tied ribbons to the goat. | I've eaten twice already. It's not noon.
+a : Happy #here.festival#. | Look at the town. All dressed up. | Somebody's tied ribbons to the goat. | I've eaten three times already, and they're still bringing it.
 b : And to you. | Hardly recognise it. | The goat looks proud. | Pace yourself.
 a : Cheers. | Prettier. | It earned it. | No.
 
 scene m7_fest_today_dance
 when topic=festival topic.when=today here.time=dusk|night
-a : Are you dancing? | The fiddler's warming up. | I've two left feet. Both mine. | They'll dance till the fire's out.
+a : Are you dancing? | The fiddler's warming up. | I've two left feet, and both of them hurt. | They'll dance till the fire's out.
 b[stage=old] #old : These knees danced their last. I'll clap.
-b[stage=adolescent] #shy : Maybe. If someone asks.
+b[stage=adolescent] #shy : I'm not dancing. Nobody's asked me, anyway.
 b : If you'll stand on my feet. | Run. | Then dance left. | Then let's keep it lit.
 a@old : Clap loud, then.
-a@shy : I'm asking.
+a@shy : Their loss. Go and ask someone yourself.
 a : Gladly. | Too late. | Left, left. | More wood!
 
 scene m7_fest_today_food
@@ -374,9 +374,9 @@ a : Glutton. | Exactly. | Pig. | There'll be a fight.
 scene m7_fest_today_market
 when topic=festival topic.when=today here.place=market|street
 a : Every stall's got a ribbon. | The square's packed. | Jugglers by the well. | Somebody's lost a pup. They're calling.
-b[role=merchant] #trade : Ribbons sell, so ribbons go up.
+b[role=merchant] #trade : Good for trade, all this. Don't keep me long.
 b : Even the fish. | Mind your pockets. | One's dropped everything. | Poor thing.
-a@trade : Clever.
+a@trade : I'll not.
 a : Festive fish. | Always. | Twice. | Found. There.
 
 scene m7_fest_today_chapel
@@ -399,9 +399,9 @@ a : Smell's free too. | Some might. | I will. | They are.
 
 scene m7_fest_today_guard
 when topic=festival topic.when=today a.job=guard|soldier
-a : Watch on a festival. Every year. | Two fights by noon. | I'll be peeling drunks off the well all night. | No dancing for me.
-b : Somebody has to. | Only two? | Bring a bucket. | I'll dance one for you.
-a : Somebody always has to. | Early yet. | Of water. | Bless you.
+a : Watch on a festival. Every year. | Two fights already. | I'll be carrying drunks home all night. | No dancing for me.
+b : Somebody has to. | Only two? | Take a barrow. | I'll dance one for you.
+a : Somebody always has to. | Early yet. | Two barrows. | Bless you.
 
 scene m7_fest_today_mourning
 when topic=festival topic.when=today a.mourning=kin|friend
@@ -417,6 +417,6 @@ a : That's shouting. | Big and loud. | No. | We'll see.
 
 scene m7_fest_today_house
 when topic=festival topic.when=today here.region=ridgemere
-a : House Greatly's paying for the fireworks. | The Houses have sent wine to Office Square. | Mossgrave's put on a wool fair. | Fell's given a tree for the square.
+a : House Greatly's paying for lanterns all along the wharf. | The Houses have sent wine to Office Square. | Mossgrave's put on a wool fair. | Fell's given a tree for the square.
 b : Buying friends. | Free wine is free wine. | Of course they have. | Cedar. Smells lovely.
 a : Works on me. | Drink up. | Wool for the winter. | Fell knows trees.

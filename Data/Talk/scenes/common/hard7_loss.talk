@@ -61,7 +61,7 @@ a : I keep hearing it. | Ordinary. I can't get over that. | It matters now. | I'
 b : You will for a while. | They're all ordinary, till they're not. | Then remember the laughing. | Wave at everyone. That's all you can do.
 
 scene h7_death_pups_ask
-when topic=life topic.kind=death a.stage=young
+when topic=life topic.kind=death a.stage=young b.stage=adult|old
 a : Where's #topic.subject# gone? | Is #topic.subject# sleeping in #grave#? | Will #topic.subject# come back in spring, like the swallows? | Did #topic.subject# know they were going to die?
 b : Somewhere quiet, pup. | Something like sleeping. | No, pup. Not like the swallows. | I don't think so.
 a : Can I go too? | Do they dream? | Not even a bit? | That's sad. And good.
@@ -71,7 +71,7 @@ scene h7_death_priest
 when topic=life topic.kind=death a.job=priest
 a : I'll say the words for #topic.subject# tomorrow. | I sat with #topic.subject# at the end. | #topic.subject# asked for me. I came too late. | I've buried four this season. #topic.subject# makes five.
 b : Say good ones. | Did they go easy? | You came. That's what matters. | Five. Gods.
-a : There are only so many words. I'll find the right ones. | Easier than most. | It doesn't feel like it. | Five, and the winter not yet in.
+a : There are only so many words. I'll find the right ones. | Easier than most. | It doesn't feel like it. | Five, and the season not half over.
 b : You always do. | Thank you for that. | It will, later. | Then save some words for us.
 
 scene h7_death_healer

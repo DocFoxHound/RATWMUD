@@ -1,8 +1,8 @@
 # How a resident feels about a player, in what they say to them (Docs/Design/62-talk.md, phase 7; "Players, as
-# settled"): their disposition (hostile, wary, cool, neutral, warm, fond: from what the two have been through), a long
-# absence, and how the resident is today (grieving, hurt). These concepts always take their best tier: hostility always
-# shows (priority 3); fondness and wariness join the tone's own lines (the same score), so they come up often but not
-# always; a resident's grief or hurt likewise.
+# settled"): their disposition (hostile, wary, cool, neutral, warm, fond: from what the two have been through), what
+# they've heard said of them, a long absence, and how the resident is today (grieving, hurt). These concepts always take
+# their best tier: hostility always shows (priority 3); fondness, wariness and what's rumoured join the tone's own lines
+# (the same score), so they come up often but not always; a resident's grief or hurt likewise.
 #
 # Never #other.name# here: a resident knows a player only by a name they were given (#topic.player#, doc 32).
 
@@ -11,27 +11,27 @@
 rule rg_greet_hostile
 when concept=player.greet pair.disposition=hostile
 priority 3
-say You. | I've nothing to say to you. | Keep walking. | What do you want?
+say You. | I've nothing to say to you. | Keep walking. | What do you want? | Not you again.
 
 rule rg_greet_hostile_named
 when concept=player.greet pair.disposition=hostile topic.meeting=known|returning
 priority 3
-say #topic.player#. You've a nerve. | Oh, it's you, #topic.player#. Wonderful. | I know you, #topic.player#. Don't think I don't.
+say #topic.player#. You've a nerve. | Oh, it's you, #topic.player#. Wonderful. | I know you, #topic.player#. Don't think I don't. | #topic.player#. I'd hoped you'd gone for good.
 
 rule rg_greet_wary
 when concept=player.greet pair.disposition=wary topic.meeting=known|returning
 priority 1
-say Oh. It's you. | What is it this time, #topic.player#? | #topic.player#. Hm. What do you want?
+say Oh. It's you. | What is it this time, #topic.player#? | #topic.player#. Hm. What do you want? | I'll keep my distance, #topic.player#, if it's all the same.
 
 rule rg_greet_cool
 when concept=player.greet pair.disposition=cool topic.meeting=known|returning
 priority 1
-say #topic.player#. | Aye, #topic.player#? | Back again.
+say #topic.player#. | Aye, #topic.player#? | Back again. | #greet#. Was there something?
 
 rule rg_greet_warm
 when concept=player.greet pair.disposition=warm topic.meeting=known|returning
 priority 1
-say #topic.player#! Good to see you. | Ah, #topic.player#. Come in, come in. | Well met, #topic.player#.
+say #topic.player#! Good to see you. | Ah, #topic.player#. There's a face I like. | Well met, #topic.player#. | #greet#, #topic.player#! You're looking well.
 
 rule rg_greet_fond
 when concept=player.greet pair.disposition=fond topic.meeting=known|returning
@@ -41,68 +41,110 @@ say #topic.player#! There you are! | Oh, it's good to see you, #topic.player#. |
 rule rg_greet_long_gone
 when concept=player.greet topic.meeting=returning pair.days_since>=28
 priority 1
-say #topic.player#! I thought you'd gone for good. | Where've you been all this while? It's been since #topic.since#! | Look what the wind blew in. It's been an age.
+say #topic.player#! I thought you'd gone for good. | Where've you been all this while? It's been since #topic.since#! | Look what the wind blew in. It's been an age. | I'd near forgotten your face, #topic.player#. Near.
 
 rule rg_greet_fond_long_gone
 when concept=player.greet topic.meeting=returning pair.days_since>=28 pair.disposition=fond|warm
 priority 1
-say #topic.player#! I'd given you up! Where have you been? | Gods, #topic.player#! Not a word since #topic.since#! Come here. | You're back! I was sure something had happened to you.
+say #topic.player#! I'd given you up! Where have you been? | Gods, #topic.player#! Not a word since #topic.since#! Come here. | You're back! I was sure something had happened to you. | There you are! I asked after you at the inn. Twice.
+
+rule rg_greet_thief
+when concept=player.greet pair.rumour=thief pair.disposition!=warm|fond
+priority 1
+say I'll keep a paw on my purse, if it's all the same. | I've heard about you. Hands where I can see them. | #greet#. I'm watching my things, mind. | They say you've light paws. We'll see.
+
+rule rg_greet_violent
+when concept=player.greet pair.rumour=violent pair.disposition!=warm|fond
+priority 1
+say Easy. I've heard what you did. | #greet#. No trouble, now. I want no trouble. | Stay where you are. Please. | They say you've a temper. I'll not test it.
+
+rule rg_greet_promises
+when concept=player.greet pair.rumour=breaks_promises pair.disposition!=warm|fond
+priority 1
+say Oh, it's you. The one whose word's worth nothing. | #greet#. Don't promise me anything. | I've heard about you and promises.
+
+rule rg_greet_owed
+when concept=player.greet pair.owed=b topic.meeting=known|returning
+priority 1
+say #topic.player#. Have you brought what you owe me? | #greet#, #topic.player#. You know what I'm going to say. | Ah. My debtor. How's my money?
 
 rule rg_greet_mourning
 when concept=player.greet mourning=kin
 priority 2
-say Oh. Hello. Forgive me, I'm not myself. | #greet#. It's been a hard week. | Hello. Sorry. We've had a death.
+say Oh. Hello. Forgive me, I'm not myself. | #greet#. It's been a hard week. | Hello. Sorry. We've had a death. | Forgive me. I've just buried one of mine.
 
 rule rg_greet_hurt
 when concept=player.greet injured=bad
 priority 2
-say Mind, don't jostle me. I'm hurt. | #greet#. Excuse me if I don't get up. | Ah. Hello. Gently, now.
+say Mind, don't jostle me. I'm hurt. | #greet#. Excuse me if I don't get up. | Ah. Hello. Gently, now. | Mind the leg. Hello.
 
 rule rg_greet_robbed
 when concept=player.greet robbed=yes
 priority 2
-say Hello. Watch your purse; I've been robbed. | Did you see anyone running? They robbed me! | #greet#. Sorry. Someone's had my things.
+say Hello. Watch your purse. I've been robbed. | Did you see anyone running? They robbed me! | #greet#. Sorry. Someone's had my things. | Robbed! Today! Have you seen a wolf with my purse?
 
 ## Thanks, and goodbye
 
 rule rg_thanks_hostile
 when concept=player.thanks pair.disposition=hostile
 priority 3
-say Hmph. | Don't thank me. Just go. | Aye. Now leave me be.
+say Hmph. | Don't thank me. Just go. | Aye. Now leave me be. | Keep your thanks.
+
+rule rg_thanks_wary
+when concept=player.thanks pair.disposition=wary
+say Mm. | Aye, well. | Don't make a habit of it.
+
+rule rg_thanks_warm
+when concept=player.thanks pair.disposition=warm
+say You're welcome, #topic.player#. | Glad to, glad to. | Any time. I mean it.
 
 rule rg_thanks_fond
 when concept=player.thanks pair.disposition=fond
-priority 1
-say For you? Any time. | Oh, hush. You'd do the same for me. | Anything, #topic.player#.
+say For you? Any time. | Oh, hush. You'd do the same for me. | Anything, #topic.player#. | Don't you dare thank me. Not you.
 
 rule rg_bye_hostile
 when concept=player.bye pair.disposition=hostile
 priority 3
-say Good riddance. | Don't come back. | Finally.
+say Good riddance. | Don't come back. | Finally. | Go on. Go.
 
 rule rg_bye_wary
-when concept=player.bye pair.disposition=wary
+when concept=player.bye pair.disposition=wary topic.meeting=known|returning
 priority 1
-say Mm. | Aye, go on. | Off you go, then.
+say Mm. | Aye, go on. | Off you go, then. | Mind how you go. Far away.
+
+rule rg_bye_cool
+when concept=player.bye pair.disposition=cool topic.meeting=known|returning
+priority 1
+say Aye. | #farewell#. | Right, then.
+
+rule rg_bye_warm
+when concept=player.bye pair.disposition=warm topic.meeting=known|returning
+priority 1
+say Mind how you go, #topic.player#. | Come back soon, now. | Safe roads to you, #topic.player#.
 
 rule rg_bye_fond
 when concept=player.bye pair.disposition=fond topic.meeting=known|returning
 priority 1
-say Don't be a stranger, #topic.player#. | Come back soon, #pet#. | Safe roads, #topic.player#. Mind you come back.
+say Don't be a stranger, #topic.player#. | Come back soon, #pet#. | Safe roads, #topic.player#. Mind you come back. | Off you go, then. Don't leave it so long.
 
 ## What they're asked: the answer, but grudgingly (or gladly)
 
 rule rg_answer_hostile
 when concept=player.trade|player.hours|player.job|player.where|player.wanted|player.day pair.disposition=hostile
 priority 3
-say If you must know: #topic.answer# | #topic.answer# Now go. | Fine. #topic.answer#
+say If you must know: #topic.answer# | #topic.answer# Now go. | Fine. #topic.answer# | #topic.answer# Don't ask me anything else.
 
 rule rg_answer_wary
 when concept=player.trade|player.hours|player.job|player.where|player.wanted|player.day pair.disposition=wary
 priority 1
-say Why do you ask? ... #topic.answer# | Hm. #topic.answer# | #topic.answer# That's all I know.
+say Why do you ask? ... #topic.answer# | Hm. #topic.answer# | #topic.answer# That's all I know. | I suppose there's no harm. #topic.answer#
+
+rule rg_answer_warm
+when concept=player.trade|player.hours|player.job|player.where|player.wanted|player.day pair.disposition=warm
+priority 1
+say Happy to help, #topic.player#. #topic.answer# | Course. #topic.answer# | Let me think. Aye. #topic.answer#
 
 rule rg_answer_fond
 when concept=player.trade|player.hours|player.job|player.where|player.wanted|player.day pair.disposition=fond
 priority 1
-say For you? #topic.answer# | Anything for you. #topic.answer# | Oh, easy. #topic.answer#
+say For you? #topic.answer# | Anything for you. #topic.answer# | Oh, easy. #topic.answer# | You only had to ask. #topic.answer#

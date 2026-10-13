@@ -54,8 +54,8 @@ a : Poor soul. | It does. | Of course it did.
 
 scene et_cr_rest_day
 when topic=crime topic.kind=theft|assault here.day=rest
-a : On a rest day, too. The Bright One's day. | Couldn't even keep the rest day holy. | Everyone at chapel, houses empty. That's when they struck.
-b[priest] : Rest day or no, the Dark One doesn't keep the calendar.
+a : On a Restday, too. The Bright One's day. | Couldn't even keep the Restday holy. | Everyone at chapel, houses empty. That's when they struck.
+b[priest] : Restday or no, the Dark One doesn't keep the calendar.
 b : Nothing's sacred. | Not any more. | Clever and wicked.
 a : Nothing. | Not for them. | Wicked.
 

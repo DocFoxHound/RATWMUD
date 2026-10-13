@@ -125,7 +125,7 @@ a : Get there early. | It is. | Ha.
 scene dy_rest
 when topic=day here.day=rest
 a : A quiet day, for once. | No work today. What to do with myself? | Restday. Bliss.
-b[guard] : Not for me. Never a rest day for the watch.
+b[guard] : Not for me. Never a Restday for the watch.
 b : Sleep, that's what I'll do. | Sit in the sun. | Enjoy it.
 a : Sounds right. | Good plan. | I will.
 

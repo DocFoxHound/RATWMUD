@@ -1,6 +1,12 @@
 # Prices, why they moved, and the caravans (Docs/Design/62-talk.md, phase 7; the work theme): chains. One remarks on a
-# price or a caravan as their trade and purse see it; the other answers as theirs do (prices.answer_complaint for a
-# rise, prices.answer_cheap for a fall, caravan.answer for news from the road), and some close it (work.end).
+# price or a caravan as their trade and purse see it; the other answers as theirs do, by what was said:
+#   prices.answer_complaint  a rise, grumbled at (also chains.talk's complaints)
+#   prices.answer_easy       a rise, by one it doesn't hurt (a seller glad of the margin, the rich who can't tell)
+#   prices.answer_cheap      a fall, welcomed or just told
+#   prices.answer_undercut   a fall, by a seller it hurts
+#   prices.answer_doubt      a fall, suspected (what's wrong with it? stolen?)
+#   caravan.answer           news from the road (a wolf off with the wagons: priority 2 answers)
+# and some close it (work.end, work.thanks).
 #
 # Facts in hand: topic.item (herbs, meal), topic.dir (up, down), topic.what ("a meal", "herbs"), topic.price ("7
 # pennies"); for a fall's cause topic.what (the good, plural or mass), topic.who (a name, or a look), topic.known; for a
@@ -47,19 +53,7 @@ then other: prices.answer_complaint
 rule w7_pr_up_healer
 when concept=talk.prices topic.item=herbs topic.dir=up job=healer
 cooldown 1d
-say #topic.price#! How am I to treat the poor at that? | I'll have to pick my own. My knees hate that. | They'll come to me sicker, because they waited.
-then other: prices.answer_complaint
-
-rule w7_pr_up_merchant_glad
-when concept=talk.prices topic.dir=up role=merchant business=failing|steady
-cooldown 1d
-say Up again. Mind, I'll not complain. Better margin. | Dear's good, if you're selling. | At #topic.price# I might make a living, at last.
-then other: prices.answer_complaint
-
-rule w7_pr_up_rich
-when concept=talk.prices topic.dir=up wealth=rich
-cooldown 2d
-say Prices are rising, I'm told. My cook said so. | Is #topic.price# a lot? I honestly can't tell. | My steward was grumbling about the price of #topic.what#.
+say #topic.price#! How am I to treat the poor at that? | I'll have to gather my own. My knees hate that. | They'll come to me sicker, because they waited.
 then other: prices.answer_complaint
 
 rule w7_pr_up_destitute
@@ -81,7 +75,21 @@ cooldown 1d
 say Winter prices. Everything's dearer when the roads freeze. | Snow on the passes, coin out of our purses. | Cold months, dear months.
 then other: prices.answer_complaint
 
-## Answering a rise (self answers; prices.answer_complaint)
+## A rise, by one it doesn't hurt
+
+rule w7_pr_up_merchant_glad
+when concept=talk.prices topic.dir=up role=merchant business=failing|steady
+cooldown 1d
+say Up again. Mind, I'll not complain. Better margin. | Dear's good, if you're selling. | At #topic.price# I might make a living, at last.
+then other: prices.answer_easy
+
+rule w7_pr_up_rich
+when concept=talk.prices topic.dir=up wealth=rich
+cooldown 2d
+say Prices are rising, I'm told. My cook said so. | Is #topic.price# a lot? I honestly can't tell. | My steward was grumbling about the price of #topic.what#.
+then other: prices.answer_easy
+
+## Answering a rise (prices.answer_complaint)
 
 rule w7_prans_cook
 when concept=prices.answer_complaint job=cook|innkeeper topic.item=meal
@@ -90,11 +98,11 @@ then other: work.end
 
 rule w7_prans_healer
 when concept=prices.answer_complaint job=healer topic.item=herbs
-say I'm paying it too. And I need ten times what you do. | The dry spell burnt the hillsides. Nothing grew. | Come to me if it's bad. We'll sort something.
+say I'm paying it too. And I need ten times what you do. | The gatherers came down off the hills with half-empty baskets. | Come to me if it's bad. We'll sort something.
 then other: work.end
 
 rule w7_prans_farmer_up
-when concept=prices.answer_complaint job=farmer|herder
+when concept=prices.answer_complaint job=farmer|herder topic.item=meal
 say Good. Maybe somebody'll pay me fair, for once. | It's not the farmer getting it, I'll tell you that. | Grow your own, then. It's not hard. It's very hard.
 then other: work.end
 
@@ -109,7 +117,7 @@ say Try asking for it, not buying it. | Up or down, it's all the same to an empt
 
 rule w7_prans_devout
 when concept=prices.answer_complaint piety=devout
-say The gods provide. Slowly, some weeks. | We'll get by. We always have. | Pray for the harvest. It's all that helps.
+say The Bright One provides. Slowly, some weeks. | We'll get by. We always have. | Pray for a good harvest. It's all that helps.
 
 rule w7_prans_dry
 when concept=prices.answer_complaint humour=dry
@@ -125,11 +133,11 @@ say Moaning won't lower them. | Then don't buy it. | Everyone's moaning. Nobody'
 
 rule w7_prans_sly
 when concept=prices.answer_complaint honesty=sly
-say I know a wolf who sells it cheaper. Ask no questions. | Buy it in Mirebridge. Bring me some. | Stock up, then sell it back when it's dearer.
+say I know a wolf who sells it cheaper. Ask no questions. | Buy before it climbs again, then sell it back dearer. | There's ways round prices. Come and see me later.
 
 rule w7_prans_house
-when concept=prices.answer_complaint self.house
-say The Houses decide prices, not us. | My House says it's the roads. My House says a lot. | Ask the Houses. They'll know.
+when concept=prices.answer_complaint self.house job!=noble
+say Don't ask me. The House sets what it sets. | My House says it's the roads. My House says a lot. | Ask the Houses. They'd know, if anyone does.
 
 rule w7_prans_old
 when concept=prices.answer_complaint stage=old
@@ -137,11 +145,38 @@ say I remember a meal for a penny. A penny! | It was worse the year of the long 
 
 rule w7_prans_young
 when concept=prices.answer_complaint stage=young
-say What's a penny worth? | Is that a lot? | Mum says that too.
+say What's a penny worth? | Is that a lot? | #mum# says that too.
 
 rule w7_prans_warm_rich
 when concept=prices.answer_complaint wealth=rich warmth=warm
-say If you're short, come to me. Don't be proud. | It's hard on folk, I know. I'll give more at the chapel. | Let me buy you one.
+say If you're short, come to me. Don't be proud. | It's hard on folk, I know. I'll give more at the chapel. | Here. Let me pay for yours this time.
+then other: work.thanks
+
+## Answering one the rise doesn't hurt (prices.answer_easy)
+
+rule w7_easy_plain
+when concept=prices.answer_easy
+say Easy for you to say. | Some of us notice, believe me. | Must be nice, not minding.
+
+rule w7_easy_poor
+when concept=prices.answer_easy wealth=poor|destitute
+say Glad it suits somebody. | I notice. My belly notices. | Try it on my purse and see.
+
+rule w7_easy_merchant
+when concept=prices.answer_easy role=merchant
+say Dear's good for the seller. Till nobody buys. | Mind, folk stop buying when it's dear. | Don't get used to it.
+
+rule w7_easy_short
+when concept=prices.answer_easy temper=short
+say You would say that. | And you wonder why folk grumble. | Lucky you.
+
+rule w7_easy_dry
+when concept=prices.answer_easy humour=dry
+say How nice for you. | Lovely. I'll tell my stomach. | I'm so glad. Truly. Look at my face.
+
+rule w7_easy_rich
+when concept=prices.answer_easy wealth=rich
+say I hadn't thought about it, honestly. | Should we have noticed? | I leave all that to the household.
 
 ## ---------------------------------------------------------------- A price went down
 
@@ -154,34 +189,34 @@ then other: prices.answer_cheap
 rule w7_pr_down_poor
 when concept=talk.prices topic.dir=down wealth=poor|destitute
 cooldown 1d
-say #topic.price#! I can eat this week. | Down to #topic.price#. Thank every god there is. | Cheaper! I'll buy two, while it lasts.
+say #topic.price#! I can eat this week. | Down to #topic.price#. Thank the Bright One. | Cheaper! I'll buy two, while it lasts.
+then other: prices.answer_cheap
+
+rule w7_pr_down_healer
+when concept=talk.prices topic.item=herbs topic.dir=down job=healer
+cooldown 1d
+say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Good gathering on the hills, I hear. Down to #topic.price#.
 then other: prices.answer_cheap
 
 rule w7_pr_down_cook
 when concept=talk.prices topic.item=meal topic.dir=down job=cook|innkeeper
 cooldown 1d
 say Meals are down to #topic.price#. My takings'll be thin. | Somebody's undercutting me. #topic.price#! | Cheaper meals. Good for them, bad for me.
-then other: prices.answer_cheap
-
-rule w7_pr_down_healer
-when concept=talk.prices topic.item=herbs topic.dir=down job=healer
-cooldown 1d
-say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Good harvest on the hills, I hear. Down to #topic.price#.
-then other: prices.answer_cheap
+then other: prices.answer_undercut
 
 rule w7_pr_down_merchant
 when concept=talk.prices topic.dir=down role=merchant
 cooldown 1d
 say Prices falling. Good for buyers, death for sellers. | I bought at the old price. Now look. | Down again. I'll be selling at a loss.
-then other: prices.answer_cheap
+then other: prices.answer_undercut
 
 rule w7_pr_down_suspicious
 when concept=talk.prices topic.dir=down honesty=guarded temper=nervy|even
 cooldown 2d
 say Cheaper? Why? What's wrong with it? | Nothing's cheap for no reason. | I don't trust a falling price.
-then other: prices.answer_cheap
+then other: prices.answer_doubt
 
-## Answering a fall (self answers; prices.answer_cheap)
+## Answering a fall (prices.answer_cheap)
 
 rule w7_cheap_plain
 when concept=prices.answer_cheap
@@ -193,7 +228,7 @@ say Thank the gods. I'll eat. | Cheaper's the best word I've heard all week. | G
 
 rule w7_cheap_rich
 when concept=prices.answer_cheap wealth=rich
-say Is it? I hadn't noticed. | My cook will be pleased, I suppose. | Lovely for everyone.
+say Is it? I leave all that to the cook. | My steward will be pleased, I suppose. | Lovely for everyone.
 
 rule w7_cheap_merchant
 when concept=prices.answer_cheap role=merchant
@@ -210,8 +245,8 @@ when concept=prices.answer_cheap job=healer topic.item=herbs
 say Good. I'll stock up before it turns. | Now the poor can afford a poultice. | That'll save a few chests this winter.
 
 rule w7_cheap_farmer
-when concept=prices.answer_cheap job=farmer|herder
-say Cheap for you. My year's work, worth less. | Lovely. Unless you grow it. | Cheap means farmers starve.
+when concept=prices.answer_cheap job=farmer|herder topic.item=meal
+say Cheap for you. My year's work, worth less. | Lovely. Unless you grow it. | Cheap means farmers go short.
 then other: work.end
 
 rule w7_cheap_old
@@ -226,6 +261,71 @@ rule w7_cheap_ambitious
 when concept=prices.answer_cheap drive=ambitious
 say Buy low. Sell high. Buy now. | I'll fill a cellar with it. | That's opportunity, that is.
 
+## Answering a seller the fall hurts (prices.answer_undercut)
+
+rule w7_under_plain
+when concept=prices.answer_undercut
+say It'll climb again. It always does. | Good for the rest of us, mind. | Hard luck. Cheap's cheap.
+
+rule w7_under_poor
+when concept=prices.answer_undercut wealth=poor|destitute
+say Sorry, but I can eat this week. | Your loss, my supper. | I'll not pretend I'm sad.
+
+rule w7_under_merchant
+when concept=prices.answer_undercut role=merchant
+say Same here. I'm holding mine back. | Don't. I'm selling at a loss as well. | We should all agree a price. Quietly.
+
+rule w7_under_cook
+when concept=prices.answer_undercut job=cook|innkeeper topic.item=meal
+say Mine too. I'll match it, I suppose. | Whoever it is, they'll not last at that. | I've had three customers ask why mine costs more.
+
+rule w7_under_warm
+when concept=prices.answer_undercut warmth=warm
+say You'll weather it. Folk know your goods. | It'll pass. Come and eat with us till it does. | Chin up. They'll be back when the cheap stuff runs out.
+then other: work.thanks
+
+rule w7_under_ambitious
+when concept=prices.answer_undercut drive=ambitious
+say Then sell something they can't. | Undercut them back. See who blinks. | Buy theirs cheap and sell it on. Why not?
+
+rule w7_under_dry
+when concept=prices.answer_undercut humour=dry
+say Tragic. Cheap food. Whatever next. | I'll weep into my cheap supper. | The world's cruel to sellers.
+
+rule w7_under_rich
+when concept=prices.answer_undercut wealth=rich
+say Oh dear. Is that bad for you? | Prices go up, prices go down. You'll manage. | I never know if cheap is good or bad.
+
+## Answering a doubt about a fall (prices.answer_doubt)
+
+rule w7_doubt_plain
+when concept=prices.answer_doubt
+say Cheap's cheap. I'll not ask. | You think everyone's a thief. | Could be. Could be good luck.
+
+rule w7_doubt_poor
+when concept=prices.answer_doubt wealth=poor|destitute
+say Stolen or not, I'm buying. | I'll not look a cheap loaf in the mouth. | If it fills a belly, I'll not ask where it's been.
+
+rule w7_doubt_guard
+when concept=prices.answer_doubt role=guard
+say If it's stolen, I'll hear of it. | Stolen goods sell cheap. I'll ask about. | Noted. The Watch likes a bargain too.
+
+rule w7_doubt_old
+when concept=prices.answer_doubt stage=old
+say I've seen that before. Cheap and bad. | Last time it was cheap it was mouldy. | Bad grain's always cheap. Sniff it first.
+
+rule w7_doubt_sly
+when concept=prices.answer_doubt honesty=sly
+say Ask no questions, pay less. | Who cares where it's from? | Shh. Don't spoil it.
+
+rule w7_doubt_merchant
+when concept=prices.answer_doubt role=merchant
+say Someone's dumping it. Mark my words. | It's somebody who needs coin fast. | Old stock, I'd bet. Sold off cheap.
+
+rule w7_doubt_nervy
+when concept=prices.answer_doubt temper=nervy
+say Oh, don't. Now I'll not eat it. | You've put me right off. | What if it's bad? What if we're all ill?
+
 ## ---------------------------------------------------------------- Why a price fell (talk.price_cause)
 
 rule w7_pc_named
@@ -237,14 +337,14 @@ then other: prices.answer_cheap
 rule w7_pc_look
 when concept=talk.price_cause topic.known=no
 cooldown 1d
-say A stranger brought #topic.what# in. #topic.who#. Prices dropped like a stone. | #topic.who# sold the shops #topic.what#. Did you see them? | Some traveller, #topic.who#, came with #topic.what#. Cheaper now.
+say A stranger brought #topic.what# in. #topic.who#. Prices dropped like a stone. | #topic.who# sold the shops #topic.what#. Cheap, too. | Some traveller, #topic.who#, came with #topic.what#. Cheaper now.
 then other: prices.answer_cheap
 
 rule w7_pc_merchant
 when concept=talk.price_cause role=merchant
 cooldown 1d
 say #topic.who# came in with #topic.what# and undercut the lot of us. | I'd stocked up on #topic.what#. Then #topic.who# turned up. | Can't sell #topic.what# at my price now. Thanks to #topic.who#.
-then other: prices.answer_cheap
+then other: prices.answer_undercut
 
 rule w7_pc_poor
 when concept=talk.price_cause wealth=poor|destitute
@@ -256,7 +356,7 @@ rule w7_pc_suspicious
 when concept=talk.price_cause topic.known=no honesty=guarded|sly
 cooldown 2d
 say #topic.who# sold #topic.what# cheap. Where'd they get it, I'd like to know. | Cheap #topic.what# from a stranger. Stolen, I'd bet. | Who sells #topic.what# under price? #topic.who#, that's who.
-then other: prices.answer_cheap
+then other: prices.answer_doubt
 
 ## ---------------------------------------------------------------- Caravans (talk.caravan)
 
@@ -322,13 +422,22 @@ when concept=talk.caravan errand=caravan
 priority 1
 cooldown 1d
 say I'm riding guard on the next one out. | They've paid me to walk with the wagons. Pray for me. | I'm off with the carts. Don't wait up.
+remember pair: w7_off=yes 30m
 then other: caravan.answer
 
-## Answering caravan news (self answers; caravan.answer)
+## Answering caravan news (caravan.answer)
 
 rule w7_cva_plain
 when concept=caravan.answer
-say Good news, that. | Is it? | Hm. Roads are busy. | Let's hope they're all well.
+say Is that so? | Hm. The roads are busy. | I'd heard something.
+
+rule w7_cva_arrived
+when concept=caravan.answer topic.kind=arrived
+say Good. The shops were getting thin. | Did they bring anything worth having? | There'll be a crowd at the inn tonight.
+
+rule w7_cva_left
+when concept=caravan.answer topic.kind=left
+say Safe road to them. | Quieter streets tonight, then. | Long way. Hope the weather holds for them.
 
 rule w7_cva_arrived_merchant
 when concept=caravan.answer topic.kind=arrived role=merchant
@@ -336,7 +445,7 @@ say Then I'm off to haggle before the rest of them. | Prices'll fall now. I'd be
 
 rule w7_cva_arrived_innkeeper
 when concept=caravan.answer topic.kind=arrived job=innkeeper|cook
-say Then my rooms will fill tonight. | Carters eat like wolves. Well. | I'll put another pot on.
+say Then my rooms will fill tonight. | Carters eat like wolves. Well. You know what I mean. | I'll put another pot on.
 
 rule w7_cva_arrived_laborer
 when concept=caravan.answer topic.kind=arrived job=laborer|carter
@@ -348,7 +457,7 @@ say Prices'll drop. Good. | Anything to eat on it? | Nothing on it for me.
 
 rule w7_cva_arrived_young
 when concept=caravan.answer topic.kind=arrived stage=young
-say Did they bring anything for pups? | Can I go see the horses? | Is there a dancing bear?
+say Did they bring anything for pups? | Can I go and see the horses? | Is there a dancing bear?
 
 rule w7_cva_left_carter
 when concept=caravan.answer topic.kind=left job=carter
@@ -371,12 +480,12 @@ say Send any hurt to me. Now. | I'll get my bag. | Were there wounded?
 rule w7_cva_raided_guard
 when concept=caravan.answer topic.kind=raided role=guard
 priority 1
-say We'll ride out. If the council pays. | Not enough of us for those roads. | I'll speak to the captain.
+say We'll ride out. If the captain says. | Not enough of us for those roads. | I'll speak to the captain.
 
 rule w7_cva_raided_merchant
 when concept=caravan.answer topic.kind=raided role=merchant
 priority 1
-say Prices will jump now. Mark it. | There goes my season. | Who'll insure the next one?
+say Prices will jump now. Mark it. | There goes my season. | Who'll risk the next one?
 
 rule w7_cva_raided_nervy
 when concept=caravan.answer topic.kind=raided temper=nervy
@@ -393,8 +502,13 @@ when concept=caravan.answer topic.kind=raided stage=old
 priority 1
 say Same as when I was a pup. The roads never change. | My uncle drove that road. Lost an ear to bandits. | Bad times come round again.
 
+rule w7_cva_errand
+when concept=caravan.answer pair.mem.w7_off=yes
+priority 2
+say Rather you than me. Watch the woods. | Bring me back something. | Mind the bandits. And the mud.
+
 rule w7_cva_errand_warm
-when concept=caravan.answer warmth=warm other.errand=caravan
+when concept=caravan.answer warmth=warm pair.mem.w7_off=yes
 priority 2
 say Come back safe. Promise me. | Keep your head down out there. | I'll light a candle for you.
-then other: work.end
+then other: work.thanks

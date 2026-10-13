@@ -1,228 +1,228 @@
 # The day as each one lives it (Docs/Design/62-talk.md, phase 7): calls and remarks to no one, by where they are in
 # their day (before work, at it, done, a day off), the kind of day (market, Restday, a festival) as it falls on them,
 # the hour, and their errands, the road and the watch. Then how they are: hurt, grieving, hungry, roofless, in debt,
-# flush. Barks have cooldowns, so a habit shows without wearing thin. Drafts (phase 7), to tune by ear.
+# flush. Barks have cooldowns, so a habit shows without wearing thin.
 
 ## The working day
 
 rule day_late_for_work
 when concept=bark shift=before here.time=dawn
 cooldown 12h
-say Late. Late, late, late. | If I run I'll make it. | Not a crumb of breakfast. Again.
+say Late. Late, late, late. | If I run I'll make it. | Not a crumb of breakfast. Again. | Where's my other boot? Where's my other boot?
 
 rule day_off_to_work
 when concept=bark shift=before
 cooldown 12h
-say Another day, another #money#. | Right. Off we go. | #work.capitalize# won't do itself.
+say Another day, another #money#. | Right. Off we go. | #work.capitalize# won't do itself. | Chin up, tail up, off we go.
 
 rule day_done
 when concept=bark shift=after
 cooldown 12h
-say Done! Done for the day. | That's me finished. | #home.capitalize#, and my feet up.
+say Done! Done for the day. | That's me finished. | #home.capitalize#, and my feet up. | Not one more thing. Not today.
 
 rule day_done_tired
 when concept=bark shift=after tired=yes
 cooldown 12h
-say Every bone. Every single bone. | I could sleep standing. | Straight to #bed#. Straight there.
+say Every bone. Every single bone. | I could sleep standing. | Straight to #bed#. Straight there. | Carry me home, somebody. Anybody.
 
 rule day_day_off
 when concept=bark shift=day_off
 cooldown 12h
-say No #work# today. Not a stroke. | What shall I do with myself? | Lovely. Lovely, lovely day off.
+say No #work# today. Not a stroke. | What shall I do with myself? | Lovely. Lovely, lovely day off. | A whole day, and nobody wanting anything.
 
 rule day_working_hard
 when concept=bark working=yes shift=during tired=yes
 cooldown 6h
-say How long till dusk? | My back's done in. | Keep at it. Keep at it.
+say How long till dusk? | My back's done in. | Keep at it. Keep at it. | Nearly there. Nearly. That's what I said an hour ago.
 
 rule day_working_restday
 when concept=bark working=yes here.day=rest
 cooldown 1d
-say Working on Restday. The gods'll have words. | Everyone at chapel but me. | Somebody's got to.
+say Working on Restday. The gods'll have words. | Everyone at chapel but me. | Somebody's got to. | Rest, they call it. Ha.
 
 rule day_working_festival
 when concept=bark working=yes here.day=festival
 cooldown 1d
-say Everyone feasting but me. | Save me a cake, somebody! | I can smell the roasting from here.
+say Everyone feasting but me. | Save me a cake, somebody! | I can smell the roasting from here. | Listen to them out there. Somebody's having fun.
 
 rule day_working_market
 when concept=bark working=yes here.day=market role!=merchant
 cooldown 1d
-say Market day, and I'm stuck at #work#. | Can't even get to the stalls. | Somebody buy me a pie.
+say Market day, and I'm stuck at #work#. | Can't even get to the stalls. | Somebody buy me a pie. | All the best cheese'll be gone by the time I'm out.
 
 rule day_devout_restday
 when concept=bark here.day=rest piety=devout
 cooldown 1d
-say Chapel at noon. Don't be late. | A blessed Restday to you all. | Rest, and give thanks.
+say Chapel at noon. Don't be late. | A blessed Restday to you all. | Rest, and give thanks. | The Bright One rested once. So can you.
 
 rule day_festival_merry
 when concept=bark here.day=festival humour=merry here.festival
 cooldown 6h
-say Happy #here.festival#! | #here.festival#! Have you had a cake yet? | Dance with me! It's #here.festival#!
+say Happy #here.festival#! | #here.festival#! Have you had a cake yet? | Dance with me! It's #here.festival#! | #here.festival#, and not a sad face allowed!
 
 rule day_festival_poor
 when concept=bark here.day=festival wealth=poor|destitute
 cooldown 1d
-say Feasts are for them as can pay. | All this food and I can't touch it. | A festival. Lovely. For some.
+say Feasts are for them as can pay. | All this food and I can't touch it. | A festival. Lovely. For some. | I'll feast on the smell, then.
 
 ## The hours
 
 rule day_dawn_old
 when concept=bark here.time=dawn stage=old
 cooldown 1d
-say Up before the birds. Always am. | At my age you don't sleep, you wait. | Another morning. Thank the gods.
+say Up before the birds. Always am. | At my age you don't sleep, you wait. | Another morning. Thank the gods. | The cocks are late. I'm not.
 
 rule day_dusk_lamps
 when concept=bark here.time=dusk here.place=street
 cooldown 12h
-say Lamps soon. | Getting dark early. | Home before the light goes.
+say Lamps soon. | Getting dark early. | Home before the light goes. | There goes the sun. Supper, then.
 
 rule day_night_street
 when concept=bark here.time=night here.place=street stage!=young
 cooldown 12h
-say Should be abed. | Dark as a pocket out here. | Mind the gutter. Mind the... ow.
+say Should be abed. | Dark as a pocket out here. | Mind the gutter. Mind the... ow. | Who moved the step? Somebody's moved the step.
 
 rule day_night_nervy
 when concept=bark here.time=night temper=nervy here.weather!=indoors
 cooldown 12h
-say Who's there? ... Nobody. Nobody. | I don't like the dark. Never have. | Was that a step? That was a step.
+say Who's there? ... Nobody. Nobody. | I don't like the dark. Never have. | Was that a step? That was a step. | Walk faster. Don't look back. Walk faster.
 
 rule day_night_tavern
 when concept=bark here.time=night here.place=tavern
 cooldown 6h
-say One more. Just the one. | Who's buying? Not me. | Another song! Another!
+say One more. Just the one. | Who's buying? Not me. | Another song! Another! | Keeper! Keeper, my jar's empty and so am I.
 
 ## Errands, the road, the watch
 
 rule day_errand_letter
 when concept=bark errand=letter
 cooldown 6h
-say Letter. Letter for... where is that door? | Mind out, letter to deliver. | Now who was this for?
+say Letter. Letter for... where is that door? | Mind out, letter to deliver. | Now who was this for? | Third door past the well, they said. Which well?
 
 rule day_errand_caravan
 when concept=bark errand=caravan
 cooldown 6h
-say The caravan won't wait! | Coming, coming! | Is that them gone already?
+say The caravan won't wait! | Coming, coming! | Is that them gone already? | Hold the carts! Hold them!
 
 rule day_errand_goods
 when concept=bark errand=goods
 cooldown 6h
-say Mind your backs! Coming through! | Heavy, this. Mind out. | Watch your toes!
+say Mind your backs! Coming through! | Heavy, this. Mind out. | Watch your toes! | Make way, make way, it's heavier than it looks.
 
 rule day_errand_order
 when concept=bark errand=order
 cooldown 6h
-say An order to fetch. Don't stop me. | They wanted it yesterday. | Quick, quick.
+say An order to fetch. Don't stop me. | They wanted it yesterday. | Quick, quick. | If it's not ready I'll wait on the step till it is.
 
 rule day_errand_wedding
 when concept=bark errand=wedding
 cooldown 6h
-say A wedding! Have you seen the bride? | Off to a wedding. Do I look all right? | Flowers! I forgot the flowers.
+say A wedding! Have you seen the bride? | Off to a wedding. Do I look all right? | Flowers! I forgot the flowers. | Is my collar straight? Somebody tell me my collar's straight.
 
 rule day_errand_funeral
 when concept=bark errand=funeral
 cooldown 6h
-say ... | They were good folk. | Walk soft. There's been a death.
+say *walks with head bowed* | They were good folk. | Walk soft. There's been a death. | Bright One keep them.
 
 rule day_travelling
 when concept=bark travelling=yes
 cooldown 6h
-say Long road yet. | My paws. My poor paws. | Is it far now? It's always far.
+say Long road yet. | My paws. My poor paws. | Is it far now? It's always far. | One more hill. There's always one more hill.
 
 rule day_watch_night
 when concept=bark on_watch=yes here.time=night
 cooldown 3h
-say All's well! | Who goes there? | Keep to the lamps, now.
+say All's well! | Who goes there? | Keep to the lamps, now. | Home, the lot of you. It's late.
 
 rule day_watch_day
 when concept=bark on_watch=yes here.time=dawn|day|dusk
 cooldown 3h
-say Move along, nothing to see. | Keep it civil, now. | Eyes open. Always.
+say Move along, now. | Keep it civil, now. | Eyes open. Always. | No running in the street. You. Yes, you.
 
 ## How they are
 
 rule day_rich
 when concept=bark wealth=rich here.place=street|market
 cooldown 1d
-say Out of the way, if you please. | Such crowds. | Where is that boy with my parcels?
+say Out of the way, if you please. | Such crowds. | Where is that boy with my parcels? | One can hardly move for people.
 
 rule day_heights
 when concept=bark quarter=heights here.region=ridgemere
 cooldown 1d
-say One does so tire of the Commons' smell. | Ghastly crowds today. | Mind the hem. This was dear.
+say One does so tire of the Commons' smell. | Ghastly crowds today. | Mind the hem. This was dear. | Somebody fetch me a chair. These steps.
 
 rule day_sump
 when concept=bark quarter=sump here.region=ridgemere
 cooldown 1d
-say Up to the ankles again. | Sump water. Sump everything. | The Heights never smell this.
+say Up to the ankles again. | Sump water. Sump everything. | The Heights never smell this. | Mind the third step. It's not there.
 
 rule day_hungry
 when concept=bark hungry=yes
 cooldown 6h
-say #hungry.capitalize#. | Spare a crust? Anyone? | I can smell bread. Torture.
+say #hungry.capitalize#. | Spare a crust? Anyone? | I can smell bread. Torture. | My belly's growling at strangers.
 
 rule day_homeless
 when concept=bark homeless=yes
 priority 1
 cooldown 6h
-say Anywhere dry. Anywhere at all. | Spare a corner? | Another night out, then.
+say Anywhere dry. Anywhere at all. | Spare a corner? | Another night out, then. | A door. Just a door to shut. That's all.
 
 rule day_on_dole
 when concept=bark on_dole=yes
 cooldown 1d
-say Parish loaf again. | Queue's longer every week. | Thank the gods for the dole, I suppose.
+say Parish loaf again. | Queue's longer every week. | Thank the gods for the dole, I suppose. | Same bread, same line, same faces.
 
 rule day_owes
-when concept=bark owes=yes
+when concept=bark owes=yes stage=adult|old
 cooldown 1d
-say If anyone asks, I'm not here. | Pay it back Restday. Restday for sure. | How did it get so much?
+say If anyone asks, I'm not here. | Pay it back Restday. Restday for sure. | How did it get so much? | Don't look round. Just walk.
 
 rule day_hurt_light
 when concept=bark injured=light
 cooldown 6h
-say *winces* | Mind the paw. | Still #hurt#. It'll pass.
+say *winces* | Mind the paw. | Still #hurt#. It'll pass. | Ow. Ow. Stupid step.
 
 rule day_mourning_friend
 when concept=bark mourning=friend
 cooldown 12h
-say They'd have liked this weather. | Gone. Just like that. | I keep seeing them in the crowd.
+say They'd have liked this weather. | Gone. Just like that. | I keep seeing them in the crowd. | We were going to go fishing. We kept saying.
 
 rule day_widowed
 when concept=bark widowed=yes
 cooldown 1d
-say We used to walk here. | Quiet, without them. | #dear.capitalize#. I still say it.
+say We used to walk here. | Quiet, without them. | I still say goodnight to the empty side of the bed. | They'd have laughed at that. They laughed at everything.
 
 rule day_fought
 when concept=bark fought=yes
 cooldown 6h
-say Let them try again. Let them. | My jaw. My poor jaw. | Should've seen it coming.
+say Let them try again. Let them. | My jaw. My poor jaw. | Should've seen it coming. | Still shaking. Still shaking, look.
 
 rule day_fighting
 when concept=bark fighting=yes
 priority 3
-say Come on, then! | Is that all? | You'll regret that!
+say Come on, then! | Is that all? | You'll regret that! | Stand still and fight!
 
 rule day_apprentice
 when concept=bark apprentice=yes working=yes
 cooldown 1d
-say Yes, master. Coming, master. | Sweep, fetch, carry. Sweep, fetch, carry. | One day it'll be my shop.
+say Yes, master. Coming, master. | Sweep, fetch, carry. Sweep, fetch, carry. | One day it'll be my shop. | I did it right! I think I did it right.
 
 rule day_master
 when concept=bark master=yes working=yes
 cooldown 1d
-say Not like that. Like this! | Where's that apprentice got to? | In my day we learnt by watching.
+say Not like that. Like this! | Where's that apprentice got to? | In my day we learnt by watching. | Again. From the start. Slowly.
 
 rule day_ambitious
 when concept=bark drive=ambitious working=yes
 cooldown 1d
-say One day this'll all be mine. | Faster. There's money in faster. | Mark me: I'll be someone.
+say One day this'll all be mine. | Faster. There's money in faster. | Mark me: I'll be someone. | Twice the work, twice the coin. That's sums.
 
 rule day_chatty_alone
 when concept=bark self.talk=chatty
 cooldown 1d
-say Talking to myself again. Best company. | Nobody to talk to. Well, there's me. | Where's everyone gone?
+say Talking to myself again. Best company. | Nobody to talk to. Well, there's me. | Where's everyone gone? | I'll just say this out loud, then. Nobody minds.
 
 rule day_dry
 when concept=bark humour=dry here.weather=rain|storm|fog
 cooldown 1d
-say Lovely day for it. | Ah. Summer. | Just how I like it.
+say Lovely day for it. | Glorious. Truly glorious. | Just how I like it. | Weather for ducks. And me, apparently.

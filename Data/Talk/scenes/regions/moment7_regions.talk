@@ -17,7 +17,7 @@ a@heights : I'm sure you couldn't.
 a : None at all. | What rail? | Best not look. | City's wet. Same thing.
 
 scene m7_rg_rain_names
-when topic=weather here.region=ridgemere here.weather=rain|overcast|fog
+when topic=weather here.region=ridgemere here.weather=rain
 a : Is it mizzle or drizzle? | My grandmother had nine words for rain. | Spitting, they call this. Spitting! | That's soft rain. Wets you to the bone and pretends it didn't.
 b[from=ridgemere] #city : City-born know: mizzle's finer. Drizzle's got intent.
 b : Wet. It's wet. | Only nine? | It's spitting on me. | Liar rain.
@@ -28,24 +28,24 @@ scene m7_rg_sun_out
 when topic=weather here.region=ridgemere here.weather=clear
 a : Sun's out! Everyone stop! | Look at them all, faces up like flowers. | The Sound's blue. Actually blue. | I'd forgotten what the Rainward Hills look like.
 b[from=ridgemere] #city : Don't get used to it. Never get used to it.
-b : Quick, hang out everything you own. | Like seals on a rock. | It's lying. It's grey underneath. | Green. Same as always.
+b : Quick, hang out everything you own. | Like cats on a sill. | It's lying. It's grey underneath. | Green. Same as always.
 a@city : Too late. I'm used to it.
-a : Already did. | I'm a seal. | Hush. | Greener than I remembered.
+a : Already did. | Purring, the lot of them. | Hush. | Greener than I remembered.
 
 scene m7_rg_fog_sound
 when topic=weather here.region=ridgemere here.weather=fog here.place=shore|street|work
-a : Fog's come in off the Sound. | Can't see the water gates. | The fog horn at the Harbourmaster's has been going since dawn. | Masts sticking out of the #fog# like reeds.
+a : Fog's come in off the Sound. | Can't see the water gates. | The fog horn's lowing out on the point like a lost cow. | Masts sticking out of the #fog# like reeds.
 b[job=sailor|fisher] #sea : Nobody's leaving harbour. Nobody sane. | I've rowed in this. Never again. Heard the rocks before I saw them. | Fog's the sea's way of saying stay home.
-b : It'll sit till noon. | Can hear them, though. Creaking. | Like a sick cow. | Ships in a cloud.
+b : It'll sit till the tide turns. | Can hear them, though. Creaking. | Somebody find it its mother. | Ships in a cloud.
 a@sea : Somebody insane, then. There's always one. | Gods. | Then I'll listen to the sea.
-a : Or all day. | Creak, creak. | A big sick cow. | Ghost ships.
+a : Or all week. | Creak, creak. | Ha. Poor beast. | Ghost ships.
 
 scene m7_rg_wharf_dawn
 when topic=day|weather here.region=ridgemere here.place=shore|work here.time=dawn
-a : Boats coming in. | Gulls already at the Fish Hall. | Smell of tar and herring. | Somebody's singing on the Ropewalk.
-b[job=fisher|sailor] #sea : Good catch, by the way they sit low. | Riding high. Bad night out there. | That's the Greatly boats first. Always first to the Hall.
+a : Boats coming in. | Gulls already at the Fish Hall. | Tar and herring and wet rope, all at once. | Somebody's singing on the Ropewalk.
+b[job=fisher|sailor] #sea : Good catch tonight, by the look of the boats. | Bad night out there. Half the boats are riding high. | Greatly boats first in, as ever.
 b : Breakfast arriving. | Before the buyers. | Smell of the wharf. | Always someone.
-a@sea : I'll have a herring off that one. | Poor souls. | Of course they are.
+a@sea : I'll have a herring off one of them. | Poor souls. | Of course they are.
 a : Cheaper at the Sump Market. | Gulls are early birds. | And home. | Rope song.
 
 scene m7_rg_storm_sound
@@ -53,25 +53,25 @@ when topic=weather here.region=ridgemere here.weather=storm
 a : Waves over the wharf wall. | They've closed the water gates. | The Greatly Yard's lashing everything down. | Somebody's boat's slipped her mooring.
 b[quarter=wharf|docks] #wharf : My door's under it. Again.
 b : Sound's angry. | Good. Keeps the sea out. | Hull'll be fine. Greatly builds well. | Hope she comes back.
-a@wharf : Come uphill to ours. Bring the pups.
+a@wharf : Come uphill to ours. Bring whoever's yours.
 a : Very. | And us in. | They'd better. | Boats know the way.
 
 scene m7_rg_heights_view
 when topic=weather|day here.region=ridgemere a.quarter=heights here.weather=clear|overcast
 a : From the garden you can see clear to the Rainwood. | The whole Sound's laid out like a map. | You can see the smoke from the works. Dreadful. | Look how small the wharf looks from up here.
-b[quarter=sump|works|wharf] #below : Smaller still when you're in it. | We can see you too. From underneath. | That smoke's my lungs, that is.
-b : Lovely view. | Lovely view. | Can't see it from mine. | Small and smelly.
+b[quarter=sump|works|wharf] #below : Looks different from underneath. | We can see you too. From down there. | Come down and see it close. Bring a cloth for your nose.
+b : Lovely view. | Like a painting. | Can't see it from mine. | Small and smelly.
 a@below : ...I didn't mean it like that. | ...Quite. | I'm sorry. Truly.
-a : Isn't it. | Isn't it. | Lucky you. | Quaint.
+a : Isn't it. | Better. It moves. | Lucky you. | Quaint.
 
 scene m7_rg_sump_wet
 when topic=weather|day here.region=ridgemere here.weather=rain|storm a.quarter=sump
 a : The lane's a river. | Water's in the tenement cellar again. | The Bilge has a puddle you could drown in. | Rats are moving upstairs.
 b : Every time. | Mind the rats. | Somebody did, last year. | Smart rats.
-a : Every time. | They mind me. | Gods. | Smarter than the landlord.
+a : And every time they promise to mend the drain. | They mind me. | Gods. | Smarter than the landlord.
 
 scene m7_rg_commons_market
-when topic=day here.region=ridgemere here.day=market here.place=market
+when topic=day here.region=ridgemere here.day=market here.place=market a.quarter=commons|harbour_hill|office
 a : The Commons Market's heaving. | Pies at the Commons Market, the good ones. | Cheese wolf's shouting again. | Somebody from the Heights slumming it.
 b : Mind your purse. | Go before they're gone. | Loudest cheese in the city. | Buying sausage like it's scandal.
 a : Always. | Gone already. | Best cheese too. | It is, for them.
@@ -80,60 +80,60 @@ scene m7_rg_sump_market
 when topic=day here.region=ridgemere here.place=market a.quarter=sump
 a : Soup's thin today at the Sump Market. | Nuts for a penny. Rotten for free. | Somebody pinched a sausage and the whole market cheered. | Pickles again. Always pickles.
 b : Thin as the purse. | Free's my price. | Good for them. | Pickles keep.
-a : Thinner. | Mine too. | Sausage hero. | Pickles last forever.
+a : Thinner. | Mine too. | Sausage hero. | So does misery.
 
 scene m7_rg_office_square
 when topic=day here.region=ridgemere here.place=street|hall
-a : Office Square's full of petitioners again. | Somebody's tied a ribbon on the statue. | The fountain's running green. Who did that? | Clerks out for lunch, all at once. Like starlings.
-b[job=official] #clerk : Petitioners are the lifeblood of the City Office. Please take a number.
+a : Office Square's full of petitioners again. | Somebody's tied a ribbon on the statue. | The fountain's running green. Who did that? | Clerks out for their bread at midday, all at once. Like starlings.
+b[job=official] #clerk : Never a dull day on Office Square. I'd know. I'm stuck in it.
 b : Rents due. | It'll be off by noon. | The Blue Vats lads, I'd bet. | And just as noisy.
-a@clerk : What number are we on?
+a@clerk : Poor you.
 a : Always rents. | Shame. | Bet you're right. | Noisier.
 
 scene m7_rg_restday_tide
 when topic=day here.region=ridgemere here.day=rest
 a : The Chapel of the Tide was full this morning. | Restday bells from every quarter. | The works are quiet. You can hear the gulls. | Even the Houses keep Restday. Mostly.
-b[quarter=heights] #heights : We went to the late service. The early one has such a crowd.
+b[quarter=heights] #heights : One hears the bells best from the Heights, of course.
 b : Tide waits for no one, but it waits for that. | Bells from every quarter, and no two together. | Strange, without the hammering. | Mostly.
-a@heights : The crowd's the point.
-a : Sermon was long. | Like cats in a sack. | Peaceful. | Greatly's ships still sail.
+a@heights : Of course one does.
+a : Sermon was long. | Like a quarrel in brass. | Peaceful. | Greatly's ships still sail.
 
 scene m7_rg_fest_wharf
 when topic=festival here.region=ridgemere topic.when=today here.place=shore|street
 a : Every boat in the harbour's hung with lanterns. | They're racing skiffs across the Sound at noon. | The Fish Hall's giving out herring. Free. | House colours on every mast.
-b[job=sailor|fisher] #sea : My cousin's rowing for the Greatly Yard. Bet on her.
+b[job=sailor|fisher] #sea : There's skiff racing later. My cousin's rowing for the Greatly Yard.
 b : Pretty on the water. | Who's favourite? | Free herring, best festival. | Greatly blue wins on numbers.
 a@sea : A penny on your cousin, then.
 a : Prettier at night. | The Ropewalk lads. | I'll take two. | Always does.
 
 scene m7_rg_fest_soon_houses
 when topic=festival here.region=ridgemere topic.when=soon
-a : The Houses are arguing over who pays for #here.festival#. | Mossgrave's promised woollen favours for every child. | Greatly wants fireworks over the Sound. | The Council's voting on the feast. They'll vote for themselves.
-b : Somebody always pays. Us. | Itchy favours. | Wet fireworks. | Always do.
-a : Always us. | Warm, though. | Hissing fireworks. | Like cats at a bowl.
+a : The Houses are each swearing to outdo the others for #here.festival#. | Mossgrave's promised woollen favours for every child. | Greatly wants a lantern on every boat in the harbour. | The Council's voting on the feast. They'll vote for themselves.
+b : And we'll pay for it, somehow. | Itchy favours. | Every boat? Even the leaky ones? | Always do.
+a : Always us. | Warm, though. | Especially those. They'll sink prettily. | Like cats at a bowl.
 
 scene m7_rg_from_away_city
 when topic=weather|day here.region=ridgemere a.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow pair.same_from=yes
-a : Another wet day in the city. Remember the sun at home? | Do you ever get used to all these stairs? | Too many wolves. Can't hear yourself. | I dreamt of home last night.
-b : Every day. | Never. | I miss the quiet too. | Me too. Every night.
-a : We'll go back. One day. | My knees won't. | Quiet's a luxury here. | One day.
+a : Another day in the city. Remember the sky at home? | Do you ever get used to all these stairs? | Too many wolves. Can't hear yourself. | Somebody's cooking like my mother did. I followed my nose two streets.
+b : Every day. | Never. | I miss the quiet too. | It gets you like that. Out of nowhere.
+a : We'll go back. One day. | My knees won't. | Quiet's a luxury here. | Every time.
 b?[warmth=warm] : Till then, we've each other. And the rain.
 
 scene m7_rg_history_wall
 when topic=lore here.region=ridgemere
 a : They say the city wall was built in a single summer. | The first Ridgemere was just the wharf and a chapel. | The Heights were a sheep run once. | Office Square was the old fish market.
-b[stage=old] #old : My grandfather carried stone for the East Gate. Said so till the day he died.
+b[stage=old] #old : My grandfather carried stone for the East Gate. He said the city was half the size then.
 b : A summer and a lot of beatings. | And look at it now. | Still full of sheep, some say. | Still smells like one.
 a@old : Proud of it, was he?
 a : Grim. | Wet and proud. | Ha! | It does, after rain.
 
 scene m7_rg_lore_drowned_lantern
 when topic=lore here.region=ridgemere here.time=dusk|night
-a : Why's it called the Drowned Lantern? | Somebody saw a light under the water at the end of the pier. | They say the Sound's got a town under it. Bells and all. | Fishers won't whistle on the water. Calls the wind.
-b[quarter=sump|wharf] #local : Lamplighter fell off the wharf with his lamp lit. It burned all the way down.
-b : Nobody remembers. | Lantern fish. | And fish for mayors. | I whistle. Nothing comes.
+a : Why's it called the Drowned Lantern? | Somebody saw a light under the water at the end of the pier. | They say the Sound's got a town under it. Bells and all. | Fishers say a lamp on the water at night is a drowned wolf looking for home.
+b[quarter=sump|wharf] #local : Ask anyone in the Sump about lights under the water. The Drowned Lantern's named for one.
+b : Nobody remembers. | Lantern fish. | And fish for mayors. | Then don't row to it.
 a@local : Gods. Is that true?
-a : Somebody does. | Or a ghost. | Ha. | Lucky you.
+a : Somebody does. | Or a ghost. | Ha. | Nobody does, twice.
 b?@local : True as the rain.
 
 scene m7_rg_lore_houses_feud
@@ -149,9 +149,9 @@ a : Depends who you ask. | Shame they don't do it more. | Sheep make lords. | Ha
 scene m7_fh_snow_dawn_market
 when topic=weather|day here.region=frosthollow here.weather=snow here.time=dawn here.day=market
 a : Marketday, and the snow's on the stalls before the goods. | Who's going to climb up for market in this? | Traders'll be stuck halfway up the Pass Road. | Sweep your stall or sell snow.
-b[role=merchant] #trade : I'll sell snow if they'll pay. Iron-cold snow, best in the realm. | I've brought a brazier. I'll sell warm paws by the minute. | Snow keeps the cheese. I'm not complaining.
+b[role=merchant] #trade : I'll sell snow if they'll pay. Iron-cold snow, best in the realm. | I've brought a brazier. A penny a warm. | Snow keeps the cheese. I'm not complaining.
 b : Only us fools. | Those that must. | Then we buy from each other. | Snow's free.
-a@trade : I'll give you a penny for a sackful. | Two minutes, then. My paws are dead. | You'd sell your own tail if it froze.
+a@trade : I'll give you a penny for a sackful. | Here's two pennies. My paws are dead. | You'd sell your own tail if it froze.
 a : Fools' market. | Must's a hard master. | Same old prices. | Free's too dear.
 
 scene m7_fh_lamp_dark
@@ -164,11 +164,11 @@ a : Everything's dearer. | It remembers in spring. | It is. | Colder.
 
 scene m7_fh_avalanche
 when topic=weather|lore here.region=frosthollow here.season=winter|spring
-a : Heard the slide on the east face last night. | Snow's hanging over the pass like a breath held. | Don't shout on the Pass Road. Ever. | The thaw's loosening the high snow.
+a : Heard the slide on the east face last night. | Snow's hanging over the pass like a breath held. | Pass Road's shut till the slide's cleared. | The thaw's loosening the high snow.
 b[stage=old] #old : The great slide took half the old houses when I was a pup. Same face.
-b : Anyone under it? | It'll let go soon. | Not even to swear. | Keep off the slopes.
+b : Anyone under it? | It'll let go soon. | Again? Third time this winter. | Keep off the slopes.
 a@old : Gods. And they built again?
-a : Nobody, thank the lamp. | Then the pass shuts. | Not even that. | Keep off everything.
+a : Nobody, thank the lamp. | Then the pass shuts. | Fourth. | Keep off everything.
 b?@old : We always build again. That's Frosthollow.
 
 scene m7_fh_clear_peaks
@@ -179,42 +179,42 @@ a : Remember why what? | Mountains bite. | I'll wear my scarf. | Lamp-sure.
 
 scene m7_fh_summer_short
 when topic=weather|day here.region=frosthollow here.season=summer
-a : Two weeks of summer. Don't blink. | Flowers on the scree! Look! | Snow's still in the gullies, and it's high summer. | Pups are swimming in the meltwater. Mad things.
-b[from=oakhaven|mirebridge|larkfield|southmeadow] #south : This is your summer? This?
-b : Blinked. Missed it. | Brave little things. | Never leaves, that snow. | Mad and blue.
+a : Two weeks of summer. Don't blink. | Bilberries up on the slope! Pick them while they last. | Snow's still in the gullies, and it's high summer. | Pups are swimming in the meltwater. Mad things.
+b[from=oakhaven|mirebridge|larkfield|southmeadow] #south : You call this summer? I'm still in my coat.
+b : Blinked. Missed it. | Pick fast. Summer's short. | Never leaves, that snow. | Mad and blue.
 a@south : Best two weeks in the realm.
-a : Ha. | Brave as miners. | Old friend, that snow. | Blue and happy.
+a : Ha. | Paws blue already. | Old friend, that snow. | Blue and happy.
 
 scene m7_fh_smelter
 when topic=day|weather here.region=frosthollow here.place=work|street
 a : Smelter's smoke's lying low today. | Ore carts screaming down the track. | You can taste the iron in the air. | The smelter's warm. Everyone's loitering.
-b[job=miner|smith] #iron : That's money you're tasting.
+b[job=miner|smith] #iron : That's money, that is. Smoke, carts, the lot.
 b : Bad air. | Grease them, somebody. | Taste of home. | Me included.
-a@iron : Tastes like rust.
+a@iron : Smells like rust.
 a : Hold your breath. | Nobody will. | Rust and home. | Warmest loafers in the valley.
 
 scene m7_fh_midwinter
 when topic=festival here.region=frosthollow here.season=winter
-a : Lamps up the mine road for #here.festival#. | They'll ring the Snow Chapel bell for every wolf below. | No picks till after #here.festival#. | Blood sausage and hot ale, the whole valley.
-b[job=miner] #miner : I carry my father's lamp. Always.
-b : Prettiest sight in the world. | Every one. Long night of bells. | Mountain rests too. | Sausage first.
+a : The Snow Chapel's hung with miners' lamps for #here.festival#. | Blood sausage and hot ale, the whole valley. | They'll read out the names of the lost at the Snow Chapel. | The smelter's banked down for #here.festival#. First quiet in a season.
+b[job=miner] #miner : I'll carry my father's lamp. Always do.
+b : Prettiest sight in the world. | Sausage first. | Every one, and slow. | You can hear the stream again.
 a@miner : He'd be proud.
-a : From the top it's a river of light. | Every one remembered. | Let it. | Ale first.
+a : From the road it looks like the stars came down. | Ale first. | Every one remembered. | Strange, the quiet.
 
 scene m7_fh_lore_ice_wolf
 when topic=lore here.region=frosthollow
 a : My grandmother swore she saw a white wolf on the high snow. Big as a horse. | They say the Whitefangs were real fangs once. A giant's. | Never sleep in the snow. It sings you down. | The old trappers left meat on the high rocks. For something.
-b[job=miner] #miner : I've seen tracks up there no wolf made.
+b[job=miner] #miner : Miners know. There's things up high no wolf's named.
 b : Hungry, was it? | Giant with bad teeth. | I'll stay awake, then. | For what?
-a@miner : Don't. I'll not sleep.
+a@miner : Don't. I've to walk home.
 a : She didn't stay to ask. | And bad breath, I'd say. | Wise. | Nobody'd say.
 
 scene m7_fh_southerner_snow
 when topic=weather here.region=frosthollow here.weather=snow b.from=oakhaven|mirebridge|larkfield|southmeadow
 a : First winter up here? | You'll want better boots. | Snow getting to you? | You look froze to the marrow.
-b : Is it always like this? Always? | Better everything. | It's IN me. In my bones. | I'm a southern wolf. We melt or we freeze. No middle.
-a : Gets worse. | Go see the cobbler. | That's how you know you're home. | You'll learn the middle.
-b : Gods help me. | Which way? Quick. | Then I'm never home. | I'll die learning it.
+b : Is it always like this? Always? | Better everything. | It's in me. In my bones. | I'm a southern wolf. We melt or we freeze. No middle.
+a : Gets worse. | Go see the cobbler. | That's Frosthollow saying hello. | You'll learn the middle.
+b : Gods help me. | Which way? Quick. | Tell it to say goodbye. | I'll die learning it.
 
 # ================================================================ Coldwater: on Glasswater
 
@@ -228,7 +228,7 @@ a : Always is. | Hungry, more like. | Ghost whales. | And boots. And wolves.
 
 scene m7_cw_mist_morning
 when topic=weather here.region=coldwater here.time=dawn here.weather=fog|clear|overcast
-a : Mist lying on the water like wool. | The lake's breathing this morning. | Can't see the far shore. | The water's flat as a plate.
+a : The lake's smoking this morning. | The lake's breathing this morning. | The far shore's gone. | Not a ripple on the water.
 b[job=fisher] #fisher : Still water, good catch. Get out there. | Mist on the lake means the fish come up. | I've had my nets out since dark.
 b : Pretty, that. | Cold breath. | It's there. Probably. | Throw a stone. Spoil it.
 a@fisher : After breakfast. | Go on, then. | Anything in them?
@@ -242,10 +242,10 @@ a : Wind. Just wind. | Except Old Heron. | Mine too. | Or down.
 
 scene m7_cw_summer_swim
 when topic=weather|day here.region=coldwater here.season=summer here.weather=clear
-a : Pups in the shallows all day. | Hot enough to swim. Nearly. | The water's still cold enough to stop your heart. | Dragonflies all over the reeds.
-b[parent=yes] #parent : Not past the willows. Mine know.
+a : Pups in the shallows all day. | Hot enough to swim. Nearly. | Warm on top, and ice a paw below. | Dragonflies all over the reeds.
+b[parent=yes] #parent : Mine are in there somewhere. Stay where you can stand, I've told them.
 b : Keep them shallow. | Nearly's not enough. | That's the joy of it. | Blue ones. Pretty.
-a@parent : Mine know too. They don't listen.
+a@parent : Told them. Ha. They listen like fish.
 a : Always. | I'll dip a paw. | Some joy. | And biting ones.
 
 scene m7_cw_long_river
@@ -269,12 +269,12 @@ when topic=weather here.region=oakhaven here.weather=rain
 a : Rain's on the leaves before it's on us. | Under the oaks you hardly feel it. | Hear it? Like a thousand pups tapping. | Drip from the trees long after it stops.
 b[from=ridgemere] #city : In the city you'd be drowned by now.
 b : Best roof in the realm. | Till you step out from under. | Sleepy sound. | Second rain, my granddam called it.
-a@city : The Warmwood looks after its own.
-a : Older than any House. | Then soaked. | Make tea. | Second rain.
+a@city : The Warmwood keeps us dry.
+a : Older than any House. | Then soaked. | Makes me yawn. | Good name.
 
 scene m7_oh_autumn_wood
 when topic=weather|day here.region=oakhaven here.season=autumn
-a : Acorns everywhere. The pigs are happy. | The whole wood's gone copper. | Mushrooms up after the rain. | Leaf mould to the ankle.
+a : Pigs in the wood up to their ears in acorns. | The whole wood's gone copper. | Mushrooms up after the rain. | Leaf mould to the ankle.
 b[job=woodcutter|crafter] #wood : Good felling weather. Sap's down.
 b : Fat pigs, fat winter. | Prettiest month. | Pick the right ones. | Smells like home.
 a@wood : Leave us a tree or two.
@@ -282,37 +282,37 @@ a : Fat everything. | Coppery. | Which are right? | It is home.
 
 scene m7_oh_storm_wood
 when topic=weather here.region=oakhaven here.weather=storm
-a : Trees groaning. Hear them? | A big limb came down on the Southway. | Keep away from the old oaks in a #wind# like this. | Something cracked out there. Big.
-b[job=woodcutter] #wood : I'll be sawing windfall for a week. Good wood, though.
+a : Trees groaning. Hear them? | A big limb came down on the Southway. | Keep out from under the old oaks today. | Something cracked out there. Big.
+b[job=woodcutter] #wood : There'll be oak across every track by morning. Good wood, though.
 b : They're talking. | Road's shut, then. | Old oaks drop limbs out of spite. | Big tree, big crack.
 a@wood : Always good wood, to you.
 a : Arguing. | Again. | Spite trees. | Poor thing.
 
 scene m7_oh_summer_glade
-when topic=weather|day here.region=oakhaven here.season=summer
-a : Cool under the trees, even now. | The glades are full of butterflies. | Bees loud as a mill. | Green light through the leaves. Like being underwater.
+when topic=weather|day here.region=oakhaven here.season=summer here.weather=clear|overcast
+a : Cool under the trees, even now. | The glades are full of butterflies. | Bees in the hollow oak again. Hear them? | Green light through the leaves. Like being underwater.
 b : Best place in summer. | Pups chasing them. | Good honey year. | Nicer than water.
 a : And winter. | Never catch one. | Sweet. | Drier.
 
 scene m7_oh_story_night
-when topic=lore|festival here.region=oakhaven here.time=dusk|night
-a : Story night at the Acorn Inn. Who's telling? | Old Hedge'll tell the hall ghost again. | I'll tell the one about the oak that walked. | Somebody tell the one with the honey thief.
-b[stage=young] #pup : The ghost one! The ghost one!
-b : Whoever's buying. | Every year. Never gets old. | It didn't walk. It leaned. | Me. I'm the honey thief.
-a@pup : Hush. Sit still and you'll hear it.
-a : Then me. | It does a bit. | Leaned with purpose. | Ha! I knew it.
+when topic=lore here.region=oakhaven here.time=dusk|night
+a : The old ones say the Warmwood was one tree once, and the rest are its children. | Ever wonder why there's never beech on the Acorn Inn's fire? Bad luck to burn a beech. | My granddam told of a joiner who carved a door in an oak, and something knocked back. | There's a ring of toadstools by the sawmill. Nobody mows it.
+b[stage=young] #pup : And then what? Then what?
+b : Big family. | Why bad luck? | Did he open it? | Nobody's that brave.
+a@pup : Then you go to bed, and I'll tell you the rest tomorrow.
+a : And they all argue. | The beech remembers. | His widow did. Once. | Or that daft.
 
 scene m7_oh_lore_green_wolf
 when topic=lore here.region=oakhaven
 a : They say there's a wolf in the Warmwood made of moss and leaves. | Leave the first honey on a stump. For the wood. | If you get lost, turn your coat inside out. The wood lets you go. | The boundary oak drinks the rain first. Before anyone.
 b : My cousin met him. Came back quiet. | Stumps get fat, here. | Then everyone sees your lining. | Thirsty oak.
-a : Quiet's the wood. | Fat stumps, lucky town. | Better lining than lost. | Old oak.
+a : Quiet's the wood. | Fat stumps, lucky town. | Better lining than lost. | Old and greedy.
 
 scene m7_oh_fest
 when topic=festival here.region=oakhaven
-a : They'll have the long table out for #here.festival#. | Everyone brings one dish. Nobody counts. | Lanterns in the oaks for #here.festival#. | Old Hedge'll carve something.
-b : One dish each and still too much. | Somebody always brings turnips. | Fireflies jealous. | A wolf, every year.
-a : Never too much. | Somebody always eats them. | Ha. | Every year better.
+a : They're stringing lanterns between the oaks for #here.festival#. | There's to be a dance in the big glade. | The joiners have made a new table for #here.festival#. Forty feet of oak. | Somebody always brings turnips.
+b : The fireflies'll be jealous. | Mind the roots, dancing. | And not a nail in it, I'll bet. | Somebody always eats them.
+a : Ha. | I'll mind your feet. | Not one. Pegs. | It's always you.
 
 # ================================================================ Mirebridge: the Sallow Fens
 
@@ -320,17 +320,17 @@ scene m7_mb_fog_dusk
 when topic=weather here.region=mirebridge here.weather=fog here.time=dusk|night
 a : Mist bell's going. | Fog's come up off the lode quick as a thief. | Lanterns on the causeway look like the other kind. | Can't tell the river from the road.
 b[from=mirebridge] #fen : Stay on the stones. Count them home. | Fen mist. Smell it? Peat and old secrets. | Mind the soft side. It's hungry this time of year.
-b[from=ridgemere|frosthollow|coldwater|larkfield|southmeadow|oakhaven] #stranger : How do you live in this? | I can't see my paws. Are they still on? | Is that a light out there? Someone's waving.
-b : Somebody's out. | It always is. | Don't look at them. | Then stand still.
+b[from=ridgemere|frosthollow|coldwater|larkfield|southmeadow|oakhaven] #stranger : How does anyone find their way in this? | I can't see my paws. Are they still on? | Is that a light out there? Someone's waving.
+b : Somebody's out. | It always is. | Count them. If there's one too many, walk faster. | Then stand still.
 a@fen : Forty-one to the inn. | Mostly peat. | Always hungry, that side.
 a@stranger : Slowly. And dry-footed. | Still on. Don't look down. | Don't look at it. Don't wave back.
-a : Pray it's no pup. | Thief fog. | I'm not. | I am.
+a : Pray it's no pup. | Thief fog. | There's one too many. | I am.
 
 scene m7_mb_flood
 when topic=weather|day here.region=mirebridge here.weather=rain|storm
 a : River's up a stride since yesterday. | Water's at the stilts. | Peat stacks are floating. | The lodes are brimming.
 b[job=farmer|herder] #farm : I've moved the beasts to the knoll.
-b : It'll top the causeway by dark. | Good thing they're stilts. | Fish the peat. | Fen's thirsty, it'll drink.
+b : It'll top the causeway by morning. | Good thing they're stilts. | Fish the peat. | Fen's thirsty, it'll drink.
 a@farm : Bring them to ours if it rises.
 a : We'll be boats again. | Grandad's stilts. | Wet peat. | Fen's never thirsty.
 
@@ -360,19 +360,19 @@ a : Lovely. | Prettiest. | Every year. | Mine too.
 
 scene m7_mb_lore_delta
 when topic=lore here.region=mirebridge
-a : They say the Drowned Delta was a kingdom once. | My uncle found a bronze ring in the peat. Old as anything. | Nobody digs where the reeds grow red. | The fen gives back what it takes. Slow.
-b[honesty=frank|guarded] #frank : The fen gives back boots. That's all I've had.
-b : Kingdoms drown. | Sell it. | Why red? | Very slow.
+a : They say the Drowned Delta was a kingdom once. | My uncle found a bronze ring in the peat. Old as anything. | Nobody digs where the reeds grow red. | Peat-cutters found a boat in the bog once. Miles from any water.
+b[honesty=frank|guarded] #frank : The fen's given me nothing but wet boots.
+b : Kingdoms drown. | Sell it. | Why red? | Water moves. Fens remember.
 a@frank : Good boots?
-a : Even here. | He wears it. | Nobody says. | Patience, then.
+a : Even here. | He wears it. | Nobody says. | Fens remember everything.
 
 # ================================================================ Larkfield: the downs
 
 scene m7_lf_wind_downs
 when topic=weather here.region=larkfield here.weather=clear|overcast
-a : Wind's coming over the High Downs. | Cloud shadows racing across the hills. | Larks up already, singing. | You can see three counties from the top today.
+a : Wind's coming over the High Downs. | Cloud shadows racing across the hills. | Larks up already, singing. | You can see clear to the Orchard Vale from the top today.
 b[job=herder] #shep : Sheep hate a wind. They all face the same way and sulk.
-b : Never stops up here. | Like sheep running. | Mad little birds. | Two, and a lot of sheep.
+b : Never stops up here. | Like sheep running. | Mad little birds. | And a lot of sheep.
 a@shep : Like the council.
 a : Never. | Like sheep. | Happy, though. | Mostly sheep.
 
@@ -386,7 +386,7 @@ a : Like custard. | Everything's stuck. | Bread mud. | Worst.
 
 scene m7_lf_market_carters
 when topic=day here.region=larkfield here.day=market
-a : Carters from three roads today. | Heard the news from Ridgemere before it's cold. | Somebody's selling sheep at a price that makes me laugh. | The inn's full of road dust and stories.
+a : Carters in from every road today. | Heard the news from Ridgemere before it's cold. | Somebody's selling sheep at a price that makes me laugh. | The inn's full of road dust and stories.
 b[role=merchant] #trade : News is free. Sheep aren't.
 b : Busy, busy. | Fresh from the city, is it? | Laugh and walk on. | Half true, the stories.
 a@trade : Everything's for sale in Larkfield.
@@ -402,11 +402,11 @@ a : Heavy fleeces. | Mossgrave wants everything. | Ha. | Can't.
 
 scene m7_lf_lore_chalk
 when topic=lore here.region=larkfield
-a : Who cut the white horse on the down? | Dig in the chalk, you find shells. Up here. On a hill. | They say there's a hollow hill where the old kings sleep. | The barrows on the High Downs. Nobody ploughs them.
-b[job=farmer|herder] #farm : I ploughed round one once. The share broke. I'd not try again.
-b : Older than Larkfield. | Sea was up here once, they say. | They can sleep. | Wise.
+a : Who cut the white horse on the down? | Dig in the chalk, you find shells. Up here. On a hill. | They say there's a hollow hill where the old kings sleep. | There's a standing stone on the down that turns round in the dead of night, they say.
+b[job=farmer|herder] #farm : I ploughed too close to the old stones once. The share broke. I'd not try again.
+b : Older than Larkfield. | Sea was up here once, they say. | They can sleep. | Who's watched it?
 a@farm : They don't like to be disturbed.
-a : Older than talk. | Sea on a hill. | Let them. | Very wise.
+a : Older than talk. | Sea on a hill. | Let them. | Nobody that'll say.
 
 scene m7_lf_fest_fair
 when topic=festival here.region=larkfield
@@ -427,7 +427,7 @@ a : Larkfield, probably. | Crunchy. | Poor trees. | Good.
 scene m7_sm_summer_heat
 when topic=weather here.region=southmeadow here.season=summer here.weather=clear
 a : Hot as a bread oven. | Shade under the apple trees, quick. | Grass is crackling. | Cider cellar's the only place to be.
-b[from=frosthollow|coldwater] #north : I'm going to die. I'm a mountain wolf. I'm going to die here. | At home there'd be snow in the gullies still. | I've sat in the well bucket twice today.
+b[from=frosthollow|coldwater] #north : I'm going to die. I'm a mountain wolf. I'm going to die here. | At home I'd be sat on a snowbank right now. | I've sat in the well bucket twice today.
 b : Hotter. | Bagsy the big tree. | Fire weather. | Cellar's full.
 a@north : Not today. Here, have some cider. | Here there's cider in the cellar. Better. | Third time's free.
 a : And no bread. | Share it. | Watch the stubble. | Full of what?
@@ -446,15 +446,15 @@ a : Last cart's in. | Every barn's full. | Stubble fires down the valley. | Cide
 b[job=farmer|laborer] #farm : My back's in the field somewhere. Somebody find it. | Thirty days, sunup to sundown. I could sleep a month. | Not a stook lost to rain this year. Not one.
 b : Good year. | Thank the Bright One. | Pretty, burning. | Every soul.
 a@farm : Cider finds backs. | Sleep, then. You've earned it. | Thank the Bright One.
-a : Good year. | And the rain. | Mind the hedges. | Every pup too.
+a : Best in years. | And the rain. | Mind the hedges. | Every pup too.
 
 scene m7_sm_rain_blessing
 when topic=weather here.region=southmeadow here.weather=rain here.season=summer|spring
 a : Rain! At last! | Listen to the fields drink. | Somebody's dancing in it. | Smell the dust settle.
 b[stage=old] #old : Rain in the south's a gift. Never curse it here.
-b : The well'll fill. | Glug glug. | Everybody, nearly. | Sweetest smell there is.
+b : The well'll fill. | Glug glug. | Everybody, nearly. | Like a stone floor fresh washed.
 a@old : I'll not. I'll dance.
-a : Thank the gods. | Ha. | Me too. | Second to cider.
+a : Thank the gods. | Ha. | Me too. | Lovely, after all that dust.
 
 scene m7_sm_lore_scarecrows
 when topic=lore here.region=southmeadow
@@ -475,13 +475,13 @@ a : Taste it from here. | Join it. | Heaven with apples. | Every year.
 scene m7_wild_road_weather
 when topic=weather here.region=wild
 a : Long way between roofs out here. | Weather's always worse on the road. | Sky looks big out here. | No shelter for miles.
-b[job=carter] #carter : I know every hedge between here and Larkfield that keeps the rain off.
+b[job=carter] #carter : I know every hedge between here and the next town that keeps the rain off.
 b : Keep walking. | It's the same. We just notice. | Big and empty. | Then don't stop.
 a@carter : Show me one.
 a : Legs are tired. | We notice. | Unnerving. | Right.
 
 scene m7_wild_night_road
 when topic=weather|lore here.region=wild here.time=dusk|night
-a : Should've stopped at the last inn. | Did you hear that? In the hedge? | Stars are bright out here. | Keep the lantern up.
-b : We'll make the next one. | Fox. Or worse. Fox. | No town smoke. | It's up.
-a : We'd better. | Say fox. | Clean sky. | Higher.
+a : Should've stopped at the last inn. | Did you hear that? In the hedge? | Not a light anywhere. Not one. | Keep the lantern up.
+b : We'll make the next one. | Fox. Or worse. Fox. | Lamps are for towns. | It's up.
+a : We'd better. | Say fox. | I'd give a lot for a town. | Higher.

@@ -168,7 +168,7 @@ a : No cake for you or the cat. | Then you can sweep up for the wind. | Wash. Th
 
 scene kn_pup_rest_day
 when topic=family pair.band=family a.stage=adult b.stage=young here.day=rest
-a : No work today. What shall we do? | Chapel first, then the river. | Rest day. Let's do nothing at all.
+a : No work today. What shall we do? | Chapel first, then the river. | Restday. Let's do nothing at all.
 b : Go to the river! | Do we have to do chapel? | Nothing's boring.
 a : The river it is. If you don't fall in. | Yes. Brother Ansel expects you. | Nothing is wonderful when you're grown.
 b : I'll fall in a little. | He smells like candles. | I'm not grown.
@@ -302,7 +302,7 @@ a : That's growing up. Collar. | Because we're a family. Collar. | Then you can 
 
 scene kn_parent_gone
 when topic=family pair.band=family a.stage=adult b.stage=young
-a : Your mother wouldn't want you sulking like this. | I miss him too, you know. | We'll go up to the stones on rest day. Say hello.
+a : Your mother wouldn't want you sulking like this. | I miss him too, you know. | We'll go up to the stones on Restday. Say hello.
 b : She's not here to want anything. | You don't cry. | Will she hear us?
 a : No. But I am. And I'm asking. | Not where you can see. | I like to think so.
 b : ...Can I sit with you? | Sometimes I hear you. | I'll tell her about my tooth.

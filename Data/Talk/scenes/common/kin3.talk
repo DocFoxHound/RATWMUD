@@ -4,12 +4,12 @@
 # ---------------------------------------------------------------- Newlyweds
 
 scene kn_mates_new_den
-when topic=family pair.band=spouses a.stage=adult|young b.stage=adult|young
+when topic=family pair.band=spouses a.stage=adult b.stage=adult
 a : I still can't believe this den is ours. | Do you think the neighbours heard us howling at the wedding? | Where shall we put my mother's chest?
 b : Ours, and the leak in the roof. | The neighbours in #here.town# heard. | As far from my cushion as it'll go.
 a : Ours, leak and all. | Good. Let them be jealous. | It's a lovely chest!
-b : I'll fix it on rest day. | They can be jealous quietly. | It smells of your mother.
-a : You said that last rest day. | Nobody's quiet at a wedding. | Everything of hers does. That's the point.
+b : I'll fix it on Restday. | They can be jealous quietly. | It smells of your mother.
+a : You said that last Restday. | Nobody's quiet at a wedding. | Everything of hers does. That's the point.
 
 scene kn_mates_new_cooking
 when topic=family pair.band=spouses a.stage=adult|young b.stage=adult|young here.place=home
@@ -137,7 +137,7 @@ a : Shh. | From your mother. | Fine. It's you.
 scene kn_mates_far_apart
 when topic=family pair.band=spouses a.job=carter|sailor|soldier|merchant
 a : I'm off with the caravan again tomorrow. | I'll be gone a month this time. | They want me on the long run to #here.town#.
-b : You were only back on rest day. | A month? | That's the one with the bandits.
+b : You were only back on Restday. | A month? | That's the one with the bandits.
 a : I know. It's the work. | The pay's good. | It's the one with the pay.
 b : Bring yourself back. That's all. | Come back with all your legs. | Then come back with it.
 a : I always do. | All four. I promise. | And all of me.
@@ -293,7 +293,7 @@ weight 0.8
 a : The den's very quiet without him. | I still set two bowls out, sometimes. | I talk to her at night. Isn't that foolish?
 b : Come and eat with us. | It's habit. It'll pass. | It's not foolish.
 a : I don't want to be a burden. | I don't want it to. | She doesn't answer.
-b : You're not. Come on rest day. | Then keep setting them. | Maybe she just listens.
+b : You're not. Come on Restday. | Then keep setting them. | Maybe she just listens.
 a : Perhaps. | Perhaps I will. | Maybe.
 
 scene kn_widow_remarry
@@ -306,7 +306,7 @@ a : At my age? | Maybe. | Maybe I will.
 
 scene kn_widow_children
 when topic=family pair.band=family a.stage=adult b.stage=young
-a : Your father would be proud of you today. | You've got his way of laughing. | Shall we visit his stone on rest day?
+a : Your father would be proud of you today. | You've got his way of laughing. | Shall we visit his stone on Restday?
 b : Do you miss him? | I don't remember him laughing. | Can I bring him a flower?
 a : Every day. | He laughed all the time. Before. | He'd like that.
 b : Me too. Even when I don't remember. | I'll laugh for him, then. | A big yellow one.

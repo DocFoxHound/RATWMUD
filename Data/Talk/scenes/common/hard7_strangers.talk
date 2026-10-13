@@ -138,7 +138,7 @@ b : That costs more than a guard. | Then ask for references. | Then offer enough
 cooldown 1d
 
 scene h7_stranger_young_hero
-when topic=player a.stage=young|adolescent
+when topic=player a.stage=young|adolescent b.stage=adult|old
 a : I'm going to be like #topic.subject# when I'm grown. | Do you think #topic.subject#'s killed a bandit? | Can I go and ask #topic.subject# about the road? | #topic.subject# has a scar. Did you see? A real one!
 b : Grown, and then we'll see. | I hope not. | No. Leave them be. | I saw. Don't stare at it.
 a : I'll have a sword. | I hope so! | Just one question! | I want one.
@@ -149,15 +149,15 @@ scene h7_stranger_restless
 when topic=player a.drive=restless|ambitious
 a : I could go with #topic.subject#. Out there. | What if I asked #topic.subject# to take me along? | Ever think of doing what #topic.subject# does? Just walking off? | #topic.subject# must have seen everything.
 b : And get your throat cut by the first bend. | They'd laugh. | Every day. Then I eat supper. | Everything, and slept on most of it.
-a : At least it'd be a bend I'd never seen. | Let them. | Supper's not enough. | I'd sleep on stones to see the sea.
+a : At least it'd be a bend I'd never seen. | Let them. | Supper's not enough. | I'd sleep on stones to see the far end of the realm.
 b : You'd miss your bed by nightfall. | Then ask. Go on. | It is when you're hungry. | Stones don't care what you see.
 cooldown 2d
 
 scene h7_stranger_devout
 when topic=player a.piety=devout
 a : The Bright One sends strangers to test us. Be kind to #topic.subject#. | I'll pray for #topic.subject#. For their road. | #topic.subject# should come to chapel. Travellers need it most. | Did #topic.subject# come by the chapel? I didn't see them.
-b : And the Dark One? | They'd thank you, if they knew. | Ask them, then. | Not everyone comes to chapel.
-a : Sends them too. That's the test. | They needn't know. | I might. | More's the pity.
+b : And who sends the thieves? | They'd thank you, if they knew. | Ask them, then. | Not everyone comes to chapel.
+a : The Bright One sends them too. That's the test. | They needn't know. | I might. | More's the pity.
 b : Then which is this one? | Then it's a quiet kindness. | Tell them the bread's free after. | Bread brings more than prayers.
 cooldown 2d
 
@@ -261,9 +261,9 @@ b : Then the gods should pay them. | Good. | Busy with someone else. | Thank you
 cooldown 1d
 
 scene h7_deed_young
-when topic=deed a.stage=young|adolescent
+when topic=deed a.stage=young|adolescent b.stage=adult|old
 a : Did you hear #topic.subject# #topic.deed#? I want to be them! | #topic.subject# #topic.deed#! Can we meet them? | When I'm big I'll do what #topic.subject# did! | Is #topic.subject# a hero? A real one?
-b : Be yourself first. Then see. | If they come by. | That's a mouthful. | A real wolf, who did a good thing.
+b : Be yourself first. Then see. | If they come by. | That's a big promise. | A real wolf, who did a good thing.
 a : I'd rather be them. | Please! | It's a good one! | That's what a hero is!
 b : They'd rather be asleep, I'd bet. | We'll see. | It is. | Then yes. A real one.
 cooldown 1d

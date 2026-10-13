@@ -151,7 +151,7 @@ void World::noteNews(const WorldEvent& e)
         tell(t, "marriage", name(t) + " married " + name(a));
     }
     else if (e.kind == "mourning")
-        tell(a, "loss", name(t) + " died, and " + name(a) + " mourns them (" + e.detail + ")");
+        tell(a, "loss", name(a) + " lost " + name(t));     // (The teller first, as it's said: "I lost Bran".)
     else if (e.kind == "apprenticeship")
     {
         tell(a, "work", name(a) + " became apprentice to " + name(t) + (e.detail.empty() ? "" : ", " + e.detail));
@@ -164,7 +164,7 @@ void World::noteNews(const WorldEvent& e)
     else if (e.kind == "assault")
         tell(t, "crime", name(a) + " attacked " + name(t));
     else if (e.kind == "arrest")
-        tell(a, "crime", name(a) + " of the watch took " + name(t) + " to the gaol");
+        tell(a, "crime", name(a) + " took " + name(t) + " to the gaol for the Watch");
 }
 
 AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
@@ -234,6 +234,17 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.confidence = belief.confidence;
                 t.score = 3 + belief.confidence + (about && !about->npc ? .5 : 0);
                 t.talk["topic.subject"] = subjectName;
+                // What kind of thing it is, for the lines to answer in kind (doc 62, phase 7): the claim is free words.
+                const auto& c = belief.claim;
+                const auto starts = [&](const char* w) { return c.rfind(w, 0) == 0; };
+                t.talk["topic.claim_kind"] = c == "died" ? "death" : c == "married" ? "marriage"
+                                           : starts("attacked") || c == "is violent" ? "violence"
+                                           : starts("stole") || starts("tried to steal") ? "theft"
+                                           : starts("was attacked") || starts("was robbed") ? "victim"
+                                           : starts("is wanted") ? "wanted"
+                                           : starts("raids the road") || starts("robs travellers") ? "bandit"
+                                           : c == "keeps promises" ? "promise_kept" : c == "breaks promises" ? "promise_broken"
+                                           : starts("was prowling") ? "prowling" : "other";
                 t.facts.push_back(name(teller) + " has heard that " + subjectName + " " + belief.claim + " (" +
                                   (belief.source == "saw it" ? name(teller) + " saw it"
                                                              : "from " + name(belief.source)) + "), and tells " +
@@ -662,6 +673,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     if (const auto* c = cell(ea->cellId); c && c->outdoors)
         if (const auto here = weatherAt(c->id, ea->position); skyAt(c->id, ea->position) >= 1 || (here.kind == Weather::Fog && here.intensity >= .3))
             consider(topic("weather", 1.0 + jitter(3)));
+        else
+            consider(topic("weather", .6 + jitter(3)));     // (A fair sky is remarked on too, less often: doc 62, phase 7.)
     consider(topic("lore", .7 + jitter(4)));
     consider(topic("smalltalk", .8 + jitter(5)));
     // More of everyday life (doc 62, phase 7: no conversation heard twice in a hundred hours): each its own topic,

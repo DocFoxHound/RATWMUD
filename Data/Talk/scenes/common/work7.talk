@@ -1,33 +1,35 @@
 # Work and trade (Docs/Design/62-talk.md, phase 7): everyday work talk most pairs can have. Few criteria, so almost
 # any two who work together or near each other can draw on them; tagged lines let the trade, the till, the purse and
 # the temper of whoever speaks colour each one. Specific scenes are in work7b.talk; prices and caravans in work7c.talk.
+# Where an answer changes what the last word must be, it sets a mark (#no) and the last word has its own line (a@no).
 
 scene w7s_break_bread
 when topic=work
 a : Stop a moment. Here, half my bread. | Sit down, you're making me tired. | Is it break yet? Tell me it's break.
-b[hungry=yes] : Gods bless you. I've had nothing since yesterday. | Gladly. My legs have been begging. | It's been break for an hour in my head.
+b[hungry=yes] : Bright One bless you. I've had nothing since yesterday. | Gladly. My legs have been begging. | It's been break for an hour in my head.
 b[tired=yes] : I'll not say no. I'll not get up again, either. | If I sit, I'll sleep. | Every hour's break, if you're tired enough.
-b[temper=short] : Can't stop. Some of us work. | I'll sit when it's done. | No. And stop asking.
+b[temper=short] #no : Can't stop. Some of us work. | I'll sit when it's done. | No. And stop asking.
 b : Go on, then. Just a crust. | A moment. Just one. | Near enough.
-a : There. Now we're both slower. | Sit. The work's not going anywhere. | I'll take near enough.
+a@no : Suit yourself. More for me. | Please yourself. | All right, all right. I only asked.
+a : There. Eat. | That's it. The work's not going anywhere. | Then it's break. I've decided.
 
 scene w7s_late_in
-when topic=work
-a : You're late. | Where were you this morning? | Overslept again?
-b[tired=yes] : Don't. I barely slept. | Lay awake half the night. | My eyes opened. My legs didn't.
+when topic=work pair.band!=strangers a.stage=adult|old here.time=dawn|day
+a : You're late. | Where've you been? | Overslept again?
+b[tired=yes] : Don't. I barely slept. | Lay awake half the night, then slept through the cock. | My eyes opened. My legs didn't.
 b[parent=yes] : The pups. Always the pups. | One of the little ones was poorly. | Have you tried dressing three pups who don't want dressing?
 b[humour=merry] : Late? I'm early for tomorrow. | I was here in spirit. | Overslept? I was resting my eyes. All night.
-b : The road was full. | Errand for my mother. | Something like that.
+b : The road was full. | An errand for the family. | Something like that.
 a : Well, you're here now. | Don't let it be a habit. | Hm. Get on, then.
 
 scene w7s_rude_customer
-when topic=work
+when topic=work a.business=thriving|steady|failing
 a : Had a customer this morning who sniffed everything and bought nothing. | One wanted it for half. Half! | A wolf shouted at me because it was raining.
 b[role=merchant] : Every day. Every single day. | I'd have given them a quarter, and the door. | Blame the sky, but buy something.
-b[warmth=warm] : Poor you. Some folk are just sour. | Some folk have no shame. | People need someone to shout at. Shame it's you.
+b[warmth=warm] : Poor you. Some folk are just sour. | Some folk have no shame. | Folk need someone to shout at. Shame it's you.
 b[humour=dry] : Was it me? I do that. | Half's a start. Did you ask for double? | Did you apologise for the rain?
 b : Some folk. | The cheek. | Folk are strange.
-a : Some folk indeed. | I sent them off. | I said I'd have a word with it.
+a : Sniffed the cheese twice, too. | I sent them off. | I said I'd have a word with it.
 
 scene w7s_lost_tool
 when topic=work
@@ -41,92 +43,107 @@ a : It's not where I left it. | ...Oh. Yes. Right there. | Someone has.
 scene w7s_first_job
 when topic=work a.stage=adult|old
 a : Do you remember your first day at it? | What was the first job you ever had? | I was useless when I started. Truly useless.
-b[stage=old] : Before your mother was born. I dropped a whole barrow of bricks. | Scaring crows for a penny a day. | We all were. The old ones laughed at me for a year.
-b[stage=adolescent] : That was last month. I still remember. | This one. This is my first. | I still am, some days.
-b[apprentice=yes] : I'm still on my first day, it feels like. | Sweeping. Still sweeping. | I am useless. My master says so.
+b[stage=old] : Long ago. I dropped a whole barrow of bricks the first morning. | Scaring crows for a penny a day. | We all were. The old ones laughed at me for a year.
+b[stage=adolescent] #green : That was last month. I still remember. | This one. This is my first. | I still am, some days.
+b[apprentice=yes] #green : I'm still on my first day, it feels like. | Sweeping. Still sweeping. | I am useless. My master says so.
 b : I spilled everything I touched. | Carrying water, for a farmer who never paid. | Weren't we all.
+a@green : It gets easier. Mostly. | Everyone starts somewhere. I started lower. | You'll get there. We all did.
 a : And look at us now. | We've come up in the world. Slightly. | We get better. Or older.
 
 scene w7s_other_life
-when topic=work pair.band=acquaintances|friends|family|spouses
+when topic=work pair.band=acquaintances|friends|family|spouses a.stage=adolescent|adult|old
 a : If you weren't doing this, what would you do? | Ever wish you'd learnt another trade? | What did you want to be, as a pup?
-b[drive=restless] : Go to sea. Today, if I could. | Every day. Every single day. | Anything but this.
-b[drive=content] : This. I'd still do this. | No. This suits me. | This, oddly enough.
+b[drive=restless] : Go to sea. Today, if I could. | Most days. All of them, some weeks. | Anything but this.
+b[drive=content] #settled : This. I'd still do this. | No. This suits me. | This, oddly enough.
 b[drive=ambitious] : Own the place, not work in it. | I'll learn three more yet. | Rich. I still do.
-b[stage=young|adolescent] : A guard! Or a sailor. Or a guard on a ship. | Is it too late? I'm only small. | I'm still a pup!
+b[stage=young|adolescent] #pup : A guard! Or a sailor. Or a guard on a ship. | Is it too late? I'm only small. | I'm still a pup!
 b : I'd have liked to be a scholar. Can't read, mind. | Some days. Most days I'm too tired to wish. | A guard. I liked the boots.
+a@settled : Lucky you. | Wish I could say the same. | Good. Somebody should be happy.
+a@pup : Plenty of time to choose. | Too late? You've years. | So you are. Plenty of time, then.
 a : Not too late, maybe. | I'd swap. Some days. | Funny how it goes.
 
 scene w7s_hiring
 when topic=work
 a : They're hiring at the yard, I hear. | Somebody's taking on paws down by the water. | Did you hear? The new shop wants help.
-b[wealth=poor|destitute] : Where? Who do I ask? | What do they pay? I'll go today. | Tell me where. I mean it.
-b[business=thriving] : I'll be hiring too, at this rate. | They'll not get mine, tell them that. | Good. Means trade's moving.
-b[drive=restless] : Is it different work? I'd go for different. | Somewhere new. Tempting. | I'd go just for the change.
+b[wealth=poor|destitute] #keen : Where? Who do I ask? | What do they pay? I'll go today. | Tell me where. I mean it.
+b[business=thriving] #hiring : I'll be hiring too, at this rate. | They'll not get mine, tell them that. | Good. Means trade's moving.
+b[drive=restless] #keen : Is it different work? I'd go for different. | Somewhere new. Tempting. | I'd go just for the change.
 b : Good pay? | Who's asking? | Is it steady?
-a : Less than you'd want. | A friend of a friend. | Steady as anything is.
+a@keen : Ask at the gate. Say I sent you. | Go early. They'll take the first ones there. | Go on, then. Before someone else does.
+a@hiring : Then they'll be fighting you for hands. | Pay them well, then. | About time it did.
+a : Less than you'd want. More than nothing. | A friend of a friend. | Steady as anything is.
 
 scene w7s_wish_day_off
 when topic=work a.working=yes
 a : I'd give a week's #wages# for one day in the sun. | Wouldn't it be grand to do nothing at all? | I want to sleep for a whole Restday.
-b[shift=day_off] : I'm doing it today. It's grand. | I am doing nothing at all. Look at me. | I'm going home to do just that.
+b[shift=day_off] #smug : I'm doing it today. It's grand. | I am doing nothing at all. Look at me. | I'm going home to do just that.
 b[tired=yes] : Don't. Don't make me think of it. | I'd sleep the whole day and the next. | I'd sleep two.
-b[wealth=rich] : I could arrange that, you know. For me, I mean. | Nothing is overrated. | You'd be bored by noon.
+b[wealth=rich] #smug : I could arrange that, you know. For me, I mean. | Nothing is overrated. | You'd be bored by noon.
 b : Restday's coming. Hold on. | Now, wouldn't it. | Me too.
+a@smug : Don't. Just don't. | I could hate you a little. | Go on, then. Rub it in.
 a : It's a long way off. | One day. | Dream with me.
 
 scene w7s_compliment
 when topic=work
-a : That's good work, that. | You've a fine paw for it. | Did you do that? Neat as anything.
+a : That's lovely work, that. | You've a fine paw for it. | Did you do that? Neat as anything.
 b[warmth=cold] : I know. | It'll do. | It's my job.
 b[talk=quiet] : Oh. Thank you. | ...Thanks. | Mm. Yes.
 b[humour=merry] : I know! I'm wonderful. Tell everyone. | Fine paw, fine wolf. | Neat as a new pin, me.
 b : Thank you. Took me long enough. | Years of it. | I had to start it three times.
-a : Worth it. | Shows. | Well, it shows.
+a : I mean it. | It shows, mind. | Well, it was worth it.
 
 scene w7s_mistake
 when topic=work
 a : I've done something stupid. | Don't look. I've ruined it. | If anyone asks, it was like that when I came.
-b[warmth=warm] : Show me. We'll fix it before anyone sees. | Oh, come here. It's not so bad. | Your secret's safe.
-b[temper=short] : Again? | What now? | I didn't see anything. And I'm not lying for you.
-b[honesty=sly] : What's it worth to you? | Ruined? No. Creatively changed. | It was like that when you came. I saw it.
+b[warmth=warm] #kind : Show me. We'll fix it before anyone sees. | Oh, come here. It's not so bad. | Your secret's safe.
+b[temper=short] #cross : Again? | What now? | I didn't see anything. And I'm not lying for you.
+b[honesty=sly] #sly : Stupid how? Funny stupid? | Ruined? No. Creatively changed. | It was like that when you came. I saw it.
 b : How bad? | Can it be mended? | Nobody'll notice.
-a : Bad. | Maybe. With luck. | They'll notice.
+a@kind : You're a good sort. | You think? Truly? | I owe you.
+a@cross : Thanks a lot. | Never mind. | Some friend you are.
+a@sly : Very funny. | Creatively. Yes. I'll tell them that. | Bless you.
+a : Bad enough. | Don't ask. | They will. They always do.
 
 scene w7s_paws
 when topic=work
 a : Look at my paws. Raw. | My pads are cracked to bits. | I've a splinter I can't get at.
-b[job=healer] : Goose fat, twice a day. Don't argue. | Let me see. Hold still. | Out it comes. There. Don't cry.
-b[stage=old] : Wait till they're forty years at it. | Mine stopped feeling anything years ago. | Here. My teeth are better than they look.
+b[job=healer] #helped : Goose fat, twice a day. Don't argue. | Let me see. Hold still. | Out it comes. There. Don't cry.
+b[stage=old] #old : Wait till they're forty years at it. | Mine stopped feeling anything years ago. | Here. My teeth are better than they look.
 b : Rub some fat in. | Mine are the same. | Bite at it.
+a@helped : Twice a day. Yes. | Ow. Gently. | Ow! ...Oh. That's better.
+a@old : Forty years? I'll not last four. | Lucky you. | Go on, then. Gently.
 a : I'll try. | Small comfort. | I've been biting at it all morning.
 
 scene w7s_fur_full
 when topic=work
 a : Look at me. I'm more dust than wolf. | My fur'll never be clean again. | I'll be combing this out for a week.
-b[job=baker] : Flour. I sneeze bread. | Try flour. It gets in your ears. | Flour's worse. Trust me.
-b[job=smith|miner] : Soot. I'm grey to the skin. | Coal dust in everything. | Grey's my colour now.
-b[job=woodcutter|crafter] : Sawdust in my ears, sawdust in my supper. | Sawdust. It itches. | Shavings in my tail. Every night.
-b[job=fisher|sailor] : Fish scales. They glitter, at least. | I smell of the catch. Folk move seats. | Salt. My fur's stiff as rope.
+b[job=baker] #worse : Flour. I sneeze bread. | Try flour. It gets in your ears. | Flour's worse. Trust me.
+b[job=smith|miner] #worse : Soot. I'm grey to the skin. | Coal dust in everything. | Grey's my colour now.
+b[job=woodcutter|crafter] #worse : Sawdust in my ears, sawdust in my supper. | Sawdust. It itches. | Shavings in my tail. Every night.
+b[job=fisher|sailor] #worse : Fish scales. They glitter, at least. | I smell of the catch. Folk move seats. | Salt. My fur's stiff as rope.
 b : Roll in the grass on the way home. | Mine too. | A good shake helps.
-a : The grass'll be dusty. | Small comfort. | I'll shake myself in the street.
+a@worse : You win. | All right, yours is worse. | We should start a club.
+a : The grass'll be dusty. | Look at the pair of us. | I'll shake myself in the street.
 
 scene w7s_whistle
 when topic=work
 a : *whistles* | *hums a tune, badly* | *sings under the breath*
-b[temper=short] : Stop that. | If you do that once more. | Please. Anything else.
-b[humour=merry] : *joins in, worse* | That's not how it goes. *sings it* | Louder! I can't hear the wrong notes.
+b[temper=short] #hush : Stop that. | If you do that once more. | Please. Anything else.
+b[humour=merry] #duet : *joins in, worse* | That's not how it goes. *sings it* | Louder! I can't hear the wrong notes.
 b : Nice tune. | What's that one? | Do you know the one about the miller?
-a : My mother's. | Old song. | Everybody knows it.
+a@hush : *whistles quieter* | Fine. Fine. | *hums anyway*
+a@duet : *whistles louder, to win* | It goes how I say it goes. | *sings louder*
+a : #mum#'s. She sang it to us. | Old song. Can't recall the name. | Everybody knows that one.
 
 scene w7s_wages_secret
-when topic=work pair.band=acquaintances|friends
+when topic=work pair.band=acquaintances|friends a.business=none b.business=none a.stage=adult|old b.stage=adult|old
 a : What do they pay you, anyway? | Do you think we're paid fair? | Do you ever ask for more?
-b[honesty=guarded] : That's my business. | Fair enough. Fair enough. | Not out loud.
+b[honesty=guarded] #closed : That's my business. | Fair enough. Fair enough. | Not out loud.
 b[honesty=frank] : Less than I'm worth, and I've told them so. | No. Nobody is. | Every month. Never get it.
 b[wealth=poor|destitute] : Not enough to eat on. | Fair? We're paid to stay hungry. | I'd ask if I thought I'd keep the job.
 b : Enough to grumble. | Fair as anything is. | Once. Never again.
-a : Hm. Same. | Fair as anything is, I suppose. | I know the feeling.
+a@closed : Suit yourself. | That's not an answer. | Quietly, then. Later.
+a : Hm. Same, near enough. | No. I didn't think so either. | I know the feeling.
 
 scene w7s_new_hand
 when topic=work
@@ -135,14 +152,15 @@ b[warmth=cold] : They'll not last. | Another mouth. | I don't learn names till t
 b[warmth=warm] : Lovely sort. I showed them where the water is. | Good. We need the help. | I'll take them under my wing.
 b[stage=old] : Young. They're all young now. | Quick isn't everything. | I've seen dozens come and go.
 b : Seen them. Seem all right. | Good. | Somebody's cousin, I think.
-a : Give them a week. | We'll see. | We'll see what they're made of.
+a : Give them a week. | Time will tell. | Let's see what they're made of.
 
 scene w7s_when_stop
-when topic=work b.stage=old
+when topic=work b.stage=old b.working=yes a.stage=adolescent|adult
 a : When will you put your feet up, then? | You should let the young ones do this. | How long will you keep at it?
-b[wealth=rich] : When I'm bored of #money#. Never, then. | They can do it when they can do it right. | Till I'm carried out.
-b[wealth=poor|destitute] : When I can afford to stop. Never. | Who'd feed me? | Till I drop. No choice.
+b[wealth=rich] : When I'm bored of money. Never, then. | They can do it when they can do it right. | Till I'm carried out.
+b[wealth=poor|destitute] #needy : When I can afford to stop. Never. | Who'd feed me? | Till I drop. No choice.
 b : When they bury me. | Young ones? They break things. | Till my paws give out.
+a@needy : That's not right. | We would. You know that. | There's always a choice. We'd see you right.
 a : Don't say that. | They learn. | Let's hope not soon.
 
 scene w7s_pup_follows
@@ -152,39 +170,42 @@ b[stage=old] : Let them. It's a living. Or don't. It's a hard one. | Teach them.
 b[drive=ambitious] : Aim higher for them. Much higher. | Teach them to read first. | Good. Push them up, not along.
 b[parent=yes] : Mine wants to be a sailor. A sailor! | I'm teaching mine already. Slowly. | Mine too. Breaks my heart and mends it.
 b : It's an honest trade. | Why not? | Pups change their minds.
-a : Honest, and hard. | We'll see. | Every week, they do.
+a : Maybe. We'll see what they're good at. | We'll see. | Pups. You never know with them.
 
 scene w7s_secret
 when topic=work pair.band=friends|family|spouses|acquaintances
 a : How do you get it so good? What's your trick? | There's a trick to it, isn't there. You're hiding it. | Show me how you do that.
-b[honesty=frank] : No trick. Do it ten thousand times. | Practice. Boring answer, true answer. | Watch. Like this. Slower.
-b[honesty=guarded|sly] : A trick? Me? | If I told you, I'd have to charge you. | It's a family secret. My family.
+b[honesty=frank] : No trick. Patience, and ten thousand tries. | Practice. Boring answer, true answer. | Watch. Like this. Slower.
+b[honesty=guarded|sly] #secret : A trick? Me? | If I told you, I'd have to charge you. | It's a family secret. My family.
 b : Patience, mostly. | There's no trick. Honest. | Watch closely.
-a : I'll find out. | Hmph. | Like that? Oh. Oh!
+a@secret : I'll find out. | Hmph. I'll pay in ale. | I'll marry into it, then.
+a : Patience. I was afraid you'd say that. | Hmph. I don't believe you. | Like that? Oh. Oh!
 
 scene w7s_leak
 when topic=work here.weather=rain|storm|snow
-a : The roof's leaking again. | There's a drip right over my bench. | Water's coming under the door.
-b[wealth=rich] : Have someone see to it. | I'll send for a roofer. | Put a pail there. And then fix it.
+a : The roof's dripping again. | There's a drip right over my bench. | Water's coming under the door.
+b[wealth=rich] : Have someone see to it. | I'll send for a roofer. | Then have someone see to the door.
 b[role=merchant] : Move the stock before it spoils. | Not on the good cloth! | Don't let it near the goods.
-b : Put a pot under it. | Shift your bench. | Sweep it out.
-a : The pot's full. | There's nowhere to shift it. | It comes back.
+b #fix : Put a pot under it. | Shift your bench. | Sweep it out.
+a?@fix : The pot's full. | There's nowhere to shift it to. | It comes back.
 
 scene w7s_omen
 when topic=work
 a : A crow sat on the roof all morning. I don't like it. | I dropped my bread butter-side down. Bad day ahead. | Saw a black cat by the door. Bad sign.
-b[piety=devout] : Say a word to the gods and get on. | Signs are for the gods to read, not us. | Pray, and work. That's all.
+b[piety=devout] : Say a word to the Bright One and get on. | Signs are for the gods to read, not us. | Pray, and work. That's all.
 b[humour=dry] : Crows like roofs. Also, crows are crows. | Bad day for the bread, anyway. | Bad for the cat, probably.
 b[temper=nervy] : Oh no. Oh, I knew today felt wrong. | Don't say that. I'll fret all day. | That's twice this week!
-b : Nonsense. | It's just a bird. | Cats go where they like.
+b : It's just a bird. | It's just bread. | Cats go where they like.
 a : We'll see. | Maybe. | I'll be careful anyway.
 
 scene w7s_noise
 when topic=work
 a : What's that racket next door? | Someone's hammering like the world's ending. | Can you hear yourself think?
-b[job=smith|crafter] : That's me, usually. | Sounds like honest work to me. | Not since I was ten.
-b[temper=short] : I'll go and stop it myself. | Drives me mad. All day! | No. And it's their fault.
+b[job=smith|crafter] #maker : That's me, usually. | Sounds like honest work to me. | Not since I was ten.
+b[temper=short] #cross : I'll go and stop it myself. | Drives me mad. All day! | No. And it's their fault.
 b : Building something. | Somebody's busy. | Barely.
+a@maker : Not today, it isn't. | Honest and loud. | Ten? You poor thing.
+a@cross : Go on, then. I'll watch. | All day and half the night. | It always is.
 a : Building what, a mountain? | Busy, or angry. | Let's shout, then.
 
 scene w7s_smells
@@ -195,7 +216,7 @@ b[job=fisher|cook] : That's yesterday's fish. Sorry. | Me, probably. | Fish. It'
 b[job=crafter] : The tannery. Wind's turned. | Glue. Hot glue. | Lye. I'm boiling it.
 b[job=farmer|herder] : That's me. Mucking out. | Honest dung. | Sheep. You never stop smelling sheep.
 b : The drains. | Wind's from the yards. | Don't breathe through your muzzle.
-a : Bless my nose. | Can't you shut it off? | I'll breathe through my ears, then.
+a : My poor nose. | Can't you shut it off? | I'll breathe through my ears, then.
 
 scene w7s_sick_coworker
 when topic=work pair.boss=no
@@ -204,19 +225,22 @@ b[job=healer] : I've seen them. They'll live. Tell them to stay home. | It's goi
 b[warmth=warm] : Poor thing. I'll take them soup. | I'll cover their share. | Let's send them something.
 b[temper=short] : So we do their work too. Lovely. | Sick, or idle? | Always the same ones.
 b : That cough's going round. | Better they stay away. | Hope it's nothing.
-a : It's everywhere. | True. | Hope so.
+a : They looked grey yesterday. | Aye. | We'll see how they are tomorrow.
 
 scene w7s_gossip_boss
-when topic=work pair.boss=no
-a : The master's in a foul mood today. | Did you hear the boss shouting? | Watch yourself. Somebody's had bad news.
-b[honesty=guarded] : I didn't hear anything. And neither did you. | Not my business. | Noted.
-b[temper=nervy] : Was it at me? Was it about me? | Oh no. What did they say? | I'll keep my head down.
-b[humour=merry] : Moods are like weather. Wait an hour. | I heard. The whole street heard. | Bad news? Somebody found the bill.
+when topic=work pair.boss=no a.business=none b.business=none
+a : #boss.capitalize#'s in a foul mood today. | Did you hear the shouting earlier? | Watch yourself. Somebody's had bad news.
+b[honesty=guarded] #hush : I didn't hear anything. And neither did you. | Not my business. | Noted.
+b[temper=nervy] #fret : Was it at me? Was it about me? | Oh no. What did they say? | I'll keep my head down.
+b[humour=merry] #laugh : Moods are like weather. Wait an hour. | I heard. The whole street heard. | Bad news? Somebody found the bill.
 b : Again? | I'll keep clear. | Thanks for the warning.
-a : Again. | Wise. | Spread the word.
+a@hush : Right. Nor did I. | Fair enough. | Noted, then.
+a@fret : Not you. I don't think. | Nothing you'd want repeated. | Good idea.
+a@laugh : Two hours, today. | The whole street, and the next. | Ha! Probably.
+a : Again. Third time this week. | Wise. | Spread the word.
 
 scene w7s_strangers_trade
-when topic=work|smalltalk pair.band=strangers
+when topic=work|smalltalk pair.band=strangers b.stage=adult|old
 a : What's your trade, then? | You've a working look about you. What do you do? | Don't tell me. I'll guess your trade by the smell of you.
 b[job=smith] : Smith. The soot gives it away. | Iron. Hinges, mostly. | Soot and hot iron. Go on, say it.
 b[job=baker] : Baker. Flour on my muzzle, is there? | Bread. You'll have eaten mine. | Fresh bread, I hope you'd say.
@@ -225,10 +249,10 @@ b[job=farmer|herder] : I work the land. | Beasts and barley. | Earth and sheep, 
 b[role=guard] : The Watch. | I keep the peace. Mostly yours. | You'd better guess right.
 b[role=merchant] : Buying and selling. | I keep a stall. Come by. | Nothing. I sell, I don't smell.
 b : Bit of this, bit of that. | Whatever pays. | Go on, guess.
-a : Good trade. | I'll remember. | Close enough.
+a : Fair enough. | I'll remember. | Ha. I'll not guess, then.
 
 scene w7s_friends_cover
-when topic=work pair.band=friends
+when topic=work pair.band=friends a.working=yes
 a : Cover for me this afternoon? Just an hour. | If anyone asks, I've gone for water. | I owe you for yesterday.
 b[honesty=frank] : I'll not lie for you. But I'll not mention it. | You've gone for water. It's a very long well. | You do. And I'm keeping count.
 b[warmth=warm] : Go on. I've got it. | Water. Right. Go. | You owe me nothing, #pet#.
@@ -236,112 +260,121 @@ b : One hour. | If they ask. | You do.
 a : You're a treasure. | Bless you. | I'll pay you back.
 
 scene w7s_family_business
-when topic=work pair.band=family
-a : Grandfather built this up from nothing. | It'll be yours one day, all of it. | Don't let it go to rack, when I'm gone.
-b[stage=young|adolescent] : I'll make it bigger! | Do I have to? | When you're gone? Don't say that.
-b[drive=restless] : Mine? I'd sell it and go. | We'll see. | I'll try.
-b : I won't. I promise. | I know. | We'll keep it going.
-a : Good. | You'll see. | I know you will.
+when topic=work pair.band=family a.business=thriving|steady|failing pair.elder=a
+a : #grandad# built this up from nothing. | It'll be yours one day, all of it. | Don't let it go to rack and ruin, when I'm gone.
+b[stage=young|adolescent] #small : I'll make it bigger! | Do I have to? | When you're gone? Don't say that.
+b[drive=restless] : And never left the street once. | Mine? I'd sell it and go. | I'll try. I can't promise more.
+b : I know. You've told me. | I know. | I won't. I promise.
+a@small : That's my pup. | Not yet. Someday. | Hush. Not for years yet.
+a : You'll understand one day. | You'll see. | Good. That's all I ask.
 
 scene w7s_spouses_work
-when topic=work|family pair.band=spouses
+when topic=work|family pair.band=spouses here.place=home
 a : How was it today, #dear#? | You smell of #work#, #dear#. | Leave it at the door, #dear#. Come in.
-b[tired=yes] : Long. So long. Rub my shoulders? | I know. I'll wash. In a moment. A long moment. | I can't. It's followed me home.
-b[business=failing] : Not good. We'll talk after supper. | Like a bad day. | Hard to leave it. We need to talk about the takings.
-b[business=thriving] : Wonderful! We'll eat well this week. | Like money, I hope. | Gladly. It's been a good one.
+b[tired=yes] : Long. So long. Rub my shoulders? | I know. I'll wash. In a moment. A long moment. | Gladly. If I can get my boots off.
+b[business=failing] #worry : Not good. We'll talk after supper. | Like a bad day. | Hard to leave it. We need to talk about the takings.
+b[business=thriving] : Wonderful! We'll eat well this week. | Like a good day, I hope. | Gladly. It's been a good one.
 b : Fine. Better now. | I'll wash. | Gladly.
-a : Sit. I'll bring something. | Go on, then. | There.
+a@worry : Sit. I'll bring something, and we'll talk. | Wash it off. The rest will keep. | After supper. Eat first.
+a : Sit. I'll bring something. | Go on, wash. #supper.capitalize#'s nearly ready. | Come and sit, then.
 
 scene w7s_rivals_customer
-when topic=work pair.band=rivals
-a : One of my regulars was seen at your door. | You've been undercutting me. Don't deny it. | Stop sending folk my way with lies about my prices.
+when topic=work pair.band=rivals a.business=thriving|steady|failing b.business=thriving|steady|failing
+a : One of my regulars was seen at your door. | You've been undercutting me. Don't deny it. | Stop telling folk lies about my prices.
 b[honesty=sly] : Folk go where they like. | Me? I'd never. Not often. | Lies? I said you were dear. That's true.
 b[temper=short] : Then keep them happy. | Prove it. | Watch your mouth.
 b : Not my doing. | Prices are prices. | I've said nothing.
-a : Hmph. | We'll see. | We'll see about that.
+a : Hmph. | I'll find out. | We'll see about that.
 
 scene w7s_neighbours_work
 when topic=work pair.neighbours=yes
-a : Your hammering woke me at dawn. | I heard you working till midnight. | Your customers keep blocking my door.
-b[warmth=warm] : I'm sorry. I'll start later. | Was I loud? Forgive me. | I'll ask them to mind it.
-b[temper=short] : Your snoring wakes me every night. | Some of us need the #money#. | Then move your door.
+a : Your hammering woke me at dawn. | I heard you working till all hours. | Your customers keep blocking my door.
+b[warmth=warm] #sorry : I'm sorry. I'll start later. | Was I loud? Forgive me. | I'll ask them to mind it.
+b[temper=short] #spat : Your snoring wakes me every night. | Some of us need the money. | Then move your door.
 b : Work's work. | Couldn't sleep. | Can't help where they stand.
+a@sorry : Thank you. A little later's all I ask. | No harm done. Just a bit loud. | Thanks. It's not your fault, really.
+a@spat : I do not snore! | Some of us need sleep. | Move my door? Move your shop.
 a : I know. Still. | I know. | Hmph.
 
 scene w7s_young_asks
-when topic=work a.stage=young
+when topic=work a.stage=young b.stage=adult|old
 a : What do you do all day? | Is your work hard? | Can I help? I'm very strong.
-b[job=smith] : I hit hot iron till it gives up. | Hot and loud. You'd like it. | Stand back from the forge, then you can watch.
-b[job=baker] : I make bread while you're asleep. | Floury. Want a crust? | You can shape a little loaf.
-b[role=guard] : I watch for wrong-doers. Like pups who steal apples. | Only when there's trouble. | You can be my lookout.
-b[temper=short] : Not now. | Go and play. | No.
+b[job=smith] #fun : I hit hot iron till it gives up. | Hot and loud. You'd like it. | Stand back from the forge, then you can watch.
+b[job=baker] #fun : I make bread while you're asleep. | Floury. Want a crust? | You can shape a little loaf.
+b[role=guard] #fun : I watch for wrong-doers. Like pups who steal apples. | Only when there's trouble. | You can be my lookout.
+b[temper=short] #shoo : Not now. | Go and play. | No.
 b : Grown-up things. Dull things. | Sometimes. | Carry this. Carefully.
-a : Sounds dull. | Is it? | I'm carrying it!
+a@fun : Ooh. Can I see? | Is it? Really? | Really? Me?
+a@shoo : Later? | Fine. I'll play. | Please?
+a : Sounds dull. | Only sometimes? | I'm carrying it!
 
 scene w7s_old_advice
 when topic=work a.stage=old b.stage=adolescent|adult
 a : Don't rush it. Rushing's how things break. | Measure twice. I learnt that the hard way. | Save a penny of every five. You'll thank me.
 b[drive=ambitious] : Slow's for old wolves. No offence. | Twice? I'm faster than that. | A penny? I'll save two.
-b[temper=short] : I know, I know. | You've told me. | I'll save when I've something to save.
+b[temper=short] : I know, I know. | You've told me. | I know. Every five.
 b : I'll try. | Hard way? | I'll try that.
 a : You'll learn. | Cut three planks short, once. | Good wolf.
 
 scene w7s_tavern_after
-when topic=work here.place=tavern
+when topic=work here.place=tavern here.time=dusk|night
 a : One cup, then home. | I'm not talking about work tonight. | First one's the best one, after a day like that.
 b[tired=yes] : One. Before I fall asleep in it. | Good. I can't. | I'll drink it lying down.
-b[wealth=poor|destitute] : If you're buying. | Nor me. I'm talking about ale. | I'll watch you drink it.
-b[shift=before] : I've not started yet! | I've not even begun. | Steady. Some of us start at dusk.
-b : One, he says. | Thank the gods. | Every one's the best one.
-a : One. Maybe two. | Not one word. | Every one.
+b[wealth=poor|destitute] #skint : If you're buying. | Nor me. I'm talking about ale. | I'll watch you drink it.
+b[shift=before] : Home? I've not started yet! | I've not even begun mine. | Steady. I've a night's work after this.
+b : One, you say. | Thank the gods. | Every one's the best one.
+a@skint : Go on, then. I'm buying. | Ale it is. I'll get them in. | No you won't. Here.
+a : One. Maybe two. | Not one word. | #toast#!
 
 scene w7s_street_load
 when topic=work here.place=street
 a : Mind your back, coming through! | Can you get the other end of this? | Out of the way, it's heavy!
-b[temper=short] : Watch where you're swinging that! | Get a cart. | Go round!
+b[temper=short] #rude : Watch where you're swinging that! | Get a cart. | Go round!
 b[warmth=warm] : Here, I've got it. | Lift on three. One, two... | Careful! Let me help.
-b[stage=old] : My back's not up to it. Sorry. | I'll hold the door. | Watch your step there.
+b[stage=old] : Mind your own, young one! | I'll hold the door for you. | Watch your step there.
 b : Mind yourself! | Go on. | Steady!
+a@rude : Sorry, sorry! | With what? | Can't! It's heavy!
 a : Sorry! | Thanks. | There!
 
 scene w7s_market_shout
-when topic=work here.place=market
+when topic=work here.place=market a.role=merchant
 a : I've been shouting since dawn. I've no voice left. | Nobody's stopping. They walk right past. | Somebody's set up right in front of me.
 b[role=merchant] : Shout lower. It carries further. | They stop for a pretty pile. Stack it high. | Elbow them back out.
 b[humour=merry] : Then sing it. Folk stop for singing. | Wave your arms. Stand on a crate. | Sit on their stall. See how they like it.
 b : Rest it. | Be patient. | The cheek.
-a : I'll try. | Patience doesn't sell. | Cheek's the word.
+a : I'll try. | I've tried everything but that. | Don't tempt me.
 
 scene w7s_chapel_work
 when topic=work here.place=chapel
 a : Is it all right to talk of #work# in here? | Keep your voice down. They're praying. | The candles want trimming again.
-b[job=priest] : The gods worked six days too. They'll not mind. | Thank you. Quietly does it. | I'll do them after prayers.
+b[job=priest] : The Bright One blesses honest work. Talk away. | Thank you. Quietly does it. | I'll do them after prayers.
 b[piety=devout] : Better to give thanks for it here. | Shh. | I'll help. It's good work.
 b : Quietly. | Sorry. | I'll do it.
-a : Quietly. | Shh. | Thanks.
+a : Good. I'll keep it short. | *nods* | Thank you.
 
 scene w7s_field_work
 when topic=work here.place=field
 a : Rows and rows. My back's a bent nail. | Look at that sky. Will it hold? | Stones. This field grows stones.
-b[job=farmer] : Every year I pull them, every year they're back. | It'll hold till dusk. After, who knows. | Bend your knees, not your back.
-b[stage=old] : Sixty years I've bent in fields. Still here. | Ask my knees. They know. | Bent nails hold.
+b[job=farmer] : Bend your knees, not your back. | It'll hold till dusk. After, who knows. | Every year I pull them, every year they're back.
+b[stage=old] : Sixty years I've bent in fields. Still here. | Ask my knees. They know. | My grandad said the frost grows them.
 b : Keep at it. | Looks like rain. | Pile them at the edge.
-a : Easy for you. | Looks like rain to me too. | There's a wall's worth.
+a : Easy for you. | We'll see. | There's a wall's worth already.
 
 scene w7s_shore_work
 when topic=work here.place=shore
-a : Tide's turning. | Gulls are thick today. Something's running. | My nets are tangled to the devil.
-b[job=fisher|sailor] : Then we'd best be quick. | Mackerel, maybe. Get the boat. | Sit and mend. Nothing else for it.
+a : Wind's turning. | Gulls are thick today. Something's running. | My nets are tangled past saving.
+b[job=fisher|sailor] #fisher : Then we'd best be quick. | Fish running, maybe. Get the boat. | Sit and mend. Nothing else for it.
 b : I'll move my things. | Lucky birds. | Want a paw?
-a : Quick, then. | Lucky me, I hope. | Please.
+a@fisher : Quick, then. | Right behind you. | All day, at this rate.
+a : Good idea. | Lucky me, I hope. | Please.
 
 scene w7s_gate_work
 when topic=work here.place=gate
-a : Everyone wants through at once. | Carts backed up to the bridge. | Toll's gone up again, they say.
+a : Everyone wants through at once. | Carts backed up to the bend. | Toll's gone up again, they say.
 b[role=guard] : They'll wait. That's what gates are for. | Let them shout. I'm counting wheels. | Not my doing. I only take it.
 b[job=carter|merchant] : And I'm one of them. | Mine's the third back. | Robbery. Every toll is.
 b : Market day. | Slow going. | Is it?
-a : Every day's market day here. | Slow as a sermon. | So they say.
+a : Every day's like this, lately. | Slow as a sermon. | Twice this year.
 
 ## The seasons and days, for any two at work
 
@@ -349,85 +382,87 @@ scene w7s_spring
 when topic=work here.season=spring
 a : Days are drawing out. More work in a day now. | Spring. Everybody wants everything mended at once. | Mud everywhere. Spring mud.
 b[job=farmer|herder] : Lambs and seed and no sleep. | Plough's waiting for me. | Mud's good. Mud grows things.
-b[job=fisher] : The fish come up with the warm. | Boats need tarring. | Rivers high and brown.
+b[job=fisher] : The fish come up with the warm. | Boats need tarring. | Water's high and brown.
 b : More light, same pay. | Spring cleaning. | Mud in my boots.
-a : Same pay. Always. | Never ends. | Mud in everything.
+a : Long days, though. I'll take them. | Never ends. | It'll dry. Eventually.
 
 scene w7s_summer
 when topic=work here.season=summer
-a : Too hot to work. Too poor not to. | The flies! | Long days. I like the long days.
-b[job=smith|baker|cook] : Try a forge in summer. | My oven's a second sun. | My kitchen's hotter than the street.
+a : Too hot to work. Too skint to stop. | The flies! | Long days. I like the long days.
+b[job=smith|baker|cook] : Try a forge in summer. | Flies, and a fire all day. Lovely. | Long days by an oven. I don't.
 b[job=farmer] : Hay won't make itself. Sun's good for hay. | Flies on the beasts, flies on me. | Long days, long rows.
 b : Take your coat off at least. | Wave your tail at them. | Too long, some.
-a : Then my fur sweats. | Does nothing. | Not long enough.
+a : Hot's hot, wherever. | They're everywhere this year. | Each to their own.
 
 scene w7s_autumn
 when topic=work here.season=autumn
 a : Harvest work for anyone who wants it. | Everyone's putting by for winter. | Nights coming in. Work's going dark.
-b[job=farmer] : Then you'll lend a paw? | Every barn's bursting, gods be thanked. | Lamp oil's dear, too.
-b[wealth=poor|destitute] : Where? I'll go. | I've nothing to put by. | I've no lamp oil.
+b[job=farmer] #farm : Then you'll lend a paw? | Every barn's bursting, gods be thanked. | Lamp oil's dear, too.
+b[wealth=poor|destitute] #need : Where? I'll go. | I've nothing to put by. | I've no lamp oil.
 b : Busy season. | Sensible. | I hate the dark mornings.
+a@farm : If you're paying. | Good year, then. | Everything's dear.
+a@need : Out at the farms. Ask at any gate. | Nor me. We'll manage. | Come by mine of an evening. There's light.
 a : Busy, and gone too quick. | Like squirrels. | So do I.
 
 scene w7s_winter
 when topic=work here.season=winter
-a : Can't feel my paws. | Work's thin in winter. | The ink froze in the pot this morning.
-b[job=woodcutter] : Winter's my season. Everyone wants logs. | Wood's dear, and I'm cutting it. | Not mine. Felling's best when it's cold.
-b[job=farmer|herder] : Feed and wait. That's winter. | Mending and worrying. | Ice on the troughs.
-b[wealth=poor|destitute] : Thin work, thin soup. | Thin everything. | My paws froze to the cart.
-b : Stamp your feet. | It'll pick up come spring. | Warm it by the fire.
-a : I'm stamping. | Spring's a long way off. | What fire?
+a : Can't feel my paws. | Work's thin in winter. | The trough froze solid this morning.
+b[job=woodcutter] : Swing an axe. You'll feel them. | Not mine. Everyone wants logs. | Felling's best when it's cold.
+b[job=farmer|herder] : Nor me. Try lambing in it. | Mending and worrying. | Ice on mine too.
+b[wealth=poor|destitute] : Nor mine. My boots let in snow. | Thin work, thin soup. | My blanket froze, near enough.
+b : Stamp your feet. | It'll pick up come spring. | Break it with a stone.
+a : Paws, ears, tail. All gone. | Spring's a long way off. | Bah. Winter.
 
 scene w7s_market_day
 when topic=work here.day=market
 a : Market day. Every wolf in the county's in town. | Have you seen the crowds? | Busiest day of the week, and I've a headache.
-b[role=merchant] : Good. Let them spend. | Lovely. Lovely crowds. | Sell to it. A headache sells too.
+b[role=merchant] : Good. Let them spend. | Lovely. Lovely crowds. | Smile through it. Headaches don't sell.
 b[role=guard] : Every cutpurse in the county too. | Watching them. All of them. | Mine's the crowds.
 b[job=carter] : Carts nose to tail. I'll be all day. | Seen them? I've driven half of them. | Mine's from the road.
 b : Market day, all right. | Hard to move. | Drink some water.
-a : All right for some. | Like a herd. | Drink? Later.
+a : And all of them in my way. | Like a herd. | It'll pass by dusk.
 
 scene w7s_restday
-when topic=work here.day=rest
+when topic=work here.day=rest a.working=yes
 a : Restday, and here's us working. | Chapel bells, and I'm at my bench. | Everyone else is sleeping off the week.
-b[piety=devout] : The gods will understand. I hope. | I'll go to evening prayers. | Not me. I'd rather pray.
+b[piety=devout] : The Bright One will understand. I hope. | I'll go to evening prayers. | Not me. I'd rather pray.
 b[role=guard] : Wrongdoers don't rest. Nor do we. | Restday's busy for the Watch. | Some of us never get Restday.
 b[wealth=poor|destitute] : Rest doesn't feed me. | Bells don't pay. | Sleeping's for the comfortable.
 b : Somebody has to. | Double pay, I hope. | Lucky them.
-a : Always us. | Ha. Never. | Lucky them.
+a : Always us. | Next Restday. Next one, for certain. | Sleep well, all of you.
 
 scene w7s_festival
-when topic=work here.day=festival
+when topic=work here.day=festival a.working=yes
 a : The whole town's dancing and I'm stacking crates. | Can you hear the pipes? | Festival trade's good, at least.
 b[role=merchant] : Best day of the season for the till. | Hear them? I'm selling to them. | Good? Wonderful.
 b[job=brewer|innkeeper|cook] : They'll want feeding when the dancing's done. | Pipes mean thirst. | I've rolled out every barrel I own.
 b : Finish quick and join them. | Lovely. | Some good, anyway.
-a : Quick? Never. | Lovely to hear. | Something.
+a : Save me a dance. And a pie. | Makes the work go quicker, anyway. | Better than nothing.
 
 scene w7s_night_work
-when topic=work here.time=night
+when topic=work here.time=night a.working=yes
 a : Who works at this hour? Us, apparently. | The whole town's asleep but us. | Lamp's burning down.
-b[role=guard] : The Watch does. Every night. | Not all asleep. Some are up to no good. | I'll walk you home after.
-b[job=baker] : Bread starts at night. Always has. | They'll want loaves at dawn. | Dough doesn't sleep.
+b[role=guard] : The Watch does. Every night. | Not all asleep. Some are up to no good. | Then finish by moonlight. I'll walk you home.
+b[job=baker] : Bread starts at night. Always has. | They'll want loaves at dawn. | Trim it. Dough doesn't wait.
 b : Odd hour. | Quiet, though. | Trim it.
-a : Very odd. | I like the quiet. | Last one.
+a : Rather you than me. | Still. I like it, this late. | Last one, then.
 
 ## The Houses, as anyone sees them
 
 scene w7s_houses_own
 when topic=work|smalltalk here.region=ridgemere
 a : Is there anything in Ridgemere the Houses don't own? | Everything I touch belongs to a House. | Brick's Greatly's, timber's Fell's, iron's Grayrock's. And me?
-b[self.house=house_greatly] : Not much. Greatly owns the walls you're leaning on. | Greatly pays me. I'll not complain. Out loud. | You? You're Greatly's too, if you live in a brick house.
-b[self.house] : My House pays on time. That's all I ask of it. | My House feeds me. I'll not bite the paw. | You're your own, if you're lucky.
+b[self.house=greatly_house] : Not much. Greatly owns the walls you're leaning on. | Greatly pays me. I'll not complain. Out loud. | You? You're Greatly's too, if you live in a brick house.
+b[self.house] : Little enough. And they pay on time. | My House feeds me. I'll not bite the paw. | You're your own, if you're lucky.
 b[wealth=poor|destitute] : The dirt in the Sump. Nobody wants that. | Yes, and they let us look at it. | You're nobody's. Nor me.
 b : The weather. They're working on it. | Feels that way. | Mossgrave's wool on your back, at least.
-a : Give them time. | It does. | Ha.
+a : Give them time. | Hm. | Ha.
 
 scene w7s_greatly_rich
 when topic=work|smalltalk here.region=ridgemere
-a : House Greatly's building again. Another wall. | They say Greatly's got more coin than the Crown. | Every new house in town is Greatly brick.
-b[self.house=house_greatly] : And I'm the one carrying the bricks. | More than the Crown? More than sense. | Good brick, too. I'd know.
-b[self.house=house_fell|house_grayrock|house_mossgrave] : Brick and paint. Showy stuff. My House makes what lasts. | Coin isn't everything. | Brick needs timber and iron. Remember that.
-b[wealth=rich] : They're good neighbours to have. And to owe. | I'd believe it. | Sound brick, mind.
+a : House Greatly's building again. Another wall. | They say Greatly's got more coin than the Council. | Every new house in town is Greatly brick.
+b[self.house=greatly_house] : And I'm the one carrying the bricks. | More than the Council? More than sense. | Good brick, too. I'd know.
+b[self.house=house_fell|grayrock_hall|mossgrave_court] : Brick and paint. Showy stuff. My House makes what lasts. | Coin isn't everything. | Brick needs timber and iron. Remember that.
+b[wealth=rich] : They're good neighbours to have. And to owe. | Easily. | Sound brick, mind.
 b : Walls and walls. | I'd believe it. | Somebody's getting rich.
-a : Walls everywhere. | Wouldn't you? | Not us.
+a : Well, somebody's paying for it. | Must be nice. | Hm. Maybe.
