@@ -17,8 +17,10 @@ struct AmbientTopic
     double confidence = 0;
     std::vector<std::string> facts;     // Plain statements the words may draw on, and nothing else.
     double score = 0;
-    // For the written scenes (RatwScenes.h, doc 30): the moment's conditions (band, place, item=herbs...) and blanks.
-    std::map<std::string, std::string> tags, blanks;
+    // The talk library's facts for it (doc 62): pair.band, the moment's (here.place...) and the topic's own
+    // (topic.item=herbs, topic.price=3 pennies...).
+    std::map<std::string, std::string> talk;
+    std::string as;                     // A deed told by the doer's name: the name (doc 56).
 };
 struct AmbientPick
 {

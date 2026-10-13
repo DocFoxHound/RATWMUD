@@ -1,0 +1,24 @@
+# Coldwater (Docs/Design/62-talk.md, section 3): the lake's fishers on Glasswater, where the Long River rises. Calm;
+# nets, water, weed and catch. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar coldwater
+greet = Still water | Calm water to you
+greet.broad = Still water, still water
+farewell = Fair winds | Calm water
+agree = It'll float | Fair enough
+refuse = That won't float
+surprise = Well, I'll be netted | Calm, now
+annoyed = Weed and tangle | Holed again
+very = right
+good = fair catch | fair
+bad = muddied | rough
+worthless = bait | net-weed
+luck = a full net
+child = minnow
+pet!! = little fish | my pearl
+rain = lake-rain | wet
+tired = waterlogged
+nonsense = weed
+tag = , eh?
+oath! = Deep and dark | Net and line | Glass and gods
+home = my own shore

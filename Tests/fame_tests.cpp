@@ -288,7 +288,7 @@ void travels()
     bool told = false;
     for (const auto& pick : w.ambientPicks({ash}))
         if (pick.topic.kind == "deed" && pick.teller == "um")
-            told = pick.topic.blanks.at("subject") == "Ash" && contains(pick.topic.blanks.at("deed"), "won the race");
+            told = pick.topic.talk.at("topic.subject") == "Ash" && contains(pick.topic.talk.at("topic.deed"), "won the race");
     expect(told, "the keeper tells the innkeeper of the deed, naming her as Ash");
     // Gossip by a teller who was never told her name speaks her look, never her name.
     w.forgetClaim("deed:" + a);
@@ -308,7 +308,7 @@ void travels()
             gossip = true;
             for (const auto& f : pick.topic.facts)
                 leak |= contains(f, "Ash");
-            for (const auto& [k, v] : pick.topic.blanks)
+            for (const auto& [k, v] : pick.topic.talk)
                 leak |= contains(v, "Ash");
         }
     expect(gossip && !leak, "gossip about her by a wolf who never heard her name names her by look");

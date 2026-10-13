@@ -20,10 +20,11 @@ from pathlib import Path
 
 import npc_bridge as bridge
 import npc_mind as mind
+import talk_files
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES = ROOT / "Data" / "Voice" / "review_samples.json"
-LIBRARY = ROOT / "Data" / "Voice" / "library.json"
+LIBRARY = ROOT / "Data" / "Talk" / "library.talk"
 CONFIG = ROOT / "Saved" / "Config" / "RATWNPCAI.local.json"
 CHECK = ROOT / "build-core" / "voice_check"
 
@@ -45,8 +46,8 @@ def model_reply(m: "mind.Mind", sample: dict) -> str:
         return f"(no answer: {error.code})"
 
 
-def library_exchange(library: dict, ex: dict, seed: int) -> list:
-    fitting = [e for e in library.get("exchanges", []) if e["kind"] == ex["kind"] and e.get("band", "any") in (ex["band"], "any")]
+def library_exchange(library: list, ex: dict, seed: int) -> list:
+    fitting = [e for e in library if e["kind"] == ex["kind"] and e.get("band", "any") in (ex["band"], "any")]
     if not fitting:
         return []
     chosen = fitting[seed % len(fitting)]
@@ -127,7 +128,7 @@ def main() -> int:
         answers = {"the game": game}
         answers.update({label: html.escape(model_reply(m, s)) for label, m in minds.items()})
         rows.append({"title": html.escape(f'To {s["name"]}: "{s["say"]}"'), "answers": answers})
-    library = json.loads(LIBRARY.read_text()) if LIBRARY.is_file() else {}
+    library = talk_files.library_exchanges(LIBRARY)
     for i, ex in enumerate(samples.get("exchanges", [])):
         answers = {"the library": lines_html(library_exchange(library, ex, i))}
         answers.update({label: lines_html(model_exchange(m, ex)) for label, m in minds.items()})

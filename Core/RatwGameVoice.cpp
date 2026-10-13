@@ -76,7 +76,6 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
         return {};
     const auto& society = world_.society();
     const auto* spec = society.spec(npcId);
-    const auto tone = voices_.toneOf(spec ? spec->personality : std::string());
     const auto* bond = identified ? world_.bonds().find(npcId, playerId) : nullptr;
     const std::string band = bond && bond->familiarity >= 25 ? "known" : "stranger";
     const auto key = npcId + "|" + (identified ? playerId : std::string("?"));
@@ -87,9 +86,35 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
         last = {asked, answer, line, world_.time()};
         return line;
     };
+    // What the talk library says for it (doc 62, phase 5: Data/Talk/rules/player.talk), in the resident's tone and
+    // dialect, "" if nothing fits; not the line said to this one last, if another will do.
+    const auto say = [&](const std::string& intentId, const std::string& meeting, const std::map<std::string, std::string>& words) {
+        talk::Facts facts;
+        for (const auto& [k, v] : words)
+            if (!v.empty())
+                facts["topic." + k] = v;
+        facts["topic.meeting"] = meeting;
+        // The answer runs on after an opener ("Well, a meal is..."): it starts small, and takes a capital where it
+        // opens a sentence. ("I" stays itself.)
+        if (auto a = facts.find("topic.answer"); a != facts.end() && a->second.rfind("I ", 0) != 0 && a->second.rfind("I'", 0) != 0)
+            a->second[0] = char(std::tolower(static_cast<unsigned char>(a->second[0])));
+        const auto q = talkQuery(npcId, playerId, "player." + intentId, facts);
+        for (std::uint64_t attempt = 0; attempt < 4; ++attempt)
+        {
+            const auto said = talk_.converse(q, seed + attempt * 7919, {}, {});
+            if (said.lines.empty())
+                return std::string();
+            if (said.lines.front().second != last.line || attempt == 3)
+            {
+                talkRemember(said.effects);
+                return said.lines.front().second;
+            }
+        }
+        return std::string();
+    };
     // The same thing asked again, soon after: "as I said".
     if (!asked.empty() && last.asked == asked && world_.time() - last.at < RepeatWithin && !last.answer.empty())
-        if (const auto line = voices_.line("repeat", band, tone, {{"answer", last.answer}}, seed, last.line); !line.empty())
+        if (const auto line = say("repeat", band, {{"answer", last.answer}}); !line.empty())
             return remember(last.answer, line);
     const auto intent = voices_.intent(heard, npc->name);
     if (intent.id.empty())
@@ -278,7 +303,7 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
             auto known = facts;
             known["since"] = calendar::seasonName(calendar::calendarAt(last_->second).season);
             away->second.unseen.erase(last_);       // (Once: after this they have spoken.)
-            if (const auto line = voices_.line("greet", "returning", tone, known, seed, last.line); !line.empty())
+            if (const auto line = say("greet", "returning", known); !line.empty())
                 return remember(line, line);
         }
     // A wolf whose notable deed it has heard of, greeted by it: at most once a game day a pair (doc 56, 5).
@@ -295,7 +320,7 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
                 known["deed"] = deedPhrase(npcId, *r.deed);
                 if (const auto nick = nicknameFor(npcId, playerId); !nick.empty())
                     known["nickname"] = nick;           // (Lines with {nickname} are used only when there is one.)
-                if (const auto line = voices_.line("greet", r.byName ? "famous" : "famous_look", tone, known, seed, last.line); !line.empty())
+                if (const auto line = say("greet", r.byName ? "famous" : "famous_look", known); !line.empty())
                 {
                     fameGreeted_[pair] = world_.calendarDays();
                     fameMentioned_.emplace(npcId + "|" + r.deed->id, world_.calendarDays());
@@ -304,7 +329,7 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
                 break;
             }
     }
-    const auto line = voices_.line(intent.id, band, tone, facts, seed, last.line);
+    const auto line = say(intent.id, band, facts);
     return line.empty() ? std::string() : remember(answer.empty() ? line : answer, line);
 }
 } // namespace ratw::game

@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import ambient_library as L
+import talk_files
 
 
 def line(who, text):
@@ -28,14 +29,23 @@ class LibraryTests(unittest.TestCase):
                              "\"I'll\" is no name")
 
     def test_written_offline_and_added_to_the_library(self):
-        out = Path(tempfile.mkdtemp()) / "library.json"
-        out.write_text(json.dumps({"exchanges": [{"kind": "day", "band": "any", "lines": [["a", "{day}"], ["b", "Aye."]]}]}))
-        made = L.write(L.Fixture(), None, ["gossip", "day"], 2, json.loads(out.read_text())["exchanges"])
+        out = Path(tempfile.mkdtemp()) / "library.talk"
+        out.write_text("scene lib_day_1\nwhen topic=day\npriority -1\na : #topic.remark#\nb : Aye.\n")
+        existing = talk_files.library_exchanges(out)
+        self.assertEqual([{"id": "lib_day_1", "kind": "day", "band": "any", "lines": [["a", "{day}"], ["b", "Aye."]]}], existing,
+                         "The library's scenes read back as doc 28 wrote them")
+        made = L.write(L.Fixture(), None, ["gossip", "day"], 2, existing)
         self.assertEqual(len(L.BANDS["gossip"]) * len(L.TONES) + len(L.BANDS["day"]) * len(L.TONES), len(made),
                          "One good exchange a call kept; the one with a name of its own refused")
         self.assertTrue(all(m["lines"][0][1].startswith(("They say", "{day}")) for m in made))
         again = L.write(L.Fixture(), None, ["gossip"], 2, made)
         self.assertEqual([], again, "Nothing already in the library is added twice")
+        L.append(out, existing, made)
+        back = talk_files.library_exchanges(out)
+        self.assertEqual(len(made) + 1, len(back), "Added to the file as scenes")
+        self.assertIn("lib_gossip_1", [b["id"] for b in back])
+        self.assertIn("lib_day_2", [b["id"] for b in back], "numbered on from the last of their kind")
+        self.assertIn("#topic.subject#", out.read_text(), "with the blanks written as facts")
 
 
 if __name__ == "__main__":

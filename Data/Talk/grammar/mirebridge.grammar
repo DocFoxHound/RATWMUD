@@ -1,0 +1,24 @@
+# Mirebridge (Docs/Design/62-talk.md, section 3): the Sallow Fens by the Long River. Wry, damp, suspicious; mud,
+# eels, reeds and mizzle. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar mirebridge
+greet = Dry feet | Dry feet to you
+greet.broad = Dry feet, dry feet
+farewell = Dry feet
+agree = Fen-sure | Sure as mud
+refuse = Boggy, that | Not on your life
+surprise = Well, drown me | Sink me
+annoyed = Mud and more mud | Eels take it
+very = right
+good = dry | fair-dry
+bad = boggy | soggy
+worthless = sump water
+luck = a dry week
+child = tadpole
+pet!! = my reed | duck
+rain = mizzle | murk
+cold = damp | raw
+nonsense = bog-wind
+tag = , no?
+oath! = Mud and eels | Sinking gods | Reed and rot
+home = my own dry corner

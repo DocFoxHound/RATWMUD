@@ -1,0 +1,274 @@
+# What a resident says to a player when the speech router recognises a plain request (Docs/Design/28-ai-cost.md; doc
+# 62, phase 5): once router.json's "lines", by intent (concept player.<intent>), how well they know the player
+# (topic.meeting: stranger, known, returning, famous, famous_look) and their tone (from their personality). The game
+# finds the facts (topic.answer: the price, the hours, the way...); these say them, in the resident's tone and, where a
+# line uses the grammar (#greet#, #farewell#, #opener#), their dialect. These concepts always take their best tier
+# (settings.json best_only): a meeting's own lines over any, a tone's own over plain.
+#
+# Never #other.name# here: a resident knows a player only by a name they were given (#topic.player#, doc 32).
+
+
+rule player_greet_stranger_plain
+when concept=player.greet topic.meeting=stranger
+priority 1
+say #topic.greeting# | Well met, traveller. | Hello there. | #greet#, traveller.
+
+rule player_greet_stranger_warm
+when concept=player.greet topic.meeting=stranger tone=warm
+priority 1
+say #topic.greeting# | Welcome, welcome! Not seen you before. | Hello, friend. New in town? | #greet#! Welcome, welcome.
+
+rule player_greet_stranger_gruff
+when concept=player.greet topic.meeting=stranger tone=gruff
+priority 1
+say #topic.greeting# | Hm. You want something? | Aye? | #greet#. You want something?
+
+rule player_greet_stranger_formal
+when concept=player.greet topic.meeting=stranger tone=formal
+priority 1
+say #topic.greeting# | Good day to you. | Greetings, traveller. | #greet#, traveller.
+
+rule player_greet_stranger_sly
+when concept=player.greet topic.meeting=stranger tone=sly
+priority 1
+say #topic.greeting# | Well, well. A new face. | Hello, stranger. What brings you? | #greet#. A new face.
+
+rule player_greet_stranger_shy
+when concept=player.greet topic.meeting=stranger tone=shy
+priority 1
+say #topic.greeting# | Oh. Hello. | Um, hello. | Oh. #greet#.
+
+rule player_greet_known_plain
+when concept=player.greet topic.meeting=known
+priority 1
+say Hello again, #topic.player#. | #topic.player#. Good to see you. | Back again, #topic.player#? | #greet#, #topic.player#.
+
+rule player_greet_known_warm
+when concept=player.greet topic.meeting=known tone=warm
+priority 1
+say #topic.player#! Always good to see you. | There you are, #topic.player#. How are you keeping? | Hello, hello, #topic.player#! | #greet#, #topic.player#! Good to see you.
+
+rule player_greet_known_gruff
+when concept=player.greet topic.meeting=known tone=gruff
+priority 1
+say #topic.player#. | You again, #topic.player#. | Hm. #topic.player#. | #greet#, #topic.player#.
+
+rule player_greet_known_formal
+when concept=player.greet topic.meeting=known tone=formal
+priority 1
+say Good to see you again, #topic.player#. | Welcome back, #topic.player#. | #topic.player#, a pleasure as ever. | #greet#, #topic.player#.
+
+rule player_greet_known_sly
+when concept=player.greet topic.meeting=known tone=sly
+priority 1
+say Ah, #topic.player#. Up to something? | #topic.player#! Just the wolf I wanted. | Well, if it isn't #topic.player#. | #greet#, #topic.player#. Up to anything?
+
+rule player_greet_known_shy
+when concept=player.greet topic.meeting=known tone=shy
+priority 1
+say Oh, #topic.player#. Hello. | Hello, #topic.player#. | #topic.player#! Oh, hello. | Oh! #greet#, #topic.player#.
+
+rule player_greet_famous_plain
+when concept=player.greet topic.meeting=famous
+priority 1
+say #topic.player#! Heard you #topic.deed#. | Well, if it isn't #topic.player#. Word is you #topic.deed#. | #topic.player#. Folk are saying you #topic.deed#. | Well, if it isn't #topic.nickname#! #topic.player#, isn't it?
+
+rule player_greet_famous_warm
+when concept=player.greet topic.meeting=famous tone=warm
+priority 1
+say #topic.player#! Everyone's talking about how you #topic.deed#! | There you are, #topic.player#. You #topic.deed#, I hear. Good on you. | #topic.player#! Is it true you #topic.deed#? | #topic.nickname#! #topic.player#, come in, come in!
+
+rule player_greet_famous_gruff
+when concept=player.greet topic.meeting=famous tone=gruff
+priority 1
+say #topic.player#. Heard you #topic.deed#. | Hm. #topic.player#. You #topic.deed#, they say. | So you #topic.deed#, #topic.player#. | #topic.nickname#, they call you. Hm.
+
+rule player_greet_famous_formal
+when concept=player.greet topic.meeting=famous tone=formal
+priority 1
+say Good day, #topic.player#. I understand you #topic.deed#. | #topic.player#. The town owes you thanks: you #topic.deed#, I am told. | Well met, #topic.player#. Word has it you #topic.deed#. | Good day, #topic.player#. Or should I say #topic.nickname#?
+
+rule player_greet_famous_sly
+when concept=player.greet topic.meeting=famous tone=sly
+priority 1
+say Well, well, #topic.player#. You #topic.deed#, so they say. | #topic.player#. The talk of the town, aren't you? You #topic.deed#. | Ah, #topic.player#. I hear you #topic.deed#. Interesting. | Ah, #topic.nickname#. Everyone's favourite.
+
+rule player_greet_famous_shy
+when concept=player.greet topic.meeting=famous tone=shy
+priority 1
+say Oh! #topic.player#. You... you #topic.deed#, didn't you? | Hello, #topic.player#. People say you #topic.deed#. | Um, hello. You #topic.deed#, I heard. | Oh! You're... #topic.nickname#, aren't you?
+
+rule player_greet_famous_look_plain
+when concept=player.greet topic.meeting=famous_look
+priority 1
+say Hello there. Say, you're not the one who #topic.deed#, are you? | Hello. You look like the one they say #topic.deed#. Was that you? | Hello. Weren't you the one who #topic.deed#?
+
+rule player_greet_famous_look_warm
+when concept=player.greet topic.meeting=famous_look tone=warm
+priority 1
+say Hello! Wait, are you the one who #topic.deed#? You look just like they said! | Welcome! Say, you're not the wolf who #topic.deed#, are you? | Hello, hello! Folk say a wolf like you #topic.deed#. Was it you?
+
+rule player_greet_famous_look_gruff
+when concept=player.greet topic.meeting=famous_look tone=gruff
+priority 1
+say Hm. You the one who #topic.deed#? | You. You look like the one who #topic.deed#. | Aye? You're not the one who #topic.deed#, are you?
+
+rule player_greet_famous_look_formal
+when concept=player.greet topic.meeting=famous_look tone=formal
+priority 1
+say Good day. Forgive me: are you the wolf who #topic.deed#? | Greetings. You answer the description of the one who #topic.deed#. | Good day to you. Might you be the one who #topic.deed#?
+
+rule player_greet_famous_look_sly
+when concept=player.greet topic.meeting=famous_look tone=sly
+priority 1
+say Well now. You wouldn't be the one who #topic.deed#, would you? | Hello, stranger. Funny, you look like the one who #topic.deed#. | Hm. A wolf who looks like you #topic.deed#, so they say.
+
+rule player_greet_famous_look_shy
+when concept=player.greet topic.meeting=famous_look tone=shy
+priority 1
+say Oh. Um, are you the one who #topic.deed#? | Hello... you look like the one who #topic.deed#. | Um. Were you... the one who #topic.deed#?
+
+rule player_greet_returning_plain
+when concept=player.greet topic.meeting=returning
+priority 1
+say Well! Haven't seen you since #topic.since#. | There you are! Not since #topic.since#, was it? | Back again! It's been since #topic.since#.
+
+rule player_greet_returning_warm
+when concept=player.greet topic.meeting=returning tone=warm
+priority 1
+say You're back! Not seen you since #topic.since#. We missed you! | Look who it is! Since #topic.since#, and not a word. Welcome back! | Oh, it's good to see you. Not since #topic.since#!
+
+rule player_greet_returning_gruff
+when concept=player.greet topic.meeting=returning tone=gruff
+priority 1
+say Hm. Not since #topic.since#. | Back, are you. Been since #topic.since#. | Thought we'd lost you. Since #topic.since#.
+
+rule player_greet_returning_formal
+when concept=player.greet topic.meeting=returning tone=formal
+priority 1
+say Welcome back. I believe it has been since #topic.since#. | A pleasure to see you again, after so long. Since #topic.since#, I think. | Welcome back. We have not seen you since #topic.since#.
+
+rule player_greet_returning_sly
+when concept=player.greet topic.meeting=returning tone=sly
+priority 1
+say Well, well. Where've you been since #topic.since#? | Back from wherever you went in #topic.since#, then. | Since #topic.since#, and not a word. Interesting.
+
+rule player_greet_returning_shy
+when concept=player.greet topic.meeting=returning tone=shy
+priority 1
+say Oh! You're back. It's been since #topic.since#... | Hello again. Not since #topic.since#. | Oh, hello... it's been a while. Since #topic.since#?
+
+rule player_thanks_any_plain
+when concept=player.thanks
+say You're welcome. | Glad to help. | Think nothing of it.
+
+rule player_thanks_any_warm
+when concept=player.thanks tone=warm
+say Any time at all! | Oh, you're very welcome. | My pleasure, truly.
+
+rule player_thanks_any_gruff
+when concept=player.thanks tone=gruff
+say Aye. | Don't mention it. | Fine.
+
+rule player_thanks_any_formal
+when concept=player.thanks tone=formal
+say You are most welcome. | It was no trouble. | Not at all.
+
+rule player_thanks_any_sly
+when concept=player.thanks tone=sly
+say You owe me one. | I'll remember that. | Anything for a friend.
+
+rule player_thanks_any_shy
+when concept=player.thanks tone=shy
+say Oh, it's nothing. | You're welcome. | Um, no trouble.
+
+rule player_bye_known_plain
+when concept=player.bye topic.meeting=known
+priority 1
+say Take care, #topic.player#. | Until next time, #topic.player#. | Go well, #topic.player#.
+
+rule player_bye_known_warm
+when concept=player.bye topic.meeting=known tone=warm
+priority 1
+say Safe roads, #topic.player#! Come back soon. | Look after yourself, #topic.player#. | Mind how you go, #topic.player#!
+
+rule player_bye_known_gruff
+when concept=player.bye topic.meeting=known tone=gruff
+priority 1
+say Aye. | Off with you, then. | Mind yourself, #topic.player#.
+
+rule player_bye_any_plain
+when concept=player.bye
+say Farewell. | Go well. | Safe travels. | #farewell#.
+
+rule player_bye_any_warm
+when concept=player.bye tone=warm
+say Safe roads, friend! | Come back soon. | Look after yourself. | #farewell#! Come back soon.
+
+rule player_bye_any_gruff
+when concept=player.bye tone=gruff
+say Aye. | Off you go. | Mind yourself. | #farewell#.
+
+rule player_bye_any_formal
+when concept=player.bye tone=formal
+say Farewell, and good fortune. | Until we meet again. | Good day to you. | #farewell#, and good fortune.
+
+rule player_bye_any_sly
+when concept=player.bye tone=sly
+say Don't be a stranger. | Watch your purse out there. | Until next time. | #farewell#. Don't be a stranger.
+
+rule player_bye_any_shy
+when concept=player.bye tone=shy
+say Oh, bye. | Goodbye. | Take care. | Oh, um. #farewell#.
+
+rule player_trade_any_plain
+when concept=player.trade
+say #opener# #topic.answer#
+
+rule player_hours_any_plain
+when concept=player.hours
+say #opener# #topic.answer#
+
+rule player_job_any_plain
+when concept=player.job
+say #opener# #topic.answer#
+
+rule player_where_any_plain
+when concept=player.where
+say #opener# #topic.answer#
+
+rule player_wanted_any_plain
+when concept=player.wanted
+say #opener# #topic.answer#
+
+rule player_day_any_plain
+when concept=player.day
+say #opener# #topic.answer#
+
+rule player_repeat_any_plain
+when concept=player.repeat
+say As I said: #topic.answer# | Like I told you: #topic.answer#
+
+rule player_repeat_any_warm
+when concept=player.repeat tone=warm
+say Oh, I said, didn't I? #topic.answer# | As I said, love: #topic.answer#
+
+rule player_repeat_any_gruff
+when concept=player.repeat tone=gruff
+say I told you already. #topic.answer# | Again? #topic.answer#
+
+rule player_repeat_any_formal
+when concept=player.repeat tone=formal
+say As I mentioned: #topic.answer# | To repeat myself: #topic.answer#
+
+rule player_repeat_any_sly
+when concept=player.repeat tone=sly
+say Weren't you listening? #topic.answer# | Twice in one breath? #topic.answer#
+
+rule player_repeat_any_shy
+when concept=player.repeat tone=shy
+say Oh, um, like I said: #topic.answer# | I, I said: #topic.answer#
+
+rule player_trouble_any_plain
+when concept=player.trouble
+say #topic.answer#

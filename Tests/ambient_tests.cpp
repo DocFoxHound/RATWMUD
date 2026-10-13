@@ -71,16 +71,16 @@ void strangersHaveNothingToSay()
     // Strangers now make small talk (doc 30): the everyday topics, as strangers.
     const auto first = w.ambientPicks({"player-ada"});
     static const std::set<std::string> everyday{"smalltalk", "lore", "player", "weather", "work"};
-    expect(first.size() == 1 && everyday.count(first[0].topic.kind) && first[0].topic.tags.at("band") == "strangers",
+    expect(first.size() == 1 && everyday.count(first[0].topic.kind) && first[0].topic.talk.at("pair.band") == "strangers",
            "Two who don't know each other pass the time of day, as strangers (" + (first.empty() ? std::string("nothing") : first[0].topic.kind) + ")");
-    expect(first[0].topic.tags.count("place") && first[0].topic.tags.count("region") && !first[0].topic.blanks.at("weekday").empty(),
+    expect(first[0].topic.talk.count("here.place") && first[0].topic.talk.count("here.region") && !first[0].topic.talk.at("here.weekday").empty(),
            "with the place, the region and the day for the scenes");
     auto f = scene();
     f.bonds().change("sorrel", "fennel", {25, 10, 50, 0, 0}, f.calendarDays());
     f.bonds().change("fennel", "sorrel", {20, 10, 50, 0, 0}, f.calendarDays());
     const auto picks = f.ambientPicks({"player-ada"});
-    expect(picks.size() == 1 && picks[0].topic.tags.at("band") == "friends" && picks[0].cell == "town",
-           "Friends pass the time, as friends (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind + "/" + picks[0].topic.tags.at("band")) + ")");
+    expect(picks.size() == 1 && picks[0].topic.talk.at("pair.band") == "friends" && picks[0].cell == "town",
+           "Friends pass the time, as friends (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind + "/" + picks[0].topic.talk.at("pair.band")) + ")");
     expect(w.ambientPicks({}).empty(), "Only where a player can hear");
     expect(w.ambientPicks({"player-ada"}, {"sorrel"}).empty(), "Never with someone busy (talking to a player)");
     w.entity("player-ada")->position = {40.5, 30.5};
@@ -151,7 +151,7 @@ void theDayItself()
     const auto picks = f.ambientPicks({"player-ada"});
     expect(picks.size() == 1 && picks[0].topic.kind == "festival", "but a festival is worth remarking on (" +
            (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
-    bool mentioned = picks[0].topic.blanks.count("festival") && picks[0].topic.blanks.at("festival") == "The Lantern Night";
+    bool mentioned = picks[0].topic.talk.count("here.festival") && picks[0].topic.talk.at("here.festival") == "The Lantern Night";
     for (const auto& fact : picks[0].topic.facts)
         mentioned |= fact.find("The Lantern Night") != std::string::npos;
     expect(mentioned, "and its name is there for the words");

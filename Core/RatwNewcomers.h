@@ -112,7 +112,7 @@ struct Starter
 {
     std::string id, newcomer, other;
     bool mentor = true, names = false, fallback = false;
-    std::vector<std::string> jobs;                  // Job categories (scenes::jobCategory); empty: any.
+    std::vector<std::string> jobs;                  // Job categories (talk::jobCategory); empty: any.
     int minAge = 18, maxAge = 99;
     std::string need;                               // "apprentice": holds a post with no apprentice.
     double affinity = 0, trust = 0, familiarity = 0, respect = 0;

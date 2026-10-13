@@ -81,6 +81,9 @@ tests unchanged and passing.
 
 ## Phase 6: NPCs talking to each other (built 2026-10-02)
 
+*Replaced 2026-10-13 by doc 62 (Talk): every scene below was converted to `Data/Talk/` and `Core/RatwScenes.*` removed.
+The scenes say the same lines; what follows is kept as the history of how they were written.*
+
 How games like Skyrim do it: two idle NPCs near each other play a short **scene** chosen from a large pool by
 **conditions** (place, who they are to each other, who each is, the time, the weather, recent events), each line with
 **variants** and replies that **branch** on the speaker; plus one-line **barks**. That is what this is, with no model.

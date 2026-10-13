@@ -31,6 +31,8 @@ struct ServerState
     json::Value acquaintances, aliases;           // RatwNames.h: who knows whom by what name; players' aliases (doc 32).
     // The NPC-to-NPC scenes each player character has heard, oldest first (doc 30): so a returning player hears new ones.
     std::map<std::string, std::vector<std::string>> scenesHeard;
+    // What the talk library's rules remembered (doc 62, phase 4): {owner: {key: [value, until day (-1: for good)]}}.
+    json::Value talkMemory;
     MemoryStore memories;
     SocialLedger social;
     std::map<std::string, std::vector<std::string>> commandReceipts;

@@ -1,0 +1,26 @@
+# Frosthollow (Docs/Design/62-talk.md, section 3): mining and snow, a high valley in the Whitefangs. Short, dry, dark
+# humour; everything is rock, seam, lamp and cold. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar frosthollow
+greet = Warm hearth | Hearth to you
+greet.broad = 'Arth | 'Arth and lamp
+farewell = Keep your lamp lit | Lamp lit
+agree = Sound as rock | Aye, sound
+refuse = Dead seam, that | Not a chance
+surprise = Well, strike me | Cold iron
+annoyed = Slag and ashes | Cave it all
+very = deep
+good = sound | solid
+bad = cracked | dead
+worthless = dead rock | slag
+luck = a good seam
+child = whelp
+pet!! = old stone | lamp of mine
+money = brass
+cold = cold | biting | iron-cold
+tired = spent | done in
+nonsense = slag | fool's gold
+tag = , eh
+tag.broad = , eh, eh
+oath! = Black seam | Cold iron | Lamp and pick
+home = my own hearth

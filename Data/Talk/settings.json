@@ -1,0 +1,18 @@
+{
+  "about": "How the talk library chooses (Docs/Design/62-talk.md, section 2). Of the rules and scenes that hold, scores (the criteria tested, plus priority) are grouped into tiers, best first; a tier is chosen by these chances, then one within it. With two tiers the best takes the lower share too (80/20). A priority of strict_priority or more always wins when it holds; below 0 speaks only when nothing else holds. named_person is what self.id=... counts for in a score. repeat: concepts whose lines may be said again to those who've heard them. alone: concepts with one speaker. best_only: concepts that always take their best tier (a resident answering a player). concepts: every concept a rule may answer.",
+  "tiers": {"best": 0.7, "next": 0.2, "lower": 0.1},
+  "strict_priority": 10,
+  "named_person": 5,
+  "repeat": ["talk.weather", "bark", "player.greet", "player.thanks", "player.bye", "player.trade", "player.hours", "player.job", "player.where", "player.wanted", "player.day", "player.repeat", "player.trouble", "react.fight", "react.struck", "react.theft", "react.rain", "react.customer", "react.friend"],
+  "alone": ["bark", "react.fight", "react.struck", "react.theft", "react.rain"],
+  "concepts": [
+    "talk.smalltalk", "talk.work", "talk.family", "talk.weather", "talk.lore", "talk.prices", "talk.caravan",
+    "talk.bandits", "talk.crime", "talk.life", "talk.festival", "talk.newcomer", "talk.player", "talk.gossip",
+    "talk.news", "talk.quarrel", "talk.friends", "talk.day", "talk.deed", "talk.price_cause", "talk.accent",
+    "bark",
+    "prices.answer_complaint", "greet.answer",
+    "react.fight", "react.struck", "react.theft", "react.rain", "react.customer", "react.friend",
+    "player.greet", "player.thanks", "player.bye", "player.trade", "player.hours", "player.job", "player.where", "player.wanted", "player.day", "player.repeat", "player.trouble"
+  ],
+  "best_only": ["player.greet", "player.thanks", "player.bye", "player.trade", "player.hours", "player.job", "player.where", "player.wanted", "player.day", "player.repeat", "player.trouble"]
+}

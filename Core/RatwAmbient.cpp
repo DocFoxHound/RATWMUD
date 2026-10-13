@@ -30,7 +30,8 @@ std::string lowered(std::string s)
     return s;
 }
 
-// A place in the scenes' words (RatwScenes.h Places), from what it is called and whether it is outdoors.
+// A place in the talk library's words (here.place, Data/Talk/facts.json), from what it is called and whether it is
+// outdoors.
 std::string placeKind(const Cell& c, bool town)
 {
     const auto name = lowered(c.name + " " + c.id);
@@ -232,7 +233,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.incident = belief.incident;
                 t.confidence = belief.confidence;
                 t.score = 3 + belief.confidence + (about && !about->npc ? .5 : 0);
-                t.blanks["subject"] = subjectName;
+                t.talk["topic.subject"] = subjectName;
                 t.facts.push_back(name(teller) + " has heard that " + subjectName + " " + belief.claim + " (" +
                                   (belief.source == "saw it" ? name(teller) + " saw it"
                                                              : "from " + name(belief.source)) + "), and tells " +
@@ -267,14 +268,14 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                     t.source = teller;
                     t.confidence = belief.confidence;
                     t.score = 3.2 + belief.confidence * .3;
-                    t.tags["known"] = words.byName ? "yes" : "no";
-                    t.tags["nickname"] = words.nickname.empty() ? "no" : "yes";
+                    t.talk["topic.known"] = words.byName ? "yes" : "no";
+                    t.talk["topic.has_nickname"] = words.nickname.empty() ? "no" : "yes";
                     if (words.byName)
-                        t.tags["as"] = words.subject;
-                    t.blanks["subject"] = words.subject;
-                    t.blanks["deed"] = words.phrase;
+                        t.as = words.subject;
+                    t.talk["topic.subject"] = words.subject;
+                    t.talk["topic.deed"] = words.phrase;
                     if (!words.nickname.empty())
-                        t.blanks["nickname"] = words.nickname;
+                        t.talk["topic.nickname"] = words.nickname;
                     t.facts.push_back(name(teller) + " has heard that " + words.subject + " " + words.phrase +
                                       (words.nickname.empty() ? "" : ", and folk call them " + words.nickname) + "; " + name(teller) +
                                       " tells " + name(listener) + ".");
@@ -291,7 +292,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.kind = "news";
                 t.source = teller;
                 t.claim = n.kind;
-                t.tags["kind"] = n.kind;           // marriage, loss, work, crime: for the scenes.
+                t.talk["topic.kind"] = n.kind;           // marriage, loss, work, crime: for the scenes.
                 t.score = 2.8 + (n.kind == "loss" || n.kind == "crime" ? .2 : 0);
                 t.facts.push_back(n.text + ".");
                 t.facts.push_back(name(teller) + " tells " + name(listener) + " about it.");
@@ -340,29 +341,132 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
     // What the written scenes need of any topic: who the two are to each other, the place, the hour, the town.
     if (!best.kind.empty())
     {
-        const auto* c = cell(ea->cellId);
-        const auto townId = townIdOf(ea->cellId);
-        const auto* spouse = society_.spouse(a);
-        best.tags["band"] = spouse && *spouse == b                                  ? "spouses"
-                            : society_.family(a, b) || society_.household(a, b)     ? "family"
-                            : [&] { const auto* p = society_.apprenticedTo(a); const auto* q = society_.apprenticedTo(b);
-                                    const auto* ja = society_.jobOf(a); const auto* jb = society_.jobOf(b);
-                                    return (p && jb && p->id == jb->id) || (q && ja && q->id == ja->id); }() ? "apprentice"
-                            : std::min(ab.affinity, ba.affinity) <= -25             ? "rivals"
-                            : ab.familiarity >= 40 && ab.affinity >= 20 && ba.affinity >= 10 ? "friends"
-                            : ab.familiarity >= 10 || ba.familiarity >= 10          ? "acquaintances"
-                                                                                     : "strangers";
-        (void)c;
-        (void)townId;
-        sceneMoment(a, best.tags, best.blanks);
+        best.talk["pair.band"] = pairBand(a, b);
+        talkMoment(a, best.talk);
     }
     return best;
 }
 
-void World::sceneMoment(const std::string& who, std::map<std::string, std::string>& tags,
-                        std::map<std::string, std::string>& blanks)
+std::string World::pairBand(const std::string& a, const std::string& b) const
 {
-    // Where and when, as the written scenes test it (RatwScenes.h): the place, the town, the hour, the sky, the day.
+    // Who the two are to each other, nearest first (doc 30's bands; doc 62's pair.band).
+    const Bond ab = bonds_.find(a, b) ? *bonds_.find(a, b) : Bond{};
+    const Bond ba = bonds_.find(b, a) ? *bonds_.find(b, a) : Bond{};
+    const auto* spouse = society_.spouse(a);
+    if (spouse && *spouse == b)
+        return "spouses";
+    if (society_.family(a, b) || society_.household(a, b))
+        return "family";
+    const auto* p = society_.apprenticedTo(a);
+    const auto* q = society_.apprenticedTo(b);
+    const auto* ja = society_.jobOf(a);
+    const auto* jb = society_.jobOf(b);
+    if ((p && jb && p->id == jb->id) || (q && ja && q->id == ja->id))
+        return "apprentice";
+    if (std::min(ab.affinity, ba.affinity) <= -25)
+        return "rivals";
+    if (ab.familiarity >= 40 && ab.affinity >= 20 && ba.affinity >= 10)
+        return "friends";
+    if (ab.familiarity >= 10 || ba.familiarity >= 10)
+        return "acquaintances";
+    return "strangers";
+}
+
+void World::talkTown(const std::string& who, std::map<std::string, std::string>& facts)
+{
+    // What the town has been talking of (doc 62's world.* facts): the same news the topics are made of, as facts any
+    // line may test, whatever it's about.
+    const auto* e = entity(who);
+    if (!e)
+        return;
+    const auto townId = townIdOf(e->cellId);
+    if (const auto seen = priceSeen_.find(townId); seen != priceSeen_.end())
+        for (const auto& [item, p] : seen->second)
+            if (p.dir != 0 && calendarDays_ - p.day <= 1.5 && (item == "herbs" || item == "meal"))
+                facts["world." + item + "_price"] = p.dir > 0 ? "up" : "down";
+    bool bandits = false;
+    for (const auto& c : roads_.caravans)
+        bandits |= c.status == "raided" && (c.from == townId || c.to == townId);
+    for (const auto& camp : roads_.camps)
+        bandits |= camp.active && calendarDays_ - camp.lastRaid <= 3;
+    facts["world.bandits"] = bandits ? "near" : "no";
+    bool crime = false;
+    for (const auto& i : crime_.incidents)
+        crime |= i.town == townId && calendarDays_ - i.day <= 2;
+    facts["world.crime"] = crime ? "recent" : "no";
+    const auto community = communityOf(e->cellId);
+    std::string festival = dayPlan(community).kind == "festival" ? "today" : "no";
+    if (festival == "no")
+        for (const auto& f : festivals_)
+            if (f.community == community && f.day > std::int64_t(calendarDays_) && f.day - calendarDays_ <= 3)
+                festival = "soon";
+    facts["world.festival"] = festival;
+    std::set<std::string> lately;
+    if (const auto news = townNews_.find(townId); news != townNews_.end())
+        for (const auto& n : news->second)
+            if (calendarDays_ - n.day <= 4)
+                lately.insert(n.kind);
+    facts["world.death"] = lately.count("death") ? "recent" : "no";
+    facts["world.wedding"] = lately.count("marriage") ? "recent" : "no";
+    facts["world.birth"] = lately.count("birth") ? "recent" : "no";
+    // The place itself: how many are about, and whether a traveller (a player) is near.
+    int people = 0;
+    bool traveller = false;
+    for (const auto* o : entitiesIn(e->cellId))
+        if (o && !o->dead && o->id != who)
+        {
+            people += o->npc;
+            traveller |= !o->npc && apart(o->position, e->position) <= 12;
+        }
+    facts["here.crowd"] = people >= 6 ? "crowd" : people >= 3 ? "busy" : "quiet";
+    facts["here.player_near"] = traveller ? "yes" : "no";
+}
+
+void World::talkOrigin(const std::string& id, std::string& from, std::string& accent) const
+{
+    // Where a resident grew up, and how strongly they still speak like it (doc 62, phase 3). Worked out from who they
+    // are, never stored, so the same resident always has the same: most grew up where they live; of each place's grown
+    // folk about one in seven came from another (one in four in Ridgemere, the city everyone comes to). The old and
+    // the never-moved speak broadest; those settled elsewhere fade.
+    static const std::vector<std::string> Regions{"ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge",
+                                                  "larkfield", "southmeadow"};
+    from.clear();
+    accent.clear();
+    const auto* e = entity(id);
+    const auto* life = society_.resident(id);
+    if (!e || !life)
+        return;
+    const auto home = townIdOf(life->homeCell.empty() ? e->cellId : life->homeCell);
+    if (std::find(Regions.begin(), Regions.end(), home) == Regions.end())
+        return;                                     // (Somewhere that is none of the realm's: no dialect of its own.)
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const unsigned char c : "origin|" + id)
+        h = (h ^ c) * 1099511628211ULL;
+    h ^= h >> 29;
+    const auto stage = lifeStage(e->age);
+    const bool grown = stage == LifeStage::Adult || stage == LifeStage::Old;
+    const bool moved = grown && int(h % 100) < (home == "ridgemere" ? 25 : 15);
+    from = home;
+    if (moved)
+    {
+        std::vector<std::string> others;
+        for (const auto& r : Regions)
+            if (r != home)
+                others.push_back(r);
+        from = others[(h >> 8) % others.size()];
+    }
+    const int roll = int((h >> 20) % 100);
+    if (stage == LifeStage::Old)
+        accent = moved ? "light" : "broad";
+    else if (!moved)
+        accent = roll < 20 ? "broad" : roll < 85 ? "light" : "none";
+    else
+        accent = roll < 10 ? "broad" : roll < 60 ? "light" : "none";
+}
+
+void World::talkMoment(const std::string& who, std::map<std::string, std::string>& facts)
+{
+    // Where and when, in the talk library's facts (doc 62): the place, the town, the hour, the sky, the day.
     const auto* e = entity(who);
     if (!e)
         return;
@@ -372,18 +476,18 @@ void World::sceneMoment(const std::string& who, std::map<std::string, std::strin
     const auto cal = calendar::calendarAt(calendarDays_);
     static const char* seasons[] = {"spring", "summer", "autumn", "winter"};
     const double hour = cal.hour;
-    tags["place"] = c ? placeKind(*c, townOf(e->cellId) != nullptr) : "street";
-    tags["day"] = plan.kind;
-    tags["region"] = townId;
-    tags["season"] = seasons[std::clamp(int(cal.season), 0, 3)];
-    tags["time"] = hour < 5 || hour >= 20 ? "night" : hour < 7.5 ? "dawn" : hour < 18 ? "day" : "dusk";
-    tags["weather"] = c && c->outdoors ? weatherName(c->weather) : "indoors";
-    blanks["season"] = tags["season"];
-    blanks["place"] = c ? c->name : std::string();
-    blanks["town"] = townWords(townId);
-    blanks["weekday"] = calendar::weekdayName(calendar::weekdayOf(calendarDays_));
+    facts["here.place"] = c ? placeKind(*c, townOf(e->cellId) != nullptr) : "street";
+    facts["here.day"] = plan.kind;
+    facts["here.region"] = townId;
+    facts["here.season"] = seasons[std::clamp(int(cal.season), 0, 3)];
+    facts["here.time"] = hour < 5 || hour >= 20 ? "night" : hour < 7.5 ? "dawn" : hour < 18 ? "day" : "dusk";
+    facts["here.weather"] = c && c->outdoors ? weatherName(c->weather) : "indoors";
+    if (c)
+        facts["here.place_name"] = c->name;
+    facts["here.town"] = townWords(townId);
+    facts["here.weekday"] = calendar::weekdayName(calendar::weekdayOf(calendarDays_));
     if (plan.kind == "festival")
-        blanks.emplace("festival", plan.name);
+        facts.emplace("here.festival", plan.name);
 }
 
 void World::sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider)
@@ -416,10 +520,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             if (p.dir != 0 && calendarDays_ - p.day <= 1.5)
             {
                 auto t = topic("prices", 2.2);
-                t.tags["item"] = item;
-                t.tags["dir"] = p.dir > 0 ? "up" : "down";
-                t.blanks["item"] = item == "meal" ? "a meal" : "herbs";
-                t.blanks["price"] = std::to_string(std::max(1, int(std::lround(p.factor * (item == "meal" ? 6 : 2))))) + " pennies";
+                t.talk["topic.item"] = item;
+                t.talk["topic.dir"] = p.dir > 0 ? "up" : "down";
+                t.talk["topic.what"] = item == "meal" ? "a meal" : "herbs";
+                t.talk["topic.price"] = std::to_string(std::max(1, int(std::lround(p.factor * (item == "meal" ? 6 : 2))))) + " pennies";
                 t.facts.push_back(std::string(item == "meal" ? "Meals" : "Herbs") + " cost " + (p.dir > 0 ? "more" : "less") + " in town lately.");
                 consider(std::move(t));
             }
@@ -433,10 +537,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                 const auto* good = items::good(cause.item);
                 auto t = topic("price_cause", 2.6);
                 t.subject = cause.who;
-                t.tags["known"] = known.byName ? "yes" : "no";
-                t.blanks["who"] = known.words;
-                t.blanks["item"] = cause.item == "meal" ? "meals" : good ? lowered(good->name.substr(0, good->name.find(" ("))) : cause.item;
-                t.facts.push_back(name(a) + " says " + t.blanks["item"] + " got cheaper in town since " + known.words + " brought some in.");
+                t.talk["topic.known"] = known.byName ? "yes" : "no";
+                t.talk["topic.who"] = known.words;
+                t.talk["topic.what"] = cause.item == "meal" ? "meals" : good ? lowered(good->name.substr(0, good->name.find(" ("))) : cause.item;
+                t.facts.push_back(name(a) + " says " + t.talk["topic.what"] + " got cheaper in town since " + known.words + " brought some in.");
                 consider(std::move(t));
             }
     // Caravans to and from this town, and the bandits on the roads.
@@ -451,15 +555,15 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (kind.empty())
             continue;
         auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : 1.9);
-        t.tags["kind"] = kind;
-        t.blanks["other"] = townWords(other);
+        t.talk["topic.kind"] = kind;
+        t.talk["topic.where"] = townWords(other);
         t.facts.push_back("A caravan between here and " + townWords(other) + " " + kind + ".");
         consider(std::move(t));
         if (kind == "raided")
         {
             auto road = topic("caravan", 2.1);
-            road.tags["kind"] = "raided";
-            road.blanks["other"] = townWords(other);
+            road.talk["topic.kind"] = "raided";
+            road.talk["topic.where"] = townWords(other);
             consider(std::move(road));
         }
     }
@@ -467,9 +571,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (camp.active && calendarDays_ - camp.lastRaid <= 3)
         {
             auto t = topic("bandits", 2.0);
-            t.tags["kind"] = "camp";
+            t.talk["topic.kind"] = "camp";
             if (const auto* where = cell(camp.cell))
-                t.blanks["other"] = where->name;
+                t.talk["topic.where"] = where->name;
             consider(std::move(t));
             break;
         }
@@ -478,9 +582,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (i.town == townId && calendarDays_ - i.day <= 2 && i.victim != a && i.victim != b && i.offender != a && i.offender != b)
         {
             auto t = topic("crime", 2.4);
-            t.tags["kind"] = i.kind == "assault" ? "assault" : "theft";
-            t.blanks["victim"] = name(i.victim);
-            t.blanks["subject"] = i.witnesses.empty() ? std::string("someone") : name(i.offender);
+            t.talk["topic.kind"] = i.kind == "assault" ? "assault" : "theft";
+            t.talk["topic.victim"] = name(i.victim);
+            t.talk["topic.subject"] = i.witnesses.empty() ? std::string("someone") : name(i.offender);
             t.facts.push_back(name(i.victim) + " was " + (i.kind == "assault" ? "attacked" : "robbed") + " in town.");
             consider(std::move(t));
         }
@@ -492,10 +596,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                 continue;
             const bool fresh = n.kind == "newcomer";
             auto t = topic(fresh ? "newcomer" : n.kind == "arrest" ? "crime" : "life", fresh ? 1.8 : n.kind == "death" ? 2.3 : 2.0);
-            t.tags["kind"] = n.kind;
-            t.blanks["subject"] = name(n.subject);
+            t.talk["topic.kind"] = n.kind;
+            t.talk["topic.subject"] = name(n.subject);
             if (!n.other.empty())
-                t.blanks["other"] = name(n.other);
+                t.talk["topic.where"] = name(n.other);
             consider(std::move(t));
         }
     // A festival today, or one called for the days ahead.
@@ -504,8 +608,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     if (plan.kind == "festival")
     {
         auto t = topic("festival", 2.0);
-        t.tags["when"] = "today";
-        t.blanks["festival"] = plan.name;
+        t.talk["topic.when"] = "today";
+        t.talk["here.festival"] = plan.name;
         consider(std::move(t));
     }
     else
@@ -513,8 +617,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             if (f.community == community && f.day > std::int64_t(calendarDays_) && f.day - calendarDays_ <= 3)
             {
                 auto t = topic("festival", 1.9);
-                t.tags["when"] = "soon";
-                t.blanks["festival"] = f.name;
+                t.talk["topic.when"] = "soon";
+                t.talk["here.festival"] = f.name;
                 consider(std::move(t));
                 break;
             }
@@ -528,11 +632,26 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             const bool knows = bond && bond->familiarity >= 5;
             // (Named only if the speaker was given the name: doc 56, 6.)
             const auto given = knows ? (namer_ ? namer_(a, id) : e.name) : std::string();
-            t.tags["known"] = !given.empty() ? "yes" : "no";
-            t.blanks["subject"] = !given.empty() ? given : strangerWords(e.appearance);
+            t.talk["topic.known"] = !given.empty() ? "yes" : "no";
+            t.talk["topic.subject"] = !given.empty() ? given : strangerWords(e.appearance);
             consider(std::move(t));
             break;
         }
+    // Speech from elsewhere (doc 62, phase 3): a stranger, or one barely known, who doesn't sound like them.
+    {
+        std::string fromA, accentA, fromB, accentB;
+        talkOrigin(a, fromA, accentA);
+        talkOrigin(b, fromB, accentB);
+        const auto band = pairBand(a, b);
+        if (!fromA.empty() && !fromB.empty() && fromA != fromB && accentB != "none" &&
+            (band == "strangers" || band == "acquaintances"))
+        {
+            auto t = topic("accent", 1.3 + jitter(9) * .6 + (accentB == "broad" ? .3 : 0));
+            t.talk["topic.accent_of"] = fromB;
+            t.talk["topic.accent_town"] = townWords(fromB);
+            consider(std::move(t));
+        }
+    }
     // The everyday: family, work, the weather, the town's own lore, and talk for talk's sake.
     if (const auto* spouse = society_.spouse(a); (spouse && *spouse == b) || society_.family(a, b) || society_.household(a, b))
         consider(topic("family", 1.4 + jitter(1)));
@@ -618,8 +737,7 @@ void World::ambientSpoken(const AmbientPick& pick)
     const auto& t = pick.topic;
     if (t.kind == "gossip" || t.kind == "deed")
     {
-        const auto as = t.tags.count("as") ? t.tags.at("as") : std::string();   // (A deed told by a name: doc 56.)
-        believe(pick.listener, t.subject, t.claim, pick.teller, t.confidence * .7, t.incident, as);
+        believe(pick.listener, t.subject, t.claim, pick.teller, t.confidence * .7, t.incident, t.as);   // (t.as: doc 56.)
         bonds_.change(pick.listener, pick.teller, {.3, 0, 1, 0, 0}, calendarDays_);
     }
     else if (t.kind == "quarrel")

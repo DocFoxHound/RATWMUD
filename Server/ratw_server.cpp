@@ -532,7 +532,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database dev|prod | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
 }
 
@@ -570,6 +570,7 @@ int main(int argc, char** argv)
         else if (a == "--web") webRoot = next();
         else if (a == "--dialogue") options.dialogueEndpoint = next();
         else if (a == "--voice-data") options.voiceData = next();
+        else if (a == "--talk-data") options.talkData = next();
         else if (a == "--ambient-model-calls") options.ambientModelCallsPerHour = std::max(0, std::atoi(next().c_str()));
         else if (a == "--voice-log") options.voiceLog = next();
         else if (a == "--dm-directory") options.directorDirectory = next();

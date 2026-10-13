@@ -1,0 +1,249 @@
+# Current events in town, part two: lives. Weddings, deaths, births, apprenticeships and successions ({subject}, and
+# {other} only sometimes: a spouse, a master, an heir, so it appears only in optional turns).
+
+# ---------------------------------------------------------------- Weddings
+
+scene et_wed_news
+when topic=life topic.kind=marriage
+a : #topic.subject#'s married! Did you hear? | They say #topic.subject# took vows this week. | #topic.subject# is wed. The whole street was singing.
+b[old] : Good. A wolf ought to have someone to grow grey beside.
+b[child] : Was there cake? Was there honey cake?
+b : Married! Good for them. | This week? Quick work. | I heard the singing. Thought it was a brawl.
+a : Good for them indeed. | Quick and sure. | It nearly was, by the end.
+b?[friends] : We'll be next, you and I. Not to each other, Bright One forbid.
+
+scene et_wed_other
+when topic=life topic.kind=marriage
+a : #topic.subject# wed at the chapel. | #topic.subject#'s finally married. | Wedding bells for #topic.subject#.
+b : Good. A quiet chapel wedding's the best kind. | Finally! There's hope for all of us. | I heard them clear from the market.
+a?[friends] : To #topic.where#, of all wolves. I'd have bet my tail against it.
+
+scene et_wed_feast
+when topic=life topic.kind=marriage here.place=tavern|hall
+a : The wedding feast went till dawn. | I danced at #topic.subject#'s wedding till my legs gave out. | I've still got a head from #topic.subject#'s feast.
+b[innkeeper] : I'll be scrubbing ale off the beams for a week.
+b[cook] : Six roast geese. Six. And they still wanted more.
+b : Till dawn? Who paid for all that? | I saw. You fell over the bench. | Serves you right.
+a : Not me, thank the Bright One. | The bench moved. | Worth every throb.
+
+scene et_wed_doubt
+when topic=life topic.kind=marriage pair.band=friends|family
+a : #topic.subject#'s married. I give it a year. | Between us, I don't think #topic.subject# wanted it. | They looked like two strangers at the altar.
+b[old] : Many good matches start like that. Mine did.
+b : That's cruel. | You'd know better than me. | Strangers learn each other.
+a : It's honest. | I would. | Or don't.
+
+scene et_wed_jealous
+when topic=life topic.kind=marriage a.stage=adult b.stage=adult
+a : Everyone's marrying but me. Now #topic.subject#. | #topic.subject#'s married and I can't even get a wolf to share a bench. | Another wedding. Another season alone.
+b[spouses] : You've got me to talk to. That's nearly as bad as marriage.
+b : Your time'll come. | You don't smell of soap, that's why. | Alone's quieter.
+a : When? I'm going grey. | I'll try soap. | Quiet's lonely.
+
+scene et_wed_children
+when topic=life topic.kind=marriage a.stage=young|adolescent
+a : Did you see #topic.subject# at the wedding? They looked so silly. | Why do grown-ups kiss at weddings? Yuck. | When I marry, there'll be a hundred honey cakes.
+b : Everyone looks silly at their wedding. | You'll understand when you're older. | A hundred? You'll be sick.
+a : I won't. | I won't ever. | Worth it.
+
+scene et_wed_priest
+when topic=life topic.kind=marriage
+a[priest] : I wed #topic.subject# this week. Two wolves, one den, under the Bright One's order. It never tires me.
+a : Was it a proper chapel wedding, #topic.subject#'s? | Did the priest give a long sermon at #topic.subject#'s wedding? | Did #topic.subject# wear the old flowers?
+b[priest] : I kept it short. They looked like they'd bolt.
+b : The full rites. | Long as a winter. | Spring flowers, braided in.
+a : Good. That's the way. | They always do. | Lovely.
+
+scene et_wed_season
+when topic=life topic.kind=marriage here.season=spring|summer
+a : A #here.season# wedding for #topic.subject#. Can't do better than that. | Flowers, warm nights, a wedding. That's #here.season#. | #topic.subject# married in the #here.season#. Lucky.
+b[old] : A #here.season# bride, a busy hearth, my mother used to say.
+b : Nothing better. | And mosquitoes. | Lucky and warm.
+a : Nothing at all. | Ha. Them too. | Lucky.
+
+scene et_wed_winter
+when topic=life topic.kind=marriage here.season=autumn|winter
+a : Married in the #here.season#, #topic.subject#. Brave. | A cold wedding for #topic.subject#. | #topic.subject# wed with frost on the chapel steps.
+b : Warm each other, I suppose. | Cold hands, warm hearts. | Frost's lucky, they say.
+a : That's the idea. | So they say. | Here's hoping.
+
+# ---------------------------------------------------------------- Deaths
+
+scene et_death_grief
+when topic=life topic.kind=death
+a : #topic.subject# is dead. I only saw them a few days past. | Have you heard? #topic.subject# died in the night. | They're burying #topic.subject#.
+b[old] : Another one gone. The list of folk I knew grows shorter than the list I didn't.
+b[priest] : The Bright One keeps a place for every wolf who kept the order. May they rest.
+b : I can't believe it. | In the night. Peaceful, I hope. | When?
+a : Nor can I. | I hope so. | Tomorrow, at dawn.
+a?[friends] : Come with me to the burying. I can't go alone.
+
+scene et_death_memory
+when topic=life topic.kind=death pair.band=friends|acquaintances
+a : I keep thinking of #topic.subject#'s laugh. Like a kettle. | #topic.subject# gave me my first proper job, you know. | #topic.subject# owed me two pennies. I'd give twenty to have them back.
+b[old] : Remember them laughing. That's the best mourning there is.
+b : Like a kettle on the boil. Yes. | I didn't know that. | I know what you mean.
+a : I'll miss it. | They were good to me. | Twenty. Easily.
+
+scene et_death_funeral
+when topic=life topic.kind=death here.place=chapel|street
+a : Was the whole town at #topic.subject#'s burying? | They sang the old hymn for #topic.subject#. | The procession for #topic.subject# went right past my door.
+b[priest] : I've never seen the chapel so full. The Bright One counts that.
+b : Most of it. | The long one. I cried like a pup. | I heard the bell.
+a : Good. They deserved it. | Everyone did. | It was a fine send-off.
+
+scene et_death_cause
+when topic=life topic.kind=death
+a : What took #topic.subject#? Do you know? | They say #topic.subject# went quick. | #topic.subject# had been ailing all #here.season#.
+b[healer] : The chest. I did what I could. Some coughs won't be turned.
+b : Fever, I heard. | A mercy, if so. | All #here.season#? I never knew.
+a : Poor soul. | A small one. | Nor did I.
+
+scene et_death_spouse
+when topic=life topic.kind=death
+a : #topic.subject# died. | We lost #topic.subject#. | #topic.subject# is gone.
+b?[old] : The young go too, these days. It's the old who are left wondering why.
+a?[friends] : And #topic.where#'s left alone now. I'll take them supper.
+b : Bright One keep them. | I'm sorry. | Too soon.
+a : Bright One keep them. | So am I. | Much too soon.
+
+scene et_death_estate
+when topic=life topic.kind=death
+a : Now #topic.subject#'s gone, who gets the house? | #topic.subject#'s relatives already arguing over the furniture. | #topic.subject# died, and the vultures are circling the will.
+b[official] : The will's lodged at the hall. It'll be read in its proper time.
+b : Someone, eventually. | Before the body's cold. | Vultures, the lot of them.
+a : Eventually. | Shameful. | Every family has some.
+
+scene et_death_child
+when topic=life topic.kind=death a.stage=young|adolescent
+a : Is #topic.subject# with the Bright One now? | Why do wolves have to die? | I saw them carry #topic.subject# to the chapel.
+b[priest] : They are, little one. In the light, where no one is hungry.
+b[old] : Because the Bright One wants the world to have room for you.
+b : I believe so. | Because everything does, pup. | Don't think about it too much.
+a : Is it nice there? | Even you? | I can't stop.
+
+scene et_death_unexpected
+when topic=life topic.kind=death a.stage=adult
+a : #topic.subject# was younger than me. | Strong as an ox, #topic.subject#. And now this. | One day here, the next gone. #topic.subject#.
+b[healer] : Strength's no shield. Hearts fail. Lungs fill. It isn't fair and it never was.
+b : That frightens me. | Oxen fall too. | That's all it takes. One day.
+a : Me too. | They do. | One day.
+
+scene et_death_rivals
+when topic=life topic.kind=death pair.band=rivals
+a : I hear #topic.subject#'s dead. I suppose you're pleased. | #topic.subject# died. You never liked them. | Go on, say something about #topic.subject#. I know you want to.
+b : I'm not a monster. | I didn't. But I'm not glad. | I'll say nothing. They're dead.
+a : Could've fooled me. | That's something. | That's a first.
+
+scene et_death_old_age
+when topic=life topic.kind=death b.stage=old
+a : #topic.subject# was a good age. | Old #topic.subject# finally went. | They're saying #topic.subject# slipped away in their sleep.
+b : Not old enough. Never old enough. | Finally. What a thing to say. | That's how I'd want it.
+a : You're right. | I'm sorry. I didn't mean it so. | We all would.
+
+scene et_death_guard
+when topic=life topic.kind=death a.role=guard
+a : We'll stand at the chapel for #topic.subject#'s burying. Full honours. | #topic.subject# served with me once. | The watch will carry #topic.subject#.
+b[guard] : I'll polish my buckle. They'd have laughed at me for that.
+b : They'd like that. | I didn't know. | That's right and proper.
+a : They would. | Good years. | It is.
+
+# ---------------------------------------------------------------- Births
+
+scene et_birth_news
+when topic=life topic.kind=birth
+a : #topic.subject# has a new pup! Born at dawn. | A litter for #topic.subject#. Three of them! | #topic.subject#'s house is loud tonight. New pups.
+b[old] : New pups. The best news there is. The only news, some days.
+b[healer] : I was there. Strong lungs on all of them.
+b : At dawn! Healthy? | Three! Poor #topic.subject#. | Loud and happy, I hope.
+a : Healthy and hungry. | Poor and proud. | Very loud.
+b?[friends] : We should take them something. Bread, a blanket.
+
+scene et_birth_names
+when topic=life topic.kind=birth
+a : What's #topic.subject# calling the pup? | Has #topic.subject# named the pup yet? | #topic.subject# can't decide on a name.
+b : After the grandmother, I heard. | Not yet. Arguing about it. | Give them time.
+a : Good old name. | They'll argue all #here.season#. | They'll need it.
+
+scene et_birth_child
+when topic=life topic.kind=birth a.stage=young|adolescent
+a : #topic.subject# has a baby! Can I hold it? | Babies are so small. Was I that small? | When the pup's big, I'll teach it to climb.
+b : Not yet. Too little. | Smaller. And louder. | Wait till it can walk.
+a : Please? | I don't believe you. | I'll wait.
+
+scene et_birth_old
+when topic=life topic.kind=birth a.stage=old
+a : Another pup in town. #topic.subject#'s. Makes an old wolf glad. | I held #topic.subject#'s pup. Light as a loaf. | #topic.subject#'s pup sneezed at me. Took a shine to me.
+b : It makes everyone glad. | Did you cry? | That's a good sign.
+a : Not everyone. Not the neighbours. | Only a little. | It is.
+
+scene et_birth_tired
+when topic=life topic.kind=birth pair.band=friends|family
+a : #topic.subject# looks dead on their feet. New pup. | Don't visit #topic.subject#; they've had no sleep since the birth. | #topic.subject#'s pup cries all night.
+b : That's pups. | I'll send food instead. | They'll grow out of it. Eventually.
+a : That's pups. | Good idea. | In about ten years.
+
+# ---------------------------------------------------------------- Apprenticeships
+
+scene et_appr_news
+when topic=life topic.kind=apprentice
+a : #topic.subject#'s been taken on as an apprentice. | #topic.subject# starts an apprenticeship this week. | #topic.subject#'s indentured. Seven years.
+b[crafter] : Seven years of sweeping before they let you touch the tools. I remember.
+b[old] : Good. Idle paws are the Dark One's tools.
+b : A trade! Good for them. | Who'd take #topic.subject# on? | Seven years is a long time.
+a : Good for them. | Someone patient. | It goes quicker than you think.
+a?[friends] : With #topic.where#, I heard. Strict, but fair.
+
+scene et_appr_pride
+when topic=life topic.kind=apprentice pair.band=family
+a : #topic.subject#'s apprenticed now. I'm so proud I could burst. | Our #topic.subject#, an apprentice. Who'd have thought. | We celebrated #topic.subject#'s indenture last night.
+b : You've every right. | Not me, that's who. | I heard. All night.
+a : I could. | Nor me. | Every right to.
+
+scene et_appr_hard
+when topic=life topic.kind=apprentice a.job=apprentice
+a : Poor #topic.subject#. Starting as an apprentice. They don't know what's coming. | #topic.subject# asked me what the first year's like. | Saw #topic.subject# on their first day. White as milk.
+b[apprentice] : I'd tell them to run. Then I'd tell them to stay.
+b : What is coming? | What did you say? | We were all white once.
+a : Sweeping. Then more sweeping. | I lied. Said it was fine. | And green, and terrified.
+
+scene et_appr_master
+when topic=life topic.kind=apprentice b.job=smith|crafter|baker|brewer|healer|cook
+a : Heard #topic.subject#'s apprenticed. Would you ever take one on? | #topic.subject# found a master. You ought to take one too. | An apprentice for the #b.trade#, maybe?
+b : Never. They break things. | One day. When I've the patience. | Maybe. Help would be welcome.
+a : We all did. | You'll never have it. | Think on it.
+
+scene et_appr_child
+when topic=life topic.kind=apprentice a.stage=young|adolescent
+a : #topic.subject#'s apprenticed! When can I be one? | I want to be an apprentice like #topic.subject#. | Is being an apprentice fun?
+b : When you're older. | To what trade? | Not at first.
+a : Now? | Any trade! | Oh.
+
+# ---------------------------------------------------------------- Successions
+
+scene et_succ_news
+when topic=life topic.kind=succession
+a : #topic.subject# runs the place now. | #topic.subject#'s taken over. Did you hear? | It's #topic.subject#'s now, the whole business.
+b[merchant] : New hand, new prices. Watch the prices.
+b[old] : The young ones always think they'll change everything. Then they don't.
+b : Already? | I heard. Big shoes. | Lucky them.
+a : Already. | Very big shoes. | Lucky, or cursed.
+a?[friends] : After #topic.where#. They earned their rest.
+
+scene et_succ_change
+when topic=life topic.kind=succession
+a : #topic.subject#'s changing everything since taking over. | New sign over the door, now #topic.subject#'s in charge. | #topic.subject# sacked the old hands the first week.
+b : New brooms sweep clean. | I liked the old sign. | That's cold.
+a : Too clean. | So did I. | Ice cold.
+
+scene et_succ_worry
+when topic=life topic.kind=succession pair.band=acquaintances|friends
+a : Do you think #topic.subject# can manage it? | #topic.subject#'s in charge now and looks terrified. | I hope #topic.subject#'s up to it.
+b : Everyone's terrified at first. | They'll learn. | We'll see.
+a : True. | Or fail. | We will.
+
+scene et_succ_respect
+when topic=life topic.kind=succession b.stage=old
+a : #topic.subject# has taken over the old place. | Young #topic.subject#'s running it all now. | The torch has passed to #topic.subject#.
+b : I remember #topic.subject# in nappies. | Young! Young enough. | It'll pass to someone else soon enough.
+a : Don't tell them that. | Young enough. | It always does.

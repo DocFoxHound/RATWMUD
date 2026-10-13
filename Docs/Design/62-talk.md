@@ -1,8 +1,9 @@
 # 62. Talk: one dialogue system, chosen by what's true, spoken in each person's own words
 
 Draft, 2026-10-13. It replaces doc 30 phase 6's scene engine (`Core/RatwScenes.*`) and doc 28's exchange library
-outright, and later the router's written answers. All 2,302 scenes are converted to the new format. Nothing here is
-built yet.
+outright, and later the router's written answers. All 2,302 scenes are converted to the new format. **Phase 1 is built
+(2026-10-13):** see "Phase 1 as built" below for what it is and where it differs from this draft. The rest is the
+plan.
 
 ## Decisions (the user, 2026-10-13)
 
@@ -10,6 +11,15 @@ built yet.
    go once the conversion is shown to say the same things (phase 1).
 2. **The most specific rule usually wins, with some chance:** see "Choosing, with some chance" in §2.
 3. **Character tables live in the world database**, edited in Atlas (DEV) and the Dungeon Master (live): §5.
+4. **Traits from the personality's adjectives, and the model for the rest** (2026-10-13): see "Character, as settled".
+5. **Quirks become shared lines:** a `quirk` fact and a few lines for each of the realm's quirks.
+6. **A character table for every resident**, drafted by the small model and reviewed.
+7. **The dialects move to the database** too (open question 2), so the DM can tune a town's speech live.
+8. **Residents know their people** (2026-10-13): family recorded and fed to the society, neighbours, those they deal
+   with, and important people not in the game yet. See "Relations, as settled".
+9. **Residents know players too** (2026-10-13): introductions, names, and their disposition toward each player, as
+   facts any line may test; disposition left open-ended for a later analysis of conversations (perhaps a model), with
+   the framework for it now. See "Players, as settled".
 
 ## The ask
 
@@ -140,15 +150,16 @@ There are two ways to write a conversation, and both end up as rules:
   doc 30's scenes were (turns of `a` and `b`, tagged variants, `?` optional turns), but in the new names: criteria are
   facts (`b[wealth=poor]`, and the old bare words `b[old]`, `a[friends]` still work), and words are grammar
   (`#b.name#`, `#topic.price#`, `#greet#`). In a scene, `a.` and `b.` name the two speakers whoever is speaking, and
-  `self.`/`other.` work too. The loader turns each scene into rules: its first turn becomes a rule for the topic
-  concept (`talk.prices`) with the scene's `when` as criteria, and each later turn becomes a concept of its own
-  (`scene:rm_market_herbs_dear#2`), with its tagged variants as rules. So scenes and chains compete for the same
-  moment. The parallel `|` alternatives become a `conv.alt` fact.
-- **The conversion (decision 1):** `tools/scenes_to_talk.py` rewrites every `.scene` file and the 23-entry exchange
+  `self.`/`other.` work too. A scene competes with rules for its concept (`talk.prices`) as one candidate, scored by
+  its `when`, and is checked whole before it's chosen (every turn that must be spoken can be). Inside it, a turn
+  speaks its first line that holds, in the order written, and parallel `|` alternatives answer each other, exactly
+  as doc 30's did. (As built: the draft had each later turn become a concept of its own; keeping a scene whole was
+  simpler and is what made the conversion provably word for word.)
+- **The conversion (decision 1):** `tools/scenes_to_talk.py` rewrote every `.scene` file and the 23-entry exchange
   library once into `Data/Talk/` (`{a}` → `#a.name#`, `{price}` → `#topic.price#`, `when region=` →
-  `here.region=`, tags into criteria, `groups.scene` into `Data/Talk/groups.talk`). Before the old engine goes,
-  a test renders every old scene through both engines for a spread of situations (each region, place, time, band,
-  speaker kind) and requires **the same set of possible lines**. Anything that differs is listed and fixed.
+  `here.region=`, tags into criteria, `groups.scene` into `Data/Talk/groups.talk`). Before the old engine went,
+  a test rendered every old scene through both engines for a spread of situations with the same seeds, and required
+  **the same lines, word for word**. Done 2026-10-13: see "Phase 1 as built".
 - **Marks** (branches inside a scene): a variant can set a mark when it's spoken (`#worried`), and later lines can
   require it (`a@worried :`). That turns a scene into a small tree written in one place:
 
@@ -217,8 +228,8 @@ Grammar files (`Data/Talk/grammar/*.grammar`):
   Frosthollow miner *their own* oath from the region's pool, and they always use it. `address!` per pair gives each
   person a fixed name they call each friend ("duck", "pet"). That makes 1,075 residents distinct from each other
   before anyone writes a line for one of them.
-- **Facts as symbols:** `#other.name#`, `#topic.price#`, `#here.town#`, `#world.festival#`. Doc 30's `{a}`, `{b}`,
-  `{price}`... are read as these, so old scenes keep working.
+- **Facts as symbols:** `#other.name#`, `#topic.price#`, `#here.town#`, `#here.festival#`. (Doc 30's `{a}`, `{b}`,
+  `{price}`... were converted to these once; the engine doesn't read braces.)
 - **Modifiers (Tracery's):** `.capitalize`, `.a` (a/an), `.s` (plural), and pronouns of the person spoken of
   (`#other.they#`, `.them`, `.their`) from their sex. `^m` / `^f` mark an alternative for one sex only. Doc 30's
   sentence-opening capitals and doubled "the" are handled here too.
@@ -318,28 +329,407 @@ there's a place for them and that they win when they should.
 
 ## 7. Speed
 
-Rules are bucketed by concept. Fact keys are interned to integers when the library loads, and each rule's criteria
-are sorted with the most selective first, so a query reads only the rules for its concept and stops at the first
-failure. Tens to hundreds of rules per concept at a few criteria each is microseconds. Facts are worked out only for
-the two speakers. Checked against the usual gate (`world_check --players 20`).
+Rules are bucketed by concept, so a query reads only the rules for its concept and stops at a rule's first failing
+criterion. Facts are worked out only for the two speakers. **Measured (phase 1):** a pick for the busiest concept
+(`talk.smalltalk`, 511 scenes, each that fits rendered in full) takes about 0.18 ms; talk happens only where players
+are, an exchange every 5 s at most and a bark look every 6 s, so it's far inside a 50 ms tick. Interning fact keys
+wasn't needed. (`world_check` runs the World alone, without the game's talk, so it isn't the gate for this.)
+
+## Phase 1 as built (2026-10-13)
+
+**The engine:** `Core/RatwTalk.{h,cpp}` (`ratw::talk`). **The library:** `Data/Talk/`:
+
+| File | What |
+|---|---|
+| `facts.json` | Every fact, and the values it may take (a list), or `"text"` (words to say; testable with any value) or `"number"` (comparable). A misspelt fact or value refuses to load. |
+| `settings.json` | The tier odds (0.7 / 0.2 / 0.1), the strict priority (10), what `self.id=` counts (5), the concepts there are, which may repeat (`talk.weather`, `bark`), and which have one speaker (`bark`). |
+| `grammar/plain.grammar` | The plain layer: seven symbols to start (greet, farewell, agree, very, robbery, oath!, address), placeholders until phases 3 and 7. |
+| `groups.talk` | The region groups (`north`, `fens`, `countryside`...). |
+| `scenes/**/*.talk` | The 2,302 converted scenes, in the same files and order as before, IDs kept (what players have heard is remembered by ID). |
+| `library.talk` | Doc 28's 23 exchanges as scenes `lib_<kind>_<n>`, priority -1. |
+
+**The format, as built** (the header of `Core/RatwTalk.h` has it in full):
+
+- `rule <id>` with `when concept=...` and `say a | b`; `scene <id>` with `when topic=X` (the concept `talk.X`) or
+  `when concept=bark`, then `a : ...` / `b[tags] : ...` lines. Both take `weight` (0 to 20) and `priority` (-10 to
+  100).
+- Criteria: `key=a|b`, `key!=a|b`, and for numbers `<`, `<=`, `>`, `>=`. A key without its namespace is the speaker's
+  if a person has it (`stage=young`: in a scene's `when`, the opener; in a line's tags, that line's speaker), else
+  the one namespace that has it (`place` is `here.place`). Bare words as doc 30 had them (`b[old]`, `a[friends]`).
+- **Priority below 0 is filler:** it speaks only when nothing of priority 0 or more holds. (That is how the library's
+  exchanges stay a fallback, as they were.)
+- Grammar: `^m`/`^f` are for one sex **of the one spoken to** (of the speaker, speaking to no one). Habits (`!`) are
+  per person; per pair (a name for each friend) waits for phase 3. A binding (`[x:#y#]`) must name a symbol plain has.
+  The 160-character limit counts the longest expansion of the words and symbols, not the facts filled in.
+- Facts named in phase 1 (doc 30's tags and blanks, renamed): `here.region, place, time, season, day (work, market,
+  rest, festival), weather, town, place_name, weekday, festival`; `pair.band`; `topic.item, dir, kind, when, known,
+  has_nickname` and the words `topic.subject, claim, news, what` (was `{item}`), `price, where` (was `{other}`),
+  `victim, deed, nickname, who, remark` (the library's `{day}`); a person's `id, name, sex, stage, age, job, role,
+  trade` (their job, unless none: was `{a_job}`). The world still tells the moment in doc 30's words
+  (`World::sceneMoment`, the topics' tags and blanks); `Game::talkQuery` reads them as facts. Phase 2 renames them at
+  the source.
+
+**The game:** the ambient director and barks ask `Game::talkPick` (one place for "not heard yet", what was said here
+lately, and remembering what players heard). When the model is asked and fails, the talk library speaks (before, only
+the 23 library exchanges did). The server takes `--talk-data DIR` (default: `Talk` beside `--voice-data`;
+`tools/server.sh` always passes it, so `RATW_VOICE=off` no longer silences residents' talk). The ledger's routes are
+unchanged (`scene`, `library`, `written`, `model`).
+
+**The conversion gate:** 3,683,200 renderings of the 2,302 old scenes (400 moments each across every region, place,
+hour, band, season, day, weather and kind of speaker, four seeds; every scene spoken at least once), and the 23
+library exchanges for every band. All the same, word for word, except five, as intended:
+
+- `ev_muse_purpose` (`when stage=adult|old`) and `tr_any_old_hurts` (`b[stage=young]`): a person's fact without
+  `a.`/`b.` was read as the moment's and was never true, so the scene, and the line, never played. Now they do.
+- `lib_news_2`, `_3`, `_4`: the library didn't capitalise news that opens a sentence ("my sister wed."); the scenes
+  always did, and now these do too.
+
+The gate test and the converter went with the old engine (they need it); both are in this phase's history.
+
+**Tools:** `talk_check` (a build target): a moment from facts given as `key=value`, or two residents of DEV, PROD or an
+export read as a scratch server reads them (`--world dev A_ID B_ID talk.prices topic.item=herbs`), with every rule that
+held, its score and tier, why the choice, the grammar's steps and the lines; `--many N` counts N picks (the odds, by
+ear); `--validate FILE...` checks `.talk` and `.grammar` files as Atlas and the DM will. `tools/talk_report.py`
+replaces `scene_report.py`. `tools/ambient_library.py` (paid) now adds its exchanges to `library.talk`;
+`tools/ai_review.py` reads them there; `tools/talk_files.py` reads the library for the tools.
+
+**Found, for phase 2: residents' job categories are often wrong.** `jobCategory` (moved unchanged from the scenes)
+looks for word fragments in the job title **and the resident's description**, so "Lark*field*" makes a shopkeeper a
+farmer, "m*ale*" a brewer, "st*ore*" a miner. Across DEV's 1,083 residents it finds 100 miners and 52 brewers where
+their work labels suggest about 19 and 7. The scenes have always been chosen with these. Fixing it (the job post and
+work label only, matched as words) changes which scenes fit, so it is phase 2's first step rather than slipped into
+the conversion.
+
+**Not in phase 1, as planned:** `then` chains, `remember` and memory, once and cooldowns, marks, `react.*` (phase 4);
+`from`, accents and the dialects (phase 3); `player.*` (phase 5); `live.npc_voice` (phase 6). `talk_check`'s world
+mode takes the topic's facts from the command line, as the world's topic picker is private to `World` (phase 2).
+
+## Phase 2 as built (2026-10-13)
+
+**Job categories, fixed.** `talk::jobCategory` reads only the post's title and the work label (a title *is* its
+founder's work label), never the description, and as whole words: the work first ("digs ore", "logging"), and only if
+that says nothing ("works at", "helping at") the place's name, from its last word ("The Wharf Tannery" is a tannery, not
+a wharf). Keeping house is no trade. On DEV: 25 miners (were 100), 6 brewers (52), 119 with no trade (204), mostly
+"keeps the house", "sits by the well" and the Heights' gentry. The same categories serve the newcomers (doc 50) and the
+fame criers (doc 56), which used the old reading too.
+
+**The facts at their source.** The world tells the moment in talk's names now: `World::talkMoment` (was
+`sceneMoment`) writes `here.*`, and a topic's `AmbientTopic::talk` (was `tags` and `blanks`) holds `pair.band` and
+`topic.*`; the translation table is gone. The world's topic picker (`World::ambientTopic`) is public, so
+`talk_check --world dev A B talk` asks for the pair's topic as the ambient director does.
+
+**The facts added** (`Core/RatwGameTalk.cpp` for people and pairs; `World::talkTown` and `World::pairBand` in
+`RatwAmbient.cpp` for the town and the band; all in `facts.json`):
+
+| Fact | Values | From |
+|---|---|---|
+| `wealth`, `wealth_days` | destitute (<3 days) / poor (<7, the society's line) / comfortable / rich (≥42: placeholder, about the top 6% on DEV) | the household's money and food in days of plain food for all of them (`troubles::foodDays`, as the troubles read it); the household is everyone at the same home |
+| `on_dole` | yes/no | the dole's own test (household cash under 7 days' food); who was actually paid isn't kept |
+| `owes` | yes/no | a debt in a bond (`owed` < 0), or a rescue loan on their till |
+| `business` | thriving / steady / failing / none | their own till against its float: a rescue loan, three days propped up of the last 28, or under half the float is failing; twice the float thriving |
+| `hungry`, `tired` | yes/no | hunger ≥55 (when they go for food), fatigue ≥60 |
+| `homeless` | yes/no | no home, or a beggar (no one is otherwise without a home) |
+| `injured` | none / light / bad | `hurt` (bad ≥50, or down); NPCs have no lasting injuries, and hurt heals within hours |
+| `mourning` | no / kin / friend | the society's mourning (5 days for kin, 2 for friends: not 14) |
+| `fighting`, `fought`, `robbed` | yes/no | in a battle now; an assault they were in (2 days); a theft from them (3 days) |
+| `working`, `shift` | yes/no; before / during / after / day_off / none | their task now; their post's hours (day off: Restday and festivals, but for guards) |
+| `on_watch`, `travelling`, `errand` | yes/no; yes/no; none / letter / caravan / goods / order / wedding / funeral | `guardOnDuty`; on the road for their work, moving house, a companion; what their activity says |
+| `married`, `widowed`, `parent`, `apprentice`, `master`, `house` | yes/no...; the House's name | spouses, parents, positions; a House's head, its head's kin, or working at its business |
+| `tone` | plain / warm / gruff / formal / sly / shy | the router's tones, from their personality |
+| `pair.kin`, `pair.elder` | spouses / parent / siblings / family / household / no; a or b (the parent) | spouses and parents |
+| `pair.boss`, `pair.richer` | a / b / no; a / b / same | who pays the other's wages (a till's keeper, a household, a House); wealth_days half again more |
+| `here.crowd`, `here.player_near` | quiet / busy (3+) / crowd (6+); yes/no | residents in the place; a traveller within 12 tiles |
+| `world.herbs_price`, `world.meal_price`, `world.bandits`, `world.crime`, `world.festival`, `world.death`, `world.wedding`, `world.birth` | up/down; near/no; recent/no; today/soon/no; recent/no | the same town news the topics are made of |
+
+**Not tracked by the world, so not facts yet:** `drunk` (drinks leave no state), `faith`, `newcomer` (no arrival
+day is kept), `class` (Ridgemere's quarters exist only in worldgen's `buildings.json`), `ill` and `mood`. `mourning`
+runs the society's 5 and 2 days, not 14. Each needs a record of its own first; phase 4's memory is the natural home
+for the arrival day and the death day.
+
+**Checked:** a game test that every fact the game gives is one `facts.json` knows, with a value it allows (and badly
+hurt is `injured=bad`); `talk_check --world dev --run 14 --residents` tallies DEV's 1,083 residents after 14 game
+hours (777 at work, 15 guards on watch, tones in all six, 70 rich, 61 businesses failing). Married, parents and
+apprentices are all "no" on DEV today: its careers have recorded no marriages or apprenticeships yet, not a fault of
+the reading. Building one speaker's facts costs about 0.2 ms.
+
+## Phase 3 as built (2026-10-13)
+
+**Where they're from, and how they sound** (`World::talkOrigin`, in `RatwAmbient.cpp`). Worked out from who each
+resident is, not stored, so a resident always has the same (and keeps it when the world is regenerated, as the plan
+asked): children grew up where they live; of the grown, about one in seven came from another of the seven regions
+(one in four in Ridgemere). Accent: the old who never moved speak broad, movers' fade to light; other locals 20% broad,
+65% light, 15% none; movers 10% broad, 50% light, 40% none. All placeholders. On DEV: from Ridgemere 547, Larkfield
+107, Southmeadow 99, Frosthollow 91, Mirebridge 82, Oakhaven 80, Coldwater 77; accents light 666, broad 213, none
+204. Phase 6's `live.npc_voice` will hold these per resident (so Atlas and the DM can set them); until then they're
+derived. Players have no `from` yet (open question 6).
+
+**The engine:** a speaker's dialect is the grammar layer named for their `from`, used as their `accent` says: none
+skips it, light takes its word half the time (per symbol), broad always, plus its `name.broad` entries. A speaker with
+a layer but no accent fact (tests, a character table) uses it fully. Habits: `name!` once per person, and now
+`name!!` once per person **for each one they speak to** (the fond name for each friend). After filling in, a full stop
+straight after `?` or `!` is dropped (a tag that asks, ", no?", before the line's stop).
+
+**The words** (`Data/Talk/grammar/`): plain's 27 symbols (greet, farewell, thanks, agree, refuse, surprise,
+annoyed, very, little, good, bad, worthless, luck, child, address, pet!!, money, cold, hot, rain, tired, drunk,
+nonsense, tag, oath!, robbery, home), and the six dialects, 17 to 20 of them each from the table in section 3 (Ridgemere
+is plain). A rule learned in writing them: **each symbol is one kind of word** (cold, tired: words like "cold"; rain,
+luck: things; greet, oath: whole sayings), or "it's #very# #cold#" comes out "it's deep nothing new". Plain's header
+says which is which. All drafts, for phase 7 with you.
+
+**Heard now:** the converted scenes still say what they always did (no symbols in them), so to hear the dialects:
+
+- `rules/barks.talk`: 11 bark rules on phase 2's facts, in symbols: the cold, the rain, the heat, tired, the poor, a
+  failing business, a stall's cry, a greeting for a passing traveller, and hurt, robbed and mourning (priority 2 to 3,
+  so they come first when they hold). A broad Frosthollow miner in the snow: "Lamp and pick, it's deep cold."
+- `talk.accent`, a new topic: two strangers or acquaintances, one not sounding like the other (`topic.accent_of`,
+  `topic.accent_town`), and 4 scenes for it where b answers in their own dialect ("Sinking gods. I said Dry feet.").
+  It competes with the other topics at about the weight of everyday talk.
+- `pair.same_from` (yes/no).
+
+**Checked:** tests for none/light/broad (light about half), `.broad` only for the broad, `!!` the same for the same
+friend and different for others, the tidied tag; every grammar and the new files load; all 67 test suites pass.
+
+## Phase 4 as built (2026-10-13)
+
+**The format** (rules; `remember` and the limits also on scenes):
+
+    rule prices_complain_poor
+    when concept=talk.prices self.wealth=poor|destitute topic.dir=up
+    say #oath#. I'll not eat this week at #topic.price#.
+    then other: prices.answer_complaint      # or then self: (the same speaker goes on)
+    remember self: complained_prices 1d      # self, other, pair or town; key[=value]; 30m, 6h, 1d or forever
+    once per day                             # or once, once per other, cooldown 2h
+
+- **Chains** (`Library::converse`): after the first pick, each rule's `then` asks the other speaker (or the same) for
+  their best rule for that concept, the best tier (so answers stay coherent), up to 8 beats. Each beat sees what the
+  earlier ones remembered. Only rules are later beats: a scene is a whole talk. The ambient director, barks and
+  reactions all speak through `converse`.
+- **Memory:** what's remembered is read back as facts any rule may test: `self.mem.complained_prices` (or
+  `!self.mem...`, or `self.mem.x=value`), `other.mem.x`, `pair.mem.talked_money`, `world.mem.x` (the town's). Kept by the
+  game (`Game::talkMemory_`) per resident, per pair and per town, at most 32 each (the soonest to go dropped first),
+  expired when read, and saved in the checkpoint beside what players have heard (`talkMemory`). A pair's memory holds
+  while one of them is away (a player logged out).
+- **Once and cooldowns** are the same store: `once` (ever), `once per day`, `cooldown` (the speaker's), `once per
+  other` (the pair's).
+- **Marks:** a scene line `b[business=failing] #worried : ...` marks the talk; a later `a@worried[friends] : ...`
+  needs the mark. The draft's `conv.*` facts weren't needed for this.
+
+**Reactions** (`Game::reactions`, every 2 s where players are; `react.*` concepts; `Game::react` is public, for the
+DM's tools and tests):
+
+| Concept | When | Who speaks |
+|---|---|---|
+| `react.fight` | a fight in the place (every 45 s while it lasts) | the nearest resident not in it |
+| `react.struck` | a resident in a fight is hurt more (at most every 20 s) | they do |
+| `react.theft` | a theft just now | the nearest resident, not the thief |
+| `react.rain` | rain or a storm begins outdoors | a resident near a player |
+| `react.customer` | a player walks into the room where someone keeps shop (a merchant's work place, or a post's) | the keeper, to the player |
+| `react.friend` | two friends within 3 tiles (once in 30 minutes a pair) | a greeting, then the other's answer (a chain) |
+
+The bell isn't wired: the world has no bell to hear yet.
+
+**The writing** (drafts for phase 7): `rules/chains.talk`, the doc's price complaint (the poor complain; merchants,
+the poor, the rich and anyone answer each as they are; a second complaint the next day reads `self.mem`) and a
+friend's greeting with answers for the tired, the mourning and those at work; `rules/reactions.talk`, two to four
+rules a reaction, with guards, children and outdoor workers answering their own way and a returning customer greeted
+as one (`pair.mem.served`).
+
+**Checked:** tests for chains (who answers, as whom, then self, eight beats at most), memory (what's remembered and
+read back, by whom), once, cooldown, once per other, marks, and the refusals; a game test that a keeper greets a
+customer, the two remember it, and it survives a restart. On DEV: a poor wolf's complaint answered by a merchant as a
+merchant, both memories recorded (the rule comes up about 7 times in 300 price talks there: one of 15 in the second
+tier). All 67 test suites pass.
+
+## Phase 5 as built (2026-10-13)
+
+**The router's lines are rules.** `Data/Voice/router.json` keeps its patterns (what was asked) and tones (from a
+personality); its 160 lines and the openers are now `Data/Talk/rules/player.talk`, 58 rules, concept `player.<intent>`
+(greet, thanks, bye, trade, hours, job, where, wanted, day, repeat, trouble). Each list became a rule: how well they
+know the player as `topic.meeting` (stranger, known, returning, famous, famous_look; one rule a meeting, priority 1) and
+the tone as `tone` (from phase 2). These concepts always take their best tier (settings.json `best_only`), which keeps
+the router's order exactly: a meeting's own lines before any, a tone's own before plain. The game's facts go in as
+`topic.answer` (the price, the hours, the way...), `topic.greeting` (their own), `topic.player` (the name they were
+given: never `other.name`), `topic.since`, `topic.deed`, `topic.nickname`. `voice::Rules::line` is gone.
+
+- **Openers** are a plain grammar symbol by tone (`opener[self.tone=warm] = Of course! | ...`); `~` in a grammar is
+  an alternative that says nothing (the router's empty openers). The game lowers the answer's first letter (not "I"),
+  so it runs on after "Well," and takes a capital where it opens a sentence: exactly the router's rule. Spaces a
+  symbol that said nothing leaves are tidied.
+- **In dialect:** each greeting and farewell list gained a line in the grammar (`#greet#, traveller.`, `#farewell#!
+  Come back soon.`, `#greet#, #topic.player#.`): a broad Frosthollow resident greets a stranger "Warm hearth. A new
+  face." The rest of the router's words are as they were; phase 7 writes more of them in symbols.
+- **Never the same line twice running** to the same player (the router's rule), now by asking again with another seed.
+
+**The voice card** (`talk::Library::voiceCard`; `talk_check` shows it): where they grew up and how strongly it shows,
+up to ten of their dialect's words (the most telling first, none that plain says too, `.broad` ones for the broad), and
+their habits as chosen ("Their own oath, always: 'Lamp and pick'"), at most 480 characters. It's added to the
+personality the Mind is given, for talk with a player and for overheard exchanges (each speaker's), so the model sounds
+like the library: no change to the Mind's protocol.
+
+**Checked:** the router's line tests, moved to `talk_tests` (a known wolf greeted by name, a resident's own greeting
+for a stranger, the answer opened in the tone, no answer no line, "I" kept, a formal farewell to a known wolf through
+the fallbacks), Frosthollow's farewell in dialect, the voice card; all 67 suites and the Mind's own tests pass.
+
+## Character, as settled (2026-10-13)
+
+**What the world has to build on.** On DEV every one of the 1,083 residents has a personality, a backstory (about 70
+characters) and a greeting. The personalities come from worldgen's small pools: two adjectives of **26** and one quirk
+of **41** ("Gentle and blunt; he hums sea songs under the breath."), 15 outside that pattern. So each quirk is shared by
+about 26 residents, and traits can be read exactly from the adjectives.
+
+**Tier 2, traits** (decision 4). Seven axes, each with a middle value for those the adjectives say nothing about:
+
+| Axis | Values |
+|---|---|
+| `temper` | calm / even / nervy / short |
+| `talk` | quiet / plain / chatty |
+| `warmth` | cold / reserved / warm |
+| `humour` | none / dry / merry |
+| `honesty` | frank / plain / guarded / sly |
+| `piety` | devout / ordinary |
+| `drive` | content / steady / restless / ambitious |
+
+The adjectives, mapped once (**a draft for you to correct**):
+
+| Adjective | Traits | | Adjective | Traits |
+|---|---|---|---|---|
+| playful | humour merry, talk chatty | | blunt | honesty frank |
+| suspicious | honesty guarded, warmth cold | | guarded | honesty guarded, talk quiet |
+| tired | talk quiet | | loud | talk chatty |
+| devout | piety devout | | proud | temper short, warmth reserved |
+| dreamy | talk quiet, drive content | | patient | temper calm |
+| wry | humour dry | | easily offended | temper short |
+| loyal | warmth warm | | curious | talk chatty |
+| anxious | temper nervy | | shrewd | honesty sly |
+| unhurried | temper calm, drive content | | warm | warmth warm |
+| ambitious | drive ambitious | | generous | warmth warm |
+| restless | drive restless | | quietly funny | humour dry, talk quiet |
+| meticulous | temper even, talk plain | | honest to a fault | honesty frank |
+| gentle | temper calm, warmth warm | | stubborn | temper short |
+
+Where two adjectives set the same axis, the first wins. The 15 outside the pattern, and personalities the DM writes by
+hand later, are read by the small model (paid, a handful). Traits are stored in each resident's row, so Atlas and the
+DM can change them.
+
+**Between tiers, quirks** (decision 5). A `quirk` fact (worldgen's 41, as short names: `coughs_in_damp`,
+`back_to_wall`, `rival_houses`...), read from the personality, and 2 to 4 rules written for each: a bark, an aside in
+talk, a reaction where it fits ("*coughs* It's nothing. The damp."). About 150 lines, drafted then reviewed with you,
+in `Data/Talk/rules/quirks.talk`. The 26 who share a quirk share its lines, varied by their dialect, tone and traits.
+
+**Tier 3, everyone's own table** (decision 6). Each resident's row holds a small grammar layer and a few rules, drafted
+by the small model from their personality, backstory, job, household and dialect, then checked by the loader:
+
+- **their words:** a saying or two of their own (`saying!`), what they call their spouse, their children and their
+  friends (overriding `pet!!`), their own oath if it isn't the dialect's;
+- **their lines:** at most four rules (`self.id=` added on load): a remark at their work, a greeting for a player they
+  know, and one or two about what their backstory says matters to them;
+- nothing that repeats their quirk (the quirk lines do that), and nothing longer than 160 characters a line.
+
+The draft is paid: ten residents first (one of each kind: a shopkeeper, a guard, a child, a House head...) for you to
+read, then all 1,083 once you say so. Review is by sample and by the loader's checks; any table can be changed in
+Atlas or by the DM afterwards.
+
+**The dialects in the database** (decision 7). A `live.dialects` table (one row a grammar: name, text), beside
+`live.npc_voice`, under the same live-data rules: Atlas edits DEV's, a push to live adds only dialects PROD doesn't
+have, the DM edits PROD's, copying from live brings them back. The files in `Data/Talk/grammar/` become the seed (a
+tool loads them into DEV once). **Plain stays in a file:** every rule's symbols must exist in it, so it's the game's own,
+reviewed with the rules; Ridgemere, plain today, can have a layer of its own in the table.
+
+**Phase 6, then** (with "Relations, as settled" below): migration 0050 (`live.npc_voice`, `live.dialects`,
+`live.npc_relations`, `live.figures`); the server reads them at start and on `NOTIFY ratw_voice`; worldgen and a seeding
+tool fill `from`, `accent` (as phase 3 works them out), traits (the table above), `quirk`, families (and the society
+from them, measured with a 30 to 60 day run); neighbours and dealings worked out live; the quirk lines; the Atlas and DM
+editors with `talk_check --validate`; the players' facts and `Game::regard` with its ledger ("Players, as settled");
+then the paid draft of everyone's table, ten first.
+
+## Relations, as settled (2026-10-13)
+
+Residents should know their family (spouse, children, parents), their neighbours, and the people they would deal with:
+the shopkeepers they buy from, their priest, their leaders, and important people who aren't in the game yet.
+
+**Family is recorded** (the world doesn't record it today: worldgen makes each household from one house and one
+surname, but never says who is whose spouse or child, so the society's spouses and parents fill only as marriages and
+births happen in play, and "married" reads "no" for everyone on DEV).
+
+- A `live.npc_relations` table (`npc`, `other`, `kind`: spouse or parent), seeded once by rule from each household:
+  the eldest man and woman of age within fifteen years of each other are spouses; those at least sixteen years younger
+  than both are their children; one at least eighteen years older than either is that one's parent. Communal homes
+  (bunkhouses) are left out. Siblings follow from shared parents. Atlas and the DM correct it.
+- **It feeds the society:** its spouses and parents are filled from the table at load, so founding families count
+  everywhere: married, a widow's mourning, inheritance, and couples having children. That changes the simulation
+  (births, estates, households), so it's measured with a 30 to 60 day run before it's kept.
+
+**Worked out live from the world** (never stored, so it stays true as people move and shops change hands):
+
+- **neighbours:** everyone in the same building (the flats over a shop), then the households whose doors are nearest on
+  the same street, up to five households;
+- **those they deal with:** for each trade they buy from, the nearest keeper in their town (their baker, their smith);
+  their town's priest; their leaders (the town's head, their House's head, the captain of the watch); their employer
+  and those they work beside.
+
+**Figures, not in the game yet:** a `live.figures` table: name, title, where they're known (the realm, a region, a
+House's people), a line or two about them, and the NPC they become (empty until they arrive). Edited in Atlas and by the
+DM; when a figure arrives, residents speak of the real one. I'll draft the first list from the lore docs for you to
+correct.
+
+**In talk:** facts and words for all of it: `#self.spouse#`, `#self.child#`, `#self.neighbour#`, `#self.priest#`,
+`#self.leader#`, a figure by role where they're known (the realm's ruler, a House's head); pair facts that are now true
+(`pair.kin`, from the records) and new ones (`pair.neighbours`, `pair.customer`: one buys from the other, `pair.flock`:
+one is the other's priest). The Mind's card gains their circle: family, neighbours, the people they deal with, the
+figures they've heard of. Everyone's character table (decision 6) is drafted knowing them, so a resident's own lines
+can name their spouse, their baker, their lord.
+
+## Players, as settled (2026-10-13)
+
+**What the game already keeps** (none of it is the talk library's yet):
+
+- **Introductions and names** (doc 32): each resident's list of whom they know by name, which name, and how they
+  learned it (introduced, familiar, a tie, founding), with when; whether they'll give their own (`willName`); a name
+  owed after an introduction. Saved.
+- **Disposition** (the bonds): a resident's affinity, trust, respect (−100 to 100), familiarity and fear (0 to 100)
+  toward each player, and theirs back; money owed; the day they last spoke. Moved by what happens (trading, talk, help,
+  harm, promises kept and broken, crimes witnessed, fights, gifts, favours, deeds heard of...) and by the model's nudges
+  in a conversation (±3 a reply, at most 6 an hour a pair). Familiarity and liking fade when apart, never while a
+  player is away. Saved.
+- **Memories:** each pair's conversation, consolidated into summaries; the model's notes and promises. Saved.
+- **What's said of them:** deeds and nicknames (doc 56), rumours ("is violent", "breaks promises"), a warrant.
+
+**The framework:**
+
+1. **Facts** (phase 6), for any pair, a resident toward the other (player or resident): `pair.named` (knows their
+   name) and `pair.named_how`; `pair.known_by` (the other knows theirs); `pair.affinity`, `pair.trust`,
+   `pair.respect`, `pair.familiarity`, `pair.fear` (numbers, comparable); `pair.disposition`, one word from them
+   (hostile, wary, cool, neutral, warm, fond: the lines between are placeholders); `pair.days_since` (last spoke);
+   `pair.owed` (who owes whom); `pair.promise` (an open one, whose); `pair.rumour` (the worst said of the other they
+   believe); `pair.tie`; `pair.famous` (a deed of theirs they've heard). A greeting can then be warm to a friend, cold
+   to one who broke a promise, wary of one said to be violent, and by name only to one introduced.
+2. **One way disposition changes** (phase 6): every change goes through `Game::regard(holder, other, change, source,
+   reason)`: events, the model's nudges, talk rules (a rule may `regard other: affinity +1`, small and budgeted), and
+   later the analysis. Each source has its clamp and budget, and a short ledger keeps the last changes for each pair
+   with their reasons, for the DM to read ("−4 trust: broke a promise to deliver herbs, day 31").
+3. **A place for analysis, left open** (later, your call): when a conversation with a player ends (it's consolidated
+   today), an optional analyst reads it and proposes changes with reasons: a model, rules, or both. It goes through
+   `regard`, so its budget, clamps and ledger are the same as everything else's; until there is one, nothing changes.
 
 ## Phases
 
-1. **The engine and the conversion.** Facts and the schema, rules, tiered choice with chance, grammar with layers
+1. **The engine and the conversion.** *(Built 2026-10-13.)* Facts and the schema, rules, tiered choice with chance, grammar with layers
    and modifiers, the `.talk` and `.grammar` formats, strict load checks, and `talk_check`. `scenes_to_talk.py`
    converts every scene and the exchange library. The ambient director and barks switch to the engine. Tests: both
    engines give the same possible lines for every old scene; then `Core/RatwScenes.*`, `Data/Voice/scenes` and
    `Data/Voice/library.json` are removed, and doc 30's scene tests move to the new engine. Tiers choose as set,
    priority 10 is strict, a typo refuses to load.
-2. **The facts.** Everything in the appendix that the world already has, under its new names.
-3. **Dialect.** `from` and `accent` on residents (worldgen, with a default from the home town for today's world),
+2. **The facts.** *(Built 2026-10-13.)* Everything in the appendix that the world already has, under its new names.
+   First, the job categories (see "Phase 1 as built", found by `talk_check`), and the world's topic picker opened to
+   `talk_check`. See "Phase 2 as built".
+3. **Dialect.** *(Built 2026-10-13: see "Phase 3 as built".)* `from` and `accent` on residents (worldgen, with a default from the home town for today's world),
    the plain grammar, the six dialects, habits (`!`), and the accent topic.
-4. **Chains, memory and reactions.** `then`, `remember`, once and cooldowns, marks, and the `react.*` concepts wired
+4. **Chains, memory and reactions.** *(Built 2026-10-13: see "Phase 4 as built".)* `then`, `remember`, once and cooldowns, marks, and the `react.*` concepts wired
    to the events that cause them.
-5. **The router's lines** become `player.*` rules, so canned answers come in dialect and character. The live model
+5. *(Built 2026-10-13: see "Phase 5 as built".)* **The router's lines** become `player.*` rules, so canned answers come in dialect and character. The live model
    gets the voice card.
 6. **Character.** `live.npc_voice` and its migration, the Atlas and DM editors with validation, live reload,
-   traits from personality: the next conversation decides what goes in the tables.
+   traits from personality. What goes in the tables was settled 2026-10-13: see "Character, as settled".
 7. **Writing.** Grammar by hand (with you). Rules drafted in bulk for the main factors: wealth, working,
    injured, mourning, fought, saw a player, the day's kind, the time (paid; ask first).
 
@@ -349,13 +739,11 @@ the two speakers. Checked against the usual gate (`world_check --players 20`).
 database. See Decisions.)
 
 1. **The tier odds** (70/20/10) are a first guess, to tune by ear.
-2. **Dialect grammars in files or the database?** The design keeps the seven dialects in files (shared, reviewed),
-   and only each person's own layer in the database. If you want the DM to tune a whole town's speech live, they
-   could move to a `live.dialects` table too.
+2. **Dialect grammars in files or the database?** *(Settled 2026-10-13: the database. See "Character, as settled".)*
 3. **Where dialect comes from:** recommended birthplace (`from`), with the accent fading for people long settled
-   elsewhere.
+   elsewhere. *(Built so in phase 3; the shares are placeholders.)*
 4. **How thick should accents be?** Recommended: broad only for the old and the never-travelled. You'll want to hear
-   it and tune.
+   it and tune. *(Phase 3: broad for the old who never moved and a fifth of other locals; see "Phase 3 as built".)*
 5. **Ridgemere's quarters as their own layers** (Heights, Wharf, slums): now, or after the seven? Recommended: after.
 6. **Player characters' `from`:** if a player picks a home town at creation, NPCs can notice it. That's cheap after
    phase 3.

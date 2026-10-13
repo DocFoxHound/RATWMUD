@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Writes overheard exchanges for the ambient director's library (Docs/Design/28-ai-cost.md, step 4).
+"""Writes overheard exchanges for the talk library (Docs/Design/28-ai-cost.md, step 4; Docs/Design/62-talk.md).
 
 The small model (the config's light_model) writes exchanges with blanks, once; the game fills them in for free
 whenever two residents talk. Each is checked before it is kept: two to four lines, both speaking, the blanks only from
 the list ({teller} {listener} {subject} {claim} {news} {day}, and the ones its kind needs), no names or places of its
-own, nothing already in the library. New ones are added to Data/Voice/library.json (or --out) beside the hand-written
-ones; review them like any data before committing.
+own, nothing already in the library. New ones are added to Data/Talk/library.talk (or --out) as scenes of priority -1
+(spoken when no written scene fits), beside the hand-written ones; check them with `talk_check --validate` and review
+them like any data before committing.
 
   python3 tools/ambient_library.py --per 20                 every kind and band, 20 each (paid: one call a combination)
   python3 tools/ambient_library.py --kinds gossip --per 5   just these
@@ -21,9 +22,10 @@ from pathlib import Path
 
 import npc_bridge as bridge
 import npc_mind as mind
+import talk_files
 
 ROOT = Path(__file__).resolve().parent.parent
-LIBRARY = ROOT / "Data" / "Voice" / "library.json"
+LIBRARY = ROOT / "Data" / "Talk" / "library.talk"
 CONFIG = ROOT / "Saved" / "Config" / "RATWNPCAI.local.json"
 BLANKS = {"teller", "listener", "subject", "claim", "news", "day"}
 NEEDS = {"gossip": {"subject", "claim"}, "news": {"news"}, "quarrel": set(), "friends": set(), "day": {"day"}}
@@ -124,13 +126,27 @@ def main() -> int:
     else:
         config = bridge.load_config(args.config)
         provider, model = mind.OpenAIProvider(config), config.light
-    library = json.loads(args.out.read_text()) if args.out.is_file() else {"exchanges": []}
-    made = write(provider, model, kinds, args.per, library.get("exchanges", []))
-    library.setdefault("exchanges", []).extend(made)
-    args.out.write_text(json.dumps(library, indent=2, ensure_ascii=False) + "\n")
+    existing = talk_files.library_exchanges(args.out)
+    made = write(provider, model, kinds, args.per, existing)
+    append(args.out, existing, made)
     print(f"{len(made)} new exchanges kept (of up to {args.per * sum(len(BANDS[k]) for k in kinds) * len(TONES)} asked "
-          f"for); {len(library['exchanges'])} in {args.out}")
+          f"for); {len(existing) + len(made)} in {args.out}")
     return 0
+
+
+def append(path: Path, existing: list[dict], made: list[dict]) -> None:
+    """The new exchanges as library.talk scenes, numbered on from the last of their kind."""
+    numbers = {}
+    for e in existing:
+        m = re.match(r"^lib_(\w+?)_(\d+)$", e["id"])
+        if m:
+            numbers[m.group(1)] = max(numbers.get(m.group(1), 0), int(m.group(2)))
+    text = path.read_text() if path.is_file() else ""
+    for x in made:
+        numbers[x["kind"]] = numbers.get(x["kind"], 0) + 1
+        text += talk_files.library_scene(f'lib_{x["kind"]}_{numbers[x["kind"]]}', x["kind"], x["band"], x["lines"],
+                                         f'{x["tone"]}, by the {x["by"]}')
+    path.write_text(text)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,109 @@
+# Ridgemere's own talk (the only city): its Houses and their Council, its rain, its hill from the Sump to the Heights,
+# its wharf and salt pans, and the Watch on its walls.
+
+# ---------------------------------------------------------------- Ridgemere: the Houses and the hill
+
+scene rm_rain
+when topic=smalltalk|weather here.region=rain_coast
+a : Rain again. | I can't remember the last dry day. | Damp in my bones, damp in my bread.
+b[old] : Dry days are for the south. We've the rain, and we're the better for it.
+b[child] : I've never seen the sun properly. Is it nice?
+b : It's Ridgemere. It always rains. | Nor can anyone. | Get used to it.
+a : I know, I know. | Nobody can. | I never will.
+
+scene rm_houses
+when topic=lore here.region=ridgemere
+a : House Grayrock's carts are on every road this week. | They say Greatly and Mossgrave aren't speaking again. | House Fell's bringing the last of the cedar down out of the Rainwood.
+b[noble] : The Houses' business is not for the street.
+b[laborer] : Whatever the Houses do, we pay for it.
+b[old] : The Houses have feuded since before my grandmother's grandmother.
+b : When were they ever? | They own everything. | That's the Houses for you.
+a : Never. | Everything. | Always.
+
+scene rm_council
+when topic=lore here.region=ridgemere
+a : The Council of Houses sat in the Rain Hall all night. | The roof of the Rain Hall leaks on the Council's heads, they say. | Council's raised the harbour dues.
+b[official] : The Council has its reasons.
+b : Serves them right. | Two hundred years, that roof's leaked. | Of course they have.
+a : Reasons for everything. | Longer. | Of course.
+
+scene rm_sump
+when topic=smalltalk here.region=ridgemere
+a : Watch yourself in the Sump after dark. | Another family moved into the Sump. Nowhere else to go. | Water's up in the Sump again.
+b[guard] : We don't go into the Sump in less than fours.
+b[beggar] : The Sump's home. It's not so bad. It's bad, but not so bad.
+b : Always is, this time of year. | Poor souls. | I never go there.
+a : Wise. | They are. | Nor me.
+
+scene sf_tiers
+when topic=smalltalk here.region=ridgemere
+a : My cousin's moved up to the Commons. Thinks he's gentry now. | Too many steps in this city. | The wharf smells worse than ever.
+b[noble] : The hill keeps order. Everyone knows their place.
+b[laborer] : Some of us will never see the Heights.
+b : Good for him. | Builds strong legs. | It's the Fish Hall.
+a : Ha. | Too strong. | It always is.
+
+scene ua_fountain
+when topic=smalltalk here.region=ridgemere here.place=market|street
+a : Meet me by the fountain in the square later? | Somebody threw a boot in the fountain again. | The square's packed today.
+b : At dusk. | Pups. Always pups. | Clerks and petitioners.
+a : Dusk, then. | Probably. | Always.
+
+# ---------------------------------------------------------------- Ridgemere: the wharf, the docks and the salt pans
+
+scene rm_quay
+when topic=work|smalltalk here.region=rain_coast here.place=shore|street
+a : Big ship in from the south this morning. | The smokehouses are going full tilt. | Rope's dear since the Ropewalk raised its price.
+b[sailor] : Rough crossing, they say. Lost a mast.
+b[fisher] : Good season for herring. The smokehouses will be pleased.
+b : What's it carrying? | Can smell it from here. | Everything's dear.
+a : Wine, if we're lucky. | Always can. | Everything.
+
+scene sf_river
+when topic=work|smalltalk here.region=ridgemere here.place=shore|street|market
+a : Rainrun's high. | Boats stuck off the piers again. | The Harbourmaster's fining late cargoes.
+b[merchant] : The Harbourmaster fines everything. It's how the office eats.
+b[old] : I remember the flood. Half the wharf went under.
+b : Rain up in the Rainwood. | Again. | Of course it is.
+a : Let's hope it drops. | Every week. | Of course.
+
+scene tn_saltreach_salt
+when topic=lore|work here.region=ridgemere
+a : A dry week, for once. The salt pans are white as snow. | The smokehouses want twice the salt they did last year. | The tide took a pan wall again.
+b[farmer] : Rake it between showers, or it's lost.
+b[fisher] : Salt for the herring, herring for the salt.
+b : Good weather for it. | They pay well, at least. | Again?
+a : For once. | When they pay. | Again.
+
+scene tn_saltreach_drowned
+when topic=lore here.region=ridgemere
+a : They cut another name into the wall of the Chapel of the Tide. | My father's name is on that wall. | The Sound takes what it wants.
+b[priest] : We remember them all.
+b[old] : I've watched the Sound all my life. It never forgives.
+b : I'm sorry. | Who was it? | It does.
+a : Thank you. | A young one. | Always.
+
+# ---------------------------------------------------------------- Ridgemere: the Watch
+
+scene ua_watch
+when topic=lore here.region=ridgemere
+a : The Watch doubled the guard on the gates. | They're checking every cart at the South Gate now. | Did the Watch catch that thief yet?
+b[guard] : We do what's needed.
+b[carter] : Checking? Robbing, more like. Twice the toll.
+b : Something's got them nervous. | Takes forever to get in. | Not that I heard.
+a : Seems so. | It does. | Typical.
+
+scene tn_fortress_posting
+when topic=smalltalk|work here.region=ridgemere a.job=guard
+a : How many nights left on the wall for you? | The sergeant walks the wall at dawn. | Another quiet night on the walls.
+b[guard] : Too many. Far too many.
+b : I stopped counting. | Polish your buckle, then. | Quiet is good.
+a : Ha. | Always. | Quiet is boring.
+
+scene ft_rations
+when topic=smalltalk|work here.region=ridgemere here.place=barracks
+a : Salt pork again. | Cook says it's stew. It's water with a rumour of meat. | Supplies were short this month.
+b[cook] : Complain to the Watch House, not me.
+b[guard] : Eat it or starve. Those are the choices.
+b : Again. | Ha. | Again.
+a : Again. | True. | Always.

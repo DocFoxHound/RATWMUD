@@ -1508,10 +1508,20 @@ class World
     std::map<std::string, std::map<std::string, PriceSeen>> priceSeen_;   // Town -> item.
     void noteNews(const WorldEvent& event);
     std::string townIdOf(const std::string& cellId) const;
-    AmbientTopic ambientTopic(const std::string& a, const std::string& b);
   public:
-    // The written scenes' conditions and blanks for where `who` stands, now (doc 30).
-    void sceneMoment(const std::string& who, std::map<std::string, std::string>& tags, std::map<std::string, std::string>& blanks);
+    // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
+    // talk_check (doc 62). An empty kind if there's nothing.
+    AmbientTopic ambientTopic(const std::string& a, const std::string& b);
+    // The talk library's facts for where `who` stands, now (doc 62): here.place, here.time, here.weather...
+    void talkMoment(const std::string& who, std::map<std::string, std::string>& facts);
+    // What the town around `who` has been talking of (world.bandits, world.crime, world.herbs_price...), and the place
+    // (here.crowd, here.player_near), as the talk library's facts (doc 62).
+    void talkTown(const std::string& who, std::map<std::string, std::string>& facts);
+    // Who `a` and `b` are to each other: spouses, family, apprentice, rivals, friends, acquaintances or strangers.
+    std::string pairBand(const std::string& a, const std::string& b) const;
+    // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
+    // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
+    void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
   private:
     void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
     // Schedules (RatwSchedules.cpp).

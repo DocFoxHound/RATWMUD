@@ -1,0 +1,65 @@
+# Residents reacting (Docs/Design/62-talk.md, section 2; phase 4): to a fight they see, being struck, a theft, rain
+# starting, a customer walking into their shop, a friend passing. Said to no one (but the customer, and the friend).
+# A start; phase 7 writes the rest.
+
+rule react_fight
+when concept=react.fight
+say #oath#! Fetch the Watch! | A fight! There's a fight! | Not again. Someone stop them.
+
+rule react_fight_guard
+when concept=react.fight role=guard
+say Break it up! In the name of the Watch! | Stand apart, the both of you!
+
+rule react_fight_child
+when concept=react.fight child
+say Fight! Fight! | Ooh, look!
+
+rule react_struck
+when concept=react.struck
+say #oath#! | You'll pay for that! | Is that all you've got?
+
+rule react_struck_bad
+when concept=react.struck injured=bad
+priority 2
+say I can't... someone help me. | Enough. Enough!
+
+rule react_theft
+when concept=react.theft
+say Thief! Stop, thief! | Did you see that? They took it! | #robbery#!
+
+rule react_theft_guard
+when concept=react.theft role=guard
+say Stop, thief! In the name of the Watch!
+
+rule react_rain
+when concept=react.rain
+say #rain.capitalize# again#tag#. | Here it comes. | Get the washing in!
+
+rule react_rain_outdoor_work
+when concept=react.rain working=yes job=farmer|herder|fisher|woodcutter|laborer
+say There goes the rest of the day. | #oath#. Soaked by noon.
+
+rule react_customer
+when concept=react.customer
+cooldown 1h
+say #greet#. Come in, come in. | #greet#. Have a look around.
+remember pair: served 7d
+
+rule react_customer_again
+when concept=react.customer pair.mem.served
+cooldown 1h
+priority 1
+say Back again#tag#? #greet#. | #greet#! Good to see you again.
+remember pair: served 7d
+
+rule react_customer_inn
+when concept=react.customer job=innkeeper
+cooldown 1h
+say #greet#! Sit anywhere, I'll be with you. | Come in out of the #rain#.
+remember pair: served 7d
+
+rule react_customer_failing
+when concept=react.customer business=failing
+cooldown 1h
+say A customer! Come in, please, come in. | #greet#! Anything you like. Anything.
+remember pair: served 7d

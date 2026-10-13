@@ -1,0 +1,57 @@
+# The realm's common speech (Docs/Design/62-talk.md, section 3): the bottom layer of every speaker's grammar, and
+# Ridgemere's own. Every symbol a rule or a dialect uses must be here, so any dialect can leave a word out and fall
+# back to ordinary speech.
+#
+#   symbol = words | words              one of them, at random
+#   symbol[facts] = words               only where the facts hold; the most specific entry that holds wins
+#   symbol! = words | words             a habit: chosen once per person, for good
+#   symbol!! = words | words            a habit for each one they speak to (a fond name for each friend)
+#   symbol.broad = words                (in a dialect) said only by the broadest accents
+#   words^m | words^f                   for one sex of the one spoken to
+#
+# Each symbol is one kind of word, so it fits wherever it is used: cold, hot, tired, drunk, good, bad, very are
+# words like "cold" ("it's #very# #cold#"); rain, money, luck, nonsense, child, home are things ("this #rain#"); greet,
+# farewell, thanks, agree, refuse, surprise, annoyed, oath are whole sayings; tag ends a sentence (", eh").
+#
+# A speaker's dialect (the grammar named for where they grew up) is used as their accent says: none, never; light,
+# half the time; broad, always, with its .broad words. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar plain
+greet = Good day | Hello | Morning
+greet[here.time=dawn] = Morning | Good morning
+greet[here.time=dusk|night] = Evening | Good evening
+farewell = Farewell | Good day to you | Mind how you go
+thanks = Thank you | Thanks | Much obliged
+agree = Aye | True enough | That it is
+refuse = No | Not likely | I'd rather not
+surprise = Well! | Is that so | You don't say
+annoyed = Bother | Curse it | Of all the luck
+very = very | right | terribly
+little = a little | a bit | a touch
+good = fine | good | sound
+bad = poor | bad | sorry
+worthless = worthless | no use | rubbish
+luck = luck | good fortune | a stroke of luck
+child = child | pup
+address = friend | neighbour
+address[other.stage=young] = little one | lad^m | lass^f
+pet!! = my dear | love | old friend
+money = coin | money | pennies
+cold = cold | bitter | raw
+hot = hot | close | stifling
+rain = rain | wet | downpour
+tired = tired | worn out | weary
+drunk = drunk | merry | tipsy
+nonsense = nonsense | rubbish | foolishness
+tag = , isn't it | , eh | , wouldn't you say
+oath! = Gods | Heavens | Blood and bread | Well, I never
+robbery = Robbery, plain and simple | Daylight robbery | A crime, that is
+home = home | my own fire
+
+# The router's openers (phase 5): what a resident says before an answer, by tone. ~ is nothing at all.
+opener = ~ | ~ | Well,
+opener[self.tone=warm] = Of course! | Happy to help. | Ah, let me think.
+opener[self.tone=gruff] = ~ | Hmph. | Listen.
+opener[self.tone=formal] = Certainly. | Of course. | Allow me.
+opener[self.tone=sly] = For you? | Ah, well now. | Since you ask,
+opener[self.tone=shy] = Oh, um. | I, well. | Oh!

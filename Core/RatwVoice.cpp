@@ -38,7 +38,6 @@ std::string lowerAscii(std::string s)
 bool Rules::load(const std::string& directory, std::string& problem)
 {
     intents_.clear();
-    library_.clear();
     json::Value router;
     if (readJson(directory + "/router.json", router, problem))
     {
@@ -58,34 +57,10 @@ bool Rules::load(const std::string& directory, std::string& problem)
                     return false;
                 }
             }
-        for (const auto& [tone, list] : router["openers"].fields())
-            for (const auto& o : list.items())
-                openers_[tone].push_back(o.asString(""));
         for (const auto& [tone, list] : router["tones"].fields())
             for (const auto& w : list.items())
                 tones_[tone].push_back(lowerAscii(w.asString("")));
-        for (const auto& [intent, bands] : router["lines"].fields())
-            for (const auto& [band, tones] : bands.fields())
-                for (const auto& [tone, list] : tones.fields())
-                    for (const auto& l : list.items())
-                        lines_[intent][band][tone].push_back(l.asString(""));
     }
-    if (!problem.empty())
-        return false;
-    json::Value library;
-    if (readJson(directory + "/library.json", library, problem))
-        for (const auto& e : library.array("exchanges"))
-        {
-            Exchange x{e.string("kind"), e.string("band", "any"), e.string("tone", "plain"), {}};
-            for (const auto& line : e.array("lines"))
-                if (line.items().size() == 2)
-                    x.lines.push_back({line.items()[0].asString("") == "a" ? 0 : 1, line.items()[1].asString("")});
-            bool both[2] = {false, false};
-            for (const auto& [who, text] : x.lines)
-                both[who] = true;
-            if (both[0] && both[1] && x.lines.size() <= 4 && !x.kind.empty())
-                library_.push_back(std::move(x));
-        }
     return problem.empty();
 }
 
@@ -166,117 +141,4 @@ std::string Rules::toneOf(const std::string& personality) const
     return best;
 }
 
-std::string Rules::fill(const std::string& text, const std::map<std::string, std::string>& facts, bool& complete)
-{
-    std::string out;
-    complete = true;
-    for (std::size_t i = 0; i < text.size(); ++i)
-    {
-        if (text[i] != '{')
-        {
-            out += text[i];
-            continue;
-        }
-        const auto end = text.find('}', i);
-        if (end == std::string::npos)
-        {
-            out += text.substr(i);
-            break;
-        }
-        const auto key = text.substr(i + 1, end - i - 1);
-        const auto found = facts.find(key);
-        if (found == facts.end() || (found->second.empty() && key != "opener"))
-            complete = false;
-        else
-            out += found->second;
-        i = end;
-    }
-    return out;
-}
-
-std::string Rules::line(const std::string& intent, const std::string& band, const std::string& tone,
-                        std::map<std::string, std::string> facts, std::uint64_t seed, const std::string& avoid) const
-{
-    const auto bands = lines_.find(intent);
-    if (bands == lines_.end())
-        return {};
-    if (!facts.count("opener"))
-    {
-        const auto o = openers_.count(tone) ? openers_.at(tone) : openers_.count("plain") ? openers_.at("plain")
-                                                                                           : std::vector<std::string>{""};
-        facts["opener"] = o.empty() ? "" : o[seed % o.size()];
-    }
-    // "Well, " runs on into the answer: "Well, a meal is..." (but "Well, I keep shop...").
-    if (const auto& opener = facts["opener"]; opener.size() >= 2 && opener.compare(opener.size() - 2, 2, ", ") == 0)
-        if (auto& answer = facts["answer"]; !answer.empty() && answer.rfind("I ", 0) != 0 && answer.rfind("I'", 0) != 0)
-            answer[0] = char(std::tolower(static_cast<unsigned char>(answer[0])));
-    for (const auto* b : {band.c_str(), "any"})
-    {
-        const auto tones = bands->second.find(b);
-        if (tones == bands->second.end())
-            continue;
-        for (const auto* t : {tone.c_str(), "plain"})
-        {
-            const auto list = tones->second.find(t);
-            if (list == tones->second.end())
-                continue;
-            std::vector<std::string> usable;
-            for (const auto& l : list->second)
-            {
-                bool complete = false;
-                auto text = fill(l, facts, complete);
-                if (complete && !text.empty())
-                    usable.push_back(std::move(text));
-            }
-            if (usable.size() > 1)
-                usable.erase(std::remove(usable.begin(), usable.end(), avoid), usable.end());
-            if (!usable.empty())
-            {
-                auto text = usable[seed % usable.size()];
-                if (!text.empty())
-                    text[0] = char(std::toupper(static_cast<unsigned char>(text[0])));
-                return text;
-            }
-        }
-    }
-    return {};
-}
-
-Exchange Rules::exchange(const std::string& kind, const std::string& band, const std::map<std::string, std::string>& facts,
-                         std::uint64_t seed, std::set<std::size_t>& recent) const
-{
-    std::vector<std::size_t> fitting, fresh;
-    for (std::size_t i = 0; i < library_.size(); ++i)
-    {
-        const auto& x = library_[i];
-        if (x.kind != kind || (x.band != band && x.band != "any"))
-            continue;
-        bool complete = true;
-        for (const auto& [who, text] : x.lines)
-        {
-            bool filled = false;
-            fill(text, facts, filled);
-            complete &= filled;
-        }
-        if (!complete)
-            continue;
-        fitting.push_back(i);
-        if (!recent.count(i))
-            fresh.push_back(i);
-    }
-    const auto& from = fresh.empty() ? fitting : fresh;
-    if (from.empty())
-        return {};
-    const auto chosen = from[seed % from.size()];
-    recent.insert(chosen);
-    if (recent.size() > 8)
-        recent.erase(recent.begin());
-    Exchange out = library_[chosen];
-    for (auto& [who, text] : out.lines)
-    {
-        bool complete = false;
-        text = fill(text, facts, complete);
-    }
-    return out;
-}
 } // namespace ratw::voice

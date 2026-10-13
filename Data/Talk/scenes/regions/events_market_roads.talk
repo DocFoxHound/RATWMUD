@@ -1,0 +1,247 @@
+# Caravans and bandits, as each part of the world talks of them (Docs/Design/30-towns-and-talk.md): wet Ridgemere and
+# its Southway and High Road, the climb to Frosthollow, the Larkdowns, the lake at Coldwater, the fens at Mirebridge,
+# Southmeadow's fields and the Warmwood. Blanks: {other}.
+# Alternatives run in parallel.
+
+# ---------------------------------------------------------------- Ridgemere
+
+scene em_rm_cv_quay
+when topic=caravan topic.kind=arrived here.region=ridgemere
+a : The #topic.where# wagons are in, and soaked through. | Caravan from #topic.where#, mud to the axles. | They came in from #topic.where# in the rain. Of course.
+b : Everything that comes here comes wet. | Mud's the Ridgemere welcome. | Of course. It's Ridgemere.
+a : And leaves wetter. | A true one. | Of course.
+b?[noble] : House Grayrock will want first look at that cargo.
+
+scene em_ua_cv_gate_check
+when topic=caravan topic.kind=arrived here.region=ridgemere
+a : The Watch is turning over every crate from #topic.where#. | Took half the day to get the #topic.where# wagons through the gate. | The City Office clerks wrote down every barrel from #topic.where#.
+b : Looking for what? | The Watch is slow as rain. | Of course they did. They write down everything.
+a : Nobody tells us. | Slower. | Every last barrel.
+b?[guard] : Every cart that comes through the gates is inspected. No exceptions.
+
+scene em_rm_cv_houses
+when topic=caravan topic.kind=arrived here.region=ridgemere
+a : Half that caravan from #topic.where# is for the Houses. | Fell's agents met the #topic.where# wagons at the gate. | Greatly's colours on every second crate from #topic.where#.
+b : And the other half? | Before anyone else could look. | Greatly owns half the city.
+a : For whoever's left. | Of course. | And the bank owns the rest.
+b?[servant] : I'm to carry it all up to the Heights by dusk.
+
+scene em_rm_cv_left
+when topic=caravan topic.kind=left here.region=ridgemere
+a : The caravan to #topic.where# went off with iron and smoked fish. | Grayrock's iron is on the road to #topic.where#. | Wagons left for #topic.where#, loaded with glass from the glassworks.
+b : What does #topic.where# send back? | Heavy road, that. | Glass on these roads? Brave.
+a : Coin, if we're lucky. | And slow. | Packed in straw. Pray.
+
+scene em_sf_cv_left
+when topic=caravan topic.kind=left here.region=ridgemere
+a : Wagons went out the gate for #topic.where#, full of Mossgrave wool. | The caravan to #topic.where# is carrying Foundry ironware. Crates and crates. | Off to #topic.where# with bolts of cloth from the Blue Vats.
+b : Wool on a wet road. | Grayrock's iron, travelling. | Ridgemere blue, they'll call it.
+a : It'll arrive as felt. | Rattling all the way. | They always do.
+
+scene em_sr_cv_salt_out
+when topic=caravan topic.kind=left here.region=ridgemere
+a : The salt carts went off to #topic.where#. White as snow, all of them. | Wagons loaded with salt fish left for #topic.where#. | The caravan for #topic.where# took the last of the smoked catch.
+b : The Sump goes without, then. | They'll smell it coming. | Hope they pay this time.
+a : Always. | Miles off. | Hope.
+
+scene em_rm_bd_raided
+when topic=bandits topic.kind=raided here.region=ridgemere
+a : Bandits on the road to #topic.where#. Some say they're from the Sump. | The Watch says the robbers on the #topic.where# road are Ridgemere wolves. | Robbers took the #topic.where# wagons, and the Houses want blood.
+b : Everyone blames the Sump. | Could be. Hunger walks far. | The Houses want blood for their crates.
+a : Somebody always does. | It does. | Not for the carters.
+b?[guard] : The Watch knows its business. Leave it to us.
+
+scene em_sf_bd_raided
+when topic=bandits topic.kind=raided here.region=ridgemere
+a : The #topic.where# caravan was hit, and not a single Greatly crate touched. Funny. | Robbers knew exactly which wagon carried the coin. | Somebody inside talked. That raid on the #topic.where# road was planned.
+b : Funny isn't the word. | Someone told them. | Someone always talks.
+a : No. It's not. | Someone always does. | And someone always pays.
+b?[guard] : Careful. Talk like that gets wolves into the Sound.
+
+scene em_rm_bd_camp
+when topic=bandits topic.kind=camp here.region=ridgemere
+a : There's a camp at #topic.where#. In this rain, even. | They say the bandits at #topic.where# sell to the smugglers on the wharf. | Fell's loggers saw a camp near #topic.where#.
+b : Wet bandits. Miserable ones. | Everyone sells to the smugglers. | Then House Fell will hear of it.
+a : Miserable and armed. | Everyone. | And do nothing.
+
+scene em_sf_bd_camp
+when topic=bandits topic.kind=camp here.region=ridgemere
+a : There's a camp at #topic.where#. In plain sight of the Folds. | The farm wolves in the Folds say bandits at #topic.where# buy bread from them. | The Watch hasn't moved on the camp at #topic.where#.
+b : Bold. | Buy it or take it. | They'll wait for it to be the Council's problem.
+a : Very bold. | Same thing, in the end. | Or the Houses'.
+b?[guard] : Orders haven't come. When they do, it's done in a night.
+
+scene em_sr_bd
+when topic=bandits here.region=ridgemere
+a : Bandits on the Southway. As if the rain weren't enough. | The Southway's got robbers and mud. Pick your death. | The Chapel of the Tide will run out of candles at this rate.
+b : The rain's honest, at least. | I'll take the mud. | Don't say that.
+a : At least. | Slower. | Sorry.
+b?[priest] : Every candle we light, we light with care. Pray we light none this season.
+
+# ---------------------------------------------------------------- Frosthollow
+
+scene em_ua_cv_climb
+when topic=caravan topic.kind=arrived here.region=frosthollow
+a : The #topic.where# wagons made the climb. Mules steaming like kettles. | They had to double the teams at the last switchback. | The #topic.where# caravan's in, and two mules lame from the High Road.
+b : Poor beasts. | Every time. | Lame mules, dear goods.
+a : They'll rest in the Frozen Lantern's stables. | Every single time. | Always.
+b?[carter] : City wolves think the High Road's a hill. They learn on the third switchback.
+
+scene em_ua_cv_left_down
+when topic=caravan topic.kind=left here.region=frosthollow
+a : The caravan's gone down to #topic.where#. Easy going, downhill. | Wagons left for #topic.where#. Brakes squealing all down the valley. | Off they go to #topic.where#, down out of the snow.
+b : Downhill's worse. Ask any mule. | I heard it from my bed. | Out of the snow. I'd hate it.
+a : Is it? | Everyone did. | Ha. You'd love it.
+
+scene em_ua_bd_camp_ridge
+when topic=bandits topic.kind=camp here.region=frosthollow
+a : Fires on the ridge past #topic.where#. Not shepherds. | The miners saw a camp near #topic.where# on their way up. | Someone's camped at #topic.where#, and they don't want to be seen.
+b : In this cold? Desperate wolves. | Did they tell the guard? | Then don't see them.
+a : The worst kind. | They told their foreman. | I'm trying.
+
+scene em_cb_cv_iron_out
+when topic=caravan topic.kind=left here.region=frosthollow
+a : The ore's gone to #topic.where#. Every cart we dug this month. | The ore carts left for #topic.where#, creaking like old bones. | Off to #topic.where# with our ore, back with somebody else's bread.
+b : And the pay comes later. | Overloaded, as always. | That's the bargain.
+a : Much later. | Always. | A bad one.
+b?[miner] : My best seam, on a wagon I'll never see again.
+
+scene em_cb_cv_in
+when topic=caravan topic.kind=arrived here.region=frosthollow
+a : The #topic.where# wagons brought timber for the shafts. | Caravan from #topic.where#. The mine's clerk is counting already. | Food from #topic.where# at last. The miners cheered.
+b : Good. The north shaft needs it. | He counts everything twice. | First cheer this month.
+a : Badly. | And pays half. | Last too, probably.
+b?[miner] : Timber's life down there. Every prop holds a roof off someone.
+
+scene em_cb_bd_raided
+when topic=bandits topic.kind=raided here.region=frosthollow
+a : They hit the ore carts on the #topic.where# road. | Bandits took Frosthollow ore. They'll sell it back to us. | Robbers on the #topic.where# road. House Grayrock will be furious.
+b : Ore's heavy. They won't get far. | Of course they will. | Good. Let Grayrock be furious.
+a : They'll get far enough. | At a profit. | For once.
+b?[guard] : Grayrock's ore is Grayrock's business. They'll send their own.
+
+scene em_cb_bd_camp
+when topic=bandits topic.kind=camp here.region=frosthollow
+a : The charcoal burners say there's a camp at #topic.where#. | Smoke at #topic.where# that isn't charcoal. | Miners walking home saw lights at #topic.where#.
+b : Charcoal burners see everything. | They'd know. | Keep walking.
+a : And say nothing. Usually. | They know smoke. | Fast.
+
+# ---------------------------------------------------------------- Larkfield and the downs
+
+scene em_ac_cv_yard
+when topic=caravan topic.kind=arrived here.region=larkfield
+a : The market's full of #topic.where# wagons. Can't walk for wheels. | #topic.where# carts parked three deep at the gate. | Forty mules from #topic.where# braying all night.
+b : That's Larkfield. | The toll-keeper's happy. | I counted them instead of sleeping.
+a : Always is. | Only wolf who is. | Did you get to forty?
+b?[innkeeper] : Every bed sold. I'm renting the hayloft.
+
+scene em_ac_cv_leaving_up
+when topic=caravan topic.kind=left here.region=larkfield
+a : The caravan to #topic.where# went out this morning. | Wagons left for #topic.where#. Out the gate in the dark. | The #topic.where# carters doubled their teams and went.
+b : Rather them than me. | In the dark? | Smart.
+a : Me too. | Earlier is cooler. | Expensive.
+b?[carter] : Doubled teams, doubled pay, doubled curses.
+
+scene em_wm_cv_in
+when topic=caravan topic.kind=arrived here.region=larkfield
+a : The #topic.where# caravan made it across the downs. | Wagons from #topic.where#. First this month. | Carters from #topic.where# say the downs are empty as a drum.
+b : Brave carters. | Feels like a holiday. | Empty is good, out there.
+a : Or paid well. | Doesn't it? | Empty is safe.
+b?[merchant] : The general store's shelves have been bare for a fortnight.
+
+scene em_ac_bd_raided
+when topic=bandits topic.kind=raided here.region=larkfield
+a : Robbers hit the #topic.where# road, two hours from our gate. | They took carts bound here from #topic.where#. The market's half empty. | Every carter at the Singing Lark is talking of the raid.
+b : Too close. | And the inn's half empty. | And drinking twice as much.
+a : Much too close. | And the stalls. | Twice the noise.
+b?[carter] : I'm not moving till there's an escort. None of us are.
+
+scene em_wm_bd_raided
+when topic=bandits topic.kind=raided here.region=larkfield
+a : They hit the #topic.where# carts out on the open downs. | Nowhere to hide on the downs, and still they got robbed. | The farmers rode out after the raid on the #topic.where# road.
+b : They saw them coming for miles. | Bandits know the folds of the land. | Did they catch anyone?
+a : And waited. | Every one. | Nobody yet.
+b?[herder] : We found the wagons. Not the robbers.
+
+scene em_ac_bd_camp
+when topic=bandits topic.kind=camp here.region=larkfield
+a : The camp at #topic.where# watches every cart that leaves Larkfield. | You can see their smoke from the wall. | The bandits at #topic.where# know the market days better than we do.
+b : Then we wait. | And it's getting closer. | Someone's telling them.
+a : We always wait. | Every day. | Someone here.
+b?[official] : The gate's barred at dusk till they move on.
+
+scene em_wm_bd_downs
+when topic=bandits here.region=downs
+a : Bandits on the downs again. Out in the hollows. | Robbers hide in the hollows, they say. Like foxes. | Shepherds won't graze near the hollows now.
+b : Brave robbers. Or mad. | Foxes take fewer sheep. | Can't blame them.
+a : Mad, I hope. | Foxes don't carry knives. | No.
+b?[herder] : Lost three sheep last week. Didn't find so much as a bone.
+
+# ---------------------------------------------------------------- Coldwater
+
+scene em_lk_cv_in
+when topic=caravan topic.kind=arrived here.region=coldwater
+a : The #topic.where# caravan brought pitch for the boatwrights. | Wagons from #topic.where# came round the lake this morning. | The #topic.where# carters stopped to stare at Glasswater. They always do.
+b : Busy week at the slips, then. | Pretty, with the mist. | It's worth a stare.
+a : Busy and sticky. | The mist was thick as wool. | Every morning.
+b?[crafter] : Pitch at last. I've three hulls waiting.
+
+scene em_lk_bd
+when topic=bandits here.region=coldwater
+a : Bandits on the shore road. They say they come by boat. | Robbers on the lake road, and fog to hide them. | Somebody saw a boat with no lantern on the lake last night.
+b : By boat? Then nowhere's safe. | Fog helps the wicked. | No lantern means no good.
+a : Nowhere. | Always has. | Never does.
+b?[fisher] : Fog hides more than fish.
+
+# ---------------------------------------------------------------- Mirebridge
+
+scene em_fh_cv_herbs_out
+when topic=caravan topic.kind=left here.region=mirebridge
+a : The herb carts went off to #topic.where#, smelling like a meadow. | Our whole herb crop's on the road to #topic.where#. | Wagons left for #topic.where#. The town smells empty without the herbs.
+b : The road will smell lovely. | Pray it arrives. | Empty and boggy.
+a : Lovely and dangerous. | I am. | As always.
+b?[healer] : I kept back what I could. Don't tell the buyer.
+
+scene em_fh_cv_bog
+when topic=caravan topic.kind=arrived here.region=mirebridge
+a : The #topic.where# wagons got stuck on the fen road twice. | Caravan from #topic.where#. Wheels black with peat. | They came in from #topic.where# sinking at every step.
+b : The fen road eats wagons. | Peat everywhere for a week. | Still, they came.
+a : And mules. | Everywhere. | Still.
+
+scene em_fh_bd
+when topic=bandits here.region=mirebridge
+a : Bandits in the fen, they say. Following the lights. | Robbers hide out on the islands in the fen. | Nobody chases bandits into the fen. Nobody comes out.
+b : Let the lights have them. | Good place to hide. | Good. Let them rot.
+a : Let them. | Wet place to hide. | Harsh.
+b?[old] : The fen keeps what it takes. Bandits too.
+
+# ---------------------------------------------------------------- Southmeadow
+
+scene em_af_cv_grain_out
+when topic=caravan topic.kind=left here.region=southmeadow
+a : The grain carts went off to #topic.where#. | Wagons heavy with Southmeadow grain left for #topic.where#. | The caravan to #topic.where# took half the granary.
+b : Dry roads made it easy. | Heavy road. | Half? What do we eat?
+a : For once. | Very. | The other half.
+b?[farmer] : My wheat. My summer. Rolling away.
+
+scene em_af_bd
+when topic=bandits here.region=southmeadow
+a : Bandits in the high grass. You'd never see them. | Robbers set a fire in the stubble to cover their raid. | Farmers are guarding the fields at night with pitchforks.
+b : Like snakes. | Fire in a dry year. Wicked. | Brave farmers.
+a : Exactly like. | The worst. | Or desperate.
+b?[farmer] : I'll guard my own field. Nobody else will.
+
+# ---------------------------------------------------------------- Oakhaven
+
+scene em_hm_cv
+when topic=caravan topic.kind=arrived here.region=oakhaven
+a : The carter came. Late, but he came. | Wagon through from #topic.where#. Exciting day for Oakhaven. | Somebody passed through with a caravan. Nobody stopped.
+b : Late is on time, for him. | The most exciting thing all season. | Nobody ever stops.
+a : True enough. | Sad but true. | Their loss.
+
+scene em_hm_bd
+when topic=bandits here.region=oakhaven
+a : Bandits? Out here? What would they steal, acorns? | We've nothing worth robbing, thank the Bright One. | A robber came through once. Left with a goat.
+b : Our acorns are good acorns. | Poverty's a kind of wall. | A good goat, though.
+a : The best. | A fine one. | The best goat.
+b?[old] : A bandit's still a bandit. Lock the door.

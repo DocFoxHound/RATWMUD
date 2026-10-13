@@ -1,0 +1,141 @@
+# More barks: trades at work, places, ages, regions.
+
+scene bk2_fish_cry
+when concept=bark a.job=fisher here.time=dawn|day
+a : Fresh from the water! | Eel! Pike! Trout! | Catch of the day, cheap!
+
+scene bk2_smith_work
+when concept=bark a.job=smith
+a : Hot iron! Stand back! | Another hinge, another penny. | Where did I put my tongs?
+
+scene bk2_baker_work
+when concept=bark a.job=baker
+a : Bread's out! | Mind the oven! | Who wants a warm loaf?
+
+scene bk2_healer
+when concept=bark a.job=healer
+a : Keep it clean, I said! | Next! Who's next? | Willow bark for fever, mint for the belly.
+
+scene bk2_carter
+when concept=bark a.job=carter
+a : Gee up! | Clear the road! | Whoa, steady, steady.
+
+scene bk2_innkeeper
+when concept=bark a.job=innkeeper
+a : Rooms! Rooms for the night! | Hot stew! | Last orders soon!
+
+scene bk2_miner
+when concept=bark a.job=miner
+a : Mind the shaft! | Another day under the hill. | Lamp oil. Need lamp oil.
+
+scene bk2_sailor
+when concept=bark a.job=sailor
+a : Heave away! | Wind's turning. | Coil that rope properly!
+
+scene bk2_priest
+when concept=bark a.job=priest
+a : All are welcome inside. | The bell rings at dusk for prayers. | Peace be with you.
+
+scene bk2_beggar
+when concept=bark a.job=beggar
+a : Spare a penny? | Bless you, bless you. | Anything at all, friend?
+
+scene bk2_noble
+when concept=bark a.job=noble
+a : Out of my way. | Where is my steward? | Insufferable rain.
+
+scene bk2_servant
+when concept=bark a.job=servant
+a : Coming, coming! | Mind the polish! | So much to do.
+
+scene bk2_laborer
+when concept=bark a.job=laborer
+a : One more load. | My back, my back. | Who's next?
+
+scene bk2_scholar
+when concept=bark a.job=scholar
+a : Where did I put that page? | Fascinating. Simply fascinating. | Quiet, please. I'm reading.
+
+scene bk2_adolescent
+when concept=bark a.stage=adolescent
+a : This place is so boring. | Race you! | I'm not a pup any more!
+
+scene bk2_young_play
+when concept=bark a.stage=young
+a : Tag! You're it! | Look, a frog! | Wait for me!
+
+scene bk2_old_mutter
+when concept=bark a.stage=old
+a : Kids today. | Where are my spectacles? | Back in my day...
+
+scene bk2_gate
+when concept=bark here.place=gate
+a : Halt there! | Next cart! | Toll's a penny a wheel!
+
+scene bk2_chapel
+when concept=bark here.place=chapel
+a : Quiet, please. | The Bright One watches. | Light a candle, friend.
+
+scene bk2_home
+when concept=bark here.place=home
+a : Who left the door open? | Supper's nearly ready. | Wipe your feet!
+
+scene bk2_field
+when concept=bark here.place=field
+a : Get on, beast! | Another row. | Rain or shine.
+
+scene bk2_shore
+when concept=bark here.place=shore
+a : Mind the tide! | Net's caught again. | Gulls! Get off!
+
+scene bk2_barracks
+when concept=bark here.place=barracks
+a : Fall in! | Who took my boots? | Lights out at the bell.
+
+scene bk2_wild
+when concept=bark here.place=wild
+a : Long way yet. | Keep your eyes on the trees. | Quiet out here.
+
+scene bk2_rain_coast
+when concept=bark here.region=rain_coast
+a : Rain, rain, always rain. | Smell of tar and fish. | Ship's in!
+
+scene bk2_marches
+when concept=bark here.region=frosthollow
+a : By the Bright One, it's cold! | Shift's changing! | Mind the steps, they're ice!
+
+scene bk2_downs
+when concept=bark here.region=downs
+a : Sheep everywhere. | Wind off the downs! | Market day soon.
+
+scene bk2_lake
+when concept=bark here.region=lake
+a : Fish on the jetty! | Mist on the lake again. | Boat's coming in!
+
+scene bk2_fens
+when concept=bark here.region=fens
+a : Mind the bog! | Peat for the fire! | Don't follow the lights!
+
+scene bk2_steppe
+when concept=bark here.region=farmland
+a : No rain again. | Grain! Grain for sale! | Dust everywhere.
+
+scene bk2_fortress
+when concept=bark here.place=gate a.role=guard
+a : Wall's quiet. | Change the watch! | Cold stone, cold food.
+
+scene bk2_fog
+when concept=bark here.weather=fog
+a : Can't see a thing. | Who's there? | Mind the fog.
+
+scene bk2_storm
+when concept=bark here.weather=storm
+a : Get inside! | Listen to that thunder! | Batten the shutters!
+
+scene bk2_overcast
+when concept=bark here.weather=overcast
+a : Grey day. | Might rain. | Sun's hiding.
+
+scene bk2_market_day
+when concept=bark here.day=market
+a : Market day! Bargains! | Stalls are full! | Come and buy!

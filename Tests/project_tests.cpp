@@ -454,10 +454,10 @@ void visible()
                 if (pick.topic.kind == "price_cause")
                 {
                     told = true;
-                    leak |= contains(pick.topic.blanks.at("who"), "Ash");
+                    leak |= contains(pick.topic.talk.at("topic.who"), "Ash");
                     for (const auto& f : pick.topic.facts)
                         leak |= contains(f, "Ash");
-                    expect(pick.topic.tags.at("known") == "no", "by look: they never learned her name");
+                    expect(pick.topic.talk.at("topic.known") == "no", "by look: they never learned her name");
                 }
             if (!told)
                 t.run(3);

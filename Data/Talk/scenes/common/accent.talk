@@ -1,0 +1,34 @@
+# Speech from elsewhere (Docs/Design/62-talk.md, phase 3): two who barely know each other, one not sounding like the
+# other. b answers in their own dialect (the symbols are b's grammar). topic.accent_of is where b grew up.
+
+scene ac_not_from_here
+when topic=accent
+a : Not from round here, are you? I can hear it. | That's no #here.town# voice. | You talk like #topic.accent_town#.
+b[from=frosthollow] : #greet#. Frosthollow, under the snow. Born to the lamp.
+b[from=coldwater] : #greet#. Coldwater. The lake follows you about.
+b[from=oakhaven] : #greet#. The Warmwood, aye. Oakhaven.
+b[from=mirebridge] : Dry feet. The fens, yes. Mirebridge. You can hear the mud, can you?
+b[from=larkfield] : Larkfield. Fair price to you. Can't help it, I was raised on a market cry.
+b[from=southmeadow] : Southmeadow. #greet#! Is it so plain?
+b : #topic.accent_town#, born and raised. | Is it so plain? #topic.accent_town#.
+a : Thought so. | Long way from #home#. | I'd know it anywhere.
+
+scene ac_what_did_you_say
+when topic=accent pair.band=strangers
+a : I'm sorry, what was that? | Say it again, slower.
+b : #oath#. I said #greet#. | I said it's #very# #cold#. | You heard me#tag#.
+a : Ah. Of course. | Right. Well. #greet#.
+
+scene ac_homesick
+when topic=accent
+a : What's it like, #topic.accent_town#? I've never been.
+b[accent=broad] : #good.capitalize#. Better than here, if you ask me. Don't tell anyone I said so.
+b[old] : Different, when I left it. Everything's different now.
+b : #good.capitalize#, mostly. I miss it some days. | Like anywhere. Folk work, folk talk.
+a?[friends] : You'll have to take me one day.
+
+scene ac_city_ears
+when topic=accent here.region=ridgemere
+a : Ridgemere's full of voices. Half the city's from somewhere else. | Every voice in the realm ends up in Ridgemere.
+b : And all of us hear the same rain#tag#. | #agree#. The city takes everyone in.
+a : #agree#.

@@ -126,7 +126,8 @@ with the main model kept for the conversations that are worth it.
   fails its checks) is answered by the small one. Exchanges, summaries and polishing use the small one; exchanges
   written live are capped by mode (20, 10, 4 an hour) and the game caps them at 10. Without a `light_model`, the main
   model does everything, as before.
-- **The speech router** (`Core/RatwVoice.*`, `Core/RatwGameVoice.cpp`, `Data/Voice/router.json`). What a player says
+- **The speech router** (`Core/RatwVoice.*`, `Core/RatwGameVoice.cpp`, `Data/Voice/router.json`; since 2026-10-13 its
+  lines are the talk library's, `Data/Talk/rules/player.talk`, doc 62 phase 5). What a player says
   is normalised (lower case, contractions spelt out, punctuation, the NPC's name and "please" gone) and matched whole
   against each request's patterns, nine words at most. A match is answered from the world: the merchant's real prices
   and stock (`Society::quote`), their hours (with Restday and Marketday), name and work, where a resident works or
@@ -137,7 +138,8 @@ with the main model kept for the conversations that are worth it.
   first meeting may use the NPC's own greeting. The corpus (`Data/Voice/corpus.json`, 50 lines) is checked by
   `Tests/voice_tests.cpp`. With `polish`, the small model rewrites the answer and the Mind checks every number and
   name survived, else the game's words stand; the game stops asking for ten minutes when polishing is off.
-- **The exchange library** (`Data/Voice/library.json`: 23 hand-written to start). The director plays one for most
+- **The exchange library** (`Data/Voice/library.json`: 23 hand-written to start; since 2026-10-13 `Data/Talk/library.talk`,
+  scenes of the talk library, doc 62, spoken when no other scene fits). The director plays one for most
   exchanges, filled in (news in the teller's own words), passing over those heard lately in that place; it writes one
   live only for gossip about a player there, the first talk of an incident, or news of a death or a crime, and falls
   back to the library when that fails. `tools/ambient_library.py` has the small model write more (one call per kind,

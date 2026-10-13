@@ -8,7 +8,7 @@
 
 #include "RatwNames.h"
 #include "RatwPractice.h"
-#include "RatwScenes.h"
+#include "RatwTalk.h"
 #include "RatwVoice.h"
 
 #include <algorithm>
@@ -821,7 +821,7 @@ std::string Game::jobCategoryOf(const std::string& npc) const
     const auto* spec = world_.society().spec(npc);
     const auto* post = world_.society().jobOf(npc);
     const auto role = spec ? spec->role : std::string("civilian");
-    return scenes::jobCategory((post ? post->title : std::string()) + " " + e->description, spec ? spec->workLabel : std::string(),
+    return talk::jobCategory(post ? post->title : std::string(), spec ? spec->workLabel : std::string(),
                                role == "merchant" || role == "guard" ? role : "civilian", e->age);
 }
 

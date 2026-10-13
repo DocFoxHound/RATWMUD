@@ -1,6 +1,7 @@
 // The ambient director's voice (Docs/Design/26-living-npcs.md, Phase 10): the world picks an exchange worth hearing
-// (World::ambientPicks) where players are; here it is written (the NPC Mind, or authored lines past the hour's budget
-// or without one) and spoken a line at a time, as NPCs speak to players, to whoever can hear.
+// (World::ambientPicks) where players are; here it is written (the talk library, doc 62; the NPC Mind for what matters
+// most, within the hour's budget; authored lines when nothing fits) and spoken a line at a time, as NPCs speak to
+// players, to whoever can hear. Barks, a resident calling out to no one in particular, are the talk library's too.
 #include "RatwSermons.h"
 #include "RatwGame.h"
 
@@ -16,6 +17,7 @@ namespace
 constexpr double LookEvery = 5;                     // World seconds between looks for an exchange.
 constexpr std::size_t AtOnce = 3;                   // Exchanges under way across the world.
 constexpr double Apart = 5;                         // Tiles: walk further apart and the exchange stops.
+
 } // namespace
 
 void Game::ambient(double dt)
@@ -69,42 +71,12 @@ void Game::ambient(double dt)
     auto pick = std::move(picks.front());
     world_.ambientSpoken(pick);                     // It counts from now: the talk is under way.
     const auto* a = world_.entity(pick.teller);
-    const auto* b = world_.entity(pick.listener);
-    mind::ExchangeContext context;
-    const auto persona = [&](const Entity& e) {
-        mind::Persona p{e.name, e.description, {}};
-        if (const auto* spec = world_.society().spec(e.id))
-            p.personality = spec->personality;
-        return p;
-    };
-    context.a = persona(*a);
-    context.b = persona(*b);
-    context.aSeesB = world_.describeRegard(a->id, b->id);
-    context.bSeesA = world_.describeRegard(b->id, a->id);
-    context.kind = pick.topic.kind;
-    context.facts = pick.topic.facts;
-    if (const auto* place = world_.cell(a->cellId))
-        context.scene = mind::left(place->description, 1200);
-    // The subject as the teller knows them: a player by a name they were given, else by look (doc 56, 6).
-    if (const auto found = pick.topic.blanks.find("subject"); found != pick.topic.blanks.end())
-        context.subjectName = found->second;
-    else if (const auto* subject = world_.entity(pick.topic.subject))
-        context.subjectName = subject->npc || knowsName(a->id, subject->id) ? labelFor(a->id, subject->id) : strangerLabel(subject->id);
-    context.claim = pick.topic.claim;
-    if (!pick.topic.facts.empty())
-        context.news = pick.topic.facts.front().substr(0, pick.topic.facts.front().find_last_not_of(". ") + 1);
-    const auto plan = world_.dayPlan(world_.communityOf(a->cellId));
-    const auto* place = world_.cell(a->cellId);
-    context.day = plan.kind == "festival" ? "Quite a feast for " + plan.name + "."
-                  : plan.kind == "market" ? std::string("The stalls are full today.")
-                  : plan.kind == "rest"   ? std::string("A quiet day, for once.")
-                  : place && place->outdoors && place->weather == Weather::Rain ? std::string("Wet enough for you?")
-                                                                                 : std::string();
-    AmbientTalk talk;
-    talk.id = ambientNext_++;
-    talk.pick = pick;
-    ambient_.push_back(talk);
-    const auto id = talk.id;
+    const auto context = exchangeContext(pick);
+    AmbientTalk started;
+    started.id = ambientNext_++;
+    started.pick = pick;
+    ambient_.push_back(started);
+    const auto id = started.id;
     const auto begin = [this, id](const mind::Exchange& written, const char* route) {
         for (auto& t : ambient_)
             if (t.id == id)
@@ -118,25 +90,19 @@ void Game::ambient(double dt)
                 voiced("exchange", route, t.pick.teller);
             }
     };
-    // From the library (doc 28): an exchange written once with blanks, filled in here, for nothing.
-    const Bond ab = world_.bonds().find(a->id, b->id) ? *world_.bonds().find(a->id, b->id) : Bond{};
-    const Bond ba = world_.bonds().find(b->id, a->id) ? *world_.bonds().find(b->id, a->id) : Bond{};
-    const std::string band = std::min(ab.affinity, ba.affinity) <= -25                    ? "rivals"
-                             : ab.familiarity >= 40 && ab.affinity >= 20 && ba.affinity >= 10 ? "friends"
-                                                                                         : "acquaintances";
-    const std::map<std::string, std::string> blanks{
-        {"teller", a->name}, {"listener", b->name}, {"subject", context.subjectName}, {"claim", context.claim},
-        {"news", mind::firstPerson(context.news, a->name)}, {"day", context.day}};
+    const auto q = exchangeQuery(pick, context);
     const auto cell = pick.cell;
-    const auto fromLibrary = [this, cell, kind = pick.topic.kind, band, blanks, seed = id * 2654435761u]() {
-        const auto x = voices_.exchange(kind, band, blanks, seed, recentExchanges_[cell]);
+    const auto seed = id * 2654435761u + std::uint64_t(now * 7);
+    const auto fromTalk = [this, q, cell, seed, teller = a->id](const char*& route) {
+        const auto said = talkPick(q, teller, cell, 16, seed, true);
         mind::Exchange out;
-        out.lines = x.lines;
+        out.lines = said.lines;
+        route = said.id.rfind("lib_", 0) == 0 ? "library" : "scene";   // (Doc 28's library, or a written scene.)
         return out;
     };
     // Written live only when it matters most: gossip about a player standing there, or the first talk of a crime
-    // or a death. The model is asked only so often; past that, and without it, the library speaks (then the authored
-    // lines, when it has nothing fitting).
+    // or a death. The model is asked only so often; past that, and without it, the talk library speaks (then the
+    // authored lines, when it has nothing fitting).
     bool playerHere = false;
     for (const auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId); e && e->id == pick.topic.subject && e->cellId == pick.cell)
@@ -147,52 +113,11 @@ void Game::ambient(double dt)
     while (!ambientCalls_.empty() && now - ambientCalls_.front() > 3600)
         ambientCalls_.pop_front();
     const bool live = salient && mind_.live() && int(ambientCalls_.size()) < options_.ambientModelCallsPerHour;
-    // The written scenes (doc 30): the moment as the scenes see it, and one no one listening has heard, if there is one.
-    if (!live && scenes_.hasTopic(pick.topic.kind))
-    {
-        scenes::Situation s;
-        s.topic = pick.topic.kind;
-        world_.sceneMoment(a->id, s.tags, s.blanks);
-        for (const auto& [k, v] : pick.topic.tags)
-            s.tags[k] = v;
-        for (const auto& [k, v] : pick.topic.blanks)
-            s.blanks[k] = v;
-        s.a = scenePerson(*a);
-        s.b = scenePerson(*b);
-        s.blanks["a_job"] = s.a.job == "none" ? std::string() : s.a.job;
-        s.blanks["b_job"] = s.b.job == "none" ? std::string() : s.b.job;
-        if (!context.subjectName.empty())
-            s.blanks.emplace("subject", context.subjectName);
-        if (pick.topic.kind == "gossip")
-            s.blanks["claim"] = context.claim;
-        if (!context.news.empty())
-            s.blanks["news"] = mind::firstPerson(context.news, a->name);
-        const auto hearers = hearersOf(a->id);
-        const auto heard = [&](const std::string& scene) {
-            for (const auto& h : hearers)
-                if (const auto found = scenesHeard_.find(h); found != scenesHeard_.end() && found->second.ids.count(scene))
-                    return true;
-            return false;
-        };
-        auto& recent = recentScenes_[cell];
-        auto chosen = scenes_.pick(s, id * 2654435761u + std::uint64_t(now * 7), heard, recent);
-        if (!chosen.id.empty())
-        {
-            for (const auto& h : hearers)
-                scenesHeard_[h].add(chosen.id);
-            recent.push_back(chosen.id);
-            while (recent.size() > 16)
-                recent.pop_front();
-            mind::Exchange x;
-            x.lines = chosen.lines;
-            begin(x, "scene");
-            return;
-        }
-    }
     if (!live)
     {
-        if (auto x = voices_.libraryEntries() ? fromLibrary() : mind::Exchange{}; !x.lines.empty())
-            begin(x, "library");
+        const char* route = "written";
+        if (auto x = fromTalk(route); !x.lines.empty())
+            begin(x, route);
         else
             begin(mind::Client::authoredExchange(context), "written");
         return;
@@ -201,17 +126,88 @@ void Game::ambient(double dt)
     if (!pick.topic.incident.empty())
         voicedIncidents_.insert(pick.topic.incident);
     std::weak_ptr<bool> alive = alive_;
-    mind_.exchange(context, [alive, begin, fromLibrary, this](const mind::Exchange& written) {
+    mind_.exchange(context, [alive, begin, fromTalk](const mind::Exchange& written) {
         if (alive.expired())
             return;
+        const char* route = "written";
         if (written.generated)
             begin(written, "model");
-        else if (auto x = voices_.libraryEntries() ? fromLibrary() : mind::Exchange{}; !x.lines.empty())
-            begin(x, "library");
+        else if (auto x = fromTalk(route); !x.lines.empty())
+            begin(x, route);
         else
             begin(written, "written");
     });
 }
+mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
+{
+    // What the Mind is told of an exchange, and what the talk library's words draw on.
+    const auto* a = world_.entity(pick.teller);
+    const auto* b = world_.entity(pick.listener);
+    mind::ExchangeContext context;
+    if (!a || !b)
+        return context;
+    const auto persona = [&](const Entity& e) {
+        mind::Persona p{e.name, e.description, {}};
+        if (const auto* spec = world_.society().spec(e.id))
+            p.personality = spec->personality;
+        if (const auto card = voiceCardOf(e.id); !card.empty())    // (Doc 62, phase 5.)
+            p.personality += (p.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;
+        return p;
+    };
+    context.a = persona(*a);
+    context.b = persona(*b);
+    context.aSeesB = world_.describeRegard(a->id, b->id);
+    context.bSeesA = world_.describeRegard(b->id, a->id);
+    context.kind = pick.topic.kind;
+    context.facts = pick.topic.facts;
+    if (const auto* place = world_.cell(a->cellId))
+        context.scene = mind::left(place->description, 1200);
+    // The subject as the teller knows them: a player by a name they were given, else by look (doc 56, 6).
+    if (const auto found = pick.topic.talk.find("topic.subject"); found != pick.topic.talk.end())
+        context.subjectName = found->second;
+    else if (const auto* subject = world_.entity(pick.topic.subject))
+        context.subjectName = subject->npc || knowsName(a->id, subject->id) ? labelFor(a->id, subject->id) : strangerLabel(subject->id);
+    context.claim = pick.topic.claim;
+    if (!pick.topic.facts.empty())
+        context.news = pick.topic.facts.front().substr(0, pick.topic.facts.front().find_last_not_of(". ") + 1);
+    const auto plan = world_.dayPlan(world_.communityOf(a->cellId));
+    const auto* place = world_.cell(a->cellId);
+    context.day = plan.kind == "festival" ? "Quite a feast for " + plan.name + "."
+                  : plan.kind == "market" ? std::string("The stalls are full today.")
+                  : plan.kind == "rest"   ? std::string("A quiet day, for once.")
+                  : place && place->outdoors && place->weather == Weather::Rain ? std::string("Wet enough for you?")
+                                                                                 : std::string();
+    return context;
+}
+
+talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeContext& context)
+{
+    // The talk library (doc 62): the topic's facts, and what the Mind would be told.
+    auto facts = pick.topic.talk;
+    if (!context.subjectName.empty())
+        facts.emplace("topic.subject", context.subjectName);
+    if (pick.topic.kind == "gossip" && !context.claim.empty())
+        facts["topic.claim"] = context.claim;
+    if (!context.news.empty())
+        facts["topic.news"] = mind::firstPerson(context.news, context.a.name);
+    if (!context.day.empty())
+        facts["topic.remark"] = context.day;
+    return talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
+}
+
+talk::Query Game::talkTopicQuery(const std::string& a, const std::string& b)
+{
+    AmbientPick pick;
+    pick.teller = a;
+    pick.listener = b;
+    if (const auto* e = world_.entity(a))
+        pick.cell = e->cellId;
+    pick.topic = world_.ambientTopic(a, b);
+    if (pick.topic.kind.empty())
+        return talkQuery(a, b, "talk.day");
+    return exchangeQuery(pick, exchangeContext(pick));
+}
+
 std::vector<std::string> Game::hearersOf(const std::string& speaker) const
 {
     std::vector<std::string> out;
@@ -223,27 +219,35 @@ std::vector<std::string> Game::hearersOf(const std::string& speaker) const
     return out;
 }
 
-scenes::Person Game::scenePerson(const Entity& e) const
+talk::Said Game::talkPick(const talk::Query& q, const std::string& speaker, const std::string& where, std::size_t keep,
+                          std::uint64_t seed, bool remember)
 {
-    scenes::Person p;
-    p.name = e.name;
-    p.sex = e.appearance->sex == "female" ? "female" : "male";
-    p.stage = lifeStageName(lifeStage(e.age));
-    const auto* spec = world_.society().spec(e.id);
-    const auto* post = world_.society().jobOf(e.id);
-    p.role = spec ? spec->role : std::string("civilian");
-    if (p.role != "merchant" && p.role != "guard")
-        p.role = "civilian";
-    p.job = scenes::jobCategory((post ? post->title : std::string()) + " " + e.description,
-                                spec ? spec->workLabel : std::string(), p.role, e.age);
-    return p;
+    const auto hearers = hearersOf(speaker);
+    const auto heard = [&](const std::string& id) {
+        for (const auto& h : hearers)
+            if (const auto found = scenesHeard_.find(h); found != scenesHeard_.end() && found->second.ids.count(id))
+                return true;
+        return false;
+    };
+    auto& recent = recentScenes_[where];
+    auto said = talk_.converse(q, seed, heard, recent);
+    if (said.id.empty())
+        return said;
+    talkRemember(said.effects);                     // (What it remembers, and that it was said: phase 4.)
+    if (remember)
+        for (const auto& h : hearers)
+            scenesHeard_[h].add(said.id);
+    recent.push_back(said.id);
+    while (recent.size() > keep)
+        recent.pop_front();
+    return said;
 }
 
 void Game::barks(double dt)
 {
     // Now and then, near a player, a resident calls out or remarks to no one in particular (doc 30): a merchant crying
     // their wares, a guard's word, a child at play. A line at most every 25 seconds in a place.
-    if ((barkLookIn_ += dt) < 6 || !scenes_.hasTopic("bark"))
+    if ((barkLookIn_ += dt) < 6 || !talk_.has("bark"))
         return;
     barkLookIn_ = 0;
     const double now = world_.time();
@@ -268,25 +272,11 @@ void Game::barks(double dt)
         if (near.empty())
             continue;
         const auto* who = near[std::size_t(std::uint64_t(now * 13) % near.size())];
-        scenes::Situation s;
-        s.topic = "bark";
-        world_.sceneMoment(who->id, s.tags, s.blanks);
-        s.a = scenePerson(*who);
-        s.blanks["a_job"] = s.a.job == "none" ? std::string() : s.a.job;
-        const auto hearers = hearersOf(who->id);
-        const auto heard = [&](const std::string& scene) {
-            for (const auto& h : hearers)
-                if (const auto found = scenesHeard_.find(h); found != scenesHeard_.end() && found->second.ids.count(scene))
-                    return true;
-            return false;
-        };
-        auto& recent = recentScenes_["bark:" + player->cellId];
-        const auto chosen = scenes_.pick(s, std::uint64_t(now * 1000) ^ std::hash<std::string>{}(who->id), heard, recent);
+        const auto q = talkQuery(who->id, {}, "bark");
+        const auto chosen = talkPick(q, who->id, "bark:" + player->cellId, 12,
+                                     std::uint64_t(now * 1000) ^ std::hash<std::string>{}(who->id), false);
         if (chosen.id.empty() || chosen.lines.empty())
             continue;
-        recent.push_back(chosen.id);
-        while (recent.size() > 12)
-            recent.pop_front();
         ParsedPost post;
         post.ok = true;
         post.speech = true;

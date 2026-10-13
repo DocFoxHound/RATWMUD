@@ -1,0 +1,51 @@
+# Talk about a good deed (doc 56, topic deed). One of the two has heard of it and the other hasn't. {subject} is how the
+# teller names the doer: a name they were given (known=yes), or how the doer looked (known=no: "a grey wolf with a torn
+# ear"), so it sits mid-sentence. {deed} is what was done, as a phrase after "who" or "they" ("drove the bandits off the
+# road at the ford"). Speak of the doer as "they". Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- By name
+
+scene dd_heard_named
+when topic=deed topic.known=yes
+a : Have you heard? #topic.subject# #topic.deed#. | Word is #topic.subject# #topic.deed#. | You know #topic.subject#? They #topic.deed#.
+b : Did they now. | #topic.subject#? Good for them. | I hadn't heard that.
+a : So they say. | It's all round the market. | I had it from someone who saw.
+
+scene dd_named_doubt
+when topic=deed topic.known=yes
+a : They're saying #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#, apparently. | Heard #topic.subject# #topic.deed#.
+b[guard] : We heard something of it at the watch-house.
+b[old] : In my day nobody did a thing like that for free.
+b : I'll believe it when I hear it twice. | Is that so? | Well, well.
+a : You'll hear it twice by supper. | It is. | It's true, I tell you.
+
+scene dd_named_merchant
+when topic=deed topic.known=yes here.place=market
+a : #topic.subject# came through here, you know. They #topic.deed#. | Sold #topic.subject# bread last week. Turns out they #topic.deed#. | #topic.subject#, the one who #topic.deed#. I've served them.
+b[merchant] : Then give them a good price next time.
+b : Fancy that. | A good customer, then. | Small world.
+a : I will. | The best kind. | Isn't it.
+
+# ---------------------------------------------------------------- By look
+
+scene dd_heard_look
+when topic=deed topic.known=no
+a : Heard about the one who #topic.deed#? | Someone #topic.deed#, so they say. | Have you heard? Some wolf #topic.deed#.
+b : Who was it? | No. Who? | Go on.
+a : Nobody knows the name. #topic.subject#, they said. | #topic.subject#, by the sound of it. Never gave a name. | A stranger. #topic.subject#.
+b : Keep an eye out, then. | I'd like to buy them a drink. | Funny, not leaving a name.
+
+scene dd_look_watch
+when topic=deed topic.known=no
+a : Did you hear someone #topic.deed#? | Somebody #topic.deed#, I hear. | There's talk someone #topic.deed#.
+b[child] : Was it a hero? Did they have a sword?
+b[guard] : We'd like a word with them. A thank-you, I mean.
+b : Who? | Never heard. | Who'd do that?
+a : #topic.subject#, apparently. | They say #topic.subject#. | #topic.subject#, no name given.
+
+scene dd_look_curious
+when topic=deed topic.known=no here.place=tavern
+a : They say #topic.subject# #topic.deed#. Came in here after, too. | #topic.subject# sat right there, the night after they #topic.deed#. | You remember #topic.subject#? They #topic.deed#.
+b[innkeeper] : I poured them a drink. Never said a word about it.
+b : Never! | Which one was that? | I'd not have guessed.
+a : Quiet ones often are. | By the hearth. | Neither would I.

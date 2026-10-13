@@ -1,0 +1,23 @@
+# Oakhaven (Docs/Design/62-talk.md, section 3): the Warmwood. Slow, rooted, warm; trees, roots, bark and shade.
+# Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar oakhaven
+greet = Shade on you | Good shade
+greet.broad = Shade an' shelter
+farewell = Root well | Shade keep you
+agree = Rooted true | Aye, that
+refuse = That won't take root
+surprise = Leaf and limb | Well, branch me
+annoyed = Blight it | Knots and knots
+very = proper
+good = good bark | sound wood
+bad = rotten | windthrown
+worthless = deadwood
+luck = good growing weather
+child = sapling
+pet!! = acorn | my sapling
+tired = felled
+nonsense = sawdust
+tag = , mm?
+oath! = Bark and branch | Old Oak | Root and rain
+home = under my own roof-beam

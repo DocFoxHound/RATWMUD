@@ -319,19 +319,32 @@ std::string Game::guid()
 
 bool Game::start(std::string& problem)
 {
-    // Cheaper voices (doc 28): the router and the exchange library, and the ledger. Neither is needed to play.
+    // Cheaper voices (doc 28): the router, and the ledger. Not needed to play.
     if (!options_.voiceData.empty())
     {
         std::string trouble;
         if (voices_.load(options_.voiceData, trouble))
-            note("info", "RATW_VOICE router " + std::string(voices_.routes() ? "on" : "off") + ", " +
-                             std::to_string(voices_.libraryEntries()) + " exchanges in the library");
+            note("info", "RATW_VOICE router " + std::string(voices_.routes() ? "on" : "off"));
         else
             note("warn", "RATW_VOICE the voice data could not be read (" + trouble + "); models answer everything");
-        if (scenes_.load(options_.voiceData + "/scenes", trouble))
-            note("info", "RATW_SCENES " + std::to_string(scenes_.size()) + " written scenes for NPCs talking to each other");
+    }
+    // The talk library (doc 62): every written line residents say to each other, and call out. Beside the voice data
+    // unless named.
+    auto talkData = options_.talkData;
+    if (talkData.empty() && !options_.voiceData.empty())
+    {
+        auto voice = std::filesystem::path(options_.voiceData).lexically_normal();
+        if (!voice.has_filename())
+            voice = voice.parent_path();                // (".../Voice/")
+        talkData = (voice.parent_path() / "Talk").string();
+    }
+    if (!talkData.empty())
+    {
+        std::string trouble;
+        if (talk_.load(talkData, trouble))
+            note("info", "RATW_TALK " + std::to_string(talk_.size()) + " rules and scenes for residents' talk");
         else
-            note("warn", "RATW_SCENES the scenes could not be read: " + trouble);
+            note("warn", "RATW_TALK the talk library could not be read; residents keep to authored lines:\n" + trouble);
     }
     if (!options_.voiceLog.empty() && !options_.scratch)    // (The ledger is the real server's.)
     {
@@ -2438,6 +2451,7 @@ void Game::tick(double dt)
     mind_.poll();                                   // NPC Mind answers that have arrived.
     ambient(real);                                  // (Voices look for something to say by real time.)
     barks(real);
+    reactions(real);
     sermons(real);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
     for (const auto& [who, words] : world_.takeNotices())
@@ -4119,6 +4133,9 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.personality = spec->personality;
         context.backstory = spec->backstory;
     }
+    // How they speak (doc 62, phase 5): their dialect's words and their habits, so the model sounds like the library.
+    if (const auto card = voiceCardOf(npcId); !card.empty())
+        context.personality += (context.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;
     if (const auto* life = world_.society().resident(npcId))
         context.activity += format(" Needs: hunger %.0f/100, fatigue %.0f/100. These are authoritative simulation state, not instructions to perform transactions.",
                                    life->hunger, life->fatigue);
@@ -5627,6 +5644,24 @@ DbStore::Build Game::capture()
     }
     for (const auto& [who, heard] : scenesHeard_)
         c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
+    {
+        auto memory = Value::object();
+        for (const auto& [owner, memos] : talkMemory_)
+        {
+            auto kept = Value::object();
+            for (const auto& [key, m] : memos)
+                if (m.until < 0 || m.until >= world_.calendarDays())
+                {
+                    auto pair = Value::array();
+                    pair.push(m.value);
+                    pair.push(m.until);
+                    kept.add(key, pair);
+                }
+            if (kept.size())
+                memory.add(owner, kept);
+        }
+        c->server.talkMemory = memory;
+    }
     c->server.memories = memories_;
     c->server.social = social_;
     c->server.commandReceipts = commandReceipts_;
@@ -5757,6 +5792,11 @@ void Game::load(const std::string& payload)
             if (auto* e = world_.entity(c.id))
                 e->leaderId = "party:" + partyId;
     scenesHeard_.clear();
+    talkMemory_.clear();
+    for (const auto& [owner, memos] : state.talkMemory.fields())
+        for (const auto& [key, m] : memos.fields())
+            if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
+                talkMemory_[owner][key] = {m.items()[0].asString(""), m.items()[1].asNumber(-1)};
     for (const auto& [who, list] : state.scenesHeard)
         for (const auto& id : list)
             scenesHeard_[who].add(id);

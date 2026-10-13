@@ -1,0 +1,154 @@
+# The overheard exchanges of doc 28 (once Data/Voice/library.json), converted for doc 62. They speak only when no
+# written scene fits the moment (priority -1), or when the model is asked and fails. tools/ambient_library.py
+# drafts more of them.
+
+scene lib_gossip_1
+when topic=gossip
+priority -1
+a : Have you heard? They say #topic.subject# #topic.claim#.
+b : #topic.subject#? I'd not have thought it.
+
+scene lib_gossip_2
+when topic=gossip
+priority -1
+a : Word is #topic.subject# #topic.claim#.
+b : Who told you that?
+a : Never you mind. But it's true, I'd wager.
+
+scene lib_gossip_3
+when topic=gossip pair.band=friends
+priority -1
+a : #b.name#, between us: #topic.subject# #topic.claim#.
+b : No! Truly?
+a : Keep it to yourself, mind.
+
+scene lib_gossip_4
+when topic=gossip pair.band=friends
+priority -1
+a : You'll never guess what I heard about #topic.subject#.
+b : Go on.
+a : That #topic.subject# #topic.claim#.
+b : Well. I'll keep an eye out.
+
+scene lib_gossip_5
+when topic=gossip pair.band!=friends|rivals
+priority -1
+a : I hear #topic.subject# #topic.claim#.
+b : Is that so. Thank you for telling me.
+
+scene lib_gossip_6
+when topic=gossip pair.band=rivals
+priority -1
+a : Even you should know this: #topic.subject# #topic.claim#.
+b : And why would I believe you?
+a : Believe what you like.
+
+scene lib_news_1
+when topic=news
+priority -1
+a : You'll have heard: #topic.news#.
+b : I had not. How are you keeping?
+
+scene lib_news_2
+when topic=news pair.band=friends
+priority -1
+a : #b.name#, did you hear? #topic.news#.
+b : I did. If you need anything, you know where I am.
+a : Thank you. I know.
+
+scene lib_news_3
+when topic=news pair.band=friends
+priority -1
+a : Strange days. #topic.news#.
+b : Strange days indeed.
+
+scene lib_news_4
+when topic=news pair.band!=friends|rivals
+priority -1
+a : Did you hear? #topic.news#.
+b : So I'd heard. Well, well.
+
+scene lib_news_5
+when topic=news pair.band=rivals
+priority -1
+a : I suppose you've heard: #topic.news#.
+b : Everyone has. You make sure of that.
+
+scene lib_quarrel_1
+when topic=quarrel pair.band=rivals
+priority -1
+a : Still here, #b.name#?
+b : Still here. Same as you.
+a : Pity.
+
+scene lib_quarrel_2
+when topic=quarrel pair.band=rivals
+priority -1
+a : I've nothing to say to you, #b.name#.
+b : Then say nothing, and go.
+
+scene lib_quarrel_3
+when topic=quarrel pair.band=rivals
+priority -1
+a : Keep your distance, #b.name#.
+b : Gladly.
+a : And keep your snout out of my business.
+
+scene lib_quarrel_4
+when topic=quarrel pair.band=rivals
+priority -1
+a : You've a nerve, showing your face.
+b : I go where I please, #a.name#.
+
+scene lib_friends_1
+when topic=friends pair.band=friends
+priority -1
+a : #b.name#! There you are.
+b : Here I am. #topic.remark#
+a : Isn't it just.
+
+scene lib_friends_2
+when topic=friends pair.band=friends
+priority -1
+a : How goes it, #b.name#?
+b : Well enough. You?
+a : Can't complain. Well, I could.
+b : You always do.
+
+scene lib_friends_3
+when topic=friends pair.band=friends
+priority -1
+a : Good to see you, #b.name#.
+b : And you. We should share a meal soon.
+
+scene lib_friends_4
+when topic=friends pair.band=friends
+priority -1
+a : Tired, #b.name#?
+b : Bone tired. And you look worse.
+a : Charming as ever.
+
+scene lib_day_1
+when topic=day
+priority -1
+a : #topic.remark#
+b : It is at that.
+
+scene lib_day_2
+when topic=day
+priority -1
+a : #topic.remark#
+b : So it is.
+a : Well. Good day to you.
+
+scene lib_day_3
+when topic=day pair.band!=friends|rivals
+priority -1
+a : #topic.remark#
+b : Aye. Good day, #a.name#.
+
+scene lib_day_4
+when topic=day pair.band=friends
+priority -1
+a : #topic.remark# Shall we make the most of it?
+b : Why not.

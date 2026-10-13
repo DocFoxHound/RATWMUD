@@ -1,0 +1,198 @@
+# Current events in town, part seven: births, apprenticeships, successions and arrests heard in more places (the shore,
+# the fields, the chapel, the hall, the barracks), so the rarer news has more than one way to be told.
+
+# ---------------------------------------------------------------- Births
+
+scene et_bi_shore
+when topic=life topic.kind=birth here.place=shore
+a : #topic.subject#'s pup was born the night the boats came in full. Lucky. | They say #topic.subject#'s pup came with the tide. | A fisher's pup for #topic.subject#. Webbed paws, I bet.
+b[fisher] : Born on a full catch. That pup'll never go hungry.
+b : Luckiest night there is. | Tide-born, sea-blessed. | Ha. Hope not.
+a : The very luckiest. | So they say. | Hope so.
+
+scene et_bi_field
+when topic=life topic.kind=birth here.place=field|work
+a : #topic.subject#'s had the pup. Back in the field in a week, I'll bet. | Heard the news in the furrows. #topic.subject#'s pup. | #topic.subject#'s pup came in the middle of the harvest.
+b[farmer] : Fields don't wait for pups. Pups don't wait for harvest.
+b : A week? Mad. | Good news travels down the rows. | Worst timing.
+a : That's #topic.subject#. | It does. | Best timing, really.
+
+scene et_bi_chapel
+when topic=life topic.kind=birth here.place=chapel
+a : #topic.subject# brought the pup for blessing this morning. | The priest held #topic.subject#'s pup up to the light. | #topic.subject#'s pup cried through the whole blessing.
+b[priest] : The loudest blessing I've done this #here.season#. A good sign.
+b : A good start. | Lovely custom. | They all do.
+a : The best. | It is. | Every one.
+
+scene et_bi_guard
+when topic=life topic.kind=birth b.role=guard
+a : Did you hear about #topic.subject#'s pup? | #topic.subject#'s a parent now. | New pup on your round, #b.name#. #topic.subject#'s.
+b : I heard it from the street. Howling like a siren. | Good for them. | I'll keep the street quiet for them.
+a : Strong lungs. | Isn't it. | Kind.
+
+scene et_bi_rivals
+when topic=life topic.kind=birth pair.band=rivals
+a : #topic.subject#'s pup. I suppose you'll be first to visit with some showy gift. | You'll not outdo my gift for #topic.subject#'s pup. | I've already been to see #topic.subject#'s pup. Before you.
+b : A blanket. Not showy. | It's not a contest. | Congratulations. You win.
+a : Hand-stitched, I'll bet. | It is now. | I know.
+
+# ---------------------------------------------------------------- Apprenticeships
+
+scene et_ap_healer
+when topic=life topic.kind=apprentice b.job=healer
+a : Heard #topic.subject#'s apprenticed. Would you ever take one? | #topic.subject#'s learning a trade. You should teach someone yours. | Who'll learn the herbs when you're gone?
+b : When I find one who doesn't faint at blood. | One day. | That keeps me awake.
+a : Hard to find. | Do. | Teach, then.
+
+scene et_ap_hall
+when topic=life topic.kind=apprentice here.place=hall
+a : #topic.subject#'s indenture's been recorded at the hall. Official now. | The clerk read #topic.subject#'s papers aloud. | Seven years for #topic.subject#, signed and sealed.
+b[official] : Three copies. One for the master, one for the hall, one for the family.
+b : No backing out now. | Very grand. | Long road.
+a : None. | Grand for a sweeping job. | Long and worth it.
+
+scene et_ap_spouses
+when topic=life topic.kind=apprentice pair.band=spouses
+a : #topic.subject#'s apprenticed. Should we think about ours? | Our pup's nearly old enough, like #topic.subject#. | #topic.subject# went at twelve. Is that too young?
+b : Not yet. Let them be young. | Nearly. Not quite. | It's how we did it.
+a : A while longer, then. | Not quite. | Was it good for us?
+
+scene et_ap_old
+when topic=life topic.kind=apprentice a.stage=old
+a : #topic.subject#'s apprenticed. I was apprenticed sixty years ago. Feels like last week. | In my day, masters beat apprentices. I hope #topic.subject#'s is kinder. | Good for #topic.subject#. A trade is a life.
+b : Sixty years! | Mine did. | It is.
+a : Last week. | Kinder times. | A whole life.
+
+scene et_ap_guard
+when topic=life topic.kind=apprentice a.role=guard
+a : #topic.subject#'s apprenticed. One less pup loitering at the gate. | Good. Idle pups make trouble. #topic.subject#'s busy now. | I caught #topic.subject# stealing apples last year. Now look. Apprentice.
+b : Every bit helps. | You'd know. | People change.
+a : It does. | I would. | Sometimes.
+
+# ---------------------------------------------------------------- Successions
+
+scene et_su_hall
+when topic=life topic.kind=succession here.place=hall
+a : The hall's acknowledged #topic.subject# as head now. | #topic.subject# sat in the old chair today. Looked very small in it. | #topic.subject#'s name's on the hall roll now.
+b[official] : All by the book. Nobody can contest it now.
+b : Official, then. | They'll grow into it. | Lasting.
+a : Official. | Or it'll swallow them. | For now.
+
+scene et_su_worker
+when topic=life topic.kind=succession b.job=laborer|servant|crafter
+a : You work for #topic.subject# now. How is it? | Is #topic.subject# a fair master? | Did #topic.subject# keep you on?
+b : Too early to tell. | Fairer than the old one. | For now.
+a : Give it time. | That's something. | Good.
+
+scene et_su_child
+when topic=life topic.kind=succession a.stage=young|adolescent
+a : Is #topic.subject# the boss now? | #topic.subject#'s in charge now. Do they get a crown? | Why does #topic.subject# get everything?
+b : They are. | No crown. Just worries. | Because someone had to.
+a : Can I be the boss? | Boring. | Lucky.
+
+scene et_su_merchant
+when topic=life topic.kind=succession b.role=merchant
+a : With #topic.subject# in charge, will prices change? | #topic.subject#'s taken over the shop. Are you worried? | Competitor or friend, #topic.subject#?
+b : Prices always change. | I'm always worried. | Depends what they sell.
+a : Upward. | That's business. | Wise.
+
+# ---------------------------------------------------------------- Arrests
+
+scene et_ar_barracks
+when topic=crime topic.kind=arrest here.place=barracks
+a : They brought #topic.subject# in last night. Kicking. | #topic.subject#'s in the lock-up. Smells like they slept in a ditch. | Bunk duty's guarding #topic.subject# tonight. Lucky me.
+b[guard] : I've got the bite marks to prove it.
+b : Kicking and shouting. | Probably did. | Bring a book.
+a : Loud one. | Smelly one. | Can't read.
+
+scene et_ar_chapel
+when topic=crime topic.kind=arrest here.place=chapel
+a : They took #topic.subject# right outside the chapel. After prayers. | #topic.subject# came to confess, then the watch took them. | Did you see? #topic.subject#, arrested on the chapel steps.
+b[priest] : Confession is between a wolf and the Bright One. I said nothing to the watch.
+b : After prayers! | Unlucky timing. | I saw. Everyone saw.
+a : Bold of the watch. | Or guilty conscience. | Everyone.
+
+scene et_ar_shore
+when topic=crime topic.kind=arrest here.place=shore
+a : They pulled #topic.subject# off a boat at the jetty. | #topic.subject# tried to swim for it. Watch fished them out. | Arrested at the shore, #topic.subject#. Trying to get away by water.
+b[fisher] : Caught like a fish. Ha.
+b : Nowhere to go. | Swim? In that cold? | Nearly made it.
+a : Nowhere at all. | Desperate. | Nearly.
+
+scene et_ar_gate
+when topic=crime topic.kind=arrest here.place=gate
+a : They took #topic.subject# at the gate, trying to leave. | #topic.subject# nearly made it out. Gatekeeper stopped them. | Guards at the gate grabbed #topic.subject# with a full pack.
+b[guard] : Running with a full pack says enough.
+b : Running, then. | Close one. | Packed for a long trip.
+a : Guilty as sin. | Too close. | A very long one.
+
+scene et_ar_rivals
+when topic=crime topic.kind=arrest pair.band=rivals
+a : Your friend #topic.subject#'s arrested. Proud of them? | Didn't you used to drink with #topic.subject#? | #topic.subject# in the cells. You must be so ashamed.
+b : They're no friend of mine. | Once. Years ago. | Not as ashamed as you'd like.
+a : Not now, eh? | Interesting. | Shame.
+
+scene et_ar_spouses
+when topic=crime topic.kind=arrest pair.band=spouses
+a : #topic.subject#'s arrested. We had them to supper last month. | Do you think we should've seen it, with #topic.subject#? | I'm glad they took #topic.subject#. I always felt odd near them.
+b : I'll count the spoons. | No one saw it. | You always had a nose for people.
+a : Ha. | Nobody. | I do.
+
+scene et_ar_old
+when topic=crime topic.kind=arrest a.stage=old
+a : They've taken #topic.subject#. I said so years ago. Nobody listened. | #topic.subject#! I knew their grandfather. Honest wolf. | In my day, the stocks. Now it's cells and clerks.
+b : You did say so. | Bad blood skips. | Clerks are crueller.
+a : Every year. | It does. | Much.
+
+# ---------------------------------------------------------------- Newcomers, at the edges of town
+
+scene et_nw2_gate
+when topic=newcomer here.place=gate
+a : #topic.subject# came through the gate with a cart of everything they own. | Gatekeeper asked #topic.subject#'s business. They said staying. | #topic.subject# stood at the gate a long time, deciding.
+b[guard] : I wrote them down. Name, trade, where from. They hadn't much of any.
+b : All of it in one cart. | Staying. A brave word. | What did they decide?
+a : Not much, then. | Very brave. | To come in.
+
+scene et_nw2_field
+when topic=newcomer here.place=field|work
+a : #topic.subject#'s come to work the fields. Strong arms. | New paws at the harvest. #topic.subject#. | #topic.subject# doesn't know a scythe from a spade.
+b[farmer] : They'll learn by the third blister.
+b : We need arms. | Every paw helps. | They'll learn.
+a : We do. | It does. | Or lose a toe.
+
+scene et_nw2_chapel
+when topic=newcomer here.place=chapel
+a : #topic.subject# sat in the back pew this morning. Alone. | The newcomer #topic.subject# lit a candle. For someone left behind, I'd guess. | #topic.subject# came to chapel. Didn't know the hymns.
+b[priest] : They know them now. I'll lend them a book.
+b : Next time, sit with them. | Poor soul. | They'll learn them.
+a : I will. | Poor soul. | Kind.
+
+scene et_nw2_hall
+when topic=newcomer here.place=hall
+a : #topic.subject# registered at the hall today. Officially one of us. | The clerk made #topic.subject# spell their name three times. | #topic.subject# asked the hall for a plot of land.
+b[official] : Paperwork is how a town knows who belongs to it.
+b : Welcome, then. | Clerks love that. | Bold.
+a : Welcome. | They do. | Very bold.
+
+# ---------------------------------------------------------------- Festivals at the edges
+
+scene et_fe2_shore
+when topic=festival here.place=shore
+a : Boats decked with flowers for #here.festival#. | They'll race skiffs across the water for #here.festival#. | Lanterns on the water at #here.festival#.
+b[sailor] : I'll win the race this year. Watch me.
+b : Pretty as anything. | My money's on the old fisher. | Like stars.
+a : Pretty. | Always is. | Like stars.
+
+scene et_fe2_barracks
+when topic=festival here.place=barracks
+a : Captain says half of us get leave for #here.festival#. | Polish your buckles for the #here.festival# parade. | Somebody's smuggled a cask in for #here.festival#.
+b[soldier] : Half! Which half? Not mine, I'll wager.
+b : Draw lots. | My buckles are spotless. | Don't tell the captain.
+a : Lots. | Never. | Wouldn't dream of it.
+
+scene et_fe2_chapel
+when topic=festival here.place=chapel
+a : The chapel's full of greenery for #here.festival#. | Candles on every ledge for #here.festival#. | Choir's practising for #here.festival#.
+b[priest] : The Bright One loves a full chapel. So do I.
+b : Smells of forest. | Lovely. | Badly.
+a : It does. | Very. | They'll be ready.

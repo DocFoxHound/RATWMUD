@@ -14,7 +14,7 @@
 #include "RatwNames.h"
 #include "RatwParty.h"
 #include "RatwVoice.h"
-#include "RatwScenes.h"
+#include "RatwTalk.h"
 #include "RatwArtwork.h"
 #include "RatwChapters.h"
 #include "RatwFactions.h"
@@ -136,11 +136,14 @@ struct Options
     // may play on without saving (as the offline demo worlds do), with the save left as it was.
     bool requireStorage = true;
     std::string dialogueEndpoint;                             // The NPC Mind (loopback only); empty for authored lines.
-    // Cheaper voices (Docs/Design/28-ai-cost.md): the speech router and exchange library (a directory with
-    // router.json and library.json; empty: off), and the ledger of who answered each NPC line (empty: none kept).
+    // Cheaper voices (Docs/Design/28-ai-cost.md): the speech router (a directory with router.json; empty: off), and the
+    // ledger of who answered each NPC line (empty: none kept).
     std::string voiceData, voiceLog;
-    // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the written
-    // scenes (voiceData/scenes, doc 30) and the library voice them all.
+    // The talk library (Docs/Design/62-talk.md: Data/Talk): every written line residents say. Empty: Talk beside
+    // voiceData (Data/Voice -> Data/Talk); none at all if there's no voiceData either.
+    std::string talkData;
+    // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the talk
+    // library voices them all.
     int ambientModelCallsPerHour = 0;
     // Residents' letters (doc 55, 5) polished by the light model: at most this many an hour; 0 (the default): templates.
     int letterModelCallsPerHour = 0;
@@ -312,8 +315,18 @@ class Game
     mind::Context dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
                                   bool identified);
     const std::map<std::string, Entity>& characters() const { return characters_; }
-    // The written scenes (doc 30): how many are loaded, and how many a character has heard.
-    std::size_t sceneLibrarySize() const { return scenes_.size(); }
+    // The talk library (doc 62): how many rules and scenes are loaded, and how many a character has heard.
+    std::size_t talkLibrarySize() const { return talk_.size(); }
+    const talk::Library& talkLibrary() const { return talk_; }
+    // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
+    // speakers, the place and moment, and `facts` (the topic's own) over them.
+    talk::Query talkQuery(const std::string& a, const std::string& b, const std::string& concept, const talk::Facts& facts = {});
+    // The same for `a` talking to `b` of the best topic the world has for them now (as the ambient director would).
+    talk::Query talkTopicQuery(const std::string& a, const std::string& b);
+    // A resident reacting now (doc 62, phase 4: react.fight, react.customer...), to `to` or to no one; false if they're
+    // busy or the library has nothing. The game cues these itself (RatwGameTalk.cpp, reactions); tests and the Dungeon
+    // Master may too.
+    bool react(const std::string& npc, const std::string& to, const std::string& concept);
     // A Dungeon Master's decision on an uploaded portrait: "approve" or "reject" (doc 29, phase 9).
     Result reviewArtwork(const std::string& id, const std::string& decision, const std::string& reason);
     const std::map<std::string, art::Meta>& artworks() const { return artworkMeta_; }
@@ -1577,12 +1590,11 @@ class Game
         double at = 0;
     };
     std::map<std::string, Said> lastSaid_;                    // "npc|player": the last the game answered itself.
-    std::map<std::string, std::set<std::size_t>> recentExchanges_;   // By cell: library entries heard lately.
     std::set<std::string> voicedIncidents_;                   // Incidents an exchange was written live for.
     double polishOffUntil_ = 0;
     std::uint64_t voiceSeed_ = 0;
-    // The written scenes (doc 30), and what each player character has heard of them (newest last, bounded).
-    scenes::Library scenes_;
+    // The talk library (doc 62), and what each player character has heard of it (newest last, bounded).
+    talk::Library talk_;
     struct Heard
     {
         std::deque<std::string> order;
@@ -1600,6 +1612,18 @@ class Game
         }
     };
     std::map<std::string, Heard> scenesHeard_;
+    // What the talk library's rules remembered (doc 62, phase 4), by owner ("person:<id>", "pair:<a>|<b>" sorted,
+    // "town:<region>"): key -> its value and until when (a calendar day; -1 for good). At most 32 an owner, the
+    // soonest to go dropped first; expired when read. Saved with what players have heard.
+    struct TalkMemo
+    {
+        std::string value;
+        double until = -1;
+    };
+    std::map<std::string, std::map<std::string, TalkMemo>> talkMemory_;
+    void talkRemember(const std::vector<talk::Effect>& effects);
+    // An owner's memories as facts: "mem.<key>" (and "said:<id>") with `prefix` before them ("", "pair.", "world.").
+    void talkRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
     // Uploaded portraits (RatwGameArtwork.cpp; doc 29, phase 9): where they are kept, every record, uploads under way.
     std::unique_ptr<art::Store> artwork_;
     std::map<std::string, art::Meta> artworkMeta_;
@@ -1623,6 +1647,14 @@ class Game
     std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
     double barkLookIn_ = 0;
     void barks(double dt);
+    // Residents reacting (doc 62, phase 4): to a fight, being struck, a theft, rain starting, a customer walking into
+    // their shop, a friend passing. What was seen last look, and when each place last reacted to each kind of thing.
+    double reactLookIn_ = 0, reactIncidentTime_ = -1;
+    std::map<std::string, double> reactLast_;
+    std::map<std::string, Weather> reactWeather_;          // By watched cell.
+    std::map<std::string, std::string> reactPlayerCell_;   // By player character.
+    std::map<std::string, double> reactHurt_;              // By NPC in a fight.
+    void reactions(double dt);
     // Restday sermons (doc 42, Phase 6): a preacher at the pulpit speaks this week's sermon, a line a minute, while a
     // player is in the church to hear it.
     struct SermonState
@@ -1637,7 +1669,18 @@ class Game
     void sermons(double dt);
     // The players in a cell who can hear `speaker` say something (for the heard lists).
     std::vector<std::string> hearersOf(const std::string& speaker) const;
-    scenes::Person scenePerson(const Entity& e) const;
+    // Talk (doc 62): a resident as the library sees them, and something said for the query by `speaker`, never what
+    // was said at `where` lately (the last `keep`); those who hear it remember it if `remember`.
+    talk::Speaker talkSpeaker(const Entity& e);
+    // How a resident speaks, for the model (doc 62, phase 5): talk::Library::voiceCard of them.
+    std::string voiceCardOf(const std::string& id);
+    // The two's facts (RatwGameTalk.cpp): pair.band, pair.kin, pair.boss...
+    void talkPair(const std::string& a, const std::string& b, talk::Facts& facts);
+    // An exchange's context for the Mind, and its query for the talk library (the topic's facts, and the Mind's words).
+    mind::ExchangeContext exchangeContext(const AmbientPick& pick);
+    talk::Query exchangeQuery(const AmbientPick& pick, const mind::ExchangeContext& context);
+    talk::Said talkPick(const talk::Query& q, const std::string& speaker, const std::string& where, std::size_t keep,
+                        std::uint64_t seed, bool remember);
 
     // Saving.
     void saveSoon();

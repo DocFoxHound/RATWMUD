@@ -1,0 +1,23 @@
+# Larkfield (Docs/Design/62-talk.md, section 3): the market town of the Larkdowns. Quick, a trader's speech; prices,
+# weights and bargains. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar larkfield
+greet = Fair price to you | Good trade
+greet.broad = Fair price, fair price
+farewell = Good trading | Fair price
+agree = Sold | Done
+refuse = No sale | Not at that price
+surprise = Well, sell me | There's a bargain
+annoyed = Short-changed again | Scales and spite
+very = top-weight
+little = a lark's worth
+good = fair-priced | full weight
+bad = short-weighed | light
+worthless = haggle-bait
+luck = a bargain
+child = lambkin
+pet!! = my bargain | my lark
+money = silver
+nonsense = market talk
+tag = , eh?
+oath! = Scales and silver | By the market cross | Weights and measures

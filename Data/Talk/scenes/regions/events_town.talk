@@ -1,0 +1,286 @@
+# Current events in town, by region, part one: Ridgemere (the City Office quarter and the Watch, the wharf and the
+# Houses, the Heights and the Sump, the salt pans and the Chapel of the Tide), Larkfield and Frosthollow. Crime, lives,
+# newcomers, festivals and gossip as each place tells them.
+
+# ---------------------------------------------------------------- Ridgemere: the City Office quarter and the Watch
+
+scene et_ua_theft_archive
+when topic=crime topic.kind=theft here.region=ridgemere
+a : A thief by the Rain Hall. #topic.victim#, robbed under the Council's own windows. | The Watch is turning out every street in the Commons over #topic.victim#. | They say #topic.victim# was robbed on the long stair.
+b[scholar] : If they'd taken a ledger from the Hall of Records I'd understand. Coin? Vulgar.
+b[guard] : The gates are watched from dusk until we know who.
+b : Under the Council's nose. Embarrassing for someone. | Every street? Good. | On the stair! Nowhere to run there.
+a : Very embarrassing. | Good and thorough. | Except down.
+
+scene et_ua_arrest_watch
+when topic=crime topic.kind=arrest here.region=ridgemere
+a : The Watch took #topic.subject# to the Gaol. | #topic.subject#'s arrested. The Magistrate's Court is slow but it doesn't forget. | Half the Watch House turned out when they took #topic.subject#. Half!
+b[guard] : Three of us were passing. We did the taking.
+b : The Gaol. Cold place. | Slow as glaciers. | Half the Watch? For a common thief?
+a : Very cold. | And as sure. | That's what frightens me.
+
+scene et_ua_death_scholar
+when topic=life topic.kind=death here.region=ridgemere
+a : #topic.subject#'s gone. They'll ring the bell at the Chapel of the Tide. | The Hall of Records lost a mind with #topic.subject#. | They're laying #topic.subject# in the old crypt below the chapel.
+b[scholar] : Forty years of notes. Who'll read them now?
+b : Fitting. | And a kind one. | With the old greats.
+a : Very. | A rare kind. | They earned it.
+
+scene et_ua_gossip_concord
+when topic=gossip here.region=ridgemere
+a : In the Rain Hall's own corridors, they say #topic.subject# #topic.claim#. | A clerk at the City Office told me #topic.subject# #topic.claim#. Clerks know everything. | Word in the Commons is that #topic.subject# #topic.claim#.
+b[official] : I would not repeat that near the Rain Hall, if I were you.
+b : Corridors leak. | They do. | The Commons love a tale.
+a : Like the Rain Hall roof. | Every word. | They do.
+
+scene et_ua_assault_stair
+when topic=crime topic.kind=assault here.region=ridgemere
+a : They found #topic.victim# hurt on the stairs below the North Gate. | #topic.victim# was beaten in the Sump. | An attack, in the Heights. Who'd dare?
+b[guard] : Someone who doesn't know the Watch will want to hear about it.
+b : On the stairs. Rain and blood. | The Sump's always rougher. | Someone desperate.
+a : Grim. | Always was. | Or foolish.
+
+# ---------------------------------------------------------------- Ridgemere: the wharf, the works and the Houses
+
+scene et_rm_theft_sump
+when topic=crime topic.kind=theft here.region=ridgemere
+a : #topic.victim# got robbed by the Sump. No surprise there. | Pickpockets from the Sump worked the wharf crowd. #topic.victim# lost a purse. | They say whoever robbed #topic.victim# vanished into the Sump.
+b[guard] : The Watch won't go into the Sump past dark. Not without twenty.
+b[beggar] : Everyone blames the Sump. The Sump's just hungry.
+b : The Sump eats purses. | The wharf's worse than the Sump Market. | And never came out.
+a : And spits out bones. | Always was. | Never do.
+
+scene et_rm_arrest_houses
+when topic=crime topic.kind=arrest here.region=ridgemere
+a : The Watch took #topic.subject#. Some House will have them out by morning. | #topic.subject#'s arrested. Greatly's man, they say. | #topic.subject# in the Gaol. I'll wager the Council hears of it.
+b[noble] : The Houses do not interfere with the Watch. Publicly.
+b : If they're owned, they'll walk. | Then they'll be out by noon. | The Council hears everything.
+a : They're always owned. | Mark me. | And does nothing.
+
+scene et_rm_death_harbour
+when topic=life topic.kind=death here.region=ridgemere
+a : #topic.subject# drowned off the piers. | They pulled #topic.subject# from the Sound this morning. | #topic.subject# went with the boat in last night's swell.
+b[sailor] : The Sound takes one a season. Feed it, they used to say.
+b : Bright One. The cold'll have taken them quick. | Poor soul. | That swell was cruel.
+a : Quick, I hope. | Poor soul. | Cruel.
+
+scene et_rm_death_furnace
+when topic=life topic.kind=death here.region=ridgemere
+a : #topic.subject# died at the Grayrock Ironworks. | A crucible tipped at the Foundry. That's how #topic.subject# went. | They say #topic.subject# breathed too much of the smoke, all those years.
+b[smith] : Grayrock'll pay a widow's purse and light the furnace again by nightfall.
+b : That place eats wolves. | Bright One. | The smoke takes us all slow.
+a : Every year. | Terrible way. | Slow and sure.
+
+scene et_rm_newcomer_ship
+when topic=newcomer here.region=ridgemere
+a : #topic.subject# came in on that southern ship. Decided to stay. | #topic.subject# jumped ship, I hear. | #topic.subject#'s looking for lodging. In Ridgemere. In the rain.
+b[sailor] : Southern crews always lose a wolf or two to Ridgemere. Bright One knows why.
+b : Brave or mad. | Jumped? Looking for trouble? | They'll drown in a week.
+a : Mad, probably. | Or running from it. | Or learn to love it.
+
+scene et_rm_festival_rain
+when topic=festival here.region=ridgemere
+a : Rain for #here.festival#, naturally. | They hung the ribbons under the overhangs for #here.festival#. | The Rain Hall leaks on #here.festival# same as every day.
+b[old] : Ridgemere keeps its feasts wet. I wouldn't know them dry.
+b : Naturally. | Clever. | Even feast days leak.
+a : We'd not know the difference. | Dry ribbons, for once. | Especially feast days.
+
+scene et_rm_gossip_houses
+when topic=gossip here.region=ridgemere
+a : In the Rain Hall they're saying #topic.subject# #topic.claim#. | A smokehouse girl on the wharf told me #topic.subject# #topic.claim#. | The wharf's buzzing. #topic.subject# #topic.claim#.
+b[noble] : The Houses have better things to whisper about than #topic.subject#.
+b : The Hall talks more than it governs. | Smokehouse girls hear everything. | The wharf always buzzes.
+a : Much more. | Smoke and secrets. | Like flies.
+
+scene et_rm_marriage_houses
+when topic=life topic.kind=marriage here.region=ridgemere
+a : #topic.subject#'s married into a House family, they say. | #topic.subject# wed. The wharf drank all night. | #topic.subject#'s wedding was at the Chapel of the Tide. Damp but grand.
+b[noble] : House matches are business. Love is a pleasant accident.
+b : Up in the world. | Good excuse for a drink. | Damp and grand. Ridgemere all over.
+a : Very up. | Any excuse. | All over.
+
+# ---------------------------------------------------------------- Ridgemere: the Heights and the Sump
+
+scene et_sf_theft_syndicate
+when topic=crime topic.kind=theft here.region=ridgemere
+a : #topic.victim#'s robbed. A Sump gang, I'd bet. | Clean job on #topic.victim#'s house. Too clean for a street thief. | Nobody's saying who robbed #topic.victim#. Everybody knows not to.
+b[official] : The City Office's ledgers show crime falling. I have the ledgers.
+b[merchant] : I pay my dues to the right wolves. My shop's untouched.
+b : The gangs don't do anything without leave. | Somebody planned it. | Wise of them.
+a : Somebody gave the leave. | Somebody always does. | Very wise.
+
+scene et_sf_arrest_courier
+when topic=crime topic.kind=arrest here.region=ridgemere
+a : They took #topic.subject#. A Sump runner, they say. | #topic.subject# arrested. Small fish. The big ones never are. | The Watch took #topic.subject# off the wharf.
+b[guard] : We take the ones we can catch. That's the job.
+b : One less runner. Ten more tomorrow. | The big ones dine with magistrates. | The wharf'll be quiet a day.
+a : At least. | Always have. | A day.
+
+scene et_sf_death_cathedral
+when topic=life topic.kind=death here.region=ridgemere
+a : They're carrying #topic.subject# up to the Chapel of the Tide. | The chapel bell rang for #topic.subject#. | #topic.subject#'s funeral. White silk, silver candles, the lot.
+b[priest] : The Bright One keeps the faithful. Their name goes in the chapel's book.
+b : A long climb for the bearers. | I heard it from the wharf. | Must have cost a fortune.
+a : Long and slow. | The whole city did. | Death's dear in Ridgemere.
+
+scene et_sf_newcomer_wharf
+when topic=newcomer here.region=ridgemere
+a : #topic.subject# came off a ship with nothing but a bag. | #topic.subject#'s new to the city. Already asking about work on the wharf. | Saw #topic.subject# gawping up at the Heights. Newcomer, clearly.
+b[official] : They'll need a permit from the City Office. Three copies.
+b : The Sound brings all sorts. | Wharf'll take anyone. | We all gawped once.
+a : All sorts. | And chew them up. | Still do.
+
+scene et_sf_festival_bright
+when topic=festival here.region=ridgemere
+a : They hang silver ribbons along the Heights for #here.festival#. | The Council of Houses walks down the hill at noon for #here.festival#. | The Sound's crowded with lantern boats for #here.festival#.
+b[noble] : The Houses give their feasts for #here.festival#. Invitation only, naturally.
+b : Silver and rain. Dazzling. | I'll get a spot on the steps. | Like stars on the water.
+a : Bring a hood. | Early, or you'll see nothing. | Lovely.
+
+scene et_sf_gossip_respectable
+when topic=gossip here.region=ridgemere
+a : Over wine in the Heights, they say #topic.subject# #topic.claim#. | A magistrate's servant swears #topic.subject# #topic.claim#. | Respectable folk are saying #topic.subject# #topic.claim#.
+b[noble] : One doesn't discuss such things. One simply stops inviting them.
+b : Wine loosens tongues. | Servants know more than masters. | Respectable folk say the worst things.
+a : And purses. | Always. | Behind fans.
+
+scene et_sf_assault_wharf
+when topic=crime topic.kind=assault here.region=ridgemere
+a : #topic.victim# was beaten on the wharf. Someone sending a message. | They say whoever hurt #topic.victim# was paid to. | Fine streets up top, knives down by the water. #topic.victim# learned that.
+b[guard] : Messages get sent in Ridgemere. We rarely find the sender.
+b : What message? | Paid by whom? | Always the way.
+a : Pay what you owe. | Who knows. | Always.
+
+scene et_sf_succession_merchant
+when topic=life topic.kind=succession here.region=ridgemere
+a : #topic.subject# has the trading house now. And its debts, and its friends. | The City Office has recognised #topic.subject#. Very proper. | #topic.subject# inherits the warehouses on the wharf.
+b[merchant] : And its arrangements. Every trading house in Ridgemere has arrangements.
+b : The friends are the dangerous part. | Proper on paper. | Lucky them.
+a : Always. | It's Ridgemere. | Or doomed.
+
+# ---------------------------------------------------------------- Ridgemere: the salt pans and the Chapel of the Tide
+
+scene et_sr_theft_salt
+when topic=crime topic.kind=theft here.region=ridgemere
+a : Somebody's been skimming salt off the pans at night. | #topic.victim# lost a season's salt. Sacks gone from the shed. | They'll sell stolen salt in the Sump Market. Easy.
+b[merchant] : The smokehouses'll want to know. They count every sack.
+b : Salt's coin, down there. | A season's work! | The Sump'd buy anything cheap.
+a : White coin. | Gone in a night. | Anything.
+
+scene et_sr_death_drowned
+when topic=life topic.kind=death here.region=ridgemere
+a : They'll cut #topic.subject#'s name in the wall of the Chapel of the Tide. | The drowned bell rang for #topic.subject# this morning. | The Sound took #topic.subject#. Boat came back empty.
+b[priest] : Another name on the wall. The sea's a hard tithe.
+b[fisher] : We all know it's coming. Doesn't help when it does.
+b : So many names. | I heard it from the pans. | Empty. That's the worst way.
+a : Too many. | Everyone did. | The worst.
+
+scene et_sr_newcomer_coast
+when topic=newcomer here.region=ridgemere
+a : #topic.subject# wants to work the salt pans. Hands soft as butter. | New face at the Chapel of the Tide. #topic.subject#. | #topic.subject# wants a berth on a fishing boat. Never seen the sea.
+b[fisher] : Salt'll toughen them. Or send them home.
+b : Salt cracks them in a week. | Did they pray? | The Sound will teach them.
+a : Or less. | Hard. | Fast.
+
+scene et_sr_festival_tide
+when topic=festival here.region=ridgemere
+a : They throw salt to the Sound for #here.festival#. For the drowned. | Boats stay in for #here.festival#. Nets mended, lanterns lit. | Salt cakes on the wharf for #here.festival#. Nowhere else makes them.
+b[old] : My mother threw salt every #here.season#. Now I throw it for her.
+b : A good custom. | Good. Everyone rests. | Salty sweet. Strange but good.
+a : Very. | We need it. | Strange and good.
+
+scene et_sr_gossip_vesk
+when topic=gossip here.region=ridgemere
+a : A smokehouse foreman told the Tarred Rope's keeper #topic.subject# #topic.claim#. | On the salt pans they're saying #topic.subject# #topic.claim#. | Out on the boats: #topic.subject# #topic.claim#.
+b : The foreman's a gossip. | The pans are dull work. Gossip helps. | The boats always know first.
+a : Worse than any of us. | Very dull. | Somehow.
+
+# ---------------------------------------------------------------- Larkfield
+
+scene et_ac_theft_wagon
+when topic=crime topic.kind=theft here.region=larkfield
+a : Another wagon rifled in the yard. #topic.victim#'s this time. | Somebody's been cutting purses at the Singing Lark. | #topic.victim# lost a cask off their wagon. Rolled away in the night.
+b[carter] : I sleep in the wagon bed now, with a cudgel. Best sleep I get.
+b[innkeeper] : Not in my common room. Out in the yard, maybe.
+b : The yard's a thieves' fair. | Busy inn, easy marks. | A cask doesn't roll itself.
+a : Every night. | Too easy. | Not uphill.
+
+scene et_ac_newcomer_traveller
+when topic=newcomer here.region=larkfield
+a : #topic.subject#'s stopped here instead of going on to Ridgemere. | #topic.subject# took a job in the stables. Says they're staying. | Not many carters stay in Larkfield. #topic.subject# did.
+b[carter] : Most pass through. A market town's a door, not a room.
+b : Smart. The city's hard. | Stables pay honest. | Wonder why.
+a : Very hard. | And smelly. | We'll find out.
+
+scene et_ac_festival_carters
+when topic=festival here.region=larkfield
+a : Carters from three roads for #here.festival#. The yard's packed. | The Singing Lark is serving free soup for #here.festival#. | Wagons decorated with greenery for #here.festival#.
+b[innkeeper] : Free soup's the cheapest way to sell twenty barrels of ale.
+b : Never seen it fuller. | Free? Get in line! | Pretty sight.
+a : Never. | Running. | Very.
+
+scene et_ac_gossip_road
+when topic=gossip here.region=larkfield
+a : A carter down from the city swears #topic.subject# #topic.claim#. | Road talk says #topic.subject# #topic.claim#. | Everyone passing through has heard #topic.subject# #topic.claim#.
+b[carter] : Road talk's half lies and half true. The trick is which half.
+b : Carters exaggerate. | The road knows. | Must be true, then.
+a : Some. | It does. | Or catching.
+
+# ---------------------------------------------------------------- Frosthollow
+
+scene et_ac_death_road
+when topic=life topic.kind=death here.region=frosthollow
+a : #topic.subject# died on the High Road. Wagon went over. | They brought #topic.subject# down from the mine road on a hurdle. | Ice took #topic.subject#'s wagon off the road.
+b[carter] : Every carter knows that bend. Doesn't help when it's iced.
+b : That road. | Bright One. | The ice gets someone every winter.
+a : That cursed road. | Poor soul. | Every winter.
+
+scene et_ua_festival_snow
+when topic=festival here.region=frosthollow
+a : They light the lanterns along the wall for #here.festival# even in the snow. | Folk are already coming down from the mines for #here.festival#. | The chapel bell for #here.festival#! Hear it?
+b[old] : I've seen the lanterns on #here.festival# for seventy years. Never tire of it.
+b : Snow and lanterns. Nothing finer. | The Frozen Lantern will be packed. | Like the whole mountain's singing.
+a : Nothing. | Elbow to elbow. | It is.
+
+scene et_cb_theft_ore
+when topic=crime topic.kind=theft here.region=frosthollow
+a : Somebody's carting ore off the tailings at night. | #topic.victim# lost their wages. A week down the shaft for nothing. | They stole the lamp oil from the mine store.
+b[miner] : Steal a wolf's lamp oil and you might as well bury him.
+b : Selling it down the High Road, I'd bet. | A whole week! | Cruel.
+a : Bet you're right. | All for nothing. | Deadly.
+
+scene et_cb_death_mine
+when topic=life topic.kind=death here.region=frosthollow
+a : #topic.subject# didn't come up. North seam. | They've closed the shaft where #topic.subject# died. | Another nail on the shrine wall that'll never be pulled. #topic.subject#.
+b[miner] : I worked beside them yesterday. Yesterday.
+b[priest] : I'll take their nail down and bury it with them. As we always do.
+b : The north seam. Always the north seam. | Closed, after. Always after. | Bright One.
+a : Cursed place. | Always too late. | Bright One keep them.
+
+scene et_cb_newcomer_miner
+when topic=newcomer here.region=frosthollow
+a : #topic.subject# came up the High Road to work the mines. | New wolf at the pithead. #topic.subject#. Pale. | #topic.subject# asked about mine wages. Brave or broke.
+b[miner] : Give them a week of grey dust and snow. Then see if they stay.
+b : Mining's what we've got. | They'll go grey soon enough. | Usually broke.
+a : All we've got. | Grey as the rest. | Usually.
+
+scene et_cb_festival_shrine
+when topic=festival here.region=frosthollow
+a : For #here.festival# they ring the shaft bell once for every wolf who came back up. | The forges go cold for #here.festival#. The only day they do. | Even the smoke lifts for #here.festival#.
+b[smith] : One day off a year. I'll sleep through it.
+b : A long ringing this year. | Strange, the quiet. | Feels like a miracle.
+a : Good. | Very strange. | A small one.
+
+scene et_cb_gossip_crown
+when topic=gossip here.region=frosthollow
+a : The ore buyer let slip that #topic.subject# #topic.claim#. | Down the shaft they say #topic.subject# #topic.claim#. | Over the forge noise I heard #topic.subject# #topic.claim#.
+b[miner] : What's said in the dark stays there. Usually.
+b : The buyer's a weasel. | Shaft talk. | You heard wrong, probably.
+a : A talkative weasel. | Dark and true. | Maybe.
+
+scene et_cb_assault
+when topic=crime topic.kind=assault here.region=frosthollow
+a : A fight at the pithead. #topic.victim# came off worst. | They say #topic.victim# was jumped for their wages. | Someone took a pick handle to #topic.victim#.
+b[guard] : Pay day and drink. Never a good mix in this town.
+b : Pay day always ends in blood here. | For wages? Cowards. | A pick handle! Brute.
+a : Always. | Cowards. | A brute.

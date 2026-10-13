@@ -1097,11 +1097,11 @@ void residentsTalkFromWrittenScenes()
     o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";
     o.savePath = "/tmp/ratw-game-test-scenes-" + std::to_string(::getpid()) + ".json";
     std::remove(o.savePath.c_str());
-    std::string problem;
+    std::string problem, shopkeeper;
     {
         game::Game g(o);
         expect(g.start(problem), "the demo world starts: " + problem);
-        expect(g.sceneLibrarySize() >= 100, "the scenes are loaded (" + std::to_string(g.sceneLibrarySize()) + ")");
+        expect(g.talkLibrarySize() >= 100, "the talk library is loaded (" + std::to_string(g.talkLibrarySize()) + ")");
         Client ash;
         ash.id = 1;
         g.connect(&ash);
@@ -1120,6 +1120,37 @@ void residentsTalkFromWrittenScenes()
                         a = x, b = y;
         }
         expect(!a.empty(), "two residents stand together");
+        // What the talk library is told of them (doc 62, phase 2): every fact one it knows, with a value it allows.
+        {
+            const auto& lib = g.talkLibrary();
+            const auto q = g.talkQuery(a, b, "talk.smalltalk");
+            const auto allowed = [&](const talk::FactKind& k, const std::string& v) {
+                char* end = nullptr;
+                std::strtod(v.c_str(), &end);
+                return k.type == talk::FactKind::Type::Text || (k.type == talk::FactKind::Type::Number && !v.empty() && !*end) ||
+                       k.values.count(v) > 0;
+            };
+            for (const auto* who : {&q.a, &q.b})
+                for (const auto& [k, v] : who->facts)
+                {
+                    const auto kind = lib.personFacts().find(k);
+                    expect(kind != lib.personFacts().end() && allowed(kind->second, v), "a person's fact the library knows: " + k + "=" + v);
+                }
+            for (const auto& [k, v] : q.facts)
+            {
+                if (k == "here.region")
+                    continue;                               // (The demo world's region is none of the realm's.)
+                const auto kind = lib.sharedFacts().find(k);
+                expect(kind != lib.sharedFacts().end() && allowed(kind->second, v), "a fact the library knows: " + k + "=" + v);
+            }
+            for (const auto* key : {"wealth", "shift", "injured", "mourning", "working", "tone", "married"})
+                expect(q.a.facts.count(key), std::string("a resident's ") + key);
+            for (const auto* key : {"pair.band", "pair.kin", "pair.boss", "pair.richer", "here.crowd", "world.crime", "world.festival"})
+                expect(q.facts.count(key), std::string("and ") + key);
+            w.entity(a)->hurt = 60;
+            expect(g.talkQuery(a, b, "talk.smalltalk").a.facts.at("injured") == "bad", "badly hurt is injured=bad");
+            w.entity(a)->hurt = 0;
+        }
         auto* me = w.entity("player-ash");
         me->cellId = w.entity(a)->cellId;
         me->position = {w.entity(a)->position.x, w.entity(a)->position.y + 1};
@@ -1131,12 +1162,32 @@ void residentsTalkFromWrittenScenes()
         for (const auto& e : ash.events)
             lines += e.string("type") == "roleplay";
         expect(lines >= 1, "and heard");
+        // A customer (doc 62, phase 4): a keeper greets Ash, and the two remember it ("served"), as the library's rule
+        // says; a second greeting is the one for those served before.
+        shopkeeper = a;
+        bool greeted = false;
+        for (int i = 0; i < 40 && !greeted; ++i)
+        {
+            greeted = g.react(shopkeeper, "player-ash", "react.customer");
+            if (!greeted)
+                run(g, ash, .5);
+        }
+        expect(greeted && g.talkQuery(shopkeeper, "player-ash", "react.customer").facts.count("pair.mem.served"),
+               "a keeper greets a customer, and the two remember it");
+        const auto q = g.talkQuery(shopkeeper, "player-ash", "react.customer");
+        talk::Trace why;
+        g.talkLibrary().pick(q, 1, {}, {}, &why);
+        expect(why.why.find("react_customer_again") != std::string::npos || why.why.find("cooldown") != std::string::npos ||
+                   why.passed.size() > 0,
+               "and next time it's the greeting for those served before, or none while the first cools: " + why.why);
         g.disconnect(&ash);
         g.save();
     }
     game::Game again(o);
     expect(again.start(problem), "restarts: " + problem);
     expect(again.scenesHeardBy("player-ash") >= 1, "what Ash has heard is remembered across a restart");
+    expect(again.talkQuery(shopkeeper, "player-ash", "react.customer").facts.count("pair.mem.served"),
+           "and what the talk remembered, too");
     std::remove(o.savePath.c_str());
 }
 

@@ -1,0 +1,23 @@
+# Southmeadow (Docs/Design/62-talk.md, section 3): grain fields and orchards in the far south. Cheerful; harvest,
+# fruit, chaff and windfalls. Drafts (phase 3), to be written properly with you (phase 7).
+
+grammar southmeadow
+greet = Good harvest | Harvest to you
+greet.broad = Good 'arvest
+farewell = Ripe days | Good harvest
+agree = Ripe and right | Aye, ripe
+refuse = Not this season
+surprise = Well, pick me | Bless the barley
+annoyed = Blight take it | Wormy luck
+very = full
+good = ripe
+bad = blighted | wormy
+luck = a windfall
+child = sprout
+pet!! = my apple | my plum
+hot = sun-ripe | baking
+tired = harvested
+nonsense = chaff
+tag = , eh
+oath! = Sheaf and sickle | Blight take it | Apples and ale
+home = my own orchard

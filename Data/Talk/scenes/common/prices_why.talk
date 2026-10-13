@@ -1,0 +1,36 @@
+# Why a price fell (doc 57, 5; topic price_cause): a wolf brought goods into a town short of them, and they got cheaper.
+# {item} is the good, plural or mass ("meals", "timber", "cord"). {who} is how the teller names the wolf: a name they were
+# given (known=yes), or how the wolf looked (known=no: "a grey wolf with a torn ear"), so it sits mid-sentence. Speak of
+# the wolf as "they". Alternatives are written in parallel.
+
+# ---------------------------------------------------------------- By name
+
+scene pw_named
+when topic=price_cause topic.known=yes
+a : The price of #topic.what# is down this week, did you see? | Have you priced #topic.what# lately? Down again. | #topic.what#, cheaper at last.
+b : Why's that? | I hadn't noticed. | About time.
+a : #topic.who# brought a load in, that's why. | Thank #topic.who# for it: they brought a cartload up. | #topic.who# came in with plenty, and the shops were short.
+b : Good of them. | Then I'll buy while it lasts. | #topic.who#, was it? Well, well.
+
+scene pw_named_merchant
+when topic=price_cause topic.known=yes here.place=market
+a : The shops were near out of #topic.what# till #topic.who# turned up. | #topic.who# sold us a stack of #topic.what# last week. | We had #topic.what# from #topic.who#.
+b[merchant] : And now nobody can charge what they did.
+b : That explains the prices. | Lucky for us. | Good timing.
+a : It does. | It was. | Wasn't it.
+
+# ---------------------------------------------------------------- By look
+
+scene pw_look
+when topic=price_cause topic.known=no
+a : The price of #topic.what# fell when #topic.who# came through with a load. | Someone, #topic.who#, brought #topic.what# up, and the price fell. | Have you seen? #topic.what# down, thanks to #topic.who#.
+b : Who was that, then? | Never seen them. | A stranger did that?
+a : Don't know their name. | Passing through, I think. | A stranger, yes.
+b : Whoever they are, I'm grateful. | Let's hope they come back. | Good for them.
+
+scene pw_look_market
+when topic=price_cause topic.known=no here.place=market
+a : A stranger sold the shops #topic.what# when they had none: #topic.who#. | #topic.who# came in with #topic.what# and the prices dropped. | #topic.what#? Cheap since #topic.who# came by.
+b[merchant] : I bought what I could. Couldn't say no at that price.
+b : Lucky for the rest of us. | I'll take some, then. | Strangers aren't all trouble.
+a : Very. | Go on, then. | Not all.

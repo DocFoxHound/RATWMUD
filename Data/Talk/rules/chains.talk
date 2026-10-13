@@ -1,0 +1,57 @@
+# Conversations as chains (Docs/Design/62-talk.md, section 2; phase 4): a rule hands the next beat to the other
+# speaker, who answers with their own best rule for it, so every reply is chosen by the replier's own facts. A start;
+# phase 7 writes the families properly.
+
+# Prices: the poor complain, and each answers as they are.
+rule prices_complain_poor
+when concept=talk.prices self.wealth=poor|destitute topic.dir=up
+say #oath#. I'll not eat this week at #topic.price#. | #topic.price#? For #topic.what#? #robbery#.
+then other: prices.answer_complaint
+remember self: complained_prices 1d
+
+rule prices_complain_again
+when concept=talk.prices self.mem.complained_prices topic.dir=up
+priority 1
+say Still #topic.price#. I said it yesterday and I'll say it again. | Dearer every day#tag#.
+then other: prices.answer_complaint
+
+rule prices_answer_merchant
+when concept=prices.answer_complaint self.role=merchant
+say Roads are bad, #address#. I pay more, you pay more. | Blame the carters, not me.
+remember pair: talked_money 7d
+
+rule prices_answer_poor
+when concept=prices.answer_complaint self.wealth=poor|destitute
+say #agree#. We'll all go hungry together. | Don't I know it.
+
+rule prices_answer_rich
+when concept=prices.answer_complaint self.wealth=rich
+say Is it? I hadn't noticed. | Surely not so very much.
+
+rule prices_answer
+when concept=prices.answer_complaint
+say #agree#. It's the caravans, they say. | #agree#. Nothing to be done.
+
+# Two friends passing: a greeting, and the answer as the answerer is today.
+rule greet_friend
+when concept=react.friend
+cooldown 6h
+say #greet#, #pet#! | #greet#, #pet#. Keeping well?
+then other: greet.answer
+
+rule greet_answer
+when concept=greet.answer
+say #greet#! Can't stop. | #greet#, #pet#. Well enough.
+
+rule greet_answer_tired
+when concept=greet.answer tired=yes
+say #tired.capitalize#. Don't ask. | Ask me after I've slept.
+
+rule greet_answer_mourning
+when concept=greet.answer mourning=kin
+priority 3
+say ... Thank you for asking. | Not good. Not today.
+
+rule greet_answer_working
+when concept=greet.answer working=yes shift=during
+say Can't stop, I'm at work. | Later, #pet#. Work.

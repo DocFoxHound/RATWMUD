@@ -1,0 +1,51 @@
+# Calls and remarks to no one in particular (Docs/Design/62-talk.md): rules, spoken in each resident's own dialect
+# through the grammar's symbols, and chosen by what's true of them (phase 2's facts). A start (phase 3); phase 7
+# writes the rest.
+
+rule bk_say_cold
+when concept=bark here.season=winter here.weather!=indoors
+say #cold.capitalize# today#tag#. | #oath#, it's #very# #cold#. | #cold.capitalize#. I'll be glad of #home#.
+
+rule bk_say_rain
+when concept=bark here.weather=rain|storm
+say #oath#, this #rain#. | More #rain##tag#. | #rain.capitalize# again. #annoyed#.
+
+rule bk_say_hot
+when concept=bark here.season=summer here.weather=clear here.time=day
+say #hot.capitalize# enough to bake bread#tag#. | #oath#, it's #hot#.
+
+rule bk_say_tired
+when concept=bark tired=yes
+say #tired.capitalize#. #very.capitalize# #tired#. | Is the day not done yet? I'm #tired#.
+
+rule bk_say_greet
+when concept=bark here.player_near=yes here.crowd=quiet
+weight 0.6
+say #greet#. | #greet#, traveller.
+
+rule bk_say_market_goods
+when concept=bark here.place=market role=merchant
+say #good.capitalize# goods! #good.capitalize# prices! | Not #worthless#, this. Look! | Come and see. #little.capitalize# closer!
+
+rule bk_say_poor
+when concept=bark wealth=poor|destitute
+say Not a penny to my name. #annoyed#. | #money.capitalize#, #money#. It's always #money#. | Another week like this and I'm done.
+
+rule bk_say_failing
+when concept=bark business=failing working=yes
+say Nobody's buying. #annoyed#. | Empty again. Where is everyone? | Another quiet day. #bad.capitalize# times.
+
+rule bk_say_hurt
+when concept=bark injured=bad
+priority 2
+say #oath#, that hurts. | Someone fetch a healer. Gods. | Don't touch it. Don't.
+
+rule bk_say_mourning
+when concept=bark mourning=kin
+priority 3
+say ... | Not today. Leave me be. | I keep turning to tell them something.
+
+rule bk_say_robbed
+when concept=bark robbed=yes
+priority 2
+say Robbed! In broad day! | Has anyone seen a thief? They took my things. | #robbery#. Where's the Watch?

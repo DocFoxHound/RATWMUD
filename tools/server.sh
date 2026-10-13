@@ -8,7 +8,7 @@
 #
 # --save FILE picks another save. Everything else goes to ratw_server (see Server/ratw_server.cpp): --port N (default
 # 7788), --dev-identity, --dev-tools, --dm-directory DIR... RATW_BIND chooses the interface (default 127.0.0.1: this
-# machine only). RATW_AI=off|fixture: see tools/mind.sh. RATW_VOICE=off: no speech router or exchange library.
+# machine only). RATW_AI=off|fixture: see tools/mind.sh. RATW_VOICE=off: no speech router (residents' talk, Data/Talk, stays).
 # The server and client are built first if their sources changed.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -27,6 +27,8 @@ while [[ $# -gt 0 ]]; do
 done
 ratw_build
 command=("$ratw_server_binary" --port "$port" --bind "${RATW_BIND:-127.0.0.1}" --web "$ratw_root/Client/dist")
+# The talk library (Docs/Design/62-talk.md): residents' written talk to each other, and their calls.
+command+=(--talk-data "$ratw_root/Data/Talk")
 # Cheaper voices (Docs/Design/28-ai-cost.md): the game answers what it knows, and keeps a ledger of who answered each
 # NPC line (no words in it) for tools/ai_cost.py. RATW_VOICE=off leaves everything to the NPC Mind.
 if [[ "${RATW_VOICE:-on}" != off ]]; then

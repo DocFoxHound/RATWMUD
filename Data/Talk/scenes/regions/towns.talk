@@ -1,0 +1,90 @@
+# The six towns' own talk: Larkfield's carters and downs, Frosthollow's mines and snow, the mountains over Coldwater
+# and Glasswater, Mirebridge's fens, Southmeadow's fields and Oakhaven's woods.
+
+scene tn_crossing_caravans
+when topic=lore|smalltalk here.region=larkfield
+a : Wagons stacked three deep in the yard again. | Every carter in the south-east stops here. | The Singing Lark is full every night.
+b[carter] : Best stopping place on the downs.
+b[innkeeper] : Full, and loud, and hungry. I love it and I hate it.
+b : Good for trade. | Seems that way. | Every night.
+a : Good for trade, bad for sleep. | It does. | And every morning.
+
+scene tn_westmarch_frontier
+when topic=lore|smalltalk here.region=larkfield
+a : Nothing out there but sheep and skylarks. | Travellers from the north are fewer this year. | The downs go on forever.
+b[herder] : And good grass. Don't forget the grass.
+b[old] : Don't go up on the high downs after dark.
+b[adolescent] : One day I'll walk to the end of them.
+b : That's the downs. | Fewer travellers, fewer troubles. | They do.
+a : That it is. | Maybe. | Ha. Good luck.
+
+scene tn_westmarch_market
+when topic=work here.region=larkfield here.place=market|street
+a : Drovers in from the south with cattle. | The general store's ledger's longer than the general store. | Half the downs owes money here.
+b[merchant] : And the other half owes money to someone else.
+b : Good market, then. | Ha. | The whole of the downs owes someone.
+a : Good enough. | True. | Everyone does.
+
+scene tn_cinderbrook_mines
+when topic=lore|work here.region=frosthollow
+a : The north seam's flooding again. | Ore's good this month. Rich as I've seen. | Another shaft collapsed up the hill.
+b[miner] : Don't go near the north seam. It's cursed, I tell you.
+b[smith] : Good ore makes good iron. Keep it coming.
+b[healer] : Anyone hurt? Bring them to me.
+b : Bad luck. | Good news. | Was anyone below?
+a : Always is. | For once. | Nobody, this time.
+
+scene tn_cinderbrook_crown
+when topic=lore here.region=frosthollow
+a : Lord Grayrock's come up the High Road again. | Ridgemere takes the best of our iron and pays like misers. | They want more ore by spring.
+b[miner] : A lord at the pithead. He looks down the shaft and nods.
+b : Of course he has. | Same as always. | More? From where?
+a : He never stays long. | Always. | From our backs.
+
+scene tn_northern_cold
+when topic=lore|weather here.region=frosthollow
+a : Ice on the inside of the walls this morning. | Wind off the peaks could cut stone. | Something howled up the valley last night.
+b[old] : Frosthollow winter. You get used to it. You don't.
+b : Stay by the stove. | It does. | Just the wind.
+a : I will. | Always. | I hope so.
+
+scene ua_mountain
+when topic=lore|weather here.region=mountains
+a : Mountain's wearing its cloud hat today. | Cold coming down off the peaks. | Can you see the summit? Never can, this time of year.
+b[old] : When the mountain hides, the snow comes. Mark me.
+b : It always is. | Feel it in the air. | Never.
+a : Marked. | Me too. | Ha.
+
+scene tn_lakeside_mere
+when topic=lore|smalltalk here.region=lake
+a : Glasswater's still as glass this morning. | Something big moved under the water last night. | Mist on the lake again.
+b[fisher] : Calm water, deep fish.
+b[old] : There are things in that lake older than the town.
+b[child] : A monster? A real one?
+b : Beautiful, isn't it? | Just a pike. A big pike. | Every morning.
+a : It is. | A very big pike. | Every morning.
+
+scene tn_fenhollow_marsh
+when topic=lore|smalltalk here.region=fens
+a : Marsh lights out again last night. | Don't follow the lights. Never follow the lights. | Peat's wet this season.
+b[healer] : The marsh gives the best herbs and takes the careless.
+b[old] : My grandmother followed the lights once. Came back different.
+b[miner] : Wet peat smokes. Dry peat burns. Nobody listens.
+b : Spirits, they say. | I wouldn't dream of it. | Always is.
+a : Something, anyway. | Good. | Always.
+
+scene tn_amberford_grain
+when topic=lore|work here.region=southmeadow
+a : Not a drop of rain in three weeks. | The millstream's lower than I've ever seen. | Grain price chalked at the door again.
+b[farmer] : If it doesn't rain soon, there'll be no second planting.
+b[old] : The fields were greener when I was a pup. I swear it.
+b : It'll come. | Slow wheel, then. | Higher or lower?
+a : It had better. | Slow bread. | Higher.
+
+scene tn_hollowmere_quiet
+when topic=smalltalk|lore here.region=oakhaven
+a : Nothing ever happens here. | The carter's late again. | Did you see the deer by the brook?
+b[old] : Nothing happening is a blessing.
+b[child] : Something happened! I fell in the brook!
+b : That's why I like it. | He's always late. | Beautiful creatures.
+a : I suppose. | Always. | They are.
