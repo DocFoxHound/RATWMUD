@@ -2038,6 +2038,9 @@ class World
     std::int64_t marriageWeek_ = -1;
     void tendPromises();
     void tendMarriages();
+    // Old age (the user, 2026-10-13): from seventy a resident may die, likelier each year, so the world's people turn
+    // over: children are born to take their place (Society::tendCareers). Not those the DM has protected.
+    void tendOldAge();
     // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
     bool freeSpotNear(const std::string& cellId, double& x, double& y);
     std::int64_t bondHour_ = -1, bondDay_ = -1;     // The last game hour and day bonds were tended.

@@ -1,0 +1,125 @@
+{
+  "input": {
+    "resident": {
+      "accent": "light",
+      "age": "28",
+      "drive": "content",
+      "from": "oakhaven",
+      "honesty": "plain",
+      "job": "innkeeper",
+      "leader": "Celestine Greatly",
+      "name": "Agnes Millford",
+      "neighbour": "Vidar Kettleham",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "commons",
+      "quirk": "carries_a_wet_stone_whetting_knife_everywhere",
+      "sex": "female",
+      "shopkeeper": "Winifred Pitchdale",
+      "talk": "quiet",
+      "temper": "even",
+      "warmth": "warm",
+      "wealth": "rich"
+    },
+    "description": "A broad-shouldered grey red wolf with amber eyes that miss little, the keeper of The Tarred Rope.",
+    "personality": "Dreamy and generous; she carries a wet-stone whetting knife everywhere.",
+    "backstory": "Agnes owes a House factor money and has been told to find it by the new moon.",
+    "greeting": "Good day to you. Dry yourself by the fire. The rain has not stopped since morning.",
+    "work": "keeping the taproom",
+    "dialect_words": "greet = Shade on you | Good shade; greet.broad = Shade an' shelter; farewell = Root well | Shade keep you; agree = Rooted true | Aye, that; refuse = That won't take root; surprise = Leaf and limb | Well, branch me; annoyed = Blight it | Knots and knots; very = proper; good = good bark | sound wood; bad = rotten | windthrown; worthless = deadwood; luck = good growing weather; child = sapling; pet!! = acorn | my sapling"
+  },
+  "draft": {
+    "persona": "Agnes Millford is a broad-shouldered grey-red wolf with amber eyes that miss little. At twenty-eight, she keeps The Tarred Rope in Ridgemere’s Commons, speaking quietly in the light Oakhaven manner she grew up with. She is even-tempered, warm, plain in her honesty, and generous enough to give away what she ought to save. Her rich circumstances sit uneasily beside the Commons and the debt a House factor presses her to settle before the new moon. She fears being cornered more than being poor. Dreamy by nature, she drifts toward thoughts of rain, fires, and far roads while keeping the taproom steady. A wet-stone whetting knife is always with her, a curious comfort and a warning. She wants a contented life, yet cannot stop sharpening herself for trouble.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "Good bark grows in quiet rain.",
+          "Keep your roots where the fire knows them."
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By rain and root.",
+          "Bark and briar!"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Shade on you.",
+          "Good shade."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Root well.",
+          "Shade keep you."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Rooted true.",
+          "Aye, that."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "That won't take root.",
+          "Not while I have breath."
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Leaf and limb!",
+          "Well, branch me."
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Blight it.",
+          "Knots and knots."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Good day to you. Dry yourself by the fire. The rain has not stopped since morning.",
+          "Settle by the hearth; I'll have your drink ready proper soon."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Shade on you, {player}. You look windthrown. Come in before the rain finds your bones.",
+          "Good shade, {player}. The fire is warm, and I have a place cleared for you."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A House debt is a root through stone. It does not loosen because you ask it kindly.",
+          "Contentment is sound wood, but even sound wood must watch the axe."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Leave the knife by the door? No. It comes with me.",
+          "The rain may have the street. This hearth is mine."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = Good bark grows in quiet rain. | Keep your roots where the fire knows them.\noath! = By rain and root. | Bark and briar!\nrefuse = Not while I have breath.\nsurprise = Leaf and limb!\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Good day to you. Dry yourself by the fire. The rain has not stopped since morning. | Settle by the hearth; I'll have your drink ready proper soon.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Shade on you, #topic.player#. You look windthrown. Come in before the rain finds your bones. | Good shade, #topic.player#. The fire is warm, and I have a place cleared for you.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A House debt is a root through stone. It does not loosen because you ask it kindly. | Contentment is sound wood, but even sound wood must watch the axe.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Leave the knife by the door? No. It comes with me. | The rain may have the street. This hearth is mine.\n",
+  "refused": ""
+}

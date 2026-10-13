@@ -1128,6 +1128,10 @@ Value society(const SocietyState& s)
     for (const auto& [key, n] : s.careers.births)
         births.add(key, n);
     careers.add("spouses", spouses); careers.add("parents", parents); careers.add("lastBirth", lastBirth); careers.add("births", births);
+    auto population = Value::object();
+    for (const auto& [town, n] : s.careers.population)
+        population.add(town, n);
+    careers.add("population", population);
     o.add("careers", careers);
     o.add("books", monthBooks(s.books));
     o.add("houses", houseState(s.houses));
@@ -1167,6 +1171,8 @@ CareerState readCareers(const Value& o)
         if (v.isNumber()) c.lastBirth[key] = v.asNumber();
     for (const auto& [key, v] : o.object("births").fields())
         if (v.isNumber()) c.births[key] = std::clamp(int(v.asNumber()), 0, 3);
+    for (const auto& [town, v] : o.object("population").fields())
+        if (v.isNumber()) c.population[town] = std::clamp(int(v.asNumber()), 0, 100000);
     return c;
 }
 

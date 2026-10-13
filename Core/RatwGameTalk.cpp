@@ -45,14 +45,43 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     if (!e.npc || !life)
         return p;                                   // (A player, or someone passing: who they are, and no more.)
 
-    // Where they grew up and how they sound (phase 3): their dialect is a layer of their grammar, above plain.
+    // Where they grew up and how they sound (phase 3): their dialect is a layer of their grammar, above plain. Their
+    // row in live.npc_voice (phase 6) says otherwise where it says anything: origin, accent, quarter, traits, quirk, and
+    // their own words, a layer above the dialect.
     std::string from, accent;
     world_.talkOrigin(e.id, from, accent);
+    const auto voice = npcVoice_.find(e.id);
+    if (voice != npcVoice_.end())
+    {
+        if (!voice->second.from.empty())
+            from = voice->second.from;
+        if (!voice->second.accent.empty())
+            accent = voice->second.accent;
+        if (!voice->second.quarter.empty())
+            f["quarter"] = voice->second.quarter;
+        if (!voice->second.quirk.empty())
+            f["quirk"] = voice->second.quirk;
+    }
+    if (voiceLayers_.count(e.id))
+        p.grammar.push_back(talk::Library::personalLayer(e.id));
     if (!from.empty())
     {
         f["from"] = from;
-        f["accent"] = accent;
+        f["accent"] = accent.empty() ? "light" : accent;
         p.grammar.push_back(from);
+    }
+    // Their people (decision 8), by name: to speak of ("#self.spouse#", "#self.priest#").
+    for (const auto& [role, who] : peopleOf(e.id))
+        if (const auto* them = world_.entity(who))
+            f[role] = them->name;
+    // Traits (decision 4): the middle of each axis unless their row says.
+    static const std::map<std::string, std::string> Middle{{"temper", "even"}, {"talk", "plain"}, {"warmth", "reserved"},
+                                                           {"humour", "none"}, {"honesty", "plain"}, {"piety", "ordinary"},
+                                                           {"drive", "steady"}};
+    for (const auto& [axis, middle] : Middle)
+    {
+        const auto set = voice == npcVoice_.end() ? nullptr : &voice->second.traits;
+        f[axis] = set && set->count(axis) ? set->at(axis) : middle;
     }
 
     // Means: the household's money and food in days of plain food for everyone in it (troubles::foodDays, as the
@@ -235,6 +264,59 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
         return false;
     };
     facts["pair.boss"] = paidBy(b, a) ? "a" : paidBy(a, b) ? "b" : "no";
+    // Neighbours, and those they deal with (decision 8): who buys from whom, who is whose priest.
+    const auto near = neighboursOf(a);
+    facts["pair.neighbours"] = yes(std::find(near.begin(), near.end(), b) != near.end());
+    auto pa2 = peopleOf(a), pb2 = peopleOf(b);
+    facts["pair.customer"] = pa2["shopkeeper"] == b ? "a" : pb2["shopkeeper"] == a ? "b" : "no";
+    facts["pair.flock"] = pa2["priest"] == b ? "b" : pb2["priest"] == a ? "a" : "no";
+    // Toward the other, player or resident (decision 9): a's knowledge of b, and a's feelings for b.
+    facts["pair.named"] = yes(knowsName(a, b));
+    if (const auto* k = known_.find(a, b))
+        facts["pair.named_how"] = k->how;
+    facts["pair.known_by"] = yes(knowsName(b, a));
+    const Bond none{};
+    const auto* bond = world_.bonds().find(a, b);
+    const Bond& r = bond ? *bond : none;
+    const auto number = [](double v) { return std::to_string(int(std::lround(v))); };
+    facts["pair.affinity"] = number(r.affinity);
+    facts["pair.trust"] = number(r.trust);
+    facts["pair.respect"] = number(r.respect);
+    facts["pair.familiarity"] = number(r.familiarity);
+    facts["pair.fear"] = number(r.fear);
+    // One word for it (placeholders: doc 62, "Players, as settled").
+    facts["pair.disposition"] = r.affinity <= -50 || (r.affinity <= -25 && r.fear >= 30) ? "hostile"
+                                : r.affinity <= -15 || r.trust <= -25                    ? "wary"
+                                : r.affinity < -3                                        ? "cool"
+                                : r.affinity >= 50 && r.familiarity >= 40                ? "fond"
+                                : r.affinity >= 20                                       ? "warm"
+                                                                                         : "neutral";
+    if (bond && r.familiarity > 0)
+        facts["pair.days_since"] = std::to_string(std::max(0, int(std::floor(world_.calendarDays() - r.lastContact))));
+    facts["pair.owed"] = r.owed > 0 ? "b" : r.owed < 0 ? "a" : "no";
+    std::string promise = "no";
+    for (const auto& p : world_.promises())
+        if (p.status == "open" && ((p.by == a && p.to == b) || (p.by == b && p.to == a)))
+            promise = p.by == a ? "a" : "b";
+    facts["pair.promise"] = promise;
+    // The worst they believe of the other.
+    static const std::vector<std::pair<const char*, const char*>> Rumours{{"violent", "violent"}, {"stole", "thief"},
+                                                                        {"breaks promises", "breaks_promises"},
+                                                                        {"keeps promises", "keeps_promises"},
+                                                                        {"new in town", "newcomer"}};
+    std::string rumour = "none";
+    if (const auto* beliefs = world_.beliefsOf(a))
+        for (const auto& [words, word] : Rumours)
+            if (rumour == "none")
+                for (const auto& belief : *beliefs)
+                    if (belief.subject == b && belief.claim.find(words) != std::string::npos)
+                    {
+                        rumour = word;
+                        break;
+                    }
+    facts["pair.rumour"] = rumour;
+    if (const auto* other = world_.entity(b); other && !other->npc)
+        facts["pair.famous"] = yes(!recognise(a, b, false).empty());
 }
 
 talk::Query Game::talkQuery(const std::string& a, const std::string& b, const std::string& concept,
@@ -264,6 +346,19 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
         talkRecall("pair:" + std::min(a, b) + "|" + std::max(a, b), "pair.", q.facts);
     if (const auto region = q.facts.find("here.region"); region != q.facts.end())
         talkRecall("town:" + region->second, "world.", q.facts);
+    // Figures not in the game yet (decision 8), known where the speaker is from, stands, or serves: by role.
+    for (const auto& fig : figures_)
+    {
+        const auto& k = fig.knownIn;
+        const auto of = [&](const talk::Facts& f, const char* key) {
+            const auto found = f.find(key);
+            return found == f.end() ? std::string("-") : found->second;
+        };
+        const bool known = k == "realm" || k == "region:" + of(q.a.facts, "from") || k == "region:" + of(q.facts, "here.region") ||
+                           k == "house:" + of(q.a.facts, "house");
+        if (known && !fig.role.empty())
+            q.facts["world.figure_" + fig.role] = fig.name;
+    }
     for (const auto& [k, v] : facts)
         if (!v.empty())
             q.facts[k] = v;
@@ -275,6 +370,18 @@ void Game::talkRemember(const std::vector<talk::Effect>& effects)
     const double now = world_.calendarDays();
     for (const auto& e : effects)
     {
+        if (e.scope == "regard")
+        {
+            // A line that moves how one feels about the other (doc 62, decision 9): bounded as talk is.
+            const auto bar = e.owner.find('|');
+            BondChange change;
+            const double n = std::atof(e.value.c_str());
+            (e.key == "affinity" ? change.affinity : e.key == "trust" ? change.trust : e.key == "respect" ? change.respect
+             : e.key == "fear" ? change.fear : change.familiarity) = n;
+            if (bar != std::string::npos)
+                regard(e.owner.substr(0, bar), e.owner.substr(bar + 1), change, "talk", "said " + e.why);
+            continue;
+        }
         auto& memos = talkMemory_[e.scope + ":" + e.owner];
         memos[e.key] = {e.value, e.days < 0 ? -1 : now + e.days};
         while (memos.size() > 32)
@@ -321,7 +428,10 @@ bool Game::react(const std::string& npc, const std::string& to, const std::strin
     for (const auto& t : ambient_)
         if (t.pick.teller == npc || t.pick.listener == npc || (!to.empty() && (t.pick.teller == to || t.pick.listener == to)))
             return false;
-    const auto q = talkQuery(npc, to, concept);
+    talk::Facts facts;
+    if (const auto* them = to.empty() ? nullptr : world_.entity(to); them && !them->npc && knowsName(npc, to))
+        facts["topic.player"] = labelFor(npc, to);  // (Only a name they were given: doc 32.)
+    const auto q = talkQuery(npc, to, concept, facts);
     const auto said = talkPick(q, npc, "react:" + e->cellId, 4, std::uint64_t(now * 1000) ^ std::hash<std::string>{}(npc + concept), false);
     if (said.lines.empty())
         return false;
@@ -488,5 +598,262 @@ void Game::reactions(double dt)
                     react(x->id, y->id, "react.friend");
             }
     }
+}
+
+std::pair<std::string, Vec2> Game::entranceOf(const std::string& cell)
+{
+    if (world_.doors().size() != entranceDoors_)
+    {
+        entrances_.clear();
+        entranceDoors_ = world_.doors().size();
+    }
+    if (const auto found = entrances_.find(cell); found != entrances_.end())
+        return found->second;
+    // Out through the door that leads in, and through the one before it (a flat upstairs, over a shop), to a street.
+    std::pair<std::string, Vec2> at{cell, {}};
+    std::string here = cell;
+    for (int step = 0; step < 4; ++step)
+    {
+        const auto* c = world_.cell(here);
+        if (!c || c->outdoors)
+            break;
+        const Door* in = nullptr;
+        for (const auto& [id, d] : world_.doors())
+            if (d.targetCell == here && d.cellId != here)
+            {
+                in = &d;
+                break;
+            }
+        if (!in)
+            break;
+        at = {in->cellId, in->position};
+        here = in->cellId;
+    }
+    return entrances_[cell] = at;
+}
+
+std::vector<std::string> Game::neighboursOf(const std::string& id)
+{
+    const auto& society = world_.society();
+    const auto* life = society.resident(id);
+    if (!life || life->homeCell.empty() || Society::communalHome(life->homeCell))
+        return {};
+    const auto mine = entranceOf(life->homeCell);
+    // Households by how far their door is from ours: the same building is no distance at all.
+    std::map<std::string, double> households;
+    for (const auto& [other, theirs] : society.state().residents)
+    {
+        if (other == id || theirs.homeCell.empty() || theirs.homeCell == life->homeCell || Society::communalHome(theirs.homeCell))
+            continue;
+        if (const auto* e = world_.entity(other); !e || e->dead)
+            continue;
+        if (households.count(theirs.homeCell))
+            continue;
+        const auto at = entranceOf(theirs.homeCell);
+        if (at.first != mine.first)
+            continue;
+        const double d = std::hypot(at.second.x - mine.second.x, at.second.y - mine.second.y);
+        if (d <= 30)
+            households[theirs.homeCell] = d;
+    }
+    std::vector<std::pair<double, std::string>> nearest;
+    for (const auto& [home, d] : households)
+        nearest.push_back({d, home});
+    std::sort(nearest.begin(), nearest.end());
+    if (nearest.size() > 5)
+        nearest.resize(5);
+    std::vector<std::string> out;
+    for (const auto& [d, home] : nearest)
+        for (const auto& [other, theirs] : society.state().residents)
+            if (theirs.homeCell == home)
+                if (const auto* e = world_.entity(other); e && !e->dead)
+                    out.push_back(other);
+    return out;
+}
+
+std::map<std::string, std::string> Game::peopleOf(const std::string& id)
+{
+    std::map<std::string, std::string> out;
+    const auto& society = world_.society();
+    const auto living = [&](const std::string& who) {
+        const auto* e = world_.entity(who);
+        return e && !e->dead;
+    };
+    if (const auto* s = society.spouse(id); s && living(*s))
+        out["spouse"] = *s;
+    int youngest = 1000;
+    for (const auto& [child, parents] : society.state().careers.parents)
+    {
+        if (std::find(parents.begin(), parents.end(), id) != parents.end() && living(child) && world_.entity(child)->age < youngest)
+            youngest = world_.entity(child)->age, out["child"] = child;
+        if (child == id)
+            for (const auto& p : parents)
+                if (living(p))
+                    out[world_.entity(p)->appearance->sex == "female" ? "mother" : "father"] = p;
+    }
+    if (const auto n = neighboursOf(id); !n.empty())
+        out["neighbour"] = n.front();
+    // Those they deal with in their town: the nearest shopkeeper to their door, their priest, their leader.
+    const auto* life = society.resident(id);
+    const auto* e = world_.entity(id);
+    if (!life || !e)
+        return out;
+    const auto town = world_.communityOf(life->homeCell.empty() ? e->cellId : life->homeCell);
+    const auto door = entranceOf(life->homeCell.empty() ? e->cellId : life->homeCell);
+    double nearest = 1e18;
+    for (const auto& p : society.positions())
+    {
+        const auto held = society.state().careers.positions.find(p.id);
+        if (held == society.state().careers.positions.end() || held->second.holder.empty() || held->second.holder == id ||
+            !living(held->second.holder) || world_.communityOf(p.work.cell) != town)
+            continue;
+        const auto& holder = held->second.holder;
+        if (p.role == "merchant")
+        {
+            const auto at = entranceOf(p.work.cell);
+            const double d = at.first == door.first ? std::hypot(at.second.x - door.second.x, at.second.y - door.second.y) : 1e9;
+            if (d < nearest)
+                nearest = d, out["shopkeeper"] = holder;
+        }
+        if (Society::clergy(p.title) && !out.count("priest"))
+            out["priest"] = holder;
+    }
+    // Their leader: their own House's head, or the head of a House of their town.
+    for (const auto& h : society.houses())
+    {
+        const auto head = society.state().careers.positions.find(h.head);
+        if (head == society.state().careers.positions.end() || head->second.holder.empty() || head->second.holder == id ||
+            !living(head->second.holder))
+            continue;
+        const auto* post = society.jobOf(id);
+        const bool own = (post && society.ownerOf(post->id) == h.id) || society.family(id, head->second.holder);
+        if (own || (!out.count("leader") && h.community == town))
+            out["leader"] = head->second.holder;
+        if (own)
+            break;
+    }
+    return out;
+}
+
+BondChange Game::regard(const std::string& holder, const std::string& other, BondChange change, const std::string& source,
+                        const std::string& reason, double lift)
+{
+    // Each source's bounds: a change at most `each`, at most `per` in each axis in its window (an hour, or a day).
+    struct Bounds
+    {
+        double each, per;
+        bool daily;
+    };
+    static const std::map<std::string, Bounds> Sources{{"model", {3, 6, false}}, {"talk", {1, 3, false}}, {"analysis", {5, 10, true}},
+                                                       {"dm", {200, 1e9, true}}};
+    const auto bounds = Sources.count(source) ? Sources.at(source) : Bounds{1, 3, false};
+    auto& budget = regardBudget_[holder + "|" + other + "|" + source];
+    const auto window = std::int64_t(std::floor(world_.calendarDays() * (bounds.daily ? 1 : 24)));
+    if (budget.window != window)
+        budget = {window, {0, 0, 0, 0, 0}};
+    double* axes[5] = {&change.affinity, &change.trust, &change.familiarity, &change.fear, &change.respect};
+    bool any = false;
+    for (int i = 0; i < 5; ++i)
+    {
+        const double room = std::max(0.0, bounds.per - budget.used[i]);
+        *axes[i] = std::clamp(*axes[i], -std::min(bounds.each, room), std::min(bounds.each, room));
+        budget.used[i] += std::abs(*axes[i]);
+        if (*axes[i] > 0 && (i == 0 || i == 1))
+            *axes[i] *= lift;                       // (First impressions, doc 55: the model's warmth only.)
+        any |= *axes[i] != 0;
+    }
+    if (!any)
+        return change;
+    world_.bonds().change(holder, other, change, world_.calendarDays());
+    auto& ledger = regardLedger_[holder + "|" + other];
+    ledger.push_back({world_.calendarDays(), source, reason.substr(0, 160), change});
+    while (ledger.size() > 12)
+        ledger.pop_front();
+    return change;
+}
+
+const std::deque<Game::RegardEntry>* Game::regardLedger(const std::string& holder, const std::string& other) const
+{
+    const auto found = regardLedger_.find(holder + "|" + other);
+    return found == regardLedger_.end() ? nullptr : &found->second;
+}
+
+void Game::loadVoices()
+{
+    if (options_.database.empty() || liveWorldId_.empty())
+        return;
+    std::string problem;
+    int dialects = 0, refused = 0;
+    // The dialects (decision 7): the database's over the files'.
+    if (const auto rows = worldDb_.exec("SELECT name, grammar FROM live.dialects WHERE world_id = $1 ORDER BY position, name",
+                                        {liveWorldId_});
+        rows.ok)
+        for (const auto& row : rows.rows)
+            if (row.size() >= 2 && row[0] && row[1])
+            {
+                if (talk_.setGrammar(*row[0], *row[1], problem))
+                    ++dialects;
+                else
+                    ++refused, note("warn", "RATW_TALK the dialect " + *row[0] + " was refused, the file's kept:\n" + problem);
+            }
+    // Each resident's voice (decisions 4 to 6, 10).
+    std::map<std::string, NpcVoice> voices;
+    std::set<std::string> layers, rules;
+    if (const auto rows = worldDb_.exec("SELECT npc_id, home_region, accent, quarter, traits::text, quirk, persona, grammar, rules "
+                                        "FROM live.npc_voice WHERE world_id = $1", {liveWorldId_});
+        rows.ok)
+        for (const auto& row : rows.rows)
+        {
+            if (row.size() < 9 || !row[0])
+                continue;
+            const auto& id = *row[0];
+            const auto text = [&](std::size_t i) { return row[i] ? *row[i] : std::string(); };
+            auto& v = voices[id];
+            v.from = text(1), v.accent = text(2), v.quarter = text(3), v.quirk = text(5), v.persona = text(6);
+            json::Value traits;
+            std::string error;
+            if (json::parse(text(4), traits, error) && traits.isObject())
+                for (const auto& [axis, value] : traits.fields())
+                    if (value.isString())
+                        v.traits[axis] = value.asString("");
+            // Their own words and lines: a person's layer, and rules only they may say.
+            if (const auto grammar = text(7); !grammar.empty())
+            {
+                const auto layer = talk::Library::personalLayer(id);
+                if (talk_.setGrammar(layer, "grammar " + layer + "\n" + grammar, problem))
+                    layers.insert(id);
+                else
+                    ++refused, note("warn", "RATW_TALK " + id + "'s own words were refused:\n" + problem);
+            }
+            if (const auto own = text(8); !own.empty())
+            {
+                if (talk_.setCharacter(id, own, problem))
+                    rules.insert(id);
+                else
+                    ++refused, note("warn", "RATW_TALK " + id + "'s own lines were refused:\n" + problem);
+            }
+        }
+    // Those whose words or lines are gone since the last load lose them.
+    for (const auto& id : voiceLayers_)
+        if (!layers.count(id))
+            talk_.setGrammar(talk::Library::personalLayer(id), "grammar " + talk::Library::personalLayer(id) + "\n", problem);
+    for (const auto& id : voiceRules_)
+        if (!rules.count(id))
+            talk_.setCharacter(id, "", problem);
+    npcVoice_ = std::move(voices);
+    voiceLayers_ = std::move(layers);
+    voiceRules_ = std::move(rules);
+    // Figures (decision 8).
+    figures_.clear();
+    if (const auto rows = worldDb_.exec("SELECT id, name, title, role, known_in, about, coalesce(npc_id, '') FROM live.figures "
+                                        "WHERE world_id = $1 ORDER BY position, id", {liveWorldId_});
+        rows.ok)
+        for (const auto& row : rows.rows)
+            if (row.size() >= 7 && row[0] && row[1])
+                figures_.push_back({*row[0], *row[1], row[2] ? *row[2] : "", row[3] ? *row[3] : "", row[4] ? *row[4] : "realm",
+                                    row[5] ? *row[5] : "", row[6] ? *row[6] : ""});
+    note("info", "RATW_TALK voices: " + std::to_string(npcVoice_.size()) + " residents (" + std::to_string(voiceLayers_.size()) +
+                     " with words of their own, " + std::to_string(voiceRules_.size()) + " with lines), " + std::to_string(dialects) +
+                     " dialects, " + std::to_string(figures_.size()) + " figures" + (refused ? ", " + std::to_string(refused) + " refused" : ""));
 }
 } // namespace ratw::game

@@ -1,0 +1,125 @@
+{
+  "input": {
+    "resident": {
+      "age": "38",
+      "drive": "steady",
+      "from": "larkfield",
+      "honesty": "plain",
+      "humour": "dry",
+      "job": "merchant",
+      "leader": "Celestine Greatly",
+      "name": "Berit Kelpwick",
+      "neighbour": "Egil Blackcombe",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "commons",
+      "quirk": "takes_the_long_stairs_two_at_a_time",
+      "sex": "female",
+      "shopkeeper": "Rosamund Tarridge",
+      "talk": "quiet",
+      "temper": "even",
+      "warmth": "warm",
+      "wealth": "rich"
+    },
+    "description": "A solid dun arctic wolf with a coat kept meticulously clean, who keeps the egg stall on the Heights Market.",
+    "personality": "Generous and quietly funny; she takes the long stairs two at a time.",
+    "backstory": "Berit was born in the Sump and means to die somewhere better, the Heights for preference.",
+    "greeting": "Good day to you. Fine egg, fresh this morning. For the Heights, only the best.",
+    "work": "egg stall on the Heights Market",
+    "dialect_words": "greet = Fair price to you | Good trade; greet.broad = Fair price, fair price; farewell = Good trading | Fair price; agree = Sold | Done; refuse = No sale | Not at that price; surprise = Well, sell me | There's a bargain; annoyed = Short-changed again | Scales and spite; very = top-weight; little = a lark's worth; good = fair-priced | full weight; bad = short-weighed | light; worthless = haggle-bait; luck = a bargain; child = lambkin"
+  },
+  "draft": {
+    "persona": "Berit Kelpwick is a solid dun arctic wolf with meticulously clean fur and a quiet, even manner. At thirty-eight, she speaks plainly, with a dry joke tucked beneath warm concern. Larkfield still shapes her voice, though years in Ridgemere have softened its market cadence. She keeps the egg stall on the Heights Market, trading in fair-priced goods for wolves richer than she was born. Born in the Sump, she means to die in the Heights, and feels every clean step upward without forgetting the mud below. Rich by trade yet never fully at ease among the great Houses, she gives generously while guarding every coin. She takes the long stairs two at a time, both from habit and stubborn hope.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "A full-weight egg hatches a fair bargain.",
+          "Clean shell, clean trade."
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By Glasswater's cold shine!",
+          "Warmwood and weather!"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Fair price to you.",
+          "Good trade."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Good trading.",
+          "Fair price on your way."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Sold.",
+          "Done, then."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "No sale.",
+          "Not at that price."
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, sell me!",
+          "There's a bargain!"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Short-changed again.",
+          "Scales and spite."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Fair-priced eggs, full weight, fresh this morning.",
+          "For the Heights, only the best."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Fair price to you, {player}. Come for eggs or news?",
+          "Good trade, {player}. Mind the stairs; they bite harder going down."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A rich wolf can still tell a light egg from a full one. That is something.",
+          "I was born below the Sump. I know what a fair bargain is worth."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "The long stairs are quicker two at a time.",
+          "Leave the cleanest shell aside, dear. Tomorrow deserves a proper breakfast."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = A full-weight egg hatches a fair bargain. | Clean shell, clean trade.\noath! = By Glasswater's cold shine! | Warmwood and weather!\nfarewell = Fair price on your way.\nagree = Done, then.\nsurprise = Well, sell me! | There's a bargain!\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Fair-priced eggs, full weight, fresh this morning. | For the Heights, only the best.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Fair price to you, #topic.player#. Come for eggs or news? | Good trade, #topic.player#. Mind the stairs; they bite harder going down.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A rich wolf can still tell a light egg from a full one. That is something. | I was born below the Sump. I know what a fair bargain is worth.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay The long stairs are quicker two at a time. | Leave the cleanest shell aside, dear. Tomorrow deserves a proper breakfast.\n",
+  "refused": ""
+}

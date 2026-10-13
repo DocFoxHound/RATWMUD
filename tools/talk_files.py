@@ -4,6 +4,8 @@ grammars in Data/Talk/grammar/*.grammar. Only reads and counts; the game's own l
 from __future__ import annotations
 
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 
 TALK = Path(__file__).resolve().parent.parent / 'Data' / 'Talk'
@@ -106,3 +108,32 @@ def library_scene(id: str, kind: str, band: str, lines: list, note: str = '') ->
     for who, text in lines:
         out.append(f'{who} : ' + re.sub(r'\{(\w+)\}', lambda m: '#' + LIBRARY_BLANKS[m.group(1)] + '#', text))
     return '\n'.join(out) + '\n'
+
+
+def talk_check() -> Path:
+    """The newest talk_check built (any build directory): the game's own loader, to check before saving."""
+    root = TALK.parent.parent
+    found = sorted(root.glob('build*/talk_check'), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not found:
+        raise RuntimeError('No talk_check built: cmake --build <a build dir> --target talk_check')
+    return found[0]
+
+
+def check_character(npc: str, grammar: str, rules: str) -> str:
+    """'' if the game would load this resident's own words and lines; else why not."""
+    with tempfile.TemporaryDirectory() as d:
+        g, r = Path(d) / 'g', Path(d) / 'r'
+        g.write_text(grammar)
+        r.write_text(rules)
+        run = subprocess.run([str(talk_check()), '--character', npc, '--grammar', str(g), '--rules', str(r)],
+                             capture_output=True, text=True, timeout=120)
+        return '' if run.returncode == 0 else (run.stdout + run.stderr).strip()
+
+
+def check_dialect(name: str, grammar: str) -> str:
+    """'' if the game would load this dialect over the files'; else why not."""
+    with tempfile.TemporaryDirectory() as d:
+        g = Path(d) / 'g'
+        g.write_text(grammar)
+        run = subprocess.run([str(talk_check()), '--dialect', name, '--grammar', str(g)], capture_output=True, text=True, timeout=120)
+        return '' if run.returncode == 0 else (run.stdout + run.stderr).strip()

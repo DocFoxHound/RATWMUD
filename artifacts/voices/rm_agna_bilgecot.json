@@ -1,0 +1,125 @@
+{
+  "input": {
+    "resident": {
+      "accent": "light",
+      "age": "53",
+      "drive": "content",
+      "from": "larkfield",
+      "honesty": "plain",
+      "job": "fisher",
+      "leader": "Celestine Greatly",
+      "name": "Agna Bilgecot",
+      "neighbour": "Ansel Kelpford",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "sump",
+      "quirk": "knows_which_streets_flood_first",
+      "sex": "female",
+      "shopkeeper": "Magnus Greycot",
+      "talk": "quiet",
+      "temper": "even",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A rangy dun timber wolf with a grey-frosted muzzle, a net-mender.",
+    "personality": "Dreamy and tired; she knows which streets flood first.",
+    "backstory": "Agna dreams of a berth on a Greatly ship bound somewhere dry.",
+    "greeting": "Good day to you. Out of the way, unless you're carrying something.",
+    "work": "mending nets on the wharf",
+    "dialect_words": "greet = Fair price to you | Good trade; greet.broad = Fair price, fair price; farewell = Good trading | Fair price; agree = Sold | Done; refuse = No sale | Not at that price; surprise = Well, sell me | There's a bargain; annoyed = Short-changed again | Scales and spite; very = top-weight; little = a lark's worth; good = fair-priced | full weight; bad = short-weighed | light; worthless = haggle-bait; luck = a bargain; child = lambkin"
+  },
+  "draft": {
+    "persona": "Agna Bilgecot is a rangy dun timber wolf with a grey-frosted muzzle, quiet in voice and even in temper. She speaks plainly, with a light Larkfield lilt still tucked into her words, though years in Ridgemere have taught her the Wharf’s sharper measures. She mends nets on the wharf and knows which streets flood first, a useful wisdom in the Sump. Her contentment is real but thinly stretched; she dreams of a berth on a Greatly ship bound somewhere dry. She respects fair trade, keeps ordinary faith with Solveig Tarwell, and minds the Greatly shadow over her quarter. Rich by the ledgers, she remains reserved about it, knowing comfort does not lift every paw around her. She is tired of mud yet afraid the open water will disappoint her.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "Every tide leaves a bargain behind.",
+          "Dry paws, fair price."
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "Scales and spite!",
+          "Well, sell me!"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Fair price to you.",
+          "Good trade."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Good trading.",
+          "Fair price."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Sold.",
+          "Done."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "No sale.",
+          "Not at that price."
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "There's a bargain!",
+          "Well, sell me!"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Short-changed again.",
+          "Scales and spite."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Mind the knot; a light net brings a light catch.",
+          "That tear will drown your luck before the tide turns."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Fair price to you, {player}. Keep to the higher stones; the Sump is taking water.",
+          "Good trade, {player}. Carry something, or clear the way."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A Greatly berth could take me somewhere dry. I wonder whether dry places dream of rain.",
+          "The first flood always tells the truth about a street."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Ansel, set that by the wall, not the door. I know what rises first.",
+          "I have mended worse nets than this. Tomorrow may yet be fair-priced."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = Every tide leaves a bargain behind. | Dry paws, fair price.\noath! = Scales and spite! | Well, sell me!\nsurprise = There's a bargain! | Well, sell me!\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Mind the knot; a light net brings a light catch. | That tear will drown your luck before the tide turns.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Fair price to you, #topic.player#. Keep to the higher stones; the Sump is taking water. | Good trade, #topic.player#. Carry something, or clear the way.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A Greatly berth could take me somewhere dry. I wonder whether dry places dream of rain. | The first flood always tells the truth about a street.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Ansel, set that by the wall, not the door. I know what rises first. | I have mended worse nets than this. Tomorrow may yet be fair-priced.\n",
+  "refused": ""
+}

@@ -1,0 +1,126 @@
+{
+  "input": {
+    "resident": {
+      "accent": "light",
+      "age": "53",
+      "drive": "steady",
+      "from": "larkfield",
+      "honesty": "plain",
+      "leader": "Celestine Greatly",
+      "married": "yes",
+      "name": "Ada Aldwych",
+      "neighbour": "Ilse Dripwell",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "heights",
+      "quirk": "knows_which_streets_flood_first",
+      "sex": "female",
+      "shopkeeper": "Njal Ashford",
+      "spouse": "Nils Aldwych",
+      "talk": "plain",
+      "temper": "calm",
+      "warmth": "warm",
+      "wealth": "rich"
+    },
+    "description": "A lean silver arctic wolf with a dark saddle across the back, of the Aldwych household.",
+    "personality": "Gentle and proud; she knows which streets flood first.",
+    "backstory": "Ada has a cousin in the Fell logging camps who writes when he can.",
+    "greeting": "Take your time; there is no hurry. I am at home in the Heights today.",
+    "work": "at home in the Heights",
+    "dialect_words": "greet = Fair price to you | Good trade; greet.broad = Fair price, fair price; farewell = Good trading | Fair price; agree = Sold | Done; refuse = No sale | Not at that price; surprise = Well, sell me | There's a bargain; annoyed = Short-changed again | Scales and spite; very = top-weight; little = a lark's worth; good = fair-priced | full weight; bad = short-weighed | light; worthless = haggle-bait; luck = a bargain; child = lambkin"
+  },
+  "draft": {
+    "persona": "Ada Aldwych is a lean silver arctic wolf with a dark saddle of fur, calm in manner and warm toward those she trusts. At fifty-three, she speaks plainly, with a light Larkfield lilt still tucked beneath the careful courtesy of the Heights. She wastes no words and will not dress a hard truth in velvet. Rich by the Aldwych household’s place among the Heights, she feels pride in what her family has built, though she dislikes being mistaken for softness. She keeps home well, cares for Nils, watches the streets, and knows which will flood first when rain comes. She fears sudden ruin more than discomfort. Gentle and proud, she is also quietly stubborn: she offers patience freely, but once she judges a bargain unfair, she will not bend.",
+    "words": [
+      {
+        "symbol": "dear",
+        "words": [
+          "my good Nils",
+          "heart-mate"
+        ]
+      },
+      {
+        "symbol": "pet",
+        "words": [
+          "old friend",
+          "bright-tail"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Fair price to you",
+          "Good trade"
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Good trading",
+          "Fair price"
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Sold",
+          "Done"
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "No sale",
+          "Not at that price"
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, sell me",
+          "There's a bargain"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Short-changed again",
+          "Scales and spite"
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Take your time; there is no hurry. I am at home in the Heights today.",
+          "The Heights can wait for a careful word."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Fair price to you, {player}. Come in from the rain.",
+          "Good trade, {player}. The road has not caught you, I hope."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "I know which streets flood first. Pride does not keep a den dry.",
+          "My cousin writes from the Fell camps when he can. That is worth more than fine talk."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Come inside, Nils. The rain is finding the lower streets again.",
+          "Rest easy, my good Nils. I have watched the weather and the drains."
+        ]
+      }
+    ]
+  },
+  "grammar": "dear! = my good Nils | heart-mate\npet!! = bright-tail\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Take your time; there is no hurry. I am at home in the Heights today. | The Heights can wait for a careful word.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Fair price to you, #topic.player#. Come in from the rain. | Good trade, #topic.player#. The road has not caught you, I hope.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay I know which streets flood first. Pride does not keep a den dry. | My cousin writes from the Fell camps when he can. That is worth more than fine talk.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Come inside, Nils. The rain is finding the lower streets again. | Rest easy, my good Nils. I have watched the weather and the drains.\n",
+  "refused": ""
+}

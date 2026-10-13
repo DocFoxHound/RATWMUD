@@ -379,6 +379,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     root.add("scenesHeard", heard);
     if (!c.talkMemory.isNull())
         root.add("talkMemory", c.talkMemory);
+    if (!c.regardLedger.isNull())
+        root.add("regardLedger", c.regardLedger);
     root.add("nextConversation", c.memories.nextConversation);
     auto active = Value::array();
     for (const auto& [key, m] : c.memories.active)
@@ -814,6 +816,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             if (id.isString() && c.scenesHeard[who].size() < 4000)
                 c.scenesHeard[who].push_back(id.asString());
     c.talkMemory = root.object("talkMemory");      // (Older saves have none: nothing remembered.)
+    c.regardLedger = root.object("regardLedger");
     c.memories.nextConversation = std::uint64_t(num(root, "nextConversation", 1));
     for (const auto& j : root.array("activeMemory"))
     {

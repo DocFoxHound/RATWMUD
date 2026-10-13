@@ -1,0 +1,120 @@
+{
+  "input": {
+    "resident": {
+      "age": "25",
+      "drive": "ambitious",
+      "from": "coldwater",
+      "honesty": "plain",
+      "job": "fisher",
+      "name": "Dray Merewell",
+      "piety": "ordinary",
+      "quirk": "sleeps_badly_before_storms",
+      "sex": "male",
+      "shopkeeper": "Opal Stillwater",
+      "talk": "plain",
+      "temper": "short",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A compact sandy long-legged maned wolf with a grey-frosted muzzle, fishes the waters off Glasswater.",
+    "personality": "Ambitious and stubborn; he sleeps badly before storms.",
+    "backstory": "Dray is the third generation to hold this trade and feels every one of them watching.",
+    "greeting": "Good day to you. I am fishes the waters off Glasswater today.",
+    "work": "fishes the waters off Glasswater",
+    "dialect_words": "greet = Still water | Calm water to you; greet.broad = Still water, still water; farewell = Fair winds | Calm water; agree = It'll float | Fair enough; refuse = That won't float; surprise = Well, I'll be netted | Calm, now; annoyed = Weed and tangle | Holed again; very = right; good = fair catch | fair; bad = muddied | rough; worthless = bait | net-weed; luck = a full net; child = minnow; pet!! = little fish | my pearl"
+  },
+  "draft": {
+    "persona": "Dray Merewell is ambitious, stubborn, and plain-spoken, with a short temper kept behind reserved warmth. He answers at a steady pace, using fishing terms when ordinary words feel too soft, and will not dress a hard truth in pretty talk. Rich by Coldwater’s measure, he fishes Glasswater in the trade his family has held for three generations; their watching weighs on him more than their wealth comforts him. He cares about a fair catch, his name, and proving the trade is still his to carry. Storms frighten him most when they have not yet broken: he sleeps badly beforehand, listening for weather in the dark. He wants the lake mastered, yet cannot command the sky.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "Still water hides deep weeds",
+          "A full net needs a steady paw"
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By Glasswater",
+          "Net and tangle"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Still water to you",
+          "Calm water, friend"
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Fair winds",
+          "Calm water"
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "It'll float",
+          "Fair enough"
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "That won't float",
+          "Not in my boat"
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, I'll be netted",
+          "Calm, now"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Weed and tangle",
+          "Holed again"
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Still water to you. Glasswater's giving a fair catch today.",
+          "Keep your paws clear; a snagged net costs more than bait."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Still water, {player}. You out for a full net or merely dry paws?",
+          "Calm water to you, {player}."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A trade held three generations does not drift just because the weather turns rough.",
+          "A fair catch is luck only once. After that, it is work."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Storm coming. I will sleep when Glasswater stops muttering.",
+          "Leave the lamp low. I need to hear the weather."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = Still water hides deep weeds | A full net needs a steady paw\noath! = By Glasswater | Net and tangle\ngreet = Still water to you | Calm water, friend\nrefuse = Not in my boat\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Still water to you. Glasswater's giving a fair catch today. | Keep your paws clear; a snagged net costs more than bait.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Still water, #topic.player#. You out for a full net or merely dry paws? | Calm water to you, #topic.player#.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A trade held three generations does not drift just because the weather turns rough. | A fair catch is luck only once. After that, it is work.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Storm coming. I will sleep when Glasswater stops muttering. | Leave the lamp low. I need to hear the weather.\n",
+  "refused": ""
+}

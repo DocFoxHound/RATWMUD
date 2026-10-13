@@ -9,13 +9,18 @@
 //       written). CONCEPT `talk`: the topic the world would choose for the two now, with its facts, as the ambient
 //       director asks. Any other concept: the topic's facts (topic.item=herbs) are given as key=value, which also
 //       override anything the world said.
+//   talk_check [--data DIR] --character NPC_ID [--grammar FILE] [--rules FILE]
+//       Checks one resident's character table (their own words and lines: live.npc_voice's grammar and rules, doc 62
+//       phase 6) against the whole library, as the game loads it. Exit 1, with the reasons, if it's refused.
+//   talk_check [--data DIR] --dialect NAME --grammar FILE
+//       Checks a dialect's grammar (live.dialects, decision 7) as the game loads it over the files'.
 //   talk_check [--data DIR] --validate FILE...
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
 //   talk_check [--data DIR] --world dev|prod|EXPORT_DIR [--run HOURS] --residents [key=value]
 //       Every resident's facts, counted: how many are each job, each wealth, injured... With key=value, those
-//       residents (up to 40) and their facts.
+//       residents (up to 40) and their facts. With --json, every resident's facts, a JSON object a line.
 //
 // --run HOURS runs the world on that many game hours first (written nowhere), so hunger, work and the rest move.
 // --many N picks N times with different seeds and counts what was said (the tiers' odds, heard by ear). --all lists
@@ -152,7 +157,8 @@ int main(int argc, char** argv)
     std::uint64_t seed = 1;
     int many = 0;
     double runHours = 0;
-    bool all = false, validating = false, residents = false;
+    std::string character, dialect, grammarFile, rulesFile;
+    bool all = false, validating = false, residents = false, asJson = false;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -171,8 +177,18 @@ int main(int argc, char** argv)
             validating = true;
         else if (a == "--residents")
             residents = true;
+        else if (a == "--json")
+            asJson = true;
         else if (a == "--run")
             runHours = std::stod(next());
+        else if (a == "--character")
+            character = next();
+        else if (a == "--dialect")
+            dialect = next();
+        else if (a == "--grammar")
+            grammarFile = next();
+        else if (a == "--rules")
+            rulesFile = next();
         else if (validating)
             validate.push_back(a);
         else
@@ -180,6 +196,50 @@ int main(int argc, char** argv)
     }
     talk::Library lib;
     std::string problem;
+    if (!dialect.empty())
+    {
+        if (!lib.load(data, problem))
+        {
+            std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+            return 1;
+        }
+        std::ifstream in(grammarFile);
+        std::stringstream text;
+        text << in.rdbuf();
+        if (!lib.setGrammar(dialect, text.str(), problem))
+        {
+            std::cout << "REFUSED the dialect\n" << problem << "\n";
+            return 1;
+        }
+        std::cout << "ok      " << dialect << "\n";
+        return 0;
+    }
+    if (!character.empty())
+    {
+        if (!lib.load(data, problem))
+        {
+            std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+            return 1;
+        }
+        const auto read = [](const std::string& file) {
+            std::ifstream in(file);
+            std::stringstream text;
+            text << in.rdbuf();
+            return text.str();
+        };
+        bool ok = true;
+        if (!grammarFile.empty())
+        {
+            const auto layer = talk::Library::personalLayer(character);
+            if (!lib.setGrammar(layer, "grammar " + layer + "\n" + read(grammarFile), problem))
+                std::cout << "REFUSED their words\n" << problem << "\n", ok = false;
+        }
+        if (!rulesFile.empty() && !lib.setCharacter(character, read(rulesFile), problem))
+            std::cout << "REFUSED their lines\n" << problem << "\n", ok = false;
+        if (ok)
+            std::cout << "ok      " << character << "\n";
+        return ok ? 0 : 1;
+    }
     if (validating)
     {
         if (validate.empty())
@@ -273,6 +333,15 @@ int main(int argc, char** argv)
                 continue;
             ++total;
             const auto q = g.talkQuery(id, {}, "bark");
+            if (asJson)
+            {
+                // One line a resident, their facts as the library sees them (tools/talk_seed.py reads these).
+                auto line = json::Value::object();
+                for (const auto& [k, v] : q.a.facts)
+                    line.add(k, v);
+                std::cout << json::dump(line) << "\n";
+                continue;
+            }
             for (const auto& [k, v] : q.a.facts)
                 if (k != "id" && k != "name" && k != "age")
                     ++counts[k][v];
@@ -289,7 +358,7 @@ int main(int argc, char** argv)
                 }
             }
         }
-        if (!key.empty())
+        if (!key.empty() || asJson)
             return 0;
         std::cout << total << " residents\n";
         for (const auto& [k, values] : counts)

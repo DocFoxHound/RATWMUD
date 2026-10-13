@@ -1,0 +1,124 @@
+{
+  "input": {
+    "resident": {
+      "accent": "light",
+      "age": "48",
+      "drive": "steady",
+      "from": "southmeadow",
+      "honesty": "sly",
+      "humour": "dry",
+      "job": "farmer",
+      "leader": "Celestine Greatly",
+      "name": "Ada Coalstack",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quirk": "collects_smooth_stones_from_the_riverbanks",
+      "sex": "female",
+      "shopkeeper": "Brenna Greyworth",
+      "talk": "plain",
+      "temper": "even",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A compact black timber wolf with pale, nearly silver eyes, keeps bees at Mossbank.",
+    "personality": "Shrewd and wry; she collects smooth stones from the riverbanks.",
+    "backstory": "Ada once petitioned the Council of Houses and lost, and has not forgiven it.",
+    "greeting": "Looking, or buying? I am keeps bees at Mossbank today.",
+    "work": "keeps bees at Mossbank",
+    "dialect_words": "greet = Good harvest | Harvest to you; greet.broad = Good 'arvest; farewell = Ripe days | Good harvest; agree = Ripe and right | Aye, ripe; refuse = Not this season; surprise = Well, pick me | Bless the barley; annoyed = Blight take it | Wormy luck; very = full; good = ripe; bad = blighted | wormy; luck = a windfall; child = sprout; pet!! = my apple | my plum; hot = sun-ripe | baking"
+  },
+  "draft": {
+    "persona": "Ada Coalstack is a compact black timber wolf with pale, nearly silver eyes and an even temper. At forty-eight, she farms rich land and keeps bees at Mossbank, speaking in the plain, lightly Southmeadow-shaped voice she grew up with. Her words come at a steady pace, dry at the edges; she favors harvest talk and says little of the Council of Houses, which she petitioned and lost. She has not forgiven that defeat, though she hides the grievance beneath practical counsel. Ada cares for healthy fields, sound hives, and the smooth stones she gathers from riverbanks. She fears neither hard work nor blunt truth, but distrusts grand promises. Her wealth gives her room to refuse, yet she still listens like one expecting to be overlooked. She is slyly honest: she will expose a trick while keeping her own counsel.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "A field remembers every pawprint.",
+          "No hive thrives on boasting."
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "Blight take it.",
+          "By the river's patience."
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Good harvest.",
+          "Harvest to you."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Ripe days.",
+          "Good harvest."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Ripe and right.",
+          "Aye, ripe."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "Not this season.",
+          "The fur stays dry."
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, pick me.",
+          "Bless the barley."
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Wormy luck.",
+          "Blight take it."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Looking, or buying? I keep bees at Mossbank today.",
+          "Mind the hive; honey rewards patience, not swagger."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Good harvest, {player}. Come to trade, or come to look?",
+          "Harvest to you, {player}. Keep your paws clear of the hives."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A council may lose a petition and still leave a debt behind.",
+          "Smooth stones tell the truth: water wears down every grand claim."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "The hive is quiet. That is better company than most councils.",
+          "Set the stones by the door. They have earned their place."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = A field remembers every pawprint. | No hive thrives on boasting.\noath! = By the river's patience.\nrefuse = The fur stays dry.\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Looking, or buying? I keep bees at Mossbank today. | Mind the hive; honey rewards patience, not swagger.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Good harvest, #topic.player#. Come to trade, or come to look? | Harvest to you, #topic.player#. Keep your paws clear of the hives.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A council may lose a petition and still leave a debt behind. | Smooth stones tell the truth: water wears down every grand claim.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay The hive is quiet. That is better company than most councils. | Set the stones by the door. They have earned their place.\n",
+  "refused": ""
+}

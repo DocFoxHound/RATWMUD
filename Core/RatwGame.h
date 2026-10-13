@@ -327,6 +327,30 @@ class Game
     // busy or the library has nothing. The game cues these itself (RatwGameTalk.cpp, reactions); tests and the Dungeon
     // Master may too.
     bool react(const std::string& npc, const std::string& to, const std::string& concept);
+    // Every change in how one feels about another made by talk, the model, the Dungeon Master or an analysis of a
+    // conversation (doc 62, decision 9) goes through here: clamped and budgeted by its source, and kept in the pair's
+    // ledger with its reason. (The world's own events, a trade, a theft, a promise broken, keep their path: they are
+    // events already, with their kinds.) Sources: "model" (3 a change, 6 an hour a pair, in affinity and trust; warmer
+    // by `lift`), "talk" (1 a change, 3 an hour), "analysis" (5 a change, 10 a day), "dm" (any). Returns what was made.
+    BondChange regard(const std::string& holder, const std::string& other, BondChange change, const std::string& source,
+                      const std::string& reason, double lift = 1);
+    struct RegardEntry
+    {
+        double day = 0;
+        std::string source, reason;
+        BondChange change;
+    };
+    // The pair's last changes (twelve), newest last; null if none.
+    const std::deque<RegardEntry>* regardLedger(const std::string& holder, const std::string& other) const;
+    // An analysis of conversations (doc 62, decision 9: open, the user's call): given a conversation with a player as
+    // it closes, what it proposes about how the two feel, with reasons. Empty: none, and nothing changes.
+    struct RegardProposal
+    {
+        std::string holder, other;
+        BondChange change;
+        std::string reason;
+    };
+    std::function<std::vector<RegardProposal>(const ActiveMemory& conversation)> conversationAnalyst;
     // A Dungeon Master's decision on an uploaded portrait: "approve" or "reject" (doc 29, phase 9).
     Result reviewArtwork(const std::string& id, const std::string& decision, const std::string& reason);
     const std::map<std::string, art::Meta>& artworks() const { return artworkMeta_; }
@@ -1487,12 +1511,6 @@ class Game
     std::deque<double> ambientCalls_;
     double exchangeLookIn_ = 0;
     std::uint64_t ambientNext_ = 1;
-    struct NudgeBudget
-    {
-        std::int64_t hour = -1;
-        int affinity = 0, trust = 0;
-    };
-    std::map<std::string, NudgeBudget> nudgeBudget_;
     std::map<std::string, std::vector<std::string>> commandReceipts_;
     std::map<std::string, std::map<std::string, std::string>> responseReceipts_;
     std::map<std::string, std::string> currentCommands_;
@@ -1622,6 +1640,38 @@ class Game
     };
     std::map<std::string, std::map<std::string, TalkMemo>> talkMemory_;
     void talkRemember(const std::vector<talk::Effect>& effects);
+    // Each resident's voice, from live.npc_voice (doc 62, phase 6): over what is worked out of them, where set.
+    struct NpcVoice
+    {
+        std::string from, accent, quarter, quirk, persona;
+        std::map<std::string, std::string> traits;
+    };
+    std::map<std::string, NpcVoice> npcVoice_;
+    std::map<std::string, std::deque<RegardEntry>> regardLedger_;     // "holder|other" (saved with talk memory).
+    struct RegardBudget
+    {
+        std::int64_t window = -1;
+        double used[5] = {0, 0, 0, 0, 0};
+    };
+    std::map<std::string, RegardBudget> regardBudget_;                  // "holder|other|source" (not saved).
+    std::set<std::string> voiceLayers_, voiceRules_;   // Residents with their own grammar, their own rules, loaded.
+    // People residents know of who aren't in the game yet (live.figures, doc 62 decision 8).
+    struct Figure
+    {
+        std::string id, name, title, role, knownIn, about, npc;
+    };
+    std::vector<Figure> figures_;
+    // The voices, dialects and figures from the world database, at start and on the DM's voice.sync.
+    void loadVoices();
+    // Where each home opens onto a street (its building's door, through any stairs), for neighbours (doc 62, decision
+    // 8): kept until the doors change.
+    std::map<std::string, std::pair<std::string, Vec2>> entrances_;
+    std::size_t entranceDoors_ = 0;
+    std::pair<std::string, Vec2> entranceOf(const std::string& cell);
+    // A resident's neighbours: the same building first, then the nearest households on the same street (five at most).
+    std::vector<std::string> neighboursOf(const std::string& id);
+    // Their people by role, for talk: spouse, child, mother, father, neighbour, shopkeeper, priest, leader (IDs).
+    std::map<std::string, std::string> peopleOf(const std::string& id);
     // An owner's memories as facts: "mem.<key>" (and "said:<id>") with `prefix` before them ("", "pair.", "world.").
     void talkRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
     // Uploaded portraits (RatwGameArtwork.cpp; doc 29, phase 9): where they are kept, every record, uploads under way.

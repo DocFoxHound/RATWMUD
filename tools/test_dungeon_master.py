@@ -527,6 +527,39 @@ class NpcTests(NpcFixture):
             log = owner.execute("SELECT editor, key FROM world.edits WHERE key = 'person:hazel' ORDER BY seq").fetchall()
         self.assertEqual(log, [('dm-master', 'person:hazel')] * 3, 'changes go through the live-edit log, so Atlas sees them')
 
+    def test_voices_families_dialects_and_figures(self):
+        # Talk (Docs/Design/62-talk.md, phase 6): saved after the game's own check, and read again by the game.
+        master = self.sign_in('dm-master')
+        people = [p['id'] for p in self.world()['people']]
+        a, b = people[0], people[1]
+        voice = {'from': 'mirebridge', 'accent': 'broad', 'traits': {'temper': 'short', 'humour': 'dry'}, 'quirk': 'counts_things',
+                 'persona': 'A wry net-mender.', 'grammar': 'saying! = Dry feet, dry heart', 'rules': 'rule work\nwhen concept=bark working=yes\nsay #saying#.'}
+        self.dm.save_voice(master, 'prod', a, voice)
+        got = self.dm.talk('prod', a)['voice']
+        self.assertEqual((got['from'], got['accent'], got['traits']['temper'], got['persona']), ('mirebridge', 'broad', 'short', 'A wry net-mender.'))
+        with self.assertRaises(D.DMError) as refused:
+            self.dm.save_voice(master, 'prod', a, {**voice, 'rules': 'rule work\nwhen concept=bark wealthy=yes\nsay Hm.'})
+        self.assertIn('unknown fact', str(refused.exception), 'the game\'s own check, with its reasons')
+        with self.assertRaises(D.DMError):
+            self.dm.save_voice(master, 'prod', a, {**voice, 'traits': {'temper': 'volcanic'}})
+        self.dm.save_kin(master, 'prod', a, b, 'spouse')
+        self.assertEqual([(f['npc'], f['other'], f['kind']) for f in self.dm.talk('prod', b)['family']], [(a, b, 'spouse')])
+        self.dm.save_kin(master, 'prod', a, b, 'spouse', remove=True)
+        self.assertEqual(self.dm.talk('prod', b)['family'], [])
+        self.dm.save_dialect(master, 'prod', 'mirebridge', 'grammar mirebridge\ngreet = Dry feet')
+        self.assertEqual(self.dm.dialects('prod')[0]['name'], 'mirebridge')
+        with self.assertRaises(D.DMError):
+            self.dm.save_dialect(master, 'prod', 'mirebridge', 'grammar mirebridge\nnot_a_plain_symbol = x')
+        with self.assertRaises(D.DMError):
+            self.dm.save_dialect(master, 'prod', 'plain', 'grammar plain\ngreet = Hi')
+        self.dm.save_figure(master, 'prod', {'id': 'the_lady', 'name': 'The Lady of the Sound', 'role': 'ruler', 'knownIn': 'realm'})
+        self.assertEqual(self.dm.figures('prod')[0]['role'], 'ruler')
+        with self.assertRaises(D.DMError):
+            self.dm.save_figure(master, 'prod', {'id': 'x', 'name': 'X', 'role': 'emperor'})
+        self.dm.save_figure(master, 'prod', {'id': 'the_lady'}, remove=True)
+        self.assertEqual(self.dm.figures('prod'), [])
+        self.assertTrue(all(kind == 'voice.sync' for kind, _ in self.queued()) and len(self.queued()) == 6, 'each read again by the game')
+
     def test_bad_placements_are_refused_with_the_reason(self):
         master = self.sign_in('dm-master')
         wren = next(p for p in self.world()['people'] if p['id'] == 'wren')

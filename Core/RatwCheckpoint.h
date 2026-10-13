@@ -33,6 +33,7 @@ struct ServerState
     std::map<std::string, std::vector<std::string>> scenesHeard;
     // What the talk library's rules remembered (doc 62, phase 4): {owner: {key: [value, until day (-1: for good)]}}.
     json::Value talkMemory;
+    json::Value regardLedger;                     // Game::regard's ledger (doc 62, decision 9): {"holder|other": [...]}.
     MemoryStore memories;
     SocialLedger social;
     std::map<std::string, std::vector<std::string>> commandReceipts;

@@ -544,6 +544,19 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Protected must follow its resident, once: " + id);
             owner->protectedNpc = true;
         }
+        else if (command == "kin")
+        {
+            // A family (Docs/Design/62-talk.md, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent. After both.
+            std::string a, b, kind;
+            if (!quoted(fields, a) || !quoted(fields, b) || !(fields >> kind) || !end(fields) || (kind != "spouse" && kind != "parent") || a == b)
+                return reject("Malformed kin record.");
+            const auto has = [&](const std::string& id) {
+                return std::any_of(roster.residents.begin(), roster.residents.end(), [&](const ResidentSpec& r) { return r.id == id; });
+            };
+            if (!has(a) || !has(b))
+                return reject("Kin must follow both residents: " + a + ", " + b);
+            roster.kin.push_back({a, b, kind});
+        }
         else if (command == "let")
         {
             // A place to let (Docs/Design/32, 5.2): let "cell" "hall|warehouse" "landlord" rent level.

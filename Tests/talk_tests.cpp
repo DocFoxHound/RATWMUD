@@ -501,6 +501,24 @@ say First time I've told you.
     fest.facts.erase("pair.said:once_each");
     expect(lib.pick(fest, 1, None, {}).id == "once_each", "but to another");
 
+    // A line that moves how one feels about the other (decision 9): an effect for the game to bound and make.
+    auto kind = foundation();
+    expect(kind.parse("rule compliment\nwhen concept=talk.smalltalk\nsay You look well.\nregard other: affinity +1\nregard self: trust 1\n",
+                      "kind.talk", problem), problem);
+    const auto warm = kind.pick(moment("talk.smalltalk"), 1, None, {});
+    const auto made = [&](const std::string& owner, const std::string& axis) {
+        return std::any_of(warm.effects.begin(), warm.effects.end(), [&](const Effect& e) {
+            return e.scope == "regard" && e.owner == owner && e.key == axis && std::atof(e.value.c_str()) == 1 && e.why == "compliment";
+        });
+    };
+    expect(made("ivo|maren", "affinity") && made("maren|ivo", "trust"), "the one spoken to warms; the speaker trusts");
+    for (const auto* text : {"rule x\nwhen concept=bark\nsay Hm.\nregard other: love +1\n", "rule x\nwhen concept=bark\nsay Hm.\nregard other: affinity +9\n"})
+    {
+        auto l = foundation();
+        std::string p;
+        expect(!l.parse(text, "bad.talk", p) && p.find("regard is") != std::string::npos, std::string("refused: ") + p);
+    }
+
     // A chain ends after 8 beats, whatever its rules say.
     auto loop = foundation();
     expect(loop.parse("rule ping\nwhen concept=talk.smalltalk\nsay Ping.\nthen other: talk.day\nrule pong\nwhen concept=talk.day\nsay Pong.\nthen other: talk.smalltalk\n",

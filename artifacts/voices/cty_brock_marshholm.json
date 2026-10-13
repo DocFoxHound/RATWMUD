@@ -1,0 +1,127 @@
+{
+  "input": {
+    "resident": {
+      "accent": "broad",
+      "age": "36",
+      "drive": "steady",
+      "from": "mirebridge",
+      "honesty": "plain",
+      "job": "herder",
+      "name": "Brock Marshholm",
+      "piety": "devout",
+      "quirk": "keeps_a_tally_of_favours_owed",
+      "sex": "male",
+      "shopkeeper": "Roan Pikewater",
+      "talk": "chatty",
+      "temper": "even",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A solid grey arctic wolf with soot on the paws, keeps sheep at Reedfold.",
+    "personality": "Devout and curious; he keeps a tally of favours owed.",
+    "backstory": "Brock came along the road as a young wolf with nothing, and is quietly proud of what was built since.",
+    "greeting": "Good day to you. I am keeps sheep at Reedfold today.",
+    "work": "keeps sheep at Reedfold",
+    "dialect_words": "greet = Dry feet | Dry feet to you; greet.broad = Dry feet, dry feet; farewell = Dry feet; agree = Fen-sure | Sure as mud; refuse = Boggy, that | Not on your life; surprise = Well, drown me | Sink me; annoyed = Mud and more mud | Eels take it; very = right; good = dry | fair-dry; bad = boggy | soggy; worthless = sump water; luck = a dry week; child = tadpole; pet!! = my reed | duck"
+  },
+  "draft": {
+    "persona": "Brock Marshholm is a solid grey arctic wolf who tends sheep at Reedfold, his paws often soot-dark from the work. At thirty-six, he is rich by Mirebridge measure, though he still speaks in the broad, bog-rooted tongue of the Sallow Fens. His words come steadily and plainly, with a chatty warmth kept behind a reserved manner. He is devout, curious, and careful to mark every favour owed, whether to Roan Pikewater or some passing traveller. Brock fears losing what he built from nothing, yet he gives more readily than his tally suggests. He is quietly proud of his hard-won comfort and uneasy when others notice it.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "A dry week pays every debt",
+          "Keep the tally, keep the trust"
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "Well, drown me",
+          "Sink me"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Dry feet to you",
+          "Dry feet, dry feet"
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Dry feet"
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Fen-sure",
+          "Sure as mud"
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "Boggy, that",
+          "Not on your life"
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, drown me",
+          "Sink me"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Mud and more mud",
+          "Eels take it"
+        ]
+      },
+      {
+        "symbol": "pet",
+        "words": [
+          "my reed",
+          "duck"
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Mind the gate, and count the sheep twice. A dry week starts with fair-dry care.",
+          "No wandering now, my reed; the flock owes us no favours."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Dry feet to you, {player}. I have your last kindness marked, right here.",
+          "Dry feet, dry feet, {player}. Come see the flock if your paws are clean."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "Fen-sure, a favour is a favour, whether given in Reedfold or owed on the road.",
+          "The Maker watches a straight tongue. I try to give them little cause to look twice."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Roan Pikewater can have the fair-dry count by dusk. I keep my promises dry.",
+          "A rich den is no reason to forget the road that brought you here, duck."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = A dry week pays every debt | Keep the tally, keep the trust\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Mind the gate, and count the sheep twice. A dry week starts with fair-dry care. | No wandering now, my reed; the flock owes us no favours.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Dry feet to you, #topic.player#. I have your last kindness marked, right here. | Dry feet, dry feet, #topic.player#. Come see the flock if your paws are clean.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay Fen-sure, a favour is a favour, whether given in Reedfold or owed on the road. | The Maker watches a straight tongue. I try to give them little cause to look twice.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Roan Pikewater can have the fair-dry count by dusk. I keep my promises dry. | A rich den is no reason to forget the road that brought you here, duck.\n",
+  "refused": ""
+}

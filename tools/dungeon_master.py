@@ -35,6 +35,7 @@ import chronicle as C
 import http_body
 import live_edit as L
 import map_editor
+import talk_files
 import world_db
 import world_store as S
 
@@ -154,6 +155,8 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # list read again.
            'storyteller.decide': 'dm', 'storyteller.revoke': 'dm', 'tale.pause': 'dm', 'tale.resume': 'dm', 'tale.stop': 'dm',
            'milestone.credit': 'dm', 'visitors.sync': 'dm',
+           # Talk (Docs/Design/62-talk.md, phase 6): a resident's voice, their family, a dialect or a figure saved; read again.
+           'voice.sync': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -576,6 +579,150 @@ class DungeonMaster:
         log.sort(key=lambda e: -(e.get('at') or 0))
         return {'target': target, 'ready': True, 'standing': standing, 'tales': tales, 'log': log, 'visitors': visitors,
                 'templates': [{'id': t['id'], 'title': t.get('title', t['id']), 'source': t.get('source', 'dm')} for t in storyline_templates()]}
+
+    # -- talk (Docs/Design/62-talk.md, phase 6) -------------------------------------------------------------------------
+    # A resident's voice (where they're from, accent, quarter, traits, quirk, the personality written for them, their own
+    # words and lines), their family, the dialects and figures: each checked as the game loads it before it is saved, and
+    # read again by the game (voice.sync).
+    @staticmethod
+    def talk_facts():
+        return json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Talk' / 'facts.json').read_text())['person']
+
+    def talk(self, target, npc):
+        """A resident's voice and family, as saved."""
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            row = conn.execute('SELECT home_region, accent, quarter, traits, quirk, persona, grammar, rules, written_by FROM live.npc_voice '
+                               'WHERE world_id = %s AND npc_id = %s', (world, npc)).fetchone()
+            kin = conn.execute('SELECT r.npc_id, a.name, r.other_id, b.name, r.kind FROM live.npc_relations r '
+                               'JOIN live.npcs a ON a.world_id = r.world_id AND a.id = r.npc_id '
+                               'JOIN live.npcs b ON b.world_id = r.world_id AND b.id = r.other_id '
+                               'WHERE r.world_id = %s AND (r.npc_id = %s OR r.other_id = %s) ORDER BY r.kind, r.npc_id', (world, npc, npc)).fetchall()
+        keys = ('from', 'accent', 'quarter', 'traits', 'quirk', 'persona', 'grammar', 'rules', 'writtenBy')
+        return {'npc': npc, 'voice': dict(zip(keys, row)) if row else None,
+                'family': [{'npc': r[0], 'npcName': r[1], 'other': r[2], 'otherName': r[3], 'kind': r[4]} for r in kin]}
+
+    def save_voice(self, who, target, npc, voice):
+        self.allowed(who, 'voice.sync')
+        if not isinstance(voice, dict):
+            raise DMError('Describe the voice.')
+        facts = self.talk_facts()
+        text = lambda k, most: str(voice.get(k) or '').strip()[:most + 1]
+        origin, accent, quarter, quirk = text('from', 40), text('accent', 10), text('quarter', 40), text('quirk', 60)
+        persona, grammar, rules = text('persona', 4000), str(voice.get('grammar') or ''), str(voice.get('rules') or '')
+        traits = voice.get('traits') or {}
+        problems = []
+        if origin and origin not in facts['from']:
+            problems.append(f'{origin} is not a region.')
+        if accent and accent not in facts['accent']:
+            problems.append('Accent is none, light or broad.')
+        if quarter and quarter not in facts['quarter']:
+            problems.append(f'{quarter} is not a quarter of Ridgemere.')
+        if quirk and not re.fullmatch(r'[a-z_]{1,60}', quirk):
+            problems.append('A quirk is lower-case words joined by _.')
+        if not isinstance(traits, dict) or any(k not in facts or not isinstance(v, str) or v not in facts[k] for k, v in traits.items()):
+            problems.append('Traits are temper, talk, warmth, humour, honesty, piety, drive, each with one of its values.')
+        if len(persona) > 4000 or len(grammar) > 8000 or len(rules) > 8000:
+            problems.append('The personality is 4000 characters at most; their words and their lines 8000 each.')
+        if problems:
+            raise DMError(' '.join(problems))
+        why = talk_files.check_character(npc, grammar, rules) if grammar.strip() or rules.strip() else ''
+        if why:
+            raise DMError('The game would refuse these:\n' + why[:1500])
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                if not conn.execute('SELECT 1 FROM live.npcs WHERE world_id = %s AND id = %s', (world, npc)).fetchone():
+                    raise DMError('No such resident.')
+                conn.execute('''INSERT INTO live.npc_voice (world_id, npc_id, home_region, accent, quarter, traits, quirk, persona, grammar, rules, written_by)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (world_id, npc_id) DO UPDATE SET home_region = excluded.home_region, accent = excluded.accent,
+                                    quarter = excluded.quarter, traits = excluded.traits, quirk = excluded.quirk, persona = excluded.persona,
+                                    grammar = excluded.grammar, rules = excluded.rules, written_by = excluded.written_by, updated_at = now()''',
+                             (world, npc, origin, accent, quarter, json.dumps(traits), quirk, persona, grammar, rules, 'dm:' + who['username']))
+                action_id = self.queue(conn, who, target, 'voice.sync', npc, f'voice.sync after saving {npc}\'s voice')
+        return {'id': action_id, 'status': 'queued'}
+
+    def save_kin(self, who, target, npc, other, kind, remove=False):
+        """A family tie: `npc` is `other`'s spouse, or `npc` is `other`'s parent; or one taken away."""
+        self.allowed(who, 'voice.sync')
+        if kind not in ('spouse', 'parent') or npc == other:
+            raise DMError('A tie is spouse or parent, between two residents.')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                if remove:
+                    conn.execute('DELETE FROM live.npc_relations WHERE world_id = %s AND npc_id = %s AND other_id = %s AND kind = %s',
+                                 (world, npc, other, kind))
+                else:
+                    found = {r[0] for r in conn.execute('SELECT id FROM live.npcs WHERE world_id = %s AND id IN (%s, %s)', (world, npc, other)).fetchall()}
+                    if found != {npc, other}:
+                        raise DMError('No such resident.')
+                    conn.execute('INSERT INTO live.npc_relations (world_id, npc_id, other_id, kind) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING',
+                                 (world, npc, other, kind))
+                action_id = self.queue(conn, who, target, 'voice.sync', npc, f'voice.sync after {"removing" if remove else "adding"} {npc} as {other}\'s {kind}')
+        return {'id': action_id, 'status': 'queued'}
+
+    def dialects(self, target):
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            return [{'name': r[0], 'grammar': r[1]} for r in conn.execute(
+                'SELECT name, grammar FROM live.dialects WHERE world_id = %s ORDER BY position, name', (world,)).fetchall()]
+
+    def save_dialect(self, who, target, name, grammar):
+        self.allowed(who, 'voice.sync')
+        name, grammar = str(name or '').strip(), str(grammar or '')
+        if not re.fullmatch(r'[a-z_]{1,40}', name) or name == 'plain' or len(grammar) > 20000:
+            raise DMError('A dialect has a lower-case name (not plain) and at most 20000 characters.')
+        why = talk_files.check_dialect(name, grammar)
+        if why:
+            raise DMError('The game would refuse this dialect:\n' + why[:1500])
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                conn.execute('INSERT INTO live.dialects (world_id, name, grammar) VALUES (%s, %s, %s) '
+                             'ON CONFLICT (world_id, name) DO UPDATE SET grammar = excluded.grammar, updated_at = now()', (world, name, grammar))
+                action_id = self.queue(conn, who, target, 'voice.sync', name, f'voice.sync after saving the {name} dialect')
+        return {'id': action_id, 'status': 'queued'}
+
+    def figures(self, target):
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            keys = ('id', 'name', 'title', 'role', 'knownIn', 'about', 'npc')
+            return [dict(zip(keys, r)) for r in conn.execute(
+                "SELECT id, name, title, role, known_in, about, coalesce(npc_id, '') FROM live.figures WHERE world_id = %s ORDER BY position, id",
+                (world,)).fetchall()]
+
+    def save_figure(self, who, target, figure, remove=False):
+        """Someone residents know of who isn't in the game yet; `npc` once they arrive."""
+        self.allowed(who, 'voice.sync')
+        if not isinstance(figure, dict):
+            raise DMError('Describe the figure.')
+        fid = str(figure.get('id', '')).strip()
+        roles = [k.removeprefix('figure_') for k in json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Talk' / 'facts.json')
+                                                              .read_text())['world'] if k.startswith('figure_')]
+        if not ID.match(fid):
+            raise DMError('A figure needs an id (lower case).')
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                if remove:
+                    conn.execute('DELETE FROM live.figures WHERE world_id = %s AND id = %s', (world, fid))
+                else:
+                    name, title, role = str(figure.get('name', '')).strip(), str(figure.get('title', '')).strip(), str(figure.get('role', '')).strip()
+                    known, about, npc = str(figure.get('knownIn', 'realm')).strip(), str(figure.get('about', '')).strip(), str(figure.get('npc', '')).strip()
+                    if not 1 <= len(name) <= 120 or len(title) > 120 or role not in roles or len(about) > 600 or \
+                            not re.fullmatch(r'realm|region:[a-z_]+|house:[a-z_]+', known):
+                        raise DMError(f'A figure needs a name, a role ({", ".join(roles)}), where they are known (realm, region:<name>, '
+                                      'house:<name>) and at most 600 characters about them.')
+                    if npc and not conn.execute('SELECT 1 FROM live.npcs WHERE world_id = %s AND id = %s', (world, npc)).fetchone():
+                        raise DMError('No such resident for them to be.')
+                    conn.execute('''INSERT INTO live.figures (world_id, id, name, title, role, known_in, about, npc_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                    ON CONFLICT (world_id, id) DO UPDATE SET name = excluded.name, title = excluded.title, role = excluded.role,
+                                        known_in = excluded.known_in, about = excluded.about, npc_id = excluded.npc_id, updated_at = now()''',
+                                 (world, fid, name, title, role, known, about, npc or None))
+                action_id = self.queue(conn, who, target, 'voice.sync', fid, f'voice.sync after {"removing" if remove else "saving"} the figure {fid}')
+        return {'id': action_id, 'status': 'queued'}
 
     def save_story_visitor(self, who, target, visitor):
         """A visitor on the approved list (doc 58, 6), saved and approved by this DM; the game reads the list again."""
@@ -2062,6 +2209,25 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.fame(self.target(query)))
             if method == 'GET' and path == '/api/storytellers':
                 return self.reply(200, dm.storytellers(self.target(query)))
+            if method == 'GET' and path == '/api/talk':
+                return self.reply(200, dm.talk(self.target(query), (query.get('npc') or [''])[0]))
+            if method == 'GET' and path == '/api/talk/dialects':
+                return self.reply(200, dm.dialects(self.target(query)))
+            if method == 'GET' and path == '/api/talk/figures':
+                return self.reply(200, dm.figures(self.target(query)))
+            if method == 'POST' and path == '/api/talk/voice':
+                data = self.body()
+                return self.reply(200, dm.save_voice(who, str(data.get('target', 'prod')), str(data.get('npc', '')), data.get('voice')))
+            if method == 'POST' and path == '/api/talk/kin':
+                data = self.body()
+                return self.reply(200, dm.save_kin(who, str(data.get('target', 'prod')), str(data.get('npc', '')), str(data.get('other', '')),
+                                                   str(data.get('kind', '')), bool(data.get('remove', False))))
+            if method == 'POST' and path == '/api/talk/dialect':
+                data = self.body()
+                return self.reply(200, dm.save_dialect(who, str(data.get('target', 'prod')), data.get('name'), data.get('grammar')))
+            if method == 'POST' and path == '/api/talk/figure':
+                data = self.body()
+                return self.reply(200, dm.save_figure(who, str(data.get('target', 'prod')), data.get('figure'), bool(data.get('remove', False))))
             if method == 'POST' and path == '/api/storytellers/visitor':
                 data = self.body()
                 return self.reply(200, dm.save_story_visitor(who, str(data.get('target', 'prod')), data.get('visitor')))

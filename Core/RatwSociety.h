@@ -168,6 +168,9 @@ struct CareerState
     std::map<std::string, std::vector<std::string>> parents;   // Child -> parents.
     std::map<std::string, double> lastBirth;          // "a|b" (a < b) -> day their last child was born.
     std::map<std::string, int> births;                // "a|b" -> how many children they have had.
+    // Each town's people, as it should stay (doc 62: the user, 2026-10-13): its living residents the first day this was
+    // kept. Children are born while a town is short of it; the old die; so the world stays about the size it was made.
+    std::map<std::string, int> population;
     std::int64_t day = -1;                            // The last day careers were tended.
 };
 // A resident the world should gain: a stranger for a post nobody here can fill, or a child. The society decides that
@@ -329,9 +332,15 @@ struct EconomySpec
     std::int64_t treasury = 1000;
     int storeHerbs = 100, storeMeals = 50, dailyHerbs = 10, dailyMeals = 12;
 };
+// A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
+struct Kin
+{
+    std::string a, b, kind;
+};
 struct AuthoredRoster
 {
     std::vector<ResidentSpec> residents;
+    std::vector<Kin> kin;
     std::map<std::string, PatrolRoute> routes;
     EconomySpec economy;
 };
@@ -348,6 +357,9 @@ class Society
     void reset(Roster roster);
     // Installs an authored population and resets to it.
     void configure(const AuthoredRoster& roster);
+    // Families as authored, replaced (doc 62: a DM's edit, read again on voice.sync); taken in at the next day's turn.
+    void setKin(std::vector<Kin> kin) { authored_.kin = std::move(kin); }
+    const std::vector<Kin>& kin() const { return authored_.kin; }
     Roster roster() const { return roster_; }
     const AuthoredRoster& authored() const { return authored_; }
     const ResidentSpec* spec(const std::string& id) const;

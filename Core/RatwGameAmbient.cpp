@@ -150,6 +150,8 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
         mind::Persona p{e.name, e.description, {}};
         if (const auto* spec = world_.society().spec(e.id))
             p.personality = spec->personality;
+        if (const auto v = npcVoice_.find(e.id); v != npcVoice_.end() && !v->second.persona.empty())
+            p.personality = v->second.persona;      // (Written for them: doc 62, decision 10.)
         if (const auto card = voiceCardOf(e.id); !card.empty())    // (Doc 62, phase 5.)
             p.personality += (p.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;
         return p;

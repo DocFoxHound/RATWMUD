@@ -2729,6 +2729,7 @@ void World::tendBonds()
         careerNotes(society_.tendCareers(calendarDays_, careerWorld()));
         tendPromises();
         tendMarriages();
+        tendOldAge();
     }
 }
 
@@ -2769,6 +2770,32 @@ std::string World::promisesBetween(const std::string& npc, const std::string& ot
                ": " + p.what + " (due in " + std::to_string(std::max(0, days)) + " day" + (days == 1 ? "" : "s") + ").";
     }
     return out;
+}
+
+void World::tendOldAge()
+{
+    std::vector<std::string> gone;
+    const auto day = std::uint64_t(std::max(0.0, std::floor(calendarDays_)));
+    for (const auto& [id, e] : entities_)
+    {
+        if (!e.npc || e.dead || e.transient || e.age < 70 || !society_.resident(id))
+            continue;
+        if (const auto* spec = society_.spec(id); spec && spec->protectedNpc)
+            continue;
+        // A year's chance (placeholders): 4% at seventy, 8% at seventy-five, 15% at eighty, 30% at eighty-five, half
+        // from ninety; a day's share of it.
+        const double yearly = e.age >= 90 ? .5 : e.age >= 85 ? .3 : e.age >= 80 ? .15 : e.age >= 75 ? .08 : .04;
+        const double daily = 1 - std::pow(1 - yearly, 1.0 / calendar::DaysPerYear);
+        std::uint64_t h = 1469598103934665603ULL;
+        for (const unsigned char c : "old age|" + id + "|" + std::to_string(day))
+            h = (h ^ c) * 1099511628211ULL;
+        h ^= h >> 33;
+        if (double(h % 1000000) / 1000000.0 < daily)
+            gone.push_back(id);
+    }
+    for (const auto& id : gone)
+        if (setDead(id, true).ok)
+            recordEvent({"old age", id, {}, {}, 0, 0, {}, 0, 0, "died of old age"});
 }
 
 void World::tendMarriages()

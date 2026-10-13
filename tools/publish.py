@@ -232,6 +232,15 @@ def plan_seeds(dev, prod, world_id):
                and (table != 'live.faction_members' or (world_id, row['npc_id']) in npcs_after)]
         plan += [('write', table, d[k]) for k in new]
         summary[label] = {'added': len(new), LIVE_KEPT: sum(1 for k in p_ if k not in d or d[k] != p_[k])}
+    # Talk (doc 62, phase 6): residents' voices, families, the dialects and the figures are PROD's once live, edited
+    # there by the Dungeon Master; a push adds new ones only, voices and families only for NPCs PROD will have.
+    for table, label, people in (('live.npc_voice', 'NPC voices', lambda r: [r['npc_id']]),
+                                 ('live.npc_relations', 'families', lambda r: [r['npc_id'], r['other_id']]),
+                                 ('live.dialects', 'dialects', lambda r: []), ('live.figures', 'figures', lambda r: [])):
+        d, p_ = read(dev, table, world_id, skip=('updated_at',)), read(prod, table, world_id, skip=('updated_at',))
+        new = [k for k, row in d.items() if k not in p_ and all((world_id, n) in npcs_after for n in people(row))]
+        plan += [('write', table, d[k]) for k in new]
+        summary[label] = {'added': len(new), LIVE_KEPT: sum(1 for k in p_ if k not in d or d[k] != p_[k])}
     # The economy is live state: a push only creates it.
     if not read(prod, 'live.economy', world_id):
         plan += [('write', 'live.economy', row) for row in read(dev, 'live.economy', world_id, skip=('updated_at',)).values()]
@@ -495,13 +504,25 @@ def pull_npcs(dev, prod, editor='Live copy'):
             elif mine.get(row['id']) != row:
                 write(dev, 'live.characters', row)
                 characters.append(row)
+        # Talk (doc 62, phase 6): PROD's voices, families, dialects and figures, wherever DEV has the NPCs they belong to.
+        npcs_here = {r[0] for r in dev.execute('SELECT id FROM live.npcs WHERE world_id = %s', (world_id,)).fetchall()}
+        talk = {}
+        for table, label, people in (('live.npc_voice', 'NPC voices', lambda r: [r['npc_id']]),
+                                     ('live.npc_relations', 'families', lambda r: [r['npc_id'], r['other_id']]),
+                                     ('live.dialects', 'dialects', lambda r: []), ('live.figures', 'figures', lambda r: [])):
+            theirs = read(prod, table, world_id, skip=('updated_at',))
+            mine_t = read(dev, table, world_id, skip=('updated_at',))
+            rows_t = [row for key, row in theirs.items() if mine_t.get(key) != row and all(n in npcs_here for n in people(row))]
+            for row in rows_t:
+                write(dev, table, row)
+            talk[label] = len(rows_t)
         # Newer than DEV's own save, so a DEV server applies them at its next start.
         states = prod.execute('SELECT npc_id, alive, state FROM live.npc_state WHERE world_id = %s', (world_id,)).fetchall()
         dev.execute('DELETE FROM live.npc_state WHERE world_id = %s', (world_id,))
         for npc_id, alive, state in states:
             dev.execute('INSERT INTO live.npc_state (world_id, npc_id, alive, state, updated_at) VALUES (%s, %s, %s, %s, now())',
                         (world_id, npc_id, alive, S.Jsonb(state)))
-    return {'copied': {**copied, 'roster characters': len(characters), 'NPC running states': len(states),
+    return {'copied': {**copied, **talk, 'roster characters': len(characters), 'NPC running states': len(states),
                        'town economy': int(any(op['key'] == 'economy' for op in ops))}, 'skipped': skipped}
 
 

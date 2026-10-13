@@ -87,6 +87,16 @@ function setToken(value: string) {
     try { if (value) sessionStorage.setItem(KEY, value); else sessionStorage.removeItem(KEY); } catch { /* private window */ }
 }
 
+/** A resident's voice (Docs/Design/62-talk.md, phase 6): where they're from, how they sound, who they are. */
+export interface Voice {
+    from: string; accent: string; quarter: string; traits: Record<string, string>; quirk: string;
+    persona: string;            // The personality written for them (decision 10): what the model is given.
+    grammar: string;            // Their own words, in the .grammar syntax (no `grammar` line).
+    rules: string;              // Their own lines, in the .talk syntax (rules only; self.id is added).
+    writtenBy?: string;
+}
+export interface Talk { npc: string; voice: Voice | null; family: {npc: string; npcName: string; other: string; otherName: string; kind: string}[] }
+export interface Figure { id: string; name: string; title: string; role: string; knownIn: string; about: string; npc: string }
 export interface Holder { id: string; name: string; role: string; slot: string; work: Place; home: Place }
 export type AreaKind = 'wander' | 'spawn' | 'plan';
 /** A painted NPC area: tiles of one cell or interior (cell-local). */
@@ -327,6 +337,15 @@ export const dmApi = {
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
     reports: (target: Target) => call<Reports>(`api/reports?target=${target}`),
     storytellers: (target: Target) => call<Storytellers>(`api/storytellers?target=${target}`),
+    // Talk (Docs/Design/62-talk.md, phase 6): a resident's voice and family, the dialects, figures.
+    talk: (target: Target, npc: string) => call<Talk>(`api/talk?target=${target}&npc=${encodeURIComponent(npc)}`),
+    saveVoice: (target: Target, npc: string, voice: Voice) => call<{id: number}>('api/talk/voice', {target, npc, voice}),
+    saveKin: (target: Target, npc: string, other: string, kind: 'spouse' | 'parent', remove = false) =>
+        call<{id: number}>('api/talk/kin', {target, npc, other, kind, remove}),
+    dialects: (target: Target) => call<{name: string; grammar: string}[]>(`api/talk/dialects?target=${target}`),
+    saveDialect: (target: Target, name: string, grammar: string) => call<{id: number}>('api/talk/dialect', {target, name, grammar}),
+    figures: (target: Target) => call<Figure[]>(`api/talk/figures?target=${target}`),
+    saveFigure: (target: Target, figure: Partial<Figure> & {id: string}, remove = false) => call<{id: number}>('api/talk/figure', {target, figure, remove}),
     saveStoryVisitor: (target: Target, visitor: {id: string; name: string; description: string; like: string; enabled: boolean}) =>
         call<{id: number}>('api/storytellers/visitor', {target, visitor}),
     creditMilestone: (target: Target, story: string, milestone: string, weight: string, rule: Record<string, unknown>, main: string[] = []) =>

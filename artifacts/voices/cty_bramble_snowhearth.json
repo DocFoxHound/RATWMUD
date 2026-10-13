@@ -1,0 +1,122 @@
+{
+  "input": {
+    "resident": {
+      "accent": "light",
+      "age": "38",
+      "drive": "steady",
+      "from": "frosthollow",
+      "honesty": "plain",
+      "job": "miner",
+      "name": "Bramble Snowhearth",
+      "piety": "devout",
+      "priest": "Tamsin Icefell",
+      "quirk": "tells_the_same_three_stories",
+      "sex": "female",
+      "shopkeeper": "Aster Coldfell",
+      "talk": "plain",
+      "temper": "short",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A lean silver red wolf with a grey-frosted muzzle, digs ore at Deepvein.",
+    "personality": "Stubborn and devout; she tells the same three stories.",
+    "backstory": "Bramble went to Ridgemere to make a fortune once and came back with nothing, and does not speak of it.",
+    "greeting": "Good day to you. I am digs ore at Deepvein today.",
+    "work": "digs ore at Deepvein",
+    "dialect_words": "greet = Warm hearth | Hearth to you; greet.broad = 'Arth | 'Arth and lamp; farewell = Keep your lamp lit | Lamp lit; agree = Sound as rock | Aye, sound; refuse = Dead seam, that | Not a chance; surprise = Well, strike me | Cold iron; annoyed = Slag and ashes | Cave it all; very = deep; good = sound | solid; bad = cracked | dead; worthless = dead rock | slag; luck = a good seam; child = whelp; pet!! = old stone | lamp of mine"
+  },
+  "draft": {
+    "persona": "Bramble Snowhearth is a lean silver-red wolf of thirty-eight, her muzzle grey with frost and her paws hardened by Deepvein. She digs ore with steady purpose, speaks in plain, lightly Frosthollow words, and wastes no breath dressing truth up. Her temper is short, though her warmth stays guarded; devotion to Priest Tamsin Icefell gives her stubbornness a bedrock beneath it. Rich now, she carries that fortune uneasily after returning from Ridgemere with nothing, a silence she keeps as tightly as ore in stone. She respects Aster Coldfell and the trade that made her secure, but fears losing what she clawed back. She tells the same three stories whenever conversation lulls, each as if freshly struck. She is devout yet private, prosperous yet still shaped by hunger and hard rock.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "Every seam remembers the pick",
+          "Stone keeps what tongues spill"
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By the deep dark",
+          "Cold iron take me"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Warm hearth to you",
+          "Hearth and lamp"
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Keep your flame sheltered",
+          "Lamp bright"
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Sound as rock",
+          "Aye, solid"
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "Dead seam, that",
+          "Not through stone"
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Well, strike me",
+          "By cold iron"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Slag and ashes",
+          "Cave it all"
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "Deepvein has a sound to it. Listen, and the good seam tells you where it sleeps.",
+          "This ore is solid. The mountain knows its worth."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Warm hearth to you, {player}. I have a story about Ridgemere.",
+          "Hearth and lamp, {player}. You’ve come at a sound hour."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "Fortune is a good seam, but it can run dead. Best not boast before the pick comes down.",
+          "Priest Tamsin Icefell says faith holds when stone does not. I believe it."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Aster Coldfell keeps honest trade. That is worth more than bright promises.",
+          "Cold iron take me, I told this one already. Still, it bears telling."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = Every seam remembers the pick | Stone keeps what tongues spill\noath! = By the deep dark | Cold iron take me\ngreet = Warm hearth to you | Hearth and lamp\nfarewell = Keep your flame sheltered | Lamp bright\nagree = Aye, solid\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay Deepvein has a sound to it. Listen, and the good seam tells you where it sleeps. | This ore is solid. The mountain knows its worth.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Warm hearth to you, #topic.player#. I have a story about Ridgemere. | Hearth and lamp, #topic.player#. You’ve come at a sound hour.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay Fortune is a good seam, but it can run dead. Best not boast before the pick comes down. | Priest Tamsin Icefell says faith holds when stone does not. I believe it.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Aster Coldfell keeps honest trade. That is worth more than bright promises. | Cold iron take me, I told this one already. Still, it bears telling.\n",
+  "refused": ""
+}

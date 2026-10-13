@@ -735,6 +735,11 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(f'joinable {quote(r["id"])}')     # May travel with a player's party (doc 32, 2.3).
         if r.get('protected'):
             manifest.append(f'protected {quote(r["id"])}')    # Can't be attacked or robbed of coin by players (doc 57, 6).
+    # Families (doc 62, decision 8), after everyone: "kin" a b spouse|parent.
+    people = {r['id'] for r in p.get('people', [])}
+    for k in p.get('relations', []):
+        if k['npc'] in people and k['other'] in people:
+            manifest.append(f'kin {quote(k["npc"])} {quote(k["other"])} {k["kind"]}')
     files['world.ratw'] = '\n'.join(manifest) + '\n'
     if stream:
         for c in by_id.values():

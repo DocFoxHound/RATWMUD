@@ -12,6 +12,7 @@ import {useWorld} from './world';
 import {dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
+import {DialectsPanel, FiguresPanel, VoicePanel} from './TalkPanels';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaColor, idFrom, type Brush, type Layer, type SpawnDraft} from './LayerPanels';
 
@@ -305,6 +306,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                 wander={data?.wanders[draft.id] ?? ''} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
+                {!isNew && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
                 {!isNew && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
                 : holder ? <div className="dm-panel"><header><div><small>JOB HOLDER</small><h2>{holder.name}</h2></div>
                     {dead.has(holder.id) && <span className="dm-status dead">✝ dead</span>}</header>
@@ -316,7 +318,9 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                 : <Overview title="NPC MANAGEMENT" target={target}>
                     <Hint>{data ? `${data.people.length} named NPCs and ${data.holders.length} job holders; ${data.dead.length} dead.` : 'Loading…'}</Hint>
                     <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to the {target.toUpperCase()} database and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint>
-                    <CalendarPanel me={me} target={target} /></Overview>)}
+                    <CalendarPanel me={me} target={target} />
+                    <DialectsPanel me={me} target={target} />
+                    <FiguresPanel me={me} target={target} /></Overview>)}
             {layer === 'routes' && world && (routeDraft ? <><RouteInspector {...common} route={routeDraft} setRoute={setRouteDraft} world={world}
                 users={peopleNamed((data?.people ?? []).filter(p => p.route === routeDraft.id).map(p => p.id))} adding={addingPosts} setAdding={setAddingPosts}
                 onSave={saveRoute} onDelete={() => deleteLayer('the route', routeDraft.name, () => dmApi.deleteRoute(target, routeDraft.id))} />

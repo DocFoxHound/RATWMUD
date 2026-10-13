@@ -1,5 +1,6 @@
 // Careers: positions, skill, apprentices, estates and succession (Docs/Design/26-living-npcs.md, Phase 4).
 #include "RatwSociety.h"
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 
 #include <algorithm>
@@ -472,6 +473,37 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     c.day = today;
     const auto alive = [&](const std::string& id) { return !id.empty() && world.alive(id); };
 
+    // Families as authored (doc 62, decision 8), kept as those made in play are: a couple married, a child's parents.
+    // Each day, so a restored save and a family added later both take; nothing already there is changed.
+    for (const auto& k : authored_.kin)
+    {
+        if (!state_.residents.count(k.a) || !state_.residents.count(k.b))
+            continue;
+        if (k.kind == "spouse")
+        {
+            if (!c.spouses.count(k.a) && !c.spouses.count(k.b))
+                c.spouses[k.a] = k.b, c.spouses[k.b] = k.a;
+        }
+        else if (auto& ps = c.parents[k.b]; ps.size() < 2 && std::find(ps.begin(), ps.end(), k.a) == ps.end())
+            ps.push_back(k.a);
+    }
+    // A founding couple's children count toward their three, and their last was born when the youngest was.
+    if (!authored_.kin.empty())
+        for (const auto& [a, b] : c.spouses)
+        {
+            if (!(a < b))
+                continue;
+            int children = 0, youngest = 1000;
+            for (const auto& [child, ps] : c.parents)
+                if (std::find(ps.begin(), ps.end(), a) != ps.end() && std::find(ps.begin(), ps.end(), b) != ps.end())
+                    ++children, youngest = std::min(youngest, world.age(child));
+            const auto key = a + "|" + b;
+            if (children > (c.births.count(key) ? c.births.at(key) : 0))
+                c.births[key] = children;
+            if (children && !c.lastBirth.count(key))
+                c.lastBirth[key] = now - double(std::max(0, youngest)) * calendar::DaysPerYear;
+        }
+
     // Mourning passes.
     for (auto it = c.mourning.begin(); it != c.mourning.end();)
         it = it->second.until <= now ? c.mourning.erase(it) : std::next(it);
@@ -650,8 +682,28 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         notes.push_back({"newcomer sent for", {}, ps.lastHolder, p.title});
     }
 
-    // Children, rarely: a married couple at home together, the mother of an age to bear, a year or so apart, no more
-    // than three. About one a season for those who can.
+    // Children, to keep each town about the size it was made (the user, 2026-10-13): only while it has fewer living
+    // residents than it should (newcomers count), no more in a day than it is short; a married couple at home
+    // together, the mother of an age to bear, a year or so apart, no more than three. About one a month for each who
+    // can, while the town is short.
+    std::map<std::string, int> living, wanted;
+    const auto townOf = [&](const std::string& id) {
+        const auto r = state_.residents.find(id);
+        const auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
+        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
+        return town.empty() ? communityOfResident(id) : town;
+    };
+    for (const auto& [id, life] : state_.residents)
+        if (alive(id))
+            ++living[townOf(id)];
+    for (const auto& [town, n] : living)
+        if (!c.population.count(town))
+            c.population[town] = n;                 // (The first day: the town as it is.)
+    for (const auto& [town, n] : c.population)
+        wanted[town] = n - living[town];
+    for (const auto& r : requests_)
+        if (r.kind == "birth" || r.kind == "newcomer")
+            --wanted[day_.communityOf ? day_.communityOf(r.home.cell) : std::string()];
     for (const auto& [a, b] : c.spouses)
     {
         if (!(a < b) || !alive(a) || !alive(b) || !household(a, b))
@@ -665,8 +717,10 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         const auto key = a + "|" + b;
         const int children = c.births.count(key) ? c.births.at(key) : 0;
         const auto last = c.lastBirth.find(key);
-        if (children >= 3 || (last != c.lastBirth.end() && now - last->second < 300) || mix(key, today) % 90 != 0)
+        auto& short_ = wanted[townOf(mother->id)];
+        if (children >= 3 || short_ <= 0 || (last != c.lastBirth.end() && now - last->second < 300) || mix(key, today) % 30 != 0)
             continue;
+        --short_;
         const auto* home = resident(mother->id);
         ResidentRequest r;
         r.kind = "birth";

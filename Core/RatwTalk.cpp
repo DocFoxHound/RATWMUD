@@ -1017,6 +1017,28 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
                 e->remember.push_back(r);
             continue;
         }
+        if (line.rfind("regard ", 0) == 0)
+        {
+            // regard self|other: affinity +1 trust -1 (affinity, trust, respect, fear, familiarity; bounded by the game)
+            const auto colon = line.find(':');
+            Entry::Regard r;
+            r.who = colon == std::string::npos ? std::string() : trim(line.substr(7, colon - 7));
+            const auto parts = colon == std::string::npos ? std::vector<std::string>{} : words(line.substr(colon + 1));
+            static const std::set<std::string> Axes{"affinity", "trust", "respect", "fear", "familiarity"};
+            bool good = (r.who == "self" || r.who == "other") && !parts.empty() && parts.size() % 2 == 0;
+            for (std::size_t i = 0; good && i + 1 < parts.size(); i += 2)
+            {
+                char* end = nullptr;
+                const double n = std::strtod(parts[i + 1].c_str(), &end);
+                good = Axes.count(parts[i]) && !*end && n != 0 && std::abs(n) <= 5;
+                r.change.push_back({parts[i], n});
+            }
+            if (!good)
+                fail("regard is 'regard self|other: affinity +1 trust -1' (affinity, trust, respect, fear, familiarity; at most 5)");
+            else
+                e->regard.push_back(r);
+            continue;
+        }
         if (line == "once" || line == "once per day" || line == "once per other" || line.rfind("cooldown ", 0) == 0)
         {
             if (e->limit != Entry::Limit::None)
@@ -1457,6 +1479,8 @@ bool Library::fits(const Entry& e, const Query& q, int speaker) const
 
 void Library::remembered(const Effect& e, Query& q)
 {
+    if (e.scope == "regard")
+        return;                                     // (The game's: Game::regard.)
     const auto said = e.key.rfind("said:", 0) == 0;
     if (e.scope == "person")
     {
@@ -1551,6 +1575,12 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
     for (const auto& m : e.remember)
         add(m.scope == "pair" ? "pair" : m.scope == "town" ? "town" : "person",
             m.scope == "self" ? self : m.scope == "other" ? other : m.scope == "pair" ? pair : town, m.key, m.value, m.days);
+    for (const auto& r : e.regard)
+        if (!self.empty() && !other.empty())
+            for (const auto& [axis, amount] : r.change)
+                add("regard", r.who == "self" ? self + "|" + other : other + "|" + self, axis, std::to_string(amount), -1);
+    for (auto& x : out.effects)
+        x.why = e.id;
     switch (e.limit)
     {
     case Entry::Limit::Once: add("person", self, "said:" + e.id, "yes", -1); break;
@@ -1736,6 +1766,90 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
     return std::move(chosen->said);
 }
 
+std::string Library::personalLayer(const std::string& npc)
+{
+    std::string name = "p_" + npc;
+    for (auto& c : name)
+        if (!(std::islower(static_cast<unsigned char>(c)) || std::isdigit(static_cast<unsigned char>(c))))
+            c = '_';
+    return name;
+}
+
+void Library::reindex()
+{
+    byConcept_.clear();
+    byId_.clear();
+    for (std::size_t i = 0; i < entries_.size(); ++i)
+    {
+        byId_[entries_[i].id] = i;
+        for (const auto& c : entries_[i].concepts)
+            byConcept_[c].push_back(i);
+    }
+}
+
+bool Library::setGrammar(const std::string& name, const std::string& text, std::string& problem)
+{
+    if (name == "plain")
+    {
+        problem = "plain is the game's own (a file): a dialect or a person's layer may not replace it";
+        return false;
+    }
+    // Only the one it names: a text that declares another grammar is refused.
+    std::istringstream lines(text);
+    for (std::string raw; std::getline(lines, raw);)
+        if (const auto line = trim(raw); line.rfind("grammar ", 0) == 0 && trim(line.substr(8)) != name)
+        {
+            problem = "db:" + name + ": declares " + line + "; only 'grammar " + name + "' here";
+            return false;
+        }
+    auto kept = grammars_;
+    grammars_.erase(name);
+    if (!parseGrammar(text, "db:" + name, problem))
+    {
+        grammars_ = std::move(kept);
+        return false;
+    }
+    return true;
+}
+
+bool Library::setCharacter(const std::string& npc, const std::string& text, std::string& problem)
+{
+    const auto file = "voice:" + npc;
+    // Their rules' IDs, made theirs.
+    std::string own;
+    std::istringstream in(text);
+    for (std::string raw; std::getline(in, raw);)
+    {
+        const auto line = trim(raw);
+        if (line.rfind("scene ", 0) == 0)
+        {
+            problem = file + ": a character's table holds rules, not scenes";
+            return false;
+        }
+        own += (line.rfind("rule ", 0) == 0 ? "rule " + npc + "." + trim(line.substr(5)) : raw) + "\n";
+    }
+    auto keptEntries = entries_;
+    entries_.erase(std::remove_if(entries_.begin(), entries_.end(), [&](const Entry& e) { return e.file == file; }), entries_.end());
+    reindex();
+    const auto before = entries_.size();
+    if (!parse(own, file, problem))
+    {
+        entries_ = std::move(keptEntries);
+        reindex();
+        return false;
+    }
+    for (std::size_t i = before; i < entries_.size(); ++i)
+    {
+        Criterion c;
+        c.ns = Ns::Self;
+        c.name = "id";
+        c.values = {npc};
+        entries_[i].when.insert(entries_[i].when.begin(), c);
+        entries_[i].score += settings_.namedPerson;
+    }
+    return true;
+}
+
 std::string Library::voiceCard(const Speaker& speaker) const
 {
     // For a model voicing them (phase 5): so its words sound like the same person the library's do.
@@ -1748,7 +1862,8 @@ std::string Library::voiceCard(const Speaker& speaker) const
         {"annoyed", "annoyance"}, {"very", "very"}, {"little", "a little"}, {"good", "good"}, {"bad", "bad"},
         {"worthless", "worthless"}, {"luck", "luck"}, {"child", "a child"}, {"pet", "a friend"}, {"money", "money"},
         {"cold", "cold"}, {"hot", "hot"}, {"rain", "rain"}, {"tired", "tired"}, {"drunk", "drunk"},
-        {"nonsense", "nonsense"}, {"tag", "a question at the end"}, {"home", "home"}, {"thanks", "thanks"}};
+        {"nonsense", "nonsense"}, {"tag", "a question at the end"}, {"home", "home"}, {"thanks", "thanks"},
+        {"dear", "name for their spouse"}, {"saying", "saying"}};
     const auto quoted = [](const std::vector<Alt>& alts, std::size_t most) {
         std::string out;
         for (std::size_t i = 0; i < alts.size() && i < most; ++i)
@@ -1807,6 +1922,8 @@ std::string Library::voiceCard(const Speaker& speaker) const
                             break;
                         }
                 }
+            if (card.size() > 320)                  // (Room left for their habits.)
+                card = card.substr(0, card.rfind(';', 316));
             card += ".";
         }
     }

@@ -34,7 +34,7 @@ KEEP_CELLS = 3          # Builds whose cell rows are kept (the server loads the 
 # Everything a build is made from besides the world's own tables (whose revision rises with every edit): the live
 # layers, which the game server and the Dungeon Master change directly.
 LIVE_LAYERS = ('live.npcs', 'live.profession_slots', 'live.patrol_routes', 'live.patrol_posts', 'live.factions',
-               'live.faction_claims', 'live.economy')
+               'live.faction_claims', 'live.economy', 'live.npc_relations')   # (Families: doc 62.)
 
 
 def fingerprint(conn, world_id, roster) -> str:

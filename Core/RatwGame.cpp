@@ -592,6 +592,7 @@ bool Game::loadFromDatabase(std::string& problem)
         note("warning", "RATW will not hear about new releases: " + listen);
     if (!worldDb_.listen("ratw_dm", listen))
         note("warning", "RATW will check for Dungeon Master actions once a minute: " + listen);
+    loadVoices();                                   // (Each resident's voice, the dialects, figures: doc 62, phase 6.)
     note("info", "RATW_DATABASE_WORLD_LOADED database=" + options_.database + " world=" + liveWorldId_ + " build=" +
                      std::to_string(loadedBuild_) + " release=" + (row[2] ? *row[2] : "0") + " cells=" + std::to_string(world_.cells().size()) +
                      " residents=" + std::to_string(world_.society().state().residents.size()) + " streamed=" +
@@ -663,7 +664,8 @@ std::string Game::withoutPeople(const std::string& manifest)
                 line = "RATW_WORLD 2";             // The version that allows NPC records, which are added next.
         }
         else if (line.rfind("economy ", 0) == 0 || line.rfind("route ", 0) == 0 || line.rfind("resident ", 0) == 0 ||
-                 line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0)
+                 line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0 ||
+                 line.rfind("kin ", 0) == 0)
             continue;
         else if (line.rfind("territory ", 0) == 0)
         {
@@ -823,6 +825,17 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+        }
+        else if (kind == "voice.sync")
+        {
+            // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
+            // families (taken in by the society at the next day's turn).
+            loadVoices();
+            World candidate;
+            std::string problem;
+            if (loadWithLivePeople(candidate, problem))
+                world_.society().setKin(candidate.society().kin());
+            outcome = {true, "Voices, dialects, families and figures are read again.", target};
         }
         else if (kind == "deed.award" || kind == "deed.revoke")
         {
@@ -4133,6 +4146,9 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
         context.personality = spec->personality;
         context.backstory = spec->backstory;
     }
+    // The personality written for them (doc 62, decision 10), where there is one: the model voices that person.
+    if (const auto v = npcVoice_.find(npcId); v != npcVoice_.end() && !v->second.persona.empty())
+        context.personality = v->second.persona;
     // How they speak (doc 62, phase 5): their dialect's words and their habits, so the model sounds like the library.
     if (const auto card = voiceCardOf(npcId); !card.empty())
         context.personality += (context.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;
@@ -4286,6 +4302,11 @@ void Game::consolidate()
     const double at = now();
     const auto closing = memories_.due(at);
     memories_.consolidate(at);
+    // An analysis of each, if there is one (doc 62, decision 9): its proposals on how the two feel, bounded as any.
+    if (conversationAnalyst)
+        for (const auto& conversation : closing)
+            for (const auto& p : conversationAnalyst(conversation))
+                regard(p.holder, p.other, p.change, "analysis", p.reason);
     std::weak_ptr<bool> alive = alive_;
     for (const auto& conversation : closing)
     {
@@ -4314,26 +4335,15 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
         npcMood_[npcId] = reply.emotion;
     if (!identified)
         return;
-    auto& budget = nudgeBudget_[npcId + "|" + subjectId];
-    const auto hour = std::int64_t(std::floor(world_.calendarDays() * 24));
-    if (budget.hour != hour)
-        budget = {hour, 0, 0};
-    const auto spend = [](int& used, int wanted) {
-        const int room = 6 - std::abs(used);
-        const int allowed = std::clamp(wanted, -room, room);
-        used += std::abs(allowed);
-        return allowed;
-    };
-    const int affinity = spend(budget.affinity, reply.affinity), trust = spend(budget.trust, reply.trust);
-    if (affinity || trust)
+    if (reply.affinity || reply.trust)
     {
         // First impressions (doc 55, 7): a Well-groomed wolf the resident hardly knows: warmer nudges a quarter more.
         double lift = 1;
         if (const auto* wolf = world_.entity(subjectId); wolf && !wolf->npc)
             if (const auto* bond = world_.bonds().find(npcId, subjectId); !bond || bond->familiarity < 25)
                 lift = 1 + .25 * world_.groomedFactor(*wolf);
-        world_.bonds().change(npcId, subjectId, {affinity > 0 ? affinity * lift : double(affinity), trust > 0 ? trust * lift : double(trust), 0, 0, 0},
-                              world_.calendarDays());
+        regard(npcId, subjectId, {double(reply.affinity), double(reply.trust), 0, 0, 0}, "model",
+               reply.emotion.empty() ? "in conversation" : "in conversation (" + reply.emotion + ")", lift);
     }
     if (!reply.remember.empty())
         memories_.record(npcId, subjectId, {sequence_++, now(), "(your note)", reply.remember});
@@ -5661,6 +5671,24 @@ DbStore::Build Game::capture()
                 memory.add(owner, kept);
         }
         c->server.talkMemory = memory;
+        auto ledger = Value::object();
+        for (const auto& [pair, entries] : regardLedger_)
+        {
+            auto list = Value::array();
+            for (const auto& e : entries)
+            {
+                auto j = Value::object();
+                j.add("day", e.day);
+                j.add("source", e.source);
+                j.add("reason", e.reason);
+                j.add("change", Value(Value::array()));
+                for (const double v : {e.change.affinity, e.change.trust, e.change.familiarity, e.change.fear, e.change.respect})
+                    j.find("change")->push(v);
+                list.push(j);
+            }
+            ledger.add(pair, list);
+        }
+        c->server.regardLedger = ledger;
     }
     c->server.memories = memories_;
     c->server.social = social_;
@@ -5797,6 +5825,16 @@ void Game::load(const std::string& payload)
         for (const auto& [key, m] : memos.fields())
             if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
                 talkMemory_[owner][key] = {m.items()[0].asString(""), m.items()[1].asNumber(-1)};
+    regardLedger_.clear();
+    for (const auto& [pair, list] : state.regardLedger.fields())
+        for (const auto& j : list.items())
+        {
+            const auto& c = j.array("change");
+            if (c.size() != 5 || regardLedger_[pair].size() >= 12)
+                continue;
+            regardLedger_[pair].push_back({j.number("day"), j.string("source"), j.string("reason"),
+                                           {c[0].asNumber(), c[1].asNumber(), c[2].asNumber(), c[3].asNumber(), c[4].asNumber()}});
+        }
     for (const auto& [who, list] : state.scenesHeard)
         for (const auto& id : list)
             scenesHeard_[who].add(id);

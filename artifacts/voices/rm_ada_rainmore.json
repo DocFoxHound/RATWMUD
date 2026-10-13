@@ -1,0 +1,133 @@
+{
+  "input": {
+    "resident": {
+      "age": "5",
+      "drive": "steady",
+      "father": "Dirk Rainmore",
+      "from": "ridgemere",
+      "honesty": "frank",
+      "job": "child",
+      "leader": "Celestine Greatly",
+      "mother": "Vigdis Rainmore",
+      "name": "Ada Rainmore",
+      "neighbour": "Eleanor Saltcot",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "heights",
+      "quirk": "takes_the_long_stairs_two_at_a_time",
+      "sex": "female",
+      "shopkeeper": "Vigdis Rainmore",
+      "talk": "plain",
+      "temper": "calm",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A small, quick dun timber wolf with soot on the paws, a child of the shop.",
+    "personality": "Patient and blunt; she takes the long stairs two at a time.",
+    "backstory": "Ada keeps a secret list of which Houses pay the Watch to look away.",
+    "greeting": "Good day to you. I am playing in the streets today.",
+    "work": "playing in the streets",
+    "dialect_words": "the realm's plain common speech"
+  },
+  "draft": {
+    "persona": "Ada Rainmore is five, a small, quick dun timber wolf with soot on her paws and a calm, blunt way of speaking. She talks plainly, in short bursts, and does not soften words for rich wolves or Great House ears. She grows up in Ridgemere’s Heights above her mother Vigdis’s shop, with her father Dirk, and knows the stairs, lanes, and shopfronts as her own. Her family is rich, though Ada watches power more carefully than she trusts it. She cares about her parents, fair dealing, and the secret list she keeps of Houses paying the Watch to look away. She fears that someone will find it. Reserved with warmth but frank in judgment, she is patient until injustice makes her suddenly quick—then she takes the long stairs two at a time.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "A clean path still climbs.",
+          "Keep your eyes open."
+        ]
+      },
+      {
+        "symbol": "pet",
+        "words": [
+          "little spark",
+          "street-tail"
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By the high steps!",
+          "Soot and stone!"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "Good day to you.",
+          "Morning, traveller."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Keep to the clear way.",
+          "Till the next stair."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "That is plain enough.",
+          "Yes, that follows."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "No. That will not do.",
+          "I will not say so."
+        ]
+      },
+      {
+        "symbol": "surprise",
+        "words": [
+          "Oh! Look at that.",
+          "Well, stairs above!"
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Do not make mud of it.",
+          "That is a poor trick."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "I am playing in the streets. Keep up if you can.",
+          "The long stairs are faster. Try them."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "Good day to you, {player}. Do you know who is watching?",
+          "{player}, come along. I found a quicker way."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A clean path still climbs, but some wolves pay to leave mud behind.",
+          "The Houses should not buy the Watch’s eyes."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Mother, I know where the list is. I will keep it safe.",
+          "Father, the stairs were easy today."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = A clean path still climbs. | Keep your eyes open.\npet!! = little spark | street-tail\noath! = By the high steps! | Soot and stone!\ngreet = Morning, traveller.\nfarewell = Keep to the clear way. | Till the next stair.\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay I am playing in the streets. Keep up if you can. | The long stairs are faster. Try them.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay Good day to you, #topic.player#. Do you know who is watching? | #topic.player#, come along. I found a quicker way.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A clean path still climbs, but some wolves pay to leave mud behind. | The Houses should not buy the Watch’s eyes.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Mother, I know where the list is. I will keep it safe. | Father, the stairs were easy today.\n",
+  "refused": ""
+}

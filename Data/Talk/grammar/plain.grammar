@@ -47,6 +47,10 @@ tag = , isn't it | , eh | , wouldn't you say
 oath! = Gods | Heavens | Blood and bread | Well, I never
 robbery = Robbery, plain and simple | Daylight robbery | A crime, that is
 home = home | my own fire
+# For each person's own words (their character table, doc 62 phase 6): a saying of their own, and what they call
+# their spouse. Plain's are the ordinary ones; a person's own layer gives theirs.
+saying! = Well, there it is | That's how it goes | So it goes | Such is life
+dear! = love | dear | my heart
 
 # The router's openers (phase 5): what a resident says before an answer, by tone. ~ is nothing at all.
 opener = ~ | ~ | Well,

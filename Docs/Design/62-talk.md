@@ -17,6 +17,11 @@ plan.
 7. **The dialects move to the database** too (open question 2), so the DM can tune a town's speech live.
 8. **Residents know their people** (2026-10-13): family recorded and fed to the society, neighbours, those they deal
    with, and important people not in the game yet. See "Relations, as settled".
+10. **A written personality for every resident** (2026-10-13), by the model, from where they're from, their age,
+   family, standing (a rich House, a farmer, Ridgemere's Heights or the Sump) and the rest; used for their own words
+   (their character table) and for the model whenever it voices them. See "Personalities, as settled".
+11. **The world stays about the size it was made** (2026-10-13): the old die and children are born to take their place,
+    and children grow up. See "Phase 6 as built".
 9. **Residents know players too** (2026-10-13): introductions, names, and their disposition toward each player, as
    facts any line may test; disposition left open-ended for a later analysis of conversations (perhaps a model), with
    the framework for it now. See "Players, as settled".
@@ -711,6 +716,82 @@ can name their spouse, their baker, their lord.
    today), an optional analyst reads it and proposes changes with reasons: a model, rules, or both. It goes through
    `regard`, so its budget, clamps and ledger are the same as everything else's; until there is one, nothing changes.
 
+## Personalities, as settled (2026-10-13)
+
+Every resident gets a personality written for them by the model, from everything the world knows of them: where they
+grew up and their accent, their age and sex, their family (from the relations, decision 8) and household, their
+standing (household wealth; their House and their place in it; their trade; in Ridgemere, their quarter: the Heights,
+the Wharf, the Commons, the Sump..., from worldgen's `artifacts/realm/buildings.json`), their traits and quirk, their
+job, and worldgen's short personality and backstory as the seed. It is used twice:
+
+1. **Their own words.** The same call drafts their character table (decision 6) from the personality: their sayings,
+   their names for their kin, their own oath, their few lines. The words follow the person, and the dialect lists of
+   each character are built from who they are.
+2. **The model's voice.** When the model voices them (a player conversation, an overheard exchange), it's given this
+   personality instead of the short one, with the voice card.
+
+It's kept in their `live.npc_voice` row beside worldgen's short personality (which stays, as the seed), editable in
+Atlas and by the DM like the rest of the row. The run is paid: ten residents of different kinds first, for you to read,
+then all of them when you say. The generator is `tools/voice_tables.py`; its prompt and its inputs are printed with
+`--dry-run`, free.
+
+## Phase 6 as built (2026-10-13)
+
+**The tables** (migration 0050, applied to DEV; PROD's is yours to apply: `python3 tools/world_db.py migrate --db prod`.
+Until then PROD's server simply finds none and works as before): `live.npc_voice`, `live.dialects`,
+`live.npc_relations`, `live.figures`. Migration 0051 adds families to the people manifest (`kin "a" "b"
+spouse|parent`), and the editor's exporter writes the same, so DEV's builds and exports, `world_check` and the live
+server all have them.
+
+**Seeded in DEV** (`tools/talk_seed.py`, once; rows already there are kept): the six dialects; every resident's
+voice row (1,083) with origin and accent as the game works them out, Ridgemere quarter from worldgen's
+`buildings.json` (621: Heights 117, Sump 116, Commons 114, Works 70...), traits from the adjective table, quirk (41
+kinds); families by the household rule (329 ties, 55 couples, and one-parent households: with no couple, the eldest
+is the parent of those sixteen or more years younger). Ridgemere's flats and manors mostly hold unrelated people
+(servants, lodgers): they aren't families, and get none.
+
+**The game** reads them at start and on the DM's `voice.sync` (`Game::loadVoices`): a dialect from the database
+replaces the file's; a resident's row overrides what's worked out of them (origin, accent, quarter, traits, quirk);
+their own words are a grammar layer above their dialect (`p_<id>`), their own lines rules only they can say
+(`self.id=` added, their ID before each rule's); the personality written for them is what the model is given.
+Families go to the society, which takes them in at each day's turn (married, a child's parents, the founding
+children counted toward a couple's three, the last born when the youngest was).
+
+**New facts:** a resident's `quarter`, `quirk`, traits (`temper`, `talk`, `warmth`, `humour`, `honesty`, `piety`,
+`drive`: the middle value where none is set), their people by name (`spouse`, `child`, `mother`, `father`,
+`neighbour`, `shopkeeper`, `priest`, `leader`); the pair's `neighbours`, `customer`, `flock`, and toward the other
+(player or resident) `named`, `named_how`, `known_by`, the five feelings as numbers, `disposition`, `days_since`,
+`owed`, `promise`, `rumour`, `famous`; figures by role where they're known (`world.figure_ruler`, `_lord`,
+`_captain`, `_high_priest`, `_hero`, `_villain`). Neighbours: the same building, then the nearest doors on the same
+street, five households at most (worked out live, the doors' way out cached).
+
+**Regard** (decision 9): `Game::regard`, bounded by source ("model": the old nudge budget, now here; "talk": a rule's
+`regard self|other: affinity +1`, 1 a change and 3 an hour; "analysis": 5 and 10 a day; "dm"), with a ledger of each
+pair's last twelve changes and their reasons, saved with the checkpoint. `Game::conversationAnalyst` is the empty place
+for an analysis of conversations (called as each closes); none runs yet.
+
+**The population** (decision 11, the user 2026-10-13): from seventy a resident may die of old age (a year's chance
+4% at seventy, 8% at seventy-five, 15% at eighty, 30% at eighty-five, half from ninety: placeholders), through the
+same death as any (mourning, the estate, the post falls vacant), the DM's protected excepted. Births come only while
+a town has fewer living residents than it had the first day this ran (its target, saved), no more a day than it's
+short, about one a month for each couple who can; newcomers sent for count. Children grow up as before (at sixteen,
+work, an apprenticeship or day labour).
+
+**Quirks** (decision 5): `rules/quirks.talk`, 61 rules for the 41 quirks (barks with cooldowns, asides, reactions),
+drafts. **Dialect words** kept in personal tables never repeat their dialect's (a personal layer is always used: a
+dialect's word there would make a light accent broad).
+
+**Personalities** (decision 10): `tools/voice_tables.py` (story model): ten written as a sample, all ten tables
+accepted by the game's check; the drafts are in `artifacts/voices/` for you to read. The full run (1,073 more, paid)
+waits for you.
+
+**Editing:** the Dungeon Master (`tools/dungeon_master.py`; NPCs tab): a resident's voice and family, the dialects and
+the figures, on PROD or DEV, each checked by the game's own loader (`talk_check --character` / `--dialect`) before it
+is saved, and read again by a running server. Push to live adds only new rows (voices and families only for NPCs PROD
+will have); copying from live brings PROD's back. **Not yet:** Atlas's own panel (the DM's edits to DEV serve until
+then), and the figures themselves: the lore names no ruler or lord beyond the four Houses' heads (in the game) and the
+Wardens (off the map), so the table is empty for you to fill.
+
 ## Phases
 
 1. **The engine and the conversion.** *(Built 2026-10-13.)* Facts and the schema, rules, tiered choice with chance, grammar with layers
@@ -728,7 +809,7 @@ can name their spouse, their baker, their lord.
    to the events that cause them.
 5. *(Built 2026-10-13: see "Phase 5 as built".)* **The router's lines** become `player.*` rules, so canned answers come in dialect and character. The live model
    gets the voice card.
-6. **Character.** `live.npc_voice` and its migration, the Atlas and DM editors with validation, live reload,
+6. *(Built 2026-10-13, but for Atlas's own panel and the full run of personalities: see "Phase 6 as built".)* **Character.** `live.npc_voice` and its migration, the Atlas and DM editors with validation, live reload,
    traits from personality. What goes in the tables was settled 2026-10-13: see "Character, as settled".
 7. **Writing.** Grammar by hand (with you). Rules drafted in bulk for the main factors: wealth, working,
    injured, mourning, fought, saw a player, the day's kind, the time (paid; ask first).

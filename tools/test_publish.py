@@ -141,6 +141,28 @@ class PublishTests(unittest.TestCase):
         self.assertIn(third['id'], mirrored)
         self.assertIn('newcomer', mirrored)
 
+    def test_talk_tables_are_added_only_and_copied_back(self):
+        # Doc 62, phase 6: voices, families, dialects and figures are PROD's once live.
+        dev, prod = self.owner['dev'], self.owner['prod']
+        a, b = [r[0] for r in dev.execute("SELECT id FROM live.npcs WHERE world_id = 'greyfen' ORDER BY position LIMIT 2").fetchall()]
+        dev.execute("INSERT INTO live.npc_voice (world_id, npc_id, persona) VALUES ('greyfen', %s, 'From DEV')", (a,))
+        dev.execute("INSERT INTO live.npc_relations (world_id, npc_id, other_id, kind) VALUES ('greyfen', %s, %s, 'spouse')", (a, b))
+        dev.execute("INSERT INTO live.dialects (world_id, name, grammar) VALUES ('greyfen', 'fenny', 'grammar fenny')")
+        dev.execute("INSERT INTO live.figures (world_id, id, name, role) VALUES ('greyfen', 'the_lady', 'The Lady', 'lord')")
+        live = self.push()['summary']['live']
+        for label in ('NPC voices', 'families', 'dialects', 'figures'):
+            self.assertEqual(live[label]['added'], 1, label)
+        self.assertEqual(prod.execute("SELECT persona FROM live.npc_voice WHERE world_id = 'greyfen' AND npc_id = %s", (a,)).fetchone()[0],
+                         'From DEV')
+        # The DM changes it live; DEV's own change never overwrites that, and DEV gets PROD's back.
+        prod.execute("UPDATE live.npc_voice SET persona = 'Changed live' WHERE world_id = 'greyfen' AND npc_id = %s", (a,))
+        dev.execute("UPDATE live.npc_voice SET persona = 'Changed in DEV' WHERE world_id = 'greyfen' AND npc_id = %s", (a,))
+        self.assertEqual(P.plan_seeds(dev, prod, 'greyfen')[1]['NPC voices'], {'added': 0, P.LIVE_KEPT: 1},
+                         'a push would keep the live one')
+        P.pull_npcs(self.dev, prod)
+        self.assertEqual(dev.execute("SELECT persona FROM live.npc_voice WHERE world_id = 'greyfen' AND npc_id = %s", (a,)).fetchone()[0],
+                         'Changed live', 'copied back to DEV')
+
     def test_dev_copies_the_live_npc_state(self):
         self.push()
         prod = self.owner['prod']

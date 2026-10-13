@@ -67,13 +67,15 @@ struct Query
 // What saying something changes (phase 4): a fact remembered about a resident, two of them, or a town, for a time;
 // "said:<id>" records a rule said, for `once` and `cooldown`. The game keeps them (Game's talk memory) and gives them
 // back as facts: a resident's as "mem.<key>" (self.mem.<key>), a pair's as "pair.mem.<key>", a town's as
-// "world.mem.<key>" (and "said:<id>", "pair.said:<id>").
+// "world.mem.<key>" (and "said:<id>", "pair.said:<id>"). Scope "regard" (owner "holder|other", key an axis, value a
+// number) is a change in how one feels about the other, made by the game through Game::regard ("talk", bounded).
 struct Effect
 {
     std::string scope;                    // "person", "pair", "town"
     std::string owner;                    // A resident's ID; a pair's two IDs, sorted, as "a|b"; a town's region.
     std::string key, value = "yes";
     double days = -1;                     // How long it is kept, in game days; -1: for good.
+    std::string why;                      // The rule or scene that made it.
 };
 
 struct Said
@@ -142,6 +144,12 @@ struct Entry
         double days = -1;
     };
     std::vector<Remember> remember;
+    struct Regard
+    {
+        std::string who;                  // "self": how the speaker comes to feel about the other; "other": the other's.
+        std::vector<std::pair<std::string, double>> change;   // (axis, amount)
+    };
+    std::vector<Regard> regard;
     std::string thenWho, thenConcept;
     enum class Limit : std::uint8_t { None, Once, PerDay, PerOther, Cooldown } limit = Limit::None;
     double cooldownDays = 0;
@@ -176,6 +184,15 @@ public:
     bool parse(const std::string& text, const std::string& file, std::string& problem);
     bool parseGrammar(const std::string& text, const std::string& file, std::string& problem);
     void clear();
+    // A grammar replaced whole (a dialect from the database, a person's own layer): its text must declare it
+    // (`grammar <name>`). False with the problems, and the old one kept.
+    bool setGrammar(const std::string& name, const std::string& text, std::string& problem);
+    // A person's own rules (their character table, doc 62 phase 6), replacing any they had: each rule's ID gets
+    // "<npc>." before it and `self.id=<npc>` among its criteria, so it can only ever be theirs. Rules only, no scenes.
+    // False with the problems, and their old rules kept.
+    bool setCharacter(const std::string& npc, const std::string& text, std::string& problem);
+    // The name a person's own grammar layer has ("p_" and their ID, - as _).
+    static std::string personalLayer(const std::string& npc);
 
     std::size_t size() const { return entries_.size(); }
     const std::vector<Entry>& entries() const { return entries_; }
@@ -247,6 +264,7 @@ private:
     Said pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
                  const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace) const;
     bool checkGrammars(std::vector<std::string>& errors) const;
+    void reindex();                                         // byConcept_ and byId_ from entries_.
     bool readSchema(const std::string& text, std::string& problem);
     bool readSettings(const std::string& text, std::string& problem);
 

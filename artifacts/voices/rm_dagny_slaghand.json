@@ -1,0 +1,119 @@
+{
+  "input": {
+    "resident": {
+      "accent": "broad",
+      "age": "66",
+      "drive": "steady",
+      "from": "ridgemere",
+      "honesty": "plain",
+      "humour": "dry",
+      "job": "baker",
+      "leader": "Celestine Greatly",
+      "name": "Dagny Slaghand",
+      "neighbour": "Egil Blackcombe",
+      "piety": "ordinary",
+      "priest": "Solveig Tarwell",
+      "quarter": "commons",
+      "quirk": "carries_a_wet_stone_whetting_knife_everywhere",
+      "sex": "female",
+      "shopkeeper": "Rosamund Tarridge",
+      "talk": "quiet",
+      "temper": "short",
+      "warmth": "reserved",
+      "wealth": "rich"
+    },
+    "description": "A stocky sandy timber wolf with a grey-frosted muzzle, who keeps the bread stall on the Heights Market.",
+    "personality": "Proud and quietly funny; she carries a wet-stone whetting knife everywhere.",
+    "backstory": "Dagny is saving for a stall on the Commons Market, coin by coin.",
+    "greeting": "You have found the best in the city. Fine bread, fresh this morning. For the Heights, only the best.",
+    "work": "bread stall on the Heights Market",
+    "dialect_words": "the realm's plain common speech"
+  },
+  "draft": {
+    "persona": "Dagny Slaghand is a stocky sandy timber wolf with a grey-frosted muzzle, rich by trade and rooted in Ridgemere’s Commons, though she keeps the bread stall on the Heights Market. At sixty-six, she speaks broad, quiet, plain common speech, with a dry joke tucked beneath every crust. Her temper is short, her warmth reserved, and her drive steady; she wastes neither words nor coin. She cares about good bread, honest weights, and saving enough for her own Commons Market stall. She respects Celestine Greatly’s rule without fawning, and keeps ordinary faith with Solveig Tarwell. She fears slipping backward more than hard work. A wet-stone whetting knife rides with her everywhere, an odd comfort and a warning. She is proud of her rich success, yet longs to leave the Heights behind.",
+    "words": [
+      {
+        "symbol": "saying",
+        "words": [
+          "Good grain tells no lies.",
+          "A sound crust carries a town."
+        ]
+      },
+      {
+        "symbol": "oath",
+        "words": [
+          "By flour and frost!",
+          "Crust take it!"
+        ]
+      },
+      {
+        "symbol": "greet",
+        "words": [
+          "You have found the best in the city.",
+          "Morning to you; the loaves are honest."
+        ]
+      },
+      {
+        "symbol": "farewell",
+        "words": [
+          "Keep your paws warm.",
+          "Go well, and mind your supper."
+        ]
+      },
+      {
+        "symbol": "agree",
+        "words": [
+          "Aye, that is sound.",
+          "You speak true."
+        ]
+      },
+      {
+        "symbol": "refuse",
+        "words": [
+          "Not at my oven.",
+          "No, I will not bake that trouble."
+        ]
+      },
+      {
+        "symbol": "annoyed",
+        "words": [
+          "Do not make me whet patience.",
+          "You are wearing thin crust."
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "moment": "work",
+        "say": [
+          "You have found the best in the city. Fine bread, fresh this morning. For the Heights, only the best.",
+          "Fresh from the oven, and priced for wolves who know grain."
+        ]
+      },
+      {
+        "moment": "greet_known",
+        "say": [
+          "{pet}, you have found me before the good loaves vanish.",
+          "{player}, mind your paws and choose while it is warm."
+        ]
+      },
+      {
+        "moment": "remark",
+        "say": [
+          "A town is fed by steady paws, not grand promises. {saying}",
+          "The Heights can buy fine bread. The Commons deserve it fresh."
+        ]
+      },
+      {
+        "moment": "home",
+        "say": [
+          "Set the coin aside. Tomorrow’s loaf will not pay for itself.",
+          "The knife stays by the door. A baker should keep tools close."
+        ]
+      }
+    ]
+  },
+  "grammar": "saying! = Good grain tells no lies. | A sound crust carries a town.\noath! = By flour and frost! | Crust take it!\ngreet = You have found the best in the city. | Morning to you; the loaves are honest.\nfarewell = Keep your paws warm. | Go well, and mind your supper.\nagree = Aye, that is sound. | You speak true.\n",
+  "rules": "rule work\nwhen concept=bark working=yes\ncooldown 6h\nsay You have found the best in the city. Fine bread, fresh this morning. For the Heights, only the best. | Fresh from the oven, and priced for wolves who know grain.\n\nrule greet_known\nwhen concept=player.greet topic.meeting=known\ncooldown 1d\nsay #pet#, you have found me before the good loaves vanish. | #topic.player#, mind your paws and choose while it is warm.\n\nrule remark\nwhen concept=talk.smalltalk\ncooldown 1d\nsay A town is fed by steady paws, not grand promises. #saying# | The Heights can buy fine bread. The Commons deserve it fresh.\n\nrule home\nwhen concept=bark working=no\ncooldown 8h\nsay Set the coin aside. Tomorrow’s loaf will not pay for itself. | The knife stays by the door. A baker should keep tools close.\n",
+  "refused": ""
+}

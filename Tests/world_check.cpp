@@ -704,6 +704,20 @@ int main(int argc, char** argv)
         out << "}}\n";
         std::cout << "  events: " << events.size() << " written to " << eventsFile << '\n';
     }
+    {
+        // The people (doc 62: the world should stay about the size it was made): who lives, who married, children asked
+        // for, strangers sent for. (Offline, nobody welcomes them in: they wait as requests.)
+        int living = 0, oldest = 0;
+        for (const auto& [id, e] : server.entities())
+            if (e.npc && !e.dead && server.society().resident(id))
+                ++living, oldest = std::max(oldest, e.age);
+        int births = 0, newcomers = 0;
+        for (const auto& r : server.takeResidentRequests())
+            (r.kind == "birth" ? births : newcomers) += 1;
+        std::cout << "  people: " << living << " residents living (the oldest " << oldest << "), "
+                  << server.society().state().careers.spouses.size() / 2 << " married couples; " << births
+                  << " children and " << newcomers << " newcomers asked for\n";
+    }
     roads.report();
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';

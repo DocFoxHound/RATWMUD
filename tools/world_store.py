@@ -556,6 +556,10 @@ def load_world(conn, world_id: str, ground: bool = True) -> tuple[dict, int]:
         'economy': economy_entity(e) if e else dict(DEFAULT_ECONOMY),
         'herbPatch': {'cell': herb[0][0], 'x': herb[0][1], 'y': herb[0][2]} if herb else None,
         'slots': slots,
+        # Families (doc 62, decision 8): `npc` is `other`'s spouse, or `npc` is `other`'s parent.
+        'relations': [{'npc': r[0], 'other': r[1], 'kind': r[2]}
+                      for r in q('SELECT npc_id, other_id, kind FROM live.npc_relations WHERE world_id = %s '
+                                 'ORDER BY npc_id, other_id, kind')],
     }
     return project, revision
 

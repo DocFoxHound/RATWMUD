@@ -35,7 +35,24 @@
     "house": "text",
     "tone": ["plain", "warm", "gruff", "formal", "sly", "shy"],
     "from": ["ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge", "larkfield", "southmeadow"],
-    "accent": ["none", "light", "broad"]
+    "accent": ["none", "light", "broad"],
+    "quarter": ["heights", "commons", "sump", "office", "works", "wharf", "docks", "harbour_hill", "suburbs", "estate"],
+    "quirk": "text",
+    "temper": ["calm", "even", "nervy", "short"],
+    "talk": ["quiet", "plain", "chatty"],
+    "warmth": ["cold", "reserved", "warm"],
+    "humour": ["none", "dry", "merry"],
+    "honesty": ["frank", "plain", "guarded", "sly"],
+    "piety": ["devout", "ordinary"],
+    "drive": ["content", "steady", "restless", "ambitious"],
+    "spouse": "text",
+    "child": "text",
+    "mother": "text",
+    "father": "text",
+    "neighbour": "text",
+    "shopkeeper": "text",
+    "priest": "text",
+    "leader": "text"
   },
   "pair": {
     "band": ["strangers", "acquaintances", "friends", "rivals", "family", "spouses", "apprentice"],
@@ -43,7 +60,24 @@
     "elder": ["a", "b"],
     "boss": ["a", "b", "no"],
     "richer": ["a", "b", "same"],
-    "same_from": ["yes", "no"]
+    "same_from": ["yes", "no"],
+    "neighbours": ["yes", "no"],
+    "customer": ["a", "b", "no"],
+    "flock": ["a", "b", "no"],
+    "named": ["yes", "no"],
+    "named_how": ["introduced", "familiar", "tie", "founding"],
+    "known_by": ["yes", "no"],
+    "affinity": "number",
+    "trust": "number",
+    "respect": "number",
+    "familiarity": "number",
+    "fear": "number",
+    "disposition": ["hostile", "wary", "cool", "neutral", "warm", "fond"],
+    "days_since": "number",
+    "owed": ["a", "b", "no"],
+    "promise": ["a", "b", "no"],
+    "rumour": ["violent", "thief", "breaks_promises", "keeps_promises", "newcomer", "none"],
+    "famous": ["yes", "no"]
   },
   "here": {
     "region": ["ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge", "larkfield", "southmeadow", "wild"],
@@ -93,6 +127,12 @@
     "festival": ["today", "soon", "no"],
     "death": ["recent", "no"],
     "wedding": ["recent", "no"],
-    "birth": ["recent", "no"]
+    "birth": ["recent", "no"],
+    "figure_ruler": "text",
+    "figure_lord": "text",
+    "figure_captain": "text",
+    "figure_high_priest": "text",
+    "figure_hero": "text",
+    "figure_villain": "text"
   }
 }

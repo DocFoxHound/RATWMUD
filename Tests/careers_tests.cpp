@@ -259,7 +259,8 @@ void strangersAndChildren()
            "and takes up the post they came for");
     expect(s.skill("stranger", "job:rook") >= 35, "knowing something of the work");
 
-    // A married couple at home together: a child, now and then, never more than three.
+    // A married couple at home together: a child to take the place of one who died (the town stays about its size:
+    // doc 62, the user 2026-10-13), never more than three.
     auto couple = town();
     couple.residents[4].appearance.sex = "female";                     // Wren Ash, 40.
     couple.residents.push_back(person("birch", "Birch Ash", "civilian", "hauling", 42, {"ash_house", 4.5, 3.5}, {"yard", 3.5, 2.5}));
@@ -270,17 +271,48 @@ void strangersAndChildren()
     expect(home.family("birch", "wren"), "Married, they are family");
     Fates alive;
     std::vector<ResidentRequest> births;
-    for (int day = 0; day < 1200; ++day)
+    for (int day = 0; day < 400; ++day)
     {
         home.tendCareers(day + .3, alive.world(home));
         for (auto& r : home.takeRequests())
             if (r.kind == "birth")
                 births.push_back(r);
     }
-    expect(!births.empty() && births.size() <= 3, "Children come, but no more than three: " + std::to_string(births.size()));
+    expect(births.empty(), "A town at the size it was made has no children");
+    alive.dead.insert("rook");                                         // One of the town dies.
+    for (int day = 400; day < 1600; ++day)
+    {
+        home.tendCareers(day + .3, alive.world(home));
+        for (auto& r : home.takeRequests())
+            if (r.kind == "birth")
+                births.push_back(r);
+    }
+    // (Here no child is ever welcomed in, so the town stays short: a child a year or so, up to the couple's three.)
+    expect(!births.empty() && births.size() <= 3, "Children come when it's short, but no more than three: " + std::to_string(births.size()));
     expect(births[0].age == 0 && births[0].templateId == "wren" && births[0].name.find("Ash") != std::string::npos &&
                births[0].parents.size() == 2 && births[0].home.cell == "ash_house",
            "A child of Wren and Birch, at home: " + births[0].name);
+}
+
+// Families as authored (doc 62, decision 8): kept by the society as those made in play are.
+void foundingFamilies()
+{
+    auto t = town();
+    t.residents[4].appearance.sex = "female";                          // Wren Ash, 40.
+    t.residents.push_back(person("birch", "Birch Ash", "civilian", "hauling", 42, {"ash_house", 4.5, 3.5}, {"yard", 3.5, 2.5}));
+    t.residents.push_back(person("sprig", "Sprig Ash", "civilian", "playing", 6, {"ash_house", 4.5, 3.5}, {"yard", 3.5, 2.5}));
+    t.kin = {{"birch", "wren", "spouse"}, {"birch", "sprig", "parent"}, {"wren", "sprig", "parent"}};
+    Society s(Roster::None);
+    s.configure(t);
+    Fates alive;
+    s.tendCareers(10.3, alive.world(s));
+    expect(s.spouse("wren") && *s.spouse("wren") == "birch", "a founding couple is married");
+    expect(s.family("sprig", "birch") && s.state().careers.parents.at("sprig").size() == 2, "and their child is theirs");
+    expect(s.state().careers.births.at("birch|wren") == 1, "who counts toward their three");
+    expect(s.state().careers.lastBirth.at("birch|wren") <= 10.3 - 6 * 365 + 1, "born when the child was");
+    s.tendCareers(11.3, alive.world(s));
+    expect(s.state().careers.parents.at("sprig").size() == 2 && s.state().careers.births.at("birch|wren") == 1,
+           "and taking them again each day changes nothing");
 }
 
 // In a world: a death empties a job and those close to the dead grieve.
@@ -310,6 +342,7 @@ int main()
         noFamilyGoesToTheTown();
         playersAsApprentices();
         savedAndRestored();
+        foundingFamilies();
         griefInTheWorld();
         skillFamiliesAndPace();
         strangersAndChildren();

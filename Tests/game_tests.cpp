@@ -1097,7 +1097,7 @@ void residentsTalkFromWrittenScenes()
     o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";
     o.savePath = "/tmp/ratw-game-test-scenes-" + std::to_string(::getpid()) + ".json";
     std::remove(o.savePath.c_str());
-    std::string problem, shopkeeper;
+    std::string problem, shopkeeper, regarder;
     {
         game::Game g(o);
         expect(g.start(problem), "the demo world starts: " + problem);
@@ -1151,6 +1151,22 @@ void residentsTalkFromWrittenScenes()
             expect(g.talkQuery(a, b, "talk.smalltalk").a.facts.at("injured") == "bad", "badly hurt is injured=bad");
             w.entity(a)->hurt = 0;
         }
+        // Regard (doc 62, decision 9): one way every change goes, bounded by its source, kept in the pair's ledger.
+        {
+            const auto made = g.regard(a, "player-ash", {5, -5, 0, 0, 0}, "talk", "said test_line");
+            expect(made.affinity == 1 && made.trust == -1, "talk moves feelings a little at a time");
+            g.regard(a, "player-ash", {1, 0, 0, 0, 0}, "talk", "said test_line");
+            g.regard(a, "player-ash", {1, 0, 0, 0, 0}, "talk", "said test_line");
+            expect(g.regard(a, "player-ash", {1, 0, 0, 0, 0}, "talk", "said test_line").affinity == 0, "and only so much an hour");
+            expect(g.regard(a, "player-ash", {-40, 0, 0, 0, 0}, "dm", "the DM said so").affinity == -40, "the DM, as much as they say");
+            const auto* ledger = g.regardLedger(a, "player-ash");
+            expect(ledger && ledger->size() == 4 && ledger->back().source == "dm" && ledger->back().reason == "the DM said so",
+                   "and each is kept with its reason");
+            expect(g.talkQuery(a, "player-ash", "player.greet").facts.at("pair.disposition") == "cool" ||
+                       g.talkQuery(a, "player-ash", "player.greet").facts.at("pair.disposition") == "wary",
+                   "a resident put out with Ash shows it: " + g.talkQuery(a, "player-ash", "player.greet").facts.at("pair.disposition"));
+            regarder = a;
+        }
         auto* me = w.entity("player-ash");
         me->cellId = w.entity(a)->cellId;
         me->position = {w.entity(a)->position.x, w.entity(a)->position.y + 1};
@@ -1188,6 +1204,8 @@ void residentsTalkFromWrittenScenes()
     expect(again.scenesHeardBy("player-ash") >= 1, "what Ash has heard is remembered across a restart");
     expect(again.talkQuery(shopkeeper, "player-ash", "react.customer").facts.count("pair.mem.served"),
            "and what the talk remembered, too");
+    expect(again.regardLedger(regarder, "player-ash") && again.regardLedger(regarder, "player-ash")->size() == 4,
+           "and the regard ledger");
     std::remove(o.savePath.c_str());
 }
 
