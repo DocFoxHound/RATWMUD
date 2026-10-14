@@ -402,11 +402,11 @@ b: Garth, old male sailor (comfortable) from Southmeadow, no accent; calm, cold,
 a: Edda, female guard (poor) from Oakhaven, light accent; nervy, dry, chatty, sly, restless  
 b: Linnet, female official (comfortable) from Coldwater, light accent; calm, cold, merry, quiet, guarded, restless; tired  
 
-> **Edda:** Your dog's been in my garden.  
-> **Linnet:** My dog doesn't go anywhere it isn't welcome.  
+> **Edda:** Your goat's been in my garden.  
+> **Linnet:** My goat doesn't go anywhere it isn't welcome.  
 > **Edda:** It's not welcome. That's the point.  
 > **Linnet:** Then shut your gate.  
-> **Edda:** Then keep your dog behind yours.  
+> **Edda:** Then keep your goat behind yours.  
 
 ## food
 
