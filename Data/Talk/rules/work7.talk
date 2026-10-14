@@ -485,7 +485,7 @@ then other: work.reply
 
 rule w7_ans_herder
 when concept=work.answer job=herder
-say Flock's well. One wanders, but there's always one. | Counted them twice. Same number both times. | Ewes are fat and the dogs are lazy.
+say Flock's well. One wanders, but there's always one. | Counted them twice. Same number both times. | Ewes are fat and the shepherds are lazy.
 remember pair: w7_tone=plain 30m
 remember pair: w7_from=b 30m
 then other: work.reply
@@ -1757,7 +1757,7 @@ then other: work.reply
 rule w7_tell_heat_forge
 when concept=talk.work here.season=summer here.weather=clear job=smith|baker|cook|brewer
 cooldown 1d
-say Summer and a fire all day. I'm cooked. | I'm panting like a hound. | Who wants hot work in this? Me, apparently.
+say Summer and a fire all day. I'm cooked. | I'm panting like a bellows. | Who wants hot work in this? Me, apparently.
 remember pair: w7_tone=tired 30m
 remember pair: w7_from=a 30m
 then other: work.reply

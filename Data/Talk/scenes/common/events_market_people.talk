@@ -19,7 +19,7 @@ b?[guard] : Not while I'm on the wall, they won't.
 
 scene em_pup_hungry
 when topic=prices topic.item=meal topic.dir=up a.stage=young|adolescent
-a : Why do we only get half a bowl now? | My tummy's growling louder than a dog. | Mama gave me her bread and said she wasn't hungry.
+a : Why do we only get half a bowl now? | My tummy's growling louder than a bear. | Mama gave me her bread and said she wasn't hungry.
 b : Food costs more this week, little one. | Mine too. Drink some water. It helps. | Mamas say that sometimes.
 a : Is it my fault? | It doesn't help. | Was she lying?
 b : No, never. | I know. | Only a kind lie.

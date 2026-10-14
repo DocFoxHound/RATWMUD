@@ -247,7 +247,7 @@ then other: reply.close
 
 rule r7_jest_merry
 when concept=jest.answer self.humour=merry
-say Says you, with a face like a dropped pie! | Ha! At least my own mother can tell me from the dog. | You're one to talk. You've burrs in your tail. | I'll laugh when it's funny. HA. There. Now it's funny.
+say Says you, with a face like a dropped pie! | Ha! At least my own mother can tell me from the goat. | You're one to talk. You've burrs in your tail. | I'll laugh when it's funny. HA. There. Now it's funny.
 remember pair: went=back 30m
 then other: reply.close
 
@@ -2221,7 +2221,7 @@ then other: chat.answer
 rule r7_chat_nervy
 when concept=talk.day|talk.smalltalk self.temper=nervy pair.band=acquaintances|strangers
 cooldown 1d
-say Is it me, or are there more strangers about lately? | The dogs have been barking all morning. Have you noticed? | There's a cart been standing at the corner since dawn. Nobody with it.
+say Is it me, or are there more strangers about lately? | The geese have been at it all morning. Have you noticed? | There's a cart been standing at the corner since dawn. Nobody with it.
 remember pair: thread=chat 30m
 remember pair: ch=remark 30m
 then other: chat.answer

@@ -140,7 +140,7 @@ a : Twenty. And they count. | House Fell will dock me for them. | Masts and more
 
 scene tr_wood_carpenter
 when topic=work a.job=woodcutter|crafter b.job=crafter|woodcutter
-a : I need seasoned ash, not this green stuff. | Bring me cherry, if you find any. | This plank's warped like a dog's leg.
+a : I need seasoned ash, not this green stuff. | Bring me cherry, if you find any. | This plank's warped like a ram's horn.
 b : Green's what I've got. | Cherry costs. | Wood moves. It's alive.
 a : Then I'll wait. | It's for a cradle. | It's dead. It's a plank.
 
@@ -150,7 +150,7 @@ scene tr_craft_order_late
 when topic=work a.job=crafter
 a : The cooper's waiting on my staves and I'm two days behind. | Somebody wants a chest carved with their whole family on it. | I've been sewing harness leather since dawn.
 b : Two days is nothing. | Their whole family? | Your jaw must ache.
-a : Not to a cooper. | Eleven of them. And a dog. | My jaw's past aching. It's numb.
+a : Not to a cooper. | Eleven of them. And a goat. | My jaw's past aching. It's numb.
 
 scene tr_craft_tools
 when topic=work a.job=crafter

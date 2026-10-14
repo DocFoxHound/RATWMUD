@@ -302,7 +302,7 @@ remember pair: qk=stones 1m
 rule qk_counts_bark
 when concept=bark quirk=counts_things_under_the_breath
 cooldown 4h
-say ...eleven, twelve, thirteen. Thirteen. | Nine carts today. Nine. Hm. | Four, five... no, that's a dog. Four.
+say ...eleven, twelve, thirteen. Thirteen. | Nine carts today. Nine. Hm. | Four, five... no, that's a goat. Four.
 
 rule qk_counts_talk
 when concept=talk.smalltalk quirk=counts_things_under_the_breath

@@ -55,7 +55,7 @@ scene f7_home_supper_grace
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dusk|night
 a : Say the words before you eat. | Who's saying thanks tonight? | Wait. We give thanks first. | Paws together.
 b[piety=devout] : For the bread and the roof and the ones beside us, thank you. | I will. Bright One, keep this house. | For what we have, and for who. | Bright One, we're grateful. Truly.
-b[young] : Thank you for the soup and the bread and the dog next door and... | Me! Me! Thank you gods for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
+b[young] : Thank you for the soup and the bread and the cat next door and... | Me! Me! Thank you gods for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
 b : Thanks for the food. There. | Me. Gods, thanks for this. Can we eat now? | Gods, thanks. Can we eat? | Done. Pass the bread.
 a : Well. It counts. | Short and sweet. | It counts. Eat. | So be it.
 
@@ -82,7 +82,7 @@ a : Sweep again. | Then brush outside. I'm begging you. | Somebody's sweeping it
 scene f7_home_washing
 when topic=family pair.kin=spouses|parent|siblings|family|household
 a : It's washing day. Don't put anything else in the basket. | Who put their boots in with the linen? | My good shirt's gone grey. | The lines are full. Where do I hang this?
-b[young] : I've only got one shirt and it's on. | The boots were muddy. They needed washing too. | Grey is a nice colour. | On the dog?
+b[young] : I've only got one shirt and it's on. | The boots were muddy. They needed washing too. | Grey is a nice colour. | On the cat?
 b[wealth=rich] : Send it out. That's what the laundress is for. | Tell the maid. | Buy another. | The maid will find a place.
 b #d : Then I'll wear this one a week. | Not me. Not this week. | It was grey when you bought it. | Over the fire. Like always.
 a@d : You'll wear it a week regardless. | It's always somebody. | It was white! | It'll smell of smoke.
@@ -129,7 +129,7 @@ a : Bring it here, then. | Off with it. Now. | I'll do it, then. Again. | It's l
 scene f7_home_morning
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dawn
 a : Up. Up! The sun's up. | Who's got my other boot? | You've slept on your ear. It's all flat. | Did anyone see my belt?
-b[young] : The sun's not up. It's pretending. | It's under the dog. | It's a good ear. It'll pop up. | I'm wearing it. As a tail.
+b[young] : The sun's not up. It's pretending. | It's under the cat. | It's a good ear. It'll pop up. | I'm wearing it. As a tail.
 b[adolescent] : Five more breaths. | Why is it always me you ask? | Don't look at me. | Under my bed, probably. Everything is.
 b[old] : I've been up since the second cock. | Look under your other boot. | At my age everything's flat. | It's round your waist, you fool.
 b : Coming. Coming. | Where you left it. | Is it? Gods. | On the hook. Where it lives.
@@ -175,7 +175,7 @@ a : Nearly. There. | It'll stay like that now. | There. Like new. | That's all I
 scene f7_home_scent
 when topic=family pair.kin=spouses|parent|siblings|family|household
 a : You smell of the tavern. | Where've you been? You smell of smoke and onions. | Is that someone else's scent on your coat? | Who've you been with? I can smell them.
-b[young] : The baker's dog! I hugged it. | I fell in something. I don't want to talk about it. | The goat. I've been with the goat. | Everybody! I've been with everybody!
+b[young] : The baker's cat! I hugged it. | I fell in something. I don't want to talk about it. | The goat. I've been with the goat. | Everybody! I've been with everybody!
 b[working=yes] : I've been working. Work smells. | The forge. The fish. The whole street. | Customers. Fifty of them. They all left a bit. | Fifty strangers a day. They all rub off.
 b #d : I walked past the tavern. Past it. | The cook-shop. I was hungry. | We were packed in the market like eels. | Nobody you'd care about.
 a@d : Your nose is lying, then, and mine isn't. | Did you bring any back? | Wash it out. | My nose cares about all of them.
@@ -204,7 +204,7 @@ a : They're well. They say the goat isn't. | Money, mostly. And the roof. | Good
 scene f7_home_visitors
 when topic=family pair.kin=spouses|parent|siblings|family|household
 a : Your cousins are coming on Restday. | We've visitors tomorrow. Tidy something. | The whole family's coming. All of them. | Hide the good cups.
-b[young] #y : Are they bringing their pups? Can we play? | Will there be cake? | The ones with the big dog? Hooray! | Can I show them my beetle?
+b[young] #y : Are they bringing their pups? Can we play? | Will there be cake? | The ones with the goat? Hooray! | Can I show them my beetle?
 b[warmth=cold] #c : Tell them we're ill. | Must they? | I'll be out. | Every year.
 b #d : All of them? Where will they sit? | Tidy what? Everything's where I want it. | Gods help us. | They know where the good cups are.
 a@y : Yes, and you'll share your toys. | If you tidy, there'll be cake. | The very same. Keep your tail out of its way. | Only if it stays in its box.
@@ -214,7 +214,7 @@ a : On each other. | Everything. | Gods help the cups. | They'll find them anywa
 scene f7_home_gift
 when topic=family pair.kin=spouses|parent|siblings|family|household
 a : I've got something for you. Close your eyes. | I saw this at the market and thought of you. | It's not much. Open it. | Happy name day. Don't make a fuss.
-b[young] #y : Is it a puppy? Is it a sword? Is it a puppy with a sword? | Is it sweets? It's sweets! | Can I open it now? Now? Now? | A whistle! Thank you! Listen!
+b[young] #y : Is it a kitten? Is it a sword? Is it a kitten with a sword? | Is it sweets? It's sweets! | Can I open it now? Now? Now? | A whistle! Thank you! Listen!
 b[warmth=cold] #c : What's this for? | You shouldn't have. Really. | Hm. Thank you. | Why?
 b[old] : At my age, a gift's a kindness. Thank you. | A scarf. I'll wear it to my own funeral. | You remembered. You always remember. | Oh, you shouldn't. Give it here.
 b : What is it? Oh. Oh, that's lovely. | You thought of me? | It's perfect. | Oh, you.
@@ -257,7 +257,7 @@ when topic=family pair.kin=spouses|parent|siblings|family|household
 a : Your boots are worn through. | You need new boots before the frost. | Where are your good boots? | Those boots have seen better years. So have I.
 b[wealth=poor|destitute] #p : I'll stuff them with straw. | Boots or bread. I chose bread. | Sold them. Don't be angry. | They'll do another winter. They'll have to.
 b[young] #y : My toes stick out! I can wiggle them! | I grew out of them. Again. | They're in the river. It's a long story. | I like them. They're my lucky boots.
-b : They've a year in them. | After market day. | Under the bed. With the dog. | They're broken in. That's the good part.
+b : They've a year in them. | After market day. | Under the bed. With the cat. | They're broken in. That's the good part.
 a@p : Straw. Gods help us. | Bread was right. | I'm not angry. I'm sad. | Then we'll patch them again.
 a@y : Stop wiggling them at me. | Again! On what we earn! | Tell me the long story. Now. | Lucky or not, they're done.
 a : A month, maybe. | Before the frost. | Fetch them out. | Broken, more like.

@@ -185,7 +185,7 @@ remember pair: f7_chain=worry 2m
 rule f7_sp_father_old
 when concept=talk.family pair.band=spouses self.father
 cooldown 2d
-say #dad.capitalize# forgot my name yesterday. Just for a breath. | #dad.capitalize# won't stop working. He'll drop where he stands. | Should #dad# come and live with us? | #dad.capitalize# was out in the yard at midnight, looking for a dog he had as a pup.
+say #dad.capitalize# forgot my name yesterday. Just for a breath. | #dad.capitalize# won't stop working. He'll drop where he stands. | Should #dad# come and live with us? | #dad.capitalize# was out in the yard at midnight, looking for a goat he had as a pup.
 then other: family.worry_answer
 remember pair: f7_worry=kin 2m
 remember pair: f7_chain=worry 2m
@@ -783,7 +783,7 @@ remember pair: f7_chain=pc 2m
 rule f7_cp_young_why
 when concept=talk.family pair.kin=parent self.stage=young other.stage=adult|old
 cooldown 1d
-say Why do we have tails? | Where does the rain go after? | Why do dogs bark at nothing? | Why can't I stay up? You stay up. | Why do the old ones smell of cupboards?
+say Why do we have tails? | Where does the rain go after? | Why do geese honk at nothing? | Why can't I stay up? You stay up. | Why do the old ones smell of cupboards?
 then other: family.answer_child
 remember pair: f7_cp=why 2m
 remember pair: f7_chain=cp 2m
@@ -857,7 +857,7 @@ remember pair: f7_chain=cp 2m
 rule f7_cp_young_news
 when concept=talk.family pair.kin=parent self.stage=young
 cooldown 1d
-say When I'm big I'm going to be a guard. Or a baker. Or both. | I found a stone with a hole in it. It's lucky. | The baker's dog licked me. On the face. | I can count to a hundred. Nearly.
+say When I'm big I'm going to be a guard. Or a baker. Or both. | I found a stone with a hole in it. It's lucky. | The baker's cat licked me. On the nose. | I can count to a hundred. Nearly.
 then other: family.answer_child
 remember pair: f7_cp=news 2m
 remember pair: f7_chain=cp 2m
@@ -1152,7 +1152,7 @@ remember pair: f7_chain=share 2m
 rule f7_tell_family_house
 when concept=talk.smalltalk|talk.friends self.house
 cooldown 4d
-say The House has us all at the head's table this month. Dreadful food. | Everyone in my family works for the House. Cousins, aunts, the dog. | You never get away from the family when the family's the House. | My uncle's been made a steward. We'll never hear the end of it.
+say The House has us all at the head's table this month. Dreadful food. | Everyone in my family works for the House. Cousins, aunts, the cat. | You never get away from the family when the family's the House. | My uncle's been made a steward. We'll never hear the end of it.
 then other: family.share_answer
 remember pair: f7_share=house_life 2m
 remember pair: f7_chain=share 2m
@@ -2124,7 +2124,7 @@ remember pair: f7_tone=jest 2m
 rule f7_sa_dayoff_tired
 when concept=family.share_answer pair.mem.f7_share=dayoff self.tired=yes
 priority 1
-say Sleep. Sleep, and then more sleep. | Lie in the sun like a pair of old dogs. | Nothing. I've earned a day of nothing.
+say Sleep. Sleep, and then more sleep. | Lie in the sun like a pair of old cats. | Nothing. I've earned a day of nothing.
 then other: family.settle
 remember pair: f7_tone=eager 2m
 

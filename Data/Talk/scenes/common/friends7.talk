@@ -190,7 +190,7 @@ a : I'm sitting over here. | Wash it, then. | Over there. Further. | I'm going h
 
 scene r7_fr_howl_contest
 when topic=friends here.time=dusk|night
-a : Bet I can howl longer than you. | Listen. That's the old dog by the river howling. Let's answer. | Remember when we used to howl at the moon from the roof? | Shall we wake the street?
+a : Bet I can howl longer than you. | Listen. That's old Tobin by the river howling. Let's answer. | Remember when we used to howl at the moon from the roof? | Shall we wake the street?
 b[temper=nervy] : The neighbours! The Watch! | Don't, they'll think something's wrong! | We'll get in trouble. We always did. | No! No. Well. Quietly.
 b : You've never beaten me yet. | Go on, then. | And your father threw a boot at us. | Let's.
 a : AWOOOOO... | AWOOOO! | AWOOO... I miss that roof. | Ready? AWOOOOO!

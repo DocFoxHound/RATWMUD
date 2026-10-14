@@ -200,9 +200,9 @@ a : Good enough. | It is. | Very old.
 
 scene rg_wm_wolves_wild
 when topic=lore here.region=downs
-a : Wild dogs took two lambs off the high fold. | Something big has been at the sheep on the east down. | The old shepherds say the downs have teeth.
-b[herder] : Wild dogs, nothing more. But I'll sleep by the fold tonight.
-b : Bad luck. | Dogs, probably. | They do.
+a : Foxes took two lambs off the high fold. | Something big has been at the sheep on the east down. | The old shepherds say the downs have teeth.
+b[herder] : Foxes, nothing more. But I'll sleep by the fold tonight.
+b : Bad luck. | Foxes, probably. | They do.
 a : Very bad. | Probably. | They do.
 
 scene rg_wm_never_city

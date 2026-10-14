@@ -86,7 +86,7 @@ b : Fine. Fine. | Then we'll sleep when they're grown. | Good.
 
 scene kn_home_pet
 when topic=family|smalltalk pair.band=family|spouses here.place=home
-a : The cat's been on the table again. | Where did that hen come from? | The dog's eaten another shoe.
+a : The cat's been on the table again. | Where did that hen come from? | The goat's eaten another shoe.
 b : The cat owns the table. We just eat at it. | She followed the pups home. | We don't wear shoes.
 a : Then the cat can do the dishes. | She can follow them back. | Exactly. Whose was it?
 b : She'd do them with her tongue. | She lays eggs. | The neighbour's.

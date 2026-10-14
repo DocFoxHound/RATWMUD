@@ -146,9 +146,9 @@ scene kn_mates_dream_house
 when topic=family pair.band=spouses
 a : One day we'll have a house with a proper hearth. | I saw a den for sale by the river. | Wouldn't it be nice to live outside the walls?
 b : With a garden for the pups to dig up. | Can we afford a river? | Bandits like it outside the walls too.
-a : And a roof that doesn't leak. | Not this year. | We'd get dogs.
-b : Now you're dreaming. | Then next year. | Dogs bark at bandits. Bandits don't care.
-a : It's free to dream. | Next year, then. | Big dogs.
+a : And a roof that doesn't leak. | Not this year. | We'd get geese.
+b : Now you're dreaming. | Then next year. | Geese hiss at bandits. Bandits don't care.
+a : It's free to dream. | Next year, then. | Big geese.
 
 scene kn_mates_snoring
 when topic=family pair.band=spouses here.time=dawn here.place=home
@@ -169,7 +169,7 @@ scene kn_mates_spouse_cold
 when topic=quarrel pair.band=spouses
 a : You didn't come to bed last night. | Are you going to speak to me today? | You're still angry about the money.
 b : I didn't feel like it. | When I've something to say. | I'm angry about the lie.
-a : You slept by the hearth like a dog. | Then I'll wait. | I didn't lie. I didn't tell.
+a : You slept by the hearth like a cat. | Then I'll wait. | I didn't lie. I didn't tell.
 b : Better than lying beside you. | Wait, then. | That's lying with your mouth shut.
 a : That's cruel. | I will. | Fine. Then we'll talk tonight.
 

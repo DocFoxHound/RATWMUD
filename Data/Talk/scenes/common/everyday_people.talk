@@ -188,6 +188,6 @@ a : I'll watch from a distance. | The cook. The cook knows everything. | I repor
 
 scene ev_pp_child_child_animals
 when topic=smalltalk a.stage=young b.stage=young
-a : I saw a frog as big as a loaf! | Do you want to see my beetle? | My dog can do a trick.
+a : I saw a frog as big as a loaf! | Do you want to see my beetle? | My goat can do a trick.
 b : Liar! | Is it alive? | What trick?
-a : As big as two loaves! | Mostly! | He sits. Sometimes.
+a : As big as two loaves! | Mostly! | He bows. Sometimes.

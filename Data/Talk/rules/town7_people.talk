@@ -468,7 +468,7 @@ then other: town.close
 
 rule n7_da_dun_short
 when concept=town.debt pair.mem.db=dun self.temper=short
-say You'll get it when you get it. | Don't hound me in the street. | I said I'd pay. Stop asking.
+say You'll get it when you get it. | Don't badger me in the street. | I said I'd pay. Stop asking.
 remember pair: da=bite 1h
 then other: town.close
 

@@ -4,11 +4,11 @@
 
 scene kn_q_fence
 when topic=quarrel
-a : Your fence is on my land again. | Your dog's been in my garden. | Your tree drops its leaves in my yard.
-b : My fence has been there twenty years. | My dog doesn't go anywhere it isn't welcome. | Trees do that. It's called autumn.
+a : Your fence is on my land again. | Your goat's been in my garden. | Your tree drops its leaves in my yard.
+b : My fence has been there twenty years. | My goat doesn't go anywhere it isn't welcome. | Trees do that. It's called autumn.
 a : And twenty years it's been wrong. | It's not welcome. That's the point. | Then autumn can sweep my yard.
 b : Take it to the council, then. | Then shut your gate. | Autumn's busy.
-a : Maybe I will. | Then keep your dog behind yours. | So am I.
+a : Maybe I will. | Then keep your goat behind yours. | So am I.
 
 scene kn_q_stolen_customer
 when topic=quarrel a.role=merchant b.role=merchant

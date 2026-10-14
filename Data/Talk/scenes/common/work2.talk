@@ -16,7 +16,7 @@ a : No choice. | No. | Barely.
 
 scene wk2_herder
 when topic=work a.job=herder
-a : Lost a lamb to the crows. | Moving the flock to the high pasture tomorrow. | The dog's getting old; won't run like she did.
+a : Lost a lamb to the crows. | Moving the flock to the high pasture tomorrow. | The pony's getting old; won't run like she did.
 b[farmer] : Crows, foxes, weather. Everything wants your sheep.
 b : Poor thing. | Good grass up there? | Neither will any of us.
 a : It happens. | Best of the year. | True.

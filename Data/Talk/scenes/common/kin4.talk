@@ -152,7 +152,7 @@ a : Fancy a game of bones? | You cheated last time. | Double or nothing?
 b : For pennies or for honour? | I won last time. That's different. | Double of what? You've nothing.
 a : For pennies. Honour doesn't buy cider. | It's the same thing with you. | Of my nothing.
 b : Pennies, then. Throw. | Watch me close, then. | Then I'll take it.
-a : Ha! A hound and a hare. | I'm watching. | Done.
+a : Ha! A fox and a hare. | I'm watching. | Done.
 
 scene kn_fr_morning_walk
 when topic=friends here.time=dawn
@@ -172,9 +172,9 @@ b : They always do. | Fine by me. | Good.
 scene kn_fr_young_mischief
 when topic=friends a.stage=young|adolescent b.stage=young|adolescent
 a : Let's sneak into the orchard. | Bet you won't ring the chapel bell. | Let's follow the watch on their rounds.
-b : The farmer's got a dog. | Bet I will. | They'll see us.
-a : The dog's old and deaf. | Then do it. | Not if we stay downwind.
-b : Old dogs still bite. | ...Tomorrow. | We'll be shadows.
+b : The farmer's got geese. | Bet I will. | They'll see us.
+a : The geese are asleep. | Then do it. | Not if we stay downwind.
+b : Geese wake up. | ...Tomorrow. | We'll be shadows.
 a : You're scared. | Scared. | Shadows. Come on.
 
 scene kn_fr_young_dream
@@ -206,7 +206,7 @@ scene kn_fr_old_friends_memory
 when topic=friends a.stage=old b.stage=old
 a : Remember when we stole the lord's pears? | We've known each other sixty winters. | Do you remember old Thorn, the miller?
 b : You got stuck in the hedge. | And you're still the worst at bones. | Thorn with the one ear?
-a : You laughed so hard the dogs came. | And you still lose to me. | That's him. He owed me money.
+a : You laughed so hard the farmer came. | And you still lose to me. | That's him. He owed me money.
 b : I laugh now, thinking of it. | Only because I let you. | He owed everyone money.
 a : So do I. | Liar. | Paid none of us.
 b : Good pears. | Old liar. | And we drank at his wake anyway.
@@ -214,8 +214,8 @@ b : Good pears. | Old liar. | And we drank at his wake anyway.
 scene kn_fr_old_friends_today
 when topic=friends a.stage=old b.stage=old
 a : How are the bones? | Did you sleep? | Have you eaten today?
-b : Creaking. Like a gate. | Some. The dogs barked half the night. | Some bread. Some soup.
-a : Mine too. We'll creak together. | Dogs are worse than ever. | Not enough. Come to mine.
+b : Creaking. Like a gate. | Some. The geese honked half the night. | Some bread. Some soup.
+a : Mine too. We'll creak together. | Geese are worse than ever. | Not enough. Come to mine.
 b : Like a pair of old gates. | Everything's worse than ever. | If you've got the good cheese.
 a : Swinging in the wind. | That's what the old say. | I always have the good cheese.
 

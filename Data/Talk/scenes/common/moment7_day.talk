@@ -24,7 +24,7 @@ a : The best kind. | Wise. | Same here. | I'll spread the word.
 scene m7_day_small_wins
 when topic=day
 a : Found a silver button off somebody's fine coat this morning. | The baker gave me the end of a loaf. Free. | Got the knot out of my tail at last. | Slept all night. Didn't wake once.
-b : Sell it, then. | Lucky dog. | Took you long enough. | I'd kill for that.
+b : Sell it, then. | Lucky so-and-so. | Took you long enough. | I'd kill for that.
 a : Wear it, more like. | The heel too. | It was a stubborn knot. | Don't. I'll tell you how.
 
 scene m7_day_small_woes
@@ -57,8 +57,8 @@ a : Some dignity. | Eggs know when you're weak. | Too pretty for my purse. | It 
 
 scene m7_day_market_noise
 when topic=day here.day=market here.place=market|street
-a : Can't hear myself think for the criers. | Somebody's shouting "fresh fish" and it's not. | Every stall's got a dog under it. | The pie wolf's back. Smell it.
-b : Shout louder. | Fresh yesterday. | And a cat on top. | I've smelled it since the gate.
+a : Can't hear myself think for the criers. | Somebody's shouting "fresh fish" and it's not. | Every stall's got a cat under it. | The pie wolf's back. Smell it.
+b : Shout louder. | Fresh yesterday. | And another on top. | I've smelled it since the gate.
 a : I'm hoarse already. | Day before. | Natural order. | Two pies, then.
 
 scene m7_day_market_pups
@@ -73,7 +73,7 @@ scene m7_day_market_end
 when topic=day here.day=market here.time=dusk
 a : Stalls packing up. | Cheap bread now, if you're quick. | That's Marketday over. | The square's all straw and cabbage leaves.
 b[role=merchant] #trade : Good day for me. Don't tell my rivals.
-b : Grab the bargains. | Quick's my middle name. | Back to normal tomorrow. | And dogs.
+b : Grab the bargains. | Quick's my middle name. | Back to normal tomorrow. | And pigeons.
 a@trade : Your secret's safe.
 a : Too late. All gone. | Run, then. | Thank the gods. | And pigeons.
 
@@ -184,9 +184,9 @@ scene m7_place_tavern_fire
 when topic=day|weather|smalltalk here.place=tavern
 a : Best seat in the house, this. | Fire's drawing well. | I could sit by this fire till spring. | My boots are steaming.
 b[job=innkeeper] #keep : Sit as long as you like. Drink as long as you sit.
-b : I've had my eye on it all week. | They've put a whole log on. | You'd have to fight the dog for it. | Don't put them on the table.
+b : I've had my eye on it all week. | They've put a whole log on. | You'd have to fight the cat for it. | Don't put them on the table.
 a@keep : That's the rule, is it?
-a : Too late. | Good log. | The dog can share. | They're comfy there.
+a : Too late. | Good log. | The cat can share. | They're comfy there.
 
 scene m7_place_tavern_song
 when topic=day|festival here.place=tavern here.time=dusk|night
@@ -272,7 +272,7 @@ scene m7_place_barracks
 when topic=day here.place=barracks
 a : Bunk's harder than the floor. | Who left the boots there? | Sergeant's in a mood. | Ration bread's like slate.
 b[job=guard|soldier] #guard : Welcome to the Watch.
-b : Swap with the dog. | Not me. | Sergeant's always in a mood. | Like Grayrock's slate.
+b : Swap with the floor. | Not me. | Sergeant's always in a mood. | Like Grayrock's slate.
 a@guard : Some welcome.
 a : Might. | Somebody. | Always. | Cheaper.
 

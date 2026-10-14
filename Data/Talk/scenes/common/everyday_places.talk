@@ -8,8 +8,8 @@ scene ev_pl_tavern_fire
 when topic=smalltalk here.place=tavern
 a : Shove over, let me near the fire. | This ale tastes of the barrel. | Who's paying for this round?
 b[innkeeper] : Complaints go out the door. Coin goes on the counter.
-b : There's room by the dog. | All ale tastes of barrel. | Not me. I paid last time.
-a : The dog can shove over too. | Not like this. This is the barrel itself. | You never paid in your life.
+b : There's room by the cat. | All ale tastes of barrel. | Not me. I paid last time.
+a : The cat can shove over too. | Not like this. This is the barrel itself. | You never paid in your life.
 
 scene ev_pl_tavern_late
 when topic=smalltalk here.place=tavern here.time=night

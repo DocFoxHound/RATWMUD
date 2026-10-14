@@ -178,7 +178,7 @@ a : Long enough. | Very cruel. | Mine wants a fire and a pie.
 
 scene e4_dr_omen_death
 when topic=dreams
-a : I dreamt of a wedding. My gran said that means a funeral. | Dreamt somebody gave me a white flower. Bad, that, they say. | Dreamt of a black dog at the door. I don't like it.
+a : I dreamt of a wedding. My gran said that means a funeral. | Dreamt somebody gave me a white flower. Bad, that, they say. | Dreamt of a black ram at the door. I don't like it.
 b[piety=devout] #dev : Say a prayer and put it out of your head.
 b[honesty=frank] #frank : Folk say a lot of things.
 b : Old wives' talk. | Who says? | Just a dream.
@@ -254,7 +254,7 @@ a : I will. Harder than anyone. | Thank you. I'll need it. | Bold is the point.
 scene e4_dr_marry
 when topic=dreams a.married=no a.stage=adolescent|adult
 cooldown 3d
-a : I'd like to be married before winter. | I want a spouse and a full house and a dog that barks at nothing. | When I marry, it'll be in summer, in the orchard.
+a : I'd like to be married before winter. | I want a spouse and a full house and a goose that honks at nothing. | When I marry, it'll be in summer, in the orchard.
 b[married=yes] #wed : Marriage. It's lovely. Mostly. Ask me on a good day.
 b[humour=dry] #dry : Have you told the other party? Or is that a detail?
 b : Anyone in mind? | That's a good life. | That sounds nice.
@@ -569,8 +569,8 @@ when topic=dreams a.job=farmer|herder
 cooldown 2d
 a : Twenty acres of my own. That's all. | I want a flock that's mine, not the master's. | Own land. Nobody's tenant. That's the dream.
 b[job=farmer|herder] : Twenty acres. And the rain at night, not on market day.
-b : And a good dog. | A big one? | Good dream.
-a : And a good dog. | Big enough. | The only one.
+b : And a good pony. | A big one? | Good dream.
+a : And a good pony. | Big enough. | The only one.
 
 scene e4_dr_fisher
 when topic=dreams a.job=fisher|sailor

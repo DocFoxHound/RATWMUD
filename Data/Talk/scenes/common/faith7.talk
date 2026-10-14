@@ -700,8 +700,8 @@ b : There'd better be. | Behind me. | For your sake.
 
 scene e4_fa_quip_omen
 when topic=faith
-a : Dog howled three times last night. | Mirror cracked this morning. | Swallows nesting under my eaves. Good luck, they say.
-b : Somebody's dog's bored. | Seven years, they say. | Lucky you.
+a : Owl hooted three times last night. | Mirror cracked this morning. | Swallows nesting under my eaves. Good luck, they say.
+b : Somebody's owl's bored. | Seven years, they say. | Lucky you.
 a : I hope so. | Bad luck. Really. | Hope it holds.
 
 scene e4_fa_quip_vow

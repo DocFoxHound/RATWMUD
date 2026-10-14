@@ -13,7 +13,7 @@ a : Every drop of it. | I'll stare till my eyes water. | Not me.
 scene ev_wx_clear_summer_noon
 when topic=weather here.weather=clear here.season=summer here.time=day
 a : The cobbles are hot enough to blister. | The sun's an anvil today. | Even the flies are too hot to bother.
-b[laborer] : Try hauling stone in it. I'm dripping like a wet dog.
+b[laborer] : Try hauling stone in it. I'm dripping like a drowned rat.
 b : Walk in the shade. | Find a cellar. | Small mercies.
 a : There isn't any. | All taken. | Very small.
 
@@ -70,7 +70,7 @@ a : My throat's been dry for weeks. | Not quite. | Without the bath.
 
 scene ev_wx_rain_autumn
 when topic=weather here.weather=rain here.season=autumn
-a : The leaves are a slick mess with this rain. | Cold rain. Gets into your bones. | My coat smells like wet dog.
+a : The leaves are a slick mess with this rain. | Cold rain. Gets into your bones. | My coat smells like wet sheep.
 b[old] : My bones knew it yesterday.
 b : Mind you don't slip. | Hot cider tonight. | So does everyone's.
 a : I already did. | Two cups. | Not as bad as mine.

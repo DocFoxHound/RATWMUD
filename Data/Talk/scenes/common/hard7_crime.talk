@@ -14,10 +14,10 @@ b : Well. Lock yours up. | Tin. Gods help us. | Not anymore, they're not. | Warm
 
 scene h7_theft_night_noise
 when topic=crime topic.kind=theft
-a : Did you hear anything the night #topic.victim# was robbed? | I heard dogs going, the night of #topic.victim#. | My ears pricked at something that night. Thought it was the wind. | Funny. I slept like a log the night they robbed #topic.victim#.
-b : I sleep like the dead. | Dogs always go. Means nothing. | Probably was the wind. | Lucky you. I never sleep.
+a : Did you hear anything the night #topic.victim# was robbed? | I heard the geese going, the night of #topic.victim#. | My ears pricked at something that night. Thought it was the wind. | Funny. I slept like a log the night they robbed #topic.victim#.
+b : I sleep like the dead. | Geese always go. Means nothing. | Probably was the wind. | Lucky you. I never sleep.
 a : That's what worries me. | They went for a reason that night. | Wind doesn't take purses. | Nor will I, now. Ears open all night.
-b : Get a bell on your door. | Ask the dogs, then. | Nor does it give them back. | You'll be no good to anyone.
+b : Get a bell on your door. | Ask the geese, then. | Nor does it give them back. | You'll be no good to anyone.
 
 scene h7_theft_safest_house
 when topic=crime topic.kind=theft b.wealth=poor|destitute
@@ -279,7 +279,7 @@ a@rich : I couldn't. I couldn't take it.
 a@poor : Who else? The rich have doors that shut.
 a : Enough to hurt. | All of it. | I slept in my coat. | It doesn't help.
 b@rich : You can, and you will. Don't be proud at me.
-b@poor : And dogs behind them.
+b@poor : And the Watch at the corner.
 b : I'm so sorry. | Then we'll start again. | Have mine. I've two. | No. But it's something.
 
 scene h7_news_crime_struck
@@ -364,11 +364,11 @@ scene h7_crime_nervy
 when topic=crime topic.kind=theft|assault a.temper=nervy
 a : #topic.victim#! I've not slept. Have you slept? | Since #topic.victim#, every noise. Every single noise. | What if it's us next? What if? | I heard about #topic.victim#. My heart's still going.
 b[temper=calm] #calm : Breathe. Slowly. Nobody's coming for you tonight.
-b : I slept fine. | Get a dog. | It won't be. | Sit down. Breathe.
+b : I slept fine. | Get a goose. | It won't be. | Sit down. Breathe.
 a@calm : You don't know that. Nobody knows that.
-a : How? How can you? | A dog's a noise too! | You don't know that. | I am breathing.
+a : How? How can you? | A goose is a noise too! | You don't know that. | I am breathing.
 b@calm : I know you'll be fine. That's enough knowing.
-b : I've nothing worth taking. | Then a quiet dog. | I know you. You'll be fine. | Slower.
+b : I've nothing worth taking. | Then a quiet goose. | I know you. You'll be fine. | Slower.
 
 scene h7_crime_spouses
 when topic=crime topic.kind=theft|assault pair.band=spouses

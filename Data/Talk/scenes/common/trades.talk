@@ -229,7 +229,7 @@ scene tr_serv_ridgemere_house
 when topic=work a.job=servant here.region=ridgemere
 a : The Grayrock house wants its colours on every cushion by the feast. | House Greatly's steward docks us for the tar smell. | The Mossgrave ladies want the windows washed in this rain.
 b : Every cushion? | We work for Greatly. Everything smells of tar. | In this rain?
-a : Every one. And the dogs' cushions. | That's what I told him. | They want to watch the rain through clean glass.
+a : Every one. And the cats' cushions. | That's what I told him. | They want to watch the rain through clean glass.
 
 # ---------------------------------------------------------------- Food trades together
 

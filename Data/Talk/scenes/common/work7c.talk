@@ -424,7 +424,7 @@ a : Next month. | I will. | Laugh, go on.
 
 scene w7c_mouser
 when topic=work
-a : The cat caught three rats in the store last night. | Somebody's been feeding the yard cat. It's useless now. | There's a dog sleeping on the sacks again.
+a : The cat caught three rats in the store last night. | Somebody's been feeding the yard cat. It's useless now. | There's a cat sleeping on the sacks again.
 b[warmth=warm] : Good cat. Give it a bit of something. | Me. Sorry. It looked so thin. | Let it sleep. It's cold out.
 b[temper=short] : Good. Now catch the rest. | Stop it, whoever it is. | Kick it off.
 b : Earns its keep, that one. | Fat cats don't hunt. | Shoo it off.
@@ -450,9 +450,9 @@ a : Twelve! | Lovely. | Pay? Good.
 
 scene w7c_measure
 when topic=work
-a : It's too short. I measured it twice! | Who cut this? It's crooked as a dog's leg. | It doesn't fit. Nothing fits today.
+a : It's too short. I measured it twice! | Who cut this? It's crooked as a ram's horn. | It doesn't fit. Nothing fits today.
 b[temper=short] : Then measure three times. | Not me. | Make it fit.
-b[humour=dry] : Twice wrong, then. | A crooked dog, by the look. | Nothing ever fits. That's the trade.
+b[humour=dry] : Twice wrong, then. | A crooked ram, by the look. | Nothing ever fits. That's the trade.
 b : Start again. | Ask who had the saw. | Shave a bit off.
 a : I'll start again. | Nobody owns up. | Fine.
 

@@ -96,7 +96,7 @@ then other: moment.reply_weather
 rule m7_wx_open_summer_heat
 when concept=talk.weather here.season=summer here.time=day here.weather=clear here.region!=frosthollow
 cooldown 1d
-say My tongue's out like a dog's. | Too hot for fur. | The flies are the only ones enjoying this. | I've been panting since breakfast.
+say My tongue's out to my chin. | Too hot for fur. | The flies are the only ones enjoying this. | I've been panting since breakfast.
 then other: moment.reply_weather
 
 rule m7_wx_open_autumn_wind

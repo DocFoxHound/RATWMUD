@@ -195,7 +195,7 @@ scene w7b_beggars
 when topic=work a.job=beggar b.job=beggar
 a : The chapel steps are taken. | That merchant gave me a whole penny. | The Watch moved me on twice today.
 b[warmth=warm] #warm : Share mine. Room for two. | Go back tomorrow! | Come by the bakery's back door.
-b : Try the market gate. | Lucky dog. | They do that.
+b : Try the market gate. | Lucky so-and-so. | They do that.
 a@warm : Thank you. Truly. | I will! | Bless you.
 a : Thank you. | I know! A whole one. | I know.
 

@@ -46,7 +46,7 @@ a : That's settled, then. | No. | Grim. | Right.
 
 scene m7_wx_wet_dog
 when topic=weather here.weather=rain|storm
-a : I smell like wet dog. | My fur's gone flat as a pond. | I've rain in my ears. Both of them. | My mother made us shake off in the yard. Like dogs.
+a : I smell like wet fleece. | My fur's gone flat as a pond. | I've rain in my ears. Both of them. | My mother made us shake off in the yard. All of us, in a row.
 b[young] #shake : Watch this! Brrrrr!
 b : We all do, in this. | Mine's in ringlets. Don't laugh. | Tip your head. It runs out. | Mine still does.
 a@shake : Oi! I was nearly dry!

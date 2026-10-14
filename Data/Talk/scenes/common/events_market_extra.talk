@@ -84,8 +84,8 @@ b?[cook] : Scarce is my whole life. I make soup from boots.
 scene em_x_dusk_caravan_tavern
 when topic=caravan topic.kind=arrived here.time=dusk|night here.place=tavern
 a : The #topic.where# carters are telling road stories by the fire. | One of the carters says he saw a bear on the road from #topic.where#. | The carters are betting on who drives fastest to #topic.where#.
-b : Stories get bigger with ale. | A bear! Or a big dog. | They'd lose to a mule.
-a : They're huge already. | A very big dog. | Probably.
+b : Stories get bigger with ale. | A bear! Or a big boar. | They'd lose to a mule.
+a : They're huge already. | A very big boar. | Probably.
 
 scene em_x_rain_prices
 when topic=prices topic.dir=up here.weather=rain|storm

@@ -64,7 +64,7 @@ remember pair: k=grief 1m
 
 rule keep_widowed
 when concept=keeping.answer widowed=yes
-say Quiet house, since. You get used to it. Mostly. | I talk to the walls now. They don't answer back, at least. | Getting by. It's the evenings. | I still cook for two. The neighbour's dog is very fat.
+say Quiet house, since. You get used to it. Mostly. | I talk to the walls now. They don't answer back, at least. | Getting by. It's the evenings. | I still cook for two. The neighbour's cat is very fat.
 then other: keeping.sorry
 remember pair: k=grief 1m
 
@@ -235,7 +235,7 @@ then other: keeping.nod
 rule keep_restless
 when concept=keeping.answer drive=restless
 cooldown 1d
-say Same as ever. Same as ever. I need a change. | Bored, if I'm honest. Itching for something. | Wondering what's over the hill. | Restless. Like a dog before thunder.
+say Same as ever. Same as ever. I need a change. | Bored, if I'm honest. Itching for something. | Wondering what's over the hill. | Restless. Like a horse before thunder.
 then other: keeping.nod
 remember pair: k=hopes 1m
 

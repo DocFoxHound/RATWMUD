@@ -67,9 +67,9 @@ a : Someone close. | I think we should watch our tongues. | Much worse.
 
 scene et_theft_night_noise
 when topic=crime topic.kind=theft here.time=dawn|day
-a : Heard a clatter in the night and thought nothing of it. Then #topic.victim# was robbed. | Dogs barking at the second hour. That was the thief. | Did anyone hear anything last night?
+a : Heard a clatter in the night and thought nothing of it. Then #topic.victim# was robbed. | Geese honking at the second hour. That was the thief. | Did anyone hear anything last night?
 b[guard] : I wish folk would shout when they hear a clatter. Save me a deal of trouble.
-b : You couldn't have known. | They always bark. | Not a whisker.
+b : You couldn't have known. | They always honk. | Not a whisker.
 a : I'll know next time. | Not like that. | Nor me. That's the worrying part.
 
 scene et_theft_rich_victim

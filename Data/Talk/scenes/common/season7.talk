@@ -92,7 +92,7 @@ a : Shook out every blanket in the house. The dust! | Opened all the windows tod
 b[wealth=rich] #rich : We've a maid for that, thank heavens.
 b : Spring cleaning. Good. | Smells of fresh air now? | Charge him rent.
 a@rich : Lucky you. And lucky her.
-a : Good, and sneezy. | Air and dog. | He's paid in droppings.
+a : Good, and sneezy. | Air and goat. | He's paid in droppings.
 
 scene e5_se_spring_frost
 when topic=season here.season=spring here.time=dawn

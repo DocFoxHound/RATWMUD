@@ -169,7 +169,7 @@ scene kn_ap_farmer
 when topic=work pair.band=apprentice a.job=farmer b.job=apprentice
 a : Straight furrows. Look at the post, not the ground. | You'll learn the soil by its smell. | Don't plant before the frost's gone.
 b : It's not straight? | It all smells like dirt. | It's gone. It's spring.
-a : Like a dog's hind leg. | Smell again. Sour, sweet, wet. | Spring's not a promise.
+a : Like a ram's horn. | Smell again. Sour, sweet, wet. | Spring's not a promise.
 b : The post moved. | Wet. It's wet. | When, then?
 a : The post never moves. | Good. Too wet. Wait a day. | When the old oak has leaves.
 
@@ -221,8 +221,8 @@ b : Now. | Then begin. | Nobody noticed for a week.
 scene kn_ap_gossip_master
 when topic=smalltalk pair.band=apprentice a.job=apprentice
 a : The other apprentices say you were wild when you were young. | Did you really fight a bear? | Is it true you trained somewhere else first?
-b : The other apprentices say a lot. | It was a dog. A big one. | For a season. I hated it.
-a : So it's true? | A dog? | Why?
-b : Some of it. Get back to work. | A very big dog. | They worked us like oxen and fed us like sparrows.
+b : The other apprentices say a lot. | It was a boar. A big one. | For a season. I hated it.
+a : So it's true? | A boar? | Why?
+b : Some of it. Get back to work. | A very big boar. | They worked us like oxen and fed us like sparrows.
 a : Which part? | Was it scary? | And you came back here.
 b : Work. | Terrifying. Work. | Best choice I ever made. Work.

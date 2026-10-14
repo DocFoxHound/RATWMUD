@@ -78,7 +78,7 @@ cooldown 2d
 
 scene h7_poor_tips
 when topic=smalltalk|day a.wealth=poor|destitute b.wealth=poor|destitute
-a : Baker throws out the burnt ends at dusk. Get there early. | The chapel gives soup on Restday if you sit through the sermon. | The tanner pays a penny for dogs' leavings. Don't ask. | Go to the market late. They'd rather give it than carry it.
+a : Baker throws out the burnt ends at dusk. Get there early. | The chapel gives soup on Restday if you sit through the sermon. | The tanner pays a penny a sack for oak bark. Hard picking. | Go to the market late. They'd rather give it than carry it.
 b : Early's when everyone gets there. | I'll sit through anything for soup. | I wasn't going to. I am now. | Late. I'll try.
 a : Earlier, then. | The sermon's long. | It's a penny. | Smile at the fishwives. They're soft.
 b : I'll sleep there. | The soup's thin. | A penny's a penny. | I'll smile. Gods help me.

@@ -117,10 +117,10 @@ a : Very good. | Always. | Probably.
 
 scene rg_fh_marsh_watch
 when topic=work here.region=mirebridge a.role=guard
-a : Nothing happens in Mirebridge. That's the trouble. | The watch here has two spears and a dog. | Walked the causeway patrol in the mist. Saw nothing. Heard everything.
+a : Nothing happens in Mirebridge. That's the trouble. | The watch here has two spears and a goose. | Walked the causeway patrol in the mist. Saw nothing. Heard everything.
 b[guard] : Quiet's good. Quiet's the job.
-b : Lucky you. | And a good dog. | That's the fen.
-a : Lucky. | A very good dog. | It is.
+b : Lucky you. | And a good goose. | That's the fen.
+a : Lucky. | A very good goose. | It is.
 
 scene rg_fh_mud
 when topic=smalltalk here.region=mirebridge

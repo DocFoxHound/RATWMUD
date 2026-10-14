@@ -34,8 +34,8 @@ when topic=friends here.weather=storm|rain
 a : Come in out of that, you'll drown. | You look like a drowned rat. | Shake off outside, please!
 b : Thank you. It's the end of days out there. | Thank you. That's how I feel. | Too late. Sorry.
 a : Sit by the fire. | Here. A blanket. | You've soaked the whole doorway.
-b : You're a good friend. | It smells of dog. | I'll mop it.
-a : I know. | It is dog. Lie on it. | With what?
+b : You're a good friend. | It smells of goat. | I'll mop it.
+a : I know. | It is goat. Lie on it. | With what?
 
 scene kn_fr_snow_day
 when topic=friends here.weather=snow

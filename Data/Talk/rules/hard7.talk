@@ -264,7 +264,7 @@ then other: crime.close
 
 rule h7_cr_ans_heights
 when concept=crime.answer topic.kind=theft here.region=ridgemere self.quarter=heights self.wealth=rich|comfortable
-say One will speak to the captain. Personally. | Was it someone from below, do they think? | Dreadful. One's own servants, quite possibly. | The city's going to the dogs.
+say One will speak to the captain. Personally. | Was it someone from below, do they think? | Dreadful. One's own servants, quite possibly. | The city's going to ruin.
 remember pair: h7_said=hang 30m
 then other: crime.close
 

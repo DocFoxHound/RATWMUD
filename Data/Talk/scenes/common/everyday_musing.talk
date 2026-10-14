@@ -197,8 +197,8 @@ a : Before noon. | Too clever. | Lucky mice, today.
 
 scene ev_beast_dog
 when topic=smalltalk
-a : That stray dog's been following me for days. | The dogs barked all night on the farms. | Do you think dogs dream?
-b[herder] : A good dog's worth two shepherds. Treat it kind.
+a : That stray cat's been following me for days. | The geese honked all night on the farms. | Do you think cats dream?
+b[herder] : Beasts know things we don't. Watch them close.
 b : Feed it and it's yours forever. | Something's out there. | Everything dreams.
 a : That's what I'm afraid of. | Something big. | Even rocks, I suppose.
 

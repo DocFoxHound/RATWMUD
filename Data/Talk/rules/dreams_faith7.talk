@@ -358,7 +358,7 @@ remember pair: e4d=big 2m
 
 rule e4_rd_ans_farmer
 when concept=dreams.answer job=farmer|herder wealth!=rich
-say A good dog and a dry barn. That's farming done right. | My own ground, where the soil's black. | One harvest where nothing goes wrong. Just one.
+say A good pony and a dry barn. That's farming done right. | My own ground, where the soil's black. | One harvest where nothing goes wrong. Just one.
 then other: dreams.reply
 remember pair: e4d=small 2m
 
