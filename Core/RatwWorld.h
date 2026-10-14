@@ -2086,11 +2086,24 @@ class World
     void placeOnStage(Entity& e, const std::set<std::string>& stage);
     void moveOffstage(Entity& e, const std::string& task, const std::string& goalCell, Vec2 goal);
     std::vector<Entity*> separateScratch_;          // separate()'s grouping, kept to avoid reallocating each step.
+    // separate()'s other scratch, kept likewise: each wolf with its cell's hash (to group by), and a crowd's buckets
+    // as (bucket, index) sorted, with where each began the pass.
+    std::vector<std::pair<std::size_t, Entity*>> separateKeys_;
+    std::vector<std::pair<std::uint64_t, std::size_t>> separateBuckets_;
+    std::vector<std::uint64_t> separateStart_;
     std::map<std::string, Door> doors_;
     // Only closable fixtures can occlude/collide. Hundreds of open authoring
     // seams must not turn each sight-ray sample into a full-world scan.
     using FixtureTiles = std::map<std::pair<int, int>, std::vector<std::string>>;
-    std::map<std::string, FixtureTiles> blockingFixtures_;
+    std::unordered_map<std::string, FixtureTiles> blockingFixtures_;
+    // The same fixtures as doors (pointers into doors_), for blockedByDoor(), asked for at every step of every walker:
+    // no looking each door up by its ID there.
+    std::unordered_map<std::string, std::map<std::pair<int, int>, std::vector<const Door*>>> blockingDoors_;
+    // Each cell's doors by the tile they stand on (doorsIn_'s order kept), for throughDoor(): a walker steps through
+    // only a door on the tile just ahead of it, so it needn't look at every door in a busy cell (hundreds in Ridgemere).
+    // Built when first wanted; dropped with portalGrid_ whenever the cell's door list changes.
+    mutable std::unordered_map<std::string, std::map<std::pair<int, int>, std::vector<Door*>>> doorsAtTile_;
+    const std::vector<Door*>* doorsAt(const std::string& cellId, Vec2 p) const;
     // lineOfSight() with the cell and its fixtures already found: a view casts thousands of rays in one cell.
     // fixtureMask, when given, marks the cell's fixture tiles in place of looking each one up in fixtures.
     bool lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,

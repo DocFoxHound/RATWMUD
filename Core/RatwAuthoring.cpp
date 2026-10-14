@@ -268,6 +268,8 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.index_.dirty = true;
     candidate.doors_.clear();
     candidate.blockingFixtures_.clear();
+    candidate.blockingDoors_.clear();
+    candidate.doorsAtTile_.clear();
     candidate.spawnCell_.clear();
     candidate.customWorld_ = true;
     candidate.source_ = source_;

@@ -1025,3 +1025,33 @@ Nothing in the tracked code depends on Unreal. Left over:
   - Unreal-style GUIDs
   - text limits counted in UTF-16 units
   They go when Phase 4.8 replaces the wire format.
+
+## The new map's busy city (2026-10-14)
+
+**Asked** (the user): the game ran slower at speed in the last tests; find what slows it and fix it.
+
+**Found.** With no player (`econ_watch`, how the economy is tested) nothing had slowed: 0.054 ms a tick over a week
+of DEV's world, a day in about 17 s, as before. With a player standing in Ridgemere (`world_check --simulate`, and
+the game itself) about 170 of the city's residents are onstage around them, and a tick cost 2.3 ms: the new map's
+256-square cells hold hundreds of doors (154 in Ridgemere West) and crowds of a hundred and more, and four things
+scaled with that rather than with what was happening:
+
+- **A walker's every step looked at every door in its cell** (`throughDoor`, twice), and a closed fixture was looked
+  up by its ID at every passable() test (`blockedByDoor`). Now crossing an edge is only looked for within a body of
+  the edge, a door to walk through only on the tile ahead (`doorsAt`, each cell's doors by tile), and the blocking
+  fixtures are kept as door pointers. Movement: 10.5 s to 3.5 s over two busy hours.
+- **Separation grouped wolves by comparing cell names, and found a crowd's neighbours with nine map searches each**,
+  a map built afresh every pass. Now grouped by the name's hash, a crowd's buckets a sorted list searched by column
+  (three searches), and the square of a distance tested before its root. 12.1 s to 3.7 s.
+- **Each resident near their goal looked for a spot of their own at every schedule pass, already there or not**
+  (up to seventeen places, each checked against everyone in the cell). Now only those still coming look.
+- **The ground's checksum** (`regionMap`, once a tick for every cell asked about, 65,536 tiles each) was a chain of
+  multiplications from one tile to the next; now each tile is mixed on its own and the mixes summed.
+
+**Measured** (DEV's export, 08:00 to 10:00, one player, `--deterministic`, eight threads): 2.34 ms a tick to 1.52,
+the same digest (`645b77afa34a82aa`) as the code before; `econ_watch`'s day digest likewise unchanged. A player in
+the city now allows about 33 times speed within the server's 50 ms tick, against about 21.
+
+**Left:** a player's own view in a 256-square cell (about 1 ms each, five a second, plus the map memory's rays);
+the society's hour (one tick of 90 to 200 ms at each game hour, a stutter at full speed); a route search in Ridgemere
+West that takes 18 ms with no nodes expanded (its setup).

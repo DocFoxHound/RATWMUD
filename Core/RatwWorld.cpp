@@ -587,9 +587,11 @@ void World::createDemo()
 void World::rebuildFixtureIndex()
 {
     blockingFixtures_.clear();
+    blockingDoors_.clear();
     doorsIn_.clear();
     portalsIn_.clear();
     portalGrid_.clear();
+    doorsAtTile_.clear();
     neighborCache_.clear();
     stepsCache_.clear();
     for (auto& entry : doors_)
@@ -598,7 +600,11 @@ void World::rebuildFixtureIndex()
     {
         const auto& d = entry.second;
         if (!d.passage && d.id.rfind("stairs_", 0) != 0)
-            blockingFixtures_[d.cellId][{int(std::floor(d.position.x)), int(std::floor(d.position.y))}].push_back(d.id);
+        {
+            const std::pair<int, int> at{int(std::floor(d.position.x)), int(std::floor(d.position.y))};
+            blockingFixtures_[d.cellId][at].push_back(d.id);
+            blockingDoors_[d.cellId][at].push_back(&d);
+        }
     }
 }
 
@@ -610,6 +616,7 @@ void World::indexSeams(const std::string& cellId, const std::vector<std::string>
     // that leads somewhere else means the manifest is out of step: then everything is rebuilt, as it used to be.
     const auto exits = exits_.find(cellId);
     portalGrid_.erase(cellId);
+    doorsAtTile_.erase(cellId);
     auto& list = doorsIn_[cellId];
     for (const auto& id : seamIds)
     {
@@ -626,18 +633,15 @@ void World::indexSeams(const std::string& cellId, const std::vector<std::string>
 
 bool World::blockedByDoor(const std::string& cellId, Vec2 point) const
 {
-    const auto blockers = blockingFixtures_.find(cellId);
-    if (blockers == blockingFixtures_.end())
+    const auto blockers = blockingDoors_.find(cellId);
+    if (blockers == blockingDoors_.end())
         return false;
     const auto tile = blockers->second.find({int(std::floor(point.x)), int(std::floor(point.y))});
     if (tile == blockers->second.end())
         return false;
-    for (const auto& id : tile->second)
-    {
-        const auto* d = door(id);
-        if (d && !d->open)
+    for (const Door* d : tile->second)
+        if (!d->open)
             return true;
-    }
     return false;
 }
 
@@ -744,6 +748,20 @@ const std::vector<Door*>& World::doorsIn(const std::string& cellId) const
     static const std::vector<Door*> none;
     const auto found = doorsIn_.find(cellId);
     return found == doorsIn_.end() ? none : found->second;
+}
+
+const std::vector<Door*>* World::doorsAt(const std::string& cellId, Vec2 p) const
+{
+    auto grid = doorsAtTile_.find(cellId);
+    if (grid == doorsAtTile_.end())
+    {
+        std::map<std::pair<int, int>, std::vector<Door*>> tiles;
+        for (Door* d : doorsIn(cellId))
+            tiles[{int(std::floor(d->position.x)), int(std::floor(d->position.y))}].push_back(d);
+        grid = doorsAtTile_.emplace(cellId, std::move(tiles)).first;
+    }
+    const auto found = grid->second.find({int(std::floor(p.x)), int(std::floor(p.y))});
+    return found == grid->second.end() ? nullptr : &found->second;
 }
 
 const std::vector<std::string>& World::neighborList(const std::string& cellId) const
@@ -984,12 +1002,26 @@ const std::vector<int>* World::regionMap(const Cell& c) const
     if (const auto kept = regions_.find(c.id); ticking_ && kept != regions_.end() && kept->second.checkedTick == ticks_ &&
                                                kept->second.region.size() == c.tiles.size())
         return &kept->second.region;
+    // Each tile mixed on its own and the mixes summed: no chain from one tile to the next, so a 256-square cell
+    // (65,536 tiles, checked once a tick wherever residents look for a spot) takes microseconds, not a tenth of a
+    // millisecond. Still keyed by place: the same tiles elsewhere give a different sum.
     std::uint64_t checksum = 1469598103934665603ULL;
-    for (const auto& t : c.tiles)
     {
-        checksum = (checksum ^ std::uint64_t(static_cast<unsigned char>(t.glyph))) * 1099511628211ULL;
-        checksum = (checksum ^ std::uint64_t(std::int64_t(std::llround(t.height * 2)) + 64 + (t.solid ? 1024 : 0))) *
-                   1099511628211ULL;
+        const auto* tiles = c.tiles.data();
+        const std::size_t count = c.tiles.size();
+        std::uint64_t sum = 0;
+        for (std::size_t i = 0; i < count; ++i)
+        {
+            const auto& t = tiles[i];
+            const double twice = t.height * 2;
+            const auto half = std::int64_t(twice + (twice < 0 ? -.5 : .5));     // (llround's half steps.)
+            std::uint64_t x = (std::uint64_t(static_cast<unsigned char>(t.glyph)) | (t.solid ? 256ULL : 0) |
+                               (std::uint64_t(half + 64) << 9)) ^ (std::uint64_t(i) * 0x9E3779B97F4A7C15ULL);
+            x *= 0xBF58476D1CE4E5B9ULL;
+            x ^= x >> 31;
+            sum += x;
+        }
+        checksum = (checksum ^ sum) * 1099511628211ULL;
     }
     // Chapters' buildings stand in the way as walls do; the checksum keys the routes kept, so they are found again.
     const std::set<std::pair<int, int>>* blocks = nullptr;
@@ -2471,7 +2503,11 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
         const auto end = a.path.back();
         return edge == 'N' ? end.y < 0 : edge == 'S' ? end.y > c.height : edge == 'W' ? end.x < 0 : end.x > c.width;
     };
-    for (const Door* door : doorsIn(a.cellId))
+    // Crossing an edge needs the step to end within a body of that edge; most steps are nowhere near one.
+    const bool nearEdge = proposed.y < Radius || proposed.y >= c.height - Radius || proposed.x < Radius ||
+                          proposed.x >= c.width - Radius;
+    static const std::vector<Door*> NoDoors;
+    for (const Door* door : nearEdge ? doorsIn(a.cellId) : NoDoors)
     {
         const auto& d = *door;
         if (!d.portal || !d.boundary || !d.open || !leaving(d.edge))
@@ -2507,7 +2543,8 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
     // open doorway or stair, or pushing into a closed, unlocked door.
     // Locked doors still block; the arrival tile sits beside the far door.
     const Vec2 lead{proposed.x + direction.x * Radius, proposed.y + direction.y * Radius};
-    for (Door* door : doorsIn(a.cellId))
+    const auto* ahead = doorsAt(a.cellId, lead);        // (Only a door on the tile ahead can cover it.)
+    for (Door* door : ahead ? *ahead : NoDoors)
     {
         auto& d = *door;
         if (!d.portal || d.locked || (d.passage && d.boundary) ||
@@ -3383,10 +3420,19 @@ void World::separate(double dt)
     constexpr double Body = step::BodyRadius * 2;
     auto& byCell = separateScratch_;
     byCell.clear();
+    // Grouped by a hash of the cell (cells don't touch, so the groups' order doesn't matter), the name only where two
+    // hashes meet: the same groups, in the same ID order within each, without comparing names at every step.
+    auto& keyed = separateKeys_;
+    keyed.clear();
+    const std::hash<std::string> hashOf;
     for (auto& entry : awake())
         if (!entry.second.offstage && !entry.second.dead && (battles_.empty() || !inBattle(entry.first)))
-            byCell.push_back(&entry.second);        // (Nobody pushes a wolf frozen in a fight's lineup.)
-    std::stable_sort(byCell.begin(), byCell.end(), [](const Entity* x, const Entity* y) { return x->cellId < y->cellId; });
+            keyed.push_back({hashOf(entry.second.cellId), &entry.second});   // (Nobody pushes a wolf frozen in a fight's lineup.)
+    std::stable_sort(keyed.begin(), keyed.end(), [](const auto& x, const auto& y) {
+        return x.first != y.first ? x.first < y.first : x.second->cellId < y.second->cellId;
+    });
+    for (const auto& k : keyed)
+        byCell.push_back(k.second);
     const auto fixed = [](const Entity& e) { return e.downedLeft > 0 || e.clientWalks; };
     // At rest: going nowhere (no route, no keys). Two at rest press together a little and settle there (Rest of a
     // body's width apart) rather than pushing every step in a corner or a crowd with nowhere to go; anyone walking
@@ -3405,17 +3451,27 @@ void World::separate(double dt)
             const double maxPush = std::min(.2, 4 * dt);
             const double slack = std::max(.25, 4 * maxPush), bucket = Body + slack;
             constexpr std::size_t Crowd = 24;
-            std::map<std::pair<long, long>, std::vector<std::size_t>> buckets;
             std::vector<std::size_t> later;
             const bool crowded = end - first > Crowd;
-            const auto bucketOf = [bucket](Vec2 p) { return std::pair<long, long>{long(std::floor(p.x / bucket)), long(std::floor(p.y / bucket))}; };
-            std::vector<std::pair<long, long>> startBucket;
+            // A bucket as one number (x and y, offset to stay positive, in 32 bits each), so the crowd's buckets are a
+            // sorted list rather than a map built afresh every pass.
+            const auto bucketOf = [bucket](Vec2 p) {
+                return (std::uint64_t(std::uint32_t(long(std::floor(p.x / bucket)) + (1L << 30))) << 32) |
+                       std::uint32_t(long(std::floor(p.y / bucket)) + (1L << 30));
+            };
+            auto& buckets = separateBuckets_;
+            auto& startBucket = separateStart_;
+            buckets.clear();
+            startBucket.clear();
             if (crowded)
+            {
                 for (std::size_t k = first; k < end; ++k)
                 {
                     startBucket.push_back(bucketOf(byCell[k]->position));
-                    buckets[startBucket.back()].push_back(k);
+                    buckets.push_back({startBucket.back(), k});
                 }
+                std::sort(buckets.begin(), buckets.end());
+            }
             const auto* c = cell(byCell[first]->cellId);
             if (!c)
                 continue;
@@ -3424,13 +3480,16 @@ void World::separate(double dt)
                 later.clear();
                 if (crowded)
                 {
-                    const auto [bx, by] = startBucket[i - first];
-                    for (long dy = -1; dy <= 1; ++dy)
-                        for (long dx = -1; dx <= 1; ++dx)
-                            if (const auto found = buckets.find({bx + dx, by + dy}); found != buckets.end())
-                                for (const auto k : found->second)
-                                    if (k > i)
-                                        later.push_back(k);
+                    // The three buckets of a column (y-1 to y+1) lie together in the sorted list: one search each.
+                    const std::uint64_t home = startBucket[i - first];
+                    for (std::int64_t dx = -1; dx <= 1; ++dx)
+                    {
+                        const std::uint64_t column = home + std::uint64_t(dx * (std::int64_t(1) << 32));
+                        for (auto it = std::lower_bound(buckets.begin(), buckets.end(), std::pair<std::uint64_t, std::size_t>{column - 1, 0});
+                             it != buckets.end() && it->first <= column + 1; ++it)
+                            if (it->second > i)
+                                later.push_back(it->second);
+                    }
                     std::sort(later.begin(), later.end());
                 }
                 else
@@ -3440,8 +3499,11 @@ void World::separate(double dt)
                 {
                     auto& a = *byCell[i];
                     auto& b = *byCell[j];
-                    const double d = distance(a.position, b.position);
                     const double apart = resting(a) && resting(b) ? Body * Rest : Body;
+                    const double ex = a.position.x - b.position.x, ey = a.position.y - b.position.y;
+                    if (ex * ex + ey * ey >= apart * apart)
+                        continue;               // (Mostly: the square first, the root only for those touching.)
+                    const double d = distance(a.position, b.position);
                     if (d >= apart)
                         continue;               // (Pushes never cross a door or a cell's edge: passable() is this cell.)
                     const bool aFixed = fixed(a), bFixed = fixed(b);
@@ -3743,10 +3805,17 @@ bool World::continueSchedules(double budgetMs)
                 // 1.2 tiles) with the goal taken: a crowd at a counter stops pressing in.
                 const bool crowded = standing_.count(goalCell) > 0;   // (Anyone on the stage there to take its spot.)
                 const bool close = e.cellId == goalCell && distance(e.position, target) <= 3;
-                const Vec2 spot = close && crowded ? spotNear(e, goalCell, target) : target;
-                const bool arrived = e.cellId == goalCell &&
-                                     (distance(e.position, target) <= .35 || distance(e.position, spot) <= .35 ||
-                                      (distance(e.position, target) <= 1.2 && crowded && spotTaken(e, goalCell, target)));
+                // There already, on the goal or near enough with it taken, needs no spot of their own looked for (each
+                // look is up to seventeen places, each checked against everyone in the cell): only those still coming.
+                bool arrived = e.cellId == goalCell &&
+                               (distance(e.position, target) <= .35 ||
+                                (distance(e.position, target) <= 1.2 && crowded && spotTaken(e, goalCell, target)));
+                Vec2 spot = target;
+                if (!arrived)
+                {
+                    spot = close && crowded ? spotNear(e, goalCell, target) : target;
+                    arrived = e.cellId == goalCell && distance(e.position, spot) <= .35;
+                }
                 if (arrived && !e.path.empty())
                     stop(e.id);
                 if (arrived)
@@ -5725,6 +5794,7 @@ void World::unload(const std::string& cellId)
     // This cell's seams leave doors_ and its door list; nothing else refers to them (see indexSeams()).
     const auto exits = exits_.find(cellId);
     portalGrid_.erase(cellId);
+    doorsAtTile_.erase(cellId);
     bool unexpected = false;
     auto& here = doorsIn_[cellId];
     std::vector<Door*> kept;
