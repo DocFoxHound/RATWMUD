@@ -144,7 +144,7 @@ a : Ha. | Indeed. | Have you?
 # ---------------------------------------------------------------- Family
 
 scene fm_kids
-when topic=family
+when topic=family a.child
 a : The little ones are growing like weeds. | Have you seen how tall our youngest is now? | The pups were up all night.
 b[old] : They grow and then they're gone. Enjoy them.
 b : They are. | Nearly as tall as me! | Again?

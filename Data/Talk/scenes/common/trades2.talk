@@ -251,7 +251,7 @@ a : Wise and alive. | By the old milestone. | Barely. But they don't know that.
 
 scene tr_cart_horse
 when topic=work a.job=carter|herder
-a : My old horse is going lame. | Bought a new mare. Bites. | The horse ate my lunch. Bread, cheese, the cloth.
+a : My old horse is going lame. | Bought a new mare. Bites. | The horse ate my dinner. Bread, cheese, the cloth.
 b : Rest her a week. | They all bite at first. | Even the cloth?
 a : A week's no money. | Not like this one. | The cloth was the best part, apparently.
 

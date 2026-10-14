@@ -159,7 +159,7 @@ a : You always say that. | Thank you for not saying. | No, you eat it.
 
 scene em_meal_up_laborer
 when topic=prices topic.item=meal topic.dir=up a.job=laborer|miner|carter|woodcutter
-a : I can't haul all day on a crust and a pickle. | A meal costs #topic.price#, and they pay us the same as last year. | Lunch was water and a turnip.
+a : I can't haul all day on a crust and a pickle. | A meal costs #topic.price#, and they pay us the same as last year. | Dinner was water and a turnip.
 b : Ask for more pay. | Same pay, more cost. Always the way. | A whole turnip?
 a : And lose the work? | Always. | Half of one.
 

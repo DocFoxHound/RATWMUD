@@ -210,9 +210,9 @@ b : Trees forgive. Lords don't.
 
 scene tr_mine_kids
 when topic=work|family a.job=miner b.stage=young|adolescent
-a : You're not going down the pit. Not ever. | Wash your paws, you look like a miner. | Did you bring my lunch?
+a : You're not going down the pit. Not ever. | Wash your paws, you look like a miner. | Did you bring my dinner?
 b : Why not? You do. | You look like a miner. | It's a bit squashed.
-a : Because I do. | That's because I am. | Squashed lunch is still lunch.
+a : Because I do. | That's because I am. | Squashed dinner is still dinner.
 
 # ---------------------------------------------------------------- Laborers, more
 

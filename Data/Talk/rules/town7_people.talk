@@ -770,7 +770,7 @@ then other: town.answer
 rule n7_ro_neighbour_kind
 when concept=talk.smalltalk|talk.day self.neighbour pair.neighbours=no self.warmth=warm
 cooldown 3d
-say #self.neighbour# brought round a pie when I was poorly. Good sort. | Lucky with my neighbour. #self.neighbour# keeps an eye on the place when I'm late. | #self.neighbour# and I share a wall and a teapot. Half each.
+say #self.neighbour# brought round a pie when I was poorly. Good sort. | Lucky with my neighbour. #self.neighbour# keeps an eye on the place when I'm late. | #self.neighbour# and I share a wall and a stew-pot. Half each.
 remember pair: on=answer 1h
 remember pair: ans=neighbourgood 1h
 then other: town.answer

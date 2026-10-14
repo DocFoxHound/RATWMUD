@@ -1,243 +1,291 @@
 # Food (talk.food, doc 62 phase 7): meals and cooking, the realm's dishes, feast and famine, the tavern's cook, and
 # the wolf's honest opinion of cooked meat. Broad scenes first (any two residents), then by season, place, trade,
-# region and standing. Parallel alternatives answer each other by position; tagged lines carry the thread.
+# region and standing. Parallel alternatives answer each other by position; a speaker-tagged reply marks the scene
+# (#name) and has its own close (a@name), so a close never answers a line that wasn't said. Facts that only shape a
+# line sit in that line's tag, not in `when`, so a scene doesn't outscore the rest of its topic.
 
 # ---------------------------------------------------------------- Anyone, any day
 
 scene e1_food_burnt
 when topic=food
 a : I burnt the #supper# again. | Smoke everywhere. I'll be eating cold bread tonight. | Do you know a way to get black off a pot?
-b[cook] : Lid on, fire low, and stay in the room. That's the whole secret.
-b[spouses] : I know. I was there. I'm still coughing.
-b : Again? What was it this time? | Better than burnt bread. | Sand and patience.
-a : Porridge. Who burns porridge? Me, apparently. | Only just. | I've neither.
-b?[humour=merry] : Call it smoked. Smoked porridge. Charge a penny for it.
+b[job=cook] #cook : Lid on, fire low, and stay in the room. That's the whole secret.
+b[spouses] #spouse : I know. I was there. I'm still coughing.
+b[humour=merry] #merry : Call it smoked. Charge a penny extra for it.
+b #plain : Again? What was it this time? | Better than burnt bread. | Sand and patience.
+a@cook : Stay in the room. I can try that.
+a@spouse : You might have said something.
+a@merry : Don't tempt me.
+a@plain : Porridge. Who burns porridge? Me, apparently. | Only just. | I've neither.
 
 scene e1_food_nose_and_tongue
 when topic=food
 a : Smell that? Somebody's frying onions. | My nose has been following that smell since the corner. | Whoever's cooking with that much garlic owes the street an apology.
-b[young] : My nose is better than yours. It's two doors down. The blue door.
-b : Onions and something else. Liver? | Mine too. Let's knock. | I like garlic.
-a : Liver. Gods, I hope it's liver. | Can't knock on a stranger's door for liver. | You would.
-b : Shame we weren't asked. | You could. I couldn't. | Somebody has to.
+b[young] #pup : My nose is better than yours. It's two doors down. The blue door.
+b #plain : Onions and liver, I'd say. | Mine too. Let's knock. | I like garlic.
+a@pup : Clever nose. Don't go knocking, mind.
+a@plain : Liver. Gods, I hope it's liver. | We can't knock on a stranger's door for a smell. | You would. You'd eat it off the bulb.
+b?@plain : Shame we weren't asked. | Watch me. | Somebody has to.
 
 scene e1_food_raw_honest
 when topic=food
-a : Do you ever think cooking meat is a waste of good meat? | Don't tell anyone, but I ate my mutton half raw last night. | Sometimes I just want to bite something. You know?
-b[old] : My grandfather never cooked a thing in his life. Teeth like a trap, till ninety.
-b[healer] : Cook it through. I've seen what raw pork does to a belly.
-b[priest] : We are not the wild ones. That's the whole point of the fire.
-b : Every day. We're civilised, apparently. | Half raw's just right. | I know exactly what you mean.
-a : Civilised and hungry. | Shh. Not a word to my mother. | Don't look at me like that, then.
+a[stage=adult|old] : Do you ever think cooking meat is a waste of good meat? | Don't tell anyone, but I ate my mutton half raw last night. | Sometimes I just want to bite something. You know?
+b[old] #old : When I was a pup my granny gave us the marrowbones raw. Best thing I ever ate.
+b[healer] #healer : Cook it through. I've seen what raw pork does to a belly.
+b[priest] #priest : We are not the wild ones. That's the whole point of the fire.
+b #plain : Every day. We're civilised, apparently. | Half raw's just right. | I know exactly what you mean.
+a@old : There. Your granny knew.
+a@healer : Mutton, not pork. I'm not daft.
+a@priest : I know. I know. I said sometimes.
+a@plain : Civilised and hungry. | Shh. Not a word to my mother. | I knew you would.
 
 scene e1_food_fur_in_soup
 when topic=food
-a : Found fur in my soup at the tavern. Not mine. | The cook's shedding. It's in everything. | Spring's the worst. You get a mouthful of somebody with every stew.
-b[cook] : Everyone's shedding. I wear a cap. What more do you want, a sack?
-b : Whose was it? | Pick it out and carry on. | Comb before you cook, I say.
-a : Grey. I've my suspicions. | That's what I did. | Tell the cook, not me.
+a : Found fur in my soup at the tavern. Not mine. | The cook's shedding. It's in everything. | Moulting season's the worst. You get a mouthful of somebody with every stew.
+b[cook] #cook : Everyone's shedding. I wear a cap. What more do you want, a sack?
+b #plain : Whose was it? | Pick it out and carry on. | Comb before you cook, I say.
+a@cook : A sack would be a start.
+a@plain : Grey. I've my suspicions. | That's what I did. Then I found another. | Tell the cook, not me.
 
 scene e1_food_last_crust
 when topic=food
-a : Who gets the last piece, in your house? | My brothers fight for the crust like it's gold. | Never leave the last slice. My mother says it's bad luck.
-b[young] : Me. I'm the smallest. Smallest gets it. That's the rule.
-b[old] : The eldest. And I'm the eldest.
-b : Whoever's quickest. | It is gold. Best bit. | Mine says it's greed.
-a : Then it's never me. | I let them. I'm a saint. | Same thing, really.
+a : Who gets the last piece, in your house? | At ours we fight for the crust like it's gold. | Never leave the last slice. My mother says it's bad luck.
+b[young] #pup : The smallest gets the last of everything. That's the rule. I'm the smallest.
+b[old] #old : In my day the eldest had it. And I'm the eldest now.
+b #plain : Whoever's quickest. | It is gold. Best bit. | Mine says it's greed.
+a@pup : Is that so. Funny how that works.
+a@old : Very convenient.
+a@plain : Then it's never me. | I let them have it. I'm a saint. | Same thing, really.
 
 scene e1_food_secret_ingredient
 when topic=food
-a : My stew's got a secret in it. | I put a spoon of honey in the gravy. Don't laugh. | There's one thing my mother put in her pies and she took it to her grave.
-b[cook] : Everyone's secret is salt. They just don't know it.
-b[honesty=sly] : I'll find out. I always find out.
-b : Go on, tell me. | That's not daft. That's clever. | Probably lard.
-a : Then it'd not be a secret. | It is, isn't it? | Probably. It was always lard.
+a : My stew's got a secret in it. | There's a spoon of something in my gravy. I'll not say what. | There's one thing my mother put in her pies and she took it to her grave.
+b[cook] #cook : Everyone's secret is salt. They just don't know it.
+b[honesty=sly] #sly : I'll find out. I always find out.
+b #plain : Go on, tell me. | Honey. I can smell honey on you. | Probably lard.
+a@cook : Salt. Hm. Maybe.
+a@sly : Not this time.
+a@plain : Then it'd not be a secret. | ... Don't tell anyone. | Probably. It was always lard.
 
 scene e1_food_eating_alone
 when topic=food
-a : I hate eating on my own. | Do you ever just eat standing over the pot? | I've eaten every meal this week by the window, watching the street.
-b[widowed=yes] : Every night. You lay the table anyway. It helps, a little.
-b[spouses] : You've never once eaten alone. I'm always there.
-b : Come and eat with us, then. | Every night. Saves a bowl. | There's worse company than a street.
-a : I might. | Saves washing. | It's better than the wall.
+a[married=no] : I hate eating on my own. | Do you ever just eat standing over the pot? | I've eaten every meal this week by the window, watching the street.
+b[widowed=yes] #widow : Every night. You lay the table anyway. It helps, a little.
+b #plain : Come and eat with us, then. | Every night. Saves a bowl. | There's worse company than a street.
+a@widow : A little. Aye.
+a@plain : I might. | Saves washing. | It's better than the wall.
 
 scene e1_food_too_full
 when topic=food
 a : I ate too much. I'm going to lie down in the road. | Never let me near a pie again. | Third bowl. I'm not proud.
-b[cook] : That's the best thing anyone's said to me all week.
-b[wealth=poor|destitute] : I'd like to have that trouble.
-b : Get up, you'll be run over. | I'll hold you to that. | You should be.
-a : Leave me. I'm happy. | You won't. | I'm a little proud.
+b[cook] #cook : Music to a cook's ears, that.
+b[wealth=poor|destitute] #poor : I'd like to have that trouble.
+b #plain : Get up, you'll be run over. | I'll hold you to that. | You should be.
+a@cook : Tell whoever made it. I can't. I can't move.
+a@poor : Sorry. That was thoughtless of me.
+a@plain : Leave me. I'm happy. | Don't. I'll be hungry by supper. | I'm a little proud.
 
 scene e1_food_swap
 when topic=food
-a : Swap you a jar of plums for a bit of that cheese. | I've more eggs than I can eat. Want some? | I'll trade you bread for a fish, if you've one going.
-b[farmer] : Eggs? I've hens. Bring me salt and we'll talk.
-b[fisher] : I've always a fish going. You'll want it gutted?
-b : Done. | I'll never say no to eggs. | Fair trade.
-a : Bring the cheese round, then. | Half a dozen, then. | Good.
+a : Swap you a jar of plums for a bit of cheese, if you've any. | I've more eggs than I can eat. Want some? | I'll trade you a loaf for a fish, if you've one going.
+b[farmer] #farm : Eggs and plums I've plenty of. Bring me salt and we'll talk.
+b #plain : Done. I've half a wheel at home. | I'll never say no to eggs. | I've one from this morning. Fair trade.
+a@farm : Salt. I'll see what I can find.
+a@plain : Bring the cheese round, then. | Half a dozen, then. | Good. Gutted, if you would.
 
 scene e1_food_mother_said
 when topic=food
 a : My mother used to say a meal without bread isn't a meal. | My father ate his supper in four bites, every night of his life. | My grandmother made us chew everything twenty times.
-b[old] : They were right, mostly. Mothers usually are.
-b : She'd hate what I eat now, then. | Wolves of that age ate like that. | Did you?
-a : She'd weep. | Like a trap closing. | Never. Not once.
+b[old] #old : The old ones were right, mostly. We just didn't listen.
+b #plain : Then I've not eaten a meal in a week. | Wolves of that age ate like that. | Did you?
+a@old : We didn't. I'm starting to.
+a@plain : She'd have fed you, then. She fed everyone. | Like a trap closing. | Never. Not once.
 
 scene e1_food_feeding_neighbours
 when topic=food
-a : I made too much soup. Want a bowl? | There's half a pie going spare at mine. | Someone left a loaf on my doorstep. No note.
-b[wealth=poor|destitute] : Gods bless you. Yes. Yes, please.
-b[warmth=cold] : No, thank you.
-b : I'll bring my own bowl. | I'll take it off your paws. | Was it warm?
-a : Bring a big one. | Gladly. | Still warm. Somebody's kind.
+a : I made too much soup. Want a bowl? | There's half a pie going spare at mine. | Someone left two loaves on my doorstep. No note. Want one?
+b[wealth=poor|destitute] #poor : Gods bless you. Yes. Yes, please.
+b[warmth=cold] #cold : No, thank you.
+b #plain : I'll bring my own bowl. | I'll take it off your paws. | Was it warm?
+a@poor : Come by tonight. There's plenty.
+a@cold : Suit yourself.
+a@plain : Bring a big one. | Gladly. | Still warm. Somebody's kind.
 
 scene e1_food_pickling
 when topic=food here.season=summer|autumn
 a : I'm pickling everything that stands still. | The whole house smells of vinegar. | Got forty jars of onions down the cellar.
-b[old] : Good. You'll be glad of it in the hungry months.
-b : Not the cat, I hope. | Better than damp. | Forty!
-a : The cat's quick. | Marginally. | I'll be sick of onions by midwinter.
+b[old] #old : Good. You'll be glad of it in the hungry months.
+b #plain : Not the cat, I hope. | Better than damp. | Forty!
+a@old : That's the idea.
+a@plain : The cat's quick. | Marginally. | I'll be sick of onions by midwinter.
 
 scene e1_food_hungry_gap
 when topic=food here.season=spring
 a : The cellar's near empty and nothing's up yet. | Nettle soup again. | It's the hungry gap. Everything's dear and nothing's grown.
-b[farmer] : A few more weeks. The greens are coming. I can see them, just.
-b[wealth=poor|destitute] : Every spring the same. You'd think we'd learn.
-b : We'll manage. | Nettle soup's not so bad. | It's always the worst bit of the year.
-a : We always do. Just. | It's not so good either. | Roll on summer.
+b[farmer] #farm : A few more weeks. The greens are coming. I can see them, just.
+b[wealth=poor|destitute] #poor : Every spring the same. You'd think we'd learn.
+b #plain : We'll manage. | Nettle soup's not so bad. | It's always the worst bit of the year.
+a@farm : I'll be looking. Every day.
+a@poor : Learn what? To grow bread in the frost?
+a@plain : We always do. Just. | It's not so good either. | Roll on summer.
 
 scene e1_food_cold_supper
 when topic=food here.season=summer
-a : Too hot to cook. Bread and cheese again. | I'm living on cucumbers. | Nobody should light an oven in this weather.
-b[baker] : I light mine every morning. You get used to it. You don't.
-b : Bread and cheese is a feast. | Cucumbers aren't food. | Tell that to the baker.
-a : Cold ale with it. | They're water you chew. | Poor baker.
+a[here.region!=frosthollow] : Too hot to cook. I've not had a hot meal in a week. | I'm living on cucumbers. | Nobody should light an oven in this weather.
+b[baker] #baker : I light mine every morning. You get used to it. You don't.
+b #plain : Cold suppers are no hardship. | Cucumbers aren't food. | Tell that to the baker.
+a@baker : Rather you than me.
+a@plain : Cold ale with it, mind. | They're water you chew. | Poor baker.
 
 scene e1_food_winter_stew
 when topic=food here.season=winter
 a : A pot of stew that's been on the fire all day. That's winter done right. | My stew's been on since Restday. It's still going. | Nothing warms like broth on a #cold# night.
-b[old] : We kept one going all winter when I was a pup. Just added to it.
-b[wealth=poor|destitute] : Water and bones, mine. Still warm, though.
-b : Save me a bowl. | Since Restday? Is it safe? | Broth and a blanket.
-a : Bring bread. | Safer every day. It's practically armour now. | And a fire that doesn't smoke.
+b[old] #old : We kept one going all winter when I was a pup. Just added to it.
+b[wealth=poor|destitute] #poor : Water and bones, mine. Still warm, though.
+b #plain : Save me a bowl. | Since Restday? Is it safe? | Broth and a blanket.
+a@old : That's the way. Never let it go cold.
+a@poor : Warm's the main thing.
+a@plain : Bring bread. | Safer every day. It's practically armour now. | And a fire that doesn't smoke.
 
 scene e1_food_apples
 when topic=food here.season=autumn
-a : Apples in everything this time of year. | I've apples coming out of my ears. | Somebody's tree is dropping apples all over the lane.
-b[child] : I took some. They were on the ground! That's not stealing.
-b : I'm not complaining. | Make a cake. | Shame to waste them.
-a : Nor me. Apple and pork. | I've made three. | I've a sack, if you've a mind.
+a[here.region!=frosthollow] : Apples in everything this time of year. | I've apples coming out of my ears. | Somebody's tree is dropping apples all over the lane.
+b[child] #pup : I had six today. Six! Off the ground, mind. That's not stealing.
+b #plain : I'm not complaining. | Make a cake. | Shame to waste them.
+a@pup : Six! You'll have a bellyache.
+a@plain : Nor me. Apple and pork. | I've made three. | I've a sack, if you've a mind.
 
 scene e1_food_feast_hunger
 when topic=food here.day=festival
 a : Eat everything. Tomorrow it's bread again. | I've had four pies and I mean to have a fifth. | Look at all that food. Where's it all been hiding?
-b[wealth=poor|destitute] : I'm filling my pockets. I'm not ashamed.
-b[wealth=rich] : Rather common fare, isn't it? Still. I'll have a pie.
-b : I mean to. | Pace yourself. | The cellars of the rich.
-a : Starting now. | I'll pace myself tomorrow. | Good of them to share.
+b[wealth=poor|destitute] #poor : I'm filling my pockets. I'm not ashamed.
+b[wealth=rich] #rich : Rather common fare, isn't it? Still. I'll have a pie.
+b #plain : I mean to. | Pace yourself. | The cellars of the rich.
+a@poor : Nor should you be. Fill mine while you're at it.
+a@rich : Have two. Nobody's counting.
+a@plain : Starting now. | I'll pace myself tomorrow. | Good of them to share.
 
 scene e1_food_restday_roast
 when topic=food here.day=rest
-a : Restday roast. The one good meal of the week. | Something's roasting in every house in the street. | I'm saving myself for the Restday dinner.
-b[piety=devout] : After chapel, mind. Not before.
-b[wealth=poor|destitute] : A roast. What's that like, then?
-b : The one thing worth waiting for. | Smells like it. | Don't fill up on bread.
-a : Every week I wait. | I can hardly stand it. | Wouldn't dream of it.
+a[wealth!=destitute] : Restday roast. The one good meal of the week. | Something's roasting in every house in the street. | I'm saving myself for the Restday dinner.
+b[piety=devout] #devout : After chapel, mind. Not before.
+b[wealth=poor|destitute] #poor : A roast. What's that like, then?
+b #plain : The one thing worth waiting for. | Smells like it. | Don't fill up on bread.
+a@devout : After chapel. Then the roast.
+a@poor : I'll save you a slice. I mean it.
+a@plain : Every week I wait. | I can hardly stand it. | Wouldn't dream of it.
 
 scene e1_food_market_day
 when topic=food here.day=market
-a : I came for flour and I'm going home with a whole goose. | Market days I eat my way round the stalls. | Did you see the size of those cabbages?
-b[merchant] : That's how we like it. Come back next week.
-b : That's how it goes. | Me too. Pie, then sausage, then more pie. | Big as a pup's head.
-a : I still forgot the flour. | My purse is lighter and I'm happy. | Bigger.
+a : I came for flour and I'm going home with a whole goose. | Marketdays I eat my way round the stalls. | Did you see the size of those cabbages?
+b[merchant] #merchant : That's how we like it. Come back next week.
+b #plain : That's how it goes. | Me too. Pie, then sausage, then more pie. | Big as a pup's head.
+a@merchant : I'll have no choice, will I.
+a@plain : I still forgot the flour. | My purse is lighter and I'm happy. | Bigger.
 
 # ---------------------------------------------------------------- At the tavern, at home, at the table
 
 scene e1_food_tavern_stew
 when topic=food here.place=tavern
 a : What's in the stew today? | Don't ask what's in the stew. | The stew here is the best thing in town and the worst thing in town, depending.
-b[innkeeper] : Meat. Vegetable. Gravy. Ask me no more.
-b : Yesterday's stew. | I didn't. | Depending on what?
-a : And the day before's. | Wise. | On how much ale you've had.
+b[innkeeper] #keeper : Meat. Vegetable. Gravy. Ask me no more.
+b #plain : Yesterday's stew. | I didn't. | Depending on what?
+a@keeper : Fair enough. A bowl, then.
+a@plain : And the day before's. | Wise. | On how much ale you've had.
 
 scene e1_food_tavern_cook_temper
 when topic=food here.place=tavern
 a : The cook's in a temper. I heard a pan hit the wall. | Don't send anything back. The cook bites. | The cook's crying in the yard again.
-b[cook] : I'd throw pans too, with what they pay.
-b : Was it full? | I've heard that. | Onions, or feelings?
-a : Of beans. | I'm eating it, whatever it is. | Both, I think.
+b[cook] #cook : I'd throw pans too, with what they pay.
+b #plain : Was it full? | I've heard that. | Onions, or feelings?
+a@cook : Not at me, I hope.
+a@plain : Of beans. | I'm eating it, whatever it is. | Both, I think.
 
 scene e1_food_tavern_pie
-when topic=food here.place=tavern here.time=dusk|night
-a : One more pie and I'll walk home. | Their pies are better after dark. Don't ask me why. | I only came in for the pies.
-b[humour=merry] : Everything's better after dark.
-b : You'll roll home. | It's the ale. | Liar.
-a : Rolling's walking, nearly. | It's the ale. | I came for the ale too.
+when topic=food here.place=tavern
+a[here.time=dusk|night] : One more pie and then I'll walk home. | Their pies are better after dark. Don't ask me why. | I only came in for the pies.
+b[humour=merry] #merry : Everything's better after dark.
+b #plain : You'll roll home. | It's the ale. | Liar.
+a@merry : Ha. Most things.
+a@plain : Rolling's walking, nearly. | Then I'll have another of both. | I came for the ale too.
 
 scene e1_food_table_manners
 when topic=food here.place=home|hall
-a : Elbows off the table. | Who taught you to eat? Wild things? | Use the spoon. That's what it's for.
-b[young] : The spoon's too small for my muzzle!
-b[family] : You eat with your paws too. I've seen you.
-b : Yes, mother. | My mother, actually. | It's slower.
-a : Don't you yes-mother me. | She'd be ashamed. | It's meant to be.
+a[pair.band=family|spouses|friends] : Elbows off the table. | Who taught you to eat? Wild things? | Use the spoon. That's what it's for.
+b[young] #pup : The spoon's too small for my muzzle!
+b[family] #kin : You eat with your paws too. I've seen you.
+b #plain : Yes, yes. | My mother, actually. | It's slower.
+a@pup : Then eat slower.
+a@kin : That's different. I'm older.
+a@plain : Don't you yes-yes me. | She'd be ashamed. | It's meant to be.
 
 scene e1_food_tablecloth
 when topic=food here.place=home
-a : We've a tablecloth now. A proper one. | Don't spill on that. It was my mother's. | I've laid the table nicely for once.
-b[wealth=rich] : We've had tablecloths for years. Linen ones.
-b[wealth=poor|destitute] : A cloth? On the table? Whatever for?
-b : Very grand. | I'll try not to. | Who's coming?
-a : I'm told we're coming up in the world. | Try very hard. | Nobody. It's for me.
+a[wealth=poor|comfortable] : We've a tablecloth now. A proper one. | Don't spill on that. It was my mother's. | I've laid the table nicely for once.
+b[wealth=rich] #rich : We've had tablecloths for years. Linen ones.
+b[wealth=poor|destitute] #poor : A cloth? On the table? Whatever for?
+b #plain : Very grand. | I'll try not to. | Who's coming?
+a@rich : How nice for you.
+a@poor : For best. Don't laugh.
+a@plain : I'm told we're coming up in the world. | Try very hard. | Nobody. It's for me.
 
 scene e1_food_kitchen_help
 when topic=food here.place=home|work
 a : Chop these, would you? | Stir that and don't stop. | Watch the pot while I fetch water.
-b[young] : Can I lick the spoon after?
-b[cook] : Give me that. You're doing it wrong.
-b : Thick or thin? | How long? | It's not going anywhere.
-a : Thin. Like your patience. | Till I say. | That's what you think.
+b[young] #pup : Can I lick the spoon after?
+b[cook] #cook : Give me that. You're doing it wrong.
+b #plain : Thick or thin? | How long? | It's not going anywhere.
+a@pup : If you're good.
+a@cook : Gladly. Take it.
+a@plain : Thin. Like your patience. | Till I say. | That's what you think.
 
 # ---------------------------------------------------------------- Drink
 
 scene e1_food_ale_or_cider
 when topic=food
-a : Ale or cider, if there were only one? | The new barrel at the tavern's sour. | I've given up ale. It's been two days.
-b[brewer] : Ale. And it isn't sour, it's sharp. There's a difference.
-b[from=southmeadow] : Cider. Or wine. Wine, really.
-b : Ale, and I'll fight you. | Sour as a priest. | Two days! A record.
-a : Cider, and I'll win. | Sour as a priest's wife. | Three tomorrow. Maybe.
+a[stage=adult|old] : Ale or cider, if there were only one? | The new barrel at the tavern's sour. | I've given up ale. It's been two days.
+b[brewer] #brewer : Ale, always. And mine's never sour. Sharp, maybe.
+b[from=southmeadow] #south : Cider. Southmeadow cider. There's no question.
+b[young] #pup : I'm not allowed either.
+b #plain : Ale, and I'll fight you. | Sour as a priest. | Two days! A record.
+a@brewer : Spoken like a brewer.
+a@south : Spoken like a Southmeadow wolf.
+a@pup : Quite right too.
+a@plain : Cider, and I'll win. | Sour as a priest's wife. | Three tomorrow. Maybe.
 
 scene e1_food_milk
 when topic=food
 a : Bought a jug of milk and it turned by noon. | Is there anything better than fresh milk? | Warm milk before bed. My one weakness.
-b[herder] : Keep it in the cold water. Not on the windowsill.
-b : Never on the windowsill. | Cream. | Mine's cheese.
-a : Now you tell me. | Cream, then. | That's not a weakness. That's a character.
+b[herder] #herder : Straight from the beast it's better than anything. And it doesn't have time to turn.
+b #plain : Never on the windowsill. | Cream. | Mine's cheese.
+a@herder : I'll take your word for it.
+a@plain : Now you tell me. | Cream, then. | Cheese isn't a weakness. It's a way of life.
 
-scene e1_food_tea
+scene e1_food_brews
 when topic=food
-a : My mother brews mint for every ailment there is. | Nettle tea. It's free and it tastes it. | A hot cup of something, and I'm a new wolf.
-b[healer] : She's not wrong. Mint for the belly, sage for the throat.
-b : Mine was chamomile. | Honey helps. | Make me one, then.
-a : Smells like a meadow. | Everything helps with honey. | Fetch the kettle.
+a : My mother brews mint for every ailment there is. | Nettle broth. It's free and it tastes it. | A hot cup of something, and I'm a new wolf.
+b[healer] #healer : She's not wrong. Mint for the belly, sage for the throat.
+b #plain : Mine swore by chamomile. | Honey helps. | Make me one, then.
+a@healer : There. The healer says so.
+a@plain : Smells like a meadow. | Everything helps with honey. | Put a pan on, then.
 
 # ---------------------------------------------------------------- Cooks, bakers, the trades of the table
 
 scene e1_food_cook_feet
 when topic=food a.job=cook
 a : Twelve hours over the fire and I've not eaten a bite. | I can't taste anything any more. Everything's just salt or not salt. | They sent the plate back. The plate. Back.
-b[cook] : I know. You eat standing, from the spoon, and it doesn't count.
-b : Sit down. Eat something. | Is that bad? | What was wrong with it?
-a : If I sit down, I'll not get up. | Ask the customers. | Nothing. They were wrong.
+b[cook] #cook : I know. A cook's lot. Nobody thanks us.
+b #plain : Sit down. Eat something. | Is that bad? | What was wrong with it?
+a@cook : Nobody. Not once.
+a@plain : If I sit down, I'll not get up. | Ask the customers. | Nothing. They were wrong.
 
 scene e1_food_baker_dawn
 when topic=food a.job=baker
 a : Up since the third hour. The loaves won't knead themselves. | The oven's playing up. Half the batch came out flat. | I dream about bread. It's not restful.
-b[child] : Do you ever eat the bread? Or is it all for selling?
-b : Smells worth it from here. | Flat bread's still bread. | What do you dream?
-a : It is, every morning. | Not to my customers. | Dough. Rising. Rising forever.
+b[child] #pup : Do you ever eat the bread? Or is it all for selling?
+b #plain : Smells worth it from here. | Flat bread's still bread. | What do you dream?
+a@pup : I eat the burnt ones.
+a@plain : It is, every morning. | Not to my customers. | Dough. Rising. Rising forever.
 
 scene e1_food_baker_eats
 when topic=food b.job=baker
@@ -248,23 +296,26 @@ a : Steam. I'll try. | You look fine. | I've made maybe forty.
 scene e1_food_brewer_tasting
 when topic=food a.job=brewer
 a : I've to taste every barrel. It's a cruel trade. | This batch came out like river water. | Somebody's been at my best barrel. I know the level.
-b[friends] : I'll help. For you. Out of friendship.
-b : Cruel. Sure. | Sell it cheap. | Not me.
-a : You're very kind. | That's the plan. | I'd know if it was you.
+b[friends] #friend : Need a second tongue? I'm free all week.
+b #plain : Cruel. Sure. | Sell it cheap. | Not me.
+a@friend : I'll bet you are.
+a@plain : Mock all you like. | That's the plan. | I'd know if it was you.
 
 scene e1_food_fisher_eats
 when topic=food a.job=fisher
 a : I've eaten fish every day for twenty years and I'd still have it tonight. | Best bit of the fish? The cheek. Nobody knows. | We keep the little ones for ourselves. The big ones sell.
-b[child] : I don't like fish. The eyes look at you.
-b : Fish every day? | The cheek? | Little ones are sweeter.
-a : Every day. | Tiny, sweet. Best bite going. | They are. Don't tell the buyers.
+b[child] #pup : I don't like fish. The eyes look at you.
+b #plain : Fish every day? | The cheek? | Little ones are sweeter.
+a@pup : Then don't look back.
+a@plain : Every day. Twice on Restday. | Tiny, sweet. Best bite going. | They are. Don't tell the buyers.
 
 scene e1_food_farmer_eats
 when topic=food a.job=farmer
 a : Grow it all and still buy my bread in town. | My own peas. Nothing tastes like your own peas. | I'd have more to eat if I didn't have to sell it.
-b[merchant] : And I'd have less to sell. That's the way of it.
-b : That's farming for you. | I'll take your word. | Isn't that the way.
-a : That's the joke of it. | Come by, I'll prove it. | It is.
+b[merchant] #merchant : And I'd have less to sell. That's the way of it.
+b #plain : That's farming for you. | I'll take your word. | Sell less, then.
+a@merchant : Aye. One of us has to eat.
+a@plain : That's the joke of it. | Come by, I'll prove it. | And pay the rent with what?
 
 scene e1_food_herder_mutton
 when topic=food a.job=herder
@@ -274,24 +325,27 @@ a : Not when it's roasted. | Clover. She was lovely. | Lamb's for selling.
 
 scene e1_food_guard_rations
 when topic=food a.job=guard|soldier
-a : The barracks porridge could hold a wall up. | Supper on the watch is a heel of bread and a cold sausage. | I can eat standing, walking or asleep.
-b[guard] : You've not had the barracks pea soup, then. Count yourself lucky.
-b : Well, it's walls you guard. | Still better than nothing. | All three at once?
-a : Useful. | Barely. | Once. Nobody noticed.
+a : The Watch House porridge could hold a wall up. | Supper on the watch is a heel of bread and a cold sausage. | I can eat standing, walking or asleep.
+b[guard] #guard : You've not had the Watch House pea soup, then. Count yourself lucky.
+b #plain : Well, it's walls you guard. | Still better than nothing. | All three at once?
+a@guard : I have. I've the scars.
+a@plain : Useful. | Barely. | Once. Nobody noticed.
 
 scene e1_food_miner_pasty
 when topic=food a.job=miner
 a : A pasty you can hold in a dirty paw. That's a miner's supper. | Down there you'd eat the lamp oil if you were hungry enough. | You eat the crimped edge last. Or you leave it for the spirits.
-b[from=frosthollow] : Leave it for the spirits. Always. My father did.
-b : Better than a spoon. | You're not serious. | Is that true?
-a : Better than most things. | Nearly. | True as rock.
+b[from=frosthollow] #frost : Leave the crust for the mountain. Always. My father did.
+b #plain : Better than a spoon. | You're not serious. | Is that true?
+a@frost : Always. The mountain's owed.
+a@plain : Better than most things. | Nearly. | True as rock.
 
 scene e1_food_priest_feast
 when topic=food a.job=priest
-a : Gluttony's a sin, they tell me. Pass the potatoes. | I've three suppers to attend tonight. My flock feeds me well. | Grace before eating. Then eat quickly before it cools.
-b[piety=devout] : The gods give food to be enjoyed. In measure.
-b : I won't tell. | Three! | That's my sort of prayer.
-a : In measure. Pass the gravy too. | It's a burden I bear. | The gods understand.
+a : Gluttony's a sin, they tell me. Pass the turnips. | I've three suppers to attend tonight. My flock feeds me well. | Grace before eating. Then eat quickly before it cools.
+b[piety=devout] #devout : The Bright One gives us food to be enjoyed. In measure.
+b #plain : I won't tell. | Three! | That's my sort of prayer.
+a@devout : In measure. Pass the gravy too.
+a@plain : Bless you. | It's a burden I bear. | The Bright One understands.
 
 scene e1_food_healer_advice
 when topic=food b.job=healer
@@ -302,26 +356,30 @@ a : Less ale. Hm. | I'd rather not. | Good enough.
 scene e1_food_servant_scraps
 when topic=food a.job=servant
 a : The family had seven dishes last night. We had what came back. | They waste more than we eat. | I carry the plates past my own nose. It's a kind of torture.
-b[servant] : The best bits come back. They never eat the crackling.
-b[wealth=poor|destitute] : What came back? Bring some home.
-b : Seven! | Shame. | Don't drop them.
-a : Seven. Two were jellies. | It is a shame. | I want to.
+b[servant] #servant : The best bits come back. They never eat the crackling.
+b[wealth=poor|destitute] #poor : If it comes back, bring some home. I'll not tell.
+b #plain : Seven! | Shame. | Don't drop them.
+a@servant : Never. The crackling's ours.
+a@poor : I'll see what I can do.
+a@plain : Seven. Two were jellies. | It is a shame. | I want to.
 
 scene e1_food_child_sweets
 when topic=food a.stage=young
 a : I found a honeycomb. I'm not sharing. | Did you know you can eat clover? | I'm never eating cabbage again. Never.
-b[old] : When I was your age we'd have been glad of cabbage.
-b[young] : Give me some or I'll tell.
-b : Not even a bit? | The flowers? | Not even once?
-a : Not even a bit. | The flowers. They're sweet. | Never ever.
+b[old] #old : When I was your age, we were glad of anything at all.
+b #plain : Not even a bit? | The flowers? | Not even once?
+a@old : That was ages ago, though.
+a@plain : Not even a lick. | The flowers. They're sweet. | Never ever.
 
 scene e1_food_old_teeth
 when topic=food a.stage=old
 a : I can't chew the crusts any more. Soak everything in milk. | My teeth went before my appetite. Cruel. | Soup, soup, soup. I'd sell my soul for a chop.
-b[young] : You can have my crusts! I hate crusts.
-b[old] : Same as me. I soak my bread in the ale. Kills two birds.
-b : Soft bread, then. | Cruel indeed. | I'll chop it small for you.
-a : Soft as a bed. | Very cruel. | Small as you like. I'll suck it.
+b[young] #pup : You can have my crusts! I hate crusts.
+b[old] #old : Same as me. I soak my bread in the ale. Kills two birds.
+b #plain : Soft bread, then. | Cruel indeed. | I'll chop it small for you.
+a@pup : Bless you. Soak them first.
+a@old : Now there's an idea.
+a@plain : Soft as a bed. | Very cruel. | Small as you like. I'll suck it.
 
 # ---------------------------------------------------------------- Wealth and want
 
@@ -329,209 +387,247 @@ scene e1_food_rich_dinner
 when topic=food a.wealth=rich
 a : We had a fish at dinner as long as my arm. | Our cook's done a dish with saffron. I can't say I liked it. | Twelve to dinner tomorrow. Twelve!
 b[wealth=poor|destitute] #envy : I had a turnip.
-b[wealth=rich] : Saffron's overrated. I said it at the Merriots' and was never asked again.
-b : Lovely. | What's it taste of? | Who's the twelve?
+b[wealth=rich] #peer : We had the same at ours last week. One does tire of it.
+b #plain : Lovely. | What's it taste of? | Who's the twelve?
 a@envy[warmth=warm] : Come to dinner, then. I mean it. I'll set a place.
-a : Delicious. | Like money. | Nobody I like.
+a@envy : Ah. Well. I'm sure it was a lovely turnip.
+a@peer : One does.
+a@plain : Delicious. | Like money. | Nobody I like.
 
 scene e1_food_poor_bread
 when topic=food a.wealth=poor|destitute
 a : Bread and dripping, again. | I've a crust. I'll make it last till evening. | The parish loaf's bigger than the bakers' now.
-b[wealth=rich] : Oh, dripping. How hearty.
-b[wealth=poor|destitute] : Dripping's a luxury, at mine.
-b : Dripping's not bad. | Make it last. | It's the bread of shame, that.
-a : Not bad, every day? It is. | I always do. | Shame fills a belly.
+b[wealth=rich] #rich : Have you tried the parish? I'm told they're very good.
+b[wealth=poor|destitute] #poor : You're doing better than me, then.
+b #plain : Dripping's not bad. | Make it last. | It's the bread of shame, that.
+a@rich : I'm told so too.
+a@poor : Hard times, the lot of us.
+a@plain : Not bad, every day? It is. | I always do. | Shame fills a belly.
 
 scene e1_food_pawned_pot
 when topic=food a.wealth=poor|destitute
 a : I sold my best pot. Now I've nothing to cook in. | We eat once a day now. Supper. Makes it something to look forward to. | Do you know who gives out soup? I've heard there's someone.
-b[warmth=warm] : You'll come to mine tonight. Don't argue.
-b[piety=devout] : The chapel gives soup on Restday. Go early.
-b : That's a hard thing. | That's one way of seeing it. | The chapel, I think.
-a : I'll get it back. | It's the only way. | I'll try there.
+b[warmth=warm] #warm : You'll come to mine tonight. Don't argue.
+b[piety=devout] #devout : The chapel gives soup on Restday. Go early.
+b #plain : That's a hard thing. | That's one way of seeing it. | The chapel, I think.
+a@warm : I'll not argue. Thank you.
+a@devout : Early. I will.
+a@plain : I'll get it back. | It's the only way. | I'll try there.
 
 scene e1_food_hungry_now
 when topic=food a.hungry=yes
-a : I'm #hungry#. Talk about something else. | Don't mention food. I mean it. | My belly's growling like a dog.
-b[cook] : Come round the back of the kitchen. Quietly.
-b : What, like pie? | Roast pork. | I can hear it from here.
-a : I hate you. | Stop. | It's growled since noon.
+a : I'm #hungry#. Talk about something else. | Don't mention food. I mean it. | My belly's growling like a cornered badger.
+b[cook] #cook : Come round the back of the kitchen. Quietly.
+b #plain : What, like pie? | Roast pork. | I can hear it from here.
+a@cook : You're a saint.
+a@plain : I hate you. | Stop. | It's growled since noon.
 
 scene e1_food_dole_bread
 when topic=food a.on_dole=yes
 a : The dole loaf's grey this week. | I queued so long for the parish bread I could've baked it. | They gave me a loaf and a sermon.
-b[priest] : The sermon's free. The loaf isn't.
-b : Grey bread's still bread. | They don't make it easy. | Which was better?
-a : Grey's a colour, not a food. | They mean not to. | The loaf. Just.
+b[priest] #priest : The sermon's free. The loaf isn't.
+b #plain : Grey bread's still bread. | They don't make it easy. | Which was better?
+a@priest : I'd have paid for the loaf.
+a@plain : Grey's a colour, not a food. | They mean not to. | The loaf. Just.
 
 # ---------------------------------------------------------------- Ridgemere: harbour fare, Heights and Sump
 
 scene e1_food_rm_mussels
 when topic=food here.region=ridgemere
-a : Fresh mussels off the wharf. A bucket for two pennies. | Herring again. This city floats on herring. | Have you had the crab from the Harbour Hill stall?
-b[from=larkfield] : I'll never get used to eating things with shells.
-b : A bucket! | Swims on it, more like. | Not with my purse.
-a : A whole bucket. | Swims. | Worth saving for.
+a : Fresh mussels off the wharf. A bucket for two pennies. | Herring again. Ridgemere swims on herring. | Have you had the crab from the stall on the wharf?
+b[from=larkfield] #lark : I'll never get used to eating things with shells.
+b #plain : A bucket! | And stinks of it. | Not with my purse.
+a@lark : More for me.
+a@plain : A whole bucket. | That's the harbour for you. | Worth saving for.
 
 scene e1_food_rm_fog_chowder
-when topic=food here.region=ridgemere here.weather=rain|fog|storm
+when topic=food here.weather=rain|fog|storm
 cooldown 2d
-a : A chowder on a day like this. That's the city's one mercy. | Rain outside, fish soup inside. Right as it should be. | The pie stall's got a queue round the corner in this #rain#.
-b[fisher] : Chowder's what we do with the catch nobody buys.
-b : Its only mercy. | That's Ridgemere. | Everyone's had the same idea.
-a : I'll take the leftovers. | Wet in, wet out. | I'll queue.
+a[here.region=ridgemere] : A chowder on a day like this. That's the city's one mercy. | Rain outside, fish soup inside. Right as it should be. | The pie stall's got a queue round the corner in this #rain#.
+b[fisher] #fisher : Chowder's what we do with the catch nobody buys.
+b #plain : Its only mercy. | That's Ridgemere. | Everyone's had the same idea.
+a@fisher : I'll take the leftovers.
+a@plain : Some days it's enough. | Wet in, wet out. | I'll queue.
 
 scene e1_food_rm_heights_dinner
-when topic=food here.region=ridgemere a.quarter=heights
-a : Another dinner on the Heights. Eight courses. I'll burst. | They served larks' tongues. Larks' tongues! | Our cook won't speak to me since I asked for plain mutton.
-b[quarter=sump] : Larks' tongues. I'd eat the lark whole and say thank you.
-b[quarter=heights] : The Greatlys do a better table. Don't tell anyone I said so.
-b : What a trial for you. | Who eats tongues? | Plain mutton's no crime.
-a : It is a trial. | People with too much money. | She thinks it is.
+when topic=food a.quarter=heights
+a[wealth=rich|comfortable] : Another dinner on the Heights. I've eaten my weight in jelly. | They served larks' tongues. Larks' tongues! | We sat down twenty and nobody spoke to me.
+b[quarter=sump] #sump : I'd eat the whole dinner and the plates after.
+b[quarter=heights] #heights : The Greatlys do a better table. Don't tell anyone I said so.
+b #plain : What a trial for you. | Who eats tongues? | Their loss.
+a@sump : I'd have let you.
+a@heights : Your secret's safe.
+a@plain : It is a trial. | People with too much money. | It was, rather.
 
 scene e1_food_rm_sump_supper
-when topic=food here.region=ridgemere a.quarter=sump
-a : Down in the Sump, supper's whatever the tide brings. | Twenty of us share one hearth in our building. You cook in turns. | There's a fellow sells eel heads by the Sump steps. Cheap.
-b[quarter=heights] : Goodness. Do you really?
-b : The tide's generous, sometimes. | What's your turn? | Eel heads?
-a : Really. | Third. After the shouting. | Boiled, they're not bad. Mostly.
+when topic=food a.quarter=sump
+a : Down in the Sump, supper's whatever the tide brings. | Twenty of us share one hearth in our building. You cook in turns. | There's a fellow sells eel heads at the Sump Market. Cheap.
+b[quarter=heights] #heights : Goodness. Do you really?
+b #plain : The tide's generous, sometimes. | What's your turn? | Eel heads?
+a@heights : Really.
+a@plain : Sometimes. | Third. After the shouting. | Boiled, they're not bad. Mostly.
 
 scene e1_food_rm_wharf_pie
-when topic=food here.region=ridgemere a.quarter=wharf|docks
-a : The pie seller on the wharf's got fish in everything. Even the apple ones. | Dockers' breakfast: a pint and a herring. | They're unloading oranges. The whole quay smells of them.
-b[sailor] : You've never had ship's biscuit. Be grateful.
-b : Even the apple? | Breakfast of kings. | Southmeadow's?
-a : Even the apple. | Kings with backache. | Smells like it.
+when topic=food a.quarter=wharf|docks
+a : The pie seller on the wharf's got fish in everything. Even the apple ones. | Dockers' breakfast: a pint and a herring. | They're unloading apples from the south. The whole quay smells of them.
+b[sailor] #sailor : You've never had ship's biscuit. Be grateful.
+b #plain : Even the apple? | Breakfast of kings. | Southmeadow's?
+a@sailor : I've had it. I used it to wedge a door.
+a@plain : Even the apple. | Kings with backache. | Smells like it.
 
 scene e1_food_rm_smoke_works
-when topic=food here.region=ridgemere a.quarter=works
-a : Everything up at the Works tastes of smoke. Even the bread. | We eat our supper at the furnace. Warm as you like. | The soot gets in the butter.
+when topic=food a.quarter=works
+a : Everything down at the Works tastes of smoke. Even the bread. | We eat our supper by the furnace. Warm as you like. | The soot gets in the butter.
 b : It's like seasoning. | Warm's something. | Scrape it off.
-a : Seasoning. Yes. | It's all something. | I scrape it off. Then there's no butter.
+a : Seasoning. Yes. | Warm and black. | I scrape it off. Then there's no butter.
 
 # ---------------------------------------------------------------- The towns' own food
 
 scene e1_food_fens_eels
-when topic=food here.region=fens
+when topic=food here.region=mirebridge
 a : Eel pie on Restday. Like my father, and his. | The eel traps were full this morning. | Smoked eel, jellied eel, eel in a pie. That's the Fens for you.
-b[from=mirebridge] : Nothing better in the realm. I'll hear no word against it.
-b[from!=mirebridge] : I still can't look an eel in the eye.
-b : Long may it last. | Lucky you. | And eel in a stew.
-a : Long may it. | I'll bring you one. | Eel in everything.
+b[from=mirebridge] #fen : Nothing better in the realm. I'll hear no word against it.
+b[from!=mirebridge] #stranger : I still can't look an eel in the eye.
+b #plain : Long may it last. | Lucky you. | And eel in a stew.
+a@fen : Nor I.
+a@stranger : You don't look. You eat.
+a@plain : Long may it. | I'll bring you one. | Eel in everything.
 
 scene e1_food_fens_reeds
-when topic=food here.region=fens here.season=spring|summer
-a : Duck eggs from the reed beds. Big as your paw. | The wildfowl are thick on the water this year. | Watercress from the ditches. Free, if you don't mind wet feet.
-b[child] : I fell in getting eggs. Mother didn't speak to me all day.
-b : Good eating. | Pot one for me. | Wet feet's the Fens anyway.
-a : The best. | If my sling's kind. | Always wet feet.
+when topic=food here.region=mirebridge
+a[here.season=spring|summer] : Duck eggs from the reed beds. Big as your paw. | The wildfowl are thick on the water this year. | Watercress from the ditches. Free, if you don't mind wet feet.
+b[child] #pup : I fell in getting eggs. Mother didn't speak to me all day.
+b #plain : Good eating. | Pot one for me. | Wet feet's the Fens anyway.
+a@pup : Everyone falls in once.
+a@plain : The best. | If my sling's kind. | Always wet feet.
 
 scene e1_food_frost_smoked
 when topic=food here.region=frosthollow
-a : Smoked fish and black bread. That's a Frosthollow winter. | My grandmother smoked fish in the chimney. The whole house tasted of it. | Nothing grows up here. We eat what keeps.
-b[from=frosthollow] : And a dram after. Don't forget the dram.
-b[from!=frosthollow] : I'd kill for something green.
-b : Keeps you alive. | Did you mind? | And what keeps is good.
-a : And keeps you grumpy. | Loved it. | Mostly.
+a : Hare stew and black bread. That's a Frosthollow winter. | My grandmother smoked hams in the chimney. The whole house tasted of it. | Nothing grows up here. We eat what keeps.
+b[from=frosthollow] #frost : And a dram after. Don't forget the dram.
+b[from!=frosthollow] #stranger : I'd give a week's pay for something green.
+b #plain : Keeps you alive. | Did you mind? | And what keeps is good.
+a@frost : Never.
+a@stranger : Go down the Pass Road, then. It's green enough down there.
+a@plain : And keeps you grumpy. | Loved it. | Mostly.
 
 scene e1_food_frost_cold_feast
-when topic=food here.region=frosthollow here.season=winter
-a : The snow's too deep for the carts. We're down to oats. | Mutton fat and oats. You'll live through anything on that. | The stores are getting low and the pass is shut.
-b[miner] : The mine eats first. Always has.
-b : Oats it is. | You'll live. You won't enjoy it. | We'll see spring.
-a : Oats and patience. | I don't enjoy it. | We always have.
+when topic=food here.region=frosthollow
+a[here.season=winter] : The snow's too deep for the carts. We're down to oats. | Mutton fat and oats. You'll live through anything on that. | The stores are getting low and the pass is shut.
+b[miner] #miner : The mine eats first. Always has.
+b #plain : Oats it is. | You'll live. You won't enjoy it. | We'll see spring.
+a@miner : Aye. And we eat what's left.
+a@plain : Oats and patience. | I don't enjoy it. | We always have.
 
 scene e1_food_coldwater_trout
 when topic=food here.region=coldwater
 a : Lake trout, fried in butter. I could weep. | They're bringing the char in by the boatload. | The water's so clear you can pick your supper from the jetty.
-b[fisher] : Clear water, clever fish. They see you coming.
-b : Weep, then. I'll eat it. | Good year for it. | Show me.
-a : Get your own. | Fat ones. | Bring a net.
+b[fisher] #fisher : Clear water, clever fish. They see you coming.
+b #plain : Weep, then. I'll eat it. | Good year for it. | Show me.
+a@fisher : Then I'll come at night.
+a@plain : Get your own. | Fat ones. | Bring a net.
 
 scene e1_food_oakhaven_mushrooms
-when topic=food here.region=woods
+when topic=food here.region=oakhaven
 a : The woods are full of ceps after that rain. | Venison's cheap this month. The hunters had a good run. | Found a ring of mushrooms by the old stump. Big as plates.
-b[from=oakhaven] : Show me where. No. Don't tell anyone else.
-b[healer] : Bring them to me first. Big as plates is how they kill you.
-b : I'll fry some for us both. | Get it while you can. | Which stump?
-a : Butter and salt. | Every year it's the same. | That's my secret.
+b[from=oakhaven] #oak : Show me where. No. Don't tell anyone else.
+b[healer] #healer : Bring them to me first. Big as plates is how they kill you.
+b #plain : I'll fry some for us both. | Get it while you can. | Which stump?
+a@oak : Not a soul.
+a@healer : I'll bring them. Before I eat them, even.
+a@plain : Butter and salt. | Every year it's the same. | That's my secret.
 
 scene e1_food_oakhaven_boar
-when topic=food here.region=woods here.season=autumn|winter
-a : They brought a boar in from the deep wood. Whole village is eating. | Acorn-fed pork. Best you'll ever taste. | Rabbit pie and blackberries. Oakhaven in autumn.
-b[woodcutter] : I saw that boar. It nearly ate me first.
-b : Save me a rib. | I don't doubt it. | Sounds like a song.
-a : If there's any left. | You will. | It ought to be.
+when topic=food here.region=oakhaven
+a[here.season=autumn|winter] : They brought a boar in from the deep wood. Whole town's eating. | Acorn-fed pork. Best you'll ever taste. | Rabbit pie and blackberries. Oakhaven in autumn.
+b[woodcutter] #cutter : I saw that boar. It nearly ate me first.
+b #plain : Save me a rib. | I don't doubt it. | Sounds like a song.
+a@cutter : Then this is justice.
+a@plain : If there's any left. | You will. | It ought to be.
 
 scene e1_food_larkfield_mutton
 when topic=food here.region=larkfield
-a : Larkfield mutton. They talk about it in Ridgemere, you know. | Mutton and turnip. Mutton and barley. Mutton and mutton. | Too many sheep, not enough mint sauce.
-b[herder] : Best grazing in the realm. That's what you're tasting.
-b[from=larkfield] : Proper mutton's a year old at least. Lamb's for babies.
-b : They should. | Mutton and more mutton. | There's never enough mint.
-a : Let them. | I'll not complain. | Never enough.
+a : Larkfield mutton. You'll not get better anywhere. | Mutton and turnip. Mutton and barley. Mutton and mutton. | Too many sheep, not enough mint sauce.
+b[herder] #herder : Best grazing in the realm. That's what you're tasting.
+b[from=larkfield] #lark : Proper mutton's a year old at least. Lamb's for babies.
+b #plain : Not anywhere. | Mutton and more mutton. | There's never enough mint.
+a@herder : And the herder's sweat. Don't forget that.
+a@lark : A year at least.
+a@plain : That's my town. | I'll not complain. | Never enough.
 
 scene e1_food_larkfield_shearing
-when topic=food here.region=larkfield here.season=spring|summer
-a : Shearing supper's on Fiveday. Cold meat and cider for everyone. | I've baked forty loaves for the shearers. | They eat like wolves, shearers. Well. We're all wolves.
-b[farmer] : Earn it with a pair of shears first.
-b : I'll be there. | Forty! | Hungrier wolves, then.
-a : Bring a mug. | Forty-one, counting mine. | Much hungrier.
+when topic=food here.region=larkfield
+a[here.season=spring|summer] : Shearing supper's on Marketday. Cold meat and cider for everyone. | I've baked forty loaves for the shearers. | They eat like wolves, shearers. Well. We're all wolves.
+b[farmer] #farm : Earn it with a pair of shears first.
+b #plain : I'll be there. | Forty! | Hungrier wolves, then.
+a@farm : I'll eat first and shear after.
+a@plain : Bring a mug. | Forty-one, counting mine. | Much hungrier.
 
 scene e1_food_southmeadow_fruit
 when topic=food here.region=southmeadow
-a : Peaches. Off the tree, still warm. Nothing in the realm like it. | The plums are in. You can smell them from the road. | They say up north they've never seen a fig.
-b[from=southmeadow] : I went to Ridgemere once. Their fruit's a crime. Small and hard.
-b[from!=southmeadow] : I'll be fat as a vicar by the time I leave.
-b : Spoils you for anywhere else. | A good year. | Pity them.
-a : It does. | The best. | I do.
+a : Peaches. Off the tree, still warm. Nothing in the realm like it. | The plums are in. You can smell them from the road. | They say up north they've never seen a ripe pear.
+b[from=southmeadow] #south : I went to Ridgemere once. Their fruit's a crime. Small and hard.
+b[from!=southmeadow] #stranger : I'll be fat as a chaplain by the time I leave.
+b #plain : Spoils you for anywhere else. | A good year. | Pity them.
+a@south : Small, hard and wet.
+a@stranger : Stay longer, then. Be fatter.
+a@plain : It does. | The best. | I do.
 
 scene e1_food_southmeadow_wine
-when topic=food here.region=southmeadow here.season=autumn
-a : The grapes are in. Everyone with feet is treading. | Last year's wine is ready. Better than the year before. | You've purple paws.
-b[child] : I trod grapes! My feet are purple! Look!
-b : I'll lend a foot. | Better every year. | So would you.
-a : Wash it first. | It's the sun. | I won't deny it.
+when topic=food here.region=southmeadow
+a[here.season=autumn] : The apples are in at the Cider House. Every paw in town's at the press. | Last year's cider's ready. Better than the year before. | Your paws are sticky. You've been at the press.
+b[child] #pup : I turned the press! Me! Look at my paws!
+b #plain : I'll lend a paw. | Better every year. | So would yours be.
+a@pup : Sticky as a honeycomb. Go and wash.
+a@plain : Wash it first. | It's the sun. | I won't deny it.
 
 # ---------------------------------------------------------------- Homesick for home cooking
 
 scene e1_food_homesick_eels
-when topic=food a.from=mirebridge here.region!=fens
-a : Nobody here can make an eel pie. Nobody. | I'd give my coat for a plate of Fen eels. | They look at me like I'm mad when I ask for eels.
-b[from=mirebridge] : Same as me. I've a cousin who sends them, smoked.
-b : I've never had one. | You'd freeze. | You might be.
-a : Your loss. | It'd be worth it. | Mad for eels.
+when topic=food a.from=mirebridge
+a[here.region!=mirebridge] : Nobody here can make an eel pie. Nobody. | I'd give my coat for a plate of Fen eels. | They look at me like I'm mad when I ask for eels.
+b[from=mirebridge] #fen : Same as me. I've a cousin who sends them, smoked.
+b #plain : I've never had one. | You'd freeze. | You might be.
+a@fen : Share. I'll owe you.
+a@plain : Your loss. | It'd be worth it. | Mad for eels.
 
 scene e1_food_homesick_south
-when topic=food a.from=southmeadow here.region!=southmeadow
-a : The apples up here taste of nothing. | I miss real wine. This is vinegar with ideas. | My mother's peach jam. I'd cry if I saw a jar.
-b[from=ridgemere] : Our apples are fine. You're spoiled.
-b : They taste of apple. | Drink it anyway. | Write to her.
-a : Of water, then. | I do. Every night. | I have. Twice.
+when topic=food a.from=southmeadow
+a[here.region!=southmeadow] : The apples up here taste of nothing. | I miss real cider. This is vinegar with ideas. | My mother's peach jam. I'd cry if I saw a jar.
+b[from=ridgemere] #city : Our apples are fine. You're spoiled.
+b #plain : They taste of apple. | Drink it anyway. | Write to her.
+a@city : Spoiled by better.
+a@plain : Of water, then. | I do. Every night. | I have. Twice.
 
 scene e1_food_homesick_north
-when topic=food a.from=frosthollow|coldwater here.region=south
-a : Too warm for smoked fish down here. I've tried. | I'd swap all this fruit for a bit of black bread. | Nobody makes a broth strong enough here.
-b[from=southmeadow] : Black bread? On purpose?
-b : Too warm for anything. | Truly? | Ours is fine.
-a : Too warm for me, certainly. | Truly. | It's soup water.
+when topic=food a.from=frosthollow|coldwater
+a[here.region=oakhaven|mirebridge|larkfield|southmeadow] : Too warm for smoked fish down here. I've tried. | I'd swap all this fruit for a bit of black bread. | Nobody makes a broth strong enough here.
+b[from=southmeadow] #south : Black bread? On purpose?
+b #plain : Too warm for anything. | Truly? | Ours is fine.
+a@south : On purpose. You'd understand in a snowdrift.
+a@plain : Too warm for me, certainly. | Truly. | It's soup water.
 
 scene e1_food_homesick_larkfield
-when topic=food a.from=larkfield here.region!=larkfield
-a : Their mutton here's goat. I'd swear to it. | I miss a proper Larkfield pie. | Nobody here knows what to do with a sheep.
-b[from=larkfield] : Our grandmothers would weep.
-b : It's mutton. | What's in it? | Shear it.
-a : It's goat. | Mutton, pastry, more mutton. | Very funny.
+when topic=food a.from=larkfield
+a[here.region!=larkfield] : Their mutton here's goat. I'd swear to it. | I miss a proper Larkfield pie. | Nobody here knows what to do with a sheep.
+b[from=larkfield] #lark : Our grandmothers would weep.
+b #plain : It's mutton. | What's in it? | Shear it.
+a@lark : They would. Into the gravy.
+a@plain : It's goat. | Mutton, pastry, more mutton. | Very funny.
 
 scene e1_food_newcomer_dish
 when topic=food pair.same_from=no
-a : What do they eat where you're from? | Is it true your lot put fruit in with the meat? | I tried your country's dish. Once.
-b[from=mirebridge] : Eels. Mainly eels.
-b[from=larkfield] : Mutton. More mutton. Then mutton.
-b[from=southmeadow] : Fruit, wine, bread. And everything else with fruit in.
-b[from=frosthollow] : Whatever keeps. Smoked, salted, dried.
-b : Same as here, more or less. | Only sometimes. | And?
-a : Huh. | Sometimes's enough. | Once.
+a : What do they eat where you're from? | What's the dish of your home, then? | What did your mother cook, back home?
+b[from=mirebridge] #dish : Eels. Mainly eels.
+b[from=larkfield] #dish : Mutton. More mutton. Then mutton.
+b[from=southmeadow] #dish : Fruit, cider, bread. And everything else with fruit in.
+b[from=frosthollow] #dish : Whatever keeps. Smoked, salted, dried.
+b[from=coldwater] #dish : Trout, char, and more trout.
+b[from=oakhaven] #dish : Mushrooms and boar, and hazelnuts in everything.
+b[from=ridgemere] #dish : Herring, and whatever else the boats bring in.
+b #same : Same as here, more or less.
+a@dish : I'll have to try that one day. | Huh. Sounds all right. | Better than here, I'll bet.
+a@same : Bread and stew, the realm over.
 
 # ---------------------------------------------------------------- Friends, family, spouses
 
@@ -540,17 +636,16 @@ when topic=food pair.band=spouses
 a : Who's cooking tonight? | You put too much salt in, last night. | I'll make that soup you like.
 b : You. I did yesterday. | I put the right amount. You're wrong. | Which one? I like all your soups.
 a : You did not. | I'm never wrong about salt. | The green one.
-b?[humour=merry] : I'll eat anything you make, #dear#. Even the green one.
 
 scene e1_food_friends_pie
 when topic=food pair.band=friends
-a : I'll bring you a pie on Restday. | Remember the night we ate a whole cheese between us? | You still owe me supper.
-b : I'll hold you to it. | My belly remembers. | I owe you nothing.
-a : You should. | Never again. Once more. | One supper. I've a long memory.
+a : Remember that pie you made me? I still think about it. | Remember the night we ate a whole cheese between us? | You still owe me supper.
+b : It was only a pie. | My belly remembers. | I owe you nothing.
+a : It was not only a pie. | Never again. Once more. | One supper. I've a long memory.
 
 scene e1_food_family_recipe
-when topic=food pair.band=family
-a : Mother's recipe's wrong. You left out the bay. | Who has Granny's pie dish? | You always got the bigger plate.
+when topic=food pair.kin=siblings
+a : You've got Mother's recipe wrong. You left out the bay. | Who has Granny's pie dish? | You always got the bigger plate.
 b : I left it out on purpose. | I do. And I'm keeping it. | I was bigger.
 a : There's no purpose to it. | We'll see. | You're still bigger.
 
@@ -572,42 +667,49 @@ a : Both. | I'll tell anyone who asks. | I'd stifle.
 scene e1_food_cake_disaster
 when topic=food
 a : I made a cake for my mother. It fell in the middle. | My pie came out of the oven like a boot. | I tried to make bread. It's more of a brick.
-b[baker] : Too much yeast, or a cold kitchen. One of the two.
-b : Fill it with cream. Nobody'll know. | Boots are useful. | Bricks are useful too.
-a : She'll know. She always knows. | Not to eat. | Not to eat.
+b[baker] #baker : Too much yeast, or a cold kitchen. One of the two.
+b #plain : Fill it with cream. Nobody'll know. | Boots are useful. | Bricks are useful too.
+a@baker : Cold kitchen. It's always cold, mine.
+a@plain : She'll know. She always knows. | Not to eat. | I'll build a wall, then.
 
 scene e1_food_wedding_food
 when topic=food world.wedding=recent
 a : The food at that wedding! I'm still full. | They had a whole roasted pig at the wedding. | I took a pie home from the wedding in my hat.
-b[wealth=poor|destitute] : I wasn't asked. I could smell it, though.
-b : Generous family. | A whole one! | In your hat?
-a : They'll be eating cheap for a year. | Head and all. | My good hat.
+b[wealth=poor|destitute] #poor : I wasn't asked. I could smell it, though.
+b #plain : Generous family. | A whole one! | In your hat?
+a@poor : Next time I'll bring you a pie. In my hat.
+a@plain : They'll be eating cheap for a year. | Head and all. | My good hat.
 
 scene e1_food_funeral_ham
 when topic=food world.death=recent
 a : There's always ham at a funeral. Why ham? | They put on a good spread for the burying. | Grief makes me hungry. Is that wrong?
-b[old] : Ham keeps. Grief doesn't let you cook.
-b : Ham's respectful. | They did. | No. Grief's hungry work.
-a : Ham's sorrowful. | The least they could do. | Pass the ham, then.
+b[old] #old : Ham keeps. Grief doesn't let you cook.
+b #plain : Ham's respectful. | They did. | No. Grief's hungry work.
+a@old : That's it, isn't it. That's why.
+a@plain : Ham's sorrowful. | The least they could do. | Pass the ham, then.
 
 scene e1_food_prices_bread
 when topic=food world.meal_price=up
 a : A loaf's gone up again. | I bought less and paid more. How does that happen? | I can't afford the stew I used to sniff at.
-b[baker] : Flour's gone up. I'm not getting rich, believe me.
-b[wealth=rich] : Has it? I hadn't noticed.
-b : Everything's gone up. | Magic. | We'll all be on turnips.
-a : Except wages. | Dark magic. | I'm on turnips.
+b[baker] #baker : Flour's gone up. I'm not getting rich, believe me.
+b[wealth=rich] #rich : Has it? I hadn't noticed.
+b #plain : Everything's gone up. | Magic. | We'll all be on turnips.
+a@baker : Somebody is.
+a@rich : No. You wouldn't have.
+a@plain : Except wages. | Dark magic. | I'm on turnips.
 
 scene e1_food_prices_cheap
 when topic=food world.meal_price=down
 a : Bread's cheaper this week. Don't say it too loud. | I bought two pies for the price of one. | Somebody's had a good harvest. The market's full.
-b[merchant] : It won't last. Buy now.
-b : Shh. | Lucky. | Long may it last.
-a : I said it quietly. | Ate both. | It won't.
+b[merchant] #merchant : It won't last. Buy now.
+b #plain : Shh. | Lucky. | Long may it last.
+a@merchant : Spoken like a seller.
+a@plain : I said it quietly. | Ate both. | It won't.
 
 scene e1_food_moonlight_snack
 when topic=food here.time=night
-a : I'm raiding the larder when I get home. | Cold sausage at midnight. That's living. | Nothing tastes as good as stolen food in the dark.
-b[young] : My mother locks the larder. I know where the key is.
-b : Quietly, I hope. | That's sin. | Your own larder's not stealing.
-a : Like a shadow. | Delicious sin. | It feels like it.
+a : I'm raiding the larder when I get home. | Cold sausage at midnight. That's living. | Nothing tastes as good as food eaten in the dark.
+b[young] #pup : My mother locks the larder. I know where the key is.
+b #plain : Quietly, I hope. | That's sin. | It tastes the same to me.
+a@pup : I never heard that.
+a@plain : Like a shadow. | Delicious sin. | Then you've not tried it.

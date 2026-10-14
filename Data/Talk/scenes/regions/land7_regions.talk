@@ -1,476 +1,577 @@
 # The country, the roads and the year in each of the seven places (doc 62, phase 7), for talk.land, talk.travel and
 # talk.season: Ridgemere's Sound, hills and Rainwood; Frosthollow's Whitefangs, pass and pines; Coldwater's Glasswater
 # and the springs of the Long River; the Warmwood round Oakhaven; the Sallow Fens and the Drowned Delta at Mirebridge;
-# the Larkdowns round Larkfield; the Sunfields and the Orchard Vale at Southmeadow. Alternatives run in parallel.
+# the Larkdowns round Larkfield; the Sunfields and the Orchard Vale at Southmeadow. Alternatives run in parallel; a
+# tagged reply sets a mark (#x) so the close that follows can answer it (a@x).
 
 # ===================================================================================== Ridgemere
 
 scene e5_rg_rm_sound
 when topic=land here.region=ridgemere
 a : The Sound's flat as a plate this morning. You can see the headland clear. | Fog on the Sound so thick the gulls are walking. | Watched the tide go out past the wharf. Takes half the harbour with it.
-b[sailor] : Flat in the bay, and a chop past the headland. Always is.
-b[fisher] : Fog's good for the herring and bad for the boats.
+b[sailor] #sailor : Flat in the bay, and a chop past the headland. Always is.
+b[fisher] #fisher : Fog's good for the herring and bad for the boats.
 b : Rare sight. | Gulls have the sense. | And brings it back, thank the gods.
-a : Enjoy it. | More than us. | Mostly.
+a@sailor : You'd know. You've the sea in your walk.
+a@fisher : And worse for the wolves in them.
+a : Enjoy it while it lasts. | More than us. | Mostly.
 
 scene e5_rg_rm_hills_behind
 when topic=land here.region=ridgemere
 a : The Rainward Hills have their cloud on again. Rain by noon. | From the Heights you can see the hills go blue, ridge after ridge. | The Rainrun's loud today. All that rain coming off the hills.
-b[old] : If you can see the hills, it's going to rain. If you can't, it's raining.
-b[quarter=heights] : Best view in the realm from our terrace. Worth every step.
+b[old] #old : If you can see the hills, it's going to rain. If you can't, it's raining.
+b[quarter=heights] #heights : Best view in the realm from our terrace. Worth every step.
 b : It always rains by noon. | Pretty, if you've the climb in you. | Like a mill race under the bridge.
+a@old : My gran said that. Word for word.
+a@heights : Every step's easier with a terrace at the top.
 a : Always. | I haven't. | Louder every year.
 
 scene e5_rg_rm_rainwood
 when topic=land here.region=ridgemere
 a : Went up into the Rainwood. Moss on the trees, moss on the stones, moss on me. | The cedars up past the Houses' lands are as tall as the Rain Hall. | It never stops dripping in the Rainwood, even when it's not raining.
-b[woodcutter] : Fell's cedar. Smells like a chapel when it's cut. Worth a fortune.
-b[young] : Are there bears? Gran says there's bears.
+b[woodcutter] #wood : Fell's cedar. Every one of them counted, and every one of them worth a purse.
+b[young] #young : Are there bears? Gran says there's bears.
 b : Did you get lost? | Taller, I'd say. | That's the city all over.
+a@wood : Then Fell's welcome to count them. I'll just look.
+a@young : Only in your gran's stories, pup.
 a : Nearly. Everything's green. | Probably. | Wet to the root.
 
 scene e5_rg_rm_folds
 when topic=land here.region=ridgemere
 a : The Folds are crawling with rabbits this year. You can't see grass for ears. | Walked out to the Folds. Sheep, rabbits, and #mud#. | The farms in the Folds feed half the city.
-b[herder] : Rabbits eat what the sheep want. I'd shoot the lot if I could hit them.
-b[cook] : Rabbit pie, rabbit stew, rabbit roast. The city's never short.
-b : Rabbit pie, then. | Lovely country. | The other half's on fish.
+b[herder] #herder : Rabbits eat what the sheep want. I'd snare the lot if I could catch them.
+b[cook] #cook : Rabbit pie, rabbit stew, rabbit roast. The city's never short.
+b : Pie, then. | Lovely country. | The other half's on fish.
+a@herder : You'd need a lot of snares.
+a@cook : I'd never get tired of it. Well. Maybe of the roast.
 a : Every night. | Wet country. | And worse.
 
 scene e5_rg_rm_terraces
 when topic=land here.region=ridgemere
 a : This city's all hill. I've climbed more steps today than a lamplighter. | You can tell how rich a wolf is by how high up they live. | From the Sump you can't see the sky. From the Heights you can't see the Sump.
-b[quarter=sump] : And the rain runs downhill. Guess where it ends up.
-b[quarter=heights] : We do see the Sump. We simply don't look.
+b[quarter=sump] #sump : And the rain runs downhill. Guess where it all ends up.
+b[quarter=heights] #heights : We do see the Sump, you know. We simply choose not to look.
 b : Good for your legs. | True, that. | That's how they like it.
+a@sump : In your boots, by the sound of it.
+a@heights : Choose a bit harder. It's still there.
 a : Bad for my temper. | Always has been. | Always will.
 
 scene e5_rg_rm_ships
 when topic=travel here.region=ridgemere
-a : A ship came in from down the coast this morning. Sails all patched. | They're loading the Greatly ship for the south. Wool and iron. | I watched a ship go round the headland till I couldn't see it.
-b[sailor] : She came through weather. You can see it in the rigging.
-b[house=Greatly] : The south pays well for our iron. And better for our wool.
+a : A boat came in from down the coast this morning. Sails all patched. | They're loading the Greatly ship with wool and iron. | I watched a ship go round the headland till I couldn't see it.
+b[sailor] #sailor : She came through weather. You can see it in the rigging.
+b[house=greatly_house] #greatly : Our ships carry half the realm's goods. Somebody has to.
 b : Rough passage, then. | Back with wine, I hope. | Where was she bound?
+a@sailor : And in the crew, I'd guess.
+a@greatly : And take a fair cut of it.
 a : Looked it. | And oranges. | Nobody would say.
 
 scene e5_rg_rm_gates
 when topic=travel here.region=ridgemere
-a : The queue at the South Gate went right back to Rainrun Bridge this morning. | Took the High Road out the East Gate. Uphill the whole first day. | Half the realm comes through the gates on market day.
-b[guard] : We check every cart. It takes the time it takes.
-b[carter] : The Southway's flat to the Warmwood. The High Road's for punishing yourself.
-b : Market day. | Your legs'll be strong. | And the other half's leaving.
-a : Every day's market day here. | My legs are dead. | Can't blame them.
+a : The queue at the South Gate went right back to Rainrun Bridge this morning. | Took the High Road out the East Gate. Uphill the whole first day. | Half the realm comes through the gates on a Marketday.
+b[guard] #guard : We check every cart. It takes the time it takes.
+b[carter] #carter : The Southway's kinder. The High Road's for punishing yourself.
+b : Marketday. | Your legs'll be strong. | And the other half's leaving.
+a@guard : It takes a good deal longer than that.
+a@carter : I'll take the Southway next time and go round.
+a : Every day's Marketday at that gate. | My legs are dead. | Can't blame them.
 
 scene e5_rg_rm_city_from_away
 when topic=travel here.region=ridgemere a.from!=ridgemere
+cooldown 2d
 a : I'll never get used to this city. The noise, the stairs, the rain. | Back home, you know everyone. Here I don't know my own neighbour. | Everyone here walks like they're late for something.
-b[from=ridgemere] : We are late. We're always late. It's the hills.
+b[from=ridgemere] #rm : We are late. We're always late. It's the hills.
 b : You'll get used to it. | You know me. | They are late.
+a@rm : Then leave earlier. Or build flatter.
 a : Maybe. | That's something. | For what, though?
 
 scene e5_rg_rm_autumn_storms
 when topic=season here.region=ridgemere here.season=autumn|winter
 a : Storm season. The Sound's throwing itself at the wharf every night. | The boats are all tied up. Nobody's fishing in this. | The gutters on the Commons are rivers.
-b[sailor] : Lost a boat at the mouth of the Sound last week. Crew made it. Just.
-b[quarter=wharf] : Water came over the wharf wall last night. Into the smokehouse.
-b : It'll be worse in winter. | Taverns are full, then. | Rivers with rats in.
+b[sailor] #sailor : Lost a boat at the mouth of the Sound last week. Crew made it. Just.
+b[quarter=wharf] #wharf : Water came over the wharf wall last night. Into the smokehouse.
+b : It'll be worse before it's better. | Taverns are full, then. | Rivers with rats in.
+a@sailor : Thank the Bright One for the just.
+a@wharf : Smoked fish, soaked. They'll still sell it.
 a : It always is. | And noisy. | Swimming rats.
 
 scene e5_rg_rm_spring
 when topic=season here.region=ridgemere here.season=spring|summer
 a : Warm rain now, at least. Spring rain's almost pleasant. | The ferns are uncurling all along the walls. | Two whole days without rain. The city doesn't know what to do with itself.
-b[from=southmeadow] : This is your summer? I'd weep.
+b[from=southmeadow] #south : This is your fine weather? I'd weep.
 b : Almost. | Pretty things. | Panic, mostly.
-a : Almost. | Green everywhere. | Wait. It'll rain.
+a@south : We do weep. It's why it's so wet.
+a : Almost's as good as it gets, here. | Green everywhere. | Wait. It'll rain.
 
 scene e5_rg_rm_winter
 when topic=season here.region=ridgemere here.season=winter
 a : No snow in the city. Just rain that's forgotten how to be snow. | Winter in Ridgemere is the same as summer, only darker. | Snow on the Rainward Hills. You can see it from the wharf.
-b[from=frosthollow] : This is rain. Snow's what we have.
+b[from=frosthollow] #fh : This is rain. Snow's what we have.
 b : Sleet. The worst. | Colder rain. | It'll never reach us.
-a : The very worst. | Darker rain. | It never does.
+a@fh : You can keep it.
+a : The very worst. | And darker. | It never does.
 
 # ===================================================================================== Frosthollow
 
 scene e5_rg_fh_peaks
 when topic=land here.region=frosthollow
 a : The Whitefangs have their teeth out today. Every peak sharp as glass. | Wind's blowing snow off the high peaks. Like smoke. | You can see the Greyteeth from the slag heap on a clear day.
-b[miner] : The mountain's in a good mood. Don't trust it.
-b[old] : I've looked at those peaks for sixty years. They don't look back.
+b[miner] #miner : The mountain's in a good mood. Don't trust it.
+b[old] #old : I've looked at those peaks all my life. They've never once looked back.
 b : Beautiful. Cruel, but beautiful. | Means a storm. | And the Eastern Snows beyond.
-a : Mostly cruel. | Lamp the windows. | Where nobody goes.
+a@miner : I never do.
+a@old : They will, one day. Then we're for it.
+a : Mostly cruel. | Bring the wood in, then. | Where nobody goes.
 
 scene e5_rg_fh_pines
 when topic=land here.region=frosthollow
 a : The pines up past the mines are older than the town. | Smell the pine resin on the wind. Better than any perfume. | The woodcutters are bringing logs down on sledges.
-b[woodcutter] : Pines grow slow up here. You cut one and it's a hundred winters gone.
-b[smith] : Pine charcoal burns hot. The smelter eats a forest a year.
+b[woodcutter] #wood : Slow as anything, up here. That log's older than my grandad.
+b[smith] #smith : Pine charcoal burns hot. The smelter eats a forest a year.
 b : Older than anything. | I'd wear it. | Easier than carts.
+a@wood : And it'll be in somebody's stove by Restday.
+a@smith : And the mountain grows it back. Slowly.
 a : And they'll outlast us. | You'd smell like a log. | Faster too.
 
 scene e5_rg_fh_snowfields
 when topic=land here.region=frosthollow
 a : There's a snowfield above the high mine that never melts. Not even in summer. | Snow slipped on the north slope last night. Heard it like thunder. | Never cross the snowfield after noon. The sun loosens it.
-b[miner] : Buried a shed once. We dug the shed out. And old Kell in it. Alive, somehow.
-b[young] : Can I slide on it?
+b[miner] #miner : It buried the tool shed once. We dug the shed out, and old Kell in it. Alive, somehow.
+b[young] #young : Can I slide on it?
 b : Strange, that. | Anyone hurt? | Good advice.
+a@miner : Kell would've had something to say about it.
+a@young : Not on that one. Not ever. You hear me?
 a : Old snow. Older than us. | Not this time. | My father's.
 
 scene e5_rg_fh_pass
 when topic=travel here.region=frosthollow
 a : The Pass Road's open again. First carts up since the snow. | It's two days down the pass to Coldwater and three back up. | The pass ate another cart last week. Off the edge, oxen and all.
-b[carter] : Steepest road in the realm. I charge double and earn every penny.
-b[merchant] : Finally. The store's been out of salt for a month.
-b : Good. We need everything. | Up's always longer. | Gods. The driver?
+b[carter] #carter : Steepest road in the realm. I charge double and earn every penny.
+b[merchant] #merchant : Every cart that doesn't come up is salt and lamp oil I can't sell.
+b : Good. We need everything. | Up's always longer. | #oath#. The driver?
+a@carter : And spend it all at the bottom.
+a@merchant : And every one that does, you sell dear.
 a : Most of all, news. | Every time. | Jumped clear. Lost everything else.
 
 scene e5_rg_fh_cut_off
 when topic=travel here.region=frosthollow here.season=winter
 a : Snowed in again. Nobody up, nobody down till the thaw. | No carts for a month. We're eating what's in the cellar. | Pass is shut. We might as well be on the moon.
-b[old] : We were snowed in for three months the winter I married. Best winter of my life.
+b[old] #old : We were snowed in for three months the winter I married. Best winter of my life.
 b : We always manage. | Salt pork and patience. | Nobody can bother us, at least.
-a : We always do. | Mostly patience. | That's the one good thing.
+a@old : I'll not ask why.
+a : Somehow. | Mostly patience. | That's the one good thing.
 
 scene e5_rg_fh_lowlands
 when topic=travel here.region=frosthollow
-a : I went down to the lowlands once. Too warm, too green, too many people. | Lowlanders come up here and wheeze after one street. | I'd like to see Southmeadow once. Just to feel warm right through.
-b[from=southmeadow] : It's lovely. You'd hate it. Too much sun.
-b[miner] : I went to Ridgemere once. Rain, rain, rain. Give me snow.
+a : I went down to the lowlands once. Too warm, too green, too many folk. | Lowlanders come up here and wheeze after one street. | I'd like to see Southmeadow once. Just to feel warm right through.
+b[from=southmeadow] #south : Southmeadow's lovely. You'd hate it. Too much sun.
+b[miner] #miner : I went to Ridgemere once. Rain, rain, rain. Give me snow.
 b : Too much of everything. | Soft lungs. | You'd melt.
+a@south : I'd hate it for a week first. Then I'd see.
+a@miner : Snow you can shake off. Rain gets in.
 a : Much too much. | Very soft. | I'd risk it.
 
 scene e5_rg_fh_summer
 when topic=season here.region=frosthollow here.season=summer|spring
 a : The thaw's on. Every gully's a waterfall. | Flowers on the scree! Yellow and blue. Gone in a fortnight. | Summer up here's three good weeks and a lot of hoping.
-b[child] : I picked flowers for Mam! They're the blue ones!
-b[miner] : The mines flood in the thaw. Pumping day and night.
+b[young] #young : I picked flowers for #mum#! The blue ones!
+b[miner] #miner : The mines flood in the thaw. Pumping day and night.
 b : Mind the meltwater. | Pick some. | Three if we're lucky.
+a@young : The blue ones are the best ones.
+a@miner : Better water than rock.
 a : It took a goat last year. | They wilt. | Two, more like.
 
 scene e5_rg_fh_winter_dark
 when topic=season here.region=frosthollow here.season=winter|autumn
-a : The sun comes over the ridge for an hour at noon and that's your day. | Snow up to the windows. We go out through the loft. | The cold up here bites through three coats.
-b[miner] : Doesn't matter to us. It's always night down the pit.
-b[priest] : The Snow Chapel's warm, at least. Come and pray. Or just sit.
-b : Make the hour count. | Mind the icicles. | Wear four.
-a : I sit in it like a cat. | They drop like spears. | I'm wearing five.
+a : The sun comes over the ridge at noon, stays a while, and that's your day. | Snow up to the windows. We go out through the loft. | The cold up here bites through three coats.
+b[miner] #miner : Makes no odds to me. I'd not see it anyway.
+b[priest] #priest : The Snow Chapel's warm, at least. Come and pray. Or just sit.
+b : Make it count. | Mind the icicles. | Wear four.
+a@miner : You'll see it on Restday. Make sure you do.
+a@priest : I'll sit. The praying might follow.
+a : I sit in it till it's gone. | They drop like spears. | I'm wearing five.
 
 # ===================================================================================== Coldwater
 
 scene e5_rg_cw_lake
 when topic=land here.region=coldwater
 a : Glasswater's so clear today you could see a dropped penny forty feet down. | The lake's the colour of slate this morning. Something's coming. | Mist lying on the lake like a blanket.
-b[fisher] : Clear water, shy fish. I'll catch nothing today.
-b[old] : The lake changes colour with its mood. My grandfather could read it.
+b[fisher] #fisher : Clear water, shy fish. I'll catch nothing today.
+b[old] #old : The lake changes colour with its mood. My grandfather could read it.
 b : Did you drop one? | Storm, then. | It'll burn off by noon.
+a@fisher : Then you've the day off. Lucky you.
+a@old : I wish he'd taught you.
 a : Not on purpose. | I'd say so. | Pretty while it lasts.
 
 scene e5_rg_cw_river_source
 when topic=land here.region=coldwater
-a : Every drop in the Long River starts here. Think of that. | The fen folk drink our water, you know. After it's been through the cows. | They say the river's spring is under the lake, deep down.
-b[from=mirebridge] : And by the time it gets to us it's half mud. Thanks for that.
-b[scholar] : The river rises from three springs and the lake's spill. I've seen them.
+a : All the Long River runs out of here. Think of that. | The fen folk drink our water, you know. After it's been through the cows. | They say the river's spring is under the lake, deep down.
+b[from=mirebridge] #mb : And by the time it gets to us it's half mud. Thanks for that.
+b[scholar] #scholar : The river rises from three springs and the lake's spill. I've seen them.
 b : Makes you proud, a bit. | Poor fen folk. | Nobody's ever found it.
+a@mb : You're welcome. We send it with love.
+a@scholar : You would have. Scholars spoil everything.
 a : Proud of water. | Poor cows. | Nobody's tried hard enough.
 
 scene e5_rg_cw_mountains
 when topic=land here.region=coldwater
-a : The mountains go up like a wall behind the lake. | Snow on the tops already. Winter's looking down at us. | You can see the High Road climbing, switchback after switchback.
-b[carter] : Every one of those switchbacks has a name. Most of them rude.
+a : The mountains go up like a wall behind the lake. | Snow on the tops already. Winter's looking down at us. | You can see the High Road climbing, bend after bend.
+b[carter] #carter : Every one of those bends has a name. Most of them rude.
 b : Keeps the wind off. | Early this year. | Glad I'm not on it.
-a : Some of it. | Earlier every year. | Glad.
+a@carter : Tell me the rudest.
+a : Some of it. | Earlier every year. | You'd not get me up there in a cart.
 
 scene e5_rg_cw_reeds
 when topic=land here.region=coldwater
 a : The reed beds at the south end are full of ducks. | Heron stood in the shallows all morning. Not one fish. | Cut reeds for the roof today. My paws are cut to ribbons.
-b[fisher] : That heron's a better fisher than me most days.
+b[fisher] #fisher : That heron's a better fisher than me most days.
 b : Lovely. | Patient bird. | Wear gloves.
+a@fisher : It's got the legs for it.
 a : Noisy. | Hungry bird. | Reeds go through gloves.
 
 scene e5_rg_cw_travel_roads
 when topic=travel here.region=coldwater
 a : Everything comes through here. The High Road from the city, the Downs Road from Larkfield, the pass from Frosthollow. | The stables are full. Carters waiting on the pass. | Coldwater's the crossroads of the north, whatever Ridgemere thinks.
-b[carter] : Last good inn before the pass. The Glass Lantern does a fine stew.
-b[merchant] : Crossroads means coin. I'll not complain.
+b[carter] #carter : Last good inn before the pass. The stew's worth stopping for.
+b[merchant] #merchant : Crossroads means coin. I'll not complain.
 b : Busy little town. | Waiting for the snow to clear? | They don't think about us at all.
+a@carter : The stew's lake fish and pepper. Always was.
+a@merchant : You never complain. You just raise your prices.
 a : Busier every year. | Always waiting. | Their loss.
 
 scene e5_rg_cw_ice
 when topic=season here.region=coldwater here.season=winter
 a : The lake's frozen right across. You can walk to the far shore. | Heard the ice groaning in the night. Sounds like a giant snoring. | Fishing through holes in the ice. My nose froze to the line.
-b[fisher] : Thick ice, good fishing. The trout come up for the light.
-b[child] : I slid halfway across! On my tail!
+b[fisher] #fisher : Thick ice, good fishing. The trout come up for the light.
+b[young] #young : I slid halfway across! On my tail!
 b : I wouldn't. | Eerie. | Take a scarf.
+a@fisher : Then I'll bring the stool and you bring the line.
+a@young : Not without telling someone, you don't.
 a : I didn't. Not quite. | Eerie and lovely. | I did. It froze too.
 
 scene e5_rg_cw_spring_melt
 when topic=season here.region=coldwater here.season=spring|summer
 a : The snowmelt's coming down. The lake's up a foot. | Mayflies all over the water. The trout are going mad for them. | The ice went out last night. Cracked like thunder.
-b[fisher] : Best week of the year. The fish practically jump in the boat.
+b[fisher] #fisher : Best week of the year. The fish practically jump in the boat.
 b : Mind the jetty. | Lucky trout. | Spring, then.
-a : It's under. | Lucky fisher. | Spring.
+a@fisher : Then I'll come and help them in.
+a : It's under. | Lucky fisher. | At last. I'd stopped believing in it.
 
 scene e5_rg_cw_autumn
 when topic=season here.region=coldwater here.season=autumn
 a : The lake goes still in autumn. Like it's holding its breath. | The geese stop on the lake on their way south. Thousands. | Mist every morning now. You can't see the far shore till noon.
-b[fisher] : The big trout go deep. Last good fishing before the ice.
+b[fisher] #fisher : The big trout go deep. Last good fishing before the ice.
 b : Waiting for winter. | Noisy guests. | Pretty, though.
-a : Aren't we all. | Messy too. | Cold pretty.
+a@fisher : Then go and get them.
+a : Aren't we all. | Messy too. | Cold and pretty.
 
 # ===================================================================================== Oakhaven
 
 scene e5_rg_ok_warmwood
 when topic=land here.region=oakhaven
 a : The Warmwood goes on for days. Oak, then beech, then oak again. | There are glades in the deep wood where the sun comes down like a lamp. | You can walk a week under the trees and never see the sky.
-b[woodcutter] : And hazel. Everything's hazel at the edges.
-b[old] : My father found a glade once. Never found it again. Said it was full of white deer.
+b[woodcutter] #wood : And hazel. You forget the hazel. Everything at the edges is hazel.
+b[old] #old : My father found a glade once. Never found it again. Said it was full of white deer.
 b : I'd be lost in an hour. | Lovely. Where? | Folk have.
+a@wood : Nobody forgets hazel who's been switched with it.
+a@old : White deer. I'd give a lot to see that.
 a : Follow the streams. | Can't tell you. | Some never came out.
 
 scene e5_rg_ok_pigs
 when topic=land here.region=oakhaven
 a : The pigs are out under the oaks. Fat as butter on acorns. | Somebody's sow got into the fern brakes and had piglets there. Wild as anything. | Acorn pork. Nothing like it in the realm.
-b[farmer] : Mast year. The pigs'll be the fattest in years.
-b[cook] : Acorn-fed ham. Ridgemere pays double for it.
+b[farmer] #farmer : Mast year. The pigs'll be the fattest in years.
+b[cook] #cook : Acorn-fed ham. Ridgemere pays double for it.
 b : Lucky pigs. | Good luck catching them. | Best ham going.
-a : Till winter. | Nobody will. | The very best.
+a@farmer : And the bacon better.
+a@cook : And pays it gladly.
+a : Till winter. | Nobody will. | I'd fight you for the last slice.
 
 scene e5_rg_ok_old_oaks
 when topic=land here.region=oakhaven
-a : The boundary oak's lost another limb. Nobody dares touch it. | There's an oak by the old Valemere stones you can't get your arms round, not with three of us. | The old oaks creak at night. Talking, my gran said.
-b[woodcutter] : Nobody cuts the boundary oak. You'd have the whole town on you.
-b[piety=devout] : Some trees are holy. That's one.
+a : The boundary oak's lost another limb. Nobody dares touch it. | There's an oak by the standing stones you can't get your arms round, not with three of us. | The old oaks creak at night. Talking, my gran said.
+b[woodcutter] #wood : Nobody cuts the boundary oak. You'd have the whole town on you.
+b[piety=devout] #devout : Some trees are holy. That's one.
 b : Leave it be. | Older than the town. | Grans say a lot.
-a : Everyone does. | Older than the Valemeres. | Mine was usually right.
+a@wood : And the oak, too, I shouldn't wonder.
+a@devout : I touch it for luck when nobody's looking.
+a : Everyone does. | Older than the stones. | Mine was usually right.
 
 scene e5_rg_ok_beasts
 when topic=land here.region=oakhaven
 a : Boar tracks by the gate. Big one. | Heard a stag roaring in the wood last night. | The bees are swarming in the hollow beech again.
-b[guard] : Boar's dangerous. Tell the hunters, not the children.
-b[farmer] : Wild boar in my turnips. Every turnip, bitten once.
+b[guard] #guard : Tell the watch post if you see anything big. Better safe.
+b[farmer] #farmer : Something's in my turnips every night. Every turnip, bitten once.
 b : Stay off that path. | Rutting season. | Honey, then.
+a@guard : I'll tell you. I'll tell everyone.
+a@farmer : Something with manners, then. One bite each.
 a : I will. | Loud enough. | If we can get at it.
 
 scene e5_rg_ok_southway
 when topic=travel here.region=oakhaven
 a : The Southway's the only road a cart can take in the wet. The rest is bog and roots. | Three days up the Southway to the city. Longest three days there are. | The carter came in by the Riverway from Larkfield. Covered in leaves.
-b[carter] : Ruts deep enough to lose a dog in. The Southway needs stone.
-b : One road. One way out. | You'd go mad with trees. | That's the Warmwood for you.
+b[carter] #carter : Ruts deep enough to lose a piglet in. The Southway wants stone.
+b : One road worth the name. | You'd go mad with trees. | That's the Warmwood for you.
+a@carter : The Council says the same every year. Then does nothing.
 a : Suits us. | You don't, if you're from here. | Leaves in everything.
 
 scene e5_rg_ok_sky
 when topic=travel here.region=oakhaven a.from=oakhaven
+cooldown 2d
 a : I went out to the downs once. All that sky. I had to lie down. | Out of the wood the wind's everywhere. You can't hear yourself. | I could never live where there's no trees.
-b[from=larkfield] : Your woods give me the creeps. Things watching from every shadow.
+b[from=larkfield] #lf : Your woods give me the creeps. Things watching from every shadow.
 b : I'd love the sky. | Silly. It's just air. | Me neither.
+a@lf : Only the squirrels. Mostly.
 a : You can have it. | Too much air. | Trees are home.
 
 scene e5_rg_ok_autumn
 when topic=season here.region=oakhaven here.season=autumn
 a : The Warmwood's turned. Red, gold, brown. It hurts to look at. | Acorns falling like hail on the roofs. | The foragers are coming back with baskets of mushrooms.
-b[child] : I collected a hundred acorns! For the pigs!
+b[young] #young : I collected a hundred acorns! For the pigs!
 b : Best sight in the realm. | Mind your head. | Wish I knew their spots.
+a@young : The pigs will love you for ever.
 a : It is. | I got one on the nose. | They'll never say.
 
 scene e5_rg_ok_spring
 when topic=season here.region=oakhaven here.season=spring|summer
 a : Bluebells under the beeches. The whole wood's gone blue. | The canopy's closed over. It's green dark under the trees now. | Wild garlic everywhere. The wood smells like supper.
-b[farmer] : Pick the leaves, not the bulbs. The bulbs feed next year.
+b[farmer] #farmer : Take the leaves and leave the bulbs. The bulbs are next year's.
 b : Lovely. | Cool, at least. | Wild garlic soup!
-a : Every year. | Cool and green. | Tonight.
+a@farmer : I know, I know. Every year you tell me.
+a : Every year, and every year I forget. | Cool and green. | Tonight.
 
 scene e5_rg_ok_winter
 when topic=season here.region=oakhaven here.season=winter
 a : The woods are bare. You can see right through them now. | Mild winter. It never snows in the Warmwood. Just drips. | Cutting season. The sawmill's loud from dawn.
-b[woodcutter] : Best time to fell. Sap's down, ground's firm.
-b[from=frosthollow] : You call this winter? I've had colder baths.
+b[woodcutter] #wood : The sawmill's had more oak this month than all summer.
+b[from=frosthollow] #fh : You call this winter? Where I grew up, this is spring.
 b : Strange to see so far. | Better than snow. | Every winter.
-a : Strange. | Much better. | Louder each year.
+a@wood : And every plank of it spoken for.
+a@fh : Then you'll not want to borrow my cloak.
+a : You can see how small the town is. | Much better. | Louder each year.
 
 # ===================================================================================== Mirebridge
 
 scene e5_rg_mb_fens
 when topic=land here.region=mirebridge
 a : The fens go on forever. Flat and grey and full of birds. | Somebody stepped off the causeway yesterday. Mud to the hips. | You can't trust the ground here. Solid one day, soup the next.
-b[fisher] : Know the channels and the fen'll feed you. Don't, and it'll eat you.
-b[from=mirebridge] : The fen's honest. It tells you where it's soft, if you look.
+b[fisher] #fisher : Know the channels and the fen'll feed you. Don't, and it'll eat you.
+b[from=mirebridge] #mb : The fen's honest. It tells you where it's soft, if you look.
 b : Lovely, in its way. | Did they get out? | That's the fens.
+a@fisher : It's tried to eat me twice.
+a@mb : I look. It still lies to me.
 a : In a damp way. | Lost a boot. | That's home.
 
 scene e5_rg_mb_lights
 when topic=land here.region=mirebridge here.time=dusk|night
 a : The lights are out on the fen tonight. Look, there by the alders. | Don't follow the lights. My uncle did. | Fen gas, the scholars say. Lights, I say.
-b[piety=devout] : Don't look at them. Say your prayers and look away.
-b[scholar] : Marsh gas. It catches. That's all.
+b[piety=devout] #devout : Don't look at them. Say your prayers and look away.
+b[scholar] #scholar : Marsh gas. It catches. That's all.
 b : I see them. | What happened? | Lights it is.
-a : Don't point. | Came back a week later. Never spoke of it. | Gas doesn't move like that.
+a@devout : I'm looking away. I'm looking away.
+a@scholar : Gas doesn't move like that.
+a : Don't point. | Came back a week later. Never spoke of it. | And they're moving.
 
 scene e5_rg_mb_delta
 when topic=land here.region=mirebridge
 a : Down past the town the river splits and splits till it's all delta. | Nobody goes into the Drowned Delta without a guide. Nobody comes out without one. | There are villages in the Drowned Delta, they say. Drowned ones.
-b[fisher] : The eels in the delta are as long as you are.
-b[old] : The bells. You can hear the drowned bells on still nights.
+b[fisher] #fisher : The eels in the delta are as long as you are.
+b[old] #old : The bells. You can hear the drowned bells on still nights.
 b : I'd not go. | Wise rule. | Stories.
-a : Nor me. | Very wise. | So you say.
+a@fisher : And I'm not short.
+a@old : You can't. Can you?
+a : Nor would I. | Nobody argues with it. | So you say.
 
 scene e5_rg_mb_peat
 when topic=land here.region=mirebridge
-a : Peat-cutting today. My back thinks it's a hundred. | Peat smoke over the whole town. You smell it on your fur for days. | Found a bog-oak in the peat. Black as iron. Thousands of years old.
-b[laborer] : Peat pays. Barely. But it pays.
-b[crafter] : Bog-oak? I'll buy it off you. Carves like stone.
+a : Peat-cutting today. My back thinks it's a hundred. | Peat smoke over the whole town. You smell it on your fur for days. | Found a bog-oak in the peat. Black as iron. Older than anything.
+b[laborer] #lab : Peat pays. Barely. But it pays.
+b[crafter] #craft : Bog-oak? I'll buy it off you. Carves like stone.
 b : Rest it. | Smells like home. | What'll you do with it?
+a@lab : Barely's the word.
+a@craft : Make me an offer, then.
 a : Can't. More to cut. | It's in everything. | Sell it, I suppose.
 
 scene e5_rg_mb_roads
 when topic=travel here.region=mirebridge
 a : The Fen Road's under water again past the alders. | Nobody comes to Mirebridge by accident. | Took the Meadow Road south. Dry ground the whole way. I nearly cried.
-b[carter] : I take the Fen Road twice a month. Every time I swear it's the last.
-b[from=mirebridge] : We like it that way. Keeps the city out.
+b[carter] #carter : I take the Fen Road twice a month. Every time I swear it's the last.
+b[from=mirebridge] #mb : We like it that way. Keeps the city out.
 b : Again? | Who'd come on purpose? | Dry ground. Imagine.
-a : Again. | Lost souls, mostly. | Strange feeling.
+a@carter : And every time you come back.
+a@mb : And the tax-men.
+a : Third time this season. | Lost souls, mostly. | Strange feeling.
 
 scene e5_rg_mb_summer
 when topic=season here.region=mirebridge here.season=summer|spring
 a : Midges. Clouds of them. I'm eaten alive. | The fen's in flower. Yellow flags everywhere. | Warm and wet and humming. The fens in summer.
-b[healer] : Bog myrtle. Rub it in your fur. Keeps them off.
+b[healer] #healer : Bog myrtle. Rub it in your fur. Keeps them off.
 b : Smoke them out. | Pretty, for once. | And smelling.
-a : I'll smell like a bog. | For once. | Always smelling.
+a@healer : I'll smell like a bog. I suppose I already do.
+a : I'd smoke myself out first. | For once. | Always smelling.
 
 scene e5_rg_mb_autumn
-when topic=season here.region=mirebridge here.season=autumn|winter
+when topic=season here.region=mirebridge here.season=autumn
 a : The eels are running. Every trap in the channels is full. | Fog every morning. Rang the mist bell three times today. | The river's up. The causeways are under at high water.
-b[fisher] : Best eel run in years. Smoke them, salt them, sell them.
-b[priest] : The mist bell's rung itself hoarse this season.
+b[fisher] #fisher : Best eel run in years. Smoke them, salt them, sell them.
+b[priest] #priest : The mist bell's rung itself hoarse this season.
 b : Eel pie, then. | Can't see your own tail. | Stay in, then.
+a@fisher : Eat a few, while you're at it.
+a@priest : Better hoarse than somebody lost.
 a : Every night till spring. | Or anyone's. | Can't. Work.
 
 scene e5_rg_mb_reeds
 when topic=season here.region=mirebridge here.season=winter
-a : Reed-cutting. Standing in ice water up to my knees. | The reeds are bundled for thatch. Half of Ridgemere's roofs come from here. | Winter on the fen. Nothing moves but the herons.
-b[laborer] : Good reed money this year. Ridgemere's roofing.
+a : Reed-cutting. Standing in ice water up to my knees. | The reeds are bundled for thatch. Half the thatch in the realm comes out of here. | Winter on the fen. Nothing moves but the herons.
+b[laborer] #lab : Good reed money this year. Everyone's re-thatching.
 b : Mad work. | Good to know. | And us.
-a : Madness. | Their roofs leak anyway. | Barely.
+a@lab : Then I'll buy my boots back off the pawnbroker.
+a : Mad, and cold with it. | Their roofs leak anyway. | Barely.
 
 # ===================================================================================== Larkfield
 
 scene e5_rg_lf_downs
 when topic=land here.region=larkfield
 a : You can walk the downs all day and never see a wall. Just grass and sky. | The wind on the High Downs never stops. You lean into it. | Sheep everywhere. Like clouds that fell.
-b[herder] : Short turf, thyme in it. That's why the mutton's so sweet.
-b[from=oakhaven] : All this sky. I don't know where to hide.
+b[herder] #herder : Short turf, thyme in it. That's why the mutton's so sweet.
+b[from=oakhaven] #oak : All this sky. I don't know where to hide.
 b : Lovely country. | Bracing. | They're stupid clouds.
-a : The best. | Very. | But woolly.
+a@herder : And the shepherds so smug.
+a@oak : You don't. That's the beauty of it.
+a : The best. | You fall over when it stops. | But woolly.
 
 scene e5_rg_lf_chalk
 when topic=land here.region=larkfield
 a : The chalk wolf on the hill needs scouring again. The grass is creeping in. | Every spade turns up chalk and flint. | The barrows on the ridge are older than anything.
-b[old] : We scoured the chalk wolf every seventh summer when I was young. Whole town, with buckets.
-b[farmer] : Flints break ploughshares. Chalk breaks backs.
+b[old] #old : We scoured the chalk wolf every seventh summer when I was young. Whole town, with buckets.
+b[farmer] #farmer : Flints break ploughshares. Chalk breaks backs.
 b : Somebody should. | That's the downs. | Leave them in peace.
+a@old : Then let's do it again. With buckets.
+a@farmer : And the downs break farmers.
 a : We should. | All of it. | Always.
 
 scene e5_rg_lf_lark_river
 when topic=land here.region=larkfield
 a : The Lark's low. You can wade it at the mill. | The water meadows by the Lark are flooded again. | The mill wheel's turning slow. River's tired.
-b[farmer] : Water meadows flood every winter. That's what makes the hay so good.
+b[farmer] #farmer : Water meadows flood every winter. That's what makes the hay so good.
 b : Dry year. | Grass loves it. | Rest it, then.
+a@farmer : Then let it flood.
 a : Too dry. | Ducks love it. | It never rests.
 
 scene e5_rg_lf_crossroads
 when topic=travel here.region=larkfield
-a : Every road comes to Larkfield sooner or later. The Downs Road, the Riverway, the city road. | Carters from every town in the inn tonight. Seven accents at one table. | Larkfield market's where the realm comes to haggle.
-b[carter] : Singing Lark does the best ale on any road. I plan my week round it.
-b[merchant] : If it's sold anywhere, it's sold here first.
+a : Every road comes to Larkfield sooner or later. The Downs Road, the Riverway, the South Road. | Carters from every town in the inn tonight. Seven accents at one table. | Larkfield market's where the realm comes to haggle.
+b[carter] #carter : The inn here pulls the best ale on any road. I plan my week round it.
+b[merchant] #merchant : If it's sold anywhere, it's sold here first.
 b : Busy town. | Must be loud. | And to drink.
+a@carter : And your oxen plan theirs round its trough.
+a@merchant : And dearer.
 a : Always. | Loud and lovely. | Mostly to drink.
 
 scene e5_rg_lf_drovers
 when topic=travel here.region=larkfield
 a : The drovers are taking the flocks to the city. A week on the road. | The drove road over the High Downs is older than the town. | A drover told me he walks two hundred miles a year behind sheep.
-b[herder] : Done it twice. Sheep don't want to go to the city either.
+b[herder] #herder : Done it twice. Sheep don't want to go to the city either.
 b : Long walk for mutton. | Older than the barrows? | Glad it's him.
+a@herder : Can't blame them, knowing what's at the end.
 a : Longer for the sheep. | Nearly. | And me.
 
 scene e5_rg_lf_spring
 when topic=season here.region=larkfield here.season=spring
-a : The larks are up over the downs at dawn. Singing like they'll burst. | Lambs on every slope. The downs sound like a nursery. | Gorse is in flower. The whole hill smells of coconut.
-b[herder] : Lambing. I've not slept since the new moon.
+a : The larks are up over the downs at dawn. Singing like they'll burst. | Lambs on every slope. The downs sound like a nursery. | Gorse is in flower. The whole hill smells of honey.
+b[herder] #herder : Lambing. I've not slept since the new moon.
 b : That's the town's name. | Lovely. | Prickly smell.
+a@herder : You look it. Go home.
 a : That's why. | Loud. | Prickly and sweet.
 
 scene e5_rg_lf_summer
 when topic=season here.region=larkfield here.season=summer|autumn
 a : Hay meadows are cut. The whole valley smells sweet. | Shearing at every fold. Wool carts on every road. | The downs go gold and brown by harvest. Like an old fleece.
-b[merchant] : Wool's cheap at shearing. Buy now, sell at midwinter.
-b : Lovely. | Busy time. | Pretty.
-a : Make hay. | Money time. | Dry, though.
+b[merchant] #merchant : Wool's cheap at shearing. Buy now, sell at midwinter.
+b : I could lie in it all day. | Busy time. | Pretty, in a tired way.
+a@merchant : That's why you're rich and I'm not.
+a : Then the ricks go up and the fun's over. | Money time, for some. | Like the rest of us.
 
 scene e5_rg_lf_winter
 when topic=season here.region=larkfield here.season=winter
-a : Snow on the downs. Everything white, only the barrows showing. | Frost fair's coming! Stalls on the green. | The wind off the downs cuts through any coat.
-b[herder] : I lose sheep in the drifts every winter. Dig them out, they're fine.
-b[child] : I want the hot chestnuts at the frost fair!
-b : Beautiful. | Can't wait. | Wear two.
-a : Cold, though. | Me neither. | I do.
+a : Snow on the downs. Everything white, only the barrows showing. | The mill's frozen. The wheel's grown a beard of ice. | The wind off the downs cuts through any coat.
+b[herder] #herder : I lose sheep in the drifts every winter. Dig them out, they're fine.
+b[young] #young : I made a snow-wolf on the hill! It's got a tail and everything!
+b : Beautiful. | No flour till the thaw, then. | Wear two.
+a@herder : Sheep are tougher than they look.
+a@young : Mind it doesn't follow you home.
+a : Cold, though. | We'll eat oats. | I do.
 
 # ===================================================================================== Southmeadow
 
 scene e5_rg_sm_sunfields
 when topic=land here.region=southmeadow
-a : The Sunfields go gold to the edge of the world. | You can see a wagon coming a whole day off across the Sunfields. | Best soil in the realm. Push a stick in and it sprouts.
-b[farmer] : Gold, aye, if it rains once more before harvest.
+a : The Sunfields go gold to the edge of the world. | Not a hedge for a mile across the Sunfields. The wind runs straight over. | Watch the grain move in the wind. Like water.
+b[farmer] #farmer : Gold, aye, if it rains once more before harvest.
 b : Lovely. | Flat as a table. | Lucky.
-a : Gold. | Flat and gold. | Very lucky.
+a@farmer : It'll rain. It always rains in the end.
+a : Lovely and hot. | And twice as hard to cross on foot. | Lucky? We work for it.
 
 scene e5_rg_sm_orchard_vale
 when topic=land here.region=southmeadow
 a : The Orchard Vale's all blossom. Pink and white as far as you can see. | Every slope in the Vale is apples, and then the vineyard on top. | Lay down under the apple trees and slept all afternoon.
-b[farmer] : The bees do the work. I just carry ladders.
-b[brewer] : Every apple in the Vale ends up in a cup in the end. My cup.
+b[farmer] #farmer : The bees do the work. I just carry ladders.
+b[brewer] #brewer : Every apple in the Vale ends up in a cup in the end. My cup.
 b : Lovely. | Fine country. | Lazy thing.
-a : The best. | The best. | Happy thing.
+a@farmer : And fall off them.
+a@brewer : Pour me one.
+a : Snows pink, some mornings. | Finest in the realm. | Best sleep I've had in a year.
 
 scene e5_rg_sm_drought
 when topic=land here.region=southmeadow
 a : No rain for a month. The wells are low. | The ground's cracking in the bottom field. You could lose a paw in it. | Everyone's watching the sky. Not a cloud.
-b[farmer] : Carrying water from the river. Sixty buckets a day.
-b[priest] : We'll pray for rain at chapel. Pray with us.
+b[farmer] #farmer : Carrying water up from the river. Sixty buckets a day.
+b[priest] #priest : We'll pray for rain at chapel. Pray with us.
 b : It'll come. | Careful, then. | Pray, then.
-a : It better. | I'll be careful. | Praying.
+a@farmer : Sixty, and the field drinks it all.
+a@priest : I'll be there. Most of the town will.
+a : It had better. | I lost a boot in it already. | I am.
 
 scene e5_rg_sm_meads
 when topic=land here.region=southmeadow
 a : The Southern Meads are knee-deep in flowers. | Cattle in the Meads, fat and lazy. | Down past the Meads there's nothing but grass and sky.
-b[herder] : Best grazing for cattle there is. Milk like cream.
-b : Pretty. | Lucky beasts. | And the sea, they say.
-a : Prettier than us. | Lazy beasts. | Never seen it.
+b[herder] #herder : Best grazing for cattle there is. Milk like cream.
+b : Pretty. | Lucky beasts. | And more grass.
+a@herder : Cheese like butter, then.
+a : Prettier than us. | Luckier than us. | And not a soul.
 
 scene e5_rg_sm_roads
 when topic=travel here.region=southmeadow
 a : The South Road's dust from end to end. My fur's yellow. | Nobody comes all the way down here but carters and lost folk. | Southmeadow's the end of every road. After us, just the Meads.
-b[carter] : Dust in summer, ruts in winter. Good cider at the end, though.
-b : Wash it. | And us. | And the sea.
-a : Every day. | And us. | Never seen it.
+b[carter] #carter : Dust in summer, ruts in winter. Good cider at the end, though.
+b : Wash it. | And us. | And then nothing.
+a@carter : That's why you come.
+a : Every day. | We're lost, are we? | Suits me.
 
 scene e5_rg_sm_summer
 when topic=season here.region=southmeadow here.season=summer
 a : Harvest in this heat. We start at dawn and stop at noon. | The grain's ripe. Gold and rattling. | Too hot to work, too hot to sleep, too hot to talk.
-b[farmer] : Every hand in the fields. Even the priest's got a scythe.
+b[farmer] #farmer : Every paw in the fields. Even the priest's got a scythe.
 b : Sleep under a hedge. | Good year? | Then don't.
+a@farmer : Bless the priest.
 a : We all do. | Best in years. | Won't.
 
 scene e5_rg_sm_autumn
 when topic=season here.region=southmeadow here.season=autumn
 a : The Cider House is working day and night. The whole town smells of apples. | Grape harvest on the slopes. Purple paws everywhere. | Apples in every loft. We're sleeping on apples.
-b[brewer] : The press runs till midnight. Best crop in years.
-b[child] : I ate so many grapes I'm purple inside!
+b[brewer] #brewer : The press runs till midnight. Best crop in years.
+b[young] #young : I ate so many grapes I'm purple inside!
 b : Lovely smell. | Messy work. | Sweet dreams.
-a : Lovely. | Sticky. | Sticky dreams.
+a@brewer : Then save me a jug of it.
+a@young : You'll be purple outside by morning.
+a : I could live on it. | Sticky. | Lumpy ones.
 
 scene e5_rg_sm_winter
 when topic=season here.region=southmeadow here.season=winter|spring
 a : Mild again. We never get snow down here. Just rain. | Pruning the orchards. Every tree, every branch. | Blossom's coming early. Pray for no frost.
-b[from=frosthollow] : You call this winter? I could sleep outside.
-b[farmer] : Prune in winter, pick in autumn. Never the other way round.
+b[from=frosthollow] #fh : This is winter? I could sleep outside in this.
+b[farmer] #farmer : Prune in winter, pick in autumn. Never the other way round.
 b : Lucky south. | Hard work. | Fingers crossed.
-a : Lucky us. | Endless. | Tails crossed.
+a@fh : Please don't. The neighbours will talk.
+a@farmer : You say that every winter.
+a : We are. | Endless. | Tails crossed.

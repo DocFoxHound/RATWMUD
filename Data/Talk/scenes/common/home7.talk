@@ -1,194 +1,224 @@
 # The house (talk.home, doc 62 phase 7): roofs and damp, chores and repairs, the hearth and the woodpile, lodgers and
 # landlords, rent, moving house, the Heights' grand houses and the Sump's crowded rooms, the neighbours, hens and the
 # garden, and the house you grew up in. Broad scenes first, then by season, quarter, region, trade and standing.
+#
+# Only those with a roof talk about theirs: a scene about a's own house tests a.homeless=no in `when` (or, where `when`
+# already tests something, in the opener's tag), so it stands level with the house rules in food_home7.talk. A
+# speaker-tagged reply marks the scene and has its own close (a@mark).
 
 # ---------------------------------------------------------------- Anyone, any day
 
 scene e1_home_roof_leak
-when topic=home
+when topic=home a.homeless=no
 a : The roof's leaking again. Right over the bed. | I've a bucket in the kitchen catching the drips. | Found a slate in the yard this morning. It was mine.
-b[job=crafter|laborer] : I'll come up and have a look. Bring the ladder round.
-b : Move the bed. | Better than catching them in your boots. | That's how it starts.
-a : I've moved it twice. The drip follows me. | Only just. | That's what I'm afraid of.
-b?[humour=dry] : At least you know when it's raining.
+b[job=crafter|laborer] #help : I'll come up and have a look. Bring the ladder round.
+b #plain : Move the bed. | Better than catching them in your boots. | That's how it starts.
+a@help : Would you? There'll be a pie in it.
+a@plain : I've moved it twice. The drip follows me. | Only just. | That's what I'm afraid of.
+b?@plain[humour=dry] : At least you know when it's raining.
 
 scene e1_home_door_sticks
-when topic=home
+when topic=home a.homeless=no
 a : My door sticks. I have to put my shoulder to it every morning. | The front door swells in the wet and won't shut. | The latch fell off in my paw.
-b[job=crafter] : Plane the bottom edge. Ten minutes' work. I'll lend you a plane.
-b : Lean on it harder. | Mine too. Every winter. | Nail it back on.
-a : I'll go through it one day. | We should start a club. | With what? I've no nails.
+b[job=crafter] #help : Plane the bottom edge. Half a morning's work. I'll lend you a plane.
+b #plain : Lean on it harder. | Mine too. Every winter. | Nail it back on.
+a@help : Lend me your paws with it and I'll owe you.
+a@plain : I'll go through it one day. | We should start a club. | With what? I've no nails.
 
 scene e1_home_mice
-when topic=home
+when topic=home a.homeless=no
 a : Mice in the larder. They've had the oats. | I've a mouse that comes and sits by the fire with me. | Something's living in my walls. It scratches all night.
-b[young] : Can I catch it? I'm good at catching.
-b[old] : We'd have eaten them, in a hard winter. Don't make that face.
-b : Get a trap. Or a cat. | You've named it, haven't you. | A mouse, or a rat?
-a : The cat's scared of them. | Barley. Don't judge me. | I'm not going to look.
+b[young] #pup : Can I catch it? I'm good at catching.
+b[old] #old : We'd have eaten them, in a hard winter. Don't make that face.
+b #plain : Get a trap. Or a cat. | You've named it, haven't you. | A mouse, or a rat?
+a@pup : If you can catch it, you can keep it.
+a@old : I'm making the face.
+a@plain : The cat's scared of them. | Barley. Don't judge me. | I'm not going to look.
 
 scene e1_home_hearth_smokes
-when topic=home
+when topic=home a.homeless=no
 a : My chimney smokes. I'm cured like a ham. | The fire won't draw. Fills the room every time. | Birds have nested in my chimney, I think.
-b[job=crafter|laborer] : It wants sweeping. Or a taller pot. I'll look, if you like.
-b : Sweep it. | Damp wood? | Light it and they'll move.
-a : I'd sweep it, if I fit. | Dry as bone. | That seems cruel.
-b?[humour=merry] : You smell lovely, though. Like a winter evening.
+b[job=crafter|laborer] #help : It wants sweeping. Or a taller pot. I'll look, if you like.
+b #plain : Sweep it. | Damp wood? | Light it and they'll move.
+a@help : I'd like that. My eyes would like it more.
+a@plain : I'd sweep it, if I fit. | Dry as bone. | That seems cruel.
+b?@plain[humour=merry] : You smell lovely, though. Like a winter evening.
 
 scene e1_home_chores
-when topic=home
+when topic=home a.homeless=no
 a : I spent the whole morning scrubbing the floor. | Washday. My arms are dead. | There's always one more thing to sweep.
-b[job=servant] : Try doing it for a whole house and then your own.
-b : It'll be dirty by tonight. | Mine too. | Never ends.
-a : Don't say that. | Wrung out like the sheets. | Never.
+b[job=servant] #servant : Try doing it for a whole house and then your own.
+b #plain : It'll be dirty by tonight. | Mine too. | Never ends.
+a@servant : I'd rather not.
+a@plain : Don't say that. | Wrung out like the sheets. | Never.
 
 scene e1_home_firewood
-when topic=home here.season=autumn|winter
+when topic=home a.homeless=no here.season=autumn|winter
 a : The woodpile's going down faster than I like. | I've split wood till I can't feel my paws. | Somebody's been taking from my woodpile. I counted.
-b[job=woodcutter] : I've a cord seasoned. Fair price, for you.
-b[wealth=poor|destitute] : I've been burning furniture. Don't tell my mother.
-b : It always does, this time of year. | Good for the shoulders. | You counted?
-a : Every year I think I've enough. | Ruinous for the back. | Every stick.
+b[job=woodcutter] #cutter : I've a cord seasoned. Fair price, for you.
+b[wealth=poor|destitute] #poor : I've been burning furniture. Don't tell my mother.
+b #plain : It always does, this time of year. | Good for the shoulders. | You counted?
+a@cutter : Fair, for me? I'll hold you to that.
+a@poor : Not the good chair, I hope.
+a@plain : Every year I think I've enough. | Ruinous for the back. | Every stick.
 
 scene e1_home_candles
-when topic=home here.time=dusk|night
-a : Down to my last candle stub. | Tallow candles stink but I can't afford wax. | I sat in the dark last night to save the candle.
-b[wealth=rich] : We burn wax. Is tallow really so bad?
-b : Bed early, then. | They do stink. | The fire gives enough light.
-a : Bed at dusk like a hen. | Like burnt mutton. | If you squint.
+when topic=home a.homeless=no here.time=dusk|night
+a[wealth!=rich] : Down to my last candle stub. | Tallow candles stink but I can't afford wax. | I sat in the dark last night to save the candle.
+b[wealth=rich] #rich : We burn wax. Is tallow really so bad?
+b #plain : Bed early, then. | They do stink. | The fire gives enough light.
+a@rich : Smell my coat and see.
+a@plain : Bed at dusk like a hen. | Like burnt mutton. | If you squint.
 
 scene e1_home_bed
-when topic=home
+when topic=home a.homeless=no
 a : My bed's a sack of straw and it's lovely. | I've a new mattress. Feathers! I'll never get up. | The bed creaks so loud the neighbours know when I turn over.
-b[wealth=poor|destitute] : I'd take straw. I've a blanket on the floor.
-b : Straw's honest. | Feathers! Where'd you get them? | Turn over less.
-a : It pricks a bit. | Saved since spring. | I'll try.
+b[wealth=poor|destitute] #poor : I'd take straw. I've a blanket on the floor.
+b #plain : Straw's honest. | Feathers! Where'd you get them? | Turn over less.
+a@poor : There's straw going at the stables. I'll ask for you.
+a@plain : It pricks a bit. | Saved since spring. | I'll try.
 
 scene e1_home_lost_thing
-when topic=home
+when topic=home a.homeless=no
 a : I can't find my good knife. It's somewhere in the house. | Have you seen my other boot? I left it by the door. | Something's gone missing every day this week.
-b[young] : I didn't take it. I mean. What knife?
-b : It'll turn up when you stop looking. | The dog? | You've a ghost.
-a : Then I'll never stop. | I don't have a dog. | A ghost with my boot.
+b[young] #pup : I didn't take it. Whatever it is. I wasn't even there.
+b #plain : It'll turn up when you stop looking. | The cat? | You've a ghost.
+a@pup : ... Turn out your pockets.
+a@plain : Then I'll never stop. | I don't have a cat. | A ghost with my boot.
 
 scene e1_home_fixing_up
-when topic=home
+when topic=home a.homeless=no
 a : I've whitewashed the front. It looks like a new house. | Mended the fence myself. It's crooked but it's mine. | I've hung a shelf. It's only fallen down once.
-b[job=crafter] : Crooked fence is a fence. Mostly.
-b : Very smart. | That's the spirit. | Once is fine.
-a : Till it rains. | Crooked's a style. | Once so far.
+b[job=crafter] #crafter : Not bad. For somebody who isn't me.
+b #plain : Very smart. | That's the spirit. | Once is fine.
+a@crafter : I'll take that.
+a@plain : Till it rains. | Crooked's a style. | Once so far.
 
 scene e1_home_dream_house
-when topic=home
+when topic=home a.stage=adult|old
 a : If I had the money I'd have a house with two hearths. | One day I'll have a garden with a pear tree. | I'd like a room nobody else goes in. Just mine.
-b[wealth=rich] : Two hearths is twice the firewood. You'd regret it.
-b[drive=restless] : I'd have a house on wheels. Never the same view twice.
-b : Two! What luxury. | A pear tree's a good dream. | Wouldn't we all.
-a : One for each paw. | Pears and a bench. | A door with a lock.
+b[wealth=rich] #rich : Big houses are cold houses. Take it from me.
+b[drive=restless] #restless : I'd have a house on wheels. Never the same view twice.
+b #plain : Two! What luxury. | A pear tree's a good dream. | Wouldn't we all.
+a@rich : I'll risk it.
+a@restless : And never the same neighbours. Tempting.
+a@plain : One for each paw. | Pears and a bench. | A door with a lock.
 
 scene e1_home_window
-when topic=home
+when topic=home a.homeless=no
 a : I've glass in my window now. Real glass. | The shutter's broken and the wind gets in all night. | I sit in the window and watch the street. It's my one pleasure.
-b[wealth=poor|destitute] : Glass. I've oiled cloth, and that's torn.
-b : Very grand! | Stuff a sack in it. | It's a good pleasure.
-a : I keep breathing on it to see it fog. | I did. It blew out. | Better than most.
+b[wealth=poor|destitute] #poor : I've oiled cloth in mine, and that's torn.
+b #plain : Very grand! | Stuff a sack in it. | It's a good pleasure.
+a@poor : Windows. There's always something.
+a@plain : I keep breathing on it to see it fog. | I did. It blew out. | Better than most.
 
 scene e1_home_spring_clean
-when topic=home here.season=spring
+when topic=home a.homeless=no here.season=spring
 a : Turned the whole house out to air. Took all day. | Beat the rugs till my arm dropped off. | You wouldn't believe the fur under the bed. Half a wolf.
-b[stage=old] : My mother did it every spring. You'd find things you'd lost for years.
-b : Smells better already, I bet. | Good for the soul. | Ha! Shedding season.
-a : It smells of rugs. | And the rugs. | Enough to knit a pup.
+b[stage=old] #old : My mother did it every spring. You'd find things you'd lost for years.
+b #plain : Smells better already, I bet. | Good for the soul. | Ha! Shedding season.
+a@old : I found a spoon I'd blamed on the neighbours.
+a@plain : It smells of rugs. | And the rugs. | Enough to knit a pup.
 
 scene e1_home_summer_flies
-when topic=home here.season=summer
+when topic=home a.homeless=no here.season=summer
 a : Flies in every room. I'm swatting in my sleep. | The house is like an oven. I slept in the yard. | Something's died under the floor. I can smell it.
-b[young] : I slept on the roof! It was brilliant.
-b : Hang some mint. | Me too, near enough. | Gods. Find it quick.
-a : Mint and swearing. | The hens didn't like it. | I'll be pulling boards.
+b[young] #pup : I like summer. Even the flies.
+b #plain : Hang some mint. | Me too, near enough. | Gods. Find it quick.
+a@pup : You would.
+a@plain : Mint and swearing. | The hens didn't like it. | I'll be pulling boards.
 
 scene e1_home_winter_cold
-when topic=home here.season=winter
+when topic=home a.homeless=no here.season=winter
 a : There was ice inside the window this morning. | I sleep in my coat. All of it. | The water froze in the jug. Inside!
-b[from=frosthollow] : Call that cold? Up in the Fangs the walls sweat ice.
-b[wealth=rich] : Have you tried a warming pan?
-b : Mine too. | Very wise. | That's bitter.
-a : Pretty, at least. | Boots too. | Bitter's the word.
+b[from=frosthollow] #frost : Call that cold? Up in the Whitefangs the walls sweat ice.
+b[wealth=rich] #rich : Have you tried a warming pan?
+b #plain : Mine too. | Very wise. | That's bitter.
+a@frost : Then I'll stay down here, thank you.
+a@rich : A warming pan. I'll tell the jug.
+a@plain : Pretty, at least. | Boots too. | Bitter's the word.
 
 scene e1_home_autumn_leaves
-when topic=home here.season=autumn
+when topic=home a.homeless=no here.season=autumn
 a : The gutters are full of leaves. | Cleared the gutters. Fell off the ladder. | Got the house ready for winter. Nearly.
-b[job=laborer] : I'll do yours for a penny. Gutters are my life.
-b : Clear them before the rain. | Badly? | Nearly's good.
-a : The rain's tomorrow. | Only my pride. | Nearly's what I always manage.
+b[job=laborer] #help : I'll do yours for a penny. Gutters are my life.
+b #plain : Clear them before the rain. | Badly? | Nearly's good.
+a@help : A penny's cheap for a neck. Done.
+a@plain : The rain's tomorrow. | Only my pride. | Nearly's what I always manage.
 
 # ---------------------------------------------------------------- Rent, landlords, lodgers, moving
 
 scene e1_home_rent_up
-when topic=home
-a : The landlord's put the rent up again. | Rent's due on Fiveday and I'm short. | I pay half my wage for one room.
-b[wealth=rich] : We could do with raising ours, honestly.
-b[wealth=poor|destitute] : Mine too. They know we've nowhere else.
-b : Again? | How short? | Half!
-a : Third time this year. | A week's worth. | And the roof leaks.
+when topic=home a.homeless=no
+a[wealth=poor|comfortable] : The landlord's put the rent up again. | Rent's due on Marketday and I'm short. | I pay half my wage for one room.
+b[wealth=rich] #rich : We could do with raising ours, honestly.
+b[wealth=poor|destitute] #poor : Mine too. They know we've nowhere else.
+b #plain : Again? | How short? | Half!
+a@rich : Don't you dare.
+a@poor : Nowhere at all.
+a@plain : Third time this year. | A week's worth. | And the roof leaks.
 
 scene e1_home_landlord
-when topic=home
-a : My landlord came round to look at the damp. He sniffed it and left. | Landlord says the cracks are character. | I've not seen my landlord in a year. Just his collector.
+when topic=home a.homeless=no
+a[wealth!=rich] : My landlord came round to look at the damp. He sniffed it and left. | Landlord says the cracks are character. | I've not seen my landlord in a year. Just his collector.
 b[wealth=rich] #landlord : I own a few houses. I always fix the roofs. Mostly.
-b : A sniff's not a repair. | Character! | That's how they like it.
+b #plain : A sniff's not a repair. | Character! | That's how they like it.
 a@landlord : You should come and sniff mine.
-a : He thinks it is. | That's what I said. | The collector's worse.
+a@plain : He thinks it is. | That's what I said. | The collector's worse.
 
 scene e1_home_lodger
-when topic=home
-a : I've taken a lodger. Snores like a bellows. | My lodger eats like a horse and pays like a mouse. | The lodger's lovely. Cooks, cleans, pays on time. I'm suspicious.
+when topic=home a.homeless=no
+a[wealth=comfortable|rich] : I've taken a lodger. Snores like a bellows. | My lodger eats like a horse and pays like a mouse. | The lodger's lovely. Cooks, cleans, pays on time. I'm suspicious.
 b : Charge more. | Throw him out. | Marry her.
 a : He'd snore louder. | He'd starve. | I might.
 
 scene e1_home_moving
-when topic=home
+when topic=home a.homeless=no
 a : We're moving across town. Everything in a cart. | I've found a new room. Two windows! | Moving house is worse than a funeral.
-b[drive=restless] : I'd move every year if I could.
-b[stage=old] : I've lived in my house sixty years. They'll carry me out of it.
-b : Need a paw? | Two! You're rising. | Better than staying somewhere bad.
-a : Bring your back. | Two whole windows. | Only just.
+b[drive=restless] #restless : I'd move every year if I could.
+b[stage=old] #old : I've lived in my house sixty years. They'll carry me out of it.
+b #plain : Need a paw? | Two! You're rising. | Better than staying somewhere bad.
+a@restless : You'd wear the cart out.
+a@old : Not for a good long while, I hope.
+a@plain : Bring your back. | Two whole windows. | Only just.
 
 scene e1_home_new_house
-when topic=home
+when topic=home a.homeless=no
 a : I've finally a house of my own. My own door. | First night in the new place. Didn't sleep a wink. | The new house creaks differently. I keep waking.
-b[warmth=warm] : I'll bring bread and salt for the threshold. For luck.
-b : Your own door! | New houses talk. | You'll learn its voice.
-a : I keep opening it, just to shut it. | Mine wouldn't shut up. | I hope so.
+b[warmth=warm] #warm : I'll bring bread and salt for the threshold. For luck.
+b #plain : Your own door! | New houses talk. | You'll learn its voice.
+a@warm : Come and cross it, then. You'll be the first.
+a@plain : I keep opening it, just to shut it. | Mine wouldn't shut up. | I hope so.
 
 scene e1_home_sharing_room
-when topic=home
-a : Six of us in two rooms. You learn to sleep anywhere. | My sister's moved in with her pups. It's noisy. | I share a bed with my brother. He's a kicker.
-b[young] : My brother sleeps sideways. On purpose.
-b : Six! | Pups are noisy. | Tie his feet.
-a : Seven, Fiveday. Cousin's coming. | They're lovely. And noisy. | He'd chew through it.
+when topic=home a.homeless=no
+a[wealth=poor|destitute] : Six of us in two rooms. You learn to sleep anywhere. | My cousin's moved in with her pups. It's noisy. | Four of us to a bed. Somebody always kicks.
+b[young] #pup : I sleep sideways. On purpose. Then there's more room.
+b #plain : Six! | Pups are noisy. | Tie their feet.
+a@pup : Clever. I might try that.
+a@plain : Seven, come Marketday. Another cousin. | They're lovely. And noisy. | They'd chew through it.
 
 # ---------------------------------------------------------------- Neighbours
 
 scene e1_home_neighbour_noise
-when topic=home
-a : My neighbours were shouting till the moon was down. | Somebody next door practises a pipe. Badly. | The family upstairs walk like they're in boots. Because they are.
+when topic=home a.homeless=no
+a[pair.neighbours=no] : My neighbours were shouting till the moon was down. | Somebody next door practises a pipe. Badly. | The family upstairs walk like they're in boots. Because they are.
 b : Bang on the wall. | Give them time. | Take your boots to theirs.
 a : I banged. They banged back. | They've had a year. | I'm not that brave.
 
 scene e1_home_neighbour_howl
-when topic=home here.time=night
-a : The old one next door howls at the moon. Every full moon. | Somebody on my street was singing at midnight. | My neighbour talks in her sleep. Through the wall.
-b[stage=old] : Let her howl. You'll do it too, at her age.
-b : Howl back. | Was it good? | What does she say?
-a : I did once. She liked it. | It was terrible. | Mostly my name. I'm worried.
+when topic=home a.homeless=no here.time=night
+a[pair.neighbours=no] : The old one next door howls at the moon. Every full moon. | Somebody on my street was singing at midnight. | My neighbour talks in her sleep. Through the wall.
+b[stage=old] #old : Leave them be. The old and the night belong to each other.
+b #plain : Howl back. | Was it good? | What does she say?
+a@old : Easy said. You sleep.
+a@plain : I did once. She liked it. | It was terrible. | Mostly my name. I'm worried.
 
 scene e1_home_neighbours_pair
 when topic=home pair.neighbours=yes
-a : Your hens were in my garden again. | Was that your door banging at midnight? | Your lad's ball came over my wall. I've kept it.
-b : They like your cabbages. | The wind. Honestly. | Fair enough.
-a : So do I. | The wind sings very like you. | He can ask nicely.
-b?[warmth=warm] : I'll bring you eggs for the cabbages.
+a : Your hens were in my garden again. | Was that your door banging at midnight? | Your washing blew into my yard. I've folded it.
+b : They like your cabbages. | The wind. Honestly. | Fair enough. Thank you.
+a : So do I. | The wind sings very like you. | Your smalls are very colourful.
 
 scene e1_home_neighbour_borrow
 when topic=home pair.neighbours=yes
@@ -198,60 +228,67 @@ a : I'll bring both back. | The roof again. | You have. It's by your door.
 b : That's what you said last time. | It's always the roof. | So it is. Sorry.
 
 scene e1_home_neighbour_gossip
-when topic=home
+when topic=home a.homeless=no
 a : The house across from me has had the same curtains shut for a week. | There's a new family moving into the corner house. | Somebody's painted their door red on our street. Red!
-b[honesty=sly] : I know why. I'll tell you if you swear to say nothing.
-b : Ill, maybe. | Who are they? | Bold.
-a : I knocked. Nobody came. | Larkfield folk, I think. | Showing off.
+b[honesty=sly] #sly : I know a thing or two about that. Come closer.
+b #plain : Ill, maybe. | Who are they? | Bold.
+a@sly : Go on, then. I'm listening.
+a@plain : I knocked. Nobody came. | Larkfield folk, I think. | Showing off.
 
 # ---------------------------------------------------------------- Hens, the garden, the yard
 
 scene e1_home_hens
-when topic=home
+when topic=home a.homeless=no
 a : My hens have stopped laying. | One of the hens has gone broody and pecks if you come near. | I lost a hen last night. Fox, I think. Or a neighbour.
-b[job=farmer] : Days drawing in, that's all. They'll lay again come spring.
-b[stage=young] : I'll get the eggs for you! They don't peck me.
-b : Feed them more. | Leave her be. | Foxes are the worst.
-a : They'll eat me out of house. | She's welcome to it. | Neighbours are worse.
-b?[humour=dry] : Can't say I blame the fox. I've thought about your hens myself.
+b[job=farmer] #farm : Hens are hens. Feed them well and leave them be.
+b[stage=young] #pup : Can I hold one? I'll be gentle.
+b #plain : Feed them more. | Leave her be. | Foxes are the worst.
+a@farm : That's all I do.
+a@pup : If you can catch one.
+a@plain : They'll eat me out of house. | She's welcome to it. | Neighbours are worse.
 
 scene e1_home_garden
-when topic=home here.season=spring|summer
+when topic=home a.homeless=no here.season=spring|summer
 a : My beans are up. Look at them. | The slugs are eating my lettuces. | Planted onions all along the wall.
-b[job=farmer] : Pinch the tops out. They'll bush.
-b : Good beans. | Salt on the slugs. | You'll be popular.
-a : I'm proud of them. | Feels cruel. | I'll be eating onions till midwinter.
+b[job=farmer] #farm : Water at dusk, not noon. That's the whole trick.
+b #plain : Good beans. | Salt on the slugs. | You'll be popular.
+a@farm : Dusk. I'll remember.
+a@plain : I'm proud of them. | Feels cruel. | I'll be eating onions till midwinter.
 
 scene e1_home_herb_pot
-when topic=home
+when topic=home a.homeless=no
 a : I've a pot of thyme on the windowsill. My whole garden. | Grew one cabbage this year. One. | My mint has taken over the yard.
-b[job=healer] : Grow sage too. You'll thank me in winter.
-b : Every garden starts somewhere. | Make it count. | Mint always wins.
-a : It smells grand. | I'm saving it for Restday. | It's coming in the door.
+b[job=healer] #healer : Grow sage too. You'll thank me in winter.
+b #plain : Every garden starts somewhere. | Make it count. | Mint always wins.
+a@healer : Sage. I'll find a pot.
+a@plain : It smells grand. | I'm saving it for Restday. | It's coming in the door.
 
 # ---------------------------------------------------------------- Childhood homes, homesickness
 
 scene e1_home_childhood
-when topic=home
+when topic=home a.stage=adult|old
 a : I walked past the house I grew up in. Someone's painted it blue. | I still dream of the house I was a pup in. | My mother's kitchen. I can still smell it.
-b[stage=old] : Mine's gone. Pulled down for a warehouse. Still dream of it.
-b : Blue! | Funny how they stay with you. | What did it smell of?
-a : It was always green. | It's always the stairs. | Bread and wet dog.
-b : Doesn't seem right. | Mine's the yard. | Sounds like home.
+b[stage=old] #old : Mine's gone. Pulled down for a warehouse. Still dream of it.
+b #plain : Blue! | Funny how they stay with you. | What did it smell of?
+a@old : That's a hard thing, a house gone.
+a@plain : It was always green. | It's always the stairs. | Bread and wet fur.
+b?@plain : Doesn't seem right. | Mine's the yard. | Sounds like home.
 
 scene e1_home_homesick
-when topic=home a.from!=ridgemere here.region=ridgemere
-a : The city's never felt like home. Too many walls. | I miss being able to see the sky from my bed. | I'd go back home tomorrow if there was work.
-b[from=ridgemere] : Give it twenty years. Then you'll miss the rain when you leave.
-b : It takes a while. | Get a room on the hill. | Why not go?
-a : Twenty? | On my pay? | No work back home.
+when topic=home a.from!=ridgemere
+a[here.region=ridgemere] : The city's never felt like home. Too many walls. | I miss being able to see the sky from my bed. | I'd go back home tomorrow if there was work.
+b[from=ridgemere] #city : Give it twenty years. Then you'll miss the rain when you leave.
+b #plain : It takes a while. | Get a room on the hill. | Why not go?
+a@city : Twenty years. Gods help me.
+a@plain : It's taken a while already. | On my pay? | No work back home.
 
 scene e1_home_homesick_town
-when topic=home a.from=ridgemere here.region=towns
-a : I miss the city. Is that strange? | It's so quiet here I can hear myself think. I hate it. | Back home there was always somebody about.
-b[from=ridgemere] : The noise. I miss the noise. Who'd have thought.
-b : Bit strange. | Thinking's good for you. | There's somebody here. Me.
-a : The rain, even. | Not for me. | You'll do.
+when topic=home a.from=ridgemere
+a[here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow] : I miss the city. Is that strange? | It's so quiet here I can hear myself think. I hate it. | Back home there was always somebody about.
+b[from=ridgemere] #city : The noise. I miss the noise. Who'd have thought.
+b #plain : Bit strange. | Thinking's good for you. | There's somebody here. Me.
+a@city : The rain, even. I miss the rain.
+a@plain : The rain, even. | Not for me. | You'll do.
 
 # ---------------------------------------------------------------- Family at home
 
@@ -265,137 +302,154 @@ b : I'll move them. Tomorrow. | That's why it's not fixed. | No.
 scene e1_home_family_chores
 when topic=home pair.band=family
 a : Whose turn is it to fetch the water? | You never put anything back where it goes. | Mother wants the yard swept.
-b[stage=young] : Not mine! I did it yesterday! I did!
-b : Yours. | There's no where it goes. | Mother always wants the yard swept.
-a : It's never mine, somehow. | There is. It's called the shelf. | So go sweep it.
+b[stage=young] #pup : Not me! Whatever it is, not me!
+b #plain : Yours. | There's no where it goes. | Mother always wants the yard swept.
+a@pup : It's always not you.
+a@plain : It's never mine, somehow. | There is. It's called the shelf. | So go sweep it.
 
 scene e1_home_pups_mess
-when topic=home a.parent=yes
+when topic=home a.parent=yes a.homeless=no
 a : The pups painted the wall with porridge. | Somebody chewed the leg of the table. I've three suspects. | My lot have dug up the floor of the yard.
-b[stage=old] : Wait till they're grown and gone. You'll miss the porridge.
-b[parent=yes] : Mine ate a candle. A whole candle.
-b : Clever pups. | Check their teeth. | Looking for bones?
-a : Clever, my tail. | All of them, guilty. | Looking for trouble.
+b[stage=old] #old : Wait till they're grown and gone. You'll miss the porridge.
+b[parent=yes] #parent : Mine ate a candle. A whole candle.
+b #plain : Clever pups. | Check their teeth. | Looking for bones?
+a@old : I'll miss the quiet more. I've never had any.
+a@parent : A candle! Was it tallow?
+a@plain : Clever, my tail. | All of them, guilty. | Looking for trouble.
 
 scene e1_home_spouse_named
-when topic=home a.spouse
+when topic=home a.spouse a.homeless=no
 a : #a.spouse# moved all the furniture while I was out. | #a.spouse# wants another room built. | #a.spouse# has started keeping bees in the yard.
 b : Can you find anything? | Can you afford it? | Bees!
 a : Not a thing. Not even the bed. | Not a chance. | Thousands. I'm terrified.
 
 scene e1_home_child_named
-when topic=home a.child
+when topic=home a.child a.homeless=no
 a : #a.child# has taken over the whole loft. | #a.child# brought home a stray. A stray what, I don't know yet. | #a.child# wants a room of their own. Don't we all.
 b : They grow. | Feed it and see. | Tell them to earn one.
-a : Out of it, I hope. | It eats like a horse. | Paid in chores.
+a : Out of it, I hope. | It eats like three. | Paid in chores.
 
 scene e1_home_widowed
-when topic=home a.widowed=yes
+when topic=home a.widowed=yes a.homeless=no
 a : The house is too big now. Too quiet. | I keep the other chair by the fire. Can't move it. | I talk to the house. It's that or the cat.
-b[warmth=warm] : Come for supper on Restday. Every Restday. I'll not hear no.
-b : It'll feel like home again, in time. | Leave it where it is. | Talk to me instead.
-a : Maybe. | I will. | I'll try.
+b[warmth=warm] #warm : Come for supper on Restday. Every Restday. I'll not hear no.
+b #plain : It'll feel like home again, in time. | Leave it where it is. | Talk to me instead.
+a@warm : I might. Thank you.
+a@plain : Maybe. | I will. | I'll try.
 
 # ---------------------------------------------------------------- Ridgemere's quarters
 
 scene e1_home_rm_heights
-when topic=home here.region=ridgemere a.quarter=heights
-a : The new house on the Heights has eleven rooms and I'm lost in half of them. | We've had the ballroom floor redone. It took a month. | Our neighbours on the Heights have put in a fountain. A fountain.
-b[quarter=sump] : Eleven. There's eleven in my room.
-b[quarter=heights] : A fountain's vulgar. We'll have one by spring.
-b : What do you do with eleven rooms? | A ballroom! | What for?
-a : Lose things. | We've danced in it twice. | Showing off.
+when topic=home a.quarter=heights a.homeless=no
+a[job!=servant] : The new house on the Heights has eleven rooms and I'm lost in half of them. | We've had the ballroom floor redone. It took a month. | Our neighbours on the Heights have put in a fountain. A fountain.
+b[quarter=sump] #sump : Must be nice. I share a stair with three families.
+b[quarter=heights] #heights : We're doing the same next year. One mustn't fall behind.
+b #plain : What do you do with eleven rooms? | A ballroom! | What for?
+a@sump : It is. I'm sorry. That was thoughtless.
+a@heights : One mustn't.
+a@plain : Lose things. | We've danced in it twice. | Showing off.
 
 scene e1_home_rm_sump
-when topic=home here.region=ridgemere a.quarter=sump
-a : The water came up through the floor again. We sleep on the table. | Three families to a stair in our building. | The Sump smells of the tide twice a day, like clockwork.
-b[quarter=heights] : Why don't you simply move?
-b[quarter=sump] : Ours too. The rats have the cellar.
-b : That's no life. | Cosy. | Least it's regular.
-a : It's a life. | Close, anyway. | Better than the Works' smoke.
+when topic=home a.quarter=sump a.homeless=no
+a : The water came up through the floor again. We sleep on the table. | Three families to a stair in our building. | The Sump smells of the tide twice a day, regular as a bell.
+b[quarter=heights] #heights : Why don't you simply move?
+b[quarter=sump] #sump : Ours too. The rats have the cellar.
+b #plain : That's no life. | Cosy. | Least it's regular.
+a@heights : With what?
+a@sump : The rats have everything down here.
+a@plain : It's a life. | Close, anyway. | Better than the Works' smoke.
 
 scene e1_home_rm_stairs
-when topic=home here.region=ridgemere a.quarter=harbour_hill|heights
+when topic=home a.quarter=harbour_hill|heights a.homeless=no
 a : Four flights to my door. My knees hate this city. | The view from my window's the whole Sound. Worth every step. | I carried water up the hill twice today.
-b[stage=old] : I've stopped going out. The stairs won the argument.
-b : Hills and stairs. That's Ridgemere. | Is it? | Get a lodger to do it.
-a : It's built for goats. | On a clear day. | I'd have to feed one.
+b[stage=old] #old : I've stopped going out. The stairs won the argument.
+b #plain : Hills and stairs. That's Ridgemere. | Is it? | Get a lodger to do it.
+a@old : They'll not win mine. Not yet.
+a@plain : It's built for goats. | On a clear day. | I'd have to feed one.
 
 scene e1_home_rm_wharf
-when topic=home here.region=ridgemere a.quarter=wharf|docks
+when topic=home a.quarter=wharf|docks a.homeless=no
 a : The gulls wake me before the bell. | My room's over a chandler's. Everything smells of tar. | The tide comes in under my floor. I can hear it slap.
-b[job=sailor] : Better than a hammock. A floor that stays still.
-b : Gulls are the worst. | Tar's clean, at least. | That's soothing, surely.
-a : Thieves with wings. | So am I, now. | Until it's in the room.
+b[job=sailor] #sailor : Better than a hammock. A floor that stays still.
+b #plain : Gulls are the worst. | Tar's clean, at least. | That's soothing, surely.
+a@sailor : Stays still. Mostly.
+a@plain : Thieves with wings. | So am I, now. | Until it's in the room.
 
 scene e1_home_rm_works
-when topic=home here.region=ridgemere a.quarter=works
+when topic=home a.quarter=works a.homeless=no
 a : The kilns are going all night. My walls are always warm. | Soot on everything. I wipe the table and it's black again. | My washing comes in greyer than it went out.
 b : Warm's good in winter. | Soot's the price. | Dry it inside.
 a : Murder in summer. | Too high a price. | Then it's damp and grey.
 
 scene e1_home_rm_commons
-when topic=home here.region=ridgemere a.quarter=commons|suburbs
+when topic=home a.quarter=commons|suburbs a.homeless=no
 a : Our street's all right. Nobody bothers anybody. | We've a yard. A little one. Room for hens. | Two rooms and a kitchen. I'm content.
-b[quarter=sump] : You don't know your luck.
-b : That's all you want. | Hens in the city! | That's plenty.
-a : That's what I say. | Three of them. Very proud. | Plenty, most days.
+b[quarter=sump] #sump : You don't know your luck.
+b #plain : That's all you want. | Hens in the city! | That's plenty.
+a@sump : I do. I count it every night.
+a@plain : That's what I say. | Three of them. Very proud. | Plenty, most days.
 
 scene e1_home_rm_rain
-when topic=home here.region=ridgemere here.weather=rain|storm|fog
+when topic=home a.homeless=no here.weather=rain|storm|fog
 cooldown 2d
-a : Everything I own is damp. My bread's damp. | My coat's never been dry since I came to this city. | The walls are running. Running!
-b[from=ridgemere] : You stop noticing. Then you go somewhere dry and you miss it.
-b : It's Ridgemere. | Hang it by the fire. | Mine too.
-a : It's a puddle with roofs. | It drips by the fire. | Rain, inside and out.
+a[here.region=ridgemere] : Everything I own is damp. My bread's damp. | My coat's never been dry since I came to this city. | The walls are running. Running!
+b[from=ridgemere] #city : You stop noticing. Then you go somewhere dry and you miss it.
+b #plain : It's Ridgemere. | Hang it by the fire. | Mine too.
+a@city : I'll never miss this.
+a@plain : It's a puddle with roofs. | It drips by the fire. | Rain, inside and out.
 
 # ---------------------------------------------------------------- Town homes
 
 scene e1_home_fens_stilts
-when topic=home here.region=fens
+when topic=home here.region=mirebridge a.homeless=no
 a : The river's up. It's lapping at the bottom step. | My floor's lower than the water half the year. | We built the house on stilts. Now it leans.
-b[from=mirebridge] : Fen houses always lean. They're comfortable that way.
-b : Raise the step. | Fens. | All the Fens lean.
-a : I raised it last year. | Damp to the bone. | So do I, by evening.
+b[from=mirebridge] #fen : Fen houses always lean. They're comfortable that way.
+b #plain : Raise the step. | Fens. | All the Fens lean.
+a@fen : So are we.
+a@plain : I raised it last year. | Damp to the bone. | So do I, by evening.
 
 scene e1_home_frost_snow
-when topic=home here.region=frosthollow
+when topic=home here.region=frosthollow a.homeless=no
 a : Snow up to the eaves. Dug my way out this morning. | The roof needs clearing again or it'll come in. | We sleep round the hearth like pups. All of us.
-b[from=frosthollow] : That's how you know you're home.
-b : Up to the eaves! | I'll lend a shovel. | Warmest way.
-a : A tunnel to the woodpile. | Bring your back too. | The old ones get the middle.
+b[from=frosthollow] #frost : That's how you know you're home.
+b #plain : Up to the eaves! | I'll lend a shovel. | Warmest way.
+a@frost : Home, and stiff in every joint.
+a@plain : A tunnel to the woodpile. | Bring your back too. | The old ones get the middle.
 
 scene e1_home_coldwater_mist
-when topic=home here.region=lake
+when topic=home here.region=coldwater a.homeless=no
 a : The lake mist comes in under the door every dawn. | You can hear the water from my bed. Best sleep there is. | My house looks out over Glasswater. Can't afford it, can't leave it.
 b : Damp, though. | Lucky. | I don't blame you.
 a : Clean damp. | Very. | I'll die poor and happy.
 
 scene e1_home_oakhaven_trees
-when topic=home here.region=woods
+when topic=home here.region=oakhaven a.homeless=no
 a : A branch came down on my roof in the night. | The oaks drop acorns on my roof like hail all autumn. | Roots are lifting my floor. The tree's winning.
-b[job=woodcutter] : I'll take that oak down for you. Fair price, and you keep the logs.
-b : Anyone hurt? | Charming. | The tree always wins.
-a : Just the roof. | Charming at midnight? | It was here first.
+b[job=woodcutter] #cutter : I'll take that oak down for you. Fair price, and you keep the logs.
+b #plain : Anyone hurt? | Charming. | The tree always wins.
+a@cutter : Not that one. My grandfather planted it.
+a@plain : Just the roof. | Charming at midnight? | It was here first.
 
 scene e1_home_larkfield_wind
-when topic=home here.region=larkfield
+when topic=home here.region=larkfield a.homeless=no
 a : The wind off the downs has my thatch half off. | Sheep got in the yard again. | Our cottage is older than the town. The walls are a yard thick.
-b[job=herder] : Mine, probably. Sorry. Very hungry sheep.
-b : Thatch is cheap. | Sheep get in everywhere. | Built to last.
-a : The thatcher isn't. | They ate the washing. | Built to keep the wind out.
+b[job=herder] #herder : That's the downs. Wind in your thatch and sheep in your yard.
+b #plain : Thatch is cheap. | Sheep get in everywhere. | Built to last.
+a@herder : And a herder at the door, saying sorry.
+a@plain : The thatcher isn't. | They ate the washing. | Built to keep the wind out.
 
 scene e1_home_southmeadow_heat
-when topic=home here.region=southmeadow
+when topic=home here.region=southmeadow a.homeless=no
 a : We keep the shutters closed all day. Cool as a cellar. | There's a vine over my door. Grapes in my bed if I'm not careful. | Lizards in the kitchen. They eat the flies, so they stay.
-b[from=southmeadow] : Closed shutters, siesta, cool tiles. That's how you live here.
-b : Clever. | Grapes in bed! | Good tenants.
-a : My grandmother's way. | It happened once. | Better than my last.
+b[from=southmeadow] #south : Closed shutters, a nap after dinner, cool stone floors. That's how you live here.
+b #plain : Clever. | Grapes in bed! | Good tenants.
+a@south : That's how my grandmother lived. And she lived to ninety.
+a@plain : My grandmother's way. | It happened once. | Better than my last.
 
 # ---------------------------------------------------------------- By trade and standing
 
 scene e1_home_innkeeper
-when topic=home a.job=innkeeper
+when topic=home a.job=innkeeper a.homeless=no
 a : I live above the taproom. I've not had a quiet night in ten years. | Every room let and I'm sleeping on the bench. | A guest's left without paying and took a blanket.
 b : You'll be deaf soon. | Your own inn! | The blanket too!
 a : I'm half there. | Money's money. | A good blanket.
@@ -403,51 +457,60 @@ a : I'm half there. | Money's money. | A good blanket.
 scene e1_home_servant
 when topic=home a.job=servant
 a : My room's under the stairs in a house that isn't mine. | I keep somebody else's house spotless and mine's a heap. | The family's bought a new carpet. I'll be the one beating it.
-b[job=servant] : Ours has a bell. I hear it in my dreams.
-b : Better than the street. | That's how it goes. | Do it in the yard.
-a : I suppose. | The cobbler's pups go barefoot. | Every spring, till I die.
+b[job=servant] #servant : Ours has a bell. I hear it in my dreams.
+b #plain : Better than the street. | That's how it goes. | Do it in the yard.
+a@servant : Bells. Don't.
+a@plain : I suppose. | It is. Every day of it. | Every spring, till I die.
 
 scene e1_home_crafter
-when topic=home a.job=crafter|smith
+when topic=home a.job=crafter|smith a.homeless=no
 a : I build things all day and my own house falls apart. | Made my own table. It wobbles. Don't tell my customers. | There's a hinge I've meant to fix for two years.
 b : The cobbler's pups go barefoot. | Put a wedge under it. | Next year, maybe.
 a : Barefoot and proud. | A wedge in my own table! | Maybe.
 
 scene e1_home_poor_one_room
-when topic=home a.wealth=poor|destitute
-a : One room, one window, one chair. I'm the one. | I sold the table to pay the rent. We eat on the floor now. | The bailiff's been sniffing round.
-b[wealth=rich] : Have you thought about something smaller?
-b[warmth=warm] : I've a chair going spare. It's yours.
-b : Cosy. | Floor's as good as a table. | Don't open the door.
-a : Very cosy. | Nearly. | I never do.
+when topic=home a.wealth=poor|destitute a.homeless=no
+a : One room, one window, one chair. I'm the one. | I sold the table to pay the rent. I eat on the floor now. | The bailiff's been sniffing round.
+b[wealth=rich] #rich : Have you thought about something smaller?
+b[warmth=warm] #warm : I've a chair going spare. It's yours.
+b #plain : Cosy. | Floor's as good as a table. | Don't open the door.
+a@rich : Smaller than one room?
+a@warm : I'll not say no. Thank you.
+a@plain : Very cosy. | Nearly. | I never do.
 
 scene e1_home_rich_redecorate
-when topic=home a.wealth=rich
+when topic=home a.wealth=rich a.homeless=no
 a : We've had the whole house painted. The smell! | I've ordered new hangings from Southmeadow. | My new servant can't make a fire to save her life.
 b[wealth=poor|destitute] #envy : My whole house would fit in your hall.
-b : Very nice. | Very nice. | Do it yourself, then.
+b #plain : The smell'll pass. | Very nice. What colour? | Do it yourself, then.
 a@envy[warmth=warm] : Then come and sit in my hall. I'll have the fire lit.
-a : We'll have to go to the country while it dries. | Blue, with gold birds. | Me? Make a fire?
+a@envy : I expect it would. It's a large hall.
+a@plain : We'll have to go to the country while it dries. | Blue, with gold birds. | Me? Make a fire?
 
 scene e1_home_homeless
 when topic=home a.homeless=yes
 a : Slept under the bridge again. The stones hold the cold. | Somebody moved me on from the chapel step. | I had a room once. Two windows.
-b[warmth=warm] : There's straw in my loft. Dry straw. Come tonight.
-b[piety=devout] : The chapel should take you in. I'll speak to the priest.
-b : I'm sorry. | That's no good. | You'll have one again.
-a : So am I. | No. | Maybe.
+b[warmth=warm] #warm : There's straw in my loft. Dry straw. Come tonight.
+b[piety=devout] #devout : The chapel should take you in. I'll speak to the priest.
+b #plain : I'm sorry. | That's no good. | You'll have one again.
+a@warm : ... Thank you. I will.
+a@devout : I'd be grateful. Truly.
+a@plain : So am I. | No. | Maybe.
 
 scene e1_home_old_house
-when topic=home a.stage=old
-a : I was born in this house and I'll die in it. | The stairs have got longer every year. I'm sure of it. | My pups want me to move in with them. Not likely.
-b[stage=young] : Does it have ghosts?
-b : There's worse plans. | Funny that. | They mean well.
-a : There's my grandmother's. She likes it. | Very funny. | They mean to put me in a corner.
+when topic=home a.stage=old a.homeless=no
+a : I was born in this house and I'll die in it. | The stairs have got longer every year. I'm sure of it. | The family want me to move in with them. Not likely.
+b[stage=young] #pup : Does it have ghosts?
+b #plain : There's worse plans. | Funny that. | They mean well.
+a@pup : Only my grandmother's. She likes it there.
+a@plain : Not many. | Very funny. | They mean to put me in a corner.
 
 scene e1_home_young_den
-when topic=home a.stage=young
+when topic=home a.stage=young a.homeless=no
 a : I've made a den under the stairs. Nobody can come in. | I'm sleeping in the loft now. With the apples. | We built a fort in the yard. It's got a roof and everything.
-b[stage=young] : Can I come in? I'll be quiet.
-b[stage=old] : I had a den once. Best house I ever lived in.
-b : Not even me? | Lucky. | A real roof?
-a : Not even you. | I eat one every night. | A sheet. Same thing.
+b[stage=young] #pup : Can I come in? I'll be quiet.
+b[stage=old] #old : I had a den once. Best house I ever lived in.
+b #plain : Not even me? | Lucky. | A real roof?
+a@pup : No. Well. Maybe.
+a@old : Was it under the stairs too?
+a@plain : Not even you. | I eat one every night. | A sheet. Same thing.

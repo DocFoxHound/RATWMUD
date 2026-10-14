@@ -204,9 +204,9 @@ a : Bright One bless you. Keep the bigger half. | It's no place for anyone. | Th
 
 scene tr_app_errand
 when topic=work a.job=apprentice here.place=street|market
-a : Sent to fetch a left-pawed hammer. The whole street laughed. | I'm to fetch nails, rope and the master's lunch. | Delivered the wrong order to the wrong house.
-b : There's no such thing. | Don't eat the lunch. | Uh oh.
-a : I know that now. | Half the lunch. | They kept it. And sent nothing back.
+a : Sent to fetch a left-pawed hammer. The whole street laughed. | I'm to fetch nails, rope and the master's dinner. | Delivered the wrong order to the wrong house.
+b : There's no such thing. | Don't eat the dinner. | Uh oh.
+a : I know that now. | Half the dinner. | They kept it. And sent nothing back.
 
 scene tr_app_night
 when topic=work|smalltalk a.job=apprentice here.time=night|dusk
@@ -305,7 +305,7 @@ a : Harder at nothing, sir. | Yes, sir. | Yes, sir. I'll tell them that, sir.
 scene tr_noble_bored
 when topic=smalltalk|work a.job=noble
 a : I'm bored. Thoroughly. | Another feast. Another speech. Another goose. | My mother wants me married by midsummer.
-b : Take up a hobby. | Poor goose. | To whom?
+b : Take up a pastime. | Poor goose. | To whom?
 a : I took up gambling. Mother took it away. | Poor me. The goose is past caring. | To whoever has the most land and the fewest teeth.
 
 scene tr_carter_tired

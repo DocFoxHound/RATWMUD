@@ -1,164 +1,198 @@
 # Memories (doc 62, phase 7): the old days and how the town has changed, childhood and courting, the dead remembered,
 # first days in a new place, friends remembering together and arguing over who has it right. Alternatives are written
-# in parallel: the second reply answers the second remark. Rules and chains: rules/health_memories7.talk.
+# in parallel: the second reply answers the second remark; a tagged reply sets a mark (#x) so the close can answer it
+# (a@x). Only those past being pups remember being small (a.stage!=young); pups have their own. Rules and chains:
+# rules/health_memories7.talk.
 
-# ---------------------------------------------------------------- Anyone
+# ---------------------------------------------------------------- Anyone past being a pup
 
 scene e3_m_childhood_games
-when topic=memories
-a : Do you remember playing tail-tag in the square? | We used to race the carts to the bridge. | I spent a whole summer digging for treasure behind the chapel.
-b[young] : We still play tail-tag! I'm the fastest.
-b[old] : We played it with sticks and stones. And the stones won.
+when topic=memories a.stage!=young
+a : Do you remember playing tail-tag in the street? | We used to race the carts to the bridge. | I spent a whole summer digging for treasure behind the chapel.
+b[young] #young : We still do that! Well, something like it.
+b[old] #old : We did the same, with sticks and stones. The stones always won.
 b : Every evening till the lamps came on. | Somebody always fell in. | Did you find any?
+a@young : Good. Somebody has to keep it going.
+a@old : The stones still win, mostly.
 a : I never caught anybody. Not once. | It was always me. | A button and a dead mouse. Still treasure.
 
 scene e3_m_mischief
-when topic=memories
+when topic=memories a.stage!=young
 a : When I was a pup I rang the chapel bell at midnight. | We let the miller's geese out once. Took three days to catch them. | I stole a whole pie off a windowsill. Ran with it hot.
-b[priest] : Ah. So that was you.
-b[quirk=has_opinions_about_everyone_s_grandmother] : Your grandmother would have skinned you.
+b[priest] #priest : Ah. So that was you.
+b[quirk=has_opinions_about_everyone_s_grandmother] #gran : Your grandmother would have skinned you.
 b : Did they catch you? | Three days! | Burned your paws, I'll bet.
+a@priest : I'll confess it properly on Restday. Maybe.
+a@gran : She did. Twice.
 a : My mother did. That was worse. | Some of them never came back. They're still out there. | Worth every blister.
 
 scene e3_m_strict_mother
 when topic=memories
 a : My mother had a look that could stop a cart. | Mother made us wash our paws before every meal. Every one. | My mother never raised her voice. She didn't need to.
-b[parent=yes] : I've got that look now. I practise it on mine.
+b[parent=yes] #parent : I've got that look now. I practise it on mine.
 b : Mine had a wooden spoon. | Clean paws, clean conscience, mine said. | Those are the frightening ones.
+a@parent : Does it work?
 a : She'd have liked yours. | And she checked behind the ears. | I still sit up straight when I think of her.
 
 scene e3_m_first_love
-when topic=memories
+when topic=memories a.stage!=young
 a : Do you remember your first sweetheart? | I wrote a poem for a girl when I was twelve. It rhymed "moon" with "moon". | The first time I fell in love I couldn't eat for a week.
-b[widowed=yes] : I married mine. I'd do it all again tomorrow.
-b[old] : I remember. I even remember the hat.
+b[widowed=yes] #widow : I married mine. I'd do every day of it again.
+b[old] #old : Mine was the miller's daughter. Wasn't everyone's?
 b : I'd rather not. | What did she say? | And then?
+a@widow : That's the best answer anyone's given me.
+a@old : Not mine. Mine was the miller's son.
 a : That bad? | She said it was very round. Like the moon. | Then I was hungry again.
 
 scene e3_m_hard_winter
-when topic=memories
+when topic=memories a.stage!=young
 a : The winter I was ten, the snow came up to the eaves. | Remember the winter the well froze solid? | We burned the chairs one winter. Every last one.
-b[old] : That was nothing. The winter before you were born, the river froze with fish in it.
-b[young] : I want snow like that!
+b[old] #old : Before your time, I'd guess, the river froze with the fish still in it.
+b[young] #young : I want snow like that!
 b : I remember. We dug tunnels. | We ate snow for a month. | And sat on the floor.
+a@old : Then you ate fish lollies all winter.
+a@young : No you don't. Not really.
 a : Tunnels to the bakehouse. | Melted, it tasted of soot. | We were warm, though.
 
 scene e3_m_bread_better
-when topic=memories
+when topic=memories a.stage!=young
 a : Bread was better when I was young. Thicker crust. | Nothing tastes the way it did. | Apples were bigger, I'm sure of it.
-b[baker] : The bread's the same. It's your teeth that changed.
-b[old] : Everything was better. Except the medicine.
+b[baker] #baker : The bread's the same. It's your teeth that changed.
+b[old] #old : Everything was better. Except the medicine.
 b : Your paws were smaller, that's all. | Nothing does. | You were smaller.
+a@baker : Leave my teeth out of it.
+a@old : And the roads. And the winters.
 a : Don't spoil it. | Not even this cheese. | I've thought of that. I don't like it.
 
 scene e3_m_who_remembers_right
-when topic=memories
+when topic=memories pair.band=friends|family|spouses
 a : It was the spring the bridge fell down. | That was the year your brother married. | You were there. You wore the green hood.
 b #argue : It was autumn. Leaves everywhere. | Not my brother. My cousin. | I've never owned a green hood.
 a : Spring. There were lambs. | It was your brother. I was at the wedding. | You had a green hood and you lost it in the river.
-b : Lambs in autumn, then. | Was I? Then why don't I remember? | ... It was blue.
+b : Lambs in autumn, then. | Were you? Then why don't I remember you there? | ... It was blue.
 a?@argue : We'll never agree, will we. | You don't remember because you drank the barrel. | Blue! There. So you did have one.
 
 scene e3_m_nostalgia
-when topic=memories
+when topic=memories a.stage!=young
 a : I miss the old days. | Things were simpler when we were young. | Nobody makes anything properly any more.
-b[honesty=frank] : The old days had no doctors and the plague every other summer. You can keep them.
-b[old] : Simpler, aye. And shorter. Most of us didn't see forty.
+b[honesty=frank] #frank : The old days had half the healers and twice the fevers. You can keep them.
+b[old] #old : Simpler, aye. And shorter. Most of us didn't see forty.
 b : So do I, some days. | Were they? We just didn't know any better. | They never did.
+a@frank : I'll keep the summers, then. You can have the fevers.
+a@old : And yet here you are.
 a : Some days. | Maybe so. | Fair point.
 
 scene e3_m_good_riddance
-when topic=memories
+when topic=memories a.stage!=young
 a : I don't miss being young. Not one bit. | Good riddance to the old days, I say. | People who miss the past didn't live in it.
-b[old] : Nor me. My knees miss it, though.
-b[drive=content] : I miss some of it. The light in the evenings.
+b[old] #old : Nor me. My knees miss it, though.
+b[drive=content] #content : I miss some of it. The light in the evenings.
 b : Not even the summers? | Hear, hear. | Some of us did, and miss it anyway.
+a@old : Knees are sentimental.
+a@content : The light. Aye. I'll give you the light.
 a : The summers were too hot. | Good riddance, and no flowers. | Then you've a short memory.
 
 scene e3_m_forgetting
-when topic=memories
+when topic=memories a.stage!=young
 a : What was the name of that fellow who kept goats on the roof? | Who was the priest before the one we've got? | There was a tavern on the corner, before. What was it called?
-b[quirk=remembers_every_name_ever_heard] : Bartle Gorse. His wife was Nell. His goats were Pip and Old Smith.
-b[old] : I knew it a minute ago. It'll come to me at midnight.
+b[quirk=remembers_every_name_ever_heard] #names : Bartle Gorse. His wife was Nell. His goats were Pip and Old Smith.
+b[old] #old : I knew it a moment ago. It'll come to me at midnight.
 b : I've no idea. | A tall one. Very tall. | The something Arms.
+a@names : How do you do that?
+a@old : Wake me when it does.
 a : He must have had a name. | Tall. That narrows it. | They're all the something Arms.
 
 scene e3_m_old_songs
 when topic=memories
 a : My grandfather used to sing a song about a three-legged fox. | I can still remember the words to my mother's lullaby. | Do they still sing the Harvest Wolf song where you're from?
-b[quirk=hums_old_marching_songs] : Sing it, then. I'll hum the march underneath.
+b[quirk=hums_old_marching_songs] #hum : Sing it, then. I'll hum the march underneath.
 b : How did it go? | Sing it. | Every year. Badly.
+a@hum : It's not a march. Nothing's a march.
 a : I've forgotten all but the chorus. | Not in the street. | That's the proper way.
 
 scene e3_m_lessons
-when topic=memories
+when topic=memories a.stage!=young
 a : The priest taught me my letters. Rapped my paws every mistake. | I sat in the chapel learning sums. I still count on my claws. | I never learned to read. Never needed it.
-b[scholar] : It's never too late. I'll lend you a primer.
-b[priest] : Paws are rapped less now. A pity, some days.
+b[scholar] #scholar : It's never too late to learn more. I'll lend you a primer.
+b[priest] #priest : Paws are rapped less now. A pity, some days.
 b : Did it work? | Claws are fine. Ten of them. | Neither did I.
+a@scholar : Lend it to someone with patience.
+a@priest : Not my paws, you don't.
 a : I can spell "paw". | Ten's all I need. | We managed.
 
 scene e3_m_lost_things
 when topic=memories
 a : I had a wooden wolf when I was small. I wonder where it went. | My father carved me a boat. I sailed it in the ditch. | I still have the first penny I ever earned.
-b[parent=yes] : My pup has one just like it. Chews it every night.
+b[parent=yes] #parent : Mine keep everything like that in a box under the bed.
 b : Lost in a move, I'll bet. | Did it float? | Spend it, you miser.
+a@parent : Keep the box. One day they'll want it.
 a : Somebody's pup has it now. I hope. | Until the ducks got it. | Never. It's my luck.
 
 scene e3_m_last_time_cried
 when topic=memories
-a : My father cried once in his life. When the old dog died. | I still think about my grandmother's hands. | I can still smell my mother's kitchen. Smoke and onions.
-b[warmth=warm] : Those are the things that stay, aren't they.
+a : My father cried once in his life. When the old ox died. | I still think about my grandmother's paws. Floury, always. | I can still smell my mother's kitchen. Smoke and onions.
+b[warmth=warm] #warm : Those are the things that stay, aren't they.
 b[warmth=cold] : Mm.
-b : That's a good thing to remember. | Mine had hands like bark. | Mine was bread. Always bread.
-a : It is. | Strong hands. Gentle, though. | Every house has its smell.
+b : That's a good thing to remember. | Mine had paws like bark. | Mine was bread. Always bread.
+a@warm : They are. The small ones.
+a : It is. | Strong, though. Gentle. | Every house has its smell.
 
 # ---------------------------------------------------------------- The old
 
 scene e3_m_old_lord
 when topic=memories a.stage=old
 a : When I was a pup, the old lord rode through on a white horse. | The old head of the House knew every tenant by name. | We had a lord once who paid for the chapel roof himself.
-b[young] : A real white horse? Was he a giant?
-b[self.house] : The House still keeps its own. Mostly.
+b[young] #young : A real lord? Was he very grand?
+b[self.house] #house : The House still keeps its own. Mostly.
 b : A white horse! | Not now. Now it's the clerks. | Who pays now?
+a@young : Grander than the chapel. And he smelled of horse.
+a@house : Mostly.
 a : Biggest horse I ever saw. Bit my uncle. | Clerks. Clerks and ledgers. | We do. In pennies.
 
 scene e3_m_old_flood
 when topic=memories a.stage=old
 a : I remember the great flood. Water in the chapel up to the altar. | The year of the flood, we rowed down the high street. | My father saved a pig from the flood. Carried it on his back.
-b[young] : Were there fish in the street?
-b[old] : I remember. My mother's chickens rode out on a door.
+b[young] #young : Were there fish in the street?
+b[old] #old : I remember. My mother's chickens rode out on a door.
 b : Up to the altar! | Rowed? | A whole pig?
+a@young : Fish in the bakehouse. True as I'm standing here.
+a@old : I remember those chickens. Smug as anything.
 a : The priest preached from a ladder. | In a washtub. Me and my brother. | It never forgave him. Bit him every day after.
 
 scene e3_m_old_plague
 when topic=memories a.stage=old
 a : Do you remember the Grey Year? The sickness? | Half our street went in the coughing summer. | When I was young there was a mange that took the whole town's fur.
-b[old] : I remember. I don't talk about it.
-b[young] : Is it going to come back?
+b[old] #old : I remember. I don't talk about it.
+b[young] #young : Is it going to come back?
 b : I've heard of it. | I'm sorry. | The whole town?
+a@old : No. Nor do I, much.
+a@young : No, pup. It's long gone.
 a : Nobody does, now. That's the strange thing. | Everyone lost someone. | Bald as eggs, the lot of us. We laughed, after.
 
 scene e3_m_old_courting
 when topic=memories a.stage=old
 a : In my day you courted with a chaperone and a fiddle. | I walked four miles every Restday to see my sweetheart. | Courting was done properly then. Flowers, and asking her father.
-b[stage=adolescent] : Four miles? Why didn't you just send a letter?
-b[young] : Ew.
+b[stage=adolescent] #teen : Why didn't you just send a letter?
+b[young] #young : Ew.
 b : Who brought the fiddle? | Was she worth it? | Did he say yes?
+a@teen : Because then I'd not have seen her, would I?
+a@young : You'll see. One day you'll see.
 a : The chaperone. She was very good. | Every step. Every one. | He said "about time".
 
 scene e3_m_old_prices
 when topic=memories a.stage=old
 a : When I was young you got a whole loaf for a penny. | My first day's wages bought a week's bread. | A pint of ale, a pie and a song for two pennies.
-b[merchant] : And you made half as much, I'll bet.
-b[young] : What's a pie cost now?
+b[merchant] #merchant : And you made half as much, I'll bet.
+b[young] #young : What does a pie cost now?
 b : And now look. | Them were the days. | Who sang the song?
+a@merchant : Less than half. And spent it all.
+a@young : Ask the baker. I can't bear to.
 a : A penny for a crust, now. | Them were the days. And the nights were cheaper. | Me. Badly. That's why it was cheap.
 
 scene e3_m_old_young_ask
 when topic=memories a.stage=young b.stage=old
 a : What was it like when you were little? | Did they have pups in the olden days? | Were you ever young?
-b : Just like now. More mud. | We were the pups. | Once. For a week. It was very busy.
+b : Just like now. More #mud#. | We were the pups. | Once. For a week. It was very busy.
 a : More mud! | Did you play tail-tag? | I don't believe you.
 
 scene e3_m_old_to_young
@@ -169,26 +203,31 @@ a : Uphill, in snow, carrying my brother. | Scaring crows. Badly. | A small buck
 
 scene e3_m_old_old
 when topic=memories a.stage=old b.stage=old
+cooldown 2d
 a : You and I are the last who remember the old mill. | Remember when we were the young ones and they were the old ones? | We've outlived most of them, haven't we.
 b : And the miller's daughter. | And now look at us. | Somebody has to.
-a : She threw a turnip at you. | We're the old ones. Gods. | Somebody has to tell it right.
+a : She threw a turnip at you. | We're the old ones. #oath#. | Somebody has to tell it right.
 
 # ---------------------------------------------------------------- Pups and the young
 
 scene e3_m_pup_last_summer
 when topic=memories a.stage=young
-a : Last summer I caught a frog THIS big. | Remember last winter? I made a snow wolf. | When I was little, I was scared of the dark.
-b[young] : That's not that big. Mine was bigger.
-b[old] : When you were little. Last spring, was that?
+a : Last summer I caught a frog this big. This big! | Remember last winter? I made a snow wolf. | When I was little, I was scared of the dark.
+b[young] #young : That's not that big. Mine was bigger.
+b[old] #old : When you were little. Last spring, was that?
 b : That's a big frog. | Did it melt? | And now you're not?
-a : It was THIS big. I'm showing you. | It melted on Tuesday. I was sad till Wednesday. | Only a little bit.
+a@young : It was not! It was this big. I'm showing you.
+a@old : Ages ago. Before I was big.
+a : It was this big. I'm showing you. | It melted on Stoneday. I was sad till Riverday. | Only a little bit.
 
 scene e3_m_adolescent_little
 when topic=memories a.stage=adolescent
-a : When I was little I thought the moon followed me home. | I used to be scared of the miller. Now he's just old. | I was a stupid pup. I'm much wiser now.
-b[old] : Wiser, at fourteen. I'll write that down.
-b[stage=adolescent] : You still are. A stupid pup.
+a : When I was little I thought the moon followed me home. | I used to be scared of the miller. Now he's just old. | I was a silly pup. I'm much wiser now.
+b[old] #old : Wiser, at fourteen. I'll write that down.
+b[stage=adolescent] #teen : You still are. A silly pup.
 b : It does, a bit. | He was always just old. | Much.
+a@old : You should. I'll sign it.
+a@teen : Says you.
 a : It does not. | Old and shouting. | Don't.
 
 # ---------------------------------------------------------------- Courtship and marriage
@@ -197,29 +236,34 @@ scene e3_m_spouses_met
 when topic=memories pair.band=spouses
 a : Do you remember the first thing you ever said to me? | You trod on my tail at the harvest dance. | I knew the first time I saw you that I'd marry you.
 b : I said your hood was on backwards. | You put it under my paw on purpose. | No you didn't. You thought I was my sister.
-a : It was. You were right. | I did. Best thing I ever did. | ... Only for a minute.
+a : It was. You were right. | I did. Best thing I ever did. | ... Only for a moment.
 
 scene e3_m_how_met
 when topic=memories b.married=yes
 a : How did you and yours meet, anyway? | Was it love at first sight, you two? | Who asked who?
-b[old] : At a dance, a long time ago. The fiddler's still alive.
+b[old] #old : At a dance, a long time ago. The fiddler's still alive.
 b : A wedding. Someone else's. | Fourth sight, maybe fifth. | That's a secret.
+a@old : Then the fiddler deserves a drink.
 a : That's how it goes. | That's better. It lasts. | I'll get it out of you.
 
 scene e3_m_widowed
 when topic=memories a.widowed=yes
-a : I still say "#dear#" to an empty chair. | I still lay out two cups some mornings. | Thirty years and I never once heard my mate snore. I'd give anything to hear it now.
-b[warmth=warm] : Tell me about them. I'd like to hear it.
-b[old] : I lay two cups too. Then I drink both.
+a : I still say "#dear#" to an empty chair. | I still lay out two cups some mornings. | All those years and I never once minded the snoring. I'd give anything to hear it now.
+b[warmth=warm] #warm : Tell me about them. I'd like to hear it.
+b[old] #old : I lay two cups too. Then I drink both.
 b : I remember. Always smiling. | You'll stop, one day. Or you won't. | I'm sorry.
+a@warm : Another day. I'd cry, and you'd have to watch.
+a@old : That's the way. Both cups.
 a : Always. | I don't want to stop. | Thank you.
 
 scene e3_m_mourning
 when topic=memories a.mourning=kin|friend
 a : I keep remembering little things. The way they laughed. | The last time I saw them, we argued over nothing. | I'd forgotten how much I'd miss them.
-b[piety=devout] : The gods keep them now. And so do you.
-b[warmth=warm] : Tell me about the laugh.
+b[piety=devout] #devout : The gods keep them now. And so do you.
+b[warmth=warm] #warm : Tell me about the laugh.
 b : That's how it starts. | They'll have forgotten it already. | It takes us all like that.
+a@devout : I'll try to keep them well.
+a@warm : Like a door creaking. Like a goose. I loved it.
 a : Is it? | I hope so. | It does.
 
 # ---------------------------------------------------------------- Friends and kin
@@ -238,7 +282,7 @@ a : You'd better not. | I still think about that pie. | And I didn't. I'm still 
 
 scene e3_m_siblings
 when topic=memories pair.kin=siblings
-a : Remember Mother's kitchen? Burnt porridge every morning. | You always got the bigger bowl. | Do you remember the dog we had? Old Tuft?
+a : Remember #mum#'s kitchen? Burnt porridge every morning. | You always got the bigger bowl. | Do you remember the goat we had? Old Tuft?
 b : She burnt it on purpose. Said it was healthier. | I was the eldest. | Tuft ate my shoes.
 a : She really believed that. | By an hour! | And you cried for a week.
 
@@ -258,33 +302,40 @@ a : Twenty years and I'm still waiting for sorry. | I fixed it. Badly. | I'll ne
 
 scene e3_m_ridgemere_growth
 when topic=memories here.region=ridgemere a.stage=old
-a : When I was a pup, the Heights were sheep pasture. | There was no wall round the docks then. Just mud and boats. | The city stopped at the old bridge. Now look at it.
-b[quarter=heights] : Sheep! On our hill. I'd never have guessed.
-b[from!=ridgemere] : I thought it had always been this big.
-b : Sheep! On the Heights! | Mud and boats. Sounds peaceful. | It never stops growing.
-a : The sheep had the best view in town. | It stank. It always stank. | Like a pup in spring.
+a : When I was a pup, there wasn't a house past Rainrun Bridge. | The wharf was half the length then. Mud and a few boats. | The city stopped at the walls. Now look at it, spilling out.
+b[quarter=suburbs] #sub : Fields! Where my house is? I'd never have guessed.
+b[from!=ridgemere] #new : I thought it had always been this big.
+b : Fields, then? | Mud and boats. Sounds peaceful. | It never stops growing.
+a@sub : Turnips, right where your hearth is.
+a@new : Nothing's always been anything.
+a : Fields and a ford. | It stank. It always stank. | Like a pup in spring.
 
 scene e3_m_ridgemere_sump
 when topic=memories here.region=ridgemere a.quarter=sump|wharf|docks
 a : The Sump was a fish market once, they say. Before the sea moved. | My grandmother remembered when the Sump had gardens. | There used to be a fountain on our street. It's a drain now.
-b[quarter=heights] : I didn't know. I don't come down very often.
+b[quarter=heights] #heights : I didn't know. I don't come down very often.
 b : I'd like to have seen that. | Gardens! | A fountain.
+a@heights : No. You don't.
 a : Now it's just the smell. | Cabbages, she said. Huge ones. | A drain. With ambitions.
 
 scene e3_m_ridgemere_harbour
 when topic=memories here.region=ridgemere
 a : I remember the night the warehouse burned on the wharf. The Sound glowed red. | The great gale, when the masts came down like trees. | When the first big ship came into the Sound, the whole city went to look.
-b[sailor] : I was out on the water that night. Never prayed so hard.
-b[old] : I remember. They said it was the end of the world.
+b[sailor] #sailor : I was out on the water that night. Never prayed so hard.
+b[old] #old : I remember. They said it was the end of the world.
 b : I heard about that. | Sounds terrible. | Was it that big?
+a@sailor : And the Bright One listened.
+a@old : It nearly was, for some.
 a : You could read by it at midnight. | It was. Three boats lost. | As big as a chapel. With sails.
 
 scene e3_m_lost_mill
-when topic=memories here.region=towns
-a : I miss the old mill. You could hear it from the whole valley. | There used to be a dance hall over the smithy. | The old oak in the square. They cut it down for a market stall.
-b[old] : I courted under that oak. I carved my name in it.
-b[young] : What mill?
+when topic=memories here.region=towns a.stage!=young
+a : The old mill had a wheel you could hear from the gate. Gone now. | There used to be a dance hall over the smithy. | There was an old oak by the crossroads. They cut it down for the road.
+b[old] #old : I courted under that oak. I carved my name in it.
+b[young] #young : What mill? Where?
 b : I remember the wheel. | I remember the floor shook. | A shame, that.
+a@old : Then somebody's beams have your name in them.
+a@young : Before your time, pup. Before your mother's, nearly.
 a : Round and round. Like the years. | Shook like a drum. Never fell, though. | A crying shame.
 
 scene e3_m_town_changed
@@ -297,58 +348,74 @@ a : Some things haven't changed, then. | I'll start saying it. | I'll take your 
 
 scene e3_m_first_days_city
 when topic=memories here.region=ridgemere a.from!=ridgemere
-a : My first day in Ridgemere I got lost for six hours. | When I came to the city I'd never seen the sea. | The first week here, I couldn't sleep for the noise.
-b[from=ridgemere] : Six hours? You were lucky. Some are still lost.
+cooldown 2d
+a : My first day in Ridgemere I got lost from dawn till dark. | When I came to the city I'd never seen the sea. | The first week here, I couldn't sleep for the noise.
+b[from=ridgemere] #rm : A day? You were lucky. Some are still lost.
 b : Everyone does. | What did you think? | Bells, carts, gulls.
+a@rm : Some are lost and pretending. I've met them.
 a : I found my way by the smell of the bakehouse. | I thought it had no other side. | And the wolf next door, singing.
 
 scene e3_m_first_days_town
 when topic=memories here.region=towns a.from=ridgemere
-a : When I came from the city, the quiet nearly drove me mad. | My first week here, everyone stared like I'd two heads. | I'd never seen a cow up close till I moved here.
-b[from!=ridgemere] : You city wolves always say that. Then you never leave.
-b : You get used to it. | They still stare. | Bigger than you'd thought?
-a : Now I can't sleep in the city. | Still? | Much bigger. And it looked at me.
+cooldown 2d
+a : When I came from the city, the quiet nearly drove me mad. | My first week here, everyone stared like I'd two heads. | I'd never had to fetch my own water till I moved here.
+b[from!=ridgemere] #local : You city wolves always say that. Then you never leave.
+b : You get used to it. | They still stare. | Heavier than you'd thought?
+a@local : Why would I? You're all here.
+a : Now I can't sleep in the city. | Still? | Much heavier. And the well's uphill.
 
 scene e3_m_from_frosthollow
 when topic=memories a.from=frosthollow here.region!=frosthollow
-a : Back home in the valley, the snow came in October and left in May. | I miss the pines. And the quiet. Snow's quiet, you know. | Up in Frosthollow, we'd go months without seeing the sun over the ridge.
-b[from=frosthollow] : I miss it too. Even the dark. Strange, that.
+cooldown 2d
+a : Back home in the valley, the snow came before harvest and left after lambing. | I miss the quiet up there. Snow's quiet, you know. | Up in Frosthollow, we'd go months without seeing the sun over the ridge.
+b[from=frosthollow] #fh : I miss it too. Even the dark. Strange, that.
 b : Sounds miserable. | I didn't know that. | How did you stand it?
+a@fh : Not strange. It was ours.
 a : Miserable and beautiful. | It hushes everything. | Lamps, songs and stubbornness.
 
 scene e3_m_from_coldwater
 when topic=memories a.from=coldwater here.region!=coldwater
+cooldown 2d
 a : I grew up on the Glasswater. You could see the bottom twenty feet down. | I miss mornings on the lake. Mist, and the loons. | My father caught a pike in Coldwater bigger than me.
-b[from=coldwater] : The loons. I'd forgotten the loons.
+b[from=coldwater] #cw : The loons. I'd forgotten the loons.
 b : Clear as glass? | What's a loon? | Bigger than you as you are now?
+a@cw : Now you'll hear them all night.
 a : Clearer. You could count the pebbles. | A bird that sounds like a ghost laughing. | As I am now. He tells it that way, anyway.
 
 scene e3_m_from_oakhaven
 when topic=memories a.from=oakhaven here.region!=oakhaven
-a : I grew up under trees older than any town. | In the Warmwood, the light comes green through the leaves. | I miss the smell of the woods after rain.
-b[from=oakhaven] : My grandmother said every oak in the Warmwood has a name.
-b : No streets? | Sounds lovely. | Wet leaves and moss.
-a : Paths. Older than streets. | It was. It is. | You smell it once, you never forget it.
+cooldown 2d
+a : I grew up under trees older than any town. | In the Warmwood we'd climb the old oaks and sit up there all day. | I miss acorn bread. Nobody here makes it.
+b[from=oakhaven] #oak : My grandmother said every oak in the Warmwood has a name.
+b : No streets? | Didn't you fall? | Acorn bread?
+a@oak : And she knew most of them.
+a : Paths. Older than streets. | Every summer. Once from the top. | Bitter, then sweet. Like home.
 
 scene e3_m_from_mirebridge
 when topic=memories a.from=mirebridge here.region!=mirebridge
+cooldown 2d
 a : In the fens we'd row to school. Or wade. | The Sallow Fens in the mist at dawn. Nothing like it. | My mother could cross the bog blindfold.
-b[from=mirebridge] : Dry feet, as we said. Never once had them.
+b[from=mirebridge] #mb : Dry feet, as we said. Never once had them.
 b : Wade? To school? | I'll take your word for it. | Could you?
+a@mb : Not once. Not one day.
 a : With the books on our heads. | It's eerie. You'd love it. | Never. I fell in every time.
 
 scene e3_m_from_larkfield
 when topic=memories a.from=larkfield here.region!=larkfield
-a : On the downs you can see for twenty miles. I miss the sky. | I grew up with the sheep fair every autumn. Best week of the year. | The larks. You don't get the larks here.
-b[from=larkfield] : The larks over the downs at dawn. Don't. I'll weep.
-b : Twenty miles of what? | What happens at a sheep fair? | We get gulls.
-a : Grass and sheep. And more sky. | Sheep. And haggling. And cider. | Gulls aren't the same.
+cooldown 2d
+a : On the downs you can see for twenty miles. I miss the sky. | I grew up with the autumn fair on the downs. Every fleece in the realm, it felt like. | The larks. You don't get the larks here.
+b[from=larkfield] #lf : The larks over the downs at dawn. Don't. I'll weep.
+b : Twenty miles of what? | What happens at a fair like that? | We get crows.
+a@lf : Weep, then. I'll join you.
+a : Grass and sheep. And more sky. | Sheep. And haggling. And cider. | Crows aren't the same.
 
 scene e3_m_from_southmeadow
 when topic=memories a.from=southmeadow here.region!=southmeadow
-a : Back home the orchards blossom in spring. White as snow, and it smells better. | I miss the warmth. I've been cold since I came north. | We'd tread the grapes as pups. My paws were purple till autumn.
-b[from=southmeadow] : And the cider after harvest. I miss the cider.
+cooldown 2d
+a : Back home the whole town turns out for the apple-picking. Pups up the ladders, grans at the baskets. | I miss the warmth. I've been cold since I came north. | We'd tread the grapes as pups. My paws were purple till autumn.
+b[from=southmeadow] #sm : And the cider after harvest. I miss the cider.
 b : Sounds a sight better than here. | You get used to it. | Purple paws!
+a@sm : The first cup of it. Nothing like it.
 a : It is. Don't tell anyone here. | I haven't yet. | All the pups had them.
 
 # ---------------------------------------------------------------- Regions remembered
@@ -356,109 +423,125 @@ a : It is. Don't tell anyone here. | I haven't yet. | All the pups had them.
 scene e3_m_frost_cavein
 when topic=memories here.region=frosthollow
 a : The year the east seam fell in, the whole valley waited at the mine head. | The long dark winter, when the sun didn't clear the ridge for two months. | The avalanche that took the old road. I heard it from my bed.
-b[miner] : I was in the west seam that day. We heard it through the rock.
-b[old] : I remember. We sang to keep the pups calm.
+b[miner] #miner : I was in the west seam that day. We heard it through the rock.
+b[old] #old : I remember. We sang to keep the pups calm.
 b : Did they get out? | Two months! | Sounded like thunder, they say.
+a@miner : Then you were the lucky ones.
+a@old : I remember the singing. Better than the rest of it.
 a : Most of them. Not all. | We forgot what colour things were. | Louder. And slower.
 
 scene e3_m_coldwater_frozen
 when topic=memories here.region=coldwater
 a : The winter the Glasswater froze, we walked to the island. | Remember the great pike? Took three wolves to land it. | The summer the lake dropped, and we found the old boat on the bottom.
-b[fisher] : I was one of the three. It pulled me in. Twice.
+b[fisher] #fisher : I was out on the ice for all of it. Every day, that winter.
 b : I was there! We skated. | Three? I heard four. | Whose boat was it?
+a@fisher : I remember. You looked half fish by spring.
 a : On our backsides, mostly. | Three. And me. So, four. | Nobody ever said. It's still there.
 
 scene e3_m_oakhaven_storm
 when topic=memories here.region=oakhaven
 a : Remember the great storm, when the old king-oak came down? | The year the woods burned on the east side. We could see it at night. | There used to be a charcoal camp in the clearing. Smoked like a chimney all year.
-b[woodcutter] : It took us a whole year to cut that oak up. Every plank went somewhere.
+b[woodcutter] #wood : I remember. The woods were never the same after.
 b : The whole town went to see. | I remember the smell. | I remember the black faces.
+a@wood : No. But they grew back.
 a : Like a funeral, it was. | Smoke in everything. Even the bread. | And the songs.
 
 scene e3_m_mire_bridge
 when topic=memories here.region=mirebridge
 a : The year the Long River took the old bridge. We ferried for a year. | Remember the great flood? The water came up to the second step of the chapel. | When I was a pup the fen froze, and we walked out to the eel traps.
-b[old] : The old bridge was better. Stone. This new one sways.
+b[old] #old : Things were built to last, then. Not like now.
 b : I remember the ferry. Wet feet every day. | Up to the second step! | Did you get any eels?
+a@old : Didn't last, though, did it.
 a : Wetter than usual, even. | The priest held service in a boat. | A cold one. We ate it anyway.
 
 scene e3_m_larkfield_fair
 when topic=memories here.region=larkfield
-a : The year a ram got loose in the fair and ran through the cider tent. | The wool price fell, the year I was fifteen. Half the downs went hungry. | I won a pie at the fair for the best fleece. I'd stolen the fleece.
-b[herder] : I remember that ram. He was mine. He's never been happier.
+a : The year a ram got loose in the fair and ran through the cider tent. | The wool price fell one year, before your time maybe. Half the downs went hungry. | I won a pie at the fair for the best fleece. I'd stolen the fleece.
+b[herder] #herder : I remember that whole fair. Never been a better one.
 b : I was in that tent! | I remember. We ate turnips. | You never!
+a@herder : Nor a worse one, for some.
 a : Did you get out? | Turnips and more turnips. | I gave the pie back. Mostly.
 
 scene e3_m_southmeadow_frost
 when topic=memories here.region=southmeadow
-a : The late frost, when all the blossom went black in one night. | The hot summer. The best vintage anyone can remember. | The year the wasps took the whole pear crop.
-b[farmer] : We lost half the orchard. I still remember the smell of it.
-b : That was a bad year. | I still have a bottle. | Wasps everywhere. Drunk ones.
+a : The late frost, when all the blossom went black in one night. | The hot summer. The best cider anyone can remember. | The year the wasps took the whole pear crop.
+b[farmer] #farmer : I remember that year. We lost half the orchard.
+b : That was a bad year. | I still have a jug. | Wasps everywhere. Drunk ones.
+a@farmer : And we're still talking about it.
 a : Bad for everyone. | Open it! | They chased us home.
 
 # ---------------------------------------------------------------- Days and seasons
 
 scene e3_m_festival_old
-when topic=memories here.day=festival
-a : The festivals were bigger when I was young. Three days, not one. | My first festival, I ate so much honey cake I was sick in the well. | I danced with my mate at this festival, years back.
-b[young] : This one's big! There's a juggler!
+when topic=memories here.day=festival a.stage!=young
+a : The festivals were bigger when I was young. Three days, not one. | My first festival, I ate so much honey cake I was sick in the well. | I danced my first dance at this festival, years back.
+b[young] #young : This one's big! There's a juggler!
 b : Three days? | In the well? | I remember.
+a@young : So there is. Go and watch, then.
 a : Three days and three nights. | Nobody drank from it for a week. | Feels like yesterday.
 
 scene e3_m_restday_old
-when topic=memories here.day=rest
+when topic=memories here.day=rest a.stage!=young
 a : As a pup I hated Restday. Sitting still all day in the chapel. | My father always made pancakes on Restday. | We'd walk to the river after chapel. All of us.
-b[priest] : You'd sit still now. Wouldn't you?
+b[priest] #priest : You'd sit still now. Wouldn't you?
 b : I still hate it. | Every Restday? | I remember that.
+a@priest : Mostly.
 a : Don't tell the priest. | Even when there was no flour. | Good days.
 
 scene e3_m_market_old
-when topic=memories here.place=market
+when topic=memories here.place=market a.stage!=young
 a : There used to be a wolf here sold pies shaped like hares. | This market used to be half the size. | My grandfather had a stall right where that one is.
-b[merchant] : My father had a stall there too. They fought every morning.
+b[merchant] #merchant : My father had a stall here too. They fought every morning.
 b : I remember those pies. | It's twice as loud, too. | Selling what?
+a@merchant : Then they were probably friends.
 a : Best pies in the world. | And twice as dear. | Pots. Nobody needed pots. He sold them anyway.
 
 scene e3_m_tavern_old
-when topic=memories here.place=tavern
+when topic=memories here.place=tavern a.stage!=young
 a : I met my oldest friend over a spilled cup in this very room. | This place used to have a fiddler every night. | I had my first drink in here. Fell off that stool.
-b[innkeeper] : That stool's seen worse.
+b[innkeeper] #inn : This room's seen worse. Most nights.
 b : Who spilled it? | What happened to him? | That one?
+a@inn : And you've mopped it all up.
 a : Both of us. | Married. Hasn't played since. | That one. It's never been right.
 
 scene e3_m_winter_first_snow
 when topic=memories here.season=winter
 a : First snow always makes me think of my mother. | When I was small I thought snow was the moon breaking up. | We'd slide down the chapel hill on trays.
-b[young] : Can we slide down the hill? Can we?
+b[young] #young : Can we slide down the hill? Can we?
 b : Why's that? | That's lovely. | The priest hated that.
+a@young : When it's deep enough. Not before.
 a : She'd catch the flakes on her tongue. A grown wolf. | It is, isn't it. | That's why we did it.
 
 scene e3_m_summer_swim
 when topic=memories here.season=summer
-a : Summers we swam in the river every day. | I remember long summers. Light till midnight. | One summer I slept out under the stars every night.
-b[old] : We swam in everything. Ponds, troughs.
+a : Summers we swam in the river every day. | I remember long summers. Light till near midnight. | One summer I slept out under the stars every night.
+b[old] #old : We swam in everything. Ponds, troughs.
 b : The water was so cold. | They don't make summers like that now. | Did it rain?
+a@old : Troughs! The beasts must have loved you.
 a : And we didn't care. | Every summer feels shorter. | Once. I stayed out anyway.
 
 scene e3_m_autumn_harvest
 when topic=memories here.season=autumn
 a : At harvest we'd all ride home on the last cart. | My first harvest I cut my paw on the sickle. Still have the scar. | When I was a pup, harvest supper was the best night of the year.
-b[farmer] : We still do. Ride on the cart. Sing badly.
+b[farmer] #farmer : We still do. Every harvest. Singing badly.
 b : I remember. | Show me. | It still is.
+a@farmer : Then I'll come and sing badly with you.
 a : Hay down the back of your neck. | There. | For some of us.
 
 scene e3_m_spring_lambs
 when topic=memories here.season=spring
 a : First spring I ever remember, I watched a lamb being born. | My mother planted beans every spring and talked to them. | Spring cleaning. My mother beat the rugs like they owed her money.
-b[herder] : I've seen thousands. Still makes me stop.
+b[herder] #herder : I've seen thousands of lambs. Still makes me stop.
 b : Was it wonderful? | Did they grow? | Mine too.
+a@herder : I'd stop too.
 a : It was messy. And wonderful. | Better than mine ever have. | They did owe her money.
 
 scene e3_m_night_stories
 when topic=memories here.time=dusk|night
 a : My grandfather told ghost stories at this hour. I never slept. | We used to sit out and count the stars. | When I was small, I thought the dark had teeth.
-b[young] : Tell me a ghost story!
+b[young] #young : Tell me a ghost story!
 b : I loved those. | How many did you get to? | It does. Sometimes.
+a@young : Not tonight. You'd never sleep, and I'd get the blame.
 a : I still can't walk past the old well. | We never finished. | Don't say that.
 
 # ---------------------------------------------------------------- By trade
@@ -466,81 +549,92 @@ a : I still can't walk past the old well. | We never finished. | Don't say that.
 scene e3_m_smith_first
 when topic=memories a.job=smith
 a : The first shoe I ever made, the horse kicked it off. | My master made me pump the bellows for a year before I touched a hammer. | I remember the first sword I made. Bent like a willow.
-b[smith] : Mine too. A year on the bellows. Built my arms.
+b[smith] #smith : Mine too. A year on the bellows. Built my arms.
 b : The horse had opinions. | A whole year? | What happened to it?
+a@smith : Every smith starts the same.
 a : Horses always do. | And I'm glad of it now. | Hangs over my door. For humility.
 
 scene e3_m_guard_first
 when topic=memories a.job=guard|soldier
 a : My first night on watch I challenged a cow. | I remember my first arrest. A pup who stole an apple. I let him go. | I've stood this gate twenty years. Seen everything come through it.
-b[guard] : My first was a hedge. I thought it was moving.
+b[guard] #guard : My first was a hedge. I thought it was moving.
 b : Did it answer? | Soft. | Name one thing.
+a@guard : Was it?
 a : It mooed. I took that as a yes. | He's a carter now. Waves every day. | A bear. On a rope. Dancing.
 
 scene e3_m_miner_first
 when topic=memories a.job=miner
-a : My first day down the mine, my lamp went out. Longest hour of my life. | My father took me down at twelve. I held his tail the whole way. | I remember the day we broke into the old workings. Tools from before anyone.
-b[miner] : I'll never forget the first dark. Real dark. Nothing like it up here.
+a : My first day down the mine, my lamp went out. Longest day of my life. | My father took me down at twelve. I held his tail the whole way. | I remember the day we broke into the old workings. Tools from before anyone.
+b[miner] #miner : I'll never forget the first dark. Real dark. Nothing like it up here.
 b : What did you do? | At twelve? | Whose were they?
+a@miner : Nothing like it. You carry it with you after.
 a : Sat still and sang. Somebody heard. | It was how it was done. | Nobody knows. Ghosts, the old ones said.
 
 scene e3_m_farmer_harvest
 when topic=memories a.job=farmer|herder
 a : The best harvest I ever had, we couldn't fit it in the barn. | I remember the year the rain never stopped. We lost the lot. | My grandfather ploughed this field with an ox called Patience.
-b[farmer] : I remember that year. My wheat rotted standing.
+b[farmer] #farmer : I remember those years. Good and bad, every one.
 b : Where did you put it? | I'm sorry. | Was she patient?
+a@farmer : Every one. You don't forget a harvest.
 a : In the chapel, for a week. The priest didn't mind. | We got by. Just. | Never once. That was the joke.
 
 scene e3_m_fisher_catch
 when topic=memories a.job=fisher|sailor
 a : I caught a fish once as long as my boat. Let it go. | My first time out, I was sick over the side all day. | I remember the storm that took my uncle's boat.
-b[fisher] : They're all as long as the boat, the ones that got away.
+b[fisher] #fisher : The water gives you a story or two. Takes a few as well.
 b : Why'd you let it go? | Everyone is. | I'm sorry.
+a@fisher : More than a few.
 a : It looked at me. | Still am, some days. | We found the oar. Just the oar.
 
 scene e3_m_priest_first
 when topic=memories a.job=priest
-a : My first sermon, I forgot every word. I talked about bread for an hour. | When I was a novice, I lit the candles and set my sleeve alight. | I've married half this town and buried the other half's parents.
-b[piety=devout] : I remember that sermon! It was about bread. It was lovely.
+a : My first sermon, I forgot every word. I talked about bread till the candles burned down. | When I was a novice, I lit the candles and set my sleeve alight. | I've married half this town and buried the other half's parents.
+b[piety=devout] #devout : I remember your first sermons. They were lovely, all of them.
 b : Did anyone notice? | Were you hurt? | That's a lot of cake.
+a@devout : You're a kind liar.
 a : Everyone went home hungry. | Only my pride. | And a lot of tears.
 
 scene e3_m_healer_first
 when topic=memories a.job=healer
 a : My first patient was a goat. I was nine. | I remember the first life I couldn't save. You don't forget. | My teacher could tell what ailed you by smelling your breath.
-b[healer] : Mine was a carter with a crushed paw. I still dream of it.
+b[healer] #healer : Mine was a carter with a crushed paw. I still dream of it.
 b : Did the goat live? | I'm sorry. | Could she?
+a@healer : We all have one.
 a : Lived to bite me. | No. You don't. | Mostly. She was wrong about my uncle. He was just drunk.
 
 scene e3_m_merchant_first
 when topic=memories a.job=merchant|baker|innkeeper|crafter|cook
 a : I remember my first sale. A candle, to an old dear who felt sorry for me. | My first year I nearly lost the shop. Lived on dry bread. | The day I opened, nobody came till sundown.
-b[merchant] : My first customer tried to pay me in onions.
+b[merchant] #merchant : My first customer tried to pay me in onions.
 b : Kind of her. | And now? | And who came?
+a@merchant : Did you take them?
 a : She came back every week till she died. | Now I live on slightly better bread. | A wolf asking the way. I sold him a hat.
 
 scene e3_m_servant_old
 when topic=memories a.job=servant
 a : My first mistress had me polish every spoon twice. | I've worked in that house since I was ten. I know where every board creaks. | The old master used to slip me sweets when the mistress wasn't looking.
-b[servant] : Mine counted the spoons every night. Every one.
+b[servant] #servant : Mine counted the spoons every night. Every one.
 b : Twice? | Useful, that. | He sounds kind.
+a@servant : They always count the spoons.
 a : Once for her. Once for her mother. | Especially at night. | He was. The mistress wasn't.
 
 # ---------------------------------------------------------------- Wealth and character
 
 scene e3_m_rich_humble
-when topic=memories a.wealth=rich
-a : I started with nothing, you know. One cart and a borrowed mule. | People forget I grew up in two rooms over a tannery. | My father mended shoes. I've not forgotten.
-b[wealth=poor|destitute] : And now you've got the rest of us to borrow from.
-b : And look at you now. | I'd forgotten. | Good. Don't.
-a : The mule's buried in the garden. | The smell never leaves you. | I won't.
+when topic=memories a.wealth=rich a.job!=noble
+a : I grew up in two rooms over a tannery. People forget. | My first winter in trade I sold my own boots to buy stock. | I still keep my first ledger. Three pennies profit, the first month.
+b[wealth=poor|destitute] #poor : And now you've got the rest of us to borrow from.
+b : And look at you now. | Barefoot! | Three pennies!
+a@poor : And I lend fair. Ask anyone.
+a : The smell never leaves you. | In the snow. I'd do it again. | I was prouder of those than of anything since.
 
 scene e3_m_poor_better_times
 when topic=memories a.wealth=poor|destitute
-a : We had a good house once. Before Father's debts. | There was a time I bought cake without counting. | I had a good coat once. Fur-lined.
-b[wealth=rich] : Times change. They'll change again.
+a : We kept a pig once. A pig! Before Father's debts. | There was a time I bought cake without counting. | I had a good coat once. Fur-lined.
+b[wealth=rich] #rich : Times change. They'll change again.
 b : I didn't know. | Times change. | What happened to it?
-a : Nobody does. I don't tell it. | They do. Not my way, lately. | Sold. For bread. Good bread, mind.
+a@rich : They change faster for some.
+a : Not many do. We ate the pig, in the end. | They do. Not my way, lately. | Sold. For bread. Good bread, mind.
 
 scene e3_m_merry_tale
 when topic=memories a.humour=merry
@@ -550,24 +644,28 @@ a : He paid twice what it was worth. He was so pleased to have one. | It's still
 
 scene e3_m_dreamy
 when topic=memories a.drive=content
-a : Sometimes I sit and just remember. It's enough. | I remember a particular afternoon, years back. Nothing happened. It was perfect. | I could happily live all of it again, the bad bits too.
-b[drive=ambitious] : I'd rather be making new ones.
+a : Sometimes I sit and just remember. It's enough. | There was a spring when I was small, all blossom and rain. I still go back there, in my head. | I could happily live all of it again, the bad bits too.
+b[drive=ambitious] #amb : I'd rather be making new ones.
 b : That's a good way to be. | Those are the best. | Even the bad bits?
-a : It suits me. | Light, and bees, and a bit of bread. | They make the good ones taste right.
+a@amb : Make them, then. I'll remember them for you.
+a : It suits me. | Blossom, and rain on the roof. | They make the good ones taste right.
 
 scene e3_m_frank_bad
 when topic=memories a.honesty=frank
-a : My childhood was miserable and I won't pretend otherwise. | Everyone says my father was a good wolf. He wasn't. | I don't go to the old reunions. They lie about what it was like.
-b[warmth=warm] : Then I'm glad you're here now.
+a : We were hungry every winter. People forget that, when they go misty. | Everyone says my father was a good wolf. He wasn't. | I don't go to the old gatherings. They lie about what it was like.
+b[warmth=warm] #warm : Then I'm glad you're here now.
 b : I'm sorry. | I won't repeat it. | Somebody has to remember it honest.
+a@warm : So am I. Mostly.
 a : No need. I came through. | Repeat it. I don't mind. | That's me.
 
 scene e3_m_devout_old_priest
 when topic=memories a.piety=devout
-a : The old priest blessed me as a pup. I still feel it. | My mother never missed a Restday in sixty years. | I remember the night the gods answered me. I'll not say more.
-b[priest] : He was a good priest. I learned from him.
-b[piety=ordinary] : I missed one or two. Or forty.
-b : That's a fine thing. | Sixty years. | I'll not ask, then.
+a : The old priest blessed me as a pup. I still feel it. | My grandmother walked to chapel with a lantern every dawn till she was ninety. | I remember the night the gods answered me. I'll not say more.
+b[priest] #priest : He was a good priest. I learned from him.
+b[piety=ordinary] #ord : I've missed a dawn or two. Or forty.
+b : That's a fine thing. | Every dawn? | I'll not ask, then.
+a@priest : Then a bit of him's still here.
+a@ord : The Bright One counts the ones you came to.
 a : He smelled of candle wax and kindness. | Even in the snow. | But it happened.
 
 # ---------------------------------------------------------------- Quirks
@@ -586,6 +684,6 @@ a : Means what's done is done. | Means you get to live it again. | Nor have I. B
 
 scene e3_m_quirk_names
 when topic=memories a.quirk=remembers_every_name_ever_heard
-a : You know, we met before. Ten years ago. You were with a lame dog called Biscuit. | I remember your father. Tall fellow, laughed like a donkey. | You had a sister. Wren? No. Linnet.
-b : You've a memory like a ledger. | That's him. Gods. | Linnet! Nobody remembers Linnet.
+a : You know, we met before. Ten years ago. You were leading a lame mule called Biscuit. | I remember your father. Tall fellow, laughed like a donkey. | You had a sister. Wren? No. Linnet.
+b : You've a memory like a ledger. | That's him. #oath#. | Linnet! Nobody remembers Linnet.
 a : I can't help it. It all sticks. | He was a good sort. | I remember everybody. It's a curse.

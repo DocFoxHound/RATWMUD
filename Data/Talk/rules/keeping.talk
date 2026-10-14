@@ -153,7 +153,7 @@ remember pair: k=good 1m
 rule keep_business_failing
 when concept=keeping.answer business=failing
 priority 2
-say The shop's dying. Nobody's buying. | Not a coin in the till since Fiveday. | Another month like this and I'm shut. | I stand at the counter and listen to the street go by.
+say The shop's dying. Nobody's buying. | Not a coin in the till since Stoneday. | Another month like this and I'm shut. | I stand at the counter and listen to the street go by.
 then other: keeping.sorry
 remember pair: k=want 1m
 
@@ -584,8 +584,9 @@ priority 1
 say Make the most of it. It goes by quicker than you think. | Ah. I remember that. All of that. | Enjoy them. Even the noise.
 
 rule glad_family_single
-when concept=keeping.glad pair.mem.k=family !self.spouse !self.child pair.band!=spouses|family
-say Sounds like a full house. Mine's just me and the mice. | I'll take your word for it. | And here's me with nobody to burn my bread.
+when concept=keeping.glad pair.mem.k=family !self.spouse
+priority 1
+say Sounds like a full house. Mine's a quiet one. | I'll take your word for it. | And here's me with nobody to burn my bread.
 
 rule glad_family_dry
 when concept=keeping.glad pair.mem.k=family humour=dry

@@ -1,14 +1,23 @@
-# Food and the house as chains (doc 62 phase 7): one asks what the other's eating, or says what they think of a dish,
-# or tells a trouble with the house; the other answers as they are (food.answer, food.opinion, home.answer,
-# home.advice), and the talk may close in kind (keeping.sorry, keeping.glad, keeping.nod). Every reply is the
-# replier's own best rule, so one question has dozens of answers.
+# Food and the house as chains (doc 62 phase 7): one asks what the other's eating, or gives an opinion on a dish, or
+# remarks on what the season's putting on the table, or tells a trouble with the house; the other answers as they are
+# (food.answer, food.opinion, food.remark, home.answer, home.advice), and the talk may close in kind (food.react,
+# keeping.sorry, keeping.glad, keeping.nod). Every reply is the replier's own best rule, so one question has dozens of
+# answers.
+#
+# What each beat remembers, so the reply suits what was said (2 minutes: only for this chain):
+#   food.answer -> food.react: pair.mem.fa = good (a good feed) | plain (the usual)
+#   talk.food -> food.remark: pair.mem.fm = lean (winter's thin table) | plenty (the season's bounty, a feast)
+#   talk.home -> home.advice: pair.mem.hk = leak | smoke | damp | vermin | broken | wood | hens | noise | lodger | byre
+#   anything -> keeping.sorry/glad/nod: pair.mem.k = want | grief | good | family | jest | weary | hopes (keeping.talk)
+# food.opinion answers only opinions ("Fish is better than meat"), never news: every alternative of every rule that
+# hands to it is an opinion about a food or a drink.
 
-# ================================================================ FOOD: asking, telling, claiming
+# ================================================================ FOOD: asking (-> food.answer)
 
 rule e1_fd_ask_supper
 when concept=talk.food pair.band=acquaintances|friends|family|spouses|apprentice
 cooldown 1d
-say What's for #supper#, then? | Eaten yet today? | What are you having tonight? | Had anything good to eat lately?
+say What's for #supper#, then? | Eaten yet today? | What are you having tonight? | What's in your pot these days?
 then other: food.answer
 
 rule e1_fd_ask_supper_dusk
@@ -20,20 +29,22 @@ then other: food.answer
 rule e1_fd_ask_cook
 when concept=talk.food other.job=cook|baker|innkeeper|brewer
 cooldown 2d
-say What's good at yours today? | What's on the fire today, then? | Anything worth coming in for today?
+say What does someone who feeds the town eat, then? | Do you ever eat your own cooking, at the end of the day? | After feeding everyone else, what's your supper?
 then other: food.answer
 
 rule e1_fd_ask_pup
 when concept=talk.food self.stage=adult|old other.stage=young
 cooldown 1d
-say Have you had your dinner, #address#? | Eaten your greens? | What did your mother give you for breakfast?
+say What's for your dinner, #address#? | And what are you having for your #supper#? | What are they feeding you tonight?
 then other: food.answer
 
 rule e1_fd_ask_neighbour
 when concept=talk.food pair.neighbours=yes
 cooldown 2d
-say Something smelled grand through the wall last night. What was it? | Was that you frying at midnight? | Your chimney's been going all day. What are you cooking?
+say What's cooking at yours tonight? I'll be sniffing at the wall anyway. | Your chimney's been going since noon. What's in the pot? | What's for #supper# next door, then?
 then other: food.answer
+
+# ================================================================ FOOD: an opinion (-> food.opinion)
 
 rule e1_fd_claim_bread
 when concept=talk.food
@@ -44,29 +55,29 @@ then other: food.opinion
 scene e1_fd_claim_raw
 when topic=food
 cooldown 2d
-a : Cooked meat's all very well, but some days a wolf wants a bone with the red still on it. | I'd eat a rabbit whole if nobody was looking. | My grandfather said fire ruins good meat.
-b[piety=devout] : The fire's a gift. Don't spit on it.
-b[job=cook] : Then what am I for? Go and chew a sheep.
-b[stage=young] : I ate a beetle once. Is that the same?
-b[humour=merry|dry] : Don't tell the cook. Tell me, and bring two.
-b : Hush. Somebody'll hear. | Fur and all? | Your grandfather had no teeth by fifty, I'll bet.
-a?[humour=merry] : I'm only half joking. The other half's hungry.
-a : We're none of us so civilised as we look. | Fur and all. | He had all of them. He bit a magistrate.
+a[stage=adult|old] : Cooked meat's all very well, but some days a wolf wants a bone with the red still on it. | I'd eat a rabbit whole if nobody was looking. | My grandfather said fire ruins good meat.
+b[piety=devout] #told : The fire's a gift. Don't spit on it.
+b[job=cook] #told : Then what am I for? Go and chew a sheep.
+b[stage=young] #told : I ate a beetle once. Is that the same?
+b[humour=merry|dry] #told : Say no more. I know a butcher with a back door.
+b #plain : Hush. Somebody'll hear. | Fur and all? | Your grandfather had no teeth by fifty, I'll bet.
+a@told : Only some days, mind. | I'm only half joking. | Mm. You may have something there.
+a@plain : We're none of us so civilised as we look. | Fur and all. Bones too. | He had every one of them. He bit a magistrate once.
 
 rule e1_fd_claim_fish
 when concept=talk.food
 cooldown 2d
-say Fish is better than meat. There. I've said it. | A fresh herring's worth any roast. | Give me a trout over a chop, every time.
+say Fish is better than meat. There. I've said it. | A fresh fish fried in butter is worth any roast. | Give me a trout over a chop, every time.
 then other: food.opinion
 
 rule e1_fd_claim_sweet
 when concept=talk.food
 cooldown 2d
-say A meal's not done without something sweet after. | Honey cake. If I'm ever rich, I'll eat it every day. | Plum jam on everything. Everything.
+say A meal's not done without something sweet after. | Honey cake. I could eat it every day and never tire. | Plum jam on everything. Everything.
 then other: food.opinion
 
 rule e1_fd_claim_drink
-when concept=talk.food
+when concept=talk.food self.stage=adult|old
 cooldown 2d
 say Cider's better than ale and I'll hear no argument. | A meal without ale is just eating. | Water's for washing. Supper wants a cup of something.
 then other: food.opinion
@@ -80,146 +91,152 @@ then other: food.opinion
 rule e1_fd_claim_onions
 when concept=talk.food
 cooldown 2d
-say Everything starts with an onion. Everything good. | Turnips are nobody's favourite. Name one wolf. | Too much salt ruins a stew. Too little ruins a cook.
+say Everything starts with an onion. Everything good. | Turnips are nobody's favourite. Name me one wolf who loves a turnip. | Salt's the whole of cooking. The rest is waiting.
 then other: food.opinion
 
 rule e1_fd_claim_merry
 when concept=talk.food humour=merry
 cooldown 2d
-say If I ate how I wanted, I'd be banned from every tavern in the realm. | I've decided gravy is a drink. | My diet is simple. Whatever's nearest.
+say If I ate how I wanted, I'd be barred from every tavern in the realm. | I've decided gravy is a drink. | My rule for food is simple. Whatever's nearest.
 then other: food.opinion
 
 rule e1_fd_claim_old
 when concept=talk.food stage=old
 cooldown 2d
-say Food tasted of something when I was young. | You pups don't know what a real pie is. | We ate what we were given and we said thank you.
+say Food tasted of something when I was young. | You pups don't know what a real pie is. | Bread's not what it was. Nothing's what it was, but bread especially.
 then other: food.opinion
 
 rule e1_fd_claim_cook
 when concept=talk.food job=cook
 cooldown 2d
-say Nobody salts enough. Nobody. | People think cooking's fire. It's patience. | If one more wolf asks for it rare, I'll serve them the cow.
+say Nobody salts enough. Nobody. | People think cooking's fire. It's patience. | Rare, they all say. Rare! One day I'll send it out still bleating.
 then other: food.opinion
 
 rule e1_fd_claim_baker
 when concept=talk.food job=baker
 cooldown 2d
-say Bread's a whole meal on its own. Fight me. | You can tell a town by its bread. | Day-old bread's for toasting. Not for complaining about.
+say Bread's a whole meal on its own. I'll not be told otherwise. | You can tell a town by its bread. | Day-old bread's for toasting, not for complaining about.
 then other: food.opinion
 
 rule e1_fd_claim_brewer
 when concept=talk.food job=brewer|innkeeper
 cooldown 2d
-say A good ale is food, you know. Barley. Practically bread. | The new barrel's the best I've had in years. | Folk don't drink like they used to. Thank the gods.
+say A good ale is food, you know. Barley. Practically bread. | Ale wants a bit of bread with it. Bread wants a lot of ale with it. | Cider's for pups and orchard folk. A grown wolf drinks ale.
 then other: food.opinion
 
 rule e1_fd_claim_fisher
 when concept=talk.food job=fisher|sailor
 cooldown 2d
-say Folk who won't eat fish have never had one an hour out of the water. | Salt fish and hard bread kept me alive a whole season. | Fish heads make the best soup. Don't pull that face.
+say Folk who won't eat fish have never had one an hour out of the water. | Salt fish and hard bread. Feed a crew on that and they'll never mutiny. | Fish heads make the best soup. Don't pull that face.
 then other: food.opinion
 
 rule e1_fd_claim_farmer
 when concept=talk.food job=farmer|herder
 cooldown 2d
-say Town folk think eggs come from a basket. | Grow it yourself and it tastes twice as good. | Nobody thanks the farmer at the feast.
+say Town folk think eggs come from a basket. | Grow it yourself and it tastes twice as good. | A field pea's worth ten from the market. Ten.
 then other: food.opinion
 
-## The realm's dishes, where you stand
+## The realm's dishes, where you stand (opinions, so food.opinion fits)
 
 rule e1_fd_claim_fens
-when concept=talk.food here.region=fens
+when concept=talk.food here.region=mirebridge
 cooldown 2d
-say No fish like an eel. Fight me. | Jellied eel on Restday. That's the Fens. | The eel traps were heaving this morning.
+say No fish like an eel. I'll argue it with anyone. | Jellied eel's the finest thing the Fens ever made. | A duck off the reed beds, roasted with sage. Nothing better.
 then other: food.opinion
 
 rule e1_fd_claim_larkfield
 when concept=talk.food here.region=larkfield
 cooldown 2d
-say Downs mutton. They talk about it in Ridgemere. | Mutton stew with barley. Nothing better on a #cold# night. | The cheese up the downs is the best in the realm.
+say Downs mutton's sweeter. It's the thyme in the grass. | Mutton stew with barley. Nothing better on a #cold# night. | The cheese off the downs is the best in the realm.
 then other: food.opinion
 
 rule e1_fd_claim_southmeadow
 when concept=talk.food here.region=southmeadow
 cooldown 2d
-say Our wine's wasted on the north. They put honey in it. | Figs, peaches, plums. Where else would you live? | The orchards are dropping fruit faster than we can pick.
+say Our cider's wasted on the north. They drink it warm. | A pear off the tree, still warm from the sun. Where else would you live? | Southmeadow plums. Everyone else's are just practice.
 then other: food.opinion
 
 rule e1_fd_claim_frosthollow
 when concept=talk.food here.region=frosthollow
 cooldown 2d
-say Smoked fish and black bread. Food that knows it's winter. | A miner's pasty. Eat it with your paws and your eyes shut. | Nothing goes off up here. The cold sees to it.
+say Smoked mutton and black bread. Food that knows it's winter. | A miner's pasty. Eat it with your paws and your eyes shut. | Salt meat's better than fresh. It's had time to think.
 then other: food.opinion
 
 rule e1_fd_claim_coldwater
-when concept=talk.food here.region=lake
+when concept=talk.food here.region=coldwater
 cooldown 2d
-say Glasswater trout. The rest of the realm eats mud by comparison. | Lake char, smoked over juniper. Have you had it? | Clean water, sweet fish. That's the secret.
+say Glasswater trout. The rest of the realm eats mud by comparison. | Lake char, smoked over juniper. Best thing a fish can become. | Clean water, sweet fish. That's the whole secret.
 then other: food.opinion
 
 rule e1_fd_claim_oakhaven
-when concept=talk.food here.region=woods
+when concept=talk.food here.region=oakhaven
 cooldown 2d
-say Mushrooms and venison. The woods feed you, if you know them. | Wild boar, slow roasted. Ask anyone in Oakhaven. | Hazelnuts in the bread. That's how we do it.
+say Mushrooms and venison. The Warmwood feeds you, if you know it. | Wild boar, slow roasted. Nothing finer. | Hazelnuts in the bread. That's how bread should be.
 then other: food.opinion
 
 rule e1_fd_claim_ridgemere
 when concept=talk.food here.region=ridgemere
 cooldown 2d
-say Ridgemere's a fish city. Herring, mussels, crab. | Best thing in this city's the chowder off the wharf. | Everything in this city tastes faintly of the sea.
+say Ridgemere's a fish city. Herring, mussels, crab. Who needs a field? | Best thing in this city's the chowder off the wharf. | Everything in this city tastes faintly of the sea. I like it.
 then other: food.opinion
 
-## The year as it falls on the table
+rule e1_fd_tavern
+when concept=talk.food here.place=tavern
+cooldown 1d
+say The pie here's better than it has any right to be. | The fish here's been dead a week. You can tell. | Whatever the cook's done to that stew, it's working.
+then other: food.opinion
+
+# ================================================================ FOOD: the season, the feast (-> food.remark)
 
 rule e1_fd_season_winter
 when concept=talk.food here.season=winter
 cooldown 1d
 say Turnips again. I'd give a tooth for a fresh pea. | Salt pork, salt fish, salt everything. | The cellar's half empty and it's not midwinter.
-then other: food.opinion
+then other: food.remark
+remember pair: fm=lean 2m
 
 rule e1_fd_season_spring
 when concept=talk.food here.season=spring
 cooldown 1d
 say First greens of the year! Nettles three days running. | Lamb's on the market. Spring's here. | The hens are laying again. Eggs with everything.
-then other: food.opinion
+then other: food.remark
+remember pair: fm=plenty 2m
 
 rule e1_fd_season_summer
 when concept=talk.food here.season=summer
 cooldown 1d
-say Strawberries at the market. Ate them before I got home. | Too hot to light a fire. Cold meat and pickles. | Peas, fresh from the pod. Like eating sunshine.
-then other: food.opinion
+say Strawberries at the market. Ate them before I got home. | Lettuce and radishes from the yard. Crunchy suppers all week. | Peas, fresh from the pod. Like eating sunshine.
+then other: food.remark
+remember pair: fm=plenty 2m
 
 rule e1_fd_season_autumn
 when concept=talk.food here.season=autumn
 cooldown 1d
 say Blackberries in every hedge. My paws are purple. | Harvest supper's soon. I'm saving room. | Pig-killing time. Sausages for weeks.
-then other: food.opinion
+then other: food.remark
+remember pair: fm=plenty 2m
 
 rule e1_fd_festival
 when concept=talk.food here.day=festival
 cooldown 1d
-say Have you tried the roast? Go, before it's gone. | They've a whole ox turning on the square. | I've eaten three of everything. I'm starting on four.
-then other: food.opinion
+say Have you tried the roast? Go, before it's gone. | They've a whole ox turning by the well. | I've let my belt out twice. There's one hole left.
+then other: food.remark
+remember pair: fm=plenty 2m
 
 rule e1_fd_restday_fast
 when concept=talk.food here.day=rest piety=devout
 cooldown 1d
-say Fasting till the bell. My belly's praying louder than I am. | No food till after chapel. The gods test us. | I keep the fast. Mostly. There was a biscuit.
+say Not a crumb till after chapel. My belly's praying louder than I am. | I keep the Restday fast. Mostly. There was a biscuit. | Nothing till the bell. The Bright One can hear my stomach, I'm sure.
 then other: keeping.nod
 
-rule e1_fd_tavern
-when concept=talk.food here.place=tavern
-cooldown 1d
-say The pie here's better than it has any right to be. | Don't have the fish. Trust me. | Whatever the cook's done to that stew, it's working.
-then other: food.opinion
-
-## Telling them, unasked
+# ================================================================ FOOD: telling them, unasked (-> keeping.*)
 
 rule e1_fd_tell_poor
 when concept=talk.food wealth=poor|destitute
 cooldown 2d
-say Bread and water till Fiveday. | I can make one onion last three days. It's an art. | I bought the bones the butcher was throwing out. Soup for a week.
+say Bread and water till Marketday. | I can make one onion last three days. It's an art. | I bought the bones the butcher was throwing out. Soup for a week.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fd_tell_hungry
 when concept=talk.food hungry=yes
@@ -227,228 +244,279 @@ cooldown 12h
 priority 1
 say I've not eaten since yesterday morning. | Don't say pie. Don't say anything. | My belly's been growling at strangers.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fd_tell_dole
 when concept=talk.food on_dole=yes
 cooldown 2d
 say The parish soup's water with a rumour of leek. | Parish bread again. I'm grateful. I'm sick of it. | They gave us dole cheese. Hard as a paving stone.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fd_tell_rich
 when concept=talk.food wealth=rich
 cooldown 2d
 say Our new cook's from Southmeadow. You can taste the sun in her sauces. | We had a pheasant at dinner. Nobody liked it but me. | I've a cellar of wine I'll never drink through.
 then other: keeping.glad
+remember pair: k=good 2m
 
 rule e1_fd_tell_spouse
 when concept=talk.food self.spouse
 cooldown 2d
 say #self.spouse# cooked last night. Something new. I'm still not sure what. | #self.spouse# hides the honey from me. I always find it. | #self.spouse# makes the best dumplings in town. Don't tell my mother.
-then other: keeping.nod
+then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_fd_tell_child
 when concept=talk.food self.child
 cooldown 2d
 say #self.child# won't eat anything green. Anything. | #self.child# ate a whole loaf on the way home from the baker. | #self.child# made me breakfast. I ate it. I'm brave.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_fd_tell_widowed
 when concept=talk.food widowed=yes
 cooldown 2d
 say I still cook for two. Habit. The neighbours eat well. | Nobody to cook for. I just eat bread now. | Their stew. I can't get it right. I keep trying.
 then other: keeping.sorry
+remember pair: k=grief 2m
 
 rule e1_fd_tell_working
 when concept=talk.food working=yes shift=during
 cooldown 2d
-say Haven't stopped for a bite since dawn. | I'll eat when it's done. If it's ever done. | Crust in my pocket. Lunch.
+say Haven't stopped for a bite since dawn. | I'll eat when it's done. If it's ever done. | Crust in my pocket. That's dinner.
 then other: keeping.nod
+remember pair: k=weary 2m
 
 rule e1_fd_tell_travelling
 when concept=talk.food travelling=yes
 cooldown 1d
-say Road food. Hard cheese and harder bread. | Every inn on the road does the same stew. Same stew! | I've eaten in nine taverns this month. One was good.
+say Road food. Hard cheese and harder bread. | Every inn on the road does the same stew. The same stew! | I've eaten in nine taverns this month. One was good.
 then other: keeping.nod
+remember pair: k=weary 2m
 
 rule e1_fd_tell_sump
 when concept=talk.food quarter=sump
 cooldown 2d
-say Eel heads by the Sump steps. Penny a bag. Don't ask. | Twenty to one hearth in our building. You cook when you can. | The tide brought in a crate of cabbages. We ate like lords.
+say The Soup Kitchen's doing barley this week. We queued twice. | Pickles and bread off the Sump Market. It's a supper. | A crate of cabbages fell off a cart on the wharf. We ate like lords.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fd_tell_heights
 when concept=talk.food quarter=heights
 cooldown 2d
-say Another dinner on the Heights. Nine courses. I'll burst. | They served snails. I said they were lovely. They weren't. | Our cook won't speak to me since I asked for plain mutton.
+say Dinners every night on the Heights this season. The whole street smells of roast. | They served snails next door. Snails! I saw the shells go out. | Everyone on the Heights has a new cook from Southmeadow. Ours too.
 then other: keeping.nod
 
-## A pie promised, between friends
+## A pie promised, between friends (the one who promised remembers it: self.mem.pie_host)
 
 scene e1_fd_promise_pie
 when topic=food pair.band=friends|family
 once per other
 remember pair: pie_promised 7d
-a : I'll bake you a pie this week. Hold me to it. | Come by on Restday. I'll make a stew big enough for two. | I owe you a supper. I've not forgotten.
+remember self: pie_host 7d
+a[stage=adult|old] : I'll bake you a pie this week. Hold me to it. | Come by on Restday. I'll make a stew big enough for two. | I owe you a supper. I've not forgotten.
 b[warmth=cold] : If you like. | If you must. | Don't trouble yourself.
 b[wealth=poor|destitute] : You're a good friend. I'll not say no. | I'll bring the bread. Such as it is. | I'll not pretend I don't need it.
 b[humour=merry] : I'm holding you to it in front of witnesses. | I'll come hungry. Very hungry. | I'll remind you every day till you do.
-b[stage=young] : A whole pie? For me? | Is there pudding? | Can I bring my brother?
+b[stage=young] : A whole pie? For me? | Is there pudding after? | Can I bring a friend?
 b : I'll hold you to that. | I'll be there. | I'll believe it when I smell it.
 a : Hold me, then. | Bring a big bowl. | Fair.
 
-rule e1_fd_pie_owed
-when concept=talk.food pair.mem.pie_promised
+scene e1_fd_pie_owed_host
+when topic=food pair.mem.pie_promised a.mem.pie_host
 cooldown 2d
-say About that pie we talked of. Is it happening? | That supper. I've not forgotten. I've just not done it. | I've been thinking about that stew all week.
-then other: keeping.nod
+a : About that supper I promised you. I've not forgotten. | That pie I owe you. It's coming. Truly. | I keep meaning to have you round. This week. I swear it.
+b[warmth=cold] : If you say so.
+b[humour=merry] : I've been starving myself for it since you said.
+b : I'll believe it when it's on the table. | Coming from where? The moon? | You said that last week.
 
-# ================================================================ FOOD: the answer (self answers what they eat)
+scene e1_fd_pie_owed_guest
+when topic=food pair.mem.pie_promised b.mem.pie_host
+cooldown 2d
+a : That pie you promised. I'm still waiting. | I've kept my belly free for that supper of yours. | My nose keeps turning towards your door. Something about a pie.
+b : This week. I swear it. | Don't. I'm ashamed enough. | It's coming. Good pies take time.
+
+# ================================================================ FOOD: the answer (self says what they're eating)
 
 rule e1_fa_plain
 when concept=food.answer
-say Bread and whatever's in the pot. | Stew. It's always stew. | Not much. A bit of cheese. | Whatever I can find, when I get in.
+say Bread and whatever's in the pot. | Stew. It's always stew. | Bread and cheese, same as ever. | Whatever I can find, when I get in.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_plain2
 when concept=food.answer
-say Porridge, a bit of bacon if I'm lucky. | Soup, bread, bed. | Haven't decided. Something with onions.
+say Porridge, and a rasher if I'm lucky. | Soup, bread, bed. | Haven't decided. Something with onions. | Yesterday's pie, warmed up.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_poor
 when concept=food.answer wealth=poor
 say Turnip broth. Again. | Bread and dripping. Same as yesterday. | A heel of cheese and hope.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_destitute
 when concept=food.answer wealth=destitute
 priority 1
 say Nothing yet. Maybe nothing at all. | Whatever the baker throws out at dusk. | I've a crust. That's my day.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_rich
 when concept=food.answer wealth=rich
-say Duck, I think. Or goose. Cook decides. | Venison with a plum sauce. Quite nice. | We've guests, so something grand. I'll eat bread in the kitchen after.
+say Duck, I think. Or goose. Cook decides. | Venison with a plum sauce. Quite nice. | We've guests, so something grand. I'll raid the kitchen for bread after. | Eight courses. One of them a jelly with a fish in it.
 then other: keeping.glad
+remember pair: k=good 2m
 
 rule e1_fa_hungry
 when concept=food.answer hungry=yes
 priority 2
 say Nothing! Don't even ask. | I've not eaten since yesterday. | Don't talk about food. I'll cry.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_dole
 when concept=food.answer on_dole=yes
 priority 1
 say The parish loaf. All of it, in one go. | Dole soup. It's soup, near enough. | Whatever the chapel's giving.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_homeless
 when concept=food.answer homeless=yes
 priority 2
-say Nothing to cook on, nowhere to cook it. | What I'm given. | A crust from the tavern back door.
+say Nothing to cook on, nowhere to cook it. | Whatever I'm given. | A crust from the tavern's back door.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_cook
 when concept=food.answer job=cook
-say I cooked for thirty today. I'll eat bread and cheese standing up. | Whatever's left in the pot. Burnt bits. Best bits. | Nothing. Cooks don't eat. Didn't you know?
+say I cooked for thirty today. I'll eat bread and cheese standing up. | Whatever's stuck to the bottom of the pot. Best bits. | The cook's leavings. Which is to say, mine.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_baker
 when concept=food.answer job=baker
 say Bread. What else? Yesterday's, mind. | The loaves that came out wrong. | A bun. A big one. I earned it.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_brewer
 when concept=food.answer job=brewer
 say Bread and ale. It's barley twice over. | Whatever goes with the new barrel. | Tasting, mostly. It counts.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_innkeeper
 when concept=food.answer job=innkeeper
-say Whatever the guests didn't finish. Don't tell them. | The stew. I always eat the stew. I know what's in it. | Nothing till the last one's gone home.
+say Whatever the guests didn't finish. Don't tell them. | The stew. I always eat the stew. I know what's in it. | Nothing till the last one's gone home. Then the whole pot.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_fisher
 when concept=food.answer job=fisher|sailor
-say Fish. Always fish. Happy with fish. | The ones too small to sell. Sweetest. | Salt herring and a heel of bread.
+say Fish. Always fish. Happy with fish. | The ones too small to sell. Sweetest. | Whatever came up in the net this morning, fried.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_farmer
 when concept=food.answer job=farmer
-say Eggs. The hens won't stop. | Our own peas, our own pork. Can't beat it. | Whatever we didn't sell at market.
+say Eggs. The hens won't stop. | Our own peas, our own pork. Can't beat it. | Whatever we didn't sell at market, which was the best of it.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_herder
 when concept=food.answer job=herder
-say Mutton. Not any I knew, I hope. | Curds and bread out on the hill. | Porridge. Herders eat porridge. Lamb's for selling.
+say Mutton. Not any I knew, I hope. | Curds and bread out on the hill. | Oatcakes and a bit of cheese, by the fold.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_guard
 when concept=food.answer job=guard|soldier
-say Barracks porridge. Thick enough to stop an arrow. | Sausage and bread, eaten on the walk. | Whatever's left when the night watch is done with it.
+say Watch House porridge. Thick enough to stop an arrow. | Sausage and bread, eaten on the walk. | Whatever's left when the night watch is done with it.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_miner
 when concept=food.answer job=miner
 say A pasty, eaten in the dark. | Something hot, if there's any left when I'm up. | Whatever's not got rock dust in it.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_woodcutter
-when concept=food.answer job=woodcutter|laborer
-say Enough for three. I've been swinging an axe all day. | Bread, cheese, a raw onion. Laborer's dinner. | Anything. Everything. Twice.
+when concept=food.answer job=woodcutter
+say Enough for three. I've been swinging an axe all day. | Bread, cheese, a raw onion. Woodcutter's dinner. | Anything. Everything. Twice.
 then other: food.react
+remember pair: fa=plain 2m
+
+rule e1_fa_laborer
+when concept=food.answer job=laborer|carter
+say Bread and a lump of bacon, sat on the cart. | A bowl of something from the cookshop. Don't ask what. | Pease pudding. It sticks to your ribs.
+then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_servant
 when concept=food.answer job=servant
 say What comes back from the family's table. | The kitchen gets the ends. I like the ends. | Bread and dripping in the scullery. Standing up.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_priest
 when concept=food.answer job=priest
-say Whatever my flock sends round. Tonight, a pie. | Plain food. The gods like plain. | A widow sent me a cake. I mustn't say it was dry.
+say Whatever my flock sends round. Tonight, a pie of some sort. | Plain food. The Bright One likes plain. | A widow sent me a cake. I mustn't say it was dry.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_young
 when concept=food.answer stage=young
-say Porridge. I hate porridge. | Bread and jam! Mostly jam. | I don't know. Mother won't say. Something with cabbage.
+say Porridge. I hate porridge. | Bread and jam! Mostly jam. | I don't know. Something with cabbage. I can smell it from here.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_old
 when concept=food.answer stage=old
-say Soft things. My teeth have retired. | Broth, bread soaked in it. Same as every night. | Not much. You eat less, at my age.
+say Soft things. My teeth have retired. | Broth, and bread soaked in it. Same as every night. | Not much. You eat less, at my age.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_spouse
 when concept=food.answer self.spouse
 cooldown 1d
 say #self.spouse#'s cooking, so something burnt. | Whatever #self.spouse# has on. I don't ask. | #self.spouse#'s famous dumplings. Famous in our house.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_fa_child
 when concept=food.answer self.child
 cooldown 1d
 say Whatever #self.child# leaves on the plate. | #self.child# says it's soup tonight. #self.child# made it. Gods help me. | Bread. #self.child# ate everything else.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_fa_widowed
 when concept=food.answer widowed=yes
-say I cook for one now. Still make too much. | Bread and cheese. I can't be bothered for one. | Their stew. I'm learning it.
+say I cook for one now. Still make too much. | Bread and cheese. I can't be bothered, for one. | Their stew. I'm learning it.
 then other: keeping.sorry
+remember pair: k=grief 2m
 
 rule e1_fa_working
 when concept=food.answer working=yes shift=during
 say Haven't stopped long enough to think. | Bread in my pocket. Eaten standing. | Later. If there's a later.
-then other: food.react
+then other: keeping.nod
+remember pair: k=weary 2m
 
 rule e1_fa_travelling
 when concept=food.answer travelling=yes
 say Whatever the next inn's got. | Road cheese. It's a kind of cheese. | Hard bread and an apple, walking.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_devout_rest
 when concept=food.answer piety=devout here.day=rest
-say Nothing till the bell. It's Restday. | I'm fasting. Ask me after chapel. | A crust and a prayer.
-then other: food.react
+say Nothing till the bell. It's Restday. | I'm keeping the fast. Ask me after chapel. | A crust and a prayer.
+then other: keeping.nod
 
 rule e1_fa_short
 when concept=food.answer temper=short
@@ -459,81 +527,102 @@ when concept=food.answer humour=merry
 cooldown 1d
 say Three suppers, one after the other. | Whatever's not nailed down. | A pie inside a pie. I'm working on the idea.
 then other: keeping.glad
-
-rule e1_fa_heights
-when concept=food.answer quarter=heights
-say Eight courses. One of them a jelly with a fish in it. | Something French- No. Something Southmeadow. Very small. | Dinner at the Merriots'. I'll be hungry after.
-then other: food.react
+remember pair: k=jest 2m
 
 rule e1_fa_sump
 when concept=food.answer quarter=sump
-say Whatever's cheap at the Sump steps. | Eel heads, boiled. They grow on you. | Whatever the tide brings.
+say Whatever's cheap at the Sump Market. | Porridge from the stall at the bottom of our lane. | Soup Kitchen soup. Same pot as yesterday.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_fa_winter
 when concept=food.answer here.season=winter
 say Salt pork and the last of the turnips. | Pease pudding. It's been on since dawn. | Broth, and lots of it.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_spring
 when concept=food.answer here.season=spring
 say Nettle soup. It's the hungry gap. | Eggs. The hens are back at it. | The last of the cellar and the first of the greens.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_summer
 when concept=food.answer here.season=summer
 say Bread and cheese. Too hot to cook. | Peas, raw from the pod. | Cold mutton and a cucumber.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_autumn
 when concept=food.answer here.season=autumn
 say Apples with everything. | Sausages. Pig-killing week. | Blackberry and apple. The pie, I mean.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_fens
-when concept=food.answer here.region=fens
+when concept=food.answer here.region=mirebridge
 say Eel. What else? | Duck, if my sling was true. | Eel pie. My mother's eel pie.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_frosthollow
 when concept=food.answer here.region=frosthollow
-say Smoked fish and black bread. | Oats and mutton fat. Keeps the cold out. | Whatever keeps. Which up here is everything.
+say Smoked mutton and black bread. | Oats and mutton fat. Keeps the cold out. | Whatever keeps. Which up here is everything.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_coldwater
-when concept=food.answer here.region=lake
+when concept=food.answer here.region=coldwater
 say Trout. Fried in butter. | Char off the boats this morning. | A fish I caught off the jetty. Proud of it.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_oakhaven
-when concept=food.answer here.region=woods
-say Mushrooms on toast. I picked them myself. | Rabbit. Somebody's snare was generous. | Venison stew. The hunters had a good week.
+when concept=food.answer here.region=oakhaven
+say Mushrooms on toast. I picked them myself. | Rabbit. Somebody's snare was generous. | Venison stew. Somebody's cousin is a hunter.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_larkfield
 when concept=food.answer here.region=larkfield
-say Mutton. You're in Larkfield. | Mutton and barley. Mutton and turnip. Mutton. | Downs cheese and an apple.
+say Mutton. You're in Larkfield. | Mutton pie. Larkfield's answer to everything. | Downs cheese and an apple.
 then other: food.react
+remember pair: fa=plain 2m
 
 rule e1_fa_southmeadow
 when concept=food.answer here.region=southmeadow
-say Bread, olives, a peach. A cup of wine. | Plums. I'm sick of plums. Don't tell anyone. | Something with figs. Everything has figs.
+say Bread, a wedge of cheese, a peach. A cup of cider. | Plums. I'm sick of plums. Don't tell anyone. | Pork and apples. Everything here comes with apples.
 then other: food.react
+remember pair: fa=good 2m
 
 rule e1_fa_ridgemere
 when concept=food.answer here.region=ridgemere
-say Herring. This city floats on herring. | A bucket of mussels off the wharf. | A pie from the stall by the steps.
+say Herring, as ever. | Fish soup from the Sump Market. Cheap and hot. | A pie from a stall on the Commons.
 then other: food.react
+remember pair: fa=plain 2m
 
 # ================================================================ FOOD: hearing what they eat (self reacts)
+# fa=good: a good feed; fa=plain: the usual. Trait replies here fit both.
 
 rule e1_fr_plain
 when concept=food.react
-say Sounds good. | Could be worse. | Save me some. | Lucky you. | Can't beat it.
+say Mm. I'd eat that. | That'll keep you going. | Can't go wrong with that.
 
-rule e1_fr_plain2
-when concept=food.react
-say Mm. I'd eat that. | Same as me, near enough. | That'll keep you going. | Not bad at all.
+rule e1_fr_good
+when concept=food.react pair.mem.fa=good
+say Lucky you. | Listen to that. Living well. | Now I'm hungry. Thanks for that. | Save me a bit.
+
+rule e1_fr_good2
+when concept=food.react pair.mem.fa=good
+say I'll be round at yours, then. | That's a proper supper. | My belly's jealous.
+
+rule e1_fr_usual
+when concept=food.react pair.mem.fa=plain
+say It fills a belly. | Could be worse. | The old faithful. | Same as me, near enough.
+
+rule e1_fr_usual2
+when concept=food.react pair.mem.fa=plain
+say Well, it'll keep you on your feet. | Nothing wrong with that. | Plain's honest.
 
 rule e1_fr_hungry
 when concept=food.react hungry=yes
@@ -545,13 +634,14 @@ when concept=food.react wealth=poor|destitute
 say Better than mine. | I'd swap you in a heartbeat. | That's a feast, where I'm sat.
 
 rule e1_fr_rich
-when concept=food.react wealth=rich
+when concept=food.react wealth=rich pair.mem.fa=plain
 say How... hearty. | I've always wondered what that tastes like. | Quite right. Simple is best. So they say.
 
 rule e1_fr_warm
 when concept=food.react warmth=warm
-say Come and have yours at mine one night. | Oh, that sounds lovely. | Bring it round and we'll share.
+say Come and have yours at mine one night. | Oh, that sounds lovely. Eat it hot. | Bring it round one night and we'll share.
 remember pair: pie_promised 7d
+remember self: pie_host 7d
 
 rule e1_fr_merry
 when concept=food.react humour=merry
@@ -559,7 +649,7 @@ say And for afters? Another one? | I'll be round at the smell. | Put my name on 
 
 rule e1_fr_dry
 when concept=food.react humour=dry
-say Living like a lord. | They'll write songs about it. | Steady, now.
+say Living like a lord. | They'll write songs about it. | Steady, now. Don't let it go to your head.
 
 rule e1_fr_short
 when concept=food.react temper=short
@@ -575,9 +665,9 @@ say We'd have called that a feast, in my day. | Mind you chew it. | That's what 
 
 rule e1_fr_young
 when concept=food.react stage=young
-say Can I have some? | Is there pudding? | I'd rather have cake.
+say Can I have some? | Is there pudding? | I'd rather have honey cake.
 
-# ================================================================ FOOD: an opinion (self answers a remark on food)
+# ================================================================ FOOD: an opinion (self answers an opinion on food)
 
 rule e1_fo_plain
 when concept=food.opinion
@@ -593,11 +683,11 @@ say No. Wrong. Completely wrong. | That's daft and you know it. | I've never hea
 
 rule e1_fo_dry
 when concept=food.opinion humour=dry
-say Write it on your grave. | Bold stand to take. | The gods will be relieved to know.
+say Write it on your grave. | Bold stand to take. | The realm can rest easy now.
 
 rule e1_fo_merry
 when concept=food.opinion humour=merry
-say Ha! You'd marry a pie if they'd let you. | I'll drink to that. I'll drink to anything. | Say it louder. The cook's listening.
+say Ha! You'd marry your supper if they'd let you. | I'll drink to that. I'll drink to anything. | Say it louder. The cook's listening.
 
 rule e1_fo_short
 when concept=food.opinion temper=short
@@ -605,25 +695,26 @@ say Do you ever talk about anything but your stomach? | Fine. Whatever you say. 
 
 rule e1_fo_warm
 when concept=food.opinion warmth=warm
-say Come and eat with us one night. I'll prove you right or wrong. | Oh, you'll have to try my mother's. | I'll make it for you. Restday.
+say Come and eat with us one night. You can prove it at my table. | You'd get on with my mother. She says the same. | I'll cook you something on Restday and you can tell me again.
 remember pair: pie_promised 7d
+remember self: pie_host 7d
 
 rule e1_fo_hungry
 when concept=food.opinion hungry=yes
 priority 1
-say Stop. Please. I've not eaten. | Don't. My belly heard you. | Can we talk about something else? Anything.
+say Stop. Please. I've not eaten. | Can we talk about something else? Anything. | I'd agree with anything you said, if you fed me.
 
 rule e1_fo_poor
 when concept=food.opinion wealth=poor|destitute
-say I wouldn't know. I've not had it in a year. | Must be nice, having opinions about food. | Whatever's cheap is my favourite.
+say Some of us eat what we can get, and have no opinions about it. | Must be nice, having opinions about food. | Whatever's cheap is my favourite.
 
 rule e1_fo_rich
 when concept=food.opinion wealth=rich
-say Our cook does it with saffron. You should try it. | Mm. I find it rather heavy. | Have it with a white wine. Changes everything.
+say Our cook would argue with you. Our cook argues with everyone. | I leave all that to the kitchen, I'm afraid. | How refreshingly simple.
 
 rule e1_fo_cook
 when concept=food.opinion job=cook
-say Spoken like someone who's never had to cook it. | You're half right. The other half's the fire. | Come and say that in my kitchen.
+say Spoken like someone who's never had to cook it. | Half right. The other half's the fire. | Come and say that in my kitchen.
 
 rule e1_fo_baker
 when concept=food.opinion job=baker
@@ -631,19 +722,19 @@ say Not without good bread, it isn't. | Ask a baker. We know. | All food's just 
 
 rule e1_fo_old
 when concept=food.opinion stage=old
-say In my day we were grateful for anything. | My mother did it better. Everyone's mother did. | I've eaten for seventy years. You're half right.
+say In my day we were grateful for anything. | Opinions! In my day you ate what was put in front of you. | I've been eating sixty years. You'll change your mind.
 
 rule e1_fo_young
 when concept=food.opinion stage=young
-say Ew. | Only if there's honey on it. | I'd rather have cake.
+say Ew. | Only if there's honey on it. | Grown-ups like the strangest things.
 
 rule e1_fo_devout
 when concept=food.opinion piety=devout
-say Give thanks for it, whatever it is. | The gods gave us the fire for a reason. | Gluttony's a sin, you know. Pass it here.
+say Give thanks for it, whatever it is. | The Bright One provides. Even that. | Gluttony's a sin, you know. Pass it here.
 
 rule e1_fo_spouses
 when concept=food.opinion pair.band=spouses
-say You burned it the last time, #dear#. | You say that every night. | Then cook it for me.
+say You say that every night, #dear#. | You would say that. | Then you can do the cooking for once.
 
 rule e1_fo_from_fens
 when concept=food.opinion from=mirebridge
@@ -651,21 +742,101 @@ say Not compared to an eel. | You've never had a Fen supper. | Back home, we'd p
 
 rule e1_fo_from_south
 when concept=food.opinion from=southmeadow
-say It wants fruit in it. Everything does. | Back home we'd have it with wine. | Not like at home. Nothing is.
+say Not like at home. Nothing is. | You've never had it with Southmeadow cider, then. | Back home, we'd have it with apples.
 
 rule e1_fo_from_north
-when concept=food.opinion from=frosthollow|coldwater
-say We'd smoke it, up north. | Smoked is better. Everything's better smoked. | Wants more fat. For the cold.
+when concept=food.opinion from=frosthollow
+say Up in the valley we'd smoke it. | Smoked is better. Everything's better smoked. | Wants more fat. For the cold.
+
+rule e1_fo_from_coldwater
+when concept=food.opinion from=coldwater
+say It's not a patch on a Glasswater trout. | Ask a lake fisher. We'll set you right. | Fair enough. It'll float.
 
 rule e1_fo_from_larkfield
 when concept=food.opinion from=larkfield
 say Better with mutton. | Can't beat a downs supper. | Have you tried it with mint?
 
+rule e1_fo_from_oakhaven
+when concept=food.opinion from=oakhaven
+say Put a mushroom in it and you'd be right. | In the Warmwood we'd say the same, with a bit of boar. | Hazelnuts. It wants hazelnuts.
+
 rule e1_fo_from_ridgemere
 when concept=food.opinion from=ridgemere
-say Better with a bit of fish in it. | Wants rain on it, like at home. | City folk know food. Fight me.
+say Better with a bit of fish in it. | City folk know food. Whatever they say in the towns. | Try it with a pint of Rainwater ale.
 
-# ================================================================ HOME: asking, troubles, telling
+# ================================================================ FOOD: the season, the feast (self answers a remark)
+# fm=lean: winter's thin table; fm=plenty: the season's bounty or a feast. Trait replies here fit both.
+
+rule e1_fm_plain
+when concept=food.remark
+say That's the time of year. | Every year the same. | It comes round, doesn't it?
+
+rule e1_fm_lean
+when concept=food.remark pair.mem.fm=lean
+say Not long now. The days are drawing out. | Salt and patience. That's winter. | Roll on spring.
+
+rule e1_fm_lean_old
+when concept=food.remark pair.mem.fm=lean stage=old
+say This is nothing. The winter of the long frost, we boiled our boots. | You'll live. We always did. | Turnips kept me alive for a whole winter once. I've forgiven them.
+
+rule e1_fm_lean_poor
+when concept=food.remark pair.mem.fm=lean wealth=poor|destitute
+say Turnips! Hark at the lord. | I'd take your turnips and thank you. | We ran out of salt pork in autumn.
+
+rule e1_fm_lean_warm
+when concept=food.remark pair.mem.fm=lean warmth=warm
+say I've a jar of plums put by. Come and help me with it. | Come for supper. I'll find something that isn't salted. | I'll bring you some honey. That cheers a winter.
+
+rule e1_fm_lean_dry
+when concept=food.remark pair.mem.fm=lean humour=dry
+say Turnips build character. So people with meat tell me. | Think of it as practice for spring. | Salt everything. Including the conversation.
+
+rule e1_fm_plenty
+when concept=food.remark pair.mem.fm=plenty
+say Make the most of it. | Eat it while it's there. | Save me some. | That's the best of the year, that.
+
+rule e1_fm_plenty_old
+when concept=food.remark pair.mem.fm=plenty stage=old
+say Enjoy it. Winter's always coming. | Put some by. You'll thank me in the frost. | It's never tasted so good as when I was a pup.
+
+rule e1_fm_plenty_poor
+when concept=food.remark pair.mem.fm=plenty wealth=poor|destitute
+say Some of us only get to smell it. | If you've any going spare, I'll not say no. | Lucky you.
+
+rule e1_fm_plenty_warm
+when concept=food.remark pair.mem.fm=plenty warmth=warm
+say Bring some round. I'll bring the bread. | Oh, lovely. That's what the year's for. | Doesn't it just make you glad?
+
+rule e1_fm_plenty_dry
+when concept=food.remark pair.mem.fm=plenty humour=dry
+say Enjoy it. Winter's taking notes. | Mind your belt. | Somebody's in a good mood.
+
+rule e1_fm_hungry
+when concept=food.remark hungry=yes
+priority 1
+say Don't. My belly's empty as a drum. | My belly heard every word of that. | I'd eat a turnip raw right now. Two.
+
+rule e1_fm_merry
+when concept=food.remark humour=merry
+say Ha! My belly's been saying the same all morning. | Then let's eat. Now. Together. | I'll be at the front of that queue.
+
+rule e1_fm_short
+when concept=food.remark temper=short
+say Stop moaning and eat. | Everyone's eating the same. | I don't care what's on the table.
+
+rule e1_fm_devout
+when concept=food.remark piety=devout
+say Give thanks for it, either way. | The Bright One feeds us in the end. | The year turns. It always turns.
+
+rule e1_fm_young
+when concept=food.remark stage=young
+say Is there cake in it anywhere? | I'm hungry now. | Mother says I eat like three.
+
+rule e1_fm_farmer
+when concept=food.remark job=farmer|herder
+say That's the land for you. Feast or famine. | You eat what the year gives. | Thank a farmer while you're at it.
+
+# ================================================================ HOME: asking (-> home.answer)
 
 rule e1_hm_ask_house
 when concept=talk.home pair.band=acquaintances|friends|apprentice|family
@@ -676,7 +847,7 @@ then other: home.answer
 rule e1_hm_ask_new
 when concept=talk.home pair.band=strangers|acquaintances
 cooldown 2d
-say Where is it you live? | You're near here, aren't you? | Is it a good street, yours?
+say Are you settled, where you live? | Is it a good spot, yours? | Do you like it where you're living?
 then other: home.answer
 
 rule e1_hm_ask_weather
@@ -685,92 +856,109 @@ cooldown 1d
 say Is your roof holding in this? | Mine's leaking like a sieve. Yours? | Dry at yours, I hope?
 then other: home.answer
 
+# ================================================================ HOME: a trouble with the house (-> home.advice)
+# Only those with a home tell these. Each remembers what the trouble is (pair.mem.hk).
+
 rule e1_hm_roof
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
-say My roof's leaking again. | There's a drip over the bed I can't find. | Lost two slates in the wind.
+say The rain's found a new way in. Over the stairs, this time. | I lay awake counting drips. I got to four hundred. | The wind took the moss off my roof, and half the roof with it.
 then other: home.advice
 remember self: roof_leaks 3d
+remember pair: hk=leak 2m
 
 rule e1_hm_roof_still
-when concept=talk.home self.mem.roof_leaks
+when concept=talk.home self.mem.roof_leaks homeless=no
 cooldown 2d
 say Still leaking. I've a pot in every room now. | The roof again. I can hear it in my sleep. | I mended the roof. It's leaking somewhere new.
 then other: home.advice
+remember pair: hk=leak 2m
 
 rule e1_hm_chimney
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
-say My chimney smokes. I'm cured like a ham. | The fire won't draw. Smoke everywhere. | There's something nesting in the chimney.
+say The chimney's drawing backwards. Smoke comes down, not up. | My eyes have been streaming for a week. It's the chimney. | Every time the wind's in the west, my kitchen fills with smoke.
 then other: home.advice
+remember pair: hk=smoke 2m
 
 rule e1_hm_damp
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
 say Damp's coming up the walls again. | Everything I own smells of mould. | There's a green patch on the ceiling. It's growing.
 then other: home.advice
+remember pair: hk=damp 2m
 
 rule e1_hm_mice
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
-say Mice in the larder again. | Something's chewing in the walls at night. | A rat ran over my foot in my own kitchen.
+say Rats in the cellar. Big as cats. | Something's been at the bread in the night. Little teeth marks. | There's a nest behind the dresser. I can hear them squeaking.
 then other: home.advice
+remember pair: hk=vermin 2m
 
 rule e1_hm_door
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
-say The door's swollen. Won't shut. | My shutter's off its hinge. | The step's cracked right through.
+say My shutter's off its hinge. It bangs all night. | The step's cracked right through. I go in sideways. | The floorboard by the hearth's gone soft. I put a foot through it.
 then other: home.advice
+remember pair: hk=broken 2m
 
 rule e1_hm_furniture
-when concept=talk.home
+when concept=talk.home homeless=no
 cooldown 2d
-say The chair's lost a leg. I'm sitting on a crate. | My bed broke. In the night. With me in it. | The table wobbles. Soup everywhere.
+say A chair's lost a leg. Nobody's owned up to it. | My bed broke. In the night. With me in it. | The table wobbles. Soup everywhere.
 then other: home.advice
+remember pair: hk=broken 2m
 
 rule e1_hm_wood
-when concept=talk.home here.season=autumn|winter
+when concept=talk.home homeless=no here.season=autumn|winter
 cooldown 2d
-say The woodpile's half what it should be. | I'm burning wet wood. The smoke! | Firewood's dear this year.
+say The woodpile's half what it should be. | Every log I've got is green. It hisses at me. | Firewood's dear this year. I'm rationing logs.
 then other: home.advice
+remember pair: hk=wood 2m
 
 rule e1_hm_hens
-when concept=talk.home
+when concept=talk.home homeless=no here.region!=ridgemere
 cooldown 3d
-say The hens have stopped laying. | A fox had one of my hens. | My hens keep roosting in the kitchen.
+say My hens have taken to laying in the hedge. I'm hunting eggs like a pup. | The cockerel starts before dawn. The whole street hates me. | The goat got in with the hens again. Nobody's happy.
 then other: home.advice
+remember pair: hk=hens 2m
 
 rule e1_hm_noise
-when concept=talk.home
+when concept=talk.home homeless=no pair.neighbours=no
 cooldown 2d
-say The neighbours shouted all night. | There's a baby next door that never sleeps. | Somebody on my stair's learning the drum.
+say There's a baby next door that never sleeps. Nor do I, now. | The smith down the lane starts hammering before dawn. | Somebody on my street keeps geese. Have you heard geese at night?
 then other: home.advice
+remember pair: hk=noise 2m
 
 rule e1_hm_lodger
-when concept=talk.home
+when concept=talk.home homeless=no wealth=comfortable
 cooldown 3d
-say My lodger's not paid in a month. | The lodger's started cooking fish in his room. | I need a lodger. The rent's too much on my own.
+say My lodger's not paid in a month. | The lodger's started cooking fish in his room. | My lodger sings in the bath. Every night. The same song.
 then other: home.advice
+remember pair: hk=lodger 2m
 
 rule e1_hm_moving
 when concept=talk.home drive=restless|ambitious
 cooldown 3d
-say I'm thinking of moving. Anywhere. | I've seen a house I want. I can't afford it. Yet. | This street's too small for me.
-then other: home.advice
+say I'm thinking of leaving this town. Going anywhere. | I've seen a house I want. I can't afford it. Yet. | This street's too small for me.
+then other: keeping.nod
+remember pair: k=hopes 2m
 
-## Telling, unasked
+# ================================================================ HOME: telling, unasked (-> keeping.*)
 
 rule e1_hm_tell_rent
-when concept=talk.home wealth=poor|destitute
+when concept=talk.home wealth=poor|destitute homeless=no
 cooldown 2d
-say Rent's due and I'm short. Again. | The landlord's put it up. Third time. | I pay half my wages for one room.
+say I've counted the rent three times. It's still short. | The collector knocks the same knock every week. I hear it in my sleep. | Rent's eaten my #wages# again. There's nothing left for firewood.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_hm_tell_owes
-when concept=talk.home owes=yes
+when concept=talk.home owes=yes homeless=no
 cooldown 2d
 say The landlord's man was at the door again. | I've not paid the rent. I go in by the back. | If they put me out, I don't know where I'll go.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_hm_tell_homeless
 when concept=talk.home homeless=yes
@@ -778,98 +966,103 @@ cooldown 1d
 priority 2
 say I've nowhere, #address#. Not a room. | Doorways and haylofts. That's my home now. | I used to have a door I could shut.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_hm_tell_rich
-when concept=talk.home wealth=rich
+when concept=talk.home wealth=rich homeless=no
 cooldown 2d
 say We're having a new wing built. The noise! | I've bought the house next door. For the garden. | New glass in every window. You should see it shine.
 then other: keeping.glad
+remember pair: k=good 2m
 
 rule e1_hm_tell_heights
-when concept=talk.home quarter=heights
+when concept=talk.home quarter=heights homeless=no
 cooldown 2d
-say The Heights are all scaffolding this season. Everyone's building. | Our neighbours have a new carriage house. Ours is older. | Eleven rooms and I can never find my spectacles.
+say The Heights are all scaffolding this season. Everyone's building. | Our neighbours have a new carriage house. Ours is older. | There's a new gardener next door. He's moved every rosebush in the street.
 then other: keeping.nod
 
 rule e1_hm_tell_sump
-when concept=talk.home quarter=sump
+when concept=talk.home quarter=sump homeless=no
 cooldown 2d
-say The tide came up through the floor. We sleep on the table. | Twenty to a stair in our building. | There's a crack in our wall you can put your arm through.
+say The landlord's split our room in two with a curtain. Now there's two rents. | There's a crack in our wall you can put your arm through. | Our stair's lost a step. Nobody'll say who took it.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_hm_tell_wharf
-when concept=talk.home quarter=wharf|docks
+when concept=talk.home quarter=wharf|docks homeless=no
 cooldown 2d
-say The gulls are on my roof at dawn, every dawn. | My room smells of tar and fish. I don't notice any more. | The tide slaps under my floor all night.
+say The Customs men tramp past my window at all hours. | I can hear the ropes creak on the piers all night. Like a cradle. | Sailors in the room below. They sing till the tide turns.
 then other: keeping.nod
 
 rule e1_hm_tell_works
-when concept=talk.home quarter=works
+when concept=talk.home quarter=works homeless=no
 cooldown 2d
-say Soot on the sill, soot on the bread, soot on me. | The kilns keep my walls warm. Too warm. | You can't hang washing up at the Works. It comes in grey.
+say The foundry bell rings the shifts right through my sleep. | The glassworks lights my window red all night. | My lodging's over the tannery. I'll say no more.
 then other: keeping.nod
 
 rule e1_hm_tell_spouse
-when concept=talk.home self.spouse
+when concept=talk.home self.spouse homeless=no
 cooldown 2d
-say #self.spouse# moved all the furniture again. | #self.spouse# wants a bigger house. Wants. | #self.spouse# fixed the shelf. It's on the floor now.
-then other: keeping.nod
+say #self.spouse# wants a bigger house. Wants. | #self.spouse# put up a shelf. It's on the floor now. | #self.spouse# has hung herbs from every beam. I walk about ducking.
+then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_hm_tell_child
-when concept=talk.home self.child
+when concept=talk.home self.child homeless=no
 cooldown 2d
-say #self.child# swept the whole floor without being asked. I nearly fainted. | #self.child# has dug a hole in the yard. A big one. Why? | #self.child# wants a room of their own. Don't we all.
+say #self.child# swept the whole floor without being asked. I nearly fainted. | #self.child# has dug a hole in the yard. A big one. Why? | #self.child# has filled the yard with snails. Pets, apparently.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_hm_tell_widowed
-when concept=talk.home widowed=yes
+when concept=talk.home widowed=yes homeless=no
 cooldown 2d
-say The house is too quiet now. | I keep their chair by the fire. | I don't like going home in the evenings.
+say I don't like going home in the evenings. | I still set out two cups. Every morning. | I've not moved their boots from the door. I can't.
 then other: keeping.sorry
+remember pair: k=grief 2m
 
 rule e1_hm_tell_old
-when concept=talk.home stage=old
+when concept=talk.home stage=old homeless=no
 cooldown 2d
-say The stairs get longer every year. | I've lived in my house fifty years. I'll leave it feet first. | My pups want me to move in with them. Not likely.
+say Every board in my house has a voice. I know them all. | Fifty years in my house. Everything's where I can reach it. Don't move a thing. | I found a letter under the floorboards from before I was born. The house keeps secrets.
 then other: keeping.nod
 
 rule e1_hm_tell_young
-when concept=talk.home stage=young
+when concept=talk.home stage=young homeless=no
 cooldown 2d
-say I've got a den. It's secret. I can't say where. | I'm sleeping in the loft now! With the apples! | My brother kicks in his sleep.
+say There's a loose board under my bed. I keep my treasures there. | I found a bird's nest in our gutter. Three eggs! | I'm allowed to bank the fire now. On my own.
 then other: keeping.nod
 
 rule e1_hm_tell_servant
 when concept=talk.home job=servant
 cooldown 2d
-say I keep a house that isn't mine, and sleep under its stairs. | Scrubbed their floors all day. Mine can wait. | The family's having the parlour done. Guess who's carrying the furniture.
+say Scrubbed their floors all day. Mine can wait. | The family count the candles. Every night. | I polish silver I'll never eat off.
 then other: keeping.nod
+remember pair: k=weary 2m
 
 rule e1_hm_tell_winter
-when concept=talk.home here.season=winter
+when concept=talk.home here.season=winter homeless=no
 cooldown 1d
-say Ice inside the window this morning. | I sleep in my coat. And my boots. | The water froze in the jug. Indoors.
+say I've hung a blanket over the door. It helps. A bit. | The wind finds every crack in my walls. I'm learning where they all are. | I keep the fire in day and night. The woodpile's weeping.
 then other: keeping.nod
 
 rule e1_hm_tell_spring
-when concept=talk.home here.season=spring
+when concept=talk.home here.season=spring homeless=no
 cooldown 1d
-say Turned the house out for spring. The fur under the bed! | Beat the rugs till my arm dropped off. | Shutters open at last. The house can breathe.
+say Shutters open at last. The house can breathe. | Swallows are back in my eaves. Same pair as last year, I'm sure. | I've scrubbed the step till it shines. First time since autumn.
 then other: keeping.nod
 
 rule e1_hm_tell_summer
-when concept=talk.home here.season=summer
+when concept=talk.home here.season=summer homeless=no
 cooldown 1d
-say House is like an oven. Slept in the yard. | Flies in every room. | Shutters shut all day, or we cook.
+say Shutters shut all day, or we cook. | The thatch is full of buzzing. Something's nesting. | I sleep with the door open now. The cat comes and goes.
 then other: keeping.nod
 
 rule e1_hm_tell_autumn
-when concept=talk.home here.season=autumn
+when concept=talk.home here.season=autumn homeless=no
 cooldown 1d
-say Got the gutters cleared before the rain. Just. | Woodpile's stacked to the eaves. Winter can come. | Apples drying on every shelf in the house.
+say Woodpile's stacked to the eaves. Winter can come. | Apples drying on every shelf in the house. | I've stuffed every crack with moss and rags. Let the wind try.
 then other: keeping.glad
-
-## A ladder lent, between neighbours
 
 # ================================================================ HOME: the answer (self answers about their house)
 
@@ -883,100 +1076,112 @@ say Warm, dry, mostly. | Small, but mine. | There's always something. This week 
 
 rule e1_ha_poor
 when concept=home.answer wealth=poor
-say Roof leaks and the rent's up. | One room, one window. It does. | I'd be fine if the landlord died. I'm joking. Mostly.
+say Roof leaks and the rent's up. | One room, one window. It does. | I'd be fine if the landlord fell down a well. I'm joking. Mostly.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_destitute
 when concept=home.answer wealth=destitute
 priority 1
-say I'll be out by Fiveday if I can't pay. | Sold the table. Sold the chairs. Still short. | Don't ask. Please.
+say I'll be out by Marketday if I can't pay. | Sold the table. Sold the chairs. Still short. | Don't ask. Please.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_homeless
 when concept=home.answer homeless=yes
 priority 3
 say I've no house, #address#. | Under the bridge, tonight. | Wherever's dry.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_owes
 when concept=home.answer owes=yes
 priority 1
 say Behind on the rent. Don't tell anyone. | I go in by the back door now. Collector. | It's a roof. For now.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_rich
 when concept=home.answer wealth=rich
-say Very well. We've had the hall done. | Splendid. New hangings from Southmeadow. | Too big, honestly. I lose the servants.
+say Very well. We've had the hall done. | Splendid. The new gardens are coming on. | Too big, honestly. I lose the servants.
 then other: keeping.glad
+remember pair: k=good 2m
 
 rule e1_ha_heights
 when concept=home.answer quarter=heights
-say Eleven rooms and nothing to do in any of them. | Lovely view. Dreadful neighbours. | The fountain's broken. A great trial.
+say Lovely view. Dreadful neighbours. | Quiet up here. You can hear the fountains. | All those steps up from the Commons. Worth it, mostly.
 
 rule e1_ha_sump
 when concept=home.answer quarter=sump
-say Damp. It's the Sump. | The water's in the cellar again. And the rats. | Three families on our stair. It's lively.
+say Damp. It's the Sump. | The water's in the cellar again. And the rats. | Loud. Somebody's always fighting on our lane.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_harbour_hill
 when concept=home.answer quarter=harbour_hill
-say Four flights up and worth it. You can see the whole Sound. | My knees hate it. My eyes love it. | Steep. Everything's steep.
+say My knees hate it. My eyes love it. | Steep. Everything's steep. | Up among the gulls. I like it.
 
 rule e1_ha_wharf
 when concept=home.answer quarter=wharf|docks
-say Gulls on the roof, tide under the floor. | Smells of tar. I've stopped noticing. | Noisy. The carts start before dawn.
+say Noisy. The carts start before dawn. | Handy for work. I roll out of bed onto the pier. | Salty. Everything's salty.
 
 rule e1_ha_works
 when concept=home.answer quarter=works
-say Warm, from the kilns. Sooty, from the kilns. | Grey. Everything's grey. | Fine, if you don't breathe much.
+say Loud. The ironworks never stops. | Grey. Everything's grey. | Fine, if you don't breathe much.
 
 rule e1_ha_commons
 when concept=home.answer quarter=commons|suburbs|office
-say Quiet street, nobody bothers us. Can't ask more. | Two rooms and a yard. We're content. | Neighbours are decent. That's half of it.
+say Quiet street, nobody bothers me. Can't ask more. | Neighbours are decent. That's half of it. | The baker's two doors down. I wake to the smell of bread.
 then other: keeping.glad
+remember pair: k=good 2m
 
 rule e1_ha_spouse
 when concept=home.answer self.spouse
 cooldown 1d
-say #self.spouse# keeps moving the furniture. I keep finding it. | #self.spouse# wants it painted. I want my supper. | Fine. #self.spouse# keeps it nice. I keep out of the way.
+say #self.spouse# wants it painted. I want my supper. | Fine. #self.spouse# keeps it nice. I keep out of the way. | Crowded. #self.spouse# never throws anything away.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_ha_child
 when concept=home.answer self.child
 cooldown 1d
 say #self.child# has drawn on every wall I own. | Loud. #self.child# has found a drum. | Full of #self.child#'s things. I live in the corner.
 then other: keeping.glad
+remember pair: k=family 2m
 
 rule e1_ha_widowed
 when concept=home.answer widowed=yes
-say Too big. Too quiet. | I keep their chair where it was. | Tidy. Nobody to make a mess.
+say Too big, now. | Tidy. Nobody to make a mess. | I sleep in the chair by the fire. The bed's too wide.
 then other: keeping.sorry
+remember pair: k=grief 2m
 
 rule e1_ha_old
 when concept=home.answer stage=old
-say The stairs and I aren't speaking. | Same house fifty years. Same creaks. | My bones and the walls, both settling.
+say Draughty. Like me. | Same house fifty years. Same creaks. | My bones and the walls, both settling.
 
 rule e1_ha_young
 when concept=home.answer stage=young
-say I share a bed with my brother. He kicks. | I've a den under the stairs! | Loud. Mother shouts a lot.
+say I've got the bed by the window now. | Loud. Everyone shouts at once. | There's a spider in the corner. I've named him Gorse.
 
 rule e1_ha_crafter
-when concept=home.answer job=crafter|smith|laborer
-say I mend everyone's house but mine. | Made the table myself. It wobbles. | Fine. I fixed the roof. Myself. With help from gravity.
+when concept=home.answer job=crafter|smith
+say I mend everyone's house but mine. | Fine. I fixed the roof myself. With help from gravity. | Every chair in it's my own work. None of them match.
 
 rule e1_ha_innkeeper
 when concept=home.answer job=innkeeper
-say I live over the taproom. I've not slept in ten years. | Full of strangers, as ever. | Every room let and I'm on the bench.
+say Full of strangers, as ever. | A guest snores through my wall. A different one every night. | Home's the inn. I've not had a day off it in years.
 
 rule e1_ha_servant
 when concept=home.answer job=servant
-say I live in someone else's house. I've a cupboard under the stairs. | Theirs is lovely. Mine's a cot. | Spotless. Not mine, mind.
+say I live in someone else's house. I've a corner of the attic. | Theirs is lovely. Mine's a cot. | Spotless. Not mine, mind.
 then other: keeping.sorry
+remember pair: k=want 2m
 
 rule e1_ha_farmer
 when concept=home.answer job=farmer|herder
-say The house is fine. The byre's falling down. | Hens in the kitchen again. | The roof wants thatching and the field wants me.
+say The house is fine. The byre's falling down. | The house is well. The barn roof's another matter. | The byre's leaning. The cows don't seem to mind.
 then other: home.advice
+remember pair: hk=byre 2m
 
 rule e1_ha_priest
 when concept=home.answer job=priest
@@ -984,8 +1189,9 @@ say The manse is cold as charity. | I've a room behind the chapel. It suits me. 
 
 rule e1_ha_restless
 when concept=home.answer drive=restless
-say I'd move tomorrow, if I had somewhere to go. | Same four walls. Same four walls. | Fine. Dull. Fine.
+say I'd move tomorrow, if I had somewhere to go. | Same four walls. Same four walls. | Fine. Dull. I'll not be there for ever.
 then other: keeping.nod
+remember pair: k=hopes 2m
 
 rule e1_ha_cold
 when concept=home.answer warmth=cold
@@ -996,79 +1202,125 @@ when concept=home.answer humour=merry
 cooldown 1d
 say Still standing! Mostly by habit. | It's a palace. A small, damp, leaning palace. | The roof leaks, but only on the landlord's side.
 then other: keeping.glad
+remember pair: k=jest 2m
 
 rule e1_ha_winter
 when concept=home.answer here.season=winter
-say Cold. I can't keep the fire in. | Snug, if you sit in the hearth. | Ice on the inside of the window.
+say Cold. I can't keep the fire in. | Snug, if you sit in the hearth. | Draughty. I've a blanket over every door.
 
 rule e1_ha_summer
-when concept=home.answer here.season=summer
-say Hot as an oven. Shutters shut all day. | Flies. Everywhere, flies. | Close. Can't sleep for the heat.
+when concept=home.answer here.season=summer here.weather!=rain|storm
+say Close. Can't sleep for the heat. | Cool enough with the shutters closed. | The thatch keeps it cool. Mostly.
 
 rule e1_ha_fens
-when concept=home.answer here.region=fens
-say The river's at the bottom step. | Damp to the rafters. Fen house. | Leaning a little more each year. Like me.
+when concept=home.answer here.region=mirebridge
+say Damp to the rafters. Fen house. | Leaning a little more each year. Like me. | The frogs sing under the floor all spring.
 
 rule e1_ha_frosthollow
 when concept=home.answer here.region=frosthollow
-say Snow to the eaves, fire in the middle. | Thick walls. Thick as a mountain. | Warm, if you keep the door shut.
+say Thick walls. Thick as a mountain. | Warm, if you keep the door shut. | Peat on the fire and the shutters barred. Snug.
 
 rule e1_ha_coldwater
-when concept=home.answer here.region=lake
-say I can hear the lake from my bed. | Mist under the door every dawn. | Damp, but you can see Glasswater.
+when concept=home.answer here.region=coldwater
+say Damp, but you can see Glasswater. | The boat's pulled up by my door. Handy. | Smells of fish and woodsmoke. I like it.
 
 rule e1_ha_oakhaven
-when concept=home.answer here.region=woods
-say An oak's dropping branches on my roof. | Roots are lifting the floor. | Snug under the trees.
+when concept=home.answer here.region=oakhaven
+say Snug under the trees. | Green light through the windows all summer. | Built of oak by my grandfather. Not a nail in it.
 
 rule e1_ha_larkfield
 when concept=home.answer here.region=larkfield
-say The wind off the downs has half my thatch. | Sheep in the yard again. | Old walls, thick and dry. Can't fault it.
+say Old walls, thick and dry. Can't fault it. | Chalk walls. White as a fleece. | Windy. It's always windy up on the downs.
 
 rule e1_ha_southmeadow
 when concept=home.answer here.region=southmeadow
-say Cool as a cellar, shutters closed. | Grapes over the door. Lizards on the wall. | Hot. It's always hot.
+say Roses over the door. Bees in the roses. | Warm. It's always warm. | Smells of apples. It always smells of apples.
 
 rule e1_ha_ridgemere
 when concept=home.answer here.region=ridgemere
 say Damp. It's Ridgemere. | The rain comes in sideways under the door. | Everything I own smells of the sea.
 
 # ================================================================ HOME: advice (self answers a trouble with the house)
+# Unkeyed replies fit any trouble (a leak, a smoking chimney, mice, a broken chair, noisy neighbours, a lodger, a
+# byre, hens). Keyed ones (pair.mem.hk) answer one kind.
 
 rule e1_hv_plain
 when concept=home.advice
-say Put a pot under it and pray. | That's houses for you. | Leave it till spring. Everyone does. | Sounds like a job for someone else.
+say That's houses for you. | There's always something, isn't there? | Mine's no better, if it helps. | What a bother.
 
 rule e1_hv_plain2
 when concept=home.advice
-say Mine's the same. | Get a man in. Or a wolf. | Have you tried hitting it?
+say Ugh. I'm sorry. | Somebody ought to see to that. | That'd drive me spare.
+
+rule e1_hv_leak
+when concept=home.advice pair.mem.hk=leak
+say Put a pot under it and pray. | Tar and a flat stone. That's what my father did. | It's never where it drips. It's always two feet over.
+
+rule e1_hv_smoke
+when concept=home.advice pair.mem.hk=smoke
+say Get the sweep in. Or a pup with a brush. | Seasoned wood, and a bit of luck. | Open a window and wear your coat.
+
+rule e1_hv_wood
+when concept=home.advice pair.mem.hk=wood
+say The woodcutters sell their offcuts cheap, if you ask nicely. | Stack it under cover and let it dry. Next year you'll thank me. | Wear your coat indoors and save the logs for the evenings.
+
+rule e1_hv_damp
+when concept=home.advice pair.mem.hk=damp
+say Lime-wash it. Every spring. | Keep the fire in all day and the damp gives up. | Rainward damp. It never really leaves.
+
+rule e1_hv_vermin
+when concept=home.advice pair.mem.hk=vermin
+say Get a cat. Cats fix everything. | Peppermint in the gaps. They hate it. | Tin over the holes. They chew through anything else.
+
+rule e1_hv_broken
+when concept=home.advice pair.mem.hk=broken
+say Get a joiner round. It's a morning's work. | Plane it down and wedge it. Done. | Have you tried hitting it?
+
+rule e1_hv_hens
+when concept=home.advice pair.mem.hk=hens
+say Hens. More trouble than eggs, some days. | Shut them in at dusk and out at dawn. They learn. | Make a pie of the worst one. The rest'll behave.
+
+rule e1_hv_noise
+when concept=home.advice pair.mem.hk=noise
+say Stuff your ears with wool. It's what I do. | You get used to it. Or you go mad. One or the other. | Sleep in the day, then. Ha. No.
+
+rule e1_hv_lodger
+when concept=home.advice pair.mem.hk=lodger
+say Turn him out. Plenty more want a room. | A lodger's a lodger. You take the rent and the rest. | Talk to him. Firmly. With the door open.
+
+rule e1_hv_byre
+when concept=home.advice pair.mem.hk=byre
+say Prop it before the winter, or you'll be calving in the kitchen. | Get the neighbours in for a day. Feed them. It'll be up by dusk. | A byre's more house than the house, on a farm.
 
 rule e1_hv_crafter
-when concept=home.advice job=crafter|smith
-say I'll come and look at it. Bring me a pie. | Ten minutes with the right tool. I'll lend you the tool. | Don't touch it. You'll make it worse. I'll come round.
+when concept=home.advice job=crafter|smith pair.mem.hk=leak|smoke|broken|damp|byre
+say I'll come and look at it. Bring me a pie. | An hour with the right tool. I'll lend you the tool. | Don't touch it. You'll make it worse. I'll come round.
 remember pair: offered_help 7d
+remember self: helper 7d
 
 rule e1_hv_laborer
-when concept=home.advice job=laborer|woodcutter
+when concept=home.advice job=laborer|woodcutter pair.mem.hk=leak|broken|wood|byre
 say Give me a ladder and a morning. | I'll do it for a penny and a cup of ale. | I've a strong back and a free Restday.
 remember pair: offered_help 7d
+remember self: helper 7d
 
 rule e1_hv_neighbour
 when concept=home.advice pair.neighbours=yes
-say Knock on my wall if you need a paw. | I'll come round after supper and look. | Borrow what you need from mine. Bring it back, mind.
+say Knock on my wall if you need a paw. | I'll come round after supper and see. | Borrow what you need from mine. Bring it back, mind.
 remember pair: offered_help 7d
+remember self: helper 7d
 
 rule e1_hv_old
 when concept=home.advice stage=old
-say My mother swore by a rag soaked in tallow. | Same thing happened to my father's house. He moved. | In my day you mended it yourself.
+say Houses are like knees. Something's always going. | There's always something. Sixty years I've had something. | I've had that. Twice. You live through it.
 
 rule e1_hv_young
 when concept=home.advice stage=young
-say I could climb up and look! | Get a cat. Cats fix everything. | Can I help? Can I hit something?
+say Can I help? I'm good at helping. | I'd hide under the blanket. | Is it scary?
 
 rule e1_hv_rich
 when concept=home.advice wealth=rich
-say Have a man in. That's what they're for. | Why not move somewhere better? | We just pay someone. It's simplest.
+say I'd pay somebody to worry about it, if I were you. | Dear me. How tiresome. | That's what one keeps a steward for.
 then other: keeping.nod
 
 rule e1_hv_poor
@@ -1077,35 +1329,36 @@ say Live with it, like the rest of us. | At least you've a house to complain abo
 
 rule e1_hv_warm
 when concept=home.advice warmth=warm
-say Come and stay at mine till it's done. | I'll help on Restday. Don't argue. | Poor you. Come round, I'll put the kettle on.
+say Oh, you poor thing. What can I do? | I'll come over on Restday and lend a paw. Don't argue. | Come round tonight and forget it for an evening.
 remember pair: offered_help 7d
+remember self: helper 7d
 
 rule e1_hv_cold
 when concept=home.advice warmth=cold
-say Not my house. | Mend it, then. | Everyone's got a leak somewhere.
+say Not my house. | See to it, then. | Everyone's got something.
 
 rule e1_hv_merry
 when concept=home.advice humour=merry
-say Call it a feature. Charge the next tenant extra. | Have you tried shouting at it? Works on my brother. | Burn it down and start again. I'm joking. Half joking.
+say Ha! Your house has it in for you. | Have you tried shouting at it? Works on my brother. | Sell tickets. Folk'd pay to see that.
 
 rule e1_hv_dry
 when concept=home.advice humour=dry
-say Look on the bright side. You'll get a new house when it falls down. | Character, that's called. | Could be worse. Could be mine.
+say Ah, the joys of a roof of your own. | Character, that's called. | Could be worse. Could be mine.
 
 rule e1_hv_short
 when concept=home.advice temper=short
-say Well, stop telling me and mend it. | Everyone's got troubles. | And what am I to do about it?
+say Well, stop telling me and see to it. | Everyone's got troubles. | And what am I to do about it?
 
 rule e1_hv_devout
 when concept=home.advice piety=devout
-say Have the priest bless the threshold. It helps more than you'd think. | Pray on it. Then mend it. | The gods test us in small ways too.
+say Have the priest bless the threshold. It helps more than you'd think. | Pray on it. Then see to it. | The Bright One tests us in small ways too.
 
 rule e1_hv_healer
-when concept=home.advice job=healer
+when concept=home.advice job=healer pair.mem.hk=damp|smoke|leak
 say Damp in the house is damp in the chest. Fix it before winter. | Burn rosemary. It clears the air. | Keep the fire up and the window cracked.
 
 rule e1_hv_help_again
-when concept=home.advice pair.mem.offered_help
+when concept=home.advice pair.mem.offered_help self.mem.helper
 priority 1
 cooldown 1d
 say I said I'd come round. I meant it. | Still waiting for you to ask. | The offer stands. Name the day.

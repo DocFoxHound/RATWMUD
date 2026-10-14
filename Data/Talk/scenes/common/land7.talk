@@ -1,112 +1,140 @@
 # The land (doc 62, phase 7): the country round about, its fields good and bad, rivers in flood, quarries, mines and
 # the forest's edge, wild places and their stories, boundary stones and the quarrels over them, the view; and each
 # trade's way of seeing it (soil, timber, ore, water, grazing, roads). Each region's own country:
-# regions/land7_regions.talk. Alternatives run in parallel.
+# regions/land7_regions.talk. Alternatives run in parallel. A tagged reply sets a mark (#x) so the close that follows
+# it can answer it (a@x).
 
 # ---------------------------------------------------------------- Anywhere
 
 scene e5_la_boundary_stone
 when topic=land
-a : Somebody's moved the boundary stone again. Two feet, in the night. | There's a row about the boundary between the two farms out past the gate. | My grandfather beat the bounds every spring. Walked the whole parish line.
-b[farmer] : Two feet a year and in forty years you've stolen a field. I know how it's done.
-b[official] : There's a map in the town chest. Nobody ever looks at it.
-b[child] : They beat the bounds? With sticks?
-b : Shameful. | Always a row about something. | Every inch of it?
-a : Shameful and slow. | It'll end in a fist fight. | Every inch. Twice.
+a : Somebody's moved the boundary stone again. Two feet, in the night. | There's a row about the boundary between the two farms out past the gate. | Nobody beats the bounds any more, and now look. Nobody knows where anything ends.
+b[farmer] #farmer : Two feet a year, and in forty years you've stolen a field. I know how it's done.
+b[official] #official : There's a map of every boundary in the town chest. Nobody ever looks at it.
+b[young] #young : Can't they just share? We share.
+b : Shameful. | Always a row about something. | My grandad walked the bounds every spring, with a willow switch.
+a@farmer : Then somebody's got a field they shouldn't, and knows it.
+a@official : Then somebody should look at it. You, for instance.
+a@young : If only. Grown wolves don't share land, pup.
+a : Shameful and slow. | It'll end in a fist fight. | Somebody ought to start that again.
 
 scene e5_la_view
-when topic=land here.weather=clear
-a : You can see clear to the next hills today. | Look how far you can see. I never knew the land went on so. | On a day like this you could count every field in the parish.
-b[old] : I've looked at that view every day of my life. It's never the same twice.
-b[stage=young] : Can you see the sea from here? Can you?
+when topic=land here.weather=clear here.time=day
+cooldown 2d
+a : You can see clear to the far hills today. | Look how far you can see. I never knew the land went on so. | On a day like this you could count every field in the parish.
+b[old] #old : I've looked at that view every day of my life. It's never the same twice.
+b[young] #young : Can you see the sea from here? Can you?
 b : It's a fine country. | It goes on further than that. | Go on, then. Count.
+a@old : Then I'll keep looking.
+a@young : Not from here, pup. You'd need wings.
 a : That it is. | Further than I'll ever walk. | Forty-one. And a half.
 
 scene e5_la_flood
 when topic=land
 a : Do you remember when the river came over the banks? Water in the chapel. | The river's up after the rain. Brown and fast. | My father said the river flooded the year I was born. Took the mill wheel.
-b[old] : Up to my knees in the parlour. We kept the hens on the table.
-b[farmer] : A flood's a curse in spring and a blessing in autumn. Leaves the silt.
+b[old] #old : Up to my knees in the parlour. We kept the hens on the table.
+b[farmer] #farmer : A flood's a curse in spring and a blessing in autumn. Leaves the silt.
 b : I'll never forget it. | Stay off the banks. | That's an omen, that.
+a@old : Hens on the table! I'd forgotten that.
+a@farmer : Tell that to whoever's parlour it's in.
 a : Nor me. | I'll keep well back. | Of what? I've been fine.
 
 scene e5_la_good_field
 when topic=land
 a : There's one field everyone wants and nobody can have. The one by the brook. | Old Tam's field never fails. Every year, a crop. | Some fields are lucky. Some are cursed. Ask anyone.
-b[farmer] : Luck's got nothing to do with it. It's drainage and dung.
-b[priest] : No field is cursed. Some are tended better.
+b[farmer] #farmer : Luck's got nothing to do with it. It's drainage and dung.
+b[priest] #priest : No field's lucky or cursed. Some are tended better, that's all.
 b : Belongs to the Houses, I expect. | What does he do to it? | Which is cursed?
+a@farmer : Drainage and dung. There's a song in that somewhere.
+a@priest : Tell that to whoever ploughs the bad ones.
 a : Everything does. | Says he sings to it. | The one with the dead tree.
 
 scene e5_la_bad_field
 when topic=land
 a : That top field's never grown a decent crop in living memory. | Stones. That field grows stones. Every spring a new crop of them. | There's a field nobody will plough. Something buried there, they say.
-b[farmer] : Stones come up with the frost. Pick them, build a wall. That's what walls are for.
-b[young] : Treasure? Can we dig?
+b[farmer] #farmer : Some ground's just poor. Pick the stones, muck it well, and give it ten years.
+b[young] #young : Can I have it, then? For a den?
 b : Let it go to grass. | Sell them. | Leave it be.
+a@farmer : Ten years. Who's got ten years?
+a@young : Ask the farmer. Nicely.
 a : Sheep won't even eat it. | Who'd buy stones? | Gladly.
 
 scene e5_la_wild_place
 when topic=land
 a : There's a hollow out past the woods nobody goes near after dark. | My gran said never to drink from the black pool past the old wall. | You know the stone circle on the hill? Something lives up there.
-b[piety=devout] : Say a prayer if you pass it. Just in case.
-b[humour=dry] : Something lives everywhere. Mostly rabbits.
-b[young] : What lives there? Tell me!
+b[piety=devout] #devout : Say a prayer if you pass it. Just in case.
+b[humour=dry] #dry : Something lives everywhere. Mostly rabbits.
+b[young] #young : What's there? Tell me!
 b : Nor me. | Why not? | Just the wind.
+a@devout : I always do. Twice, to be sure.
+a@dry : Big rabbits, then.
+a@young : Nobody knows. That's the frightening bit.
 a : Wise. | She never said. | So you say.
 
 scene e5_la_ruins
 when topic=land
 a : There's an old wall out in the fields. Older than anyone. Nobody knows who built it. | Found an old coin in the furrow. Strange face on it. | There are ruins in the hills nobody's ever mapped.
-b[scholar] : Older folk than us were here. We farm their bones.
+b[scholar] #scholar : Older folk than us were here. We farm their bones.
 b : Leave it be. | Spend it. | Leave them unmapped.
-a : I do. | It won't spend. | Some things should be.
+a@scholar : Cheerful thought, that.
+a : I do. I walk round. | It won't spend. Nobody'll take it. | Some things should be.
 
 scene e5_la_paths
 when topic=land
-a : There's a path over the hill the old folk used. It's gone to bramble now. | Every path round here was made by somebody's cow. | The old track to the next valley's quicker than the road. If you know it.
-b[herder] : That's the drove road. My grandfather took sheep along it.
-b[carter] : Quicker on foot. Try it with a cart and see.
-b : Nobody walks anymore. | Cows have more sense than surveyors. | Do you know it?
-a : Nobody has time. | Much more. | I'll not tell.
+a : There's a path over the hill the old folk used. It's gone to bramble now. | Every path round here was made by somebody's cow. | The old track over the hill's quicker than the road. If you know it.
+b[herder] #herder : That's the drove road. My grandfather took sheep along it.
+b[carter] #carter : Quicker on foot. Try it with a cart and see.
+b : Nobody walks it any more. | Cows have more sense than surveyors. | Do you know it?
+a@herder : Then somebody should take sheep along it again, and clear it.
+a@carter : I'll leave the cart at home, then.
+a : Nobody has the time. | Much more. | I'll not tell.
 
 scene e5_la_forest_edge
 when topic=land
 a : The woods are creeping closer to the fields every year. | You can hear wolves in the far woods some nights. Wild ones. Not like us. | The forest edge is where the old stories start.
-b[woodcutter] : Creeping is right. Turn your back and there's a birch in your barley.
-b[humour=dry] : Wild cousins. Don't invite them to supper.
-b : Cut them back. | Gives me shivers. | And end.
+b[woodcutter] #wood : The wood takes back whatever you stop watching. Fields, paths, houses.
+b[humour=dry] #dry : Every wood's got something in it that's glad you're leaving.
+b : Cut them back. | Gives me shivers. | And where most of them end.
+a@wood : Then I'll keep watching.
+a@dry : I'm always glad to oblige.
 a : Somebody should. | Me too. | Usually badly.
 
 scene e5_la_quarry
-when topic=land
-a : The quarry's eaten half the hill since I was a pup. | Blasting at the quarry again. Rattled every cup in the house. | Where do you think all that stone goes?
-b[laborer] : Somebody has to cut it. Pays better than the fields.
-b[house=Greatly] : Into walls, roads and bridges. Into the realm.
-b : It'll eat the rest. | Every week. | Ridgemere. Everything goes to Ridgemere.
-a : And then us. | The cups are fine. Me, less so. | Like everything else.
+when topic=land here.region=ridgemere
+a : Grayrock's quarry has eaten half the hill since I was a pup. | They were splitting stone at the quarry all day. You could hear the wedges ringing from here. | Where do you think all that stone goes?
+b[laborer] #lab : Somebody has to cut it. Pays better than the fields.
+b[house=grayrock_hall] #gr : Into walls, roads and bridges. Into the realm.
+b : It'll eat the rest. | Every day, that ringing. | Into the walls, and the Heights' new houses.
+a@lab : And breaks your back quicker, too.
+a@gr : And into Grayrock's purse, on the way.
+a : And then us. | I hear it in my sleep. | The Heights get everything.
 
 scene e5_la_springs
 when topic=land
 a : There's a spring up the hill tastes better than any ale. | The well's water comes from under the hill. Cold even in summer. | Folk used to leave pennies at the spring for luck.
-b[brewer] : That spring's why my ale's the best for miles.
-b[young] : I left a button! Does that count?
+b[brewer] #brewer : That spring's why my ale's the best for miles.
+b[young] #young : I drank from it! Is that lucky?
 b : Show me. | Clean water's a treasure. | Do they still?
+a@brewer : That and the water you put in it.
+a@young : The luckiest. Don't tell anyone.
 a : I'll take you. | The best. | Some. I do.
 
 scene e5_la_land_owner
 when topic=land a.wealth=poor|destitute
 a : Every field you can see belongs to somebody, and none of them to me. | My family farmed that ground for a hundred years. Never owned an inch of it. | The land's rich. The ones who work it aren't.
-b[wealth=rich] : Ownership's a responsibility, you know. Not just a pleasure.
-b[warmth=warm] : One day, maybe. Things change.
-b : Same as ever. | It's not fair. | Never has been.
-a : Some burden. | Not fast enough. | No.
+b[wealth=rich] #rich : Ownership's a responsibility, you know. Not just a pleasure.
+b[warmth=warm] #warm : One day, maybe. Things change.
+b : That's the way of it. | And never will, I suppose. | Never has been fair.
+a@rich : Some burden.
+a@warm : Not fast enough.
+a : Doesn't make it right. | Not while the Houses hold it. | No. Nor ever will be.
 
 scene e5_la_stars_fields
 when topic=land here.time=night here.weather=clear
 a : Out past the last lamp the fields go silver under the moon. | You can see the hills against the stars, if you let your eyes settle. | The land's different at night. Bigger.
-b[guard] : Pretty from the wall. You still want to keep watching it.
+b[guard] #guard : Pretty from the wall. You still want to keep watching it.
 b : Lovely. | Takes a while. | And quieter.
+a@guard : You watch it. I'll look at it.
 a : It is. | Worth the wait. | Mostly.
 
 # ---------------------------------------------------------------- By trade
@@ -114,9 +142,11 @@ a : It is. | Worth the wait. | Mostly.
 scene e5_la_farmer_soil
 when topic=land a.job=farmer
 a : Pick up a pawful of this. Feel it. That's good soil. | My soil's sour this year. Too much rain. | I can tell a field by its smell. That one's tired.
-b[farmer] : Lime it. My father swore by lime.
-b[child] : It's just dirt.
+b[farmer] #farmer : Let me feel. ...Aye. I'd want lime on it all the same. I'd want lime on everything.
+b[young] #young : It's mud. You're holding mud.
 b : It's just dirt to me. | Will it come right? | Let it rest a year, then.
+a@farmer : Your father and his lime. You're turning into him.
+a@young : Mud's what your bread comes out of, pup.
 a : Dirt's the whole world, #address#. | With work. | Can't afford to.
 
 scene e5_la_farmer_weeds
@@ -128,8 +158,9 @@ a : I'd burn the field. | I did. | Who'd buy them?
 scene e5_la_woodcutter_trees
 when topic=land a.job=woodcutter
 a : I know every big tree for a day's walk. Like old friends. | There's an oak out there older than any family in this town. I'll not cut it. | The young trees grow straighter where we've thinned.
-b[child] : Do trees have names?
+b[young] #young : Do they know you? The trees?
 b : Friends you cut down. | Good of you. | Clever.
+a@young : The old ones do. They creak when I come by.
 a : Some I don't. | Some trees should just be. | It's just sense.
 
 scene e5_la_miner_hills
@@ -141,15 +172,17 @@ a : Each to their own. | Not for you. | Too late.
 scene e5_la_fisher_water
 when topic=land a.job=fisher
 a : The water's the only land worth knowing. | The banks change every year. New pools, old pools gone. | I read the water like you'd read a book. If you could read.
-b[fisher] : And the fish read us, just as well.
+b[fisher] #fisher : And the fish read us, just as well.
 b : Don't fall in. | Must make work. | Cheek.
-a : I've done it. Twice. | It keeps you sharp. | You love me.
+a@fisher : Better, some days.
+a : I've done it. Twice. | It keeps you sharp. | Only the truth.
 
 scene e5_la_herder_grazing
 when topic=land a.job=herder
 a : The best grazing's always on the steep bit. Sheep know. | Moved the flock to the far pasture. The near one's bitten to the root. | Every bit of this land's been grazed for a thousand years. You can tell.
-b[farmer] : Keep them off my barley, that's all I ask.
+b[farmer] #farmer : Keep them off my barley, that's all I ask.
 b : Sheep are cleverer than you'd think. | Long walk. | How?
+a@farmer : Mend your hedge, then. They only go where it's open.
 a : Than most wolves. | Long enough. | The grass is sweet. Short and sweet.
 
 scene e5_la_carter_roads
@@ -161,44 +194,52 @@ a : They don't drive carts either. | With a cart? | I drive it beautifully.
 scene e5_la_hunting_land
 when topic=land a.job=woodcutter|herder|farmer
 a : Deer have been at the hedges. Tracks everywhere. | There's a fox earth under the bank. Got two of my hens. | Hares on the top field. You can see them boxing at dawn.
-b[guard] : No poaching, now. You know the rule.
+b[guard] #guard : Mind what you hunt, and where. You know the rules.
 b : Venison, then. | Block it. | Lovely sight.
+a@guard : I only said I'd seen them.
 a : I didn't say anything. | Done. They dig. | It is.
 
 scene e5_la_scholar_land
 when topic=land a.job=scholar|priest|official
-a : The old maps say this valley was a lake once. | The parish rolls go back two hundred years. Every field named. | Half these field names mean nothing now. "Hanging Wolf Acre". Imagine.
-b[farmer] : Hanging Wolf Acre's still called that. And nobody likes ploughing it.
-b : A lake? Here? | Who cares, two hundred years on? | I'd rather not.
+a : The old maps say this country was all under water once. | The parish rolls go back two hundred years. Every field named. | Half these field names mean nothing now. "Hanging Wolf Acre". Imagine.
+b[farmer] #farmer : Old names stick. My top field's Hanging Wolf Acre to this day, and nobody likes ploughing it.
+b : Under water? Here? | Who cares, two hundred years on? | I'd rather not.
+a@farmer : I should think not.
 a : Before the hills moved. | The lawyers. | Quite.
 
 # ---------------------------------------------------------------- Who they are
 
 scene e5_la_old_changes
 when topic=land a.stage=old
+cooldown 2d
 a : That was all woods when I was a pup. All of it. | There used to be a pond there. Frogs all summer. Drained it for a field. | The river's moved. It used to come right up to that wall.
-b[young] : All of it? Where did it go?
+b[young] #young : All of it? Where did it go?
 b : Hard to picture. | Pity. | Rivers do.
-a : Into fires and roofs. | Frogs, though. | Like folk. Wandering off.
+a@young : Into fires and roofs, pup. Same as everything.
+a : I can still see it, if I squint. | I miss the frogs. | Like folk. Wandering off.
 
 scene e5_la_young_explore
 when topic=land a.stage=young
-a : I walked all the way to the big rock and back! On my own! | There's a cave in the hill! Real one! | I found a stream nobody knows about.
-b[parent=yes] : On your own? We'll talk about that.
-b[stage=old] : I found that cave at your age. Mind the bats.
+a : I walked all the way to the big rock and back! On my own! | There's a cave in the hill! A real one! | I found a stream nobody knows about.
+b[pair.kin=parent] #parent : On your own? We'll talk about that.
+b[stage=old] #old : I found that at your age. Mind how you go.
 b : Clever pup. | Did you go in? | Show me, then.
+a@parent : ...Can we talk about it tomorrow?
+a@old : You never! Was it there then?
 a : Easy. | Nearly! | It's a secret.
 
 scene e5_la_rich_land
 when topic=land a.wealth=rich
 a : We've bought the meadow past the mill. Good grazing. | Land's the only investment that doesn't run off with the steward. | I rode out to look at our holdings. More than I'd thought.
-b[wealth=poor] : Must be nice to count fields like coins.
+b[wealth=poor] #poor : Must be nice to count fields like coins.
 b : Congratulations. | Ha. True. | Lucky you.
-a : It is. | Usually. | Prudence, not luck.
+a@poor : It is, rather.
+a : Thank you. It'll pay for itself in three years. | Usually. | Prudence, not luck.
 
 scene e5_la_stranger_directions
 when topic=land pair.band=strangers
 a : Where does that road go, past the hill? | Is there a quicker way to the river from here? | What's out beyond the last farm?
-b[carter] : Every road goes somewhere. That one goes somewhere slow.
+b[carter] #carter : Ask a carter and you'll get the truth: further than it looks, whichever way you go.
 b : Next town, if you keep on long enough. | Through the fields, if the farmer doesn't catch you. | Nothing. Then more nothing.
+a@carter : I'll remember that. Thank you.
 a : Thank you. | I'll risk it. | Sounds restful.

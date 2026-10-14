@@ -83,7 +83,7 @@ scene tr_rm_rain_hall
 when topic=work here.region=ridgemere a.job=official|noble|servant
 a : Rain's coming through the Rain Hall roof onto the council table. | The Houses met and agreed on nothing. | Buckets in the council chamber. Every session.
 b : Fitting. | As usual. | They should mend it.
-a : Fitting and wet. | Nothing and lunch. | They'd have to agree to.
+a : Fitting and wet. | Nothing and dinner. | They'd have to agree to.
 
 scene tr_ua_pilgrim_trade
 when topic=work here.region=ridgemere a.role=merchant
