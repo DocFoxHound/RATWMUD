@@ -1,7 +1,7 @@
 {
   "format": "ratw-worth-ladder",
   "version": 2,
-  "about": "What things should cost (doc 63): the worth ladder. Every item sits on a rung, and production times are calibrated so that, priced from cost, it sells there. Worth is measured in a labourer's day-wages (LD): what a wolf in plain work earns in a day. Money is closed, so the price level floats; worth is relative, and stays put while pennies drift. Rungs are named steps, each about three times the one below, for the item editors (Atlas, the Dungeon Master) to place items on; `at` puts an item within its rung, 0 at the bottom, 1 at the top, on a log scale (0.5 is the rung's middle). An item not placed here sits where its catalogue price puts it (price / catalogueDay LD). Not a gear tier (items.json `tier`: basic, professional, exceptional) and not a quality (Common, Fine, ...): a common-quality rapier is still Rare. markup: each seller's margin at every step, for the calibration. skillWage: a trade needing skill s pays (1 + s / skillWage) a labourer's wage (a modest premium: the market can wear it down, so a good's worth is carried by its hours). carryPerWeight: labourer's hours to cart one unit of weight to market, once per step.",
+  "about": "What things should cost (doc 63): the worth ladder. Every item sits on a rung, and production times are calibrated so that, priced from cost, it sells there. Worth is measured in a labourer's day-wages (LD): what a wolf in plain work earns in a day. Money is closed, so the price level floats; worth is relative, and stays put while pennies drift. Rungs are named steps, each about three times the one below, for the item editors (Atlas, the Dungeon Master) to place items on; `at` puts an item within its rung, 0 at the bottom, 1 at the top, on a log scale (0.5 is the rung's middle). Every item carries its own place in Data/Items/items.json (`worth`: rung and at), written by tools/econ_model/apply_ladder.py and later edited in Atlas and the Dungeon Master; `anchors` here are the placings the ladder began from (the user's targets, 2026-10-14), and an item with no place of its own sits where its catalogue price puts it (price / catalogueDay LD). Not a gear tier (items.json `tier`: basic, professional, exceptional) and not a quality (Common, Fine, ...): a common-quality rapier is still Rare. markup: each seller's margin at every step, for the calibration. skillWage: a trade needing skill s pays (1 + s / skillWage) a labourer's wage (a modest premium: the market can wear it down, so a good's worth is carried by its hours). carryPerWeight: labourer's hours to cart one unit of weight to market, once per step.",
   "unit": "LD",
   "catalogueDay": 12,
   "markup": 0.15,
@@ -17,7 +17,7 @@
     {"id": "precious",  "name": "Precious",  "from": 40,   "to": 120,  "about": "A season's wages: jewelled pieces, siege engines; Houses and the rich."},
     {"id": "legendary", "name": "Legendary", "from": 120,  "to": 400,  "about": "A year's wages or more: one of a kind."}
   ],
-  "items": {
+  "anchors": {
     "wheat":       {"rung": "staple",   "at": 0.4,  "note": "Fields are productive: a lot of grain for the work, so bread can be cheap."},
     "oats":        {"rung": "staple",   "at": 0.4},
     "vegetables":  {"rung": "staple",   "at": 0.48},

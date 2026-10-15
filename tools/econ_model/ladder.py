@@ -1,8 +1,10 @@
-"""The worth ladder (ladder.json, doc 63): rungs, where each item sits, and what that is in a labourer's day-wages.
+"""The worth ladder (Data/Economy/ladder.json, doc 63): rungs, where each item sits, and what that is in a labourer's
+day-wages (LD). An item's place is its own `worth` in Data/Items/items.json; else the ladder's `anchors` (the
+placings it began from); else where its catalogue price puts it.
 
     worth(item)          -> LD, from its placing (rung + at) or its catalogue price
     place(ld)            -> (rung id, at) for a worth: where an editor's slider would put it
-    python3 tools/econ_model/ladder.py [item ...]   prints placings (all placed items by default)
+    python3 tools/econ_model/ladder.py [item ...]   prints placings (the anchors by default)
 """
 import json
 import math
@@ -11,13 +13,14 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+LADDER = ROOT / "Data/Economy/ladder.json"
 
 
 class Ladder:
-    def __init__(self, path=HERE / "ladder.json", items=None):
+    def __init__(self, path=LADDER, items=None):
         self.data = json.load(open(path))
         self.rungs = {r["id"]: r for r in self.data["rungs"]}
-        self.placed = self.data["items"]
+        self.placed = self.data["anchors"]
         self.catalogue = items if items is not None else \
             {i["id"]: i for i in json.load(open(ROOT / "Data/Items/items.json"))["items"]}
 
@@ -29,6 +32,9 @@ class Ladder:
         return r["from"] * (r["to"] / r["from"]) ** at
 
     def worth(self, item):
+        own = self.catalogue.get(item, {}).get("worth")
+        if own:
+            return self.at_rung(own["rung"], own.get("at", 0.5))
         p = self.placed.get(item)
         if p:
             return self.at_rung(p["rung"], p.get("at", 0.5))

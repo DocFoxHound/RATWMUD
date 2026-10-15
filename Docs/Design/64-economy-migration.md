@@ -532,3 +532,38 @@ crafting 89,400, town 38,722, game 3,570: all pass.
 **The DEV reset waits.** With 10× the money but wages and prices at their old 12p level, DEV would play for weeks with
 every household holding four months' wages. The reset (`--refound-economy` on DEV's server) is to be done once Phases
 2, 4 and 6 build prices and wages at the 5,000,000p level (a labourer's day about 60p).
+
+### Phase 2: done (2026-10-15)
+
+**The ladder is in the catalogue.**
+
+- **`Data/Economy/ladder.json`** holds the rungs and the calibration's settings: `catalogueDay` 12, `markup` 0.15,
+  `skillWage` 150, `carryPerWeight` 0.004. Its `anchors` are the placings the ladder began from (the user's targets).
+- **Every item in `Data/Items/items.json`** carries its own place, `worth` (`rung`, `at`), and **`playerSeconds`: 0**.
+  That's how long a player takes to make it; it's not read by the game yet, and is set per item later in Atlas and the
+  DM. An item's `price` is unchanged: doc 47's gear prices stand until Phase 4 prices from cost.
+- **Every craft and producer in `crafts.json`** carries its NPC work, **`hours`** a batch or spell, calibrated from the
+  ladder. It sits beside `seconds`, which still paces making until Phase 3. A bakery's batch of six loaves is 1.7
+  hours of work, for example.
+
+**`tools/econ_model/apply_ladder.py`** writes both, re-runnably.
+
+- It changes only those fields, one object to a line, as it was. It's checked: no line changes beyond them, and lines
+  written with `\u` escapes keep them.
+- **The 110 conflicts:** a recipe whose inputs alone cost more than its goods were worth. Those goods' worth is raised
+  to what they cost to make, and the ladder settled again until none are left. The biggest rises are silver goods,
+  blankets, chain collars and crossbow prods. Calibration on the game's data now reports **0 conflicts of 361 ways**.
+- **The labour budget:** a head's day of bread and household needs is 1.68 labourer's hours.
+
+**`tools/item_catalog.py`** knows the ladder:
+
+- every item needs a rung and an `at` from 0 to 1, and a whole `playerSeconds`;
+- every craft and producer needs its `hours`;
+- a recipe "loses" by worth, no longer by catalogue price;
+- crafts.json's crafts and producers count as makers. Before, the checker failed on smoked mutton, smoked rabbit and
+  farm gear for "nothing makes it", and on the brass bracelet's loss at catalogue prices.
+
+A losing recipe is unsound only if it's the only way to make its goods. Four player recipes are dearer routes to goods
+made cheaper another way (rye flour, a copper bar, plaster, an ear ring), and are listed as notes. The check passes.
+
+**Tests:** crafting, society, roads and town suites pass with the new fields; the loaders ignore keys they don't know.

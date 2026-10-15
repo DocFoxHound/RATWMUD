@@ -42,6 +42,20 @@ CRAFTS = _CRAFTS_FILE['crafts']           # What shopkeepers make now (doc 35, P
 SUPPLIES = _CRAFTS_FILE['supplies']       # Business -> the ingredients its shops sell.
 PRODUCERS = _CRAFTS_FILE.get('producers', [])   # Residents who bring goods in from the land.
 BUYS = {b: v for b, v in _CRAFTS_FILE.get('buys', {}).items() if b != 'about'}   # What shops buy from players.
+# The worth ladder (Docs/Design/64-economy-migration.md, Phase 2): its rungs, in a labourer's day-wages (LD).
+LADDER = json.loads((ROOT / 'Data/Economy/ladder.json').read_text(encoding='utf-8'))
+RUNGS = {r['id']: r for r in LADDER['rungs']}
+
+
+def worth(ref):
+    """What an item is worth in a labourer's day-wages (its rung and where in it); a group, its cheapest member."""
+    if ref in GROUPS:
+        return min(worth(i['id']) for i in members(ref))
+    w = ITEMS[ref].get('worth')
+    if not w or w.get('rung') not in RUNGS:
+        return ITEMS[ref]['price'] / LADDER['catalogueDay']
+    r = RUNGS[w['rung']]
+    return r['from'] * (r['to'] / r['from']) ** w.get('at', 0.5)
 
 
 def members(group):
@@ -58,13 +72,19 @@ def price(ref):
 
 
 def margin(r):
-    cost = sum(price(k) * n for k, n in r['in'].items())
-    value = sum(price(k) * n for k, n in r['out'].items()) + sum(price(k) * n for k, n in r.get('by', {}).items())
+    """A recipe's inputs and goods by worth (LD): what's left between them is the work's (doc 64, Phase 2; it was by
+    catalogue price)."""
+    cost = sum(worth(k) * n for k, n in r['in'].items())
+    value = sum(worth(k) * n for k, n in r['out'].items()) + sum(worth(k) * n for k, n in r.get('by', {}).items())
     return cost, value, value - cost
+
+
+NOTES = []                                  # What the checks noticed that isn't unsound.
 
 
 def check():
     problems = []
+    NOTES.clear()
     raw = json.loads((DIR / 'items.json').read_text(encoding='utf-8'))['items']
     if len(raw) != len(ITEMS):
         problems.append('duplicate item ids')
@@ -76,6 +96,7 @@ def check():
             problems.append(f'{g}: no items carry that tag')
     made = defaultdict(list)
     used = set()
+    losing = []
     for r in RECIPES:
         if r['station'] not in STATIONS:
             problems.append(f'recipe {r["id"]}: unknown station {r["station"]}')
@@ -98,7 +119,21 @@ def check():
             used.add(r['tool'])
         cost, value, gain = margin(r)
         if gain < 0:
-            problems.append(f'recipe {r["id"]}: loses {-gain:g}p (inputs {cost:g}p, outputs {value:g}p)')
+            losing.append((r, cost, value, gain))
+    # What the residents make and bring in counts as made too (crafts.json: the starter crafts and the producers).
+    for c in CRAFTS:
+        for k in c['out']:
+            made[k].append(f'craft {c["id"]}')
+        used.update(c['in'])
+    for pr in PRODUCERS:
+        for k in list(pr.get('out', {})) + list(pr.get('offSeason', {})):
+            made[k].append(f'producer {pr["id"]}')
+    # A recipe whose goods are worth less than its inputs: unsound if it's the only way to make them; a note if another
+    # way makes them cheaper (worth is set by the way the residents make them: a dearer route is just a poorer one).
+    for r, cost, value, gain in losing:
+        other = any(m != r['id'] for k in r['out'] for m in made.get(k, []))
+        line = f'recipe {r["id"]}: loses {-gain:.3g} LD (inputs {cost:.3g} LD, goods {value:.3g} LD)'
+        (NOTES if other else problems).append(line + (' (a dearer route: its goods are made cheaper another way)' if other else ''))
     for i in ITEMS.values():
         if i.get('slot') and i['slot'] not in SLOTS:
             problems.append(f'{i["id"]}: unknown slot {i["slot"]}')
@@ -106,6 +141,11 @@ def check():
             problems.append(f'{i["id"]}: jewellery needs spots from {sorted(SPOTS)}')
         if i['price'] < 0 or i['weight'] < 0:
             problems.append(f'{i["id"]}: negative price or weight')
+        w = i.get('worth')
+        if not w or w.get('rung') not in RUNGS or not 0 <= w.get('at', -1) <= 1:
+            problems.append(f'{i["id"]}: worth must name a rung ({", ".join(RUNGS)}) and an at from 0 to 1')
+        if not isinstance(i.get('playerSeconds'), int) or i['playerSeconds'] < 0:
+            problems.append(f'{i["id"]}: playerSeconds must be a whole number of seconds, 0 or more')
         if not (made.get(i['id']) or i.get('source') or i.get('issued')):
             problems.append(f'{i["id"]}: nothing makes it and it has no source')
         if i['category'] in ('material', 'component') and i['id'] not in used and not any(
@@ -154,7 +194,9 @@ def check_crafts():
         if all(k in ITEMS for p in ('in', 'out') for k in c[p]):
             cost, value, gain = margin(c)
             if gain <= 0:
-                problems.append(f'craft {c["id"]}: makes nothing ({cost:g}p in, {value:g}p out)')
+                problems.append(f'craft {c["id"]}: makes nothing ({cost:.3g} LD in, {value:.3g} LD out)')
+        if not isinstance(c.get('hours'), (int, float)) or c['hours'] <= 0:
+            problems.append(f'craft {c["id"]}: needs its hours (tools/econ_model/apply_ladder.py)')
     for pr in PRODUCERS:
         if not pr.get('match') or pr.get('seconds', 0) <= 0 or not pr.get('out'):
             problems.append(f'producer {pr.get("id")}: needs match words, seconds and goods')
@@ -163,6 +205,8 @@ def check_crafts():
                 problems.append(f'producer {pr["id"]}: {k} must be a known good in a whole count')
         if any(x not in (0, 1, 2, 3) for x in pr.get('seasons', [])):
             problems.append(f'producer {pr["id"]}: seasons are 0 to 3')
+        if not isinstance(pr.get('hours'), (int, float)) or pr['hours'] <= 0:
+            problems.append(f'producer {pr["id"]}: needs its hours (tools/econ_model/apply_ladder.py)')
     for b, goods in BUYS.items():
         if b not in BUSINESSES:
             problems.append(f'buys: unknown business {b}')
@@ -231,10 +275,10 @@ def main(argv):
         show(argv[argv.index('--item') + 1], made)
         return 0
     if '--margins' in argv:
-        print(f'{"recipe":28} {"cost":>8} {"value":>8} {"margin":>8} {"p/min":>7}')
+        print(f'{"recipe":28} {"cost LD":>8} {"value LD":>8} {"margin":>8} {"LD/min":>7}')
         for r in sorted(RECIPES, key=lambda r: r['id']):
             cost, value, gain = margin(r)
-            print(f'{r["id"]:28} {cost:8.2f} {value:8.2f} {gain:+8.2f} {gain / (r["seconds"] / 60):7.2f}')
+            print(f'{r["id"]:28} {cost:8.3f} {value:8.3f} {gain:+8.3f} {gain / (r["seconds"] / 60):7.3f}')
     cats = defaultdict(int)
     for i in ITEMS.values():
         cats[i['category']] += 1
@@ -247,6 +291,8 @@ def main(argv):
             print(f'{c["id"]:20} {",".join(c["makers"]):34} {str(c["in"]):34} {str(c["out"]):22} {cost:5g} {value:5g}')
     for k in unsupplied():
         print(f'NOTE: {k} goes into a starter craft but nothing supplies, makes or produces it yet')
+    for n in NOTES:
+        print('NOTE:', n)
     for p in problems:
         print('PROBLEM:', p)
     return 1 if problems else 0

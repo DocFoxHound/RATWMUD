@@ -1,5 +1,6 @@
 """Production times from target prices (doc 63): what each craft and producer's work should take so that, priced from
-cost, every good lands on the price ladder (ladder.json).
+cost, every good lands on the worth ladder (Data/Economy/ladder.json; each item's own place, `worth`, in items.json).
+apply_ladder.py writes the result into the game's catalogue (doc 64, Phase 2).
 
 A good's built price is the work at its trade's wage, plus its inputs, plus carting, plus the tools worn, times the
 seller's margin. Raw goods come first, then everything made from them, so each step sees its inputs' new costs. The
@@ -9,7 +10,7 @@ target, the step is listed as a conflict (the target, the recipe or an input's t
     python3 tools/econ_model/calibrate.py [--show all|changed|conflicts] [--write proposed_rates.json]
 
 Reads Data/Items (crafts.json: what NPCs make and gather; recipes.json: skills, and goods only players make). Writes
-nothing to the game's data: --write puts the proposal next to this script.
+nothing to the game's data (apply_ladder.py does): --write puts a listing next to this script.
 """
 import argparse
 import json
