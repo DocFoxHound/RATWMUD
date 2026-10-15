@@ -978,6 +978,21 @@ Value economyMemory(const EconomyMemory& m)
     }
     o.add("putIn", putIn);
     o.add("credit", credit);
+    auto employers = Value::object();
+    for (const auto& [key, e] : m.employers)
+    {
+        auto book = Value::array();
+        book.push(e.wage);
+        book.push(double(e.openDays));
+        book.push(double(e.calm));
+        book.push(e.shortPay ? 1. : 0.);
+        employers.add(key, book);
+    }
+    o.add("employers", employers);
+    auto closed = Value::array();
+    for (const auto& pid : m.closed)
+        closed.push(pid);
+    o.add("closed", closed);
     return o;
 }
 
@@ -1038,6 +1053,15 @@ EconomyMemory readEconomyMemory(const Value& o)
         if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
             v.items()[0].asNumber() < 1e12 && key.find('|') != std::string::npos)
             m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
+    // (Saved before doc 64's Phase 6: every employer starts at the going rate for its skill.)
+    for (const auto& [key, v] : o.object("employers").fields())
+        if (v.isArray() && v.items().size() == 4 && std::all_of(v.items().begin(), v.items().end(), [](const Value& x) { return x.isNumber(); }) &&
+            v.items()[0].asNumber() > 0 && v.items()[0].asNumber() < 1e6 && key.size() < 200)
+            m.employers[key] = {v.items()[0].asNumber(), std::clamp(int(v.items()[1].asNumber()), 0, 7),
+                                std::clamp(int(v.items()[2].asNumber()), 0, 1000), v.items()[3].asNumber() > 0};
+    for (const auto& v : o.array("closed"))
+        if (v.isString() && v.asString().size() < 200)
+            m.closed.insert(v.asString());
     return m;
 }
 

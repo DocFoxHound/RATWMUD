@@ -854,9 +854,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                      const auto* held =
                          oddJobFor(id, *job, job == &stand || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title),
                                    body.age, wallet.cash < 12 || (hunger >= 55 && !carriesFood), hour,
-                                   // (What its own post pays a day, to weigh a better-paid hire against.)
+                                   // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
-                                       ? std::int64_t(dayWage(homePlace.community, wageKind(payerOf(id, *job, body.age), *job)))
+                                       ? lookingFor(id, payerOf(id, *job, body.age), *job, absoluteDay)
                                        : 0,
                                    atOnce ? &claims : nullptr);
                      if (claims)
@@ -1232,10 +1232,11 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 creditWork(payer.account, 1.);
             if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {
-                // The town's wage table (doc 46, Phase 4): a day's pay for its kind of post, a PaidSpells-th of it a spell,
-                // the pennies' fractions carried to the next (never more than a day's owed).
+                // Its employer's own wage (doc 64, Phase 6): a PaidSpells-th of a day's a spell, the pennies' fractions
+                // carried to the next (never more than a day's owed).
                 const bool business = payer.whom == "the shop"sv || payer.whom == "the house"sv;
-                const double day = dayWage(home, wageKind(payer, *job));
+                const auto employer = employerKey(payer, *job);
+                const double day = employerWage(employer);
                 auto& carry = wageCarry_[pair.first];
                 carry = std::min(carry + day / PaidSpells, day);
                 const std::int64_t wage = std::int64_t(std::floor(carry));
@@ -1263,11 +1264,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 {
                     ++life.wagesToday;
                     carry -= double(wage);
+                    notePay(pair.first, employer, wage, wage);
                     if (job->title != LabourTitle && state_.memory.unpaidSince.erase(pair.first))
                         ++state_.memory.revision;
                 }
                 else
+                {
+                    notePay(pair.first, employer, 0, wage);   // (Its employer fell short: its review marks it.)
                     state_.memory.revision += state_.memory.unpaidSince.emplace(pair.first, absoluteDay).second;
+                }
             }
         }
         else if (task == "buy food"sv)

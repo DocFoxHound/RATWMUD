@@ -625,6 +625,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             reckon(day);                               // The month's tax and tithes, when one is due (RatwReckoning.cpp).
             tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
             tendTills(day);                            // Owner-run businesses' tills: their keepers' wages (RatwTills.cpp).
+            tendLabour(day, bodies);                   // The labour market: wages, posts judged and left (RatwLabour.cpp).
             spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
             tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).

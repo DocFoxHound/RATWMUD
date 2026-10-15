@@ -616,6 +616,18 @@ int main(int argc, char** argv)
         for (const auto& [seller, goods] : society.margins())
             for (const auto& [good, m] : goods)
                 sum += m, ++count, low += m < .05, high += m > .3;
+        // Employers' wages (doc 64, Phase 6): how many have books, their mean against the going rate, the share over 1.3x.
+        {
+            double sumWage = 0;
+            int books = 0, over = 0;
+            for (const auto& [key, book] : society.state().memory.employers)
+            {
+                const double rate = society.employerWage(key) / std::max(1e-9, wage);
+                sumWage += rate, ++books, over += rate > 1.3;
+            }
+            out << ",\"employers\":{\"count\":" << books << ",\"mean\":" << (books ? sumWage / books : 0.) << ",\"over\":"
+                << (books ? double(over) / books : 0.) << "}";
+        }
         out << ",\"margins\":{\"count\":" << count << ",\"mean\":" << (count ? sum / count : 0.) << ",\"low\":"
             << (count ? double(low) / count : 0.) << ",\"high\":" << (count ? double(high) / count : 0.) << "}}";
         return out.str();

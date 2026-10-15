@@ -85,7 +85,7 @@ void Society::tendTills(std::int64_t day)
         const auto& keeper = held->second.holder;
         // The keeper's wage (its town's table, doc 46, Phase 4), as far as the till can pay it: one short of working
         // money is topped up by its owner (tendOwners).
-        const auto ownWage = std::int64_t(std::ceil(dayWage(communityOfResident(keeper), "keeper") - 1e-9));
+        const auto ownWage = std::int64_t(std::ceil(employerWage(till) - 1e-9));   // (Its business's wage: doc 64, Phase 6.)
         if (const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash); wage > 0)
             shift(till, keeper, "", 0, wage, "the keeper's wage");
     }
@@ -135,7 +135,8 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
                 const auto h = state_.careers.positions.find(p.id);
                 (h == state_.careers.positions.end() || h->second.holder.empty() ? open : help) += 1;
             }
-    double day = dayWage(town, "keeper") + (help + std::min(open, 2)) * dayWage(town, "help");
+    (void)town;
+    double day = (1 + help + std::min(open, 2)) * employerWage("till:" + positionId);   // (Its own wage: doc 64, Phase 6.)
     // And the materials (or goods to sell on) its sales use a day, at what they cost it.
     const auto till = "till:" + positionId;
     if (const auto rates = sellRate_.find(till); rates != sellRate_.end() && !keeper.empty())

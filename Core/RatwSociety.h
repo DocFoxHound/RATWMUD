@@ -250,6 +250,14 @@ struct House
 
 // What the economy remembers from day to day (doc 42): who has gone unpaid since when (Phase 3), and each treasury's,
 // church's and house's usual spending a day, for its reserve (the rule against hoarding). Saved with the society.
+// An employer's book (Docs/Design/64-economy-migration.md, Phase 6): its own day's wage, the days this week a post of
+// its stood open, its calm weeks in a row (none open), and whether it fell short paying a wage since its last review.
+struct EmployerBook
+{
+    double wage = 0;
+    int openDays = 0, calm = 0;
+    bool shortPay = false;
+};
 struct EconomyMemory
 {
     std::map<std::string, double> unpaidSince;      // Worker -> the day its employer first couldn't pay.
@@ -280,6 +288,8 @@ struct EconomyMemory
     // till|seller's till" -> what it owes and the day it first owed it).
     std::map<std::string, double> putIn;
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
+    std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
+    std::set<std::string> closed;                    // Posts a business has let go and keeps empty (doc 64, Phase 6).
     std::int64_t revision = 0;
 };
 
@@ -850,7 +860,7 @@ class Society
     double marginOf(const std::string& seller, const std::string& item) const;
     double priceAt(const std::string& seller, const std::string& item) const;   // Pennies a piece, not rounded.
     double offerAt(const std::string& seller, const std::string& item) const { return normalCost(seller, item); }
-    double labourDay(const std::string& town) const { return dayWage(town, "labour"); }
+    double labourDay(const std::string& town) const { return goingRate(town); }
     // Carting a piece `legs` steps (ladder.json carryPerWeight: labourer's hours a unit of weight a step), in pennies.
     double carriage(const std::string& item, double legs, const std::string& town = {}) const;
     static constexpr double CarriageLegs = 10;       // Steps between towns, for what's carted from one to another.
@@ -892,7 +902,7 @@ class Society
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
     // hand (the wage table, doc 46, Phase 4). A wolf whose own post pays HireRaise less than a hire takes it.
     static constexpr std::int64_t HireRaise = 2;
-    static constexpr int HireSpells = 4;
+    static constexpr int HireSpells = 8;           // (A day's hours, as a post's: doc 64, Phase 6. It was 4.)
     // Children's friend groups (the user, 2026-10-05): in each town its children, by age, in fours; they play together
     // and take odd jobs together. A child's group ("" for none).
     const std::string& friendGroup(const std::string& child) const;
@@ -977,6 +987,38 @@ class Society
     // economy orchestrator (the dials' starts until it has), paid a PaidSpells-th a spell of work. Every payer pays the
     // table: a shop or house that can't is covered by its town (or church) if it has plenty, else its hand goes unpaid.
     double dayWage(const std::string& town, const std::string& kind) const;
+    // The labour market (Docs/Design/64-economy-migration.md, Phase 6; doc 63's model; RatwLabour.cpp). Every employer
+    // pays its own wage: a business (its till), and the town's watch, works and posts and the church ("<account>|<kind>").
+    // A new one starts at the going rate for its skill: its town's labourer's wage (the middle of what its unskilled
+    // businesses pay, by their hands) times 1 + skill / skillWage, the Town Works at 0.85 of it, the clergy 1.1.
+    // Reviewed weekly on its own day: up when a post of its stood open four days or more (3% to 10% a week, the more
+    // of its posts open the more, never past twice the going rate for its skill); down a little after six calm weeks
+    // while wolves stand idle; sliding back while over 1.3 times it with nothing open; never under 0.85 times it; down
+    // after a week it fell short paying. Its hands judge it by what it paid them lately: paid under 60% of what it owed
+    // them, a wolf looks for better each morning; under 40%, it leaves (unless it's the only hand). A wolf in a post that pays
+    // well enough is drawn off by a hire paying a tenth more on 4% of mornings, unless its employer is short of hands
+    // or it's the only hand. A post left is open again at once (tendCareers fills it).
+    std::string employerKey(const Payer& payer, const Position& job) const;
+    double employerWage(const std::string& key) const;
+    double goingRate(const std::string& town) const;          // A labourer's day in the town (labourDay).
+    double employerSkill(const std::string& key) const;       // The skill its trade needs.
+    int vacanciesOf(const std::string& key) const;
+    int handsOf(const std::string& key) const;
+    double paidLately(const std::string& resident) const;     // The share of its wages owed it lately that were paid.
+    // What a wolf's own post weighs against a hire this morning (0: it isn't looking).
+    std::int64_t lookingFor(const std::string& resident, const Payer& payer, const Position& job, double day) const;
+    static constexpr double WageUp = .03, WageUpShort = .10, WageDown = .02, WageFloor = .85, WageMost = 2, WageHigh = 1.3,
+                            LeaveBelow = .4, LookBelow = .6, PoachGap = .1, PoachChance = .04, WorksShare = .85, ClergyShare = 1.1;
+    static constexpr int CalmWeeks = 6, OpenDays = 4;
+    // Hands by sales (doc 64, Phase 6), at its weekly review: the hours its sales take a day (its crafts' or yields'
+    // hours for what it sells, a fifth more for staples, half again with its shelf near bare, a fifth less with it
+    // glutted), in hands of PaidSpells hours; at least its keeper. Short, it opens the posts it let go, then hires for
+    // HireDays (a farm a quarter over its wage at sowing and harvest, from the idle and other trades: the harvest
+    // call); over, it lets its hires run out, then lets help go (half the excess, one at least), keeping their posts
+    // empty. Never more than doubling its hands (and two) in a week.
+    static constexpr double StapleSlack = 1.2, HarvestPay = 1.25;
+    std::vector<std::string> helpPosts(const std::string& till) const;   // Its help's posts (at its premises).
+    int handsWanted(const std::string& till) const;
     std::string wageKind(const Payer& payer, const Position& job) const;   // "help", "guard", "labour", "clergy".
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
@@ -1189,6 +1231,15 @@ class Society
     // What each shop's till took in today (wages follow takings: RatwSurplus.cpp). Not saved.
     std::map<std::string, std::int64_t> takings_;
     std::unordered_map<std::string, std::int64_t> weekTakings_;   // A till's takings since its rent was last paid (doc 64).
+    // The labour market's day (doc 64, Phase 6; RatwLabour.cpp): each employer's posts open and filled, and its town;
+    // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
+    std::unordered_map<std::string, int> vacancies_, hands_;
+    std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
+    std::unordered_map<std::string, double> going_, paidToday_, owedToday_, pay7_;
+    double slack_ = 0;
+    void tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    void reviewHands(const std::string& till, std::int64_t day);
+    void notePay(const std::string& resident, const std::string& key, std::int64_t coins, std::int64_t owed);
     void tendOwners(std::int64_t day);
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).
     // A business with money to spare (RatwOddJobs.cpp): hands hired for its premises, paid from its till, and its premises

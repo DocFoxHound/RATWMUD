@@ -90,7 +90,8 @@ void Society::spendSurpluses(std::int64_t day)
     ++oddVersion_;
     for (auto& j : oddJobs_)
     {
-        if (j.until >= 0 && !j.producer.empty() && j.slots > 0)
+        // (A business's hire by its sales keeps the pay it was posted at, its own wage: doc 64, Phase 6.)
+        if (j.until >= 0 && !j.producer.empty() && j.slots > 0 && !(workByHours() && j.payer.rfind("till:", 0) == 0))
             j.pay = std::int64_t(std::ceil(dayWage(j.community, "hand") - 1e-9)) * j.slots;
         for (auto& [who, stage] : j.stage)
             stage = 0, j.progress[who] = 0;

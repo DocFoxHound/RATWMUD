@@ -343,10 +343,10 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return here;
     };
     // A wolf with a post of its own looks, of a morning, for a business's hire paying it better (the user, 2026-10-05:
-    // unfilled work pulls workers off other employment).
+    // unfilled work pulls workers off other employment): `ownDayPay` is what it must pay (Society::lookingFor, doc 64).
     const bool better = ownDayPay > 0 && hour >= 8 && hour < 10 && [&] {
         for (const auto i : candidates())
-            if (const auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && j.pay / j.slots >= ownDayPay + HireRaise &&
+            if (const auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && j.pay / j.slots >= ownDayPay &&
                                              int(j.stage.size()) < j.slots && j.community == community)
                 return true;
         return false;
@@ -385,7 +385,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
             }
     for (int pass = child ? 0 : 1; !chosen && pass < 2; ++pass)
         for (const auto i : *look)
-            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay + HireRaise)))
+            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay)))
             {
                 chosen = &j;
                 break;

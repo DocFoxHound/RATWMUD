@@ -1224,7 +1224,9 @@ void greatHouses()
     for (const auto& e : w.takeEvents())
         if (e.kind == "economy" && e.detail == "manager's wage" && e.target == "tanner")
             wage += e.coins;
-    expect(wage == Society::ManagerWage, "The manager is paid its wage from the till");
+    // (Its wage as it stood when paid: the town's going rate is worked out afresh after the houses' day.)
+    expect(wage > 0 && std::abs(double(wage) - soc.employerWage(till)) < 2, "The manager is paid its business's wage from the till (" +
+                                                                             std::to_string(wage) + "p)");
     // On the business's day of the month, all above its working money is its house's (doc 64, Phase 5: no longer each
     // night's takings above a float).
     auto saved = w.save();
@@ -1302,7 +1304,11 @@ void theDole()
     s.openAccount(Society::SharedChurch);
     expect(s.shift("treasury", Society::SharedChurch, "", 0, std::min<std::int64_t>(3000, s.account("treasury")->cash / 2), "test: a full church"),
            "The church is full");
-    s.shift("w1", "treasury", "", 0, s.account("w1")->cash, "test: penniless");
+    // (The household is penniless: its members share one purse.)
+    const auto home = s.resident("w1")->homeCell;
+    for (const auto& [id, life] : s.state().residents)
+        if (life.homeCell == home && s.account(id)->cash > 0)
+            s.shift(id, "treasury", "", 0, s.account(id)->cash, "test: penniless");
     w.takeEvents();
     nextMorning(w);
     std::int64_t given = 0;
@@ -1767,13 +1773,15 @@ void householdsShareAndKeepHouse()
     expect(!keeper.empty(), "After a comfortable week one of them keeps the house");
     {
         auto saved = w.save();
-        saved.calendarDays = std::floor(saved.calendarDays) + 1.5;   // (Mid-morning.)
+        saved.calendarDays = std::floor(saved.calendarDays) + 1.5;   // (Mid-morning, of a working day.)
+        while (calendar::weekdayOf(saved.calendarDays) == calendar::Restday)
+            saved.calendarDays += 1;
         expect(w.restore(saved).ok, "To the morning");
     }
     run(w, 30);
     const auto task = w.society().resident(keeper)->task;
     expect(task == "shopping for the household" || task == "minding the children" || task == "about the town",
-           keeper + " keeps the house: " + task);
+           keeper + " keeps the house: " + task + " (" + w.society().resident(keeper)->reason + ")");
     // The money runs low: back to work. (Its shopkeeper's purse is the household's too, since its shop keeps a till of its
     // own: doc 46.)
     for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em"})

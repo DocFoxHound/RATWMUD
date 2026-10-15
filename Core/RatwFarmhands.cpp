@@ -62,6 +62,9 @@ void Society::postFarmHires(std::int64_t day)
     for (const auto& [community, n] : folk)
         if (n >= CityResidents && !community.empty())
             cities_.insert(community);
+    // (With work by the hours, a farm hires as its sales want, at its weekly review: doc 64, Phase 6, RatwLabour.cpp.)
+    if (workByHours())
+        return;
     std::set<std::string> hiring;
     for (const auto& j : oddJobs_)
         if (j.until >= day && j.kind == "a hand")

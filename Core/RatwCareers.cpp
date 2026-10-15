@@ -561,8 +561,8 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
-        if (!ps.holder.empty() || ps.vacantSince < 0)
-            continue;
+        if (!ps.holder.empty() || ps.vacantSince < 0 || state_.memory.closed.count(p.id))
+            continue;                                // (A post its business let go stays empty: doc 64, Phase 6.)
         const double waited = now - ps.vacantSince;
         std::string chosen, how;
         if (waited >= 2 && alive(ps.apprentice) && skill(ps.apprentice, p.id) >= 30)
@@ -661,7 +661,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
-        if (!ps.holder.empty() || ps.vacantSince < 0 || ps.newcomerAsked || now - ps.vacantSince < 8)
+        if (!ps.holder.empty() || ps.vacantSince < 0 || ps.newcomerAsked || now - ps.vacantSince < 8 || state_.memory.closed.count(p.id))
             continue;
         std::string model = spec(ps.lastHolder) ? ps.lastHolder : p.founder;
         if (!spec(model))

@@ -771,3 +771,92 @@ orchestrator.
   rent on its own business.
 - New: `rentOnHouseLand`, a farm paying 15% of its takings.
 - `residentsFillContractsForGoods` checks the till's contract payment, since the keeper's purse now tops up its till.
+
+### Phase 6: built (2026-10-15); calibrated hours still wait, on the realm's diet
+
+**Every employer pays its own wage** (`Core/RatwLabour.cpp`).
+
+- **Who's an employer:**
+  - a business, by its till;
+  - the town's watch, works and other posts, and the church (`"<account>|<kind>"`).
+- **Its book** (saved in the society's memory) holds:
+  - its day's wage;
+  - the days this week a post of its stood open;
+  - its calm weeks in a row;
+  - whether it fell short paying.
+- **A new employer** starts at the going rate for its skill:
+  - **the going rate** is its town's labourer's wage: the middle of what its unskilled businesses pay, counted by
+    their hands;
+  - times 1 + skill / `skillWage` (the most any of its crafts needs);
+  - the Town Works at 0.85 of it, the clergy 1.1.
+- **The going rate is now `labourDay`.** Prices follow it, and `dayWage` by kind becomes a share of it. The
+  orchestrator's wage table applies only when it's on.
+- **Weekly, on its own day**, an employer's wage:
+  - **rises** if a post stood open four days or more: 3% to 10%, the more of its posts open the more, never past
+    twice the going rate for its skill;
+  - **eases a little** after six calm weeks while more than 3% of grown wolves are idle;
+  - **slides back** 5% a week while over 1.3× the going rate with nothing open;
+  - **falls a little** after a week it fell short paying;
+  - **never drops** under 0.85× the going rate.
+- **Everyone is paid their employer's wage:** help by the spell, the keeper and the manager by the day.
+- **Wolves judge a post by what it paid of what it owed them**, a running week of working days:
+  - under 60%, a wolf looks each morning for a hire paying better than it's been getting;
+  - under 40%, it leaves, unless it's the only hand (the watch keeps its posts);
+  - a new post starts a fresh record.
+  - Not by pay itself: a messenger or a House's kinsman works fewer spells at its post, and isn't badly paid for it.
+    The first build judged by pay, and 90 wolves left good posts in 30 days.
+- **Poaching:** a wolf paid well enough takes a hire paying a tenth over its post's wage on 4% of mornings. Never from
+  an employer short of hands, nor as its only hand.
+- **A post left is open again at once**, and succession fills it as before.
+
+**Hands by sales.** Only with work by the hours (Phase 3's switch): at the seconds pace a business's sales take almost
+no hours, and it would let everyone go. At its weekly review, a business works out its hands wanted:
+
+- **The hours its sales take a day:**
+  - its crafts' or yields' hours for what it sells;
+  - a fifth more for staples (`StapleSlack`);
+  - half again when its shelf is nearly bare, a fifth less when it's glutted;
+  - in hands of 8 hours, its keeper at least.
+- **Short of hands,** it opens the posts it let go, then hires for a week at its own wage, from the idle and from other
+  trades. A farm pays a quarter over at sowing and harvest (the harvest call).
+- **Over,** it lets its hires run out, then lets help go: half the excess, one at least. Their posts are kept empty
+  (`memory.closed`, which succession skips).
+- **Never more than doubling** its hands (and two) in a week.
+- A hire's hand now works a full day's 8 spells, not 4. A day's pay for half a day's work made hired hands cost twice
+  their hours.
+- With the hours on, farms hire through this review, and the old farm hires stand down.
+
+**Measured, the game's default (the seconds pace), 30 days from DEV:**
+
+- the going rate holds at 12p;
+- 267 employers have books; their wages average 1.06× the going rate, and 7% are over 1.3×;
+- 2 wolves left a post that didn't pay;
+- nobody idle, hungry or starving; shares of money as in Phase 5; 0.063 ms a tick.
+
+**With the calibrated hours on, the realm still starves** (642 starving by day 9, as in Phase 3). The labour market
+isn't why: the realm's diet takes more work than its hands have.
+
+| | hours of work a day |
+|---|---|
+| food alone, at calibrated hours (the wolves' actual diet, days 8–14) | about 3,750 |
+| everything a household needs, in doc 63's calibration (1.68 h a head) | about 1,820 |
+| the realm's producers (235) and businesses (148) at 8 hours | about 3,060 |
+
+**Why the diet costs so much:**
+
+- A wolf eats about 47 nourishment a day. The model fed each head two loaves (30).
+- Most of it comes from the costlier foods:
+  - smoked fish, smoked mutton, cheese and jerky take 4 to 7 hours of work per meal's worth (50 nourishment);
+  - bread, porridge and rabbit take about 1.4.
+- Those foods took their ladder places from their catalogue prices, so they are dear for what they feed.
+
+**This is for the user to decide.** Calibrated hours wait for it.
+
+**Retired:** wage support (the orchestrator's) and `HireRaise` (a hire must now pay a tenth more). `dayWage` by kind
+is now a share of the going rate. The orchestrator's table and weekly moves apply only when it's on.
+
+**Tests:**
+
+- `greatHouses`: the manager is paid its business's wage.
+- `householdsShareAndKeepHouse`: a working morning, not a Restday.
+- `theDole`: a whole household penniless, since the dole counts a household's purse.
