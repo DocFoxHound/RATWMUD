@@ -89,8 +89,6 @@ void Society::reckon(std::int64_t day, bool force)
     if (books.month >= 0 && (month > books.month || force))
     {
         reckonedDay_ = day;                          // (The economy orchestrator decides that evening: doc 46.)
-        if (force || day % MonthDays < ReckonDays)
-            collectRents();                             // A month's ground rents to the great houses first (doc 42, 5b).
         std::map<std::string, Reckoning> towns;
         // Everyone, and the great houses (on their businesses' takings, doc 42 Phase 5b).
         std::vector<std::pair<std::string, std::string>> payers;    // Account -> its treasury.
@@ -103,7 +101,6 @@ void Society::reckon(std::int64_t day, bool force)
         for (const auto& p : positions_)
             if (const auto till = ownTill(p.id); !till.empty())
                 payers.push_back({till, treasuryOf(communityOfResident(p.founder))});
-        std::map<std::string, std::int64_t> tillProfits;   // What each owner-run till made, after its tax and tithe.
         for (const auto& [id, treasury] : payers)
         {
             const auto start = books.start.find(id);
@@ -131,10 +128,8 @@ void Society::reckon(std::int64_t day, bool force)
             town.tax += paid ? tax : 0;
             town.tithes += tithed ? tithe : 0;
             town.payers += paid || tithed;
-            if (id.rfind("till:", 0) == 0)
-                tillProfits[id] = profit - (paid ? tax : 0) - (tithed ? tithe : 0);
         }
-        ownersShare(tillProfits);                   // Its keeper's share of what the business made (RatwTills.cpp).
+        // (An owner's share of its business's profit is paid monthly now, on the business's own day: doc 64, Phase 5.)
         // The towns send the capital a tenth of what they took in.
         for (auto& [treasury, town] : towns)
             if (const auto share = std::int64_t(double(town.tax / CapitalShare) * taxLevel("treasury"));

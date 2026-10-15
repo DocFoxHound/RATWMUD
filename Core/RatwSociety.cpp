@@ -345,7 +345,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
                       kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
                       kind == "the household purse" || kind == "the church's dole" || kind == "the church's share" ||
-                      kind == "a gift" || kind == "a letter's enclosure"))   // (Gifts and enclosures: doc 55.)
+                      kind == "a gift" || kind == "a letter's enclosure" || kind == "an owner's investment"))   // (Gifts and enclosures: doc 55.)
     {
         auto& books = state_.books;
         if (books.start.count(from))
@@ -441,6 +441,7 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     if (seller.rfind("till:", 0) == 0 || merchant(seller))
     {
         takings_[seller] += total;                  // (A shop's day's takings: its help share them.)
+        weekTakings_[seller] += total;              // (And its week's, for its rent: doc 64, Phase 5.)
         soldToday_[seller][items::baseOf(item)] += quantity;
     }
     record(kind, buyer, seller, item, quantity, total);

@@ -715,3 +715,59 @@ gathers a fifth of the money by day 30: that's the old tithes, for Phase 7.
 **Tests.** The game's tests now run with it off. Tests of what it does turn it on for their own world (`orchestrate`
 in `roads_tests`: odd jobs, its channels, its watching in shadow; the projects test's town measure in shadow).
 `orchestrator_tests` sets its own dials. Phase 12 decides what, if anything, it keeps.
+
+### Phase 5: built (2026-10-15)
+
+**A business keeps its working money, and the rest is its owner's** (`Core/RatwTills.cpp`, `tendOwners`).
+
+- **Working money:** a month of the business's staffing and of the materials its sales use.
+  - Staffing: its keeper, its help, and up to two of its help posts standing open, at the town's wages.
+  - Materials: its daily sales of each good, at what one piece's materials cost it. Goods it sells on count at what
+    they cost it, and a producer's tools at their wear.
+  - Also a week of its standing orders on the roads.
+- **The owner** is its House, or its keeper.
+- **On the business's own day of the month**, all it holds above its working money (and its debts) goes to its owner
+  as "the owner's profit".
+- **On its own day of the week:**
+  - a business on a House's land pays it **15% of the week's takings** as rent. That's the land's: a producer in a
+    town with great houses, always the same House. Rent counts in its price, as a share of it;
+  - a business short of a week's working money is **topped up by its owner** from what it can spare. A keeper keeps
+    `KeeperReserve`; a House gives what it has. An owner stops after putting in two months' working money that hasn't
+    come back: what's put in wears away by a thirteenth a week, and profits paid out count against it.
+- **Trade credit:** a business short of money buys its materials on credit, up to a week of its turnover at cost.
+  - Debts are repaid first each day, from whatever is in the till.
+  - The seller writes a debt off after 56 days.
+  - Debts and what owners have put in are saved in the society's memory.
+- **The keeper's wage** comes out of the till as far as it can pay. It no longer waits for the till to hold half a
+  float.
+- **Market dues** are now a twentieth of what a till holds above its working money (it was above its float).
+
+**Retired:** the keeper's third of the week's profit, the Houses' nightly sweep, a House propping up its own trade's
+businesses, the forced sale of a failing business, and the flat 20p monthly rent. Rescue loans went with the
+orchestrator.
+
+**Measured** (30 days from DEV, the orchestrator off):
+
+- **Money moved** over the month:
+  - farms paid their farmers 128,000p in profit;
+  - farms paid the Houses 17,100p in rent;
+  - House businesses paid their Houses 11,200p in profit;
+  - shopkeepers took 10,200p in profit and put 35,800p in.
+- **Shops are kept going by their owners**, because of what the old institutions take:
+  - in the first run (before the market dues change), shop tills paid 103,000p in market dues, 82,000p in wealth
+    tithe and 70,000p in weekly tax and tithe;
+  - **the wealth tithe** takes about 700,000p from everyone (14% of all money) to the church in 30 days. That's why the
+    church's share climbs from 5% to 20%, and households' falls from 41% to 28%. **It is the largest drain left, and
+    Phase 7 replaces it** with the model's tithe of 6% of income.
+- **Against Phase 4 with the orchestrator off** (day 30), every share is within a point:
+  - households 28%, businesses 17%, the Houses 24%, the church 20%, the towns 11%;
+  - household Gini 0.53;
+  - nobody hungry; 0.068 ms a tick.
+
+**Tests:**
+
+- `theOwnersShare` became `theOwnersProfit`: the month's profit to the keeper; a dry till topped up.
+- `greatHouses`' second half is rewritten: the manager's wage, the month's profit to the House, its top-up, and no
+  rent on its own business.
+- New: `rentOnHouseLand`, a farm paying 15% of its takings.
+- `residentsFillContractsForGoods` checks the till's contract payment, since the keeper's purse now tops up its till.

@@ -1216,54 +1216,51 @@ void greatHouses()
             ware = x;
     expect(!ware.empty() && w.trade("player-ada", "tanner", ware, 1, true).ok, "Ada buys " + ware + " at the tannery");
     expect(soc.account(till)->cash > tillBefore && soc.account("tanner")->cash == managerBefore, "and pays the till, not the manager");
-    // A good day: the takings above the float go to the house; the manager has its wage.
-    w.society().shift("treasury", till, "", 0, 500, "test: a good day");
+    // The manager is paid its wage from the till each day.
     w.takeEvents();
     nextMorning(w);
     run(w, 2);
-    std::int64_t takings = 0, wage = 0;
+    std::int64_t wage = 0;
     for (const auto& e : w.takeEvents())
-    {
-        if (e.kind == "economy" && e.detail == "house takings" && e.actor == till && e.target == house)
-            takings += e.coins;
         if (e.kind == "economy" && e.detail == "manager's wage" && e.target == "tanner")
             wage += e.coins;
-    }
-    // (The till then trades on through the morning, so it is near its float rather than at it.)
-    expect(takings > 0 && soc.account(till)->cash <= soc.floatOf(pid) + 30, "The takings above the float go to the house (" +
-                                                                         std::to_string(takings) + "p)");
     expect(wage == Society::ManagerWage, "The manager is paid its wage from the till");
-    // Bad days: the till runs dry and its town's rescue fund (the economy orchestrator's, doc 46, Phase 6) lends it its
-    // float, until its house sells the business to the other house.
-    const auto other = house == "house:vesk_manor" ? std::string("house:house_ash") : std::string("house:vesk_manor");
-    expect(w.society().shift("treasury", other, "", 0, soc.floatOf(pid) * 2 + 10, "test: the other house's wealth"), "The other house is rich");
-    for (const auto& t : w.towns())
-    {
-        const auto rescue = Society::fundOf(t.id, "rescue");
-        w.society().openAccount(rescue);
-        w.society().shift("treasury", rescue, "", 0, soc.floatOf(pid) * (Society::ProppedDays + 2), "test: the orchestrator's orders");
-    }
-    bool propped = false;
-    for (int d = 0; d < Society::ProppedDays + 1 && soc.ownerOf(pid) == house; ++d)
-    {
-        w.society().shift(till, "treasury", "", 0, soc.account(till)->cash, "test: a bad day");
-        w.takeEvents();
-        nextMorning(w);
-        run(w, 2);
-        for (const auto& e : w.takeEvents())
-            propped |= e.kind == "economy" && e.detail == "a rescue: lent to keep it open" && e.target == till;
-    }
-    expect(propped, "A till run dry is rescued by its town's fund");
-    expect(soc.ownerOf(pid) == other, "and a business that keeps losing is sold to the other house");
-    expect(soc.state().books.start.count(house) && soc.state().books.start.count(other), "Houses keep books for the reckoning");
-    // The month's rent: the tannery (now the other house's) pays the house that doesn't own it, never its own.
+    // On the business's day of the month, all above its working money is its house's (doc 64, Phase 5: no longer each
+    // night's takings above a float).
+    auto saved = w.save();
+    saved.calendarDays = MonthDays + Society::ownersDay(pid) - 1 + 23. / 24;
+    expect(w.restore(saved).ok, "To the eve of its day of the month");
+    w.tick(.6);
+    w.society().shift("treasury", till, "", 0, soc.workingMoney(pid) + 500, "test: a good month");
     w.takeEvents();
-    w.reckonNow();
-    std::string landlord;
+    run(w, 600 * 2);
+    std::int64_t profit = 0;
     for (const auto& e : w.takeEvents())
-        if (e.kind == "economy" && e.detail == "rent" && e.actor == till)
-            landlord = e.target;
-    expect(landlord == house, "The tannery pays its ground rent to the house that doesn't own it (" + landlord + ")");
+        if (e.kind == "economy" && e.detail == "the owner's profit" && e.actor == till && e.target == house)
+            profit += e.coins;
+    expect(profit > 0 && soc.account(till)->cash <= soc.workingMoney(pid) + 50,
+           "The month's profit goes to the house (" + std::to_string(profit) + "p); the till keeps its working money");
+    // Run dry the evening before its day of the week: the house puts money in (no rescue loans, no forced sale).
+    saved = w.save();
+    std::int64_t next = std::int64_t(std::floor(saved.calendarDays)) + 1;
+    while (next % 7 != Society::ownersWeekday(pid))
+        ++next;
+    saved.calendarDays = double(next) - 1 + 23. / 24;
+    expect(w.restore(saved).ok, "To the eve of its day of the week");
+    w.tick(.6);
+    w.society().shift(till, "treasury", "", 0, soc.account(till)->cash, "test: a bad week");
+    w.takeEvents();
+    run(w, 600 * 2);
+    std::int64_t invested = 0, rent = 0;
+    for (const auto& e : w.takeEvents())
+    {
+        invested += e.kind == "economy" && e.detail == "an owner's investment" && e.actor == house && e.target == till ? e.coins : 0;
+        rent += e.kind == "economy" && e.detail == "rent" && e.actor == till ? e.coins : 0;
+    }
+    expect(invested > 0, "A till run dry is topped up by its house (" + std::to_string(invested) + "p)");
+    expect(rent == 0, "and a house's own business pays no rent");
+    expect(soc.state().books.start.count(house), "Houses keep books for the reckoning");
+    const auto other = house;
     World again = load(f);
     expect(again.restore(w.save()).ok && again.society().ownerOf(pid) == other && again.society().tillOf("tanner") == till,
            "Who owns what survives a restart");
@@ -1522,9 +1519,48 @@ void shopkeepersDontHoard()
     (void)shareOfProfit;                             // (Only in a week the till makes a profit: see theOwnersShare.)
 }
 
-// The owner's share (doc 46, Phase 2): at the reckoning an owner-run till pays its town tax and tithe on the week's profit,
-// and its keeper takes a third of what is left.
-void theOwnersShare()
+// Rent on a House's land (doc 64, Phase 5): a farm in a town with great houses pays one of them a share of its week's
+// takings, on its own day of the week; and its rent counts in its price.
+void rentOnHouseLand()
+{
+    const auto unpaid = [](std::string line) { line.replace(line.find(" 1 8 17 "), 8, " 0 8 17 "); return line; };
+    auto f = strip("EE.....WW", unpaid(resident("lord", "Lord Ash", "civilian", "ruling House Ash", 0, 9.5, 0, 9.5)) +
+                                    unpaid(resident("lady", "Lady Vesk", "civilian", "keeping Vesk Manor", 0, 10.5, 0, 10.5)) +
+                                    resident("farmer", "Barley Field", "civilian", "farms the valley fields", 0, 12.5, 0, 12.5));
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);
+    run(w, 2);
+    auto& s = w.society();
+    const auto till = s.tillOf("farmer");
+    expect(till.rfind("till:", 0) == 0, "The farm keeps its own till");
+    const auto pid = till.substr(5);
+    const auto landlord = s.landlordOf(pid);
+    expect(landlord == "house:house_ash" || landlord == "house:vesk_manor", "and works a House's land: " + landlord);
+    // Its takings this week, then its day of the week.
+    auto saved = w.save();
+    std::int64_t next = std::int64_t(std::floor(saved.calendarDays)) + 1;
+    while (next % 7 != Society::ownersWeekday(pid))
+        ++next;
+    saved.calendarDays = double(next) - 1 + 23. / 24;
+    expect(w.restore(saved).ok, "To the eve of its day of the week");
+    w.tick(.6);
+    const std::string wheat = "wheat";
+    s.create(till, wheat, 5, "test: the harvest");
+    expect(s.sale(till, "treasury", wheat, 1, 100, "test: a week's sales"), "The farm sells " + wheat);
+    w.takeEvents();
+    run(w, 600 * 2);
+    std::int64_t rent = 0;
+    for (const auto& e : w.takeEvents())
+        rent += e.kind == "economy" && e.detail == "rent" && e.actor == till && e.target == landlord ? e.coins : 0;
+    expect(rent == 15, "It pays its landlord 15% of the week's takings (" + std::to_string(rent) + "p)");
+    expect(s.conserved(), "Money stays conserved");
+}
+
+// The owner's profit (doc 64, Phase 5): a business keeps its working money (a month of its staffing and materials), and
+// on its own day of the month the rest goes to its owner (here its keeper); on its own day of the week, one short of a
+// week's working money is topped up by its owner.
+void theOwnersProfit()
 {
     auto f = strip("EE.....WW", resident("cook", "Pell Ladle", "merchant", "keeps the cookshop", 7, 9.5, 8, 9.5));
     auto w = load(f);
@@ -1533,22 +1569,44 @@ void theOwnersShare()
     auto& s = w.society();
     const auto till = s.tillOf("cook");
     expect(till.rfind("till:", 0) == 0, "The cookshop has its own till");
+    const auto pid = till.substr(5);
+    expect(s.ownerOfBusiness(pid) == "cook", "and its keeper owns it");
+    const auto working = s.workingMoney(pid);
+    expect(working > 0, "It keeps working money (" + std::to_string(working) + "p)");
+    // To the evening before its day of the month, with a fine month's takings in the till.
     auto saved = w.save();
-    saved.calendarDays = 6 + 23. / 24;              // The eve of the week's reckoning (day 7).
-    expect(w.restore(saved).ok, "To the eve of the reckoning");
+    saved.calendarDays = MonthDays + Society::ownersDay(pid) - 1 + 23. / 24;
+    expect(w.restore(saved).ok, "To the eve of its day of the month");
     w.tick(.6);
-    s.shift("treasury", till, "", 0, 600, "test: a fine week's takings");
+    s.shift("treasury", till, "", 0, working + 600, "test: a fine month's takings");
     w.takeEvents();
     run(w, 600 * 2);
-    std::int64_t tax = 0, share = 0;
+    std::int64_t profit = 0;
     for (const auto& e : w.takeEvents())
-        if (e.kind == "economy" && e.actor == till)
-        {
-            tax += e.detail == "town tax" ? e.coins : 0;
-            share += e.detail == "the owner's share" && e.target == "cook" ? e.coins : 0;
-        }
-    expect(tax > 0, "The till pays tax on its week (" + std::to_string(tax) + "p)");
-    expect(share > 0, "and its keeper takes a share of the profit (" + std::to_string(share) + "p)");
+        if (e.kind == "economy" && e.actor == till && e.detail == "the owner's profit" && e.target == "cook")
+            profit += e.coins;
+    expect(profit > 0, "Its keeper takes the month's profit (" + std::to_string(profit) + "p)");
+    // (Its working money, and what it has sold in the hours since.)
+    expect(s.account(till)->cash <= s.workingMoney(pid) + 50, "and the till keeps its working money (" + std::to_string(s.workingMoney(pid)) + "p): " +
+                                                                  std::to_string(s.account(till)->cash) + "p");
+    // Run dry the evening before its day of the week: its keeper puts money in.
+    saved = w.save();
+    const auto today = std::int64_t(std::floor(saved.calendarDays));
+    std::int64_t next = today + 1;
+    while (next % 7 != Society::ownersWeekday(pid))
+        ++next;
+    saved.calendarDays = double(next) - 1 + 23. / 24;
+    expect(w.restore(saved).ok, "To the eve of its day of the week");
+    w.tick(.6);
+    s.shift(till, "treasury", "", 0, s.account(till)->cash, "test: a bad week");
+    s.shift("treasury", "cook", "", 0, 500, "test: the keeper's savings");
+    w.takeEvents();
+    run(w, 600 * 2);
+    std::int64_t invested = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "economy" && e.actor == "cook" && e.detail == "an owner's investment" && e.target == till)
+            invested += e.coins;
+    expect(invested > 0, "Run dry, its owner tops it up (" + std::to_string(invested) + "p)");
     expect(s.conserved(), "Money stays conserved");
 }
 
@@ -1749,7 +1807,9 @@ void residentsFillContractsForGoods()
                 kid = c.id;
     }
     expect(!kid.empty(), "East's Town Works asks for stone");
-    const auto storeBefore = w.society().account("store")->cash;
+    // (Its till's: what the keeper's purse does is its own, and it tops up its till when it runs short, doc 64.)
+    const auto storeTill = w.society().tillOf("store");
+    std::int64_t paidShop = 0;
     // A day on, nobody (no player) has taken it: a resident does.
     nextMorning(w);
     run(w, 2);
@@ -1772,11 +1832,12 @@ void residentsFillContractsForGoods()
         {
             done |= e.kind == "contract done" && e.detail.find("stone") != std::string::npos;
             paid |= e.kind == "economy" && e.detail == "carrier's pay" && e.target == taker && e.coins > 0;
+            paidShop += e.kind == "economy" && e.detail == "sold on a contract" && e.target == storeTill ? e.coins : 0;
         }
     }
     expect(done, "fetches the stone from the shop in the west and delivers it");
     expect(Society::stockAll(*w.society().account("town:east:works"), "stone") > 0, "The stone reaches the Town Works");
-    expect(w.society().account("store")->cash > storeBefore, "the shop is paid its price");
+    expect(paidShop > 0, "the shop is paid its price");
     expect(paid, "and the carrier the rest");
     expect(w.society().conserved(), "Money stays conserved");
 }
@@ -2393,7 +2454,8 @@ int main()
         theTraderAgreesItAgain();
         standingOrdersAreRenegotiated();
         shopkeepersDontHoard();
-        theOwnersShare();
+        theOwnersProfit();
+        rentOnHouseLand();
         childrensStipends();
         grownWolvesBuyWhatTheyWant();
         oddJobs();

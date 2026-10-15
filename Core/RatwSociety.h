@@ -275,6 +275,11 @@ struct EconomyMemory
     // the average cost a piece (pennies), and "account|good" -> the seller's margin. Copied from the society's own once
     // a day (Society::keepPrices), so they're saved with the rest.
     std::map<std::string, double> costs, margins;
+    // Businesses and owners (doc 64, Phase 5): what each business's owner has put into its till lately (till -> pennies,
+    // a quarter's worth, wearing away by a thirteenth a week and paid back by its profits), and trade credit ("buyer's
+    // till|seller's till" -> what it owes and the day it first owed it).
+    std::map<std::string, double> putIn;
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
     std::int64_t revision = 0;
 };
 
@@ -1006,10 +1011,8 @@ class Society
     // A manager's wage a day, the days of running costs a till keeps (its float), and how many of the last 28 days a
     // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders.
     static constexpr int ManagerWage = 8, FloatDays = 3, ProppedDays = 10;
-    // A great house's founding fortune, and a month's rent a business pays a house for its ground. Placeholders.
-    static constexpr std::int64_t HouseFortune = 3000, MonthlyRent = 20;
-    // The month's rents (at the reckoning): each business in a town with great houses pays one that doesn't own it.
-    void collectRents();
+    // A great house's fortune in an older world (before the realm's money stood: doc 64). Rent is RentShare now.
+    static constexpr std::int64_t HouseFortune = 3000;
     std::int64_t floatOf(const std::string& positionId) const;
     // Once a game day: the managers' wages, the takings above each till's float to its house, a struggling till propped
     // up, and a business that keeps losing sold to another house. Gives the houses their businesses the first time.
@@ -1066,8 +1069,29 @@ class Society
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
     std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
     void foundTills();
-    void tendTills(std::int64_t day);               // Daily: the keepers' wages, and (until doc 46, Phase 5) surplus spending.
-    void ownersShare(const std::map<std::string, std::int64_t>& profits);   // At the reckoning: till -> its week's profit.
+    void tendTills(std::int64_t day);               // Daily: the keepers' wages, then the owners' business (tendOwners).
+    // Businesses and owners (Docs/Design/64-economy-migration.md, Phase 5; doc 63's model; RatwTills.cpp). A business
+    // keeps its working money: a month of its staffing (its keeper, its help, and up to two of its posts standing open,
+    // at the town's wages) and of the materials its sales use. On its own day of the month the rest goes to its owner
+    // (its House, or its keeper). On its own day of the week a business on a House's land pays it RentShare of the
+    // week's takings, and one short of a week's working money is topped up by its owner from what it can spare; an
+    // owner stops after putting in two months' working money that hasn't come back. A business short of money buys its
+    // materials on credit, up to a week of its turnover, repaid first from its takings and written off by the seller
+    // after CreditWrittenOff days.
+    static constexpr double RentShare = .15;
+    static constexpr int CreditDays = 7, CreditWrittenOff = 56;
+    std::int64_t workingMoney(const std::string& positionId) const;
+    // A business's own day of the month (its profit to its owner) and of the week (rent, top-ups): 0-based.
+    static int ownersDay(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % MonthDays); }
+    static int ownersWeekday(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % 7); }
+    std::string ownerOfBusiness(const std::string& positionId) const;   // Its House, or its keeper ("" for none).
+    std::string landlordOf(const std::string& positionId) const;        // The House whose land it works, or "".
+    // What the materials (or, bought to sell on, the goods themselves) of one piece cost a seller, without its hours.
+    double materialsCost(const std::string& seller, const std::string& item) const;
+    std::int64_t creditLeft(const std::string& till) const;              // What it may still owe its suppliers.
+    std::int64_t owed(const std::string& till) const;
+    // Goods bought on credit: the seller's stock to the buyer at `price` a piece, owed rather than paid.
+    bool onCredit(const std::string& seller, const std::string& buyer, const std::string& item, int quantity, std::int64_t price);
     // A business changes hands (the Dungeon Master, or a sale): to `house`, for `price` from it to the old owner.
     bool sellBusiness(const std::string& positionId, const std::string& house, std::int64_t price);
     // The rule against hoarding (doc 42; RatwSurplus.cpp): once a game day, each town treasury, church and great house
@@ -1164,6 +1188,8 @@ class Society
     void indexOddJobs();
     // What each shop's till took in today (wages follow takings: RatwSurplus.cpp). Not saved.
     std::map<std::string, std::int64_t> takings_;
+    std::unordered_map<std::string, std::int64_t> weekTakings_;   // A till's takings since its rent was last paid (doc 64).
+    void tendOwners(std::int64_t day);
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).
     // A business with money to spare (RatwOddJobs.cpp): hands hired for its premises, paid from its till, and its premises
     // improved (materials bought from the town's makers, builders hired); returns what it committed.

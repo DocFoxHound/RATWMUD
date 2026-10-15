@@ -60,7 +60,7 @@ bool unearned(const std::string& kind)
     static const char* const words[] = {"inheritance", "operator", "the shop's till", "sale of a business", "starting money",
                                         "a child's", "stipend", "household purse", "dole", "the church's share", "alms",
                                         "beggar", "money for the road", "welcome grant", "world's money", "for the poor",
-                                        "a gift", "enclosure"};   // (Doc 55: given, not earned.)
+                                        "a gift", "enclosure", "an owner's investment"};   // (Doc 55: given, not earned.)
     for (const auto* w : words)
         if (kind.find(w) != std::string::npos)
             return true;

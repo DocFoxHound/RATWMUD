@@ -201,7 +201,7 @@ void Society::spendSurpluses(std::int64_t day)
     postFarmHires(day);
     stockBunkhouses(day);
     // Market dues (the user, 2026-10-05: tax where money gathers): each Restday every shop's till pays its town a
-    // twentieth of what it holds above its float.
+    // twentieth of what it holds above its working money.
     if (calendar::weekdayOf(double(day)) == calendar::Restday)
         keepUpPremises();                            // (Improved premises kept up, or let go: RatwOddJobs.cpp.)
     if (calendar::weekdayOf(double(day)) == calendar::Restday)
@@ -215,7 +215,8 @@ void Society::spendSurpluses(std::int64_t day)
             const auto till = tillOf(held->second.holder);
             const auto* purse = account(till);
             const auto town = communityOfResident(held->second.holder);
-            const auto due = purse ? (purse->cash - floatOf(p.id) - (till == held->second.holder ? KeeperReserve : 0)) / 20 : 0;
+            // (Above its working money, doc 64, Phase 5: what it keeps to run on isn't dues' to take.)
+            const auto due = purse ? (purse->cash - workingMoney(p.id) - (till == held->second.holder ? KeeperReserve : 0)) / 20 : 0;
             // (Times its town's tax level: money that stops, doc 46.)
             if (const auto levied = std::min(purse ? purse->cash : 0, std::int64_t(double(due) * taxLevel(treasuryOf(town)))); levied > 0 && !town.empty())
                 shift(till, treasuryOf(town), "", 0, levied, "market dues");

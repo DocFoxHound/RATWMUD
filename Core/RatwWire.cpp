@@ -966,6 +966,18 @@ Value economyMemory(const EconomyMemory& m)
         margins.add(key, v);
     o.add("costs", costs);
     o.add("margins", margins);
+    auto putIn = Value::object(), credit = Value::object();
+    for (const auto& [till, v] : m.putIn)
+        putIn.add(till, v);
+    for (const auto& [key, owed] : m.credit)
+    {
+        auto pair = Value::array();
+        pair.push(double(owed.first));
+        pair.push(double(owed.second));
+        credit.add(key, pair);
+    }
+    o.add("putIn", putIn);
+    o.add("credit", credit);
     return o;
 }
 
@@ -1018,6 +1030,14 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [key, v] : o.object("margins").fields())
         if (v.isNumber() && v.asNumber() >= -1 && v.asNumber() <= 2 && key.find('|') != std::string::npos && key.size() < 200)
             m.margins[key] = v.asNumber();
+    // (Saved before doc 64's Phase 5: nothing put in, nothing owed.)
+    for (const auto& [till, v] : o.object("putIn").fields())
+        if (v.isNumber() && std::abs(v.asNumber()) < 1e12)
+            m.putIn[till] = v.asNumber();
+    for (const auto& [key, v] : o.object("credit").fields())
+        if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
+            v.items()[0].asNumber() < 1e12 && key.find('|') != std::string::npos)
+            m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
     return m;
 }
 

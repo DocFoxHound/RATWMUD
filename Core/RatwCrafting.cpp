@@ -114,6 +114,10 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
+                    // Short of money: the rest on credit, up to a week of its turnover (doc 64, Phase 5).
+                    if (const int more = int(std::min<std::int64_t>({wanted - bought, spare - std::max(0, n), 99, creditLeft(till) / price}));
+                        more > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, more, price))
+                        bought += more;
                     if (bought >= wanted)
                         return bought;
                 }

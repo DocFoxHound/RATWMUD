@@ -109,6 +109,9 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
                 if (t.producer == producer->id && t.everyDays > 0)
                     wear += producer->seconds / (PaidSpells * 3600.) / t.everyDays * inputCost(till, t.item);
             unit = (producer->hours * hour + wear) * each;
+            // On a House's land, its rent is a cost like any other: a share of the price (doc 64, Phase 5).
+            if (p && !landlordOf(p->id).empty())
+                unit /= 1 - RentShare;
         }
     }
     if (unit < 0 && !label.empty())
@@ -129,6 +132,39 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
 double Society::buyingPrice(const std::string& town, const std::string& item) const
 {
     return townPrice(town, item) / (1 + items::ladder().markup);
+}
+
+double Society::materialsCost(const std::string& seller, const std::string& item) const
+{
+    const auto till = tillOf(seller);
+    const auto base = items::baseOf(item);
+    const auto* r = spec(seller);
+    const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+    const std::string label = r ? r->workLabel : p ? p->title : std::string();
+    const auto town = accountTown(till).empty() ? communityOfResident(seller) : accountTown(till);
+    if (const auto* producer = label.empty() ? nullptr : items::producerFor(label))
+    {
+        // A producer's: its tools' wear, a yield's share.
+        int n = 0;
+        for (const auto& [o, count] : producer->out)
+            n += count;
+        double wear = 0;
+        for (const auto& t : items::toolNeeds())
+            if (t.producer == producer->id && t.everyDays > 0)
+                wear += producer->seconds / (PaidSpells * 3600.) / t.everyDays * inputCost(till, t.item);
+        return n > 0 ? wear / n : 0;
+    }
+    if (const auto* business = label.empty() ? nullptr : items::businessFor(label))
+        for (const auto* k : items::craftsFor(business->id))
+            for (const auto& [o, count] : k->out)
+                if (o == base)
+                {
+                    double materials = 0;
+                    for (const auto& [in, q] : k->in)
+                        materials += q * (inputCost(till, in) + carriage(in, 1, town));
+                    return materials / count;
+                }
+    return costOf(till, item);                       // (Bought to sell on: the goods themselves.)
 }
 
 double Society::marginOf(const std::string& seller, const std::string& item) const

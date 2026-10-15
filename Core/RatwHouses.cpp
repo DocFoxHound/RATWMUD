@@ -300,77 +300,9 @@ void Society::tendHouses(std::int64_t day)
         if (!manager.empty() && account(manager))
             shift(till, manager, "", 0, std::min<std::int64_t>(std::int64_t(std::ceil(dayWage(communityOfResident(manager), "keeper") - 1e-9)),
                                                                account(till)->cash), "manager's wage");   // (The wage table: doc 46.)
-        // Then everything above the float to the house; or, run low, the house props it up.
-        const auto floatCash = floatOf(pid);
-        const auto cash = account(till)->cash;
-        auto& propped = state.propped[pid];
-        propped.erase(std::remove_if(propped.begin(), propped.end(), [&](double d) { return d <= day - MonthDays; }), propped.end());
-        if (cash > floatCash)
-            shift(till, house, "", 0, cash - floatCash, "house takings");
-        // A house invests in its own trade (doc 61, the user, 2026-10-12: each House an industry): a business of its trade
-        // run low is filled back up to its float from the house's own purse, while the house can afford it, and is never
-        // sold off for it. (Any other business that struggles is rescued by its town's rescue fund, which counts its days
-        // in `propped`: doc 46, Phase 6. The house no longer props those to keep the money in the family.)
-        if (ownTrade(pid, house))
-        {
-            if (const auto* purse = account(house); cash < floatCash / 2 && purse && purse->cash > HouseFortune / 4)
-                shift(house, till, "", 0, std::min<std::int64_t>(floatCash - cash, purse->cash - HouseFortune / 4),
-                      "a house invests in its trade");
-            continue;
-        }
-        if (propped.empty())
-            state.propped.erase(pid);
-        else if (int(propped.size()) >= ProppedDays)
-        {
-            // It keeps losing: sold to the house that can best afford it (one of its own town's first), for two floats.
-            const auto price = floatCash * 2;
-            const auto* here = position(pid);
-            const auto town = here ? communityOfResident(here->founder) : std::string();
-            const House* buyer = nullptr;
-            for (const auto& h : houses())
-            {
-                const auto* purse = account(h.id);
-                if (h.id == house || !purse || purse->cash < price)
-                    continue;
-                const auto* best = buyer ? account(buyer->id) : nullptr;
-                if (!buyer || (h.community == town) > (buyer->community == town) ||
-                    ((h.community == town) == (buyer->community == town) && purse->cash > best->cash))
-                    buyer = &h;
-            }
-            if (buyer)
-                sellBusiness(pid, buyer->id, price);
-        }
-    }
-}
-
-void Society::collectRents()
-{
-    // Each business in a town with great houses pays a house a month's rent for its ground (the user, 2026-10-05):
-    // one of the town's houses that doesn't own it, the same one month to month. A house's own businesses pay it
-    // nothing; another house's pay it like anyone's.
-    std::map<std::string, std::vector<const House*>> byTown;
-    for (const auto& h : houses())
-        byTown[h.community].push_back(&h);
-    for (const auto& p : positions_)
-    {
-        if (p.role != "merchant")
-            continue;
-        const auto town = byTown.find(communityOfResident(p.founder));
-        if (town == byTown.end())
-            continue;
-        const auto owner = ownerOf(p.id);
-        std::vector<const House*> landlords;
-        for (const auto* h : town->second)
-            if (h->id != owner)
-                landlords.push_back(h);
-        const auto held = state_.careers.positions.find(p.id);
-        if (landlords.empty() || held == state_.careers.positions.end() || held->second.holder.empty())
-            continue;
-        const auto& landlord = *landlords[std::hash<std::string>{}(p.id + "|landlord") % landlords.size()];
-        const auto till = tillOf(held->second.holder);
-        openAccount(landlord.id);
-        if (const auto* purse = account(till); purse && purse->cash > 0)
-            shift(till, landlord.id, "", 0, std::min<std::int64_t>(MonthlyRent, purse->cash), "rent");
+        // (The takings above its float no longer go to the house each night, nor does the house prop it up or sell it
+        // off: its month's profit is the house's, and the house tops it up when it runs short, as any owner does. Doc
+        // 64, Phase 5: tendOwners.)
     }
 }
 } // namespace ratw
