@@ -123,41 +123,65 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     return bought;
 }
 
-bool Society::produce(const std::string& id, double absoluteDay)
+bool Society::produce(const std::string& id, double absoluteDay, double hours)
 {
     const auto* r = spec(id);
     const auto* producer = r ? items::producerFor(r->workLabel) : nullptr;
     const auto till = tillOf(id);
     if (!producer || !account(till))
         return false;
-    if (const auto next = produceNext_.find(id); next != produceNext_.end() && absoluteDay < next->second)
-        return false;
     const bool inSeason = producer->seasons.empty() ||
                           std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end();
     if (!inSeason && producer->offSeason.empty())
         return false;                               // Nothing grows in the fields this season.
+    // Its work in hand (doc 64, Phase 3): this spell's, and any a hand put in (RatwOddJobs.cpp); improved premises
+    // (better tools, a bigger barn: RatwOddJobs.cpp) make an hour go further.
     const auto* job = jobOf(id);
-    produceNext_[id] = absoluteDay + producer->seconds / 86400. * (1 - ImprovementPace * (job ? improvement(job->id) : 0));
+    creditWork(id, hours / (1 - ImprovementPace * (job ? improvement(job->id) : 0)));
+    auto& banked = workBanked_[id];
     bool any = false;
     // A town's trade (doc 61): its producers bring in more of its goods, the fraction by a lot fixed by the producer and
     // the spell (so a run repeats), and keep more of them in store to send away.
     const auto town = communityOfResident(id);
-    const auto spell = std::uint64_t(std::floor(absoluteDay * 96));
-    // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
-    for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
+    for (int yield = 0; banked >= hoursFor(*producer); ++yield)
     {
-        int brought = count, kept = ProducerKept;
-        if (items::townGoodOf(town, item))
+        banked -= hoursFor(*producer);
+        const auto spell = std::uint64_t(std::floor(absoluteDay * 96)) * 16 + std::uint64_t(yield);
+        // Out of season, what the work brings in instead (threshing the barn's grain in winter, doc 42).
+        for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
         {
-            const double more = count * items::tradeYield();
-            const double lot = double(std::hash<std::string>{}(id + "|" + item + "|" + std::to_string(spell)) % 1000) / 1000;
-            brought = int(std::floor(more)) + (lot < more - std::floor(more) ? 1 : 0);
-            kept = int(std::lround(ProducerKept * items::tradeKeep()));
+            int brought = count, kept = ProducerKept;
+            if (items::townGoodOf(town, item))
+            {
+                const double more = count * items::tradeYield();
+                const double lot = double(std::hash<std::string>{}(id + "|" + item + "|" + std::to_string(spell)) % 1000) / 1000;
+                brought = int(std::floor(more)) + (lot < more - std::floor(more) ? 1 : 0);
+                kept = int(std::lround(ProducerKept * items::tradeKeep()));
+            }
+            if (const int held = stock(*account(till), item); held < kept)
+                any = create(till, item, std::min(brought, kept - held), "brought in") || any;
         }
-        if (const int held = stock(*account(till), item); held < kept)
-            any = create(till, item, std::min(brought, kept - held), "brought in") || any;
     }
     return any;
+}
+
+double Society::hoursFor(const items::Craft& k)
+{
+    return workByHours_ ? k.hours : k.seconds / 3600.;
+}
+
+double Society::hoursFor(const items::Producer& p)
+{
+    // (At the old pace a producer brought in a yield a spell at most: it looked once a spell, however short its seconds.)
+    return workByHours_ ? p.hours : std::max(1., p.seconds / 3600.);
+}
+
+void Society::creditWork(const std::string& account, double hours)
+{
+    if (hours <= 0)
+        return;
+    auto& banked = workBanked_[account];
+    banked = std::min(WorkBankedMost, banked + hours);
 }
 
 double Society::useRate(const std::string& till, const std::string& item) const
@@ -291,8 +315,24 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     for (const auto& item : supplies)
         if (const int held = stockAll(*account(till), item); held < SuppliesKept / 4)
             buyMaterials(id, workCell, item, SuppliesKept - held, true);
-    // A shopkeeper who also brings goods in (a stables' stock-breeding) does so while at work.
-    produce(id, absoluteDay);
+    // The keeper's own time at work since it last looked (doc 64, Phase 3): a gap over two game hours is a new day's
+    // work begun, not work done. The skilled get more done in an hour (workPace), and so do improved premises and a
+    // player's paw lent; it goes to the business's work in hand, beside its help's spells (RatwResidents.cpp).
+    double worked = 0;
+    if (const auto last = lastAtWork_.find(id); last != lastAtWork_.end())
+        if (const double since = (absoluteDay - last->second) * 24; since > 0 && since <= 2)
+            worked = since;
+    lastAtWork_[id] = absoluteDay;
+    if (const auto* job = jobOf(id); job && worked > 0)
+        worked /= workPace(skill(id, job->id)) * (1 - ImprovementPace * improvement(job->id));
+    if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
+        worked *= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
+    // A shopkeeper who also brings goods in (a stables' stock-breeding) does so with its time; one who makes things,
+    // its time goes to the business's work in hand.
+    if (items::producerFor(r->workLabel))
+        produce(id, absoluteDay, worked);
+    else
+        creditWork(till, worked);
     double wait = 1. / 96;                          // Nothing to make: look again in a quarter of an hour.
     // What sells fastest first (and what was asked for and missed), so scarce materials (iron) go where they're wanted,
     // not into goods that sit on the shelf; otherwise in file order (doc 42, "Pressure").
@@ -343,12 +383,17 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         }
         if (!has(*k))
             continue;                               // Short of materials, and nobody sells them: something else.
-        craftAtWork_[id] = k->id;                   // A batch begun: done after its working time (quicker in improved
-        wait = k->seconds / 86400.;                 // premises: RatwOddJobs.cpp).
-        if (const auto* job = jobOf(id))
-            wait *= 1 - ImprovementPace * improvement(job->id);
-        if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
-            wait /= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
+        // A batch takes its crafts.json `hours` of the business's work in hand (doc 64, Phase 3): begun when there are
+        // enough, and on the shelf at the next look; until then the hands work on, and it waits for them.
+        auto& banked = workBanked_[till];
+        if (banked + 1e-9 >= hoursFor(*k))
+        {
+            banked -= hoursFor(*k);
+            craftAtWork_[id] = k->id;
+            wait = 1. / 1440;                       // (Done at the next look, a minute on.)
+        }
+        else                                        // Look again when the keeper's own time would cover it (the help's
+            wait = std::clamp((hoursFor(*k) - banked) / 24, 1. / 1440, 1. / 24);   // may bring it sooner), within the hour.
         break;
     }
     craftNext_[id] = absoluteDay + wait;

@@ -17,6 +17,15 @@
 
 namespace ratw
 {
+namespace items
+{
+struct Craft;
+struct Producer;
+} // namespace items
+}
+
+namespace ratw
+{
 struct EconomyAccount
 {
     std::int64_t cash = 0;
@@ -745,14 +754,35 @@ class Society
     };
     mutable std::unordered_map<std::string, std::vector<Seller>> suppliers_;
     std::unordered_map<std::string, double> produceNext_;   // Producer -> the game day of its next yield.
+    // Work done (Docs/Design/64-economy-migration.md, Phase 3): the hours a business's hands have put in (each paid
+    // spell of its help, the keeper's time at the counter) and a producer's own, drawn on by each batch or yield at its
+    // crafts.json `hours`. At most WorkBankedMost in hand: work not used is work not done. Not saved.
+    std::unordered_map<std::string, double> workBanked_;    // Till (or producer) -> hours of work in hand.
+    std::unordered_map<std::string, double> lastAtWork_;    // Keeper -> the game day its time at work was last counted.
+    void creditWork(const std::string& account, double hours);
+    static constexpr double WorkBankedMost = 24;
+    // The hours a batch or a yield takes: its calibrated crafts.json `hours` once work is by hours, else its old
+    // `seconds`' worth (the pace the game had: doc 64, Phase 3, until Phase 6 lets businesses take on the hands that
+    // calibrated hours need).
+    static double hoursFor(const items::Craft& k);
+    static double hoursFor(const items::Producer& p);
+    static inline bool workByHours_ = false;
+
+  public:
+    // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
+    static void setWorkByHours(bool on) { workByHours_ = on; }
+    static bool workByHours() { return workByHours_; }
+
+  private:
     int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).
     void craft(const std::string& id, const std::string& workCell, double absoluteDay);
     // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
     // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier.
     int buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
                      bool forSupplier = false);
-    // A producer's spell of work done: what it brings in from the land, while it has fewer than ProducerKept.
-    bool produce(const std::string& id, double absoluteDay);
+    // A producer's work done (`hours` of it: a paid spell is one): what it brings in from the land, a yield for every
+    // crafts.json `hours` of work in hand (doc 64, Phase 3), while it has fewer than ProducerKept.
+    bool produce(const std::string& id, double absoluteDay, double hours);
     std::string communityOfResident(const std::string& id) const;
     // Tops a shopkeeper's stock up to a good store of what they make things from and what they supply; returns how
     // many goods were added.

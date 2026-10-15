@@ -1223,9 +1223,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         else if (paidWork)
         {
-            produce(pair.first, absoluteDay);       // A farmer's, fisher's... yield (Data/Items/crafts.json).
+            produce(pair.first, absoluteDay, 1.);   // A farmer's, fisher's... yield (Data/Items/crafts.json): a spell's hour.
             // Wages from whoever the work is for (doc 42, Phase 2): the shop, the town, the church, the house.
             const auto payer = payerOf(pair.first, *job, body.age);
+            // An hour of the business's work, if the work is a business's (doc 64, Phase 3): a shop's help, a hand at a
+            // house's works. What it makes is made from the hours its hands put in.
+            if (payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0))
+                creditWork(payer.account, 1.);
             if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {
                 // The town's wage table (doc 46, Phase 4): a day's pay for its kind of post, a PaidSpells-th of it a spell,

@@ -92,6 +92,9 @@ struct Craft
     std::string id;
     std::vector<std::string> makers;                // Business ids whose keepers make it.
     double seconds = 60;                            // Game seconds of work for one batch.
+    // Hours of residents' work for one batch (Docs/Design/64-economy-migration.md, Phase 3; calibrated from the worth
+    // ladder by tools/econ_model/apply_ladder.py). Without it, `seconds`' worth of hours.
+    double hours = 60. / 3600;
     std::vector<std::pair<std::string, int>> in, out;
 };
 // Someone who brings goods in from the land (crafts.json `producers`): a farmer, a shepherd, a fisher, a stables.
@@ -100,6 +103,7 @@ struct Producer
     std::string id;
     std::vector<std::string> match;                 // Words in a resident's work label.
     double seconds = 1800;                          // Game seconds of work for one yield.
+    double hours = .5;                              // Hours of residents' work for one yield (as Craft::hours).
     std::vector<int> seasons;                       // 0 spring .. 3 winter; empty: all year.
     std::vector<std::pair<std::string, int>> out;
     // Out of its seasons, what the work brings in instead (a farm threshing the barn's grain in winter), or nothing.

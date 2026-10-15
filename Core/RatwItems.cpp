@@ -200,9 +200,11 @@ Catalog build()
             Craft craft;
             craft.id = k.string("id");
             craft.seconds = k.number("seconds", 60);
+            craft.hours = k.number("hours", craft.seconds / 3600.);
             for (const auto& m : k.array("makers"))
                 craft.makers.push_back(m.asString({}));
-            if (!craft.id.empty() && !craft.makers.empty() && craft.seconds > 0 && craft.seconds <= 86400 &&
+            if (!craft.id.empty() && !craft.makers.empty() && craft.seconds > 0 && craft.seconds <= 86400 && craft.hours > 0 &&
+                craft.hours <= 2000 &&
                 counts(k.object("in"), craft.in) && craft.in.size() <= 2 && counts(k.object("out"), craft.out))
                 c.crafts.push_back(std::move(craft));
         }
@@ -211,6 +213,7 @@ Catalog build()
             Producer producer;
             producer.id = k.string("id");
             producer.seconds = k.number("seconds", 1800);
+            producer.hours = k.number("hours", producer.seconds / 3600.);
             for (const auto& m : k.array("match"))
                 if (!m.asString({}).empty())
                     producer.match.push_back(m.asString({}));
@@ -219,6 +222,7 @@ Catalog build()
             if (k.has("offSeason"))
                 counts(k.object("offSeason"), producer.offSeason);
             if (!producer.id.empty() && !producer.match.empty() && producer.seconds > 0 && producer.seconds <= 86400 &&
+                producer.hours > 0 && producer.hours <= 2000 &&
                 counts(k.object("out"), producer.out) &&
                 std::all_of(producer.seasons.begin(), producer.seasons.end(), [](int s) { return s >= 0 && s <= 3; }))
                 c.producers.push_back(std::move(producer));

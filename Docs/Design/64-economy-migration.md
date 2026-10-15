@@ -567,3 +567,43 @@ A losing recipe is unsound only if it's the only way to make its goods. Four pla
 made cheaper another way (rye flour, a copper bar, plaster, an ear ring), and are listed as notes. The check passes.
 
 **Tests:** crafting, society, roads and town suites pass with the new fields; the loaders ignore keys they don't know.
+
+### Phase 3: built behind a switch (2026-10-15); calibrated hours wait for Phase 6
+
+**Goods come from a pool of work hours.**
+
+- Each business (its till) and each producer keeps **hours banked**, up to a day's 24.
+- **Who adds to the pool:**
+  - a keeper at the station adds the time since they last worked there, faster with skill and the shop's
+    improvements;
+  - a resident's spell for "the shop" or "the house" adds its hour;
+  - an odd-job hand adds the spells they're paid for.
+- **What the pool pays for:**
+  - a batch comes out when the bank holds its hours;
+  - a producer brings in a yield for each spell of hours banked, still under its `ProducerKept` cap.
+- A keeper who isn't yet able to make a batch looks again when the hours should be there (between a minute and an hour
+  of game time), not every quarter-hour.
+
+**The switch.** `Society::setWorkByHours` picks what a batch or spell costs:
+
+- **Off (the game's default):** the old pace, a craft's `seconds` as hours. A producer still brings in a yield a spell
+  at most, as it did.
+- **On:** the calibrated `hours` from Phase 2. `econ_watch --hours` turns it on.
+
+**Why it's off.** Calibrated hours are the model's, and the model gets its hands from the labour market (Phase 6).
+The game's shops are still kept by one keeper and a few residents. With the hours on, 9 days from DEV:
+
+| | old pace | calibrated hours |
+|---|---|---|
+| starving on day 9 | 0 | 651 |
+| maker-hours short | 6,178 | 7,646 |
+| wages paid on day 9 | 9,917p | 4,720p |
+| ms a tick | 0.064 | 0.133 (errands) |
+
+At the old pace the run matches Phase 1's (maker-hours short ~6,000, nobody starving). Hours are turned on with
+Phase 6, when businesses can hire.
+
+**Left for later (Phase 3b):** output by sales targets in place of the stock caps, seasonal fields, wood laid in for
+winter, and tool wear in a batch's cost. They need Phase 4's cost basis and Phase 6's day labour.
+
+**Tests:** all suites pass. The crafting tests pin the old pace, a yield a spell.

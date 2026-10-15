@@ -425,13 +425,16 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         if ((j.kind == "a hand" || j.kind == "a hand at the shop" || j.kind == "building work" || j.kind == "gathering" ||
              j.kind == "hunting" || j.kind == "about the home" || j.kind == "project") && (j.progress[id] += seconds) < 600 * spells)
             return;
+        // A hand's spells are hours of the work it was taken on for (doc 64, Phase 3): a shop's, made into its next
+        // batches; a farm's or other producer's, into its yields.
         if (j.kind == "a hand at the shop")
-            craftNext_.erase(j.producer);           // (Its next batch is begun at once.)
+        {
+            creditWork(tillOf(j.producer), double(spells));
+            craftNext_.erase(j.producer);           // (Its keeper looks again at once.)
+        }
         if (j.kind == "a hand")
-            if (const auto* producer = spec(j.producer))
-                if (const auto* p = items::producerFor(producer->workLabel))
-                    for (const auto& [item, count] : p->out)
-                        create(tillOf(j.producer), item, count, "brought in by a hand");
+            if (const auto* producer = spec(j.producer); producer && items::producerFor(producer->workLabel))
+                creditWork(j.producer, double(spells));
         if ((j.kind == "gathering" || j.kind == "hunting") && day_.grounds && day_.harvest)
             if (const auto found = day_.grounds->find(j.community); found != day_.grounds->end() && j.ground < found->second.size())
                 for (const auto& [item, n] : day_.harvest(id, found->second[j.ground], season_))

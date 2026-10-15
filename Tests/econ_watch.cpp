@@ -2,7 +2,10 @@
 // asked (Docs/Design/42-money-in-circulation.md: "a month-long run"). The world runs as world_check runs it (20 ticks a
 // second, simulation tiers on), and every coin and good that moves is tallied from the society's journal.
 //
-//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N]
+//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
+//
+// --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
+// it, the game's old pace (each craft's `seconds` as its hours).
 //
 // OUT_DIR gets, for each game day:
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
@@ -138,7 +141,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--steer FILE]\n";
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--steer FILE] [--hours]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -153,6 +156,8 @@ int main(int argc, char** argv)
             from = std::atof(argv[++i]);
         else if (std::string(argv[i]) == "--deterministic")
             deterministic = true;
+        else if (std::string(argv[i]) == "--hours")
+            Society::setWorkByHours(true);          // Residents' work takes its calibrated hours (doc 64, Phase 3).
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else if (std::string(argv[i]) == "--steer" && i + 1 < argc)
