@@ -514,6 +514,93 @@ int main(int argc, char** argv)
         lardersOut.flush();
     };
 
+    // The measures of doc 63's model (tools/econ_model/model.py, measure()), so a run can be set beside a model run
+    // (Docs/Design/64-economy-migration.md, Phase 0; tools/econ_model/compare.py): households' money (by home) and its
+    // Gini and poorer half's share, the going labourer's day wage and prices in labourer's day-wages (LD), idle wolves,
+    // masters, apprentices, elders, and the births and deaths since the last day.
+    std::set<std::string> lastAlive;
+    bool firstMeasure = true;
+    const auto modelMeasures = [&]() {
+        const auto worths = society.bankWorths();
+        std::map<std::string, std::int64_t> homes;     // Home cell (or the resident, homeless) -> the household's money.
+        std::set<std::string> alive;
+        int idle = 0, masters = 0, apprentices = 0, elders = 0;
+        for (const auto& [id, life] : society.state().residents)
+        {
+            const auto* e = server.entity(id);
+            if (!e || e->dead)
+                continue;
+            alive.insert(id);
+            const auto* a = society.account(id);
+            homes[life.homeCell.empty() ? id : life.homeCell] += (a ? a->cash : 0) + society.savingsWorth(id, worths);
+            const bool apprentice = society.apprenticedTo(id) != nullptr;
+            apprentices += apprentice;
+            elders += e->age >= Society::RetireAge;
+            idle += e->age >= 16 && e->age < Society::RetireAge && !society.jobOf(id) && !apprentice;
+        }
+        std::map<std::string, double> best;            // A resident's best skill at any post.
+        for (const auto& [key, s] : society.state().careers.skill)
+        {
+            const auto who = key.substr(0, key.find('|'));
+            if (alive.count(who))
+                best[who] = std::max(best[who], s);
+        }
+        for (const auto& [who, s] : best)
+            masters += s >= 60;
+        int births = 0, deaths = 0;
+        if (!firstMeasure)
+        {
+            for (const auto& id : alive)
+                births += !lastAlive.count(id);
+            for (const auto& id : lastAlive)
+                deaths += !alive.count(id);
+        }
+        lastAlive = alive;
+        firstMeasure = false;
+        std::vector<std::int64_t> money;
+        std::int64_t total = 0;
+        for (const auto& [home, m] : homes)
+        {
+            money.push_back(std::max<std::int64_t>(0, m));
+            total += std::max<std::int64_t>(0, m);
+        }
+        std::sort(money.begin(), money.end());
+        const auto h = money.size();
+        double gini = 0, poorer = 0;
+        if (h && total > 0)
+        {
+            double weighted = 0, low = 0;
+            for (std::size_t i = 0; i < h; ++i)
+            {
+                weighted += double(i + 1) * double(money[i]);
+                if (i < h / 2)
+                    low += double(money[i]);
+            }
+            gini = 2 * weighted / (double(h) * double(total)) - double(h + 1) / double(h);
+            poorer = low / double(total);
+        }
+        const auto town = society.capital().empty() ? server.communityOf(society.state().residents.begin()->second.homeCell)
+                                                    : society.capital();
+        const double wage = society.dayWage(town, "labour");
+        std::ostringstream out;
+        out << "{\"people\":" << alive.size() << ",\"households\":" << h << ",\"household_gini\":" << gini
+            << ",\"poorer_half\":" << poorer << ",\"median_household\":" << (h ? money[h / 2] : 0) << ",\"idle\":" << idle
+            << ",\"masters\":" << masters << ",\"apprentices\":" << apprentices << ",\"elders\":" << elders
+            << ",\"births\":" << births << ",\"deaths\":" << deaths << ",\"wage\":" << wage << ",\"town\":" << json(town)
+            << ",\"ld\":{";
+        bool firstGood = true;
+        for (const char* good : {"wheat", "flour", "bread", "firewood", "timber", "iron_ore", "iron_bar", "sword", "iron_sword",
+                                 "steel_sword", "rapier", "wool_scarf", "mining_pick"})
+        {
+            if (!items::good(good))
+                continue;
+            out << (firstGood ? "" : ",") << json(good) << ':' << (wage > 0 ? society.townPrice(town, good) / wage : 0.0);
+            firstGood = false;
+        }
+        out << "}}";
+        return out.str();
+    };
+
     const auto snapshot = [&](int day, const char* when) {
         if (std::string(when) == "day end")
             writeLarders(day);
@@ -700,7 +787,7 @@ int main(int argc, char** argv)
             daysOut << (first ? "" : ",") << json(community) << ':' << c;
             first = false;
         }
-        daysOut << "}}\n";
+        daysOut << "},\"model\":" << modelMeasures() << "}\n";
         daysOut.flush();
         return std::make_tuple(supply, society.conserved(), n ? people[n / 2] : 0, gini, grownShort, broke, starving);
     };

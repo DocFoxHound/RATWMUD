@@ -424,3 +424,53 @@ Each phase is committed and pushed when measured. The perf gate is checked at Ph
 5. **The DM's steering.** The orchestrator's pressure and scenarios go with it. Keep a few levers for the DM: the tax
    rate, the mint on or off, a one-off relief grant from the treasury?
    - *Recommended:* those three, logged.
+
+## Decisions (the user, 2026-10-15)
+
+1. **Whole pennies, and found with 5,000,000p.** A labourer's day comes to about 60p, bread about 3–4p, a bronze sword
+   about 180p, a rapier about 1,500p. The penny stays the unit; there are no farthings. Adaptation A is settled this
+   way.
+2. **Reset DEV's economy** at Phase 1 (re-founding, rule 2).
+3. **Posts: as recommended.** A business may leave an authored post empty and take hires beyond its posts. A laid-off
+   holder keeps its home and looks for other work.
+4. **Splitting households: yes.** The generator leaves a few homes free in each city and town.
+5. **The DM keeps three levers:** the tax rate, the mint on or off, and a one-off relief grant from the treasury.
+   Each is logged.
+
+## Progress
+
+### Phase 0: done (2026-10-15)
+
+**econ_watch's new measures.** `days.jsonl` gains a `"model"` block each day:
+
+- people, households (by home), and the households' Gini, poorer half's share and median;
+- idle wolves (grown, under retiring age, no post, not apprenticed);
+- masters (best skill ≥ 60), apprentices, elders (65+), and births and deaths since the day before;
+- the going labourer's day wage in the capital (`dayWage(capital, "labour")`);
+- prices in labourer's day-wages for wheat, flour, bread, firewood, timber, iron ore, iron bars, the three swords, the
+  rapier, a wool scarf and a mining pick.
+
+The measures cost nothing measurable per tick.
+
+**`tools/econ_model/compare.py OUT [--every 7]`** runs the model for as many days and prints both, in measures that
+don't depend on the money supply: shares by kind of holder, the Gini, the poorer half, prices in LD, people,
+households, idle, hungry. It also lists money minted day by day.
+
+**The "before"** (DEV build 34, 28 days, deterministic, `artifacts/economy/2026-10-15-before/days.jsonl` and
+`-compare.txt`):
+
+| Day 28 | Game | Model |
+|---|---|---|
+| Household Gini / poorer half | 0.48 / 0.17 (from 0.38 / 0.25 on day 7: widening) | 0.43 / 0.20 |
+| Bread / wheat / bronze sword / rapier (LD) | 0.049 / 0.058 / 1.73 / 5.2 (falling) | 0.067 / 0.037 / 2.86 / 22 |
+| Money: homes / businesses / Houses / church / town / other | 34% / 33% / 8% / 2% / 15% / 8% | 45% / 10% / 30% / 6% / 8% / 0 |
+| Minted | days 1–2 (the founding, staged: +26,001p, +329,894p); none after | at the founding |
+
+**Notes:**
+
+- The game founds in stages over its first two days: starting purses, then the top-up to `WorldMoney`.
+- Its businesses hold a third of all money, its Houses almost none: the reverse of the model.
+- Its swords and rapiers sit at the catalogue's ladder (2.5 and 7.5 LD at the start), well under the rapier's Rare
+  rung.
+- **The game's skill scale isn't the model's** (700–900 "masters" at 60+), so masters aren't compared until Phase 8.
+- **A run costs** about 9 minutes for 28 days at 0.067 ms a tick, so a year is about 2 hours, in the background.
