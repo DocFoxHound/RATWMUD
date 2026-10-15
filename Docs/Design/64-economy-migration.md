@@ -1,0 +1,426 @@
+# 64. Bringing the model into the game
+
+The user, 2026-10-14: translate doc 63's simulation into the game itself; there's a lot of work to tweak the game to
+match it.
+
+Doc 63 is the specification. `tools/econ_model/model.py` is the reference behaviour: a rule is "done" in the game when
+the game, measured the same way, behaves as the model does. This document maps each of the model's rules onto the
+code that does that job today, sets out where the game has to differ from the model, and orders the work into phases.
+
+Read from the code 2026-10-14. Paths are relative to the repository. Line numbers are as of 9901668.
+
+## Ground rules
+
+1. **The model is the spec.** Every phase is measured with the same measures as `model.py`'s `measure()` (Phase 0),
+   and compared side by side with a model run.
+2. **Re-found, don't migrate.** It's a test world, and the user's standing rule is no data migrations. The economy's
+   saved state (`SocietyState`: accounts, tills, Houses, careers, the ledger, the orchestrator) is founded afresh on
+   DEV where a phase needs it. The world itself, its residents and their homes and posts, stays as it is. PROD pushes
+   stay the user's.
+3. **Money is conserved at every step.** `conserved()` stays true in every test and every run. The only coin struck or
+   melted after the founding is the mint's (Phase 11), and it is logged.
+4. **One rule at a time; the orchestrator retires piece by piece.** Each part goes only once its replacement is
+   measured to work: prices, the wage table, channels, funds, banks, bands.
+5. **Tick cost stays low.** The model's daily, weekly and monthly reviews run staggered (a business on its own day of
+   the week). The perf gate is unchanged (`world_check --players 20`, doc 31).
+6. **Where the game can't do what the model does, adapt and write it down here.** The model is a sketch of 890 people
+   and 17 goods with no bodies. The game has about 1,080 residents who walk to work, about 430 items, seven towns,
+   roads, caravans and players.
+
+## Where the game stands
+
+| Area | Today | The model | Size of the gap |
+|---|---|---|---|
+| **Money** | 500,000p (`WorldMoney`, for ≥500 residents) spread evenly. Mid-game mints: a newly sorted House's 3,000p, late town and church accounts, newcomers' and births' purses (`adoptResident`), `restore`. Banks (`bank:<town>`). | 1,000,000p founded once, 40% households (uneven), 15% businesses, 30% Houses, 5% church, 10% treasury. No mints, no banks. | Small |
+| **Prices** | One price per good per town from the orchestrator (catalogue × shelf × `priceLift`, 0.6–1.6×, support for staples). Producers paid price × margin. Caravans ×1.4. No record of what stock cost. | Each seller prices at normal cost × (1 + its margin). The margin follows its shelf and wears back toward 15%; −30%/+60% (+100% for staples). | **Large**: needs a cost basis |
+| **Production** | A batch every `seconds/86400` days, made by the keeper alone. Help and hands add nothing. Output capped by stock targets (`GoodsKept`, `ProducerKept`). | Every hand's hours make goods; output bounded by hours and inputs. Fields sown and harvested; grain stored for the year. | **Large** |
+| **Businesses** | Keeper's wage plus a third of weekly profit. Houses sweep their tills nightly, prop them up and sell failing ones. Rent a flat 20p a month. Rescue loans from orchestrator funds. | Wages daily, a month of working money kept, the rest to the owner monthly. Owner tops up (capped). A week of trade credit. Rent a share of takings. | Medium |
+| **Wages and hiring** | A town wage table by kind (orchestrator). Posts are authored positions. The jobless take outwork or the Works. Hires and odd jobs pay by the job. | Each employer's own wage, moved by its open posts. Hires by its sales. Workers judge posts by actual pay. Poaching, the harvest call, masters to their trade. | **Large** |
+| **Households** | About eight overlapping rules (food, needs, wants, stipends, savers, deposits, feasts, the plate). Purses per resident, evened daily. | One rule: needs, then a share of what's held over k × the household's income, into a want fund and home help. Servants for the very rich. | Medium |
+| **Institutions** | Tax and tithe on weekly *profit* (about 10%, banded), a wealth tithe and a levy. One shared church. Town buyers. Orchestrator bands and channels spend the rest. | Tax 8% and tithe 6% of *income*, weekly. Each institution: its income + a2 × (held − k × income). Church: relief, clergy, masons. Town: watch, works as employer of last resort. Houses: retainers, finery, works, estate crew. | Medium |
+| **Lives** | Ages advance on World entities. Wages stop at 65. Death only from 70, by bands. Births only while a town is under its founding number. Marriage, newcomers. Estates of cash, meal and herbs to family. Succession: apprentice, family, a local. | Retire at 58–66. Death by age (Gompertz). Births follow deaths into young families. Households split above six. Kin inherit everything. Succession to the best hand. | Medium: adapt |
+| **Skills** | Skill per resident and post. Practice at the post, ×3 beside a master. One apprentice per post, unpaid, done at 70. Skill doesn't affect pay or who may work a trade. | Trades need skill. Learning beside a better hand, up to the trade's level. Apprentices on half pay, bound. Masters' trades seek masters. The user's succession rule. | Medium |
+| **Mending** | Players only (`RatwDurability.cpp`). NPCs rebuy household needs and tools on a timer. | NPCs own pieces that wear, and choose to mend or replace. Mending costs the maker hours and materials. | Medium |
+| **Carriage** | Caravans with escorts and bandits sell at ×1.4. Standing orders and porters. | A carter by weight. A business hauls its own when the carts are full. | Small–medium |
+| **Hunting** | NPC outwork "hunting" from the same finite game players use. | The idle hunt; hides to tanneries; sheep runs give hides too. | Small |
+| **Players** | Stalls (3p), town projects hiring residents, Chapter Halls and Holds with sworn residents but no payroll. No mint. | The mint (a thermostat on players' dormant money). Keeps hiring NPCs, drawing on the towns. | Medium |
+| **Measures** | `econ_watch` writes money by holder, Gini, purses, hunger, flows, wages, prices, larders and trade. | `measure()`: prices in labourer's day-wages, the market wage, masters, apprentices, elders, births, deaths, hunting, a monthly flows table by holder. | Small: mostly new columns |
+
+**Size:**
+
+- Economy core: about 9,350 lines.
+- The orchestrator: about 3,470 lines (`RatwOrchestrator.cpp/.h`, `RatwOrchestrate.cpp`, `RatwChannels.cpp`).
+- `RatwSociety.h`: 1,221 lines.
+
+**Tests that pin today's behaviour:**
+
+- `roads_tests.cpp`: about 40 economy cases.
+- `orchestrator_tests.cpp`: 45 references.
+- Also `crafting_tests`, `careers_tests`, `society_tests` and others.
+
+## How the game must differ from the model
+
+These are the adaptations. Each is decided here, or put to the user at the end.
+
+### A. The penny
+
+At 1,000,000p the model prices a loaf at about 0.7p. The game rounds to whole pennies (`pennies()`), and catalogue
+bread is 1p.
+
+**Proposal: count in farthings.** The ledger keeps farthings (a quarter penny), and prices show as pennies and
+farthings ("2p 1f"). The money supply becomes 4,000,000 farthings.
+
+- A loaf is about 3f, a labourer's day about 48f (12p), a bronze sword about 36p, a rapier about 300p.
+- It's medieval; it keeps every staple above one coin; and nothing about the economy changes, only the unit.
+
+The other option is a bigger money supply (about 4,000,000p, a labourer's day about 48p). It's the same thing without
+the coin, but it doubles every price players see against the catalogue. Question 1.
+
+### B. Posts and hands
+
+The model's businesses hire and lay off freely. The game's posts are authored positions with work spots and routes,
+and NPCs walk to them.
+
+**Adaptation:**
+
+- **A business's hands are its filled posts plus its hires.**
+- **Its "posts offered" are its empty authored posts, plus hires** for anything beyond them (the existing hires
+  machinery in `RatwOddJobs.cpp`).
+- **Laying off leaves a post empty.** Its holder joins the labour market and keeps its home.
+- **Every hand at the station adds its hours to the business's output**, not only the keeper. This is the change that
+  makes output follow labour.
+
+Question 3.
+
+### C. A cost basis on fungible stock
+
+Stock is a count per account per item. Building prices from cost needs **a parallel map of average cost per account
+per item**, updated whenever goods are made (the hours at the maker's wage, plus inputs at their average cost, plus
+tool wear) or bought (the price paid, plus carriage). It's saved with the account. Re-founding (rule 2) sets it from
+the ladder at the start.
+
+### D. 430 items, not 17
+
+**Every item gets a worth**, from the ladder (`tools/econ_model/ladder.json`), placed or by default from its catalogue
+price.
+
+**Every NPC-made item gets calibrated work hours** (`proposed_rates.json`). The calibration's conflict list (110
+recipes whose inputs cost more than the product) is resolved by raising those items' worth to their built cost.
+
+**Goods a shop buys and resells** (a general store's) are priced at their purchase cost plus its margin, like the
+model's.
+
+### E. Hourly spells, daily rules
+
+The model decides by the day. The game pays and produces by the spell (a game hour) and runs its society once a day.
+
+- **Making** stays per spell. The model's day maps onto the game's daily pass, in the model's order: lives, firms'
+  making, households, relief, leftovers, help, hunting, services' wages, the labour market.
+- **Weekly reviews** run on each business's own day (its offset).
+- **Monthly payouts** run on each business's own day of the month.
+
+### F. Towns and roads
+
+The model has one city and one countryside joined by a carter. The game has seven towns, roads, caravans, porters and
+standing orders.
+
+**Adaptation:**
+
+- **Carriage between towns is priced by weight and distance**, from the carrier's hours. This replaces the caravans'
+  flat ×1.4 markup.
+- **A business short of carriage sends its own hands** (the model's self-haul).
+- **Caravans stay physical**, with bandits; what they carry costs its carriage.
+- **Each town has its own labour market, wages and prices.** Wolves may move between towns for work (doc 61's porters
+  already travel).
+
+### G. People
+
+- **Ages already live on World entities** (`RatwAging.cpp`), and marriage, births and newcomers exist
+  (`RatwCareers.cpp`, `RatwWorld.cpp`). So the model's lives are an adaptation, not new work:
+  - Gompertz deaths replace the bands from 70;
+  - retirement at 58–66 replaces 65;
+  - births follow deaths into young families, alongside marriage;
+  - estates carry everything to kin.
+- **Households splitting above six need a home to go to:** an empty house, a room let, or a bunkhouse bed. Where none
+  is free, the household stays together. Question 4.
+- **Purses stay per resident.** The household rule applies to the household's pooled money, as
+  `RatwHouseholds.cpp` already evens it daily.
+
+### H. Keeps are Holds
+
+The game's Chapter Halls and Holds (`RatwGameHolds.cpp`) already have sworn and settled residents, but no payroll.
+They become doc 63's keeps:
+
+- up to three workshops and a farm, with NPC hands paid by the Hold's players;
+- houses filled by wolves moving from the towns (the user's "draw" rule).
+
+## Phases
+
+Each phase lists what changes, what it retires, its tests, and when it's done. **"Measured"** means: an `econ_watch`
+run of the stated length on DEV's export, compared with a model run of the same length by `tools/econ_model`'s
+comparison script (Phase 0), every listed measure within its band (see "Done when" at the end).
+
+### Phase 0: the measures and the comparison
+
+- `econ_watch` gains the model's measures:
+  - prices in labourer's day-wages for bread, wheat, a sword, a rapier and each rung's sample item;
+  - the market wage;
+  - masters, apprentices, elders, births, deaths and households;
+  - hunted beasts and hides;
+  - idle wolves (no post, no help that day);
+  - days with more than 50 and more than 300 hungry;
+  - **a monthly flows table by kind of holder,** whose columns must sum to zero: the audit.
+- **`tools/econ_model/compare.py`** runs the model and reads an `econ_watch` run, then prints both side by side, decade
+  or month by month.
+- **A long-run harness:** `econ_watch` for a year or more on the deterministic export, run in the background.
+- **Done when** today's game is measured and compared, as the "before".
+
+### Phase 1: the books
+
+- **Re-found the economy.**
+  - 1,000,000p (or 4,000,000f, Question 1) for the realm, split as the model does: households 40% (uneven), businesses
+    15%, Houses 30% (50/30/20), church 5%, treasuries 10%.
+  - Houses get their fortunes at the founding.
+- **No mid-game mints:**
+  - `sortHouses` gives no money (a newly sorted House starts with what its businesses earn);
+  - late town and church accounts are opened from the treasury;
+  - newcomers arrive with nothing, and the town's relief takes them in;
+  - a birth's purse comes from its parents;
+  - `restore` mints nothing.
+- **Banks removed.** Savers are repaid at re-founding (moot on a fresh founding).
+- **The carter's goods from nothing** stop. Those goods come from producers.
+- **Retires:** `worldMoney`'s top-up, `HouseFortune` mid-game, `bankReckoning`, `tendBank`, `bankWorths`, `payDue`.
+- **Tests:**
+  - `conserved()` across a founding;
+  - no `minted` change after day 0 (except the mint, later);
+  - `roads_tests` bank cases removed.
+- **Done when** a 28-day run mints nothing after the founding.
+
+### Phase 2: the worth ladder in the catalogue
+
+- **`items.json` gains `worth`** (`rung`, `at`) for placed items, and **`playerSeconds`: 0** for every item (the
+  user's choice: player craft time set per item, later, in Atlas and the DM).
+- **`ladder.json` moves to `Data/Economy/ladder.json`** and `ladder.py` into `tools/item_catalog.py`'s checks.
+- **The calibrated NPC work hours** go into `crafts.json` (producers' `seconds`, crafts' `seconds`). They're kept
+  apart from player crafting time in `recipes.json`.
+- **The 110 conflicts:** each item's worth is raised to its built cost, or its recipe changed. They're listed in the
+  phase's notes for the user to glance over.
+- **Labour budget check:** a head's daily needs at about 1.7 labourer's hours (doc 63).
+- **Done when** `item_catalog.py` passes, and `calibrate.py` run on the game's data reports no unplaced conflict.
+
+### Phase 3: production by hours
+
+- **Every hand's hours make goods.** A post's spell at the station adds its hours to its business's work. Batches come
+  out when the hours for one are done, as far as inputs allow. Producers' yields come from hours too.
+- **Output follows sales**, with the model's shelf target (`keep` days; staples 20% spare). It replaces `GoodsKept`,
+  `ProducerKept` and `SuppliesKept` as the bound.
+- **Tool wear** counts into a batch's cost. Tools are bought by the business, not out of the worker's purse.
+- **Seasonal fields:**
+  - farms sow in spring and harvest at the end of summer, by hours per field;
+  - the store lasts the year, spoiling a little;
+  - acres are planned from last year's sales or the last month's rate, with a tenth over, and half again after a dry
+    year;
+  - sowing and harvest call day labour (Phase 6).
+- **Wood laid in for winter** a month ahead.
+- **Retires:** stock-target production, `SeasonalStore`, the producers' `ProducerKept` cap.
+- **Tests:** `crafting_tests` rewritten around hours; `makersKeepWhatIsOrdered` and its kin re-pinned.
+
+### Phase 4: what things cost, and prices
+
+- **Average cost** per account per item (adaptation C), saved.
+- **Each seller's price** is normal cost (hours at its wage, inputs, wear, rent) × (1 + its margin).
+  - The margin moves weekly by shelf days against a band and wears back toward 15% between.
+  - Caps: −30%/+60%, +100% for staples.
+- **Producers are paid the price they set, not town price × margin.** Players sell to a shop at what the shop would
+  pay: its price less its margin.
+- **Caravans and porters** price by cost plus carriage (adaptation F).
+- **Retires:** `townPrice`, `buyingPrice`, `applyPrices`, `priceLift`, the orchestrator's price and margin, price
+  support, `storePriced`.
+- **Tests:** `oneTownPrice`, `tradeAndPrices` and `priceSupport` replaced by per-seller cost-price cases.
+
+### Phase 5: businesses and owners
+
+- **Working money:** a business keeps a month of its staffing (its hands and at most two posts) and its inputs.
+- **The rest goes to its owner** on the business's own day of the month (the keeper's household, or its House).
+- **The owner tops up** a business short of a week's working money, out of what it holds above its own needs. It
+  stops after two months' working money unreturned in a quarter.
+- **A week of turnover in trade credit**, repaid first from takings, written off after 8 weeks.
+- **Rent** is a share of takings (15%) on a House's land, and it counts in the cost.
+- **Retires:** the keeper's third of profit, the Houses' nightly sweep, props and forced sales, rescue loans, the flat
+  20p rent.
+- **Tests:** `greatHouses`, `theOwnersShare`, `housesKeepToTheirTrades`, `aHousesTillKeepsItsOrders` and
+  `shopkeepersDontHoard` rewritten.
+
+### Phase 6: the labour market
+
+- **Each employer has its own wage and its posts** (adaptation B). They're reviewed weekly from its sales, with
+  staples keeping 20% spare and a short shelf adding hands. A business short of materials hires only the hands its
+  materials keep busy.
+- **Wages:**
+  - up when a post stands open most of the week (to 10% a week when short; at most 2× the going rate for the
+    skill);
+  - down slowly after calm weeks while hands stand idle;
+  - never under 0.85× the going rate for the skill;
+  - sliding back when more than 30% over it with no post open.
+- **A post left is open again at once.**
+- **Wolves judge a post by what it paid last week.** Under 60% of the going rate, they look daily. Under 40%, they
+  leave. A new post starts a fresh record.
+- **Poaching:** 4% a day of wolves move to a post paying 10% more, but never from an employer that is itself short,
+  and nobody leaves a post it holds alone.
+- **The harvest call:** sowing and harvest pay 1.25× the going rate and draw the idle and non-staple, non-master
+  trades. The going rate leaves the farms' harvest pay out.
+- **Artisans' pay floor** is 60% of a day when paid by the hours worked.
+- **Carriers take on hands the day they turn loads away.**
+- **Retires:** the town wage table, `dayWage` by kind, wage support, `HireRaise` and the weekly wage moves in `plan()`.
+- **Tests:** `whoPaysWages`, `aLivingForEveryone`, `residentsTakeWork`, `workingOutOfTown` and `oddJobs` reworked.
+
+### Phase 7: households and institutions
+
+- **The household rule:**
+  - needs first (food, fuel, clothes);
+  - then the household's pooled money over (1 month's income + 10 days' needs) goes, at its a2 a month, half into a
+    want fund and half to help about the home.
+- **Wants** are owned pieces: a sword for a household that works, a rapier for the top sixth, finery to a piece a
+  head. Building work is bought by the amount.
+- **Servants** for a household holding over six months' income.
+- **Daily relief** from the church, then the town, out of what each sets aside weekly (last week's relief and a third
+  over).
+- **Bakers' spoiling bread** goes to the hungry, then the poor, each evening, into the household's larder.
+- **Tax 8% and tithe 6% of income, weekly.**
+- **Institutions spend their month's income + a2 × (held − k × income):**
+  - Houses (k 4, a2 0.3): retainers, finery, works, an estate crew;
+  - the church (k 2, a2 0.4): relief, clergy, works, its own masons;
+  - the town (k 2, a2 0.4): relief, the watch, its swords, works that hire whoever the budget pays.
+- **Retires:**
+  - wants (the tenth a day), savers' channels, feasts, the levy, the wealth tithe, the 2p dole;
+  - the orchestrator's bands, pressure, grants, channels and funds, and the reserve rule;
+  - `spendSurpluses`' hand-offs.
+- **Tests:** `childrensStipends`, `grownWolvesBuyWhatTheyWant`, `householdsShareAndKeepHouse`, `theDole`,
+  `theChurchCares`, `townPursesAndTheReckoning`, `noHoarding` and `theChannelsSpend` rewritten.
+
+### Phase 8: lives, skills and masters
+
+- **Lives** (adaptation G):
+  - Gompertz deaths;
+  - retirement at 58–66;
+  - births following deaths into young families;
+  - households splitting above six (into a free home);
+  - kin inheriting money and goods;
+  - the realm's number held.
+- **Skill gates the trade:** a post needs its trade's skill; apprentices excepted.
+- **Learning:** fast beside a better hand, up to the trade's level and a little; slowly alone; 4 a year for a shop's
+  head with no better hand.
+- **Apprentices:**
+  - on half pay and bound to their master;
+  - one per qualified hand (two while short; at most a third of a shop's hands);
+  - only masters' trades (skill 50+) take the young from a post;
+  - apprentices are hands over and above, so a master's trade keeps a post open for a master.
+- **Masters' trades seek masters** (idle, or working below their level).
+- **The user's succession rule:** the best apprentice steps up, else the best-trained wolf not in a master's place or
+  an important position. They inherit the workshop (a House keeps its own) and work toward mastership. A masters'
+  trade with no one at its level and no head appoints one weekly.
+- **Re-founding** sets masters at about one wolf in fifty.
+- **Tests:** `careers_tests` (apprentices, succession), `aging_tests` and `newcomer_tests` reworked; new succession
+  cases.
+
+### Phase 9: wear and mending for NPCs
+
+- **NPCs own what they wear and carry:** a household's clothes (a set a head), swords, rapiers and finery, the
+  watch's swords, the Houses' blades. All wear by days of use.
+- **At 0.35 the owner sees to it:**
+  - heirlooms are mended;
+  - the rich may move up;
+  - "fashion" sometimes buys new (clothes 15%, finery 35%);
+  - otherwise mend if the maker's quote is under 60% of new.
+- **The maker spends hours and its own materials** on a mend (blades 30% of the hours and 10% of the materials;
+  clothes 50/30; finery 60/40). Mending counts toward its hands. Mending never shortens a piece's life (doc 35).
+- **Founded pieces start at random condition.**
+- **Retires:** household needs bought on a timer for clothes; NPC tool purchases out of the worker's purse.
+
+### Phase 10: hunting and hides
+
+- **The idle hunt** (the existing outwork, from the same finite game). Their catch feeds their household's larder, and
+  hides go to the tanneries at the tannery's offer.
+- **Sheep runs give hides too.** Leather goes into the blades and finery as the recipes have it.
+
+### Phase 11: players
+
+- **The mint** (`players.py`'s `Mint`): a weekly thermostat on money in use.
+  - Players' and Holds' dormant money is what they hold beyond two months of their spending.
+  - **It strikes** into the treasury only when that pulls money in use 5% under the founding *and* there's harm (wages
+    down 3% in 8 weeks, 10% idle, 1% hungry).
+  - **It melts** evenly from every purse (households under a week's food spared), only what it struck, when money in
+    use is 5% over.
+  - Logged as "the mint strikes" and "the mint melts" (`record(...)`, `minted`/`sunk`).
+- **Holds as keeps** (adaptation H): workshops (up to three) and a farm with NPC hands paid by the Hold's players, and
+  houses filled from the towns.
+- **Players' goods:** stalls sell at the player's price, so a player can dump or corner. The market rebounds by the
+  rules above (doc 63's crash tests).
+- **Tests:** mint strike and melt cases; a Hold's payroll; a stall dump and recovery.
+
+### Phase 12: the orchestrator steps back
+
+This is done along the way, as each phase retires its part. What's left at the end:
+
+- **Kept as a monitor:** the 23:00 snapshot and its measures (distress, hungry, short, poor, idle, Gini, the poorer
+  half) and the DM's Money tab and brief viewer.
+- **Removed:** `plan()`'s prices, margins, wages, bands, tax levels, channels, funds, grants, rescue and supports;
+  `orchestrator.json`'s dials; `scenarios.json`; the steer routes. The DM's steering is Question 5.
+- **Tests:** `orchestrator_tests` cut down to the monitor.
+
+### Phase 13: the long runs
+
+- **1-year, 5-year and 20-year `econ_watch` runs** on DEV's export, each compared with the model (Phase 0's
+  `compare.py`). From the sixth pass on, doc 63's long runs found faults no short run showed.
+- **A century run if the game's tick allows it.** Otherwise the 20-year run stands, with the model's century as the
+  reference.
+- **Players:** a 5-year run with the mint on and simulated hoarders, and one with Holds (staffed, drawing).
+
+## Order
+
+Phase 0 first: nothing can be judged without it.
+
+Then:
+
+1. **Phases 1 and 2:** the foundation, both small.
+2. **Phases 3–6:** the core of the market, built in order. Prices need costs; costs need hours; owners need prices;
+   wages need posts.
+3. **Phase 7.**
+4. **Phase 8:** it can begin alongside Phase 7, since lives touch careers, not money.
+5. **Phases 9–11.**
+6. **Phase 13's long runs**, after Phases 7, 8 and 11.
+
+Each phase is committed and pushed when measured. The perf gate is checked at Phases 3, 6, 7 and 8.
+
+## Done when (from the model)
+
+| Measure | Band (years 3+) |
+|---|---|
+| Gini among households | 0.33–0.45 (20 years); no runaway over longer runs |
+| The poorer half's share | 0.18–0.28 |
+| Hungry | no day over 300 after year 1; days over 50 rare (a few a decade) |
+| Bread / a bronze sword / a rapier | 0.05–0.09 / 1.5–4 / 15–40 LD |
+| A labourer's day | steady within ±30% year to year; no drift beyond 1% a year |
+| Money by kind of holder | each steady within about 20% of its year-3 share |
+| Masters | never none for long; succession by apprentice or best hand |
+| People and households | within 2% of the founding |
+| Money | minted only at the founding (and by the mint, logged) |
+| Every start | normal, one House holding all, empty treasury and equal purses converge (as doc 63) |
+
+## Questions for the user
+
+1. **The penny.** Count in farthings (a quarter penny; prices shown as pennies and farthings) so bread stays above one
+   coin at 1,000,000p? Or found with about 4,000,000p and keep whole pennies?
+   - *Recommended:* farthings.
+2. **Re-founding.** Found DEV's economy afresh: accounts, tills, Houses, careers' money and the orchestrator's state.
+   The world, its residents, homes and posts stay as they are.
+   - *Recommended:* yes, at Phase 1. PROD when you choose.
+3. **Posts.** A business may leave an authored post empty (laid off) and take hires beyond its posts, so its hands
+   follow its sales. Should the empty post's holder keep its home and look for other work?
+   - *Recommended:* yes.
+4. **Splitting households.** A household above six splits only when there's a free home (an empty house, a room to
+   let, a bunkhouse bed).
+   - *Recommended:* yes, with the generator leaving a few homes free in each town.
+5. **The DM's steering.** The orchestrator's pressure and scenarios go with it. Keep a few levers for the DM: the tax
+   rate, the mint on or off, a one-off relief grant from the treasury?
+   - *Recommended:* those three, logged.
