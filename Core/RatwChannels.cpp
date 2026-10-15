@@ -558,7 +558,6 @@ void Society::bankReckoning(std::map<std::string, Reckoning>& towns)
     const auto& dials = orchestratorDials();
     if (dials.mode != "on")
         return;
-    auto& deposits = state_.orchestrator.deposits;
     // The town levy: a share of what each resident holds (in purse and what its savings are worth) above its levy line,
     // times its town's tax level, to its town.
     const auto worths = bankWorths();
@@ -573,31 +572,8 @@ void Society::bankReckoning(std::map<std::string, Reckoning>& towns)
         if (const auto due = std::int64_t(std::floor(double(held - line) * dials.levyShare * taxLevel(treasury))); due > 0)
             towns[treasury].levy += payDue(id, treasury, due, "a town levy");
     }
-    // Deposits (the savers' own decision): the bank's terms' share of what each holds above
-    // its deposit line (the orchestrator's: the playbook), into its town's bank.
-    for (const auto& [id, life] : state_.residents)
-    {
-        const auto* purse = account(id);
-        if (!purse || (merchant(id) && tillOf(id) == id))
-            continue;
-        auto town = communityOfResident(id);
-        if (town.empty())
-            town = capital_;
-        if (const auto known = deposits.find(id); known != deposits.end())
-            town = known->second.first;                 // (Its savings stay where it first put them.)
-        const auto line = std::int64_t(dials.depositLine * double(wealthLine(id)));
-        // (At the bank's terms: the orchestrator's, the playbook's.)
-        if (const auto put = std::int64_t(double(purse->cash - line) * state_.orchestrator.memory.depositShare); put > 0)
-        {
-            openAccount(bankOf(town));
-            if (shift(id, bankOf(town), "", 0, put, "saved at the bank"))
-            {
-                auto& saved = deposits[id];
-                saved.first = town;
-                saved.second += put;
-            }
-        }
-    }
+    // Deposits: none any more (Docs/Design/64-economy-migration.md, Phase 1: the banks go). Savings already held are
+    // drawn back by their savers as before (tendBank) until none are left.
 }
 
 void Society::tendBank(std::int64_t day)

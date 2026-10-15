@@ -158,6 +158,11 @@ struct Options
     // health; its database session is read-only besides. It doesn't need to own the world, so it runs beside the
     // real server and any number of other scratch servers.
     bool scratch = false;
+    // Re-found the economy (Docs/Design/64-economy-migration.md, Phase 1; the user, 2026-10-15: "reset dev's economy"):
+    // the save's society (every purse, till, house, career, the ledger, the orchestrator) and its roads' trade
+    // (caravans, contracts, camps' hoards) are set aside on start, and the realm's money stands afresh from the world.
+    // The world's people (their bodies, ages, homes), its players and everything else load as saved.
+    bool refoundEconomy = false;
     // Snapshots of the world taken by a forked copy of the server, so the game never waits for one (doc 31, Phase 2).
     // For a database or file world; tests turn it off to snapshot in place.
     bool forkSnapshots = true;
@@ -1560,6 +1565,8 @@ class Game
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
     void makeResidents();
+    // A newcomer's purse: NewcomerWageDays of its new town's labourer's wage (the user, 2026-10-15; doc 64).
+    std::int64_t newcomerPurse(const std::string& homeCell) const;
     void runSpawns(double dt);
     bool spawnTile(const std::string& area, const std::string& tilesJson, int& x, int& y);
     void applyExternalNpcStates();

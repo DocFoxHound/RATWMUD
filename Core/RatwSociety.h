@@ -1061,15 +1061,19 @@ class Society
     // Older saves' churches each kept money of their own: it goes into the shared purse (on the next day), their goods
     // staying in their storehouses.
     void joinChurches();
-    // The world's money (the user, 2026-10-06: "increase the world total monetary amount to 500,000p, and spread it
-    // evenly everywhere"): once the purses are founded, what the world holds is made up to WorldMoney, WorldGrownShare
-    // percent of it shared alike among the grown residents, the rest among the towns' treasuries by their residents.
-    // (The second grant: an older save gets it the first time it runs with this.) Only a land of WorldMoneyResidents or
-    // more: a village made for a test keeps its own starting money.
-    static constexpr std::int64_t WorldMoney = 500000;
+    // The realm's money as it stands on its first day (Docs/Design/64-economy-migration.md, Phase 1; the user,
+    // 2026-10-15: 5,000,000p in whole pennies). Once the purses are made, what the realm holds is made up to WorldMoney,
+    // each kind of holder to its share, as doc 63's model holds it: households WorldHomesShare percent (unevenly, as
+    // households are), businesses WorldBusinessShare (by their floats), the great houses WorldHousesShare (by what they
+    // own: old families, theirs from before the story starts), the church WorldChurchShare, the treasuries the rest
+    // (by their residents). Only a land of WorldMoneyResidents or more: a village made for a test keeps its own starting
+    // money. After this nothing is made but a newcomer's purse (NewcomerWageDays of its town's labourer's wage) and,
+    // later, the mint's (doc 64, Phase 11).
+    static constexpr std::int64_t WorldMoney = 5000000;
     static constexpr std::size_t WorldMoneyResidents = 500;
-    static constexpr int WorldGrownShare = 85;
-    static constexpr int PursesFounded = 2;          // (1: the purses; 2: the world made up to WorldMoney.)
+    static constexpr int WorldHomesShare = 40, WorldBusinessShare = 15, WorldHousesShare = 30, WorldChurchShare = 5;
+    static constexpr int NewcomerWageDays = 2;
+    static constexpr int PursesFounded = 2;          // (1: the purses; 2: the realm's money as it stands.)
     std::int64_t startingPurse(const std::string& resident, int age) const;
     // A keeper whose shop is its own (its purse is the till) never spends its last KeeperReserve on the business
     // (materials, restocking, help's wages): it keeps its food money (the user, 2026-10-05). What an account may spend so.

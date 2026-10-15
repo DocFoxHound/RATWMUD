@@ -18,6 +18,7 @@
 #include <iterator>
 #include <unistd.h>
 #include <stdexcept>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -720,6 +721,48 @@ void aRestartFromAFile()
     again.command(&c, cmd({{"type", "character_enter"}, {"id", id}}));
     expect(c.entityId == id, "and plays on");
     again.disconnect(&c);
+    std::remove(path.c_str());
+}
+
+// Re-founding the economy (Docs/Design/64-economy-migration.md, Phase 1): a server started with refoundEconomy sets
+// the saved economy aside and the realm's money stands afresh; without it, the saved economy is what loads.
+void theEconomyRefounds()
+{
+    const std::string path = "/tmp/ratw-refound-test-" + std::to_string(::getpid()) + ".json";
+    std::remove(path.c_str());
+    std::int64_t fresh = 0;
+    {
+        game::Options o;
+        o.savePath = path;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts with a file save: " + problem);
+        auto& society = g.world().society();
+        fresh = society.moneySupply();
+        expect(society.openAccount("fund:test:marker") && society.shift("treasury", "fund:test:marker", "", 0, 7, "a test's mark"),
+               "a mark is made in the economy");
+        g.save();
+    }
+    const auto start = [&](bool refound) {
+        game::Options o;
+        o.savePath = path;
+        o.refoundEconomy = refound;
+        auto g = std::make_unique<game::Game>(o);
+        std::string problem;
+        expect(g->start(problem), "a server starts from the file: " + problem);
+        return g;
+    };
+    {
+        const auto kept = start(false);
+        const auto* mark = kept->world().society().account("fund:test:marker");
+        expect(mark && mark->cash == 7, "without the option, the saved economy loads (the mark is there)");
+    }
+    {
+        const auto refounded = start(true);
+        const auto& society = refounded->world().society();
+        expect(!society.account("fund:test:marker"), "with it, the saved economy is set aside (no mark)");
+        expect(society.conserved() && society.moneySupply() == fresh, "and the realm's money stands afresh, as at the start");
+    }
     std::remove(path.c_str());
 }
 
@@ -1943,6 +1986,7 @@ int main()
         signingInNeverHoldsTheGame();
         freeMovementIsChecked();
         aRestartFromAFile();
+    theEconomyRefounds();
         healthIsKept();
         playersCannotRuleTheSky();
         othersSeeNoPrivateStats();

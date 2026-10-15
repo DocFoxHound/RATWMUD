@@ -962,9 +962,10 @@ void townPursesAndTheReckoning()
     expect(w.society().account("w1")->cash == w1Taxed - wealthTithe(w1Taxed, "w1") - levied["w1"] - banked["w1"],
            "w1 pays a tenth of its profit in tax (a fifth above the band) and a tenth in tithe");
     const auto w2Taxed = w2Cash - std::max<std::int64_t>(0, w2 >= 10 ? w2 / 10 * 2 : 0);
-    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") - levied["w2"] - banked["w2"] &&
-               wealthTithe(w2Taxed, "w2") > 0 && banked["w2"] > 0 && w.society().savedAtBank("w2") == banked["w2"],
-           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line, and saves half the rest");
+    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") - levied["w2"] &&
+               wealthTithe(w2Taxed, "w2") > 0 && banked["w2"] == 0 && w.society().savedAtBank("w2") == 0,
+           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line, and banks nothing "
+           "(the banks are gone: Docs/Design/64-economy-migration.md, Phase 1)");
     expect(!w3Paid, "w3, at a loss, pays nothing");
     expect(tax > 0 && tithes == tax && toCapital == tax / 10, "West took in " + std::to_string(tax) + "p in tax and " +
                                                              std::to_string(tithes) + "p in tithes, and sent the capital a tenth");

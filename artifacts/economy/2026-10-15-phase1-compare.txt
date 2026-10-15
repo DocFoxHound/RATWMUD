@@ -1,0 +1,14 @@
+game: /tmp/ew_p1m; model: normal, seed 1. Prices in a labourer's day-wages; $ = share of all money.
+day   who   people  homes   gini   poor   idle hungry  bread  wheat  sword rapier $homes $firms $Houses $church  $town $other
+   0  game    1083    347   0.43   0.21      0      0  0.083  0.083   2.50    7.5   0.41   0.45    0.00    0.00   0.14   0.00
+   0  model    895    260   0.47   0.17      0      0  0.059  0.030   3.05   25.0   0.40   0.15    0.30    0.05   0.10   0.00
+   7  game    1083    345   0.48   0.16      0      0  0.050  0.083   2.50    7.5   0.39   0.15    0.31    0.05   0.11   0.00
+   7  model    895    260   0.47   0.18      1      0  0.062  0.037   3.04   24.6   0.42   0.11    0.32    0.05   0.10   0.00
+  14  game    1083    344   0.50   0.15      0      0  0.050  0.067   2.00    6.0   0.35   0.16    0.28    0.09   0.11   0.01
+  14  model    894    260   0.45   0.19      0      0  0.065  0.038   3.12   24.0   0.43   0.11    0.31    0.06   0.09   0.00
+  21  game    1083    349   0.49   0.16      0      0  0.050  0.053   1.60    4.8   0.33   0.19    0.22    0.13   0.12   0.01
+  21  model    894    260   0.44   0.19      0      0  0.067  0.038   3.01   23.3   0.44   0.11    0.30    0.06   0.09   0.00
+  28  game    1083    347   0.51   0.15      0      0  0.050  0.043   1.28    3.8   0.31   0.22    0.16    0.16   0.13   0.02
+  28  model    893    260   0.43   0.20      7      0  0.067  0.037   2.86   22.1   0.45   0.10    0.30    0.06   0.08   0.00
+
+minted, day by day (the game founds over its first days; after that it should be none, but the mint's): day 1 +26,001p, day 2 +4,829,894p. Masters aren't compared until Phase 8 brings the game's skill scale to the model's; $other is bandits' hoards, contracts' escrow and home stores.

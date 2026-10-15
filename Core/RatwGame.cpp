@@ -1375,6 +1375,15 @@ void Game::applyDmActions(double dt)
     }
 }
 
+std::int64_t Game::newcomerPurse(const std::string& homeCell) const
+{
+    const auto& society = world_.society();
+    auto town = world_.communityOf(homeCell);
+    if (town.empty())
+        town = society.capital();
+    return std::max<std::int64_t>(1, std::int64_t(std::lround(Society::NewcomerWageDays * society.dayWage(town, "labour"))));
+}
+
 void Game::makeResidents()
 {
     for (const auto& request : world_.takeResidentRequests())
@@ -1414,7 +1423,8 @@ void Game::makeResidents()
             "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
             "FROM live.npcs WHERE world_id = $1 AND id = $11",
             {liveWorldId_, id, request.name, description, child ? std::string("Born in the world, not written.") : std::string(),
-             std::to_string(request.age), child ? std::string("0") : std::to_string(Society::AdultPurse), home.cell, x, y, request.templateId});
+             std::to_string(request.age), child ? std::string("0") : std::to_string(newcomerPurse(home.cell)), home.cell, x, y,
+             request.templateId});
         World candidate;
         std::string problem;
         const bool loaded = made.ok && loadWithLivePeople(candidate, problem);
@@ -5787,6 +5797,12 @@ void Game::load(const std::string& payload)
         storageReady_ = false;
         note("error", "RATW character/account ownership is incomplete; autosave disabled.");
         return;
+    }
+    if (options_.refoundEconomy)
+    {
+        saved.hasSociety = false;
+        saved.roads = RoadsState{};
+        note("warning", "RATW_ECONOMY_REFOUNDED the saved economy is set aside; the realm's money stands afresh");
     }
     const auto result = world_.restore(saved);
     if (!result.ok)

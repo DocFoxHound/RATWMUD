@@ -474,3 +474,61 @@ households, idle, hungry. It also lists money minted day by day.
   rung.
 - **The game's skill scale isn't the model's** (700–900 "masters" at 60+), so masters aren't compared until Phase 8.
 - **A run costs** about 9 minutes for 28 days at 0.067 ms a tick, so a year is about 2 hours, in the background.
+
+### The user, 2026-10-15: the Houses and newcomers
+
+- **The Houses aren't "founded".** They're old families of the realm; their money is part of the realm as it stands
+  on its first day, like every household's purse and every shop's till. No coin is struck for them, then or later: a
+  House the game sorts out later (`sortHouses`) already had what it holds, and the 3,000p for a newly sorted House goes.
+  (So "the founding" in this document means only the realm's opening state, 5,000,000p, not an event in its story.)
+- **Newcomers arrive with two days' wages** in their pockets. That is new money; the user accepts it, and leaves it
+  to the mint. Since the mint only ever melts what it struck, **a newcomer's purse is counted as struck coin**: the
+  mint has it out, and melts it back (evenly, from every purse) once the money in use runs over the realm's opening
+  5,000,000p.
+
+### Phase 1: built (2026-10-15); the DEV reset waits
+
+**The realm's money as it stands** (`Society::worldMoney`, `RatwFounding.cpp`). Once the purses are made, what the
+realm holds is made up to `WorldMoney` = 5,000,000p, each kind of holder to its share:
+
+| Holder | Share | Spread |
+|---|---|---|
+| Households | 40% | Among grown wolves, unevenly: an exponential lot by each one's id, the same every run |
+| Businesses | 15% | Tills, and keepers whose purse is their till, by their floats |
+| The great houses | 30% | By the businesses each owns, plus one |
+| The church | 5% | |
+| The treasuries | 10% | By their residents |
+
+The great houses' share is theirs from before the story starts: they're not founded (the user).
+
+**After that, nothing is made:**
+
+- A purse for something new (a town's buyers or church opened late) comes from its treasury (`startingMoney`).
+- A house the rules newly count gets no coin (`sortHouses`).
+- No deposits: the banks go. Savings already held are drawn back as before.
+- The capital's daily carter of meals and herbs from nothing is gone.
+- **The one exception: a newcomer** arrives with `NewcomerWageDays` (2) of its town's labourer's wage
+  (`Game::newcomerPurse`). That's the user's choice, and the mint's to answer later. A child is born with nothing.
+
+**`--refound-economy`** (`Options::refoundEconomy`, `Game::load`): the saved society and the roads' trade are set
+aside on start, and the realm's money stands afresh from the world. Players' purses, which are in the society, start
+afresh too. Tested in `game_tests` (`theEconomyRefounds`): without the option the saved economy loads; with it, the
+money stands as at the start.
+
+**Tests:** society 140, careers 64, newcomers 2,646, roads 515 (the bank case now expects no saving), orchestrator 126,
+crafting 89,400, town 38,722, game 3,570: all pass.
+
+**Measured** (28 days, `artifacts/economy/2026-10-15-phase1`):
+
+- **From day 2, the opening matches the model:** Gini 0.48 / 0.48, poorer half 0.17 / 0.17, money 40/15/30/5/10%
+  against the model's 40/15/31/5/10%. Nothing is minted after day 2.
+- **Then the old rules pull it apart, as expected before Phases 4–7:**
+  - the Houses' share drains (31% → 16%);
+  - the church's grows (5% → 16%: the old wealth tithe on so many fuller purses);
+  - the Gini widens to 0.51;
+  - swords and rapiers sink in LD, while wages stay at the old 12p a day and prices at the old catalogue's.
+- **The tick** is 0.082 ms (0.067 before), with more money moving. It's to be watched at the perf gate.
+
+**The DEV reset waits.** With 10× the money but wages and prices at their old 12p level, DEV would play for weeks with
+every household holding four months' wages. The reset (`--refound-economy` on DEV's server) is to be done once Phases
+2, 4 and 6 build prices and wages at the 5,000,000p level (a labourer's day about 60p).

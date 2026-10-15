@@ -583,6 +583,7 @@ int main(int argc, char** argv)
         else if (a == "--perf-log") perfLog = std::atof(next().c_str());
         else if (a == "--workers") workers = std::atoi(next().c_str());
         else if (a == "--scratch") options.scratch = true;
+        else if (a == "--refound-economy") options.refoundEconomy = true;   // Doc 64, Phase 1: the economy afresh.
         else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
         else if (a == "--speed") options.speed = std::atof(next().c_str());
         else

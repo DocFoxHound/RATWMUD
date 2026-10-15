@@ -608,15 +608,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
         if (roster_ == Roster::Authored)
         {
-            // A daily carter refills the town stores with goods, never money,
-            // up to the authored starting store levels.
-            const auto& e = authored_.economy;
-            auto& stores = state_.accounts.at("treasury");
-            stores.stock["meal"] =
-                std::max(stock(stores, "meal"), std::min(e.storeMeals, stock(stores, "meal") + e.dailyMeals));
-            stores.stock["herbs"] =
-                std::max(stock(stores, "herbs"), std::min(e.storeHerbs, stock(stores, "herbs") + e.dailyHerbs));
-            record("carter delivery", "outside", "treasury", "", 0, 0);
+            // (The daily carter that refilled the capital's stores with meals and herbs from nothing is gone: every good
+            // comes from someone's work. Docs/Design/64-economy-migration.md, Phase 1.)
             reckon(day);                               // The month's tax and tithes, when one is due (RatwReckoning.cpp).
             tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
             tendTills(day);                            // Owner-run businesses' tills: their keepers' wages (RatwTills.cpp).

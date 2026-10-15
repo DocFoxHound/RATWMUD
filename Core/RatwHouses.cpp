@@ -208,9 +208,15 @@ void Society::sortHouses()
         if (!account(h.id))
         {
             openAccount(h.id);
-            state_.accounts.at(h.id).cash = HouseFortune;
-            state_.minted += HouseFortune;
-            record("a great house's fortune", "outside", h.id, "", 0, HouseFortune);
+            // (The great houses are old families, not founded in the story: before the realm's money stands, a house's
+            // purse is part of it; after, a house the rules newly count already had what it holds, and nothing is made
+            // for it. Docs/Design/64-economy-migration.md, the user, 2026-10-15.)
+            if (state_.memory.purses < PursesFounded)
+            {
+                state_.accounts.at(h.id).cash = HouseFortune;
+                state_.minted += HouseFortune;
+                record("a great house's fortune", "outside", h.id, "", 0, HouseFortune);
+            }
         }
     }
     std::map<std::string, std::string> gone;        // A house no more -> where its money goes.
