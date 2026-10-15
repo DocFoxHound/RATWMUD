@@ -342,10 +342,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     noteIncoming(to, kind, coins);
     noteForOrchestra(kind, from, to, coins, item, quantity);   // What the economy orchestrator counts (RatwOrchestrate.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
-    if (coins > 0 && (kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
-                      kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" ||
-                      kind == "the household purse" || kind == "the church's dole" || kind == "the church's share" ||
-                      kind == "a gift" || kind == "a letter's enclosure" || kind == "an owner's investment"))   // (Gifts and enclosures: doc 55.)
+    if (coins > 0 && unearnedKind(kind))            // (Gifts and enclosures: doc 55; relief: doc 64.)
     {
         auto& books = state_.books;
         if (books.start.count(from))
@@ -353,6 +350,20 @@ void Society::record(const std::string& kind, const std::string& from, const std
         if (books.start.count(to))
             books.unearned[to] += coins;
         ++books.revision;
+    }
+    // What it earned (doc 64, Phase 7): a resident's wages, sales and profit; a House's profit and rent; a town's tax; the
+    // church's tithes and plate. And the wages an institution paid, out of its week's budget.
+    if (coins > 0)
+    {
+        const bool resident = state_.residents.count(to) > 0;
+        if ((resident && !unearnedKind(kind)) ||
+            (to.rfind("house:", 0) == 0 && (kind == "the owner's profit" || kind == "rent")) ||
+            ((to == "treasury" || to.rfind("stores:", 0) == 0) && (kind == "town tax" || kind == "capital's share")) ||
+            (to == SharedChurch && (kind == "tithe" || kind == "the collection")))
+            earnedToday_[to] += double(coins);
+        if ((from == "treasury" || from.rfind("stores:", 0) == 0 || from == SharedChurch) &&
+            (kind == "watch wages" || kind == "day labour" || kind == "service wages"))
+            state_.memory.wagesWeek[from] += double(coins);
     }
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
@@ -609,6 +620,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         offered_.clear();                              // (The Restday plate, doc 42.)
         if (roster_ == Roster::Authored)
         {
+            tendIncome();                              // Yesterday's earnings into the week's and month's (doc 64, Phase 7).
+            leftovers(day);                            // Last evening's bread that wouldn't keep, to the hungry.
             spoil(day);                                // Food older than it keeps goes bad (RatwDemand.cpp).
             // Sellers' margins, each on its own day of the week, and their costs kept for the save (doc 64, Phase 4);
             // makers' normal costs are worked out afresh.
@@ -627,6 +640,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendTills(day);                            // Owner-run businesses' tills: their keepers' wages (RatwTills.cpp).
             tendLabour(day, bodies);                   // The labour market: wages, posts judged and left (RatwLabour.cpp).
             spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
+            dailyRelief(day, bodies);                  // A day's food money to households short of it (RatwInstitutions.cpp).
             householdShopping(day, season, bodies);    // Each household's errands for the day (RatwDemand.cpp).
             tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).
             childrenAndStipends(day, bodies);          // The children's stipends, and what they spend them on.

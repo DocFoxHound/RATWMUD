@@ -148,7 +148,17 @@ int Society::handsWanted(const std::string& till) const
     return std::max(1, int(std::ceil(hours / PaidSpells - 1e-9)));
 }
 
-void Society::reviewHands(const std::string& till, std::int64_t day)
+bool Society::idleHand(const std::string& resident, const Payer& payer) const
+{
+    // A hand whose business has more work in hand than it can use (its shelves full, its materials short): free to take
+    // a hire elsewhere (doc 63's harvest call: hands from trades with nothing to do go where they're wanted).
+    if (payer.account.rfind("till:", 0) != 0 || jobOf(resident) == nullptr || jobOf(resident)->role == "merchant")
+        return false;
+    const auto banked = workBanked_.find(payer.account);
+    return banked != workBanked_.end() && banked->second >= WorkBankedMost - 1;
+}
+
+void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly)
 {
     const auto pid = till.substr(5);
     const auto* p = position(pid);
@@ -178,8 +188,12 @@ void Society::reviewHands(const std::string& till, std::int64_t day)
                              (producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end()) &&
                              (season_ == 0 || season_ == 2);   // (Sowing in spring, the harvest at summer's end: doc 63.)
         const auto pay = std::int64_t(std::ceil(employerWage(till) * (harvest ? HarvestPay : 1.) - 1e-9));
-        const int slots = std::min(more, 3);
-        if (slots > 0 && spendable(till) >= pay * slots)
+        // (Already hiring: its hire runs on, and what it still wants comes with the next.)
+        const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
+            return j.payer == till && j.until >= day && int(j.stage.size()) < j.slots;
+        });
+        const int slots = std::min(more, 8);
+        if (slots > 0 && !hiring && spendable(till) >= pay * slots)
         {
             OddJob j;
             j.id = "odd" + std::to_string(++nextOddJob_);
@@ -197,7 +211,8 @@ void Society::reviewHands(const std::string& till, std::int64_t day)
             ++oddVersion_;
         }
     }
-    else if (const int excess = hands - wanted - hired; excess > 0)
+    // (Not while the realm is still on its way to the calibrated hours: what its sales take grows week by week.)
+    else if (const int excess = hands - wanted - hired; weekly && excess > 0 && state_.memory.pace >= 1)
     {
         // Over: its hires run out by themselves; then help let go, half the excess (one at least), the post kept empty.
         int letGo = std::max(1, excess / 2);
@@ -234,8 +249,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         const auto held = state_.careers.positions.find(p.id);
         const auto holder = held == state_.careers.positions.end() ? std::string() : held->second.holder;
         std::string key;
-        if (p.role == "merchant")
-            key = "till:" + p.id;                    // (Its keeper, its business's first hand.)
+        if (p.role == "merchant" || items::producerFor(p.title))
+            key = "till:" + p.id;                    // (Its keeper or farmer: its business's first hand.)
         else
             key = employerKey(payerOf(holder.empty() ? p.founder : holder, p, holder.empty() ? 30 : ageOf(holder)), p);
         if (key.empty() || (key.rfind("till:", 0) == 0 && !account(key)))
@@ -287,6 +302,15 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             idle += !jobOf(id) && !apprenticedTo(id);
         }
     slack_ = grown ? double(idle) / grown : 0;
+    // The realm's pace toward the calibrated hours: on while it's fed, back while it goes hungry.
+    if (workByHours())
+    {
+        int hungry = 0;
+        for (const auto& [id, life] : state_.residents)
+            hungry += life.hunger >= 60;
+        const bool fed = state_.residents.empty() || double(hungry) / double(state_.residents.size()) < PaceHungry;
+        memory.pace = std::clamp(memory.pace + (fed ? PaceStep : -PaceBack), 0., 1.);
+    }
     // Each wolf's pay lately: the share of the wages owed it that its employer paid, a week's running average of its working
     // days (a new post starts a fresh record, paid in full). Paid under 40% of what it was owed, it leaves (not the only
     // hand; the watch keeps its posts). (Not the pay itself: a wolf whose work takes it about, a messenger, works fewer
@@ -323,6 +347,12 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             payKey_.erase(id);
             forgetCareers();
         }
+    // A business short of hands hires the day it finds itself short (the land can't wait for the week's end); it lets
+    // hands go only at its weekly review.
+    if (workByHours())
+        for (const auto& [key, n] : hands_)
+            if (key.rfind("till:", 0) == 0 && std::int64_t(std::hash<std::string>{}(key + "|wage") % 7) != day % 7)
+                reviewHands(key, day, false);
     // Each employer's weekly review, on its own day: a business's hands by its sales, then every employer's wage.
     std::set<std::string> employers;
     for (const auto& [key, n] : hands_)
@@ -336,7 +366,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         if (std::int64_t(std::hash<std::string>{}(key + "|wage") % 7) != day % 7)
             continue;
         if (key.rfind("till:", 0) == 0 && workByHours())
-            reviewHands(key, day);
+            reviewHands(key, day, true);
         auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
         const auto town = employerTown_.count(key) ? employerTown_.at(key) : std::string();
         const double rate = goingRate(town) * (1 + employerSkill(key) / items::ladder().skillWage);

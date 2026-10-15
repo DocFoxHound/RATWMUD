@@ -915,65 +915,41 @@ void townPursesAndTheReckoning()
     expect(westWages > 0 && eastToWest == 0, "West's townsfolk are paid by west (" + std::to_string(westWages) + "p), not the capital");
     const auto* church = w.society().account(Society::SharedChurch);
     expect(church && church->cash > 0, "The land's church was founded");
-    // A month's doings: w1 does well, w2 inherits, w3 spends more than it earns.
+    // A week's doings (doc 64, Phase 7: tax and tithe on income): w1 is paid for work, w2 inherits, w3 spends all it has.
     const auto& books = w.society().state().books;
     expect(books.month == 0 && books.start.count("w1") && books.start.count("wm"), "The week's books are open");
-    expect(w.society().shift("treasury", "w1", "", 0, 30, "test: paid for work"),
-           "w1 is paid for some work");
+    expect(w.society().shift("treasury", "w1", "", 0, 30, "day labour"), "w1 is paid for some work");
     expect(w.society().operatorTransfer("treasury", "w2", "", 0, 300).ok, "w2 is left 300p (not earned)");
     w.society().shift("w3", "wm", "", 0, w.society().account("w3")->cash, "test: spends it all");
-    const auto profit = [&](const std::string& who) {
-        return w.society().account(who)->cash - books.start.at(who) - (books.unearned.count(who) ? books.unearned.at(who) : 0);
-    };
-    const auto w1 = profit("w1"), w2 = profit("w2"), w3 = profit("w3");
-    const auto w1Cash = w.society().account("w1")->cash, w2Cash = w.society().account("w2")->cash;
-    const auto westBefore = w.society().account("stores:west")->cash, churchBefore = w.society().account(Society::SharedChurch)->cash;
-    expect(w1 >= 30 && w2 < 300 && w3 < 0, "Profits: w1 " + std::to_string(w1) + "p, w2 " + std::to_string(w2) + "p, w3 " + std::to_string(w3) + "p");
     w.takeEvents();
     const auto told = w.reckonNow();
-    std::int64_t tax = 0, tithes = 0, allTithes = 0, toCapital = 0, fromCapital = 0, levyToWest = 0;
-    std::map<std::string, std::int64_t> levied, banked;   // (The town levy and the savers' deposits: doc 46.)
-    bool w3Paid = false, logged = false;
+    std::int64_t tax = 0, tithes = 0, toCapital = 0;
+    std::map<std::string, std::int64_t> taxed, tithed;
+    bool w3Paid = false, logged = false, wealth = false;
     for (const auto& e : w.takeEvents())
     {
-        if (e.kind == "economy" && e.detail == "a town levy")
-            levied[e.actor] += e.coins, levyToWest += e.target == "stores:west" ? e.coins : 0;
-        if (e.kind == "economy" && e.detail == "saved at the bank")
-            banked[e.actor] += e.coins;
         if (e.kind == "economy" && e.detail == "town tax" && e.target == "stores:west")
             tax += e.coins;
+        if (e.kind == "economy" && e.detail == "town tax")
+            taxed[e.actor] += e.coins;
         if (e.kind == "economy" && e.detail == "tithe" && e.target == Society::SharedChurch)
         {
-            allTithes += e.coins;                   // (Every town's: the church's purse is the land's.)
+            tithed[e.actor] += e.coins;
             tithes += e.actor.front() == 'w' ? e.coins : 0;
         }
         if (e.kind == "economy" && e.detail == "capital's share" && e.actor == "stores:west")
             toCapital += e.coins;
-        if (e.kind == "economy" && e.detail == "a wealth tithe" && e.target == Society::SharedChurch)
-            allTithes += e.coins;                   // (To the church too.)
-        if (e.kind == "economy" && e.detail == "from the capital, for the poor" && e.target == "stores:west")
-            fromCapital += e.coins;
+        wealth |= e.kind == "economy" && (e.detail == "a wealth tithe" || e.detail == "market dues");
         w3Paid |= e.kind == "economy" && e.actor == "w3" && (e.detail == "town tax" || e.detail == "tithe");
         logged |= e.kind == "reckoning" && e.actor == "stores:west" && e.detail.find("West's reckoning") != std::string::npos;
     }
-    // (And each, a wealth tithe on what it holds above its comfortable line: Society::wealthLine.)
-    const auto wealthTithe = [&](std::int64_t cash, const std::string& who) {
-        return std::max<std::int64_t>(0, (cash - w.society().wealthLine(who)) / Society::WealthTitheShare);
-    };
-    const auto w1Taxed = w1Cash - w1 / 10 - std::max<std::int64_t>(0, w1 - Society::TaxBand) / 10 - w1 / 10;
-    expect(w.society().account("w1")->cash == w1Taxed - wealthTithe(w1Taxed, "w1") - levied["w1"] - banked["w1"],
-           "w1 pays a tenth of its profit in tax (a fifth above the band) and a tenth in tithe");
-    const auto w2Taxed = w2Cash - std::max<std::int64_t>(0, w2 >= 10 ? w2 / 10 * 2 : 0);
-    expect(w.society().account("w2")->cash == w2Taxed - wealthTithe(w2Taxed, "w2") - levied["w2"] &&
-               wealthTithe(w2Taxed, "w2") > 0 && banked["w2"] == 0 && w.society().savedAtBank("w2") == 0,
-           "w2 pays no tax on what it inherited, but a wealth tithe on what it holds above its line, and banks nothing "
-           "(the banks are gone: Docs/Design/64-economy-migration.md, Phase 1)");
-    expect(!w3Paid, "w3, at a loss, pays nothing");
-    expect(tax > 0 && tithes == tax && toCapital == tax / 10, "West took in " + std::to_string(tax) + "p in tax and " +
-                                                             std::to_string(tithes) + "p in tithes, and sent the capital a tenth");
-    expect(w.society().account("stores:west")->cash == westBefore + tax + levyToWest - toCapital + fromCapital &&
-               w.society().account(Society::SharedChurch)->cash == churchBefore + allTithes,
-           "into its own purse and the land's church's");
+    expect(taxed["w1"] >= std::llround(30 * Society::TaxRate) && std::abs(double(tithed["w1"]) - double(taxed["w1"]) * .75) <= 1,
+           "w1 pays 8% of its week's income in tax and 6% in tithe (" + std::to_string(taxed["w1"]) + "p, " + std::to_string(tithed["w1"]) + "p)");
+    expect(taxed["w2"] < std::llround(300 * Society::TaxRate), "w2 pays nothing on what it inherited");
+    expect(!w3Paid, "w3, with nothing in its purse, pays nothing");
+    expect(!wealth, "and there's no wealth tithe or market dues");
+    expect(tax > 0 && tithes > 0 && tithes <= tax && toCapital == tax / Society::CapitalShare,
+           "West took in " + std::to_string(tax) + "p in tax and the church " + std::to_string(tithes) + "p in tithes; west sent the capital a tenth");
     expect(logged && told.find("West's reckoning") != std::string::npos, "The reckoning is told: " + told);
     expect(books.start.at("w1") == w.society().account("w1")->cash && books.unearned.empty(), "New books are opened");
     expect(w.society().conserved(), "Money stays conserved");
@@ -1293,9 +1269,9 @@ void oneChurch()
     expect(s.conserved(), "Money stays conserved");
 }
 
-// The dole (doc 42, "Where money pools", the user, 2026-10-06): a household short of a week's food is given a little
-// in coins by the church each day, to spend at its own town's shops.
-void theDole()
+// Daily relief (doc 64, Phase 7, in place of doc 42's dole): a household short of a day's food money is given it, by the
+// church and then its town, out of what each set aside for the week.
+void theRelief()
 {
     auto f = strip();
     auto w = load(f);
@@ -1313,9 +1289,9 @@ void theDole()
     nextMorning(w);
     std::int64_t given = 0;
     for (const auto& e : w.takeEvents())
-        if (e.kind == "economy" && e.detail == "the church's dole")
+        if (e.kind == "economy" && e.detail == "relief")
             given += e.coins;
-    expect(given > 0, "The poor are given the dole (" + std::to_string(given) + "p)");
+    expect(given > 0, "A penniless household is given a day's food money in relief (" + std::to_string(given) + "p)");
     expect(s.conserved(), "Money stays conserved");
 }
 
@@ -1490,9 +1466,9 @@ void standingOrdersAreRenegotiated()
 }
 
 // A shopkeeper doesn't hoard either (the user, 2026-10-05). Since doc 46's Phase 2 every shop keeps a till of its own,
-// apart from its keeper's purse: the shop's goods and money move into it on the first day (all but a month's living), it
-// pays its keeper a wage each day and its help a share of its takings, it shares what it holds far above its need, and
-// every Restday it pays its town market dues. At the reckoning its keeper takes a share of the week's profit.
+// apart from its keeper's purse: the shop's goods and money move into it on the first day (all but a month's living), and
+// it pays its keeper a wage each day. Since doc 64 what it holds over its working money goes to its owner monthly
+// (theOwnersProfit), and it pays no market dues and no tax of its own: its owner is taxed on what it's paid.
 void shopkeepersDontHoard()
 {
     auto f = strip("EE.....WW", resident("cook", "Pell Ladle", "merchant", "keeps the cookshop", 7, 9.5, 8, 9.5) +
@@ -1505,24 +1481,20 @@ void shopkeepersDontHoard()
            "and its keeper keeps at most a month's living (" + std::to_string(w.society().account("cook")->cash) + "p)");
     w.society().shift("treasury", till, "", 0, 2000, "test: a fine year");
     w.takeEvents();
-    bool shared = false, wage = false, dues = false, shareOfProfit = false;
-    for (int d = 0; d < 8 && !(dues && wage); ++d)
+    bool wage = false, levied = false;
+    for (int d = 0; d < 8; ++d)
     {
         nextMorning(w);
         run(w, 2);
         for (const auto& e : w.takeEvents())
         {
-            shared |= e.kind == "economy" && e.detail == "surplus: a share of the takings" && e.actor == till;
             wage |= e.kind == "economy" && e.detail == "the keeper's wage" && e.actor == till && e.target == "cook";
-            dues |= e.kind == "economy" && e.detail == "market dues" && e.actor == till;
-            shareOfProfit |= e.kind == "economy" && e.detail == "the owner's share" && e.actor == till && e.target == "cook";
+            levied |= e.kind == "economy" && (e.detail == "market dues" || e.detail == "town tax" || e.detail == "a wealth tithe") && e.actor == till;
         }
     }
     expect(wage, "The till pays its keeper a wage");
-    expect(dues, "and pays the town its market dues on Restday");
-    (void)shared;                                    // (What a till holds above its band is the orchestrator's: doc 46, Phase 5.)
+    expect(!levied, "and pays no dues or tax of its own");
     expect(w.society().conserved(), "Money stays conserved");
-    (void)shareOfProfit;                             // (Only in a week the till makes a profit: see theOwnersShare.)
 }
 
 // Rent on a House's land (doc 64, Phase 5): a farm in a town with great houses pays one of them a share of its week's
@@ -1664,10 +1636,12 @@ void grownWolvesBuyWhatTheyWant()
                                     resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
     auto w = load(f);
     w.tick(.6);
-    w.society().shift("treasury", "e1", "", 0, 500, "test: a good year");
+    // (A windfall goes on wants a little at a time: the household rule's share of what it holds over its month's
+    // income and ten days' needs, a2 a month, half of it to its want fund. Doc 64, Phase 7.)
+    w.society().shift("treasury", "e1", "", 0, std::min<std::int64_t>(5000, w.society().account("treasury")->cash / 2), "test: a good year");
     w.takeEvents();
     bool rich = false;
-    for (int d = 0; d < 3; ++d)
+    for (int d = 0; d < 7 && !rich; ++d)
     {
         nextMorning(w);
         run(w, 2);
@@ -2490,7 +2464,7 @@ int main()
         greatHouses();
         noHoarding();
         oneChurch();
-        theDole();
+        theRelief();
         spoilage();
         residentsFillContractsForGoods();
         tradesWearAndCharity();

@@ -23,7 +23,6 @@ bool Society::homemaking(const std::string& title)
 
 void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
 {
-    (void)day;
     auto& memory = state_.memory;
     std::map<std::string, std::vector<std::string>> homes, grown;
     for (const auto& [id, life] : state_.residents)
@@ -66,6 +65,8 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
                         shift(giver, taker, "", 0, std::min(over, under), "the household purse");
                 }
         }
+        // The household rule (doc 64, Phase 7): its want fund, help about the home, servants.
+        householdRule(home, members, pot, day);
         // Comfortable or poor, and for how long.
         const auto need = householdNeed(members.size());
         auto& streak = memory.comfort[home];

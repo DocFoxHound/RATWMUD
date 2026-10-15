@@ -97,32 +97,25 @@ void Society::reckon(std::int64_t day, bool force)
         for (const auto& h : houses())
             if (account(h.id))
                 payers.push_back({h.id, treasuryOf(h.community)});
-        // And every owner-run business's till (doc 46, Phase 2), where it works.
-        for (const auto& p : positions_)
-            if (const auto till = ownTill(p.id); !till.empty())
-                payers.push_back({till, treasuryOf(communityOfResident(p.founder))});
+        // (A business isn't taxed: its profit is its owner's, and taxed as theirs. Doc 64, Phase 7.)
+        flushEarnings();                            // (Today's too, when reckoned on demand.)
         for (const auto& [id, treasury] : payers)
         {
-            const auto start = books.start.find(id);
             const auto* purse = account(id);
-            if (start == books.start.end() || !purse)
+            if (!purse)
                 continue;
-            const auto unearned = books.unearned.count(id) ? books.unearned.at(id) : 0;
-            const auto profit = purse->cash - start->second - unearned;
             auto& town = towns[treasury];
             town.treasury = treasury;
             town.church = churchOf(treasury);
             ++town.residents;
-            if (profit < std::max(TaxShare, TitheShare))
-                continue;                               // A week at a loss (or of nothing much) pays nothing.
-            openAccount(town.church);
-            // (Progressive: a fifth of the part of the week's profit above TaxBand.)
-            // (The same rates for all (the user, 2026-10-06), but nothing from one under the poverty line.)
-            if (const auto* r = spec(id); r && purse->cash < PovertyLine)
+            // TaxRate and TitheRate of the week's income (doc 64, Phase 7; doc 63's model), as far as its purse goes.
+            const auto income = state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.;
+            if (income < 1)
                 continue;
-            // (Times its town's tax level, the orchestrator's: money that stops, doc 46.)
-            const auto tax = std::int64_t(double(profit / TaxShare + std::max<std::int64_t>(0, profit - TaxBand) / TaxShare) * taxLevel(treasury)),
-                       tithe = profit / TitheShare;
+            openAccount(town.church);
+            // (Times its town's tax level, the orchestrator's when it's on: doc 46.)
+            const auto tax = std::min<std::int64_t>(purse->cash, std::llround(income * TaxRate * taxLevel(treasury))),
+                       tithe = std::min<std::int64_t>(purse->cash - tax, std::llround(income * TitheRate));
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
             const bool tithed = shift(id, town.church, "", 0, tithe, "tithe");
             town.tax += paid ? tax : 0;
@@ -135,15 +128,11 @@ void Society::reckon(std::int64_t day, bool force)
             if (const auto share = std::int64_t(double(town.tax / CapitalShare) * taxLevel("treasury"));
                 treasury != "treasury" && share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
                 town.toCapital = share;
-        // The wealth tithe: a WealthTitheShare-th of what anyone holds above its comfortable line, to the church.
+        // (No wealth tithe: tax and tithe are on income now, doc 64, Phase 7.)
+        state_.memory.weekIncome.clear();
         openAccount(SharedChurch);
-        const auto worths = bankWorths();
-        for (const auto& [id, treasury] : payers)
-            if (const auto* purse = account(id))
-                // (What its savings are worth counts, and pays when its purse can't: money that stops, doc 46.)
-                if (const auto due = (purse->cash + savingsWorth(id, worths) - wealthLine(id)) / WealthTitheShare; due > 0)
-                    towns[treasury].wealthTithe += payDue(id, SharedChurch, due, "a wealth tithe");
         bankReckoning(towns);                       // The town levy, the banks' interest, and the savers' deposits.
+        institutionsWeek(day);                      // Each institution's week's budget, spent (RatwInstitutions.cpp).
         // (The capital's share for the poor is the economy orchestrator's now: doc 46, Phase 5.)
         for (auto& [treasury, town] : towns)
             reckonings_.push_back(std::move(town));

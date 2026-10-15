@@ -379,8 +379,10 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     // Today's meal: wanted by one who is hungry, or buying only for itself.
     const bool hungry = !laysIn || !me || me->hunger >= 35;
     // What the shop has to eat. Short of a week's food money, it buys what feeds most for the money; with more, by its
-    // taste too (the same each day: some like their porridge).
+    // taste too (the same each day: some like their porridge), and only the well off (a month's food money) by its taste
+    // as far as it goes: the rest mind what a meal's worth costs them (doc 64, the realm's diet; the user, 2026-10-15).
     const bool tight = mine->cash < 7 * need;
+    const double fancy = mine->cash >= MonthDays * need ? .4 : .2;
     struct Choice
     {
         std::string item;
@@ -395,7 +397,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         const auto* good = items::good(item);
         const auto asked = shopPrice(seller, item);   // (Supply and demand at this shop, the town's scarcity, its markdown.)
         const int price = int(std::max<std::int64_t>(1, stall ? std::int64_t(std::floor(double(asked) * .9)) : asked));
-        const double taste = tight ? 1 : .6 + .8 * unit(resident + "|" + items::baseOf(item));
+        const double taste = tight ? 1 : 1 - fancy + 2 * fancy * unit(resident + "|" + items::baseOf(item));
         choices.push_back({item, price, good->nourish, good->keeps, double(good->nourish) / price * taste});
     }
     std::sort(choices.begin(), choices.end(), [](const Choice& a, const Choice& b) { return a.score > b.score; });
@@ -443,6 +445,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
 
 void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
 {
+    (void)day;
     // Friend groups: each town's children, by age, in fours.
     {
         friendGroups_.clear();
@@ -466,7 +469,6 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
     for (const auto& r : authored_.residents)
         if (r.role == "merchant" && state_.residents.count(r.id))
             shops[communityOfResident(r.id)].push_back(r.id);
-    const auto& books = state_.books;
     for (const auto& [home, members] : homes)
     {
         const auto& [grown, children] = members;
@@ -484,12 +486,8 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             purse += spendable(who);                // (A keeper's food money and its shop's till aside: spendable.)
             if (!richest || spendable(who) > spendable(*richest))
                 richest = &who;
-            if (const auto start = books.start.find(who); start != books.start.end())
-            {
-                const auto unearned = books.unearned.count(who) ? books.unearned.at(who) : 0;
-                if (const auto profit = a->cash - start->second - unearned; profit >= std::max(TaxShare, TitheShare))
-                    owed += profit / TaxShare + profit / TitheShare;
-            }
+            // (The tax and tithe on its week's income so far: doc 64, Phase 7.)
+            owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (TaxRate + TitheRate));
         }
         // Only what it can safely afford (the user, 2026-10-05: never a given): two weeks' food kept back for all at
         // home, and nothing while the household has lately been poor.
@@ -555,7 +553,6 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         {"a pastime", [&](const std::string& i) { const auto c = category(i); return c == "luxury" || c == "instrument" || i == "broadsheet" || i == "pamphlet" || i == "printed_book"; }},
         {"something for the home", [&](const std::string& i) { return category(i) == "household"; }},
     };
-    const auto& books = state_.books;
     for (const auto& [id, life] : state_.residents)
     {
         const auto body = bodies.find(id);
@@ -564,16 +561,19 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         // (A keeper whose shop is its own spends its surplus as a keeper: RatwSurplus.cpp.)
         if (body == bodies.end() || body->second.age < 16 || !purse || !r || (r->role == "merchant" && tillOf(id) == id))
             continue;
-        std::int64_t owed = 0;
-        if (const auto start = books.start.find(id); start != books.start.end())
-        {
-            const auto unearned = books.unearned.count(id) ? books.unearned.at(id) : 0;
-            if (const auto profit = purse->cash - start->second - unearned; profit >= std::max(TaxShare, TitheShare))
-                owed = profit / TaxShare + profit / TitheShare;
-        }
-        const auto budget = (purse->cash - FoodADay * 7 - owed) / 10;
+        // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
+        // week's food and the tax and tithe it owes.
+        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (TaxRate + TitheRate));
+        const auto fund = state_.memory.wantFund.find(life.homeCell);
+        const int grown = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
+                                              const auto b = bodies.find(other.first);
+                                              return other.second.homeCell == life.homeCell && b != bodies.end() && b->second.age >= 16;
+                                          })));
+        const auto budget = fund == state_.memory.wantFund.end() ? std::int64_t(0)
+                                                                  : std::min<std::int64_t>(std::int64_t(fund->second / grown), purse->cash - FoodADay * 7 - owed);
         if (budget < 2)
             continue;
+        const auto before = purse->cash;
         // Today's fancies: the kinds it likes best, as it feels today; one that finds nothing on the shelves, the next
         // (two more at most: money that stops, doc 46).
         std::vector<std::pair<double, const Want*>> fancies;
@@ -589,6 +589,8 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             buyForSurplus(id, shops[communityOfResident(id)], fancy->is, treat ? std::min<std::int64_t>(budget, 9) : budget,
                           std::string("a want: ") + fancy->name, &got);
         }
+        if (const auto spent = before - account(id)->cash; spent > 0)
+            fund->second = std::max(0., fund->second - double(spent));
         int finery = 0;
         for (const auto& [item, n] : account(id)->stock)
             if (const auto c = category(item); c == "jewelry" || c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear")
@@ -906,7 +908,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // What the town couldn't supply, it asks for: a contract for goods (the world posts it). (Not the church:
                 // its money is the land's, its goods its town's own.)
                 if (payer == acct && want >= std::max(2, target / 3))
-                    if (const auto* good = items::good(item))
+                    if (items::good(item))
                         procurements_.push_back({acct, community, in.name, item, want, pennies(townPrice(community, item))});   // (The going price: doc 64, Phase 4.)
             }
             if (condition && needed > 0)

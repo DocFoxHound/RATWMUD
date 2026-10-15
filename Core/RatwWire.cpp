@@ -6,6 +6,7 @@
 #include "RatwStep.h"
 
 #include <algorithm>
+#include <initializer_list>
 #include <cmath>
 #include <set>
 
@@ -993,6 +994,16 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& pid : m.closed)
         closed.push(pid);
     o.add("closed", closed);
+    o.add("pace", m.pace);
+    for (const auto& [name, field] : std::initializer_list<std::pair<const char*, const std::map<std::string, double>*>>{
+             {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
+             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
+    {
+        auto map = Value::object();
+        for (const auto& [key, v] : *field)
+            map.add(key, v);
+        o.add(name, map);
+    }
     return o;
 }
 
@@ -1059,6 +1070,15 @@ EconomyMemory readEconomyMemory(const Value& o)
             v.items()[0].asNumber() > 0 && v.items()[0].asNumber() < 1e6 && key.size() < 200)
             m.employers[key] = {v.items()[0].asNumber(), std::clamp(int(v.items()[1].asNumber()), 0, 7),
                                 std::clamp(int(v.items()[2].asNumber()), 0, 1000), v.items()[3].asNumber() > 0};
+    if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
+        m.pace = pace->asNumber();
+    // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold.)
+    for (const auto& [name, field] : std::initializer_list<std::pair<const char*, std::map<std::string, double>*>>{
+             {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
+             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
+        for (const auto& [key, v] : o.object(name).fields())
+            if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e12 && key.size() < 200)
+                (*field)[key] = v.asNumber();
     for (const auto& v : o.array("closed"))
         if (v.isString() && v.asString().size() < 200)
             m.closed.insert(v.asString());

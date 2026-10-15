@@ -152,45 +152,7 @@ void Society::spendSurpluses(std::int64_t day)
             if (n > 0)
                 shift(id, churchStore(town), item, n, 0, "to the church's storehouse");
     }
-    // The dole (the user, 2026-10-06: money back out at the lowest level): each household short of a week's food is given
-    // DoleADay a member in coins, to its eldest, to spend at its own town's shops; the poorest households first, and never
-    // more than a thirtieth of the church's purse a day.
-    if (const auto* purse = account(land))
-    {
-        struct Household
-        {
-            std::vector<std::string> members;
-            std::int64_t held = 0;
-        };
-        std::map<std::string, Household> homes;
-        for (const auto& [who, life] : state_.residents)
-            if (!life.homeCell.empty())
-                if (const auto* p = account(who))
-                {
-                    auto& h = homes[life.homeCell];
-                    h.members.push_back(who);
-                    h.held += p->cash;
-                }
-        std::vector<std::pair<double, const Household*>> short_;   // (Purse a head, household.)
-        for (const auto& [home, h] : homes)
-            if (h.held < 7 * householdNeed(h.members.size()))
-                short_.push_back({double(h.held) / double(h.members.size()), &h});
-        std::sort(short_.begin(), short_.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-        std::int64_t left = purse->cash / 30;
-        for (const auto& [perHead, h] : short_)
-        {
-            const auto dole = DoleADay * std::int64_t(h->members.size());
-            if (dole > left)
-                break;
-            const auto eldest = *std::max_element(h->members.begin(), h->members.end(), [&](const std::string& a, const std::string& b) {
-                const auto* ra = spec(a);
-                const auto* rb = spec(b);
-                return (ra ? ra->age : 0) < (rb ? rb->age : 0);
-            });
-            if (shift(land, eldest, "", 0, dole, "the church's dole"))
-                left -= dole;
-        }
-    }
+    // (The dole is gone: daily relief from what the church and the towns set aside weekly, doc 64, Phase 7: dailyRelief.)
     // What the treasuries, the church and the great houses hold above their band is the economy orchestrator's to send
     // out now, through its channels (doc 46, Phase 5; RatwChannels.cpp): the town's funds spend today.
     runChannels(day);
@@ -205,22 +167,6 @@ void Society::spendSurpluses(std::int64_t day)
     // twentieth of what it holds above its working money.
     if (calendar::weekdayOf(double(day)) == calendar::Restday)
         keepUpPremises();                            // (Improved premises kept up, or let go: RatwOddJobs.cpp.)
-    if (calendar::weekdayOf(double(day)) == calendar::Restday)
-        for (const auto& p : positions_)
-        {
-            if (p.role != "merchant")
-                continue;
-            const auto held = state_.careers.positions.find(p.id);
-            if (held == state_.careers.positions.end() || held->second.holder.empty())
-                continue;
-            const auto till = tillOf(held->second.holder);
-            const auto* purse = account(till);
-            const auto town = communityOfResident(held->second.holder);
-            // (Above its working money, doc 64, Phase 5: what it keeps to run on isn't dues' to take.)
-            const auto due = purse ? (purse->cash - workingMoney(p.id) - (till == held->second.holder ? KeeperReserve : 0)) / 20 : 0;
-            // (Times its town's tax level: money that stops, doc 46.)
-            if (const auto levied = std::min(purse ? purse->cash : 0, std::int64_t(double(due) * taxLevel(treasuryOf(town)))); levied > 0 && !town.empty())
-                shift(till, treasuryOf(town), "", 0, levied, "market dues");
-        }
+    // (No market dues: tax is on income now, doc 64, Phase 7.)
 }
 } // namespace ratw

@@ -290,6 +290,11 @@ struct EconomyMemory
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
     std::set<std::string> closed;                    // Posts a business has let go and keeps empty (doc 64, Phase 6).
+    double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
+    // Households and institutions (doc 64, Phase 7): each account's earned income this week (taxed at the reckoning)
+    // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
+    // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
+    std::map<std::string, double> weekIncome, monthIncome, wantFund, helpBudget, reliefLeft, reliefWeek, wagesWeek;
     std::int64_t revision = 0;
 };
 
@@ -794,14 +799,23 @@ class Society
     // The hours a batch or a yield takes: its calibrated crafts.json `hours` once work is by hours, else its old
     // `seconds`' worth (the pace the game had: doc 64, Phase 3, until Phase 6 lets businesses take on the hands that
     // calibrated hours need).
-    static double hoursFor(const items::Craft& k);
-    static double hoursFor(const items::Producer& p);
+    double hoursFor(const items::Craft& k) const;
+    double hoursFor(const items::Producer& p) const;
+    // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
+    // calibrated over some eight weeks (PaceStep a day) while the realm is fed, and back a little faster (PaceBack a day)
+    // while more than PaceHungry of it goes hungry: the labour market needs weeks to move hands to the land, and the
+    // founding's stores last days. Where it settles is what the realm's hands can carry.
+    static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
     static inline bool workByHours_ = false;
+    double workCredited_ = 0, workLost_ = 0;
 
   public:
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
+    // Hours of work credited to businesses and producers so far, and those lost to a full bank (econ_watch's measures).
+    double workCredited() const { return workCredited_; }
+    double workLost() const { return workLost_; }
 
   private:
     int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).
@@ -861,6 +875,23 @@ class Society
     double priceAt(const std::string& seller, const std::string& item) const;   // Pennies a piece, not rounded.
     double offerAt(const std::string& seller, const std::string& item) const { return normalCost(seller, item); }
     double labourDay(const std::string& town) const { return goingRate(town); }
+    // Households and institutions (Docs/Design/64-economy-migration.md, Phase 7; doc 63's model; RatwInstitutions.cpp).
+    //  - Income: what an account earned (wages, sales, profit, rent; for a town its tax, for the church its tithes and
+    //    plate), a week's (taxed) and a month's (its rule's measure). Gifts, estates and relief aren't income.
+    //  - Tax TaxRate and tithe TitheRate of each resident's and House's week's income, at the reckoning.
+    //  - The household rule: what its purse holds over a month's income and HomeNeedDays of its needs goes, at its own
+    //    rate (HomeShareLeast..Most a month), half into a want fund (its wants, works on its home) and half to help
+    //    about the home; holding over ServantMonths of its income, it keeps servants.
+    //  - Institutions (a town's treasury, the church, a House) spend each week a quarter of their month's income and
+    //    a share of what they hold over k months of it: the town (k 2, 0.4) and the church (k 2, 0.4) first set aside
+    //    the week's relief, then their own wages, then works (materials, and crews hired for the week); a House (k 4,
+    //    0.3) its retainers, finery, works and an estate crew.
+    //  - Daily relief: a household short of a day's food money is given it, by the church and then its town, out of
+    //    what each set aside.
+    static constexpr double TaxRate = .08, TitheRate = .06, HomeShareLeast = .3, HomeShareMost = .7;
+    static constexpr int HomeNeedDays = 10, ServantMonths = 6;
+    double monthIncomeOf(const std::string& account) const;
+    static bool unearnedKind(const std::string& kind);
     // Carting a piece `legs` steps (ladder.json carryPerWeight: labourer's hours a unit of weight a step), in pennies.
     double carriage(const std::string& item, double legs, const std::string& town = {}) const;
     static constexpr double CarriageLegs = 10;       // Steps between towns, for what's carted from one to another.
@@ -1013,12 +1044,14 @@ class Society
     // Hands by sales (doc 64, Phase 6), at its weekly review: the hours its sales take a day (its crafts' or yields'
     // hours for what it sells, a fifth more for staples, half again with its shelf near bare, a fifth less with it
     // glutted), in hands of PaidSpells hours; at least its keeper. Short, it opens the posts it let go, then hires for
-    // HireDays (a farm a quarter over its wage at sowing and harvest, from the idle and other trades: the harvest
-    // call); over, it lets its hires run out, then lets help go (half the excess, one at least), keeping their posts
-    // empty. Never more than doubling its hands (and two) in a week.
+    // HireDays, the day it's short (a farm a quarter over its wage at sowing and harvest, from the idle, other trades
+    // and hands whose business has no work for them: the harvest call); over, at its weekly review, it lets its hires
+    // run out, then lets help go (half the excess, one at least), keeping their posts empty. Never more than doubling
+    // its hands (and two) at once.
     static constexpr double StapleSlack = 1.2, HarvestPay = 1.25;
     std::vector<std::string> helpPosts(const std::string& till) const;   // Its help's posts (at its premises).
     int handsWanted(const std::string& till) const;
+    bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
     std::string wageKind(const Payer& payer, const Position& job) const;   // "help", "guard", "labour", "clergy".
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
@@ -1238,7 +1271,24 @@ class Society
     std::unordered_map<std::string, double> going_, paidToday_, owedToday_, pay7_;
     double slack_ = 0;
     void tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    void reviewHands(const std::string& till, std::int64_t day);
+    // Households and institutions (doc 64, Phase 7; RatwInstitutions.cpp).
+    std::unordered_map<std::string, double> earnedToday_;   // What each account earned today (into memory.weekIncome).
+    void tendIncome();                                      // Daily, first: today's earnings into the week's and month's.
+    void flushEarnings();                                   // (Those so far, without the month's daily decay.)
+    void institutionsWeek(std::int64_t day);                // At the reckoning: each institution's week's budget, spent.
+    void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    void householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day);
+    void leftovers(std::int64_t day);                       // Bakers' bread that would spoil overnight, to the hungry.
+    // Hands hired by the week (an institution's works, masons, retainers; a household's servants): `slots` hands at
+    // `wage` a day each, for `days`, at `at`. Returns what a day of them costs.
+    std::int64_t hireForWeek(const std::string& payer, const std::string& community, const std::string& kind, const std::string& what,
+                             const Spot& at, int slots, std::int64_t wage, int days, std::int64_t day);
+    Spot townSpot(const std::string& community, const std::string& salt) const;   // Somewhere public in town.
+    // Spends up to `budget` of `payer`'s on goods its town's shops sell that `is` picks, used up ("used in <what>") or
+    // kept; returns what it spent.
+    std::int64_t buyAndUse(const std::string& payer, const std::string& community, const std::function<bool(const std::string&)>& is,
+                           std::int64_t budget, const std::string& what, bool keep);
+    void reviewHands(const std::string& till, std::int64_t day, bool weekly);
     void notePay(const std::string& resident, const std::string& key, std::int64_t coins, std::int64_t owed);
     void tendOwners(std::int64_t day);
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).

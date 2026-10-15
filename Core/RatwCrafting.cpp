@@ -170,15 +170,18 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     return any;
 }
 
-double Society::hoursFor(const items::Craft& k)
+double Society::hoursFor(const items::Craft& k) const
 {
-    return workByHours_ ? k.hours : k.seconds / 3600.;
+    // The old pace, and with work by the hours the realm's way from it to the calibrated hours (memory.pace).
+    const double old = k.seconds / 3600.;
+    return workByHours_ ? old + std::clamp(state_.memory.pace, 0., 1.) * (k.hours - old) : old;
 }
 
-double Society::hoursFor(const items::Producer& p)
+double Society::hoursFor(const items::Producer& p) const
 {
     // (At the old pace a producer brought in a yield a spell at most: it looked once a spell, however short its seconds.)
-    return workByHours_ ? p.hours : std::max(1., p.seconds / 3600.);
+    const double old = std::max(1., p.seconds / 3600.);
+    return workByHours_ ? old + std::clamp(state_.memory.pace, 0., 1.) * (p.hours - old) : old;
 }
 
 void Society::creditWork(const std::string& account, double hours)
@@ -186,6 +189,8 @@ void Society::creditWork(const std::string& account, double hours)
     if (hours <= 0)
         return;
     auto& banked = workBanked_[account];
+    workCredited_ += hours;
+    workLost_ += std::max(0., banked + hours - WorkBankedMost);   // (Hands with nothing to make: hours that go nowhere.)
     banked = std::min(WorkBankedMost, banked + hours);
 }
 

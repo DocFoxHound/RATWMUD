@@ -628,6 +628,8 @@ int main(int argc, char** argv)
             out << ",\"employers\":{\"count\":" << books << ",\"mean\":" << (books ? sumWage / books : 0.) << ",\"over\":"
                 << (books ? double(over) / books : 0.) << "}";
         }
+        out << ",\"work\":{\"credited\":" << society.workCredited() << ",\"lost\":" << society.workLost()
+            << ",\"pace\":" << society.state().memory.pace << "}";
         out << ",\"margins\":{\"count\":" << count << ",\"mean\":" << (count ? sum / count : 0.) << ",\"low\":"
             << (count ? double(low) / count : 0.) << ",\"high\":" << (count ? double(high) / count : 0.) << "}}";
         return out.str();

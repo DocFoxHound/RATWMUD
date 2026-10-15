@@ -860,3 +860,150 @@ is now a share of the going rate. The orchestrator's table and weekly moves appl
 - `greatHouses`: the manager is paid its business's wage.
 - `householdsShareAndKeepHouse`: a working morning, not a Restday.
 - `theDole`: a whole household penniless, since the dole counts a household's purse.
+
+### The realm's diet, and the pace (the user, 2026-10-15: "go with your recommendation")
+
+**Foods placed by how much they feed** (`tools/econ_model/food_worth.py`):
+
+- a food's worth is its nourishment at bread's rate a point (4 mLD), times a premium for its kind:
+  - staple 1.0: bread, porridge, rabbit, offal;
+  - fresh 1.2 to 1.3: fish, meat, mutton, eggs, milk;
+  - preserved 1.6: smoked, salted, cheese, butter, sausage;
+  - cooked 1.6: a meal, a pie, a stew, a roast;
+  - fine 3.0: spiced roasts, pâtés, honey cakes;
+- drinks keep their places;
+- then `apply_ladder.py` recalibrates every craft's and producer's hours. It raised smoked fish to 0.17 LD and a meal
+  to 0.43 LD, to cover their materials. 0 conflicts of 361.
+- **The wolves' actual diet now takes about 2,700 hours a day, down from 3,750.**
+
+**Thrift:** wolves short of a week's food money already buy by nourishment a penny. Now only the well off (a month's
+food money) follow their taste as far as it goes. The merely comfortable follow it half as far.
+
+**Calibrated hours still starved the realm, for want of time, not hands:**
+
+- the realm credits about 7,000 work hours a day, enough;
+- but they're in the authored trades, not on the land. In the first runs 1,500 to 2,500 hours a day were lost to full
+  banks (shelves at their caps, materials short);
+- the founding's food spoils on day 5, and hungry wolves don't work, so production fell into a spiral.
+
+**Three fixes:**
+
+- **Farms review their hands too.** A producer's post had no employer key, so farms never hired.
+- **Hiring for need, every day:**
+  - a business short of hands hires the day it finds itself short; it lets hands go only at its weekly review;
+  - hires aren't capped at 3 hands;
+  - a hand whose business has more work banked than it can use may take a hire elsewhere (the harvest call).
+- **The realm's pace** (`memory.pace`, saved): with work by the hours, each craft's and yield's hours go from the old
+  pace toward the calibrated:
+  - a 56th of the way a day while fewer than 2% of the realm are hungry;
+  - back a 14th a day while more are;
+  - businesses don't lay hands off until the pace reaches 1.
+
+**Measured, 60 days with the hours on:**
+
+| day | 6 | 12 | 18 | 24 | 30 | 36 | 44 | 52 | 60 |
+|---|---|---|---|---|---|---|---|---|---|
+| pace | 0.09 | 0.20 | 0.30 | 0.41 | 0.43 | 0.27 | 0.43 | 0.39 | 0.54 |
+
+- Two hungry spells (44 wolves on day 32, 15 on day 52); each ended within days.
+- Prices on the ladder throughout; the going wage at 12p.
+- **Where it settles is what the realm's hands can carry.** By day 60 that's still rising past half. A longer run will
+  tell (Phase 13).
+- The game's default stays the old pace (the switch off) until then.
+
+### Phase 7: built (2026-10-15)
+
+**Income** (`Core/RatwInstitutions.cpp`): what an account earns, tallied as it's paid.
+
+- **A resident:** everything but gifts, estates, relief, the household purse and an owner's investment.
+- **A House:** its profit and rent.
+- **A town:** its tax and the capital's share.
+- **The church:** its tithes and the plate.
+- **Kept in the society's memory:** the week's income (taxed) and a month's running income (a 28th off a day).
+
+**Tax 8% and tithe 6% of each resident's and House's week's income**, at the reckoning, as far as its purse goes:
+
+- a business isn't taxed: its profit is its owner's, and taxed as theirs;
+- an inheritance or a gift isn't income;
+- **gone:** the profit tax with its band, the poverty line's exemption, the wealth tithe and market dues;
+- the capital's tenth of each town's tax stays.
+
+**Institutions spend a weekly budget**: a quarter of a month's income plus a2 × (held − k × that income). In the
+realm's first month, before there's a month's income, they reckon a k+1-th of what they hold.
+
+- **A town** (k 2, a2 0.4):
+  - first its week's relief, set aside: last week's and a third over, plus a twentieth of the budget, at most 30%;
+  - then its own wages (the watch, the Town Works, its posts);
+  - then 80% of the rest on a works crew hired for the week, the rest on building materials.
+- **The church** (k 2, a2 0.4):
+  - its relief (at least a tenth of the budget);
+  - its clergy's wages;
+  - half the rest on materials for its works, the rest on its own masons for the week.
+- **A House** (k 4, a2 0.3):
+  - retainers for the week (30%, up to 12);
+  - finery (30%, kept, up to 12 pieces);
+  - works (40% of what's left);
+  - an estate crew with the rest.
+
+**Daily relief** replaces the dole:
+
+- a household short of a day's food money, or hungry with no food in, is given what it lacks;
+- by the church, then its town, out of what each set aside (before its first reckoning, the share its first week's
+  budget would give);
+- relief isn't income.
+
+**The household rule** (daily, in `tendHouseholds`):
+
+- what the household's purse holds over a month's income and 10 days' needs goes, at its own rate (0.3 to 0.7 a
+  month), half into a want fund and half to help about the home;
+- **wants** come out of the want fund now, each grown member its share. The tenth-a-day rule is gone;
+- **help about the home** is a hand for the week at 0.8 of the going rate, once the help budget runs to a week of it;
+- **servants:** a household holding over six months of its income takes servants for the week, as many as a tenth of
+  the excess pays for a month (up to 3).
+
+**Bakers' leftovers:** each evening, bread that wouldn't keep another day goes from a baker's shelves to the larders
+of the hungry, then the poor (under three days' food money). It isn't sold.
+
+**Hires and keepers:** a wolf keeping the house doesn't take hires (it counted as jobless).
+
+**Not yet:** owned pieces (a sword for a working household, a rapier for the rich) wait for Phase 9's mending.
+Works on the home come out of the want fund only as wants for now. The savers' rule and the levy stay inert with the
+orchestrator.
+
+**Measured** (30 days from DEV, the default pace):
+
+| day 30 | Phase 6 | Phase 7 | the model |
+|---|---|---|---|
+| the church's share | 20% | 5% | 6% |
+| the Houses' | 25% | 30% | 30% |
+| the towns' | 11% | 9% | 8% |
+| households' | 28% | 35% | 46% |
+| businesses' | 16% | 20% | 10% |
+| household Gini | 0.53 | 0.52 | 0.43 |
+| median purse | 1,076p | 1,310p | — |
+| hungry | 0 | 0 | 0 |
+| ms a tick | 0.063 | 0.081 | — |
+
+- The wealth tithe's drain is gone: the church, the Houses and the towns hold the model's shares.
+- **Money now moves:**
+  - wants about 36,000p a month;
+  - tax about 33,000p and tithes about 21,000p;
+  - towns' works crews about 9,000p;
+  - help about the home about 13,000p.
+- **Left:**
+  - businesses hold twice the model's share: working money and the month's profit not yet paid out;
+  - households' share is short by as much;
+  - the Gini is 0.1 wider than the model's.
+  These are for the long runs (Phase 13), once lives (Phase 8) and mending (Phase 9) are in.
+- **The tick** is 28% dearer, in errands: more wolves walking to hires and help. Help about the home is hired by the
+  week (it was by the day: 0.039 ms of errands, now 0.034).
+
+**Tests:**
+
+- `townPursesAndTheReckoning`: 8% and 6% of income, nothing on an inheritance, nothing from an empty purse, no wealth
+  tithe or market dues.
+- `theDole` became `theRelief`.
+- `shopkeepersDontHoard`: a till pays no dues or tax of its own.
+- `grownWolvesBuyWhatTheyWant`: a windfall spent from the want fund over a week.
+- A test's own transfers ("test: …") aren't income.
+- All suites pass.
