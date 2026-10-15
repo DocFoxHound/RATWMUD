@@ -684,3 +684,34 @@ re-pinned to the mill's price plus carriage.
 - Nobody starving; 2 hungry on day 30. 0.067 ms a tick.
 - Tests: all suites pass. Two re-pinned: the contract reward (now the going price and the premium) and the carted-in
   flour.
+
+### The orchestrator switched off (the user, 2026-10-15)
+
+> "If orchestrator is getting in the way of implementing our working model, then perhaps we disable orchestrator and
+> re-evaluate whether we need it later or not."
+
+**`Data/Economy/orchestrator.json` `mode` is now `off`.** The code stays, and `RATW_ORCHESTRATOR=on|shadow` brings it
+back. Off, these stop:
+
+- its wage table. Wages hold at its starting table (a labourer's day 12p) until Phase 6's labour market;
+- its channels and funds: the towns' odd jobs, commissions, granaries and trade orders;
+- the bank's grants, the levy on savings, and the savers' rule.
+
+**Measured** (30 days from DEV, the same run with it on and off):
+
+| day 30 | on | off | the model |
+|---|---|---|---|
+| prices (LD) | falling behind wages (wheat 0.012, iron bar 0.54) | steady on the ladder (wheat 0.029, iron bar 1.03) | wheat 0.037 |
+| household Gini | 0.54 | 0.53 | 0.43 |
+| the Houses' share | 13% | 25% | 30% |
+| the church's share | 20% | 20% | 6% |
+| hungry | 2 | 0 | 0 |
+| median purse | 986p | 1,087p | — |
+| ms a tick | 0.067 | 0.072 | — |
+
+Off is as good or better on every measure, and nobody goes hungry without the towns' odd jobs. The church still
+gathers a fifth of the money by day 30: that's the old tithes, for Phase 7.
+
+**Tests.** The game's tests now run with it off. Tests of what it does turn it on for their own world (`orchestrate`
+in `roads_tests`: odd jobs, its channels, its watching in shadow; the projects test's town measure in shadow).
+`orchestrator_tests` sets its own dials. Phase 12 decides what, if anything, it keeps.

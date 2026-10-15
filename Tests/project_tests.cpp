@@ -410,6 +410,12 @@ void visible()
         Town t(world, save);
         auto& w = t.g.world();
         auto& s = w.society();
+        {
+            // (The town's measure is the orchestrator's: it measures in shadow, though the game has it off, doc 64.)
+            auto dials = s.orchestratorDials();
+            dials.mode = "shadow";
+            s.setOrchestratorDials(dials);
+        }
         t.enter(t.ash, 1, "ash", "Ash", 1, 9.5);
         const auto ash = t.ash.entityId;
         const auto put = [&](const char* who, int cell, double x, double y = 8.5) {

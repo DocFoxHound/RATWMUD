@@ -1632,6 +1632,15 @@ void grownWolvesBuyWhatTheyWant()
     expect(w.society().conserved(), "Money stays conserved");
 }
 
+// The game has the economy orchestrator off while doc 64 brings in the model (the user, 2026-10-15); a test of what it
+// does turns it on (or to shadow) for its own world.
+void orchestrate(World& w, const char* mode)
+{
+    auto dials = w.society().orchestratorDials();
+    dials.mode = mode;
+    w.society().setOrchestratorDials(dials);
+}
+
 // Odd jobs (the user, 2026-10-05): a town with money to spare posts a day's menial work (deliveries, repairs, trips to
 // gather or hunt, scouting, a hand at a producer); a wolf without other work takes one, does it, and is paid.
 void oddJobs()
@@ -1644,6 +1653,7 @@ void oddJobs()
     auto f = strip("EE.....WW", k1 + k2 +
                                     resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 7, 10.5, 8, 9.5));
     auto w = load(f);
+    orchestrate(w, "on");                            // (Towns post odd jobs through the orchestrator's channels.)
     w.tick(.6);
     w.takeEvents();
     bool posted = false, paid = false, together = false;
@@ -1953,6 +1963,7 @@ void theOrchestratorWatches()
 {
     auto f = strip("EE.....WW");
     auto w = load(f);
+    orchestrate(w, "shadow");
     w.tick(.6);
     auto saved = w.save();
     saved.calendarDays = 6 + 22. / 24;              // The evening before the week's reckoning (day 7).
@@ -2027,10 +2038,9 @@ void theChannelsSpend()
 {
     auto f = strip("EE.....WW", resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 7, 9.5, 8, 9.5));
     auto w = load(f);
+    orchestrate(w, "on");
     w.tick(.6);
     auto& s = w.society();
-    if (s.orchestratorDials().mode != "on")
-        return;
     auto saved = w.save();
     saved.calendarDays = 6 + 22. / 24;              // The evening before the week's reckoning (day 7).
     expect(w.restore(saved).ok, "To the eve of the reckoning");

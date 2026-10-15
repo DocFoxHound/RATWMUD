@@ -1,6 +1,6 @@
 {
-  "about": "The economy orchestrator's dials (Docs/Design/46-economy-orchestrator.md). Every number is a placeholder for the balance pass. mode: on (its prices and margin applied: doc 46, Phase 3), shadow (plan and show, apply nothing), off. RATW_ORCHESTRATOR=off|shadow overrides the mode. It measures every day and decides once a week, the evening of the weekly reckoning: overShare, overShareAtCap, priceMove and marginMove are per decision.",
-  "mode": "on",
+  "about": "The economy orchestrator's dials (Docs/Design/46-economy-orchestrator.md). Every number is a placeholder for the balance pass. mode: on (its wage table, channels, grants, levy and savers applied; its prices no longer, doc 64 Phase 4), shadow (plan and show, apply nothing), off (the user, 2026-10-15: off while doc 64 brings in the model, to be weighed again later). RATW_ORCHESTRATOR=off|shadow overrides the mode. It measures every day and decides once a week, the evening of the weekly reckoning: overShare, overShareAtCap, priceMove and marginMove are per decision.",
+  "mode": "off",
   "nourishADay": 50,
   "needDays": 14,
   "comfortable": 2,
