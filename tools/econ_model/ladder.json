@@ -1,0 +1,37 @@
+{
+  "format": "ratw-worth-ladder",
+  "version": 2,
+  "about": "What things should cost (doc 63): the worth ladder. Every item sits on a rung, and production times are calibrated so that, priced from cost, it sells there. Worth is measured in a labourer's day-wages (LD): what a wolf in plain work earns in a day. Money is closed, so the price level floats; worth is relative, and stays put while pennies drift. Rungs are named steps, each about three times the one below, for the item editors (Atlas, the Dungeon Master) to place items on; `at` puts an item within its rung, 0 at the bottom, 1 at the top, on a log scale (0.5 is the rung's middle). An item not placed here sits where its catalogue price puts it (price / catalogueDay LD). Not a gear tier (items.json `tier`: basic, professional, exceptional) and not a quality (Common, Fine, ...): a common-quality rapier is still Rare. markup: each seller's margin at every step, for the calibration. skillWage: a trade needing skill s pays (1 + s / skillWage) a labourer's wage (a modest premium: the market can wear it down, so a good's worth is carried by its hours). carryPerWeight: labourer's hours to cart one unit of weight to market, once per step.",
+  "unit": "LD",
+  "catalogueDay": 12,
+  "markup": 0.15,
+  "skillWage": 150,
+  "carryPerWeight": 0.004,
+  "rungs": [
+    {"id": "staple",    "name": "Staple",    "from": 0.01, "to": 0.1,  "about": "What every wolf buys every day without thinking: bread, firewood, grain."},
+    {"id": "cheap",     "name": "Cheap",     "from": 0.1,  "to": 0.5,  "about": "Small things a day's wage buys several of: candles, a pot, raw ore, rope."},
+    {"id": "everyday",  "name": "Everyday",  "from": 0.5,  "to": 2,    "about": "A day's wage or so: plain clothes, tools, a bar of iron."},
+    {"id": "fine",      "name": "Fine",      "from": 2,    "to": 6,    "about": "Days of wages, saved for: a bronze sword, good boots, finery."},
+    {"id": "costly",    "name": "Costly",    "from": 6,    "to": 15,   "about": "A week or two of wages: steel blades, mail pieces."},
+    {"id": "rare",      "name": "Rare",      "from": 15,   "to": 40,   "about": "A month's wages: a master's work, a rapier, a mail coat."},
+    {"id": "precious",  "name": "Precious",  "from": 40,   "to": 120,  "about": "A season's wages: jewelled pieces, siege engines; Houses and the rich."},
+    {"id": "legendary", "name": "Legendary", "from": 120,  "to": 400,  "about": "A year's wages or more: one of a kind."}
+  ],
+  "items": {
+    "wheat":       {"rung": "staple",   "at": 0.4,  "note": "Fields are productive: a lot of grain for the work, so bread can be cheap."},
+    "oats":        {"rung": "staple",   "at": 0.4},
+    "vegetables":  {"rung": "staple",   "at": 0.48},
+    "flour":       {"rung": "staple",   "at": 0.7},
+    "bread":       {"rung": "staple",   "at": 0.78, "note": "Two loaves a head a day is an eighth of a labourer's day."},
+    "firewood":    {"rung": "staple",   "at": 0.6},
+    "timber":      {"rung": "staple",   "at": 0.9},
+    "stone":       {"rung": "cheap",    "at": 0.11},
+    "iron_ore":    {"rung": "cheap",    "at": 0.25, "note": "Mining is slow, heavy work: six times a measure of wheat."},
+    "copper_ore":  {"rung": "cheap",    "at": 0.43},
+    "tin_ore":     {"rung": "cheap",    "at": 0.57},
+    "sword":       {"rung": "fine",     "at": 0.37, "note": "The bronze sword: a few days' wages, saved for but within a working wolf's reach."},
+    "iron_sword":  {"rung": "fine",     "at": 0.83},
+    "steel_sword": {"rung": "costly",   "at": 0.56},
+    "rapier":      {"rung": "rare",     "at": 0.52, "note": "A specialty blade: about a month's wages, always far dearer than a plain sword."}
+  }
+}

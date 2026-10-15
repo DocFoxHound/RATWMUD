@@ -541,3 +541,11 @@ the next starts.
    effects in the world?
 6. **Memory edits and the chronicle:** this plan logs corrections only in the audit, and logs "this happened" edits in
    the chronicle too. Is that the right line?
+
+## Later: item management (planned in doc 63, 2026-10-14)
+
+The user wants Atlas and the Dungeon Master to let users create and edit items, place them on the **worth ladder**,
+and build their recipes. Doc 63 ("For the item editors") has the fields.
+
+Each item will carry a **player craft time**, set per item: how long a player takes to make it. Every item is **0 for
+now**. It is separate from the NPC work hours, which the ladder calibrates.

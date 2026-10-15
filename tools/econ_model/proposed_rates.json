@@ -1,0 +1,1807 @@
+{
+ "sheep_farm": {
+  "kind": "producer",
+  "seconds": 22769,
+  "was": 1800
+ },
+ "rabbit_farm": {
+  "kind": "producer",
+  "seconds": 10247,
+  "was": 1800
+ },
+ "orchard": {
+  "kind": "producer",
+  "seconds": 8127,
+  "was": 1800
+ },
+ "vineyard": {
+  "kind": "producer",
+  "seconds": 12301,
+  "was": 1800
+ },
+ "apiary": {
+  "kind": "producer",
+  "seconds": 24856,
+  "was": 1800
+ },
+ "dairy_herd": {
+  "kind": "producer",
+  "seconds": 10158,
+  "was": 1800
+ },
+ "swineherd": {
+  "kind": "producer",
+  "seconds": 24668,
+  "was": 3600
+ },
+ "logging": {
+  "kind": "producer",
+  "seconds": 9738,
+  "was": 1800
+ },
+ "copper_pit": {
+  "kind": "producer",
+  "seconds": 11083,
+  "was": 1800
+ },
+ "mine": {
+  "kind": "producer",
+  "seconds": 7530,
+  "was": 1800
+ },
+ "tin_streams": {
+  "kind": "producer",
+  "seconds": 12197,
+  "was": 1800
+ },
+ "clay_pit": {
+  "kind": "producer",
+  "seconds": 10247,
+  "was": 1800
+ },
+ "peat": {
+  "kind": "producer",
+  "seconds": 8160,
+  "was": 1800
+ },
+ "reed_beds": {
+  "kind": "producer",
+  "seconds": 6073,
+  "was": 1800
+ },
+ "eel_traps": {
+  "kind": "producer",
+  "seconds": 8115,
+  "was": 1800
+ },
+ "herb_gathering": {
+  "kind": "producer",
+  "seconds": 10247,
+  "was": 1800
+ },
+ "farm": {
+  "kind": "producer",
+  "seconds": 17661,
+  "was": 1800
+ },
+ "sheep_pasture": {
+  "kind": "producer",
+  "seconds": 8160,
+  "was": 1800
+ },
+ "fishing": {
+  "kind": "producer",
+  "seconds": 8224,
+  "was": 900
+ },
+ "woodcutting": {
+  "kind": "producer",
+  "seconds": 11096,
+  "was": 900
+ },
+ "charcoal_burning": {
+  "kind": "producer",
+  "seconds": 8130,
+  "was": 1800
+ },
+ "quarry": {
+  "kind": "producer",
+  "seconds": 10999,
+  "was": 1800
+ },
+ "salt_pans": {
+  "kind": "producer",
+  "seconds": 8130,
+  "was": 1800
+ },
+ "stock_breeding": {
+  "kind": "producer",
+  "seconds": 41364,
+  "was": 3600
+ },
+ "porridge": {
+  "kind": "craft",
+  "seconds": 5109,
+  "was": 60
+ },
+ "smoked_fish": {
+  "kind": "craft",
+  "seconds": 9878,
+  "was": 180
+ },
+ "cider": {
+  "kind": "craft",
+  "seconds": 1121,
+  "was": 180
+ },
+ "wool_scarf": {
+  "kind": "craft",
+  "seconds": 5592,
+  "was": 300
+ },
+ "straw_hat": {
+  "kind": "craft",
+  "seconds": 9978,
+  "was": 300
+ },
+ "clay_pot": {
+  "kind": "craft",
+  "seconds": 5804,
+  "was": 180
+ },
+ "flour": {
+  "kind": "craft",
+  "seconds": 919,
+  "was": 60
+ },
+ "linen_cloth": {
+  "kind": "craft",
+  "seconds": 4624,
+  "was": 240
+ },
+ "leather_sheepskin": {
+  "kind": "craft",
+  "seconds": 12288,
+  "was": 300
+ },
+ "leather_pelts": {
+  "kind": "craft",
+  "seconds": 4953,
+  "was": 300
+ },
+ "cord": {
+  "kind": "craft",
+  "seconds": 3818,
+  "was": 60
+ },
+ "butcher_pig": {
+  "kind": "craft",
+  "seconds": 12939,
+  "was": 300
+ },
+ "masking_oil": {
+  "kind": "craft",
+  "seconds": 36929,
+  "was": 180
+ },
+ "butcher_sheep": {
+  "kind": "craft",
+  "seconds": 3757,
+  "was": 240
+ },
+ "iron_bar": {
+  "kind": "craft",
+  "seconds": 4525,
+  "was": 240
+ },
+ "copper_bar": {
+  "kind": "craft",
+  "seconds": 4253,
+  "was": 240
+ },
+ "tin_bar": {
+  "kind": "craft",
+  "seconds": 5411,
+  "was": 240
+ },
+ "bronze_bar": {
+  "kind": "craft",
+  "seconds": 10533,
+  "was": 240
+ },
+ "lime": {
+  "kind": "craft",
+  "seconds": 5783,
+  "was": 240
+ },
+ "whitewash": {
+  "kind": "craft",
+  "seconds": 7578,
+  "was": 90
+ },
+ "linseed_oil": {
+  "kind": "craft",
+  "seconds": 3773,
+  "was": 120
+ },
+ "mortar": {
+  "kind": "craft",
+  "seconds": 2490,
+  "was": 90
+ },
+ "cut_stone": {
+  "kind": "craft",
+  "seconds": 1308,
+  "was": 180
+ },
+ "beam": {
+  "kind": "craft",
+  "seconds": 2831,
+  "was": 120
+ },
+ "glass_pane": {
+  "kind": "craft",
+  "seconds": 17286,
+  "was": 200
+ },
+ "charcoal": {
+  "kind": "craft",
+  "seconds": 10968,
+  "was": 240
+ },
+ "plaster": {
+  "kind": "craft",
+  "seconds": 10626,
+  "was": 240
+ },
+ "plaster_sheepskin": {
+  "kind": "craft",
+  "seconds": 7912,
+  "was": 240
+ },
+ "glass_beads": {
+  "kind": "craft",
+  "seconds": 20993,
+  "was": 180
+ },
+ "glassware": {
+  "kind": "craft",
+  "seconds": 18688,
+  "was": 300
+ },
+ "mirror": {
+  "kind": "craft",
+  "seconds": 10167,
+  "was": 360
+ },
+ "ear_ring": {
+  "kind": "craft",
+  "seconds": 25679,
+  "was": 240
+ },
+ "charm": {
+  "kind": "craft",
+  "seconds": 12032,
+  "was": 180
+ },
+ "brass_bracelet": {
+  "kind": "craft",
+  "seconds": 11019,
+  "was": 240
+ },
+ "perfume_cedar": {
+  "kind": "craft",
+  "seconds": 44660,
+  "was": 300
+ },
+ "fine_soap": {
+  "kind": "craft",
+  "seconds": 19953,
+  "was": 180
+ },
+ "fur_oil": {
+  "kind": "craft",
+  "seconds": 21812,
+  "was": 180
+ },
+ "bricks": {
+  "kind": "craft",
+  "seconds": 6418,
+  "was": 240
+ },
+ "roof_tiles": {
+  "kind": "craft",
+  "seconds": 3488,
+  "was": 300
+ },
+ "planks": {
+  "kind": "craft",
+  "seconds": 13832,
+  "was": 60
+ },
+ "cheese": {
+  "kind": "craft",
+  "seconds": 3421,
+  "was": 240
+ },
+ "wine": {
+  "kind": "craft",
+  "seconds": 19160,
+  "was": 300
+ },
+ "candle_wax": {
+  "kind": "craft",
+  "seconds": 11838,
+  "was": 120
+ },
+ "smoked_fish_works": {
+  "kind": "craft",
+  "seconds": 9878,
+  "was": 180
+ },
+ "smoked_mutton": {
+  "kind": "craft",
+  "seconds": 14190,
+  "was": 240
+ },
+ "smoked_rabbit": {
+  "kind": "craft",
+  "seconds": 5647,
+  "was": 180
+ },
+ "salt_pork": {
+  "kind": "craft",
+  "seconds": 9208,
+  "was": 240
+ },
+ "jerky": {
+  "kind": "craft",
+  "seconds": 4798,
+  "was": 300
+ },
+ "salt_fish": {
+  "kind": "craft",
+  "seconds": 5771,
+  "was": 180
+ },
+ "mining_pick": {
+  "kind": "craft",
+  "seconds": 8609,
+  "was": 300
+ },
+ "sickle": {
+  "kind": "craft",
+  "seconds": 8264,
+  "was": 240
+ },
+ "farm_gear": {
+  "kind": "craft",
+  "seconds": 28081,
+  "was": 240
+ },
+ "draw_saw": {
+  "kind": "craft",
+  "seconds": 4919,
+  "was": 300
+ },
+ "iron_hoops": {
+  "kind": "craft",
+  "seconds": 6887,
+  "was": 120
+ },
+ "barrel": {
+  "kind": "craft",
+  "seconds": 3935,
+  "was": 300
+ },
+ "rope": {
+  "kind": "craft",
+  "seconds": 2885,
+  "was": 180
+ },
+ "canvas": {
+  "kind": "craft",
+  "seconds": 1374,
+  "was": 240
+ },
+ "sack": {
+  "kind": "craft",
+  "seconds": 5905,
+  "was": 120
+ },
+ "pitch": {
+  "kind": "craft",
+  "seconds": 1205,
+  "was": 180
+ },
+ "fishing_net": {
+  "kind": "craft",
+  "seconds": 14859,
+  "was": 300
+ },
+ "lamp_oil": {
+  "kind": "craft",
+  "seconds": 1432,
+  "was": 120
+ },
+ "sealing_wax": {
+  "kind": "craft",
+  "seconds": 3895,
+  "was": 120
+ },
+ "cart_wheel": {
+  "kind": "craft",
+  "seconds": 4600,
+  "was": 600
+ },
+ "axle": {
+  "kind": "craft",
+  "seconds": 6457,
+  "was": 300
+ },
+ "paper": {
+  "kind": "craft",
+  "seconds": 5645,
+  "was": 240
+ },
+ "ink": {
+  "kind": "craft",
+  "seconds": 5793,
+  "was": 120
+ },
+ "ledger": {
+  "kind": "craft",
+  "seconds": 12825,
+  "was": 600
+ },
+ "steel_bar": {
+  "kind": "craft",
+  "seconds": 5510,
+  "was": 300
+ },
+ "fittings": {
+  "kind": "craft",
+  "seconds": 11150,
+  "was": 180
+ },
+ "chain": {
+  "kind": "craft",
+  "seconds": 4304,
+  "was": 240
+ },
+ "rivets": {
+  "kind": "craft",
+  "seconds": 6887,
+  "was": 120
+ },
+ "buckles": {
+  "kind": "craft",
+  "seconds": 6887,
+  "was": 120
+ },
+ "cookpot": {
+  "kind": "craft",
+  "seconds": 6887,
+  "was": 300
+ },
+ "lock": {
+  "kind": "craft",
+  "seconds": 7130,
+  "was": 300
+ },
+ "iron_sword": {
+  "kind": "craft",
+  "seconds": 56432,
+  "was": 600
+ },
+ "kettle_helm": {
+  "kind": "craft",
+  "seconds": 9993,
+  "was": 600
+ },
+ "steel_gorget": {
+  "kind": "craft",
+  "seconds": 42286,
+  "was": 600
+ },
+ "handbell": {
+  "kind": "craft",
+  "seconds": 4946,
+  "was": 600
+ },
+ "splinted_greaves": {
+  "kind": "craft",
+  "seconds": 27651,
+  "was": 900
+ },
+ "steel_sword": {
+  "kind": "craft",
+  "seconds": 80493,
+  "was": 900
+ },
+ "potash": {
+  "kind": "recipe",
+  "seconds": 3119,
+  "was": 120
+ },
+ "lye": {
+  "kind": "recipe",
+  "seconds": 3404,
+  "was": 60
+ },
+ "lampblack": {
+  "kind": "recipe",
+  "seconds": 3228,
+  "was": 120
+ },
+ "aqua_vitae_wine": {
+  "kind": "recipe",
+  "seconds": 7208,
+  "was": 240
+ },
+ "salt": {
+  "kind": "recipe",
+  "seconds": 9797,
+  "was": 240
+ },
+ "malt": {
+  "kind": "recipe",
+  "seconds": 1701,
+  "was": 120
+ },
+ "glue": {
+  "kind": "recipe",
+  "seconds": 1749,
+  "was": 120
+ },
+ "rawhide": {
+  "kind": "recipe",
+  "seconds": 4539,
+  "was": 120
+ },
+ "boiled_leather": {
+  "kind": "recipe",
+  "seconds": 5777,
+  "was": 180
+ },
+ "parchment": {
+  "kind": "recipe",
+  "seconds": 8035,
+  "was": 300
+ },
+ "fur_lining": {
+  "kind": "recipe",
+  "seconds": 2025,
+  "was": 180
+ },
+ "wool_yarn": {
+  "kind": "recipe",
+  "seconds": 7679,
+  "was": 120
+ },
+ "linen_yarn": {
+  "kind": "recipe",
+  "seconds": 2885,
+  "was": 150
+ },
+ "hemp_yarn": {
+  "kind": "recipe",
+  "seconds": 1731,
+  "was": 90
+ },
+ "wool_cloth": {
+  "kind": "recipe",
+  "seconds": 3443,
+  "was": 240
+ },
+ "dyed_cloth": {
+  "kind": "recipe",
+  "seconds": 9839,
+  "was": 240
+ },
+ "scarlet_cloth": {
+  "kind": "recipe",
+  "seconds": 13641,
+  "was": 300
+ },
+ "oilcloth": {
+  "kind": "recipe",
+  "seconds": 3443,
+  "was": 120
+ },
+ "wick": {
+  "kind": "recipe",
+  "seconds": 1377,
+  "was": 30
+ },
+ "iron_bloom": {
+  "kind": "recipe",
+  "seconds": 5903,
+  "was": 300
+ },
+ "lead_bar": {
+  "kind": "recipe",
+  "seconds": 3443,
+  "was": 180
+ },
+ "silver": {
+  "kind": "recipe",
+  "seconds": 6887,
+  "was": 300
+ },
+ "brass_bar": {
+  "kind": "recipe",
+  "seconds": 6457,
+  "was": 240
+ },
+ "pewter_bar": {
+  "kind": "recipe",
+  "seconds": 11806,
+  "was": 180
+ },
+ "type_metal": {
+  "kind": "recipe",
+  "seconds": 9183,
+  "was": 180
+ },
+ "iron_wire": {
+  "kind": "recipe",
+  "seconds": 5165,
+  "was": 180
+ },
+ "brass_wire": {
+  "kind": "recipe",
+  "seconds": 6887,
+  "was": 180
+ },
+ "brass_sheet": {
+  "kind": "recipe",
+  "seconds": 8855,
+  "was": 180
+ },
+ "tin_sheet": {
+  "kind": "recipe",
+  "seconds": 9039,
+  "was": 180
+ },
+ "mail_rings": {
+  "kind": "recipe",
+  "seconds": 5357,
+  "was": 600
+ },
+ "needles": {
+  "kind": "recipe",
+  "seconds": 4435,
+  "was": 120
+ },
+ "staves": {
+  "kind": "recipe",
+  "seconds": 8048,
+  "was": 150
+ },
+ "cut_marble": {
+  "kind": "recipe",
+  "seconds": 12042,
+  "was": 600
+ },
+ "glass": {
+  "kind": "recipe",
+  "seconds": 3948,
+  "was": 300
+ },
+ "vial": {
+  "kind": "recipe",
+  "seconds": 4860,
+  "was": 180
+ },
+ "lens": {
+  "kind": "recipe",
+  "seconds": 21900,
+  "was": 600
+ },
+ "gears": {
+  "kind": "recipe",
+  "seconds": 5165,
+  "was": 600
+ },
+ "millstone": {
+  "kind": "recipe",
+  "seconds": 82839,
+  "was": 3600
+ },
+ "crossbow_prod": {
+  "kind": "recipe",
+  "seconds": 33057,
+  "was": 2400
+ },
+ "windlass": {
+  "kind": "recipe",
+  "seconds": 13774,
+  "was": 1200
+ },
+ "crossbow_string": {
+  "kind": "recipe",
+  "seconds": 5145,
+  "was": 600
+ },
+ "printing_ink": {
+  "kind": "recipe",
+  "seconds": 2793,
+  "was": 120
+ },
+ "type_case": {
+  "kind": "recipe",
+  "seconds": 63725,
+  "was": 7200
+ },
+ "fang_knife": {
+  "kind": "recipe",
+  "seconds": 5903,
+  "was": 300
+ },
+ "rapier": {
+  "kind": "recipe",
+  "seconds": 241858,
+  "was": 1500
+ },
+ "hook_cleaver": {
+  "kind": "recipe",
+  "seconds": 21931,
+  "was": 900
+ },
+ "war_pick": {
+  "kind": "recipe",
+  "seconds": 18140,
+  "was": 900
+ },
+ "cudgel": {
+  "kind": "recipe",
+  "seconds": 4132,
+  "was": 300
+ },
+ "mouth_flail": {
+  "kind": "recipe",
+  "seconds": 5320,
+  "was": 900
+ },
+ "cosh": {
+  "kind": "recipe",
+  "seconds": 2296,
+  "was": 120
+ },
+ "fang_caps": {
+  "kind": "recipe",
+  "seconds": 23328,
+  "was": 900
+ },
+ "claw_caps": {
+  "kind": "recipe",
+  "seconds": 10792,
+  "was": 600
+ },
+ "wall_crossbow": {
+  "kind": "recipe",
+  "seconds": 59346,
+  "was": 3600
+ },
+ "siege_crossbow": {
+  "kind": "recipe",
+  "seconds": 512139,
+  "was": 14400
+ },
+ "emplacement_bolts": {
+  "kind": "recipe",
+  "seconds": 12059,
+  "was": 600
+ },
+ "siege_bolts": {
+  "kind": "recipe",
+  "seconds": 6987,
+  "was": 900
+ },
+ "leather_barding": {
+  "kind": "recipe",
+  "seconds": 8694,
+  "was": 900
+ },
+ "boiled_barding": {
+  "kind": "recipe",
+  "seconds": 22957,
+  "was": 1200
+ },
+ "brigandine_coat": {
+  "kind": "recipe",
+  "seconds": 30966,
+  "was": 2400
+ },
+ "mail_coat": {
+  "kind": "recipe",
+  "seconds": 65277,
+  "was": 3600
+ },
+ "leather_gorget": {
+  "kind": "recipe",
+  "seconds": 5739,
+  "was": 300
+ },
+ "spiked_collar": {
+  "kind": "recipe",
+  "seconds": 19193,
+  "was": 600
+ },
+ "mail_aventail": {
+  "kind": "recipe",
+  "seconds": 32391,
+  "was": 1200
+ },
+ "chamfron": {
+  "kind": "recipe",
+  "seconds": 28082,
+  "was": 1200
+ },
+ "leg_guards": {
+  "kind": "recipe",
+  "seconds": 10761,
+  "was": 900
+ },
+ "wool_hood": {
+  "kind": "recipe",
+  "seconds": 5165,
+  "was": 300
+ },
+ "oilcloth_hat": {
+  "kind": "recipe",
+  "seconds": 6110,
+  "was": 240
+ },
+ "chaperon": {
+  "kind": "recipe",
+  "seconds": 9470,
+  "was": 600
+ },
+ "scholar_coif": {
+  "kind": "recipe",
+  "seconds": 7384,
+  "was": 240
+ },
+ "velvet_beret": {
+  "kind": "recipe",
+  "seconds": 22454,
+  "was": 900
+ },
+ "mourning_veil": {
+  "kind": "recipe",
+  "seconds": 7139,
+  "was": 300
+ },
+ "cleric_cap": {
+  "kind": "recipe",
+  "seconds": 5903,
+  "was": 300
+ },
+ "fur_hat": {
+  "kind": "recipe",
+  "seconds": 7553,
+  "was": 360
+ },
+ "beggars_wrap": {
+  "kind": "recipe",
+  "seconds": 689,
+  "was": 120
+ },
+ "wool_shawl": {
+  "kind": "recipe",
+  "seconds": 11665,
+  "was": 300
+ },
+ "linen_shawl": {
+  "kind": "recipe",
+  "seconds": 3616,
+  "was": 300
+ },
+ "rain_cape": {
+  "kind": "recipe",
+  "seconds": 9183,
+  "was": 360
+ },
+ "fur_mantle": {
+  "kind": "recipe",
+  "seconds": 19503,
+  "was": 900
+ },
+ "silk_shawl": {
+  "kind": "recipe",
+  "seconds": 45329,
+  "was": 900
+ },
+ "livery_shawl": {
+  "kind": "recipe",
+  "seconds": 12913,
+  "was": 600
+ },
+ "embroidered_shawl": {
+  "kind": "recipe",
+  "seconds": 15304,
+  "was": 1200
+ },
+ "mourning_shawl": {
+  "kind": "recipe",
+  "seconds": 9183,
+  "was": 300
+ },
+ "scarlet_mantle": {
+  "kind": "recipe",
+  "seconds": 32713,
+  "was": 900
+ },
+ "strap_harness": {
+  "kind": "recipe",
+  "seconds": 6198,
+  "was": 300
+ },
+ "work_harness": {
+  "kind": "recipe",
+  "seconds": 14175,
+  "was": 600
+ },
+ "courier_harness": {
+  "kind": "recipe",
+  "seconds": 9203,
+  "was": 600
+ },
+ "guard_harness": {
+  "kind": "recipe",
+  "seconds": 10109,
+  "was": 900
+ },
+ "pack_harness": {
+  "kind": "recipe",
+  "seconds": 15962,
+  "was": 900
+ },
+ "draught_harness": {
+  "kind": "recipe",
+  "seconds": 20624,
+  "was": 900
+ },
+ "dress_harness": {
+  "kind": "recipe",
+  "seconds": 36050,
+  "was": 1500
+ },
+ "noble_harness": {
+  "kind": "recipe",
+  "seconds": 71739,
+  "was": 3600
+ },
+ "sheath": {
+  "kind": "recipe",
+  "seconds": 6214,
+  "was": 240
+ },
+ "belt_pouch": {
+  "kind": "recipe",
+  "seconds": 2755,
+  "was": 240
+ },
+ "panniers": {
+  "kind": "recipe",
+  "seconds": 11019,
+  "was": 240
+ },
+ "lantern_hook": {
+  "kind": "recipe",
+  "seconds": 2066,
+  "was": 240
+ },
+ "tool_roll": {
+  "kind": "recipe",
+  "seconds": 2891,
+  "was": 240
+ },
+ "sling_bag": {
+  "kind": "recipe",
+  "seconds": 4105,
+  "was": 300
+ },
+ "scabbard_sling": {
+  "kind": "recipe",
+  "seconds": 8226,
+  "was": 300
+ },
+ "waterskin": {
+  "kind": "recipe",
+  "seconds": 4848,
+  "was": 300
+ },
+ "document_tube": {
+  "kind": "recipe",
+  "seconds": 6403,
+  "was": 300
+ },
+ "bandolier": {
+  "kind": "recipe",
+  "seconds": 4012,
+  "was": 300
+ },
+ "gather_sling": {
+  "kind": "recipe",
+  "seconds": 4702,
+  "was": 300
+ },
+ "linen_wraps": {
+  "kind": "recipe",
+  "seconds": 2323,
+  "was": 300
+ },
+ "paw_boots": {
+  "kind": "recipe",
+  "seconds": 5789,
+  "was": 300
+ },
+ "marsh_wraps": {
+  "kind": "recipe",
+  "seconds": 7333,
+  "was": 300
+ },
+ "silk_wraps": {
+  "kind": "recipe",
+  "seconds": 35919,
+  "was": 300
+ },
+ "fleece_boots": {
+  "kind": "recipe",
+  "seconds": 13429,
+  "was": 300
+ },
+ "bone_clip": {
+  "kind": "recipe",
+  "seconds": 1476,
+  "was": 120
+ },
+ "brass_clip": {
+  "kind": "recipe",
+  "seconds": 1807,
+  "was": 180
+ },
+ "silver_clip": {
+  "kind": "recipe",
+  "seconds": 7379,
+  "was": 600
+ },
+ "gold_clip": {
+  "kind": "recipe",
+  "seconds": 20754,
+  "was": 600
+ },
+ "gem_clip": {
+  "kind": "recipe",
+  "seconds": 39560,
+  "was": 600
+ },
+ "jewel_clip": {
+  "kind": "recipe",
+  "seconds": 96696,
+  "was": 1800
+ },
+ "bone_beads": {
+  "kind": "recipe",
+  "seconds": 1476,
+  "was": 300
+ },
+ "amber_beads": {
+  "kind": "recipe",
+  "seconds": 9517,
+  "was": 600
+ },
+ "silver_beads": {
+  "kind": "recipe",
+  "seconds": 9839,
+  "was": 600
+ },
+ "brass_ear_cuff": {
+  "kind": "recipe",
+  "seconds": 3894,
+  "was": 180
+ },
+ "silver_ear_cuff": {
+  "kind": "recipe",
+  "seconds": 8855,
+  "was": 600
+ },
+ "brass_tail_ring": {
+  "kind": "recipe",
+  "seconds": 7429,
+  "was": 300
+ },
+ "silver_tail_ring": {
+  "kind": "recipe",
+  "seconds": 14758,
+  "was": 600
+ },
+ "gold_tail_ring": {
+  "kind": "recipe",
+  "seconds": 55096,
+  "was": 600
+ },
+ "tail_clasp": {
+  "kind": "recipe",
+  "seconds": 3564,
+  "was": 180
+ },
+ "bells": {
+  "kind": "recipe",
+  "seconds": 1908,
+  "was": 180
+ },
+ "scent_locket": {
+  "kind": "recipe",
+  "seconds": 13391,
+  "was": 600
+ },
+ "jet_clip": {
+  "kind": "recipe",
+  "seconds": 4523,
+  "was": 600
+ },
+ "pair_clips": {
+  "kind": "recipe",
+  "seconds": 14635,
+  "was": 600
+ },
+ "gilded_claws": {
+  "kind": "recipe",
+  "seconds": 13744,
+  "was": 600
+ },
+ "signet_clip": {
+  "kind": "recipe",
+  "seconds": 14458,
+  "was": 600
+ },
+ "chapter_token": {
+  "kind": "recipe",
+  "seconds": 13045,
+  "was": 240
+ },
+ "ribbon_collar": {
+  "kind": "recipe",
+  "seconds": 1610,
+  "was": 120
+ },
+ "leather_collar": {
+  "kind": "recipe",
+  "seconds": 8690,
+  "was": 300
+ },
+ "studded_collar": {
+  "kind": "recipe",
+  "seconds": 13705,
+  "was": 600
+ },
+ "chain_collar": {
+  "kind": "recipe",
+  "seconds": 17217,
+  "was": 1200
+ },
+ "filigree_collar": {
+  "kind": "recipe",
+  "seconds": 94956,
+  "was": 3600
+ },
+ "jewelled_collar": {
+  "kind": "recipe",
+  "seconds": 153043,
+  "was": 3600
+ },
+ "silk_scarf": {
+  "kind": "recipe",
+  "seconds": 27873,
+  "was": 300
+ },
+ "leather_neck_wrap": {
+  "kind": "recipe",
+  "seconds": 3343,
+  "was": 300
+ },
+ "bone_bracelet": {
+  "kind": "recipe",
+  "seconds": 2952,
+  "was": 120
+ },
+ "silver_bracelet": {
+  "kind": "recipe",
+  "seconds": 6887,
+  "was": 600
+ },
+ "gold_bracelet": {
+  "kind": "recipe",
+  "seconds": 42782,
+  "was": 600
+ },
+ "roast": {
+  "kind": "recipe",
+  "seconds": 4251,
+  "was": 180
+ },
+ "meat_pie": {
+  "kind": "recipe",
+  "seconds": 9730,
+  "was": 120
+ },
+ "sausage": {
+  "kind": "recipe",
+  "seconds": 9826,
+  "was": 180
+ },
+ "blood_pudding": {
+  "kind": "recipe",
+  "seconds": 10569,
+  "was": 120
+ },
+ "pemmican": {
+  "kind": "recipe",
+  "seconds": 13955,
+  "was": 180
+ },
+ "bone_broth": {
+  "kind": "recipe",
+  "seconds": 7677,
+  "was": 120
+ },
+ "fine_bread": {
+  "kind": "recipe",
+  "seconds": 7002,
+  "was": 120
+ },
+ "ship_biscuit": {
+  "kind": "recipe",
+  "seconds": 4688,
+  "was": 180
+ },
+ "butter": {
+  "kind": "recipe",
+  "seconds": 1374,
+  "was": 180
+ },
+ "liver_pate": {
+  "kind": "recipe",
+  "seconds": 26763,
+  "was": 240
+ },
+ "spiced_roast": {
+  "kind": "recipe",
+  "seconds": 9383,
+  "was": 120
+ },
+ "mushroom_stew": {
+  "kind": "recipe",
+  "seconds": 9180,
+  "was": 60
+ },
+ "ale": {
+  "kind": "recipe",
+  "seconds": 5374,
+  "was": 240
+ },
+ "mead": {
+  "kind": "recipe",
+  "seconds": 7582,
+  "was": 240
+ },
+ "herb_tea": {
+  "kind": "recipe",
+  "seconds": 2972,
+  "was": 30
+ },
+ "yarrow_poultice": {
+  "kind": "recipe",
+  "seconds": 10689,
+  "was": 120
+ },
+ "comfrey_salve": {
+  "kind": "recipe",
+  "seconds": 11882,
+  "was": 180
+ },
+ "burn_salve": {
+  "kind": "recipe",
+  "seconds": 11021,
+  "was": 180
+ },
+ "stitch_kit": {
+  "kind": "recipe",
+  "seconds": 8046,
+  "was": 180
+ },
+ "willow_tea": {
+  "kind": "recipe",
+  "seconds": 13977,
+  "was": 90
+ },
+ "garlic_salve": {
+  "kind": "recipe",
+  "seconds": 12383,
+  "was": 180
+ },
+ "valerian_draught": {
+  "kind": "recipe",
+  "seconds": 19111,
+  "was": 180
+ },
+ "smelling_salts": {
+  "kind": "recipe",
+  "seconds": 34615,
+  "was": 300
+ },
+ "charcoal_draught": {
+  "kind": "recipe",
+  "seconds": 27145,
+  "was": 180
+ },
+ "paw_balm": {
+  "kind": "recipe",
+  "seconds": 15774,
+  "was": 120
+ },
+ "flea_powder": {
+  "kind": "recipe",
+  "seconds": 13977,
+  "was": 120
+ },
+ "clove_oil": {
+  "kind": "recipe",
+  "seconds": 39098,
+  "was": 180
+ },
+ "eyewash": {
+  "kind": "recipe",
+  "seconds": 9379,
+  "was": 180
+ },
+ "thyme_syrup": {
+  "kind": "recipe",
+  "seconds": 12383,
+  "was": 180
+ },
+ "dewormer": {
+  "kind": "recipe",
+  "seconds": 9908,
+  "was": 180
+ },
+ "theriac": {
+  "kind": "recipe",
+  "seconds": 42225,
+  "was": 1800
+ },
+ "perfume_rose": {
+  "kind": "recipe",
+  "seconds": 27614,
+  "was": 180
+ },
+ "perfume_citrus": {
+  "kind": "recipe",
+  "seconds": 27140,
+  "was": 180
+ },
+ "perfume_musk": {
+  "kind": "recipe",
+  "seconds": 36543,
+  "was": 180
+ },
+ "incense": {
+  "kind": "recipe",
+  "seconds": 17291,
+  "was": 120
+ },
+ "soap": {
+  "kind": "recipe",
+  "seconds": 7686,
+  "was": 180
+ },
+ "grooming_brush": {
+  "kind": "recipe",
+  "seconds": 3758,
+  "was": 180
+ },
+ "tick_comb": {
+  "kind": "recipe",
+  "seconds": 2713,
+  "was": 180
+ },
+ "tooth_scraper": {
+  "kind": "recipe",
+  "seconds": 6561,
+  "was": 180
+ },
+ "clay_pipe": {
+  "kind": "recipe",
+  "seconds": 16441,
+  "was": 120
+ },
+ "briar_pipe": {
+  "kind": "recipe",
+  "seconds": 11223,
+  "was": 600
+ },
+ "spectacles": {
+  "kind": "recipe",
+  "seconds": 48599,
+  "was": 1200
+ },
+ "ear_horn": {
+  "kind": "recipe",
+  "seconds": 11922,
+  "was": 600
+ },
+ "antler_chew": {
+  "kind": "recipe",
+  "seconds": 6411,
+  "was": 300
+ },
+ "tug_rope": {
+  "kind": "recipe",
+  "seconds": 689,
+  "was": 60
+ },
+ "dice": {
+  "kind": "recipe",
+  "seconds": 3563,
+  "was": 180
+ },
+ "game_board": {
+  "kind": "recipe",
+  "seconds": 9733,
+  "was": 600
+ },
+ "bone_whistle": {
+  "kind": "recipe",
+  "seconds": 5650,
+  "was": 120
+ },
+ "mouth_pipe": {
+  "kind": "recipe",
+  "seconds": 21931,
+  "was": 900
+ },
+ "paw_drum": {
+  "kind": "recipe",
+  "seconds": 6827,
+  "was": 900
+ },
+ "hurdy_gurdy": {
+  "kind": "recipe",
+  "seconds": 48767,
+  "was": 3600
+ },
+ "torch": {
+  "kind": "recipe",
+  "seconds": 1862,
+  "was": 60
+ },
+ "oil_lamp": {
+  "kind": "recipe",
+  "seconds": 23771,
+  "was": 240
+ },
+ "mouth_lantern": {
+  "kind": "recipe",
+  "seconds": 5184,
+  "was": 600
+ },
+ "harness_lantern": {
+  "kind": "recipe",
+  "seconds": 9136,
+  "was": 600
+ },
+ "fire_kit": {
+  "kind": "recipe",
+  "seconds": 2207,
+  "was": 120
+ },
+ "brazier": {
+  "kind": "recipe",
+  "seconds": 8855,
+  "was": 600
+ },
+ "floor_bowl_wood": {
+  "kind": "recipe",
+  "seconds": 3672,
+  "was": 120
+ },
+ "floor_bowl_clay": {
+  "kind": "recipe",
+  "seconds": 5625,
+  "was": 120
+ },
+ "floor_bowl_pewter": {
+  "kind": "recipe",
+  "seconds": 2952,
+  "was": 240
+ },
+ "cushion": {
+  "kind": "recipe",
+  "seconds": 5052,
+  "was": 240
+ },
+ "fine_cushion": {
+  "kind": "recipe",
+  "seconds": 22419,
+  "was": 600
+ },
+ "blanket": {
+  "kind": "recipe",
+  "seconds": 6198,
+  "was": 300
+ },
+ "chest": {
+  "kind": "recipe",
+  "seconds": 10340,
+  "was": 1200
+ },
+ "key": {
+  "kind": "recipe",
+  "seconds": 3013,
+  "was": 240
+ },
+ "bit_chisel": {
+  "kind": "recipe",
+  "seconds": 5470,
+  "was": 300
+ },
+ "paw_mallet": {
+  "kind": "recipe",
+  "seconds": 9582,
+  "was": 300
+ },
+ "smith_tongs": {
+  "kind": "recipe",
+  "seconds": 6504,
+  "was": 300
+ },
+ "shears": {
+  "kind": "recipe",
+  "seconds": 3773,
+  "was": 600
+ },
+ "digging_caps": {
+  "kind": "recipe",
+  "seconds": 5358,
+  "was": 300
+ },
+ "snare": {
+  "kind": "recipe",
+  "seconds": 6685,
+  "was": 120
+ },
+ "claw_picks": {
+  "kind": "recipe",
+  "seconds": 24239,
+  "was": 600
+ },
+ "scales": {
+  "kind": "recipe",
+  "seconds": 5335,
+  "was": 900
+ },
+ "quill": {
+  "kind": "recipe",
+  "seconds": 8108,
+  "was": 60
+ },
+ "satchel": {
+  "kind": "recipe",
+  "seconds": 4132,
+  "was": 300
+ },
+ "mouth_basket": {
+  "kind": "recipe",
+  "seconds": 3818,
+  "was": 300
+ },
+ "sled": {
+  "kind": "recipe",
+  "seconds": 25552,
+  "was": 1200
+ },
+ "horse_tack": {
+  "kind": "recipe",
+  "seconds": 19370,
+  "was": 1800
+ },
+ "letter": {
+  "kind": "recipe",
+  "seconds": 3464,
+  "was": 300
+ },
+ "contract": {
+  "kind": "recipe",
+  "seconds": 9322,
+  "was": 600
+ },
+ "deed": {
+  "kind": "recipe",
+  "seconds": 15212,
+  "was": 900
+ },
+ "writ": {
+  "kind": "recipe",
+  "seconds": 3776,
+  "was": 300
+ },
+ "map": {
+  "kind": "recipe",
+  "seconds": 38737,
+  "was": 3600
+ },
+ "manuscript": {
+  "kind": "recipe",
+  "seconds": 34862,
+  "was": 14400
+ },
+ "printed_book": {
+  "kind": "recipe",
+  "seconds": 14224,
+  "was": 1800
+ },
+ "almanac": {
+  "kind": "recipe",
+  "seconds": 7039,
+  "was": 900
+ },
+ "notice": {
+  "kind": "recipe",
+  "seconds": 1414,
+  "was": 300
+ },
+ "bread": {
+  "kind": "craft",
+  "seconds": 6176,
+  "was": 120
+ },
+ "honey_cake": {
+  "kind": "craft",
+  "seconds": 11653,
+  "was": 120
+ },
+ "stew": {
+  "kind": "craft",
+  "seconds": 4366,
+  "was": 60
+ },
+ "linen_neckerchief": {
+  "kind": "craft",
+  "seconds": 13035,
+  "was": 120
+ },
+ "quilted_vest": {
+  "kind": "craft",
+  "seconds": 7254,
+  "was": 600
+ },
+ "padded_collar": {
+  "kind": "craft",
+  "seconds": 8192,
+  "was": 240
+ },
+ "quilted_hood": {
+  "kind": "craft",
+  "seconds": 6826,
+  "was": 240
+ },
+ "quilted_leggings": {
+  "kind": "craft",
+  "seconds": 3348,
+  "was": 300
+ },
+ "leather_cap": {
+  "kind": "craft",
+  "seconds": 13778,
+  "was": 240
+ },
+ "leather_bindings": {
+  "kind": "craft",
+  "seconds": 24882,
+  "was": 300
+ },
+ "fang_charm": {
+  "kind": "craft",
+  "seconds": 11848,
+  "was": 120
+ },
+ "candle_tallow": {
+  "kind": "craft",
+  "seconds": 3529,
+  "was": 120
+ },
+ "bandages": {
+  "kind": "craft",
+  "seconds": 4645,
+  "was": 120
+ },
+ "sword": {
+  "kind": "craft",
+  "seconds": 12328,
+  "was": 900
+ },
+ "nails": {
+  "kind": "craft",
+  "seconds": 12397,
+  "was": 120
+ },
+ "leather": {
+  "kind": "craft",
+  "seconds": 10180,
+  "was": 300
+ },
+ "paint": {
+  "kind": "craft",
+  "seconds": 9175,
+  "was": 150
+ },
+ "pamphlet": {
+  "kind": "craft",
+  "seconds": 20797,
+  "was": 240
+ },
+ "broadsheet": {
+  "kind": "craft",
+  "seconds": 23768,
+  "was": 180
+ },
+ "aqua_vitae_ale": {
+  "kind": "recipe",
+  "seconds": 3111,
+  "was": 240
+ },
+ "felt": {
+  "kind": "recipe",
+  "seconds": 8792,
+  "was": 180
+ },
+ "felt_cap": {
+  "kind": "recipe",
+  "seconds": 3228,
+  "was": 180
+ },
+ "felt_wraps": {
+  "kind": "recipe",
+  "seconds": 6455,
+  "was": 300
+ },
+ "hobnail_boots": {
+  "kind": "recipe",
+  "seconds": 11241,
+  "was": 300
+ },
+ "soft_wraps": {
+  "kind": "recipe",
+  "seconds": 21626,
+  "was": 300
+ },
+ "splint": {
+  "kind": "recipe",
+  "seconds": 12982,
+  "was": 120
+ },
+ "low_table": {
+  "kind": "recipe",
+  "seconds": 20042,
+  "was": 1200
+ },
+ "crate": {
+  "kind": "recipe",
+  "seconds": 3642,
+  "was": 300
+ },
+ "handcart": {
+  "kind": "recipe",
+  "seconds": 25826,
+  "was": 1800
+ },
+ "wagon": {
+  "kind": "recipe",
+  "seconds": 61983,
+  "was": 7200
+ }
+}
