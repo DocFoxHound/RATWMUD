@@ -188,7 +188,7 @@ std::pair<std::string, int> World::sourceFor(const Contract& k) const
     const auto* good = items::good(k.item);
     if (left <= 0 || !good || k.reward <= 0)
         return {};
-    const std::int64_t price = std::max(1, good->price);
+    const std::int64_t price = Society::pennies(society_.townPrice(k.town, k.item));   // (The going price: doc 64, Phase 4.)
     if (price * left > k.reward)
         return {};
     std::string best;
@@ -266,7 +266,7 @@ void World::provisionCarrier(Contract& k, int quantity)
     else
     {
         const auto* good = items::good(k.item);
-        const auto above = k.reward - std::int64_t(std::max(1, good ? good->price : 1)) * quantity;
+        const auto above = k.reward - (good ? Society::pennies(society_.townPrice(k.town, k.item)) : 1) * quantity;
         k.reward -= provisionTraveller(k.taker, "contract:" + k.id, k.town, at.cell, above);
     }
 }
@@ -371,7 +371,7 @@ void World::tendContractCarriers()
         const int left = k.quantity - k.delivered;
         const auto pay = given >= left ? k.reward : k.reward * given / std::max(1, left);
         const auto* good = items::good(k.item);
-        const auto price = std::min<std::int64_t>(pay, std::int64_t(std::max(1, good ? good->price : 1)) * given);
+        const auto price = std::min<std::int64_t>(pay, (good ? Society::pennies(society_.townPrice(k.town, k.item)) : 1) * given);
         if (price > 0 && society_.shift(escrow, society_.tillOf(k.source), "", 0, price, "sold on a contract"))
             k.reward -= price;
         if (pay - price > 0 && society_.shift(escrow, k.taker, "", 0, pay - price, "carrier's pay"))

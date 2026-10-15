@@ -41,6 +41,7 @@ struct Catalog
     std::string houseRules;
     std::vector<TownTrade> towns;                   // Data/Economy/specialties.json (doc 61).
     double tradeYield = 1, tradeKeep = 1;
+    Ladder ladder;
 };
 
 bool readJson(const std::filesystem::path& path, json::Value& out, std::string& error)
@@ -99,6 +100,29 @@ Catalog build()
     const auto dir = itemsDir();
     if (!readJson(dir / "items.json", items, c.error) || !readJson(dir / "businesses.json", businesses, c.error))
         return c;
+    // The worth ladder (doc 64, Phase 4): its rungs, each a range of LD an item's `at` places it in on a log scale. A
+    // world without the file has no places: every item is worth its catalogue price.
+    std::map<std::string, std::pair<double, double>> rungs;
+    std::string lowestRung;
+    if (const auto file = dir.parent_path() / "Economy" / "ladder.json"; std::filesystem::exists(file))
+    {
+        json::Value ladder;
+        std::string problem;
+        if (readJson(file, ladder, problem))
+        {
+            c.ladder.catalogueDay = std::max(1.0, ladder.number("catalogueDay", 12));
+            c.ladder.markup = std::clamp(ladder.number("markup", .15), 0.0, 1.0);
+            c.ladder.skillWage = std::max(1.0, ladder.number("skillWage", 150));
+            c.ladder.carryPerWeight = std::max(0.0, ladder.number("carryPerWeight", .004));
+            for (const auto& r : ladder.array("rungs"))
+                if (const double from = r.number("from", 0), to = r.number("to", 0); from > 0 && to > from)
+                {
+                    rungs[r.string("id")] = {from, to};
+                    if (lowestRung.empty() || from < rungs[lowestRung].first)
+                        lowestRung = r.string("id");
+                }
+        }
+    }
     for (const auto& i : items.array("items"))
     {
         Item good;
@@ -114,6 +138,12 @@ Catalog build()
         good.drink = i.object("food").number("drink", 0) > 0;
         good.keeps = std::max(0.0, i.number("keeps", 0));
         good.tier = tierOf(i.string("tier"));
+        if (const auto r = rungs.find(i.object("worth").string("rung")); r != rungs.end())
+        {
+            const double at = std::clamp(i.object("worth").number("at", .5), 0.0, 1.0);
+            good.worth = r->second.first * std::pow(r->second.second / r->second.first, at);
+            good.staple = r->first == lowestRung;
+        }
         if (const auto& w = i.object("weapon"); i.has("weapon"))
         {
             good.weapon.kind = w.string("class");
@@ -195,9 +225,16 @@ Catalog build()
             }
             return !out.empty();
         };
+        // The skill each craft's trade needs: the player recipe of the same id's (recipes.json), else none.
+        std::map<std::string, int> skills;
+        if (json::Value recipes; readJson(dir / "recipes.json", recipes, craftError))
+            for (const auto& r : recipes.array("recipes"))
+                skills[r.string("id")] = std::clamp(int(r.number("skill", 0)), 0, 200);
+        craftError.clear();
         for (const auto& k : crafts.array("crafts"))
         {
             Craft craft;
+            craft.skill = skills.count(k.string("id")) ? skills[k.string("id")] : 0;
             craft.id = k.string("id");
             craft.seconds = k.number("seconds", 60);
             craft.hours = k.number("hours", craft.seconds / 3600.);
@@ -678,6 +715,23 @@ const std::vector<Institution>& institutions()
 const std::vector<ToolNeed>& toolNeeds()
 {
     return catalog().tools;
+}
+
+const Ladder& ladder()
+{
+    return catalog().ladder;
+}
+
+double worthOf(const std::string& id)
+{
+    const auto* g = good(id);
+    if (!g)
+        return 0;
+    const auto* plain = good(baseOf(id));
+    if (!plain || plain->worth <= 0)
+        return std::max(1, g->price) / ladder().catalogueDay;
+    // (A quality's share of the plain good's, as its price is: crude 0.6, fine 1.6, a masterwork 3.)
+    return plain->worth * (plain->price > 0 && g != plain ? double(g->price) / plain->price : 1.);
 }
 
 const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business)

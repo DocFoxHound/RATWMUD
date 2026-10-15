@@ -73,6 +73,7 @@ void Society::reset(Roster roster)
     wages_.clear();
     wageCarry_.clear();
     margin_ = .55;
+    loadPrices();                                   // (None: state_ is fresh.)
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
@@ -425,6 +426,7 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
         return false;
     auto& s = state_.accounts.at(seller);
     auto& b = state_.accounts.at(buyer);
+    addCost(buyer, item, stock(b, item), quantity, double(price));   // (What it paid: doc 64, Phase 4.)
     if ((s.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
         s.stock.erase(item);                                // (Room for other kinds; the old three keep their place.)
     b.stock[item] += quantity;
@@ -471,14 +473,16 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     // (its price times the orchestrator's margin); meals, herbs and swords as before: dearer as the trader runs short of
     // them, and as the town's stores do (priceFactor).
     const bool catalog = worn || good;
-    const double each = catalog ? townPrice(shopTown(seller), item)
+    // A good of the catalog at the shop's own price, and bought from a player at its normal cost: its price less its
+    // margin (doc 64, Phase 4).
+    const double each = catalog ? priceAt(seller, item)
                                 : (item == "meal" ? 6 : item == "sword" ? swordPrice() : 2) * (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) *
                                       priceFactor(seller, item);
-    const double sells = catalog ? margin() : .55;
+    const double offered = catalog ? offerAt(seller, item) : each * .55;
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
     const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(double(pennies(each)) * .9)))
                                : buy ? pennies(each)
-                                   : pennies(each * sells);
+                                   : pennies(offered);
     const std::int64_t total = price * quantity;
     if (!buy && held + quantity > cap)
         return {false, "The trader already has enough of those goods.", price, total};
@@ -603,7 +607,14 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             resident.second.wagesToday = 0;
         offered_.clear();                              // (The Restday plate, doc 42.)
         if (roster_ == Roster::Authored)
+        {
             spoil(day);                                // Food older than it keeps goes bad (RatwDemand.cpp).
+            // Sellers' margins, each on its own day of the week, and their costs kept for the save (doc 64, Phase 4);
+            // makers' normal costs are worked out afresh.
+            reviewMargins(day);
+            keepPrices();
+            unitCost_.clear();
+        }
         const int recovery[] = {20, 30, 12, 4};
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
         if (roster_ == Roster::Authored)
@@ -1114,6 +1125,7 @@ bool Society::restore(const SocietyState& saved)
     indexTills();
     forgetOrchestra();
     applyPrices();
+    loadPrices();
     roster_ = roster;
     for (auto& life : state_.residents)
         if (roster_ == Roster::Demo) defaultHome(life.first, life.second);

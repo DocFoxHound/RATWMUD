@@ -240,7 +240,7 @@ void Society::runChannels(std::int64_t day)
                 {
                     if (n <= ProduceKept || !keeps(item) || spent >= budget)
                         continue;
-                    const auto price = pennies(buyingPrice(town, item));
+                    const auto price = pennies(priceAt(till, item));     // (The farm's own: doc 64, Phase 4.)
                     const int k = int(std::min<std::int64_t>({n - ProduceKept, (budget - spent) / price, 99}));
                     if (k > 0 && transfer(till, fund, item, k, price, "orders: food for the granary"))
                     {
@@ -298,7 +298,7 @@ void Society::runChannels(std::int64_t day)
                     const int spare = n - (farm ? ProducerKept / 2 : SuppliesKept / 2);
                     if (spare <= 0 || spent >= budget || !items::good(item))
                         continue;
-                    const auto price = pennies(farm ? buyingPrice(town, item) : townPrice(town, item));
+                    const auto price = pennies(priceAt(till, item));     // (The seller's own: doc 64, Phase 4.)
                     const int k = int(std::min<std::int64_t>({spare, (budget - spent) / price, 99}));
                     if (k > 0 && transfer(till, fund, item, k, price, "orders: bought for trade"))
                     {
@@ -392,7 +392,7 @@ void Society::runChannels(std::int64_t day)
             int drawn = 0;
             for (const auto& [item, n] : std::map<std::string, int>(it->second.stock.begin(), it->second.stock.end()))
             {
-                const auto price = pennies(buyingPrice(town, item));
+                const auto price = pennies(costOf(id, item));   // (The granary sells at what it paid: doc 64, Phase 4.)
                 const int k = int(std::min<std::int64_t>({n, 12 - drawn, account(mess)->cash / std::max<std::int64_t>(1, price)}));
                 if (n <= 0 || k <= 0 || !edible(item))
                     continue;
@@ -418,7 +418,7 @@ void Society::runChannels(std::int64_t day)
                     continue;
                 for (const auto& [item, n] : std::map<std::string, int>(it->second.stock.begin(), it->second.stock.end()))
                 {
-                    const auto price = pennies(buyingPrice(town, item));
+                    const auto price = pennies(costOf(id, item));   // (The granary sells at what it paid: doc 64, Phase 4.)
                     if (n > 0 && edible(item) && purse->cash >= price && transfer(id, rid, item, 1, price, "bought from the granary"))
                     {
                         sold += price;
@@ -455,7 +455,7 @@ void Society::runChannels(std::int64_t day)
                 const auto* shelves = account(till);
                 if (n <= 0 || !shelves)
                     continue;
-                const auto price = pennies(buyingPrice(town, item));
+                const auto price = pennies(costOf(id, item));   // (The granary sells at what it paid: doc 64, Phase 4.)
                 const int fill = int(std::ceil(std::max(0.0, wanted - onShelves) / std::max(1, nourishment(item))));
                 const int k = int(std::min<std::int64_t>({n, FoodShelf - stockAll(*shelves, item), shelves->cash / price, 99, fill}));
                 if (k > 0 && transfer(id, till, item, k, price, "from the granary"))

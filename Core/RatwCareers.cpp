@@ -156,6 +156,9 @@ bool Society::shift(const std::string& from, const std::string& to, const std::s
     b->second.cash += std::max<std::int64_t>(0, coins);
     if (!item.empty() && quantity > 0)
     {
+        // (Goods moved unpaid carry what they cost the giver: doc 64, Phase 4.)
+        if (costed(to))
+            addCost(to, item, stock(b->second, item), quantity, costOf(from, item));
         if ((a->second.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
             a->second.stock.erase(item);           // (As in consume.)
         b->second.stock[item] += quantity;

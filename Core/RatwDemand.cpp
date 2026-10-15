@@ -256,15 +256,10 @@ double Society::townPrice(const std::string& town, const std::string& item) cons
         return 1;
     if (storePriced(items::baseOf(item)))
         return std::max(1, good->price);             // (Meals, herbs, swords: World::tendPrices's, through priceFactor.)
-    const auto base = items::baseOf(item);
-    const auto* plain = items::good(base);
-    const double catalog = std::max(1, plain ? plain->price : good->price);
-    double price = catalog;
-    if (const auto t = prices_.find(town); t != prices_.end())
-        if (const auto p = t->second.find(base); p != t->second.end() && p->second > 0)
-            price = p->second;
-    // A quality's share of the plain good's price (crude 0.6, fine 1.6, a masterwork 3: the catalog's own).
-    return price * std::max(1, good->price) / catalog;
+    // The going price (doc 64, Phase 4): the good's worth at the town's labourer's wage, what a seller at the usual margin
+    // asks when its costs are the ladder's. Sellers set their own (priceAt); this is the town's yardstick, for a stall,
+    // a contract or a measure. A quality's share of the plain good's (crude 0.6, fine 1.6, a masterwork 3).
+    return items::worthOf(item) * labourDay(town);
 }
 
 double Society::townFactor(const std::string& town, const std::string& item) const
@@ -286,11 +281,8 @@ void Society::applyPrices()
     const auto& o = state_.orchestrator;
     if (orchestratorDials().mode != "on")
         return;
-    for (const auto& [key, price] : o.memory.price)
-        if (const auto bar = key.find('|'); bar != std::string::npos && price > 0)
-            prices_[key.substr(0, bar)][key.substr(bar + 1)] = price;
-    if (o.memory.margin > 0)
-        margin_ = o.memory.margin;
+    // (Its prices, its margin and its price support are no longer applied: each seller prices from its costs, doc 64,
+    // Phase 4. It still works them out, and shows them.)
     for (const auto& [key, pay] : o.memory.wage)
         if (const auto bar = key.find('|'); bar != std::string::npos && pay > 0)
             wages_[key.substr(0, bar)][key.substr(bar + 1)] = pay;
@@ -301,17 +293,14 @@ void Society::applyPrices()
         livingFloor_[t.id] = t.wageFloor;
         idleHands_[t.id] = std::max(0, t.idle);
     }
-    for (const auto& [key, gap] : o.memory.support)
-        if (const auto bar = key.find('|'); bar != std::string::npos && gap > 0)
-            support_[key.substr(0, bar)][key.substr(bar + 1)] = gap;
 }
 
 std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const
 {
-    // The town's price (doc 46, Phase 3): the same at every shop of the town.
+    // Its own (doc 64, Phase 4): its normal cost and its margin.
     if (!items::good(item))
         return 1;
-    return pennies(townPrice(shopTown(shop), item));
+    return pennies(priceAt(shop, item));
 }
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
@@ -918,7 +907,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // its money is the land's, its goods its town's own.)
                 if (payer == acct && want >= std::max(2, target / 3))
                     if (const auto* good = items::good(item))
-                        procurements_.push_back({acct, community, in.name, item, want, std::max(1, good->price)});
+                        procurements_.push_back({acct, community, in.name, item, want, pennies(townPrice(community, item))});   // (The going price: doc 64, Phase 4.)
             }
             if (condition && needed > 0)
             {
@@ -967,8 +956,8 @@ void Society::producersSell(std::int64_t day)
                 const auto* shelves = account(till);
                 if (!shelves)
                     continue;
-                // At the town's buying price: its price times the orchestrator's margin (doc 46, Phase 3).
-                const std::int64_t price = pennies(buyingPrice(shops->first, item));
+                // At the farm's own price (doc 64, Phase 4).
+                const std::int64_t price = pennies(priceAt(r.id, item));
                 const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
                 if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
                     left -= count;

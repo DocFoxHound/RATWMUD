@@ -607,3 +607,80 @@ Phase 6, when businesses can hire.
 winter, and tool wear in a batch's cost. They need Phase 4's cost basis and Phase 6's day labour.
 
 **Tests:** all suites pass. The crafting tests pin the old pace, a yield a spell.
+
+### Phase 4: built (2026-10-15)
+
+**Each seller prices from its own costs** (`Core/RatwPrices.cpp`).
+
+- **The cost basis** (adaptation C): every seller's account (a till, a House's till, a caravan, a fund, a town's
+  stores) keeps the average a piece of what each good cost it.
+  - Bought: what it paid.
+  - Made: the batch's hours at the town's labourer's wage (more for a skilled trade, ladder.json `skillWage`) and its
+    materials at what they cost it, shared among the batch by worth.
+  - Brought in: the producer's normal cost.
+  - Moved unpaid (a caravan loaded from the stores, an estate): what it cost the giver.
+  - It's kept in the society's memory once a day, so it's saved. An older save has none: sellers price from the
+    ladder until they've bought or made.
+- **A seller's price** is its normal cost × (1 + its margin), in whole pennies.
+  - A good it makes: a batch's calibrated hours (Phase 2's, whatever the Phase 3 switch), its materials at what they
+    cost it (or the going price, with no record) carted to the bench, and for a producer its tools' wear.
+  - A good it buys and sells on: what it paid.
+  - A quality its share of the plain good's, by worth.
+- **The margin** starts at the ladder's 15% and is reviewed weekly, on each seller's own day, three weeks in four:
+  - up by up to 4% when its shelf holds under 0.3 of the days of sales it keeps;
+  - down when it holds over 1.7 of them and more than a maker keeps (`GoodsKept`). A maker's few on the shelf don't
+    count as a glut until Phase 3b makes output follow sales;
+  - otherwise a quarter of the way back toward 15%, at random;
+  - within −30% and +60%, +100% for staples (the ladder's lowest rung).
+  - Days kept: food by how long it keeps (half, 1 to 6 days), staples 6, else 10, 12 or 20 by worth.
+- **The land is paid its own price.** Producers sell to the food shops, the granary and the trade orders at their
+  price. A shop buys from a player or a wolf at its normal cost: its price less its margin.
+- **Carriage by weight** (adaptation F): ladder.json's `carryPerWeight` labourer's hours a unit of weight a step, 10
+  steps between towns.
+  - Materials carted from another town cost the seller's price plus carriage, in place of half as much again.
+  - A caravan sells at what its load cost it plus the carriage with its margin, in place of the road's 1.4×, and
+    brings back the unsold at what it paid.
+  - A standing order's price is the going price plus the carriage with its margin.
+- **The going price** (`townPrice`) is now a good's worth at the town's labourer's wage: a yardstick, what a seller
+  asks at the usual margin when its costs are the ladder's. Stalls, contracts, town projects and the measures use it.
+  Contracts now pay it, not the catalogue's price.
+
+**Retired:**
+
+- the orchestrator's prices, its margin and its price support: it still works them out and shows them, but nothing
+  applies them;
+- `oneTownPrice` and `priceSupport` (roads tests). `sellersPriceFromCost` takes their place.
+
+**Not yet:**
+
+- meals, herbs and swords keep their old store pricing (`storePriced`). They're the oldest goods, and the next
+  catalogue pass brings them onto the ladder;
+- rent in the cost waits for Phase 5;
+- `priceLift` stays in the orchestrator until Phase 12 strips it.
+
+**Tests:** `sellersPriceFromCost` checks the going price, a baker's loaf from its hours and flour within 5% of its
+worth, a fine loaf's share, the land paid its normal cost, and each bakery's own margin. The carted-in flour test is
+re-pinned to the mill's price plus carriage.
+
+**Measured** (30 days from DEV, prices in labourer's day-wages, sellers' mean asking price):
+
+| | day 5 | day 30 | the model, day 30 |
+|---|---|---|---|
+| bread | 0.074 | 0.059 | 0.067 |
+| wheat | 0.029 | 0.012 | 0.037 |
+| iron bar | 1.00 | 0.54 | — |
+| steel sword | 10.1 | 9.2 | — |
+| rapier | 25.0 | 25.0 | 21.8 |
+| margins (mean) | 0.153 | 0.165 | — |
+
+- **Prices sit on the ladder.** In Phase 1's run a rapier had fallen to 3.8 LD by day 28; now it holds at 25.
+- **Margins move but stay near 15%:** by day 30, 1,781 margins, none over 30%, under half a percent under 5%.
+- **Prices lag wages.** The old orchestrator's wage table raises a labourer's day by a quarter a week (12p to 29p by
+  day 30, as in Phase 1's run). Stock bought at the old prices sells at what it cost, so prices in LD fall while
+  wages climb. Wheat falls furthest: at 12p a day it is worth 0.3p, and the mills paid a whole penny for it. Phase 6
+  replaces the wage table.
+- **As in Phase 1's run:** the Houses' share drains (31% to 13%), the church's grows (5% to 20%), and the household
+  Gini widens (0.43 to 0.54). These are the old rules' (tithes, the Houses' sweeps and props), for Phases 5 and 7.
+- Nobody starving; 2 hungry on day 30. 0.067 ms a tick.
+- Tests: all suites pass. Two re-pinned: the contract reward (now the going price and the premium) and the carted-in
+  flour.

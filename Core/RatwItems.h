@@ -49,6 +49,10 @@ struct Item
     // Basic however well made.
     int tier = 0;
     Weapon weapon;                                  // A weapon's blow (weapon.kind empty for anything else).
+    // What it's worth (Docs/Design/64-economy-migration.md, Phase 4): its place on the worth ladder (items.json
+    // `worth`, Data/Economy/ladder.json), in a labourer's day-wages (LD); 0 when it has none. See items::worthOf.
+    double worth = 0;
+    bool staple = false;                            // On the ladder's lowest rung (its sellers' margins may reach +100%).
 };
 
 struct Business
@@ -95,6 +99,7 @@ struct Craft
     // Hours of residents' work for one batch (Docs/Design/64-economy-migration.md, Phase 3; calibrated from the worth
     // ladder by tools/econ_model/apply_ladder.py). Without it, `seconds`' worth of hours.
     double hours = 60. / 3600;
+    int skill = 0;                                  // The trade skill it needs (Data/Items/recipes.json, by its id).
     std::vector<std::pair<std::string, int>> in, out;
 };
 // Someone who brings goods in from the land (crafts.json `producers`): a farmer, a shepherd, a fisher, a stables.
@@ -144,6 +149,17 @@ struct ToolNeed
     double everyDays = 20;
 };
 const std::vector<ToolNeed>& toolNeeds();
+// The worth ladder's settings (Data/Economy/ladder.json; doc 63, doc 64 Phase 4): the catalogue's labourer's day (an
+// item with no place is worth its price over it), the margin the hours were calibrated at, the skill premium (a trade
+// needing skill s pays 1 + s / skillWage a labourer's wage) and carriage (labourer's hours to cart a unit of weight).
+struct Ladder
+{
+    double catalogueDay = 12, markup = .15, skillWage = 150, carryPerWeight = .004;
+};
+const Ladder& ladder();
+// What a good is worth in a labourer's day-wages: its place on the ladder (a quality its share of the plain good's), or
+// with none its catalogue price over the catalogue's day. 0 for an unknown id.
+double worthOf(const std::string& id);
 // What a kind of business uses up a day to keep going (crafts.json `upkeep`: a stables' horses eat hay and oats),
 // bought like its materials and paid from its till; null for none. "(farm)": what a farm worker wears out a day
 // (crafts.json `farmUpkeep`).

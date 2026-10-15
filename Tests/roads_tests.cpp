@@ -852,7 +852,9 @@ void townBuyersAndContractsForGoods()
             }
     }
     expect(!kid.empty(), "East's Town Works asks for the stone its market doesn't sell");
-    expect(w.society().account("town:east:works") && quantity >= 2 && reward >= quantity * 2, "a contract for goods, paid from its funds");
+    expect(w.society().account("town:east:works") && quantity >= 2 &&
+               reward >= quantity * Society::pennies(w.society().townPrice("east", "stone")),
+           "a contract for goods, paid from its funds, at the going price (doc 64, Phase 4) and more");
     expect(w.society().conserved(), "money stays conserved");
     auto* ada = w.entity("player-ada");
     ada->cellId = id(0);
@@ -1988,29 +1990,34 @@ void theOrchestratorWatches()
 
 // One price for a good in a town (doc 46, Phase 3): the orchestrator's, the same at every shop of the town, a quality at
 // its share of it; and what the land is paid for it, that price times the orchestrator's margin.
-void oneTownPrice()
+void sellersPriceFromCost()
 {
+    // Each seller its own price (doc 64, Phase 4): a good it makes at its normal cost (the batch's hours at the town's
+    // labourer's wage, its materials at what it would pay, shared among the batch) and its margin, 15% to start; the
+    // land paid its normal cost; the town's going price the good's worth at its wage.
     auto f = strip("EE.....WW", resident("baker1", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 4.5, 1, 4.5) +
                                     resident("baker2", "Tilly Crust", "merchant", "baker at The Morning Oven", 0, 5.5, 1, 5.5));
     auto w = load(f);
     w.tick(.6);
     auto& s = w.society();
-    if (s.orchestratorDials().mode != "on")
-        return;                                      // (A data directory with the orchestrator off: catalog prices.)
-    auto state = s.state();
-    state.orchestrator.memory.price["east|bread"] = 5;
-    state.orchestrator.memory.price["west|bread"] = 2;
-    state.orchestrator.memory.margin = .5;
-    expect(s.restore(state), "The orchestrator's prices restore");
+    const double day = s.labourDay("east");
+    const double worth = items::worthOf("bread") * day;
+    const double cost = s.normalCost("baker1", "bread");
+    expect(std::abs(s.townPrice("east", "bread") - worth) < 1e-9, "The going price is the good's worth at the town's wage");
+    expect(std::abs(cost * 1.15 - worth) < worth * .05, "A baker's loaf, from its hours and flour, sits on the ladder: " +
+                                                           std::to_string(cost * 1.15) + "p against " + std::to_string(worth) + "p");
+    expect(s.shopPrice("baker1", "bread") == Society::pennies(cost * 1.15), "and sells at its cost and 15%");
+    expect(std::abs(s.offerAt("baker1", "bread") - cost) < 1e-9, "Bought from the land at its normal cost");
     const auto* bread = items::good("bread");
     const auto* fine = items::good("bread~fine");
-    expect(bread && fine, "Bread and fine bread are in the catalog");
-    expect(s.shopPrice("baker1", "bread") == 5 && s.shopPrice("baker2", "bread") == 5, "Both of east's bakeries sell bread at east's price");
-    expect(s.shopPrice("wm", "bread") == 2, "and west's shops at west's");
-    expect(s.shopPrice("baker1", "bread~fine") == std::int64_t(std::ceil(5. * fine->price / bread->price - 1e-9)),
+    expect(bread && fine && std::abs(s.priceAt("baker1", "bread~fine") - s.priceAt("baker1", "bread") * fine->price / bread->price) < 1e-6,
            "A fine loaf at its quality's share of it");
-    expect(std::abs(s.buyingPrice("east", "bread") - 2.5) < 1e-9, "The land is paid the price times the margin");
-    expect(s.townPrice("east", "nails") == items::good("nails")->price, "A good it hasn't priced goes at the catalog's");
+    auto state = s.state();
+    state.memory.margins[s.tillOf("baker1") + "|bread"] = .6;
+    expect(s.restore(state), "A seller's margin restores");
+    expect(std::abs(s.priceAt("baker1", "bread") - s.normalCost("baker1", "bread") * 1.6) < 1e-6 && std::abs(s.priceAt("baker2", "bread") - s.normalCost("baker2", "bread") * 1.15) < 1e-6,
+           "Each bakery prices by its own margin");
+    expect(std::abs(s.buyingPrice("east", "bread") - worth / 1.15) < 1e-9, "The town's buyers pay the land the going price less the margin");
 }
 
 // The orchestrator's channels (doc 46, Phase 5): the evening of the week's reckoning it decides what the holders over
@@ -2051,42 +2058,6 @@ void theChannelsSpend()
     expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
 }
 
-// Price support (doc 46, Phase 6): a staple the orchestrator holds under its price for the poor; each shop that sells it
-// is paid the gap from its town's fund the next day.
-void priceSupport()
-{
-    auto f = strip("EE.....WW", resident("baker1", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 4.5, 1, 4.5));
-    auto w = load(f);
-    w.addPlayer("player-ada", "Ada");
-    w.tick(.6);
-    nextMorning(w);                                  // (A day's pass: each shop's town known.)
-    auto& s = w.society();
-    if (s.orchestratorDials().mode != "on")
-        return;
-    auto state = s.state();
-    state.orchestrator.memory.price["east|bread"] = 2;
-    state.orchestrator.memory.support["east|bread"] = 1.5;
-    expect(s.restore(state), "Bread held under its price in east restores");
-    const auto fund = Society::fundOf("east", "price support");
-    s.openAccount(fund);
-    s.shift("treasury", fund, "", 0, 50, "test: the orchestrator's orders");
-    s.shift("treasury", "player-ada", "", 0, 50, "test: a purse");
-    s.create(s.tillOf("baker1"), "bread", 4, "test: baked");
-    auto* ada = w.entity("player-ada");
-    const auto* baker = w.entity("baker1");
-    ada->cellId = baker->cellId;
-    ada->position = {baker->position.x + 1, baker->position.y};
-    const auto bought = s.trade("player-ada", "baker1", "bread", 2, true);
-    expect(bought.ok && bought.unitPrice == 2, "Ada buys two loaves at east's price: " + bought.message);
-    w.takeEvents();
-    run(w, 600 * 18);                                // (On to the next day's pass: what is owed isn't saved.)
-    std::int64_t support = 0;
-    for (const auto& e : w.takeEvents())
-        if (e.kind == "economy" && e.detail == "price support" && e.actor == fund && e.target == s.tillOf("baker1"))
-            support += e.coins;
-    expect(support == 3, "The bakery is paid the gap, 1.5p a loaf, from east's fund (" + std::to_string(support) + "p)");
-    expect(s.conserved(), "Money stays conserved");
-}
 
 // A town's market is in the town (the user, 2026-10-12): west's two shops stand side by side, and out in its fields,
 // eighty tiles off, a mill has two merchants of its own. Caravans load at the shops, not at the mill, though the mill
@@ -2447,9 +2418,8 @@ int main()
         theChurchCares();
         townsWearAndAreMended();
         theOrchestratorWatches();
-        oneTownPrice();
+        sellersPriceFromCost();
         theChannelsSpend();
-        priceSupport();
     }
     catch (const std::exception& error)
     {

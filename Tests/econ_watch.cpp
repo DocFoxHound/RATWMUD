@@ -599,10 +599,25 @@ int main(int argc, char** argv)
         {
             if (!items::good(good))
                 continue;
-            out << (firstGood ? "" : ",") << json(good) << ':' << (wage > 0 ? society.townPrice(town, good) / wage : 0.0);
+            // What the sellers holding it ask (doc 64, Phase 4: each its own), on average; with none, the going price.
+            double asked = 0;
+            int sellers = 0;
+            for (const auto& [id, a] : society.state().accounts)
+                if (Society::costed(id) && id.rfind("fund:", 0) != 0 && Society::stock(a, good) > 0)
+                    asked += society.priceAt(id, good), ++sellers;
+            const double price = sellers ? asked / sellers : society.townPrice(town, good);
+            out << (firstGood ? "" : ",") << json(good) << ':' << (wage > 0 ? price / wage : 0.0);
             firstGood = false;
         }
-        out << "}}";
+        out << "}";
+        // Sellers' margins (doc 64, Phase 4): their mean, and the shares under 5% and over 30%.
+        double sum = 0;
+        int count = 0, low = 0, high = 0;
+        for (const auto& [seller, goods] : society.margins())
+            for (const auto& [good, m] : goods)
+                sum += m, ++count, low += m < .05, high += m > .3;
+        out << ",\"margins\":{\"count\":" << count << ",\"mean\":" << (count ? sum / count : 0.) << ",\"low\":"
+            << (count ? double(low) / count : 0.) << ",\"high\":" << (count ? double(high) / count : 0.) << "}}";
         return out.str();
     };
 

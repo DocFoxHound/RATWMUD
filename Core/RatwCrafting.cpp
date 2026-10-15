@@ -108,11 +108,9 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     if (!sortGood || !buyerNow)
                         continue;
                     const int spare = stock(*from, sort) - (kind == 1 && sort == item ? GoodsKept : 0);
-                    // At the seller's town's price (doc 46, Phase 3): a shop's or workshop's whole, a producer's times the
-                    // orchestrator's margin (what the land is paid); carted in from elsewhere, dearer.
-                    const auto sellerTown = communityOfResident(seller.id);
-                    const double each = seller.kind == 2 ? buyingPrice(sellerTown, sort) : townPrice(sellerTown, sort);
-                    const std::int64_t price = pennies(each * (local ? 1. : CartedIn));
+                    // At the seller's own price (doc 64, Phase 4); carted in from another town, its carriage besides.
+                    const double each = priceAt(seller.id, sort);
+                    const std::int64_t price = pennies(each + (local ? 0. : carriage(sort, CarriageLegs, here)));
                     const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
@@ -159,7 +157,10 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
                 kept = int(std::lround(ProducerKept * items::tradeKeep()));
             }
             if (const int held = stock(*account(till), item); held < kept)
+            {
+                addCost(till, item, held, std::min(brought, kept - held), normalCost(id, item));
                 any = create(till, item, std::min(brought, kept - held), "brought in") || any;
+            }
         }
     }
     return any;
@@ -269,7 +270,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         if (k != crafts.end() && has(**k))
         {
             // The materials, plain ones first (common, then crude, then the better), and how good they were on the whole.
-            double qualities = 0;
+            double qualities = 0, materials = 0;
             int used = 0;
             // A paw lent (doc 53, 3): one batch in four, one input of its first material isn't used up.
             bool saved = false;
@@ -281,7 +282,9 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
                 saved = false;
                 for (const auto& sort : kindsHeld(*account(till), item))
                 {
+                    const double each = inputCost(till, sort);
                     const int took = consume(till, sort, std::min(left, stock(*account(till), sort)), "used in crafting");
+                    materials += took * each;
                     qualities += took * items::qualityOf(sort);
                     used += took;
                     left -= took;
@@ -293,7 +296,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             // it down, a fine one lifts it) and the day's luck. Fine needs a skill of 60 (and is common only past 75), masterwork 85.
             const auto* job = jobOf(id);
             const double craft = job ? skill(id, job->id) : 30;
-            const double materials = used > 0 ? (qualities / used - 1) * 15 : 0;
+            const double fromMaterials = used > 0 ? (qualities / used - 1) * 15 : 0;
             const double luck = (double(std::hash<std::string>{}(id + "|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 1000) / 1000 - .5) * 40;
             // A Gift lent to it (doc 43): the forge kept hot, the clay true, the flaws heard; once, for this batch.
             double lifted = 0;
@@ -302,13 +305,23 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
                 lifted = absoluteDay <= lent->second.second ? lent->second.first : 0;
                 giftLift_.erase(lent);
             }
-            const double score = craft + materials + luck + lifted;
+            const double score = craft + fromMaterials + luck + lifted;
             // Masterwork is rare even for a master: a good day, and a further one in seven besides.
             const bool inspired = std::hash<std::string>{}(id + "|muse|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 7 == 0;
             const int quality = craft >= 85 && score >= 100 && inspired ? 3 : craft >= 60 && score >= 85 ? 2 : score < 20 ? 0 : 1;
             // A masterwork carries its maker's mark (doc 35, Part 4).
+            // What the batch cost (doc 64, Phase 4): its hours at the town's wage for the trade, and its materials at what
+            // they cost; shared among its goods by their worth.
+            double worth = 0;
             for (const auto& [item, count] : (*k)->out)
-                create(till, quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality), count, "crafted");
+                worth += count * items::worthOf(item);
+            const double batch = (*k)->hours * (1 + (*k)->skill / items::ladder().skillWage) * labourDay(communityOfResident(id)) / PaidSpells + materials;
+            for (const auto& [item, count] : (*k)->out)
+            {
+                const auto made = quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality);
+                addCost(till, made, stock(*account(till), made), count, worth > 0 ? batch * items::worthOf(item) / worth : 0);
+                create(till, made, count, "crafted");
+            }
         }
     }
     // A supplier's shelves: what has run below a quarter of its store is bought back up from workshops and producers.

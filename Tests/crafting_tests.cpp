@@ -289,8 +289,10 @@ void cartedInFromAnotherTown()
     for (const auto& e : s.takeJournal())
         if (e.kind == "materials carted in" && e.item == "flour")
             paid += e.coins;
-    expect(paid >= got * 3 && paid <= got * 4, "carted in, at half as much again, by the seller's supply (doc 42: 2p flour at 3p or "
-                                               "4p): " + std::to_string(paid) + "p for " + std::to_string(got));
+    // At the mill's own price and the carriage (doc 64, Phase 4), in place of half as much again.
+    const auto each = Society::pennies(s.priceAt("miller", "flour") + s.carriage("flour", Society::CarriageLegs, "farstall"));
+    expect(paid == got * each, "carted in, at the mill's price and the carriage: " + std::to_string(paid) + "p for " +
+                                   std::to_string(got) + " (" + std::to_string(each) + "p each)");
 }
 void qualities()
 {

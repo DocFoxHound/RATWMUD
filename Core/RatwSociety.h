@@ -271,6 +271,10 @@ struct EconomyMemory
     // Improvements to a business's premises (position -> level, 0 to MostImprovement), and the weeks in a row each has
     // gone without its upkeep (two, and it loses a level).
     std::map<std::string, int> improved, neglected;
+    // What sellers' stock cost them and their margins (Docs/Design/64-economy-migration.md, Phase 4): "account|item" ->
+    // the average cost a piece (pennies), and "account|good" -> the seller's margin. Copied from the society's own once
+    // a day (Society::keepPrices), so they're saved with the rest.
+    std::map<std::string, double> costs, margins;
     std::int64_t revision = 0;
 };
 
@@ -573,7 +577,8 @@ class Society
     // A price in whole pennies: to the nearest, a penny at least (doc 46, Phase 8: rounded up, a 1p good priced at 1.4p
     // sold for 2p, twice its catalog's).
     static std::int64_t pennies(double price) { return std::max<std::int64_t>(1, std::llround(price)); }
-    double buyingPrice(const std::string& town, const std::string& item) const { return townPrice(town, item) * margin(); }
+    // What a buyer in the town pays the land for a good, by the yardstick: its going price less the usual margin.
+    double buyingPrice(const std::string& town, const std::string& item) const;
     double margin() const { return margin_; }
     double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.
     std::string shopTown(const std::string& shop) const;   // The town a shop works in.
@@ -640,6 +645,16 @@ class Society
     LifeDay day_;
     Parallel parallel_;
     std::map<std::string, double> mealsSold_;       // A shop's till -> the meals it sells a day (a running average).
+    // Doc 64, Phase 4 (RatwPrices.cpp): account -> item -> what its stock cost a piece, on average; seller's account ->
+    // good -> its margin; and each seller's normal cost of a good it makes (by keeper or account), worked out once a day.
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> cost_, margins_;
+    mutable std::unordered_map<std::string, std::unordered_map<std::string, double>> unitCost_;
+    // Goods coming into a costed account: its average cost a piece, `had` held before, `n` more at `each`.
+    void addCost(const std::string& account, const std::string& item, int had, int n, double each);
+    void reviewMargins(std::int64_t day);           // Each seller's weekly review, on its own day of the week.
+    void keepPrices();                              // Into the saved memory (daily), and back from it (restore).
+    void loadPrices();
+    std::string accountTown(const std::string& account) const;
     std::map<std::string, int> mealsToday_;         // A shop's till -> the meals it sold today.
     std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (made daily).
     // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; its wage table (town -> kind -> a day's
@@ -810,8 +825,34 @@ class Society
     std::int64_t householdNeed(std::size_t members) const { return FoodADay * std::int64_t(members); }
   public:
     static constexpr std::int64_t FoodADay = 5;     // A wolf's food a day, as a household reckons it (pennies).
-    // A shop's price to the townsfolk: its town's (townPrice, the economy orchestrator's: doc 46, Phase 3).
+    // A shop's price to the townsfolk: its own (priceAt, doc 64, Phase 4), in whole pennies.
     std::int64_t shopPrice(const std::string& shop, const std::string& item) const;
+    // What things cost, and prices (Docs/Design/64-economy-migration.md, Phase 4; RatwPrices.cpp). Each seller prices
+    // at its normal cost times one and its margin:
+    //  - a good it makes: a batch's hours at a labourer's wage (more for a skilled trade), its materials at what they
+    //    cost it, carted to the bench, shared among the batch by worth; a producer's yield the same, its tools' wear
+    //    counted;
+    //  - a good it buys and sells on: what it paid, on average;
+    //  - one with no record: its worth on the ladder at the town's labourer's wage, less the calibration's margin.
+    // The margin follows its shelf, weekly, and wears back toward the ladder's 15% between (reviewMargins). A seller
+    // buying from a player or a wolf pays its normal cost (its price less its margin).
+    static bool costed(const std::string& account);      // Whether an account keeps what its stock cost (sellers').
+    const std::unordered_map<std::string, std::unordered_map<std::string, double>>& margins() const { return margins_; }
+    double costOf(const std::string& account, const std::string& item) const;   // Pennies a piece.
+    // What a material cost it, or with no record what it would pay for it (the town's going price).
+    double inputCost(const std::string& account, const std::string& item) const;
+    double normalCost(const std::string& seller, const std::string& item) const;
+    double marginOf(const std::string& seller, const std::string& item) const;
+    double priceAt(const std::string& seller, const std::string& item) const;   // Pennies a piece, not rounded.
+    double offerAt(const std::string& seller, const std::string& item) const { return normalCost(seller, item); }
+    double labourDay(const std::string& town) const { return dayWage(town, "labour"); }
+    // Carting a piece `legs` steps (ladder.json carryPerWeight: labourer's hours a unit of weight a step), in pennies.
+    double carriage(const std::string& item, double legs, const std::string& town = {}) const;
+    static constexpr double CarriageLegs = 10;       // Steps between towns, for what's carted from one to another.
+    static constexpr double MarginLeast = -.3, MarginMost = .6, StapleMarginMost = 1.;
+    static constexpr double MarginStep = .04;
+    // How many days of sales a seller keeps of a good: food by how long it keeps, else by its worth.
+    static double keepDays(const std::string& item);
     // Improvements to premises (RatwOddJobs.cpp): a business's level (0 to MostImprovement); each makes its batches (a
     // workshop) or its yields (a producer) ImprovementPace quicker.
     static constexpr int MostImprovement = 3;
@@ -877,7 +918,7 @@ class Society
     {
         std::string account, community, buyer, item;    // buyer: "the Town Works"; item: the common kind.
         int quantity = 0;
-        std::int64_t price = 1;                          // A piece, as the catalog has it.
+        std::int64_t price = 1;                          // A piece, at the going price (doc 64, Phase 4).
     };
     void townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     std::vector<Procurement> takeProcurements();

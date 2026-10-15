@@ -959,6 +959,13 @@ Value economyMemory(const EconomyMemory& m)
     o.add("improved", improved);
     o.add("unpaidSince", unpaid);
     o.add("outgoing", outgoing);
+    auto costs = Value::object(), margins = Value::object();
+    for (const auto& [key, c] : m.costs)
+        costs.add(key, c);
+    for (const auto& [key, v] : m.margins)
+        margins.add(key, v);
+    o.add("costs", costs);
+    o.add("margins", margins);
     return o;
 }
 
@@ -1004,6 +1011,13 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [who, v] : o.object("lodging").fields())
         if (v.isString() && v.asString().size() < 256)
             m.lodging[who] = v.asString();
+    // (Saved before doc 64's Phase 4: none, and sellers price from the ladder until they've bought or made.)
+    for (const auto& [key, v] : o.object("costs").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9 && key.find('|') != std::string::npos && key.size() < 200)
+            m.costs[key] = v.asNumber();
+    for (const auto& [key, v] : o.object("margins").fields())
+        if (v.isNumber() && v.asNumber() >= -1 && v.asNumber() <= 2 && key.find('|') != std::string::npos && key.size() < 200)
+            m.margins[key] = v.asNumber();
     return m;
 }
 

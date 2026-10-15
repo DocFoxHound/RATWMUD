@@ -13,7 +13,6 @@ namespace ratw
 {
 namespace
 {
-constexpr double Markup = 1.4;                       // What carted goods sell for, against the catalog price.
 constexpr int MostOfAGood = 30, MostALoad = 80;      // A wagon's load (placeholders).
 constexpr int TradeCaravansADay = 12;
 constexpr double OrderSettles = 7;                   // Days before a new or raised standing order is looked at again.
@@ -123,8 +122,10 @@ std::string World::traderOf(const Town& t) const
 
 std::int64_t World::orderPrice(const Town& from, const std::string& item) const
 {
-    // The selling town's price (the economy orchestrator's: doc 46, Phase 3), and the road's markup.
-    return Society::pennies(society_.townPrice(from.id, item) * Markup);
+    // The selling town's going price and the carriage, the carrier's margin on it (doc 64, Phase 4: carriage by weight,
+    // in place of the road's flat markup).
+    return Society::pennies(society_.townPrice(from.id, item) +
+                            society_.carriage(item, Society::CarriageLegs, from.id) * (1 + items::ladder().markup));
 }
 
 void World::tradeCaravans()
@@ -261,7 +262,7 @@ void World::tradeCaravans()
         int total = 0;
         for (const auto& [item, n] : load)
             if (items::good(item) && from)
-                cost += Society::pennies(society_.townPrice(from->id, item)) * n, total += n;
+                cost += Society::pennies(society_.townPrice(from->id, item)) * n, total += n;   // (About what it'll cost.)
         const auto trader = traderOf(*from);
         const auto* purse = society_.account(trader);
         if (cost <= 0 || !purse || purse->cash < cost)
@@ -290,7 +291,7 @@ void World::tradeCaravans()
                 {
                     const auto* good = items::good(sort);
                     const int k = std::min({left, spare, Society::stock(*society_.account(holder), sort), 99});
-                    const auto each = Society::pennies(society_.townPrice(from->id, sort));
+                    const auto each = Society::pennies(society_.priceAt(holder, sort));   // (The holder's own.)
                     if (good && k > 0 && society_.sale(holder, c->account, sort, k, each, "bought for the road"))
                         left -= k, spare -= k, bought += k;
                     if (left <= 0 || spare <= 0)
@@ -301,7 +302,7 @@ void World::tradeCaravans()
         // Rations for the carters and feed for the horses, bought at home and eaten on the way (the trader's cost).
         for (const auto& [item, n] : std::map<std::string, int>{{"bread", 2}, {"hay", 2}})
             for (auto& [holder, spare] : fm.holders[item])
-                if (const auto each = Society::pennies(society_.townPrice(from->id, item));
+                if (const auto each = Society::pennies(society_.priceAt(holder, item));
                     items::good(item) && spare >= n && society_.account(c->account)->cash >= each * n &&
                     society_.sale(holder, c->account, item, n, each, "provisions for the road"))
                 {
@@ -472,8 +473,9 @@ void World::tradeCaravanArrived(Caravan& c)
         const auto* good = items::good(item);
         if (n <= 0 || !good)
             continue;
-        // The town's price (the orchestrator's, doc 46), on top of the road's markup: dearer where it is short.
-        const auto price = Society::pennies(society_.townPrice(to->id, item) * Markup);
+        // What it cost the caravan and its carriage, with the carrier's margin (doc 64, Phase 4).
+        const auto price = Society::pennies(society_.costOf(c.account, item) +
+                                            society_.carriage(item, Society::CarriageLegs, to->id) * (1 + items::ladder().markup));
         int left = n;
         for (auto& [buyer, want] : market.wanters[base])
         {
@@ -501,9 +503,11 @@ void World::tradeCaravanHome(Caravan& c)
         {
             const auto* good = items::good(item);
             const auto* store = society_.account(home->store);
-            const int paid = good && store ? int(std::min<std::int64_t>(n, store->cash / std::max(1, good->price))) : 0;
+            // (At what the caravan paid for them: doc 64, Phase 4.)
+            const auto each = Society::pennies(society_.costOf(c.account, item));
+            const int paid = good && store ? int(std::min<std::int64_t>(n, store->cash / each)) : 0;
             if (paid > 0)
-                society_.sale(c.account, home->store, item, std::min(paid, 99), std::max(1, good->price), "unsold, back to the stores");
+                society_.sale(c.account, home->store, item, std::min(paid, 99), each, "unsold, back to the stores");
         }
     if (const auto cash = society_.account(c.account)->cash; cash > 0)
         society_.shift(c.account, c.trader, "", 0, cash, "trade takings");
