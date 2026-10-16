@@ -540,18 +540,19 @@ int main(int argc, char** argv)
             homes[life.homeCell.empty() ? id : life.homeCell] += (a ? a->cash : 0) + society.savingsWorth(id, worths);
             const bool apprentice = society.apprenticedTo(id) != nullptr;
             apprentices += apprentice;
-            elders += e->age >= Society::RetireAge;
-            idle += e->age >= 16 && e->age < Society::RetireAge && !society.jobOf(id) && !apprentice;
+            elders += e->age >= Society::retireAge(id);
+            idle += e->age >= 16 && e->age < Society::retireAge(id) && !society.jobOf(id) && !apprentice;
         }
-        std::map<std::string, double> best;            // A resident's best skill at any post.
-        for (const auto& [key, s] : society.state().careers.skill)
-        {
-            const auto who = key.substr(0, key.find('|'));
-            if (alive.count(who))
-                best[who] = std::max(best[who], s);
-        }
-        for (const auto& [who, s] : best)
-            masters += s >= 60;
+        // Posts standing empty (not let go), and of them producers' and shops' (doc 64, Phase 8).
+        int vacant = 0, vacantTrade = 0;
+        for (const auto& p : society.positions())
+            if (const auto ps = society.state().careers.positions.find(p.id);
+                ps != society.state().careers.positions.end() && ps->second.holder.empty() && !society.state().memory.closed.count(p.id))
+                ++vacant, vacantTrade += p.role == "merchant" || items::producerFor(p.title);
+        // Masters (doc 64, Phase 8): wolves at their trade's level in a masters' trade (Society::TradeMasters).
+        for (const auto& id : alive)
+            if (const auto* job = society.jobOf(id); job && job->level >= Society::TradeMasters && society.skill(id, job->id) >= job->level)
+                ++masters;
         int births = 0, deaths = 0;
         if (!firstMeasure)
         {
@@ -591,7 +592,7 @@ int main(int argc, char** argv)
         out << "{\"people\":" << alive.size() << ",\"households\":" << h << ",\"household_gini\":" << gini
             << ",\"poorer_half\":" << poorer << ",\"median_household\":" << (h ? money[h / 2] : 0) << ",\"idle\":" << idle
             << ",\"masters\":" << masters << ",\"apprentices\":" << apprentices << ",\"elders\":" << elders
-            << ",\"births\":" << births << ",\"deaths\":" << deaths << ",\"wage\":" << wage << ",\"town\":" << json(town)
+            << ",\"births\":" << births << ",\"deaths\":" << deaths << ",\"vacant\":" << vacant << ",\"vacant_trade\":" << vacantTrade << ",\"wage\":" << wage << ",\"town\":" << json(town)
             << ",\"ld\":{";
         bool firstGood = true;
         for (const char* good : {"wheat", "flour", "bread", "firewood", "timber", "iron_ore", "iron_bar", "sword", "iron_sword",
@@ -923,6 +924,8 @@ int main(int argc, char** argv)
     {
         const auto tickBegin = std::chrono::steady_clock::now();
         server.tick(0.05);
+        if (i % 1200 == 0)
+            server.makeRequestedResidents();        // (Births and newcomers, as the game makes them from files: doc 64.)
         tickSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - tickBegin).count();
         absorb();
         for (const auto& id : traced)

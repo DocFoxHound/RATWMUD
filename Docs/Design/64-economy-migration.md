@@ -1007,3 +1007,127 @@ orchestrator.
 - `grownWolvesBuyWhatTheyWant`: a windfall spent from the want fund over a week.
 - A test's own transfers ("test: …") aren't income.
 - All suites pass.
+
+### Phase 8: built (2026-10-15)
+
+**Lives:**
+
+- **Deaths by age** (`World::tendOldAge`): a yearly chance of 0.0004 × e^(0.085 × age), and 3% more under five. That's
+  about 1% at forty, 7% at sixty, 15% at seventy, a third at eighty. It replaces the bands from seventy.
+  Protected residents still don't die of it.
+- **Retirement:** each wolf has its own age, 58 to 66 (a lot by its id).
+  - In paid work (a trade, the watch), it leaves its post then **once someone can take it on**: its apprentice, family
+    or a local out of work, as skilled as the trade needs. With nobody, it works on.
+  - The model retires everyone and fills posts from its idle. The authored realm has nobody idle and 76 wolves past
+    their age in work: retiring them all at once left about 70 posts empty and the realm hungry.
+  - The clergy, a great House's head and the unpaid (a storyteller, a beggar) keep theirs: the realm's elders stay as
+    they were written. Greyfen's 72-year-old Maple still preaches.
+  - Out of work past its age, a wolf is "retired".
+- **Births and newcomers in a world from files:** `World::makeRequestedResidents` makes them from their templates, as
+  the database host does. A child has nothing; a newcomer has two days' wages.
+  - The game does this when it has no database, and `econ_watch` every game minute.
+  - Before, such a world logged the requests and dropped them, so its population could only fall.
+- **The realm's number holds:**
+  - births still come while a town is under its founding number (married couples, about a month apart): deaths
+    bring them;
+  - a stranger is now sent for a post only while its town is under its number too. Otherwise its posts fill from its
+    own. Before, every post empty eight days brought a stranger: 60 newcomers in a fortnight once retirements and
+    apprenticeships emptied posts;
+  - a hand lodged at a farm's bunkhouse counts at its own home. City wolves hired out to the farms made the city look
+    short, and births were asked for.
+- **Kin inherit everything:** an estate's goods now pass with its money (it was only herbs and meals).
+- **Households split into free homes:**
+  - weekly, a household of more than six sends an unmarried grown member of 18 to 32 to a free home in its town (one
+    written for someone, now empty);
+  - with none free it stays together, as the user decided;
+  - the generator's few spare homes come with the DEV rebuild.
+
+**Skills:**
+
+- **A post's trade has a level** (`Position::level`): the skill its business's hardest craft needs (recipes.json). Help
+  and other posts have none.
+- **Founders** are seeded near their trade's level:
+  - a skilled trade's hands at level − 8 + (age − 25) × 0.4 + up to 12, so about half are at the level;
+  - a plain post's 5 to 45 by age.
+  
+  This is for a fresh founding: a saved world keeps its skills.
+- **Pace and quality are relative to the level:**
+  - a hand at its trade's level works at the usual pace and crafts as a 50 did;
+  - a better one works up to a quarter quicker, and makes fine work more often.
+  
+  Before, both went by skill alone. With plain trades' founders at 5 to 45, an inn's cooks made crude stew, a third
+  as many meals came out, and Ridgemere went hungry on days 23 to 25.
+- **Learning, a year of work:**
+  - 8 beside a better hand: an apprentice beside its master, up to five short of the master, or the level where the
+    master is at it;
+  - 4 for a shop's or farm's head short of its trade's level;
+  - 0.3 otherwise;
+  - never past 85.
+  
+  The old rate was about 10 points a working day, so skills topped out within weeks.
+
+**Apprentices** (every trade has them: the user, 2026-09-27):
+
+- **Who may take one:**
+  - a skilled trade's master must be at its level;
+  - a plain trade's, 35 or older or at skill 30.
+- **Pay and learning:**
+  - half the business's wage, from its till;
+  - they learn until they reach the trade's level (30 for a plain trade).
+- **Who is taken:**
+  - family and household first, then one out of work, or working alongside;
+  - a masters' trade (level 50 and up) also takes the young from plain work, as in the model, but only while more than
+    3% of grown wolves are idle. The model always has some idle; the authored realm has none, so the post left behind
+    stayed empty and the realm went short (15 to 24 posts in the runs).
+
+**Succession** (the user's rule):
+
+1. the apprentice, after two days;
+2. for a masters' trade, after a day, a master about (idle, or working below its level);
+3. family after three days, a local out of work after five, if as skilled as the trade needs (their best at that kind
+   of work);
+4. otherwise, after five days, the best-trained wolf about who isn't in a master's place, keeping its own shop or the
+   clergy. It heads the business and learns toward mastership at the head's rate.
+
+A newcomer comes at least as skilled as the trade needs.
+
+**Tests:**
+
+- New, `theBestTrainedInherits`:
+  - with no apprentice and no master about, the forge goes to the best-trained after five days;
+  - a master smith baking bread is sought out within days.
+- Two re-pinned:
+  - the farm's yield counted as brought in (the quicker mill may buy it at once);
+  - a lent paw makes batches sooner, not twice as many (a skilled baker's batches come as fast as it looks).
+- One successor per retirement: one wolf free to take a post had let 36 retire at once on day 31, when a new year aged
+  the realm and its children came of age.
+
+**Measured** (60 days from DEV, the default pace; Phase 7 built from its commit and run the same, for the comparison):
+
+| | Phase 7, day 60 | Phase 8, day 30 | Phase 8, day 60 | the model, day 60 |
+|---|---|---|---|---|
+| people | 1,083 | 1,082 | 1,083 | 890 |
+| births and newcomers / deaths (60 days) | — | — | 5 / 5 | — |
+| posts empty | — | 4 | 15 | — |
+| apprentices | 85 | 77 | 84 | — |
+| masters (at a masters' trade's level) | — | 15 | 15 | 1–5 |
+| household Gini | 0.62 | 0.51 | 0.58 | 0.39 |
+| households' share | 33% | 37% | 36% | 52% |
+| the church's, the Houses', the towns' | 5%, 30%, 8% | 5%, 30%, 10% | 5%, 30%, 9% | 6%, 25%, 7% |
+| ms a tick | 0.094 | — | 0.111 | — |
+
+- **The realm's number holds:** five births and newcomers for five deaths.
+- **Masters stay about one wolf in seventy** (15).
+- **The Gini widens more slowly than Phase 7's** (0.58 against 0.62 at day 60).
+- **Hunger:**
+  - Phase 7 at 60 days: a single hungry day (49 wolves, day 46);
+  - Phase 8: hungry spells from day 30 (83 on day 31; 141 at worst, day 45), each over in a day or three;
+  - the hungry are mostly Ridgemere's. In both phases the capital's shops run empty for days at a time after day 36
+    (Phase 7's shop food went 15,800 → 800 → 10,900 → 0 nourishment between days 36 and 42).
+  
+  **The capital's food supply is fragile from the second month, before Phase 8.** Production is still bounded by
+  stock caps (`GoodsKept`, `ProducerKept`), not by sales; Phase 3b replaces them. Phase 8's retirements and changes of
+  hands deepen the dips. That's the next thing to fix.
+- **The tick:** 0.111 ms, up from Phase 7's 0.094, in errands (0.064 against 0.046): more wolves about their days as
+  apprentices and in retirement.
+

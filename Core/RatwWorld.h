@@ -950,6 +950,10 @@ class World
     // the home it asked for. The host makes them and then calls welcomeResident with their new ID.
     std::vector<ResidentRequest> takeResidentRequests();
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
+    // A world without a database (a world from files, econ_watch, tests) makes the residents asked for itself, each
+    // like its template (the mother, the last holder of the post): a child with nothing, a newcomer with two days'
+    // wages (doc 64, Phase 8). Returns how many it made.
+    int makeRequestedResidents();
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.
     const std::vector<Town>& towns() const { return towns_; }

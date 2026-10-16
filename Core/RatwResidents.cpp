@@ -171,6 +171,27 @@ bool Society::adoptResident(const Society& from, const std::string& id)
     return true;
 }
 
+bool Society::addResident(const ResidentSpec& r, std::int64_t purse)
+{
+    if (roster_ != Roster::Authored || r.id.empty() || spec(r.id) || state_.accounts.count(r.id) || purse < 0)
+        return false;
+    ++rosterRevision_;
+    authored_.residents.push_back(r);
+    forgetSpecs();
+    buildPositions();
+    state_.accounts[r.id] = EconomyAccount{purse, {}};
+    ResidentLife life;
+    life.role = r.role;
+    life.homeCell = r.home.cell;
+    life.homeX = r.home.x;
+    life.homeY = r.home.y;
+    state_.residents[r.id] = life;
+    state_.minted += purse;
+    record("new resident", "outside", r.id, "", 0, purse);
+    reconcileCareers();
+    return true;
+}
+
 void Society::adoptLayers(const Society& from)
 {
     if (roster_ != Roster::Authored || from.roster_ != Roster::Authored)
@@ -539,8 +560,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // town's square (or where it spends its days), paid by the town; one of RetireAge or more has retired.
             if (!learning && body.age >= 16)
             {
-                if (body.age >= RetireAge)
-                    stand.title = "retired";
+                if (body.age >= retireAge(id))
+                    stand.title = "retired";             // (At its own age, 58 to 66: doc 64, Phase 8.)
                 else if (const auto* ground = outwork(homePlace.community))
                 {
                     // A trade of its own out of town (Phase 3b): it lives by what it brings back.
@@ -1144,7 +1165,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             auto& record = *c.record;
             double* at = job != record.job ? skillSlot(id, job->id, true)
                                            : record.skill ? record.skill : (record.skill = skillSlot(id, job->id, true));
-            *at = std::min(100.0, *at + .002 * step * (1 - *at / 100));
+            // (Doc 64, Phase 8, a year's: a shop's or farm's head short of its trade's level LearnHead, else LearnAlone;
+            // never past SkillTop, nor back from where it is.)
+            const bool head = (job->role == "merchant"sv || items::producerFor(job->title)) && *at < job->level;
+            const double year = calendar::DaysPerYear * PaidSpells * 600.;
+            if (*at < SkillTop)
+                *at = std::min(SkillTop, *at + (head ? LearnHead : LearnAlone) * step / year);
             skilled = *at;
         }
         if (learning && body.cell == learning->work.cell && within(hour, learning->startHour, learning->endHour))
@@ -1153,7 +1179,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto there = bodies.find(master);
             if (there != bodies.end() && there->second.cell == body.cell)
             {
-                const double learnt = practise(id, learning->id, .006 * step);
+                // Beside a better hand (doc 64, Phase 8): LearnBeside a year, up to five short of the master, or the
+                // trade's level where the master is at it, and never past it and five.
+                const double best = skill(master, learning->id), level = std::max(learning->level, TradeSkilled);
+                const double reach = std::min(level + 5, std::max(best - 5, best >= level ? level : 0.));
+                double* at = skillSlot(id, learning->id, true);
+                if (*at < reach)
+                    *at = std::min(reach, *at + LearnBeside * step / (calendar::DaysPerYear * PaidSpells * 600.));
+                const double learnt = *at;
                 if (learning->id == job->id)
                     skilled = learnt;
             }
@@ -1175,7 +1208,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         life.progress += step;
         // The skilled finish paid work sooner (workPace: 1 at skill 50).
-        const double duration = paidWork ? (guard ? 120. : 600.) * workPace(skilled >= 0 ? skilled : skill(id, job->id))
+        const double duration = paidWork ? (guard ? 120. : 600.) * workPace(skilled >= 0 ? skilled : skill(id, job->id), job->level)
                                          : task == "eat"sv ? 8. : 12.;
         if (life.progress < duration)
             continue;
@@ -1237,7 +1270,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 // carried to the next (never more than a day's owed).
                 const bool business = payer.whom == "the shop"sv || payer.whom == "the house"sv;
                 const auto employer = employerKey(payer, *job);
-                const double day = employerWage(employer);
+                // (An apprentice is paid ApprenticePay of it: doc 64, Phase 8.)
+                const double day = employerWage(employer) * (job->title.rfind("apprenticed: ", 0) == 0 ? ApprenticePay : 1.);
                 auto& carry = wageCarry_[pair.first];
                 carry = std::min(carry + day / PaidSpells, day);
                 const std::int64_t wage = std::int64_t(std::floor(carry));

@@ -1386,13 +1386,18 @@ std::int64_t Game::newcomerPurse(const std::string& homeCell) const
 
 void Game::makeResidents()
 {
+    if (options_.database.empty())
+    {
+        // A world from files makes them itself, like their templates (doc 64, Phase 8).
+        if (const int made = world_.makeRequestedResidents(); made > 0)
+        {
+            note("info", "RATW_RESIDENT " + std::to_string(made) + " made from files");
+            ++revision_;
+        }
+        return;
+    }
     for (const auto& request : world_.takeResidentRequests())
     {
-        if (options_.database.empty())
-        {
-            note("info", "RATW_RESIDENT " + request.kind + " wanted (" + request.name + "), but a world from files can't add residents.");
-            continue;
-        }
         const auto* model = world_.society().spec(request.templateId);
         const auto* modelLife = world_.society().resident(request.templateId);
         if (!model || !modelLife)

@@ -138,6 +138,48 @@ void apprenticeshipAndSuccession()
     expect(!s.position("job:tam") || s.jobOf("tam")->id == "job:hale", "Tam keeps the stall");
 }
 
+// The user's succession rule (2026-10-14; doc 64, Phase 8): a masters' trade whose master dies with no apprentice goes to
+// the best-trained wolf about who isn't in a master's place or an important post, to head it and work toward mastership;
+// and a master already about (idle, or working below its level) is sought out first.
+void theBestTrainedInherits()
+{
+    AuthoredRoster roster;
+    roster.residents = {
+        person("smith", "Garth Anvil", "merchant", "the smith at the forge", 55, {"anvil_house", 3.5, 3.5}, {"forge", 3.5, 3.5}),
+        person("rook", "Rook Fen", "civilian", "odd jobs", 24, {"fen_house", 3.5, 3.5}, {"yard", 2.5, 2.5}),
+        person("wren", "Wren Ash", "civilian", "baking", 40, {"ash_house", 3.5, 3.5}, {"bakery", 2.5, 2.5})};
+    for (const bool master : {false, true})
+    {
+        Society s(Roster::None);
+        s.configure(roster);
+        Fates fates;
+        expect(s.position("job:smith") && s.position("job:smith")->level >= Society::TradeMasters, "The forge is a masters' trade");
+        // Rook has worked at a forge a while (better trained than Wren, whose baking is craft work too); or, the second
+        // time, Wren is a master smith baking bread.
+        s.practise("rook", "job:smith", 45);
+        s.practise("wren", "job:smith", master ? 60 : 10);
+        fates.dead.insert("smith");
+        s.died("smith", 1.5);
+        std::vector<CareerNote> notes;
+        int took = -1;
+        for (int day = 2; day <= 9 && took < 0; ++day)
+        {
+            for (auto& n : s.tendCareers(day + .1, fates.world(s)))
+                notes.push_back(n);
+            if (s.position("job:smith") && (s.jobOf("rook") == s.position("job:smith") || s.jobOf("wren") == s.position("job:smith")))
+                took = day;
+        }
+        if (master)
+            expect(s.jobOf("wren") && s.jobOf("wren")->id == "job:smith" && took <= 3,
+                   "A master smith working below her trade is sought out for the forge within days (" + std::to_string(took) + ")");
+        else
+            expect(s.jobOf("rook") && s.jobOf("rook")->id == "job:smith" && took >= 6,
+                   "With no apprentice and no master about, the best-trained takes the forge after five days (" + std::to_string(took) + ")");
+        expect(noted(notes, "succession", master ? "wren" : "rook"), "and the succession is noted");
+        expect(s.conserved(), "Money is conserved");
+    }
+}
+
 void revivedBeforeTheyAreReplaced()
 {
     Society s(Roster::None);
@@ -229,7 +271,8 @@ void strangersAndChildren()
     auto roster = town();
     s.configure(roster);
     Fates fates;
-    // Rook dies; nobody here is free, so after eight days a stranger is sent for.
+    s.tendCareers(1.0, fates.world(s));             // (The town's number, as it was made.)
+    // Rook dies; nobody here is free, so after eight days a stranger is sent for (the town is under its number).
     fates.dead.insert("rook");
     s.died("rook", 1.2);
     std::vector<ResidentRequest> wanted;
@@ -338,6 +381,7 @@ int main()
     {
         positionsAndFamilies();
         apprenticeshipAndSuccession();
+        theBestTrainedInherits();
         revivedBeforeTheyAreReplaced();
         noFamilyGoesToTheTown();
         playersAsApprentices();

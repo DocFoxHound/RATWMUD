@@ -108,6 +108,11 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
         return {treasuryOfResident(resident), "the Town Works"};
     if (const auto* r = spec(resident); r && items::producerFor(r->workLabel))
         return {"", "lives by what it brings in"};
+    // An apprentice: its master's business, on half pay (doc 64, Phase 8).
+    if (job.title.rfind("apprenticed: ", 0) == 0)
+        if (const auto* learning = apprenticedTo(resident))
+            if (const auto held = state_.careers.positions.find(learning->id); held != state_.careers.positions.end() && !held->second.holder.empty())
+                return {tillOf(held->second.holder), "the shop"};
     const auto& said = titleWages(job.title);
     // Work nobody pays a wage for (doc 42, 2026-10-05): keeping one's own house, learning a trade, hawking, scavenging,
     // sitting by the well. The household keeps them, or they live by what they sell.

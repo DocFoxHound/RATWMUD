@@ -4,6 +4,8 @@
 #include "RatwItems.h"
 
 #include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
 
 namespace ratw
@@ -46,6 +48,11 @@ std::string lower(std::string s)
 int rank(const Position* p)
 {
     return !p ? -1 : p->role == "merchant" ? 3 : p->role == "guard" ? 2 : p->paid ? 1 : 0;
+}
+// A lot from 0 to 1, fixed by its words.
+double lotOf(const std::string& words)
+{
+    return double(std::hash<std::string>{}(words) % 100000) / 100000;
 }
 // Masters take on an apprentice now and then, not the first day they could: about once a week.
 bool thisWeek(const std::string& id, std::int64_t day)
@@ -187,9 +194,29 @@ const char* skillFamily(const std::string& title)
     return "general";
 }
 
-double workPace(double skill)
+double workPace(double skill, double level)
 {
-    return std::clamp(1.25 - (std::isfinite(skill) ? skill : 0) / 200, .75, 1.25);
+    return std::clamp(1.25 - ((std::isfinite(skill) ? skill : 0) - (std::isfinite(level) ? level : 50) + 50) / 200, .75, 1.25);
+}
+
+int Society::retireAge(const std::string& resident)
+{
+    return RetireLeast + int(std::hash<std::string>{}(resident + "|retire") % (RetireMost - RetireLeast + 1));
+}
+
+double Society::tradeLevel(const Position& p) const
+{
+    return p.level;                                 // (A business's: its hardest craft's; help and other posts none.)
+}
+
+bool Society::important(const std::string& resident) const
+{
+    // In a master's place (a skilled trade, at its level), keeping its own shop, or the clergy.
+    const auto* job = jobOf(resident);
+    if (!job)
+        return false;
+    const double level = tradeLevel(*job);
+    return (level >= TradeSkilled && skill(resident, job->id) >= level) || job->role == "merchant" || clergy(job->title);
 }
 
 double Society::familySkill(const std::string& resident, const std::string& family) const
@@ -252,7 +279,7 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
     found->second.holder = id;
     found->second.vacantSince = -1;
     auto& known = c.skill[skillKey(id, p->id)];
-    known = std::max(known, 35.0);                     // A stranger who has done this work elsewhere.
+    known = std::max({known, 35.0, p->level});        // A stranger who has done this work elsewhere, as well as it needs.
     forgetCareers();
     return {"newcomer", id, found->second.lastHolder, "came from outside to take up " + p->title};
 }
@@ -280,6 +307,11 @@ void Society::buildPositions()
         p.endHour = r.endHour;
         p.route = r.route;
         p.paid = r.paid;
+        // (A business's trade: the skill its hardest craft needs. Doc 64, Phase 8.)
+        if (p.role == "merchant" || items::producerFor(p.title))
+            if (const auto* business = items::businessFor(p.title))
+                for (const auto* k : items::craftsFor(business->id))
+                    p.level = std::max(p.level, double(k->skill));
         positionIndex_[p.id] = positions_.size();
         positions_.push_back(std::move(p));
     }
@@ -288,13 +320,18 @@ void Society::buildPositions()
 
 void Society::defaultCareers()
 {
-    // Every founder holds the job they were written with, as skilled as their years suggest.
+    // Every founder holds the job they were written with, about as skilled as its trade needs and its years suggest
+    // (doc 64, Phase 8): about half of a skilled trade's founders at its level, the rest short of it and working toward
+    // it; a plain post's a little general experience.
     state_.careers = {};
     for (const auto& p : positions_)
     {
         state_.careers.positions[p.id].holder = p.founder;
         const auto* r = spec(p.founder);
-        state_.careers.skill[skillKey(p.founder, p.id)] = std::clamp(30.0 + (r ? r->age : 20), 40.0, 90.0);
+        const double age = r ? r->age : 30, level = tradeLevel(p), u = lotOf(p.id + "|skill");
+        state_.careers.skill[skillKey(p.founder, p.id)] =
+            level <= 0 ? std::clamp(10 + (age - 16) * .8 + 10 * (u - .5), 5., 45.)
+                       : std::clamp(level - 8 + (age - 25) * .4 + 12 * u, 5., SkillTop);
     }
     forgetCareers();
 }
@@ -466,6 +503,52 @@ std::vector<CareerNote> Society::revived(const std::string& resident)
     return notes;
 }
 
+void Society::splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes)
+{
+    // A crowded household (more than HouseholdMost living there) sends a young grown member (18 to 32) to a home of its
+    // own, weekly: a free home in its town, one written for someone and now empty (doc 64, Phase 8; the user, 2026-10-15:
+    // households split only into free homes). With none free it stays together.
+    if (day % 7 != 3)
+        return;
+    std::map<std::string, std::vector<std::string>> homes;
+    std::set<std::string> taken;
+    for (const auto& [id, life] : state_.residents)
+        if (world.alive(id) && !life.homeCell.empty())
+        {
+            homes[life.homeCell].push_back(id);
+            taken.insert(life.homeCell);
+            if (!life.relocationCell.empty())
+                taken.insert(life.relocationCell);  // (One already on its way there.)
+        }
+    const auto townOf = [&](const std::string& cell) { return day_.communityOf ? day_.communityOf(cell) : storeFor(cell); };
+    std::map<std::string, std::vector<Spot>> free;
+    for (const auto& r : authored_.residents)
+        if (!r.home.cell.empty() && !communalHome(r.home.cell) && taken.insert(r.home.cell).second)
+            free[townOf(r.home.cell)].push_back(r.home);
+    for (const auto& [home, members] : homes)
+    {
+        if (int(members.size()) <= HouseholdMost || communalHome(home))
+            continue;
+        auto& open = free[townOf(home)];
+        if (open.empty())
+            continue;
+        std::string leaving;
+        double best = -1;
+        for (const auto& id : members)
+            if (const int age = world.age(id); age >= 18 && age <= 32 && !state_.careers.spouses.count(id))
+                if (const double l = lotOf(id + "|leaves|" + std::to_string(day)); l > best)
+                    best = l, leaving = id;
+        if (leaving.empty())
+            continue;
+        const auto to = open.back();
+        if (moveHome(leaving, to.cell, to.x, to.y))
+        {
+            open.pop_back();
+            notes.push_back({"left home", leaving, {}, "a home of its own at " + to.cell});
+        }
+    }
+}
+
 std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& world)
 {
     std::vector<CareerNote> notes;
@@ -541,7 +624,12 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             if (coins > 0)
                 bequeath(dead, heirs[h], "", 0, coins);
         }
-        for (const std::string item : {"herbs", "meal"})
+        // And all its goods (doc 64, Phase 8: kin inherit everything), each shared the same way.
+        std::vector<std::string> goods;
+        for (const auto& [item, n] : estate.stock)
+            if (n > 0)
+                goods.push_back(item);
+        for (const auto& item : goods)
         {
             const int total = stock(estate, item);      // Likewise taken once, before sharing.
             for (std::size_t h = 0; h < heirs.size() && total > 0; ++h)
@@ -556,24 +644,82 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         it = c.estates.erase(it);
     }
 
-    // Empty positions are filled, not all at once: an apprentice after two days, family after three, anyone local
-    // who is out of work after five. Whoever moves up leaves their own job empty in turn.
+    // Retirement (doc 64, Phase 8): a wolf in paid work (a trade, the watch) leaves its post at its own age once there's
+    // someone to take it on (its apprentice; family or a local out of work, as skilled as the trade needs), and the post
+    // falls to them; with nobody, it works on. The clergy, a great House's head and the unpaid (a storyteller, a beggar)
+    // keep theirs: the realm's elders as they were written. (Each retiring wolf's successor is its own: one wolf free
+    // to take a post doesn't let a dozen retire.)
+    std::set<std::string> claimed;
+    for (auto& p : positions_)
+    {
+        auto& ps = c.positions[p.id];
+        if (ps.holder.empty() || !alive(ps.holder) || !p.paid || clergy(p.title) || houseHead(p.title) ||
+            world.age(ps.holder) < retireAge(ps.holder))
+            continue;
+        const auto kind = skillFamily(p.title);
+        std::string successor = alive(ps.apprentice) && !claimed.count(ps.apprentice) ? ps.apprentice : std::string();
+        for (auto other = state_.residents.begin(); successor.empty() && other != state_.residents.end(); ++other)
+        {
+            const auto& id = other->first;
+            const int age = world.age(id);
+            if (id == ps.holder || claimed.count(id) || !alive(id) || age < 16 || age >= retireAge(id) || apprenticedTo(id) ||
+                std::max(skill(id, p.id), familySkill(id, kind)) < p.level)
+                continue;
+            if ((this->family(ps.holder, id) && rank(jobOf(id)) < rank(&p)) ||
+                (!jobOf(id) && (!world.near || world.near(p.work.cell, other->second.homeCell))))
+                successor = id;
+        }
+        if (successor.empty())
+            continue;
+        claimed.insert(successor);
+        notes.push_back({"retired", ps.holder, {}, p.title});
+        ps.lastHolder = ps.holder;
+        ps.holder.clear();
+        ps.vacantSince = now;
+        forgetCareers();
+    }
+
+    // Empty positions are filled, not all at once (doc 64, Phase 8; the user's succession rule, 2026-10-14):
+    //  - its apprentice after two days;
+    //  - a masters' trade, after a day, a master idle or working below its level;
+    //  - family after three, a local out of work after five: as skilled as the trade needs (its best at that kind of
+    //    work);
+    //  - else, after five, the best-trained wolf about who isn't in a master's place or an important post: it heads the
+    //    business and works toward mastership.
+    // Whoever moves up leaves its own post empty in turn.
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
         if (!ps.holder.empty() || ps.vacantSince < 0 || state_.memory.closed.count(p.id))
             continue;                                // (A post its business let go stays empty: doc 64, Phase 6.)
-        const double waited = now - ps.vacantSince;
+        const double waited = now - ps.vacantSince, level = tradeLevel(p);
+        const auto family = skillFamily(p.title);
+        const auto trained = [&](const std::string& id) { return std::max(skill(id, p.id), familySkill(id, family)); };
         std::string chosen, how;
-        if (waited >= 2 && alive(ps.apprentice) && skill(ps.apprentice, p.id) >= 30)
+        if (waited >= 2 && alive(ps.apprentice))
             chosen = ps.apprentice, how = "the apprentice steps up";
+        if (chosen.empty() && waited >= 1 && level >= TradeMasters)
+        {
+            double best = -1;
+            for (const auto& [id, life] : state_.residents)
+            {
+                const auto* own = jobOf(id);
+                if (!alive(id) || world.age(id) < 16 || apprenticedTo(id) || trained(id) < level || (own && tradeLevel(*own) >= level) ||
+                    (own && own->role == "merchant") || (world.near && !world.near(p.work.cell, life.homeCell)))
+                    continue;
+                if (const double t = trained(id); t > best)
+                    best = t, chosen = id;
+            }
+            if (!chosen.empty())
+                how = "a master comes to the trade";
+        }
         if (chosen.empty() && waited >= 3 && !ps.lastHolder.empty())
         {
             double best = -1;
             // Family carry on a family's trade when it is a step up for them (or they have no work): the son takes
             // over the stall, but the stallkeeper doesn't leave it to fetch errands.
             for (const auto& [id, life] : state_.residents)
-                if (family(ps.lastHolder, id) && alive(id) && world.age(id) >= 16 && rank(jobOf(id)) < rank(&p))
+                if (this->family(ps.lastHolder, id) && alive(id) && world.age(id) >= 16 && rank(jobOf(id)) < rank(&p) && trained(id) >= level)
                 {
                     const double score = skill(id, p.id) * 2 + world.regard(id, ps.lastHolder) + world.age(id) / 10.0;
                     if (score > best)
@@ -586,7 +732,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         {
             double best = -1;
             for (const auto& [id, life] : state_.residents)
-                if (!jobOf(id) && !apprenticedTo(id) && alive(id) && world.age(id) >= 16 &&
+                if (!jobOf(id) && !apprenticedTo(id) && alive(id) && world.age(id) >= 16 && world.age(id) < retireAge(id) && trained(id) >= level &&
                     (!world.near || world.near(p.work.cell, life.homeCell)))
                 {
                     const double score = skill(id, p.id) * 2 + (ps.lastHolder.empty() ? 0 : world.regard(ps.lastHolder, id));
@@ -595,6 +741,18 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
                 }
             if (!chosen.empty())
                 how = "someone local takes it on";
+        }
+        if (chosen.empty() && waited >= 5 && level > 0)
+        {
+            // The user's rule: the best-trained, not already in a master's place or an important post.
+            double best = -1;
+            for (const auto& [id, life] : state_.residents)
+                if (alive(id) && world.age(id) >= 16 && world.age(id) < retireAge(id) && !apprenticedTo(id) && !important(id) &&
+                    rank(jobOf(id)) < rank(&p) && (!world.near || world.near(p.work.cell, life.homeCell)))
+                    if (const double t = trained(id); t > best)
+                        best = t, chosen = id;
+            if (!chosen.empty())
+                how = "the best-trained takes it on, to work toward mastership";
         }
         if (chosen.empty())
             continue;
@@ -613,24 +771,28 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         ps.holder = chosen;
         ps.vacantSince = -1;
         auto& known = c.skill[skillKey(chosen, p.id)];
-        known = std::max({known, 10.0, .5 * familySkill(chosen, skillFamily(p.title))});   // Some of it carries over.
+        known = std::max({known, 5.0, familySkill(chosen, family)});   // (Its hand at that kind of work carries over.)
         notes.push_back({"succession", chosen, ps.lastHolder, p.title + ": " + how});
         forgetCareers();
     }
 
-    // Apprenticeships: finished at skill 70; taken on by an older or accomplished master, now and then.
+    // Apprenticeships (every trade has them: the user, 2026-09-27; doc 64, Phase 8): a qualified hand takes on a young
+    // wolf now and then, until it reaches the trade's level (TradeSkilled for a plain trade): family and household
+    // first, one out of work, or one working alongside it; a masters' trade takes the young from plain work too. A
+    // skilled trade's master must be at its level; a plain trade's, its years or TradeSkilled.
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
+        const double level = tradeLevel(p), target = std::max(level, TradeSkilled);
         if (!ps.apprentice.empty() && (!alive(ps.apprentice) || ps.apprentice == ps.holder))
             ps.apprentice.clear();
-        if (!ps.apprentice.empty() && skill(ps.apprentice, p.id) >= 70)
+        if (!ps.apprentice.empty() && skill(ps.apprentice, p.id) >= target)
         {
             notes.push_back({"apprenticeship completed", ps.apprentice, ps.holder, p.title});
             ps.apprentice.clear();
         }
-        if (!ps.apprentice.empty() || !alive(ps.holder) || p.role == "guard" || !thisWeek(p.id, today) ||
-            (world.age(ps.holder) < 35 && skill(ps.holder, p.id) < 70))
+        const bool qualified = skill(ps.holder, p.id) >= target || (level < TradeSkilled && world.age(ps.holder) >= 35);
+        if (!ps.apprentice.empty() || !alive(ps.holder) || p.role == "guard" || !thisWeek(p.id, today) || !qualified)
             continue;
         std::string chosen;
         int bestTier = -1, bestAge = 1000;
@@ -638,31 +800,73 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         for (const auto& [id, life] : state_.residents)
         {
             const int age = world.age(id);
-            if (id == ps.holder || !alive(id) || age < 12 || age > 25 || apprenticedTo(id))
+            if (id == ps.holder || !alive(id) || age < 12 || age >= 24 || apprenticedTo(id))
                 continue;
             const auto* own = jobOf(id);
             const bool alongside = own && own->work.cell == p.work.cell;
-            if (own && !alongside)
+            // (A masters' trade would take the young from plain work too, doc 63's model, but only while the realm has
+            // wolves idle to fill the post left: with none, it stays empty and the realm goes short. Not yet: doc 64.)
+            const bool plain = own && level >= TradeMasters && tradeLevel(*own) < 10 && own->role != "merchant" && slack_ > .03;
+            if (own && !alongside && !plain)
                 continue;                             // Busy with work elsewhere.
-            const int tier = family(ps.holder, id) ? 3 : household(ps.holder, id) ? 2
+            const int tier = this->family(ps.holder, id) ? 3 : household(ps.holder, id) ? 2
                              : alongside && world.regard(ps.holder, id) >= 30 ? 1
-                             : !own && (!world.near || world.near(p.work.cell, life.homeCell)) ? 0 : -1;
+                             : (!own || plain) && (!world.near || world.near(p.work.cell, life.homeCell)) ? 0 : -1;
             if (tier > bestTier || (tier == bestTier && tier >= 0 && age < bestAge))
                 bestTier = tier, bestAge = age, chosen = id;
         }
         if (bestTier < 0)
             continue;
+        // (Taken from plain work: its post falls empty for another.)
+        if (const auto* own = jobOf(chosen); own && own->work.cell != p.work.cell)
+        {
+            auto& was = c.positions[own->id];
+            was.lastHolder = chosen;
+            was.holder.clear();
+            was.vacantSince = now;
+            notes.push_back({"vacancy", chosen, {}, own->title});
+        }
         ps.apprentice = chosen;
         notes.push_back({"apprenticeship", chosen, ps.holder, p.title});
         forgetCareers();
     }
 
-    // A post nobody here has taken in eight days: a stranger is sent for, with the last holder's kind of manner.
+    splitHouseholds(today, world, notes);
+
+    // Each town's number (doc 62: the world stays about the size it was made; the user, 2026-10-14: births follow deaths):
+    // how many live there against how many did on its first day, less the children and strangers already asked for.
+    std::map<std::string, int> living, wanted;
+    const auto townOf = [&](const std::string& id) {
+        const auto r = state_.residents.find(id);
+        auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
+        // (A hand lodged at a farm's bunkhouse lives at its own home still: doc 64, Phase 8.)
+        if (const auto lodged = state_.memory.lodging.find(id); lodged != state_.memory.lodging.end())
+            home = lodged->second.substr(0, lodged->second.find('|'));
+        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
+        return town.empty() ? communityOfResident(id) : town;
+    };
+    for (const auto& [id, life] : state_.residents)
+        if (alive(id))
+            ++living[townOf(id)];
+    for (const auto& [town, n] : living)
+        if (!c.population.count(town))
+            c.population[town] = n;                 // (The first day: the town as it is.)
+    for (const auto& [town, n] : c.population)
+        wanted[town] = n - living[town];
+    for (const auto& r : requests_)
+        if (r.kind == "birth" || r.kind == "newcomer")
+            --wanted[day_.communityOf ? day_.communityOf(r.home.cell) : std::string()];
+    // A post nobody here has taken in eight days, in a town under its number: a stranger is sent for, with the last
+    // holder's kind of manner. (A town at its number fills its posts from its own: doc 64, Phase 8.)
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
         if (!ps.holder.empty() || ps.vacantSince < 0 || ps.newcomerAsked || now - ps.vacantSince < 8 || state_.memory.closed.count(p.id))
             continue;
+        auto& under = wanted[day_.communityOf ? day_.communityOf(p.work.cell) : communityOfResident(p.founder)];
+        if (under <= 0)
+            continue;
+        --under;
         std::string model = spec(ps.lastHolder) ? ps.lastHolder : p.founder;
         if (!spec(model))
             continue;
@@ -689,24 +893,6 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     // residents than it should (newcomers count), no more in a day than it is short; a married couple at home
     // together, the mother of an age to bear, a year or so apart, no more than three. About one a month for each who
     // can, while the town is short.
-    std::map<std::string, int> living, wanted;
-    const auto townOf = [&](const std::string& id) {
-        const auto r = state_.residents.find(id);
-        const auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
-        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
-        return town.empty() ? communityOfResident(id) : town;
-    };
-    for (const auto& [id, life] : state_.residents)
-        if (alive(id))
-            ++living[townOf(id)];
-    for (const auto& [town, n] : living)
-        if (!c.population.count(town))
-            c.population[town] = n;                 // (The first day: the town as it is.)
-    for (const auto& [town, n] : c.population)
-        wanted[town] = n - living[town];
-    for (const auto& r : requests_)
-        if (r.kind == "birth" || r.kind == "newcomer")
-            --wanted[day_.communityOf ? day_.communityOf(r.home.cell) : std::string()];
     for (const auto& [a, b] : c.spouses)
     {
         if (!(a < b) || !alive(a) || !alive(b) || !household(a, b))

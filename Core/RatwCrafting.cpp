@@ -304,7 +304,8 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             // The batch's quality (doc 35, Part 4): the maker's skill at their trade, the materials (a crude one drags
             // it down, a fine one lifts it) and the day's luck. Fine needs a skill of 60 (and is common only past 75), masterwork 85.
             const auto* job = jobOf(id);
-            const double craft = job ? skill(id, job->id) : 30;
+            // (Against its trade's level, as its pace is: a hand at the level crafts as a 50 did. Doc 64, Phase 8.)
+            const double craft = job ? skill(id, job->id) - job->level + 50 : 30;
             const double fromMaterials = used > 0 ? (qualities / used - 1) * 15 : 0;
             const double luck = (double(std::hash<std::string>{}(id + "|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 1000) / 1000 - .5) * 40;
             // A Gift lent to it (doc 43): the forge kept hot, the clay true, the flaws heard; once, for this batch.
@@ -346,7 +347,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             worked = since;
     lastAtWork_[id] = absoluteDay;
     if (const auto* job = jobOf(id); job && worked > 0)
-        worked /= workPace(skill(id, job->id)) * (1 - ImprovementPace * improvement(job->id));
+        worked /= workPace(skill(id, job->id), job->level) * (1 - ImprovementPace * improvement(job->id));
     if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
         worked *= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
     // A shopkeeper who also brings goods in (a stables' stock-breeding) does so with its time; one who makes things,

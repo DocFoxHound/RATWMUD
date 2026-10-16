@@ -2815,13 +2815,13 @@ void World::tendOldAge()
     const auto day = std::uint64_t(std::max(0.0, std::floor(calendarDays_)));
     for (const auto& [id, e] : entities_)
     {
-        if (!e.npc || e.dead || e.transient || e.age < 70 || !society_.resident(id))
+        if (!e.npc || e.dead || e.transient || !society_.resident(id))
             continue;
         if (const auto* spec = society_.spec(id); spec && spec->protectedNpc)
             continue;
-        // A year's chance (placeholders): 4% at seventy, 8% at seventy-five, 15% at eighty, 30% at eighty-five, half
-        // from ninety; a day's share of it.
-        const double yearly = e.age >= 90 ? .5 : e.age >= 85 ? .3 : e.age >= 80 ? .15 : e.age >= 75 ? .08 : .04;
+        // A year's chance by age (doc 64, Phase 8: Gompertz, doc 63's model): DeathA * e^(DeathB * age), and more for
+        // the very young; about 1% at forty, 7% at sixty, 15% at seventy, a third at eighty. A day's share of it.
+        const double yearly = std::min(1., Society::DeathA * std::exp(Society::DeathB * e.age) + (e.age < 5 ? Society::InfantDeath : 0.));
         const double daily = 1 - std::pow(1 - yearly, 1.0 / calendar::DaysPerYear);
         std::uint64_t h = 1469598103934665603ULL;
         for (const unsigned char c : "old age|" + id + "|" + std::to_string(day))
@@ -2832,7 +2832,7 @@ void World::tendOldAge()
     }
     for (const auto& id : gone)
         if (setDead(id, true).ok)
-            recordEvent({"old age", id, {}, {}, 0, 0, {}, 0, 0, "died of old age"});
+            recordEvent({"old age", id, {}, {}, 0, 0, {}, 0, 0, entity(id) && entity(id)->age >= 60 ? "died of old age" : "died"});
 }
 
 void World::tendMarriages()
@@ -2913,6 +2913,58 @@ std::vector<ResidentRequest> World::takeResidentRequests()
         if (!freeSpotNear(r.home.cell, r.home.x, r.home.y))
             r.home = {};                             // The host will find them somewhere to stay.
     return requests;
+}
+
+int World::makeRequestedResidents()
+{
+    int made = 0;
+    for (const auto& request : takeResidentRequests())
+    {
+        const auto* model = society_.spec(request.templateId);
+        const auto* body = entity(request.templateId);
+        if (!model || !body)
+            continue;
+        const bool child = request.kind == "birth";
+        std::string id;
+        for (int n = int(society_.state().residents.size()); id.empty() || society_.spec(id) || entity(id); ++n)
+            id = std::string(child ? "born_" : "new_") + std::to_string(n);
+        ResidentSpec r = *model;
+        r.id = id;
+        r.name = request.name;
+        r.role = "civilian";
+        r.workLabel = "-";
+        r.age = request.age;
+        r.home = r.work = r.evening = request.home.cell.empty() ? model->home : request.home;
+        r.route.clear();
+        r.wander.clear();
+        r.paid = false;
+        r.herbs = 0;
+        r.meals = 1;
+        r.joinable = r.protectedNpc = false;
+        r.description = child ? "A young wolf, born here to " + model->name + "'s family." : "A stranger lately come to town.";
+        r.backstory = child ? "Born in the world, not written." : std::string();
+        const auto purse = child ? std::int64_t(0)
+                                 : std::int64_t(std::llround(Society::NewcomerWageDays * society_.labourDay(communityOf(r.home.cell))));
+        if (!society_.addResident(r, purse))
+            continue;
+        Entity e = *body;
+        e.id = id;
+        e.name = r.name;
+        e.age = r.age;
+        e.lastBirthdayDay = calendarDays_;
+        e.description = r.description;
+        e.activity = r.workLabel;
+        e.dead = false;
+        e.cellId = r.home.cell;
+        e.position = {r.home.x, r.home.y};
+        e.path.clear();
+        e.velocity = {};
+        entities_[id] = e;
+        index_.dirty = true;
+        welcomeResident(request, id);
+        ++made;
+    }
+    return made;
 }
 
 Result World::welcomeResident(const ResidentRequest& request, const std::string& id)

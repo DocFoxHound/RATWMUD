@@ -154,6 +154,7 @@ struct Position
     double startHour = 8, endHour = 17;
     std::string route;
     bool paid = true;
+    double level = 0;     // The skill its trade needs (Society::tradeLevel; doc 64, Phase 8).
 };
 // Who holds a position now, who is learning it, and since when it has stood empty (-1: it hasn't).
 struct PositionState
@@ -199,7 +200,9 @@ struct ResidentRequest
 // carries to a similar job. "keeping the inn" and "keeping the stall" are both trade; a sawyer and a quarryman labour.
 const char* skillFamily(const std::string& title);
 // How long paid work takes at a skill (1 at 50; faster for the skilled, slower for beginners): 0.75..1.25.
-double workPace(double skill);
+// How long a spell's work takes against the usual: a hand at its trade's level (doc 64, Phase 8; 50 when unknown)
+// works at the usual pace, a better one up to a quarter quicker, a worse one up to a quarter slower.
+double workPace(double skill, double level = 50);
 // Something that happened to a career, for the world's event log.
 struct CareerNote
 {
@@ -540,6 +543,8 @@ class Society
     // A new resident arrives with their authored purse; a changed one keeps purse and needs but re-plans; one
     // `from` no longer has leaves, their purse and goods returning to the treasury. Routes follow `from`.
     bool adoptResident(const Society& from, const std::string& id);
+    // A resident made in the running world (a birth, a newcomer: doc 64, Phase 8), with its purse (new money).
+    bool addResident(const ResidentSpec& resident, std::int64_t purse);
     // Takes patrol routes and every resident's wander area from `from` (a validated candidate society).
     void adoptLayers(const Society& from);
     static int stock(const EconomyAccount& account, const std::string& item);
@@ -889,6 +894,27 @@ class Society
     //  - Daily relief: a household short of a day's food money is given it, by the church and then its town, out of
     //    what each set aside.
     static constexpr double TaxRate = .08, TitheRate = .06, HomeShareLeast = .3, HomeShareMost = .7;
+    // Lives, skills and masters (doc 64, Phase 8; doc 63's model; RatwCareers.cpp, RatwWorld.cpp's tendOldAge).
+    //  - Deaths by age: a yearly chance of DeathA * e^(DeathB * years), and InfantDeath under five.
+    //  - Each wolf retires at its own age, RetireLeast..RetireMost (a lot by its id): it leaves its post.
+    //  - A post's trade has a level (tradeLevel: the skill its business's hardest craft needs). Learning at work, a
+    //    year of it: LearnBeside beside a better hand (up to five short of it, or the level where it's there), LearnHead
+    //    for a shop's head short of its level, LearnAlone otherwise; never past SkillTop.
+    //  - Apprentices (every trade: the user, 2026-09-27) learn beside a qualified master on ApprenticePay of the business's
+    //    wage, until they reach the trade's level (TradeSkilled for a plain trade); a masters' trade (TradeMasters)
+    //    takes the young from plain work too.
+    //  - Succession: the apprentice; for a masters' trade a master idle or working below its level; family or a local
+    //    as skilled as the trade needs; else (the user's rule, 2026-10-14) the best-trained wolf about who isn't in a
+    //    master's place or an important post, who heads it and works toward mastership.
+    //  - A household of more than HouseholdMost sends a young grown member to a free home in its town.
+    static constexpr double DeathA = .0004, DeathB = .085, InfantDeath = .03;
+    static constexpr int RetireLeast = 58, RetireMost = 66, HouseholdMost = 6;
+    static constexpr double LearnBeside = 8, LearnHead = 4, LearnAlone = .3, SkillTop = 85, ApprenticePay = .5;
+    static constexpr double TradeSkilled = 30, TradeMasters = 50;
+    static int retireAge(const std::string& resident);
+    double tradeLevel(const Position& p) const;
+    bool important(const std::string& resident) const;     // In a master's place, keeping its own shop, or the clergy.
+    void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
     static constexpr int HomeNeedDays = 10, ServantMonths = 6;
     double monthIncomeOf(const std::string& account) const;
     static bool unearnedKind(const std::string& kind);

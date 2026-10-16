@@ -176,7 +176,8 @@ void aPawLent()
     bake(true, helped, helpedFlour);
     std::cout << "  the bakery, an hour: " << alone << " batches alone (" << aloneFlour << " flour), " << helped << " with a paw at x2.0 (" << helpedFlour
               << " flour)\n";
-    expect(alone > 0 && helped >= alone * 3 / 2, "with a paw at x2.0 the batches come sooner: " + std::to_string(helped) + " against " +
+    // (Sooner, though not twice as many: a skilled baker's batches come about as fast as it looks for the next, doc 64.)
+    expect(alone > 0 && helped > alone, "with a paw at x2.0 the batches come sooner: " + std::to_string(helped) + " against " +
                                                     std::to_string(alone));
     expect(aloneFlour == alone && helpedFlour < helped, "and now and then one input isn't used up: " + std::to_string(helpedFlour) +
                                                             " flour for " + std::to_string(helped) + " batches");
@@ -238,8 +239,12 @@ void farmerBringsIn()
 {
     auto s = farmTown();
     double day = 10. / 24;
+    s.takeJournal();
     work(s, 700, day);
-    expect(held(s, "farmer", "wheat") == 2 && held(s, "farmer", "vegetables") == 2, "a spell in the fields brings in wheat and vegetables");
+    // (Counted as brought in: the mill may buy the wheat at once.)
+    const auto first = s.takeJournal();
+    expect(count(first, "brought in", "wheat") == 2 && count(first, "brought in", "vegetables") == 2,
+           "a spell in the fields brings in wheat and vegetables");
     work(s, 3 * 3600, day);
     expect(held(s, "farmer", "wheat") <= Society::ProducerKept, "never more than a farmer keeps");
     auto winter = farmTown();
