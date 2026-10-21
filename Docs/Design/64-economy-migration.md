@@ -1131,3 +1131,62 @@ A newcomer comes at least as skilled as the trade needs.
 - **The tick:** 0.111 ms, up from Phase 7's 0.094, in errands (0.064 against 0.046): more wolves about their days as
   apprentices and in retirement.
 
+
+### Phase 3b, first part: output follows sales (2026-10-21)
+
+**What was wrong.** A 60-day run of Phase 8 from DEV (build 34, deterministic) had 14 days with wolves starving (96 at
+worst, day 39), 503 starving-days in all. Most were in Oakhaven and Frosthollow, not the capital:
+
+- their shops had cash (1,000–4,000p) and nothing to sell: Oakhaven's baker had no flour from day 8, its inn no raw meat
+  or milk, Frosthollow's provisioner nothing to cure. Neither town has a mill, a butcher or a dairy; it all comes by road;
+- the roads' standing orders were filled a third to a half (Ridgemere's, week 3: 12,083 of 30,526 goods), because the
+  selling towns had none to spare: **a shop made only up to `GoodsKept` (4) of a good, a producer brought in only up to
+  `ProducerKept` (40), a food shop took only `FoodShelf` (30) from the land**, however much it sold or was ordered;
+- an order raised itself only from the buyer's use, and a baker with no flour sells no bread, so Oakhaven's baker's
+  order stayed at 6 flour a week (36 loaves for 72 wolves);
+- the trader looked an order over after handing that week's goods over, when the shop looked well stocked, so it was
+  never raised.
+
+**Built:**
+
+- **`Society::shelfTarget(till, good, least, orders)`:** what a seller keeps is its sales a day (the running average,
+  missed sales counting) times the good's `keepDays`, a fifth over for a staple (`StapleSlack`); with orders, at least
+  its share of a week of the roads' orders on the town and half a supplier's store. The old fixed stores are floors.
+  At most `ShelfMost` (2,000).
+- **Missed sales from selling out:** a seller that sold its last of a good counts, at the day's end, the buyers after as
+  half again its day's sales (`ranOut_`), so a shelf that empties every day keeps more until it doesn't.
+- **Used everywhere the old stores bound output:** a maker's goods and the materials for the batches that fill them
+  (`Society::craft`), a supplier's restocking, a producer's yield (`produce`), producers selling to food shops
+  (`producersSell`), the hands players and odd jobs lend a farm, and what a town has to spare and wants on the roads
+  (`marketOf`).
+- **The roads' orders are shared among a town's producers too**, not only its makers (`setStandingOrders`): a farm keeps
+  its share of the grain ordered from its town.
+- **The trader reviews an order before handing the week's goods over** (`tradeCaravanArrived`).
+- **econ_watch:** `RATW_STOCK=account,...` writes those accounts' cash and stock every three game hours to `stock.csv`;
+  `orders.csv` has every standing order at each day's end (a week's ask, delivered and short since agreed).
+- **Tests:** `crafting_tests` `outputFollowsSales`; the roads' `makersKeepWhatIsOrdered` holds as it was.
+
+**Measured** (60 days from DEV, the default pace; `artifacts/economy/2026-10-21-phase8` and `-phase3b`):
+
+| | Phase 8 | Phase 3b |
+|---|---|---|
+| days with wolves starving | 14 | 0 |
+| starving-days, the worst day | 503, 96 | 0, 0 |
+| hungry, the worst day | 141 | 21 |
+| small towns' households under a day's food (days 30–60) | 91% | 62% |
+| Ridgemere's shop food (days 5–60): least, median | 0, 564 | 1,098, 2,508 |
+| household Gini, day 60 | 0.58 | 0.63 |
+| the poorer half, day 60 | 0.11 | 0.09 |
+| ms a tick | 0.114 | 0.070 |
+
+- **No starving at all,** and the tick is cheaper: fewer wolves walking from shop to empty shop.
+- **The small towns are still lean.** Orders now ask for what the towns use (36,500 goods a week on day 58, from
+  10,300 on day 9) and are filled about half (flour and oats from Larkfield, rabbit and apples from Southmeadow). That's
+  the land's hands, not a cap: at the default pace a farm worker brings in about 8 oats a day. Phase 6's hiring by
+  sales works only with calibrated hours on, so the old pace has no way to add hands to the land.
+- **The Gini widens faster** (0.63 against 0.58 at day 60; the model's 0.39). More goes through the land: the producers'
+  own purses rise from 14% to 16% of the money and paid workers' fall from 13% to 10%. The widening was there before
+  (Phase 8), and is the next research.
+
+**Left of Phase 3b:** seasonal fields (sowing and harvest by hours, a year's store), wood laid in for winter, and tool
+wear in a batch's cost (tools still bought from the worker's own purse, `tradeUpkeep`).

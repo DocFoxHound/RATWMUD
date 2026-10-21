@@ -190,6 +190,8 @@ bool Society::onCredit(const std::string& seller, const std::string& buyer, cons
         debt.second = state_.budgetDay;
     debt.first += price * quantity;
     soldToday_[seller][items::baseOf(item)] += quantity;
+    if (stockAll(a->second, items::baseOf(item)) == 0)
+        ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
     record("bought on credit", buyer, seller, item, quantity, 0);
     return true;
 }

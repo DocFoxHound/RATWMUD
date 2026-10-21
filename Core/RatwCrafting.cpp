@@ -160,6 +160,7 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
                 brought = int(std::floor(more)) + (lot < more - std::floor(more) ? 1 : 0);
                 kept = int(std::lround(ProducerKept * items::tradeKeep()));
             }
+            kept = shelfTarget(till, item, kept);   // (By what it sells, and the roads' orders on it: doc 64, Phase 3b.)
             if (const int held = stock(*account(till), item); held < kept)
             {
                 addCost(till, item, held, std::min(brought, kept - held), normalCost(id, item));
@@ -218,24 +219,49 @@ double Society::useRate(const std::string& till, const std::string& item) const
     return use;
 }
 
+int Society::shelfTarget(const std::string& till, const std::string& item, int least, bool orders) const
+{
+    const auto base = items::baseOf(item);
+    const auto* good = items::good(base);
+    double rate = 0;
+    if (const auto rates = sellRate_.find(till); rates != sellRate_.end())
+        if (const auto r = rates->second.find(base); r != rates->second.end())
+            rate = r->second;
+    // (Kept whole: a shelf for a day's keeping holds a whole one more.)
+    const double slack = good && good->staple ? StapleSlack : 1.;
+    int target = std::max(least, int(std::ceil(rate * keepDays(base) * slack)));
+    // A week of the roads' orders on it and half a supplier's store, kept for the caravan, as a smelter keeps bars to
+    // send (doc 61).
+    if (const auto* p = orders && (!good || good->keeps <= 0) && till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+        if (const auto ordered = ordersFrom_.find({communityOfResident(p->founder), base}); ordered != ordersFrom_.end())
+            target = std::max(target, ordered->second + SuppliesKept / 2);
+    return std::min(target, ShelfMost);
+}
+
 void Society::setStandingOrders(const std::map<std::pair<std::string, std::string>, int>& perWeek,
                                 std::map<std::string, std::int64_t> costs)
 {
     // Each of a town's makers of the good keeps its share: kept whole by every one, Ridgemere's six smiths each made
     // the city's week of nails for the towns, and sat on them.
+    // (And its producers': a farm's grain goes on the roads too, doc 64, Phase 3b.)
     std::map<std::pair<std::string, std::string>, int> makers;
     for (const auto& p : positions_)
+    {
+        std::set<std::string> made;
         if (const auto* business = p.role == "merchant" ? items::businessFor(p.title) : nullptr)
         {
-            std::set<std::string> made;
             for (const auto* k : items::craftsFor(business->id))
                 if (!k->out.empty())
                     made.insert(k->out.front().first);
-            const auto town = communityOfResident(p.founder);
-            for (const auto& item : made)
-                if (perWeek.count({town, item}))
-                    ++makers[{town, item}];
         }
+        else if (const auto* producer = items::producerFor(p.title))
+            for (const auto& [item, n] : producer->out)
+                made.insert(item);
+        const auto town = communityOfResident(p.founder);
+        for (const auto& item : made)
+            if (perWeek.count({town, item}))
+                ++makers[{town, item}];
+    }
     ordersFrom_.clear();
     for (const auto& [key, n] : perWeek)
     {
@@ -335,9 +361,10 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         }
     }
     // A supplier's shelves: what has run below a quarter of its store is bought back up from workshops and producers.
+    // (Its store by what it sells, doc 64, Phase 3b: SuppliesKept at least.)
     for (const auto& item : supplies)
-        if (const int held = stockAll(*account(till), item); held < SuppliesKept / 4)
-            buyMaterials(id, workCell, item, SuppliesKept - held, true);
+        if (const int store = shelfTarget(till, item, SuppliesKept); stockAll(*account(till), item) < store / 4)
+            buyMaterials(id, workCell, item, store - stockAll(*account(till), item), true);
     // The keeper's own time at work since it last looked (doc 64, Phase 3): a gap over two game hours is a new day's
     // work begun, not work done. The skilled get more done in an hour (workPace), and so do improved premises and a
     // player's paw lent; it goes to the business's work in hand, beside its help's spells (RatwResidents.cpp).
@@ -386,19 +413,22 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
         const auto town = communityOfResident(id);
         const double trade = items::townGoodOf(town, made) ? items::tradeKeep() : 1;
-        double kept = items::traded(made) && keeps ? SuppliesKept * trade
-                      : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
-        // And its share of a week of what the roads' standing orders take of it from this town, over what a caravan
-        // leaves (doc 61): kept at its usual store, a smelter had 60 bars to send whatever was ordered of it.
-        if (const auto ordered = ordersFrom_.find({town, made}); ordered != ordersFrom_.end() && keeps)
-            kept = std::max(kept, double(ordered->second + SuppliesKept / 2));
+        const double least = items::traded(made) && keeps ? SuppliesKept * trade
+                             : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
+        // Its store follows its sales (doc 64, Phase 3b): what it sells in its days' keeping, and its share of a week of
+        // what the roads' standing orders take of it from this town (doc 61: kept at its usual store, a smelter had 60
+        // bars to send whatever was ordered of it); the old store a floor.
+        const int kept = shelfTarget(till, made, int(least));
         const bool low = stockAll(*account(till), made) < kept;
         if (!low)
             continue;
-        // A seasonal good (grapes, apples) is laid in at the harvest, a store to last the year: SeasonalStore times as much.
+        // Materials for the batches that fill it, MaterialBatches at least. A seasonal good (grapes, apples) is laid in
+        // at the harvest, a store to last the year: SeasonalStore times as much.
+        const int perBatch = std::max(1, k->out.front().second);
+        const int batches = std::max(MaterialBatches, (kept + perBatch - 1) / perBatch);
         for (const auto& [item, count] : k->in)
         {
-            const int store = count * MaterialBatches * (items::seasonal(item) ? SeasonalStore : 1) + fresh(*k, item);
+            const int store = count * batches * (items::seasonal(item) ? SeasonalStore : 1) + fresh(*k, item);
             // (What it sells as a supplier too, a fishmonger's fish, it restocks as a supplier does, from the makers and
             // the land, never from the town's other suppliers: they'd only buy it back, round and round.)
             if (const int held = stockAll(*account(till), item); held < count * MaterialsLow || (store > count * MaterialBatches && held < store / 2))

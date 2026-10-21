@@ -88,7 +88,8 @@ std::int64_t Society::postOddJobs(const std::string& payer, const std::string& c
             communityOfResident(held->second.holder) != community)
             continue;
         const auto* store = account(tillOf(held->second.holder));
-        if (!store || stockAll(*store, producer->out.front().first) >= ProducerKept / 2)
+        const auto till = tillOf(held->second.holder);
+        if (!store || stockAll(*store, producer->out.front().first) >= shelfTarget(till, producer->out.front().first, ProducerKept) / 2)
             continue;
         OddJob j;
         j.kind = "a hand";

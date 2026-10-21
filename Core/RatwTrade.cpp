@@ -81,7 +81,11 @@ World::Market World::marketOf(const std::string& town) const
             for (const auto& [item, n] : k->out)
             {
                 const bool staple = std::find(supplies.begin(), supplies.end(), item) != supplies.end() || items::traded(item);
-                if (const int spare = Society::stockAll(*shelves, item) - (staple ? Society::SuppliesKept / 2 : Society::GoodsKept); spare > 0)
+                // (Over what it keeps for its own sales, doc 64, Phase 3b; not its store for the roads' orders, which is
+                // what it has to send.)
+                if (const int spare = Society::stockAll(*shelves, item) -
+                                      society_.shelfTarget(till, item, staple ? Society::SuppliesKept / 2 : Society::GoodsKept, false);
+                    spare > 0)
                 {
                     m.spare[item] += spare;
                     m.holders[item].push_back({till, spare});
@@ -90,11 +94,16 @@ World::Market World::marketOf(const std::string& town) const
             // (One store of each material, whichever crafts it goes into: a smith's iron for its nails, tools and
             // fittings is one store of bars, not one for each, doc 61; it was counted fourteen times over, and a town
             // with a smith never had iron to spare.)
+            // (Materials for the batches that fill its shelf by what it sells, as Society::craft buys them: doc 64, 3b.)
+            const int perBatch = k->out.empty() ? 1 : std::max(1, k->out.front().second);
+            const int kept = k->out.empty() ? 0 : society_.shelfTarget(till, k->out.front().first, Society::GoodsKept, false);
+            const int batches = std::max(Society::MaterialBatches, (kept + perBatch - 1) / perBatch);
             for (const auto& [item, n] : k->in)
-                tillWant[item] = std::max(tillWant[item], n * Society::MaterialBatches - Society::stockAll(*shelves, item));
+                tillWant[item] = std::max(tillWant[item], n * batches - Society::stockAll(*shelves, item));
         }
         for (const auto& item : supplies)
-            tillWant[item] = std::max(tillWant[item], Society::SuppliesKept / 2 - Society::stockAll(*shelves, item));
+            tillWant[item] = std::max(tillWant[item], society_.shelfTarget(till, item, Society::SuppliesKept / 2, false) -
+                                                          Society::stockAll(*shelves, item));
         for (const auto& [item, want] : tillWant)
             if (want > 0)
             {
@@ -424,28 +433,10 @@ void World::tradeCaravanArrived(Caravan& c)
     const auto* load = society_.account(c.account);
     if (!load)
         return;
-    // Its standing orders first, at the price agreed, as far as each buyer can pay; then the rest to whoever wants it.
-    for (auto& o : roads_.orders)
-    {
-        if (o.from != c.from || o.town != c.to)
-            continue;
-        int given = 0;
-        for (const auto& sort : Society::kindsHeld(*society_.account(c.account), o.item))
-        {
-            const auto* purse = society_.account(o.buyer);
-            const int k = int(std::min<std::int64_t>({o.perWeek - given, Society::stock(*society_.account(c.account), sort), 99,
-                                                      purse ? purse->cash / std::max<std::int64_t>(1, o.price) : 0}));
-            if (k > 0 && society_.sale(c.account, o.buyer, sort, k, o.price, "a standing order"))
-                given += k, made += o.price * k;
-            if (given >= o.perWeek)
-                break;
-        }
-        o.delivered += given;
-        o.shortfall += o.perWeek - given;
-    }
     // An order due to be looked at again that no porter has gone for (a town whose people all have work to do): the
     // trader agrees it again here, on the same terms a porter would have had (doc 61; the towns' iron stayed at the few
-    // bars of its first week).
+    // bars of its first week). Before this week's goods are handed over (doc 64, Phase 3b): judged after, a shop that had
+    // run out looked well stocked, and its order was never raised (Oakhaven's baker, 6 flour a week for 72 wolves).
     if (const auto* from = town(c.from))
         for (auto it = roads_.orders.begin(); it != roads_.orders.end();)
         {
@@ -466,6 +457,25 @@ void World::tradeCaravanArrived(Caravan& c)
             else
                 ++it;
         }
+    // Its standing orders first, at the price agreed, as far as each buyer can pay; then the rest to whoever wants it.
+    for (auto& o : roads_.orders)
+    {
+        if (o.from != c.from || o.town != c.to)
+            continue;
+        int given = 0;
+        for (const auto& sort : Society::kindsHeld(*society_.account(c.account), o.item))
+        {
+            const auto* purse = society_.account(o.buyer);
+            const int k = int(std::min<std::int64_t>({o.perWeek - given, Society::stock(*society_.account(c.account), sort), 99,
+                                                      purse ? purse->cash / std::max<std::int64_t>(1, o.price) : 0}));
+            if (k > 0 && society_.sale(c.account, o.buyer, sort, k, o.price, "a standing order"))
+                given += k, made += o.price * k;
+            if (given >= o.perWeek)
+                break;
+        }
+        o.delivered += given;
+        o.shortfall += o.perWeek - given;
+    }
     load = society_.account(c.account);
     for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
     {

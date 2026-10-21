@@ -117,10 +117,17 @@ void Society::spoil(std::int64_t day)
     for (auto& [till, goods] : sellRate_)
         for (auto& [item, rate] : goods)
             rate *= .7;
+    // A good it sold out of: the buyers who came after are counted too, as half again what it sold (doc 64, Phase 3b).
     for (const auto& [till, goods] : soldToday_)
         for (const auto& [item, n] : goods)
-            sellRate_[till][item] += .3 * n;
+        {
+            const auto out = ranOut_.find(till);
+            const auto* shelves = account(till);
+            const bool soldOut = out != ranOut_.end() && out->second.count(item) && shelves && stockAll(*shelves, item) == 0;
+            sellRate_[till][item] += .3 * (soldOut ? n + std::max(1., n * .5) : n);
+        }
     soldToday_.clear();
+    ranOut_.clear();
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
     for (const auto& [larder, taken] : larderTaken_)
@@ -960,7 +967,8 @@ void Society::producersSell(std::int64_t day)
                     continue;
                 // At the farm's own price (doc 64, Phase 4).
                 const std::int64_t price = pennies(priceAt(r.id, item));
-                const int count = int(std::min<std::int64_t>({left, FoodShelf - stockAll(*shelves, item), 99, spendable(till) / price}));
+                // (A shelf of it by what the shop sells, FoodShelf at least: doc 64, Phase 3b.)
+                const int count = int(std::min<std::int64_t>({left, shelfTarget(till, item, FoodShelf) - stockAll(*shelves, item), 99, spendable(till) / price}));
                 if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
                     left -= count;
             }

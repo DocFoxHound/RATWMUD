@@ -454,6 +454,8 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
         takings_[seller] += total;                  // (A shop's day's takings: its help share them.)
         weekTakings_[seller] += total;              // (And its week's, for its rent: doc 64, Phase 5.)
         soldToday_[seller][items::baseOf(item)] += quantity;
+        if (stockAll(s, items::baseOf(item)) == 0)
+            ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
     }
     record(kind, buyer, seller, item, quantity, total);
     return true;

@@ -481,6 +481,36 @@ void townsfolkBuy()
         expect(poorBought == 0, "a poor household keeps its food money");
     }
 }
+// Output follows sales (doc 64, Phase 3b): a bakery that sells out of bread day after day keeps more of it, its target
+// growing with what it sells, missed sales counting; one that sells none keeps the few it always kept. And it bakes to
+// the larger shelf.
+void outputFollowsSales()
+{
+    auto s = town();
+    const auto till = s.tillOf("baker");
+    expect(s.shelfTarget(till, "bread", Society::GoodsKept) == Society::GoodsKept, "a shelf with no sales keeps the few it always kept");
+    int before = Society::GoodsKept;
+    for (std::int64_t d = 1; d <= 6; ++d)
+    {
+        set(s, "baker", "bread", 12);
+        expect(s.sale(till, "scribe", "bread", 12, 1, "test: the morning's queue"), "the scribe's household buys the bread");
+        s.spoil(d);
+        const int now = s.shelfTarget(till, "bread", Society::GoodsKept);
+        expect(now >= before, "selling out, the shelf it keeps doesn't shrink (" + std::to_string(now) + ")");
+        before = now;
+        auto st = s.state();                        // (The bread eaten: conserved, it's only goods.)
+        st.accounts.at("scribe").stock.erase("bread");
+        expect(s.restore(st), "the bread eaten");
+    }
+    expect(before > 12, "a bakery selling out every day keeps more than it sold: " + std::to_string(before));
+    expect(s.shelfTarget(s.tillOf("smith"), "bread", Society::GoodsKept) == Society::GoodsKept, "another shop's shelf is its own");
+    set(s, "baker", "bread", 0);
+    set(s, "baker", "flour", 40);
+    set(s, "baker", "firewood", 40);
+    double day = 6 + 10. / 24;
+    work(s, 3600, day);
+    expect(held(s, "baker", "bread") > Society::GoodsKept, "and bakes past the old few: " + std::to_string(held(s, "baker", "bread")));
+}
 } // namespace
 
 // A town's trade (Docs/Design/61; Data/Economy/specialties.json): iron is Frosthollow's. A miner at Frosthollow's
@@ -527,6 +557,7 @@ int main()
         cartedInFromAnotherTown();
         qualities();
         townsfolkBuy();
+        outputFollowsSales();
     }
     catch (const std::exception& error)
     {

@@ -553,7 +553,7 @@ Result World::helpAtWork(const std::string& player, const std::string& farmer)
     {
         const bool inSeason = producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), act->season) != producer->seasons.end();
         for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
-            room = room || Society::stock(*account, item) < Society::ProducerKept;
+            room = room || Society::stock(*account, item) < society_.shelfTarget(till, item, Society::ProducerKept);
     }
     if (!room)
         return {false, "The barn is full; " + f->name + " has no more work for hands today.", {}};
@@ -636,7 +636,7 @@ void World::workBeat(together::JointWork& joint)
         const auto* account = society_.account(till);
         bool room = !farm;
         for (const auto& [item, count] : yield)
-            room = room || Society::stock(*account, item) < Society::ProducerKept;
+            room = room || Society::stock(*account, item) < society_.shelfTarget(till, item, Society::ProducerKept);
         if (!room)
         {
             stop = "The barn is full; " + f->name + " has no more work for hands today.";
@@ -659,7 +659,7 @@ void World::workBeat(together::JointWork& joint)
             // Weathereye (a Gifted Seer, doc 43) at the harvest, as at foraging: a quarter more (doc 53, 4).
             const auto* me = entity(m.id);
             const double seer = act->id == "harvest" && me && me->gift == "seer" && !me->quickened ? 1.25 : 1.;
-            const int n = std::min(Society::ProducerKept - held,
+            const int n = std::min(society_.shelfTarget(till, item, Society::ProducerKept) - held,
                                    farmWhole(count * act->share * rate * part * seer, farmOdds(m.id + item, std::int64_t(time_ * 1000))));
             if (n > 0 && society_.create(till, item, n, "brought in by a hand"))
             {

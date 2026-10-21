@@ -919,6 +919,20 @@ int main(int argc, char** argv)
                 traced.push_back(id);
         }
     std::map<std::string, std::string> lastTrace;
+    // RATW_STOCK=account[,account...]: each named account's cash and stock every three game hours, to stock.csv.
+    std::vector<std::string> stocked;
+    if (const char* t = std::getenv("RATW_STOCK"))
+        for (std::stringstream list(t); list.good();)
+        {
+            std::string id;
+            std::getline(list, id, ',');
+            if (!id.empty())
+                stocked.push_back(id);
+        }
+    std::ofstream stockOut;
+    if (!stocked.empty())
+        stockOut.open(out / "stock.csv"), stockOut << "day,account,cash,stock\n";
+    int nextStockHour = 0;
     double tickSeconds = 0;                         // (The server's own time in the day, apart from this watch's.)
     for (long i = 0; i < ticks; ++i)
     {
@@ -951,6 +965,16 @@ int main(int argc, char** argv)
         {
             nextHour += 1. / 24;
             sampleMaterials();
+            if (!stocked.empty() && nextStockHour++ % 3 == 0)
+                for (const auto& id : stocked)
+                    if (const auto* a = society.account(id))
+                    {
+                        stockOut << std::fixed << std::setprecision(3) << server.calendarDays() << std::defaultfloat << ",\"" << id << "\"," << a->cash << ",\"";
+                        for (const auto& [item, n] : a->stock)
+                            if (n > 0)
+                                stockOut << item << ":" << n << " ";
+                        stockOut << "\"\n";
+                    }
         }
         if (const int now = int(std::floor(server.calendarDays())); now != day)
         {
@@ -1033,6 +1057,16 @@ int main(int argc, char** argv)
                 }
             const auto [wageTotal, makerShort] = writeDay(day);
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
+            // The roads' standing orders at the day's end (doc 64, Phase 3b): what each asks a week and how short it
+            // has fallen since it was last agreed.
+            {
+                static std::ofstream orders(out / "orders.csv");
+                static bool header = (orders << "day,buyer,town,from,item,per_week,delivered,shortfall\n", true);
+                (void)header;
+                for (const auto& o : server.roads().orders)
+                    orders << now << ",\"" << o.buyer << "\",\"" << o.town << "\",\"" << o.from << "\",\"" << o.item << "\","
+                           << o.perWeek << "," << o.delivered << "," << o.shortfall << "\n";
+            }
             const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
             std::cout << "day " << now << " (" << int(wall / 60) << " min): supply " << supply << (conserved ? "" : " NOT CONSERVED")
                       << ", median purse " << median << "p, gini " << std::fixed << std::setprecision(3) << gini

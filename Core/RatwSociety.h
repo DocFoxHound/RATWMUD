@@ -579,6 +579,11 @@ class Society
     // How many of a good a business uses a day (doc 61), by its till ("till:<position>"): through each of its crafts that
     // takes it, as fast as what the craft makes sells (missed sales too); a supplier, as fast as it sells the good.
     double useRate(const std::string& till, const std::string& item) const;
+    // How many of a good a seller keeps (doc 64, Phase 3b): output follows sales. Its days' keeping (keepDays) of what
+    // it sells a day, missed sales counting, a fifth over for a staple; with `orders`, at least its share of a week of
+    // the standing orders on its town's makers or producers of it and half a supplier's store; never under `least` (the
+    // old fixed store, now a floor, so a new shop still has a few in).
+    int shelfTarget(const std::string& till, const std::string& item, int least, bool orders = true) const;
     // The roads' standing orders (doc 61), told by World each day: by selling town and good, how many go a week (its
     // makers share that much more of a good that keeps, kept for the caravan); by buyer's till, what its orders cost a
     // week (a house's business keeps that in its till, floatOf, to pay for them when they come).
@@ -624,6 +629,9 @@ class Society
     // A producer (a farmer, a fisher) keeps at most ProducerKept of each thing it brings in, for the town to buy.
     // Goods fetched from another community cost CartedIn times the price (they come a long way).
     static constexpr int ProducerKept = 40;          // (40, not 20: the land sat idle. Doc 42, "Pressure".)
+    // Output by sales (doc 64, Phase 3b): a staple's store a fifth over its sales (StapleSlack, as its hands), and no
+    // store over ShelfMost of a good.
+    static constexpr int ShelfMost = 2000;
     static constexpr double CartedIn = 1.5;
     // The current grant (SocietyState::craftingStocked): 1 the starter crafts, 2 the workshops (mills, tanneries...), 3
     // masking oil (apothecaries' and perfumers' wormwood and resin, herbalists' wormwood).
@@ -696,6 +704,9 @@ class Society
     // What each shop sells of each good a day, and the sales it missed for having none (a running average; Society::spoil
     // keeps it daily): a maker short of materials makes first what is wanted (TRIAL make_what_sells, doc 42). Not saved.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> sellRate_;
+    // What each seller sold out of today (its last one sold): the sales it missed after are counted as half again its
+    // day's (doc 64, Phase 3b), so a shelf that empties every day keeps more until it doesn't. Not saved.
+    std::unordered_map<std::string, std::set<std::string>> ranOut_;
     std::map<std::pair<std::string, std::string>, int> ordersFrom_;    // (Town, good) -> each maker's share of a week's orders.
     std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
