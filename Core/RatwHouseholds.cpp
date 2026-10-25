@@ -41,6 +41,12 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         if (adults->second.size() > 8 || communalHome(home))
         {
             memory.keeper.erase(home);
+            // Each its own household, by its own purse: the rule all the same, or its purse only fills (a bunkhouse's
+            // farmers and loggers held half the households' money by day 60, doc 64, "The households' gap").
+            for (const auto& id : adults->second)
+                if (const auto* r = spec(id); !(r && r->role == "merchant" && tillOf(id) == id))
+                    if (const auto* a = account(id))
+                        householdRule(id, {id}, a->cash, day, true);
             continue;
         }
         // The household purse: its grown members' money, a keeper's till aside, evened out among them.

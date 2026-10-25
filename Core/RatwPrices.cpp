@@ -156,14 +156,24 @@ double Society::materialsCost(const std::string& seller, const std::string& item
     }
     if (const auto* business = label.empty() ? nullptr : items::businessFor(label))
         for (const auto* k : items::craftsFor(business->id))
+        {
+            // A batch's materials shared among its goods by their worth, as its cost is (normalCost): a carcass's among
+            // its cuts, not the whole carcass against each.
+            double all = 0, mine = 0;
+            int n = 0;
             for (const auto& [o, count] : k->out)
+            {
+                all += count * items::worthOf(o);
                 if (o == base)
-                {
-                    double materials = 0;
-                    for (const auto& [in, q] : k->in)
-                        materials += q * (inputCost(till, in) + carriage(in, 1, town));
-                    return materials / count;
-                }
+                    mine = count * items::worthOf(o), n = count;
+            }
+            if (n <= 0)
+                continue;
+            double materials = 0;
+            for (const auto& [in, q] : k->in)
+                materials += q * (inputCost(till, in) + carriage(in, 1, town));
+            return all > 0 ? materials * mine / all / n : materials / n;
+        }
     return costOf(till, item);                       // (Bought to sell on: the goods themselves.)
 }
 

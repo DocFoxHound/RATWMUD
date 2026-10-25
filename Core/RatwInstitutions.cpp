@@ -247,7 +247,8 @@ void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody
     }
 }
 
-void Society::householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day)
+void Society::householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day,
+                            bool lodger)
 {
     auto& memory = state_.memory;
     double month = 0;
@@ -266,10 +267,19 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         fund = std::min(fund, std::max(0., double(pot) - target));
         help *= .9;
     }
+    else if (lodger)
+        fund += spare;
     else
     {
         fund += spare / 2;
         help = help * .9 + spare / 2;
+    }
+    if (lodger)
+    {
+        memory.helpBudget.erase(home);
+        if (fund <= 0)
+            memory.wantFund.erase(home);
+        return;
     }
     // Help about the home: a hand for the week, at a little under the going rate, once the budget runs to it (a week's
     // hire, not a day's: fewer jobs on the board, the same work).

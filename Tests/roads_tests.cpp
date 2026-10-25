@@ -1666,6 +1666,25 @@ void grownWolvesBuyWhatTheyWant()
     for (const auto& e : hard.takeEvents())
         poor |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e2";
     expect(!poor, "A penniless one doesn't");
+    // Over eight grown under one roof (a bunkhouse, a barracks) share no purse, and each is its own household by the rule:
+    // a windfall goes on its wants too (doc 64, "The households' gap": a bunkhouse's purses only filled).
+    auto nine = strip("EE.....WW", resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
+                                       resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5) +
+                                       resident("e9", "Ned Bunk", "civilian", "works at The Sweet Crust", 0, 12.5, 1, 9.5));
+    auto bunk = load(nine);
+    bunk.tick(.6);
+    bunk.society().shift("treasury", "e1", "", 0, std::min<std::int64_t>(5000, bunk.society().account("treasury")->cash / 2), "test: a good year");
+    bunk.takeEvents();
+    bool lodger = false;
+    for (int d = 0; d < 7 && !lodger; ++d)
+    {
+        nextMorning(bunk);
+        run(bunk, 2);
+        for (const auto& e : bunk.takeEvents())
+            lodger |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e1";
+    }
+    expect(lodger, "A well-off wolf of a bunkhouse buys something it wants");
+    expect(bunk.society().conserved(), "Money stays conserved");
     expect(hard.society().conserved(), "Money stays conserved");
     expect(w.society().conserved(), "Money stays conserved");
 }

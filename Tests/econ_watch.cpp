@@ -358,12 +358,15 @@ int main(int argc, char** argv)
         }
     };
 
+    std::map<std::string, std::pair<std::int64_t, std::int64_t>> tillSold;   // Till -> units sold and coins taken since the last measure.
     const auto absorb = [&] {
         for (auto& e : server.takeEvents())
         {
             const int d = int(std::floor(e.day));
             if (e.kind == "economy")
             {
+                if (e.coins > 0 && e.quantity > 0 && e.target.rfind("till:", 0) == 0)
+                    tillSold[e.target].first += e.quantity, tillSold[e.target].second += e.coins;
                 auto& f = flows[d][{e.detail, holder(server, e.actor), holder(server, e.target)}];
                 ++f.entries;
                 f.coins += e.coins;
@@ -525,9 +528,19 @@ int main(int argc, char** argv)
     // masters, apprentices, elders, and the births and deaths since the last day.
     std::set<std::string> lastAlive;
     bool firstMeasure = true;
-    const auto modelMeasures = [&]() {
+    std::ofstream residentsOut(out / "residents.csv");
+    residentsOut << "day,resident,home,holder,title,age,cash,savings\n";
+    std::ofstream tillsOut(out / "tills.csv");
+    tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings\n";
+    const auto modelMeasures = [&](int day) {
         const auto worths = society.bankWorths();
         std::map<std::string, std::int64_t> homes;     // Home cell (or the resident, homeless) -> the household's money.
+        // A barracks, a bunkhouse, quarters or lodgings (over eight grown, or communal) share no purse
+        // (Society::tendHouseholds): each who lives there is a household of its own.
+        std::map<std::string, int> grownAt;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* e = server.entity(id); e && !e->dead && e->age >= 16 && !life.homeCell.empty())
+                ++grownAt[life.homeCell];
         std::set<std::string> alive;
         int idle = 0, masters = 0, apprentices = 0, elders = 0;
         for (const auto& [id, life] : society.state().residents)
@@ -537,12 +550,37 @@ int main(int argc, char** argv)
                 continue;
             alive.insert(id);
             const auto* a = society.account(id);
-            homes[life.homeCell.empty() ? id : life.homeCell] += (a ? a->cash : 0) + society.savingsWorth(id, worths);
+            const bool shared = !life.homeCell.empty() && (grownAt[life.homeCell] > 8 || Society::communalHome(life.homeCell));
+            homes[life.homeCell.empty() || shared ? id : life.homeCell] += (a ? a->cash : 0) + society.savingsWorth(id, worths);
+            {
+                const auto* job = society.jobOf(id);
+                residentsOut << day << ',' << csv(id) << ',' << csv(life.homeCell) << ',' << csv(holder(server, id)) << ','
+                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << ','
+                             << society.savingsWorth(id, worths) << '\n';
+            }
             const bool apprentice = society.apprenticedTo(id) != nullptr;
             apprentices += apprentice;
             elders += e->age >= Society::retireAge(id);
             idle += e->age >= 16 && e->age < Society::retireAge(id) && !society.jobOf(id) && !apprentice;
         }
+        // Each business's till against its working money (doc 64, Phase 5): what it keeps back, and why.
+        for (const auto& p : society.positions())
+            if (const auto* till = society.account("till:" + p.id))
+            {
+                const auto id = "till:" + p.id;
+                const auto held = society.state().careers.positions.find(p.id);
+                const auto keeper = held == society.state().careers.positions.end() ? std::string() : held->second.holder;
+                double units = 0, materials = 0;
+                if (const auto* rates = society.sellRates(id))
+                    for (const auto& [good, rate] : *rates)
+                        if (items::good(good) && !Society::storePriced(good))
+                            units += rate, materials += keeper.empty() ? 0 : rate * society.materialsCost(keeper, good);
+                const auto sold = tillSold[id];
+                tillsOut << day << ',' << csv(id) << ',' << csv(holder(server, id)) << ',' << csv(p.title) << ',' << till->cash << ','
+                         << society.workingMoney(p.id) << ',' << society.owed(id) << ',' << units << ',' << materials << ','
+                         << society.ordersCostOf(id) << ',' << sold.first << ',' << sold.second << '\n';
+            }
+        tillSold.clear();
         // Posts standing empty (not let go), and of them producers' and shops' (doc 64, Phase 8).
         int vacant = 0, vacantTrade = 0;
         for (const auto& p : society.positions())
@@ -822,7 +860,7 @@ int main(int argc, char** argv)
             daysOut << (first ? "" : ",") << json(community) << ':' << c;
             first = false;
         }
-        daysOut << "},\"model\":" << modelMeasures() << "}\n";
+        daysOut << "},\"model\":" << modelMeasures(day) << "}\n";
         daysOut.flush();
         return std::make_tuple(supply, society.conserved(), n ? people[n / 2] : 0, gini, grownShort, broke, starving);
     };

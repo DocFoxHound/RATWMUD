@@ -125,20 +125,22 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
         return 0;
     const auto keeper = held == state_.careers.positions.end() ? std::string() : held->second.holder;
     const auto town = communityOfResident(business->founder);
-    // Its staffing a day: its keeper, its help (the posts that work where it does: doc 46's float), and at most two of
-    // those standing open (posts it can't fill aren't wages it pays: doc 63).
+    // Its staffing a day: its keeper, its help (the posts that work where it does and that it pays: doc 46's float), and
+    // at most two of those standing open (posts it can't fill aren't wages it pays: doc 63). (Not every post where it
+    // works: a market stall counted the whole market's, a month of dozens of wages for a stall selling a score a day.)
     int help = 0, open = 0;
+    const auto till = "till:" + positionId;
     if (business->role == "merchant")
         for (const auto& p : positions_)
             if (p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell)
             {
                 const auto h = state_.careers.positions.find(p.id);
-                (h == state_.careers.positions.end() || h->second.holder.empty() ? open : help) += 1;
+                if (const auto key = postKey_.find(p.id); key != postKey_.end() && key->second == till)   // (Its employer: tendLabour.)
+                    (h == state_.careers.positions.end() || h->second.holder.empty() ? open : help) += 1;
             }
     (void)town;
     double day = (1 + help + std::min(open, 2)) * employerWage("till:" + positionId);   // (Its own wage: doc 64, Phase 6.)
     // And the materials (or goods to sell on) its sales use a day, at what they cost it.
-    const auto till = "till:" + positionId;
     if (const auto rates = sellRate_.find(till); rates != sellRate_.end() && !keeper.empty())
         for (const auto& [good, rate] : rates->second)
             if (items::good(good) && !storePriced(good))

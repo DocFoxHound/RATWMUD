@@ -1193,6 +1193,18 @@ class Society
     static constexpr double RentShare = .15;
     static constexpr int CreditDays = 7, CreditWrittenOff = 56;
     std::int64_t workingMoney(const std::string& positionId) const;
+    // What a till sells of each good a day (its running average, missed sales counting) and its standing orders' cost a
+    // week: what its working money is reckoned from (for econ_watch).
+    const std::unordered_map<std::string, double>* sellRates(const std::string& till) const
+    {
+        const auto found = sellRate_.find(till);
+        return found == sellRate_.end() ? nullptr : &found->second;
+    }
+    std::int64_t ordersCostOf(const std::string& till) const
+    {
+        const auto found = ordersCost_.find(till);
+        return found == ordersCost_.end() ? 0 : found->second;
+    }
     // A business's own day of the month (its profit to its owner) and of the week (rent, top-ups): 0-based.
     static int ownersDay(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % MonthDays); }
     static int ownersWeekday(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % 7); }
@@ -1314,7 +1326,10 @@ class Society
     void flushEarnings();                                   // (Those so far, without the month's daily decay.)
     void institutionsWeek(std::int64_t day);                // At the reckoning: each institution's week's budget, spent.
     void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    void householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day);
+    // `lodger`: one wolf of a barracks, a bunkhouse, quarters or lodgings, its own household by its own purse (`home` its
+    // ID): all its spare to its wants, no help about the home or servants for a bunk.
+    void householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day,
+                       bool lodger = false);
     void leftovers(std::int64_t day);                       // Bakers' bread that would spoil overnight, to the hungry.
     // Hands hired by the week (an institution's works, masons, retainers; a household's servants): `slots` hands at
     // `wage` a day each, for `days`, at `at`. Returns what a day of them costs.

@@ -571,11 +571,14 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
         // week's food and the tax and tithe it owes.
         const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (TaxRate + TitheRate));
-        const auto fund = state_.memory.wantFund.find(life.homeCell);
-        const int grown = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
+        const int under = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
                                               const auto b = bodies.find(other.first);
                                               return other.second.homeCell == life.homeCell && b != bodies.end() && b->second.age >= 16;
                                           })));
+        // (A barracks', a bunkhouse's or lodgings' wolf has a want fund of its own: tendHouseholds.)
+        const bool lodger = !life.homeCell.empty() && (under > 8 || communalHome(life.homeCell));
+        const auto fund = state_.memory.wantFund.find(lodger ? id : life.homeCell);
+        const int grown = lodger ? 1 : under;
         const auto budget = fund == state_.memory.wantFund.end() ? std::int64_t(0)
                                                                   : std::min<std::int64_t>(std::int64_t(fund->second / grown), purse->cash - FoodADay * 7 - owed);
         if (budget < 2)

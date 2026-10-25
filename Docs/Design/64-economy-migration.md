@@ -1190,3 +1190,52 @@ worst, day 39), 503 starving-days in all. Most were in Oakhaven and Frosthollow,
 
 **Left of Phase 3b:** seasonal fields (sowing and harvest by hours, a year's store), wood laid in for winter, and tool
 wear in a batch's cost (tools still bought from the worker's own purse, `tradeUpkeep`).
+
+### The households' gap (2026-10-25)
+
+**The question.** Phase 3b's runs had the household Gini widening, 0.58 to 0.63 by day 60 (the model's 0.39).
+
+**Half of it was the measure.** The 51 bunkhouses and barracks each counted as one household, and between them they held
+about half of all household money. econ_watch now counts each grown wolf of a shared home (over 8 grown, or
+`communalHome`) as a household of its own, as the game's household rule already treats them. Corrected, the default
+60-day run goes 0.52 to 0.48.
+
+**Three leaks, fixed:**
+
+- **Shared homes skipped the household rule.** About 235 wolves (farmers, loggers, shepherds) live in bunkhouses and
+  barracks, and their purses could only fill. Each now runs the rule as its own household (`householdRule(..., lodger)`):
+  all its spare to its own want fund, no help about the home or servants for a bunk. A `roads_tests` check fails without
+  it.
+- **A market stall reckoned the whole market's wages into its working money** (`workingMoney`): every post at its work
+  cell, a month of dozens of wages for a stall selling a score a day. It counts only the help it employs now
+  (`postKey_`). That was 684k of the 1.75M businesses held back.
+- **A batch's materials were charged against each of its goods whole** (`materialsCost`): a butcher charged a whole
+  carcass against every cut. They're shared by worth now, as `normalCost` does.
+
+Together these cut about 1.1M of the 1.75M businesses reserved.
+
+**econ_watch:** `residents.csv` (each resident's home, kind of holder, job, cash and savings, daily) and `tills.csv`
+(each till's cash, working money, owed, reckoned sales rate, materials a day, orders a week, units sold and takings).
+
+**What's left is the pace, not spending.** 120 days from DEV (deterministic):
+
+| day 119 | the fixes | + commissions, more hands (12p) | the same at 60p |
+|---|---|---|---|
+| household Gini (from about 0.53) | 0.67 | 0.671 | 0.737 |
+| the poorer half | | 0.074 | 0.024 |
+| hungry, starving | 0, 0 | 0, 0 | 12, 5 |
+| producers' purses (from about 0.5M) | | 0.60M | 1.16M |
+| wage earners' purses (from about 0.95M) | | 0.32M | 0.35M |
+
+- **Rich households spending more doesn't close it.** Tried: well-off wolves commissioning pieces made to order, and
+  help and servants scaling with the budget (to 4 and 8). Commissions came to about 12,000p in 120 days; the Gini didn't
+  move. Not kept.
+- **The drain is from wage earners.** Days 90–120 they took in 228k and spent 304k. Shop tills went 421k to 673k,
+  producers 516k to 603k, and the going wage stayed at 12p (12.7 by day 119).
+- **A 60p labourer's day** (the wage 5,000,000p supports, doc 64's founding) made it worse: the producers doubled and
+  the realm went hungry from day 60.
+- **The cause:** goods are priced at the calibrated hours but made at the old pace (`memory.pace` 0, the switch off),
+  so the difference is the producers' profit. At 12p the penny floor hides part of it (44% of everything sold goes at
+  1p); at 60p it's plain. Pricing at the hours actually worked (tried, reverted) didn't help at 12p, for the penny floor.
+- **The fix is work by the hours**, so goods cost the hours they're priced at. That waits on the land feeding the realm
+  at calibrated hours: the rest of Phase 3b.
