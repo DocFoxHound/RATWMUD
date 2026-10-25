@@ -48,9 +48,7 @@ double Society::goingRate(const std::string& town) const
         return found->second;
     if (const auto realm = going_.find(""); realm != going_.end())
         return realm->second;
-    const auto& start = orchestratorDials().wageStart;
-    const auto labour = start.find("labour");
-    return labour != start.end() ? labour->second : 12;
+    return items::ladder().catalogueDay;            // (Before the first measure: the catalogue's labourer's day.)
 }
 
 double Society::employerWage(const std::string& key) const

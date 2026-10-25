@@ -1,6 +1,6 @@
 // Farmhands (Docs/Design/42-money-in-circulation.md, "Farmhands"; the user, 2026-10-06: spread the farms' money out).
 // Every farm, orchard and vineyard with money to spare hires a hand for a few days (longer in its season), at the going
-// pay for a hand in its town (the wage table: doc 46, Phase 4). Its town's folk may take it, and so may anyone living
+// pay for a hand in its town (Society::dayWage: doc 64, Phase 6). Its town's folk may take it, and so may anyone living
 // in a city; one from elsewhere lodges in the farm's bunkhouse for the hire (up to BunkBeds), its home there meanwhile,
 // eating from the bunkhouse larder, which the farm stocks from its own food first, then from the town's shops. When the
 // hire ends the hand goes home. All daily, in the day's pass: nothing here runs per tick.

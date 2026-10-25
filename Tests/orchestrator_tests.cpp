@@ -1,7 +1,6 @@
-// The economy orchestrator's plan (Core/RatwOrchestrator.h; Docs/Design/46-economy-orchestrator.md), on made-up snapshots:
-// how it reads a town's distress and its kind, the bands, the week's decisions (only on a decision's day, never below a
-// holder's need, every penny of the pot placed), the Dungeon Master's steers, prices, the saved state, and that the same
-// snapshot always gives the same brief, on its own thread or not.
+// The economy's monitor (Core/RatwOrchestrator.h; Docs/Design/46-economy-orchestrator.md; doc 64, Phase 12), on made-up
+// snapshots: how it reads a town's distress and its kind, how it weighs the week, how the land's money is spread, the
+// saved state (and a save from before Phase 12), and that the same snapshot always gives the same measures.
 #include "RatwOrchestratorJson.h"
 
 #include <cmath>
@@ -23,7 +22,7 @@ void expect(bool condition, const std::string& message)
 }
 
 // Two towns of twenty: Wellby, fed and earning; Hungerford, with hungry, starving and penniless folk. Bread in both
-// shops. A rich great house in Wellby, a lean till in Hungerford, the land's church.
+// shops.
 Snapshot land(bool decide = true)
 {
     Snapshot s;
@@ -60,26 +59,13 @@ Snapshot land(bool decide = true)
     }
     s.shops.push_back({"till:bakery", "wellby", 40, 30});
     s.shops.push_back({"till:stall", "hungerford", 5, 30});
-    s.goods.push_back({"wellby", "bread", 60, 40, 10, 2, 2, 25, true});
-    s.goods.push_back({"hungerford", "bread", 120, 40, 10, 2, 2, 25, true});
-    s.goods.push_back({"wellby", "ring", 2, 4, 1, 40, 40, 0, false});
-    s.towns.push_back({"wellby", 300, 200, 0, 0});
-    s.towns.push_back({"hungerford", 50, 300, 0, 0});
-    s.dials.channelFloor = 1e9;                      // (No spending history: let every channel take what it is sent.)
-    s.holders.push_back({"house:gold", "wellby", HolderKind::House, 20000, 50, 100});
-    s.holders.push_back({"till:stall", "hungerford", HolderKind::Till, 10, 10, 60});
-    s.holders.push_back({"town:all:church", "", HolderKind::Church, 500, 20, 400});
-    s.holders.push_back({"stores:wellby", "wellby", HolderKind::Treasury, 1500, 40, 600});
+    s.goods.push_back({"wellby", "bread", 60, 2, 25});
+    s.goods.push_back({"hungerford", "bread", 120, 2, 25});
+    s.towns.push_back({"wellby", 300, 200, 0, 0, 0});
+    s.towns.push_back({"hungerford", 50, 300, 0, 0, 0});
     return s;
 }
 
-const HolderBand& holder(const Brief& b, const std::string& id)
-{
-    for (const auto& h : b.holders)
-        if (h.id == id)
-            return h;
-    throw std::runtime_error("no holder " + id);
-}
 const TownReading& town(const Brief& b, const std::string& id)
 {
     for (const auto& t : b.towns)
@@ -87,74 +73,32 @@ const TownReading& town(const Brief& b, const std::string& id)
             return t;
     throw std::runtime_error("no town " + id);
 }
-std::int64_t ordered(const Brief& b)
-{
-    std::int64_t n = 0;
-    for (const auto& o : b.orders)
-        n += o.coins;
-    return n;
-}
-Steer steer(const std::string& kind, const std::string& target, double strength, const std::string& item = {})
-{
-    Steer s;
-    s.id = "steer-" + kind;
-    s.kind = kind;
-    s.target = target;
-    s.item = item;
-    s.strength = strength;
-    s.from = 0;
-    s.until = 30;
-    return s;
-}
 
 void readsDistress()
 {
     Memory m;
-    const auto b = plan(land(), m);
+    const auto b = measure(land(false), m);
     const auto& well = town(b, "wellby");
     const auto& hurt = town(b, "hungerford");
     expect(well.distress < .1 && well.kind.empty(), "Wellby is well (" + std::to_string(well.distress) + ")");
     expect(hurt.distress > .8, "Hungerford is in distress (" + std::to_string(hurt.distress) + ")");
     expect(hurt.kind == "empty purses", "with food in its shop but none in its purses: " + hurt.kind);
     expect(hurt.hungry == .5 && hurt.starving == .2 && hurt.idle == 12, "Its sensors: half hungry, a fifth starving, twelve idle");
+    expect(hurt.short_ == 1 && hurt.poor == 1, "every household short of a week's food, every grown wolf poor");
+    expect(hurt.netInflow == -250 && well.netInflow == 100, "and the coins between the towns");
     expect(b.towns.front().id == "hungerford", "The towns come most in distress first");
-    expect(std::abs(well.foodCost - 4) < 1e-9 && well.wageFloor == 8, "A day's bread costs 4p in Wellby; the living wage, a day's food for two, 8p");
-}
-
-void bandsAndTheWeek()
-{
-    Memory m;
-    const auto b = plan(land(), m);
-    const auto& gold = holder(b, "house:gold");
-    expect(gold.band == "cap" && gold.need == 700, "The house holds far over its need (14 days of 50p): " + gold.band);
-    expect(holder(b, "till:stall").band == "lean" && holder(b, "till:stall").toSpend == 0, "A lean till spends nothing");
-    expect(gold.toSpend > 15000, "Over the cap, the house sends nearly all its excess out (" + std::to_string(gold.toSpend) + "p)");
-    expect(gold.cash - gold.toSpend >= std::int64_t(std::ceil(1.5 * gold.need)), "and never below its band's top");
-    expect(b.pot == ordered(b), "Every penny of the pot is ordered somewhere (" + std::to_string(b.pot) + "p)");
-    std::int64_t toHungerford = 0;
-    for (const auto& o : b.orders)
-        if (o.town == "hungerford")
-            toHungerford += o.coins;
-    expect(toHungerford > b.pot / 2, "Most of it goes to the town in distress");
-    for (const auto& o : b.orders)
-        expect(o.channel != "price support" || o.town == "hungerford", "A well town needs no price support");
-    // A day that isn't a decision's measures, and sends nothing.
-    Memory m2;
-    const auto day = plan(land(false), m2);
-    expect(!day.decided && day.pot == 0 && day.orders.empty(), "Other days only measure");
-    expect(day.prices.size() == 3, "but a good it sees for the first time is priced at once");
-    expect(plan(land(false), m2).prices.empty(), "and not again until the week's decision");
-    expect(holder(day, "house:gold").band == "cap", "though the bands show where each stands");
-    // Before a day is counted, no bands at all.
-    auto first = land(false);
-    first.counted = 0;
-    Memory m3;
-    expect(holder(plan(first, m3), "house:gold").band == "warming", "A new world waits a day before its bands");
+    expect(std::abs(well.foodCost - 4) < 1e-9, "A day's bread costs 4p in Wellby");
+    expect(std::abs(well.shopFoodDays - 1.5) < 1e-9 && std::abs(well.takingsRatio - 40. / 30) < 1e-9, "and its shops' food and takings");
+    expect(!b.decided && well.week < 0, "Not the evening of the reckoning: no week weighed");
+    auto unknown = land(false);
+    unknown.counted = 2;
+    Memory n;
+    expect(town(measure(unknown, n), "hungerford").idle == -1, "Idleness waits for three days counted");
 }
 
 void theWeekIsWeighed()
 {
-    // Six good days and a bad one: the decision weighs the week, not the evening.
+    // Six good days and a bad one: the week is weighed, not the evening.
     Memory m;
     auto calm = land(false);
     for (auto& r : calm.residents)
@@ -168,439 +112,75 @@ void theWeekIsWeighed()
     for (int day = 1; day <= 6; ++day)
     {
         calm.day = day;
-        plan(calm, m);
+        measure(calm, m);
     }
     auto bad = land(true);
     bad.day = 7;
-    const auto b = plan(bad, m);
+    const auto b = measure(bad, m);
     const auto& t = town(b, "hungerford");
     expect(b.decided && t.week > 0 && t.week < t.raw / 3, "The week's distress is its mean (" + std::to_string(t.week) + " against tonight's " +
                                                               std::to_string(t.raw) + ")");
-    expect(m.week.empty() && m.decided == 7, "and the week's measures start afresh after a decision");
+    expect(t.distress < t.raw, "and the day's distress is smoothed");
+    expect(m.week.empty() && m.decided == 7, "and the week's measures start afresh after it is weighed");
 }
 
-void steers()
+void howTheMoneyIsSpread()
 {
-    Memory m0;
-    const auto plain = plan(land(), m0);
-    {
-        auto s = land();
-        s.steers.push_back(steer("holder", "house:gold", 0));
-        Memory m;
-        const auto b = plan(s, m);
-        expect(holder(b, "house:gold").band == "spared" && holder(b, "house:gold").toSpend == 0, "A spared house keeps what it has");
-        expect(b.steers.size() == 1, "and the brief names the steer it weighed");
-    }
-    {
-        auto s = land();
-        s.steers.push_back(steer("holder", "stores:wellby", 3));
-        Memory m;
-        expect(holder(plan(s, m), "stores:wellby").toSpend > holder(plain, "stores:wellby").toSpend, "A squeezed treasury spends more");
-    }
-    {
-        auto s = land();
-        s.steers.push_back(steer("channel", "works", 0));
-        Memory m;
-        const auto b = plan(s, m);
-        for (const auto& o : b.orders)
-            expect(o.channel != "works", "A closed channel gets nothing");
-        expect(b.pot == ordered(b), "and the pot still all goes somewhere");
-    }
-    {
-        auto s = land();
-        s.steers.push_back(steer("town", "hungerford", 0));
-        Memory m;
-        const auto b = plan(s, m);
-        expect(town(b, "hungerford").distress == 0, "A town weighed at nothing reads as well");
-        expect(town(b, "wellby").share > town(plain, "wellby").share, "and the pot goes elsewhere");
-    }
-    {
-        auto s = land();
-        s.steers.push_back(steer("price", "*", 3, "bread"));
-        Memory m;
-        const auto b = plan(s, m);
-        for (const auto& p : b.prices)
-            if (p.item == "bread")
-                expect(std::abs(p.would - 2 * 1.25) < 1e-9 || p.would <= 2 * 1.25, "A price scare moves bread at most a quarter in a week");
-    }
-    {
-        // Pressure on a land in no distress: more of the comfortable's excess goes out.
-        auto s = land();
-        s.holders[0].cash = 1300;                   // (The house a little over its band's top.)
-        Memory a, b;
-        const auto easy = plan(s, a);
-        s.steers.push_back(steer("pressure", "", 3));
-        expect(plan(s, b).pot > easy.pot, "Pressure sends more out");
-    }
-    {
-        // Steers out of their days are not weighed.
-        auto s = land();
-        auto late = steer("holder", "house:gold", 0);
-        late.from = 9;
-        s.steers.push_back(late);
-        Memory m;
-        expect(holder(plan(s, m), "house:gold").band == "cap", "A steer that starts tomorrow isn't weighed today");
-    }
-    std::string problem;
-    expect(validSteer(steer("pressure", "", 2), problem), "A pressure steer of 2 is fine");
-    expect(!validSteer(steer("pressure", "", 9), problem), "of 9 is not");
-    expect(!validSteer(steer("holder", "house:gold", 1), problem), "A holder is spared (0) or squeezed (1.5 to 4), not 1");
-    expect(!validSteer(steer("channel", "bribes", 1), problem), "No such channel");
-    expect(!validSteer(steer("price", "*", 2), problem), "A price steer names a good");
-    auto long_ = steer("town", "wellby", 1);
-    long_.until = long_.from + 57;
-    expect(!validSteer(long_, problem), "A steer lasts at most 56 days");
-    std::vector<ScriptedSteer> script;
-    expect(readSteerScript(R"([{"day": 9, "kind": "town", "target": "wellby", "strength": 2, "days": 7}])", script, problem) &&
-               script.size() == 1 && script[0].day == 9 && script[0].steer.target == "wellby" && script[0].days == 7,
-           "A test's steer script reads");
-    expect(!readSteerScript("{}", script, problem), "A script is an array");
-}
-
-void pricesAndMargin()
-{
-    auto s = land();
-    s.goods[0].stock = 2;                           // (Wellby's bread nearly gone: dearer.)
-    s.goods[2].stock = 200;                         // (A glut of rings: cheaper.)
     Memory m;
-    const auto b = plan(s, m);
-    for (const auto& p : b.prices)
-    {
-        if (p.town == "wellby" && p.item == "bread")
-            expect(p.would > 2 && p.would <= 2.5, "Scarce bread costs more, a quarter at most in a week");
-        if (p.item == "ring")
-            expect(p.would < 40 && p.would >= 30, "A glut of rings costs less");
-    }
-    expect(m.price.count("wellby|bread") && b.margin > 0, "It remembers the prices it set, and keeps a margin");
+    const auto b = measure(land(false), m);
+    expect(b.moneySupply == 100000 && std::abs(b.residentShare - .042) < 1e-9, "The residents hold 4.2% of the land's money");
+    expect(std::abs(b.bottomShare - 200. / 4200) < 1e-9, "the poorer half of the households 200p of their 4,200p");
+    expect(b.median == 200 && std::abs(b.gini - .4643) < 1e-3, "the middle purse 200p, the Gini 0.46 (" + std::to_string(b.gini) + ")");
 }
 
 void sameEveryTime()
 {
-    auto s = land();
-    s.steers.push_back(steer("pressure", "", 1.5));
+    const auto s = land();
     Memory a, b;
-    const auto one = briefText(plan(s, a), true), two = briefText(plan(s, b), true);
-    expect(one == two, "The same snapshot gives the same brief");
-    Runner threaded(true), inline_(false);
-    threaded.submit(s, Memory{});
-    inline_.submit(s, Memory{});
-    expect(threaded.pending() && threaded.pendingDay() == 8, "A plan is pending for day 8");
-    const auto t = threaded.take(), i = inline_.take();
-    expect(briefText(t.first, true) == one && briefText(i.first, true) == one, "on its own thread or not");
-    expect(!threaded.pending(), "and once taken, nothing is pending");
+    expect(briefText(measure(s, a)) == briefText(measure(s, b)), "The same snapshot gives the same measures");
 }
 
 void savedState()
 {
     State st;
     Memory m;
-    st.last = plan(land(false), m);
-    st.decision = plan(land(), m);
+    st.last = measure(land(false), m);
+    st.decision = measure(land(), m);
     st.memory = m;
-    st.steers.push_back(steer("town", "hungerford", 2));
-    st.nextSteer = 4;
     const auto back = readState(stateJson(st));
-    expect(back.steers.size() == 1 && back.steers[0].target == "hungerford" && back.nextSteer == 4, "Its steers are saved");
-    expect(back.memory.price == st.memory.price && back.memory.decided == st.memory.decided && back.memory.margin == st.memory.margin,
-           "and its memory");
-    expect(back.decision.decided && back.decision.pot == st.decision.pot && back.decision.orders.size() == st.decision.orders.size(),
-           "and the week's decision");
-    std::int64_t savedOver = 0;
-    for (const auto& h : back.decision.holders)
-        savedOver += h.band == "over" || h.band == "cap";
-    expect(savedOver == std::int64_t(back.decision.holders.size()), "The saved brief keeps only the holders over their band");
-    Dials d;
+    expect(back.memory.distress == st.memory.distress && back.memory.net == st.memory.net && back.memory.decided == st.memory.decided &&
+               back.memory.day == st.memory.day,
+           "Its memory is saved");
+    expect(briefText(back.last) == briefText(st.last) && back.decision.decided && briefText(back.decision) == briefText(st.decision),
+           "and the day's and the week's measures");
+    // A save from before Phase 12: the steers, bands, orders, prices, wages, tax levels and banks it held are left behind.
+    json::Value old;
     std::string problem;
-    expect(readDialsText(R"({"mode": "off", "needDays": 10, "weights": {"hungry": 4}})", d, problem) && d.mode == "off" && d.needDays == 10 &&
-               d.wHungry == 4 && d.cap == 4,
-           "Dials read from JSON, the rest kept");
-    expect(!readDialsText(R"({"mode": "loud"})", d, problem), "An unknown mode is refused");
-    expect(!readDialsText(R"({"cap": 1})", d, problem), "and dials out of range");
-}
-
-void theWageTable()
-{
-    // Seeded at once from the dials' starts, never under the living floor.
-    Memory m;
-    auto s = land(false);
-    const auto first = plan(s, m);
-    expect(first.wages.at("wellby").at("help") == 16 && first.wages.at("wellby").at("guard") == 14, "Each town's table starts from the dials");
-    expect(first.wages.at("wellby").at("keeper") == 8 && first.wages.at("wellby").at("odd job") == 4, "and a keeper's and an odd job's");
-    // Posts going begging raise their pay at the week's decision; not on other days.
-    s.towns[0].unfilled["help"] = 2;
-    expect(plan(s, m).wages.at("wellby").at("help") == 16, "A day's measure moves no wage");
-    auto week = land(true);
-    week.towns[0].unfilled["help"] = 2;
-    const auto raised = plan(week, m);
-    expect(std::abs(raised.wages.at("wellby").at("help") - 17.6) < 1e-9, "Help going begging is paid a tenth more at the decision");
-    // Many idle and nothing begging: it eases, but not below the living floor.
-    expect(raised.wages.at("hungerford").at("labour") < 12 || town(raised, "hungerford").kind == "empty purses",
-           "Many idle: the town's labour pays less, unless it is in want of work or money");
-    Memory n;
-    auto lean = land(true);
-    lean.dials.wageStart["labour"] = 1;              // (A start under the floor.)
-    expect(plan(lean, n).wages.at("wellby").at("labour") == 8, "A wage is never under the living floor");
-    // Saved.
-    State st;
-    st.memory = m;
-    expect(readState(stateJson(st)).memory.wage == m.wage, "The table is saved");
-    Dials d;
-    std::string problem;
-    expect(readDialsText(R"({"wages": {"help": 20}, "wageRaise": 0.2})", d, problem) && d.wageStart.at("help") == 20 && d.wageRaise == .2 &&
-               d.wageStart.at("guard") == 14,
-           "Its starts and steps are dials");
-}
-
-void growthGoesBackOut()
-{
-    // A treasury inside its band, but gaining week on week: half its week's gain goes out at the decision.
-    Memory m;
-    auto s = land(false);
-    s.holders[3].cash = 700;                         // (Wellby's treasury: need 600, so comfortable.)
-    plan(s, m);
-    auto week = land(true);
-    week.holders[3].cash = 900;                      // (200p more a week later: still under its band's top.)
-    const auto b = plan(week, m);
-    const auto& t = holder(b, "stores:wellby");
-    expect(t.gain == 200 && t.band == "growing", "A comfortable treasury that gained 200p in the week is growing (" + t.band + ")");
-    expect(t.toSpend >= 100 && t.cash - t.toSpend >= t.need, "and sends at least half its gain out, keeping its need");
-    expect(m.weekStart.at("stores:wellby") == t.cash - t.toSpend, "Its next week starts from what it keeps");
-    // One that lost doesn't.
-    auto lost = land(true);
-    lost.day = 15;
-    lost.holders[3].cash = 700;
-    expect(holder(plan(lost, m), "stores:wellby").toSpend == 0, "One that lost over the week sends nothing");
-}
-
-void itPressesItself()
-{
-    // The residents' share of the land's money falls over the week: it presses harder at the decision; rises, it eases.
-    Memory m;
-    auto week1 = land(true);
-    plan(week1, m);
-    expect(m.autoPressure == 1 && m.residentShare > 0, "Its first decision only notes the residents' share");
-    auto week2 = land(true);
-    week2.day = 15;
-    for (auto& r : week2.residents)
-        r.cash = r.cash * 8 / 10;                    // (A fifth less in their purses.)
-    const auto b = plan(week2, m);
-    expect(std::abs(m.autoPressure - 1.3) < 1e-9 && b.autoPressure == m.autoPressure, "Their share fell: it presses a third harder");
-    auto week3 = land(true);
-    week3.day = 22;
-    plan(week3, m);
-    expect(m.autoPressure < 1.3 && m.autoPressure >= 1, "Their share back up: it eases, never below 1");
-}
-
-void itLearnsReach()
-{
-    // A week in which the hires reached the poorer half and commissions didn't: the hires weigh more, commissions less.
-    Memory m;
-    auto week = land(true);
-    week.reach["hires"] = {90, 100};
-    week.reach["commissions"] = {10, 100};
-    week.reach["trade"] = {1, 20};                   // (Too little paid to judge.)
-    const auto b = plan(week, m);
-    expect(std::abs(m.learned.at("hires") - 1.2) < 1e-9, "Hires that reached the poor at 90% (a target of 1.8) weigh a fifth more");
-    expect(std::abs(m.learned.at("commissions") - .875) < 1e-9, "commissions that reached them at 10% an eighth less");
-    expect(m.learned.at("trade") == 1 && !b.reach.count("trade"), "and a channel paid too little isn't judged");
-    expect(std::abs(b.reach.at("hires") - .9) < 1e-9, "The brief says what each reached");
-    // Weighed in the orders: with the same need, more to hires than before.
-    Memory fresh;
-    const auto plain = plan(land(true), fresh);
-    const auto sum = [](const Brief& br, const std::string& c) { return br.channels.count(c) ? br.channels.at(c) : 0; };
-    auto again = land(true);
-    again.day = 15;
-    const auto learned = plan(again, m);
-    expect(double(sum(learned, "hires")) / learned.pot > double(sum(plain, "hires")) / plain.pot, "and the hires get more of the pot");
-    expect(readState(stateJson(State{m, {}, 1, {}, {}})).memory.learned == m.learned, "What it learned is saved");
-}
-
-void theGranaryStores()
-{
-    // In summer a town with an empty granary is sent money to store food; in winter it isn't.
-    Memory m;
-    auto summer = land(true);
-    summer.season = 1;
-    const auto stored = plan(summer, m);
-    bool food = false;
-    for (const auto& o : stored.orders)
-        food |= o.channel == "food" && o.town == "wellby";
-    expect(food, "In summer the granaries are filled for the winter");
-    // In winter it keeps half that store (the playbook): an empty one is made up, one at half isn't.
-    const auto foodTo = [](const Brief& b) {
-        std::int64_t n = 0;
-        for (const auto& o : b.orders)
-            n += o.channel == "food" && o.town == "wellby" ? o.coins : 0;
-        return n;
-    };
-    Memory n;
-    auto winter = land(true);
-    winter.season = 3;
-    winter.towns[0].granary = 0;
-    expect(foodTo(plan(winter, n)) > 0, "In winter an empty granary is made up");
-    Memory n2;
-    auto half = land(true);
-    half.season = 3;
-    half.towns[0].granary = std::int64_t(half.dials.granaryDays / 2 * 20 * half.dials.nourishADay);   // (Wellby's twenty.)
-    expect(foodTo(plan(half, n2)) == 0, "but one holding half the store isn't");
-}
-
-void noMoreThanChannelsSpend()
-{
-    // A channel is sent at most one and a half times what it paid last week, less what its funds hold; the givers keep
-    // the rest, and their weeks start from what they keep.
-    Memory m;
-    auto s = land(true);
-    s.dials.channelFloor = 0;
-    for (const auto& c : channelNames())
-        s.reach[c] = {0, 1000};                      // (Each paid 1,000p last week.)
-    s.towns[1].funds["works"] = 500;                 // (Hungerford's works still hold 500p.)
-    const auto b = plan(s, m);
-    // (Not the needs: food, wage and price support and rescue are sized by need already.)
-    for (const auto& [channel, coins] : b.channels)
-        if (channel != "food" && channel != "wage support" && channel != "price support" && channel != "rescue")
-            expect(coins <= (channel == "works" ? 1000 : 1500), channel + " is sent no more than it can spend (" + std::to_string(coins) + "p)");
-    std::int64_t ordered = 0;
-    for (const auto& o : b.orders)
-        ordered += o.coins;
-    expect(ordered == b.pot, "and the pot is what is sent");
-    // (What the channels couldn't take goes to those short of their need: the playbook's outlet.)
-    std::int64_t given = 0;
-    for (const auto& g : b.grants)
-        given += g.from == "house:gold" ? g.coins : 0;
-    expect(given > 0, "What the channels couldn't take goes to those short");
-    expect(m.weekStart.at("house:gold") == holder(b, "house:gold").cash - holder(b, "house:gold").toSpend - given,
-           "The house keeps the rest, and its week starts from it");
+    expect(json::parse(R"({"mode": "off", "nextSteer": 3, "steers": [{"id": "steer-1", "kind": "pressure", "strength": 2, "from": 1, "until": 9}],
+                          "deposits": {"w1": ["wellby", 120]},
+                          "memory": {"distress": {"wellby": 0.25}, "price": {"wellby|bread": 2.5}, "wage": {"wellby|labour": 14}, "ladder": 2,
+                                     "taxLevel": {"stores:wellby": 1.3}, "day": 8, "decided": 8},
+                          "brief": {"day": 8, "mode": "off", "pot": 900, "gini": 0.5, "holders": [{"id": "house:gold", "band": "over"}],
+                                    "orders": [{"from": "land", "town": "wellby", "channel": "works", "coins": 900}],
+                                    "towns": [{"id": "wellby", "people": 20, "distress": 0.25, "wageFloor": 9, "share": 900}]}})",
+                       old, problem),
+           "An old save parses: " + problem);
+    const auto read = readState(old);
+    expect(read.memory.distress.at("wellby") == .25 && read.memory.decided == 8 && read.last.day == 8 && read.last.gini == .5 &&
+               read.last.towns.size() == 1 && read.last.towns[0].people == 20,
+           "and loads its measures, the rest left behind");
 }
 } // namespace
-
-void moneyThatStops()
-{
-    // A treasury over its band eases its town's tax level; one under its need raises it.
-    Memory m;
-    auto s = land(true);
-    s.holders.push_back({"stores:hungerford", "hungerford", HolderKind::Treasury, 100, 10, 600});
-    // A bank keeps its reserve (its floor) and sends all the rest out.
-    s.holders.push_back({"bank:hungerford", "hungerford", HolderKind::Bank, 1000, 0, 300});
-    s.banks["hungerford"] = {1000, 900};
-    auto b = plan(s, m);
-    expect(b.taxLevels.at("stores:wellby") < 1 && b.taxLevels.at("stores:hungerford") > 1, "The treasuries' tax levels follow their bands");
-    expect(holder(b, "bank:hungerford").toSpend == 700, "A bank sends all but its reserve out");
-    std::int64_t fromBank = 0;
-    for (const auto& o : b.orders)
-        fromBank += o.from == "bank:hungerford" ? o.coins : 0;
-    expect(fromBank > 0 && fromBank <= 700, "through the channels");
-    expect(b.banks.at("hungerford").second == 900, "Its savers' savings are measured");
-    // What the channels can't take goes to those short in its town: the treasury first, then a business under half its need.
-    auto capped = s;
-    capped.dials.channelFloor = 0;
-    Memory mc;
-    const auto c = plan(capped, mc);
-    std::map<std::string, std::int64_t> given;
-    for (const auto& g : c.grants)
-        given[g.to] += g.from == "bank:hungerford" ? g.coins : 0;
-    // (The works may still take a little, for the idle, and the needs what they need.)
-    std::int64_t granted = 0;
-    for (const auto& [to, n] : given)
-        granted += n;
-    expect(granted > 0 && holder(c, "bank:hungerford").toSpend + granted <= 700,
-           "A bank's savings the channels can't take go to those short of their need, all but its reserve");
-    expect(given["stores:hungerford"] > 0 && (given["till:stall"] == 0 || given["stores:hungerford"] == 500),
-           "the treasury first, then a business");
-    // Nothing is decided on other days.
-    Memory m4;
-    auto quiet = land(false);
-    quiet.holders.push_back({"stores:hungerford", "hungerford", HolderKind::Treasury, 100, 10, 600});
-    quiet.holders.push_back({"bank:hungerford", "hungerford", HolderKind::Bank, 1000, 0, 300});
-    const auto q = plan(quiet, m4);
-    expect(holder(q, "bank:hungerford").toSpend == 0 && q.taxLevels.at("stores:hungerford") == 1, "Only a decision sends or moves a tax level");
-    // The watch's board is off its floor.
-    auto lean = land(true);
-    lean.dials.wageStart["guard"] = 1;
-    lean.dials.wageStart["help"] = 1;
-    Memory m5;
-    const auto w = plan(lean, m5).wages.at("wellby");
-    expect(w.at("guard") < w.at("help") && w.at("guard") >= 1, "A guard fed at the mess has a day's food off its floor");
-    // The savers' books are saved.
-    State st;
-    st.deposits["w1"] = {"wellby", 120};
-    st.memory.taxLevel["stores:wellby"] = 1.3;
-    const auto back = readState(stateJson(st));
-    expect(back.deposits == st.deposits && back.memory.taxLevel == st.memory.taxLevel, "The savers' books are saved");
-    Dials d;
-    std::string problem;
-    expect(readDialsText(R"({"levyShare": 0.03, "board": {"guard": 0.5}})", d, problem) && d.levyShare == .03 && d.board.at("guard") == .5,
-           "Its dials are read");
-}
-
-void thePlaybook()
-{
-    // The ladder: three decisions at its most pressure with the shares still falling, a rung up; the banks take less.
-    Memory m;
-    m.autoPressure = 3;
-    int rung = 0;
-    double terms = m.depositShare;
-    for (int week = 0; week < 3; ++week)
-    {
-        m.residentShare = 1;                         // (Each week the shares look to have fallen from everything.)
-        m.bottomShare = 1;
-        auto s = land(true);
-        s.day = 8 + 7 * week;
-        const auto b = plan(s, m);
-        rung = b.ladder;
-        if (week < 2)
-            expect(b.ladder == 0, "No rung before three weeks");
-    }
-    expect(rung == 1 && m.ladder == 1, "Three weeks at its most pressure and still falling: a rung up");
-    expect(m.depositShare < terms, "and the banks take less of the savers' money");
-    // Four calm weeks: a rung down.
-    for (int week = 0; week < 4; ++week)
-    {
-        auto s = land(true);
-        s.day = 40 + 7 * week;
-        Brief b;
-        m.residentShare = -1;                        // (First, a measure only; then nothing falls.)
-        b = plan(s, m);
-        b = plan(s, m);
-    }
-    expect(m.ladder == 0, "Calm weeks: a rung down");
-    // The week's report says what it did.
-    Memory r;
-    r.autoPressure = 3;
-    r.ladderWeeks = 2;
-    r.residentShare = r.bottomShare = 1;
-    const auto told = plan(land(true), r);
-    bool ladder = false;
-    for (const auto& a : told.actions)
-        ladder |= a.tool == "the ladder";
-    expect(ladder, "The week's report tells of the ladder");
-    State st;
-    st.memory = m;
-    st.memory.ladder = 2;
-    st.memory.depositShare = .1;
-    const auto back = readState(stateJson(st));
-    expect(back.memory.ladder == 2 && back.memory.depositShare == .1, "Its rung and the banks' terms are saved");
-}
 
 int main()
 {
     try
     {
         readsDistress();
-        bandsAndTheWeek();
         theWeekIsWeighed();
-        steers();
-        pricesAndMargin();
+        howTheMoneyIsSpread();
         sameEveryTime();
         savedState();
-        theWageTable();
-        growthGoesBackOut();
-        itPressesItself();
-        itLearnsReach();
-        theGranaryStores();
-        noMoreThanChannelsSpend();
-    moneyThatStops();
-    thePlaybook();
     }
     catch (const std::exception& e)
     {

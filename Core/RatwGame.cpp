@@ -1067,33 +1067,29 @@ void Game::applyDmActions(double dt)
                     if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                         system(c, "Word goes round: " + outcome.message);
         }
-        else if (kind == "economy.steer" || kind == "economy.unsteer")
+        else if (kind == "economy.tax" || kind == "economy.mint" || kind == "economy.relief")
         {
-            // A Dungeon Master's steer on the economy orchestrator (doc 46, Part 10): payload {"kind", "target", "item",
-            // "strength", "days", "note"}; its id is "steer-<the action's id>". Unsteer: the target is the steer's id.
+            // The Dungeon Master's levers on the economy (Docs/Design/64-economy-migration.md, decision 5), each logged in
+            // the ledger: the tax rate (payload {"rate": 0 to 0.5 of a week's income}), the mint on or off ({"on"}), and a
+            // one-off relief grant from the capital's treasury to a town's (the target the town; {"coins"}).
             json::Value payload;
             std::string problem;
             if (row.size() > 4 && row[4])
                 json::parse(*row[4], payload, problem);
             auto& society = world_.society();
-            if (kind == "economy.unsteer")
-                outcome = society.unsteer(target) ? Result{true, "The steer has ended.", target} : Result{false, "No such steer in force.", target};
-            else if (!payload.isObject())
-                outcome = {false, "The steer can't be read.", {}};
+            const auto by = "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?"));
+            EconomyResult done;
+            if (!payload.isObject())
+                done = {false, "The lever can't be read."};
+            else if (kind == "economy.tax")
+                done = payload.find("rate") && payload["rate"].isNumber() ? society.setTaxRate(payload["rate"].asNumber(), by)
+                                                                         : EconomyResult{false, "Give the tax rate."};
+            else if (kind == "economy.mint")
+                done = payload.find("on") && payload["on"].isBool() ? society.setMint(payload["on"].asBool(), by)
+                                                                    : EconomyResult{false, "Say whether the mint is on."};
             else
-            {
-                orchestra::Steer steer;
-                steer.id = "steer-" + *row[0];
-                steer.kind = payload.string("kind");
-                steer.target = payload.string("target");
-                steer.item = payload.string("item");
-                steer.strength = payload.number("strength", 1);
-                steer.note = payload.string("note");
-                steer.by = row[3] ? *row[3] : std::string();
-                const auto days = int(std::clamp(payload.number("days", 7), 0., 1000.));
-                const auto done = society.steer(steer, days);
-                outcome = {done.ok, done.ok ? "Steer " + steer.id + " set. " + done.message : done.message, steer.id};
-            }
+                done = society.reliefGrant(target, std::int64_t(std::clamp(payload.number("coins"), 0., 1e12)));
+            outcome = {done.ok, done.message, target};
             if (outcome.ok)
                 saveSoon();
         }

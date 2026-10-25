@@ -1,59 +1,18 @@
-// The society's side of the economy orchestrator (Docs/Design/46-economy-orchestrator.md): what it counts between
-// snapshots, the snapshot it takes once a day at SnapshotHour, the brief it takes when the day turns, and the Dungeon
-// Master's steers. Phase 1 (shadow): the brief is kept and shown; nothing in it is applied.
+// The society's side of the economy's monitor (Docs/Design/46-economy-orchestrator.md; doc 64, Phase 12): what it counts
+// between snapshots, the snapshot it takes once a day at SnapshotHour, and the measures it keeps when the day turns. And
+// the Dungeon Master's three levers (doc 64, decision 5): the tax rate, the mint on or off, and a relief grant from the
+// capital's treasury, each logged in the ledger.
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
-#include <filesystem>
-#include <fstream>
-#include <sstream>
+#include <cstdio>
 
 namespace ratw
 {
 namespace
 {
-// Data/Economy: RATW_DATA_DIR (the Data directory), else the working directory or one above it, else the source tree.
-std::filesystem::path economyDir()
-{
-    namespace fs = std::filesystem;
-    std::error_code ec;
-    if (const char* dir = std::getenv("RATW_DATA_DIR"); dir && *dir)
-        return fs::path(dir) / "Economy";
-    for (auto at = fs::current_path(ec); !ec && !at.empty(); at = at.parent_path())
-    {
-        if (fs::exists(at / "Data" / "Economy" / "orchestrator.json", ec))
-            return at / "Data" / "Economy";
-        if (at == at.parent_path())
-            break;
-    }
-#ifdef RATW_SOURCE_DIR
-    return fs::path(RATW_SOURCE_DIR) / "Data" / "Economy";
-#else
-    return fs::path("Data") / "Economy";
-#endif
-}
-
-orchestra::Dials loadDials()
-{
-    orchestra::Dials dials;
-    std::ifstream file(economyDir() / "orchestrator.json", std::ios::binary);
-    if (file)
-    {
-        std::ostringstream text;
-        text << file.rdbuf();
-        std::string problem;
-        orchestra::Dials read;
-        if (orchestra::readDialsText(text.str(), read, problem))
-            dials = read;
-    }
-    if (const char* mode = std::getenv("RATW_ORCHESTRATOR"); mode && (std::string(mode) == "off" || std::string(mode) == "shadow"))
-        dials.mode = mode;
-    return dials;
-}
-
 // Money a resident is given rather than earns (for "idle": a wolf that earned nothing in three days).
 bool unearned(const std::string& kind)
 {
@@ -66,62 +25,21 @@ bool unearned(const std::string& kind)
             return true;
     return false;
 }
-// What a holder spends in the ordinary way: not what it passes to its own house or another collector, and not what the
-// rules against hoarding or the orchestrator make it spend.
-bool ordinarySpending(const std::string& kind)
-{
-    return kind.rfind("surplus", 0) != 0 && kind.rfind("orders:", 0) != 0 && kind != "house takings" && kind != "the shop's till" &&
-           kind != "sale of a business" && kind != "the household purse" && kind != "the churches' purses joined" &&
-           kind != "capital's share" && kind != "starting money";
-}
 } // namespace
-
-const orchestra::Dials& Society::orchestratorDials() const
-{
-    if (dialsOverride_)
-        return *dialsOverride_;
-    static const orchestra::Dials dials = loadDials();
-    return dials;
-}
 
 bool Society::orchestrating() const
 {
-    return roster_ == Roster::Authored && orchestratorDials().mode != "off";
+    return roster_ == Roster::Authored;
 }
 
 void Society::forgetOrchestra()
 {
-    if (orchestraRunner_ && orchestraRunner_->pending())
-        orchestraRunner_->take();                    // (A plan for the old society is dropped.)
+    measured_.reset();                               // (Measures for the old society are dropped.)
     snapshotDay_ = countingFrom_ = -1;
     accountTown_.clear();
-    holderSpent_.clear();
     townFlow_.clear();
     playerFlow_.clear();
     earned_.clear();
-}
-
-void Society::setOrchestratorThread(bool threaded)
-{
-    if (threaded == orchestraThreaded_ && (orchestraRunner_ || !threaded))
-        return;
-    orchestraThreaded_ = threaded;
-    // A plan under way is finished first (on the old runner), so nothing is lost.
-    std::optional<std::pair<orchestra::Brief, orchestra::Memory>> pending;
-    if (orchestraRunner_ && orchestraRunner_->pending())
-        pending = orchestraRunner_->take();
-    orchestraRunner_.runner = std::make_shared<orchestra::Runner>(threaded);
-    if (pending)
-    {
-        // (Kept as the brief it was: handed back when the day turns, as if planned on the new runner.)
-        state_.orchestrator.memory = pending->second;
-        state_.orchestrator.last = pending->first;
-        if (pending->first.decided)
-            state_.orchestrator.decision = pending->first;
-        applyPrices();
-        if (keepBriefs_)
-            briefs_.push_back(pending->first);
-    }
 }
 
 std::vector<orchestra::Brief> Society::takeBriefs()
@@ -129,33 +47,6 @@ std::vector<orchestra::Brief> Society::takeBriefs()
     std::vector<orchestra::Brief> out;
     out.swap(briefs_);
     return out;
-}
-
-EconomyResult Society::steer(orchestra::Steer s, int days)
-{
-    auto& o = state_.orchestrator;
-    s.from = state_.budgetDay + 1;
-    s.until = s.from + days;
-    std::string problem;
-    if (!orchestra::validSteer(s, problem))
-        return {false, problem};
-    if (o.steers.size() >= 64)
-        return {false, "Sixty-four steers are in force: end one first."};
-    if (s.id.empty())
-        s.id = "steer-" + std::to_string(o.nextSteer++);
-    for (const auto& other : o.steers)
-        if (other.id == s.id)
-            return {false, "That steer is already in force."};
-    o.steers.push_back(s);
-    return {true, "From tomorrow's plan, for " + std::to_string(days) + (days == 1 ? " day." : " days.")};
-}
-
-bool Society::unsteer(const std::string& id)
-{
-    auto& steers = state_.orchestrator.steers;
-    const auto before = steers.size();
-    steers.erase(std::remove_if(steers.begin(), steers.end(), [&](const orchestra::Steer& s) { return s.id == id; }), steers.end());
-    return steers.size() != before;
 }
 
 void Society::noteForOrchestra(const std::string& kind, const std::string& from, const std::string& to, std::int64_t coins,
@@ -187,29 +78,6 @@ void Society::noteForOrchestra(const std::string& kind, const std::string& from,
     }
     if (coins <= 0)
         return;
-    // Reach (Phase 7): what a channel's fund pays, and to whom; what a till pays out, and how much to the poorer half.
-    if (from.rfind("fund:", 0) == 0 && to.rfind("fund:", 0) != 0 && from != LandFund)
-        if (const auto second = from.find(':', 5); second != std::string::npos)
-        {
-            auto channel = from.substr(second + 1);
-            std::replace(channel.begin(), channel.end(), '_', ' ');
-            auto& week = channelWeek_[channel];
-            week.second += double(coins);
-            if (poorHalf_.count(to))
-                week.first += double(coins);
-            else if (to.rfind("till:", 0) == 0)
-                tillFrom_[to][channel] += double(coins);
-        }
-    if (from.rfind("till:", 0) == 0)
-    {
-        auto& week = tillWeek_[from];
-        week.second += double(coins);
-        if (poorHalf_.count(to))
-            week.first += double(coins);
-    }
-    if (ordinarySpending(kind))
-        if (const auto h = holderSpent_.find(from); h != holderSpent_.end())
-            h->second += coins;
     // Coins that go from one town to another (an account of no town, the road's or the land church's, doesn't count: what
     // the church takes in tithes it gives back as alms and wages in every town).
     const auto a = accountTown_.find(from), b = accountTown_.find(to);
@@ -241,69 +109,53 @@ void Society::orchestrate(double absoluteDay, const std::map<std::string, LifeBo
 {
     if (!orchestrating())
         return;
-    if (!orchestraRunner_)
-        orchestraRunner_.runner = std::make_shared<orchestra::Runner>(orchestraThreaded_);
     const auto day = std::int64_t(std::floor(absoluteDay));
-    // The day turns: the brief planned for it (the game waits for it here, so every run sees it at the same moment).
-    if (day > state_.budgetDay && orchestraRunner_->pending())
+    // The day turns: the measures taken for it last evening are the ones shown (so every run sees them at the same moment).
+    if (day > state_.budgetDay && measured_)
     {
-        const auto forDay = orchestraRunner_->pendingDay();
-        auto [brief, memory] = orchestraRunner_->take();
-        if (forDay == day)                           // (A plan for a day already gone is dropped.)
+        auto [brief, memory] = std::move(*measured_);
+        measured_.reset();
+        if (brief.day == day)                        // (Measures for a day already gone are dropped.)
         {
             state_.orchestrator.memory = std::move(memory);
             state_.orchestrator.last = brief;
             if (brief.decided)
                 state_.orchestrator.decision = brief;
-            applyPrices();                           // Its prices and margin, when it is on (doc 46, Phase 3).
-            applyOrders(brief);                      // And the week's orders: money into the channels' funds (Phase 5).
-            applyGrants(brief);                      // And the banks' grants to those short (money that stops).
             if (keepBriefs_)
                 briefs_.push_back(std::move(brief));
         }
     }
-    // An hour before the day turns: the snapshot for tomorrow, handed to the orchestrator's thread.
+    // An hour before the day turns: the snapshot for tomorrow, and its measures.
     if (wantsSnapshot(absoluteDay) && !bodies.empty())
     {
         snapshotDay_ = day + 1;
-        orchestraRunner_->submit(orchestraSnapshot(day + 1, bodies), state_.orchestrator.memory);
+        auto memory = state_.orchestrator.memory;
+        auto brief = orchestra::measure(orchestraSnapshot(day + 1, bodies), memory);
+        measured_.emplace(std::move(brief), std::move(memory));
     }
 }
 
 orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::map<std::string, LifeBody>& bodies)
 {
-    using orchestra::HolderKind;
-    const auto& dials = orchestratorDials();
     orchestra::Snapshot s;
     s.day = forDay;
-    s.season = season_;
-    s.dials = dials;
     s.moneySupply = moneySupply();
     if (countingFrom_ < 0)
         countingFrom_ = forDay;
     s.counted = int(std::min<std::int64_t>(1000, forDay - countingFrom_));
-    // The week's decisions: the evening of the weekly reckoning, once a day has been counted.
+    // The week is weighed the evening of the weekly reckoning, once a day has been counted.
     s.decide = reckonedDay_ == forDay - 1 && s.counted >= 1;
     const auto of = [&](const std::string& cell) { return day_.communityOf ? day_.communityOf(cell) : storeFor(cell); };
 
-    // The steers in force tomorrow; those that have ended are forgotten.
-    auto& steers = state_.orchestrator.steers;
-    steers.erase(std::remove_if(steers.begin(), steers.end(), [&](const orchestra::Steer& st) { return st.until <= forDay; }),
-                 steers.end());
-    s.steers = steers;
-
     // Residents (the living: those the world gave a body), and where each lives.
-    const auto worths = bankWorths();
     std::unordered_map<std::string, std::string> nextTown;
     std::map<std::string, int> people;
     std::map<std::string, std::vector<const std::string*>> homes;
-    std::size_t everyone = 0;
     for (const auto& [id, life] : state_.residents)
     {
         const auto body = bodies.find(id);
         if (body == bodies.end())
             continue;
-        ++everyone;
         orchestra::ResidentSnap r;
         r.id = id;
         r.home = life.homeCell;
@@ -312,7 +164,6 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         r.hunger = life.hunger;
         if (const auto* a = account(id))
             r.cash = a->cash;
-        r.cash += savingsWorth(id, worths);          // (What its savings are worth is its money: money that stops.)
         const auto* job = jobOf(id);
         // (Not looking for work: a child, the retired, one keeping the house, or one in an unpaid post: a lord, a student.)
         r.dependent = r.age < 16 || r.age >= RetireAge || (job && (homemaking(job->title) || !job->paid));
@@ -334,8 +185,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             homes[life.homeCell].push_back(&id);
         s.residents.push_back(std::move(r));
     }
-    // Households: what they hold, in purse and food; and the poorer half of them, by purse a head (Phase 7's reach).
-    std::vector<std::pair<double, const std::vector<const std::string*>*>> byHead;
+    // Households: what they hold, in purse and food.
     const auto nourishIn = [&](const EconomyAccount& a, const std::string& holder) {
         std::int64_t n = 0;
         for (const auto& [item, q] : a.stock)
@@ -356,85 +206,44 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
             {
                 const bool till = merchant(*id) && tillOf(*id) == *id;
                 if (!till)
-                    h.cash += a->cash + savingsWorth(*id, worths);
+                    h.cash += a->cash;
                 h.nourishment += nourishIn(*a, *id);
             }
-        byHead.push_back({double(std::max<std::int64_t>(0, h.cash)) / std::max(1, h.members), &members});
         s.homes.push_back(std::move(h));
     }
-    std::sort(byHead.begin(), byHead.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-    poorHalf_.clear();
-    for (const auto& [perHead, members] : byHead)
-    {
-        if (poorHalf_.size() * 2 >= everyone)
-            break;
-        for (const auto* id : *members)
-            poorHalf_.insert(*id);
-    }
 
-    // The banks (money that stops): each one's coins and its savers' savings.
-    for (auto it = state_.accounts.lower_bound("bank:"); it != state_.accounts.end() && it->first.rfind("bank:", 0) == 0; ++it)
-        s.banks[it->first.substr(5)].first = it->second.cash;
-    for (const auto& [id, saved] : state_.orchestrator.deposits)
-        s.banks[saved.first].second += saved.second;
-
-    // The holders, and each one's town.
-    std::unordered_map<std::string, std::int64_t> spentNext;
+    // The accounts that belong to a town, for the coins between towns: its treasury, its buyers, its great houses, its
+    // businesses' tills, and the owner-run shops' and producers' own purses (the capital's treasury is the capital's; the
+    // land's church is of no town).
     std::map<std::string, std::string> houseTown;
     for (const auto& house : houses())
         houseTown[house.id] = house.community;
-    const auto add = [&](const std::string& id, HolderKind kind, const std::string& town, std::int64_t floor, std::int64_t cash) {
-        orchestra::HolderSnap h;
-        h.id = id;
-        h.kind = kind;
-        h.town = town;
-        h.cash = cash;
-        h.floor = floor;
-        if (const auto spent = holderSpent_.find(id); spent != holderSpent_.end())
-            h.spent = spent->second;
-        spentNext[id] = 0;
-        s.holders.push_back(std::move(h));
-    };
-    const auto head = [&](const std::string& town, double each) { return std::int64_t(std::ceil(each * people[town])); };
+    std::vector<std::pair<std::string, std::string>> placed;   // Account -> its town ("": of none).
     for (const auto& [id, a] : state_.accounts)
     {
         if (id == "treasury")
-            add(id, HolderKind::Capital, capital_, head(capital_, dials.floorTownHead), a.cash);
+            placed.push_back({id, capital_});
         else if (id.rfind("stores:", 0) == 0)
-            add(id, HolderKind::Treasury, id.substr(7), head(id.substr(7), dials.floorTownHead), a.cash);
+            placed.push_back({id, id.substr(7)});
         else if (id == SharedChurch)
-            add(id, HolderKind::Church, {}, std::int64_t(std::ceil(dials.floorChurchHead * double(everyone))), a.cash);
+            placed.push_back({id, {}});
         else if (id.rfind("town:", 0) == 0)
         {
             const auto colon = id.find(':', 5);
             if (colon != std::string::npos && id.compare(colon, std::string::npos, ":church") != 0 &&
                 id.compare(colon, std::string::npos, ":granary") != 0)
-                add(id, HolderKind::Buyer, id.substr(5, colon - 5), std::int64_t(dials.floorBuyer), a.cash);
-        }
-        else if (id.rfind("bank:", 0) == 0)
-        {
-            // A bank: its floor is its reserve: four weeks of what its savers draw, twice over, and a tenth of what they
-            // have in at least (money that stops; the playbook: a third kept a pool of its own, the savers drawing little).
-            const auto town = id.substr(5);
-            const auto bank = s.banks.find(town);
-            const double drawn = bankDrawn_.count(town) ? bankDrawn_.at(town) : 0;
-            const auto reserve = std::max<std::int64_t>(bank == s.banks.end() ? 0 : bank->second.second / 10, std::int64_t(std::ceil(drawn * 28 * 2)));
-            add(id, HolderKind::Bank, town, reserve, a.cash);
+                placed.push_back({id, id.substr(5, colon - 5)});
         }
         else if (id.rfind("house:", 0) == 0)
-            add(id, HolderKind::House, houseTown[id], std::max<std::int64_t>(std::int64_t(dials.floorHouse), houseFloor(id)), a.cash);
+            placed.push_back({id, houseTown[id]});
         else if (id.rfind("till:", 0) == 0)
         {
-            // A business's till: a shop's, or a farm's or a site's (doc 46, Phase 2), a house's or its own.
-            const auto positionId = id.substr(5);
-            const auto* p = position(positionId);
+            // A business's till: a shop's, or a farm's or a site's, a house's or its own.
+            const auto* p = position(id.substr(5));
             const bool farm = p && p->role != "merchant" && items::producerFor(p->title);
-            add(id, farm ? HolderKind::Producer : HolderKind::Till, p ? (farm ? communityOfResident(p->founder) : of(p->work.cell)) : std::string(),
-                std::max<std::int64_t>(std::int64_t(farm ? dials.floorProducer : dials.floorTill), floatOf(positionId)), a.cash);
+            placed.push_back({id, p ? (farm ? communityOfResident(p->founder) : of(p->work.cell)) : std::string()});
         }
     }
-    // Owner-run shops and producers without a till of their own yet (an older save before its first day's pass with
-    // tills): their keepers' and workers' own purses, so their floor is their own comfortable line too.
     for (const auto& r : s.residents)
     {
         const auto* job = jobOf(r.id);
@@ -442,13 +251,12 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         if (tillOf(r.id) != r.id)
             continue;
         if (job && merchant(r.id))
-            add(r.id, HolderKind::Keeper, of(job->work.cell),
-                std::max({std::int64_t(dials.floorKeeper), floatOf(job->id), wealthLine(r.id)}), r.cash);
+            placed.push_back({r.id, of(job->work.cell)});
         else if (sp && items::producerFor(sp->workLabel))
-            add(r.id, HolderKind::Producer, r.town, std::max(std::int64_t(dials.floorProducer), wealthLine(r.id)), r.cash);
+            placed.push_back({r.id, r.town});
     }
 
-    // The shops: today's takings against their running, and what each has of each good, sells and asks.
+    // The shops: today's takings against their running, and the food each has in, and asks.
     std::map<std::pair<std::string, std::string>, orchestra::GoodSnap> goods;
     std::map<std::pair<std::string, std::string>, int> priced;
     for (const auto& r : authored_.residents)
@@ -478,26 +286,17 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         for (const auto& [item, q] : a->stock)
             if (q > 0 && nourishment(item) > 0 && std::find(sold.begin(), sold.end(), item) == sold.end())
                 sold.push_back(item);
-        const auto rates = sellRate_.find(till);
         for (const auto& item : sold)
         {
             const auto base = items::baseOf(item);
             const auto* good = storePriced(base) ? nullptr : items::good(base);
-            if (!good || good->price <= 0)
+            if (!good || good->price <= 0 || nourishment(base) <= 0)
                 continue;
             auto& g = goods[{town, base}];
             g.town = town;
             g.item = base;
-            g.catalog = good->price;
             g.nourish = nourishment(base);
-            g.staple = (g.nourish > 0 && good->price <= 3) || base == "firewood";
             g.stock += stockAll(*a, base);
-            // What it means to keep of it (Society::craft): a store of what it supplies or what is traded, else a few.
-            const bool store = items::traded(base) || std::find(supplies.begin(), supplies.end(), base) != supplies.end();
-            g.kept += store ? SuppliesKept / 2 : GoodsKept;
-            if (rates != sellRate_.end())
-                if (const auto rate = rates->second.find(base); rate != rates->second.end())
-                    g.rate += rate->second;
             g.price += double(shopPrice(r.id, base));
             ++priced[{town, base}];
         }
@@ -508,7 +307,7 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         s.goods.push_back(g);
     }
 
-    // The towns: coins in and out since the last snapshot, and the odd jobs and hires posted.
+    // The towns: coins in and out since the last snapshot, and players' help.
     std::map<std::string, orchestra::TownSnap> towns;
     for (const auto& [town, n] : people)
         towns[town].id = town;
@@ -518,82 +317,68 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
     for (const auto& [town, flow] : playerFlow_)    // (Players' help: doc 57, 5.)
         if (const auto t = towns.find(town); t != towns.end())
             t->second.playerIn = flow.in, t->second.playerOut = flow.out, t->second.playerGoods = flow.goods;
-    for (const auto& job : oddJobs_)
-        if (const auto t = towns.find(job.community); t != towns.end())
-        {
-            ++t->second.oddJobs;
-            t->second.oddJobSlots += job.slots;
-            // Places nobody took by the evening: a business's hire, or a hand's share of the day's odd job.
-            if (const int open = job.slots - int(job.stage.size()); open > 0)
-                t->second.unfilled[job.until >= 0 ? "hand" : "odd job"] += open;
-        }
-    // Its workers owed wages, and those paid by wage support today (Phase 6); what its failing businesses lack of their
-    // floats; and what its funds hold.
-    for (const auto& [who, since] : state_.memory.unpaidSince)
-        if (const auto home = nextTown.find(who); home != nextTown.end())
-            if (const auto t = towns.find(home->second); t != towns.end())
-                ++t->second.unpaid;
-    for (const auto& [town, spells] : supportedToday_)
-        if (const auto t = towns.find(town); t != towns.end())
-            t->second.supported += (spells + PaidSpells - 1) / PaidSpells;
-    supportedToday_.clear();
-    for (const auto& p : positions_)
-        if (const auto till = account("till:" + p.id); till && (p.role == "merchant" || items::producerFor(p.title)))
-            if (const auto floatCash = floatOf(p.id); till->cash < floatCash / 2)
-                if (const auto t = towns.find(p.role == "merchant" ? of(p.work.cell) : communityOfResident(p.founder)); t != towns.end())
-                    t->second.rescueNeed += floatCash - till->cash;
-    for (auto& [town, t] : towns)
-        if (const auto* granary = account("town:" + town + ":granary"))
-            for (const auto& [item, n] : granary->stock)
-                t.granary += std::int64_t(n) * nourishment(item);
-    for (const auto& [town, days] : granaryExtra_)   // (A granary project standing: doc 57.)
-        if (const auto t = towns.find(town); t != towns.end())
-            t->second.granaryExtra = days;
-    // A decision's day: each channel's week (Phase 7), what it paid and what reached the poorer half, directly or through
-    // the tills it paid (in the share of each till's outgoings that went to them). Then the week's count starts afresh.
-    if (s.decide)
-    {
-        for (const auto& [channel, week] : channelWeek_)
-            s.reach[channel] = week;
-        for (const auto& [till, channels] : tillFrom_)
-            if (const auto paid = tillWeek_.find(till); paid != tillWeek_.end() && paid->second.second > 0)
-                for (const auto& [channel, coins] : channels)
-                    s.reach[channel].first += coins * paid->second.first / paid->second.second;
-        channelWeek_.clear();
-        tillFrom_.clear();
-        tillWeek_.clear();
-    }
-    for (auto it = state_.accounts.lower_bound("fund:"); it != state_.accounts.end() && it->first.rfind("fund:", 0) == 0; ++it)
-        if (const auto second = it->first.find(':', 5); second != std::string::npos)
-            if (const auto t = towns.find(it->first.substr(5, second - 5)); t != towns.end())
-            {
-                auto channel = it->first.substr(second + 1);
-                std::replace(channel.begin(), channel.end(), '_', ' ');
-                t->second.funds[channel] = it->second.cash;
-            }
-    // Posts standing empty, by their kind of pay (the wage table, doc 46, Phase 4).
-    for (const auto& p : positions_)
-        if (const auto held = state_.careers.positions.find(p.id); held != state_.careers.positions.end() && held->second.holder.empty() && p.paid)
-            if (const auto t = towns.find(communityOfResident(p.founder)); t != towns.end())
-                ++t->second.unfilled[p.role == "guard" ? "guard" : p.role == "merchant" ? "keeper" : clergy(p.title) ? "clergy" : "help"];
     for (auto& [town, t] : towns)
         s.towns.push_back(t);
 
-    // What is counted until the next snapshot: these holders' spending, coins between these towns, these residents'
-    // earnings (kept for the week).
-    holderSpent_ = std::move(spentNext);
+    // What is counted until the next snapshot: coins between these towns, these residents' earnings (kept for the week).
     townFlow_.clear();
     playerFlow_.clear();
     accountTown_ = std::move(nextTown);
-    for (const auto& h : s.holders)
-        if (!h.town.empty())
-            accountTown_[h.id] = h.town;
+    for (const auto& [id, town] : placed)
+        if (!town.empty())
+            accountTown_[id] = town;
         else
-            accountTown_.erase(h.id);                // (The land church's: of no town.)
+            accountTown_.erase(id);                  // (The land church's: of no town.)
     for (const auto& r : s.residents)
         earned_.try_emplace(r.id);
     for (auto it = earned_.begin(); it != earned_.end();)
         it = accountTown_.count(it->first) || state_.residents.count(it->first) ? std::next(it) : earned_.erase(it);
     return s;
+}
+
+// --- The Dungeon Master's levers (doc 64, decision 5) --------------------------------------------------------------------
+namespace
+{
+std::string percent(double rate)
+{
+    char text[16];
+    std::snprintf(text, sizeof text, "%g%%", std::round(rate * 1000) / 10);
+    return text;
+}
+} // namespace
+
+EconomyResult Society::setTaxRate(double rate, const std::string& by)
+{
+    if (!std::isfinite(rate) || rate < 0 || rate > MostTaxRate)
+        return {false, "The tax rate is 0% to " + percent(MostTaxRate) + " of a week's income."};
+    const double was = state_.memory.taxRate;
+    state_.memory.taxRate = rate;
+    ++state_.memory.revision;
+    record("the tax rate set from " + percent(was) + " to " + percent(rate), by.empty() ? "a Dungeon Master" : by, {}, {}, 0, 0);
+    return {true, "From the next reckoning, " + percent(rate) + " of a week's income."};
+}
+
+EconomyResult Society::setMint(bool on, const std::string& by)
+{
+    auto& mint = state_.memory.mint;
+    if (mint.on == on)
+        return {true, on ? "The mint is on already." : "The mint is off already."};
+    mint.on = on;
+    ++state_.memory.revision;
+    record(on ? "the mint turned on" : "the mint turned off", by.empty() ? "a Dungeon Master" : by, {}, {}, 0, 0);
+    return {true, on ? "The mint is on: it strikes and melts from its next week." : "The mint is off: nothing more is struck or melted."};
+}
+
+EconomyResult Society::reliefGrant(const std::string& town, std::int64_t coins)
+{
+    const auto from = treasuryOf(capital_), to = treasuryOf(town);
+    if (town.empty() || to == from || !account(to))
+        return {false, "Name a town with a treasury of its own, not the capital."};
+    const auto* purse = account(from);
+    if (coins <= 0 || !purse || coins > purse->cash)
+        return {false, "The capital's treasury holds " + std::to_string(purse ? purse->cash : 0) + "p: grant 1p to that."};
+    if (!shift(from, to, "", 0, coins, "a relief grant"))
+        return {false, "The grant couldn't be made."};
+    return {true, std::to_string(coins) + "p from the capital's treasury to " + town + "'s."};
 }
 } // namespace ratw

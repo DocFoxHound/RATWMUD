@@ -209,67 +209,37 @@ export interface Money {
         shortOfFood: number; byRole: Record<string, MoneyGroup>};
     road: {caravans: number; contracts: number; bandits: number}; players: number;
     events: {kind: string; actor: string; target: string; day: number; detail: string; at: string}[];
-    /** The economy orchestrator's last plan (Docs/Design/46-economy-orchestrator.md, Part 9); null in saves before it ran. */
+    /** The economy's monitor's latest measures (Docs/Design/46-economy-orchestrator.md, Part 9; doc 64, Phase 12); null
+     *  in saves before it ran. */
     orchestrator?: Orchestrator | null;
-    /** The orchestrator's funds (doc 46, Phase 5): each town's by channel, and the land's; absent in older hosts' replies. */
-    funds?: Record<string, Partial<Record<string, number>>>;
-    landFund?: number | null;
-    /** Each town's granary (Phase 7): its cash and how many goods it holds. */
-    granaries?: Record<string, {cash: number; goods: number}>;
+    /** The Dungeon Master's levers as they stand (doc 64, Phase 12); absent in older hosts' replies. */
+    levers?: EconomyLevers;
 }
 
-/** The economy orchestrator, as last saved (doc 46). In shadow mode it plans but nothing it plans is applied yet. */
-export type SteerKind = 'pressure' | 'town' | 'holder' | 'channel' | 'price';
-export type EconomyChannel = 'works' | 'hires' | 'commissions' | 'food' | 'trade' | 'price support' | 'wage support' | 'rescue' | 'opening';
-/** What a Dungeon Master asks of it: `target` is "" for pressure, a town, an account, a channel, or a town or "*" for a price. */
-export interface SteerRequest { kind: SteerKind; targetId: string; item: string; strength: number; days: number; note: string }
-/** A steer in force: from and until are game days; `by` is the Dungeon Master who set it. */
-export interface Steer { id: string; kind: SteerKind; target: string; item: string; strength: number; from: number; until: number; note: string; by: string }
 /** Why a town is in distress: "" when it is well. */
 export type DistressKind = '' | 'empty shelves' | 'empty purses' | 'no work' | 'failing trade' | 'draining';
 export interface OrchestratorTown {
     id: string; people: number; distress: number; week?: number; kind: DistressKind; foodCost: number; hungry: number; starving: number; short: number;
-    poor: number; idle: number; shopFoodDays: number; takingsRatio: number; netInflow: number; wageFloor: number; share: number;
+    poor: number; idle: number; shopFoodDays: number; takingsRatio: number; netInflow: number;
     /** Players' help since the last measure (doc 57): coins they spent there, coins its shops paid them, goods they brought (at its price). */
     playerIn?: number; playerOut?: number; playerGoods?: number;
-    /** A day's pay by kind of work (Phase 4): help, guard, labour, clergy, keeper, hand, odd job. */
-    wages?: Partial<Record<WageKind, number>>;
 }
-export type WageKind = 'help' | 'guard' | 'labour' | 'clergy' | 'keeper' | 'hand' | 'odd job';
-export const WageKinds: WageKind[] = ['help', 'guard', 'labour', 'clergy', 'keeper', 'hand', 'odd job'];
-export type Band = 'warming' | 'growing' | 'lean' | 'comfortable' | 'over' | 'cap' | 'spared' | (string & {});
-/** A holder over its band: what it holds, what it needs, and what the orchestrator has it spend. */
-export interface OrchestratorHolder { id: string; kind: string; town: string; cash: number; need: number; band: Band; toSpend: number;
-    /** What it gained over the week. */
-    gain?: number }
 export interface OrchestratorBrief {
-    day: number; decided?: boolean; landDistress: number; moneySupply: number; pot: number; margin: number; median: number; gini: number;
-    /** Residents' share of the land's money, 0..1 (Phase 6). */
+    day: number; decided?: boolean; landDistress: number; moneySupply: number; median: number; gini: number;
+    /** Residents' share of the land's money, 0..1. */
     residentShare?: number;
-    /** Its own pressure, 1 or more (Phase 5). */
-    autoPressure?: number;
-    /** The poorer half of households' share of residents' money, 0..1 (Phase 6). */
+    /** The poorer half of households' share of the households' money, 0..1. */
     bottomShare?: number;
-    /** The living floor's multiplier, 1 or more (Phase 6). */
-    floorLift?: number;
-    /** Each channel's reach this week, 0..1 (Phase 7; on a decision's day). */
-    reach?: Partial<Record<string, number>>;
-    /** Each channel's learned weight, 0.5..2 (Phase 7). */
-    learned?: Partial<Record<string, number>>;
-    towns: OrchestratorTown[]; holders: OrchestratorHolder[]; bands: Partial<Record<string, number>>;
-    orders: {from: string; town: string; channel: string; coins: number}[];
-    channels: Partial<Record<string, number>>;
-    prices: {town: string; item: string; catalog: number; now: number; would: number; support?: number}[];
+    towns: OrchestratorTown[];
 }
-/** A named bundle of steers a Dungeon Master starts with one click (Data/Economy/scenarios.json): `needs` says whether
- *  it asks for a town or a holder. */
-export interface ScenarioSteer { kind: SteerKind; target: string; item?: string; strength: number; days: number }
-export interface Scenario { id: string; name: string; about: string; needs: ('town' | 'holder')[]; steers: ScenarioSteer[] }
-/** It measures every day (`brief`, the latest day's) and decides once a week, the evening of the reckoning (`decision`). */
+/** The economy's monitor (doc 46; doc 64, Phase 12): it measures every day (`brief`, the latest day's) and weighs the week the
+ *  evening of the reckoning (`decision`). It sets nothing. */
 export interface Orchestrator {
-    mode: 'shadow' | 'on' | 'off'; day: number; steers: Steer[]; memory?: unknown;
+    day: number; memory?: unknown;
     brief?: OrchestratorBrief | null; decision?: OrchestratorBrief | null;
 }
+/** The Dungeon Master's levers (doc 64, decision 5): the tax on a week's income (0..0.5) and whether the mint is on. */
+export interface EconomyLevers { taxRate: number; mint: boolean }
 
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
@@ -326,14 +296,11 @@ export const dmApi = {
     calendar: (target: Target) => call<WorldCalendar>(`api/calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
         call<{id: number}>('api/festivals/call', {target, community, name, inDays}),
-    /** Queues a steer for the economy orchestrator (doc 46, Part 10); the game names it steer-<id> at the next day's plan. */
-    steerEconomy: (target: Target, steer: SteerRequest) => call<{id: number; steer: string}>('api/economy/steer', {target, ...steer}),
-    /** Ends a steer before its time. */
-    endSteer: (target: Target, id: string) => call<{id: number}>('api/economy/unsteer', {target, id}),
-    scenarios: () => call<{scenarios: Scenario[]}>('api/economy/scenarios').then(r => r.scenarios),
-    /** Starts a scenario: its steers expanded and queued, all or none. */
-    startScenario: (target: Target, start: {scenario: string; town?: string; holder?: string}) =>
-        call<{scenario: string; queued: {id: number; steer: string}[]}>('api/economy/scenario', {target, ...start}),
+    /** The economy's levers (doc 64, decision 5), each queued for the game and logged in its ledger: the tax rate from the
+     *  next reckoning, the mint on or off, and a one-off relief grant from the capital's treasury to a town's. */
+    setTaxRate: (target: Target, rate: number) => call<{id: number}>('api/economy/tax', {target, rate}),
+    setMint: (target: Target, on: boolean) => call<{id: number}>('api/economy/mint', {target, on}),
+    reliefGrant: (target: Target, town: string, coins: number) => call<{id: number}>('api/economy/relief', {target, town, coins}),
     artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
     reports: (target: Target) => call<Reports>(`api/reports?target=${target}`),
     storytellers: (target: Target) => call<Storytellers>(`api/storytellers?target=${target}`),

@@ -69,10 +69,7 @@ void Society::reset(Roster roster)
     state_ = {};
     tills_.clear();
     forgetOrchestra();
-    prices_.clear();
-    wages_.clear();
     wageCarry_.clear();
-    margin_ = .55;
     loadPrices();                                   // (None: state_ is fresh.)
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
@@ -341,7 +338,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
     noteSpent(from, coins);                            // A player's or a Hold's, for the mint (RatwMint.cpp).
     noteIncoming(to, kind, coins);
-    noteForOrchestra(kind, from, to, coins, item, quantity);   // What the economy orchestrator counts (RatwOrchestrate.cpp).
+    noteForOrchestra(kind, from, to, coins, item, quantity);   // What the economy's monitor counts (RatwOrchestrate.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
     if (coins > 0 && unearnedKind(kind))            // (Gifts and enclosures: doc 55; relief: doc 64.)
     {
@@ -444,12 +441,6 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.stock[item] += quantity;
     b.cash -= total;
     s.cash += total;
-    // A staple held under its price (price support, doc 46, Phase 6): its till is owed the gap on what it sells.
-    if (!support_.empty() && seller.rfind("till:", 0) == 0 && buyer.rfind("till:", 0) != 0 && buyer.rfind("fund:", 0) != 0)
-        if (const auto town = shopTown_.find(seller); town != shopTown_.end())
-            if (const auto t = support_.find(town->second); t != support_.end())
-                if (const auto gap = t->second.find(items::baseOf(item)); gap != t->second.end())
-                    supportOwed_[seller] += gap->second * quantity;
     if (seller.rfind("till:", 0) == 0 || merchant(seller))
     {
         takings_[seller] += total;                  // (A shop's day's takings: its help share them.)
@@ -484,9 +475,8 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const auto dealsIn = [&](const std::vector<std::string>& list) { return std::find(list.begin(), list.end(), items::baseOf(item)) != list.end(); };
     const bool stocked = business && (dealsIn(items::suppliesFor(business->id)) || dealsIn(items::buysFor(business->id)));
     const int held = stock(m, item), cap = stocked ? SuppliesKept : worn ? 4 : good ? GoodsKept : item == "meal" ? 24 : item == "sword" ? 4 : 20;
-    // A good of the catalog at its town's price (doc 46, Phase 3), and bought from a player at the town's buying price
-    // (its price times the orchestrator's margin); meals, herbs and swords as before: dearer as the trader runs short of
-    // them, and as the town's stores do (priceFactor).
+    // A good of the catalog at the shop's own price, and bought from a player at its normal cost (doc 64, Phase 4); meals,
+    // herbs and swords as before: dearer as the trader runs short of them, and as the town's stores do (priceFactor).
     const bool catalog = worn || good;
     // A good of the catalog at the shop's own price, and bought from a player at its normal cost: its price less its
     // margin (doc 64, Phase 4).
@@ -603,7 +593,7 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
         return false;
     return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
            std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < 1 || state_.books.month < 0 ||
-           wantsSnapshot(absoluteDay);                 // (The orchestrator's snapshot: everyone, doc 46.)
+           wantsSnapshot(absoluteDay);                 // (The monitor's snapshot: everyone, doc 46.)
 }
 
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
@@ -611,7 +601,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     season_ = season;
     unseenDecided_ = ++secondsDecided_ % UnseenStep == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
-    orchestrate(absoluteDay, bodies);                  // The economy orchestrator's brief and snapshot (doc 46).
+    orchestrate(absoluteDay, bodies);                  // The economy's monitor: its measures and snapshot (doc 46).
     if (day > state_.budgetDay)
     {
         // Missed days do not accumulate unbounded grants, orders or harvests.
@@ -648,8 +638,6 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendHouseholds(day, bodies);               // The household purse, and who keeps the house (RatwHouseholds.cpp).
             childrenAndStipends(day, bodies);          // The children's stipends, and what they spend them on.
             wants(day, bodies);                        // And what the grown spend on things they just want.
-            savers(day, bodies);                       // And the comfortable on their savings (doc 46, RatwChannels.cpp).
-            tendBank(day);                             // Savers short of food draw from the bank.
             townBuyers(day, bodies);                   // And the town's own buyers'.
             tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
             tendBelongings(day, bodies);               // What NPCs own, worn, mended or replaced (RatwBelongings.cpp).
@@ -1145,7 +1133,6 @@ bool Society::restore(const SocietyState& saved)
     state_ = s;
     indexTills();
     forgetOrchestra();
-    applyPrices();
     loadPrices();
     roster_ = roster;
     for (auto& life : state_.residents)

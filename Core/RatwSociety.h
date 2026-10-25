@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -295,8 +296,9 @@ struct EconomyMemory
     std::map<std::string, double> condition;        // Community -> its buildings' repair, 0 to 100 (the Town Works).
     int purses = 0;                                 // The grant of starting money the world has had (Society::PursesFounded).
     int tills = 0;                                  // Owner-run businesses have tills of their own (Society::TillsFounded, doc 46).
-    // Business rescue (doc 46, Phase 6): a failing business's till -> what its town's rescue fund has lent it, and the day it
-    // was first lent. Repaid from what it holds above two floats; after MonthDays, written off.
+    // Business rescue (doc 46, Phase 6): a failing business's till -> what its town's rescue fund lent it, and the day it
+    // was first lent. No more are lent since the orchestrator stepped back (doc 64, Phase 12); one still owed may be paid
+    // off by a friend (repayRescue), and after MonthDays it is written off.
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> loans;
     // Households (the user, 2026-10-05): who keeps the house in a comfortable one (home -> resident); each home's run of
     // comfortable days (counting up) or poor ones (down); and the poor homes whose stay-at-home members go to work.
@@ -324,6 +326,8 @@ struct EconomyMemory
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     MintBook mint;                                   // The mint (Phase 11).
+    double taxRate = .08;                            // The tax on a week's income (Society::TaxRate to start): the Dungeon
+                                                     // Master's lever (Phase 12, Society::setTaxRate).
     // Households and institutions (doc 64, Phase 7): each account's earned income this week (taxed at the reckoning)
     // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
     // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
@@ -347,7 +351,7 @@ struct SocietyState
     MonthBooks books;
     HouseState houses;
     EconomyMemory memory;
-    orchestra::State orchestrator;                  // The economy orchestrator's memory, steers and last brief (doc 46).
+    orchestra::State orchestrator;                  // The economy's monitor: its memory and its last measures (doc 46).
 };
 struct EconomyResult
 {
@@ -556,7 +560,7 @@ class Society
     // A player's help with a resident's trouble (Docs/Design/57-changing-the-world.md, 3): a vacant post given to a resident
     // now, as succession would give it (leaving any other post it held); a youth apprenticed now to a position's holder,
     // under the weekly chance's own rules (12 to 25, no master yet, no work elsewhere; a master of 35 or skilled 70, not
-    // the watch); a business's rescue loan paid off from `payer`'s purse into its town's rescue fund. "refused" notes, or
+    // the watch); a business's rescue loan paid off from `payer`'s purse into its town's treasury. "refused" notes, or
     // what changed (the paid-off coins).
     CareerNote appoint(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
     CareerNote apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double day);
@@ -658,24 +662,18 @@ class Society
     // (Item::keeps) spoils. Goods bought are fresh to their buyer; on the road, in a caravan, they age. Players' packs
     // don't spoil (not yet). The batches aren't saved: a loaded world's food is all fresh.
     void spoil(std::int64_t day);
-    // Prices (Docs/Design/46-economy-orchestrator.md, Phase 3): one price for each good in each town, set by the economy
-    // orchestrator (a new good's at once, then once a week at its decision), and the margin: what a shop pays the land
-    // (a farm, a gatherer, a player selling) is the town's price times it. Every shop sells at the town's price, a good of
-    // a quality at its quality's share of it; shops buy from each other at it. A good the orchestrator hasn't priced (or
-    // with the orchestrator in shadow or off) goes at the catalog's price; meals and herbs by the town's stores, as before
-    // (World::tendPrices). These replace doc 42's markdowns, flush discounts, town food factors, shelf and supply factors.
+    // The town's going price (doc 64, Phase 4): a good's worth at the town's labourer's wage, the yardstick for a stall, a
+    // contract or a measure (each seller prices its own: priceAt). Meals and herbs by the town's stores (World::tendPrices).
     double townPrice(const std::string& town, const std::string& item) const;   // Pennies a piece (quality counted).
     // A price in whole pennies: to the nearest, a penny at least (doc 46, Phase 8: rounded up, a 1p good priced at 1.4p
     // sold for 2p, twice its catalog's).
     static std::int64_t pennies(double price) { return std::max<std::int64_t>(1, std::llround(price)); }
     // What a buyer in the town pays the land for a good, by the yardstick: its going price less the usual margin.
     double buyingPrice(const std::string& town, const std::string& item) const;
-    double margin() const { return margin_; }
     double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.
     std::string shopTown(const std::string& shop) const;   // The town a shop works in.
     // Meals, herbs and swords: priced by the town's stores (World::tendPrices), not the orchestrator, for now.
     static bool storePriced(const std::string& item) { return item == "meal" || item == "herbs" || item == "sword"; }
-    void applyPrices();                             // prices_, wages_ and margin_ from the orchestrator's memory, when on.
     // Daily: each shop's meals sold (what it restocks) and each shop's town.
     void tendPrices(std::int64_t day);
     static constexpr int ProduceKept = 5, FoodShelf = 30;     // (Keeps 5: doc 42, "Pressure".)
@@ -707,27 +705,24 @@ class Society
     static int shutAhead(std::int64_t today);       // Days from tomorrow the shops aren't properly open (Restday, a festival).
     static int startingLarderDays(const std::string& homeCell);
     static const char* itemName(const std::string& id);
-    // The economy orchestrator (Docs/Design/46-economy-orchestrator.md; RatwOrchestrate.cpp). Once a game day, at
-    // SnapshotHour, the society copies what the orchestrator reads (purses, food, work, prices, what each holder spent
-    // since yesterday, the Dungeon Master's steers) and hands it to the orchestrator's thread; when the day turns, before
-    // the day's pass, it takes the brief (waiting for it if need be), so a run repeats exactly. It measures every day and
-    // acts once a week (the user, 2026-10-06): the evening of the weekly reckoning, after the taxes and tithes, the brief
-    // also holds the week's decisions. Phase 1 (shadow): the briefs are kept and shown, and nothing in them is applied.
+    // The economy's monitor (Docs/Design/46-economy-orchestrator.md; doc 64, Phase 12; RatwOrchestrate.cpp). In an authored
+    // world, once a game day at SnapshotHour, the society copies what it reads (purses, food, work, the shops' food, coins
+    // between towns) and measures it; when the day turns, before the day's pass, those measures become the latest
+    // (orchestrator().last), so a run repeats exactly. The evening of the weekly reckoning the week is weighed too
+    // (orchestrator().decision). It sets nothing.
     static constexpr double SnapshotHour = 23;
-    // Whether the orchestrator plans on a thread of its own (the world's runner turns it on with its threads); off, it
-    // plans on the game thread when the day turns: the same brief either way.
-    void setOrchestratorThread(bool threaded);
     const orchestra::State& orchestrator() const { return state_.orchestrator; }
-    // The dials (Data/Economy/orchestrator.json, read once; RATW_ORCHESTRATOR=off|shadow overrides the mode), or a test's.
-    const orchestra::Dials& orchestratorDials() const;
-    void setOrchestratorDials(const orchestra::Dials& dials) { dialsOverride_ = std::make_shared<orchestra::Dials>(dials); }
-    // Every brief planned since the last call, in full (econ_watch); kept only while someone takes them.
+    // Every day's measures since the last call (econ_watch); kept only while someone takes them.
     std::vector<orchestra::Brief> takeBriefs();
     void keepBriefs(bool keep) { keepBriefs_ = keep; }
-    // A Dungeon Master's steer (doc 46, Part 10), in force from tomorrow for `days` days; `id` names it ("steer-<n>" if
-    // empty). Steers are saved, and end by themselves.
-    EconomyResult steer(orchestra::Steer steer, int days);
-    bool unsteer(const std::string& id);
+    // The Dungeon Master's levers (doc 64, decision 5; RatwOrchestrate.cpp), each logged in the ledger: the tax rate (0 to
+    // MostTaxRate of a week's income, from the next reckoning); the mint on or off; and a one-off relief grant of `coins`
+    // from the capital's treasury to a town's ("a relief grant").
+    static constexpr double MostTaxRate = .5;
+    double taxRate() const { return state_.memory.taxRate; }
+    EconomyResult setTaxRate(double rate, const std::string& by);
+    EconomyResult setMint(bool on, const std::string& by);
+    EconomyResult reliefGrant(const std::string& town, std::int64_t coins);
     std::int64_t moneySupply() const;
     bool conserved() const;
     // Every ledger entry recorded since the last call, oldest first (the saved ledger keeps only the latest 128).
@@ -751,12 +746,6 @@ class Society
     std::string accountTown(const std::string& account) const;
     std::map<std::string, int> mealsToday_;         // A shop's till -> the meals it sold today.
     std::map<std::string, std::string> shopTown_;   // A shop's till -> its community (made daily).
-    // The orchestrator's prices, applied (applyPrices): town -> good -> pennies; its wage table (town -> kind -> a day's
-    // pay); and its margin.
-    std::unordered_map<std::string, std::unordered_map<std::string, double>> prices_, wages_, support_;
-    // From its latest measures: each town's living floor (a day's pay) and its idle wolves (the long run's fixes).
-    std::unordered_map<std::string, std::int64_t> livingFloor_, idleHands_;
-    double margin_ = .55;
     // What each larder gives its household a day (nourishment taken from it, a running average, Society::spoil): the
     // household lays in by what it eats from home, not by what its members would eat if they never ate out (not saved).
     std::unordered_map<std::string, double> larderUse_;
@@ -955,7 +944,8 @@ class Society
     // Households and institutions (Docs/Design/64-economy-migration.md, Phase 7; doc 63's model; RatwInstitutions.cpp).
     //  - Income: what an account earned (wages, sales, profit, rent; for a town its tax, for the church its tithes and
     //    plate), a week's (taxed) and a month's (its rule's measure). Gifts, estates and relief aren't income.
-    //  - Tax TaxRate and tithe TitheRate of each resident's and House's week's income, at the reckoning.
+    //  - Tax taxRate() (TaxRate to start, the Dungeon Master's lever) and tithe TitheRate of each resident's and House's
+    //    week's income, at the reckoning.
     //  - The household rule: what its purse holds over a month's income and HomeNeedDays of its needs goes, at its own
     //    rate (HomeShareLeast..Most a month), half into a want fund (its wants, works on its home) and half to help
     //    about the home; holding over ServantMonths of its income, it keeps servants.
@@ -1030,7 +1020,7 @@ class Society
     };
     static constexpr int HireDays = 7;
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
-    // hand (the wage table, doc 46, Phase 4). A wolf whose own post pays HireRaise less than a hire takes it.
+    // hand (Society::dayWage, doc 64, Phase 6). A wolf whose own post pays HireRaise less than a hire takes it.
     static constexpr std::int64_t HireRaise = 2;
     static constexpr int HireSpells = 8;           // (A day's hours, as a post's: doc 64, Phase 6. It was 4.)
     // Children's friend groups (the user, 2026-10-05): in each town its children, by age, in fours; they play together
@@ -1085,7 +1075,6 @@ class Society
         int payers = 0, residents = 0;
         std::int64_t tax = 0, tithes = 0, toCapital = 0;
         std::int64_t wealthTithe = 0, fromCapital = 0;   // Its folk's wealth tithe; what the capital sent it, for its poor.
-        std::int64_t levy = 0;                           // Its town levy (money that stops, doc 46).
     };
     // Money back out where it pools (Docs/Design/42, "Where money pools", the user, 2026-10-06):
     // - the tax on a week's profit is a tenth, and a fifth of the part above TaxBand;
@@ -1113,9 +1102,8 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
-    // Wages (doc 46, Phase 4): each town's table of a day's pay by kind of post (orchestra::wageKinds), set by the
-    // economy orchestrator (the dials' starts until it has), paid a PaidSpells-th a spell of work. Every payer pays the
-    // table: a shop or house that can't is covered by its town (or church) if it has plenty, else its hand goes unpaid.
+    // Wages by kind of post (help, guard, labour, clergy, keeper, hand, odd job): a share of the town's going rate (doc 64,
+    // Phase 6), paid a PaidSpells-th a spell of work.
     double dayWage(const std::string& town, const std::string& kind) const;
     // The labour market (Docs/Design/64-economy-migration.md, Phase 6; doc 63's model; RatwLabour.cpp). Every employer
     // pays its own wage: a business (its till), and the town's watch, works and posts and the church ("<account>|<kind>").
@@ -1204,46 +1192,6 @@ class Society
     static constexpr std::int64_t OwnerWage = ManagerWage;
     static constexpr int OwnersShare = 3, TillsFounded = 1;
     bool ownsTill(const Position& p) const;         // A business that keeps a till of its own (not a house's).
-    // The orchestrator's channels (doc 46, Phase 5; RatwChannels.cpp): each town's funds ("fund:<town>:<channel>"), filled
-    // at the week's decision from the holders over their band (through the land's fund, LandFund, for what goes to other
-    // towns), and spent each day through the game's own work.
-    static constexpr const char* LandFund = "fund:land";
-    static std::string fundOf(const std::string& town, const std::string& channel);
-    void applyOrders(const orchestra::Brief& brief);
-    void runChannels(std::int64_t day);
-    // Money that stops (doc 46; RatwChannels.cpp): each town's bank ("bank:<town>"), its savers' books in the
-    // orchestrator's state; savings put in at the reckoning and drawn when short, the bank's coins above its reserve sent
-    // out by the orchestrator; the town levy; and what the comfortable spend their savings on (a hand about the home, a
-    // piece commissioned, a feast). Each treasury's tax level (the orchestrator's) multiplies what its town takes.
-    static std::string bankOf(const std::string& town);
-    std::int64_t savedAtBank(const std::string& resident) const;
-    // What its savings are worth: its share of what its bank holds (the bank sends the rest out, so a saver can't draw
-    // more). Each town's bank's coins against its savers' savings (at most 1), made once for a pass.
-    std::unordered_map<std::string, double> bankWorths() const;
-    std::int64_t savingsWorth(const std::string& resident, const std::unordered_map<std::string, double>& worths) const;
-    // Pays `due` from `from` to `to`: from its purse first, then from what it has at the bank (as far as the bank has
-    // the coins). What was paid.
-    std::int64_t payDue(const std::string& from, const std::string& to, std::int64_t due, const std::string& why);
-    void bankReckoning(std::map<std::string, Reckoning>& towns);
-    void applyGrants(const orchestra::Brief& brief);   // At a decision: the banks' grants.
-    void tendBank(std::int64_t day);
-    void savers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    double taxLevel(const std::string& treasury) const;
-    std::unordered_map<std::string, double> taxLevel_;
-    // What each town's savers draw from its bank a day, a slow average (for its reserve; not saved: a restart starts it
-    // afresh, the reserve a tenth meanwhile).
-    std::map<std::string, double> bankDrawn_;
-    // Price support (Phase 6): what a staple's sales owe each shop's till, the gap under its price, paid daily from its
-    // town's fund; and how many were paid today by wage support, by town (for the orchestrator's snapshot).
-    std::unordered_map<std::string, double> supportOwed_;
-    std::map<std::string, int> supportedToday_;
-    // Reach (Phase 7; RatwOrchestrate.cpp): who is in the poorer half of households (by purse a head, made at each
-    // snapshot); each channel's week, what it paid and what reached them directly; what it paid each till; and each till's
-    // week, what it paid out and how much of it to the poorer half. Not saved: a restart starts the week's count afresh.
-    std::unordered_set<std::string> poorHalf_;
-    std::map<std::string, std::pair<double, double>> channelWeek_;   // Channel -> reached directly, paid.
-    std::unordered_map<std::string, std::map<std::string, double>> tillFrom_;   // Till -> channel -> coins.
-    std::unordered_map<std::string, std::pair<double, double>> tillWeek_;       // Till -> to the poorer half, paid out.
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
     std::string ownTill(const std::string& positionId) const;   // Its till ("" for none, or a house's business).
     void foundTills();
@@ -1309,8 +1257,6 @@ class Society
     // A town mended by other hands than the Town Works' (Docs/Design/57-changing-the-world.md: a town project's work):
     // `points` more repair, its news when it crosses half, as the Town Works' own mending makes.
     void mendTown(const std::string& community, double points);
-    // A granary project standing (doc 57): days more food a head that town's granary keeps (the orchestrator's target).
-    void setGranaryExtra(std::map<std::string, double> days) { granaryExtra_ = std::move(days); }
     // Town projects' accounts and their towns (doc 57), for counting players' gifts to them as help to that town.
     void setProjectTowns(std::map<std::string, std::string> towns) { projectTowns_ = std::move(towns); }
     double condition(const std::string& community) const
@@ -1368,7 +1314,7 @@ class Society
   private:
     std::vector<OddJob> oddJobs_;
     std::int64_t nextOddJob_ = 0;
-    // An index of the odd jobs (doc 46: the orchestrator's works post many): who holds one (resident -> its place in
+    // An index of the odd jobs: who holds one (resident -> its place in
     // oddJobs_), each town's (places, in order), and the farms' hires (anyone from a city may take one). Remade when the
     // list changes (oddVersion_, moved on wherever a job is posted or the day's are cleared), before residents decide.
     std::unordered_map<std::string, std::size_t> oddHeld_;
@@ -1440,8 +1386,6 @@ class Society
   public:
     static constexpr std::int64_t UpkeepALevel = 5;
   private:
-    // Posts odd jobs worth up to `budget` for `payer` in `community`; returns their worth.
-    std::int64_t postOddJobs(const std::string& payer, const std::string& community, std::int64_t budget);
     // The odd job this resident holds, claiming one if it is free to (nullptr for none). With `claims`, nothing is claimed:
     // it is set if one would be (deciding at once, RatwResidents.cpp).
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
@@ -1502,28 +1446,15 @@ class Society
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
     std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.
-    // The orchestrator's side of the society (RatwOrchestrate.cpp): its runner, the day the last snapshot was for, and
-    // what it counts between snapshots (each holder's ordinary spending, coins between towns, what residents earn).
-    // (A copy of the society, a candidate checked before it is used, plans on its own: never on this one's thread.)
-    struct RunnerSlot
-    {
-        std::shared_ptr<orchestra::Runner> runner;
-        RunnerSlot() = default;
-        RunnerSlot(const RunnerSlot&) {}
-        RunnerSlot& operator=(const RunnerSlot&) { return *this; }
-        RunnerSlot(RunnerSlot&&) = default;
-        RunnerSlot& operator=(RunnerSlot&&) = default;
-        orchestra::Runner* operator->() const { return runner.get(); }
-        explicit operator bool() const { return bool(runner); }
-    };
-    RunnerSlot orchestraRunner_;
+    // The monitor's side of the society (RatwOrchestrate.cpp): the measures taken at the last snapshot, waiting for the day
+    // to turn, the day the last snapshot was for, and what it counts between snapshots (coins between towns, what
+    // residents earn).
+    std::optional<std::pair<orchestra::Brief, orchestra::Memory>> measured_;
     std::unordered_map<std::string, std::string> tills_;   // Position -> its business's till ("till:<position>"), for tillOf.
-    bool orchestraThreaded_ = false, keepBriefs_ = false;
-    std::shared_ptr<const orchestra::Dials> dialsOverride_;
+    bool keepBriefs_ = false;
     std::int64_t snapshotDay_ = -1, countingFrom_ = -1;   // (countingFrom_: the day counting began.)
     std::int64_t reckonedDay_ = -1;                  // The day of the last weekly reckoning (taxes and tithes).
     std::unordered_map<std::string, std::string> accountTown_;   // Account -> its town, for the coins between towns.
-    std::unordered_map<std::string, std::int64_t> holderSpent_;  // Holder -> its ordinary outgoings since the snapshot.
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> townFlow_;   // Town -> coins in, out.
     struct Earned
     {
@@ -1531,7 +1462,6 @@ class Society
     };
     std::unordered_map<std::string, Earned> earned_;             // Resident -> what it earned on each of the last 7 days.
     std::vector<orchestra::Brief> briefs_;
-    std::map<std::string, double> granaryExtra_;    // Town -> days more in its granary (doc 57's granary projects).
     bool orchestrating() const;
     void forgetOrchestra();                          // A new or restored society: no snapshot taken, nothing counted.
     bool wantsSnapshot(double absoluteDay) const;

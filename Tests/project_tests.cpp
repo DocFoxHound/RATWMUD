@@ -398,8 +398,7 @@ void effects()
 
 // Phase 5, the economy made visible: meals a stranger sells into a town short of them, and the price falling after, are
 // talked of with their cause, the wolf named by look by those who never learned her name; food brought into a town of
-// bare shelves feeds it (a deed); players' coins and goods counted by town in the orchestrator's measures, and a
-// project's purse never one of its holders.
+// bare shelves feeds it (a deed); and players' coins and goods counted by town in the economy's monitor's measures.
 void visible()
 {
     const auto root = fs::temp_directory_path() / ("ratw-projects5-" + std::to_string(::getpid()));
@@ -410,12 +409,6 @@ void visible()
         Town t(world, save);
         auto& w = t.g.world();
         auto& s = w.society();
-        {
-            // (The town's measure is the orchestrator's: it measures in shadow, though the game has it off, doc 64.)
-            auto dials = s.orchestratorDials();
-            dials.mode = "shadow";
-            s.setOrchestratorDials(dials);
-        }
         t.enter(t.ash, 1, "ash", "Ash", 1, 9.5);
         const auto ash = t.ash.entityId;
         const auto put = [&](const char* who, int cell, double x, double y = 8.5) {
@@ -495,12 +488,12 @@ void visible()
             fed |= d->kind == "fed_town";
         expect(fed, "she fed the town: a deed");
 
-        // The orchestrator counts what players bring; a project's purse is never a holder.
+        // The monitor counts what players bring.
         expect(t.g.postProject("mend", "ridgemere", "", -1, -1, "", "dm").ok, "a mending to give to");
         std::string mend;
         for (const auto& [id, p] : t.g.projects().all())
             mend = id;
-        const auto snapshot = [&] {                 // (The orchestrator measures at 23:00 and briefs at the turn of the day.)
+        const auto snapshot = [&] {                 // (The monitor measures at 23:00, shown from the turn of the day.)
             w.setTimeOfDay(23.2);
             t.run(5);
             w.advanceCalendar(1);
@@ -525,8 +518,6 @@ void visible()
         for (const auto& town : s.orchestrator().last.towns)
             seen += town.id + " " + std::to_string(town.playerIn) + "/" + std::to_string(town.playerOut) + "/" + std::to_string(town.playerGoods) + " ";
         expect(counted, "the town's measure counts players' coins in, out, and goods: " + seen);
-        for (const auto& h : s.orchestrator().last.holders)
-            expect(h.id.rfind("project:", 0) != 0, "a project's purse is never a holder: " + h.id);
         expect(s.conserved(), "conserved");
     }
     fs::remove_all(root);

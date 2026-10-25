@@ -88,7 +88,7 @@ void Society::reckon(std::int64_t day, bool force)
     const auto month = day / ReckonDays;             // (books.month counts reckonings: weeks now.)
     if (books.month >= 0 && (month > books.month || force))
     {
-        reckonedDay_ = day;                          // (The economy orchestrator decides that evening: doc 46.)
+        reckonedDay_ = day;                          // (The economy's monitor weighs the week that evening: doc 46.)
         std::map<std::string, Reckoning> towns;
         // Everyone, and the great houses (on their businesses' takings, doc 42 Phase 5b).
         std::vector<std::pair<std::string, std::string>> payers;    // Account -> its treasury.
@@ -108,13 +108,13 @@ void Society::reckon(std::int64_t day, bool force)
             town.treasury = treasury;
             town.church = churchOf(treasury);
             ++town.residents;
-            // TaxRate and TitheRate of the week's income (doc 64, Phase 7; doc 63's model), as far as its purse goes.
+            // The tax rate (the Dungeon Master's: TaxRate to start) and TitheRate of the week's income (doc 64, Phases 7 and
+            // 12; doc 63's model), as far as its purse goes.
             const auto income = state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.;
             if (income < 1)
                 continue;
             openAccount(town.church);
-            // (Times its town's tax level, the orchestrator's when it's on: doc 46.)
-            const auto tax = std::min<std::int64_t>(purse->cash, std::llround(income * TaxRate * taxLevel(treasury))),
+            const auto tax = std::min<std::int64_t>(purse->cash, std::llround(income * taxRate())),
                        tithe = std::min<std::int64_t>(purse->cash - tax, std::llround(income * TitheRate));
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
             const bool tithed = shift(id, town.church, "", 0, tithe, "tithe");
@@ -125,15 +125,13 @@ void Society::reckon(std::int64_t day, bool force)
         // (An owner's share of its business's profit is paid monthly now, on the business's own day: doc 64, Phase 5.)
         // The towns send the capital a tenth of what they took in.
         for (auto& [treasury, town] : towns)
-            if (const auto share = std::int64_t(double(town.tax / CapitalShare) * taxLevel("treasury"));
+            if (const auto share = std::int64_t(double(town.tax / CapitalShare));
                 treasury != "treasury" && share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
                 town.toCapital = share;
         // (No wealth tithe: tax and tithe are on income now, doc 64, Phase 7.)
         state_.memory.weekIncome.clear();
         openAccount(SharedChurch);
-        bankReckoning(towns);                       // The town levy, the banks' interest, and the savers' deposits.
         institutionsWeek(day);                      // Each institution's week's budget, spent (RatwInstitutions.cpp).
-        // (The capital's share for the poor is the economy orchestrator's now: doc 46, Phase 5.)
         for (auto& [treasury, town] : towns)
             reckonings_.push_back(std::move(town));
     }

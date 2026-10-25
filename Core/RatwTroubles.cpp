@@ -141,10 +141,9 @@ double foodDays(const std::vector<std::string>& household, const std::string& ho
     for (const auto& t : s.orchestrator().last.towns)
         if (t.id == town && t.foodCost > 0)
             cost = t.foodCost;
-    // Their purses, savings and the food they carry, and the larder's food, at the town's price.
+    // Their purses and the food they carry, and the larder's food, at the town's price.
     double money = 0;
     for (const auto& id : household)
-    {
         if (const auto* a = s.account(id))
         {
             money += double(a->cash);
@@ -152,9 +151,6 @@ double foodDays(const std::vector<std::string>& household, const std::string& ho
                 if (n > 0 && Society::edible(item))
                     money += n * s.townPrice(town, item);
         }
-        if (const auto saved = s.state().orchestrator.deposits.find(id); saved != s.state().orchestrator.deposits.end())
-            money += double(saved->second.second);
-    }
     if (const auto* larder = s.account(Society::homeStore(homeCell, "larder")))
         for (const auto& [item, n] : larder->stock)
             if (n > 0 && Society::edible(item))

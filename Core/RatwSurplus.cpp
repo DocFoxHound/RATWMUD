@@ -85,7 +85,7 @@ void Society::spendSurpluses(std::int64_t day)
         return;
     surplusDay_ = day;
     // Yesterday's odd jobs are over, but for businesses' hires still running: those who hold them come back to them, at
-    // today's pay for a hand in its town (the wage table, doc 46, Phase 4).
+    // today's pay for a hand in its town (Society::dayWage, doc 64, Phase 6).
     oddJobs_.erase(std::remove_if(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) { return j.until < day; }), oddJobs_.end());
     ++oddVersion_;
     for (auto& j : oddJobs_)
@@ -153,9 +153,14 @@ void Society::spendSurpluses(std::int64_t day)
                 shift(id, churchStore(town), item, n, 0, "to the church's storehouse");
     }
     // (The dole is gone: daily relief from what the church and the towns set aside weekly, doc 64, Phase 7: dailyRelief.)
-    // What the treasuries, the church and the great houses hold above their band is the economy orchestrator's to send
-    // out now, through its channels (doc 46, Phase 5; RatwChannels.cpp): the town's funds spend today.
-    runChannels(day);
+    // (The orchestrator's channels are gone, doc 64, Phase 12: what the treasuries, the church and the Houses hold is
+    // spent by their own rules, institutionsWeek. A rescue loan still owed is written off a month on.)
+    auto& loans = state_.memory.loans;
+    for (auto it = loans.begin(); it != loans.end();)
+        if (it->second.first <= 0 || day - it->second.second >= MonthDays)
+            it = loans.erase(it), ++state_.memory.revision;
+        else
+            ++it;
     // (Wages are the town's table now, doc 46, Phase 4: no more shares of a day's takings.)
     tendPrices(day);                                // (By today's takings: before they are forgotten.)
     takings_.clear();
@@ -168,5 +173,28 @@ void Society::spendSurpluses(std::int64_t day)
     if (calendar::weekdayOf(double(day)) == calendar::Restday)
         keepUpPremises();                            // (Improved premises kept up, or let go: RatwOddJobs.cpp.)
     // (No market dues: tax is on income now, doc 64, Phase 7.)
+}
+
+std::int64_t Society::repayRescue(const std::string& till, const std::string& payer, std::int64_t most)
+{
+    // A resident's trouble solved (doc 57, 3): the loan its town's rescue fund made a business, paid off from a player's
+    // purse to its town's treasury (the fund is gone with the orchestrator's channels, doc 64, Phase 12: a move, nothing
+    // made or lost).
+    auto loan = state_.memory.loans.find(till);
+    const auto* purse = account(payer);
+    if (loan == state_.memory.loans.end() || !purse || till.rfind("till:", 0) != 0)
+        return 0;
+    const auto* p = position(till.substr(5));
+    if (!p)
+        return 0;
+    const auto town = p->role == "merchant" && shopTown_.count(till) ? shopTown_.at(till) : communityOfResident(p->founder);
+    const auto paid = std::min({loan->second.first, purse->cash, std::max<std::int64_t>(0, most)});
+    if (paid <= 0 || !shift(payer, treasuryOf(town), "", 0, paid, "a rescue repaid by a friend"))
+        return 0;
+    loan->second.first -= paid;
+    if (loan->second.first <= 0)
+        state_.memory.loans.erase(loan);
+    ++state_.memory.revision;
+    return paid;
 }
 } // namespace ratw

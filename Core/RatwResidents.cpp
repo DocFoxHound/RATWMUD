@@ -1268,32 +1268,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             {
                 // Its employer's own wage (doc 64, Phase 6): a PaidSpells-th of a day's a spell, the pennies' fractions
                 // carried to the next (never more than a day's owed).
-                const bool business = payer.whom == "the shop"sv || payer.whom == "the house"sv;
                 const auto employer = employerKey(payer, *job);
                 // (An apprentice is paid ApprenticePay of it: doc 64, Phase 8.)
                 const double day = employerWage(employer) * (job->title.rfind("apprenticed: ", 0) == 0 ? ApprenticePay : 1.);
                 auto& carry = wageCarry_[pair.first];
                 carry = std::min(carry + day / PaidSpells, day);
                 const std::int64_t wage = std::int64_t(std::floor(carry));
-                // A payer that can't pay (a shop, a house, a lean treasury or church): its town's wage support covers it
-                // (the economy orchestrator's channel, doc 46, Phase 6), so the work goes on.
-                std::string subsidy;
-                if (wage > 0 && spendable(payer.account) < wage)
-                    if (const auto fund = fundOf(home, "wage support"); account(fund) && account(fund)->cash >= wage)
-                        subsidy = fund;
-                (void)business;
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (const auto floor = livingFloor_.count(home) ? livingFloor_.at(home) : 0,
-                         // (Wage support pays a living, the town's floor, not the post's whole pay: doc 46, the long run.)
-                         supported = floor > 0 ? std::min<std::int64_t>(wage, std::max<std::int64_t>(1, (floor + PaidSpells - 1) / PaidSpells)) : wage;
-                         !subsidy.empty() && shift(subsidy, pair.first, "", 0, supported, "a wage supported"))
-                {
-                    ++life.wagesToday;
-                    carry -= double(supported);
-                    ++supportedToday_[home];
-                    state_.memory.revision += state_.memory.unpaidSince.erase(pair.first);
-                }
                 else if (spendable(payer.account) >= wage &&
                     shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : job->title == LabourTitle ? "day labour" : "service wages"))
                 {

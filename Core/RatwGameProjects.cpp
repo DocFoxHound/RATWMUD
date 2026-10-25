@@ -21,7 +21,6 @@ using json::Value;
 namespace
 {
 constexpr double WorkReach = 2.2, SiteReach = 4, HandInReach = 3;
-constexpr double GranaryDays = 3;                   // Days more food a head a standing granary keeps (placeholder).
 bool standing(const projects::Project& p) { return p.state == "built" || p.state == "worn"; }
 double hourOf(double days) { return (days - std::floor(days)) * 24; }
 }
@@ -703,7 +702,6 @@ void Game::refreshWorks()
 {
     // What the standing projects do, handed to the world (and the economy) when it changes.
     World::StandingWorks works;
-    std::map<std::string, double> granary;
     for (const auto& [id, p] : projects_.all())
     {
         const double s = projectStrength(p);
@@ -715,12 +713,9 @@ void Game::refreshWorks()
             works.covers[p.town] = std::max(works.covers[p.town], s);
         else if (p.kind == "waystation")
             works.waystations[p.cell] = std::max(works.waystations[p.cell], s);
-        else if (p.kind == "granary")
-            granary[p.town] = std::max(granary[p.town], GranaryDays * s);
     }
     if (!(works == world_.standingWorks()))
         world_.setStandingWorks(std::move(works));
-    world_.society().setGranaryExtra(std::move(granary));
     if (projects_.all().size() != projectTowns_)
     {
         std::map<std::string, std::string> towns;   // (Players' gifts to a project count as help to its town: doc 57, 5.)

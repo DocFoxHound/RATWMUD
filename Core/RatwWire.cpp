@@ -1018,6 +1018,7 @@ Value economyMemory(const EconomyMemory& m)
         spending.add(who, avg);
     mint.add("spending", spending);
     o.add("mint", mint);
+    o.add("taxRate", m.taxRate);                     // (The Dungeon Master's lever: doc 64, Phase 12.)
     auto employers = Value::object();
     for (const auto& [key, e] : m.employers)
     {
@@ -1103,6 +1104,9 @@ EconomyMemory readEconomyMemory(const Value& o)
         if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
             v.items()[0].asNumber() < 1e12 && key.find('|') != std::string::npos)
             m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
+    // (Saved before Phase 12: the tax rate it always had.)
+    if (const auto* rate = o.find("taxRate"); rate && rate->isNumber() && rate->asNumber() >= 0 && rate->asNumber() <= Society::MostTaxRate)
+        m.taxRate = rate->asNumber();
     if (const auto& mint = o.object("mint"); mint.isObject())
     {
         const auto number = [&](const char* key, double most) {
@@ -1289,7 +1293,7 @@ Value society(const SocietyState& s)
     o.add("books", monthBooks(s.books));
     o.add("houses", houseState(s.houses));
     o.add("memory", economyMemory(s.memory));
-    o.add("orchestrator", orchestra::stateJson(s.orchestrator));   // (Doc 46.)
+    o.add("orchestrator", orchestra::stateJson(s.orchestrator));   // (The economy's monitor: doc 46; doc 64, Phase 12.)
     return o;
 }
 
@@ -1359,7 +1363,7 @@ SocietyState readSociety(const Value& o)
     s.books = readMonthBooks(o["books"]);
     s.houses = readHouseState(o["houses"]);       // Saved before doc 42's houses: none founded yet.
     s.memory = readEconomyMemory(o["memory"]);         // Saved before doc 42: no books yet (they open at the next new day).
-    s.orchestrator = orchestra::readState(o["orchestrator"]);   // Saved before doc 46: the orchestrator starts afresh.
+    s.orchestrator = orchestra::readState(o["orchestrator"]);   // Saved before doc 46: the monitor starts afresh.
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)

@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--steer FILE] [--hours]\n";
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -150,7 +150,6 @@ int main(int argc, char** argv)
     double from = 6;
     bool deterministic = false;
     unsigned threads = 8;
-    std::vector<orchestra::ScriptedSteer> steers;   // (--steer FILE: the economy orchestrator steered by day, doc 46.)
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -160,15 +159,6 @@ int main(int argc, char** argv)
             Society::setWorkByHours(true);          // Residents' work takes its calibrated hours (doc 64, Phase 3).
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
-        else if (std::string(argv[i]) == "--steer" && i + 1 < argc)
-        {
-            std::string problem;
-            if (!orchestra::readSteerScript(slurp(argv[++i]), steers, problem))
-            {
-                std::cerr << "The steer script can't be read: " << problem << '\n';
-                return 2;
-            }
-        }
     fs::create_directories(out);
 
     std::map<std::string, std::string> files;
@@ -219,7 +209,7 @@ int main(int argc, char** argv)
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
         foodMovesOut(out / "food_moves.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
-    orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,wage_floor,share,player_in,player_out,player_goods\n";
+    orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,player_in,player_out,player_goods\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     wagesOut << "day,resident,title,coins\n";
     materialsOut << "day,item,maker_hours_short,supplier_hours_short,held,brought_in,crafted,used,bought,carted_in\n";
@@ -529,11 +519,10 @@ int main(int argc, char** argv)
     std::set<std::string> lastAlive;
     bool firstMeasure = true;
     std::ofstream residentsOut(out / "residents.csv");
-    residentsOut << "day,resident,home,holder,title,age,cash,savings\n";
+    residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings\n";
     const auto modelMeasures = [&](int day) {
-        const auto worths = society.bankWorths();
         std::map<std::string, std::int64_t> homes;     // Home cell (or the resident, homeless) -> the household's money.
         // A barracks, a bunkhouse, quarters or lodgings (over eight grown, or communal) share no purse
         // (Society::tendHouseholds): each who lives there is a household of its own.
@@ -551,12 +540,11 @@ int main(int argc, char** argv)
             alive.insert(id);
             const auto* a = society.account(id);
             const bool shared = !life.homeCell.empty() && (grownAt[life.homeCell] > 8 || Society::communalHome(life.homeCell));
-            homes[life.homeCell.empty() || shared ? id : life.homeCell] += (a ? a->cash : 0) + society.savingsWorth(id, worths);
+            homes[life.homeCell.empty() || shared ? id : life.homeCell] += (a ? a->cash : 0);
             {
                 const auto* job = society.jobOf(id);
                 residentsOut << day << ',' << csv(id) << ',' << csv(life.homeCell) << ',' << csv(holder(server, id)) << ','
-                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << ','
-                             << society.savingsWorth(id, worths) << '\n';
+                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << '\n';
             }
             const bool apprentice = society.apprenticedTo(id) != nullptr;
             apprentices += apprentice;
@@ -695,7 +683,6 @@ int main(int argc, char** argv)
                 id.rfind("till:", 0) == 0 || id.rfind("fund:", 0) == 0)
                 purses[id] = a.cash;
         }
-        const auto worths = society.bankWorths();
         for (const auto& [id, life] : society.state().residents)
         {
             const auto* e = server.entity(id);
@@ -703,7 +690,7 @@ int main(int argc, char** argv)
                 continue;
             const auto* a = society.account(id);
             const std::int64_t cash = a ? a->cash : 0;
-            const std::int64_t wealth = cash + society.savingsWorth(id, worths);   // (What its savings are worth: doc 46.)
+            const std::int64_t wealth = cash;
             people.push_back(wealth);
             residentTotal += wealth;
             short_ += cash < 6;
@@ -805,7 +792,7 @@ int main(int argc, char** argv)
             const auto* a = society.account(id);
             const std::int64_t cash = a ? a->cash : 0;
             auto& t = towns[server.communityOf(life.homeCell)];
-            t.purses.push_back(cash + society.savingsWorth(id, worths));
+            t.purses.push_back(cash);
             t.short_ += cash < 6;
             t.broke += cash <= 0;
             t.hungry += life.hunger >= 70;
@@ -1056,43 +1043,21 @@ int main(int argc, char** argv)
                 dayBegin = std::chrono::steady_clock::now();
                 ticksBefore = i;
             }
-            // The orchestrator's briefs (doc 46): each in full, and its towns.
+            // The economy's monitor's measures (doc 46; doc 64, Phase 12): each in full, and its towns.
             for (const auto& b : server.society().takeBriefs())
             {
-                orchestraOut << orchestra::briefText(b, true) << '\n';
+                orchestraOut << orchestra::briefText(b) << '\n';
                 for (const auto& t : b.towns)
                     orchestraTownsOut << b.day << ',' << csv(t.id) << ',' << t.people << ',' << t.distress << ',' << t.raw << ',' << csv(t.kind)
                                       << ',' << t.foodCost << ',' << t.hungry << ',' << t.starving << ',' << t.short_ << ',' << t.poor << ','
-                                      << t.idle << ',' << t.shopFoodDays << ',' << t.takingsRatio << ',' << t.netInflow << ',' << t.wageFloor
-                                      << ',' << t.share << ',' << t.playerIn << ',' << t.playerOut << ',' << t.playerGoods << '\n';
-                std::cout << "  orchestrator for day " << b.day << ": land distress " << std::fixed << std::setprecision(3) << b.landDistress
-                          << std::defaultfloat << ", pot " << b.pot << "p, margin " << b.margin << ", residents hold " << std::fixed << std::setprecision(3) << b.residentShare << std::defaultfloat << ", own pressure " << b.autoPressure << ", bands";
-                for (const auto& [band, n] : b.bands)
-                    std::cout << " " << band << " " << n;
-                // The banks and the tax levels (money that stops, doc 46).
-                std::int64_t saved = 0, coins = 0;
-                for (const auto& [id, d] : server.society().state().orchestrator.deposits)
-                    saved += d.second;
-                for (const auto& [town, bank] : b.banks)
-                    coins += bank.first;
-                double least = 9, most = 0;
-                for (const auto& [id, level] : b.taxLevels)
-                    least = std::min(least, level), most = std::max(most, level);
-                std::cout << ", steers " << b.steers.size() << ", banks saved " << saved << "p hold " << coins << "p, tax levels "
-                          << (b.taxLevels.empty() ? 1 : least) << " to " << (b.taxLevels.empty() ? 1 : most) << ", ladder " << b.ladder
-                          << ", banks' terms " << b.depositShare << "\n";
-                // The week's report (the playbook): what it found and did.
-                for (const auto& a : b.actions)
-                    std::cout << "    did: " << (a.town.empty() ? std::string("the land") : a.town) << ": " << a.tool << ": " << a.detail << "\n";
+                                      << t.idle << ',' << t.shopFoodDays << ',' << t.takingsRatio << ',' << t.netInflow << ',' << t.playerIn
+                                      << ',' << t.playerOut << ',' << t.playerGoods << '\n';
+                std::cout << "  measured for day " << b.day << ": land distress " << std::fixed << std::setprecision(3) << b.landDistress
+                          << ", residents hold " << b.residentShare << ", the poorer half " << b.bottomShare << ", Gini " << b.gini
+                          << std::defaultfloat << (b.decided ? " (the week weighed)" : "") << "\n";
             }
             orchestraOut.flush();
             orchestraTownsOut.flush();
-            for (const auto& st : steers)
-                if (st.day == now)
-                {
-                    const auto done = server.society().steer(st.steer, st.days);
-                    std::cout << "  steer " << st.steer.kind << " " << st.steer.target << ": " << done.message << "\n";
-                }
             const auto [wageTotal, makerShort] = writeDay(day);
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
             // The roads' standing orders at the day's end (doc 64, Phase 3b): what each asks a week and how short it
@@ -1117,7 +1082,7 @@ int main(int argc, char** argv)
     absorb();
     writeDay(day);
     for (const auto& b : server.society().takeBriefs())
-        orchestraOut << orchestra::briefText(b, true) << '\n';
+        orchestraOut << orchestra::briefText(b) << '\n';
     snapshot(int(std::floor(server.calendarDays())), "end");
     // As world_check's: where everyone ended up and what they were doing, and the money.
     std::uint64_t digest = 1469598103934665603ULL;

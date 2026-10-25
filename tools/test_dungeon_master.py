@@ -974,172 +974,65 @@ class MoneyTests(Fixture):
         self.assertEqual(['reckoning'], [e['kind'] for e in money['events']])
         self.assertIsNone(money['orchestrator'])                                  # Older saves have none.
 
-    ORCHESTRATOR = {'mode': 'shadow', 'day': 12,
-                    'steers': [{'id': 'steer-17', 'kind': 'pressure', 'target': '', 'item': '', 'strength': 2.0,
-                                'from': 12, 'until': 19, 'note': 'why', 'by': 'dm-master'}],
-                    'memory': {}, 'brief': {'day': 12, 'landDistress': 0.12, 'pot': 3200,
-                                            'towns': [{'id': 'saltreach', 'people': 40, 'distress': 0.2, 'kind': 'no work'}],
-                                            'holders': [], 'orders': [], 'prices': []}}
+    ORCHESTRATOR = {'day': 12, 'memory': {'distress': {'saltreach': 0.2}, 'day': 12, 'decided': 7},
+                    'brief': {'day': 12, 'landDistress': 0.12, 'gini': 0.41, 'bottomShare': 0.22, 'median': 300,
+                              'towns': [{'id': 'saltreach', 'people': 40, 'distress': 0.2, 'kind': 'no work'}]},
+                    'decision': {'day': 7, 'decided': True, 'towns': []}}
 
-    def save_orchestrator(self):
+    def save_orchestrator(self, memory=None):
         with W.connect('dev', 'game', dbname=self.names['dev']) as game:
             game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
                          ('greyfen', json.dumps({'schema': 1, 'calendarDays': 12.5,
-                                                 'society': {'accounts': {}, 'orchestrator': self.ORCHESTRATOR}})))
+                                                 'society': {'accounts': {}, 'orchestrator': self.ORCHESTRATOR,
+                                                             **({'memory': memory} if memory is not None else {})}})))
 
-    def test_the_orchestrators_last_plan(self):
+    def test_the_monitors_measures(self):
         self.save_orchestrator()
-        self.assertEqual(self.ORCHESTRATOR, self.dm.money('dev')['orchestrator'])
-
-    def test_steering_the_orchestrator(self):
-        self.save_orchestrator()
-        master = self.sign_in('dm-master')
-        queued = [self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'Squeeze the rich.'),
-                  self.dm.steer_economy(master, 'dev', 'town', 'greyfen', '', 1.5, 14),
-                  self.dm.steer_economy(master, 'dev', 'town', 'saltreach', '', 0, 1),      # A town only the brief knows.
-                  self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 0, 28, 'Saving for a war.'),
-                  self.dm.steer_economy(master, 'dev', 'channel', 'rescue', '', 0, 28),
-                  self.dm.steer_economy(master, 'dev', 'price', '*', 'bread', 2.5, 56)]
-        self.assertEqual(f"steer-{queued[0]['id']}", queued[0]['steer'])
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            rows = conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = ANY(%s) ORDER BY id',
-                                ([q['id'] for q in queued],)).fetchall()
-            audited = conn.execute("SELECT count(*) FROM dm.audit WHERE action = 'economy.steer'").fetchone()[0]
-        steer = lambda kind, target, item, strength, days, note='': {'kind': kind, 'target': target, 'item': item,
-                                                                     'strength': strength, 'days': days, 'note': note}
-        self.assertEqual([('economy.steer', 'land', steer('pressure', '', '', 2.0, 7, 'Squeeze the rich.'), 'dm-master'),
-                          ('economy.steer', 'greyfen', steer('town', 'greyfen', '', 1.5, 14), 'dm-master'),
-                          ('economy.steer', 'saltreach', steer('town', 'saltreach', '', 0.0, 1), 'dm-master'),
-                          ('economy.steer', 'house:fell', steer('holder', 'house:fell', '', 0.0, 28, 'Saving for a war.'), 'dm-master'),
-                          ('economy.steer', 'rescue', steer('channel', 'rescue', '', 0.0, 28), 'dm-master'),
-                          ('economy.steer', '*', steer('price', '*', 'bread', 2.5, 56), 'dm-master')], rows)
-        self.assertEqual(6, audited)
-        for bad in (lambda: self.dm.steer_economy(master, 'dev', 'drought', '', '', 1, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 0.4, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 3.5, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', True, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', '2', 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', float('nan'), 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', 'greyfen', '', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', 'bread', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 0),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 57),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7.0),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, True),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'x' * 201),
-                    lambda: self.dm.steer_economy(master, 'dev', 'pressure', '', '', 2, 7, 'a\nb'),
-                    lambda: self.dm.steer_economy(master, 'dev', 'town', 'nowhere', '', 1, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'town', '*', '', 1, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'town', '', '', 1, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'town', 'greyfen', '', 3.5, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'holder', '', '', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:' + 'f' * 120, '', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house fell', '', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 1, 7),     # Neither spared nor squeezed.
-                    lambda: self.dm.steer_economy(master, 'dev', 'holder', 'house:fell', '', 4.5, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'channel', 'bribes', '', 1, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'channel', 'works', '', 3.5, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'greyfen', '', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'greyfen', 'b' * 61, 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'price', 'nowhere', 'bread', 2, 7),
-                    lambda: self.dm.steer_economy(master, 'dev', 'price', '*', 'bread', 0.4, 7)):
-            with self.assertRaises(D.DMError):
-                bad()
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            self.assertEqual(6, conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0])
-        with self.assertRaises(D.DMError) as raised:
-            self.dm.steer_economy(self.sign_in('dm-viewer'), 'dev', 'pressure', '', '', 2, 7)
-        self.assertEqual(403, raised.exception.status)
-
-    def test_ending_a_steer(self):
-        master = self.sign_in('dm-master')
-        queued = self.dm.end_steer(master, 'dev', 'steer-17')
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            row = conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = %s', (queued['id'],)).fetchone()
-        self.assertEqual(('economy.unsteer', 'steer-17', {}, 'dm-master'), row)
-        for bad in ('steer-', 'steer-x', '17', 'steer-17 ', 'steer-17\n', None, 17):
-            with self.assertRaises(D.DMError):
-                self.dm.end_steer(master, 'dev', bad)
-        with self.assertRaises(D.DMError) as raised:
-            self.dm.end_steer(self.sign_in('dm-viewer'), 'dev', 'steer-17')
-        self.assertEqual(403, raised.exception.status)
-
-
-    def test_funds_and_granaries(self):
-        society = {'accounts': {'fund:greyfen:works': {'cash': 30, 'stock': {}},
-                                'fund:greyfen:price_support': {'cash': 12, 'stock': {}},
-                                'fund:saltreach:food': {'cash': 5, 'stock': {}},
-                                'fund:land': {'cash': 200, 'stock': {}},
-                                'town:greyfen:granary': {'cash': 40, 'stock': {'bread': 10, 'porridge': 4}},
-                                'town:greyfen:watch': {'cash': 9, 'stock': {}}}}
-        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
-            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
-                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 3.5, 'society': society})))
         money = self.dm.money('dev')
-        self.assertEqual({'greyfen': {'price support': 12, 'works': 30}, 'saltreach': {'food': 5}}, money['funds'])
-        self.assertEqual(200, money['landFund'])
-        self.assertEqual({'greyfen': {'cash': 40, 'goods': 14}}, money['granaries'])
-        self.assertEqual({'watch': 9}, money['towns']['greyfen']['buyers'])          # The granary isn't a buyer.
+        self.assertEqual(self.ORCHESTRATOR, money['orchestrator'])
+        self.assertEqual({'taxRate': 0.08, 'mint': True}, money['levers'])         # A save from before the levers.
+        self.save_orchestrator({'taxRate': 0.1, 'mint': {'on': False}})
+        self.assertEqual({'taxRate': 0.1, 'mint': False}, self.dm.money('dev')['levers'])
 
-    def test_the_scenarios(self):
-        scenarios = self.dm.scenarios()
-        listed = json.loads((D.ROOT / 'Data/Economy/scenarios.json').read_text(encoding='utf-8'))['scenarios']
-        self.assertEqual([s['id'] for s in listed], [s['id'] for s in scenarios])
-        self.assertIn('famine', [s['id'] for s in scenarios])
-
-    def test_the_staples(self):
-        staples = self.dm.staples()
-        self.assertLessEqual(len(staples), D.DungeonMaster.STAPLES_MAX)
-        self.assertIn('bread', staples)
-        self.assertIn('firewood', staples)
-        for drink in ('water', 'ale', 'cider'):
-            self.assertNotIn(drink, staples)
-
-    def actions(self, ids):
+    def lever_rows(self, ids):
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            return [r[0] for r in conn.execute('SELECT payload FROM dm.actions WHERE id = ANY(%s) ORDER BY id', (ids,)).fetchall()]
+            return conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = ANY(%s) ORDER BY id',
+                                (ids,)).fetchall()
 
-    def test_starting_a_scenario(self):
-        self.save_orchestrator()
+    def test_the_economys_levers(self):
         master = self.sign_in('dm-master')
-        famine = self.dm.start_scenario(master, 'dev', 'famine', town='greyfen')
-        self.assertEqual('famine', famine['scenario'])
-        staples = self.dm.staples()
-        rows = self.actions([q['id'] for q in famine['queued']])
-        self.assertEqual(len(staples) + 2, len(rows))
-        self.assertTrue(all(q['steer'] == f"steer-{q['id']}" for q in famine['queued']))
-        note = 'Scenario: Famine in a town (greyfen)'
-        self.assertEqual([{'kind': 'price', 'target': 'greyfen', 'item': good, 'strength': 2.0, 'days': 21, 'note': note}
-                          for good in staples], rows[:len(staples)])
-        self.assertEqual([{'kind': 'town', 'target': 'greyfen', 'item': '', 'strength': 2.5, 'days': 21, 'note': note},
-                          {'kind': 'channel', 'target': 'food', 'item': '', 'strength': 2.0, 'days': 21, 'note': note}],
-                         rows[len(staples):])
-        miser = self.dm.start_scenario(master, 'dev', 'the_miser', holder='house:fell')
-        note = 'Scenario: The miser (house:fell)'
-        self.assertEqual([{'kind': 'holder', 'target': 'house:fell', 'item': '', 'strength': 0.0, 'days': 28, 'note': note},
-                          {'kind': 'pressure', 'target': '', 'item': '', 'strength': 1.3, 'days': 28, 'note': note}],
-                         self.actions([q['id'] for q in miser['queued']]))
-        winter = self.dm.start_scenario(master, 'dev', 'hard_winter')
-        self.assertEqual(len(staples) + 1, len(winter['queued']))
-        self.assertEqual('*', self.actions([winter['queued'][0]['id']])[0]['target'])
+        queued = [self.dm.set_tax_rate(master, 'dev', 0.1), self.dm.set_tax_rate(master, 'dev', 0),
+                  self.dm.set_mint(master, 'dev', False), self.dm.relief_grant(master, 'dev', 'greyfen', 500)]
+        self.assertEqual([('economy.tax', 'land', {'rate': 0.1}, 'dm-master'), ('economy.tax', 'land', {'rate': 0.0}, 'dm-master'),
+                          ('economy.mint', 'land', {'on': False}, 'dm-master'),
+                          ('economy.relief', 'greyfen', {'coins': 500}, 'dm-master')], self.lever_rows([q['id'] for q in queued]))
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            before = conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0]
-        for bad in (lambda: self.dm.start_scenario(master, 'dev', 'famine'),
-                    lambda: self.dm.start_scenario(master, 'dev', 'famine', town='nowhere'),
-                    lambda: self.dm.start_scenario(master, 'dev', 'the_miser'),
-                    lambda: self.dm.start_scenario(master, 'dev', 'the_miser', holder='house fell'),
-                    lambda: self.dm.start_scenario(master, 'dev', 'drought'),
-                    lambda: self.dm.start_scenario(master, 'dev', None)):
+            audited = conn.execute("SELECT action, detail FROM dm.audit WHERE action LIKE 'economy.%%' ORDER BY sequence").fetchall()
+        self.assertEqual(['economy.tax', 'economy.tax', 'economy.mint', 'economy.relief'], [a for a, _ in audited])
+        self.assertIn('relief grant of 500p', audited[-1][1])
+        for bad in (lambda: self.dm.set_tax_rate(master, 'dev', 0.6),
+                    lambda: self.dm.set_tax_rate(master, 'dev', -0.01),
+                    lambda: self.dm.set_tax_rate(master, 'dev', True),
+                    lambda: self.dm.set_tax_rate(master, 'dev', '0.1'),
+                    lambda: self.dm.set_tax_rate(master, 'dev', float('nan')),
+                    lambda: self.dm.set_mint(master, 'dev', 1),
+                    lambda: self.dm.set_mint(master, 'dev', None),
+                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', 0),
+                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', 2.5),
+                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', True),
+                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', D.MOST_RELIEF + 1),
+                    lambda: self.dm.relief_grant(master, 'dev', 'nowhere', 10),
+                    lambda: self.dm.relief_grant(master, 'dev', '', 10)):
             with self.assertRaises(D.DMError):
                 bad()
-        with self.assertRaises(D.DMError) as raised:
-            self.dm.start_scenario(master, 'dev', 'drought')
-        self.assertEqual(404, raised.exception.status)
-        with self.assertRaises(D.DMError) as raised:
-            self.dm.start_scenario(self.sign_in('dm-viewer'), 'dev', 'squeeze_the_rich')
-        self.assertEqual(403, raised.exception.status)
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            self.assertEqual(before, conn.execute("SELECT count(*) FROM dm.actions WHERE kind = 'economy.steer'").fetchone()[0])
+            self.assertEqual(4, conn.execute("SELECT count(*) FROM dm.actions WHERE kind LIKE 'economy.%%'").fetchone()[0])
+        viewer = self.sign_in('dm-viewer')
+        for refused in (lambda: self.dm.set_tax_rate(viewer, 'dev', 0.1), lambda: self.dm.set_mint(viewer, 'dev', True),
+                        lambda: self.dm.relief_grant(viewer, 'dev', 'greyfen', 10)):
+            with self.assertRaises(D.DMError) as raised:
+                refused()
+            self.assertEqual(403, raised.exception.status)
 
 if __name__ == '__main__':
     unittest.main()

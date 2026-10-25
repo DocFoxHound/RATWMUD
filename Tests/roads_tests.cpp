@@ -1017,29 +1017,10 @@ void whoPaysWages()
                 (e.actor == w.society().tillOf("em") ? fromShop : fromTown) += e.coins;   // (Its till, since doc 46.)
     }
     expect(fromShop > 0 && fromTown == 0, "The help is paid by the shop (" + std::to_string(fromShop) + "p)");
-    // The shop goes broke. Its town's wage support (the economy orchestrator's, doc 46, Phase 6) covers the help's wage,
-    // so the work goes on.
+    // The shop goes broke: the help waits on its wages, and after a week labours for the Town Works instead. (The town's
+    // wage support went with the orchestrator's channels: doc 64, Phase 12.)
     const auto emTill = w.society().tillOf("em");
     w.society().shift(emTill, "treasury", "", 0, w.society().account(emTill)->cash, "test: a bad week");
-    std::vector<std::string> supports;
-    for (const auto& t : w.towns())
-    {
-        supports.push_back(Society::fundOf(t.id, "wage support"));
-        w.society().openAccount(supports.back());
-        w.society().shift("treasury", supports.back(), "", 0, 200, "test: the orchestrator's orders");
-    }
-    std::int64_t subsidised = 0;
-    for (int t = 0; t < 700; ++t)
-    {
-        w.tick(1);
-        for (const auto& e : w.takeEvents())
-            if (e.kind == "economy" && e.detail == "a wage supported" && e.target == "help")
-                subsidised += e.coins;
-    }
-    expect(subsidised > 0, "A broke shop's help is paid by its town's wage support (" + std::to_string(subsidised) + "p)");
-    // With nothing in it: the help waits on its wages, and after a week labours for the Town Works instead.
-    for (const auto& support : supports)
-        w.society().shift(support, "treasury", "", 0, w.society().account(support)->cash, "test: spent");
     w.society().shift("treasury", "stores:west", "", 0, w.society().account("treasury")->cash - 100, "test: a lean year");
     if (const auto* church = w.society().account(Society::SharedChurch))
         w.society().shift(Society::SharedChurch, "stores:west", "", 0, church->cash, "test: a lean year");
@@ -1343,7 +1324,7 @@ void noHoarding()
             spent = true, told = e.detail;
     }
     (void)churchBefore;
-    (void)spent;                                     // (What it holds above its band is the orchestrator's: theChannelsSpend.)
+    (void)spent;                                     // (What it holds it spends by its own rules: institutionsWeek.)
     expect(alms && !Society::bestFood(*w.society().account("w1")).empty(), "Penniless w1 is given food as alms by the church");
     expect(w.society().conserved(), "Money stays conserved");
 }
@@ -1649,16 +1630,12 @@ void grownWolvesBuyWhatTheyWant()
             rich |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e1";
     }
     expect(rich, "A well-off wolf buys something it wants");
-    // (They all share one household, whose purse passes money round: penniless, the whole household, in purse and at
-    // the bank: doc 46.)
+    // (They all share one household, whose purse passes money round: penniless, the whole household.)
     auto hard = load(f);
     hard.tick(.6);
     for (const char* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop", "trinkets"})
         if (hard.society().account(who))
-        {
             hard.society().shift(who, "treasury", "", 0, hard.society().account(who)->cash, "test: a hard year");
-            hard.society().payDue(who, "treasury", hard.society().savedAtBank(who), "test: and its savings");
-        }
     hard.takeEvents();
     nextMorning(hard);
     run(hard, 2);
@@ -1686,61 +1663,6 @@ void grownWolvesBuyWhatTheyWant()
     expect(lodger, "A well-off wolf of a bunkhouse buys something it wants");
     expect(bunk.society().conserved(), "Money stays conserved");
     expect(hard.society().conserved(), "Money stays conserved");
-    expect(w.society().conserved(), "Money stays conserved");
-}
-
-// The game has the economy orchestrator off while doc 64 brings in the model (the user, 2026-10-15); a test of what it
-// does turns it on (or to shadow) for its own world.
-void orchestrate(World& w, const char* mode)
-{
-    auto dials = w.society().orchestratorDials();
-    dials.mode = mode;
-    w.society().setOrchestratorDials(dials);
-}
-
-// Odd jobs (the user, 2026-10-05): a town with money to spare posts a day's menial work (deliveries, repairs, trips to
-// gather or hunt, scouting, a hand at a producer); a wolf without other work takes one, does it, and is paid.
-void oddJobs()
-{
-    auto k1 = resident("k1", "Kit One", "civilian", "plays in the streets", 7, 13.5, 7, 13.5);
-    auto k2 = resident("k2", "Kit Two", "civilian", "plays in the streets", 7, 14.5, 7, 14.5);
-    k1.replace(k1.find(" 30 "), 4, " 10 ");
-    k2.replace(k2.find(" 30 "), 4, " 10 ");
-    // (No grown wolf out of work here: children, who would rather not work, take what is left by noon.)
-    auto f = strip("EE.....WW", k1 + k2 +
-                                    resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 7, 10.5, 8, 9.5));
-    auto w = load(f);
-    orchestrate(w, "on");                            // (Towns post odd jobs through the orchestrator's channels.)
-    w.tick(.6);
-    w.takeEvents();
-    bool posted = false, paid = false, together = false;
-    std::string kind;
-    // (This strip has no ground about it to gather from and its watch is fed, so its jobs are repairs, once its buildings
-    // have worn: a point a day.)
-    for (int d = 0; d < 10 && !(paid && together); ++d)
-    {
-        // Through the night to the next morning (it must sleep: children who don't are too tired to work).
-        const auto today = std::floor(w.calendarDays());
-        while (w.calendarDays() < today + 1.3)
-            w.tick(1);
-        posted |= !w.society().oddJobs().empty();
-        if (w.society().account("town:west:works") && Society::stockAll(*w.society().account("town:west:works"), "stone") == 0)
-            w.society().create("town:west:works", "stone", 10, "test: a quarry's load");
-        for (int t = 0; t < 6000 && !(paid && together); ++t)   // (To five in the afternoon: children look from noon.)
-        {
-            w.tick(1);
-            for (const auto& j : w.society().oddJobs())
-                together |= j.stage.count("k1") && j.stage.count("k2");
-            for (const auto& e : w.takeEvents())
-                if (e.kind == "economy" && e.detail.rfind("an odd job: ", 0) == 0 && (e.target == "idle" || e.target == "k1" || e.target == "k2"))
-                    paid = true, kind = e.detail;
-        }
-    }
-    expect(posted, "West, with money to spare, posts odd jobs");
-    expect(paid, "Wolves without work (here, two children) take them, do them and are paid: " + kind);
-    expect(!w.society().friendGroup("k1").empty() && w.society().friendGroup("k1") == w.society().friendGroup("k2"),
-           "Two children of an age are friends");
-    expect(together, "and take a job together");
     expect(w.society().conserved(), "Money stays conserved");
 }
 
@@ -2021,14 +1943,13 @@ void townsWearAndAreMended()
            "The town's repair is saved");
 }
 
-// The economy orchestrator (doc 46), in shadow: it measures every evening and decides the evening of the weekly reckoning,
-// after the taxes and tithes; a Dungeon Master's steer is weighed from the next day; nothing it plans moves a penny; and
-// its steers, measures and decision are saved with the society.
-void theOrchestratorWatches()
+// The economy's monitor (doc 46; doc 64, Phase 12): it measures every evening and weighs the week the evening of the
+// weekly reckoning, after the taxes and tithes; nothing it measures moves a penny; and its measures are saved with the
+// society. And the Dungeon Master's levers: the tax rate, the mint, a relief grant, each in the ledger.
+void theMonitorWatches()
 {
     auto f = strip("EE.....WW");
     auto w = load(f);
-    orchestrate(w, "shadow");
     w.tick(.6);
     auto saved = w.save();
     saved.calendarDays = 6 + 22. / 24;              // The evening before the week's reckoning (day 7).
@@ -2036,32 +1957,39 @@ void theOrchestratorWatches()
     w.tick(.6);
     auto& s = w.society();
     const auto supply = s.moneySupply();
-    orchestra::Steer squeeze;
-    squeeze.kind = "pressure";
-    squeeze.strength = 2;
-    squeeze.by = "test";
-    expect(s.steer(squeeze, 7).ok, "A Dungeon Master squeezes the land for a week");
-    orchestra::Steer bad = squeeze;
-    bad.strength = 9;
-    expect(!s.steer(bad, 7).ok, "but not past what a steer allows");
     run(w, 600 * 3);                                 // (A game hour is 600 seconds: past 23:00 and the turn of day 7.)
     const auto& o = s.orchestrator();
-    expect(o.last.day == 7 && !o.last.decided, "Day 7's measures, from the evening before: " + std::to_string(o.last.day));
-    expect(o.last.bands.count("warming") && o.decision.day < 0, "A new world counts a day before its bands, and decides nothing yet");
+    expect(o.last.day == 7 && !o.last.decided && !o.last.towns.empty(), "Day 7's measures, from the evening before: " + std::to_string(o.last.day));
+    expect(o.decision.day < 0, "and no week weighed yet");
     run(w, 600 * 24);                                // (Past the reckoning's evening and the turn of day 8.)
-    expect(o.last.day == 8 && o.last.decided && o.decision.day == 8, "The evening of the reckoning, it decides the week");
-    expect(o.decision.steers.size() == 1 && o.decision.steers[0].kind == "pressure", "weighing the steer");
+    expect(o.last.day == 8 && o.last.decided && o.decision.day == 8, "The evening of the reckoning, it weighs the week");
     expect(!o.decision.towns.empty() && o.decision.towns.front().week >= 0, "and each town's week");
-    std::int64_t ordered = 0;
-    for (const auto& order : o.decision.orders)
-        ordered += order.coins;
-    expect(ordered == o.decision.pot, "Its orders place the whole pot (" + std::to_string(o.decision.pot) + "p)");
-    expect(s.conserved() && s.moneySupply() == supply, "In shadow, nothing it plans moves a penny");
+    expect(o.last.moneySupply > 0 && o.last.gini >= 0 && o.last.bottomShare >= 0 && o.last.bottomShare <= 1, "and how the land's money is spread");
+    expect(s.conserved() && s.moneySupply() == supply, "Nothing it measures moves a penny");
     const auto back = wire::readSociety(wire::society(s.state()));
-    expect(back.orchestrator.steers.size() == 1 && back.orchestrator.decision.day == 8 && back.orchestrator.last.day == 8 &&
-               back.orchestrator.memory.decided == 8,
-           "Its steers, measures and decision are saved");
-    expect(s.unsteer(o.steers.front().id) && s.orchestrator().steers.empty(), "and a steer can be ended early");
+    expect(back.orchestrator.decision.day == 8 && back.orchestrator.last.day == 8 && back.orchestrator.memory.decided == 8,
+           "Its measures are saved");
+
+    // The levers.
+    const auto ledgered = [&](const std::string& kind) {
+        for (const auto& e : s.state().ledger)
+            if (e.kind.rfind(kind, 0) == 0)
+                return true;
+        return false;
+    };
+    expect(s.taxRate() == Society::TaxRate, "The tax rate starts at its constant");
+    expect(!s.setTaxRate(.9, "dm:test").ok && s.taxRate() == Society::TaxRate, "A tax rate past half is refused");
+    expect(s.setTaxRate(.1, "dm:test").ok && s.taxRate() == .1 && ledgered("the tax rate set from 8% to 10%"), "A Dungeon Master sets it, in the ledger");
+    expect(wire::readSociety(wire::society(s.state())).memory.taxRate == .1, "and it is saved");
+    expect(s.setMint(false, "dm:test").ok && !s.state().memory.mint.on && ledgered("the mint turned off"), "The mint turned off, in the ledger");
+    expect(s.setMint(true, "dm:test").ok && s.state().memory.mint.on, "and on again");
+    const auto west = s.treasuryOf("west"), capital = s.treasuryOf(s.capital());
+    expect(west != capital && s.account(west), "West has a treasury of its own");
+    const auto before = s.account(west)->cash, held = s.account(capital)->cash;
+    expect(!s.reliefGrant("west", held + 1).ok && !s.reliefGrant(s.capital(), 10).ok, "No grant past what the capital holds, nor to itself");
+    expect(s.reliefGrant("west", 25).ok && s.account(west)->cash == before + 25 && s.account(capital)->cash == held - 25 && ledgered("a relief grant"),
+           "A relief grant moves coins from the capital's treasury to the town's, in the ledger");
+    expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
 }
 
 // One price for a good in a town (doc 46, Phase 3): the orchestrator's, the same at every shop of the town, a quality at
@@ -2095,44 +2023,6 @@ void sellersPriceFromCost()
            "Each bakery prices by its own margin");
     expect(std::abs(s.buyingPrice("east", "bread") - worth / 1.15) < 1e-9, "The town's buyers pay the land the going price less the margin");
 }
-
-// The orchestrator's channels (doc 46, Phase 5): the evening of the week's reckoning it decides what the holders over
-// their band send out; when the day turns their money goes into the towns' funds, and the funds spend it through work
-// (odd jobs and materials, hires, commissions, food for a granary, trade), never below a holder's need, every penny kept.
-void theChannelsSpend()
-{
-    auto f = strip("EE.....WW", resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 7, 9.5, 8, 9.5));
-    auto w = load(f);
-    orchestrate(w, "on");
-    w.tick(.6);
-    auto& s = w.society();
-    auto saved = w.save();
-    saved.calendarDays = 6 + 22. / 24;              // The evening before the week's reckoning (day 7).
-    expect(w.restore(saved).ok, "To the eve of the reckoning");
-    w.tick(.6);
-    expect(s.shift("treasury", "stores:west", "", 0, std::min<std::int64_t>(8000, s.account("treasury")->cash - 100), "test: a fat year"),
-           "West's treasury is far over its band");
-    const auto supply = s.moneySupply();
-    w.takeEvents();
-    run(w, 600 * 27);                                // (Past the reckoning's evening, and the turn of day 8, and its pass.)
-    const auto& decision = s.orchestrator().decision;
-    expect(decision.decided && decision.day == 8 && decision.pot > 0, "The week's decision sends money out (" + std::to_string(decision.pot) + "p)");
-    std::int64_t funded = 0, spentByFunds = 0;
-    for (const auto& e : w.takeEvents())
-    {
-        if (e.kind == "economy" && e.detail.rfind("orders: ", 0) == 0 && e.target.rfind("fund:", 0) == 0)
-            funded += e.coins;
-        if (e.kind == "surplus spent" && e.actor.rfind("fund:", 0) == 0)
-            spentByFunds += 1;
-    }
-    expect(funded > 0, "Its money goes into the towns' funds (" + std::to_string(funded) + "p)");
-    expect(spentByFunds > 0, "and the funds spend it through work the same day");
-    for (const auto& h : decision.holders)
-        if (h.id == "stores:west")
-            expect(s.account("stores:west")->cash >= h.need, "West's treasury keeps its need");
-    expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
-}
-
 
 // A town's market is in the town (the user, 2026-10-12): west's two shops stand side by side, and out in its fields,
 // eighty tiles off, a mill has two merchants of its own. Caravans load at the shops, not at the mill, though the mill
@@ -2462,7 +2352,6 @@ int main()
         rentOnHouseLand();
         childrensStipends();
         grownWolvesBuyWhatTheyWant();
-        oddJobs();
         householdsShareAndKeepHouse();
         shopsSellTheirGoods();
         townsAndCaravans();
@@ -2493,9 +2382,8 @@ int main()
         tradeCaravansCarryGoodsAndMoney();
         theChurchCares();
         townsWearAndAreMended();
-        theOrchestratorWatches();
+        theMonitorWatches();
         sellersPriceFromCost();
-        theChannelsSpend();
     }
     catch (const std::exception& error)
     {

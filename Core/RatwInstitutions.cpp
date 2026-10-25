@@ -37,7 +37,7 @@ bool Society::unearnedKind(const std::string& kind)
     return kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
            kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" || kind == "the household purse" ||
            kind == "the church's dole" || kind == "the church's share" || kind == "a gift" || kind == "a letter's enclosure" ||
-           kind == "an owner's investment" || kind == "relief" || kind.rfind("test:", 0) == 0;   // (A test's money, put there.)
+           kind == "an owner's investment" || kind == "relief" || kind == "a relief grant" || kind.rfind("test:", 0) == 0;   // (A test's money, put there.)
 }
 
 double Society::monthIncomeOf(const std::string& account) const

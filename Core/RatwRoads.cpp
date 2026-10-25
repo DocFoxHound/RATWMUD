@@ -549,7 +549,7 @@ void World::tendPrices()
     if (hour == priceHour_)
         return;
     priceHour_ = hour;
-    // (Every other good's price is the economy orchestrator's, doc 46, Phase 3: Society::townPrice.)
+    // (Every other good's price is its seller's own, doc 64, Phase 4: Society::priceAt.)
     std::map<std::string, std::map<std::string, double>> factors;
     for (const auto& t : towns_)
         if (const auto* store = society_.account(t.store))
@@ -1876,7 +1876,7 @@ void World::noteTrade(const std::string& town, const std::string& item, const st
                 auto& fed = fedToday_[key];
                 const double before = fed;
                 fed += double(nourish) * quantity;
-                const double enough = std::max(1, reading.people) / 10.0 * society_.orchestratorDials().nourishADay;
+                const double enough = std::max(1, reading.people) / 10.0 * orchestra::NourishADay;
                 if (before < enough && fed >= enough)
                     recordEvent({"fed the town", who, town, {}, 0, 0, base, quantity, 0, "brought food into " + town + " when its shelves were bare"});
             }

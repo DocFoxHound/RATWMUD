@@ -10,126 +10,6 @@
 
 namespace ratw
 {
-std::int64_t Society::postOddJobs(const std::string& payer, const std::string& community, std::int64_t budget)
-{
-    // What a hand is paid: its town's table for a hand's share of an odd job (the wage table, doc 46, Phase 4).
-    const std::int64_t handPay = std::max<std::int64_t>(1, std::int64_t(std::ceil(dayWage(community, "odd job") - 1e-9)));
-    // As many as the town has idle wolves (its latest measure), sixty at least.
-    const auto idle = idleHands_.count(community) ? idleHands_.at(community) : 0;
-    const int most = int(std::min<std::int64_t>(std::max<std::int64_t>(60, idle), budget / handPay));
-    static const DayPlan none;
-    const auto& plan = day_.plans.count(community) ? day_.plans.at(community) : none;
-    const bool church = payer.rfind("town:", 0) == 0;
-    // Where jobs begin and end in town: its market square, or else before its shops.
-    std::vector<Spot> about = plan.crowd;
-    if (about.empty())
-        for (const auto& p : positions_)
-            if (p.role == "merchant" && communityOfResident(p.founder) == community)
-                about.push_back(p.serve);
-    if (most <= 0 || about.empty())
-        return 0;
-    const auto square = [&](std::size_t k) -> Spot { return about[(std::hash<std::string>{}(payer) + k) % about.size()]; };
-    int posted = 0;
-    // Each job's hands: a few by its kind (a trip goes in a party), the pay OddJobPay for each, split among them.
-    const auto post = [&](OddJob j) {
-        const auto [fewest, most_] = j.kind == "gathering" || j.kind == "hunting" ? std::pair{2, 5}
-                                   : j.kind == "repairs" || j.kind == "scouting" ? std::pair{1, 3}
-                                                                                 : std::pair{1, 2};
-        j.id = "odd" + std::to_string(++nextOddJob_);
-        j.payer = payer;
-        j.community = community;
-        j.slots = std::min(most - posted, fewest + int(std::hash<std::string>{}(j.id) % std::size_t(most_ - fewest + 1)));
-        if (j.slots < 1)
-            return;
-        j.pay = handPay * j.slots;
-        posted += j.slots;
-        oddJobs_.push_back(std::move(j));
-        ++oddVersion_;
-    };
-    // Deliveries: food bought at a shop for the watch's mess (or the church's table), carried there.
-    const auto buyer = church ? payer : "town:" + community + ":watch";
-    if (const auto* mess = account(buyer); mess && mess->cash >= 12 && !hasFood(*mess))
-        for (const auto& p : positions_)
-        {
-            if (posted >= std::min(most, 3))
-                break;
-            const auto held = state_.careers.positions.find(p.id);
-            if (p.role != "merchant" || held == state_.careers.positions.end() || held->second.holder.empty() ||
-                communityOfResident(held->second.holder) != community)
-                continue;
-            const auto* shelves = account(tillOf(held->second.holder));
-            if (!shelves || !hasFood(*shelves))
-                continue;
-            Spot to = church && !plan.pulpit.cell.empty() ? plan.pulpit : square(posted);
-            if (!church)
-                for (const auto& g : positions_)
-                    if (g.role == "guard" && communityOfResident(g.founder) == community)
-                    {
-                        to = g.work;
-                        break;
-                    }
-            OddJob j;
-            j.kind = "delivery";
-            j.what = church ? "carrying bread for the church's table" : "carrying food for the watch's mess";
-            j.from = p.serve;
-            j.to = to;
-            j.source = held->second.holder;
-            j.buyer = buyer;
-            post(std::move(j));
-        }
-    // A hand at a producer short of hands (a farm, a quarry, a dairy...): one with little of its yield in store.
-    for (const auto& p : positions_)
-    {
-        if (posted >= most * 2 / 3)
-            break;
-        const auto held = state_.careers.positions.find(p.id);
-        const auto* producer = items::producerFor(p.title);
-        if (!producer || producer->out.empty() || held == state_.careers.positions.end() || held->second.holder.empty() ||
-            communityOfResident(held->second.holder) != community)
-            continue;
-        const auto* store = account(tillOf(held->second.holder));
-        const auto till = tillOf(held->second.holder);
-        if (!store || stockAll(*store, producer->out.front().first) >= shelfTarget(till, producer->out.front().first, ProducerKept) / 2)
-            continue;
-        OddJob j;
-        j.kind = "a hand";
-        j.what = "a hand at " + p.title.substr(0, 40);
-        j.from = j.to = p.work;
-        j.producer = held->second.holder;
-        j.forChildren = false;
-        post(std::move(j));
-    }
-    // Repairs (a town's): the Town Works' materials carried out and used about the town.
-    if (!church && condition(community) < 95)
-        if (const auto* works = account("town:" + community + ":works"); works && !works->stock.empty())
-            for (int k = 0; k < 2 && posted < most; ++k)
-            {
-                OddJob j;
-                j.kind = "repairs";
-                j.what = "mending about the town for the Town Works";
-                j.from = square(posted);
-                j.to = square(posted + 7);
-                post(std::move(j));
-            }
-    // Gathering, hunting and scouting trips to the ground around the town.
-    if (day_.grounds)
-        if (const auto found = day_.grounds->find(community); found != day_.grounds->end() && !found->second.empty())
-            for (std::size_t k = 0; posted < most; ++k)
-            {
-                const auto index = (std::hash<std::string>{}(payer) + std::size_t(nextOddJob_) + k) % found->second.size();
-                const auto& ground = found->second[index];
-                OddJob j;
-                j.kind = k % 5 == 4 ? "scouting" : ground.trade == "hunting" ? "hunting" : "gathering";
-                j.what = j.kind == "scouting" ? "scouting the country for what it has" : j.kind + " for the town, to sell to its makers";
-                j.from = ground.spot;
-                j.to = square(posted);
-                j.ground = index;
-                j.forChildren = j.kind != "hunting";
-                post(std::move(j));
-            }
-    return std::int64_t(posted) * handPay;
-}
-
 std::string Society::postOddJob(const std::string& payer, const std::string& community, const std::string& kind, int slots,
                                 std::int64_t pay, const Spot& at, const std::string& what)
 {
@@ -183,7 +63,7 @@ std::int64_t Society::businessSpends(const std::string& payer, const std::string
     const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
         return j.payer == payer && j.producer == keeper && j.until >= surplusDay_ && (j.kind == "a hand" || j.kind == "a hand at the shop");
     });
-    const auto dayPay = std::int64_t(std::ceil(dayWage(community, "hand") - 1e-9));   // (The wage table: doc 46.)
+    const auto dayPay = std::int64_t(std::ceil(dayWage(community, "hand") - 1e-9));   // (Society::dayWage: doc 64, Phase 6.)
     if (const int hands = int(std::min<std::int64_t>(3, budget * 4 / 10 / dayPay)); hands > 0 && !hiring)
     {
         hire(shop ? "a hand at the shop" : "a hand", "a hand at " + job.title.substr(0, 40) + ", hired for the week", hands);

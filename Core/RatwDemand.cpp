@@ -276,32 +276,6 @@ double Society::townFactor(const std::string& town, const std::string& item) con
     return plain && plain->price > 0 ? townPrice(town, base) / plain->price : 1;
 }
 
-void Society::applyPrices()
-{
-    prices_.clear();
-    wages_.clear();
-    support_.clear();
-    livingFloor_.clear();
-    idleHands_.clear();
-    margin_ = .55;
-    taxLevel_.clear();
-    const auto& o = state_.orchestrator;
-    if (orchestratorDials().mode != "on")
-        return;
-    // (Its prices, its margin and its price support are no longer applied: each seller prices from its costs, doc 64,
-    // Phase 4. It still works them out, and shows them.)
-    for (const auto& [key, pay] : o.memory.wage)
-        if (const auto bar = key.find('|'); bar != std::string::npos && pay > 0)
-            wages_[key.substr(0, bar)][key.substr(bar + 1)] = pay;
-    for (const auto& [treasury, level] : o.memory.taxLevel)
-        taxLevel_[treasury] = level;
-    for (const auto& t : o.last.towns)
-    {
-        livingFloor_[t.id] = t.wageFloor;
-        idleHands_[t.id] = std::max(0, t.idle);
-    }
-}
-
 std::int64_t Society::shopPrice(const std::string& shop, const std::string& item) const
 {
     // Its own (doc 64, Phase 4): its normal cost and its margin.
@@ -494,7 +468,7 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             if (!richest || spendable(who) > spendable(*richest))
                 richest = &who;
             // (The tax and tithe on its week's income so far: doc 64, Phase 7.)
-            owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (TaxRate + TitheRate));
+            owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (taxRate() + TitheRate));
         }
         // Only what it can safely afford (the user, 2026-10-05: never a given): two weeks' food kept back for all at
         // home, and nothing while the household has lately been poor.
@@ -570,7 +544,7 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             continue;
         // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
         // week's food and the tax and tithe it owes.
-        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (TaxRate + TitheRate));
+        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (taxRate() + TitheRate));
         const int under = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
                                               const auto b = bodies.find(other.first);
                                               return other.second.homeCell == life.homeCell && b != bodies.end() && b->second.age >= 16;

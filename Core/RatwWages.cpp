@@ -166,9 +166,6 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
 
 double Society::dayWage(const std::string& town, const std::string& kind) const
 {
-    if (const auto t = wages_.find(town); t != wages_.end())
-        if (const auto w = t->second.find(kind); w != t->second.end() && w->second > 0)
-            return w->second;                        // (The orchestrator's table, when it's on.)
     // The going rate (doc 64, Phase 6): a labourer's day in the town; the clergy a tenth over, an odd job a third of a day.
     const double going = goingRate(town);
     return kind == "clergy" ? going * ClergyShare : kind == "odd job" ? going / 3 : going;

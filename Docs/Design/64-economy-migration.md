@@ -1377,3 +1377,69 @@ The sheep farms already give sheepskins, which the tanneries make into leather.
 **Players' goods** were there already: a player's stall sells at the player's own price (doc 54), and residents buy
 at it. **Test:** `crafting_tests` `aStallDumpAndTheRebound` (three days of a player's penny bread: the bakery sells
 and keeps less; the stall gone, it comes back as it was).
+
+### Phase 12: the orchestrator steps back (2026-10-25)
+
+The user chose to take the orchestrator's steering out now. It had been off since 2026-10-15; what it did is the
+society's own rules (Phases 1–11).
+
+**Kept, as a monitor** (`RatwOrchestrator.h/.cpp`, `RatwOrchestrate.cpp`; the names stay):
+
+- **The 23:00 snapshot, every day, in an authored world** (there is no mode any more). Its measures are shown from the
+  turn of the day (`Society::orchestrator().last`), and the week's on the evening of the reckoning (`.decision`).
+- **Each town:** distress (smoothed over three days) and its kind, hungry, starving, short, poor, idle, a day's food
+  cost, days of food on its shops' shelves, takings against running, net coins in from other towns, players' help.
+- **The land:** the residents' Gini and median purse, the poorer half's share (by household, a head), the residents'
+  share, the money supply.
+- **`orchestra::measure()`** is pure, on the game thread: the `Runner` thread is gone (it is cheap without the plan).
+- **What reads it:** the troubles' food cost, the "fed the town" deed and the granary project's "empty shelves".
+- **econ_watch's** `orchestrator.jsonl` and `orchestrator_towns.csv` carry the measures, now every day.
+
+**Removed:**
+
+- **`plan()`'s steering:** prices, margins, wages, bands, tax levels, channels, funds, orders, grants, rescue, price and
+  wage support, the playbook's ladder, the banks, reach and learning, its own pressure and the floor's lift.
+- **`RatwChannels.cpp`** (applyOrders, runChannels, the banks, the levy, the savers) and every `mode == "on"` branch:
+  `applyPrices`, the wage table in `dayWage`, the tax level in the reckoning, wage support, `postOddJobs`.
+- **`Data/Economy/orchestrator.json`** and **`scenarios.json`**; the steers (`orchestra::Steer`, `ScriptedSteer`, the
+  `economy.steer`, `economy.unsteer` and `economy.scenario` actions, the DM tool's routes, econ_watch's `--steer`).
+- **Kept as constants:** the labourer's day before the first measure is `items::ladder().catalogueDay` (12, as the
+  dials' 12); a day's food is `orchestra::NourishADay` (50).
+- **Rescue loans** are no longer made. One still owed is written off a month on, or paid off by a friend (doc 57's
+  trouble) into the town's treasury.
+- **Saves:** an old save loads. Its steers, bands, prices, wages, tax levels and savers' books are left behind. Old
+  `fund:`, `bank:` and granary accounts keep their coins and goods; nothing spends them. (DEV was founded afresh at
+  Phase 1, so it has none. PROD, if not founded afresh, would keep its savers' coins in the banks.)
+
+**The Dungeon Master's three levers** (decision 5), in the Money tab under the measures. Each is a DM action, audited,
+and logged in the game's ledger:
+
+| Lever | Action, payload | Ledger |
+|---|---|---|
+| The tax rate, 0% to 50% of a week's income, from the next reckoning | `economy.tax` `{"rate": 0.1}` | "the tax rate set from 8% to 10%" |
+| The mint on or off | `economy.mint` `{"on": false}` | "the mint turned off" |
+| A relief grant from the capital's treasury to a town's | `economy.relief`, the town, `{"coins": 500}` | "a relief grant" (the coins) |
+
+- **The tax rate** is saved (`memory.taxRate`; 8%, `Society::TaxRate`, in a save from before). The households' budgets
+  count it too.
+- **The DM tool:** `POST /api/economy/tax`, `/api/economy/mint`, `/api/economy/relief`; the Money reply has `levers`.
+
+**The check that nothing changed** (5 days of DEV's export, `--deterministic`):
+
+- **The digest:** 2149ef26b108f66c before and after, with the monitor now measuring every day.
+- **`days.jsonl`, `flows.csv`, `prices.csv`, `wages.csv`, `tills.csv`, `food.csv`, `events.csv`:** byte for byte the
+  same. Day 5: supply 5,000,000p, Gini 0.489, household Gini 0.536, poorer half 0.137, hungry 0, wage 12p.
+- **The tick:** 0.032 ms both.
+- **In the game, not in econ_watch:** the troubles' food cost, the deed and the granary project see the measures again
+  (they saw none while it was off).
+
+**Tests:**
+
+- `orchestrator_tests`: the monitor alone, 22 checks (distress and its kind, the week weighed, the money's spread, the
+  same snapshot the same measures, the saved state and a save from before Phase 12).
+- `roads_tests`: `theOrchestratorWatches` became `theMonitorWatches`, with the three levers. `theChannelsSpend` and
+  `oddJobs` (the towns' odd jobs, a channel) are gone; `whoPaysWages` lost its wage-support part.
+- `project_tests` `visible`: the town's measure needs no shadow mode now.
+- `test_dungeon_master.py`: the steers, scenarios, staples and funds tests became `test_the_economys_levers` and
+  `test_the_monitors_measures`.
+- All suites pass.
