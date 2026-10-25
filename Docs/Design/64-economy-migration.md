@@ -1373,3 +1373,7 @@ The sheep farms already give sheepskins, which the tanneries make into leather.
 - **Houses filled from the towns** were there already (doc 16's migration, the user's "draw" rule).
 - **Tests:** `camp_tests` (a workshop at the Hall takes up the smithy's work, not a trade that makes nothing; with
   Bracken its hand, a day's work makes swords from the stores' bronze; a field planned; the trade survives a restart).
+
+**Players' goods** were there already: a player's stall sells at the player's own price (doc 54), and residents buy
+at it. **Test:** `crafting_tests` `aStallDumpAndTheRebound` (three days of a player's penny bread: the bakery sells
+and keeps less; the stall gone, it comes back as it was).

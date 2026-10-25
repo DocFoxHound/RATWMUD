@@ -473,6 +473,38 @@ void theMint()
     expect(off.state().minted == offBefore, "turned off, the mint does nothing");
 }
 
+// Players' goods (doc 64, Phase 11): a player's stall dumps bread at a penny for three days, and the town buys there
+// instead; the bakery's sales and the store it keeps fall. The stall gone, they come back as they were (doc 63's crash
+// tests: the market rebounds by its own rules).
+void aStallDumpAndTheRebound()
+{
+    auto s = town();
+    const auto till = s.tillOf("baker");
+    expect(s.shift("treasury", "scribe", "", 0, 400, "test: the town's bread money"), "the town has bread money");
+    const auto day = [&](std::int64_t d, int sold) {
+        if (sold > 0)
+        {
+            set(s, "baker", "bread", sold);
+            expect(s.sale(till, "scribe", "bread", sold, 1, "test: the morning's queue"), "the town buys the bakery's bread");
+            auto st = s.state();                    // (Eaten.)
+            st.accounts.at("scribe").stock.erase("bread");
+            expect(s.restore(st), "the bread eaten");
+        }
+        s.spoil(d);
+    };
+    for (std::int64_t d = 1; d <= 10; ++d)
+        day(d, 10);
+    const int before = s.shelfTarget(till, "bread", 0);
+    for (std::int64_t d = 11; d <= 13; ++d)
+        day(d, 0);                                  // (The player's penny bread: nobody comes to the bakery.)
+    const int dumped = s.shelfTarget(till, "bread", 0);
+    expect(dumped < before, "while the stall dumps, the bakery sells less and keeps less: " + std::to_string(before) + " to " + std::to_string(dumped));
+    for (std::int64_t d = 14; d <= 40; ++d)
+        day(d, 10);
+    const int after = s.shelfTarget(till, "bread", 0);
+    expect(after >= before - 1 && after <= before + 1, "the stall gone, it comes back as it was: " + std::to_string(after));
+}
+
 void millGrindsForTheStall()
 {
     auto s = farmTown();
@@ -771,6 +803,7 @@ int main()
         piecesWornAndMended();
         theCatchFeedsTheLarder();
         theMint();
+        aStallDumpAndTheRebound();
         aTownsTradeBringsInMore();
         millGrindsForTheStall();
         cartedInFromAnotherTown();
