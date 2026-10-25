@@ -261,6 +261,33 @@ struct EmployerBook
     int openDays = 0, calm = 0;
     bool shortPay = false;
 };
+// A field's year (doc 64, Phase 3b: seasonal fields, with work by the hours): the acres it plans to sow, those sown and
+// those still to bring in, a part-yield carried over, the year whose harvest's end it last planned at, and whether its
+// store ran dry this year.
+struct FieldYear
+{
+    double acres = 0, sown = 0, toHarvest = 0, part = 0;
+    std::int64_t year = -1;
+    bool dry = false;
+};
+// A thing an NPC owns and wears or carries (doc 64, Phase 9): what it is, how whole (1 new, 0 worn out but kept and
+// mendable), whether it's an heirloom, and whether it's in its purse (finery, a blade) or worn (clothes, an issued sword).
+struct Belonging
+{
+    std::string item;
+    double cond = 1;
+    bool heirloom = false, held = false;
+};
+// The mint's book (doc 64, Phase 11; RatwMint.cpp): on or off (the Dungeon Master's lever), the money in use it keeps
+// to, what it has struck and not yet melted, the going wage week by week (eight), the hoarded money week by week
+// (four), and each player's or Hold's spending a day (a month's average).
+struct MintBook
+{
+    bool on = true;
+    double target = 0, struck = 0;
+    std::vector<double> wages, recent;
+    std::map<std::string, double> spending;
+};
 struct EconomyMemory
 {
     std::map<std::string, double> unpaidSince;      // Worker -> the day its employer first couldn't pay.
@@ -294,6 +321,9 @@ struct EconomyMemory
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
     std::set<std::string> closed;                    // Posts a business has let go and keeps empty (doc 64, Phase 6).
     double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
+    std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
+    std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
+    MintBook mint;                                   // The mint (Phase 11).
     // Households and institutions (doc 64, Phase 7): each account's earned income this week (taxed at the reckoning)
     // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
     // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
@@ -468,6 +498,37 @@ class Society
     void forgetPlaces() { ++rosterRevision_; }
     // Each farm worker's bunkhouse (the world finds them: a room "<site> Bunkhouse" for a worker "... at <site>").
     static bool farmWork(const std::string& producer);   // A farm, orchard, vineyard, herd or flock (RatwFarmhands.cpp).
+    // Seasonal fields (doc 64, Phase 3b; the model's): with work by the hours, a farm, an orchard or a vineyard sows in
+    // spring (days of the year before SowEnd) and brings in at the harvest (HarvestStart to HarvestEnd) what it sowed,
+    // FieldYields of its yields an acre, a third of an acre's hours at sowing and the rest at the harvest; it sells from
+    // its store all year. At the harvest's end it plans next year's acres: a year and a harvest of its sales a day, a
+    // tenth over (FieldMargin), half again after a year its store ran dry (DryYear), less what its store still holds.
+    static bool fieldWork(const std::string& producer);
+    static constexpr int SowEnd = 92, HarvestStart = 213, HarvestEnd = 274, FieldYields = 20;
+    static constexpr int WinterStart = 275;         // (The calendar's: days of the year from 275 to its end.)
+    static constexpr double SowShare = 1. / 3, FieldMargin = 1.1, DryYear = 1.5;
+    // The mint (doc 64, Phase 11; RatwMint.cpp), daily in the day's pass and weighing up on the week's first day: a
+    // player's purse or a Hold's treasury (`hoarder`), whose spending it follows (noteSpent, from record).
+    static bool hoarder(const std::string& account);
+    void noteSpent(const std::string& from, std::int64_t coins);
+    void tendMint(std::int64_t day);
+    static constexpr double MintBand = .05, MintStrikeMost = .01, MintMeltMost = .02, MintWageFall = .03, MintIdle = .1,
+                            MintHungry = .01;
+    // Wear and mending for NPCs (doc 64, Phase 9; RatwBelongings.cpp): a piece worn to MendAt is seen to, mended if the
+    // quote is under MendIf of new; a guard's issued sword wears out in WatchWearDays of daily use.
+    static constexpr double MendAt = .35, MendIf = .6, WatchWearDays = 120;
+    static std::string belongingKind(const std::string& item);   // "finery", "sword", "rapier" or "" (of a held item).
+    void tendBelongings(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    double mendQuote(const std::string& maker, const items::Craft& k, const Belonging& b, const std::string& kind) const;
+    bool seeTo(const std::string& id, Belonging& b, const std::string& kind, bool issued, std::int64_t day,
+               const std::vector<std::string>& shops);
+    // 0 out of season, 1 sowing, 2 the harvest, for a day of the calendar.
+    static int fieldWindow(double absoluteDay);
+    bool fieldsOn() const { return workByHours_; }
+    // A field's yields a day wanted: the most of any of its goods' sales a day (missed sales counting), by its count.
+    double fieldNeed(const std::string& till, const items::Producer& p) const;
+    // Its year planned (at the harvest's end, or when it is first seen, with a store to last it to the harvest).
+    void planField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay, bool founding);
     void setBunkhouses(std::map<std::string, Spot> byWorker)
     {
         bunkhouses_ = std::move(byWorker);
@@ -962,6 +1023,7 @@ class Society
         std::size_t ground = 0;
         std::int64_t pay = 0;                        // For all its slots, a day.
         bool forChildren = true;
+        bool field = false;                          // A field's hire at sowing or the harvest: the land calls (Phase 3b).
         // A business's hire runs HireDays (the user, 2026-10-05: semi-permanent work at shops that are hiring): whoever
         // took it comes back each day to it, paid each day, until then. Other odd jobs are the day's.
         std::int64_t until = -1;
@@ -1113,6 +1175,10 @@ class Society
     static bool idlePost(const std::string& title);   // "idling in the square", "sits and watches": no work at all.
     // Sells what a wolf brought in to a shop that buys it, at the price a player gets; returns the pennies it made.
     std::int64_t sellBroughtIn(const std::string& resident, const std::string& shop);
+    // A wolf's catch from the wild for its own household's larder, up to LarderDays of a wolf's day's food
+    // (DayNourishment) a head (doc 64, Phase 10); returns the nourishment put away.
+    int keepForTheLarder(const std::string& resident);
+    static constexpr int LarderDays = 3, DayNourishment = 47;
     bool carriesForSale(const std::string& resident) const;
     bool sellsTo(const std::string& resident, const std::string& shop) const;   // The shop takes something it carries.
     // Great houses (doc 42, Phase 5b; RatwHouses.cpp): the houses, each business's till (the keeper itself unless a house
@@ -1362,6 +1428,11 @@ class Society
     void stockBunkhouses(std::int64_t day);
     // A farm's upkeep (crafts.json `farmUpkeep`): what it wears out a day, bought in its town, the fractions owed.
     std::unordered_map<std::string, std::map<std::string, double>> upkeepOwed_;
+    // A producer's till -> its tools' wear (crafts.json `tools`), in tools, by its hours of work (doc 64, Phase 3b).
+    std::unordered_map<std::string, std::map<std::string, double>> toolsWorn_;
+    // A maker's till -> its mending, hours a day (a month's running average), toward its hands (Phase 9).
+    std::unordered_map<std::string, double> mendRate_;
+    std::unordered_map<std::string, double> hoarderSpent_;   // A hoarder's spending today (Phase 11's mint).
     std::unordered_map<std::string, double> wageCarry_;   // Worker -> the fraction of a penny its wages owe it (not saved).
     // Each Restday, every improved business keeps its premises up (the user, 2026-10-05): UpkeepALevel a level a week in
     // materials bought from its town's makers, from its till (or its house). Two weeks without, and it loses a level.
@@ -1375,6 +1446,14 @@ class Society
     // it is set if one would be (deciding at once, RatwResidents.cpp).
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
                             std::int64_t ownDayPay = 0, bool* claims = nullptr);
+  public:
+    // A producer's tools worn by `hours` of its work (doc 64, Phase 3b; Society::produce), bought new when worn through.
+    void wearTools(const std::string& till, const std::string& producer, double hours);
+    // Called to the fields this morning at sowing or the harvest (Phase 3b), LandCall of the hands of trades that aren't
+    // staples a day: it may take a field's hire whatever it pays.
+    bool calledToTheLand(const std::string& resident, const Position& job, int age, std::int64_t day) const;
+    static constexpr double LandCall = .1;
+  private:
     // Arrived where its odd job takes it: the work done there, and paid when finished.
     void advanceOddJob(const std::string& id, int seconds = 1);   // (A step's seconds of its work.)
     // Made into `account` as starting money: counted as made, and kept out of the month's profit.

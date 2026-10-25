@@ -352,7 +352,9 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
                 return true;
         return false;
     }();
-    if (!(jobless || child || better || (poor && !job.paid)))
+    // (Called to the land: a field's hire only.)
+    const bool called = !jobless && !child && !better && hour >= 8 && hour < 10 && calledToTheLand(id, job, age, surplusDay_);
+    if (!(jobless || child || better || called || (poor && !job.paid)))
         return nullptr;
     const auto& group = child ? friendGroup(id) : std::string();
     // (A farm's hire may be taken by anyone living in a city too: RatwFarmhands.cpp.)
@@ -386,7 +388,8 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
             }
     for (int pass = child ? 0 : 1; !chosen && pass < 2; ++pass)
         for (const auto i : *look)
-            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay)))
+            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay)) &&
+                                       (!called || j.field))
             {
                 chosen = &j;
                 break;

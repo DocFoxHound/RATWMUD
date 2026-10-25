@@ -1866,6 +1866,9 @@ void tradesWearAndCharity()
     w.society().create("farmer", "hay", 20, "test: the barn");
     w.society().shift("treasury", "ostler", "", 0, 100, "test: takings");
     std::map<std::string, int> seen;
+    // (A pick lasts 15 days of spells, worn by the hours worked: Society::produce, doc 64, Phase 3b. A pick's worth of
+    // the mine's work, as these days are only their mornings.)
+    w.society().wearTools(w.society().tillOf("miner"), "mine", 15 * Society::PaidSpells);
     for (int d = 0; d < 16; ++d)
     {
         nextMorning(w);

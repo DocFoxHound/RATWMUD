@@ -701,6 +701,8 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
         for (std::size_t k = 0; k < needs.size(); ++k)
         {
             const auto& need = needs[k];
+            if (need.perPerson && fieldsOn())
+                continue;                           // (Clothes are worn and mended now: RatwBelongings.cpp, Phase 9.)
             const double every = season == 3 && need.winterDays > 0 ? need.winterDays : need.everyDays;
             const double at = double(day) + offset + double(k) * 7.3;
             int count = int(std::floor(at / every) - std::floor((at - 1) / every));
@@ -1016,25 +1018,18 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
                 ++soldToday_[tillOf(shop)][item];
         return false;
     };
-    // Tools a trade wears out (crafts.json `tools`): every so often, out of the worker's own purse.
-    const auto& tools = items::toolNeeds();
+    // Tools a trade wears out (crafts.json `tools`), by the hours worked (Society::produce; doc 64, Phase 3b): a new one
+    // each time one is worn through, out of the business's till.
     for (const auto& r : authored_.residents)
     {
-        if (tools.empty())
-            break;
-        const auto body = bodies.find(r.id);
-        const auto* p = items::producerFor(r.workLabel);
-        if (!p || body == bodies.end() || body->second.age < 16 || !state_.residents.count(r.id))
+        const auto worn = toolsWorn_.find(tillOf(r.id));
+        if (worn == toolsWorn_.end() || !state_.residents.count(r.id))
             continue;
-        for (const auto& t : tools)
-        {
-            if (t.producer != p->id)
-                continue;
-            const double offset = unit(r.id + "|" + t.item) * t.everyDays;          // (Not everyone on the same day.)
-            const double at = double(day) + offset;
-            if (std::floor(at / t.everyDays) != std::floor((at - 1) / t.everyDays))
-                buy(r.id, t.item, "tools for the work");
-        }
+        for (auto& [item, w] : worn->second)
+            if (w >= 1 && buy(r.id, item, "tools for the work"))
+                w -= 1;
+            else
+                w = std::min(w, 3.);                 // (Gone without: owed, a few at most.)
     }
     // A farm's upkeep (crafts.json `farmUpkeep`, the user, 2026-10-06: nails, plaster, planks for its fences, barns and
     // walls): what each farm worker wears out a day, bought whole when a whole one is owed, at its town's shops (which

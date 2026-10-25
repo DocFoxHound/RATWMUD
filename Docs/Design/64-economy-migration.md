@@ -1239,3 +1239,114 @@ Together these cut about 1.1M of the 1.75M businesses reserved.
   1p); at 60p it's plain. Pricing at the hours actually worked (tried, reverted) didn't help at 12p, for the penny floor.
 - **The fix is work by the hours**, so goods cost the hours they're priced at. That waits on the land feeding the realm
   at calibrated hours: the rest of Phase 3b.
+
+### Building first, balancing last (the user, 2026-10-25)
+
+"We probably shouldn't try balancing everything until we are done implementing everything." The rest of the phases
+are built as designed, each with its tests and a short smoke run for breakage (crashes, money not conserved). What the
+smoke runs show about balance is noted here for Phase 13, not tuned.
+
+### Phase 3b, the rest: seasonal fields, wood for winter, tool wear (2026-10-25)
+
+With work by the hours on (`Society::fieldsOn`, the Phase 3 switch). The game's default, the old pace, is as it was.
+
+**Seasonal fields** (`RatwFarmhands.cpp`, `Society::produce`): farms, orchards and vineyards (`fieldWork`).
+
+- **The year:** sowing to day 92 of the year (spring), the harvest from day 213 to 274 (the end of summer and early
+  autumn), as the model's 0–90 and 196–252 of its 336-day year.
+- **An acre** is `FieldYields` (20) of the producer's yields. A third of its hours go at sowing, the rest at the
+  harvest (`SowShare`). Between, the fields bring nothing in; an orchard's or a farm's work out of season brings in its
+  `offSeason` goods that aren't its fields' (prunings for firewood). The store is sold from all year. Field goods don't
+  spoil in the catalogue, so the store keeps.
+- **Planning** (`planField`): at the harvest's end, next year's acres are a year and a harvest of its sales a day
+  (`fieldNeed`: the most of any of its goods, missed sales counting), a tenth over (`FieldMargin`), half again after a
+  year its store ran dry (`DryYear`), less what its store will still hold at the next harvest. What wasn't brought in
+  is lost.
+- **Founding:** a farm first seen with sales to plan by has this year's fields as if sown, and a store made to last it
+  to the harvest ("a year's store").
+- **Hands:** a field wants the work left in its season over the days left of it (`handsWanted`); between, one hand.
+  Its hires at sowing and the harvest are field hires (`OddJob::field`), at the harvest's pay.
+- **The harvest call** (`calledToTheLand`): at sowing and the harvest, each morning a tenth (`LandCall`) of the hands of
+  trades that aren't staples (none of their crafts' goods on the staple rung), and the town's own posts, may take a
+  field's hire whatever it pays. Not the land's own, the clergy, guards or keepers.
+- **Saved:** `memory.fields` (acres, sown, to harvest, part-yield, the year last planned, dry).
+
+**Wood laid in for winter** (`shelfTarget`): from a month before winter (day 247), what households burn faster in
+winter (crafts.json `winterDays`: firewood and peat, twice as fast) is kept at its winter rate. All paces.
+
+**Tool wear** (`Society::wearTools`, `tradeUpkeep`): a producer's tools wear by its hours of work, a tool lasting its
+`everyDays` of 8-hour days, and a new one is bought from the till each time one is worn through (it was bought on a
+timer). Their cost in a yield is reckoned at the calibrated hours, as the yield's labour is (it was the old pace's).
+
+**Tests:** `crafting_tests` `seasonalFields` (founding, nothing between, the harvest, planning at the end, sowing next
+spring; the smith's hand called to the land and the baker's never, and not in summer) and `woodLaidInForWinter`;
+`roads_tests`' pick bought by the mine after a pick's worth of work.
+
+**Smoke run** (30 days from DEV with the hours on, deterministic): money conserved, no faults; 0.064 ms a tick. One
+hungry spell on day 25 (205 hungry, 105 starving), as the hours runs had before (Phase 13).
+
+### Phase 9: wear and mending for NPCs (2026-10-25)
+
+With work by the hours on (`RatwBelongings.cpp`, `tendBelongings` in the day's pass).
+
+- **What a grown wolf owns** (`memory.belongings`, saved): its clothes (the household need bought a head, `perPerson`:
+  a wool scarf), the finery and blades in its purse (`belongingKind`: jewellery, hats, scarves, shawls, paw wear;
+  swords and rapiers), and a guard the sword it's issued (not in its purse). Pieces follow its purse: bought ones come
+  in whole, sold or given ones go.
+- **Wear by days of use** (the model's): clothes 150 days whole to worn out, finery 240, a sword 360, a rapier 540, a
+  guard's issued sword 120. Founded pieces start between 0.35 and whole.
+- **Worn to 0.35 (`MendAt`), seen to**, one piece a day:
+  - an heirloom (swords 20%, rapiers 40%, finery 5%, clothes never) is mended;
+  - the rich (three months of its income to spare) move up a third of the time: a sword for a rapier;
+  - "fashion" buys new: clothes 15%, finery 35%, blades 2%;
+  - otherwise mended if the cheapest maker's quote is under 60% of new (`MendIf`), else bought new.
+- **Who pays:** an issued sword, the guard's payer (the watch, a House); otherwise the wolf, beyond eight days' food
+  money, finery and blades from its want fund.
+- **A mend:** the maker's quote is the wear times the kind's share of the piece's hours (blades 30%, clothes 50%,
+  finery 60%) at its town's hour, and of its materials (10%, 30%, 40%), with the ladder's markup. The maker uses its
+  own materials (whole ones, a part by lot), and the hours are booked into its work in hand, worked out of what it
+  banks next, while its mending booked is under half a day of its hands' time. Mending counts toward its hands
+  (`mendRate_`, a month's running average, in `handsWanted`); a maker too busy or short hears it was asked. A mended
+  piece is whole again (doc 35).
+- **Retired with the hours on:** households buying clothes on a timer.
+- **Not yet:** the Houses' own blades (their retainers who are guards are covered).
+- **Tests:** `crafting_tests` `piecesWornAndMended` (the scribe owns its sword and clothes; an heirloom worn to 0.3 is
+  mended by the smith, for a fee).
+
+**Smoke run** (30 days from DEV with the hours on): money conserved, no faults, nobody hungry; 141 pieces mended, 27
+replaced, 1,004 tools bought as they wore through; 0.063 ms a tick.
+
+### Phase 10: hunting and hides (2026-10-25)
+
+Most of it was there: wolves without a post already hunt, fish and gather out of town (doc 42's outwork, from the same
+finite game and patches players use), and sell the hides and pelts to the tanneries and butchers at the shop's offer.
+The sheep farms already give sheepskins, which the tanneries make into leather.
+
+- **The catch feeds the household first** (`Society::keepForTheLarder`, with the hours on): what a wolf brings in from
+  the wild to eat goes into its household's larder, up to three days of a wolf's day's food (47) a head, before it
+  sells the rest. The hides and pelts are sold as before.
+- **Tests:** `crafting_tests` `theCatchFeedsTheLarder` (twelve rabbits: the larder takes three days' food, the rest and
+  the hides are kept for selling, a full larder takes no more; at the old pace, all of it is sold).
+
+### Phase 11, first part: the mint (2026-10-25)
+
+`RatwMint.cpp`, as the model's `players.py` `Mint`, in the day's pass:
+
+- **Hoarders:** players' purses and Holds' treasuries (`chapter:<id>`). Each one's spending a day is followed from the
+  ledger (a month's running average, `memory.mint.spending`).
+- **Weekly:**
+  - dormant money is what each hoarder holds beyond two months of its own spending;
+  - hoarded money is the dormant money's four-week average;
+  - the money in use is all the money less what's hoarded;
+  - the target is the money it first saw (the realm as founded).
+- **It strikes**, into the capital's treasury, when the money in use is 5% under the target *and* there's harm: wages
+  down 3% over eight weeks, a tenth of the grown idle, or a hundredth of the realm hungry. It strikes the gap, at most a
+  hundredth of the target a week, and not before it has eight weeks of wages to judge by.
+- **It melts** only what it struck, when the money in use is 5% over and wages aren't falling: at most two hundredths a
+  week, the same share of every purse, but not a wolf's with under a week's food money.
+- **Logged:** "the mint strikes" and "the mint melts", counted in `minted` and `sunk`.
+- **The Dungeon Master's lever:** `memory.mint.on` (saved; on by default). With no players it never acts: nothing is
+  dormant.
+- **Tests:** `crafting_tests` `theMint` (a player sitting on a third of the money while the realm is hungry: nothing
+  for seven weeks, then it strikes, a hundredth a week at most; the hoard spent and the realm fed, it melts what it
+  struck and no more, and not from a poor wolf's purse; turned off, nothing).

@@ -149,8 +149,48 @@ bool Society::sellsTo(const std::string& resident, const std::string& shop) cons
     return false;
 }
 
+int Society::keepForTheLarder(const std::string& resident)
+{
+    // Hunting and hides (doc 64, Phase 10), with work by the hours: what a wolf brings in from the wild to eat goes to
+    // its household's larder first, up to LarderDays of the household's food; the rest, and the hides and pelts, it sells.
+    const auto* purse = account(resident);
+    const auto life = state_.residents.find(resident);
+    if (!fieldsOn() || !purse || life == state_.residents.end() || life->second.homeCell.empty())
+        return 0;
+    const auto& home = life->second.homeCell;
+    const auto larder = homeStore(home, "larder");
+    const auto* store = account(larder);
+    if (!store)
+        return 0;
+    int members = 0;
+    for (const auto& [id, other] : state_.residents)
+        members += other.homeCell == home;
+    int held = 0;
+    for (const auto& [item, n] : store->stock)
+        if (edible(item))
+            held += n * nourishment(item);
+    const int most = LarderDays * DayNourishment * std::max(1, members);
+    std::vector<std::pair<std::string, int>> food;
+    for (const auto& [item, n] : purse->stock)
+        if (n > 0 && broughtIn(item) && edible(item) && !forSale(resident, item))
+            food.push_back({item, n});
+    int kept = 0;
+    for (const auto& [item, n] : food)
+    {
+        const int each = std::max(1, nourishment(item));
+        const int count = std::min({n, 99, (most - held + each - 1) / each});
+        if (count > 0 && shift(resident, larder, item, count, 0, "the catch put away in the larder"))
+        {
+            kept += count * each;
+            held += count * each;
+        }
+    }
+    return kept;
+}
+
 std::int64_t Society::sellBroughtIn(const std::string& resident, const std::string& shop)
 {
+    keepForTheLarder(resident);                      // (Its household's food first: Phase 10.)
     const auto* keeper = spec(shop);
     const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
     const auto* purse = account(resident);

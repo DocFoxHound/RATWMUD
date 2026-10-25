@@ -103,11 +103,12 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
             each = share(producer->offSeason);
         if (each >= 0)
         {
-            // Its tools' wear (crafts.json `tools`): a tool lasts so many days of spells.
+            // Its tools' wear (crafts.json `tools`): a tool lasts so many days of spells, worn by the hours of work (as
+            // they are bought: tradeUpkeep; doc 64, Phase 3b).
             double wear = 0;
             for (const auto& t : items::toolNeeds())
                 if (t.producer == producer->id && t.everyDays > 0)
-                    wear += producer->seconds / (PaidSpells * 3600.) / t.everyDays * inputCost(till, t.item);
+                    wear += producer->hours / PaidSpells / t.everyDays * inputCost(till, t.item);
             unit = (producer->hours * hour + wear) * each;
             // On a House's land, its rent is a cost like any other: a share of the price (doc 64, Phase 5).
             if (p && !landlordOf(p->id).empty())

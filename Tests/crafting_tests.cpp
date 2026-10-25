@@ -259,6 +259,220 @@ void farmerBringsIn()
            "in winter only the barn's grain is threshed, nothing grows");
 }
 
+// Seasonal fields (doc 64, Phase 3b), with work by the hours: once it has sales to plan by, a farm founds its year (the
+// fields as if sown, a store to the harvest); it brings in what it sowed at the harvest, plans next year's acres at the
+// harvest's end, and sows them in spring. The harvest call draws the smith, not the baker.
+void seasonalFields()
+{
+    Society::setWorkByHours(true);
+    auto s = farmTown();
+    const auto till = s.tillOf("farmer");
+    for (std::int64_t d = 1; d <= 6; ++d)
+    {
+        set(s, "farmer", "wheat", 10);
+        expect(s.sale(till, "miller", "wheat", 10, 1, "test: the mill's order"), "the mill buys the farm's wheat");
+        s.spoil(d);
+    }
+    double day = 10 + 10. / 24;                      // (The tenth day of the year: spring, the sowing.)
+    set(s, "farmer", "wheat", 0);
+    work(s, 600, day);
+    const auto founded = s.state().memory.fields.find(till);
+    expect(founded != s.state().memory.fields.end() && founded->second.acres > 0 && founded->second.toHarvest == founded->second.acres,
+           "the farm founds its year, its fields as if sown");
+    // (The mill buys as the wheat comes in: what was made counts.)
+    expect(held(s, "farmer", "wheat") + held(s, "miller", "wheat") > 100, "with a store to the harvest: " + std::to_string(held(s, "farmer", "wheat")));
+    const double acres = founded->second.acres;
+    set(s, "farmer", "wheat", 0);
+    set(s, "miller", "wheat", 0);
+    s.takeJournal();
+    double summer = 150 + 10. / 24;
+    work(s, 3600, summer, 1);
+    expect(count(s.takeJournal(), "brought in", "wheat") == 0, "between sowing and the harvest the fields bring nothing in");
+    double harvest = 220 + 10. / 24;
+    work(s, 4 * 3600, harvest, 2);
+    expect(count(s.takeJournal(), "brought in", "wheat") > 0 && s.state().memory.fields.at(till).toHarvest < acres,
+           "at the harvest it brings in what it sowed");
+    double after = 280 + 10. / 24;
+    work(s, 600, after, 3);
+    const auto& planned = s.state().memory.fields.at(till);
+    expect(planned.year == 0 && planned.toHarvest == 0 && planned.sown == 0 && planned.acres >= 0,
+           "at the harvest's end it plans next year's acres");
+    double spring = 365 + 10 + 10. / 24;
+    work(s, 4 * 3600, spring, 0);
+    expect(planned.acres == 0 || s.state().memory.fields.at(till).sown > 0, "and sows them in spring");
+    // The harvest call: some sowing morning the smith goes to the fields; the baker (bread is a staple) never.
+    AuthoredRoster roster;
+    roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("smith", "the smith at the forge", {"forge", 2.5, 2.5}),
+                        person("bhand", "works at The Loaf", {"bakery", 3.5, 3.5}, "civilian"),
+                        person("shand", "works at the forge", {"forge", 3.5, 3.5}, "civilian")};
+    roster.economy.treasury = 500;
+    Society t(Roster::None);
+    t.configure(roster);
+    const auto* smithy = t.jobOf("shand");
+    const auto* bakery = t.jobOf("bhand");
+    int smith = 0, baker = 0;
+    for (std::int64_t d = 0; d < 60 && smithy && bakery; ++d)
+    {
+        smith += t.calledToTheLand("shand", *smithy, 30, d);
+        baker += t.calledToTheLand("bhand", *bakery, 30, d);
+    }
+    expect(smithy && bakery && smith > 0 && smith < 20 && baker == 0,
+           "the smith's hand is called to the land now and then, the baker's never: " + std::to_string(smith) + ", " + std::to_string(baker));
+    int summerCalls = 0;
+    for (std::int64_t d = 120; d < 180 && smithy; ++d)
+        summerCalls += t.calledToTheLand("shand", *smithy, 30, d);
+    expect(summerCalls == 0, "and not between sowing and the harvest");
+    Society::setWorkByHours(false);
+}
+
+// Wood laid in for winter (doc 64, Phase 3b): a month before it, firewood's seller keeps its winter rate's store
+// (households burn it twice as fast then: crafts.json `winterDays`); bread's store doesn't change.
+void woodLaidInForWinter()
+{
+    // (Two towns alike, one on an autumn day and one a month before winter.)
+    const auto on = [](double day) {
+        auto s = farmTown();
+        const auto till = s.tillOf("farmer");
+        for (std::int64_t d = 1; d <= 6; ++d)
+        {
+            set(s, "farmer", "firewood", 10);
+            expect(s.sale(till, "baker", "firewood", 10, 1, "test: the bakery's wood"), "the bakery buys the farm's firewood");
+            s.spoil(d);
+        }
+        work(s, 60, day, 2);
+        return std::pair{s.shelfTarget(till, "firewood", 0), s.shelfTarget(s.tillOf("baker"), "bread", 0)};
+    };
+    const auto before = on(200 + 10. / 24), now = on(255 + 10. / 24);
+    expect(before.first > 0 && now.first >= 2 * before.first - 1 && now.second == before.second,
+           "a month before winter the firewood laid in doubles: " + std::to_string(before.first) + " to " + std::to_string(now.first));
+}
+
+// Wear and mending for NPCs (doc 64, Phase 9), with work by the hours: a grown wolf owns its clothes and the sword it
+// holds; worn to MendAt, an heirloom sword goes to the smith, who mends it whole for a fee, out of its own hours.
+void piecesWornAndMended()
+{
+    Society::setWorkByHours(true);
+    auto s = town();
+    set(s, "smith", "sword", 20);                   // (Its shelf full: its hours bank.)
+    {
+        auto state = s.state();                     // (In its own purse: the scribe keeps a shop, and its till is the shop's.)
+        state.accounts.at("scribe").stock["sword"] = 1;
+        expect(s.restore(state), "the scribe's sword restores");
+    }
+    expect(s.shift("treasury", "scribe", "", 0, 200, "test: a fee in hand"), "the scribe has money");
+    double day = 10. / 24;
+    work(s, 600, day);
+    day = 1 + 10. / 24;
+    work(s, 60, day);
+    const auto found = s.state().memory.belongings.find("scribe");
+    const auto has = [&](bool held, const std::string& item) {
+        return found != s.state().memory.belongings.end() &&
+               std::any_of(found->second.begin(), found->second.end(), [&](const Belonging& b) { return b.held == held && b.item == item; });
+    };
+    expect(has(true, "sword") && has(false, "wool_scarf"), "the scribe owns the sword it holds, and its clothes");
+    auto state = s.state();
+    for (auto& b : state.memory.belongings.at("scribe"))
+        if (b.item == "sword")
+            b.cond = .3, b.heirloom = true;
+    state.memory.wantFund["scribe"] = 150;
+    expect(s.restore(state), "the worn sword restores");
+    work(s, 600, day);
+    s.takeJournal();
+    day = 2 + 10. / 24;
+    work(s, 60, day);
+    const auto journal = s.takeJournal();
+    const bool mended = std::any_of(journal.begin(), journal.end(), [&](const EconomyEntry& e) {
+        return e.kind == "a piece mended" && e.from == "scribe" && e.to == s.tillOf("smith") && e.coins > 0;
+    });
+    double cond = 0;
+    for (const auto& b : s.state().memory.belongings.at("scribe"))
+        if (b.item == "sword")
+            cond = b.cond;
+    expect(mended && cond > .99 && Society::stock(*s.account("scribe"), "sword") == 1,
+           "the smith mends the heirloom whole, for a fee");
+    Society::setWorkByHours(false);
+}
+
+// Hunting and hides (doc 64, Phase 10), with work by the hours: what a wolf brings in from the wild to eat goes to its
+// household's larder first, up to three days of its food; the rest, and the hides, are for selling.
+void theCatchFeedsTheLarder()
+{
+    Society::setWorkByHours(true);
+    auto s = farmTown();
+    const auto larder = Society::homeStore("farmhouse", "larder");
+    auto state = s.state();
+    state.accounts[larder].stock.clear();          // (Opened: a society without a map opens no home stores.)
+    state.accounts.at("farmer").stock["rabbit"] = 12;
+    state.accounts.at("farmer").stock["hide"] = 2;
+    expect(s.restore(state), "the day's catch restores");
+    const int kept = s.keepForTheLarder("farmer");
+    const int rabbits = Society::stock(*s.account(larder), "rabbit");
+    expect(kept > 0 && rabbits > 0 && rabbits * Society::nourishment("rabbit") >= Society::LarderDays * Society::DayNourishment &&
+               (rabbits - 1) * Society::nourishment("rabbit") < Society::LarderDays * Society::DayNourishment,
+           "the catch fills the larder to three days' food: " + std::to_string(rabbits) + " rabbits");
+    expect(Society::stock(*s.account("farmer"), "rabbit") == 12 - rabbits && Society::stock(*s.account("farmer"), "hide") == 2,
+           "the rest, and the hides, kept for selling");
+    expect(s.keepForTheLarder("farmer") == 0, "a full larder takes no more");
+    Society::setWorkByHours(false);
+    expect(farmTown().keepForTheLarder("farmer") == 0, "(at the old pace, all of it is sold)");
+}
+
+// The mint (doc 64, Phase 11): a player who sits on a third of the realm's money while the realm goes hungry, and the
+// mint strikes (after eight weeks of wages to judge by, a hundredth of the money a week at most); the hoard spent again,
+// it melts what it struck, from every purse but a poor wolf's. Off, it does nothing.
+void theMint()
+{
+    const auto realm = [](bool on) {
+        auto s = town();
+        auto state = s.state();
+        const auto money = state.minted - state.sunk;
+        const auto hoard = std::min<std::int64_t>(state.accounts.at("treasury").cash, money / 3);
+        state.accounts.at("treasury").cash -= hoard;
+        state.accounts["player-hoard"].cash = hoard;
+        state.accounts.at("treasury").cash += state.accounts.at("scribe").cash - 20;
+        state.accounts.at("scribe").cash = 20;      // (A poor wolf: under a week's food money.)
+        for (auto& [id, life] : state.residents)
+            life.hunger = 80;
+        state.memory.mint.on = on;
+        expect(s.restore(state), "the hoard restores");
+        return s;
+    };
+    auto s = realm(true);
+    const auto before = s.state().minted;
+    s.takeJournal();
+    for (std::int64_t week = 0; week < 7; ++week)
+        s.tendMint(7 * week);
+    expect(s.state().minted == before, "not before eight weeks of wages to judge by");
+    for (std::int64_t week = 7; week < 20; ++week)
+        s.tendMint(7 * week);
+    const auto journal = s.takeJournal();
+    const auto struck = s.state().minted - before;
+    const auto target = s.state().memory.mint.target;
+    expect(struck > 0 && std::any_of(journal.begin(), journal.end(), [](const EconomyEntry& e) { return e.kind == "the mint strikes" && e.to == "treasury"; }),
+           "the hoard held and the realm hungry, the mint strikes into the treasury: " + std::to_string(struck) + "p");
+    expect(double(struck) <= 13 * Society::MintStrikeMost * target + 13, "a hundredth of the money a week at most");
+    expect(s.conserved(), "money counted as minted");
+    // The hoard spent again, the realm fed: what was struck melts.
+    auto state = s.state();
+    state.accounts.at("treasury").cash += state.accounts.at("player-hoard").cash;
+    state.accounts.at("player-hoard").cash = 0;
+    for (auto& [id, life] : state.residents)
+        life.hunger = 0;
+    expect(s.restore(state), "the hoard spent restores");
+    const auto sunk = s.state().sunk;
+    for (std::int64_t week = 20; week < 40; ++week)
+        s.tendMint(7 * week);
+    expect(s.state().sunk > sunk && s.state().sunk - sunk <= struck, "the hoard spent again, it melts what it struck, no more: " +
+                                                                         std::to_string(s.state().sunk - sunk) + "p");
+    expect(s.account("scribe")->cash == 20, "and not from a poor wolf's purse");
+    expect(s.conserved(), "money counted as sunk");
+    auto off = realm(false);
+    const auto offBefore = off.state().minted;
+    for (std::int64_t week = 0; week < 20; ++week)
+        off.tendMint(7 * week);
+    expect(off.state().minted == offBefore, "turned off, the mint does nothing");
+}
+
 void millGrindsForTheStall()
 {
     auto s = farmTown();
@@ -552,6 +766,11 @@ int main()
         smithForges();
         olderSavesGetTheirGrantOnce();
         farmerBringsIn();
+        seasonalFields();
+        woodLaidInForWinter();
+        piecesWornAndMended();
+        theCatchFeedsTheLarder();
+        theMint();
         aTownsTradeBringsInMore();
         millGrindsForTheStall();
         cartedInFromAnotherTown();
@@ -567,3 +786,4 @@ int main()
     std::cout << "Crafting tests passed: " << checks << " checks.\n";
     return 0;
 }
+

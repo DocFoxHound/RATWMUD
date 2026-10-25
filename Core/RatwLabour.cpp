@@ -4,6 +4,8 @@
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
+#include "RatwCalendar.h"
+
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -105,6 +107,32 @@ std::int64_t Society::lookingFor(const std::string& resident, const Payer& payer
     return std::max<std::int64_t>(1, std::int64_t(std::ceil(employerWage(key) * (1 + PoachGap) - 1e-9)));
 }
 
+bool Society::calledToTheLand(const std::string& resident, const Position& job, int age, std::int64_t day) const
+{
+    // The harvest call (doc 63's model; doc 64, Phase 3b): at sowing and the harvest, hands from trades that aren't
+    // staples (finery, cloth, building, the blades) go to the fields, a tenth of them a day. Not the land's own, nor
+    // those who make what the realm eats or burns every day, nor the clergy.
+    if (!fieldsOn() || !job.paid || job.role != "civilian" || age < 16 || fieldWindow(double(day)) == 0 ||
+        lot(resident + "|land|" + std::to_string(day)) >= LandCall)
+        return false;
+    const auto key = employerKey(payerOf(resident, job, age), job);
+    if (key.empty() || (key.size() > 7 && key.compare(key.size() - 7, 7, "|clergy") == 0))
+        return false;
+    if (key.rfind("till:", 0) != 0)
+        return true;                                 // (The town's own posts, its works.)
+    const auto* p = position(key.substr(5));
+    if (!p || items::producerFor(p->title))
+        return false;
+    const auto* business = items::businessFor(p->title);
+    if (!business)
+        return false;
+    for (const auto* k : items::craftsFor(business->id))
+        for (const auto& [good, n] : k->out)
+            if (const auto* g = items::good(good); g && g->staple)
+                return false;
+    return true;
+}
+
 std::vector<std::string> Society::helpPosts(const std::string& till) const
 {
     std::vector<std::string> posts;
@@ -140,8 +168,22 @@ int Society::handsWanted(const std::string& till) const
         return most * hours;
     };
     double hours = 0;
-    if (const auto* producer = items::producerFor(p->title))
+    const auto* producer = items::producerFor(p->title);
+    if (const auto f = state_.memory.fields.find(till); producer && fieldsOn() && fieldWork(producer->id) && f != state_.memory.fields.end())
+    {
+        // A field: the work left in its season over the days left of it (between, a hand keeps it).
+        const auto d = std::int64_t(state_.budgetDay) % calendar::DaysPerYear;
+        const double acre = hoursFor(*producer) * FieldYields;
+        const int window = d < SowEnd ? 1 : d >= HarvestStart && d < HarvestEnd ? 2 : 0;
+        if (window == 1)
+            hours = (f->second.acres - f->second.sown) * acre * SowShare / double(SowEnd - d);
+        else if (window == 2)
+            hours = f->second.toHarvest * acre * (1 - SowShare) / double(HarvestEnd - d);
+    }
+    else if (producer)
         hours = hoursFor_(producer->out, hoursFor(*producer));
+    if (const auto mending = mendRate_.find(till); mending != mendRate_.end())
+        hours += mending->second;                    // (And its mending: Phase 9.)
     else if (const auto* business = items::businessFor(p->title))
         for (const auto* k : items::craftsFor(business->id))
             hours += hoursFor_(k->out, hoursFor(*k));
@@ -184,9 +226,12 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
                 ++state_.memory.revision;
             }
         const auto* producer = items::producerFor(p->title);
-        const bool harvest = producer && farmWork(producer->id) &&
-                             (producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end()) &&
-                             (season_ == 0 || season_ == 2);   // (Sowing in spring, the harvest at summer's end: doc 63.)
+        // (Sowing in spring, the harvest at summer's end: doc 63. A field's own windows, with seasonal fields.)
+        const bool field = producer && fieldsOn() && fieldWork(producer->id) && state_.memory.fields.count(till) &&
+                           fieldWindow(double(day)) != 0;
+        const bool harvest = field || (producer && farmWork(producer->id) && !(fieldsOn() && fieldWork(producer->id)) &&
+                                       (producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end()) &&
+                                       (season_ == 0 || season_ == 2));
         const auto pay = std::int64_t(std::ceil(employerWage(till) * (harvest ? HarvestPay : 1.) - 1e-9));
         // (Already hiring: its hire runs on, and what it still wants comes with the next.)
         const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
@@ -201,11 +246,13 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
             j.producer = keeper;
             j.community = communityOfResident(keeper);
             j.kind = p->role == "merchant" ? "a hand at the shop" : "a hand";
-            j.what = std::string(harvest ? "a hand at the harvest at " : "a hand at ") + p->title.substr(0, 40) + ", hired for the week";
+            j.what = std::string(field && fieldWindow(double(day)) == 1 ? "a hand at the sowing at " : harvest ? "a hand at the harvest at " : "a hand at ") +
+                     p->title.substr(0, 40) + ", hired for the week";
             j.from = j.to = p->role == "merchant" ? p->serve : p->work;
             j.slots = slots;
             j.pay = pay * slots;
             j.forChildren = false;
+            j.field = field;
             j.until = day + HireDays - 1;
             oddJobs_.push_back(std::move(j));
             ++oddVersion_;

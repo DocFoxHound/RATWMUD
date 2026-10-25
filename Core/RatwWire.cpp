@@ -979,6 +979,45 @@ Value economyMemory(const EconomyMemory& m)
     }
     o.add("putIn", putIn);
     o.add("credit", credit);
+    auto fields = Value::object();
+    for (const auto& [till, f] : m.fields)
+    {
+        auto v = Value::array();
+        for (const double x : {f.acres, f.sown, f.toHarvest, f.part, double(f.year), f.dry ? 1. : 0.})
+            v.push(x);
+        fields.add(till, v);
+    }
+    o.add("fields", fields);
+    auto belongings = Value::object();
+    for (const auto& [who, pieces] : m.belongings)
+    {
+        auto list = Value::array();
+        for (const auto& b : pieces)
+        {
+            auto v = Value::array();
+            v.push(b.item);
+            v.push(b.cond);
+            v.push(double((b.heirloom ? 1 : 0) + (b.held ? 2 : 0)));
+            list.push(v);
+        }
+        belongings.add(who, list);
+    }
+    o.add("belongings", belongings);
+    auto mint = Value::object(), spending = Value::object();
+    mint.add("on", m.mint.on);
+    mint.add("target", m.mint.target);
+    mint.add("struck", m.mint.struck);
+    for (const auto* list : {&m.mint.wages, &m.mint.recent})
+    {
+        auto v = Value::array();
+        for (const double x : *list)
+            v.push(x);
+        mint.add(list == &m.mint.wages ? "wages" : "recent", v);
+    }
+    for (const auto& [who, avg] : m.mint.spending)
+        spending.add(who, avg);
+    mint.add("spending", spending);
+    o.add("mint", mint);
     auto employers = Value::object();
     for (const auto& [key, e] : m.employers)
     {
@@ -1064,6 +1103,42 @@ EconomyMemory readEconomyMemory(const Value& o)
         if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
             v.items()[0].asNumber() < 1e12 && key.find('|') != std::string::npos)
             m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
+    if (const auto& mint = o.object("mint"); mint.isObject())
+    {
+        const auto number = [&](const char* key, double most) {
+            const auto& v = mint[key];
+            return v.isNumber() && std::isfinite(v.asNumber()) ? std::clamp(v.asNumber(), 0., most) : 0.;
+        };
+        m.mint.on = !mint["on"].isBool() || mint["on"].asBool();
+        m.mint.target = number("target", 1e12);
+        m.mint.struck = number("struck", 1e12);
+        for (const auto& [key, into, most] : {std::tuple{"wages", &m.mint.wages, std::size_t(8)}, std::tuple{"recent", &m.mint.recent, std::size_t(4)}})
+            if (mint[key].isArray())
+                for (const auto& v : mint[key].items())
+                    if (v.isNumber() && std::isfinite(v.asNumber()) && into->size() < most)
+                        into->push_back(std::clamp(v.asNumber(), 0., 1e12));
+        for (const auto& [who, v] : mint.object("spending").fields())
+            if (v.isNumber() && std::isfinite(v.asNumber()) && who.size() < 120)
+                m.mint.spending[who] = std::clamp(v.asNumber(), 0., 1e12);
+    }
+    for (const auto& [who, list] : o.object("belongings").fields())
+        if (list.isArray() && list.items().size() < 200 && who.size() < 120)
+            for (const auto& v : list.items())
+                if (v.isArray() && v.items().size() == 3 && v.items()[0].isString() && v.items()[1].isNumber() && v.items()[2].isNumber() &&
+                    v.items()[0].asString().size() < 80 && std::isfinite(v.items()[1].asNumber()))
+                {
+                    const int flags = int(v.items()[2].asNumber());
+                    m.belongings[who].push_back({v.items()[0].asString(), std::clamp(v.items()[1].asNumber(), 0., 1.), (flags & 1) != 0, (flags & 2) != 0});
+                }
+    for (const auto& [till, v] : o.object("fields").fields())
+        if (v.isArray() && v.items().size() == 6 && std::all_of(v.items().begin(), v.items().end(), [](const Value& x) {
+                return x.isNumber() && std::isfinite(x.asNumber()) && std::abs(x.asNumber()) < 1e9;
+            }))
+        {
+            const auto& x = v.items();
+            m.fields[till] = {std::max(0., x[0].asNumber()), std::max(0., x[1].asNumber()), std::max(0., x[2].asNumber()),
+                              std::clamp(x[3].asNumber(), 0., 1.), std::int64_t(x[4].asNumber()), x[5].asNumber() != 0};
+        }
     // (Saved before doc 64's Phase 6: every employer starts at the going rate for its skill.)
     for (const auto& [key, v] : o.object("employers").fields())
         if (v.isArray() && v.items().size() == 4 && std::all_of(v.items().begin(), v.items().end(), [](const Value& x) { return x.isNumber(); }) &&

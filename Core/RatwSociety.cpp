@@ -339,6 +339,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
 {
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     noteOutgoing(from, kind, coins);                   // A collector's usual spending, for its reserve (RatwSurplus.cpp).
+    noteSpent(from, coins);                            // A player's or a Hold's, for the mint (RatwMint.cpp).
     noteIncoming(to, kind, coins);
     noteForOrchestra(kind, from, to, coins, item, quantity);   // What the economy orchestrator counts (RatwOrchestrate.cpp).
     // Money that wasn't earned or spent stays out of the month's profit (doc 42): an estate, a Dungeon Master's gift.
@@ -651,6 +652,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendBank(day);                             // Savers short of food draw from the bank.
             townBuyers(day, bodies);                   // And the town's own buyers'.
             tradeUpkeep(day, bodies);                  // Tools worn out, horses fed, beggars given a penny (doc 42).
+            tendBelongings(day, bodies);               // What NPCs own, worn, mended or replaced (RatwBelongings.cpp).
+            tendMint(day);                             // The mint: struck or melted, weekly (RatwMint.cpp).
             producersSell(day);                        // What the land gave, to the town's food shops.
             worldMoney(bodies);                        // The world's money made up, once (RatwFounding.cpp).
         }

@@ -1,5 +1,6 @@
 #include "RatwSociety.h"
 
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 
 #include <algorithm>
@@ -140,8 +141,62 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     // (better tools, a bigger barn: RatwOddJobs.cpp) make an hour go further.
     const auto* job = jobOf(id);
     creditWork(id, hours / (1 - ImprovementPace * (job ? improvement(job->id) : 0)));
+    wearTools(till, producer->id, hours);
     auto& banked = workBanked_[id];
     bool any = false;
+    // Seasonal fields (doc 64, Phase 3b): sown in spring, brought in at the harvest, sold from the store all year. (Until
+    // it has sales to plan by, as before.)
+    if (fieldsOn() && fieldWork(producer->id) && (state_.memory.fields.count(till) || fieldNeed(till, *producer) > 0))
+    {
+        if (!state_.memory.fields.count(till))
+            planField(id, till, *producer, absoluteDay, true);
+        auto& f = state_.memory.fields[till];
+        const auto window = fieldWindow(absoluteDay);
+        const auto today = std::int64_t(std::floor(absoluteDay));
+        if (today % calendar::DaysPerYear >= HarvestEnd && f.year < today / calendar::DaysPerYear)
+            planField(id, till, *producer, absoluteDay, false);   // (The harvest over: next year's acres.)
+        if (const auto* a = account(till); a && !producer->out.empty() && stockAll(*a, producer->out.front().first) <= 0)
+            f.dry = true;
+        const double acre = hoursFor(*producer) * FieldYields;
+        if (window == 1 && f.sown < f.acres)
+        {
+            const double done = std::min(f.acres - f.sown, banked / (acre * SowShare));
+            f.sown += done;
+            f.toHarvest += done;
+            banked -= done * acre * SowShare;
+        }
+        else if (window == 2 && f.toHarvest > 0)
+        {
+            const double done = std::min(f.toHarvest, banked / (acre * (1 - SowShare)));
+            f.toHarvest -= done;
+            banked -= done * acre * (1 - SowShare);
+            f.part += done * FieldYields;
+            const int yields = int(std::floor(f.part));
+            f.part -= yields;
+            for (const auto& [item, count] : producer->out)
+            {
+                int brought = yields * count;
+                if (items::townGoodOf(communityOfResident(id), item))
+                    brought = int(std::lround(brought * items::tradeYield()));
+                for (; brought > 0; brought -= 99)           // (A ledger entry holds 99 at most.)
+                {
+                    addCost(till, item, stock(*account(till), item), std::min(brought, 99), normalCost(id, item));
+                    any = create(till, item, std::min(brought, 99), "brought in") || any;
+                }
+            }
+        }
+        else if (window == 0)
+            // Between: what the work brings in out of season (an orchard's prunings for firewood), not the fields' goods.
+            for (; banked >= hoursFor(*producer); banked -= hoursFor(*producer))
+                for (const auto& [item, count] : producer->offSeason)
+                    if (std::none_of(producer->out.begin(), producer->out.end(), [&](const auto& o) { return o.first == item; }))
+                        if (const int held = stock(*account(till), item); held < shelfTarget(till, item, ProducerKept))
+                        {
+                            addCost(till, item, held, count, normalCost(id, item));
+                            any = create(till, item, count, "brought in") || any;
+                        }
+        return any;
+    }
     // A town's trade (doc 61): its producers bring in more of its goods, the fraction by a lot fixed by the producer and
     // the spell (so a run repeats), and keep more of them in store to send away.
     const auto town = communityOfResident(id);
@@ -169,6 +224,14 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
         }
     }
     return any;
+}
+
+void Society::wearTools(const std::string& till, const std::string& producer, double hours)
+{
+    // Its tools worn by the work (crafts.json `tools`: a tool lasts so many days of spells; bought when worn: tradeUpkeep).
+    for (const auto& t : items::toolNeeds())
+        if (t.producer == producer && t.everyDays > 0 && hours > 0)
+            toolsWorn_[till][t.item] += hours / (PaidSpells * t.everyDays);
 }
 
 double Society::hoursFor(const items::Craft& k) const
@@ -229,6 +292,12 @@ int Society::shelfTarget(const std::string& till, const std::string& item, int l
             rate = r->second;
     // (Kept whole: a shelf for a day's keeping holds a whole one more.)
     const double slack = good && good->staple ? StapleSlack : 1.;
+    // Wood laid in for winter (doc 64, Phase 3b): from a month before winter, what households burn faster then (crafts.json
+    // `winterDays`, firewood and peat) is kept at its winter rate, so the store is there when the cold comes.
+    if (const auto d = state_.budgetDay % calendar::DaysPerYear; d >= WinterStart - MonthDays && d < WinterStart)
+        for (const auto& need : items::householdNeeds())
+            if (need.winterDays > 0 && need.winterDays < need.everyDays && std::find(need.any.begin(), need.any.end(), base) != need.any.end())
+                rate *= need.everyDays / need.winterDays;
     int target = std::max(least, int(std::ceil(rate * keepDays(base) * slack)));
     // A week of the roads' orders on it and half a supplier's store, kept for the caravan, as a smelter keeps bars to
     // send (doc 61).
