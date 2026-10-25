@@ -205,7 +205,7 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
         else if (const auto posts = camps_.freePosts(site->id); posts.empty())
             result = {false, "There's no work for them at the Hold. Build a workshop, a stable, a well...", target};
         else if (const auto* purse = world_.society().account(treasuryOf(chapter->id));
-                 !purse || purse->cash < std::int64_t(faction::Factions::WeekDays) * camp::HoldWage)
+                 !purse || purse->cash < std::int64_t(faction::Factions::WeekDays) * keepWage())
             result = {false, "The treasury can't promise them a week's wages.", target};
         else
         {
@@ -216,7 +216,7 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
             else
             {
                 offers.erase(found);
-                camps_.staff()[target] = camp::Staff{target, site->id, role, camp::HoldWage, 0, true, day};
+                camps_.staff()[target] = camp::Staff{target, site->id, role, keepWage(), 0, true, day};
                 resentLoss(target, chapter->id);
                 tellChapter(chapter->id, names::capitalised(strangerLabel(target)) + " sets out to live and work at " + site->name + ".", id);
                 result = {true, "They set out for the Hold, to work there as " + role + ".", target};

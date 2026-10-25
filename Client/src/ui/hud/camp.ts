@@ -37,6 +37,19 @@ export class CampPanel {
             else if (bool(st, 'near') && (!built || num(st, 'condition') < 100))
                 button(built ? 'MEND' : 'WORK ON IT', 'small', row, () => send({verb: 'build', target: str(st, 'id')}));
             if (!built && num(st, 'progress') === 0) button('×', 'chip-x', row, () => send({verb: 'unplan', target: str(st, 'id')})).title = 'Take back the plan';
+            // A workshop's trade: what its hands make, from the Chapter's stores into them (Docs/Design/64, Phase 11).
+            if (built && str(st, 'kind') === 'workshop') {
+                const pick = el('select', 'small', row) as HTMLSelectElement;
+                pick.title = 'What its hands make, from the Chapter\'s stores';
+                const none = el('option', '', pick, 'no trade') as HTMLOptionElement;
+                none.value = '';
+                for (const t of arr(camp, 'trades')) {
+                    const o = el('option', '', pick, String(t).replace(/_/g, ' ')) as HTMLOptionElement;
+                    o.value = String(t);
+                }
+                pick.value = str(st, 'trade');
+                pick.onchange = () => { if (pick.value) send({verb: 'trade', target: str(st, 'id'), trade: pick.value}); };
+            }
         }
         if (bool(camp, 'cookfire'))
             button('COOK A MEAL (2 HERBS)', 'small', this.body, () => send({verb: 'cook'})).title = 'Two bundles of herbs become a meal';

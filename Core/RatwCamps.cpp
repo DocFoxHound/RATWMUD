@@ -23,6 +23,7 @@ const std::vector<Kind>& catalogue()
         {"gate", "Gate", 'H', 15, 4, 4, true},
         {"hall", "Timber hall", 'M', 60, 16, 4, false},
         {"workshop", "Workshop", 'w', 40, 10, 4, false},
+        {"field", "Field", ',', 20, 6, 4, false},
         {"stable", "Stable", 's', 30, 8, 4, false},
         {"well", "Well", 'o', 25, 8, 4, false},
         {"keep", "Stone keep", 'K', 400, 80, 5, true},
@@ -285,6 +286,7 @@ int bedsIn(const std::string& kind)
 std::vector<std::string> postsIn(const std::string& kind)
 {
     if (kind == "workshop") return {"smith's hand", "smith's hand"};
+    if (kind == "field") return {"farmhand", "farmhand"};
     if (kind == "stable") return {"groom"};
     if (kind == "well") return {"water-carrier"};
     if (kind == "cookfire") return {"cook"};
@@ -341,7 +343,7 @@ Value Camps::save() const
     {
         auto j = Value::object();
         j.add("id", st.id); j.add("site", st.site); j.add("kind", st.kind); j.add("x", st.x); j.add("y", st.y);
-        j.add("work", st.work); j.add("condition", st.condition); j.add("built", st.built);
+        j.add("work", st.work); j.add("condition", st.condition); j.add("built", st.built); j.add("trade", st.trade);
         structures.push(j);
     }
     root.add("structures", structures);
@@ -386,6 +388,7 @@ void Camps::load(const Value& saved)
     {
         Structure st{j.string("id"), j.string("site"), j.string("kind"), int(j.number("x")), int(j.number("y")), j.number("work"),
                      std::clamp(j.number("condition", 100), 0.0, 100.0), j.boolean("built")};
+        st.trade = j.string("trade").substr(0, 60);
         if (!st.id.empty() && sites_.count(st.site) && kind(st.kind))
             structures_[st.id] = st;
     }

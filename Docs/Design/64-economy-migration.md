@@ -1350,3 +1350,26 @@ The sheep farms already give sheepskins, which the tanneries make into leather.
 - **Tests:** `crafting_tests` `theMint` (a player sitting on a third of the money while the realm is hungry: nothing
   for seven weeks, then it strikes, a hundredth a week at most; the hoard spent and the realm fed, it melts what it
   struck and no more, and not from a poor wolf's purse; turned off, nothing).
+
+### Phase 11, second part: Holds as keeps (the user, 2026-10-25: "the Chapter picks trades")
+
+`RatwGameCamps.cpp` (`Game::keepWork`), at every pace:
+
+- **Up to three workshops and a field** at a place (`camp::WorkshopsMost`, `FieldsMost`). The field is a new building
+  (20p, 6 work-hours, a Hall's), with two farmhands' posts; it doesn't block the way.
+- **A workshop's trade is the Chapter's choice:** an Officer picks one of the realm's businesses that makes things
+  (`trade`; the camp panel's picker). Saved with the structure.
+- **The day's work, at dawn:** each of the site's hands holds the next post of its role, and puts a day's 8 hours into
+  its building (up to two days' in hand).
+  - A workshop makes its trade's goods from the Chapter's stores into them: the first of its crafts it has the
+    materials for, again while the hours last, at the realm's hours for the craft (`Society::workHours`: the old pace,
+    or the pace toward the calibrated).
+  - The field brings in the farm's yields in season, and the barn's threshing out of it. It is not on the seasonal
+    fields' year: a Hold's field is small and its Chapter's own.
+- **Hands are paid the realm's going rate** (`keepWage`; at least the old 5p), so a Hold's hiring draws on the realm's
+  labour as a business's does. Those already working keep their wage.
+- **The Chapter's stores take any of the realm's goods** (they took herbs, meals and swords), and the place view lists
+  all of them. Players lay materials in and take the goods out to sell (their stalls, at their own price).
+- **Houses filled from the towns** were there already (doc 16's migration, the user's "draw" rule).
+- **Tests:** `camp_tests` (a workshop at the Hall takes up the smithy's work, not a trade that makes nothing; with
+  Bracken its hand, a day's work makes swords from the stores' bronze; a field planned; the trade survives a restart).

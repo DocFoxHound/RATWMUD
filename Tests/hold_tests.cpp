@@ -279,7 +279,11 @@ void holdsThroughTheGame(const std::string& save)
                    ada.said().find("has made a home at Crown Camp") != std::string::npos,
                "they arrive and take up their post:\n" + ada.said());
         tick(1);
-        expect(w.society().account("chapter:" + lodge)->cash == treasuryBefore - camp::HoldWage, "and are paid from the treasury");
+        // (At the realm's going rate, doc 64, Phase 11: a Hold's hands cost what a business's do.)
+        const auto wage = g.camps().staff().at(newcomer).wage;
+        expect(wage == std::max<std::int64_t>(camp::HoldWage, std::int64_t(std::ceil(w.society().labourDay("") - 1e-9))) &&
+                   w.society().account("chapter:" + lodge)->cash == treasuryBefore - wage,
+               "and are paid the going rate from the treasury (" + std::to_string(wage) + "p)");
         g.command(&ada, cmd({{"type", "chapter"}, {"verb", "welcome"}, {"target", steward}}));
         expect(ada.said().find("haven't asked to come") != std::string::npos, "only those who asked");
         g.save();

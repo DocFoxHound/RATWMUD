@@ -1442,6 +1442,12 @@ class Game
     std::map<std::string, std::string> building_;                    // Player → the structure they work on.
     std::set<std::string> townCells_;
     double campAccumulator_ = 0, lastWearDay_ = -1;
+    // A keep's work (doc 64, Phase 11; RatwGameCamps.cpp): each workshop's and field's hours in hand, and the last day
+    // its hands' work was done.
+    std::map<std::string, double> keepHours_;
+    double lastKeepDay_ = -1;
+    void keepWork(double day);
+    std::int64_t keepWage() const;
     std::string whyNotGround(const std::string& cellId, int x, int y, bool town = false) const;   // (town: a town's project, doc 57)
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);

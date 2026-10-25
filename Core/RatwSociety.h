@@ -1447,6 +1447,10 @@ class Society
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
                             std::int64_t ownDayPay = 0, bool* claims = nullptr);
   public:
+    // A craft's or a producer's hours of work now (the old pace, or with work by the hours the realm's pace toward the
+    // calibrated: hoursFor), for work done outside the society's own businesses (a Hold's workshops, doc 64, Phase 11).
+    double workHours(const items::Craft& k) const { return hoursFor(k); }
+    double workHours(const items::Producer& p) const { return hoursFor(p); }
     // A producer's tools worn by `hours` of its work (doc 64, Phase 3b; Society::produce), bought new when worn through.
     void wearTools(const std::string& till, const std::string& producer, double hours);
     // Called to the fields this morning at sowing or the harvest (Phase 3b), LandCall of the hands of trades that aren't

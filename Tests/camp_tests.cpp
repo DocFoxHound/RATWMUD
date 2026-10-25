@@ -255,14 +255,59 @@ void campingThroughTheGame(const std::string& save)
         w.advanceCalendar(1);
         tick(1);
         expect(w.society().account("chapter:" + lodge)->cash == treasury - 6, "and is paid at dawn from the treasury");
+        // A keep's work (doc 64, Phase 11): a workshop at the Hall, taken up as a smithy, Bracken its hand; it makes
+        // swords from the bronze in the Chapter's stores, into them.
+        w.society().shift("treasury", "chapter:" + lodge, "", 0, 200, "test: the Chapter's savings");
+        a->position = {37.5, 22.5};
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "workshop"}}));
+        tick(.2);
+        const auto* bench = g.camps().structureAt("exterior", 37, 22);
+        expect(bench && bench->kind == "workshop", "a workshop planned:\n" + ada.said());
+        const auto workshop = bench->id;
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "build"}, {"target", workshop}}));
+        tick(10 * camp::SecondsPerWorkHour + 1);
+        expect(g.camps().structure(workshop)->built, "and built");
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "trade"}, {"target", workshop}, {"trade", "nothing"}}));
+        tick(.2);
+        expect(g.camps().structure(workshop)->trade.empty(), "not a trade that doesn't make things");
+        g.command(&ada, cmd({{"type", "chapter"}, {"verb", "trade"}, {"target", workshop}, {"trade", "smithy"}}));
+        tick(.2);
+        expect(g.camps().structure(workshop)->trade == "smithy", "the workshop takes up the smithy's work:\n" + ada.said());
+        g.camps().staff()["npc_scout"].role = "smith's hand";
+        const auto store = "chapter:" + lodge;
+        for (const auto& [item, n] : {std::pair{"bronze_bar", 3}, std::pair{"charcoal", 3}})
+            w.society().create(store, item, n, "test: laid in");
+        const int swords = Society::stock(*w.society().account(store), "sword");
+        w.advanceCalendar(1);
+        tick(1);
+        expect(Society::stock(*w.society().account(store), "sword") > swords && Society::stock(*w.society().account(store), "bronze_bar") < 3,
+               "a day's work at the bench: swords from the stores' bronze (" +
+                   std::to_string(Society::stock(*w.society().account(store), "sword") - swords) + ")");
+        // (The first level, open tile along the row.)
+        const auto fields = [&] {
+            int n = 0;
+            for (const auto* st : g.camps().structuresOf(site))
+                n += st->kind == "field";
+            return n;
+        };
+        for (const double x : {33.5, 35.5, 37.5, 39.5, 41.5})
+            if (fields() == 0)
+            {
+                a->position = {x, 24.5};
+                g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "field"}}));
+                tick(.2);
+            }
+        expect(fields() == 1, "and a field planned:\n" + ada.said());
+        a->position = {37.5, 20.5};
         g.save();
     }
     {
         game::Game g(o);
         std::string problem;
         expect(g.start(problem), "restarts: " + problem);
-        expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 4 && g.camps().staff().count("npc_scout"),
+        expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 6 && g.camps().staff().count("npc_scout"),
                "the camp, its structures and its staff survive a restart");
+        expect(g.camps().structureAt("exterior", 37, 22) && g.camps().structureAt("exterior", 37, 22)->trade == "smithy", "and the workshop's trade");
     }
     std::remove(save.c_str());
 }

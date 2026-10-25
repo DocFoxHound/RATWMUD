@@ -3,6 +3,10 @@
 // wear and mending, residents hired to work there, the shared stores, and the levels' ground.
 #include "RatwGame.h"
 
+#include "RatwCalendar.h"
+
+#include "RatwItems.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -19,7 +23,7 @@ bool blocks(const std::string& kind)
 {
     // (A town's market cover and waystation are roofs to stand under: doc 57.)
     return kind != "firepit" && kind != "cookfire" && kind != "hitching" && kind != "gate" && kind != "gatehouse" &&
-           kind != "market_cover" && kind != "waystation";
+           kind != "market_cover" && kind != "waystation" && kind != "field";
 }
 bool shelters(const std::string& kind)
 {
@@ -139,6 +143,11 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
                       {}};
         else if (const auto why = whyNotGround(me->cellId, x, y); !why.empty())
             result = {false, why, {}};
+        else if (const auto have = camps_.structuresOf(here->id);
+                 (k->id == "workshop" || k->id == "field") &&
+                 std::count_if(have.begin(), have.end(), [&](const camp::Structure* st) { return st->kind == k->id; }) >=
+                     (k->id == "workshop" ? camp::WorkshopsMost : camp::FieldsMost))
+            result = {false, k->id == "workshop" ? "A place holds three workshops at most." : "A place has one field.", {}};
         else if (!world_.society().shift(treasuryOf(chapter->id), "treasury", "", 0, k->cost, "chapter building materials"))
             result = {false, std::string("The materials for a ") + k->name + " cost " + std::to_string(k->cost) + " pennies, from the treasury.", {}};
         else
@@ -149,6 +158,22 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
             else
                 record(Economy);
             result = {o.ok, o.ok ? std::string("A ") + k->name + " is planned here; the materials are bought. Set to work on it." : o.message, {}};
+        }
+    }
+    else if (verb == "trade")
+    {
+        // What a workshop works at (doc 64, Phase 11: Holds as keeps): one of the realm's trades that makes things.
+        auto* st = camps_.structure(target);
+        const auto* site = st ? camps_.site(st->site) : nullptr;
+        const auto* business = items::business(j.string("trade"));
+        if (!st || !site || site->chapter != chapter->id || !officer || st->kind != "workshop")
+            result = {false, "An Officer chooses what the Chapter's workshops make.", target};
+        else if (!business || items::craftsFor(business->id).empty())
+            result = {false, "That isn't a trade that makes things.", target};
+        else
+        {
+            st->trade = business->id;
+            result = {true, "The workshop takes up the " + business->id + "'s work. Its hands make from the Chapter's stores, into them.", target};
         }
     }
     else if (verb == "unplan")
@@ -264,6 +289,89 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
     return true;
 }
 
+std::int64_t Game::keepWage() const
+{
+    // A keep's hands are paid the realm's going rate (doc 64, Phase 11), so a Hold draws on the realm's labour as a
+    // business does; HoldWage at least.
+    return std::max<std::int64_t>(camp::HoldWage, std::int64_t(std::ceil(world_.society().labourDay("") - 1e-9)));
+}
+
+void Game::keepWork(double day)
+{
+    // A keep's workshops and field (doc 63's keeps; doc 64, Phase 11): each working hand puts a day's hours into its
+    // post's building; a workshop makes its trade's goods from the Chapter's stores into them, the first of its crafts it
+    // has the materials for; the field brings in the farm's yields (out of season, the barn's threshing).
+    auto& society = world_.society();
+    const auto* farm = items::producerFor("works the fields");
+    const int season = int(calendar::calendarAt(day).season);
+    for (const auto& [siteId, s] : camps_.sites())
+    {
+        if (s.state != "standing" || camp::townSite(s))
+            continue;
+        const auto store = treasuryOf(s.chapter);
+        if (!society.account(store))
+            continue;
+        // Its hands, post by post: each staff member of the site holds the next post of its role (by name).
+        std::vector<std::pair<std::string, const camp::Staff*>> hands;
+        for (const auto& [npc, st] : camps_.staff())
+            if (st.site == siteId && !st.arriving)
+                hands.push_back({npc, &st});
+        std::sort(hands.begin(), hands.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+        std::vector<bool> taken(hands.size());
+        for (const auto* st : camps_.structuresOf(siteId))
+        {
+            if (!st->built || st->condition <= 0 || (st->kind != "workshop" && st->kind != "field"))
+                continue;
+            int working = 0;
+            for (const auto& post : camp::postsIn(st->kind))
+                for (std::size_t i = 0; i < hands.size(); ++i)
+                    if (!taken[i] && hands[i].second->role == post)
+                    {
+                        taken[i] = true;
+                        ++working;
+                        break;
+                    }
+            auto& hours = keepHours_[st->id];
+            hours = std::min(hours + working * double(Society::PaidSpells), 2. * Society::PaidSpells * std::max(1, working));
+            if (st->kind == "field" && farm)
+            {
+                const bool inSeason = farm->seasons.empty() || std::find(farm->seasons.begin(), farm->seasons.end(), season) != farm->seasons.end();
+                for (const double each = std::max(.01, society.workHours(*farm)); hours >= each; hours -= each)
+                    for (const auto& [item, n] : inSeason ? farm->out : farm->offSeason)
+                        society.create(store, item, n, "brought in at the Hold");
+                continue;
+            }
+            const auto* business = st->trade.empty() ? nullptr : items::business(st->trade);
+            if (!business)
+                continue;
+            for (bool made = true; made;)
+            {
+                made = false;
+                for (const auto* k : items::craftsFor(business->id))
+                {
+                    const double each = std::max(.01, society.workHours(*k));
+                    const auto* held = society.account(store);
+                    if (k->out.empty() || hours < each || !held ||
+                        !std::all_of(k->in.begin(), k->in.end(), [&](const auto& in) { return Society::stockAll(*held, in.first) >= in.second; }))
+                        continue;
+                    for (const auto& [in, q] : k->in)
+                    {
+                        int left = q;
+                        for (const auto& sort : Society::kindsHeld(*society.account(store), in))
+                            if (left > 0)
+                                left -= society.consume(store, sort, std::min(left, Society::stock(*society.account(store), sort)), "used at the Hold");
+                    }
+                    for (const auto& [item, n] : k->out)
+                        society.create(store, item, n, "made at the Hold");
+                    hours -= each;
+                    made = true;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 bool Game::campHere(const std::string& who) const
 {
     // The Chapter's stores reach a camp with a storage pile built.
@@ -366,6 +474,12 @@ void Game::campTick(double dt)
         if (auto* npc = world_.entity(npcId))
             npc->leaderId.clear();
     }
+    if (std::floor(day) > lastKeepDay_)
+    {
+        if (lastKeepDay_ >= 0)
+            keepWork(day);                          // (The day's work at the workshops and fields, at dawn.)
+        lastKeepDay_ = std::floor(day);
+    }
     // The levels' ground: a camp standing (Hall), a fortified camp (Hold).
     std::vector<std::string> ids;
     for (const auto& [id, c] : chapters_.all())
@@ -434,6 +548,8 @@ Value Game::campView(const std::string& viewer) const
         auto o = Value::object();
         o.add("id", st->id);
         o.add("name", k ? k->name : st->kind);
+        o.add("kind", st->kind);
+        o.add("trade", st->trade);                   // (A workshop's, its Chapter's choice: doc 64, Phase 11.)
         o.add("built", st->built);
         o.add("progress", k ? std::round(st->work / k->hours * 100) : 0.0);
         o.add("condition", std::round(st->condition));
@@ -457,6 +573,12 @@ Value Game::campView(const std::string& viewer) const
             kinds.push(o);
         }
     v.add("kinds", kinds);
+    // The realm's trades a workshop may take up (those that make things).
+    auto trades = Value::array();
+    for (const auto& b : items::businesses())
+        if (!items::craftsFor(b.id).empty())
+            trades.push(b.id);
+    v.add("trades", trades);
     bool fire = false;
     for (const auto* st : camps_.structuresOf(site->id))
         fire |= st->kind == "cookfire" && st->built && st->condition > 0 &&

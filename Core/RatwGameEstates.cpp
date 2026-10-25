@@ -4,6 +4,8 @@
 // board, the Chapter's stores, and the rented hall the Company level needs.
 #include "RatwGame.h"
 
+#include "RatwItems.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -14,7 +16,6 @@ using json::Value;
 namespace
 {
 std::string treasuryOf(const std::string& chapterId) { return "chapter:" + chapterId; }
-const char* const Goods[] = {"herbs", "meal", "sword"};
 } // namespace
 
 void Game::refreshEstates()
@@ -256,7 +257,8 @@ bool Game::estateCommand(Connection* c, const Value& j, Result& result)
         // The Chapter's stores: kept in its treasury's purse, reached from any place it holds.
         const auto item = j.string("item");
         const int quantity = int(j.number("quantity", 1));
-        const bool known = std::find(std::begin(Goods), std::end(Goods), item) != std::end(Goods);
+        // (Any of the realm's goods: a keep's workshops make from them, doc 64, Phase 11.)
+        const bool known = items::good(item) != nullptr;
         if (!ours && !campHere(id))
             result = {false, "The Chapter's stores are kept in its own places.", {}};
         else if (!known || quantity < 1 || quantity > 99)
@@ -320,8 +322,8 @@ Value Game::placeView(const std::string& viewer) const
             v.add("notices", notices);
             auto stores = Value::object();
             if (const auto* purse = world_.society().account(treasuryOf(l->chapter)))
-                for (const char* item : Goods)
-                    if (const int n = Society::stock(*purse, item); n > 0)
+                for (const auto& [item, n] : purse->stock)  // (All of it: a keep's workshops make goods of every kind.)
+                    if (n > 0)
                         stores.add(item, n);
             v.add("stores", stores);
         }

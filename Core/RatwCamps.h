@@ -38,6 +38,9 @@ struct Structure
     double work = 0;                              // Work-hours done (built when it reaches the kind's hours).
     double condition = 100;
     bool built = false;
+    // A workshop's trade, the realm's business it works as (Data/Items/businesses.json), its Chapter's choice; a field is
+    // the farm's (doc 64, Phase 11: Holds as keeps).
+    std::string trade;
 };
 
 struct Site
@@ -63,10 +66,12 @@ struct Staff
 
 // Room at a Hold (5.5): beds in what is built to live in, and work in what is built to work at. Placeholders.
 int bedsIn(const std::string& kind);              // tent 1, lean-to 1, hall 4, keep 6, tower 1.
-// The work a building gives, one role per post: workshop 2 (smith's hand), stable (groom), well (water-carrier),
-// cookfire (cook), storage pile (storekeeper).
+// The work a building gives, one role per post: workshop 2 (smith's hand), field 2 (farmhand), stable (groom), well
+// (water-carrier), cookfire (cook), storage pile (storekeeper).
 std::vector<std::string> postsIn(const std::string& kind);
-constexpr std::int64_t HoldWage = 5;              // Pennies a game day for work at a Hold (placeholder).
+constexpr std::int64_t HoldWage = 5;              // Pennies a game day at least for work at a Hold (else the going rate).
+// A keep's work (doc 63; doc 64, Phase 11): at most so many workshops and fields at a site.
+constexpr int WorkshopsMost = 3, FieldsMost = 1;
 constexpr double OfferDays = 7;                   // How long those willing to come wait for an answer.
 
 // A resident willing to come and live and work at a Hold (doc 16's migration preview, offered to the Chapter).
