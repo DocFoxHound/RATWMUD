@@ -2922,7 +2922,8 @@ void pricedAtTheHoursWorked()
 }
 
 // A realm (doc 64, Phase 13): a baker and a stall (or not), and its other wolves labourers, each in a home of its own.
-Society realm(int wolves, bool shops = true)
+// (`written`: the labourers' age as their specs were written, 0 for person()'s.)
+Society realm(int wolves, bool shops = true, int written = 0)
 {
     AuthoredRoster roster;
     if (shops)
@@ -2931,6 +2932,8 @@ Society realm(int wolves, bool shops = true)
     {
         auto r = person("w" + std::to_string(i), "labouring in the yard", {"yard", 2.5, 2.5}, "civilian");
         r.home = {"home" + std::to_string(i), 2.5, 2.5};
+        if (written > 0)
+            r.age = written;
         roster.residents.push_back(r);
     }
     roster.economy.treasury = 500;
@@ -3097,12 +3100,15 @@ void foundedAtTheFoundingDay()
     }
     // The same, loaded afresh from the save (the price review: the labour market's record of each employer's town is
     // made at its day, none yet in a society just loaded, so every book went by the realm's rate), in two towns at
-    // different rates: the market's stall in the north at a quarter over the realm's, the rest in the south at it. Each
-    // book moves by its own town's.
+    // different rates: the market's stall in the north at a quarter over the realm's, the rest in the south at a fifth
+    // under it. Each book moves by its own town's: a till's, and the town's own labour's (round 6, the tidy's review:
+    // only tills' were tried). And again with the labourers written as 15, grown up since (their bodies 30): their posts
+    // keyed by their bodies' age, as the labour market keys them (they went by the realm's).
+    for (const int written : {0, 15})
     {
         LifeDay towns;
         towns.communityOf = [](const std::string& cell) { return cell == "market" ? std::string("north") : std::string("south"); };
-        auto older = realm(int(Society::WorldMoneyResidents));
+        auto older = realm(int(Society::WorldMoneyResidents), true, written);
         older.setDay(towns);
         auto bodies = atWork(older);
         double day = .5;
@@ -3111,20 +3117,25 @@ void foundedAtTheFoundingDay()
                 older.tick(1, day + i / 86400., 0, bodies);
         auto state = older.state();
         const auto north = "till:" + older.jobOf("stall")->id, south = "till:" + older.jobOf("baker")->id;
-        expect(state.memory.employers.count(north) && state.memory.employers.count(south), "the stall and the bakery have their books");
+        const std::string labour = "treasury|labour";
+        expect(state.memory.employers.count(north) && state.memory.employers.count(south) && state.memory.employers.count(labour),
+               "the stall, the bakery and the town's labour have their books");
         state.memory.purses = 0;
         state.memory.foundedDay = 0;
-        state.memory.going = {{"", catalogue}, {"south", catalogue}, {"north", catalogue * 1.25}};
+        state.memory.going = {{"", catalogue}, {"south", catalogue * .8}, {"north", catalogue * 1.25}};
         state.memory.employers.at(north).wage = catalogue * 1.25;
-        state.memory.employers.at(south).wage = catalogue;
-        auto loaded = realm(int(Society::WorldMoneyResidents));
+        state.memory.employers.at(south).wage = catalogue * .8;
+        state.memory.employers.at(labour).wage = catalogue * .8;
+        auto loaded = realm(int(Society::WorldMoneyResidents), true, written);
         loaded.setDay(towns);
         expect(loaded.restore(wire::readSociety(wire::society(state))), "an older save of two towns, loaded afresh");
         loaded.tick(1, day - .8, 0, bodies);        // (Its purses founded.)
         const auto& books = loaded.state().memory.employers;
-        expect(loaded.state().memory.purses >= 1 && std::abs(books.at(north).wage - founding) < 1e-6 && std::abs(books.at(south).wage - founding) < 1e-6,
-               "each book by its own town's rate: the north's " + std::to_string(books.at(north).wage) + "p, the south's " +
-                   std::to_string(books.at(south).wage) + "p, at " + std::to_string(founding) + "p");
+        expect(loaded.state().memory.purses >= 1 && std::abs(books.at(north).wage - founding) < 1e-6 && std::abs(books.at(south).wage - founding) < 1e-6 &&
+                   std::abs(books.at(labour).wage - founding) < 1e-6,
+               std::string(written ? "(the labourers written at 15) " : "") + "each book by its own town's rate: the north's " +
+                   std::to_string(books.at(north).wage) + "p, the south's " + std::to_string(books.at(south).wage) + "p, its labour's " +
+                   std::to_string(books.at(labour).wage) + "p, at " + std::to_string(founding) + "p");
     }
     // A church founded after the realm's money stands (an older save's, its church never opened) is given ChurchHead a
     // resident (10p at a 12p day) from the treasury at its town's day, if more than its month's basket (the price

@@ -714,6 +714,28 @@ void officersDrawAtTheDay()
     const auto head = society.account(t.ash.entityId)->cash;
     draw(t.ash, most + 1);
     expect(society.account(t.ash.entityId)->cash == head + most + 1, "the Head, more");
+    // With its Hold's claim in a town whose day is above the realm's (by the hours): the cap at that town's day (round 6,
+    // the tidy's review: only the realm's, a Chapter with no Hold, was tried). Cy, made an Officer, draws.
+    Society::setWorkByHours(true);
+    const auto* strip = t.g.world().townOf(cellId(1));
+    const auto town = strip ? strip->id : t.g.world().lawTown(cellId(1));
+    {
+        auto state = society.state();
+        state.memory.going[town] = FoundedAtTheDay::day() * 1.5;
+        state.memory.going[""] = FoundedAtTheDay::day();
+        expect(!town.empty() && society.restore(state) && society.amountDay(town) > society.amountDay(""), "a town above the realm: " + town);
+    }
+    ch.byId(id)->claimCell = cellId(1);
+    ch.byId(id)->members[t.cy.entityId].rank = chapter::RankOfficer;
+    const auto there = society.pennies(20 / 12., town), realm = society.pennies(20 / 12., "");
+    expect(there > realm, "its cap there is above the realm's: " + std::to_string(there) + "p against " + std::to_string(realm) + "p");
+    const auto cyCash = society.account(t.cy.entityId)->cash;
+    said = draw(t.cy, there);
+    expect(society.account(t.cy.entityId)->cash == cyCash + there, "an Officer of a Hold there draws its town's " + std::to_string(there) + "p: " + said);
+    said = draw(t.cy, 1);
+    expect(society.account(t.cy.entityId)->cash == cyCash + there && contains(said, "draws at most " + std::to_string(there) + "p a day"),
+           "and no more: " + said);
+    Society::setWorkByHours(false);
     expect(society.conserved(), "money conserved");
     fs::remove_all(root);
 }

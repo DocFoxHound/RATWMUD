@@ -70,6 +70,8 @@ void Society::reset(Roster roster)
     tills_.clear();
     messes_.clear();
     messMeals_.clear();
+    messKeeps_.clear();
+    drawn_.clear();
     forgetOrchestra();
     wageCarry_.clear();
     loadPrices();                                   // (None: state_ is fresh.)
@@ -690,6 +692,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             keptHandDoes(pair.first, life, wallet, eats, 1);
             continue;
         }
+        giveBackDrawn(pair.first, false);              // (Let go with a piece from its mess uneaten: given back.)
         std::string task, goal = "tavern", reason;
         double x = 14.5, y = 13.5;
         if (!life.relocationCell.empty())

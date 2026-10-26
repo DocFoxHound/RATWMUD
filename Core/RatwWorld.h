@@ -1464,7 +1464,8 @@ class World
     // city cell has well over a thousand seam and door records, far too many to walk every tick.
     mutable std::map<std::string, std::vector<std::string>> neighborCache_;
     const std::vector<std::string>& neighborList(const std::string& cellId) const;
-    // firstSteps() for each starting cell, kept until doors change: residents ask it every half second.
+    // firstSteps() for each starting cell, kept until doors change: residents ask it every half second. (Those never
+    // through a cell, by "from\navoid".)
     mutable std::map<std::string, std::map<std::string, std::string>> stepsCache_;
     // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
     // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
@@ -1477,7 +1478,7 @@ class World
         std::set<std::string> beyond;
     };
     mutable std::map<std::pair<std::string, std::string>, PocketEnd> deadEndPockets_;
-    const std::map<std::string, std::string>& cachedSteps(const std::string& from) const;
+    const std::map<std::string, std::string>& cachedSteps(const std::string& from, const std::string& avoid = {}) const;
     std::map<std::string, Cell> cells_;
     std::map<std::string, FactionDefinition> factions_;
     std::map<std::string, ChapterDefinition> chapters_;
@@ -2140,7 +2141,9 @@ class World
     // Adds a just-loaded cell's seams (already in doors_) to the index without rebuilding it (see ensureLoaded()).
     void indexSeams(const std::string& cellId, const std::vector<std::string>& seamIds);
     // For every cell, the first cell to step into on the way to each reachable cell, through unlocked portals.
-    std::map<std::string, std::string> firstSteps(const std::string& from) const;
+    // For every cell, the first cell to step into on the way to each reachable cell, through unlocked portals; never
+    // through `avoid`, if one is given.
+    std::map<std::string, std::string> firstSteps(const std::string& from, const std::string& avoid = {}) const;
     std::map<std::string, std::map<std::string, CellMemory>> memories_;
     // Where tick() last took each player's view for their map memory (see tick()).
     struct ObservedTile

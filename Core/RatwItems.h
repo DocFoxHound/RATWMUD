@@ -117,6 +117,9 @@ struct Producer
 // Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies; or, a staple,
 // something households or the town's own buyers use up every day or so (bread, candles: doc 35, Part 7).
 bool traded(const std::string& item);
+// Whether some craft takes it to work with (raw meat, flour, eggs; a keep's workshop too, which makes the crafts:
+// Game::keepWork), in any quality. A kept hand's mess gives what no craft takes first (Society::messFood).
+bool ingredient(const std::string& item);
 // The producer a resident is, from the words of their work label, or null.
 const Producer* producerFor(const std::string& workLabel);
 // Whether a good comes in only in some seasons (every producer that brings it in has its seasons: grapes, apples), so

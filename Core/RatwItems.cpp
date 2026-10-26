@@ -704,6 +704,16 @@ bool traded(const std::string& item)
     return item == "bread" || item == "porridge" || item == "meal";   // (What the hungry buy most.)
 }
 
+bool ingredient(const std::string& item)
+{
+    const auto base = baseOf(item);
+    for (const auto& craft : catalog().crafts)
+        for (const auto& i : craft.in)
+            if (i.first == base)
+                return true;
+    return false;
+}
+
 const std::vector<HouseholdNeed>& householdNeeds()
 {
     return catalog().needs;

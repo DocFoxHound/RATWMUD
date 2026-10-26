@@ -583,7 +583,7 @@ int foodIn(const Society& s, const std::string& account)
 void keptHandsEat()
 {
     // Kept hands' meals (doc 64, Phase 13; the user, 2026-10-26): off their schedules (World: a leader), a Hold's hand eats
-    // from the Hold's stores and a companion from its hirer's pack, on the residents' marks (drawn at 55, eaten at 60),
+    // from the Hold's stores and a companion from its hirer's pack, at the eat mark (60; round 6: taken then, not at 55),
     // the food moved by the ledger and eaten; one with no mess eats what it carries, and nothing else.
     const auto root = writeWorld("ratw_econ_players_kept");
     auto w = worldAt(root, 2 + 10. / 24);
@@ -613,10 +613,122 @@ void keptHandsEat()
     const auto meals = s.takeMessMeals();
     expect(meals.size() == 2 && meals[0].who == "u1" && meals[0].mess == hold && meals[0].item == "jerky" && meals[1].who == "u2" &&
                meals[1].mess == player,
-           "the meals drawn are told: " + std::to_string(meals.size()));
+           "the meals eaten are told: " + std::to_string(meals.size()));
     expect(foodIn(s, "u3") == 0 && s.resident("u3")->hunger < 61 - 50, "one without a mess eats what it carries");
     expect(s.resident("u4")->hunger > 61 && s.unfed("u4", 61) && !s.unfed("u1", 0) && !s.unfed("u2", 0),
            "and one with neither goes hungry: unfed");
+    expect(s.conserved(), "money stays conserved");
+}
+
+// What a kept hand takes from its mess, and when (round 6, doc 64, Phase 13, the companions' review): only at the eat
+// mark, and eaten then (taken at the rations' mark, a dismissed companion walked off with a player's meal); prepared
+// food before a raw good a craft works with, however soon that spoils; never a player's goods kept back for a contract;
+// a purse full to MaxGoodsKinds kinds takes nothing, and reads as unfed (it starved unsaid); and one let go with a piece
+// taken and uneaten gives it back.
+void keptHandsChooseTheirMeal()
+{
+    const auto root = writeWorld("ratw_econ_players_choose");
+    auto w = worldAt(root, 2 + 10. / 24);
+    auto& s = w->society();
+    const std::string hold = "chapter:test-hold", player = "player-test-1";
+    expect(s.openAccount(hold) && s.create(hold, "jerky", 2, "test: laid in") && s.create(hold, "raw_meat", 4, "test: the workshop's"),
+           "the Hold's stores hold jerky and the keep workshop's raw meat");
+    expect(items::ingredient("raw_meat") && !items::ingredient("jerky") && !items::ingredient("meal"),
+           "raw meat is a craft's, jerky and a meal nobody's");
+    s.addPlayer(player);
+    expect(s.create(player, "rabbit", 1, "test: a catch"), "the player carries a rabbit too");
+    const int meals = Society::stock(*s.account(player), "meal");
+    expect(meals > 0, "and its first meals");
+    for (const auto& [id, leader] : {std::pair{"u1", "camp:test"}, std::pair{"u2", "party:test"}, std::pair{"u3", "party:test"},
+                                     std::pair{"u4", "camp:test"}})
+    {
+        w->entity(id)->leaderId = leader;
+        w->stop(id);
+        hungry(*w, id, 57);
+    }
+    // u4's purse holds MaxGoodsKinds kinds, none of them food.
+    for (const auto& g : items::allGoods())
+        if (s.account("u4")->stock.size() < MaxGoodsKinds && !Society::edible(g.id) && g.price > 0 && !s.account("u4")->stock.count(g.id))
+            s.create("u4", g.id, 1, "test: a full purse");
+    expect(s.account("u4")->stock.size() == MaxGoodsKinds, "u4's purse is full of kinds: " + std::to_string(s.account("u4")->stock.size()));
+    s.setMesses({{"u1", hold}, {"u2", player}, {"u3", player}, {"u4", hold}}, {{player, {"meal"}}});
+    econ::Players idle(*w, {}, 99, 0);
+    run(*w, idle, 10);
+    expect(foodIn(s, hold) == 6 && Society::stock(*s.account(player), "rabbit") == 1 && foodIn(s, "u1") == 0 && foodIn(s, "u2") == 0,
+           "under the eat mark, nothing is taken");
+    for (const auto* id : {"u1", "u2", "u3", "u4"})
+        hungry(*w, id, 61);
+    run(*w, idle, 30);
+    expect(Society::stock(*s.account(hold), "jerky") == 1 && Society::stock(*s.account(hold), "raw_meat") == 4 &&
+               s.resident("u1")->hunger < 61 - 30,
+           "the Hold's hand eats the jerky, not the raw meat that spoils sooner: jerky " +
+               std::to_string(Society::stock(*s.account(hold), "jerky")) + ", raw meat " + std::to_string(Society::stock(*s.account(hold), "raw_meat")));
+    expect(Society::stock(*s.account(player), "meal") == meals && Society::stock(*s.account(player), "rabbit") == 0 &&
+               s.resident("u2")->hunger < 61 - 15,
+           "the companion leaves the meals kept back for a contract, and eats the rabbit");
+    expect(s.unfed("u3", 61), "a second, with nothing left it may eat, is unfed");
+    expect(Society::stock(*s.account(hold), "jerky") == 1 && s.unfed("u4", 61) && s.resident("u4")->hunger > 61,
+           "a full purse takes nothing, and reads as unfed (told of, and let go), not starving unsaid");
+    const auto told = s.takeMessMeals();
+    expect(told.size() == 2 && told[0].who == "u1" && told[0].item == "jerky" && told[1].who == "u2" && told[1].mess == player &&
+               told[1].item == "rabbit",
+           "the meals eaten are told: " + std::to_string(told.size()));
+    // Let go with a piece taken, before eating it: given back.
+    s.setMesses({{"u3", hold}});
+    hungry(*w, "u3", 61);
+    w->tick(.05);
+    for (int i = 0; i < 20 && foodIn(s, "u3") == 0; ++i)
+        w->tick(.05);
+    expect(foodIn(s, "u3") == 1 && Society::stock(*s.account(hold), "jerky") == 0, "u3 takes the last jerky to eat");
+    w->entity("u3")->leaderId.clear();
+    s.setMesses({});
+    run(*w, idle, 30);
+    expect(Society::stock(*s.account("u3"), "jerky") == 0 && Society::stock(*s.account(hold), "jerky") == 1 && s.takeMessMeals().empty(),
+           "let go before eating it, it gives it back and no meal from the stores is told");
+    expect(s.conserved(), "money stays conserved");
+}
+
+// A Hold's hand that came to live there (Game::moveToHold, the user's Holds: its home the Hold's own cell, here in the
+// wilds between the towns, no shop in it nor a town of its own) and is let go hungry at KeptLeaveHunger, its stores bare
+// (round 6, the companions' review: every test's hand was town-homed): back in its own life it walks to a shop and buys
+// a meal with its wage before it starves, and is fed within the quarter day.
+void aMigrantHandLetGoHungryEats()
+{
+    const auto root = writeWorld("ratw_econ_players_migrant");
+    auto w = worldAt(root, 2 + 10. / 24);
+    auto& s = w->society();
+    const std::string hand = "u6", hold = "chapter:test-migrant", wilds = cellId(2);
+    // Moved to the Hold, as moveToHold does it (relocateResident), and arrived.
+    expect(w->relocateResident(hand, wilds, 8.5, 8.5).ok, "u6 moves to the Hold in the wilds");
+    econ::Players idle(*w, {}, 99, 0);
+    for (int i = 0; i < 24000 && s.resident(hand)->homeCell != wilds; ++i)
+    {
+        w->tick(.05);
+        idle.step();
+    }
+    expect(s.resident(hand)->homeCell == wilds && w->entity(hand)->cellId == wilds, "and makes its home there: " + s.resident(hand)->homeCell);
+    expect(s.openAccount(hold), "the Hold's stores, bare");
+    w->entity(hand)->leaderId = "camp:test";
+    w->stop(hand);
+    s.setMesses({{hand, hold}});
+    if (const auto cash = s.account(hand)->cash; cash < 12)
+        s.shift("treasury", hand, "", 0, 12 - cash, "test: its wages");
+    hungry(*w, hand, 88);
+    run(*w, idle, 600);
+    expect(s.unfed(hand, Society::KeptLeaveHunger), "unfed at the Hold, at " + std::to_string(s.resident(hand)->hunger));
+    // Let go, as Game::feedKeptHands does it.
+    w->entity(hand)->leaderId.clear();
+    s.setMesses({});
+    double most = 0, after = 100;
+    std::string where;
+    run(*w, idle, calendar::SecondsPerDay / 4, [&] {
+        most = std::max(most, s.resident(hand)->hunger);
+        after = std::min(after, s.resident(hand)->hunger);
+        if (where.empty() && after < Society::KeptLeaveHunger)
+            where = w->entity(hand)->cellId;
+    });
+    expect(most < 100 && after < Society::KeptToldHunger, "let go hungry from its home at the Hold, it eats, never starving: hunger at most " +
+                                                              std::to_string(most) + ", then as low as " + std::to_string(after) + " (fed in " + where + ")");
     expect(s.conserved(), "money stays conserved");
 }
 
@@ -643,6 +755,76 @@ void strikeKeepsItsHandsFed()
            "held, fed, never hungry enough to tell of");
     expect(most < Society::KeptToldHunger, "its hunger at most " + std::to_string(most));
     expect(count(moves, "stored") > laidIn, "the stores topped up at dawn");
+    expect(s.conserved(), "money stays conserved");
+}
+
+// The quartermaster stocks food that keeps (round 6, doc 64, Phase 13, the companions' review: two days of porridge,
+// which keeps a day, and 44% of what went in rotted there): toward the stores' ProvisionDays only food lasting till the
+// next top-up counts, the longest-keeping bought first; what spoils sooner, a day's food at most.
+void strikeStocksFoodThatKeeps()
+{
+    // Ridgemere with an inn (porridge, a day; meals, three), a bakery (bread, four) and a butcher (salt pork, ninety).
+    const auto root = writeWorld("ratw_econ_players_stocks", resident("ui", "Inn U", "merchant", "keeping the inn", 1, 3.5, 1, 4.5) +
+                                                             resident("ub", "Baker U", "merchant", "the baker", 1, 5.5, 1, 6.5) +
+                                                             resident("uc", "Butcher U", "merchant", "the butcher", 1, 7.5, 1, 9.5));
+    auto w = worldAt(root, 2 + 10. / 24);
+    auto& s = w->society();
+    // Every shop's food in Ridgemere: only what this sets (the inn's porridge, the baker's bread, two salt pork).
+    const auto clear = [&](const std::string& keeper, std::initializer_list<const char*> keep) {
+        const auto till = s.tillOf(keeper);
+        std::vector<std::pair<std::string, int>> food;
+        for (const auto& [item, n] : s.account(till)->stock)
+            if (n > 0 && Society::edible(item) && std::none_of(keep.begin(), keep.end(), [&](const char* k) { return item == k; }))
+                food.push_back({item, n});
+        for (const auto& [item, n] : food)
+            s.consume(till, item, n, "test: none of it");
+    };
+    for (const auto* keeper : {"ug", "uk", "ui", "ub", "uc"})
+        clear(keeper, {});
+    for (const auto& [keeper, item, n] : {std::tuple{"ui", "porridge", 60}, std::tuple{"ub", "bread", 60}, std::tuple{"uc", "salt_pork", 2}})
+        expect(s.create(s.tillOf(keeper), item, n, "test: the shelves"), std::string(keeper) + " has " + item);
+    econ::Players p(*w, {"strike"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 10. / 24);
+    keep(moves, p);
+    const int hands = int(p.staffOf("strike").size());
+    const int day = Society::DayNourishment * hands, want = econ::Players::ProvisionDays * day;
+    std::map<std::string, int> stored;
+    std::string first;
+    for (const auto& m : moves)
+        if (m.action == "stored")
+        {
+            stored[m.item] += m.quantity;
+            if (first.empty())
+                first = m.item;
+        }
+    int lasting = 0;
+    for (const auto& [item, n] : stored)
+        lasting += items::good(item)->keeps >= econ::Players::ProvisionDays ? n * Society::nourishment(item) : 0;
+    expect(hands > 0 && first == "salt_pork" && stored.count("bread") && lasting >= want,
+           "the salt pork first, then bread, till the days are held in food that lasts: " + std::to_string(lasting) + " of " +
+               std::to_string(want) + ", first " + first);
+    expect(!stored.count("porridge"), "no porridge, when bread will do");
+    // Nothing that lasts on the shelves, nor in the stores: porridge, but a day's at most.
+    for (const auto* keeper : {"ug", "uk", "ui", "ub", "uc"})
+        clear(keeper, {"porridge"});
+    const auto hold = p.accountsOf("strike").front();
+    {
+        std::vector<std::pair<std::string, int>> food;
+        for (const auto& [item, n] : s.account(hold)->stock)
+            if (n > 0 && Society::edible(item))
+                food.push_back({item, n});
+        for (const auto& [item, n] : food)
+            s.consume(hold, item, n, "test: spoiled");
+    }
+    moves.clear();
+    jumpTo(*w, p, 3 + 1. / 960);
+    keep(moves, p);
+    int porridge = 0;
+    for (const auto& m : moves)
+        porridge += m.action == "stored" && m.item == "porridge" ? m.quantity * Society::nourishment("porridge") : 0;
+    expect(porridge >= day && porridge < day + Society::nourishment("porridge"),
+           "only porridge to be had: a day's of it, no more: " + std::to_string(porridge) + " of " + std::to_string(day));
     expect(s.conserved(), "money stays conserved");
 }
 
@@ -1105,6 +1287,20 @@ void heldPace()
     std::ofstream(base / "bad.csv") << "day,when,society_day,pace\n0,start,0,1.5\n";
     expect(run("bad", " --hold-pace '" + (base / "bad.csv").string() + "'") != 0 && slurp(base / "bad.txt").find("--hold-pace wants") != std::string::npos,
            "a pace out of 0 to 1 is refused");
+    // Refused where it can't act (round 6, the tidy's review): without --hours (the pace is stepped only there), and with
+    // a file that ends before the run does (the run went back to its own pace from the first day missing, unsaid).
+    {
+        const auto command = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 1.2 '" + (base / "seconds").string() +
+                             "' --deterministic --threads 1 --hold-pace '" + (base / "quarter.csv").string() + "' > '" +
+                             (base / "seconds.txt").string() + "' 2>&1";
+        expect(std::system(command.c_str()) != 0 && slurp(base / "seconds.txt").find("it wants --hours") != std::string::npos &&
+                   !fs::exists(base / "seconds"),
+               "--hold-pace without --hours is refused: " + slurp(base / "seconds.txt"));
+    }
+    std::ofstream(base / "short.csv") << "day,when,society_day,pace\n0,start,0,0.25\n";
+    expect(run("short", " --hold-pace '" + (base / "short.csv").string() + "'") != 0 &&
+               slurp(base / "short.txt").find("no pace for the society's day 1") != std::string::npos,
+           "a file that ends before the run is refused: " + slurp(base / "short.txt"));
     expect(econ::readPace("day,when,society_day,pace\n0,start,0,0.1\n1,day end,x,0.2\n").empty() && econ::readPace("0,start,0,0.1\n").empty() &&
                econ::readPace("day,when,society_day,pace\n0,start,0,0.1\n3,day end,3,0.2\n").size() == 2,
            "readPace reads all of a pace.csv or none of it");
@@ -1328,7 +1524,10 @@ int main()
         strikeTakesATenthForAMonth();
         strikeEndsWithThePlayers();
         keptHandsEat();
+        keptHandsChooseTheirMeal();
+        aMigrantHandLetGoHungryEats();
         strikeKeepsItsHandsFed();
+        strikeStocksFoodThatKeeps();
         strikeHandsGoHomeHungry();
         buyoutHoldsTheFood();
         buyoutLastsTheWeek();
@@ -1338,8 +1537,8 @@ int main()
         daysCountFromTheStart();
         theDeadKeepNoShop();
         chestsInLots();
-        econWatchsFiles();
         heldPace();
+        econWatchsFiles();
         theStampSaysWhatChanged();
         // Every check passed: the scratch folders go (a failed run's stay, to look at).
         const auto pid = "-" + std::to_string(::getpid());

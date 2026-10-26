@@ -667,6 +667,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             c.kind = Choice::Kind::Decided;
             return;
         }
+        // Let go with a piece from its mess uneaten (dismissed as it sat down to it): given back, in its turn (round 6).
+        if (!giveBackDrawn(id, atOnce))
+            throw DecideInTurn{};
         // Home storage (doc 36): food beyond the one carried (the best of it) is put away in the larder whenever they're
         // home (a shopkeeper's are the shop's stock, kept), and a larder with food in it is where a hungry wolf goes first.
         const std::string& larder = c.larder;

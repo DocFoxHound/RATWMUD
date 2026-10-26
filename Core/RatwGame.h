@@ -1473,8 +1473,9 @@ class Game
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);
     // Kept hands' meals (doc 64, Phase 13; RatwGameCamps.cpp): each Hold's hand's and companion's mess for the society
-    // (Society::setMesses), what they took from a player's pack told, and those long unfed told of and let go. The day
-    // each Chapter or hirer was last told its hands go hungry (not saved: a restart may tell it once more).
+    // (Society::setMesses), what they ate from a player's pack told, and those long unfed told of and let go. The day
+    // each Chapter (by its site: "chapter|site") or hirer ("player|") was last told its hands go hungry (not saved: a
+    // restart may tell it once more).
     double messAccumulator_ = 0;
     bool messesSet_ = false;
     std::map<std::string, std::int64_t> hungerTold_;

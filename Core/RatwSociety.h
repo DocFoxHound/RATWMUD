@@ -682,18 +682,30 @@ class Society
     bool forSale(const std::string& id, const std::string& item) const;   // A producer's own goods, for the shops.
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
     // Kept hands' meals (doc 64, Phase 13; doc 32): a wolf off its own day (a Hold's hand, a party's companion) eats what
-    // it carries, and when it carries nothing draws a meal from its mess on the rations' mark: the Chapter's stores, or the
-    // pack of whoever asked it along. The game sets the messes as its camps and parties stand (not saved: those are), each
-    // its own account's ID by the kept hand's; one without a mess eats only what it carries.
-    void setMesses(std::map<std::string, std::string> messes) { messes_ = std::move(messes); }
+    // it carries, and when it carries nothing takes a piece of food from its mess at the eat mark and eats it then: the
+    // Chapter's stores, or the pack of whoever asked it along. The game sets the messes as its camps and parties stand
+    // (not saved: those are), each its own account's ID by the kept hand's, and what of a mess isn't to be eaten (a
+    // player's goods for an open contract or mission: `keeps`, by the mess's account, as plain goods' ids); one without a
+    // mess eats only what it carries.
+    void setMesses(std::map<std::string, std::string> messes, std::map<std::string, std::set<std::string>> keeps = {})
+    {
+        messes_ = std::move(messes);
+        messKeeps_ = std::move(keeps);
+    }
     const std::map<std::string, std::string>& messes() const { return messes_; }
-    // A kept hand that can't eat: as hungry as `hunger` or more, carrying nothing that feeds, its mess (if any) bare. The
-    // game tells the Chapter or the hirer at KeptToldHunger, and at KeptLeaveHunger lets it go back to its own life,
-    // where it eats as anyone does: nobody starves in a Chapter's service.
+    const std::map<std::string, std::set<std::string>>& messKeeps() const { return messKeeps_; }
+    // What a kept hand takes from that mess (round 6, the companions' review): prepared food first, what no craft works
+    // with (items::ingredient: not a keep workshop's raw meat, nor a hunter's rabbit), raw goods last; of those, what
+    // spoils soonest, the most nourishing of those; never one kept back (setMesses). Empty: nothing it may eat.
+    std::string messFood(const std::string& mess, const EconomyAccount& stores) const;
+    // A kept hand that can't eat: as hungry as `hunger` or more, carrying nothing that feeds, its mess (if any) with
+    // nothing it may eat, or a piece it couldn't take (its purse holding MaxGoodsKinds kinds already: a refused draw is a
+    // bare mess, never a hand starving unsaid). The game tells the Chapter or the hirer at KeptToldHunger, and at
+    // KeptLeaveHunger lets it go back to its own life, where it eats as anyone does: nobody starves in a Chapter's service.
     bool unfed(const std::string& id, double hunger) const;
     static constexpr double KeptToldHunger = 70, KeptLeaveHunger = 90;
-    // The meals drawn from a mess since the last call (who, from which account, what), so the game can tell a player
-    // what went from its pack. At most MaxMessMeals kept between calls.
+    // The meals eaten from a mess since the last call (who, from which account, what), so the game can tell a player
+    // what went from its pack, when it was eaten. At most MaxMessMeals kept between calls.
     struct MessMeal
     {
         std::string who, mess, item;
@@ -910,12 +922,24 @@ class Society
     std::set<std::string> feasted_;                 // Fed at today's festival already.
     std::int64_t feastDay_ = -1;
     std::map<std::string, std::string> messes_;     // Kept hand -> the account it eats from (setMesses).
-    std::vector<MessMeal> messMeals_;               // Meals drawn from a mess since takeMessMeals.
-    // A kept hand's deciding (both rosters): a meal drawn from its mess if it wants one and carries none (in its turn:
-    // false at once, `atOnce`, when it would draw), and whether it eats now.
+    std::vector<MessMeal> messMeals_;               // Meals eaten from a mess since takeMessMeals.
+    std::map<std::string, std::set<std::string>> messKeeps_;   // A mess's goods not to be eaten (setMesses).
+    // The piece a kept hand took from its mess, being eaten (keptHandDoes): kept hand -> mess, good. Not saved: a restart
+    // finds it in the hand's purse, and it is eaten as its own.
+    struct Drawn
+    {
+        std::string mess, item;
+    };
+    std::map<std::string, Drawn> drawn_;
+    // A kept hand's deciding (both rosters): at the eat mark, carrying nothing, a piece taken from its mess (in its turn:
+    // false at once, `atOnce`, when it would take one), and whether it eats now.
     bool keptHandDecides(const std::string& id, const EconomyAccount& wallet, double hunger, bool atOnce, bool& eats);
-    // And its doing: eight seconds at its meal, as anyone's, then the food that spoils soonest eaten.
+    // And its doing: eight seconds at its meal, as anyone's, then the piece it took eaten (else what it carries that
+    // spoils soonest), and the meal told (takeMessMeals).
     void keptHandDoes(const std::string& id, ResidentLife& life, const EconomyAccount& wallet, bool eats, int step);
+    // One let go (no longer kept) with a piece it took and hasn't eaten gives it back to the mess it came from, in its
+    // turn (false at once, `atOnce`, when it would): no meal walks off with a dismissed companion.
+    bool giveBackDrawn(const std::string& id, bool atOnce);
     SocietyState state_;
     Roster roster_ = Roster::Demo;
     AuthoredRoster authored_;
@@ -1672,8 +1696,9 @@ class Society
     // money is made up to WorldMoney, the going rate starts at ladder.json's `foundingDay` (the realm's and every town's,
     // memory.going), so its tills' floats, its first wages and employers' books and its prices start there. Before its
     // purses are made, once; a village made for a test keeps the catalogue's day. An older save founding its purses now
-    // has its employers' books moved with their towns' rates, so its first measure doesn't pull the day back.
-    void foundWage();
+    // has its employers' books moved with their towns' rates, so its first measure doesn't pull the day back (each post's
+    // employer told by its holder's age as the labour market tells it: its body's, if `bodies` has it, else its spec's).
+    void foundWage(const std::map<std::string, LifeBody>* bodies = nullptr);
     // Tops every purse up to its starting money, once (EconomyMemory::purses).
     void foundPurses(const std::map<std::string, LifeBody>& bodies);
     // Makes what the world holds up to WorldMoney (once, at the end of the first day's pass after the purses are founded).

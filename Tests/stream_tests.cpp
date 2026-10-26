@@ -348,6 +348,141 @@ void aStripHouseholdGetsHome()
     }
 }
 
+// No seam between two cells: their records, on both sides, and each other in their exits.
+void cutSeams(Fixture& f, const std::string& a, const std::string& b)
+{
+    for (const auto& [one, other] : {std::pair{a, b}, std::pair{b, a}})
+    {
+        std::istringstream in(f.seams[one]);
+        std::string line, kept;
+        while (std::getline(in, line))
+            if (line.find("\"" + one + "\" ") == std::string::npos || line.find(" \"" + other + "\" ") == std::string::npos)
+                kept += line + '\n';
+        f.seams[one] = kept;
+    }
+    std::istringstream in(f.manifest);
+    std::string line, kept;
+    while (std::getline(in, line))
+    {
+        std::istringstream fields(line);
+        std::string word, from;
+        int n = 0;
+        if (fields >> word >> std::quoted(from) >> n && word == "exits" && (from == a || from == b))
+        {
+            std::vector<std::string> to;
+            for (std::string next; fields >> std::quoted(next);)
+                if (next != (from == a ? b : a))
+                    to.push_back(next);
+            std::ostringstream out;
+            out << "exits \"" << from << "\" " << to.size();
+            for (const auto& next : to)
+                out << " \"" << next << '"';
+            line = out.str();
+        }
+        kept += line + '\n';
+    }
+    f.manifest = kept;
+}
+
+// Every neighbour's cheapest way back is through the cell beyond (round 6, doc 64, Phase 13, the roads' review): with
+// no seam between c_0_1 and c_1_1, both ways out of c_1_0's body (east, south) come straight back through it to c_0_0,
+// the way into the cottage's strip. Cot, in the body of c_1_0, went out and in again; she goes round, however long.
+void everyWayBackIsThroughTheBody()
+{
+    auto f = cottage("resident \"cot\" \"Cot\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+                     "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_cot\" 2.5 2.5 \"c_0_0\" 9.5 8.5 \"h_cot\" 3.5 2.5\n");
+    cutSeams(f, "c_0_1", "c_1_1");
+    // And a shed beside her in the body, the nearest way out, whose only way anywhere is back into c_1_0.
+    f.manifest += "door \"shed_out\" \"The shed door\" \"c_1_0\" 9.5 8.5 \"h_shed\" 2.5 4.5 \"shed_in\" 0 0 0 0 \"-\"\n"
+                  "door \"shed_in\" \"The shed door\" \"h_shed\" 2.5 5.5 \"c_1_0\" 9.5 9.5 \"shed_out\" 0 0 0 0 \"-\"\n";
+    auto& street = f.cells["c_1_0"];
+    street[street.find("grid:\n") + 6 + std::size_t(8 * (Side + 1) + 9)] = '+';
+    f.cells["h_shed"] = "id: h_shed\nname: The shed\ndescription: A small room.\nworld: 16 300 0\noutdoors: false\n"
+                        "weather: clear\nsize: 6 6\ngrid:\n......\n......\n......\n......\n......\n..+...\n";
+    f.seams["h_shed"] = "";
+    const std::string was = "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_cot\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits, with the cottage");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 5 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_cot\" \"h_shed\"\nexits \"h_shed\" 1 \"c_1_0\"\narea \"h_shed\"\n");
+    auto world = load(f);
+    expect(world.routeBetween("c_1_1", "c_0_1").size() > 2 && world.routeBetween("c_1_1", "c_0_0").at(1) == "c_1_0",
+           "No seam between c_0_1 and c_1_1: c_1_1's way to c_0_0 is through c_1_0");
+    world.setTimeOfDay(18.5);                               // Off work, both of them, in c_0_0.
+    for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(world.entity("pip")->cellId == "c_2_0", "Pip gets home round the strip: " + world.entity("pip")->cellId);
+    auto* cot = world.entity("cot");
+    world.ensureLoaded("c_1_0");
+    cot->cellId = "c_1_0";
+    cot->position = {8.5, 8.5};
+    cot->path.clear();
+    int second = 0, crossings = 0;
+    std::string in = cot->cellId, trail = in;
+    for (; second < 3000 && cot->cellId != "h_cot"; ++second)
+    {
+        world.tick(1);
+        if (cot->cellId != in)
+        {
+            ++crossings, in = cot->cellId;
+            if (trail.size() < 200)
+                trail += " " + in;
+        }
+    }
+    expect(cot->cellId == "h_cot", "Cot gets home from the body of c_1_0, round by the north: " + cot->cellId + " " + cot->activity +
+                                       " by " + trail);
+    expect(crossings <= 8, "without going back and forth: " + std::to_string(crossings) + " crossings, " + trail);
+}
+
+// The ground changes mid-walk (round 6, doc 64, Phase 13, the roads' review): a Chapter's tent goes up in the body of
+// c_1_0, and what was known of the cell's ways is forgotten (regionMap) while a walker's route is still being chosen
+// from it, and was read after it was freed: Sal, bound for the strip by the dead end's pocket (headFor's pocket loop),
+// and Pip, going home through c_1_0 (choose(), the way on from the next cell). Both get there. (A Release build ran
+// on silently: the sanitizer build, RATW_SANITIZERS, is what this guards.)
+void theGroundChangesMidWalk()
+{
+    const std::string sal = "resident \"sal\" \"Sal\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" "
+                            "\"average\" \"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_0_0\" 6.5 6.5 \"c_1_0\" 1.5 4.5 \"c_0_0\" 7.5 6.5\n";
+    for (const bool home : {false, true})
+    {
+        auto f = cottage(sal);
+        auto world = load(f);
+        world.setTimeOfDay(18.5);                               // Pip, passing through, finds the dead end.
+        for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+            world.tick(1);
+        expect(world.entity("pip")->cellId == "c_2_0", "Pip gets home round the strip: " + world.entity("pip")->cellId);
+        auto* pip = world.entity("pip");
+        auto* walker = world.entity("sal");
+        const auto put = [&](Entity* who, const std::string& in, Vec2 at) {
+            world.ensureLoaded(in);
+            who->cellId = in;
+            who->position = at;
+            who->path.clear();
+        };
+        if (!home)
+        {
+            world.setTimeOfDay(9.0);                            // Sal to work on the strip; Pip at work already.
+            put(pip, "c_0_0", {8.5, 8.5});
+            put(walker, "c_0_0", {9.5, 8.5});
+        }
+        else
+        {
+            world.setTimeOfDay(18.5);                           // Pip home from c_1_1, by c_1_0 (its first step); Sal at home.
+            put(pip, "c_1_1", {8.5, 8.5});
+            put(walker, "c_0_0", {6.5, 6.5});
+        }
+        world.ensureLoaded("c_1_0");
+        world.obstacles["c_1_0"].insert({10, 10});              // A tent goes up in the body of c_1_0, before they set off.
+        bool there = false;
+        for (int second = 0; second < 1200 && !there; ++second)
+        {
+            world.tick(1);
+            there = !home ? walker->cellId == "c_1_0" && walker->position.x < 3 : pip->cellId == "c_2_0";
+        }
+        expect(there, !home ? "Sal gets to the strip after the tent goes up: " + walker->cellId + " " + walker->activity
+                            : "Pip gets home by c_1_0 after the tent goes up: " + pip->cellId + " " + pip->activity);
+    }
+}
+
 // A lane to a strip (round 5, doc 64, Phase 13; a boy of Ridgemere, out of Greatly House): the west of c_2_0 below row 7
 // is a lane walled off from the cell's body, whose ways west all land on a strip of c_1_0 walled off from its body
 // (where his door is); the strip goes on south only onto a corner of c_1_1 walled off from that cell's body, and that
@@ -983,6 +1118,8 @@ int main()
         aStripWithAHouseIsNoWayOn();
         aStripHouseholdGetsHome();
         aLaneToAStripIsLeftForTheBody();
+        everyWayBackIsThroughTheBody();
+        theGroundChangesMidWalk();
         aCellCutInTwo();
         theBestWayOn();
         aSpotNoWayReaches();

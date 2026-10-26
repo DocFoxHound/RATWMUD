@@ -390,6 +390,18 @@ void campingThroughTheGame(const std::string& save)
         expect(ada.said().find("The Chapter's stores have nothing to eat, and the hands at Juniper Camp are going hungry.") != std::string::npos,
                "the Chapter is told:\n" + ada.said());
         expect(g.camps().staff().count("npc_scout"), "he stays a while yet");
+        // A second camp of the Chapter's, with no storage pile, and a hand there going hungry the same day: told of too,
+        // by its own site (round 6, the companions' review: told once a day by Chapter, the second site's hands left unsaid).
+        const auto second = g.camps().found(lodge, "exterior", 8, 30, "Rowan Camp", w.calendarDays(), w.time());
+        expect(second.ok, "a second camp: " + second.message);
+        g.camps().staff()["npc_porter"] = camp::Staff{"npc_porter", second.message, "porter", 5, std::floor(w.calendarDays()) + 1, false, w.calendarDays()};
+        hungry(w, "npc_porter", Society::KeptToldHunger + 1);
+        for (int i = 0; i < 40; ++i)
+            g.tick(.05);
+        expect(ada.said().find("The hands at Rowan Camp are going hungry: build a storage pile there") != std::string::npos,
+               "the Chapter is told of the second camp's hands too:\n" + ada.said());
+        g.camps().staff().erase("npc_porter");
+        w.entity("npc_porter")->leaderId.clear();
         hungry(w, "npc_scout", Society::KeptLeaveHunger + .5);
         for (int i = 0; i < 40; ++i)
             g.tick(.05);
@@ -397,9 +409,9 @@ void campingThroughTheGame(const std::string& save)
                    ada.said().find("leaves Juniper Camp: there was nothing to eat.") != std::string::npos,
                "unfed, he leaves:\n" + ada.said());
         int told = 0;
-        for (std::size_t at = 0; (at = ada.said().find("are going hungry", at)) != std::string::npos; ++at)
+        for (std::size_t at = 0; (at = ada.said().find("Juniper Camp are going hungry", at)) != std::string::npos; ++at)
             ++told;
-        expect(told == 1, "told once that day: " + std::to_string(told));
+        expect(told == 1, "told once that day of each camp: " + std::to_string(told));
     }
     std::remove(save.c_str());
 }

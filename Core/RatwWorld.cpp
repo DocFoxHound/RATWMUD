@@ -787,15 +787,23 @@ std::set<std::string> World::neighbors(const std::string& cellId) const
     return out;
 }
 
-const std::map<std::string, std::string>& World::cachedSteps(const std::string& from) const
+const std::map<std::string, std::string>& World::cachedSteps(const std::string& from, const std::string& avoid) const
 {
+    if (!avoid.empty())
+    {
+        const auto key = from + '\n' + avoid;       // (No cell's ID holds a line break.)
+        auto found = stepsCache_.find(key);
+        if (found == stepsCache_.end())
+            found = stepsCache_.emplace(key, firstSteps(from, avoid)).first;
+        return found->second;
+    }
     auto found = stepsCache_.find(from);
     if (found == stepsCache_.end())
         found = stepsCache_.emplace(from, firstSteps(from)).first;
     return found->second;
 }
 
-std::map<std::string, std::string> World::firstSteps(const std::string& from) const
+std::map<std::string, std::string> World::firstSteps(const std::string& from, const std::string& avoid) const
 {
     // The cheapest way (indexRoads): a step through a door or along a road counts 1, one overland OverlandCost, so
     // travellers keep to the roads unless one is blocked or none goes their way. Ties go the same way every time.
@@ -812,7 +820,7 @@ std::map<std::string, std::string> World::firstSteps(const std::string& from) co
         if (!done.insert(current).second)
             continue;
         const auto visit = [&](const std::string& next, bool seam) {
-            if (done.count(next) || deadEnds_.count({current, next}))
+            if (done.count(next) || deadEnds_.count({current, next}) || (!avoid.empty() && next == avoid))
                 return;
             const int total = spent + (!seam || roadLink(current, next) ? 1 : OverlandCost);
             if (const auto known = cost.find(next); known != cost.end() && known->second <= total)
@@ -4342,9 +4350,15 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     // found it, and a one-door house's household, coming home round it into the body of the cell, went out and round
     // again, all night). In the body of the cell beyond, out to a neighbour whose way there doesn't come back (below).
     std::string pocketed, pocketFrom;                   // (The next cell, so; and, in the cell beyond, the one it was found from.)
+    // The goal's part of its cell, looked up before the dead ends are gone through: new ground there (a Chapter's tent
+    // put up or taken down) forgets the dead ends touching it (regionMap), and one of them may be the one being looked
+    // at (doc 64, Phase 13, round 6: the roads' review, read after it was freed).
+    int goalPart = -1;
+    if (const auto* goal = cell(goalCell);
+        goal && std::any_of(deadEndPockets_.begin(), deadEndPockets_.end(), [&](const auto& kept) { return kept.first.second == goalCell; }))
+        goalPart = regionAt(*goal, target);
     for (const auto& [edge, end] : deadEndPockets_)
-        if (end.beyond.count(goalCell) || (edge.second == goalCell && cell(goalCell) && regionMap(*cell(goalCell)) &&
-                                           end.parts.count(regionAt(*cell(goalCell), target))))
+        if (end.beyond.count(goalCell) || (edge.second == goalCell && goalPart >= 0 && end.parts.count(goalPart)))
         {
             if (e.cellId == edge.second)
                 pocketFrom = edge.first;
@@ -4353,7 +4367,12 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
             else if (e.cellId == edge.first)
                 pocketed = edge.second;
             else if (const auto& to = cachedSteps(e.cellId); to.count(edge.first))
-                pocketed = to.at(edge.first);
+            {
+                // Not by way of the cell beyond, where another way round goes: from its body every neighbour's way
+                // there may come back through it, and the walker went in and out again (round 6, the roads' review).
+                const auto& round = cachedSteps(e.cellId, edge.second);
+                pocketed = to.at(edge.first) == edge.second && round.count(edge.first) ? round.at(edge.first) : to.at(edge.first);
+            }
             if (!pocketed.empty() || !pocketFrom.empty())
                 break;
         }
@@ -4454,7 +4473,10 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
         onward.clear();
         if (!next.empty() && next != goalCell)
             if (const auto& on = cachedSteps(next); on.count(goalCell))
-                regionsToward(next, on.at(goalCell), onward);
+            {
+                const std::string toward = on.at(goalCell);   // (A copy: new ground beyond clears the routes kept, regionMap.)
+                regionsToward(next, toward, onward);
+            }
         for (const Door* way : doorsIn(e.cellId))
             if (usable(way) && way->targetCell == next && !next.empty())
                 if (const int lands = landing(*way);
@@ -4479,8 +4501,8 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
         // judged by one walker's goal (a spot upstairs in a room no stair reaches), or by a part of the next cell
         // other than its body, it cut a House off from the street, and its floors from each other, for everyone
         // (doc 64, Phase 13: a household offstage, never getting home to eat).
-        deadEnds_.insert({e.cellId, next});
-        auto& end = deadEndPockets_[{e.cellId, next}];
+        // (Its pocket gathered first, then kept: regionAt may forget dead ends, as above.)
+        PocketEnd end;
         if (const auto* there = cell(next))
             for (const Door* way : doorsIn(e.cellId))
                 if (usable(way) && way->targetCell == next)
@@ -4488,6 +4510,10 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                         for (const Door* on : doorsIn(next))
                             if (on->portal && !on->locked && on->targetCell != e.cellId && regionAt(*there, on->position) == part)
                                 end.beyond.insert(on->targetCell);
+        deadEnds_.insert({e.cellId, next});
+        auto& kept = deadEndPockets_[{e.cellId, next}];
+        kept.parts.insert(end.parts.begin(), end.parts.end());
+        kept.beyond.insert(end.beyond.begin(), end.beyond.end());
         stepsCache_.clear();
         step = cachedSteps(e.cellId).find(goalCell);
         if (step == cachedSteps(e.cellId).end()) { e.activity = task + " — route unavailable"; return; }
@@ -4556,6 +4582,13 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                     if (const auto& on = cachedSteps(way->targetCell);
                         way->targetCell == pocketFrom || (on.count(pocketFrom) && on.at(pocketFrom) != e.cellId))
                         out = way;
+        // None: to one with any way there not through here, however long (as it goes on from there, above), not one
+        // whose way comes straight back (round 6, the roads' review: every neighbour's cheapest way was back through).
+        if (!out && !pocketFrom.empty() && !misplaced)
+            for (const Door* way : doorsIn(e.cellId))
+                if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) == 2 &&
+                    cachedSteps(way->targetCell, e.cellId).count(pocketFrom))
+                    out = way;
         if (!out && !misplaced)
             for (const Door* way : doorsIn(e.cellId))
                 if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) == 2)

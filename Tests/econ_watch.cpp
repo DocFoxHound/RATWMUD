@@ -22,6 +22,7 @@
 // --hold-pace: the realm's pace (memory.pace, Society::holdPace) each day as another run's pace.csv has it, whatever this
 // run's hunger, food and hands would make it: a run with players set beside the run without them differs by what the
 // players did, not by the pace they moved (doc 64, Phase 13: strike's starving hands held the pace at 0 for a month).
+// It wants --hours (the pace is stepped only there) and a pace for every society's day the run turns; else refused.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -64,6 +65,9 @@
 //   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
 //                   society's days' turns (--hold-pace's to read; a turn can fall on either side of the watch's
 //                   midnight, so not at the day's records);
+//   orders.csv      day, the roads' standing orders: buyer, town, seller's town, good, a week's, delivered, short, unpaid;
+//   refusals.csv    day, buyer, good, the day its refusal was marked, its till's cash: the buyers whose order was cut or
+//                   ended for what they couldn't pay for (RoadsState::refused), at each day's end;
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
@@ -287,6 +291,13 @@ int main(int argc, char** argv)
                 return 2;
             }
         }
+    // (The pace is held only where it is stepped, at work by the hours: without --hours a held run would quietly be a
+    // free one. Round 6, the tidy's review.)
+    if (!heldPace.empty() && !Society::workByHours())
+    {
+        std::cerr << "--hold-pace holds the pace of work by the hours: it wants --hours\n";
+        return 2;
+    }
     fs::create_directories(out);
     const auto stamp = runStamp(argc, argv);
     std::cout << stamp << std::flush;
@@ -344,7 +355,19 @@ int main(int argc, char** argv)
     }
     server.setDeterministic(deterministic);
     if (!heldPace.empty())
+    {
+        // Every society's day the run will turn (its days are the calendar's: Society::decide) in the file, or the run
+        // would go back to stepping its own pace from the first one missing, without a word (round 6, the tidy's review).
+        const auto first = std::int64_t(std::floor(server.calendarDays())), last = std::int64_t(std::floor(server.calendarDays() + days));
+        for (auto d = server.society().state().budgetDay >= first ? first + 1 : first; d <= last; ++d)
+            if (!heldPace.count(d))
+            {
+                std::cerr << "--hold-pace: the file has no pace for the society's day " << d << ", and the run goes to day " << last
+                          << " (from " << first << "): a held run wants every day held\n";
+                return 2;
+            }
         server.society().holdPace(heldPace);
+    }
     const auto& society = server.society();
     server.society().keepBriefs(true);
     std::unique_ptr<econ::Players> players;
@@ -1367,6 +1390,18 @@ int main(int argc, char** argv)
                 for (const auto& o : server.roads().orders)
                     orders << now << ",\"" << o.buyer << "\",\"" << o.town << "\",\"" << o.from << "\",\"" << o.item << "\","
                            << o.perWeek << "," << o.delivered << "," << o.shortfall << "," << o.unpaid << "\n";
+                // And the buyers' refusals standing (RoadsState::refused; round 6, the roads' review): since when, and
+                // the money in the buyer's till now, against which a new order's week is weighed.
+                static std::ofstream refusals(out / "refusals.csv");
+                static bool refusalsHeader = (refusals << "day,buyer,item,since,cash\n", true);
+                (void)refusalsHeader;
+                for (const auto& [mark, since] : server.roads().refused)
+                {
+                    const auto bar = mark.rfind('|');
+                    const auto* till = society.account(mark.substr(0, bar));
+                    refusals << now << ",\"" << mark.substr(0, bar) << "\",\"" << mark.substr(bar + 1) << "\"," << since << ","
+                             << (till ? till->cash : 0) << "\n";
+                }
             }
             const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
             std::cout << "day " << now << " (" << int(wall / 60) << " min): supply " << supply << (conserved ? "" : " NOT CONSERVED")
