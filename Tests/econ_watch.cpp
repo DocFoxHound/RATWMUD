@@ -2,7 +2,7 @@
 // asked (Docs/Design/42-money-in-circulation.md: "a month-long run"). The world runs as world_check runs it (20 ticks a
 // second, simulation tiers on), and every coin and good that moves is tallied from the society's journal.
 //
-//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
+//   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
 //              [--players-staple ITEM] [--hold-pace PACE_CSV]
 //
@@ -10,6 +10,10 @@
 // at six in the morning).
 // --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
 // it, the game's old pace (each craft's `seconds` as its hours).
+// --step SECONDS: the world seconds each of the watch's ticks (0.05 unless asked: 20 a second, as world_check's), the
+// days asked kept. World::tick moves the world in steps of 1/30 s at most whatever it is given, and its schedules come
+// every half second of world time, so a longer step saves only each tick's own work (streaming, views, the journal,
+// this watch's tallies); past half a second, the scripted players' looks (twice a world second) come once a tick.
 // --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
 // poach, kill, theft, visit, winter, flood, strike, buyout, drain, gift. They act from --players-from DAY (7 unless
 // asked: the realm's money stands from day 2;
@@ -215,7 +219,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n"
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
                      "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n";
         return 2;
@@ -224,6 +228,7 @@ int main(int argc, char** argv)
     const double days = std::atof(argv[2]);
     const fs::path out = argv[3];
     double from = 6;
+    double step = .05;                              // --step: world seconds a tick.
     bool deterministic = false;
     unsigned threads = 8;
     std::vector<std::string> scenarios;             // --players (doc 64, Phase 13).
@@ -238,6 +243,15 @@ int main(int argc, char** argv)
             deterministic = true;
         else if (std::string(argv[i]) == "--hours")
             Society::setWorkByHours(true);          // Residents' work takes its calibrated hours (doc 64, Phase 3).
+        else if (std::string(argv[i]) == "--step" && i + 1 < argc)
+        {
+            step = std::atof(argv[++i]);
+            if (!(step > 0 && step <= 60))
+            {
+                std::cerr << "--step is world seconds a tick, over 0 and up to 60 (World::tick's most), not " << argv[i] << "\n";
+                return 2;
+            }
+        }
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else if (std::string(argv[i]) == "--players" && i + 1 < argc)
@@ -1216,7 +1230,8 @@ int main(int argc, char** argv)
               << std::flush;
 
     const auto wallBegin = std::chrono::steady_clock::now();
-    const long ticks = long(days * 24 * 600 / 0.05);
+    const long ticks = long(days * 24 * 600 / step);
+    const long minuteTicks = std::max(1L, std::lround(60 / step));   // (A world minute's ticks: 1200 at 0.05.)
     int day = int(std::floor(server.calendarDays()));
     today = day;
     double nextHour = std::floor(server.calendarDays() * 24 + 1) / 24;
@@ -1250,7 +1265,7 @@ int main(int argc, char** argv)
     for (long i = 0; i < ticks; ++i)
     {
         const auto tickBegin = std::chrono::steady_clock::now();
-        server.tick(0.05);
+        server.tick(step);
         // The pace each of the society's days sets at its turn (Society::tendLabour), every digit of it.
         if (const auto turned = society.state().budgetDay; turned != paceDay)
         {
@@ -1258,7 +1273,7 @@ int main(int argc, char** argv)
             paceOut << std::int64_t(std::floor(server.calendarDays())) << ",turn," << turned << ',' << society.state().memory.pace << '\n'
                     << std::flush;
         }
-        if (i % 1200 == 0)
+        if (i % minuteTicks == 0)
             server.makeRequestedResidents();        // (Births and newcomers, as the game makes them from files: doc 64.)
         tickSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - tickBegin).count();
         absorb();
@@ -1405,7 +1420,8 @@ int main(int argc, char** argv)
             mix(&a->cash, sizeof a->cash);
     }
     const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
-    std::cout << "done: " << ticks << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(ticks) << " ms a tick); digest "
+    std::cout << "done: " << ticks << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(ticks) << " ms a tick, "
+              << wall / 60 / std::max(1e-9, days) << " min a game day); digest "
               << std::hex << digest << std::dec << "\n";
     // Where the ticks went (ms a tick): the world's parts, and the schedules by stage.
     const auto& p = server.tickProfile();
