@@ -39,8 +39,10 @@ struct Caravan
     // home. Empty for the capital's daily caravans.
     std::string trader;
     // The standing orders it carries, when it went for those signed that day only (doc 64, Phase 13); empty for all of
-    // its road's.
+    // its road's. And what each order it set out with was for a week then: what it was loaded for, its share of the
+    // load on arrival (a raise agreed while it was on the road is next week's). Empty in an older save.
     std::vector<std::string> orders;
+    std::map<std::string, int> loaded;
 };
 
 // Robbers in wild country along a road. Loot feeds them; hunger makes them bold; starving, they scatter.
@@ -110,6 +112,9 @@ struct RoadsState
     // A road whose week's caravan went early, with an order new that day ("from>to" -> the day it was due): it doesn't
     // go again that day (doc 64, Phase 13).
     std::map<std::string, std::int64_t> sentEarly;
+    // A seller whose order was cut or ended for what it didn't send ("buyer|good|from" -> the day): the buyer signs
+    // with another town for MonthDays, not again with it the next day (doc 64, Phase 13).
+    std::map<std::string, std::int64_t> failed;
     std::int64_t day = -1, nextId = 1;
     bool stocked = false;                 // The towns' stores have had their first share from the treasury.
     bool purses = false;                  // ...and their share of its money, as their own treasuries (doc 42).

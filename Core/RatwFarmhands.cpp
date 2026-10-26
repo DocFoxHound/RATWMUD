@@ -202,6 +202,10 @@ void Society::tendFields()
     // first days aren't counted short) into its year's rate (a slow average over the year, the model's year's sales, doc
     // 64, Phase 13) and its week's; at a week's end, the week's into its month's, set right for the weeks it has run.
     // (Not a day at a time: with a farm's caravan once a week, that still went a quarter over in its founding spring.)
+    // A restart's first days aren't counted: its running average begun again from nothing, a farm sold to once a week
+    // read its week's lump as a day's sales, and planned its spring and its year at up to 1.29 times them. Its week begins
+    // again once its average has a week behind it (or, with no sales yet, the society has run a week).
+    ++fieldPasses_;
     for (auto& [till, f] : state_.memory.fields)
     {
         const auto* job = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
@@ -209,7 +213,13 @@ void Society::tendFields()
         if (!p)
             continue;
         const auto days = salesDays_.find(till);
-        const double today = days == salesDays_.end() ? 0. : fieldNeed(till, *p) / (1 - std::pow(.7, std::max(1, days->second)));
+        if (days == salesDays_.end() ? fieldPasses_ <= 7 : days->second < 7)
+        {
+            f.week = 0;
+            f.monthDays -= f.monthDays % 7;
+            continue;
+        }
+        const double today = days == salesDays_.end() ? 0. : fieldNeed(till, *p) / (1 - std::pow(.7, days->second));
         f.rate += (today - f.rate) / calendar::DaysPerYear;
         f.week += today;
         if (++f.monthDays % 7 == 0)

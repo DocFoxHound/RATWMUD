@@ -1570,11 +1570,13 @@ void theOwnersProfit()
     expect(s.conserved(), "Money stays conserved");
 }
 
-// Children's stipends (the user, 2026-10-05): a child living with grown family is given a little each day out of the
-// household's want fund, only what it can spare over the household rule's target and the week's tax and tithe; and
-// children spend a little, on a trinket (doc 64, Phase 13: never the baker's flour and firewood).
+// Children's stipends (the user, 2026-10-05): with work by the hours, a child living with grown family is given a little
+// each day out of the household's want fund, only what it can spare over the household rule's target and the week's tax
+// and tithe; and children spend a little, on a trinket (doc 64, Phase 13: never the baker's flour and firewood). With
+// the hours off, the old pace, as it was: a penny more for every hundred spared, and what it buys kept.
 void childrensStipends()
 {
+    Society::setWorkByHours(true);
     for (const bool comfortable : {true, false})
     {
         auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
@@ -1624,6 +1626,25 @@ void childrensStipends()
             expect(!given, "A household with nothing to spare after food and tax gives none");
         expect(w.society().conserved(), "Money stays conserved");
     }
+    Society::setWorkByHours(false);
+    auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
+    kid.replace(kid.find(" 30 "), 4, " 8 ");
+    auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
+                                    resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
+    auto w = load(f);
+    w.tick(.6);
+    w.society().shift("treasury", "e1", "", 0, 1000, "test: a good year");
+    w.takeEvents();
+    nextMorning(w);
+    if (!Society::hasFood(*w.society().account("kid")))
+        w.society().create("kid", "porridge", 2, "test: breakfast");
+    run(w, 2);
+    std::int64_t stipend = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "economy" && e.detail == "a child's stipend" && e.target == "kid")
+            stipend = std::max(stipend, e.coins);
+    expect(stipend > Society::MostStipend, "At the old pace, as it was: a penny more for every hundred spared (" + std::to_string(stipend) + "p)");
+    expect(w.society().conserved(), "Money stays conserved");
 }
 
 // Wants (the user, 2026-10-05; doc 64, Phase 13): a household with money to spare buys things it simply wants, one a day
@@ -2085,7 +2106,9 @@ void thePaceIsSteadied()
 
 // And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
 // go on to the shops). Its sales wanting a hand's day, the land's hands keep up and the pace goes on, though the farm,
-// planning half again for its bare shelf, hires; its sales wanting three hands' days, they don't, and it holds.
+// planning half again for its bare shelf, hires; its sales wanting three hands' days, they don't, and it holds. But with
+// no work for more hands (its store full, its work in hand full at two turns of the day), it counts at the hand it has,
+// whatever its sales want (it lets hands go, not hires them): the pace goes on.
 void thePaceStepsUpWithTheLand()
 {
     Society::setWorkByHours(true);
@@ -2132,6 +2155,51 @@ void thePaceStepsUpWithTheLand()
         pace = evening(d, 24);
     expect(std::abs(pace - .5) < 1e-9 && s.handsWanted(till, false) >= 3,
            "Its sales three hands' days with only its own, the land falls behind: it holds (" + std::to_string(pace) + ")");
+    // Its store full and no money to hire with, for days: its work in hand fills, and is full at two turns of the day.
+    // (Its premises improved, so its hours go further; its folk fed, and its till emptied, each evening.)
+    {
+        auto saved = w.save();
+        saved.calendarDays = 9 + 7. / 24;
+        auto& farmStock = saved.society.accounts.at(till);
+        farmStock.stock["rabbit"] = 900;
+        farmStock.stock["small_pelt"] = 900;
+        saved.society.memory.improved[s.jobOf("rk")->id] = Society::MostImprovement;
+        expect(w.restore(saved).ok, "To a morning, the farm's store full");
+    }
+    const auto until = [&](double day) {
+        while (w.calendarDays() < day)
+            w.tick(1);
+    };
+    for (std::int64_t d = 9; d <= 13; ++d)
+    {
+        until(double(d) + 22. / 24);
+        auto state = s.state();
+        for (auto& [id, life] : state.residents)
+            life.hunger = life.fatigue = 0;
+        state.accounts.at("treasury").cash += state.accounts.at(till).cash;
+        state.accounts.at(till).cash = 0;
+        state.memory.pace = .5;
+        state.memory.paceCover.clear();
+        for (std::int64_t r = d + 1 - (Society::PaceWeek - 1); r <= d; ++r)
+            state.memory.paceCover.push_back({r, r == d + 1 - (Society::PaceWeek - 1) ? 0. : Society::PaceCoverCap});
+        expect(s.restore(state), "The evening: its folk fed, its till emptied");
+    }
+    {
+        // (Its sales three hands' days.)
+        const double old = std::max(1., farm->seconds / 3600.), perYield = old + .5 * (farm->hours - old);
+        const double rate = 24 * 3 / perYield / (rabbit->staple ? Society::StapleSlack : 1.);
+        const auto* rates = s.sellRates(till);
+        const double before = rates && rates->count("rabbit") ? rates->at("rabbit") : 0.;
+        const int n = std::max(0, int(std::lround((rate - .7 * before) / .3)));
+        expect(n == 0 || s.shift("treasury", "e1", "", 0, n, "test: the day's money"), "the day's money");
+        for (int left = n; left > 0; left -= 99)    // (A ledger entry holds 99 at most.)
+            expect(s.sale(till, "e1", "rabbit", std::min(left, 99), 1, "test: the day's rabbits"), "the day's rabbits sold");
+    }
+    until(14 + 1. / 24);
+    pace = s.state().memory.pace;
+    expect(s.idleBusiness(till) && s.handsWanted(till, false) >= 3 && std::abs(pace - (.5 + Society::PaceStep)) < 1e-9,
+           "Its sales three hands' days, but no work for more: at its one, the land keeps up and the pace goes on (" + std::to_string(pace) + "; its sales " +
+               std::to_string(s.handsWanted(till, false)) + " hands, its work in hand " + std::to_string(s.workBankedOf("rk")) + ")");
     expect(s.conserved(), "Every penny is kept");
     Society::setWorkByHours(false);
 }
@@ -2731,14 +2799,21 @@ void anOrderRisesNoFasterThanItsSeller()
         else
             expect(agreedAgain->perWeek == 8, std::string(which == NothingToSpare ? "Frosthollow with no bars to spare" : "Its bars piled up") +
                                                   ": not raised (" + std::to_string(agreedAgain->perWeek) + ")");
+        // (A raise its seller's room held where it was is looked at again in a week, as a raise is; one lowered, or left,
+        // in a month.)
+        if (which == NothingToSpare)
+            expect(agreedAgain->review - w.calendarDays() <= 7.01, "with nothing to spare, its raise is looked at again in a week");
+        if (which == PiledUp)
+            expect(agreedAgain->review - w.calendarDays() > 27, "piled up, in a month");
         expect(soc.conserved(), "Money is conserved");
     }
 }
 
 // An order its seller falls short of (doc 64, Phase 13: Southmeadow's flour with Larkfield brought nothing after its
 // first week, and was never cut, nor signed with another town). A week its road's caravan doesn't go (its trader without
-// the money) is a week short; and when it is next agreed, an order its seller sent under half of is cut toward what
-// came, by half at most, and one its seller sent nothing of in two weeks' worth ends, so another town may be signed.
+// the money) is a week short; and when it is next agreed, an order its seller sent under half of is halved, and one its
+// seller sent nothing of in two weeks' worth ends, so another town may be signed: not the one that failed it, for a
+// month (it was signed again with Frosthollow the next day, for more). That is saved with the roads.
 void anOrderItsSellerCantFillIsCut()
 {
     auto f = ironRoad(3);
@@ -2783,8 +2858,42 @@ void anOrderItsSellerCantFillIsCut()
         return e.kind == "standing order ends" && e.target == soc.tillOf("lowsmith");
     });
     expect(orderOf(w, "so-westsmith") && orderOf(w, "so-westsmith")->perWeek == 4,
-           "An order its seller sent a quarter of is cut by half: " + std::to_string(orderOf(w, "so-westsmith") ? orderOf(w, "so-westsmith")->perWeek : 0));
+           "An order its seller sent a quarter of is halved: " + std::to_string(orderOf(w, "so-westsmith") ? orderOf(w, "so-westsmith")->perWeek : 0));
     expect(ended && !orderOf(w, "so-lowsmith"), "and one it sent nothing of in two weeks ends");
+    const auto low = soc.tillOf("lowsmith");
+    const auto failed = [&](const std::string& till) { return w.roads().failed.count(till + "|iron_bar|frosthollow") > 0; };
+    expect(failed(low) && failed(soc.tillOf("westsmith")), "Both sellers' failures are kept");
+    // The west's three forges short of bars, with no orders: Frosthollow (the only town with iron) signs the far forge's,
+    // never the two it failed.
+    w.roads().orders.clear();
+    bool again = false, farSigned = false;
+    for (int d = 0; d < 3; ++d)
+    {
+        for (const auto* smith : {"westsmith", "lowsmith", "farsmith"})
+        {
+            emptyOf(soc, soc.tillOf(smith), "iron_bar");   // (Short of bars, and wanting them.)
+            soc.shift("treasury", soc.tillOf(smith), "", 0, 100, "test: takings");
+        }
+        nextMorning(w);
+        w.roads().camps.clear();
+        tickWhileOnTheWay(w);
+        for (const auto& o : w.roads().orders)
+        {
+            again |= o.buyer == low || o.buyer == soc.tillOf("westsmith");
+            farSigned |= o.buyer == far && o.from == "frosthollow";
+        }
+    }
+    expect(farSigned && !again, "The far forge is signed with Frosthollow; the low and west forges, short again, aren't, with the town that "
+                                "failed them");
+    {
+        checkpoint::ServerState server;
+        PersistedWorld back;
+        std::string problem;
+        const auto key = low + "|iron_bar|frosthollow";
+        expect(checkpoint::decode(checkpoint::encode(w.save(), server, {}, 0), back, server, problem) && back.roads.failed.count(key) &&
+                   back.roads.failed.at(key) == w.roads().failed.at(key),
+               "and its failure is saved with the roads: " + problem);
+    }
     expect(soc.conserved(), "Money is conserved");
 }
 
@@ -2894,6 +3003,130 @@ void anEarlyCaravanIsTheWeeks()
     expect(soc.conserved(), "Money is conserved");
 }
 
+// An order agreed the day a world is loaded, before that day's trade (doc 64, Phase 13): what its seller's town has to
+// spare isn't known (World::canSpare_, not saved). A raise isn't agreed on an unknown room (an in-process restore read
+// the last timeline's, a restart none), and the order stays due: its week's load is handed over, and it is agreed at
+// the next caravan.
+void anOrderWaitsForItsSellersRoom()
+{
+    auto f = ironRoad(1);
+    auto w = ironWorld(f, 297);
+    auto& soc = w.society();
+    const auto smith = soc.tillOf("westsmith");
+    auto o = ironOrder(w, "westsmith", 8);
+    o.review = 0;                                   // (Due: a month's, a quarter short, as one to be raised.)
+    o.delivered = 21;
+    o.shortfall = 7;
+    w.roads().orders.push_back(o);
+    const auto busy = [&] {
+        soc.create(smith, "nails", 96, "test: made");
+        soc.shift("treasury", "w1", "", 0, 96, "test: a builder's errand");
+        expect(soc.sale(smith, "w1", "nails", 96, 1, "test: sold"), "A busy day: the smith sells 96 nails");
+        soc.consume("w1", "nails", 96, "test: a roof mended");
+    };
+    bool out = false;
+    for (int d = 0; d < 9 && !out; ++d)
+    {
+        busy();
+        nextMorning(w);
+        w.roads().camps.clear();
+        out = ironOnTheWay(w);
+        if (!out)
+            tickWhileOnTheWay(w);
+    }
+    expect(out, "The week's caravan sets out");
+    auto saved = w.save();
+    expect(w.restore(saved).ok, "The world loaded again while it is on the road");
+    std::vector<WorldEvent> seen;
+    tickWhileOnTheWay(w, &seen);
+    const bool early = std::any_of(seen.begin(), seen.end(), [&](const WorldEvent& e) { return e.kind == "standing order renegotiated" && e.target == smith; });
+    const auto* waiting = orderOf(w, o.id);
+    expect(!early && waiting && waiting->perWeek == 8 && waiting->review <= w.calendarDays() && waiting->delivered == 21 + 8,
+           "Arrived before the day's trade: not agreed, still due, its week handed over (" +
+               std::to_string(waiting ? waiting->delivered : -1) + " delivered)");
+    bool agreed = false;
+    for (int d = 0; d < 9 && !agreed; ++d)
+    {
+        busy();
+        nextMorning(w);
+        w.roads().camps.clear();
+        seen.clear();
+        tickWhileOnTheWay(w, &seen);
+        for (const auto& e : seen)
+            agreed |= e.kind == "standing order renegotiated" && e.target == smith;
+    }
+    expect(agreed && orderOf(w, o.id) && orderOf(w, o.id)->perWeek > 8, "and agreed, raised, at the next caravan, its room known");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// What the buyer couldn't pay for isn't its seller's shortfall (doc 64, Phase 13: a smith short of cash two weeks had its
+// order ended, and signed it again): the week's eight came, its till was empty; nothing delivered, nothing short.
+void whatTheBuyerCantPayForIsntShort()
+{
+    auto f = ironRoad(1);
+    auto w = ironWorld(f, 297);
+    auto& soc = w.society();
+    const auto smith = soc.tillOf("westsmith");
+    w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+    bool out = false;
+    for (int d = 0; d < 9 && !out; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        out = ironOnTheWay(w);
+        if (!out)
+            tickWhileOnTheWay(w);
+    }
+    expect(out, "The week's caravan sets out");
+    for (const auto& who : {smith, std::string("westsmith")})   // (Its till, and its keeper, who would top it up.)
+        if (const auto cash = soc.account(who)->cash; cash > 0)
+            soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+    tickWhileOnTheWay(w);
+    const auto* o = orderOf(w, "so-westsmith");
+    expect(o && o->delivered == 0 && o->shortfall == 0, "Its till empty: nothing handed over, and nothing short (" +
+                                                           std::to_string(o ? o->shortfall : -1) + ")");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A load is for the orders it set out with, as they were then (doc 64, Phase 13; Caravan::loaded, saved): an order raised
+// while the wagon is on the road (by a porter agreeing it at the selling town) has the eight it was loaded for, and
+// isn't laid the raise as a shortfall its seller didn't make.
+void aLoadIsForTheOrdersItLeftWith()
+{
+    auto f = ironRoad(1);
+    auto w = ironWorld(f, 297);
+    auto& soc = w.society();
+    w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+    bool out = false;
+    for (int d = 0; d < 9 && !out; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        out = ironOnTheWay(w);
+        if (!out)
+            tickWhileOnTheWay(w);
+    }
+    const auto wagon = std::find_if(w.roads().caravans.begin(), w.roads().caravans.end(), [](const Caravan& c) {
+        return !c.trader.empty() && c.from == "frosthollow" && c.status == "travelling";
+    });
+    expect(out && wagon != w.roads().caravans.end() && wagon->loaded.count("so-westsmith") && wagon->loaded.at("so-westsmith") == 8,
+           "The week's caravan sets out loaded for the order's eight");
+    {
+        checkpoint::ServerState server;
+        PersistedWorld back;
+        std::string problem;
+        expect(checkpoint::decode(checkpoint::encode(w.save(), server, {}, 0), back, server, problem), "The checkpoint reads back: " + problem);
+        const auto again = std::find_if(back.roads.caravans.begin(), back.roads.caravans.end(), [&](const Caravan& c) { return c.id == wagon->id; });
+        expect(again != back.roads.caravans.end() && again->loaded == wagon->loaded, "what it was loaded for is saved");
+    }
+    orderOf(w, "so-westsmith")->perWeek = 16;       // (Raised by a porter at Frosthollow's market meanwhile.)
+    tickWhileOnTheWay(w);
+    const auto* o = orderOf(w, "so-westsmith");
+    expect(o && o->delivered == 8 && o->shortfall == 0, "Its eight handed over, nothing short: " + std::to_string(o ? o->delivered : -1) + " delivered, " +
+                                                           std::to_string(o ? o->shortfall : -1) + " short");
+    expect(soc.conserved(), "Money is conserved");
+}
+
 int main()
 {
     try
@@ -2904,6 +3137,9 @@ int main()
         anOrderItsSellerCantFillIsCut();
         aWagonShortOfMoneyMissesNoSale();
         anEarlyCaravanIsTheWeeks();
+        anOrderWaitsForItsSellersRoom();
+        whatTheBuyerCantPayForIsntShort();
+        aLoadIsForTheOrdersItLeftWith();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();

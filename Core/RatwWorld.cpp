@@ -5455,8 +5455,11 @@ Result World::restore(const PersistedWorld& saved)
     memories_ = state.memories;
     lastObserved_.clear();
     bonds_ = std::move(restoredBonds);
-    // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
+    // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again, and what
+    // they have to spare at the next day's trade (doc 64, Phase 13: an order agreed before it read the last timeline's).
     roads_ = state.roads;
+    canSpare_.clear();
+    canSpareKnown_ = false;
     crime_ = state.crime;
     festivals_ = state.festivals;
     ++festivalsChanged_;

@@ -1012,6 +1012,10 @@ Value economyMemory(const EconomyMemory& m)
             map.add(till, hours);
         o.add(rates == &m.mendRate ? "mendRate" : "worksRate", map);
     }
+    auto waits = Value::object();
+    for (const auto& [fund, since] : m.pieceWait)
+        waits.add(fund, double(since));
+    o.add("pieceWait", waits);
     auto mint = Value::object(), spending = Value::object();
     mint.add("on", m.mint.on);
     mint.add("target", m.mint.target);
@@ -1164,6 +1168,11 @@ EconomyMemory readEconomyMemory(const Value& o)
         for (const auto& [till, v] : o.object(key).fields())
             if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= 0 && v.asNumber() < 1e6 && till.size() < 200)
                 (*into)[till] = v.asNumber();
+    // (Saved before doc 64's Phase 13 review: none waiting.)
+    for (const auto& [fund, v] : o.object("pieceWait").fields())
+        if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= 0 && v.asNumber() <= 365000000 && fund.size() < 200 &&
+            m.pieceWait.size() < 100000)
+            m.pieceWait[fund] = std::int64_t(v.asNumber());
     // (Saved before doc 64's Phase 13, six numbers: no year's rate yet, so the next plan goes by its sales lately, and no
     // founding spring to look at again. Nine, before its month's rate: that begins with the next day's sales.)
     for (const auto& [till, v] : o.object("fields").fields())

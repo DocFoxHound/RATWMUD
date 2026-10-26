@@ -116,6 +116,13 @@ Value roads(const RoadsState& r)
             j.add("trader", t.trader);
         if (!t.orders.empty())
             j.add("orders", strings(t.orders));
+        if (!t.loaded.empty())
+        {
+            auto loaded = Value::object();
+            for (const auto& [order, n] : t.loaded)
+                loaded.add(order, double(n));
+            j.add("loaded", loaded);
+        }
         caravans.push(j);
     }
     for (const auto& b : r.camps)
@@ -156,6 +163,10 @@ Value roads(const RoadsState& r)
     for (const auto& [road, due] : r.sentEarly)
         early.add(road, double(due));
     roads.add("sentEarly", early);
+    auto failed = Value::object();
+    for (const auto& [key, day] : r.failed)
+        failed.add(key, double(day));
+    roads.add("failed", failed);
     return roads;
 }
 
@@ -689,6 +700,9 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             for (const auto& order : readStrings(j, "orders"))
                 if (order.size() < 40 && t.orders.size() < 256)
                     t.orders.push_back(order);
+            for (const auto& [order, n] : j.object("loaded").fields())   // (Saved before doc 64's Phase 13 review: none.)
+                if (n.isNumber() && std::isfinite(n.asNumber()) && order.size() < 40 && t.loaded.size() < 256)
+                    t.loaded[order] = std::clamp(int(n.asNumber()), 0, Society::ShelfMost);
             for (const auto& [who, cells] : j.object("with").fields())
                 if (cells.isNumber())
                     t.with[who] = int(cells.asNumber());
@@ -730,6 +744,10 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             if (due.isNumber() && std::isfinite(due.asNumber()) && std::abs(due.asNumber()) < 1e9 && road.size() < 200 &&
                 saved.roads.sentEarly.size() < 4096)
                 saved.roads.sentEarly[road] = std::int64_t(due.asNumber());
+        for (const auto& [key, day] : roads.object("failed").fields())   // (Saved before doc 64's Phase 13 review: none.)
+            if (day.isNumber() && std::isfinite(day.asNumber()) && std::abs(day.asNumber()) < 1e9 && key.size() < 400 &&
+                saved.roads.failed.size() < 4096)
+                saved.roads.failed[key] = std::int64_t(day.asNumber());
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),

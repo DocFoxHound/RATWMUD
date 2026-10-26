@@ -111,6 +111,29 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
         here = communityOfResident(id);
     int bought = 0;
     bool more = false;                              // A seller in its town had more it would sell.
+    // What it bought of it today, this call's with those before it. And none left to buy in its town (doc 64, Phase 13;
+    // the model's asks): what it went without of a day's use of it, once a day, is a sale its town's producers missed.
+    // (Not what it was short of money for, nor what a ledger entry's 99 left behind: only when its town's sellers had no
+    // more, keeping back what they keep. Counted the first time it is, not the first time it looked: a call short only
+    // for money stamped the day, and the want found later went uncounted. Against all it bought that day: a mill that
+    // laid in two days' wheat from one farm, calling again for more, found the other's barn empty, and told it of a
+    // day's sales it missed.)
+    const auto tally = [&](int n, bool left) {
+        if (n <= 0 && left)
+            return n;
+        auto& today = unmetOn_[till + "|" + item];
+        if (today.day != state_.budgetDay)
+            today.day = state_.budgetDay, today.bought = 0;
+        const int before = today.bought;
+        today.bought += n;
+        if (!left && today.counted != state_.budgetDay)
+            if (const int missed = std::min(before + wanted, int(std::ceil(useRate(till, item)))) - today.bought; missed > 0)
+            {
+                today.counted = state_.budgetDay;
+                missedAt(here, item, missed);
+            }
+        return n;
+    };
     // Close to home first, at the price; then anywhere, carted in (in a world of towns, only the caravans bring what a
     // town lacks: doc 42, Phase 7).
     for (const bool local : {true, false})
@@ -146,25 +169,13 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                         credit && rest > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, rest, price))
                         bought += rest, owing = rest;
                     if (bought >= wanted)
-                        return bought;
+                        return tally(bought, more);
                     // (What it has left of what it would sell, as it keeps back: left for want of money or by a ledger
                     // entry's 99 is no sale missed.)
                     more = more || (local && spare - std::max(0, n) - owing > 0);
                 }
             }
-    // None left to buy in its town (doc 64, Phase 13; the model's asks): what it went without of a day's use of it,
-    // once a day, is a sale its town's producers missed. (Not what it was short of money for, nor what a ledger entry's
-    // 99 left behind: only when its town's sellers had no more, keeping back what they keep. Counted the first time it
-    // is, not the first time it looked: a call short only for money stamped the day, and the want found later went
-    // uncounted.)
-    if (!more)
-        if (auto& counted = unmetOn_.try_emplace(till + "|" + item, -1).first->second; counted != state_.budgetDay)
-            if (const int missed = std::min(wanted, int(std::ceil(useRate(till, item)))) - bought; missed > 0)
-            {
-                counted = state_.budgetDay;
-                missedAt(here, item, missed);
-            }
-    return bought;
+    return tally(bought, more);
 }
 
 int Society::keepsBack(const std::string& seller, const std::string& item) const
@@ -223,10 +234,9 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
         auto& f = state_.memory.fields[till];
         const auto window = fieldWindow(absoluteDay);
         const auto today = std::int64_t(std::floor(absoluteDay));
+        // (The harvest over: next year's acres. Its founding spring is looked at in the day's pass: Society::tendLabour.)
         if (today % calendar::DaysPerYear >= HarvestEnd && f.year < today / calendar::DaysPerYear)
-            planField(id, till, *producer, absoluteDay, false);   // (The harvest over: next year's acres.)
-        else if (window == 1)
-            reviewField(id, till, *producer, absoluteDay);
+            planField(id, till, *producer, absoluteDay, false);
         // (Dry when any of what it is planned by runs out, not only its first good: a farm's wheat held while its oats
         // were gone.)
         if (const auto* a = account(till))

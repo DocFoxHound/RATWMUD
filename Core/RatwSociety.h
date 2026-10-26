@@ -343,6 +343,9 @@ struct EconomyMemory
     // world that has lived), and makers' mending and builders' works, hours a day (Society::keepRates).
     int piecesFounded = 0;
     std::map<std::string, double> mendRate, worksRate;
+    // A household waiting for a piece its fund runs to and no shelf has (its want fund's key -> the day it began): a few
+    // days at most (Society::PieceWaitDays), then its works go on while it looks (Phase 13).
+    std::map<std::string, std::int64_t> pieceWait;
     MintBook mint;                                   // The mint (Phase 11).
     double taxRate = .08;                            // The tax on a week's income (Society::TaxRate to start): the Dungeon
                                                      // Master's lever (Phase 12, Society::setTaxRate).
@@ -679,6 +682,9 @@ class Society
     // A shop of food (a general store, a provisioner, a stall, a bakery, a butcher, a fishmonger, a brewery, an inn): it
     // sells any wholesome food it has in, besides its own wares (Docs/Design/42, "Food between towns").
     bool foodShop(const std::string& merchant) const;
+    // The first of its wares that feeds and that it makes or supplies, or "" for none (a brewery's: its drinks feed
+    // nobody, and nobody there makes the meal every food shop sells): where a missed meal is counted (doc 64, Phase 13).
+    const std::string& foodMade(const std::string& shop) const;
     // How many of a good a business uses a day (doc 61), by its till ("till:<position>"): through each of its crafts that
     // takes it, as fast as what the craft makes sells (missed sales too); a supplier, as fast as it sells the good.
     double useRate(const std::string& till, const std::string& item) const;
@@ -806,8 +812,10 @@ class Society
     std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
     // A shop's food wanted today when it had none left: a hungry buyer's meal, in its first food's pieces (doc 64,
-    // Phase 13), counted with its sales (Society::spoil). Not saved. A wolf's meal counted once a day (missedBy_), at a
-    // shop it found bare, or at one of its town's open food shops when none had food (decideAuthored).
+    // Phase 13), counted with its sales (Society::spoil). Not saved. With work by the hours, a wolf's meal counted once a
+    // day (missedBy_), at a shop it found bare, or at one of its town's open food shops when none had food
+    // (decideAuthored); only at a shop that makes or supplies a food (foodMade: not a brewery's, whose meal nobody there
+    // makes). (Also a piece a household's fund ran to and found on no shelf: Society::wants.)
     std::unordered_map<std::string, std::unordered_map<std::string, int>> missedToday_;
     std::unordered_set<std::string> missedBy_;
     void missedMeal(const std::string& resident, const std::string& shop);
@@ -907,13 +915,22 @@ class Society
     mutable std::unordered_map<std::string, std::vector<Seller>> suppliers_;
     const std::vector<Seller>* sellersOf(const std::string& item) const;   // (Null for nobody.)
     // Doc 64, Phase 13 (not saved): each till's day it last laid in its food's materials (inputStore); each
-    // "till|good"'s day its want of it was last counted as missed (missedAt); each till's days of sales in its running
-    // average (sellRate_, set right in a field's month's rate); what goes into food (grownToEat, worked out on first
-    // asking). And a field not yet founded, its sales since its first (each good's, missed ones counting) and the days
-    // of them, and its sales over its whole weeks of them: what it is founded on (foundingRate), each weekday counted
-    // alike (a farm's caravan buys once a week, and its missed sales are counted the same day).
-    std::unordered_map<std::string, std::int64_t> laidIn_, unmetOn_;
+    // "till|good"'s materials bought today and the day its want of it was last counted as missed (missedAt); each till's
+    // days of sales in its running average (sellRate_, set right in a field's month's rate), and how many day passes
+    // this society has made its fields' rates in (a restart's first week isn't folded in: tendFields); what goes into
+    // food (grownToEat, worked out on first asking). And a field not yet founded, its sales since its first (each good's,
+    // missed ones counting) and the days of them, and its sales over its whole weeks of them: what it is founded on
+    // (foundingRate), each weekday counted alike (a farm's caravan buys once a week, and its missed sales are counted
+    // the same day).
+    struct Unmet
+    {
+        std::int64_t day = -1, counted = -1;        // (The day `bought` is of, and the day a want was last counted.)
+        int bought = 0;
+    };
+    std::unordered_map<std::string, std::int64_t> laidIn_;
+    std::unordered_map<std::string, Unmet> unmetOn_;
     std::unordered_map<std::string, int> salesDays_;
+    int fieldPasses_ = 0;
     mutable std::unordered_map<std::string, bool> grownToEat_;
     struct FieldSales
     {
@@ -1019,22 +1036,27 @@ class Society
     int buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under = nullptr);
     void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
     // Children's stipends (the user, 2026-10-05; RatwDemand.cpp): once a day each child living with grown family is given
-    // a little, MostStipend at most, out of its household's want fund (doc 64, Phase 13: the one rule), as far as what
-    // the household holds over the rule's target and the tax and tithe it owes spares; none to a child with a fortnight's
-    // pennies. Children spend a little: one cheap thing a day, a bite when hungry or else a trinket, kept (one lost
-    // past TrinketsKept).
+    // a little. With work by the hours (doc 64, Phase 13): MostStipend at most, out of its household's want fund (the
+    // one rule), as far as what the household holds over the rule's target and the tax and tithe it owes spares; none to
+    // a child with a fortnight's pennies; and a child spends a little, one cheap thing a day, a bite when hungry or else
+    // a trinket, kept (one lost past TrinketsKept). With the hours off (the game's default), as it was: a stipend by what
+    // the household spares over two weeks' food, a penny more for every hundred, and up to half a child's pennies on
+    // anything of 3p or less, kept.
     void childrenAndStipends(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    // Wants (the user, 2026-10-05; doc 64, Phases 7 and 13; doc 63's model): one want a day a household (each lodger its
-    // own), out of its want fund, bought by the member whose turn it is. With work by the hours, the pieces it keeps
-    // first: a rapier for the rich (the top sixth by income, holding twice a rapier's price) with none, a sword for a
+    // Wants (the user, 2026-10-05; doc 64, Phases 7 and 13; doc 63's model). With work by the hours: one want a day a
+    // household (each lodger its own), out of its want fund, bought by the member whose turn it is; first the pieces it
+    // keeps, a rapier for the rich (the top sixth by income, holding twice a rapier's price) with none, a sword for a
     // household that works with no blade, finery while it holds fewer pieces than it has members (two more for the
-    // rich), the dearest the fund runs to; all kept, and worn and mended as belongings. With none of those wanted (or
-    // none sold in its town at all), works on its home with up to half of what the fund holds (worksOnHome); and on a
-    // day no builder had the hours for them, or a piece it wants wasn't to be had, one thing it fancies by its own
-    // taste, used up (a treat, never in a town gone hungry; a drink; soap and scent; a pastime; something for the home).
-    // With the hours off (the game's default, the old pace, as it was), only the fancies, jewellery and finery among
-    // them: kept while the buyer holds FineryKept pieces or fewer, used past them.
+    // rich), the dearest the fund runs to; all kept, and worn and mended as belongings. Only a piece its fund runs to at
+    // the cheapest its town sells it for; one it could pay for and found on no shelf, its sellers hear of, and it waits
+    // for it PieceWaitDays at most, no works meanwhile. With none of those to buy, works on its home with up to half of
+    // what the fund holds (worksOnHome); and on a day with none (no builder had the hours, or a piece waited for), one
+    // thing it fancies by its own taste, used up (a treat, a dish, never in a town gone hungry and only off a full shelf;
+    // a drink; soap and scent; a pastime; something for the home). With the hours off (the game's default, the old pace),
+    // as it was but one thing at a time (wantsAtTheOldPace): each grown wolf its share of the fund, on a fancy (a treat
+    // any food of 3p or more; jewellery and finery among them, kept while the buyer holds FineryKept pieces or fewer).
     void wants(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    void wantsAtTheOldPace(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     static constexpr int TrinketsKept = 3, FineryKept = 6;
     // Works on the home (doc 63's model: what a household with nothing left to want has done to its home, bought by the
     // amount; RatwInstitutions.cpp): a unit is WorksHours of a building business's time and a batch of its own building
@@ -1113,6 +1135,7 @@ class Society
     bool important(const std::string& resident) const;     // In a master's place, keeping its own shop, or the clergy.
     void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
     static constexpr int HomeNeedDays = 10, ServantMonths = 6;
+    static constexpr int PieceWaitDays = 3;         // Days a household waits for a piece no shelf has (Society::wants).
     double monthIncomeOf(const std::string& account) const;
     static bool unearnedKind(const std::string& kind);
     // Carting a piece `legs` steps (ladder.json carryPerWeight: labourer's hours a unit of weight a step), in pennies.

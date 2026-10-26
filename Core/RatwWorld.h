@@ -1796,11 +1796,14 @@ class World
     void tendNegotiators();
     // An order agreed again (doc 61), by a porter at the selling town's market or, in a town with nobody free to go, by
     // the trader whose caravan brings it: brought toward a week of the buyer's use, at the selling town's price now.
-    // Returns how many a week it was before.
+    // Returns how many a week it was before, or -1 when it can't be agreed yet: it would be raised, and what its seller's
+    // town has to spare isn't known (no day's trade since the world was loaded). It stays due.
     int agreeAgain(StandingOrder& o, const Town& from);
     // What each town had to spare of each good at the day's trade (tradeCaravans), over what its own makers want and the
-    // roads' orders promise: as far as an order with it may be raised until the next (doc 64, Phase 13). Not saved.
+    // roads' orders promise: as far as an order with it may be raised until the next (doc 64, Phase 13). Not saved:
+    // unknown (canSpareKnown_) until the first day's trade after a load.
     std::map<std::pair<std::string, std::string>, int> canSpare_;
+    bool canSpareKnown_ = false;
     // Food for the road for one going from `town` to `toCell` and back, paid by `payer` up to `budget`: a meal for every
     // ten places of the way, two at least, bought at its town's shops; what can't be bought, the money for it. Returns
     // what it cost. Never made.

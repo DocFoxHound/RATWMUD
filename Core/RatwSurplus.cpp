@@ -21,14 +21,22 @@ bool collector(const std::string& id)
 }
 
 // Whether a business makes things from a good (a provisioner's rabbits for smoking): one of its own crafts' materials.
+// (Worked out once a business, as keepsBack's: each thread remembers. It was a scan of the catalog for every food a shop
+// held, in every day's offers.)
 bool madeFrom(const items::Business* business, const std::string& base)
 {
-    if (business)
+    if (!business)
+        return false;
+    thread_local std::unordered_map<std::string, std::unordered_set<std::string>> inputs;
+    auto known = inputs.find(business->id);
+    if (known == inputs.end())
+    {
+        known = inputs.emplace(business->id, std::unordered_set<std::string>{}).first;
         for (const auto* k : items::craftsFor(business->id))
             for (const auto& [in, q] : k->in)
-                if (in == base)
-                    return true;
-    return false;
+                known->second.insert(in);
+    }
+    return known->second.count(base) > 0;
 }
 } // namespace
 

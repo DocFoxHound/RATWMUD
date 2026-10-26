@@ -272,8 +272,9 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         help = help * .9 + spare / 2;
     }
     // (Never more than what it holds over the target: a fund left unspent would count the same money again each day.
-    // Doc 64, Phase 13.)
-    fund = std::min(fund, std::max(0., double(pot) - target));
+    // Doc 64, Phase 13, with work by the hours; at the old pace, as it was, only on a day with nothing to spare.)
+    if (fieldsOn() || spare <= 0)
+        fund = std::min(fund, std::max(0., double(pot) - target));
     if (lodger)
     {
         memory.helpBudget.erase(home);

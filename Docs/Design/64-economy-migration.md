@@ -1746,32 +1746,56 @@ goods for 5,565p.
   make things from, never a shelf's last two. `buyOne` takes, from the buyer's own place in that order, the first four
   still on the shelf that it can pay for, and buys the cheapest (the model's `buy`: the cheapest of four sellers).
   `buyForSurplus` keeps its bulk buying for institutions, alms and farms, but skips materials too.
-- **Wants are the model's** (`wants`): one a day per household, each lodger its own, out of its want fund, bought by
-  the member whose turn it is. In the model's order:
+(As built and then reviewed twice: the review's mends are in these bullets, and "the second review, mended" below.)
+
+- **Wants are the model's** (`wants`), with work by the hours: one a day per household, each lodger its own, out of its
+  want fund, bought by the member whose turn it is. In the model's order:
   - a rapier for the rich (the top sixth by month's income, holding twice a rapier's going price) with none;
   - a sword for a household that works, with no blade (a guard's issued sword counts);
   - finery while it holds fewer pieces than it has members, two more for the rich, the dearest of the four;
   - all kept, and worn, mended and replaced as belongings (Phase 9).
-- **With none of those to buy, one thing it fancies,** by its own taste as before, used up: a drink, soap and scent, a
-  pastime, something for the home, or a treat. A treat is a dish, never a staple; never in a town with wolves hungry
-  (70, as the monitor counts them); only off a shelf holding its days' keeping of its sales.
-- **And works on its home** (`worksOnHome`, doc 63's outlet): with a fund that covers a unit, up to half of it, by the
-  amount. A unit is 11 hours of a building business's time (`WorksHours`; a business with a craft making building
-  goods) and a batch of its own building goods, at the town's hour and their cost, with the ladder's markup. Four
-  builders by lot, the cheapest first, as a mend is booked: out of the hours it banks, while what's booked is under
-  half a day of its hands' time. Its goods are used up. The hours count toward its hands (`worksRate_`, a month's
-  running average beside `mendRate_` in `handsWanted`). What found no hours, a unit at most, the four hear of between
-  them, a quarter of it, as a mend's. Lodgers' works are on their bunkhouse. With work by the hours only, as mending.
-- **Founded with what they own** (the model's): once, the day belongings are first counted, a sword for 70% of
-  households that work (20% of those that don't), a rapier for 12%, a piece of its town's finery for half. 658 pieces
-  on DEV's founding.
-- **Children** (`childrenAndStipends`): a stipend of at most 3p, a penny for every two weeks' worth over the household
-  rule's target and the tax owed, out of the household's want fund (one rule). None goes to a child holding a
-  fortnight's (42p). A child buys one thing a day, at half its purse and 3p at most: a bite when hungry with nothing on
-  it, otherwise a trinket (jewellery, a hat, a scarf, paw wear, a toy; not a pipe). Trinkets are kept; past three, one
-  is lost ("lost by a child").
-- **The want fund is clamped every day** to what the household holds over its target (`householdRule`).
-- **Not saved:** `worksRate_`, as `mendRate_`. Nothing new in a save.
+- **Only a piece its fund runs to** (model.py's `wants`, line 1084): at the cheapest its town's shops sell it for, on
+  their shelves or not. One none of them sells (a rapier: no shop makes one), or too dear, goes on to the next piece,
+  and then to works. One it could pay for and finds on no shelf (none holding three), its sellers hear of: a sale
+  missed at one of them by lot, counted with its sales at the turn of the day (the model's asks), so it makes or buys
+  in more. It waits for that piece, no works meanwhile, `PieceWaitDays` (3) at most (`EconomyMemory::pieceWait`, the
+  day its wait began, saved); then its works go on while it still looks, and tells its sellers, each day. (Waiting for
+  any its town sold, whatever the fund, 4% of households waited a fortnight or more for a sword, one holding 117p, and
+  never had works.)
+- **And works on its home** (`worksOnHome`, doc 63's outlet) when it wants no piece it can buy, first: with a fund that
+  covers a unit, up to half of it, by the amount. A unit is 11 hours of a building business's time (`WorksHours`) and a
+  batch of its own building goods, at the town's hour and their cost, with the ladder's markup. The builders are the
+  five building trades by name (`builds`: carpenters, sawmills, masons, the brick and plaster works), not the smiths,
+  tinkers and potters who make a few building goods among their wares. Four by lot, the cheapest first, as a mend is
+  booked: out of the hours it banks, while what's booked is under half a day of its hands' time. Its goods count as the
+  builder's sales (`soldToday_`; a shelf the works emptied a sell-out, `ranOut_`), so its shelf's plan and its hands
+  follow them. The hours count toward its hands (`worksRate_`, a month's running average beside `mendRate_` in
+  `handsWanted`). What found no hours, a unit at most, the four hear of between them, a quarter of it, as a mend's.
+  Lodgers' works are on their bunkhouse.
+- **On a day with none of those, one thing it fancies,** by its own taste as before, used up: a drink, soap and scent, a
+  pastime, something for the home, or a treat. The day's one want: never works and a fancy both. A treat is a dish,
+  never a staple; never in a town with a wolf at 70 hunger (as the monitor counts them); only off a shelf holding its
+  days' keeping of its sales.
+- **Founded with what they own** (the model's): once (`EconomyMemory::piecesFounded`, saved), in a new world's first
+  day pass, its purses still being founded: a sword for 70% of households that work (20% of those that don't), a rapier
+  for 12%, a piece of its town's finery for half. 658 pieces on DEV's founding. Never into a world that has lived (an
+  older save, or one first run at the old pace and turned to the hours later: the flag is set at either pace).
+- **Children** (`childrenAndStipends`), with work by the hours: a stipend of at most 3p, a penny for every two weeks'
+  worth over the household rule's target and the tax owed, out of the household's want fund (one rule). None goes to a
+  child holding a fortnight's (42p). A child buys one thing a day, at half its purse and 3p at most: a bite when hungry
+  with nothing on it, otherwise a trinket (jewellery, a hat, a scarf, paw wear, a toy; not a pipe). Trinkets are kept;
+  past three, one is lost ("lost by a child").
+- **The want fund is clamped every day**, with work by the hours, to what the household holds over its target
+  (`householdRule`).
+- **At the old pace, as it was** (the hours off, the game's default; the review's ask): a want for each grown wolf
+  from its share of the fund, on what it fancies (a treat any food of 3p or more, in any town, off any shelf; finery
+  and jewellery among its fancies, kept while its buyer holds six pieces or fewer, used past them), no piece wanted
+  first, no works, nothing founded; children's stipends by two weeks' food spared and a penny more for every hundred,
+  and up to half a child's purse on anything of 3p or less, kept; the fund clamped only on a day with nothing to spare.
+  Bought one thing at a time (`buyOne`; the brief allowed it). Still at both paces: what a shop has on sale (`onSale`:
+  never a maker's materials) and the founding flag.
+- **Saved:** `piecesFounded`, the makers' mending and builders' works rates (`mendRate`, `worksRate`, from the day
+  pass's end, loaded back on a restore), and the households' waits (`pieceWait`). An older save has none.
 
 **Smoke run** (30 days of DEV's export, `--deterministic --hours`): money conserved every day, no faults. Against the
 32-day run before:
@@ -1789,6 +1813,10 @@ goods for 5,565p.
 | the poorer half | 0.138 | 0.135 |
 | the going wage | 12p | 12p |
 | hours lost to full banks, days 15–30 | 35.3% | 36.3% |
+
+After the merge and both reviews (the same 30 days, `--threads 3`; days 15–29 a day): children's spending 373p and 166
+goods, stipends 47p; wants 2,314p and 418 goods (1.5 swords, 7.5 pieces of finery); works on homes 621p and 75
+building goods; on day 30 nobody hungry, household Gini 0.558, the poorer half 0.145, the pace 0.036.
 
 - **The fill:** about 900 pieces of finery and 90 swords in the first nine days, then 5–10 pieces and a sword a day.
 - **The money stays home.** Shop tills hold 203k on day 30 (333k before), farm tills 117k (175k); wage earners 918k
@@ -1815,6 +1843,13 @@ goods for 5,565p.
 - **Children's trinkets:** lost one a day past three keeps a little spending going. Kept for good, children would
   stop buying once they have three.
 - **Treats** are the game's own (the model has none). They're kept here, out of a town gone hungry.
+- **Works or a fancy first** on a day nothing is wanted: works first (the model has works as the fund's outlet), a
+  fancy only when no builder had the hours. Fancy first would almost stop works.
+- **The wait for a piece** (`PieceWaitDays`, 3) is a placeholder: the model waits as long as the fund covers the price,
+  and tells the makers each day. A fancy still goes on a waiting day (the model has none).
+- **An older live save that turns the hours on later** is never founded pieces, so its households fill up by buying
+  (about 900 pieces of finery in the first weeks). Founding them mid-life would make goods from nothing.
+- **The building trades** are a fixed list by name; a new building trade would need adding to it.
 
 ### Phase 13: feeding the city (2026-10-25)
 
@@ -1841,10 +1876,13 @@ city makers' buffers. (Children's spending, wants, the wage and the hands are ot
   (`ShelfMost` at most) where that is over the 90 a week they stopped at, under a city bakery's flour; but twice over
   at most at once, and by no more than the seller's town had to spare at the day's trade, over its own makers' wants and
   what the orders promise (`World::canSpare_`, not saved): a city potter's clay went from 23 a week to 1,133 at once,
-  and Mirebridge sent none of it. A seller that sent under half has its order cut toward what it sent, by half at
-  most, and one that sent nothing in two weeks' worth loses it, so that another town may be signed (Southmeadow's flour
-  stayed with Larkfield, which sent none). Agreed again by the trader on arrival, the load is handed over by what each
-  order was loaded for: a raise isn't laid a shortfall the seller didn't make.
+  and Mirebridge sent none of it. A seller that sent under half has its order halved, and one that sent nothing in two
+  weeks' worth loses it, so that another town may be signed (Southmeadow's flour stayed with Larkfield, which sent
+  none); the buyer doesn't sign with the town that failed it for a month (`RoadsState::failed`, saved). What the buyer
+  couldn't pay for, still on the wagon, isn't the seller's shortfall. A raise its seller's room held where it was is
+  looked at again in a week, as a raise is; and one whose seller's room isn't known yet (no day's trade since the world
+  was loaded) isn't agreed: the order stays due. The load is handed over by what each order was for as the wagon set out
+  (`Caravan::loaded`, saved): a raise agreed while it was on the road isn't laid a shortfall the seller didn't make.
 - **The week's caravans first.** The roads due today go first, in an order of the day's (a hash with the day); taken
   by name, with new orders' wagons counted among them, the twelve a day (`TradeCaravansADay`, unchanged) left
   Southmeadow's road to the city without its week's caravan on the days the cap was reached. Then a road with an order
@@ -1879,7 +1917,8 @@ its hires follow. They are counted with the buyers who found none (`missedToday_
 its sales: a producer that sold its last that day counts them or its sold-out half again, the more, not both. And only
 when its town's sellers had no more as they keep back for themselves (a workshop's batches' store, as the buying does),
 the day marked only when one is counted (a call short only of money marked it, and the want found later that day went
-uncounted).
+uncounted), and against all it bought of the good that day (a mill that laid in two days' wheat from one farm, calling
+again for the rest, told the farm with an empty barn of fourteen sales it had missed).
 
 **The fields** (`RatwFarmhands.cpp`):
 
@@ -1890,12 +1929,16 @@ uncounted).
 - **Its month's rate** (`FieldYear::month`; the model's `daily_sales`): its yields a day wanted, into a running average
   over four weeks a week at a time (each week's mean of its days), set right for the weeks it has run; begun at its
   founding as if over the weeks it was founded on. Fed a day at a time, it still went a quarter over in the founding
-  spring for a farm sold to once a week; a week at a time, within 2%.
+  spring for a farm sold to once a week; a week at a time, within 2%. After a restart its running average of sales
+  begins again from nothing (not saved), and a farm sold to once a week read its lump as a day's sales: its month went
+  up to 1.29 times. Its days aren't folded in till that average has a week behind it (or, with no sales, the society
+  has run a week), its week begun again.
 - **Its founding spring:** founded before the roads' orders on it were known, it looks at its acres again once a week
-  on a day of its own, by its month's rate (what is sown stays sown; its hands sow the rest; by the last few days' it
-  ratcheted to the day after the caravan's, up to 2.3 times its year), and a fortnight on (`FieldTopUpDays`) its
-  store is topped up to the harvest, once ("a year's store"), by its month's or year's rate, the more; not till one is
-  known (a field read from a save without them waits for its sales; it was marked done with nothing stored).
+  on a day of its own, at the day's pass (its farmer at work or away on a hire), by its month's rate (what is sown
+  stays sown; its hands sow the rest; by the last few days' it ratcheted to the day after the caravan's, up to 2.3
+  times its year), and a fortnight on (`FieldTopUpDays`) its store is topped up to the harvest, once ("a year's
+  store"), by its month's or year's rate, the more; not till one is known (a field read from a save without them waits
+  for its sales; it was marked done with nothing stored).
 - **Planned by its food** (`grownToEat`, `plannedBy`): what feeds, or goes only into food or flour (a farm's wheat, oats
   and vegetables); its straw, hemp, flax, hay and firewood come with them, as hides with the model's sheep. A field that
   grows no food (an orchard's apples, for cider) is planned by all it grows. It was planned by the most sold of all
@@ -1966,8 +2009,9 @@ parts not landed):
   bread, meals and pies (they keep 3 to 4 days). The small towns had fresh fish, mutton and bread by road in b1. A
   faster cadence for short roads (every `keeps - 1` days) is the alternative.
 - **`RoundTripDays`** (2) is a placeholder for how long a wagon is out.
-- **An order its seller can't fill** is cut toward what came, and ended after two weeks' worth with nothing, so another
-  town may be signed (the review's fix). Sharing a seller's goods across its roads is still a choice.
+- **An order its seller can't fill** is halved, and ended after two weeks' worth with nothing, so another town may be
+  signed, and the one that failed it isn't for a month (the reviews' fixes). Sharing a seller's goods across its roads
+  is still a choice.
 
 **After the review** (2026-10-26; the fixes above are in the bullets): 30 days of DEV's export, `--deterministic --hours
 --threads 3`, against the five parts merged (the same run before these fixes):
@@ -2115,16 +2159,18 @@ tools), back to real hours on improved premises (an improved hour in hand took l
   exactly a week ago, and its mean what was read between. A day the monitor missed leaves a gap; a server away for
   days finds no week to weigh, not a reading from weeks ago. An older save's bare readings read as none.
 
-**Missed meals, where they happen** (`missedMeal`): a wolf at 60 hunger or more, nothing to eat about it or at home,
-whose town has food shops open but none with food left, counts the meal it wanted (of the first food one of them, by
-lot, sells) into that shop's sales at the turn of the day; once a day a wolf, at most a day's real need. A buyer at a
-shop it finds bare counts so too. Before, every errand went only to shops with food, so a shelf bare all day was never
+**Missed meals, where they happen** (`missedMeal`), with work by the hours: a wolf at 60 hunger or more, nothing to eat
+about it or at home, whose town has food shops open but none with food left, counts the meal it wanted (of the first
+food one of them, by lot, makes or supplies: `foodMade`, not the meal every food shop sells, which at a brewery nobody
+makes) into that shop's sales at the turn of the day; once a day a wolf, at most a day's real need. A buyer at a shop
+it finds bare counts so too. Before, every errand went only to shops with food, so a shelf bare all day was never
 visited and nothing was counted.
 
 **At the seconds' pace, as it was** (with work by the hours only): the best-paid hire first, a stall's help crediting
 no work and its working money counting no help, a full store's hours kept in hand, an unpaid hire ended, a post open
-while its holder is away on a hire, tools worn by the hours drawn, and the going rate's new measure (at the old pace,
-its towns' unskilled shops by their hands, as before). The cord loop's mend and the keep-back stay at both paces.
+while its holder is away on a hire, tools worn by the hours drawn, the going rate's new measure (at the old pace, its
+towns' unskilled shops by their hands, as before), and missed meals (the second review). The cord loop's mend and the
+keep-back stay at both paces.
 
 **Not mended here, for the user:** the founding larder's two days for every household (its 2-to-5-day spread of first
 trips gone), the land's food on Restday, and the monitor's shop food counting meals.
@@ -2167,3 +2213,121 @@ before these mends:
 - `wire_tests`: the readings round trip with their days; out of order, out of bounds, too many or a bare older save's
   read as none.
 - Each fails with its mend undone. All suites pass.
+
+### Phase 13: the second review, mended (2026-10-26)
+
+What the second round of reviews (of the three parts' mends, merged at e0e6f45) found, mended. The players' harness is
+another part's; what is the user's to choose is at the end.
+
+**The land:**
+
+- **A field's founding spring is looked at in the day's pass** (`tendLabour`, `reviewField`): every field in its
+  founding year's sowing, its holder's or (its post empty) its founder's, on its own day of the week; no longer in its
+  farmer's work (`produce`). Founded sown, its farmer took 7-day hires, its look ran only in its own work, so its acres
+  never grew and the recall never came. In the smoke two farmers were called back; the rest of the founding's farmers
+  (84 to 102 a day on hires from day 9, against 94 to 102) have nothing more to sow: their month's rate is about what
+  they were founded on.
+- **A field's month through a restart** (`tendFields`): its days aren't folded in till its running average of sales
+  has a week behind it again (or, with none, the society has run a week, `fieldPasses_`), its week begun again. A farm
+  sold to once a week, rebuilt from its save on day 40, read 0.80 to 1.29 times its sales; now within a twentieth.
+- **Sales missed against the day's buying** (`buyMaterials`; `unmetOn_` keeps what each till bought of a good that day):
+  what it went without is the least of all it sought that day and a day's use, less all it bought. A mill using 39
+  wheat a day that bought 99 from one farm, calling again, told the other (its barn empty) of fourteen sales it missed.
+- **A producer's help is free for a hire as its business is** (`idleHand` -> `idleBusiness`: its field's work done, or
+  its holder's work in hand full). Its hours go to the till's own bank, which nothing draws on (latent in DEV's run, as
+  the review found).
+- **What a workshop keeps back** in the sales-missed test was already its batches' (`keepsBack`, mended in the merge);
+  a foundry's charcoal (six, over the four a shelf keeps) now guards it.
+
+**What households buy** (with work by the hours): only a piece its fund runs to at the cheapest its town sells it for;
+one none sells, or too dear, goes on to the next and then to works; one it could pay for and found on no shelf, its
+sellers hear of (a sale missed), and it waits for it three days at most (`PieceWaitDays`, `EconomyMemory::pieceWait`,
+saved; a household gone is dropped). The rest are in "what the wolves buy" above. `madeFrom` (a food shop's own
+materials, not on sale) is worked out once a business.
+
+**Missed meals** with work by the hours only, and only at a shop that makes or supplies a food (`foodMade`): not a
+brewery's meal (every food shop is listed as selling meals), which reached no maker.
+
+**The old pace, as it was** (the hours off, the game's default): each grown wolf's want from its share of the fund
+(`wantsAtTheOldPace`), its treats any food of 3p or more anywhere, finery and jewellery among its fancies; the old
+stipends and children's spending; the fund clamped only on a day with nothing to spare. One thing at a time, as the
+brief allowed. Missed meals too (above).
+
+**The roads** (`RatwTrade.cpp`):
+
+- **A raise its seller's room held where it was** is looked at again in a week, as a raise is (it waited a month while
+  the shop ran low).
+- **A seller's room not known** (`World::canSpareKnown_`: no day's trade since the world was loaded, and cleared by
+  `World::restore`): a raise isn't agreed, the order stays due. (A restart read none; an in-process restore the last
+  timeline's.)
+- **A seller that failed an order** (cut or ended for what it didn't send) isn't signed with that buyer again for
+  `MonthDays` (`RoadsState::failed`, saved with the roads): Frosthollow's iron orders were ended and signed again the
+  next day, for more.
+- **What the buyer couldn't pay for**, still on the wagon, isn't its seller's shortfall.
+- **A load is for the orders it set out with** (`Caravan::loaded`, each order's week at departure, saved): a raise a
+  porter agreed while the wagon was out isn't laid a shortfall. An order signed after it set out has none of that load.
+- **Halved:** the cut's "toward what it sent" never applied (under half sent, its floor of half always won); the code
+  and the text say halved.
+
+**Saved:** the households' waits (`memory.pieceWait`), each caravan's `loaded`, the roads' `failed`; bounds-checked, and
+an older save has none.
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`), against the merged Phase 13 (m2, the same
+run from e0e6f45):
+
+| | merged | now |
+|---|---|---|
+| day 30: hungry, starving | 0, 0 | 0, 0 (3, 0 at the run's end) |
+| household Gini; the poorer half | 0.561; 0.140 | 0.558; 0.145 |
+| the going wage (realm, Ridgemere); the pace | 12p, 12p; 0.071 | 12p, 12p; 0.036 |
+| hours credited, lost (all run) | 153,429; 68,661 | 155,116; 69,692 |
+| days 15-29 a day: the owners' profit | 14,549p | 14,184p |
+| the keepers' wages; hands' odd jobs; service wages | 4,378p; 2,613p; 1,448p | 4,351p; 2,592p; 1,440p |
+| wants (swords, finery) | 2,257p, 414 goods (0.9, 5.9) | 2,314p, 418 goods (1.5, 7.5) |
+| works on homes | 586p, 70 goods | 621p, 75 goods |
+| children's spending; stipends | 380p, 168 goods; 49p | 373p, 166 goods; 47p |
+
+- Money conserved every day; no faults; digest edc08328cb6106f4, the same on one thread and three (3 days). The tick:
+  0.0647 ms against the merged binary's 0.0649, six days side by side (the society 0.0309 against 0.0306).
+- **The end's three hungry** are asleep at 70 to 71 (a Frosthollow watchman, an Icegrip miner in its bunkhouse, an
+  Oakhaven wolf); Frosthollow has no food shop (the same in the merged run). Nobody hungry at any day's end.
+- **The pace** stepped up on day 15 in both, then held till day 29 (the merged run went on again on days 16, 29 and
+  30). Not traced.
+- **More pieces** are bought (swords 1.5 a day against 0.9): makers hear of the pieces wanted and make them.
+
+**Tests:**
+
+- `crafting_tests`: `farmersCalledBackAndHiresShut` (its sales grown, the day after the hire not its day: acres as they
+  were; on its day, twice as many, the farmer called back); `missedAgainstTheDaysBuying` (99 and none: the empty farm
+  told of nothing; 10 and none: of its share of the thirty); `aRestartKeepsTheMonth` (seven weekdays, rebuilt on day 40:
+  within a twentieth); `aFarmsHelpFreeAsItsFields`; `aHouseholdsWants` (the wait saved, the store's missed sale);
+  `aPieceWaitedForAFewDays` (three days' wait, then works while it looks; saved, and an older save has none; over when
+  found; a household gone dropped); `piecesItCantGetGoOnToWorks` (no sword sold; an armourer's swords past the fund);
+  `worksSellOutTheShelf`; `theWantFundClamped` (to what's held over its target, exactly; not at the old pace);
+  `noTreatsInAHungryTown` (70 and 69; at the old pace a treat either way); `missedMealsCount` (none at a brewery, none
+  at the old pace); `missedMealsWhereFoodIsMade` (a bakery and a brewery bare: four meals at the bakery; two at a
+  counter with one loaf, the second's meal counted, and at the old pace only the loaf); `missedOnlyWhenNoneLeft` (a
+  foundry's charcoal); `theHarvestsWagesKept` (the year's last month and the sowing; a field founded sown, none);
+  `wantsAtTheOldPace` (each grown wolf its own want).
+- `roads_tests`: `anOrderRisesNoFasterThanItsSeller` (with nothing to spare, looked at again in a week; piled up, in a
+  month); `anOrderItsSellerCantFillIsCut` (halved; Frosthollow signs the far forge's, never the two it failed; saved);
+  `anOrderWaitsForItsSellersRoom`; `whatTheBuyerCantPayForIsntShort`; `aLoadIsForTheOrdersItLeftWith` (saved through
+  the checkpoint); `thePaceStepsUpWithTheLand` (its store full and its work in hand full at two turns, its sales three
+  hands': the pace goes on); `childrensStipends` (with the hours; at the old pace, a penny more for every hundred).
+- `wire_tests`: the waits round trip, a day that can't be dropped, an older save's none.
+- Each fails with its mend undone (29 checked one at a time); `madeFrom`'s cache changes nothing to test. All suites
+  pass (pg_tests skip without a database).
+
+**For the user:**
+
+- **The wait for a piece** is three days (a placeholder); its sellers hear of one missed sale a household a day (the
+  model's asks are a twentieth of a piece). A fancy still goes on a waiting day; the model would keep the fund.
+- **The want fund's clamp** is with the hours only now, so the old pace is as it was; it was a mend (the fund counted
+  the same money again each day), and could be at both paces.
+- **A failed seller's month** (`MonthDays`) is a placeholder; a buyer with only that town to buy from signs nothing
+  meanwhile. The roads' rules (this one, the cut, what a buyer couldn't pay) are at both paces, as all of the roads'
+  are.
+- **A producer's help** works into a bank nobody draws on (before this part): it does no work for the farm.
+- **Left as they were:** the founding larder's two days for every household, the land's food on Restday, the monitor's
+  shop meals at store price, `RoundTripDays`, the roads for food that rots, milk, a seller sharing its goods across its
+  roads, no top-up for a farm founded after day 78, the keep-back of the common sort only, and the wage barely floating.

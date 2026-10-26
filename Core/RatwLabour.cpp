@@ -239,10 +239,15 @@ bool Society::idleHand(const std::string& resident, const Payer& payer) const
     // (Asked at every decision of a paid wolf: the cheap tests first.)
     if (payer.account.rfind("till:", 0) == 0)
     {
-        if (!bankFull(payer.account))
-            return false;
         const auto* job = jobOf(resident);
-        return job && job->role != "merchant";
+        if (!job || job->role == "merchant")
+            return false;
+        // (A producer's help: free as its business is, its field's work done or its holder's work in hand full
+        // (idleBusiness). Its hours go to the till's own bank, which nothing draws on: full, it read as idle, and a
+        // field's help would be freed each morning and called back each day's pass. Doc 64, Phase 13.)
+        if (const auto* p = position(payer.account.substr(5)); p && items::producerFor(p->title))
+            return idleBusiness(payer.account);
+        return bankFull(payer.account);
     }
     // A field's farmer with no work in its window, as free (doc 64, Phase 13: the model's farm keeps a hand between its
     // windows, but each of ours is a one-hand farm, and it stood idle from sowing's end to the harvest).
@@ -447,6 +452,20 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         const auto* producer = p ? items::producerFor(p->title) : nullptr;
         return producer && fieldsOn() && fieldWork(producer->id) && memory.fields.count(key) > 0;
     };
+    // First, each field in its founding year's sowing looks at its acres again (reviewField), its farmer at work or away
+    // on a hire, as its next year is planned below: founded already sown, its farmer took 7-day hires, and its weekly
+    // look ran only in its farmer's own work, so its acres never grew and it was never called back (doc 64, Phase 13).
+    if (fieldsOn() && fieldWindow(double(day)) == 1)
+        for (const auto& [till, f] : memory.fields)
+            if (const auto* p = f.founded >= 0 && f.founded / calendar::DaysPerYear == day / calendar::DaysPerYear && till.rfind("till:", 0) == 0
+                                    ? position(till.substr(5))
+                                    : nullptr)
+                if (const auto* producer = items::producerFor(p->title); producer && fieldWork(producer->id))
+                {
+                    const auto held = state_.careers.positions.find(p->id);
+                    reviewField(held != state_.careers.positions.end() && !held->second.holder.empty() ? held->second.holder : p->founder, till,
+                                *producer, double(day));
+                }
     if (workByHours())
         for (auto& j : oddJobs_)
             if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))

@@ -565,6 +565,14 @@ void societyTests()
     const auto olderRates = wire::readSociety(saved);
     expect(olderRates.minted >= 0 && olderRates.memory.piecesFounded == 0 && olderRates.memory.mendRate.empty() && olderRates.memory.worksRate.empty(),
            "an older save reads with none");
+    // A household's wait for a piece (doc 64, Phase 13 review): the day it began, saved; a day that can't be is dropped,
+    // and an older save has none.
+    state.memory.pieceWait = {{"home:a", 40}, {"home:b", -3}, {"home:c", 1e12}};
+    auto waits = wire::society(state);
+    const auto waited = wire::readSociety(waits).memory.pieceWait;
+    expect(waited.size() == 1 && waited.at("home:a") == 40, "a household's wait round trips, the days that can't be dropped");
+    waits.find("memory")->erase("pieceWait");
+    expect(wire::readSociety(waits).memory.pieceWait.empty(), "and an older save has none");
 }
 
 void commandTests()

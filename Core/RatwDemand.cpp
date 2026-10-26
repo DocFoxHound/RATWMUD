@@ -319,14 +319,36 @@ void Society::missedMeal(const std::string& resident, const std::string& shop)
 {
     // A hungry wolf's meal a food shop it found bare didn't sell (doc 64, Phase 13): a meal's worth (50) of the first food
     // it sells, counted with its sales at the turn of the day, so what it makes follows what was wanted, not only what it
-    // had to sell. A wolf's once a day: no more than a day's real need, however long it goes hungry.
+    // had to sell. A wolf's once a day: no more than a day's real need, however long it goes hungry. (Only where a food
+    // is made or supplied, to reach a maker: foodMade.)
+    if (const auto& food = foodMade(shop); !food.empty() && missedBy_.insert(resident).second)
+        missedToday_[tillOf(shop)][food] += (50 + nourishment(food) - 1) / nourishment(food);
+}
+
+const std::string& Society::foodMade(const std::string& shop) const
+{
+    // The first of a shop's wares that feeds and that it makes or supplies (doc 64, Phase 13): not the meal every food
+    // shop sells (wares), which at a brewery nobody makes, nor what it only buys in to sell on. (Worked out once a
+    // business: each thread remembers.)
+    static const std::string none;
+    const auto* r = spec(shop);
+    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    if (!business)
+        return none;
+    thread_local std::unordered_map<std::string, std::string> known;
+    if (const auto found = known.find(business->id); found != known.end())
+        return found->second;
+    const auto& supplies = items::suppliesFor(business->id);
+    const auto crafts = items::craftsFor(business->id);
+    std::string first;
     for (const auto& item : wares(shop))
-        if (const int feeds = nourishment(item); feeds > 0)
-        {
-            if (missedBy_.insert(resident).second)
-                missedToday_[tillOf(shop)][items::baseOf(item)] += (50 + feeds - 1) / feeds;
-            return;
-        }
+        if (nourishment(item) > 0 && first.empty() &&
+            (std::find(supplies.begin(), supplies.end(), item) != supplies.end() ||
+             std::any_of(crafts.begin(), crafts.end(), [&](const items::Craft* k) {
+                 return std::any_of(k->out.begin(), k->out.end(), [&](const auto& o) { return o.first == item; });
+             })))
+            first = items::baseOf(item);
+    return known.emplace(business->id, first).first->second;
 }
 
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
@@ -467,8 +489,8 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         life.hunger = std::max(0., life.hunger - nourishment(atCounter) * 1.1);
         stocked -= nourishment(atCounter);
     }
-    // A hungry buyer who found nothing left to eat: a meal it wanted (Society::missedMeal).
-    if (hungry && choices.empty())
+    // A hungry buyer who found nothing left to eat: a meal it wanted (Society::missedMeal), with work by the hours.
+    if (hungry && choices.empty() && workByHours())
         missedMeal(resident, seller);
     if (under)
         *under = laysIn ? std::max(0, perDay * (1 + shut) - stocked) : 0;
@@ -500,6 +522,57 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
     for (const auto& r : authored_.residents)
         if (r.role == "merchant" && state_.residents.count(r.id))
             shops[communityOfResident(r.id)].push_back(r.id);
+    // With the hours off (the game's default), the old pace, as it was (doc 64): a stipend by two weeks' food kept back,
+    // and a penny more for every hundred to spare; and up to half a child's pennies on anything of 3p or less it likes,
+    // kept (as it was: "kept by a child").
+    if (!fieldsOn())
+    {
+        for (const auto& [home, members] : homes)
+        {
+            const auto& [grown, children] = members;
+            if (grown.empty() || children.empty())
+                continue;
+            std::int64_t purse = 0, owed = 0;
+            const std::string* richest = nullptr;
+            for (const auto& who : grown)
+            {
+                if (!account(who))
+                    continue;
+                purse += spendable(who);
+                if (!richest || spendable(who) > spendable(*richest))
+                    richest = &who;
+                owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (taxRate() + TitheRate));
+            }
+            if (const auto streak = state_.memory.comfort.find(home); streak != state_.memory.comfort.end() && streak->second < 0)
+                continue;
+            const auto spare = purse - FoodADay * 14 * std::int64_t(grown.size() + children.size()) - owed;
+            const auto kids = std::int64_t(children.size());
+            const auto each = std::min<std::int64_t>(MostStipend + std::max<std::int64_t>(0, spare) / (100 * kids), spare / (14 * kids));
+            if (each <= 0 || !richest)
+                continue;
+            for (const auto& child : children)
+                if (spendable(*richest) > each)
+                    shift(*richest, child, "", 0, each, "a child's stipend");
+        }
+        for (const auto& [home, members] : homes)
+            for (const auto& child : members.second)
+            {
+                const auto* purse = account(child);
+                if (!purse || purse->cash < 2)
+                    continue;
+                const auto* life = resident(child);
+                const bool peckish = life && life->hunger >= 55 && !hasFood(*purse);
+                std::map<std::string, int> got;
+                buyForSurplus(child, shops[communityOfResident(child)], [&](const std::string& item) {
+                    const auto* good = items::good(item);
+                    return good && good->price <= 3 && (peckish || !edible(item));
+                }, peckish ? std::min<std::int64_t>(purse->cash / 2, 3) : purse->cash / 2, "a child's spending", &got);
+                for (const auto& [item, n] : got)
+                    if (!edible(item))
+                        consume(child, item, n, "kept by a child");
+            }
+        return;
+    }
     for (const auto& [home, members] : homes)
     {
         const auto& [grown, children] = members;
@@ -594,6 +667,16 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
 
 void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
 {
+    // Founded with what they own (doc 63's model): pieces of every age, so they wear out over the years rather than all
+    // being bought in the first months. Once (EconomyMemory::piecesFounded, saved), with work by the hours, in a new
+    // world's first day pass, its purses still being founded (foundPurses; tendBelongings, later in the pass, founds their
+    // condition): never goods from nothing into a world that has lived, an older save or one first run at the old pace.
+    const bool founding = !state_.memory.piecesFounded && fieldsOn() && state_.memory.purses < PursesFounded;
+    if (!state_.memory.piecesFounded)
+        state_.memory.piecesFounded = 1, ++state_.memory.revision;
+    // With the hours off (the game's default), the old pace, as it was (doc 64).
+    if (!fieldsOn())
+        return wantsAtTheOldPace(day, bodies);
     std::map<std::string, std::vector<std::string>> shops, builders;
     for (const auto& r : authored_.residents)
         if (r.role == "merchant" && state_.residents.count(r.id))
@@ -665,15 +748,8 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             return job && job->paid;
         });
     };
-    // Founded with what they own (doc 63's model): pieces of every age, so they wear out over the years rather than all
-    // being bought in the first months. A sword for seven households in ten that work (two in ten that don't), a rapier
-    // for one in eight, a piece of the finery its town's shops sell for half. Once (EconomyMemory::piecesFounded, saved),
-    // with work by the hours, in a new world's first day pass, its purses still being founded (foundPurses; tendBelongings,
-    // later in the pass, founds their condition): never goods from nothing into a world that has lived, an older save
-    // or one first run with the hours later.
-    const bool founding = !state_.memory.piecesFounded && fieldsOn() && state_.memory.purses < PursesFounded;
-    if (!state_.memory.piecesFounded)
-        state_.memory.piecesFounded = 1, ++state_.memory.revision;
+    // (A sword for seven households in ten that work, two in ten that don't; a rapier for one in eight; a piece of the
+    // finery its town's shops sell for half.)
     if (founding)
     {
         std::map<std::string, std::vector<std::string>> finery;
@@ -703,31 +779,33 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const char* name;
         std::function<bool(const std::string&)> is;
     };
-    std::vector<Want> kinds = {
+    const std::vector<Want> kinds = {
         {"a treat", [](const std::string& i) { const auto* g = items::good(i); return edible(i) && g && g->price >= 3 && !g->staple; }},
         {"a drink", [](const std::string& i) { const auto* g = items::good(i); return g && g->drink; }},
         {"soap and scent", [&](const std::string& i) { return category(i) == "care"; }},
         {"a pastime", [&](const std::string& i) { const auto c = category(i); return c == "luxury" || c == "instrument" || i == "broadsheet" || i == "pamphlet" || i == "printed_book"; }},
         {"something for the home", [&](const std::string& i) { return category(i) == "household"; }},
     };
-    // (With the hours off, the old pace, nothing is worn or mended (tendBelongings): finery is a fancy as it was, kept a
-    // few pieces and used past them, and no piece is wanted first.)
-    if (!fieldsOn())
-        kinds.insert(kinds.begin() + 2, {{"jewellery", [&](const std::string& i) { return category(i) == "jewelry"; }},
-                                         {"finery", [&](const std::string& i) {
-                                              const auto c = category(i);
-                                              return c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear";
-                                          }}});
     const auto kindIs = [](const char* kind) { return [kind](const std::string& i) { return belongingKind(i) == kind; }; };
-    // Whether a town's shops sell a piece of a kind at all, on their shelves today or not (none sells a rapier now): one
-    // none sells is never waited for.
-    std::map<std::string, bool> sells;
-    const auto sold = [&](const std::string& town, const char* kind) {
+    // What a town's shops sell of a kind of piece, on their shelves today or not: each shop's ware of it, and the
+    // cheapest of them at its going price (none sells a rapier now).
+    struct Sold
+    {
+        std::int64_t cheapest = 0;
+        std::vector<std::pair<std::string, std::string>> by;    // (Shop, ware.)
+    };
+    std::map<std::string, Sold> sells;
+    const auto sold = [&](const std::string& town, const char* kind) -> const Sold& {
         auto [at, fresh] = sells.try_emplace(town + "|" + kind);
         if (fresh)
             for (const auto& shop : shops[town])
                 for (const auto& ware : wares(shop))
-                    at->second = at->second || belongingKind(ware) == kind;
+                    if (belongingKind(ware) == kind)
+                    {
+                        const auto price = shopPrice(shop, ware);
+                        at->second.cheapest = at->second.by.empty() ? price : std::min(at->second.cheapest, price);
+                        at->second.by.push_back({shop, ware});
+                    }
         return at->second;
     };
     // What each town's shops have on sale of each kind, worked out once (buyOne).
@@ -743,7 +821,11 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
     {
         const auto fund = state_.memory.wantFund.find(h.fund);
         if (fund == state_.memory.wantFund.end() || h.buyers.empty())
+        {
+            if (state_.memory.pieceWait.erase(h.fund))
+                ++state_.memory.revision;
             continue;
+        }
         // The member whose turn it is (by lot), out of the household's want fund (doc 64, Phase 7: the household rule's),
         // as far as its purse goes past a week's food and the tax and tithe it owes.
         const auto& id = h.buyers[std::hash<std::string>{}(h.fund + "|want|" + std::to_string(day)) % h.buyers.size()];
@@ -751,7 +833,11 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const auto spare = account(id)->cash - FoodADay * 7 - owed;
         const auto budget = std::min<std::int64_t>(std::int64_t(fund->second), spare);
         if (budget < 2)
+        {
+            if (state_.memory.pieceWait.erase(h.fund))
+                ++state_.memory.revision;
             continue;
+        }
         const auto before = account(id)->cash;
         const auto town = communityOfResident(id);
         const auto salt = h.fund + "|" + std::to_string(day) + "|";
@@ -770,22 +856,38 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const bool rich = h.income > 0 && h.income >= richIncome && double(h.cash) > 2 * townPrice(town, "rapier");
         // A piece it wants, in the model's order, one a day: a rapier for the rich, a sword for a household that works,
         // finery to a piece a head (two more for the rich), the dearest the fund runs to. Kept, and worn, mended and
-        // replaced as its belongings (RatwBelongings.cpp), with work by the hours. One its town's shops sell and it
-        // didn't find today (none on the shelves, or none its fund runs to) it waits for: no works meanwhile.
+        // replaced as its belongings (RatwBelongings.cpp). Only one its fund runs to at the cheapest its town's shops sell
+        // it for (model.py's wants): one none of them sells, or too dear, goes on to the next, and then to works. One it
+        // could pay for and found on no shelf, its sellers hear of (a sale missed, by lot, the model's asks), and it waits
+        // for it, no works meanwhile: PieceWaitDays at most (EconomyMemory::pieceWait), then it goes on to the rest while
+        // it looks. (Waiting for any its town sold, 4% of households waited a fortnight or more for a sword, one with a
+        // 117p fund, and never had works.)
         std::string got;
-        bool waits = false;
+        bool waits = false, looked = false;
         const auto piece = [&](const char* kind, bool wanted, const char* what, bool dearest) {
-            if (!got.empty() || !wanted || !fieldsOn())
+            if (!got.empty() || waits || !wanted)
+                return;
+            const auto& s = sold(town, kind);
+            if (s.by.empty() || budget < s.cheapest)
                 return;
             got = buyOne(id, onShelves(town, kind, kindIs(kind)), budget, what, salt + kind, dearest);
-            waits = waits || (got.empty() && sold(town, kind));
+            if (!got.empty())
+                return;
+            const auto& [shop, ware] = s.by[std::hash<std::string>{}(salt + kind + "|missed") % s.by.size()];
+            ++missedToday_[tillOf(shop)][items::baseOf(ware)];
+            looked = true;
+            const auto [since, begun] = state_.memory.pieceWait.try_emplace(h.fund, day);
+            state_.memory.revision += begun ? 1 : 0;
+            waits = day - since->second < PieceWaitDays;
         };
         piece("rapier", rich && !rapier, "a want: a rapier", false);
         piece("sword", !sword && !rapier && working(h), "a want: a sword", false);
         piece("finery", pieces < h.persons + (rich ? 2 : 0), "a want: finery", true);
+        if ((!got.empty() || !looked) && state_.memory.pieceWait.erase(h.fund))
+            ++state_.memory.revision;
         // None of those wanted: works on its home with up to half what the fund holds (doc 63's model: the want fund's
-        // outlet, so savings don't pile up), with work by the hours.
-        const bool works = got.empty() && !waits && fieldsOn() && worksOnHome(id, builders[town], std::int64_t(fund->second), spare, day) > 0;
+        // outlet, so savings don't pile up).
+        const bool works = got.empty() && !waits && worksOnHome(id, builders[town], std::int64_t(fund->second), spare, day) > 0;
         if (got.empty() && !works)
         {
             // Or, no builder with the hours for them (or a piece waited for): one thing it fancies, the kinds its buyer
@@ -812,18 +914,115 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
                 me.hunger = std::max(0., me.hunger - nourishment(got) * 1.1);
             }
             else if (const auto* good = got.empty() ? nullptr : items::good(got))
-            {
-                // (Finery, with the hours off: kept while its buyer holds FineryKept pieces or fewer, as it was.)
-                int finery = 0;
-                if (!fieldsOn() && belongingKind(got) == "finery")
-                    for (const auto& [item, n] : account(id)->stock)
-                        finery += belongingKind(item) == "finery" ? n : 0;
-                if (fieldsOn() || belongingKind(got) != "finery" || finery > FineryKept)
-                    consume(id, got, 1, good->drink ? "drunk" : "used");
-            }
+                consume(id, got, 1, good->drink ? "drunk" : "used");
         }
         if (const auto spent = before - account(id)->cash; spent > 0)
             fund->second = std::max(0., fund->second - double(spent));
+    }
+    // (A household gone, or a lodger moved home, waits no more.)
+    std::set<std::string> funds;
+    for (const auto& h : households)
+        funds.insert(h.fund);
+    for (auto it = state_.memory.pieceWait.begin(); it != state_.memory.pieceWait.end();)
+        it = funds.count(it->first) ? std::next(it) : (++state_.memory.revision, state_.memory.pieceWait.erase(it));
+}
+
+void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
+{
+    // With the hours off (the game's default, the old pace): as they were before Phase 13 (doc 64), but one thing at a
+    // time (buyOne, not up to half of every shelf). Each grown wolf its share of its household's want fund, on one of
+    // the kinds it fancies most today: a treat (any food of 3p or more), a drink, jewellery, finery, soap and scent, a
+    // pastime, something for the home. Finery and jewellery are kept while it holds FineryKept pieces or fewer (nothing
+    // is worn or mended: tendBelongings), the rest used up.
+    std::map<std::string, std::vector<std::string>> shops;
+    for (const auto& r : authored_.residents)
+        if (r.role == "merchant" && state_.residents.count(r.id))
+            shops[communityOfResident(r.id)].push_back(r.id);
+    const auto category = [](const std::string& item) {
+        const auto* good = items::good(item);
+        return good ? good->category : std::string();
+    };
+    struct Want
+    {
+        const char* name;
+        std::function<bool(const std::string&)> is;
+    };
+    const std::vector<Want> kinds = {
+        {"a treat", [](const std::string& i) { const auto* g = items::good(i); return edible(i) && g && g->price >= 3; }},
+        {"a drink", [](const std::string& i) { const auto* g = items::good(i); return g && g->drink; }},
+        {"jewellery", [&](const std::string& i) { return category(i) == "jewelry"; }},
+        {"finery", [&](const std::string& i) { const auto c = category(i); return c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear"; }},
+        {"soap and scent", [&](const std::string& i) { return category(i) == "care"; }},
+        {"a pastime", [&](const std::string& i) { const auto c = category(i); return c == "luxury" || c == "instrument" || i == "broadsheet" || i == "pamphlet" || i == "printed_book"; }},
+        {"something for the home", [&](const std::string& i) { return category(i) == "household"; }},
+    };
+    std::map<std::string, std::vector<Offer>> market;   // (Each town's on sale of each kind, worked out once: buyOne.)
+    const auto onShelves = [&](const std::string& town, const Want& kind) -> const std::vector<Offer>& {
+        auto [on, fresh] = market.try_emplace(town + "|" + kind.name);
+        if (fresh)
+            on->second = offersOf(shops[town], kind.is, on->first + "|" + std::to_string(day));
+        return on->second;
+    };
+    for (const auto& [id, life] : state_.residents)
+    {
+        const auto body = bodies.find(id);
+        const auto* r = spec(id);
+        const auto* purse = account(id);
+        // (A keeper whose shop is its own spends its surplus as a keeper: RatwSurplus.cpp.)
+        if (body == bodies.end() || body->second.age < 16 || !purse || !r || (r->role == "merchant" && tillOf(id) == id))
+            continue;
+        // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
+        // week's food and the tax and tithe it owes.
+        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (taxRate() + TitheRate));
+        const int under = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
+                                              const auto b = bodies.find(other.first);
+                                              return other.second.homeCell == life.homeCell && b != bodies.end() && b->second.age >= 16;
+                                          })));
+        // (A barracks', a bunkhouse's or lodgings' wolf has a want fund of its own: tendHouseholds.)
+        const bool lodger = !life.homeCell.empty() && (under > 8 || communalHome(life.homeCell));
+        const auto fund = state_.memory.wantFund.find(lodger ? id : life.homeCell);
+        const int grown = lodger ? 1 : under;
+        const auto budget = fund == state_.memory.wantFund.end() ? std::int64_t(0)
+                                                                  : std::min<std::int64_t>(std::int64_t(fund->second / grown), purse->cash - FoodADay * 7 - owed);
+        if (budget < 2)
+            continue;
+        const auto before = purse->cash;
+        // Today's fancies: the kinds it likes best, as it feels today; one that finds nothing on the shelves, the next
+        // (two more at most: money that stops, doc 46).
+        std::vector<std::pair<double, const Want*>> fancies;
+        for (const auto& k : kinds)
+            fancies.push_back({(.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name), &k});
+        std::stable_sort(fancies.begin(), fancies.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+        const auto town = communityOfResident(id);
+        std::string got;
+        for (std::size_t f = 0; f < 3 && f < fancies.size() && got.empty(); ++f)
+        {
+            // (A treat is one thing, a pastry or a dish, eaten at once; the rest of its fancies may cost what it can spare.)
+            const Want* fancy = fancies[f].second;
+            const bool treat = std::string(fancy->name) == "a treat";
+            got = buyOne(id, onShelves(town, *fancy), treat ? std::min<std::int64_t>(budget, 9) : budget, std::string("a want: ") + fancy->name,
+                         id + "|" + std::to_string(day) + "|" + fancy->name);
+        }
+        if (const auto spent = before - account(id)->cash; spent > 0)
+            fund->second = std::max(0., fund->second - double(spent));
+        const auto* good = got.empty() ? nullptr : items::good(got);
+        if (!good)
+            continue;
+        if (edible(got))
+        {
+            // A treat is eaten there and then (it fills it a little): never laid in the larder to spoil.
+            consume(id, got, 1, "eat");
+            auto& me = state_.residents.at(id);
+            me.hunger = std::max(0., me.hunger - nourishment(got) * 1.1);
+            continue;
+        }
+        int finery = 0;
+        for (const auto& [item, n] : account(id)->stock)
+            finery += belongingKind(item) == "finery" ? n : 0;
+        if (good->drink)
+            consume(id, got, 1, "drunk");
+        else if (belongingKind(got) != "finery" || finery > FineryKept)
+            consume(id, got, 1, "used");            // (Finery kept: a few pieces.)
     }
 }
 

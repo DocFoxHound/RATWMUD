@@ -426,12 +426,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 atStall_.insert(holder);
         }
     }
-    // Each town's food shops open for trade with nothing left to eat (in ID order): where a hungry wolf that finds no
-    // food in its town counts the meal it wanted (doc 64, Phase 13: Society::missedMeal).
+    // Each town's food shops open for trade with nothing left to eat (in ID order), that make or supply a food: where a
+    // hungry wolf that finds no food in its town counts the meal it wanted (doc 64, Phase 13: Society::missedMeal; not a
+    // brewery, whose meal nobody makes). With work by the hours: at the seconds' pace, as it was.
     std::unordered_map<std::string, std::vector<const std::string*>> bareShops;
-    for (const auto& [holder, open] : trading)
-        if (!open.community.empty() && !openShops.count(holder) && !smith(holder) && foodShop(holder))
-            bareShops[open.community].push_back(&holder);
+    if (workByHours())
+        for (const auto& [holder, open] : trading)
+            if (!open.community.empty() && !openShops.count(holder) && !smith(holder) && foodShop(holder) && !foodMade(holder).empty())
+                bareShops[open.community].push_back(&holder);
     // The open shops indexed for the nearest-shop search below: by the cell they serve in and by community, each list in
     // ID order (openShops' order), so the search finds what walking them all in that order found.
     std::vector<const std::pair<const std::string, Open>*> shopList;
