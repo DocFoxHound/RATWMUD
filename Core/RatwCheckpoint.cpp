@@ -114,6 +114,8 @@ Value roads(const RoadsState& r)
         j.add("with", with);
         if (!t.trader.empty())
             j.add("trader", t.trader);
+        if (!t.orders.empty())
+            j.add("orders", strings(t.orders));
         caravans.push(j);
     }
     for (const auto& b : r.camps)
@@ -680,6 +682,9 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             t.cell = j.string("cell"); t.x = num(j, "x"); t.y = num(j, "y");
             t.waitUntil = num(j, "waitUntil");
             t.trader = j.string("trader");
+            for (const auto& order : readStrings(j, "orders"))
+                if (order.size() < 40 && t.orders.size() < 256)
+                    t.orders.push_back(order);
             for (const auto& [who, cells] : j.object("with").fields())
                 if (cells.isNumber())
                     t.with[who] = int(cells.asNumber());

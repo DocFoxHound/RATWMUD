@@ -128,6 +128,8 @@ void Society::spoil(std::int64_t day)
         }
     soldToday_.clear();
     ranOut_.clear();
+    for (const auto& [till, goods] : sellRate_)
+        ++salesDays_[till];                         // (Its days of sales in the average: a field's founding, doc 64, Phase 13.)
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
     for (const auto& [larder, taken] : larderTaken_)
@@ -155,7 +157,7 @@ void Society::spoil(std::int64_t day)
         for (const auto& [item, n] : a.stock)
         {
             const auto* good = items::good(item);
-            if (!good || good->keeps <= 0 || good->nourish <= 0)
+            if (!rots(good))
                 continue;
             auto& lots = mine[item];
             int known = 0;

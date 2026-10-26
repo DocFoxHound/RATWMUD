@@ -164,10 +164,12 @@ void Society::spendSurpluses(std::int64_t day)
     // (Wages are the town's table now, doc 46, Phase 4: no more shares of a day's takings.)
     tendPrices(day);                                // (By today's takings: before they are forgotten.)
     takings_.clear();
-    // Farmhands (RatwFarmhands.cpp): hires ended and lodgers home, new hires posted, bunkhouse larders stocked.
+    // Farmhands (RatwFarmhands.cpp): hires ended and lodgers home, new hires posted, bunkhouse larders stocked; and the
+    // fields' year's rates (doc 64, Phase 13).
     endLodgings(day);
     postFarmHires(day);
     stockBunkhouses(day);
+    tendFields();
     // Market dues (the user, 2026-10-05: tax where money gathers): each Restday every shop's till pays its town a
     // twentieth of what it holds above its working money.
     if (calendar::weekdayOf(double(day)) == calendar::Restday)

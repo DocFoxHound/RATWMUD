@@ -21,6 +21,7 @@ namespace ratw
 namespace items
 {
 struct Craft;
+struct Item;
 struct Producer;
 } // namespace items
 }
@@ -264,12 +265,16 @@ struct EmployerBook
 };
 // A field's year (doc 64, Phase 3b: seasonal fields, with work by the hours): the acres it plans to sow, those sown and
 // those still to bring in, a part-yield carried over, the year whose harvest's end it last planned at, and whether its
-// store ran dry this year.
+// store ran dry this year; its yields a day wanted over the year (a slow average, the model's year's sales: doc 64,
+// Phase 13), the day it was founded and whether its founding store has been topped up since.
 struct FieldYear
 {
     double acres = 0, sown = 0, toHarvest = 0, part = 0;
     std::int64_t year = -1;
     bool dry = false;
+    double rate = 0;
+    std::int64_t founded = -1;
+    bool toppedUp = true;
 };
 // A thing an NPC owns and wears or carries (doc 64, Phase 9): what it is, how whole (1 new, 0 worn out but kept and
 // mendable), whether it's an heirloom, and whether it's in its purse (finery, a blade) or worn (clothes, an issued sword).
@@ -529,10 +534,25 @@ class Society
     // 0 out of season, 1 sowing, 2 the harvest, for a day of the calendar.
     static int fieldWindow(double absoluteDay);
     bool fieldsOn() const { return workByHours_; }
-    // A field's yields a day wanted: the most of any of its goods' sales a day (missed sales counting), by its count.
+    // A field's yields a day wanted: the most of any of its food's sales a day (missed sales counting), by its count
+    // (doc 64, Phase 13: what feeds, or goes only into food or flour, grownToEat; the rest comes with it, as hides with
+    // the model's sheep; a field that grows no food, by all it grows).
     double fieldNeed(const std::string& till, const items::Producer& p) const;
-    // Its year planned (at the harvest's end, or when it is first seen, with a store to last it to the harvest).
+    bool grownToEat(const std::string& item) const;
+    bool plannedBy(const items::Producer& p, const std::string& item) const;   // Whether its acres are planned by the good.
+    // Its year planned (at the harvest's end, or when it is first seen, with a store to last it to the harvest). It is
+    // first seen after FieldFoundDays of sales (its running average set right for the days it has run), and in its
+    // founding spring its acres are looked at again weekly and its store topped up once, FieldTopUpDays on
+    // (reviewField). Daily, each field's slow year's rate (tendFields).
     void planField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay, bool founding);
+    void reviewField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay);
+    void tendFields();
+    double fieldHeld(const std::string& till, const items::Producer& p) const;   // In yields of what it is planned by.
+    void storeYields(const std::string& id, const std::string& till, const items::Producer& p, double yields);   // "A year's store".
+    static constexpr int FieldFoundDays = 7, FieldTopUpDays = 14;
+    // What none of a town's sellers had to sell (doc 64, Phase 13; the model's unmet asks): counted at the town's
+    // producers of the good as sales missed, shared among them, so the land plans and hires for it.
+    void missedAt(const std::string& town, const std::string& item, int n);
     void setBunkhouses(std::map<std::string, Spot> byWorker)
     {
         bunkhouses_ = std::move(byWorker);
@@ -620,6 +640,9 @@ class Society
     // an account holds to eat.
     static bool edible(const std::string& item);
     static int nourishment(const std::string& item);
+    // Whether a good rots (spoil): a food that keeps so many days (fish, bread), not one that keeps but feeds nobody
+    // (milk, hides).
+    static bool rots(const items::Item* good);
     static std::string bestFood(const EconomyAccount& account);
     // What to eat first: the food that spoils soonest (Item::keeps), the most nourishing of those (doc 42, "Spoilage").
     static std::string eatFirst(const EconomyAccount& account);
@@ -644,6 +667,11 @@ class Society
     // How many of a good a business uses a day (doc 61), by its till ("till:<position>"): through each of its crafts that
     // takes it, as fast as what the craft makes sells (missed sales too); a supplier, as fast as it sells the good.
     double useRate(const std::string& till, const std::string& item) const;
+    // The store of a craft's material a maker keeps (doc 64, Phase 13; the model's lay_in): `least` (its batches'
+    // worth), or for what goes into food or flour, days of its use, StapleInputDays for a staple (bread, porridge),
+    // InputDays otherwise, never longer than a material that rots keeps.
+    int inputStore(const std::string& till, const items::Craft& k, const std::string& item, int least) const;
+    static constexpr int StapleInputDays = 7, InputDays = 4;
     // How many of a good a seller keeps (doc 64, Phase 3b): output follows sales. Its days' keeping (keepDays) of what
     // it sells a day, missed sales counting, a fifth over for a staple; with `orders`, at least its share of a week of
     // the standing orders on its town's makers or producers of it and half a supplier's store; never under `least` (the
@@ -854,6 +882,13 @@ class Society
         int kind = 0;                                // 0 supplier, 1 workshop, 2 producer.
     };
     mutable std::unordered_map<std::string, std::vector<Seller>> suppliers_;
+    const std::vector<Seller>* sellersOf(const std::string& item) const;   // (Null for nobody.)
+    // Doc 64, Phase 13 (not saved): each till's day it last laid in its food's materials (inputStore); each
+    // "till|good"'s day its want of it was last counted as missed (missedAt); each till's days of sales in its running
+    // average (sellRate_, the field's founding); what goes into food (grownToEat, worked out on first asking).
+    std::unordered_map<std::string, std::int64_t> laidIn_, unmetOn_;
+    std::unordered_map<std::string, int> salesDays_;
+    mutable std::unordered_map<std::string, bool> grownToEat_;
     std::unordered_map<std::string, double> produceNext_;   // Producer -> the game day of its next yield.
     // Work done (Docs/Design/64-economy-migration.md, Phase 3): the hours a business's hands have put in (each paid
     // spell of its help, the keeper's time at the counter) and a producer's own, drawn on by each batch or yield at its
@@ -889,9 +924,10 @@ class Society
     int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).
     void craft(const std::string& id, const std::string& workCell, double absoluteDay);
     // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
-    // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier.
+    // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier. Without
+    // `credit`, only with what its till can spare.
     int buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
-                     bool forSupplier = false);
+                     bool forSupplier = false, bool credit = true);
     // A producer's work done (`hours` of it: a paid spell is one): what it brings in from the land, a yield for every
     // crafts.json `hours` of work in hand (doc 64, Phase 3), while it has fewer than ProducerKept.
     bool produce(const std::string& id, double absoluteDay, double hours);

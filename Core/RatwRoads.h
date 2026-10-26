@@ -38,6 +38,9 @@ struct Caravan
     // A trade caravan (doc 42, Phase 7): the house or treasury whose money bought its load and to whom its takings go
     // home. Empty for the capital's daily caravans.
     std::string trader;
+    // The standing orders it carries, when it went for those signed that day only (doc 64, Phase 13); empty for all of
+    // its road's.
+    std::vector<std::string> orders;
 };
 
 // Robbers in wild country along a road. Loot feeds them; hunger makes them bold; starving, they scatter.

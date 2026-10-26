@@ -3,6 +3,7 @@
 // supplier in town when it runs short, and make nothing from nothing.
 #include "RatwItems.h"
 #include "RatwSociety.h"
+#include "RatwWire.h"
 
 #include <algorithm>
 #include <cmath>
@@ -259,29 +260,79 @@ void farmerBringsIn()
            "in winter only the barn's grain is threshed, nothing grows");
 }
 
-// Seasonal fields (doc 64, Phase 3b), with work by the hours: once it has sales to plan by, a farm founds its year (the
-// fields as if sown, a store to the harvest); it brings in what it sowed at the harvest, plans next year's acres at the
-// harvest's end, and sows them in spring. The harvest call draws the smith, not the baker.
+// Seasonal fields (doc 64, Phase 3b), with work by the hours: once it has a week of sales to plan by (doc 64, Phase 13), a
+// farm founds its year (the fields as if sown, a store to the harvest, its sales a day set right for the days its average
+// has run); in its founding spring it sows more as its sales grow and tops its store up once, a fortnight on; it brings
+// in what it sowed at the harvest, plans next year's acres at the harvest's end, and sows them in spring. Its year is
+// saved, and an older save's still reads. The harvest call draws the smith, not the baker.
 void seasonalFields()
 {
     Society::setWorkByHours(true);
     auto s = farmTown();
     const auto till = s.tillOf("farmer");
-    for (std::int64_t d = 1; d <= 6; ++d)
-    {
-        set(s, "farmer", "wheat", 10);
-        expect(s.sale(till, "miller", "wheat", 10, 1, "test: the mill's order"), "the mill buys the farm's wheat");
+    const auto* farm = items::producerFor("farms the valley fields");
+    const auto sell = [&](std::int64_t d, int n) {
+        set(s, "farmer", "wheat", n);
+        expect(s.sale(till, "miller", "wheat", n, 1, "test: the mill's order"), "the mill buys the farm's wheat");
         s.spoil(d);
-    }
+    };
+    const auto fed = [&] {                          // (A farmer hungry or worn out goes for food or to bed, not to the fields.)
+        auto st = s.state();
+        st.residents.at("farmer").hunger = st.residents.at("farmer").fatigue = 20;
+        expect(s.restore(st), "the farmer has eaten and slept");
+    };
+    for (std::int64_t d = 1; d <= 5; ++d)
+        sell(d, 10);
+    double early = 6 + 10. / 24;                     // (Its sixth day of sales, at the turn of the day.)
+    work(s, 600, early);
+    expect(!s.state().memory.fields.count(till), "on under a week of sales it brings in as it always did");
+    sell(7, 10);
     double day = 10 + 10. / 24;                      // (The tenth day of the year: spring, the sowing.)
     set(s, "farmer", "wheat", 0);
+    set(s, "miller", "wheat", 0);
     work(s, 600, day);
     const auto founded = s.state().memory.fields.find(till);
-    expect(founded != s.state().memory.fields.end() && founded->second.acres > 0 && founded->second.toHarvest == founded->second.acres,
-           "the farm founds its year, its fields as if sown");
+    expect(farm && founded != s.state().memory.fields.end() && founded->second.acres > 0 &&
+               founded->second.toHarvest == founded->second.acres && founded->second.founded == 10 && !founded->second.toppedUp,
+           "after a week the farm founds its year, its fields as if sown");
+    // (Eight days of the running average: 1 - 0.7^8 of its sales a day.)
+    const double rate = founded->second.rate, need = s.fieldNeed(till, *farm);
+    expect(need > 0 && std::abs(rate - need / (1 - std::pow(.7, 8))) < 1e-9, "planned by its sales a day, set right for a week's average: " +
+                                                                                  std::to_string(rate) + " against " + std::to_string(need));
     // (The mill buys as the wheat comes in: what was made counts.)
     expect(held(s, "farmer", "wheat") + held(s, "miller", "wheat") > 100, "with a store to the harvest: " + std::to_string(held(s, "farmer", "wheat")));
-    const double acres = founded->second.acres;
+    const auto saved = wire::readSociety(wire::society(s.state())).memory.fields.at(till);
+    expect(std::abs(saved.rate - rate) < 1e-6 * std::max(1., rate) && saved.founded == 10 && !saved.toppedUp &&
+               std::abs(saved.acres - founded->second.acres) < 1e-6 * std::max(1., saved.acres),
+           "its year is saved");
+    auto older = wire::society(s.state());
+    older.find("memory")->find("fields")->find(till)->items().resize(6);
+    const auto old = wire::readSociety(older).memory.fields.at(till);
+    expect(old.acres > 0 && old.rate == 0 && old.founded == -1 && old.toppedUp, "and one saved before Phase 13 reads, as founded long ago");
+    // Its sales grow: on its own day of the week it plans more acres, and its hands sow them; what was sown stays sown.
+    const double first = founded->second.acres, sown = founded->second.sown;
+    for (std::int64_t d = 11; d <= 23; ++d)
+    {
+        double morning = d + 10. / 24;
+        work(s, 1200, morning);
+        set(s, "farmer", "wheat", 30);
+        expect(s.sale(till, "miller", "wheat", 30, 1, "test: the mill's order") && s.shift(till, "miller", "", 0, 30, "test: the mill's takings"),
+               "the mill buys more of the farm's wheat");
+    }
+    const auto& grown = s.state().memory.fields.at(till);
+    expect(grown.acres > first && grown.sown > sown && grown.toHarvest > sown,
+           "its sales grown, its founding spring sows more: " + std::to_string(grown.acres) + " acres, from " + std::to_string(first));
+    set(s, "farmer", "wheat", 0);
+    set(s, "miller", "wheat", 0);
+    s.takeJournal();
+    double fortnight = 25 + 10. / 24;
+    work(s, 600, fortnight);
+    expect(grown.toppedUp && count(s.takeJournal(), "a year's store", "wheat") > 0, "and a fortnight on its store is topped up, once");
+    double later = 26 + 10. / 24;
+    set(s, "farmer", "wheat", 0);
+    work(s, 600, later);
+    expect(count(s.takeJournal(), "a year's store", "wheat") == 0, "only once");
+    const double acres = grown.acres;
     set(s, "farmer", "wheat", 0);
     set(s, "miller", "wheat", 0);
     s.takeJournal();
@@ -289,15 +340,18 @@ void seasonalFields()
     work(s, 3600, summer, 1);
     expect(count(s.takeJournal(), "brought in", "wheat") == 0, "between sowing and the harvest the fields bring nothing in");
     double harvest = 220 + 10. / 24;
+    fed();
     work(s, 4 * 3600, harvest, 2);
     expect(count(s.takeJournal(), "brought in", "wheat") > 0 && s.state().memory.fields.at(till).toHarvest < acres,
            "at the harvest it brings in what it sowed");
     double after = 280 + 10. / 24;
+    fed();
     work(s, 600, after, 3);
     const auto& planned = s.state().memory.fields.at(till);
     expect(planned.year == 0 && planned.toHarvest == 0 && planned.sown == 0 && planned.acres >= 0,
            "at the harvest's end it plans next year's acres");
     double spring = 365 + 10 + 10. / 24;
+    fed();
     work(s, 4 * 3600, spring, 0);
     expect(planned.acres == 0 || s.state().memory.fields.at(till).sown > 0, "and sows them in spring");
     // The harvest call: some sowing morning the smith goes to the fields; the baker (bread is a staple) never.
@@ -757,6 +811,124 @@ void outputFollowsSales()
     work(s, 3600, day);
     expect(held(s, "baker", "bread") > Society::GoodsKept, "and bakes past the old few: " + std::to_string(held(s, "baker", "bread")));
 }
+
+// A food maker's materials (doc 64, Phase 13; the model's lay_in): a bakery selling sixty loaves a day lays in a week of
+// flour (bread is a staple) once a day, its shelf full or not, from what its till can spare and never on credit; a smith's
+// bronze stays at its batches' store.
+void foodMakersLayIn()
+{
+    auto s = town();
+    const auto till = s.tillOf("baker");
+    for (std::int64_t d = 1; d <= 7; ++d)
+    {
+        set(s, "baker", "bread", 60);
+        expect(s.sale(till, "scribe", "bread", 60, 1, "test: the morning's queue") && s.shift(till, "scribe", "", 0, 60, "test: the scribe's wage"),
+               "the scribe's household buys sixty loaves");
+        s.spoil(d);
+        auto st = s.state();                        // (The bread eaten: conserved, it's only goods.)
+        st.accounts.at("scribe").stock.erase("bread");
+        expect(s.restore(st), "the bread eaten");
+    }
+    const auto* bread = items::craftsFor("bakery").front();
+    const int week = int(std::ceil(s.useRate(till, "flour") * Society::StapleInputDays));
+    expect(bread->out.front().first == "bread" && s.inputStore(till, *bread, "flour", Society::MaterialBatches) == week &&
+               week > Society::MaterialBatches * 4,
+           "its store of flour is a week of its use: " + std::to_string(week));
+    const auto* smithy = items::businessFor("the smith at the forge");
+    const auto forged = smithy ? items::craftsFor(smithy->id) : std::vector<const items::Craft*>{};
+    expect(!forged.empty() && s.inputStore(s.tillOf("smith"), *forged.front(), forged.front()->in.front().first, 8) == 8,
+           "a smith's materials are its batches' store");
+    set(s, "baker", "bread", Society::ShelfMost);    // (A full shelf: nothing to bake.)
+    set(s, "baker", "flour", 0);
+    double day = 8 + 10. / 24;
+    work(s, 60, day);
+    const int laid = held(s, "baker", "flour");
+    expect(laid > Society::MaterialBatches && laid <= week + Society::GoodsKept && held(s, "stall", "flour") < Society::SuppliesKept,
+           "its shelf full, it lays in flour from the stall all the same: " + std::to_string(laid));
+    set(s, "baker", "flour", 0);
+    work(s, 600, day);
+    expect(held(s, "baker", "flour") == 0, "once a day");
+    auto broke = town();
+    const auto broketill = broke.tillOf("baker");
+    for (std::int64_t d = 1; d <= 7; ++d)
+    {
+        set(broke, "baker", "bread", 60);
+        expect(broke.sale(broketill, "scribe", "bread", 60, 1, "test: the morning's queue") &&
+                   broke.shift(broketill, "scribe", "", 0, 60, "test: the scribe's wage"),
+               "the scribe's household buys sixty loaves");
+        broke.spoil(d);
+    }
+    set(broke, "baker", "bread", Society::ShelfMost);
+    set(broke, "baker", "flour", 0);
+    for (const auto& who : {broketill, std::string("baker")})   // (Its till and its owner, who would top it up.)
+        if (const auto cash = broke.account(who)->cash; cash > 0)
+            broke.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+    double then = 8 + 10. / 24;
+    work(broke, 60, then);
+    expect(held(broke, "baker", "flour") == 0, "with nothing in its till it lays in nothing, not on credit");
+}
+
+// What a field is planned by (doc 64, Phase 13): its food, what feeds or goes only into food or flour; the straw, hemp,
+// hay and firewood come with it. An orchard's apples (for cider, a drink) are all it grows: it's planned by them.
+void fieldsPlannedByTheirFood()
+{
+    auto s = farmTown();
+    const auto* farm = items::producerFor("farms the valley fields");
+    const auto* orchard = items::producerFor("tends the orchard");
+    expect(farm && orchard, "a farm and an orchard");
+    for (const auto* food : {"wheat", "oats", "vegetables"})
+        expect(s.grownToEat(food) && s.plannedBy(*farm, food), std::string(food) + " is grown to eat");
+    for (const auto* other : {"straw", "hemp", "flax", "hay", "firewood", "apples"})
+        expect(!s.grownToEat(other) && !s.plannedBy(*farm, other), std::string(other) + " comes with the farm's food");
+    expect(s.plannedBy(*orchard, "apples"), "an orchard's apples are what it is planned by");
+    expect(Society::rots(items::good("fish")) && Society::rots(items::good("bread")) && !Society::rots(items::good("milk")) &&
+               !Society::rots(items::good("wheat")),
+           "fish and bread rot; milk and wheat don't");
+    // Planned by its food: a farm selling hay by the hundred and a little wheat wants acres for its wheat.
+    const auto till = s.tillOf("farmer");
+    set(s, "farmer", "wheat", 8);                   // (Not sold out: no missed buyers counted.)
+    set(s, "farmer", "hay", 99);
+    expect(s.sale(till, "miller", "wheat", 4, 1, "test: the mill's order") && s.sale(till, "baker", "hay", 90, 1, "test: the horses' hay"),
+           "the farm sells hay and wheat");
+    s.spoil(1);
+    expect(std::abs(s.fieldNeed(till, *farm) - .3 * 4 / 2) < 1e-9, "its acres go by its wheat, not its hay: " + std::to_string(s.fieldNeed(till, *farm)));
+}
+
+// A want none of its town's sellers could meet (doc 64, Phase 13; the model's unmet asks) is a sale its producers missed:
+// the mill short of wheat with the farm's barn empty tells the farm, once a day, and the farm's sales a day go up by it.
+void missedSalesReachTheLand()
+{
+    auto s = farmTown();
+    const auto mill = s.tillOf("miller"), farm = s.tillOf("farmer");
+    for (std::int64_t d = 1; d <= 3; ++d)
+    {
+        set(s, "miller", "flour", 40);
+        expect(s.sale(mill, "stall", "flour", 40, 1, "test: the stall's flour") && s.shift(mill, "stall", "", 0, 40, "test: the stall's takings"),
+               "the stall buys the mill's flour");
+        s.spoil(d);
+    }
+    expect(s.sellRates(farm) == nullptr || !s.sellRates(farm)->count("wheat"), "the farm has sold no wheat");
+    set(s, "farmer", "wheat", 0);
+    set(s, "miller", "wheat", 0);
+    set(s, "miller", "flour", 0);
+    set(s, "stall", "flour", 0);
+    auto bodies = atWork(s);
+    bodies["farmer"] = {"farmhouse", 2.5, 2.5};     // (At home: bringing nothing in.)
+    for (double day = 4 + 10. / 24, end = day + 120. / 86400; day < end;)
+    {
+        day += 1. / 86400;
+        s.tick(1, day, 0, bodies);
+    }
+    const auto* rates = s.sellRates(farm);
+    const double use = s.useRate(mill, "wheat");
+    expect(held(s, "miller", "wheat") == 0 && (!rates || !rates->count("wheat")) && use > 0, "the mill finds no wheat");
+    s.spoil(5);
+    rates = s.sellRates(farm);
+    const double missed = rates && rates->count("wheat") ? rates->at("wheat") : 0;
+    expect(missed > 0 && missed <= .3 * std::ceil(use) + 1e-9, "a day's use of wheat the mill went without is a sale the farm missed: " +
+                                                                   std::to_string(missed) + " (the mill uses " + std::to_string(use) + ")");
+    expect(s.conserved(), "money stays conserved");
+}
 } // namespace
 
 // A town's trade (Docs/Design/61; Data/Economy/specialties.json): iron is Frosthollow's. A miner at Frosthollow's
@@ -810,6 +982,9 @@ int main()
         qualities();
         townsfolkBuy();
         outputFollowsSales();
+        foodMakersLayIn();
+        fieldsPlannedByTheirFood();
+        missedSalesReachTheLand();
     }
     catch (const std::exception& error)
     {

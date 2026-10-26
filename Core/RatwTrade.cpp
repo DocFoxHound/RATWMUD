@@ -16,6 +16,15 @@ namespace
 constexpr int MostOfAGood = 30, MostALoad = 80;      // A wagon's load (placeholders).
 constexpr int TradeCaravansADay = 12;
 constexpr double OrderSettles = 7;                   // Days before a new or raised standing order is looked at again.
+constexpr int RoundTripDays = 2;                     // About as long as a wagon is out (placeholder).
+// A food that rots within the week a caravan takes to come again (fish, rabbit, porridge) isn't ordered by the roads
+// (doc 64, Phase 13): it's made where it's eaten, the town's own producers told of what its makers went without.
+constexpr double RoadKeeps = 7;
+bool rotsOnTheRoad(const std::string& item)
+{
+    const auto* good = items::good(items::baseOf(item));
+    return Society::rots(good) && good->keeps < RoadKeeps;
+}
 // What a week's order holds back of the seller's spare: all of it, but half for a town whose trade the good is (doc 61),
 // whose makers and producers keep making it all week, so that it can promise twice what it has to spare on the day.
 int promised(const std::string& town, const std::string& item, int perWeek)
@@ -95,11 +104,12 @@ World::Market World::marketOf(const std::string& town) const
             // fittings is one store of bars, not one for each, doc 61; it was counted fourteen times over, and a town
             // with a smith never had iron to spare.)
             // (Materials for the batches that fill its shelf by what it sells, as Society::craft buys them: doc 64, 3b.)
+            // (A food maker's, days of its use, as it lays them in: doc 64, Phase 13.)
             const int perBatch = k->out.empty() ? 1 : std::max(1, k->out.front().second);
             const int kept = k->out.empty() ? 0 : society_.shelfTarget(till, k->out.front().first, Society::GoodsKept, false);
             const int batches = std::max(Society::MaterialBatches, (kept + perBatch - 1) / perBatch);
             for (const auto& [item, n] : k->in)
-                tillWant[item] = std::max(tillWant[item], n * batches - Society::stockAll(*shelves, item));
+                tillWant[item] = std::max(tillWant[item], society_.inputStore(till, *k, item, n * batches) - Society::stockAll(*shelves, item));
         }
         for (const auto& item : supplies)
             tillWant[item] = std::max(tillWant[item], society_.shelfTarget(till, item, Society::SuppliesKept / 2, false) -
@@ -156,7 +166,7 @@ void World::tradeCaravans()
         for (const auto& from : towns_)
             if (&from != &to)
                 for (const auto& [item, n] : markets[from.id].spare)
-                    if (const auto* good = items::good(item); good && !good->drink && Society::edible(item))
+                    if (const auto* good = items::good(item); good && !good->drink && Society::edible(item) && !rotsOnTheRoad(item))
                         elsewhere[item] += n - (markets[from.id].want.count(item) ? markets[from.id].want.at(item) : 0);
         std::vector<std::pair<int, std::string>> foods;
         for (const auto& [item, n] : elsewhere)
@@ -186,12 +196,13 @@ void World::tradeCaravans()
     // New standing orders: a shop short of a good its own town can't spare, signed with the town that has the most of
     // it to spare, for about what it is short.
     std::set<std::pair<std::string, std::string>> signedToday;
+    std::set<std::string> fresh;                            // The orders signed today.
     for (const auto& to : towns_)
         for (const auto& [item, want] : markets[to.id].want)
         {
             const auto local = markets[to.id].spare.count(item) ? markets[to.id].spare.at(item) : 0;
             const auto covered = ordered.count({to.id, item}) ? ordered.at({to.id, item}) : 0;
-            if (want - local - covered < 4)
+            if (want - local - covered < 4 || rotsOnTheRoad(item))
                 continue;
             // A town whose trade the good is (doc 61) comes first, if it has any to spare; else the most to spare.
             const Town* best = nullptr;
@@ -231,6 +242,7 @@ void World::tradeCaravans()
                 markets[best->id].spare[item] -= promised(best->id, item, o.perWeek);
                 buyers.insert({buyer, item});
                 signedToday.insert({best->id, to.id});
+                fresh.insert(o.id);
                 recordEvent({"standing order", buyer, best->id, to.market, 0, 0, item, o.perWeek, o.price,
                              std::to_string(o.perWeek) + " " + item + " a week from " + best->id + " at " + std::to_string(o.price) + "p"});
                 roads_.orders.push_back(std::move(o));
@@ -247,84 +259,125 @@ void World::tradeCaravans()
     }
     society_.setStandingOrders(std::move(perWeek), std::move(costs));
     // Each road with standing orders sends its trader's caravan once a week (on a day of its own), and at once when an
-    // order is new; a wagon still on the road goes again next week.
-    std::map<std::pair<std::string, std::string>, std::map<std::string, int>> loads;
+    // order is new; a wagon still on the road goes again next week. Those due go first, in an order of the day's (doc 64,
+    // Phase 13: taken by name, new orders' wagons first, the cap left Southmeadow's road to the city without its week's
+    // caravan on the days it was reached), then the roads with an order new today, with what the cap leaves, carrying only
+    // today's orders, unless their week's caravan is due before a wagon would be back.
+    std::map<std::pair<std::string, std::string>, std::map<std::string, int>> loads, freshLoads;
+    std::map<std::pair<std::string, std::string>, std::vector<std::string>> freshIds;
     for (const auto& o : roads_.orders)
-        loads[{o.from, o.town}][o.item] += o.perWeek;
-    const auto today = std::int64_t(std::floor(calendarDays_));
-    int sent = 0;
-    for (const auto& [pair, load] : loads)
     {
-        if (sent >= TradeCaravansADay)
-            break;
-        const bool due = signedToday.count(pair) ||
-                         std::hash<std::string>{}(pair.first + ">" + pair.second) % 7 == std::uint64_t(today % 7);
-        const auto* from = town(pair.first);
-        const auto* to = town(pair.second);
-        const bool going = std::any_of(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& c) {
-            return !c.trader.empty() && c.from == pair.first && c.to == pair.second && c.status == "travelling";
-        });
-        if (!due || !from || !to || going)
-            continue;
-        // What the load costs at home, and the trader can pay.
-        std::int64_t cost = 0;
-        int total = 0;
-        for (const auto& [item, n] : load)
-            if (items::good(item) && from)
-                cost += Society::pennies(society_.townPrice(from->id, item)) * n, total += n;   // (About what it'll cost.)
-        const auto trader = traderOf(*from);
-        const auto* purse = society_.account(trader);
-        if (cost <= 0 || !purse || purse->cash < cost)
-            continue;
-        auto* c = sendCaravan(*from, *to, {});
-        if (!c)
-            continue;
-        c->trader = trader;
-        society_.shift(trader, c->account, "", 0, cost, "money for the road");
-        // Two more guards for a load worth robbing, hired from the town's watch.
-        if (from->store != trader && society_.shift(trader, from->store, "", 0, GuardsHire, "guards for the road"))
-            c->guards += 2;
-        else if (from->store == trader)
-            c->guards += 2;
-        int bought = 0;
-        auto& fm = markets[from->id];
-        for (const auto& [item, n] : load)
-        {
-            int left = n;
-            for (auto& [holder, spare] : fm.holders[item])
-            {
-                if (left <= 0)
-                    break;
-                const auto* shelves = society_.account(holder);
-                for (const auto& sort : shelves ? Society::kindsHeld(*shelves, item) : std::vector<std::string>{})
-                {
-                    const auto* good = items::good(sort);
-                    const int k = std::min({left, spare, Society::stock(*society_.account(holder), sort), 99});
-                    const auto each = Society::pennies(society_.priceAt(holder, sort));   // (The holder's own.)
-                    if (good && k > 0 && society_.sale(holder, c->account, sort, k, each, "bought for the road"))
-                        left -= k, spare -= k, bought += k;
-                    if (left <= 0 || spare <= 0)
-                        break;
-                }
-            }
-        }
-        // Rations for the carters and feed for the horses, bought at home and eaten on the way (the trader's cost).
-        for (const auto& [item, n] : std::map<std::string, int>{{"bread", 2}, {"hay", 2}})
-            for (auto& [holder, spare] : fm.holders[item])
-                if (const auto each = Society::pennies(society_.priceAt(holder, item));
-                    items::good(item) && spare >= n && society_.account(c->account)->cash >= each * n &&
-                    society_.sale(holder, c->account, item, n, each, "provisions for the road"))
-                {
-                    society_.consume(c->account, item, n, "eaten on the road");
-                    spare -= n;
-                    break;
-                }
-        if (auto* w = entity("road:" + c->id))
-            w->name = "a trader's caravan bound for " + to->id;
-        recordEvent({"trade caravan departs", c->id, to->id, from->market, 0, 0, {}, bought, cost,
-                     std::to_string(bought) + " of " + std::to_string(total) + " goods ordered for " + to->id + ", " + trader + "'s"});
-        ++sent;
+        loads[{o.from, o.town}][o.item] += o.perWeek;
+        if (fresh.count(o.id))
+            freshLoads[{o.from, o.town}][o.item] += o.perWeek, freshIds[{o.from, o.town}].push_back(o.id);
     }
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    const auto dueIn = [&](const std::pair<std::string, std::string>& pair) {
+        return int((std::hash<std::string>{}(pair.first + ">" + pair.second) % 7 + 7 - std::uint64_t(today % 7)) % 7);
+    };
+    std::vector<std::pair<std::uint64_t, std::pair<std::string, std::string>>> due, extra;
+    for (const auto& [pair, load] : loads)
+        if (dueIn(pair) == 0 || signedToday.count(pair))
+            (dueIn(pair) == 0 ? due : extra).push_back({std::hash<std::string>{}(pair.first + ">" + pair.second + "|" + std::to_string(today)), pair});
+    std::sort(due.begin(), due.end());
+    std::sort(extra.begin(), extra.end());
+    int sent = 0;
+    for (const auto* roads : {&due, &extra})
+        for (const auto& [drawn, pair] : *roads)
+        {
+            if (sent >= TradeCaravansADay)
+                break;
+            const bool weekly = roads == &due, whole = weekly || dueIn(pair) <= RoundTripDays;
+            auto load = whole ? loads[pair] : freshLoads[pair];
+            const auto* from = town(pair.first);
+            const auto* to = town(pair.second);
+            const bool going = std::any_of(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& c) {
+                return !c.trader.empty() && c.from == pair.first && c.to == pair.second && c.status == "travelling";
+            });
+            if (!from || !to || going)
+                continue;
+            // What the load costs at home, and the trader can pay: a load it can't pay for whole goes as much of it as it
+            // can (doc 64, Phase 13: it was all or nothing, and Larkfield's load to the city had come to 18,652p).
+            const auto cost = [&] {
+                std::int64_t sum = 0;
+                for (const auto& [item, n] : load)
+                    if (items::good(item))
+                        sum += Society::pennies(society_.townPrice(from->id, item)) * n;   // (About what it'll cost.)
+                return sum;
+            };
+            const auto trader = traderOf(*from);
+            const auto* purse = society_.account(trader);
+            if (!purse)
+                continue;
+            const auto budget = std::max<std::int64_t>(0, purse->cash - (from->store == trader ? 0 : GuardsHire));
+            if (const auto dear = cost(); dear > budget)
+                for (auto& [item, n] : load)
+                    n = int(std::int64_t(n) * budget / dear);
+            const auto spend = cost();
+            int total = 0;
+            for (const auto& [item, n] : load)
+                total += items::good(item) ? n : 0;
+            if (spend <= 0 || purse->cash < spend)
+                continue;
+            auto* c = sendCaravan(*from, *to, {});
+            if (!c)
+                continue;
+            c->trader = trader;
+            if (!whole)
+                c->orders = freshIds[pair];
+            society_.shift(trader, c->account, "", 0, spend, "money for the road");
+            // Two more guards for a load worth robbing, hired from the town's watch.
+            if (from->store != trader && society_.shift(trader, from->store, "", 0, GuardsHire, "guards for the road"))
+                c->guards += 2;
+            else if (from->store == trader)
+                c->guards += 2;
+            int bought = 0;
+            auto& fm = markets[from->id];
+            for (const auto& [item, n] : load)
+            {
+                int left = n;
+                for (auto& [holder, spare] : fm.holders[item])
+                {
+                    if (left <= 0)
+                        break;
+                    const auto* shelves = society_.account(holder);
+                    for (const auto& sort : shelves ? Society::kindsHeld(*shelves, item) : std::vector<std::string>{})
+                    {
+                        // (A ledger entry holds 99 at most: as many as it has, 99 at a time. Doc 64, Phase 13: one sale a
+                        // quality, Larkfield's fifteen farms sent the city 1,485 oats a week, whatever was ordered.)
+                        const auto each = Society::pennies(society_.priceAt(holder, sort));   // (The holder's own.)
+                        while (items::good(sort) && left > 0 && spare > 0)
+                        {
+                            const int k = std::min({left, spare, Society::stock(*society_.account(holder), sort), 99});
+                            if (k <= 0 || !society_.sale(holder, c->account, sort, k, each, "bought for the road"))
+                                break;
+                            left -= k, spare -= k, bought += k;
+                        }
+                        if (left <= 0 || spare <= 0)
+                            break;
+                    }
+                }
+                // What its town couldn't spare of the week's orders is a sale its producers missed (doc 64, Phase 13).
+                if (weekly && left > 0)
+                    society_.missedAt(from->id, item, left);
+            }
+            // Rations for the carters and feed for the horses, bought at home and eaten on the way (the trader's cost).
+            for (const auto& [item, n] : std::map<std::string, int>{{"bread", 2}, {"hay", 2}})
+                for (auto& [holder, spare] : fm.holders[item])
+                    if (const auto each = Society::pennies(society_.priceAt(holder, item));
+                        items::good(item) && spare >= n && society_.account(c->account)->cash >= each * n &&
+                        society_.sale(holder, c->account, item, n, each, "provisions for the road"))
+                    {
+                        society_.consume(c->account, item, n, "eaten on the road");
+                        spare -= n;
+                        break;
+                    }
+            if (auto* w = entity("road:" + c->id))
+                w->name = "a trader's caravan bound for " + to->id;
+            recordEvent({"trade caravan departs", c->id, to->id, from->market, 0, 0, {}, bought, spend,
+                         std::to_string(bought) + " of " + std::to_string(total) + " goods ordered for " + to->id + ", " + trader + "'s"});
+            ++sent;
+        }
 }
 
 void World::residentsRenegotiate(std::set<std::string>& busy)
@@ -410,11 +463,17 @@ int World::agreeAgain(StandingOrder& o, const Town& from)
     // most. (Not raised because the seller fell short, nor for use alone: looked at weekly, that raised orders the
     // seller couldn't fill and shops stocked from their own town, fruit and fish by the hundred, till the rescue fund
     // kept them open.)
+    // (Doc 64, Phase 13: raised only when the seller kept up, a quarter short at most, and as far as a week and a quarter
+    // of its use, ShelfMost at most, where that is over the 90 a week it stopped at, under a city bakery's flour. A food
+    // that rots on the road ends.)
     const int weekly = int(std::ceil(society_.useRate(o.buyer, o.item) * 7 * 1.1));
-    if (held > std::max(o.perWeek, weekly) * 2)
+    const int most = std::min(std::max(MostOfAGood * 3, int(std::ceil(society_.useRate(o.buyer, o.item) * 7 * 1.25))), Society::ShelfMost);
+    if (rotsOnTheRoad(o.item))
+        o.perWeek = 0;
+    else if (held > std::max(o.perWeek, weekly) * 2)
         o.perWeek = std::max(weekly, o.perWeek * 3 / 4);
-    else if (held < std::max(o.perWeek, weekly) / 2)
-        o.perWeek = std::min(MostOfAGood * 3, std::max(weekly, o.perWeek * 5 / 4 + 1));
+    else if (held < std::max(o.perWeek, weekly) / 2 && o.shortfall <= o.perWeek / 4)
+        o.perWeek = std::min(most, std::max(weekly, o.perWeek * 5 / 4 + 1));
     o.price = orderPrice(from, o.item);
     // Raised, it is looked at again in a week, till it has caught up with the shop's use; else in a month.
     o.review = calendarDays_ + (o.perWeek > before ? OrderSettles : MonthDays);
@@ -457,24 +516,45 @@ void World::tradeCaravanArrived(Caravan& c)
             else
                 ++it;
         }
-    // Its standing orders first, at the price agreed, as far as each buyer can pay; then the rest to whoever wants it.
+    // Its standing orders first (those it carries: all its road's, or those signed the day it left), at the price
+    // agreed, as far as each buyer can pay; then the rest to whoever wants it. Short of a good, each order has its share
+    // of what came, then what is left in the order they were signed (doc 64, Phase 13: in that order alone, the supply
+    // shops signed first took the city's oats and its inns had none).
+    std::vector<StandingOrder*> carried;
+    std::map<std::string, int> asked, came;
     for (auto& o : roads_.orders)
-    {
-        if (o.from != c.from || o.town != c.to)
-            continue;
+        if (o.from == c.from && o.town == c.to && (c.orders.empty() || std::find(c.orders.begin(), c.orders.end(), o.id) != c.orders.end()))
+        {
+            carried.push_back(&o);
+            asked[o.item] += o.perWeek;
+        }
+    for (const auto& [item, n] : asked)
+        came[item] = Society::stockAll(*load, item);
+    const auto hand = [&](const StandingOrder& o, int most) {
         int given = 0;
         for (const auto& sort : Society::kindsHeld(*society_.account(c.account), o.item))
-        {
-            const auto* purse = society_.account(o.buyer);
-            const int k = int(std::min<std::int64_t>({o.perWeek - given, Society::stock(*society_.account(c.account), sort), 99,
-                                                      purse ? purse->cash / std::max<std::int64_t>(1, o.price) : 0}));
-            if (k > 0 && society_.sale(c.account, o.buyer, sort, k, o.price, "a standing order"))
+            while (given < most)                    // (99 at a time: a ledger entry's most.)
+            {
+                const auto* purse = society_.account(o.buyer);
+                const int k = int(std::min<std::int64_t>({most - given, Society::stock(*society_.account(c.account), sort), 99,
+                                                          purse ? purse->cash / std::max<std::int64_t>(1, o.price) : 0}));
+                if (k <= 0 || !society_.sale(c.account, o.buyer, sort, k, o.price, "a standing order"))
+                    break;
                 given += k, made += o.price * k;
-            if (given >= o.perWeek)
-                break;
-        }
-        o.delivered += given;
-        o.shortfall += o.perWeek - given;
+            }
+        return given;
+    };
+    std::vector<int> given(carried.size(), 0);
+    for (std::size_t i = 0; i < carried.size(); ++i)
+    {
+        const auto& o = *carried[i];
+        given[i] = hand(o, came[o.item] >= asked[o.item] ? o.perWeek : int(std::int64_t(came[o.item]) * o.perWeek / asked[o.item]));
+    }
+    for (std::size_t i = 0; i < carried.size(); ++i)
+    {
+        given[i] += hand(*carried[i], carried[i]->perWeek - given[i]);
+        carried[i]->delivered += given[i];
+        carried[i]->shortfall += carried[i]->perWeek - given[i];
     }
     load = society_.account(c.account);
     for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
@@ -489,10 +569,14 @@ void World::tradeCaravanArrived(Caravan& c)
         int left = n;
         for (auto& [buyer, want] : market.wanters[base])
         {
-            const auto* purse = society_.account(buyer);
-            const int k = int(std::min<std::int64_t>({left, want, 99, purse ? purse->cash / price : 0}));
-            if (k > 0 && society_.sale(c.account, buyer, item, k, price, "carted in by caravan"))
+            while (left > 0 && want > 0)            // (99 at a time.)
+            {
+                const auto* purse = society_.account(buyer);
+                const int k = int(std::min<std::int64_t>({left, want, 99, purse ? purse->cash / price : 0}));
+                if (k <= 0 || !society_.sale(c.account, buyer, item, k, price, "carted in by caravan"))
+                    break;
                 left -= k, want -= k, made += price * k;
+            }
             if (left <= 0)
                 break;
         }
@@ -515,9 +599,9 @@ void World::tradeCaravanHome(Caravan& c)
             const auto* store = society_.account(home->store);
             // (At what the caravan paid for them: doc 64, Phase 4.)
             const auto each = Society::pennies(society_.costOf(c.account, item));
-            const int paid = good && store ? int(std::min<std::int64_t>(n, store->cash / each)) : 0;
-            if (paid > 0)
-                society_.sale(c.account, home->store, item, std::min(paid, 99), each, "unsold, back to the stores");
+            for (int paid = good && store ? int(std::min<std::int64_t>(n, store->cash / each)) : 0; paid > 0; paid -= 99)
+                if (!society_.sale(c.account, home->store, item, std::min(paid, 99), each, "unsold, back to the stores"))
+                    break;
         }
     if (const auto cash = society_.account(c.account)->cash; cash > 0)
         society_.shift(c.account, c.trader, "", 0, cash, "trade takings");

@@ -2333,10 +2333,110 @@ void anOrderCatchesUpWithUse()
     expect(soc.conserved(), "Money is conserved");
 }
 
+// A caravan carries the whole of its orders (doc 64, Phase 13): 99 at a time, as a ledger entry holds, from one holder
+// and to one buyer, not one sale a quality (Larkfield's fifteen farms sent the city 1,485 oats a week, whatever was
+// ordered); and short of a good, each order has its share of what came, not the first signed all it wanted.
+void caravansCarryWholeOrders()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("westsmith", "Wyn Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5) +
+                        resident("lowsmith", "Wil Anvil", "merchant", "smith at The Low Forge", 7, 13.5, 8, 13.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto clear = [&](const std::string& till, const std::string& item) {
+        for (const auto& kind : Society::kindsHeld(*soc.account(till), item))
+            soc.consume(till, kind, Society::stock(*soc.account(till), kind), "test: none left");
+    };
+    const auto smelter = soc.tillOf("smelter");
+    const std::string smiths[] = {soc.tillOf("westsmith"), soc.tillOf("lowsmith")};
+    for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+        clear(smelter, item);
+    for (const int n : {99, 99, 30})
+        soc.create(smelter, "iron_bar", n, "test: a month's bars");
+    expect(soc.account("stores:frosthollow") && soc.shift("treasury", "stores:frosthollow", "", 0, 4500, "test: the town's trade money"),
+           "Frosthollow's trader has the money for a big load");
+    for (const auto& smith : smiths)
+    {
+        clear(smith, "iron_bar");
+        soc.shift("treasury", smith, "", 0, 600, "test: takings");
+        StandingOrder o;
+        o.id = "so-" + smith;
+        o.buyer = smith;
+        o.town = "west";
+        o.item = "iron_bar";
+        o.from = "frosthollow";
+        o.perWeek = 120;
+        o.price = 5;
+        o.review = 1e9;
+        w.roads().orders.push_back(o);
+    }
+    // On its road's day of the week (another wagon, with only the day's new orders, home first).
+    const auto onTheRoad = [&](bool iron) -> const Caravan* {
+        for (const auto& c : w.roads().caravans)
+            if (!c.trader.empty() && c.from == "frosthollow" && c.to == "west" && c.status != "arrived" &&
+                (Society::stockAll(*soc.account(c.account), "iron_bar") > 0) == iron)
+                return &c;
+        return nullptr;
+    };
+    const Caravan* trip = nullptr;
+    for (int d = 0; d < 9 && !trip; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        trip = onTheRoad(true);
+        for (int t = 0; t < 30000 && !trip && onTheRoad(false); ++t)
+            w.tick(1);
+    }
+    expect(trip != nullptr, "The week's caravan sets out from Frosthollow");
+    const auto id = trip->id;
+    const int loaded = Society::stockAll(*soc.account(trip->account), "iron_bar");
+    expect(loaded > 2 * 99 && loaded < 240, "with all the smelter can spare of the 240 ordered, not 99: " + std::to_string(loaded));
+    bool sold = false;
+    w.takeEvents();
+    for (int t = 0; t < 20000 && !sold; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            sold |= e.kind == "trade caravan sells" && e.actor == id;
+    }
+    const int a = Society::stockAll(*soc.account(smiths[0]), "iron_bar"), b = Society::stockAll(*soc.account(smiths[1]), "iron_bar");
+    expect(sold && a > 99 && b > 99 && std::abs(a - b) <= 1 && a + b == loaded,
+           "Each smith has its share, 99 at a time: " + std::to_string(a) + " and " + std::to_string(b) + " of " + std::to_string(loaded));
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A food that rots before the week is out (fish keeps three days) isn't ordered by the roads (doc 64, Phase 13): the
+// west's fishmonger, out of fish while east's fisher has a catch to spare, signs no standing order for it.
+void noRoadOrdersForWhatRots()
+{
+    auto f = strip("EE.....WW", resident("fisher", "Finn Net", "civilian", "fishes the river", 0, 12.5, 1, 12.5) +
+                                    resident("monger", "Mag Scale", "merchant", "fishmonger at The Wet Slab", 7, 12.5, 8, 12.5));
+    auto w = load(f);
+    w.tick(.6);
+    auto& soc = w.society();
+    const auto monger = soc.tillOf("monger");
+    expect(items::businessFor("fishmonger at The Wet Slab") && items::producerFor("fishes the river"), "a fishmonger and a fisher");
+    soc.create(soc.tillOf("fisher"), "fish", 60, "test: a good catch");
+    for (const auto& kind : Society::kindsHeld(*soc.account(monger), "fish"))
+        soc.consume(monger, kind, Society::stock(*soc.account(monger), kind), "test: sold out");
+    soc.shift("treasury", monger, "", 0, 300, "test: takings");
+    nextMorning(w);
+    const bool fish = std::any_of(w.roads().orders.begin(), w.roads().orders.end(), [](const StandingOrder& o) { return o.item == "fish"; });
+    expect(!fish, "No standing order for fish by the week's caravan");
+    expect(soc.conserved(), "Money is conserved");
+}
+
 int main()
 {
     try
     {
+        caravansCarryWholeOrders();
+        noRoadOrdersForWhatRots();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();
