@@ -334,7 +334,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         shift(j.payer, id, "", 0, share, "an odd job: " + j.kind);
         // A House's estate crew keeps its town's fabric, as the Town Works' materials do, while it isn't in full repair
         // (doc 64, Phase 13, round 6); in full repair, its grounds and hedges, nothing made (the model's estate crew).
-        if (houseCrew(j) && j.kind == "building work" && workByHours() && condition(j.community) < 100)
+        if (CrewMend > 0 && houseCrew(j) && j.kind == "building work" && workByHours() && condition(j.community) < 100)
             mendTown(j.community, CrewMend);
     }
     else if (houseCrew(j) && workByHours())

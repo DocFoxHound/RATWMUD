@@ -3261,6 +3261,7 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         e.activity = task + " — route unavailable";
         return;
     }
+    const std::string next = step->second;   // A copy: pocket()'s regionMap may clear stepsCache_ under `step`.
     // The nearest way into the next cell: a door, or a crossing of the shared edge (known from the first time this
     // cell was in memory; if it never has been, it is loaded once to learn them).
     // Ways landing in a pocket of the next cell (a strip cut off from the rest) come last, where the cell is in memory
@@ -3274,12 +3275,12 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
         return arrives >= 0 && wanted >= 0 && arrives != wanted;
     };
     // Along a road into the next cell, its crossing on the road (indexRoads): the traveller keeps to the road.
-    const bool byRoad = roadLink(e.cellId, step->second);
+    const bool byRoad = roadLink(e.cellId, next);
     const auto nearest = [&]() -> const Door* {
         const Door* best = nullptr;
         bool bestPocket = false, bestRoad = false;
         const auto consider = [&](const Door& way) {
-            if (!way.portal || way.locked || way.targetCell != step->second)
+            if (!way.portal || way.locked || way.targetCell != next)
                 return;
             const bool inPocket = pocket(way);
             const bool road = byRoad && roadSeams_.count(way.id) > 0;
@@ -3316,7 +3317,7 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     {
         std::vector<const Door*> ways{way};
         const auto consider = [&](const Door& other) {
-            if (&other != way && other.portal && !other.locked && other.targetCell == step->second && roadSeams_.count(other.id) &&
+            if (&other != way && other.portal && !other.locked && other.targetCell == next && roadSeams_.count(other.id) &&
                 !pocket(other))
                 ways.push_back(&other);
         };

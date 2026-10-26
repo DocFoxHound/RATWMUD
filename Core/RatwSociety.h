@@ -1253,8 +1253,10 @@ class Society
     // working age (EstateShare), posted in gangs of CrewGang about its town; their places weighed with the businesses'
     // hires by pay, and those untaken its posts open (vacanciesOf(house + "|crew")). A crew hand's day of building work
     // mends its town by CrewMend while it isn't in full repair. A House that can't pay a day's share ends that gang.
+    // (CrewMend is 0 until the user picks a value: a mend made of no materials lowered the Town Works' buying once the
+    // capital paid for it, kept Ridgemere's decay off its condition, and stopped the disrepair project; round 6's review.)
     static constexpr int EstateShare = 10, CrewGang = 12;
-    static constexpr double CrewMend = .05;
+    static constexpr double CrewMend = 0;
     static constexpr int PieceWaitDays = 3;         // Days a household waits for a piece no shelf has (Society::wants).
     double monthIncomeOf(const std::string& account) const;
     static bool unearnedKind(const std::string& kind);

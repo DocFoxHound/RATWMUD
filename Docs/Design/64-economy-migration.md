@@ -4623,8 +4623,13 @@ money and, in brackets, how many.)
   lower from day 84 on (but not on days 56 and 70); paid civilians hold 779k against 712k and the guards 117k against
   94k. The Houses pay for it (813k against 877k: their seats' staff, grounds and family), and the owners (949k against
   1,029k), the farm tills (184k against 212k) and the House tills hold less. Without the capital's changes some 30 more
-  residents are without work from the third week (54 against 20 on day 120; in the merge too, 51): most of them had
-  sat and watched the world or minded a shop's door until then. Not traced further.
+  residents are without work from the third week (54 against 20 on day 120; in the merge too, 51). The review traced
+  them: they are elders retiring (37 of r6_nocap's 41 on day 28 have a "retired" event and 38 are 58 or over; 41 of 44
+  on day 120; b_merge 35 of 35 and 41 of 41), let go by a few working-age residents who left underpaid posts, through a
+  pre-existing rule in `Society` careers that lets one jobless successor be claimed for retirement after retirement
+  (its claim is rebuilt each pass, and succession takes 5 days). So it is not a gain of the capital's changes, and
+  r6_nocap's 8 starving on day 46 (40 hungry; 0 in every other run) is the one welfare signal against the labour fixes
+  without them, one seed.
 - **A producer's hire by its sales** (this branch against bare hire): the wage floats less (67.7p against 73.4p on day
   120; 65.9p against 73.2p on day 112), as the review expected: the hires it no longer posts were posts open bidding it
   up; the land's hours the same by day 120 (23.4k against 23.5k), a little lower mid-run; the Gini 0.587 against 0.611.
@@ -4691,9 +4696,8 @@ the houses are worked out, not saved.
    112) on every measure: the next balancing question, with the Houses' estate crews (decision 1 of 2026-10-26).
 7. **The brake** counts the land's hours as they are credited and leaves out the apiaries; whether to keep it at all is
    round 5's decision 1, still open (corrected there: its case rests on the second month's pace alone).
-8. **Without work from the third week**, some 30 residents who sat and watched the world or minded a shop's door
-   lose their posts in the runs without the capital's changes (and round 5's) but not with them. Not traced: worth a
-   look before the year's run.
+8. **Without work from the third week:** traced by the review (above): elders retiring, set off by a successor claimed
+   again and again. Recommended: keep a successor claimed until it takes a post or the claim lapses, with a test.
 
 ### Phase 13: the Houses' estate crews (the user, 2026-10-26)
 
@@ -4757,7 +4761,8 @@ only:
 **What the crews do.**
 
 - **The model:** nothing is made.
-- **The game:** each crew hand's day, once paid, mends its town's fabric by `CrewMend` (0.05 points, through
+- **The game** (as built; `CrewMend` is 0 since the merge, below): each crew hand's day, once paid, mends its town's
+  fabric by `CrewMend` (0.05 points, through
   `mendTown`, as a town project's work does), while the town isn't in full repair. That is twenty hands' days a point:
   a crew of about twenty keeps up a day's wear out of winter. The Town Works' materials mend two points with a full
   day's supply.
@@ -4939,14 +4944,20 @@ in `bestOf`. More hires taken means more walking, and that cost is in the errand
    is untouched, and the House's places are now real posts with their vacancies shown. Know that in 120 days they
    don't reach the households' share. They need grown hands free to take them, and the realm has none after the first
    month.
-2. **Children on the Houses' crews.** Children take about three quarters of the slot-days from the second month, as
-   they took the old twelve. The options are to keep the game's rule for every hire, or to have grown hands only, as
+2. **Children on the Houses' crews.** Children take 84% of the slot-days over 120 days, and 96% from the second
+   month (the review's count from the takers table), as they took the old twelve; about 40 places are taken a day and
+   about 20 worked (children start after 14:00), so about a fifth of the posted crew-days are paid. The gangs also draw
+   children off the businesses' hires (a child's first pass prefers jobs with room for a party). The options are to keep the game's rule for every hire, or to have grown hands only, as
    in the model. Grown only would leave the places empty and the Houses' money where it is. Recommended: keep it for
    now, and look again with the wage's float (decision 3): grown hands take the crews only where some stand idle.
 3. **The crews' pay.** Recommended: the model's going rate. Paying 1.15 times it drew hands for a month and made the
    Gini no better.
-4. **The mend (`CrewMend`, 0.05 a hand's day, a placeholder).** Recommended: keep it. It moves no money, and it keeps
-   the capital's fabric up while the capital can't pay its Works. Choosing a value is the user's call.
+4. **The mend (`CrewMend`, 0.05 a hand's day, a placeholder): set to 0 at the merge, until the user picks a value.**
+   The review: it "moved no money" only because the capital couldn't fund its Works in these runs. With the capital
+   paying (its posts' real payers, merged beside it), the Works' buying is scaled by the town's condition
+   (`RatwDemand.cpp`), so a mend made of no materials lowers the builders' sales; it also kept Ridgemere at 91 against
+   54 on day 120, hiding the capital's decay, and above 50, which stops the disrepair news and the players' mend
+   project. A value, or a mend drawn from the House's own builders' materials, is the user's call.
 5. **Places for the week, not kept like the model's posts** (on the reckoning day they all open again). Recommended:
    leave as it is. With so few grown takers, keeping them would change little, and it would need the hires saved.
 6. **The towns' works crews and the church's masons weighed by pay too** (as round 5's text suggested)? Recommended:

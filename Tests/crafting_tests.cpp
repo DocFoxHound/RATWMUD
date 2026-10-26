@@ -1970,7 +1970,7 @@ void aHouseKeepsItsCrew()
         expect(before - s->account("house:house_fell")->cash == (paid + retained) * crew.front()->pay / crew.front()->slots,
                "each hand's day paid by the House: " + std::to_string(before - s->account("house:house_fell")->cash));
         expect(paid >= 1 && std::abs(s->condition("town") - (90 + paid * Society::CrewMend)) < 1e-9,
-               "its hands' days paid, the town is mended by CrewMend each: " + std::to_string(paid) + " paid, " + std::to_string(s->condition("town")));
+               "its hands' days paid, the town is mended by CrewMend each (0 for now): " + std::to_string(paid) + " paid, " + std::to_string(s->condition("town")));
         // A House that can't pay: its gangs shut.
         s->tick(1, 9 + .5 / 24, 0, bodies);
         morning(*s, bodies, 9, 12.5, [&] {

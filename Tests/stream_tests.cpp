@@ -483,6 +483,39 @@ void theGroundChangesMidWalk()
     }
 }
 
+// The ground changes while an offstage walker plans its leg (round 6's review, doc 64, Phase 13): Pip has found the
+// dead end by c_1_0, and tents go up in c_1_0's body as Sal, offstage in c_0_0, heads for her work on the strip.
+// moveOffstage's pocket() then forgets the dead end (regionMap), clearing the steps it was reading the next cell from.
+// Only the sanitizer build (clang, RATW_SANITIZERS) sees the read of freed memory; here she gets on her way.
+void anOffstageLegWhileTheGroundChanges()
+{
+    const std::string sal = "resident \"sal\" \"Sal\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" "
+                            "\"average\" \"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_0_0\" 6.5 6.5 \"c_1_0\" 1.5 4.5 \"c_0_0\" 7.5 6.5\n";
+    auto f = cottage(sal);
+    auto world = load(f);
+    world.setTimeOfDay(18.5);
+    for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(world.entity("pip")->cellId == "c_2_0", "Pip gets home round the strip, finding the dead end");
+    auto* walker = world.entity("sal");
+    world.setTimeOfDay(9.0);
+    world.ensureLoaded("c_0_0");
+    world.ensureLoaded("c_1_0");
+    walker->cellId = "c_0_0";
+    walker->position = {9.5, 8.5};
+    walker->path.clear();
+    walker->offstage = true;
+    for (int k = 0; k < 40; ++k)
+    {
+        world.obstacles["c_1_0"].insert({10 + k % 4, 10 + k / 4});
+        for (int s = 0; s < 5; ++s)
+            world.tick(1);
+        walker->offstage = true;
+    }
+    expect(walker->activity.find("route unavailable") == std::string::npos,
+           "Sal, offstage, keeps a way to the strip as the tents go up: " + walker->cellId + " " + walker->activity);
+}
+
 // A lane to a strip (round 5, doc 64, Phase 13; a boy of Ridgemere, out of Greatly House): the west of c_2_0 below row 7
 // is a lane walled off from the cell's body, whose ways west all land on a strip of c_1_0 walled off from its body
 // (where his door is); the strip goes on south only onto a corner of c_1_1 walled off from that cell's body, and that
@@ -1120,6 +1153,7 @@ int main()
         aLaneToAStripIsLeftForTheBody();
         everyWayBackIsThroughTheBody();
         theGroundChangesMidWalk();
+        anOffstageLegWhileTheGroundChanges();
         aCellCutInTwo();
         theBestWayOn();
         aSpotNoWayReaches();

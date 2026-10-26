@@ -739,8 +739,10 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
     if (!wagon.offstage && time_ - f.enteredAt > StuckSeconds)
     {
         // Stuck where it walks (a crowd, a bad corner): it goes on to the next cell as if offstage.
-        const auto& next = cachedSteps(wagon.cellId).at(dest->market);
-        for (const Door* way : doorsIn(wagon.cellId))
+        // Copies: ensureLoaded may rebuild the fixture index, clearing stepsCache_ and doorsIn_ under them.
+        const std::string next = cachedSteps(wagon.cellId).at(dest->market);
+        const auto ways = doorsIn(wagon.cellId);
+        for (const Door* way : ways)
             if (way->portal && !way->locked && way->targetCell == next && ensureLoaded(next).ok)
             {
                 stop(wagon.id);
