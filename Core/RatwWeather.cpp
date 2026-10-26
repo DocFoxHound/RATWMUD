@@ -170,6 +170,7 @@ double weatherStrengthAt(const WeatherSystem& system, double x, double y, double
 
 void World::refreshWeatherField(bool force)
 {
+    indexCells();
     const auto stamp = std::int64_t(std::floor(calendarDays_ / FieldStep));
     if (!force && stamp == fieldStamp_)
         return;
@@ -232,9 +233,15 @@ WeatherSample World::sampleField(double x, double y) const
     // brings what it was called up as). So a rain coming in off the Sound turns to snow as it reaches the mountains,
     // where the land grows cold, not at a cell's edge.
     int falls = -1;
+    const double day = calendarDays_;
     for (const auto& s : systems_)
     {
-        const double v = strengthOf(s, x, y, calendarDays_);
+        // A system plainly out of reach (its middle where strengthOf puts it) is passed over without the square root;
+        // any nearer is weighed by strengthOf, so the edge is decided as ever.
+        const double dx = x - (s.x + s.vx * (day - s.born)), dy = y - (s.y + s.vy * (day - s.born));
+        if (dx * dx + dy * dy > s.radius * s.radius * (1 + 1e-9) + 1e-9)
+            continue;
+        const double v = strengthOf(s, x, y, day);
         if (v <= 0)
             continue;
         Weather kind = s.kind;
@@ -272,14 +279,21 @@ WeatherSample World::sampleField(double x, double y) const
 WeatherSample World::weatherAt(const std::string& cellId, Vec2 at) const
 {
     const auto* c = cell(cellId);
-    if (!c || !c->outdoors)
+    if (!c)
         return {};
-    if (!c->seasonalWeather)
-        return {c->weather, c->weather == Weather::Clear ? 0.0 : 1.0, Weather::Clear, 0};
-    auto s = sampleField(c->worldX + at.x, c->worldY + at.y);
+    return weatherAt(*c, at);
+}
+
+WeatherSample World::weatherAt(const Cell& c, Vec2 at) const
+{
+    if (!c.outdoors)
+        return {};
+    if (!c.seasonalWeather)
+        return {c.weather, c.weather == Weather::Clear ? 0.0 : 1.0, Weather::Clear, 0};
+    auto s = sampleField(c.worldX + at.x, c.worldY + at.y);
     // Fog gathers in low ground and thins on the heights.
     if (s.kind == Weather::Fog)
-        if (const auto* t = c->tile(int(std::floor(at.x)), int(std::floor(at.y))))
+        if (const auto* t = c.tile(int(std::floor(at.x)), int(std::floor(at.y))))
             s.intensity = std::clamp(s.intensity * (1 - t->height * .06), 0.0, 1.0);
     return s;
 }
@@ -291,7 +305,7 @@ int World::skyAt(const std::string& cellId, Vec2 at) const
         return 0;
     if (!c->outdoors)
         return -1;
-    const auto s = weatherAt(cellId, at);
+    const auto s = weatherAt(*c, at);
     if (s.intensity < .3)
         return 0;
     switch (s.kind)
@@ -429,8 +443,16 @@ double World::seasonalWarmth() const
     // Warmest at midsummer (the middle of summer, day 138 of the year), coldest at midwinter, smoothly between: so the
     // first snows come to the mountains well before the lowlands, and the snow line climbs again in spring.
     constexpr double Pi = 3.14159265358979323846, MidsummerDay = 138;
-    const auto date = calendar::calendarAt(calendarDays_);
-    const double day = date.valid ? date.dayOfYear - 1 + std::fmod(date.hour, 24.0) / 24 : MidsummerDay;
+    // The day of the year and the hour, worked out as calendar::calendarAt does (the rest of the date is not wanted).
+    const double at = calendarDays_;
+    double day = MidsummerDay;
+    if (std::isfinite(at) && at >= 0.0 && at <= calendar::MaxGameDays)
+    {
+        const double completedDays = std::floor(at);
+        const int dayOfYear = static_cast<int>(static_cast<std::uint64_t>(completedDays) % calendar::DaysPerYear) + 1;
+        const double hour = (at - completedDays) * 24.0;
+        day = dayOfYear - 1 + std::fmod(hour, 24.0) / 24;
+    }
     return .5 + .8 * std::cos(2 * Pi * (day - MidsummerDay) / calendar::DaysPerYear);
 }
 
