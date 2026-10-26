@@ -1454,7 +1454,8 @@ scripted players in the world. Nothing in the society changed but three small ac
 
 - **`work.csv`:** a producer's work is credited to the farmer but its hands are its till's, so its hands and hands
   wanted are now looked up by its till (they read 0). New columns: the till, its hours in hand at the day's turn, and
-  its running hires' slots and slots taken.
+  its running hires' slots and slots taken. (Since the review, the till's own columns, hands, hands wanted and hires,
+  are in `tills.csv`, once a till a day: in `work.csv` a till could have two rows, the farmer's and its own.)
 - **`days.jsonl`:** every town's going rate and the realm's (`model.going`, "" the realm's).
 - **`books.csv`:** every employer's book each day: wage, the going rate for its skill, open days, calm weeks, short
   pay, posts open and filled, skill.
@@ -1462,33 +1463,45 @@ scripted players in the world. Nothing in the society changed but three small ac
   its dawn, and who took them (jobless, child, works, idle, called, better or other, with its own employer), as they
   stand at 23:00.
 - **The run's stamp**, at the top of the log and in `run.txt`: the command, the source's `git describe` and commit,
-  and the binary's build time (b0 and b1 straddled the hands-wanted fix unseen).
+  and the binary's build time (b0 and b1 straddled the hands-wanted fix unseen). (Since the review, the describe is
+  taken when the binary is built, a dirty tree's with its changes' SHA-1 (`Tests/econ_watch_stamp.cmake`), and a run
+  warns when the source has changed since; the build time is the binary's, in UTC, and the compile time local.)
 - **`--from` past 24** is hours into the calendar (6006: day 250 at six), by a save restored at that moment.
 
 What the new measures show on day 30 of that run (DEV's export, `--hours`): the realm's going rate is still 12p and
-Ridgemere's too, while the small towns' have moved (Larkfield 12.2p to Mirebridge 14.3p); 208 of the businesses' books
-are at 12.0p. Producers' hands now read: 468 against 1,117 wanted. Of the hires, 1,419 slots were running on day 29
+Ridgemere's too, while the small towns' have moved (Larkfield 12.2p to Mirebridge 14.3p); 104 of the 384 businesses'
+books are at 12.0p. Producers' hands now read: 234 against 587 wanted, each till once. (Both were first given twice
+over, 208 books and 468 hands against 1,117: day 30's rows were there twice, the run's end repeating them, and a few
+tills twice besides; recounted by till.) Of the hires, 1,419 slots were running on day 29
 and 188 taken; over the month, of the slots of the 4,426 hires, those taken went to idle hands (2,503), children
 (1,325), wolves drawn by better pay (699), the jobless (60) and others (39). Most slots are households' help about
 the home (3,776 of 6,465).
 
-**Players who push** (`--players SCENARIO[,...]`, `--players-from DAY` (7), `--players-days N` (to the end);
-`Tests/econ_players.cpp`). They act only as the game lets a player act: `Society::addPlayer` (its welcome grant),
-`Society::trade` with a shop's keeper (99 a trade, what the shop wants and can pay for), `World::steal` with a body
-beside the mark, `World::setDead`. Every coin they're given comes from the capital's treasury by the ledger
-("test: a player's money", not earnings). `players.csv` has each thing done; `days.jsonl` a `players` block a day.
+**Players who push** (`--players SCENARIO[,...]`, `--players-from DAY` (7), `--players-days N` (to the end),
+`--players-bodies walk|still|jump` (walk); `Tests/econ_players.cpp`). They act as the game lets a player act:
+`Society::addPlayer` (its welcome grant), `Society::trade` with a shop's keeper (99 a trade, what the shop wants and
+can pay for), `World::addPlayer` and `World::moveTo` for a body (a door opened and entered, a seam walked across),
+`World::steal` with the body beside the mark, `World::setDead`, and `World::removePlayer` when their days are over.
+Two stand-ins, said so: hoard's yield, and the whale's chests (below). Every coin they're given comes from the
+capital's treasury by the ledger ("test: a player's money", not earnings). Their days count from when they start (a
+run that starts after `--players-from` starts them on its first day, and says so). `players.csv` has each thing done;
+`days.jsonl` a `players` block a day (a day's record is made at its midnight, before the players act at that
+midnight, so what they do then is the new day's in every file).
 
 | Scenario | What it does |
 |---|---|
-| `hoard` | 20 players roam the capital's hunting and gathering grounds, a spell an hour 8 to 17, from the same game and patches as its own hunters (`World::harvestAt`, through `Society::day().harvest`); at 17 they sell it all to the shops, and keep every coin |
-| `corner` | a player with 30,000p buys every loaf, sack of flour and meal on the capital's shelves at six each morning for a week, then sells them back to whichever shops take them |
+| `hoard` | 20 players roam the capital's hunting and gathering grounds, a spell an hour 8 to 17, from the same game and patches as its own hunters (`World::harvestAt`, through `Society::day().harvest`); at 17 they sell it all to the shops, and keep every coin. A stand-in: a spell gives an outworker's yield (a hunt's kill at its odds, fierce game passed by; a forage without its wait or practice), not a player's `World::forage` and hunts, which would want twenty bodies in the wild and a fight each |
+| `corner` | a player with 30,000p buys every loaf, sack of flour and meal on the capital's shelves at six each morning for its first week, then sells them back to whichever shops take them |
 | `dump` | 5 players sell swords, iron swords and hides to their towns' shops every day, as many as they take (the goods as a Hold's smithy makes them, and hunted; their materials not counted) |
-| `whale` | a player with 5% of the money (250,000p) buys every rapier and piece of finery on every shelf each morning, into rented chests past a pack's kinds |
-| `poach` | a Hold takes 20 of the capital's hands from their businesses (off their schedules, as `station`ed staff are) at twice the realm's going rate, paid each dawn, a week's wages put by each week |
-| `kill` | the key makers die on the first day: every smith of the realm, a town's only miller, the biggest farm's farmer; succession is the world's |
-| `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30 |
+| `whale` | a player with 5% of the money (250,000p) buys every rapier and piece of finery on every shelf each morning, into chests past a pack's kinds, 99 at a time. A stand-in: the chests are accounts of its own ("let:"), free, with no lodging and no rent |
+| `poach` | a Hold takes 20 of the capital's hands from their businesses (off their schedules, as `station`ed staff are) at twice the realm's going rate, paid each dawn: the Chapter's treasury has the first day's pay when it takes them, and is topped up each dawn to that day's pay at that day's rate (what the capital's treasury can't give, noted "short") |
+| `kill` | the key makers die on the first day: every smith of the realm, a town's only miller, the biggest farm's farmer; succession is the world's (the dead keep no shop the rest of that day) |
+| `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30. Their bodies arrive at five of the capital's shops and walk up to a mark in the place they're in (`World::moveTo`, trying the purse on arrival), and on the hour (or with nobody about) on into the next of the capital's places; `still`, they stand where they arrived and try any purse that comes within reach; `jump`, they're put beside each mark (`World::teleport`, a Dungeon Master's move: the first runs') |
 | `visit` | 5 players with bodies go about the capital as the thieves do, and take nothing: theft's control (bodies on the stage alone) |
-| `winter` | 10 players with 3,000p each buy every bundle of firewood in their towns each autumn morning, and keep it |
+| `winter` | 10 players with 3,000p each buy every bundle of firewood in their towns each morning of the calendar's autumn (days 184 to 274), and keep it |
+
+When their days are over, the thieves' and visitors' bodies leave the world (as a player's who logs off; one in a
+fight stays till it's over), and the Hold's hands go back to their own lives.
 
 **What the game didn't let them do** (each a question for the user, at the end):
 
@@ -1504,8 +1517,8 @@ beside the mark, `World::setDead`. Every coin they're given comes from the capit
 - **Shops take few of a player's goods:** a good a shop makes, up to 4 on its shelf; what it supplies or buys, up to
   40. A player dumps at scale only at a stall (doc 54; `crafting_tests` `aStallDumpAndTheRebound`).
 
-**The 10-day checks** (DEV's export, from day 2, `--hours`, deterministic; winter from day 250): money conserved
-every day in every run.
+**The 10-day checks** (DEV's export, from day 2, `--hours`, deterministic; winter from day 250; before the review's
+fixes, so theft's and visit's bodies jumped): money conserved every day in every run.
 
 | Scenario | What happened | Against the run without players |
 |---|---|---|
@@ -1519,16 +1532,39 @@ every day in every run.
 | `visit` | 5 bodies moved about the capital each quarter of an hour | 11 to 21 hungry from day 6, the pace 0.04 on day 10, 5% fewer hours worked: residents on the stage fetching a meal from home don't get there (on day 8 of `theft`, 47 of the 66 hungry were in the Heights Market's cell, `w_ridgemere_1_1`, on their way home; others are offstage in houses not theirs) |
 | `winter` | bought 16,835 firewood for 17,075p in 7 days: 132 the first morning, 5,700 the fourth, 729 the seventh | Gini up to 0.005 lower, the poorer half up to 0.003 higher; the run ends before winter (day 275), when it would tell |
 
+**The bodies' control** (the review: were the hungry the jumps' doing?). The same 10 days from day 2, on the merged
+Phase 13 with the review's fixes (`4e83cec`), the bodies walking, standing still and jumping; the run without players
+is the 30-day smoke's first 10 days (its digest is the merged run's, `m1`'s). Money conserved every day in every run;
+Gini and the poorer half within 0.006 of the run without players in all; the pace 0 in all, as without players.
+
+| Bodies | `visit`: hungry, starving (day 10) | `theft`: hungry, starving | Hours worked on day 10 (4,841 without players) | A tick (2 threads) |
+|---|---|---|---|---|
+| none | 0, 0 | | | 0.09 ms |
+| walk | 191, 118 (the first on day 3) | 93, 45 (day 4) | `visit` 3,495 (28% fewer), `theft` 3,936 (19%) | 1.6 ms, 1.1 ms |
+| still | 179, 142 (day 3) | 176, 141 (day 3) | 3,784 (22%), 3,853 (20%) | 1.2 ms |
+| jump | 47, 46 (day 5) | (the first runs': 104, 63) | 4,564 (6%) | 0.7 ms |
+
+So it isn't the jumps: bodies that never move starve the most, and walking ones as many. Where: with the still bodies
+(in five inns) 162 of the 179 hungry are in the street outside them (`w_ridgemere_1_2`), on the stage, 135 of them
+fetching a meal from home (most of the rest asleep); with the walking ones (most in the Heights Market,
+`w_ridgemere_1_1`), 135 of the 191 in the next cell along (`w_ridgemere_2_1`) and 46 in the market's own; all but 10
+on the stage. With the jumping ones the hungry are elsewhere: offstage, in houses not theirs (the Grey Gull Inn, the
+Houses' halls), on their way upstairs home. A trace (`RATW_TRACE`, still bodies) of three of day 3's hungry: each
+walked onto the stage into `w_ridgemere_1_2` across its north seam (at 52,0 and 235,0) on its way home to eat, and
+stood there 10 and 21 game hours before it got home, the third still there at the run's end. Real players' bodies
+on the stage would do the same: a fault in the residents' walking at the stage's edge (World: `placeOnStage`,
+`headFor`), not the harness's.
+
 **Notes for the long runs:**
 
 - The players' funding comes out of the capital's treasury, so a big one (the whale's) leaves the capital less to
   spend: a run that measures it should read the treasury beside the rest.
-- **Players' bodies make residents hungry.** Every other run (and every run before) has nobody on the stage; with five
-  bodies in the capital, residents fail to fetch their meals home and go hungry, more with the watch busy after
-  thieves. The bodies here jump (`World::teleport`) where a player walks, so the stage's edges move all at once; that
-  may be part of it. It wants looking into before the long runs, which have no players on the stage.
+- **Players' bodies make residents hungry**, whether they walk, stand or jump (the bodies' control, above). Every other
+  run (and every run before) has nobody on the stage; with five bodies in the capital, residents on the stage near
+  them fail to get home to eat. It wants fixing before players come, and the long runs, which have no players on the
+  stage, can't see it.
 - `theft` and `visit` cost far more: everyone near the bodies is on the stage, and a tick took 0.6 to 3 ms on one to
-  three threads against 0.1 to 0.2 (`theft`'s 10 days took 55 minutes).
+  three threads against 0.1 to 0.2 (`theft`'s 10 days took 55 minutes; walking `visit`'s, 75).
 - `troubles_tests` failed once with ten runs going at once ("the loan paid") and passed on three runs after and on
   the commit before: it is flaky under load.
 
@@ -1539,8 +1575,35 @@ every day in every run.
 3. Rapiers: should the armory make them (a craft)? None is made, and a whale has little else to buy.
 4. A corner can profit on meals by selling back into the shortage it made (576p on 7,453p in a week). Is that a fair
    reward for the risk, or should a shop buy meals at its own normal cost, as it does every other good?
-5. Residents near players go hungry (above). If the stage's life is meant to match the unseen's, it's a fault to
-   find first: the long runs, without players, can't see it.
+5. Residents near players go hungry (above), with bodies that walk or stand still as with jumping ones: residents
+   who walk onto the stage at its edge, on their way home to eat, stand there for hours. If the stage's life is meant
+   to match the unseen's, it's a fault to find first (in the world's walking, not the economy): the long runs, without
+   players, can't see it.
+
+**The review's fixes (2026-10-26)** (`4e83cec`; `Tests/econ_players_tests.cpp` checks each, and econ_watch's files
+on a little world of its own, a day and a fifth in under two seconds):
+
+- `poach`: the Chapter's treasury has the first day's pay when it takes the hands, and each dawn it is topped up to
+  that day's pay at that day's rate (it had a week's, at one rate, put by only when the players started at midnight
+  on a seventh day; started mid-day, every hand went home unpaid at the first dawn).
+- When their days are over, the thieves' and visitors' bodies leave the world (`World::removePlayer`; they had stood
+  on in the capital, keeping the stage there), and the Hold's hands go home.
+- `theft` and `visit`: bodies walk (`--players-bodies`, above), or stand still, or jump as before.
+- `winter` buys in the calendar's autumn only (it bought from spring on, before `Society::WinterStart`).
+- The players' days, and the corner's buying week, count from when they start; a run that starts after
+  `--players-from` starts them on its first day and says so (`--from 6006 --players-days 10` had never started them).
+- `work.csv` has each account's hours; a till's hands, hands wanted and hires are in `tills.csv`, once a till. The
+  run's end writes no rows of its own in `work.csv`, `books.csv`, `tills.csv` or `residents.csv` (it repeated the
+  last day's under the same day). The figures above that came from them are recounted.
+- The players act after a midnight's record is made: what they do at midnight is the new day's in `days.jsonl` as in
+  `players.csv` and `flows.csv` (the record before had it).
+- The stamp is taken at build time; times say their zones.
+- The dead keep no shop: a keeper who died since the morning's list, or left its post, is passed by, and `kill`
+  makes the list again (in the test's little world, the `dump`ers had sold swords to the smith `kill` had just
+  killed).
+- The whale's goods go into its chests 99 at a time (the journal notes 99 a move at most; a stack of 190 showed as 99),
+  and the chests are said to be free; hoard's yield is said to be a stand-in (the table).
+- `camp::HoldWage` for the Hold's least wage; the comments put right.
 
 ### Phase 13: the labour market unpinned (2026-10-25)
 
