@@ -712,11 +712,20 @@ class Society
     // A price in whole pennies: to the nearest, a penny at least (doc 46, Phase 8: rounded up, a 1p good priced at 1.4p
     // sold for 2p, twice its catalog's).
     static std::int64_t pennies(double price) { return std::max<std::int64_t>(1, std::llround(price)); }
+    // An amount in labourer's days (LD), in whole pennies at the town's going rate ("" the realm's), a penny at least
+    // (doc 64, Phase 13: the realm is founded at ladder.json's `foundingDay`, 60p). The amounts here that were written as
+    // pennies when a day was the catalogue's 12p are kept so, in LD (5 / 12. for 5p): at 12p each is what it was.
+    std::int64_t pennies(double days, const std::string& town) const { return pennies(days * goingRate(town)); }
+    // A good's catalogue price (in the catalogue's pennies: a day of `catalogueDay`), at the town's going rate. Meals,
+    // herbs and swords are still priced so (storePriced).
+    double atGoingRate(double catalogue, const std::string& town) const;
+    static constexpr double PieceMost = 1000 / 12.;  // The dearest piece the ledger moves, in LD (1,000p at a 12p day).
     // What a buyer in the town pays the land for a good, by the yardstick: its going price less the usual margin.
     double buyingPrice(const std::string& town, const std::string& item) const;
     double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.
     std::string shopTown(const std::string& shop) const;   // The town a shop works in.
-    // Meals, herbs and swords: priced by the town's stores (World::tendPrices), not the orchestrator, for now.
+    // Meals, herbs and swords: priced by the town's stores (World::tendPrices), not the orchestrator, for now; at their
+    // catalogue prices at the going rate (atGoingRate).
     static bool storePriced(const std::string& item) { return item == "meal" || item == "herbs" || item == "sword"; }
     // Daily: each shop's meals sold (what it restocks) and each shop's town.
     void tendPrices(std::int64_t day);
@@ -942,6 +951,10 @@ class Society
     // calibrated hours need).
     double hoursFor(const items::Craft& k) const;
     double hoursFor(const items::Producer& p) const;
+    // The hours a good is costed at (doc 64, Phase 13; doc 63's normal_cost): with work by the hours, those it takes now
+    // (hoursFor, at the realm's pace), so a price is what its work cost; otherwise the calibrated `hours` (Phase 4).
+    double costedHours(const items::Craft& k) const;
+    double costedHours(const items::Producer& p) const;
     static inline bool workByHours_ = false;
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
@@ -1052,9 +1065,14 @@ class Society
     // till aside), and a household that has stayed comfortable a week keeps one of them at home (to mind the children,
     // shop and look about), sending it back to work when money runs low; a poor one sends everyone who can to work.
     void tendHouseholds(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    std::int64_t householdNeed(std::size_t members) const { return FoodADay * std::int64_t(members); }
+    // Its food a day, in pennies at its town's going rate ("" the realm's).
+    std::int64_t householdNeed(std::size_t members, const std::string& town = "") const
+    {
+        return members > 0 ? pennies(FoodADay * double(members), town) : 0;
+    }
   public:
-    static constexpr std::int64_t FoodADay = 5;     // A wolf's food a day, as a household reckons it (pennies).
+    // A wolf's food a day, as a household reckons it, in LD (5p at a 12p day; doc 64, Phase 13): pennies().
+    static constexpr double FoodADay = 5 / 12.;
     // A shop's price to the townsfolk: its own (priceAt, doc 64, Phase 4), in whole pennies.
     std::int64_t shopPrice(const std::string& shop, const std::string& item) const;
     // What things cost, and prices (Docs/Design/64-economy-migration.md, Phase 4; RatwPrices.cpp). Each seller prices
@@ -1158,13 +1176,11 @@ class Society
     };
     static constexpr int HireDays = 7;
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
-    // hand (Society::dayWage, doc 64, Phase 6). A wolf whose own post pays HireRaise less than a hire takes it.
-    static constexpr std::int64_t HireRaise = 2;
+    // hand (Society::dayWage, doc 64, Phase 6).
     static constexpr int HireSpells = 8;           // (A day's hours, as a post's: doc 64, Phase 6. It was 4.)
     // Children's friend groups (the user, 2026-10-05): in each town its children, by age, in fours; they play together
     // and take odd jobs together. A child's group ("" for none).
     const std::string& friendGroup(const std::string& child) const;
-    static constexpr std::int64_t OddJobPay = 4;
     const std::vector<OddJob>& oddJobs() const { return oddJobs_; }
     // An odd job posted from outside the society (Docs/Design/57-changing-the-world.md: a town project's hands, kind
     // "project"): `slots` wolves for the day, `pay` for all of them, paid by `payer` as each finishes a spell's work at
@@ -1172,7 +1188,7 @@ class Society
     std::string postOddJob(const std::string& payer, const std::string& community, const std::string& kind, int slots,
                            std::int64_t pay, const Spot& at, const std::string& what);
 
-    static constexpr std::int64_t MostStipend = 3;  // A child's stipend a day at most.
+    static constexpr double MostStipend = 3 / 12.;  // A child's stipend a day at most, in LD (3p at a 12p day).
     // A household is comfortable with ComfortDays of food in its purse for everyone at home, poor under PoorDays'; it keeps
     // a member at home after a week comfortable, and sends it back under KeeperDays' (and everyone to work after a week poor).
     static constexpr int ComfortDays = 28, PoorDays = 7, KeeperDays = 10, StreakDays = 7;
@@ -1215,17 +1231,16 @@ class Society
         std::int64_t wealthTithe = 0, fromCapital = 0;   // Its folk's wealth tithe; what the capital sent it, for its poor.
     };
     // Money back out where it pools (Docs/Design/42, "Where money pools", the user, 2026-10-06):
-    // - the tax on a week's profit is a tenth, and a fifth of the part above TaxBand;
     // - each week a WealthTitheShare-th of what anyone holds above a comfortable line goes to the church (wealthLine);
     // - each week the capital sends the towns half of what it holds above four weeks' spending, by how many of their
     //   folk are short of a week's food;
-    // - each day the church gives households short of a week's food DoleADay a member, in coins (the dole);
     // - a great house keeps only its floor and spends a HouseSurplusShare-th of the rest a day; what it holds above that
     //   floor raises the wages it pays (wageFor), rather than being given away.
-    static constexpr std::int64_t TaxBand = 70, DoleADay = 2;
+    // (The banded tax and the dole went with doc 64's Phase 7.)
     static constexpr int WealthTitheShare = 20, HouseSurplusShare = 10, KeeperSurplusShare = 5;
     // Above what a wealth tithe is paid: a resident's four weeks' food; a keeper whose purse is its shop's till, that, its
-    // food money and a float; a great house, its floor (100p and a float for each business: as for its surplus).
+    // food money and a float; a great house, its floor (HouseFloor and a float for each business: as for its surplus).
+    static constexpr double HouseFloor = 100 / 12.;  // (In LD: 100p at a 12p day.)
     std::int64_t wealthLine(const std::string& id) const;
     std::int64_t houseFloor(const std::string& house) const;
     // The month's reckoning, if one is due on `day` (at most once a month): every resident who made a profit pays a
@@ -1299,9 +1314,6 @@ class Society
     // Spells of paid work a day (a spell: a game hour at the post): paid for the hours worked, up to a full day's
     // (the user, 2026-10-05: wages must cover a day's living; it was 3, a third of the day). A placeholder.
     static constexpr int PaidSpells = 8;
-    // A treasury with less than this a head of its town pays its posts 1p a spell, not 2 (doc 42, 2026-10-05).
-    static constexpr int LeanTreasury = 20;
-    bool treasuryLean(const std::string& treasury) const;
     static constexpr int RetireAge = 65;
     // Working out of town (doc 42, Phase 3b): the ground a grown wolf without a post works today, or null (it labours
     // for the Town Works instead). A ground takes OutworkRoom wolves; the choice is the wolf's own, steady day to day.
@@ -1327,8 +1339,10 @@ class Society
     std::string tillOf(const std::string& keeper) const;
     std::string ownerOf(const std::string& positionId) const;
     // A manager's wage a day, the days of running costs a till keeps (its float), and how many of the last 28 days a
-    // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders.
-    static constexpr int ManagerWage = 8, FloatDays = 3, ProppedDays = 10;
+    // till may run low (propped up by its house, or not) before the house sells the business on. Placeholders. The
+    // wages, and a float's help and materials, in LD (8p, 6p and 30p at a 12p day: floatOf).
+    static constexpr double ManagerWage = 8 / 12., HelpWage = 6 / 12., FloatMaterials = 30 / 12.;
+    static constexpr int FloatDays = 3, ProppedDays = 10;
     // A great house's fortune in an older world (before the realm's money stood: doc 64). Rent is RentShare now.
     static constexpr std::int64_t HouseFortune = 3000;
     std::int64_t floatOf(const std::string& positionId) const;
@@ -1336,12 +1350,11 @@ class Society
     // up, and a business that keeps losing sold to another house. Gives the houses their businesses the first time.
     void tendHouses(std::int64_t day);
     // Every business its own till (doc 46, Phase 2; RatwTills.cpp): an owner-run shop, workshop, farm or site keeps
-    // "till:<position>" apart from its keeper's purse, as a house's business does (tillOf finds either). Its keeper draws
-    // OwnerWage a day from it (what it can spare above half its float) and, at the reckoning, an OwnersShare-th of the
-    // week's profit after the till's tax and tithe. Founded when a world first runs (an older save: the first time it runs
-    // with tills): its keepers move their shop's goods and money (all but a month's living) into it once (TillsFounded).
-    // A great house that takes a business on later (foundHouses, a sale) takes its till with it.
-    static constexpr std::int64_t OwnerWage = ManagerWage;
+    // "till:<position>" apart from its keeper's purse, as a house's business does (tillOf finds either). Its keeper is
+    // paid its business's wage and its owner the month's profit (doc 64, Phases 5 and 6). Founded when a world first runs
+    // (an older save: the first time it runs with tills): its keepers move their shop's goods and money (all but a
+    // month's living) into it once (TillsFounded). A great house that takes a business on later (foundHouses, a sale)
+    // takes its till with it.
     static constexpr int OwnersShare = 3, TillsFounded = 1;
     bool ownsTill(const Position& p) const;         // A business that keeps a till of its own (not a house's).
     void indexTills();                              // tills_ from the accounts (a reset, a restore).
@@ -1426,15 +1439,15 @@ class Society
     static bool clergy(const std::string& title);     // A priest's, a chapel keeper's, an acolyte's work.
     static bool houseHead(const std::string& title);  // The head of a great house: "ruling House Fell".
     static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
-    // The poverty line (the user, 2026-10-06: tax and tithe the same for all, unless in poverty): a resident holding less
-    // than two weeks' food money pays neither tax nor tithe that week.
-    static constexpr std::int64_t PovertyLine = 14 * FoodADay;
     // Starting money (the user, 2026-10-05; RatwFounding.cpp): every resident and every body that keeps a purse begins with
     // a reasonable one, made once when the world is founded (an older save: the first time it runs with this). Placeholders:
     // a child ChildPurse and half a penny a year of its age; a beggar PoorPurse; a grown wolf AdultPurse (some five days'
     // food); one retired ElderPurse; a shopkeeper whose shop is its own KeeperPurse, or its shop's float if more. A town's
     // treasury TreasuryHead a resident who pays it, its church ChurchHead (or four weeks of its basket, if more), a town's
-    // buyers their working funds, a great house's business its till's float.
+    // buyers their working funds, a great house's business its till's float. In pennies as written: in a realm of
+    // WorldMoneyResidents they are only the seed WorldMoney makes up, each kind to its share, so the founding's spread is
+    // the model's whatever the day (doc 64, Phases 1 and 13). A child's first pennies at its birth are ChildPurse at the
+    // going rate (atGoingRate).
     static constexpr std::int64_t ChildPurse = 5, PoorPurse = 10, AdultPurse = 30, ElderPurse = 60, KeeperPurse = 80;
     static constexpr std::int64_t TreasuryHead = 40, ChurchHead = 10;
     // One church across the land (the user, 2026-10-06): every town's church keeps one purse, shared at once, so what
@@ -1463,7 +1476,8 @@ class Society
     std::int64_t startingPurse(const std::string& resident, int age) const;
     // A keeper whose shop is its own (its purse is the till) never spends its last KeeperReserve on the business
     // (materials, restocking, help's wages): it keeps its food money (the user, 2026-10-05). What an account may spend so.
-    static constexpr std::int64_t KeeperReserve = 20;
+    // In LD (20p at a 12p day: pennies()).
+    static constexpr double KeeperReserve = 20 / 12.;
     std::int64_t spendable(const std::string& account) const;
 
   private:
@@ -1511,10 +1525,6 @@ class Society
     void notePay(const std::string& resident, const std::string& key, std::int64_t coins, std::int64_t owed);
     void tendOwners(std::int64_t day);
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).
-    // A business with money to spare (RatwOddJobs.cpp): hands hired for its premises, paid from its till, and its premises
-    // improved (materials bought from the town's makers, builders hired); returns what it committed.
-    std::int64_t businessSpends(const std::string& payer, const std::string& keeper, const Position& job, std::int64_t budget);
-    std::map<std::string, std::int64_t> improving_;     // Position -> what has gone into its next improvement (not saved).
     // Farmhands (doc 42, the user, 2026-10-06): every farm, orchard and vineyard hires hands for a few days when it has the
     // money, from its town or from any city; one from elsewhere lodges in the farm's bunkhouse (BunkBeds), fed from its
     // larder, which the farm stocks. A city: a community of CityResidents or more.
@@ -1543,7 +1553,7 @@ class Society
     // materials bought from its town's makers, from its till (or its house). Two weeks without, and it loses a level.
     void keepUpPremises();
   public:
-    static constexpr std::int64_t UpkeepALevel = 5;
+    static constexpr double UpkeepALevel = 5 / 12.;   // (In LD: 5p at a 12p day.)
   private:
     // The odd job this resident holds, claiming one if it is free to (nullptr for none). With `claims`, nothing is claimed:
     // it is set if one would be (deciding at once, RatwResidents.cpp).
@@ -1565,6 +1575,11 @@ class Society
     void advanceOddJob(const std::string& id, int seconds = 1);   // (A step's seconds of its work.)
     // Made into `account` as starting money: counted as made, and kept out of the month's profit.
     void startingMoney(const std::string& account, std::int64_t coins);
+    // The realm's labourer's day as it is founded (doc 64, Phase 13): in a land of WorldMoneyResidents or more, whose
+    // money is made up to WorldMoney, the going rate starts at ladder.json's `foundingDay` (the realm's and every town's,
+    // memory.going), so its tills' floats, its first wages and employers' books and its prices start there. Before its
+    // purses are made, once; a village made for a test keeps the catalogue's day.
+    void foundWage();
     // Tops every purse up to its starting money, once (EconomyMemory::purses).
     void foundPurses(const std::map<std::string, LifeBody>& bodies);
     // Makes what the world holds up to WorldMoney (once, at the end of the first day's pass after the purses are founded).
@@ -1620,8 +1635,6 @@ class Society
     mutable std::map<std::string, std::string> richest_;    // Home cell -> its household's richest (for the day).
     mutable std::int64_t richestDay_ = -1;
     const std::string* richestAt(const std::string& homeCell, const std::string& besides) const;
-    mutable std::map<std::string, int> people_;              // Treasury -> residents who pay it (for the day).
-    mutable std::int64_t peopleDay_ = -1;
     void indexEmployers() const;
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.

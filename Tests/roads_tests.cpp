@@ -1158,7 +1158,7 @@ void greatHouses()
     expect(soc.tillOf("tanner") == till && soc.account(till), "with a till of its own");
     expect(soc.account("house:house_ash")->cash >= Society::HouseFortune / 2 && soc.account("house:vesk_manor")->cash >= Society::HouseFortune / 2,
            "Each house was founded with a fortune of its own");
-    expect(soc.account("tanner")->cash <= Society::ManagerWage * (Society::FloatDays + 3),
+    expect(soc.account("tanner")->cash <= soc.pennies(Society::ManagerWage, "") * (Society::FloatDays + 3),
            "the manager keeps only its own week's wage (" + std::to_string(soc.account("tanner")->cash) + "p)");
     expect(Society::stockAll(*soc.account(till), "leather") > 0 && Society::stockAll(*soc.account("tanner"), "leather") == 0,
            "and the shop's goods are on the till's shelves");
@@ -1459,7 +1459,7 @@ void shopkeepersDontHoard()
     w.tick(.6);
     const auto till = w.society().tillOf("cook");
     expect(till.rfind("till:", 0) == 0, "The cookshop has a till of its own: " + till);
-    expect(w.society().account("cook")->cash <= MonthDays * Society::FoodADay,
+    expect(w.society().account("cook")->cash <= w.society().pennies(MonthDays * Society::FoodADay, ""),
            "and its keeper keeps at most a month's living (" + std::to_string(w.society().account("cook")->cash) + "p)");
     w.society().shift("treasury", till, "", 0, 2000, "test: a fine year");
     w.takeEvents();

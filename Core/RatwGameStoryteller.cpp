@@ -668,7 +668,7 @@ Result Game::storyPrize(const std::string& teller, storylines::Storyline& tale, 
     }
     bool moved = false;
     if (coins > 0 && item.empty())
-        moved = coins <= 1000 && society.account(from) && society.account(from)->cash >= coins &&
+        moved = coins <= society.pennies(Society::PieceMost, "") && society.account(from) && society.account(from)->cash >= coins &&
                 society.shift(from, to, "", 0, coins, "a story's prize");
     else if (!item.empty() && from == teller)
         moved = society.account(teller) && Society::stock(*society.account(teller), item) >= quantity &&

@@ -5,6 +5,8 @@
 // amounts are placeholders for the balance pass (RatwSociety.h).
 #include "RatwSociety.h"
 
+#include "RatwItems.h"
+
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -34,7 +36,7 @@ std::int64_t Society::spendable(const std::string& id) const
         return 0;
     const auto* r = state_.residents.count(id) ? spec(id) : nullptr;
     // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.)
-    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - KeeperReserve) : purse->cash;
+    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, "")) : purse->cash;
 }
 
 void Society::startingMoney(const std::string& id, std::int64_t coins)
@@ -62,11 +64,23 @@ void Society::startingMoney(const std::string& id, std::int64_t coins)
     record("starting money", "outside", id, "", 0, coins);
 }
 
+void Society::foundWage()
+{
+    auto& memory = state_.memory;
+    if (memory.purses >= 1 || state_.residents.size() < WorldMoneyResidents)
+        return;
+    ++memory.revision;
+    for (auto& [town, rate] : memory.going)
+        rate = items::ladder().foundingDay;
+    memory.going[""] = items::ladder().foundingDay;
+}
+
 void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)
 {
     auto& memory = state_.memory;
     if (memory.purses >= 1)
         return;
+    foundWage();                                    // (Already, for a world founded afresh: resetAuthored.)
     memory.purses = 1;
     ++memory.revision;
     std::map<std::string, std::int64_t> heads;      // Treasury -> the residents who pay it.

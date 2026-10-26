@@ -118,6 +118,7 @@ void Society::resetAuthored()
         stockMaterials(r.id);                       // What the makers make things from, and the suppliers sell them.
     state_.craftingStocked = CraftingStock;
     defaultCareers();
+    foundWage();                                    // The realm's labourer's day, founded (RatwFounding.cpp, doc 64).
     foundTills();                                   // Every business its own till (RatwTills.cpp, doc 46).
 }
 
@@ -285,6 +286,11 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     }
     if (bodies.empty())
         return;                                     // (A second with no one due: see needsBodies.)
+    // What a wolf's purse is weighed against, at the realm's going rate (doc 64, Phase 13; at a 12p day: the price of a
+    // bite 4p, a day's wage, 5p to lay in the larder, and the plate's 1p or 2p from over 20p or 60p): pennies().
+    const auto bite = pennies(4 / 12., ""), aDay = pennies(1., ""), layIn = pennies(5 / 12., "");
+    const auto plateOne = pennies(1 / 12., ""), plateTwo = pennies(2 / 12., ""), plateFrom = pennies(20 / 12., ""),
+               plateMore = pennies(60 / 12., "");
     // The day's plan for a place's community, and its sky (Phase 9): an ordinary day under a fair sky without them.
     static const DayPlan ordinary;
     // A cell's community and its plan, asked of the same few hundred cells over and over in a pass: kept for the pass.
@@ -828,7 +834,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
         }
         // (A keeper whose own shelves hold nothing to eat buys a meal elsewhere too.) Only with the price of a meal.
-        else if (hunger >= 55 && !carriesFood && spendable(id) >= 4 && shop)
+        else if (hunger >= 55 && !carriesFood && spendable(id) >= bite && shop)
         {
             task = "buy food";
             goal = *shop;
@@ -917,7 +923,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                      const auto* held =
                          oddJobFor(id, *job, (job == &stand && !keepsHouse) || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title) ||
                                                  (workByHours() && job->paid && idleHand(id, payerOf(id, *job, body.age))),
-                                   body.age, wallet.cash < 12 || (hunger >= 55 && !carriesFood), hour,
+                                   body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
                                    // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
                                        ? lookingFor(id, payerOf(id, *job, body.age), *job, absoluteDay)
@@ -936,7 +942,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (keepsHouse && onHours)
         {
             // Keeping the house: the household's food first, then the children, then a look about the town.
-            if (larderLow(life.homeCell) && wallet.cash >= 5 && shop)
+            if (larderLow(life.homeCell) && wallet.cash >= layIn && shop)
             {
                 task = "shopping for the household";
                 goal = *shop;
@@ -1281,7 +1287,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (task == "at church"sv && hour >= ServiceEnd - .5 && offered_.insert(pair.first).second)
         {
             // The plate goes round as the service ends: a penny or two from those who can spare it.
-            if (const std::int64_t gift = wallet.cash > 60 ? 2 : wallet.cash > 20 ? 1 : 0; gift > 0)
+            if (const std::int64_t gift = wallet.cash > plateMore ? plateTwo : wallet.cash > plateFrom ? plateOne : 0; gift > 0)
             {
                 const auto church = churchOf(treasuryOfResident(pair.first));
                 openAccount(church);
@@ -1370,14 +1376,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto sells = mealsSold_.count(till) ? mealsSold_.at(till) : 6.;
             const int carried = std::clamp(int(std::ceil(sells * 2)) + 1, 3, atStall_.count(pair.first) ? 20 : 12);
             const auto& shelves = state_.accounts.at(till);
+            // (Wholesale, at the going rate: a meal 4p and herbs 1p at a 12p day.)
+            const auto town = shopTown(pair.first);
+            const auto mealAt = pennies(4 / 12., town), herbsAt = pennies(1 / 12., town);
             const int meals = !sellsMeals ? 0 : std::min({3, carried - stock(shelves, "meal"), stock(stores, "meal"),
-                                        int(std::min<std::int64_t>(3, spendable(till) / 4))});
+                                        int(std::min<std::int64_t>(3, spendable(till) / mealAt))});
             if (meals > 0)
-                transfer(storeId, till, "meal", meals, 4, "wholesale restock");
+                transfer(storeId, till, "meal", meals, mealAt, "wholesale restock");
             const int herbs = !sellsHerbs ? 0 : std::min({3, 8 - stock(shelves, "herbs"), stock(stores, "herbs"),
-                                        int(std::min<std::int64_t>(3, spendable(till)))});
+                                        int(std::min<std::int64_t>(3, spendable(till) / herbsAt))});
             if (herbs > 0)
-                transfer(storeId, till, "herbs", herbs, 1, "wholesale restock");
+                transfer(storeId, till, "herbs", herbs, herbsAt, "wholesale restock");
         }
     }
 }

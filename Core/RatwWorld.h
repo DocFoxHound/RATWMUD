@@ -1818,8 +1818,9 @@ class World
     // The month's reckoning at once (the Dev Console's /reckon): what each town took in, as a line each.
     std::string reckonNow();
     // The church's care (doc 42, Phase 5): a priest or chapel keeper tends a poor wolf's healing wounds with the
-    // church's bandages, free, once a day: a quarter of each wound's rest. Poor: under PoorPurse.
-    static constexpr std::int64_t PoorPurse = 20;
+    // church's bandages, free, once a day: a quarter of each wound's rest. Poor: under PoorPurse, in LD (20p at a 12p day:
+    // Society::pennies, doc 64, Phase 13).
+    static constexpr double PoorPurse = 20 / 12.;
     bool churchCares(const std::string& player, const std::string& clergy) const;
     Result churchCare(const std::string& player, const std::string& clergy);
     // The storehouse of a cleric's town's church (Society::churchStore): its bandages, bread and candles.

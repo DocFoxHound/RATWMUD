@@ -340,6 +340,16 @@ double Society::hoursFor(const items::Producer& p) const
     return workByHours_ ? old + std::clamp(state_.memory.pace, 0., 1.) * (p.hours - old) : old;
 }
 
+double Society::costedHours(const items::Craft& k) const
+{
+    return workByHours_ ? hoursFor(k) : k.hours;
+}
+
+double Society::costedHours(const items::Producer& p) const
+{
+    return workByHours_ ? hoursFor(p) : p.hours;
+}
+
 void Society::creditWork(const std::string& account, double hours)
 {
     if (hours <= 0)
@@ -540,12 +550,12 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             const bool inspired = std::hash<std::string>{}(id + "|muse|" + std::to_string(std::int64_t(absoluteDay * 86400))) % 7 == 0;
             const int quality = craft >= 85 && score >= 100 && inspired ? 3 : craft >= 60 && score >= 85 ? 2 : score < 20 ? 0 : 1;
             // A masterwork carries its maker's mark (doc 35, Part 4).
-            // What the batch cost (doc 64, Phase 4): its hours at the town's wage for the trade, and its materials at what
-            // they cost; shared among its goods by their worth.
+            // What the batch cost (doc 64, Phase 4): its hours at the town's wage for the trade (as it works them:
+            // costedHours, Phase 13), and its materials at what they cost; shared among its goods by their worth.
             double worth = 0;
             for (const auto& [item, count] : (*k)->out)
                 worth += count * items::worthOf(item);
-            const double batch = (*k)->hours * (1 + (*k)->skill / items::ladder().skillWage) * labourDay(communityOfResident(id)) / PaidSpells + materials;
+            const double batch = costedHours(**k) * (1 + (*k)->skill / items::ladder().skillWage) * labourDay(communityOfResident(id)) / PaidSpells + materials;
             for (const auto& [item, count] : (*k)->out)
             {
                 const auto made = quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality);

@@ -31,7 +31,7 @@ int promised(const std::string& town, const std::string& item, int perWeek)
 {
     return items::townGoodOf(town, item) ? (perWeek + 1) / 2 : perWeek;
 }
-constexpr std::int64_t GuardsHire = 6;               // Two guards for the road, paid to the town.
+constexpr double GuardsHire = 6 / 12.;              // Two guards for the road, paid to the town: in LD (6p at a 12p day).
 }
 
 std::string World::residentTown(const std::string& id) const
@@ -316,7 +316,8 @@ void World::tradeCaravans()
         const auto* purse = society_.account(trader);
         if (!purse)
             return false;
-        const auto budget = std::max<std::int64_t>(0, purse->cash - (from->store == trader ? 0 : GuardsHire));
+        const auto guards = society_.pennies(GuardsHire, from->id);
+        const auto budget = std::max<std::int64_t>(0, purse->cash - (from->store == trader ? 0 : guards));
         if (const auto dear = cost(); dear > budget)
             for (auto& [item, n] : load)
                 n = int(std::int64_t(n) * budget / dear);
@@ -334,7 +335,7 @@ void World::tradeCaravans()
             c->orders = freshIds[pair];
         society_.shift(trader, c->account, "", 0, spend, "money for the road");
         // Two more guards for a load worth robbing, hired from the town's watch.
-        if (from->store != trader && society_.shift(trader, from->store, "", 0, GuardsHire, "guards for the road"))
+        if (from->store != trader && society_.shift(trader, from->store, "", 0, guards, "guards for the road"))
             c->guards += 2;
         else if (from->store == trader)
             c->guards += 2;

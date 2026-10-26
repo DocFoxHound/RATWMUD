@@ -137,7 +137,7 @@ double foodDays(const std::vector<std::string>& household, const std::string& ho
 {
     const auto& s = *r.society;
     const auto town = r.communityOf ? r.communityOf(homeCell) : homeCell;
-    double cost = double(Society::FoodADay);
+    double cost = Society::FoodADay * s.goingRate(town);   // (In LD, at the town's going rate.)
     for (const auto& t : s.orchestrator().last.towns)
         if (t.id == town && t.foodCost > 0)
             cost = t.foodCost;

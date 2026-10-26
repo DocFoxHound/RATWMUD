@@ -435,12 +435,14 @@ void stalls()
     t.place(t.ash, 1, spot.x, spot.y);
     w.setWeather(spot.cell, Weather::Clear);
     t.run(1);
+    const auto unrented = society.account(t.ash.entityId)->cash;
     said = stall(t.ash, {{"verb", "rent"}});
     expect(contains(said, "You rent the stall"), "a stall next Marketday: " + said);
     const auto rented = society.account(t.ash.entityId)->cash;
     w.setWeather(spot.cell, Weather::Storm);
     t.run(2);
-    expect(society.account(t.ash.entityId)->cash == rented + 3, "a storm: the stall cleared and the fee returned");
+    // (The fee is 3p at a 12p day, at the town's going rate: doc 64, Phase 13.)
+    expect(rented < unrented && society.account(t.ash.entityId)->cash == unrented, "a storm: the stall cleared and the fee returned");
     said = stall(t.ash, {{"verb", "rent"}});
     expect(contains(said, "too foul"), "no stalls in a storm: " + said);
     expect(society.conserved(), "money conserved");

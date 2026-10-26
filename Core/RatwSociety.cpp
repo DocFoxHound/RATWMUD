@@ -409,7 +409,7 @@ void Society::addPlayer(const std::string& id)
         return;
     auto& reserve = state_.accounts.at("treasury");
     EconomyAccount created;
-    created.cash = std::min<std::int64_t>(20, reserve.cash);
+    created.cash = std::min<std::int64_t>(pennies(20 / 12., ""), reserve.cash);   // (20p at a 12p day: doc 64, Phase 13.)
     reserve.cash -= created.cash;
     created.stock["herbs"] = std::min(2, stock(reserve, "herbs"));
     reserve.stock["herbs"] -= created.stock["herbs"];
@@ -421,7 +421,8 @@ void Society::addPlayer(const std::string& id)
 bool Society::transfer(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
                        std::int64_t price, const std::string& kind)
 {
-    if (seller == buyer || quantity < 1 || quantity > 99 || !itemValid(item) || price < 1 || price > 1000)
+    // (A piece at most PieceMost, 1,000p at a 12p day, at the realm's going rate: doc 64, Phase 13.)
+    if (seller == buyer || quantity < 1 || quantity > 99 || !itemValid(item) || price < 1 || price > pennies(PieceMost, ""))
         return false;
     const auto* from = account(seller);
     const auto* to = account(buyer);
@@ -477,8 +478,8 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     // A good of the catalog at the shop's own price, and bought from a player at its normal cost: its price less its
     // margin (doc 64, Phase 4).
     const double each = catalog ? priceAt(seller, item)
-                                : (item == "meal" ? 6 : item == "sword" ? swordPrice() : 2) * (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) *
-                                      priceFactor(seller, item);
+                                : atGoingRate(item == "meal" ? 6 : item == "sword" ? swordPrice() : 2, shopTown(seller)) *
+                                      (held < cap / 4 ? 1.5 : held > cap * 3 / 4 ? .85 : 1.) * priceFactor(seller, item);
     const double offered = catalog ? offerAt(seller, item) : each * .55;
     // Market stalls sell a little cheaper (Phase 9): a tenth off, rounded down.
     const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(double(pennies(each)) * .9)))

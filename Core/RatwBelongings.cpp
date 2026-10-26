@@ -171,7 +171,7 @@ bool Society::seeTo(const std::string& id, Belonging& b, const std::string& kind
         return false;
     const auto fundKey = state_.memory.wantFund.count(id) ? id : state_.residents.at(id).homeCell;
     const auto fund = state_.memory.wantFund.find(fundKey);
-    std::int64_t budget = purse->cash - (payer == id ? FoodADay * 8 : 0);
+    std::int64_t budget = purse->cash - (payer == id ? pennies(8 * FoodADay, communityOfResident(id)) : 0);
     if (payer == id && kind != "clothes")
         budget = std::min<std::int64_t>(budget, fund == state_.memory.wantFund.end() ? 0 : std::int64_t(fund->second));
     if (budget <= 0)

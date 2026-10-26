@@ -134,7 +134,7 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     for (const auto& id : household)
         if (const auto* a = society.account(id))
             cash += a->cash;
-    f["on_dole"] = yes(cash < std::int64_t(Society::PoorDays * Society::FoodADay * household.size()));
+    f["on_dole"] = yes(cash < society.pennies(Society::PoorDays * Society::FoodADay * double(household.size()), ""));
     bool owes = false;
     if (const auto* bonds = world_.bonds().of(e.id))
         for (const auto& [other, b] : *bonds)

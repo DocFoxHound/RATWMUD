@@ -815,18 +815,19 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         for (const auto& id : watching)
             notice(id, "Bandits burst from cover and fall on the caravan! In the struggle they make off with its load, "
                        "and the carters turn back for " + c.from + ".");
-        // The town posts a bounty on the camp, and asks for guards for the next caravan.
+        // The town posts a bounty on the camp, and asks for guards for the next caravan (at a 12p day, 20p and 3p a point
+        // of the camp's strength, and 12p: at the going rate, doc 64, Phase 13).
         const bool bounty = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken");
         });
         if (!bounty)
-            postContract("bounty", "treasury", c.to, camp.id, 20 + std::int64_t(camp.strength * 3), 20,
+            postContract("bounty", "treasury", c.to, camp.id, society_.pennies((20 + std::int64_t(camp.strength * 3)) / 12., c.to), 20,
                          "the bandits robbing the road at " + cellId);
         const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "escort" && k.town == c.to && (k.status == "open" || k.status == "taken");
         });
         if (!escort)
-            postContract("escort", "treasury", c.to, c.to, 12, 7, "guarding the next caravan to " + c.to);
+            postContract("escort", "treasury", c.to, c.to, society_.pennies(1., c.to), 7, "guarding the next caravan to " + c.to);
         for (const auto& p : society_.positions())
             if (p.role == "merchant" && townOf(p.work.cell) && townOf(p.work.cell)->id == c.to)
                 if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
@@ -1301,10 +1302,13 @@ void World::roadsDaily()
             return k.kind == "supply" && k.town == towns_[i].id && (k.status == "open" || k.status == "taken");
         });
         if (store && Society::stock(*store, "meal") < 4 && !asked)
-            postContract("supply", "treasury", towns_[i].id, towns_[i].id, 15, 7, "bringing food to " + towns_[i].id + "'s market");
+            postContract("supply", "treasury", towns_[i].id, towns_[i].id, society_.pennies(15 / 12., towns_[i].id), 7,
+                         "bringing food to " + towns_[i].id + "'s market");   // (15p at a 12p day.)
     }
 
-    // Letters: someone who cares for another in a different town may pay to have word carried.
+    // Letters: someone who cares for another in a different town may pay to have word carried (with 10p in its purse
+    // at a 12p day, 3p to 7p for the carrying: at the going rate, doc 64, Phase 13).
+    const auto writes = society_.pennies(10 / 12., "");
     std::set<std::string> writing;
     for (const auto& k : roads_.contracts)
         if (k.kind == "courier" && (k.status == "open" || k.status == "taken"))
@@ -1314,7 +1318,7 @@ void World::roadsDaily()
         const auto* mine = bonds_.of(id);
         const auto* purse = society_.account(id);
         const auto* here = townOf(e.cellId);
-        if (!e.npc || e.dead || !mine || !purse || purse->cash < 10 || writing.count(id) || !here)
+        if (!e.npc || e.dead || !mine || !purse || purse->cash < writes || writing.count(id) || !here)
             continue;
         for (const auto& [other, b] : *mine)
         {
@@ -1322,7 +1326,7 @@ void World::roadsDaily()
             const auto* there = o ? townOf(o->cellId) : nullptr;
             if (!o || !o->npc || o->dead || b.affinity < 40 || !there || there == here || chance(id + other, today) > .025)
                 continue;
-            postContract("courier", id, there->id, other, 3 + std::int64_t(roll(id, today) % 5), ContractDays,
+            postContract("courier", id, there->id, other, society_.pennies((3 + std::int64_t(roll(id, today) % 5)) / 12., here->id), ContractDays,
                          "a letter from " + e.name + " to " + o->name + " in " + there->id);
             writing.insert(id);
             break;

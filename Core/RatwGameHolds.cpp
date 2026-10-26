@@ -559,6 +559,7 @@ void Game::migrationTick(double day)
             continue;
         camps_.offered()[site->id] = day;
         std::vector<std::pair<double, std::string>> willing;
+        const auto poor = world_.society().pennies(30 / 12., "");   // (A purse under 30p at a 12p day draws it.)
         for (const auto& [id, life] : world_.society().state().residents)
         {
             if (!whyNotMigrate(id, cid).empty())
@@ -568,7 +569,7 @@ void Game::migrationTick(double day)
                 if (const auto* b = world_.bonds().find(id, m))
                     fondest = std::max(fondest, b->affinity);
             const auto* purse = world_.society().account(id);
-            const double score = fondest + (purse && purse->cash < 30 ? 15 : 0);
+            const double score = fondest + (purse && purse->cash < poor ? 15 : 0);
             if (score >= 10)
                 willing.emplace_back(-score, id);
         }

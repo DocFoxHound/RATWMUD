@@ -65,28 +65,32 @@ std::string Society::tillOf(const std::string& keeper) const
 std::int64_t Society::floatOf(const std::string& positionId) const
 {
     // FloatDays of the business's running: its manager's wage and its help's (the posts that work where it does), and
-    // a little for materials (placeholders; three days since 2026-10-05, when a week drained the houses' fortunes).
+    // a little for materials (placeholders; three days since 2026-10-05, when a week drained the houses' fortunes). At
+    // its town's going rate (doc 64, Phase 13).
     const auto* business = position(positionId);
     if (!business)
         return 0;
+    const auto town = communityOfResident(business->founder);
     // (A farm's or a site's workers work the same ground, each on its own account: none is another's help. Doc 46.)
     int help = 0;
     if (business->role == "merchant")
         for (const auto& p : positions_)
             help += p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell;
     // And its materials (doc 61): a maker's store of them for its first craft (MaterialBatches batches, at the catalog's
-    // prices), so that a night's takings swept to its house never leave it unable to buy its ore and coal.
-    std::int64_t materials = 0;
+    // prices at the going rate), so that a night's takings swept to its house never leave it unable to buy its ore and
+    // coal.
+    double store = 0;
     if (const auto* kind = business->role == "merchant" ? items::businessFor(business->title) : nullptr)
         if (const auto crafts = items::craftsFor(kind->id); !crafts.empty())
             for (const auto& [item, n] : crafts.front()->in)
                 if (const auto* good = items::good(item))
-                    materials += std::int64_t(good->price) * n * MaterialBatches;
+                    store += double(good->price) * n * MaterialBatches;
+    std::int64_t materials = store > 0 ? pennies(atGoingRate(store, town)) : 0;
     // And a week of its standing orders on the roads (doc 61), paid when the caravan comes: swept to the house each
     // night, a city smith's till held a quarter of what its iron cost when the caravan came.
     if (const auto orders = ordersCost_.find("till:" + positionId); orders != ordersCost_.end())
         materials += orders->second;
-    return FloatDays * (ManagerWage + 6 * help) + 30 + materials;
+    return FloatDays * (pennies(ManagerWage, town) + help * pennies(HelpWage, town)) + pennies(FloatMaterials, town) + materials;
 }
 
 void Society::foundHouses()
@@ -133,7 +137,7 @@ void Society::foundHouses()
                     shift(keeper, till, item, n, 0, "the shop's till");
                 else if (n > 1)
                     shift(keeper, till, item, n - 1, 0, "the shop's till");   // (It keeps one thing to eat.)
-            const auto keep = std::int64_t(ManagerWage) * FloatDays;
+            const auto keep = pennies(ManagerWage, communityOfResident(keeper)) * FloatDays;
             if (account(keeper)->cash > keep)
                 shift(keeper, till, "", 0, account(keeper)->cash - keep, "the shop's till");
         }

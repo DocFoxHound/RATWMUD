@@ -74,7 +74,7 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         // The household rule (doc 64, Phase 7): its want fund, help about the home, servants.
         householdRule(home, members, pot, day);
         // Comfortable or poor, and for how long.
-        const auto need = householdNeed(members.size());
+        const auto need = householdNeed(members.size(), communityOfResident(members.front()));
         auto& streak = memory.comfort[home];
         if (pot >= need * ComfortDays)
             streak = std::max(0, streak) + 1;

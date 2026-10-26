@@ -31,79 +31,6 @@ std::string Society::postOddJob(const std::string& payer, const std::string& com
     return oddJobs_.back().id;
 }
 
-std::int64_t Society::businessSpends(const std::string& payer, const std::string& keeper, const Position& job, std::int64_t budget)
-{
-    // Spare money put to work (the user, 2026-10-05: something to sink it into, not just charity): hands hired for the
-    // premises (a workshop's next batch sooner, a field's yield worked), and the premises improved, with materials bought
-    // from the town's makers and builders hired. Each pays wolves for real work or goods.
-    const auto community = communityOfResident(keeper);
-    const auto* purse = account(payer);
-    if (!purse || budget < OddJobPay || community.empty())
-        return 0;
-    const bool shop = job.role == "merchant";
-    const Spot at = shop ? job.serve : job.work;
-    std::int64_t committed = 0;
-    const auto hire = [&](const std::string& kind, const std::string& what, int slots) {
-        OddJob j;
-        j.id = "odd" + std::to_string(++nextOddJob_);
-        j.payer = payer;
-        j.community = community;
-        j.kind = kind;
-        j.what = what;
-        j.from = j.to = at;
-        j.producer = keeper;
-        j.slots = slots;
-        j.pay = OddJobPay * slots;
-        j.forChildren = kind == "a hand at the shop";
-        committed += j.pay;
-        oddJobs_.push_back(std::move(j));
-        ++oddVersion_;
-    };
-    // Hands: about four tenths of what it spends, hired for HireDays (unless its hire is running still).
-    const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
-        return j.payer == payer && j.producer == keeper && j.until >= surplusDay_ && (j.kind == "a hand" || j.kind == "a hand at the shop");
-    });
-    const auto dayPay = std::int64_t(std::ceil(dayWage(community, "hand") - 1e-9));   // (Society::dayWage: doc 64, Phase 6.)
-    if (const int hands = int(std::min<std::int64_t>(3, budget * 4 / 10 / dayPay)); hands > 0 && !hiring)
-    {
-        hire(shop ? "a hand at the shop" : "a hand", "a hand at " + job.title.substr(0, 40) + ", hired for the week", hands);
-        auto& j = oddJobs_.back();
-        j.until = surplusDay_ + HireDays - 1;
-        j.pay = dayPay * hands;
-        committed += (dayPay - OddJobPay) * hands;
-    }
-    // Its premises improved, up to MostImprovement: materials first (bought and used), then the builders.
-    const int level = improvement(job.id);
-    if (level < MostImprovement && budget - committed >= 10)
-    {
-        std::vector<std::string> shops;
-        for (const auto& p : positions_)
-            if (p.role == "merchant" && p.id != job.id)
-                if (const auto held = state_.careers.positions.find(p.id); held != state_.careers.positions.end() &&
-                                                                           !held->second.holder.empty() &&
-                                                                           communityOfResident(held->second.holder) == community)
-                    shops.push_back(held->second.holder);
-        std::map<std::string, int> got;
-        const auto spent = buyForSurplus(payer, shops, [](const std::string& item) {
-            return item == "bricks" || item == "planks" || item == "nails" || item == "stone" || item == "roof_tiles" ||
-                   item == "timber" || item == "lime" || item == "fittings";
-        }, budget - committed, "improving the premises", &got);
-        for (const auto& [item, n] : got)
-            consume(payer, item, n, "used in improving the premises");
-        committed += spent;
-        auto& progress = improving_[job.id];
-        progress += spent;
-        if (progress >= 60 * (level + 1))
-        {
-            progress = 0;
-            state_.memory.improved[job.id] = level + 1;
-            ++state_.memory.revision;
-            hire("building work", "building work at " + job.title.substr(0, 40), 2);
-        }
-    }
-    return committed;
-}
-
 void Society::keepUpPremises()
 {
     for (auto it = state_.memory.improved.begin(); it != state_.memory.improved.end();)
@@ -111,15 +38,16 @@ void Society::keepUpPremises()
         const auto& [pid, level] = *it;
         const auto* job = position(pid);
         const auto held = state_.careers.positions.find(pid);
-        std::int64_t spent = 0;
+        std::int64_t spent = 0, upkeep = 0;
         if (job && level > 0 && held != state_.careers.positions.end() && !held->second.holder.empty())
         {
             const auto& keeper = held->second.holder;
             const auto community = communityOfResident(keeper);
+            upkeep = pennies(UpkeepALevel * level, community);
             // Who pays: the business's till; a house's business, its house, if the till can't.
             std::string payer = tillOf(keeper);
             if (const auto owner = state_.houses.owner.find(pid);
-                owner != state_.houses.owner.end() && (!account(payer) || spendable(payer) < UpkeepALevel * level))
+                owner != state_.houses.owner.end() && (!account(payer) || spendable(payer) < upkeep))
                 payer = owner->second;
             std::vector<std::string> shops;
             for (const auto& p : positions_)
@@ -131,12 +59,12 @@ void Society::keepUpPremises()
             if (account(payer))
                 spent = buyForSurplus(payer, shops, [](const std::string& item) {
                     return item == "planks" || item == "nails" || item == "lime" || item == "bricks" || item == "roof_tiles" || item == "timber";
-                }, std::min<std::int64_t>(UpkeepALevel * level, spendable(payer)), "keeping up the premises", &got);
+                }, std::min<std::int64_t>(upkeep, spendable(payer)), "keeping up the premises", &got);
             for (const auto& [item, n] : got)
                 consume(payer, item, n, "used in keeping up the premises");
         }
         auto& weeks = state_.memory.neglected[pid];
-        weeks = spent * 2 >= UpkeepALevel * level ? 0 : weeks + 1;
+        weeks = level <= 0 || (upkeep > 0 && spent * 2 >= upkeep) ? 0 : weeks + 1;
         if (weeks >= 2)
         {
             weeks = 0;

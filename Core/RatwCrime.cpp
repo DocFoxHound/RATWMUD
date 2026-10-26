@@ -39,10 +39,12 @@ std::string pennies(std::int64_t n)
 {
     return std::to_string(n) + (n == 1 ? " penny" : " pennies");
 }
-// What a thing is worth to the Watch, for fines and for restitution in coin when the goods are gone.
-std::int64_t worth(const std::string& item, int quantity)
+// What a thing is worth to the Watch, for fines and for restitution in coin when the goods are gone: a meal 6p, herbs
+// 2p, a sword 40p at a 12p day, at the town's going rate (doc 64, Phase 13).
+std::int64_t worth(const Society& society, const std::string& town, const std::string& item, int quantity)
 {
-    return std::int64_t(quantity) * (item == "meal" ? 6 : item == "herbs" ? 2 : item == "sword" ? 40 : 0);
+    const double days = item == "meal" ? 6 / 12. : item == "herbs" ? 2 / 12. : item == "sword" ? 40 / 12. : 0;
+    return days > 0 ? std::int64_t(quantity) * society.pennies(days, town) : 0;
 }
 std::string charge(const std::string& kind)
 {
@@ -108,7 +110,7 @@ std::int64_t World::owedBy(const Warrant& w) const
 {
     std::int64_t total = w.fine;
     for (const auto& r : w.restitution)
-        total += r.coins + worth(r.item, r.quantity);
+        total += r.coins + worth(society_, w.town, r.item, r.quantity);
     return total;
 }
 
@@ -244,7 +246,10 @@ void World::weigh(Incident& inc)
     w->incidents.push_back(inc.id);
     if (inc.kind == "theft" && (inc.coins > 0 || inc.quantity > 0))
         w->restitution.push_back({inc.victim, inc.item, inc.quantity, inc.coins});
-    w->fine += inc.kind == "assault" ? 8 : inc.kind == "attempted theft" ? 3 : 3 + inc.coins + worth(inc.item, inc.quantity);
+    // (The fine: 8p for an assault, 3p for a theft or an attempt, at a 12p day, at the town's going rate; and, for a
+    // theft, what was taken.)
+    w->fine += society_.pennies(inc.kind == "assault" ? 8 / 12. : 3 / 12., inc.town) +
+               (inc.kind == "assault" || inc.kind == "attempted theft" ? 0 : inc.coins + worth(society_, inc.town, inc.item, inc.quantity));
     const auto* off = entity(inc.offender);
     recordEvent({"warrant", inc.offender, inc.victim, inc.cell, 0, 0, inc.item, inc.quantity, inc.coins,
                  "wanted by the watch of " + inc.town + " for " + charge(inc.kind) + " (" + inc.id + ")"});
@@ -408,7 +413,7 @@ void World::settleWarrant(const Warrant& w, const std::string& guard)
         const auto* purse = society_.account(w.person);
         if (!r.item.empty() && purse && Society::stock(*purse, r.item) >= r.quantity)
             society_.shift(w.person, r.to, r.item, r.quantity, 0, "restitution");
-        else if (const auto value = worth(r.item, r.quantity); value > 0)
+        else if (const auto value = worth(society_, w.town, r.item, r.quantity); value > 0)
             paid += society_.shift(w.person, r.to, "", 0, value, "restitution") ? value : 0;
         if (r.coins > 0)
             paid += society_.shift(w.person, r.to, "", 0, r.coins, "restitution") ? r.coins : 0;
@@ -740,6 +745,7 @@ void World::chooseMarks()
 {
     // The hungry and penniless, some of them, make up their minds to take a meal (at most once a day).
     const auto today = std::int64_t(std::floor(calendarDays_));
+    const auto meal = society_.pennies(6 / 12., "");   // (Penniless: short of a meal's price, 6p at a 12p day.)
     marks_.clear();
     for (const auto& [id, life] : society_.state().residents)
     {
@@ -750,7 +756,7 @@ void World::chooseMarks()
             continue;
         if (const auto last = tried_.find(id); last != tried_.end() && last->second >= today)
             continue;
-        if (life.hunger < 70 || Society::stock(*purse, "meal") > 0 || purse->cash >= 6)
+        if (life.hunger < 70 || Society::stock(*purse, "meal") > 0 || purse->cash >= meal)
             continue;
         const auto here = lawTown(e->cellId);
         for (const auto& p : society_.positions())

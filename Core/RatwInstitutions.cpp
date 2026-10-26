@@ -104,7 +104,7 @@ std::int64_t Society::hireForWeek(const std::string& payer, const std::string& c
 std::int64_t Society::buyAndUse(const std::string& payer, const std::string& community, const std::function<bool(const std::string&)>& is,
                                 std::int64_t budget, const std::string& what, bool keep)
 {
-    if (budget < 2)
+    if (budget < pennies(2 / 12., community))
         return 0;
     std::vector<std::string> shops;
     for (const auto& p : positions_)
@@ -219,7 +219,7 @@ void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody
             pot += a ? a->cash : 0;
             hungry |= state_.residents.at(id).hunger >= 60 && a && !hasFood(*a);
         }
-        const auto need = householdNeed(members.size());
+        const auto need = householdNeed(members.size(), communityOfResident(members.front()));
         if (pot >= need && !hungry)
             continue;
         const auto eldest = *std::max_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) {
@@ -254,7 +254,8 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
     double month = 0;
     for (const auto& id : members)
         month += monthIncomeOf(id);
-    const auto need = householdNeed(members.size());
+    const auto community = communityOfResident(members.front());
+    const auto need = householdNeed(members.size(), community);
     // The one rule: a share of what's held over a month's income and HomeNeedDays of its needs, half towards things
     // and half on help about the home.
     const double target = month + HomeNeedDays * double(need);
@@ -283,7 +284,6 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
     }
     // Help about the home: a hand for the week, at a little under the going rate, once the budget runs to it (a week's
     // hire, not a day's: fewer jobs on the board, the same work).
-    const auto community = communityOfResident(members.front());
     const auto pay = std::int64_t(std::ceil(.8 * goingRate(community) - 1e-9));
     const auto* where = state_.residents.count(members.front()) ? &state_.residents.at(members.front()) : nullptr;
     const auto richest = *std::max_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) {

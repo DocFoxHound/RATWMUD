@@ -81,16 +81,17 @@ void Society::tendMint(std::int64_t day)
         // Too much in use (the hoards spent again), and wages not falling: what it struck melted, the same share of
         // every purse, but not a wolf's with under a week's food money.
         const double amount = std::min({mint.struck, -gap, MintMeltMost * mint.target});
+        const auto week = pennies(7 * FoodADay, "");
         double held = 0;
         for (const auto& [id, a] : state_.accounts)
-            if (a.cash > 0 && !(state_.residents.count(id) && a.cash < 7 * FoodADay))
+            if (a.cash > 0 && !(state_.residents.count(id) && a.cash < week))
                 held += double(a.cash);
         if (held <= 0)
             return;
         const double share = std::min(1., amount / held);
         std::int64_t melted = 0;
         for (auto& [id, a] : state_.accounts)
-            if (a.cash > 0 && !(state_.residents.count(id) && a.cash < 7 * FoodADay))
+            if (a.cash > 0 && !(state_.residents.count(id) && a.cash < week))
                 if (const auto take = std::int64_t(std::floor(double(a.cash) * share)); take > 0)
                 {
                     a.cash -= take;

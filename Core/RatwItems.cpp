@@ -111,6 +111,7 @@ Catalog build()
         if (readJson(file, ladder, problem))
         {
             c.ladder.catalogueDay = std::max(1.0, ladder.number("catalogueDay", 12));
+            c.ladder.foundingDay = std::clamp(ladder.number("foundingDay", c.ladder.catalogueDay), 1.0, 100000.0);
             c.ladder.markup = std::clamp(ladder.number("markup", .15), 0.0, 1.0);
             c.ladder.skillWage = std::max(1.0, ladder.number("skillWage", 150));
             c.ladder.carryPerWeight = std::max(0.0, ladder.number("carryPerWeight", .004));
