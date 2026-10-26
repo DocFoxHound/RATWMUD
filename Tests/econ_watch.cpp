@@ -3,10 +3,18 @@
 // second, simulation tiers on), and every coin and good that moves is tallied from the society's journal.
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
+//              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]
 //
+// --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
+// at six in the morning).
 // --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
 // it, the game's old pace (each craft's `seconds` as its hours).
+// --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
+// poach, kill, theft, winter. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2) for
+// --players-days N days (to the run's end unless asked), as the game lets players act, with money from the capital's
+// treasury by the ledger.
 //
+// The log starts with the run's stamp (also run.txt): the command, the source's git state and the binary's build time.
 // OUT_DIR gets, for each game day:
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
 //                   tenth, Gini, shares), hunger, contracts, each town's residents (held, median, short, broke, hungry,
@@ -27,7 +35,18 @@
 //   town_flows.csv  day, town, kind, from-holder, to-holder: coins that move between two of one town's accounts;
 //   trade.csv       day, from-town, to-town, kind: entries, coins, goods, for coins that change towns (a resident's town
 //                   is its home's; a shop's, where its keeper works; the shared church, the capital's treasury, the great
-//                   houses and the roads count as places of their own).
+//                   houses and the roads count as places of their own);
+//   work.csv        day, account: its hours of work credited and lost, and its business's (its till's, for a producer)
+//                   hands, hands wanted, hours in hand at the day's turn, and its running hires' slots and slots taken;
+//   books.csv       day, employer: its book (wage, the going rate for its skill, open days, calm weeks, short pay), its
+//                   posts open and filled, its skill (doc 64, Phase 6);
+//   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
+//                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
+//                   its own employer, as it stands at 23:00);
+//   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
+//                   the resident who died).
+// days.jsonl's model block has every town's going rate (going, "" the realm's), and with --players a players block:
+// each scenario's players, their money and goods, and what they did that day.
 // A line a day goes to stdout, so a long run can be followed. --deterministic does the world's work by counts, never the
 // clock (World::setDeterministic): the run repeats exactly, and ends with a digest of where everyone is and what they do.
 // --threads N: how many threads the world's work is spread over (8 unless asked: four cores and their twins; 1, none but
@@ -35,17 +54,23 @@
 #include "RatwItems.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
+#include "econ_players.h"
+
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -79,6 +104,44 @@ std::string json(const std::string& s)
         else if (static_cast<unsigned char>(c) >= 0x20)
             out += c;
     return out + "\"";
+}
+
+// The run's stamp (doc 64, Phase 13: two runs once straddled a fix unseen): how it was run, the source's git state, and
+// when this binary was built.
+std::string firstLine(const std::string& command)
+{
+    std::string out;
+    if (FILE* p = popen(command.c_str(), "r"))
+    {
+        char line[256];
+        if (std::fgets(line, sizeof line, p))
+            out = line;
+        pclose(p);
+    }
+    while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+        out.pop_back();
+    return out.empty() ? "(unknown)" : out;
+}
+std::string runStamp(int argc, char** argv)
+{
+    std::ostringstream out;
+    out << "run:";
+    for (int i = 0; i < argc; ++i)
+        out << ' ' << argv[i];
+#ifdef RATW_SOURCE_DIR
+    const std::string git = std::string("git -C '") + RATW_SOURCE_DIR + "' ";
+    out << "\nsource: " << RATW_SOURCE_DIR << " at " << firstLine(git + "describe --always --dirty --abbrev=12 2>/dev/null")
+        << " (" << firstLine(git + "log -1 --format=%H 2>/dev/null") << ")";
+#endif
+    struct stat built{};
+    char when[64] = "(unknown)";
+    if (::stat("/proc/self/exe", &built) == 0)
+    {
+        const std::time_t t = built.st_mtime;
+        std::strftime(when, sizeof when, "%Y-%m-%d %H:%M:%S UTC", std::gmtime(&t));
+    }
+    out << "\nbuilt: " << when << " (this file compiled " << __DATE__ << " " << __TIME__ << ")\n";
+    return out.str();
 }
 
 // What kind of holder an account is: a resident by its work, or a facility by its prefix.
@@ -141,7 +204,8 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n";
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n"
+                     "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -150,6 +214,8 @@ int main(int argc, char** argv)
     double from = 6;
     bool deterministic = false;
     unsigned threads = 8;
+    std::vector<std::string> scenarios;             // --players (doc 64, Phase 13).
+    std::int64_t playersFrom = 7, playersDays = 0;
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -159,7 +225,28 @@ int main(int argc, char** argv)
             Society::setWorkByHours(true);          // Residents' work takes its calibrated hours (doc 64, Phase 3).
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
+        else if (std::string(argv[i]) == "--players" && i + 1 < argc)
+            for (std::stringstream list(argv[++i]); list.good();)
+            {
+                std::string name;
+                std::getline(list, name, ',');
+                const auto& known = econ::Players::names();
+                if (std::find(known.begin(), known.end(), name) == known.end())
+                {
+                    std::cerr << "no such players' scenario: " << name << " (hoard, corner, dump, whale, poach, kill, theft, winter)\n";
+                    return 2;
+                }
+                if (std::find(scenarios.begin(), scenarios.end(), name) == scenarios.end())
+                    scenarios.push_back(name);
+            }
+        else if (std::string(argv[i]) == "--players-from" && i + 1 < argc)
+            playersFrom = std::max<std::int64_t>(0, std::atoll(argv[++i]));
+        else if (std::string(argv[i]) == "--players-days" && i + 1 < argc)
+            playersDays = std::max<std::int64_t>(0, std::atoll(argv[++i]));
     fs::create_directories(out);
+    const auto stamp = runStamp(argc, argv);
+    std::cout << stamp << std::flush;
+    std::ofstream(out / "run.txt") << stamp;
 
     std::map<std::string, std::string> files;
     for (const auto& entry : fs::recursive_directory_iterator(root))
@@ -199,10 +286,24 @@ int main(int argc, char** argv)
         std::cerr << "World failed to load: " << loaded.message << '\n';
         return 1;
     }
-    server.setTimeOfDay(from);
+    server.setTimeOfDay(std::fmod(from, 24));
+    if (from >= 24)
+    {
+        // Later in the calendar (a winter's run): the world saved and restored at that moment, as the tests set a day.
+        auto later = server.save();
+        later.calendarDays = from / 24;
+        if (const auto restored = server.restore(later); !restored.ok)
+        {
+            std::cerr << "Couldn't start at day " << from / 24 << ": " << restored.message << '\n';
+            return 1;
+        }
+    }
     server.setDeterministic(deterministic);
     const auto& society = server.society();
     server.society().keepBriefs(true);
+    std::unique_ptr<econ::Players> players;
+    if (!scenarios.empty())
+        players = std::make_unique<econ::Players>(server, scenarios, playersFrom, playersDays);
 
     std::ofstream daysOut(out / "days.jsonl"), flowsOut(out / "flows.csv"), wagesOut(out / "wages.csv"),
         materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),
@@ -523,8 +624,10 @@ int main(int argc, char** argv)
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings\n";
     std::ofstream workOut(out / "work.csv");
-    workOut << "day,account,title,hands,wanted,credited,lost\n";
+    workOut << "day,account,title,hands,wanted,credited,lost,till,banked,hire_slots,hire_taken\n";
     std::unordered_map<std::string, std::pair<double, double>> workBefore;
+    std::ofstream booksOut(out / "books.csv");
+    booksOut << "day,key,town,wage,rate,open_days,calm,short_pay,vacancies,hands,skill\n";
     const auto modelMeasures = [&](int day) {
         std::map<std::string, std::int64_t> homes;     // Home cell (or the resident, homeless) -> the household's money.
         // A barracks, a bunkhouse, quarters or lodgings (over eight grown, or communal) share no purse
@@ -573,15 +676,45 @@ int main(int argc, char** argv)
             }
         tillSold.clear();
         // Each business's and producer's hours of work today, and those lost to a full bank, against its hands and the
-        // hands it wants (doc 64, Phase 13).
+        // hands it wants (doc 64, Phase 13), by its till (a producer's work is credited to the farmer, its hands to its
+        // till); its hours in hand at the day's turn, and its hires running: their slots, and those taken.
+        std::map<std::string, std::pair<int, int>> hiring;   // Payer -> slots, taken.
+        for (const auto& j : society.oddJobs())
+            if (j.until >= day - 1)
+            {
+                auto& h = hiring[j.payer];
+                h.first += j.slots;
+                h.second += int(j.stage.size());
+            }
+        std::vector<std::string> worked;
         for (const auto& [account, by] : society.workBy())
+            worked.push_back(account);
+        std::sort(worked.begin(), worked.end());
+        for (const auto& account : worked)
         {
+            const auto& by = society.workBy().at(account);
             auto& before = workBefore[account];
-            const auto* p = account.rfind("till:", 0) == 0 ? society.position(account.substr(5)) : nullptr;
-            workOut << day << ',' << csv(account) << ',' << csv(p ? p->title : "") << ',' << society.handsOf(account) << ','
-                    << (p ? society.handsWanted(account) : 0) << ',' << by.first - before.first << ',' << by.second - before.second << '\n';
+            const auto till = account.rfind("till:", 0) == 0 ? account : society.tillOf(account);
+            const auto* p = till.rfind("till:", 0) == 0 ? society.position(till.substr(5)) : nullptr;
+            const auto hires = hiring.find(till);
+            workOut << day << ',' << csv(account) << ',' << csv(p ? p->title : "") << ',' << society.handsOf(till) << ','
+                    << (p ? society.handsWanted(till) : 0) << ',' << by.first - before.first << ',' << by.second - before.second
+                    << ',' << csv(till) << ',' << society.workBankedOf(account) << ',' << (hires == hiring.end() ? 0 : hires->second.first)
+                    << ',' << (hires == hiring.end() ? 0 : hires->second.second) << '\n';
             before = by;
         }
+        // Every employer's book (doc 64, Phase 6): its wage against the going rate for its skill, the week's open days,
+        // its calm weeks, whether it fell short paying; its posts open and filled.
+        for (const auto& [key, book] : society.state().memory.employers)
+        {
+            const auto town = society.employerTownOf(key);
+            const double skill = society.employerSkill(key);
+            booksOut << day << ',' << csv(key) << ',' << csv(town) << ',' << book.wage << ','
+                     << society.goingRate(town) * (1 + skill / items::ladder().skillWage) << ',' << book.openDays << ','
+                     << book.calm << ',' << (book.shortPay ? 1 : 0) << ',' << society.vacanciesOf(key) << ','
+                     << society.handsOf(key) << ',' << skill << '\n';
+        }
+        booksOut.flush();
         // Posts standing empty (not let go), and of them producers' and shops' (doc 64, Phase 8).
         int vacant = 0, vacantTrade = 0;
         for (const auto& p : society.positions())
@@ -632,7 +765,18 @@ int main(int argc, char** argv)
             << ",\"poorer_half\":" << poorer << ",\"median_household\":" << (h ? money[h / 2] : 0) << ",\"idle\":" << idle
             << ",\"masters\":" << masters << ",\"apprentices\":" << apprentices << ",\"elders\":" << elders
             << ",\"births\":" << births << ",\"deaths\":" << deaths << ",\"vacant\":" << vacant << ",\"vacant_trade\":" << vacantTrade << ",\"wage\":" << wage << ",\"town\":" << json(town)
-            << ",\"ld\":{";
+            << ",\"going\":{";
+        // Every town's going rate, and the realm's ("") (doc 64, Phase 6).
+        {
+            const std::map<std::string, double> going(society.goingRates().begin(), society.goingRates().end());
+            bool firstTown = true;
+            for (const auto& [where, rate] : going)
+            {
+                out << (firstTown ? "" : ",") << json(where) << ':' << rate;
+                firstTown = false;
+            }
+        }
+        out << "},\"ld\":{";
         bool firstGood = true;
         for (const char* good : {"wheat", "flour", "bread", "firewood", "timber", "iron_ore", "iron_bar", "sword", "iron_sword",
                                  "steel_sword", "rapier", "wool_scarf", "mining_pick"})
@@ -860,7 +1004,10 @@ int main(int argc, char** argv)
             daysOut << (first ? "" : ",") << json(community) << ':' << c;
             first = false;
         }
-        daysOut << "},\"model\":" << modelMeasures(day) << "}\n";
+        daysOut << "},\"model\":" << modelMeasures(day);
+        if (players)
+            daysOut << ",\"players\":" << players->takeDay();
+        daysOut << "}\n";
         daysOut.flush();
         return std::make_tuple(supply, society.conserved(), n ? people[n / 2] : 0, gini, grownShort, broke, starving);
     };
@@ -936,6 +1083,56 @@ int main(int argc, char** argv)
         return std::make_pair(wageTotal, makerShort);
     };
 
+    // The day's hires at 23:00 (doc 64, Phase 13: how many of the slots posted are taken, and by whom): a business's or
+    // an institution's hire running today, its slots taken, those open at its dawn (taken at the day before's 23:00;
+    // one posted since, all), and its takers as they stand now.
+    std::ofstream hiresOut(out / "hires.csv");
+    hiresOut << "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers\n";
+    std::map<std::string, int> takenBefore;
+    const auto sampleHires = [&](std::int64_t day) {
+        std::map<std::string, int> taken;
+        for (const auto& j : society.oddJobs())
+        {
+            if (j.until < day)
+                continue;                           // (A day's odd job, or a hire run out.)
+            std::string takers;
+            for (const auto& [who, stage] : j.stage)
+            {
+                const auto* e = server.entity(who);
+                const auto* job = society.jobOf(who);
+                const int age = e ? e->age : 30;
+                const auto payer = job ? society.payerOf(who, *job, age) : Society::Payer{};
+                const auto key = job ? society.employerKey(payer, *job) : std::string();
+                const char* kind = age < 16                                                 ? "child"
+                                   : !job                                                   ? "jobless"
+                                   : job->title == Society::LabourTitle                     ? "works"
+                                   : society.idleHand(who, payer)                           ? "idle"
+                                   : j.field && society.calledToTheLand(who, *job, age, day) ? "called"
+                                   : job->paid                                              ? "better"
+                                                                                            : "other";
+                takers += (takers.empty() ? "" : ";") + std::string(kind) + (key.empty() ? "" : "@" + key);
+            }
+            const auto before = takenBefore.find(j.id);
+            hiresOut << day << ',' << csv(j.id) << ',' << csv(j.payer) << ',' << csv(j.kind) << ',' << j.slots << ','
+                     << (j.slots > 0 ? j.pay / j.slots : 0) << ',' << j.until << ',' << (j.field ? 1 : 0) << ',' << j.stage.size()
+                     << ',' << j.slots - (before == takenBefore.end() ? 0 : before->second) << ',' << csv(takers) << '\n';
+            taken[j.id] = int(j.stage.size());
+        }
+        takenBefore.swap(taken);
+        hiresOut.flush();
+    };
+    std::ofstream playersOut;
+    if (players)
+        playersOut.open(out / "players.csv"), playersOut << "day,player,scenario,action,item,quantity,coins\n";
+    const auto writePlayers = [&] {
+        if (!players)
+            return;
+        for (const auto& m : players->takeMoves())
+            playersOut << m.day << ',' << csv(m.player) << ',' << csv(m.scenario) << ',' << csv(m.action) << ',' << csv(m.item)
+                       << ',' << m.quantity << ',' << m.coins << '\n';
+        playersOut.flush();
+    };
+
     snapshot(int(std::floor(server.calendarDays())), "start");
     std::cout << "residents " << society.state().residents.size() << ", makers and suppliers " << makers.size()
               << ", ingredients " << ingredients.size() << ", from calendar day " << server.calendarDays() << "\n"
@@ -979,6 +1176,8 @@ int main(int argc, char** argv)
         if (i % 1200 == 0)
             server.makeRequestedResidents();        // (Births and newcomers, as the game makes them from files: doc 64.)
         tickSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - tickBegin).count();
+        if (players)
+            players->step();                        // (Between ticks, as a player's command comes in.)
         absorb();
         for (const auto& id : traced)
             if (const auto* e = server.entity(id))
@@ -1003,6 +1202,8 @@ int main(int argc, char** argv)
         {
             nextHour += 1. / 24;
             sampleMaterials();
+            if (const double now = server.calendarDays(); int(std::floor((now - std::floor(now)) * 24 + 1e-9)) == 23)
+                sampleHires(std::int64_t(std::floor(now)));
             if (!stocked.empty() && nextStockHour++ % 3 == 0)
                 for (const auto& id : stocked)
                     if (const auto* a = society.account(id))
@@ -1072,6 +1273,7 @@ int main(int argc, char** argv)
             orchestraOut.flush();
             orchestraTownsOut.flush();
             const auto [wageTotal, makerShort] = writeDay(day);
+            writePlayers();
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
             // The roads' standing orders at the day's end (doc 64, Phase 3b): what each asks a week and how short it
             // has fallen since it was last agreed.
@@ -1094,6 +1296,7 @@ int main(int argc, char** argv)
     }
     absorb();
     writeDay(day);
+    writePlayers();
     for (const auto& b : server.society().takeBriefs())
         orchestraOut << orchestra::briefText(b) << '\n';
     snapshot(int(std::floor(server.calendarDays())), "end");

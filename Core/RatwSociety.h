@@ -884,9 +884,22 @@ class Society
     double workCredited() const { return workCredited_; }
     double workLost() const { return workLost_; }
     const std::unordered_map<std::string, std::pair<double, double>>& workBy() const { return workBy_; }
+    // And the labour market's (doc 64, Phase 13): each town's going rate ("" the realm's), an employer's town, and an
+    // account's hours of work in hand.
+    const std::unordered_map<std::string, double>& goingRates() const { return going_; }
+    std::string employerTownOf(const std::string& key) const
+    {
+        const auto found = employerTown_.find(key);
+        return found == employerTown_.end() ? std::string() : found->second;
+    }
+    double workBankedOf(const std::string& account) const
+    {
+        const auto found = workBanked_.find(account);
+        return found == workBanked_.end() ? 0. : found->second;
+    }
 
   private:
-    int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).
+    int season_ = 0;                                // The season of the latest decision (0 spring .. 3 winter).
     void craft(const std::string& id, const std::string& workCell, double absoluteDay);
     // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
     // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier.

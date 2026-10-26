@@ -236,8 +236,10 @@ target_compile_definitions(practice_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT
 add_executable(world_check Tests/world_check.cpp)
 target_link_libraries(world_check PRIVATE ratw_core)
 # Nor this: a world's economy left to its residents for days on end, every coin tallied (see Tests/econ_watch.cpp).
-add_executable(econ_watch Tests/econ_watch.cpp)
+add_executable(econ_watch Tests/econ_watch.cpp Tests/econ_players.cpp)
 target_link_libraries(econ_watch PRIVATE ratw_core ${RATW_FAST_MALLOC})
+# (Its log's stamp: the source's git state, doc 64's Phase 13.)
+target_compile_definitions(econ_watch PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 # Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
 add_executable(game_load Tests/game_load.cpp)
 target_link_libraries(game_load PRIVATE ratw_core ${RATW_FAST_MALLOC})
