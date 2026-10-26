@@ -2192,6 +2192,46 @@ void thePaceIsSteadied()
                "Food down a few hundredths of a day a head on the week: it didn't fall, and the pace goes on (" + std::to_string(little) + ")");
         expect(std::abs(more - .5) < 1e-9, "down by more, though under PaceSlide: it holds (" + std::to_string(more) + ")");
     }
+    // The brake (2026-10-26): the land's hours worked over the last seven day passes against the seven before. Down by
+    // over PaceLandSlack, the pace holds though the food holds; down by less, it goes on; a day missing, the food alone
+    // decides. And the readings are saved, a bad one dropping them all.
+    {
+        const auto base = w.save();
+        const auto landFell = [&](double since, std::int64_t missed) {
+            auto saved = base;
+            saved.calendarDays = 30 + 22. / 24;      // (The turn of day 31.)
+            saved.society.memory.pace = .5;
+            saved.society.memory.paceCover = week(30, 0, Society::PaceCoverCap);
+            // (A week of 100 a day, then the week to the turn at `since` a day: the strip has no land, so the turn's own
+            // reading is none, and the six days before it carry the week's.)
+            saved.society.memory.paceLand.clear();
+            for (std::int64_t d = 31 - (Society::PaceLandDays - 1); d < 31; ++d)
+                if (d != missed)
+                    saved.society.memory.paceLand.push_back({d, d <= 31 - Society::PaceLandDays / 2 ? 100. : since * 7 / 6});
+            for (auto& [id, life] : saved.society.residents)
+                life.hunger = 0;
+            expect(w.restore(saved).ok, "To day 30's evening");
+            run(w, 600 * 3);
+            return w.society().state().memory;
+        };
+        auto m = landFell(100 * (1 - 2 * Society::PaceLandSlack), -1);
+        expect(std::abs(m.pace - .5) < 1e-9 && m.paceLand.size() == std::size_t(Society::PaceLandDays) && m.paceLand.back().first == 31,
+               "The land's hours down a tenth on the week before: the pace holds, the food rising (" + std::to_string(m.pace) + ")");
+        auto back = wire::readSociety(wire::society(w.society().state())).memory.paceLand;
+        expect(back == m.paceLand, "and the land's hours are saved, each with its day");
+        auto bad = w.society().state();
+        bad.memory.paceLand.front().second = -1;
+        expect(wire::readSociety(wire::society(bad)).memory.paceLand.empty(), "a bad reading in a save drops them all");
+        auto old = wire::society(w.society().state());
+        expect(old.find("memory") && old.find("memory")->erase("paceLand"), "(A save from before them)");
+        const auto oldRead = wire::readSociety(old);
+        expect(oldRead.memory.paceLand.empty() && oldRead.memory.paceCover == m.paceCover, "an older save reads none, and the rest as it was");
+        m = landFell(100 * (1 - Society::PaceLandSlack / 2), -1);
+        expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9, "down a fortieth: it goes on (" + std::to_string(m.pace) + ")");
+        m = landFell(100 * (1 - 2 * Society::PaceLandSlack), 25);
+        expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9, "down a tenth with a day missing: no fortnight to weigh, it goes on (" +
+                                                                      std::to_string(m.pace) + ")");
+    }
     expect(w.society().conserved(), "Nothing it reads moves a penny");
     Society::setWorkByHours(false);
 }

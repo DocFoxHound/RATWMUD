@@ -509,7 +509,9 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // falls or runs thin, and back faster while the realm goes hungry. (Not held while the land's hands are short of what
     // its sales want, as it was: the pace stopped at the first shortage of hands, so no wage was ever bid up, and the
     // realm sat at the edge of one with its full banks' hours idle. The land's shortage is its posts open, and its wage
-    // answers it, as the model's does; the food, falling as the land falls behind, steps the pace back.)
+    // answers it, as the model's does; the food, falling as the land falls behind, steps the pace back.) A loose brake
+    // instead (the review, 2026-10-26): it holds while the land's hours worked fall week on week, the realm no longer
+    // following it to the land. (The model has no pace to borrow a rule from: its hours are the calibrated from day one.)
     if (workByHours())
     {
         int hungry = 0;
@@ -546,12 +548,38 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                 mean += r->second;
             mean /= double(week.size() - 1);
         }
+        // The land's hours since the last pass (its producers' but the seasonal fields', whose work is the calendar's; their
+        // hands' are credited to them), and the brake: the last seven passes' against the seven before, by their days.
+        double land = 0;
+        for (const auto& r : authored_.residents)
+            if (const auto* p = items::producerFor(r.workLabel); p && !fieldWork(p->id))
+                if (const auto by = workBy_.find(r.id); by != workBy_.end())
+                    land += by->second.first;
+        auto& lands = memory.paceLand;
+        lands.erase(std::remove_if(lands.begin(), lands.end(), [&](const auto& r) { return r.first > day || r.first <= day - PaceLandDays; }),
+                    lands.end());
+        if (landWorkSeen_ >= 0 && land >= landWorkSeen_)
+        {
+            if (!lands.empty() && lands.back().first == day)
+                lands.back().second += land - landWorkSeen_;
+            else
+                lands.push_back({day, land - landWorkSeen_});
+        }
+        landWorkSeen_ = land;
+        bool landFalls = false;
+        if (lands.size() == std::size_t(PaceLandDays) && lands.front().first == day - (PaceLandDays - 1) && lands.back().first == day)
+        {
+            double before = 0, since = 0;
+            for (std::size_t i = 0; i < lands.size(); ++i)
+                (i < lands.size() / 2 ? before : since) += lands[i].second;
+            landFalls = since < before * (1 - PaceLandSlack);
+        }
         double step = 0;
         if (!fed)
             step = -PaceBack;
         else if (weighed && (slide < -PaceSlide || mean < PaceFloor))
             step = -PaceStep;
-        else if (weighed && slide >= -PaceNoise)
+        else if (weighed && slide >= -PaceNoise && !landFalls)
             step = PaceStep;
         memory.pace = std::clamp(memory.pace + step, 0., 1.);
     }
