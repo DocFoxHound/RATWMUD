@@ -1386,7 +1386,11 @@ class World
         std::function<std::string(const std::string& id, std::string& cell, std::string& seams)> load;
     };
     // Set before loading a world whose manifest names cells with "area" records (RATW_WORLD 3).
-    void setCellSource(CellSource source) { source_ = std::move(source); }
+    void setCellSource(CellSource source)
+    {
+        source_ = std::move(source);
+        parsed_ = {};
+    }
     bool streamed() const { return static_cast<bool>(source_.load); }
     // Brings a streamed cell's tiles and seams into memory (a no-op for a loaded cell).
     Result ensureLoaded(const std::string& cellId);
@@ -1405,6 +1409,26 @@ class World
     Result parseCell(std::istream& file, const std::string& path, Cell& out, bool headerOnly) const;
     void unload(const std::string& cellId);
     CellSource source_;
+    // The streamed cells last read from source_, as parsed, with their seams' text (ensureLoaded): so a cell unloaded
+    // and wanted again is not read and parsed afresh. The least lately used go first. Not copied with the World.
+    struct ParsedCells
+    {
+        struct Kept
+        {
+            std::string id, seams;
+            Cell cell;
+            std::uint64_t used = 0;
+        };
+        std::vector<Kept> kept;
+        std::uint64_t uses = 0;
+        ParsedCells() = default;
+        ParsedCells(const ParsedCells&) {}
+        ParsedCells& operator=(const ParsedCells&)
+        {
+            kept.clear();
+            return *this;
+        }
+    } parsed_;
     // A streamed world's cell graph through seams (explicit doors are always in doors_).
     std::map<std::string, std::set<std::string>> exits_;
     StandingWorks works_;                           // Town projects standing (doc 57).
@@ -1445,6 +1469,21 @@ class World
     RoadWay roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const;
     static Vec2 alongWay(Vec2 from, const std::vector<Vec2>& way, double fraction);   // That far along it (0 to 1).
     mutable std::map<std::tuple<std::string, int, int, std::uint64_t>, RoadWay> roadWays_;   // By cell, start tile, targets.
+    // roadWay's working grids, kept between calls (main thread only) and left as found: g infinite, previous -1, no
+    // tile wanted. Not copied with the World.
+    struct RoadScratch
+    {
+        std::vector<float> g;
+        std::vector<int> previous;
+        std::vector<std::uint8_t> wanted, walk;     // (walk: each call's own, with a border.)
+        std::vector<std::size_t> target;            // The first target on each wanted tile.
+        std::vector<int> touched;                   // Tiles whose g was set.
+        std::vector<std::uint64_t> queue;
+        RoadScratch() = default;
+        RoadScratch(const RoadScratch&) {}
+        RoadScratch& operator=(const RoadScratch&) { return *this; }
+    };
+    mutable RoadScratch roadScratch_;
     // Of the ways into the next cell, the one the roads make cheapest to reach (the first given, where the cell has no
     // road map); kept for each walker while it stays in that cell bound for the same next one, so it holds to it.
     const Door* roadCrossing(const std::string& walker, const std::string& cellId, Vec2 from, const std::vector<const Door*>& ways);
@@ -2227,6 +2266,24 @@ class World
     std::uint64_t frontNext_ = 1;
     void refreshWeatherField(bool force = false);
     WeatherSample sampleField(double x, double y) const;
+    WeatherSample weatherAt(const Cell& c, Vec2 at) const;
+    // cells_ by id, for cell(): built on the main thread (indexCells) and used only while it is this World's and
+    // cells_ has as many as it was built over (else cells_ itself). Not copied with the World.
+    struct CellsById
+    {
+        const World* owner = nullptr;
+        std::size_t size = 0;
+        std::unordered_map<std::string, Cell*> at;
+        CellsById() = default;
+        CellsById(const CellsById&) {}
+        CellsById& operator=(const CellsById&)
+        {
+            owner = nullptr;
+            at.clear();
+            return *this;
+        }
+    } cellsById_;
+    void indexCells();
     // Climates (the user, 2026-10-12: weather fit for each region, changing gradually between them). What each outdoor
     // cell's ground is (shares of its land under snow and ice, marsh, and sand; read with the roads, indexRoads), each
     // cell's climate (from its usual weather and its ground), and how warm the land is everywhere: each cell's warmth

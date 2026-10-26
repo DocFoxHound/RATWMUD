@@ -152,15 +152,40 @@ Result World::ensureLoaded(const std::string& cellId)
         return {true, "Cell already loaded.", cellId};
     if (!source_.load)
         return {false, "No source for streamed cells.", cellId};
-    std::string text, seams;
-    const auto problem = source_.load(cellId, text, seams);
-    if (!problem.empty())
-        return {false, problem, cellId};
+    // As read and parsed when last loaded, where it is still kept (parsed_); else afresh, and kept.
+    constexpr std::size_t CellsKept = 32, TilesKept = std::size_t(1) << 21;
+    std::string seams;
     Cell full;
-    std::istringstream input(text);
-    const auto read = parseCell(input, cellId, full, false);
-    if (!read.ok)
-        return read;
+    auto& kept = parsed_.kept;
+    const auto known = std::find_if(kept.begin(), kept.end(), [&](const auto& k) { return k.id == cellId; });
+    if (known != kept.end())
+    {
+        known->used = ++parsed_.uses;
+        seams = known->seams;
+        full = known->cell;
+    }
+    else
+    {
+        std::string text;
+        const auto problem = source_.load(cellId, text, seams);
+        if (!problem.empty())
+            return {false, problem, cellId};
+        std::istringstream input(text);
+        const auto read = parseCell(input, cellId, full, false);
+        if (!read.ok)
+            return read;
+        std::size_t tiles = full.tiles.size();
+        for (const auto& k : kept)
+            tiles += k.cell.tiles.size();
+        while (!kept.empty() && (kept.size() >= CellsKept || tiles > TilesKept))
+        {
+            const auto oldest = std::min_element(kept.begin(), kept.end(), [](const auto& a, const auto& b) { return a.used < b.used; });
+            tiles -= oldest->cell.tiles.size();
+            kept.erase(oldest);
+        }
+        if (tiles <= TilesKept)
+            kept.push_back({cellId, seams, full, ++parsed_.uses});
+    }
     auto& area = found->second;
     if (full.id != cellId || full.width != area.width || full.height != area.height)
         return {false, "A streamed cell disagrees with its header.", cellId};
@@ -262,6 +287,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     // mutates the running world's maps, entities, remembered views, or clock.
     World candidate;
     candidate.cells_.clear();
+    candidate.cellsById_ = {};                      // (Its cells are about to be replaced, perhaps as many again.)
     candidate.factions_.clear();
     candidate.chapters_.clear();
     candidate.entities_.clear();

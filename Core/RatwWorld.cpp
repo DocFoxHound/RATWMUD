@@ -9,6 +9,7 @@
 #include <mutex>
 #include <deque>
 #include <condition_variable>
+#include <cstring>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -735,13 +736,35 @@ const Entity* World::entity(const std::string& id) const
 }
 Cell* World::cell(const std::string& id)
 {
+    if (cellsById_.owner == this && cellsById_.size == cells_.size())
+    {
+        const auto it = cellsById_.at.find(id);
+        return it == cellsById_.at.end() ? nullptr : it->second;
+    }
     const auto it = cells_.find(id);
     return it == cells_.end() ? nullptr : &it->second;
 }
 const Cell* World::cell(const std::string& id) const
 {
+    if (cellsById_.owner == this && cellsById_.size == cells_.size())
+    {
+        const auto it = cellsById_.at.find(id);
+        return it == cellsById_.at.end() ? nullptr : it->second;
+    }
     const auto it = cells_.find(id);
     return it == cells_.end() ? nullptr : &it->second;
+}
+void World::indexCells()
+{
+    if (cellsById_.owner == this && cellsById_.size == cells_.size())
+        return;
+    cellsById_.owner = nullptr;
+    cellsById_.at.clear();
+    cellsById_.at.reserve(cells_.size());
+    for (auto& [id, c] : cells_)
+        cellsById_.at.emplace(id, &c);
+    cellsById_.size = cells_.size();
+    cellsById_.owner = this;
 }
 const std::vector<Door*>& World::doorsIn(const std::string& cellId) const
 {
@@ -3388,53 +3411,129 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
             way.way.back() = targets[way.which];
         return way;
     }
-    std::map<int, std::size_t> wanted;
+    // What a step on each tile weighs (tenths), and what a straight and a diagonal step onto it cost (the step's length
+    // times the tile's weight).
+    static const auto Tenths = [] {
+        std::array<double, 256> t{};
+        for (int i = 0; i < 256; ++i)
+            t[std::size_t(i)] = double(std::uint8_t(i)) / 10.0;
+        return t;
+    }();
+    static const auto Steps = [] {
+        const double straight = std::hypot(1, 0), diagonal = std::hypot(1, 1);
+        std::array<std::array<double, 256>, 2> t{};
+        for (int i = 0; i < 256; ++i)
+        {
+            t[0][std::size_t(i)] = straight * (i ? Tenths[std::size_t(i)] : 1.0);
+            t[1][std::size_t(i)] = diagonal * (i ? Tenths[std::size_t(i)] : 1.0);
+        }
+        return t;
+    }();
+    auto& s = roadScratch_;
+    const std::size_t area = std::size_t(w) * std::size_t(h);
+    if (s.g.size() < area)
+    {
+        s.g.resize(area, std::numeric_limits<float>::infinity());
+        s.previous.resize(area, -1);
+        s.wanted.resize(area, 0);
+        s.target.resize(area, 0);
+    }
     for (std::size_t i = 0; i < targets.size(); ++i)
-        wanted.emplace(tileOf(targets[i]), i);
-    const auto weight = [&](int i) { return double(m.weight[std::size_t(i)]) / 10.0; };
-    // Where it starts and where it may end may be on tiles not to be walked (a door's step): they count as made ground.
-    const auto walkable = [&](int i) { return m.weight[std::size_t(i)] > 0 || i == start || wanted.count(i); };
-    std::vector<float> g(std::size_t(w) * std::size_t(h), std::numeric_limits<float>::infinity());
-    std::vector<int> previous(g.size(), -1);
-    using Item = std::pair<float, int>;
-    std::priority_queue<Item, std::vector<Item>, std::greater<Item>> queue;
+        if (const int t = tileOf(targets[i]); !s.wanted[std::size_t(t)])
+            s.wanted[std::size_t(t)] = 1, s.target[std::size_t(t)] = i;
+    const auto weight = [&](int i) { return Tenths[m.weight[std::size_t(i)]]; };
+    // Which tiles may be walked, on a grid with a border of none around the cell's (so a tile's neighbours need no
+    // looking at the map's edges). Where it starts and where it may end may be on tiles not to be walked (a door's
+    // step): they count as made ground.
+    const int pw = w + 2;
+    auto& walk = s.walk;
+    walk.assign(std::size_t(pw) * std::size_t(h + 2), 0);
+    for (int y = 0; y < h; ++y)
+    {
+        const auto* row = &m.weight[std::size_t(y) * std::size_t(w)];
+        auto* into = &walk[std::size_t(y + 1) * std::size_t(pw) + 1];
+        for (int x = 0; x < w; ++x)
+            into[x] = row[x] > 0;
+    }
+    const auto bordered = [&](int i) { return std::size_t(i / w + 1) * std::size_t(pw) + std::size_t(i % w + 1); };
+    walk[bordered(start)] = 1;
+    for (const Vec2 t : targets)
+        walk[bordered(tileOf(t))] = 1;
+    const auto walkable = [&](int i) { return walk[bordered(i)] != 0; };
+    auto& g = s.g;
+    auto& previous = s.previous;
+    // The tiles to look at, cheapest first and then by index: a heap of each one's cost's bits over the tile (costs are
+    // never negative, so the keys sort as the costs and tiles do).
+    auto& queue = s.queue;
+    queue.clear();
+    const std::greater<std::uint64_t> later;
+    const auto push = [&](float cost, int tile) {
+        std::uint32_t bits;
+        std::memcpy(&bits, &cost, sizeof bits);
+        queue.push_back(std::uint64_t(bits) << 32 | std::uint32_t(tile));
+        std::push_heap(queue.begin(), queue.end(), later);
+    };
+    const auto pop = [&] {
+        std::pop_heap(queue.begin(), queue.end(), later);
+        const std::uint64_t top = queue.back();
+        queue.pop_back();
+        return top;
+    };
     g[std::size_t(start)] = 0;
-    queue.push({0.f, start});
+    s.touched.push_back(start);
+    push(0.f, start);
     int reached = -1;
     while (!queue.empty())
     {
-        const auto [cost, current] = queue.top();
-        queue.pop();
+        const std::uint64_t top = pop();
+        const auto bits = std::uint32_t(top >> 32);
+        float cost;
+        std::memcpy(&cost, &bits, sizeof cost);
+        const int current = int(std::uint32_t(top));
         if (cost > g[std::size_t(current)])
             continue;
-        if (wanted.count(current))
+        if (s.wanted[std::size_t(current)])
         {
             reached = current;
             break;
         }
-        const int x = current % w, y = current / w;
-        for (int dy = -1; dy <= 1; ++dy)
-            for (int dx = -1; dx <= 1; ++dx)
+        const auto relax = [&](int next, bool diagonal) {
+            const double step = Steps[diagonal][m.weight[std::size_t(next)]];
+            if (const float through = float(cost + step); through < g[std::size_t(next)])
             {
-                const int nx = x + dx, ny = y + dy;
-                if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= w || ny >= h)
-                    continue;
-                const int next = ny * w + nx;
-                if (!walkable(next) || (dx && dy && (!walkable(y * w + nx) || !walkable(ny * w + x))))
-                    continue;
-                const double step = std::hypot(dx, dy) * (m.weight[std::size_t(next)] ? weight(next) : 1.0);
-                if (const float through = float(cost + step); through < g[std::size_t(next)])
-                {
-                    g[std::size_t(next)] = through;
-                    previous[std::size_t(next)] = current;
-                    queue.push({through, next});
-                }
+                if (g[std::size_t(next)] == std::numeric_limits<float>::infinity())
+                    s.touched.push_back(next);
+                g[std::size_t(next)] = through;
+                previous[std::size_t(next)] = current;
+                push(through, next);
             }
+        };
+        // The eight around it, row by row: those to be walked (off the map, the border: never), a diagonal only with
+        // both the tiles beside it open.
+        const int x = current % w, y = current / w;
+        const std::uint8_t* at = &walk[std::size_t(y + 1) * std::size_t(pw) + std::size_t(x + 1)];
+        const bool up = at[-pw], down = at[pw], left = at[-1], right = at[1];
+        if (at[-pw - 1] && up && left)
+            relax(current - w - 1, true);
+        if (up)
+            relax(current - w, false);
+        if (at[-pw + 1] && up && right)
+            relax(current - w + 1, true);
+        if (left)
+            relax(current - 1, false);
+        if (right)
+            relax(current + 1, false);
+        if (at[pw - 1] && down && left)
+            relax(current + w - 1, true);
+        if (down)
+            relax(current + w, false);
+        if (at[pw + 1] && down && right)
+            relax(current + w + 1, true);
     }
     RoadWay result;
     if (reached >= 0)
     {
-        result.which = wanted.at(reached);
+        result.which = s.target[std::size_t(reached)];
         std::vector<int> tiles;
         for (int i = reached; i >= 0 && i != start; i = previous[std::size_t(i)])
             tiles.push_back(i);
@@ -3453,7 +3552,9 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
                 const Vec2 p = centre(tiles[k]);
                 routeCost += distance(prior, p) * (m.weight[std::size_t(tiles[k])] ? weight(tiles[k]) : 1.0);
                 prior = p;
-                const int samples = std::max(1, int(std::ceil(distance(anchor, p) / .25)));
+                const double span = distance(anchor, p);
+                const int samples = std::max(1, int(std::ceil(span / .25)));
+                const double each = span / samples;
                 double direct = 0;
                 bool clear = true;
                 for (int sample = 1; sample <= samples && clear; ++sample)
@@ -3461,7 +3562,7 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
                     const double f = double(sample) / samples;
                     const int t = tileOf({anchor.x + (p.x - anchor.x) * f, anchor.y + (p.y - anchor.y) * f});
                     clear = walkable(t);
-                    direct += distance(anchor, p) / samples * (m.weight[std::size_t(t)] ? weight(t) : 1.0);
+                    direct += each * (m.weight[std::size_t(t)] ? weight(t) : 1.0);
                 }
                 if (!clear)
                     break;
@@ -3477,6 +3578,11 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
         else
             result.way.back() = targets[result.which];
     }
+    for (const int t : s.touched)
+        g[std::size_t(t)] = std::numeric_limits<float>::infinity(), previous[std::size_t(t)] = -1;
+    s.touched.clear();
+    for (const Vec2 t : targets)
+        s.wanted[std::size_t(tileOf(t))] = 0;
     if (roadWays_.size() >= WaysKept)
         roadWays_.clear();
     roadWays_.emplace(key, result);
@@ -4983,7 +5089,7 @@ Environment World::environmentAt(const std::string& cellId, Vec2 at) const
     // Darkness changes sight only: it does not damage hearing or smell and
     // never secretly changes a selected gait or stamina recovery.
     // The weather where it was asked for (doc 29, phase 7): each effect as strong as the weather is there.
-    auto here = weatherAt(cellId, at);
+    auto here = weatherAt(*c, at);
     // In the lee of a Chapter's tent or hall (Docs/Design/32, 5.7), the weather is a quarter as strong.
     if (const auto found = shelters.find(cellId);
         found != shelters.end() && found->second.count({int(std::floor(at.x)), int(std::floor(at.y))}))
@@ -5850,6 +5956,9 @@ Result World::loadCell(std::istream& file, const std::string& path)
                     return {false, "Cell replacement would invalidate a portal anchor.", d.id};
             }
     }
+    // A cell put in by hand: what was kept of its file is let go (read afresh, should it ever stream in again).
+    auto& kept = parsed_.kept;
+    kept.erase(std::remove_if(kept.begin(), kept.end(), [&](const auto& k) { return k.id == candidate.id; }), kept.end());
     cells_[candidate.id] = std::move(candidate);
     return {true, "Cell loaded.", path};
 }
