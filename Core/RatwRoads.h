@@ -99,6 +99,7 @@ struct StandingOrder
     std::int64_t price = 0;                      // A piece, agreed.
     double since = 0, review = 0;                // Calendar days: signed, and next renegotiated.
     int delivered = 0, shortfall = 0;            // Since it was last agreed.
+    int unpaid = 0;                              // ...and what came that its buyer hadn't the money for (doc 64, Phase 13).
     std::string negotiator;                      // A porter on the way to renegotiate it ("" for nobody).
 };
 

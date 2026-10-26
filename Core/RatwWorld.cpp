@@ -2344,8 +2344,12 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
 // for good, a knot at a seam or a pair face to face, for game hours, while those caught went hungry (doc 64, Phase 13:
 // the residents near players' bodies). So a walker that has come no nearer its next turn for a couple of seconds goes
 // on to the turn after, within a tile of it; further off, a resident steps aside, a body's width to its right (or its
-// left), and on from there. Near the end of its path it keeps on: what happens there is for whoever sent it (a
-// resident's own spot by a goal others share, a door's reach).
+// left), and on from there. Only a resident, and only held by a body (pressed by one in the last moment: separate()):
+// a player's path is its own to walk, and one stopped by the ground alone (a wall slides it, and its path is cleared)
+// isn't held. On the last leg of its path it doesn't drop the turn (its goal), and steps aside only from one walking
+// into it, face to face: queued behind one standing still (at a counter, in a doorway, behind its leader) it waits
+// where it is; it shuffled from side to side every couple of seconds (the stage review, doc 64, Phase 13). What
+// happens at the end of a path is for whoever sent it (a resident's own spot by a goal others share, a door's reach).
 void World::heldOff(Entity& a)
 {
     constexpr double HeldOff = 2.0;                 // Seconds without coming nearer.
@@ -2353,7 +2357,8 @@ void World::heldOff(Entity& a)
     constexpr double Headway = .01;                 // Nearer by less than this is not getting on.
     constexpr double Break = .25;                   // Not walking toward it for longer than this, it begins again.
     constexpr double Aside = step::BodyRadius * 2;
-    if (a.path.empty())
+    constexpr double Pressed = 1.1;                 // Pressed this lately (a tick of a second at most since): held by a body.
+    if (a.path.empty() || !a.npc)
         return;
     const Vec2 turn = a.path.front();
     const double off = distance(a.position, turn);
@@ -2366,7 +2371,7 @@ void World::heldOff(Entity& a)
         a.heldSince = time_;
         return;
     }
-    if (time_ - a.heldSince < HeldOff)
+    if (time_ - a.heldSince < HeldOff || time_ - a.pressedAt > Pressed)
         return;
     a.heldSince = time_;                            // (Whatever it tries now has a couple of seconds of its own.)
     if (off <= Within)
@@ -2377,7 +2382,7 @@ void World::heldOff(Entity& a)
     }
     const auto* c = cell(a.cellId);
     const auto* here = c ? c->tile(int(std::floor(a.position.x)), int(std::floor(a.position.y))) : nullptr;
-    if (!a.npc || !here)
+    if (!here || (a.path.size() == 1 && time_ - a.pressedByWalkerAt > Pressed))
         return;
     const Vec2 ahead{(turn.x - a.position.x) / off, (turn.y - a.position.y) / off};
     // (Its right as it faces, then its left: y runs south. In a lane a tile wide, half as far: two side by side fill
@@ -3619,6 +3624,11 @@ void World::separate(double dt)
                     const double d = distance(a.position, b.position);
                     if (d >= apart)
                         continue;               // (Pushes never cross a door or a cell's edge: passable() is this cell.)
+                    a.pressedAt = b.pressedAt = time_;   // (Held by a body, not the ground: heldOff.)
+                    if (!resting(b))
+                        a.pressedByWalkerAt = time_;
+                    if (!resting(a))
+                        b.pressedByWalkerAt = time_;
                     const bool aFixed = fixed(a), bFixed = fixed(b);
                     if (aFixed && bFixed)
                         continue;
@@ -4296,6 +4306,33 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                 interact(e.id, barrier->id, "open");
         return;
     }
+    // A goal in a part of its cell no way leads into at all (a spot upstairs in a room no stair reaches): as near to
+    // it as the rest of the cell goes, not out and in again for good (doc 64, Phase 13: a resident of Greatly House
+    // did, all night). Its cell is judged by its body on the way there (landsWell), and once in, the nearest tile of
+    // the part it stands in is sought.
+    std::map<std::pair<std::string, int>, bool> into;   // (By cell and part, once a pass: a city cell's ways are many.)
+    const auto waysInto = [&](const std::string& id, const auto& c, int part) {
+        const auto [known, fresh] = into.try_emplace({id, part}, false);
+        if (fresh)
+            known->second = std::any_of(doorsIn(id).begin(), doorsIn(id).end(), [&](const Door* way) {
+                return way->portal && !way->locked && regionAt(c, way->position) == part;
+            });
+        return known->second;
+    };
+    if (e.cellId == goalCell && region >= 0 && current && !waysInto(goalCell, *current, goalRegion))
+    {
+        Vec2 nearest = e.position;
+        double best = distance(e.position, target);
+        for (int y = 0; y < current->height; ++y)
+            for (int x = 0; x < current->width; ++x)
+                if (const Vec2 p{x + .5, y + .5}; (*regions)[std::size_t(y * current->width + x)] == region && distance(p, target) < best - 1e-9)
+                    nearest = p, best = distance(p, target);
+        if (distance(e.position, nearest) > .35)
+            seek(nearest);
+        else
+            pathRetryAt_[e.id] = time_ + 5.0;       // (There: not looked for again every pass.)
+        return;
+    }
     // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
     // then the first way into it (in ID order, as ever). In the goal cell but cut off from the goal (below), the way
     // on is out and back in.
@@ -4310,18 +4347,33 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     // body be the half with no way on: residents crossed into it, found no way on, crossed back and in again, for game
     // hours (doc 64, Phase 13), going hungry.
     // A pocket is a part of the cell beyond that nothing leads on from but back here; a part with ways of its own (a
-    // district of the city behind its body, where a House's door opens) is not one. Told by that cell's ways, by part.
+    // district of the city behind its body, where a House's door opens) is not one. Told by that cell's ways, by part:
+    // a way on is a seam to another cell, or a door to somewhere with a way out of its own, not only back into this
+    // part or back here (doc 64, Phase 13 review: a strip whose one door was a house's, that house's only way out, was
+    // taken for a way on, and crossed onto and back again).
     std::map<std::pair<std::string, int>, bool> shut;
     const auto pocket = [&](const Door& way, int arrives) {
         const auto [known, fresh] = shut.try_emplace({way.targetCell, arrives}, true);
         if (fresh)
             if (const auto* there = cell(way.targetCell))
+            {
+                const auto beyond = [&](const Door& on) {
+                    if (on.boundary)
+                        return true;
+                    for (const Door* out : doorsIn(on.targetCell))
+                        if (out->portal && !out->locked && out->targetCell != way.cellId &&
+                            (out->targetCell != way.targetCell || regionAt(*there, out->arrival) != arrives))
+                            return true;
+                    return false;
+                };
                 for (const Door* on : doorsIn(way.targetCell))
-                    if (on->portal && !on->locked && on->targetCell != way.cellId && regionAt(*there, on->position) == arrives)
+                    if (on->portal && !on->locked && on->targetCell != way.cellId && regionAt(*there, on->position) == arrives &&
+                        beyond(*on))
                     {
                         known->second = false;
                         break;
                     }
+            }
         return known->second;
     };
     const auto landsWell = [&](const Door& way) {       // 2: lands well; 1: can't tell, or where it may go on; 0: in a pocket.
@@ -4330,21 +4382,28 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
             return 1;
         const int arrives = regionAt(*there, way.arrival);
         const int aim = way.targetCell == goalCell ? regionAt(*there, target) : -1;
-        const int wanted = aim >= 0 ? aim : mainRegion(*there);
+        const int wanted = aim >= 0 && waysInto(way.targetCell, *there, aim) ? aim : mainRegion(*there);
         return arrives < 0 || wanted < 0 ? 1 : arrives == wanted ? 2 : pocket(way, arrives) ? 0 : 1;
     };
-    // The regions of `through` its usable ways into `toward` leave from, of those not landing in a pocket (none known
-    // unless it is in memory).
+    // The regions of `through` its usable ways into `toward` leave from, of those landing best, and never in a pocket
+    // (none known unless it is in memory). (Doc 64, Phase 13 review: those landing anywhere but a pocket, a way on into
+    // the wrong part of the goal's cell was taken over one into the right part, and walked out of and in again.)
     const auto regionsToward = [&](const std::string& through, const std::string& toward, std::vector<int>& out) {
         out.clear();
         const auto* c = cell(through);
         if (!c || toward.empty() || !regionMap(*c))
             return;
+        int best = 1;
         for (const Door* way : doorsIn(through))
             if (way->portal && !way->locked && way->targetCell == toward)
-                if (const int r = regionAt(*c, way->position);
-                    r >= 0 && std::find(out.begin(), out.end(), r) == out.end() && landsWell(*way) > 0)
-                    out.push_back(r);
+                if (const int r = regionAt(*c, way->position); r >= 0)
+                    if (const int lands = landsWell(*way); lands >= best)
+                    {
+                        if (lands > best)
+                            out.clear(), best = lands;
+                        if (std::find(out.begin(), out.end(), r) == out.end())
+                            out.push_back(r);
+                    }
     };
     std::vector<int> onward;                            // The next cell's, toward the goal (choose(), below).
     const auto landing = [&](const Door& way) {         // 3: where its way on is; else as landsWell.
@@ -4512,8 +4571,8 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
         else if (d->edge == 'W') aim.x = -.15; else aim.x = here->width + .15;
         seek(aim);
     }
-    else if (distance(e.position, d->position) <= d->reach && interact(e.id, d->id, d->open ? "enter" : "open").ok)
-        return;
+    else if (distance(e.position, d->position) <= d->reach && visiblePoint(e, d->position))
+        interact(e.id, d->id, d->open ? "enter" : "open");   // (Through; or held, tried again on the next pass, as ever.)
     else
     {
         // Walking up to it: from further off, or from within reach of a door it can't see (beside it, past the corner

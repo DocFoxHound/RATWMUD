@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <tuple>
 
 // What townsfolk buy and use up (Docs/Design/35-items-crafting-industry.md, Part 7: households).
 //
@@ -796,7 +797,7 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
     struct Sold
     {
         std::int64_t cheapest = 0;
-        std::vector<std::pair<std::string, std::string>> by;    // (Shop, ware.)
+        std::vector<std::tuple<std::string, std::string, std::int64_t>> by;   // (Shop, ware, its price.)
     };
     std::map<std::string, Sold> sells;
     const auto sold = [&](const std::string& town, const char* kind) -> const Sold& {
@@ -808,7 +809,7 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
                     {
                         const auto price = shopPrice(shop, ware);
                         at->second.cheapest = at->second.by.empty() ? price : std::min(at->second.cheapest, price);
-                        at->second.by.push_back({shop, ware});
+                        at->second.by.push_back({shop, ware, price});
                     }
         return at->second;
     };
@@ -877,8 +878,22 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             got = buyOne(id, onShelves(town, kind, kindIs(kind)), budget, what, salt + kind, dearest);
             if (!got.empty())
                 return;
-            const auto& [shop, ware] = s.by[std::hash<std::string>{}(salt + kind + "|missed") % s.by.size()];
-            ++missedToday_[tillOf(shop)][items::baseOf(ware)];
+            // (Its missed sale by lot among the shops with one of the kind its fund runs to, a shop once, for that ware,
+            // the cheapest, or with `dearest` the dearest: told of a steel sword at 90p a 40p fund couldn't have paid for,
+            // an armourer heard of demand for it, and a shop of three such wares had three lots.)
+            std::vector<const std::tuple<std::string, std::string, std::int64_t>*> could;
+            for (const auto& offer : s.by)
+            {
+                if (std::get<2>(offer) > budget)
+                    continue;
+                const auto same = std::find_if(could.begin(), could.end(), [&](const auto* c) { return std::get<0>(*c) == std::get<0>(offer); });
+                if (same == could.end())
+                    could.push_back(&offer);
+                else if (dearest ? std::get<2>(offer) > std::get<2>(**same) : std::get<2>(offer) < std::get<2>(**same))
+                    *same = &offer;
+            }
+            const auto& missed = *could[std::hash<std::string>{}(salt + kind + "|missed") % could.size()];
+            ++missedToday_[tillOf(std::get<0>(missed))][items::baseOf(std::get<1>(missed))];
             looked = true;
             const auto [since, begun] = state_.memory.pieceWait.try_emplace(h.fund, day);
             state_.memory.revision += begun ? 1 : 0;
