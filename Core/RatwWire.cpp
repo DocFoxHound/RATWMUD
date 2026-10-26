@@ -983,7 +983,8 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& [till, f] : m.fields)
     {
         auto v = Value::array();
-        for (const double x : {f.acres, f.sown, f.toHarvest, f.part, double(f.year), f.dry ? 1. : 0.})
+        for (const double x : {f.acres, f.sown, f.toHarvest, f.part, double(f.year), f.dry ? 1. : 0., f.rate, double(f.founded),
+                               f.toppedUp ? 1. : 0.})
             v.push(x);
         fields.add(till, v);
     }
@@ -1138,14 +1139,24 @@ EconomyMemory readEconomyMemory(const Value& o)
                     const int flags = int(v.items()[2].asNumber());
                     m.belongings[who].push_back({v.items()[0].asString(), std::clamp(v.items()[1].asNumber(), 0., 1.), (flags & 1) != 0, (flags & 2) != 0});
                 }
+    // (Saved before doc 64's Phase 13, six numbers: no year's rate yet, so the next plan goes by its sales lately, and no
+    // founding spring to look at again.)
     for (const auto& [till, v] : o.object("fields").fields())
-        if (v.isArray() && v.items().size() == 6 && std::all_of(v.items().begin(), v.items().end(), [](const Value& x) {
+        if (v.isArray() && (v.items().size() == 6 || v.items().size() == 9) && till.size() < 200 &&
+            std::all_of(v.items().begin(), v.items().end(), [](const Value& x) {
                 return x.isNumber() && std::isfinite(x.asNumber()) && std::abs(x.asNumber()) < 1e9;
             }))
         {
             const auto& x = v.items();
-            m.fields[till] = {std::max(0., x[0].asNumber()), std::max(0., x[1].asNumber()), std::max(0., x[2].asNumber()),
-                              std::clamp(x[3].asNumber(), 0., 1.), std::int64_t(x[4].asNumber()), x[5].asNumber() != 0};
+            auto& f = m.fields[till];
+            f = {std::max(0., x[0].asNumber()), std::max(0., x[1].asNumber()), std::max(0., x[2].asNumber()),
+                 std::clamp(x[3].asNumber(), 0., 1.), std::int64_t(x[4].asNumber()), x[5].asNumber() != 0};
+            if (x.size() == 9)
+            {
+                f.rate = std::max(0., x[6].asNumber());
+                f.founded = std::max<std::int64_t>(-1, std::int64_t(x[7].asNumber()));
+                f.toppedUp = x[8].asNumber() != 0;
+            }
         }
     // (Saved before doc 64's Phase 6: every employer starts at the going rate for its skill.)
     for (const auto& [key, v] : o.object("employers").fields())

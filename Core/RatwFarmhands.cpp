@@ -57,13 +57,37 @@ int Society::fieldWindow(double absoluteDay)
     return d < SowEnd ? 1 : d >= HarvestStart && d < HarvestEnd ? 2 : 0;
 }
 
+bool Society::grownToEat(const std::string& item) const
+{
+    // What feeds, or what goes only into food or flour (wheat, oats, vegetables; not straw, hemp or firewood, which
+    // other trades burn and weave too). (Worked out once a good: the catalog doesn't change.)
+    if (const auto known = grownToEat_.find(item); known != grownToEat_.end())
+        return known->second;
+    bool used = false, otherwise = false;
+    if (!edible(item))
+        for (const auto& b : items::businesses())
+            for (const auto* k : items::craftsFor(b.id))
+                if (std::any_of(k->in.begin(), k->in.end(), [&](const auto& i) { return i.first == item; }))
+                {
+                    used = true;
+                    otherwise = otherwise || k->out.empty() || (!edible(k->out.front().first) && k->out.front().first != "flour");
+                }
+    return grownToEat_[item] = edible(item) || (used && !otherwise);
+}
+
+bool Society::plannedBy(const items::Producer& p, const std::string& item) const
+{
+    // Its food, or all it grows where it grows none (an orchard's apples, for cider).
+    return grownToEat(item) || std::none_of(p.out.begin(), p.out.end(), [&](const auto& o) { return grownToEat(o.first); });
+}
+
 double Society::fieldNeed(const std::string& till, const items::Producer& p) const
 {
     const auto rates = sellRate_.find(till);
     double most = 0;
     if (rates != sellRate_.end())
         for (const auto& [good, n] : p.out)
-            if (const auto r = rates->second.find(good); r != rates->second.end())
+            if (const auto r = rates->second.find(good); r != rates->second.end() && plannedBy(p, good))
                 most = std::max(most, r->second / std::max(1, n));
     return most;
 }
@@ -73,16 +97,14 @@ void Society::planField(const std::string& id, const std::string& till, const it
     auto& f = state_.memory.fields[till];
     const auto day = std::int64_t(std::floor(absoluteDay));
     const auto d = day % calendar::DaysPerYear;
-    const double daily = fieldNeed(till, p);
+    // Its sales a day; at its founding, its running average from nothing set right for the days it has run (doc 64,
+    // Phase 13: a week's average is a twelfth short), and at a harvest's end the year's rate if that is more (the model's).
+    const auto days = salesDays_.find(till);
+    const double daily = founding ? fieldNeed(till, p) / (1 - std::pow(.7, days == salesDays_.end() ? 1 : std::max(1, days->second)))
+                                  : std::max(fieldNeed(till, p), f.rate);
     // To the harvest's end after next (or this year's, still to come): what the store must last.
     const double year = calendar::DaysPerYear + HarvestEnd - HarvestStart;
-    // What it holds of its goods, in yields (the scarcest of them).
-    double held = 1e18;
-    if (const auto* a = account(till))
-        for (const auto& [good, n] : p.out)
-            held = std::min(held, double(stockAll(*a, good)) / std::max(1, n));
-    if (held > 1e17)
-        held = 0;
+    const double held = fieldHeld(till, p);
     if (founding)
     {
         // First seen (the founding, or the switch turned on): this year's fields as if sown, and a store to its harvest.
@@ -90,13 +112,10 @@ void Society::planField(const std::string& id, const std::string& till, const it
         f.acres = daily * year * FieldMargin / FieldYields;
         f.sown = f.toHarvest = d < HarvestEnd ? f.acres : 0;
         f.year = day / calendar::DaysPerYear - (d < HarvestEnd ? 1 : 0);   // (The year it last planned at a harvest's end.)
-        if (const double want = daily * toEnd * FieldMargin - held; want >= 1)
-            for (const auto& [good, n] : p.out)
-                for (int more = int(std::ceil(want * n)); more > 0; more -= 99)   // (A ledger entry holds 99 at most.)
-                {
-                    addCost(till, good, stock(*account(till), good), std::min(more, 99), normalCost(id, good));
-                    create(till, good, std::min(more, 99), "a year's store");
-                }
+        f.rate = daily;
+        f.founded = day;
+        f.toppedUp = false;
+        storeYields(id, till, p, daily * toEnd * FieldMargin - held);
         return;
     }
     // At the harvest's end: what's left in the fields is lost, and next year's acres are planned, the store's carry off.
@@ -105,6 +124,60 @@ void Society::planField(const std::string& id, const std::string& till, const it
     f.sown = f.toHarvest = 0;
     f.dry = false;
     f.year = day / calendar::DaysPerYear;
+}
+
+double Society::fieldHeld(const std::string& till, const items::Producer& p) const
+{
+    // What it holds of what it is planned by, in yields (the scarcest of them).
+    double held = 1e18;
+    if (const auto* a = account(till))
+        for (const auto& [good, n] : p.out)
+            if (plannedBy(p, good))
+                held = std::min(held, double(stockAll(*a, good)) / std::max(1, n));
+    return held > 1e17 ? 0 : held;
+}
+
+void Society::storeYields(const std::string& id, const std::string& till, const items::Producer& p, double want)
+{
+    if (want < 1 || !account(till))
+        return;
+    for (const auto& [good, n] : p.out)
+        for (int more = int(std::ceil(want * n)); more > 0; more -= 99)   // (A ledger entry holds 99 at most.)
+        {
+            addCost(till, good, stock(*account(till), good), std::min(more, 99), normalCost(id, good));
+            create(till, good, std::min(more, 99), "a year's store");
+        }
+}
+
+void Society::reviewField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay)
+{
+    // Its founding spring (doc 64, Phase 13): founded on a week of its sales, before the roads' orders on it were known,
+    // it looks at its acres again once a week, on a day of its own, its idle hands sowing what more its sales want (what
+    // is sown stays sown); and a fortnight on, its store is topped up to the harvest, once.
+    auto& f = state_.memory.fields[till];
+    const auto day = std::int64_t(std::floor(absoluteDay));
+    if (f.founded < 0 || day / calendar::DaysPerYear != f.founded / calendar::DaysPerYear || fieldWindow(absoluteDay) != 1)
+        return;
+    const double daily = fieldNeed(till, p);
+    if (std::hash<std::string>{}(till + "|acres") % 7 == std::uint64_t(day % 7))
+        f.acres = std::max(f.acres, daily * (calendar::DaysPerYear + HarvestEnd - HarvestStart) * FieldMargin / FieldYields);
+    if (!f.toppedUp && day >= f.founded + FieldTopUpDays)
+    {
+        f.toppedUp = true;
+        storeYields(id, till, p, daily * double(HarvestEnd - day % calendar::DaysPerYear) * FieldMargin - fieldHeld(till, p));
+    }
+}
+
+void Society::tendFields()
+{
+    // Daily: each field's yields a day wanted, into its year's rate (a slow average over the year, the model's year's
+    // sales, doc 64, Phase 13), what its next acres are planned by when that is more than the last few days'.
+    for (auto& [till, f] : state_.memory.fields)
+    {
+        const auto* job = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+        if (const auto* p = job ? items::producerFor(job->title) : nullptr)
+            f.rate += (fieldNeed(till, *p) - f.rate) / calendar::DaysPerYear;
+    }
 }
 
 bool Society::farmHire(const OddJob& j) const
