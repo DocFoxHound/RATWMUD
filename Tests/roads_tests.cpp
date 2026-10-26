@@ -1998,16 +1998,18 @@ void theMonitorWatches()
 }
 
 // The realm's pace, steadied (doc 64, Phase 13), with work by the hours: each turn of the day it takes the monitor's
-// reading of the realm's food in hand (homes and shelves, days a head, a town's at most PaceCoverCap). Until it has a
-// week of them it only holds; a week in, it steps back when the week's food fell by more than PaceSlide; and back faster
-// while the realm goes hungry. (It goes on only with the land's producers keeping up: the strip has none.)
+// reading of the realm's food in hand (homes and shelves, days a head, a town's at most PaceCoverCap), with its day.
+// Until it has a reading from exactly a week ago it only holds; then it steps back when the week's food fell by more
+// than PaceSlide, goes on when it didn't (the strip has no land to keep up with); and back faster while the realm goes
+// hungry.
 void thePaceIsSteadied()
 {
     Society::setWorkByHours(true);
     auto f = strip("EE.....WW");
     auto w = load(f);
     w.tick(.6);
-    const auto evening = [&](double day, std::vector<double> cover, bool hungry) {
+    using Readings = std::vector<std::pair<std::int64_t, double>>;
+    const auto evening = [&](double day, Readings cover, bool hungry) {
         auto saved = w.save();
         saved.calendarDays = day + 22. / 24;
         saved.society.memory.pace = .5;
@@ -2030,24 +2032,91 @@ void thePaceIsSteadied()
     double held = 0, people = 0;
     for (const auto& t : last.towns)
         held += t.people * std::min(Society::PaceCoverCap, t.shopFoodDays + t.homeFoodDays), people += t.people;
-    expect(last.day == 4 && m.paceCover.size() == 1 && people > 0 && std::abs(m.paceCover.back() - held / people) < 1e-9,
+    expect(last.day == 4 && m.paceCover.size() == 1 && people > 0 && m.paceCover.back().first == 4 &&
+               std::abs(m.paceCover.back().second - held / people) < 1e-9,
            "At the turn of day 4, a reading: the monitor's homes and shelves, days a head (" + std::to_string(held / people) + ")");
     expect(m.pace == .5, "and with no week of them yet, the pace holds");
-    // (A week's readings before today's: a week ago first.)
-    const auto week = [](double weekAgo, double since) {
-        std::vector<double> v(Society::PaceWeek - 1, since);
-        v.front() = weekAgo;
+    // (A week's readings before the turn after `day`'s evening: a week ago first, then each day since; `missed` a day the
+    // monitor missed.)
+    const auto week = [](std::int64_t day, double weekAgo, double since, std::int64_t missed = -1000) {
+        Readings v;
+        for (std::int64_t d = day + 1 - (Society::PaceWeek - 1); d <= day; ++d)
+            if (d != missed)
+                v.push_back({d, d == day + 1 - (Society::PaceWeek - 1) ? weekAgo : since});
         return v;
     };
-    m = evening(4, week(Society::PaceCoverCap, Society::PaceCoverCap), false);
-    expect(m.paceCover.size() == std::size_t(Society::PaceWeek) && m.paceCover.back() < Society::PaceCoverCap - Society::PaceSlide &&
+    m = evening(4, week(4, Society::PaceCoverCap, Society::PaceCoverCap), false);
+    expect(m.paceCover.size() == std::size_t(Society::PaceWeek) && m.paceCover.back().second < Society::PaceCoverCap - Society::PaceSlide &&
                std::abs(m.pace - (.5 - Society::PaceStep)) < 1e-9,
            "A week in, with more food a week ago: the pace steps back (" + std::to_string(m.pace) + ")");
-    m = evening(5, week(0, Society::PaceCoverCap), false);
-    expect(std::abs(m.pace - .5) < 1e-9, "With more now than a week ago, it holds: the land's producers don't keep up (it has none)");
-    m = evening(6, week(0, Society::PaceCoverCap), true);
+    m = evening(5, week(5, 0, Society::PaceCoverCap), false);
+    expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9,
+           "With more now than a week ago, it goes on: a realm with no land to keep up with keeps up (" + std::to_string(m.pace) + ")");
+    m = evening(6, week(6, 0, Society::PaceCoverCap, 6 + 1 - (Society::PaceWeek - 1)), false);
+    expect(std::abs(m.pace - .5) < 1e-9 && m.paceCover.size() == std::size_t(Society::PaceWeek - 1),
+           "With last week's same day missed, there's no week to weigh: it holds (" + std::to_string(m.pace) + ")");
+    m = evening(7, week(7, 0, Society::PaceCoverCap, 5), false);
+    expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9, "A day missed between doesn't move the week's ends: it goes on");
+    // (A week of readings a fortnight old, from before the server was away: dropped, and nothing to weigh.)
+    m = evening(16, week(7, 0, Society::PaceCoverCap), false);
+    expect(std::abs(m.pace - .5) < 1e-9 && m.paceCover.size() == 1 && m.paceCover.front().first == 17,
+           "Readings older than the week are dropped, and it holds (" + std::to_string(m.paceCover.size()) + " left)");
+    m = evening(17, week(17, 0, Society::PaceCoverCap), true);
     expect(std::abs(m.pace - (.5 - Society::PaceBack)) < 1e-9, "and while the realm goes hungry it steps back faster (" + std::to_string(m.pace) + ")");
     expect(w.society().conserved(), "Nothing it reads moves a penny");
+    Society::setWorkByHours(false);
+}
+
+// And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
+// go on to the shops). Its sales wanting a hand's day, the land's hands keep up and the pace goes on, though the farm,
+// planning half again for its bare shelf, hires; its sales wanting three hands' days, they don't, and it holds.
+void thePaceStepsUpWithTheLand()
+{
+    Society::setWorkByHours(true);
+    auto f = strip("EE.....WW", resident("rk", "Rook Hutch", "civilian", "keeps rabbits by the road", 0, 9.5, 1, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    const auto till = s.tillOf("rk");
+    const auto* farm = items::producerFor("keeps rabbits by the road");
+    const auto* rabbit = items::good("rabbit");
+    expect(farm && rabbit && s.account(till), "The rabbit farm keeps a till");
+    using Readings = std::vector<std::pair<std::int64_t, double>>;
+    // An evening: its sales over the day enough for `hours` of its work a day by now, its shelf bare at the turn.
+    const auto evening = [&](std::int64_t day, double hours) {
+        auto saved = w.save();
+        saved.calendarDays = double(day) + 22. / 24;
+        saved.society.memory.pace = .5;
+        saved.society.memory.paceCover.clear();
+        for (std::int64_t d = day + 1 - (Society::PaceWeek - 1); d <= day; ++d)
+            saved.society.memory.paceCover.push_back({d, d == day + 1 - (Society::PaceWeek - 1) ? 0. : Society::PaceCoverCap});
+        // (Its hours a day for rabbits sold, at the pace, three a yield: the rate those take, after the day's average.)
+        const double old = std::max(1., farm->seconds / 3600.), perYield = old + .5 * (farm->hours - old);
+        const double rate = hours * 3 / perYield / (rabbit->staple ? Society::StapleSlack : 1.);
+        const auto* rates = s.sellRates(till);
+        const double before = rates && rates->count("rabbit") ? rates->at("rabbit") : 0.;
+        const int n = std::max(0, int(std::lround((rate - .7 * before) / .3)));
+        saved.society.accounts.at(till).stock["rabbit"] = n;
+        saved.society.accounts.at(till).stock.erase("small_pelt");
+        saved.society.accounts.at("treasury").cash -= n;
+        saved.society.accounts.at("e1").cash += n;
+        expect(w.restore(saved).ok, "To an evening");
+        expect(n == 0 || s.sale(till, "e1", "rabbit", n, 1, "test: the day's rabbits"), "the day's rabbits sold");
+        run(w, 600 * 3);
+        return s.state().memory.pace;
+    };
+    // (A hand's day: 6 hours. Half again would be 9, two hands.)
+    double pace = .5;
+    for (std::int64_t d = 3; d < 6; ++d)
+        pace = evening(d, 6);
+    expect(std::abs(pace - (.5 + Society::PaceStep)) < 1e-9 && s.handsWanted(till) >= 2 && s.handsWanted(till, false) == 1,
+           "Its sales a hand's day, the land keeps up and the pace goes on (" + std::to_string(pace) + "; it plans for " +
+               std::to_string(s.handsWanted(till)) + ", sells for " + std::to_string(s.handsWanted(till, false)) + ")");
+    for (std::int64_t d = 6; d < 9; ++d)
+        pace = evening(d, 24);
+    expect(std::abs(pace - .5) < 1e-9 && s.handsWanted(till, false) >= 3,
+           "Its sales three hands' days with only its own, the land falls behind: it holds (" + std::to_string(pace) + ")");
+    expect(s.conserved(), "Every penny is kept");
     Society::setWorkByHours(false);
 }
 
@@ -2543,6 +2612,7 @@ int main()
         townsWearAndAreMended();
         theMonitorWatches();
         thePaceIsSteadied();
+        thePaceStepsUpWithTheLand();
         sellersPriceFromCost();
     }
     catch (const std::exception& error)

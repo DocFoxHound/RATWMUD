@@ -2015,3 +2015,95 @@ already worked Restday.
   there was bread on the shelf it stood waiting to buy.
 - `schedules_tests` `restdayLandFood`: Greyfen with Rook keeping rabbits rests through the service and works after it.
 - All suites pass.
+
+### Phase 13: the labour market and the pace, reviewed (2026-10-26)
+
+What the reviews of the two parts above found, mended.
+
+**The land's hands:**
+
+- **A field's farmer is called back** from another business's hire at the day's pass once its own window has work
+  (more acres to sow, the harvest open): the farm's hands worked into a bank only its farmer's own work draws on, and
+  were paid for hours that were lost.
+- **A field's hands' wages are kept in its working money** (`fieldWages`): from a month before its window opens to its
+  end, the window's work still ahead (what's left to sow, or what's sown to bring in) less a day's hours a day of the
+  farmer's own, in hands' days at its wage and the harvest's pay. Its owner's monthly take no longer leaves the harvest
+  unpaid; a farm that still can't pay ends its hires, as any business does. (The founding's fields, sown as founded,
+  want none at their sowing.)
+- **A hire ended early** (its business couldn't pay a hand's share, or had no work for it) **is shut at once**
+  (`OddJob::ended`): its other holders don't work the day out for nothing, nor do the jobless take it, ranked by the
+  pay it didn't pay; it goes with the day's odd jobs. (On day 0 an ended hire no longer turns into a day's odd job.)
+- **A business with no work for more hands** (`idleBusiness`, and a hand's `idleHand`) is one whose work in hand was
+  full at the last turn of the day and is still: not a moment's full bank, a hire's day of hours come in after its
+  keeper's last look. (A restart still finds none idle for a day: work in hand isn't saved.)
+
+**What a workshop keeps back** (`keepsBack`): of what its own crafts work with, two batches of each (`MaterialsLow`,
+the point it would buy more at), not eight; and of what rots, only its shelf's few. A butcher held back 24 raw meat
+that spoiled, a plasterworks 48 lime; a chandler keeps 10 cord, not 40.
+
+**Tools wear by real hours:** what goes out of the work in hand, its hands' with the farmer's (they work with its
+tools), back to real hours on improved premises (an improved hour in hand took less than an hour).
+
+**The pace:**
+
+- **The land's hands by their sales as they are:** a producer's want without the half again of a shelf near bare
+  (`handsWanted(till, false)`): its goods go on to the shops, so its shelf always is, and the level test never passed.
+  A producer with no work for more hands counts at the hands it has. A realm with no land keeps up.
+- **The week's trend is gone** (`memory.paceHands`, no longer saved or read): a fill share stuck low, or sliding a
+  little each week, passed it.
+- **Each reading carries its day** (`memory.paceCover`: day and reading); the week is today's against the reading
+  exactly a week ago, and its mean what was read between. A day the monitor missed leaves a gap; a server away for
+  days finds no week to weigh, not a reading from weeks ago. An older save's bare readings read as none.
+
+**Missed meals, where they happen** (`missedMeal`): a wolf at 60 hunger or more, nothing to eat about it or at home,
+whose town has food shops open but none with food left, counts the meal it wanted (of the first food one of them, by
+lot, sells) into that shop's sales at the turn of the day; once a day a wolf, at most a day's real need. A buyer at a
+shop it finds bare counts so too. Before, every errand went only to shops with food, so a shelf bare all day was never
+visited and nothing was counted.
+
+**At the seconds' pace, as it was** (with work by the hours only): the best-paid hire first, a stall's help crediting
+no work and its working money counting no help, a full store's hours kept in hand, an unpaid hire ended, a post open
+while its holder is away on a hire, tools worn by the hours drawn, and the going rate's new measure (at the old pace,
+its towns' unskilled shops by their hands, as before). The cord loop's mend and the keep-back stay at both paces.
+
+**Not mended here, for the user:** the founding larder's two days for every household (its 2-to-5-day spread of first
+trips gone), the land's food on Restday, and the monitor's shop food counting meals.
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`), day 30 against the merged Phase 13
+before these mends:
+
+| day 30 | before | now |
+|---|---|---|
+| hungry, starving | 0, 0 | 0, 0 (1, 0 at the run's end) |
+| household Gini | 0.562 | 0.565 |
+| the poorer half | 0.141 | 0.139 |
+| the going wage: the realm's, Ridgemere's | 12p, 12p | 12p, 12p |
+| pace | 0.107 (on from day 17) | 0.036 (on at days 14 and 15, then held) |
+| employers' wages against the rate | 1.043×, 3.4% over 1.3× | 1.052×, 3.2% over |
+| hours credited to day 30; lost | 154,889; 40.6% | 161,305; 42.4% |
+| hours lost, day 30's | 47.4% | 52.9% |
+
+- **Money conserved every day;** digest 83f19ae007d0f350 (a traced copy repeated it). The tick 0.055 ms on three
+  threads with the machine shared, against 0.052 on six.
+- **What holds the pace now is the land's hands,** as it should: from a traced copy, their want without the bump was
+  540 to 850 hands a day against 520 to 780 had; from day 16 they had 72% to 88% of it, and the one day they kept up
+  (day 30) the week's food had slid. The week's food moved little (−0.13 to +0.33 days a head, averaging 3.4 to 3.6),
+  so before these mends the week's trend let the pace on while the land fell behind. It goes on as the land's hires
+  are taken: the labour market's to mend (the going wage still 12p).
+
+**Tests:**
+
+- `crafting_tests`: `missedMealsCount` (a bakery sold out, nothing in town to eat: the meal a hungry wolf wanted is in
+  the bakery's sales at the turn of the day, once), `theErrandGoesOn` (half of the first bakery's bread isn't enough:
+  the household goes on to the second), `whatAWorkshopKeepsBack` (two batches of cord; no store of raw meat),
+  `toolsWornByRealHours` (an improved miner's pick by its real hours), `theHarvestsWagesKept` (a month before the
+  harvest the farm's working money holds its hands' wages; none between), `farmersCalledBackAndHiresShut` (the farmer
+  called back as its acres grow; an unpaid hire shut, its other hand not working the day out); `aFullStoreLosesItsHours`
+  (not idle the day its bank first fills, idle at the next turn); `theGoingRateFromTheMakers` with work by the hours;
+  `theCordGoesRoundNoMore` against the new keep-back.
+- `roads_tests`: `thePaceIsSteadied` (with no land it goes on; a week whose first day was missed holds; a day missed
+  between doesn't; a fortnight-old week is dropped); `thePaceStepsUpWithTheLand` (a rabbit farm selling a hand's day,
+  its shelf bare: the pace goes on, though the farm plans for two; selling three hands' days: it holds).
+- `wire_tests`: the readings round trip with their days; out of order, out of bounds, too many or a bare older save's
+  read as none.
+- Each fails with its mend undone. All suites pass.

@@ -118,8 +118,8 @@ void Society::spoil(std::int64_t day)
         for (auto& [item, rate] : goods)
             rate *= .7;
     // A good it sold out of: the buyers who came after are counted too, as half again what it sold (doc 64, Phase 3b),
-    // or as the meals the hungry wanted of it when they found none (Phase 13), whichever is more; a shelf bare all day,
-    // by those meals alone.
+    // or as the meals the hungry wanted of it when they found none (Phase 13: missedMeal), whichever is more; a shelf
+    // bare all day, by those meals alone.
     const auto missed = [&](const std::string& till, const std::string& item) {
         if (const auto t = missedToday_.find(till); t != missedToday_.end())
             if (const auto m = t->second.find(item); m != t->second.end())
@@ -143,6 +143,7 @@ void Society::spoil(std::int64_t day)
     for (const auto& [till, goods] : sellRate_)
         ++salesDays_[till];                         // (Its days of sales in the average: a field's founding, doc 64, Phase 13.)
     missedToday_.clear();
+    missedBy_.clear();
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
     for (const auto& [larder, taken] : larderTaken_)
@@ -299,6 +300,20 @@ std::int64_t Society::shopPrice(const std::string& shop, const std::string& item
     return pennies(priceAt(shop, item));
 }
 
+void Society::missedMeal(const std::string& resident, const std::string& shop)
+{
+    // A hungry wolf's meal a food shop it found bare didn't sell (doc 64, Phase 13): a meal's worth (50) of the first food
+    // it sells, counted with its sales at the turn of the day, so what it makes follows what was wanted, not only what it
+    // had to sell. A wolf's once a day: no more than a day's real need, however long it goes hungry.
+    for (const auto& item : wares(shop))
+        if (const int feeds = nourishment(item); feeds > 0)
+        {
+            if (missedBy_.insert(resident).second)
+                missedToday_[tillOf(shop)][items::baseOf(item)] += (50 + feeds - 1) / feeds;
+            return;
+        }
+}
+
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
 {
     const auto till = tillOf(seller);
@@ -437,15 +452,9 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         life.hunger = std::max(0., life.hunger - nourishment(atCounter) * 1.1);
         stocked -= nourishment(atCounter);
     }
-    // A hungry buyer who found nothing left to eat: a meal it wanted, of the first food the shop sells, counted with its
-    // sales (doc 64, Phase 13: what it makes follows what was wanted, not only what it had to sell).
+    // A hungry buyer who found nothing left to eat: a meal it wanted (Society::missedMeal).
     if (hungry && choices.empty())
-        for (const auto& item : sold)
-            if (const int feeds = nourishment(item); feeds > 0)
-            {
-                missedToday_[till][items::baseOf(item)] += (50 + feeds - 1) / feeds;   // (A meal's worth: 50.)
-                break;
-            }
+        missedMeal(resident, seller);
     if (under)
         *under = laysIn ? std::max(0, perDay * (1 + shut) - stocked) : 0;
     return bought;

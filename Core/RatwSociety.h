@@ -329,8 +329,9 @@ struct EconomyMemory
     std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
     std::set<std::string> closed;                   // Posts a business has let go and keeps empty (doc 64, Phase 6).
     double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
-    std::vector<double> paceCover;                   // The realm's food in hand at the last PaceWeek day passes, days a head.
-    std::vector<double> paceHands;                   // And the land's hands, a share of those its sales want (0 to 1).
+    // The realm's food in hand at the day passes of the last week, days a head, each with its day (a day it missed has
+    // none: the week is still a week).
+    std::vector<std::pair<std::int64_t, double>> paceCover;
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     MintBook mint;                                   // The mint (Phase 11).
@@ -794,8 +795,11 @@ class Society
     std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
     // A shop's food wanted today when it had none left: a hungry buyer's meal, in its first food's pieces (doc 64,
-    // Phase 13), counted with its sales (Society::spoil). Not saved.
+    // Phase 13), counted with its sales (Society::spoil). Not saved. A wolf's meal counted once a day (missedBy_), at a
+    // shop it found bare, or at one of its town's open food shops when none had food (decideAuthored).
     std::unordered_map<std::string, std::unordered_map<std::string, int>> missedToday_;
+    std::unordered_set<std::string> missedBy_;
+    void missedMeal(const std::string& resident, const std::string& shop);
     // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
     // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.
     struct ResidentRecord
@@ -905,6 +909,9 @@ class Society
     std::unordered_map<std::string, double> lastAtWork_;    // Keeper -> the game day its time at work was last counted.
     void creditWork(const std::string& account, double hours);
     static constexpr double WorkBankedMost = 24;
+    // Those whose work in hand was full at the last turn of the day (idleBusiness: full then and now). Not saved.
+    std::unordered_set<std::string> fullBanks_;
+    bool bankFull(const std::string& account) const;
     // What each maker made of its crafts' first goods a day (till -> good -> pieces, a fortnight's running average, and
     // today's so far), and the crafts it found itself short of materials for, today and yesterday (till -> craft ids):
     // handsWanted plans a short craft by what it could make (doc 63's model, feasible; doc 64, Phase 13). Not saved.
@@ -925,8 +932,10 @@ class Society
     // while more than PaceHungry of it goes hungry: the labour market needs weeks to move hands to the land, and the
     // founding's stores last days. Where it settles is what the realm's hands can carry.
     // Steadied (Phase 13): it goes on only while the realm's food in hand (homes and shelves, days a head, a town's at
-    // most PaceCoverCap) hasn't fallen over the week (PaceWeek readings) and the land's hands keep up with what its sales
-    // want (short by PaceShortHands at most, or no further behind than a week ago by more than that); it steps back while
+    // most PaceCoverCap) hasn't fallen over the week (today's reading against the one exactly a week ago: PaceWeek
+    // days, ends included) and the land's hands keep up with what its sales want (short by PaceShortHands at most; its
+    // producers' want without the half again of a shelf near bare, which theirs always are, the goods going on to the
+    // shops; one with no work for more hands, at the hands it has; a realm with no land, kept up); it steps back while
     // the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back faster while the
     // realm goes hungry, as before.
     static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
@@ -961,6 +970,20 @@ class Society
     // `credit`, only with what its till can spare.
     int buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
                      bool forSupplier = false, bool credit = true);
+  public:
+    // What a workshop selling `item` keeps back of it, its common sort (doc 64, Phase 13): GoodsKept for its shelf, or,
+    // when its own crafts work with it (a chandler's cord for its candles), MaterialsLow batches of each of them, the
+    // point it would buy more at. Not of what rots: held back, it would only spoil.
+    int keepsBack(const std::string& seller, const std::string& item) const;
+    // A producer's till's wear on a tool so far, in tools (toolsWorn_: bought new when worn through).
+    double toolWear(const std::string& till, const std::string& tool) const
+    {
+        const auto worn = toolsWorn_.find(till);
+        const auto t = worn == toolsWorn_.end() ? nullptr : &worn->second;
+        return t && t->count(tool) ? t->at(tool) : 0.;
+    }
+
+  private:
     // A producer's work done (`hours` of it: a paid spell is one): what it brings in from the land, a yield for every
     // crafts.json `hours` of work in hand (doc 64, Phase 3), while it has fewer than ProducerKept.
     bool produce(const std::string& id, double absoluteDay, double hours);
@@ -1104,6 +1127,9 @@ class Society
         // A business's hire runs HireDays (the user, 2026-10-05: semi-permanent work at shops that are hiring): whoever
         // took it comes back each day to it, paid each day, until then. Other odd jobs are the day's.
         std::int64_t until = -1;
+        // A hire ended early (its business couldn't pay its share, or had no work for it: doc 64, Phase 13): shut for
+        // the rest of the day, to its holders and to those looking, and gone with the day's.
+        bool ended = false;
     };
     static constexpr int HireDays = 7;
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
@@ -1229,10 +1255,12 @@ class Society
     // its hands use hires none, and its hires end; one that makes nothing (a stall) neither hires nor lets go.
     static constexpr double StapleSlack = 1.2, HarvestPay = 1.25, MadeSlack = 1.1;
     std::vector<std::string> helpPosts(const std::string& till) const;   // Its help's posts (at its premises).
-    int handsWanted(const std::string& till) const;
+    // (`bare`: half again for a shelf near bare, as its maker plans; without, its sales as they are: the pace's measure
+    // of the land, whose producers' shelves are always near bare.)
+    int handsWanted(const std::string& till, bool bare = true) const;
     bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
-    // A business whose hands have more work in hand than it can use (its bank full: its shelves full, its materials
-    // short; a producer's store full), or a field with none in its window (Phase 13).
+    // A business whose hands have more work in hand than it can use (its bank full at this turn of the day and the last:
+    // its shelves full, its materials short; a producer's store full), or a field with none in its window (Phase 13).
     bool idleBusiness(const std::string& till) const;
     bool fieldIdle(const std::string& till, const FieldYear& f, const items::Producer& producer) const;   // (Its field's.)
     // A business whose hands make something: one with crafts (and so its mending), or a producer; not a stall, whose
@@ -1306,6 +1334,9 @@ class Society
     static constexpr double RentShare = .15;
     static constexpr int CreditDays = 7, CreditWrittenOff = 56;
     std::int64_t workingMoney(const std::string& positionId) const;
+    // A seasonal field's hands' wages for its window's work still ahead (doc 64, Phase 13): kept in its working money
+    // from a month before the window opens to its end, so the land pays the hands it hires when they're wanted.
+    double fieldWages(const std::string& till) const;
     // What a till sells of each good a day (its running average, missed sales counting) and its standing orders' cost a
     // week: what its working money is reckoned from (for econ_watch).
     const std::unordered_map<std::string, double>* sellRates(const std::string& till) const

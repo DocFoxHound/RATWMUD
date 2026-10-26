@@ -122,33 +122,16 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                 if (!from || !buyer)
                     continue;
                 // Any quality it has (doc 35, Part 4), at that quality's price. A workshop keeps a few common ones for
-                // its own shelf; a supplier or producer sells all it has.
-                // (A workshop that works with it too, a chandler's cord for its candles, keeps back its own batches' too:
-                // two chandlers stripped each other. Doc 64, Phase 13.)
-                int keeps = GoodsKept;
-                if (const auto* r = kind == 1 ? spec(seller.id) : nullptr)
-                    if (const auto* business = items::businessFor(r->workLabel))
-                    {
-                        // (Its batches' need of each material, worked out once a business: each thread remembers.)
-                        thread_local std::unordered_map<std::string, std::unordered_map<std::string, int>> needs;
-                        auto found = needs.find(business->id);
-                        if (found == needs.end())
-                        {
-                            found = needs.emplace(business->id, std::unordered_map<std::string, int>{}).first;
-                            for (const auto* k : items::craftsFor(business->id))
-                                for (const auto& [in, count] : k->in)
-                                    found->second[in] += count * MaterialBatches;
-                        }
-                        if (const auto need = found->second.find(item); need != found->second.end())
-                            keeps = std::max(keeps, need->second);
-                    }
+                // its own shelf, and of what it works with too, its own batches' (keepsBack); a supplier or producer
+                // sells all it has.
+                const int keeps = kind == 1 ? keepsBack(seller.id, item) : 0;
                 for (const auto& sort : kindsHeld(*from, item))
                 {
                     const auto* sortGood = items::good(sort);
                     const auto* buyerNow = account(till);
                     if (!sortGood || !buyerNow)
                         continue;
-                    const int spare = stock(*from, sort) - (kind == 1 && sort == item ? keeps : 0);
+                    const int spare = stock(*from, sort) - (sort == item ? keeps : 0);
                     // At the seller's own price (doc 64, Phase 4); carted in from another town, its carriage besides.
                     const double each = priceAt(seller.id, sort);
                     const std::int64_t price = pennies(each + (local ? 0. : carriage(sort, CarriageLegs, here)));
@@ -180,6 +163,29 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     return bought;
 }
 
+int Society::keepsBack(const std::string& seller, const std::string& item) const
+{
+    // (A workshop that works with it too, a chandler's cord for its candles, keeps back what its own batches want before
+    // it buys more: two chandlers stripped each other. Doc 64, Phase 13. Not a store of them: a butcher held back two
+    // dozen raw meat that spoiled, a plasterworks four dozen lime.)
+    const auto* r = spec(seller);
+    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    if (!business || rots(items::good(item)))
+        return GoodsKept;
+    // (Its crafts' need of each material, worked out once a business: each thread remembers.)
+    thread_local std::unordered_map<std::string, std::unordered_map<std::string, int>> needs;
+    auto known = needs.find(business->id);
+    if (known == needs.end())
+    {
+        known = needs.emplace(business->id, std::unordered_map<std::string, int>{}).first;
+        for (const auto* k : items::craftsFor(business->id))
+            for (const auto& [in, count] : k->in)
+                known->second[in] += count * MaterialsLow;
+    }
+    const auto need = known->second.find(item);
+    return need == known->second.end() ? GoodsKept : std::max(GoodsKept, need->second);
+}
+
 bool Society::produce(const std::string& id, double absoluteDay, double hours)
 {
     const auto* r = spec(id);
@@ -194,11 +200,15 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     // Its work in hand (doc 64, Phase 3): this spell's, and any a hand put in (RatwOddJobs.cpp); improved premises
     // (better tools, a bigger barn: RatwOddJobs.cpp) make an hour go further.
     const auto* job = jobOf(id);
-    creditWork(id, hours / (1 - ImprovementPace * (job ? improvement(job->id) : 0)));
+    const double improved = 1 - ImprovementPace * (job ? improvement(job->id) : 0);
+    creditWork(id, hours / improved);
     auto& banked = workBanked_[id];
     // Its tools worn by the hours its work takes, not those it stands idle (doc 64, Phase 13: a farmer between sowing and
-    // the harvest bought sickles for nothing): what goes out of its work in hand.
+    // the harvest bought sickles for nothing): what goes out of its work in hand, as real hours (an improved farm's hour
+    // in hand took less than an hour), its hands' with its own: they work with its tools. (With work by the hours: at the
+    // seconds' pace, its own spells', as it was.)
     const double before = banked;
+    const auto wear = [&] { wearTools(till, producer->id, workByHours() ? std::max(0., before - banked) * improved : hours); };
     bool any = false;
     // Seasonal fields (doc 64, Phase 3b): sown in spring, brought in at the harvest, sold from the store all year. (Until
     // it has a week of sales to plan by, as before: doc 64, Phase 13.)
@@ -267,12 +277,13 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
                     banked -= hoursFor(*producer);
                 any = any || made;
             }
-        wearTools(till, producer->id, std::max(0., before - banked));
+        wear();
         return any;
     }
     // A town's trade (doc 61): its producers bring in more of its goods, the fraction by a lot fixed by the producer and
     // the spell (so a run repeats), and keep more of them in store to send away. (A yield's hours are taken only when it
-    // brought something in: with its store full they stay in hand, and are lost. Doc 64, Phase 13.)
+    // brought something in: with its store full they stay in hand, and are lost. Doc 64, Phase 13; with work by the
+    // hours: at the seconds' pace, taken whatever it brought, as they were.)
     const auto town = communityOfResident(id);
     for (int yield = 0; banked >= hoursFor(*producer); ++yield)
     {
@@ -296,12 +307,12 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
                 made = create(till, item, std::min(brought, kept - held), "brought in") || made;
             }
         }
-        if (!made)
+        if (!made && workByHours())
             break;
         banked -= hoursFor(*producer);
-        any = true;
+        any = any || made;
     }
-    wearTools(till, producer->id, std::max(0., before - banked));
+    wear();
     return any;
 }
 
@@ -586,8 +597,8 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     if (const auto rates = sellRate_.find(till); rates != sellRate_.end())
             std::stable_sort(order.begin(), order.end(), [&](const items::Craft* a, const items::Craft* b) {
                 const auto rate = [&](const items::Craft* k) {
-                    const auto r = rates->second.find(k->out.front().first);
-                    return r == rates->second.end() ? 0. : r->second;
+                    const auto sold = rates->second.find(k->out.front().first);
+                    return sold == rates->second.end() ? 0. : sold->second;
                 };
                 return rate(a) > rate(b);
             });

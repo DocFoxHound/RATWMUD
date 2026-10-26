@@ -1040,13 +1040,15 @@ Value economyMemory(const EconomyMemory& m)
         closed.push(pid);
     o.add("closed", closed);
     o.add("pace", m.pace);
-    for (const auto* readings : {&m.paceCover, &m.paceHands})
+    auto cover = Value::array();
+    for (const auto& [day, reading] : m.paceCover)
     {
-        auto list = Value::array();
-        for (const double x : *readings)
-            list.push(x);
-        o.add(readings == &m.paceCover ? "paceCover" : "paceHands", list);
+        auto one = Value::array();
+        one.push(double(day));
+        one.push(reading);
+        cover.push(one);
     }
+    o.add("paceCover", cover);
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, const std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
@@ -1177,17 +1179,25 @@ EconomyMemory readEconomyMemory(const Value& o)
             m.going[town] = v.asNumber();
     if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
         m.pace = pace->asNumber();
-    // (Saved before doc 64's Phase 13: none, and the pace waits a week of readings before it goes on.)
-    for (const auto& [key, into, most] : {std::tuple{"paceCover", &m.paceCover, Society::PaceCoverCap}, std::tuple{"paceHands", &m.paceHands, 1.}})
+    // The pace's readings, each with its day, in order (saved before doc 64's Phase 13, or as bare readings before they
+    // carried their days: none, and the pace waits a week of readings before it goes on; the land's hands' share once
+    // saved beside them is no longer read).
+    if (const auto& list = o["paceCover"]; list.isArray() && list.items().size() <= std::size_t(Society::PaceWeek))
     {
-        const auto& list = o[key];
-        const double top = most;
-        if (list.isArray() && list.items().size() <= std::size_t(Society::PaceWeek) &&
-            std::all_of(list.items().begin(), list.items().end(), [top](const Value& x) {
-                return x.isNumber() && std::isfinite(x.asNumber()) && x.asNumber() >= 0 && x.asNumber() <= top;
-            }))
-            for (const auto& x : list.items())
-                into->push_back(x.asNumber());
+        std::vector<std::pair<std::int64_t, double>> readings;
+        for (const auto& x : list.items())
+        {
+            const bool fits = x.isArray() && x.items().size() == 2 && x.items()[0].isNumber() && x.items()[1].isNumber() &&
+                              std::isfinite(x.items()[0].asNumber()) && x.items()[0].asNumber() >= 0 && x.items()[0].asNumber() <= 365000000 &&
+                              std::isfinite(x.items()[1].asNumber()) && x.items()[1].asNumber() >= 0 && x.items()[1].asNumber() <= Society::PaceCoverCap;
+            if (!fits || (!readings.empty() && std::int64_t(x.items()[0].asNumber()) <= readings.back().first))
+            {
+                readings.clear();
+                break;
+            }
+            readings.push_back({std::int64_t(x.items()[0].asNumber()), x.items()[1].asNumber()});
+        }
+        m.paceCover = std::move(readings);
     }
     // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold.)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, std::map<std::string, double>*>>{
