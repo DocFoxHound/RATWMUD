@@ -1097,9 +1097,17 @@ void foodMakersLayIn()
     for (const auto& who : {broketill, std::string("baker")})   // (Its till and its owner, who would top it up.)
         if (const auto cash = broke.account(who)->cash; cash > 0)
             broke.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+    const auto owedBefore = broke.owed(broketill);
     double then = 8 + 10. / 24;
+    broke.takeJournal();
     work(broke, 60, then);
-    expect(held(broke, "baker", "flour") == 0, "with nothing in its till it lays in nothing, not on credit");
+    // (What the day brings its till, a cake sold or its owner's top-up, it may lay in with; never more, on credit.)
+    std::int64_t paid = 0;
+    for (const auto& e : broke.takeJournal())
+        if (e.kind == "materials bought" && e.from == broketill && e.item == "flour")
+            paid += e.coins;
+    expect(broke.owed(broketill) == owedBefore && held(broke, "baker", "flour") <= paid,
+           "with nothing in its till it lays in only what it pays for, not on credit");
 }
 
 // What a field is planned by (doc 64, Phase 13): its food, what feeds or goes only into food or flour; the straw, hemp,
