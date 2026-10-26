@@ -1039,7 +1039,7 @@ const std::vector<int>* World::regionMap(const Cell& c) const
         bool forgot = false;
         for (auto it = deadEnds_.begin(); it != deadEnds_.end();)
             if (it->first == c.id || it->second == c.id)
-                it = deadEnds_.erase(it), forgot = true;
+                deadEndPockets_.erase(*it), it = deadEnds_.erase(it), forgot = true;
             else
                 ++it;
         if (forgot)
@@ -4336,9 +4336,30 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
     // Residents know their authored work/home routes, not player exploration: the next cell toward the goal,
     // then the first way into it (in ID order, as ever). In the goal cell but cut off from the goal (below), the way
     // on is out and back in.
+    // Bound into the pocket of a dead end (its part of the cell beyond, or a door of it: a cottage on the strip), in
+    // by the cell it was found from, and by way of that cell from elsewhere: routes leave the dead end out, and from
+    // round the other side the pocket can't be reached (doc 64, Phase 13, the roads' review: a walker passing through
+    // found it, and a one-door house's household, coming home round it into the body of the cell, went out and round
+    // again, all night). In the body of the cell beyond, out to a neighbour whose way there doesn't come back (below).
+    std::string pocketed, pocketFrom;                   // (The next cell, so; and, in the cell beyond, the one it was found from.)
+    for (const auto& [edge, end] : deadEndPockets_)
+        if (end.beyond.count(goalCell) || (edge.second == goalCell && cell(goalCell) && regionMap(*cell(goalCell)) &&
+                                           end.parts.count(regionAt(*cell(goalCell), target))))
+        {
+            if (e.cellId == edge.second)
+                pocketFrom = edge.first;
+            else if (e.cellId == goalCell)
+                continue;
+            else if (e.cellId == edge.first)
+                pocketed = edge.second;
+            else if (const auto& to = cachedSteps(e.cellId); to.count(edge.first))
+                pocketed = to.at(edge.first);
+            if (!pocketed.empty() || !pocketFrom.empty())
+                break;
+        }
     auto step = cachedSteps(e.cellId).find(goalCell);
-    if (step == cachedSteps(e.cellId).end()) { e.activity = task + " — route unavailable"; return; }
-    std::string next = e.cellId == goalCell ? std::string() : step->second;
+    if (step == cachedSteps(e.cellId).end() && pocketed.empty()) { e.activity = task + " — route unavailable"; return; }
+    std::string next = e.cellId == goalCell ? std::string() : !pocketed.empty() ? pocketed : step->second;
     // Where a way comes out matters as much as where it starts. A seam can land on a strip of the next cell that a
     // step or a wall cuts off from the rest, with no way on from it; residents were stranded there for good, and
     // piled up. So a way is judged by where it lands, when the cell beyond is in memory to tell: in the goal's own
@@ -4459,13 +4480,37 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
         // other than its body, it cut a House off from the street, and its floors from each other, for everyone
         // (doc 64, Phase 13: a household offstage, never getting home to eat).
         deadEnds_.insert({e.cellId, next});
+        auto& end = deadEndPockets_[{e.cellId, next}];
+        if (const auto* there = cell(next))
+            for (const Door* way : doorsIn(e.cellId))
+                if (usable(way) && way->targetCell == next)
+                    if (const int part = regionAt(*there, way->arrival); part >= 0 && end.parts.insert(part).second)
+                        for (const Door* on : doorsIn(next))
+                            if (on->portal && !on->locked && on->targetCell != e.cellId && regionAt(*there, on->position) == part)
+                                end.beyond.insert(on->targetCell);
         stepsCache_.clear();
         step = cachedSteps(e.cellId).find(goalCell);
         if (step == cachedSteps(e.cellId).end()) { e.activity = task + " — route unavailable"; return; }
         next = step->second;
         choose();
     }
-    if (!d || ranked == 0)
+    // A way into the next cell that lands neither where its way on is nor in its body, from a part of this cell other
+    // than its body whose ways all land so where another part's land well: out, and in again by that part, by a way
+    // landing in the body of a cell in memory with a way back to it (below); else on by this way, as before, not out
+    // by the nearest way that lands well (into a house or a shed whose way on is back) (doc 64, Phase 13, round 5: a
+    // boy out of Greatly House onto a lane of the city's north-east, its ways west landing on a strip of the next cell
+    // with none to his door, crossed onto it and back, all night; the strip's ways out all land in parts of their
+    // cells, and the nearest was back). (Not from the body of the cell, nor out into a cell not in memory: a hand in
+    // the body of the city's south-east, so sent out east into the hills offstage, was hopped back in at once, and
+    // again, for hours.)
+    bool misplaced = false;
+    if (d && ranked == 1 && !next.empty() && next != goalCell && region >= 0 && current && region != mainRegion(*current))
+    {
+        std::vector<int> better;
+        regionsToward(e.cellId, next, better);
+        misplaced = !better.empty() && std::find(better.begin(), better.end(), region) == better.end();
+    }
+    if (!d || ranked == 0 || misplaced)
     {
         // In the wrong part of this cell (no way on from here, or cut off from the goal): out, and in again where the
         // way on is. Out first to a neighbour with a way back in to that part, where it is in memory to tell (and it is
@@ -4498,11 +4543,20 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
             return known->second;
         };
         const Door* out = nullptr;
-        if (!d && region >= 0 && !wanted.empty() && std::find(wanted.begin(), wanted.end(), region) == wanted.end())
+        if ((!d || misplaced) && region >= 0 && !wanted.empty() && std::find(wanted.begin(), wanted.end(), region) == wanted.end())
             for (const Door* way : doorsIn(e.cellId))
-                if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) > 0 && leadsBack(*way))
+                if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) > (misplaced ? 1 : 0) &&
+                    leadsBack(*way))
                     out = way;
-        if (!out)
+        // In the cell beyond a dead end, bound into its pocket (above), and no way back in to it from a neighbour: out
+        // to one whose way to the cell it was found from doesn't come back through here.
+        if (!out && !pocketFrom.empty() && !misplaced)
+            for (const Door* way : doorsIn(e.cellId))
+                if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) == 2)
+                    if (const auto& on = cachedSteps(way->targetCell);
+                        way->targetCell == pocketFrom || (on.count(pocketFrom) && on.at(pocketFrom) != e.cellId))
+                        out = way;
+        if (!out && !misplaced)
             for (const Door* way : doorsIn(e.cellId))
                 if (usable(way) && way->targetCell != e.cellId && nearer(way, out) && landing(*way) == 2)
                     out = way;

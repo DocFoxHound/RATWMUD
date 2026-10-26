@@ -1469,6 +1469,14 @@ class World
     // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
     // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
     mutable std::set<std::pair<std::string, std::string>> deadEnds_;
+    // What lies in or beyond the pocket of each dead end: its parts of the next cell, and the cells its doors open on
+    // (a cottage on the strip). A walker bound there goes in by it all the same (doc 64, Phase 13, the roads' review).
+    struct PocketEnd
+    {
+        std::set<int> parts;
+        std::set<std::string> beyond;
+    };
+    mutable std::map<std::pair<std::string, std::string>, PocketEnd> deadEndPockets_;
     const std::map<std::string, std::string>& cachedSteps(const std::string& from) const;
     std::map<std::string, Cell> cells_;
     std::map<std::string, FactionDefinition> factions_;

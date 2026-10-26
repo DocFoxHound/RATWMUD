@@ -201,6 +201,9 @@ void World::tradeCaravans()
     const auto today = std::int64_t(std::floor(calendarDays_));
     for (auto it = roads_.failed.begin(); it != roads_.failed.end();)
         it = today - it->second >= MonthDays ? roads_.failed.erase(it) : std::next(it);
+    // (A refusal is kept till its buyer signs again, with the money, or its till is gone: RoadsState::refused.)
+    for (auto it = roads_.refused.begin(); it != roads_.refused.end();)
+        it = !society_.account(it->first.substr(0, it->first.rfind('|'))) ? roads_.refused.erase(it) : std::next(it);
     const auto failedWith = [&](const std::string& buyer, const std::string& item, const std::string& from) {
         return !buyer.empty() && roads_.failed.count(buyer + "|" + item + "|" + from) > 0;
     };
@@ -240,16 +243,26 @@ void World::tradeCaravans()
                 const auto [seller, spare] = failedWith(buyer, item, best->id) ? bestFor(to, item, buyer) : std::pair{best, bestSpare};
                 if (!seller || spare < 4)
                     continue;
+                // For a week of what it uses (doc 61), or what it is short now if that is more.
+                const int weekly = int(std::ceil(society_.useRate(buyer, item) * 7));
+                const int perWeek = std::clamp(std::max(wanted, weekly), 4, std::min(MostOfAGood, spare));
+                const auto price = orderPrice(*seller, item);
+                // A buyer whose last order of it ended or was cut for what it couldn't pay for signs again only with a
+                // week of the new one in its till (RoadsState::refused; doc 64, Phase 13).
+                if (const auto mark = roads_.refused.find(buyer + "|" + item); mark != roads_.refused.end())
+                {
+                    if (const auto* till = society_.account(buyer); !till || till->cash < price * perWeek)
+                        continue;
+                    roads_.refused.erase(mark);
+                }
                 StandingOrder o;
                 o.id = "so" + std::to_string(roads_.nextId++);
                 o.buyer = buyer;
                 o.town = to.id;
                 o.item = item;
                 o.from = seller->id;
-                // For a week of what it uses (doc 61), or what it is short now if that is more.
-                const int weekly = int(std::ceil(society_.useRate(buyer, item) * 7));
-                o.perWeek = std::clamp(std::max(wanted, weekly), 4, std::min(MostOfAGood, spare));
-                o.price = orderPrice(*seller, item);
+                o.perWeek = perWeek;
+                o.price = price;
                 o.since = calendarDays_;
                 o.review = calendarDays_ + OrderSettles;      // (Looked at again once a week of its use is known.)
                 if (seller == best)
@@ -537,7 +550,8 @@ int World::agreeAgain(StandingOrder& o, const Town& from)
     // be signed: it isn't signed again with the buyer for a month (RoadsState::failed). What its buyer couldn't pay for
     // isn't its seller's shortfall (tradeCaravanArrived): the seller sent it (StandingOrder::unpaid). An order whose
     // buyer refused two weeks' worth so is brought down to what it paid for, or ends, the seller not blamed (it ran on
-    // with nothing handed over, looked at again each month, holding the seller's room and its town's want for good). A
+    // with nothing handed over, looked at again each month, holding the seller's room and its town's want for good),
+    // and the buyer signs for the good again only with a week of it in its till (RoadsState::refused). A
     // food that rots on the road ends. A raise its seller's room held where it was is looked at again in a week, as a
     // raise is; one with that room not known yet, the day's trade not run since the world was loaded, isn't agreed: the
     // order stays due.)
@@ -554,7 +568,10 @@ int World::agreeAgain(StandingOrder& o, const Town& from)
         roads_.failed[o.buyer + "|" + o.item + "|" + o.from] = std::int64_t(std::floor(calendarDays_));
     }
     else if (o.unpaid >= o.perWeek * 2)              // (Its share of what came, paid for; none, it ends.)
+    {
         o.perWeek = std::min(o.perWeek - 1, int(std::int64_t(o.perWeek) * o.delivered / std::max(1, sent)));
+        roads_.refused[o.buyer + "|" + o.item] = std::int64_t(std::floor(calendarDays_));
+    }
     else if (held > std::max(o.perWeek, weekly) * 2)   // (Never raised for it: a week of its use over the order, it was.)
         o.perWeek = std::min(o.perWeek, std::max(weekly, o.perWeek * 3 / 4));
     else if (held < std::max(o.perWeek, weekly) / 2 && o.delivered > 0 && (o.shortfall + o.unpaid) * 4 <= owed)

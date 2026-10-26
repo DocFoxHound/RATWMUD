@@ -3300,6 +3300,59 @@ void aBuyerWithoutMoneyEndsItsOrder()
         }
         expect(saved && trips >= 2 && !orderOf(w, o.id), "Penniless three weeks, its order ends: " + std::to_string(trips) + " caravans");
         expect(w.roads().failed.empty(), "and its seller isn't blamed: no failure kept");
+        // Still penniless, nine weeks in all: not signed again (the roads' review: it was, the next day, every fortnight,
+        // its seller's trader buying a load a week nobody paid for). Then a week of it in the till, and it is.
+        const auto ironFor = [&] {
+            const auto& orders = w.roads().orders;
+            return std::find_if(orders.begin(), orders.end(), [&](const StandingOrder& s) { return s.buyer == smith && s.item == "iron_bar"; });
+        };
+        expect(w.roads().refused.count(smith + "|iron_bar") > 0, "Its refusal is kept against the buyer");
+        {
+            checkpoint::ServerState server;
+            PersistedWorld back;
+            std::string problem;
+            expect(checkpoint::decode(checkpoint::encode(w.save(), server, {}, 0), back, server, problem) &&
+                       back.roads.refused == w.roads().refused,
+                   "and saved: " + problem);
+        }
+        const auto trader = soc.account("stores:frosthollow")->cash;
+        int signedAgain = 0;
+        for (int d = 0; d < 42; ++d)
+        {
+            for (const auto& who : {smith, std::string("westsmith")})
+                if (const auto cash = soc.account(who)->cash; cash > 0)
+                    soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+            nextMorning(w);
+            w.roads().camps.clear();
+            tickWhileOnTheWay(w);
+            signedAgain += ironFor() != w.roads().orders.end();
+        }
+        expect(signedAgain == 0 && w.roads().failed.empty(), "Penniless six weeks more, it isn't signed again: an order on " +
+                                                                 std::to_string(signedAgain) + " days");
+        expect(soc.account("stores:frosthollow")->cash >= trader, "and its seller's trader buys no load for it");
+        // A few bars' money: more than a bar's, under a week of the order (below). Not yet.
+        constexpr std::int64_t little = 40;
+        expect(soc.shift("treasury", smith, "", 0, little, "test: a little in the till"), "The till has a little");
+        for (int d = 0; d < 2; ++d)
+        {
+            nextMorning(w);
+            w.roads().camps.clear();
+            tickWhileOnTheWay(w);
+        }
+        expect(ironFor() == w.roads().orders.end(), "With under a week of it in the till, still not: " +
+                                                        std::to_string(soc.account(smith)->cash) + "p");
+        soc.shift("treasury", smith, "", 0, 2000, "test: the till filled");
+        for (int d = 0; d < 3 && ironFor() == w.roads().orders.end(); ++d)
+        {
+            nextMorning(w);
+            w.roads().camps.clear();
+            tickWhileOnTheWay(w);
+        }
+        expect(ironFor() != w.roads().orders.end() && !w.roads().refused.count(smith + "|iron_bar"),
+               "With the money, it is signed again, and the refusal forgotten");
+        expect(ironFor()->price < little && little < ironFor()->price * ironFor()->perWeek,
+               "(the little was more than a bar's, under a week's: " + std::to_string(ironFor()->perWeek) + " at " +
+                   std::to_string(ironFor()->price) + "p)");
         expect(soc.conserved(), "Money is conserved");
     }
     {

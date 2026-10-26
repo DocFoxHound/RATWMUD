@@ -675,8 +675,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // back to it, as it did.)
     const auto realm = memory.going.find("");
     const double kept = realm != memory.going.end() && memory.foundedDay > 0 ? realm->second : 0;
-    if (workByHours())                              // (At the seconds' pace a town kept its last, as before.)
-        memory.going.clear();
+    // (At the seconds' pace a town keeps its last, as before the hours; the realm's is as above at either pace. Merged
+    // in round 5, doc 64, Phase 13: kept whole at that pace, a village's never fell back.)
+    for (auto it = memory.going.begin(); it != memory.going.end();)
+        it = workByHours() || it->first.empty() ? memory.going.erase(it) : std::next(it);
     for (auto& [town, wages] : paid)
         if (!wages.empty() && (town.empty() || !workByHours() || int(wages.size()) >= TownRateWeight))
         {

@@ -168,6 +168,10 @@ Value roads(const RoadsState& r)
     for (const auto& [key, day] : r.failed)
         failed.add(key, double(day));
     roads.add("failed", failed);
+    auto refused = Value::object();
+    for (const auto& [key, day] : r.refused)
+        refused.add(key, double(day));
+    roads.add("refused", refused);
     return roads;
 }
 
@@ -751,6 +755,10 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             if (day.isNumber() && std::isfinite(day.asNumber()) && std::abs(day.asNumber()) < 1e9 && key.size() < 400 &&
                 saved.roads.failed.size() < 4096)
                 saved.roads.failed[key] = std::int64_t(day.asNumber());
+        for (const auto& [key, day] : roads.object("refused").fields())   // (Saved before doc 64's Phase 13, round 5: none.)
+            if (day.isNumber() && std::isfinite(day.asNumber()) && std::abs(day.asNumber()) < 1e9 && key.size() < 400 &&
+                saved.roads.refused.size() < 4096)
+                saved.roads.refused[key] = std::int64_t(day.asNumber());
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),

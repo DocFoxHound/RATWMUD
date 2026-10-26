@@ -116,6 +116,10 @@ struct RoadsState
     // A seller whose order was cut or ended for what it didn't send ("buyer|good|from" -> the day): the buyer signs
     // with another town for MonthDays, not again with it the next day (doc 64, Phase 13).
     std::map<std::string, std::int64_t> failed;
+    // A buyer whose order of a good was cut or ended for what it couldn't pay for ("buyer|good" -> the day): it signs
+    // for that good again only with a week of the order in its till, the seller never blamed (doc 64, Phase 13: signed
+    // again the next day, penniless, every fortnight, its seller's trader buying a load a week nobody paid for).
+    std::map<std::string, std::int64_t> refused;
     std::int64_t day = -1, nextId = 1;
     bool stocked = false;                 // The towns' stores have had their first share from the treasury.
     bool purses = false;                  // ...and their share of its money, as their own treasuries (doc 42).

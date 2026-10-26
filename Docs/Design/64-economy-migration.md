@@ -3033,7 +3033,8 @@ a missed piece's seller, and the walking on the stage.
   Frosthollow's bars and its town's want of iron (no other shop there could sign for it), the trader buying a load for
   it every week. Now two weeks' worth refused makes it due at once; agreed again, it is brought down to its share of
   what came that was paid for, and with none paid for it ends, its seller not blamed (no `RoadsState::failed`): it may
-  sign again with the same town.
+  sign again with the same town. (It did, the next day, still penniless, and every fortnight after: nothing at the
+  signing looked at the buyer's money. Mended in "the roads and the walking, round 5", below.)
 - **The seller is judged by what came**, handed over or refused: under half of what it was to send, the order halved;
   none in two weeks' worth, ended and the seller failed, as before. A raise wants three quarters of all it was to send
   handed over and paid for.
@@ -3054,7 +3055,9 @@ an armourer of a 90p steel sword, and a shop of three such wares had three lots.
 
 - **A pocket two steps ahead:** a way on from a part of the next cell is a seam to another cell, or a door to somewhere
   with a way out of its own (not only back into that part, or back here). A strip whose one door was a cottage's, the
-  cottage's only way out, was taken for a way on: crossed onto, no way on found, crossed back, and again.
+  cottage's only way out, was taken for a way on: crossed onto, no way on found, crossed back, and again. (So a
+  walker passing through took it for a pocket and recorded a dead end for everyone, and the cottage's own household,
+  routed round it into the body of the cell, where the door can't be reached, stayed out all night: round 5, below.)
 - **The best way on only:** a way into the next cell is best of all when it lands in a part the next leg leaves from
   best (into the goal's own part of its cell, before another part of it). Both counted, a crossing into the half of a
   cell whose way on lands in the wrong half of the goal's cell was as good, and the nearest was taken, and walked
@@ -3103,7 +3106,8 @@ an armourer of a 90p steel sword, and a shop of three such wares had three lots.
 - `roads_tests`: `whatTheBuyerCantPayForIsntShort` (the eight refused), `aShortLoadIsTheSellersShortfall` (nine for
   sixteen: the second forge its eight, the first refuses the one left, the seller seven short),
   `aBuyerWithoutMoneyEndsItsOrder` (penniless three weeks with a month's review: ended, no failure kept, what was
-  refused saved through the checkpoint; paid for a third, brought down to two a week, its refusals cleared),
+  refused saved through the checkpoint; paid for a third, brought down to two a week, its refusals cleared; it
+  stopped at the end, so couldn't see the order signed again the next day: round 5 runs it on),
   `aFailedSellerIsForgottenInAMonth` (two forges Frosthollow failed: one signs with the mid town, the other finds its
   bars promised; the day the month is out, Frosthollow signs both).
 - `crafting_tests`: `aTownKeepsItsRateAtTheOldPace`, `aMissedPieceIsOneItCouldPayFor` (a sword, a dear charm),
@@ -3118,7 +3122,147 @@ an armourer of a 90p steel sword, and a shop of three such wares had three lots.
 **For the user:**
 
 - **An order its buyer can't pay for** ends after two weeks' worth refused, or comes down to what was paid for; the
-  seller isn't blamed, so the same town may be signed again when the buyer has money (a placeholder, as the cut is).
+  seller isn't blamed, so the same town may be signed again (a placeholder, as the cut is). (Not "when the buyer has
+  money", as this said: nothing looked at its money, and it was signed again the next day. Round 5, below: only with
+  a week of it in the till.)
 - **The last leg's step aside** from a body walking into it, against the review's none (above).
 - **A spot no way reaches** is settled for with the nearest tile; the world build could make sure every resident's spot
   is reachable from its cell's doors (recommended: Greatly House's room upstairs is the one known).
+
+### Phase 13: the roads and the walking, round 5 (2026-10-26)
+
+The roads and the walking (`p13-r4-roads`, above) merged into the price level and the players' third review (`83714a0`),
+and its review mended: two majors and the doc's wording.
+
+**The merge.** One conflict in code, the going rate (`Society::tendLabour`): the price level's review had the realm's
+rate kept, with no maker to measure, only for a realm founded at its founding day (a village falls back to the
+catalogue's); the roads' had every rate kept at the seconds' pace (a town keeps its last, as before the hours). Both
+are kept: at the seconds' pace a town keeps its last, and the realm's own is as the price level has it at either pace.
+(As merged, the whole table kept at that pace, a village's realm never fell back: `crafting_tests` failed.)
+
+**A buyer that can't pay isn't signed again till it can** (`RoadsState::refused`, "buyer|good" -> the day; saved with
+the roads, bounded, an older save's none). The order of a buyer that refused two weeks' worth ended, its seller not
+blamed, and nothing at the signing looked at the buyer's money: the same order was signed again the next day, still
+penniless, ran two weeks, ended, and was signed again, every fortnight (the review's probe: signed again on days 18,
+32, 46 and 60; an order stood 59 days of 63; the seller's trader bought about 1,200p of bars nobody paid for). Now an
+order cut or ended for what its buyer refused leaves a mark against the buyer and the good, never the seller; a
+marked buyer signs for that good again only with a week of the new order (its price, so many a week) in its till, and
+then the mark goes. It isn't forgotten in a month, as a seller's failure is: a month on, a buyer still penniless would
+be signed again, and the fortnight's churn come back every six weeks. A mark goes with its till.
+
+**A dead end found by a walker passing through keeps no household from its door** (`World::headFor`). The stricter
+pocket (above) let a walker passing through, every way into the next cell landing on a strip whose one door is a
+cottage's, record a dead end there for everyone; the cottage's own household, routed round it into the body of the
+cell, where the door can't be reached, went out and round again all night (the review's probe: home in 6 s at
+`3cec19a`, never after). The review asked for a dead end only for a bare pocket (no door, no seam on); but then the
+walker passing through, with no dead end to route round, stood in the cell before the strip for good
+(`aStripWithAHouseIsNoWayOn` failed: two crossings, never home). So the dead end is kept for those passing through,
+and what lies in and beyond its pocket is kept with it (`deadEndPockets_`: the parts of the next cell its ways land
+in, and the cells their doors open on). A walker bound there goes in by the cell the dead end was found from, and by
+way of that cell from elsewhere; in the body of the cell beyond, with no way back in to the pocket from a neighbour,
+out to a neighbour whose way to that cell doesn't come back through here.
+
+On the review's fixture, Cot (who lives in the cottage) put down in each of six cells, home or not in 3,000 s:
+
+| from | `83714a0`, alone | `83714a0`, after Pip | merged, after Pip | now, alone | now, after Pip |
+|---|---|---|---|---|---|
+| `c_0_0` (her work) | 6 s | 8 s | never | 6 s | 7 s |
+| `c_0_1` | 17 s | 20 s | never | 17 s | 18 s |
+| `c_1_1` | never | never | never | never | 20 s |
+| `c_1_0`, its body | never | never | never | never | 20 s |
+| `c_2_0` | never | never | never | never | 32 s |
+| `c_2_1` | never | never | never | never | 32 s |
+
+("After Pip": Pip, who passes through, has found the dead end; at `83714a0` Pip herself never got home round the
+strip.) Where nobody has found the dead end, a resident in the body of the cell, or coming to it round the other side,
+still can't reach the cottage: the routes are cell by cell and don't know the cell's parts until a walker finds them
+out. That was so before the roads' review too.
+
+**A lane whose ways on land on a strip is left for the body of a cell** (`World::headFor`). The visit run with walking
+bodies, merged, went hungry from day 9: five children of Ridgemere's North West (Grantham, Lockwood, Vance and Wexley
+Houses) visiting Greatly House in the North East came out of its door onto a lane walled off from the body of that
+cell, whose ways west all land on a strip of the North West walled off from its body, where their doors are. The
+strip has ways on (south, onto a corner of the next cell walled off too), so it is no pocket, and they crossed onto
+it; there, with no way to their doors and none out landing well, they took the nearest way, back onto the lane, and
+again, all night (2 hungry at day 9's end, 5 at day 10's). Not the roads' review's walking nor this round's: the
+same boy put down at that door at `83714a0` does the same (a probe, not in the repo, loading DEV's export: below);
+the merged roads only sent him there.
+Now a walker in a part of its cell other than its body, whose ways into the next cell land neither where its way on
+is nor in that cell's body, where another part of its cell has ways that land well, is in the wrong part of its
+cell: out, and in again by that part, by a way landing in the body of a cell in memory that has a way back to it
+(the lane's ways south, into the body of the cell below, from which its ways north land in the body of the North
+East); with none, on by the way it had, as before (not out by the nearest way that lands well: into a house or a
+shed whose only way on is back the way he came). Not from the body of its cell, and not out into a cell not in
+memory: so first written, four in the body of Ridgemere's East (the gaol's keeper, a taproom's, a hand at Bridge
+Stores and a field hand, bound for the South East) were sent out east into the hills, offstage, hopped back in at
+once, and out again, for hours (4 hungry at day 4's end, 1 starving). The five children, each put down at Greatly
+House's door at 20:00, are home in 166 to 183 s, by the East, the West and the North West, and up their stairs; at
+`83714a0` and as merged, none in 900 s.
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`; `83714a0` is p13 before this round, the
+merge `ffc416e` is the roads' branch merged into it, unmended; `m3` is `3cec19a`'s, as the earlier rounds compared):
+
+| day 30 | `m3` (`3cec19a`) | `83714a0` | merged | now |
+|---|---|---|---|---|
+| hungry, starving | 0, 0 | 0, 0 | 0, 0 | 0, 0 |
+| household Gini; the poorer half | 0.5519; 0.1519 | 0.5521; 0.1501 | 0.5514; 0.1510 | 0.5514; 0.1510 |
+| the going wage; the pace | 60p; 0.107 | 60p; 0.089 | 60p; 0.089 | 60p; 0.089 |
+| hours credited, lost | 169,695; 80,735 | 168,826; 81,144 | 169,531; 81,117 | 169,523; 81,108 |
+| great houses (1,494,143p at day 2) | 1,238,233p | 1,253,127p | 1,253,973p | 1,253,975p |
+| treasuries; the church | 366,643p; 281,026p | 369,499p; 280,610p | 372,990p; 280,771p | 372,994p; 280,770p |
+| residents; tills | 2,018,125p; 1,062,802p | 2,039,893p; 1,022,134p | 2,024,907p; 1,032,977p | 2,024,921p; 1,032,958p |
+| days 15-29 a day: the owners' profit; investment | 12,725p; 16,336p | 13,968p; 15,334p | 13,977p; 15,691p | 13,977p; 15,691p |
+| the keepers' wages; hands' odd jobs; service wages | 20,530p; 15,636p; 7,711p | 20,480p; 15,105p; 8,102p | 20,496p; 15,419p; 8,048p | 20,496p; 15,422p; 8,048p |
+| standing orders; unsold, back to the stores | 8,096p; 1,076p | 7,446p; 609p | 7,850p; 421p | 7,851p; 421p |
+| orders; refused by then | 378; none counted | 372; none counted | 371; 353 goods, 23 orders | 369; 327 goods, 21 orders |
+| an order ended with refusals, signed again | (not counted) | (not counted) | 2, each the next day | none |
+
+- Money conserved every day in each. Digests: `83714a0` `9c4c291d44a5f898`, merged `2fcc588618b372b7`, now
+  `a799cb967686aa3b`. The round's own mends change little over 30 days (the merged and now columns): two orders
+  signed again the next day, penniless, are not, and 26 fewer goods refused. Against `83714a0` the roads' branch
+  leaves the residents about 15,000p (0.7%) poorer by day 30, the tills and treasuries that much richer, with 5% more
+  in standing orders and a third less sent back unsold; the Gini and the poorer half barely move.
+- **The seconds' pace** (5 days, no `--hours`): digest `d034a6316a8d0cb` at `83714a0`, merged, and now.
+- **The stage** (10 days from day 2, `visit`'s bodies still and walking): still, none hungry or starving at any day's
+  end, now as at `83714a0` (digest `5bce7f1650277c7a`; hours credited by day 10 60,591, 60,589 at `83714a0`);
+  walking, none hungry or starving at any day's end now (digest `d7faa7c66318c280`; 60,368 hours by day 10, 60,323 at
+  `83714a0`); merged, 2 hungry at day 9's end and 5 at day 10's (above); with the lane's rule as first written, 4 at
+  day 4's and 1 at day 7's (above). Money conserved every day in each.
+- A tick costs the same: four days of walking bodies, side by side with `83714a0`, 0.161 ms against 0.162 (day 4:
+  0.324 ms each; route planning 0.0094 ms each).
+
+**Tests** (each fails with its mend undone; the mutation runner's results in the round's report):
+
+- `roads_tests`: `aBuyerWithoutMoneyEndsItsOrder` runs on: the refusal kept against the buyer and saved through the
+  checkpoint; six weeks more penniless, no order on any day, no failure kept, and the seller's trader buying no load
+  for it; with 40p (more than a bar's, under a week's) not signed; with the money, signed again and the mark gone.
+- `stream_tests`: `aStripHouseholdGetsHome` (Pip home round the strip first; then Cot home from her work, from round
+  the other side, and from the body of the cell beyond, each within 600 s), `aLaneToAStripIsLeftForTheBody` (the
+  lane, the strip and the walled corner: Bram home from the lane in six crossings at most; without the mend, back and
+  forth between the lane and the strip for 3,000 s). Not guarded by a test: that a walker with no way out leading
+  back keeps to the way it had rather than the nearest way that lands well (no fixture told them apart: in the one
+  tried, a shed, both went back and forth); and that the rule keeps out of the body of a cell and off a way into a
+  cell not in memory (the walking run is their only guard: without both, the four in the East above).
+- `crafting_tests`: the price level's village falling back, and the roads' town keeping its rate at the seconds' pace,
+  both now (each fails with the other's form of the merged line).
+
+**Left:**
+
+- A pocket nobody has found: as above, a resident coming to it from the wrong side doesn't get in.
+- The walking is still by cell, and a cell's parts only as far as the next cell: a walker in a part of a cell whose
+  only ways out lead back to it (the shed above) goes back and forth. The lane's rule mends the one case the runs
+  found; a search across cells and their parts (the stage's cells in memory) would mend the kind. Recommended next,
+  if the stage runs find another.
+- From the roads' review, unchanged: the "pressed" gate alone and the door's visible test have no behavioural test; a
+  resident settled at the nearest tile stands rather than sleeps; the carrier's unreachable market point; moveOffstage's
+  own pocket check.
+
+**For the user:**
+
+- **A buyer's refusal is kept till it can pay a week** of the order (recommended), against the review's other way, a
+  cash check at every signing (a week's money for every order, a buyer that never refused included: it would change
+  who signs across the realm, not only those who couldn't pay). A week is a placeholder, as the cut is.
+- **The dead end kept for those passing through** (recommended), with what lies beyond it kept for those bound
+  there, against the review's "only a bare pocket" (which strands the walker passing through, above).
+- **The seconds' pace's going rate, merged:** a town keeps its last, the realm's falls back for a village (both
+  reviews' rules; recommended). The other way is one rule for both.
