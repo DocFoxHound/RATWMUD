@@ -263,10 +263,7 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
     auto& fund = memory.wantFund[home];
     auto& help = memory.helpBudget[home];
     if (spare <= 0)
-    {
-        fund = std::min(fund, std::max(0., double(pot) - target));
         help *= .9;
-    }
     else if (lodger)
         fund += spare;
     else
@@ -274,6 +271,9 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         fund += spare / 2;
         help = help * .9 + spare / 2;
     }
+    // (Never more than what it holds over the target: a fund left unspent would count the same money again each day.
+    // Doc 64, Phase 13.)
+    fund = std::min(fund, std::max(0., double(pot) - target));
     if (lodger)
     {
         memory.helpBudget.erase(home);
@@ -305,6 +305,90 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         memory.wantFund.erase(home);
     if (help <= .5)
         memory.helpBudget.erase(home);
+}
+
+bool Society::builds(const std::string& shop) const
+{
+    const auto* keeper = spec(shop);
+    const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+    if (!business)
+        return false;
+    for (const auto* k : items::craftsFor(business->id))
+        if (!k->out.empty() && building(k->out.front().first))
+            return true;
+    return false;
+}
+
+std::int64_t Society::worksOnHome(const std::string& payer, const std::vector<std::string>& builders, std::int64_t fund, std::int64_t most,
+                                  std::int64_t day)
+{
+    // A few of the town's builders, by lot (the model's buy: up to WantSample sellers, the cheapest first), each with its
+    // quote a unit: WorksHours at its town's hour, and a batch of the building good it has most batches of, at what they
+    // cost it; with the ladder's markup, as a mend's (mendQuote).
+    struct Quote
+    {
+        double each;
+        std::string till, item;
+        int batch;
+    };
+    std::vector<std::pair<std::size_t, const std::string*>> order;
+    for (const auto& shop : builders)
+        order.push_back({std::hash<std::string>{}(payer + "|works|" + std::to_string(day) + "|" + shop), &shop});
+    std::sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.first < b.first || (a.first == b.first && *a.second < *b.second); });
+    std::vector<Quote> quotes;
+    for (const auto& [l, shop] : order)
+    {
+        const auto* keeper = *shop == payer || quotes.size() >= WantSample ? nullptr : spec(*shop);
+        const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+        const auto till = tillOf(*shop);
+        const auto* shelves = account(till);
+        if (!business || !shelves || till == payer)
+            continue;
+        const items::Craft* best = nullptr;
+        int batches = 0;
+        for (const auto* k : items::craftsFor(business->id))
+            if (!k->out.empty() && building(k->out.front().first))
+                if (const int b = stockAll(*shelves, k->out.front().first) / std::max(1, k->out.front().second); b > batches)
+                    best = k, batches = b;
+        if (!best)
+            continue;
+        const auto& [item, n] = best->out.front();
+        const double hour = labourDay(communityOfResident(*shop)) / PaidSpells;
+        quotes.push_back({(WorksHours * hour + std::max(1, n) * costOf(till, item)) * (1 + items::ladder().markup), till, item, std::max(1, n)});
+    }
+    std::sort(quotes.begin(), quotes.end(), [](const Quote& a, const Quote& b) { return a.each < b.each || (a.each == b.each && a.till < b.till); });
+    if (quotes.empty() || double(fund) < quotes.front().each)
+        return 0;                                   // (Not yet a unit's worth in the fund.)
+    // By the amount, up to half the fund (the model's), the cheapest first that has the hours: booked into its work in
+    // hand, worked out of what it banks next, while what's booked is under half a day of its hands' time (as a mend).
+    double left = std::min(double(fund) / 2, double(most));
+    std::int64_t paid = 0;
+    for (const auto& q : quotes)
+    {
+        if (left < 1)
+            break;
+        auto& banked = workBanked_[q.till];
+        const double units = std::min(left / q.each, (banked + .5 * PaidSpells * std::max(1, handsOf(q.till))) / WorksHours);
+        const auto price = std::llround(units * q.each);
+        // Its goods: the units' batches, whole ones (a part by lot).
+        const int goods = int(std::floor(units * q.batch + lot(payer + "|works|" + std::to_string(day))));
+        if (price < 1 || stockAll(*account(q.till), q.item) < goods || !shift(payer, q.till, "", 0, price, "works on the home"))
+            continue;
+        int need = goods;
+        for (const auto& sort : kindsHeld(*account(q.till), q.item))
+            if (need > 0)
+                need -= consume(q.till, sort, std::min(need, stock(*account(q.till), sort)), "used in works on the home");
+        banked -= units * WorksHours;
+        worksRate_[q.till] += units * WorksHours / MonthDays;
+        left -= double(price);
+        paid += price;
+    }
+    // (Wanted, and too few hours to be had: each builder it asked hears of it, a unit at most between them (the model's
+    // asks), and takes hands on for it.)
+    if (left >= 1)
+        for (const auto& q : quotes)
+            worksRate_[q.till] += std::min(1., left / quotes.front().each) * WorksHours / MonthDays / 4 / double(quotes.size());
+    return paid;
 }
 
 void Society::leftovers(std::int64_t day)

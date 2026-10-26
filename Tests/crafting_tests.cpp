@@ -400,6 +400,76 @@ void piecesWornAndMended()
     Society::setWorkByHours(false);
 }
 
+// What a household wants (doc 64, Phase 13; doc 63's model), with work by the hours: one want a day, out of its want
+// fund. A piece it keeps first (finery to a piece a head), bought from what a shop sells; with all it wants, works on its
+// home, bought by the amount from a builder's hours and its planks.
+void aHouseholdsWants()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    auto ash = person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian");
+    auto keeper = person("keeper", "shopkeeper at the general store", {"store", 2.5, 2.5});
+    auto carpenter = person("carpenter", "carpenter at the yard", {"yard", 2.5, 2.5});
+    keeper.home = {"store_flat", 2.5, 2.5};
+    carpenter.home = {"yard_flat", 2.5, 2.5};
+    roster.residents = {keeper, carpenter, wren, ash};
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    double day = 10. / 24;
+    work(s, 60, day);
+    set(s, "keeper", "straw_hat", 6);
+    set(s, "carpenter", "straw_hat", 6);            // (Not its wares: never sold from its till.)
+    set(s, "carpenter", "planks", 20);
+    {
+        auto state = s.state();
+        state.memory.wantFund["homes"] = 100;
+        state.memory.belongings["keeper"];          // (Belongings counted already: nothing founded.)
+        expect(s.restore(state), "the household's want fund restores");
+    }
+    const auto members = [](const std::string& who) { return who == "wren" || who == "ash"; };
+    s.takeJournal();
+    day = 1 + 10. / 24;
+    work(s, 60, day);
+    auto journal = s.takeJournal();
+    int wants = 0;
+    std::string bought, buyer;
+    for (const auto& e : journal)
+        if (e.kind.rfind("a want: ", 0) == 0 && members(e.from))
+        {
+            ++wants, bought = e.item, buyer = e.from;
+            expect(e.to == s.tillOf("keeper"), "bought from what a shop sells, never from a till that only holds it");
+        }
+    expect(wants == 1 && Society::belongingKind(bought) == "finery" && Society::stock(*s.account(buyer), bought) >= 1,
+           "the household buys one piece of finery, and keeps it: " + bought);
+    // All it wants, owned (a rapier, finery to a piece a head and two over): works on its home.
+    {
+        auto state = s.state();
+        state.accounts.at("ash").stock["rapier"] = 1;
+        state.accounts.at("ash").stock["straw_hat"] += 4;
+        state.memory.wantFund["homes"] = 200;
+        expect(s.restore(state), "a household that owns all it wants restores");
+    }
+    expect(s.shift("treasury", "ash", "", 0, 1000, "test: a good year"), "the household has money");
+    day = 2 + 10. / 24;
+    work(s, 60, day);
+    journal = s.takeJournal();
+    std::int64_t paid = 0;
+    int planks = 0;
+    bool piece = false;
+    for (const auto& e : journal)
+    {
+        paid += e.kind == "works on the home" && members(e.from) && e.to == s.tillOf("carpenter") ? e.coins : 0;
+        planks += e.kind == "used in works on the home" && e.from == s.tillOf("carpenter") && e.item == "planks" ? e.quantity : 0;
+        piece |= e.kind == "a want: finery" || e.kind == "a want: a rapier" || e.kind == "a want: a sword";
+    }
+    expect(!piece && paid > 0 && paid <= 100 && planks > 0,
+           "with all it wants, the carpenter works on its home with its planks, for half the fund at most: " + std::to_string(paid) + "p, " +
+               std::to_string(planks) + " planks");
+    Society::setWorkByHours(false);
+}
+
 // Hunting and hides (doc 64, Phase 10), with work by the hours: what a wolf brings in from the wild to eat goes to its
 // household's larder first, up to three days of its food; the rest, and the hides, are for selling.
 void theCatchFeedsTheLarder()
@@ -938,6 +1008,7 @@ int main()
         seasonalFields();
         woodLaidInForWinter();
         piecesWornAndMended();
+        aHouseholdsWants();
         theCatchFeedsTheLarder();
         theMint();
         aStallDumpAndTheRebound();

@@ -202,6 +202,8 @@ int Society::handsWanted(const std::string& till) const
     }
     if (const auto mending = mendRate_.find(till); mending != mendRate_.end())
         hours += mending->second;                    // (And its mending: Phase 9.)
+    if (const auto works = worksRate_.find(till); works != worksRate_.end())
+        hours += works->second;                      // (And its works on homes: Phase 13.)
     if (const auto* business = items::businessFor(p->title))
     {
         // A craft by what it's for, its first good, as craft() judges it (a butcher's meat, not the hides that come with

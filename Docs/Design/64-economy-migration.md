@@ -1658,3 +1658,97 @@ realm's for every town, saved), `handsByWhatCanBeMade` (leather counted once; a 
 `theCordGoesRoundNoMore` (no cord from the general store; the other chandler keeps its batches'),
 `aFullStoreLosesItsHours`, and `seasonalFields` (the farmer free while its fields are sown and between; the harvest's
 end planned at night). All suites pass.
+
+### Phase 13: what the wolves buy (2026-10-25)
+
+**The question.** The first long runs with the hours on spent most of the realm's work on wants and on children. Days
+15–30 of the 32-day run: children bought 3,784 goods a day for 5,000p (on stipends of 4,541p a day), and wants 1,512
+goods for 5,565p.
+
+**Why:**
+
+- **Every want cleared shelves.** `buyForSurplus` takes half of every matching shelf in town, up to the budget: a
+  drink fancy was nine jugs, drunk at once.
+- **Finery was thrown away.** Bought past six pieces, it was "used" the same day: about 95% of it. Phase 9 already
+  wears, mends and replaces what a wolf holds, and Phase 7 planned wants as owned pieces.
+- **Children's 3p "trinkets" were materials:** flour, oats, firewood, planks, clay and nails, the bakers' and the
+  supply shops' own, destroyed as "kept by a child". They took about 85% of the realm's oats.
+- **Stipends grew with the household's money:** a penny more for every hundred to spare, about 31p a child a day.
+- **The want fund was counted again each day.** It was clamped only on a day with nothing to spare.
+
+**Built:**
+
+- **One thing at a time, from what a shop sells** (`RatwSurplus.cpp`). `offersOf` lists a town's goods on sale of a
+  kind once a day pass, in an order by lot: a shop's wares, and food at a food shop (`onSale`), never what it holds to
+  make things from, never a shelf's last two. `buyOne` takes, from the buyer's own place in that order, the first four
+  still on the shelf that it can pay for, and buys the cheapest (the model's `buy`: the cheapest of four sellers).
+  `buyForSurplus` keeps its bulk buying for institutions, alms and farms, but skips materials too.
+- **Wants are the model's** (`wants`): one a day per household, each lodger its own, out of its want fund, bought by
+  the member whose turn it is. In the model's order:
+  - a rapier for the rich (the top sixth by month's income, holding twice a rapier's going price) with none;
+  - a sword for a household that works, with no blade (a guard's issued sword counts);
+  - finery while it holds fewer pieces than it has members, two more for the rich, the dearest of the four;
+  - all kept, and worn, mended and replaced as belongings (Phase 9).
+- **With none of those to buy, one thing it fancies,** by its own taste as before, used up: a drink, soap and scent, a
+  pastime, something for the home, or a treat. A treat is a dish, never a staple; never in a town with wolves hungry
+  (70, as the monitor counts them); only off a shelf holding its days' keeping of its sales.
+- **And works on its home** (`worksOnHome`, doc 63's outlet): with a fund that covers a unit, up to half of it, by the
+  amount. A unit is 11 hours of a building business's time (`WorksHours`; a business with a craft making building
+  goods) and a batch of its own building goods, at the town's hour and their cost, with the ladder's markup. Four
+  builders by lot, the cheapest first, as a mend is booked: out of the hours it banks, while what's booked is under
+  half a day of its hands' time. Its goods are used up. The hours count toward its hands (`worksRate_`, a month's
+  running average beside `mendRate_` in `handsWanted`). What found no hours, a unit at most, the four hear of between
+  them, a quarter of it, as a mend's. Lodgers' works are on their bunkhouse. With work by the hours only, as mending.
+- **Founded with what they own** (the model's): once, the day belongings are first counted, a sword for 70% of
+  households that work (20% of those that don't), a rapier for 12%, a piece of its town's finery for half. 658 pieces
+  on DEV's founding.
+- **Children** (`childrenAndStipends`): a stipend of at most 3p, a penny for every two weeks' worth over the household
+  rule's target and the tax owed, out of the household's want fund (one rule). None goes to a child holding a
+  fortnight's (42p). A child buys one thing a day, at half its purse and 3p at most: a bite when hungry with nothing on
+  it, otherwise a trinket (jewellery, a hat, a scarf, paw wear, a toy; not a pipe). Trinkets are kept; past three, one
+  is lost ("lost by a child").
+- **The want fund is clamped every day** to what the household holds over its target (`householdRule`).
+- **Not saved:** `worksRate_`, as `mendRate_`. Nothing new in a save.
+
+**Smoke run** (30 days of DEV's export, `--deterministic --hours`): money conserved every day, no faults. Against the
+32-day run before:
+
+| | before | after |
+|---|---|---|
+| children's spending, days 15–30 | 5,000p, 3,784 goods a day | 366p, 165 goods |
+| stipends | 4,541p a day | 73p |
+| wants | 5,565p, 1,512 goods a day | 1,825p, 404 goods |
+| works on homes | | 603p a day, and 72 building goods |
+| hungry wolf-days, days 15–30 (starving) | 568 (369) | 164 (58) |
+| day 30: hungry, starving | 174, 147 | 106, 41 |
+| the pace, day 30 (mean, days 15–30) | 0.25 (0.30) | 0.43 (0.35) |
+| household Gini, day 30 | 0.569 | 0.567 |
+| the poorer half | 0.138 | 0.135 |
+| the going wage | 12p | 12p |
+| hours lost to full banks, days 15–30 | 35.3% | 36.3% |
+
+- **The fill:** about 900 pieces of finery and 90 swords in the first nine days, then 5–10 pieces and a sword a day.
+- **The money stays home.** Shop tills hold 203k on day 30 (333k before), farm tills 117k (175k); wage earners 918k
+  (821k).
+- **Works are short of builders' hours:** about 600p a day of the funds' half. The rest waits in the funds, clamped,
+  and the builders want more hands (carpenters, sawmills, masons and the brick and plaster works, by name: 53 hands
+  wanted and 21 held on day 29, against 31 and 21 before).
+- **More hours are lost:** goods nobody buys now fill shelves. That is for the labour market (layoffs below pace 1,
+  the wage), not wants.
+- **The tick** is the same as before: 6 days run side by side on a loaded machine, 0.056 ms against 0.058.
+
+**Tests:**
+
+- `roads_tests` `childrensStipends`: the town has a jeweller, as the child buys trinkets, not the baker's flour.
+- `roads_tests` `grownWolvesBuyWhatTheyWant`: a want is the household's, bought by any of its grown members.
+- `crafting_tests` `aHouseholdsWants`: one piece of finery a day, kept, never from a till that only holds it; with all
+  it wants, the carpenter works on its home with its planks, for half the fund at most.
+- All suites pass.
+
+**For the user:**
+
+- **No business makes rapiers** (only the players' armourer recipe), so the rich never find one and go on to swords
+  and finery.
+- **Children's trinkets:** lost one a day past three keeps a little spending going. Kept for good, children would
+  stop buying once they have three.
+- **Treats** are the game's own (the model has none). They're kept here, out of a town gone hungry.

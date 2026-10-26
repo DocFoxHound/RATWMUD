@@ -1569,22 +1569,23 @@ void theOwnersProfit()
     expect(s.conserved(), "Money stays conserved");
 }
 
-// Children's stipends (the user, 2026-10-05): a child living with grown family is given a little each day from the
-// household's purse, only what it can spare after a week's food for all at home and the week's tax and tithe; and
-// children spend freely.
+// Children's stipends (the user, 2026-10-05): a child living with grown family is given a little each day out of the
+// household's want fund, only what it can spare over the household rule's target and the week's tax and tithe; and
+// children spend a little, on a trinket (doc 64, Phase 13: never the baker's flour and firewood).
 void childrensStipends()
 {
     for (const bool comfortable : {true, false})
     {
         auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
         kid.replace(kid.find(" 30 "), 4, " 8 ");    // (Eight years old.)
-        auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5));
+        auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
+                                        resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
         auto w = load(f);
         w.tick(.6);
         if (comfortable)
             w.society().shift("treasury", "e1", "", 0, 1000, "test: a good year");
         else
-            for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop"})   // (Everyone grown at home.)
+            for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop", "trinkets"})   // (Everyone grown at home.)
                 w.society().shift(who, "treasury", "", 0, w.society().account(who)->cash, "test: a hard year");
         w.takeEvents();
         bool given = false, spent = false;
@@ -1609,10 +1610,14 @@ void childrensStipends()
     }
 }
 
-// Wants (the user, 2026-10-05): a grown wolf with money to spare buys things it simply wants (a treat, a drink, finery,
-// scent, a pastime); one with nothing to spare after food and tax doesn't.
+// Wants (the user, 2026-10-05; doc 64, Phase 13): a household with money to spare buys things it simply wants, one a day
+// by whichever of its grown members' turn it is (a piece of finery, a treat, a drink, scent, a pastime); one with nothing
+// to spare after food and tax doesn't.
 void grownWolvesBuyWhatTheyWant()
 {
+    const auto ofTheHousehold = [](const std::string& who) {
+        return who == "e1" || who == "e2" || who == "e3" || who == "e4" || who == "e5" || who == "em";
+    };
     auto f = strip("EE.....WW", resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
                                     resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
     auto w = load(f);
@@ -1627,9 +1632,9 @@ void grownWolvesBuyWhatTheyWant()
         nextMorning(w);
         run(w, 2);
         for (const auto& e : w.takeEvents())
-            rich |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e1";
+            rich |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && ofTheHousehold(e.actor);
     }
-    expect(rich, "A well-off wolf buys something it wants");
+    expect(rich, "A well-off household buys something it wants");
     // (They all share one household, whose purse passes money round: penniless, the whole household.)
     auto hard = load(f);
     hard.tick(.6);
@@ -1641,7 +1646,7 @@ void grownWolvesBuyWhatTheyWant()
     run(hard, 2);
     bool poor = false;
     for (const auto& e : hard.takeEvents())
-        poor |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && e.actor == "e2";
+        poor |= e.kind == "economy" && e.detail.rfind("a want: ", 0) == 0 && ofTheHousehold(e.actor);
     expect(!poor, "A penniless one doesn't");
     // Over eight grown under one roof (a bunkhouse, a barracks) share no purse, and each is its own household by the rule:
     // a windfall goes on its wants too (doc 64, "The households' gap": a bunkhouse's purses only filled).
