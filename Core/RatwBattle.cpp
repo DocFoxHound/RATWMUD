@@ -353,6 +353,7 @@ Result World::testFight(const std::string& player)
     auto& bandit = addRoadFolk(id, "a ragged bandit", "Thin, nervous and new to the road, with a rusted blade and more hunger than sense.",
                                p->cellId, beside, "bandit", camp.id);
     bandit.offstage = false;
+    entitiesChanged();
     bandit.age = 20;
     folk_[id].hp = 10;
     folk_[id].skill = 30;
@@ -460,6 +461,7 @@ Result World::testFightTeam(const std::string& player)
         auto* e = entity(id);
         e->position = {x + .5, y + .5};
         e->offstage = false;
+        entitiesChanged();
         enterBattle(*b, id, side, true);
         auto& f = b->fighters.back();
         f.x = x;
@@ -1792,7 +1794,7 @@ void World::tendAwareness()
     for (auto it = lookings_.begin(); it != lookings_.end();)
         it = time_ >= it->second.until ? lookings_.erase(it) : std::next(it);
     std::vector<std::pair<std::string, std::string>> pairs;
-    for (const auto& [id, p] : entities_.inOrder())
+    for (const auto& [id, p] : players())
     {
         if (p.npc || p.dead || p.offstage || inBattle(id))
             continue;
@@ -2639,6 +2641,7 @@ void World::standUp(Entity& e, double health)
 {
     e.hurt = std::clamp(100 - health, 0.0, 99.0);
     e.downedLeft = 0;
+    entitiesChanged();
     e.struggleUntil = 0;
     if (e.state == "downed")
         e.state.clear();
@@ -3252,6 +3255,7 @@ void World::tendDowned(double dt)
         if (e.tendUntil > 0 && time_ >= e.tendUntil)
         {
             e.tendUntil = 0;
+            entitiesChanged();
             auto* t = entity(e.tending);
             if (t && !t->dead && t->downedLeft > 0 && !inBattle(t->id) && t->cellId == e.cellId &&
                 std::hypot(t->position.x - e.position.x, t->position.y - e.position.y) <= 2.2 && e.stamina >= battle::TendStamina)
