@@ -906,15 +906,29 @@ class Society
     int buyFood(const std::string& resident, const std::string& seller, bool stocking);
     void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
     // Children's stipends (the user, 2026-10-05; RatwDemand.cpp): once a day each child living with grown family is given
-    // a little from the household's purse (its grown members' together), as far as it can spare after a week's food for
-    // everyone at home, the tax and tithe it owes on the week so far, and its rent; and children spend freely, up to half
-    // what they have each day, on something cheap they like.
+    // a little, MostStipend at most, out of its household's want fund (doc 64, Phase 13: the one rule), as far as what
+    // the household holds over the rule's target and the tax and tithe it owes spares; none to a child with a fortnight's
+    // pennies. Children spend a little: one cheap thing a day, a bite when hungry or else a trinket, kept (one lost
+    // past TrinketsKept).
     void childrenAndStipends(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
-    // Wants (the user, 2026-10-05): a grown wolf with money to spare after a week's food and the tax and tithe it owes
-    // spends a tenth of what is above that each day on something it simply wants, by its own taste: a treat or a dish
-    // it fancies, a drink, jewellery, a scarf or a hat, soap and scent, a pipe, dice, a broadsheet. Food is kept to
-    // eat, drink drunk, finery kept (a few pieces), the rest used.
+    // Wants (the user, 2026-10-05; doc 64, Phases 7 and 13; doc 63's model): one want a day a household (each lodger its
+    // own), out of its want fund, bought by the member whose turn it is: a rapier for the rich (the top sixth by income,
+    // holding twice a rapier's price) with none, a sword for a household that works with no blade, finery while it
+    // holds fewer pieces than it has members (two more for the rich), the dearest the fund runs to. All kept, and worn
+    // and mended as belongings. With nothing of those to buy, one thing it fancies by its own taste, used up (a treat,
+    // never in a town gone hungry; a drink; soap and scent; a pastime; something for the home), and works on its home
+    // with up to half of what the fund holds (worksOnHome).
     void wants(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    static constexpr int TrinketsKept = 3;
+    // Works on the home (doc 63's model: what a household with nothing left to want has done to its home, bought by the
+    // amount; RatwInstitutions.cpp): a unit is WorksHours of a building business's time and a batch of its own building
+    // goods, at its town's hour and the goods' cost with the ladder's markup. With a `fund` that covers a unit, up to
+    // half of it (and `most`), from the town's `builders`, the cheapest first that has the hours in hand (booked into
+    // them as a mend is). Counts toward its hands (worksRate_); a builder too busy hears of a unit at most. What it cost.
+    std::int64_t worksOnHome(const std::string& payer, const std::vector<std::string>& builders, std::int64_t fund, std::int64_t most,
+                             std::int64_t day);
+    bool builds(const std::string& shop) const;     // A building business: one of its crafts makes building goods.
+    static constexpr double WorksHours = 11;
     // Households (the user, 2026-10-05; RatwHouseholds.cpp), once a day: the grown members share one purse (a shopkeeper's
     // till aside), and a household that has stayed comfortable a week keeps one of them at home (to mind the children,
     // shop and look about), sending it back to work when money runs low; a poor one sends everyone who can to work.
@@ -1036,7 +1050,7 @@ class Society
     std::string postOddJob(const std::string& payer, const std::string& community, const std::string& kind, int slots,
                            std::int64_t pay, const Spot& at, const std::string& what);
 
-    static constexpr std::int64_t MostStipend = 3;  // A child's stipend a day, before a rich household's more (see below).
+    static constexpr std::int64_t MostStipend = 3;  // A child's stipend a day at most.
     // A household is comfortable with ComfortDays of food in its purse for everyone at home, poor under PoorDays'; it keeps
     // a member at home after a week comfortable, and sends it back under KeeperDays' (and everyone to work after a week poor).
     static constexpr int ComfortDays = 28, PoorDays = 7, KeeperDays = 10, StreakDays = 7;
@@ -1378,8 +1392,9 @@ class Society
     std::unordered_map<std::string, std::map<std::string, double>> upkeepOwed_;
     // A producer's till -> its tools' wear (crafts.json `tools`), in tools, by its hours of work (doc 64, Phase 3b).
     std::unordered_map<std::string, std::map<std::string, double>> toolsWorn_;
-    // A maker's till -> its mending, hours a day (a month's running average), toward its hands (Phase 9).
-    std::unordered_map<std::string, double> mendRate_;
+    // A maker's till -> its mending, hours a day (a month's running average), toward its hands (Phase 9); a builder's,
+    // its works on homes (Phase 13).
+    std::unordered_map<std::string, double> mendRate_, worksRate_;
     std::unordered_map<std::string, double> hoarderSpent_;   // A hoarder's spending today (Phase 11's mint).
     std::unordered_map<std::string, double> wageCarry_;   // Worker -> the fraction of a penny its wages owe it (not saved).
     // Each Restday, every improved business keeps its premises up (the user, 2026-10-05): UpkeepALevel a level a week in
@@ -1421,10 +1436,21 @@ class Society
     void noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins);
     void noteIncoming(const std::string& to, const std::string& kind, std::int64_t coins);
     std::map<std::string, std::int64_t> incomeToday_, wagesToday_;
-    // Buys what `wanted` from the shops' tills, up to `budget`, never a shop's last few; what was got, by item.
+    // Buys what `wanted` from what the shops sell (onSale), up to `budget`, never a shop's last few; what was got, by item.
     std::int64_t buyForSurplus(const std::string& buyer, const std::vector<std::string>& shops,
                                const std::function<bool(const std::string& item)>& wanted, std::int64_t budget,
                                const std::string& kind, std::map<std::string, int>* got, bool lastToo = false);
+    // Whether a shop sells a good it holds (doc 64, Phase 13): its wares, and food at a food shop (as the hungry buy it,
+    // sellsFood); never what it holds to make things from. `sold`: its wares.
+    bool onSale(const std::string& shop, const std::string& item, const std::vector<std::string>& sold) const;
+    // One of what `wanted` picks, bought by a townsfolk (doc 64, Phase 13; the model's buy, from the cheapest of a few
+    // sellers): of the shops' goods on sale that `budget` and its purse run to, never a shelf's last few, WantSample by
+    // lot (`salt`), the cheapest of them (with `dearest`, the dearest); with `fullShelf`, only off a shelf holding its
+    // days' keeping of its sales (a treat: never what the hungry will come for). The item got, or "".
+    std::string buyOne(const std::string& buyer, const std::vector<std::string>& shops,
+                       const std::function<bool(const std::string& item)>& wanted, std::int64_t budget, const std::string& kind,
+                       const std::string& salt, bool dearest = false, bool fullShelf = false);
+    static constexpr std::size_t WantSample = 4;
     mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).
     mutable bool housesKnown_ = false;
     void foundHouses();

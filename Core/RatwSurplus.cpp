@@ -55,11 +55,13 @@ std::int64_t Society::buyForSurplus(const std::string& buyer, const std::vector<
         const auto* stockHeld = account(till);
         if (!stockHeld)
             continue;
+        const auto sold = wares(shop);
         const std::vector<std::pair<std::string, int>> held(stockHeld->stock.begin(), stockHeld->stock.end());
         for (const auto& [item, n] : held)
         {
+            // (What it sells, not a maker's materials: doc 64, Phase 13.)
             const auto* good = items::good(item);
-            if (n < (lastToo ? 1 : 2) || !good || !wanted(items::baseOf(item)))
+            if (n < (lastToo ? 1 : 2) || !good || !wanted(items::baseOf(item)) || !onSale(shop, item, sold))
                 continue;
             const std::int64_t price = shopPrice(shop, item);
             // Never the shop's last few: a town's shelves are for its townsfolk first (but for the hungry, `lastToo`).
@@ -77,6 +79,74 @@ std::int64_t Society::buyForSurplus(const std::string& buyer, const std::vector<
             break;
     }
     return spent;
+}
+
+bool Society::onSale(const std::string& shop, const std::string& item, const std::vector<std::string>& sold) const
+{
+    // (A baker's flour and firewood, a carpenter's timber, sit in the same till as its wares: not for sale.)
+    return std::find(sold.begin(), sold.end(), items::baseOf(item)) != sold.end() || (edible(item) && foodShop(shop));
+}
+
+std::string Society::buyOne(const std::string& buyer, const std::vector<std::string>& shops,
+                            const std::function<bool(const std::string& item)>& wanted, std::int64_t budget, const std::string& kind,
+                            const std::string& salt, bool dearest, bool fullShelf)
+{
+    const auto* purse = account(buyer);
+    budget = std::min<std::int64_t>(budget, purse ? purse->cash : 0);
+    if (budget < 1)
+        return {};
+    // What is on sale that it wants and can pay for, each with its lot.
+    struct Offer
+    {
+        std::size_t lot;
+        const std::string* shop;
+        std::string item;
+        std::int64_t price;
+    };
+    std::vector<Offer> offers;
+    std::vector<std::string> made;
+    for (const auto& shop : shops)
+    {
+        const auto till = tillOf(shop);
+        const auto* shelves = shop == buyer || till == buyer ? nullptr : account(till);
+        if (!shelves)
+            continue;
+        // (Its wares as wares() keeps them, not a copy, as shopHasFood; onSale's rule, its parts worked out once a shop.)
+        const std::vector<std::string>* sold = nullptr;
+        if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(shop))
+            if (const auto kept = waresCache_.find(shop); kept != waresCache_.end() && kept->second.first == r->workLabel)
+                sold = &kept->second.second;
+        if (!sold)
+            made = wares(shop), sold = &made;
+        const bool food = foodShop(shop);
+        const auto rates = fullShelf ? sellRate_.find(till) : sellRate_.end();
+        for (const auto& [item, n] : shelves->stock)
+        {
+            if (n < 3)                               // (Never a shelf's last few: buyForSurplus's (n - 1) / 2.)
+                continue;
+            const bool marked = item.find_first_of("~@") != std::string::npos;
+            const std::string plain = marked ? items::baseOf(item) : std::string();
+            const auto& base = marked ? plain : item;
+            if (!wanted(base) || (std::find(sold->begin(), sold->end(), base) == sold->end() && !(food && edible(item))))
+                continue;
+            if (rates != sellRate_.end())
+                if (const auto rate = rates->second.find(base); rate != rates->second.end() && stockAll(*shelves, base) < rate->second * keepDays(base))
+                    continue;
+            if (const auto price = shopPrice(shop, item); price <= budget)
+                offers.push_back({std::hash<std::string>{}(buyer + "|" + salt + "|" + shop + "|" + item), &shop, item, price});
+        }
+    }
+    if (offers.empty())
+        return {};
+    // WantSample of them by lot, and of those the cheapest (or the dearest).
+    const auto n = std::min(WantSample, offers.size());
+    std::partial_sort(offers.begin(), offers.begin() + std::ptrdiff_t(n), offers.end(), [](const Offer& a, const Offer& b) {
+        return a.lot < b.lot || (a.lot == b.lot && std::tie(*a.shop, a.item) < std::tie(*b.shop, b.item));
+    });
+    const auto pick = std::min_element(offers.begin(), offers.begin() + std::ptrdiff_t(n), [&](const Offer& a, const Offer& b) {
+        return dearest ? a.price > b.price : a.price < b.price;
+    });
+    return transfer(tillOf(*pick->shop), buyer, pick->item, 1, pick->price, kind) ? pick->item : std::string();
 }
 
 void Society::spendSurpluses(std::int64_t day)

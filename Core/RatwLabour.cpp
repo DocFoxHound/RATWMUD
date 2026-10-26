@@ -182,6 +182,8 @@ int Society::handsWanted(const std::string& till) const
         hours = hoursFor_(producer->out, hoursFor(*producer));
     if (const auto mending = mendRate_.find(till); mending != mendRate_.end())
         hours += mending->second;                    // (And its mending: Phase 9.)
+    if (const auto works = worksRate_.find(till); works != worksRate_.end())
+        hours += works->second;                      // (And its works on homes: Phase 13.)
     if (const auto* business = items::businessFor(p->title))
         for (const auto* k : items::craftsFor(business->id))
             hours += hoursFor_(k->out, hoursFor(*k));
