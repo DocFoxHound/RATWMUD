@@ -44,9 +44,10 @@ double Society::employerSkill(const std::string& key) const
 
 double Society::goingRate(const std::string& town) const
 {
-    if (const auto found = going_.find(town); found != going_.end())
+    const auto& going = state_.memory.going;
+    if (const auto found = going.find(town); found != going.end())
         return found->second;
-    if (const auto realm = going_.find(""); realm != going_.end())
+    if (const auto realm = going.find(""); realm != going.end())
         return realm->second;
     return items::ladder().catalogueDay;            // (Before the first measure: the catalogue's labourer's day.)
 }
@@ -148,22 +149,35 @@ int Society::handsWanted(const std::string& till) const
     const auto* shelves = account(till);
     if (!p || !shelves)
         return 1;
+    // A craft short of materials today or yesterday, and what it could make a day (doc 63's model, feasible; doc 64,
+    // Phase 13): what it made lately, or what a week of the materials in hand would make.
+    const auto shortOf = [&](const items::Craft& k) {
+        for (const auto* days : {&shortToday_, &shortYesterday_})
+            if (const auto found = days->find(till); found != days->end() && found->second.count(k.id))
+                return true;
+        return false;
+    };
+    const auto feasible = [&](const items::Craft& k) {
+        double batches = 1e18, made = 0;
+        for (const auto& [in, q] : k.in)
+            batches = std::min(batches, stockAll(*shelves, in) / double(std::max(1, q)));
+        if (const auto m = madeRate_.find(till); m != madeRate_.end())
+            if (const auto g = m->second.find(k.out.front().first); g != m->second.end())
+                made = g->second;
+        return std::max(made, std::max(1, k.out.front().second) * batches / 7);
+    };
     // A good's sales a day, as its maker plans them: a fifth over for a staple, half again with its shelf near bare, a
-    // fifth less with it glutted (doc 63's model).
-    const auto planned = [&](const std::string& good) {
+    // fifth less with it glutted (doc 63's model). A craft short of materials: not half again (its shelf is bare for want
+    // of them), and no more than MadeSlack over what it could make.
+    const auto planned = [&](const std::string& good, const items::Craft* k) {
         const double rate = rates == sellRate_.end() || !rates->second.count(good) ? 0. : rates->second.at(good);
         const auto* g = items::good(good);
         if (rate <= 0 || !g)
             return 0.;
+        const bool short_ = k && !k->in.empty() && shortOf(*k);
         const double days = stockAll(*shelves, good) / rate, keep = keepDays(good);
-        return rate * (g->staple ? StapleSlack : 1.) * (days < keep * .3 ? 1.5 : days > keep * 1.7 ? .8 : 1.);
-    };
-    // The hours a batch (or a yield) takes, for the most-wanted of what it makes.
-    const auto hoursFor_ = [&](const std::vector<std::pair<std::string, int>>& out, double hours) {
-        double most = 0;
-        for (const auto& [good, n] : out)
-            most = std::max(most, planned(good) / std::max(1, n));
-        return most * hours;
+        const double want = rate * (g->staple ? StapleSlack : 1.) * (days < keep * .3 && !short_ ? 1.5 : days > keep * 1.7 ? .8 : 1.);
+        return short_ ? std::min(want, MadeSlack * feasible(*k)) : want;
     };
     double hours = 0;
     const auto* producer = items::producerFor(p->title);
@@ -179,12 +193,38 @@ int Society::handsWanted(const std::string& till) const
             hours = f->second.toHarvest * acre * (1 - SowShare) / double(HarvestEnd - d);
     }
     else if (producer)
-        hours = hoursFor_(producer->out, hoursFor(*producer));
+    {
+        // A yield: its hours for the most-wanted of what it brings in (one yield brings them all).
+        double most = 0;
+        for (const auto& [good, n] : producer->out)
+            most = std::max(most, planned(good, nullptr) / std::max(1, n));
+        hours = most * hoursFor(*producer);
+    }
     if (const auto mending = mendRate_.find(till); mending != mendRate_.end())
         hours += mending->second;                    // (And its mending: Phase 9.)
     if (const auto* business = items::businessFor(p->title))
-        for (const auto* k : items::craftsFor(business->id))
-            hours += hoursFor_(k->out, hoursFor(*k));
+    {
+        // A craft by what it's for, its first good, as craft() judges it (a butcher's meat, not the hides that come with
+        // it); a good several recipes make counted once, by the first of them in craft()'s order with its materials in
+        // hand (doc 64, Phase 13: pig and sheep both counted for meat).
+        const auto crafts = items::craftsFor(business->id);
+        const auto inHand = [&](const items::Craft& k) {
+            return std::all_of(k.in.begin(), k.in.end(), [&](const auto& i) { return stockAll(*shelves, i.first) >= i.second; });
+        };
+        std::set<std::string> counted;
+        for (const auto* k : crafts)
+            if (!k->out.empty() && counted.insert(k->out.front().first).second)
+            {
+                const auto* use = k;
+                for (const auto* other : crafts)
+                    if (!other->out.empty() && other->out.front().first == k->out.front().first && inHand(*other))
+                    {
+                        use = other;
+                        break;
+                    }
+                hours += planned(use->out.front().first, use) / std::max(1, use->out.front().second) * hoursFor(*use);
+            }
+    }
     return std::max(1, int(std::ceil(hours / PaidSpells - 1e-9)));
 }
 
@@ -192,28 +232,102 @@ bool Society::idleHand(const std::string& resident, const Payer& payer) const
 {
     // A hand whose business has more work in hand than it can use (its shelves full, its materials short): free to take
     // a hire elsewhere (doc 63's harvest call: hands from trades with nothing to do go where they're wanted).
-    if (payer.account.rfind("till:", 0) != 0 || jobOf(resident) == nullptr || jobOf(resident)->role == "merchant")
+    // (Asked at every decision of a paid wolf: the cheap tests first.)
+    if (payer.account.rfind("till:", 0) == 0)
+    {
+        const auto banked = workBanked_.find(payer.account);
+        if (banked == workBanked_.end() || banked->second < WorkBankedMost - 1)
+            return false;
+        const auto* job = jobOf(resident);
+        return job && job->role != "merchant";
+    }
+    // A field's farmer with no work in its window, as free (doc 64, Phase 13: the model's farm keeps a hand between its
+    // windows, but each of ours is a one-hand farm, and it stood idle from sowing's end to the harvest).
+    if (!payer.account.empty() || !fieldsOn())
         return false;
-    const auto banked = workBanked_.find(payer.account);
-    return banked != workBanked_.end() && banked->second >= WorkBankedMost - 1;
+    const auto* job = jobOf(resident);
+    const auto* producer = job ? items::producerFor(job->title) : nullptr;
+    if (!producer || !fieldWork(producer->id))
+        return false;
+    const auto till = tillOf(resident);
+    const auto f = state_.memory.fields.find(till);
+    return f != state_.memory.fields.end() && fieldIdle(till, f->second, *producer);
 }
 
-void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly)
+bool Society::fieldIdle(const std::string& till, const FieldYear& f, const items::Producer& producer) const
+{
+    // A field: its window's work done (all sown, all brought in), or between them nothing it brings in wanted.
+    if (const int window = fieldWindow(double(state_.budgetDay)); window != 0)
+        return window == 1 ? f.sown >= f.acres : f.toHarvest <= 0;
+    const auto* a = account(till);
+    for (const auto& [item, n] : producer.offSeason)
+        if (a && std::none_of(producer.out.begin(), producer.out.end(), [&](const auto& o) { return o.first == item; }) &&
+            stock(*a, item) < shelfTarget(till, item, ProducerKept))
+            return false;
+    return true;
+}
+
+bool Society::idleBusiness(const std::string& till) const
+{
+    // (A keeper's purse its till: an older save's, a test's village.)
+    const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : jobOf(till);
+    const auto* producer = p ? items::producerFor(p->title) : nullptr;
+    if (const auto f = state_.memory.fields.find(till); producer && fieldsOn() && fieldWork(producer->id) && f != state_.memory.fields.end())
+        return fieldIdle(till, f->second, *producer);
+    // Its work in hand: a business's at its till, a producer's its own (its holder's).
+    auto bank = workBanked_.end();
+    if (!producer)
+        bank = workBanked_.find(till);
+    else if (const auto held = state_.careers.positions.find(p->id); held != state_.careers.positions.end())
+        bank = workBanked_.find(held->second.holder);
+    return bank != workBanked_.end() && bank->second >= WorkBankedMost - 1;
+}
+
+bool Society::makesThings(const std::string& till) const
+{
+    const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : jobOf(till);
+    if (!p)
+        return false;
+    if (items::producerFor(p->title))
+        return true;
+    const auto* business = items::businessFor(p->title);
+    if (!business)
+        return false;
+    thread_local std::unordered_map<std::string, bool> crafts;     // (Asked every spell of help: each thread remembers.)
+    if (const auto found = crafts.find(business->id); found != crafts.end())
+        return found->second;
+    return crafts.emplace(business->id, !items::craftsFor(business->id).empty()).first->second;
+}
+
+void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly, int wanted)
 {
     const auto pid = till.substr(5);
     const auto* p = position(pid);
     const auto held = state_.careers.positions.find(pid);
-    if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till))
+    // (A business that makes nothing, a stall or a moneychanger, neither hires nor lets go: its help sells, whatever its
+    // sales. Doc 64, Phase 13.)
+    if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till) || !makesThings(till))
         return;
     const auto& keeper = held->second.holder;
     const auto posts = helpPosts(till);
+    // With more work in hand than its hands can use, it takes on no more, and its hires end: their hours would be lost
+    // (doc 64, Phase 13; the model lets its excess go).
+    const bool idle = idleBusiness(till);
     int hired = 0;
-    for (const auto& j : oddJobs_)
+    for (auto& j : oddJobs_)
         if (j.payer == till && j.until >= day && (j.kind == "a hand" || j.kind == "a hand at the shop"))
-            hired += j.slots;
+        {
+            if (!idle)
+            {
+                hired += j.slots;
+                continue;
+            }
+            j.until = day - 1;
+            ++oddVersion_;
+        }
     const int hands = handsOf(till) + hired;
-    int wanted = std::min(handsWanted(till), 2 * hands + 2);
-    if (wanted > hands)
+    wanted = std::min(wanted, 2 * hands + 2);
+    if (wanted > hands && !idle)
     {
         int more = wanted - hands;
         // The posts it let go first (succession fills them), then hires.
@@ -313,30 +427,21 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     for (const auto& j : oddJobs_)
         if (j.until >= day && j.payer.rfind("till:", 0) == 0 && int(j.stage.size()) < j.slots)
             vacancies_[j.payer] += j.slots - int(j.stage.size());
+    // A post whose holder is away on another business's hire stands open while it's away (doc 63's model: a hire opens
+    // the post it leaves; doc 64, Phase 13), unless its own business has no work for it: then its hands are free to go.
+    // (Its hands stay as they are: it comes back.)
+    for (const auto& j : oddJobs_)
+        if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+            for (const auto& [who, stage] : j.stage)
+                if (const auto k = keyOf.find(who); k != keyOf.end() && k->second != j.payer &&
+                                                    !(k->second.size() > 6 && k->second.compare(k->second.size() - 6, 6, "|works") == 0) &&
+                                                    !(k->second.rfind("till:", 0) == 0 && idleBusiness(k->second)))
+                    ++vacancies_[k->second];
     for (const auto& [key, open] : vacancies_)
         if (open > 0)
         {
             auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
             book.openDays = std::min(7, book.openDays + 1);
-        }
-    // The going rate in each town: the middle of what its unskilled businesses pay (not the land's), by their hands.
-    std::map<std::string, std::vector<double>> paid;
-    for (const auto& [key, n] : hands_)
-    {
-        const auto* p = key.rfind("till:", 0) == 0 ? position(key.substr(5)) : nullptr;
-        if (!p || p->role != "merchant" || employerSkill(key) > 10)
-            continue;
-        for (int k = 0; k < n; ++k)
-        {
-            paid[employerTown_[key]].push_back(employerWage(key));
-            paid[""].push_back(employerWage(key));
-        }
-    }
-    for (auto& [town, wages] : paid)
-        if (!wages.empty())
-        {
-            std::nth_element(wages.begin(), wages.begin() + wages.size() / 2, wages.end());
-            going_[town] = wages[wages.size() / 2];
         }
     // The idle: grown wolves of working age with no post.
     int grown = 0, idle = 0;
@@ -392,12 +497,70 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             payKey_.erase(id);
             forgetCareers();
         }
+    // What its makers made lately, and the crafts they were short of materials for yesterday (doc 64, Phase 13): a
+    // fortnight's running average, for their hands wanted.
+    for (auto& [till, goods] : madeRate_)
+        for (auto& [good, rate] : goods)
+            rate *= 13. / 14;
+    for (const auto& [till, goods] : madeToday_)
+        for (const auto& [good, n] : goods)
+            madeRate_[till][good] += n / 14;
+    madeToday_.clear();
+    shortYesterday_ = std::move(shortToday_);
+    shortToday_.clear();
+    // A field's next year planned at the harvest's end, its farmer at work or away on a hire (doc 64, Phase 13).
+    if (fieldsOn() && day % calendar::DaysPerYear >= HarvestEnd)
+        for (const auto& [till, f] : memory.fields)
+            if (const auto* p = f.year < day / calendar::DaysPerYear && till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+                if (const auto* producer = items::producerFor(p->title); producer && fieldWork(producer->id))
+                {
+                    const auto held = state_.careers.positions.find(p->id);
+                    planField(held != state_.careers.positions.end() && !held->second.holder.empty() ? held->second.holder : p->founder, till,
+                              *producer, double(day), false);
+                }
+    // Each business's hands wanted, once a day: its review's, and the going rate's weights.
+    std::unordered_map<std::string, int> wanted;
+    if (workByHours())
+        for (const auto& [key, n] : hands_)
+            if (key.rfind("till:", 0) == 0)
+                wanted[key] = handsWanted(key);
+    const auto wantedOf = [&](const std::string& key) {
+        const auto found = wanted.find(key);
+        return found != wanted.end() ? found->second : handsWanted(key);
+    };
+    // The going rate (doc 63's model, market_wage; doc 64, Phase 13): the middle of what the unskilled trades that make
+    // things pay, each as a labourer's day (its skill's premium off), counted by the hands its work wants, one at least
+    // and those it has at most. The makers and the land's producers, but its seasonal fields (their pay follows the
+    // rate); not a stall or a moneychanger, whose wages no market moves. A town's own once TownRateWeight hands count in
+    // it, else the realm's: one market, as the model's, so a small town's producers are kept to twice the realm's rate.
+    std::map<std::string, std::vector<double>> paid;
+    for (const auto& [key, n] : hands_)
+    {
+        const auto* p = key.rfind("till:", 0) == 0 ? position(key.substr(5)) : nullptr;
+        const auto* producer = p ? items::producerFor(p->title) : nullptr;
+        if (!p || employerSkill(key) > 10 || !makesThings(key) || (producer && fieldsOn() && fieldWork(producer->id)))
+            continue;
+        const int weight = workByHours() ? std::clamp(wantedOf(key), 1, std::max(1, n)) : std::max(1, n);
+        const double labourer = employerWage(key) / (1 + employerSkill(key) / items::ladder().skillWage);
+        for (int k = 0; k < weight; ++k)
+        {
+            paid[employerTown_[key]].push_back(labourer);
+            paid[""].push_back(labourer);
+        }
+    }
+    memory.going.clear();
+    for (auto& [town, wages] : paid)
+        if (!wages.empty() && (town.empty() || int(wages.size()) >= TownRateWeight))
+        {
+            std::nth_element(wages.begin(), wages.begin() + wages.size() / 2, wages.end());
+            memory.going[town] = wages[wages.size() / 2];
+        }
     // A business short of hands hires the day it finds itself short (the land can't wait for the week's end); it lets
     // hands go only at its weekly review.
     if (workByHours())
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0 && std::int64_t(std::hash<std::string>{}(key + "|wage") % 7) != day % 7)
-                reviewHands(key, day, false);
+                reviewHands(key, day, false, wantedOf(key));
     // Each employer's weekly review, on its own day: a business's hands by its sales, then every employer's wage.
     std::set<std::string> employers;
     for (const auto& [key, n] : hands_)
@@ -411,7 +574,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         if (std::int64_t(std::hash<std::string>{}(key + "|wage") % 7) != day % 7)
             continue;
         if (key.rfind("till:", 0) == 0 && workByHours())
-            reviewHands(key, day, true);
+            reviewHands(key, day, true, wantedOf(key));
         auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
         const auto town = employerTown_.count(key) ? employerTown_.at(key) : std::string();
         const double rate = goingRate(town) * (1 + employerSkill(key) / items::ladder().skillWage);

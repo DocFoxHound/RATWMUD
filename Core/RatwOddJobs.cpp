@@ -167,6 +167,7 @@ void Society::indexOddJobs()
     oddIndexed_ = oddVersion_;
     oddHeld_.clear();
     oddByTown_.clear();
+    oddHiresByTown_.clear();
     oddFarmHires_.clear();
     for (std::size_t i = 0; i < oddJobs_.size(); ++i)
     {
@@ -175,6 +176,8 @@ void Society::indexOddJobs()
             if (stage < 2)
                 oddHeld_.try_emplace(who, i);        // (The first it holds, as a search down the list finds.)
         oddByTown_[j.community].push_back(i);
+        if (j.until >= 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+            oddHiresByTown_[j.community].push_back(i);
         if (j.until >= 0 && j.kind == "a hand" && farmHire(j))
             oddFarmHires_.push_back(i);
     }
@@ -257,8 +260,31 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         all.erase(std::unique(all.begin(), all.end()), all.end());
         look = &all;
     }
-    // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one.
+    // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one. The
+    // jobless and the idle (not a child, nor one called to the land) take the best-paid business's hire open to them
+    // first, the first of the best by the list, before chores (doc 63's model: the unemployed take the best-paid post
+    // they find; doc 64, Phase 13), so a business that raised its wage draws them.
     OddJob* chosen = nullptr;
+    if (jobless && !child && !called)
+    {
+        std::int64_t best = 0;
+        const auto bestOf = [&](const std::vector<std::size_t>& list) {
+            for (const auto i : list)
+                if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop") &&
+                                           (j.pay / j.slots > best || (j.pay / j.slots == best && chosen && &j < chosen)) && open(j))
+                    best = j.pay / j.slots, chosen = &j;
+        };
+        // (Its town's hires, and a city wolf's the farms', from the index: the list is long with chores.)
+        if (!indexed)
+            bestOf(*look);
+        else
+        {
+            if (const auto hires = oddHiresByTown_.find(community); hires != oddHiresByTown_.end())
+                bestOf(hires->second);
+            if (fromCity)
+                bestOf(oddFarmHires_);
+        }
+    }
     if (child && !group.empty())
         for (const auto i : *look)
             if (auto& j = oddJobs_[i]; open(j) && std::any_of(j.stage.begin(), j.stage.end(), [&](const auto& t) { return friendGroup(t.first) == group; }))
@@ -311,7 +337,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
             return;
         // A hand's spells are hours of the work it was taken on for (doc 64, Phase 3): a shop's, made into its next
         // batches; a farm's or other producer's, into its yields.
-        if (j.kind == "a hand at the shop")
+        if (j.kind == "a hand at the shop" && makesThings(tillOf(j.producer)))   // (Not a stall's: doc 64, Phase 13.)
         {
             creditWork(tillOf(j.producer), double(spells));
             craftNext_.erase(j.producer);           // (Its keeper looks again at once.)
@@ -368,6 +394,13 @@ void Society::advanceOddJob(const std::string& id, int seconds)
     const auto share = j.pay / std::max(1, j.slots);
     if (spendable(j.payer) >= share)
         shift(j.payer, id, "", 0, share, "an odd job: " + j.kind);
+    else if (j.until >= 0 && j.payer.rfind("till:", 0) == 0)
+    {
+        // A business that can't pay its hire's share: the hire ends, and its weekly review hears it fell short (doc 64,
+        // Phase 13: no more unpaid days, and a wage it can't pay comes down).
+        j.until = surplusDay_ - 1;
+        state_.memory.employers.try_emplace(j.payer, EmployerBook{employerWage(j.payer)}).first->second.shortPay = true;
+    }
     stage = 2;
     ++oddVersion_;                                   // (Its share done: the next it holds, if any, or another.)
 }

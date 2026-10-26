@@ -1261,8 +1261,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // Wages from whoever the work is for (doc 42, Phase 2): the shop, the town, the church, the house.
             const auto payer = payerOf(pair.first, *job, body.age);
             // An hour of the business's work, if the work is a business's (doc 64, Phase 3): a shop's help, a hand at a
-            // house's works. What it makes is made from the hours its hands put in.
-            if (payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0))
+            // house's works. What it makes is made from the hours its hands put in. (Not a stall's: its help sells, and
+            // makes nothing. Doc 64, Phase 13.)
+            if ((payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0)) && makesThings(payer.account))
                 creditWork(payer.account, 1.);
             if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {
