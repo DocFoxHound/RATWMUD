@@ -2100,6 +2100,28 @@ void thePaceIsSteadied()
            "Readings older than the week are dropped, and it holds (" + std::to_string(m.paceCover.size()) + " left)");
     m = evening(17, week(17, 0, Society::PaceCoverCap), true);
     expect(std::abs(m.pace - (.5 - Society::PaceBack)) < 1e-9, "and while the realm goes hungry it steps back faster (" + std::to_string(m.pace) + ")");
+    // (Within PaceNoise of a week ago the week's food didn't fall: a reading wanders by a few hundredths. Doc 64, Phase 13.)
+    {
+        const auto base = w.save();
+        const auto fellBy = [&](double fall, double* now) {
+            auto saved = base;
+            saved.calendarDays = 20 + 22. / 24;
+            saved.society.memory.pace = .5;
+            saved.society.memory.paceCover = week(20, (now ? *now : 0) + fall, Society::PaceCoverCap);
+            for (auto& [id, life] : saved.society.residents)
+                life.hunger = 0;                     // (Fed again, after the hungry evening above.)
+            expect(w.restore(saved).ok, "To day 20's evening");
+            run(w, 600 * 3);
+            if (now)
+                return w.society().state().memory.pace;
+            return w.society().state().memory.paceCover.back().second;   // (Today's reading, from the same evening each time.)
+        };
+        double now = fellBy(0, nullptr);
+        const double little = fellBy(Society::PaceNoise / 2, &now), more = fellBy((Society::PaceNoise + Society::PaceSlide) / 2, &now);
+        expect(std::abs(little - (.5 + Society::PaceStep)) < 1e-9,
+               "Food down a few hundredths of a day a head on the week: it didn't fall, and the pace goes on (" + std::to_string(little) + ")");
+        expect(std::abs(more - .5) < 1e-9, "down by more, though under PaceSlide: it holds (" + std::to_string(more) + ")");
+    }
     expect(w.society().conserved(), "Nothing it reads moves a penny");
     Society::setWorkByHours(false);
 }

@@ -568,7 +568,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             step = -PaceBack;
         else if (weighed && (slide < -PaceSlide || mean < PaceFloor))
             step = -PaceStep;
-        else if (weighed && slide >= 0 && handsKeepUp)
+        else if (weighed && slide >= -PaceNoise && handsKeepUp)
             step = PaceStep;
         memory.pace = std::clamp(memory.pace + step, 0., 1.);
     }
@@ -639,6 +639,32 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         const auto found = wanted.find(key);
         return found != wanted.end() ? found->second : handsWanted(key);
     };
+    // The hands a business wants and has neither at work nor on its hires stand open too (doc 63's model: its posts are
+    // the hands it wants less those it has, two and twice its hands at most; doc 64, Phase 13), though it couldn't post
+    // a hire for them (one at a time, eight at most, its till short): short all the same, its weekly review bids its
+    // wage up. Before, only a hire's slots nobody took counted, and the land's hands, short by a fifth, moved no wage.
+    // (Not one with no work for more hands. With work by the hours: the seconds' pace as it was.)
+    if (workByHours())
+    {
+        std::map<std::string, int> onHires;
+        for (const auto& j : oddJobs_)
+            if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+                onHires[j.payer] += int(j.stage.size());
+        for (const auto& [key, n] : hands_)
+            if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
+            {
+                const int missing = std::min(wantedOf(key), 2 * n + 2) - n - onHires[key];
+                if (auto& open = vacancies_[key]; missing > open)
+                {
+                    if (open == 0)                   // (Open today: its day counted, as any post open.)
+                    {
+                        auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
+                        book.openDays = std::min(7, book.openDays + 1);
+                    }
+                    open = missing;
+                }
+            }
+    }
     // The going rate (doc 63's model, market_wage; doc 64, Phase 13): the middle of what the unskilled trades that make
     // things pay, each as a labourer's day (its skill's premium off), counted by the hands its work wants, one at least
     // and those it has at most. The makers and the land's producers, but its seasonal fields (their pay follows the

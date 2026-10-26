@@ -987,10 +987,12 @@ class Society
     // producers' want without the half again of a shelf near bare, which theirs always are, the goods going on to the
     // shops; one with no work for more hands, at the hands it has; a realm with no land, kept up); it steps back while
     // the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back faster while the
-    // realm goes hungry, as before.
+    // realm goes hungry, as before. (A week's food "didn't fall" within PaceNoise days a head: at three and a half days
+    // a head the week's reading wanders by a few hundredths, and a fall of 0.002 held it as a fall of 0.1 would. Doc 64,
+    // Phase 13, 2026-10-26.)
     static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
     static constexpr int PaceWeek = 8;
-    static constexpr double PaceSlide = .15, PaceFloor = 1, PaceCoverCap = 4, PaceShortHands = .05;
+    static constexpr double PaceSlide = .15, PaceNoise = PaceSlide / 3, PaceFloor = 1, PaceCoverCap = 4, PaceShortHands = .05;
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
@@ -1551,8 +1553,11 @@ class Society
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).
     // Farmhands (doc 42, the user, 2026-10-06): every farm, orchard and vineyard hires hands for a few days when it has the
     // money, from its town or from any city; one from elsewhere lodges in the farm's bunkhouse (BunkBeds), fed from its
-    // larder, which the farm stocks. A city: a community of CityResidents or more.
-    bool farmHire(const OddJob& j) const;          // A hire posted by a farm (its producer works the land).
+    // larder, which the farm stocks. A city: a community of CityResidents or more. (With work by the hours, every
+    // producer's hire is the land's, a farm's or not: doc 64, Phase 13.)
+  public:
+    bool farmHire(const OddJob& j) const;          // A hire posted by the land's (a farm, or with the hours any producer).
+  private:
     static constexpr int BunkBeds = 10;
     static constexpr std::size_t CityResidents = 150;
     std::map<std::string, Spot> bunkhouses_;
