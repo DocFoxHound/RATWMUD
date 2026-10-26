@@ -3964,11 +3964,16 @@ slot-days taken 80%, 83%, 84%.
   3. Its untaken places aren't posts open: `tendLabour` counts only a `till:` payer's hires in `vacancies_`, so a House
      short of crew shows in no measure (the realm's `vacant`). Counting them under the House's key would; the House's
      wage needs no review (it pays the going rate, as the model's).
-  4. A poached hand: `lookingFor` already draws from posts to any hire paying better, the crews' too.
+  4. A poached hand: `lookingFor` already draws from posts to any hire paying better, the crews' too. (Round 6: only
+     for one paying a tenth over its own, `PoachGap`; a crew at the going rate draws nobody from a post.)
   5. Hires aren't saved: a restart mid-week drops the week's crew until the next week's budget (as now).
   6. Its size: four Houses, up to about 320 places at the going rate, near 19k a day at the full size against the
      Houses' 1.5k a day of crews now. Their fortunes would go as the model's (0.17 of the founding by day 168), into
-     households' pay: the lever the Gini wants, by the model's reading. A year's run is its measure.
+     households' pay: the lever the Gini wants, by the model's reading. A year's run is its measure. (Corrected in
+     round 6, which built it: the budget, not the cap, sizes the crews, about 90 places in all on day 7 and 50 by day
+     119, at most 5.4k a day; and with almost no grown wolf free to take them, they paid 1.6k to 2.6k a day with the
+     retainers, against 1.6k to 2.4k before. The Houses were 0.64 of their founding on day 120, against `b_merge`'s 0.65.
+     The fall was not the model's, and the households' share did not rise: see round 6's section.)
 - **(b) Real payers for the capital's posts of last resort.** Asked of every resident on day 3 (a run with the payers'
   columns, since taken out), the capital's treasury pays 85 paid civilians as "the town" (`payerOf`'s last line,
   `Core/RatwWages.cpp`), besides the watch: 27 live-in servants (23 "in service to" one of 16 households, 4 "keeping
@@ -4035,7 +4040,8 @@ Houses 1,225k (1,238k), the capital 207k (205k), the farm tills 304k (328k); the
    as round 4 left it. A year's run is still the test of either.
 2. **The Houses' estate crews** (round 4's decision 2): what it would take is above. Recommended as before: the next
    balancing step, measured over a year; it is the one lever here aimed at the households' share, which every 120-day
-   run shows falling.
+   run shows falling. (Built in round 6 at the user's word; in its 120 days the households' share didn't rise: the
+   crews' places went to children, for want of free grown hands. See that section.)
 3. **The capital's posts** (round 4's decision 3): what each kind would take is above. Recommended: (b) for the
    servants, the seat staff, the gardeners and the work "for hire" (60 of the 85), and (a), the budget, for the rest
    and the buyers' funds.
@@ -4159,3 +4165,260 @@ on any. So `strike` must stock its Hold, or it is a two-day strike: it now does.
     dawn), funded from the capital's treasury. Recommendation: keep it; the hands' food comes from the same shops their
     households would have bought it at. The alternative, the Hold's own field (`keepWork`), brings in materials (wheat,
     oats, vegetables) that feed nobody till a kitchen makes them into food, and the harness has no Hold.
+
+### Phase 13: the Houses' estate crews (the user, 2026-10-26)
+
+The user's decision (1): the Houses get estate crews of the model's size, and their places are taken like ordinary posts.
+
+**The model** (`tools/econ_model/model.py`: `house_week`, `week_budget`, `staff_to`):
+
+- A House's week's budget is a quarter of its month's income and 0.3 of what it holds over four months of it. It never
+  goes below nothing or above what the House holds.
+- From that budget it pays, in order:
+  - its retainers: three tenths of the budget, twelve at most;
+  - mending for what it owns;
+  - finery: three tenths of the rest;
+  - works: four tenths of what's left.
+- With what's left it keeps an estate crew: as many as the rest pays for a week at the going rate (`market_wage`), up
+  to a tenth of the realm's workers (`len(self.workers) // 10`).
+- The crew are posts. Each week `staff_to` opens as many places as the budget pays for and lets go, at random, any
+  hands above that. The idle fill the places in the labour market (each takes the best-paid of six posts it hears of),
+  along with hands drawn off their posts by a tenth more pay.
+- The crew makes nothing ("building, hedging, the household's own works"). The House's money goes out as wages.
+- **What stops a fortune running out is the budget rule itself.** A month's spending is the House's income plus 0.3 of
+  (what it holds − 4 × income):
+  - a House holding more than four months' income spends three tenths of the gap a month;
+  - a House holding less spends less than it earns;
+  - a House holding nothing spends nothing (income × (1 − 1.2), floored at 0).
+
+  The crew is whatever that budget pays for. No other rule cuts it.
+
+**The game before this round.** `institutionsWeek` already used the model's budget (k 4, a2 0.3), and still does. Three
+things were different:
+
+1. `hireForWeek` capped the crew at twelve, posted in the head's room.
+2. Its places were taken after every business's hire. `bestOf` weighed only "a hand" and "a hand at the shop", so the
+   crew went to whoever was left. In `b_merge`, the Houses' places went to children: 1,249 to 1,673 slot-days in each
+   30 days, and almost nobody else.
+3. Its untaken places counted nowhere.
+
+**What changed** (`Core/RatwInstitutions.cpp`, `RatwOddJobs.cpp`, `RatwLabour.cpp`). This applies with work by the hours
+only:
+
+- **The size.** The estate crew is as many as what's left of the budget pays at the going rate, up to `estateMost()`.
+  - `estateMost()` is a tenth (`EstateShare`) of the realm's grown wolves of working age (16 to 65), counted at the
+    labour pass (`grown_`, not saved). Before the first pass after a restart, they are counted by their written ages.
+    That gives about 83 a House at DEV's scale.
+  - The crew is posted in gangs of twelve (`CrewGang`). Each gang works at a spot about its town (`townSpot`), not all
+    in the hall.
+  - A House posts only as many places as its purse pays for one day.
+  - The budget is what limits the crews, not the cap. The four Houses posted 90 to 99 places in all a day over weeks
+    2–8. That fell to 51 by week 17 as their budgets fell. The retainers stayed at 34 to 48.
+- **Taken as posts.** `bestOf` weighs a House's hires for the week (its retainers' and its crew's: `Society::houseCrew`)
+  against the businesses' hires, by pay per slot. Ties go to the earlier posted. A House pays its town's going rate,
+  so a business paying more draws hands first and one paying less draws them after.
+- **Posts open.** A House's untaken places are counted in `vacancies_` under `<house>|crew` (`vacanciesOf`). No book is
+  kept and no review is held, because the House pays the going rate, as the model's does.
+- **A hand away.** A wolf with a post who is away on a House's crew leaves that post open while it's away. A field's
+  farmer, freed between its windows, is called back from the crew once its field has work. Both work as they do for a
+  business's hire.
+- **A House short of money.** If a House can't pay a day's share, that gang is shut for the day. Its hands are owed
+  nothing more for the day, as with a business's hire. Next week's budget then posts what the House can pay.
+
+**What the crews do.**
+
+- **The model:** nothing is made.
+- **The game:** each crew hand's day, once paid, mends its town's fabric by `CrewMend` (0.05 points, through
+  `mendTown`, as a town project's work does), while the town isn't in full repair. That is twenty hands' days a point:
+  a crew of about twenty keeps up a day's wear out of winter. The Town Works' materials mend two points with a full
+  day's supply.
+- **In full repair**, the crew's day goes to the grounds and hedges, and nothing is made, as in the model.
+- **The House's works:** the materials are bought and used up as before. They are the builders' sales, and the crew
+  doesn't use them.
+- **Considered and not built:** putting the crew to work as hands at the House's own businesses. Those are the city's
+  makers, whose output follows their sales. The crew's hours would go into work banks that are already full, and the
+  businesses' own hands would be freed.
+
+**Where it isn't the model's:**
+
+- **A place lasts a week, not until the hand is let go.** On each reckoning day every place opens again, and the
+  places fill over the week.
+- **Hires aren't saved.** A restart drops the week's crews until the next reckoning, as before.
+- **One wolf may hold places on two hires.** Once its first share is done, it may take another, so "taken" counts
+  places, not wolves. This is true of every hire.
+- **Children may take places.** After 14:00, a child takes any place no grown wolf has taken, as with every hire. The
+  model's workers are all grown.
+- **A House's crews are for its own town only** (the capital's).
+- **The towns' works crews and the church's masons are unchanged.** They are still taken after the businesses' hires.
+  Their payers' budgets are the capital's question, decision (2).
+
+**Saves:** nothing new.
+
+**The seconds' pace** is as it was. A 9-day run (past the day-7 reckoning, with the Houses' hires in `hires.csv`) gives
+4a08125's digest, 9ee1ea39ea8c7553. Its `days.jsonl`, `flows.csv`, `work.csv`, `tills.csv`, `books.csv` and `hires.csv`
+are identical to 4a08125's. A 5-day run gives d034a6316a8d0cb, as before.
+
+**Tests** (each fails with its change undone; ten mutations, one at a time, all caught; the script is round 6's
+`mutate.py` in the scratch folder):
+
+- `crafting_tests` `aHouseKeepsItsCrew`. The town has 143 grown wolves, House Fell, a fishery selling for more hands,
+  three bakers, 125 scribes and thirteen idle wolves.
+  - House Fell posts twelve retainers and an estate crew of 14 in gangs of 12 and 2. With the cap: 12 in one gang.
+    Without gangs: one of 14.
+  - The fishery, paying half the going rate, posts a hire the same day. The idle take the House's places, twelve
+    retainers and one on the crew. Without the House's hires in `bestOf` or in its index, three of them take the
+    fishery's hire.
+  - With the fishery paying twice the going rate, its places are taken first and the rest go to the House.
+  - The 13 untaken places stand open under the House's key (without that change: 0), and no book is kept for it.
+  - The crew's days mend the town by `CrewMend` each (without the mend: 90 stays 90). The House pays each hand's day.
+  - With the House's money gone, its gangs are shut. Without that rule: 0 shut, 3 still open.
+  - With 2,000p left, the next week's crew is the one place its budget pays for. Without the budget: 14.
+  - Money is conserved.
+- `crafting_tests` `aFarmerCalledBackFromAHousesCrew`. A farmer with all its fields sown takes a place with House Fell
+  at the reckoning. It is called back to its fields on the day its field's weekly look finds twice the acres wanted,
+  and not before. Without the House's crews in the away loop, it stays on the crew.
+- All 67 suites pass (`pg_tests` skipped: no database).
+
+**Measured** (120 days of DEV's export, `--deterministic --hours --threads 3`, against round 5's `b_merge`, run on the
+same harness, which makes no `payerOf` calls of its own). The runs:
+
+- `c_crews`: this branch.
+- `c_nomend`: without the mend.
+- `c_pay115`: the crews paid 1.15 times the going rate. This is a trial build, not committed. The question it answers:
+  would pay draw grown hands from their posts?
+
+Every run conserved money every day. Each run's only hungry day is the dip on day 46 (`b_merge` 16, `c_crews` 20,
+`c_pay115` 19), with none starving. Each run is one seed.
+
+`c_nomend` has `c_crews`'s digest (e4393d1fd0864f38) and the same `flows.csv`. In these 120 days the mend moved no
+money: the Town Works' buying is funded by the capital, which was dry either way. The mend changed only Ridgemere's
+fabric: 91 on day 120, against 55 without it and `b_merge`'s 54. Ridgemere was in full repair until day 70 in all the
+runs.
+
+By week: the household Gini, the poorer half, the wage and the pace.
+
+| day | `b_merge` | `c_crews` | `c_pay115` |
+|---|---|---|---|
+| 14 | 0.536, 0.148, 60p, 0.02 | 0.535, 0.150, 60p, 0.02 | 0.535, 0.150, 60p, 0.02 |
+| 28 | 0.545, 0.154, 60p, 0.25 | 0.543, 0.155, 60p, 0.20 | 0.548, 0.151, 60p, 0.18 |
+| 42 | 0.559, 0.143, 60p, 0.43 | 0.559, 0.142, 60p, 0.32 | 0.563, 0.140, 60p, 0.36 |
+| 56 | 0.568, 0.133, 61.8p, 0.32 | 0.570, 0.132, 60p, 0.25 | 0.578, 0.125, 64.2p, 0.25 |
+| 70 | 0.584, 0.120, 66.1p, 0.32 | 0.583, 0.120, 64.1p, 0.23 | 0.590, 0.116, 66.4p, 0.36 |
+| 84 | 0.576, 0.123, 70.4p, 0.39 | 0.583, 0.118, 67.4p, 0.30 | 0.592, 0.110, 68.5p, 0.34 |
+| 98 | 0.587, 0.110, 72.9p, 0.38 | 0.581, 0.113, 69.0p, 0.39 | 0.591, 0.105, 72.3p, 0.36 |
+| 112 | 0.602, 0.097, 78.2p, 0.52 | 0.591, 0.103, 76.0p, 0.48 | 0.607, 0.093, 78.8p, 0.54 |
+| 120 | 0.615, 0.092, 80.7p, 0.57 | 0.600, 0.096, 79.0p, 0.59 | 0.617, 0.088, 79.6p, 0.50 |
+
+The Houses' money (k), by week:
+
+| day | 2 | 14 | 28 | 42 | 56 | 70 | 84 | 98 | 112 | 120 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `b_merge` | 1,494 | 1,360 | 1,280 | 1,190 | 1,181 | 1,145 | 1,114 | 1,036 | 989 | 965 |
+| `c_crews` | 1,494 | 1,348 | 1,265 | 1,185 | 1,182 | 1,114 | 1,095 | 1,018 | 991 | 951 |
+| `c_pay115` | 1,494 | 1,344 | 1,236 | 1,131 | 1,125 | 1,068 | 1,034 | 947 | 889 | 864 |
+
+The holders by kind on day 120 (k):
+
+| | capital | towns | church | farm tills | shop tills | House tills | owners | earners and the rest |
+|---|---|---|---|---|---|---|---|---|
+| `b_merge` | 25 | 251 | 302 | 227 | 840 | 398 | 981 | 992 |
+| `c_crews` | 22 | 295 | 291 | 178 | 925 | 372 | 957 | 987 |
+| `c_pay115` | 23 | 293 | 317 | 204 | 878 | 443 | 939 | 1,020 |
+
+**The crews' places.** In `c_crews`, a day's places in each week (posted, taken at 23:00, worked by 23:00):
+
+- The estate crew: 91/67/35 in week 2, then 90 to 99 posted and 33 to 44 taken through week 8 (20 in week 7). After
+  that, 86 down to 51 posted, 23 to 43 taken and 10 to 23 worked.
+- The retainers: 48 posted, 17 to 41 taken.
+
+The takers, in slot-days per 30 days:
+
+| days | children | idle | jobless | drawn by pay ("better") | other |
+|---|---|---|---|---|---|
+| 1–30 | 1,175 | 485 | 13 | 117 | 8 |
+| 31–60 | 1,806 | 45 | 0 | 19 | 6 |
+| 61–90 | 1,904 | 9 | 0 | 5 | 58 |
+| 91–120 | 1,219 | 66 | 56 | 49 | 258 |
+
+In `b_merge` the takers were nearly all children (1,249 to 1,673 slot-days).
+
+The places are now weighed by pay, but there is almost nobody grown to take them:
+
+- From day 10 the realm's idle grown wolves number 0 to 10.
+- The idle hands, whose own business has no work, take the places in the first month. They become fewer as the pace
+  brings their work back.
+- A wolf with a post moves only for a tenth more than its own pay (`PoachGap`), and the crews pay the going rate.
+
+So the children take the places after 14:00, as they took them before.
+
+**What the Houses paid a day** for their crews and retainers ("an odd job: building work" and "about the home"):
+
+| days | `b_merge` | `c_crews` | `c_pay115` |
+|---|---|---|---|
+| 15–29 | 1.6k | 1.8k | 3.9k |
+| 45–59 | 1.6k | 1.6k | 1.6k |
+| 75–89 | 1.7k | 2.2k | 1.8k |
+| 105–119 | 2.4k | 2.6k | 3.6k |
+
+The rest of the Houses' outgoings were their road money (2.9k to 4.7k), their works' materials (3.0k to 3.8k) and
+their businesses' top-ups (1.7k to 3.3k), as before.
+
+**The owners' profit against six kinds of wages**, by period:
+
+| days | `b_merge` | `c_crews` | `c_pay115` |
+|---|---|---|---|
+| 15–29 | 0.25 | 0.26 | 0.27 |
+| 45–59 | 0.19 | 0.19 | 0.20 |
+| 75–89 | 0.12 | 0.17 | 0.11 |
+| 105–119 | 0.26 | 0.21 | 0.25 |
+
+**Read plainly:**
+
+- **The crews are the model's size and are weighed as posts, but they didn't move the money.** The Houses ended at
+  0.64 of their founding, against `b_merge`'s 0.65. The model's were at 0.17 by day 168. The crews paid at most a
+  half a thousand a day more than before (0.1k to 0.5k).
+- **The households' share did not rise.** Earners and the rest held 987k on day 120 against 992k.
+- **The Gini (0.600 against 0.615) and the poorer half (0.096 against 0.092) are a little better on day 120.** That is
+  within what two seeds gave in round 5 (0.599 to 0.615), so it is not established.
+- **The crews made worse:**
+  - the farm tills (178k against 227k on day 120);
+  - the church (291k against 302k);
+  - the owners' profit in the last fortnight (0.21 against 0.26).
+
+  These are also single runs.
+- **The wage floats about as before:** 79p on day 120 against 80.7p.
+- **The crews' one sure effect is Ridgemere's fabric:** 91 against 54 on day 120.
+- **Paid 1.15 times the going rate (`c_pay115`):**
+  - in the first month the crews draw grown hands: 1,795 idle and 326 by pay, against 144 children;
+  - the Houses spend faster (0.58 of their founding by day 120);
+  - the earners hold 33k more;
+  - but the Gini (0.617) and the poorer half (0.088) are the worst of the three runs on day 120;
+  - from about day 35 to day 95 the places go mostly to children again: the idle hands' own work came back as the
+    pace rose. After that the idle and the jobless return (1,055 and 388 slot-days in days 91–120).
+
+  So pay over the going rate is no answer either, on this one seed.
+- **What would test it:** a year's run (the model's Houses fall from day 56 to 168), and 2 to 3 seeds per variant.
+
+**The tick:** 0.0528 ms in `c_crews` and 0.0492 ms in `c_pay115`, each run beside two others. The 30-day smoke run
+alone took 0.0493 ms (society 0.022, errands 0.014). Other sessions' runs shared the machine, so these are not
+comparable with round 4's 0.034 ms. The new work is a few more hires a week for each House and a few more looked over
+in `bestOf`. More hires taken means more walking, and that cost is in the errands.
+
+**For the user:**
+
+1. **Keep the crews as built?** Recommended: yes. They are the user's decision and the model's rule, the seconds' pace
+   is untouched, and the House's places are now real posts with their vacancies shown. Know that in 120 days they
+   don't reach the households' share. They need grown hands free to take them, and the realm has none after the first
+   month.
+2. **Children on the Houses' crews.** Children take about three quarters of the slot-days from the second month, as
+   they took the old twelve. The options are to keep the game's rule for every hire, or to have grown hands only, as
+   in the model. Grown only would leave the places empty and the Houses' money where it is. Recommended: keep it for
+   now, and look again with the wage's float (decision 3): grown hands take the crews only where some stand idle.
+3. **The crews' pay.** Recommended: the model's going rate. Paying 1.15 times it drew hands for a month and made the
+   Gini no better.
+4. **The mend (`CrewMend`, 0.05 a hand's day, a placeholder).** Recommended: keep it. It moves no money, and it keeps
+   the capital's fabric up while the capital can't pay its Works. Choosing a value is the user's call.
+5. **Places for the week, not kept like the model's posts** (on the reckoning day they all open again). Recommended:
+   leave as it is. With so few grown takers, keeping them would change little, and it would need the hires saved.
+6. **The towns' works crews and the church's masons weighed by pay too** (as round 5's text suggested)? Recommended:
+   not here. Their budgets are the capital's question (decision 2).
