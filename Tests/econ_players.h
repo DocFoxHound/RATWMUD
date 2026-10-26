@@ -23,8 +23,9 @@
 //           of it keep their living?)
 //   strike  players' Holds take a tenth of the capital's hands from their work for a month, as stationed companions, then
 //           let them go (do hires and wages answer, and does the town come back?)
-//   buyout  5 players with 30,000p each buy every piece of food on the capital's shelves each morning for a week, as far
-//           as their purses run, and hold it (a food corner: unlike corner's, all its food, and never sold back)
+//   buyout  5 players with 30,000p each buy every piece of food on the capital's shelves on the hour from 6 to 20 for a
+//           week, their purses spread over its hours so they last it, and hold it (a food corner: unlike corner's, all
+//           its food, and never sold back)
 //   drain   players take every place at every bench in a town (World::helpAtWork: two beside each maker, the most a
 //           bench takes) each working day, paid by the beat from Society::tillOf's account for the maker (a hand's
 //           own purse: its post has no till) (do the town's own hands lose their work?)
@@ -68,6 +69,9 @@ std::string sourceDrift(const std::string& source, const std::string& commit, co
 // a warning: Data is read at run time, not built in.
 std::string dataDir(const std::string& source);
 std::string dataState(const std::string& dir);
+// econ_watch --hold-pace's: a run's pace.csv as the society's day -> the realm's pace that day (Society::holdPace); none
+// at all if any line isn't one.
+std::map<std::int64_t, double> readPace(const std::string& text);
 
 class Players
 {
@@ -81,7 +85,8 @@ class Players
     static const std::vector<std::string>& names();          // The scenarios there are (they act in the order asked).
     static bool bodiesNamed(const std::string& name, Bodies& out);   // "walk", "still", "jump".
     static constexpr int FloodDays = 14, StrikeDays = 28;    // flood's selling, strike's month (from when they start).
-    static constexpr int BuyoutDays = 7;                     // buyout's buying week (it holds what it bought after).
+    static constexpr int BuyoutDays = 7;                     // buyout's buying week (it holds what it bought after),
+    static constexpr int BuyoutFrom = 6, BuyoutTo = 20;      // on the hour from six to eight in the evening.
     static constexpr int GiftHouseholds = 50, GiftEach = 100;   // gift's poorest households, and its pennies to each a day.
     // flood's staple unless asked (--players-staple): several pennies a piece, bought by the capital's shops (its
     // provisioners, butchers and inns) and brought in by its own hunters. Fish sat at the penny's floor at a 12p day
@@ -176,7 +181,8 @@ class Players
     void note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
               int quantity, std::int64_t coins);
     static bool trades(const Shop& shop, const std::set<std::string>& towns);   // In one of its towns (none: any).
-    int buyAll(const std::string& scenario, const std::string& player, const Shop& shop, const std::string& base);
+    int buyAll(const std::string& scenario, const std::string& player, const Shop& shop, const std::string& base,
+               std::int64_t* budget = nullptr);           // (budget: what it may spend, less what it paid.)
     int sellAll(const std::string& scenario, const std::string& player, const std::string& item);
     void stow(const std::string& scenario, const std::string& player);   // Goods into its chests, past a pack's kinds.
     bool markable(const std::string& id) const;     // A purse a thief may try: the capital's grown, the watch aside.

@@ -113,6 +113,36 @@ std::string dataState(const std::string& dir)
     return "data: " + dir + " at " + (describe.empty() ? std::string("(no describe)") : describe) + "; its own changes since: " + mine;
 }
 
+std::map<std::int64_t, double> readPace(const std::string& text)
+{
+    // A run's pace.csv: its header, then day, when, the society's day and its pace. Any line that isn't one, or a pace
+    // out of 0 to 1, and none is read: a held run on half a file would be no comparison.
+    std::map<std::int64_t, double> byDay;
+    std::istringstream in(text);
+    std::string line;
+    if (!std::getline(in, line) || line != "day,when,society_day,pace")
+        return {};
+    while (std::getline(in, line))
+    {
+        std::vector<std::string> cells;
+        for (std::stringstream row(line); row.good();)
+        {
+            std::string cell;
+            std::getline(row, cell, ',');
+            cells.push_back(cell);
+        }
+        char* end = nullptr;
+        const auto day = cells.size() == 4 ? std::strtoll(cells[2].c_str(), &end, 10) : -1;
+        if (cells.size() != 4 || cells[2].empty() || *end || day < 0)
+            return {};
+        const double pace = std::strtod(cells[3].c_str(), &end);
+        if (cells[3].empty() || *end || !std::isfinite(pace) || pace < 0 || pace > 1)
+            return {};
+        byDay[day] = pace;
+    }
+    return byDay;
+}
+
 const std::vector<std::string>& Players::names()
 {
     static const std::vector<std::string> all{"hoard", "corner", "dump",  "whale",  "poach",  "kill", "theft",
@@ -348,9 +378,11 @@ bool Players::trades(const Shop& shop, const std::set<std::string>& towns)
     return towns.empty() || towns.count(shop.town) > 0;
 }
 
-int Players::buyAll(const std::string& scenario, const std::string& player, const Shop& shop, const std::string& base)
+int Players::buyAll(const std::string& scenario, const std::string& player, const Shop& shop, const std::string& base,
+                    std::int64_t* budget)
 {
-    // Every one the shop has, of every quality, as the game sells them (Society::trade: 99 at most a trade).
+    // Every one the shop has, of every quality, as the game sells them (Society::trade: 99 at most a trade); with a
+    // budget, as far as it goes (Society::quote first), and what it paid taken from it.
     auto& society = world_.society();
     if (!open(shop))
         return 0;
@@ -362,6 +394,12 @@ int Players::buyAll(const std::string& scenario, const std::string& player, cons
     for (const auto& kind : Society::kindsHeld(*society.account(till), base))
         for (int k = std::min(Lot, Society::stock(*society.account(till), kind)); k > 0;)
         {
+            if (budget)
+                if (const auto q = society.quote(player, shop.keeper, kind, k, true); !q.ok || q.total > *budget)
+                {
+                    k /= 2;                         // (Past what it may spend: fewer.)
+                    continue;
+                }
             const auto r = society.trade(player, shop.keeper, kind, k, true);
             if (!r.ok)
             {
@@ -369,6 +407,8 @@ int Players::buyAll(const std::string& scenario, const std::string& player, cons
                 continue;
             }
             got += k;
+            if (budget)
+                *budget -= r.total;
             note(scenario, player, "bought", kind, k, r.total);
             k = std::min(Lot, Society::stock(*society.account(till), kind));
         }
@@ -1015,12 +1055,20 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 for (const auto& item : loot_[thief])
                     sellAll(s, thief, item);
     }
-    else if (s == "buyout" && quarter == 6 * 4 && day < startDay_ + BuyoutDays)
+    else if (s == "buyout" && quarter % 4 == 0 && quarter >= BuyoutFrom * 4 && quarter <= BuyoutTo * 4 && day < startDay_ + BuyoutDays)
     {
-        // At six each morning for its first week, every piece of food (a good that nourishes: bread, meals, smoked fish,
-        // cheese, the raw stuff a provisioner sells...) on the capital's shelves, as far as the five purses run, each
-        // player buying until its pack is full of kinds or its purse empty, then the next. Held after, never sold back.
+        // On the hour from BuyoutFrom to BuyoutTo each day of its first week, every piece of food (a good that
+        // nourishes: bread, meals, smoked fish, cheese, the raw stuff a provisioner sells...) on the capital's shelves,
+        // as far as the five purses' hour goes: each its purse over the hours of the week still to come (this one among
+        // them), so the purses last the week (since the third review: buying at six only, with nothing held back, they
+        // ran dry on the fifth morning, and residents had what was made from a quarter past six). Each player buys until
+        // its hour's money is spent, its pack full of kinds or its purse empty, then the next. Held after, never sold
+        // back.
         auto& players = who_[s];
+        const auto hoursLeft = (startDay_ + BuyoutDays - 1 - day) * (BuyoutTo - BuyoutFrom + 1) + (BuyoutTo - quarter / 4 + 1);
+        std::map<std::string, std::int64_t> hour;
+        for (const auto& id : players)
+            hour[id] = society.account(id) ? society.account(id)->cash / std::max<std::int64_t>(1, hoursLeft) : 0;
         std::size_t next = 0;
         for (const auto& shop : shops_)
         {
@@ -1039,16 +1087,16 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 {
                     // One whose purse is empty, or whose pack has every kind it can hold, gives way to the next.
                     const auto* pack = society.account(players[next]);
-                    if (!pack || pack->cash <= 0 || pack->stock.size() >= MaxGoodsKinds)
+                    if (!pack || pack->cash <= 0 || hour[players[next]] <= 0 || pack->stock.size() >= MaxGoodsKinds)
                     {
                         ++next;
                         continue;
                     }
-                    buyAll(s, players[next], shop, base);
+                    buyAll(s, players[next], shop, base, &hour[players[next]]);
                     const auto* left = society.account(society.tillOf(shop.keeper));
                     if (!left || Society::stockAll(*left, base) == 0)
                         break;
-                    ++next;                         // (Some left: more than its purse or its pack would take.)
+                    ++next;                         // (Some left: more than its hour, its purse or its pack would take.)
                 }
         }
     }

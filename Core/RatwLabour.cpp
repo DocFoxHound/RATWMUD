@@ -570,7 +570,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             step = -PaceStep;
         else if (weighed && slide >= 0 && handsKeepUp)
             step = PaceStep;
-        memory.pace = std::clamp(memory.pace + step, 0., 1.);
+        if (const auto held = paceHeld_.find(day); held != paceHeld_.end())
+            memory.pace = std::clamp(held->second, 0., 1.);   // (A test's: holdPace.)
+        else
+            memory.pace = std::clamp(memory.pace + step, 0., 1.);
     }
     // Each wolf's pay lately: the share of the wages owed it that its employer paid, a week's running average of its working
     // days (a new post starts a fresh record, paid in full). Paid under 40% of what it was owed, it leaves (not the only

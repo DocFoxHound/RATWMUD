@@ -561,7 +561,8 @@ void strikeEndsWithThePlayers()
 {
     // Players there five days, fewer than StrikeDays: at their end the Hold lets its hands go, and the block says so (it
     // had said "let_go":false with none held). And the Hold takes none Game::whyNotJoin refuses at any hour: the hand
-    // it would take, Quickened, is passed over for another.
+    // it would take, Quickened, beaten down (or still down), wanted by the watch (a warrant) or in its hands (custody),
+    // or passing through, is passed over for another (the review: only the Quickened had been tried).
     const auto root = writeWorld("ratw_econ_players_strike_end");
     std::string first;
     {
@@ -577,12 +578,26 @@ void strikeEndsWithThePlayers()
                "the block says it is let go: " + day);
         expect(w->society().conserved(), "money stays conserved");
     }
-    auto w = worldAt(root, 2 + 10. / 24);
-    w->entity(first)->quickened = true;
-    econ::Players p(*w, {"strike"}, 2, 0);
-    jumpTo(*w, p, 2 + 10. / 24);
-    expect(p.staffOf("strike").size() == 1 && p.staffOf("strike").front() != first,
-           "the Quickened " + first + " passed over: " + (p.staffOf("strike").empty() ? std::string("none") : p.staffOf("strike").front()));
+    const std::vector<std::pair<std::string, std::function<void(World&)>>> refused{
+        {"the Quickened", [&](World& w) { w.entity(first)->quickened = true; }},
+        {"one beaten down", [&](World& w) { w.entity(first)->state = "beaten down"; }},
+        {"one still down", [&](World& w) { w.entity(first)->downedLeft = 30; }},
+        {"one passing through", [&](World& w) { w.entity(first)->transient = true; }},
+        {"one with a warrant", [&](World& w) { w.crime().warrants.push_back({first, "ridgemere", {}, {}, 5, w.calendarDays()}); }},
+        {"one in custody", [&](World& w) {
+             const auto* e = w.entity(first);
+             w.crime().custody.push_back({first, "ridgemere", e->cellId, e->position.x, e->position.y, w.calendarDays() + 30});
+         }},
+    };
+    for (const auto& [who, make] : refused)
+    {
+        auto w = worldAt(root, 2 + 10. / 24);
+        make(*w);
+        econ::Players p(*w, {"strike"}, 2, 0);
+        jumpTo(*w, p, 2 + 10. / 24);
+        expect(p.staffOf("strike").size() == 1 && p.staffOf("strike").front() != first,
+               who + " " + first + " passed over: " + (p.staffOf("strike").empty() ? std::string("none") : p.staffOf("strike").front()));
+    }
 }
 
 void buyoutHoldsTheFood()
@@ -642,6 +657,64 @@ void buyoutHoldsTheFood()
     expect(s.conserved(), "money stays conserved");
 }
 
+void buyoutLastsTheWeek()
+{
+    // buyout buys on the hour from six to eight in the evening, each player's purse over the week's hours still to
+    // come (the review: at six only, all of it, they ran dry on the fifth morning): with a shelf fuller than the hour's
+    // money, each spends at most its purse over the week's 105 hours at six, and buys again at seven; on the week's
+    // last hour it may spend all it has.
+    const auto root = writeWorld("ratw_econ_players_buyout_week");
+    auto w = worldAt(root, 2 + 5. / 24);
+    auto& s = w->society();
+    std::string staple;
+    for (const auto& item : s.wares("ug"))
+        if (const auto* good = items::good(item); good && good->nourish > 0 && staple.empty())
+            staple = item;
+    expect(!staple.empty() && s.create(s.tillOf("ug"), staple, 3000, "test: a full shelf"), "Ridgemere's grocer with a full shelf of " + staple);
+    econ::Players p(*w, {"buyout"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 5. / 24);
+    std::map<std::string, std::int64_t> purse;
+    for (const auto& id : p.playersOf("buyout"))
+        purse[id] = s.account(id)->cash;
+    const int hours = econ::Players::BuyoutDays * (econ::Players::BuyoutTo - econ::Players::BuyoutFrom + 1);
+    jumpTo(*w, p, 2 + 6.01 / 24);
+    keep(moves, p);
+    std::map<std::string, std::int64_t> spent;
+    for (const auto& m : moves)
+        if (m.action == "bought")
+            spent[m.player] += m.coins;
+    bool paced = purse.size() == 5 && purse.begin()->second > hours;   // (The little world's treasury funds the first.)
+    for (const auto& [id, coins] : purse)
+        paced &= coins <= 0 ? !spent[id] : spent[id] > 0 && spent[id] <= coins / hours;
+    expect(paced && Society::stockAll(*s.account(s.tillOf("ug")), staple) > 0,
+           "at six each spends its purse over the week's hours at most, and food is left: " + [&] {
+               std::string said;
+               for (const auto& [id, coins] : purse)
+                   said += id + " " + std::to_string(spent[id]) + "p of " + std::to_string(coins) + "p; ";
+               return said + std::to_string(Society::stockAll(*s.account(s.tillOf("ug")), staple)) + " left";
+           }());
+    moves.clear();
+    jumpTo(*w, p, 2 + 7.01 / 24);
+    keep(moves, p);
+    expect(count(moves, "bought") > 0, "and buys again at seven");
+    // The week's last hour: all each has left, as far as the shelf goes (here 200p, the shelf full again).
+    jumpTo(*w, p, 8 + 19.5 / 24);
+    s.create(s.tillOf("ug"), staple, 3000, "test: a full shelf again");
+    const auto& one = p.playersOf("buyout").front();
+    expect(s.shift(one, "treasury", "", 0, s.account(one)->cash - 200, "test: 200p left"), "200p left");
+    const auto piece = s.quote(one, "ug", staple, 1, true).total;
+    jumpTo(*w, p, 8 + 20.01 / 24);
+    expect(piece > 0 && s.account(one)->cash < piece && Society::stockAll(*s.account(s.tillOf("ug")), staple) > 0,
+           "on the week's last hour it spends all it has: 200p to " + std::to_string(s.account(one)->cash) + "p, at " + std::to_string(piece) + "p a piece");
+    keep(moves, p);
+    moves.clear();
+    jumpTo(*w, p, 9 + 8.01 / 24);
+    keep(moves, p);
+    expect(count(moves, "bought") == 0, "and none after the week");
+    expect(s.conserved(), "money stays conserved");
+}
+
 void giftToThePoorest()
 {
     // gift's player gives 100p at ten to each of the poorest households (here all ten: Ridgemere's nine grown under one
@@ -677,6 +750,19 @@ void giftToThePoorest()
         expect(ledger[id] == econ::Players::GiftEach, id + "'s gift is in the journal: " + std::to_string(ledger[id]));
     expect(s.account(giver)->cash == purse - 10 * econ::Players::GiftEach, "the giver is 1,000p the poorer");
     expect(s.conserved() && s.moneySupply() == supply, "money stays conserved, none made");
+    // Larkfield's first grown in the watch's hands: the household's gift goes to the next (the review: the skip was
+    // never tried).
+    auto again = worldAt(root, 2 + 9. / 24);
+    const auto* l1 = again->entity("l1");
+    again->crime().custody.push_back({"l1", "larkfield", l1->cellId, l1->position.x, l1->position.y, again->calendarDays() + 30});
+    econ::Players q(*again, {"gift"}, 2, 0);
+    jumpTo(*again, q, 2 + 10.01 / 24);
+    std::set<std::string> given;
+    for (const auto& m : q.takeMoves())
+        if (m.action == "gave")
+            given.insert(m.item);
+    expect(again->custodyOf("l1") && given.size() == 10 && !given.count("l1") && given.count("l2"),
+           "one in custody passed over for the household's next grown: " + std::to_string(given.size()) + " given");
 }
 
 void drainWorksEveryBench()
@@ -848,6 +934,40 @@ std::vector<std::vector<std::string>> rows(const fs::path& csv)
     }
     return out;
 }
+// econ_watch --hold-pace (doc 64, Phase 13: strike's starving hands held the realm's pace at 0 for its month, so its
+// hours were the pace's as much as the strike's): pace.csv has the pace each day to the last digit; a run held to its
+// own pace.csv is that run, record for record; held to another, its pace is the other's whatever its own day would
+// make it; a file that isn't a pace.csv is refused; and readPace reads none of a file with a bad line.
+void heldPace()
+{
+    const auto world = writeWorld("ratw_econ_held_pace", {}, "world");
+    const auto base = world.parent_path();
+    const auto run = [&](const std::string& name, const std::string& more) {
+        const auto command = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 1.2 '" + (base / name).string() +
+                             "' --deterministic --threads 1 --hours" + more + " > '" + (base / (name + ".txt")).string() + "' 2>&1";
+        return std::system(command.c_str());
+    };
+    expect(run("free", "") == 0, "econ_watch runs by the hours: " + slurp(base / "free.txt"));
+    const auto free = slurp(base / "free" / "pace.csv");
+    const auto read = econ::readPace(free);
+    expect(free.rfind("day,when,society_day,pace\n", 0) == 0 && read.size() >= 2 && read.count(0) && read.count(1),
+           "pace.csv has the pace of each of the society's days: " + free);
+    expect(run("same", " --hold-pace '" + (base / "free" / "pace.csv").string() + "'") == 0, "held to its own pace: " + slurp(base / "same.txt"));
+    expect(slurp(base / "same" / "days.jsonl") == slurp(base / "free" / "days.jsonl") && slurp(base / "same" / "pace.csv") == free,
+           "a run held to its own pace is that run, record for record");
+    std::ofstream(base / "quarter.csv") << "day,when,society_day,pace\n0,start,0,0.25\n1,day end,1,0.25\n";
+    expect(run("quarter", " --hold-pace '" + (base / "quarter.csv").string() + "'") == 0, "held to another's: " + slurp(base / "quarter.txt"));
+    const auto held = econ::readPace(slurp(base / "quarter" / "pace.csv"));
+    expect(held.count(1) && held.at(1) == .25 && slurp(base / "quarter" / "days.jsonl").find("\"pace\":0.25}") != std::string::npos,
+           "its pace is the other's on each day: " + slurp(base / "quarter" / "pace.csv"));
+    std::ofstream(base / "bad.csv") << "day,when,society_day,pace\n0,start,0,1.5\n";
+    expect(run("bad", " --hold-pace '" + (base / "bad.csv").string() + "'") != 0 && slurp(base / "bad.txt").find("--hold-pace wants") != std::string::npos,
+           "a pace out of 0 to 1 is refused");
+    expect(econ::readPace("day,when,society_day,pace\n0,start,0,0.1\n1,day end,x,0.2\n").empty() && econ::readPace("0,start,0,0.1\n").empty() &&
+               econ::readPace("day,when,society_day,pace\n0,start,0,0.1\n3,day end,3,0.2\n").size() == 2,
+           "readPace reads all of a pace.csv or none of it");
+}
+
 void econWatchsFiles()
 {
     // Two days and a fifth: an employer's book is opened at its weekly review, each on its own day of the seven
@@ -1066,6 +1186,7 @@ int main()
         strikeTakesATenthForAMonth();
         strikeEndsWithThePlayers();
         buyoutHoldsTheFood();
+        buyoutLastsTheWeek();
         giftToThePoorest();
         drainWorksEveryBench();
         winterBuysInTheAutumn();
@@ -1073,6 +1194,7 @@ int main()
         theDeadKeepNoShop();
         chestsInLots();
         econWatchsFiles();
+        heldPace();
         theStampSaysWhatChanged();
         // Every check passed: the scratch folders go (a failed run's stay, to look at).
         const auto pid = "-" + std::to_string(::getpid());

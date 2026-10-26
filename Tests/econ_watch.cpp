@@ -4,7 +4,7 @@
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
-//              [--players-staple ITEM]
+//              [--players-staple ITEM] [--hold-pace PACE_CSV]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
@@ -19,6 +19,9 @@
 // visit's bodies get about: walk (unless asked: up to each mark, as a player walks), still (where they arrived), or jump
 // (World::teleport beside each mark, a Dungeon Master's move: the first runs', to compare). --players-staple: what
 // flood sells (raw_meat unless asked).
+// --hold-pace: the realm's pace (memory.pace, Society::holdPace) each day as another run's pace.csv has it, whatever this
+// run's hunger, food and hands would make it: a run with players set beside the run without them differs by what the
+// players did, not by the pace they moved (doc 64, Phase 13: strike's starving hands held the pace at 0 for a month).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -56,6 +59,7 @@
 //   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
 //                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
 //                   its own employer, as it stands at 23:00);
+//   pace.csv        day, when, the society's day, the realm's pace that day, to the last digit (--hold-pace's to read);
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
@@ -209,7 +213,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
-                     "                  [--players-bodies walk|still|jump] [--players-staple ITEM]\n";
+                     "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -222,6 +226,7 @@ int main(int argc, char** argv)
     std::int64_t playersFrom = 7, playersDays = 0;
     auto bodies = econ::Players::Bodies::Walk;
     std::string staple = econ::Players::DefaultStaple;
+    std::map<std::int64_t, double> heldPace;        // --hold-pace: the society's day -> its pace.
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -266,6 +271,15 @@ int main(int argc, char** argv)
             if (!econ::Players::stapleKnown(staple))
             {
                 std::cerr << "--players-staple is a good of the catalogue its sellers price (not meal, herbs or sword), not " << staple << "\n";
+                return 2;
+            }
+        }
+        else if (std::string(argv[i]) == "--hold-pace" && i + 1 < argc)
+        {
+            heldPace = econ::readPace(slurp(argv[++i]));
+            if (heldPace.empty())
+            {
+                std::cerr << "--hold-pace wants a run's pace.csv (day,when,society_day,pace), not " << argv[i] << "\n";
                 return 2;
             }
         }
@@ -325,6 +339,8 @@ int main(int argc, char** argv)
         }
     }
     server.setDeterministic(deterministic);
+    if (!heldPace.empty())
+        server.society().holdPace(heldPace);
     const auto& society = server.society();
     server.society().keepBriefs(true);
     std::unique_ptr<econ::Players> players;
@@ -338,9 +354,10 @@ int main(int argc, char** argv)
         materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
-        foodMovesOut(out / "food_moves.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
+        foodMovesOut(out / "food_moves.csv"), paceOut(out / "pace.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
     orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,player_in,player_out,player_goods\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
+    paceOut << "day,when,society_day,pace\n" << std::setprecision(17);
     wagesOut << "day,resident,title,coins\n";
     materialsOut << "day,item,maker_hours_short,supplier_hours_short,held,brought_in,crafted,used,bought,carted_in\n";
     eventsOut << "day,kind,actor,target,coins,detail\n";
@@ -861,6 +878,8 @@ int main(int argc, char** argv)
     };
 
     const auto snapshot = [&](int day, const char* when) {
+        // The pace the society's day last set (once a day, at its turn: Society::tendLabour), every digit of it.
+        paceOut << day << ',' << when << ',' << society.state().budgetDay << ',' << society.state().memory.pace << '\n' << std::flush;
         if (std::string(when) == "day end")
             writeLarders(day);
         // Money by kind of holder, and every collector's and till's purse.

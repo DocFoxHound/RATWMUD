@@ -991,6 +991,7 @@ class Society
     double costedHours(const items::Craft& k) const;
     double costedHours(const items::Producer& p) const;
     static inline bool workByHours_ = false, costAtPace_ = false, foundAnyLand_ = false;
+    std::map<std::int64_t, double> paceHeld_;       // (holdPace: a test's.)
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
 
@@ -1016,6 +1017,10 @@ class Society
     // A test's: a land of any size founds its wage at ladder.json's foundingDay as a realm's is (foundWage), so a test's
     // village can be a realm founded at 60p; its money is still a village's.
     static void setFoundAnyLand(bool on) { foundAnyLand_ = on; }
+    // A test's (econ_watch --hold-pace, doc 64, Phase 13): the realm's pace on each day given, as another run had it,
+    // whatever this one's hunger, food and hands would make it (so a run with players differs from one without by what
+    // they did, not by the pace they moved). Not saved; the game never sets it.
+    void holdPace(std::map<std::int64_t, double> byDay) { paceHeld_ = std::move(byDay); }
     // Hours of work credited to businesses and producers so far, and those lost to a full bank (econ_watch's measures).
     double workCredited() const { return workCredited_; }
     double workLost() const { return workLost_; }
