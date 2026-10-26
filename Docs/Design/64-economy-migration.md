@@ -2177,7 +2177,9 @@ day 24, 157 to 346 from day 29.
   ago, so Restday is at both ends or neither) or averaged under a day (`PaceFloor`).
 - **On a 56th** only while the week's food didn't fall and **the land's hands keep up**: its producers at work and
   their hires taken, against the hands their sales want (`handsWanted`), short by 5% at most (`PaceShortHands`); or no
-  further behind than a week ago by more than 5 points (`memory.paceHands`, saved).
+  further behind than a week ago by more than 5 points (`memory.paceHands`, saved). (Since 2026-10-26: the week's
+  food "didn't fall" within `PaceNoise`, 0.05 days a head; and the land's hands no longer hold it. See "money by holder,
+  and the wage bid".)
 - **Otherwise it holds.** Until it has a week of readings it only holds or backs off.
 - **Why the land's hands by their week:** their sales want two to three times the hands they have even at the old pace
   (day 10: 963 wanted, 449 had). Buyers lay in stores, a producer that sells out counts its day half again, and a bare
@@ -2595,7 +2597,9 @@ A day, days 15–29 (pennies; LD in brackets):
   profit against wages (0.16–0.30 against 1.49) is paid for by the founding's capital: not an equilibrium, and doc 64's
   "money by kind of holder steady within about 20%" fails within weeks. The drain is the balance work's (Phase 13).
   Costing at the pace is right (doc 63's `normal_cost`) once a business's paid hours are its worked ones, which is the
-  labour market's to mend (hands that follow the work, not the bank); until then it undoes the rest.
+  labour market's to mend (hands that follow the work, not the bank); until then it undoes the rest. What the holders' fall
+  is, and what isn't the model's in it, is in "money by holder, and the wage bid" below; costing at the pace is now
+  behind `ladder.json`'s `costAtPace`, off.
 
 **Tests:**
 
@@ -3552,3 +3556,491 @@ merge `ffc416e` is the roads' branch merged into it, unmended; `m3` is `3cec19a`
   there, against the review's "only a bare pocket" (which strands the walker passing through, above).
 - **The seconds' pace's going rate, merged:** a town keeps its last, the realm's falls back for a village (both
   reviews' rules; recommended). The other way is one rule for both.
+
+### Phase 13: money by holder, and the wage bid (2026-10-26)
+
+**The question.** At the 60p founding (with `costAtPace` off) the realm is fed and its money conserved, but far from
+the bands above: the household Gini 0.56 (band 0.33–0.45), the poorer half 0.14 (0.18–0.28), and a wage that never
+leaves 60p. The price level's review found money leaving the founding holders. Two things to find: where the money
+goes, and why the wage doesn't float as the model's does.
+
+**Where it goes** (the merged run `m3`: 60 days of DEV's export at `3cec19a`, `--deterministic --hours`):
+
+| holder | day 2 | day 14 | day 28 | day 42 | day 60 | day 60 / day 2 |
+|---|---|---|---|---|---|---|
+| great houses | 1,494k | 1,362k | 1,285k | 1,186k | 1,180k | 0.79 |
+| the capital's treasury | 309k | 240k | 196k | 167k | 81k | 0.26 |
+| the towns' treasuries | 187k | 180k | 159k | 159k | 111k (154k on day 56) | 0.59 (0.82) |
+| the church | 248k | 252k | 270k | 295k | 296k | 1.19 |
+| farm tills | 183k | 300k | 343k | 291k | 287k | 1.57 |
+| shop tills | 490k | 435k | 415k | 502k | 576k | 1.18 |
+| House tills | 55k | 153k | 251k | 344k | 373k | 6.8 |
+| owners (producers, merchants) | 833k | 925k | 981k | 997k | 1,014k | 1.22 |
+| wage earners and the rest | 1,184k | 1,122k | 1,070k | 1,026k | 1,050k | 0.89 |
+
+(The towns' day 60 is a caravan on the road with 38k of their money.) A day, days 15–29:
+
+- **The Houses** (−6.2k a day): money for the road 4.0k against trade takings 2.9k; into their businesses' tills 3.3k
+  against their profit 0.5k back; materials for their works 3.7k; their crews 1.5k; rent in 3.4k.
+- **The capital** (−3.8k a day): its posts' wages 3.6k and the watch's 0.9k, its buyers' funds 2.8k (the Town Works,
+  the watch, the docks, the hall), against its tax 3.6k. It pays about 95 posts as the payer of last resort (`payerOf`'s
+  "the town": a post with no shop, House or household to pay it): 24 live-in servants "in service to" a household,
+  10 gardeners, 11 keepers of this and that, 8 carriers, 5 pupils at their lessons, clerks, messengers, washers and
+  cooks. At 12p its tax carried them (the base's capital holds level); at 60p they cost more than its tax.
+- **The tills** fill toward their working money (a month of their running at 60p: 2.7M wanted on day 60, 1.24M held),
+  from sales kept and their owners' top-ups (16.3k a day against 12.7k of profit out).
+
+**The model, founded the same way** (`tools/econ_model/model.py` with its founding wage at 60p and 4,090,000p, the
+game's money a head for its 885 people; `wage0` set to 60 in `World.found`, nothing else changed):
+
+| day | wage | Gini | poorer half | homes | firms | Houses | church | treasury |
+|---|---|---|---|---|---|---|---|---|
+| 2 | 60p | 0.477 | 0.172 | 1,636k | 607k | 1,236k | 204k | 407k |
+| 28 | 65p | 0.425 | 0.207 | 1,829k | 453k | 1,122k | 241k | 446k |
+| 56 | 77p | 0.381 | 0.242 | 2,057k | 415k | 897k | 270k | 452k |
+| 112 | 97p | 0.330 | 0.270 | 2,415k | 564k | 460k | 309k | 343k |
+| 168 | 138p | 0.341 | 0.245 | 2,420k | 929k | 213k | 230k | 298k |
+| 364 | 137p | 0.403 | 0.204 | 2,412k | 1,033k | 247k | 169k | 228k |
+| 1092 | 122p | 0.412 | 0.203 | 2,574k | 847k | 291k | 161k | 217k |
+
+(With all of 5,000,000p for its 885, the wage reaches 160p to 180p in the first year.)
+
+- **The Houses' fall is the model's.** Its Houses spend by their rule (a share of what they hold over four months'
+  income) and go from 30% of the money to 7% by year 3: 0.73 of their founding by day 56, 0.17 by day 168. The game's
+  are at 0.78 on day 56, slower. Not a fault, and not to be held "steady": doc 64's band is each kind within 20% of its
+  year-3 share, not its founding.
+- **The tills' rise is the model's.** Its firms sit at a quarter of their working money, and swell from 15% of the
+  money to about a quarter as the wage rises (1.53 of their founding by day 168, 25% by day 364); their owners put in
+  more than comes out in the first months (2.1k to 5.3k a day to day 196, against 0.03k to 6.6k of profit). The game's
+  owners' rule is the model's (`owner_tops_up`, `firm_month`); its tills swell sooner (the Houses' businesses from
+  floats a tenth of their working money).
+- **The capital's fall is not.** The model's treasury is up a tenth on day 56 and steady at 5% from year 1: it pays its
+  watch and its works crew out of its week's budget (`staff_to`), and lets them go when the budget falls. The game's
+  capital pays its posts every spell whatever its budget, and its buyers outside the budget too: it is dry by day 90
+  (the 120-day run below: 18k). Then its buyers get nothing (their funds stop under its payroll reserve) and its posts
+  take the week's tax (+0.2k a day, days 95–119). **Not mended here** (for the user, below).
+- **The households' gain is the model's lever, and the game's misses it.** The model's homes gain 26% by day 56 and 48%
+  by day 168, the Houses' fortunes paid out as wages (twelve retainers and an estate crew of up to a tenth of the
+  realm's workers each, always to be had), and its Gini falls from 0.48 to 0.33. The game's households hold level: wage
+  earners −11%, owners +22%. The Houses' crews (twelve retainers and twelve of their estate each, at the going rate) go
+  about three-quarters untaken.
+
+**Why the wage stood at 60p.** The model's wage floats on a shortage of hands: from day 28, 182 posts open against 410
+workers (the institutions' crews, sized to their budgets, and the firms' hands at the calibrated hours). At the game's
+pace (0.1 to 0.2) there is none: a day's hires are taken by some 240 hands whose own business has no work (their banks
+full), 100 children, 60 drawn from their posts by better pay and 45 without a post, and every business's hire fills.
+Only the land's far hires and the Houses' crews stand empty. So, rule by rule against `model.py`:
+
+- A business's posts were its hires' untaken slots and its empty authored posts; the model's are the hands it wants
+  less those it has. A business that couldn't post a hire (one at a time, eight slots, its till short) stood short with
+  nothing open.
+- The going rate is the model's (`market_wage`: the middle of the unskilled makers' wages, by their hands; the farms'
+  harvest pay follows it). With most makers not short, the middle never moves, however short the land.
+- A fishery's, a quarry's, a mine's or a logging camp's hires were for its own town's folk only (a farm's, for anyone
+  from a city). The model has one market. Traced (40 days, `RATW_R4TRACE`, not kept): the land's shortfall was fishing
+  (20 to 40 hands), quarries (20 to 45), logging and mines, not the fields.
+- The pace held whenever the land's hands were 5% short, so it stopped at the first shortage, where a wage would begin
+  to be bid. And on many of the other days it held for the week's food falling by a few hundredths: of 33 weighed days,
+  9 held on the food alone, falls of 0.002 to 0.12 days a head (with 3.5 in hand); 6 on the land's hands alone and 3 on
+  both; 11 went on and 4 stepped back.
+
+**What changed** (with work by the hours only; the seconds' pace is as it was: 5 days of it, the same digest
+93ddacf5c1f9ce40 and the same `days.jsonl` and `flows.csv` before and after):
+
+- **Hands wanted and not had are posts open** (`tendLabour`): a business's hands wanted (two and twice its hands at
+  most, as its review hires), less its hands and those on its hires, count as posts open though it couldn't post a hire
+  for them; a day open counts toward its review's raise. Not a business with no work for more hands. (Corrected by
+  the review: it counted a producer's hands wanted with the half again of a shelf near bare, which a producer's always
+  is, so a producer stood half again short for good. Since round 5 a producer's are its sales as they are. And a hand
+  is never drawn off from an employer with a post open, the model's rule, so with more employers short, fewer hands
+  are drawn off: "better" moves are counted in round 5's section below.)
+- **The land's hires for anyone from a city** (`farmHire`): any producer's, not a farm's only. One labour market, as
+  the model's. (Corrected by the review: this was given as the answer to the land's shortage, but nothing here
+  measured the land's hires after it. Round 5 measured them: alone, at the same pace, it raised the land's takes 2%
+  and cut its hours 1%. The land's takes and hours fall against `m3` with the pace, not with this: see round 5.)
+- **The week's food "didn't fall" within `PaceNoise`** (a third of `PaceSlide`, 0.05 days a head).
+- **The land's hands no longer hold the pace** (a commit of its own, after the three above, to be kept or dropped
+  alone). The land's shortage is its posts open now, which its weekly review answers by its wage; the food, falling
+  as the land falls behind, steps the pace back, and hunger faster, as before. The daily count of the land's hands
+  wanted goes (`PaceShortHands`). (Round 5: a loose brake in the hold's place, the land's hours worked week on week;
+  see below. The review: with no brake but the food, the pace climbed to 0.64 while the land's hours fell.)
+
+**Not changed:** the fields' wages stay out of the going rate, their harvest pay a quarter over their own (the model's
+farms are left out of `market_wage` too, their pay following it).
+
+**Tried, not kept** (switches in a trial build, gone):
+
+- The institutions' crews ranked with the businesses' hires by pay, ties by lot: no change, the crews still went
+  untaken.
+- The crews first, before any business's hire, and a House's estate crew up to 48: the crews' pay 3.6k to 5.9k a day,
+  the Houses 0.73 of their founding by day 60, the wage floating to 62p; but the Gini 0.566 and the poorer half 0.132,
+  no better.
+- The capital's own posts kept to its week's budget, half the excess let go a week: its treasury 114k on day 60
+  against 81k, 38 posts let go by day 56 and more each week. Its budget falls with its cash while its buyers' funds stay
+  outside it, so it doesn't settle.
+
+**Measured** (60 days of DEV's export, `--deterministic --hours --threads 3`; every run conserved every day; every one,
+the merged run's too, has its one hungry day on day 46, none starving; one run's end record has one more):
+
+| day 60 | `m3` | posts open, one market, the noise | and the land's hold lifted |
+|---|---|---|---|
+| household Gini; the poorer half | 0.562; 0.136 | 0.558; 0.139 | 0.574; 0.132 |
+| the wage (the realm's, Ridgemere's) | 60p | 60.4p (60.8p on day 56) | 63.3p |
+| pace | 0.196 | 0.214 | 0.375 |
+| hungry on day 46 | 18 | 9 | 14 |
+| bread, a bronze sword, a rapier (LD) | 0.072, 2.50, 25.0 | 0.077, 2.49, 25.0 | 0.073, 2.42, 25.0 |
+| great houses; the capital; tills | 1,180k; 81k; 1,236k | 1,178k; 85k; 1,217k | 1,175k; 84k; 1,229k |
+| the owners' profit against six kinds of wages, days 45–59 | 0.23 | 0.16 | 0.13 |
+| a tick (three runs at once on a shared machine) | | 0.050 ms | 0.049 ms |
+
+By week (the household Gini, the poorer half, the wage, the pace):
+
+| day | `m3` | posts open, one market, the noise | and the land's hold lifted |
+|---|---|---|---|
+| 14 | 0.535, 0.151, 60p, 0.02 | 0.536, 0.149, 60p, 0.02 | 0.536, 0.149, 60p, 0.02 |
+| 28 | 0.545, 0.154, 60p, 0.09 | 0.543, 0.154, 60p, 0.18 | 0.543, 0.156, 60p, 0.23 |
+| 42 | 0.557, 0.140, 60p, 0.20 | 0.553, 0.148, 60p, 0.30 | 0.562, 0.142, 60p, 0.43 |
+| 49 | 0.565, 0.133, 60p, 0.14 | 0.567, 0.136, 60p, 0.21 | 0.574, 0.132, 60p, 0.27 |
+| 56 | 0.562, 0.137, 60p, 0.14 | 0.559, 0.139, 60.8p, 0.21 | 0.576, 0.131, 61.8p, 0.30 |
+| 60 | 0.562, 0.136, 60p, 0.20 | 0.558, 0.139, 60.4p, 0.21 | 0.574, 0.132, 63.3p, 0.38 |
+
+And with all four, 120 days: the wage 65p on day 70, 70p on day 84, 73p on day 98, 78p on day 120 (the model's: 77p
+by day 56, 97p by day 112); the pace 0.29 to 0.64; nobody hungry after day 46; the Gini 0.582, 0.577, 0.577, 0.586 and
+the poorer half 0.123, 0.121, 0.114, 0.105; the Houses 0.69 of their founding by day 120; the capital dry from day 90;
+shop tills 911k (1.86). (Corrected by the review, which found the run's other tills left out: the farm tills 295k on
+day 90 and 184k on day 120, down 38% in a month (`m3`'s 287k on day 60), the House tills 342k; the owners' profit
+6.5k a day over days 45–59 against `m3`'s 11.1k, with the six kinds of wages barely moved (49.1k against 47.7k), so the
+float raised the tills' share, not the households' pay. The land's hours a week (its producers' but the fields')
+16.8k at their lowest on day 49, 20.5k on day 60 and 23.6k by day 120, against `m3`'s 18.9k and 21.7k on days 49 and
+60.)
+
+- **The wage floats once the pace may rise past the land's first shortage**, slower than the model's (63p on day 60
+  against its 77p by day 56; 78p on day 120 against its 97p by day 112), and without the hold the realm is fed as
+  before (each run's day-46 dip, then nobody). With the hold, in every run it stood at 60p to day 49, and reached 62p
+  at most by day 60 (with the crews first).
+- **The Gini goes the wrong way while it does.** As the pace and the wage rise, every till's working money rises (more
+  hands wanted, at more a day), and the tills keep what the households spend on food (the wage earners' food 10% dearer
+  by days 45–59, their pay from the land's hires 14% lower) until they hold it; the Houses' money, which in the model is
+  paid out as wages, goes here into their businesses' tills, caravans and materials. The poorer half falls from 0.15 to
+  0.11 in 120 days.
+- **Still out of band:** the Gini and the poorer half (above); bread in band (0.07); the bronze sword (2.4 to 2.5) and
+  the rapier (25) in band by construction (store-priced, and no rapier sold); the capital's treasury; and (the review)
+  the farm tills, draining from day 90, a risk of lifting the hold that only a year's run (a winter and a harvest)
+  can clear.
+
+**What a year would need to show:** the wage settling (the model's: 130p to 140p by day 168, then 120p to 135p for two
+years), the pace reaching 1 and staying fed through a winter and a harvest, the tills' share turning down once the wage
+stops rising (the model's firms: about a quarter at the float's top, 14% to 21% from year 2), the Houses at their rule's
+level, and the Gini turning: which, by the reading above, needs the Houses' and the church's budgets to reach the
+households as wages, as the model's estate crews do. And the capital: what it pays, and for whom (for the user).
+
+**The smoke** (30 days, `build/econ_watch` at the second commit, `--deterministic --hours --threads 3`): conserved every
+day, nobody hungry; digest 22c5e0263d62fc15; its `days.jsonl` the 60-day run's day for day. Day 30: the Gini 0.548
+(`m3` 0.552), the poorer half 0.156 (0.152), the wage 60p, the pace 0.268 (0.107); 0.034 ms a tick alone.
+
+**Saves:** nothing new. A business's days open were saved already (`memory.employers`); `PaceShortHands` was never
+saved.
+
+**Tests** (each fails with its change undone, checked one at a time):
+
+- `crafting_tests` `aShortBusinessBidsUp`: a bakery whose bread sells for more hands than its baker, its till and its
+  baker's purse emptied each evening so it posts no hire: its posts are open on all 15 days, and its review raises
+  its wage (before: none open, no raise).
+- `crafting_tests` `theLandsHiresForAnyone`: a fishery's hire is the land's with work by the hours (a farm's at both
+  paces, a bakery's at neither).
+- `roads_tests` `thePaceIsSteadied`: the week's food down a fortieth of a day a head, the pace goes on; down a tenth,
+  it holds.
+- `roads_tests` `thePaceStepsUpWithTheLand`: its sales three hands' days with the farm's one, the pace goes on and the
+  farm's posts stand open (before: it held). (The review: its case of no work for more hands checked only that the
+  pace went on, which with the hold gone it always does; the exclusion of such a business from posts open, the
+  subtraction of those on its hires and the cap of its hands and two were each untested. Round 5's tests cover them.)
+
+**For the user:**
+
+1. **Lift the land's hold on the pace?** Recommended: yes (its own commit). Without it the wage can't float, and
+   nothing in these runs went hungrier for it. But in 60 to 120 days the Gini rises with the wage, as the tills fill;
+   the next step is the institutions' spending reaching wages (2). Dropping the commit brings the hold back as it was.
+   (The review: not before a year's run shows the land's hours, its tills and the food holding without it. Round 5
+   puts a loose brake in its place; the decision is restated there.)
+2. **The Houses' crews.** The model's Houses keep twelve retainers and an estate crew of up to a tenth of the realm's
+   workers each, paid out of their budget, and that is where their fortunes go. The game's keep twelve of each at the
+   going rate, and they go mostly untaken (the businesses' hires come first, at the same or better pay). Recommended: an
+   estate crew sized as the model's, its posts taken as posts are (not after every hire), as the next balancing step.
+3. **The capital's posts.** It pays about 95 posts as the payer of last resort, at 60p more than its tax, and runs dry
+   in three months. The model's treasury keeps its watch and works crew to its budget. Options: (a) the model's: its
+   posts kept to its week's budget and its buyers' funds inside it too, so posts are let go; (b) payers for them: the
+   live-in servants paid by their households, the gardeners and keepers by the Houses whose grounds they keep, the
+   pupils by nobody; (c) a higher tax (the Dungeon Master's lever: about 16% would carry them). Recommended: (b) for the
+   servants and keepers, and (a) for the rest.
+4. **The founding wage against the money.** The model founded at 60p with this money floats to 135p to 180p in the first
+   year and comes back toward 60p to 75p only over decades (the sixth pass: 13p to 15p at 1,000,000p from year 8). At
+   60p the realm holds about twice the money the model's wage would; the float is the realm finding its level. Either
+   let it (and the 60p "labourer's day" of decision 1 is the founding's, not the years'), or found at about 120p.
+
+### Phase 13: the wage bid, the review mended (2026-10-26)
+
+The review of "money by holder, and the wage bid" (`p13-r4-balance`), mended on `p13-r5-wagebid`: that branch merged
+onto `83714a0` (round 4's price and harness branches; `costAtPace` off, the founding at 60p), then `809d57c` (a
+producer's posts by its sales; the tests the review found missing; the harness's count of hires worked and taken from
+afar), `99dcd27` (a loose brake on the pace) and `7797bc0` (the harness). The seconds' pace is as it was: 5 days of it
+without `--hours`, the same digest d034a6316a8d0cb from `83714a0`'s build and this branch's, and the same
+`days.jsonl`, `flows.csv`, `work.csv`, `tills.csv` and `books.csv`.
+
+**The land's hires, measured** (the review's first finding: the land's hires taken down a quarter and its hours down
+a seventh against `m3`, put down to city hands walking to distant hires). Days 21–44, the review's land: 85 tills of
+fisheries, quarries, logging camps, mines, charcoal burners, clay pits, salt pans, woodcutters and eel traps.
+Slot-days are a hire's slots on each day it runs; "worked", takers who had done the day's spells by 23:00 (and been
+paid); "from away", takers living in another town than the hire's (both counted since `809d57c`, so only in this
+round's runs). `e_o` to `f_omng` are round 4's (`3cec19a` with its changes one at a time: o the posts open, m the one
+market, n the noise, g the hold lifted); "merge" is round 4's branch on `83714a0`; the last three are this round's, all
+without the brake:
+
+| days 21–44 | slot-days | taken | worked | from away (worked) | taken by the idle, jobless, drawn off, children | hours credited |
+|---|---|---|---|---|---|---|
+| `m3` | 5,353 | 4,458 (83%) | — | — | 2,451, 369, 611, 992 | 36,256 |
+| `e_o` | 5,353 | 4,239 (79%) | — | — | 2,329, 379, 620, 881 | 35,403 |
+| `e_om` | 5,263 | 4,337 (82%) | — | — | 2,288, 644, 419, 966 | 35,080 |
+| `f_omn` | 4,950 | 3,914 (79%) | — | — | 2,113, 479, 375, 929 | 33,518 |
+| `f_omng` | 4,852 | 3,426 (71%) | — | — | 1,772, 477, 363, 786 | 31,480 |
+| the merge | 4,538 | 3,367 (74%) | 1,914 | 713 (490) | 1,633, 522, 376, 810 | 32,199 |
+| posts by sales | 4,646 | 3,612 (78%) | 2,079 | 653 (450) | 1,782, 580, 421, 800 | 33,371 |
+| and lodging | 4,198 | 2,874 (68%) | 1,634 | 829 (518) | 1,384, 141, 437, 907 | 29,712 |
+| and a walking range | 4,483 | 3,253 (73%) | 1,746 | 728 (448) | 1,690, 169, 508, 871 | 30,666 |
+
+The mean pace over those days: `m3` 0.12; `e_o` and `e_om` 0.16, `f_omn` 0.21, `f_omng` 0.29; the merge 0.31, posts by
+sales 0.27, lodging 0.31, the range 0.28. By town (slot-days, taken, hours credited):
+
+| town | `m3` | `e_o` | `e_om` | `f_omn` | `f_omng` | the merge | posts by sales | lodging | a range |
+|---|---|---|---|---|---|---|---|---|---|
+| frost_valley | 367, 284, 2,886 | 328, 274, 2,800 | 303, 289, 3,034 | 255, 223, 2,852 | 272, 235, 2,709 | 323, 266, 2,902 | 297, 265, 2,898 | 304, 239, 2,804 | 218, 198, 2,582 |
+| frosthollow | 0, 0, 652 | 0, 0, 625 | 0, 0, 490 | 0, 0, 473 | 0, 0, 388 | 0, 0, 510 | 0, 0, 547 | 0, 0, 562 | 0, 0, 524 |
+| glasswater | 428, 418, 3,630 | 466, 450, 3,674 | 421, 413, 3,737 | 407, 400, 3,448 | 417, 388, 3,389 | 405, 380, 3,450 | 388, 380, 3,433 | 420, 385, 3,456 | 382, 372, 3,139 |
+| greyteeth | 128, 70, 996 | 36, 36, 808 | 6, 6, 642 | 6, 6, 641 | 0, 0, 641 | 12, 12, 714 | 13, 12, 692 | 37, 25, 867 | 3, 1, 637 |
+| rainward_hills | 1,941, 1,571, 9,831 | 1,949, 1,479, 9,489 | 1,944, 1,532, 9,283 | 1,961, 1,466, 9,193 | 1,999, 1,275, 8,496 | 1,938, 1,351, 9,013 | 1,715, 1,199, 8,572 | 1,643, 961, 7,521 | 1,636, 1,071, 8,100 |
+| ridgemere | 868, 735, 5,696 | 932, 581, 5,026 | 840, 627, 5,294 | 738, 500, 4,747 | 738, 448, 4,475 | 479, 242, 3,717 | 795, 549, 5,224 | 554, 295, 3,946 | 594, 326, 3,789 |
+| ridgemere_sound | 1,083, 847, 4,549 | 1,127, 904, 5,190 | 1,245, 975, 5,003 | 1,089, 834, 4,802 | 898, 576, 3,847 | 919, 654, 4,292 | 940, 721, 4,289 | 603, 346, 2,553 | 1,032, 671, 3,890 |
+| sallow_fens | 464, 459, 4,768 | 462, 462, 4,780 | 479, 470, 4,835 | 475, 466, 4,635 | 493, 469, 4,691 | 415, 415, 4,727 | 462, 450, 4,840 | 582, 568, 5,027 | 562, 558, 4,986 |
+| warmwood | 74, 74, 3,248 | 53, 53, 3,011 | 25, 25, 2,762 | 19, 19, 2,727 | 35, 35, 2,844 | 47, 47, 2,874 | 36, 36, 2,876 | 55, 55, 2,976 | 56, 56, 3,019 |
+
+- **The review was right that the land's hires and hours fell against `m3`** (posts by sales: takes 19% fewer, hours
+  8% fewer), **but the fall is the pace's, not the road's.** The runs fall in the order of their pace. Over half the
+  land's takers are idle hands, whose own business has no work (its work in hand full): 2,451 of `m3`'s 4,458. As the
+  pace rises their own businesses have work again, and the idle take 1,633 to 1,782; that is most of the fall (`m3` to
+  posts by sales: 846 fewer takes, 669 of them the idle's). It is the labour market tightening, where a wage is to be
+  bid, not hands lost on the way.
+- **The one market alone** (`e_o` to `e_om`, about the same pace): takes up 2%, hours down 1%. The land's jobless
+  takers rose (379 to 644) and those drawn off their posts fell (620 to 419): the review's "city hands displace local
+  ones", within a percent of the same hours.
+- **Hands from away work their hires more, not less.** Of the slot-days taken by hands from another town, 62% to 69%
+  were worked by the day's end, against 55% to 58% of the rest. (Why little more than half of the slot-days taken are
+  worked by 23:00 anywhere, the farms' too: hands who take a hire late in the day, children from noon, and those whose
+  own post has work and who hold the hire meanwhile. Not mended here: the next labour-market measure.)
+- **Lodging and a walking range, tried and not kept** (switches in a trial build, gone). Lodging: every producer of the
+  land given a bunkhouse as a farm is (its site's, "... at" or "... off <site>", or its town's nearest its work: the
+  export has them at the quarries, the mines, the clay pit, the logging camps and the fisheries off Greywater,
+  Glasswater and Eelwater, but only farms' were found). At the merge's pace (0.31) it worked the land 8% fewer hours
+  than the merge, and 11% fewer than posts by sales; Ridgemere Sound's fisheries took half the hires (346 against
+  721), their tills feeding the lodgers (a day's food each, their own fish first). The range (a producer's hire open to
+  a city's hands only within 700 tiles of the city's homes: the Rainward Hills, Glasswater, the Sound and the Warmwood
+  in; the Frost Valley, the Greyteeth and the Sallow Fens out): 8% fewer hours than posts by sales. Both took the
+  city's jobless off the land (141 and 169 slot-days taken, against 580). The land stays one market, as the model's
+  (which has no distance), and a city hand on a distant hire walks there from home.
+- The end-to-end test the review asked for: a city's idle wolf takes a distant fishery's hire, walks there, works the
+  day and is paid, its hours credited to the fishery's work (`aCityHandAtTheFishery`).
+
+**What changed:**
+
+- **A producer's posts open by its sales** (the review's second finding; `tendLabour`): its hands wanted without the
+  half again of a shelf near bare (`handsWanted(key, false)`, as the old hold measured them). Its goods go on to the
+  shops, so its shelf always is near bare, and it stood half again short for good, bidding its wage up for hands its
+  sales never wanted. A shop's are as they were (the model's half again near bare is graded,
+  `1 + 0.5 (low - days) / low`; the game's isn't, for the shops either: not changed here).
+- **A loose brake on the pace** (the review of a7500b4; `tendLabour`): each turn of the day reads the land's hours
+  worked since the last (its producers' but the seasonal fields', whose work is the calendar's; their hands' are
+  credited to them) into `paceLand`, a fortnight's readings each with its day. The pace holds, the food holding, while
+  the last seven turns' hours fell by over `PaceLandSlack` (5%) against the seven before; under a fortnight of
+  readings, or a gap (a restart, an older save), and the food alone decides. The model has no pace to borrow a rule
+  from: its hours are the calibrated from its first day. It isn't the old hold, which stopped the pace at the first
+  shortage of hands, wanted against had, every day: this holds it only while the land's work actually falls. In the
+  120-day run the land's week was down by over 5% on 24 of the 107 days it could be weighed (about days 18–19,
+  29–35, 46–52 after the day-46 dip, 64, 78–80 and 90–93); on those the pace couldn't go on.
+- **Poaching never draws from an employer with a post open** (the review's fourth finding: documented, not changed).
+  `lookingFor` lets a paid hand look for a better-paid hire now and then only if its employer has no post open and
+  other hands besides it (the model's `poach` skips employers short of hands too). With posts open counted for every
+  short business since round 4, fewer employers can be drawn from. Hires' slot-days taken by hands drawn off their
+  posts ("better" in `hires.csv`), by 30 days: `m3` 1,596 and 2,050 (days 1–30, 31–60); round 4's 120-day run 1,498,
+  1,726, 2,408, 2,362; the merge 1,626, 1,818, 2,555, 2,264; posts by sales 1,493, 1,832, 2,461, 2,344; with the brake
+  1,468, 1,776, 2,647, 2,264. Fewer than `m3`'s in the second month (by an eighth or so), then more as the wage
+  floats.
+
+**120 days** (DEV's export, `--deterministic --hours --threads 3`, three at once on a loaded machine; every run
+conserved every day). Round 4's is `e_omgn120` (its four changes on `3cec19a`); the merge, round 4's branch on
+`83714a0`; then posts by sales, and with the brake: the branch as committed. (The last two were run with a harness that
+also asked every resident's payer each day, since taken out: it fills `payerOf`'s day's cache of a household's
+richest at another moment, and the runs part from the same code's run without it on day 2, as a run with another
+seed would. The smoke below is the committed harness.)
+
+| day: Gini, poorer half, wage, pace | `m3` | round 4 | the merge | posts by sales | and the brake |
+|---|---|---|---|---|---|
+| 14 | 0.535, 0.151, 60.0p, 0.02 | 0.536, 0.149, 60.0p, 0.02 | 0.536, 0.148, 60.0p, 0.02 | 0.536, 0.149, 60.0p, 0.02 | 0.536, 0.149, 60.0p, 0.02 |
+| 28 | 0.545, 0.154, 60.0p, 0.09 | 0.543, 0.156, 60.0p, 0.23 | 0.545, 0.154, 60.0p, 0.25 | 0.543, 0.155, 60.0p, 0.25 | 0.545, 0.153, 60.0p, 0.21 |
+| 42 | 0.557, 0.140, 60.0p, 0.20 | 0.562, 0.142, 60.0p, 0.43 | 0.559, 0.143, 60.0p, 0.43 | 0.556, 0.145, 60.0p, 0.46 | 0.555, 0.144, 60.0p, 0.36 |
+| 49 | 0.565, 0.133, 60.0p, 0.14 | 0.574, 0.132, 60.0p, 0.27 | 0.570, 0.134, 60.0p, 0.25 | 0.572, 0.132, 60.0p, 0.32 | 0.566, 0.136, 60.0p, 0.29 |
+| 56 | 0.562, 0.137, 60.0p, 0.14 | 0.576, 0.131, 61.8p, 0.30 | 0.568, 0.133, 61.8p, 0.32 | 0.573, 0.129, 62.1p, 0.34 | 0.570, 0.132, 60.9p, 0.29 |
+| 60 | 0.562, 0.136, 60.0p, 0.20 | 0.574, 0.132, 63.3p, 0.38 | 0.566, 0.135, 63.1p, 0.39 | 0.569, 0.133, 64.4p, 0.41 | 0.566, 0.135, 61.8p, 0.36 |
+| 70 | | 0.582, 0.123, 65.4p, 0.29 | 0.584, 0.120, 66.1p, 0.32 | 0.587, 0.120, 65.5p, 0.30 | 0.582, 0.121, 65.0p, 0.32 |
+| 84 | | 0.577, 0.121, 69.6p, 0.30 | 0.576, 0.123, 70.4p, 0.39 | 0.589, 0.117, 67.9p, 0.30 | 0.584, 0.115, 66.8p, 0.41 |
+| 98 | | 0.577, 0.114, 73.1p, 0.52 | 0.587, 0.110, 72.9p, 0.38 | 0.588, 0.108, 72.0p, 0.48 | 0.584, 0.109, 71.3p, 0.45 |
+| 112 | | 0.582, 0.107, 76.5p, 0.52 | 0.602, 0.097, 78.2p, 0.52 | 0.598, 0.098, 78.4p, 0.50 | 0.589, 0.102, 78.2p, 0.52 |
+| 120 | | 0.586, 0.105, 77.9p, 0.64 | 0.615, 0.092, 80.7p, 0.57 | 0.615, 0.089, 81.5p, 0.62 | 0.599, 0.097, 80.5p, 0.66 |
+
+| day: the land's hours the week; farm, shop, House tills | `m3` | round 4 | the merge | posts by sales | and the brake |
+|---|---|---|---|---|---|
+| 14 | 22.6k; 300k, 435k, 153k | 22.5k; 314k, 431k, 149k | 22.8k; 297k, 441k, 147k | 22.8k; 301k, 436k, 147k | 22.8k; 301k, 436k, 147k |
+| 28 | 21.9k; 343k, 415k, 251k | 21.1k; 299k, 429k, 257k | 20.6k; 322k, 416k, 246k | 21.5k; 302k, 423k, 253k | 21.5k; 315k, 408k, 253k |
+| 42 | 20.5k; 291k, 502k, 344k | 18.7k; 248k, 558k, 330k | 19.4k; 234k, 564k, 325k | 19.6k; 248k, 543k, 314k | 20.1k; 254k, 526k, 316k |
+| 49 | 18.9k; 287k, 558k, 375k | 16.8k; 258k, 611k, 346k | 17.1k; 243k, 617k, 352k | 17.2k; 239k, 604k, 346k | 16.7k; 270k, 577k, 349k |
+| 56 | 21.1k; 317k, 552k, 347k | 18.8k; 258k, 627k, 339k | 19.7k; 261k, 627k, 327k | 19.8k; 229k, 627k, 325k | 20.8k; 250k, 607k, 328k |
+| 60 | 21.7k; 287k, 576k, 373k | 20.5k; 235k, 663k, 331k | 21.4k; 237k, 669k, 325k | 20.7k; 216k, 655k, 328k | 20.9k; 225k, 634k, 345k |
+| 70 | | 20.1k; 276k, 682k, 383k | 21.3k; 267k, 663k, 331k | 19.9k; 247k, 663k, 371k | 21.0k; 255k, 645k, 359k |
+| 84 | | 19.9k; 274k, 723k, 365k | 21.0k; 278k, 692k, 321k | 20.5k; 279k, 657k, 373k | 20.5k; 263k, 649k, 353k |
+| 98 | | 22.9k; 263k, 804k, 387k | 21.9k; 308k, 747k, 372k | 21.0k; 280k, 749k, 375k | 21.0k; 235k, 730k, 332k |
+| 112 | | 22.1k; 214k, 871k, 342k | 22.8k; 290k, 810k, 387k | 22.4k; 251k, 824k, 402k | 22.4k; 220k, 838k, 331k |
+| 120 | | 23.6k; 184k, 911k, 342k | 24.1k; 227k, 840k, 398k | 24.1k; 208k, 851k, 377k | 23.6k; 182k, 881k, 342k |
+
+| day: great houses, the capital, the towns, the church; owners, earners | `m3` | round 4 | the merge | posts by sales | and the brake |
+|---|---|---|---|---|---|
+| 14 | 1,362k, 240k, 180k, 252k; 925k, 1,122k | 1,361k, 240k, 179k, 250k; 921k, 1,123k | 1,360k, 240k, 178k, 251k; 927k, 1,126k | 1,362k, 241k, 178k, 251k; 926k, 1,125k | 1,362k, 241k, 178k, 251k; 926k, 1,125k |
+| 42 | 1,186k, 167k, 159k, 295k; 997k, 1,026k | 1,190k, 167k, 167k, 296k; 971k, 1,039k | 1,190k, 166k, 160k, 298k; 982k, 1,048k | 1,201k, 171k, 172k, 293k; 967k, 1,055k | 1,204k, 173k, 166k, 294k; 977k, 1,056k |
+| 60 | 1,180k, 81k, 111k, 296k; 1,014k, 1,050k | 1,175k, 84k, 150k, 299k; 1,006k, 1,022k | 1,198k, 81k, 132k, 297k; 986k, 1,036k | 1,199k, 84k, 137k, 293k; 992k, 1,056k | 1,192k, 90k, 136k, 294k; 1,002k, 1,043k |
+| 84 | | 1,099k, 52k, 201k, 305k; 957k, 1,002k | 1,114k, 50k, 210k, 311k; 969k, 1,035k | 1,099k, 51k, 207k, 297k; 967k, 1,053k | 1,120k, 51k, 225k, 304k; 974k, 1,045k |
+| 98 | | 1,045k, 34k, 216k, 304k; 928k, 998k | 1,036k, 26k, 220k, 305k; 946k, 1,024k | 1,044k, 32k, 234k, 296k; 932k, 1,041k | 1,091k, 31k, 253k, 305k; 960k, 1,049k |
+| 120 | | 1,031k, 25k, 243k, 309k; 946k, 990k | 965k, 25k, 251k, 302k; 981k, 992k | 994k, 26k, 256k, 299k; 961k, 1,010k | 1,032k, 21k, 299k, 298k; 933k, 991k |
+
+The owners' profit against the six kinds of wages, a day: days 15–29, the merge 0.25, posts by sales 0.26, the brake
+0.27 (`m3` 0.27); days 45–59, 0.19, 0.16, 0.16 (`m3` 0.23); days 105–119, 0.26, 0.26, 0.19 (round 4 0.29), the six
+wages 56.9k, 57.1k, 55.8k a day and the owners' profit 14.9k, 15.1k, 10.5k. Hungry: each run's day-46 dip, the merge
+16, posts by sales 41 with 9 starving, the brake 18 with none; nobody hungry on any other day. Bread 0.070, 0.070,
+0.067 LD on day 120 (band 0.05–0.09); a bronze sword 2.26, 2.27, 2.25 LD, an iron one 4.4 to 4.5, a steel one 9.4 (the
+store's and the smiths' pennies over a wage a third up); no rapier sold (25). The going rate (the realm's) 68p on
+day 120 in all three, the wage (the realm's posts') 80.5p to 81.5p. The review's land (its 85 tills) over days
+61–120: hours credited 96.4k in the merge, 100.1k with posts by sales, 98.5k with the brake (round 4 97.3k); its hires'
+slot-days taken 80%, 83%, 84%.
+
+- **Worse:** the trajectory is round 4's, and the merge onto `83714a0` made it worse: by day 120 the Gini 0.599 to
+  0.615 and the poorer half 0.089 to 0.097, against round 4's own 0.586 and 0.105 and the bands' 0.33–0.45 and
+  0.18–0.28. The farm tills drain from their top (308k on day 98 in the merge, 280k on day 98 with posts by sales, 276k
+  on day 77 with the brake) to 182k to 227k by day 120, a quarter to a third gone in three to six weeks, while the
+  shop tills keep rising (840k to 881k). The capital is dry from about day 98 in all three (21k to 26k). The Houses fall to 0.65 to
+  0.69 of their founding.
+- **Posts by sales** (no brake): the land worked 4% more hours than the merge over days 61–120 and took more of its
+  hires (83% against 80%); the wage and the Gini as the merge's. Not the lever the Gini wants.
+- **The brake:** it held the pace back in the second month (mean pace days 21–60: 0.26 against 0.32 without it; 0.36
+  on day 60 against 0.41) and not after (0.44 against 0.44 over days 61–120; 0.66 on day 120, the highest); the wage
+  floated a little later (61.8p on day 60 against 64.4p) and caught up (80.5p). On day 120 its Gini is the lowest of
+  the three (0.599 against 0.615) and its poorer half the highest (0.097 against 0.089), the Houses kept more (1,032k
+  against 994k) and the towns more; but its farm tills are the lowest (182k against 208k) and its owners' profit in
+  the last fortnight a third under (10.5k against 15.1k a day). Its day-46 dip had no starving where the run without
+  it had 9. Single runs: the differences are of the size two seeds would give, but for the second month's pace.
+- **What still needs a year** (the review's condition for keeping a7500b4, not met here: no run past 120 days): the
+  land's hours, its tills and the food through a winter and a harvest, with the hold gone and the brake in its place.
+
+**What the two waiting decisions would take** (from the code; nothing here is changed):
+
+- **(a) The Houses' estate crews sized as the model's, their places taken as posts are.** The model (`house_week`)
+  keeps an estate crew of what's left of a House's week's budget after its retainers (three tenths, twelve at most),
+  its pieces mended, its finery and its works, up to a tenth of the realm's workers (`len(self.workers) // 10`), at the
+  going rate; its crew is posts (`staff_to`: vacancies, filled in the labour market like any employer's, let go when
+  the budget falls). The game's (`institutionsWeek`, `Core/RatwInstitutions.cpp`) budgets as the model (`k` 4, `a2` 0.3)
+  and posts what's left as a week's hire, "building work" at its head's work spot. What differs:
+  1. `hireForWeek` cuts every hire to 12 slots (`j.slots = std::min(slots, 12)`): the estate crew wants its own most,
+     a tenth of the realm's grown wolves of working age (about 80 of today's 830), so a cap passed in, or several hires.
+  2. Its places are taken after every business's: `oddJobFor` (`Core/RatwOddJobs.cpp`) has the jobless and the idle
+     (an idle hand is asked as jobless) take the best-paid "a hand" or "a hand at the shop" first (`bestOf`), and a
+     "building work" or "about the home" hire only in the first-open pass after, by its place in the list. Taken as
+     posts: `bestOf` to weigh an institution's week's hire (`until >= 0`, its payer a House, a town's own or the
+     church) with the businesses', by its pay a slot. (Round 4's trial ranked them by pay, ties by lot, and they still
+     went untaken; with them first, the Gini was no better in 60 days, 0.566.)
+  3. Its untaken places aren't posts open: `tendLabour` counts only a `till:` payer's hires in `vacancies_`, so a House
+     short of crew shows in no measure (the realm's `vacant`). Counting them under the House's key would; the House's
+     wage needs no review (it pays the going rate, as the model's).
+  4. A poached hand: `lookingFor` already draws from posts to any hire paying better, the crews' too.
+  5. Hires aren't saved: a restart mid-week drops the week's crew until the next week's budget (as now).
+  6. Its size: four Houses, up to about 320 places at the going rate, near 19k a day at the full size against the
+     Houses' 1.5k a day of crews now. Their fortunes would go as the model's (0.17 of the founding by day 168), into
+     households' pay: the lever the Gini wants, by the model's reading. A year's run is its measure.
+- **(b) Real payers for the capital's posts of last resort.** Asked of every resident on day 3 (a run with the payers'
+  columns, since taken out), the capital's treasury pays 85 paid civilians as "the town" (`payerOf`'s last line,
+  `Core/RatwWages.cpp`), besides the watch: 27 live-in servants (23 "in service to" one of 16 households, 4 "keeping
+  the chambers" at Mossgrave Court), 3 cooks of Grayrock Hall, 10 gardeners (in the Rainward Hills' west cell), 8
+  carriers, 4 washers, 4 messengers, 3 timber haulers at the docks, 3 gate keepers, a lamplighter, and some 21 of the
+  city's own (the City Office, the Counting House's clerks, the customs, the records, the court and the gaol, the
+  harbour, the Rain Hall, the school, the infirmary). What it would take:
+  1. **Live-in servants** (27): the household-servant rule skips a servant whose home is the room it works in
+     (`own->second.homeCell != job.work.cell`), so every live-in servant falls through to the town. Without that test
+     `richestAt` picks the household's richest, which can be a fellow servant: it needs the richest who isn't in service
+     itself (whose own paid post isn't worked at home), and `richestAt` to see a house's "_down" rooms as it does its
+     "_up" (Grayrock Hall's kitchen). The household pays at the going rate from its purse; one that can't pays short,
+     and its servant leaves after a week under 40% (`LookBelow`), as from any post.
+  2. **A House's seat staff** (the chambers at Mossgrave Court, the cooks of Grayrock Hall): `indexEmployers` lists a
+     House's head at its work room only, so its seat's other rooms find no employer. Listing the seat's rooms (its
+     "_up" and "_down") under the head; better, paid from the House's account (`house:`), as its retainers are, not its
+     head's purse.
+  3. **Gardeners and gate keepers** (13): their work is an outdoor cell nobody owns. As the hands at a trade's works
+     already are (`trades`: "or else by its town's richest great house"), a title rule ("the gardens") paid by the
+     town's richest House; the gates are the city's, as the watch.
+  4. **Carriers, washers, messengers, haulers, the lamplighter** (20): work "for hire". The household rule
+     (`titleWages`' `household`: they live by odd jobs, no wage), or the docks' account for the haulers (it is a
+     buyer's fund now) and the Town Works for the lamplighter (doc 59).
+  5. **The city's own** (about 21): rightly the capital's. With (1) to (4) the capital pays them, the gates and the watch,
+     about 2.3k a day at 60p against its 3.6k of tax; its buyers' funds outside its budget (2.8k a day) still drain it: that
+     is decision 3's option (a).
+
+**Saves:** `paceLand` in the society's memory (`RatwWire.cpp`, so in checkpoints): at most `PaceLandDays` readings, each
+day 0 to 365,000,000 and each value 0 to `PaceLandMost`, in order; a bad one drops them all, and an older save reads
+none (the brake waits a fortnight). `landWorkSeen_` (the land's hours at the last turn) isn't saved: after a restart the
+first turn reads none.
+
+**The tick:** the brake sums 1,083 residents' credited hours once a day; the posts open ask a producer's hands wanted
+once more a day. The smoke's 0.0665 ms a tick, the society's share 0.032 ms, was run beside three 120-day runs and
+other sessions' on a loaded machine (round 4's smoke: 0.034 ms alone), so not comparable; the daily passes' extra
+work is two loops over the residents and the businesses once a day, nothing per tick.
+
+**Tests** (each fails with its change undone, checked one at a time: `py/mutate.py` in the round's scratch):
+
+- `crafting_tests` `aProducersPostsBySales`: a fishery selling for a hand's day, planning two for its bare shelf, has no
+  post open (with the half again: one); for three hands' days, two; for ten and more, three, its hand and two more
+  (the cap undone: ten).
+- `crafting_tests` `aHireTakenIsNoPostOpen`: three idle wolves take every slot of a fishery's hire, and nothing stands
+  open (those on its hires not subtracted: two).
+- `roads_tests` `thePaceStepsUpWithTheLand`: with no work for more hands, no post open (the exclusion undone: three).
+- `roads_tests` `aCityHandAtTheFishery`: above (the one market undone: its hire isn't the land's).
+- `roads_tests` `thePaceIsSteadied`: the land's hours down a tenth on the week, the pace holds with the food rising
+  (the brake undone: it goes on); down a fortieth, it goes on (no slack: it holds); a day missing, it goes on; the
+  readings saved (not saved: none read back), a bad one dropping them, an older save reading none.
+- All 67 suites pass (`pg_tests` skipped: no database).
+
+**The smoke** (30 days, `build/econ_watch` at `7797bc0`, `--deterministic --hours --threads 3`): conserved every day,
+nobody hungry, none starving; digest 1f8d4fae1c99ee3c. Day 30 against `m3`: the Gini 0.551 (0.552), the poorer half
+0.151 (0.152), the wage and the going rate 60p (60p), the pace 0.161 (0.107), bread 0.074 LD (0.074), a bronze, an
+iron and a steel sword 2.50, 5.07 and 10.14 LD (2.50, 5.04, 10.12); the land's hours the week 20.4k (21.3k); the
+Houses 1,225k (1,238k), the capital 207k (205k), the farm tills 304k (328k); the owners' profit against wages, days
+15–29, 0.26 (0.27).
+
+**For the user:**
+
+1. **The brake in the hold's place?** Recommended: keep it (`99dcd27`). It is loose (24 of 107 days), it
+   held the pace back in the second month while the land's hours fell, and its day-46 dip starved nobody; but it does
+   not mend the trajectory, and its farm tills drained the most. Dropping it leaves the food as the pace's only check,
+   as round 4 left it. A year's run is still the test of either.
+2. **The Houses' estate crews** (round 4's decision 2): what it would take is above. Recommended as before: the next
+   balancing step, measured over a year; it is the one lever here aimed at the households' share, which every 120-day
+   run shows falling.
+3. **The capital's posts** (round 4's decision 3): what each kind would take is above. Recommended: (b) for the
+   servants, the seat staff, the gardeners and the work "for hire" (60 of the 85), and (a), the budget, for the rest
+   and the buyers' funds.
+4. **Lodging for the land's distant hires:** measured worse (above) and not kept. If the user wants city hands to live
+   at the land's bunkhouses for the look of it (they are in the export), it costs the land's producers their lodgers'
+   food and, in this run, a tenth of the land's hours.
+5. Round 4's decision 4 (the founding wage against the money) stands as it was: by day 120 the wage is 80p and rising,
+   the model's 97p by day 112.

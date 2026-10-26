@@ -2170,15 +2170,147 @@ void thePaceIsSteadied()
            "Readings older than the week are dropped, and it holds (" + std::to_string(m.paceCover.size()) + " left)");
     m = evening(17, week(17, 0, Society::PaceCoverCap), true);
     expect(std::abs(m.pace - (.5 - Society::PaceBack)) < 1e-9, "and while the realm goes hungry it steps back faster (" + std::to_string(m.pace) + ")");
+    // (Within PaceNoise of a week ago the week's food didn't fall: a reading wanders by a few hundredths. Doc 64, Phase 13.)
+    {
+        const auto base = w.save();
+        const auto fellBy = [&](double fall, double* now) {
+            auto saved = base;
+            saved.calendarDays = 20 + 22. / 24;
+            saved.society.memory.pace = .5;
+            saved.society.memory.paceCover = week(20, (now ? *now : 0) + fall, Society::PaceCoverCap);
+            for (auto& [id, life] : saved.society.residents)
+                life.hunger = 0;                     // (Fed again, after the hungry evening above.)
+            expect(w.restore(saved).ok, "To day 20's evening");
+            run(w, 600 * 3);
+            if (now)
+                return w.society().state().memory.pace;
+            return w.society().state().memory.paceCover.back().second;   // (Today's reading, from the same evening each time.)
+        };
+        double now = fellBy(0, nullptr);
+        const double little = fellBy(Society::PaceNoise / 2, &now), more = fellBy((Society::PaceNoise + Society::PaceSlide) / 2, &now);
+        expect(std::abs(little - (.5 + Society::PaceStep)) < 1e-9,
+               "Food down a few hundredths of a day a head on the week: it didn't fall, and the pace goes on (" + std::to_string(little) + ")");
+        expect(std::abs(more - .5) < 1e-9, "down by more, though under PaceSlide: it holds (" + std::to_string(more) + ")");
+    }
+    // The brake (2026-10-26): the land's hours worked over the last seven day passes against the seven before. Down by
+    // over PaceLandSlack, the pace holds though the food holds; down by less, it goes on; a day missing, the food alone
+    // decides. And the readings are saved, a bad one dropping them all.
+    {
+        const auto base = w.save();
+        const auto landFell = [&](double since, std::int64_t missed) {
+            auto saved = base;
+            saved.calendarDays = 30 + 22. / 24;      // (The turn of day 31.)
+            saved.society.memory.pace = .5;
+            saved.society.memory.paceCover = week(30, 0, Society::PaceCoverCap);
+            // (A week of 100 a day, then the week to the turn at `since` a day: the strip has no land, so the turn's own
+            // reading is none, and the six days before it carry the week's.)
+            saved.society.memory.paceLand.clear();
+            for (std::int64_t d = 31 - (Society::PaceLandDays - 1); d < 31; ++d)
+                if (d != missed)
+                    saved.society.memory.paceLand.push_back({d, d <= 31 - Society::PaceLandDays / 2 ? 100. : since * 7 / 6});
+            for (auto& [id, life] : saved.society.residents)
+                life.hunger = 0;
+            expect(w.restore(saved).ok, "To day 30's evening");
+            run(w, 600 * 3);
+            return w.society().state().memory;
+        };
+        auto m = landFell(100 * (1 - 2 * Society::PaceLandSlack), -1);
+        expect(std::abs(m.pace - .5) < 1e-9 && m.paceLand.size() == std::size_t(Society::PaceLandDays) && m.paceLand.back().first == 31,
+               "The land's hours down a tenth on the week before: the pace holds, the food rising (" + std::to_string(m.pace) + ")");
+        auto back = wire::readSociety(wire::society(w.society().state())).memory.paceLand;
+        expect(back == m.paceLand, "and the land's hours are saved, each with its day");
+        auto bad = w.society().state();
+        bad.memory.paceLand.front().second = -1;
+        expect(wire::readSociety(wire::society(bad)).memory.paceLand.empty(), "a bad reading in a save drops them all");
+        auto old = wire::society(w.society().state());
+        expect(old.find("memory") && old.find("memory")->erase("paceLand"), "(A save from before them)");
+        const auto oldRead = wire::readSociety(old);
+        expect(oldRead.memory.paceLand.empty() && oldRead.memory.paceCover == m.paceCover, "an older save reads none, and the rest as it was");
+        m = landFell(100 * (1 - Society::PaceLandSlack / 2), -1);
+        expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9, "down a fortieth: it goes on (" + std::to_string(m.pace) + ")");
+        m = landFell(100 * (1 - 2 * Society::PaceLandSlack), 25);
+        expect(std::abs(m.pace - (.5 + Society::PaceStep)) < 1e-9, "down a tenth with a day missing: no fortnight to weigh, it goes on (" +
+                                                                      std::to_string(m.pace) + ")");
+    }
     expect(w.society().conserved(), "Nothing it reads moves a penny");
     Society::setWorkByHours(false);
 }
 
+// A city hand at a distant fishery (doc 64, Phase 13, the review): with work by the hours a fishery's hire is open to
+// anyone from a city, as a farm's. East is a city (150 idle wolves and its own); west's fishery, at the strip's far end,
+// sells for more hands than its fisher. An idle wolf of east takes its hire and walks there from its home in the city
+// (no bunkhouse: lodging city hands at the land's own measured worse, doc 64), works the day, and is paid; its hours are
+// credited to the fishery's work.
+void aCityHandAtTheFishery()
+{
+    Society::setWorkByHours(true);
+    std::string extra = resident("wf", "Wade Fenn", "civilian", "fishes the waters off Westmere", 7, 9.5, 8, 9.5);
+    for (int n = 1; n <= 150; ++n)
+        extra += resident("ec" + std::to_string(n), "Idle " + std::to_string(n), "civilian", "idling in the square", 0, 2.5 + n % 12, 0, 2.5 + n % 12);
+    auto f = strip("EE.....WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    const auto till = s.tillOf("wf");
+    const auto* fish = items::good("fish");
+    expect(fish && s.account(till), "The fishery keeps a till");
+    // Two evenings of fish sold for more hands than its fisher, its money to hire with, its folk fed.
+    for (std::int64_t day = 3; day <= 4; ++day)
+    {
+        auto saved = w.save();
+        saved.calendarDays = double(day) + 22. / 24;
+        saved.society.memory.pace = .5;
+        saved.society.memory.paceCover.clear();
+        for (auto& [who, life] : saved.society.residents)
+            life.hunger = life.fatigue = 0;
+        saved.society.accounts.at(till).stock["fish"] = 80;
+        saved.society.accounts.at("treasury").cash -= 80 + 3000;
+        saved.society.accounts.at("e1").cash += 80;
+        saved.society.accounts.at(till).cash += 3000;
+        expect(w.restore(saved).ok, "To an evening");
+        expect(s.sale(till, "e1", "fish", 80, 1, "test: the day's fish"), "the day's fish sold");
+        run(w, 600 * 3);
+    }
+    const auto hire = [&]() -> const Society::OddJob* {
+        for (const auto& j : s.oddJobs())
+            if (j.payer == till && j.until >= 0 && j.kind == "a hand")
+                return &j;
+        return nullptr;
+    };
+    expect(hire() && s.farmHire(*hire()) && hire()->community == "west", "The fishery hires, a hire of the land's");
+    // Its next working day, to 23:00.
+    const double before = s.workBy().count("wf") ? s.workBy().at("wf").first : 0;
+    while (w.calendarDays() < 5 + 23. / 24)
+        w.tick(1);
+    std::string hand;
+    int worked = 0;
+    if (const auto* j = hire())
+        for (const auto& [who, stage] : j->stage)
+        {
+            worked += stage == 2;
+            if (who.rfind("ec", 0) == 0 && stage == 2 && hand.empty())
+                hand = who;
+        }
+    expect(!hand.empty(), "An idle wolf of the city took the fishery's hire and worked its day (" + std::to_string(worked) + " worked)");
+    const auto* life = s.state().residents.count(hand) ? &s.state().residents.at(hand) : nullptr;
+    expect(!s.state().memory.lodging.count(hand) && life && life->homeCell == id(0), "It still lives in the city");
+    const double credited = s.workBy().at("wf").first - before;
+    expect(credited >= Society::HireSpells * worked, "Its hours are credited to the fishery's work: " + std::to_string(credited) + " hours, " +
+                                                         std::to_string(worked) + " hands' days");
+    bool paid = false;
+    for (const auto& e : s.state().ledger)
+        paid = paid || (e.from == till && e.to == hand && e.kind == "an odd job: a hand");
+    expect(paid, "and it is paid from the fishery's till");
+    expect(s.conserved(), "Every penny is kept");
+    Society::setWorkByHours(false);
+}
+
 // And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
-// go on to the shops). Its sales wanting a hand's day, the land's hands keep up and the pace goes on, though the farm,
-// planning half again for its bare shelf, hires; its sales wanting three hands' days, they don't, and it holds. But with
-// no work for more hands (its store full, its work in hand full at two turns of the day), it counts at the hand it has,
-// whatever its sales want (it lets hands go, not hires them): the pace goes on.
+// go on to the shops). Its sales wanting a hand's day, the pace goes on, though the farm, planning half again for its
+// bare shelf, hires. Its sales wanting three hands' days, the land falls behind: since 2026-10-26 that no longer holds
+// the pace (it held it at the first shortage of hands, and no wage was ever bid); the farm's posts stand open, for its
+// review to bid its wage up. With no work for more hands (its store full, its work in hand full at two turns of the
+// day) it wants none, whatever its sales: the pace goes on.
 void thePaceStepsUpWithTheLand()
 {
     Society::setWorkByHours(true);
@@ -2223,8 +2355,13 @@ void thePaceStepsUpWithTheLand()
                std::to_string(s.handsWanted(till)) + ", sells for " + std::to_string(s.handsWanted(till, false)) + ")");
     for (std::int64_t d = 6; d < 9; ++d)
         pace = evening(d, 24);
-    expect(std::abs(pace - .5) < 1e-9 && s.handsWanted(till, false) >= 3,
-           "Its sales three hands' days with only its own, the land falls behind: it holds (" + std::to_string(pace) + ")");
+    int onHire = 0;
+    for (const auto& j : s.oddJobs())
+        if (j.payer == till && j.until >= 0)
+            onHire += int(j.stage.size());
+    expect(std::abs(pace - (.5 + Society::PaceStep)) < 1e-9 && s.handsWanted(till, false) >= 3 && s.vacanciesOf(till) + onHire >= 2,
+           "Its sales three hands' days with only its own, the land falls behind: the pace goes on, the farm's posts open (" +
+               std::to_string(pace) + "; " + std::to_string(s.vacanciesOf(till)) + " open, " + std::to_string(onHire) + " on its hire)");
     // Its store full and no money to hire with, for days: its work in hand fills, and is full at two turns of the day.
     // (Its premises improved, so its hours go further; its folk fed, and its till emptied, each evening.)
     {
@@ -2268,8 +2405,9 @@ void thePaceStepsUpWithTheLand()
     until(14 + 1. / 24);
     pace = s.state().memory.pace;
     expect(s.idleBusiness(till) && s.handsWanted(till, false) >= 3 && std::abs(pace - (.5 + Society::PaceStep)) < 1e-9,
-           "Its sales three hands' days, but no work for more: at its one, the land keeps up and the pace goes on (" + std::to_string(pace) + "; its sales " +
+           "Its sales three hands' days, but no work for more: the pace goes on (" + std::to_string(pace) + "; its sales " +
                std::to_string(s.handsWanted(till, false)) + " hands, its work in hand " + std::to_string(s.workBankedOf("rk")) + ")");
+    expect(s.vacanciesOf(till) == 0, "and its posts aren't open: it has no work for more hands (" + std::to_string(s.vacanciesOf(till)) + ")");
     expect(s.conserved(), "Every penny is kept");
     Society::setWorkByHours(false);
 }
@@ -3482,6 +3620,7 @@ int main()
         theMonitorWatches();
         thePaceIsSteadied();
         thePaceStepsUpWithTheLand();
+        aCityHandAtTheFishery();
         sellersPriceFromCost();
     }
     catch (const std::exception& error)

@@ -233,9 +233,12 @@ void Society::tendFields()
 
 bool Society::farmHire(const OddJob& j) const
 {
+    // A farm's; with work by the hours, any of the land's (a fishery's, a quarry's, a mine's, a logging camp's): one labour
+    // market, as the model's (doc 64, Phase 13). Its own town's folk alone took a fishery's or a quarry's hires, and the
+    // land's hands, those short most, stood a fifth short with the city's idle a walk away.
     const auto* r = spec(j.producer);
     const auto* p = r ? items::producerFor(r->workLabel) : nullptr;
-    return p && farmWork(p->id);
+    return p && (farmWork(p->id) || workByHours());
 }
 
 void Society::postFarmHires(std::int64_t day)

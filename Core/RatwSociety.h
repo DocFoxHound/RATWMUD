@@ -340,6 +340,9 @@ struct EconomyMemory
     // The realm's food in hand at the day passes of the last week, days a head, each with its day (a day it missed has
     // none: the week is still a week).
     std::vector<std::pair<std::int64_t, double>> paceCover;
+    // The land's hours worked (its producers' but the seasonal fields', their hands' with their own) at the day passes of
+    // the last fortnight, each with its day: the pace's brake (Society::PaceLandSlack; doc 64, Phase 13).
+    std::vector<std::pair<std::int64_t, double>> paceLand;
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     // Households' pieces founded (doc 64, Phase 13: once, in a new world's first days with work by the hours; never into a
@@ -994,6 +997,9 @@ class Society
     std::map<std::int64_t, double> paceHeld_;       // (holdPace: a test's.)
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
+    // The land's hours credited since the start, at the last day pass (the pace's brake: a day's are the difference).
+    // Not saved: after a restart, -1, and the first pass reads none.
+    double landWorkSeen_ = -1;
 
   public:
     // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
@@ -1002,14 +1008,19 @@ class Society
     // founding's stores last days. Where it settles is what the realm's hands can carry.
     // Steadied (Phase 13): it goes on only while the realm's food in hand (homes and shelves, days a head, a town's at
     // most PaceCoverCap) hasn't fallen over the week (today's reading against the one exactly a week ago: PaceWeek
-    // days, ends included) and the land's hands keep up with what its sales want (short by PaceShortHands at most; its
-    // producers' want without the half again of a shelf near bare, which theirs always are, the goods going on to the
-    // shops; one with no work for more hands, at the hands it has; a realm with no land, kept up); it steps back while
-    // the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back faster while the
-    // realm goes hungry, as before.
+    // days, ends included; within PaceNoise days a head, a reading wandering by a few hundredths, it didn't fall); it
+    // steps back while the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back
+    // faster while the realm goes hungry, as before. (2026-10-26: no longer held while the land's hands are short of
+    // what its sales want. That hold stopped the pace at the first shortage of hands, and with it any wage bid; the
+    // land's shortage is its posts open now, which its weekly review answers by its wage, as the model's market does.)
+    // A loose brake in its place (2026-10-26): it holds while the land's hours worked (its producers' but the seasonal
+    // fields', with their hands') over the last seven day passes fell by over PaceLandSlack against the seven before
+    // (PaceLandDays of readings, each with its day; fewer, or a gap, and the food alone decides). The pace stands
+    // while the realm stops following it to the land, not at the first shortage of hands.
     static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
-    static constexpr int PaceWeek = 8;
-    static constexpr double PaceSlide = .15, PaceFloor = 1, PaceCoverCap = 4, PaceShortHands = .05;
+    static constexpr int PaceWeek = 8, PaceLandDays = 14;
+    static constexpr double PaceSlide = .15, PaceNoise = PaceSlide / 3, PaceFloor = 1, PaceCoverCap = 4, PaceLandSlack = .05;
+    static constexpr double PaceLandMost = 1e9;    // (A day's land hours read back from a save: at most this.)
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
@@ -1579,8 +1590,11 @@ class Society
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).
     // Farmhands (doc 42, the user, 2026-10-06): every farm, orchard and vineyard hires hands for a few days when it has the
     // money, from its town or from any city; one from elsewhere lodges in the farm's bunkhouse (BunkBeds), fed from its
-    // larder, which the farm stocks. A city: a community of CityResidents or more.
-    bool farmHire(const OddJob& j) const;          // A hire posted by a farm (its producer works the land).
+    // larder, which the farm stocks. A city: a community of CityResidents or more. (With work by the hours, every
+    // producer's hire is the land's, a farm's or not: doc 64, Phase 13.)
+  public:
+    bool farmHire(const OddJob& j) const;          // A hire posted by the land's (a farm, or with the hours any producer).
+  private:
     static constexpr int BunkBeds = 10;
     static constexpr std::size_t CityResidents = 150;
     std::map<std::string, Spot> bunkhouses_;
