@@ -478,12 +478,15 @@ void floodSellsThenStops()
     jumpTo(*w, p, 3 + 7.9 / 24);
     jumpTo(*w, p, 3 + 8.01 / 24);
     keep(moves, p);
-    int landed3 = 0;
+    int landed3 = 0, sold3 = 0, held3 = 0;
     for (const auto& m : moves)
-        landed3 += m.action == "landed" && m.day == 3 ? m.quantity : 0;
-    expect(landed3 == sold, "the second morning they land what they sold: " + std::to_string(landed3) + " of " + std::to_string(sold));
+        if (m.day == 3)
+            landed3 += m.action == "landed" ? m.quantity : 0, sold3 += m.action == "sold" ? m.quantity : 0;
     for (const auto& id : p.playersOf("flood"))
-        expect(s.account(id) && Society::stock(*s.account(id), "fish") <= 99, id + " holds a pack at most");
+        held3 += s.account(id) ? Society::stock(*s.account(id), "fish") : 0;
+    expect(landed3 == sold && held3 == 10 * 99 - sold3, "the second morning they land what they sold, each a full pack again: " +
+                                                          std::to_string(landed3) + " of " + std::to_string(sold) + "; " +
+                                                          std::to_string(held3) + " held after selling " + std::to_string(sold3));
     // Two weeks on, at eight, they stop; and sell no more.
     jumpTo(*w, p, 16 + 7.9 / 24);
     jumpTo(*w, p, 16 + 8.01 / 24);
@@ -599,14 +602,29 @@ void buyoutHoldsTheFood()
         return n;
     };
     const auto larkfield = food(s.tillOf("lg"));
+    // Every shop's till holds food it doesn't sell besides (a maker's materials): not to be had, and passed over (the
+    // five had given up at the first five such, and bought almost nothing on DEV's map).
+    std::map<std::string, int> unsold;
+    for (const auto& keeper : {"ug", "us", "uk"})
+    {
+        const auto deals = s.wares(keeper);
+        int kinds = 0;
+        for (const auto& g : items::allGoods())
+            if (kinds < 6 && g.nourish > 0 && g.id == items::baseOf(g.id) && std::find(deals.begin(), deals.end(), g.id) == deals.end() &&
+                s.create(s.tillOf(keeper), g.id, 3, "test: materials"))
+                ++kinds, unsold[keeper] += 3;
+    }
+    expect(unsold["us"] == 18, "the smith holds six kinds of food it doesn't sell: " + std::to_string(unsold["us"]));
     econ::Players p(*w, {"buyout"}, 2, 0);
     std::vector<econ::PlayerMove> moves;
     jumpTo(*w, p, 2 + 5. / 24);
-    expect(food(s.tillOf("ug")) + food(s.tillOf("uk")) > 0 && larkfield > 0, "both towns' shops have food");
+    expect(food(s.tillOf("ug")) + food(s.tillOf("uk")) > unsold["ug"] + unsold["uk"] && larkfield > 0, "both towns' shops have food to sell");
     jumpTo(*w, p, 2 + 6.01 / 24);
     keep(moves, p);
     const int bought = count(moves, "bought");
-    expect(bought > 0 && food(s.tillOf("ug")) + food(s.tillOf("uk")) == 0, "every piece of Ridgemere's food bought: " + std::to_string(bought));
+    expect(bought > 0 && food(s.tillOf("ug")) == unsold["ug"] && food(s.tillOf("uk")) == unsold["uk"] && food(s.tillOf("us")) == unsold["us"],
+           "every piece of Ridgemere's food for sale bought, and none of what isn't: " + std::to_string(bought) + "; left " +
+               std::to_string(food(s.tillOf("ug"))) + ", " + std::to_string(food(s.tillOf("uk"))) + ", " + std::to_string(food(s.tillOf("us"))));
     expect(food(s.tillOf("lg")) >= larkfield, "none of Larkfield's");
     std::int64_t held = 0;
     for (const auto& id : p.playersOf("buyout"))
@@ -697,7 +715,9 @@ void drainWorksEveryBench()
     for (const auto& e : w->takeEvents())
         if (e.kind == "economy" && e.detail == "a hand at the bench" && e.actor == s.tillOf("ls"))
             fromTill += e.coins;
-    expect(count(moves, "set to work", "ls") >= 2 && working == 2, "both at work beside the smith: " + std::to_string(working));
+    expect(count(moves, "set to work", "ls") == 2 && working == 2,
+           "both at work beside the smith, keeping at it (each set to work once in five beats): " + std::to_string(working) + ", " +
+               std::to_string(count(moves, "set to work", "ls")));
     expect(earned > 0 && fromTill == earned, "paid from its till: " + std::to_string(earned) + "p, " + std::to_string(fromTill) + "p");
     const auto day = p.takeDay();
     expect(day.find("\"town\":\"larkfield\",\"benches\":1,\"working\":2") != std::string::npos, "the block has them at work: " + day);

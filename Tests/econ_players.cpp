@@ -1024,19 +1024,28 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
             const auto* till = shop.town == capital_ && open(shop) ? society.account(society.tillOf(shop.keeper)) : nullptr;
             if (!till)
                 continue;
+            // (What it sells: food it holds and doesn't sell, its materials, isn't to be had.)
+            const auto deals = society.wares(shop.keeper);
             std::set<std::string> bases;
             for (const auto& [item, n] : till->stock)
-                if (const auto* good = items::good(item); n > 0 && ((good && good->nourish > 0) || items::baseOf(item) == "meal"))
+                if (const auto* good = items::good(item); n > 0 && ((good && good->nourish > 0) || items::baseOf(item) == "meal") &&
+                                                          std::find(deals.begin(), deals.end(), items::baseOf(item)) != deals.end())
                     bases.insert(items::baseOf(item));
             for (const auto& base : bases)
-                for (; next < players.size(); ++next)
+                while (next < players.size())
                 {
+                    // One whose purse is empty, or whose pack has every kind it can hold, gives way to the next.
                     const auto* pack = society.account(players[next]);
-                    if (pack && pack->cash > 0 && pack->stock.size() < MaxGoodsKinds)
-                        buyAll(s, players[next], shop, base);
+                    if (!pack || pack->cash <= 0 || pack->stock.size() >= MaxGoodsKinds)
+                    {
+                        ++next;
+                        continue;
+                    }
+                    buyAll(s, players[next], shop, base);
                     const auto* left = society.account(society.tillOf(shop.keeper));
                     if (!left || Society::stockAll(*left, base) == 0)
                         break;
+                    ++next;                         // (Some left: more than its purse or its pack would take.)
                 }
         }
     }
