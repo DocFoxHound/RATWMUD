@@ -67,6 +67,16 @@ struct StationHash
         return std::hash<std::string>{}(*s.cell) ^ (std::size_t(s.x) * 0x9e3779b97f4a7c15ULL) ^ (std::size_t(s.y) * 0xc2b2ae3d27d4eb4fULL);
     }
 };
+// A producer of the land's food (a fisher, a rabbit or sheep farm) or of its milk (the dairy's and the pasture's, for the
+// realm's porridge and cheese): what the food makers need on Dawnday (doc 64, Phase 13).
+bool landFood(const items::Producer* producer)
+{
+    if (producer)
+        for (const auto& [item, n] : producer->out)
+            if (item == "milk" || Society::edible(item))
+                return true;
+    return false;
+}
 // Thrown by a resident deciding at once with the others, on a thread, when its deciding would change something shared:
 // it decides in its turn instead (Society::decideAuthored).
 struct DecideInTurn
@@ -699,8 +709,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             else if (festival)
                 resting = "Work stops for " + plan.name + ".";
             // Shops open after the service, so everyone can eat (doc 42); those that make food keep at it all afternoon,
-            // so the shelves are stocked for the day (the user, 2026-10-07: food makers work Restday after service).
-            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && (hour < ServiceEnd + 4 || (foodShop(id) && onHours))))
+            // so the shelves are stocked for the day (the user, 2026-10-07: food makers work Restday after service); and
+            // so do the land's producers of food and milk, so Dawnday's makers have their materials (doc 64, Phase 13).
+            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && (hour < ServiceEnd + 4 || (foodShop(id) && onHours))) &&
+                     !(!merchantRole && hour >= ServiceEnd && onHours && landFood(items::producerFor(job->title))))
                 resting = "Restday: no work today.";
             if (!resting.empty())
                 onHours = false;
