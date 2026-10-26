@@ -952,6 +952,15 @@ void heldPace()
     const auto read = econ::readPace(free);
     expect(free.rfind("day,when,society_day,pace\n", 0) == 0 && read.size() >= 2 && read.count(0) && read.count(1),
            "pace.csv has the pace of each of the society's days: " + free);
+    // A row at each turn of the society's day, once (a turn can fall after the watch's midnight: at the day's records
+    // one went missing on DEV's map, day 36 of 44).
+    {
+        const auto all = rows(base / "free" / "pace.csv");
+        bool once = all.size() == read.size() + 1;
+        for (std::size_t i = 1; i < all.size(); ++i)
+            once &= all[i].size() == 4 && all[i][1] == "turn" && std::atoll(all[i][2].c_str()) == std::int64_t(i - 1);
+        expect(once, "a row at each turn of the society's day, once: " + free);
+    }
     expect(run("same", " --hold-pace '" + (base / "free" / "pace.csv").string() + "'") == 0, "held to its own pace: " + slurp(base / "same.txt"));
     expect(slurp(base / "same" / "days.jsonl") == slurp(base / "free" / "days.jsonl") && slurp(base / "same" / "pace.csv") == free,
            "a run held to its own pace is that run, record for record");
