@@ -1030,6 +1030,10 @@ Value economyMemory(const EconomyMemory& m)
         employers.add(key, book);
     }
     o.add("employers", employers);
+    auto going = Value::object();
+    for (const auto& [town, rate] : m.going)
+        going.add(town, rate);
+    o.add("going", going);
     auto closed = Value::array();
     for (const auto& pid : m.closed)
         closed.push(pid);
@@ -1149,6 +1153,10 @@ EconomyMemory readEconomyMemory(const Value& o)
             v.items()[0].asNumber() > 0 && v.items()[0].asNumber() < 1e6 && key.size() < 200)
             m.employers[key] = {v.items()[0].asNumber(), std::clamp(int(v.items()[1].asNumber()), 0, 7),
                                 std::clamp(int(v.items()[2].asNumber()), 0, 1000), v.items()[3].asNumber() > 0};
+    // (Saved before doc 64's Phase 13: none, and the labourer's day is the catalogue's until the first measure.)
+    for (const auto& [town, v] : o.object("going").fields())
+        if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() > 0 && v.asNumber() < 1e6 && town.size() < 200)
+            m.going[town] = v.asNumber();
     if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
         m.pace = pace->asNumber();
     // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold.)

@@ -321,7 +321,8 @@ struct EconomyMemory
     std::map<std::string, double> putIn;
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
-    std::set<std::string> closed;                    // Posts a business has let go and keeps empty (doc 64, Phase 6).
+    std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
+    std::set<std::string> closed;                   // Posts a business has let go and keeps empty (doc 64, Phase 6).
     double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
@@ -862,6 +863,11 @@ class Society
     std::unordered_map<std::string, double> lastAtWork_;    // Keeper -> the game day its time at work was last counted.
     void creditWork(const std::string& account, double hours);
     static constexpr double WorkBankedMost = 24;
+    // What each maker made of its crafts' first goods a day (till -> good -> pieces, a fortnight's running average, and
+    // today's so far), and the crafts it found itself short of materials for, today and yesterday (till -> craft ids):
+    // handsWanted plans a short craft by what it could make (doc 63's model, feasible; doc 64, Phase 13). Not saved.
+    std::unordered_map<std::string, std::unordered_map<std::string, double>> madeRate_, madeToday_;
+    std::unordered_map<std::string, std::set<std::string>> shortToday_, shortYesterday_;
     // The hours a batch or a yield takes: its calibrated crafts.json `hours` once work is by hours, else its old
     // `seconds`' worth (the pace the game had: doc 64, Phase 3, until Phase 6 lets businesses take on the hands that
     // calibrated hours need).
@@ -886,7 +892,7 @@ class Society
     const std::unordered_map<std::string, std::pair<double, double>>& workBy() const { return workBy_; }
     // And the labour market's (doc 64, Phase 13): each town's going rate ("" the realm's), an employer's town, and an
     // account's hours of work in hand.
-    const std::unordered_map<std::string, double>& goingRates() const { return going_; }
+    const std::map<std::string, double>& goingRates() const { return state_.memory.going; }
     std::string employerTownOf(const std::string& key) const
     {
         const auto found = employerTown_.find(key);
@@ -1122,15 +1128,18 @@ class Society
     double dayWage(const std::string& town, const std::string& kind) const;
     // The labour market (Docs/Design/64-economy-migration.md, Phase 6; doc 63's model; RatwLabour.cpp). Every employer
     // pays its own wage: a business (its till), and the town's watch, works and posts and the church ("<account>|<kind>").
-    // A new one starts at the going rate for its skill: its town's labourer's wage (the middle of what its unskilled
-    // businesses pay, by their hands) times 1 + skill / skillWage, the Town Works at 0.85 of it, the clergy 1.1.
+    // A new one starts at the going rate for its skill: the labourer's wage (the middle of what the unskilled trades that
+    // make things pay, the makers and the land's producers but its seasonal fields, each as a labourer's day, counted by
+    // the hands its work wants up to those it has: doc 64, Phase 13), a town's own once TownRateWeight hands count in it,
+    // else the realm's; times 1 + skill / skillWage, the Town Works at 0.85 of it, the clergy 1.1. Saved (memory.going).
     // Reviewed weekly on its own day: up when a post of its stood open four days or more (3% to 10% a week, the more
     // of its posts open the more, never past twice the going rate for its skill); down a little after six calm weeks
     // while wolves stand idle; sliding back while over 1.3 times it with nothing open; never under 0.85 times it; down
     // after a week it fell short paying. Its hands judge it by what it paid them lately: paid under 60% of what it owed
     // them, a wolf looks for better each morning; under 40%, it leaves (unless it's the only hand). A wolf in a post that pays
     // well enough is drawn off by a hire paying a tenth more on 4% of mornings, unless its employer is short of hands
-    // or it's the only hand. A post left is open again at once (tendCareers fills it).
+    // or it's the only hand. A post left is open again at once (tendCareers fills it); a post whose holder is away on
+    // another business's hire is open while it's away, unless its business has no work for it (Phase 13).
     std::string employerKey(const Payer& payer, const Position& job) const;
     double employerWage(const std::string& key) const;
     double goingRate(const std::string& town) const;          // A labourer's day in the town (labourDay).
@@ -1142,18 +1151,27 @@ class Society
     std::int64_t lookingFor(const std::string& resident, const Payer& payer, const Position& job, double day) const;
     static constexpr double WageUp = .03, WageUpShort = .10, WageDown = .02, WageFloor = .85, WageMost = 2, WageHigh = 1.3,
                             LeaveBelow = .4, LookBelow = .6, PoachGap = .1, PoachChance = .04, WorksShare = .85, ClergyShare = 1.1;
-    static constexpr int CalmWeeks = 6, OpenDays = 4;
+    static constexpr int CalmWeeks = 6, OpenDays = 4, TownRateWeight = 40;
     // Hands by sales (doc 64, Phase 6), at its weekly review: the hours its sales take a day (its crafts' or yields'
     // hours for what it sells, a fifth more for staples, half again with its shelf near bare, a fifth less with it
     // glutted), in hands of PaidSpells hours; at least its keeper. Short, it opens the posts it let go, then hires for
     // HireDays, the day it's short (a farm a quarter over its wage at sowing and harvest, from the idle, other trades
     // and hands whose business has no work for them: the harvest call); over, at its weekly review, it lets its hires
     // run out, then lets help go (half the excess, one at least), keeping their posts empty. Never more than doubling
-    // its hands (and two) at once.
-    static constexpr double StapleSlack = 1.2, HarvestPay = 1.25;
+    // its hands (and two) at once. (Phase 13:) a craft by its first good, a good several recipes make once; a craft
+    // short of materials lately no more than MadeSlack over what it could make; a business with more work in hand than
+    // its hands use hires none, and its hires end; one that makes nothing (a stall) neither hires nor lets go.
+    static constexpr double StapleSlack = 1.2, HarvestPay = 1.25, MadeSlack = 1.1;
     std::vector<std::string> helpPosts(const std::string& till) const;   // Its help's posts (at its premises).
     int handsWanted(const std::string& till) const;
     bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
+    // A business whose hands have more work in hand than it can use (its bank full: its shelves full, its materials
+    // short; a producer's store full), or a field with none in its window (Phase 13).
+    bool idleBusiness(const std::string& till) const;
+    bool fieldIdle(const std::string& till, const FieldYear& f, const items::Producer& producer) const;   // (Its field's.)
+    // A business whose hands make something: one with crafts (and so its mending), or a producer; not a stall, whose
+    // help sells and whose hours are no work in hand (Phase 13).
+    bool makesThings(const std::string& till) const;
     std::string wageKind(const Payer& payer, const Position& job) const;   // "help", "guard", "labour", "clergy".
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";
@@ -1333,7 +1351,7 @@ class Society
     // oddJobs_), each town's (places, in order), and the farms' hires (anyone from a city may take one). Remade when the
     // list changes (oddVersion_, moved on wherever a job is posted or the day's are cleared), before residents decide.
     std::unordered_map<std::string, std::size_t> oddHeld_;
-    std::unordered_map<std::string, std::vector<std::size_t>> oddByTown_;
+    std::unordered_map<std::string, std::vector<std::size_t>> oddByTown_, oddHiresByTown_;   // (And its businesses' hires.)
     std::vector<std::size_t> oddFarmHires_;
     std::uint64_t oddVersion_ = 1, oddIndexed_ = 0;
     void indexOddJobs();
@@ -1344,7 +1362,7 @@ class Society
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
     std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
-    std::unordered_map<std::string, double> going_, paidToday_, owedToday_, pay7_;
+    std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
     double slack_ = 0;
     void tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // Households and institutions (doc 64, Phase 7; RatwInstitutions.cpp).
@@ -1367,7 +1385,7 @@ class Society
     // kept; returns what it spent.
     std::int64_t buyAndUse(const std::string& payer, const std::string& community, const std::function<bool(const std::string&)>& is,
                            std::int64_t budget, const std::string& what, bool keep);
-    void reviewHands(const std::string& till, std::int64_t day, bool weekly);
+    void reviewHands(const std::string& till, std::int64_t day, bool weekly, int wanted);   // (wanted: handsWanted's.)
     void notePay(const std::string& resident, const std::string& key, std::int64_t coins, std::int64_t owed);
     void tendOwners(std::int64_t day);
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (rebuilt each day: childrenAndStipends).

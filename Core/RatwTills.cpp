@@ -127,10 +127,11 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
     const auto town = communityOfResident(business->founder);
     // Its staffing a day: its keeper, its help (the posts that work where it does and that it pays: doc 46's float), and
     // at most two of those standing open (posts it can't fill aren't wages it pays: doc 63). (Not every post where it
-    // works: a market stall counted the whole market's, a month of dozens of wages for a stall selling a score a day.)
+    // works: a market stall counted the whole market's, a month of dozens of wages for a stall selling a score a day.
+    // Nor a business that makes nothing: the market's street posts it was given, doc 64, Phase 13.)
     int help = 0, open = 0;
     const auto till = "till:" + positionId;
-    if (business->role == "merchant")
+    if (business->role == "merchant" && makesThings(till))
         for (const auto& p : positions_)
             if (p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell)
             {

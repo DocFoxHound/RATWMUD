@@ -1541,3 +1541,120 @@ every day in every run.
    reward for the risk, or should a shop buy meals at its own normal cost, as it does every other good?
 5. Residents near players go hungry (above). If the stage's life is meant to match the unseen's, it's a fault to
    find first: the long runs, without players, can't see it.
+
+### Phase 13: the labour market unpinned (2026-10-25)
+
+The first of Phase 13's balancing, from a diagnosis of two runs (60 and 32 days from DEV, calibrated hours): the going
+wage never left 12p, and a third of the realm's credited hours were lost to full banks. This part is the labour market
+and the hands; the food chain, the wants and the pace are other parts.
+
+**The going rate** (`tendLabour`; doc 63's `market_wage`):
+
+- **Whose wages:** the unskilled trades that make things (skill 10 or less): businesses with crafts, and the land's
+  producers but its seasonal fields (their pay follows the rate). Not food stalls or moneychangers, which make nothing:
+  they never want more hands than they have, never post a hire, and so never raise. Half the old measure's weight was
+  at shops paying 12p that never wanted more, and two of Ridgemere's market stalls alone held 56 street posts
+  (`payerOf` gives a cell's posts to its first merchant).
+- **Each as a labourer's day:** its wage over 1 + skill / `skillWage`. Nearly every counted maker is skill 10, and the
+  premium was counted twice.
+- **By the hands its work wants,** one at least and those it has at most (`handsWanted`, worked out once a day for the
+  reviews and the rate).
+- **One market:** a town has its own rate only with 40 hands' weight (`TownRateWeight`; today only Ridgemere), else the
+  realm's. A small town's producers are kept to twice the realm's rate, not their own.
+- **Measured afresh daily** (a town that loses its makers falls back to the realm's) **and saved** (`memory.going`): a
+  restart no longer prices its first day at 12p.
+
+**Posts and hires:**
+
+- **A post whose holder is away on another business's hire stands open** while it's away, as the model's `hire()`
+  opens the post it leaves: its employer's open days count, and it raises after four. Not when its own business has no
+  work for it (its hands are free to go), nor the Town Works'. Its hands count as before: it comes back.
+- **The jobless and the idle** (not children, not the land's call) take the best-paid business hire open to them
+  before chores, the first of the best by the list. A raise now draws them.
+- **A business with more work in hand than its hands can use** (`idleBusiness`: its bank full; a producer's its own; a
+  field with none in its window) hires none, and its running hires end at its daily review.
+- **A business that can't pay a hire's share** ends the hire, and its weekly review hears it fell short.
+
+**Hands wanted** (`handsWanted`):
+
+- **A craft by its first good,** as `craft()` judges it (a butcher's meat, not the hides). **A good several recipes
+  make** (pig and sheep for meat, three for leather, two for plaster) **counted once,** by the first in `craft()`'s
+  order with its materials in hand.
+- **A craft short of materials** today or yesterday plans no more than 1.1× what it could make (what it made lately, a
+  fortnight's average, or what a week of its materials in hand would make), and not half again near bare: its shelf is
+  bare for want of them (doc 63's feasible). The foundry's copper and tin crafts, whose ores nobody brings in, asked
+  for hands they could never use.
+
+**The cord loop.** A maker buys what its own crafts make as a supplier does: from other makers and the land, never from
+the town's suppliers, who only bought it back (5,000–30,000 cord a day went round Ridgemere's chandlers and general
+stores, against a few hundred used). A workshop selling a good it works with keeps back its own batches' need (`count ×
+MaterialBatches` over its crafts), so two chandlers can't strip each other.
+
+**Businesses that make nothing** (`makesThings`: no crafts, not a producer; a stall):
+
+- their help's hours aren't credited as work in hand (they were all lost);
+- they neither hire nor let help go;
+- their working money counts no help.
+
+**Fields and producers:**
+
+- **A field's farmer with no work in its window** (all sown, all brought in, between windows nothing wanted) is free
+  for a hire in its town, as an idle hand. The founding's fields are sown, so 52 farmers stood idle from day 2 to the
+  harvest.
+- **The harvest's-end plan is in the day's pass,** so it doesn't wait for the farmer to come to work.
+- **A yield's hours are taken only when it brought something in.** A full store's hours stay in hand, and with the
+  bank full they show as lost, and its hires end.
+- **Tools wear by the hours the work took,** not those credited.
+
+**Not done yet, on purpose:**
+
+- **Prices at the seller's own wage** (`normalCost`, doc 63's `normal_cost`, this doc's Phase 4 plan): measure the
+  going rate first. It reverses Phase 6's "prices follow it", so it needs the user.
+- **The market stalls' street posts paid by the town** instead (about 670p a day from the capital's treasury): a
+  design choice.
+- **A field farm sized by its food goods, and its working money for a harvest's wages;** a slow staffing rate; a
+  keeper's real hours in its hands.
+
+**To watch:**
+
+- **A farmer away on a hire when its window opens** holds the hire to its end (a week at most), and its fields wait:
+  the farm's hands bank hours only the farmer's own work spends. Not seen in 30 days (the harvest is day 213).
+- **A chandler keeps back 40 cord** (its candles' and nets' batches), so the makers that work with cord (jewellers,
+  tinkers, the general stores' charms) get only what's over it. The realm's cord on hand fell from 470–1,500 to
+  20–380; no shortage showed yet.
+- **The going rate's new measure applies at the old pace too:** stalls out, and towns under 40 hands on the realm's.
+
+**Measured** (30 days of DEV's export, calibrated hours, deterministic, against the same run before these changes;
+`days.jsonl`'s label N is the midnight that ends day N-1):
+
+| | before | after |
+|---|---|---|
+| hungry, starving: label 29 | 157, 81 | 17, 0 |
+| label 30 | 174, 147 | 24, 0 |
+| the first hungry spell | label 22 (95, 42) | label 29 (17, 0) |
+| the pace: label 30 | 0.25 (backed off from 0.375) | 0.43 (0.5 at label 29) |
+| Ridgemere's going rate | 12p throughout | 12p to label 25, then 12.13p |
+| employers' wages against it: label 30 | 1.12×, 8.5% over 1.3× | 1.05×, 4.1% over |
+| household Gini; the poorer half's share: label 30 | 0.569; 0.138 | 0.565; 0.141 |
+| hours credited a day, days 15–29 | 4,290 | 5,073 |
+| lost: all; businesses'; producers' | 35.5%; 50.9%; 19.6% | 33.7%; 43.4%; 24.2% |
+| businesses' hands wanted, summed (held) | 625 (357) | 364 (358) |
+| pay a day for hires: a hand, a hand at the shop | 684p, 263p | 1,859p, 834p |
+| pay a day for chores (about the home) | 946p | 407p |
+| cord bought a day | up to 31,800 | up to 540 |
+
+- **Money conserved every day;** the digest 4bf2852fcc5ac2cd twice (before and after the cheap-checks pass).
+- **What moved:** hands went to the businesses' hires instead of chores, the farmers off their sown fields, and the
+  realm credited a fifth more hours; the hands wanted lost the loop, the byproducts and the crafts with no materials;
+  the pace climbed to 0.5 before the first hunger, a week later than before and without starving.
+- **What barely moved: the going rate.** The measure is unpinned, but few makers have a post open four days a week:
+  hires are filled by the idle and the jobless at once, and no business hires into a full bank. Its raises need the
+  pace higher, or more work wanted than there are hands. Producers now show a full store's hours as lost.
+- **The tick** (both runs side by side, the machine shared): 0.110 ms before, 0.096 after (fewer hungry errands); the
+  society's share 0.032 to 0.035.
+
+**Tests:** `crafting_tests` `theGoingRateFromTheMakers` (a stall's wage not in it, the scribe's labourer's day is, the
+realm's for every town, saved), `handsByWhatCanBeMade` (leather counted once; a bakery short of flour wants its keeper),
+`theCordGoesRoundNoMore` (no cord from the general store; the other chandler keeps its batches'),
+`aFullStoreLosesItsHours`, and `seasonalFields` (the farmer free while its fields are sown and between; the harvest's
+end planned at night). All suites pass.
