@@ -201,9 +201,10 @@ void World::tradeCaravans()
     const auto today = std::int64_t(std::floor(calendarDays_));
     for (auto it = roads_.failed.begin(); it != roads_.failed.end();)
         it = today - it->second >= MonthDays ? roads_.failed.erase(it) : std::next(it);
-    // (A refusal is kept till its buyer signs again, with the money, or its till is gone: RoadsState::refused.)
+    // (A refusal is kept till its buyer signs again, with the money, or its till is gone, or a season: RoadsState::refused.)
     for (auto it = roads_.refused.begin(); it != roads_.refused.end();)
-        it = !society_.account(it->first.substr(0, it->first.rfind('|'))) ? roads_.refused.erase(it) : std::next(it);
+        it = !society_.account(it->first.substr(0, it->first.rfind('|'))) || today - it->second >= RoadsState::RefusedKeptDays
+                 ? roads_.refused.erase(it) : std::next(it);
     const auto failedWith = [&](const std::string& buyer, const std::string& item, const std::string& from) {
         return !buyer.empty() && roads_.failed.count(buyer + "|" + item + "|" + from) > 0;
     };
@@ -584,6 +585,10 @@ int World::agreeAgain(StandingOrder& o, const Town& from)
         o.perWeek = std::min({most, std::max(weekly, o.perWeek * 5 / 4 + 1), o.perWeek * 2, o.perWeek + room});
         spare -= promised(from.id, o.item, o.perWeek) - promised(from.id, o.item, before);
     }
+    // Everything that came paid for: its buyer's refusal (a cut order's, running on) is forgotten (round 6, the roads'
+    // review: it stood, and bit when the order later ended for another reason).
+    if (o.delivered > 0 && o.unpaid == 0)
+        roads_.refused.erase(o.buyer + "|" + o.item);
     o.price = orderPrice(from, o.item);
     // Raised (or to be, its seller's room allowing), it is looked at again in a week, till it has caught up with the
     // shop's use; else in a month.

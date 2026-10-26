@@ -331,62 +331,93 @@ void Players::keepMesses()
 void Players::provision(const std::string& s)
 {
     // The Hold's stores kept in food (the user, 2026-10-26: a Chapter has to keep food in for its hands): its
-    // quartermaster, a player of the Chapter, buys at the capital's food shops (in their order, what each sells that
-    // feeds) what tops the stores up to ProvisionDays of a wolf's day's food (Society::DayNourishment) a hand, and puts it
-    // in the stores as the game's "store" does. Its purse is topped up from the capital's treasury first, to twice that
-    // food at a meal's price (a stand-in for the Chapter's dues).
+    // quartermaster, a player of the Chapter, buys at the capital's food shops what tops the stores up to ProvisionDays
+    // of a wolf's day's food (Society::DayNourishment) a hand, and puts it in the stores as the game's "store" does. Its
+    // purse is topped up from the capital's treasury first, to twice that food at a meal's price (a stand-in for the
+    // Chapter's dues). Only food that keeps to the next top-up counts toward the days (lasting: ProvisionDays or more, or
+    // that doesn't spoil), bought first (below, the order); what spoils sooner (porridge, a day) only toward a day's
+    // food, when there isn't enough that lasts (doc 64, Phase 13, round 6, the companions' review: two days of porridge,
+    // 44% of what was stored rotted in the stores).
     auto& society = world_.society();
     const auto hold = holds_.find(s);
     if (hold == holds_.end() || hold->second.empty() || staffOf(s).empty() || playersOf(s).empty())
         return;
     const auto chapter = hold->second.front();
     const auto qm = playersOf(s).front();
-    const auto held = [&] {
+    const auto lasting = [](const std::string& item) {
+        const auto* good = items::good(item);
+        return good && (good->keeps <= 0 || good->keeps >= ProvisionDays);
+    };
+    const auto held = [&](bool lasts) {
         int n = 0;
         if (const auto* a = society.account(chapter))
             for (const auto& [item, k] : a->stock)
-                if (k > 0 && Society::edible(item))
+                if (k > 0 && Society::edible(item) && lasting(item) == lasts)
                     n += k * Society::nourishment(item);
         return n;
     };
-    const int want = ProvisionDays * Society::DayNourishment * int(staffOf(s).size());
-    if (held() >= want)
+    const int day = Society::DayNourishment * int(staffOf(s).size()), want = ProvisionDays * day;
+    // (Still wanted, of food that lasts; and of what spoils sooner, a day's at most, and only what the lasting lacks.)
+    const auto wanted = [&](bool lasts) { return lasts ? want - held(true) : std::min(day, want - held(true)) - held(false); };
+    if (wanted(true) <= 0)
         return;
     const auto capital = capitalNow();
-    const std::int64_t purse = std::int64_t((want - held()) / 50 + 1) * society.pennies(6 / 12., capital) * 2;
+    const std::int64_t purse = std::int64_t(wanted(true) / 50 + 1) * society.pennies(6 / 12., capital) * 2;
     if (const auto* a = society.account(qm); a && a->cash < purse)
         fund(s, qm, purse - a->cash);
+    // What the capital's open food shops have: prepared food before what a craft takes (the hands eat it first,
+    // Society::messFood, and the raw would wait and spoil), then the longest-keeping, then the cheapest for what it
+    // feeds (its catalogue price a point of nourishment); else in the shops' order, as before. (Round 6: the cheapest
+    // first bought bread, which keeps four days, and in a store turned over every day it rotted wholesale every sixth
+    // day, the stores bare till the next dawn and 21 hands gone home hungry in the month: Society::spoil reckons an
+    // account's batches by the day's net, so stock taken in and eaten alike all day never comes in fresh, and its
+    // first batch ages on. That is the society's, found here, not mended; the longest-keeping first steers clear of it.)
+    struct Ware
+    {
+        const Shop* shop;
+        std::string kind;
+        bool raw;
+        double cost, keeps;
+    };
+    std::vector<Ware> wares;
     for (const auto& shop : shops_)
     {
-        if (held() >= want)
-            break;
         if (shop.town != capital || !open(shop))
             continue;
+        const auto* till = society.account(society.tillOf(shop.keeper));
+        if (!till)
+            continue;
         for (const auto& base : society.wares(shop.keeper))
+            if (Society::edible(base))
+                for (const auto& kind : Society::kindsHeld(*till, base))
+                    if (const auto* good = items::good(kind))
+                        wares.push_back({&shop, kind, items::ingredient(kind), double(good->price) / std::max(1, good->nourish),
+                                         good->keeps <= 0 ? 1e9 : good->keeps});
+    }
+    std::stable_sort(wares.begin(), wares.end(), [](const Ware& a, const Ware& b) {
+        return a.raw != b.raw ? b.raw : a.keeps != b.keeps ? a.keeps > b.keeps : a.cost < b.cost;
+    });
+    for (const bool lasts : {true, false})
+        for (const auto& w : wares)
         {
-            const auto* till = society.account(society.tillOf(shop.keeper));
-            if (!till || !Society::edible(base) || held() >= want)
+            if (lasting(w.kind) != lasts || wanted(lasts) <= 0)
                 continue;
-            for (const auto& kind : Society::kindsHeld(*till, base))
+            const int each = std::max(1, Society::nourishment(w.kind));
+            const auto shelf = [&] { return Society::stock(*society.account(society.tillOf(w.shop->keeper)), w.kind); };
+            for (int k = std::min({Lot, shelf(), (wanted(lasts) + each - 1) / each}); k > 0 && wanted(lasts) > 0;)
             {
-                const int each = std::max(1, Society::nourishment(kind));
-                for (int k = std::min({Lot, Society::stock(*society.account(society.tillOf(shop.keeper)), kind), (want - held() + each - 1) / each});
-                     k > 0 && held() < want;)
+                const auto r = society.trade(qm, w.shop->keeper, w.kind, k, true);
+                if (!r.ok)
                 {
-                    const auto r = society.trade(qm, shop.keeper, kind, k, true);
-                    if (!r.ok)
-                    {
-                        k /= 2;                     // (Short of money: fewer.)
-                        continue;
-                    }
-                    note(s, qm, "bought", kind, k, r.total);
-                    if (society.shift(qm, chapter, kind, k, 0, "chapter stores"))
-                        note(s, qm, "stored", kind, k, 0);
-                    k = std::min({Lot, Society::stock(*society.account(society.tillOf(shop.keeper)), kind), (want - held() + each - 1) / each});
+                    k /= 2;                         // (Short of money: fewer.)
+                    continue;
                 }
+                note(s, qm, "bought", w.kind, k, r.total);
+                if (society.shift(qm, chapter, w.kind, k, 0, "chapter stores"))
+                    note(s, qm, "stored", w.kind, k, 0);
+                k = std::min({Lot, shelf(), (wanted(lasts) + each - 1) / each});
             }
         }
-    }
 }
 
 void Players::keepFed(const std::string& s, std::int64_t day)

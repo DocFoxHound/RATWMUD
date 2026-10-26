@@ -507,6 +507,90 @@ void aCompanionEatsFromThePack()
            "unfed, he goes home:\n" + t.ada.said());
 }
 
+void aCompanionLeavesThePacksGoods()
+{
+    // What a companion takes from the pack (round 6, doc 64, Phase 13, the companions' review): a prepared meal before a
+    // raw rabbit, and the rabbit when that is all; never what she carries for a contract she has taken; told when he has
+    // eaten it. Told to wait and left in another place, he takes nothing; she is told he goes hungry away from the food
+    // she carries, and when he goes home, why.
+    Three t(devOptions());
+    auto& w = t.g.world();
+    auto& s = w.society();
+    const std::string bracken = "npc_scout";
+    auto* a = w.entity(t.ada.entityId);
+    w.entity(bracken)->cellId = a->cellId;
+    w.entity(bracken)->position = {a->position.x + 1, a->position.y + 1};
+    t.tick(.3);
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "hire for 6p a day"}, {"target", bracken}}));
+    t.tick(.3);
+    expect(member(t.ada, bracken), "hired");
+    const auto hungry = [&](double hunger) {
+        std::vector<std::pair<std::string, int>> food;
+        for (const auto& [item, n] : s.account(bracken)->stock)
+            if (n > 0 && Society::edible(item))
+                food.push_back({item, n});
+        for (const auto& [item, n] : food)
+            s.consume(bracken, item, n, "test: eaten");
+        auto state = s.state();
+        state.residents[bracken].hunger = hunger;
+        expect(s.restore(state), "Bracken is hungry");
+    };
+    const auto has = [&](const char* item) { return Society::stock(*s.account(t.ada.entityId), item); };
+    expect(s.create(t.ada.entityId, "rabbit", 1, "test: a catch"), "Ada carries a rabbit");
+    const int meals = has("meal");
+    expect(meals > 0, "and her first meals");
+    hungry(61);
+    t.tick(10);
+    expect(has("meal") == meals - 1 && has("rabbit") == 1, "he eats a meal from her pack, not the rabbit");
+    // A contract for meals taken: her meals are the contract's, and he eats the rabbit.
+    Contract k;
+    k.id = "k-test";
+    k.kind = "procure";
+    k.status = "taken";
+    k.taker = t.ada.entityId;
+    k.item = "meal";
+    k.quantity = 5;
+    w.roads().contracts.push_back(k);
+    t.tick(1);
+    hungry(61);
+    t.tick(10);
+    expect(has("meal") == meals - 1 && has("rabbit") == 0, "with a contract for meals taken, he eats the rabbit, not her meals");
+    expect(t.ada.said().find("from your pack") != std::string::npos && t.ada.said().find("rabbit") != std::string::npos,
+           "and she is told:\n" + t.ada.said());
+    w.roads().contracts.clear();
+    // Told to wait, she gone to another place: nothing taken; told he goes hungry away from her food, then why he goes.
+    t.g.command(&t.ada, cmd({{"type", "action"}, {"action", "wait here"}, {"target", bracken}}));
+    t.tick(.3);
+    a->cellId = a->cellId == "exterior" ? "tavern" : "exterior";
+    a->position = a->cellId == "tavern" ? Vec2{10.5, 6.5} : Vec2{17.5, 7.5};
+    a->path.clear();
+    t.tick(1);
+    expect(w.entity(bracken)->cellId != a->cellId, "apart: he in " + w.entity(bracken)->cellId + ", she in " + a->cellId);
+    hungry(61);
+    t.tick(10);
+    expect(has("meal") == meals - 1, "waiting apart from her, he takes nothing from her pack");
+    // (Apart, and nothing in her pack he may eat, her meals a contract's again: she is told she carries nothing for him.)
+    w.roads().contracts.push_back(k);
+    t.tick(1);
+    hungry(Society::KeptToldHunger + 1);
+    t.tick(1);
+    expect(t.ada.said().find("is going hungry, and you carry nothing to eat.") != std::string::npos &&
+               t.ada.said().find("away from the food you carry") == std::string::npos,
+           "apart, with nothing in her pack for him, she is told she carries nothing:\n" + t.ada.said());
+    w.roads().contracts.clear();
+    w.advanceCalendar(1);                           // (Told once a day.)
+    t.tick(1);
+    hungry(Society::KeptToldHunger + 1);
+    t.tick(1);
+    expect(t.ada.said().find("is going hungry, away from the food you carry.") != std::string::npos && member(t.ada, bracken),
+           "she is told he goes hungry, away from her food:\n" + t.ada.said());
+    hungry(Society::KeptLeaveHunger + .5);
+    t.tick(1);
+    expect(!member(t.ada, bracken) && t.ada.said().find("they were away from the food you carry.") != std::string::npos &&
+               has("meal") == meals - 1,
+           "unfed, he goes home, and she is told why:\n" + t.ada.said());
+}
+
 void aResidentWontWatchACrime()
 {
     Three t(devOptions());
@@ -582,6 +666,7 @@ int main()
         hiringAResident();
         aResidentWontWatchACrime();
         aCompanionEatsFromThePack();
+        aCompanionLeavesThePacksGoods();
     }
     catch (const std::exception& e)
     {

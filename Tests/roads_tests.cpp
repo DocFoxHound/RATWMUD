@@ -3512,6 +3512,56 @@ void aBuyerWithoutMoneyEndsItsOrder()
         expect(lowered && lowered->perWeek == 2 && lowered->unpaid == 0 && w.roads().failed.empty(),
                "One that paid for a third of what came is brought down to that, its seller not blamed: " +
                    std::to_string(lowered ? lowered->perWeek : -1) + " a week");
+        const auto mark = soc.tillOf("westsmith") + "|iron_bar";
+        expect(w.roads().refused.count(mark) > 0, "Cut, its refusal is kept against the buyer");
+        // Looked at again with everything that came paid for (round 6, the roads' review): the refusal is forgotten.
+        // With some refused it stands.
+        for (const int refused : {1, 0})
+        {
+            auto* again = orderOf(w, o.id);
+            again->review = 0;
+            again->perWeek = 8;                     // (Not lowered to its end for the bars on its shelf.)
+            again->delivered = 8;
+            again->unpaid = refused;
+            for (int d = 0; d < 9 && orderOf(w, o.id) && orderOf(w, o.id)->review <= w.calendarDays(); ++d)
+            {
+                nextMorning(w);
+                w.roads().camps.clear();
+                tickWhileOnTheWay(w);
+            }
+            expect(orderOf(w, o.id) && (w.roads().refused.count(mark) > 0) == (refused > 0),
+                   refused ? "Looked at again with one refused, the refusal stands"
+                           : "Looked at again with all that came paid for, the refusal is forgotten");
+        }
+        expect(soc.conserved(), "Money is conserved");
+    }
+    {
+        // A refusal is forgotten after a season (RoadsState::RefusedKeptDays; round 6, the roads' review): a shop living
+        // from hand to mouth may never hold a week of the order at once. A day short of it, a till with under a week's
+        // money isn't signed; the season out, it is.
+        auto f = ironRoad(1);
+        auto w = ironWorld(f, 600);
+        auto& soc = w.society();
+        const auto smith = soc.tillOf("westsmith");
+        const auto ironFor = [&] {
+            const auto& orders = w.roads().orders;
+            return std::find_if(orders.begin(), orders.end(), [&](const StandingOrder& s) { return s.buyer == smith && s.item == "iron_bar"; });
+        };
+        for (const auto& who : {smith, std::string("westsmith")})
+            if (const auto cash = soc.account(who)->cash; cash > 0)
+                soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+        expect(soc.shift("treasury", smith, "", 0, 40, "test: a little in the till"), "The till has a little");
+        // (Marked so that at the next morning's trade it is a day short of the season.)
+        const auto tomorrow = std::int64_t(std::floor(w.calendarDays())) + 1;
+        w.roads().refused[smith + "|iron_bar"] = tomorrow - (RoadsState::RefusedKeptDays - 1);
+        nextMorning(w);
+        w.roads().camps.clear();
+        expect(ironFor() == w.roads().orders.end() && w.roads().refused.count(smith + "|iron_bar"),
+               "A day short of a season, under a week's money in the till, it isn't signed");
+        nextMorning(w);
+        w.roads().camps.clear();
+        expect(ironFor() != w.roads().orders.end() && !w.roads().refused.count(smith + "|iron_bar"),
+               "The season out, the refusal is forgotten and it is signed: " + std::to_string(soc.account(smith)->cash) + "p in its till");
         expect(soc.conserved(), "Money is conserved");
     }
 }

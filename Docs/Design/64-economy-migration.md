@@ -1610,16 +1610,21 @@ still carries the bodies' control. Without players, no one hungry.
    to match the unseen's, it's a fault to find first (in the world's walking, not the economy): the long runs, without
    players, can't see it. (Found and mended: "residents near players' bodies", below.)
 6. A hand stationed at a Hold keeps its post, and its employer counts it a hand though it never comes (`strike`):
-   a month away moved no wage, opened no post and posted no more hires; the realm's hours hardly moved (0.2% fewer
-   with the pace held, the tidy's run: the 1.5% first read was the pace's), and its service wages fell 11%. Should a
+   a month away moved no wage, opened no post and posted no more hires; the realm's hours hardly moved (on the tidy's
+   code, records 3 to 30: 0.65% fewer free, 0.24% fewer with the pace held; round 4's 1.5% was against `m3`'s code,
+   and the pace was about 0.4 points of it, the round 6 correction; in the two weeks after, 2.7% fewer free and 1.4%
+   more held, where the pace plainly mattered), and its service wages fell 11%. Should a
    post whose holder hasn't come for some days stand open (a stand-in hired, or the post given up), so that taking
    hands draws the wage up?
 7. (Reworded by the third review: the first `flood` was on fish, which sat at the penny's floor at a 12p day, so it
    couldn't show a price falling, and its finding was the floor's, not the market's. And again by the tidy, on the
    run with the pace held: "the players' runs with the pace held", below.) A shop pays a player its own normal cost
    for a staple (`Society::offerAt`), so a flood never lowers what a shop pays, nor what it asks: through two weeks of
-   raw meat the shops that buy it in asked 14.0p to 14.4p, and after it 14.4p rising to 15.6p, as without players. No
-   shop's price fell. What residents paid on average fell, from 17.0p to 14.3p, only because they bought five times
+   raw meat the shops that buy it in asked 14.0p to 14.4p, and after it 14.4p rising to 15.6p. No shop's asking price
+   fell below where it started; but it wasn't set beside the run without players, which has no such series (round 6,
+   the tidy's review: "as without players" was not measured), and the one price the files do compare points the other
+   way: shops buying raw meat as materials paid 15.26p through the flood against 16.13p without players, 5% less. What
+   residents paid on average fell, from 17.0p to 14.3p, only because they bought five times
    as much of it (3,139 pieces against 603) from those shops rather than from the butchers, who price it at their
    cost of making it. Should a shop pay a player less than its own cost when its shelf is over what it wants (a
    glut's price), so that a flood lowers what it pays and then what it asks? Recommendation: yes, below its cost by
@@ -3053,8 +3058,10 @@ The wage and the going rates were 60p in every run on every day. Days 15 to 29, 
 11. **A food corner fails** (`buyout`; re-aimed by the tidy: it buys every hour from 6 to 20 all week, its 150,000p
     spread so it lasts, and the pace held; the first ran dry on its fifth morning and bought at six only). It bought
     10,968 pieces, about 21,000p a day; the capital's makers crafted 22,528 pieces of food in the week against 10,159,
-    and its shops held more food than without players at most days' ends of the buying week (up to a fifth more),
-    2% to 11% less after; no one went hungry, and residents' food cost 0.999 to 1.004 of what it did without players.
+    and at the ends of the buying week's days (game days 2 to 8) its shops held 3% less to 17% more food than without
+    players (more on 5 of the 7), 11% to 20% more on days 9 to 13, and 2% to 14% less from day 15 (corrected by the
+    tidy's review, round 6: "up to a fifth more" was day 9, after the week, and "11%" was 14%); no one went hungry, and
+    residents' food cost 0.999 to 1.004 of what it did without players.
     Is that the intent, or should a buyout of a town's food make it dearer for a while? Recommendation: keep it (the
     model's: a price is a cost and a margin, and the makers answer within the day); if it should bite, let a margin
     rise within the week on a shelf emptied faster than it is made, not only at its weekly review.
@@ -3156,18 +3163,24 @@ Feeding them would take, in order of what it would cost to build:
 1. **Eat what it carries** (Society, both companion branches in `RatwResidents.cpp`, about ten lines): hungry and
    carrying food, a companion eats as a resident does (`eatFirst`, `consume`, its hunger down by the food's worth).
    A resident carries one piece and keeps the rest in its larder, so this feeds it a day at most.
-2. **The Hold feeds its staff** (Game, the camp's dawn round where it pays them, `RatwGameCamps.cpp`, about fifteen
-   lines; the watch's mess is the pattern, `"rations"`): each dawn the Hold gives each stationed hand a day's food
-   from the Chapter's stores (what its field, its cookfire and its workshops make, or what the Chapter buys), and a
-   hand it can't feed goes home as one it can't pay does, the Chapter told. That is about `FoodADay`, 5p at a 12p day
-   (25p at 60p), a hand a day, beside its 6p companion's wage (30p at 60p): `strike`'s 26 would cost the Chapter about
-   650p a day more at 60p.
+2. **The Hold feeds its staff** (Game, the camp's dawn round where it pays them, `RatwGameCamps.cpp`): each dawn the
+   Hold gives each stationed hand a day's food from the Chapter's stores, and a hand it can't feed goes home as one it
+   can't pay does, the Chapter told. (Corrected by the tidy's review, round 6: this was costed as if the stores were
+   there. `strike`'s Hold is funded with pennies and keeps no food, so as written it would let all 26 go at the first
+   dawn, ending the scenario rather than feeding it; it needs stocked stores, or a buying step, a Chapter's purse
+   buying food at a town's shop at dawn, which is a Game-side purchase path of its own, more than fifteen lines. The
+   watch's "rations" are a Society shift in the resident's own turn, after the companion's early return, not a Game
+   dawn round, so not a pattern to drop in. And the 650p a day below is food bought, not food the Hold makes.) That is
+   about `FoodADay`, 5p at a 12p day (25p at 60p), a hand a day, beside its 6p companion's wage (30p at 60p):
+   `strike`'s 26 would cost the Chapter about 650p a day more at 60p, bought.
 3. **Its own purse buying meals**: a stationed hand is off its schedule at the Hold, so it can't walk to a shop; it
    would want a sale at a distance (a stand-in the game has nowhere else) or leave to eat, which a post at a Hold
    doesn't allow. And a companion's wage is about a day's food, so it would spend nearly all its pay to eat.
 
-**Recommendation:** 1 and 2 together: a companion eats what it carries; a Hold feeds its stationed hands from its
-stores at dawn, as the watch feeds its own, and lets go one it can't feed. A party's roving companion (no Hold)
+**Recommendation:** 1 first, if the aim is a fed strike (option 2 alone, as `strike` is built, lets the hands go); then
+2 with the stores stocked: a companion eats what it carries; a Hold feeds its stationed hands from its stores, and
+lets go one it can't feed. (Built since, the user's way: "kept hands' meals", below, its harness's quartermaster
+stocking the stores; round 6 amends both.) A party's roving companion (no Hold)
 eats what it carries and buys food at a shop when the party is in a town, as a resident on the road would. With
 that, `strike`'s hands are fed, and the pace is no longer `strike`'s measure.
 
@@ -3227,8 +3240,11 @@ after the flood 4% apart.
   above, "why `strike`'s hands starve"); none the day after they were let go. 26 kept their posts through the month,
   24 by day 44. The Hold paid them 780p a day (30p each, a companion's 6p at a 12p day): 21,840p in the month, against
   the 17,707p the same 26 earned in it without players.
-- **The work was done** (round 4 read 1.5% fewer hours as the work undone; that was the pace): 155,840 hours in the
-  month against 156,218 (0.2% fewer), the hands' odd jobs 0.7% more, the owners' profit 0.7% more, the keepers'
+- **The work was done** (round 4 read 1.5% fewer hours as the work undone): 155,840 hours in the month against
+  156,218 (0.2% fewer; corrected by the tidy's review, round 6: free, on this same code, 155,206, 0.65% fewer, so the
+  pace was about 0.4 points of it, and the rest of round 4's 1.5% the baseline's move from `m3`'s code, the farmhands'
+  food money, not the pace; the pace showed plainly only in the two weeks after, below), the hands' odd jobs 0.7%
+  more, the owners' profit 0.7% more, the keepers'
   wages the same. What the town lost was the service its absent hands gave: service wages 11% down (204,918p against
   229,925p: 25,007p, more than the 26 had earned).
 - **The labour market didn't see them gone**, as before: the going rates 60p throughout; Ridgemere's employers' mean
@@ -3242,12 +3258,14 @@ after the flood 4% apart.
 - The ten sold 8,544 pieces for 105,465p (12.34p each, the shops' own cost) to the 39 capital shops that buy it in
   (the two that make it, the butchers, aren't sold to), and kept every coin: 106,465p with their grants on day 30.
   The shops' shelves of it held 1,180 to 1,559 through the flood, 395 two days after, about 260 to 400 after.
-- **No shop's price fell.** The shops that buy it in asked, before the penny, 14.02p on the first day and 14.36p on the
-  last, then 14.41p rising to 15.59p by day 29 (prices rose without players too: shops buying it as materials paid
-  16.13p in those two weeks and 16.49p after). What moved was where residents bought: 3,139 pieces through the flood
-  against 603 without players, from those shops at about 14p rather than from the butchers at their cost of making
-  it, so the mean paid was 14.31p against 17.03p; in the 16 days after, 607 pieces at 17.08p against 816 at 18.31p
-  (fewer, and still a little cheaper by the mix: no price came back, because none had gone). Residents' food as a
+- **No shop's asking price fell below where it started.** The shops that buy it in asked, before the penny, 14.02p on
+  the first day and 14.36p on the last, then 14.41p rising to 15.59p by day 29. (Corrected by the tidy's review, round
+  6: the run without players has no series of those shops' asking price, so it isn't set beside one; the one like for
+  like price the files have points the other way: shops buying it as materials paid 15.26p through the flood against
+  16.13p without players, 5% less, and 16.49p after without players.) What moved was where residents bought: 3,139
+  pieces through the flood against 603 without players, from those shops at about 14p rather than from the butchers
+  at their cost of making it, so the mean paid was 14.31p against 17.03p; in the 16 days after, 607 pieces at 17.08p
+  against 816 at 18.31p (fewer, and still a little cheaper by the mix: no price came back, because none had gone). Residents' food as a
   whole: 0.997, 0.984, 0.993 and 0.990 of its cost without players, week by week.
 - **The makers lost the fortnight's trade, then had it back.** The capital's two butchers sold 1,916 pieces of
   everything (28,024p) through the flood against 4,044 (62,189p), half; in the 16 days after 3,650 (53,863p)
@@ -3262,10 +3280,13 @@ after the flood 4% apart.
 - The five spent 150,470p (their 150,000p and grants) on 10,968 pieces of food over the week, about 21,000p a day:
   1,107 pieces the first day, then 2,032, 2,217, 2,700, 760, 949 and 1,203 (30p left), and held them all to the end.
 - **The corner failed: the makers answered.** At each day's end the capital's shops held (`towns.ridgemere.food`,
-  both sides) 3,474 pieces of food against 3,578 on day 2, the first; more than without players on every day from 3
-  to 14 but day 8 (5,395 against 5,545), at most 7,424 against 6,210 on day 9; and 2% to 11% less from day 15 on
-  (9,523 against 10,418 on day 20, 10,553 against 11,823 on day 27). The capital crafted 22,528 pieces of food in
-  the buying week against 10,159, then as without players (15,792 against 15,663; 14,463 against 14,412).
+  both sides; by game day, a record N being day N-1's end) 3,474 pieces of food against 3,578 on day 2, the first;
+  more than without players on every day from 3 to 14 but day 8 (5,395 against 5,545): in the buying week 3% less to
+  17% more, 5 of its 7 days over; 11% to 20% more on days 9 to 13, at most 7,424 against 6,210 on day 9; and 2% to
+  14% less from day 15 on (9,523 against 10,418 on day 20, 9,266 against 10,565 on day 23, 10,553 against 11,823 on
+  day 27, 8,446 against 9,865 on day 31; the tidy's review, round 6, recounted them). The capital crafted 22,528
+  pieces of food in the buying week against 10,159, then as without players (15,792 against 15,663; 14,463 against
+  14,412).
 - No one went hungry on any day; residents short of food 0 to 8 a day against 0 to 7. Residents' food cost 1.004,
   1.002, 0.999 and 1.000 of what it did without players, week by week; all they bought 1.000 to 1.004.
 - The 150,000p came from the capital's treasury and stayed in the tills (152,061p richer on day 30: the shops', the
@@ -3512,7 +3533,13 @@ merge `ffc416e` is the roads' branch merged into it, unmended; `m3` is `3cec19a`
   signed again the next day, penniless, are not, and 26 fewer goods refused. Against `83714a0` the roads' branch
   leaves the residents about 15,000p (0.7%) poorer by day 30, the tills and treasuries that much richer, with 5% more
   in standing orders and a third less sent back unsold; the Gini and the poorer half barely move.
-- **The seconds' pace** (5 days, no `--hours`): digest `d034a6316a8d0cb` at `83714a0`, merged, and now.
+- **The seconds' pace** (5 days, no `--hours`): digest `d034a6316a8d0cb` at `83714a0`, merged, and now. (Read too
+  kindly, the roads' review, round 6: 5 days is short of where the roads' rules first act. Over 25 days without
+  `--hours` the run matches `83714a0` for 12 days and departs from day 13, maker-hours short 5,944 against 5,941, and
+  wages, the Gini and the broke from day 15; digests `2f2c30798e90b00a` now, `5ae6fc1671d12c2` at `83714a0`. The
+  merge's 14 days match this build's line for line, so it is round 4's order rules, refusals and cuts, which act at
+  both paces once orders reach their fortnight's review, not this round's mends. The default pace is changed by them:
+  a question for the user, round 6's section.)
 - **The stage** (10 days from day 2, `visit`'s bodies still and walking): still, none hungry or starving at any day's
   end, now as at `83714a0` (digest `5bce7f1650277c7a`; hours credited by day 10 60,591, 60,589 at `83714a0`);
   walking, none hungry or starving at any day's end now (digest `d7faa7c66318c280`; 60,368 hours by day 10, 60,323 at
@@ -4067,7 +4094,9 @@ purse (`Game::companionTick`). So:
 on the same marks. What it carries first; carrying nothing, at hunger 55 (the rations' mark: a watch's mess, a mine's
 bread) one piece of food is moved from its mess to it by the ledger (`Society::shift`, "rations" from a Hold, "shared
 from the pack" from a player: moved, never made), what spoils soonest there (`eatFirst`); at 60 it eats, eight
-seconds, its hunger down by the food's catalogue nourishment and a tenth (a meal 55, porridge 22). The draw changes
+seconds, its hunger down by the food's catalogue nourishment and a tenth (a meal 55, porridge 22). (Round 6, the
+companions' review: now taken at 60 and eaten then, prepared food first, never a player's goods for a contract; below,
+"the reviews' fixes, round 6".) The draw changes
 what others see, so it is made in the resident's turn (`DecideInTurn`), never on the threads. Its task stays
 "companion" (the game moves it; its reason says it is eating). The game says where each eats (`Society::setMesses`,
 hand to account), from `Game::feedKeptHands` every half second before the world's tick (only when it changes); not
@@ -4135,7 +4164,11 @@ meals and raw meat) and what the hands drew:
 | 15 | 38 to 75 | 38 | 102 (703p) | 29 | 26 to 67 | 47 | 104 (624p) |
 
 (Drawn: "rations" from the Hold, `flows.csv`; bought: the quartermaster's, by the day its record is labelled.) About
-45 pieces a day for 26 hands; the quartermaster bought 2,097 pieces for 15,268p in the month; the stores never below 18 pieces. Day 30 against no
+45 pieces a day for 26 hands; the quartermaster bought 2,097 pieces for 15,268p in the month; the stores never below
+18 pieces. (Not said, the companions' review, round 6: of the 2,097 pieces stored, 1,922 porridge, which keeps a day,
+the hands ate 1,169 and 919 rotted in the stores, 44%: 880 porridge, 39 raw meat. So "bought" is not what the hands
+needed, and about 44% of the 15,268p went on food that rotted. Round 6 stocks food that keeps, and counts the
+spoiled: below.) Day 30 against no
 players: Gini 0.5026 against 0.5048, the poorer half 0.1552 against 0.1564; the week before, within 0.004 and 0.003.
 The ticks, 0.062 against 0.035 ms, were measured beside other sessions' runs: not comparable.
 
@@ -4159,3 +4192,187 @@ on any. So `strike` must stock its Hold, or it is a two-day strike: it now does.
     dawn), funded from the capital's treasury. Recommendation: keep it; the hands' food comes from the same shops their
     households would have bought it at. The alternative, the Hold's own field (`keepWork`), brings in materials (wheat,
     oats, vegetables) that feed nobody till a kitchen makes them into food, and the harness has no Hold.
+
+### Phase 13: the reviews' fixes, round 6 (2026-10-26)
+
+Three reviews' findings mended, on `p13` as merged at `4a08125` (branch `p13-r6-fixes`): the roads' and the walking's
+(round 5's `1be0f38`), the kept hands' meals' (`16b4480`) and the tidy's (`00f7fe3`). No balancing: what moves the
+numbers is said where it does.
+
+**The roads and the walking.**
+
+- **A read after a free** (the review's major; `World::headFor`). The new loop over the dead ends' pockets
+  (`deadEndPockets_`) called `regionMap` on the goal's cell inside it, and `regionMap`, finding new ground there (a
+  Chapter's tent or hall put up or taken down: `Game::refreshGround`), forgets every dead end touching the cell,
+  erasing from the map being walked: the entry being read was freed, and the loop went on through an erased
+  iterator (AddressSanitizer on the review's probe, the commit's own fixture). Now the goal's part is looked up before
+  the loop, and only when a dead end opens on the goal's cell (as before, so nothing else moves). The same older
+  fault in `choose()` (a reference to the way on kept in `stepsCache_`, which `regionMap` clears) takes a copy; and a
+  newly found dead end's pocket is gathered before it is kept, so no lookup in between can forget it under it.
+- **Every neighbour's way back runs through the cell beyond** (a minor; the one-hop fallback). A walker bound into a
+  pocket from the body of the cell beyond went out to a neighbour whose cheapest way to the cell the dead end was found
+  from came straight back through it, and in and out again. Now a walker elsewhere whose plain way there steps into the
+  cell beyond goes round it if it can (`cachedSteps(from, avoid)`, `firstSteps` with a cell left out, kept in the same
+  cache, "from\navoid"), and from the body of the cell beyond, when no neighbour's first step leads away, out to one with
+  any way there not through it, however long. On the fixture (no seam between `c_0_1` and `c_1_1`, and a shed by her in
+  the body of `c_1_0` whose only way anywhere is back): Cot, in the body, never left it at `4a08125` (the fixture
+  before its shed); now she is home.
+- **A buyer's refusal is forgotten** (a minor; `RoadsState::RefusedKeptDays`, a season, 84 days) or when an order of the
+  good still running is looked at again with everything that came paid for. The review's other way, forgetting it once
+  the till has held a week's worth for a month, wants a daily watch of every marked till and of an order no longer
+  signed; a season is simpler, and still keeps a penniless buyer from being signed every fortnight (at most once a
+  season now). A shop living from hand to mouth is signed again in a season. Measured (`refusals.csv`, new: every
+  day's standing marks with the till's cash): in 30 days of DEV's export, 1 mark on day 25, 3 on day 30 (two tills
+  holding 1,138p and 1,353p, one with nothing), none old enough to be forgotten. So over 30 days the season changes
+  nothing; it acts from day 84.
+- **The seconds' pace** (a minor: round 5 read its 5-day digest too kindly): corrected where it stands. Round 4's order
+  rules act at both paces from day 13. Not this round's: below.
+- **Found, not mended** (`stream_tests`' new fixture showed it): Pip, at home in `c_2_0` in the morning, bound for work
+  in `c_0_0`, stands at the seam into `c_1_0` all day, at `4a08125` as now. Her route runs through the body of `c_1_0`,
+  whose ways into `c_0_0` leave only from the strip, which its body can't reach; no dead end is found from that side
+  (the finding wants ways that land in a pocket, and here there are none from the body at all). The same kind as "a
+  pocket nobody has found" (round 5's "left"): the routes are cell by cell. A search across cells and their parts
+  would mend the kind; this is its second case.
+
+**The kept hands' meals** (`Society::keptHandDecides`, `keptHandDoes`, `messFood`, `giveBackDrawn`;
+`Game::feedKeptHands`):
+
+- **Taken at the eat mark, and that piece eaten.** A hand carrying nothing takes a piece from its mess at 60, not at
+  55, and eats it in the next eight seconds; the piece it took is the one eaten (`drawn_`, not saved: after a restart it
+  is in the hand's purse and eaten as its own). The player is told when it is eaten, not when it is taken. One let go
+  before eating it (dismissed, unpaid, gone home) gives it back to the mess it came from, in its own turn
+  ("given back, uneaten"). Both messes alike: the Hold's stores too (a hand let go kept a ration so before).
+- **Prepared food first** (`items::ingredient`: what some craft takes, a keep's workshop's too: in the catalogue, fish,
+  mutton, rabbit and raw meat), then what spoils soonest, the most nourishing of those; raw last, but eaten when it is
+  all there is.
+  **A player's goods for an open contract or mission** (a "procure" contract taken, a "deliver" mission) aren't eaten:
+  the game sets them with the messes (`setMesses`' `keeps`), by plain good.
+- **A purse full of kinds** (`MaxGoodsKinds`, 64, and none of them the food) can't take the piece: it is unfed, as with a
+  bare mess (told of, and let go), not a hand starving unsaid; nothing is tried in its turn.
+- **The books recorded once a tick**, however many ate (`record(Economy)`; it had run for each meal).
+- **The notices:** a hirer is told by what its pack holds ("away from the food you carry" only with food in it it
+  may eat, else "you carry nothing to eat"), and told why when the companion goes ("they were away from the food you
+  carry."); a Chapter once a day for each site (`hungerTold_` by "chapter|site": a second site's hands left unsaid);
+  a site with no storage pile told to build one, a Chapter with no stores yet told to store food there; an offline
+  hirer's pack is out of reach (its character may stand in the world a while).
+- **A hand that came to live at the Hold** (`Game::moveToHold`), let go hungry with the stores bare: tested, and it eats.
+  In the little world's wilds between the two towns, home at the Hold, 12p of wages, let go at 90.0: fed in Larkfield,
+  two cells off, its hunger at most 90.3, as low as 35.3 within the quarter day. No mend was needed there; but a Hold
+  far from any town was not measured (DEV's export has no Hold), and from 90 a hand has about 2,900 game seconds
+  before 100 (a decision below).
+- **The quartermaster** (`strike`, `poach`: `Players::provision`) counts toward its two days only food that keeps to the
+  next top-up (two days or more, or that doesn't spoil), and buys it first; what spoils sooner, a day's food at most and
+  only when there isn't enough that keeps. The order: prepared before raw, then the longest-keeping, then the cheapest for
+  what it feeds. Tried first the cheapest: bread, and it rotted wholesale (below). The stores' spoilage is now a column.
+
+**`strike` again** (DEV's export, 30 days, `--deterministic --hours --threads 3 --players strike --players-from 2`,
+`RATW_STOCK`; each against the same build without players; the pace free, and held to the run without players):
+
+| day 30, or the month | `4a08125`, free | `4a08125`, held | now, free | now, held | bread first (tried), held |
+|---|---|---|---|---|---|
+| the Hold's stores: stored; eaten; spoiled | 2,132; 1,197; 926 | 2,135; 1,196; 930 | 1,523; 1,443; 0 | 1,512; 1,432; 0 | 1,237; 844; 302 |
+| mostly | porridge (1,986) | porridge (1,992) | salt fish (all) | salt fish (all) | bread (1,181) |
+| the quartermaster paid | 14,960p | 14,939p | 22,569p | 22,404p | 5,386p |
+| hands told of; gone home hungry | 0; 0 | 0; 0 | 0; 0 | 0; 0 | 6; 21 |
+| the realm's most hungry in a record; starving | 1; 0 | 0; 0 | 2; 0 | 1; 0 | 6; 0 |
+| household Gini; the poorer half (0.5523; 0.1529 without players) | 0.5522; 0.1541 | 0.5545; 0.1541 | 0.5569; 0.1498 | 0.5557; 0.1507 | 0.5512; 0.1517 |
+| the pace (0.196 without players) | 0.214 | 0.196 | 0.196 | 0.196 | 0.196 |
+| hours credited from day 3 (159,549 without players) | 156,469 | 156,433 | 155,847 | 155,764 | 156,511 |
+| the capital's treasury (204,967p without players) | 179,726p | 179,967p | 167,417p | 167,832p | 192,979p |
+| residents (2,046,082p without players) | 2,059,588p | 2,053,548p | 2,050,245p | 2,043,744p | 2,038,384p |
+| digest | `ca7698df27ea07ac` | `91e4fd5ade26273e` | `ba736dd13bb0a373` | `7bd5a1a1f5eeafe8` | `d92a187ece977ce5` |
+
+Money conserved in every record of every run. The stores spoiled nothing on any day now (they held 81 to 136 pieces
+through the month, against 13 to 102, mostly porridge, at `4a08125` held); the 26 hands never reached 70 and none was
+told of or let go. What got worse: the quartermaster pays half as much again (22,569p against 14,960p), salt fish being the dearest
+food there is for what it feeds (4p for 18, against porridge's 1p for 20), all from the capital's treasury, which ends
+12,000p lower than at `4a08125`'s `strike`; and the household Gini on day 30 is 0.5569 against 0.5522, the poorer half
+0.1498 against 0.1541 (one run, one seed: the week-by-week path isn't compared here). Held or free, the pace now ends
+where the run without players does: fed hands no longer move it (at `4a08125`, free, it ended at 0.214). The hands' food
+came out of the capital's salt fish: its shops' food on day 30 held 9,348 pieces free, 8,734 held, against 9,245
+without players. Round 5's own run (`16b4480` on `83714a0`) bought 2,097 pieces, of which 919 rotted: close to
+`4a08125`'s here (2,132 and 926). The per-day tables, with the spoiled column: the round's report.
+
+**What the bread found** (a fault in the society, not mended here: it changes how much food rots across the realm, at
+both paces). `Society::spoil` keeps an account's food in batches by the day it came in, but it learns what came in
+and went out only from the day's net: stock up since yesterday is a new batch; stock down is taken from the oldest.
+An account that takes in and gives out about as much each day (a Hold's stores topped up each dawn and eaten all day;
+a shop that makes and sells its bread daily) never has a new batch, and its first ages on until it rots wholesale,
+fresh pieces with it. In the bread runs the Hold's stores rotted 96, 99, 69 and 38 pieces at once on days 7, 13, 19 and
+25 (bread keeps four days), bare till the next dawn, and 21 hands went home hungry in the month (15 on day 13). In the
+run without players the realm's meals spoiled 3,312 against 5,804 eaten, in spikes every fifth day (2,143 on day 5, then
+255, 188, 160, 145 and 143), and porridge every third day: the keeping days and the restocking's rhythm, not food left
+unsold. So the realm's spoilage in `food.csv` is likely too high wherever stock turns over daily. The mend is to keep
+the batches as goods move (a piece in, a fresh batch; a piece out, from the oldest), in `Society::shift`,
+`consume`, `create` and the trades: a decision below, as it will move balance.
+
+**The tidy's review.**
+
+- The doc's readings it called wrong are corrected where they stand: question 6's share of the pace (0.65% free, 0.24%
+  held on the tidy's code; the pace about 0.4 points of round 4's 1.5%); question 7 and the flood bullet (no asking
+  price measured without players; the materials buyers paid 5% less); the buyout bullet and question 11 (in the
+  buying week 3% less to 17% more, 5 of 7 days over; 11% to 20% more on days 9 to 13; 2% to 14% less from day 15, by
+  game day); option 2 of "what feeding them would take" (it wants stores, or a buying step; alone, as `strike` was
+  built, it would have let the hands go); and the kept hands' section (the draw at 55; the 44% that rotted).
+- **The Officer's cap at its Hold's town** (`gathering_tests`): a Chapter with its claim in a town whose day is half
+  again the realm's, by the hours: an Officer draws 150p there, and not a penny more, where the realm's would be 100p.
+- **The books' founding keyed as the labour market keys them** (`Society::foundWage(bodies)`): each post's employer by
+  its holder's age as the body has it (else its spec's), as `tendLabour` does; a town's own labour (`treasury|labour`,
+  not a till's) moves by its town's rate, tested, as do the labourers written at 15 and grown up since (their books had
+  gone by the realm's).
+- **`strike`'s "beaten down" arm** is guarded after all: taken back alone, the test "one beaten down" fails (the tidy's
+  mutation list had taken back only the other half of the line). Nothing changed.
+- **econ_watch refuses `--hold-pace` where it can't act**: without `--hours` ("it wants --hours"), or with a file
+  short of a society's day the run will turn ("no pace for the society's day N"); both before anything is written.
+
+**Measured.**
+
+- **The runs without players don't move.** 30 days by the hours: digest `94075372be62c2b1` at `4a08125` and now, every
+  day's line the same (money conserved every day; 0 hungry, 0 starving; day 30: household Gini 0.5523, the poorer half
+  0.1529, the wage 60p, the pace 0.196). The seconds' pace: 5 days `d034a6316a8d0cb`, 25 days `2f2c30798e90b00a`, at
+  `4a08125` and now, every day's line the same. The walking's mends are real at both paces but didn't come into play on
+  DEV's map in those runs, and the refusal's season can't in 30 days. One run each: one seed.
+- A tick costs the same (0.0592 ms against 0.0590 over the 30 days; 0.0543 against 0.0550 over the 25).
+- Under the sanitizer build (clang, `RATW_SANITIZERS`, `-Wno-c++11-narrowing`, `RelWithDebInfo`): `stream_tests` (237
+  checks), `world_tests` and `roads_tests` (902) pass clean. With either use-after-free mend taken back,
+  `stream_tests` stops on a heap-use-after-free in `World::headFor`.
+
+**Tests** (each seen to fail with its change taken back: 28 mutations, all caught, the pocket's fallback only once the
+fixture had its shed; runner and results in the round's report):
+
+- `stream_tests`: `theGroundChangesMidWalk` (a tent goes up in the body of `c_1_0` as Sal sets off for the strip, and as
+  Pip goes home through it: both get there; the sanitizer build is the guard, a Release build ran on silently);
+  `everyWayBackIsThroughTheBody` (Cot home from the body, round by the north, eight crossings at most).
+- `roads_tests`: the refusal a day short of a season holds, a till with under a week's money not signed; the season
+  out, signed; a cut order looked at again with one refused keeps it, with everything paid forgets it.
+- `econ_players_tests`: `keptHandsChooseTheirMeal` (nothing taken under 60; jerky before the raw meat; a contract's
+  meals left, the rabbit eaten; a full purse unfed; one let go gives its piece back, and no meal is told);
+  `aMigrantHandLetGoHungryEats`; `strikeStocksFoodThatKeeps` (salt pork first, then bread, no porridge nor raw meat;
+  meals before raw meat; with only porridge, a day's); the held pace's two refusals.
+- `party_tests` `aCompanionLeavesThePacksGoods` (a meal before a rabbit; a contract's meals kept back, the rabbit
+  eaten, she told; told to wait and left in another place, nothing taken, she told she carries nothing for him, then
+  that he goes hungry away from her food, then why he goes). `camp_tests`: a second camp's hands told of the same day.
+- `gathering_tests`, `crafting_tests` as above.
+- Not guarded by a test: the books recorded once a tick (a cost, not a behaviour), an offline hirer's pack, the
+  message for a Chapter with no stores, and a dead end's pocket gathered before it is kept (a lookup that can't forget
+  it today; the guard is against tomorrow's).
+- Every suite passes, 67 of 67 (counts in the round's report).
+
+**For the user:**
+
+16. **A refusal forgotten after a season** (built). Recommendation: keep it, and let a 120-day run say whether marked
+    buyers are kept out longer than they should be (`refusals.csv` has them, with their cash).
+17. **The default pace takes round 4's order rules** (refusals, cuts and failures, at both paces, from about day 13).
+    Recommendation: keep them at both paces: a penniless buyer and a seller who sends nothing are as wrong by the
+    seconds as by the hours.
+18. **`Society::spoil`'s net reckoning** (above). Recommendation: mend it next, as goods move, before the long
+    balancing runs read spoilage, and expect the realm's food to last longer for it.
+19. **A Hold-homed hand let go hungry far from a town** (built: it goes at 90 and walks to the nearest shop it can).
+    Recommendation: let a hand whose home is the Hold go at 70, when the Chapter is told, so it has about 2.4 game hours
+    to walk, not 48 minutes; measure it on a real Hold when there is one.
+20. **The piece taken at the eat mark for both messes** (built), and prepared food before raw for both. Recommendation:
+    keep both; a Hold that wants its raw meat eaten can cook it.
+21. **The quartermaster's longest-keeping first** (built: salt fish in Ridgemere, the dearest food there is for what it
+    feeds). Recommendation: keep it until 18 is mended, then buy the cheapest food that keeps two days.
+22. **Walking by cell and part** (round 5's 4, with a second case: Pip to work). Recommendation: the search across
+    cells and their parts, as its own piece of work.

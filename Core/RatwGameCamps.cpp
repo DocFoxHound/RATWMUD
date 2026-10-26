@@ -507,23 +507,22 @@ void Game::feedKeptHands(double dt)
 {
     // Kept hands' meals (doc 64, Phase 13; the user, 2026-10-26): a Hold's hands eat from the Chapter's stores, reached
     // from a storage pile at their site as a member reaches them (campHere), and a party's companion from the pack of
-    // whoever asked it along, while they are in the same place (a party has no stores of its own: each player carries
-    // its own). The society draws the meals (Society::setMesses); here, what went from a pack is told, and a hand long
-    // unfed is told of and, unfed still, goes back to its own life, where it eats as anyone does.
+    // whoever asked it along, while they are in the same place and the player is here to hand it over (a party has no
+    // stores of its own: each player carries its own; an offline player's pack is out of reach). The society takes the
+    // meals (Society::setMesses); here, what was eaten from a pack is told, and a hand long unfed is told of and, unfed
+    // still, goes back to its own life, where it eats as anyone does.
     auto& society = world_.society();
+    bool ate = false;
     for (const auto& meal : society.takeMessMeals())
     {
+        ate = true;
         if (auto* c = clientOf(meal.mess))
-        {
-            record(Economy, meal.mess);
             system(c, names::capitalised(labelFor(meal.mess, meal.who)) + " eats " + goodsWords(meal.item, 1, 0) + " from your pack.");
-        }
         else
-        {
-            record(Economy);
             chapterViewsDirty_ = true;              // (The stores' view.)
-        }
     }
+    if (ate)
+        record(Economy);                            // (Once a tick, however many ate: round 6, the companions' review.)
     messAccumulator_ += dt;
     if (messesSet_ && messAccumulator_ < .5)
         return;
@@ -533,44 +532,72 @@ void Game::feedKeptHands(double dt)
     {
         std::string npc, owner;                    // The hand, and its Chapter or its hirer.
         const camp::Site* site = nullptr;          // A Hold's hand's site (null: a companion).
+        bool pile = false, stores = false;         // A Hold's: a storage pile at its site; the Chapter's stores there.
         bool reached = false;                      // Its mess within reach.
     };
     std::vector<Kept> kept;
     std::map<std::string, std::string> messes;
+    std::map<std::string, std::set<std::string>> keeps;
     for (const auto& [npcId, st] : camps_.staff())
     {
         const auto* site = camps_.site(st.site);
         if (st.arriving || !site || site->state != "standing")
             continue;                              // (On its way to the Hold it lives as anyone does.)
         const auto store = treasuryOf(site->chapter);
-        const bool reached = camps_.hasBuilt(site->id, "storage") && society.account(store);
-        if (reached)
+        const bool pile = camps_.hasBuilt(site->id, "storage"), stores = society.account(store) != nullptr;
+        if (pile && stores)
             messes[npcId] = store;
-        kept.push_back({npcId, site->chapter, site, reached});
+        kept.push_back({npcId, site->chapter, site, pile, stores, pile && stores});
     }
     for (const auto& [partyId, p] : parties_.all())
         for (const auto& c : p.companions)
         {
             const auto* npc = world_.entity(c.id);
             const auto* by = world_.entity(c.by);
-            const bool reached = npc && by && !by->npc && by->cellId == npc->cellId && society.account(c.by);
-            if (reached)
+            const bool reached = npc && by && !by->npc && by->cellId == npc->cellId && society.account(c.by) && clientOf(c.by);
+            if (reached && !messes.count(c.id))
                 messes[c.id] = c.by;
-            kept.push_back({c.id, c.by, nullptr, reached});
+            // What the player carries for an open contract or mission isn't the companion's to eat (nor told of as food
+            // it might have had, out of reach).
+            if (!keeps.count(c.by))
+            {
+                auto& theirs = keeps[c.by];
+                for (const auto& k : world_.roads().contracts)
+                    if (k.kind == "procure" && k.status == "taken" && k.taker == c.by && !k.item.empty())
+                        theirs.insert(items::baseOf(items::unmarked(k.item)));
+                for (const auto& m : factions_.missions())
+                    if (m.kind == "deliver" && m.state == "taken" && m.taker == c.by && !m.item.empty())
+                        theirs.insert(items::baseOf(items::unmarked(m.item)));
+                if (theirs.empty())
+                    keeps.erase(c.by);
+            }
+            kept.push_back({c.id, c.by, nullptr, false, false, reached});
         }
-    if (messes != society.messes())
-        society.setMesses(std::move(messes));
-    // Unfed: told once a day (each Chapter, each hirer); at KeptLeaveHunger, gone home.
+    if (messes != society.messes() || keeps != society.messKeeps())
+        society.setMesses(std::move(messes), std::move(keeps));
+    // Unfed: told once a day (each Chapter of each site, each hirer); at KeptLeaveHunger, gone home.
     const auto day = std::int64_t(std::floor(world_.calendarDays()));
     if (hungerTold_.size() > 2000)
         hungerTold_.clear();
-    std::vector<std::string> companionsGo;
+    // (A hirer's pack: whether it holds food its companion may eat, out of reach or not: what it is told.)
+    const auto packFood = [&](const std::string& owner) {
+        const auto* pack = society.account(owner);
+        const auto keptBack = society.messKeeps().find(owner);
+        if (pack)
+            for (const auto& [item, n] : pack->stock)
+                if (n > 0 && Society::edible(item) &&
+                    !(keptBack != society.messKeeps().end() && keptBack->second.count(items::baseOf(items::unmarked(item)))))
+                    return true;
+        return false;
+    };
+    std::vector<std::pair<std::string, std::string>> companionsGo;   // (Who, and why its hirer is told.)
     bool staffGone = false;
     for (const auto& k : kept)
     {
         if (!society.unfed(k.npc, Society::KeptToldHunger))
             continue;
         const auto who = names::capitalised(k.site ? strangerLabel(k.npc) : labelFor(k.owner, k.npc));
+        const bool away = !k.site && !k.reached && packFood(k.owner);
         if (society.unfed(k.npc, Society::KeptLeaveHunger))
         {
             if (k.site)
@@ -582,20 +609,22 @@ void Game::feedKeptHands(double dt)
                 staffGone = true;
             }
             else
-                companionsGo.push_back(k.npc);
+                companionsGo.push_back({k.npc, away ? "they were away from the food you carry." : "you had nothing to feed them."});
             continue;
         }
-        if (const auto told = hungerTold_.find(k.owner); told != hungerTold_.end() && told->second == day)
-            continue;                              // (Told today.)
-        hungerTold_[k.owner] = day;
+        const auto toldKey = k.owner + "|" + (k.site ? k.site->id : std::string());
+        if (const auto told = hungerTold_.find(toldKey); told != hungerTold_.end() && told->second == day)
+            continue;                              // (Told today, of this site.)
+        hungerTold_[toldKey] = day;
         if (k.site)
-            tellChapter(k.owner, !k.reached ? "The hands at " + k.site->name + " are going hungry: build a storage pile there, so they can eat from the stores."
-                                            : "The Chapter's stores have nothing to eat, and the hands at " + k.site->name + " are going hungry.");
+            tellChapter(k.owner, !k.pile     ? "The hands at " + k.site->name + " are going hungry: build a storage pile there, so they can eat from the stores."
+                                 : !k.stores ? "The hands at " + k.site->name + " are going hungry: the Chapter keeps no stores yet. Store food there for them."
+                                             : "The Chapter's stores have nothing to eat, and the hands at " + k.site->name + " are going hungry.");
         else if (auto* c = clientOf(k.owner))
-            system(c, who + (k.reached ? " is going hungry, and you carry nothing to eat." : " is going hungry, away from the food you carry."));
+            system(c, who + (away ? " is going hungry, away from the food you carry." : " is going hungry, and you carry nothing to eat."));
     }
-    for (const auto& npcId : companionsGo)
-        companionLeaves(npcId, "I can't go on with nothing to eat. I'm going home.", "you had nothing to feed them.");
+    for (const auto& [npcId, why] : companionsGo)
+        companionLeaves(npcId, "I can't go on with nothing to eat. I'm going home.", why);
     if (staffGone)
     {
         chapterViewsDirty_ = true;

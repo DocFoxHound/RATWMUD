@@ -66,7 +66,7 @@ void Society::startingMoney(const std::string& id, std::int64_t coins)
     record("starting money", "outside", id, "", 0, coins);
 }
 
-void Society::foundWage()
+void Society::foundWage(const std::map<std::string, LifeBody>* bodies)
 {
     auto& memory = state_.memory;
     if (memory.purses >= 1 || (state_.residents.size() < WorldMoneyResidents && !foundAnyLand_))
@@ -83,8 +83,14 @@ void Society::foundWage()
         {
             const auto held = state_.careers.positions.find(p.id);
             const auto holder = held == state_.careers.positions.end() ? std::string() : held->second.holder;
-            const auto* r = holder.empty() ? nullptr : spec(holder);
-            if (const auto key = postEmployer(p, holder, r ? r->age : 30); !key.empty())
+            // (Its holder's age as tendLabour takes it: its body's, else its spec's. Round 6, the tidy's review.)
+            int age = 30;
+            if (const auto* r = holder.empty() ? nullptr : spec(holder))
+                age = r->age;
+            if (bodies && !holder.empty())
+                if (const auto b = bodies->find(holder); b != bodies->end())
+                    age = b->second.age;
+            if (const auto key = postEmployer(p, holder, age); !key.empty())
                 townOf[key] = communityOfResident(p.founder);
         }
     for (auto& [key, book] : memory.employers)
@@ -104,7 +110,7 @@ void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)
     auto& memory = state_.memory;
     if (memory.purses >= 1)
         return;
-    foundWage();                                    // (Already, for a world founded afresh: resetAuthored.)
+    foundWage(&bodies);                             // (Already, for a world founded afresh: resetAuthored.)
     memory.purses = 1;
     ++memory.revision;
     std::map<std::string, std::int64_t> heads;      // Treasury -> the residents who pay it.

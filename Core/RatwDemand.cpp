@@ -230,6 +230,52 @@ bool Society::hasFood(const EconomyAccount& account)
     return false;
 }
 
+std::string Society::messFood(const std::string& mess, const EconomyAccount& stores) const
+{
+    // As eatFirst, by the days its oldest batch has left, but what nobody works with before what a craft takes (doc 64,
+    // Phase 13, round 6: a Hold's hands ate the keep workshop's raw meat, a companion a hunter's catch).
+    const auto lots = batches_.find(mess);
+    const auto kept = messKeeps_.find(mess);
+    const auto left = [&](const std::string& item, const items::Item* g) {
+        if (g->keeps <= 0)
+            return 1e9;
+        double age = 0;
+        if (lots != batches_.end())
+            if (const auto mine = lots->second.find(item); mine != lots->second.end() && !mine->second.empty())
+                age = double(state_.budgetDay - mine->second.front().first);
+        return g->keeps - age;
+    };
+    const std::string* first = nullptr;
+    const items::Item* firstGood = nullptr;
+    bool firstRaw = false;
+    double firstLeft = 0;
+    for (const auto& [item, n] : stores.stock)
+        if (n > 0 && !(kept != messKeeps_.end() && kept->second.count(items::baseOf(items::unmarked(item)))))
+            if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
+            {
+                const bool raw = items::ingredient(item);
+                const double l = left(item, good);
+                if (!first || raw < firstRaw ||
+                    (raw == firstRaw && (l < firstLeft || (l == firstLeft && good->nourish > firstGood->nourish))))
+                {
+                    first = &item;
+                    firstGood = good;
+                    firstRaw = raw;
+                    firstLeft = l;
+                }
+            }
+    return first ? *first : std::string();
+}
+
+namespace
+{
+// Whether a purse can take a piece of `item` (Society::shift's own refusal: a kind more than MaxGoodsKinds).
+bool takes(const EconomyAccount& purse, const std::string& item)
+{
+    return purse.stock.count(item) || purse.stock.size() < MaxGoodsKinds;
+}
+} // namespace
+
 bool Society::unfed(const std::string& id, double hunger) const
 {
     const auto* life = resident(id);
@@ -237,24 +283,26 @@ bool Society::unfed(const std::string& id, double hunger) const
     if (!life || !purse || life->hunger < hunger || hasFood(*purse))
         return false;
     const auto mess = messes_.find(id);
-    const auto* stores = mess == messes_.end() ? nullptr : account(mess->second);
-    return !stores || !hasFood(*stores);
+    const auto* stores = mess == messes_.end() || mess->second == id ? nullptr : account(mess->second);
+    const auto food = stores ? messFood(mess->second, *stores) : std::string();
+    return food.empty() || !takes(*purse, food);
 }
 
 bool Society::keptHandDecides(const std::string& id, const EconomyAccount& wallet, double hunger, bool atOnce, bool& eats)
 {
-    // On the rations' mark, a meal from its mess (what spoils soonest there): the Hold's stores feed its hands, the
-    // hirer's pack its companion, as a watch's mess feeds the watch. Moved, never made: the books hold.
-    if (hunger >= 55 && !hasFood(wallet))
+    // At the eat mark, a piece of food from its mess (messFood), eaten at once: the Hold's stores feed its hands, the
+    // hirer's pack its companion, as a watch's mess feeds the watch. Moved, never made: the books hold. (Not taken on
+    // the rations' mark, hours before: a companion dismissed in between went off with a player's meal, and the player
+    // had been told it was eaten. Round 6, the companions' review.)
+    if (hunger >= 60 && !hasFood(wallet))
         if (const auto mess = messes_.find(id); mess != messes_.end() && mess->second != id)
             if (const auto* stores = account(mess->second))
-                if (const auto food = eatFirst(mess->second, *stores); !food.empty())
+                if (const auto food = messFood(mess->second, *stores); !food.empty() && takes(wallet, food))
                 {
                     if (atOnce)
                         return false;
-                    if (shift(mess->second, id, food, 1, 0, playerAccountId(mess->second) ? "shared from the pack" : "rations") &&
-                        messMeals_.size() < MaxMessMeals)
-                        messMeals_.push_back({id, mess->second, food});
+                    if (shift(mess->second, id, food, 1, 0, playerAccountId(mess->second) ? "shared from the pack" : "rations"))
+                        drawn_[id] = {mess->second, food};
                 }
     eats = hunger >= 60 && hasFood(wallet);
     return true;
@@ -275,8 +323,30 @@ void Society::keptHandDoes(const std::string& id, ResidentLife& life, const Econ
     if (life.progress < 8.)
         return;
     life.progress = 0;
-    if (const auto food = eatFirst(id, wallet); !food.empty() && consume(id, food, 1, "eat") > 0)
+    // The piece it took from its mess, if it still has it; else what it carries that spoils soonest.
+    const auto took = drawn_.find(id);
+    const auto food = took != drawn_.end() && stock(wallet, took->second.item) > 0 ? took->second.item : eatFirst(id, wallet);
+    if (!food.empty() && consume(id, food, 1, "eat") > 0)
+    {
         life.hunger = std::max(0., life.hunger - nourishment(food) * 1.1);
+        if (took != drawn_.end() && food == took->second.item && messMeals_.size() < MaxMessMeals)
+            messMeals_.push_back({id, took->second.mess, food});
+    }
+    if (took != drawn_.end())
+        drawn_.erase(took);
+}
+
+bool Society::giveBackDrawn(const std::string& id, bool atOnce)
+{
+    const auto took = drawn_.find(id);
+    if (took == drawn_.end())
+        return true;
+    if (atOnce)
+        return false;
+    if (const auto* purse = account(id); purse && stock(*purse, took->second.item) > 0 && account(took->second.mess))
+        shift(id, took->second.mess, took->second.item, 1, 0, "given back, uneaten");
+    drawn_.erase(took);
+    return true;
 }
 
 bool Society::shopHasFood(const std::string& merchant) const
