@@ -529,14 +529,20 @@ void Players::start(std::int64_t day)
         else if (s == "flood")
         {
             // Ten players who land the staple and sell it to the capital's shops (fishmongers, provisioners: whatever
-            // shop buys it); its makers are the capital's posts that land it (its fishers), watched.
+            // shop buys it); its makers are the posts that land it worked in the capital or held by a wolf who lives
+            // there (its shops buy from the capital's own first: Society::buyMaterials), watched.
             for (int i = 1; i <= 10; ++i)
                 towns_[join(s, i)] = {capital_};
+            const auto& held = society.state().careers.positions;
             for (const auto& p : society.positions())
                 if (const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
-                    producer && world_.communityOf(p.work.cell) == capital_ &&
-                    std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
-                    makers_.push_back(p.id);
+                    producer && std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
+                {
+                    const auto h = held.find(p.id);
+                    const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
+                    if (world_.communityOf(p.work.cell) == capital_ || (life && world_.communityOf(life->homeCell) == capital_))
+                        makers_.push_back(p.id);
+                }
             flooded_ = true;
         }
         else if (s == "kill")
