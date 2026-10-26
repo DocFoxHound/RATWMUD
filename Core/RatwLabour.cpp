@@ -505,8 +505,11 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             idle += !jobOf(id) && !apprenticedTo(id);
         }
     slack_ = grown ? double(idle) / grown : 0;
-    // The realm's pace toward the calibrated hours (doc 64, Phase 13): on while the week's food holds and the land's
-    // hands keep up, back while the food falls or runs thin, and back faster while the realm goes hungry.
+    // The realm's pace toward the calibrated hours (doc 64, Phase 13): on while the week's food holds, back while the food
+    // falls or runs thin, and back faster while the realm goes hungry. (Not held while the land's hands are short of what
+    // its sales want, as it was: the pace stopped at the first shortage of hands, so no wage was ever bid up, and the
+    // realm sat at the edge of one with its full banks' hours idle. The land's shortage is its posts open, and its wage
+    // answers it, as the model's does; the food, falling as the land falls behind, steps the pace back.)
     if (workByHours())
     {
         int hungry = 0;
@@ -543,32 +546,12 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                 mean += r->second;
             mean /= double(week.size() - 1);
         }
-        // The land's hands: its producers at work and their hires taken, against the hands their sales want now. They keep
-        // up when short by PaceShortHands at most: the pace goes on as far as the labour market follows it to the land.
-        // (Their sales as they are, without the half again of a shelf near bare: a producer's goods go on to the shops,
-        // and its shelf always is. One with no work for more, its store full, at the hands it has: it lets them go. A
-        // realm with no land to keep up with keeps up.)
-        std::map<std::string, int> taken;
-        for (const auto& j : oddJobs_)
-            if (j.until >= day && j.kind == "a hand")
-                taken[j.payer] += int(j.stage.size());
-        int want = 0, have = 0;
-        for (const auto& p : positions_)
-            if (p.role != "merchant" && items::producerFor(p.title))
-                if (const auto till = "till:" + p.id; handsOf(till) > 0)
-                {
-                    const auto hired = taken.find(till);
-                    const int hands = handsOf(till) + (hired == taken.end() ? 0 : hired->second), wants = handsWanted(till, false);
-                    want += idleBusiness(till) ? std::min(wants, hands) : wants;
-                    have += hands;
-                }
-        const bool handsKeepUp = want == 0 || (have > 0 && want <= have * (1 + PaceShortHands));
         double step = 0;
         if (!fed)
             step = -PaceBack;
         else if (weighed && (slide < -PaceSlide || mean < PaceFloor))
             step = -PaceStep;
-        else if (weighed && slide >= 0 && handsKeepUp)
+        else if (weighed && slide >= -PaceNoise)
             step = PaceStep;
         memory.pace = std::clamp(memory.pace + step, 0., 1.);
     }
@@ -639,6 +622,32 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         const auto found = wanted.find(key);
         return found != wanted.end() ? found->second : handsWanted(key);
     };
+    // The hands a business wants and has neither at work nor on its hires stand open too (doc 63's model: its posts are
+    // the hands it wants less those it has, two and twice its hands at most; doc 64, Phase 13), though it couldn't post
+    // a hire for them (one at a time, eight at most, its till short): short all the same, its weekly review bids its
+    // wage up. Before, only a hire's slots nobody took counted, and the land's hands, short by a fifth, moved no wage.
+    // (Not one with no work for more hands. With work by the hours: the seconds' pace as it was.)
+    if (workByHours())
+    {
+        std::map<std::string, int> onHires;
+        for (const auto& j : oddJobs_)
+            if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+                onHires[j.payer] += int(j.stage.size());
+        for (const auto& [key, n] : hands_)
+            if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
+            {
+                const int missing = std::min(wantedOf(key), 2 * n + 2) - n - onHires[key];
+                if (auto& open = vacancies_[key]; missing > open)
+                {
+                    if (open == 0)                   // (Open today: its day counted, as any post open.)
+                    {
+                        auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
+                        book.openDays = std::min(7, book.openDays + 1);
+                    }
+                    open = missing;
+                }
+            }
+    }
     // The going rate (doc 63's model, market_wage; doc 64, Phase 13): the middle of what the unskilled trades that make
     // things pay, each as a labourer's day (its skill's premium off), counted by the hands its work wants, one at least
     // and those it has at most. The makers and the land's producers, but its seasonal fields (their pay follows the

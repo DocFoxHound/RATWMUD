@@ -1351,6 +1351,82 @@ void handsByWhatCanBeMade()
     Society::setWorkByHours(false);
 }
 
+// A business short of hands it can't hire (doc 64, Phase 13; doc 63's model, whose posts are the hands wanted less those
+// had): a bakery whose bread sells for more hands than its baker, its till and its keeper's purse emptied each evening so
+// it can post no hire, stands short all the same. Its posts are open, day after day, and its weekly review bids its
+// wage up. (Before, only a hire's slots nobody took were open: no hire, no post open, no raise.)
+void aShortBusinessBidsUp()
+{
+    Society::setWorkByHours(true);
+    auto s = town();
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto bakery = s.tillOf("baker");
+    const auto bodies = atWork(s);
+    // (Thirty loaves bought each day and eaten; then the day's money and the baker's own taken away.)
+    const auto aDay = [&](std::int64_t d) {
+        set(s, "baker", "bread", 30);
+        set(s, "baker", "flour", 40);
+        expect(s.shift("treasury", "scribe", "", 0, 30 * s.shopPrice("baker", "bread"), "test: the buyer's money"), "the buyer has money");
+        expect(s.sale(bakery, "scribe", "bread", 30, s.shopPrice("baker", "bread"), "test: the day's buying"), "the buyer buys");
+        auto st = s.state();
+        st.accounts.at("scribe").stock.erase("bread");
+        expect(s.restore(st), "eaten");
+        for (const auto& who : {bakery, std::string("baker")})
+            if (const auto cash = s.account(who)->cash; cash > 0)
+                expect(s.shift(who, "treasury", "", 0, cash, "test: the evening's money taken"), "its money taken");
+        s.tick(1, double(d) + .5, 0, bodies);       // (The day's pass.)
+    };
+    for (std::int64_t d = 1; d <= 14; ++d)
+        aDay(d);
+    const double before = s.employerWage(bakery);
+    int open = 0, days = 0;
+    for (std::int64_t d = 15; d <= 29; ++d)
+    {
+        aDay(d);
+        open = std::max(open, s.vacanciesOf(bakery));
+        days += s.vacanciesOf(bakery) > 0;
+    }
+    expect(s.handsWanted(bakery) >= 2 && s.handsOf(bakery) == 1, "the bakery's bread wants more hands than its baker: " +
+                                                                     std::to_string(s.handsWanted(bakery)));
+    expect(open >= 1 && days >= 14, "its posts open though it posts no hire: " + std::to_string(open) + " on " + std::to_string(days) + " days");
+    expect(s.employerWage(bakery) > before * (1 + Society::WageUp * .3 - 1e-9),
+           "and its review bids its wage up: " + std::to_string(before) + "p to " + std::to_string(s.employerWage(bakery)) + "p");
+    expect(s.conserved(), "money stays conserved");
+    Society::setWorkByHours(false);
+}
+
+// One labour market for the land (doc 64, Phase 13; doc 63's model): with work by the hours a fishery's hire, like a
+// farm's, may be taken by anyone living in a city, not by its own town's folk alone. At the seconds' pace, as it was: a
+// farm's only. A shop's hire is the land's at neither.
+void theLandsHiresForAnyone()
+{
+    AuthoredRoster roster;
+    roster.residents = {person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian"),
+                        person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                        person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5})};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    const auto hireBy = [](const std::string& keeper) {
+        Society::OddJob j;
+        j.producer = keeper;
+        j.kind = "a hand";
+        return j;
+    };
+    expect(items::producerFor("fishes the lake") && !Society::farmWork(items::producerFor("fishes the lake")->id), "the fisher works no farm");
+    for (const bool hours : {false, true})
+    {
+        Society::setWorkByHours(hours);
+        const std::string pace = hours ? " (by the hours)" : " (at the seconds' pace)";
+        expect(s.farmHire(hireBy("farmer")), "a farm's hire is the land's" + pace);
+        expect(s.farmHire(hireBy("fisher")) == hours, "a fishery's is the land's with work by the hours only" + pace);
+        expect(!s.farmHire(hireBy("baker")), "a bakery's never" + pace);
+    }
+    Society::setWorkByHours(false);
+}
+
 // The cord loop (doc 64, Phase 13): a chandler short of cord for its candles buys it as a supplier does, from the makers
 // (another chandler), never from the general store, which supplies cord and only bought it back from the chandlers,
 // round and round; and the other chandler keeps back what its own batches need.
@@ -2802,6 +2878,8 @@ int main()
         aStallDumpAndTheRebound();
         theGoingRateFromTheMakers();
         handsByWhatCanBeMade();
+        aShortBusinessBidsUp();
+        theLandsHiresForAnyone();
         theCordGoesRoundNoMore();
         aFullStoreLosesItsHours();
         aTownsTradeBringsInMore();

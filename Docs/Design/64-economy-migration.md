@@ -2173,7 +2173,9 @@ day 24, 157 to 346 from day 29.
   ago, so Restday is at both ends or neither) or averaged under a day (`PaceFloor`).
 - **On a 56th** only while the week's food didn't fall and **the land's hands keep up**: its producers at work and
   their hires taken, against the hands their sales want (`handsWanted`), short by 5% at most (`PaceShortHands`); or no
-  further behind than a week ago by more than 5 points (`memory.paceHands`, saved).
+  further behind than a week ago by more than 5 points (`memory.paceHands`, saved). (Since 2026-10-26: the week's
+  food "didn't fall" within `PaceNoise`, 0.05 days a head; and the land's hands no longer hold it. See "money by holder,
+  and the wage bid".)
 - **Otherwise it holds.** Until it has a week of readings it only holds or backs off.
 - **Why the land's hands by their week:** their sales want two to three times the hands they have even at the old pace
   (day 10: 963 wanted, 449 had). Buyers lay in stores, a producer that sells out counts its day half again, and a bare
@@ -2589,7 +2591,9 @@ A day, days 15–29 (pennies; LD in brackets):
   profit against wages (0.16–0.30 against 1.49) is paid for by the founding's capital: not an equilibrium, and doc 64's
   "money by kind of holder steady within about 20%" fails within weeks. The drain is the balance work's (Phase 13).
   Costing at the pace is right (doc 63's `normal_cost`) once a business's paid hours are its worked ones, which is the
-  labour market's to mend (hands that follow the work, not the bank); until then it undoes the rest.
+  labour market's to mend (hands that follow the work, not the bank); until then it undoes the rest. What the holders' fall
+  is, and what isn't the model's in it, is in "money by holder, and the wage bid" below; costing at the pace is now
+  behind `ladder.json`'s `costAtPace`, off.
 
 **Tests:**
 
@@ -3013,3 +3017,204 @@ The wage and the going rates were 60p in every run on every day. Days 15 to 29, 
     economy (it is what a player does); but the mint's rule (doc 64, Phase 11) is the place to answer it, if any.
 11. A food corner fails at once (`buyout`): the makers make more, no one goes hungry, the price barely moves. Is that
     the intent (it is the model's), or should a buyout of a town's food make it dearer for a while?
+### Phase 13: money by holder, and the wage bid (2026-10-26)
+
+**The question.** At the 60p founding (with `costAtPace` off) the realm is fed and its money conserved, but far from
+the bands above: the household Gini 0.56 (band 0.33–0.45), the poorer half 0.14 (0.18–0.28), and a wage that never
+leaves 60p. The price level's review found money leaving the founding holders. Two things to find: where the money
+goes, and why the wage doesn't float as the model's does.
+
+**Where it goes** (the merged run `m3`: 60 days of DEV's export at `3cec19a`, `--deterministic --hours`):
+
+| holder | day 2 | day 14 | day 28 | day 42 | day 60 | day 60 / day 2 |
+|---|---|---|---|---|---|---|
+| great houses | 1,494k | 1,362k | 1,285k | 1,186k | 1,180k | 0.79 |
+| the capital's treasury | 309k | 240k | 196k | 167k | 81k | 0.26 |
+| the towns' treasuries | 187k | 180k | 159k | 159k | 111k (154k on day 56) | 0.59 (0.82) |
+| the church | 248k | 252k | 270k | 295k | 296k | 1.19 |
+| farm tills | 183k | 300k | 343k | 291k | 287k | 1.57 |
+| shop tills | 490k | 435k | 415k | 502k | 576k | 1.18 |
+| House tills | 55k | 153k | 251k | 344k | 373k | 6.8 |
+| owners (producers, merchants) | 833k | 925k | 981k | 997k | 1,014k | 1.22 |
+| wage earners and the rest | 1,184k | 1,122k | 1,070k | 1,026k | 1,050k | 0.89 |
+
+(The towns' day 60 is a caravan on the road with 38k of their money.) A day, days 15–29:
+
+- **The Houses** (−6.2k a day): money for the road 4.0k against trade takings 2.9k; into their businesses' tills 3.3k
+  against their profit 0.5k back; materials for their works 3.7k; their crews 1.5k; rent in 3.4k.
+- **The capital** (−3.8k a day): its posts' wages 3.6k and the watch's 0.9k, its buyers' funds 2.8k (the Town Works,
+  the watch, the docks, the hall), against its tax 3.6k. It pays about 95 posts as the payer of last resort (`payerOf`'s
+  "the town": a post with no shop, House or household to pay it): 24 live-in servants "in service to" a household,
+  10 gardeners, 11 keepers of this and that, 8 carriers, 5 pupils at their lessons, clerks, messengers, washers and
+  cooks. At 12p its tax carried them (the base's capital holds level); at 60p they cost more than its tax.
+- **The tills** fill toward their working money (a month of their running at 60p: 2.7M wanted on day 60, 1.24M held),
+  from sales kept and their owners' top-ups (16.3k a day against 12.7k of profit out).
+
+**The model, founded the same way** (`tools/econ_model/model.py` with its founding wage at 60p and 4,090,000p, the
+game's money a head for its 885 people; `wage0` set to 60 in `World.found`, nothing else changed):
+
+| day | wage | Gini | poorer half | homes | firms | Houses | church | treasury |
+|---|---|---|---|---|---|---|---|---|
+| 2 | 60p | 0.477 | 0.172 | 1,636k | 607k | 1,236k | 204k | 407k |
+| 28 | 65p | 0.425 | 0.207 | 1,829k | 453k | 1,122k | 241k | 446k |
+| 56 | 77p | 0.381 | 0.242 | 2,057k | 415k | 897k | 270k | 452k |
+| 112 | 97p | 0.330 | 0.270 | 2,415k | 564k | 460k | 309k | 343k |
+| 168 | 138p | 0.341 | 0.245 | 2,420k | 929k | 213k | 230k | 298k |
+| 364 | 137p | 0.403 | 0.204 | 2,412k | 1,033k | 247k | 169k | 228k |
+| 1092 | 122p | 0.412 | 0.203 | 2,574k | 847k | 291k | 161k | 217k |
+
+(With all of 5,000,000p for its 885, the wage reaches 160p to 180p in the first year.)
+
+- **The Houses' fall is the model's.** Its Houses spend by their rule (a share of what they hold over four months'
+  income) and go from 30% of the money to 7% by year 3: 0.73 of their founding by day 56, 0.17 by day 168. The game's
+  are at 0.78 on day 56, slower. Not a fault, and not to be held "steady": doc 64's band is each kind within 20% of its
+  year-3 share, not its founding.
+- **The tills' rise is the model's.** Its firms sit at a quarter of their working money, and swell from 15% of the
+  money to about a quarter as the wage rises (1.53 of their founding by day 168, 25% by day 364); their owners put in
+  more than comes out in the first months (2.1k to 5.3k a day to day 196, against 0.03k to 6.6k of profit). The game's
+  owners' rule is the model's (`owner_tops_up`, `firm_month`); its tills swell sooner (the Houses' businesses from
+  floats a tenth of their working money).
+- **The capital's fall is not.** The model's treasury is up a tenth on day 56 and steady at 5% from year 1: it pays its
+  watch and its works crew out of its week's budget (`staff_to`), and lets them go when the budget falls. The game's
+  capital pays its posts every spell whatever its budget, and its buyers outside the budget too: it is dry by day 90
+  (the 120-day run below: 18k). Then its buyers get nothing (their funds stop under its payroll reserve) and its posts
+  take the week's tax (+0.2k a day, days 95–119). **Not mended here** (for the user, below).
+- **The households' gain is the model's lever, and the game's misses it.** The model's homes gain 26% by day 56 and 48%
+  by day 168, the Houses' fortunes paid out as wages (twelve retainers and an estate crew of up to a tenth of the
+  realm's workers each, always to be had), and its Gini falls from 0.48 to 0.33. The game's households hold level: wage
+  earners −11%, owners +22%. The Houses' crews (twelve retainers and twelve of their estate each, at the going rate) go
+  about three-quarters untaken.
+
+**Why the wage stood at 60p.** The model's wage floats on a shortage of hands: from day 28, 182 posts open against 410
+workers (the institutions' crews, sized to their budgets, and the firms' hands at the calibrated hours). At the game's
+pace (0.1 to 0.2) there is none: a day's hires are taken by some 240 hands whose own business has no work (their banks
+full), 100 children, 60 drawn from their posts by better pay and 45 without a post, and every business's hire fills.
+Only the land's far hires and the Houses' crews stand empty. So, rule by rule against `model.py`:
+
+- A business's posts were its hires' untaken slots and its empty authored posts; the model's are the hands it wants
+  less those it has. A business that couldn't post a hire (one at a time, eight slots, its till short) stood short with
+  nothing open.
+- The going rate is the model's (`market_wage`: the middle of the unskilled makers' wages, by their hands; the farms'
+  harvest pay follows it). With most makers not short, the middle never moves, however short the land.
+- A fishery's, a quarry's, a mine's or a logging camp's hires were for its own town's folk only (a farm's, for anyone
+  from a city). The model has one market. Traced (40 days, `RATW_R4TRACE`, not kept): the land's shortfall was fishing
+  (20 to 40 hands), quarries (20 to 45), logging and mines, not the fields.
+- The pace held whenever the land's hands were 5% short, so it stopped at the first shortage, where a wage would begin
+  to be bid. And on many of the other days it held for the week's food falling by a few hundredths: of 33 weighed days,
+  9 held on the food alone, falls of 0.002 to 0.12 days a head (with 3.5 in hand); 6 on the land's hands alone and 3 on
+  both; 11 went on and 4 stepped back.
+
+**What changed** (with work by the hours only; the seconds' pace is as it was: 5 days of it, the same digest
+93ddacf5c1f9ce40 and the same `days.jsonl` and `flows.csv` before and after):
+
+- **Hands wanted and not had are posts open** (`tendLabour`): a business's hands wanted (two and twice its hands at
+  most, as its review hires), less its hands and those on its hires, count as posts open though it couldn't post a hire
+  for them; a day open counts toward its review's raise. Not a business with no work for more hands.
+- **The land's hires for anyone from a city** (`farmHire`): any producer's, not a farm's only. One labour market, as
+  the model's.
+- **The week's food "didn't fall" within `PaceNoise`** (a third of `PaceSlide`, 0.05 days a head).
+- **The land's hands no longer hold the pace** (a commit of its own, after the three above, to be kept or dropped
+  alone). The land's shortage is its posts open now, which its weekly review answers by its wage; the food, falling
+  as the land falls behind, steps the pace back, and hunger faster, as before. The daily count of the land's hands
+  wanted goes (`PaceShortHands`).
+
+**Not changed:** the fields' wages stay out of the going rate, their harvest pay a quarter over their own (the model's
+farms are left out of `market_wage` too, their pay following it).
+
+**Tried, not kept** (switches in a trial build, gone):
+
+- The institutions' crews ranked with the businesses' hires by pay, ties by lot: no change, the crews still went
+  untaken.
+- The crews first, before any business's hire, and a House's estate crew up to 48: the crews' pay 3.6k to 5.9k a day,
+  the Houses 0.73 of their founding by day 60, the wage floating to 62p; but the Gini 0.566 and the poorer half 0.132,
+  no better.
+- The capital's own posts kept to its week's budget, half the excess let go a week: its treasury 114k on day 60
+  against 81k, 38 posts let go by day 56 and more each week. Its budget falls with its cash while its buyers' funds stay
+  outside it, so it doesn't settle.
+
+**Measured** (60 days of DEV's export, `--deterministic --hours --threads 3`; every run conserved every day; every one,
+the merged run's too, has its one hungry day on day 46, none starving; one run's end record has one more):
+
+| day 60 | `m3` | posts open, one market, the noise | and the land's hold lifted |
+|---|---|---|---|
+| household Gini; the poorer half | 0.562; 0.136 | 0.558; 0.139 | 0.574; 0.132 |
+| the wage (the realm's, Ridgemere's) | 60p | 60.4p (60.8p on day 56) | 63.3p |
+| pace | 0.196 | 0.214 | 0.375 |
+| hungry on day 46 | 18 | 9 | 14 |
+| bread, a bronze sword, a rapier (LD) | 0.072, 2.50, 25.0 | 0.077, 2.49, 25.0 | 0.073, 2.42, 25.0 |
+| great houses; the capital; tills | 1,180k; 81k; 1,236k | 1,178k; 85k; 1,217k | 1,175k; 84k; 1,229k |
+| the owners' profit against six kinds of wages, days 45–59 | 0.23 | 0.16 | 0.13 |
+| a tick (three runs at once on a shared machine) | | 0.050 ms | 0.049 ms |
+
+By week (the household Gini, the poorer half, the wage, the pace):
+
+| day | `m3` | posts open, one market, the noise | and the land's hold lifted |
+|---|---|---|---|
+| 14 | 0.535, 0.151, 60p, 0.02 | 0.536, 0.149, 60p, 0.02 | 0.536, 0.149, 60p, 0.02 |
+| 28 | 0.545, 0.154, 60p, 0.09 | 0.543, 0.154, 60p, 0.18 | 0.543, 0.156, 60p, 0.23 |
+| 42 | 0.557, 0.140, 60p, 0.20 | 0.553, 0.148, 60p, 0.30 | 0.562, 0.142, 60p, 0.43 |
+| 49 | 0.565, 0.133, 60p, 0.14 | 0.567, 0.136, 60p, 0.21 | 0.574, 0.132, 60p, 0.27 |
+| 56 | 0.562, 0.137, 60p, 0.14 | 0.559, 0.139, 60.8p, 0.21 | 0.576, 0.131, 61.8p, 0.30 |
+| 60 | 0.562, 0.136, 60p, 0.20 | 0.558, 0.139, 60.4p, 0.21 | 0.574, 0.132, 63.3p, 0.38 |
+
+And with all four, 120 days: the wage 65p on day 70, 70p on day 84, 73p on day 98, 78p on day 120 (the model's: 77p
+by day 56, 97p by day 112); the pace 0.29 to 0.64; nobody hungry after day 46; the Gini 0.582, 0.577, 0.577, 0.586 and
+the poorer half 0.123, 0.121, 0.114, 0.105; the Houses 0.69 of their founding by day 120; the capital dry from day 90;
+shop tills 911k (1.86).
+
+- **The wage floats once the pace may rise past the land's first shortage**, slower than the model's (63p on day 60
+  against its 77p by day 56; 78p on day 120 against its 97p by day 112), and without the hold the realm is fed as
+  before (each run's day-46 dip, then nobody). With the hold, in every run it stood at 60p to day 49, and reached 62p
+  at most by day 60 (with the crews first).
+- **The Gini goes the wrong way while it does.** As the pace and the wage rise, every till's working money rises (more
+  hands wanted, at more a day), and the tills keep what the households spend on food (the wage earners' food 10% dearer
+  by days 45–59, their pay from the land's hires 14% lower) until they hold it; the Houses' money, which in the model is
+  paid out as wages, goes here into their businesses' tills, caravans and materials. The poorer half falls from 0.15 to
+  0.11 in 120 days.
+- **Still out of band:** the Gini and the poorer half (above); bread in band (0.07); the bronze sword (2.4 to 2.5) and
+  the rapier (25) in band by construction (store-priced, and no rapier sold); the capital's treasury.
+
+**What a year would need to show:** the wage settling (the model's: 130p to 140p by day 168, then 120p to 135p for two
+years), the pace reaching 1 and staying fed through a winter and a harvest, the tills' share turning down once the wage
+stops rising (the model's firms: about a quarter at the float's top, 14% to 21% from year 2), the Houses at their rule's
+level, and the Gini turning: which, by the reading above, needs the Houses' and the church's budgets to reach the
+households as wages, as the model's estate crews do. And the capital: what it pays, and for whom (for the user).
+
+**The smoke** (30 days, `build/econ_watch` at the second commit, `--deterministic --hours --threads 3`): conserved every
+day, nobody hungry; digest 22c5e0263d62fc15; its `days.jsonl` the 60-day run's day for day. Day 30: the Gini 0.548
+(`m3` 0.552), the poorer half 0.156 (0.152), the wage 60p, the pace 0.268 (0.107); 0.034 ms a tick alone.
+
+**Saves:** nothing new. A business's days open were saved already (`memory.employers`); `PaceShortHands` was never
+saved.
+
+**Tests** (each fails with its change undone, checked one at a time):
+
+- `crafting_tests` `aShortBusinessBidsUp`: a bakery whose bread sells for more hands than its baker, its till and its
+  baker's purse emptied each evening so it posts no hire: its posts are open on all 15 days, and its review raises
+  its wage (before: none open, no raise).
+- `crafting_tests` `theLandsHiresForAnyone`: a fishery's hire is the land's with work by the hours (a farm's at both
+  paces, a bakery's at neither).
+- `roads_tests` `thePaceIsSteadied`: the week's food down a fortieth of a day a head, the pace goes on; down a tenth,
+  it holds.
+- `roads_tests` `thePaceStepsUpWithTheLand`: its sales three hands' days with the farm's one, the pace goes on and the
+  farm's posts stand open (before: it held).
+
+**For the user:**
+
+1. **Lift the land's hold on the pace?** Recommended: yes (its own commit). Without it the wage can't float, and
+   nothing in these runs went hungrier for it. But in 60 to 120 days the Gini rises with the wage, as the tills fill;
+   the next step is the institutions' spending reaching wages (2). Dropping the commit brings the hold back as it was.
+2. **The Houses' crews.** The model's Houses keep twelve retainers and an estate crew of up to a tenth of the realm's
+   workers each, paid out of their budget, and that is where their fortunes go. The game's keep twelve of each at the
+   going rate, and they go mostly untaken (the businesses' hires come first, at the same or better pay). Recommended: an
+   estate crew sized as the model's, its posts taken as posts are (not after every hire), as the next balancing step.
+3. **The capital's posts.** It pays about 95 posts as the payer of last resort, at 60p more than its tax, and runs dry
+   in three months. The model's treasury keeps its watch and works crew to its budget. Options: (a) the model's: its
+   posts kept to its week's budget and its buyers' funds inside it too, so posts are let go; (b) payers for them: the
+   live-in servants paid by their households, the gardeners and keepers by the Houses whose grounds they keep, the
+   pupils by nobody; (c) a higher tax (the Dungeon Master's lever: about 16% would carry them). Recommended: (b) for the
+   servants and keepers, and (a) for the rest.
+4. **The founding wage against the money.** The model founded at 60p with this money floats to 135p to 180p in the first
+   year and comes back toward 60p to 75p only over decades (the sixth pass: 13p to 15p at 1,000,000p from year 8). At
+   60p the realm holds about twice the money the model's wage would; the float is the realm finding its level. Either
+   let it (and the 60p "labourer's day" of decision 1 is the founding's, not the years'), or found at about 120p.
