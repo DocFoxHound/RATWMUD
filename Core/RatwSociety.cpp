@@ -1132,6 +1132,7 @@ bool Society::restore(const SocietyState& saved)
                 s.residents.at(life.first).role != life.second.role)
                 return false;
     state_ = s;
+    richestDay_ = -1;                               // (Its households as the save has them: rollRichest.)
     indexTills();
     forgetOrchestra();
     loadPrices();

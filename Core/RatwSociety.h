@@ -1528,6 +1528,10 @@ class Society
     static bool goesToChurch(const std::string& resident, std::int64_t day);
     static bool clergy(const std::string& title);     // A priest's, a chapel keeper's, an acolyte's work.
     static bool houseHead(const std::string& title);  // The head of a great house: "ruling House Fell".
+    // Work for hire ("carries loads for hire", "washes linen for hire", "runs messages about the city"): with work by the
+    // hours, nobody's post to pay; the household keeps them, and they take hires as the jobless do (doc 64, Phase 13,
+    // round 6: the capital's posts of last resort).
+    static bool forHire(const std::string& title);
     static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
     // Starting money (the user, 2026-10-05; RatwFounding.cpp): every resident and every body that keeps a purse begins with
     // a reasonable one, made once when the world is founded (an older save: the first time it runs with this). Placeholders:
@@ -1727,16 +1731,22 @@ class Society
     mutable std::int64_t outworkDay_ = -1;
     std::set<std::string> offered_;                        // Who has put something on the plate this Restday.            // Worker -> the day its employer first couldn't pay (not saved).
     mutable std::unordered_map<std::string, std::vector<std::string>> employers_;   // Work cell -> shops' and houses' positions.
-    // Each home cell's household's richest, for the day. Filled at fixed points of the society's own day (rollRichest:
-    // the day's turn, before the labour market, and a day's first decision with none yet), never by whoever asks first:
-    // a talk scene or a harness asking payerOf leaves the run as it was (doc 64, Phase 13, round 6). Asked before
-    // they're known, they're worked out for that asking alone.
-    std::map<std::string, std::string> richest_;
+    // A great house's seat, its rooms (its head's work room, and that room's floors above and below) -> its head's
+    // position (doc 64, Phase 13, round 6: the chambers above, the kitchen below; with work by the hours).
+    mutable std::unordered_map<std::string, std::string> seats_;
+    // Each home cell's household's richest, and its richest not in service (one whose own paid post is worked at home:
+    // a live-in servant), for the day. Filled at fixed points of the society's own day (rollRichest: the day's turn,
+    // before the labour market, and a day's first decision with none yet), never by whoever asks first: a talk scene or
+    // a harness asking payerOf leaves the run as it was (doc 64, Phase 13, round 6). Asked before they're known, they're
+    // worked out for that asking alone.
+    std::map<std::string, std::string> richest_, richestFree_;
     std::int64_t richestDay_ = -1;
     void rollRichest();
-    std::string richestAt(const std::string& homeCell, const std::string& besides) const;
-    std::string richestIn(const std::string& homeCell) const;   // (Worked out afresh: richestAt's fallback.)
+    std::string richestAt(const std::string& homeCell, const std::string& besides, bool free = false) const;
+    std::string richestIn(const std::string& homeCell, bool free) const;   // (Worked out afresh: richestAt's fallback.)
+    bool inService(const std::string& resident, const std::string& homeCell) const;
     void indexEmployers() const;
+    const House* seatOf(const std::string& cell) const;   // The house whose seat a room is (seats_), or none.
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
     std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.

@@ -1150,9 +1150,10 @@ void askingWhoPaysLeavesTheRun(bool hours)
                    id + " is where it would have been");
         }
     }
-    // (What the case rests on: the maid is the household's richest's to pay, the smoker the house's.)
+    // (What the case rests on: the maid is the household's richest's to pay, the smoker the house's. By the hours, the
+    // household's richest not in service: west's folk all work at home, so its shopkeeper, round 6.)
     const auto& soc = alone.society();
-    expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == "w3", "The maid is paid by west's richest");
+    expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == (hours ? "wm" : "w3"), "The maid is paid by west's richest");
     expect(soc.payerOf("smoker", *soc.jobOf("smoker"), 30).account == "house:house_ash",
            "and the smoker by East's great house (" + soc.payerOf("smoker", *soc.jobOf("smoker"), 30).account + ", " +
                (soc.houses().empty() ? "none" : soc.houses()[0].community) + ")");
@@ -1166,7 +1167,7 @@ void askingWhoPaysLeavesTheRun(bool hours)
         accounts.at("treasury").cash -= accounts.at("w3").cash + 100;
         expect(alone.restore(saved).ok, "A restart, w1 the richer");
         alone.tick(1);
-        expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == "w1", "and the maid is w1's to pay");
+        expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == (hours ? "wm" : "w1"), "and the maid is w1's to pay");
     }
     Society::setWorkByHours(false);
 }

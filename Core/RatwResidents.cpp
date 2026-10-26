@@ -932,7 +932,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                      bool claims = false;
                      const auto* held =
                          oddJobFor(id, *job, (job == &stand && !keepsHouse) || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title) ||
-                                                 (workByHours() && job->paid && idleHand(id, payerOf(id, *job, body.age))),
+                                                 (workByHours() && job->paid && [&] {
+                                                     // (Work for hire that nobody pays takes hires as the jobless do:
+                                                     // doc 64, Phase 13, round 6.)
+                                                     const auto payer = payerOf(id, *job, body.age);
+                                                     return (payer.account.empty() && forHire(job->title)) || idleHand(id, payer);
+                                                 }()),
                                    body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
                                    // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
