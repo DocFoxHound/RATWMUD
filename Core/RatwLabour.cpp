@@ -444,15 +444,21 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         if (!holder.empty())
             keyOf[holder] = key;
     }
-    // Its hires not yet taken are posts open too.
+    // Its hires not yet taken are posts open too. And a House's crews' places, under its own key (doc 64, Phase 13,
+    // round 6: a House short of its crew showed in no measure); they pay the going rate (the model's), so no review moves
+    // them, and no book is kept. (With work by the hours.)
     for (const auto& j : oddJobs_)
         if (j.until >= day && j.payer.rfind("till:", 0) == 0 && int(j.stage.size()) < j.slots)
             vacancies_[j.payer] += j.slots - int(j.stage.size());
+        else if (workByHours() && j.until >= day && !j.ended && houseCrew(j) && int(j.stage.size()) < j.slots)
+            vacancies_[j.payer + "|crew"] += j.slots - int(j.stage.size());
+    const auto crewKey = [](const std::string& key) { return key.size() > 5 && key.compare(key.size() - 5, 5, "|crew") == 0; };
     // A post whose holder is away on another business's hire stands open while it's away (doc 63's model: a hire opens
     // the post it leaves; doc 64, Phase 13), unless its own business has no work for it: then its hands are free to go.
     // (Its hands stay as they are: it comes back.) A field's farmer, freed between its windows, is called back from its
-    // hire once its own window has work: the farm's hands work its fields with it, not into a bank only it draws on.
-    // (With work by the hours: the seconds' pace is as it was.)
+    // hire once its own window has work: the farm's hands work its fields with it, not into a bank only it draws on. A
+    // House's crews as a business's hire (round 6: they are posts now, taken as a hire is). (With work by the hours: the
+    // seconds' pace is as it was.)
     const auto fieldOf = [&](const std::string& key) {
         const auto* p = key.rfind("till:", 0) == 0 ? position(key.substr(5)) : nullptr;
         const auto* producer = p ? items::producerFor(p->title) : nullptr;
@@ -474,7 +480,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                 }
     if (workByHours())
         for (auto& j : oddJobs_)
-            if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+            if (j.until >= day && ((j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop")) || houseCrew(j)))
                 for (auto it = j.stage.begin(); it != j.stage.end();)
                 {
                     const auto k = keyOf.find(it->first);
@@ -497,7 +503,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                     ++it;
                 }
     for (const auto& [key, open] : vacancies_)
-        if (open > 0)
+        if (open > 0 && !crewKey(key))
         {
             auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
             book.openDays = std::min(7, book.openDays + 1);
@@ -511,6 +517,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             idle += !jobOf(id) && !apprenticedTo(id);
         }
     slack_ = grown ? double(idle) / grown : 0;
+    grown_ = grown;
     // The realm's pace toward the calibrated hours (doc 64, Phase 13): on while the week's food holds, back while the food
     // falls or runs thin, and back faster while the realm goes hungry. (Not held while the land's hands are short of what
     // its sales want, as it was: the pace stopped at the first shortage of hands, so no wage was ever bid up, and the
@@ -748,7 +755,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     for (const auto& [key, n] : hands_)
         employers.insert(key);
     for (const auto& [key, n] : vacancies_)
-        employers.insert(key);
+        if (!crewKey(key))
+            employers.insert(key);
     for (const auto& [key, book] : memory.employers)
         employers.insert(key);
     for (const auto& key : employers)

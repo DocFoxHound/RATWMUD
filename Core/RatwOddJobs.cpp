@@ -106,8 +106,8 @@ void Society::indexOddJobs()
             if (stage < 2)
                 oddHeld_.try_emplace(who, i);        // (The first it holds, as a search down the list finds.)
         oddByTown_[j.community].push_back(i);
-        if (j.until >= 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
-            oddHiresByTown_[j.community].push_back(i);
+        if (j.until >= 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || houseCrew(j)))
+            oddHiresByTown_[j.community].push_back(i);   // (And a House's crews: its posts, doc 64, Phase 13, round 6.)
         if (j.until >= 0 && j.kind == "a hand" && farmHire(j))
             oddFarmHires_.push_back(i);
     }
@@ -193,15 +193,16 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one. The
     // jobless and the idle (not a child, nor one called to the land) take the best-paid business's hire open to them
     // first, the first of the best by the list, before chores (doc 63's model: the unemployed take the best-paid post
-    // they find; doc 64, Phase 13), so a business that raised its wage draws them. (With work by the hours: at the
-    // seconds' pace, the first open one, as it was.)
+    // they find; doc 64, Phase 13), so a business that raised its wage draws them. A House's crews are its posts, weighed
+    // with them by their pay (round 6: they were taken after every business's hire, by their place in the list, and went
+    // mostly untaken). (With work by the hours: at the seconds' pace, the first open one, as it was.)
     OddJob* chosen = nullptr;
     if (jobless && !child && !called && workByHours())
     {
         std::int64_t best = 0;
         const auto bestOf = [&](const std::vector<std::size_t>& list) {
             for (const auto i : list)
-                if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop") &&
+                if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || houseCrew(j)) &&
                                            (j.pay / j.slots > best || (j.pay / j.slots == best && chosen && &j < chosen)) && open(j))
                     best = j.pay / j.slots, chosen = &j;
         };
@@ -325,7 +326,20 @@ void Society::advanceOddJob(const std::string& id, int seconds)
     // (A keeper paying from its own purse keeps its food money: spendable.)
     const auto share = j.pay / std::max(1, j.slots);
     if (spendable(j.payer) >= share)
+    {
         shift(j.payer, id, "", 0, share, "an odd job: " + j.kind);
+        // A House's estate crew keeps its town's fabric, as the Town Works' materials do, while it isn't in full repair
+        // (doc 64, Phase 13, round 6); in full repair, its grounds and hedges, nothing made (the model's estate crew).
+        if (houseCrew(j) && j.kind == "building work" && workByHours() && condition(j.community) < 100)
+            mendTown(j.community, CrewMend);
+    }
+    else if (houseCrew(j) && workByHours())
+    {
+        // A House that can't pay a day's share: that gang ends, shut from now, and next week's budget posts what it pays
+        // (the model's staff_to). (Its other hands are owed nothing more for a day it can't pay, as a business's.)
+        j.until = surplusDay_ - 1;
+        j.ended = true;
+    }
     else if (j.until >= 0 && j.payer.rfind("till:", 0) == 0 && workByHours())
     {
         // A business that can't pay its hire's share: the hire ends, shut from now (its other hands are owed nothing
