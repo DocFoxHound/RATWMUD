@@ -379,6 +379,249 @@ void aPlayerBringsResidentsOnstage()
     expect(fresh.entity("pip")->cellId == world.entity("pip")->cellId, "Pip is where she was");
 }
 
+// Bodies at a seam (doc 64, Phase 13): three residents make for the same crossing at once, two along the edge and one
+// from the field. Only one can stand on the tile it is crossed by at a time; all three get over. (They stood pressed
+// round it for good, and residents near players' bodies went hungry so, for game hours, at the city's seams.)
+const std::string Three =
+    "economy 1000 100 50 10 12\n"
+    "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" \"saddle\" "
+    "3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_0_0\" 4.5 4.5 \"c_0_0\" 4.5 6.5 \"c_0_0\" 5.5 4.5\n"
+    "resident \"kit\" \"Kit\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"male\" \"average\" \"saddle\" "
+    "3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_0_0\" 4.5 10.5 \"c_0_0\" 4.5 12.5 \"c_0_0\" 5.5 10.5\n"
+    "resident \"lou\" \"Lou\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" \"saddle\" "
+    "3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_0_0\" 2.5 8.5 \"c_0_0\" 2.5 10.5 \"c_0_0\" 3.5 8.5\n";
+
+void aCrossingIsNotHeldShut()
+{
+    auto f = grid(Three);
+    auto world = load(f);
+    world.tick(.1);
+    const std::vector<std::pair<std::string, Vec2>> starts{{"pip", {15.5, 5.5}}, {"kit", {15.5, 11.5}}, {"lou", {12.5, 8.5}}};
+    for (const auto& [who, at] : starts)
+    {
+        auto* e = world.entity(who);
+        expect(e && e->npc, who + " is a resident");
+        e->leaderId = "test-held";                  // (Out of their schedules: only sent over the seam.)
+        e->cellId = "c_0_0";
+        e->position = at;
+        e->path.clear();
+    }
+    for (const auto& [who, at] : starts)
+        expect(world.moveTo(who, Side + .15, 8.5).ok, who + " heads for the crossing at row 8");
+    int over = 0;
+    for (int i = 0; i < 300 && over < 3; ++i)
+    {
+        world.tick(.1);
+        over = 0;
+        for (const auto& [who, at] : starts)
+            over += world.entity(who)->cellId == "c_1_0";
+    }
+    std::string where;
+    for (const auto& [who, at] : starts)
+        if (const auto* e = world.entity(who))
+            where += " " + who + "@" + e->cellId + ":" + std::to_string(e->position.x) + "," + std::to_string(e->position.y);
+    expect(over == 3, "All three get over the seam, none held off it for good:" + where);
+}
+
+// Face to face in a lane a tile wide (doc 64, Phase 13): two residents walk its length from either end, each to where
+// the other set off. Pushed straight back, neither got by, for good; held a couple of seconds, each steps half a body's
+// width to its right (two side by side fill such a lane), and they pass.
+void aLaneATileWide()
+{
+    auto f = grid(Three);
+    auto& text = f.cells["c_3_3"];
+    const auto rows = text.find("grid:\n") + 6;
+    for (int y = 2; y <= 13; ++y)
+        text[rows + std::size_t(y * (Side + 1)) + 7] = text[rows + std::size_t(y * (Side + 1)) + 9] = '#';
+    auto world = load(f);
+    world.ensureLoaded("c_3_3");
+    const Vec2 top{8.5, 3.5}, bottom{8.5, 12.5};
+    auto* a = world.entity("pip");
+    auto* b = world.entity("kit");
+    for (auto* e : {a, b})
+    {
+        e->leaderId = "test-held";                  // (Out of their schedules: only sent along the lane.)
+        e->cellId = "c_3_3";
+        e->path.clear();
+    }
+    a->position = top;
+    b->position = bottom;
+    a->path = {bottom};
+    b->path = {top};
+    for (int i = 0; i < 300 && !(a->path.empty() && b->path.empty()); ++i)
+        world.tick(.1);
+    expect(a->path.empty() && std::hypot(a->position.x - bottom.x, a->position.y - bottom.y) < .05 && b->path.empty() &&
+               std::hypot(b->position.x - top.x, b->position.y - top.y) < .05,
+           "Face to face in a lane a tile wide, they pass: " + std::to_string(a->position.x) + "," + std::to_string(a->position.y) +
+               " and " + std::to_string(b->position.x) + "," + std::to_string(b->position.y));
+}
+
+// A strip that leads only into a pocket is no way on (doc 64, Phase 13). A wall cuts c_1_0's top row off from the rest
+// of it, and walls hem in the tile of c_2_0 that the strip's east end crosses into: the strip has a way on to c_2_0, but
+// it lands where nothing leads on. Pip, at work in c_0_0 beside the strip's west end, goes home to c_2_0 through the
+// body of c_1_0, never onto the strip (she was sent onto it, as onto a way on, and crossed back and forth at its end).
+void aStripIsNoWayOn()
+{
+    auto f = grid(PipEast);
+    const auto tile = [&](const std::string& id, int x, int y) -> char& {
+        auto& text = f.cells[id];
+        return text[text.find("grid:\n") + 6 + std::size_t(y * (Side + 1) + x)];
+    };
+    for (int x = 0; x < Side; ++x)
+        tile("c_1_0", x, 1) = '#';
+    tile("c_2_0", 1, 0) = tile("c_2_0", 0, 1) = '#';
+    for (auto& [cell, sides] : f.seams)                       // (No seam onto a wall: a build writes none.)
+    {
+        std::istringstream in(sides);
+        std::string line, kept;
+        while (std::getline(in, line))
+        {
+            std::istringstream fields(line);
+            std::string word, id, name, from, to;
+            double ax, ay, bx, by;
+            fields >> word >> std::quoted(id) >> std::quoted(name) >> std::quoted(from) >> ax >> ay >> std::quoted(to) >> bx >> by;
+            if (tile(from, int(ax), int(ay)) == '#' || tile(to, int(bx), int(by)) == '#')
+                continue;
+            kept += line + '\n';
+        }
+        sides = kept;
+    }
+    auto world = load(f);
+    world.setTimeOfDay(18.5);                                   // Off work in c_0_0: home is two cells east.
+    world.tick(1);
+    auto* pip = world.entity("pip");
+    pip->cellId = "c_0_0";
+    pip->position = {13.5, .5};                                 // Beside the strip's west end.
+    pip->path.clear();
+    bool strip = false;
+    for (int second = 0; second < 600 && pip->cellId != "c_2_0"; ++second)
+    {
+        world.tick(1);
+        strip |= pip->cellId == "c_1_0" && pip->position.y < 1;
+    }
+    expect(pip->cellId == "c_2_0" && !strip, "Pip gets home through the body of c_1_0, never onto the strip: " + pip->cellId +
+                                                 " " + std::to_string(pip->position.x) + "," + std::to_string(pip->position.y) +
+                                                 (strip ? " (on the strip)" : ""));
+}
+
+// A cell cut in two (doc 64, Phase 13): a wall runs down c_1_0, and Pip's front door is in its smaller, western half.
+// Coming home from work in c_2_0 she crosses into the eastern half, the body of the cell, where every way in from
+// c_2_0 lands. There is no way on from there; she must go out and come in again on the right side, from c_1_1's edge
+// west of the wall. (Residents crossed back and in again at the same seam for game hours in the city, and went
+// hungry.) With the house in memory to tell, the way in is judged by where its way on leaves from.
+const std::string PipWest =
+    "economy 1000 100 50 10 12\n"
+    "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+    "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_pip\" 2.5 2.5 \"c_2_0\" 8.5 8.5 \"h_pip\" 3.5 2.5\n"
+    "door \"pip_door_out\" \"Pip's door\" \"c_1_0\" 2.5 8.5 \"h_pip\" 2.5 4.5 \"pip_door_in\" 0 0 0 0 \"-\"\n"
+    "door \"pip_door_in\" \"Pip's door\" \"h_pip\" 2.5 5.5 \"c_1_0\" 2.5 9.5 \"pip_door_out\" 0 0 0 0 \"-\"\n";
+
+void aCellCutInTwo()
+{
+    auto f = grid(PipWest);
+    auto& text = f.cells["c_1_0"];
+    const auto rows = text.find("grid:\n") + 6;
+    for (int y = 0; y < Side; ++y)
+        text[rows + std::size_t(y * (Side + 1)) + 5] = '#';      // The wall, at x = 5.
+    text[rows + std::size_t(8 * (Side + 1)) + 2] = '+';          // Pip's front door.
+    for (auto& [cell, sides] : f.seams)                       // (No seam onto the wall: a build writes none.)
+    {
+        std::istringstream in(sides);
+        std::string line, kept;
+        while (std::getline(in, line))
+        {
+            std::istringstream fields(line);
+            std::string word, id, name, from, to;
+            double ax, ay, bx, by;
+            fields >> word >> std::quoted(id) >> std::quoted(name) >> std::quoted(from) >> ax >> ay >> std::quoted(to) >> bx >> by;
+            if ((from == "c_1_0" && int(ax) == 5) || (to == "c_1_0" && int(bx) == 5))
+                continue;
+            kept += line + '\n';
+        }
+        sides = kept;
+    }
+    f.cells["h_pip"] = "id: h_pip\nname: Pip's house\ndescription: A small room.\nworld: 16 200 0\noutdoors: false\n"
+                       "weather: clear\nsize: 6 6\ngrid:\n......\n......\n......\n......\n......\n..+...\n";
+    f.seams["h_pip"] = "";
+    const std::string was = "exits \"c_1_0\" 3 \"c_0_0\" \"c_1_1\" \"c_2_0\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_pip\"\nexits \"h_pip\" 1 \"c_1_0\"\narea \"h_pip\"\n");
+    auto world = load(f);
+    world.setTimeOfDay(18.5);                                   // Off work in c_2_0: home is through c_1_0's west half.
+    world.ensureLoaded("c_2_0");
+    auto* pip = world.entity("pip");
+    expect(pip != nullptr, "Pip is in the world");
+    pip->cellId = "c_2_0";
+    pip->position = {8.5, 8.5};
+    pip->path.clear();
+    int crossings = 0;
+    std::string was2 = pip->cellId;
+    for (int second = 0; second < 3000 && pip->cellId != "h_pip"; ++second)
+    {
+        world.tick(1);
+        if (pip->cellId != was2)
+            ++crossings, was2 = pip->cellId;
+    }
+    expect(pip->cellId == "h_pip", "Pip gets home, round by c_1_1 to the wall's west side: " + pip->cellId + " " +
+                                       std::to_string(pip->position.x) + "," + std::to_string(pip->position.y) + " after " +
+                                       std::to_string(crossings) + " crossings");
+    expect(crossings <= 6, "without crossing back and forth: " + std::to_string(crossings) + " crossings");
+    // And out again in the morning, to work. Her door opens on the wall's west side, not on the body of c_1_0; but that
+    // side has ways of its own, so it is no pocket, and her house no dead end (it was taken for one, and cut off from
+    // the street for everyone).
+    world.setTimeOfDay(6.25);
+    for (int second = 0; second < 3000 && pip->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(pip->cellId == "c_2_0", "In the morning Pip goes out to work: " + pip->cellId + " " + std::to_string(pip->position.x) +
+                                       "," + std::to_string(pip->position.y) + " " + pip->activity);
+}
+
+// A spot no way reaches is one walker's trouble, not everyone's (doc 64, Phase 13). Pip's place at home is in a little
+// room of the house that no door opens into (as a resident's upstairs in Ridgemere is); Kit lives in the same house,
+// in the room the front door opens into. Pip, coming home first, found every way in landing short of her own spot and
+// took the house's door for a dead end, for everyone: Kit, close behind, had no way home, and nor had any of the
+// household after. Kit gets home.
+const std::string TwoHome =
+    "economy 1000 100 50 10 12\n"
+    "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" \"saddle\" "
+    "3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_two\" 6.5 0.5 \"c_0_0\" 14.5 8.5 \"h_two\" 7.5 0.5\n"
+    "resident \"kit\" \"Kit\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"male\" \"average\" \"saddle\" "
+    "3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_two\" 1.5 1.5 \"c_0_0\" 4.5 8.5 \"h_two\" 1.5 2.5\n"
+    "door \"two_door_out\" \"The house door\" \"c_1_0\" 3.5 8.5 \"h_two\" 3.5 4.5 \"two_door_in\" 0 0 0 0 \"-\"\n"
+    "door \"two_door_in\" \"The house door\" \"h_two\" 3.5 5.5 \"c_1_0\" 3.5 9.5 \"two_door_out\" 0 0 0 0 \"-\"\n";
+
+void aSpotNoWayReaches()
+{
+    auto f = grid(TwoHome);
+    auto& street = f.cells["c_1_0"];
+    street[street.find("grid:\n") + 6 + std::size_t(8 * (Side + 1) + 3)] = '+';
+    f.cells["h_two"] = "id: h_two\nname: The house\ndescription: Two rooms.\nworld: 16 200 0\noutdoors: false\n"
+                       "weather: clear\nsize: 8 6\ngrid:\n.....#..\n.....#..\n.....###\n........\n........\n...+....\n";
+    f.seams["h_two"] = "";
+    const std::string was = "exits \"c_1_0\" 3 \"c_0_0\" \"c_1_1\" \"c_2_0\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_two\"\nexits \"h_two\" 1 \"c_1_0\"\narea \"h_two\"\n");
+    auto world = load(f);
+    world.setTimeOfDay(18.5);                                   // Off work in c_0_0, both: home is next door.
+    world.ensureLoaded("c_0_0");
+    auto* pip = world.entity("pip");
+    auto* kit = world.entity("kit");
+    expect(pip && kit, "Both are in the world");
+    for (auto* e : {pip, kit})
+    {
+        e->cellId = "c_0_0";
+        e->path.clear();
+    }
+    pip->position = {14.5, 8.5};                                // Pip by the edge, Kit well behind.
+    kit->position = {2.5, 8.5};
+    for (int second = 0; second < 900 && kit->cellId != "h_two"; ++second)
+        world.tick(1);
+    expect(kit->cellId == "h_two", "Kit gets home: " + kit->cellId + " " + std::to_string(kit->position.x) + "," +
+                                       std::to_string(kit->position.y) + " " + kit->activity);
+}
+
 void badSourcesAreRefused()
 {
     auto f = grid("");
@@ -496,6 +739,11 @@ int main()
         aPlayerBringsResidentsOnstage();
         noOneIsStrandedInAPocket();
         aPairedPocketIsClamberedOutOf();
+        aCrossingIsNotHeldShut();
+        aLaneATileWide();
+        aStripIsNoWayOn();
+        aCellCutInTwo();
+        aSpotNoWayReaches();
         badSourcesAreRefused();
         aWalkKeepsToTheRoad();
     }

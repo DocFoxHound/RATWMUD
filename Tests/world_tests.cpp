@@ -420,6 +420,78 @@ void bodies()
     }
     expect(tightest >= body * .8 - 1e-6, "and spreads out round it, none on top of another: " + std::to_string(tightest));
 }
+// Bodies at a turn (doc 64, Phase 13): two walkers come at the same turn of their paths at once, from either side.
+// Neither can stand on it while the other presses for it; within a tile of it and getting no nearer, each goes on to
+// its next turn. (They stood there for good: residents near players' bodies were held so at a seam for game hours.)
+void heldAtATurn()
+{
+    World w;
+    quiet(w);
+    auto& a = *w.entity("npc_porter");
+    auto& b = *w.entity("npc_smith");
+    expect(a.cellId == "exterior" && b.cellId == "exterior", "Two residents in the yard");
+    const Vec2 turn{20.5, 13.5}, north{20.5, 9.5}, south{20.5, 17.5};
+    a.position = {16.5, 13.5};                      // Along the path across the yard, from the west...
+    b.position = {24.5, 13.5};                      // ...and from the east, the same way off: they meet at the turn.
+    a.path = {turn, north};
+    b.path = {turn, south};
+    advance(w, 3.5);                                // (Four tiles at a resident's walk, and a moment.)
+    expect(a.path.size() == 2 && b.path.size() == 2 && std::abs(a.position.x - b.position.x) < step::BodyRadius * 2 + .05,
+           "They meet at the turn, pressed together short of it: " + std::to_string(a.position.x) + " " +
+               std::to_string(b.position.x));
+    advance(w, 10);
+    expect(std::hypot(a.position.x - north.x, a.position.y - north.y) < .05 && a.path.empty(),
+           "One goes on north: " + std::to_string(a.position.x) + "," + std::to_string(a.position.y));
+    expect(std::hypot(b.position.x - south.x, b.position.y - south.y) < .05 && b.path.empty(),
+           "and the other south: " + std::to_string(b.position.x) + "," + std::to_string(b.position.y));
+    // Alone, a walker keeps to its path, every turn of it: none is cut short.
+    a.position = {16.5, 13.5};
+    a.path = {turn, north};
+    bool turned = false;
+    for (int i = 0; i < 100 && !a.path.empty(); ++i)
+    {
+        w.tick(.1);
+        turned |= a.path.size() == 1 && std::abs(a.position.x - turn.x) < 1e-6;
+    }
+    expect(turned && a.path.empty() && std::hypot(a.position.x - north.x, a.position.y - north.y) < .05,
+           "Alone, it turns on the turn itself");
+    // Face to face along one line (a street's row of tile middles), each bound for where the other set off: pushed
+    // straight back, neither got by. Held a couple of seconds, each steps aside to its right, and they pass.
+    const Vec2 west{16.5, 13.5}, east{24.5, 13.5};
+    a.position = west;
+    b.position = east;
+    a.path = {east};
+    b.path = {west};
+    advance(w, 4);
+    expect(!a.path.empty() && !b.path.empty() && a.position.x < b.position.x && std::abs(a.position.y - b.position.y) < .3,
+           "They meet face to face: " + std::to_string(a.position.x) + " " + std::to_string(b.position.x));
+    advance(w, 12);
+    expect(a.path.empty() && std::hypot(a.position.x - east.x, a.position.y - east.y) < .05,
+           "One gets by to the east: " + std::to_string(a.position.x) + "," + std::to_string(a.position.y));
+    expect(b.path.empty() && std::hypot(b.position.x - west.x, b.position.y - west.y) < .05,
+           "and the other to the west: " + std::to_string(b.position.x) + "," + std::to_string(b.position.y));
+}
+// A door within reach but out of sight (beside it, past the corner of its wall), on a resident's way: it walks up to
+// the door rather than trying it from where it stands, again and again, for good (doc 64, Phase 13: residents pushed
+// off their way by others' bodies were left so, beside their own front doors, and went hungry).
+void aDoorOutOfSight()
+{
+    World w;
+    const auto* life = w.society().resident("npc_scout");
+    for (int i = 0; i < 1200 && life->goalCell != "exterior"; ++i)
+        w.tick(.1);
+    expect(life->goalCell == "exterior", "The scout sets off for work in the yard");
+    auto* scout = w.entity("npc_scout");
+    scout->cellId = "tavern";
+    scout->position = {17.4, 22.8};                 // Beside the yard door, its wall's corner between them.
+    scout->path.clear();
+    expect(!w.interact("npc_scout", "door_main", "open").ok && !w.door("door_main")->open,
+           "From there the scout can't see the yard door to open it");
+    for (int i = 0; i < 300 && scout->cellId == "tavern"; ++i)
+        w.tick(.1);
+    expect(scout->cellId == "exterior", "It walks up to the door and goes through: " + scout->cellId + " " +
+                                            std::to_string(scout->position.x) + "," + std::to_string(scout->position.y));
+}
 void sensesAndWeather()
 {
     World w;
@@ -1673,6 +1745,8 @@ int main()
         clickPathing();
         transitions();
         bodies();
+        heldAtATurn();
+        aDoorOutOfSight();
         sensesAndWeather();
         stealthPerception();
         posturePortalTransitions();
