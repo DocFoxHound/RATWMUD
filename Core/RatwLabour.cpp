@@ -182,7 +182,7 @@ int Society::handsWanted(const std::string& till) const
         hours = hoursFor_(producer->out, hoursFor(*producer));
     if (const auto mending = mendRate_.find(till); mending != mendRate_.end())
         hours += mending->second;                    // (And its mending: Phase 9.)
-    else if (const auto* business = items::businessFor(p->title))
+    if (const auto* business = items::businessFor(p->title))
         for (const auto* k : items::craftsFor(business->id))
             hours += hoursFor_(k->out, hoursFor(*k));
     return std::max(1, int(std::ceil(hours / PaidSpells - 1e-9)));

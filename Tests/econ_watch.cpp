@@ -522,6 +522,9 @@ int main(int argc, char** argv)
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings\n";
+    std::ofstream workOut(out / "work.csv");
+    workOut << "day,account,title,hands,wanted,credited,lost\n";
+    std::unordered_map<std::string, std::pair<double, double>> workBefore;
     const auto modelMeasures = [&](int day) {
         std::map<std::string, std::int64_t> homes;     // Home cell (or the resident, homeless) -> the household's money.
         // A barracks, a bunkhouse, quarters or lodgings (over eight grown, or communal) share no purse
@@ -569,6 +572,16 @@ int main(int argc, char** argv)
                          << society.ordersCostOf(id) << ',' << sold.first << ',' << sold.second << '\n';
             }
         tillSold.clear();
+        // Each business's and producer's hours of work today, and those lost to a full bank, against its hands and the
+        // hands it wants (doc 64, Phase 13).
+        for (const auto& [account, by] : society.workBy())
+        {
+            auto& before = workBefore[account];
+            const auto* p = account.rfind("till:", 0) == 0 ? society.position(account.substr(5)) : nullptr;
+            workOut << day << ',' << csv(account) << ',' << csv(p ? p->title : "") << ',' << society.handsOf(account) << ','
+                    << (p ? society.handsWanted(account) : 0) << ',' << by.first - before.first << ',' << by.second - before.second << '\n';
+            before = by;
+        }
         // Posts standing empty (not let go), and of them producers' and shops' (doc 64, Phase 8).
         int vacant = 0, vacantTrade = 0;
         for (const auto& p : society.positions())

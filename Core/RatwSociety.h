@@ -874,6 +874,7 @@ class Society
     static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
     static inline bool workByHours_ = false;
     double workCredited_ = 0, workLost_ = 0;
+    std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
 
   public:
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
@@ -882,6 +883,7 @@ class Society
     // Hours of work credited to businesses and producers so far, and those lost to a full bank (econ_watch's measures).
     double workCredited() const { return workCredited_; }
     double workLost() const { return workLost_; }
+    const std::unordered_map<std::string, std::pair<double, double>>& workBy() const { return workBy_; }
 
   private:
     int season_ = 0;                                 // The season of the latest decision (0 spring .. 3 winter).

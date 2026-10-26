@@ -253,8 +253,12 @@ void Society::creditWork(const std::string& account, double hours)
     if (hours <= 0)
         return;
     auto& banked = workBanked_[account];
+    const double lost = std::max(0., banked + hours - WorkBankedMost);   // (Hands with nothing to make: hours that go nowhere.)
     workCredited_ += hours;
-    workLost_ += std::max(0., banked + hours - WorkBankedMost);   // (Hands with nothing to make: hours that go nowhere.)
+    workLost_ += lost;
+    auto& by = workBy_[account];
+    by.first += hours;
+    by.second += lost;
     banked = std::min(WorkBankedMost, banked + hours);
 }
 
