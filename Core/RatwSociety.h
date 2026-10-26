@@ -1248,6 +1248,13 @@ class Society
     bool important(const std::string& resident) const;     // In a master's place, keeping its own shop, or the clergy.
     void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
     static constexpr int HomeNeedDays = 10, ServantMonths = 6;
+    // A House's crews (doc 64, Phase 13, round 6; doc 63's model, house_week), with work by the hours: its estate crew as
+    // many as what's left of its week's budget pays at the going rate, up to a tenth of the realm's grown wolves of
+    // working age (EstateShare), posted in gangs of CrewGang about its town; their places weighed with the businesses'
+    // hires by pay, and those untaken its posts open (vacanciesOf(house + "|crew")). A crew hand's day of building work
+    // mends its town by CrewMend while it isn't in full repair. A House that can't pay a day's share ends that gang.
+    static constexpr int EstateShare = 10, CrewGang = 12;
+    static constexpr double CrewMend = .05;
     static constexpr int PieceWaitDays = 3;         // Days a household waits for a piece no shelf has (Society::wants).
     double monthIncomeOf(const std::string& account) const;
     static bool unearnedKind(const std::string& kind);
@@ -1293,6 +1300,12 @@ class Society
         bool ended = false;
     };
     static constexpr int HireDays = 7;
+    // A House's own hires for the week (its retainers, its estate crew: doc 64, Phase 13, round 6).
+    static bool houseCrew(const OddJob& j)
+    {
+        return j.until >= 0 && j.payer.rfind("house:", 0) == 0 && (j.kind == "building work" || j.kind == "about the home");
+    }
+    int estateMost() const;                          // A House's estate crew at most: EstateShare of the realm's workers.
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
     // hand (Society::dayWage, doc 64, Phase 6).
     static constexpr int HireSpells = 8;           // (A day's hours, as a post's: doc 64, Phase 6. It was 4.)
@@ -1627,6 +1640,7 @@ class Society
     std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
     std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
     double slack_ = 0;
+    int grown_ = 0;                                  // (Its grown wolves of working age, at the last pass.)
     void tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // Households and institutions (doc 64, Phase 7; RatwInstitutions.cpp).
     std::unordered_map<std::string, double> earnedToday_;   // What each account earned today (into memory.weekIncome).
@@ -1652,6 +1666,10 @@ class Society
     std::int64_t hireForWeek(const std::string& payer, const std::string& community, const std::string& kind, const std::string& what,
                              const Spot& at, int slots, std::int64_t wage, int days, std::int64_t day);
     Spot townSpot(const std::string& community, const std::string& salt) const;   // Somewhere public in town.
+    // A House's crew for the week, with work by the hours (doc 64, Phase 13, round 6): `slots` hands at `wage` a day in
+    // gangs of CrewGang, each at the next of `spots`. Returns what a day of them costs.
+    std::int64_t houseCrewForWeek(const std::string& house, const std::string& community, const std::string& kind, const std::string& what,
+                                  const std::vector<Spot>& spots, int slots, std::int64_t wage, std::int64_t day);
     // Spends up to `budget` of `payer`'s on goods its town's shops sell that `is` picks, used up ("used in <what>") or
     // kept; returns what it spent.
     std::int64_t buyAndUse(const std::string& payer, const std::string& community, const std::function<bool(const std::string&)>& is,

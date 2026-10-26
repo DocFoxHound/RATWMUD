@@ -101,6 +101,52 @@ std::int64_t Society::hireForWeek(const std::string& payer, const std::string& c
     return oddJobs_.back().pay;
 }
 
+int Society::estateMost() const
+{
+    // The model's `len(self.workers) // 10`: the grown wolves of working age at the last labour pass (before the first
+    // after a restart, by their written ages).
+    int grown = grown_;
+    if (grown <= 0)
+        for (const auto& [id, life] : state_.residents)
+            if (const auto* r = spec(id); r && r->age >= 16 && r->age < RetireAge)
+                ++grown;
+    return grown / EstateShare;
+}
+
+std::int64_t Society::houseCrewForWeek(const std::string& house, const std::string& community, const std::string& kind, const std::string& what,
+                                       const std::vector<Spot>& spots, int slots, std::int64_t wage, std::int64_t day)
+{
+    // Its crew in gangs, as many as its purse pays a day of (the model's staff_to: its posts are what its budget pays).
+    // Each gang's places are taken as a business's hire's are (oddJobFor's bestOf), by its pay.
+    if (wage < 1 || spots.empty() || !account(house))
+        return 0;
+    slots = int(std::min<std::int64_t>(slots, spendable(house) / wage));
+    std::int64_t cost = 0;
+    for (std::size_t k = 0; slots > 0; ++k)
+    {
+        const auto& at = spots[k % spots.size()];
+        const int gang = std::min(slots, CrewGang);
+        slots -= gang;
+        if (at.cell.empty())
+            continue;
+        OddJob j;
+        j.id = "odd" + std::to_string(++nextOddJob_);
+        j.payer = house;
+        j.community = community;
+        j.kind = kind;
+        j.what = what.substr(0, 80);
+        j.from = j.to = at;
+        j.slots = gang;
+        j.pay = wage * gang;
+        j.forChildren = false;
+        j.until = day + HireDays - 1;
+        cost += j.pay;
+        oddJobs_.push_back(std::move(j));
+        ++oddVersion_;
+    }
+    return cost;
+}
+
 std::int64_t Society::buyAndUse(const std::string& payer, const std::string& community, const std::function<bool(const std::string&)>& is,
                                 std::int64_t budget, const std::string& what, bool keep)
 {
@@ -201,8 +247,11 @@ void Society::institutionsWeek(std::int64_t day)
         if (budget <= 0 || !seat)
             continue;
         const auto wage = std::int64_t(std::ceil(goingRate(h.community) - 1e-9));
-        budget -= 7 * hireForWeek(h.id, h.community, "about the home", "a retainer of " + h.name, seat->work,
-                                  std::min(12, int(budget * 3 / 10 / std::max<std::int64_t>(1, wage * 7))), wage, 7, day);
+        const int retainers = std::min(12, int(budget * 3 / 10 / std::max<std::int64_t>(1, wage * 7)));
+        if (workByHours())
+            budget -= 7 * houseCrewForWeek(h.id, h.community, "about the home", "a retainer of " + h.name, {seat->work}, retainers, wage, day);
+        else
+            budget -= 7 * hireForWeek(h.id, h.community, "about the home", "a retainer of " + h.name, seat->work, retainers, wage, 7, day);
         // (Finery kept, a few pieces a House: what it has worn out goes in Phase 9.)
         int pieces = 0;
         for (const auto& [item, n] : account(h.id)->stock)
@@ -210,8 +259,20 @@ void Society::institutionsWeek(std::int64_t day)
         if (pieces < 12)
             budget -= buyAndUse(h.id, h.community, finery, budget * 3 / 10, "a House's finery", true);
         budget -= buyAndUse(h.id, h.community, building, budget * 4 / 10, "a House's works", false);
-        hireForWeek(h.id, h.community, "building work", "the estate of " + h.name, seat->work,
-                    int(std::max<std::int64_t>(0, budget) / std::max<std::int64_t>(1, wage * 7)), wage, 7, day);
+        const int crew = int(std::max<std::int64_t>(0, budget) / std::max<std::int64_t>(1, wage * 7));
+        if (!workByHours())
+        {
+            hireForWeek(h.id, h.community, "building work", "the estate of " + h.name, seat->work, crew, wage, 7, day);
+            continue;
+        }
+        // With work by the hours, the model's size (doc 64, Phase 13, round 6): as many as what's left pays, up to a
+        // tenth of the realm's workers, in gangs about its town, keeping its fabric (CrewMend). (It was twelve at most, in
+        // its hall, and they went mostly untaken.)
+        const int most = std::min(crew, estateMost());
+        std::vector<Spot> spots;
+        for (int k = 0; k * CrewGang < most; ++k)
+            spots.push_back(townSpot(h.community, h.id + "|estate|" + std::to_string(k)));
+        houseCrewForWeek(h.id, h.community, "building work", "the estate of " + h.name, spots, most, wage, day);
     }
     memory.wagesWeek.clear();
     ++memory.revision;
