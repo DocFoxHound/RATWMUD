@@ -1443,3 +1443,90 @@ and logged in the game's ledger:
 - `test_dungeon_master.py`: the steers, scenarios, staples and funds tests became `test_the_economys_levers` and
   `test_the_monitors_measures`.
 - All suites pass.
+
+### Phase 13: the pace, steadied (2026-10-25)
+
+**The trouble.** The realm's pace (Phase 6) went on a 56th a day until the realm was already hungry. Its one signal,
+2% of the realm hungry, came after the shelves and larders were bare, so it climbed into a famine, backed off, and
+climbed again from empty shelves: in the run before (30 days from DEV with the hours on), 95 hungry on day 22, 141 on
+day 24, 157 to 346 from day 29.
+
+**The pace now** (`tendLabour`), with work by the hours:
+
+- **Its reading:** each day pass, the realm's food in hand from the monitor (its homes' and its shelves', days a head,
+  each town's at most 4 days, `PaceCoverCap`, so a glutted town doesn't hide a hungry one), measured the evening before
+  for that day; none if the monitor missed the evening. A week of them is kept (`memory.paceCover`, 8, saved).
+- **Back a 14th a day** while 2% of the realm is hungry, as before.
+- **Back a 56th** while the week's food fell by over 0.15 days a head (`PaceSlide`: today against the same day a week
+  ago, so Restday is at both ends or neither) or averaged under a day (`PaceFloor`).
+- **On a 56th** only while the week's food didn't fall and **the land's hands keep up**: its producers at work and
+  their hires taken, against the hands their sales want (`handsWanted`), short by 5% at most (`PaceShortHands`); or no
+  further behind than a week ago by more than 5 points (`memory.paceHands`, saved).
+- **Otherwise it holds.** Until it has a week of readings it only holds or backs off.
+- **Why the land's hands by their week:** their sales want two to three times the hands they have even at the old pace
+  (day 10: 963 wanted, 449 had). Buyers lay in stores, a producer that sells out counts its day half again, and a bare
+  shelf plans half again more. Held to the 5% alone it never went on (a first run, stopped at day 15, had the land's
+  hands at 36% to 92% of those wanted), and a pace held at 0 keeps the households' gap open.
+- **Saves:** both lists are read only when they hold a week's readings at most, each in bounds; an older save has none,
+  and the pace waits a week.
+
+**The monitor** (`TownReading.homeFoodDays`): each town's homes' food (larders and pockets), days a head, kept in the
+brief (0 in an older one). Its shops' food counts their meals now, at the store price (they were skipped). Drinks were
+left out already.
+
+**The food buffers** (at every pace):
+
+- **Shelves over Restday** (`shelfTarget`): on the eve of a day the shops aren't properly open, a food is kept for that
+  day too, as far as it keeps (`keeps` − 1): bread 2 to 3 days, a meal 1.5 to 2, porridge as it was.
+- **The larder errand** (`householdShopping`): each household starts at a shop of its own (by its home's lot), and goes
+  on to the next while what it holds is still under the point it lays in at (`buyFood`'s `under`). The plan for a
+  weekday is as it was: the household lays in by what it eats from home.
+- **A missed meal** (`missedToday_`): a hungry buyer who finds nothing left to eat at a shop counts a meal of its first
+  food as wanted, into its sales rate with its sales (the more of that and a sold-out day's half again).
+- **The founding larder** holds two days of meals (`FoundingLarderDays`), not 2 to 5: meals keep three days, and 207k of
+  the founding's 253k nourishment spoiled on day 5. The first trips no longer spread over days 2 to 5; each household's
+  own first shop spreads them over the town's shops instead.
+
+**The land's food on Restday** (`decideAuthored`'s Restday rule; **waiting on the user's OK**): the producers of food or
+milk (fishers, eel traps, rabbit and sheep farms, dairies, pastures) work Restday after the service, as the food shops
+do. It widens the user's 2026-10-07 rule (food makers work Restday after the service) to the land's food. Their hires
+already worked Restday.
+
+**Measured** (30 days from DEV, `--deterministic --hours --threads 3`), against the run before:
+
+| day 30 | before | now |
+|---|---|---|
+| hungry, starving | 174, 147 | 0, 0 |
+| days with anyone hungry | 5 (from day 21) | none |
+| pace | 0.25 (0.375 at its height) | 0.107 |
+| household Gini | 0.569 | 0.561 |
+| the poorer half | 0.138 | 0.147 |
+| the going wage | 12p | 12p |
+| hours lost to full banks (the day's) | 32% | 41% |
+| food brought in on a Restday | 0 | 15k to 31k nourishment |
+
+- Money conserved every day. "The run before" is the commit before (its run matches the lead's baseline day for day).
+- **The tick:** 0.0735 ms over the 30 days, with six other runs on the machine. Ten days side by side with the commit
+  before: 0.063 ms against 0.079, the society's part the same (0.0289 against 0.0286), fewer hungry walking to the shops.
+- **The pace:** 0 to day 15, then on at 6 of the 15 day passes after (0.107 by day 27), and a step back at the last.
+  From a traced run (the same pace day by day): the founding's meals spoil and the week's food falls to day 12, and the
+  land's hands fall from 85% to 36% of those wanted as the first hires end; of the 8 holds, 6 were the week's food
+  falling a little (under 0.06 days a head) and 2 the land's hands; the last pass's food fell 0.53.
+- **The food in hand** (`larders.csv`, homes and shops, a town's at most 4 days, by people): 3.0 to 3.6 days a head from
+  day 7, against 0.9 to 2.7 before.
+- **Still to do:** the land's hires go untaken (in the traced run two thirds of their slots stood open most days from
+  day 9; day 20, 224 of 312) and the wage stays at 12p, so the pace holds low and the hours of the full banks stay
+  idle. That is the labour market's to mend; the pace follows as the land's hands come.
+
+**Tests:**
+
+- `orchestrator_tests`: the homes' food (five days a head in Wellby, none in Hungerford), and none in an older brief.
+- `wire_tests`: both lists round trip; too many readings, or one out of bounds, are dropped, the society still read.
+- `roads_tests` `thePaceIsSteadied`: the first reading is the monitor's homes and shelves, and the pace holds; a week in
+  it steps back when the food fell, holds when it didn't (the strip has no producers), and steps back a 14th while the
+  realm goes hungry.
+- `crafting_tests` `foodKeptOverRestday`: more bread kept on the eve, firewood's store the same. `seasonalFields` feeds
+  its farmer before the harvest's end: its body can't walk to the bakery, and with the pace no longer rising by itself
+  there was bread on the shelf it stood waiting to buy.
+- `schedules_tests` `restdayLandFood`: Greyfen with Rook keeping rabbits rests through the service and works after it.
+- All suites pass.
