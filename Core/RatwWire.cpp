@@ -1004,6 +1004,14 @@ Value economyMemory(const EconomyMemory& m)
         belongings.add(who, list);
     }
     o.add("belongings", belongings);
+    o.add("piecesFounded", double(m.piecesFounded));
+    for (const auto* rates : {&m.mendRate, &m.worksRate})
+    {
+        auto map = Value::object();
+        for (const auto& [till, hours] : *rates)
+            map.add(till, hours);
+        o.add(rates == &m.mendRate ? "mendRate" : "worksRate", map);
+    }
     auto mint = Value::object(), spending = Value::object();
     mint.add("on", m.mint.on);
     mint.add("target", m.mint.target);
@@ -1146,6 +1154,14 @@ EconomyMemory readEconomyMemory(const Value& o)
                     const int flags = int(v.items()[2].asNumber());
                     m.belongings[who].push_back({v.items()[0].asString(), std::clamp(v.items()[1].asNumber(), 0., 1.), (flags & 1) != 0, (flags & 2) != 0});
                 }
+    // (Saved before doc 64's Phase 13: none. An older world is never founded pieces from nothing (it has lived: its purses
+    // are founded), and its makers' mending and builders' works are counted afresh.)
+    if (const auto* p = o.find("piecesFounded"); p && p->isNumber() && p->asNumber() >= 0 && p->asNumber() <= 1)
+        m.piecesFounded = int(p->asNumber());
+    for (const auto& [key, into] : {std::pair{"mendRate", &m.mendRate}, std::pair{"worksRate", &m.worksRate}})
+        for (const auto& [till, v] : o.object(key).fields())
+            if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= 0 && v.asNumber() < 1e6 && till.size() < 200)
+                (*into)[till] = v.asNumber();
     // (Saved before doc 64's Phase 13, six numbers: no year's rate yet, so the next plan goes by its sales lately, and no
     // founding spring to look at again.)
     for (const auto& [till, v] : o.object("fields").fields())

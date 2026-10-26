@@ -19,6 +19,17 @@ bool collector(const std::string& id)
 {
     return id == "treasury" || id.rfind("stores:", 0) == 0 || id.rfind("house:", 0) == 0 || id == Society::SharedChurch;
 }
+
+// Whether a business makes things from a good (a provisioner's rabbits for smoking): one of its own crafts' materials.
+bool madeFrom(const items::Business* business, const std::string& base)
+{
+    if (business)
+        for (const auto* k : items::craftsFor(business->id))
+            for (const auto& [in, q] : k->in)
+                if (in == base)
+                    return true;
+    return false;
+}
 } // namespace
 
 void Society::noteOutgoing(const std::string& from, const std::string& kind, std::int64_t coins)
@@ -55,7 +66,8 @@ std::int64_t Society::buyForSurplus(const std::string& buyer, const std::vector<
         const auto* stockHeld = account(till);
         if (!stockHeld)
             continue;
-        const auto sold = wares(shop);
+        std::vector<std::string> made;
+        const auto& sold = waresKept(shop, made);
         const std::vector<std::pair<std::string, int>> held(stockHeld->stock.begin(), stockHeld->stock.end());
         for (const auto& [item, n] : held)
         {
@@ -83,8 +95,24 @@ std::int64_t Society::buyForSurplus(const std::string& buyer, const std::vector<
 
 bool Society::onSale(const std::string& shop, const std::string& item, const std::vector<std::string>& sold) const
 {
-    // (A baker's flour and firewood, a carpenter's timber, sit in the same till as its wares: not for sale.)
-    return std::find(sold.begin(), sold.end(), items::baseOf(item)) != sold.end() || (edible(item) && foodShop(shop));
+    // (A baker's flour and firewood, a carpenter's timber, sit in the same till as its wares: not for sale; nor a
+    // provisioner's rabbits, food it smokes, though an inn's raw meat, bought in from hunters to sell on, is.)
+    const auto base = items::baseOf(item);
+    if (std::find(sold.begin(), sold.end(), base) != sold.end())
+        return true;
+    if (!edible(item) || !foodShop(shop))
+        return false;
+    const auto* keeper = spec(shop);
+    return !madeFrom(keeper ? items::businessFor(keeper->workLabel) : nullptr, base);
+}
+
+const std::vector<std::string>& Society::waresKept(const std::string& shop, std::vector<std::string>& made) const
+{
+    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(shop))
+        if (const auto kept = waresCache_.find(shop); kept != waresCache_.end() && kept->second.first == r->workLabel)
+            return kept->second.second;
+    made = wares(shop);
+    return made;
 }
 
 std::vector<Society::Offer> Society::offersOf(const std::vector<std::string>& shops, const std::function<bool(const std::string& item)>& wanted,
@@ -99,19 +127,16 @@ std::vector<Society::Offer> Society::offersOf(const std::vector<std::string>& sh
         if (!shelves)
             continue;
         // (Its wares as wares() keeps them, not a copy, as shopHasFood; onSale's rule, its parts worked out once a shop.)
-        const std::vector<std::string>* sold = nullptr;
-        if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(shop))
-            if (const auto kept = waresCache_.find(shop); kept != waresCache_.end() && kept->second.first == r->workLabel)
-                sold = &kept->second.second;
-        if (!sold)
-            made = wares(shop), sold = &made;
+        const auto& sold = waresKept(shop, made);
         const bool food = foodShop(shop);
+        const auto* keeper = food ? spec(shop) : nullptr;
+        const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
         for (const auto& [item, n] : shelves->stock)
         {
             if (n < 3)                               // (Never a shelf's last few: buyForSurplus's (n - 1) / 2.)
                 continue;
             const auto base = items::baseOf(item);
-            if (wanted(base) && (std::find(sold->begin(), sold->end(), base) != sold->end() || (food && edible(item))))
+            if (wanted(base) && (std::find(sold.begin(), sold.end(), base) != sold.end() || (food && edible(item) && !madeFrom(business, base))))
                 lots.push_back({std::hash<std::string>{}(salt + "|" + shop + "|" + item), {shop, till, item, base}});
         }
     }
