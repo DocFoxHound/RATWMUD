@@ -522,6 +522,23 @@ void societyTests()
     stringCash.find("accounts")->find(firstAccount)->set("cash", "10");
     refused(stringCash, "cash as a string");
     refused(Value("society"), "a society that isn't an object");
+    // The pace's week of readings (doc 64, Phase 13): saved, and dropped (the society still read) when there are more
+    // than a week's, or one is out of bounds.
+    auto state = w.save().society;
+    state.memory.paceCover = {1.5, 1.25, 2, 0, 4};
+    state.memory.paceHands = {.5, .75, 1};
+    const auto read = wire::readSociety(wire::society(state));
+    expect(read.memory.paceCover == state.memory.paceCover && read.memory.paceHands == state.memory.paceHands, "the pace's readings round trip");
+    for (const auto& wrong : {std::vector<double>(Society::PaceWeek + 1, 1.), std::vector<double>{1, -1}, std::vector<double>{1, Society::PaceCoverCap + 1}})
+    {
+        state.memory.paceCover = wrong;
+        state.memory.paceHands = wrong;
+        const auto back = wire::readSociety(wire::society(state));
+        expect(back.minted >= 0 && back.memory.paceCover.empty() && back.memory.paceHands.empty(), "readings that can't be are dropped, the rest kept");
+    }
+    state.memory.paceCover = {};
+    state.memory.paceHands = {1.5};
+    expect(wire::readSociety(wire::society(state)).memory.paceHands.empty(), "(the land's hands are a share, at most 1)");
 }
 
 void commandTests()

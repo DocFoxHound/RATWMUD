@@ -66,11 +66,13 @@ Brief measure(const Snapshot& s, Memory& memory)
         const auto c = cheapest.find(id);
         t.foodCost = (c != cheapest.end() ? c->second : landCheapest > 0 ? landCheapest * 1.5 : 5. / NourishADay) * NourishADay;
     }
+    std::map<std::string, double> homeFood;           // Town -> nourishment in its homes.
     for (const auto& h : s.homes)
     {
         auto it = towns.find(h.town);
         if (it == towns.end() || h.members <= 0)
             continue;
+        homeFood[h.town] += double(h.nourishment);
         const double days = double(h.nourishment) / (NourishADay * h.members) + double(h.cash) / (it->second.foodCost * h.members);
         auto& hs = homesShort[h.town];
         hs.first += days < 7;
@@ -103,6 +105,7 @@ Brief measure(const Snapshot& s, Memory& memory)
         const auto hs = homesShort[id];
         t.short_ = hs.second ? double(hs.first) / hs.second : 0;
         t.shopFoodDays = shopFood[id] / (NourishADay * n);
+        t.homeFoodDays = homeFood[id] / (NourishADay * n);
         const auto tk = takings[id];
         t.takingsRatio = tk.second > 0 ? double(tk.first) / double(tk.second) : 1;
         if (const auto ts = townSnaps.find(id); ts != townSnaps.end())
@@ -258,6 +261,7 @@ Brief readBrief(const Value& o)
         t.poor = x.number("poor");
         t.idle = int(x.number("idle"));
         t.shopFoodDays = x.number("shopFoodDays");
+        t.homeFoodDays = x.number("homeFoodDays");  // (Saved before doc 64's Phase 13: 0.)
         t.takingsRatio = x.number("takingsRatio");
         t.netInflow = std::int64_t(x.number("netInflow"));
         t.playerIn = std::int64_t(x.number("playerIn"));
@@ -298,6 +302,7 @@ Value briefJson(const Brief& b)
         x.add("poor", round3(t.poor));
         x.add("idle", t.idle);
         x.add("shopFoodDays", round3(t.shopFoodDays));
+        x.add("homeFoodDays", round3(t.homeFoodDays));
         x.add("takingsRatio", round3(t.takingsRatio));
         x.add("netInflow", double(t.netInflow));
         if (t.playerIn || t.playerOut || t.playerGoods)

@@ -293,6 +293,12 @@ void seasonalFields()
     expect(count(s.takeJournal(), "brought in", "wheat") > 0 && s.state().memory.fields.at(till).toHarvest < acres,
            "at the harvest it brings in what it sowed");
     double after = 280 + 10. / 24;
+    {
+        // (Fed: its body can't walk to the bakery, and a hungry farmer would stand waiting to buy its bread.)
+        auto state = s.state();
+        state.residents.at("farmer").hunger = 0;
+        expect(s.restore(state), "the fed farmer restores");
+    }
     work(s, 600, after, 3);
     const auto& planned = s.state().memory.fields.at(till);
     expect(planned.year == 0 && planned.toHarvest == 0 && planned.sown == 0 && planned.acres >= 0,
@@ -345,6 +351,34 @@ void woodLaidInForWinter()
     const auto before = on(200 + 10. / 24), now = on(255 + 10. / 24);
     expect(before.first > 0 && now.first >= 2 * before.first - 1 && now.second == before.second,
            "a month before winter the firewood laid in doubles: " + std::to_string(before.first) + " to " + std::to_string(now.first));
+}
+
+// Food kept over Restday (doc 64, Phase 13): on the eve of a day the shops aren't properly open, the baker keeps that
+// day's bread too (bread keeps four days: two days' sales, and the shut day's); firewood's store doesn't change.
+void foodKeptOverRestday()
+{
+    // (Two towns alike, one on an ordinary day and one on the eve.)
+    const auto on = [](std::int64_t day) {
+        auto s = farmTown();
+        const auto till = s.tillOf("baker");
+        for (std::int64_t d = 1; d <= 6; ++d)
+        {
+            set(s, "baker", "bread", 10);
+            expect(s.sale(till, "stall", "bread", 10, 1, "test: the stall's bread"), "the stall buys the baker's bread");
+            s.spoil(d);
+        }
+        double at = double(day) + 10. / 24;
+        work(s, 60, at, 1);
+        return std::pair{s.shelfTarget(till, "bread", 0), s.shelfTarget(s.tillOf("farmer"), "firewood", 0)};
+    };
+    std::int64_t eve = 100, plain = 100;
+    while (Society::shutAhead(eve) == 0)
+        ++eve;
+    while (Society::shutAhead(plain) > 0 || Society::shutAhead(plain - 1) > 0)
+        ++plain;
+    const auto usual = on(plain), ahead = on(eve);
+    expect(usual.first > 0 && ahead.first > usual.first && ahead.second == usual.second,
+           "on the eve the baker keeps more bread: " + std::to_string(usual.first) + " to " + std::to_string(ahead.first));
 }
 
 // Wear and mending for NPCs (doc 64, Phase 9), with work by the hours: a grown wolf owns its clothes and the sword it
@@ -800,6 +834,7 @@ int main()
         farmerBringsIn();
         seasonalFields();
         woodLaidInForWinter();
+        foodKeptOverRestday();
         piecesWornAndMended();
         theCatchFeedsTheLarder();
         theMint();

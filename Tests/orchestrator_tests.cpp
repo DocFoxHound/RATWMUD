@@ -89,6 +89,7 @@ void readsDistress()
     expect(b.towns.front().id == "hungerford", "The towns come most in distress first");
     expect(std::abs(well.foodCost - 4) < 1e-9, "A day's bread costs 4p in Wellby");
     expect(std::abs(well.shopFoodDays - 1.5) < 1e-9 && std::abs(well.takingsRatio - 40. / 30) < 1e-9, "and its shops' food and takings");
+    expect(std::abs(well.homeFoodDays - 5) < 1e-9 && hurt.homeFoodDays == 0, "and its homes' food: five days a head in Wellby, none in Hungerford");
     expect(!b.decided && well.week < 0, "Not the evening of the reckoning: no week weighed");
     auto unknown = land(false);
     unknown.counted = 2;
@@ -169,6 +170,7 @@ void savedState()
     expect(read.memory.distress.at("wellby") == .25 && read.memory.decided == 8 && read.last.day == 8 && read.last.gini == .5 &&
                read.last.towns.size() == 1 && read.last.towns[0].people == 20,
            "and loads its measures, the rest left behind");
+    expect(read.last.towns[0].homeFoodDays == 0, "(its homes' food unknown before Phase 13: none)");
 }
 } // namespace
 

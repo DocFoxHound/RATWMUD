@@ -398,11 +398,6 @@ int Society::shutAhead(std::int64_t today)
     return n;
 }
 
-int Society::startingLarderDays(const std::string& homeCell)
-{
-    return 2 + int(std::hash<std::string>{}(homeCell + "|larder") % 4);
-}
-
 bool Society::conserved() const
 {
     return moneySupply() == state_.minted - state_.sunk;
@@ -548,7 +543,7 @@ void Society::furnishHomes(const std::set<std::string>& homeCells)
             for (; quantity > 0; quantity -= 99)            // (A ledger entry is at most 99 of anything.)
                 create(store, item, std::min(quantity, 99), "household provisions");
         };
-        stockUp(homeStore(home, "larder"), "meal", startingLarderDays(home) * n);
+        stockUp(homeStore(home, "larder"), "meal", FoundingLarderDays * n);
         stockUp(homeStore(home, "chest"), "herbs", ChestHerbsEach * n);
         for (const auto& id : members)
             if (const auto* a = account(id); a && stock(*a, "meal") == 0)
