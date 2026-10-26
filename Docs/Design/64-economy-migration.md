@@ -2369,7 +2369,9 @@ brief allowed. Missed meals too (above).
 - **A seller that failed an order** (cut or ended for what it didn't send) isn't signed with that buyer again for
   `MonthDays` (`RoadsState::failed`, saved with the roads): Frosthollow's iron orders were ended and signed again the
   next day, for more.
-- **What the buyer couldn't pay for**, still on the wagon, isn't its seller's shortfall.
+- **What the buyer couldn't pay for**, still on the wagon, isn't its seller's shortfall. (So made, nothing counted it,
+  and an order whose buyer never paid never ended: mended in "the roads and the walking, reviewed" below, with
+  `StandingOrder::unpaid`.)
 - **A load is for the orders it set out with** (`Caravan::loaded`, each order's week at departure, saved): a raise a
   porter agreed while the wagon was out isn't laid a shortfall. An order signed after it set out has none of that load.
 - **Halved:** the cut's "toward what it sent" never applied (under half sent, its floor of half always won); the code
@@ -2592,9 +2594,10 @@ hop between known places and meet none of it, so the runs without players never 
   has come no nearer its next turn for two seconds goes on to the turn after, within a tile of it.
 - **Face to face.** Two coming head on along one row of tile middles (the roads' paths keep to them) pushed each other
   straight back, for hours. Now a resident held as long, further than a tile from its next turn, steps aside a body's
-  width to its right (or left; in a lane a tile wide, half that, and two pass) and goes on. Near the end of its path
-  neither happens: what happens there is for whoever sent it (a resident's own spot by a goal others share, a door's
-  reach). The clock is four numbers on the entity, never saved (paths aren't).
+  width to its right (or left; in a lane a tile wide, half that, and two pass) and goes on. (As first built, any walker
+  held, even by nothing but the ground, a player's path too, and one on its last leg stepped aside as well: see "the
+  roads and the walking, reviewed" below for what it does now.) The clock is numbers on the entity, never saved (paths
+  aren't).
 - **A door out of sight** (`headFor`). A resident pushed off its way within reach of its own front door, but where it
   couldn't see it (beside it, past its wall's corner, at night), tried the door at every pass ("You cannot see that
   here") and stood there for good. Now it walks up to the door, as from further off.
@@ -2624,7 +2627,8 @@ hop between known places and meet none of it, so the runs without players never 
 | walk | 193, 134 / 0, 0 | 193, 134 (day 10) | 3,627 / 5,143 | 1.40 ms / 0.29 ms |
 | jump | 90, 56 / 0, 0 | 90, 56 (day 10) | 4,396 / 5,210 | 0.53 ms / 0.27 ms |
 
-None hungry on any day in any of the three. Most of the stage's cost was the knots: keeping bodies apart took 0.44 and
+None hungry at any day's end in any of the three (the walking run's last row, a morning, has one hungry: ordinary
+morning hunger). Most of the stage's cost was the knots: keeping bodies apart took 0.44 and
 0.63 ms a tick with the still and walking bodies, now 0.02 and 0.04; their walking 0.24 and 0.38, now 0.03 and 0.06.
 Gini and the poorer half are within 0.011 of the run without players on day 10 (the walking run's Gini 0.555 against
 0.545; 0.551 before the mends). **Without players nothing changes:** the 30-day smoke (`--threads 3`) gives the digest
@@ -2649,4 +2653,109 @@ tick 0.047 ms.
   wait while he's on the stage (offstage he hops there). Not hunger (an errand gives way to a meal) and not the
   walking's: the market's point is the roads' (`RatwRoads.cpp`).
 - A resident whose spot at home no way reaches (a room upstairs no stair leads to: Greatly House's) still can't get
-  to it on the stage; now she alone is held, going in and out, not her household.
+  to it on the stage; now she alone is held, going in and out, not her household. (Mended below: she keeps to the
+  nearest of the floor she can stand on.)
+
+### Phase 13: the roads and the walking, reviewed (2026-10-26)
+
+What the reviews of the second review's mends and of the stage's found, mended: the roads, the old pace's going rate,
+a missed piece's seller, and the walking on the stage.
+
+**The roads** (`RatwTrade.cpp`):
+
+- **What a buyer refused is counted** (`StandingOrder::unpaid`, saved with the orders, bounded; an older save's none).
+  Goods refused for the buyer's want of money had stopped counting as the seller's shortfall, and nothing else counted
+  them, so an order whose buyer never paid never ended: a smith whose till was empty every day kept an order of eight
+  bars a week for 42 days and six caravans, nothing handed over, nothing short, looked at again each month, holding
+  Frosthollow's bars and its town's want of iron (no other shop there could sign for it), the trader buying a load for
+  it every week. Now two weeks' worth refused makes it due at once; agreed again, it is brought down to its share of
+  what came that was paid for, and with none paid for it ends, its seller not blamed (no `RoadsState::failed`): it may
+  sign again with the same town.
+- **The seller is judged by what came**, handed over or refused: under half of what it was to send, the order halved;
+  none in two weeks' worth, ended and the seller failed, as before. A raise wants three quarters of all it was to send
+  handed over and paid for.
+- **What was refused is worked out once every order is served:** what the wagon still holds of a good, among the orders
+  whose buyers' money ran out (the hand-over says so), in the order they were signed. Counted as each order was
+  served, it took in what the orders after it were still to have, and hid the seller's own shortfall: nine bars for
+  sixteen, the first buyer penniless, the seller was three short where it was seven.
+- `econ_watch`'s `orders.csv` has an `unpaid` column.
+
+**The going rate at the seconds' pace, as it was:** a town whose unskilled shops have nobody working keeps its last
+rate, as before the hours (it fell back to the realm's; "as before" above is so now).
+
+**A missed piece's seller** (`wants`): by lot among the shops with a piece of the kind the household's fund runs to, a
+shop once, told of that ware (a sword, the cheapest; finery, the dearest under the fund, as it buys). A 40p fund told
+an armourer of a 90p steel sword, and a shop of three such wares had three lots.
+
+**The walking** (`World::headFor`, `World::heldOff`; the stage review):
+
+- **A pocket two steps ahead:** a way on from a part of the next cell is a seam to another cell, or a door to somewhere
+  with a way out of its own (not only back into that part, or back here). A strip whose one door was a cottage's, the
+  cottage's only way out, was taken for a way on: crossed onto, no way on found, crossed back, and again.
+- **The best way on only:** a way into the next cell is best of all when it lands in a part the next leg leaves from
+  best (into the goal's own part of its cell, before another part of it). Both counted, a crossing into the half of a
+  cell whose way on lands in the wrong half of the goal's cell was as good, and the nearest was taken, and walked
+  round.
+- **A spot no way reaches:** a goal in a part of its cell that no door or seam leads into (Greatly House's room upstairs
+  no stair reaches). Its cell is judged by its body on the way there (the way in was taken for one into a pocket, and
+  she went out and in again at the street), and, in, she keeps to the nearest tile of the part she stands in, looked
+  for again every five seconds at most. She doesn't lie down there (she isn't at her spot); the world's data is the
+  user's question below.
+- **Held only by a body, and only a resident:** a walker steps aside or drops a turn only when another body pressed on
+  it in the last second (`Entity::pressedAt`, set by `separate()`, never saved). A player's path is never touched (its
+  turn was dropped when it stood held). On the last leg of its path a resident steps aside only from one walking into
+  it, face to face (`pressedByWalkerAt`): third in a queue behind those standing at a spot, more than a tile from it,
+  it stepped aside every two seconds, from side to side; now it waits. (The review suggested no step aside at all on
+  the last leg; but two face to face on one straight leg, each bound past the other, then hold each other for good, as
+  `heldAtATurn` shows.)
+- **A door out of sight only:** within reach of a door it can see, a resident tries it, as before; it walks up to it
+  only when it can't see it (every failure walked up, a route searched where one try did).
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`, against the merged Phase 13 at 3cec19a,
+`m3`, its day 30):
+
+| | merged | now |
+|---|---|---|
+| day 30: hungry, starving | 0, 0 | 0, 0 (and at the run's end) |
+| household Gini; the poorer half | 0.5519; 0.1519 | 0.5515; 0.1521 |
+| the going wage (realm, Ridgemere); the pace | 60p, 60p; 0.107 | 60p, 60p; 0.125 |
+| hours credited, lost | 169,695; 80,735 | 169,297; 80,769 |
+| great houses, day 2 to 30 | 1,494,143p to 1,238,233p | to 1,247,518p |
+| treasuries; the church | 496,291p to 366,643p; 248,352p to 281,026p | to 368,562p; to 281,057p |
+| residents; tills | 2,016,252p to 2,018,125p; 727,036p to 1,062,802p | to 2,011,832p; to 1,057,242p |
+| days 15-29 a day: the owners' profit; investment | 12,725p; 16,336p | 12,600p; 16,056p |
+| the keepers' wages; hands' odd jobs; service wages | 20,530p; 15,636p; 7,711p | 20,522p; 15,428p; 7,723p |
+| standing orders | 8,096p | 7,678p |
+| orders on day 30; refused by then | 378; none counted | 374; 596 goods, 38 orders |
+
+- Money conserved every day; digest eb7e378c00fcb458; 0.064 ms a tick on a loaded machine. Eleven orders ended by day
+  30 (nine in the merged run).
+- **The stage** (10 days from day 2, `visit`'s bodies still and walking, as in "residents near players' bodies"): none
+  hungry or starving on any day, money conserved every day; hours credited by day 10 60,590 and 60,730. A tick costs
+  the same as the merged binary's, four days of still bodies side by side: 0.224 ms each (the ten-day runs' 0.29 and
+  0.43 ms were three runs at once).
+
+**Tests** (each fails with its mend undone; the mutation runner's results are in the round's report):
+
+- `roads_tests`: `whatTheBuyerCantPayForIsntShort` (the eight refused), `aShortLoadIsTheSellersShortfall` (nine for
+  sixteen: the second forge its eight, the first refuses the one left, the seller seven short),
+  `aBuyerWithoutMoneyEndsItsOrder` (penniless three weeks with a month's review: ended, no failure kept, what was
+  refused saved through the checkpoint; paid for a third, brought down to two a week, its refusals cleared),
+  `aFailedSellerIsForgottenInAMonth` (two forges Frosthollow failed: one signs with the mid town, the other finds its
+  bars promised; the day the month is out, Frosthollow signs both).
+- `crafting_tests`: `aTownKeepsItsRateAtTheOldPace`, `aMissedPieceIsOneItCouldPayFor` (a sword, a dear charm),
+  `missedMealsWhereFoodIsMade` (three hungry wolves at a brewery's counter with one meal: no missed meal; this is the
+  counter race's only guard, not a second one behind the bare shops' as the second review's report had it).
+- `world_tests`: `aQueueStandsStill` (behind one standing on its spot, and third in the queue; a player keeps its turn).
+- `stream_tests`: `aStripWithAHouseIsNoWayOn`, `theBestWayOn` (home in two crossings, by the right half),
+  `aSpotNoWayReaches` (and she stays in, at the nearest tile).
+- Not guarded by a test: the "pressed" gate alone (no case in the tests holds a resident without a body: a wall clears
+  its path) and the door's visible test against the stage's "any failure" (only its cost differs).
+
+**For the user:**
+
+- **An order its buyer can't pay for** ends after two weeks' worth refused, or comes down to what was paid for; the
+  seller isn't blamed, so the same town may be signed again when the buyer has money (a placeholder, as the cut is).
+- **The last leg's step aside** from a body walking into it, against the review's none (above).
+- **A spot no way reaches** is settled for with the nearest tile; the world build could make sure every resident's spot
+  is reachable from its cell's doors (recommended: Greatly House's room upstairs is the one known).

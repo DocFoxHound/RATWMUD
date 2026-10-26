@@ -268,6 +268,42 @@ void noOneIsStrandedInAPocket()
     }
 }
 
+// A strip whose one way on is a house's door, the house's only way out (the stage review, doc 64, Phase 13): no way on.
+// The strip of pocketed(), with a cottage on it. Its door was taken for a way on (one step ahead), so the strip was no
+// pocket, and Pip, every way from c_0_0 into c_1_0 landing on it, would cross onto it, find no way on and cross back,
+// and again. She goes round it, as round the bare strip.
+void aStripWithAHouseIsNoWayOn()
+{
+    auto f = pocketed();
+    f.manifest += "door \"cot_out\" \"The cottage door\" \"c_1_0\" 1.5 8.5 \"h_cot\" 2.5 4.5 \"cot_in\" 0 0 0 0 \"-\"\n"
+                  "door \"cot_in\" \"The cottage door\" \"h_cot\" 2.5 5.5 \"c_1_0\" 1.5 9.5 \"cot_out\" 0 0 0 0 \"-\"\n";
+    auto& street = f.cells["c_1_0"];
+    street[street.find("grid:\n") + 6 + std::size_t(8 * (Side + 1) + 1)] = '+';
+    f.cells["h_cot"] = "id: h_cot\nname: The cottage\ndescription: A small room.\nworld: 16 200 0\noutdoors: false\n"
+                       "weather: clear\nsize: 6 6\ngrid:\n......\n......\n......\n......\n......\n..+...\n";
+    f.seams["h_cot"] = "";
+    const std::string was = "exits \"c_1_0\" 3 \"c_0_0\" \"c_1_1\" \"c_2_0\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_cot\"\nexits \"h_cot\" 1 \"c_1_0\"\narea \"h_cot\"\n");
+    auto world = load(f);
+    world.setTimeOfDay(18.5);                               // Off work in c_0_0: home is two cells east.
+    bool strip = false;
+    int crossings = 0;
+    std::string in = world.entity("pip")->cellId;
+    for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+    {
+        world.tick(1);
+        const auto* pip = world.entity("pip");
+        strip |= pip->cellId == "c_1_0" && pip->position.x < 3;
+        if (pip->cellId != in)
+            ++crossings, in = pip->cellId;
+    }
+    expect(world.entity("pip")->cellId == "c_2_0" && !strip, "Pip gets home round the strip and its cottage, never onto it: " +
+                                                                 world.entity("pip")->cellId + " " + world.entity("pip")->activity + " after " +
+                                                                 std::to_string(crossings) + " crossings");
+}
+
 // Pockets in pairs: the edge tiles either side of one seam lie a step below the rest of both cells, so each can
 // only be left for the other. Someone set down there (arriving from offstage, say) clambers out over the step.
 void aPairedPocketIsClamberedOutOf()
@@ -577,6 +613,65 @@ void aCellCutInTwo()
                                        "," + std::to_string(pip->position.y) + " " + pip->activity);
 }
 
+// The way on that lands best (the stage review, doc 64, Phase 13). A wall runs across c_1_0 and across c_2_0, each at
+// row 8; Pip's home is in c_2_0's north half. The south half of c_1_0 also has ways on into c_2_0, landing in its south
+// half: a way on, but into the wrong part of her goal's cell. Counted with the north half's, both made the crossing
+// into c_1_0 the best there is, and from the south of c_0_0 she took the nearest, into the south half, and had to go
+// round by c_3_0 to get home. She crosses into the north half, and in by it.
+const std::string PipNorth =
+    "economy 1000 100 50 10 12\n"
+    "resident \"pip\" \"Pip\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"female\" \"average\" "
+    "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"c_2_0\" 8.5 3.5 \"c_0_0\" 8.5 12.5 \"c_2_0\" 9.5 3.5\n";
+
+void theBestWayOn()
+{
+    auto f = grid(PipNorth);
+    const auto tile = [&](const std::string& id, int x, int y) -> char& {
+        auto& text = f.cells[id];
+        return text[text.find("grid:\n") + 6 + std::size_t(y * (Side + 1) + x)];
+    };
+    for (const auto* id : {"c_1_0", "c_2_0"})
+        for (int x = 0; x < Side; ++x)
+            tile(id, x, 8) = '#';
+    for (auto& [cell, sides] : f.seams)                       // (No seam onto a wall: a build writes none.)
+    {
+        std::istringstream in(sides);
+        std::string line, kept;
+        while (std::getline(in, line))
+        {
+            std::istringstream fields(line);
+            std::string word, id, name, from, to;
+            double ax, ay, bx, by;
+            fields >> word >> std::quoted(id) >> std::quoted(name) >> std::quoted(from) >> ax >> ay >> std::quoted(to) >> bx >> by;
+            if (tile(from, int(ax), int(ay)) == '#' || tile(to, int(bx), int(by)) == '#')
+                continue;
+            kept += line + '\n';
+        }
+        sides = kept;
+    }
+    auto world = load(f);
+    world.setTimeOfDay(18.5);                                   // Off work in c_0_0: home is two cells east.
+    world.ensureLoaded("c_2_0");                                // (In memory, to tell where its ways land.)
+    world.tick(1);
+    auto* pip = world.entity("pip");
+    pip->cellId = "c_0_0";
+    pip->position = {12.5, 12.5};                               // Nearer the south half's crossings.
+    pip->path.clear();
+    int crossings = 0;
+    bool south = false;
+    std::string in = pip->cellId;
+    for (int second = 0; second < 1200 && !(pip->cellId == "c_2_0" && pip->position.y < 8); ++second)
+    {
+        world.tick(1);
+        south |= pip->cellId == "c_1_0" && pip->position.y > 8;
+        if (pip->cellId != in)
+            ++crossings, in = pip->cellId;
+    }
+    expect(pip->cellId == "c_2_0" && pip->position.y < 8 && crossings == 2 && !south,
+           "Pip gets home by the north half of c_1_0: " + pip->cellId + " " + std::to_string(pip->position.x) + "," +
+               std::to_string(pip->position.y) + " after " + std::to_string(crossings) + " crossings" + (south ? " (by the south half)" : ""));
+}
+
 // A spot no way reaches is one walker's trouble, not everyone's (doc 64, Phase 13). Pip's place at home is in a little
 // room of the house that no door opens into (as a resident's upstairs in Ridgemere is); Kit lives in the same house,
 // in the room the front door opens into. Pip, coming home first, found every way in landing short of her own spot and
@@ -616,10 +711,26 @@ void aSpotNoWayReaches()
     }
     pip->position = {14.5, 8.5};                                // Pip by the edge, Kit well behind.
     kit->position = {2.5, 8.5};
+    bool pipHome = false, pipOut = false;
     for (int second = 0; second < 900 && kit->cellId != "h_two"; ++second)
+    {
         world.tick(1);
+        pipOut |= pipHome && pip->cellId != "h_two";
+        pipHome |= pip->cellId == "h_two";
+    }
     expect(kit->cellId == "h_two", "Kit gets home: " + kit->cellId + " " + std::to_string(kit->position.x) + "," +
                                        std::to_string(kit->position.y) + " " + kit->activity);
+    // And Pip, home, keeps to the nearest of the house she can stand on to her spot (the stage review): she went out
+    // and in again, all night, a route searched each time.
+    for (int second = 0; second < 600; ++second)
+    {
+        world.tick(1);
+        pipOut |= pipHome && pip->cellId != "h_two";
+        pipHome |= pip->cellId == "h_two";
+    }
+    expect(pipHome && !pipOut && std::hypot(pip->position.x - 4.5, pip->position.y - .5) < .5,
+           "Pip, home, stays in, as near her spot as she can stand: " + pip->cellId + " " + std::to_string(pip->position.x) + "," +
+               std::to_string(pip->position.y) + (pipOut ? " (went out again)" : ""));
 }
 
 void badSourcesAreRefused()
@@ -742,7 +853,9 @@ int main()
         aCrossingIsNotHeldShut();
         aLaneATileWide();
         aStripIsNoWayOn();
+        aStripWithAHouseIsNoWayOn();
         aCellCutInTwo();
+        theBestWayOn();
         aSpotNoWayReaches();
         badSourcesAreRefused();
         aWalkKeepsToTheRoad();

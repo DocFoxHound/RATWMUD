@@ -3083,9 +3083,176 @@ void whatTheBuyerCantPayForIsntShort()
             soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
     tickWhileOnTheWay(w);
     const auto* o = orderOf(w, "so-westsmith");
-    expect(o && o->delivered == 0 && o->shortfall == 0, "Its till empty: nothing handed over, and nothing short (" +
-                                                           std::to_string(o ? o->shortfall : -1) + ")");
+    expect(o && o->delivered == 0 && o->shortfall == 0 && o->unpaid == 8, "Its till empty: nothing handed over, nothing short, and the eight "
+                                                                          "refused (" + std::to_string(o ? o->shortfall : -1) + " short, " +
+                                                                          std::to_string(o ? o->unpaid : -1) + " refused)");
     expect(soc.conserved(), "Money is conserved");
+}
+
+// Two orders for one good and a load short of both, the first one's buyer penniless (doc 64, Phase 13): what the wagon
+// still held when that order was served was the second's to come, not refused; counted so, it hid the seller's own
+// shortfall. Nine bars came for sixteen: the second smith has its eight, the first refuses the one left, and the seller
+// is seven short.
+void aShortLoadIsTheSellersShortfall()
+{
+    auto f = ironRoad(2);
+    auto w = ironWorld(f, 30);
+    auto& soc = w.society();
+    const auto first = soc.tillOf("westsmith");
+    w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+    w.roads().orders.push_back(ironOrder(w, "lowsmith", 8));
+    bool out = false;
+    for (int d = 0; d < 9 && !out; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        out = ironOnTheWay(w);
+        if (!out)
+            tickWhileOnTheWay(w);
+    }
+    int load = 0;
+    for (const auto& c : w.roads().caravans)
+        if (!c.trader.empty() && c.from == "frosthollow" && c.status == "travelling")
+            load = Society::stockAll(*soc.account(c.account), "iron_bar");
+    expect(out && load == 9, "The week's caravan sets out with nine bars for the sixteen: " + std::to_string(load));
+    for (int t = 0; t < 30000 && ironOnTheWay(w); ++t)
+    {
+        for (const auto& who : {first, std::string("westsmith")})   // (Its till, and its keeper, who would top it up.)
+            if (const auto cash = soc.account(who)->cash; cash > 0)
+                soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+        w.tick(1);
+    }
+    const auto* a = orderOf(w, "so-westsmith");
+    const auto* b = orderOf(w, "so-lowsmith");
+    expect(a && b && b->delivered == 8 && b->shortfall == 0, "The low forge has its eight");
+    expect(a->delivered == 0 && a->unpaid == 1 && a->shortfall + b->shortfall == 7,
+           "the west forge refuses the one left, and the seller is seven short: " + std::to_string(a->shortfall + b->shortfall) + " short, " +
+               std::to_string(a->unpaid) + " refused");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A buyer a seller failed signs with another town that has some to spare (doc 64, Phase 13; RoadsState::failed), that
+// town's spare taken by it as by any order; and once the month is out, the failure is forgotten and the first town,
+// the trade's own, may be signed again. Two forges in the west that Frosthollow failed; the mid town's smelter has
+// bars to spare for one of them.
+void aFailedSellerIsForgottenInAMonth()
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5) +
+                        resident("midsmelter", "Ash Ore", "merchant", "runs The Mid Smelter", 5, 9.5, 6, 9.5) +
+                        resident("westsmith", "West Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5) +
+                        resident("lowsmith", "Low Anvil", "merchant", "smith at The Low Forge", 7, 13.5, 8, 13.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FFMMWW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    for (const auto& [smelter, bars] : std::map<std::string, int>{{"smelter", 297}, {"midsmelter", 32}})
+    {
+        const auto till = soc.tillOf(smelter);
+        for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+            emptyOf(soc, till, item);
+        for (int left = bars; left > 0; left -= 99)
+            soc.create(till, "iron_bar", std::min(left, 99), "test: the month's bars");
+    }
+    const auto west = soc.tillOf("westsmith"), low = soc.tillOf("lowsmith");
+    const auto short_ = [&] {
+        for (const auto& smith : {west, low})
+        {
+            emptyOf(soc, smith, "iron_bar");
+            soc.shift("treasury", smith, "", 0, 300, "test: takings");
+        }
+    };
+    const auto tomorrow = std::int64_t(std::floor(w.calendarDays())) + 1;
+    for (const auto& smith : {west, low})          // (Failed the day before the month's last.)
+        w.roads().failed[smith + "|iron_bar|frosthollow"] = tomorrow - MonthDays + 1;
+    short_();
+    nextMorning(w);
+    w.roads().camps.clear();
+    std::map<std::string, std::string> from;
+    for (const auto& o : w.roads().orders)
+        if (o.item == "iron_bar")
+            from[o.buyer] = o.from;
+    expect(std::count_if(from.begin(), from.end(), [](const auto& o) { return o.second == "mid"; }) == 1 &&
+               std::none_of(from.begin(), from.end(), [](const auto& o) { return o.second == "frosthollow"; }),
+           "Failed by Frosthollow, one forge signs with the mid town, the other finds its bars promised: " + std::to_string(from.size()) +
+               " orders");
+    // The month out: forgotten, and Frosthollow signs both.
+    w.roads().orders.clear();
+    short_();
+    nextMorning(w);
+    w.roads().camps.clear();
+    from.clear();
+    for (const auto& o : w.roads().orders)
+        if (o.item == "iron_bar")
+            from[o.buyer] = o.from;
+    expect(w.roads().failed.empty() && from.count(west) && from[west] == "frosthollow" && from.count(low) && from[low] == "frosthollow",
+           "A month on, its failures forgotten, Frosthollow signs both forges again");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// An order whose buyer hasn't the money for what comes ends (doc 64, Phase 13): refused, the goods weren't its seller's
+// shortfall, and nothing else counted them, so a smith with an empty till kept its eight a week for good, holding its
+// seller's bars and its town's want of iron. Two weeks' worth refused, it is looked at again before its month and ends,
+// its seller not blamed: no failure kept against it (RoadsState::failed). What is refused is saved with the order. And
+// one that paid for some of what came is brought down to that.
+void aBuyerWithoutMoneyEndsItsOrder()
+{
+    {
+        auto f = ironRoad(1);
+        auto w = ironWorld(f, 600);
+        auto& soc = w.society();
+        const auto smith = soc.tillOf("westsmith");
+        auto o = ironOrder(w, "westsmith", 8);
+        o.review = w.calendarDays() + MonthDays;    // (Its month's review: not before the three weeks are out.)
+        w.roads().orders.push_back(o);
+        int trips = 0;
+        bool saved = false;
+        for (int d = 0; d < 21 && orderOf(w, o.id); ++d)
+        {
+            for (const auto& who : {smith, std::string("westsmith")})   // (Penniless, its keeper too.)
+                if (const auto cash = soc.account(who)->cash; cash > 0)
+                    soc.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+            nextMorning(w);
+            w.roads().camps.clear();
+            trips += tickWhileOnTheWay(w);
+            if (const auto* refused = orderOf(w, o.id); refused && refused->unpaid > 0 && !saved)
+            {
+                checkpoint::ServerState server;
+                PersistedWorld back;
+                std::string problem;
+                expect(checkpoint::decode(checkpoint::encode(w.save(), server, {}, 0), back, server, problem), "The checkpoint reads back: " + problem);
+                const auto again = std::find_if(back.roads.orders.begin(), back.roads.orders.end(), [&](const StandingOrder& s) { return s.id == o.id; });
+                expect(again != back.roads.orders.end() && again->unpaid == refused->unpaid, "what its buyer refused is saved with the order");
+                saved = true;
+            }
+        }
+        expect(saved && trips >= 2 && !orderOf(w, o.id), "Penniless three weeks, its order ends: " + std::to_string(trips) + " caravans");
+        expect(w.roads().failed.empty(), "and its seller isn't blamed: no failure kept");
+        expect(soc.conserved(), "Money is conserved");
+    }
+    {
+        auto f = ironRoad(1);
+        auto w = ironWorld(f, 600);
+        auto& soc = w.society();
+        auto o = ironOrder(w, "westsmith", 8);
+        o.review = 0;                               // (Due: a week paid for, two refused.)
+        o.delivered = 8;
+        o.unpaid = 16;
+        w.roads().orders.push_back(o);
+        for (int d = 0; d < 9 && orderOf(w, o.id) && orderOf(w, o.id)->review <= w.calendarDays(); ++d)
+        {
+            nextMorning(w);
+            w.roads().camps.clear();
+            tickWhileOnTheWay(w);
+        }
+        const auto* lowered = orderOf(w, o.id);
+        expect(lowered && lowered->perWeek == 2 && lowered->unpaid == 0 && w.roads().failed.empty(),
+               "One that paid for a third of what came is brought down to that, its seller not blamed: " +
+                   std::to_string(lowered ? lowered->perWeek : -1) + " a week");
+        expect(soc.conserved(), "Money is conserved");
+    }
 }
 
 // A load is for the orders it set out with, as they were then (doc 64, Phase 13; Caravan::loaded, saved): an order raised
@@ -3139,6 +3306,9 @@ int main()
         anEarlyCaravanIsTheWeeks();
         anOrderWaitsForItsSellersRoom();
         whatTheBuyerCantPayForIsntShort();
+        aShortLoadIsTheSellersShortfall();
+        aBuyerWithoutMoneyEndsItsOrder();
+        aFailedSellerIsForgottenInAMonth();
         aLoadIsForTheOrdersItLeftWith();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();

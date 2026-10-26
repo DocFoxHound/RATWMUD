@@ -1297,14 +1297,14 @@ int main(int argc, char** argv)
             writePlayers();
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
             // The roads' standing orders at the day's end (doc 64, Phase 3b): what each asks a week and how short it
-            // has fallen since it was last agreed.
+            // has fallen since it was last agreed, and what its buyer couldn't pay for.
             {
                 static std::ofstream orders(out / "orders.csv");
-                static bool header = (orders << "day,buyer,town,from,item,per_week,delivered,shortfall\n", true);
+                static bool header = (orders << "day,buyer,town,from,item,per_week,delivered,shortfall,unpaid\n", true);
                 (void)header;
                 for (const auto& o : server.roads().orders)
                     orders << now << ",\"" << o.buyer << "\",\"" << o.town << "\",\"" << o.from << "\",\"" << o.item << "\","
-                           << o.perWeek << "," << o.delivered << "," << o.shortfall << "\n";
+                           << o.perWeek << "," << o.delivered << "," << o.shortfall << "," << o.unpaid << "\n";
             }
             const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
             std::cout << "day " << now << " (" << int(wall / 60) << " min): supply " << supply << (conserved ? "" : " NOT CONSERVED")

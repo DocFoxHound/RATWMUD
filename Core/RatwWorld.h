@@ -347,9 +347,11 @@ struct Entity
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
     // Held off the next turn of its path by others' bodies (World::heldOff, doc 64's Phase 13), never saved: that turn,
-    // the nearest it has come to it, since when, and when it last walked toward it.
+    // the nearest it has come to it, since when, and when it last walked toward it; and when another body last pressed
+    // on it (World::separate), and one walking.
     Vec2 heldTurn;
     double heldNearest = 0, heldSince = 0, heldAt = -1;
+    double pressedAt = -1e9, pressedByWalkerAt = -1e9;
     Vec2 input;
     // Set by an accepted transition; UI must release/reissue held movement.
     bool transitioned = false;

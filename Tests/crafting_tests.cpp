@@ -745,6 +745,66 @@ void piecesItCantGetGoOnToWorks()
     Society::setWorkByHours(false);
 }
 
+// A piece it could pay for and found on no shelf is a sale missed of one its fund runs to (doc 64, Phase 13; the
+// model's asks): an armourer with no swords on its shelves hears of the cheapest, never of the dear one past the fund
+// (a 40p fund told an armourer of a 90p steel sword); a store with no finery, of the dearest piece the fund runs to (the
+// dearest is what it buys), never of its charms at ten times their cost. Twenty days of looking, each day's by its own
+// lot. (The fund is the cheapest piece's price before the day's share comes into it.)
+void aMissedPieceIsOneItCouldPayFor()
+{
+    Society::setWorkByHours(true);
+    for (const bool sword : {true, false})
+    {
+        auto s = householdTown(true);
+        const std::string shop = sword ? "smith" : "keeper", kind = sword ? "sword" : "finery";
+        const auto till = s.tillOf(shop);
+        {
+            auto state = s.state();
+            if (sword)
+                state.accounts.at("ash").stock["straw_hat"] = 4;   // (Finery to a piece a head, and two over.)
+            else
+            {
+                state.accounts.at("ash").stock["rapier"] = 1;      // (Its blade: no sword wanted.)
+                state.memory.margins[till + "|charm"] = 19;        // (Its charms dear.)
+            }
+            expect(s.restore(state), "the household's belongings restore");
+        }
+        for (const char* who : {"ash", "wren"})
+            expect(s.shift("treasury", who, "", 0, 1000, "test: a good year"), "the household has money");
+        std::vector<std::pair<std::string, std::int64_t>> pieces;
+        for (const auto& ware : s.wares(shop))
+            if (Society::belongingKind(ware) == kind)
+                pieces.push_back({ware, s.shopPrice(shop, ware)});
+        std::sort(pieces.begin(), pieces.end(), [](const auto& a, const auto& b) { return a.second < b.second; });
+        const auto fund = pieces.front().second;
+        const auto dear = pieces.back();
+        expect(pieces.size() >= 2 && dear.second >= fund + 50, "the " + shop + " sells a " + kind + " at " + std::to_string(fund) +
+                                                                       "p and a dear one: " + dear.first + " at " + std::to_string(dear.second) + "p");
+        // (The one it could pay for: the cheapest sword, or the dearest finery short of the dear one.)
+        const auto told = sword ? pieces.front().first : pieces[pieces.size() - 2].first;
+        const auto rate = [&](const std::string& piece) {
+            const auto* rates = s.sellRates(till);
+            return rates && rates->count(piece) ? rates->at(piece) : 0.;
+        };
+        // (Each day's sales into the running average at the turn of the day: none sold, nor missed, it only wanes.)
+        double was = 0, heardWas = 0;
+        bool heard = false;
+        for (std::int64_t d = 1; d <= 21; ++d)
+        {
+            for (const auto& [piece, price] : pieces)
+                set(s, shop, piece, 0);             // (None on its shelves.)
+            householdsDay(s, d, double(fund));
+            if (d > 1)
+                expect(std::abs(rate(dear.first) - .7 * was) < 1e-12, "day " + std::to_string(d) + ", never of the one past its fund: " +
+                                                                          dear.first + " at " + std::to_string(dear.second) + "p");
+            heard |= d > 1 && rate(told) > .7 * heardWas + 1e-9;
+            was = rate(dear.first), heardWas = rate(told);
+        }
+        expect(heard, "the " + shop + " hears of the " + kind + " the household could pay for: " + told);
+    }
+    Society::setWorkByHours(false);
+}
+
 // Works that use a builder's last planks are a sell-out (doc 64, Phase 13; Society::spoil): its sales a day counted half
 // again, as a shelf sold bare is, so it plans for more. The same works from twenty planks are sales as they are. (A
 // carpenter with nothing to make planks from, its hours in hand from a day at the yard.)
@@ -1289,6 +1349,36 @@ void theGoingRateFromTheMakers()
     expect(again.restore(wire::readSociety(wire::society(s.state()))), "the saved society restores");
     expect(std::abs(again.labourDay("") - 15) < 1e-6, "with its going rate, before the day's first measure");
     Society::setWorkByHours(false);
+}
+
+// At the seconds' pace the going rate is each town's, as it was before the hours (doc 64, Phase 13): a town whose
+// unskilled shops have nobody working keeps the rate it last had, not the realm's.
+void aTownKeepsItsRateAtTheOldPace()
+{
+    auto s = farmTown();
+    const auto far = s.tillOf("farstall");
+    auto state = s.state();
+    for (const auto* keeper : {"miller", "baker", "stall"})
+        state.memory.employers[s.tillOf(keeper)] = {10};
+    state.memory.employers[far] = {20};
+    expect(s.restore(state), "the employers' books restore");
+    double day = 1 + 10. / 24;
+    work(s, 1, day);
+    const auto rate = [&](const char* town) {
+        const auto& going = s.state().memory.going;
+        return going.count(town) ? going.at(town) : 0.;
+    };
+    expect(std::abs(rate("far") - 20) < 1e-6 && std::abs(rate("town") - 10) < 1e-6,
+           "each town its own shops' rate: " + std::to_string(rate("far")) + " far, " + std::to_string(rate("town")) + " in town");
+    state = s.state();
+    for (auto& [id, post] : state.careers.positions)
+        if (post.holder == "farstall")
+            post.holder.clear();
+    expect(s.restore(state), "the far stall's keeper gone");
+    day = 2 + 10. / 24;
+    work(s, 1, day);
+    expect(!s.jobOf("farstall") && std::abs(rate("far") - 20) < 1e-6,
+           "the far town, nobody at its stall, keeps the rate it had: " + std::to_string(rate("far")));
 }
 
 // Hands by what can be made (doc 64, Phase 13; doc 63's model), with work by the hours: a tannery's leather, which three
@@ -2221,6 +2311,49 @@ void missedMealsWhereFoodIsMade()
         else
             expect(sold == 1 && std::abs(bread - .3 * 2) < 1e-9, "at the old pace, the loaf sold and its half again, as it was: " + std::to_string(bread / .3));
     }
+    // And at a brewery's counter (its meal nobody makes: foodMade): three hungry wolves and one meal. The first buys it;
+    // the others' meals are counted nowhere, the meal only sold and its half again.
+    {
+        Society::setWorkByHours(true);
+        AuthoredRoster roster;
+        roster.residents = {person("brewer", "the brewer at the vat", {"vats", 2.5, 2.5})};
+        for (const char* who : {"ash", "wren", "fern"})
+            roster.residents.push_back(person(who, "idling in the square", {"vats", 2.5, 2.5}, "civilian"));
+        roster.economy.treasury = 500;
+        Society s(Roster::None);
+        s.configure(roster);
+        oneTown(s);
+        double day = 1 + 10. / 24;
+        work(s, 5, day);
+        const auto till = s.tillOf("brewer");
+        expect(s.foodMade("brewer").empty(), "the brewery makes no food");
+        auto state = s.state();
+        std::vector<std::string> bareOf = {till, "treasury"};
+        for (const char* who : {"ash", "wren", "fern"})
+        {
+            state.residents.at(who).hunger = 70;
+            bareOf.push_back(who);
+            bareOf.push_back(Society::homeStore(state.residents.at(who).homeCell, "larder"));
+        }
+        expect(s.restore(state), "three hungry wolves at the brewery's counter");
+        bare(s, bareOf);
+        for (const char* in : {"apples", "malt", "grapes", "honey"})
+            set(s, "brewer", in, 0);
+        set(s, "brewer", "meal", 1);
+        s.takeJournal();
+        work(s, 600, day);
+        int sold = 0;
+        for (const auto& e : s.takeJournal())
+            sold += e.kind == "resident food purchase" && e.to == till ? e.quantity : 0;
+        double midnight = 2 - 30. / 86400;
+        work(s, 60, midnight);
+        double counted = 0;                         // (Its food's: the cider they drank aside.)
+        if (const auto* rates = s.sellRates(till))
+            for (const auto& [item, rate] : *rates)
+                counted += items::good(item) && items::good(item)->drink ? 0 : rate;
+        expect(sold == 1 && std::abs(counted - .3 * 2) < 1e-9, "the meal sold and its half again, no missed meal at the brewery: " +
+                                                                  std::to_string(counted / .3));
+    }
     Society::setWorkByHours(false);
 }
 
@@ -2686,6 +2819,7 @@ int main()
         aHouseholdsWants();
         aPieceWaitedForAFewDays();
         piecesItCantGetGoOnToWorks();
+        aMissedPieceIsOneItCouldPayFor();
         worksSellOutTheShelf();
         worksFromTheBuildingTrades();
         piecesFoundedOnce();
@@ -2697,6 +2831,7 @@ int main()
         theMint();
         aStallDumpAndTheRebound();
         theGoingRateFromTheMakers();
+        aTownKeepsItsRateAtTheOldPace();
         handsByWhatCanBeMade();
         theCordGoesRoundNoMore();
         aFullStoreLosesItsHours();
