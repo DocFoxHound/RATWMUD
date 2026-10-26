@@ -14,6 +14,9 @@
 //   dump    5 players sell swords, iron swords and hides to the shops every day, as many as the shops take
 //   whale   a player arrives with 5% of the realm's money and spends it on rapiers and finery
 //   poach   a Hold takes 20 of the capital's hands from their posts at twice the going rate
+//           (poach's and strike's Holds feed their hands from their stores, as the game's do: doc 64, Phase 13, "Kept
+//           hands' meals". A quartermaster, a player of the Chapter, keeps them in food bought at the capital's shops;
+//           a hand long unfed goes home, as in Game::feedKeptHands.)
 //   kill    the key makers die: a town's only miller, the biggest farm's farmer, the realm's smiths (succession)
 //   theft   5 thieves pick the capital's purses every quarter of an hour and fence what isn't coin
 //   visit   5 players go about the capital as the thieves do and take nothing (theft's control: bodies on the stage)
@@ -83,6 +86,7 @@ class Players
     static constexpr int FloodDays = 14, StrikeDays = 28;    // flood's selling, strike's month (from when they start).
     static constexpr int BuyoutDays = 7;                     // buyout's buying week (it holds what it bought after).
     static constexpr int GiftHouseholds = 50, GiftEach = 100;   // gift's poorest households, and its pennies to each a day.
+    static constexpr int ProvisionDays = 2;                  // poach's and strike's stores kept in so many days' food a hand.
     // flood's staple unless asked (--players-staple): several pennies a piece, bought by the capital's shops (its
     // provisioners, butchers and inns) and brought in by its own hunters. Fish sat at the penny's floor at a 12p day
     // (Society::pennies: 1p at least), so its price could never be seen to fall.
@@ -146,6 +150,7 @@ class Players
     std::map<std::string, std::vector<std::string>> staff_;  // poach's and strike's hands, held now.
     std::map<std::string, std::string> jobWas_;              // strike's hands -> the post they had when taken.
     std::vector<std::string> taken_;                         // strike's hands, all it took (held or let go).
+    std::map<std::string, std::int64_t> hungerTold_;         // poach's and strike's: the day it was last told of a hungry hand.
     bool struck_ = false, flooded_ = false;                  // strike's month over (its hands let go); flood's selling.
     bool makersFound_ = false;
     std::string staple_ = DefaultStaple;                     // flood's staple.
@@ -173,6 +178,11 @@ class Players
     void take(const std::string& scenario, const std::string& chapter, const std::vector<std::string>& hands);
     void payStaff(const std::string& scenario, const std::function<std::int64_t(const std::string&)>& wage);
     void letGo(const std::string& scenario);
+    // Their meals (doc 64, Phase 13): each hand's mess its Hold's stores (Society::setMesses); the stores topped up each
+    // dawn by its quartermaster (ProvisionDays); a hand long unfed told of once a day and, unfed still, gone home.
+    void keepMesses();
+    void provision(const std::string& scenario);
+    void keepFed(const std::string& scenario, std::int64_t day);
     void note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
               int quantity, std::int64_t coins);
     static bool trades(const Shop& shop, const std::set<std::string>& towns);   // In one of its towns (none: any).

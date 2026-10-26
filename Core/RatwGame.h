@@ -1472,6 +1472,13 @@ class Game
     std::string whyNotGround(const std::string& cellId, int x, int y, bool town = false) const;   // (town: a town's project, doc 57)
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);
+    // Kept hands' meals (doc 64, Phase 13; RatwGameCamps.cpp): each Hold's hand's and companion's mess for the society
+    // (Society::setMesses), what they took from a player's pack told, and those long unfed told of and let go. The day
+    // each Chapter or hirer was last told its hands go hungry (not saved: a restart may tell it once more).
+    double messAccumulator_ = 0;
+    bool messesSet_ = false;
+    std::map<std::string, std::int64_t> hungerTold_;
+    void feedKeptHands(double dt);
     json::Value structuresView(const std::string& viewer, const std::string& cellId) const;
     json::Value storesView(const std::string& cellId) const;     // Home storage (doc 36).
     json::Value campView(const std::string& viewer) const;

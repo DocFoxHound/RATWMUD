@@ -3013,3 +3013,118 @@ The wage and the going rates were 60p in every run on every day. Days 15 to 29, 
     economy (it is what a player does); but the mint's rule (doc 64, Phase 11) is the place to answer it, if any.
 11. A food corner fails at once (`buyout`): the makers make more, no one goes hungry, the price barely moves. Is that
     the intent (it is the model's), or should a buyout of a town's food make it dearer for a while?
+
+### Phase 13: kept hands' meals (the user, 2026-10-26)
+
+A Hold's hands and a party's companions never ate: off their schedules (a leader, `LifeBody::companion`) they decided
+nothing (`Society::decideAuthored`'s companion branch, and the demo roster's), while their hunger rose as anyone's, so
+they starved at their posts within two days (`strike`: 26 starving Hold hands; question 1 of "players who push"). The
+user: they eat from the Hold's or the party's stores, so a Chapter has to keep food in.
+
+**What the game has.** A Chapter's stores are its treasury's purse (`chapter:<id>`): members put any good in and take
+it out ("store", "take"; `Game::estateCommand`), reached from a place it holds or a camp with a storage pile built
+(`Game::campHere`), and a keep's workshops and field make from them into them (`Game::keepWork`). A party has no
+stores: each player carries its own pack (its account), and the one who asked a companion along pays its wage purse to
+purse (`Game::companionTick`). So:
+
+- **A Hold's hand** (`camp::Staff`, not one still on its way to make a home there) eats from its Chapter's stores, when
+  its site has a storage pile built: the same reach a member has.
+- **A companion** eats from the pack of whoever asked it along (`Companion::by`; the leader, once the asker has gone),
+  while the two are in the same place: a companion told to wait, or left behind, has only what it carries.
+
+**How they eat** (`Society::keptHandDecides`, `keptHandDoes`, in `RatwDemand.cpp`; both rosters): as a resident does,
+on the same marks. What it carries first; carrying nothing, at hunger 55 (the rations' mark: a watch's mess, a mine's
+bread) one piece of food is moved from its mess to it by the ledger (`Society::shift`, "rations" from a Hold, "shared
+from the pack" from a player: moved, never made), what spoils soonest there (`eatFirst`); at 60 it eats, eight
+seconds, its hunger down by the food's catalogue nourishment and a tenth (a meal 55, porridge 22). The draw changes
+what others see, so it is made in the resident's turn (`DecideInTurn`), never on the threads. Its task stays
+"companion" (the game moves it; its reason says it is eating). The game says where each eats (`Society::setMesses`,
+hand to account), from `Game::feedKeptHands` every half second before the world's tick (only when it changes); not
+saved: the camps and parties it is made from are, and the first tick after a restart sets it again. A few dozen map
+entries, looked up only for kept hands: no measurable cost.
+
+**When the mess is bare** (the fallback; a decision for the user, below): `Society::unfed(id, hunger)` is a kept hand
+as hungry as that, carrying nothing that feeds, its mess bare or out of reach.
+
+- At `Society::KeptToldHunger` (70) the Chapter is told, "The Chapter's stores have nothing to eat, and the hands at
+  <site> are going hungry." (or, with no storage pile, to build one), or the hirer, "<name> is going hungry, and you
+  carry nothing to eat." (or "away from the food you carry"): once a game day each Chapter or hirer
+  (`Game::hungerTold_`, not saved: a restart may tell once more).
+- At `KeptLeaveHunger` (90) the hand goes back to its own life, as one unpaid does: "<name> leaves <site>: there was
+  nothing to eat." (the staff entry gone, `leaderId` cleared), or a companion leaves the party, "I can't go on with
+  nothing to eat. I'm going home." ("you had nothing to feed them."). Its own again, it eats as any resident: its pack,
+  its larder, a shop with its wage, alms. Nobody starves in a Chapter's service.
+- What a companion takes from a player's pack is told ("<name> eats 1 prepared meal from your pack."), and the
+  player's character saved (`record(Economy, player)`).
+
+**The harness** (`Tests/econ_players.{h,cpp}`): `poach` and `strike` now feed their hands as the game does. Each hand's
+mess is its Hold's treasury (`keepMesses`); every quarter of an hour a hand unfed is noted "told hungry" (once a day)
+or, at 90, "left hungry" and let go (`keepFed`); and the Hold keeps food in, as the user's rule wants of a Chapter: a
+quartermaster, a player of the Chapter ("player-<scenario>-1"), buys at the capital's food shops (in their order,
+what each sells that feeds) what tops the stores up to `ProvisionDays` (2) of a wolf's day's food
+(`Society::DayNourishment`, 47) a hand, at the start and each dawn, and puts it in the stores as "store" does; its
+purse topped up from the capital's treasury to twice that food at a meal's price, as the hands' pay is (a stand-in for
+the Chapter's dues). The scenarios' players block counts the quartermaster (`players` 1) and what it holds.
+
+**Tests** (each seen to fail with its change taken back: the draw and the meal, and the going home):
+
+- `econ_players_tests` `keptHandsEat` (the authored roster): a Hold's hand eats a jerky from the Hold's stores (3 to 2),
+  a companion a meal from its hirer's pack, one with no mess its own meal, and one with neither stays hungry and is
+  `unfed`; the meals drawn are told; money conserved. `strikeKeepsItsHandsFed`: two days of real ticks, the hand
+  never at 70, the stores topped up at dawn. `strikeHandsGoHomeHungry`: the stores emptied mid-morning, the hand at
+  88 is told of once, leaves at 90.0 to 90.5, and its own again eats within the quarter day (never above 91).
+- `camp_tests` (the game, the demo roster): Bracken, stationed at Juniper Camp with its storage pile, eats a meal from
+  the Chapter's stores; after a restart, the stores bare, the Chapter is told once, and at 90.5 he leaves the camp.
+- `party_tests` `aCompanionEatsFromThePack`: hired Bracken eats a meal from Ada's pack and she is told; her pack bare,
+  she is told he goes hungry; unfed, he goes home.
+- Every suite passes (`pg_tests` and the ones without a count print nothing; no `scenes_tests` in this build).
+
+**The strike run** (DEV's export, 30 days, `--deterministic --hours --threads 3 --players strike --players-from 2`,
+this branch's binary; `RATW_STOCK` for the stores; against the same binary without players). Money conserved in every
+record. The 26 hands, held from day 2 to day 30's dawn, were never hungry (`staff_hungry`, 70 or more: 0 every day,
+against 25 to 26 hungry and starving before); nobody in the realm hungry or starving on any day, with or without the
+strike. None told of, none left hungry. The stores (pieces of food, every three game hours; mostly porridge, some
+meals and raw meat) and what the hands drew:
+
+| Day | stores, fewest to most | drawn | bought at dawn | Day | stores | drawn | bought |
+|---|---|---|---|---|---|---|---|
+| 2 | 25 to 73 | 58 | 83 (985p) | 16 | 77 to 112 | 41 | 102 (703p) |
+| 3 | 55 to 73 | 18 | 48 (786p) | 17 | 24 to 66 | 51 | 86 (516p) |
+| 4 | 30 to 39 | 23 | 17 (102p) | 18 | 29 to 64 | 40 | 50 (300p) |
+| 5 | 62 to 80 | 20 | 50 (876p) | 19 | 77 to 113 | 40 | 107 (657p) |
+| 6 | 47 to 81 | 37 | 40 (312p) | 20 | 27 to 67 | 43 | 97 (582p) |
+| 7 | 41 to 77 | 43 | 66 (734p) | 21 | 25 to 60 | 42 | 49 (294p) |
+| 8 | 35 to 67 | 35 | 68 (718p) | 22 | 68 to 110 | 52 | 98 (588p) |
+| 9 | 32 to 73 | 49 | 74 (574p) | 23 | 28 to 68 | 45 | 100 (600p) |
+| 10 | 58 to 100 | 48 | 78 (468p) | 24 | 19 to 63 | 51 | 61 (366p) |
+| 11 | 26 to 54 | 31 | 57 (342p) | 25 | 68 to 113 | 51 | 100 (600p) |
+| 12 | 35 to 77 | 48 | 94 (733p) | 26 | 29 to 66 | 47 | 110 (660p) |
+| 13 | 78 to 112 | 40 | 91 (546p) | 27 | 20 to 62 | 45 | 60 (360p) |
+| 14 | 18 to 50 | 39 | 49 (294p) | 28 | 74 to 110 | 47 | 102 (612p) |
+| 15 | 38 to 75 | 38 | 102 (703p) | 29 | 26 to 67 | 47 | 104 (624p) |
+
+(Drawn: "rations" from the Hold, `flows.csv`; bought: the quartermaster's, by the day its record is labelled.) About
+45 pieces a day for 26 hands; the quartermaster bought 2,097 pieces for 15,268p in the month; the stores never below 18 pieces. Day 30 against no
+players: Gini 0.5026 against 0.5048, the poorer half 0.1552 against 0.1564; the week before, within 0.004 and 0.003.
+The ticks, 0.062 against 0.035 ms, were measured beside other sessions' runs: not comparable.
+
+**The same Hold keeping no food** (6 days, the quartermaster switched off by a temporary build, not committed): 14
+hands left hungry the first day and 11 the second, each Chapter told once a day; one, with food enough of its own,
+stayed to day 6. The realm's record had 10 hungry (the Hold's, before they left) on the second day and none starving
+on any. So `strike` must stock its Hold, or it is a two-day strike: it now does.
+
+**For the user:**
+
+12. **The fallback when a Hold's stores are bare** (built: told at 70, home at 90). Recommendation: keep it. The
+    alternative, a hand stepping away from the Hold to buy a meal with its wage and coming back, wants a walk the
+    game doesn't give a stationed hand (the game moves it, and a Hold may be far from any shop), and would let a
+    Chapter keep hands it never feeds.
+13. **A companion eats from its hirer's pack only**, not the rest of the party's. Recommendation: keep it (it is who
+    pays it, and nobody else's food goes without their say); the party's other players can give it food
+    (`Game::giveRefusal`'s gift) if they like.
+14. **A Hold's hands need a storage pile at their site** to reach the stores (the members' own reach). Recommendation:
+    keep it: a Hold has one long before it has hands, and the Chapter is told to build one.
+15. **`strike`'s and `poach`'s quartermaster** buys the Hold's food at the capital's shops (2 days' worth, topped up at
+    dawn), funded from the capital's treasury. Recommendation: keep it; the hands' food comes from the same shops their
+    households would have bought it at. The alternative, the Hold's own field (`keepWork`), brings in materials (wheat,
+    oats, vegetables) that feed nobody till a kitchen makes them into food, and the harness has no Hold.

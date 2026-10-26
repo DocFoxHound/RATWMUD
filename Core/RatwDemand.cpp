@@ -229,6 +229,55 @@ bool Society::hasFood(const EconomyAccount& account)
     return false;
 }
 
+bool Society::unfed(const std::string& id, double hunger) const
+{
+    const auto* life = resident(id);
+    const auto* purse = account(id);
+    if (!life || !purse || life->hunger < hunger || hasFood(*purse))
+        return false;
+    const auto mess = messes_.find(id);
+    const auto* stores = mess == messes_.end() ? nullptr : account(mess->second);
+    return !stores || !hasFood(*stores);
+}
+
+bool Society::keptHandDecides(const std::string& id, const EconomyAccount& wallet, double hunger, bool atOnce, bool& eats)
+{
+    // On the rations' mark, a meal from its mess (what spoils soonest there): the Hold's stores feed its hands, the
+    // hirer's pack its companion, as a watch's mess feeds the watch. Moved, never made: the books hold.
+    if (hunger >= 55 && !hasFood(wallet))
+        if (const auto mess = messes_.find(id); mess != messes_.end() && mess->second != id)
+            if (const auto* stores = account(mess->second))
+                if (const auto food = eatFirst(mess->second, *stores); !food.empty())
+                {
+                    if (atOnce)
+                        return false;
+                    if (shift(mess->second, id, food, 1, 0, playerAccountId(mess->second) ? "shared from the pack" : "rations") &&
+                        messMeals_.size() < MaxMessMeals)
+                        messMeals_.push_back({id, mess->second, food});
+                }
+    eats = hunger >= 60 && hasFood(wallet);
+    return true;
+}
+
+void Society::keptHandDoes(const std::string& id, ResidentLife& life, const EconomyAccount& wallet, bool eats, int step)
+{
+    life.task = "companion";                        // (Its work and its walking are the game's.)
+    life.goalCell.clear();
+    if (!eats)
+    {
+        life.reason = "Ordinary work is suspended while recruited.";
+        life.progress = 0;
+        return;
+    }
+    life.reason = "Eating, while recruited.";
+    life.progress += step;
+    if (life.progress < 8.)
+        return;
+    life.progress = 0;
+    if (const auto food = eatFirst(id, wallet); !food.empty() && consume(id, food, 1, "eat") > 0)
+        life.hunger = std::max(0., life.hunger - nourishment(food) * 1.1);
+}
+
 bool Society::shopHasFood(const std::string& merchant) const
 {
     const auto* a = account(tillOf(merchant));       // (A house's business: its till, doc 42.)

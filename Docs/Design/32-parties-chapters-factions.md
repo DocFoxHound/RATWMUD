@@ -905,6 +905,9 @@ Not yet:
   - They cross into a new place with whoever they follow, unless told to wait.
   - Orders from whoever asked them or the leader: **wait here**, **follow me**, **go home** and **dismiss**. Going
     home lets them go back to their schedule from where they stand.
+  - They eat what they carry, then from the pack of whoever asked them along while in the same place (a party has no
+    stores of its own; doc 64, Phase 13, "Kept hands' meals", 2026-10-26). That player is told what they ate, and
+    when the pack is bare; unfed long, they go home.
 - **Leaving of their own accord:**
   - A friend after 2 game days, unless their affinity is 70 or more.
   - A friend whose affinity falls below 20 or trust below 10. A hireling whose trust falls below −20.
@@ -1186,6 +1189,8 @@ Not yet:
 - **Staff:** a resident travelling with the party (Phase 3) can be **stationed** at the camp by an Officer.
   - They keep near its centre (`leaderId = camp:<site>`), paid each game dawn from the treasury.
   - Unpaid, they go home. An Officer can let them go.
+  - They eat from the Chapter's stores, which a storage pile at their site reaches (doc 64, Phase 13, "Kept hands'
+    meals", 2026-10-26): the Chapter has to keep food in. Bare stores, it is told; unfed long, they go home.
 - **The stores** are reached from a camp with a storage pile built (the same store as the Chapter's rented places).
 - **The levels' ground:**
   - **Hall (IV):** a camp standing, meaning a site with three things built.
