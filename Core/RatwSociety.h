@@ -972,7 +972,7 @@ class Society
     // (hoursFor, at the realm's pace), so a price is what its work cost; otherwise the calibrated `hours` (Phase 4).
     double costedHours(const items::Craft& k) const;
     double costedHours(const items::Producer& p) const;
-    static inline bool workByHours_ = false;
+    static inline bool workByHours_ = false, costAtPace_ = false;
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
 
@@ -994,6 +994,7 @@ class Society
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
+    static void setCostAtPace(bool on) { costAtPace_ = on; }   // (A test's: ladder.json's costAtPace, whatever the data says.)
     // Hours of work credited to businesses and producers so far, and those lost to a full bank (econ_watch's measures).
     double workCredited() const { return workCredited_; }
     double workLost() const { return workLost_; }

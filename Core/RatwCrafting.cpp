@@ -352,12 +352,12 @@ double Society::hoursFor(const items::Producer& p) const
 
 double Society::costedHours(const items::Craft& k) const
 {
-    return workByHours_ ? hoursFor(k) : k.hours;
+    return workByHours_ && (costAtPace_ || items::ladder().costAtPace) ? hoursFor(k) : k.hours;
 }
 
 double Society::costedHours(const items::Producer& p) const
 {
-    return workByHours_ ? hoursFor(p) : p.hours;
+    return workByHours_ && (costAtPace_ || items::ladder().costAtPace) ? hoursFor(p) : p.hours;
 }
 
 void Society::creditWork(const std::string& account, double hours)

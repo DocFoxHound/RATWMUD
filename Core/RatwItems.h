@@ -153,10 +153,12 @@ const std::vector<ToolNeed>& toolNeeds();
 // item with no place is worth its price over it), the margin the hours were calibrated at, the skill premium (a trade
 // needing skill s pays 1 + s / skillWage a labourer's wage) and carriage (labourer's hours to cart a unit of weight).
 // foundingDay: a labourer's day when the realm's money is founded (doc 64, Phase 13: 60p, for 5,000,000p), the going
-// rate it starts at (Society::foundWage); the catalogue's day if it has none.
+// rate it starts at (Society::foundWage); the catalogue's day if it has none. costAtPace: with work by the hours, goods
+// costed at the hours worked at the realm's pace, not the calibrated (Society::costedHours; off until paid hours follow).
 struct Ladder
 {
     double catalogueDay = 12, foundingDay = 12, markup = .15, skillWage = 150, carryPerWeight = .004;
+    bool costAtPace = false;
 };
 const Ladder& ladder();
 // What a good is worth in a labourer's day-wages: its place on the ladder (a quality its share of the plain good's), or

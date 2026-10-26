@@ -2536,6 +2536,7 @@ void aTownsTradeBringsInMore()
 // off, the calibrated hours, as before.
 void pricedAtTheHoursWorked()
 {
+    Society::setCostAtPace(true);
     const items::Craft* k = nullptr;
     for (const auto* c : items::craftsFor("bakery"))
         if (c->id == "bread")
@@ -2580,6 +2581,16 @@ void pricedAtTheHoursWorked()
     Society::setWorkByHours(false);
     expect(std::abs(off - half - (labour(k->hours) - labour(old + .5 * (k->hours - old)))) < 1e-6,
            "half way there, at the hours half way: " + std::to_string(half) + "p");
+    Society::setCostAtPace(false);
+    {
+        Society::setWorkByHours(true);
+        auto s = town();
+        auto state = s.state();
+        state.memory.pace = .5;
+        expect(s.restore(state), "half way, the switch off");
+        expect(std::abs(s.normalCost("baker", "bread") - off) < 1e-6, "with ladder.json's costAtPace off, a loaf is costed at the calibrated hours");
+        Society::setWorkByHours(false);
+    }
 }
 
 // A realm (doc 64, Phase 13): a baker and a stall (or not), and its other wolves labourers, each in a home of its own.
