@@ -50,7 +50,7 @@
 //                   farmer's, its hands its till's), and its hours in hand at the day's turn;
 //   tills.csv       day, till: its cash, working money, what it owes, its sales and orders (doc 64, Phase 5), and its
 //                   hands, hands wanted, and its running hires' slots and slots taken (each till once a day);
-//   residents.csv   day, resident: home, kind of holder, title, age, cash, and who pays its post and as what (payerOf);
+//   residents.csv   day, resident: home, kind of holder, title, age, cash;
 //   books.csv       day, employer: its book (wage, the going rate for its skill, open days, calm weeks, short pay), its
 //                   posts open and filled, its skill (doc 64, Phase 6);
 //   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
@@ -651,7 +651,7 @@ int main(int argc, char** argv)
     std::set<std::string> lastAlive;
     bool firstMeasure = true;
     std::ofstream residentsOut(out / "residents.csv");
-    residentsOut << "day,resident,home,holder,title,age,cash,payer,paid_as\n";
+    residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
                 "hire_slots,hire_taken\n";
@@ -684,10 +684,8 @@ int main(int argc, char** argv)
             if (rows)
             {
                 const auto* job = society.jobOf(id);
-                const auto payer = job ? society.payerOf(id, *job, e->age) : Society::Payer{};
                 residentsOut << day << ',' << csv(id) << ',' << csv(life.homeCell) << ',' << csv(holder(server, id)) << ','
-                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << ',' << csv(payer.account)
-                             << ',' << csv(payer.whom) << '\n';
+                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << '\n';
             }
             const bool apprentice = society.apprenticedTo(id) != nullptr;
             apprentices += apprentice;

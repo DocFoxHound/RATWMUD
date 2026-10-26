@@ -888,7 +888,7 @@ void econWatchsFiles()
     once("tills.csv", 1, "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
                          "hire_slots,hire_taken");
     once("books.csv", 1, "day,key,town,wage,rate,open_days,calm,short_pay,vacancies,hands,skill");
-    once("residents.csv", 1, "day,resident,home,holder,title,age,cash,payer,paid_as");
+    once("residents.csv", 1, "day,resident,home,holder,title,age,cash");
     // Day 1's record (made at its midnight: day 0's) has none of what the players did at that midnight; day 2's (day
     // 1's) has.
     std::ifstream days(out / "days.jsonl");
