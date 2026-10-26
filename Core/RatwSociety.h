@@ -983,16 +983,14 @@ class Society
     // founding's stores last days. Where it settles is what the realm's hands can carry.
     // Steadied (Phase 13): it goes on only while the realm's food in hand (homes and shelves, days a head, a town's at
     // most PaceCoverCap) hasn't fallen over the week (today's reading against the one exactly a week ago: PaceWeek
-    // days, ends included) and the land's hands keep up with what its sales want (short by PaceShortHands at most; its
-    // producers' want without the half again of a shelf near bare, which theirs always are, the goods going on to the
-    // shops; one with no work for more hands, at the hands it has; a realm with no land, kept up); it steps back while
-    // the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back faster while the
-    // realm goes hungry, as before. (A week's food "didn't fall" within PaceNoise days a head: at three and a half days
-    // a head the week's reading wanders by a few hundredths, and a fall of 0.002 held it as a fall of 0.1 would. Doc 64,
-    // Phase 13, 2026-10-26.)
+    // days, ends included; within PaceNoise days a head, a reading wandering by a few hundredths, it didn't fall); it
+    // steps back while the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back
+    // faster while the realm goes hungry, as before. (2026-10-26: no longer held while the land's hands are short of
+    // what its sales want. That hold stopped the pace at the first shortage of hands, and with it any wage bid; the
+    // land's shortage is its posts open now, which its weekly review answers by its wage, as the model's market does.)
     static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
     static constexpr int PaceWeek = 8;
-    static constexpr double PaceSlide = .15, PaceNoise = PaceSlide / 3, PaceFloor = 1, PaceCoverCap = 4, PaceShortHands = .05;
+    static constexpr double PaceSlide = .15, PaceNoise = PaceSlide / 3, PaceFloor = 1, PaceCoverCap = 4;
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }

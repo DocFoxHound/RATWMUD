@@ -2127,10 +2127,11 @@ void thePaceIsSteadied()
 }
 
 // And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
-// go on to the shops). Its sales wanting a hand's day, the land's hands keep up and the pace goes on, though the farm,
-// planning half again for its bare shelf, hires; its sales wanting three hands' days, they don't, and it holds. But with
-// no work for more hands (its store full, its work in hand full at two turns of the day), it counts at the hand it has,
-// whatever its sales want (it lets hands go, not hires them): the pace goes on.
+// go on to the shops). Its sales wanting a hand's day, the pace goes on, though the farm, planning half again for its
+// bare shelf, hires. Its sales wanting three hands' days, the land falls behind: since 2026-10-26 that no longer holds
+// the pace (it held it at the first shortage of hands, and no wage was ever bid); the farm's posts stand open, for its
+// review to bid its wage up. With no work for more hands (its store full, its work in hand full at two turns of the
+// day) it wants none, whatever its sales: the pace goes on.
 void thePaceStepsUpWithTheLand()
 {
     Society::setWorkByHours(true);
@@ -2175,8 +2176,13 @@ void thePaceStepsUpWithTheLand()
                std::to_string(s.handsWanted(till)) + ", sells for " + std::to_string(s.handsWanted(till, false)) + ")");
     for (std::int64_t d = 6; d < 9; ++d)
         pace = evening(d, 24);
-    expect(std::abs(pace - .5) < 1e-9 && s.handsWanted(till, false) >= 3,
-           "Its sales three hands' days with only its own, the land falls behind: it holds (" + std::to_string(pace) + ")");
+    int onHire = 0;
+    for (const auto& j : s.oddJobs())
+        if (j.payer == till && j.until >= 0)
+            onHire += int(j.stage.size());
+    expect(std::abs(pace - (.5 + Society::PaceStep)) < 1e-9 && s.handsWanted(till, false) >= 3 && s.vacanciesOf(till) + onHire >= 2,
+           "Its sales three hands' days with only its own, the land falls behind: the pace goes on, the farm's posts open (" +
+               std::to_string(pace) + "; " + std::to_string(s.vacanciesOf(till)) + " open, " + std::to_string(onHire) + " on its hire)");
     // Its store full and no money to hire with, for days: its work in hand fills, and is full at two turns of the day.
     // (Its premises improved, so its hours go further; its folk fed, and its till emptied, each evening.)
     {
@@ -2220,7 +2226,7 @@ void thePaceStepsUpWithTheLand()
     until(14 + 1. / 24);
     pace = s.state().memory.pace;
     expect(s.idleBusiness(till) && s.handsWanted(till, false) >= 3 && std::abs(pace - (.5 + Society::PaceStep)) < 1e-9,
-           "Its sales three hands' days, but no work for more: at its one, the land keeps up and the pace goes on (" + std::to_string(pace) + "; its sales " +
+           "Its sales three hands' days, but no work for more: the pace goes on (" + std::to_string(pace) + "; its sales " +
                std::to_string(s.handsWanted(till, false)) + " hands, its work in hand " + std::to_string(s.workBankedOf("rk")) + ")");
     expect(s.conserved(), "Every penny is kept");
     Society::setWorkByHours(false);
