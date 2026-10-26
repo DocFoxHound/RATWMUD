@@ -1604,7 +1604,8 @@ void missedOnlyWhenNoneLeft()
     s.spoil(5);
     const auto* rates = s.sellRates(farm);
     expect(rates && rates->count("wheat") && rates->at("wheat") > 0, "later that day, the farm's barn empty, the mill's want is a sale it missed");
-    // The smith short of charcoal: the ironworks has ten, under its own batches' sixteen, and the burner none.
+    // The smith short of charcoal: the ironworks has only what its own batches keep back (a couple of batches'), and the
+    // burner none.
     AuthoredRoster roster;
     roster.residents = {person("smith", "the smith at the forge", {"forge", 2.5, 2.5}),
                         person("works", "the ironworks by the river", {"works", 2.5, 2.5}),
@@ -1617,8 +1618,9 @@ void missedOnlyWhenNoneLeft()
     int keeps = 0;
     for (const auto* k : works ? items::craftsFor(works->id) : std::vector<const items::Craft*>{})
         for (const auto& [in, n] : k->in)
-            keeps += in == "charcoal" ? n * Society::MaterialBatches : 0;
-    expect(works && works->id == "ironworks" && keeps > Society::GoodsKept + 2 && items::producerFor("burns charcoal"), "an ironworks that burns its own charcoal, and a burner");
+            keeps += in == "charcoal" ? n * Society::MaterialsLow : 0;
+    keeps = std::max(keeps, Society::GoodsKept);
+    expect(works && works->id == "ironworks" && items::producerFor("burns charcoal"), "an ironworks that burns its own charcoal, and a burner");
     for (std::int64_t d = 1; d <= 3; ++d)
     {
         set(t, "smith", "nails", 60);
@@ -1629,7 +1631,7 @@ void missedOnlyWhenNoneLeft()
     set(t, "smith", "nails", 0);
     set(t, "smith", "charcoal", 0);
     set(t, "smith", "iron_bar", 40);
-    set(t, "works", "charcoal", keeps - 6);
+    set(t, "works", "charcoal", keeps);
     set(t, "burner", "charcoal", 0);
     auto there = atWork(t);
     there["works"] = there["burner"] = {"homes", 2.5, 2.5};   // (Both at home: neither works.)
@@ -1640,7 +1642,7 @@ void missedOnlyWhenNoneLeft()
     }
     t.spoil(5);
     const auto* burnt = t.sellRates(burner);
-    expect(held(t, "works", "charcoal") == keeps - 6 && burnt && burnt->count("charcoal") && burnt->at("charcoal") > 0,
+    expect(held(t, "works", "charcoal") == keeps && burnt && burnt->count("charcoal") && burnt->at("charcoal") > 0,
            "the ironworks keeps its batches' charcoal, and the smith's want is a sale the burner missed");
     expect(t.conserved(), "money stays conserved");
 }
