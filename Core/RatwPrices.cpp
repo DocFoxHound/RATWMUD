@@ -62,6 +62,11 @@ void Society::addCost(const std::string& account, const std::string& item, int h
     goods[item] = (before * had + each * n) / (had + n);
 }
 
+double Society::atGoingRate(double catalogue, const std::string& town) const
+{
+    return catalogue * goingRate(town) / items::ladder().catalogueDay;
+}
+
 double Society::carriage(const std::string& item, double legs, const std::string& town) const
 {
     const auto* good = items::good(item);
@@ -104,12 +109,13 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
         if (each >= 0)
         {
             // Its tools' wear (crafts.json `tools`): a tool lasts so many days of spells, worn by the hours of work (as
-            // they are bought: tradeUpkeep; doc 64, Phase 3b).
+            // they are bought: tradeUpkeep; doc 64, Phase 3b). The hours as it works them (costedHours, Phase 13).
+            const double hours = costedHours(*producer);
             double wear = 0;
             for (const auto& t : items::toolNeeds())
                 if (t.producer == producer->id && t.everyDays > 0)
-                    wear += producer->hours / PaidSpells / t.everyDays * inputCost(till, t.item);
-            unit = (producer->hours * hour + wear) * each;
+                    wear += hours / PaidSpells / t.everyDays * inputCost(till, t.item);
+            unit = (hours * hour + wear) * each;
             // On a House's land, its rent is a cost like any other: a share of the price (doc 64, Phase 5).
             if (p && !landlordOf(p->id).empty())
                 unit /= 1 - RentShare;
@@ -123,7 +129,7 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
                     double materials = 0;
                     for (const auto& [in, count] : k->in)
                         materials += count * (inputCost(till, in) + carriage(in, 1, town));
-                    unit = (k->hours * (1 + k->skill / items::ladder().skillWage) * hour + materials) * each;
+                    unit = (costedHours(*k) * (1 + k->skill / items::ladder().skillWage) * hour + materials) * each;
                     break;
                 }
     cached[base] = unit;                             // (-1: it doesn't make it, and sells it at what it paid.)
@@ -191,7 +197,7 @@ double Society::priceAt(const std::string& seller, const std::string& item) cons
     if (!items::good(item))
         return 1;
     if (storePriced(items::baseOf(item)))
-        return std::max(1, items::good(item)->price);   // (Meals, herbs, swords: as before, for now.)
+        return atGoingRate(std::max(1, items::good(item)->price), shopTown(seller));   // (Meals, herbs, swords: as before.)
     return normalCost(seller, item) * (1 + marginOf(seller, item));
 }
 

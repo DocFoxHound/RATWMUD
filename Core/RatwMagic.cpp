@@ -2389,9 +2389,10 @@ Result World::useWorkGift(const std::string& id, const std::string& ability, con
         practise(id, "gift.lend", {maker->id});      // A Gift lent to real work trains the mind (by practice: doc 49).
         const auto till = society_.tillOf(maker->id);
         const auto* purse = society_.account(till);
-        const bool paid = purse && purse->cash >= 4 && society_.shift(till, id, "", 0, 4, "a Gift's help");
+        const auto pay = society_.pennies(4 / 12., lawTown(maker->cellId));   // (4p at a 12p day: doc 64, Phase 13.)
+        const bool paid = purse && purse->cash >= pay && society_.shift(till, id, "", 0, pay, "a Gift's help");
         return {true, "You lend " + maker->name + " your Gift: it " + l.words + ". Their next batch will be the better for it" +
-                          (paid ? ", and they pay you 4p." : "."),
+                          (paid ? ", and they pay you " + std::to_string(pay) + "p." : "."),
                 maker->id};
     }
     if (ability == "mend")

@@ -21,7 +21,7 @@ std::string Society::treasuryOf(const std::string& community) const
 
 std::int64_t Society::houseFloor(const std::string& house) const
 {
-    std::int64_t floor = 100;                       // (And a float for each of its businesses.)
+    std::int64_t floor = pennies(HouseFloor, "");     // (And a float for each of its businesses.)
     for (const auto& [pid, owner] : state_.houses.owner)
         if (owner == house)
             floor += floatOf(pid);
@@ -43,9 +43,10 @@ std::int64_t Society::wealthLine(const std::string& id) const
         return houseFloor(id);
     if (id.rfind("till:", 0) == 0)
         return 2 * floatOf(id.substr(5));            // (An owner-run business's till: two floats, doc 46.)
-    const std::int64_t living = MonthDays * FoodADay;
+    const auto town = communityOfResident(id);
+    const std::int64_t living = pennies(MonthDays * FoodADay, town);
     if (const auto* job = jobOf(id); job && job->role == "merchant" && tillOf(id) == id)
-        return living + KeeperReserve + floatOf(job->id);
+        return living + pennies(KeeperReserve, town) + floatOf(job->id);
     return living;
 }
 

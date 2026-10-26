@@ -80,7 +80,8 @@ bool World::churchCares(const std::string& player, const std::string& clergy) co
     const auto* c = entity(clergy);
     const auto* post = society_.jobOf(clergy);
     const auto* purse = society_.account(player);
-    if (!p || !c || p->npc || !c->npc || c->dead || !post || !Society::clergy(post->title) || !purse || purse->cash >= PoorPurse)
+    if (!p || !c || p->npc || !c->npc || c->dead || !post || !Society::clergy(post->title) || !purse ||
+        purse->cash >= society_.pennies(PoorPurse, lawTown(c->cellId)))
         return false;
     return std::any_of(p->injuries.begin(), p->injuries.end(), [](const Injury& i) { return i.kind == "acute" && i.restLeft > 1; });
 }
@@ -237,7 +238,8 @@ std::int64_t World::provisionTraveller(const std::string& traveller, const std::
             const auto* shelves = society_.account(till);
             const auto food = shelves && till != payer ? Society::bestFood(*shelves) : std::string();
             const auto* meal = food.empty() ? nullptr : items::good(food);
-            const auto price = std::int64_t(std::ceil(std::max(1, meal ? meal->price : 1) * society_.priceFactor(keeper, items::baseOf(food))));
+            const auto price = std::int64_t(std::ceil(society_.atGoingRate(std::max(1, meal ? meal->price : 1), town) *
+                                                      society_.priceFactor(keeper, items::baseOf(food))));
             if (food.empty() || spent + price > budget || !society_.sale(till, payer, food, 1, price, "provisions for the road") ||
                 !society_.shift(payer, traveller, food, 1, 0, "provisions for the road"))
                 break;
@@ -245,7 +247,8 @@ std::int64_t World::provisionTraveller(const std::string& traveller, const std::
             ++got;
         }
     }
-    if (const std::int64_t money = std::min<std::int64_t>(budget - spent, std::int64_t(meals - got) * 4);
+    // (And for each meal it couldn't buy, its price: 4p at a 12p day.)
+    if (const std::int64_t money = std::min<std::int64_t>(budget - spent, std::int64_t(meals - got) * society_.pennies(4 / 12., town));
         money > 0 && society_.shift(payer, traveller, "", 0, money, "money for the road"))
         spent += money;
     return spent;
@@ -261,7 +264,7 @@ void World::provisionCarrier(Contract& k, int quantity)
         return;
     const auto& at = job->role == "merchant" ? job->serve : job->work;
     const auto* poster = society_.account(k.poster);
-    if (poster && poster->cash >= 20)
+    if (poster && poster->cash >= society_.pennies(20 / 12., k.town))
         provisionTraveller(k.taker, k.poster, k.town, at.cell, poster->cash / 4);
     else
     {

@@ -61,7 +61,7 @@ void Society::foundTills()
                 if (n > 0 && business)
                     shift(keeper, till, item, n, 0, "the shop's till");
             }
-            const auto living = std::int64_t(MonthDays) * FoodADay;
+            const auto living = pennies(MonthDays * FoodADay, communityOfResident(keeper));
             if (account(keeper)->cash > living)
                 shift(keeper, till, "", 0, account(keeper)->cash - living, "the shop's till");
         }
@@ -289,7 +289,7 @@ void Society::tendOwners(std::int64_t day)
             if (short_ > 0 && putIn <= 2. * working)
             {
                 // (A keeper keeps a week's food for its household; a House gives what it has.)
-                const auto floor = owner.rfind("house:", 0) == 0 ? 0 : KeeperReserve;
+                const auto floor = owner.rfind("house:", 0) == 0 ? 0 : pennies(KeeperReserve, accountTown(till));
                 if (const auto give = std::min<std::int64_t>(short_, account(owner)->cash - floor); give > 0 &&
                                                                                                     shift(owner, till, "", 0, give, "an owner's investment"))
                     putIn += double(give);

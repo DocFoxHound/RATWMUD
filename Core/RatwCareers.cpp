@@ -258,7 +258,8 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
             if (const auto* purse = account(parent); purse && (!giver || purse->cash > account(*giver)->cash))
                 giver = &parent;
         if (giver)
-            shift(*giver, id, "", 0, std::min<std::int64_t>(ChildPurse, account(*giver)->cash), "a child's first pennies");
+            shift(*giver, id, "", 0, std::min<std::int64_t>(pennies(atGoingRate(ChildPurse, communityOfResident(*giver))), account(*giver)->cash),
+                  "a child's first pennies");
         forgetCareers();
         return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
                 request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};

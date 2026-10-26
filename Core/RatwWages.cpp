@@ -202,19 +202,4 @@ const std::string* Society::richestAt(const std::string& homeCell, const std::st
             return &found->second;
     return nullptr;
 }
-
-bool Society::treasuryLean(const std::string& treasury) const
-{
-    // Under LeanTreasury pennies a head of its town (cached for the day): it pays its posts half (doc 42).
-    if (peopleDay_ != state_.budgetDay)
-    {
-        people_.clear();
-        peopleDay_ = state_.budgetDay;
-        for (const auto& [id, life] : state_.residents)
-            ++people_[treasuryOfResident(id)];
-    }
-    const auto* purse = account(treasury);
-    const auto n = people_.count(treasury) ? people_.at(treasury) : 0;
-    return !purse || purse->cash < std::int64_t(LeanTreasury) * n;
-}
 } // namespace ratw

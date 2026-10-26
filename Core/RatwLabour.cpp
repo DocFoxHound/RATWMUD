@@ -670,6 +670,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             paid[""].push_back(labourer);
         }
     }
+    // (A realm with no such makers to measure today keeps the rate it had: the catalogue's 12p is no fallback for a
+    // realm founded at another, doc 64, Phase 13.)
+    const auto realm = memory.going.find("");
+    const double kept = realm != memory.going.end() ? realm->second : 0;
     memory.going.clear();
     for (auto& [town, wages] : paid)
         if (!wages.empty() && (town.empty() || !workByHours() || int(wages.size()) >= TownRateWeight))
@@ -677,6 +681,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             std::nth_element(wages.begin(), wages.begin() + wages.size() / 2, wages.end());
             memory.going[town] = wages[wages.size() / 2];
         }
+    if (kept > 0 && !memory.going.count(""))
+        memory.going[""] = kept;
     // A business short of hands hires the day it finds itself short (the land can't wait for the week's end); it lets
     // hands go only at its weekly review.
     if (workByHours())

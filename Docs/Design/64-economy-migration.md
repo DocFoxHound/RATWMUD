@@ -2435,3 +2435,141 @@ run from e0e6f45):
 - **Left as they were:** the founding larder's two days for every household, the land's food on Restday, the monitor's
   shop meals at store price, `RoundTripDays`, the roads for food that rots, milk, a seller sharing its goods across its
   roads, no top-up for a farm founded after day 78, the keep-back of the common sort only, and the wage barely floating.
+
+### Phase 13: the price level (2026-10-26)
+
+**The question.** The user's decision 1: found with 5,000,000p in whole pennies, a labourer's day about 60p. The realm
+was founded with that money, but its going rate began at the catalogue's 12p (`goingRate`'s fallback) and never left
+it; every amount written in pennies when a day was 12p stayed so; and goods were costed at their calibrated hours
+whatever the pace. Three experiments (30 days from DEV: the founding wage, costing at the pace, both) tried them; this part builds them.
+
+**Prices at the hours worked** (doc 63's `normal_cost`): with work by the hours, a good's normal cost (a producer's
+yield and its tools' wear, a craft's batch) and the cost a batch is made at take the hours it takes now, at the realm's
+pace (`Society::costedHours`, `hoursFor`). With the hours off, the calibrated `hours`, as before.
+
+**The founding wage** (`Society::foundWage`, `RatwFounding.cpp`). `ladder.json` has `foundingDay` (60): in a land of
+`WorldMoneyResidents` or more, whose money is made up to `WorldMoney`, the realm's going rate (`memory.going[""]`, and
+every town's there) starts there, once, before its purses are made: in `resetAuthored` before the tills are founded
+(their floats), and in `foundPurses` for a save that never founded them. So the first wages, employers' books, floats
+and prices start at 60p. A village made for a test keeps the catalogue's day (12). A realm whose measure finds no maker
+on a day keeps the rate it had (`tendLabour`; it fell back to the catalogue's 12p).
+
+**Where `catalogueDay` is read:** as the unit the catalogue's prices are in (an item with no place on the ladder is
+worth `price / catalogueDay` LD: `worthOf`, `item_catalog.py`, `ladder.py`), and now `atGoingRate` (a catalogue price
+at the going rate); as a wage only before the first measure, in a village.
+
+**The 12p amounts, in labourer's days** (`Society::pennies(days, town)`: whole pennies at the town's going rate, ""
+the realm's, a penny at least; each written as its 12p amount over 12, so at 12p each is what it was):
+
+| Amount | At 12p | At 60p |
+|---|---|---|
+| a wolf's food a day (`FoodADay`): a household's need (its relief, the rule's target, comfortable or poor), a month's living (the wealth line, a keeper's at the founding), a week's kept back from a want or a stall's buyer (eight days' from a piece), the mint's spared purses, talk's "on the dole", the troubles' food cost before the monitor's | 5p | 25p |
+| a keeper's reserve (`KeeperReserve`) | 20p | 100p |
+| a child's stipend at most (`MostStipend`), its day's spending at most, its least purse to spend | 3p, 3p, 2p | 15p, 15p, 10p |
+| a treat at most; a want's least budget, a town buyer's | 9p; 2p | 45p; 10p |
+| a float (`floatOf`): the manager's wage, a help's, materials, and its first craft's store at catalogue prices; a House's manager's keep | 8p, 6p, 30p | 40p, 30p, 150p |
+| a House's floor (`HouseFloor`), upkeep a level a week (`UpkeepALevel`) | 100p, 5p | 500p, 25p |
+| a wolf's purse weighed: the price of a bite, poor (under a day's wage: odd jobs from eight, a child's every day, the town's poor), to lay in the larder, alms (under 6p) | 4p, 12p, 5p, 6p | 20p, 60p, 25p, 30p |
+| the plate: 1p over 20p, 2p over 60p; a beggar's penny from those over 100p | | 5p over 100p, 10p over 300p; 5p over 500p |
+| wholesale meals and herbs from the stores; a treasury's payroll reserve | 4p, 1p; 2p a spell | 20p, 5p; 10p |
+| the town's buyers' baskets, provisions for the road (catalogue prices) | | at the going rate |
+| meals, herbs and swords (`storePriced`: shelves, the going price, a player's quote) | 6p, 2p, 30p | 30p, 10p, 150p |
+| the dearest piece the ledger moves (`PieceMost`), a story's prize at most, a stall's price at most | 1,000p, 1,000p, 999p | 5,000p, 5,000p, 4,995p |
+| a player's welcome grant; a stall's rent; a Gift's help (paid by the till) | 20p; 3p; 4p | 100p; 15p; 20p |
+| the watch: a fine for an assault, a theft; a meal's, herbs', a sword's worth; penniless (crime), poor (the church's care) | 8p, 3p; 6p, 2p, 40p; 6p, 20p | 40p, 15p; 30p, 10p, 200p; 30p, 100p |
+| caravan guards; the towns' contracts: a bounty (20p and 3p a point of strength), an escort, a supply run; a letter (10p to write, 3p to 7p for it) | 6p; 20p+, 12p, 15p; 10p, 3–7p | 30p; 100p+, 60p, 75p; 50p, 15–35p |
+| a Hold's draw (a purse under 30p); a child's first pennies at its birth | 30p; 5p | 150p; 25p |
+
+**Kept as they are:**
+
+- **The founding's seeds:** the starting purses (`ChildPurse` to `KeeperPurse`), `TreasuryHead`, `ChurchHead`,
+  `HouseFortune`. In a founded realm `worldMoney` makes them up, each kind to its share, so the opening spread is the
+  model's at either day; at 60p, even purses five times over would flatten it.
+- **The catalogue's own units:** a shop's cheap goods (`CheapPrice`, `goodsSold`), a trinket (3p at most on the
+  catalogue), a treat (3p at least).
+- **Counts:** days (`PoorDays`, `ComfortDays`, `HomeNeedDays`, a fortnight's stipends), batches, months of income.
+- **`camp::HoldWage`** (5p): a floor under the going rate that binds only under a 5p day.
+- **The demo roster's** (`Roster::Demo`), the DM's own coins and the sanity bounds far above any price.
+- **Players' services, for the user** (content prices, some in labels and the client): lodgings (2p a night, 10p a
+  week, 6p a lodger's week, 8p the upstairs), estates' rents, couriers' fees, a notice (1p), a Chapter's founding (20p),
+  a festival's entry (1p) and prizes, the tavern's stakes (5p), a faction's report (5p) and tithe (20p), the troubles'
+  offers, a favour's lost loan (at its catalogue price) and its courier (1p), a letter's enclosure (50p).
+- **Removed, unused since Phases 6 and 7:** `HireRaise`, `TaxBand`, `DoleADay`, `PovertyLine`, `OwnerWage`,
+  `LeanTreasury` (`treasuryLean`), and `OddJobPay` with `businessSpends`.
+
+**Saves:** nothing new is saved (`memory.going` was; `foundingDay` is data). An old save loads with its rate: DEV,
+founded at 12p, stays there until it is founded afresh (`--refound-economy`).
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`, five runs side by side; the middle three
+from a build with a part switched off by `RATW_TRIAL`, not kept):
+
+| day 30 | base (e0e6f45) | 60p alone | 60p, priced at the pace | 60p and the amounts | all three |
+|---|---|---|---|---|---|
+| household Gini | 0.561 | 0.539 | 0.561 | 0.554 | 0.562 |
+| the poorer half | 0.140 | 0.154 | 0.138 | 0.149 | 0.141 |
+| hungry, starving | 0, 0 | 2, 2 (from day 23) | 0, 0 | 0, 0 (1, 0 at the end) | 0, 0 (1, 0 at the end) |
+| the going wage: the realm's, Ridgemere's | 12p, 12p | 60p, 60p | 60p, 59.8p | 60p, 60p | 60p, 59.5p |
+| pace | 0.071 | 0.107 | 0.054 | 0.071 | 0.018 |
+| hours credited; lost | 153,429; 68,661 | 166,256; 78,650 | 161,160; 73,202 | 168,513; 81,506 | 162,590; 76,374 |
+| bread, a bronze sword, a rapier (LD) | 0.081, 2.5, 25 | 0.071, 0.5, 25 | 0.028, 0.5, 25 | 0.076, 2.5, 25 | 0.027, 2.5, 25 |
+| an iron, a steel sword (LD) | 5.1, 9.8 | 5.1, 10.2 | 1.5, 1.1 | 5.1, 10.1 | 1.4, 1.8 |
+
+A day, days 15–29 (pennies; LD in brackets):
+
+| | base | 60p alone | 60p, at the pace | 60p and the amounts | all three |
+|---|---|---|---|---|---|
+| the owner's profit | 14,549 (1,212) | 13,293 (222) | 5,404 (90) | 13,889 (231) | 6,767 (114) |
+| an owner's investment | 1,431 | 15,748 | 21,432 | 15,894 | 22,424 |
+| the keeper's wage | 4,378 | 20,217 | 19,953 | 20,431 | 20,059 |
+| an odd job: a hand | 2,613 | 14,494 | 11,470 | 14,970 | 10,364 |
+| service wages | 1,448 | 7,963 | 7,459 | 7,861 | 7,783 |
+| wages, six kinds (with the shop's, the home's and the watch's hands) | 9,740 (812) | 46,179 (770) | 42,756 (714) | 46,859 (781) | 43,195 (726) |
+| the owner's profit against them | 1.49 | 0.29 | 0.13 | 0.30 | 0.16 |
+| farms' takings; their tills' cash (working money) | 7,090; 137k (86k) | 29,712; 365k (444k) | 13,267; 85k (435k) | 30,810; 341k (453k) | 12,362; 83k (426k) |
+| farms' hire slots, taken | 447, 352 | 429, 371 | 379, 326 | 436, 385 | 312, 295 |
+
+- **Money conserved every day in every run;** the base's digest aded872975ff165c is the merged run's (`m2`) day for
+  day; all three's 99fabb73f1c82454. The tick: 0.106 ms in each, side by side (the society's part 0.058).
+- **The founding:** the first day's money before it is made up is 430,688p (169,890p before: the tills' floats at
+  60p), and the day's wages 21,100p (4,086p).
+- **60p alone** is what `x1` found: the owners' profit falls from one and a half times the wages to under a third,
+  money stays in the businesses' tills (their working money is a month of 60p wages: a fifth of all money is in tills,
+  against a fourteenth), and the household Gini falls 0.022. But the 12p amounts are a fifth of what they meant: a
+  household's food money, its relief and its rule's target; a child with a fortnight's 3p has its stipend stopped (7p a
+  day, against 49p); store meals and swords at their 12p prices (a bronze sword 0.5 LD); and the realm goes a little
+  hungry from day 23.
+- **The amounts** put those back (the children's stipends 236p a day, 3.9 LD against the base's 4.1; relief 73p; a
+  bronze sword 2.5 LD) and keep the realm fed, for some of the Gini's fall (0.554, the poorer half 0.149).
+- **Pricing at the pace makes it worse, with today's labour market.** At a pace of 0.02 to 0.11 a good's labour is
+  costed at a small share of its calibrated hours (a loaf's at 4% to 12%), but its hands are paid by the day, and
+  nearly half their hours are lost to full banks: what a business sells no longer pays its wages. The land sells at
+  less than half (farms' takings 12,400p a day against 30,800p), the farms' tills fall to a fifth of their working
+  money, owners put 22,000p a day into their businesses (15,900p without it), and the farms hire fewer hands (312
+  slots against 436). With the land's hands behind, the pace stalls (0.018 at day 30), and
+  more hours are lost. Prices fall out of the ladder's bands (bread 0.027 LD, against 0.05–0.09; a steel sword below a
+  store-priced bronze one), and the Gini goes back to the base's.
+- **So:** the founding wage and the amounts are better than the base on every measure here. Costing at the pace is
+  right (doc 63's `normal_cost`) once a business's paid hours are its worked ones, which is the labour market's to mend
+  (hands that follow the work, not the bank); until then it undoes the rest.
+
+**Tests:**
+
+- `crafting_tests` `pricedAtTheHoursWorked`: by the hours at the pace 0, a loaf costs the old pace's hours less, and so
+  does the batch it bakes; at 0.5, half way; with the hours off, the calibrated.
+- `crafting_tests` `foundedAtTheFoundingDay`: a realm of 500 starts at `foundingDay` (499: the catalogue's); its
+  bakery's float, a meal, the ledger's dearest piece (1,200p moved, refused in the village) and a penniless household's
+  relief at the first turn (25p, 5p in the village) follow the day; its measure keeps 60p; one with no maker to measure
+  keeps it too.
+- `roads_tests` `shopkeepersDontHoard` and `greatHouses`, and `gathering_tests` (the stall's fee returned is the fee
+  paid): the amounts in LD.
+- Each fails with its change undone (eight checked one at a time). All suites pass (`troubles_tests` and
+  `newcomer_tests` failed once each with the machine loaded, and passed when run again).
+
+**For the user:**
+
+1. **Price at the pace now, or after the labour market?** Built as asked; on its own it undoes what the founding wage
+   and the amounts gain (the tables). The alternative is the calibrated hours until a business's paid hours follow its
+   work.
+2. **Players' services** (the list above) are still at their 12p prices: a bed for the night at 2p is a thirtieth of a
+   day's wage.
+3. **DEV** keeps its 12p rate until it is founded afresh.

@@ -21,7 +21,9 @@ using json::Value;
 
 namespace
 {
-constexpr std::int64_t StallFee = 3, PriceMost = 999;
+// A stall's rent for the morning, and the dearest price laid on it, in LD (3p and 999p at a 12p day: at the town's
+// going rate, Society::pennies, doc 64, Phase 13).
+constexpr double StallFee = 3 / 12., PriceMost = 999 / 12.;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;
 
@@ -133,7 +135,7 @@ void Game::residentsAtStalls()
             if (double(std::hash<std::string>{}(key + "|stall") % 1000) / 1000 >= .35)
                 continue;                           // (Looked, and walked on.)
             const auto* purse = society.account(e->id);
-            const auto budget = purse ? (purse->cash - Society::FoodADay * 7) / 10 : 0;
+            const auto budget = purse ? (purse->cash - society.pennies(7 * Society::FoodADay, st.community)) / 10 : 0;
             const auto* wares = society.account(account(st));
             for (const auto& [item, price] : st.prices)
             {
@@ -267,8 +269,9 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         if (let >= squareMost(world_, community))
             return result = {false, "The town has let all the stalls it lets today.", {}}, true;
         const auto treasury = society.treasuryOf(community);
-        if (society.spendable(me) < StallFee || !society.shift(me, treasury, "", 0, StallFee, "stall rent"))
-            return result = {false, "A stall costs " + std::to_string(StallFee) + "p.", {}}, true;
+        const auto fee = society.pennies(StallFee, community);
+        if (society.spendable(me) < fee || !society.shift(me, treasury, "", 0, fee, "stall rent"))
+            return result = {false, "A stall costs " + std::to_string(fee) + "p.", {}}, true;
         Stall st;
         st.id = "st" + std::to_string(nextStall_++);
         st.keeper = me;
@@ -277,7 +280,7 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         st.x = spot->x;
         st.y = spot->y;
         st.day = std::floor(world_.calendarDays());
-        st.fee = StallFee;
+        st.fee = fee;
         society.openAccount(account(st));
         stalls_.push_back(st);
         std::set<std::string> keys;
@@ -285,9 +288,9 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
             if (!s.closed)
                 keys.insert(World::stallKey({s.cell, s.x, s.y}));
         world_.setLetStalls(std::move(keys));
-        world_.recordEvent({"stall rented", me, {}, st.cell, 0, 0, {}, 0, StallFee, st.id});
+        world_.recordEvent({"stall rented", me, {}, st.cell, 0, 0, {}, 0, fee, st.id});
         record(Economy | Character, me);
-        return result = {true, "You rent the stall for the morning (" + std::to_string(StallFee) + "p to the town). Lay out your wares.", {}}, true;
+        return result = {true, "You rent the stall for the morning (" + std::to_string(fee) + "p to the town). Lay out your wares.", {}}, true;
     }
     if (verb == "buy")
     {
@@ -345,8 +348,8 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
     {
         const int quantity = std::clamp(int(j.number("quantity", 1)), 1, 99);
         const auto price = std::int64_t(j.number("price", 0));
-        if (price < 1 || price > PriceMost)
-            return result = {false, "A price from 1p to " + std::to_string(PriceMost) + "p.", {}}, true;
+        if (const auto most = society.pennies(PriceMost, st.community); price < 1 || price > most)
+            return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         if (!items::good(items::baseOf(item)) || spareOf(me, item) < quantity)
             return result = {false, "You haven't that to sell (what you wear, and what is lent to you, stays off the stall).", {}}, true;
         const auto* a = society.account(account(st));
@@ -376,8 +379,8 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto found = st.prices.find(item);
         if (found == st.prices.end())
             return result = {false, "That isn't on your stall.", {}}, true;
-        if (price < 1 || price > PriceMost)
-            return result = {false, "A price from 1p to " + std::to_string(PriceMost) + "p.", {}}, true;
+        if (const auto most = society.pennies(PriceMost, st.community); price < 1 || price > most)
+            return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         found->second = price;
         return result = {true, "Now " + std::to_string(price) + "p apiece.", {}}, true;
     }
@@ -470,7 +473,7 @@ json::Value Game::stallSelf(const std::string& viewer)
                 if (!taken && let < squareMost(world_, community) && marketOpen(community))
                 {
                     auto o = Value::object();
-                    o.add("fee", double(StallFee));
+                    o.add("fee", double(world_.society().pennies(StallFee, community)));
                     out.add("offer", o);
                     any = true;
                 }

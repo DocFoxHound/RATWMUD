@@ -292,8 +292,8 @@ double Society::townPrice(const std::string& town, const std::string& item) cons
     const auto* good = items::good(item);
     if (!good)
         return 1;
-    if (storePriced(items::baseOf(item)))
-        return std::max(1, good->price);             // (Meals, herbs, swords: World::tendPrices's, through priceFactor.)
+    if (storePriced(items::baseOf(item)))            // (Meals, herbs, swords: World::tendPrices's, through priceFactor,
+        return atGoingRate(std::max(1, good->price), town);   // at the going rate.)
     // The going price (doc 64, Phase 4): the good's worth at the town's labourer's wage, what a seller at the usual margin
     // asks when its costs are the ladder's. Sellers set their own (priceAt); this is the town's yardstick, for a stall,
     // a contract or a measure. A quality's share of the plain good's (crude 0.6, fine 1.6, a masterwork 3).
@@ -377,7 +377,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
             household = int(home->second.size());   // (The day's households: RatwResidents.cpp.)
         household = std::clamp(household, 1, 8);
     }
-    const auto need = std::max<std::int64_t>(1, householdNeed(std::size_t(household)));
+    const auto need = std::max<std::int64_t>(1, householdNeed(std::size_t(household), shopTown(seller)));
     // What the household holds, in nourishment: the larder and what its members carry (one bringing a trip's worth home
     // hasn't put it away yet; not a keeper whose purse is its shop: those shelves are for sale).
     int atHome = 0;
@@ -602,26 +602,28 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
         // been poor.
         if (const auto streak = state_.memory.comfort.find(home); streak != state_.memory.comfort.end() && streak->second < 0)
             continue;
-        const auto target = std::llround(month) + HomeNeedDays * householdNeed(grown.size() + children.size());
+        const auto town = communityOfResident(grown.front());
+        const auto target = std::llround(month) + HomeNeedDays * householdNeed(grown.size() + children.size(), town);
         const auto spare = purse - target - owed;
         // A penny a day for every two weeks' worth it could spare, MostStipend at most, out of its want fund: one rule
         // (doc 64, Phase 13: a penny more for every hundred to spare gave a rich family's children 31p a day, more than
         // a labourer's wage). None to a child with a fortnight's pennies in hand.
         const auto kids = std::int64_t(children.size());
-        const auto each = std::min<std::int64_t>(MostStipend, spare / (14 * kids));
+        const auto most = pennies(MostStipend, town);
+        const auto each = std::min<std::int64_t>(most, spare / (14 * kids));
         const auto fund = state_.memory.wantFund.find(home);
         if (each <= 0 || !richest || fund == state_.memory.wantFund.end())
             continue;
         for (const auto& child : children)
-            if (const auto* a = account(child); a && a->cash < 14 * MostStipend && fund->second >= double(each) &&
+            if (const auto* a = account(child); a && a->cash < 14 * most && fund->second >= double(each) &&
                                                 spendable(*richest) > each && shift(*richest, child, "", 0, each, "a child's stipend"))
                 fund->second -= double(each);
     }
     // Children spend a little (the user, 2026-10-05: freely, of the little they're given): one cheap thing a day, at half
-    // what they have and 3p at most, at their town's shops (doc 64, Phase 13: half their purse a day, on whatever cost
-    // 3p, took the bakers' flour, the inns' oats and the carpenters' planks, and threw them away). Hungry with nothing on
-    // it, a bite (eaten as it eats: a child doesn't stock the larder, the household's plan does); otherwise a trinket,
-    // kept, and one lost when it has more than TrinketsKept.
+    // what they have and 3p at most (at a 12p day: what a trinket costs on the catalogue's, 3p at most), at their town's
+    // shops (doc 64, Phase 13: half their purse a day, on whatever cost 3p, took the bakers' flour, the inns' oats and the
+    // carpenters' planks, and threw them away). Hungry with nothing on it, a bite (eaten as it eats: a child doesn't stock
+    // the larder, the household's plan does); otherwise a trinket, kept, and one lost when it has more than TrinketsKept.
     const auto trinket = [](const std::string& item) {
         const auto* good = items::good(item);
         if (!good || good->price > 3)
@@ -635,12 +637,12 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
         for (const auto& child : members.second)
         {
             const auto* purse = account(child);
-            if (!purse || purse->cash < 2)
+            const auto town = communityOfResident(child);
+            if (!purse || purse->cash < pennies(2 / 12., town))
                 continue;
             const auto* life = resident(child);
             const bool peckish = life && life->hunger >= 55 && !hasFood(*purse);
-            const auto budget = std::min<std::int64_t>(purse->cash / 2, 3);
-            const auto town = communityOfResident(child);
+            const auto budget = std::min<std::int64_t>(purse->cash / 2, pennies(3 / 12., town));
             auto [on, fresh] = (peckish ? bites : trinkets).try_emplace(town);
             if (fresh)
                 on->second = peckish ? offersOf(shops[town], [](const std::string& item) { return edible(item); }, town + "|a bite|" + salt)
@@ -830,16 +832,16 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         // as far as its purse goes past a week's food and the tax and tithe it owes.
         const auto& id = h.buyers[std::hash<std::string>{}(h.fund + "|want|" + std::to_string(day)) % h.buyers.size()];
         const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (taxRate() + TitheRate));
-        const auto spare = account(id)->cash - FoodADay * 7 - owed;
+        const auto town = communityOfResident(id);
+        const auto spare = account(id)->cash - pennies(7 * FoodADay, town) - owed;
         const auto budget = std::min<std::int64_t>(std::int64_t(fund->second), spare);
-        if (budget < 2)
+        if (budget < pennies(2 / 12., town))
         {
             if (state_.memory.pieceWait.erase(h.fund))
                 ++state_.memory.revision;
             continue;
         }
         const auto before = account(id)->cash;
-        const auto town = communityOfResident(id);
         const auto salt = h.fund + "|" + std::to_string(day) + "|";
         // What it owns: its pieces of finery, and its blades (a guard's issued sword counts).
         int pieces = 0;
@@ -899,11 +901,12 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             std::stable_sort(fancies.begin(), fancies.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
             for (std::size_t f = 0; f < 3 && f < fancies.size() && got.empty(); ++f)
             {
-                // (A treat: a dish, 9p at most, never in a town gone hungry, and only off a shelf with its days' keeping.)
+                // (A treat: a dish, 9p at most at a 12p day, never in a town gone hungry, and only off a shelf with its
+                // days' keeping.)
                 const Want* fancy = fancies[f].second;
                 const bool treat = std::string(fancy->name) == "a treat";
                 if (!treat || !hungry.count(town))
-                    got = buyOne(id, onShelves(town, fancy->name, fancy->is), treat ? std::min<std::int64_t>(budget, 9) : budget,
+                    got = buyOne(id, onShelves(town, fancy->name, fancy->is), treat ? std::min(budget, pennies(9 / 12., town)) : budget,
                                  std::string("a want: ") + fancy->name, salt + fancy->name, false, treat);
             }
             if (edible(got))
@@ -1202,8 +1205,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
             t.shops.push_back(r.id);
         if (const auto* p = items::producerFor(r.workLabel))
             ++t.workers[p->id];
-        if (const auto* purse = account(r.id); purse && purse->cash < 12 && !hasFood(*purse))
-            t.poor.push_back(r.id);
+        if (const auto* purse = account(r.id); purse && purse->cash < pennies(1, community) && !hasFood(*purse))
+            t.poor.push_back(r.id);                 // (Under a day's wage, with nothing to eat.)
     }
     const double days = items::institutionDays();
     joinChurches();                                 // (An older save's churches' purses, into the one.)
@@ -1238,11 +1241,12 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 founded = churchFounded = openAccount(payer) || churchFounded;
             if (!account(acct) || !account(treasuryId))
                 continue;
-            // A day's funds from the treasury: what its basket costs, never more than a twentieth of the treasury.
+            // A day's funds from the treasury: what its basket costs (its catalogue prices at the going rate), never more
+            // than a twentieth of the treasury.
             double cost = 0;
             for (const auto& [item, rate] : in.basket)
                 if (const auto* good = items::good(item))
-                    cost += rate * scale * good->price;
+                    cost += rate * scale * atGoingRate(good->price, community);
             // Funds from the treasury: enough to keep twice its days' worth in hand (to buy, and to put up a contract's
             // reward), never more than a twentieth of the treasury a day.
             const auto& treasury = *account(treasuryId);
@@ -1258,11 +1262,11 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // Founded with its working funds as starting money (RatwFounding.cpp), the treasury tops them up after.
                 if (founded)
                     startingMoney(acct, std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())));
-                // A town's budget (doc 42, 2026-10-05): its treasury first keeps PayrollDays of its wages (2p a spell,
-                // PaidSpells a day, for each of its watch and its civic posts, roughly), and funds its buyers only from
-                // what is above that, a month's share a day. A poor town's buyers go short (its buildings wear, its
-                // watch eats plainly) rather than its wages going unpaid.
-                const auto reserve = std::int64_t(PayrollDays) * 2 * PaidSpells * (town.guards + town.residents / 10);
+                // A town's budget (doc 42, 2026-10-05): its treasury first keeps PayrollDays of its wages (2p a spell at
+                // a 12p day, PaidSpells a day, for each of its watch and its civic posts, roughly), and funds its buyers
+                // only from what is above that, a month's share a day. A poor town's buyers go short (its buildings wear,
+                // its watch eats plainly) rather than its wages going unpaid.
+                const auto reserve = std::int64_t(PayrollDays) * pennies(2 * PaidSpells / 12., community) * (town.guards + town.residents / 10);
                 const auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
                 if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
                                                               spare);
@@ -1477,21 +1481,24 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
             owed = std::min(owed, rate * 3);       // (What couldn't be had waits a few days, no more.)
         }
     }
-    // Beggars (doc 42, Phase 5): a few of their town's better-off spare them a penny each day.
+    // Beggars (doc 42, Phase 5): a few of their town's better-off (over 100p at a 12p day) spare them a penny each day
+    // (at a 12p day: a twelfth of the going rate).
     std::map<std::string, std::vector<std::string>> wellOff;
     for (const auto& r : authored_.residents)
-        if (const auto* purse = account(r.id); purse && purse->cash > 100 && state_.residents.count(r.id))
-            wellOff[communityOfResident(r.id)].push_back(r.id);
+        if (const auto* purse = account(r.id); purse && state_.residents.count(r.id))
+            if (const auto town = communityOfResident(r.id); purse->cash > pennies(100 / 12., town))
+                wellOff[town].push_back(r.id);
     for (const auto& r : authored_.residents)
     {
         if (r.workLabel.find("beg") == std::string::npos || !state_.residents.count(r.id))
             continue;
-        const auto& givers = wellOff[communityOfResident(r.id)];
+        const auto town = communityOfResident(r.id);
+        const auto& givers = wellOff[town];
         for (std::size_t k = 0; k < std::min<std::size_t>(3, givers.size()); ++k)
         {
             const auto& giver = givers[std::size_t(unit(r.id + std::to_string(day) + std::to_string(k)) * double(givers.size())) % givers.size()];
             if (giver != r.id)
-                shift(giver, r.id, "", 0, 1, "a penny for a beggar");
+                shift(giver, r.id, "", 0, pennies(1 / 12., town), "a penny for a beggar");
         }
     }
 }

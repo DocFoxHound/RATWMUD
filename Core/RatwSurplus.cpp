@@ -237,9 +237,10 @@ void Society::spendSurpluses(std::int64_t day)
         const auto& id = land;
         // Its town's by home (a salt raker who works out at the pans is still its own).
         std::vector<std::string> hungry;
+        const auto poor = pennies(6 / 12., town);   // (Under the price of a meal: 6p at a 12p day.)
         for (const auto& [who, life] : state_.residents)
             if (const auto home = day_.communityOf ? day_.communityOf(life.homeCell) : std::string(); home == town)
-                if (const auto* p = account(who); p && p->cash < 6 && !hasFood(*p))
+                if (const auto* p = account(who); p && p->cash < poor && !hasFood(*p))
                 {
                     const auto larder = homeStore(life.homeCell, "larder");
                     if (!account(larder) || !hasFood(*account(larder)))

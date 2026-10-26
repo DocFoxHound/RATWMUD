@@ -2531,6 +2531,131 @@ void aTownsTradeBringsInMore()
            "and keeps more of it to send away: " + std::to_string(held(s, "north", "iron_ore")) + " to " + std::to_string(held(s, "south", "iron_ore")));
 }
 
+// Prices at the hours worked (doc 64, Phase 13; doc 63's normal_cost): with work by the hours, a loaf's normal cost
+// takes the hours a batch of bread takes at the realm's pace, and so does the cost a batch is made at; with the hours
+// off, the calibrated hours, as before.
+void pricedAtTheHoursWorked()
+{
+    const items::Craft* k = nullptr;
+    for (const auto* c : items::craftsFor("bakery"))
+        if (c->id == "bread")
+            k = c;
+    expect(k && k->out.size() == 1 && k->hours > k->seconds / 3600., "a batch of bread takes longer calibrated than at the old pace");
+    const double old = k->seconds / 3600., each = 1. / k->out.begin()->second;
+    // A batch's hours at the town's wage, a loaf's share.
+    const auto labour = [&](double hours) {
+        return hours * (1 + k->skill / items::ladder().skillWage) * items::ladder().catalogueDay / Society::PaidSpells * each;
+    };
+    // A bakery's loaf priced, and then a batch baked (at the old pace's speed: the pace 0), by the hours or not.
+    const auto bake = [&](bool byHours, double pace, double& normal, double& made) {
+        Society::setWorkByHours(byHours);
+        auto s = town();
+        auto state = s.state();
+        state.memory.pace = pace;
+        expect(s.restore(state), "the pace restores");
+        expect(std::abs(s.labourDay("") - items::ladder().catalogueDay) < 1e-9, "a village keeps the catalogue's day");
+        normal = s.normalCost("baker", "bread");
+        set(s, "baker", "bread", 0);
+        double day = 10. / 24;
+        work(s, 600, day);
+        expect(held(s, "baker", "bread") > 0, "the baker bakes");
+        made = s.costOf(s.tillOf("baker"), "bread");
+        Society::setWorkByHours(false);
+    };
+    double off = 0, offMade = 0, slow = 0, slowMade = 0, half = 0;
+    bake(false, 0, off, offMade);
+    bake(true, 0, slow, slowMade);
+    expect(std::abs(off - slow - (labour(k->hours) - labour(old))) < 1e-6,
+           "by the hours at the old pace, a loaf is costed at the old pace's hours: " + std::to_string(slow) + "p against " + std::to_string(off) + "p");
+    expect(std::abs(offMade - slowMade - (labour(k->hours) - labour(old))) < 1e-6,
+           "and so is the batch it bakes: " + std::to_string(slowMade) + "p a loaf against " + std::to_string(offMade) + "p");
+    Society::setWorkByHours(true);
+    {
+        auto s = town();
+        auto state = s.state();
+        state.memory.pace = .5;
+        expect(s.restore(state), "half way to the calibrated hours");
+        half = s.normalCost("baker", "bread");
+    }
+    Society::setWorkByHours(false);
+    expect(std::abs(off - half - (labour(k->hours) - labour(old + .5 * (k->hours - old)))) < 1e-6,
+           "half way there, at the hours half way: " + std::to_string(half) + "p");
+}
+
+// A realm (doc 64, Phase 13): a baker and a stall (or not), and its other wolves labourers, each in a home of its own.
+Society realm(int wolves, bool shops = true)
+{
+    AuthoredRoster roster;
+    if (shops)
+        roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("stall", "keeping the stall", {"market", 4.5, 4.5})};
+    for (int i = int(roster.residents.size()); i < wolves; ++i)
+    {
+        auto r = person("w" + std::to_string(i), "labouring in the yard", {"yard", 2.5, 2.5}, "civilian");
+        r.home = {"home" + std::to_string(i), 2.5, 2.5};
+        roster.residents.push_back(r);
+    }
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    return s;
+}
+
+// The realm's labourer's day as it is founded (doc 64, Phase 13): a land of WorldMoneyResidents, whose money is made up to
+// WorldMoney, starts at ladder.json's foundingDay, and what was written in pennies when a day was 12p follows it: a
+// business's float, a meal at its catalogue price, the dearest piece the ledger moves, a household's food money (its
+// relief). A village made for a test keeps the catalogue's day; a realm with no maker to measure keeps the rate it had.
+void foundedAtTheFoundingDay()
+{
+    const double founding = items::ladder().foundingDay, catalogue = items::ladder().catalogueDay, ratio = founding / catalogue;
+    expect(founding > catalogue, "ladder.json founds the realm above the catalogue's day: " + std::to_string(founding) + "p");
+    auto big = realm(int(Society::WorldMoneyResidents)), small = realm(int(Society::WorldMoneyResidents) - 1);
+    expect(std::abs(big.labourDay("") - founding) < 1e-9 && std::abs(big.state().memory.going.at("") - founding) < 1e-9,
+           "a realm starts at the founding's day: " + std::to_string(big.labourDay("")) + "p");
+    expect(std::abs(small.labourDay("") - catalogue) < 1e-9 && small.state().memory.going.empty(), "a village at the catalogue's");
+    const auto pid = big.jobOf("baker")->id;
+    expect(std::abs(double(big.floatOf(pid)) - ratio * double(small.floatOf(pid))) <= 3,
+           "a bakery's float follows the day: " + std::to_string(big.floatOf(pid)) + "p against " + std::to_string(small.floatOf(pid)) + "p");
+    expect(std::abs(big.townPrice("", "meal") - 6 * ratio) < 1e-9 && std::abs(small.townPrice("", "meal") - 6) < 1e-9,
+           "a meal at its catalogue's 6p, at the day: " + std::to_string(big.townPrice("", "meal")) + "p");
+    // The dearest piece the ledger moves: 1,000p at a 12p day (a piece of 1,200p, then).
+    for (auto* s : {&big, &small})
+    {
+        expect(s->create("baker", "rapier", 1, "test: a piece"), "a rapier");
+        for (int i = 10; i < 16; ++i)
+            expect(s->shift("w" + std::to_string(i), "stall", "", 0, 200, "test: its price"), "and the price of it");
+        expect(s->sale("baker", "stall", "rapier", 1, 1200, "test: a dear piece") == (s == &big),
+               s == &big ? "the realm's ledger moves a piece of 1,200p" : "a village's refuses it");
+    }
+    // A household with nothing is given its food money in relief at the first day's turn: 5p a head at a 12p day.
+    const auto relief = [](Society& s) {
+        auto bodies = atWork(s);
+        const auto poor = "w3";
+        double day = 1 - 3. / 86400;
+        s.tick(1, day, 0, bodies);                  // (Its purses founded first.)
+        expect(s.shift(poor, "treasury", "", 0, s.account(poor)->cash, "test: penniless"), "a labourer with nothing");
+        s.takeJournal();
+        for (int i = 0; i < 6; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+        }
+        expect(s.conserved(), "money stays conserved");
+        std::int64_t given = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "relief" && e.to == poor)
+                given += e.coins;
+        return given;
+    };
+    const auto bigRelief = relief(big), smallRelief = relief(small);
+    expect(smallRelief == 5 && bigRelief == Society::pennies(5 * ratio),
+           "a day's food money in relief, at the day: " + std::to_string(bigRelief) + "p against " + std::to_string(smallRelief) + "p");
+    expect(std::abs(big.labourDay("") - founding) < 1e-9, "and the realm's day, measured from its makers, is the founding's");
+    // A realm with nobody whose wage measures the day keeps the day it had (it fell back to the catalogue's).
+    auto bare = realm(int(Society::WorldMoneyResidents), false);
+    relief(bare);
+    expect(std::abs(bare.labourDay("") - founding) < 1e-9, "with no maker to measure, the realm keeps its day: " + std::to_string(bare.labourDay("")) + "p");
+}
+
 int main()
 {
     try
@@ -2585,6 +2710,8 @@ int main()
         missedAgainstTheDaysBuying();
         fieldsPlannedByTheirMonth();
         aRestartKeepsTheMonth();
+        pricedAtTheHoursWorked();
+        foundedAtTheFoundingDay();
     }
     catch (const std::exception& error)
     {
