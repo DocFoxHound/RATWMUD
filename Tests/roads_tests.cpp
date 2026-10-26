@@ -1588,21 +1588,36 @@ void childrensStipends()
             for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop", "trinkets"})   // (Everyone grown at home.)
                 w.society().shift(who, "treasury", "", 0, w.society().account(who)->cash, "test: a hard year");
         w.takeEvents();
-        bool given = false, spent = false;
+        bool given = false, spent = false, trinkets = true, materials = false;
         for (int d = 0; d < (comfortable ? 2 : 1); ++d)   // (The poor one's wages would soon let it spare a little.)
         {
             nextMorning(w);
+            // (Fed: a hungry child buys a bite instead, RatwDemand.cpp.)
+            if (!Society::hasFood(*w.society().account("kid")))
+                w.society().create("kid", "porridge", 2, "test: breakfast");
             run(w, 2);
             for (const auto& e : w.takeEvents())
             {
                 given |= e.kind == "economy" && e.detail == "a child's stipend" && e.target == "kid";
-                spent |= e.kind == "economy" && e.detail == "a child's spending" && e.actor == "kid";
+                if (e.kind == "economy" && e.detail == "a child's spending" && e.actor == "kid")
+                {
+                    // (Jewellery, a hat, a scarf, paw wear or a toy: what the jeweller sells, never the baker's.)
+                    const auto* good = items::good(items::baseOf(e.item));
+                    const auto c = good ? good->category : std::string();
+                    spent = true;
+                    trinkets = trinkets && e.target == w.society().tillOf("trinkets") &&
+                               (c == "jewelry" || c == "hat" || c == "scarf" || c == "paw_wear" || c == "luxury");
+                }
+                const auto base = items::baseOf(e.item);
+                materials |= e.kind == "economy" && (e.actor == "kid" || e.target == "kid") && (base == "flour" || base == "firewood");
             }
         }
         if (comfortable)
         {
             expect(given, "A comfortable household gives its child a stipend");
             expect(spent, "and the child spends some of it");
+            expect(trinkets, "on trinkets, every one from the jeweller");
+            expect(!materials, "and never the baker's flour or firewood");
         }
         else
             expect(!given, "A household with nothing to spare after food and tax gives none");

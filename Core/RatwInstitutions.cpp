@@ -309,9 +309,12 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
 
 bool Society::builds(const std::string& shop) const
 {
+    // (The building trades by name: a smithy's nails and fittings, a tinker's nails, a potter's bricks are a few of their
+    // wares, and their hands are for their tools, blades and pots. Doc 64, Phase 13.)
+    static const char* Trades[] = {"carpenter", "sawmill", "mason", "brickworks", "plasterworks"};
     const auto* keeper = spec(shop);
     const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
-    if (!business)
+    if (!business || std::find(std::begin(Trades), std::end(Trades), business->id) == std::end(Trades))
         return false;
     for (const auto* k : items::craftsFor(business->id))
         if (!k->out.empty() && building(k->out.front().first))
@@ -378,6 +381,14 @@ std::int64_t Society::worksOnHome(const std::string& payer, const std::vector<st
         for (const auto& sort : kindsHeld(*account(q.till), q.item))
             if (need > 0)
                 need -= consume(q.till, sort, std::min(need, stock(*account(q.till), sort)), "used in works on the home");
+        // (Its goods, as sold: its shelf's plan and its hands follow its works, as they follow its sales, and a shelf the
+        // works emptied is a sell-out. Society::spoil.)
+        if (goods - need > 0)
+        {
+            soldToday_[q.till][q.item] += goods - need;
+            if (stockAll(*account(q.till), q.item) == 0)
+                ranOut_[q.till].insert(q.item);
+        }
         banked -= units * WorksHours;
         worksRate_[q.till] += units * WorksHours / MonthDays;
         left -= double(price);

@@ -71,6 +71,7 @@ void Society::reset(Roster roster)
     forgetOrchestra();
     wageCarry_.clear();
     loadPrices();                                   // (None: state_ is fresh.)
+    loadRates();
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
@@ -1129,6 +1130,7 @@ bool Society::restore(const SocietyState& saved)
     indexTills();
     forgetOrchestra();
     loadPrices();
+    loadRates();                                    // (Makers' mending and builders' works: doc 64, Phase 13.)
     roster_ = roster;
     for (auto& life : state_.residents)
         if (roster_ == Roster::Demo) defaultHome(life.first, life.second);

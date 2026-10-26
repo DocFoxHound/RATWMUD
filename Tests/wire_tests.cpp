@@ -550,6 +550,21 @@ void societyTests()
     memory->set("paceHands", bare);
     const auto old = wire::readSociety(older);
     expect(old.minted >= 0 && old.memory.paceCover.empty(), "an older save's bare readings, and its land's hands, read as none");
+    // Households' pieces founded, and makers' mending and builders' works, hours a day (doc 64, Phase 13): saved, a rate
+    // that can't be dropped; an older save has none, and its pieces were never founded.
+    state.memory.piecesFounded = 1;
+    state.memory.mendRate = {{"till:smith", .5}};
+    state.memory.worksRate = {{"till:carpenter", 2.25}, {"till:mason", -1}, {"till:sawmill", 1e7}};
+    auto saved = wire::society(state);
+    const auto rates = wire::readSociety(saved).memory;
+    expect(rates.piecesFounded == 1 && rates.mendRate.size() == 1 && rates.mendRate.at("till:smith") == .5 && rates.worksRate.size() == 1 &&
+               rates.worksRate.at("till:carpenter") == 2.25,
+           "the founding and the mending and works round trip, the rates that can't be dropped");
+    for (const char* key : {"piecesFounded", "mendRate", "worksRate"})
+        saved.find("memory")->erase(key);
+    const auto olderRates = wire::readSociety(saved);
+    expect(olderRates.minted >= 0 && olderRates.memory.piecesFounded == 0 && olderRates.memory.mendRate.empty() && olderRates.memory.worksRate.empty(),
+           "an older save reads with none");
 }
 
 void commandTests()

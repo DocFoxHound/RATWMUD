@@ -652,9 +652,14 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
     };
     // Founded with what they own (doc 63's model): pieces of every age, so they wear out over the years rather than all
     // being bought in the first months. A sword for seven households in ten that work (two in ten that don't), a rapier
-    // for one in eight, a piece of the finery its town's shops sell for half. Once, the day the realm's belongings are
-    // first counted (tendBelongings, later in the day's pass, founds their condition).
-    if (fieldsOn() && state_.memory.belongings.empty())
+    // for one in eight, a piece of the finery its town's shops sell for half. Once (EconomyMemory::piecesFounded, saved),
+    // with work by the hours, in a new world's first day pass, its purses still being founded (foundPurses; tendBelongings,
+    // later in the pass, founds their condition): never goods from nothing into a world that has lived, an older save
+    // or one first run with the hours later.
+    const bool founding = !state_.memory.piecesFounded && fieldsOn() && state_.memory.purses < PursesFounded;
+    if (!state_.memory.piecesFounded)
+        state_.memory.piecesFounded = 1, ++state_.memory.revision;
+    if (founding)
     {
         std::map<std::string, std::vector<std::string>> finery;
         for (const auto& [town, list] : shops)
@@ -683,14 +688,33 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const char* name;
         std::function<bool(const std::string&)> is;
     };
-    const std::vector<Want> kinds = {
+    std::vector<Want> kinds = {
         {"a treat", [](const std::string& i) { const auto* g = items::good(i); return edible(i) && g && g->price >= 3 && !g->staple; }},
         {"a drink", [](const std::string& i) { const auto* g = items::good(i); return g && g->drink; }},
         {"soap and scent", [&](const std::string& i) { return category(i) == "care"; }},
         {"a pastime", [&](const std::string& i) { const auto c = category(i); return c == "luxury" || c == "instrument" || i == "broadsheet" || i == "pamphlet" || i == "printed_book"; }},
         {"something for the home", [&](const std::string& i) { return category(i) == "household"; }},
     };
+    // (With the hours off, the old pace, nothing is worn or mended (tendBelongings): finery is a fancy as it was, kept a
+    // few pieces and used past them, and no piece is wanted first.)
+    if (!fieldsOn())
+        kinds.insert(kinds.begin() + 2, {{"jewellery", [&](const std::string& i) { return category(i) == "jewelry"; }},
+                                         {"finery", [&](const std::string& i) {
+                                              const auto c = category(i);
+                                              return c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear";
+                                          }}});
     const auto kindIs = [](const char* kind) { return [kind](const std::string& i) { return belongingKind(i) == kind; }; };
+    // Whether a town's shops sell a piece of a kind at all, on their shelves today or not (none sells a rapier now): one
+    // none sells is never waited for.
+    std::map<std::string, bool> sells;
+    const auto sold = [&](const std::string& town, const char* kind) {
+        auto [at, fresh] = sells.try_emplace(town + "|" + kind);
+        if (fresh)
+            for (const auto& shop : shops[town])
+                for (const auto& ware : wares(shop))
+                    at->second = at->second || belongingKind(ware) == kind;
+        return at->second;
+    };
     // What each town's shops have on sale of each kind, worked out once (buyOne).
     std::map<std::string, std::vector<Offer>> market;
     const auto onShelves = [&](const std::string& town, const std::string& what, const std::function<bool(const std::string&)>& is)
@@ -731,18 +755,27 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         const bool rich = h.income > 0 && h.income >= richIncome && double(h.cash) > 2 * townPrice(town, "rapier");
         // A piece it wants, in the model's order, one a day: a rapier for the rich, a sword for a household that works,
         // finery to a piece a head (two more for the rich), the dearest the fund runs to. Kept, and worn, mended and
-        // replaced as its belongings (RatwBelongings.cpp).
+        // replaced as its belongings (RatwBelongings.cpp), with work by the hours. One its town's shops sell and it
+        // didn't find today (none on the shelves, or none its fund runs to) it waits for: no works meanwhile.
         std::string got;
-        if (rich && !rapier)
-            got = buyOne(id, onShelves(town, "rapier", kindIs("rapier")), budget, "a want: a rapier", salt + "rapier");
-        if (got.empty() && !sword && !rapier && working(h))
-            got = buyOne(id, onShelves(town, "sword", kindIs("sword")), budget, "a want: a sword", salt + "sword");
-        if (got.empty() && pieces < h.persons + (rich ? 2 : 0))
-            got = buyOne(id, onShelves(town, "finery", kindIs("finery")), budget, "a want: finery", salt + "finery", true);
-        if (got.empty())
+        bool waits = false;
+        const auto piece = [&](const char* kind, bool wanted, const char* what, bool dearest) {
+            if (!got.empty() || !wanted || !fieldsOn())
+                return;
+            got = buyOne(id, onShelves(town, kind, kindIs(kind)), budget, what, salt + kind, dearest);
+            waits = waits || (got.empty() && sold(town, kind));
+        };
+        piece("rapier", rich && !rapier, "a want: a rapier", false);
+        piece("sword", !sword && !rapier && working(h), "a want: a sword", false);
+        piece("finery", pieces < h.persons + (rich ? 2 : 0), "a want: finery", true);
+        // None of those wanted: works on its home with up to half what the fund holds (doc 63's model: the want fund's
+        // outlet, so savings don't pile up), with work by the hours.
+        const bool works = got.empty() && !waits && fieldsOn() && worksOnHome(id, builders[town], std::int64_t(fund->second), spare, day) > 0;
+        if (got.empty() && !works)
         {
-            // None of those: one thing it fancies, the kinds its buyer likes best as it feels today; one that finds
-            // nothing on the shelves, the next (two more at most: money that stops, doc 46). One thing, used up.
+            // Or, no builder with the hours for them (or a piece waited for): one thing it fancies, the kinds its buyer
+            // likes best as it feels today; one that finds nothing on the shelves, the next (two more at most: money that
+            // stops, doc 46). One thing, used up: the day's one want, never works and a fancy both.
             std::vector<std::pair<double, const Want*>> fancies;
             for (const auto& k : kinds)
                 fancies.push_back({(.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name), &k});
@@ -764,13 +797,14 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
                 me.hunger = std::max(0., me.hunger - nourishment(got) * 1.1);
             }
             else if (const auto* good = got.empty() ? nullptr : items::good(got))
-                consume(id, got, 1, good->drink ? "drunk" : "used");
-            // And, nothing of its own left to buy, works on its home with up to half what the fund still holds (doc 63's
-            // model: the want fund's outlet, so savings don't pile up).
-            if (fieldsOn())
             {
-                const auto spent = before - account(id)->cash;
-                worksOnHome(id, builders[town], std::int64_t(fund->second) - spent, spare - spent, day);
+                // (Finery, with the hours off: kept while its buyer holds FineryKept pieces or fewer, as it was.)
+                int finery = 0;
+                if (!fieldsOn() && belongingKind(got) == "finery")
+                    for (const auto& [item, n] : account(id)->stock)
+                        finery += belongingKind(item) == "finery" ? n : 0;
+                if (fieldsOn() || belongingKind(got) != "finery" || finery > FineryKept)
+                    consume(id, got, 1, good->drink ? "drunk" : "used");
             }
         }
         if (const auto spent = before - account(id)->cash; spent > 0)

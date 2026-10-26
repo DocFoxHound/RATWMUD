@@ -56,7 +56,7 @@ std::string Society::belongingKind(const std::string& item)
 void Society::tendBelongings(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
 {
     if (!fieldsOn() || roster_ != Roster::Authored)
-        return;
+        return keepRates();
     // A set of clothes: what a household buys a head of (crafts.json `households`, `perPerson`).
     std::string clothes;
     for (const auto& need : items::householdNeeds())
@@ -125,6 +125,25 @@ void Society::tendBelongings(std::int64_t day, const std::map<std::string, LifeB
         it = state_.residents.count(it->first) ? std::next(it) : all.erase(it);
     for (auto& [till, rate] : mendRate_)
         rate *= 1 - 1. / MonthDays;                  // (A month's running average of mending hours a day.)
+    keepRates();
+}
+
+void Society::keepRates()
+{
+    // Makers' mending and builders' works, into the saved memory at the day pass's end (doc 64, Phase 13: most of a
+    // builder's hands; a restarted world's would be gone, a month to come back). What has worn to nothing, forgotten.
+    auto& memory = state_.memory;
+    for (auto* rates : {&mendRate_, &worksRate_})
+        for (auto it = rates->begin(); it != rates->end();)
+            it = it->second < 1e-4 ? rates->erase(it) : std::next(it);
+    memory.mendRate = {mendRate_.begin(), mendRate_.end()};
+    memory.worksRate = {worksRate_.begin(), worksRate_.end()};
+}
+
+void Society::loadRates()
+{
+    mendRate_ = {state_.memory.mendRate.begin(), state_.memory.mendRate.end()};
+    worksRate_ = {state_.memory.worksRate.begin(), state_.memory.worksRate.end()};
 }
 
 double Society::mendQuote(const std::string& maker, const items::Craft& k, const Belonging& b, const std::string& kind) const
