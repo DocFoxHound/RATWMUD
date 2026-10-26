@@ -2196,6 +2196,75 @@ void thePaceIsSteadied()
     Society::setWorkByHours(false);
 }
 
+// A city hand at a distant fishery (doc 64, Phase 13, the review): with work by the hours a fishery's hire is open to
+// anyone from a city, as a farm's. East is a city (150 idle wolves and its own); west's fishery, at the strip's far end,
+// sells for more hands than its fisher. An idle wolf of east takes its hire and walks there from its home in the city
+// (no bunkhouse: lodging city hands at the land's own measured worse, doc 64), works the day, and is paid; its hours are
+// credited to the fishery's work.
+void aCityHandAtTheFishery()
+{
+    Society::setWorkByHours(true);
+    std::string extra = resident("wf", "Wade Fenn", "civilian", "fishes the waters off Westmere", 7, 9.5, 8, 9.5);
+    for (int n = 1; n <= 150; ++n)
+        extra += resident("ec" + std::to_string(n), "Idle " + std::to_string(n), "civilian", "idling in the square", 0, 2.5 + n % 12, 0, 2.5 + n % 12);
+    auto f = strip("EE.....WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    const auto till = s.tillOf("wf");
+    const auto* fish = items::good("fish");
+    expect(fish && s.account(till), "The fishery keeps a till");
+    // Two evenings of fish sold for more hands than its fisher, its money to hire with, its folk fed.
+    for (std::int64_t day = 3; day <= 4; ++day)
+    {
+        auto saved = w.save();
+        saved.calendarDays = double(day) + 22. / 24;
+        saved.society.memory.pace = .5;
+        saved.society.memory.paceCover.clear();
+        for (auto& [who, life] : saved.society.residents)
+            life.hunger = life.fatigue = 0;
+        saved.society.accounts.at(till).stock["fish"] = 80;
+        saved.society.accounts.at("treasury").cash -= 80 + 3000;
+        saved.society.accounts.at("e1").cash += 80;
+        saved.society.accounts.at(till).cash += 3000;
+        expect(w.restore(saved).ok, "To an evening");
+        expect(s.sale(till, "e1", "fish", 80, 1, "test: the day's fish"), "the day's fish sold");
+        run(w, 600 * 3);
+    }
+    const auto hire = [&]() -> const Society::OddJob* {
+        for (const auto& j : s.oddJobs())
+            if (j.payer == till && j.until >= 0 && j.kind == "a hand")
+                return &j;
+        return nullptr;
+    };
+    expect(hire() && s.farmHire(*hire()) && hire()->community == "west", "The fishery hires, a hire of the land's");
+    // Its next working day, to 23:00.
+    const double before = s.workBy().count("wf") ? s.workBy().at("wf").first : 0;
+    while (w.calendarDays() < 5 + 23. / 24)
+        w.tick(1);
+    std::string hand;
+    int worked = 0;
+    if (const auto* j = hire())
+        for (const auto& [who, stage] : j->stage)
+        {
+            worked += stage == 2;
+            if (who.rfind("ec", 0) == 0 && stage == 2 && hand.empty())
+                hand = who;
+        }
+    expect(!hand.empty(), "An idle wolf of the city took the fishery's hire and worked its day (" + std::to_string(worked) + " worked)");
+    const auto* life = s.state().residents.count(hand) ? &s.state().residents.at(hand) : nullptr;
+    expect(!s.state().memory.lodging.count(hand) && life && life->homeCell == id(0), "It still lives in the city");
+    const double credited = s.workBy().at("wf").first - before;
+    expect(credited >= Society::HireSpells * worked, "Its hours are credited to the fishery's work: " + std::to_string(credited) + " hours, " +
+                                                         std::to_string(worked) + " hands' days");
+    bool paid = false;
+    for (const auto& e : s.state().ledger)
+        paid = paid || (e.from == till && e.to == hand && e.kind == "an odd job: a hand");
+    expect(paid, "and it is paid from the fishery's till");
+    expect(s.conserved(), "Every penny is kept");
+    Society::setWorkByHours(false);
+}
+
 // And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
 // go on to the shops). Its sales wanting a hand's day, the pace goes on, though the farm, planning half again for its
 // bare shelf, hires. Its sales wanting three hands' days, the land falls behind: since 2026-10-26 that no longer holds
@@ -2298,6 +2367,7 @@ void thePaceStepsUpWithTheLand()
     expect(s.idleBusiness(till) && s.handsWanted(till, false) >= 3 && std::abs(pace - (.5 + Society::PaceStep)) < 1e-9,
            "Its sales three hands' days, but no work for more: the pace goes on (" + std::to_string(pace) + "; its sales " +
                std::to_string(s.handsWanted(till, false)) + " hands, its work in hand " + std::to_string(s.workBankedOf("rk")) + ")");
+    expect(s.vacanciesOf(till) == 0, "and its posts aren't open: it has no work for more hands (" + std::to_string(s.vacanciesOf(till)) + ")");
     expect(s.conserved(), "Every penny is kept");
     Society::setWorkByHours(false);
 }
@@ -3287,6 +3357,7 @@ int main()
         theMonitorWatches();
         thePaceIsSteadied();
         thePaceStepsUpWithTheLand();
+        aCityHandAtTheFishery();
         sellersPriceFromCost();
     }
     catch (const std::exception& error)

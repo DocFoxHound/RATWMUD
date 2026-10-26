@@ -50,12 +50,14 @@
 //                   farmer's, its hands its till's), and its hours in hand at the day's turn;
 //   tills.csv       day, till: its cash, working money, what it owes, its sales and orders (doc 64, Phase 5), and its
 //                   hands, hands wanted, and its running hires' slots and slots taken (each till once a day);
-//   residents.csv   day, resident: home, kind of holder, title, age, cash;
+//   residents.csv   day, resident: home, kind of holder, title, age, cash, and who pays its post and as what (payerOf);
 //   books.csv       day, employer: its book (wage, the going rate for its skill, open days, calm weeks, short pay), its
 //                   posts open and filled, its skill (doc 64, Phase 6);
 //   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
 //                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
-//                   its own employer, as it stands at 23:00);
+//                   its own employer, as it stands at 23:00), and of them those who worked the day's spells, those
+//                   from another town, those of them who worked, and those lodged away from home (doc 64, Phase 13:
+//                   a hire taken from afar);
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
@@ -649,7 +651,7 @@ int main(int argc, char** argv)
     std::set<std::string> lastAlive;
     bool firstMeasure = true;
     std::ofstream residentsOut(out / "residents.csv");
-    residentsOut << "day,resident,home,holder,title,age,cash\n";
+    residentsOut << "day,resident,home,holder,title,age,cash,payer,paid_as\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
                 "hire_slots,hire_taken\n";
@@ -682,8 +684,10 @@ int main(int argc, char** argv)
             if (rows)
             {
                 const auto* job = society.jobOf(id);
+                const auto payer = job ? society.payerOf(id, *job, e->age) : Society::Payer{};
                 residentsOut << day << ',' << csv(id) << ',' << csv(life.homeCell) << ',' << csv(holder(server, id)) << ','
-                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << '\n';
+                             << csv(job ? job->title : "") << ',' << e->age << ',' << (a ? a->cash : 0) << ',' << csv(payer.account)
+                             << ',' << csv(payer.whom) << '\n';
             }
             const bool apprentice = society.apprenticedTo(id) != nullptr;
             apprentices += apprentice;
@@ -1128,8 +1132,14 @@ int main(int argc, char** argv)
     // an institution's hire running today, its slots taken, those open at its dawn (taken at the day before's 23:00;
     // one posted since, all), and its takers as they stand now.
     std::ofstream hiresOut(out / "hires.csv");
-    hiresOut << "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers\n";
+    hiresOut << "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers,worked,away,away_worked,lodged\n";
     std::map<std::string, int> takenBefore;
+    std::map<std::string, std::string> townOf;      // (Each resident's community, as the society's: its work's, else its home's.)
+    for (const auto& r : society.authored().residents)
+    {
+        const auto at = server.communityOf(r.work.cell);
+        townOf[r.id] = at.empty() ? server.communityOf(r.home.cell) : at;
+    }
     const auto sampleHires = [&](std::int64_t day) {
         std::map<std::string, int> taken;
         for (const auto& j : society.oddJobs())
@@ -1137,8 +1147,16 @@ int main(int argc, char** argv)
             if (j.until < day)
                 continue;                           // (A day's odd job, or a hire run out.)
             std::string takers;
+            int worked = 0, away = 0, awayWorked = 0, lodged = 0;
             for (const auto& [who, stage] : j.stage)
             {
+                // (Its day's spells done: paid, stage 2. From away: living in another town than the hire's.)
+                const auto town = townOf.find(who);
+                const bool far = town != townOf.end() && town->second != j.community;
+                worked += stage == 2;
+                away += far;
+                awayWorked += far && stage == 2;
+                lodged += society.state().memory.lodging.count(who) > 0;
                 const auto* e = server.entity(who);
                 const auto* job = society.jobOf(who);
                 const int age = e ? e->age : 30;
@@ -1156,7 +1174,8 @@ int main(int argc, char** argv)
             const auto before = takenBefore.find(j.id);
             hiresOut << day << ',' << csv(j.id) << ',' << csv(j.payer) << ',' << csv(j.kind) << ',' << j.slots << ','
                      << (j.slots > 0 ? j.pay / j.slots : 0) << ',' << j.until << ',' << (j.field ? 1 : 0) << ',' << j.stage.size()
-                     << ',' << j.slots - (before == takenBefore.end() ? 0 : before->second) << ',' << csv(takers) << '\n';
+                     << ',' << j.slots - (before == takenBefore.end() ? 0 : before->second) << ',' << csv(takers) << ',' << worked << ','
+                     << away << ',' << awayWorked << ',' << lodged << '\n';
             taken[j.id] = int(j.stage.size());
         }
         takenBefore.swap(taken);

@@ -1397,6 +1397,123 @@ void aShortBusinessBidsUp()
     Society::setWorkByHours(false);
 }
 
+// A producer's posts open by its sales as they are (doc 64, Phase 13, the review): a fishery's goods go on to the shops,
+// so its shelf is always near bare, and planning half again for that it would stand short for good. Its sales a hand's
+// day, though it plans for two: no post open. Its sales three hands' days: two open. Its sales ten and more: three, its
+// hand and two more at most (doc 63's model: its posts grow by steps, not leaps). Its till and its purse emptied each evening,
+// so it posts no hire.
+void aProducersPostsBySales()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    roster.economy.treasury = 100000;
+    Society s(Roster::None);
+    s.configure(roster);
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto till = s.tillOf("fisher");
+    const auto bodies = atWork(s);
+    std::int64_t d = 0;
+    // (A fortnight of `n` fish sold a day and eaten; the day's money and the fisher's own taken away.)
+    const auto fortnight = [&](int n) {
+        int open = 0, least = 1000;
+        for (int i = 0; i < 14; ++i)
+        {
+            ++d;
+            set(s, "fisher", "fish", n);
+            expect(s.shift("treasury", "scribe", "", 0, n, "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(till, "scribe", "fish", n, 1, "test: the day's fish"), "the buyer buys");
+            auto st = s.state();
+            st.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(st), "eaten");
+            for (const auto& who : {till, std::string("fisher")})
+                if (const auto cash = s.account(who)->cash; cash > 0)
+                    expect(s.shift(who, "treasury", "", 0, cash, "test: the evening's money taken"), "its money taken");
+            s.tick(1, double(d) + .5, 0, bodies);   // (The day's pass.)
+            if (i >= 7)
+                open = std::max(open, s.vacanciesOf(till)), least = std::min(least, s.vacanciesOf(till));
+        }
+        for (const auto& j : s.oddJobs())
+            expect(j.payer != till || j.until < d, "it posts no hire");
+        return std::make_pair(least, open);
+    };
+    const auto one = fortnight(8);
+    expect(s.handsOf(till) == 1 && s.handsWanted(till) == 2 && s.handsWanted(till, false) == 1,
+           "its sales a hand's day, it plans for two for its bare shelf: " + std::to_string(s.handsWanted(till)) + " and " +
+               std::to_string(s.handsWanted(till, false)) + " (" + std::to_string(s.sellRates(till)->at("fish")) + " a day)");
+    expect(one.second == 0,"and has no post open: " + std::to_string(one.second));
+    const auto three = fortnight(24);
+    expect(s.handsWanted(till, false) == 3 && three.first == 2 && three.second == 2,
+           "its sales three hands' days: two posts open (" + std::to_string(three.first) + " to " + std::to_string(three.second) + ")");
+    const auto many = fortnight(99);         // (A ledger entry holds 99 at most.)
+    expect(s.handsWanted(till, false) >= 10 && many.second == 3,
+           "its sales " + std::to_string(s.handsWanted(till, false)) + " hands' days: its hand and two more open, " + std::to_string(many.second));
+    expect(s.conserved(), "money stays conserved");
+    Society::setWorkByHours(false);
+}
+
+// A hire taken is no post open (doc 64, Phase 13, the review): a fishery whose sales want three hands' days has its
+// own and posts a hire for the rest; three idle wolves of its town take every slot of it, and nothing stands open.
+void aHireTakenIsNoPostOpen()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    for (int i = 1; i <= 3; ++i)
+        roster.residents.push_back(person("idle" + std::to_string(i), "idling in the square", {"square", 2.5, 2.5}, "civilian"));
+    roster.economy.treasury = 100000;
+    Society s(Roster::None);
+    s.configure(roster);
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto till = s.tillOf("fisher");
+    expect(s.shift("treasury", till, "", 0, 20000, "test: the fishery's money"), "the fishery has money to hire with");
+    std::map<std::string, LifeBody> bodies = atWork(s);
+    int taken = -1, slots = 0, open = -1, wanted = 0;
+    for (std::int64_t d = 1; d <= 28 && open < 0; ++d)
+    {
+        // (A hire running into today with every slot taken yesterday, before the day's pass counts its posts.)
+        int full = -1;
+        for (const auto& j : s.oddJobs())
+            if (j.payer == till && j.until >= d && j.slots >= 2 && int(j.stage.size()) == j.slots)
+                full = j.slots;
+        // (The day's pass, then its working hours, the hands at the hire's spot when they hold it.)
+        for (double t = 10; t < 12; t += 1. / 60)
+        {
+            s.tick(1, double(d) + t / 24, 0, bodies);
+            if (t == 10 && full > 0 && d >= 8)
+            {
+                open = s.vacanciesOf(till), slots = full, wanted = s.handsWanted(till, false);
+                for (const auto& j : s.oddJobs())
+                    if (j.payer == till && j.until >= d)
+                        taken = std::max(taken, int(j.stage.size()));
+            }
+            for (const auto& j : s.oddJobs())
+                if (j.payer == till && j.until >= d)
+                    for (const auto& [who, stage] : j.stage)
+                        bodies[who] = {j.from.cell, j.from.x, j.from.y};
+        }
+        // (The day's fish sold and eaten, before the next day's pass.)
+        set(s, "fisher", "fish", 24);
+        expect(s.shift("treasury", "scribe", "", 0, 24, "test: the buyer's money"), "the buyer has money");
+        expect(s.sale(till, "scribe", "fish", 24, 1, "test: the day's fish"), "the buyer buys");
+        auto st = s.state();
+        st.accounts.at("scribe").stock.erase("fish");
+        for (auto& [id, life] : st.residents)
+            life.hunger = life.fatigue = 0;
+        expect(s.restore(st), "eaten");
+    }
+    expect(wanted == 3 && slots >= 2 && taken == slots,
+           "its sales three hands' days, its hire's slots all taken: " + std::to_string(taken) + " of " + std::to_string(slots) + " (" +
+               std::to_string(wanted) + " wanted)");
+    expect(open == 0, "and no post stands open: " + std::to_string(open));
+    expect(s.conserved(), "money stays conserved");
+    Society::setWorkByHours(false);
+}
+
 // One labour market for the land (doc 64, Phase 13; doc 63's model): with work by the hours a fishery's hire, like a
 // farm's, may be taken by anyone living in a city, not by its own town's folk alone. At the seconds' pace, as it was: a
 // farm's only. A shop's hire is the land's at neither.
@@ -2880,6 +2997,8 @@ int main()
         handsByWhatCanBeMade();
         aShortBusinessBidsUp();
         theLandsHiresForAnyone();
+        aProducersPostsBySales();
+        aHireTakenIsNoPostOpen();
         theCordGoesRoundNoMore();
         aFullStoreLosesItsHours();
         aTownsTradeBringsInMore();

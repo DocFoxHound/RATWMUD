@@ -626,7 +626,9 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // the hands it wants less those it has, two and twice its hands at most; doc 64, Phase 13), though it couldn't post
     // a hire for them (one at a time, eight at most, its till short): short all the same, its weekly review bids its
     // wage up. Before, only a hire's slots nobody took counted, and the land's hands, short by a fifth, moved no wage.
-    // (Not one with no work for more hands. With work by the hours: the seconds' pace as it was.)
+    // (Not one with no work for more hands. A producer's by its sales as they are, without the half again of a shelf near
+    // bare: its goods go on to the shops, and its shelf always is, so it stood half again short for good, and bid its wage
+    // up for hands its sales never wanted. With work by the hours: the seconds' pace as it was.)
     if (workByHours())
     {
         std::map<std::string, int> onHires;
@@ -636,7 +638,9 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
             {
-                const int missing = std::min(wantedOf(key), 2 * n + 2) - n - onHires[key];
+                const auto* p = position(key.substr(5));
+                const int want = p && items::producerFor(p->title) ? handsWanted(key, false) : wantedOf(key);
+                const int missing = std::min(want, 2 * n + 2) - n - onHires[key];
                 if (auto& open = vacancies_[key]; missing > open)
                 {
                     if (open == 0)                   // (Open today: its day counted, as any post open.)
