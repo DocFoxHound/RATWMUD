@@ -347,9 +347,11 @@ struct Entity
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
     // Held off the next turn of its path by others' bodies (World::heldOff, doc 64's Phase 13), never saved: that turn,
-    // the nearest it has come to it, since when, and when it last walked toward it.
+    // the nearest it has come to it, since when, and when it last walked toward it; and when another body last pressed
+    // on it (World::separate), and one walking.
     Vec2 heldTurn;
     double heldNearest = 0, heldSince = 0, heldAt = -1;
+    double pressedAt = -1e9, pressedByWalkerAt = -1e9;
     Vec2 input;
     // Set by an accepted transition; UI must release/reissue held movement.
     bool transitioned = false;
@@ -1467,6 +1469,14 @@ class World
     // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
     // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
     mutable std::set<std::pair<std::string, std::string>> deadEnds_;
+    // What lies in or beyond the pocket of each dead end: its parts of the next cell, and the cells its doors open on
+    // (a cottage on the strip). A walker bound there goes in by it all the same (doc 64, Phase 13, the roads' review).
+    struct PocketEnd
+    {
+        std::set<int> parts;
+        std::set<std::string> beyond;
+    };
+    mutable std::map<std::pair<std::string, std::string>, PocketEnd> deadEndPockets_;
     const std::map<std::string, std::string>& cachedSteps(const std::string& from) const;
     std::map<std::string, Cell> cells_;
     std::map<std::string, FactionDefinition> factions_;

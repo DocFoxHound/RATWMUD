@@ -471,6 +471,62 @@ void heldAtATurn()
     expect(b.path.empty() && std::hypot(b.position.x - west.x, b.position.y - west.y) < .05,
            "and the other to the west: " + std::to_string(b.position.x) + "," + std::to_string(b.position.y));
 }
+// Queued behind one standing still (the stage review, doc 64, Phase 13): a resident making for the spot a body stands on,
+// pressed against it on the last leg of its path, waits behind it; it stepped aside every couple of seconds, from side
+// to side, for as long as the other stood there. And a player's path is its own: held at a turn by that body, the turn
+// isn't dropped from it.
+void aQueueStandsStill()
+{
+    World w;
+    quiet(w);
+    auto& a = *w.entity("npc_porter");
+    auto& b = w.addPlayer("stood", "stood");
+    b.cellId = a.cellId = "exterior";
+    b.clientWalks = true;                           // (Its page walks it: it isn't pushed along.)
+    const Vec2 spot{20.5, 13.5};
+    b.position = spot;
+    a.position = {16.5, 13.5};
+    a.path = {spot};
+    double widest = 0;
+    for (int i = 0; i < 200; ++i)
+    {
+        w.tick(.1);
+        widest = std::max(widest, std::abs(a.position.y - spot.y));
+    }
+    expect(a.path.size() == 1 && std::abs(a.position.x - (spot.x - step::BodyRadius * 2)) < .1 && widest < .05,
+           "The resident waits behind the one standing on its spot, never stepping aside: " + std::to_string(a.position.x) + "," +
+               std::to_string(a.position.y) + ", " + std::to_string(widest) + " off its line at most");
+    // Further back in the queue (two more standing between, at rest: arrived, as near the spot as they could get), more
+    // than a tile from the spot: the same.
+    auto& c = *w.entity("npc_smith");
+    auto& d = *w.entity("npc_scout");
+    c.cellId = d.cellId = "exterior";
+    c.position = {spot.x - .5, spot.y};
+    d.position = {spot.x - 1, spot.y};
+    c.path.clear();
+    d.path.clear();
+    a.position = {14.5, 13.5};
+    a.path = {spot};
+    widest = 0;
+    for (int i = 0; i < 200; ++i)
+    {
+        w.tick(.1);
+        widest = std::max(widest, std::abs(a.position.y - spot.y));
+    }
+    expect(a.path.size() == 1 && spot.x - a.position.x > 1.2 && widest < .05,
+           "Third in the queue, it waits there too: " + std::to_string(a.position.x) + "," + std::to_string(a.position.y) + ", " +
+               std::to_string(widest) + " off its line at most");
+    c.position = d.position = {30.5, 20.5};
+    auto& p = w.addPlayer("p", "p");
+    p.cellId = "exterior";
+    a.position = {30.5, 20.5};
+    a.path.clear();
+    p.position = {16.5, 13.5};
+    p.path = {spot, {20.5, 9.5}};
+    advance(w, 8);
+    expect(p.path.size() == 2 && p.path.front().x == spot.x && p.path.front().y == spot.y,
+           "A player held short of a turn keeps it: " + std::to_string(p.path.size()) + " turns left");
+}
 // A door within reach but out of sight (beside it, past the corner of its wall), on a resident's way: it walks up to
 // the door rather than trying it from where it stands, again and again, for good (doc 64, Phase 13: residents pushed
 // off their way by others' bodies were left so, beside their own front doors, and went hungry).
@@ -1746,6 +1802,7 @@ int main()
         transitions();
         bodies();
         heldAtATurn();
+        aQueueStandsStill();
         aDoorOutOfSight();
         sensesAndWeather();
         stealthPerception();
