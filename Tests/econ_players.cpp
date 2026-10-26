@@ -61,7 +61,7 @@ void Players::step()
     }
     refreshShops(day);
     if (!started_)
-        start(day);
+        start();
     for (const auto& s : scenarios_)
         act(s, day, int(quarter % Quarters));
 }
@@ -197,7 +197,7 @@ void Players::stow(const std::string& scenario, const std::string& player)
     }
 }
 
-void Players::start(std::int64_t day)
+void Players::start()
 {
     started_ = true;
     auto& society = world_.society();
@@ -344,7 +344,6 @@ void Players::start(std::int64_t day)
                 note(s, id, "joined", "", 0, society.account(id) ? society.account(id)->cash : 0);
             }
         }
-    (void)day;
 }
 
 void Players::act(const std::string& s, std::int64_t day, int quarter)

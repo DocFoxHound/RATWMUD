@@ -65,7 +65,7 @@ class Players
     std::vector<PlayerMove> moves_;
     std::map<std::string, std::map<std::string, std::pair<std::int64_t, std::int64_t>>> today_;   // Scenario -> action -> qty, coins.
 
-    void start(std::int64_t day);
+    void start();
     void end();
     void act(const std::string& scenario, std::int64_t day, int quarter);
     void refreshShops(std::int64_t day);
