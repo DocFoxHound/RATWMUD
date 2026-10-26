@@ -1443,3 +1443,116 @@ and logged in the game's ledger:
 - `test_dungeon_master.py`: the steers, scenarios, staples and funds tests became `test_the_economys_levers` and
   `test_the_monitors_measures`.
 - All suites pass.
+
+### Phase 13: feeding the city (2026-10-25)
+
+The first balancing pass found Ridgemere starving every week or so from day 21 (b0 and b1: 60 and 32 days from DEV
+with the hours on). It has 683 of the realm's 1,083 wolves, 4 bakeries and 12 inns, and no mill or farm; its oats,
+flour, vegetables, milk and fish come by caravan. This part is the supply side: the roads, the farms' stores and the
+city makers' buffers. (Children's spending, wants, the wage and the hands are other parts.)
+
+**The roads** (`RatwTrade.cpp`):
+
+- **99 at a time.** A ledger entry holds 99 at most (`Society::transfer`), and a caravan bought one sale a quality from
+  each holder, so Larkfield's fifteen farms sent the city 1,485 oats a week (15 x 99) whatever was ordered. Buying for
+  the road, handing over a standing order, selling the rest on arrival and selling the unsold back to the stores now
+  go on 99 at a time while there are goods, money and want.
+- **Short of a good, a share each.** When a caravan holds less of a good than its orders want, each order has its
+  share (`held x perWeek / all ordered`), then what is left in the order they were signed. In signing order alone, the
+  supply shops signed first had the city's oats and its inns had none on day 54.
+- **Orders agreed again** (`agreeAgain`) are raised only when the seller kept up (a quarter short at most since the
+  last agreement): a shop ran low because the town couldn't fill its order, and its order rose. They rise as far as a
+  week and a quarter of the buyer's use (`ShelfMost` at most) where that is over the 90 a week they stopped at, under a
+  city bakery's flour.
+- **The week's caravans first.** The roads due today go first, in an order of the day's (a hash with the day); taken
+  by name, with new orders' wagons counted among them, the twelve a day (`TradeCaravansADay`, unchanged) left
+  Southmeadow's road to the city without its week's caravan on the days the cap was reached. Then a road with an order
+  new today and no wagon out, with what the cap leaves, carrying only today's orders (`Caravan::orders`, saved), unless
+  its week's caravan is due within `RoundTripDays` (2, a placeholder): then the whole load. Every new order sent a full
+  week's load again, 28 trips from Larkfield to the city in 60 days, which hid the 99.
+- **A load the trader can't pay for whole** goes as much of it as it can (it was all or nothing; Larkfield's load to
+  the city had come to 18,652p).
+- **No weekly roads for food that rots within the week** (`rotsOnTheRoad`, `RoadKeeps` 7: fish, rabbit, mutton, raw
+  meat, bread, meals and porridge keep 1 to 5 days): no new orders, none in "Food between towns", and an order already
+  signed ends when it is next agreed. The city's makers buy it from its own producers and makers, the producers told of
+  what they missed (below). A faster cadence for those roads is left for later, if this isn't enough.
+- **What rots** is one rule, `Society::rots` (keeps a number of days and feeds): spoilage, the share of the roads'
+  orders a seller keeps (`shelfTarget`), and craft's keeping goods. Milk keeps a day but feeds nobody, so it never
+  rotted; it had no road share, and Larkfield's dairies held about a day of their own sales. Now they keep their share.
+
+**The city makers' buffer** (`Society::craft`, `inputStore`, the model's `lay_in`): a maker of food or flour keeps days
+of each material's use, a week for a staple (bread, porridge: `StapleInputDays`), four days otherwise (`InputDays`),
+no longer than a material that rots keeps less a day (fish, two days). It lays them in once a day, in a pass of its
+own, whatever its shelves hold (it bought only for a craft whose shelf was low, about a day's worth); what is over its
+batches' store only with what its till can spare, never on credit. A town's wants for the roads (`marketOf`) count the
+same store.
+
+**Sales missed reach the land** (`Society::missedAt`, the model's unmet asks): when a maker or supplier finds none left
+to buy in its town (not short of money, nor left by a ledger entry's 99), what it went without of a day's use is
+counted at the town's producers of the good as sales missed, once a day; so are the week's caravan's goods its town
+couldn't spare. A farm's sales a day, its next acres and its hires follow.
+
+**The fields** (`RatwFarmhands.cpp`):
+
+- **Founded on a week of sales** (`FieldFoundDays`), not the first day's, and on the running average set right for the
+  days it has run (`/ (1 - 0.7^days)`: a week's is a twelfth short). Until then a farm brings in as it always did.
+- **Its founding spring:** founded before the roads' orders on it were known, it looks at its acres again once a week
+  on a day of its own (what is sown stays sown; its hands sow the rest), and a fortnight on (`FieldTopUpDays`) its
+  store is topped up to the harvest, once ("a year's store").
+- **Planned by its food** (`grownToEat`, `plannedBy`): what feeds, or goes only into food or flour (a farm's wheat, oats
+  and vegetables); its straw, hemp, flax, hay and firewood come with them, as hides with the model's sheep. A field that
+  grows no food (an orchard's apples, for cider) is planned by all it grows. It was planned by the most sold of all
+  nine goods. Splitting the farm by crop in crafts.json is the real fix, later.
+- **Dry** when any of what it is planned by runs out, not only its first good (wheat held, its oats gone).
+- **Next year** is planned from the year's rate if that is more than the last days' (`FieldYear::rate`, a slow average
+  over the year, daily in `tendFields`; the model's `max(year_sales / YEAR, daily_sales)`): a farm whose store ran dry
+  stopped selling, its running average fell to nothing, and it planned no acres at all.
+- **Saved:** `memory.fields` has three more numbers (the year's rate, the day founded, topped up). A save from before
+  reads, its fields as founded long ago.
+
+**Tests:**
+
+- `crafting_tests`: `seasonalFields` (not on under a week of sales; the founding's average set right; the year saved,
+  and a six-number save read; more acres sown as sales grow in the founding spring; topped up a fortnight on, once);
+  `foodMakersLayIn` (a week of flour for a bakery selling sixty loaves a day, laid in with its shelf full, once a day,
+  not on credit; a smith's bronze unchanged); `fieldsPlannedByTheirFood`; `missedSalesReachTheLand`.
+- `roads_tests`: `caravansCarryWholeOrders` (over 198 bars bought from one smelter for two orders of 120, shared
+  between them within one, each over 99), `noRoadOrdersForWhatRots`.
+
+**Smoke run** (30 days from DEV's export with the hours, `--deterministic`, against b1; this part alone, the other
+parts not landed):
+
+| Day 30 (the turn of day 29) | b1 | This |
+|---|---|---|
+| Hungry / starving | 174 / 147 | 144 / 82 |
+| Days with hunger | 21, 22, 24, 29, 30 | 11, 15, 16, 30 |
+| Household Gini, the poorer half's share | 0.569, 0.138 | 0.576, 0.134 |
+| The going wage, the pace | 12p, 0.25 | 12.65p, 0.18 |
+| Work hours lost, that day and all run | 32%, 35% | 35%, 35% |
+
+- Money conserved every day; no faults. The tick: 0.072 ms against the base's 0.070 run side by side (6 days).
+- **Ridgemere's bakeries** lay in their flour: Grist & Crust went from the 5 to 8 it started with to 20 by day 5 and
+  74 by day 11, its bread at 150 to 174 of an evening. The city went hungry on day 30 (122 of its people), not from
+  day 22 (2% on day 15); the small towns had short spells on days 11 and 15-16 instead (Oakhaven, Southmeadow,
+  Frosthollow: a fifth of their people at worst).
+- **Ridgemere's oats orders** stay at 1,200-1,330 a week: they no longer rise when Larkfield falls short (b1's rose to
+  3,052). A week brings what was ordered, once (b1's repeat trips brought 2,900-7,500 a week).
+- **Southmeadow's bakery had no flour from day 3**: its two orders with Larkfield (26 a week) brought nothing after the
+  first week, and an order its seller can't fill is never raised and never signed elsewhere. In b1 the repeat trips
+  brought it some. Larkfield's mills grind too little for the city and Southmeadow both (the hands' part).
+- **The farms' founding spring** re-planned their acres up (wheat and oats ordered by the city), and city hands went
+  to sow them, lodging at the farms (Ridgemere 605-640 people on days 9-11 against 680): their credited hours doubled
+  (444 to 813 a day), still 78% lost at full banks (hires into full banks, the hands' part).
+- **Not this part's to fix, and in the way:** children still buy a bakery's flour and an inn's oats (a bigger store is
+  more for them to take, as the review warned); a wage that barely floats.
+
+**For the user:**
+
+- **Milk** keeps a day but never rots (it feeds nobody, so spoilage skips it). This part keeps it so, and gives it its
+  road share. If milk should sour, the road share should go and the city's own dairies make it.
+- **Food that rots within a week** no longer goes by the weekly roads: fish, rabbit, mutton and raw meat, but also
+  bread, meals and pies (they keep 3 to 4 days). The small towns had fresh fish, mutton and bread by road in b1. A
+  faster cadence for short roads (every `keeps - 1` days) is the alternative.
+- **`RoundTripDays`** (2) is a placeholder for how long a wagon is out.
+- **An order its seller can't fill** stays with that seller (Southmeadow's flour). Letting the buyer sign with another
+  town after a month short, or sharing a seller's goods across its roads, is a choice.

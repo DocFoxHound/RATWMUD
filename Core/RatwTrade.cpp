@@ -260,9 +260,9 @@ void World::tradeCaravans()
     society_.setStandingOrders(std::move(perWeek), std::move(costs));
     // Each road with standing orders sends its trader's caravan once a week (on a day of its own), and at once when an
     // order is new; a wagon still on the road goes again next week. Those due go first, in an order of the day's (doc 64,
-    // Phase 13: taken by name, new orders' wagons first, the cap left Southmeadow's road to the city without its week's
-    // caravan on the days it was reached), then the roads with an order new today, with what the cap leaves, carrying only
-    // today's orders, unless their week's caravan is due before a wagon would be back.
+    // Phase 13: taken by name, new orders' wagons counted among them, the cap left Southmeadow's road to the city without
+    // its week's caravan on the days it was reached), then the roads with an order new today, with what the cap leaves,
+    // carrying only today's orders, unless their week's caravan is due before a wagon would be back.
     std::map<std::pair<std::string, std::string>, std::map<std::string, int>> loads, freshLoads;
     std::map<std::pair<std::string, std::string>, std::vector<std::string>> freshIds;
     for (const auto& o : roads_.orders)
