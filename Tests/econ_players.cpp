@@ -4,10 +4,13 @@
 #include "RatwCalendar.h"
 #include "RatwCamps.h"
 #include "RatwItems.h"
+#include "RatwTogether.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -77,10 +80,55 @@ std::string sourceDrift(const std::string& source, const std::string& commit, co
     return {};
 }
 
+std::string dataDir(const std::string& source)
+{
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    if (const char* dir = std::getenv("RATW_DATA_DIR"); dir && *dir)
+        return fs::absolute(dir, ec).lexically_normal().string();
+    for (auto at = fs::current_path(ec); !ec && !at.empty(); at = at.parent_path())
+    {
+        if (fs::exists(at / "Data" / "Items" / "items.json", ec))
+            return (at / "Data").string();
+        if (at == at.parent_path())
+            break;
+    }
+    return (fs::path(source) / "Data").string();
+}
+
+std::string dataState(const std::string& dir)
+{
+    // Its checkout's describe (dirty or not, the whole tree's), and Data's own changes since its commit: none, or the
+    // SHA-1 of their diff and of its untracked files (their contents with their names), so two runs either side of a
+    // Data edit read apart.
+    const std::string vc = "git -C '" + dir + "' ";
+    if (firstLine(vc + "rev-parse --show-toplevel 2>/dev/null").empty())
+        return "data: " + dir + " (in no git checkout, so its state isn't known)";
+    const auto describe = firstLine(vc + "describe --always --dirty --abbrev=12 2>/dev/null");
+    const bool changed = !firstLine(vc + "status --porcelain --untracked-files=all -- . 2>/dev/null").empty();
+    std::string mine = "none";
+    if (changed)
+        mine = firstLine("{ " + vc + "diff --no-color --no-ext-diff --full-index HEAD -- . 2>/dev/null; cd '" + dir + "' && " + vc +
+                         "ls-files -z --others --exclude-standard -- . 2>/dev/null | xargs -0 -r sha1sum; } | sha1sum | cut -c1-12");
+    return "data: " + dir + " at " + (describe.empty() ? std::string("(no describe)") : describe) + "; its own changes since: " + mine;
+}
+
 const std::vector<std::string>& Players::names()
 {
-    static const std::vector<std::string> all{"hoard", "corner", "dump", "whale", "poach", "kill", "theft", "visit", "winter", "flood", "strike"};
+    static const std::vector<std::string> all{"hoard", "corner", "dump",  "whale",  "poach",  "kill", "theft",
+                                              "visit", "winter", "flood", "strike", "buyout", "drain", "gift"};
     return all;
+}
+
+bool Players::stapleKnown(const std::string& item)
+{
+    return items::good(item) && !Society::storePriced(items::baseOf(item));
+}
+
+std::string Players::benchOf(const std::string& body) const
+{
+    const auto found = bench_.find(body);
+    return found == bench_.end() ? std::string() : found->second;
 }
 
 bool Players::bodiesNamed(const std::string& name, Bodies& out)
@@ -128,6 +176,8 @@ void Players::step()
         leave();
     if (started_ && !ended_ && bodies_ != Bodies::Jump)
         lookAbout();
+    if (started_ && !ended_ && !bench_.empty())
+        drainLook();
     const auto quarter = std::int64_t(std::floor(world_.calendarDays() * Quarters));
     if (quarter == quarter_)
         return;
@@ -267,7 +317,10 @@ void Players::payStaff(const std::string& s, const std::function<std::int64_t(co
 
 void Players::letGo(const std::string& s)
 {
-    // Back to their own lives (RatwGameCamps.cpp's "dismissstaff"): their schedules walk them home or to work.
+    // Back to their own lives (RatwGameCamps.cpp's "dismissstaff"): their schedules walk them home or to work. (strike's
+    // month is over, whether at its own dawn or the players' last day: the review's.)
+    if (s == "strike" && std::find(scenarios_.begin(), scenarios_.end(), s) != scenarios_.end())
+        struck_ = true;
     for (const auto& id : staffOf(s))
         if (auto* npc = world_.entity(id))
         {
@@ -494,7 +547,9 @@ void Players::start(std::int64_t day)
             // its schedule, on its companion's wage. Its post stays its own. (A Hold takes into its own posts only
             // wolves without work. Companions are 4 in the realm at once and one more for each 4 players online, and
             // one stationed frees its place: a tenth of the capital's hands wants a few players over some days, done
-            // here at once.)
+            // here at once, whatever the hour: the game would ask each awake and out of its working hours.) Not those
+            // Game::whyNotJoin refuses whatever the hour: the Quickened, a wolf beaten down, one the watch wants (a
+            // warrant) or holds (custody).
             const std::string chapter = "chapter:econ-strike";
             society.openAccount(chapter);
             holds_[s].push_back(chapter);
@@ -503,9 +558,10 @@ void Players::start(std::int64_t day)
             {
                 const auto* e = world_.entity(id);
                 const auto* job = society.jobOf(id);
-                if (!e || e->dead || !e->leaderId.empty() || e->age < 16 || e->age >= Society::retireAge(id) || !job || !job->paid ||
-                    job->role != "civilian" || (life.role != "civilian" && life.role != "resident") ||
-                    world_.communityOf(life.homeCell) != capital_)
+                if (!e || e->dead || e->transient || e->downedLeft > 0 || e->state == "beaten down" || e->quickened ||
+                    world_.warrantFor(id) || world_.custodyOf(id) || !e->leaderId.empty() || e->age < 16 ||
+                    e->age >= Society::retireAge(id) || !job || !job->paid || job->role != "civilian" ||
+                    (life.role != "civilian" && life.role != "resident") || world_.communityOf(life.homeCell) != capital_)
                     continue;
                 const auto payer = society.payerOf(id, *job, e->age).account;
                 if (payer.empty() || payer == id)
@@ -528,14 +584,32 @@ void Players::start(std::int64_t day)
         }
         else if (s == "flood")
         {
-            // Ten players who land the staple and sell it to the capital's shops (fishmongers, provisioners: whatever
-            // shop buys it); its makers are the posts that land it worked in the capital or held by a wolf who lives
-            // there (its shops buy from the capital's own first: Society::buyMaterials), watched.
+            // Ten players who bring in the staple and sell it to the capital's shops (whatever shop buys it); its makers
+            // are the posts that bring it in worked in the capital or held by a wolf who lives there (its shops buy from
+            // the capital's own first: Society::buyMaterials), watched.
             for (int i = 1; i <= 10; ++i)
                 towns_[join(s, i)] = {capital_};
             findMakers();
             flooded_ = true;
         }
+        else if (s == "buyout")
+        {
+            // Five players with big purses, buying in the capital.
+            for (int i = 1; i <= 5; ++i)
+            {
+                const auto id = join(s, i);
+                fund(s, id, 30000);
+                towns_[id] = {capital_};
+            }
+        }
+        else if (s == "gift")
+        {
+            // A rich player: a month of its gifts, 100p a day to each of the 50 poorest households (or its days').
+            const auto id = join(s, 1);
+            fund(s, id, std::int64_t(GiftHouseholds) * GiftEach * (days_ > 0 ? days_ : 30));
+        }
+        else if (s == "drain")
+            drainStart();
         else if (s == "kill")
         {
             // The makers a town can't do without: its only mill's miller, the biggest farm's farmer (by its acres), and
@@ -892,22 +966,25 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
     }
     else if (s == "flood" && flooded_ && onTheHour && hour >= 8 && hour <= 18)
     {
-        // On the hour from 8 to 18 for FloodDays, what each has landed sold to the capital's shops, as many as they take
-        // (a pack of 99 landed each morning: a stand-in, made in its pack, "landed"; a player can't fish yet). Unsold,
-        // it keeps (and spoils as anyone's does). Then they stop.
+        // On the hour from 8 to 18 for FloodDays, what each has brought in sold to the capital's shops, as many as they
+        // take (its pack topped up to 99 each morning: a stand-in, made in its pack, "landed"; no player's hunt or catch
+        // is run). Unsold, it keeps: a player's goods never spoil (Society::spoil passes players by), and go to a shop
+        // as a fresh lot, however long ago they came. A shop pays a player its own normal cost (Society::offerAt; one
+        // that doesn't make it, its average paid), so buying the flood never lowers its cost; only its margin can fall.
+        // Then they stop.
         if (day >= startDay_ + FloodDays)
         {
             flooded_ = false;
             for (const auto& id : who_[s])
-                note(s, id, "stopped", FloodStaple, 0, 0);
+                note(s, id, "stopped", staple_, 0, 0);
             return;
         }
         for (const auto& id : who_[s])
         {
-            const int held = society.account(id) ? Society::stock(*society.account(id), FloodStaple) : 0;
-            if (hour == 8 && held < Lot && society.create(id, FloodStaple, Lot - held, "landed"))
-                note(s, id, "landed", FloodStaple, Lot - held, 0);
-            sellAll(s, id, FloodStaple);
+            const int held = society.account(id) ? Society::stock(*society.account(id), staple_) : 0;
+            if (hour == 8 && held < Lot && society.create(id, staple_, Lot - held, "landed"))
+                note(s, id, "landed", staple_, Lot - held, 0);
+            sellAll(s, id, staple_);
         }
     }
     else if ((s == "theft" || s == "visit") && quarter >= 9 * 4 && quarter < 21 * 4)
@@ -935,6 +1012,36 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 for (const auto& item : loot_[thief])
                     sellAll(s, thief, item);
     }
+    else if (s == "buyout" && quarter == 6 * 4 && day < startDay_ + BuyoutDays)
+    {
+        // At six each morning for its first week, every piece of food (a good that nourishes: bread, meals, smoked fish,
+        // cheese, the raw stuff a provisioner sells...) on the capital's shelves, as far as the five purses run, each
+        // player buying until its pack is full of kinds or its purse empty, then the next. Held after, never sold back.
+        auto& players = who_[s];
+        std::size_t next = 0;
+        for (const auto& shop : shops_)
+        {
+            const auto* till = shop.town == capital_ && open(shop) ? society.account(society.tillOf(shop.keeper)) : nullptr;
+            if (!till)
+                continue;
+            std::set<std::string> bases;
+            for (const auto& [item, n] : till->stock)
+                if (const auto* good = items::good(item); n > 0 && ((good && good->nourish > 0) || items::baseOf(item) == "meal"))
+                    bases.insert(items::baseOf(item));
+            for (const auto& base : bases)
+                for (; next < players.size(); ++next)
+                {
+                    const auto* pack = society.account(players[next]);
+                    if (pack && pack->cash > 0 && pack->stock.size() < MaxGoodsKinds)
+                        buyAll(s, players[next], shop, base);
+                    const auto* left = society.account(society.tillOf(shop.keeper));
+                    if (!left || Society::stockAll(*left, base) == 0)
+                        break;
+                }
+        }
+    }
+    else if (s == "gift" && quarter == 10 * 4)
+        giveAway(s);
     else if (s == "winter" && quarter == 7 * 4 && calendar::calendarAt(double(day) + .5).season == calendar::Season::Autumn)
     {
         // At seven each autumn morning (the calendar's autumn, up to the winter: Society::WinterStart), every bundle of
@@ -955,10 +1062,11 @@ void Players::end()
     flooded_ = false;
     for (const char* s : {"poach", "strike"})
         letGo(s);
-    for (const char* s : {"theft", "visit"})
+    for (const char* s : {"theft", "visit", "drain"})
         for (const auto& body : playersOf(s))
             leaving_.insert(body);
     walkers_.clear();
+    bench_.clear();
     leave();
 }
 
@@ -972,7 +1080,11 @@ void Players::leave()
             continue;
         }
         if (world_.removePlayer(*it))
-            note(it->rfind("player-theft-", 0) == 0 ? "theft" : "visit", *it, "left", "", 0, 0);
+        {
+            // (Its scenario from its name: "player-<scenario>-<n>".)
+            const auto rest = it->substr(std::min(it->size(), std::size_t(7)));
+            note(rest.substr(0, rest.find('-')), *it, "left", "", 0, 0);
+        }
         it = leaving_.erase(it);
     }
 }
@@ -984,7 +1096,7 @@ std::string Players::capitalNow() const
 
 void Players::findMakers()
 {
-    // flood's makers: the posts that land the staple worked in the capital, or held by a wolf who lives there (its
+    // flood's makers: the posts that bring in the staple worked in the capital, or held by a wolf who lives there (its
     // shops buy from the capital's own first: Society::buyMaterials), found once (the first day's block, or the start).
     const auto capital = capitalNow();
     if (makersFound_ || capital.empty())
@@ -993,27 +1105,44 @@ void Players::findMakers()
     const auto& society = world_.society();
     const auto& held = society.state().careers.positions;
     for (const auto& p : society.positions())
-        if (const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
-            producer && std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
-        {
-            const auto h = held.find(p.id);
-            const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
-            if (world_.communityOf(p.work.cell) == capital || (life && world_.communityOf(life->homeCell) == capital))
-                makers_.push_back(p.id);
-        }
+    {
+        const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
+        const bool lands = producer && std::any_of(producer->out.begin(), producer->out.end(), [this](const auto& o) { return o.first == staple_; });
+        if (!lands && !(p.role == "merchant" && crafts(p.title, staple_)))
+            continue;                               // (Neither the land's nor a shop's that makes it: raw meat is a butcher's.)
+        const auto h = held.find(p.id);
+        const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
+        if (world_.communityOf(p.work.cell) == capital || (life && world_.communityOf(life->homeCell) == capital))
+            makers_.push_back(p.id);
+    }
+}
+
+bool Players::crafts(const std::string& workLabel, const std::string& item)
+{
+    const auto* business = items::businessFor(workLabel);
+    if (!business)
+        return false;
+    for (const auto* k : items::craftsFor(business->id))
+        for (const auto& [out, n] : k->out)
+            if (out == item)
+                return true;
+    return false;
 }
 
 std::string Players::floodDay() const
 {
-    // The staple in the capital: what its shops that deal in it ask and would pay a player (each shop's own, averaged
-    // over them, before it is rounded to the penny), and what is on their shelves; its makers: the posts landing it
-    // that are held, their tills' cash and what they hold of it (their sales are in tills.csv, their hours in work.csv).
-    // From the run's first day, before they start too: the days before the flood to set it by.
+    // The staple in the capital: what its shops that deal in it and don't make it ask and would pay a player (each
+    // shop's own, averaged over them, before it is rounded to the penny: what it paid, and its margin), and what is on
+    // the shelves of all that deal in it; its makers: the posts bringing it in or making it that are held, their tills'
+    // cash and what they hold of it (their sales are in tills.csv, their hours in work.csv). From the run's first day,
+    // before they start too: the days before the flood to set it by. (A shop that makes it is priced at its own cost of
+    // making it, worked out once a day when it is first asked for and kept for the day: asked here at midnight, that
+    // would be the day's for the game too, so it isn't asked. One that doesn't is priced at what it paid, whenever asked.)
     const auto& society = world_.society();
     const auto capital = capitalNow();
     const auto& posts = society.state().careers.positions;
     double asked = 0, offered = 0;
-    int shops = 0;
+    int shops = 0, making = 0;
     std::int64_t shelves = 0;
     std::set<std::string> tills;
     for (const auto& p : society.positions())
@@ -1023,13 +1152,18 @@ std::string Players::floodDay() const
         if (held == posts.end() || shop.town != capital || !open(shop))
             continue;
         const auto deals = society.wares(shop.keeper);
-        if (std::find(deals.begin(), deals.end(), FloodStaple) == deals.end())
+        if (std::find(deals.begin(), deals.end(), staple_) == deals.end())
             continue;
-        asked += society.priceAt(shop.keeper, FloodStaple);
-        offered += society.offerAt(shop.keeper, FloodStaple);
-        ++shops;
+        if (const auto* spec = society.spec(shop.keeper); spec && crafts(spec->workLabel, staple_))
+            ++making;
+        else
+        {
+            asked += society.priceAt(shop.keeper, staple_);
+            offered += society.offerAt(shop.keeper, staple_);
+            ++shops;
+        }
         if (const auto* till = tills.insert(society.tillOf(shop.keeper)).second ? society.account(society.tillOf(shop.keeper)) : nullptr)
-            shelves += Society::stockAll(*till, FloodStaple);
+            shelves += Society::stockAll(*till, staple_);
     }
     int held = 0;
     std::int64_t cash = 0, stock = 0;
@@ -1039,10 +1173,11 @@ std::string Players::floodDay() const
             if (const auto* e = world_.entity(found->second.holder); e && !e->dead)
                 ++held;
         if (const auto* till = society.account("till:" + post))
-            cash += till->cash, stock += Society::stockAll(*till, FloodStaple);
+            cash += till->cash, stock += Society::stockAll(*till, staple_);
     }
     std::ostringstream out;
-    out << ",\"selling\":" << (flooded_ ? "true" : "false") << ",\"shops\":" << shops << ",\"asked\":" << (shops ? asked / shops : 0.)
+    out << ",\"staple\":" << quoted(staple_) << ",\"selling\":" << (flooded_ ? "true" : "false") << ",\"shops\":" << shops
+        << ",\"shops_making\":" << making << ",\"asked\":" << (shops ? asked / shops : 0.)
         << ",\"offered\":" << (shops ? offered / shops : 0.) << ",\"shelves\":" << shelves << ",\"makers\":" << makers_.size()
         << ",\"makers_held\":" << held << ",\"makers_cash\":" << cash << ",\"makers_stock\":" << stock;
     return out.str();
@@ -1065,6 +1200,143 @@ std::string Players::strikeDay() const
     std::ostringstream out;
     out << ",\"taken\":" << taken_.size() << ",\"kept_post\":" << kept << ",\"let_go\":" << (struck_ ? "true" : "false")
         << ",\"going\":" << society.goingRate(capital) << ",\"open\":" << open;
+    return out.str();
+}
+
+void Players::giveAway(const std::string& s)
+{
+    // At ten each morning, GiftEach pennies to each of the GiftHouseholds poorest households of the realm (by what their
+    // members hold, as econ_watch's measures count a household: a home; each wolf of a barracks or lodgings its own),
+    // into the purse of its first grown member who isn't in the watch's hands, while the giver's purse lasts. As the
+    // game gives (Game::gifted: Society::shift, kind "a gift"; at most 10,000p a give), but with no body walking up to
+    // each (a stand-in: the game wants the two face to face), and without the warmth a gift brings.
+    auto& society = world_.society();
+    const auto& giver = who_[s].front();
+    std::map<std::string, int> grownAt;
+    for (const auto& [id, life] : society.state().residents)
+        if (const auto* e = world_.entity(id); e && !e->dead && e->age >= 16 && !life.homeCell.empty())
+            ++grownAt[life.homeCell];
+    std::map<std::string, std::pair<std::int64_t, std::string>> homes;   // Household -> its money, and whom to give to.
+    for (const auto& [id, life] : society.state().residents)
+    {
+        const auto* e = world_.entity(id);
+        if (!e || e->dead)
+            continue;
+        const bool shared = !life.homeCell.empty() && (grownAt[life.homeCell] > 8 || Society::communalHome(life.homeCell));
+        auto& home = homes[life.homeCell.empty() || shared ? id : life.homeCell];
+        home.first += society.account(id) ? society.account(id)->cash : 0;
+        if (home.second.empty() && e->age >= 16 && !world_.custodyOf(id))
+            home.second = id;                       // (Residents in id order: the first grown.)
+    }
+    std::vector<std::pair<std::int64_t, std::string>> poorest;
+    for (const auto& [home, h] : homes)
+        if (!h.second.empty())
+            poorest.push_back({h.first, h.second});
+    std::sort(poorest.begin(), poorest.end());
+    for (std::size_t i = 0; i < poorest.size() && i < std::size_t(GiftHouseholds); ++i)
+    {
+        const auto coins = std::min<std::int64_t>(GiftEach, society.account(giver) ? society.account(giver)->cash : 0);
+        if (coins <= 0 || !society.shift(giver, poorest[i].second, "", 0, coins, "a gift"))
+            break;
+        note(s, giver, "gave", poorest[i].second, 1, coins);
+    }
+}
+
+void Players::drainStart()
+{
+    // The town (not the capital, whose benches would want a hundred bodies and more) with the most makers at a bench, as
+    // World::residentWorkAt has them: a wolf whose work is a business that crafts (not the land's), at its post at its
+    // post's own task; so not a shop's keeper, whose task there is to trade. Two players at each (the workshop's `most`
+    // is 3, its maker one of them), arriving at its work spot, as a player walks up to a bench.
+    auto& society = world_.society();
+    std::map<std::string, std::vector<std::string>> byTown;
+    for (const auto& [id, life] : society.state().residents)
+    {
+        const auto* e = world_.entity(id);
+        const auto* spec = society.spec(id);
+        const auto* job = society.jobOf(id);
+        const auto* business = spec ? items::businessFor(spec->workLabel) : nullptr;
+        if (!e || e->dead || !job || life.role == "merchant" || !business || items::craftsFor(business->id).empty() ||
+            items::producerFor(spec->workLabel))
+            continue;
+        if (const auto town = world_.communityOf(spec->work.cell); !town.empty() && town != capital_)
+            byTown[town].push_back(id);
+    }
+    for (const auto& [town, makers] : byTown)
+        if (makers.size() > benches_.size())
+            drainTown_ = town, benches_ = makers;
+    int n = 0;
+    for (const auto& maker : benches_)
+    {
+        const auto* spec = society.spec(maker);
+        for (int k = 0; k < 2; ++k)
+        {
+            const auto id = "player-drain-" + std::to_string(++n);
+            world_.addPlayer(id, "Hand " + std::to_string(n), spec->work.cell, {spec->work.x + (k ? .8 : -.8), spec->work.y});
+            who_["drain"].push_back(id);
+            towns_[id] = {drainTown_};
+            bench_[id] = maker;
+            note("drain", id, "joined", maker, 0, society.account(id) ? society.account(id)->cash : 0);
+        }
+    }
+}
+
+void Players::drainLook()
+{
+    // Twice a world second, each at its bench: working beside its maker, it keeps at it (World::noteActive: a player
+    // doing its part each beat, or the beat isn't paid); not, it asks to once a quarter of an hour (World::helpAtWork:
+    // the maker at its bench, the till able to pay a hand, a place free), walking back to the bench first if it has been
+    // pushed off. They work any hour their makers do.
+    const double now = world_.time();
+    if (drainLooked_ >= 0 && now - drainLooked_ < LookEvery)
+        return;
+    drainLooked_ = now;
+    const auto quarter = std::int64_t(std::floor(world_.calendarDays() * Quarters));
+    const bool ask = quarter != drainQuarter_;
+    drainQuarter_ = quarter;
+    const double reach = together::rules().lendTiles;
+    for (const auto& [body, maker] : bench_)
+    {
+        const auto* me = world_.entity(body);
+        const auto* m = world_.entity(maker);
+        if (!me || !m || m->dead || world_.custodyOf(body))
+            continue;
+        if (const auto* j = world_.jointOf(body); j && j->target == maker)
+        {
+            world_.noteActive(body);
+            continue;
+        }
+        if (!ask || !world_.residentWorkAt(maker))
+            continue;
+        if (m->cellId != me->cellId || apart(m->position, me->position) > reach)
+        {
+            const auto* spec = world_.society().spec(maker);
+            if (spec && spec->work.cell == me->cellId)
+                world_.moveTo(body, spec->work.x, spec->work.y);
+            continue;
+        }
+        if (world_.helpAtWork(body, maker).ok)
+            note("drain", body, "set to work", maker, 1, 0);
+    }
+}
+
+std::string Players::drainDay() const
+{
+    // Its town, its benches and bodies; and its hires (the odd jobs its businesses post by the week: slots, and those
+    // taken by its wolves), the work the players would take if they could (they can't: a player takes no odd job).
+    const auto& society = world_.society();
+    int slots = 0, taken = 0;
+    const auto day = std::int64_t(std::floor(world_.calendarDays()));
+    for (const auto& j : society.oddJobs())
+        if (j.community == drainTown_ && j.until >= day - 1)
+            slots += j.slots, taken += int(j.stage.size());
+    int working = 0;
+    for (const auto& [body, maker] : bench_)
+        if (const auto* j = world_.jointOf(body); j && j->target == maker)
+            ++working;
+    std::ostringstream out;
+    out << ",\"town\":" << quoted(drainTown_) << ",\"benches\":" << benches_.size() << ",\"working\":" << working
+        << ",\"hire_slots\":" << slots << ",\"hire_taken\":" << taken;
     return out.str();
 }
 
@@ -1113,6 +1385,31 @@ std::string Players::takeDay()
         {
             findMakers();
             out << floodDay();
+        }
+        if (s == "drain")
+            out << drainDay();
+        if (s == "buyout")
+        {
+            // The food it holds (pieces), and on the capital's shelves at the day's end (pieces, every shop's till once).
+            std::int64_t held = 0, shelves = 0;
+            const auto food = [](const EconomyAccount& a) {
+                std::int64_t n = 0;
+                for (const auto& [item, k] : a.stock)
+                    if (const auto* good = items::good(item); (good && good->nourish > 0) || items::baseOf(item) == "meal")
+                        n += k;
+                return n;
+            };
+            for (const auto& id : players)
+                if (const auto* a = society.account(id))
+                    held += food(*a);
+            std::set<std::string> tills;
+            for (const auto& p : society.positions())
+                if (const auto h = p.role == "merchant" ? society.state().careers.positions.find(p.id) : society.state().careers.positions.end();
+                    h != society.state().careers.positions.end() && !h->second.holder.empty() && world_.communityOf(p.work.cell) == capitalNow())
+                    if (const auto till = society.tillOf(h->second.holder); tills.insert(till).second)
+                        if (const auto* a = society.account(till))
+                            shelves += food(*a);
+            out << ",\"food_held\":" << held << ",\"capital_shelves\":" << shelves;
         }
         if (s == "kill")
         {

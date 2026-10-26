@@ -4,22 +4,26 @@
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
+//              [--players-staple ITEM]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
 // --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
 // it, the game's old pace (each craft's `seconds` as its hours).
 // --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
-// poach, kill, theft, visit, winter, flood, strike. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2;
+// poach, kill, theft, visit, winter, flood, strike, buyout, drain, gift. They act from --players-from DAY (7 unless
+// asked: the realm's money stands from day 2;
 // a run that starts later starts them on its first day, and says so) for --players-days N days from when they start (to
 // the run's end unless asked), as the game lets players act, with money from the capital's treasury by the ledger; then
 // they leave (their bodies out of the world, a Hold's hands back to their lives). --players-bodies: how theft's and
 // visit's bodies get about: walk (unless asked: up to each mark, as a player walks), still (where they arrived), or jump
-// (World::teleport beside each mark, a Dungeon Master's move: the first runs', to compare).
+// (World::teleport beside each mark, a Dungeon Master's move: the first runs', to compare). --players-staple: what
+// flood sells (raw_meat unless asked).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
-// changed since (not the docs), or a note if that can't be told.
+// changed since (not the docs), or a note if that can't be told; and the Data it reads, with its git state now (a line
+// to read, not a warning: Data is read at run time).
 // OUT_DIR gets, for each game day (a day's record, N, made at its midnight: the state at the end of day N-1 and what
 // happened in it; the run's last, "end", where it stops, with no rows of its own in the per-day CSVs):
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
@@ -131,6 +135,7 @@ std::string runStamp(int argc, char** argv)
     out << "\nbuilt from: " << RATW_BUILT_SOURCE << " at " << RATW_BUILT_DESCRIBE << " (" << RATW_BUILT_COMMIT << ")";
     if (const auto drift = econ::sourceDrift(RATW_BUILT_SOURCE, RATW_BUILT_COMMIT, RATW_BUILT_CODE, RATW_BUILT_PATHS); !drift.empty())
         out << "\n" << drift;
+    out << "\n" << econ::dataState(econ::dataDir(RATW_SOURCE_DIR));   // (The Data it reads, as it stands now: the review's.)
     struct stat built{};
     char when[64] = "(unknown)";
     if (::stat("/proc/self/exe", &built) == 0)
@@ -204,7 +209,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
-                     "                  [--players-bodies walk|still|jump]\n";
+                     "                  [--players-bodies walk|still|jump] [--players-staple ITEM]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -216,6 +221,7 @@ int main(int argc, char** argv)
     std::vector<std::string> scenarios;             // --players (doc 64, Phase 13).
     std::int64_t playersFrom = 7, playersDays = 0;
     auto bodies = econ::Players::Bodies::Walk;
+    std::string staple = econ::Players::DefaultStaple;
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -251,6 +257,15 @@ int main(int argc, char** argv)
             if (!econ::Players::bodiesNamed(argv[++i], bodies))
             {
                 std::cerr << "--players-bodies is walk, still or jump, not " << argv[i] << "\n";
+                return 2;
+            }
+        }
+        else if (std::string(argv[i]) == "--players-staple" && i + 1 < argc)
+        {
+            staple = argv[++i];
+            if (!econ::Players::stapleKnown(staple))
+            {
+                std::cerr << "--players-staple is a good of the catalogue its sellers price (not meal, herbs or sword), not " << staple << "\n";
                 return 2;
             }
         }
@@ -314,7 +329,10 @@ int main(int argc, char** argv)
     server.society().keepBriefs(true);
     std::unique_ptr<econ::Players> players;
     if (!scenarios.empty())
+    {
         players = std::make_unique<econ::Players>(server, scenarios, playersFrom, playersDays, bodies);
+        players->setStaple(staple);
+    }
 
     std::ofstream daysOut(out / "days.jsonl"), flowsOut(out / "flows.csv"), wagesOut(out / "wages.csv"),
         materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),

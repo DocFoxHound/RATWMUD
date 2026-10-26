@@ -2,11 +2,12 @@
 // Players who push (Docs/Design/64-economy-migration.md, Phase 13): econ_watch's scripted players, each scenario a thing
 // players typically do that could upset the economy. They act as the game lets a player act, through its own entry
 // points (Society::addPlayer, Society::trade for a shop, World::addPlayer and World::moveTo for a body, World::steal,
-// World::setDead, World::removePlayer), and every coin they have comes from the capital's treasury by a logged
-// transfer, never made. Three stand-ins, said where they are: hoard's yield is the residents' outworkers'
-// (World::harvestAt), not a player's forage and hunt; the whale's chests are accounts of its own, free (no lodging, no
-// rent); flood's catch is made in its packs (players can't fish yet).
-// Deterministic: no clock, no unseeded chance.
+// World::helpAtWork at a bench, World::setDead, World::removePlayer), and every coin they have comes from the capital's
+// treasury by a logged transfer, never made. The stand-ins, said where they are: hoard's yield is the residents'
+// outworkers' (World::harvestAt), not a player's forage and hunt; the whale's chests are accounts of its own, free (no
+// lodging, no rent); flood's catch is made in its packs; gift's coins go by Society::shift as Game::gifted's do, with
+// no body walking up to each household. A player's own goods never spoil (Society::spoil passes players by), as in the
+// game. Deterministic: no clock, no unseeded chance.
 //
 //   hoard   20 players hunt and gather near the capital and sell what they bring in, keeping every coin (the mint's case)
 //   corner  a rich player buys up the capital's bread, flour and meals every morning for a week, then sells them back
@@ -17,15 +18,22 @@
 //   theft   5 thieves pick the capital's purses every quarter of an hour and fence what isn't coin
 //   visit   5 players go about the capital as the thieves do and take nothing (theft's control: bodies on the stage)
 //   winter  10 players buy all the firewood they can each autumn morning and keep it (start near day 250: --from 6006)
-//   flood   10 players sell fish to the capital's shops every hour of the day for two weeks, as many as they take, then
-//           stop (does the price come back, and do the capital's fishers keep their living?)
+//   flood   10 players sell a staple (raw meat unless asked: --players-staple) to the capital's shops on the hour from 8
+//           to 18 for two weeks, as many as they take, then stop (does the price come back, and do the capital's makers
+//           of it keep their living?)
 //   strike  players' Holds take a tenth of the capital's hands from their work for a month, as stationed companions, then
 //           let them go (do hires and wages answer, and does the town come back?)
+//   buyout  5 players with 30,000p each buy every piece of food on the capital's shelves each morning for a week, as far
+//           as their purses run, and hold it (a food corner: unlike corner's, all its food, and never sold back)
+//   drain   players take every place at every bench in a town (World::helpAtWork: two beside each maker, the most a
+//           bench takes) each working day, paid from its till (do the town's own hands lose their work?)
+//   gift    a rich player gives 100p a day to each of the realm's 50 poorest households (does it lift prices, and is
+//           every coin still there?)
 //
 // theft's and visit's bodies walk (World::moveTo up to a mark in the place they're in, acting on arrival; on into the
 // next of the capital's places on the hour, or when theirs is empty), stand still where they arrived (a thief trying a
 // purse that comes within reach, each purse once a day), or jump (World::teleport beside each mark: a Dungeon Master's
-// move, not a player's; the first runs', kept to compare): Bodies.
+// move, not a player's; the first runs', kept to compare): Bodies. drain's stand at their benches.
 #include "RatwWorld.h"
 
 #include <cstdint>
@@ -52,6 +60,13 @@ struct PlayerMove
 // is still what `source` holds. "" when it is; else a line to print: a warning when the code has changed, or a note
 // when it can't be told (built from no git checkout, or no git or no such commit here now). A docs edit is no change.
 std::string sourceDrift(const std::string& source, const std::string& commit, const std::string& code, const std::string& paths);
+// The Data econ_watch reads at run time (the catalogue's rule, RatwItems.cpp's itemsDir: RATW_DATA_DIR, else the
+// working directory or one above it with Data/Items/items.json, else `source`'s Data); and run.txt's line on it: where,
+// and its state in version control as the run found it (the checkout's describe, dirty or not, and the SHA-1 of the
+// changes to it since its commit, its untracked files' names too), or that it is in no checkout. A line to read, never
+// a warning: Data is read at run time, not built in.
+std::string dataDir(const std::string& source);
+std::string dataState(const std::string& dir);
 
 class Players
 {
@@ -65,7 +80,14 @@ class Players
     static const std::vector<std::string>& names();          // The scenarios there are (they act in the order asked).
     static bool bodiesNamed(const std::string& name, Bodies& out);   // "walk", "still", "jump".
     static constexpr int FloodDays = 14, StrikeDays = 28;    // flood's selling, strike's month (from when they start).
-    static constexpr const char* FloodStaple = "fish";
+    static constexpr int BuyoutDays = 7;                     // buyout's buying week (it holds what it bought after).
+    static constexpr int GiftHouseholds = 50, GiftEach = 100;   // gift's poorest households, and its pennies to each a day.
+    // flood's staple unless asked (--players-staple): several pennies a piece, bought by the capital's shops (its
+    // provisioners, butchers and inns) and brought in by its own hunters. Fish sat at the penny's floor at a 12p day
+    // (Society::pennies: 1p at least), so its price could never be seen to fall.
+    static constexpr const char* DefaultStaple = "raw_meat";
+    // A staple flood may sell: a good of the catalogue priced by its sellers (not by the stores: meals, herbs, swords).
+    static bool stapleKnown(const std::string& item);
     // The scenarios asked for, from `fromDay` (or the run's first day, if later) for `days` days counted from when they
     // start (0: to the run's end).
     Players(World& world, std::vector<std::string> scenarios, std::int64_t fromDay, std::int64_t days, Bodies bodies = Bodies::Walk);
@@ -81,6 +103,10 @@ class Players
     const std::vector<std::string>& staffOf(const std::string& scenario) const;      // poach's and strike's hands, held now.
     std::string markOf(const std::string& body) const;       // Whom a walking body is going up to ("": nobody).
     int aims() const { return aims_; }                       // World::moveTo calls the bodies have made (a test's count).
+    void setStaple(const std::string& item) { staple_ = item; }   // flood's (before they start; stapleKnown).
+    const std::string& staple() const { return staple_; }
+    const std::string& drainTown() const { return drainTown_; }   // The town drain works in ("": not yet).
+    std::string benchOf(const std::string& body) const;           // The maker a drain body works beside.
 
   private:
     struct Shop
@@ -121,8 +147,14 @@ class Players
     std::vector<std::string> taken_;                         // strike's hands, all it took (held or let go).
     bool struck_ = false, flooded_ = false;                  // strike's month over (its hands let go); flood's selling.
     bool makersFound_ = false;
+    std::string staple_ = DefaultStaple;                     // flood's staple.
     std::vector<std::string> posts_;                         // kill's posts left empty.
-    std::vector<std::string> makers_;                        // flood's makers: the capital's posts that land the staple.
+    std::vector<std::string> makers_;                        // flood's makers: the capital's posts that bring in the staple.
+    std::string drainTown_;                                  // drain's town,
+    std::vector<std::string> benches_;                       // its makers at a bench (a business that crafts),
+    std::map<std::string, std::string> bench_;               // and its bodies -> the maker each works beside.
+    double drainLooked_ = -1;                                // World seconds drain's bodies last looked about them,
+    std::int64_t drainQuarter_ = -1;                         // and the quarter they last asked to work (once a quarter).
     std::vector<PlayerMove> moves_;
     std::map<std::string, std::map<std::string, std::pair<std::int64_t, std::int64_t>>> today_;   // Scenario -> action -> qty, coins.
 
@@ -153,7 +185,12 @@ class Players
     void leave();                                   // The bodies out of the world (World::removePlayer), when they may.
     std::string capitalNow() const;                 // The capital (before they start, the society's).
     void findMakers();                              // flood's makers, once the capital is known.
+    static bool crafts(const std::string& workLabel, const std::string& item);   // Its business makes it (crafts.json).
     std::string floodDay() const;                   // flood's block: the staple's price in the capital, its makers.
     std::string strikeDay() const;                  // strike's block: its hands, and the town's going rate.
+    void drainStart();                              // drain's town, its benches, and a body for each place at them.
+    void drainLook();                               // drain's bodies at their benches (World::helpAtWork), each look.
+    std::string drainDay() const;                   // drain's block: its town's benches, and its hands' hires.
+    void giveAway(const std::string& scenario);     // gift's day: to the poorest households.
 };
 } // namespace ratw::econ

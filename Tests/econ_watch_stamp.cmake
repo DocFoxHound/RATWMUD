@@ -4,8 +4,9 @@
 # then. A dirty tree's describe carries its changes' SHA-1 (`git diff HEAD`), so two builds from different uncommitted
 # changes don't read alike. RATW_BUILT_CODE is the SHA-1 of the changes from the commit to the code econ_watch is built
 # from (RATW_BUILT_PATHS); econ_watch works the same out at run time against the commit and warns when the two differ
-# (econ::sourceDrift: a docs edit, or a docs-only commit since, is no change). Not a git checkout: "(unknown)".
-set(paths CMakeLists.txt Core Tests)
+# (econ::sourceDrift: a docs edit, or a docs-only commit since, is no change). Not a git checkout: "(unknown)". Of
+# Tests, only econ_watch's own files: another suite's edit isn't econ_watch's (the review's).
+set(paths CMakeLists.txt Core Tests/econ_watch.cpp Tests/econ_players.h Tests/econ_players.cpp Tests/econ_watch_stamp.cmake)
 execute_process(COMMAND git -C "${SOURCE}" describe --always --dirty --abbrev=12
                 OUTPUT_VARIABLE describe OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 execute_process(COMMAND git -C "${SOURCE}" log -1 --format=%H
