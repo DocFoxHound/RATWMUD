@@ -1798,6 +1798,9 @@ class World
     // the trader whose caravan brings it: brought toward a week of the buyer's use, at the selling town's price now.
     // Returns how many a week it was before.
     int agreeAgain(StandingOrder& o, const Town& from);
+    // What each town had to spare of each good at the day's trade (tradeCaravans), over what its own makers want and the
+    // roads' orders promise: as far as an order with it may be raised until the next (doc 64, Phase 13). Not saved.
+    std::map<std::pair<std::string, std::string>, int> canSpare_;
     // Food for the road for one going from `town` to `toCell` and back, paid by `payer` up to `budget`: a meal for every
     // ten places of the way, two at least, bought at its town's shops; what can't be bought, the money for it. Returns
     // what it cost. Never made.

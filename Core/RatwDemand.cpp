@@ -126,22 +126,37 @@ void Society::spoil(std::int64_t day)
                 return double(m->second);
         return 0.;
     };
+    // (And a field not yet founded, the day's into its sales since its first: what it is founded on, doc 64, Phase 13.)
+    const auto sold = [&](const std::string& till, const std::string& item, double n) {
+        sellRate_[till][item] += .3 * n;
+        if (fieldsOn() && !state_.memory.fields.count(till) && fieldTill(till))
+            fieldSales_[till].sold[item] += n;
+    };
     for (const auto& [till, goods] : soldToday_)
         for (const auto& [item, n] : goods)
         {
             const auto out = ranOut_.find(till);
             const auto* shelves = account(till);
             const bool soldOut = out != ranOut_.end() && out->second.count(item) && shelves && stockAll(*shelves, item) == 0;
-            sellRate_[till][item] += .3 * (n + std::max(soldOut ? std::max(1., n * .5) : 0., missed(till, item)));
+            sold(till, item, n + std::max(soldOut ? std::max(1., n * .5) : 0., missed(till, item)));
         }
     for (const auto& [till, goods] : missedToday_)
         for (const auto& [item, n] : goods)
-            if (const auto sold = soldToday_.find(till); sold == soldToday_.end() || !sold->second.count(item))
-                sellRate_[till][item] += .3 * n;
+            if (const auto today = soldToday_.find(till); today == soldToday_.end() || !today->second.count(item))
+                sold(till, item, n);
     soldToday_.clear();
     ranOut_.clear();
     for (const auto& [till, goods] : sellRate_)
-        ++salesDays_[till];                         // (Its days of sales in the average: a field's founding, doc 64, Phase 13.)
+        ++salesDays_[till];                         // (Its days of sales in the average: a field's rates, doc 64, Phase 13.)
+    for (auto it = fieldSales_.begin(); it != fieldSales_.end();)
+        if (state_.memory.fields.count(it->first))
+            it = fieldSales_.erase(it);             // (Founded.)
+        else
+        {
+            if (++it->second.days % 7 == 0)
+                it->second.weeks = it->second.sold;
+            ++it;
+        }
     missedToday_.clear();
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.

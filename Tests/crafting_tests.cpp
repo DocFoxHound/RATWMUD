@@ -298,17 +298,27 @@ void seasonalFields()
     // (Its fields all sown, the farmer is free to take a hire, as a hand whose business has no work for it: Phase 13.)
     const auto idle = [&] { return s.idleHand("farmer", s.payerOf("farmer", *s.jobOf("farmer"), 30)); };
     expect(idle(), "its fields all sown, the farmer is free for a hire");
-    // (Eight days of the running average: 1 - 0.7^8 of its sales a day.)
-    const double rate = founded->second.rate, need = s.fieldNeed(till, *farm);
-    expect(need > 0 && std::abs(rate - need / (1 - std::pow(.7, 8))) < 1e-9, "planned by its sales a day, set right for a week's average: " +
-                                                                                  std::to_string(rate) + " against " + std::to_string(need));
+    // Planned by its first whole week of sales, a day: the test's six days of ten, each its last (half again for the
+    // buyers who came after), and the few the mill bought on the sixth; two to a yield. (The running average on the
+    // day, set right for its days, had a week's sales of 60.)
+    const double rate = founded->second.rate;
+    const auto wheat = std::find_if(farm->out.begin(), farm->out.end(), [](const auto& o) { return o.first == "wheat"; });
+    const int perYield = wheat == farm->out.end() ? 0 : wheat->second;
+    expect(perYield == 2 && rate * 7 * perYield >= 6 * 15 && rate * 7 * perYield <= 6 * 15 + 6 && founded->second.month == rate &&
+               founded->second.monthDays == 7,
+           "planned by its first week's sales a day: " + std::to_string(rate * 7 * perYield) + " in its week");
     // (The mill buys as the wheat comes in: what was made counts.)
     expect(held(s, "farmer", "wheat") + held(s, "miller", "wheat") > 100, "with a store to the harvest: " + std::to_string(held(s, "farmer", "wheat")));
     const auto saved = wire::readSociety(wire::society(s.state())).memory.fields.at(till);
     expect(std::abs(saved.rate - rate) < 1e-6 * std::max(1., rate) && saved.founded == 10 && !saved.toppedUp &&
-               std::abs(saved.acres - founded->second.acres) < 1e-6 * std::max(1., saved.acres),
-           "its year is saved");
+               std::abs(saved.acres - founded->second.acres) < 1e-6 * std::max(1., saved.acres) &&
+               std::abs(saved.month - rate) < 1e-6 * std::max(1., rate) && saved.monthDays == 7,
+           "its year is saved, its month's rate with it");
     auto older = wire::society(s.state());
+    older.find("memory")->find("fields")->find(till)->items().resize(9);
+    const auto nine = wire::readSociety(older).memory.fields.at(till);
+    expect(std::abs(nine.rate - rate) < 1e-6 * std::max(1., rate) && nine.founded == 10 && nine.month == 0 && nine.monthDays == 0,
+           "one saved before its month's rate reads, that rate to begin with its sales");
     older.find("memory")->find("fields")->find(till)->items().resize(6);
     const auto old = wire::readSociety(older).memory.fields.at(till);
     expect(old.acres > 0 && old.rate == 0 && old.founded == -1 && old.toppedUp, "and one saved before Phase 13 reads, as founded long ago");
@@ -322,20 +332,21 @@ void seasonalFields()
         expect(s.sale(till, "miller", "wheat", 30, 1, "test: the mill's order") && s.shift(till, "miller", "", 0, 30, "test: the mill's takings"),
                "the mill buys more of the farm's wheat");
     }
-    const auto& grown = s.state().memory.fields.at(till);
-    expect(grown.acres > first && grown.sown > sown && grown.toHarvest > sown,
-           "its sales grown, its founding spring sows more: " + std::to_string(grown.acres) + " acres, from " + std::to_string(first));
+    // (Its year read afresh each time: set() restores the society, and a reference into the old one's fields is gone.)
+    const auto grown = [&] { return s.state().memory.fields.at(till); };
+    expect(grown().acres > first && grown().sown > sown && grown().toHarvest > sown,
+           "its sales grown, its founding spring sows more: " + std::to_string(grown().acres) + " acres, from " + std::to_string(first));
     set(s, "farmer", "wheat", 0);
     set(s, "miller", "wheat", 0);
     s.takeJournal();
     double fortnight = 25 + 10. / 24;
     work(s, 600, fortnight);
-    expect(grown.toppedUp && count(s.takeJournal(), "a year's store", "wheat") > 0, "and a fortnight on its store is topped up, once");
+    expect(grown().toppedUp && count(s.takeJournal(), "a year's store", "wheat") > 0, "and a fortnight on its store is topped up, once");
     double later = 26 + 10. / 24;
     set(s, "farmer", "wheat", 0);
     work(s, 600, later);
     expect(count(s.takeJournal(), "a year's store", "wheat") == 0, "only once");
-    const double acres = grown.acres;
+    const double acres = grown().acres;
     set(s, "farmer", "wheat", 0);
     set(s, "miller", "wheat", 0);
     s.takeJournal();
@@ -1170,6 +1181,170 @@ void missedSalesReachTheLand()
     expect(missed > 0 && missed <= .3 * std::ceil(use) + 1e-9, "a day's use of wheat the mill went without is a sale the farm missed: " +
                                                                    std::to_string(missed) + " (the mill uses " + std::to_string(use) + ")");
     expect(s.conserved(), "money stays conserved");
+    // A farm that sold its last that day and was told of the mill's want besides counts the buyers it missed or its
+    // sold-out half again, the more, not both: they are the same buyers (the missed sales went in with its sales, and
+    // the half again was laid on them too).
+    auto t = farmTown();
+    const auto field = t.tillOf("farmer");
+    set(t, "farmer", "wheat", 4);
+    expect(t.sale(field, "miller", "wheat", 4, 1, "test: its last") && t.shift(field, "miller", "", 0, 4, "test: the mill's takings"),
+           "the mill buys the farm's last four");
+    t.missedAt("town", "wheat", 10);
+    t.spoil(1);
+    const auto* after = t.sellRates(field);
+    const double counted = after && after->count("wheat") ? after->at("wheat") : 0;
+    expect(std::abs(counted - .3 * (4 + 10)) < 1e-9, "four sold and ten missed: " + std::to_string(counted / .3) + " counted");
+}
+
+// A sale missed is counted when the town's sellers have none to sell, as they keep back for themselves (doc 64, Phase
+// 13). The mill, its till empty, lays in no wheat though the farm has some: no sale missed, and the day isn't spent on
+// it; later that day, its till filled and the farm's barn empty, its want is counted. And a workshop's store of what it
+// works with itself (an ironworks' charcoal, its batches' worth) isn't for sale: a smith that finds only that missed it.
+void missedOnlyWhenNoneLeft()
+{
+    auto s = farmTown();
+    const auto mill = s.tillOf("miller"), farm = s.tillOf("farmer");
+    for (std::int64_t d = 1; d <= 3; ++d)
+    {
+        set(s, "miller", "flour", 40);
+        expect(s.sale(mill, "stall", "flour", 40, 1, "test: the stall's flour") && s.shift(mill, "stall", "", 0, 40, "test: the stall's takings"),
+               "the stall buys the mill's flour");
+        s.spoil(d);
+    }
+    set(s, "farmer", "wheat", 200);
+    set(s, "miller", "wheat", 0);
+    set(s, "miller", "flour", Society::ShelfMost);  // (Its shelf full: it lays in, and makes nothing.)
+    set(s, "stall", "flour", Society::SuppliesKept);
+    set(s, "baker", "bread", Society::ShelfMost);    // (Nor the baker buying the mill's flour.)
+    for (const auto& who : {mill, std::string("miller")})   // (Its till and its owner, who would top it up.)
+        if (const auto cash = s.account(who)->cash; cash > 0)
+            s.shift(who, "treasury", "", 0, cash, "test: the till emptied");
+    auto bodies = atWork(s);
+    bodies["farmer"] = {"farmhouse", 2.5, 2.5};     // (At home: bringing nothing in.)
+    const auto tick = [&](double from, int seconds) {
+        for (double day = from, end = from + seconds / 86400.; day < end;)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            expect(s.conserved(), "money stays conserved");
+        }
+    };
+    tick(4 + 10. / 24, 60);
+    expect(held(s, "miller", "wheat") == 0 && held(s, "farmer", "wheat") == 200, "the mill, with nothing in its till, lays in no wheat");
+    set(s, "farmer", "wheat", 0);
+    set(s, "miller", "flour", 0);
+    s.shift("treasury", mill, "", 0, 100, "test: the day's takings");
+    tick(4 + 11. / 24, 60);
+    s.spoil(5);
+    const auto* rates = s.sellRates(farm);
+    expect(rates && rates->count("wheat") && rates->at("wheat") > 0, "later that day, the farm's barn empty, the mill's want is a sale it missed");
+    // The smith short of charcoal: the ironworks has ten, under its own batches' sixteen, and the burner none.
+    AuthoredRoster roster;
+    roster.residents = {person("smith", "the smith at the forge", {"forge", 2.5, 2.5}),
+                        person("works", "the ironworks by the river", {"works", 2.5, 2.5}),
+                        person("burner", "burns charcoal", {"kilns", 4.5, 4.5}, "civilian")};
+    roster.economy.treasury = 500;
+    Society t(Roster::None);
+    t.configure(roster);
+    const auto smith = t.tillOf("smith"), burner = t.tillOf("burner");
+    const auto* works = items::businessFor("the ironworks by the river");
+    int keeps = 0;
+    for (const auto* k : works ? items::craftsFor(works->id) : std::vector<const items::Craft*>{})
+        for (const auto& [in, n] : k->in)
+            keeps += in == "charcoal" ? n * Society::MaterialBatches : 0;
+    expect(works && works->id == "ironworks" && keeps > Society::GoodsKept + 2 && items::producerFor("burns charcoal"), "an ironworks that burns its own charcoal, and a burner");
+    for (std::int64_t d = 1; d <= 3; ++d)
+    {
+        set(t, "smith", "nails", 60);
+        expect(t.sale(smith, "burner", "nails", 60, 1, "test: a roof's nails") && t.shift(smith, "burner", "", 0, 60, "test: the burner's wage"),
+               "the burner buys the smith's nails");
+        t.spoil(d);
+    }
+    set(t, "smith", "nails", 0);
+    set(t, "smith", "charcoal", 0);
+    set(t, "smith", "iron_bar", 40);
+    set(t, "works", "charcoal", keeps - 6);
+    set(t, "burner", "charcoal", 0);
+    auto there = atWork(t);
+    there["works"] = there["burner"] = {"homes", 2.5, 2.5};   // (Both at home: neither works.)
+    for (double day = 4 + 10. / 24, end = day + 60. / 86400; day < end;)
+    {
+        day += 1. / 86400;
+        t.tick(1, day, 0, there);
+    }
+    t.spoil(5);
+    const auto* burnt = t.sellRates(burner);
+    expect(held(t, "works", "charcoal") == keeps - 6 && burnt && burnt->count("charcoal") && burnt->at("charcoal") > 0,
+           "the ironworks keeps its batches' charcoal, and the smith's want is a sale the burner missed");
+    expect(t.conserved(), "money stays conserved");
+}
+
+// A field's year from its sales a day over whole weeks, and its founding spring's looks from its month's (doc 64, Phase
+// 13): a farm whose wheat the mill buys seventy at once, once a week, is founded on ten a day whatever the weekday, and
+// its weekly looks don't take its acres up to the day after the mill's; seven farms, the mill's day a different one for
+// each, plan alike. (The running average of the last few days went from half to nearly twice its sales a day.) And a
+// field whose rate isn't known yet (read from a save without it) waits to top up its store.
+void fieldsPlannedByTheirMonth()
+{
+    Society::setWorkByHours(true);
+    const auto* farm = items::producerFor("farms the valley fields");
+    const auto wheat = std::find_if(farm->out.begin(), farm->out.end(), [](const auto& o) { return o.first == "wheat"; });
+    expect(wheat != farm->out.end(), "a farm grows wheat");
+    const double daily = 10. / wheat->second;       // (Ten a day, in yields.)
+    const double first = daily * (calendar::DaysPerYear + Society::HarvestEnd - Society::HarvestStart) * Society::FieldMargin / Society::FieldYields;
+    double lowest = 1e18, highest = 0;
+    for (int weekday = 0; weekday < 7; ++weekday)
+    {
+        auto s = farmTown();
+        const auto till = s.tillOf("farmer");
+        set(s, "farmer", "wheat", 900);             // (Never its last: no buyers counted after it.)
+        double founded = 0;
+        for (std::int64_t d = 1; d < Society::SowEnd - 5; ++d)
+        {
+            if (d % 7 == weekday)
+                expect(s.sale(till, "miller", "wheat", 70, 1, "test: the mill's week") &&
+                           s.shift(till, "miller", "", 0, 70, "test: the mill's takings"),
+                       "the mill buys its week's wheat");
+            s.spoil(d);
+            s.tendFields();
+            if (const double morning = d + 1 + 10. / 24; s.state().memory.fields.count(till))
+                s.reviewField("farmer", till, *farm, morning);
+            else if (s.foundingRate(till, *farm) > 0)
+            {
+                founded = s.foundingRate(till, *farm);
+                s.planField("farmer", till, *farm, morning, true);
+            }
+        }
+        expect(std::abs(founded - daily) < 1e-9, "founded on ten a day, the mill's day " + std::to_string(weekday) + ": " +
+                                                     std::to_string(founded * wheat->second));
+        const double acres = s.state().memory.fields.at(till).acres;
+        lowest = std::min(lowest, acres);
+        highest = std::max(highest, acres);
+    }
+    expect(lowest >= first - 1e-6 && highest <= first * 1.05, "its founding spring's acres within a twentieth of its founding's, whatever the weekday: " +
+                                                                 std::to_string(lowest) + " to " + std::to_string(highest) + ", of " +
+                                                                 std::to_string(first));
+    auto s = farmTown();
+    const auto till = s.tillOf("farmer");
+    auto st = s.state();
+    FieldYear unknown;
+    unknown.acres = 10;
+    unknown.year = -1;
+    unknown.founded = 1;
+    unknown.toppedUp = false;
+    st.memory.fields[till] = unknown;
+    expect(s.restore(st), "a field founded on day 1, its rates not saved");
+    s.takeJournal();
+    s.reviewField("farmer", till, *farm, 20.5);
+    expect(!s.state().memory.fields.at(till).toppedUp && count(s.takeJournal(), "a year's store", "wheat") == 0,
+           "with no rate yet, its store isn't topped up, nor its top-up spent");
+    st = s.state();
+    st.memory.fields.at(till).month = daily;
+    st.memory.fields.at(till).monthDays = 28;
+    expect(s.restore(st), "a month of its sales");
+    s.reviewField("farmer", till, *farm, 21.5);
+    expect(s.state().memory.fields.at(till).toppedUp && count(s.takeJournal(), "a year's store", "wheat") > 0, "then it is topped up");
+    Society::setWorkByHours(false);
 }
 } // namespace
 
@@ -1233,6 +1408,8 @@ int main()
         foodMakersLayIn();
         fieldsPlannedByTheirFood();
         missedSalesReachTheLand();
+        missedOnlyWhenNoneLeft();
+        fieldsPlannedByTheirMonth();
     }
     catch (const std::exception& error)
     {

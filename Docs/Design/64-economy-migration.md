@@ -1769,16 +1769,28 @@ city makers' buffers. (Children's spending, wants, the wage and the hands are ot
 - **Short of a good, a share each.** When a caravan holds less of a good than its orders want, each order has its
   share (`held x perWeek / all ordered`), then what is left in the order they were signed. In signing order alone, the
   supply shops signed first had the city's oats and its inns had none on day 54.
-- **Orders agreed again** (`agreeAgain`) are raised only when the seller kept up (a quarter short at most since the
-  last agreement): a shop ran low because the town couldn't fill its order, and its order rose. They rise as far as a
-  week and a quarter of the buyer's use (`ShelfMost` at most) where that is over the 90 a week they stopped at, under a
-  city bakery's flour.
+- **Orders agreed again** (`agreeAgain`) are raised only when the seller kept up: it sent some, and a quarter short at
+  most of all it was to send since the last agreement (a share: a monthly order a little short each week was never
+  raised), a week its road's caravan didn't go counting as a week short (it counted as kept up; not for an order signed
+  that day, whose week begins). A shop with over two weeks of its use piled up has its order lowered, never raised (a
+  smith's charcoal went from 18 a week to 126 so, its use being over the order). A shop ran low because
+  the town couldn't fill its order, and its order rose. They rise toward a week and a quarter of the buyer's use
+  (`ShelfMost` at most) where that is over the 90 a week they stopped at, under a city bakery's flour; but twice over
+  at most at once, and by no more than the seller's town had to spare at the day's trade, over its own makers' wants and
+  what the orders promise (`World::canSpare_`, not saved): a city potter's clay went from 23 a week to 1,133 at once,
+  and Mirebridge sent none of it. A seller that sent under half has its order cut toward what it sent, by half at
+  most, and one that sent nothing in two weeks' worth loses it, so that another town may be signed (Southmeadow's flour
+  stayed with Larkfield, which sent none). Agreed again by the trader on arrival, the load is handed over by what each
+  order was loaded for: a raise isn't laid a shortfall the seller didn't make.
 - **The week's caravans first.** The roads due today go first, in an order of the day's (a hash with the day); taken
   by name, with new orders' wagons counted among them, the twelve a day (`TradeCaravansADay`, unchanged) left
   Southmeadow's road to the city without its week's caravan on the days the cap was reached. Then a road with an order
   new today and no wagon out, with what the cap leaves, carrying only today's orders (`Caravan::orders`, saved), unless
-  its week's caravan is due within `RoundTripDays` (2, a placeholder): then the whole load. Every new order sent a full
-  week's load again, 28 trips from Larkfield to the city in 60 days, which hid the 99.
+  its week's caravan is due within `RoundTripDays` (2, a placeholder): then the whole load, and the road's week is
+  served (`RoadsState::sentEarly`, saved): it doesn't go again on its day, and an order new on it meanwhile goes by
+  itself. (In econ_watch, where a wagon is home the day it sets out, it went again: each order had two weeks' in two
+  days, and its town's producers were told of a week's sales missed that they had made the day before.) Every new order
+  sent a full week's load again, 28 trips from Larkfield to the city in 60 days, which hid the 99.
 - **A load the trader can't pay for whole** goes as much of it as it can (it was all or nothing; Larkfield's load to
   the city had come to 18,652p).
 - **No weekly roads for food that rots within the week** (`rotsOnTheRoad`, `RoadKeeps` 7: fish, rabbit, mutton, raw
@@ -1799,34 +1811,62 @@ same store.
 **Sales missed reach the land** (`Society::missedAt`, the model's unmet asks): when a maker or supplier finds none left
 to buy in its town (not short of money, nor left by a ledger entry's 99), what it went without of a day's use is
 counted at the town's producers of the good as sales missed, once a day; so are the week's caravan's goods its town
-couldn't spare. A farm's sales a day, its next acres and its hires follow.
+couldn't spare (not what its money didn't stretch to at its holders' prices). A farm's sales a day, its next acres and
+its hires follow. They are counted with the buyers who found none (`missedToday_`, as the pace's hungry are), not with
+its sales: a producer that sold its last that day counts them or its sold-out half again, the more, not both. And only
+when its town's sellers had no more as they keep back for themselves (a workshop's batches' store, as the buying does),
+the day marked only when one is counted (a call short only of money marked it, and the want found later that day went
+uncounted).
 
 **The fields** (`RatwFarmhands.cpp`):
 
-- **Founded on a week of sales** (`FieldFoundDays`), not the first day's, and on the running average set right for the
-  days it has run (`/ (1 - 0.7^days)`: a week's is a twelfth short). Until then a farm brings in as it always did.
+- **Founded on a week of sales** (`FieldFoundDays`), not the first day's: its sales a day over its whole weeks of them
+  (`foundingRate`; its sales and missed sales since its first, summed in `Society::spoil`, not saved), each weekday
+  alike. (On the running average of the day, set right for the days it had run, a farm whose caravan buys once a week
+  was founded on half to nearly twice its sales a day, by the weekday.) Until then a farm brings in as it always did.
+- **Its month's rate** (`FieldYear::month`; the model's `daily_sales`): its yields a day wanted, into a running average
+  over four weeks a week at a time (each week's mean of its days), set right for the weeks it has run; begun at its
+  founding as if over the weeks it was founded on. Fed a day at a time, it still went a quarter over in the founding
+  spring for a farm sold to once a week; a week at a time, within 2%.
 - **Its founding spring:** founded before the roads' orders on it were known, it looks at its acres again once a week
-  on a day of its own (what is sown stays sown; its hands sow the rest), and a fortnight on (`FieldTopUpDays`) its
-  store is topped up to the harvest, once ("a year's store").
+  on a day of its own, by its month's rate (what is sown stays sown; its hands sow the rest; by the last few days' it
+  ratcheted to the day after the caravan's, up to 2.3 times its year), and a fortnight on (`FieldTopUpDays`) its
+  store is topped up to the harvest, once ("a year's store"), by its month's or year's rate, the more; not till one is
+  known (a field read from a save without them waits for its sales; it was marked done with nothing stored).
 - **Planned by its food** (`grownToEat`, `plannedBy`): what feeds, or goes only into food or flour (a farm's wheat, oats
   and vegetables); its straw, hemp, flax, hay and firewood come with them, as hides with the model's sheep. A field that
   grows no food (an orchard's apples, for cider) is planned by all it grows. It was planned by the most sold of all
   nine goods. Splitting the farm by crop in crafts.json is the real fix, later.
 - **Dry** when any of what it is planned by runs out, not only its first good (wheat held, its oats gone).
-- **Next year** is planned from the year's rate if that is more than the last days' (`FieldYear::rate`, a slow average
+- **Next year** is planned from the year's rate if that is more than the month's (`FieldYear::rate`, a slow average
   over the year, daily in `tendFields`; the model's `max(year_sales / YEAR, daily_sales)`): a farm whose store ran dry
   stopped selling, its running average fell to nothing, and it planned no acres at all.
-- **Saved:** `memory.fields` has three more numbers (the year's rate, the day founded, topped up). A save from before
-  reads, its fields as founded long ago.
+- **Saved:** `memory.fields` has six more numbers (the year's rate, the day founded, topped up; the month's rate, this
+  week's so far, and its days). A save from before reads, its fields as founded long ago; one with nine, its month's
+  rate begun with the next day's sales.
 
 **Tests:**
 
-- `crafting_tests`: `seasonalFields` (not on under a week of sales; the founding's average set right; the year saved,
-  and a six-number save read; more acres sown as sales grow in the founding spring; topped up a fortnight on, once);
-  `foodMakersLayIn` (a week of flour for a bakery selling sixty loaves a day, laid in with its shelf full, once a day,
-  not on credit; a smith's bronze unchanged); `fieldsPlannedByTheirFood`; `missedSalesReachTheLand`.
+- `crafting_tests`: `seasonalFields` (not on under a week of sales; founded on its first week's sales a day; the year
+  saved, and six- and nine-number saves read; more acres sown as sales grow in the founding spring; topped up a
+  fortnight on, once); `foodMakersLayIn` (a week of flour for a bakery selling sixty loaves a day, laid in with its shelf
+  full, once a day, not on credit; a smith's bronze unchanged); `fieldsPlannedByTheirFood`; `missedSalesReachTheLand`
+  (and a farm that sold its last and missed sales besides counts the more, not both); `missedOnlyWhenNoneLeft` (a mill
+  short only of money misses no sale and the day isn't spent, its want later that day counted; an ironworks' batches'
+  charcoal isn't for sale, and the smith's want is counted at the burner); `fieldsPlannedByTheirMonth` (seven farms
+  sold seventy once a week, each on another weekday: all founded on ten a day, their spring's acres within a twentieth;
+  a field with no rate yet isn't topped up till it has one).
 - `roads_tests`: `caravansCarryWholeOrders` (over 198 bars bought from one smelter for two orders of 120, shared
-  between them within one, each over 99), `noRoadOrdersForWhatRots`.
+  between them within one, each over 99), `noRoadOrdersForWhatRots`, `anOrderRisesNoFasterThanItsSeller` (a monthly
+  order a quarter short raised, twice over and no more, the load handed over with nothing short; not raised with
+  nothing to spare, nor with bars piled up), `anOrderItsSellerCantFillIsCut` (a week with no caravan a week short, but
+  not for an order signed that day; a quarter sent, cut by half; nothing in two weeks, ended),
+  `aWagonShortOfMoneyMissesNoSale`, `anEarlyCaravanIsTheWeeks` (the week's load
+  early with a new order, not again on its day, each order its week once; saved through the checkpoint, and an order
+  of 1,500 a week, which the checkpoint cut to 999). `anOrderCatchesUpWithUse` now expects twice over at most.
+- Each of these fails with its fix undone (19 checked one at a time); the lay-in's cord-loop rule (`supplied(item) ||
+  madeHere(item)`, as the batches' buying) changes nothing in today's catalog, where no food maker makes a material it
+  works with that it doesn't also supply.
 
 **Smoke run** (30 days from DEV's export with the hours, `--deterministic`, against b1; this part alone, the other
 parts not landed):
@@ -1863,8 +1903,28 @@ parts not landed):
   bread, meals and pies (they keep 3 to 4 days). The small towns had fresh fish, mutton and bread by road in b1. A
   faster cadence for short roads (every `keeps - 1` days) is the alternative.
 - **`RoundTripDays`** (2) is a placeholder for how long a wagon is out.
-- **An order its seller can't fill** stays with that seller (Southmeadow's flour). Letting the buyer sign with another
-  town after a month short, or sharing a seller's goods across its roads, is a choice.
+- **An order its seller can't fill** is cut toward what came, and ended after two weeks' worth with nothing, so another
+  town may be signed (the review's fix). Sharing a seller's goods across its roads is still a choice.
+
+**After the review** (2026-10-26; the fixes above are in the bullets): 30 days of DEV's export, `--deterministic --hours
+--threads 3`, against the five parts merged (the same run before these fixes):
+
+| Day 30 | Merged | With the fixes |
+|---|---|---|
+| Hungry / starving | 0 / 0 | 0 / 0 |
+| Household Gini, the poorer half's share | 0.562, 0.141 | 0.563, 0.138 |
+| The going wage (realm, Ridgemere), the pace | 12p, 12p; 0.107 | 12p, 12p; 0.089 |
+| Work hours credited, lost (all run) | 154,889, 62,953 | 150,255, 65,397 |
+
+- Money conserved every day; no faults; nobody hungry on any day in either. The tick: 0.046 ms against the merged
+  binary's 0.048, run side by side for 8 days.
+- **A week's load twice in two days:** 9 times in the merged run (Oakhaven's 7,759 to the city on days 11 and 12, and
+  Larkfield's and Southmeadow's), none now. Big loads (over 500 ordered) went 12 times, not 23.
+- **Orders:** the largest is 240 a week on day 30 (2,000 merged). 13 ended from day 27 (none merged): 12 whose sellers
+  sent nothing in two weeks' worth (Frosthollow's iron for four city smiths; the city's salt fish, smoked rabbit and
+  limestone for the towns; Coldwater's flour for Oakhaven), one cut below 2. An order more than twice over from one
+  day to the next: 72 times merged, twice now (iron orders ended and signed again with Frosthollow, for more).
+- The pace stepped up a little later (0.089 on day 30, against 0.107).
 
 ### Phase 13: the pace, steadied (2026-10-25)
 

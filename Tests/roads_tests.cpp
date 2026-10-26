@@ -1,5 +1,6 @@
 // The roads (RatwRoads.h): towns and their stores, caravans that carry real goods, bandits who take them, contracts,
 // and rumours. A strip of nine cells: the capital "east" at one end, "west" at the other, wild country between.
+#include "RatwCheckpoint.h"
 #include "RatwItems.h"
 #include "RatwWire.h"
 #include "RatwWorld.h"
@@ -2386,9 +2387,11 @@ void anOrderCatchesUpWithUse()
     }
     expect(agreed, "The porter agrees it again at Frosthollow");
     order = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.id == id; });
-    expect(order != w.roads().orders.end() && order->perWeek >= weekly,
-           "raised to a week of the smith's use (" + std::to_string(order == w.roads().orders.end() ? 0 : order->perWeek) + ")");
-    expect(order->review - w.calendarDays() <= 7.01, "and looked at again in a week, being raised");
+    // (Twice over at most, doc 64, Phase 13: a city potter's clay went from 23 a week to 1,133 at once.)
+    expect(order != w.roads().orders.end() && order->perWeek > first && order->perWeek <= 2 * first,
+           "raised toward a week of the smith's use, twice over at most (" +
+               std::to_string(order == w.roads().orders.end() ? 0 : order->perWeek) + ", from " + std::to_string(first) + ")");
+    expect(order->review - w.calendarDays() <= 7.01, "and looked at again in a week, being raised, till it has caught up");
     expect(soc.conserved(), "Money is conserved");
 }
 
@@ -2490,12 +2493,333 @@ void noRoadOrdersForWhatRots()
     expect(soc.conserved(), "Money is conserved");
 }
 
+// The road from Frosthollow to the west, for the standing orders' tests below (doc 64, Phase 13): Frosthollow's smelter
+// with the bars it is given and nothing to make more from, one to three of the west's smiths, their bars gone and money
+// in their tills, and Frosthollow's trader (its stores: it has no great house) with the money for a load.
+Fixture ironRoad(int smiths)
+{
+    std::string extra = resident("smelter", "Rune Ore", "merchant", "runs The Frost Smelter", 3, 9.5, 4, 9.5);
+    const std::pair<const char*, const char*> forges[] = {{"westsmith", "West"}, {"lowsmith", "Low"}, {"farsmith", "Far"}};
+    for (int k = 0; k < smiths && k < 3; ++k)
+        extra += resident(forges[k].first, std::string(forges[k].second) + " Anvil", "merchant", std::string("smith at The ") + forges[k].second + " Forge",
+                          7, 12.5 + k, 8, 12.5 + k);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    return strip("EE.FF..WW", extra);
+}
+
+void emptyOf(Society& soc, const std::string& till, const std::string& item)
+{
+    for (const auto& kind : Society::kindsHeld(*soc.account(till), item))
+        soc.consume(till, kind, Society::stock(*soc.account(till), kind), "test: none left");
+}
+
+World ironWorld(Fixture& f, int bars)
+{
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto smelter = soc.tillOf("smelter");
+    for (const auto* item : {"iron_ore", "charcoal", "iron_bar", "timber"})
+        emptyOf(soc, smelter, item);
+    for (int left = bars; left > 0; left -= 99)
+        soc.create(smelter, "iron_bar", std::min(left, 99), "test: the month's bars");
+    for (const auto* smith : {"westsmith", "lowsmith", "farsmith"})
+        if (soc.account(soc.tillOf(smith)) && soc.spec(smith))
+        {
+            emptyOf(soc, soc.tillOf(smith), "iron_bar");
+            soc.shift("treasury", soc.tillOf(smith), "", 0, 300, "test: takings");
+        }
+    expect(soc.shift("treasury", "stores:frosthollow", "", 0, 4500, "test: the town's trade money"), "Frosthollow's trader has the money for a load");
+    return w;
+}
+
+StandingOrder ironOrder(const World& w, const std::string& smith, int perWeek)
+{
+    StandingOrder o;
+    o.id = "so-" + smith;
+    o.buyer = w.society().tillOf(smith);
+    o.town = "west";
+    o.item = "iron_bar";
+    o.from = "frosthollow";
+    o.perWeek = perWeek;
+    o.price = 5;
+    o.review = 1e9;
+    return o;
+}
+
+StandingOrder* orderOf(World& w, const std::string& id)
+{
+    for (auto& o : w.roads().orders)
+        if (o.id == id)
+            return &o;
+    return nullptr;
+}
+
+// Days from `day` to the road's week's caravan, its own day of the week (as tradeCaravans draws it).
+int dueIn(const std::string& road, double day)
+{
+    return int((std::hash<std::string>{}(road) % 7 + 7 - std::uint64_t(std::int64_t(std::floor(day)) % 7)) % 7);
+}
+
+// A trade caravan on its way from Frosthollow to the west.
+bool ironOnTheWay(const World& w)
+{
+    return std::any_of(w.roads().caravans.begin(), w.roads().caravans.end(), [](const Caravan& c) {
+        return !c.trader.empty() && c.from == "frosthollow" && c.to == "west" && c.status == "travelling";
+    });
+}
+
+// Ticks till no trade caravan is on its way from Frosthollow (or a day's worth, at most); the departures seen.
+int tickWhileOnTheWay(World& w, std::vector<WorldEvent>* seen = nullptr)
+{
+    int departed = 0;
+    const auto count = [&] {
+        for (const auto& e : w.takeEvents())
+        {
+            departed += e.kind == "trade caravan departs" && e.target == "west" && e.detail.find("stores:frosthollow") != std::string::npos;
+            if (seen)
+                seen->push_back(e);
+        }
+    };
+    count();
+    for (int t = 0; t < 30000 && ironOnTheWay(w); ++t)
+    {
+        w.tick(1);
+        count();
+    }
+    return departed;
+}
+
+// An order is raised when its seller kept up, a quarter short at most of all it was to send since it was last agreed,
+// and no more than twice over at once, nor past what the seller's town has to spare (doc 64, Phase 13: a city potter's
+// clay went from 23 a week to 1,133 at once, and Mirebridge sent none of it; and a monthly order its seller sent a little
+// short of each week was never raised). The load came for the order before: no shortfall is laid on the raise. And a
+// shop with more than two weeks of its use piled up isn't raised by the lowering either (a smith's charcoal went from 18
+// a week to 126 so, its use a week over the order).
+void anOrderRisesNoFasterThanItsSeller()
+{
+    enum Case { Raised, NothingToSpare, PiledUp };
+    for (const auto which : {Raised, NothingToSpare, PiledUp})
+    {
+        auto f = ironRoad(1);
+        auto w = ironWorld(f, which == NothingToSpare ? 0 : 297);
+        auto& soc = w.society();
+        const auto smith = soc.tillOf("westsmith");
+        if (which == PiledUp)
+            for (int n = 0; n < 7; ++n)
+                soc.create(smith, "iron_bar", 99, "test: a year's bars");
+        auto o = ironOrder(w, "westsmith", 8);
+        o.review = 0;                               // (Due: a month's, a quarter short.)
+        o.delivered = 21;
+        o.shortfall = 7;
+        w.roads().orders.push_back(o);
+        // Its week's caravan, and the trader agreeing it again on arrival (nobody in the west is free to go); the smith
+        // busy meanwhile, nails by the hundred.
+        std::vector<WorldEvent> seen;
+        bool agreed = false;
+        for (int d = 0; d < 9 && !agreed; ++d)
+        {
+            soc.create(smith, "nails", 96, "test: made");
+            soc.shift("treasury", "w1", "", 0, 96, "test: a builder's errand");
+            expect(soc.sale(smith, "w1", "nails", 96, 1, "test: sold"), "A busy day: the smith sells 96 nails");
+            soc.consume("w1", "nails", 96, "test: a roof mended");
+            nextMorning(w);
+            w.roads().camps.clear();
+            seen.clear();
+            tickWhileOnTheWay(w, &seen);
+            for (const auto& e : seen)
+                agreed |= e.kind == "standing order renegotiated" && e.target == smith && e.detail.find("with the trader") != std::string::npos;
+        }
+        const auto* agreedAgain = orderOf(w, o.id);
+        const int use = int(soc.useRate(smith, "iron_bar") * 7);
+        expect(agreed && agreedAgain && use > 16, "The trader agrees the smith's order again when the week's caravan comes, its use " +
+                                                      std::to_string(use) + " a week");
+        if (which == Raised)
+        {
+            expect(agreedAgain->perWeek == 16, "raised twice over, no more, toward its use (" + std::to_string(agreedAgain->perWeek) + ")");
+            expect(agreedAgain->delivered == 8 && agreedAgain->shortfall == 0,
+                   "the eight loaded for it handed over, and nothing short: " + std::to_string(agreedAgain->delivered) + " delivered, " +
+                       std::to_string(agreedAgain->shortfall) + " short");
+            expect(agreedAgain->review - w.calendarDays() <= 7.01, "and looked at again in a week");
+        }
+        else
+            expect(agreedAgain->perWeek == 8, std::string(which == NothingToSpare ? "Frosthollow with no bars to spare" : "Its bars piled up") +
+                                                  ": not raised (" + std::to_string(agreedAgain->perWeek) + ")");
+        expect(soc.conserved(), "Money is conserved");
+    }
+}
+
+// An order its seller falls short of (doc 64, Phase 13: Southmeadow's flour with Larkfield brought nothing after its
+// first week, and was never cut, nor signed with another town). A week its road's caravan doesn't go (its trader without
+// the money) is a week short; and when it is next agreed, an order its seller sent under half of is cut toward what
+// came, by half at most, and one its seller sent nothing of in two weeks' worth ends, so another town may be signed.
+void anOrderItsSellerCantFillIsCut()
+{
+    auto f = ironRoad(3);
+    auto w = ironWorld(f, 297);
+    auto& soc = w.society();
+    const std::string road = "frosthollow>west";
+    const auto far = soc.tillOf("farsmith");
+    soc.create(far, "iron_bar", 40, "test: a full rack");   // (Short only on the road's day: an order new that day.)
+    w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+    w.roads().orders.push_back(ironOrder(w, "lowsmith", 8));
+    bool dry = false;
+    for (int d = 0; d < 9 && !dry; ++d)
+    {
+        if ((dry = dueIn(road, std::floor(w.calendarDays()) + 1) == 0))
+        {
+            if (const auto cash = soc.account("stores:frosthollow")->cash; cash > 0)
+                soc.shift("stores:frosthollow", "treasury", "", 0, cash, "test: the trade money spent");
+            emptyOf(soc, far, "iron_bar");
+        }
+        nextMorning(w);
+        w.roads().camps.clear();
+        expect(!dry || !ironOnTheWay(w), "Frosthollow's trader, without a penny, sends no caravan on its road's day");
+        tickWhileOnTheWay(w);
+    }
+    const auto fresh = std::find_if(w.roads().orders.begin(), w.roads().orders.end(), [&](const StandingOrder& o) { return o.buyer == far; });
+    expect(dry && orderOf(w, "so-westsmith")->shortfall == 8 && orderOf(w, "so-lowsmith")->shortfall == 8,
+           "and each of its orders is a week short: " + std::to_string(orderOf(w, "so-westsmith")->shortfall));
+    expect(fresh != w.roads().orders.end() && fresh->shortfall == 0, "but not one signed that day, whose week begins");
+    soc.shift("treasury", "stores:frosthollow", "", 0, 4500, "test: the town's trade money");
+    auto* cut = orderOf(w, "so-westsmith");
+    cut->delivered = 2, cut->shortfall = 6, cut->review = 0;   // (A quarter of what it was to send.)
+    auto* none = orderOf(w, "so-lowsmith");
+    none->delivered = 0, none->shortfall = 16, none->review = 0;   // (Nothing in two weeks.)
+    std::vector<WorldEvent> seen;
+    for (int d = 0; d < 9 && orderOf(w, "so-westsmith") && orderOf(w, "so-westsmith")->review <= w.calendarDays(); ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        tickWhileOnTheWay(w, &seen);
+    }
+    const bool ended = std::any_of(seen.begin(), seen.end(), [&](const WorldEvent& e) {
+        return e.kind == "standing order ends" && e.target == soc.tillOf("lowsmith");
+    });
+    expect(orderOf(w, "so-westsmith") && orderOf(w, "so-westsmith")->perWeek == 4,
+           "An order its seller sent a quarter of is cut by half: " + std::to_string(orderOf(w, "so-westsmith") ? orderOf(w, "so-westsmith")->perWeek : 0));
+    expect(ended && !orderOf(w, "so-lowsmith"), "and one it sent nothing of in two weeks ends");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// What a week's caravan couldn't buy for want of money is no sale its town's producers missed (doc 64, Phase 13): its
+// money is the load at the town's price, and a burner holding only its finest charcoal asks more; it still has charcoal
+// to spare, and its sales a day are what it sold.
+void aWagonShortOfMoneyMissesNoSale()
+{
+    std::string extra = resident("burner", "Fen Ash", "civilian", "burns charcoal", 3, 12.5, 4, 12.5) +
+                        resident("fstall", "Moss Bin", "merchant", "keeping the stall", 3, 9.5, 4, 9.5) +   // (Its market's.)
+                        resident("westsmith", "West Anvil", "merchant", "smith at The West Forge", 7, 12.5, 8, 12.5);
+    for (int n = 1; n <= 5; ++n)
+        extra += resident("f" + std::to_string(n), "Frost " + std::to_string(n), "civilian", "working", 3, 3.5 + n, 3, 3.5 + n);
+    auto f = strip("EE.FF..WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto burner = soc.tillOf("burner");
+    const auto finest = items::withQuality("charcoal", 3);
+    emptyOf(soc, burner, "charcoal");
+    soc.create(burner, finest, 90, "test: a fine burn");
+    soc.shift("treasury", soc.tillOf("westsmith"), "", 0, 600, "test: takings");
+    expect(soc.shift("treasury", "stores:frosthollow", "", 0, 4500, "test: the town's trade money"), "Frosthollow's trader has money");
+    expect(Society::pennies(soc.priceAt(burner, finest)) > Society::pennies(soc.townPrice("frosthollow", "charcoal")) * 1.2,
+           "the finest charcoal dearer than the town's price for charcoal: " + std::to_string(soc.priceAt(burner, finest)) + "p, against " +
+               std::to_string(soc.townPrice("frosthollow", "charcoal")) + "p");
+    auto o = ironOrder(w, "westsmith", 30);
+    o.item = "charcoal";
+    w.roads().orders.push_back(o);
+    int bought = -1;
+    for (int d = 0; d < 9 && bought < 0; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        std::vector<WorldEvent> seen;
+        tickWhileOnTheWay(w, &seen);
+        for (const auto& e : seen)
+            if (e.kind == "trade caravan departs" && e.target == "west")
+                bought = e.quantity;
+    }
+    expect(bought > 0 && bought < 30 && Society::stockAll(*soc.account(burner), "charcoal") > 30,
+           "The week's caravan buys what its money stretches to: " + std::to_string(bought) + " of 30");
+    nextMorning(w);
+    const auto* rates = soc.sellRates(burner);
+    const double rate = rates && rates->count("charcoal") ? rates->at("charcoal") : 0;
+    // (Its running average: the day's sales a third of it, and a day on, seven tenths of that.)
+    expect(rate > 0 && rate <= .3 * bought + 1e-9, "and the burner's sales a day are what it sold, none missed: " + std::to_string(rate / .3) +
+                                                       " counted, " + std::to_string(bought) + " sold");
+    expect(soc.conserved(), "Money is conserved");
+}
+
+// A road's week's caravan due a day or two after an order new on it goes with that order's, early (a wagon out wouldn't
+// be back for its day), and then not again on its day (doc 64, Phase 13: it went again, each order had two weeks' in two
+// days, and its town's producers were told of a week's sales missed that they had made the day before). The road's week
+// served is saved through the checkpoint, as an order over the 999 a week it was once cut to is.
+void anEarlyCaravanIsTheWeeks()
+{
+    auto f = ironRoad(2);
+    auto w = ironWorld(f, 297);
+    auto& soc = w.society();
+    const std::string road = "frosthollow>west";
+    const auto low = soc.tillOf("lowsmith");
+    soc.create(low, "iron_bar", 40, "test: a full rack");   // (Not short yet.)
+    w.roads().orders.push_back(ironOrder(w, "westsmith", 4));
+    const auto tomorrow = [&] { return dueIn(road, std::floor(w.calendarDays()) + 1); };
+    for (int d = 0; d < 9 && (tomorrow() < 1 || tomorrow() > 2); ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        tickWhileOnTheWay(w);
+    }
+    const int early = tomorrow();
+    expect(early >= 1 && early <= 2, "The day before one a day or two from the road's own");
+    emptyOf(soc, low, "iron_bar");                  // (Short now: an order signed in the morning.)
+    orderOf(w, "so-westsmith")->delivered = 0;
+    nextMorning(w);
+    w.roads().camps.clear();
+    std::vector<WorldEvent> seen;
+    int departed = tickWhileOnTheWay(w, &seen);
+    const bool signed_ = std::any_of(seen.begin(), seen.end(), [&](const WorldEvent& e) { return e.kind == "standing order" && e.actor == low; });
+    const auto served = w.roads().sentEarly.find(road);
+    expect(signed_ && departed == 1 && served != w.roads().sentEarly.end() && served->second == std::int64_t(std::floor(w.calendarDays())) + early,
+           "A new order for the low forge, and the week's caravan goes with it, early, its week served");
+    {
+        // (Through the checkpoint: the road's week served, and an order of 1,500 a week.)
+        orderOf(w, "so-westsmith")->perWeek = 1500;
+        checkpoint::ServerState server;
+        PersistedWorld back;
+        std::string problem;
+        const auto doc = checkpoint::encode(w.save(), server, {}, 0);
+        expect(checkpoint::decode(doc, back, server, problem), "The checkpoint reads back: " + problem);
+        const auto again = back.roads.sentEarly.find(road);
+        const auto big = std::find_if(back.roads.orders.begin(), back.roads.orders.end(), [](const StandingOrder& o) { return o.id == "so-westsmith"; });
+        expect(again != back.roads.sentEarly.end() && again->second == served->second && big != back.roads.orders.end() && big->perWeek == 1500,
+               "its week served is saved, and the order's 1,500");
+        orderOf(w, "so-westsmith")->perWeek = 4;
+    }
+    for (int d = 0; d < early; ++d)
+    {
+        nextMorning(w);
+        w.roads().camps.clear();
+        departed += tickWhileOnTheWay(w);
+    }
+    expect(dueIn(road, w.calendarDays()) == 0 && departed == 1, "On its day it doesn't go again: " + std::to_string(departed) + " caravans");
+    expect(orderOf(w, "so-westsmith")->delivered == 4, "and the forge's order had its week once: " + std::to_string(orderOf(w, "so-westsmith")->delivered));
+    expect(soc.conserved(), "Money is conserved");
+}
+
 int main()
 {
     try
     {
         caravansCarryWholeOrders();
         noRoadOrdersForWhatRots();
+        anOrderRisesNoFasterThanItsSeller();
+        anOrderItsSellerCantFillIsCut();
+        aWagonShortOfMoneyMissesNoSale();
+        anEarlyCaravanIsTheWeeks();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();

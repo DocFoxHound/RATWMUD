@@ -107,6 +107,9 @@ struct RoadsState
     std::vector<BanditCamp> camps;
     std::vector<Contract> contracts;
     std::vector<Belief> beliefs;
+    // A road whose week's caravan went early, with an order new that day ("from>to" -> the day it was due): it doesn't
+    // go again that day (doc 64, Phase 13).
+    std::map<std::string, std::int64_t> sentEarly;
     std::int64_t day = -1, nextId = 1;
     bool stocked = false;                 // The towns' stores have had their first share from the treasury.
     bool purses = false;                  // ...and their share of its money, as their own treasuries (doc 42).

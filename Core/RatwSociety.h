@@ -266,7 +266,10 @@ struct EmployerBook
 // A field's year (doc 64, Phase 3b: seasonal fields, with work by the hours): the acres it plans to sow, those sown and
 // those still to bring in, a part-yield carried over, the year whose harvest's end it last planned at, and whether its
 // store ran dry this year; its yields a day wanted over the year (a slow average, the model's year's sales: doc 64,
-// Phase 13), the day it was founded and whether its founding store has been topped up since.
+// Phase 13), the day it was founded and whether its founding store has been topped up since; and its yields a day
+// wanted over the last month (the model's daily_sales), what its founding spring and next year are planned by: a
+// running average over FieldMonthWeeks, a week at a time (each week's days alike, whatever day its caravan buys on), set
+// right for the weeks it has run; this week's so far, and its days in all (monthDays).
 struct FieldYear
 {
     double acres = 0, sown = 0, toHarvest = 0, part = 0;
@@ -275,6 +278,8 @@ struct FieldYear
     double rate = 0;
     std::int64_t founded = -1;
     bool toppedUp = true;
+    double month = 0, week = 0;
+    int monthDays = 0;
 };
 // A thing an NPC owns and wears or carries (doc 64, Phase 9): what it is, how whole (1 new, 0 worn out but kept and
 // mendable), whether it's an heirloom, and whether it's in its purse (finery, a blade) or worn (clothes, an issued sword).
@@ -544,15 +549,17 @@ class Society
     bool grownToEat(const std::string& item) const;
     bool plannedBy(const items::Producer& p, const std::string& item) const;   // Whether its acres are planned by the good.
     // Its year planned (at the harvest's end, or when it is first seen, with a store to last it to the harvest). It is
-    // first seen after FieldFoundDays of sales (its running average set right for the days it has run), and in its
-    // founding spring its acres are looked at again weekly and its store topped up once, FieldTopUpDays on
-    // (reviewField). Daily, each field's slow year's rate (tendFields).
+    // first seen after FieldFoundDays of sales, founded on its sales a day over its whole weeks of them (foundingRate:
+    // 0 before a week), and in its founding spring its acres are looked at again weekly and its store topped up once,
+    // FieldTopUpDays on (reviewField). Daily, each field's month's and year's rates (tendFields).
+    double foundingRate(const std::string& till, const items::Producer& p) const;
+    bool fieldTill(const std::string& till) const;   // A till of a farm's, orchard's or vineyard's.
     void planField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay, bool founding);
     void reviewField(const std::string& id, const std::string& till, const items::Producer& p, double absoluteDay);
     void tendFields();
     double fieldHeld(const std::string& till, const items::Producer& p) const;   // In yields of what it is planned by.
     void storeYields(const std::string& id, const std::string& till, const items::Producer& p, double yields);   // "A year's store".
-    static constexpr int FieldFoundDays = 7, FieldTopUpDays = 14;
+    static constexpr int FieldFoundDays = 7, FieldTopUpDays = 14, FieldMonthWeeks = MonthDays / 7, FieldMonthDaysMost = 10000000;
     // What none of a town's sellers had to sell (doc 64, Phase 13; the model's unmet asks): counted at the town's
     // producers of the good as sales missed, shared among them, so the land plans and hires for it.
     void missedAt(const std::string& town, const std::string& item, int n);
@@ -893,10 +900,19 @@ class Society
     const std::vector<Seller>* sellersOf(const std::string& item) const;   // (Null for nobody.)
     // Doc 64, Phase 13 (not saved): each till's day it last laid in its food's materials (inputStore); each
     // "till|good"'s day its want of it was last counted as missed (missedAt); each till's days of sales in its running
-    // average (sellRate_, the field's founding); what goes into food (grownToEat, worked out on first asking).
+    // average (sellRate_, set right in a field's month's rate); what goes into food (grownToEat, worked out on first
+    // asking). And a field not yet founded, its sales since its first (each good's, missed ones counting) and the days
+    // of them, and its sales over its whole weeks of them: what it is founded on (foundingRate), each weekday counted
+    // alike (a farm's caravan buys once a week, and its missed sales are counted the same day).
     std::unordered_map<std::string, std::int64_t> laidIn_, unmetOn_;
     std::unordered_map<std::string, int> salesDays_;
     mutable std::unordered_map<std::string, bool> grownToEat_;
+    struct FieldSales
+    {
+        int days = 0;
+        std::unordered_map<std::string, double> sold, weeks;
+    };
+    std::unordered_map<std::string, FieldSales> fieldSales_;
     std::unordered_map<std::string, double> produceNext_;   // Producer -> the game day of its next yield.
     // Work done (Docs/Design/64-economy-migration.md, Phase 3): the hours a business's hands have put in (each paid
     // spell of its help, the keeper's time at the counter) and a producer's own, drawn on by each batch or yield at its
