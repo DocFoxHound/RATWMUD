@@ -63,10 +63,22 @@ void groundAlone()
     const double tentBefore = c.structure(tent)->condition;
     c.work(tent, 0.5);
     expect(c.structure(tent)->condition > tentBefore, "mended");
+    // What a building's materials cost when planned is saved with it; one saved before has none (-1), and so has one
+    // whose sum is past any building's (doc 64, Phase 13).
+    const auto paid = c.plan(site, "firepit", 24, 16).message, older = c.plan(site, "firepit", 25, 16).message,
+               wild = c.plan(site, "firepit", 26, 16).message;
+    c.structure(paid)->paid = 37;
+    c.structure(wild)->paid = 37;
+    auto saved = parsed(json::dump(c.save()));
+    for (auto& j : saved.find("structures")->items())
+        if (j.string("id") == wild)
+            j.set("paid", 1e12);
     Camps d;
-    d.load(parsed(json::dump(c.save())));
+    d.load(saved);
     expect(d.sitesOf("lodge").size() == 1 && d.structuresOf(site).size() == c.structuresOf(site).size() && d.fortified("lodge"),
            "saved and read");
+    expect(d.structure(paid)->paid == 37 && d.structure(older)->paid == -1 && d.structure(wild)->paid == -1,
+           "what its materials cost, saved; none in an older save, nor past the bound");
     const auto ruined = c.wear(400, 1000 + AbandonedSeconds + 1);
     expect(!ruined.empty() && c.site(site)->state == "ruin" && !c.campStanding("lodge"), "abandoned: a ruin");
 }
@@ -194,6 +206,32 @@ void campingThroughTheGame(const std::string& save)
             tick(camp::SecondsPerWorkHour + 1);
         }
         expect(g.camps().campStanding(lodge), "a camp standing");
+        // Taken back unbuilt, a building's materials come back as they were paid for, whatever its kind costs since
+        // (doc 64, Phase 13, the price review: by the hours the cost is at the town's day, which moves day to day).
+        {
+            Society::setWorkByHours(true);
+            auto& society = w.society();
+            const auto chapter = "chapter:" + lodge;
+            a->position = {33.5, 23.5};
+            const auto cash = society.account(chapter)->cash;
+            g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "firepit"}}));
+            tick(.2);
+            const auto* st = g.camps().structureAt("exterior", 33, 23);
+            expect(st && st->paid > 0 && st->paid == cash - society.account(chapter)->cash, "a firepit planned, what it cost kept:\n" + ada.said());
+            const auto id = st->id;
+            const auto paid = st->paid;
+            auto state = society.state();
+            for (auto& [town, rate] : state.memory.going)
+                rate *= 2;
+            state.memory.going[""] = 2 * society.goingRate("");
+            expect(society.restore(state) && g.buildingCost(*camp::kind("firepit"), "exterior") > paid, "a firepit costs more now");
+            const auto planned = society.account(chapter)->cash;
+            g.command(&ada, cmd({{"type", "chapter"}, {"verb", "unplan"}, {"target", id}}));
+            tick(.2);
+            expect(!g.camps().structure(id) && society.account(chapter)->cash == planned + paid,
+                   "taken back, what was paid refunded: " + std::to_string(society.account(chapter)->cash - planned) + "p of " + std::to_string(paid) + "p");
+            Society::setWorkByHours(false);
+        }
         // Not beside a full step up or down: the ground must be level enough to build on.
         auto* ground = w.cell("exterior");
         const double was = ground->tile(38, 20)->height;

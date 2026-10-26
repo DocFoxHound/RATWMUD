@@ -1257,9 +1257,12 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
             if (in.tithes)
             {
                 // The church lives on its tithes. It is founded with its starting money (RatwFounding.cpp): four weeks
-                // of its basket, or ChurchHead a resident if more.
+                // of its basket, or ChurchHead a resident if more: at the founding a seed, kept as it is (the founding's
+                // seeds set only the even floor of its share); founded after, from the treasury, at its town's day (10p at
+                // a 12p day: doc 64, Phase 13, the price review).
+                const auto head = state_.memory.purses >= PursesFounded ? pennies(ChurchHead / 12., community) : ChurchHead;
                 if (founded)
-                    startingMoney(payer, std::max<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), ChurchHead * town.residents));
+                    startingMoney(payer, std::max<std::int64_t>(std::int64_t(std::ceil(cost * MonthDays)), head * town.residents));
             }
             else
             {

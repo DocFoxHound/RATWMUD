@@ -23,7 +23,10 @@ namespace
 {
 // A stall's rent for the morning, and the dearest price laid on it, in LD (3p and 999p at a 12p day, Society::pennies,
 // doc 64, Phase 13): the rent at its town's day, the price at the realm's, as the ledger's dearest piece (PieceMost) is,
-// so a price a stall takes is one the ledger moves.
+// so a price a stall takes is one the ledger moves. And one it sells at: a price past today's dearest (the realm's rate
+// measured lower since it was laid out: a stall stands a market morning, the rate is measured at the day's turn, so only
+// across a save) isn't sold at until its keeper prices it again (the price review). A resident pays no more than its
+// town's price for what it wants, which is far under it (the dearest such, a jewelled collar, 600p at a 12p day).
 constexpr double StallFee = 3 / 12., PriceMost = 999 / 12.;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;
@@ -308,6 +311,9 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto price = st->prices.find(item);
         if (!a || price == st->prices.end() || Society::stock(*a, item) < quantity)
             return result = {false, "The stall hasn't that many.", {}}, true;
+        if (const auto most = society.pennies(PriceMost, ""); price->second > most)
+            return result = {false, "That is priced past the dearest a piece sells for today (" + std::to_string(most) +
+                                        "p); the keeper must price it again.", {}}, true;
         const auto cost = price->second * quantity;
         if (society.spendable(me) < cost)
             return result = {false, "You haven't " + std::to_string(cost) + "p.", {}}, true;

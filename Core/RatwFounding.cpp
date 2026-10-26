@@ -74,10 +74,25 @@ void Society::foundWage()
     ++memory.revision;
     const double day = items::ladder().foundingDay;
     // (An older save's employers' books, founding its purses now: each wage by its town's rate to the founding's, so
-    // they stand as far above or below it as they stood, and the first measure keeps the day.)
+    // they stand as far above or below it as they stood, and the first measure keeps the day. Each employer's town from
+    // its posts, as the labour market finds it: its own record of them is made at its day, none yet in a save just
+    // loaded: the price review.)
+    std::map<std::string, std::string> townOf;
+    if (!memory.employers.empty())
+        for (const auto& p : positions_)
+        {
+            const auto held = state_.careers.positions.find(p.id);
+            const auto holder = held == state_.careers.positions.end() ? std::string() : held->second.holder;
+            const auto* r = holder.empty() ? nullptr : spec(holder);
+            if (const auto key = postEmployer(p, holder, r ? r->age : 30); !key.empty())
+                townOf[key] = communityOfResident(p.founder);
+        }
     for (auto& [key, book] : memory.employers)
-        if (const double was = goingRate(employerTownOf(key)); book.wage > 0 && was > 0)
+    {
+        const auto town = townOf.find(key);
+        if (const double was = goingRate(town != townOf.end() ? town->second : employerTownOf(key)); book.wage > 0 && was > 0)
             book.wage *= day / was;
+    }
     for (auto& [town, rate] : memory.going)
         rate = day;
     memory.going[""] = day;

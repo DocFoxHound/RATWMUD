@@ -31,6 +31,16 @@ std::string Society::employerKey(const Payer& payer, const Position& job) const
     return payer.account + "|" + (job.title == LabourTitle ? std::string("works") : wageKind(payer, job));
 }
 
+std::string Society::postEmployer(const Position& p, const std::string& holder, int age) const
+{
+    std::string key;
+    if (p.role == "merchant" || items::producerFor(p.title))
+        key = "till:" + p.id;                        // (Its keeper or farmer: its business's first hand.)
+    else
+        key = employerKey(payerOf(holder.empty() ? p.founder : holder, p, holder.empty() ? 30 : age), p);
+    return key.empty() || (key.rfind("till:", 0) == 0 && !account(key)) ? std::string() : key;
+}
+
 double Society::employerSkill(const std::string& key) const
 {
     // A business's: the most any of its crafts needs (a smithy's blades, a mill's none).
@@ -422,12 +432,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     {
         const auto held = state_.careers.positions.find(p.id);
         const auto holder = held == state_.careers.positions.end() ? std::string() : held->second.holder;
-        std::string key;
-        if (p.role == "merchant" || items::producerFor(p.title))
-            key = "till:" + p.id;                    // (Its keeper or farmer: its business's first hand.)
-        else
-            key = employerKey(payerOf(holder.empty() ? p.founder : holder, p, holder.empty() ? 30 : ageOf(holder)), p);
-        if (key.empty() || (key.rfind("till:", 0) == 0 && !account(key)))
+        const auto key = postEmployer(p, holder, holder.empty() ? 30 : ageOf(holder));
+        if (key.empty())
             continue;
         postKey_[p.id] = key;
         employerTown_[key] = communityOfResident(p.founder);

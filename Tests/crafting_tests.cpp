@@ -2769,6 +2769,99 @@ void foundedAtTheFoundingDay()
         expect(std::abs(older.labourDay("") - founding) < founding * .02,
                "and its measure keeps the founding's day: " + std::to_string(older.labourDay("")) + "p");
     }
+    // The same, loaded afresh from the save (the price review: the labour market's record of each employer's town is
+    // made at its day, none yet in a society just loaded, so every book went by the realm's rate), in two towns at
+    // different rates: the market's stall in the north at a quarter over the realm's, the rest in the south at it. Each
+    // book moves by its own town's.
+    {
+        LifeDay towns;
+        towns.communityOf = [](const std::string& cell) { return cell == "market" ? std::string("north") : std::string("south"); };
+        auto older = realm(int(Society::WorldMoneyResidents));
+        older.setDay(towns);
+        auto bodies = atWork(older);
+        double day = .5;
+        for (int d = 0; d < 8; ++d, day += 1)
+            for (int i = 0; i < 3; ++i)
+                older.tick(1, day + i / 86400., 0, bodies);
+        auto state = older.state();
+        const auto north = "till:" + older.jobOf("stall")->id, south = "till:" + older.jobOf("baker")->id;
+        expect(state.memory.employers.count(north) && state.memory.employers.count(south), "the stall and the bakery have their books");
+        state.memory.purses = 0;
+        state.memory.foundedDay = 0;
+        state.memory.going = {{"", catalogue}, {"south", catalogue}, {"north", catalogue * 1.25}};
+        state.memory.employers.at(north).wage = catalogue * 1.25;
+        state.memory.employers.at(south).wage = catalogue;
+        auto loaded = realm(int(Society::WorldMoneyResidents));
+        loaded.setDay(towns);
+        expect(loaded.restore(wire::readSociety(wire::society(state))), "an older save of two towns, loaded afresh");
+        loaded.tick(1, day - .8, 0, bodies);        // (Its purses founded.)
+        const auto& books = loaded.state().memory.employers;
+        expect(loaded.state().memory.purses >= 1 && std::abs(books.at(north).wage - founding) < 1e-6 && std::abs(books.at(south).wage - founding) < 1e-6,
+               "each book by its own town's rate: the north's " + std::to_string(books.at(north).wage) + "p, the south's " +
+                   std::to_string(books.at(south).wage) + "p, at " + std::to_string(founding) + "p");
+    }
+    // A church founded after the realm's money stands (an older save's, its church never opened) is given ChurchHead a
+    // resident (10p at a 12p day) from the treasury at its town's day, if more than its month's basket (the price
+    // review: it was given the raw 10p).
+    {
+        auto late = realm(int(Society::WorldMoneyResidents));
+        auto bodies = atWork(late);
+        double day = .5;
+        for (int d = 0; d < 2; ++d, day += 1)
+            for (int i = 0; i < 3; ++i)
+                late.tick(1, day + i / 86400., 0, bodies);
+        expect(late.state().memory.purses >= 2 && late.account(Society::SharedChurch), "the realm's money stands, its church with it");
+        expect(late.shift(Society::SharedChurch, "treasury", "", 0, late.account(Society::SharedChurch)->cash, "test: the church's to the treasury"),
+               "its purse back to the treasury");
+        auto state = late.state();
+        state.accounts.erase(Society::SharedChurch);
+        expect(late.restore(state) && !late.account(Society::SharedChurch), "an older save with no church");
+        for (int i = 0; i < 3; ++i)
+            late.tick(1, day + i / 86400., 0, bodies);
+        const auto least = Society::pennies(10 * ratio) * std::int64_t(Society::WorldMoneyResidents);
+        expect(late.account(Society::SharedChurch) && late.account(Society::SharedChurch)->cash >= least && late.conserved(),
+               "a church founded late, ChurchHead a resident at the day: " +
+                   std::to_string(late.account(Society::SharedChurch) ? late.account(Society::SharedChurch)->cash : -1) + "p, at least " +
+                   std::to_string(least) + "p");
+    }
+    // A keeper short of a week's working money in its shop's till puts in what it holds over its reserve, at its own
+    // town's day (the price review: untried): in the north at a fifth over the realm's, by the hours.
+    {
+        LifeDay towns;
+        towns.communityOf = [](const std::string& cell) { return cell == "market" ? std::string("north") : std::string("south"); };
+        auto owners = realm(int(Society::WorldMoneyResidents));
+        owners.setDay(towns);
+        auto bodies = atWork(owners);
+        Society::setWorkByHours(true);
+        double day = .5;
+        for (int i = 0; i < 3; ++i)
+            owners.tick(1, day + i / 86400., 0, bodies);
+        const auto till = owners.tillOf("stall");
+        expect(till != "stall", "the stall's till its own");
+        std::int64_t invested = -1, reserve = 0;
+        for (int d = 1; d < 9 && invested < 0; ++d)
+        {
+            day += 1;
+            auto state = owners.state();
+            state.memory.going = {{"", founding}, {"north", founding * 1.2}, {"south", founding}};
+            state.memory.putIn.erase(till);
+            expect(owners.restore(state), "the north a fifth over the realm");
+            reserve = owners.pennies(Society::KeeperReserve, "north");
+            owners.shift(till, "treasury", "", 0, owners.account(till)->cash, "test: the till short");
+            if (const auto cash = owners.account("stall")->cash; cash > reserve + 7)
+                owners.shift("stall", "treasury", "", 0, cash - reserve - 7, "test: the keeper's purse");
+            else
+                owners.shift("treasury", "stall", "", 0, reserve + 7 - cash, "test: the keeper's purse");
+            owners.takeJournal();
+            owners.tick(1, day, 0, bodies);         // (The day's turn: its owner's day of the week, one of them.)
+            for (const auto& e : owners.takeJournal())
+                if (e.kind == "an owner's investment" && e.from == "stall" && e.to == till)
+                    invested = e.coins;
+        }
+        Society::setWorkByHours(false);
+        expect(invested == 7, "it puts in what it holds over its reserve at its town's day (" + std::to_string(reserve) + "p): " +
+                                  std::to_string(invested) + "p");
+    }
 }
 
 int main()

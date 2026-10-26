@@ -177,12 +177,13 @@ void Game::sendArchiveTask(Connection* c, const ArchiveTask& t)
     send(c, e);
 }
 
-std::int64_t Game::archivePay(const std::string& cell) const
+std::int64_t Game::archivePay(const std::string& cell, bool half) const
 {
-    return atTheDay(lore().pay, world_.lawTown(cell));   // (Archives.json's pay, at a 12p day: doc 64, Phase 13.)
+    // (Archives.json's pay, at a 12p day: doc 64, Phase 13; half for a copy with errors.)
+    return atTheDay(half ? lore().pay / 2 : lore().pay, world_.lawTown(cell));
 }
 
-void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t pay, const std::string& how)
+void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, bool half, const std::string& how)
 {
     const auto me = c->entityId;
     auto* e = world_.entity(me);
@@ -191,7 +192,7 @@ void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t p
     auto& society = world_.society();
     const auto community = world_.lawTown(t.cell);
     const auto treasury = society.treasuryOf(community);
-    const auto paid = std::min(atTheDay(pay, community), society.spendable(treasury));   // (At a 12p day: doc 64, Phase 13.)
+    const auto paid = std::min(archivePay(t.cell, half), society.spendable(treasury));
     if (paid > 0)
         society.shift(treasury, me, "", 0, paid, "archive work");
     ++archiveToday_[me + "|" + std::to_string(std::int64_t(std::floor(world_.calendarDays())))];
@@ -261,7 +262,7 @@ bool Game::archiveCommand(Connection* c, const json::Value& j, Result& result)
         {
             const auto done = t;
             archiveTasks_.erase(task);
-            finishArchiveTask(c, done, lore().pay, "The records are in order.");
+            finishArchiveTask(c, done, false, "The records are in order.");
             return result = {true, "", {}}, true;
         }
         if (++t.tries >= 3)
@@ -366,7 +367,7 @@ void Game::tendArchive()
                 const int errors = int(std::floor((1 - skill / 100) * 4 * (double(std::hash<std::string>{}(it->first + std::to_string(world_.time())) % 1000) / 1000)));
                 const auto done = t;
                 it = archiveTasks_.erase(it);
-                finishArchiveTask(c, done, errors <= 1 ? lore().pay : lore().pay / 2,
+                finishArchiveTask(c, done, errors > 1,
                                   errors == 0 ? "A clean copy, not a blot on it." : "The copy is done, with " + std::to_string(errors) + (errors == 1 ? " slip." : " slips."));
                 continue;
             }

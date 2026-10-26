@@ -344,6 +344,8 @@ Value Camps::save() const
         auto j = Value::object();
         j.add("id", st.id); j.add("site", st.site); j.add("kind", st.kind); j.add("x", st.x); j.add("y", st.y);
         j.add("work", st.work); j.add("condition", st.condition); j.add("built", st.built); j.add("trade", st.trade);
+        if (st.paid >= 0)
+            j.add("paid", double(st.paid));
         structures.push(j);
     }
     root.add("structures", structures);
@@ -389,6 +391,9 @@ void Camps::load(const Value& saved)
         Structure st{j.string("id"), j.string("site"), j.string("kind"), int(j.number("x")), int(j.number("y")), j.number("work"),
                      std::clamp(j.number("condition", 100), 0.0, 100.0), j.boolean("built")};
         st.trade = j.string("trade").substr(0, 60);
+        // (Saved before doc 64's Phase 13 tidy: none, its cost now. A sum past any building's is none too.)
+        if (const double paid = j.number("paid", -1); std::isfinite(paid) && paid >= 0 && paid <= PaidMost)
+            st.paid = std::int64_t(paid);
         if (!st.id.empty() && sites_.count(st.site) && kind(st.kind))
             structures_[st.id] = st;
     }

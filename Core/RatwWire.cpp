@@ -1209,10 +1209,18 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [town, v] : o.object("going").fields())
         if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() > 0 && v.asNumber() < 1e6 && town.size() < 200)
             m.going[town] = v.asNumber();
-    // (Saved before doc 64's Phase 13 review: none, a realm founded at the catalogue's 12p.)
+    // (Saved before doc 64's Phase 13 review: none, a realm founded at the catalogue's 12p; but one whose purses were
+    // founded and whose realm's rate stands well above the catalogue's (half again) was founded at ladder.json's
+    // foundingDay by the price level's first builds, which didn't save it (904d48c, 3cec19a: the price review), and is
+    // taken as founded at it, or at its rate if the Data now founds at the catalogue's. The seconds' pace's measure keeps
+    // a skill's premium in, a town's 12.8p at a 12p day, well under.)
     if (const auto* day = o.find("foundedDay"); day && day->isNumber() && std::isfinite(day->asNumber()) && day->asNumber() >= 0 &&
         day->asNumber() <= 100000)
         m.foundedDay = day->asNumber();
+    else if (const auto realm = m.going.find(""); !day && m.purses >= 1 && realm != m.going.end() &&
+                                                  realm->second > 1.5 * items::ladder().catalogueDay)
+        m.foundedDay = items::ladder().foundingDay > 1.5 * items::ladder().catalogueDay ? items::ladder().foundingDay
+                                                                                         : std::min(realm->second, 100000.);
     if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
         m.pace = pace->asNumber();
     // The pace's readings, each with its day, in order (saved before doc 64's Phase 13, or as bare readings before they

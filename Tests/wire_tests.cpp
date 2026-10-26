@@ -2,6 +2,7 @@
 // writes a character and reads it back strictly, the weather, light and clock records, the society, and the pace and
 // environment commands. A malformed record is refused, never quietly turned into a default.
 #include "RatwWire.h"
+#include "RatwItems.h"
 
 #include <cmath>
 #include <iostream>
@@ -580,9 +581,23 @@ void societyTests()
         state.memory.foundedDay = day;
         expect(wire::readSociety(wire::society(state)).memory.foundedDay == back, "the founding's day round trips, or is dropped: " + std::to_string(day));
     }
+    const double catalogue = items::ladder().catalogueDay, founding = items::ladder().foundingDay;
+    state.memory.purses = 1;
+    state.memory.going[""] = catalogue * 16 / 15;   // (The seconds' pace's measure, a skill's premium in.)
     auto unfounded = wire::society(state);
     unfounded.find("memory")->erase("foundedDay");
     expect(wire::readSociety(unfounded).memory.foundedDay == 0, "and an older save was founded at the catalogue's");
+    // One founded at 60p by the price level's first builds (904d48c, 3cec19a), which didn't save the day: its realm's
+    // rate well above the catalogue's (the price review). Its purses unfounded, it was founded at none.
+    state.memory.going[""] = 61.5;
+    auto sixty = wire::society(state);
+    sixty.find("memory")->erase("foundedDay");
+    expect(wire::readSociety(sixty).memory.foundedDay == (founding > 1.5 * catalogue ? founding : 61.5),
+           "an older save founded at 60p is known by its rate: " + std::to_string(wire::readSociety(sixty).memory.foundedDay));
+    state.memory.purses = 0;
+    auto never = wire::society(state);
+    never.find("memory")->erase("foundedDay");
+    expect(wire::readSociety(never).memory.foundedDay == 0, "and one never founded, at none");
 }
 
 void commandTests()

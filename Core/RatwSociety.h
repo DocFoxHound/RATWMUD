@@ -1323,6 +1323,8 @@ class Society
     // or it's the only hand. A post left is open again at once (tendCareers fills it); a post whose holder is away on
     // another business's hire is open while it's away, unless its business has no work for it (Phase 13).
     std::string employerKey(const Payer& payer, const Position& job) const;
+    // A post's employer as the labour market keys it (its holder's, or for a post empty its founder's at 30), "" if none.
+    std::string postEmployer(const Position& p, const std::string& holder, int age) const;
     double employerWage(const std::string& key) const;
     double goingRate(const std::string& town) const;          // A labourer's day in the town (labourDay).
     double employerSkill(const std::string& key) const;       // The skill its trade needs.

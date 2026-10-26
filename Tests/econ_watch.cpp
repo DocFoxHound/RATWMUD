@@ -59,7 +59,9 @@
 //   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
 //                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
 //                   its own employer, as it stands at 23:00);
-//   pace.csv        day, when, the society's day, the realm's pace that day, to the last digit (--hold-pace's to read);
+//   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
+//                   society's days' turns (--hold-pace's to read; a turn can fall on either side of the watch's
+//                   midnight, so not at the day's records);
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
@@ -878,8 +880,6 @@ int main(int argc, char** argv)
     };
 
     const auto snapshot = [&](int day, const char* when) {
-        // The pace the society's day last set (once a day, at its turn: Society::tendLabour), every digit of it.
-        paceOut << day << ',' << when << ',' << society.state().budgetDay << ',' << society.state().memory.pace << '\n' << std::flush;
         if (std::string(when) == "day end")
             writeLarders(day);
         // Money by kind of holder, and every collector's and till's purse.
@@ -1229,10 +1229,18 @@ int main(int argc, char** argv)
         stockOut.open(out / "stock.csv"), stockOut << "day,account,cash,stock\n";
     int nextStockHour = 0;
     double tickSeconds = 0;                         // (The server's own time in the day, apart from this watch's.)
+    std::int64_t paceDay = -1;                      // (The society's day pace.csv last had.)
     for (long i = 0; i < ticks; ++i)
     {
         const auto tickBegin = std::chrono::steady_clock::now();
         server.tick(0.05);
+        // The pace each of the society's days sets at its turn (Society::tendLabour), every digit of it.
+        if (const auto turned = society.state().budgetDay; turned != paceDay)
+        {
+            paceDay = turned;
+            paceOut << std::int64_t(std::floor(server.calendarDays())) << ",turn," << turned << ',' << society.state().memory.pace << '\n'
+                    << std::flush;
+        }
         if (i % 1200 == 0)
             server.makeRequestedResidents();        // (Births and newcomers, as the game makes them from files: doc 64.)
         tickSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - tickBegin).count();

@@ -324,11 +324,14 @@ void Game::tendLoans()
         const auto* a = society.account(it->borrower);
         const int have = a ? Society::stock(*a, it->item) : 0;
         const int back = std::min(have, it->quantity);
+        std::int64_t fee = 0;
         if (back > 0)
         {
             society.shift(it->borrower, it->lender, it->item, back, 0, "lent");
             world_.fitWorn(it->borrower);           // (Taken off, if it was worn.)
-            society.shift(it->borrower, society.treasuryOf(society.capital()), "", 0, atTheDay(1, society.capital()), "a courier's fee");
+            fee = atTheDay(1, society.capital());
+            if (!society.shift(it->borrower, society.treasuryOf(society.capital()), "", 0, fee, "a courier's fee"))
+                fee = 0;                            // (One who can't pay it isn't asked to.)
         }
         if (back < it->quantity)
         {
@@ -345,7 +348,8 @@ void Game::tendLoans()
             system(lc, back == it->quantity ? "A courier brings back what you lent: " + what + "."
                                             : "What you lent came back short: they owe you for the rest.");
         if (auto* bc = clientOf(it->borrower))
-            system(bc, back == it->quantity ? "A courier takes back what you borrowed (1p)." : "What you borrowed is gone: you owe for it now.");
+            system(bc, back == it->quantity ? "A courier takes back what you borrowed" + (fee > 0 ? " (" + priceWords(fee) + ")." : std::string("."))
+                                            : "What you borrowed is gone: you owe for it now.");
         record(Economy, it->borrower);
         it = loans_.erase(it);
     }

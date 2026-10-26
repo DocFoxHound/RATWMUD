@@ -41,6 +41,9 @@ struct Structure
     // A workshop's trade, the realm's business it works as (Data/Items/businesses.json), its Chapter's choice; a field is
     // the farm's (doc 64, Phase 11: Holds as keeps).
     std::string trade;
+    // What its materials cost when it was planned, refunded if it is taken back unbuilt (its kind's cost is at the town's
+    // day, which moves day to day by the hours: doc 64, Phase 13). -1: planned before, not known (its cost now).
+    std::int64_t paid = -1;
 };
 
 struct Site
@@ -70,6 +73,7 @@ int bedsIn(const std::string& kind);              // tent 1, lean-to 1, hall 4, 
 // (water-carrier), cookfire (cook), storage pile (storekeeper).
 std::vector<std::string> postsIn(const std::string& kind);
 constexpr std::int64_t HoldWage = 5;              // Pennies a game day at least for work at a Hold (else the going rate).
+constexpr double PaidMost = 1e7;                  // The most a saved building's materials may have cost (a bound).
 // A keep's work (doc 63; doc 64, Phase 11): at most so many workshops and fields at a site.
 constexpr int WorkshopsMost = 3, FieldsMost = 1;
 constexpr double OfferDays = 7;                   // How long those willing to come wait for an answer.

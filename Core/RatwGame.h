@@ -1001,7 +1001,7 @@ class Game
     std::int64_t titheFee(const std::string& who) const;
     // A Chapter's building's materials (camp::Kind::cost, at a 12p day) where it builds.
     std::int64_t buildingCost(const camp::Kind& k, const std::string& cell) const { return atTheDay(k.cost, townFor(cell)); }
-    std::int64_t archivePay(const std::string& cell) const;   // A clean archive task's pay there (RatwArchive.cpp).
+    std::int64_t archivePay(const std::string& cell, bool half = false) const;   // An archive task's pay there (RatwArchive.cpp).
     // A resident's letter of thanks (doc 55, 5): whether a gift is worth one (5p or more at a 12p day, coins and the
     // goods' catalogue price), and the few pennies it may send with it (a tenth of its purse, 6p at most at a 12p day),
     // each at the resident's town's day (doc 64, Phase 13).
@@ -1056,7 +1056,7 @@ class Game
     void refreshArchives();
     bool archiveKeeperHere(const std::string& cell);
     void sendArchiveTask(Connection* c, const ArchiveTask& t);
-    void finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t pay, const std::string& how);
+    void finishArchiveTask(Connection* c, const ArchiveTask& t, bool half, const std::string& how);
     void sendJournal(Connection* c);
     std::string scholarBriefing(const std::string& npc, const std::string& player);
     // Festivals that draw players (doc 54, 6; RatwFestivals.cpp): on a town's festival day, the feast from noon (a meal

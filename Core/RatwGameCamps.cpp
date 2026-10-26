@@ -148,17 +148,20 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
                  std::count_if(have.begin(), have.end(), [&](const camp::Structure* st) { return st->kind == k->id; }) >=
                      (k->id == "workshop" ? camp::WorkshopsMost : camp::FieldsMost))
             result = {false, k->id == "workshop" ? "A place holds three workshops at most." : "A place has one field.", {}};
-        else if (!world_.society().shift(treasuryOf(chapter->id), "treasury", "", 0, buildingCost(*k, me->cellId), "chapter building materials"))
-            result = {false, std::string("The materials for a ") + k->name + " cost " + std::to_string(buildingCost(*k, me->cellId)) +
-                                 " pennies, from the treasury.",
-                      {}};
+        else if (const auto cost = buildingCost(*k, me->cellId);
+                 !world_.society().shift(treasuryOf(chapter->id), "treasury", "", 0, cost, "chapter building materials"))
+            result = {false, std::string("The materials for a ") + k->name + " cost " + std::to_string(cost) + " pennies, from the treasury.", {}};
         else
         {
             const auto o = camps_.plan(here->id, k->id, x, y);
             if (!o.ok)
-                world_.society().shift("treasury", treasuryOf(chapter->id), "", 0, buildingCost(*k, me->cellId), "chapter building materials refunded");
+                world_.society().shift("treasury", treasuryOf(chapter->id), "", 0, cost, "chapter building materials refunded");
             else
+            {
+                if (auto* planned = camps_.structure(o.message))
+                    planned->paid = cost;           // (Refunded as paid, if taken back unbuilt.)
                 record(Economy);
+            }
             result = {o.ok, o.ok ? std::string("A ") + k->name + " is planned here; the materials are bought. Set to work on it." : o.message, {}};
         }
     }
@@ -188,7 +191,8 @@ bool Game::campCommand(Connection* c, const Value& j, Result& result)
         {
             if (st->work <= 0)
                 if (const auto* k = camp::kind(st->kind))
-                    world_.society().shift("treasury", treasuryOf(chapter->id), "", 0, buildingCost(*k, site->cell), "chapter building materials refunded");
+                    world_.society().shift("treasury", treasuryOf(chapter->id), "", 0, st->paid >= 0 ? st->paid : buildingCost(*k, site->cell),
+                                           "chapter building materials refunded");
             camps_.unplan(target);
             result = {true, "The plan is taken back.", target};
         }
