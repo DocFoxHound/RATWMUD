@@ -152,6 +152,10 @@ Value roads(const RoadsState& r)
         orders.push(j);
     }
     roads.add("orders", orders);
+    auto early = Value::object();
+    for (const auto& [road, due] : r.sentEarly)
+        early.add(road, double(due));
+    roads.add("sentEarly", early);
     return roads;
 }
 
@@ -714,13 +718,18 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         {
             StandingOrder o;
             o.id = j.string("id"); o.buyer = j.string("buyer"); o.town = j.string("town"); o.item = j.string("item");
-            o.from = j.string("from"); o.perWeek = std::clamp(int(num(j, "perWeek")), 0, 999);
+            // (As many a week as a shelf holds: doc 64, Phase 13 raised the 90 a week orders stopped at.)
+            o.from = j.string("from"); o.perWeek = std::clamp(int(num(j, "perWeek")), 0, Society::ShelfMost);
             o.price = std::clamp<std::int64_t>(std::int64_t(num(j, "price")), 0, 100000); o.since = num(j, "since");
             o.review = num(j, "review"); o.delivered = std::max(0, int(num(j, "delivered")));
             o.shortfall = std::max(0, int(num(j, "shortfall"))); o.negotiator = j.string("negotiator");
             if (!o.id.empty() && !o.buyer.empty() && !o.item.empty() && o.perWeek > 0)
                 saved.roads.orders.push_back(std::move(o));
         }
+        for (const auto& [road, due] : roads.object("sentEarly").fields())   // (Saved before doc 64's Phase 13: none.)
+            if (due.isNumber() && std::isfinite(due.asNumber()) && std::abs(due.asNumber()) < 1e9 && road.size() < 200 &&
+                saved.roads.sentEarly.size() < 4096)
+                saved.roads.sentEarly[road] = std::int64_t(due.asNumber());
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),

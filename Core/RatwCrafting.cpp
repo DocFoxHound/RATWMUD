@@ -88,10 +88,11 @@ void Society::missedAt(const std::string& town, const std::string& item, int n)
     for (const auto& s : *sellers)
         if (s.kind == 2 && state_.residents.count(s.id) && communityOfResident(s.id) == town)
             producers.push_back(tillOf(s.id));
-    // (Shared out whole, the odd ones to the first: soldToday_ counts whole goods.)
+    // (Shared out whole, the odd ones to the first. With the buyers who found none, not with its sales: a producer that
+    // sold its last that day counts its missed sales or its sold-out half again, the more, not both. Society::spoil.)
     for (std::size_t k = 0; k < producers.size(); ++k)
         if (const int share = n / int(producers.size()) + (int(k) < n % int(producers.size()) ? 1 : 0); share > 0)
-            soldToday_[producers[k]][item] += share;
+            missedToday_[producers[k]][item] += share;
 }
 
 int Society::buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
@@ -109,6 +110,7 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     if (here.empty())
         here = communityOfResident(id);
     int bought = 0;
+    bool more = false;                              // A seller in its town had more it would sell.
     // Close to home first, at the price; then anywhere, carted in (in a world of towns, only the caravans bring what a
     // town lacks: doc 42, Phase 7).
     for (const bool local : {true, false})
@@ -139,27 +141,29 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
                     if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
                         bought += n;
                     // Short of money: the rest on credit, up to a week of its turnover (doc 64, Phase 5).
-                    if (const int more = int(std::min<std::int64_t>({wanted - bought, spare - std::max(0, n), 99, creditLeft(till) / price}));
-                        credit && more > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, more, price))
-                        bought += more;
+                    int owing = 0;
+                    if (const int rest = int(std::min<std::int64_t>({wanted - bought, spare - std::max(0, n), 99, creditLeft(till) / price}));
+                        credit && rest > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, rest, price))
+                        bought += rest, owing = rest;
                     if (bought >= wanted)
                         return bought;
+                    // (What it has left of what it would sell, as it keeps back: left for want of money or by a ledger
+                    // entry's 99 is no sale missed.)
+                    more = more || (local && spare - std::max(0, n) - owing > 0);
                 }
             }
     // None left to buy in its town (doc 64, Phase 13; the model's asks): what it went without of a day's use of it,
     // once a day, is a sale its town's producers missed. (Not what it was short of money for, nor what a ledger entry's
-    // 99 left behind: only when its town's sellers had no more.)
-    if (auto& counted = unmetOn_.try_emplace(till + "|" + item, -1).first->second; counted != state_.budgetDay)
-    {
-        counted = state_.budgetDay;
-        bool more = false;
-        for (const auto& seller : *sellers)
-            if (seller.kind >= (forSupplier ? 1 : 0) && seller.id != id && communityOfResident(seller.id) == here)
-                if (const auto* from = account(tillOf(seller.id)))
-                    more = more || stockAll(*from, item) > (seller.kind == 1 ? GoodsKept : 0);
-        if (const int missed = std::min(wanted, int(std::ceil(useRate(till, item)))) - bought; !more && missed > 0)
-            missedAt(here, item, missed);
-    }
+    // 99 left behind: only when its town's sellers had no more, keeping back what they keep. Counted the first time it
+    // is, not the first time it looked: a call short only for money stamped the day, and the want found later went
+    // uncounted.)
+    if (!more)
+        if (auto& counted = unmetOn_.try_emplace(till + "|" + item, -1).first->second; counted != state_.budgetDay)
+            if (const int missed = std::min(wanted, int(std::ceil(useRate(till, item)))) - bought; missed > 0)
+            {
+                counted = state_.budgetDay;
+                missedAt(here, item, missed);
+            }
     return bought;
 }
 
@@ -212,9 +216,7 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     bool any = false;
     // Seasonal fields (doc 64, Phase 3b): sown in spring, brought in at the harvest, sold from the store all year. (Until
     // it has a week of sales to plan by, as before: doc 64, Phase 13.)
-    if (const auto days = salesDays_.find(till);
-        fieldsOn() && fieldWork(producer->id) &&
-        (state_.memory.fields.count(till) || (days != salesDays_.end() && days->second >= FieldFoundDays && fieldNeed(till, *producer) > 0)))
+    if (fieldsOn() && fieldWork(producer->id) && (state_.memory.fields.count(till) || foundingRate(till, *producer) > 0))
     {
         if (!state_.memory.fields.count(till))
             planField(id, till, *producer, absoluteDay, true);
@@ -568,9 +570,10 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             for (const auto& [item, count] : k->in)
                 if (const int store = inputStore(till, *k, item, count * MaterialBatches), held = stockAll(*account(till), item);
                     store > count * MaterialBatches && held < store / 2)
-                    // (A seller's 99 at a time, as long as some come: doc 64, Phase 13.)
+                    // (A seller's 99 at a time, as long as some come: doc 64, Phase 13. What it makes too, it buys as a
+                    // supplier does, as for its batches below, and not back from the town's shops: the cord loop.)
                     for (int left = store + fresh(*k, item) - held, got = 1; left > 0 && got > 0; left -= got)
-                        got = buyMaterials(id, workCell, item, left, supplied(item), false);
+                        got = buyMaterials(id, workCell, item, left, supplied(item) || madeHere(item), false);
     }
     // The keeper's own time at work since it last looked (doc 64, Phase 3): a gap over two game hours is a new day's
     // work begun, not work done. The skilled get more done in an hour (workPace), and so do improved premises and a
