@@ -1078,6 +1078,99 @@ void whoPaysWages()
     expect(w.society().conserved(), "Money stays conserved");
 }
 
+// Asking who pays whom leaves the run as it was (doc 64, Phase 13, round 6: the round-5 review). payerOf's household
+// richest was kept for the day from whoever asked first, and the houses' towns from a first asking before the world had
+// told the society its towns: a talk scene or a harness asking moved the run. Two worlds the same, one asked of every
+// resident's payer before its first tick and at odd moments after, end the same: every purse, every good, everyone
+// where they were. (With the old caches, the asked world's maid is paid by the household's richest before a gift made
+// it another's, and its smoker by the town, its house's town misread: their purses part.)
+void askingWhoPaysLeavesTheRun(bool hours)
+{
+    const auto unpaid = [](std::string line) { line.replace(line.find(" 1 8 17 "), 8, " 0 8 17 "); return line; };
+    Society::setWorkByHours(hours);
+    const auto make = [&] {
+        auto f = strip("EEE....WW", unpaid(resident("lord", "Lord Ash", "civilian", "ruling House Ash", 0, 9.5, 0, 9.5)) +
+                                        resident("maid", "Tidy Paws", "civilian", "serving the household", 8, 12.5, 7, 7.5) +
+                                        resident("smoker", "Kipper Hand", "civilian", "smoking fish", 0, 6.5, 2, 6.5));
+        return f;
+    };
+    auto fa = make(), fb = make();
+    auto asked = load(fa), alone = load(fb);
+    const auto askAll = [](World& w) {
+        const auto& soc = w.society();
+        for (const auto& [id, life] : soc.state().residents)
+            if (const auto* job = soc.jobOf(id))
+                (void)soc.payerOf(id, *job, 30);
+    };
+    askAll(asked);                                   // (Before its first tick: the world hasn't told it its towns.)
+    for (auto* w : {&asked, &alone})
+    {
+        w->tick(.6);                                 // (Its day begun: the restart below is to the same day.)
+        auto saved = w->save();
+        saved.calendarDays = std::floor(saved.calendarDays) + .4;   // (In its working hours.)
+        expect(w->restore(saved).ok, "To the morning");
+        if (w == &asked)
+            askAll(asked);                           // (After a restart, before its first decision, and a gift.)
+        w->society().shift("treasury", "w3", "", 0, 2000, "test: west's third the richest of its house");
+    }
+    // A working morning, then the next day's (its house founded at the day's turn, and paying).
+    for (int morning = 0; morning < 2; ++morning)
+    {
+        if (morning == 1)
+            for (auto* w : {&asked, &alone})
+            {
+                auto saved = w->save();
+                saved.calendarDays = std::floor(saved.calendarDays) + 1.4;
+                expect(w->restore(saved).ok, "To the next morning");
+            }
+        for (int t = 0; t < 1500; ++t)
+        {
+            if (t % 37 == 5)
+                askAll(asked);
+            asked.tick(1);
+            alone.tick(1);
+        }
+        // (Each morning's end: a household's purse is pooled at the day's turn, which would hide who paid.)
+        const auto& a = asked.society().state().accounts;
+        const auto& b = alone.society().state().accounts;
+        expect(a.size() == b.size(), "The same accounts");
+        for (const auto& [id, acct] : a)
+        {
+            const auto other = b.find(id);
+            expect(other != b.end() && other->second.cash == acct.cash && other->second.stock == acct.stock,
+                   (hours ? "By the hours, " : "") + std::string("morning ") + std::to_string(morning + 1) + ": " + id +
+                       " holds the same, asked or not (" + std::to_string(acct.cash) + "p against " +
+                       std::to_string(other == b.end() ? -1 : other->second.cash) + "p)");
+        }
+        for (const auto& [id, e] : asked.entities())
+        {
+            const auto* other = alone.entity(id);
+            expect(other && other->cellId == e.cellId && other->position.x == e.position.x && other->position.y == e.position.y &&
+                       other->activity == e.activity,
+                   id + " is where it would have been");
+        }
+    }
+    // (What the case rests on: the maid is the household's richest's to pay, the smoker the house's.)
+    const auto& soc = alone.society();
+    expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == "w3", "The maid is paid by west's richest");
+    expect(soc.payerOf("smoker", *soc.jobOf("smoker"), 30).account == "house:house_ash",
+           "and the smoker by East's great house (" + soc.payerOf("smoker", *soc.jobOf("smoker"), 30).account + ", " +
+               (soc.houses().empty() ? "none" : soc.houses()[0].community) + ")");
+    expect(asked.society().conserved() && alone.society().conserved(), "Money stays conserved");
+    // A restart on the same day with other purses (a save from before a windfall): the household's richest as the save
+    // has them, not as they were.
+    {
+        auto saved = alone.save();
+        auto& accounts = saved.society.accounts;
+        accounts.at("w1").cash += accounts.at("w3").cash + 100;
+        accounts.at("treasury").cash -= accounts.at("w3").cash + 100;
+        expect(alone.restore(saved).ok, "A restart, w1 the richer");
+        alone.tick(1);
+        expect(soc.payerOf("maid", *soc.jobOf("maid"), 30).account == "w1", "and the maid is w1's to pay");
+    }
+    Society::setWorkByHours(false);
+}
+
 // A living for every grown wolf (doc 42, Phase 3): out of work, one labours for the Town Works at the square, paid by
 // the town; at 65, one retires; a foreman's unpaid post is paid by the town; a beggar's isn't.
 void aLivingForEveryone()
@@ -3605,6 +3698,8 @@ int main()
         townBuyersAndContractsForGoods();
         townPursesAndTheReckoning();
         whoPaysWages();
+        askingWhoPaysLeavesTheRun(false);
+        askingWhoPaysLeavesTheRun(true);
         aLivingForEveryone();
         workingOutOfTown();
         greatHouses();

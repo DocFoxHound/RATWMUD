@@ -67,6 +67,7 @@ void Society::reset(Roster roster)
 {
     roster_ = roster;
     state_ = {};
+    richestDay_ = -1;                               // (The day's richest, again at the next decision: rollRichest.)
     tills_.clear();
     messes_.clear();
     messMeals_.clear();
@@ -630,6 +631,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             reckon(day);                               // The month's tax and tithes, when one is due (RatwReckoning.cpp).
             tendHouses(day);                           // Great houses' businesses: wages, takings, props (RatwHouses.cpp).
             tendTills(day);                            // Owner-run businesses' tills: their keepers' wages (RatwTills.cpp).
+            rollRichest();                             // Each household's richest, for the day's payers (RatwWages.cpp).
             tendLabour(day, bodies);                   // The labour market: wages, posts judged and left (RatwLabour.cpp).
             spendSurpluses(day);                       // What the treasuries, churches and houses hold above need goes back out.
             dailyRelief(day, bodies);                  // A day's food money to households short of it (RatwInstitutions.cpp).

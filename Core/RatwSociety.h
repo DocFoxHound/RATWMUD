@@ -1714,6 +1714,7 @@ class Society
     static constexpr std::size_t WantSample = 4;
     mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).
     mutable bool housesKnown_ = false;
+    mutable bool housesTold_ = false;                       // (Built with the world's towns: houses().)
     void foundHouses();
     // The house a business belongs to (doc 61): the one named in it, else the one whose trade it is, else none (its
     // keeper's own); houses with no trade (a world without houses.json) own industry, and half the shops, by lot.
@@ -1726,9 +1727,15 @@ class Society
     mutable std::int64_t outworkDay_ = -1;
     std::set<std::string> offered_;                        // Who has put something on the plate this Restday.            // Worker -> the day its employer first couldn't pay (not saved).
     mutable std::unordered_map<std::string, std::vector<std::string>> employers_;   // Work cell -> shops' and houses' positions.
-    mutable std::map<std::string, std::string> richest_;    // Home cell -> its household's richest (for the day).
-    mutable std::int64_t richestDay_ = -1;
-    const std::string* richestAt(const std::string& homeCell, const std::string& besides) const;
+    // Each home cell's household's richest, for the day. Filled at fixed points of the society's own day (rollRichest:
+    // the day's turn, before the labour market, and a day's first decision with none yet), never by whoever asks first:
+    // a talk scene or a harness asking payerOf leaves the run as it was (doc 64, Phase 13, round 6). Asked before
+    // they're known, they're worked out for that asking alone.
+    std::map<std::string, std::string> richest_;
+    std::int64_t richestDay_ = -1;
+    void rollRichest();
+    std::string richestAt(const std::string& homeCell, const std::string& besides) const;
+    std::string richestIn(const std::string& homeCell) const;   // (Worked out afresh: richestAt's fallback.)
     void indexEmployers() const;
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.

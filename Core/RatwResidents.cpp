@@ -368,7 +368,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     indexEmployers();
     (void)spec(std::string());
     (void)houses();
-    (void)richestAt(std::string(), std::string());
+    // (Each household's richest: at the day's turn, or here, at a day's first decision with none yet, a restart's or a
+    // founding's. Never at whoever asks first: doc 64, Phase 13, round 6.)
+    if (richestDay_ != state_.budgetDay)
+        rollRichest();
     rollOutwork();
     indexOddJobs();
     refreshRecords();                               // (Each resident by number: see ResidentRecord.)

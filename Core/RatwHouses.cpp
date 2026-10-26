@@ -25,9 +25,13 @@ std::string slug(const std::string& name)
 
 const std::vector<House>& Society::houses() const
 {
-    if (housesKnown_)
+    // (Again once the world has said which town a cell is in, the day's communityOf: before, a house's town is only its
+    // stores' guess, and from a first asking then (a harness's, before the world's first tick) it stayed so for good, and
+    // the run with it. Doc 64, Phase 13, round 6.)
+    if (housesKnown_ && (housesTold_ || !day_.communityOf))
         return houses_;
     housesKnown_ = true;
+    housesTold_ = bool(day_.communityOf);
     houses_.clear();
     for (const auto& p : positions_)
     {

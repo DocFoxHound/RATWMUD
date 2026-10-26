@@ -136,8 +136,8 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     // A household's servant ("serving the household", "keeping the chambers"): paid by the richest of the household
     // whose home it works in.
     if (const auto own = state_.residents.find(resident); own == state_.residents.end() || own->second.homeCell != job.work.cell)
-        if (const auto* master = richestAt(job.work.cell, resident))
-            return {*master, "the house"};
+        if (const auto master = richestAt(job.work.cell, resident); !master.empty())
+            return {master, "the house"};
     // A hand at a trade's works (at the forge, working the saws, smoking fish): paid by a keeper of that trade in its
     // town, or else by its town's richest great house, who own the industry.
     if (said.trade >= 0)
@@ -182,24 +182,45 @@ std::string Society::wageKind(const Payer& payer, const Position& job) const
     return "labour";                                 // (The town's own posts and its works.)
 }
 
-const std::string* Society::richestAt(const std::string& homeCell, const std::string& besides) const
+void Society::rollRichest()
 {
-    // The household living in a cell, by its richest grown member (cached for the day).
-    if (richestDay_ != state_.budgetDay)
-    {
-        richest_.clear();
-        richestDay_ = state_.budgetDay;
-        std::map<std::string, std::int64_t> most;
-        for (const auto& [id, life] : state_.residents)
-            if (const auto* purse = account(id); purse && !life.homeCell.empty() && (!most.count(life.homeCell) || purse->cash > most[life.homeCell]))
-                most[life.homeCell] = purse->cash, richest_[life.homeCell] = id;
-    }
+    // The household living in each cell, by its richest member.
+    richest_.clear();
+    richestDay_ = state_.budgetDay;
+    std::map<std::string, std::int64_t> most;
+    for (const auto& [id, life] : state_.residents)
+        if (const auto* purse = account(id); purse && !life.homeCell.empty() && (!most.count(life.homeCell) || purse->cash > most[life.homeCell]))
+            most[life.homeCell] = purse->cash, richest_[life.homeCell] = id;
+}
+
+std::string Society::richestIn(const std::string& homeCell) const
+{
+    std::string who;
+    std::int64_t most = 0;
+    for (const auto& [id, life] : state_.residents)
+        if (const auto* purse = account(id); purse && life.homeCell == homeCell && (who.empty() || purse->cash > most))
+            most = purse->cash, who = id;
+    return who;
+}
+
+std::string Society::richestAt(const std::string& homeCell, const std::string& besides) const
+{
     // The room itself, or the house it is a room of (a palazzo's salon below its family's chambers: "villa_x",
     // "villa_x_up").
+    const bool known = richestDay_ == state_.budgetDay;
     for (const auto& cell : {homeCell, homeCell + "_up", homeCell.size() > 3 && homeCell.compare(homeCell.size() - 3, 3, "_up") == 0
                                                             ? homeCell.substr(0, homeCell.size() - 3) : std::string()})
-        if (const auto found = richest_.find(cell); !cell.empty() && found != richest_.end() && found->second != besides)
-            return &found->second;
-    return nullptr;
+    {
+        if (cell.empty())
+            continue;
+        std::string who;
+        if (!known)
+            who = richestIn(cell);                  // (Asked before the day's are known: for this asking alone, never kept.)
+        else if (const auto found = richest_.find(cell); found != richest_.end())
+            who = found->second;
+        if (!who.empty() && who != besides)
+            return who;
+    }
+    return {};
 }
 } // namespace ratw
