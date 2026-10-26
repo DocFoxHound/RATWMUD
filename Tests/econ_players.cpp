@@ -2,11 +2,13 @@
 #include "econ_players.h"
 
 #include "RatwCalendar.h"
+#include "RatwCamps.h"
 #include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <sstream>
 
 namespace ratw::econ
@@ -27,10 +29,19 @@ std::string quoted(const std::string& s)
             out += c;
     return out + "\"";
 }
+double apart(Vec2 a, Vec2 b)
+{
+    return std::hypot(a.x - b.x, a.y - b.y);
+}
 // Every coin a player has is the capital's treasury's, moved by the ledger ("test:" money: nobody's earnings).
 const char* Funding = "test: a player's money, from the capital's treasury";
 constexpr int Quarters = 96;                       // Quarters of an hour in a day: when the players act.
 constexpr int PackKinds = 56;                      // A pack this full of kinds goes to a chest (MaxGoodsKinds 64).
+constexpr int Lot = 99;                            // The most moved at once (Society::trade's; the journal's too).
+constexpr double Reach = 1.5;                      // Tiles: beside its mark (World::steal reaches 1.6).
+constexpr double LookEvery = .5, AimEvery = 2;     // World seconds between a body's looks about it, and its new aims.
+constexpr double QuarterSeconds = calendar::SecondsPerDay / Quarters;   // A quarter of an hour, in world seconds.
+const std::vector<std::string> None;
 } // namespace
 
 const std::vector<std::string>& Players::names()
@@ -39,37 +50,71 @@ const std::vector<std::string>& Players::names()
     return all;
 }
 
-Players::Players(World& world, std::vector<std::string> scenarios, std::int64_t fromDay, std::int64_t days)
-    : world_(world), scenarios_(std::move(scenarios)), from_(fromDay), days_(days)
+bool Players::bodiesNamed(const std::string& name, Bodies& out)
 {
+    if (name == "walk" || name == "still" || name == "jump")
+    {
+        out = name == "walk" ? Bodies::Walk : name == "still" ? Bodies::Still : Bodies::Jump;
+        return true;
+    }
+    return false;
+}
+
+Players::Players(World& world, std::vector<std::string> scenarios, std::int64_t fromDay, std::int64_t days, Bodies bodies)
+    : world_(world), scenarios_(std::move(scenarios)), from_(fromDay), days_(days), bodies_(bodies)
+{
+}
+
+const std::vector<std::string>& Players::playersOf(const std::string& scenario) const
+{
+    const auto found = who_.find(scenario);
+    return found == who_.end() ? None : found->second;
+}
+
+const std::vector<std::string>& Players::accountsOf(const std::string& scenario) const
+{
+    const auto found = holds_.find(scenario);
+    return found == holds_.end() ? None : found->second;
 }
 
 void Players::step()
 {
+    if (!leaving_.empty())
+        leave();
+    if (started_ && !ended_ && bodies_ != Bodies::Jump)
+        lookAbout();
     const auto quarter = std::int64_t(std::floor(world_.calendarDays() * Quarters));
     if (quarter == quarter_)
         return;
     quarter_ = quarter;
     const auto day = quarter / Quarters;
-    if (day < from_)
-        return;
-    if (days_ > 0 && day >= from_ + days_)
+    if (firstDay_ < 0)
     {
-        if (started_ && !ended_)
-            end();
+        // Their days count from when they start: a run that starts after --players-from says so.
+        firstDay_ = day;
+        if (day > from_)
+            std::cerr << "players: the run starts on day " << day << ", after their day " << from_ << ": they start on day " << day
+                      << (days_ > 0 ? " and stay " + std::to_string(days_) + " days from then" : std::string()) << "\n";
+    }
+    if (ended_ || day < from_)
+        return;
+    if (started_ && days_ > 0 && day >= startDay_ + days_)
+    {
+        end();
         return;
     }
     refreshShops(day);
     if (!started_)
-        start();
+        start(day);
     for (const auto& s : scenarios_)
         act(s, day, int(quarter % Quarters));
 }
 
-void Players::refreshShops(std::int64_t day)
+void Players::refreshShops(std::int64_t day, bool again)
 {
-    // Every shop whose keeper is living, by the town it works in (once a day: a keeper who dies has a successor).
-    if (day == shopsDay_)
+    // Every shop whose keeper is living, by the town it works in (once a day, or again after a death: a keeper who dies
+    // has a successor).
+    if (day == shopsDay_ && !again)
         return;
     shopsDay_ = day;
     shops_.clear();
@@ -78,7 +123,16 @@ void Players::refreshShops(std::int64_t day)
         if (p.role == "merchant")
             if (const auto held = society.state().careers.positions.find(p.id); held != society.state().careers.positions.end())
                 if (const auto* e = world_.entity(held->second.holder); e && !e->dead)
-                    shops_.push_back({held->second.holder, world_.communityOf(p.work.cell)});
+                    shops_.push_back({held->second.holder, p.id, world_.communityOf(p.work.cell)});
+}
+
+bool Players::open(const Shop& shop) const
+{
+    // (A keeper who died since the list was made, or left its post, keeps no shop: its purse isn't one.)
+    const auto* e = world_.entity(shop.keeper);
+    const auto& posts = world_.society().state().careers.positions;
+    const auto held = posts.find(shop.post);
+    return e && !e->dead && held != posts.end() && held->second.holder == shop.keeper;
 }
 
 std::string Players::join(const std::string& scenario, int n)
@@ -102,6 +156,12 @@ std::int64_t Players::fund(const std::string& scenario, const std::string& to, s
     return coins;
 }
 
+std::int64_t Players::poachWage() const
+{
+    // Twice what a Hold pays (Game::keepWage: the realm's going rate, camp::HoldWage at least), read each day.
+    return 2 * std::max<std::int64_t>(camp::HoldWage, std::int64_t(std::ceil(world_.society().labourDay("") - 1e-9)));
+}
+
 void Players::note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
                    int quantity, std::int64_t coins)
 {
@@ -120,13 +180,15 @@ int Players::buyAll(const std::string& scenario, const std::string& player, cons
 {
     // Every one the shop has, of every quality, as the game sells them (Society::trade: 99 at most a trade).
     auto& society = world_.society();
+    if (!open(shop))
+        return 0;
     const auto deals = society.wares(shop.keeper);
     const auto till = society.tillOf(shop.keeper);
     if (std::find(deals.begin(), deals.end(), base) == deals.end() || !society.account(till))
         return 0;
     int got = 0;
     for (const auto& kind : Society::kindsHeld(*society.account(till), base))
-        for (int k = std::min(99, Society::stock(*society.account(till), kind)); k > 0;)
+        for (int k = std::min(Lot, Society::stock(*society.account(till), kind)); k > 0;)
         {
             const auto r = society.trade(player, shop.keeper, kind, k, true);
             if (!r.ok)
@@ -136,7 +198,7 @@ int Players::buyAll(const std::string& scenario, const std::string& player, cons
             }
             got += k;
             note(scenario, player, "bought", kind, k, r.total);
-            k = std::min(99, Society::stock(*society.account(till), kind));
+            k = std::min(Lot, Society::stock(*society.account(till), kind));
         }
     return got;
 }
@@ -153,10 +215,12 @@ int Players::sellAll(const std::string& scenario, const std::string& player, con
     {
         if (held() <= 0)
             break;
-        const auto deals = society.wares(shop.keeper);
-        if ((towns != towns_.end() && !trades(shop, towns->second)) || std::find(deals.begin(), deals.end(), base) == deals.end())
+        if (!open(shop) || (towns != towns_.end() && !trades(shop, towns->second)))
             continue;
-        for (int k = std::min(99, held()); k > 0;)
+        const auto deals = society.wares(shop.keeper);
+        if (std::find(deals.begin(), deals.end(), base) == deals.end())
+            continue;
+        for (int k = std::min(Lot, held()); k > 0;)
         {
             const auto r = society.trade(player, shop.keeper, item, k, false);
             if (!r.ok)
@@ -166,7 +230,7 @@ int Players::sellAll(const std::string& scenario, const std::string& player, con
             }
             sold += k;
             note(scenario, player, scenario == "theft" ? "fenced" : "sold", item, k, r.total);
-            k = std::min(99, held());
+            k = std::min(Lot, held());
         }
     }
     return sold;
@@ -174,7 +238,9 @@ int Players::sellAll(const std::string& scenario, const std::string& player, con
 
 void Players::stow(const std::string& scenario, const std::string& player)
 {
-    // A pack holds so many kinds of goods (MaxGoodsKinds); past that, they go into a rented chest (doc 54's "let:").
+    // A pack holds so many kinds of goods (MaxGoodsKinds); past that, they go into chests: accounts of the player's own
+    // ("let:" as doc 54's lodgings' are), but free, with no lodging and no rent (a stand-in). In lots of 99 at most, as
+    // a pack is unloaded, so the journal (which notes 99 a move at most) has every one.
     auto& society = world_.society();
     const auto* pack = society.account(player);
     if (!pack || int(pack->stock.size()) < PackKinds)
@@ -185,21 +251,33 @@ void Players::stow(const std::string& scenario, const std::string& player)
             goods.push_back({item, n});
     auto& chests = holds_[scenario];
     for (const auto& [item, n] : goods)
-    {
-        const auto* chest = chests.empty() ? nullptr : society.account(chests.back());
-        if (!chest || (!chest->stock.count(item) && int(chest->stock.size()) >= PackKinds))
+        for (int left = n, full = 0; left > 0 && full < 2;)
         {
-            chests.push_back("let:" + player + "-" + std::to_string(chests.size() + 1));
-            society.openAccount(chests.back());
+            const auto* chest = chests.empty() ? nullptr : society.account(chests.back());
+            if (!chest || full > 0 || (!chest->stock.count(item) && int(chest->stock.size()) >= PackKinds))
+            {
+                chests.push_back("let:" + player + "-" + std::to_string(chests.size() + 1));
+                society.openAccount(chests.back());
+                chest = society.account(chests.back());
+            }
+            const int before = chest ? Society::stock(*chest, item) : 0;
+            const bool put = society.shift(player, chests.back(), item, std::min(Lot, left), 0, "put in a chest");
+            const int moved = put ? Society::stock(*society.account(chests.back()), item) - before : 0;   // (A full one takes fewer.)
+            if (moved <= 0)
+            {
+                ++full;                             // (That chest holds all of it that it can: another.)
+                continue;
+            }
+            full = 0;
+            note(scenario, player, "stowed", item, moved, 0);
+            left -= moved;
         }
-        if (society.shift(player, chests.back(), item, n, 0, "put in a chest"))
-            note(scenario, player, "stowed", item, n, 0);
-    }
 }
 
-void Players::start()
+void Players::start(std::int64_t day)
 {
     started_ = true;
+    startDay_ = day;
     auto& society = world_.society();
     capital_ = society.capital();
     std::map<std::string, int> shopsIn;
@@ -211,9 +289,12 @@ void Players::start()
     for (const auto& [town, n] : shopsIn)
         if (!town.empty())
             towns.push_back(town);
-    // Player i of n trades in town i of the towns (and every nth after, when there are fewer players than towns).
+    // Player i of n trades in town i of the towns (and every nth after, when there are fewer players than towns); with
+    // no towns, anywhere.
     const auto spread = [&](const std::string& player, int i, int n) {
         auto& mine = towns_[player];
+        if (towns.empty())
+            return;
         for (int t = 0; t < int(towns.size()); ++t)
             if (t % n == i % n || i % int(towns.size()) == t)
                 mine.insert(towns[std::size_t(t)]);
@@ -222,8 +303,10 @@ void Players::start()
         if (s == "hoard")
         {
             // Twenty wolves out on the capital's hunting and gathering grounds (any town's, if it has none), the same
-            // game and patches its own hunters and gatherers work (World::harvestAt), selling in those towns' shops.
-            // A player roams: each spell at another ground.
+            // game and patches its own hunters and gatherers work, selling in those towns' shops. A player roams: each
+            // spell at another ground. (A stand-in: what a spell gives is an outworker's, World::harvestAt through
+            // Society::day().harvest, a hunt's kill at its odds, a forage without its wait; not a player's World::forage
+            // and hunts, which would want twenty bodies in the wild and a fight each.)
             std::set<std::string> where;
             for (const bool anywhere : {false, true})
                 if (const auto& all = society.day().grounds; all && grounds_.empty())
@@ -288,6 +371,8 @@ void Players::start()
                 const auto* job = society.jobOf(id);
                 note(s, chapter, "hired", id + " (" + (job ? job->title : std::string()) + ")", 1, 0);
             }
+            // The first day's pay put by now; each dawn tops it up to that day's (act).
+            fund(s, chapter, poachWage() * std::int64_t(staff_.size()));
         }
         else if (s == "kill")
         {
@@ -324,27 +409,201 @@ void Players::start()
                         note(s, holder, "killed", p->title, 1, 0);
                     }
                 }
+            refreshShops(day, true);                // (The dead keep no shops today.)
         }
         else if (s == "theft" || s == "visit")
         {
-            // Five thieves (or visitors) with bodies in the world (World::steal needs one beside its mark), arriving at a
-            // capital shop.
-            const Position* at = nullptr;
+            // Five thieves (or visitors) with bodies in the world (World::steal needs one beside its mark), arriving at
+            // the capital's shops, one at each of five.
+            std::vector<const Position*> at;
             for (const auto& p : society.positions())
-                if (!at && p.role == "merchant" && world_.communityOf(p.work.cell) == capital_)
-                    at = &p;
+                if (p.role == "merchant" && world_.communityOf(p.work.cell) == capital_)
+                    at.push_back(&p);
             for (int i = 1; i <= 5; ++i)
             {
                 const auto id = "player-" + s + "-" + std::to_string(i);
                 const auto name = (s == "theft" ? "Thief " : "Visitor ") + std::to_string(i);
-                if (at)
-                    world_.addPlayer(id, name, at->work.cell, {at->work.x, at->work.y});
+                if (const auto* p = at.empty() ? nullptr : at[std::size_t(i - 1) % at.size()])
+                    world_.addPlayer(id, name, p->work.cell, {p->work.x, p->work.y});
                 else
                     world_.addPlayer(id, name);
                 who_[s].push_back(id);
                 towns_[id] = {capital_};
                 note(s, id, "joined", "", 0, society.account(id) ? society.account(id)->cash : 0);
             }
+        }
+}
+
+bool Players::markable(const std::string& id) const
+{
+    const auto& society = world_.society();
+    const auto* life = society.resident(id);
+    const auto* e = life ? world_.entity(id) : nullptr;
+    if (!e || e->dead || e->age < 16 || world_.custodyOf(id) || world_.communityOf(life->homeCell) != capital_)
+        return false;
+    const auto* job = society.jobOf(id);
+    return !job || job->role != "guard";
+}
+
+void Players::tryPurse(const std::string& s, const std::string& thief, const std::string& mark)
+{
+    auto& society = world_.society();
+    const auto before = society.account(thief) ? *society.account(thief) : EconomyAccount{};
+    if (!world_.steal(thief, mark).ok)
+        return;
+    note(s, thief, "tried", "", 1, 0);              // (Taken or not: World::steal's own odds and the watch's eyes.)
+    const auto* after = society.account(thief);
+    if (!after)
+        return;
+    if (after->cash > before.cash)
+        note(s, thief, "stole", "", 0, after->cash - before.cash);
+    for (const auto& [item, n] : after->stock)
+        if (const int was = Society::stock(before, item); n > was)
+        {
+            note(s, thief, "stole", item, n - was, 0);
+            loot_[thief].insert(item);
+        }
+}
+
+void Players::setOff(const std::string& s, const std::string& body, std::int64_t day, int quarter)
+{
+    // A quarter of an hour's purpose: whom to go up to (theft's mark; visit's, to stand beside and take nothing).
+    const auto* me = world_.entity(body);
+    if (!me || bodies_ == Bodies::Still)
+        return;
+    const auto pick = lot(body + "|" + std::to_string(day) + "|" + std::to_string(quarter));
+    if (bodies_ == Bodies::Jump)
+    {
+        // Beside a mark anywhere in the capital (World::teleport: a Dungeon Master's move).
+        std::vector<std::string> marks;
+        for (const auto& [id, life] : world_.society().state().residents)
+            if (markable(id))
+                marks.push_back(id);
+        if (marks.empty())
+            return;
+        const auto& mark = marks[std::size_t(pick * double(marks.size()))];
+        const auto* v = world_.entity(mark);
+        if (v && world_.teleport(body, v->cellId, v->position.x, v->position.y).ok && s == "theft")
+            tryPurse(s, body, mark);
+        return;
+    }
+    // Walking: someone in the place it is (World::moveTo up to them; lookAbout acts on arrival), not the one it went up
+    // to last; on the hour, or with nobody there, on into the next of the capital's places (a seam walked across, a
+    // door opened and entered: as a player clicks), so it goes about the capital as the jumping ones do, a step at a time.
+    auto& w = walkers_[body];
+    if (!w.mark.empty())
+        return;                                     // (Still on its way to the last.)
+    std::vector<std::string> marks;
+    for (const auto* e : world_.entitiesIn(me->cellId))
+        if (e->cellId == me->cellId && e->npc && e->id != w.last && markable(e->id))
+            marks.push_back(e->id);
+    std::sort(marks.begin(), marks.end());
+    // Each place it could go next, and the ways in (a door; a seam's every tile, each body taking its own, as players
+    // cross a street's width and don't all make for one tile).
+    std::map<std::string, std::vector<const Door*>> ways;
+    if (marks.empty() || quarter % 4 == 0)
+        for (const auto* d : world_.doorsIn(me->cellId))
+            if (d->portal && !d->locked && world_.communityOf(d->targetCell) == capital_)
+                ways[d->targetCell].push_back(d);
+    if (!ways.empty())
+    {
+        auto next = ways.begin();
+        std::advance(next, std::ptrdiff_t(pick * double(ways.size())));
+        const auto& in = next->second;
+        const auto* d = in[std::size_t(lot(body + "|way|" + std::to_string(day) + "|" + std::to_string(quarter)) * double(in.size()))];
+        if (world_.moveTo(body, d->position.x, d->position.y).ok)
+            w = {"door:" + d->id, d->position, world_.time(), w.tried, w.last};
+        return;
+    }
+    if (!marks.empty())
+    {
+        const auto& mark = marks[std::size_t(pick * double(marks.size()))];
+        const auto* v = world_.entity(mark);
+        if (world_.moveTo(body, v->position.x, v->position.y).ok)
+            w = {mark, v->position, world_.time(), w.tried, mark};
+    }
+}
+
+void Players::lookAbout()
+{
+    // Twice a world second, each body sees how it is getting on: beside its mark, it acts; its mark moved off, it turns
+    // after it (every two seconds at most); a quarter of an hour without getting there, it gives up. One standing still
+    // tries any purse that comes within reach, once a quarter of an hour.
+    const double now = world_.time();
+    if (lookedAt_ >= 0 && now - lookedAt_ < LookEvery)
+        return;
+    lookedAt_ = now;
+    const double calendar = world_.calendarDays();
+    const double hour = (calendar - std::floor(calendar)) * 24;
+    if (hour < 9 || hour >= 21)
+        return;
+    const auto quarter = std::int64_t(std::floor(calendar * Quarters));
+    for (const char* s : {"theft", "visit"})
+        for (const auto& body : playersOf(s))
+        {
+            const auto* me = world_.entity(body);
+            if (!me || world_.custodyOf(body))
+                continue;
+            auto& w = walkers_[body];
+            const bool thief = std::string(s) == "theft";
+            if (bodies_ == Bodies::Still)
+            {
+                if (!thief || w.tried == quarter)
+                    continue;
+                std::string mark;
+                double nearest = Reach;
+                for (const auto* e : world_.entitiesIn(me->cellId))
+                    if (const double d = apart(e->position, me->position);
+                        e->cellId == me->cellId && e->npc && (d < nearest || (d == nearest && e->id < mark)) && markable(e->id))
+                        mark = e->id, nearest = d;
+                if (!mark.empty())
+                {
+                    w.tried = quarter;
+                    tryPurse(s, body, mark);
+                }
+                continue;
+            }
+            if (w.mark.empty())
+                continue;
+            if (w.mark.rfind("door:", 0) == 0)
+            {
+                // On its way out: across a seam it is through by itself; a door it opens and goes in by, once there.
+                const auto* d = world_.door(w.mark.substr(5));
+                if (!d || d->cellId != me->cellId || now - w.since > QuarterSeconds)
+                    w.mark.clear();
+                else if (!d->boundary && apart(d->position, me->position) <= d->reach)
+                {
+                    if (!d->open)
+                        world_.interact(body, d->id, "open");
+                    world_.interact(body, d->id, "enter");
+                    w.mark.clear();
+                }
+                continue;
+            }
+            const auto* m = world_.entity(w.mark);
+            if (!m || m->cellId != me->cellId || !markable(w.mark) || now - w.since > QuarterSeconds)
+            {
+                w.mark.clear();
+                world_.stop(body);
+                continue;
+            }
+            if (apart(m->position, me->position) <= Reach)
+            {
+                const auto mark = w.mark;
+                w.mark.clear();
+                world_.stop(body);
+                if (thief && w.tried != quarter)
+                {
+                    w.tried = quarter;
+                    tryPurse(s, body, mark);
+                }
+                else if (!thief)
+                    note(s, body, "came up to", "", 1, 0);
+                continue;
+            }
+            if (apart(m->position, w.aim) > 1 && now - w.since >= AimEvery)
+                if (world_.moveTo(body, m->position.x, m->position.y).ok)
+                    w.aim = m->position;
         }
 }
 
@@ -381,10 +640,10 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
     }
     else if (s == "corner" && quarter == 6 * 4)
     {
-        // At six each morning for a week, every loaf, sack of flour and meal on the capital's shelves; then, each morning,
-        // back to whichever shops take them.
+        // At six each morning for its first week, every loaf, sack of flour and meal on the capital's shelves; then, each
+        // morning, back to whichever shops take them.
         const auto& id = who_[s].front();
-        if (day < from_ + 7)
+        if (day < startDay_ + 7)
         {
             for (const auto& shop : shops_)
                 if (shop.town == capital_)
@@ -409,8 +668,8 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
             {
                 const int held = society.account(id) ? Society::stock(*society.account(id), item) : 0;
                 const bool hide = std::string(item) == "hide";
-                if (held < 99 && society.create(id, item, 99 - held, hide ? "hunted" : "made at the Hold"))
-                    note(s, id, hide ? "hunted" : "made", item, 99 - held, 0);
+                if (held < Lot && society.create(id, item, Lot - held, hide ? "hunted" : "made at the Hold"))
+                    note(s, id, hide ? "hunted" : "made", item, Lot - held, 0);
                 sellAll(s, id, item);
             }
     }
@@ -420,7 +679,7 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
         // purse lasts.
         const auto& id = who_[s].front();
         for (const auto& shop : shops_)
-            if (const auto* till = society.account(society.tillOf(shop.keeper)))
+            if (const auto* till = open(shop) ? society.account(society.tillOf(shop.keeper)) : nullptr)
             {
                 std::set<std::string> bases;
                 for (const auto& [item, n] : till->stock)
@@ -435,11 +694,15 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
     }
     else if (s == "poach" && quarter == 0)
     {
-        // Each dawn, its hands paid (a week's wages put by each week first); one it can't pay goes home (campTick).
+        // Each dawn, its hands paid, the Chapter's treasury first topped up to the day's pay at the day's rate (what it
+        // can't get from the capital's treasury noted, "short"); one it can't pay goes home (campTick).
         const auto& chapter = holds_[s].front();
-        const auto wage = 2 * std::max<std::int64_t>(5, std::int64_t(std::ceil(society.labourDay("") - 1e-9)));   // (Twice keepWage.)
-        if ((day - from_) % 7 == 0)
-            fund(s, chapter, 7 * wage * std::int64_t(staff_.size()));
+        const auto wage = poachWage();
+        const auto need = wage * std::int64_t(staff_.size());
+        const auto* purse = society.account(chapter);
+        if (const auto lacking = need - (purse ? purse->cash : 0); lacking > 0)
+            if (const auto got = fund(s, chapter, lacking); got < lacking)
+                note(s, chapter, "short", "", 0, lacking - got);
         for (auto it = staff_.begin(); it != staff_.end();)
         {
             const auto* e = world_.entity(*it);
@@ -457,43 +720,19 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
     }
     else if ((s == "theft" || s == "visit") && quarter >= 9 * 4 && quarter < 21 * 4)
     {
-        // Every quarter of an hour from 9 to 21, each thief's hand in a purse (the capital's grown, the watch aside),
-        // beside its mark (World::teleport) as a player walks up to one. The watch is the world's own: it may hold them.
-        // A visitor goes about the same way and takes nothing (theft's control: bodies on the stage alone).
-        std::vector<std::string> marks;
-        for (const auto& [id, life] : society.state().residents)
-            if (const auto* e = world_.entity(id); e && !e->dead && e->age >= 16 && !world_.custodyOf(id) &&
-                                                   world_.communityOf(life.homeCell) == capital_)
-                if (const auto* job = society.jobOf(id); !job || job->role != "guard")
-                    marks.push_back(id);
-        for (const auto& thief : who_[s])
+        // Every quarter of an hour from 9 to 21, each thief's paw in a purse (the capital's grown, the watch aside): it
+        // sets off for its mark (setOff; lookAbout tries the purse on arrival). The watch is the world's own: it may
+        // hold them. A visitor goes about the same way and takes nothing (theft's control: bodies on the stage alone).
+        for (const auto& body : who_[s])
         {
-            if (world_.custodyOf(thief))
+            if (world_.custodyOf(body))
             {
-                if (held_.insert(thief).second)
-                    note(s, thief, "held by the watch", "", 0, 0);
+                if (held_.insert(body).second)
+                    note(s, body, "held by the watch", "", 0, 0);
                 continue;
             }
-            held_.erase(thief);
-            if (marks.empty())
-                break;
-            const auto& mark = marks[std::size_t(lot(thief + "|" + std::to_string(day) + "|" + std::to_string(quarter)) * double(marks.size()))];
-            const auto* v = world_.entity(mark);
-            if (!v || !world_.teleport(thief, v->cellId, v->position.x, v->position.y).ok || s == "visit")
-                continue;
-            const auto before = society.account(thief) ? *society.account(thief) : EconomyAccount{};
-            world_.steal(thief, mark);
-            const auto* after = society.account(thief);
-            if (!after)
-                continue;
-            if (after->cash > before.cash)
-                note(s, thief, "stole", "", 0, after->cash - before.cash);
-            for (const auto& [item, n] : after->stock)
-                if (const int was = Society::stock(before, item); n > was)
-                {
-                    note(s, thief, "stole", item, n - was, 0);
-                    loot_[thief].insert(item);
-                }
+            held_.erase(body);
+            setOff(s, body, day, quarter);
         }
     }
     else if (s == "theft" && quarter == 21 * 4 + 2)
@@ -504,9 +743,10 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 for (const auto& item : loot_[thief])
                     sellAll(s, thief, item);
     }
-    else if (s == "winter" && quarter == 7 * 4 && int(std::fmod(double(day), calendar::DaysPerYear)) < Society::WinterStart)
+    else if (s == "winter" && quarter == 7 * 4 && calendar::calendarAt(double(day) + .5).season == calendar::Season::Autumn)
     {
-        // At seven each autumn morning (before the winter: Society::WinterStart), every bundle of firewood in its towns.
+        // At seven each autumn morning (the calendar's autumn, up to the winter: Society::WinterStart), every bundle of
+        // firewood in its towns.
         for (const auto& id : who_[s])
             for (const auto& shop : shops_)
                 if (towns_[id].count(shop.town))
@@ -516,7 +756,9 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
 
 void Players::end()
 {
-    // The days over: the Hold's hands go back to their own lives (RatwGameCamps.cpp's "dismissstaff").
+    // The days over: the Hold's hands go back to their own lives (RatwGameCamps.cpp's "dismissstaff"), and the bodies
+    // leave the world as a player's does who logs off (Game: World::removePlayer; one in a fight stays till it's over).
+    // What they own they keep, as a player away does.
     ended_ = true;
     for (const auto& id : staff_)
         if (auto* npc = world_.entity(id))
@@ -526,6 +768,26 @@ void Players::end()
             note("poach", holds_["poach"].empty() ? std::string() : holds_["poach"].front(), "released", id, 1, 0);
         }
     staff_.clear();
+    for (const char* s : {"theft", "visit"})
+        for (const auto& body : playersOf(s))
+            leaving_.insert(body);
+    walkers_.clear();
+    leave();
+}
+
+void Players::leave()
+{
+    for (auto it = leaving_.begin(); it != leaving_.end();)
+    {
+        if (world_.inBattle(*it))
+        {
+            ++it;
+            continue;
+        }
+        if (world_.removePlayer(*it))
+            note(it->rfind("player-theft-", 0) == 0 ? "theft" : "visit", *it, "left", "", 0, 0);
+        it = leaving_.erase(it);
+    }
 }
 
 std::vector<PlayerMove> Players::takeMoves()
@@ -552,14 +814,12 @@ std::string Players::takeDay()
                     goods += n;
             }
         };
-        const auto players = who_.find(s);
-        for (const auto& id : players == who_.end() ? std::vector<std::string>{} : players->second)
+        const auto& players = playersOf(s);
+        for (const auto& id : players)
             count(id);
-        if (const auto extra = holds_.find(s); extra != holds_.end())
-            for (const auto& id : extra->second)
-                count(id);
-        out << (first ? "" : ",") << quoted(s) << ":{\"players\":" << (players == who_.end() ? 0 : players->second.size())
-            << ",\"cash\":" << cash << ",\"goods\":" << goods;
+        for (const auto& id : accountsOf(s))
+            count(id);
+        out << (first ? "" : ",") << quoted(s) << ":{\"players\":" << players.size() << ",\"cash\":" << cash << ",\"goods\":" << goods;
         first = false;
         if (s == "poach")
         {
@@ -582,12 +842,12 @@ std::string Players::takeDay()
             out << ",\"held\":" << held_.size();
         if (s == "theft" || s == "visit")
         {
-            // Where their bodies stand at the day's end (the residents about them are on the stage).
+            // Where their bodies stand at the day's end (the residents about them are on the stage), and how they go.
             std::map<std::string, int> at;
-            for (const auto& id : players == who_.end() ? std::vector<std::string>{} : players->second)
+            for (const auto& id : players)
                 if (const auto* e = world_.entity(id))
                     ++at[e->cellId];
-            out << ",\"at\":{";
+            out << ",\"bodies\":" << quoted(bodies_ == Bodies::Walk ? "walk" : bodies_ == Bodies::Still ? "still" : "jump") << ",\"at\":{";
             for (auto it = at.begin(); it != at.end(); ++it)
                 out << (it == at.begin() ? "" : ",") << quoted(it->first) << ":" << it->second;
             out << "}";
