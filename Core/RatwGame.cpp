@@ -2483,6 +2483,7 @@ void Game::tick(double dt)
     for (auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId))
             beforeCells[e->id] = e->cellId;
+    feedKeptHands(dt);                              // Hold hands' and companions' messes, before they decide (doc 64, Phase 13).
     {
         perf::Scope world(meter_, perf::World);
         world_.tick(dt);

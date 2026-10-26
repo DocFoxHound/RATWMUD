@@ -314,6 +314,113 @@ void Players::take(const std::string& s, const std::string& chapter, const std::
         const auto* job = world_.society().jobOf(id);
         note(s, chapter, "hired", id + " (" + (job ? job->title : std::string()) + ")", 1, 0);
     }
+    keepMesses();
+}
+
+void Players::keepMesses()
+{
+    // Each hand eats from its Hold's stores (Game::feedKeptHands: a stationed hand's mess is its Chapter's stores).
+    std::map<std::string, std::string> messes;
+    for (const auto& [s, staff] : staff_)
+        if (const auto hold = holds_.find(s); hold != holds_.end() && !hold->second.empty())
+            for (const auto& id : staff)
+                messes[id] = hold->second.front();
+    world_.society().setMesses(std::move(messes));
+}
+
+void Players::provision(const std::string& s)
+{
+    // The Hold's stores kept in food (the user, 2026-10-26: a Chapter has to keep food in for its hands): its
+    // quartermaster, a player of the Chapter, buys at the capital's food shops (in their order, what each sells that
+    // feeds) what tops the stores up to ProvisionDays of a wolf's day's food (Society::DayNourishment) a hand, and puts it
+    // in the stores as the game's "store" does. Its purse is topped up from the capital's treasury first, to twice that
+    // food at a meal's price (a stand-in for the Chapter's dues).
+    auto& society = world_.society();
+    const auto hold = holds_.find(s);
+    if (hold == holds_.end() || hold->second.empty() || staffOf(s).empty() || playersOf(s).empty())
+        return;
+    const auto chapter = hold->second.front();
+    const auto qm = playersOf(s).front();
+    const auto held = [&] {
+        int n = 0;
+        if (const auto* a = society.account(chapter))
+            for (const auto& [item, k] : a->stock)
+                if (k > 0 && Society::edible(item))
+                    n += k * Society::nourishment(item);
+        return n;
+    };
+    const int want = ProvisionDays * Society::DayNourishment * int(staffOf(s).size());
+    if (held() >= want)
+        return;
+    const auto capital = capitalNow();
+    const std::int64_t purse = std::int64_t((want - held()) / 50 + 1) * society.pennies(6 / 12., capital) * 2;
+    if (const auto* a = society.account(qm); a && a->cash < purse)
+        fund(s, qm, purse - a->cash);
+    for (const auto& shop : shops_)
+    {
+        if (held() >= want)
+            break;
+        if (shop.town != capital || !open(shop))
+            continue;
+        for (const auto& base : society.wares(shop.keeper))
+        {
+            const auto* till = society.account(society.tillOf(shop.keeper));
+            if (!till || !Society::edible(base) || held() >= want)
+                continue;
+            for (const auto& kind : Society::kindsHeld(*till, base))
+            {
+                const int each = std::max(1, Society::nourishment(kind));
+                for (int k = std::min({Lot, Society::stock(*society.account(society.tillOf(shop.keeper)), kind), (want - held() + each - 1) / each});
+                     k > 0 && held() < want;)
+                {
+                    const auto r = society.trade(qm, shop.keeper, kind, k, true);
+                    if (!r.ok)
+                    {
+                        k /= 2;                     // (Short of money: fewer.)
+                        continue;
+                    }
+                    note(s, qm, "bought", kind, k, r.total);
+                    if (society.shift(qm, chapter, kind, k, 0, "chapter stores"))
+                        note(s, qm, "stored", kind, k, 0);
+                    k = std::min({Lot, Society::stock(*society.account(society.tillOf(shop.keeper)), kind), (want - held() + each - 1) / each});
+                }
+            }
+        }
+    }
+}
+
+void Players::keepFed(const std::string& s, std::int64_t day)
+{
+    // As Game::feedKeptHands: a hand unfed at Society::KeptToldHunger told of (noted, once a day), and at KeptLeaveHunger
+    // gone back to its own life.
+    auto& society = world_.society();
+    const auto hold = holds_.find(s);
+    const auto staff = staff_.find(s);
+    if (hold == holds_.end() || hold->second.empty() || staff == staff_.end())
+        return;
+    const auto chapter = hold->second.front();
+    const auto before = staff->second.size();
+    for (auto it = staff->second.begin(); it != staff->second.end();)
+    {
+        if (society.unfed(*it, Society::KeptLeaveHunger))
+        {
+            if (auto* npc = world_.entity(*it))
+                npc->leaderId.clear();
+            world_.stop(*it);
+            note(s, chapter, "left hungry", *it, 1, 0);
+            it = staff->second.erase(it);
+            continue;
+        }
+        if (society.unfed(*it, Society::KeptToldHunger))
+            if (const auto told = hungerTold_.find(s); told == hungerTold_.end() || told->second != day)
+            {
+                hungerTold_[s] = day;
+                note(s, chapter, "told hungry", *it, 1, 0);
+            }
+        ++it;
+    }
+    if (staff->second.size() != before)
+        keepMesses();
 }
 
 void Players::payStaff(const std::string& s, const std::function<std::int64_t(const std::string&)>& wage)
@@ -346,6 +453,7 @@ void Players::payStaff(const std::string& s, const std::function<std::int64_t(co
         note(s, chapter, e && !e->dead ? "left unpaid" : "died", *it, 1, 0);
         it = staff.erase(it);
     }
+    keepMesses();
 }
 
 void Players::letGo(const std::string& s)
@@ -362,6 +470,7 @@ void Players::letGo(const std::string& s)
             note(s, accountsOf(s).empty() ? std::string() : accountsOf(s).front(), "released", id, 1, 0);
         }
     staff_.erase(s);
+    keepMesses();
 }
 
 void Players::note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
@@ -578,8 +687,11 @@ void Players::start(std::int64_t day)
             for (std::size_t i = 0; i < hands.size() && i < 20; ++i)
                 taken.push_back(hands[i].second);
             take(s, chapter, taken);
-            // The first day's pay put by now; each dawn tops it up to that day's (act).
+            // The first day's pay put by now; each dawn tops it up to that day's (act). Its quartermaster, and the first
+            // days' food in the stores.
             fund(s, chapter, poachWage() * std::int64_t(staffOf(s).size()));
+            join(s, 1);
+            provision(s);
         }
         else if (s == "strike")
         {
@@ -624,6 +736,8 @@ void Players::start(std::int64_t day)
             for (const auto& id : chosen)
                 pay += companionWage(id);
             fund(s, chapter, pay);
+            join(s, 1);                             // (Its quartermaster, and the first days' food in the stores.)
+            provision(s);
         }
         else if (s == "flood")
         {
@@ -990,22 +1104,32 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 }
             }
     }
-    else if (s == "poach" && quarter == 0)
+    else if (s == "poach")
     {
-        // Each dawn its hands paid at twice the day's rate (payStaff).
-        const auto wage = poachWage();
-        payStaff(s, [wage](const std::string&) { return wage; });
+        // Each quarter, its hands' meals seen to (keepFed); each dawn the stores topped up and its hands paid at twice the
+        // day's rate (payStaff).
+        keepFed(s, day);
+        if (quarter == 0)
+        {
+            provision(s);
+            const auto wage = poachWage();
+            payStaff(s, [wage](const std::string&) { return wage; });
+        }
     }
-    else if (s == "strike" && quarter == 0 && !struck_)
+    else if (s == "strike" && !struck_)
     {
-        // Each dawn its hands paid their companions' wages; the month over, let go at that dawn.
-        if (day >= startDay_ + StrikeDays)
+        // As poach's, its hands paid their companions' wages; the month over, let go at that dawn.
+        keepFed(s, day);
+        if (quarter == 0 && day >= startDay_ + StrikeDays)
         {
             letGo(s);
             struck_ = true;
         }
-        else
+        else if (quarter == 0)
+        {
+            provision(s);
             payStaff(s, [this](const std::string& id) { return companionWage(id); });
+        }
     }
     else if (s == "flood" && flooded_ && onTheHour && hour >= 8 && hour <= 18)
     {

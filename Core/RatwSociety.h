@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwOrchestrator.h"
@@ -680,6 +681,25 @@ class Society
     std::string eatFirst(const std::string& id, const EconomyAccount& account) const;
     bool forSale(const std::string& id, const std::string& item) const;   // A producer's own goods, for the shops.
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
+    // Kept hands' meals (doc 64, Phase 13; doc 32): a wolf off its own day (a Hold's hand, a party's companion) eats what
+    // it carries, and when it carries nothing draws a meal from its mess on the rations' mark: the Chapter's stores, or the
+    // pack of whoever asked it along. The game sets the messes as its camps and parties stand (not saved: those are), each
+    // its own account's ID by the kept hand's; one without a mess eats only what it carries.
+    void setMesses(std::map<std::string, std::string> messes) { messes_ = std::move(messes); }
+    const std::map<std::string, std::string>& messes() const { return messes_; }
+    // A kept hand that can't eat: as hungry as `hunger` or more, carrying nothing that feeds, its mess (if any) bare. The
+    // game tells the Chapter or the hirer at KeptToldHunger, and at KeptLeaveHunger lets it go back to its own life,
+    // where it eats as anyone does: nobody starves in a Chapter's service.
+    bool unfed(const std::string& id, double hunger) const;
+    static constexpr double KeptToldHunger = 70, KeptLeaveHunger = 90;
+    // The meals drawn from a mess since the last call (who, from which account, what), so the game can tell a player
+    // what went from its pack. At most MaxMessMeals kept between calls.
+    struct MessMeal
+    {
+        std::string who, mess, item;
+    };
+    static constexpr std::size_t MaxMessMeals = 256;
+    std::vector<MessMeal> takeMessMeals() { return std::exchange(messMeals_, {}); }
     // Goods made (not bought: a smith's work, a grant): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -889,6 +909,13 @@ class Society
     std::set<std::string> atStall_;                 // Merchants trading from a market stall right now.
     std::set<std::string> feasted_;                 // Fed at today's festival already.
     std::int64_t feastDay_ = -1;
+    std::map<std::string, std::string> messes_;     // Kept hand -> the account it eats from (setMesses).
+    std::vector<MessMeal> messMeals_;               // Meals drawn from a mess since takeMessMeals.
+    // A kept hand's deciding (both rosters): a meal drawn from its mess if it wants one and carries none (in its turn:
+    // false at once, `atOnce`, when it would draw), and whether it eats now.
+    bool keptHandDecides(const std::string& id, const EconomyAccount& wallet, double hunger, bool atOnce, bool& eats);
+    // And its doing: eight seconds at its meal, as anyone's, then the food that spoils soonest eaten.
+    void keptHandDoes(const std::string& id, ResidentLife& life, const EconomyAccount& wallet, bool eats, int step);
     SocietyState state_;
     Roster roster_ = Roster::Demo;
     AuthoredRoster authored_;

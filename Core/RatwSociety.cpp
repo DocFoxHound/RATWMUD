@@ -68,6 +68,8 @@ void Society::reset(Roster roster)
     roster_ = roster;
     state_ = {};
     tills_.clear();
+    messes_.clear();
+    messMeals_.clear();
     forgetOrchestra();
     wageCarry_.clear();
     loadPrices();                                   // (None: state_ is fresh.)
@@ -682,10 +684,10 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         life.fatigue = std::min(100., life.fatigue + .0025);
         if (body.companion)
         {
-            life.task = "companion";
-            life.reason = "Ordinary work is suspended while recruited.";
-            life.progress = 0;
-            life.goalCell.clear();
+            // Off its own day, it eats from its mess (doc 64, Phase 13), as in decideAuthored.
+            bool eats = false;
+            keptHandDecides(pair.first, wallet, life.hunger, false, eats);
+            keptHandDoes(pair.first, life, wallet, eats, 1);
             continue;
         }
         std::string task, goal = "tavern", reason;

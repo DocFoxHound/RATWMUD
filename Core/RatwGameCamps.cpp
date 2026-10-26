@@ -503,6 +503,106 @@ void Game::campTick(double dt)
         }
 }
 
+void Game::feedKeptHands(double dt)
+{
+    // Kept hands' meals (doc 64, Phase 13; the user, 2026-10-26): a Hold's hands eat from the Chapter's stores, reached
+    // from a storage pile at their site as a member reaches them (campHere), and a party's companion from the pack of
+    // whoever asked it along, while they are in the same place (a party has no stores of its own: each player carries
+    // its own). The society draws the meals (Society::setMesses); here, what went from a pack is told, and a hand long
+    // unfed is told of and, unfed still, goes back to its own life, where it eats as anyone does.
+    auto& society = world_.society();
+    for (const auto& meal : society.takeMessMeals())
+    {
+        if (auto* c = clientOf(meal.mess))
+        {
+            record(Economy, meal.mess);
+            system(c, names::capitalised(labelFor(meal.mess, meal.who)) + " eats " + goodsWords(meal.item, 1, 0) + " from your pack.");
+        }
+        else
+        {
+            record(Economy);
+            chapterViewsDirty_ = true;              // (The stores' view.)
+        }
+    }
+    messAccumulator_ += dt;
+    if (messesSet_ && messAccumulator_ < .5)
+        return;
+    messAccumulator_ = 0;
+    messesSet_ = true;
+    struct Kept
+    {
+        std::string npc, owner;                    // The hand, and its Chapter or its hirer.
+        const camp::Site* site = nullptr;          // A Hold's hand's site (null: a companion).
+        bool reached = false;                      // Its mess within reach.
+    };
+    std::vector<Kept> kept;
+    std::map<std::string, std::string> messes;
+    for (const auto& [npcId, st] : camps_.staff())
+    {
+        const auto* site = camps_.site(st.site);
+        if (st.arriving || !site || site->state != "standing")
+            continue;                              // (On its way to the Hold it lives as anyone does.)
+        const auto store = treasuryOf(site->chapter);
+        const bool reached = camps_.hasBuilt(site->id, "storage") && society.account(store);
+        if (reached)
+            messes[npcId] = store;
+        kept.push_back({npcId, site->chapter, site, reached});
+    }
+    for (const auto& [partyId, p] : parties_.all())
+        for (const auto& c : p.companions)
+        {
+            const auto* npc = world_.entity(c.id);
+            const auto* by = world_.entity(c.by);
+            const bool reached = npc && by && !by->npc && by->cellId == npc->cellId && society.account(c.by);
+            if (reached)
+                messes[c.id] = c.by;
+            kept.push_back({c.id, c.by, nullptr, reached});
+        }
+    if (messes != society.messes())
+        society.setMesses(std::move(messes));
+    // Unfed: told once a day (each Chapter, each hirer); at KeptLeaveHunger, gone home.
+    const auto day = std::int64_t(std::floor(world_.calendarDays()));
+    if (hungerTold_.size() > 2000)
+        hungerTold_.clear();
+    std::vector<std::string> companionsGo;
+    bool staffGone = false;
+    for (const auto& k : kept)
+    {
+        if (!society.unfed(k.npc, Society::KeptToldHunger))
+            continue;
+        const auto who = names::capitalised(k.site ? strangerLabel(k.npc) : labelFor(k.owner, k.npc));
+        if (society.unfed(k.npc, Society::KeptLeaveHunger))
+        {
+            if (k.site)
+            {
+                tellChapter(k.owner, who + " leaves " + k.site->name + ": there was nothing to eat.");
+                camps_.staff().erase(k.npc);
+                if (auto* npc = world_.entity(k.npc))
+                    npc->leaderId.clear();
+                staffGone = true;
+            }
+            else
+                companionsGo.push_back(k.npc);
+            continue;
+        }
+        if (const auto told = hungerTold_.find(k.owner); told != hungerTold_.end() && told->second == day)
+            continue;                              // (Told today.)
+        hungerTold_[k.owner] = day;
+        if (k.site)
+            tellChapter(k.owner, !k.reached ? "The hands at " + k.site->name + " are going hungry: build a storage pile there, so they can eat from the stores."
+                                            : "The Chapter's stores have nothing to eat, and the hands at " + k.site->name + " are going hungry.");
+        else if (auto* c = clientOf(k.owner))
+            system(c, who + (k.reached ? " is going hungry, and you carry nothing to eat." : " is going hungry, away from the food you carry."));
+    }
+    for (const auto& npcId : companionsGo)
+        companionLeaves(npcId, "I can't go on with nothing to eat. I'm going home.", "you had nothing to feed them.");
+    if (staffGone)
+    {
+        chapterViewsDirty_ = true;
+        saveSoon();
+    }
+}
+
 Value Game::structuresView(const std::string& viewer, const std::string& cellId) const
 {
     auto list = Value::array();

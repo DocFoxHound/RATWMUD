@@ -658,7 +658,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         c.walksRoute = patrols || travels;          // (Its place among the route's walkers is counted in its turn.)
         if (body.companion)
         {
+            // Off its own day, kept by a Hold or a party: it eats from its mess, and nothing else (doc 64, Phase 13).
             c.companion = true;
+            bool eats = false;
+            if (!keptHandDecides(id, wallet, hunger, atOnce, eats))
+                throw DecideInTurn{};               // (A meal drawn from its mess: in its turn.)
+            c.task = eats ? "eat" : "";
             c.kind = Choice::Kind::Decided;
             return;
         }
@@ -1132,10 +1137,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const int walker = c.walksRoute ? routeWalkers[job->route]++ : 0;
         if (c.companion)
         {
-            life.task = "companion";
-            life.reason = "Ordinary work is suspended while recruited.";
-            life.progress = 0;
-            life.goalCell.clear();
+            keptHandDoes(id, life, wallet, c.task == "eat"sv, step);
             continue;
         }
         const auto& task = c.task;

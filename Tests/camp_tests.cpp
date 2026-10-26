@@ -25,6 +25,21 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 
+// A resident's hunger set (the society's state restored with it), and what it carries that feeds eaten up.
+void hungry(World& w, const std::string& id, double hunger)
+{
+    auto& s = w.society();
+    std::vector<std::pair<std::string, int>> food;
+    for (const auto& [item, n] : s.account(id)->stock)
+        if (n > 0 && Society::edible(item))
+            food.push_back({item, n});
+    for (const auto& [item, n] : food)
+        s.consume(id, item, n, "test: eaten");
+    auto state = s.state();
+    state.residents[id].hunger = hunger;
+    expect(s.restore(state), id + " is hungry");
+}
+
 json::Value parsed(const std::string& text)
 {
     json::Value v;
@@ -336,6 +351,15 @@ void campingThroughTheGame(const std::string& save)
                 tick(.2);
             }
         expect(fields() == 1, "and a field planned:\n" + ada.said());
+        // Kept hands' meals (doc 64, Phase 13): hungry, Bracken eats from the Chapter's stores, which his site's storage
+        // pile reaches; the meal goes from them by the ledger.
+        expect(w.society().create(store, "meal", 2, "test: laid in"), "meals in the stores");
+        const int laidIn = Society::stock(*w.society().account(store), "meal");
+        hungry(w, "npc_scout", 61);
+        tick(10);
+        expect(Society::stock(*w.society().account(store), "meal") == laidIn - 1 && w.society().resident("npc_scout")->hunger < 61 - 50,
+               "Bracken eats a meal from the Chapter's stores (hunger " + std::to_string(w.society().resident("npc_scout")->hunger) + ")");
+        expect(g.camps().staff().count("npc_scout") && w.entity("npc_scout")->leaderId == "camp:" + site, "and keeps the camp");
         a->position = {37.5, 20.5};
         g.save();
     }
@@ -346,6 +370,36 @@ void campingThroughTheGame(const std::string& save)
         expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 6 && g.camps().staff().count("npc_scout"),
                "the camp, its structures and its staff survive a restart");
         expect(g.camps().structureAt("exterior", 37, 22) && g.camps().structureAt("exterior", 37, 22)->trade == "smithy", "and the workshop's trade");
+        // The stores bare: the Chapter is told its hands go hungry, once that day; unfed still at KeptLeaveHunger, Bracken
+        // leaves the camp for his own life, where he eats as anyone does.
+        Client ada;
+        ada.id = 1;
+        g.connect(&ada);
+        g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+        auto& w = g.world();
+        const auto store = "chapter:" + lodge;
+        std::vector<std::pair<std::string, int>> food;
+        for (const auto& [item, n] : w.society().account(store)->stock)
+            if (n > 0 && Society::edible(item))
+                food.push_back({item, n});
+        for (const auto& [item, n] : food)
+            w.society().consume(store, item, n, "test: spoiled");
+        hungry(w, "npc_scout", Society::KeptToldHunger + 1);
+        for (int i = 0; i < 40; ++i)
+            g.tick(.05);
+        expect(ada.said().find("The Chapter's stores have nothing to eat, and the hands at Juniper Camp are going hungry.") != std::string::npos,
+               "the Chapter is told:\n" + ada.said());
+        expect(g.camps().staff().count("npc_scout"), "he stays a while yet");
+        hungry(w, "npc_scout", Society::KeptLeaveHunger + .5);
+        for (int i = 0; i < 40; ++i)
+            g.tick(.05);
+        expect(!g.camps().staff().count("npc_scout") && w.entity("npc_scout")->leaderId.empty() &&
+                   ada.said().find("leaves Juniper Camp: there was nothing to eat.") != std::string::npos,
+               "unfed, he leaves:\n" + ada.said());
+        int told = 0;
+        for (std::size_t at = 0; (at = ada.said().find("are going hungry", at)) != std::string::npos; ++at)
+            ++told;
+        expect(told == 1, "told once that day: " + std::to_string(told));
     }
     std::remove(save.c_str());
 }
