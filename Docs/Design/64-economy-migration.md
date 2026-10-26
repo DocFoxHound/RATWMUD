@@ -1482,11 +1482,11 @@ the home (3,776 of 6,465).
 `Society::addPlayer` (its welcome grant), `Society::trade` with a shop's keeper (99 a trade, what the shop wants and
 can pay for), `World::addPlayer` and `World::moveTo` for a body (a door opened and entered, a seam walked across),
 `World::steal` with the body beside the mark, `World::setDead`, and `World::removePlayer` when their days are over.
-Two stand-ins, said so: hoard's yield, and the whale's chests (below). Every coin they're given comes from the
-capital's treasury by the ledger ("test: a player's money", not earnings). Their days count from when they start (a
-run that starts after `--players-from` starts them on its first day, and says so). `players.csv` has each thing done;
-`days.jsonl` a `players` block a day (a day's record is made at its midnight, before the players act at that
-midnight, so what they do then is the new day's in every file).
+Three stand-ins, said so: hoard's yield, the whale's chests and flood's catch (below). Every coin they're given comes
+from the capital's treasury by the ledger ("test: a player's money", not earnings). Their days count from when they
+start (a run that starts after `--players-from` starts them on its first day, and says so). `players.csv` has each
+thing done; `days.jsonl` a `players` block a day (a day's record is made at its midnight, before the players act at
+that midnight, so what they do then is the new day's in every file).
 
 | Scenario | What it does |
 |---|---|
@@ -1496,9 +1496,11 @@ midnight, so what they do then is the new day's in every file).
 | `whale` | a player with 5% of the money (250,000p) buys every rapier and piece of finery on every shelf each morning, into chests past a pack's kinds, 99 at a time. A stand-in: the chests are accounts of its own ("let:"), free, with no lodging and no rent |
 | `poach` | a Hold takes 20 of the capital's hands from their businesses (off their schedules, as `station`ed staff are) at twice the realm's going rate, paid each dawn: the Chapter's treasury has the first day's pay when it takes them, and is topped up each dawn to that day's pay at that day's rate (what the capital's treasury can't give, noted "short") |
 | `kill` | the key makers die on the first day: every smith of the realm, a town's only miller, the biggest farm's farmer; succession is the world's (the dead keep no shop the rest of that day) |
-| `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30. Their bodies arrive at five of the capital's shops and walk up to a mark in the place they're in (`World::moveTo`, trying the purse on arrival), and on the hour (or with nobody about) on into the next of the capital's places; `still`, they stand where they arrived and try any purse that comes within reach; `jump`, they're put beside each mark (`World::teleport`, a Dungeon Master's move: the first runs') |
+| `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30. Their bodies arrive at five of the capital's shops and walk up to a mark in the place they're in (`World::moveTo`, trying the purse on arrival), and on the hour (or with nobody about) on into the next of the capital's places; `still`, they stand where they arrived and try a purse that comes within reach, each purse once a day (since the second review: it had tried the keeper beside it every quarter); `jump`, they're put beside each mark (`World::teleport`, a Dungeon Master's move: the first runs') |
 | `visit` | 5 players with bodies go about the capital as the thieves do, and take nothing: theft's control (bodies on the stage alone) |
 | `winter` | 10 players with 3,000p each buy every bundle of firewood in their towns each morning of the calendar's autumn (days 184 to 274), and keep it |
+| `flood` | 10 players sell fish to the capital's shops that buy it (its fishmongers and provisioners) on the hour from 8 to 18 for two weeks (`FloodDays`), as many as they take, then stop; does the price come back, and do the capital's fishers (its 9 fishing posts, by work or home) keep their living? A stand-in: players can't fish yet, so each lands a pack of 99 in its pack each morning ("landed"), made; the selling is `Society::trade`'s. Fish, not herbs or hides: the capital has makers of it, and its price is the shops' own (doc 64, Phase 4; herbs are still priced by the stores) |
+| `strike` | a Hold takes a tenth of the capital's hands (wolves of working age paid by an employer, not keepers, the watch or the land's producers; rounded up, 26 on DEV's export) from their work for a month (`StrikeDays`, 28), then lets them go: do hires and wages answer, and does the town come back? As the game lets a Chapter take a wolf in work: hired as a party's companion out of its working hours, then stationed at the Hold (off its schedule, its post still its own), on a companion's wage (6p, 10p for a roving trade: `Game::wageFor`), paid each dawn as `poach` is. Done at once here; in the game, companions are 4 at a time in the realm and one more for each 4 players online (a stationed one frees its place), so a tenth wants a few players over some days. A Hold takes into its own posts only wolves without work |
 
 When their days are over, the thieves' and visitors' bodies leave the world (as a player's who logs off; one in a
 fight stays till it's over), and the Hold's hands go back to their own lives.
@@ -1516,6 +1518,11 @@ fight stays till it's over), and the Hold's hands go back to their own lives.
 - **Theft takes from a wolf's purse** (1 to 5p, now and then a masterwork, a meal or herbs), never a till.
 - **Shops take few of a player's goods:** a good a shop makes, up to 4 on its shelf; what it supplies or buys, up to
   40. A player dumps at scale only at a stall (doc 54; `crafting_tests` `aStallDumpAndTheRebound`).
+- **Players can't fish:** no `World::fish`; `flood`'s catch is made in its packs. (A player forages herbs, a picking
+  every 4 seconds while the patches last, but herbs are still priced by the stores, and the capital has no herb
+  gatherer.)
+- **A Hold takes no wolf in work into its own posts** (`whyNotMigrate`: "They have work where they are."); one comes
+  only as a party's hired companion, stationed, at a companion's 6p or 10p. `strike` takes its tenth that way.
 
 **The 10-day checks** (DEV's export, from day 2, `--hours`, deterministic; winter from day 250; before the review's
 fixes, so theft's and visit's bodies jumped): money conserved every day in every run.
@@ -1539,10 +1546,14 @@ Gini and the poorer half within 0.006 of the run without players in all; the pac
 
 | Bodies | `visit`: hungry, starving (day 10) | `theft`: hungry, starving | Hours worked on day 10 (4,841 without players) | A tick (2 threads) |
 |---|---|---|---|---|
-| none | 0, 0 | | | 0.09 ms |
+| none | 0, 0 | | | 0.09 ms (3 threads: the 30-day smoke's) |
 | walk | 191, 118 (the first on day 3) | 93, 45 (day 4) | `visit` 3,495 (28% fewer), `theft` 3,936 (19%) | 1.6 ms, 1.1 ms |
-| still | 179, 142 (day 3) | 176, 141 (day 3) | 3,784 (22%), 3,853 (20%) | 1.2 ms |
+| still | 179, 142 (day 3) | 176, 141 (day 3)\* | 3,784 (22%), 3,853 (20%) | 1.2 ms |
 | jump | 47, 46 (day 5) | (the first runs': 104, 63) | 4,564 (6%) | 0.7 ms |
+
+\* Not a control of its own: the still thief then tried the one purse beside it, its shop's keeper, every quarter
+(1,363 tries in all, 14p taken, never held), so its hungry were standing `visit`'s, day for day, from day 3 to day
+8 (3, 33, 81, 76, 122, 135). Since the second review a still thief passes over a purse it has tried that day (below).
 
 So it isn't the jumps: bodies that never move starve the most, and walking ones as many. Where: with the still bodies
 (in five inns) 162 of the 179 hungry are in the street outside them (`w_ridgemere_1_2`), on the stage, 135 of them
@@ -1554,6 +1565,15 @@ walked onto the stage into `w_ridgemere_1_2` across its north seam (at 52,0 and 
 stood there 10 and 21 game hours before it got home, the third still there at the run's end. Real players' bodies
 on the stage would do the same: a fault in the residents' walking at the stage's edge (World: `placeOnStage`,
 `headFor`), not the harness's.
+
+Standing still again on the merged Phase 13 with the second review's fixes (`e0e6f45` and `af5d842`: the same 10
+days, 2 threads; the economy is not `4e83cec`'s, so set these beside each other, not beside the table): `visit` 55
+hungry and 36 starving on day 10 (111 and 92 at the worst, day 8), 4,275 hours against 5,214 without players (18%
+fewer), 1.18 ms a tick; `theft` 152 and 106, 4,001 hours (23% fewer), 1.22 ms. The two were the same, day for day,
+to day 6, and parted after (the watch's doings set the thief's world apart). The thieves, in five inns, each tried
+its inn's keeper once a day (35 tries in nine days, 34 of them on the five keepers; one theft, 3p): standing at a
+shop, nobody but its keeper comes within reach, so a still thief is still no control for theft of its own; `visit`
+still carries the bodies' control. Without players, no one hungry.
 
 **Notes for the long runs:**
 
@@ -1579,6 +1599,13 @@ on the stage would do the same: a fault in the residents' walking at the stage's
    who walk onto the stage at its edge, on their way home to eat, stand there for hours. If the stage's life is meant
    to match the unseen's, it's a fault to find first (in the world's walking, not the economy): the long runs, without
    players, can't see it.
+6. A hand stationed at a Hold keeps its post, and its employer counts it a hand though it never comes (`strike`):
+   a month away moved no wage, opened no post and posted no more hires; only the work went undone. Should a post whose
+   holder hasn't come for some days stand open (a stand-in hired, or the post given up), so that taking hands draws
+   the wage up?
+7. A flood of a staple that spoils fast never lowers its price (`flood`: fish stayed at a penny): a shop prices it
+   at what it paid, and its margin falls only on a shelf that won't move. Is it right that a glut of fresh fish
+   becomes smoked fish rather than cheaper fish?
 
 **The review's fixes (2026-10-26)** (`4e83cec`; `Tests/econ_players_tests.cpp` checks each, and econ_watch's files
 on a little world of its own, a day and a fifth in under two seconds):
@@ -1604,6 +1631,83 @@ on a little world of its own, a day and a fifth in under two seconds):
 - The whale's goods go into its chests 99 at a time (the journal notes 99 a move at most; a stack of 190 showed as 99),
   and the chests are said to be free; hoard's yield is said to be a stand-in (the table).
 - `camp::HoldWage` for the Hold's least wage; the comments put right.
+
+**The second review's fixes (2026-10-26)** (`af5d842`, `95a4057`, `1c5b648`; each guarded in
+`Tests/econ_players_tests.cpp`, and each guard was seen to fail with its fix taken back, but the scratch folders'):
+
+- The test's worlds and econ_watch's output are each in a folder of the run's own (the process id in its name: suites
+  run several at once here, and one run had cleared another's), removed once every check has passed.
+- A walking body turns after its mark every two seconds at most since it last aimed (`Walker::aimedAt`); it had
+  re-planned at every look, twice a second, once two seconds had passed since it set off. (A mark kept across the
+  place from it, crossing 16 times in ten seconds: it turned 15 times before; now once in two seconds at most.)
+- A thief standing still passes over a purse it has tried that day (above); `players.csv`'s `tried` rows name the
+  purse.
+- The stamp: built from no git checkout, it says it can't tell, never a warning (the run had read "" against the
+  build's "(unknown)"). And the run's check is now of the code econ_watch is built from (`CMakeLists.txt`, `Core`,
+  `Tests`): the build writes the SHA-1 of the changes from its commit to them (`RATW_BUILT_CODE`), the run works the
+  same out against that commit (`econ::sourceDrift`), so a docs edit, or a docs-only commit since, warns of nothing.
+  Checked on a git tree of the test's own, with the stamp's own script.
+- `poach`'s `short` row has the pennies it lacked as its quantity (item "pennies lacking") and no coins: coins are
+  pennies that moved, in every row.
+- Real guards: econ_watch runs the little world for 2.2 days, so `books.csv` has rows (an employer's book is opened
+  at its weekly review, on its own day of the seven), each day's once; a `poach` with the treasury emptied notes its
+  shortfall and sends the unpaid home; econ_watch runs `flood` and `strike` by name.
+- The bodies leave on the real map: DEV's export, 3 days, `--players theft,visit --players-from 1 --players-days 2`
+  (`1c5b648`'s code). All ten left at day 3's midnight (`World::removePlayer`), none then in the watch's hands (three
+  had been at day 1's end), and the watch raised 13 more warrants for the thieves gone, on day 3, for earlier tries;
+  the end's record has no bodies, and money was conserved in every record. The 65 hungry and 35 starving of day 2's
+  end were none six hours after the bodies left.
+- The 30-day smoke without players (`1c5b648`, `--threads 3`, 0.1 ms a tick, 14.4 minutes): money conserved every
+  day; `days.jsonl` but its end, `flows.csv`, `tills.csv`, `work.csv`, `books.csv`, `residents.csv` and `prices.csv`
+  are byte for byte the merged baseline's (`m2`; digest `aded872975ff165c` in both) and the clean `e0e6f45`'s first
+  30 days: nothing changes without players. Day 30: no one hungry or starving, the household Gini 0.5612, the poorer
+  half 0.1402, the wage 12p, the pace 0.071, the going rates 12p (the realm's and Ridgemere's); days 15 to 29, the
+  owners' profit 14,549p a day against the keepers' wages 4,378p, the hands' odd jobs 2,613p and service wages 1,448p.
+
+**`flood` and `strike`** (DEV's export, `--hours`, deterministic, 3 threads, players from day 2, `1c5b648`; against
+the clean `e0e6f45` without players, 44 days, whose first 30 are the smoke's). Money conserved every day in both.
+
+`flood`, 30 days:
+
+- The ten sold 7,662 fish in their two weeks to the capital's six shops that buy it (three fishmongers, three
+  provisioners), at 1p each, and kept it (with 200p of welcome grants): 117 the first day, then up to all 990 they
+  landed a day (days 8 to 11), as fast as the shops sold and used them. The shops' shelves of fish went from 99 to
+  240 (40 a shop) on the first day and stayed full for six days.
+- **The price didn't fall, so there was nothing to come back.** The shops' asking price, before the penny, was
+  1.07p and 1.13p the two days before, 1.13p to 1.14p through the flood and 1.13p to 1.16p after; every fish was
+  sold at 1p before, during and after, and a player was paid the shops' normal cost, 0.99p to 1.00p (a penny). A
+  shop prices fish at what it paid for it, and its margin falls only on a shelf that won't move: fish keeps a day and
+  a half, and the shops made it into smoked and salt fish (10,757 used in crafting in the two weeks against 5,644
+  without players), passed 2,477 more to other shops, and let 653 more spoil. The households bought the smoked fish
+  (397 on day 28 against 234).
+- **The makers kept their living.** The capital's nine fishing posts (four on the piers, five on the Sound) were
+  held throughout; they sold 3,949 fish in the two weeks against 3,474 without players, and 6,316 against 4,440 in
+  the two after (the shops' trade in fish had grown), working 2,026 and 3,994 hours against 1,835 and 2,602; their
+  tills held 2,937p on day 30 against 3,033p.
+- Day 30: no one hungry or starving; Gini 0.5620 (0.5612 without players), the poorer half 0.1405 (0.1402), the pace
+  0.054 (0.071), the wage and the going rates 12p; days 15 to 29, the owners' profit 14,404p a day (14,549p), the
+  keepers' wages 4,352p (4,378p), the hands' odd jobs 2,621p (2,613p), service wages 1,456p (1,448p).
+
+`strike`, 44 days (the hands held from day 2 to day 30's dawn):
+
+- 26 hands taken (wharf hands, porters, laundresses, hall servants, a gardener, the Wharf Tannery's, the Blue Vats'
+  and a masons' yard's hands...). Off their schedules, 24 were hungry by the first day's end and all 26 the next,
+  12 then 25 starving, and all 26 by the month's end (as `poach`'s hands, and the companions'); the day after they
+  were let go, none.
+- **Hires and wages didn't answer: the labour market didn't see them gone.** Every one kept its post all month (26
+  of 26) and after; their employers counted them as hands still (Ridgemere's books' hands 518 against 519 on day 30)
+  and opened no posts for them (72 posts open a day against 77 without players), so no wage rose: Ridgemere's
+  employers' mean wage was 12.68p on day 30 against 12.75p, the going rates 12p throughout, the hires' slots as
+  without players (42,473 against 42,571 in the month; taken 15,976 against 16,658). Their employers paid them
+  nothing while they were away: the Hold's 6p a day was all their pay, more than the 4.8p a day they had earned
+  (4,368p in the month against 3,529p), so they ended richer (63,994p against 61,791p on day 44).
+- The work just wasn't done: 1.0% fewer hours in the month (139,426 against 140,838), service wages 10% down
+  (1,302p a day against 1,448p, days 15 to 29), the hands' odd jobs 5% (2,471p against 2,613p), the owners' profit 3%
+  (14,157p against 14,549p), the keepers' wages 1% (4,325p against 4,378p).
+- **The town came back at once** in the work: the day after they were let go, the hours were the run's without
+  players (+0.3% over the two weeks after, +1.0% the last week), and no one was hungry. The wages paid stayed 2.2%
+  lower for the two weeks, fewer posts stood open (76 a day against 105), and on day 44 the poorer half held 0.1378
+  of the money against 0.1410, Gini 0.5618 against 0.5588, the pace 0.125 against 0.143.
 
 ### Phase 13: the labour market unpinned (2026-10-25)
 

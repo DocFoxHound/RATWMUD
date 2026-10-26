@@ -10,7 +10,7 @@
 // --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
 // it, the game's old pace (each craft's `seconds` as its hours).
 // --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
-// poach, kill, theft, visit, winter. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2;
+// poach, kill, theft, visit, winter, flood, strike. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2;
 // a run that starts later starts them on its first day, and says so) for --players-days N days from when they start (to
 // the run's end unless asked), as the game lets players act, with money from the capital's treasury by the ledger; then
 // they leave (their bodies out of the world, a Hold's hands back to their lives). --players-bodies: how theft's and
@@ -18,7 +18,8 @@
 // (World::teleport beside each mark, a Dungeon Master's move: the first runs', to compare).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
-// build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the source has changed since.
+// build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
+// changed since (not the docs), or a note if that can't be told.
 // OUT_DIR gets, for each game day (a day's record, N, made at its midnight: the state at the end of day N-1 and what
 // happened in it; the run's last, "end", where it stops, with no rows of its own in the per-day CSVs):
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
@@ -52,7 +53,8 @@
 //                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
 //                   its own employer, as it stands at 23:00);
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
-//                   the resident who died).
+//                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
+//                   the pennies it lacked, item "pennies lacking").
 // days.jsonl's model block has every town's going rate (going, "" the realm's), and with --players a players block:
 // each scenario's players, their money and goods, and what they did that day (the players act after the midnight's
 // record is made, so what they do at midnight is the new day's, in every file).
@@ -118,21 +120,8 @@ std::string json(const std::string& s)
 
 // The run's stamp (doc 64, Phase 13: two runs once straddled a fix unseen): how it was run, the git state this binary
 // was built from (econ_watch_stamp.h, written at each build: Tests/econ_watch_stamp.cmake), and when it was built; and a
-// warning when the source has changed since (the binary is older than the tree it is run from).
-std::string firstLine(const std::string& command)
-{
-    std::string out;
-    if (FILE* p = popen(command.c_str(), "r"))
-    {
-        char line[256];
-        if (std::fgets(line, sizeof line, p))
-            out = line;
-        pclose(p);
-    }
-    while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
-        out.pop_back();
-    return out.empty() ? "(unknown)" : out;
-}
+// warning when the code it was built from has changed since (econ::sourceDrift: a docs edit is none), or a note when
+// that can't be told.
 std::string runStamp(int argc, char** argv)
 {
     std::ostringstream out;
@@ -140,14 +129,8 @@ std::string runStamp(int argc, char** argv)
     for (int i = 0; i < argc; ++i)
         out << ' ' << argv[i];
     out << "\nbuilt from: " << RATW_BUILT_SOURCE << " at " << RATW_BUILT_DESCRIBE << " (" << RATW_BUILT_COMMIT << ")";
-    // The tree as it is now, as the build saw it (Tests/econ_watch_stamp.cmake: the describe, and a dirty tree's changes'
-    // SHA-1); a binary built from another state says so.
-    const std::string git = std::string("git -C '") + RATW_BUILT_SOURCE + "' ";
-    auto now = firstLine(git + "describe --always --dirty --abbrev=12 2>/dev/null");
-    if (now.size() > 6 && now.compare(now.size() - 6, 6, "-dirty") == 0)
-        now += " " + firstLine(git + "diff HEAD 2>/dev/null | sha1sum | cut -c1-12");
-    if (now != RATW_BUILT_DESCRIBE)
-        out << "\nWARNING: the source is now at " << now << ", not what this binary was built from: rebuild it";
+    if (const auto drift = econ::sourceDrift(RATW_BUILT_SOURCE, RATW_BUILT_COMMIT, RATW_BUILT_CODE, RATW_BUILT_PATHS); !drift.empty())
+        out << "\n" << drift;
     struct stat built{};
     char when[64] = "(unknown)";
     if (::stat("/proc/self/exe", &built) == 0)

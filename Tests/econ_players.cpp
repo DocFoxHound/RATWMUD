@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -15,6 +16,21 @@ namespace ratw::econ
 {
 namespace
 {
+// A shell command's first line of output ("" for none).
+std::string firstLine(const std::string& command)
+{
+    std::string out;
+    if (FILE* p = popen(command.c_str(), "r"))
+    {
+        char line[256];
+        if (std::fgets(line, sizeof line, p))
+            out = line;
+        pclose(p);
+    }
+    while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+        out.pop_back();
+    return out;
+}
 double lot(const std::string& words)
 {
     return double(std::hash<std::string>{}(words) % 100000) / 100000;
@@ -44,9 +60,26 @@ constexpr double QuarterSeconds = calendar::SecondsPerDay / Quarters;   // A qua
 const std::vector<std::string> None;
 } // namespace
 
+std::string sourceDrift(const std::string& source, const std::string& commit, const std::string& code, const std::string& paths)
+{
+    // The changes from the commit it was built from to the code it builds from, as the build worked them out (a docs
+    // edit, or a docs-only commit since, changes nothing). Built from no git checkout, there is nothing to set it by.
+    if (commit.empty() || code.empty() || commit == "(unknown)" || code == "(unknown)")
+        return "source: not a git checkout when it was built, so not checked";
+    const std::string git = "git -C '" + source + "' ";
+    const auto now = firstLine(git + "rev-parse -q --verify '" + commit + "^{commit}' >/dev/null 2>&1 && " + git +
+                               "diff --no-color --no-ext-diff --full-index '" + commit + "' -- " + paths +
+                               " 2>/dev/null | sha1sum | cut -c1-12");
+    if (now.empty())
+        return "source: no git here, or no commit " + commit.substr(0, 12) + ", so not checked";
+    if (now != code)
+        return "WARNING: the code this binary was built from (" + paths + " in " + source + ") has changed since: rebuild it";
+    return {};
+}
+
 const std::vector<std::string>& Players::names()
 {
-    static const std::vector<std::string> all{"hoard", "corner", "dump", "whale", "poach", "kill", "theft", "visit", "winter"};
+    static const std::vector<std::string> all{"hoard", "corner", "dump", "whale", "poach", "kill", "theft", "visit", "winter", "flood", "strike"};
     return all;
 }
 
@@ -75,6 +108,18 @@ const std::vector<std::string>& Players::accountsOf(const std::string& scenario)
 {
     const auto found = holds_.find(scenario);
     return found == holds_.end() ? None : found->second;
+}
+
+const std::vector<std::string>& Players::staffOf(const std::string& scenario) const
+{
+    const auto found = staff_.find(scenario);
+    return found == staff_.end() ? None : found->second;
+}
+
+std::string Players::markOf(const std::string& body) const
+{
+    const auto found = walkers_.find(body);
+    return found == walkers_.end() ? std::string() : found->second.mark;
 }
 
 void Players::step()
@@ -160,6 +205,77 @@ std::int64_t Players::poachWage() const
 {
     // Twice what a Hold pays (Game::keepWage: the realm's going rate, camp::HoldWage at least), read each day.
     return 2 * std::max<std::int64_t>(camp::HoldWage, std::int64_t(std::ceil(world_.society().labourDay("") - 1e-9)));
+}
+
+std::int64_t Players::companionWage(const std::string& id) const
+{
+    // What a hired companion is paid, and keeps once stationed at a Hold (Game::wageFor): 6p a day, 10p for a trade that
+    // wanders for a living (RatwGameCompanions.cpp's `roving`, its words).
+    const auto* job = world_.society().jobOf(id);
+    const auto* spec = world_.society().spec(id);
+    std::string trade = job ? job->title : spec ? spec->workLabel : std::string();
+    std::transform(trade.begin(), trade.end(), trade.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    for (const char* word : {"scout", "guide", "hunter", "travel", "pilgrim", "sellsword", "mercenary", "courier", "escort", "tracker"})
+        if (trade.find(word) != std::string::npos)
+            return 10;
+    return 6;
+}
+
+void Players::take(const std::string& s, const std::string& chapter, const std::vector<std::string>& hands)
+{
+    for (const auto& id : hands)
+    {
+        world_.entity(id)->leaderId = "camp:econ-" + s;
+        world_.stop(id);
+        staff_[s].push_back(id);
+        const auto* job = world_.society().jobOf(id);
+        note(s, chapter, "hired", id + " (" + (job ? job->title : std::string()) + ")", 1, 0);
+    }
+}
+
+void Players::payStaff(const std::string& s, const std::function<std::int64_t(const std::string&)>& wage)
+{
+    // Each dawn its hands paid (campTick), the Hold's treasury first topped up to the day's pay at the day's rates (what
+    // it can't get from the capital's treasury noted, "short": the pennies lacking as its quantity, none moved); one it
+    // can't pay goes home.
+    auto& society = world_.society();
+    const auto& chapter = holds_[s].front();
+    auto& staff = staff_[s];
+    std::int64_t need = 0;
+    for (const auto& id : staff)
+        need += wage(id);
+    const auto* purse = society.account(chapter);
+    if (const auto lacking = need - (purse ? purse->cash : 0); lacking > 0)
+        if (const auto got = fund(s, chapter, lacking); got < lacking)
+            note(s, chapter, "short", "pennies lacking", int(std::min<std::int64_t>(lacking - got, 1'000'000'000)), 0);
+    for (auto it = staff.begin(); it != staff.end();)
+    {
+        const auto* e = world_.entity(*it);
+        const auto pay = wage(*it);
+        if (e && !e->dead && society.shift(chapter, *it, "", 0, pay, "camp wage"))
+        {
+            note(s, chapter, "paid", *it, 1, pay);
+            ++it;
+            continue;
+        }
+        if (auto* npc = world_.entity(*it))
+            npc->leaderId.clear();
+        note(s, chapter, e && !e->dead ? "left unpaid" : "died", *it, 1, 0);
+        it = staff.erase(it);
+    }
+}
+
+void Players::letGo(const std::string& s)
+{
+    // Back to their own lives (RatwGameCamps.cpp's "dismissstaff"): their schedules walk them home or to work.
+    for (const auto& id : staffOf(s))
+        if (auto* npc = world_.entity(id))
+        {
+            npc->leaderId.clear();
+            world_.stop(id);
+            note(s, accountsOf(s).empty() ? std::string() : accountsOf(s).front(), "released", id, 1, 0);
+        }
+    staff_.erase(s);
 }
 
 void Players::note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
@@ -362,17 +478,63 @@ void Players::start(std::int64_t day)
                 hands.push_back({lot(id + "|poach"), id});
             }
             std::sort(hands.begin(), hands.end());
+            std::vector<std::string> taken;
             for (std::size_t i = 0; i < hands.size() && i < 20; ++i)
-            {
-                const auto& id = hands[i].second;
-                world_.entity(id)->leaderId = "camp:econ-poach";
-                world_.stop(id);
-                staff_.push_back(id);
-                const auto* job = society.jobOf(id);
-                note(s, chapter, "hired", id + " (" + (job ? job->title : std::string()) + ")", 1, 0);
-            }
+                taken.push_back(hands[i].second);
+            take(s, chapter, taken);
             // The first day's pay put by now; each dawn tops it up to that day's (act).
-            fund(s, chapter, poachWage() * std::int64_t(staff_.size()));
+            fund(s, chapter, poachWage() * std::int64_t(staffOf(s).size()));
+        }
+        else if (s == "strike")
+        {
+            // A tenth of the capital's hands (wolves of working age paid by an employer: a business, a House, the town
+            // or the church; not the keepers, the watch, nor the land's producers, who live by what they bring in),
+            // taken from their work for StrikeDays as the game lets a Chapter take a wolf in work: hired as a party's
+            // companion (out of its working hours), then stationed at the Hold (RatwGameCamps.cpp's "station"), off
+            // its schedule, on its companion's wage. Its post stays its own. (A Hold takes into its own posts only
+            // wolves without work. Companions are 4 in the realm at once and one more for each 4 players online, and
+            // one stationed frees its place: a tenth of the capital's hands wants a few players over some days, done
+            // here at once.)
+            const std::string chapter = "chapter:econ-strike";
+            society.openAccount(chapter);
+            holds_[s].push_back(chapter);
+            std::vector<std::pair<double, std::string>> hands;
+            for (const auto& [id, life] : society.state().residents)
+            {
+                const auto* e = world_.entity(id);
+                const auto* job = society.jobOf(id);
+                if (!e || e->dead || !e->leaderId.empty() || e->age < 16 || e->age >= Society::retireAge(id) || !job || !job->paid ||
+                    job->role != "civilian" || (life.role != "civilian" && life.role != "resident") ||
+                    world_.communityOf(life.homeCell) != capital_)
+                    continue;
+                const auto payer = society.payerOf(id, *job, e->age).account;
+                if (payer.empty() || payer == id)
+                    continue;
+                hands.push_back({lot(id + "|strike"), id});
+            }
+            std::sort(hands.begin(), hands.end());
+            std::vector<std::string> chosen;
+            for (std::size_t i = 0; i < hands.size() && i < (hands.size() + 9) / 10; ++i)
+            {
+                chosen.push_back(hands[i].second);
+                jobWas_[hands[i].second] = society.jobOf(hands[i].second)->id;
+            }
+            take(s, chapter, chosen);
+            taken_ = chosen;
+            std::int64_t pay = 0;
+            for (const auto& id : chosen)
+                pay += companionWage(id);
+            fund(s, chapter, pay);
+        }
+        else if (s == "flood")
+        {
+            // Ten players who land the staple and sell it to the capital's shops (fishmongers, provisioners: whatever
+            // shop buys it); its makers are the posts that land it worked in the capital or held by a wolf who lives
+            // there (its shops buy from the capital's own first: Society::buyMaterials), watched.
+            for (int i = 1; i <= 10; ++i)
+                towns_[join(s, i)] = {capital_};
+            findMakers();
+            flooded_ = true;
         }
         else if (s == "kill")
         {
@@ -451,7 +613,7 @@ void Players::tryPurse(const std::string& s, const std::string& thief, const std
     const auto before = society.account(thief) ? *society.account(thief) : EconomyAccount{};
     if (!world_.steal(thief, mark).ok)
         return;
-    note(s, thief, "tried", "", 1, 0);              // (Taken or not: World::steal's own odds and the watch's eyes.)
+    note(s, thief, "tried", mark, 1, 0);            // (Taken or not: World::steal's own odds and the watch's eyes.)
     const auto* after = society.account(thief);
     if (!after)
         return;
@@ -511,24 +673,35 @@ void Players::setOff(const std::string& s, const std::string& body, std::int64_t
         std::advance(next, std::ptrdiff_t(pick * double(ways.size())));
         const auto& in = next->second;
         const auto* d = in[std::size_t(lot(body + "|way|" + std::to_string(day) + "|" + std::to_string(quarter)) * double(in.size()))];
+        ++aims_;
         if (world_.moveTo(body, d->position.x, d->position.y).ok)
-            w = {"door:" + d->id, d->position, world_.time(), w.tried, w.last};
+        {
+            w.mark = "door:" + d->id;
+            w.aim = d->position;
+            w.since = w.aimedAt = world_.time();
+        }
         return;
     }
     if (!marks.empty())
     {
         const auto& mark = marks[std::size_t(pick * double(marks.size()))];
         const auto* v = world_.entity(mark);
+        ++aims_;
         if (world_.moveTo(body, v->position.x, v->position.y).ok)
-            w = {mark, v->position, world_.time(), w.tried, mark};
+        {
+            w.mark = w.last = mark;
+            w.aim = v->position;
+            w.since = w.aimedAt = world_.time();
+        }
     }
 }
 
 void Players::lookAbout()
 {
     // Twice a world second, each body sees how it is getting on: beside its mark, it acts; its mark moved off, it turns
-    // after it (every two seconds at most); a quarter of an hour without getting there, it gives up. One standing still
-    // tries any purse that comes within reach, once a quarter of an hour.
+    // after it (every two seconds at most: AimEvery since it last aimed); a quarter of an hour without getting there, it
+    // gives up. One standing still tries a purse that comes within reach, once a quarter of an hour, passing over the
+    // purses it has tried that day (it had tried the keeper beside it 400 times in ten days: the review's).
     const double now = world_.time();
     if (lookedAt_ >= 0 && now - lookedAt_ < LookEvery)
         return;
@@ -550,15 +723,19 @@ void Players::lookAbout()
             {
                 if (!thief || w.tried == quarter)
                     continue;
+                if (const auto day = quarter / Quarters; w.day != day)
+                    w.day = day, w.today.clear();
                 std::string mark;
                 double nearest = Reach;
                 for (const auto* e : world_.entitiesIn(me->cellId))
-                    if (const double d = apart(e->position, me->position);
-                        e->cellId == me->cellId && e->npc && (d < nearest || (d == nearest && e->id < mark)) && markable(e->id))
+                    if (const double d = apart(e->position, me->position); e->cellId == me->cellId && e->npc &&
+                                                                         (d < nearest || (d == nearest && e->id < mark)) &&
+                                                                         !w.today.count(e->id) && markable(e->id))
                         mark = e->id, nearest = d;
                 if (!mark.empty())
                 {
                     w.tried = quarter;
+                    w.today.insert(mark);
                     tryPurse(s, body, mark);
                 }
                 continue;
@@ -601,9 +778,13 @@ void Players::lookAbout()
                     note(s, body, "came up to", "", 1, 0);
                 continue;
             }
-            if (apart(m->position, w.aim) > 1 && now - w.since >= AimEvery)
+            if (apart(m->position, w.aim) > 1 && now - w.aimedAt >= AimEvery)
+            {
+                ++aims_;
+                w.aimedAt = now;                    // (Tried, whether or not a way was found: no sooner again.)
                 if (world_.moveTo(body, m->position.x, m->position.y).ok)
                     w.aim = m->position;
+            }
         }
 }
 
@@ -694,28 +875,39 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
     }
     else if (s == "poach" && quarter == 0)
     {
-        // Each dawn, its hands paid, the Chapter's treasury first topped up to the day's pay at the day's rate (what it
-        // can't get from the capital's treasury noted, "short"); one it can't pay goes home (campTick).
-        const auto& chapter = holds_[s].front();
+        // Each dawn its hands paid at twice the day's rate (payStaff).
         const auto wage = poachWage();
-        const auto need = wage * std::int64_t(staff_.size());
-        const auto* purse = society.account(chapter);
-        if (const auto lacking = need - (purse ? purse->cash : 0); lacking > 0)
-            if (const auto got = fund(s, chapter, lacking); got < lacking)
-                note(s, chapter, "short", "", 0, lacking - got);
-        for (auto it = staff_.begin(); it != staff_.end();)
+        payStaff(s, [wage](const std::string&) { return wage; });
+    }
+    else if (s == "strike" && quarter == 0 && !struck_)
+    {
+        // Each dawn its hands paid their companions' wages; the month over, let go at that dawn.
+        if (day >= startDay_ + StrikeDays)
         {
-            const auto* e = world_.entity(*it);
-            if (e && !e->dead && society.shift(chapter, *it, "", 0, wage, "camp wage"))
-            {
-                note(s, chapter, "paid", *it, 1, wage);
-                ++it;
-                continue;
-            }
-            if (auto* npc = world_.entity(*it))
-                npc->leaderId.clear();
-            note(s, chapter, e && !e->dead ? "left unpaid" : "died", *it, 1, 0);
-            it = staff_.erase(it);
+            letGo(s);
+            struck_ = true;
+        }
+        else
+            payStaff(s, [this](const std::string& id) { return companionWage(id); });
+    }
+    else if (s == "flood" && flooded_ && onTheHour && hour >= 8 && hour <= 18)
+    {
+        // On the hour from 8 to 18 for FloodDays, what each has landed sold to the capital's shops, as many as they take
+        // (a pack of 99 landed each morning: a stand-in, made in its pack, "landed"; a player can't fish yet). Unsold,
+        // it keeps (and spoils as anyone's does). Then they stop.
+        if (day >= startDay_ + FloodDays)
+        {
+            flooded_ = false;
+            for (const auto& id : who_[s])
+                note(s, id, "stopped", FloodStaple, 0, 0);
+            return;
+        }
+        for (const auto& id : who_[s])
+        {
+            const int held = society.account(id) ? Society::stock(*society.account(id), FloodStaple) : 0;
+            if (hour == 8 && held < Lot && society.create(id, FloodStaple, Lot - held, "landed"))
+                note(s, id, "landed", FloodStaple, Lot - held, 0);
+            sellAll(s, id, FloodStaple);
         }
     }
     else if ((s == "theft" || s == "visit") && quarter >= 9 * 4 && quarter < 21 * 4)
@@ -760,14 +952,9 @@ void Players::end()
     // leave the world as a player's does who logs off (Game: World::removePlayer; one in a fight stays till it's over).
     // What they own they keep, as a player away does.
     ended_ = true;
-    for (const auto& id : staff_)
-        if (auto* npc = world_.entity(id))
-        {
-            npc->leaderId.clear();
-            world_.stop(id);
-            note("poach", holds_["poach"].empty() ? std::string() : holds_["poach"].front(), "released", id, 1, 0);
-        }
-    staff_.clear();
+    flooded_ = false;
+    for (const char* s : {"poach", "strike"})
+        letGo(s);
     for (const char* s : {"theft", "visit"})
         for (const auto& body : playersOf(s))
             leaving_.insert(body);
@@ -788,6 +975,97 @@ void Players::leave()
             note(it->rfind("player-theft-", 0) == 0 ? "theft" : "visit", *it, "left", "", 0, 0);
         it = leaving_.erase(it);
     }
+}
+
+std::string Players::capitalNow() const
+{
+    return capital_.empty() ? world_.society().capital() : capital_;
+}
+
+void Players::findMakers()
+{
+    // flood's makers: the posts that land the staple worked in the capital, or held by a wolf who lives there (its
+    // shops buy from the capital's own first: Society::buyMaterials), found once (the first day's block, or the start).
+    const auto capital = capitalNow();
+    if (makersFound_ || capital.empty())
+        return;                                     // (No capital named: the start's, by its shops.)
+    makersFound_ = true;
+    const auto& society = world_.society();
+    const auto& held = society.state().careers.positions;
+    for (const auto& p : society.positions())
+        if (const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
+            producer && std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
+        {
+            const auto h = held.find(p.id);
+            const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
+            if (world_.communityOf(p.work.cell) == capital || (life && world_.communityOf(life->homeCell) == capital))
+                makers_.push_back(p.id);
+        }
+}
+
+std::string Players::floodDay() const
+{
+    // The staple in the capital: what its shops that deal in it ask and would pay a player (each shop's own, averaged
+    // over them, before it is rounded to the penny), and what is on their shelves; its makers: the posts landing it
+    // that are held, their tills' cash and what they hold of it (their sales are in tills.csv, their hours in work.csv).
+    // From the run's first day, before they start too: the days before the flood to set it by.
+    const auto& society = world_.society();
+    const auto capital = capitalNow();
+    const auto& posts = society.state().careers.positions;
+    double asked = 0, offered = 0;
+    int shops = 0;
+    std::int64_t shelves = 0;
+    std::set<std::string> tills;
+    for (const auto& p : society.positions())
+    {
+        const auto held = p.role == "merchant" ? posts.find(p.id) : posts.end();
+        const Shop shop{held == posts.end() ? std::string() : held->second.holder, p.id, world_.communityOf(p.work.cell)};
+        if (held == posts.end() || shop.town != capital || !open(shop))
+            continue;
+        const auto deals = society.wares(shop.keeper);
+        if (std::find(deals.begin(), deals.end(), FloodStaple) == deals.end())
+            continue;
+        asked += society.priceAt(shop.keeper, FloodStaple);
+        offered += society.offerAt(shop.keeper, FloodStaple);
+        ++shops;
+        if (const auto* till = tills.insert(society.tillOf(shop.keeper)).second ? society.account(society.tillOf(shop.keeper)) : nullptr)
+            shelves += Society::stockAll(*till, FloodStaple);
+    }
+    int held = 0;
+    std::int64_t cash = 0, stock = 0;
+    for (const auto& post : makers_)
+    {
+        if (const auto found = posts.find(post); found != posts.end() && !found->second.holder.empty())
+            if (const auto* e = world_.entity(found->second.holder); e && !e->dead)
+                ++held;
+        if (const auto* till = society.account("till:" + post))
+            cash += till->cash, stock += Society::stockAll(*till, FloodStaple);
+    }
+    std::ostringstream out;
+    out << ",\"selling\":" << (flooded_ ? "true" : "false") << ",\"shops\":" << shops << ",\"asked\":" << (shops ? asked / shops : 0.)
+        << ",\"offered\":" << (shops ? offered / shops : 0.) << ",\"shelves\":" << shelves << ",\"makers\":" << makers_.size()
+        << ",\"makers_held\":" << held << ",\"makers_cash\":" << cash << ",\"makers_stock\":" << stock;
+    return out.str();
+}
+
+std::string Players::strikeDay() const
+{
+    // The hands it took: how many have the post they had when taken (held or let go); and the capital's labour market:
+    // its going rate, and its employers' posts open.
+    const auto& society = world_.society();
+    const auto capital = capitalNow();
+    int kept = 0;
+    for (const auto& id : taken_)
+        if (const auto* job = society.jobOf(id); job && jobWas_.count(id) && job->id == jobWas_.at(id))
+            ++kept;
+    int open = 0;
+    for (const auto& [key, book] : society.state().memory.employers)
+        if (society.employerTownOf(key) == capital)
+            open += society.vacanciesOf(key);
+    std::ostringstream out;
+    out << ",\"taken\":" << taken_.size() << ",\"kept_post\":" << kept << ",\"let_go\":" << (struck_ ? "true" : "false")
+        << ",\"going\":" << society.goingRate(capital) << ",\"open\":" << open;
+    return out.str();
 }
 
 std::vector<PlayerMove> Players::takeMoves()
@@ -821,13 +1099,20 @@ std::string Players::takeDay()
             count(id);
         out << (first ? "" : ",") << quoted(s) << ":{\"players\":" << players.size() << ",\"cash\":" << cash << ",\"goods\":" << goods;
         first = false;
-        if (s == "poach")
+        if (s == "poach" || s == "strike")
         {
             int hungry = 0;
-            for (const auto& id : staff_)
+            for (const auto& id : staffOf(s))
                 if (const auto* life = society.resident(id))
                     hungry += life->hunger >= 70;
-            out << ",\"staff\":" << staff_.size() << ",\"staff_hungry\":" << hungry;
+            out << ",\"staff\":" << staffOf(s).size() << ",\"staff_hungry\":" << hungry;
+        }
+        if (s == "strike")
+            out << strikeDay();
+        if (s == "flood")
+        {
+            findMakers();
+            out << floodDay();
         }
         if (s == "kill")
         {
