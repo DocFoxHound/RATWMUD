@@ -117,19 +117,32 @@ void Society::spoil(std::int64_t day)
     for (auto& [till, goods] : sellRate_)
         for (auto& [item, rate] : goods)
             rate *= .7;
-    // A good it sold out of: the buyers who came after are counted too, as half again what it sold (doc 64, Phase 3b).
+    // A good it sold out of: the buyers who came after are counted too, as half again what it sold (doc 64, Phase 3b),
+    // or as the meals the hungry wanted of it when they found none (Phase 13), whichever is more; a shelf bare all day,
+    // by those meals alone.
+    const auto missed = [&](const std::string& till, const std::string& item) {
+        if (const auto t = missedToday_.find(till); t != missedToday_.end())
+            if (const auto m = t->second.find(item); m != t->second.end())
+                return double(m->second);
+        return 0.;
+    };
     for (const auto& [till, goods] : soldToday_)
         for (const auto& [item, n] : goods)
         {
             const auto out = ranOut_.find(till);
             const auto* shelves = account(till);
             const bool soldOut = out != ranOut_.end() && out->second.count(item) && shelves && stockAll(*shelves, item) == 0;
-            sellRate_[till][item] += .3 * (soldOut ? n + std::max(1., n * .5) : n);
+            sellRate_[till][item] += .3 * (n + std::max(soldOut ? std::max(1., n * .5) : 0., missed(till, item)));
         }
+    for (const auto& [till, goods] : missedToday_)
+        for (const auto& [item, n] : goods)
+            if (const auto sold = soldToday_.find(till); sold == soldToday_.end() || !sold->second.count(item))
+                sellRate_[till][item] += .3 * n;
     soldToday_.clear();
     ranOut_.clear();
     for (const auto& [till, goods] : sellRate_)
         ++salesDays_[till];                         // (Its days of sales in the average: a field's founding, doc 64, Phase 13.)
+    missedToday_.clear();
     // Each larder's day: what it gave, into its running average. A larder that ends the day bare ran short (what it
     // gave is less than its household wanted): its plan goes a quarter of the way back up to a meal each for its household.
     for (const auto& [larder, taken] : larderTaken_)
@@ -286,7 +299,7 @@ std::int64_t Society::shopPrice(const std::string& shop, const std::string& item
     return pennies(priceAt(shop, item));
 }
 
-int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking)
+int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
 {
     const auto till = tillOf(seller);
     const auto* shop = account(till);
@@ -301,7 +314,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     // enough to last until the shops are properly open again (over Restday and a festival, shutAhead). It lays in only
     // when what the household holds (the larder and what its members carry) won't last until then: otherwise just a
     // meal, if hungry. A child buys only for itself.
-    int household = 1, days = 0, perDay = 50;
+    int household = 1, days = 0, perDay = 50, shut = 0;
     const auto* me = state_.residents.count(resident) ? &state_.residents.at(resident) : nullptr;
     const auto* r = spec(resident);
     const bool grown = r && r->age >= 16;
@@ -339,7 +352,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
         }
         else
             carried(resident);
-        const int shut = shutAhead(state_.budgetDay);
+        shut = shutAhead(state_.budgetDay);
         // (What the household eats from home a day: its larder's running average once it has one, at least a fifth of
         // a meal each; at first, a meal each.)
         const auto use = larderUse_.find(homeStore(me->homeCell, "larder"));
@@ -353,7 +366,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     // One with no household to lay in for it (barracks, a bunkhouse, lodgings) buys, on the eve of a day the shops aren't
     // properly open, what will last it over that day, and carries it (the user, 2026-10-07: barracks lay in too).
     else if (grown && me && communalHome(me->homeCell))
-        if (const int shut = shutAhead(state_.budgetDay); shut > 0)
+        if (shut = shutAhead(state_.budgetDay); shut > 0)
         {
             carried(resident);
             if (atHome < 50 * (1 + shut))
@@ -422,7 +435,19 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     {
         auto& life = state_.residents.at(resident);
         life.hunger = std::max(0., life.hunger - nourishment(atCounter) * 1.1);
+        stocked -= nourishment(atCounter);
     }
+    // A hungry buyer who found nothing left to eat: a meal it wanted, of the first food the shop sells, counted with its
+    // sales (doc 64, Phase 13: what it makes follows what was wanted, not only what it had to sell).
+    if (hungry && choices.empty())
+        for (const auto& item : sold)
+            if (const int feeds = nourishment(item); feeds > 0)
+            {
+                missedToday_[till][items::baseOf(item)] += (50 + feeds - 1) / feeds;   // (A meal's worth: 50.)
+                break;
+            }
+    if (under)
+        *under = laysIn ? std::max(0, perDay * (1 + shut) - stocked) : 0;
     return bought;
 }
 
@@ -797,11 +822,17 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
             // (A household with someone keeping the house sends it to the shop: RatwResidents.cpp; unless the larder is
             // all but bare.)
             const bool kept = state_.memory.keeper.count(home) > 0;
-            // (buyFood lays in by the household's plan, only when it is running low: Society::buyFood.)
+            // (buyFood lays in by the household's plan, only when it is running low: Society::buyFood.) Each household
+            // starts at a shop of its own, and goes on to the next while what it holds is still under the point it lays
+            // in at (doc 64, Phase 13: not every household at the town's first shop, nor home with a crumb of it).
+            const auto& list = shops->second;
+            const std::size_t first = std::size_t(unit(home) * double(list.size())) % list.size();
             if (!kept || held < 50 * int(members.size()))
-                for (const auto& shop : shops->second)
+                for (std::size_t k = 0; k < list.size(); ++k)
                 {
-                    if (shop == shopper || !shopHasFood(shop) || buyFood(shopper, shop, true) == 0)
+                    const auto& shop = list[(first + k) % list.size()];
+                    int under = 0;
+                    if (shop == shopper || !shopHasFood(shop) || buyFood(shopper, shop, true, &under) == 0)
                         continue;
                     const auto keep = bestFood(*account(shopper));
                     std::vector<std::pair<std::string, int>> food;
@@ -811,7 +842,8 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
                     for (const auto& [item, n] : food)
                         if (n > 0)
                             shift(shopper, larder, item, std::min(n, 99), 0, "put away in the larder");
-                    break;
+                    if (under <= 0)
+                        break;
                 }
         }
         const double offset = unit(home) * 30;          // (Not every household on the same day.)

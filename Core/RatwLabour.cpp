@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <map>
+#include <numeric>
 #include <set>
 
 namespace ratw
@@ -454,14 +456,66 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             idle += !jobOf(id) && !apprenticedTo(id);
         }
     slack_ = grown ? double(idle) / grown : 0;
-    // The realm's pace toward the calibrated hours: on while it's fed, back while it goes hungry.
+    // The realm's pace toward the calibrated hours (doc 64, Phase 13): on while the week's food holds and the land's
+    // hands keep up, back while the food falls or runs thin, and back faster while the realm goes hungry.
     if (workByHours())
     {
         int hungry = 0;
         for (const auto& [id, life] : state_.residents)
             hungry += life.hunger >= 60;
         const bool fed = state_.residents.empty() || double(hungry) / double(state_.residents.size()) < PaceHungry;
-        memory.pace = std::clamp(memory.pace + (fed ? PaceStep : -PaceBack), 0., 1.);
+        // The realm's food in hand, days a head: its homes' and its shelves', each town's at most PaceCoverCap (a glutted
+        // town doesn't hide a hungry one). The monitor's, measured last evening for today (if it missed the evening, none).
+        const auto& last = state_.orchestrator.last;
+        double held = 0, people = 0;
+        if (last.day == day)
+            for (const auto& t : last.towns)
+                held += t.people * std::clamp(t.shopFoodDays + t.homeFoodDays, 0., PaceCoverCap), people += t.people;
+        auto& week = memory.paceCover;
+        if (people > 0)
+        {
+            week.push_back(held / people);
+            if (int(week.size()) > PaceWeek)
+                week.erase(week.begin());
+        }
+        const bool weighed = int(week.size()) == PaceWeek;
+        // Today's against the same day last week (Restday at both ends or neither): the week's food made less eaten.
+        const double slide = weighed ? week.back() - week.front() : 0;
+        const double mean = weighed ? std::accumulate(week.begin() + 1, week.end(), 0.) / (PaceWeek - 1) : 0;
+        // The land's hands: its producers at work and their hires taken, against the hands their sales want now. They keep
+        // up when short by PaceShortHands at most, or (their sales wanting more than any hands could make while the realm's
+        // buyers lay in stores) no further behind than a week ago by more than that: the pace goes on as far as the labour
+        // market follows it to the land.
+        std::map<std::string, int> taken;
+        for (const auto& j : oddJobs_)
+            if (j.until >= day && j.kind == "a hand")
+                taken[j.payer] += int(j.stage.size());
+        int want = 0, have = 0;
+        for (const auto& p : positions_)
+            if (p.role != "merchant" && items::producerFor(p.title))
+                if (const auto till = "till:" + p.id; handsOf(till) > 0)
+                {
+                    want += handsWanted(till);
+                    const auto hired = taken.find(till);
+                    have += handsOf(till) + (hired == taken.end() ? 0 : hired->second);
+                }
+        auto& hands = memory.paceHands;
+        if (want > 0)
+        {
+            hands.push_back(std::min(1., double(have) / want));
+            if (int(hands.size()) > PaceWeek)
+                hands.erase(hands.begin());
+        }
+        const bool handsKeepUp = have > 0 && (want <= have * (1 + PaceShortHands) ||
+                                              (int(hands.size()) == PaceWeek && hands.back() >= hands.front() - PaceShortHands));
+        double step = 0;
+        if (!fed)
+            step = -PaceBack;
+        else if (weighed && (slide < -PaceSlide || mean < PaceFloor))
+            step = -PaceStep;
+        else if (weighed && slide >= 0 && handsKeepUp)
+            step = PaceStep;
+        memory.pace = std::clamp(memory.pace + step, 0., 1.);
     }
     // Each wolf's pay lately: the share of the wages owed it that its employer paid, a week's running average of its working
     // days (a new post starts a fresh record, paid in full). Paid under 40% of what it was owed, it leaves (not the only

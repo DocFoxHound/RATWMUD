@@ -329,6 +329,8 @@ struct EconomyMemory
     std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
     std::set<std::string> closed;                   // Posts a business has let go and keeps empty (doc 64, Phase 6).
     double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
+    std::vector<double> paceCover;                   // The realm's food in hand at the last PaceWeek day passes, days a head.
+    std::vector<double> paceHands;                   // And the land's hands, a share of those its sales want (0 to 1).
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     MintBook mint;                                   // The mint (Phase 11).
@@ -674,9 +676,10 @@ class Society
     int inputStore(const std::string& till, const items::Craft& k, const std::string& item, int least) const;
     static constexpr int StapleInputDays = 7, InputDays = 4;
     // How many of a good a seller keeps (doc 64, Phase 3b): output follows sales. Its days' keeping (keepDays) of what
-    // it sells a day, missed sales counting, a fifth over for a staple; with `orders`, at least its share of a week of
-    // the standing orders on its town's makers or producers of it and half a supplier's store; never under `least` (the
-    // old fixed store, now a floor, so a new shop still has a few in).
+    // it sells a day (food, over the shut days ahead too, as far as it keeps: Phase 13), missed sales counting, a fifth
+    // over for a staple; with `orders`, at least its share of a week of the standing orders on its town's makers or
+    // producers of it and half a supplier's store; never under `least` (the old fixed store, now a floor, so a new shop
+    // still has a few in).
     int shelfTarget(const std::string& till, const std::string& item, int least, bool orders = true) const;
     // The roads' standing orders (doc 61), told by World each day: by selling town and good, how many go a week (its
     // makers share that much more of a good that keeps, kept for the caravan); by buyer's till, what its orders cost a
@@ -728,11 +731,12 @@ class Society
     // and its chest, herbs for each. Placeholder amounts for the balance pass.
     static constexpr int StartingMeals = 3, LarderMealsEach = 3, ChestHerbsEach = 2;
     // How many days' food a household's larder holds (the user, 2026-10-06: 2 to 5), its own steady habit, so the
-    // world's households don't all shop on the same day; and a new larder holds 2 to 5 days' to begin with (in place of
-    // LarderMealsEach for everyone), so their first trips are spread out too.
+    // world's households don't all shop on the same day; and a new larder holds FoundingLarderDays of meals to begin
+    // with (in place of LarderMealsEach for everyone): meals keep three days, and the 2 to 5 it once held mostly spoiled
+    // on the fifth (doc 64, Phase 13).
     static int stockingDays(const std::string& homeCell);
     static int shutAhead(std::int64_t today);       // Days from tomorrow the shops aren't properly open (Restday, a festival).
-    static int startingLarderDays(const std::string& homeCell);
+    static constexpr int FoundingLarderDays = 2;
     static const char* itemName(const std::string& id);
     // The economy's monitor (Docs/Design/46-economy-orchestrator.md; doc 64, Phase 12; RatwOrchestrate.cpp). In an authored
     // world, once a game day at SnapshotHour, the society copies what it reads (purses, food, work, the shops' food, coins
@@ -789,6 +793,9 @@ class Society
     std::map<std::pair<std::string, std::string>, int> ordersFrom_;    // (Town, good) -> each maker's share of a week's orders.
     std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
+    // A shop's food wanted today when it had none left: a hungry buyer's meal, in its first food's pieces (doc 64,
+    // Phase 13), counted with its sales (Society::spoil). Not saved.
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> missedToday_;
     // Each resident by number (its place in ID order), and what its decisions every second reach through it, kept while
     // nothing they rest on changes (refreshRecords): the roster, the careers, the specs, the positions, the accounts.
     struct ResidentRecord
@@ -908,16 +915,23 @@ class Society
     // calibrated hours need).
     double hoursFor(const items::Craft& k) const;
     double hoursFor(const items::Producer& p) const;
-    // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
-    // calibrated over some eight weeks (PaceStep a day) while the realm is fed, and back a little faster (PaceBack a day)
-    // while more than PaceHungry of it goes hungry: the labour market needs weeks to move hands to the land, and the
-    // founding's stores last days. Where it settles is what the realm's hands can carry.
-    static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
     static inline bool workByHours_ = false;
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
 
   public:
+    // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
+    // calibrated over some eight weeks (PaceStep a day) while the realm is fed, and back a little faster (PaceBack a day)
+    // while more than PaceHungry of it goes hungry: the labour market needs weeks to move hands to the land, and the
+    // founding's stores last days. Where it settles is what the realm's hands can carry.
+    // Steadied (Phase 13): it goes on only while the realm's food in hand (homes and shelves, days a head, a town's at
+    // most PaceCoverCap) hasn't fallen over the week (PaceWeek readings) and the land's hands keep up with what its sales
+    // want (short by PaceShortHands at most, or no further behind than a week ago by more than that); it steps back while
+    // the week's food falls by over PaceSlide days a head or averages under PaceFloor days; and back faster while the
+    // realm goes hungry, as before.
+    static constexpr double PaceStep = 1. / 56, PaceBack = 1. / 14, PaceHungry = .02;
+    static constexpr int PaceWeek = 8;
+    static constexpr double PaceSlide = .15, PaceFloor = 1, PaceCoverCap = 4, PaceShortHands = .05;
     // Whether residents' work takes the calibrated hours (econ_watch --hours; on in play from doc 64's Phase 6).
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
@@ -955,10 +969,11 @@ class Society
     // many goods were added.
     int stockMaterials(const std::string& id);
     // What townsfolk buy (RatwDemand.cpp): whether a shop has food for sale; a hungry resident's purchase at it (enough
-    // for now, and a couple of days more with a larder), returning how many it bought; and each household's day of
-    // errands (firewood, candles, clothes... crafts.json `households`).
+    // for now, and a couple of days more with a larder), returning how many it bought (and, laying in, how far its
+    // household's food is still under the point it lays in at: `under`); and each household's day of errands (firewood,
+    // candles, clothes... crafts.json `households`).
     bool shopHasFood(const std::string& merchant) const;
-    int buyFood(const std::string& resident, const std::string& seller, bool stocking);
+    int buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under = nullptr);
     void householdShopping(std::int64_t day, int season, const std::map<std::string, LifeBody>& bodies);
     // Children's stipends (the user, 2026-10-05; RatwDemand.cpp): once a day each child living with grown family is given
     // a little, MostStipend at most, out of its household's want fund (doc 64, Phase 13: the one rule), as far as what

@@ -151,6 +151,28 @@ void restdayService()
     expect(life(w, "maple").task != "preaching", "The service is over by noon");
 }
 
+// The land's food on Restday (doc 64, Phase 13): Greyfen with Rook keeping rabbits. Through the service it rests like
+// everyone; after it, it works the afternoon, as the food shops do, so Dawnday's makers have meat.
+void restdayLandFood()
+{
+    auto files = greyfenFiles();
+    auto& manifest = files["world.ratw"];
+    const std::string hauling = "\"hauling crates on the high street\"", rabbits = "\"keeps rabbits on the high street\"";
+    const auto label = manifest.find(hauling);
+    expect(label != std::string::npos, "Rook hauls crates in Greyfen");
+    manifest.replace(label, hauling.size(), rabbits);
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "greyfen");
+    expect(loaded.ok, "Greyfen with a rabbit keeper loads: " + loaded.message);
+    expect(w.advanceCalendar(6 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(10).ok, "Restday, during the service");
+    run(w, 5);
+    expect(life(w, "rook").task != "keeps rabbits on the high street", "Rook doesn't work through the service: " + life(w, "rook").task);
+    expect(w.setTimeOfDay(13).ok, "The afternoon");
+    run(w, 5);
+    expect(life(w, "rook").task == "keeps rabbits on the high street", "Rook keeps its rabbits after it: " + life(w, "rook").task);
+    expect(life(w, "sorrel").task != "tending the herb garden", "while the gardener rests: " + life(w, "sorrel").task);
+}
+
 void restday()
 {
     auto w = at(6, 11);
@@ -352,6 +374,7 @@ int main()
         theWeek();
         restday();
         restdayService();
+        restdayLandFood();
         marketday();
         cityMarkets();
         festivals();

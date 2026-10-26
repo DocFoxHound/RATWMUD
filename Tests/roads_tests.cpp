@@ -1997,6 +1997,60 @@ void theMonitorWatches()
     expect(s.conserved() && s.moneySupply() == supply, "Every penny is kept");
 }
 
+// The realm's pace, steadied (doc 64, Phase 13), with work by the hours: each turn of the day it takes the monitor's
+// reading of the realm's food in hand (homes and shelves, days a head, a town's at most PaceCoverCap). Until it has a
+// week of them it only holds; a week in, it steps back when the week's food fell by more than PaceSlide; and back faster
+// while the realm goes hungry. (It goes on only with the land's producers keeping up: the strip has none.)
+void thePaceIsSteadied()
+{
+    Society::setWorkByHours(true);
+    auto f = strip("EE.....WW");
+    auto w = load(f);
+    w.tick(.6);
+    const auto evening = [&](double day, std::vector<double> cover, bool hungry) {
+        auto saved = w.save();
+        saved.calendarDays = day + 22. / 24;
+        saved.society.memory.pace = .5;
+        saved.society.memory.paceCover = std::move(cover);
+        if (hungry)                                  // (Hungry, and nothing to eat at home or about them.)
+            for (auto& [id, life] : saved.society.residents)
+            {
+                life.hunger = 95;
+                for (const auto& key : {id, Society::homeStore(life.homeCell, "larder")})
+                    if (const auto a = saved.society.accounts.find(key); a != saved.society.accounts.end())
+                        for (auto it = a->second.stock.begin(); it != a->second.stock.end();)
+                            it = Society::edible(it->first) ? a->second.stock.erase(it) : std::next(it);
+            }
+        expect(w.restore(saved).ok, "To an evening");
+        run(w, 600 * 3);                             // (Past 23:00 and the turn of the day.)
+        return w.society().state().memory;
+    };
+    auto m = evening(3, {}, false);
+    const auto& last = w.society().orchestrator().last;
+    double held = 0, people = 0;
+    for (const auto& t : last.towns)
+        held += t.people * std::min(Society::PaceCoverCap, t.shopFoodDays + t.homeFoodDays), people += t.people;
+    expect(last.day == 4 && m.paceCover.size() == 1 && people > 0 && std::abs(m.paceCover.back() - held / people) < 1e-9,
+           "At the turn of day 4, a reading: the monitor's homes and shelves, days a head (" + std::to_string(held / people) + ")");
+    expect(m.pace == .5, "and with no week of them yet, the pace holds");
+    // (A week's readings before today's: a week ago first.)
+    const auto week = [](double weekAgo, double since) {
+        std::vector<double> v(Society::PaceWeek - 1, since);
+        v.front() = weekAgo;
+        return v;
+    };
+    m = evening(4, week(Society::PaceCoverCap, Society::PaceCoverCap), false);
+    expect(m.paceCover.size() == std::size_t(Society::PaceWeek) && m.paceCover.back() < Society::PaceCoverCap - Society::PaceSlide &&
+               std::abs(m.pace - (.5 - Society::PaceStep)) < 1e-9,
+           "A week in, with more food a week ago: the pace steps back (" + std::to_string(m.pace) + ")");
+    m = evening(5, week(0, Society::PaceCoverCap), false);
+    expect(std::abs(m.pace - .5) < 1e-9, "With more now than a week ago, it holds: the land's producers don't keep up (it has none)");
+    m = evening(6, week(0, Society::PaceCoverCap), true);
+    expect(std::abs(m.pace - (.5 - Society::PaceBack)) < 1e-9, "and while the realm goes hungry it steps back faster (" + std::to_string(m.pace) + ")");
+    expect(w.society().conserved(), "Nothing it reads moves a penny");
+    Society::setWorkByHours(false);
+}
+
 // One price for a good in a town (doc 46, Phase 3): the orchestrator's, the same at every shop of the town, a quality at
 // its share of it; and what the land is paid for it, that price times the orchestrator's margin.
 void sellersPriceFromCost()
@@ -2488,6 +2542,7 @@ int main()
         theChurchCares();
         townsWearAndAreMended();
         theMonitorWatches();
+        thePaceIsSteadied();
         sellersPriceFromCost();
     }
     catch (const std::exception& error)

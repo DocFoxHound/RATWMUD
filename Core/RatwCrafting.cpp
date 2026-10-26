@@ -399,7 +399,13 @@ int Society::shelfTarget(const std::string& till, const std::string& item, int l
         for (const auto& need : items::householdNeeds())
             if (need.winterDays > 0 && need.winterDays < need.everyDays && std::find(need.any.begin(), need.any.end(), base) != need.any.end())
                 rate *= need.everyDays / need.winterDays;
-    int target = std::max(least, int(std::ceil(rate * keepDays(base) * slack)));
+    // Food is kept over the days ahead the shops aren't properly open too (Restday, a festival), as far as it keeps
+    // (doc 64, Phase 13): the eve's makers hold the shut day's sales, so the larders laying in don't empty the shelves.
+    double days = keepDays(base);
+    if (good && good->nourish > 0 && !good->drink)
+        if (const int shut = shutAhead(state_.budgetDay); shut > 0)
+            days += good->keeps > 0 ? std::min<double>(shut, std::max(0., good->keeps - 1 - days)) : shut;
+    int target = std::max(least, int(std::ceil(rate * days * slack)));
     // A week of the roads' orders on it and half a supplier's store, kept for the caravan, as a smelter keeps bars to
     // send (doc 61). (Not of what rots before the week is out; but of what keeps a day yet never rots, milk, its share:
     // doc 64, Phase 13.)

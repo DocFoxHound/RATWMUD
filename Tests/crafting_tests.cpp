@@ -407,6 +407,34 @@ void woodLaidInForWinter()
            "a month before winter the firewood laid in doubles: " + std::to_string(before.first) + " to " + std::to_string(now.first));
 }
 
+// Food kept over Restday (doc 64, Phase 13): on the eve of a day the shops aren't properly open, the baker keeps that
+// day's bread too (bread keeps four days: two days' sales, and the shut day's); firewood's store doesn't change.
+void foodKeptOverRestday()
+{
+    // (Two towns alike, one on an ordinary day and one on the eve.)
+    const auto on = [](std::int64_t day) {
+        auto s = farmTown();
+        const auto till = s.tillOf("baker");
+        for (std::int64_t d = 1; d <= 6; ++d)
+        {
+            set(s, "baker", "bread", 10);
+            expect(s.sale(till, "stall", "bread", 10, 1, "test: the stall's bread"), "the stall buys the baker's bread");
+            s.spoil(d);
+        }
+        double at = double(day) + 10. / 24;
+        work(s, 60, at, 1);
+        return std::pair{s.shelfTarget(till, "bread", 0), s.shelfTarget(s.tillOf("farmer"), "firewood", 0)};
+    };
+    std::int64_t eve = 100, plain = 100;
+    while (Society::shutAhead(eve) == 0)
+        ++eve;
+    while (Society::shutAhead(plain) > 0 || Society::shutAhead(plain - 1) > 0)
+        ++plain;
+    const auto usual = on(plain), ahead = on(eve);
+    expect(usual.first > 0 && ahead.first > usual.first && ahead.second == usual.second,
+           "on the eve the baker keeps more bread: " + std::to_string(usual.first) + " to " + std::to_string(ahead.first));
+}
+
 // Wear and mending for NPCs (doc 64, Phase 9), with work by the hours: a grown wolf owns its clothes and the sword it
 // holds; worn to MendAt, an heirloom sword goes to the smith, who mends it whole for a fee, out of its own hours.
 void piecesWornAndMended()
@@ -1178,6 +1206,7 @@ int main()
         farmerBringsIn();
         seasonalFields();
         woodLaidInForWinter();
+        foodKeptOverRestday();
         piecesWornAndMended();
         aHouseholdsWants();
         theCatchFeedsTheLarder();

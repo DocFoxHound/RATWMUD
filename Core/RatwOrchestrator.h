@@ -93,6 +93,7 @@ struct TownReading
     double foodCost = 0;                             // A day's plain food, pennies.
     double hungry = 0, starving = 0, short_ = 0, poor = 0;   // Shares of its people (short: of its households).
     double shopFoodDays = 0, takingsRatio = 0;
+    double homeFoodDays = 0;                         // Its homes' food (larders, pockets), days a head (doc 64, Phase 13).
     std::int64_t netInflow = 0;
     std::int64_t playerIn = 0, playerOut = 0, playerGoods = 0;   // Players' help (doc 57): TownSnap's, as measured.
 };

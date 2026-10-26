@@ -1040,6 +1040,13 @@ Value economyMemory(const EconomyMemory& m)
         closed.push(pid);
     o.add("closed", closed);
     o.add("pace", m.pace);
+    for (const auto* readings : {&m.paceCover, &m.paceHands})
+    {
+        auto list = Value::array();
+        for (const double x : *readings)
+            list.push(x);
+        o.add(readings == &m.paceCover ? "paceCover" : "paceHands", list);
+    }
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, const std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
@@ -1170,6 +1177,18 @@ EconomyMemory readEconomyMemory(const Value& o)
             m.going[town] = v.asNumber();
     if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
         m.pace = pace->asNumber();
+    // (Saved before doc 64's Phase 13: none, and the pace waits a week of readings before it goes on.)
+    for (const auto& [key, into, most] : {std::tuple{"paceCover", &m.paceCover, Society::PaceCoverCap}, std::tuple{"paceHands", &m.paceHands, 1.}})
+    {
+        const auto& list = o[key];
+        const double top = most;
+        if (list.isArray() && list.items().size() <= std::size_t(Society::PaceWeek) &&
+            std::all_of(list.items().begin(), list.items().end(), [top](const Value& x) {
+                return x.isNumber() && std::isfinite(x.asNumber()) && x.asNumber() >= 0 && x.asNumber() <= top;
+            }))
+            for (const auto& x : list.items())
+                into->push_back(x.asNumber());
+    }
     // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold.)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},

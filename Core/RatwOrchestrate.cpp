@@ -286,10 +286,11 @@ orchestra::Snapshot Society::orchestraSnapshot(std::int64_t forDay, const std::m
         for (const auto& [item, q] : a->stock)
             if (q > 0 && nourishment(item) > 0 && std::find(sold.begin(), sold.end(), item) == sold.end())
                 sold.push_back(item);
+        // (Food: what feeds, not drinks; meals too, at their store price: doc 64, Phase 13.)
         for (const auto& item : sold)
         {
             const auto base = items::baseOf(item);
-            const auto* good = storePriced(base) ? nullptr : items::good(base);
+            const auto* good = items::good(base);
             if (!good || good->price <= 0 || nourishment(base) <= 0)
                 continue;
             auto& g = goods[{town, base}];
