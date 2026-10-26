@@ -1582,7 +1582,7 @@ still carries the bodies' control. Without players, no one hungry.
 - **Players' bodies make residents hungry**, whether they walk, stand or jump (the bodies' control, above). Every other
   run (and every run before) has nobody on the stage; with five bodies in the capital, residents on the stage near
   them fail to get home to eat. It wants fixing before players come, and the long runs, which have no players on the
-  stage, can't see it.
+  stage, can't see it. (Mended in the world's walking: "residents near players' bodies", below.)
 - `theft` and `visit` cost far more: everyone near the bodies is on the stage, and a tick took 0.6 to 3 ms on one to
   three threads against 0.1 to 0.2 (`theft`'s 10 days took 55 minutes; walking `visit`'s, 75).
 - `troubles_tests` failed once with ten runs going at once ("the loan paid") and passed on three runs after and on
@@ -1606,6 +1606,8 @@ still carries the bodies' control. Without players, no one hungry.
 7. A flood of a staple that spoils fast never lowers its price (`flood`: fish stayed at a penny): a shop prices it
    at what it paid, and its margin falls only on a shelf that won't move. Is it right that a glut of fresh fish
    becomes smoked fish rather than cheaper fish?
+
+   players, can't see it. (Found and mended: "residents near players' bodies", below.)
 
 **The review's fixes (2026-10-26)** (`4e83cec`; `Tests/econ_players_tests.cpp` checks each, and econ_watch's files
 on a little world of its own, a day and a fifth in under two seconds):
@@ -2573,3 +2575,78 @@ A day, days 15–29 (pennies; LD in brackets):
 2. **Players' services** (the list above) are still at their 12p prices: a bed for the night at 2p is a thirtieth of a
    day's wage.
 3. **DEV** keeps its 12p rate until it is founded afresh.
+
+### Phase 13: residents near players' bodies (2026-10-26)
+
+What the bodies' control (above) found, mended: residents near players' bodies went hungry, on their way home to eat.
+It was the world's walking (`World::integrate`, `World::headFor`), not the economy's or the harness's. All of it shows
+only on the stage, where residents walk tile by tile, press against each other and use doors and seams; offstage they
+hop between known places and meet none of it, so the runs without players never could see it. Traces of the hungry
+(`RATW_TRACE`, and a count of every walker getting no nearer its next turn) found four faults.
+
+- **Bodies at a turn** (`World::heldOff`). A walker passes a turn of its path only on reaching it, and bodies
+  (`step::BodyRadius`) keep any two a body's width apart. So of several making for the same turn at once only one
+  could stand on it, and the rest pressed round it for good: knots of three to six at the tile a seam is crossed by
+  (`w_ridgemere_1_2`'s north seam at 49,0, residents of four houses standing there for game hours: "in the street
+  outside" the inns), whirls of five or six at a street corner the roads' paths share (220.5,64.5). Now a walker that
+  has come no nearer its next turn for two seconds goes on to the turn after, within a tile of it.
+- **Face to face.** Two coming head on along one row of tile middles (the roads' paths keep to them) pushed each other
+  straight back, for hours. Now a resident held as long, further than a tile from its next turn, steps aside a body's
+  width to its right (or left; in a lane a tile wide, half that, and two pass) and goes on. Near the end of its path
+  neither happens: what happens there is for whoever sent it (a resident's own spot by a goal others share, a door's
+  reach). The clock is four numbers on the entity, never saved (paths aren't).
+- **A door out of sight** (`headFor`). A resident pushed off its way within reach of its own front door, but where it
+  couldn't see it (beside it, past its wall's corner, at night), tried the door at every pass ("You cannot see that
+  here") and stood there for good. Now it walks up to the door, as from further off.
+- **The parts of a cell** (`headFor`). Ridgemere's cells are in parts: `w_ridgemere_2_2`'s body (48,310 tiles) and,
+  behind it, a district of 2,308 reached only across its north edge and the west edge's first rows, where Ashworth
+  House's door is; `w_ridgemere_2_0`'s body and a district of 2,319 where Greatly House's door opens. A way into a cell
+  was judged good if it landed in the cell's body and a pocket otherwise, and a cell whose every way in from here
+  landed in a "pocket" was taken for a dead end, for everyone, for good (`deadEnds_`).
+  - Residents going home to Ashworth House crossed at the road's seam into the body, found no way on, crossed back,
+    and in again, every few seconds for game hours.
+  - One resident of Greatly House leaving by its door, and another making for her spot upstairs in a room no stair
+    reaches, made the street and the stairs dead ends: the whole household, onstage or off, had no way home after
+    ("route unavailable"; in the old jumping control, the hungry "offstage, in houses not theirs").
+  - Now a pocket is a part nothing leads on from but back; a part with ways of its own is somewhere to go on from. On
+    the way through, a way in that lands in a part the next cell's way on leaves from (a way on into a pocket doesn't
+    count) is best of all. A resident in the wrong part of a cell goes out first to a neighbour with a way back in to
+    the right part (told by this cell's own ways, which come in pairs, so the neighbour needn't be in memory). And a
+    dead end is recorded only on the way through, for a true pocket, never by one walker's goal.
+
+**Measured** (10 days of DEV's export from day 2, `visit`'s five bodies from day 2, `--deterministic --hours --threads
+2`, against `e0e6f45`; every run's money conserved every day; the pace 0 in all, as without players):
+
+| Bodies | hungry, starving on day 10: before / now | the worst day before | hours worked on day 10: before / now (5,214 without players) | a tick: before / now |
+|---|---|---|---|---|
+| none | 0, 0 / 0, 0 | | | 0.058 ms / 0.050 ms |
+| still | 55, 36 / 0, 0 | 111, 92 (day 8) | 4,275 / 5,248 | 0.91 ms / 0.18 ms |
+| walk | 193, 134 / 0, 0 | 193, 134 (day 10) | 3,627 / 5,143 | 1.40 ms / 0.29 ms |
+| jump | 90, 56 / 0, 0 | 90, 56 (day 10) | 4,396 / 5,210 | 0.53 ms / 0.27 ms |
+
+None hungry on any day in any of the three. Most of the stage's cost was the knots: keeping bodies apart took 0.44 and
+0.63 ms a tick with the still and walking bodies, now 0.02 and 0.04; their walking 0.24 and 0.38, now 0.03 and 0.06.
+Gini and the poorer half are within 0.011 of the run without players on day 10 (the walking run's Gini 0.555 against
+0.545; 0.551 before the mends). **Without players nothing changes:** the 30-day smoke (`--threads 3`) gives the digest
+aded872975ff165c, `e0e6f45`'s and the merged run's (`m2`), its `days.jsonl` and `flows.csv` the same byte for byte; a
+tick 0.047 ms.
+
+**Tests** (each fails with its mend undone):
+
+- `world_tests`: `heldAtATurn` (two meeting at a turn from either side both go on; alone, a walker turns on the turn
+  itself; face to face along one line, they step aside and pass), `aDoorOutOfSight` (beside the yard door, past its
+  wall's corner, the scout can't see it to open it, and walks up to it).
+- `stream_tests`: `aCrossingIsNotHeldShut` (three making for one seam at once all get over), `aLaneATileWide` (face
+  to face in a lane a tile wide, they pass), `aStripIsNoWayOn` (a strip whose only way on lands in a pocket isn't
+  taken for a way on), `aCellCutInTwo` (home to a door behind a wall, round by the next cell, in at most six crossings;
+  and out again in the morning: the part the door opens on is no pocket), `aSpotNoWayReaches` (a spot no way reaches
+  makes no dead end for the rest of its household).
+
+**Left:**
+
+- One carrier's delivery to Ridgemere's market (`errand`: the market's point and a tile below it, 255.5,37.5 in
+  `w_ridgemere_1_1`) can't be walked to on the stage ("No reachable route"): he tries every five seconds, and the goods
+  wait while he's on the stage (offstage he hops there). Not hunger (an errand gives way to a meal) and not the
+  walking's: the market's point is the roads' (`RatwRoads.cpp`).
+- A resident whose spot at home no way reaches (a room upstairs no stair leads to: Greatly House's) still can't get
+  to it on the stage; now she alone is held, going in and out, not her household.

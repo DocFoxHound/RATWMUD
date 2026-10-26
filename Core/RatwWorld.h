@@ -346,6 +346,10 @@ struct Entity
     bool typing = false;
     double speakingUntil = 0.0;
     std::vector<Vec2> path;
+    // Held off the next turn of its path by others' bodies (World::heldOff, doc 64's Phase 13), never saved: that turn,
+    // the nearest it has come to it, since when, and when it last walked toward it.
+    Vec2 heldTurn;
+    double heldNearest = 0, heldSince = 0, heldAt = -1;
     Vec2 input;
     // Set by an accepted transition; UI must release/reissue held movement.
     bool transitioned = false;
@@ -2306,6 +2310,8 @@ class World
     mutable std::map<std::string, std::pair<std::uint64_t, std::shared_ptr<const Cell>>> routeCells_;
     void takeRoutes();
     void integrate(Entity& actor, double dt);
+    // A walker held by others' bodies, getting no nearer the next turn of its path: on past the turn, or aside.
+    void heldOff(Entity& actor);
     void updateStamina(Entity& actor, double dt, double movedTime);
     void updateTravel(Entity& actor);
     void prepareMovement(Entity& actor);
