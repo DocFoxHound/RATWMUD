@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 #include "RatwTogether.h"
 
@@ -402,17 +403,13 @@ class EntityMap : public std::map<std::string, Entity>
     }
     Entity& operator[](const std::string& id)
     {
-        const auto before = size();
-        auto& e = Base::operator[](id);
-        stale_ = stale_ || size() != before;
-        return e;
+        stale_ = true;                              // (Added, or handed out to be written over whole.)
+        return Base::operator[](id);
     }
     Entity& operator[](std::string&& id)
     {
-        const auto before = size();
-        auto& e = Base::operator[](std::move(id));
-        stale_ = stale_ || size() != before;
-        return e;
+        stale_ = true;                              // (Added, or handed out to be written over whole.)
+        return Base::operator[](std::move(id));
     }
     template <class... Args>
     auto emplace(Args&&... args)
@@ -472,13 +469,23 @@ class EntityMap : public std::map<std::string, Entity>
             for (auto& entry : const_cast<EntityMap&>(*this))
                 order_.push_back(&entry);
             stale_ = false;
+            generation_ = ++generations_;
         }
         return {order_.data(), order_.data() + order_.size()};
+    }
+    // Which order inOrder() last made, a number no other order of any map shares: what is kept from the entities
+    // (World::awake_, players_, onstage_) holds while it stays the same.
+    std::uint64_t generation() const
+    {
+        inOrder();
+        return generation_;
     }
 
   private:
     mutable std::vector<value_type*> order_;
     mutable bool stale_ = true;
+    mutable std::uint64_t generation_ = 0;
+    static inline std::atomic<std::uint64_t> generations_{0};
 };
 
 struct Door
@@ -1343,6 +1350,7 @@ class World
     Environment environmentAt(const std::string& cellId) const;
     // At a point in the cell: the weather there, as strong as it is there (doc 29, phase 7).
     Environment environmentAt(const std::string& cellId, Vec2 at) const;
+    double movementAt(const std::string& cellId, Vec2 at) const;    // environmentAt(cellId, at).movement, alone.
     WeatherSample weatherAt(const std::string& cellId, Vec2 at) const;
     // How warm the land is at a point of the world (world tiles): its cell's climate's warmth, blended across the cells'
     // edges (0 a temperate country's, below it colder). With the season's (seasonalWarmth, below 0 in winter), the
@@ -1540,6 +1548,46 @@ class World
     std::vector<EntityMap::value_type*> awake_;
     void gatherAwake();
     EntityMap::InOrder awake() const { return {awake_.data(), awake_.data() + awake_.size()}; }
+    // Who is awake, the players and those onstage, each kept in ID order and gathered again only when the entities have
+    // changed since (entities_.generation()) or something has marked them: whatever writes offstage, dead, a Gift,
+    // tending or Downed, and whatever is handed an entity to change (entity()). Each may keep one that no longer
+    // belongs (a resident done tending, say), and whatever walks it passes over those.
+    struct Marked
+    {
+        std::atomic<bool> set{true};
+        Marked() = default;
+        Marked(const Marked&) {}                    // (A copy's pointers would be the other world's: gathered afresh.)
+        Marked& operator=(const Marked&)
+        {
+            set = true;
+            return *this;
+        }
+    };
+    mutable Marked awakeMarked_, listsMarked_;
+    std::uint64_t awakeOf_ = 0;                     // The entities' generation each was gathered from.
+    mutable std::uint64_t listsOf_ = 0;
+    mutable std::vector<EntityMap::value_type*> players_, onstage_;
+    void entitiesChanged() const
+    {
+        awakeMarked_.set.store(true, std::memory_order_relaxed);
+        listsMarked_.set.store(true, std::memory_order_relaxed);
+    }
+    void keepLists() const;
+    EntityMap::InOrder players() const              // Every player (not an NPC), in ID order.
+    {
+        keepLists();
+        return {players_.data(), players_.data() + players_.size()};
+    }
+    EntityMap::InOrder onstage() const              // Everyone onstage, in ID order.
+    {
+        keepLists();
+        return {onstage_.data(), onstage_.data() + onstage_.size()};
+    }
+    // Case 0's bodies for the society, kept and written over in place while the living are the same.
+    std::map<std::string, LifeBody> bodies_;
+    // The earliest last birthday of the entities of generation agesOf_ (-infinity for one not yet anchored).
+    double firstBirthday_ = 0;
+    std::uint64_t agesOf_ = 0;
     std::unordered_set<std::string> following_;     // Residents keeping up with something that moves, this pass.
     bool townsReady_ = false;
     // Home storage (Docs/Design/36-home-storage.md): every household's stores opened and stocked once (homesReady_),
@@ -2140,12 +2188,13 @@ class World
     std::set<std::string> stageCells() const;
     // Where an entity is, the cells across its open edges, and those behind doors near it: what it could see,
     // hear or step into soon. The stage is this around every player; streaming keeps it around everyone onstage.
-    void nearCells(const Entity& e, std::set<std::string>& out) const;
+    void nearCells(const Entity& e, std::set<std::string>& out, bool cellToo = true) const;   // (cellToo: its own and seams.)
     std::set<std::string> tierWanted_;              // Tiers: the cells to keep in memory, as of the last update.
     // Each cell's portals other than open-edge seams (doors, stairs): a city cell has thousands of seam records but
     // a few dozen of these. Built on first use; seams come and go with loading but these don't (rebuildFixtureIndex
     // drops them).
     mutable std::map<std::string, std::vector<const Door*>> portalsIn_;
+    mutable std::map<std::string, std::map<std::pair<long, long>, std::vector<const Door*>>> portalsNear_;   // (By square.)
     // Each cell's portals (seams included) by 2-tile square, for "is anyone at a doorway" (separate()); rebuilt when
     // the cell's door list changes.
     mutable std::map<std::string, std::map<std::pair<long, long>, std::vector<const Door*>>> portalGrid_;
@@ -2156,8 +2205,11 @@ class World
     // separate()'s other scratch, kept likewise: each wolf with its cell's hash (to group by), and a crowd's buckets
     // as (bucket, index) sorted, with where each began the pass.
     std::vector<std::pair<std::size_t, Entity*>> separateKeys_;
+    std::vector<Entity*> separateNow_, separateWho_;    // Who pushed at the last step, and in which cells: separateCells_.
+    std::vector<std::string> separateCells_;
     std::vector<std::pair<std::uint64_t, std::size_t>> separateBuckets_;
     std::vector<std::uint64_t> separateStart_;
+    std::vector<int> separateHead_, separateNext_;  // A crowd's buckets as a grid: each one's first, and each one's next.
     std::map<std::string, Door> doors_;
     // Only closable fixtures can occlude/collide. Hundreds of open authoring
     // seams must not turn each sight-ray sample into a full-world scan.

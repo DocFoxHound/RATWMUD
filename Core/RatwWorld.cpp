@@ -9,6 +9,8 @@
 #include <mutex>
 #include <deque>
 #include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <array>
 #include <chrono>
@@ -591,6 +593,7 @@ void World::rebuildFixtureIndex()
     blockingDoors_.clear();
     doorsIn_.clear();
     portalsIn_.clear();
+    portalsNear_.clear();
     portalGrid_.clear();
     doorsAtTile_.clear();
     neighborCache_.clear();
@@ -727,7 +730,10 @@ bool World::removePlayer(const std::string& id)
 Entity* World::entity(const std::string& id)
 {
     const auto it = entities_.find(id);
-    return it == entities_.end() ? nullptr : &it->second;
+    if (it == entities_.end())
+        return nullptr;
+    entitiesChanged();                              // (Whoever has it may make it awake, onstage or not: gathered again.)
+    return &it->second;
 }
 const Entity* World::entity(const std::string& id) const
 {
@@ -976,7 +982,14 @@ void smoothPath(const Cell& c, const std::vector<char>& closedTiles, Vec2 origin
 class World::WalkingGrid final : public step::Grid
 {
   public:
-    WalkingGrid(const World& world, const Cell& c) : world_(world), cell_(c) {}
+    WalkingGrid(const World& world, const Cell& c) : cell_(c)
+    {
+        // The cell's structures and doors, looked up once rather than at each of a step's five samples.
+        if (const auto found = world.obstacles.find(c.id); found != world.obstacles.end())
+            obstacles_ = &found->second;
+        if (const auto found = world.blockingDoors_.find(c.id); found != world.blockingDoors_.end())
+            blockers_ = &found->second;
+    }
     bool ground(int x, int y, step::Ground& out) const override
     {
         const auto* t = cell_.tile(x, y);
@@ -984,16 +997,28 @@ class World::WalkingGrid final : public step::Grid
         {
             out = groundOf(*t);
             // A Chapter's built structure stands here (Docs/Design/32, 5.7).
-            if (const auto found = world_.obstacles.find(cell_.id); found != world_.obstacles.end() && found->second.count({x, y}))
+            if (obstacles_ && obstacles_->count({x, y}))
                 out.solid = true;
         }
         return t != nullptr;
     }
-    bool closedDoor(int x, int y) const override { return world_.blockedByDoor(cell_.id, {x + .5, y + .5}); }
+    bool closedDoor(int x, int y) const override
+    {
+        if (!blockers_)
+            return false;
+        const auto tile = blockers_->find({x, y});
+        if (tile == blockers_->end())
+            return false;
+        for (const Door* d : tile->second)
+            if (!d->open)
+                return true;
+        return false;
+    }
 
   private:
-    const World& world_;
     const Cell& cell_;
+    const std::set<std::pair<int, int>>* obstacles_ = nullptr;
+    const std::map<std::pair<int, int>, std::vector<const Door*>>* blockers_ = nullptr;
 };
 
 bool World::passable(const std::string& cellId, Vec2 p, const Tile* from) const
@@ -2445,6 +2470,10 @@ void World::integrate(Entity& a, double dt)
     // elapsed recovery exactly once, and charge only the time corresponding
     // to accepted translation, not a blocked input or a portal teleport.
     const auto advanceMotion = [&]() {
+        // Standing still with nothing under way (most of those awake, most steps): nothing below would change.
+        if (!a.turning && a.postureRemaining <= 0.0 && a.path.empty() && length(a.input) < Epsilon &&
+            (pendingPortals_.empty() || !pendingPortals_.count(a.id)))
+            return;
         const auto* c = cell(a.cellId);
         if (!c)
             return;
@@ -2506,7 +2535,7 @@ void World::integrate(Entity& a, double dt)
             walked = walked || !a.path.empty();
             const double speed = a.downedLeft > 0 ? CrawlSpeed
                                                   : step::groundSpeed(paceSpeed(a), startTile->movementCost, a.posture == "crouching",
-                                                                      a.npc, environmentAt(c->id, a.position).movement);
+                                                                      a.npc, movementAt(c->id, a.position));
             double travel = speed * dt;
             if (!a.path.empty())
                 travel = std::min(travel, distance(a.position, a.path.front()));
@@ -3169,14 +3198,21 @@ std::size_t World::offstageCount() const
     return n;
 }
 
-void World::nearCells(const Entity& e, std::set<std::string>& out) const
+void World::nearCells(const Entity& e, std::set<std::string>& out, bool cellToo) const
 {
     // A door further off than this is a building the entity can neither see into nor reach within a few seconds.
     constexpr double NearDoor = 24.0;
-    out.insert(e.cellId);
     const auto seams = exits_.find(e.cellId);
-    if (seams != exits_.end())
-        out.insert(seams->second.begin(), seams->second.end());
+    if (cellToo)
+    {
+        out.insert(e.cellId);
+        if (seams != exits_.end())
+            out.insert(seams->second.begin(), seams->second.end());
+        if (seams == exits_.end())                  // A world wholly in memory: its seams are ordinary records.
+            for (const Door* d : doorsIn(e.cellId))
+                if (d->portal && d->passage && d->boundary)
+                    out.insert(d->targetCell);
+    }
     auto portals = portalsIn_.find(e.cellId);
     if (portals == portalsIn_.end())
     {
@@ -3186,19 +3222,30 @@ void World::nearCells(const Entity& e, std::set<std::string>& out) const
                 list.push_back(d);
         portals = portalsIn_.emplace(e.cellId, std::move(list)).first;
     }
-    for (const Door* d : portals->second)
-        if (distance(e.position, d->position) <= NearDoor)
-            out.insert(d->targetCell);
-    if (seams == exits_.end())                      // A world wholly in memory: its seams are ordinary records.
-        for (const Door* d : doorsIn(e.cellId))
-            if (d->portal && d->passage && d->boundary)
-                out.insert(d->targetCell);
+    // By square a little wider than NearDoor: only those in the squares around it can be near enough (a city cell has
+    // a hundred).
+    constexpr double Square = NearDoor + 1;
+    auto grid = portalsNear_.find(e.cellId);
+    if (grid == portalsNear_.end())
+    {
+        std::map<std::pair<long, long>, std::vector<const Door*>> squares;
+        for (const Door* d : portals->second)
+            squares[{long(std::floor(d->position.x / Square)), long(std::floor(d->position.y / Square))}].push_back(d);
+        grid = portalsNear_.emplace(e.cellId, std::move(squares)).first;
+    }
+    const long sx = long(std::floor(e.position.x / Square)), sy = long(std::floor(e.position.y / Square));
+    for (long dy = -1; dy <= 1; ++dy)
+        for (long dx = -1; dx <= 1; ++dx)
+            if (const auto found = grid->second.find({sx + dx, sy + dy}); found != grid->second.end())
+                for (const Door* d : found->second)
+                    if (distance(e.position, d->position) <= NearDoor)
+                        out.insert(d->targetCell);
 }
 
 std::set<std::string> World::stageCells() const
 {
     std::set<std::string> stage;
-    for (const auto& entry : entities_.inOrder())
+    for (const auto& entry : players())
         if (!entry.second.npc)
             nearCells(entry.second, stage);
     return stage;
@@ -3213,6 +3260,7 @@ void World::placeOnStage(Entity& e, const std::set<std::string>& stage)
     // Either way the NPC stands where it is, which is a place it could stand: walking only ever reaches such
     // places, and offstage hops only ever end on them. Whatever it was doing, it plans again from there.
     e.offstage = off;
+    entitiesChanged();
     legs_.erase(e.id);
     pathRetryAt_.erase(e.id);
     routes_.waiting.erase(e.id);
@@ -3631,14 +3679,87 @@ bool World::nearPortal(const std::string& cellId, Vec2 p, double within) const
     return false;
 }
 
+namespace
+{
+bool isAwake(const Entity& e)
+{
+    return e.dead || !e.offstage || !e.npc || !e.gift.empty() || e.tendUntil > 0 || e.downedLeft > 0;
+}
+
+// RATW_CHECK_KEPT set: every kept list is held against a fresh look each time it is used, and a difference stops the
+// program (what is kept must hold everyone a fresh look would find, in the same order).
+const bool CheckKept = std::getenv("RATW_CHECK_KEPT") != nullptr;
+
+template <class Kept, class Fresh>
+void checkKept(const char* what, const Kept& kept, const Fresh& fresh)
+{
+    auto at = kept.begin();
+    for (const auto* entry : fresh)
+    {
+        while (at != kept.end() && *at != entry)
+            ++at;
+        if (at == kept.end())
+        {
+            std::fprintf(stderr, "kept %s list is missing %s\n", what, entry->first.c_str());
+            std::abort();
+        }
+        ++at;
+    }
+}
+}
+
 void World::gatherAwake()
 {
+    // Kept from the last gathering while the entities are the same ones and nothing has marked them.
+    const auto generation = entities_.generation();
+    if (!awakeMarked_.set.exchange(false, std::memory_order_relaxed) && generation == awakeOf_)
+    {
+        if (CheckKept)
+        {
+            std::vector<const EntityMap::value_type*> fresh;
+            for (const auto& entry : entities_.inOrder())
+                if (isAwake(entry.second))
+                    fresh.push_back(&entry);
+            checkKept("awake", awake_, fresh);
+        }
+        return;
+    }
+    awakeOf_ = generation;
     awake_.clear();
     for (auto& entry : entities_.inOrder())
-    {
-        const auto& e = entry.second;
-        if (e.dead || !e.offstage || !e.npc || !e.gift.empty() || e.tendUntil > 0 || e.downedLeft > 0)
+        if (isAwake(entry.second))
             awake_.push_back(&entry);
+}
+
+void World::keepLists() const
+{
+    const auto generation = entities_.generation();
+    if (!listsMarked_.set.exchange(false, std::memory_order_relaxed) && generation == listsOf_)
+    {
+        if (CheckKept)
+        {
+            std::vector<const EntityMap::value_type*> players, onstage;
+            for (const auto& entry : entities_.inOrder())
+            {
+                if (!entry.second.npc)
+                    players.push_back(&entry);
+                if (!entry.second.offstage)
+                    onstage.push_back(&entry);
+            }
+            checkKept("players", players_, players);
+            checkKept("onstage", onstage_, onstage);
+        }
+        return;
+    }
+    listsOf_ = generation;
+    players_.clear();
+    onstage_.clear();
+    for (auto& entry : entities_.inOrder())
+    {
+        if (!entry.second.npc)
+            players_.push_back(&entry);
+        if (!entry.second.offstage)
+            onstage_.push_back(&entry);
     }
 }
 
@@ -3652,20 +3773,36 @@ void World::separate(double dt)
     // each group, visits the same pairs in the same order as comparing everyone with everyone.
     constexpr double Body = step::BodyRadius * 2;
     auto& byCell = separateScratch_;
-    byCell.clear();
     // Grouped by a hash of the cell (cells don't touch, so the groups' order doesn't matter), the name only where two
     // hashes meet: the same groups, in the same ID order within each, without comparing names at every step.
-    auto& keyed = separateKeys_;
-    keyed.clear();
-    const std::hash<std::string> hashOf;
+    // The same wolves in the same cells as at the last step (the usual case: the awake change only with the schedules,
+    // and cells only on crossing): the same groups, kept.
+    auto& who = separateNow_;
+    who.clear();
     for (auto& entry : awake())
         if (!entry.second.offstage && !entry.second.dead && (battles_.empty() || !inBattle(entry.first)))
-            keyed.push_back({hashOf(entry.second.cellId), &entry.second});   // (Nobody pushes a wolf frozen in a fight's lineup.)
-    std::stable_sort(keyed.begin(), keyed.end(), [](const auto& x, const auto& y) {
-        return x.first != y.first ? x.first < y.first : x.second->cellId < y.second->cellId;
-    });
-    for (const auto& k : keyed)
-        byCell.push_back(k.second);
+            who.push_back(&entry.second);           // (Nobody pushes a wolf frozen in a fight's lineup.)
+    bool same = who == separateWho_;
+    for (std::size_t i = 0; same && i < who.size(); ++i)
+        same = who[i]->cellId == separateCells_[i];
+    if (!same)
+    {
+        byCell.clear();
+        auto& keyed = separateKeys_;
+        keyed.clear();
+        const std::hash<std::string> hashOf;
+        for (Entity* e : who)
+            keyed.push_back({hashOf(e->cellId), e});
+        std::stable_sort(keyed.begin(), keyed.end(), [](const auto& x, const auto& y) {
+            return x.first != y.first ? x.first < y.first : x.second->cellId < y.second->cellId;
+        });
+        for (const auto& k : keyed)
+            byCell.push_back(k.second);
+        separateWho_ = who;
+        separateCells_.clear();
+        for (const Entity* e : who)
+            separateCells_.push_back(e->cellId);
+    }
     const auto fixed = [](const Entity& e) { return e.downedLeft > 0 || e.clientWalks; };
     // At rest: going nowhere (no route, no keys). Two at rest press together a little and settle there (Rest of a
     // body's width apart) rather than pushing every step in a corner or a crowd with nowhere to go; anyone walking
@@ -3686,6 +3823,9 @@ void World::separate(double dt)
             constexpr std::size_t Crowd = 24;
             std::vector<std::size_t> later;
             const bool crowded = end - first > Crowd;
+            const auto* c = cell(byCell[first]->cellId);
+            if (!c)
+                continue;
             // A bucket as one number (x and y, offset to stay positive, in 32 bits each), so the crowd's buckets are a
             // sorted list rather than a map built afresh every pass.
             const auto bucketOf = [bucket](Vec2 p) {
@@ -3696,22 +3836,68 @@ void World::separate(double dt)
             auto& startBucket = separateStart_;
             buckets.clear();
             startBucket.clear();
+            // Or, as a crowd mostly is, over a few hundred buckets across: a grid of them over where the crowd stands,
+            // each a list of its own (in ID order), with a margin of empty buckets all round.
+            auto& head = separateHead_;
+            auto& next = separateNext_;
+            long left = 0, top = 0, across = 0;
+            bool grid = false;
+            const auto xOf = [](std::uint64_t key) { return long(key >> 32) - (1L << 30); };
+            const auto yOf = [](std::uint64_t key) { return long(key & 0xffffffffu) - (1L << 30); };
+            const auto slot = [&](std::uint64_t key) { return (yOf(key) - top + 1) * across + xOf(key) - left + 1; };
             if (crowded)
             {
+                long right = 0, bottom = 0;
                 for (std::size_t k = first; k < end; ++k)
                 {
                     startBucket.push_back(bucketOf(byCell[k]->position));
-                    buckets.push_back({startBucket.back(), k});
+                    const long x = xOf(startBucket.back()), y = yOf(startBucket.back());
+                    left = k == first ? x : std::min(left, x);
+                    right = k == first ? x : std::max(right, x);
+                    top = k == first ? y : std::min(top, y);
+                    bottom = k == first ? y : std::max(bottom, y);
                 }
-                std::sort(buckets.begin(), buckets.end());
+                across = right - left + 3;
+                const long down = bottom - top + 3;
+                grid = across * down <= (1L << 18);           // (A cell 256 tiles across is some 110,000.)
+                if (grid)
+                {
+                    if (head.size() < std::size_t(across * down))
+                        head.resize(std::size_t(across * down), -1);
+                    next.resize(end - first);
+                    for (std::size_t k = end; k-- > first;)  // (Last first, so each list runs in ID order.)
+                    {
+                        const auto b = std::size_t(slot(startBucket[k - first]));
+                        next[k - first] = head[b];
+                        head[b] = int(k - first);
+                    }
+                }
+                else
+                {
+                    for (std::size_t k = first; k < end; ++k)
+                        buckets.push_back({startBucket[k - first], k});
+                    std::sort(buckets.begin(), buckets.end());
+                }
             }
-            const auto* c = cell(byCell[first]->cellId);
-            if (!c)
-                continue;
+            const WalkingGrid walking(*this, *c);
+            const auto passableHere = [&](Vec2 p, const Tile* from) {   // (passable(), with the cell and its grid at hand.)
+                const auto start = groundOf(*from);
+                return finite(p) && step::passable(walking, {p.x, p.y}, &start);
+            };
             for (std::size_t i = first; i < end; ++i)
             {
                 later.clear();
-                if (crowded)
+                if (grid)
+                {
+                    const long at = slot(startBucket[i - first]);
+                    for (const long row : {at - across, at, at + across})
+                        for (long b = row - 1; b <= row + 1; ++b)
+                            for (int m = head[std::size_t(b)]; m >= 0; m = next[std::size_t(m)])
+                                if (first + std::size_t(m) > i)
+                                    later.push_back(first + std::size_t(m));
+                    std::sort(later.begin(), later.end());
+                }
+                else if (crowded)
                 {
                     // The three buckets of a column (y-1 to y+1) lie together in the sorted list: one search each.
                     const std::uint64_t home = startBucket[i - first];
@@ -3768,8 +3954,8 @@ void World::separate(double dt)
                     const Vec2 pa{a.position.x + n.x * pushA, a.position.y + n.y * pushA},
                         pb{b.position.x - n.x * pushB, b.position.y - n.y * pushB};
                     // Never into a wall or up a step too high: one against a wall leaves it to the other.
-                    const bool aMoves = pushA > 0 && ta && passable(a.cellId, pa, ta);
-                    const bool bMoves = pushB > 0 && tb && passable(b.cellId, pb, tb);
+                    const bool aMoves = pushA > 0 && ta && passableHere(pa, ta);
+                    const bool bMoves = pushB > 0 && tb && passableHere(pb, tb);
                     if (aMoves)
                         a.position = pa;
                     if (bMoves)
@@ -3781,11 +3967,14 @@ void World::separate(double dt)
                         const double sign = aMoves ? 1 : -1, more = std::min(overlap * .5, maxPush);
                         const Vec2 further{mover.position.x + sign * n.x * more, mover.position.y + sign * n.y * more};
                         const auto* tm = c->tile(int(mover.position.x), int(mover.position.y));
-                        if (tm && passable(mover.cellId, further, tm))
+                        if (tm && passableHere(further, tm))
                             mover.position = further;
                     }
                 }
             }
+            if (grid)
+                for (std::size_t k = first; k < end; ++k)
+                    head[std::size_t(slot(startBucket[k - first]))] = -1;   // (Empty again for the next crowd.)
         }
 }
 
@@ -3918,26 +4107,66 @@ bool World::continueSchedules(double budgetMs)
                 furnishHomes();
             // Where everyone is, for the society, only when it has someone to decide for: anyone a player may see
             // (onstage) every second, the unseen every Society::UnseenStep seconds.
-            bool anySeen = false;
-            for (auto& pair : entities_.inOrder())
+            // Birthdays: nobody's is due while the earliest last one (as of the last look over the same entities) was
+            // under a year ago. A birthday only ever moves later; anyone new makes a new generation.
+            const bool due = entities_.generation() != agesOf_ || !(calendarDays_ - firstBirthday_ + 1e-8 < calendar::DaysPerYear);
+            if (due || CheckKept)
             {
-                advanceAge(pair.second, calendarDays_);
-                anySeen = anySeen || (pair.second.npc && !pair.second.offstage && !pair.second.dead);
+                firstBirthday_ = std::numeric_limits<double>::infinity();
+                for (auto& pair : entities_.inOrder())
+                {
+                    if (advanceAge(pair.second, calendarDays_) && !due)
+                    {
+                        std::fprintf(stderr, "kept birthdays missed %s's\n", pair.first.c_str());
+                        std::abort();
+                    }
+                    const double last = pair.second.lastBirthdayDay;
+                    firstBirthday_ = last >= 0 ? std::min(firstBirthday_, last) : -std::numeric_limits<double>::infinity();
+                }
+                agesOf_ = entities_.generation();
             }
-            std::map<std::string, LifeBody> bodies;
-            if (society_.needsBodies(.5, calendarDays_, anySeen))
+            bool anySeen = false;
+            for (const auto& pair : onstage())
+                anySeen = anySeen || (pair.second.npc && !pair.second.offstage && !pair.second.dead);
+            static const std::map<std::string, LifeBody> noBodies;
+            const bool withBodies = society_.needsBodies(.5, calendarDays_, anySeen);
+            if (withBodies)
+            {
+                // The living, in ID order (the dead keep no schedule: no work, no hunger, no walking): written over the
+                // last ones in place while they are the same people, else made afresh.
+                const auto bodyOf = [](const Entity& e, LifeBody& b) {
+                    b.cell = e.cellId;
+                    b.x = e.position.x;
+                    b.y = e.position.y;
+                    b.companion = !e.leaderId.empty() || e.state == "following"sv;
+                    b.age = e.age;
+                    b.unseen = e.offstage;
+                };
+                auto kept = bodies_.begin();
+                bool same = true;
                 for (const auto& pair : entities_.inOrder())
                 {
-                    const auto& e = pair.second;
-                    if (e.dead)
-                        continue;                   // The dead keep no schedule: no work, no hunger, no walking.
-                    bodies.emplace_hint(bodies.end(), pair.first,
-                                        LifeBody{e.cellId, e.position.x, e.position.y, !e.leaderId.empty() || e.state == "following"sv,
-                                                 e.age, e.offstage});
+                    if (pair.second.dead)
+                        continue;
+                    if (kept == bodies_.end() || kept->first != pair.first)
+                    {
+                        same = false;
+                        break;
+                    }
+                    bodyOf(pair.second, kept->second);
+                    ++kept;
                 }
+                if (!same || kept != bodies_.end())
+                {
+                    bodies_.clear();
+                    for (const auto& pair : entities_.inOrder())
+                        if (!pair.second.dead)
+                            bodyOf(pair.second, bodies_.emplace_hint(bodies_.end(), pair.first, LifeBody{})->second);
+                }
+            }
             planDays();
             const bool decided = society_.decidesWithin(.5);
-            society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), bodies);
+            society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), withBodies ? bodies_ : noBodies);
             unseenErrands_ = decided && society_.unseenDecided();   // (The unseen go about what they decided, below.)
             absorbJournal();
             ++scheduleStage_;
@@ -3975,7 +4204,7 @@ bool World::continueSchedules(double budgetMs)
                             placeOnStage(entry.second, errandStage_);
                 standing_.clear();
                 errandsOnstage_ = false;
-                for (const auto& entry : entities_.inOrder())
+                for (const auto& entry : onstage())
                     if (!entry.second.offstage && !entry.second.dead)
                     {
                         standing_.insert(entry.second.cellId);
@@ -4077,9 +4306,13 @@ bool World::continueSchedules(double budgetMs)
             {
                 // What streaming keeps in memory until the next update: the surroundings of everyone onstage.
                 tierWanted_.clear();
-                for (const auto& entry : entities_)
+                const std::string* last = nullptr;  // (The cell itself and its seams once for a run of those in it.)
+                for (const auto& entry : onstage())
                     if (!entry.second.offstage)
-                        nearCells(entry.second, tierWanted_);
+                    {
+                        nearCells(entry.second, tierWanted_, !last || *last != entry.second.cellId);
+                        last = &entry.second.cellId;
+                    }
             }
             scheduleStage_ = -1;
             break;
@@ -4914,7 +5147,7 @@ void World::tick(double dt)
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
     // exactly where the player stands, so everything a player is shown is remembered.
     std::vector<std::string> looking;
-    for (const auto& entry : entities_.inOrder())
+    for (const auto& entry : players())
         if (!entry.second.npc)
         {
             const auto& e = entry.second;
@@ -5052,6 +5285,28 @@ Environment World::environmentAt(const std::string& cellId) const
 {
     const auto* c = cell(cellId);
     return environmentAt(cellId, c ? Vec2{c->width * .5, c->height * .5} : Vec2{});
+}
+
+double World::movementAt(const std::string& cellId, Vec2 at) const
+{
+    // environmentAt's movement alone (walking asks for it at every step): the weather where it is, and nothing else.
+    const auto* c = cell(cellId);
+    if (!c || !c->outdoors)
+        return 1.0;
+    auto here = weatherAt(cellId, at);
+    if (const auto found = shelters.find(cellId);
+        found != shelters.end() && found->second.count({int(std::floor(at.x)), int(std::floor(at.y))}))
+        here.intensity *= .25;
+    double movement = 1.0;
+    switch (here.kind)
+    {
+    case Weather::Rain: movement = .85; break;
+    case Weather::Snow: movement = .70; break;
+    case Weather::Storm: movement = .75; break;
+    case Weather::Sandstorm: movement = .65; break;
+    default: break;
+    }
+    return 1.0 + (movement - 1.0) * here.intensity;
 }
 
 Environment World::environmentAt(const std::string& cellId, Vec2 at) const
@@ -6197,9 +6452,13 @@ void World::stream(double idle)
     // Runs every tick, so it only does real work when someone has changed cells or an unload check is due.
     // The cells characters are in; offstage NPCs need none (they travel without the ground in memory).
     std::set<std::string> occupied;
-    for (const auto& entry : entities_.inOrder())
-        if (!entry.second.offstage)
+    const std::string* last = nullptr;              // (Neighbours in ID order are often in one cell: not asked again.)
+    for (const auto& entry : onstage())
+        if (!entry.second.offstage && (!last || *last != entry.second.cellId))
+        {
             occupied.insert(entry.second.cellId);
+            last = &entry.second.cellId;
+        }
     const bool due = time_ >= streamCheck_;
     if (!due && occupied == streamOccupied_)
         return;
