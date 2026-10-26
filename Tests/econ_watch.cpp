@@ -10,7 +10,7 @@
 // --hours: residents' work takes its calibrated crafts.json hours (Docs/Design/64-economy-migration.md, Phase 3); without
 // it, the game's old pace (each craft's `seconds` as its hours).
 // --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
-// poach, kill, theft, winter. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2) for
+// poach, kill, theft, visit, winter. They act from --players-from DAY (7 unless asked: the realm's money stands from day 2) for
 // --players-days N days (to the run's end unless asked), as the game lets players act, with money from the capital's
 // treasury by the ledger.
 //
@@ -233,7 +233,10 @@ int main(int argc, char** argv)
                 const auto& known = econ::Players::names();
                 if (std::find(known.begin(), known.end(), name) == known.end())
                 {
-                    std::cerr << "no such players' scenario: " << name << " (hoard, corner, dump, whale, poach, kill, theft, winter)\n";
+                    std::cerr << "no such players' scenario: " << name << " (";
+                    for (const auto& n : known)
+                        std::cerr << (n == known.front() ? "" : ", ") << n;
+                    std::cerr << ")\n";
                     return 2;
                 }
                 if (std::find(scenarios.begin(), scenarios.end(), name) == scenarios.end())

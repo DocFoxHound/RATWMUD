@@ -11,6 +11,7 @@
 //   poach   a Hold takes 20 of the capital's hands from their posts at twice the going rate
 //   kill    the key makers die: a town's only miller, the biggest farm's farmer, the realm's smiths (succession)
 //   theft   5 thieves pick the capital's purses every quarter of an hour and fence what isn't coin
+//   visit   5 players go about the capital as the thieves do and take nothing (theft's control: bodies on the stage)
 //   winter  10 players buy all the firewood they can in the autumn and keep it (start near day 250: --from 6006)
 #include "RatwWorld.h"
 

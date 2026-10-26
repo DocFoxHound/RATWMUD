@@ -1443,3 +1443,101 @@ and logged in the game's ledger:
 - `test_dungeon_master.py`: the steers, scenarios, staples and funds tests became `test_the_economys_levers` and
   `test_the_monitors_measures`.
 - All suites pass.
+
+### Phase 13: players who push (2026-10-25)
+
+Before the balancing, `econ_watch` measures what the review of the frozen wage and the lost hours asked for, and can put
+scripted players in the world. Nothing in the society changed but three small accessors (`Society::goingRates`,
+`employerTownOf`, `workBankedOf`): a 30-day run without players gives the same `days.jsonl` as before, day for day.
+
+**The measures** (`Tests/econ_watch.cpp`):
+
+- **`work.csv`:** a producer's work is credited to the farmer but its hands are its till's, so its hands and hands
+  wanted are now looked up by its till (they read 0). New columns: the till, its hours in hand at the day's turn, and
+  its running hires' slots and slots taken.
+- **`days.jsonl`:** every town's going rate and the realm's (`model.going`, "" the realm's).
+- **`books.csv`:** every employer's book each day: wage, the going rate for its skill, open days, calm weeks, short
+  pay, posts open and filled, skill.
+- **`hires.csv`:** each hire running, at 23:00: payer, kind, slots, pay a slot, last day, slots taken, those open at
+  its dawn, and who took them (jobless, child, works, idle, called, better or other, with its own employer), as they
+  stand at 23:00.
+- **The run's stamp**, at the top of the log and in `run.txt`: the command, the source's `git describe` and commit,
+  and the binary's build time (b0 and b1 straddled the hands-wanted fix unseen).
+- **`--from` past 24** is hours into the calendar (6006: day 250 at six), by a save restored at that moment.
+
+What the new measures show on day 30 of that run (DEV's export, `--hours`): the realm's going rate is still 12p and
+Ridgemere's too, while the small towns' have moved (Larkfield 12.2p to Mirebridge 14.3p); 208 of the businesses' books
+are at 12.0p. Producers' hands now read: 468 against 1,117 wanted. Of the hires, 1,419 slots were running on day 29
+and 188 taken; over the month, of the slots of the 4,426 hires, those taken went to idle hands (2,503), children
+(1,325), wolves drawn by better pay (699), the jobless (60) and others (39). Most slots are households' help about
+the home (3,776 of 6,465).
+
+**Players who push** (`--players SCENARIO[,...]`, `--players-from DAY` (7), `--players-days N` (to the end);
+`Tests/econ_players.cpp`). They act only as the game lets a player act: `Society::addPlayer` (its welcome grant),
+`Society::trade` with a shop's keeper (99 a trade, what the shop wants and can pay for), `World::steal` with a body
+beside the mark, `World::setDead`. Every coin they're given comes from the capital's treasury by the ledger
+("test: a player's money", not earnings). `players.csv` has each thing done; `days.jsonl` a `players` block a day.
+
+| Scenario | What it does |
+|---|---|
+| `hoard` | 20 players roam the capital's hunting and gathering grounds, a spell an hour 8 to 17, from the same game and patches as its own hunters (`World::harvestAt`, through `Society::day().harvest`); at 17 they sell it all to the shops, and keep every coin |
+| `corner` | a player with 30,000p buys every loaf, sack of flour and meal on the capital's shelves at six each morning for a week, then sells them back to whichever shops take them |
+| `dump` | 5 players sell swords, iron swords and hides to their towns' shops every day, as many as they take (the goods as a Hold's smithy makes them, and hunted; their materials not counted) |
+| `whale` | a player with 5% of the money (250,000p) buys every rapier and piece of finery on every shelf each morning, into rented chests past a pack's kinds |
+| `poach` | a Hold takes 20 of the capital's hands from their businesses (off their schedules, as `station`ed staff are) at twice the realm's going rate, paid each dawn, a week's wages put by each week |
+| `kill` | the key makers die on the first day: every smith of the realm, a town's only miller, the biggest farm's farmer; succession is the world's |
+| `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30 |
+| `visit` | 5 players with bodies go about the capital as the thieves do, and take nothing: theft's control (bodies on the stage alone) |
+| `winter` | 10 players with 3,000p each buy every bundle of firewood in their towns each autumn morning, and keep it |
+
+**What the game didn't let them do** (each a question for the user, at the end):
+
+- **Nobody makes rapiers** (no craft in `crafts.json`), so the whale buys finery only: about 2,000p a day of hats,
+  charms, beads and scarves. **Houses** can't be bought; a Hold's buildings cost a few hundred pennies, paid to the
+  capital's treasury. A whale can't spend: in 9 days it spent 17,801p of 250,000p.
+- **A Hold can't outbid:** a Hold pays the realm's going rate (`keepWage`) and takes only wolves without work; a
+  stationed companion keeps its 6p or 10p (`wageFor`). `poach` pays twice the rate anyway, as a stress.
+- **A Hold's hands and companions never eat:** off their schedules (a leader, `LifeBody::companion`) they decide
+  nothing, so they go hungry within a day and starve by the next. In `poach`, 13 to 18 of the 20 were hungry from the
+  second day, the only hungry in the realm.
+- **Theft takes from a wolf's purse** (1 to 5p, now and then a masterwork, a meal or herbs), never a till.
+- **Shops take few of a player's goods:** a good a shop makes, up to 4 on its shelf; what it supplies or buys, up to
+  40. A player dumps at scale only at a stall (doc 54; `crafting_tests` `aStallDumpAndTheRebound`).
+
+**The 10-day checks** (DEV's export, from day 2, `--hours`, deterministic; winter from day 250): money conserved
+every day in every run.
+
+| Scenario | What happened | Against the run without players |
+|---|---|---|
+| `hoard` | in 9 days foraged 1,176 pieces and hunted 250 (137 of them meat, 21 hides); sold 1,327 for 1,939p, about 11p a player a day, all kept (2,339p with the welcome grants). Standing at one ground each, the patches gave them half that | Gini and the poorer half within 0.0004 |
+| `corner` | bought 2,020 pieces (5,740p) the first morning (1,195 flour, 1,147 meals, 92 loaves: the capital had little bread), 2,439 in the week; sold 2,361 back on the eighth morning for 9,240p, 576p more than they cost, all of it on the meals (a meal is priced by the town's stores, dearer when the town is short, and the corner had made it short) | no hunger in 10 days (households' larders); Gini and the poorer half within 0.0011 |
+| `dump` | sold 363 hides (2,432p) and 6 iron swords in 9 days, 133 pieces the first day and almost none after; no bronze sword | within 0.0002 |
+| `whale` | spent 17,801p in 9 days (4,772 pieces of finery) | the capital's treasury 64,000p against 312,000p (its funding); Gini 0.002 lower, the poorer half 0.0013 higher |
+| `poach` | 20 hands taken, 480p a day paid | 13 to 18 hungry (the hands); Gini and the poorer half within 0.0012 |
+| `kill` | 12 died: 10 smiths, Coldwater's miller, Barleycombe's farmer; 1 post filled by day 5, 10 by day 8 | Gini and the poorer half within 0.004 |
+| `theft` | 1,002 caught at it and 246 thefts took 947p in 9 days (about 20p a thief a day, all coin); the watch held a thief 90 times and took fines and restitution back, so the five ended with 10p | 104 hungry and 63 starving on day 10 (none without players), the pace back to 0 (0.16), 9% fewer hours worked: see `visit` |
+| `visit` | 5 bodies moved about the capital each quarter of an hour | 11 to 21 hungry from day 6, the pace 0.04 on day 10, 5% fewer hours worked: residents on the stage fetching a meal from home don't get there (on day 8 of `theft`, 47 of the 66 hungry were in the Heights Market's cell, `w_ridgemere_1_1`, on their way home; others are offstage in houses not theirs) |
+| `winter` | bought 16,835 firewood for 17,075p in 7 days: 132 the first morning, 5,700 the fourth, 729 the seventh | Gini up to 0.005 lower, the poorer half up to 0.003 higher; the run ends before winter (day 275), when it would tell |
+
+**Notes for the long runs:**
+
+- The players' funding comes out of the capital's treasury, so a big one (the whale's) leaves the capital less to
+  spend: a run that measures it should read the treasury beside the rest.
+- **Players' bodies make residents hungry.** Every other run (and every run before) has nobody on the stage; with five
+  bodies in the capital, residents fail to fetch their meals home and go hungry, more with the watch busy after
+  thieves. The bodies here jump (`World::teleport`) where a player walks, so the stage's edges move all at once; that
+  may be part of it. It wants looking into before the long runs, which have no players on the stage.
+- `theft` and `visit` cost far more: everyone near the bodies is on the stage, and a tick took 0.6 to 3 ms on one to
+  three threads against 0.1 to 0.2 (`theft`'s 10 days took 55 minutes).
+- `troubles_tests` failed once with ten runs going at once ("the loan paid") and passed on three runs after and on
+  the commit before: it is flaky under load.
+
+**For the user:**
+
+1. Should a Hold's hands (and a party's companions) eat? Today they starve at their posts within two days.
+2. May a Hold outbid the going rate, and take wolves who have work? Today it can't (`keepWage`, the jobless only).
+3. Rapiers: should the armory make them (a craft)? None is made, and a whale has little else to buy.
+4. A corner can profit on meals by selling back into the shortage it made (576p on 7,453p in a week). Is that a fair
+   reward for the risk, or should a shop buy meals at its own normal cost, as it does every other good?
+5. Residents near players go hungry (above). If the stage's life is meant to match the unseen's, it's a fault to
+   find first: the long runs, without players, can't see it.

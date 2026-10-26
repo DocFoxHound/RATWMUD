@@ -35,7 +35,7 @@ constexpr int PackKinds = 56;                      // A pack this full of kinds 
 
 const std::vector<std::string>& Players::names()
 {
-    static const std::vector<std::string> all{"hoard", "corner", "dump", "whale", "poach", "kill", "theft", "winter"};
+    static const std::vector<std::string> all{"hoard", "corner", "dump", "whale", "poach", "kill", "theft", "visit", "winter"};
     return all;
 }
 
@@ -325,20 +325,22 @@ void Players::start()
                     }
                 }
         }
-        else if (s == "theft")
+        else if (s == "theft" || s == "visit")
         {
-            // Five thieves with bodies in the world (World::steal needs one beside its mark), arriving at a capital shop.
+            // Five thieves (or visitors) with bodies in the world (World::steal needs one beside its mark), arriving at a
+            // capital shop.
             const Position* at = nullptr;
             for (const auto& p : society.positions())
                 if (!at && p.role == "merchant" && world_.communityOf(p.work.cell) == capital_)
                     at = &p;
             for (int i = 1; i <= 5; ++i)
             {
-                const auto id = "player-theft-" + std::to_string(i);
+                const auto id = "player-" + s + "-" + std::to_string(i);
+                const auto name = (s == "theft" ? "Thief " : "Visitor ") + std::to_string(i);
                 if (at)
-                    world_.addPlayer(id, "Thief " + std::to_string(i), at->work.cell, {at->work.x, at->work.y});
+                    world_.addPlayer(id, name, at->work.cell, {at->work.x, at->work.y});
                 else
-                    world_.addPlayer(id, "Thief " + std::to_string(i));
+                    world_.addPlayer(id, name);
                 who_[s].push_back(id);
                 towns_[id] = {capital_};
                 note(s, id, "joined", "", 0, society.account(id) ? society.account(id)->cash : 0);
@@ -453,10 +455,11 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
             it = staff_.erase(it);
         }
     }
-    else if (s == "theft" && quarter >= 9 * 4 && quarter < 21 * 4)
+    else if ((s == "theft" || s == "visit") && quarter >= 9 * 4 && quarter < 21 * 4)
     {
         // Every quarter of an hour from 9 to 21, each thief's hand in a purse (the capital's grown, the watch aside),
         // beside its mark (World::teleport) as a player walks up to one. The watch is the world's own: it may hold them.
+        // A visitor goes about the same way and takes nothing (theft's control: bodies on the stage alone).
         std::vector<std::string> marks;
         for (const auto& [id, life] : society.state().residents)
             if (const auto* e = world_.entity(id); e && !e->dead && e->age >= 16 && !world_.custodyOf(id) &&
@@ -476,7 +479,7 @@ void Players::act(const std::string& s, std::int64_t day, int quarter)
                 break;
             const auto& mark = marks[std::size_t(lot(thief + "|" + std::to_string(day) + "|" + std::to_string(quarter)) * double(marks.size()))];
             const auto* v = world_.entity(mark);
-            if (!v || !world_.teleport(thief, v->cellId, v->position.x, v->position.y).ok)
+            if (!v || !world_.teleport(thief, v->cellId, v->position.x, v->position.y).ok || s == "visit")
                 continue;
             const auto before = society.account(thief) ? *society.account(thief) : EconomyAccount{};
             world_.steal(thief, mark);
@@ -577,6 +580,18 @@ std::string Players::takeDay()
         }
         if (s == "theft")
             out << ",\"held\":" << held_.size();
+        if (s == "theft" || s == "visit")
+        {
+            // Where their bodies stand at the day's end (the residents about them are on the stage).
+            std::map<std::string, int> at;
+            for (const auto& id : players == who_.end() ? std::vector<std::string>{} : players->second)
+                if (const auto* e = world_.entity(id))
+                    ++at[e->cellId];
+            out << ",\"at\":{";
+            for (auto it = at.begin(); it != at.end(); ++it)
+                out << (it == at.begin() ? "" : ",") << quoted(it->first) << ":" << it->second;
+            out << "}";
+        }
         // What they did since the last day's end: each action, how many, how many pennies.
         if (const auto t = today_.find(s); t != today_.end())
             for (const auto& [action, n] : t->second)
