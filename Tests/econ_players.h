@@ -3,8 +3,9 @@
 // players typically do that could upset the economy. They act as the game lets a player act, through its own entry
 // points (Society::addPlayer, Society::trade for a shop, World::addPlayer and World::moveTo for a body, World::steal,
 // World::setDead, World::removePlayer), and every coin they have comes from the capital's treasury by a logged
-// transfer, never made. Two stand-ins, said where they are: hoard's yield is the residents' outworkers' (World::harvestAt),
-// not a player's forage and hunt; the whale's chests are accounts of its own, free (no lodging, no rent).
+// transfer, never made. Three stand-ins, said where they are: hoard's yield is the residents' outworkers'
+// (World::harvestAt), not a player's forage and hunt; the whale's chests are accounts of its own, free (no lodging, no
+// rent); flood's catch is made in its packs (players can't fish yet).
 // Deterministic: no clock, no unseeded chance.
 //
 //   hoard   20 players hunt and gather near the capital and sell what they bring in, keeping every coin (the mint's case)
@@ -16,14 +17,19 @@
 //   theft   5 thieves pick the capital's purses every quarter of an hour and fence what isn't coin
 //   visit   5 players go about the capital as the thieves do and take nothing (theft's control: bodies on the stage)
 //   winter  10 players buy all the firewood they can each autumn morning and keep it (start near day 250: --from 6006)
+//   flood   10 players sell fish to the capital's shops every hour of the day for two weeks, as many as they take, then
+//           stop (does the price come back, and do the capital's fishers keep their living?)
+//   strike  players' Holds take a tenth of the capital's hands from their work for a month, as stationed companions, then
+//           let them go (do hires and wages answer, and does the town come back?)
 //
 // theft's and visit's bodies walk (World::moveTo up to a mark in the place they're in, acting on arrival; on into the
-// next of the capital's places on the hour, or when theirs is empty), stand still where they arrived (a thief trying
-// any purse that comes within reach), or jump (World::teleport beside each mark: a Dungeon Master's move, not a
-// player's; the first runs', kept to compare): Bodies.
+// next of the capital's places on the hour, or when theirs is empty), stand still where they arrived (a thief trying a
+// purse that comes within reach, each purse once a day), or jump (World::teleport beside each mark: a Dungeon Master's
+// move, not a player's; the first runs', kept to compare): Bodies.
 #include "RatwWorld.h"
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -31,7 +37,8 @@
 
 namespace ratw::econ
 {
-// One thing a player did (players.csv): what, with which good, how many, for how many pennies.
+// One thing a player did (players.csv): what, with which good, how many, for how many pennies (pennies that moved; a
+// Hold's shortfall, "short", has the pennies it lacked as its quantity, item "pennies lacking", and none moved).
 struct PlayerMove
 {
     std::int64_t day = 0;
@@ -39,6 +46,12 @@ struct PlayerMove
     int quantity = 0;
     std::int64_t coins = 0;
 };
+
+// econ_watch's stamp's check (doc 64, Phase 13; here so it can be tested): whether the code a binary was built from
+// (Tests/econ_watch_stamp.cmake: its commit, and the SHA-1 of the changes from it to `paths`, the code it builds from)
+// is still what `source` holds. "" when it is; else a line to print: a warning when the code has changed, or a note
+// when it can't be told (built from no git checkout, or no git or no such commit here now). A docs edit is no change.
+std::string sourceDrift(const std::string& source, const std::string& commit, const std::string& code, const std::string& paths);
 
 class Players
 {
@@ -51,6 +64,8 @@ class Players
     };
     static const std::vector<std::string>& names();          // The scenarios there are (they act in the order asked).
     static bool bodiesNamed(const std::string& name, Bodies& out);   // "walk", "still", "jump".
+    static constexpr int FloodDays = 14, StrikeDays = 28;    // flood's selling, strike's month (from when they start).
+    static constexpr const char* FloodStaple = "fish";
     // The scenarios asked for, from `fromDay` (or the run's first day, if later) for `days` days counted from when they
     // start (0: to the run's end).
     Players(World& world, std::vector<std::string> scenarios, std::int64_t fromDay, std::int64_t days, Bodies bodies = Bodies::Walk);
@@ -63,6 +78,9 @@ class Players
     bool ended() const { return ended_; }
     const std::vector<std::string>& playersOf(const std::string& scenario) const;
     const std::vector<std::string>& accountsOf(const std::string& scenario) const;   // A Hold's treasury, the chests.
+    const std::vector<std::string>& staffOf(const std::string& scenario) const;      // poach's and strike's hands, held now.
+    std::string markOf(const std::string& body) const;       // Whom a walking body is going up to ("": nobody).
+    int aims() const { return aims_; }                       // World::moveTo calls the bodies have made (a test's count).
 
   private:
     struct Shop
@@ -72,10 +90,13 @@ class Players
     struct Walker
     {
         std::string mark;                           // Whom it walks up to ("": nobody).
-        Vec2 aim;                                   // The mark's spot when it last set off.
+        Vec2 aim;                                   // The mark's spot when it last aimed at it.
         double since = 0;                           // World seconds it set off (it gives up after a quarter of an hour).
+        double aimedAt = 0;                         // World seconds it last aimed (World::moveTo): every AimEvery at most.
         std::int64_t tried = -1;                    // The quarter it last put its paw in a purse (one a quarter).
         std::string last;                           // The last it went up to (the next is someone else).
+        std::int64_t day = -1;                      // Standing still: the day of `today`,
+        std::set<std::string> today;                // the purses it has tried that day (each once a day).
     };
     World& world_;
     std::vector<std::string> scenarios_;
@@ -93,8 +114,14 @@ class Players
     std::set<std::string> held_;                             // Thieves the watch holds.
     std::map<std::string, Walker> walkers_;                  // theft's and visit's bodies, as they go about.
     double lookedAt_ = -1;                                   // World seconds the bodies last looked about them.
+    int aims_ = 0;
     std::set<std::string> leaving_;                          // Bodies to take out of the world, once out of a fight.
-    std::vector<std::string> staff_, posts_;                 // poach's hands; kill's posts left empty.
+    std::map<std::string, std::vector<std::string>> staff_;  // poach's and strike's hands, held now.
+    std::map<std::string, std::string> jobWas_;              // strike's hands -> the post they had when taken.
+    std::vector<std::string> taken_;                         // strike's hands, all it took (held or let go).
+    bool struck_ = false, flooded_ = false;                  // strike's month over (its hands let go); flood's selling.
+    std::vector<std::string> posts_;                         // kill's posts left empty.
+    std::vector<std::string> makers_;                        // flood's makers: the capital's posts that land the staple.
     std::vector<PlayerMove> moves_;
     std::map<std::string, std::map<std::string, std::pair<std::int64_t, std::int64_t>>> today_;   // Scenario -> action -> qty, coins.
 
@@ -106,6 +133,12 @@ class Players
     std::string join(const std::string& scenario, int n);    // A player made ("player-<scenario>-<n>").
     std::int64_t fund(const std::string& scenario, const std::string& to, std::int64_t coins);
     std::int64_t poachWage() const;                 // Twice a Hold's (Game::keepWage).
+    std::int64_t companionWage(const std::string& id) const;   // A hired companion's (Game::wageFor): strike's.
+    // Hands off their schedules (World: a leader, as a stationed companion's), held by a Hold: taken, paid each dawn
+    // from its treasury (topped up from the capital's), and let go.
+    void take(const std::string& scenario, const std::string& chapter, const std::vector<std::string>& hands);
+    void payStaff(const std::string& scenario, const std::function<std::int64_t(const std::string&)>& wage);
+    void letGo(const std::string& scenario);
     void note(const std::string& scenario, const std::string& player, const std::string& action, const std::string& item,
               int quantity, std::int64_t coins);
     static bool trades(const Shop& shop, const std::set<std::string>& towns);   // In one of its towns (none: any).
@@ -117,5 +150,7 @@ class Players
     void setOff(const std::string& scenario, const std::string& body, std::int64_t day, int quarter);
     void tryPurse(const std::string& scenario, const std::string& thief, const std::string& mark);
     void leave();                                   // The bodies out of the world (World::removePlayer), when they may.
+    std::string floodDay() const;                   // flood's block: the staple's price in the capital, its makers.
+    std::string strikeDay() const;                  // strike's block: its hands, and the town's going rate.
 };
 } // namespace ratw::econ

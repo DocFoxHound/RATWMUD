@@ -249,12 +249,13 @@ add_custom_target(econ_watch_stamp
 add_dependencies(econ_watch econ_watch_stamp)
 target_include_directories(econ_watch PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/stamp)
 # The players who push, and econ_watch's files, checked (a test: Tests/econ_players_tests.cpp runs econ_watch on a
-# little world of its own).
+# little world of its own, and the stamp's script on a git tree of its own, with the cmake that built it).
 add_executable(econ_players_tests Tests/econ_players_tests.cpp Tests/econ_players.cpp)
 target_link_libraries(econ_players_tests PRIVATE ratw_core)
 target_compile_definitions(econ_players_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-                           RATW_ECON_WATCH="$<TARGET_FILE:econ_watch>")
-add_dependencies(econ_players_tests econ_watch)
+                           RATW_ECON_WATCH="$<TARGET_FILE:econ_watch>" RATW_CMAKE="${CMAKE_COMMAND}")
+add_dependencies(econ_players_tests econ_watch econ_watch_stamp)
+target_include_directories(econ_players_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/stamp)
 add_test(NAME econ_players COMMAND econ_players_tests)
 # Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
 add_executable(game_load Tests/game_load.cpp)
