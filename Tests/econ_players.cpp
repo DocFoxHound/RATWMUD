@@ -335,7 +335,7 @@ void Players::provision(const std::string& s)
     // of a wolf's day's food (Society::DayNourishment) a hand, and puts it in the stores as the game's "store" does. Its
     // purse is topped up from the capital's treasury first, to twice that food at a meal's price (a stand-in for the
     // Chapter's dues). Only food that keeps to the next top-up counts toward the days (lasting: ProvisionDays or more, or
-    // that doesn't spoil), the longest-keeping bought first; what spoils sooner (porridge, a day) only toward a day's
+    // that doesn't spoil), bought first (below, the order); what spoils sooner (porridge, a day) only toward a day's
     // food, when there isn't enough that lasts (doc 64, Phase 13, round 6, the companions' review: two days of porridge,
     // 44% of what was stored rotted in the stores).
     auto& society = world_.society();
@@ -365,13 +365,16 @@ void Players::provision(const std::string& s)
     const std::int64_t purse = std::int64_t(wanted(true) / 50 + 1) * society.pennies(6 / 12., capital) * 2;
     if (const auto* a = society.account(qm); a && a->cash < purse)
         fund(s, qm, purse - a->cash);
-    // What the capital's open food shops have, longest-keeping first (that doesn't spoil first of all; then in the shops'
-    // order, as before).
+    // What the capital's open food shops have: prepared food before what a craft takes (the hands eat it first,
+    // Society::messFood, and the raw would wait and spoil), then the cheapest for what it feeds (its catalogue price a
+    // point of nourishment), then the longest-keeping; else in the shops' order, as before. (So first written, the
+    // longest-keeping first, it bought salt fish, the dearest food there is for what it feeds: 71% more than porridge.)
     struct Ware
     {
         const Shop* shop;
         std::string kind;
-        double keeps;
+        bool raw;
+        double cost, keeps;
     };
     std::vector<Ware> wares;
     for (const auto& shop : shops_)
@@ -385,9 +388,12 @@ void Players::provision(const std::string& s)
             if (Society::edible(base))
                 for (const auto& kind : Society::kindsHeld(*till, base))
                     if (const auto* good = items::good(kind))
-                        wares.push_back({&shop, kind, good->keeps <= 0 ? 1e9 : good->keeps});
+                        wares.push_back({&shop, kind, items::ingredient(kind), double(good->price) / std::max(1, good->nourish),
+                                         good->keeps <= 0 ? 1e9 : good->keeps});
     }
-    std::stable_sort(wares.begin(), wares.end(), [](const Ware& a, const Ware& b) { return a.keeps > b.keeps; });
+    std::stable_sort(wares.begin(), wares.end(), [](const Ware& a, const Ware& b) {
+        return a.raw != b.raw ? b.raw : a.cost != b.cost ? a.cost < b.cost : a.keeps > b.keeps;
+    });
     for (const bool lasts : {true, false})
         for (const auto& w : wares)
         {
