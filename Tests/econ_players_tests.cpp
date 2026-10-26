@@ -683,7 +683,8 @@ void drainWorksEveryBench()
 {
     // drain's players at every bench of the town (not the capital) with the most: here Larkfield's smith's (its keeper
     // trades, at no bench), two of them, arriving beside it; at work beside it while it is at its forge
-    // (World::helpAtWork), paid from its till by the beat.
+    // (World::helpAtWork), paid by the beat from what Society::tillOf gives for it: for a hand, whose post has no till,
+    // its own purse (so it is on DEV's map: doc 64, "players who push, the third review").
     const auto root = writeWorld("ratw_econ_players_drain", resident("ls", "Smith L", "civilian", "the smith at the forge", 3, 9.5, 4, 9.5));
     auto w = worldAt(root, 2 + 8.5 / 24);
     auto& s = w->society();

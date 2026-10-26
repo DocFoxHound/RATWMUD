@@ -26,7 +26,8 @@
 //   buyout  5 players with 30,000p each buy every piece of food on the capital's shelves each morning for a week, as far
 //           as their purses run, and hold it (a food corner: unlike corner's, all its food, and never sold back)
 //   drain   players take every place at every bench in a town (World::helpAtWork: two beside each maker, the most a
-//           bench takes) each working day, paid from its till (do the town's own hands lose their work?)
+//           bench takes) each working day, paid by the beat from Society::tillOf's account for the maker (a hand's
+//           own purse: its post has no till) (do the town's own hands lose their work?)
 //   gift    a rich player gives 100p a day to each of the realm's 50 poorest households (does it lift prices, and is
 //           every coin still there?)
 //

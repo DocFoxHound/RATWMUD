@@ -1482,7 +1482,8 @@ the home (3,776 of 6,465).
 `Society::addPlayer` (its welcome grant), `Society::trade` with a shop's keeper (99 a trade, what the shop wants and
 can pay for), `World::addPlayer` and `World::moveTo` for a body (a door opened and entered, a seam walked across),
 `World::steal` with the body beside the mark, `World::setDead`, and `World::removePlayer` when their days are over.
-Three stand-ins, said so: hoard's yield, the whale's chests and flood's catch (below). Every coin they're given comes
+Four stand-ins, said so: hoard's yield, the whale's chests, flood's catch and gift's walk to each household (below);
+and a player's own goods never spoil (`Society::spoil` passes players by), as in the game. Every coin they're given comes
 from the capital's treasury by the ledger ("test: a player's money", not earnings). Their days count from when they
 start (a run that starts after `--players-from` starts them on its first day, and says so). `players.csv` has each
 thing done; `days.jsonl` a `players` block a day (a day's record is made at its midnight, before the players act at
@@ -1499,8 +1500,11 @@ that midnight, so what they do then is the new day's in every file).
 | `theft` | 5 thieves with bodies try a purse in the capital every quarter of an hour from 9 to 21 (`World::steal`; the watch is the world's own), and fence what isn't coin at 21:30. Their bodies arrive at five of the capital's shops and walk up to a mark in the place they're in (`World::moveTo`, trying the purse on arrival), and on the hour (or with nobody about) on into the next of the capital's places; `still`, they stand where they arrived and try a purse that comes within reach, each purse once a day (since the second review: it had tried the keeper beside it every quarter); `jump`, they're put beside each mark (`World::teleport`, a Dungeon Master's move: the first runs') |
 | `visit` | 5 players with bodies go about the capital as the thieves do, and take nothing: theft's control (bodies on the stage alone) |
 | `winter` | 10 players with 3,000p each buy every bundle of firewood in their towns each morning of the calendar's autumn (days 184 to 274), and keep it |
-| `flood` | 10 players sell fish to the capital's shops that buy it (its fishmongers and provisioners) on the hour from 8 to 18 for two weeks (`FloodDays`), as many as they take, then stop; does the price come back, and do the capital's fishers (its 9 fishing posts, by work or home) keep their living? A stand-in: players can't fish yet, so each lands a pack of 99 in its pack each morning ("landed"), made; the selling is `Society::trade`'s. Fish, not herbs or hides: the capital has makers of it, and its price is the shops' own (doc 64, Phase 4; herbs are still priced by the stores) |
-| `strike` | a Hold takes a tenth of the capital's hands (wolves of working age paid by an employer, not keepers, the watch or the land's producers; rounded up, 26 on DEV's export) from their work for a month (`StrikeDays`, 28), then lets them go: do hires and wages answer, and does the town come back? As the game lets a Chapter take a wolf in work: hired as a party's companion out of its working hours, then stationed at the Hold (off its schedule, its post still its own), on a companion's wage (6p, 10p for a roving trade: `Game::wageFor`), paid each dawn as `poach` is. Done at once here; in the game, companions are 4 at a time in the realm and one more for each 4 players online (a stationed one frees its place), so a tenth wants a few players over some days. A Hold takes into its own posts only wolves without work |
+| `flood` | 10 players sell a staple (`--players-staple`; raw meat unless asked, since the third review: fish sat at the penny's floor) to the capital's shops that buy it on the hour from 8 to 18 for two weeks (`FloodDays`), as many as they take, then stop; does the price come back, and do the capital's makers of it (the posts that bring it in or make it, by work or home: for raw meat its two butchers) keep their living? A stand-in: no player's hunt or catch is run, so each pack is topped up to 99 each morning ("landed"), made; the selling is `Society::trade`'s. Two things the game does that shape it: a shop pays a player its own normal cost (`Society::offerAt`; a shop that doesn't make it, the average it paid), so buying the flood never lowers a shop's cost, and only its margin can fall; and a player's goods never spoil, so a pack landed days ago goes to a shop as a fresh lot. A staple the stores price (meals, herbs, swords) is refused |
+| `strike` | a Hold takes a tenth of the capital's hands (wolves of working age paid by an employer, not keepers, the watch or the land's producers; rounded up, 26 on DEV's export) from their work for a month (`StrikeDays`, 28), then lets them go: do hires and wages answer, and does the town come back? As the game lets a Chapter take a wolf in work: hired as a party's companion out of its working hours, then stationed at the Hold (off its schedule, its post still its own), on a companion's wage (6p, 10p for a roving trade: `Game::wageFor`), paid each dawn as `poach` is. Not those `Game::whyNotJoin` refuses at any hour (since the third review): the Quickened, a wolf beaten down, one with a warrant or in the watch's custody. What the stand-in skips: the game asks each awake and out of its working hours ("They are asleep.", "They have work to do until..."), and companions are 4 at a time in the realm and one more for each 4 players online (a stationed one frees its place), so a tenth wants a few players over some days; here all are taken at once, at the start's quarter (midnight on DEV's runs). A Hold takes into its own posts only wolves without work |
+| `buyout` | 5 players with 30,000p each buy every piece of food the capital's shops sell (bread, meals, smoked fish, cheese, raw meat: every good that nourishes, of every quality) at six each morning for a week (`BuyoutDays`), as far as their purses run, and hold it to the end (never sold back, never spoiling). A food corner, unlike `corner`'s (one player, bread, flour and meals, sold back on the eighth morning): do the capital's households go short, do its makers answer, and do the prices come back? |
+| `drain` | players take every place at every bench in a town: two beside each maker who works a bench (a business that crafts, not the land's; not a shop's keeper, whose task there is to trade), the most a bench takes (the workshop's `most` 3, its maker one), arriving at its work spot. Each quarter of an hour its maker is at work, a body not at work asks to be (`World::helpAtWork`); at work, it does its part each beat (`World::noteActive`), paid by the beat at the town's hand wage (`a hand at the bench`) from what `Society::tillOf` gives for the maker (for a hand, whose post has no till, its own purse: below), and its paw makes the maker's batches go faster. The town is the one (not the capital, which would want a hundred bodies and more) with the most such benches: Frosthollow on DEV's export, 15 benches, 30 bodies. Not a stand-in, but not the brief's either: a player takes no odd job and no hire (only residents take them, `Society::oddJobFor`), so the nearest the game lets players come to taking a town's work is its benches (and its farms' harvest and threshing, in autumn and winter) |
+| `gift` | a rich player (150,000p, a month of it) gives 100p at ten each morning to each of the realm's 50 poorest households (as econ_watch counts a household: a home; each wolf of a barracks or lodgings its own), into its first grown member's purse: does it lift prices, and is every coin still there? As the game gives (`Game::gifted`: `Society::shift`, kind `a gift`; 10,000p a give at most); a stand-in in that no body walks up to each (the game wants the two face to face, within 2 tiles), and the warmth a gift brings isn't kept |
 
 When their days are over, the thieves' and visitors' bodies leave the world (as a player's who logs off; one in a
 fight stays till it's over), and the Hold's hands go back to their own lives.
@@ -1523,6 +1527,12 @@ fight stays till it's over), and the Hold's hands go back to their own lives.
   gatherer.)
 - **A Hold takes no wolf in work into its own posts** (`whyNotMigrate`: "They have work where they are."); one comes
   only as a party's hired companion, stationed, at a companion's 6p or 10p. `strike` takes its tenth that way.
+- **Players take no odd jobs and no hires** (the third review's): the board's work is taken only by residents
+  (`Society::oddJobFor`). A player works beside a resident: at its bench (`World::helpAtWork`, paid from its till by
+  the beat), at a farm's harvest or threshing in their seasons, or on a town project (unpaid). `drain` takes every
+  bench of a town that way.
+- **A gift is face to face** (`Game::giveRefusal`: within 2 tiles, out of a fight, 10,000p a give at most); `gift`
+  gives by the same ledger move without walking up to each household.
 
 **The 10-day checks** (DEV's export, from day 2, `--hours`, deterministic; winter from day 250; before the review's
 fixes, so theft's and visit's bodies jumped): money conserved every day in every run.
@@ -1547,7 +1557,7 @@ Gini and the poorer half within 0.006 of the run without players in all; the pac
 | Bodies | `visit`: hungry, starving (day 10) | `theft`: hungry, starving | Hours worked on day 10 (4,841 without players) | A tick (2 threads) |
 |---|---|---|---|---|
 | none | 0, 0 | | | 0.09 ms (3 threads: the 30-day smoke's) |
-| walk | 191, 118 (the first on day 3) | 93, 45 (day 4) | `visit` 3,495 (28% fewer), `theft` 3,936 (19%) | 1.6 ms, 1.1 ms |
+| walk (`4e83cec`, before the re-aim throttle) | 191, 118 (the first on day 3) | 93, 45 (day 4) | `visit` 3,495 (28% fewer), `theft` 3,936 (19%) | 1.6 ms, 1.1 ms |
 | still | 179, 142 (day 3) | 176, 141 (day 3)\* | 3,784 (22%), 3,853 (20%) | 1.2 ms |
 | jump | 47, 46 (day 5) | (the first runs': 104, 63) | 4,564 (6%) | 0.7 ms |
 
@@ -1598,16 +1608,18 @@ still carries the bodies' control. Without players, no one hungry.
 5. Residents near players go hungry (above), with bodies that walk or stand still as with jumping ones: residents
    who walk onto the stage at its edge, on their way home to eat, stand there for hours. If the stage's life is meant
    to match the unseen's, it's a fault to find first (in the world's walking, not the economy): the long runs, without
-   players, can't see it.
+   players, can't see it. (Found and mended: "residents near players' bodies", below.)
 6. A hand stationed at a Hold keeps its post, and its employer counts it a hand though it never comes (`strike`):
    a month away moved no wage, opened no post and posted no more hires; only the work went undone. Should a post whose
    holder hasn't come for some days stand open (a stand-in hired, or the post given up), so that taking hands draws
    the wage up?
-7. A flood of a staple that spoils fast never lowers its price (`flood`: fish stayed at a penny): a shop prices it
-   at what it paid, and its margin falls only on a shelf that won't move. Is it right that a glut of fresh fish
-   becomes smoked fish rather than cheaper fish?
-
-   players, can't see it. (Found and mended: "residents near players' bodies", below.)
+7. (Reworded by the third review: the first `flood` was on fish, which sat at the penny's floor at a 12p day, so it
+   couldn't show a price falling, and its finding was the floor's, not the market's. On raw meat at a 60p day, below.)
+   A shop pays a player its own normal cost for a staple (`Society::offerAt`), so a flood never lowers a shop's cost;
+   the price residents paid for raw meat still fell a sixth, because the shops that buy it in (at about 12p) sold
+   more of it beside the butchers (who price it at their own cost of making it, 16p to 17p). Should a shop pay a
+   player less than its own cost when its shelf is full (a glut's price), so that a flood lowers what it pays and
+   then what it asks?
 
 **The review's fixes (2026-10-26)** (`4e83cec`; `Tests/econ_players_tests.cpp` checks each, and econ_watch's files
 on a little world of its own, a day and a fifth in under two seconds):
@@ -1655,7 +1667,8 @@ on a little world of its own, a day and a fifth in under two seconds):
   at its weekly review, on its own day of the seven), each day's once; a `poach` with the treasury emptied notes its
   shortfall and sends the unpaid home; econ_watch runs `flood` and `strike` by name.
 - The bodies leave on the real map: DEV's export, 3 days, `--players theft,visit --players-from 1 --players-days 2`
-  (`1c5b648`'s code). All ten left at day 3's midnight (`World::removePlayer`), none then in the watch's hands (three
+  (`af5d842`'s binary, as its `run.txt` says; the two commits after it, `95a4057` and `1c5b648`, change only `flood`
+  and `strike`, so theft's and visit's code is the same). All ten left at day 3's midnight (`World::removePlayer`), none then in the watch's hands (three
   had been at day 1's end), and the watch raised 13 more warrants for the thieves gone, on day 3, for earlier tries;
   the end's record has no bodies, and money was conserved in every record. The 65 hungry and 35 starving of day 2's
   end were none six hours after the bodies left.
@@ -1675,7 +1688,11 @@ the clean `e0e6f45` without players, 44 days, whose first 30 are the smoke's). M
   provisioners), at 1p each, and kept it (with 200p of welcome grants): 117 the first day, then up to all 990 they
   landed a day (days 8 to 11), as fast as the shops sold and used them. The shops' shelves of fish went from 99 to
   240 (40 a shop) on the first day and stayed full for six days.
-- **The price didn't fall, so there was nothing to come back.** The shops' asking price, before the penny, was
+- (The third review: this finding is the penny's floor's, not the market's. `Society::pennies` is 1p at least, and
+  fish asked 1.07p to 1.16p before rounding, so however big the glut it could never sell under a penny; and a shop
+  pays a player its own normal cost, so buying the flood couldn't lower its cost either. `flood` is now on raw meat,
+  at a 60p day: "players who push, the third review", below.) **The price didn't fall, so there was nothing to come
+  back.** The shops' asking price, before the penny, was
   1.07p and 1.13p the two days before, 1.13p to 1.14p through the flood and 1.13p to 1.16p after; every fish was
   sold at 1p before, during and after, and a player was paid the shops' normal cost, 0.99p to 1.00p (a penny). A
   shop prices fish at what it paid for it, and its margin falls only on a shelf that won't move: fish keeps a day and
@@ -2650,3 +2667,174 @@ tick 0.047 ms.
   walking's: the market's point is the roads' (`RatwRoads.cpp`).
 - A resident whose spot at home no way reaches (a room upstairs no stair leads to: Greatly House's) still can't get
   to it on the stage; now she alone is held, going in and out, not her household.
+
+### Phase 13: players who push, the third review (2026-10-26)
+
+The third review of the players who push (`p13-r3-harness`), mended, and three more things a player base would do:
+`buyout`, `drain` and `gift` (the table in "players who push", above). `d372517` and `e64f172`; only the harness
+(`Tests/econ_watch.cpp`, `Tests/econ_players.{h,cpp}`, `Tests/econ_players_tests.cpp`,
+`Tests/econ_watch_stamp.cmake`), no Core file. Each change is guarded in `econ_players_tests` (421 checks), and each
+guard was seen to fail with its change taken back.
+
+**The review's fixes:**
+
+- **`flood`'s staple is a choice** (`--players-staple ITEM`), raw meat unless asked. Fish sat at the penny's floor at
+  a 12p day (`Society::pennies`: 1p at least; it asked 1.07p to 1.16p), so it could never be seen to fall; at the
+  60p day fish is 5p to 6p, raw meat 14p to 17p. A staple the stores price (meals, herbs, swords) is refused. Raw
+  meat is a butcher's make (`butcher_pig`, `butcher_sheep`), not the land's, so a shop whose business makes the
+  staple counts among its makers (the capital's two butchers). Such a shop isn't asked its price in the day's block:
+  its cost of making it is worked out once a day when first asked for and kept for the day (`unitCost_`), so asked
+  at midnight by the harness it would be the day's for the game too. Before the players start, a `flood` run's
+  files and records are byte for byte the run's without players. The doc now says what the game does that shapes a
+  flood: a shop pays a player its own normal cost (`Society::offerAt`), and a player's goods never spoil.
+- **`strike`** sets its "let go" when the players' days end before its month (it read `false` with none held), and
+  takes none `Game::whyNotJoin` refuses whatever the hour: the Quickened, a wolf beaten down, one with a warrant or
+  in custody. The table says what the stand-in skips: the game asks each awake and out of its working hours, a few
+  at a time over days (the companions' cap).
+- **The comments:** a flood's goods don't spoil "as anyone's do" (`Society::spoil` passes players by, and a pack
+  landed days ago goes to a shop as fresh); `flood` sells 8 to 18, not every hour.
+- **`run.txt` says which Data it read**, as a line of its own (never a warning: Data is read at run time): the
+  directory (`RATW_DATA_DIR`, else the working directory or one above it, else the source's: the catalogue's own
+  rule), its checkout's describe, and Data's own changes since its commit (`none`, or the SHA-1 of their diff and
+  of its untracked files): `data: <worktree>/Data at d3725173abad; its own changes since: none`. Data in no checkout
+  says so. And the stamp's code check covers only econ_watch's own test files (`Tests/econ_watch.cpp`,
+  `Tests/econ_players.{h,cpp}`, `Tests/econ_watch_stamp.cmake`), not every suite's: another suite's edit gave
+  "rebuild it".
+- **Labels:** the bodies' walk row is `4e83cec`'s, before the re-aim throttle (said in the table); the 3-day bodies
+  smoke ran on `af5d842`'s binary (the two commits after it touch only `flood` and `strike`). Question 7 is
+  reworded, and the stray half-line after it put back at the end of question 5.
+- **The three test gaps:** `flood` runs through a second morning after a part sale and lands exactly what it sold,
+  each pack full again; `poach` with three hands' day in its purse and the treasury empty pays those three, notes the
+  rest short, and sends three home; and the run's `end` record is checked to carry the players' doings since the
+  last midnight (the Hold's dawn pay) and none of the day before's.
+
+**Found on the way:** `buyout` first bought almost nothing (50 pieces the first morning): it moved on to its next
+player at every food left on a shelf, and the first five foods a shop held and didn't sell (its materials) used up
+all five buyers. Now it tries only what a shop sells (`e64f172`, guarded).
+
+**The runs** (DEV's export, `--deterministic --hours --threads 3`, players from day 2, against the merged baseline
+`m3`, a 60-day run of `3cec19a`'s code: its `run.txt` names the main checkout at `94e8e7f` with changes, but its rows
+to day 29 are byte for byte this branch's smoke's). Money conserved in every record of every run. `run`, `flood`, `strike` and `gift`
+are `d372517`'s binary, `buyout` and `drain` `e64f172`'s (`drain`'s run matched `d372517`'s byte for byte to day 23,
+where that one was stopped from outside the run).
+
+The 30-day smoke without players: 11.3 minutes, 0.078 ms a tick, digest `61df5f39a3ec5247`; every row of
+`flows.csv`, `tills.csv`, `work.csv`, `books.csv`, `residents.csv` and `prices.csv` to day 29 and every record to
+day 30 the same as `m3`'s. Day 30: no one hungry or starving; the household Gini 0.5519, the poorer half 0.1519,
+the wage 60p, the pace 0.107, the going rates 60p (the realm's and Ridgemere's). Money by holder, day 2 to day 30:
+the great houses 1,494,143p to 1,238,233p, the treasuries (the capital's and the towns') 496,291p to 366,643p, the
+church 248,352p to 281,026p, households (every resident's purse) 2,016,252p to 2,018,125p, tills (shops', farms',
+houses') 727,036p to 1,062,802p. Days 15 to 29, a day: the owners' profit 12,725p, the keepers' wages 20,530p, the
+hands' odd jobs 15,636p, service wages 7,711p, owners' investment 16,336p.
+
+| Run (day 30) | hungry, starving | Gini | poorer half | pace | households | treasuries | tills | players |
+|---|---|---|---|---|---|---|---|---|
+| without players | 0, 0 | 0.5519 | 0.1519 | 0.107 | 2,018,125p | 366,643p | 1,062,802p | |
+| `flood` | 0, 0 | 0.5316 | 0.1593 | 0.196 | 1,935,694p | 363,215p | 1,044,965p | 109,309p |
+| `strike` | 26, 26 (its hands) | 0.5537 | 0.1486 | 0 | 2,034,112p | 374,690p | 1,047,226p | |
+| `buyout` | 0, 0 | 0.5391 | 0.1578 | 0.125 | 2,082,674p | 219,347p | 1,123,755p | 7,682 pieces of food |
+| `drain` | 0, 0 | 0.5560 | 0.1483 | 0.107 | 1,988,066p | 359,493p | 1,032,847p | 52,305p |
+| `gift` | 0, 0 | 0.5026 | 0.1848 | 0.125 | 2,134,145p | 227,115p | 1,069,133p | 10,100p left to give |
+
+The wage and the going rates were 60p in every run on every day. Days 15 to 29, a day (without players: profit
+12,725p, keepers 20,530p, odd jobs 15,636p, service 7,711p, investment 16,336p): `flood` 6,471p, 20,205p, 15,535p,
+7,879p, 16,650p; `strike` 13,296p, 20,237p, 14,410p, 7,042p, 16,135p; `buyout` 13,141p, 20,600p, 16,407p, 7,809p,
+16,305p; `drain` 12,725p, 20,375p, 15,700p, 7,951p, 15,643p (and 1,140p to the players at the benches); `gift`
+12,564p, 20,586p, 15,546p, 8,088p, 17,119p (and the 5,000p of gifts).
+
+`flood`, raw meat, 30 days (selling days 2 to 15):
+
+- The ten sold 8,792 pieces in their two weeks for 108,309p (12.32p each, the shops' own cost) to the 39 capital
+  shops that buy it in, and kept it: all 990 they landed the first day, then 193 to 990 a day. The shops' shelves of
+  raw meat went from 264 to 1,180 on the first day and 1,233 to 1,602 through the flood; two days after it, 522, and
+  from the fourth day after, 81 to 335 as before.
+- **The price fell, and had come only part way back two weeks on.** What residents paid for raw meat: 14.27p
+  through the flood against 17.17p without players (they bought 3,002 pieces against 589), 16.30p in the two weeks
+  after against 18.68p (704 against 515). Not because any shop's cost fell (a shop pays a player its own cost): the
+  shops that buy it in, at about 12.3p, sold far more of it beside the butchers, who price it at their cost of
+  making it. Those shops' asking price, before the penny, was 14.10p before, 14.0p to 14.4p through, and rose to
+  15.2p to 15.9p from the sixth day after (prices were rising without players too: 17.2p to 18.7p). Shops buying it
+  as materials paid 14.98p against 16.15p during, 16.29p against 16.79p after. Residents' food as a whole cost
+  0.993 of what it did without players, during and after.
+- **The makers kept their posts but lost trade.** The capital's two butchers sold 1,983 pieces of everything
+  (32,297p) through the flood against 4,032 (62,037p), half; in the two weeks after 2,830 (42,571p) against 3,399
+  (54,817p), and over the 16 days after 12% fewer (17% less taken). They worked the same hours (348 against 352
+  through the flood, 424 against 407 after).
+- **The money didn't come back.** The 108,309p came out of the capital's shops and stayed in the players' purses:
+  the owners' profit was 13% lower through the flood and a third lower in the two weeks after (11,051p a day against
+  16,500p); on day 30 households held 82,000p less and the tills 18,000p less. Gini and the poorer half moved the
+  other way (0.5316, 0.1593), likely because the owners' profit, which goes to richer households, fell most.
+
+`strike`, 44 days (the hands held from day 2 to day 30's dawn), at a 60p day, as the first run at 12p found:
+
+- 26 hands taken; 25 hungry by the first day's end and all 26 hungry and starving to the month's end; none the day
+  after they were let go. 26 kept their posts to day 29, 25 on day 30 and 24 by day 44.
+- **The labour market didn't see them gone.** The going rates 60p throughout; Ridgemere's employers' mean wage
+  62.69p on day 29 against 63.07p; hires' slots (running at 23:00, summed) 16,733 against 17,541 in the month, taken
+  13,456 against 13,939.
+- The work wasn't done: 1.5% fewer hours in the month (155,511 against 157,800), service wages 9% down and the hands'
+  odd jobs 8% (days 15 to 29); the owners' profit 4% up.
+- **The work hadn't come back two weeks on:** in the two weeks after, hours 1.6% fewer (76,090 against 77,306),
+  service wages 2% and odd jobs 3% down. Day 44: no one hungry; Gini 0.5593 against 0.5596, the poorer half 0.1354
+  against 0.1385, the pace 0.179 against 0.196.
+
+`buyout`, 30 days (buying days 2 to 8):
+
+- The five bought 7,667 pieces of food in five mornings with their 150,000p: 2,622 (50,489p) the first, then 1,464,
+  1,296, 1,419 and 866, when their purses ran out (47p left); nothing on the sixth and seventh. They held 7,682 to
+  the end.
+- **The corner failed: the makers answered.** At the first day's end the capital's shelves held 2,889 pieces of
+  food against 3,578 without players; from the fourth day more than without (4,577 against 4,289), and from the
+  ninth to the twentieth half as much again (10,000 to 14,500 against 6,000 to 10,000). Its food crafted in the
+  buying week was 23,099 against 10,128, then less as the shelves stood full (8,216 against 13,614 in days 17 to
+  23), and as without players in the last week (10,144 against 10,804).
+- No one went hungry on any day (the households' larders hold 2 to 5 days; "short" 2 to 7 against 0 to 4).
+  Residents' food cost 1.007 of what it did without players in the buying week, then 1.001, 0.997 and 1.010: prices
+  are costs and margins, and a margin moves a little a week.
+- The 150,000p, from the capital's treasury, went to the shops (the tills 61,000p richer on day 30) and on to their
+  owners and hands (households 65,000p richer). By day 32 Gini was 0.5496 against 0.5567.
+
+`drain`, 30 days, Frosthollow:
+
+- **What a player can do at a bench isn't what it looks like.** Of Frosthollow's 15 "benches", 11 are wolves who keep
+  their houses, one keeps the Snow Chapel, two work at the Smelter and one helps at the Pass Provisioner.
+  `World::residentWorkAt` takes the work from a resident's authored work label (`spec->workLabel`, which names a
+  business that crafts), not from its post now, so a wolf at home keeping house is "at its bench"; and a shop's
+  keeper, whose task is to trade, never is, so on DEV's map no player can lend a paw at a shop's own bench.
+  `Society::tillOf` for a wolf whose post has no till is its own purse, so the players were paid out of the wolves'
+  own purses (`a hand at the bench`, from paid civilians): 5,382p the first day, about 1,500p a day over the month,
+  49,305p in all.
+- **The town's wolves lost no work, but their money.** Frosthollow's hires (slots running at 23:00, summed over days 3
+  to 31) 1,050 against 1,124, taken 874 against 863; its residents' wages 789p a day against 772p. On day 31 its 56
+  residents held 56,730p against 97,122p, their median purse 535p against 1,671p; none hungry.
+- 0.149 ms a tick with the 30 bodies on the stage, against 0.078.
+- The brief's drain (players taking every odd job and hire so the town's wolves get none) can't be run: a player
+  takes no odd job and no hire.
+
+`gift`, 30 days:
+
+- 150,000p from the capital's treasury, given at 5,000p a day (100p to each of the 50 poorest households) every day,
+  all of it by day 32. Money conserved in every record; on day 30 the households held 116,000p more and the
+  treasuries 139,500p less (the giver's 150,000p came from the capital's), the tills 6,000p more.
+- **No inflation.** What residents bought cost 0.999, 0.991, 0.986 and 0.996 of what it did without players, week
+  by week (their food 1.000 to 0.988); they bought 4% more in the last week (24,305 pieces against 23,392) and spent
+  1% more. Prices are a shop's cost and margin, not what buyers will pay, and the margin moves only on a shelf that
+  empties fast or won't move.
+- The poorest tenth's purse 175p on day 30 against 82p; the median 1,577p against 1,444p; Gini 0.5026 against
+  0.5519, the poorer half 0.1848 against 0.1519.
+
+**For the user** (8 to 11 new; 7 reworded, above):
+
+8. **Bench work pays from the wolf's own purse, and finds benches at home** (`drain`; Core, `World::residentWorkAt`
+   and the beat's pay in `RatwTogether.cpp`). Thirty players took 49,305p in a month from Frosthollow's wolves, most
+   of whom were keeping house, and halved what its residents held. Recommendation: a bench is a business's with a
+   till of its own, worked by its post now (the post's title, not the authored label), and pays from that till;
+   none where `tillOf` gives the wolf's own purse.
+9. **Should a player be able to take an odd job or a business's hire?** Today it can't, so a `drain` that takes a
+   town's work can't happen. Recommendation: not until hires are weighed against the town's own jobless (a player
+   who takes one should take it from the board as a resident does, the jobless first), or keep them residents'.
+10. **A flood's money leaves the shops for good** (`flood`, and `hoard` before it): players who sell and never spend
+    take it out of circulation, a third off the owners' profit two weeks after. Recommendation: nothing in the
+    economy (it is what a player does); but the mint's rule (doc 64, Phase 11) is the place to answer it, if any.
+11. A food corner fails at once (`buyout`): the makers make more, no one goes hungry, the price barely moves. Is that
+    the intent (it is the model's), or should a buyout of a town's food make it dearer for a while?
