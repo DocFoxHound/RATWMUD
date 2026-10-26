@@ -344,6 +344,9 @@ struct EconomyMemory
     // The land's hours worked (its producers' but the seasonal fields', their hands' with their own) at the day passes of
     // the last fortnight, each with its day: the pace's brake (Society::PaceLandSlack; doc 64, Phase 13).
     std::vector<std::pair<std::int64_t, double>> paceLand;
+    // The land's hours credited since the last day pass, as they are credited (Society::produce, a hand's hire): the
+    // brake's next reading. -1 until the first pass counts them (a new world, a save from before round 6 of Phase 13).
+    double landToday = -1;
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     // Households' pieces founded (doc 64, Phase 13: once, in a new world's first days with work by the hours; never into a
@@ -360,6 +363,9 @@ struct EconomyMemory
     // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
     // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
     std::map<std::string, double> weekIncome, monthIncome, wantFund, helpBudget, reliefLeft, reliefWeek, wagesWeek;
+    // The capital's buyers' funds inside its week's budget (doc 64, Phase 13, round 6; with work by the hours): what is
+    // left of the week's allowance for them, and what they drew this week (Society::institutionsWeek, townBuyers).
+    std::map<std::string, double> fundsLeft, fundsWeek;
     std::int64_t revision = 0;
 };
 
@@ -1024,9 +1030,9 @@ class Society
     std::map<std::int64_t, double> paceHeld_;       // (holdPace: a test's.)
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
-    // The land's hours credited since the start, at the last day pass (the pace's brake: a day's are the difference).
-    // Not saved: after a restart, -1, and the first pass reads none.
-    double landWorkSeen_ = -1;
+    // The land's work that counts toward the pace's brake (doc 64, Phase 13): a producer's but a seasonal one's (a
+    // field's, whose work is the calendar's; an apiary's, idle all winter: round 6, the round-5 review).
+    static bool brakesOn(const items::Producer& p);
 
   public:
     // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
@@ -1343,6 +1349,9 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
+    // A resident's town as the society reckons it, where it works or else where it lives: a hire's town (OddJob::community)
+    // is its payer's so (econ_watch's hires.csv, doc 64, Phase 13, round 6).
+    std::string townOfResident(const std::string& id) const { return communityOfResident(id); }
     // Wages by kind of post (help, guard, labour, clergy, keeper, hand, odd job): a share of the town's going rate (doc 64,
     // Phase 6), paid a PaidSpells-th a spell of work.
     double dayWage(const std::string& town, const std::string& kind) const;
@@ -1600,6 +1609,14 @@ class Society
     void tendIncome();                                      // Daily, first: today's earnings into the week's and month's.
     void flushEarnings();                                   // (Those so far, without the month's daily decay.)
     void institutionsWeek(std::int64_t day);                // At the reckoning: each institution's week's budget, spent.
+    // A town's posts kept to `share` of its week's budget (doc 64, Phase 13, round 6; the model's staff_to): the watch's
+    // whatever, then its own (the city's clerks, its court, its lamplighters) in an order by lot that is the same week to
+    // week, as many as the rest pays a week, PostWeekDays of a post's wage (the watch's seven). Past that, a post's holder
+    // is let go and the post kept empty (memory.closed, as a business's help); within it again, a post it let go is open
+    // again, for succession to fill. Returns the week's cost of the posts kept.
+    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day);
+    static constexpr double TreasuryStaff = .5;     // The capital's posts' share of its week's budget (the model's watch).
+    static constexpr int PostWeekDays = 6;          // A post's working days a week (not Restday; the watch, every day).
     void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // `lodger`: one wolf of a barracks, a bunkhouse, quarters or lodgings, its own household by its own purse (`home` its
     // ID): all its spare to its wants, no help about the home or servants for a bunk.

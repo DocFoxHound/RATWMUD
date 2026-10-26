@@ -150,7 +150,24 @@ void Society::institutionsWeek(std::int64_t day)
         const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
         memory.reliefLeft[id] = double(relief);
         memory.reliefWeek[id] = 0;
-        budget -= relief + wagesPaid(id);
+        if (workByHours() && id == "treasury")
+        {
+            // The capital, with work by the hours (doc 64, Phase 13, round 6; the model's treasury_week): its posts first,
+            // the watch and then its own, to half its week's budget, its own let go if they come to more; then its buyers'
+            // funds inside what's left (what they drew last week and a third over, and a twentieth of the rest besides;
+            // its first week, all the rest); then its works, as a town's. Before, it paid its posts every spell and funded
+            // its buyers day by day whatever its budget, and it ran dry in three months.
+            budget -= relief;
+            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, budget)) * TreasuryStaff, day);
+            const auto rest = std::max<std::int64_t>(0, budget);
+            const auto drew = memory.fundsWeek.find(id);
+            const auto funds = drew == memory.fundsWeek.end() ? rest : std::min(rest, std::int64_t(drew->second * 1.33) + rest / 20);
+            memory.fundsLeft[id] = double(funds);
+            memory.fundsWeek[id] = 0;
+            budget -= funds;
+        }
+        else
+            budget -= relief + wagesPaid(id);
         if (budget <= 0 || community.empty())
             continue;
         // Its works: a crew hired for the week with most of the rest, materials with what's left.
@@ -198,6 +215,62 @@ void Society::institutionsWeek(std::int64_t day)
     }
     memory.wagesWeek.clear();
     ++memory.revision;
+}
+
+std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day)
+{
+    // Its posts that draw a wage (an unpaid one too, held by a grown wolf: doc 42, Phase 3; not a beggar's, nor a great
+    // house's head's), each with its employer as the labour market finds it (its holder's, else its founder's).
+    struct Post
+    {
+        const Position* p;
+        bool guard;
+        double order, week;
+    };
+    std::vector<Post> posts;
+    for (const auto& p : positions_)
+    {
+        if (!p.paid && (p.role != "civilian" || houseHead(p.title) || p.title.find("beg") != std::string::npos))
+            continue;
+        const auto held = state_.careers.positions.find(p.id);
+        const auto holder = held == state_.careers.positions.end() ? std::string() : held->second.holder;
+        const auto* r = holder.empty() ? nullptr : spec(holder);
+        const auto key = postEmployer(p, holder, r ? r->age : 30);
+        const bool guard = key == treasury + "|guard";
+        if (guard || key == treasury + "|labour")
+            posts.push_back({&p, guard, lot(p.id + "|kept"), employerWage(key) * (guard ? 7 : PostWeekDays)});
+    }
+    std::sort(posts.begin(), posts.end(), [](const Post& a, const Post& b) {
+        return a.guard != b.guard ? a.guard : a.order != b.order ? a.order < b.order : a.p->id < b.p->id;
+    });
+    double left = share;
+    bool room = true;
+    for (const auto& post : posts)
+    {
+        room = room && (post.guard || left >= post.week);
+        if (room)
+        {
+            left -= post.week;
+            if (state_.memory.closed.erase(post.p->id))
+            {
+                record("taken on again", treasury, post.p->id, "", 0, 0);
+                ++state_.memory.revision;
+            }
+            continue;
+        }
+        auto& ps = state_.careers.positions[post.p->id];
+        if (!ps.holder.empty())
+        {
+            record("laid off", treasury, ps.holder, "", 0, 0);
+            ps.lastHolder = ps.holder;
+            ps.holder.clear();
+            ps.vacantSince = double(day);
+            forgetCareers();
+        }
+        if (state_.memory.closed.insert(post.p->id).second)
+            ++state_.memory.revision;
+    }
+    return std::int64_t(std::ceil(share - left));
 }
 
 void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies)

@@ -165,6 +165,13 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     if (said.church)
         return {churchOf(treasuryOfResident(resident)), "the church"};
     const bool hours = workByHours();
+    // An unpaid post, paid by whoever it works for (doc 42, Phase 3), with work by the hours (doc 64, Phase 13, round 6):
+    // one worked at its holder's own home (at home in the Heights, at lessons, at leisure) is its household's own life,
+    // no wage. Before, the household's richest paid it, a servant as often as not, or the town did.
+    const auto own = state_.residents.find(resident);
+    const auto home = own == state_.residents.end() ? std::string() : own->second.homeCell;
+    if (hours && !job.paid && job.role == "civilian" && !home.empty() && houseOfRoom(home) == houseOfRoom(job.work.cell))
+        return {"", "lives on the household"};
     // Someone with a shop, or a great house, where it works: the first of them there who isn't itself.
     indexEmployers();
     if (const auto found = employers_.find(job.work.cell); found != employers_.end())
@@ -188,12 +195,14 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
         // pays its staff there as at its head's own room (doc 64, Phase 13, round 6; before, the town did).
         if (const auto* h = seatOf(job.work.cell); h && h->head != job.id)
             return {h->id, "the house"};
+        // An unpaid post of a great house's family away from its seat and any shop (the House's money counted, its
+        // business abroad): the house's. Before, the town's.
+        if (const auto* h = job.paid ? nullptr : seatOf(home))
+            return {h->id, "the house"};
         // A house's grounds (its gardens, its gate): the house whose name its home bears ("the Fell gatehouse", "the
         // Grayrock cottages"), else its town's richest, as a trade's works hands (below). Before, the town.
         if (said.estate)
         {
-            const auto own = state_.residents.find(resident);
-            const auto home = own == state_.residents.end() ? std::string() : own->second.homeCell;
             const House* named = nullptr;
             const House* richest = nullptr;
             std::int64_t most = -1;
@@ -226,7 +235,7 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
         if (const auto master = richestAt(job.work.cell, resident, true); !master.empty())
             return {master, "the house"};
     }
-    else if (const auto own = state_.residents.find(resident); own == state_.residents.end() || own->second.homeCell != job.work.cell)
+    else if (own == state_.residents.end() || own->second.homeCell != job.work.cell)
         if (const auto master = richestAt(job.work.cell, resident); !master.empty())
             return {master, "the house"};
     // A hand at a trade's works (at the forge, working the saws, smoking fish): paid by a keeper of that trade in its

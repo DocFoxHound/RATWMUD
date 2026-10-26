@@ -1172,6 +1172,109 @@ void askingWhoPaysLeavesTheRun(bool hours)
     Society::setWorkByHours(false);
 }
 
+// The capital keeps to its week's budget (doc 64, Phase 13, round 6; the model's treasury_week), with work by the hours:
+// its posts to half of it, the watch's first and kept whatever, then the city's own in an order by lot that is the same
+// week to week; past that a clerk is let go and the post kept empty, and with money again it is open again. Its buyers'
+// funds draw no more than the week's allowance for them.
+void theCapitalKeepsToItsBudget()
+{
+    Society::setWorkByHours(true);
+    std::string extra = resident("g1", "Ward Gate", "guard", "keeping the gate", 0, 9.5, 2, 9.5) +
+                        resident("wb", "Wick Gate", "guard", "keeping the gate", 0, 9.5, 2, 10.5);
+    for (int i = 1; i <= 4; ++i)
+        extra += resident("c" + std::to_string(i), "Clerk " + std::to_string(i), "civilian", "clerking at the City Office", 0, 9.5 + i, 2, 3.5 + i);
+    // (And an unpaid post the town pays all the same, its holder grown: doc 42, Phase 3.)
+    auto keeper = resident("rk", "Rolls Keeper", "civilian", "keeping the records", 0, 14.5, 2, 8.5);
+    keeper.replace(keeper.find(" 1 8 17 "), 8, " 0 8 17 ");
+    extra += keeper;
+    auto f = strip("EEE....WW", extra);
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);
+    run(w, 2);
+    const auto& soc = w.society();
+    const auto clerk = soc.payerOf("c1", *soc.jobOf("c1"), 30);
+    expect(clerk.account == "treasury" && soc.payerOf("g1", *soc.jobOf("g1"), 30).account == "treasury", "the capital pays its clerks and its watch");
+    const double wage = std::max(soc.employerWage("treasury|labour"), soc.employerWage("treasury|guard"));
+    // A week's turn, the treasury holding `cash` at its eve: its budget in its first month an eighth or so of it.
+    const auto week = [&](int n, double cash) {
+        auto saved = w.save();
+        saved.calendarDays = 7. * n - .002;
+        auto& t = saved.society.accounts.at("treasury").cash;
+        saved.society.minted += std::int64_t(cash) - t;   // (Counted as made or unmade: the books still balance.)
+        t = std::int64_t(cash);
+        expect(w.restore(saved).ok, "To the eve of week " + std::to_string(n));
+        w.takeEvents();
+        run(w, 240);
+        std::set<std::string> closed;
+        for (const auto& p : w.society().state().memory.closed)
+            closed.insert(p);
+        int letGo = 0, back = 0;
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "economy" && e.actor == "treasury")
+                letGo += e.detail == "laid off", back += e.detail == "taken on again";
+        return std::make_tuple(closed, letGo, back);
+    };
+    // (The posts' week: the watch's seven days, a clerk's six. Its budget 62 of their days: a twentieth to three tenths of
+    // it set aside for relief, half the rest pays its two of the watch and one of its own at least, and never three.)
+    const auto [closed1, letGo1, back1] = week(1, 62 * wage * 12 / 1.4);
+    expect(soc.payerOf("rk", *soc.jobOf("rk"), 30).account == "treasury", "the capital pays its unpaid rolls keeper too");
+    expect(letGo1 >= 3 && letGo1 <= 4 && int(closed1.size()) == letGo1 && back1 == 0,
+           "a lean week: the capital lets " + std::to_string(letGo1) + " of its five go, their posts kept empty");
+    expect(w.society().jobOf("g1") != nullptr && !closed1.count(w.society().jobOf("g1")->id), "and keeps its watch");
+    for (const auto& p : closed1)
+    {
+        const auto held = w.society().state().careers.positions.find(p);
+        expect(held != w.society().state().careers.positions.end() && held->second.holder.empty(), "nobody holds a post let go");
+    }
+    const auto [closed2, letGo2, back2] = week(2, 62 * wage * 12 / 1.4);
+    expect(closed2 == closed1 && letGo2 == 0 && back2 == 0, "another such week: the same posts stay empty, the same clerks kept");
+    // Its buyers' funds: no more than what's left of the week's allowance.
+    {
+        auto saved = w.save();
+        saved.society.memory.fundsLeft["treasury"] = 3;
+        for (auto& [id, a] : saved.society.accounts)
+            if (id.rfind("town:east:", 0) == 0)
+            {
+                saved.society.minted -= a.cash;      // (Its buyers bare, wanting their funds.)
+                a.cash = 0;
+                a.stock.clear();
+            }
+        expect(w.restore(saved).ok, "an allowance nearly spent");
+        w.takeEvents();
+        run(w, 600 * 24);
+        std::int64_t funds = 0;
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "economy" && e.actor == "treasury" && e.detail == "town funds")
+                funds += e.coins;
+        expect(funds <= 3 && w.society().state().memory.fundsLeft.at("treasury") >= 0,
+               "its buyers drew " + std::to_string(funds) + "p of the 3p left");
+    }
+    // A week with nothing to spare: every clerk let go, and the watch kept.
+    const auto [closed3, letGo3, back3] = week(3, 2 * wage * 12 / 1.4);
+    expect(int(closed3.size()) == 5 && letGo3 == 5 - letGo1, "nothing to spare: every clerk let go (" + std::to_string(closed3.size()) + ")");
+    for (const char* guard : {"g1", "wb"})
+        expect(w.society().jobOf(guard) && !closed3.count(w.society().jobOf(guard)->id), std::string("and ") + guard + " still keeps the watch");
+    const auto [closed4, letGo4, back4] = week(5, 1000 * wage * 12 / 1.4);
+    expect(closed4.empty() && back4 == 5 && letGo4 == 0, "money again: the posts it let go are open again (" + std::to_string(back4) + ")");
+    // The allowance is saved (a bad sum dropped), and an older save has none: its buyers funded as before till its week.
+    {
+        auto state = w.society().state();
+        expect(state.memory.fundsLeft.count("treasury") && state.memory.fundsWeek.count("treasury"), "the week's allowance kept");
+        const auto back = wire::readSociety(wire::society(state)).memory;
+        expect(back.fundsLeft == state.memory.fundsLeft && back.fundsWeek == state.memory.fundsWeek, "and saved");
+        state.memory.fundsLeft["treasury"] = -5;
+        expect(!wire::readSociety(wire::society(state)).memory.fundsLeft.count("treasury"), "a bad one dropped");
+        auto old = wire::society(w.society().state());
+        expect(old.find("memory") && old.find("memory")->erase("fundsLeft") && old.find("memory")->erase("fundsWeek"), "(A save from before)");
+        const auto oldRead = wire::readSociety(old).memory;
+        expect(oldRead.fundsLeft.empty() && oldRead.fundsWeek.empty() && oldRead.reliefLeft == state.memory.reliefLeft,
+               "an older save reads none, the rest as it was");
+    }
+    expect(w.society().conserved(), "Money stays conserved");
+    Society::setWorkByHours(false);
+}
+
 // A living for every grown wolf (doc 42, Phase 3): out of work, one labours for the Town Works at the square, paid by
 // the town; at 65, one retires; a foreman's unpaid post is paid by the town; a beggar's isn't.
 void aLivingForEveryone()
@@ -2372,10 +2475,25 @@ void aCityHandAtTheFishery()
         return nullptr;
     };
     expect(hire() && s.farmHire(*hire()) && hire()->community == "west", "The fishery hires, a hire of the land's");
-    // Its next working day, to 23:00.
-    const double before = s.workBy().count("wf") ? s.workBy().at("wf").first : 0;
+    // Its next working day, to 23:00. (The tick a hand's spells are done, its hours credited, the fisher's own beside them
+    // at most a spell's: round 6, the round-5 review.)
+    const auto fishery = [&] { return s.workBy().count("wf") ? s.workBy().at("wf").first : 0.; };
+    const double before = fishery();
+    double jump = 0, landJump = 0;
+    std::set<std::string> done;
     while (w.calendarDays() < 5 + 23. / 24)
+    {
+        const double was = fishery(), land = s.state().memory.landToday;
         w.tick(1);
+        if (const auto* j = hire())
+            for (const auto& [who, stage] : j->stage)
+                if (who.rfind("ec", 0) == 0 && stage >= 1 && done.insert(who).second)
+                {
+                    jump = std::max(jump, fishery() - was);
+                    if (land >= 0)
+                        landJump = std::max(landJump, s.state().memory.landToday - land);
+                }
+    }
     std::string hand;
     int worked = 0;
     if (const auto* j = hire())
@@ -2391,6 +2509,9 @@ void aCityHandAtTheFishery()
     const double credited = s.workBy().at("wf").first - before;
     expect(credited >= Society::HireSpells * worked, "Its hours are credited to the fishery's work: " + std::to_string(credited) + " hours, " +
                                                          std::to_string(worked) + " hands' days");
+    expect(jump >= Society::HireSpells && jump < Society::HireSpells + 2,
+           "the hand's own: its day's spells at once, the tick it finished them (" + std::to_string(jump) + " hours)");
+    expect(std::abs(landJump - jump) < 1e-9, "and the land's hours for the pace's brake with them (" + std::to_string(landJump) + ")");
     bool paid = false;
     for (const auto& e : s.state().ledger)
         paid = paid || (e.from == till && e.to == hand && e.kind == "an odd job: a hand");
@@ -3701,6 +3822,7 @@ int main()
         whoPaysWages();
         askingWhoPaysLeavesTheRun(false);
         askingWhoPaysLeavesTheRun(true);
+        theCapitalKeepsToItsBudget();
         aLivingForEveryone();
         workingOutOfTown();
         greatHouses();

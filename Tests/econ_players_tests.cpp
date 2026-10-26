@@ -1151,6 +1151,18 @@ void econWatchsFiles()
                          "hire_slots,hire_taken");
     once("books.csv", 1, "day,key,town,wage,rate,open_days,calm,short_pay,vacancies,hands,skill");
     once("residents.csv", 1, "day,resident,home,holder,title,age,cash");
+    // (hires.csv: at 23:00, a day's hires once each, if there are any; its columns: round 6, the round-5 review.)
+    {
+        const auto all = rows(out / "hires.csv");
+        std::string head;
+        for (const auto& c : all.empty() ? std::vector<std::string>{} : all.front())
+            head += (head.empty() ? "" : ",") + c;
+        expect(head == "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers,worked,away,away_worked,lodged",
+               "hires.csv's columns: " + head);
+        std::set<std::pair<std::string, std::string>> seen;
+        for (std::size_t i = 1; i < all.size(); ++i)
+            expect(seen.insert({all[i][0], all[i][1]}).second, "hires.csv has day " + all[i][0] + "'s " + all[i][1] + " twice");
+    }
     // Day 1's record (made at its midnight: day 0's) has none of what the players did at that midnight; day 2's (day
     // 1's) has.
     std::ifstream days(out / "days.jsonl");

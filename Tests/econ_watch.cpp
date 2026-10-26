@@ -1160,12 +1160,6 @@ int main(int argc, char** argv)
     std::ofstream hiresOut(out / "hires.csv");
     hiresOut << "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers,worked,away,away_worked,lodged\n";
     std::map<std::string, int> takenBefore;
-    std::map<std::string, std::string> townOf;      // (Each resident's community, as the society's: its work's, else its home's.)
-    for (const auto& r : society.authored().residents)
-    {
-        const auto at = server.communityOf(r.work.cell);
-        townOf[r.id] = at.empty() ? server.communityOf(r.home.cell) : at;
-    }
     const auto sampleHires = [&](std::int64_t day) {
         std::map<std::string, int> taken;
         for (const auto& j : society.oddJobs())
@@ -1176,9 +1170,9 @@ int main(int argc, char** argv)
             int worked = 0, away = 0, awayWorked = 0, lodged = 0;
             for (const auto& [who, stage] : j.stage)
             {
-                // (Its day's spells done: paid, stage 2. From away: living in another town than the hire's.)
-                const auto town = townOf.find(who);
-                const bool far = town != townOf.end() && town->second != j.community;
+                // (Its day's spells done: paid, stage 2. From away: of another town than the hire's, by the rule the hire's
+                // own town is found by, asked as it stands: round 6, the round-5 review.)
+                const bool far = society.townOfResident(who) != j.community;
                 worked += stage == 2;
                 away += far;
                 awayWorked += far && stage == 2;
