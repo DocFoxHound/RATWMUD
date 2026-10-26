@@ -276,7 +276,11 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         }
         if (j.kind == "a hand")
             if (const auto* producer = spec(j.producer); producer && items::producerFor(producer->workLabel))
+            {
                 creditWork(j.producer, double(spells));
+                if (auto& land = state_.memory.landToday; land >= 0 && workByHours() && brakesOn(*items::producerFor(producer->workLabel)))
+                    land += double(spells);         // (The pace's brake's reading: RatwLabour.cpp.)
+            }
         if ((j.kind == "gathering" || j.kind == "hunting") && day_.grounds && day_.harvest)
             if (const auto found = day_.grounds->find(j.community); found != day_.grounds->end() && j.ground < found->second.size())
                 for (const auto& [item, n] : day_.harvest(id, found->second[j.ground], season_))

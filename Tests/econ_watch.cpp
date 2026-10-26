@@ -4,7 +4,7 @@
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
-//              [--players-staple ITEM] [--hold-pace PACE_CSV]
+//              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
@@ -23,6 +23,9 @@
 // run's hunger, food and hands would make it: a run with players set beside the run without them differs by what the
 // players did, not by the pace they moved (doc 64, Phase 13: strike's starving hands held the pace at 0 for a month).
 // It wants --hours (the pace is stepped only there) and a pace for every society's day the run turns; else refused.
+// --ask-payers: asks Society::payerOf of every resident with a post before the first tick and every game hour, as a talk
+// scene or a harness might, and writes payers.csv (doc 64, Phase 13, round 6: who pays the capital's posts). A run with it
+// must give the same digest as one without: what is asked of the society, read only, never moves it.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -62,6 +65,8 @@
 //                   its own employer, as it stands at 23:00), and of them those who worked the day's spells, those
 //                   from another town, those of them who worked, and those lodged away from home (doc 64, Phase 13:
 //                   a hire taken from afar);
+//   payers.csv      (--ask-payers) day, resident: its home and work cells, title, who pays it and as what, at the day's
+//                   record;
 //   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
 //                   society's days' turns (--hold-pace's to read; a turn can fall on either side of the watch's
 //                   midnight, so not at the day's records);
@@ -221,7 +226,8 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
-                     "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n";
+                     "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n"
+                     "                  [--ask-payers]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -235,6 +241,7 @@ int main(int argc, char** argv)
     auto bodies = econ::Players::Bodies::Walk;
     std::string staple = econ::Players::DefaultStaple;
     std::map<std::int64_t, double> heldPace;        // --hold-pace: the society's day -> its pace.
+    bool askPayers = false;                         // --ask-payers.
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -282,6 +289,8 @@ int main(int argc, char** argv)
                 return 2;
             }
         }
+        else if (std::string(argv[i]) == "--ask-payers")
+            askPayers = true;
         else if (std::string(argv[i]) == "--hold-pace" && i + 1 < argc)
         {
             heldPace = econ::readPace(slurp(argv[++i]));
@@ -1174,12 +1183,6 @@ int main(int argc, char** argv)
     std::ofstream hiresOut(out / "hires.csv");
     hiresOut << "day,hire,payer,kind,slots,pay_slot,until,field,taken,open_at_dawn,takers,worked,away,away_worked,lodged\n";
     std::map<std::string, int> takenBefore;
-    std::map<std::string, std::string> townOf;      // (Each resident's community, as the society's: its work's, else its home's.)
-    for (const auto& r : society.authored().residents)
-    {
-        const auto at = server.communityOf(r.work.cell);
-        townOf[r.id] = at.empty() ? server.communityOf(r.home.cell) : at;
-    }
     const auto sampleHires = [&](std::int64_t day) {
         std::map<std::string, int> taken;
         for (const auto& j : society.oddJobs())
@@ -1190,9 +1193,9 @@ int main(int argc, char** argv)
             int worked = 0, away = 0, awayWorked = 0, lodged = 0;
             for (const auto& [who, stage] : j.stage)
             {
-                // (Its day's spells done: paid, stage 2. From away: living in another town than the hire's.)
-                const auto town = townOf.find(who);
-                const bool far = town != townOf.end() && town->second != j.community;
+                // (Its day's spells done: paid, stage 2. From away: of another town than the hire's, by the rule the hire's
+                // own town is found by, asked as it stands: round 6, the round-5 review.)
+                const bool far = society.townOfResident(who) != j.community;
                 worked += stage == 2;
                 away += far;
                 awayWorked += far && stage == 2;
@@ -1268,6 +1271,24 @@ int main(int argc, char** argv)
     if (!stocked.empty())
         stockOut.open(out / "stock.csv"), stockOut << "day,account,cash,stock\n";
     int nextStockHour = 0;
+    // --ask-payers: every resident with a post asked who pays it, read only; written at the day's record.
+    std::ofstream payersOut;
+    if (askPayers)
+        payersOut.open(out / "payers.csv"), payersOut << "day,resident,home,work,title,payer,paid_as\n";
+    const auto askAll = [&](int recordDay) {
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* job = society.jobOf(id))
+            {
+                const auto* e = server.entity(id);
+                const auto payer = society.payerOf(id, *job, e ? e->age : 30);
+                if (recordDay >= 0)
+                    payersOut << recordDay << ',' << csv(id) << ',' << csv(life.homeCell) << ',' << csv(job->work.cell) << ','
+                              << csv(job->title) << ',' << csv(payer.account) << ',' << csv(payer.whom) << '\n';
+            }
+        payersOut.flush();
+    };
+    if (askPayers)
+        askAll(-1);                                 // (Before the first tick: before the society has decided anything.)
     double tickSeconds = 0;                         // (The server's own time in the day, apart from this watch's.)
     std::int64_t paceDay = -1;                      // (The society's day pace.csv last had.)
     for (long i = 0; i < ticks; ++i)
@@ -1308,6 +1329,8 @@ int main(int argc, char** argv)
         {
             nextHour += 1. / 24;
             sampleMaterials();
+            if (askPayers)
+                askAll(-1);
             if (const double now = server.calendarDays(); int(std::floor((now - std::floor(now)) * 24 + 1e-9)) == 23)
                 sampleHires(std::int64_t(std::floor(now)));
             if (!stocked.empty() && nextStockHour++ % 3 == 0)
@@ -1324,6 +1347,8 @@ int main(int argc, char** argv)
         if (const int now = int(std::floor(server.calendarDays())); now != day)
         {
             today = now;
+            if (askPayers)
+                askAll(now);
             // The day's own cost (ms a tick, by part and by stage of the schedules), to see what grows as days pass.
             {
                 static World::TickProfile before;

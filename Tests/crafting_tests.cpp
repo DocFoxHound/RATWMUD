@@ -1544,15 +1544,235 @@ void aProducersPostsBySales()
     Society::setWorkByHours(false);
 }
 
+// A producer's own hire by its sales as well (doc 64, Phase 13, round 6: the round-5 review). A fishery selling for a
+// hand's day plans for two for its bare shelf, as a producer's always is near bare; its till funded, it could post a hire
+// for the second, and that hire's slot, untaken, stood open as a post its sales never wanted. Now it hires for its sales:
+// no hire, and nothing open, for a hand's day; for three hands' days, a hire for two, and no more open than that.
+void aProducersHireBySales()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    roster.economy.treasury = 100000;
+    Society s(Roster::None);
+    s.configure(roster);
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto till = s.tillOf("fisher");
+    const auto bodies = atWork(s);
+    std::int64_t d = 0;
+    // (A fortnight of `n` fish sold a day and eaten, its till kept funded; nobody to take its hire.)
+    const auto fortnight = [&](int n) {
+        int worst = -100, hired = 0;
+        for (int i = 0; i < 14; ++i)
+        {
+            ++d;
+            set(s, "fisher", "fish", n);
+            expect(s.shift("treasury", "scribe", "", 0, n, "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(till, "scribe", "fish", n, 1, "test: the day's fish"), "the buyer buys");
+            auto st = s.state();
+            st.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(st), "eaten");
+            if (const auto cash = s.account(till)->cash; cash < 20000)
+                expect(s.shift("treasury", till, "", 0, 20000 - cash, "test: its till kept funded"), "its till funded");
+            s.tick(1, double(d) + .5, 0, bodies);   // (The day's pass.)
+            if (i >= 7)
+            {
+                worst = std::max(worst, s.vacanciesOf(till) - std::max(0, s.handsWanted(till, false) - s.handsOf(till)));
+                for (const auto& j : s.oddJobs())
+                    if (j.payer == till && j.until >= d)
+                        hired = std::max(hired, j.slots);
+            }
+        }
+        return std::make_pair(worst, hired);
+    };
+    const auto one = fortnight(8);
+    expect(s.handsWanted(till) == 2 && s.handsWanted(till, false) == 1,
+           "its sales a hand's day, two for its bare shelf: " + std::to_string(s.handsWanted(till)) + ", " + std::to_string(s.handsWanted(till, false)));
+    expect(one.first <= 0 && one.second == 0,
+           "it posts no hire, and stands no post open past its sales' (" + std::to_string(one.first) + " over, a hire of " + std::to_string(one.second) + ")");
+    const auto three = fortnight(24);
+    expect(three.first <= 0 && three.second >= 1 && three.second <= 2,
+           "its sales three hands' days: a hire for two at most, and no more open (" + std::to_string(three.first) + " over, a hire of " +
+               std::to_string(three.second) + ")");
+    expect(s.conserved(), "money stays conserved");
+    Society::setWorkByHours(false);
+}
+
+// The pace's brake reads the land's hours as they are credited (doc 64, Phase 13, round 6: the round-5 review): two
+// fishers' hours count, a beekeeper's don't (an apiary is idle all winter: its season's end would read as the land
+// falling); a fisher leaving the roster mid-day doesn't take its life's hours out of the day's reading, nor leave a gap;
+// a restart reads on (the count is saved), and an older save, not yet counting, counts from its next pass.
+void theBrakeReadsTheLandsHours()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                        person("fisher2", "fishes the lake", {"lake", 6.5, 4.5}, "civilian"),
+                        person("bees", "keeps bees at the meadow", {"meadow", 4.5, 4.5}, "civilian"),
+                        person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    roster.economy.treasury = 100000;
+    Society s(Roster::None);
+    s.configure(roster);
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto worked = [&](const std::string& who) {
+        const auto found = s.workBy().find(who);
+        return found == s.workBy().end() ? 0. : found->second.first;
+    };
+    double day = 1 + 10. / 24;
+    work(s, 2, day);
+    expect(s.state().memory.landToday == 0 && s.state().memory.paceLand.empty(), "counting from the first day's pass, with no reading yet");
+    const double fisher = worked("fisher"), fisher2 = worked("fisher2"), bees = worked("bees");
+    work(s, 3600, day);
+    const double today = worked("fisher") - fisher + worked("fisher2") - fisher2;
+    expect(today > 0 && worked("bees") > bees, "the fishers and the beekeeper work the morning");
+    expect(std::abs(s.state().memory.landToday - today) < 1e-9,
+           "the fishers' hours count as credited, the beekeeper's not (" + std::to_string(s.state().memory.landToday) + " of " +
+               std::to_string(today) + ")");
+    // Saved, and read back; a bad count, or none (an older save), not counting till the next pass.
+    const auto saved = s.state();
+    expect(wire::readSociety(wire::society(saved)).memory.landToday == saved.memory.landToday, "the count is saved");
+    auto bad = saved;
+    bad.memory.landToday = 2 * Society::PaceLandMost;
+    expect(wire::readSociety(wire::society(bad)).memory.landToday == -1, "a count out of bounds is dropped");
+    auto old = wire::society(saved);
+    expect(old.find("memory") && old.find("memory")->erase("landToday"), "(A save from before it)");
+    expect(wire::readSociety(old).memory.landToday == -1, "an older save isn't counting yet");
+    // A restart, then a fisher leaves the roster: the day's reading at the next pass is every hour credited today.
+    expect(s.restore(saved), "a restart mid-morning");
+    work(s, 600, day);
+    const double more = s.state().memory.landToday;
+    {
+        auto without = roster;
+        without.residents.erase(without.residents.begin() + 1);
+        Society candidate(Roster::None);
+        candidate.configure(without);
+        expect(s.adoptResident(candidate, "fisher2") && !s.spec("fisher2"), "the second fisher leaves");
+    }
+    day = 2 + 10. / 24;
+    work(s, 2, day);
+    const auto& lands = s.state().memory.paceLand;
+    expect(lands.size() == 1 && lands.back().first == 2 && std::abs(lands.back().second - more) < 1e-9,
+           "the next pass reads every hour credited since the last (" + std::to_string(lands.empty() ? -1 : lands.back().second) + " of " +
+               std::to_string(more) + ")");
+    Society::setWorkByHours(false);
+}
+
+// Who pays the capital's posts of last resort (doc 64, Phase 13, round 6: the user's decision, real payers for the posts
+// the town paid because nobody else did), with work by the hours: a household's live-in servants by its richest not in
+// service itself; a great house's seat staff (the chambers above, the kitchen below, its head's own room) and its
+// grounds' (its gardens, its gate: the house its home names, else its town's richest) by the house's own purse; the
+// docks' timber haulers by the town's joiners; work for hire by nobody (the household keeps them; they take hires as
+// the jobless do); the town's own posts by the town. At the seconds' pace, as it was.
+void theCapitalsPostsOfLastResort()
+{
+    const auto at = [](ResidentSpec r, const std::string& home, double x = 3.5) {
+        r.home = {home, x, 2.5};
+        r.evening = r.home;
+        return r;
+    };
+    auto lady = at(person("lady", "keeping Ash Hall", {"ash_hall", 2.5, 2.5}, "civilian"), "ash_hall_up");
+    auto lord = at(person("lord", "ruling House Fell", {"fellhall", 2.5, 2.5}, "civilian"), "fellhall_up");
+    lady.paid = lord.paid = false;
+    auto master = at(person("vance", "clerking at the Counting House", {"counting_house", 2.5, 2.5}, "civilian"), "vance_house", 2.5);
+    auto rich = at(person("servant1", "in service to the Vances", {"vance_house", 4.5, 4.5}, "civilian"), "vance_house", 4.5);
+    auto poor = at(person("servant2", "in service to the Vances", {"vance_house", 5.5, 4.5}, "civilian"), "vance_house", 5.5);
+    rich.purse = 5000;                              // (Richer than the master: in service all the same.)
+    // (Unpaid posts: one at its own home, a great house's son at the House's counting house.)
+    auto homebody = at(person("homebody", "at home in the Heights", {"vance_house", 6.5, 2.5}, "civilian"), "vance_house_up");
+    auto son = at(person("son", "counting the House's money", {"counting_house", 4.5, 2.5}, "civilian"), "ash_hall_up", 8.5);
+    auto overseer = at(person("overseer", "overseeing the joinery", {"joinery", 6.5, 2.5}, "civilian"), "ash_hall_up", 9.5);
+    homebody.paid = son.paid = overseer.paid = false;
+    AuthoredRoster roster;
+    roster.residents = {lady, lord, master, rich, poor, homebody, son, overseer,
+                        at(person("chambers", "keeping the chambers", {"ash_hall_up", 6.5, 4.5}, "civilian"), "ash_hall_up", 6.5),
+                        at(person("cook", "cooking for the House", {"ash_hall_down", 2.5, 4.5}, "civilian"), "ash_hall_up", 7.5),
+                        person("steward", "counting the House's money", {"ash_hall", 4.5, 4.5}, "civilian"),
+                        at(person("gardener", "tending the gardens", {"grounds", 2.5, 2.5}, "civilian"), "the_fell_gatehouse"),
+                        at(person("gate", "keeping the gate", {"grounds", 4.5, 2.5}, "civilian"), "ash_cottages"),
+                        at(person("hedger", "tending the gardens", {"grounds", 6.5, 2.5}, "civilian"), "drayman_house"),
+                        person("carrier", "carries loads for hire", {"street", 2.5, 2.5}, "civilian"),
+                        person("porter", "carries loads for hire", {"joinery", 4.5, 4.5}, "civilian"),
+                        person("kitchen", "cooking for the household", {"vance_house_down", 2.5, 2.5}, "civilian"),
+                        person("hauler", "hauling timber at the docks", {"docks", 2.5, 2.5}, "civilian"),
+                        person("joiner", "carpenter at Cedar Row Joiners", {"joinery", 2.5, 2.5}),
+                        person("clerk", "clerking at the City Office", {"city_office", 2.5, 2.5}, "civilian")};
+    roster.economy.treasury = 100000;
+    for (const bool hours : {false, true})
+    {
+        Society::setWorkByHours(hours);
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay town;
+        town.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(town);
+        double day = 1 + 8. / 24;                   // (The day's turn: the houses founded.)
+        work(s, 2, day);
+        expect(s.account("house:ash_hall") && s.account("house:house_fell"), "two great houses, founded");
+        expect(s.shift("house:ash_hall", "house:house_fell", "", 0, 1000, "test: Fell the richer"), "Fell the richer");
+        const auto payer = [&](const std::string& who) { return s.payerOf(who, *s.jobOf(who), 30); };
+        const auto is = [&](const std::string& who, const std::string& account, const std::string& whom) {
+            const auto p = payer(who);
+            expect(p.account == account && p.whom == whom, std::string(hours ? "by the hours: " : "at the seconds' pace: ") + who +
+                                                               " is paid by " + account + " as " + whom + " (" + p.account + ", " + p.whom + ")");
+        };
+        is("clerk", "treasury", "the town");
+        if (!hours)
+        {
+            for (const char* who : {"servant1", "servant2", "chambers", "cook", "gardener", "gate", "hedger", "carrier", "hauler", "kitchen"})
+                is(who, "treasury", "the town");
+            is("steward", "lady", "the house");
+            is("porter", s.tillOf("joiner"), "the shop");
+            is("homebody", "servant1", "the house");     // (Its household's richest, a servant.)
+            is("son", "treasury", "the town");
+            is("overseer", s.tillOf("joiner"), "the shop");
+            continue;
+        }
+        is("servant1", "vance", "the house");
+        is("servant2", "vance", "the house");
+        is("kitchen", "vance", "the house");             // (The kitchen below a household's home.)
+        is("homebody", "", "lives on the household");    // (At home: its household's own life.)
+        is("son", "house:ash_hall", "the house");
+        is("overseer", s.tillOf("joiner"), "the shop");   // (A house's son at a shop: the shop's, as before.)
+        is("chambers", "house:ash_hall", "the house");
+        is("cook", "house:ash_hall", "the house");
+        is("steward", "house:ash_hall", "the house");
+        is("gardener", "house:house_fell", "the house");
+        is("gate", "house:ash_hall", "the house");
+        is("hedger", "house:house_fell", "the house");
+        is("carrier", "", "lives on the household");
+        is("porter", s.tillOf("joiner"), "the shop");    // (Work for hire where a shop is: the shop's, as before.)
+        is("hauler", s.tillOf("joiner"), "the shop");
+        expect(Society::forHire("carries loads for hire") && Society::forHire("runs messages about the city") &&
+                   !Society::forHire("clerking at the City Office"),
+               "work for hire takes hires as the jobless do");
+        // Its master moved out: the household above pays; and with none but its servants, the town, as before.
+        auto state = s.state();
+        state.residents.at("vance").homeCell = "elsewhere";
+        expect(s.restore(state), "the master moves out");
+        work(s, 1, day);
+        is("servant2", "homebody", "the house");
+        state.residents.at("homebody").homeCell = "elsewhere";
+        expect(s.restore(state), "and the rest of the family");
+        work(s, 1, day);
+        is("servant2", "treasury", "the town");
+    }
+    Society::setWorkByHours(false);
+}
+
 // A hire taken is no post open (doc 64, Phase 13, the review): a fishery whose sales want three hands' days has its
-// own and posts a hire for the rest; three idle wolves of its town take every slot of it, and nothing stands open.
-void aHireTakenIsNoPostOpen()
+// own and posts a hire for the rest; three idle wolves of its town take every slot of it, and nothing stands open. (And
+// three wolves who carry loads for hire, nobody's post to pay them since round 6: they take hires as the jobless do.)
+void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
 {
     Society::setWorkByHours(true);
     AuthoredRoster roster;
     roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
     for (int i = 1; i <= 3; ++i)
-        roster.residents.push_back(person("idle" + std::to_string(i), "idling in the square", {"square", 2.5, 2.5}, "civilian"));
+        roster.residents.push_back(person("idle" + std::to_string(i), takers, {"square", 2.5, 2.5}, "civilian"));
     roster.economy.treasury = 100000;
     Society s(Roster::None);
     s.configure(roster);
@@ -1565,21 +1785,24 @@ void aHireTakenIsNoPostOpen()
     int taken = -1, slots = 0, open = -1, wanted = 0;
     for (std::int64_t d = 1; d <= 28 && open < 0; ++d)
     {
-        // (A hire running into today with every slot taken yesterday, before the day's pass counts its posts.)
-        int full = -1;
+        // (Its hires running into today with every slot taken yesterday, two at least, before the day's pass counts its
+        // posts. Since round 6 they may be two hires of one: its hire is sized by its sales as they are.)
+        int full = 0, held = 0;
         for (const auto& j : s.oddJobs())
-            if (j.payer == till && j.until >= d && j.slots >= 2 && int(j.stage.size()) == j.slots)
-                full = j.slots;
+            if (j.payer == till && j.until >= d)
+                full += j.slots, held += int(j.stage.size());
+        if (full < 2 || held < full)
+            full = -1;
         // (The day's pass, then its working hours, the hands at the hire's spot when they hold it.)
         for (double t = 10; t < 12; t += 1. / 60)
         {
             s.tick(1, double(d) + t / 24, 0, bodies);
             if (t == 10 && full > 0 && d >= 8)
             {
-                open = s.vacanciesOf(till), slots = full, wanted = s.handsWanted(till, false);
+                open = s.vacanciesOf(till), slots = full, wanted = s.handsWanted(till, false), taken = 0;
                 for (const auto& j : s.oddJobs())
                     if (j.payer == till && j.until >= d)
-                        taken = std::max(taken, int(j.stage.size()));
+                        taken += int(j.stage.size());
             }
             for (const auto& j : s.oddJobs())
                 if (j.payer == till && j.until >= d)
@@ -1597,7 +1820,7 @@ void aHireTakenIsNoPostOpen()
         expect(s.restore(st), "eaten");
     }
     expect(wanted == 3 && slots >= 2 && taken == slots,
-           "its sales three hands' days, its hire's slots all taken: " + std::to_string(taken) + " of " + std::to_string(slots) + " (" +
+           "its sales three hands' days, its hires' slots all taken by those " + takers + ": " + std::to_string(taken) + " of " + std::to_string(slots) + " (" +
                std::to_string(wanted) + " wanted)");
     expect(open == 0, "and no post stands open: " + std::to_string(open));
     expect(s.conserved(), "money stays conserved");
@@ -3237,7 +3460,11 @@ int main()
         aShortBusinessBidsUp();
         theLandsHiresForAnyone();
         aProducersPostsBySales();
+        aProducersHireBySales();
+        theBrakeReadsTheLandsHours();
         aHireTakenIsNoPostOpen();
+        aHireTakenIsNoPostOpen("carries loads for hire");
+        theCapitalsPostsOfLastResort();
         theCordGoesRoundNoMore();
         aFullStoreLosesItsHours();
         aTownsTradeBringsInMore();

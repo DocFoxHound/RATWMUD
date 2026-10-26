@@ -368,7 +368,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     indexEmployers();
     (void)spec(std::string());
     (void)houses();
-    (void)richestAt(std::string(), std::string());
+    // (Each household's richest: at the day's turn, or here, at a day's first decision with none yet, a restart's or a
+    // founding's. Never at whoever asks first: doc 64, Phase 13, round 6.)
+    if (richestDay_ != state_.budgetDay)
+        rollRichest();
     rollOutwork();
     indexOddJobs();
     refreshRecords();                               // (Each resident by number: see ResidentRecord.)
@@ -932,7 +935,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                      bool claims = false;
                      const auto* held =
                          oddJobFor(id, *job, (job == &stand && !keepsHouse) || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title) ||
-                                                 (workByHours() && job->paid && idleHand(id, payerOf(id, *job, body.age))),
+                                                 (workByHours() && job->paid && [&] {
+                                                     // (Work for hire that nobody pays takes hires as the jobless do:
+                                                     // doc 64, Phase 13, round 6.)
+                                                     const auto payer = payerOf(id, *job, body.age);
+                                                     return (payer.account.empty() && forHire(job->title)) || idleHand(id, payer);
+                                                 }()),
                                    body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
                                    // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10

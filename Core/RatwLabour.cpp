@@ -242,6 +242,11 @@ int Society::handsWanted(const std::string& till, bool bare) const
     return std::max(1, int(std::ceil(hours / PaidSpells - 1e-9)));
 }
 
+bool Society::brakesOn(const items::Producer& p)
+{
+    return !fieldWork(p.id) && (p.seasons.empty() || !p.offSeason.empty());
+}
+
 bool Society::idleHand(const std::string& resident, const Payer& payer) const
 {
     // A hand whose business has more work in hand than it can use (its shelves full, its materials short): free to take
@@ -554,24 +559,22 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                 mean += r->second;
             mean /= double(week.size() - 1);
         }
-        // The land's hours since the last pass (its producers' but the seasonal fields', whose work is the calendar's; their
-        // hands' are credited to them), and the brake: the last seven passes' against the seven before, by their days.
-        double land = 0;
-        for (const auto& r : authored_.residents)
-            if (const auto* p = items::producerFor(r.workLabel); p && !fieldWork(p->id))
-                if (const auto by = workBy_.find(r.id); by != workBy_.end())
-                    land += by->second.first;
+        // The land's hours since the last pass (its producers' but the seasonal ones', whose work is the calendar's; their
+        // hands' are credited to them), counted as they are credited (memory.landToday: saved, so a restart reads on, and a
+        // roster's change doesn't take a producer's whole life's hours out of the day's: round 6, the round-5 review), and
+        // the brake: the last seven passes' against the seven before, by their days. (Not counting yet, a new world or an
+        // older save: from now, and no reading today.)
         auto& lands = memory.paceLand;
         lands.erase(std::remove_if(lands.begin(), lands.end(), [&](const auto& r) { return r.first > day || r.first <= day - PaceLandDays; }),
                     lands.end());
-        if (landWorkSeen_ >= 0 && land >= landWorkSeen_)
+        if (memory.landToday >= 0)
         {
             if (!lands.empty() && lands.back().first == day)
-                lands.back().second += land - landWorkSeen_;
+                lands.back().second += memory.landToday;
             else
-                lands.push_back({day, land - landWorkSeen_});
+                lands.push_back({day, memory.landToday});
         }
-        landWorkSeen_ = land;
+        memory.landToday = 0;
         bool landFalls = false;
         if (lands.size() == std::size_t(PaceLandDays) && lands.front().first == day - (PaceLandDays - 1) && lands.back().first == day)
         {
@@ -649,12 +652,18 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                     planField(held != state_.careers.positions.end() && !held->second.holder.empty() ? held->second.holder : p->founder, till,
                               *producer, double(day), false);
                 }
-    // Each business's hands wanted, once a day: its review's, and the going rate's weights.
+    // Each business's hands wanted, once a day: its review's, and the going rate's weights. (A producer's by its sales as
+    // they are, without the half again of a shelf near bare: its goods go on to the shops, and its shelf always is, so it
+    // stood half again short for good. Its hire is sized by them too, so a slot nobody takes is a hand its sales want:
+    // doc 64, Phase 13, round 6, the round-5 review. Before, only its posts open past its hire were.)
     std::unordered_map<std::string, int> wanted;
     if (workByHours())
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0)
-                wanted[key] = handsWanted(key);
+            {
+                const auto* p = position(key.substr(5));
+                wanted[key] = handsWanted(key, !(p && items::producerFor(p->title)));
+            }
     const auto wantedOf = [&](const std::string& key) {
         const auto found = wanted.find(key);
         return found != wanted.end() ? found->second : handsWanted(key);
@@ -663,9 +672,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // the hands it wants less those it has, two and twice its hands at most; doc 64, Phase 13), though it couldn't post
     // a hire for them (one at a time, eight at most, its till short): short all the same, its weekly review bids its
     // wage up. Before, only a hire's slots nobody took counted, and the land's hands, short by a fifth, moved no wage.
-    // (Not one with no work for more hands. A producer's by its sales as they are, without the half again of a shelf near
-    // bare: its goods go on to the shops, and its shelf always is, so it stood half again short for good, and bid its wage
-    // up for hands its sales never wanted. With work by the hours: the seconds' pace as it was.)
+    // (Not one with no work for more hands. A producer's by its sales as they are, above. With work by the hours: the
+    // seconds' pace as it was.)
     if (workByHours())
     {
         std::map<std::string, int> onHires;
@@ -675,8 +683,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
             {
-                const auto* p = position(key.substr(5));
-                const int want = p && items::producerFor(p->title) ? handsWanted(key, false) : wantedOf(key);
+                const int want = wantedOf(key);
                 const int missing = std::min(want, 2 * n + 2) - n - onHires[key];
                 if (auto& open = vacancies_[key]; missing > open)
                 {

@@ -1408,11 +1408,21 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 // only from what is above that, a month's share a day. A poor town's buyers go short (its buildings wear,
                 // its watch eats plainly) rather than its wages going unpaid.
                 const auto reserve = std::int64_t(PayrollDays) * pennies(2 * PaidSpells / 12., community) * (town.guards + town.residents / 10);
-                const auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
+                auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
+                // (The capital's, with work by the hours, inside what's left of its week's allowance for its buyers: doc
+                // 64, Phase 13, round 6. Before its first week's, as before.)
+                const bool budgeted = workByHours() && treasuryId == "treasury";
+                const auto allowance = budgeted ? state_.memory.fundsLeft.find(treasuryId) : state_.memory.fundsLeft.end();
+                if (allowance != state_.memory.fundsLeft.end())
+                    spare = std::min(spare, std::int64_t(allowance->second));
                 if (const auto grant = std::min<std::int64_t>(std::int64_t(std::ceil(cost * days * 2 * items::contractPremium())) - account(acct)->cash,
                                                               spare);
-                    grant > 0)
-                    shift(treasuryId, acct, "", 0, grant, "town funds");
+                    grant > 0 && shift(treasuryId, acct, "", 0, grant, "town funds") && budgeted)
+                {
+                    if (allowance != state_.memory.fundsLeft.end())
+                        allowance->second = std::max(0., allowance->second - double(grant));
+                    state_.memory.fundsWeek[treasuryId] += double(grant);
+                }
             }
             for (const auto& [item, rate] : in.basket)
             {

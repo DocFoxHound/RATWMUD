@@ -217,6 +217,8 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     const auto* job = jobOf(id);
     const double improved = 1 - ImprovementPace * (job ? improvement(job->id) : 0);
     creditWork(id, hours / improved);
+    if (auto& land = state_.memory.landToday; land >= 0 && workByHours() && brakesOn(*producer))
+        land += hours / improved;                   // (The pace's brake's reading: RatwLabour.cpp.)
     auto& banked = workBanked_[id];
     // Its tools worn by the hours its work takes, not those it stands idle (doc 64, Phase 13: a farmer between sowing and
     // the harvest bought sickles for nothing): what goes out of its work in hand, as real hours (an improved farm's hour

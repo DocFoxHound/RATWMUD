@@ -344,6 +344,9 @@ struct EconomyMemory
     // The land's hours worked (its producers' but the seasonal fields', their hands' with their own) at the day passes of
     // the last fortnight, each with its day: the pace's brake (Society::PaceLandSlack; doc 64, Phase 13).
     std::vector<std::pair<std::int64_t, double>> paceLand;
+    // The land's hours credited since the last day pass, as they are credited (Society::produce, a hand's hire): the
+    // brake's next reading. -1 until the first pass counts them (a new world, a save from before round 6 of Phase 13).
+    double landToday = -1;
     std::map<std::string, FieldYear> fields;         // A farm's, an orchard's or a vineyard's till -> its year (Phase 3b).
     std::map<std::string, std::vector<Belonging>> belongings;   // A grown wolf -> what it owns (Phase 9).
     // Households' pieces founded (doc 64, Phase 13: once, in a new world's first days with work by the hours; never into a
@@ -360,6 +363,9 @@ struct EconomyMemory
     // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
     // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
     std::map<std::string, double> weekIncome, monthIncome, wantFund, helpBudget, reliefLeft, reliefWeek, wagesWeek;
+    // The capital's buyers' funds inside its week's budget (doc 64, Phase 13, round 6; with work by the hours): what is
+    // left of the week's allowance for them, and what they drew this week (Society::institutionsWeek, townBuyers).
+    std::map<std::string, double> fundsLeft, fundsWeek;
     std::int64_t revision = 0;
 };
 
@@ -1048,9 +1054,9 @@ class Society
     std::map<std::int64_t, double> paceHeld_;       // (holdPace: a test's.)
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
-    // The land's hours credited since the start, at the last day pass (the pace's brake: a day's are the difference).
-    // Not saved: after a restart, -1, and the first pass reads none.
-    double landWorkSeen_ = -1;
+    // The land's work that counts toward the pace's brake (doc 64, Phase 13): a producer's but a seasonal one's (a
+    // field's, whose work is the calendar's; an apiary's, idle all winter: round 6, the round-5 review).
+    static bool brakesOn(const items::Producer& p);
 
   public:
     // The realm's pace (doc 64, Phase 6): with work by the hours, a craft's or yield's hours go from the old pace to the
@@ -1367,6 +1373,9 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
+    // A resident's town as the society reckons it, where it works or else where it lives: a hire's town (OddJob::community)
+    // is its payer's so (econ_watch's hires.csv, doc 64, Phase 13, round 6).
+    std::string townOfResident(const std::string& id) const { return communityOfResident(id); }
     // Wages by kind of post (help, guard, labour, clergy, keeper, hand, odd job): a share of the town's going rate (doc 64,
     // Phase 6), paid a PaidSpells-th a spell of work.
     double dayWage(const std::string& town, const std::string& kind) const;
@@ -1552,6 +1561,10 @@ class Society
     static bool goesToChurch(const std::string& resident, std::int64_t day);
     static bool clergy(const std::string& title);     // A priest's, a chapel keeper's, an acolyte's work.
     static bool houseHead(const std::string& title);  // The head of a great house: "ruling House Fell".
+    // Work for hire ("carries loads for hire", "washes linen for hire", "runs messages about the city"): with work by the
+    // hours, nobody's post to pay; the household keeps them, and they take hires as the jobless do (doc 64, Phase 13,
+    // round 6: the capital's posts of last resort).
+    static bool forHire(const std::string& title);
     static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
     // Starting money (the user, 2026-10-05; RatwFounding.cpp): every resident and every body that keeps a purse begins with
     // a reasonable one, made once when the world is founded (an older save: the first time it runs with this). Placeholders:
@@ -1620,6 +1633,14 @@ class Society
     void tendIncome();                                      // Daily, first: today's earnings into the week's and month's.
     void flushEarnings();                                   // (Those so far, without the month's daily decay.)
     void institutionsWeek(std::int64_t day);                // At the reckoning: each institution's week's budget, spent.
+    // A town's posts kept to `share` of its week's budget (doc 64, Phase 13, round 6; the model's staff_to): the watch's
+    // whatever, then its own (the city's clerks, its court, its lamplighters) in an order by lot that is the same week to
+    // week, as many as the rest pays a week, PostWeekDays of a post's wage (the watch's seven). Past that, a post's holder
+    // is let go and the post kept empty (memory.closed, as a business's help); within it again, a post it let go is open
+    // again, for succession to fill. Returns the week's cost of the posts kept.
+    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day);
+    static constexpr double TreasuryStaff = .5;     // The capital's posts' share of its week's budget (the model's watch).
+    static constexpr int PostWeekDays = 6;          // A post's working days a week (not Restday; the watch, every day).
     void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // `lodger`: one wolf of a barracks, a bunkhouse, quarters or lodgings, its own household by its own purse (`home` its
     // ID): all its spare to its wants, no help about the home or servants for a bunk.
@@ -1739,6 +1760,7 @@ class Society
     static constexpr std::size_t WantSample = 4;
     mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).
     mutable bool housesKnown_ = false;
+    mutable bool housesTold_ = false;                       // (Built with the world's towns: houses().)
     void foundHouses();
     // The house a business belongs to (doc 61): the one named in it, else the one whose trade it is, else none (its
     // keeper's own); houses with no trade (a world without houses.json) own industry, and half the shops, by lot.
@@ -1751,10 +1773,22 @@ class Society
     mutable std::int64_t outworkDay_ = -1;
     std::set<std::string> offered_;                        // Who has put something on the plate this Restday.            // Worker -> the day its employer first couldn't pay (not saved).
     mutable std::unordered_map<std::string, std::vector<std::string>> employers_;   // Work cell -> shops' and houses' positions.
-    mutable std::map<std::string, std::string> richest_;    // Home cell -> its household's richest (for the day).
-    mutable std::int64_t richestDay_ = -1;
-    const std::string* richestAt(const std::string& homeCell, const std::string& besides) const;
+    // A great house's seat, its rooms (its head's work room, and that room's floors above and below) -> its head's
+    // position (doc 64, Phase 13, round 6: the chambers above, the kitchen below; with work by the hours).
+    mutable std::unordered_map<std::string, std::string> seats_;
+    // Each home cell's household's richest, and its richest not in service (one whose own paid post is worked at home:
+    // a live-in servant), for the day. Filled at fixed points of the society's own day (rollRichest: the day's turn,
+    // before the labour market, and a day's first decision with none yet), never by whoever asks first: a talk scene or
+    // a harness asking payerOf leaves the run as it was (doc 64, Phase 13, round 6). Asked before they're known, they're
+    // worked out for that asking alone.
+    std::map<std::string, std::string> richest_, richestFree_;
+    std::int64_t richestDay_ = -1;
+    void rollRichest();
+    std::string richestAt(const std::string& homeCell, const std::string& besides, bool free = false) const;
+    std::string richestIn(const std::string& homeCell, bool free) const;   // (Worked out afresh: richestAt's fallback.)
+    bool inService(const std::string& resident, const std::string& homeCell) const;
     void indexEmployers() const;
+    const House* seatOf(const std::string& cell) const;   // The house whose seat a room is (seats_), or none.
     std::vector<Reckoning> reckonings_;                    // Since the world last took them.
     std::vector<Procurement> procurements_;                // Asked for since the world last took them.
     std::map<std::string, double> owed_;                   // "account|item" -> a buyer's use not yet taken from stock.

@@ -1071,9 +1071,12 @@ Value economyMemory(const EconomyMemory& m)
         land.push(one);
     }
     o.add("paceLand", land);
+    if (m.landToday >= 0)
+        o.add("landToday", m.landToday);            // (The brake's next reading, as credited: round 6.)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, const std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
-             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
+             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
+             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}})
     {
         auto map = Value::object();
         for (const auto& [key, v] : *field)
@@ -1258,10 +1261,15 @@ EconomyMemory readEconomyMemory(const Value& o)
     };
     readings("paceCover", std::size_t(Society::PaceWeek), Society::PaceCoverCap, m.paceCover);
     readings("paceLand", std::size_t(Society::PaceLandDays), Society::PaceLandMost, m.paceLand);
-    // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold.)
+    if (const auto* today = o.find("landToday");
+        today && today->isNumber() && std::isfinite(today->asNumber()) && today->asNumber() >= 0 && today->asNumber() <= Society::PaceLandMost)
+        m.landToday = today->asNumber();            // (Saved before round 6, or out of bounds: not counting till the next pass.)
+    // (Saved before doc 64's Phase 7: none, and the first month's institutions budget from what they hold. The capital's
+    // buyers' funds, saved before round 6 of Phase 13: none, and its buyers are funded as before until its next week.)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
-             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek}})
+             {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
+             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}})
         for (const auto& [key, v] : o.object(name).fields())
             if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e12 && key.size() < 200)
                 (*field)[key] = v.asNumber();

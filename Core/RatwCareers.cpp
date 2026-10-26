@@ -282,8 +282,9 @@ void Society::buildPositions()
 {
     ++rosterRevision_;
     employers_.clear();
+    seats_.clear();
     houses_.clear();
-    housesKnown_ = false;
+    housesKnown_ = housesTold_ = false;
     positions_.clear();
     positionIndex_.clear();
     for (const auto& r : authored_.residents)

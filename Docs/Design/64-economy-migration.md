@@ -3859,7 +3859,12 @@ sales 0.27, lodging 0.31, the range 0.28. By town (slot-days, taken, hours credi
   takers rose (379 to 644) and those drawn off their posts fell (620 to 419): the review's "city hands displace local
   ones", within a percent of the same hours.
 - **Hands from away work their hires more, not less.** Of the slot-days taken by hands from another town, 62% to 69%
-  were worked by the day's end, against 55% to 58% of the rest. (Why little more than half of the slot-days taken are
+  were worked by the day's end, against 55% to 58% of the rest. (Corrected by the review, round 6: the rest's own are
+  51% to 55%, the merge 1,424 of 2,654, posts by sales 1,629 of 2,959, lodging 1,116 of 2,045, the range 1,298 of
+  2,525; 55% to 58% is everyone's. And the two aren't the same takers: those from away are mostly the jobless and the
+  idle, the locals children from noon and hands drawn off their posts as well, so the gap may be who takes them, not
+  the walk. `hires.csv` now finds a taker's town as the hire's own is found, at the sampling, not from where it began.)
+  (Why little more than half of the slot-days taken are
   worked by 23:00 anywhere, the farms' too: hands who take a hire late in the day, children from noon, and those whose
   own post has work and who hold the hire meanwhile. Not mended here: the next labour-market measure.)
 - **Lodging and a walking range, tried and not kept** (switches in a trial build, gone). Lodging: every producer of the
@@ -3905,7 +3910,10 @@ conserved every day). Round 4's is `e_omgn120` (its four changes on `3cec19a`); 
 `83714a0`; then posts by sales, and with the brake: the branch as committed. (The last two were run with a harness that
 also asked every resident's payer each day, since taken out: it fills `payerOf`'s day's cache of a household's
 richest at another moment, and the runs part from the same code's run without it on day 2, as a run with another
-seed would. The smoke below is the committed harness.)
+seed would. The smoke below is the committed harness.) (Corrected by the review, round 6: so the merge against posts
+by sales and the brake are single runs on two harnesses, and their differences of the size two seeds would give; the
+one the code makes is the brake's lower pace in the second month. The cache is mended in round 6: asking leaves a run
+as it was.)
 
 | day: Gini, poorer half, wage, pace | `m3` | round 4 | the merge | posts by sales | and the brake |
 |---|---|---|---|---|---|
@@ -3947,7 +3955,8 @@ seed would. The smoke below is the committed harness.)
 The owners' profit against the six kinds of wages, a day: days 15–29, the merge 0.25, posts by sales 0.26, the brake
 0.27 (`m3` 0.27); days 45–59, 0.19, 0.16, 0.16 (`m3` 0.23); days 105–119, 0.26, 0.26, 0.19 (round 4 0.29), the six
 wages 56.9k, 57.1k, 55.8k a day and the owners' profit 14.9k, 15.1k, 10.5k. Hungry: each run's day-46 dip, the merge
-16, posts by sales 41 with 9 starving, the brake 18 with none; nobody hungry on any other day. Bread 0.070, 0.070,
+16, posts by sales 41 with 9 starving, the brake 18 with none; nobody hungry on any other day (corrected, round 6: but
+one, in the merge's end record, day 120's last hours). Bread 0.070, 0.070,
 0.067 LD on day 120 (band 0.05–0.09); a bronze sword 2.26, 2.27, 2.25 LD, an iron one 4.4 to 4.5, a steel one 9.4 (the
 store's and the smiths' pennies over a wage a third up); no rapier sold (25). The going rate (the realm's) 68p on
 day 120 in all three, the wage (the realm's posts') 80.5p to 81.5p. The review's land (its 85 tills) over days
@@ -3969,6 +3978,9 @@ slot-days taken 80%, 83%, 84%.
   against 994k) and the towns more; but its farm tills are the lowest (182k against 208k) and its owners' profit in
   the last fortnight a third under (10.5k against 15.1k a day). Its day-46 dip had no starving where the run without
   it had 9. Single runs: the differences are of the size two seeds would give, but for the second month's pace.
+  (Round 6: and on two harnesses, above. Of all this only the second month's pace is the brake's for certain; the
+  Gini, the poorer half, the Houses, the farm tills, the profit and the dip's starving are not established either
+  way.)
 - **What still needs a year** (the review's condition for keeping a7500b4, not met here: no run past 120 days): the
   land's hours, its tills and the food through a winter and a harvest, with the hold gone and the brake in its place.
 
@@ -4002,7 +4014,13 @@ slot-days taken 80%, 83%, 84%.
   the chambers" at Mossgrave Court), 3 cooks of Grayrock Hall, 10 gardeners (in the Rainward Hills' west cell), 8
   carriers, 4 washers, 4 messengers, 3 timber haulers at the docks, 3 gate keepers, a lamplighter, and some 21 of the
   city's own (the City Office, the Counting House's clerks, the customs, the records, the court and the gaol, the
-  harbour, the Rain Hall, the school, the infirmary). What it would take:
+  harbour, the Rain Hall, the school, the infirmary). (Corrected, round 6, from the code and the export: 31 live in,
+  27 "in service to" one of 18 households and 4 keepers of the chambers, one at each House's seat; the 3 cooks are the
+  Houses of Greatly's, Grayrock's and Mossgrave's, in the kitchens below their seats; the 3 gate keepers are the Houses'
+  own, by their descriptions ("the gatekeeper of House Fell"), not the city's; the city's own are 18; and besides the
+  85 the capital paid 9 unpaid posts, which draw a wage too (doc 42): 6 at their lessons at home (5 of the Heights'
+  households, one of Grayrock Hall) and 3 of the Houses' families at the Houses' business, the Lord of Greatly at the
+  counting house among them. Round 6's section lists every one and its payer now.) What it would take:
   1. **Live-in servants** (27): the household-servant rule skips a servant whose home is the room it works in
      (`own->second.homeCell != job.work.cell`), so every live-in servant falls through to the town. Without that test
      `richestAt` picks the household's richest, which can be a fellow servant: it needs the richest who isn't in service
@@ -4059,7 +4077,9 @@ Houses 1,225k (1,238k), the capital 207k (205k), the farm tills 304k (328k); the
 1. **The brake in the hold's place?** Recommended: keep it (`99dcd27`). It is loose (24 of 107 days), it
    held the pace back in the second month while the land's hours fell, and its day-46 dip starved nobody; but it does
    not mend the trajectory, and its farm tills drained the most. Dropping it leaves the food as the pace's only check,
-   as round 4 left it. A year's run is still the test of either.
+   as round 4 left it. A year's run is still the test of either. (Corrected by the review, round 6: the case for it
+   rests on the second month's pace alone; the dip's starving and the day-120 Gini are single runs on two harnesses,
+   not established. Two or three runs a variant on one harness, or the year, before keeping either.)
 2. **The Houses' estate crews** (round 4's decision 2): what it would take is above. Recommended as before: the next
    balancing step, measured over a year; it is the one lever here aimed at the households' share, which every 120-day
    run shows falling.
@@ -4376,3 +4396,295 @@ fixture had its shed; runner and results in the round's report):
     feeds). Recommendation: keep it until 18 is mended, then buy the cheapest food that keeps two days.
 22. **Walking by cell and part** (round 5's 4, with a second case: Pip to work). Recommendation: the search across
     cells and their parts, as its own piece of work.
+
+### Phase 13: real payers, and the capital's week (the user, 2026-10-26)
+
+The user's decisions of 2026-10-26, this round's: (2) the posts the capital paid because nobody else would get real
+payers (households their live-in servants, the Houses their gardeners, keepers and cooks), and what it still pays,
+with its buyers' funds, kept within its week's budget, letting posts go if it must. And the round-5 wage-bid review's
+labour fixes. Branch `p13-r6-payers` on `4a08125`: `2cb3276` (asking who pays leaves the run as it was), `2bc3c81` (real
+payers), `8b777af` (the capital's week, unpaid posts, the review's labour fixes). With work by the hours only, but the
+first, a fix at both paces that changes no unasked run.
+
+**Asking who pays moved the run** (the review's major, pre-existing). Two caches were filled by whoever asked first:
+
+- `payerOf`'s household richest (`richestAt`) for the day. The society's own first asking is fixed (the day's turn,
+  in the labour market; else the day's first decision), but a talk scene (`GameTalk`'s `paidBy`) or a harness asking
+  before it (after a restart, or a run's first day) kept its moment's purses for the day.
+- The great houses (`houses()`), with their towns: asked before the world had told the society its towns (the day's
+  `communityOf`, set at the first tick), a house's town was its stores' guess, kept for good. (Found this round: with
+  the first fixed, a 5-day run with work by the hours, asked before its first tick, still parted.)
+
+Measured with `econ_watch --ask-payers` (new: every resident's payer asked before the first tick and every game hour,
+and `payers.csv`), 5 days of DEV's export at `4a08125`: without `--hours` d034a6316a8d0cb unasked, 5d6bc19c3322e93b
+asked; with it 3f23224e73efa000 and a7820b57427871ac; parting on day 1 (`flows.csv`'s day-2 lines). Now the day's
+richest is filled at those fixed points only (`Society::rollRichest`: before the labour market at the day's turn, and
+at a day's first decision with none yet; `reset` forgets it, and with `2bc3c81` `restore` too); asked before then, it is
+worked out for that asking alone, never kept. The houses are built again once the world gives its towns. After: the
+same four runs give d034a6316a8d0cb, d034a6316a8d0cb, 3f23224e73efa000, 3f23224e73efa000: an unasked run is exactly as
+it was at both paces, and asking changes nothing. So round 5's `b_brake` and `b_nobrake` (a harness that asked) are
+runs of their code as another seed's would be (corrected in round 5's section).
+
+**Who pays the capital's posts now.** Re-derived from the code and DEV's export (`payers.csv`, day 3; the export's
+descriptions): the capital paid 85 paid civilians as "the town" and 9 unpaid posts (which draw a wage, doc 42, Phase 3),
+besides its watch. Round 5's counts were partly wrong (corrected there). Every one, and its payer with work by the
+hours:
+
+| post | n | who (resident ids, "rm_" off) | paid by now |
+|---|---|---|---|
+| at her lessons in the Hall (unpaid) | 1 | ingrid_grayrock_ | nobody (lives on the household) |
+| at lessons (unpaid) | 5 | gerrit_ashby, hanne_thornbury, maren_ravensworth, tage_pemberton, thyra_calloway | nobody (lives on the household) |
+| carries loads for hire | 8 | dagfinn_thornham, dunstan_plankham, frida_netherby, ivo_wainwright, kjell_coalham, ottilie_dripdale, sigrun_mudworth, theodora_pitchwick | nobody (lives on the household) |
+| cooking for the House | 1 | corra_ropewell | house:grayrock_hall |
+| cooking for the House | 1 | frederick_foghand | house:greatly_house |
+| cooking for the House | 1 | lotte_greyley | house:mossgrave_court |
+| counting the House's money (unpaid) | 1 | ambrose_greatly | house:greatly_house |
+| hauling timber at the docks | 3 | agnes_wetley, percival_rustford, runa_nailton | the till of Pennock & Sons (joiners) |
+| in service to the Aldwychs | 2 | ilse_dripwell, knut_rainstack | its household (ada_aldwych) |
+| in service to the Ashbys | 1 | sigrun_salthand | its household (josephine_ashby) |
+| in service to the Beaumonts | 2 | godfrey_bilgewick, silas_rustley | its household (pim_beaumont) |
+| in service to the Calloways | 1 | yrsa_wetton | its household (thyra_calloway) |
+| in service to the Carlisles | 1 | ulf_pitchham | its household (orm_carlisle) |
+| in service to the Dorringtons | 2 | ambrose_wetwell, lavinia_slagridge | its household (kari_dorrington) |
+| in service to the Everards | 1 | thyra_plankstack | its household (berit_everard) |
+| in service to the Fairfaxs | 1 | ada_raindale | its household (ulf_fairfax) |
+| in service to the Granthams | 2 | erland_plankwell, oskar_wickmarsh | its household (egil_grantham) |
+| in service to the Harrowgates | 2 | emmerich_greyridge, hollis_slagwick | its household (oda_harrowgate) |
+| in service to the Hawthornes | 2 | runa_nailstack, septimus_plankdale | its household (jorunn_hawthorne) |
+| in service to the Lockwoods | 2 | imogen_coalstack, ulf_ashmarsh | its household (kari_lockwood) |
+| in service to the Pembertons | 1 | mogens_brinestack | its household (tage_pemberton) |
+| in service to the Ravensworths | 2 | lavinia_millridge, septimus_brinehand | its household (maren_ravensworth) |
+| in service to the Stanmores | 1 | wynn_pitchwell | its household (karin_stanmore) |
+| in service to the Thornburys | 2 | hollis_slagford, silas_brinemore | its household (hanne_thornbury) |
+| in service to the Vances | 1 | roald_wickstack | its household (eleanor_vance) |
+| in service to the Wexleys | 1 | ivar_millby | its household (lars_wexley) |
+| keeping the chambers | 1 | arne_wetworth | house:mossgrave_court |
+| keeping the chambers | 1 | edmund_saltham | house:greatly_house |
+| keeping the chambers | 1 | maren_tarworth__ | house:grayrock_hall |
+| keeping the chambers | 1 | wystan_tarstack | house:house_fell |
+| keeping the gate | 1 | frederick_nailgate | house:mossgrave_court |
+| keeping the gate | 1 | oskar_sootwick | house:grayrock_hall |
+| keeping the gate | 1 | philippa_fogwick | house:house_fell |
+| keeping the wharf's books (unpaid) | 1 | julian_greatly | house:greatly_house |
+| runs messages about the city | 4 | dunstan_sallow, ottilie_slagley, philippa_coldby, rika_gullwell | nobody (lives on the household) |
+| tending the gardens | 3 | agna_dripridge, disa_raincot, sybil_bilgeby | house:grayrock_hall |
+| tending the gardens | 4 | berit_coalworth, bertil_slagley, gudrun_rustwick, signe_ashstack | house:mossgrave_court |
+| tending the gardens | 3 | ivo_wickgate, oda_kelpworth, wynn_sootridge | house:house_fell |
+| travelling on House business (unpaid) | 1 | aldric_grayrock_ | house:grayrock_hall |
+| washes linen for hire | 4 | dagfinn_wainwright, delphine_brackwick, delphine_redfern, sigrun_mudmore | nobody (lives on the household) |
+| boiling rags | 1 | gorm_plankgate | the capital |
+| clerking at the City Office | 2 | edmund_sootcot, olaf_pitchmore | the capital |
+| clerking at the Counting House | 2 | ivar_pitchwick, rune_gullwell | the capital |
+| copying the rolls | 1 | eleanor_mudworth | the capital |
+| hearing cases | 1 | theodora_driphand | the capital |
+| issuing permits | 1 | gwen_cinderdale | the capital |
+| keeping order in court | 1 | erland_ashworth | the capital |
+| keeping the Rain Hall | 1 | gerrit_mudhand | the capital |
+| keeping the gaol | 1 | brand_mudridge | the capital |
+| keeping the harbour | 1 | dagny_rustcot | the capital |
+| keeping the records | 1 | soren_kelpcot | the capital |
+| lights the lamps at dusk | 1 | desmond_toft | the capital |
+| running the City Office | 1 | oskar_gullworth | the capital |
+| taking the tolls and rents | 1 | ilse_cindercot | the capital |
+| taxing the cargoes | 1 | yrsa_tarwick | the capital |
+| teaching letters | 1 | imogen_ashby | the capital |
+| weighing bales | 1 | jasper_bilgeford | the capital |
+
+Besides the 94, with the same rules: 13 of the Houses' seat staff at their heads' own rooms, paid from the head's purse
+before, are paid from the House's (8 "serving in the hall", 4 stewards, Fell's cook); and 45 unpaid posts worked at
+their holders' own homes ("at home in the Heights", "at leisure", "between voyages"), which their household's richest
+paid, a fellow servant as often as not, no longer draw a wage. 30 more "for hire" whose work is at a shop's place stay
+the shop's, as before.
+
+The rules (`Society::payerOf`, `Core/RatwWages.cpp`):
+
+- **Live-in servants:** a household's servant is paid by the household's richest not in service itself (whose own paid
+  post isn't worked at home), live-in or not; `richestAt` sees a house's room below ("_down", a kitchen) as its rooms
+  above. A household with none but its servants at home: the town, as before. One that can't pay pays short, and its
+  servant leaves after a week under 40%, as from any post.
+- **A House's seat:** its head's work room and the floors above and below it (`seats_`); every post there but the
+  head's is paid from the House's own purse, as its retainers are.
+- **A House's grounds** ("tending the gardens", "keeping the gate"): the House whose family's name is a word of the
+  holder's home ("the_fell_gatehouse", "grayrock_cottages"), else its town's richest House (the Greatly gardener's home,
+  "drayman_house", names none: Mossgrave, the richest, pays it).
+- **The docks' timber haulers:** a trade's hands ("hauling timber": the town's sawmill or joiners, else its richest
+  House), as the forge's and the saws' are.
+- **Work for hire** (titles "for hire", "runs messages") that no shop or household pays: nobody's post; they live on
+  the household and take hires as the jobless do (`RatwResidents.cpp`). Their pay is the hires', not a wage.
+- **Unpaid posts:** one worked at its holder's own home is the household's own life, no wage; one of a House's family
+  away from its seat and any shop, the House's.
+- **The city's own** (18 and the lamplighter) stay the capital's. (The Counting House's two clerks work at the Greatly
+  counting house, where the Lord of Greatly counts the House's money: arguably the House's. For the user, below.)
+
+**The capital's week** (the model's `treasury_week`; `Society::institutionsWeek`, `keepPostsTo`): its week's budget as
+before (`k` 2, `a2` 0.4, its relief set aside first), then
+
+- **its posts, to half of it** (the model's watch's share): the watch first, kept whatever (the watch keeps its posts),
+  then its own in an order by lot that is the same week to week, a week of each at its wage (six days, the watch
+  seven), as many as fit. Past that a post's holder is let go ("laid off") and the post kept empty (`memory.closed`, as a
+  business's help); a post it let go comes back ("taken on again") when the budget has room, for succession to fill: the
+  model's `staff_to`, its posts let go and opened again as its budget falls and rises, in a fixed order where the
+  model's are by chance. Its posts are those whose wage it pays, an unpaid one too.
+- **its buyers' funds, inside what's left:** a week's allowance, what they drew last week and a third over, and a
+  twentieth of the rest besides (its first week: all the rest), drawn day by day by `townBuyers` as before but never past
+  what's left of it (`memory.fundsLeft`, `fundsWeek`). Before, its buyers were funded day by day from its purse above
+  its payroll reserve, whatever its budget.
+- **its works** with what remains, as a town's (most of it a crew, the rest materials).
+
+The towns' treasuries are as they were (they hold, round 5's runs).
+
+**The wage-bid review, mended:**
+
+- **A producer's own hire by its sales** (major): its hands wanted are `handsWanted(key, false)` for its hire as for its
+  posts open and the going rate's weights, so a slot nobody takes is a hand its sales want. (Corrected: round 5 fixed
+  only the posts open past its hire.)
+- **The brake's reading** (minor): the land's hours are counted as they are credited (`Society::produce`, a hand's
+  hire), into `memory.landToday`, saved; the day's turn reads it and starts again. A roster's change no longer takes a
+  producer's life's hours out of a day's reading, and a restart no longer turns the brake off for a fortnight (only a
+  save from before this, or a new world, starts counting at its next turn). A producer of the seasons with no work out
+  of them (the apiaries) is left out as the fields are: its season's end would read as the land falling.
+- **`aCityHandAtTheFishery`**: the hand's hours on their own, the tick it finishes its spells (8 at once, and the
+  brake's count with them); a mutation that drops that credit fails it.
+- **`hires.csv`**: a taker is "away" by the society's own rule for a hire's town (`Society::townOfResident`), asked at
+  the sampling, not from where it began; `econ_players_tests` checks the file's columns.
+- **The doc** (round 5's section): the rest's share worked is 51% to 55%, not 55% to 58%; one hungry in the merge's end
+  record; the brake's case rests on the second month's pace alone; the payers' counts.
+
+**120 days** (DEV's export, `--deterministic --hours --threads 3`, three at once beside other sessions' runs; every run
+conserved money every day). "This branch" is `8b777af`; "no capital" is it with the capital's payers and week switched
+off (trial switches in a build otherwise the same: its 5-day digest without them, 19d916fd323767da, is the branch's),
+so the labour fixes alone; "bare hire" is this branch with a producer's hire by its bare shelf again; "the merge" is
+round 5's `b_merge` (`83714a0` with round 4's branch, before round 5's fixes). One run each, one seed: a difference of
+a few hundredths in the Gini, a few hungry on day 46, is what another seed would give. The scripts and runs:
+`py/weeks.py`, `r6_full`, `r6_nocap`, `r6_barehire` in the round's scratch.
+
+| day: the capital's treasury | this branch | no capital | bare hire | the merge |
+|---|---|---|---|---|
+| 2 | 314k | 309k | 314k | 309k |
+| 14 | 283k | 238k | 283k | 240k |
+| 28 | 278k | 197k | 277k | 196k |
+| 42 | 287k | 165k | 285k | 166k |
+| 56 | 273k | 109k | 269k | 110k |
+| 70 | 263k | 68k | 263k | 70k |
+| 84 | 255k | 46k | 257k | 50k |
+| 98 | 249k | 26k | 252k | 26k |
+| 112 | 247k | 27k | 235k | 29k |
+| 120 | 247k | 24k | 227k | 25k |
+
+- **The capital holds.** Its week's budget (after relief) falls from 34.5k on day 7 to 29.1k by day 105 and turns up
+  (29.5k on day 119) as its cash comes down to its rule's level, about 2 months' income; its cash 312k, 303k, 283k,
+  271k, 262k, 265k at the reckonings of days 7, 28, 56, 84, 105, 119: 5% of the money, the model's treasury's share
+  from year 1. Its posts cost 13.3k to 13.7k a week (its own 19 and its watch), under the half of its
+  budget they may take (14.6k to 17.2k); its buyers' allowance 15.4k to 21.3k, all of it drawn. The capital a day,
+  days 105–119: in 5.7k, out 5.0k (the merge: in 6.3k, out 4.7k, from a dry purse); service wages 0.8k (the merge 3.2k
+  and 0.25k to unpaid posts), the watch 0.9k, its buyers' funds 3.0k (the merge none: they stopped under its payroll
+  reserve from about day 90). The city's upkeep (`condition`) 98.9 on day 120 against 54 in the merge and with no
+  capital.
+- **No post was let go in 120 days** on this branch: the half never ran short. With bare hire, 2 on day 119, when
+  its budget had fallen to 27.6k and its posts cost 13.9k against a share of 13.8k. So the layoffs are tested but
+  barely exercised; in a year, as the wage rises and the budget settles at its income, they would start.
+
+| day: Gini, poorer half, wage, pace | this branch | no capital | bare hire | the merge |
+|---|---|---|---|---|
+| 14 | 0.527, 0.156, 60.0p, 0.02 | 0.534, 0.151, 60.0p, 0.02 | 0.533, 0.152, 60.0p, 0.02 | 0.536, 0.148, 60.0p, 0.02 |
+| 28 | 0.526, 0.166, 60.0p, 0.21 | 0.537, 0.159, 60.0p, 0.27 | 0.536, 0.159, 60.0p, 0.18 | 0.545, 0.154, 60.0p, 0.25 |
+| 42 | 0.546, 0.151, 60.0p, 0.36 | 0.553, 0.145, 60.0p, 0.39 | 0.552, 0.149, 60.0p, 0.36 | 0.559, 0.143, 60.0p, 0.43 |
+| 56 | 0.564, 0.137, 60.0p, 0.30 | 0.558, 0.137, 60.0p, 0.30 | 0.563, 0.137, 60.0p, 0.36 | 0.568, 0.133, 61.8p, 0.32 |
+| 70 | 0.581, 0.123, 60.0p, 0.27 | 0.579, 0.119, 61.7p, 0.32 | 0.579, 0.124, 63.7p, 0.32 | 0.584, 0.120, 66.1p, 0.32 |
+| 84 | 0.580, 0.116, 63.1p, 0.30 | 0.586, 0.110, 65.5p, 0.38 | 0.580, 0.118, 66.7p, 0.32 | 0.576, 0.123, 70.4p, 0.39 |
+| 98 | 0.581, 0.108, 64.6p, 0.46 | 0.597, 0.101, 66.0p, 0.39 | 0.585, 0.109, 69.6p, 0.48 | 0.587, 0.110, 72.9p, 0.38 |
+| 112 | 0.582, 0.102, 65.9p, 0.48 | 0.612, 0.091, 67.4p, 0.46 | 0.600, 0.100, 73.2p, 0.59 | 0.602, 0.097, 78.2p, 0.52 |
+| 120 | 0.587, 0.099, 67.7p, 0.61 | 0.624, 0.086, 67.4p, 0.55 | 0.611, 0.092, 73.4p, 0.64 | 0.615, 0.092, 80.7p, 0.57 |
+
+| day 120 (day 60) | this branch | no capital | bare hire | the merge |
+|---|---|---|---|---|
+| great houses | 813k (1,064k) | 877k (1,137k) | 828k (1,102k) | 965k (1,181k) |
+| the towns; the church | 280k; 293k | 267k; 295k | 259k; 307k | 251k; 302k |
+| farm, shop, House tills | 184k, 835k, 361k | 212k, 846k, 412k | 208k, 798k, 379k | 227k, 840k, 398k |
+| owners (producers, merchants) | 949k | 1,029k | 907k | 981k |
+| paid civilians; unpaid; without work | 779k; 78k; 19k (20) | 712k; 106k; 98k (54) | 835k; 73k; 27k (25) | 716k; 86k; 87k (51) |
+| guards; children and apprentices | 117k; 24k | 94k; 11k | 116k; 14k | 93k; 10k |
+| the land's hours, the week | 23.4k (16.5k on day 49) | 23.5k (16.7k) | 23.5k (17.6k) | 24.1k (17.1k) |
+| hungry on day 46 (and starving) | 18 (0) | 40 (8) | 20 (0) | 16 (0) |
+| owners' profit against six wages, days 105–119 | 0.21 | 0.24 | 0.20 | 0.26 |
+| bread (LD); the going rate | 0.076; 62p | 0.073; 63p | 0.070; 64p | 0.070; 68p |
+
+(Hungry: the day-46 dip only, in every run, but for the merge's one in its end record. "Without work": its holders'
+money and, in brackets, how many.)
+
+- **The capital's changes** (this branch against no capital): the treasury holds (247k against 24k), its buyers are
+  funded and the city kept up; the Gini 0.587 against 0.624 and the poorer half 0.099 against 0.086 on day 120, and
+  lower from day 84 on (but not on days 56 and 70); paid civilians hold 779k against 712k and the guards 117k against
+  94k. The Houses pay for it (813k against 877k: their seats' staff, grounds and family), and the owners (949k against
+  1,029k), the farm tills (184k against 212k) and the House tills hold less. Without the capital's changes some 30 more
+  residents are without work from the third week (54 against 20 on day 120; in the merge too, 51): most of them had
+  sat and watched the world or minded a shop's door until then. Not traced further.
+- **A producer's hire by its sales** (this branch against bare hire): the wage floats less (67.7p against 73.4p on day
+  120; 65.9p against 73.2p on day 112), as the review expected: the hires it no longer posts were posts open bidding it
+  up; the land's hours the same by day 120 (23.4k against 23.5k), a little lower mid-run; the Gini 0.587 against 0.611.
+- **The labour fixes together** (no capital against the merge): the wage 67.4p against 80.7p. The model's: 97p by day
+  112. The wage floats more slowly than it did, and further from the model's.
+- **Worse, plainly:** the farm tills, lowest in this branch (184k, down from 356k on day 21), as in every run they drain
+  from about day 80; the Houses fall faster (0.54 of their founding by day 120, against 0.65 in the merge; the model's
+  0.73 by day 56 and 0.17 by day 168, so not out of the model's way); the wage stays near 60p to day 77 and reaches only
+  67.7p; the owners' profit is a fifth of the wages against a quarter; the day-46 dip is as before (18 hungry). The Gini
+  and the poorer half are still far out of their bands (0.33–0.45, 0.18–0.28).
+- **What a year still needs:** a winter and a harvest with the brake as now (the apiaries left out), the capital's
+  layoffs once its budget is its income, and the wage, the Gini and the farm tills past day 120.
+
+**Saves** (`RatwWire.cpp`, so checkpoints too): `memory.fundsLeft` and `fundsWeek` (account to pennies, each 0 to
+1e12, a bad one dropped; an older save has none: its buyers are funded as before until its next week); `memory.landToday`
+(0 to `PaceLandMost`, out of bounds or missing: -1, not counting until the next turn). The day's richest, the seats and
+the houses are worked out, not saved.
+
+**The tick:** three 120-day runs at once beside other sessions': 0.0650 ms a tick on this branch, 0.0653 ms with no capital, 0.0656 ms with bare hire, so nothing measurable. The new work: `payerOf`'s seat lookup (a hash), the household's richest not in service filled with the day's richest (one pass over the residents at the day's turn), the capital's posts weighed once a week, the land's hours added where they are credited (instead of a pass over the residents each day).
+
+**Tests** (each fails with its change undone, one at a time: `py/mutate.py` with `m_fix.py`, `m_payers.py`,
+`m_budget.py`, `m_budget2.py`, `m_labour.py` in the round's scratch, results in `mutate.out`: 34 tried, 33 caught; the one that survived, unpaid posts left out of the capital's budget when its rule counted paid posts only, showed the rule short, and with the rule counting every post that draws a wage it is caught):
+
+- `roads_tests` `askingWhoPaysLeavesTheRun` (both paces): two worlds the same, one asked every resident's payer before
+  its first tick, after a restart and every 37 seconds; each morning's end every purse and good, everyone's place and
+  activity the same; and a restart with other purses reads them (caught: the richest kept from the first asking, the
+  houses kept from before the towns, a restart keeping the day's richest, no roll at the day's turn).
+- `crafting_tests` `theCapitalsPostsOfLastResort` (both paces): every rule above, and at the seconds' pace every post
+  as before (caught: each rule undone, the haulers' trade at both paces).
+- `crafting_tests` `aHireTakenIsNoPostOpen("carries loads for hire")`: those for hire take every slot of a fishery's
+  hire (caught: their flag undone, or the town paying them).
+- `roads_tests` `theCapitalKeepsToItsBudget`: a lean week lets three or four of its five go (an unpaid one among them),
+  keeps its watch, and the same the next week; nothing to spare, all five, the watch kept; money again, all five open
+  again; its buyers draw no more than the allowance left; the allowance saved, a bad one dropped, an older save none
+  (caught: the posts unbudgeted, the watch not first, the watch let go, not opened again, the order changing weekly,
+  the buyers past their allowance, the allowance not saved, unpaid posts left out).
+- `crafting_tests` `aProducersHireBySales`: a funded fishery selling for a hand's day posts no hire and stands nothing
+  open; for three, a hire of two at most, no more open (caught: the bare shelf's half again).
+- `crafting_tests` `theBrakeReadsTheLandsHours`: the fishers' hours counted as credited and the beekeeper's not; saved,
+  bounded, an older save not counting; after a restart and a fisher leaving the roster, the next turn reads every hour
+  credited (caught: the seasons counted, not saved, the bounds, the producer's own hours, a hand's).
+- All 67 suites pass at each commit (`pg_tests` skipped, no database; newcomer_tests 2,652 checks, troubles_tests 75).
+
+**For the user:**
+
+1. **The Houses' gatekeepers** are the Houses' by their descriptions ("the gatekeeper of House Fell"), and are paid by
+   them now; the brief had them stay the city's. Recommended: keep them the Houses'.
+2. **The Counting House's two clerks** (at the Greatly counting house, where the Lord of Greatly counts the House's
+   money) stay the city's here. Recommended: the House's, if the Counting House is Greatly's business and not the
+   city's (the export doesn't say).
+3. **Work for hire** (16 carriers, washers and messengers) draw no wage now and take hires as the jobless do; their pay
+   is what the hires pay. The model's nearest is home help (idle hands paid by households with a help budget).
+   Recommended: keep it; the realm has hires enough (the land is short of hands).
+4. **Unpaid posts at home draw no wage** (51: masters "at home in the Heights", pupils at lessons): before, their
+   household's richest paid them, often a servant, or the town. Recommended: keep it; it was money round a household and
+   the capital's 9 unpaid posts.
+5. **The capital's week:** its posts to half its budget (the model's watch's share), the watch never let go, its own let
+   go and opened again in a fixed order by lot (the model's are by chance), its buyers inside what's left. In 120 days
+   it held at 5% of the money and let nobody go. Recommended: keep it, and judge the layoffs over a year. The towns'
+   treasuries keep their old rule (they hold); to give them the same, say so.
+6. **A producer's hire by its sales** (the review's major): the wage floats less (67.7p against 73.4p by day 120) and
+   the land works about the same. Recommended: keep it; it is the review's fix, and the wage's float was partly the
+   bare shelf's half again, a shortage that wasn't there. The wage now floats more slowly than the model's (97p by day
+   112) on every measure: the next balancing question, with the Houses' estate crews (decision 1 of 2026-10-26).
+7. **The brake** counts the land's hours as they are credited and leaves out the apiaries; whether to keep it at all is
+   round 5's decision 1, still open (corrected there: its case rests on the second month's pace alone).
+8. **Without work from the third week**, some 30 residents who sat and watched the world or minded a shop's door
+   lose their posts in the runs without the capital's changes (and round 5's) but not with them. Not traced: worth a
+   look before the year's run.
