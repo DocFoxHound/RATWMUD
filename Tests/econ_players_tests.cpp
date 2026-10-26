@@ -242,8 +242,9 @@ void poachIsPaidFromTheStart()
 void poachShortOfMoney()
 {
     // The capital's treasury nearly empty: the Hold's has the first day's pay, and the first dawn is paid; then the
-    // treasury is emptied. At the second dawn the Hold notes what it lacked ("short", the pennies as its quantity: none
-    // moved), pays what it can, and the rest go home unpaid.
+    // treasury is emptied, and the Hold's own purse given three hands' day. At the second dawn the Hold notes what it
+    // lacked ("short", the pennies as its quantity: none moved), pays the three it can, and the other three go home
+    // unpaid.
     const auto root = writeWorld("ratw_econ_players_short");
     auto w = worldAt(root, 3 + 10. / 24);
     auto& s = w->society();
@@ -258,9 +259,11 @@ void poachShortOfMoney()
     keep(moves, p);
     expect(count(moves, "paid") == 6 && count(moves, "short") == 0, "all six paid at the first dawn, from the first day's pay");
     const auto chapter = p.accountsOf("poach").front();
-    const auto purse = s.account(chapter)->cash;
     if (const auto left = s.account("treasury")->cash; left > 0)
         expect(s.shift("treasury", "chapter:econ-test-sink", "", 0, left, "test: the treasury emptied"), "the treasury emptied");
+    if (const auto lacking = 3 * wage - s.account(chapter)->cash; lacking > 0)
+        expect(s.shift("chapter:econ-test-sink", chapter, "", 0, lacking, "test: three hands' day"), "the Hold has three hands' day");
+    const auto purse = s.account(chapter)->cash;
     jumpTo(*w, p, 5 + 1. / 960);
     keep(moves, p);
     // (The day's wage, as paid, and what the capital's treasury could still give: the rate may move from day to day.)
@@ -281,13 +284,14 @@ void poachShortOfMoney()
                 expect(m.item == "pennies lacking", "the shortfall says what it is: " + m.item);
             }
         }
-    expect(paid + unpaid == 6 && unpaid >= 1, "at the second dawn some go home unpaid: " + std::to_string(paid) + " paid, " +
-                                                   std::to_string(unpaid) + " unpaid");
+    expect(paid == 3 && unpaid == 3, "at the second dawn it pays the three it can, and three go home unpaid: " + std::to_string(paid) +
+                                         " paid, " + std::to_string(unpaid) + " unpaid");
+    expect(funded == 0, "the emptied treasury gives nothing: " + std::to_string(funded));
     if (wage5 == 0)
         wage5 = 2 * std::max<std::int64_t>(camp::HoldWage, std::int64_t(std::ceil(s.labourDay("") - 1e-9)));
     expect(lacking > 0 && moved == 0 && lacking == 6 * wage5 - purse - funded,
            "the shortfall noted as its quantity, no pennies moved: " + std::to_string(lacking) + " of " + std::to_string(6 * wage5));
-    expect(int(p.staffOf("poach").size()) == paid, "the paid stay");
+    expect(int(p.staffOf("poach").size()) == 3, "the three paid stay");
     int home = 0;
     for (const auto& id : {"u1", "u2", "u3", "u4", "u5", "u6"})
         home += w->entity(id)->leaderId.empty();
@@ -436,15 +440,21 @@ void stillThievesPassOver()
 
 void floodSellsThenStops()
 {
-    // flood's ten players land a pack of fish each morning and sell it on the hour to the capital's shops that buy it
-    // (here a fishmonger), as many as they take (its shelf to its supplies' 40); after two weeks, they stop. The
-    // capital's fisher is its maker, watched in the day's block.
+    // flood's ten players (asked for fish: --players-staple) land a pack each morning and sell it on the hour to the
+    // capital's shops that buy it (here a fishmonger), as many as they take (its shelf to its supplies' 40); the next
+    // morning each pack is topped up by what it sold; after two weeks, they stop. The capital's fisher is its maker,
+    // watched in the day's block.
+    expect(std::string(econ::Players::DefaultStaple) == "raw_meat" && econ::Players::stapleKnown("raw_meat") &&
+               econ::Players::stapleKnown("fish") && !econ::Players::stapleKnown("meal") && !econ::Players::stapleKnown("no_such_good"),
+           "raw meat unless asked: a good its sellers price (not a meal, priced by the stores)");
     const auto root = writeWorld("ratw_econ_players_flood",
                                  resident("uf", "Fishmonger U", "merchant", "the fishmonger at the quay", 0, 14.5, 1, 13.5) +
                                      resident("ux", "Fisher U", "civilian", "fishes the lake", 0, 15.5, 1, 15.5));
     auto w = worldAt(root, 2 + 7.9 / 24);
     auto& s = w->society();
     econ::Players p(*w, {"flood"}, 2, 0);
+    expect(p.staple() == "raw_meat", "flood sells raw meat unless asked");
+    p.setStaple("fish");
     std::vector<econ::PlayerMove> moves;
     jumpTo(*w, p, 2 + 7.9 / 24);
     // (Its shelf as a day's buyers leave it: sold out.)
@@ -460,9 +470,23 @@ void floodSellsThenStops()
     expect(sold > 0 && till && Society::stockAll(*till, "fish") == Society::SuppliesKept,
            "they fill the fishmonger's shelf: " + std::to_string(sold) + " sold, " + std::to_string(till ? Society::stockAll(*till, "fish") : -1) + " held");
     const auto day = p.takeDay();
-    expect(day.find("\"selling\":true") != std::string::npos && day.find("\"makers\":1,") != std::string::npos &&
-               day.find("\"makers_held\":1,") != std::string::npos && day.find("\"asked\":") != std::string::npos,
-           "the day's block has the price and the maker: " + day);
+    expect(day.find("\"staple\":\"fish\"") != std::string::npos && day.find("\"selling\":true") != std::string::npos &&
+               day.find("\"makers\":1,") != std::string::npos && day.find("\"makers_held\":1,") != std::string::npos &&
+               day.find("\"asked\":") != std::string::npos,
+           "the day's block has the staple, its price and its maker: " + day);
+    // The next morning at eight, each pack topped up to 99: by what it sold (a player's fish doesn't spoil).
+    jumpTo(*w, p, 3 + 7.9 / 24);
+    jumpTo(*w, p, 3 + 8.01 / 24);
+    keep(moves, p);
+    int landed3 = 0, sold3 = 0, held3 = 0;
+    for (const auto& m : moves)
+        if (m.day == 3)
+            landed3 += m.action == "landed" ? m.quantity : 0, sold3 += m.action == "sold" ? m.quantity : 0;
+    for (const auto& id : p.playersOf("flood"))
+        held3 += s.account(id) ? Society::stock(*s.account(id), "fish") : 0;
+    expect(landed3 == sold && held3 == 10 * 99 - sold3, "the second morning they land what they sold, each a full pack again: " +
+                                                          std::to_string(landed3) + " of " + std::to_string(sold) + "; " +
+                                                          std::to_string(held3) + " held after selling " + std::to_string(sold3));
     // Two weeks on, at eight, they stop; and sell no more.
     jumpTo(*w, p, 16 + 7.9 / 24);
     jumpTo(*w, p, 16 + 8.01 / 24);
@@ -472,9 +496,31 @@ void floodSellsThenStops()
     jumpTo(*w, p, 16 + 9.01 / 24);
     jumpTo(*w, p, 17 + 8.01 / 24);
     keep(moves, p);
-    expect(count(moves, "sold", "fish") == then && count(moves, "landed") == 10 * 99, "and land and sell no more");
+    expect(count(moves, "sold", "fish") == then && count(moves, "landed") == 10 * 99 + sold, "and land and sell no more");
     expect(p.takeDay().find("\"selling\":false") != std::string::npos, "the block says so");
     expect(s.conserved(), "money stays conserved");
+}
+
+void floodsMeat()
+{
+    // Raw meat (flood's unless asked) is a butcher's make, not the land's: the capital's butcher is its maker, watched;
+    // as a shop that makes it (priced at its own cost of making it, worked out once a day), it isn't asked its price at
+    // midnight, and the provisioner, who buys it in, is.
+    const auto root = writeWorld("ratw_econ_players_meat",
+                                 resident("ub", "Butcher U", "merchant", "the butcher at the shambles", 0, 14.5, 1, 13.5) +
+                                     resident("up", "Provisioner U", "merchant", "the provisioner", 0, 15.5, 1, 15.5));
+    auto w = worldAt(root, 2 + 7.9 / 24);
+    econ::Players p(*w, {"flood"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 7.9 / 24);
+    jumpTo(*w, p, 2 + 8.01 / 24);
+    keep(moves, p);
+    const auto day = p.takeDay();
+    expect(day.find("\"staple\":\"raw_meat\"") != std::string::npos && day.find("\"shops_making\":1,") != std::string::npos &&
+               day.find("\"makers\":1,") != std::string::npos && day.find("\"makers_held\":1,") != std::string::npos,
+           "the butcher is raw meat's maker, and isn't asked: " + day);
+    expect(count(moves, "landed", "raw_meat") == 990 && count(moves, "sold", "raw_meat") > 0, "they sell raw meat: " + day);
+    expect(w->society().conserved(), "money stays conserved");
 }
 
 void strikeTakesATenthForAMonth()
@@ -508,6 +554,175 @@ void strikeTakesATenthForAMonth()
            "the month over, let go at its dawn");
     const auto day = p.takeDay();
     expect(day.find("\"let_go\":true") != std::string::npos && day.find("\"taken\":1,") != std::string::npos, "the block says so: " + day);
+    expect(s.conserved(), "money stays conserved");
+}
+
+void strikeEndsWithThePlayers()
+{
+    // Players there five days, fewer than StrikeDays: at their end the Hold lets its hands go, and the block says so (it
+    // had said "let_go":false with none held). And the Hold takes none Game::whyNotJoin refuses at any hour: the hand
+    // it would take, Quickened, is passed over for another.
+    const auto root = writeWorld("ratw_econ_players_strike_end");
+    std::string first;
+    {
+        auto w = worldAt(root, 2 + 10. / 24);
+        econ::Players p(*w, {"strike"}, 2, 5);
+        jumpTo(*w, p, 2 + 10. / 24);
+        expect(p.staffOf("strike").size() == 1, "it takes one");
+        first = p.staffOf("strike").front();
+        jumpTo(*w, p, 7 + 1. / 960);
+        expect(p.ended() && p.staffOf("strike").empty() && w->entity(first)->leaderId.empty(), "their five days over, the hand goes home");
+        const auto day = p.takeDay();
+        expect(day.find("\"let_go\":true") != std::string::npos && day.find("\"staff\":0,") != std::string::npos,
+               "the block says it is let go: " + day);
+        expect(w->society().conserved(), "money stays conserved");
+    }
+    auto w = worldAt(root, 2 + 10. / 24);
+    w->entity(first)->quickened = true;
+    econ::Players p(*w, {"strike"}, 2, 0);
+    jumpTo(*w, p, 2 + 10. / 24);
+    expect(p.staffOf("strike").size() == 1 && p.staffOf("strike").front() != first,
+           "the Quickened " + first + " passed over: " + (p.staffOf("strike").empty() ? std::string("none") : p.staffOf("strike").front()));
+}
+
+void buyoutHoldsTheFood()
+{
+    // buyout's five buy every piece of food on the capital's shelves at six (here Ridgemere's grocer's and stall's),
+    // none of the other town's, each morning of their week; and hold it: after the week, nothing is sold back, and
+    // what they hold (a player's food doesn't spoil) is all still there.
+    const auto root = writeWorld("ratw_econ_players_buyout");
+    auto w = worldAt(root, 2 + 5. / 24);
+    auto& s = w->society();
+    const auto food = [&](const std::string& account) {
+        std::int64_t n = 0;
+        if (const auto* a = s.account(account))
+            for (const auto& [item, k] : a->stock)
+                if (const auto* good = items::good(item); (good && good->nourish > 0) || items::baseOf(item) == "meal")
+                    n += k;
+        return n;
+    };
+    const auto larkfield = food(s.tillOf("lg"));
+    // Every shop's till holds food it doesn't sell besides (a maker's materials): not to be had, and passed over (the
+    // five had given up at the first five such, and bought almost nothing on DEV's map).
+    std::map<std::string, int> unsold;
+    for (const auto& keeper : {"ug", "us", "uk"})
+    {
+        const auto deals = s.wares(keeper);
+        int kinds = 0;
+        for (const auto& g : items::allGoods())
+            if (kinds < 6 && g.nourish > 0 && g.id == items::baseOf(g.id) && std::find(deals.begin(), deals.end(), g.id) == deals.end() &&
+                s.create(s.tillOf(keeper), g.id, 3, "test: materials"))
+                ++kinds, unsold[keeper] += 3;
+    }
+    expect(unsold["us"] == 18, "the smith holds six kinds of food it doesn't sell: " + std::to_string(unsold["us"]));
+    econ::Players p(*w, {"buyout"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 5. / 24);
+    expect(food(s.tillOf("ug")) + food(s.tillOf("uk")) > unsold["ug"] + unsold["uk"] && larkfield > 0, "both towns' shops have food to sell");
+    jumpTo(*w, p, 2 + 6.01 / 24);
+    keep(moves, p);
+    const int bought = count(moves, "bought");
+    expect(bought > 0 && food(s.tillOf("ug")) == unsold["ug"] && food(s.tillOf("uk")) == unsold["uk"] && food(s.tillOf("us")) == unsold["us"],
+           "every piece of Ridgemere's food for sale bought, and none of what isn't: " + std::to_string(bought) + "; left " +
+               std::to_string(food(s.tillOf("ug"))) + ", " + std::to_string(food(s.tillOf("uk"))) + ", " + std::to_string(food(s.tillOf("us"))));
+    expect(food(s.tillOf("lg")) >= larkfield, "none of Larkfield's");
+    std::int64_t held = 0;
+    for (const auto& id : p.playersOf("buyout"))
+        held += food(id);
+    expect(p.playersOf("buyout").size() == 5 && held >= bought, "the five hold it: " + std::to_string(held));
+    jumpTo(*w, p, 9 + 6.01 / 24);
+    jumpTo(*w, p, 10 + 6.01 / 24);
+    keep(moves, p);
+    std::int64_t after = 0;
+    for (const auto& id : p.playersOf("buyout"))
+        after += food(id);
+    expect(count(moves, "bought") == bought && count(moves, "sold") == 0 && after == held,
+           "after the week they buy none, sell none, and hold it all: " + std::to_string(after) + " of " + std::to_string(held));
+    expect(p.takeDay().find("\"food_held\":" + std::to_string(after)) != std::string::npos, "the block has what they hold");
+    expect(s.conserved(), "money stays conserved");
+}
+
+void giftToThePoorest()
+{
+    // gift's player gives 100p at ten to each of the poorest households (here all ten: Ridgemere's nine grown under one
+    // roof are each a household, as a barracks' are; Larkfield's four are one), to one grown member of each, by the
+    // ledger; nothing is made.
+    const auto root = writeWorld("ratw_econ_players_gift");
+    auto w = worldAt(root, 2 + 9. / 24);
+    auto& s = w->society();
+    econ::Players p(*w, {"gift"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 9. / 24);
+    const auto supply = s.moneySupply();
+    const auto& giver = p.playersOf("gift").front();
+    const auto purse = s.account(giver)->cash;
+    expect(purse >= std::int64_t(econ::Players::GiftHouseholds) * econ::Players::GiftEach, "the giver has its month's gifts: " + std::to_string(purse));
+    w->takeEvents();
+    jumpTo(*w, p, 2 + 10.01 / 24);
+    keep(moves, p);
+    std::map<std::string, std::int64_t> ledger;      // (The journal's "a gift" entries: from the giver, to whom, how much.)
+    for (const auto& e : w->takeEvents())
+        if (e.kind == "economy" && e.detail == "a gift" && e.actor == giver)
+            ledger[e.target] += e.coins;
+    std::map<std::string, int> to;
+    for (const auto& m : moves)
+        if (m.action == "gave")
+        {
+            expect(m.coins == econ::Players::GiftEach, "each given 100p");
+            ++to[m.item];
+        }
+    expect(to.size() == 10 && count(moves, "gave") == 10, "ten households given to: " + std::to_string(to.size()));
+    expect(to.count("l1") && !to.count("l2") && !to.count("l3") && !to.count("lg"), "Larkfield's household once, to its first grown");
+    for (const auto& [id, n] : to)
+        expect(ledger[id] == econ::Players::GiftEach, id + "'s gift is in the journal: " + std::to_string(ledger[id]));
+    expect(s.account(giver)->cash == purse - 10 * econ::Players::GiftEach, "the giver is 1,000p the poorer");
+    expect(s.conserved() && s.moneySupply() == supply, "money stays conserved, none made");
+}
+
+void drainWorksEveryBench()
+{
+    // drain's players at every bench of the town (not the capital) with the most: here Larkfield's smith's (its keeper
+    // trades, at no bench), two of them, arriving beside it; at work beside it while it is at its forge
+    // (World::helpAtWork), paid by the beat from what Society::tillOf gives for it: for a hand, whose post has no till,
+    // its own purse (so it is on DEV's map: doc 64, "players who push, the third review").
+    const auto root = writeWorld("ratw_econ_players_drain", resident("ls", "Smith L", "civilian", "the smith at the forge", 3, 9.5, 4, 9.5));
+    auto w = worldAt(root, 2 + 8.5 / 24);
+    auto& s = w->society();
+    econ::Players p(*w, {"drain"}, 2, 0);
+    std::vector<econ::PlayerMove> moves;
+    jumpTo(*w, p, 2 + 8.5 / 24);
+    keep(moves, p);
+    std::map<std::string, std::vector<std::string>> at;
+    for (const auto& id : p.playersOf("drain"))
+        at[p.benchOf(id)].push_back(id);
+    expect(p.drainTown() == "larkfield" && p.playersOf("drain").size() == 2 && at["ls"].size() == 2,
+           "two at Larkfield's one bench: " + p.drainTown() + ", " + std::to_string(p.playersOf("drain").size()));
+    for (const auto& id : at["ls"])
+        expect(w->entity(id) && w->entity(id)->cellId == cellId(4), id + " is at the smith's");
+    std::map<std::string, std::int64_t> was;
+    for (const auto& id : at["ls"])
+        was[id] = s.account(id) ? s.account(id)->cash : 0;
+    w->takeEvents();
+    run(*w, p, 1500);                               // (Five beats: a beat is 300 s.)
+    keep(moves, p);
+    int working = 0;
+    std::int64_t earned = 0, fromTill = 0;
+    for (const auto& id : at["ls"])
+    {
+        const auto* j = w->jointOf(id);
+        working += j && j->target == "ls";
+        earned += (s.account(id) ? s.account(id)->cash : 0) - was[id];
+    }
+    for (const auto& e : w->takeEvents())
+        if (e.kind == "economy" && e.detail == "a hand at the bench" && e.actor == s.tillOf("ls"))
+            fromTill += e.coins;
+    expect(count(moves, "set to work", "ls") == 2 && working == 2,
+           "both at work beside the smith, keeping at it (each set to work once in five beats): " + std::to_string(working) + ", " +
+               std::to_string(count(moves, "set to work", "ls")));
+    expect(earned > 0 && fromTill == earned, "paid from its till: " + std::to_string(earned) + "p, " + std::to_string(fromTill) + "p");
+    const auto day = p.takeDay();
+    expect(day.find("\"town\":\"larkfield\",\"benches\":1,\"working\":2") != std::string::npos, "the block has them at work: " + day);
+    jumpTo(*w, p, 2 + 23.9 / 24);
     expect(s.conserved(), "money stays conserved");
 }
 
@@ -639,14 +854,18 @@ void econWatchsFiles()
     // (RatwLabour.cpp), here the first by day 2's record, so books.csv has rows to check.
     const auto world = writeWorld("ratw_econ_watch", {}, "world");
     const auto out = world.parent_path() / "out", log = world.parent_path() / "log.txt";
-    const auto command = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 2.2 '" + out.string() +
+    const auto data = std::string(RATW_SOURCE_DIR) + "/Data";
+    const auto command = "RATW_DATA_DIR='" + data + "' '" + RATW_ECON_WATCH + "' '" + world.string() + "' 2.2 '" + out.string() +
                          "' --deterministic --threads 1 --players poach,visit --players-from 1 > '" + log.string() + "' 2>&1";
     expect(std::system(command.c_str()) == 0, "econ_watch runs: " + slurp(log));
-    // The stamp: what it was built from, as the build had it (econ_watch_stamp.h, which this test was built with too).
+    // The stamp: what it was built from, as the build had it (econ_watch_stamp.h, which this test was built with too);
+    // and the Data it read (RATW_DATA_DIR here), with its state now: a line of its own, never a warning.
     const auto stamp = slurp(out / "run.txt");
     expect(stamp.find(std::string("built from: ") + RATW_BUILT_SOURCE + " at " + RATW_BUILT_DESCRIBE + " (" + RATW_BUILT_COMMIT + ")") !=
                std::string::npos,
            "the stamp says what it was built from, as built: " + stamp);
+    expect(stamp.find("\n" + econ::dataState(data) + "\n") != std::string::npos && stamp.find("\ndata: " + data) != std::string::npos,
+           "the stamp says which Data it read, and its state: " + stamp);
     // Each day's rows once (the run's end repeats none), and a till's hands in tills.csv, once a day.
     const auto once = [&](const std::string& file, std::size_t key, const std::string& header) {
         const auto all = rows(out / file);
@@ -683,6 +902,15 @@ void econWatchsFiles()
                    "day 1's record has nothing the players did at its midnight");
         if (line.find("\"day\":2,\"when\":\"day end\"") != std::string::npos)
             expect(line.find("\"hired\"") != std::string::npos && line.find("\"joined\"") != std::string::npos, "day 2's (day 1's) has it all");
+        // The end's (day 2's first hours) has what they did since day 2's midnight: the Hold's dawn pay, and none of
+        // the hiring and joining of day 1.
+        if (line.find("\"when\":\"end\"") != std::string::npos)
+        {
+            const auto block = line.find("\"players\":{\"poach\":{");
+            expect(block != std::string::npos && line.find("\"paid\":[6,", block) != std::string::npos &&
+                       line.find("\"hired\"", block) == std::string::npos && line.find("\"joined\"", block) == std::string::npos,
+                   "the end's record has the players' doings since the last midnight: " + line.substr(std::min(block, line.size())));
+        }
     }
     expect(records == 4, "a record at the start, at day 1's and day 2's midnights and at the end: " + std::to_string(records));
     bool hiredOnDay1 = false;
@@ -699,6 +927,23 @@ void econWatchsFiles()
         if (r.size() > 3)
             joined += r[2] == "flood" && r[3] == "joined", hired += r[2] == "strike" && r[3] == "hired";
     expect(joined == 10 && hired == 1, "flood's ten join and strike's Hold takes one: " + std::to_string(joined) + ", " + std::to_string(hired));
+    expect(slurp(later / "days.jsonl").find("\"staple\":\"raw_meat\"") != std::string::npos, "flood sells raw meat unless asked");
+    // And the new three by name, flood's staple asked for; a staple the stores price refused.
+    const auto three = world.parent_path() / "out-three", told = world.parent_path() / "log-three.txt";
+    const auto again = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 0.05 '" + three.string() +
+                       "' --deterministic --threads 1 --players buyout,drain,gift,flood --players-staple fish --players-from 0 > '" +
+                       told.string() + "' 2>&1";
+    expect(std::system(again.c_str()) == 0, "econ_watch runs buyout, drain and gift: " + slurp(told));
+    std::set<std::string> came;
+    for (const auto& r : rows(three / "players.csv"))
+        if (r.size() > 3 && r[3] == "joined")
+            came.insert(r[2]);
+    expect(came.count("buyout") && came.count("gift") && came.count("flood") &&
+               slurp(three / "days.jsonl").find("\"staple\":\"fish\"") != std::string::npos,
+           "they join, and flood sells fish as asked");
+    const auto refused = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 0.05 '" + (world.parent_path() / "out-meal").string() +
+                         "' --players flood --players-staple meal > /dev/null 2>&1";
+    expect(std::system(refused.c_str()) != 0, "a staple the stores price is refused");
 }
 
 int sh(const std::string& command)
@@ -738,9 +983,15 @@ void theStampSaysWhatChanged()
     const auto tree = root / "tree", plain = root / "plain", header = root / "stamp.h";
     fs::create_directories(tree / "Core");
     fs::create_directories(tree / "Docs");
+    fs::create_directories(tree / "Tests");
+    fs::create_directories(tree / "Data" / "Items");
     fs::create_directories(plain / "Core");
+    fs::create_directories(plain / "Data");
     std::ofstream(tree / "Core" / "a.cpp") << "int a() { return 1; }\n";
     std::ofstream(tree / "Docs" / "a.md") << "# A\n";
+    std::ofstream(tree / "Tests" / "econ_players.cpp") << "int p() { return 1; }\n";
+    std::ofstream(tree / "Tests" / "other_tests.cpp") << "int o() { return 1; }\n";
+    std::ofstream(tree / "Data" / "Items" / "items.json") << "{}\n";
     std::ofstream(tree / "CMakeLists.txt") << "project(a)\n";
     std::ofstream(plain / "Core" / "a.cpp") << "int a() { return 1; }\n";
     const auto git = "GIT_CEILING_DIRECTORIES='" + root.string() + "' git -C '" + tree.string() +
@@ -758,6 +1009,33 @@ void theStampSaysWhatChanged()
     expect(drift().empty(), "a docs edit since: nothing to say: " + drift());
     expect(sh(git + "commit -qam docs") == 0, "the docs committed");
     expect(drift().empty(), "a docs-only commit since: nothing to say: " + drift());
+    // Another suite's test is no change of econ_watch's; its own players' code is.
+    std::ofstream(tree / "Tests" / "other_tests.cpp", std::ios::app) << "int q() { return 2; }\n";
+    expect(drift().empty(), "another suite's edit: nothing to say: " + drift());
+    std::ofstream(tree / "Tests" / "econ_players.cpp", std::ios::app) << "int q() { return 2; }\n";
+    expect(drift().rfind("WARNING: ", 0) == 0, "an edit of econ_watch's players: a warning: " + drift());
+    std::ofstream(tree / "Tests" / "econ_players.cpp") << "int p() { return 1; }\n";
+    expect(drift().empty(), "taken back: nothing to say: " + drift());
+    // The Data it reads: its state a line to read (never a warning), apart for an edit or a file added since.
+    const auto data = (tree / "Data").string();
+    const auto clean = econ::dataState(data);
+    expect(clean.rfind("data: " + data + " at ", 0) == 0 && clean.find("its own changes since: none") != std::string::npos &&
+               clean.find("WARNING") == std::string::npos,
+           "Data as committed: " + clean);
+    std::ofstream(tree / "Data" / "Items" / "items.json") << "{\"items\": []}\n";
+    const auto edited = econ::dataState(data);
+    expect(edited.find("its own changes since: none") == std::string::npos && edited.size() == clean.size() + 8,
+           "Data edited: its changes' SHA-1 (12 places for 'none'): " + edited);
+    std::ofstream(tree / "Data" / "Items" / "more.json") << "{}\n";
+    const auto added = econ::dataState(data);
+    expect(added != edited && added.find("WARNING") == std::string::npos, "a file added to Data: another: " + added);
+    std::ofstream(tree / "Data" / "Items" / "more.json") << "{\"a\": 1}\n";
+    expect(econ::dataState(data) != added, "and that file changed: another again");
+    fs::remove(tree / "Data" / "Items" / "more.json");
+    std::ofstream(tree / "Data" / "Items" / "items.json") << "{}\n";
+    expect(econ::dataState(data) == clean, "taken back: as committed");
+    const auto loose = econ::dataState((plain / "Data").string());
+    expect(loose.find("in no git checkout") != std::string::npos && loose.find("WARNING") == std::string::npos, "Data in no checkout: said so: " + loose);
     std::ofstream(tree / "Core" / "a.cpp", std::ios::app) << "int b() { return 2; }\n";
     expect(drift().rfind("WARNING: ", 0) == 0, "a code edit since: a warning to rebuild: " + drift());
     built = stampOf(tree, header, root);
@@ -784,7 +1062,12 @@ int main()
         bodiesAimEveryTwoSeconds();
         stillThievesPassOver();
         floodSellsThenStops();
+        floodsMeat();
         strikeTakesATenthForAMonth();
+        strikeEndsWithThePlayers();
+        buyoutHoldsTheFood();
+        giftToThePoorest();
+        drainWorksEveryBench();
         winterBuysInTheAutumn();
         daysCountFromTheStart();
         theDeadKeepNoShop();
