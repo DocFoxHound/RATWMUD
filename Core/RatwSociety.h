@@ -923,8 +923,9 @@ class Society
     // Works on the home (doc 63's model: what a household with nothing left to want has done to its home, bought by the
     // amount; RatwInstitutions.cpp): a unit is WorksHours of a building business's time and a batch of its own building
     // goods, at its town's hour and the goods' cost with the ladder's markup. With a `fund` that covers a unit, up to
-    // half of it (and `most`), from the town's `builders`, the cheapest first that has the hours in hand (booked into
-    // them as a mend is). Counts toward its hands (worksRate_); a builder too busy hears of a unit at most. What it cost.
+    // half of it (and `most`), from WantSample of the town's `builders` by lot, the cheapest first that has the hours in
+    // hand (booked into them as a mend is). Counts toward their hands (worksRate_); what found no hours, a unit at most,
+    // they hear of between them. What it cost.
     std::int64_t worksOnHome(const std::string& payer, const std::vector<std::string>& builders, std::int64_t fund, std::int64_t most,
                              std::int64_t day);
     bool builds(const std::string& shop) const;     // A building business: one of its crafts makes building goods.
@@ -1443,12 +1444,19 @@ class Society
     // Whether a shop sells a good it holds (doc 64, Phase 13): its wares, and food at a food shop (as the hungry buy it,
     // sellsFood); never what it holds to make things from. `sold`: its wares.
     bool onSale(const std::string& shop, const std::string& item, const std::vector<std::string>& sold) const;
-    // One of what `wanted` picks, bought by a townsfolk (doc 64, Phase 13; the model's buy, from the cheapest of a few
-    // sellers): of the shops' goods on sale that `budget` and its purse run to, never a shelf's last few, WantSample by
-    // lot (`salt`), the cheapest of them (with `dearest`, the dearest); with `fullShelf`, only off a shelf holding its
-    // days' keeping of its sales (a treat: never what the hungry will come for). The item got, or "".
-    std::string buyOne(const std::string& buyer, const std::vector<std::string>& shops,
-                       const std::function<bool(const std::string& item)>& wanted, std::int64_t budget, const std::string& kind,
+    // What townsfolk buy one at a time (doc 64, Phase 13; the model's buy, from the cheapest of a few sellers). A town's
+    // goods on sale (onSale) of what `wanted` picks, past a shelf's last few, in an order by lot (`salt`): worked out
+    // once for a day's buying. buyOne takes, from the buyer's own place in that order (by lot), the first WantSample
+    // still on the shelf that `budget` and its purse run to, and buys the cheapest of them (with `dearest`, the dearest);
+    // with `fullShelf`, only off a shelf holding its days' keeping of its sales (a treat: never what the hungry will come
+    // for). The item got, or "".
+    struct Offer
+    {
+        std::string shop, till, item, base;
+    };
+    std::vector<Offer> offersOf(const std::vector<std::string>& shops, const std::function<bool(const std::string& item)>& wanted,
+                                const std::string& salt) const;
+    std::string buyOne(const std::string& buyer, const std::vector<Offer>& offers, std::int64_t budget, const std::string& kind,
                        const std::string& salt, bool dearest = false, bool fullShelf = false);
     static constexpr std::size_t WantSample = 4;
     mutable std::vector<House> houses_;                     // From the heads' positions (houses(), built on first use).

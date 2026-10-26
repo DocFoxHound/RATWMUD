@@ -506,6 +506,7 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
         return c == "jewelry" || c == "hat" || c == "scarf" || c == "paw_wear" || (c == "luxury" && item != "clay_pipe");
     };
     const auto salt = std::to_string(day) + "|a child's";
+    std::map<std::string, std::vector<Offer>> bites, trinkets;   // (Each town's on sale, once: buyOne.)
     for (const auto& [home, members] : homes)
         for (const auto& child : members.second)
         {
@@ -515,13 +516,12 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             const auto* life = resident(child);
             const bool peckish = life && life->hunger >= 55 && !hasFood(*purse);
             const auto budget = std::min<std::int64_t>(purse->cash / 2, 3);
-            const auto& here = shops[communityOfResident(child)];
-            if (peckish)
-            {
-                buyOne(child, here, [](const std::string& item) { return edible(item); }, budget, "a child's spending", salt);
-                continue;
-            }
-            if (buyOne(child, here, trinket, budget, "a child's spending", salt).empty())
+            const auto town = communityOfResident(child);
+            auto [on, fresh] = (peckish ? bites : trinkets).try_emplace(town);
+            if (fresh)
+                on->second = peckish ? offersOf(shops[town], [](const std::string& item) { return edible(item); }, town + "|a bite|" + salt)
+                                     : offersOf(shops[town], trinket, town + "|a trinket|" + salt);
+            if (buyOne(child, on->second, budget, "a child's spending", salt).empty() || peckish)
                 continue;
             std::vector<std::pair<std::string, int>> kept;
             int held = 0;
@@ -655,6 +655,15 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         {"something for the home", [&](const std::string& i) { return category(i) == "household"; }},
     };
     const auto kindIs = [](const char* kind) { return [kind](const std::string& i) { return belongingKind(i) == kind; }; };
+    // What each town's shops have on sale of each kind, worked out once (buyOne).
+    std::map<std::string, std::vector<Offer>> market;
+    const auto onShelves = [&](const std::string& town, const std::string& what, const std::function<bool(const std::string&)>& is)
+        -> const std::vector<Offer>& {
+        auto [on, fresh] = market.try_emplace(town + "|" + what);
+        if (fresh)
+            on->second = offersOf(shops[town], is, on->first + "|" + std::to_string(day));
+        return on->second;
+    };
     for (const auto& h : households)
     {
         const auto fund = state_.memory.wantFund.find(h.fund);
@@ -670,7 +679,6 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             continue;
         const auto before = account(id)->cash;
         const auto town = communityOfResident(id);
-        const auto& here = shops[town];
         const auto salt = h.fund + "|" + std::to_string(day) + "|";
         // What it owns: its pieces of finery, and its blades (a guard's issued sword counts).
         int pieces = 0;
@@ -690,11 +698,11 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         // replaced as its belongings (RatwBelongings.cpp).
         std::string got;
         if (rich && !rapier)
-            got = buyOne(id, here, kindIs("rapier"), budget, "a want: a rapier", salt + "rapier");
+            got = buyOne(id, onShelves(town, "rapier", kindIs("rapier")), budget, "a want: a rapier", salt + "rapier");
         if (got.empty() && !sword && !rapier && working(h))
-            got = buyOne(id, here, kindIs("sword"), budget, "a want: a sword", salt + "sword");
+            got = buyOne(id, onShelves(town, "sword", kindIs("sword")), budget, "a want: a sword", salt + "sword");
         if (got.empty() && pieces < h.persons + (rich ? 2 : 0))
-            got = buyOne(id, here, kindIs("finery"), budget, "a want: finery", salt + "finery", true);
+            got = buyOne(id, onShelves(town, "finery", kindIs("finery")), budget, "a want: finery", salt + "finery", true);
         if (got.empty())
         {
             // None of those: one thing it fancies, the kinds its buyer likes best as it feels today; one that finds
@@ -709,8 +717,8 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
                 const Want* fancy = fancies[f].second;
                 const bool treat = std::string(fancy->name) == "a treat";
                 if (!treat || !hungry.count(town))
-                    got = buyOne(id, here, fancy->is, treat ? std::min<std::int64_t>(budget, 9) : budget, std::string("a want: ") + fancy->name,
-                                 salt + fancy->name, false, treat);
+                    got = buyOne(id, onShelves(town, fancy->name, fancy->is), treat ? std::min<std::int64_t>(budget, 9) : budget,
+                                 std::string("a want: ") + fancy->name, salt + fancy->name, false, treat);
             }
             if (edible(got))
             {
