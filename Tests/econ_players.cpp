@@ -533,16 +533,7 @@ void Players::start(std::int64_t day)
             // there (its shops buy from the capital's own first: Society::buyMaterials), watched.
             for (int i = 1; i <= 10; ++i)
                 towns_[join(s, i)] = {capital_};
-            const auto& held = society.state().careers.positions;
-            for (const auto& p : society.positions())
-                if (const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
-                    producer && std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
-                {
-                    const auto h = held.find(p.id);
-                    const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
-                    if (world_.communityOf(p.work.cell) == capital_ || (life && world_.communityOf(life->homeCell) == capital_))
-                        makers_.push_back(p.id);
-                }
+            findMakers();
             flooded_ = true;
         }
         else if (s == "kill")
@@ -986,19 +977,50 @@ void Players::leave()
     }
 }
 
+std::string Players::capitalNow() const
+{
+    return capital_.empty() ? world_.society().capital() : capital_;
+}
+
+void Players::findMakers()
+{
+    // flood's makers: the posts that land the staple worked in the capital, or held by a wolf who lives there (its
+    // shops buy from the capital's own first: Society::buyMaterials), found once (the first day's block, or the start).
+    const auto capital = capitalNow();
+    if (makersFound_ || capital.empty())
+        return;                                     // (No capital named: the start's, by its shops.)
+    makersFound_ = true;
+    const auto& society = world_.society();
+    const auto& held = society.state().careers.positions;
+    for (const auto& p : society.positions())
+        if (const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
+            producer && std::any_of(producer->out.begin(), producer->out.end(), [](const auto& o) { return o.first == FloodStaple; }))
+        {
+            const auto h = held.find(p.id);
+            const auto* life = h == held.end() ? nullptr : society.resident(h->second.holder);
+            if (world_.communityOf(p.work.cell) == capital || (life && world_.communityOf(life->homeCell) == capital))
+                makers_.push_back(p.id);
+        }
+}
+
 std::string Players::floodDay() const
 {
     // The staple in the capital: what its shops that deal in it ask and would pay a player (each shop's own, averaged
     // over them, before it is rounded to the penny), and what is on their shelves; its makers: the posts landing it
     // that are held, their tills' cash and what they hold of it (their sales are in tills.csv, their hours in work.csv).
+    // From the run's first day, before they start too: the days before the flood to set it by.
     const auto& society = world_.society();
+    const auto capital = capitalNow();
+    const auto& posts = society.state().careers.positions;
     double asked = 0, offered = 0;
     int shops = 0;
     std::int64_t shelves = 0;
     std::set<std::string> tills;
-    for (const auto& shop : shops_)
+    for (const auto& p : society.positions())
     {
-        if (shop.town != capital_ || !open(shop))
+        const auto held = p.role == "merchant" ? posts.find(p.id) : posts.end();
+        const Shop shop{held == posts.end() ? std::string() : held->second.holder, p.id, world_.communityOf(p.work.cell)};
+        if (held == posts.end() || shop.town != capital || !open(shop))
             continue;
         const auto deals = society.wares(shop.keeper);
         if (std::find(deals.begin(), deals.end(), FloodStaple) == deals.end())
@@ -1011,7 +1033,6 @@ std::string Players::floodDay() const
     }
     int held = 0;
     std::int64_t cash = 0, stock = 0;
-    const auto& posts = society.state().careers.positions;
     for (const auto& post : makers_)
     {
         if (const auto found = posts.find(post); found != posts.end() && !found->second.holder.empty())
@@ -1032,17 +1053,18 @@ std::string Players::strikeDay() const
     // The hands it took: how many have the post they had when taken (held or let go); and the capital's labour market:
     // its going rate, and its employers' posts open.
     const auto& society = world_.society();
+    const auto capital = capitalNow();
     int kept = 0;
     for (const auto& id : taken_)
         if (const auto* job = society.jobOf(id); job && jobWas_.count(id) && job->id == jobWas_.at(id))
             ++kept;
     int open = 0;
     for (const auto& [key, book] : society.state().memory.employers)
-        if (society.employerTownOf(key) == capital_)
+        if (society.employerTownOf(key) == capital)
             open += society.vacanciesOf(key);
     std::ostringstream out;
     out << ",\"taken\":" << taken_.size() << ",\"kept_post\":" << kept << ",\"let_go\":" << (struck_ ? "true" : "false")
-        << ",\"going\":" << society.goingRate(capital_) << ",\"open\":" << open;
+        << ",\"going\":" << society.goingRate(capital) << ",\"open\":" << open;
     return out.str();
 }
 
@@ -1088,7 +1110,10 @@ std::string Players::takeDay()
         if (s == "strike")
             out << strikeDay();
         if (s == "flood")
+        {
+            findMakers();
             out << floodDay();
+        }
         if (s == "kill")
         {
             int filled = 0;

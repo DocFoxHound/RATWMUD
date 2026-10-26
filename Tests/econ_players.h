@@ -120,6 +120,7 @@ class Players
     std::map<std::string, std::string> jobWas_;              // strike's hands -> the post they had when taken.
     std::vector<std::string> taken_;                         // strike's hands, all it took (held or let go).
     bool struck_ = false, flooded_ = false;                  // strike's month over (its hands let go); flood's selling.
+    bool makersFound_ = false;
     std::vector<std::string> posts_;                         // kill's posts left empty.
     std::vector<std::string> makers_;                        // flood's makers: the capital's posts that land the staple.
     std::vector<PlayerMove> moves_;
@@ -150,6 +151,8 @@ class Players
     void setOff(const std::string& scenario, const std::string& body, std::int64_t day, int quarter);
     void tryPurse(const std::string& scenario, const std::string& thief, const std::string& mark);
     void leave();                                   // The bodies out of the world (World::removePlayer), when they may.
+    std::string capitalNow() const;                 // The capital (before they start, the society's).
+    void findMakers();                              // flood's makers, once the capital is known.
     std::string floodDay() const;                   // flood's block: the staple's price in the capital, its makers.
     std::string strikeDay() const;                  // strike's block: its hands, and the town's going rate.
 };
