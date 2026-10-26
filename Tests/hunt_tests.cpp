@@ -5,6 +5,7 @@
 #include "RatwItems.h"
 #include "RatwWild.h"
 #include "RatwWorld.h"
+#include "founded_fixture.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -341,6 +342,34 @@ void gearWearsAndMends()
     expect(w.conditionOf(ada, "wool_scarf") == 1, "whole again");
     expect(!w.canRepair("wren", "sword"), "but a weaver doesn't mend swords");
 }
+// Mending at the founding's day (doc 64, Phase 13): half the catalogue's price for the wear, at the town's day, so five
+// times a village's in a realm founded at 60p (FoundedAtTheDay).
+void mendingAtTheFoundingDay()
+{
+    std::map<bool, std::int64_t> cost;
+    double worn = 0;
+    for (const bool founded : {false, true})
+    {
+        auto w = [&] {
+            if (!founded)
+                return wilds();
+            FoundedAtTheDay atTheDay;
+            return wilds();
+        }();
+        expect(w.society().state().memory.foundedDay == (founded ? FoundedAtTheDay::day() : 0), "founded at its day");
+        auto& ada = hunter(w, "player-ada");
+        w.society().create("player-ada", "wool_scarf", 1, "test");
+        expect(w.wear("player-ada", "wool_scarf", "").ok, "a scarf on");
+        ada.wear["wool_scarf"] = World::durabilityOf("wool_scarf") / 2.0;
+        worn = 1 - w.conditionOf(ada, "wool_scarf");
+        cost[founded] = w.repairCost(ada, "wool_scarf");
+    }
+    const double price = items::good("wool_scarf")->price;
+    expect(worn > 0 && cost[false] == std::int64_t(std::ceil(price * worn * .5)) &&
+               cost[true] == std::int64_t(std::ceil(price * FoundedAtTheDay::ratio() * worn * .5)),
+           "half the price for the wear, at the day: " + std::to_string(cost[true]) + "p against " + std::to_string(cost[false]) + "p");
+}
+
 void noseAndMarks()
 {
     // The nose: a physical stat that sharpens with use, to its cap (by practice: doc 49, Data/Progression/skills.json).
@@ -872,6 +901,7 @@ int main()
         foraging();
         tracks();
         gearWearsAndMends();
+        mendingAtTheFoundingDay();
         noseAndMarks();
     }
     catch (const std::exception& error)

@@ -338,10 +338,12 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
         bool paid = false;
         if (verb == "payreport")
         {
-            paid = world_.society().shift(id, target, "", 0, 5, "faction report fee");
+            // (5p at a 12p day, and a tithe 20p, at the town's day for amounts: doc 64, Phase 13.)
+            const auto fee = reportFee(id);
+            paid = world_.society().shift(id, target, "", 0, fee, "faction report fee");
             if (!paid)
             {
-                result = {false, "You haven't five pennies.", target};
+                result = {false, "You haven't " + std::to_string(fee) + " pennies.", target};
                 return true;
             }
             record(Economy, id);
@@ -356,10 +358,10 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
     }
     else if (verb == "tithe")
     {
-        const std::int64_t amount = 20;
+        const std::int64_t amount = titheFee(id);
         if (!world_.society().shift(id, "treasury", "", 0, amount, "faction tithe"))
         {
-            result = {false, "A tithe is twenty pennies.", target};
+            result = {false, amount == 20 ? "A tithe is twenty pennies." : "A tithe is " + std::to_string(amount) + " pennies.", target};
             return true;
         }
         record(Economy, id);

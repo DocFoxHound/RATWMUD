@@ -137,17 +137,32 @@ void Game::watchEvent(const WorldEvent& e)
     const auto* resident = world_.entity(e.target);
     if (!player || player->npc || !resident || !resident->npc || resident->transient)
         return;
-    if (e.kind == "gift")
-    {
-        const auto* good = e.item.empty() ? nullptr : items::good(e.item.substr(0, e.item.find('~')));
-        if (e.coins + std::int64_t(good ? good->price : 0) * e.quantity < 5)
-            return;
-    }
+    if (e.kind == "gift" && !giftWorthThanks(e))
+        return;
     if (thanksDue_.size() >= MostDue || std::any_of(thanksDue_.begin(), thanksDue_.end(), [&](const ThanksDue& t) {
             return t.resident == e.target && t.player == e.actor;
         }))
         return;
     thanksDue_.push_back({e.target, e.actor, deedWords(e), world_.calendarDays()});
+}
+
+bool Game::giftWorthThanks(const WorldEvent& e) const
+{
+    // Coins and the goods' catalogue price, at the receiver's town's day, against 5p at a 12p day (doc 64, Phase 13).
+    const auto& society = world_.society();
+    const auto* resident = world_.entity(e.target);
+    const auto town = resident ? world_.lawTown(resident->cellId) : std::string();
+    const auto* good = e.item.empty() ? nullptr : items::good(e.item.substr(0, e.item.find('~')));
+    return double(e.coins) + (good ? society.atGoingRate(good->price, town) : 0.) * e.quantity >= double(society.pennies(5 / 12., town));
+}
+
+std::int64_t Game::thanksGift(const std::string& resident) const
+{
+    // A tenth of its purse, 6p at most at a 12p day, at its town's day (doc 64, Phase 13).
+    const auto& society = world_.society();
+    const auto* purse = society.account(resident);
+    const auto* r = world_.entity(resident);
+    return purse ? std::min<std::int64_t>(society.pennies(6 / 12., r ? world_.lawTown(r->cellId) : std::string()), purse->cash / 10) : 0;
 }
 
 bool Game::residentLetterRoom(const std::string& resident, const std::string& player) const
@@ -249,7 +264,6 @@ void Game::tendResidentLetters()
     residentLettersSent_.erase(std::remove_if(residentLettersSent_.begin(), residentLettersSent_.end(),
                                               [&](const ResidentLetterSent& s) { return now - s.day >= WeekDays; }),
                                residentLettersSent_.end());
-    auto& society = world_.society();
     inviteToOccasions();
     // Thanks, the day after.
     for (auto it = thanksDue_.begin(); it != thanksDue_.end();)
@@ -267,8 +281,7 @@ void Game::tendResidentLetters()
         // One time in three, a few pennies from its own purse.
         std::int64_t coins = 0;
         if (std::hash<std::string>{}(t.resident + t.player + std::to_string(std::int64_t(now))) % 3 == 0)
-            if (const auto* purse = society.account(t.resident))
-                coins = std::min<std::int64_t>(6, purse->cash / 10);
+            coins = thanksGift(t.resident);
         const auto* r = world_.entity(t.resident);
         const auto from = r ? (willName(t.resident, t.player) && bond->familiarity >= 50 ? r->name : names::capitalised(labelFor(t.player, t.resident)))
                             : std::string();

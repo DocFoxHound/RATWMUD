@@ -289,7 +289,7 @@ void Society::tendOwners(std::int64_t day)
             if (short_ > 0 && putIn <= 2. * working)
             {
                 // (A keeper keeps a week's food for its household; a House gives what it has.)
-                const auto floor = owner.rfind("house:", 0) == 0 ? 0 : pennies(KeeperReserve, accountTown(till));
+                const auto floor = owner.rfind("house:", 0) == 0 ? 0 : pennies(KeeperReserve, accountTown(owner));
                 if (const auto give = std::min<std::int64_t>(short_, account(owner)->cash - floor); give > 0 &&
                                                                                                     shift(owner, till, "", 0, give, "an owner's investment"))
                     putIn += double(give);

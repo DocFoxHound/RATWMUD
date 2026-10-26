@@ -177,6 +177,11 @@ void Game::sendArchiveTask(Connection* c, const ArchiveTask& t)
     send(c, e);
 }
 
+std::int64_t Game::archivePay(const std::string& cell) const
+{
+    return atTheDay(lore().pay, world_.lawTown(cell));   // (Archives.json's pay, at a 12p day: doc 64, Phase 13.)
+}
+
 void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t pay, const std::string& how)
 {
     const auto me = c->entityId;
@@ -186,7 +191,7 @@ void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, std::int64_t p
     auto& society = world_.society();
     const auto community = world_.lawTown(t.cell);
     const auto treasury = society.treasuryOf(community);
-    const auto paid = std::min(pay, society.spendable(treasury));
+    const auto paid = std::min(atTheDay(pay, community), society.spendable(treasury));   // (At a 12p day: doc 64, Phase 13.)
     if (paid > 0)
         society.shift(treasury, me, "", 0, paid, "archive work");
     ++archiveToday_[me + "|" + std::to_string(std::int64_t(std::floor(world_.calendarDays())))];

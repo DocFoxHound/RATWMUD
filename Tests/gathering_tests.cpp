@@ -4,6 +4,7 @@
 // rested practice half again as fast.
 #include "RatwCalendar.h"
 #include "RatwGame.h"
+#include "founded_fixture.h"
 #include "RatwItems.h"
 #include "RatwWorld.h"
 
@@ -449,6 +450,199 @@ void stalls()
     fs::remove_all(root);
 }
 
+// A realm founded at the founding's day (doc 64, Phase 13; FoundedAtTheDay): a stall's rent is five times a village's
+// (3p at a 12p day), a newcomer's welcome grant too (20p); the dearest price a stall takes is the ledger's realm's
+// (999p at a 12p day, against the ledger's 1,000p), told to the client's price box, and, with work by the hours in a town
+// whose going rate is above the realm's, still one the ledger moves; a resident's purse under 30p at a 12p day draws it
+// to a Hold; a gift is worth a resident's thanks from 5p at a 12p day, and its thanks may send a tenth of its purse, 6p
+// at most at a 12p day.
+void stallsAtTheFoundingDay()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-stalls-day-" + std::to_string(::getpid()));
+    const auto world = writeStrip(root, false, true);
+    FoundedAtTheDay atTheDay;
+    const auto at = [](std::int64_t pennies) { return FoundedAtTheDay::at(pennies); };
+    Town t(world, {});
+    auto& w = t.g.world();
+    auto& society = w.society();
+    expect(society.state().memory.foundedDay == FoundedAtTheDay::day(), "the strip is founded at the day");
+    const auto community = w.lawTown(cellId(1));
+    const auto spot = w.stallSpots(community).front();
+    t.enter(t.ash, 1, "ash", "Ash", 1, spot.x);
+    t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
+    expect(society.account(t.ash.entityId)->cash == at(20) + 50, "a newcomer's welcome grant at the day (and the test's 50p): " +
+                                                                     std::to_string(society.account(t.ash.entityId)->cash) + "p");
+    t.place(t.ash, 1, spot.x, spot.y);
+    const auto stall = [&](Client& c, std::initializer_list<std::pair<const char*, json::Value>> more) {
+        auto o = json::Value::object();
+        o.add("type", "stall");
+        for (const auto& [k, v] : more)
+            o.add(k, v);
+        c.events.clear();
+        t.g.command(&c, json::dump(o));
+        return c.said();
+    };
+    for (int i = 0; i < 24 * 8 && !(calendar::weekdayOf(w.calendarDays()) == calendar::Marketday &&
+                                     std::abs((w.calendarDays() - std::floor(w.calendarDays())) * 24 - 8) < .5); ++i)
+        w.advanceCalendar(1. / 24);
+    t.run(1.5);
+    w.setWeather(spot.cell, Weather::Clear);
+    const auto offer = t.selfOf(t.ash).object("stall").object("offer");
+    expect(offer.number("fee") == double(at(3)), "the stall's rent offered at the day: " + json::dump(offer));
+    const auto purse = society.account(t.ash.entityId)->cash;
+    auto said = stall(t.ash, {{"verb", "rent"}});
+    expect(contains(said, "You rent the stall") && society.account(t.ash.entityId)->cash == purse - at(3), "rented at " + std::to_string(at(3)) + "p: " + said);
+    // The dearest price: the realm's 999p at a 12p day, at the seconds' pace and by the hours, in a town above the realm.
+    const auto most = Society::pennies(999 / 12. * FoundedAtTheDay::day());
+    expect(t.selfOf(t.ash).object("stall").object("mine").number("priceMost") == double(most), "the price box is told the dearest price");
+    Society::setWorkByHours(true);
+    {
+        auto state = society.state();
+        state.memory.going[community] = FoundedAtTheDay::day() * 1.2;
+        state.memory.going[""] = FoundedAtTheDay::day();
+        // (And the stall keeper's till folded into its purse, as an older save's: a keeper whose purse is its till.)
+        const auto till = society.tillOf("um");
+        auto& keeper = state.accounts.at("um");
+        keeper.cash += state.accounts.at(till).cash;
+        for (const auto& [item, n] : state.accounts.at(till).stock)
+            keeper.stock[item] += n;
+        state.accounts.erase(till);
+        expect(society.restore(state) && society.amountDay(community) > society.amountDay(""), "a town whose going rate is above the realm's");
+    }
+    // Such a keeper keeps back its reserve (20p at a 12p day) at its town's day, as its wealth line reckons it.
+    expect(society.tillOf("um") == "um" &&
+               society.spendable("um") == society.account("um")->cash - Society::pennies(20 / 12. * society.amountDay(community)),
+           "a keeper's reserve at its town's day: " + std::to_string(society.account("um")->cash - society.spendable("um")) + "p");
+    society.create(t.ash.entityId, "meal", 2, "test");
+    said = stall(t.ash, {{"verb", "list"}, {"item", "meal"}, {"quantity", 1}, {"price", double(most + 1)}});
+    expect(contains(said, "A price from 1p to " + std::to_string(most) + "p"), "a price over the realm's dearest is refused: " + said);
+    said = stall(t.ash, {{"verb", "list"}, {"item", "meal"}, {"quantity", 1}, {"price", double(most)}});
+    expect(contains(said, "You lay out"), "the dearest is taken: " + said);
+    expect(t.selfOf(t.ash).object("stall").object("mine").number("priceMost") == double(most), "and the price box says so, by the hours");
+    society.shift("treasury", t.bo.entityId, "", 0, most, "test: a dear meal");
+    t.place(t.bo, 1, spot.x + 1.5, spot.y);
+    const auto here = t.selfOf(t.bo).object("stall").object("here");
+    const auto bo0 = society.account(t.bo.entityId)->cash;
+    said = stall(t.bo, {{"verb", "buy"}, {"id", here.string("id")}, {"item", "meal"}, {"quantity", 1}});
+    expect(society.account(t.bo.entityId)->cash == bo0 - most, "and the ledger moves it: " + said);
+    Society::setWorkByHours(false);
+    // A purse light enough for a Hold: under 30p at a 12p day.
+    const auto purseOf = [&](const std::string& who, std::int64_t coins) {
+        const auto had = society.account(who)->cash;
+        if (had > coins)
+            society.shift(who, "treasury", "", 0, had - coins, "test");
+        else if (had < coins)
+            society.shift("treasury", who, "", 0, coins - had, "test");
+        return t.g.drawnToAHold(who);
+    };
+    expect(purseOf("u1", 30) && purseOf("u1", at(30) - 1) && !purseOf("u1", at(30)), "a purse under " + std::to_string(at(30)) + "p draws a resident to a Hold");
+    const auto gift = [&](std::int64_t coins) {
+        return t.g.giftWorthThanks({"gift", t.ash.entityId, "u1", cellId(0), 0, 0, {}, 0, coins, {}});
+    };
+    expect(!gift(at(5) - 1) && gift(at(5)), "a gift worth thanks from " + std::to_string(at(5)) + "p");
+    purseOf("u1", 400);
+    expect(t.g.thanksGift("u1") == at(6), "thanks with " + std::to_string(at(6)) + "p at most: " + std::to_string(t.g.thanksGift("u1")) + "p");
+    purseOf("u1", 100);
+    expect(t.g.thanksGift("u1") == 10, "or a tenth of the purse");
+    expect(society.conserved(), "money conserved");
+    fs::remove_all(root);
+}
+
+// The players' services at the founding's day (doc 64, Phase 13: the price review's question 2), each written at a 12p
+// day, so five times as much in a realm founded at 60p (FoundedAtTheDay): a bed upstairs at an inn (2p a night, 10p a
+// week, 8p the whole upstairs), a notice (1p), Liar's Bones' stakes (5p at most), the courier's fee in town (1p) and the
+// most a letter carries (50p), a faction's report and tithe (5p, 20p), archive work's pay (2p), a Chapter's tent (10p)
+// and a companion's wage (6p a day).
+void servicesAtTheFoundingDay()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-services-day-" + std::to_string(::getpid()));
+    const auto world = writeStrip(root, true, false, true);
+    FoundedAtTheDay atTheDay;
+    const auto at = [](std::int64_t pennies) { return FoundedAtTheDay::at(pennies); };
+    Town t(world, {});
+    t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);
+    t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
+    t.run(6);                                       // (The estates refresh: the upstairs is to let.)
+    auto& w = t.g.world();
+    auto& society = w.society();
+    expect(society.state().memory.foundedDay == FoundedAtTheDay::day(), "the strip is founded at the day");
+    const auto command = [&](Client& c, const char* type, std::initializer_list<std::pair<const char*, json::Value>> more) {
+        auto o = json::Value::object();
+        o.add("type", type);
+        for (const auto& [k, v] : more)
+            o.add(k, v);
+        c.events.clear();
+        t.g.command(&c, json::dump(o));
+        return c.said();
+    };
+    society.shift("treasury", t.ash.entityId, "", 0, at(100), "test: a purse for it all");
+    // A bed upstairs.
+    auto* ash = w.entity(t.ash.entityId);
+    ash->cellId = "c_up";
+    ash->position = {2.5, 1.5};
+    t.run(1);
+    std::map<std::string, double> offered;
+    for (const auto& o : t.selfOf(t.ash).object("lodging").array("offers"))
+        offered[o.string("verb") + "|" + o.string("period")] = o.number("price");
+    expect(offered["bed|night"] == double(at(2)) && offered["bed|week"] == double(at(10)) && offered["night|night"] == double(at(8)),
+           "a bed for the night, the week, the whole upstairs, at the day: " + std::to_string(offered["bed|night"]) + "p");
+    auto cash = society.account(t.ash.entityId)->cash;
+    auto said = command(t.ash, "lodge", {{"verb", "bed"}, {"period", "night"}});
+    expect(contains(said, "(" + std::to_string(at(2)) + "p)") && society.account(t.ash.entityId)->cash == cash - at(2), "a bed taken at the day: " + said);
+    // A notice at Ridgemere's board.
+    const auto* spot = w.boardSpot("ridgemere");
+    expect(spot != nullptr, "Ridgemere has a board");
+    ash->cellId = spot->cell;
+    ash->position = {spot->x + .5, spot->y};
+    t.run(.5);
+    command(t.ash, "board", {{"verb", "read"}});
+    expect(t.ash.last("board") && t.ash.last("board")->number("noticeFee") == double(at(1)), "the board's form is told the notice's fee");
+    cash = society.account(t.ash.entityId)->cash;
+    said = command(t.ash, "board", {{"verb", "post"}, {"kind", "seeking"}, {"whatType", "item"}, {"whatValue", "honey"}, {"text", "Seeking honey."}});
+    expect(contains(said, "(" + std::to_string(at(1)) + "p to the town)") && society.account(t.ash.entityId)->cash == cash - at(1), "a notice at the day: " + said);
+    // The upstairs to let to a Chapter (30p a week at a 12p day); a letter by the courier, and what it may carry.
+    expect(t.g.estates().property("c_up") && t.g.estates().property("c_up")->rent == at(30), "the upstairs' week to a Chapter at the day");
+    t.g.command(&t.bo, cmd({{"type", "chat"}, {"text", "\"I'm Bo.\""}, {"commandId", "b1"}}));
+    t.place(t.ash, 1, 11.5);
+    t.run(1);
+    auto r = t.letter(t.ash, "write", {{"to", "bo"}, {"text", "Coins."}, {"enclose", [&] {
+                                            auto o = json::Value::object();
+                                            o.add("coins", double(at(50) + 1));
+                                            return o;
+                                        }()}});
+    expect(contains(r.message, std::to_string(at(50)) + "p at most"), "a letter carries " + std::to_string(at(50)) + "p at most: " + r.message);
+    cash = society.account(t.ash.entityId)->cash;
+    r = t.letter(t.ash, "write", {{"to", "bo"}, {"text", "Meet me by the fountain."}});
+    expect(r.ok && contains(r.message, "(" + std::to_string(at(1)) + "p)") && society.account(t.ash.entityId)->cash == cash - at(1),
+           "a letter in town at the day: " + r.message);
+    // Liar's Bones at the common room's table.
+    t.place(t.ash, 1, 12.5, 12.5);
+    expect(t.selfOf(t.ash).object("table").number("stakeMost") == double(at(5)), "the table's stakes, 5p at most at a 12p day");
+    said = command(t.ash, "table", {{"verb", "start"}, {"game", "liars"}, {"stake", double(at(5) * 10)}});
+    expect(t.selfOf(t.ash).object("table").number("stake") == double(at(5)),
+           "a stake over the most is the most: " + said + json::dump(t.selfOf(t.ash).object("table")));
+    command(t.ash, "table", {{"verb", "leave"}});
+    // The courier's fees; a faction's; the archive's; a Chapter's tent.
+    const auto fees = t.caseOf(t.ash).object("fees");
+    expect(fees.number("town") == double(at(1)) && fees.number("enclosureMost") == double(at(50)), "the courier's fees at the day: " + json::dump(fees));
+    expect(t.g.reportFee(t.ash.entityId) == at(5) && t.g.titheFee(t.ash.entityId) == at(20) && t.g.archivePay(cellId(1)) == at(2) &&
+               t.g.buildingCost(*camp::kind("tent"), cellId(1)) == at(10),
+           "a report, a tithe, archive work and a tent at the day");
+    // A companion hired, after its working hours: its first day's wage.
+    w.setTimeOfDay(18);
+    t.place(t.ash, 0, 4.5);
+    auto* neighbour = w.entity("u1");
+    neighbour->cellId = cellId(0);
+    neighbour->position = {5.5, 8.5};
+    t.run(.5);
+    cash = society.account(t.ash.entityId)->cash;
+    const auto had = society.account("u1")->cash;
+    said = command(t.ash, "action", {{"action", "hire for " + std::to_string(at(6)) + "p a day"}, {"target", "u1"}});
+    expect(society.account(t.ash.entityId)->cash == cash - at(6) && society.account("u1")->cash == had + at(6), "a companion's day at the day: " + said);
+    expect(society.conserved(), "money conserved");
+    fs::remove_all(root);
+}
+
 // Phase 5, tavern games: a table in the common room; Knucklebones between two wolves to a winner, with practice;
 // Liar's Bones for 3p against a resident (residents with little money refused), the pot paid less the house's penny,
 // money conserved, the resident kept in its seat; a wolf leaving Wolves and Deer hands the game to the other.
@@ -827,6 +1021,8 @@ int main()
         boards();
         lodgings();
         stalls();
+        stallsAtTheFoundingDay();
+        servicesAtTheFoundingDay();
         tables();
         festivals();
         archive();

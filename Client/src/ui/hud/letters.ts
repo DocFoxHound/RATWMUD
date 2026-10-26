@@ -100,7 +100,9 @@ export function renderLetters(panel: HTMLElement, s: GameState) {
             s.letterDraftVersion++;
         });
         if (d.replyTo) button('CANCEL', 'secondary', row, () => { d.replyTo = ''; s.letterDraftVersion++; });
-        el('p', 'muted small', sheet, 'Sealed, carried by the town\'s courier (a penny in town, more to another). It carries your scent, unless masked.');
+        const fees = obj(c, 'fees'), inTown = num(fees, 'town', 1);
+        el('p', 'muted small', sheet, `Sealed, carried by the town's courier (${inTown === 1 ? 'a penny' : `${inTown}p`} in town, more to another; ` +
+            `${num(fees, 'enclosureMost', 50)}p at most inside). It carries your scent, unless masked.`);
     } else el('p', 'muted small', panel, 'Letters are written at an inn or tavern, at a scriptorium\'s desk, or in your Chapter\'s own place.');
     // A pact (doc 55, 8): terms one sets down naming another; both seal it; nothing enforces it.
     const pact = el('details', 'letter-sheet', panel);
@@ -116,8 +118,9 @@ export function renderLetters(panel: HTMLElement, s: GameState) {
     for (const w of arr(c, 'waiting').filter(isObject)) {
         const row = el('div', 'story-row letter-waiting', panel);
         el('span', '', row, `${num(w, 'count')} ${num(w, 'count') === 1 ? 'letter waits' : 'letters wait'} at the inns of ${str(w, 'town')}`);
+        const on = num(obj(c, 'fees'), 'sendOn', 1);
         button('SEND IT ON', 'small', row, () => s.sendLetter('sendOn', {from: str(w, 'id')})).title =
-            'A penny a letter, and the courier\'s time again, to bring it to the town you are in';
+            `${on === 1 ? 'A penny' : `${on}p`} a letter, and the courier's time again, to bring it to the town you are in`;
     }
     const letters = arr(c, 'letters').filter(isObject);
     if (!letters.length && !arr(c, 'waiting').length) el('p', 'muted', panel, 'No letters.');

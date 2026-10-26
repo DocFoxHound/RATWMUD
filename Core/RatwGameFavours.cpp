@@ -304,8 +304,9 @@ bool Game::returnLoan(Connection* c, const json::Value& j, Result& result)
 
 void Game::tendLoans()
 {
-    // Once a game hour: what is due goes back by courier (a penny from the borrower); what is gone becomes a debt, and
-    // the lender trusts the borrower less.
+    // Once a game hour: what is due goes back by courier (a penny from the borrower); what is gone becomes a debt (its
+    // catalogue price), and the lender trusts the borrower less. Both at a 12p day, at the capital's day for amounts
+    // (doc 64, Phase 13).
     const double hour = std::floor(world_.calendarDays() * 24);
     if (hour == loansHour_)
         return;
@@ -327,12 +328,12 @@ void Game::tendLoans()
         {
             society.shift(it->borrower, it->lender, it->item, back, 0, "lent");
             world_.fitWorn(it->borrower);           // (Taken off, if it was worn.)
-            society.shift(it->borrower, society.treasuryOf(society.capital()), "", 0, 1, "a courier's fee");
+            society.shift(it->borrower, society.treasuryOf(society.capital()), "", 0, atTheDay(1, society.capital()), "a courier's fee");
         }
         if (back < it->quantity)
         {
             const auto* good = items::good(it->item.substr(0, it->item.find('~')));
-            const std::int64_t owed = std::int64_t(good ? good->price : 1) * (it->quantity - back);
+            const std::int64_t owed = Society::pennies(society.atGoingRate(good ? good->price : 1, society.capital())) * (it->quantity - back);
             world_.bonds().addOwed(it->lender, it->borrower, owed, world_.calendarDays());
             world_.bonds().change(it->lender, it->borrower, {0, -10, 0, 0, 0}, world_.calendarDays());
             world_.recordEvent({"loan unreturned", it->borrower, it->lender, {}, 0, 0, it->item, it->quantity - back, owed, it->id});

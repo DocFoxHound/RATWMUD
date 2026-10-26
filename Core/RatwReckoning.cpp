@@ -46,7 +46,7 @@ std::int64_t Society::wealthLine(const std::string& id) const
     const auto town = communityOfResident(id);
     const std::int64_t living = pennies(MonthDays * FoodADay, town);
     if (const auto* job = jobOf(id); job && job->role == "merchant" && tillOf(id) == id)
-        return living + pennies(KeeperReserve, town) + floatOf(job->id);
+        return living + pennies(KeeperReserve, accountTown(id)) + floatOf(job->id);   // (Its reserve as spendable's.)
     return living;
 }
 

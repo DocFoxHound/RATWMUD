@@ -71,7 +71,7 @@ export class FestivalPanel {
             const row = el('div', 'story-row', this.body);
             el('span', 'small', row, programmeLine(p));
             if (Contests.includes(str(p, 'kind')) && str(p, 'state') === 'open' && !bool(p, 'entered'))
-                button('ENTER · 1p', 'small', row, () => send({verb: 'enter', contest: str(p, 'kind')}));
+                button(`ENTER · ${num(f, 'entry', 1)}p`, 'small', row, () => send({verb: 'enter', contest: str(p, 'kind')}));
             else if (bool(p, 'entered') && str(p, 'state') === 'open') el('span', 'muted small', row, 'entered');
         }
         el('div', 'muted small', this.body, bool(f, 'here') ? 'At the square: the feast, and rest that builds all day.' : 'The festival is at the square.');

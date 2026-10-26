@@ -41,7 +41,9 @@ export class TablePanel {
             button('WOLVES AND DEER', 'small', row, () => send({verb: 'start', game: 'wolves'}));
             const liars = el('div', 'story-row', this.body);
             const stake = el('select', '', liars);
-            for (let p = 0; p <= 5; ++p) el('option', '', stake, p ? `${p}p each` : 'no stake').value = String(p);
+            // Five stakes to choose, up to the most the server allows (5p at a 12p day, at the town's day).
+            const step = Math.max(1, Math.floor(num(table, 'stakeMost', 5) / 5));
+            for (let k = 0; k <= 5; ++k) el('option', '', stake, k ? `${k * step}p each` : 'no stake').value = String(k * step);
             button('LIAR\'S BONES', 'small', liars, () => send({verb: 'start', game: 'liars', stake: Number(stake.value)}));
             return;
         }

@@ -5,6 +5,7 @@
 #include "RatwWire.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
+#include "founded_fixture.h"
 
 #include <algorithm>
 #include <cmath>
@@ -216,6 +217,38 @@ void townsAndCaravans()
     run(w, 7 * 150 + 20);
     expect(w.roads().caravans.empty(), "Back home empty, the caravan is done");
     expect(w.society().conserved(), "Money is still conserved");
+}
+
+// The towns' contracts in LD (doc 64, Phase 13): a realm founded at the founding's day (FoundedAtTheDay) posts the bounty
+// on a camp that robbed its caravan, and the escort for the next, at five times a village's (20p and 3p a point of the
+// camp's strength, and 12p, at a 12p day).
+void contractsAtTheFoundingDay()
+{
+    std::map<bool, std::pair<std::int64_t, std::int64_t>> posted;
+    for (const bool founded : {false, true})
+    {
+        auto f = strip();
+        auto w = [&] {
+            if (!founded)
+                return load(f);
+            FoundedAtTheDay atTheDay;
+            return load(f);
+        }();
+        expect(w.society().state().memory.foundedDay == (founded ? FoundedAtTheDay::day() : 0), "founded at its day");
+        w.tick(.6);
+        expect(!w.roads().caravans.empty(), "A caravan on the road");
+        w.roads().camps = {{"camp_mid", id(4), 20, 100, -100, true}};
+        run(w, 4 * 150 + 20);
+        const auto* bounty = find(w, "bounty");
+        const auto* escort = find(w, "escort");
+        expect(bounty && escort, "a bounty and an escort posted");
+        posted[founded] = {bounty->reward, escort->reward};
+        expect(w.society().conserved(), "The rewards were set aside, not made");
+    }
+    expect(posted[false].second == 12 && posted[true].second == FoundedAtTheDay::at(12),
+           "the escort at the day: " + std::to_string(posted[true].second) + "p against " + std::to_string(posted[false].second) + "p");
+    expect(posted[false].first >= 20 && posted[true].first == FoundedAtTheDay::at(posted[false].first),
+           "the bounty at the day: " + std::to_string(posted[true].first) + "p against " + std::to_string(posted[false].first) + "p");
 }
 
 void banditsAndContracts()
@@ -1627,24 +1660,61 @@ void childrensStipends()
         expect(w.society().conserved(), "Money stays conserved");
     }
     Society::setWorkByHours(false);
-    auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
-    kid.replace(kid.find(" 30 "), 4, " 8 ");
-    auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
-                                    resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
-    auto w = load(f);
-    w.tick(.6);
-    w.society().shift("treasury", "e1", "", 0, 1000, "test: a good year");
-    w.takeEvents();
-    nextMorning(w);
-    if (!Society::hasFood(*w.society().account("kid")))
-        w.society().create("kid", "porridge", 2, "test: breakfast");
-    run(w, 2);
-    std::int64_t stipend = 0;
-    for (const auto& e : w.takeEvents())
-        if (e.kind == "economy" && e.detail == "a child's stipend" && e.target == "kid")
-            stipend = std::max(stipend, e.coins);
-    expect(stipend > Society::MostStipend, "At the old pace, as it was: a penny more for every hundred spared (" + std::to_string(stipend) + "p)");
-    expect(w.society().conserved(), "Money stays conserved");
+    // At the old pace, as it was: MostStipend and a penny more for every hundred spared over a fortnight's food a head;
+    // none from a household whose purse doesn't cover that. Both in LD since Phase 13 (3p, and 70p a head, at a 12p day),
+    // so a realm founded at the founding's day (FoundedAtTheDay) gives about five times the stipend from five times the
+    // purse, and none from five times the lean one. A household sparing under three hundred still gives its MostStipend.
+    std::map<bool, std::int64_t> stipends;
+    for (const bool founded : {false, true})
+        for (const int purse : {1000, 300, 700})
+        {
+            if (founded && purse == 700)
+                continue;
+            const bool lean = purse == 300;
+            const double ratio = founded ? FoundedAtTheDay::ratio() : 1;
+            auto kid = resident("kid", "Pip Small", "civilian", "plays in the streets", 0, 9.5, 0, 9.5);
+            kid.replace(kid.find(" 30 "), 4, " 8 ");
+            auto f = strip("EE.....WW", kid + resident("shop", "Tess Sweet", "merchant", "baker at The Sweet Crust", 0, 10.5, 1, 9.5) +
+                                            resident("trinkets", "Bel Bauble", "merchant", "keeps the jeweller's", 0, 11.5, 1, 10.5));
+            auto w = [&] {
+                if (!founded)
+                    return load(f);
+                FoundedAtTheDay atTheDay;
+                return load(f);
+            }();
+            expect(w.society().state().memory.foundedDay == (founded ? FoundedAtTheDay::day() : 0), "founded at its day");
+            w.tick(.6);
+            // (Everyone grown at home: the purse between them, at a 12p day.)
+            for (const auto* who : {"e1", "e2", "e3", "e4", "e5", "em", "shop", "trinkets"})
+                w.society().shift(who, "treasury", "", 0, w.society().account(who)->cash, "test: the household's purse");
+            w.society().shift("treasury", "e1", "", 0, std::int64_t(purse * ratio), "test: the household's purse");
+            w.takeEvents();
+            nextMorning(w);
+            if (!Society::hasFood(*w.society().account("kid")))
+                w.society().create("kid", "porridge", 2, "test: breakfast");
+            run(w, 2);
+            std::int64_t stipend = 0;
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail == "a child's stipend" && e.target == "kid")
+                    stipend = std::max(stipend, e.coins);
+            const std::string at = (founded ? " (founded at " + std::to_string(int(FoundedAtTheDay::day())) + "p)" : std::string()) + ", " +
+                                   std::to_string(purse) + "p at home";
+            const auto most = w.society().pennies(Society::MostStipend, "");
+            if (lean)
+                expect(stipend == 0, "At the old pace, a household short of a fortnight's food a head gives none" + at + ": " +
+                                         std::to_string(stipend) + "p");
+            else if (purse == 700)
+                expect(stipend >= most && stipend < most + 3, "At the old pace, a household sparing a little gives its stipend, " +
+                                                                  std::to_string(most) + "p and a penny or two" + at + ": " + std::to_string(stipend) + "p");
+            else
+            {
+                expect(stipend > most, "At the old pace, as it was: a penny more for every hundred spared" + at + " (" + std::to_string(stipend) + "p)");
+                stipends[founded] = stipend;
+            }
+            expect(w.society().conserved(), "Money stays conserved");
+        }
+    expect(std::abs(double(stipends[true]) - FoundedAtTheDay::ratio() * double(stipends[false])) <= FoundedAtTheDay::ratio(),
+           "five times the stipend at five times the day: " + std::to_string(stipends[true]) + "p against " + std::to_string(stipends[false]) + "p");
 }
 
 // Wants (the user, 2026-10-05; doc 64, Phase 13): a household with money to spare buys things it simply wants, one a day
@@ -3159,6 +3229,7 @@ int main()
         shopsSellTheirGoods();
         townsAndCaravans();
         banditsAndContracts();
+        contractsAtTheFoundingDay();
         anEscortWhoIsntThere();
         couriersAndSupplies();
         rumoursSpread();

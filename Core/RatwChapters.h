@@ -18,7 +18,7 @@ constexpr std::size_t Founders = 3;
 constexpr double WeekSeconds = 7 * 86400.0, ActiveSeconds = 14 * 86400.0, InviteSeconds = 300, HeadAwaySeconds = 30 * 86400.0,
                  RejoinSeconds = 14 * 86400.0;
 constexpr int WeeklyRenownCap = 300;
-constexpr std::int64_t FoundingFee = 20;          // Two marks, in pennies.
+constexpr std::int64_t FoundingFee = 20;          // Two marks, in pennies at a 12p day (Game::atTheDay: doc 64, Phase 13).
 
 struct Member
 {

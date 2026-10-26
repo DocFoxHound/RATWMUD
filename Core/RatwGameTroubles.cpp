@@ -277,7 +277,7 @@ void Game::troubleActions(const Entity& self, const Entity& e, double apart, Val
             actions.push("trouble:speak:" + resident + "|Speak for " + labelFor(self.id, resident));
         else if (t.kind == "child" && e.id != resident && e.id != t.other && apart <= 3 && mastersTrade(e.id))
             actions.push("trouble:sponsor:" + resident + "|Sponsor " + labelFor(self.id, t.other) + "'s apprenticeship (" +
-                         std::to_string(kind ? kind->fee : 20) + "p)");
+                         std::to_string(atTheDay(kind ? kind->fee : 20, townFor(e.cellId))) + "p)");
     }
 }
 
@@ -315,7 +315,9 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
         if (paid <= 0)
             return {false, "The loan can't be paid just now.", {}};
         record(Economy | Character, wolf);
-        troubleSolved(wolf, t, "paid_debt", paid >= rules.notableDebt ? fame::Notable : -1, paid,
+        const auto* at = world_.entity(wolf);
+        const auto notable = atTheDay(rules.notableDebt, at ? townFor(at->cellId) : std::string());   // (At a 12p day.)
+        troubleSolved(wolf, t, "paid_debt", paid >= notable ? fame::Notable : -1, paid,
                       "You pay off the loan: " + std::to_string(paid) + " pennies to the town's rescue fund. " + name(resident) +
                           "'s shop owes nothing now, and stays open.");
         return {true, {}, resident};
@@ -388,15 +390,18 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
             return {false, name(target) + " can't take an apprentice just now.", {}};
         if (const auto* b = world_.bonds().find(target, wolf); !b || b->trust < rules.masterTrust)
             return {false, name(target) + " doesn't know you well enough to take your word for it.", {}};
-        if (cash < kind->fee)
-            return {false, "The fee is " + std::to_string(kind->fee) + " pennies; you haven't so much.", {}};
+        // (troubles.json's fee is at a 12p day, as the catalogue's prices: at the town's day, doc 64, Phase 13.)
+        const auto* at = world_.entity(target);
+        const auto fee = atTheDay(kind->fee, at ? townFor(at->cellId) : std::string());
+        if (cash < fee)
+            return {false, "The fee is " + std::to_string(fee) + " pennies; you haven't so much.", {}};
         const auto done = world_.apprenticeResident(trade->id, t.other);
         if (!done.ok)
             return {false, done.message, {}};
-        society.shift(wolf, target, "", 0, kind->fee, "an apprenticeship's fee");
+        society.shift(wolf, target, "", 0, fee, "an apprenticeship's fee");
         record(Economy | Character, wolf);
-        troubleSolved(wolf, t, "sponsored_apprentice", -1, kind->fee,
-                      "You pay the fee of " + std::to_string(kind->fee) + " pennies. " + name(target) + " takes " + labelFor(wolf, t.other) +
+        troubleSolved(wolf, t, "sponsored_apprentice", -1, fee,
+                      "You pay the fee of " + std::to_string(fee) + " pennies. " + name(target) + " takes " + labelFor(wolf, t.other) +
                           " on as an apprentice: " + trade->title + ".");
         return {true, {}, resident};
     }

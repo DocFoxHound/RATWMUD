@@ -21,8 +21,9 @@ using json::Value;
 
 namespace
 {
-// A stall's rent for the morning, and the dearest price laid on it, in LD (3p and 999p at a 12p day: at the town's
-// going rate, Society::pennies, doc 64, Phase 13).
+// A stall's rent for the morning, and the dearest price laid on it, in LD (3p and 999p at a 12p day, Society::pennies,
+// doc 64, Phase 13): the rent at its town's day, the price at the realm's, as the ledger's dearest piece (PieceMost) is,
+// so a price a stall takes is one the ledger moves.
 constexpr double StallFee = 3 / 12., PriceMost = 999 / 12.;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;
@@ -348,7 +349,7 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
     {
         const int quantity = std::clamp(int(j.number("quantity", 1)), 1, 99);
         const auto price = std::int64_t(j.number("price", 0));
-        if (const auto most = society.pennies(PriceMost, st.community); price < 1 || price > most)
+        if (const auto most = society.pennies(PriceMost, ""); price < 1 || price > most)
             return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         if (!items::good(items::baseOf(item)) || spareOf(me, item) < quantity)
             return result = {false, "You haven't that to sell (what you wear, and what is lent to you, stays off the stall).", {}}, true;
@@ -379,7 +380,7 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto found = st.prices.find(item);
         if (found == st.prices.end())
             return result = {false, "That isn't on your stall.", {}}, true;
-        if (const auto most = society.pennies(PriceMost, st.community); price < 1 || price > most)
+        if (const auto most = society.pennies(PriceMost, ""); price < 1 || price > most)
             return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         found->second = price;
         return result = {true, "Now " + std::to_string(price) + "p apiece.", {}}, true;
@@ -445,6 +446,7 @@ json::Value Game::stallSelf(const std::string& viewer)
             o.add("here", d <= KeeperReach);
             o.add("takings", double(st.takings));
             o.add("wares", wares(st, false));
+            o.add("priceMost", double(world_.society().pennies(PriceMost, "")));   // (For the price box.)
             out.add("mine", o);
             any = true;
         }

@@ -6,6 +6,8 @@
 //   purse, from a head who doesn't dislike the wolf (liking and trust 0 or more): letting is income for the resident;
 // - the inn's whole upstairs for a night (to 06:00) 8p, not while a bed there is let (nor the other way round);
 // - a place a DM or Atlas listed for individuals (estate::Property::individuals): a night or a week, as set.
+// The prices are at a 12p day, at the town's day for amounts (Game::atTheDay; doc 64, Phase 13): five times as much in
+// a realm founded at 60p. A place's rent is the DM's, as set.
 // Never a seat of power, a church, a guardhouse or where a resident lives or works: nothing else is offered. One
 // lodging a wolf. Each has a small chest (`let:<id>`, 10 kinds and 20 lb). Held for a story (estate.hold), new lodgings
 // are refused and running ones get a week's notice, then end with the rest refunded from the landlord (owed if it
@@ -101,7 +103,7 @@ bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result)
                     free.push_back(b);
             if (free.empty())
                 return result = {false, names::capitalised(labelFor(me, target)) + " has no bed to spare.", target}, true;
-            kind = "lodger", landlord = target, account = target, period = "week", rent = LodgerWeek;
+            kind = "lodger", landlord = target, account = target, period = "week", rent = atTheDay(LodgerWeek, townFor(cell));
             x = free.front().first, y = free.front().second;
         }
         else if (verb == "place")
@@ -125,7 +127,7 @@ bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result)
             {
                 if (std::any_of(lodgings_.begin(), lodgings_.end(), [&](const Lodging& l) { return l.cell == cell; }))
                     return result = {false, "A bed up here is let; the whole upstairs can't be.", {}}, true;
-                kind = "night", period = "night", rent = UpstairsNight;
+                kind = "night", period = "night", rent = atTheDay(UpstairsNight, townFor(cell));
             }
             else
             {
@@ -137,7 +139,8 @@ bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result)
                             best = d, x = b.first, y = b.second;
                 if (x < 0)
                     return result = {false, "Every bed up here is let.", {}}, true;
-                kind = "bed", period = period == "week" ? "week" : "night", rent = period == "week" ? BedWeek : BedNight;
+                kind = "bed", period = period == "week" ? "week" : "night";
+                rent = atTheDay(period == "week" ? BedWeek : BedNight, townFor(cell));
             }
         }
         if (const auto hold = holds_.find(cell); hold != holds_.end() && hold->second.until > now)
@@ -336,10 +339,11 @@ json::Value Game::lodgingView(const std::string& viewer)
         const bool held = holds_.count(e->cellId) && holds_.at(e->cellId).until > world_.calendarDays();
         if (!held && innUpstairs(e->cellId) && !estates_.lease(e->cellId) && !wholeLodgingAt(e->cellId))
         {
-            add("bed", "night", "Take a bed for the night", BedNight);
-            add("bed", "week", "Take a bed for a week", BedWeek);
+            const auto town = townFor(e->cellId);
+            add("bed", "night", "Take a bed for the night", atTheDay(BedNight, town));
+            add("bed", "week", "Take a bed for a week", atTheDay(BedWeek, town));
             if (std::none_of(lodgings_.begin(), lodgings_.end(), [&](const Lodging& l) { return l.cell == e->cellId; }))
-                add("night", "night", "Hire the upstairs for tonight", UpstairsNight);
+                add("night", "night", "Hire the upstairs for tonight", atTheDay(UpstairsNight, town));
         }
         if (const auto* p = estates_.property(e->cellId); !held && p && p->individuals && !estates_.lease(e->cellId) && !wholeLodgingAt(e->cellId))
         {

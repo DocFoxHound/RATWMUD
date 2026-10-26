@@ -75,9 +75,11 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
                 return true;
             }
         const auto* purse = world_.society().account(id);
-        if (!purse || purse->cash < chapter::FoundingFee)
+        const auto* where = world_.entity(id);
+        const auto fee = atTheDay(chapter::FoundingFee, where ? townFor(where->cellId) : std::string());
+        if (!purse || purse->cash < fee)
         {
-            result = {false, "Founding a Chapter costs " + std::to_string(chapter::FoundingFee) + " pennies (two marks).", {}};
+            result = {false, "Founding a Chapter costs " + std::to_string(fee) + " pennies" + (fee == 20 ? " (two marks)." : "."), {}};
             return true;
         }
         const auto o = chapters_.propose(id, founders, mind::trim(j.string("name")), j.string("colour"), mind::trim(j.string("charter")), scene, t);
@@ -104,7 +106,9 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
                 result = {false, "The scene the Chapter was to be founded in has ended. Begin again in another.", {}};
                 return true;
             }
-            if (!world_.society().shift(proposal.by, "treasury", "", 0, chapter::FoundingFee, "chapter founding fee"))
+            const auto* where = world_.entity(proposal.by);
+            if (!world_.society().shift(proposal.by, "treasury", "", 0,
+                                        atTheDay(chapter::FoundingFee, where ? townFor(where->cellId) : std::string()), "chapter founding fee"))
             {
                 result = {false, "The founder who proposed it can't pay the fee now.", {}};
                 return true;
@@ -454,6 +458,8 @@ void Game::refreshChapterViews(double dt)
             o.add("colour", p->colour);
             o.add("mine", p->by == id);
             o.add("agreed", p->agreed.count(id) > 0);
+            if (const auto* where = world_.entity(p->by))
+                o.add("fee", double(atTheDay(chapter::FoundingFee, townFor(where->cellId))));   // (The proposer's to pay.)
             auto founders = Value::array();
             for (const auto& f : p->founders)
             {

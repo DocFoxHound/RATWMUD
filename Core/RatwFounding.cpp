@@ -35,8 +35,10 @@ std::int64_t Society::spendable(const std::string& id) const
     if (!purse)
         return 0;
     const auto* r = state_.residents.count(id) ? spec(id) : nullptr;
-    // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.)
-    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, "")) : purse->cash;
+    // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.
+    // At its town's day, accountTown, as the wealth line and an owner's top-up reckon it.)
+    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, accountTown(id)))
+                                                         : purse->cash;
 }
 
 void Society::startingMoney(const std::string& id, std::int64_t coins)
@@ -67,12 +69,19 @@ void Society::startingMoney(const std::string& id, std::int64_t coins)
 void Society::foundWage()
 {
     auto& memory = state_.memory;
-    if (memory.purses >= 1 || state_.residents.size() < WorldMoneyResidents)
+    if (memory.purses >= 1 || (state_.residents.size() < WorldMoneyResidents && !foundAnyLand_))
         return;
     ++memory.revision;
+    const double day = items::ladder().foundingDay;
+    // (An older save's employers' books, founding its purses now: each wage by its town's rate to the founding's, so
+    // they stand as far above or below it as they stood, and the first measure keeps the day.)
+    for (auto& [key, book] : memory.employers)
+        if (const double was = goingRate(employerTownOf(key)); book.wage > 0 && was > 0)
+            book.wage *= day / was;
     for (auto& [town, rate] : memory.going)
-        rate = items::ladder().foundingDay;
-    memory.going[""] = items::ladder().foundingDay;
+        rate = day;
+    memory.going[""] = day;
+    memory.foundedDay = day;
 }
 
 void Society::foundPurses(const std::map<std::string, LifeBody>& bodies)

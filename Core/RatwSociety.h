@@ -332,6 +332,9 @@ struct EconomyMemory
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
     std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
+    // The realm's labourer's day when its money was founded (Society::foundWage: ladder.json's foundingDay); 0 for a
+    // realm founded before Phase 13 (at the catalogue's 12p) or a village. The amounts' day at the seconds' pace.
+    double foundedDay = 0;
     std::set<std::string> closed;                   // Posts a business has let go and keeps empty (doc 64, Phase 6).
     double pace = 0;                                 // The realm's way to the calibrated hours, 0 to 1 (Society::PaceStep).
     // The realm's food in hand at the day passes of the last week, days a head, each with its day (a day it missed has
@@ -523,6 +526,12 @@ class Society
     void forgetPlaces() { ++rosterRevision_; }
     // Each farm worker's bunkhouse (the world finds them: a room "<site> Bunkhouse" for a worker "... at <site>").
     static bool farmWork(const std::string& producer);   // A farm, orchard, vineyard, herd or flock (RatwFarmhands.cpp).
+    // What a farm spends at its town's food shops on its bunkhouse's food (stockBunkhouses): a penny for each 15 of the
+    // nourishment it still wants, 2p at least, at a 12p day, at the town's day (doc 64, Phase 13).
+    std::int64_t farmhandsFoodMoney(int wanted, const std::string& town) const
+    {
+        return pennies(double(std::max(2, wanted / 15)) / 12., town);
+    }
     // Seasonal fields (doc 64, Phase 3b; the model's): with work by the hours, a farm, an orchard or a vineyard sows in
     // spring (days of the year before SowEnd) and brings in at the harvest (HarvestStart to HarvestEnd) what it sowed,
     // FieldYields of its yields an acre, a third of an acre's hours at sowing and the rest at the harvest; it sells from
@@ -718,14 +727,23 @@ class Society
     // A price in whole pennies: to the nearest, a penny at least (doc 46, Phase 8: rounded up, a 1p good priced at 1.4p
     // sold for 2p, twice its catalog's).
     static std::int64_t pennies(double price) { return std::max<std::int64_t>(1, std::llround(price)); }
-    // An amount in labourer's days (LD), in whole pennies at the town's going rate ("" the realm's), a penny at least
-    // (doc 64, Phase 13: the realm is founded at ladder.json's `foundingDay`, 60p). The amounts here that were written as
-    // pennies when a day was the catalogue's 12p are kept so, in LD (5 / 12. for 5p): at 12p each is what it was.
-    std::int64_t pennies(double days, const std::string& town) const { return pennies(days * goingRate(town)); }
-    // A good's catalogue price (in the catalogue's pennies: a day of `catalogueDay`), at the town's going rate. Meals,
-    // herbs and swords are still priced so (storePriced).
+    // An amount in labourer's days (LD), in whole pennies at the town's day for amounts ("" the realm's: amountDay), a
+    // penny at least (doc 64, Phase 13: the realm is founded at ladder.json's `foundingDay`, 60p). The amounts here that
+    // were written as pennies when a day was the catalogue's 12p are kept so, in LD (5 / 12. for 5p): in a realm founded
+    // at 12p each is what it was, at either pace.
+    std::int64_t pennies(double days, const std::string& town) const { return pennies(days * amountDay(town)); }
+    // A labourer's day for the amounts in LD and the catalogue's prices (pennies(days, town), atGoingRate; doc 64, Phase
+    // 13). With work by the hours, the town's going rate (its measure a labourer's day, the skill's premium off). At the
+    // seconds' pace, the realm's day at its founding (memory.foundedDay; the catalogue's, for a realm founded before Phase
+    // 13 or a village): that pace's measure keeps the premium in, as it did (a town of skill-10 shops at 12.8p), so the
+    // amounts don't follow it, and stay as they were.
+    double amountDay(const std::string& town) const;
+    // A good's catalogue price (in the catalogue's pennies: a day of `catalogueDay`), at the town's day for amounts.
+    // Meals, herbs and swords are still priced so (storePriced).
     double atGoingRate(double catalogue, const std::string& town) const;
-    static constexpr double PieceMost = 1000 / 12.;  // The dearest piece the ledger moves, in LD (1,000p at a 12p day).
+    // The dearest piece the ledger moves, in LD (1,000p at a 12p day), at the realm's day (amountDay("")): one rate for it
+    // and every cap under it (a stall's price, a story's prize), so none takes a price the ledger refuses.
+    static constexpr double PieceMost = 1000 / 12.;
     // What a buyer in the town pays the land for a good, by the yardstick: its going price less the usual margin.
     double buyingPrice(const std::string& town, const std::string& item) const;
     double townFactor(const std::string& town, const std::string& item) const;   // townPrice against the catalog's.
@@ -972,7 +990,7 @@ class Society
     // (hoursFor, at the realm's pace), so a price is what its work cost; otherwise the calibrated `hours` (Phase 4).
     double costedHours(const items::Craft& k) const;
     double costedHours(const items::Producer& p) const;
-    static inline bool workByHours_ = false, costAtPace_ = false;
+    static inline bool workByHours_ = false, costAtPace_ = false, foundAnyLand_ = false;
     double workCredited_ = 0, workLost_ = 0;
     std::unordered_map<std::string, std::pair<double, double>> workBy_;   // Account -> hours credited, lost (econ_watch).
 
@@ -995,6 +1013,9 @@ class Society
     static void setWorkByHours(bool on) { workByHours_ = on; }
     static bool workByHours() { return workByHours_; }
     static void setCostAtPace(bool on) { costAtPace_ = on; }   // (A test's: ladder.json's costAtPace, whatever the data says.)
+    // A test's: a land of any size founds its wage at ladder.json's foundingDay as a realm's is (foundWage), so a test's
+    // village can be a realm founded at 60p; its money is still a village's.
+    static void setFoundAnyLand(bool on) { foundAnyLand_ = on; }
     // Hours of work credited to businesses and producers so far, and those lost to a full bank (econ_watch's measures).
     double workCredited() const { return workCredited_; }
     double workLost() const { return workLost_; }
@@ -1602,7 +1623,8 @@ class Society
     // The realm's labourer's day as it is founded (doc 64, Phase 13): in a land of WorldMoneyResidents or more, whose
     // money is made up to WorldMoney, the going rate starts at ladder.json's `foundingDay` (the realm's and every town's,
     // memory.going), so its tills' floats, its first wages and employers' books and its prices start there. Before its
-    // purses are made, once; a village made for a test keeps the catalogue's day.
+    // purses are made, once; a village made for a test keeps the catalogue's day. An older save founding its purses now
+    // has its employers' books moved with their towns' rates, so its first measure doesn't pull the day back.
     void foundWage();
     // Tops every purse up to its starting money, once (EconomyMemory::purses).
     void foundPurses(const std::map<std::string, LifeBody>& bodies);

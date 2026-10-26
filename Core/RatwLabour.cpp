@@ -670,10 +670,11 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             paid[""].push_back(labourer);
         }
     }
-    // (A realm with no such makers to measure today keeps the rate it had: the catalogue's 12p is no fallback for a
-    // realm founded at another, doc 64, Phase 13.)
+    // (A realm founded at its founding day with no such makers to measure today keeps the rate it had: the catalogue's
+    // 12p is no fallback for a realm founded at another, doc 64, Phase 13. A village, or a realm founded before, falls
+    // back to it, as it did.)
     const auto realm = memory.going.find("");
-    const double kept = realm != memory.going.end() ? realm->second : 0;
+    const double kept = realm != memory.going.end() && memory.foundedDay > 0 ? realm->second : 0;
     memory.going.clear();
     for (auto& [town, wages] : paid)
         if (!wages.empty() && (town.empty() || !workByHours() || int(wages.size()) >= TownRateWeight))

@@ -3,11 +3,13 @@
 // supplier in town when it runs short, and make nothing from nothing.
 #include "RatwItems.h"
 #include "RatwSociety.h"
+#include "RatwTroubles.h"
 #include "RatwWire.h"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>
@@ -2661,10 +2663,112 @@ void foundedAtTheFoundingDay()
     expect(smallRelief == 5 && bigRelief == Society::pennies(5 * ratio),
            "a day's food money in relief, at the day: " + std::to_string(bigRelief) + "p against " + std::to_string(smallRelief) + "p");
     expect(std::abs(big.labourDay("") - founding) < 1e-9, "and the realm's day, measured from its makers, is the founding's");
+    // (The review, doc 64, Phase 13.) The day it was founded at is remembered (the amounts' day at the seconds' pace),
+    // and what was written at a 12p day follows it at either pace: a meal, herbs and a sword at the stores' prices, a
+    // player's welcome grant, a keeper's reserve kept back from its shop's till.
+    expect(big.state().memory.foundedDay == founding && small.state().memory.foundedDay == 0,
+           "the realm remembers the day it was founded at, a village none: " + std::to_string(big.state().memory.foundedDay));
+    {
+        // (A keeper whose purse is its shop's till, as in an older save: the stall's till folded into its purse.)
+        auto state = big.state();
+        if (const auto till = big.tillOf("stall"); till != "stall")
+        {
+            auto& folded = state.accounts.at(till);
+            auto& keeper = state.accounts.at("stall");
+            keeper.cash += folded.cash;
+            for (const auto& [item, n] : folded.stock)
+                keeper.stock[item] += n;
+            state.accounts.erase(till);
+        }
+        expect(big.restore(state) && big.tillOf("stall") == "stall", "a keeper whose purse is its shop's till");
+    }
+    for (const bool hours : {false, true})
+    {
+        Society::setWorkByHours(hours);
+        const std::string pace = hours ? " (by the hours)" : " (at the seconds' pace)";
+        expect(std::abs(big.amountDay("") - founding) < 1e-9, "the amounts' day is the founding's" + pace);
+        for (const auto& [item, at12] : {std::pair{"meal", 6.}, std::pair{"herbs", 2.}, std::pair{"sword", double(items::good("sword")->price)}})
+            expect(std::abs(big.townPrice("", item) - at12 * ratio) < 1e-9 && (hours || std::abs(small.townPrice("", item) - at12) < 1e-9),
+                   std::string("the stores' ") + item + " at the day" + pace + ": " + std::to_string(big.townPrice("", item)) + "p");
+        const std::string player = hours ? "player-hours" : "player-seconds";
+        big.addPlayer(player);
+        expect(big.account(player) && big.account(player)->cash == Society::pennies(20 * ratio),
+               "a player's welcome grant at the day" + pace + ": " + std::to_string(big.account(player)->cash) + "p");
+        // Such a keeper keeps back its reserve (20p at a 12p day) from what it spends.
+        expect(big.account("stall")->cash > Society::pennies(20 * ratio) &&
+                   big.spendable("stall") == big.account("stall")->cash - Society::pennies(20 * ratio),
+               "a keeper keeps back its reserve at the day" + pace + ": " + std::to_string(big.spendable("stall")) + "p of " +
+                   std::to_string(big.account("stall")->cash) + "p");
+    }
+    Society::setWorkByHours(false);
+    small.addPlayer("player-village");
+    expect(small.account("player-village")->cash == 20, "a village's welcome grant is the catalogue day's 20p");
+    expect(big.farmhandsFoodMoney(50, "") == Society::pennies(3 * ratio) && big.farmhandsFoodMoney(0, "") == Society::pennies(2 * ratio) &&
+               small.farmhandsFoodMoney(50, "") == 3,
+           "a farm's money for its bunkhouse's food at the day: " + std::to_string(big.farmhandsFoodMoney(50, "")) + "p");
+    // At the seconds' pace the amounts keep the founding's day whatever a town measures (that pace's measure keeps the
+    // skill's premium in: a town of skill-10 shops measures 12.8p in a realm founded at 12p); by the hours they follow it.
+    {
+        auto state = small.state();
+        state.memory.going = {{"", catalogue * 16 / 15}, {"t", catalogue * 16 / 15}};
+        expect(small.restore(state), "a village whose shops measure the day with their premium");
+        expect(small.amountDay("t") == catalogue && small.pennies(20 / 12., "t") == 20 && std::abs(small.townPrice("t", "meal") - 6) < 1e-9,
+               "at the seconds' pace, its amounts as they were: " + std::to_string(small.pennies(20 / 12., "t")) + "p");
+        troubles::Reads reads;
+        reads.society = &small;
+        double dayCost = 0;
+        troubles::foodDays({"w3"}, "t", reads, nullptr, &dayCost);
+        expect(dayCost == 5, "and the troubles' food a day, 5p a head: " + std::to_string(dayCost) + "p");
+        Society::setWorkByHours(true);
+        expect(std::abs(small.amountDay("t") - catalogue * 16 / 15) < 1e-9 && small.pennies(20 / 12., "t") == 21,
+               "by the hours, at the town's: " + std::to_string(small.pennies(20 / 12., "t")) + "p");
+        Society::setWorkByHours(false);
+    }
     // A realm with nobody whose wage measures the day keeps the day it had (it fell back to the catalogue's).
     auto bare = realm(int(Society::WorldMoneyResidents), false);
     relief(bare);
     expect(std::abs(bare.labourDay("") - founding) < 1e-9, "with no maker to measure, the realm keeps its day: " + std::to_string(bare.labourDay("")) + "p");
+    // A village with none falls back to the catalogue's, as it did (the review): it was never founded at another.
+    {
+        auto village = realm(int(Society::WorldMoneyResidents) - 1, false);
+        auto state = village.state();
+        state.memory.going[""] = catalogue * 1.25;
+        expect(village.restore(state) && std::abs(village.labourDay("") - catalogue * 1.25) < 1e-9, "a village measured at 15p once");
+        relief(village);
+        expect(std::abs(village.labourDay("") - catalogue) < 1e-9, "with no maker to measure, a village falls back to the catalogue's day: " +
+                                                                        std::to_string(village.labourDay("")) + "p");
+    }
+    // An older save of a land this size that never founded its purses (the review): its employers' books, kept at the
+    // catalogue's day, move with the founding, and its next measure keeps the founding's day.
+    {
+        auto older = realm(int(Society::WorldMoneyResidents));
+        auto bodies = atWork(older);
+        double day = .5;
+        for (int d = 0; d < 8; ++d, day += 1)
+            for (int i = 0; i < 3; ++i)
+                older.tick(1, day + i / 86400., 0, bodies);   // (A week of reviews: every employer's book.)
+        auto state = older.state();
+        expect(!state.memory.employers.empty(), "the employers have their books");
+        std::map<std::string, double> founded;
+        for (auto& [key, book] : state.memory.employers)
+            founded[key] = book.wage, book.wage /= ratio;
+        state.memory.purses = 0;
+        state.memory.foundedDay = 0;
+        for (auto& [town, rate] : state.memory.going)
+            rate = catalogue;
+        expect(older.restore(state) && std::abs(older.labourDay("") - catalogue) < 1e-9, "an older save at the catalogue's day, its purses never founded");
+        older.tick(1, day - .8, 0, bodies);         // (Its purses founded, the same day.)
+        bool moved = true;
+        for (const auto& [key, book] : older.state().memory.employers)
+            if (const auto was = founded.find(key); was != founded.end())
+                moved &= std::abs(book.wage - was->second) < 1e-6 * was->second;
+        expect(older.state().memory.purses >= 1 && older.state().memory.foundedDay == founding && moved,
+               "its purses founded, the employers' books move with the day");
+        for (int i = 0; i < 3; ++i)
+            older.tick(1, day + i / 86400., 0, bodies);   // (The next day's measure.)
+        expect(std::abs(older.labourDay("") - founding) < founding * .02,
+               "and its measure keeps the founding's day: " + std::to_string(older.labourDay("")) + "p");
+    }
 }
 
 int main()

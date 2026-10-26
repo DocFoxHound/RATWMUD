@@ -28,12 +28,13 @@ void Game::refreshEstates()
         if (!life.homeCell.empty())
             townCells_.insert(life.homeCell);
     // Rooms above an inn ("<inn>, upstairs") from its keeper; warehouses from the town. A DM's own are kept, and
-    // Atlas's (`let` records) come first.
+    // Atlas's (`let` records) come first. Atlas's rents and these are written at a 12p day, as the catalogue's prices
+    // are: at the town's day for amounts (doc 64, Phase 13); a DM's are as the DM set them.
     estates_.clearDerived();
     for (const auto& [cellId, l] : world_.lettings())
         if (const auto* c = world_.cell(cellId); c && !estates_.property(cellId))
-            estates_.define({cellId, c->name, l.kind, l.landlord, c->factionClaims.empty() ? std::string() : c->factionClaims.front(), l.rent,
-                             l.level});
+            estates_.define({cellId, c->name, l.kind, l.landlord, c->factionClaims.empty() ? std::string() : c->factionClaims.front(),
+                             atTheDay(l.rent, townFor(cellId)), l.level});
     std::map<std::string, std::string> byName;
     for (const auto& [id, c] : world_.cells())
         byName[c.name] = id;
@@ -61,14 +62,14 @@ void Game::refreshEstates()
                 if (const auto* cell = world_.cell(base->second); cell && !cell->factionClaims.empty())
                     p.faction = cell->factionClaims.front();
             p.kind = "hall";
-            p.rent = 30;
+            p.rent = atTheDay(30, townFor(id));
             p.level = 2;
         }
         else if (c.name.find("Warehouse") != std::string::npos)
         {
             p.kind = "warehouse";
             p.landlord = "treasury";
-            p.rent = 50;
+            p.rent = atTheDay(50, townFor(id));
             p.level = 3;
         }
         else

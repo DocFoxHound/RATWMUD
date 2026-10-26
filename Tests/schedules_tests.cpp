@@ -2,6 +2,9 @@
 // Restday, festivals (seasonal and called), and the weather changing plans.
 #include "RatwCheckpoint.h"
 #include "RatwWorld.h"
+#include "founded_fixture.h"
+
+#include <optional>
 
 #include <cmath>
 #include <sstream>
@@ -113,9 +116,15 @@ std::map<std::string, std::string> greyfenFiles()
 }
 
 // Restday's service (Docs/Design/42-money-in-circulation.md, Phase 6): Greyfen with Maple keeping a chapel in the Long
-// House. From nine to eleven a third of the town sits there while she preaches; the plate goes round at the end.
-void restdayService()
+// House. From nine to eleven a third of the town sits there while she preaches; the plate goes round at the end: 1p from
+// a purse over 20p, 2p over 60p, at a 12p day, so five times that in a realm founded at 60p (doc 64, Phase 13:
+// FoundedAtTheDay; each purse topped up to 40p at a 12p day for it).
+void restdayService(bool founded)
 {
+    const auto at = [&](std::int64_t pennies) { return founded ? FoundedAtTheDay::at(pennies) : pennies; };
+    std::optional<FoundedAtTheDay> atTheDay;
+    if (founded)
+        atTheDay.emplace();
     auto files = greyfenFiles();
     auto& manifest = files["world.ratw"];
     const auto line = manifest.find("resident \"maple\"");
@@ -129,7 +138,11 @@ void restdayService()
     World w;
     const auto loaded = w.loadWorldFiles(files, "greyfen");
     expect(loaded.ok, "Greyfen with a chapel loads: " + loaded.message);
+    expect(w.society().state().memory.foundedDay == (founded ? FoundedAtTheDay::day() : 0), "founded at its day");
     expect(w.advanceCalendar(6 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(9.2).ok, "Restday morning");
+    for (const auto& [id, r] : w.society().state().residents)
+        if (const auto* purse = w.society().account(id); purse && purse->cash < at(40))
+            w.society().shift("treasury", id, "", 0, at(40) - purse->cash, "test: a purse for the plate");
     run(w, 400);
     expect(life(w, "maple").task == "preaching", "Maple preaches (" + life(w, "maple").task + ")");
     int there = 0, folk = 0;
@@ -142,10 +155,16 @@ void restdayService()
     expect(w.setTimeOfDay(10.6).ok, "The service ends");
     w.takeEvents();
     run(w, 200);
-    bool plate = false;
+    bool plate = false, atTheDayOnly = true;
     for (const auto& e : w.takeEvents())
-        plate |= e.kind == "economy" && e.detail == "the collection";
+        if (e.kind == "economy" && e.detail == "the collection")
+        {
+            plate = true;
+            atTheDayOnly &= e.coins == at(1) || e.coins == at(2);
+        }
     expect(plate, "and the plate goes round");
+    expect(atTheDayOnly, "each gives " + std::to_string(at(1)) + "p or " + std::to_string(at(2)) + "p");
+    expect(w.society().conserved(), "money conserved");
     expect(w.setTimeOfDay(12).ok, "Noon");
     run(w, 30);
     expect(life(w, "maple").task != "preaching", "The service is over by noon");
@@ -373,7 +392,8 @@ int main()
     {
         theWeek();
         restday();
-        restdayService();
+        restdayService(false);
+        restdayService(true);
         restdayLandFood();
         marketday();
         cityMarkets();

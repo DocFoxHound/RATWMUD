@@ -387,8 +387,9 @@ void Society::stockBunkhouses(std::int64_t day)
             if (wanted <= 0)
                 break;
             std::map<std::string, int> got;
-            buyForSurplus(till, shops[communityOfResident(farm)], [](const std::string& item) { return edible(item); },
-                          std::max<std::int64_t>(2, wanted / 15), "food bought for the farmhands", &got);
+            const auto town = communityOfResident(farm);
+            buyForSurplus(till, shops[town], [](const std::string& item) { return edible(item); }, farmhandsFoodMoney(wanted, town),
+                          "food bought for the farmhands", &got);
             for (const auto& [item, n] : got)
                 if (n > 0 && shift(till, larder, item, n, 0, "food for the farmhands"))
                     wanted -= n * nourishment(item);

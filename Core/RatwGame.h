@@ -986,6 +986,27 @@ class Game
         if (const auto& t = troubleOf(npc))
             heardTrouble(wolf, npc, t.kind);
     }
+    // Whether a resident's purse is light enough to draw it to a Hold's offer of a home and work (doc 32, 5.5): under 30p
+    // at a 12p day, at the realm's day for amounts (doc 64, Phase 13).
+    bool drawnToAHold(const std::string& npcId) const;
+    // A price the game asks, of players and of residents at its tables and festivals (a bed, a notice, a festival's
+    // entry, a stake, a courier's fee, a companion's wage...), written in pennies at a 12p day, the catalogue's (in code
+    // or in Data, as the catalogue's own prices are): in whole pennies at the town's day for amounts (Society::pennies;
+    // doc 64, Phase 13), so in a realm founded at 12p each is what it was. None stays none. And how it is said: "a penny"
+    // for one, "5p" for more.
+    std::int64_t atTheDay(std::int64_t pennies, const std::string& town) const;
+    static std::string priceWords(std::int64_t pennies);
+    // A faction official's report (5p at a 12p day) and a Chapter's tithe to the faction (20p), where the wolf stands.
+    std::int64_t reportFee(const std::string& who) const;
+    std::int64_t titheFee(const std::string& who) const;
+    // A Chapter's building's materials (camp::Kind::cost, at a 12p day) where it builds.
+    std::int64_t buildingCost(const camp::Kind& k, const std::string& cell) const { return atTheDay(k.cost, townFor(cell)); }
+    std::int64_t archivePay(const std::string& cell) const;   // A clean archive task's pay there (RatwArchive.cpp).
+    // A resident's letter of thanks (doc 55, 5): whether a gift is worth one (5p or more at a 12p day, coins and the
+    // goods' catalogue price), and the few pennies it may send with it (a tenth of its purse, 6p at most at a 12p day),
+    // each at the resident's town's day (doc 64, Phase 13).
+    bool giftWorthThanks(const WorldEvent& e) const;
+    std::int64_t thanksGift(const std::string& resident) const;
 
   private:
     // Doc 56, Phase 2: deeds travel and are recognised.

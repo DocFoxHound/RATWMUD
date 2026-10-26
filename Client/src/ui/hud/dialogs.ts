@@ -331,7 +331,7 @@ export class Dialogs {
             this.heading('CHAPTERS', 'No Chapter yet');
             const proposal = obj(ch, 'proposal');
             if (proposal) {
-                el('div', 'label gold', this.panel, `FOUNDING "${str(proposal, 'name')}"`);
+                el('div', 'label gold', this.panel, `FOUNDING "${str(proposal, 'name')}"${num(proposal, 'fee') ? ` · ${num(proposal, 'fee')}p` : ''}`);
                 for (const f of arr(proposal, 'founders').filter(isObject))
                     el('div', '', this.panel, `${str(f, 'name')} · ${bool(f, 'agreed') ? 'agreed' : 'waiting'}`);
                 const row = el('div', 'sheet-actions', this.panel);
@@ -346,9 +346,10 @@ export class Dialogs {
                 button('DECLINE', 'secondary', row, () => send({verb: 'decline'}));
                 return;
             }
-            // Founding: three together, in a scene, each at the social level it takes; two marks from the proposer.
+            // Founding: three together, in a scene, each at the social level it takes; a fee from the proposer (two
+            // marks at a 12p day, at the town's day: the server says what, when it is proposed).
             el('p', 'muted', this.panel, 'A Chapter is founded by three wolves together, in a scene they are all taking part in. ' +
-                'Name it, choose its colour, write its charter, and choose the two who found it with you. It costs two marks.');
+                'Name it, choose its colour, write its charter, and choose the two who found it with you. The one who proposes it pays the founding fee.');
             const name = el('input', 'name-input', this.panel);
             name.placeholder = 'The Chapter\'s name';
             name.maxLength = 32;
@@ -395,8 +396,9 @@ export class Dialogs {
             el('span', 'small', row, `The Chapter's Hold claims ${str(hold, 'claims')} · toll ${num(hold, 'toll')}p for others coming in.`);
             if (rank === 0)
                 button('SET TOLL', 'small', row, () => {
-                    const toll = window.prompt('Toll in pennies (0 to 5)', String(num(hold, 'toll')));
-                    if (toll !== null && /^[0-5]$/.test(toll.trim())) send({verb: 'toll', amount: +toll.trim()});
+                    const most = num(hold, 'tollMost', 5);
+                    const toll = window.prompt(`Toll in pennies (0 to ${most})`, String(num(hold, 'toll')));
+                    if (toll !== null && /^[0-9]+$/.test(toll.trim()) && +toll.trim() <= most) send({verb: 'toll', amount: +toll.trim()});
                 });
         }
         const cols = el('div', 'sheet-cols', this.panel);

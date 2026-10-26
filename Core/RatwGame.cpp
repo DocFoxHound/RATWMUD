@@ -1371,6 +1371,28 @@ void Game::applyDmActions(double dt)
     }
 }
 
+std::int64_t Game::atTheDay(std::int64_t pennies, const std::string& town) const
+{
+    return pennies > 0 ? world_.society().pennies(double(pennies) / 12., town) : 0;
+}
+
+std::int64_t Game::reportFee(const std::string& who) const
+{
+    const auto* e = world_.entity(who);
+    return atTheDay(5, e ? townFor(e->cellId) : std::string());
+}
+
+std::int64_t Game::titheFee(const std::string& who) const
+{
+    const auto* e = world_.entity(who);
+    return atTheDay(20, e ? townFor(e->cellId) : std::string());
+}
+
+std::string Game::priceWords(std::int64_t pennies)
+{
+    return pennies == 1 ? std::string("a penny") : std::to_string(pennies) + "p";
+}
+
 std::int64_t Game::newcomerPurse(const std::string& homeCell) const
 {
     const auto& society = world_.society();
@@ -2977,6 +2999,7 @@ void Game::sendSnapshot(Connection* c)
             auto archive = Value::object();          // (A keeper of records here: archive work, doc 54, 7.)
             const auto task = archiveTasks_.find(id);
             archive.add("task", task == archiveTasks_.end() ? std::string() : task->second.kind);
+            archive.add("pay", double(archivePay(me->cellId)));   // (A task's pay, for its button.)
             if (task != archiveTasks_.end() && task->second.kind == "copy")
                 archive.add("copied", std::round(std::min(1., (world_.time() - task->second.begun) / 300) * 100));
             self.set("archive", archive);
@@ -3465,9 +3488,9 @@ void Game::sendSnapshot(Connection* c)
                         actions.push("ask to be recognised as a House");
                 }
                 actions.push("ask about our standing");
-                actions.push("pay for a report (5p)");
+                actions.push("pay for a report (" + std::to_string(reportFee(view.self.id)) + "p)");
                 actions.push("ask for missions");
-                actions.push("give a tithe (20p)");
+                actions.push("give a tithe (" + std::to_string(titheFee(view.self.id)) + "p)");
                 if (!factions_.stillCounted(factionId, chapters_.of(view.self.id)->id).empty())
                     actions.push("tell of an expulsion");
             }
@@ -5229,13 +5252,13 @@ void Game::command(Connection* c, const std::string& raw)
             // Kestrel."). Said here as an action, it is only a reminder of how.
             system(c, "Introduce yourself aloud: say \"I'm\" and the name you go by.");
         }
-        else if (action == "ask about our standing" || action == "pay for a report (5p)" || action == "ask for missions" ||
-                 action == "give a tithe (20p)" || action == "tell of an expulsion" || action.rfind("deliver mission-", 0) == 0)
+        else if (action == "ask about our standing" || action.rfind("pay for a report (", 0) == 0 || action == "ask for missions" ||
+                 action.rfind("give a tithe (", 0) == 0 || action == "tell of an expulsion" || action.rfind("deliver mission-", 0) == 0)
         {
             auto k = Value::object();
-            k.add("verb", action == "ask about our standing" ? "report" : action == "pay for a report (5p)" ? "payreport"
+            k.add("verb", action == "ask about our standing" ? "report" : action.rfind("pay for a report (", 0) == 0 ? "payreport"
                           : action == "ask for missions"     ? "missions"
-                          : action == "give a tithe (20p)"   ? "tithe"
+                          : action.rfind("give a tithe (", 0) == 0 ? "tithe"
                           : action == "tell of an expulsion" ? "tellexpulsion"
                                                              : "deliver");
             k.add("target", target);

@@ -210,15 +210,18 @@ std::int64_t Players::poachWage() const
 std::int64_t Players::companionWage(const std::string& id) const
 {
     // What a hired companion is paid, and keeps once stationed at a Hold (Game::wageFor): 6p a day, 10p for a trade that
-    // wanders for a living (RatwGameCompanions.cpp's `roving`, its words).
+    // wanders for a living (RatwGameCompanions.cpp's `roving`, its words), at a 12p day, at its town's day for amounts
+    // (Game::atTheDay: doc 64, Phase 13).
     const auto* job = world_.society().jobOf(id);
     const auto* spec = world_.society().spec(id);
     std::string trade = job ? job->title : spec ? spec->workLabel : std::string();
     std::transform(trade.begin(), trade.end(), trade.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    const auto* e = world_.entity(id);
+    const auto town = e ? world_.lawTown(e->cellId) : std::string();
     for (const char* word : {"scout", "guide", "hunter", "travel", "pilgrim", "sellsword", "mercenary", "courier", "escort", "tracker"})
         if (trade.find(word) != std::string::npos)
-            return 10;
-    return 6;
+            return world_.society().pennies(10 / 12., town);
+    return world_.society().pennies(6 / 12., town);
 }
 
 void Players::take(const std::string& s, const std::string& chapter, const std::vector<std::string>& hands)

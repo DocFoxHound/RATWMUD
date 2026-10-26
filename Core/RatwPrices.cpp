@@ -62,9 +62,16 @@ void Society::addCost(const std::string& account, const std::string& item, int h
     goods[item] = (before * had + each * n) / (had + n);
 }
 
+double Society::amountDay(const std::string& town) const
+{
+    if (workByHours_)
+        return goingRate(town);
+    return state_.memory.foundedDay > 0 ? state_.memory.foundedDay : items::ladder().catalogueDay;
+}
+
 double Society::atGoingRate(double catalogue, const std::string& town) const
 {
-    return catalogue * goingRate(town) / items::ladder().catalogueDay;
+    return catalogue * amountDay(town) / items::ladder().catalogueDay;
 }
 
 double Society::carriage(const std::string& item, double legs, const std::string& town) const

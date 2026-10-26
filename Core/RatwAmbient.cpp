@@ -383,6 +383,12 @@ std::string World::pairBand(const std::string& a, const std::string& b) const
     return "strangers";
 }
 
+std::int64_t World::talkedOfPrice(const std::string& town, const std::string& item, double factor) const
+{
+    // (The catalogue's 6p or 2p at the town's day, as its stores price it: doc 64, Phase 13.)
+    return std::max<std::int64_t>(1, std::lround(factor * society_.atGoingRate(item == "meal" ? 6 : 2, town)));
+}
+
 void World::talkTown(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // What the town has been talking of (doc 62's world.* facts): the same news the topics are made of, as facts any
@@ -534,7 +540,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                 t.talk["topic.item"] = item;
                 t.talk["topic.dir"] = p.dir > 0 ? "up" : "down";
                 t.talk["topic.what"] = item == "meal" ? "a meal" : "herbs";
-                t.talk["topic.price"] = std::to_string(std::max(1, int(std::lround(p.factor * (item == "meal" ? 6 : 2))))) + " pennies";
+                t.talk["topic.price"] = std::to_string(talkedOfPrice(townId, item, p.factor)) + " pennies";
                 t.facts.push_back(std::string(item == "meal" ? "Meals" : "Herbs") + " cost " + (p.dir > 0 ? "more" : "less") + " in town lately.");
                 consider(std::move(t));
             }

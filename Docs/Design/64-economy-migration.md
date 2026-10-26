@@ -2447,21 +2447,28 @@ whatever the pace. Three experiments (30 days from DEV: the founding wage, costi
 
 **Prices at the hours worked** (doc 63's `normal_cost`): with work by the hours, a good's normal cost (a producer's
 yield and its tools' wear, a craft's batch) and the cost a batch is made at take the hours it takes now, at the realm's
-pace (`Society::costedHours`, `hoursFor`). With the hours off, the calibrated `hours`, as before.
+pace (`Society::costedHours`, `hoursFor`). With the hours off, the calibrated `hours`, as before. (Since `3cec19a`
+only with `ladder.json`'s `costAtPace` on, and it is off: goods are costed at their calibrated hours at either pace
+until the user decides, below.)
 
 **The founding wage** (`Society::foundWage`, `RatwFounding.cpp`). `ladder.json` has `foundingDay` (60): in a land of
 `WorldMoneyResidents` or more, whose money is made up to `WorldMoney`, the realm's going rate (`memory.going[""]`, and
 every town's there) starts there, once, before its purses are made: in `resetAuthored` before the tills are founded
 (their floats), and in `foundPurses` for a save that never founded them. So the first wages, employers' books, floats
 and prices start at 60p. A village made for a test keeps the catalogue's day (12). A realm whose measure finds no maker
-on a day keeps the rate it had (`tendLabour`; it fell back to the catalogue's 12p).
+on a day keeps the rate it had (`tendLabour`; it fell back to the catalogue's 12p). (The review, below: the realm
+remembers the day it was founded at, `memory.foundedDay`; only a realm so founded keeps its rate, a village falls back
+as it did; and an older save founding its purses now has its employers' books moved with the rate.)
 
 **Where `catalogueDay` is read:** as the unit the catalogue's prices are in (an item with no place on the ladder is
 worth `price / catalogueDay` LD: `worthOf`, `item_catalog.py`, `ladder.py`), and now `atGoingRate` (a catalogue price
 at the going rate); as a wage only before the first measure, in a village.
 
 **The 12p amounts, in labourer's days** (`Society::pennies(days, town)`: whole pennies at the town's going rate, ""
-the realm's, a penny at least; each written as its 12p amount over 12, so at 12p each is what it was):
+the realm's, a penny at least; each written as its 12p amount over 12, so at 12p each is what it was). (The review,
+below: at the town's day for amounts, `amountDay`, which by the hours is its going rate and at the seconds' pace the
+realm's founding day, because that pace's measure keeps the skill's premium in and three towns measured 12.8p; caps at
+the realm's day only. In a realm founded at 12p each is what it was at either pace.)
 
 | Amount | At 12p | At 60p |
 |---|---|---|
@@ -2492,7 +2499,7 @@ the realm's, a penny at least; each written as its 12p amount over 12, so at 12p
 - **Counts:** days (`PoorDays`, `ComfortDays`, `HomeNeedDays`, a fortnight's stipends), batches, months of income.
 - **`camp::HoldWage`** (5p): a floor under the going rate that binds only under a 5p day.
 - **The demo roster's** (`Roster::Demo`), the DM's own coins and the sanity bounds far above any price.
-- **Players' services, for the user** (content prices, some in labels and the client): lodgings (2p a night, 10p a
+- **Players' services, for the user** (scaled since the review, below; content prices, some in labels and the client): lodgings (2p a night, 10p a
   week, 6p a lodger's week, 8p the upstairs), estates' rents, couriers' fees, a notice (1p), a Chapter's founding (20p),
   a festival's entry (1p) and prizes, the tavern's stakes (5p), a faction's report (5p) and tithe (20p), the troubles'
   offers, a favour's lost loan (at its catalogue price) and its courier (1p), a letter's enclosure (50p).
@@ -2500,7 +2507,8 @@ the realm's, a penny at least; each written as its 12p amount over 12, so at 12p
   `LeanTreasury` (`treasuryLean`), and `OddJobPay` with `businessSpends`.
 
 **Saves:** nothing new is saved (`memory.going` was; `foundingDay` is data). An old save loads with its rate: DEV,
-founded at 12p, stays there until it is founded afresh (`--refound-economy`).
+founded at 12p, stays there until it is founded afresh (`--refound-economy`). (Since the review, the day it was
+founded at is saved too, `memory.foundedDay`; an older save has none, the catalogue's 12p.)
 
 **Measured** (30 days of DEV's export, `--deterministic --hours --threads 3`, five runs side by side; the middle three
 from a build with a part switched off by `RATW_TRIAL`, not kept):
@@ -2550,9 +2558,21 @@ A day, days 15–29 (pennies; LD in brackets):
   slots against 436). With the land's hands behind, the pace stalls (0.018 at day 30), and
   more hours are lost. Prices fall out of the ladder's bands (bread 0.027 LD, against 0.05–0.09; a steel sword below a
   store-priced bronze one), and the Gini goes back to the base's.
-- **So:** the founding wage and the amounts are better than the base on every measure here. Costing at the pace is
-  right (doc 63's `normal_cost`) once a business's paid hours are its worked ones, which is the labour market's to mend
-  (hands that follow the work, not the bank); until then it undoes the rest.
+- **So** (corrected by the review, 2026-10-26): the founding wage and the amounts are *not* better than the base on
+  every measure. Of the bands, the bronze sword's 2.5 LD and the rapier's 25 are so by construction (the sword is
+  store-priced, its catalogue price at the day; no rapier sold, so the yardstick stands), and the only measured band
+  price, bread, was out of its band at 0.027 LD in the run costed at the pace, not in the one without (0.076). What the
+  60p runs without costing at the pace show (`m3`: `3cec19a`, 60 days, `costAtPace` off): the realm fed (none hungry on
+  day 30 or 60), bread 0.074 and 0.072 LD (band 0.05–0.09), an iron and a steel sword 5.0 and 10.1 LD, the pace 0.107
+  and 0.196, the household Gini 0.552 and 0.562 and the poorer half 0.152 and 0.136 (the 12p base 0.561, 0.140 on day
+  30). But money drains out of the founding's holders while the 12p base stays level: from day 2 to day 30 and day 60
+  the great houses lose 17% and 21% (the base 0.8% by day 30), the treasuries 26% and 61% (the capital's 34% and 74%),
+  the paid civilians 21% and 22%, while the tills gain 46% and 70%; owners put 16,300p a day into their businesses
+  against 12,700p of profit (days 15–29); and 29, then 35, grown wolves are without work (the base 5). So the owners'
+  profit against wages (0.16–0.30 against 1.49) is paid for by the founding's capital: not an equilibrium, and doc 64's
+  "money by kind of holder steady within about 20%" fails within weeks. The drain is the balance work's (Phase 13).
+  Costing at the pace is right (doc 63's `normal_cost`) once a business's paid hours are its worked ones, which is the
+  labour market's to mend (hands that follow the work, not the bank); until then it undoes the rest.
 
 **Tests:**
 
@@ -2573,8 +2593,163 @@ A day, days 15–29 (pennies; LD in brackets):
    and the amounts gain (the tables). The alternative is the calibrated hours until a business's paid hours follow its
    work.
 2. **Players' services** (the list above) are still at their 12p prices: a bed for the night at 2p is a thirtieth of a
-   day's wage.
+   day's wage. (Answered and scaled by the review, below.)
 3. **DEV** keeps its 12p rate until it is founded afresh.
+
+### Phase 13: the price level, the review mended (2026-10-26)
+
+The price review's findings on `p13-r3-price` (all but the money drain at 60p, which is the balance work's, and costing
+at the pace, which is behind `costAtPace` and off), and the price report's questions 2 and 4.
+
+**The seconds' pace stays as it was** (the review's major). That pace's going-rate measure keeps the skill's premium in
+(as it always did), so frosthollow, mirebridge and oakhaven measure 12.8p from day 2, and every amount written in LD
+moved there in round 3 (a sword 30p to 32p, a keeper's reserve 20p to 21p...). Of the two ways the review gave, the
+amounts' rate: taking the premium out of that measure would move the pace's own wages (a new employer's wage, the wage
+cap, the works' and the institutions' wages all read the town's rate), so the default game would not be as it was.
+Instead the amounts and the catalogue's prices are read at `Society::amountDay(town)`: with work by the hours, the town's
+going rate, as before; at the seconds' pace, the realm's day at its founding, `memory.foundedDay` (set by `foundWage`;
+saved through `RatwWire`, bounded to 0..100,000; an older save, a village and a realm founded before this have none,
+the catalogue's 12p). In a realm founded at 12p every amount is what it was at either pace; one founded at 60p (DEV
+after `--refound-economy`) has them at 60p at the seconds' pace too, however its towns measure.
+
+Proved on DEV's export with a `Data` copy at `foundingDay` 12, 10 days without `--hours`, `--deterministic --threads 3`:
+
+| build | digest |
+|---|---|
+| `e0e6f45` (round 3's base) | c7d9780768522469 (the review's) |
+| `1aa4047` (`p13` before the price merge: the second review's and the harness's) | 4ed72a4dec8e66e2 |
+| `3cec19a` (`p13` now) | 64616e353aba92bb |
+| this branch | **4ed72a4dec8e66e2** |
+
+This branch is `1aa4047` exactly: the same digest, and `flows.csv`, `tills.csv`, `prices.csv` and `wages.csv` byte for
+byte; `days.jsonl` differs only in `model.going[""]` reading 12 on days 0 and 1 (round 3's `foundWage` sets it at the
+founding; nothing in play reads the record). It can't be `e0e6f45`'s, deliberately: `b6b9a86` (the second review,
+mended; the harness merge changed no Core file) changes the default pace on purpose — the roads' rules at both paces (an
+order cut by half, a failed seller passed over for a month, unpaid goods not short, loads by departure), missed sales by
+the day's buying, the old pace's wants bought one at a time, the founding flag. Its own report says so; its digest
+differs from `e0e6f45`'s from day 2.
+
+**A merge fault, mended.** `b6b9a86` brought the old pace's children's stipends and wants back verbatim, with
+`FoodADay` and `MostStipend` as pennies; the price merge made both LD. So in `3cec19a` a household's fortnight of food was
+5.8p a head (not 70p), a stipend's base 0.25 (truncated to nothing), and the 2p, 3p and 9p floors and caps were raw. Now
+each is `pennies()` at the town's day. `roads_tests` `childrensStipends` catches the fortnight and the stipend's base
+(the old-pace check `stipend > MostStipend` compared with 0.25 and could not fail; a household of 700p must now give 3p
+and a penny or two, one of 300p none, and one founded at 60p five times either). The wants' week of food and the
+child's 2p floor are converted too but no test can tell: the household rule keeps the fund under what the purse can
+spare, and at 60p nothing costs under 5p; with either taken back the 10-day digest above is unchanged.
+
+**The amounts still unconverted** (the review's list, and a grep of the merged code):
+
+- `repairCost`: half the catalogue's price for the wear, at the town's day (`atGoingRate`).
+- The town's talk of a meal's or herbs' price: `World::talkedOfPrice`, the catalogue's 6p or 2p at the town's day, by
+  the stores' factor.
+- A resident's letter of thanks: a gift is worth one from 5p at a 12p day (coins and the goods' catalogue price, at the
+  resident's town's day: `Game::giftWorthThanks`), and the pennies it sends, a tenth of its purse and 6p at most at a
+  12p day (`Game::thanksGift`; missed in round 3).
+- The client's stall price box: the server sends `priceMost` with one's stall; the box and its prompt use it.
+- A farm's money for its bunkhouse's food: a penny for each 15 of the nourishment it wants, 2p at least, at a 12p day
+  (`Society::farmhandsFoodMoney`; it was a 12p-era food price).
+- The troubles' food a day: in whole pennies at the town's day for amounts, as the households' (`pennies()`).
+- The old pace's children's and wants' amounts (above). `ResidentPurseLeast` (the tables) went with the players'
+  services (below).
+- Kept, as round 3 kept them: the catalogue's own filters (3p or less, 3p or more), sanity bounds (a gift of 10,000p at
+  most, a project's 100,000p), the demo roster.
+
+**One rate for the caps** (the review's minor). The ledger's dearest piece (`PieceMost`), a stall's dearest price and a
+story's prize are all at the realm's day, `amountDay("")`; a stall's 999p at a 12p day is under the ledger's 1,000p in
+any town, so a stall never takes a price `transfer()` refuses (`gathering_tests` `stallsAtTheFoundingDay`, by the hours in
+a town at 72p against a 60p realm: 4,996p refused, 4,995p taken and sold). A keeper's reserve is at its own town's day
+(`accountTown`) in `spendable`, the wealth line and its owner's top-up alike.
+
+**The founding, its edges** (the review's minor). `foundWage` moves an older save's employers' books with its towns' rates
+when it founds them at the day (scaled by the founding's day over the town's old rate), so the next measure keeps the
+day. The "kept" rule applies only to a realm founded at its founding day (`foundedDay` set); a village with no maker to
+measure falls back to the catalogue's 12p, as it did.
+
+**At 60p, tested** (the review's minor: most conversions passed every suite at 12p by construction).
+`Tests/founded_fixture.h` (`FoundedAtTheDay`, with `Society::setFoundAnyLand`, a test's switch) founds a test's village
+at `foundingDay` through the real `foundWage`; `crafting_tests` founds a realm of 500 for real. Checked five times a
+village's (each fails with its conversion taken back):
+
+- `crafting_tests` `foundedAtTheFoundingDay`: a meal, herbs and a sword at the stores' prices, at both paces; a
+  player's welcome grant; a keeper's reserve; a farm's bunkhouse food money; the amounts' day, and at the seconds' pace
+  a town measuring above it not followed (the troubles' food a day with it); a village falling back; an older save's
+  books; plus round 3's float, meal, dearest piece and relief.
+- `crime_tests` `finesAtTheFoundingDay`: a theft's fine and what was taken; a shop's wholesale meals from the stores; the
+  price the town talks of.
+- `roads_tests` `contractsAtTheFoundingDay` (the bounty and the escort) and `childrensStipends` (the old pace's).
+- `gathering_tests` `stallsAtTheFoundingDay`: a stall's rent, the welcome grant, the dearest price and its box, a
+  keeper's reserve at its town's day, a Hold's draw (`Game::drawnToAHold`), a gift worth thanks and the thanks' pennies.
+- `schedules_tests` `restdayService(true)`: the plate, 5p or 10p.
+- `hunt_tests` `mendingAtTheFoundingDay`; `wire_tests` (the founding's day saved, dropped when it can't be, none in an
+  older save).
+- Mutation checks: 22 of this part's changes taken back one at a time, 20 caught; the two not (the wants' week, the
+  child's floor) are the unobservable ones above. Twelve more for the players' services, all caught.
+
+**The players' services (the price report's question 2): scaled.** From the code: every one of these is a transfer in
+the ledger between a player and the realm's own accounts (an inn's till, a resident's purse, a treasury, a faction's
+official), so each is part of the closed economy, not a label; a player's income was already at the day (the welcome
+grant, contracts, bounties, the going prices it sells at, residents' letters' rewards), so leaving its costs at 12p made
+them a fifth of what they meant; and the catalogue's own prices, which these were set beside, are already read at the
+day. In a realm founded at 12p each is what it was. So each is read at a 12p day, at the town's day for amounts
+(`Game::atTheDay`, `priceWords` for "a penny"): a bed upstairs (2p a night, 10p a week), a lodger's week (6p), the
+whole upstairs (8p); a Chapter's rooms and warehouses (30p, 50p a week) and Atlas's lettings (`let` records); a notice
+(1p); a Chapter's founding (20p); a festival's entry (1p), a resident's purse to enter (10p), the town's 2p an entrant
+up to 10p; Liar's Bones' stakes (5p at most), the house's penny, a resident's purse to stake (30p); a faction's report
+(5p) and tithe (20p), in their action labels; an apprenticeship's fee (`troubles.json`'s 20p) and the notable debt
+(100p); a lent thing's courier (1p) and, lost, its catalogue price; the courier's fees (`letters.json`), sending letters
+on, and the most a letter carries (50p); a companion's wage (6p, 10p roving; the harness's `strike` mirrors it); archive
+work's pay (`archives.json`'s 2p); a Hold's toll (5p at most); a Chapter's buildings' materials. Kept as set: what a
+Dungeon Master enters (a place's rent for individuals, a treaty's tithe, DM coins) and what a player chooses under a cap
+(a toll, a stake, a gift). The client shows what the server sends: the notice's fee and a contest's entry on the board,
+ENTER at a festival, the stakes to choose, the courier's fees, a founding's fee on its proposal, the toll's most, the
+archive's pay. `gathering_tests` `servicesAtTheFoundingDay` checks the beds, the notice, the stakes, the courier's fee
+and the enclosure, the upstairs' week, a report, a tithe, archive pay, a tent and a companion's day at 60p. Not checked
+at 60p (each is the same at 12p, and every suite passes): the festival's pennies, the house's penny and the residents'
+purses at the tables, the founding fee, the apprenticeship's fee and the notable debt, the loan's courier and price,
+sending letters on, the toll's most and Atlas's lettings.
+
+**The founding's seeds (the price report's question 4): keep them unscaled.** From the code (`worldMoney`): in a realm
+of `WorldMoneyResidents` or more the seeds (`ChildPurse` 5p ... `KeeperPurse` 80p, `TreasuryHead` 40p, `ChurchHead`
+10p, `HouseFortune` 3,000p) are only the floor each purse starts from before its kind is made up to its share of the
+5,000,000p (households 40%, by an exponential lot; businesses 15%, by floats already at the day; houses 30%; the church
+5%; the treasuries the rest, by heads). Each kind's total is its share whatever the seeds; the seeds set only how much of
+it is spread evenly. A grown wolf's 30p against a household share of about 2,500p each is an even 1.2% floor; scaled
+to 150p it would be 6%, flattening the model's opening spread. Nothing after the founding reads them in a realm (a new
+purse comes from its treasury; a child's first pennies are already at the day). In a test's village they are its whole
+money, at its 12p day. Scale them only if the user wants a starting purse to be so many days' food rather than the
+model's spread.
+
+**Measured** (the 30-day smoke, `--deterministic --hours --threads 3`, DEV's export, `foundingDay` 60, against `m3`:
+`3cec19a`, the same command): money conserved on every day; digest 9c4c291d44a5f898 (`m3`'s day 30 differs by design:
+the farmhands' food money at 60p, about 10p a day against 1p, and keepers' reserves at their town's day). A tick
+0.0307 ms against 0.0309 for `3cec19a`, side by side (5 days, the society's part 0.0121 in both).
+
+| day 30 | this branch | `m3` |
+|---|---|---|
+| hungry, starving | 0, 0 | 0, 0 |
+| household Gini; the poorer half | 0.552; 0.150 | 0.552; 0.152 |
+| the going wage: the realm's, Ridgemere's; pace | 60p, 60p; 0.089 | 60p, 60p; 0.107 |
+| bread, a bronze, an iron, a steel sword, a rapier (LD) | 0.073, 2.5, 5.08, 10.12, 24.98 | 0.074, 2.5, 5.04, 10.12, 24.98 |
+| grown wolves without work | 15 | 29 |
+| great houses, day 2 to 30 | 1,494,143p to 1,253,127p (−16%) | to 1,238,233p (−17%) |
+| treasuries (the capital's) | 496,291p to 369,499p (−26%; −33%) | to 366,643p (−26%; −34%) |
+| the church | 248,352p to 280,610p (+13%) | to 281,026p (+13%) |
+| households | 2,016,252p to 2,039,897p (+1%) | to 2,018,125p (0%) |
+| tills (farms', houses', shops') | 727,036p to 1,022,134p (+41%) | to 1,062,802p (+46%) |
+
+A day, days 15–29: the owner's profit 13,968p (`m3` 12,725), the keeper's wage 20,480p (20,530), an odd job: a hand
+15,105p (15,636), service wages 8,102p (7,711), an owner's investment 15,334p (16,336). The drain the review found is
+still there, as it should be: this part doesn't touch it.
+
+**For the user:**
+
+1. **Players' services at 60p** were scaled (above): recommended, since a player's income is already at the day. If any
+   should stay a token (a festival's penny entry), say which.
+2. **The founding's seeds**: recommend keeping them as they are (above).
+3. **What a DM or Atlas enters**: Atlas's lettings and `Data`'s fees are read as pennies at a 12p day, like the
+   catalogue's prices; a DM's amounts as the pennies of the day they are entered. Recommend Atlas and the DM tools say
+   which, or move to entering in LD.
 
 ### Phase 13: residents near players' bodies (2026-10-26)
 

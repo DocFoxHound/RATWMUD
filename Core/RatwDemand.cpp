@@ -524,7 +524,7 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             shops[communityOfResident(r.id)].push_back(r.id);
     // With the hours off (the game's default), the old pace, as it was (doc 64): a stipend by two weeks' food kept back,
     // and a penny more for every hundred to spare; and up to half a child's pennies on anything of 3p or less it likes,
-    // kept (as it was: "kept by a child").
+    // kept (as it was: "kept by a child"). Its amounts in LD, at a 12p day as they were (Phase 13: pennies()).
     if (!fieldsOn())
     {
         for (const auto& [home, members] : homes)
@@ -545,9 +545,10 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             }
             if (const auto streak = state_.memory.comfort.find(home); streak != state_.memory.comfort.end() && streak->second < 0)
                 continue;
-            const auto spare = purse - FoodADay * 14 * std::int64_t(grown.size() + children.size()) - owed;
+            const auto town = communityOfResident(grown.front());
+            const auto spare = purse - pennies(14 * FoodADay, town) * std::int64_t(grown.size() + children.size()) - owed;
             const auto kids = std::int64_t(children.size());
-            const auto each = std::min<std::int64_t>(MostStipend + std::max<std::int64_t>(0, spare) / (100 * kids), spare / (14 * kids));
+            const auto each = std::min<std::int64_t>(pennies(MostStipend, town) + std::max<std::int64_t>(0, spare) / (100 * kids), spare / (14 * kids));
             if (each <= 0 || !richest)
                 continue;
             for (const auto& child : children)
@@ -558,15 +559,16 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             for (const auto& child : members.second)
             {
                 const auto* purse = account(child);
-                if (!purse || purse->cash < 2)
+                const auto town = communityOfResident(child);
+                if (!purse || purse->cash < pennies(2 / 12., town))
                     continue;
                 const auto* life = resident(child);
                 const bool peckish = life && life->hunger >= 55 && !hasFood(*purse);
                 std::map<std::string, int> got;
-                buyForSurplus(child, shops[communityOfResident(child)], [&](const std::string& item) {
+                buyForSurplus(child, shops[town], [&](const std::string& item) {
                     const auto* good = items::good(item);
-                    return good && good->price <= 3 && (peckish || !edible(item));
-                }, peckish ? std::min<std::int64_t>(purse->cash / 2, 3) : purse->cash / 2, "a child's spending", &got);
+                    return good && good->price <= 3 && (peckish || !edible(item));   // (3p on the catalogue.)
+                }, peckish ? std::min<std::int64_t>(purse->cash / 2, pennies(3 / 12., town)) : purse->cash / 2, "a child's spending", &got);
                 for (const auto& [item, n] : got)
                     if (!edible(item))
                         consume(child, item, n, "kept by a child");
@@ -985,9 +987,12 @@ void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, Li
         const bool lodger = !life.homeCell.empty() && (under > 8 || communalHome(life.homeCell));
         const auto fund = state_.memory.wantFund.find(lodger ? id : life.homeCell);
         const int grown = lodger ? 1 : under;
+        // (Its amounts in LD, at a 12p day as they were, Phase 13: a week's food kept back, 2p at least, a treat 9p at most.)
+        const auto town = communityOfResident(id);
         const auto budget = fund == state_.memory.wantFund.end() ? std::int64_t(0)
-                                                                  : std::min<std::int64_t>(std::int64_t(fund->second / grown), purse->cash - FoodADay * 7 - owed);
-        if (budget < 2)
+                                                                  : std::min<std::int64_t>(std::int64_t(fund->second / grown),
+                                                                                           purse->cash - pennies(7 * FoodADay, town) - owed);
+        if (budget < pennies(2 / 12., town))
             continue;
         const auto before = purse->cash;
         // Today's fancies: the kinds it likes best, as it feels today; one that finds nothing on the shelves, the next
@@ -996,15 +1001,14 @@ void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, Li
         for (const auto& k : kinds)
             fancies.push_back({(.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|" + k.name), &k});
         std::stable_sort(fancies.begin(), fancies.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
-        const auto town = communityOfResident(id);
         std::string got;
         for (std::size_t f = 0; f < 3 && f < fancies.size() && got.empty(); ++f)
         {
             // (A treat is one thing, a pastry or a dish, eaten at once; the rest of its fancies may cost what it can spare.)
             const Want* fancy = fancies[f].second;
             const bool treat = std::string(fancy->name) == "a treat";
-            got = buyOne(id, onShelves(town, *fancy), treat ? std::min<std::int64_t>(budget, 9) : budget, std::string("a want: ") + fancy->name,
-                         id + "|" + std::to_string(day) + "|" + fancy->name);
+            got = buyOne(id, onShelves(town, *fancy), treat ? std::min<std::int64_t>(budget, pennies(9 / 12., town)) : budget,
+                         std::string("a want: ") + fancy->name, id + "|" + std::to_string(day) + "|" + fancy->name);
         }
         if (const auto spent = before - account(id)->cash; spent > 0)
             fund->second = std::max(0., fund->second - double(spent));

@@ -573,6 +573,16 @@ void societyTests()
     expect(waited.size() == 1 && waited.at("home:a") == 40, "a household's wait round trips, the days that can't be dropped");
     waits.find("memory")->erase("pieceWait");
     expect(wire::readSociety(waits).memory.pieceWait.empty(), "and an older save has none");
+    // The day the realm was founded at (doc 64, Phase 13 review): saved; one that can't be is none (the catalogue's), as
+    // is an older save's.
+    for (const auto& [day, back] : {std::pair{60., 60.}, std::pair{-5., 0.}, std::pair{1e7, 0.}})
+    {
+        state.memory.foundedDay = day;
+        expect(wire::readSociety(wire::society(state)).memory.foundedDay == back, "the founding's day round trips, or is dropped: " + std::to_string(day));
+    }
+    auto unfounded = wire::society(state);
+    unfounded.find("memory")->erase("foundedDay");
+    expect(wire::readSociety(unfounded).memory.foundedDay == 0, "and an older save was founded at the catalogue's");
 }
 
 void commandTests()

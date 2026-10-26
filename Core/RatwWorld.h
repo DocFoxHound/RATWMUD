@@ -1526,6 +1526,9 @@ class World
     void talkTown(const std::string& who, std::map<std::string, std::string>& facts);
     // Who `a` and `b` are to each other: spouses, family, apprentice, rivals, friends, acquaintances or strangers.
     std::string pairBand(const std::string& a, const std::string& b) const;
+    // The price of a meal or herbs as the town talks of it when its stores' price moves (whole pennies, a penny at least):
+    // the catalogue's at the town's day for amounts, by the stores' factor (doc 64, Phase 13).
+    std::int64_t talkedOfPrice(const std::string& town, const std::string& item, double factor) const;
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;

@@ -23,6 +23,7 @@ using json::Value;
 
 namespace
 {
+constexpr std::int64_t EnclosureMost = 50;       // The most coin a letter carries, at a 12p day (doc 55, 3).
 std::string lowered(std::string s)
 {
     for (auto& ch : s)
@@ -216,7 +217,8 @@ documents::Document* Game::sendLetter(Connection* c, const std::string& toId, st
         return result = {false, "You have sent as many letters as the courier will take from you today.", {}}, nullptr;
     if (documents_.unread(toId) >= r.unreadMost)
         return result = {false, "Their post is full; the courier won't take more for them.", {}}, nullptr;
-    // An enclosure (doc 55, 3): one kind of small thing, a pound in all at most, and up to 50p.
+    // An enclosure (doc 55, 3): one kind of small thing, a pound in all at most, and up to 50p (at a 12p day, as the
+    // courier's fees: at the writing town's day, doc 64, Phase 13).
     const auto encItem = enclose.isObject() ? enclose.string("item") : std::string();
     const int encQuantity = encItem.empty() ? 0 : std::max(1, int(enclose.number("quantity", 1)));
     const auto encCoins = enclose.isObject() ? std::int64_t(std::max(0., enclose.number("coins", 0))) : 0;
@@ -228,12 +230,12 @@ documents::Document* Game::sendLetter(Connection* c, const std::string& toId, st
         if (spareOf(writer, encItem) < encQuantity)
             return result = {false, "You haven't that to put in it (what you wear stays on you).", {}}, nullptr;
     }
-    if (encCoins > 50)
-        return result = {false, "A letter carries 50p at most.", {}}, nullptr;
     const auto from = townFor(w->cellId), post = postTownOf(toId);
+    if (const auto most = atTheDay(EnclosureMost, from); encCoins > most)
+        return result = {false, "A letter carries " + std::to_string(most) + "p at most.", {}}, nullptr;
     const int cells = courierCells(from, post);
     const bool same = cells == 0;
-    const int fee = documents::courierFee(cells, same);
+    const auto fee = atTheDay(documents::courierFee(cells, same), from);
     const auto treasury = world_.society().treasuryOf(from.empty() ? world_.society().capital() : from);
     if (world_.society().spendable(writer) < fee + encCoins || !world_.society().shift(writer, treasury, "", 0, fee, "a letter's postage"))
         return result = {false, "The courier's fee is " + std::to_string(fee) + "p, more than you have.", {}}, nullptr;
@@ -503,6 +505,19 @@ void Game::sendLetters(Connection* c)
     e.add("letters", list);
     e.add("waiting", w);
     e.add("canWrite", writingPlace(me));
+    {
+        // What the courier asks here, at the town's day (doc 64, Phase 13): in town, to another, to send letters on, and
+        // the most a letter carries.
+        const auto* self = world_.entity(me);
+        const auto here = self ? townFor(self->cellId) : std::string();
+        const auto& r = documents::rules();
+        auto fees = Value::object();
+        fees.add("town", double(atTheDay(r.feeTown, here)));
+        fees.add("between", double(atTheDay(r.feeBetween, here)));
+        fees.add("sendOn", double(atTheDay(r.sendOnFee, here)));
+        fees.add("enclosureMost", double(atTheDay(EnclosureMost, here)));
+        e.add("fees", fees);
+    }
     send(c, e);
 }
 
@@ -567,7 +582,7 @@ bool Game::letterCommand(Connection* c, const json::Value& j, Result& result)
             // treasury), and the letter waits in the friend's keeping until handed over.
             auto& society = world_.society();
             const int cells = courierCells(sent->fromTown, sent->postTown);
-            const int fee = documents::courierFee(cells, cells == 0);
+            const auto fee = atTheDay(documents::courierFee(cells, cells == 0), sent->fromTown);
             society.shift(society.treasuryOf(sent->fromTown.empty() ? society.capital() : sent->fromTown), me, "", 0, fee, "a letter's postage");
             const auto& contract = world_.postContract("courier", me, sent->fromTown, to, fee, 7, "a letter for " + labelFor(carrier, to));
             for (auto& k : world_.roads().contracts)
@@ -606,7 +621,7 @@ bool Game::letterCommand(Connection* c, const json::Value& j, Result& result)
             result = {false, ids.empty() ? "No letters wait for you there." : "Go to one of this town's inns for them.", {}};
             return true;
         }
-        const int fee = documents::rules().sendOnFee * int(ids.size());
+        const auto fee = atTheDay(documents::rules().sendOnFee, here) * std::int64_t(ids.size());
         const auto treasury = world_.society().treasuryOf(here);
         if (world_.society().spendable(me) < fee || !world_.society().shift(me, treasury, "", 0, fee, "a letter's postage"))
         {

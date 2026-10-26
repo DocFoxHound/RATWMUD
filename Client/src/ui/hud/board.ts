@@ -22,7 +22,9 @@ export function renderBoard(panel: HTMLElement, s: GameState) {
         // The festival's programme, from three days before (doc 54, 6).
         const days = num(festival, 'inDays');
         el('div', 'label gold', panel, `${str(festival, 'name').toUpperCase()} · ${days ? `IN ${days} ${days === 1 ? 'DAY' : 'DAYS'}` : 'TODAY'}`);
-        el('p', 'small', panel, arr(festival, 'programme').map(String).join(' · ') + '. Sign up at the square, here, or at the inn: a penny a contest.');
+        const entry = num(festival, 'entry', 1);
+        el('p', 'small', panel, arr(festival, 'programme').map(String).join(' · ') +
+            `. Sign up at the square, here, or at the inn: ${entry === 1 ? 'a penny' : `${entry}p`} a contest.`);
     }
     el('div', 'label muted', panel, 'WORK AND STORIES');
     const work = arr(b, 'work').filter(isObject);
@@ -58,7 +60,8 @@ export function renderBoard(panel: HTMLElement, s: GameState) {
     }
     // Pinning a notice.
     const form = el('details', 'letter-sheet', panel);
-    el('summary', 'label muted', form, 'PIN A NOTICE · 1p');
+    const fee = num(b, 'noticeFee', 1);
+    el('summary', 'label muted', form, `PIN A NOTICE · ${fee}p`);
     const kind = el('select', 'profile-input', form) as HTMLSelectElement;
     kind.dataset.field = 'notice-kind';
     for (const [value, label] of [['seeking', 'Seeking'], ['offering', 'Offering'], ['event', 'An event'], ['lost', 'Lost and found'], ['other', 'Other']]) {
@@ -79,5 +82,5 @@ export function renderBoard(panel: HTMLElement, s: GameState) {
     text.placeholder = 'Your notice (280 letters at most)';
     text.dataset.field = 'notice-text';
     button('PIN IT UP', 'primary', form, () => send('post', {kind: kind.value, whatType: whatType.value, whatValue: whatValue.value, text: text.value}));
-    el('p', 'muted small', form, 'A penny to the town; it stays up seven days. It carries your scent unless you are masked. Residents answer what you seek, never what you write.');
+    el('p', 'muted small', form, `${fee === 1 ? 'A penny' : `${fee}p`} to the town; it stays up seven days. It carries your scent unless you are masked. Residents answer what you seek, never what you write.`);
 }

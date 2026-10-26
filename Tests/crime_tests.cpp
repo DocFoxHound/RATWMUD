@@ -2,6 +2,7 @@
 // keep the Watch.
 #include "RatwCheckpoint.h"
 #include "battle_play.h"
+#include "founded_fixture.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -416,12 +417,80 @@ void savedAndRestored()
 }
 } // namespace
 
+// The Watch's fines in LD (doc 64, Phase 13): in a realm founded at the founding's day (FoundedAtTheDay), a theft's fine
+// is five times a village's (3p at a 12p day), and what was taken is worth five times as much (a meal 6p, herbs 2p, a
+// sword 40p at a 12p day); and the shops' wholesale meals from the stores (4p at a 12p day) cost five times as much.
+void finesAtTheFoundingDay()
+{
+    for (const bool founded : {false, true})
+    {
+        auto w = [&] {
+            if (!founded)
+                return town();
+            FoundedAtTheDay atTheDay;
+            return town();
+        }();
+        const auto at = [&](std::int64_t pennies) { return founded ? FoundedAtTheDay::at(pennies) : pennies; };
+        const std::string where = founded ? " (founded at " + std::to_string(int(FoundedAtTheDay::day())) + "p)" : " (a village)";
+        expect(w.society().state().memory.foundedDay == (founded ? FoundedAtTheDay::day() : 0), "founded at its day" + where);
+        w.addPlayer("player-ada", "Ada");
+        beside(w, "player-ada", "wren");
+        beside(w, "sloe", "wren", -1, 2);
+        expect(w.guardOnDuty("sloe"), "Sloe is on duty" + where);
+        stealUntilSeen(w, "player-ada", "wren");
+        const auto* warrant = w.warrantFor("player-ada");
+        expect(warrant != nullptr, "a theft the Watch saw makes a warrant" + where);
+        std::int64_t fine = 0;
+        for (const auto& inc : w.crime().incidents)
+            if (std::find(warrant->incidents.begin(), warrant->incidents.end(), inc.id) != warrant->incidents.end())
+            {
+                const std::int64_t worth = inc.item == "meal" ? 6 : inc.item == "herbs" ? 2 : inc.item == "sword" ? 40 : 0;
+                fine += at(3) + (inc.kind == "theft" ? inc.coins + at(worth) * inc.quantity : 0);
+            }
+        expect(warrant->fine == fine && fine >= at(3), "the fine, " + std::to_string(at(3)) + "p and what was taken, at the day" + where +
+                                                           ": " + std::to_string(warrant->fine) + "p against " + std::to_string(fine) + "p");
+        // A shop restocks its meals from the stores at the wholesale price (its shelves emptied of them first).
+        int sellers = 0;
+        for (const auto& [id, life] : w.society().state().residents)
+        {
+            const auto sold = w.society().wares(id);
+            if (std::find(sold.begin(), sold.end(), "meal") == sold.end())
+                continue;
+            ++sellers;
+            const auto till = w.society().tillOf(id);
+            if (const int n = Society::stock(*w.society().account(till), "meal"); n > 0)
+                w.society().shift(till, "treasury", "meal", n, 0, "test: sold out");
+        }
+        expect(sellers > 0, "a shop sells meals" + where);
+        w.takeEvents();
+        bool restocked = false;
+        for (int i = 0; i < 1800 && !restocked; ++i)
+        {
+            w.tick(1);
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail == "wholesale restock" && e.item == "meal" && e.quantity > 0)
+                {
+                    expect(e.coins == at(4) * e.quantity, "a meal wholesale at " + std::to_string(at(4)) + "p" + where + ": " +
+                                                              std::to_string(e.coins) + "p for " + std::to_string(e.quantity));
+                    restocked = true;
+                }
+        }
+        expect(restocked, "a shop restocks its meals from the stores" + where);
+        // And the town talks of a meal's and herbs' price as its stores ask it.
+        expect(w.talkedOfPrice("greyfen", "meal", 1.25) == std::llround(1.25 * double(at(6))) &&
+                   w.talkedOfPrice("greyfen", "herbs", 1.) == at(2),
+               "the price the town talks of, at the day" + where + ": " + std::to_string(w.talkedOfPrice("greyfen", "meal", 1.25)) + " pennies");
+        expect(w.society().conserved(), "money is conserved" + where);
+    }
+}
+
 int main()
 {
     try
     {
         refusals();
         theftBeforeTheWatch();
+        finesAtTheFoundingDay();
         unpaidMeansGaol();
         theFallenAreCarriedIn();
         residentChasedDown();

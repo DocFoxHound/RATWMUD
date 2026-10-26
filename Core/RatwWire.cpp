@@ -1047,6 +1047,7 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& [town, rate] : m.going)
         going.add(town, rate);
     o.add("going", going);
+    o.add("foundedDay", m.foundedDay);              // (The amounts' day at the seconds' pace: doc 64, Phase 13.)
     auto closed = Value::array();
     for (const auto& pid : m.closed)
         closed.push(pid);
@@ -1208,6 +1209,10 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [town, v] : o.object("going").fields())
         if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() > 0 && v.asNumber() < 1e6 && town.size() < 200)
             m.going[town] = v.asNumber();
+    // (Saved before doc 64's Phase 13 review: none, a realm founded at the catalogue's 12p.)
+    if (const auto* day = o.find("foundedDay"); day && day->isNumber() && std::isfinite(day->asNumber()) && day->asNumber() >= 0 &&
+        day->asNumber() <= 100000)
+        m.foundedDay = day->asNumber();
     if (const auto* pace = o.find("pace"); pace && pace->isNumber() && pace->asNumber() >= 0 && pace->asNumber() <= 1)
         m.pace = pace->asNumber();
     // The pace's readings, each with its day, in order (saved before doc 64's Phase 13, or as bare readings before they

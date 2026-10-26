@@ -361,6 +361,10 @@ export class Hud {
             show(this.copyButton, !fighting && !!archive && (!str(archive, 'task') || copying));
             this.copyButton.disabled = copying;
             this.copyButton.textContent = copying ? `Copying · ${num(archive, 'copied')}% (sit to work)` : 'Copy a page';
+            if (archive) {                          // (What the keeper pays, at the town's day: the server's.)
+                this.archiveButton.title = `Ask the keeper of records for records to sort (${num(archive, 'pay', 2)}p, four a day)`;
+                this.copyButton.title = `Five minutes sitting at a desk here (${num(archive, 'pay', 2)}p)`;
+            }
             this.performButton.textContent = str(obj(s.snapshot, 'self'), 'performing') ? 'Stop performing' : 'Perform';
             this.performButton.title = 'Sing, tell a tale, or play an instrument you carry; keep at it (say or do something every two minutes). ' +
                 'Those resting in the room rest better.';
