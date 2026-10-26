@@ -760,13 +760,13 @@ void strikeKeepsItsHandsFed()
 
 // The quartermaster stocks food that keeps (round 6, doc 64, Phase 13, the companions' review: two days of porridge,
 // which keeps a day, and 44% of what went in rotted there): toward the stores' ProvisionDays only food lasting till the
-// next top-up counts, bought first, prepared before a craft's, the cheapest for what it feeds first; what spoils sooner,
-// a day's food at most.
+// next top-up counts, bought first, prepared before a craft's, the longest-keeping first; what spoils sooner, a day's
+// food at most.
 void strikeStocksFoodThatKeeps()
 {
-    // Ridgemere with an inn (porridge: keeps a day, the cheapest food there is), a butcher (salt pork: ninety days, dear)
-    // and a bakery (bread: four days, cheap), the butcher first in the shops' order; and the stall's raw meat (three
-    // days, a craft's).
+    // Ridgemere with an inn (porridge: keeps a day, the cheapest food there is), a bakery (bread: four days, cheap) and
+    // a butcher (salt pork: ninety days, dear), the butcher first in the shops' order; and the stall's raw meat (three
+    // days, a craft's, cheaper than a meal).
     const auto root = writeWorld("ratw_econ_players_stocks", resident("ui", "Inn U", "merchant", "keeping the inn", 1, 3.5, 1, 4.5) +
                                                              resident("ua", "Butcher U", "merchant", "the butcher", 1, 7.5, 1, 9.5) +
                                                              resident("ub", "Baker U", "merchant", "the baker", 1, 5.5, 1, 6.5));
@@ -817,17 +817,20 @@ void strikeStocksFoodThatKeeps()
     std::vector<std::string> order;
     auto stored = dawn(2 + 10. / 24, order);
     const int hands = int(p.staffOf("strike").size()), day = nourished * hands, want = econ::Players::ProvisionDays * day;
-    expect(hands > 0 && order == std::vector<std::string>{"bread"} && stored["bread"] >= want,
-           "bread, the cheapest food that lasts, and only it, till the days are held: " + std::to_string(stored["bread"]) + " of " +
-               std::to_string(want) + " (first " + (order.empty() ? std::string("none") : order.front()) + ")");
-    // No bread: the salt pork (prepared), then the stall's raw meat, cheaper but a craft's; no porridge.
+    expect(hands > 0 && order == std::vector<std::string>{"salt_pork", "bread"} && stored["salt_pork"] + stored["bread"] >= want,
+           "the salt pork first, the longest-keeping, then bread, till the days are held: " +
+               std::to_string(stored["salt_pork"] + stored["bread"]) + " of " + std::to_string(want) + " (first " +
+               (order.empty() ? std::string("none") : order.front()) + ")");
+    expect(!stored.count("porridge") && !stored.count("raw_meat"), "no porridge, nor raw meat, when bread will do");
+    // No salt pork nor bread, the inn's meals out: meals (prepared, three days) before the stall's raw meat (three days,
+    // cheaper, but a craft's); no porridge.
     clear("ub", {});
+    clear("ua", {});
+    expect(s.create(s.tillOf("ui"), "meal", 20, "test: the inn's"), "the inn has meals");
     order.clear();
     stored = dawn(3 + 1. / 960, order);
-    expect(order.size() == 2 && order[0] == "salt_pork" && order[1] == "raw_meat" && !stored.count("porridge") &&
-               stored["salt_pork"] + stored["raw_meat"] >= want,
-           "then the salt pork, the raw meat after it, and no porridge: " + std::to_string(order.size()) + " goods, first " +
-               (order.empty() ? std::string("none") : order.front()));
+    expect(!order.empty() && order[0] == "meal" && !stored.count("porridge") && stored["meal"] + stored["raw_meat"] >= want,
+           "then meals before the raw meat, and no porridge: first " + (order.empty() ? std::string("none") : order.front()));
     // Nothing that lasts on the shelves: porridge, but a day's at most.
     for (const auto* keeper : {"ug", "uk", "ui", "ua", "ub"})
         clear(keeper, {"porridge"});

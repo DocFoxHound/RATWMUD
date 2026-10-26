@@ -366,9 +366,12 @@ void Players::provision(const std::string& s)
     if (const auto* a = society.account(qm); a && a->cash < purse)
         fund(s, qm, purse - a->cash);
     // What the capital's open food shops have: prepared food before what a craft takes (the hands eat it first,
-    // Society::messFood, and the raw would wait and spoil), then the cheapest for what it feeds (its catalogue price a
-    // point of nourishment), then the longest-keeping; else in the shops' order, as before. (So first written, the
-    // longest-keeping first, it bought salt fish, the dearest food there is for what it feeds: 71% more than porridge.)
+    // Society::messFood, and the raw would wait and spoil), then the longest-keeping, then the cheapest for what it
+    // feeds (its catalogue price a point of nourishment); else in the shops' order, as before. (Round 6: the cheapest
+    // first bought bread, which keeps four days, and in a store turned over every day it rotted wholesale every sixth
+    // day, the stores bare till the next dawn and 21 hands gone home hungry in the month: Society::spoil reckons an
+    // account's batches by the day's net, so stock taken in and eaten alike all day never comes in fresh, and its
+    // first batch ages on. That is the society's, found here, not mended; the longest-keeping first steers clear of it.)
     struct Ware
     {
         const Shop* shop;
@@ -392,7 +395,7 @@ void Players::provision(const std::string& s)
                                          good->keeps <= 0 ? 1e9 : good->keeps});
     }
     std::stable_sort(wares.begin(), wares.end(), [](const Ware& a, const Ware& b) {
-        return a.raw != b.raw ? b.raw : a.cost != b.cost ? a.cost < b.cost : a.keeps > b.keeps;
+        return a.raw != b.raw ? b.raw : a.keeps != b.keeps ? a.keeps > b.keeps : a.cost < b.cost;
     });
     for (const bool lasts : {true, false})
         for (const auto& w : wares)
