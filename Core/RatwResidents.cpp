@@ -426,6 +426,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 atStall_.insert(holder);
         }
     }
+    // Each town's food shops open for trade with nothing left to eat (in ID order): where a hungry wolf that finds no
+    // food in its town counts the meal it wanted (doc 64, Phase 13: Society::missedMeal).
+    std::unordered_map<std::string, std::vector<const std::string*>> bareShops;
+    for (const auto& [holder, open] : trading)
+        if (!open.community.empty() && !openShops.count(holder) && !smith(holder) && foodShop(holder))
+            bareShops[open.community].push_back(&holder);
     // The open shops indexed for the nearest-shop search below: by the cell they serve in and by community, each list in
     // ID order (openShops' order), so the search finds what walking them all in that order found.
     std::vector<const std::pair<const std::string, Open>*> shopList;
@@ -503,6 +509,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         bool routeGoal = false;                     // Its goal is a post on its route, by its place among the walkers.
         bool companion = false, arrivedHome = false;
         const std::string* seller = nullptr;        // Where it sells what it brought in.
+        const std::string* missed = nullptr;        // A bare food shop of its town, where the meal it wanted is counted.
         std::string task, reason;
         Spot goal;
     };
@@ -757,6 +764,29 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                     shop = &open->second.serve;
                     break;
                 }
+        // Hungry, with nothing to eat about it or at home, and no shop of its town with food left though some are open:
+        // the meal it wanted, counted at one of those (by lot), in its turn (Society::missedMeal; doc 64, Phase 13).
+        c.missed = nullptr;
+        if (hunger >= 60 && !carriesFood && !larderHasFood && !home.empty() && !missedBy_.count(id))
+            if (const auto bare = bareShops.find(home); bare != bareShops.end())
+            {
+                const auto town = shopsOfCommunity.find(home);
+                const bool food = town != shopsOfCommunity.end() &&
+                                  std::any_of(town->second.begin(), town->second.end(), [&](std::size_t i) { return shopList[i]->first != id; });
+                std::size_t others = 0;
+                for (const auto* holder : bare->second)
+                    others += *holder != id;
+                if (!food && others > 0)
+                {
+                    std::size_t which = std::hash<std::string>{}(id + "|missed") % others;
+                    for (const auto* holder : bare->second)
+                        if (*holder != id && which-- == 0)
+                        {
+                            c.missed = holder;
+                            break;
+                        }
+                }
+            }
         // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
         const auto visit = [&] { return 8 + int(std::hash<std::string>{}(id + "market") % 5); };
         // Where a wolf who works out of town sells what it brings in: an open shop of its town that takes it.
@@ -1021,6 +1051,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         auto& c = choices[i];
         c.kind = Choice::Kind::Skip;
         c.companion = false;
+        c.missed = nullptr;
         c.body = nullptr;
         c.wallet = nullptr;
         c.record = &records_[i];
@@ -1084,6 +1115,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         life.hunger = c.hunger;
         life.fatigue = c.fatigue;
         life.decidedAt = absoluteDay;
+        if (c.missed)
+            missedMeal(id, *c.missed);              // (Its town's shops bare: the meal it wanted, doc 64, Phase 13.)
         const int step = c.step;
         const Position* job = c.job;
         const Position* learning = c.learning;
@@ -1273,9 +1306,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // Wages from whoever the work is for (doc 42, Phase 2): the shop, the town, the church, the house.
             const auto payer = payerOf(pair.first, *job, body.age);
             // An hour of the business's work, if the work is a business's (doc 64, Phase 3): a shop's help, a hand at a
-            // house's works. What it makes is made from the hours its hands put in. (Not a stall's: its help sells, and
-            // makes nothing. Doc 64, Phase 13.)
-            if ((payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0)) && makesThings(payer.account))
+            // house's works. What it makes is made from the hours its hands put in. (Not a stall's, with work by the
+            // hours: its help sells, and makes nothing. Doc 64, Phase 13.)
+            if ((payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0)) &&
+                (!workByHours() || makesThings(payer.account)))
                 creditWork(payer.account, 1.);
             if (!payer.account.empty() && life.wagesToday < PaidSpells)
             {

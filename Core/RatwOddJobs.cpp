@@ -172,6 +172,8 @@ void Society::indexOddJobs()
     for (std::size_t i = 0; i < oddJobs_.size(); ++i)
     {
         const auto& j = oddJobs_[i];
+        if (j.ended)
+            continue;                                // (A hire ended today: shut, to its holders and to those looking.)
         for (const auto& [who, stage] : j.stage)
             if (stage < 2)
                 oddHeld_.try_emplace(who, i);        // (The first it holds, as a search down the list finds.)
@@ -198,7 +200,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     }
     else
         for (const auto& j : oddJobs_)
-            if (const auto mine = j.stage.find(id); mine != j.stage.end() && mine->second < 2)
+            if (const auto mine = j.stage.find(id); !j.ended && mine != j.stage.end() && mine->second < 2)
                 return &j;
     // Who seeks them out: those without other work, and children (eight and up, not apprenticed), in the day; the poor
     // and hungry from eight, others from ten. Children would rather not work (the user, 2026-10-05): they look from noon,
@@ -230,7 +232,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     // unfilled work pulls workers off other employment): `ownDayPay` is what it must pay (Society::lookingFor, doc 64).
     const bool better = ownDayPay > 0 && hour >= 8 && hour < 10 && [&] {
         for (const auto i : candidates())
-            if (const auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && j.pay / j.slots >= ownDayPay &&
+            if (const auto& j = oddJobs_[i]; j.until >= 0 && !j.ended && j.slots > 0 && j.pay / j.slots >= ownDayPay &&
                                              int(j.stage.size()) < j.slots && j.community == community)
                 return true;
         return false;
@@ -248,7 +250,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return payer != state_.residents.end() && me != state_.residents.end() && payer->second.homeCell == me->second.homeCell;
     };
     const auto open = [&](const OddJob& j) {
-        return (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
+        return !j.ended && (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
                int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14) &&
                (j.kind != "about the home" || !ownHome(j));
     };
@@ -263,9 +265,10 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     // A child joins a friend on a job first, then one with room for a party; anyone else, the first open one. The
     // jobless and the idle (not a child, nor one called to the land) take the best-paid business's hire open to them
     // first, the first of the best by the list, before chores (doc 63's model: the unemployed take the best-paid post
-    // they find; doc 64, Phase 13), so a business that raised its wage draws them.
+    // they find; doc 64, Phase 13), so a business that raised its wage draws them. (With work by the hours: at the
+    // seconds' pace, the first open one, as it was.)
     OddJob* chosen = nullptr;
-    if (jobless && !child && !called)
+    if (jobless && !child && !called && workByHours())
     {
         std::int64_t best = 0;
         const auto bestOf = [&](const std::vector<std::size_t>& list) {
@@ -320,7 +323,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
 {
     indexOddJobs();
     auto it = oddJobs_.end();
-    if (const auto held = oddHeld_.find(id); held != oddHeld_.end() && held->second < oddJobs_.size())
+    if (const auto held = oddHeld_.find(id); held != oddHeld_.end() && held->second < oddJobs_.size() && !oddJobs_[held->second].ended)
         if (const auto mine = oddJobs_[held->second].stage.find(id); mine != oddJobs_[held->second].stage.end() && mine->second < 2)
             it = oddJobs_.begin() + std::ptrdiff_t(held->second);
     if (it == oddJobs_.end())
@@ -337,7 +340,8 @@ void Society::advanceOddJob(const std::string& id, int seconds)
             return;
         // A hand's spells are hours of the work it was taken on for (doc 64, Phase 3): a shop's, made into its next
         // batches; a farm's or other producer's, into its yields.
-        if (j.kind == "a hand at the shop" && makesThings(tillOf(j.producer)))   // (Not a stall's: doc 64, Phase 13.)
+        // (Not a stall's, with work by the hours: doc 64, Phase 13.)
+        if (j.kind == "a hand at the shop" && (!workByHours() || makesThings(tillOf(j.producer))))
         {
             creditWork(tillOf(j.producer), double(spells));
             craftNext_.erase(j.producer);           // (Its keeper looks again at once.)
@@ -394,11 +398,13 @@ void Society::advanceOddJob(const std::string& id, int seconds)
     const auto share = j.pay / std::max(1, j.slots);
     if (spendable(j.payer) >= share)
         shift(j.payer, id, "", 0, share, "an odd job: " + j.kind);
-    else if (j.until >= 0 && j.payer.rfind("till:", 0) == 0)
+    else if (j.until >= 0 && j.payer.rfind("till:", 0) == 0 && workByHours())
     {
-        // A business that can't pay its hire's share: the hire ends, and its weekly review hears it fell short (doc 64,
-        // Phase 13: no more unpaid days, and a wage it can't pay comes down).
+        // A business that can't pay its hire's share: the hire ends, shut from now (its other hands are owed nothing
+        // more for a day it can't pay), and its weekly review hears it fell short (doc 64, Phase 13: no more unpaid days,
+        // and a wage it can't pay comes down). (With work by the hours: at the seconds' pace, as it was.)
         j.until = surplusDay_ - 1;
+        j.ended = true;
         state_.memory.employers.try_emplace(j.payer, EmployerBook{employerWage(j.payer)}).first->second.shortPay = true;
     }
     stage = 2;

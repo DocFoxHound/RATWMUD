@@ -6,6 +6,8 @@
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
+#include "RatwCalendar.h"
+
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -128,10 +130,11 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
     // Its staffing a day: its keeper, its help (the posts that work where it does and that it pays: doc 46's float), and
     // at most two of those standing open (posts it can't fill aren't wages it pays: doc 63). (Not every post where it
     // works: a market stall counted the whole market's, a month of dozens of wages for a stall selling a score a day.
-    // Nor a business that makes nothing: the market's street posts it was given, doc 64, Phase 13.)
+    // Nor, with work by the hours, a business that makes nothing: the market's street posts it was given, doc 64,
+    // Phase 13.)
     int help = 0, open = 0;
     const auto till = "till:" + positionId;
-    if (business->role == "merchant" && makesThings(till))
+    if (business->role == "merchant" && (!workByHours() || makesThings(till)))
         for (const auto& p : positions_)
             if (p.id != positionId && p.role != "merchant" && p.work.cell == business->work.cell)
             {
@@ -146,11 +149,41 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
         for (const auto& [good, rate] : rates->second)
             if (items::good(good) && !storePriced(good))
                 day += rate * materialsCost(keeper, good);
-    // And a week of its standing orders on the roads (doc 61), paid when the caravan comes.
+    // And a week of its standing orders on the roads (doc 61), paid when the caravan comes; and a field's hands' wages
+    // for its window ahead.
     double orders = 0;
     if (const auto o = ordersCost_.find(till); o != ordersCost_.end())
         orders = double(o->second);
-    return std::int64_t(std::ceil(MonthDays * day + orders));
+    return std::int64_t(std::ceil(MonthDays * day + orders + fieldWages(till)));
+}
+
+double Society::fieldWages(const std::string& till) const
+{
+    // The work of its window still ahead (doc 64, Phase 13): what's left to sow, or what's sown to bring in, less what
+    // its farmer does itself there (a day's hours a day); the rest its hands' days, at its wage and the harvest's pay.
+    // From a month before the window opens, its owner's month's take before it, to the window's end: the land's hands
+    // paid from what its last harvest sold for, not cut off for want of the money its owner took. (The founding's
+    // fields, sown as founded, want none at their sowing.)
+    const auto* p = fieldsOn() && till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+    const auto* producer = p ? items::producerFor(p->title) : nullptr;
+    const auto f = state_.memory.fields.find(till);
+    if (!producer || !fieldWork(producer->id) || f == state_.memory.fields.end())
+        return 0;
+    const auto d = state_.budgetDay % calendar::DaysPerYear;
+    const double acre = hoursFor(*producer) * FieldYields;
+    double hours = 0;
+    std::int64_t days = 0;
+    if (d < SowEnd || d >= calendar::DaysPerYear - MonthDays)
+    {
+        hours = (f->second.acres - f->second.sown) * acre * SowShare;
+        days = SowEnd - (d < SowEnd ? d : 0);
+    }
+    else if (d >= HarvestStart - MonthDays && d < HarvestEnd)
+    {
+        hours = f->second.toHarvest * acre * (1 - SowShare);
+        days = HarvestEnd - std::max<std::int64_t>(d, HarvestStart);
+    }
+    return std::max(0., hours - double(days * PaidSpells)) / HireSpells * employerWage(till) * HarvestPay;
 }
 
 std::int64_t Society::owed(const std::string& till) const

@@ -668,6 +668,7 @@ void aStallDumpAndTheRebound()
 // In a land this small (no town with TownRateWeight hands) every town has the realm's, and it is saved.
 void theGoingRateFromTheMakers()
 {
+    Society::setWorkByHours(true);                  // (At the seconds' pace, the old measure: its shops'.)
     auto s = town();
     const auto scribe = s.tillOf("scribe"), stall = s.tillOf("stall");
     expect(s.makesThings(scribe) && !s.makesThings(stall), "the scribe makes things, the stall sells");
@@ -684,6 +685,7 @@ void theGoingRateFromTheMakers()
     auto again = town();
     expect(again.restore(wire::readSociety(wire::society(s.state()))), "the saved society restores");
     expect(std::abs(again.labourDay("") - 15) < 1e-6, "with its going rate, before the day's first measure");
+    Society::setWorkByHours(false);
 }
 
 // Hands by what can be made (doc 64, Phase 13; doc 63's model), with work by the hours: a tannery's leather, which three
@@ -770,27 +772,34 @@ void theCordGoesRoundNoMore()
         if (e.kind == "materials bought" && items::baseOf(e.item) == "cord" && e.from == s.tillOf("chandler"))
             (e.to == s.tillOf("shop") ? fromShop : fromOther) += e.quantity;
     expect(fromShop == 0, "the chandler buys no cord from the general store: " + std::to_string(fromShop));
-    expect(fromOther > 0 && held(s, "other", "cord") >= 40, "but from the other chandler, which keeps back its own batches': " +
-                                                                std::to_string(fromOther) + " bought, " + std::to_string(held(s, "other", "cord")) + " kept");
+    expect(fromOther > 0 && held(s, "other", "cord") >= s.keepsBack("other", "cord") && s.keepsBack("other", "cord") > Society::GoodsKept,
+           "but from the other chandler, which keeps back its own batches': " + std::to_string(fromOther) + " bought, " +
+               std::to_string(held(s, "other", "cord")) + " kept");
 }
 
-// A producer with its store full (doc 64, Phase 13): its yields would bring nothing in, so its hours aren't spent on
-// them; they stay in hand, and once its work in hand is full they are lost, and it has no work for a hand.
+// A producer with its store full (doc 64, Phase 13), with work by the hours: its yields would bring nothing in, so its
+// hours aren't spent on them; they stay in hand, and once its work in hand is full they are lost. Full at one turn of
+// the day and the next, it has no work for a hand: not on the first day its work in hand fills.
 void aFullStoreLosesItsHours()
 {
+    Society::setWorkByHours(true);
     auto s = farmTown();
     for (const auto& [item, n] : items::producerFor("farms the valley fields")->out)
         set(s, "farmer", item, 2000);
     s.takeJournal();
-    for (int d = 0; d < 3; ++d)
-    {
-        double day = d + 8. / 24;
-        work(s, 9 * 3600, day);
-    }
+    const auto by = [&] {
+        const auto found = s.workBy().find("farmer");
+        return found == s.workBy().end() ? 0. : found->second.second;
+    };
+    double day = 8. / 24;
+    work(s, 9 * 3600, day);
     expect(count(s.takeJournal(), "brought in", "wheat") == 0, "its store full, nothing is brought in");
-    const auto by = s.workBy().find("farmer");
-    expect(by != s.workBy().end() && by->second.second > 0 && s.idleBusiness(s.tillOf("farmer")),
-           "and its hours are lost, not spent: " + std::to_string(by == s.workBy().end() ? 0. : by->second.second));
+    expect(by() > 0 && !s.idleBusiness(s.tillOf("farmer")),
+           "and its hours are lost, not spent; but full only since this morning, it isn't idle yet: " + std::to_string(by()));
+    day = 1 + 8. / 24;
+    work(s, 3600, day);
+    expect(s.idleBusiness(s.tillOf("farmer")), "full at the turn of the day too, it is");
+    Society::setWorkByHours(false);
 }
 
 void millGrindsForTheStall()
@@ -1171,6 +1180,283 @@ void missedSalesReachTheLand()
                                                                    std::to_string(missed) + " (the mill uses " + std::to_string(use) + ")");
     expect(s.conserved(), "money stays conserved");
 }
+
+// A town of one community ("town"), as the world's day plans give it.
+void oneTown(Society& s)
+{
+    LifeDay day;
+    day.communityOf = [](const std::string& cell) { return cell == "fields" ? std::string() : std::string("town"); };
+    s.setDay(day);
+}
+
+// Nothing edible left on a till, or in a wolf's purse and its home's larder.
+void bare(Society& s, const std::vector<std::string>& accounts)
+{
+    auto state = s.state();
+    for (const auto& id : accounts)
+        if (const auto a = state.accounts.find(id); a != state.accounts.end())
+            for (auto it = a->second.stock.begin(); it != a->second.stock.end();)
+                it = Society::edible(it->first) ? a->second.stock.erase(it) : std::next(it);
+    expect(s.restore(state), "the bare shelves restore");
+}
+
+// Missed meals (doc 64, Phase 13): a bakery sold out, with nothing to bake; a hungry wolf of its town, nothing to eat
+// about it or at home, finds no shop with food open. The meal it wanted is counted at the bakery, once a day however
+// long it stays hungry, and at the turn of the day it is in the bakery's sales: what it bakes follows what was wanted.
+void missedMealsCount()
+{
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), wren};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    oneTown(s);
+    const auto till = s.tillOf("baker");
+    double day = 1 + 10. / 24;
+    work(s, 5, day);                               // (The day's first: the larders and purses founded.)
+    auto state = s.state();
+    state.residents.at("wren").hunger = 70;
+    expect(s.restore(state), "hungry wren restores");
+    // (Nor in the town's stores, which the bakery's meals come from.)
+    bare(s, {till, "wren", Society::homeStore(s.resident("wren")->homeCell, "larder"), "treasury"});
+    for (const char* in : {"flour", "firewood"})
+        set(s, "baker", in, 0);
+    const auto food = [&] {
+        int n = 0;
+        for (const auto& [item, k] : s.account(till)->stock)
+            n += Society::edible(item) ? k : 0;
+        return n;
+    };
+    expect(food() == 0 && (!s.sellRates(till) || s.sellRates(till)->empty()), "the bakery has nothing to sell, and has sold nothing");
+    work(s, 600, day);
+    expect(s.resident("wren")->hunger >= 60 && food() == 0, "wren stays hungry: there's no food in town (" + std::to_string(s.resident("wren")->hunger) +
+                                                                " hungry, " + std::to_string(food()) + " at the bakery; " + s.resident("wren")->task + ")");
+    double midnight = 2 - 30. / 86400;
+    work(s, 60, midnight);
+    const auto* rates = s.sellRates(till);
+    std::string good;
+    double rate = 0;
+    if (rates)
+        for (const auto& [item, r] : *rates)
+            if (r > 0)
+                good = item, rate = r;
+    const int meal = good.empty() ? 0 : (50 + Society::nourishment(good) - 1) / Society::nourishment(good);
+    expect(!good.empty() && std::abs(rate - .3 * meal) < 1e-9,
+           "at the turn of the day the meal wren wanted is in the bakery's sales, once: " + good + " " + std::to_string(rate));
+    expect(s.conserved(), "money stays conserved");
+}
+
+// The household's errand goes on (doc 64, Phase 13): two bakeries with four loaves each, a household of two laying in
+// with nothing at home. Half of the first's leaves it short of what it lays in at, so it goes on to the second.
+void theErrandGoesOn()
+{
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    auto ash = person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian");
+    auto loaf = person("loaf", "baker at The Loaf", {"bakery", 2.5, 2.5});
+    auto oven = person("oven", "baker at The Morning Oven", {"oven", 2.5, 2.5});
+    loaf.home = {"loaf_flat", 2.5, 2.5};
+    oven.home = {"oven_flat", 2.5, 2.5};
+    roster.residents = {loaf, oven, wren, ash};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    oneTown(s);
+    double day = 1 + 10. / 24;
+    work(s, 5, day);
+    const auto larder = Society::homeStore(s.resident("wren")->homeCell, "larder");
+    expect(s.openAccount(larder), "the household's larder");
+    bare(s, {s.tillOf("loaf"), s.tillOf("oven"), "wren", "ash", larder});
+    auto state = s.state();
+    for (const char* who : {"wren", "ash"})
+        state.residents.at(who).hunger = 0;             // (Laying in, not hungry: no meal at the counter.)
+    expect(s.restore(state), "the household fed");
+    set(s, "loaf", "bread", 4);
+    set(s, "oven", "bread", 4);
+    s.takeJournal();
+    double midnight = 2 - 30. / 86400;
+    work(s, 60, midnight);
+    int fromLoaf = 0, fromOven = 0;
+    for (const auto& e : s.takeJournal())
+        if (e.kind == "resident food purchase" && (e.from == "wren" || e.from == "ash"))
+        {
+            if (e.to == s.tillOf("loaf"))
+                fromLoaf += e.quantity;
+            if (e.to == s.tillOf("oven"))
+                fromOven += e.quantity;
+        }
+    expect(fromLoaf > 0 && fromLoaf <= 2 && fromOven > 0 && fromOven <= 2,
+           "half of each bakery's bread, the first not enough: " + std::to_string(fromLoaf) + " and " + std::to_string(fromOven));
+    expect(s.conserved(), "money stays conserved");
+}
+
+// What a workshop keeps back of what it works with (doc 64, Phase 13): a chandler its candles' and nets' cord, two
+// batches of each (where it would buy more), not a store of them; a butcher none of its raw meat beyond its shelf's few,
+// for meat kept back only spoils.
+void whatAWorkshopKeepsBack()
+{
+    AuthoredRoster roster;
+    roster.residents = {person("chandler", "the chandler at the kettle", {"kettle", 2.5, 2.5}),
+                        person("butcher", "the butcher on the lane", {"lane", 2.5, 2.5})};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    int cord = 0;
+    for (const auto* k : items::craftsFor(items::businessFor("the chandler at the kettle")->id))
+        for (const auto& [in, n] : k->in)
+            cord += in == "cord" ? n : 0;
+    expect(cord > 0 && s.keepsBack("chandler", "cord") == std::max(Society::GoodsKept, cord * Society::MaterialsLow),
+           "the chandler keeps back two batches of cord for each craft it works it into: " + std::to_string(s.keepsBack("chandler", "cord")));
+    expect(s.keepsBack("butcher", "raw_meat") == Society::GoodsKept && s.keepsBack("chandler", "tallow") >= Society::GoodsKept,
+           "the butcher keeps back no store of raw meat: " + std::to_string(s.keepsBack("butcher", "raw_meat")));
+}
+
+// Tools worn by real hours (doc 64, Phase 13), with work by the hours: two miners at the same work, one's premises
+// improved as far as they go. The improved bring in more for an hour, but their picks wear by the hours worked: each
+// yield's hours in hand, back to real hours.
+void toolsWornByRealHours()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("plain", "digs ore at the high pit", {"high_pit", 2.5, 2.5}, "civilian"),
+                        person("better", "digs ore at the low pit", {"low_pit", 2.5, 2.5}, "civilian")};
+    roster.economy.treasury = 500;
+    Society s(Roster::None);
+    s.configure(roster);
+    oneTown(s);
+    auto state = s.state();
+    state.memory.pace = 1;
+    state.memory.improved[s.jobOf("better")->id] = Society::MostImprovement;
+    expect(s.restore(state), "the better premises restore");
+    const auto* mine = items::producerFor("digs ore at the high pit");
+    double everyDays = 0;
+    for (const auto& t : items::toolNeeds())
+        if (t.producer == mine->id && t.item == "mining_pick")
+            everyDays = t.everyDays;
+    s.takeJournal();
+    double day = 8. / 24;
+    work(s, 12000, day);
+    const auto journal = s.takeJournal();
+    for (const char* who : {"plain", "better"})
+    {
+        const auto till = s.tillOf(who);
+        int yields = 0;
+        for (const auto& e : journal)
+            if (e.kind == "brought in" && e.to == till && items::baseOf(e.item) == "iron_ore")
+                yields += e.quantity;
+        const double improved = std::string(who) == "better" ? 1 - Society::ImprovementPace * Society::MostImprovement : 1;
+        const double hours = yields * s.workHours(*mine) * improved, worn = s.toolWear(till, "mining_pick");
+        expect(everyDays > 0 && yields > 0 && std::abs(worn - hours / (Society::PaidSpells * everyDays)) < 1e-9,
+               std::string(who) + "'s pick worn by its real hours: " + std::to_string(worn * Society::PaidSpells * everyDays) + " for " +
+                   std::to_string(yields) + " yields, " + std::to_string(hours) + " hours");
+    }
+    Society::setWorkByHours(false);
+}
+
+// A field's hands' wages kept (doc 64, Phase 13), with work by the hours: from a month before the harvest to its end, a
+// farm's working money holds what its hands will be paid to bring in what it sowed (its owner's month's take leaves it),
+// and between, none.
+void theHarvestsWagesKept()
+{
+    Society::setWorkByHours(true);
+    auto s = farmTown();
+    const auto till = s.tillOf("farmer");
+    const auto pid = s.jobOf("farmer")->id;
+    const auto on = [&](std::int64_t d) {
+        auto state = s.state();
+        state.budgetDay = d;
+        state.memory.pace = 1;
+        state.memory.fields[till] = FieldYear{400, 400, 400, 0, 0, false, 0, -1, true};
+        expect(s.restore(state), "the farm's year restores");
+        return std::pair{s.fieldWages(till), s.workingMoney(pid)};
+    };
+    const auto between = on(150), before = on(Society::HarvestStart - 10), during = on(Society::HarvestStart + 30), after = on(Society::HarvestEnd + 5);
+    const double acre = s.workHours(*items::producerFor("farms the valley fields")) * Society::FieldYields;
+    const double hours = 400 * acre * (1 - Society::SowShare) - double(Society::HarvestEnd - Society::HarvestStart) * Society::PaidSpells;
+    expect(between.first == 0 && after.first == 0 && hours > 0 &&
+               std::abs(before.first - hours / Society::HireSpells * s.employerWage(till) * Society::HarvestPay) < 1e-6,
+           "a month before the harvest its hands' days at its wage, harvest pay: " + std::to_string(before.first));
+    expect(before.second >= between.second + std::int64_t(before.first) && during.first > 0,
+           "in its working money, until the harvest is in: " + std::to_string(before.second) + " against " + std::to_string(between.second));
+    Society::setWorkByHours(false);
+}
+
+// A field's farmer called back (doc 64, Phase 13), with work by the hours: its fields all sown, the farmer takes a
+// bakery's hire with the town's idle; when its acres grow, the day's pass calls it back to the fields. And when the
+// bakery can't pay a hand's share, the hire is shut at once: its other hand doesn't work the day out unpaid.
+void farmersCalledBackAndHiresShut()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    auto farmer = person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian");
+    farmer.home = {"farmhouse", 2.5, 2.5};
+    auto idler1 = person("idler1", "idling in the square", {"bakery", 2.5, 2.5}, "civilian");
+    auto idler2 = person("idler2", "idling in the square", {"bakery", 2.5, 2.5}, "civilian");
+    roster.residents = {farmer, person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), idler1, idler2};
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    oneTown(s);
+    const auto bakery = s.tillOf("baker"), farm = s.tillOf("farmer");
+    {
+        auto state = s.state();
+        state.memory.pace = 1;
+        expect(s.restore(state), "the calibrated hours restore");
+    }
+    // Bread selling, a week: hands wanted.
+    for (std::int64_t d = 1; d <= 7; ++d)
+    {
+        set(s, "baker", "bread", 90);
+        expect(s.shift("treasury", "farmer", "", 0, 90, "test: the buyer's money") && s.sale(bakery, "farmer", "bread", 90, 1, "test: the day's buying"),
+               "the bread is bought");
+        auto st = s.state();
+        st.accounts.at("farmer").stock.erase("bread");
+        expect(s.restore(st), "and eaten");
+        s.spoil(d);
+    }
+    set(s, "baker", "flour", 200);
+    set(s, "baker", "firewood", 200);
+    set(s, "baker", "bread", 0);
+    auto state = s.state();
+    state.memory.fields[farm] = FieldYear{10, 10, 10, 0, 0, false, 0, -1, true};   // (Sown, as founded.)
+    for (const char* who : {"farmer", "idler1", "idler2"})
+        state.residents.at(who).hunger = state.residents.at(who).fatigue = 0;
+    expect(s.restore(state), "the farm's fields all sown");
+    double day = 20 + 10. / 24;
+    work(s, 120, day);
+    const auto hire = [&]() -> const Society::OddJob* {
+        for (const auto& j : s.oddJobs())
+            if (j.payer == bakery && j.until >= 0)
+                return &j;
+        return nullptr;
+    };
+    expect(hire() && hire()->stage.count("farmer") && hire()->stage.count("idler1") && hire()->stage.count("idler2"),
+           "the bakery hires, and its farmer free, the farm's hand takes it with the idle (" + std::to_string(hire() ? hire()->stage.size() : 0) + ")");
+    state = s.state();
+    state.memory.fields[farm].acres = 20;               // (Its sales grown: more to sow.)
+    for (const char* who : {"farmer", "idler1", "idler2"})
+        state.residents.at(who).hunger = state.residents.at(who).fatigue = 0;
+    expect(s.restore(state), "more acres to sow");
+    s.takeJournal();
+    double next = 21 + 10. / 24;
+    work(s, 5, next);
+    const auto called = s.takeJournal();
+    expect(hire() && !hire()->stage.count("farmer") &&
+               std::any_of(called.begin(), called.end(), [](const EconomyEntry& e) { return e.kind == "called back to the fields" && e.from == "farmer"; }),
+           "its window has work again: the day's pass calls the farmer back to the fields");
+    // The bakery's money gone before the day's share is done: the first to finish isn't paid, and the hire shuts.
+    state = s.state();
+    state.accounts.at("treasury").cash += state.accounts.at(bakery).cash;
+    state.accounts.at(bakery).cash = 0;
+    expect(s.restore(state), "the bakery's till emptied");
+    work(s, 600 * Society::HireSpells + 60, next);
+    const auto* shut = hire();
+    expect(shut && shut->ended && shut->stage.count("idler1") && shut->stage.at("idler1") == 2 &&
+               (!shut->stage.count("idler2") || shut->stage.at("idler2") != 2),
+           "the first unpaid, the hire shuts: its other hand doesn't work the day out for nothing");
+    Society::setWorkByHours(false);
+}
 } // namespace
 
 // A town's trade (Docs/Design/61; Data/Economy/specialties.json): iron is Frosthollow's. A miner at Frosthollow's
@@ -1233,6 +1519,12 @@ int main()
         foodMakersLayIn();
         fieldsPlannedByTheirFood();
         missedSalesReachTheLand();
+        missedMealsCount();
+        theErrandGoesOn();
+        whatAWorkshopKeepsBack();
+        toolsWornByRealHours();
+        theHarvestsWagesKept();
+        farmersCalledBackAndHiresShut();
     }
     catch (const std::exception& error)
     {

@@ -524,21 +524,32 @@ void societyTests()
     refused(Value("society"), "a society that isn't an object");
     // The pace's week of readings (doc 64, Phase 13): saved, and dropped (the society still read) when there are more
     // than a week's, or one is out of bounds.
+    // Each reading with its day, in order; a save from before they carried their days (bare readings) reads as none.
     auto state = w.save().society;
-    state.memory.paceCover = {1.5, 1.25, 2, 0, 4};
-    state.memory.paceHands = {.5, .75, 1};
+    using Readings = std::vector<std::pair<std::int64_t, double>>;
+    state.memory.paceCover = {{3, 1.5}, {4, 1.25}, {6, 2}, {7, 0}, {10, 4}};
     const auto read = wire::readSociety(wire::society(state));
-    expect(read.memory.paceCover == state.memory.paceCover && read.memory.paceHands == state.memory.paceHands, "the pace's readings round trip");
-    for (const auto& wrong : {std::vector<double>(Society::PaceWeek + 1, 1.), std::vector<double>{1, -1}, std::vector<double>{1, Society::PaceCoverCap + 1}})
+    expect(read.memory.paceCover == state.memory.paceCover, "the pace's readings round trip, with their days");
+    Readings week;
+    for (std::int64_t d = 0; d <= Society::PaceWeek; ++d)
+        week.push_back({d, 1.});
+    for (const auto& wrong : {week, Readings{{1, 1}, {2, -1}}, Readings{{1, 1}, {2, Society::PaceCoverCap + 1}}, Readings{{2, 1}, {2, 1}},
+                              Readings{{3, 1}, {2, 1}}, Readings{{-1, 1}}})
     {
         state.memory.paceCover = wrong;
-        state.memory.paceHands = wrong;
         const auto back = wire::readSociety(wire::society(state));
-        expect(back.minted >= 0 && back.memory.paceCover.empty() && back.memory.paceHands.empty(), "readings that can't be are dropped, the rest kept");
+        expect(back.minted >= 0 && back.memory.paceCover.empty(), "readings that can't be are dropped, the rest kept");
     }
-    state.memory.paceCover = {};
-    state.memory.paceHands = {1.5};
-    expect(wire::readSociety(wire::society(state)).memory.paceHands.empty(), "(the land's hands are a share, at most 1)");
+    auto older = wire::society(state);
+    auto bare = Value::array();
+    for (const double x : {1.5, 1.25, 2.})
+        bare.push(x);
+    auto* memory = older.find("memory");
+    expect(memory != nullptr, "the society's memory is saved");
+    memory->set("paceCover", bare);
+    memory->set("paceHands", bare);
+    const auto old = wire::readSociety(older);
+    expect(old.minted >= 0 && old.memory.paceCover.empty(), "an older save's bare readings, and its land's hands, read as none");
 }
 
 void commandTests()
