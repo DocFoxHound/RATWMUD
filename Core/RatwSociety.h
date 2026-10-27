@@ -1593,8 +1593,13 @@ class Society
     // owner stops after putting in two months' working money that hasn't come back. A business short of money buys its
     // materials on credit, up to a week of its turnover, repaid first from its takings and written off by the seller
     // after CreditWrittenOff days.
+    // With work by the hours (doc 64, Phase 13, round 8), goods bought to sell on are counted for ResaleDays of its
+    // sales, not a month, nearer the model's firms, which carry only their inputs (a month of the shops' goods was
+    // three-quarters of their working money, and kept their margin in their tills). And a lone owner tops its
+    // business up only from what it holds above a week of its household's food, the model's 7 x need_cost; a House
+    // gives what it has.
     static constexpr double RentShare = .15;
-    static constexpr int CreditDays = 7, CreditWrittenOff = 56;
+    static constexpr int CreditDays = 7, CreditWrittenOff = 56, ResaleDays = 14;
     std::int64_t workingMoney(const std::string& positionId) const;
     // A seasonal field's hands' wages for its window's work still ahead (doc 64, Phase 13): kept in its working money
     // from a month before the window opens to its end, so the land pays the hands it hires when they're wanted.
@@ -1615,9 +1620,11 @@ class Society
     static int ownersDay(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % MonthDays); }
     static int ownersWeekday(const std::string& positionId) { return int(std::hash<std::string>{}(positionId + "|owner") % 7); }
     std::string ownerOfBusiness(const std::string& positionId) const;   // Its House, or its keeper ("" for none).
+    std::size_t householdOf(const std::string& resident) const;         // Those whose food its purse keeps (at least 1).
     std::string landlordOf(const std::string& positionId) const;        // The House whose land it works, or "".
-    // What the materials (or, bought to sell on, the goods themselves) of one piece cost a seller, without its hours.
-    double materialsCost(const std::string& seller, const std::string& item) const;
+    // What the materials (or, bought to sell on, the goods themselves) of one piece cost a seller, without its hours;
+    // `resold`, if given, is set when it is bought to sell on.
+    double materialsCost(const std::string& seller, const std::string& item, bool* resold = nullptr) const;
     std::int64_t creditLeft(const std::string& till) const;              // What it may still owe its suppliers.
     std::int64_t owed(const std::string& till) const;
     // Goods bought on credit: the seller's stock to the buyer at `price` a piece, owed rather than paid.
