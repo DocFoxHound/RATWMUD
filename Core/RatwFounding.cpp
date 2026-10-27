@@ -34,11 +34,40 @@ std::int64_t Society::spendable(const std::string& id) const
     const auto* purse = account(id);
     if (!purse)
         return 0;
+    // A House's, or the church's, never below its floor (round 10, lane A: HouseBudget, ChurchBudget; set at its week's
+    // reckoning, institutionsWeek, only with the rule).
+    if ((id[0] == 'h' && id.rfind("house:", 0) == 0) || id == SharedChurch)
+    {
+        const auto floor = state_.memory.spendLeft.find(id + "|floor");
+        return floor == state_.memory.spendLeft.end() ? purse->cash : std::max<std::int64_t>(0, purse->cash - std::int64_t(floor->second));
+    }
     const auto* r = state_.residents.count(id) ? spec(id) : nullptr;
     // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.
     // At its town's day, accountTown, as the wealth line and an owner's top-up reckon it.)
     return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, accountTown(id)))
                                                          : purse->cash;
+}
+
+std::int64_t Society::houseMay(const std::string& house, HousePart part) const
+{
+    const auto may = spendable(house);
+    if (!workByHours() || !wageRule(HouseBudget) || house.rfind("house:", 0) != 0)
+        return may;
+    static const char* const parts[] = {"|posts", "|road", "|tops"};
+    const auto left = state_.memory.spendLeft.find(house + parts[part]);
+    return left == state_.memory.spendLeft.end() ? may : std::min<std::int64_t>(may, std::max<std::int64_t>(0, std::int64_t(left->second)));
+}
+
+std::int64_t Society::almsMay() const
+{
+    const auto* purse = account(SharedChurch);
+    if (!purse)
+        return 0;
+    if (!workByHours() || !wageRule(ChurchBudget))
+        return purse->cash;
+    const auto left = state_.memory.reliefLeft.find(SharedChurch);
+    return left == state_.memory.reliefLeft.end() ? spendable(SharedChurch)
+                                                  : std::min<std::int64_t>(spendable(SharedChurch), std::int64_t(left->second));
 }
 
 void Society::startingMoney(const std::string& id, std::int64_t coins)

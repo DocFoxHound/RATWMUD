@@ -1471,7 +1471,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                     for (const auto& kind : kindsHeld(*account(till), item))
                     {
                         const std::int64_t price = shopPrice(shop, kind);   // (The town's price: doc 46.)
-                        const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, account(payer)->cash / price}));
+                        const int n = int(std::min<std::int64_t>({want, stock(*account(till), kind), 99, spendable(payer) / price}));
                         if (n > 0 && transfer(till, payer, kind, n, price, "bought by " + in.name))
                         {
                             if (payer != acct)

@@ -250,7 +250,10 @@ void Society::spendSurpluses(std::int64_t day)
             continue;
         // Food from the town's shops, the last of it too if need be (for the hungry, not the church's table).
         std::map<std::string, int> bread;
-        buyForSurplus(id, shops[town], [](const std::string& item) { return edible(item); }, std::int64_t(hungry.size()) * 6,
+        // (With work by the hours, inside what's left of the church's week's relief, over its floor: round 10, lane A.)
+        buyForSurplus(id, shops[town], [](const std::string& item) { return edible(item); },
+                      workByHours() && wageRule(ChurchBudget) ? std::min<std::int64_t>(std::int64_t(hungry.size()) * 6, almsMay())
+                                                              : std::int64_t(hungry.size()) * 6,
                       "alms bought for the hungry", &bread, true);
         for (const auto& who : hungry)
             for (auto& [item, n] : bread)

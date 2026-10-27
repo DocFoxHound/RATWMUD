@@ -43,7 +43,11 @@
 // caravans' week goes to its works with its posts paid from the tax budget and its purse, not its posts' shortfall
 // first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
 // take a second). With all six left out, a run is round 8's to the digest.
-// And round 9's tills: owners (a lone owner tops up a business short of its wages as before).
+// And round 9's tills: owners (a lone owner tops up a business short of its wages as before). And round 10's, lane A:
+// houses (a House's budget pays its retainers, finery, works and estate crew only; its posts, caravans and investments
+// draw on its purse as before), housetills (a House's business it doesn't top up isn't free to trade on as a lone
+// owner's: no record, its manager not free for hire), church (the church's alms bought on top of its relief, no floor).
+// With those three left out, a run is 4ef067b's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -445,9 +449,15 @@ int main(int argc, char** argv)
                     off |= Society::OnePlace;
                 else if (name == "owners")
                     off |= Society::OwnersStop;
+                else if (name == "houses")
+                    off |= Society::HouseBudget;
+                else if (name == "housetills")
+                    off |= Society::HouseTills;
+                else if (name == "church")
+                    off |= Society::ChurchBudget;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace or owners, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, houses, housetills or church, not "
                               << name << "\n";
                     return 2;
                 }
