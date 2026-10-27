@@ -35,7 +35,8 @@
 // keeper and all, as before), stalls (a stall never lets its help go, as before); and round 8's: sellers (every business
 // with no craft lets its surplus help go, not only the stalls and the moneychangers), apprentices (an apprentice is let
 // go as any hand), unpaid (the out of work look for crews from waking too), caravans (a town's budget counts its tax
-// only, not its caravans' net takings). With round 8's four left out, a run is round 7's (1e192c0) to the digest.
+// only, not its caravans' net takings). With round 8's four left out, a run is round 7's (1e192c0) to the digest. And
+// round 9's: owners (a lone owner tops up a business short of its wages as before; a run is round 8's, f13f80e).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -66,13 +67,16 @@
 //   work.csv        day, account: its hours of work credited and lost, the till it works for (a producer's work is the
 //                   farmer's, its hands its till's), and its hours in hand at the day's turn;
 //   tills.csv       day, till: its cash, working money, what it owes, its sales and orders (doc 64, Phase 5), and its
-//                   hands, hands wanted, and its running hires' slots and slots taken (each till once a day);
+//                   hands, hands wanted, and its running hires' slots and slots taken (each till once a day); and
+//                   (round 9) its owner's weekly looks in a row that found it short of a week's wages, the day its
+//                   owner stopped topping it up (-1 if it hasn't), and what its keeper's odd jobs paid it that day;
 //   residents.csv   day, resident: home, kind of holder, title, age, cash;
 //   books.csv       day, employer: its book (wage, the going rate for its skill, open days, calm weeks, short pay), its
 //                   posts open and filled, its skill (doc 64, Phase 6);
 //   hires.csv       day, hire (at 23:00): its payer, kind, slots, pay a slot, last day, slots taken and those open at
-//                   the day's dawn, and who took them (each as jobless, child, works, idle, called, better or other, and
-//                   its own employer, as it stands at 23:00), and of them those who worked the day's spells, those
+//                   the day's dawn, and who took them (each as jobless, child, works, owner (a keeper its till can't pay,
+//                   its owner stopped: round 9), idle, called, better or other, and its own employer, as it stands at
+//                   23:00), and of them those who worked the day's spells, those
 //                   from another town, those of them who worked, and those lodged away from home (doc 64, Phase 13:
 //                   a hire taken from afar);
 //   payers.csv      (--ask-payers) day, resident: its home and work cells, title, who pays it and as what, at the day's
@@ -338,9 +342,11 @@ int main(int argc, char** argv)
                     off |= Society::UnpaidFirst;
                 else if (name == "caravans")
                     off |= Society::CaravanIncome;
+                else if (name == "owners")
+                    off |= Society::OwnersStop;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid or caravans, not " << name << "\n";
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans or owners, not " << name << "\n";
                     return 2;
                 }
             }
@@ -588,6 +594,7 @@ int main(int argc, char** argv)
     };
 
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> tillSold;   // Till -> units sold and coins taken since the last measure.
+    std::map<std::string, std::int64_t> oddPaid;    // Resident -> what its odd jobs paid it since the last measure (round 9).
     const auto absorb = [&] {
         for (auto& e : server.takeEvents())
         {
@@ -596,6 +603,8 @@ int main(int argc, char** argv)
             {
                 if (e.coins > 0 && e.quantity > 0 && e.target.rfind("till:", 0) == 0)
                     tillSold[e.target].first += e.quantity, tillSold[e.target].second += e.coins;
+                if (e.coins > 0 && e.detail.rfind("an odd job: ", 0) == 0)
+                    oddPaid[e.target] += e.coins;
                 auto& f = flows[d][{e.detail, holder(server, e.actor), holder(server, e.target)}];
                 ++f.entries;
                 f.coins += e.coins;
@@ -761,7 +770,7 @@ int main(int argc, char** argv)
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
-                "hire_slots,hire_taken,resale_day\n";
+                "hire_slots,hire_taken,resale_day,short_weeks,stopped,keeper_odd_pay\n";
     std::ofstream workOut(out / "work.csv");
     workOut << "day,account,title,credited,lost,till,banked\n";
     std::unordered_map<std::string, std::pair<double, double>> workBefore;
@@ -832,13 +841,22 @@ int main(int argc, char** argv)
                         }
                 const auto sold = tillSold[id];
                 const auto hires = hiring.find(id);
+                // (Round 9: its owner's looks in a row that found it short of a week's wages, the day its owner stopped
+                // topping it up, -1 if it hasn't, and what its keeper's odd jobs paid it since the last measure.)
+                const auto shortTill = society.state().memory.shortTills.find(id);
+                const auto paidOdd = keeper.empty() ? oddPaid.end() : oddPaid.find(keeper);
                 tillsOut << day << ',' << csv(id) << ',' << csv(holder(server, id)) << ',' << csv(p.title) << ',' << till->cash << ','
                          << society.workingMoney(p.id) << ',' << society.owed(id) << ',' << units << ',' << materials << ','
                          << society.ordersCostOf(id) << ',' << sold.first << ',' << sold.second << ',' << society.handsOf(id) << ','
                          << society.handsWanted(id) << ',' << (hires == hiring.end() ? 0 : hires->second.first) << ','
-                         << (hires == hiring.end() ? 0 : hires->second.second) << ',' << resale << '\n';
+                         << (hires == hiring.end() ? 0 : hires->second.second) << ',' << resale << ','
+                         << (shortTill == society.state().memory.shortTills.end() ? 0 : shortTill->second.weeks) << ','
+                         << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.stopped) << ','
+                         << (paidOdd == oddPaid.end() ? 0 : paidOdd->second) << '\n';
             }
         tillSold.clear();
+        if (rows)
+            oddPaid.clear();
         // Each business's and producer's hours of work today, and those lost to a full bank (doc 64, Phase 13), with the
         // till it is for (a producer's work is credited to the farmer, its hands to its till: tills.csv), and its hours
         // in hand at the day's turn.
@@ -1276,6 +1294,7 @@ int main(int argc, char** argv)
                 const char* kind = age < 16                                                 ? "child"
                                    : !job                                                   ? "jobless"
                                    : job->title == Society::LabourTitle                     ? "works"
+                                   : society.ownerUnpaid(who, *job)                         ? "owner"
                                    : society.idleHand(who, payer)                           ? "idle"
                                    : j.field && society.calledToTheLand(who, *job, age, day) ? "called"
                                    : job->paid                                              ? "better"

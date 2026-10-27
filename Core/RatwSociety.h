@@ -265,6 +265,14 @@ struct EmployerBook
     int openDays = 0, calm = 0;
     bool shortPay = false;
 };
+// A lone owner's business short of its wages (doc 64, Phase 13, round 9: Society::tendOwners): its owner's weekly looks
+// in a row that found it holding less than a week's wages, the day its owner stopped topping it up (-1: it hasn't), and
+// the last day its till couldn't pay its keeper's wage.
+struct ShortTill
+{
+    int weeks = 0;
+    std::int64_t stopped = -1, unpaid = -1;
+};
 // A field's year (doc 64, Phase 3b: seasonal fields, with work by the hours): the acres it plans to sow, those sown and
 // those still to bring in, a part-yield carried over, the year whose harvest's end it last planned at, and whether its
 // store ran dry this year; its yields a day wanted over the year (a slow average, the model's year's sales: doc 64,
@@ -332,6 +340,10 @@ struct EconomyMemory
     // till|seller's till" -> what it owes and the day it first owed it).
     std::map<std::string, double> putIn;
     std::map<std::string, std::pair<std::int64_t, std::int64_t>> credit;
+    // A lone owner's business that can't pay its wages (doc 64, Phase 13, round 9; with work by the hours): its till ->
+    // its owner's weekly looks running that found it short of a week's wages, the day its owner stopped topping it up
+    // (-1 while it still does), and the last day it couldn't pay its keeper its wage.
+    std::map<std::string, ShortTill> shortTills;
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
     std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
     // The realm's labourer's day when its money was founded (Society::foundWage: ladder.json's foundingDay); 0 for a
@@ -1165,7 +1177,8 @@ class Society
         SellersOnly = 8,                             // Only the stalls and the moneychangers let go (round 8).
         KeepApprentices = 16,                        // No apprentice is let go, nor counted in the excess (round 8).
         UnpaidFirst = 32,                            // Only the unpaid, not the out of work, look for crews early (round 8).
-        CaravanIncome = 64                           // A town's caravans' net takings count in its budget (round 8).
+        CaravanIncome = 64,                          // A town's caravans' net takings count in its budget (round 8).
+        OwnersStop = 128                             // A lone owner stops topping up a till short of its wages (round 9).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1605,9 +1618,17 @@ class Society
     // three-quarters of their working money, and kept their margin in their tills). And a lone owner tops its
     // business up only from what it holds above a week of its household's food, the model's 7 x need_cost; a House
     // gives what it has.
+    // And (round 9, the user, 2026-10-27) a lone owner whose business can't pay its wages, found at StopWeeks of its
+    // weekly looks in a row holding less than a week of them (staffing), stops topping it up. The business trades on
+    // with what it has; on a day its till can't pay its keeper's wage the keeper is free for hire work as an unpaid hand
+    // is (ownerUnpaid). Its owner tops it up again once a look finds it holding a week's wages of its own.
     static constexpr double RentShare = .15;
-    static constexpr int CreditDays = 7, CreditWrittenOff = 56, ResaleDays = 14;
+    static constexpr int CreditDays = 7, CreditWrittenOff = 56, ResaleDays = 14, StopWeeks = 4;
     std::int64_t workingMoney(const std::string& positionId) const;
+    double staffing(const std::string& positionId) const;   // Its keeper's, its help's and two open posts' wages a day.
+    // A keeper whose owner has stopped topping its till up, on a day the till couldn't pay its wage (round 9). (By its
+    // post: the till is "till:" and the post's id.)
+    bool ownerUnpaid(const std::string& resident, const Position& job) const;
     // A seasonal field's hands' wages for its window's work still ahead (doc 64, Phase 13): kept in its working money
     // from a month before the window opens to its end, so the land pays the hands it hires when they're wanted.
     double fieldWages(const std::string& till) const;

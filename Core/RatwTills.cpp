@@ -88,10 +88,27 @@ void Society::tendTills(std::int64_t day)
         // The keeper's wage (its town's table, doc 46, Phase 4), as far as the till can pay it: one short of working
         // money is topped up by its owner (tendOwners).
         const auto ownWage = std::int64_t(std::ceil(employerWage(till) - 1e-9));   // (Its business's wage: doc 64, Phase 6.)
-        if (const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash); wage > 0)
+        const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash);
+        if (wage > 0)
             shift(till, keeper, "", 0, wage, "the keeper's wage");
+        // (A day it can't pay it, for a business short of its wages: its keeper is free for hire work while its owner has
+        // stopped topping it up. Round 9.)
+        if (const auto s = state_.memory.shortTills.find(till); s != state_.memory.shortTills.end() && wage < ownWage)
+            s->second.unpaid = day;
     }
     tendOwners(day);
+}
+
+bool Society::ownerUnpaid(const std::string& resident, const Position& job) const
+{
+    // (Asked at a paid wolf's every decision: with none stopped, at once.)
+    if (state_.memory.shortTills.empty() || !workByHours())
+        return false;
+    const auto s = state_.memory.shortTills.find("till:" + job.id);
+    if (s == state_.memory.shortTills.end() || s->second.stopped < 0 || s->second.unpaid != state_.budgetDay)
+        return false;
+    const auto held = state_.careers.positions.find(job.id);
+    return held != state_.careers.positions.end() && held->second.holder == resident;
 }
 
 std::string Society::ownerOfBusiness(const std::string& positionId) const
@@ -119,14 +136,11 @@ std::string Society::landlordOf(const std::string& positionId) const
     return landlords[std::hash<std::string>{}(positionId + "|landlord") % landlords.size()]->id;
 }
 
-std::int64_t Society::workingMoney(const std::string& positionId) const
+double Society::staffing(const std::string& positionId) const
 {
     const auto* business = position(positionId);
-    const auto held = state_.careers.positions.find(positionId);
     if (!business)
         return 0;
-    const auto keeper = held == state_.careers.positions.end() ? std::string() : held->second.holder;
-    const auto town = communityOfResident(business->founder);
     // Its staffing a day: its keeper, its help (the posts that work where it does and that it pays: doc 46's float), and
     // at most two of those standing open (posts it can't fill aren't wages it pays: doc 63). (Not every post where it
     // works: a market stall counted the whole market's, a month of dozens of wages for a stall selling a score a day.
@@ -142,8 +156,18 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
                 if (const auto key = postKey_.find(p.id); key != postKey_.end() && key->second == till)   // (Its employer: tendLabour.)
                     (h == state_.careers.positions.end() || h->second.holder.empty() ? open : help) += 1;
             }
-    (void)town;
-    double day = (1 + help + std::min(open, 2)) * employerWage("till:" + positionId);   // (Its own wage: doc 64, Phase 6.)
+    return (1 + help + std::min(open, 2)) * employerWage(till);   // (Its own wage: doc 64, Phase 6.)
+}
+
+std::int64_t Society::workingMoney(const std::string& positionId) const
+{
+    const auto* business = position(positionId);
+    const auto held = state_.careers.positions.find(positionId);
+    if (!business)
+        return 0;
+    const auto keeper = held == state_.careers.positions.end() ? std::string() : held->second.holder;
+    const auto till = "till:" + positionId;
+    double day = staffing(positionId);
     // And the materials (or goods to sell on) its sales use a day, at what they cost it: with work by the hours, goods to
     // sell on for ResaleDays, not a month (doc 64, Phase 13, round 8).
     double resale = 0;
@@ -307,10 +331,37 @@ void Society::tendOwners(std::int64_t day)
                     shift(till, landlord, "", 0, rent, "rent");
             }
             weekTakings_.erase(till);
+            // A lone owner's business short of a week's wages at StopWeeks looks in a row: its owner stops topping it up,
+            // and it trades on with what it has, its hands paid while it can pay them; until a look finds it holding a
+            // week's wages again (round 9, the user, 2026-10-27; the model's owner_tops_up stops when what it put in
+            // hasn't come back: the business shrinks to what it can pay for). A House tops its own up as before.
+            bool stopped = false;
+            if (workByHours() && wageRule(OwnersStop) && owner.rfind("house:", 0) != 0)
+            {
+                const bool wagesShort = double(account(till)->cash) < 7 * staffing(p.id);
+                auto s = memory.shortTills.find(till);
+                if (wagesShort && s == memory.shortTills.end())
+                    s = memory.shortTills.emplace(till, ShortTill{}).first;
+                if (s != memory.shortTills.end())
+                {
+                    auto& t = s->second;
+                    t.weeks = wagesShort ? t.weeks + 1 : 0;
+                    if (t.weeks == 0)
+                        memory.shortTills.erase(s);   // (Paid its way: its owner tops it up again.)
+                    else
+                    {
+                        if (t.stopped < 0 && t.weeks >= StopWeeks)
+                            t.stopped = day;
+                        stopped = t.stopped >= 0;
+                    }
+                }
+            }
+            else
+                memory.shortTills.erase(till);
             // Short of a week's working money: its owner puts in what it can spare, until two months' worth hasn't come back.
             putIn *= 12. / 13;
             const auto short_ = working / 4 - account(till)->cash;
-            if (short_ > 0 && putIn <= 2. * working)
+            if (short_ > 0 && putIn <= 2. * working && !stopped)
             {
                 // (A keeper keeps a week's food for its household; a House gives what it has.)
                 const auto floor = owner.rfind("house:", 0) == 0 ? 0

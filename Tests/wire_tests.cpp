@@ -574,6 +574,17 @@ void societyTests()
     expect(waited.size() == 1 && waited.at("home:a") == 40, "a household's wait round trips, the days that can't be dropped");
     waits.find("memory")->erase("pieceWait");
     expect(wire::readSociety(waits).memory.pieceWait.empty(), "and an older save has none");
+    // A business short of its wages (doc 64, Phase 13, round 9): its looks short in a row, the day its owner stopped
+    // topping it up and the last day it couldn't pay its keeper, saved; one not a till's, or a day that can't be, is
+    // dropped, and an older save has none.
+    state.memory.shortTills = {{"till:a", {5, 40, 44}}, {"till:b", {2, -1, 30}}, {"home:c", {4, 1, 1}}, {"till:d", {4, -7, 1}}};
+    auto shorts = wire::society(state);
+    const auto reread = wire::readSociety(shorts).memory.shortTills;
+    expect(reread.size() == 2 && reread.at("till:a").weeks == 5 && reread.at("till:a").stopped == 40 && reread.at("till:a").unpaid == 44 &&
+               reread.at("till:b").weeks == 2 && reread.at("till:b").stopped == -1 && reread.at("till:b").unpaid == 30,
+           "a business short of its wages round trips, those that can't be dropped");
+    shorts.find("memory")->erase("shortTills");
+    expect(wire::readSociety(shorts).memory.shortTills.empty(), "and an older save has none");
     // The day the realm was founded at (doc 64, Phase 13 review): saved; one that can't be is none (the catalogue's), as
     // is an older save's.
     for (const auto& [day, back] : {std::pair{60., 60.}, std::pair{-5., 0.}, std::pair{1e7, 0.}})
