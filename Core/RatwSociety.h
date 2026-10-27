@@ -375,6 +375,10 @@ struct EconomyMemory
     // spent in its next week's budget on top of its tax's, as they come. Below nothing (road money out, the takings not
     // yet home), it stays to be netted against the takings when they come.
     std::map<std::string, double> caravanWeek;
+    // What a town's own posts and relief came to over its week's tax budget, not yet made good by its caravans' takings
+    // (round 9, the user, 2026-10-27: the caravans pay its posts first, its works only with what's left; with work by the
+    // hours). Its works see its caravans' money only once this is paid.
+    std::map<std::string, double> postsOwed;
     std::int64_t revision = 0;
 };
 
@@ -1176,7 +1180,10 @@ class Society
         CaravanIncome = 64,                          // A town's caravans' net takings count in its budget (round 8).
         CaravansAsTheyCome = 128,                    // ...in its week's budget on top of its tax's, not its month (round 9).
         FarGiveWay = 256,                            // A field's far taker, still on its way, gives way to a nearer (round 9).
-        KeepersApprentice = 512                      // Only the keeper's own apprentice is kept over and above (round 9).
+        KeepersApprentice = 512,                     // Only the keeper's own apprentice is kept over and above (round 9).
+        PostsFirst = 1024,                           // A town's caravans' week pays its own posts' shortfall first (round 9).
+        CrewsAbroad = 2048,                          // A town's works crew may be taken by wolves of other towns (round 9).
+        OnePlace = 4096                              // A wolf holding a hire's place takes no other hire (round 9).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1394,6 +1401,9 @@ class Society
     // An institution's crew for the week: a House's, a town's works (its treasury's or stores'), the church's masons. With
     // work by the hours all are posted as a House's are (houseCrewForWeek) and taken by its rules (doc 64, Phase 13, round
     // 7; the model's staff_to: grown hands first).
+    // A town's works crew for the week (its stores'), which with work by the hours any town's grown wolves may take (doc
+    // 64, Phase 13, round 9; the user, 2026-10-27).
+    static bool townCrew(const OddJob& j) { return j.until >= 0 && j.kind == "building work" && j.payer.rfind("stores:", 0) == 0; }
     static bool crewPlace(const OddJob& j)
     {
         return houseCrew(j) || (j.until >= 0 && j.kind == "building work" &&
@@ -1745,6 +1755,8 @@ class Society
     std::unordered_map<std::string, std::size_t> oddHeld_;
     std::unordered_map<std::string, std::vector<std::size_t>> oddByTown_, oddHiresByTown_;   // (And its businesses' hires.)
     std::vector<std::size_t> oddFarmHires_;
+    std::vector<std::size_t> oddTownCrews_;          // The towns' works crews, open to any town's wolves (round 9).
+    std::unordered_set<std::string> oddHiresHeld_;   // Who holds a place on a hire (any stage): one place each (round 9).
     std::uint64_t oddVersion_ = 1, oddIndexed_ = 0;
     void indexOddJobs();
     // Each odd job's farmHire, by its place in oddJobs_: made before the residents decide (markFarmHires), kept while the

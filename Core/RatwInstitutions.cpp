@@ -205,15 +205,36 @@ void Society::institutionsWeek(std::int64_t day)
         // 2026-10-27), and its month is its tax alone: it holds two months of its tax, not of its trade. A week below
         // nothing (its road money out, the takings not yet home) adds nothing, and is netted against the takings to come.
         // (A town's stores only: the capital's caravans are its Houses'.)
-        if (const auto trade = memory.caravanWeek.find(id); trade != memory.caravanWeek.end() && trade->second > 0)
+        const auto taxed = budget;
+        std::int64_t trade = 0;
+        if (const auto found = memory.caravanWeek.find(id); found != memory.caravanWeek.end() && found->second > 0)
         {
-            budget = std::min(budget + std::int64_t(trade->second), account(id)->cash);
-            memory.caravanWeek.erase(trade);
+            trade = std::int64_t(found->second);
+            budget = std::min(budget + trade, account(id)->cash);
+            memory.caravanWeek.erase(found);
         }
         // The week's relief, set aside: what it gave last week and a third over, and a twentieth of its budget besides.
         const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
         memory.reliefLeft[id] = double(relief);
         memory.reliefWeek[id] = 0;
+        // Its caravans' money pays its own posts first (round 9, the user, 2026-10-27): what its posts and relief came to
+        // over its tax budget, this week and before, is made good from its caravans' takings, and its works get only
+        // what's left of them, with what its tax budget leaves over its posts. (Before, its posts were taken from the tax
+        // budget and the caravans' week together each week, and a week's takings went to its works while the weeks with
+        // its caravans on the road paid its posts from its purse: Frosthollow's ran dry.)
+        const bool postsFirst = workByHours() && wageRule(CaravansAsTheyCome) && wageRule(PostsFirst) && id != "treasury";
+        if (postsFirst)
+        {
+            const auto need = relief + wagesPaid(id);
+            auto owed = memory.postsOwed[id] + double(std::max<std::int64_t>(0, need - taxed));
+            const auto repaid = std::min(double(trade), owed);
+            owed -= repaid;
+            if (owed > 0)
+                memory.postsOwed[id] = owed;
+            else
+                memory.postsOwed.erase(id);
+            budget = std::min(std::max<std::int64_t>(0, taxed - need) + trade - std::int64_t(repaid), account(id)->cash);
+        }
         if (workByHours() && id == "treasury")
         {
             // The capital, with work by the hours (doc 64, Phase 13, round 6; the model's treasury_week): its posts first,
@@ -230,7 +251,7 @@ void Society::institutionsWeek(std::int64_t day)
             memory.fundsWeek[id] = 0;
             budget -= funds;
         }
-        else
+        else if (!postsFirst)
             budget -= relief + wagesPaid(id);
         if (budget <= 0 || community.empty())
             continue;

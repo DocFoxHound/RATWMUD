@@ -38,7 +38,10 @@
 // only, not its caravans' net takings). With round 8's four left out, a run is round 7's (1e192c0) to the digest. And
 // round 9's: weekly (a town's caravans' net takings in its month, as round 8, not on top of its week's budget), giveway
 // (a field's far taker on its way keeps its place), masters (any apprentice is kept, as round 8, not only the keeper's).
-// With those three left out, a run is round 8's (f13f80e) to the digest.
+// With those three left out, a run is round 8's (f13f80e) to the digest. And round 9's follow-ups: posts (a town's
+// caravans' week goes to its works with its posts paid from the tax budget and its purse, not its posts' shortfall
+// first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
+// take a second). With all six left out, a run is round 8's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -350,9 +353,15 @@ int main(int argc, char** argv)
                     off |= Society::FarGiveWay;
                 else if (name == "masters")
                     off |= Society::KeepersApprentice;
+                else if (name == "posts")
+                    off |= Society::PostsFirst;
+                else if (name == "crews")
+                    off |= Society::CrewsAbroad;
+                else if (name == "oneplace")
+                    off |= Society::OnePlace;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway or masters, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews or oneplace, not "
                               << name << "\n";
                     return 2;
                 }

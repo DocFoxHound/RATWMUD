@@ -1076,7 +1076,7 @@ Value economyMemory(const EconomyMemory& m)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, const std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
-             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}})
+             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed}})
     {
         auto map = Value::object();
         for (const auto& [key, v] : *field)
@@ -1269,7 +1269,7 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [name, field] : std::initializer_list<std::pair<const char*, std::map<std::string, double>*>>{
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
-             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}})
+             {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed}})
         for (const auto& [key, v] : o.object(name).fields())
             // (A town's income can fall below nothing, its caravans' road money out before their takings come home:
             // round 8; and its caravans' week, round 9. Read as saved, or a reload would count the takings without the

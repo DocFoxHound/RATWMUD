@@ -6019,8 +6019,8 @@ folder):
 **Measured** (120 days of DEV's export, `--deterministic --hours --threads 6`, one seed; money conserved every day in
 each run):
 
-- `base120`: round 8 merged (f13f80e), digest 8dfd6f9d275a7904.
-- `r9`: this branch, digest 5a83102073050d54.
+- `base120`: round 8 merged (f13f80e), digest 5a83102073050d54.
+- `r9`: this branch (75ad0a4), digest 8dfd6f9d275a7904.
 
 The scripts are `r9/rules/py/cmp.py`, `towns.py`, `oak.py` and `fields.py` in the scratch folder. Day 120's figures are
 its day-end line.
@@ -6053,7 +6053,7 @@ its day-end line.
 | Gave way to a nearer hand (`gaveway.csv`) | — | 149 |
 | Crew places posted / worked a day, all days | 100.9 / 88.9 | 125.0 / 100.3 |
 | Pace, day 56 / 120 | 0.357 / 0.696 | 0.250 / 0.661 |
-| A tick | 0.0223 ms | 0.0220 ms |
+| A tick | 0.0220 ms | 0.0223 ms |
 
 **Read plainly:**
 
@@ -6099,3 +6099,113 @@ its day-end line.
    more tax. Recommended: (a), a small change to this rule.
 3. **The far taker gives way, as built?** It does what was asked and nobody bumps back, but it changes little at the
    harvest. Recommended: keep it, and look next at why the places held aren't worked.
+
+### Phase 13: round 9's rules, the follow-ups (the user, 2026-10-27)
+
+The user's decisions on the questions above: the towns' caravans pay their own posts first, a town's works crew may hire
+abroad, and one place a wolf. Rule C and the give-way are kept as built. All with work by the hours only. Base: the lane
+above (75ad0a4).
+
+**What changed:**
+
+- **A town's caravans pay its own posts first** (`Core/RatwInstitutions.cpp`, `institutionsWeek`). What its posts'
+  wages and its relief come to over its week's tax budget is owed (`EconomyMemory::postsOwed`, saved), this week's
+  and the weeks' before. Its caravans' week makes that good first, and its works get only what's left of it, with what
+  its tax budget leaves over its posts. (Above, the week's posts were taken from the tax budget and the caravans' week
+  together. So a week's takings went to the works while the weeks with the caravans on the road paid the posts from
+  the purse.)
+- **A town's works crew may be taken by wolves of other towns** (`Core/RatwOddJobs.cpp`, `oddJobFor`;
+  `Society::townCrew`). A town's stores' crew (not the capital's, nor the church's, nor a House's) is open to any
+  town's grown wolf, as the farms' hires are to the city's. It is weighed with the rest by its pay.
+- **One place a wolf** (the same). A wolf holding a place on a hire, even one whose day's share it has done, takes
+  no other hire: it comes back to its own the next day. (Before, a wolf done with its share might take a second, a
+  farm's next field hire or a town's crew, and hold two places, paid for neither twice but keeping one from others.)
+  A day's odd job it may still take. Round 7's crew test had allowed it ("a keeper whose first share was done by
+  mid-morning may hold a second place").
+- **For trials:** `econ_watch --without posts,crews,oneplace`. With all six of round 9's left out, a 9-day `--hours`
+  run gives f13f80e's f4ad2f45081e44af.
+
+**Saves:** `postsOwed` in the economy's memory.
+
+**The seconds' pace** is as it was: d034a6316a8d0cb.
+
+**Tests** (`crafting_tests`; five mutations, all caught: the shortfall made good, the shortfall carried, crews abroad,
+one place, its index; `r9/rules/mutate2.py`):
+
+- `aTownsPostsComeFirst`. A far town pays its watch 1,500p a week on a purse of 4,000p and no tax. What that comes to
+  over its tax budget is owed, through a save too. Its caravan comes home with 4,000p net: the day-42 budget makes the
+  debt good and nothing is owed after. Its works crew is smaller than without the rule.
+- `aTownsCrewHiresAbroad`. A far town with three of its own posts a works crew of 14. By noon its three hold places and
+  the capital's idle the other eleven. None of the far town's hold places on the capital's crews. Without the rule the
+  eleven stand open.
+- `aFarTakerGivesWay` now checks one place: the wolf at work on the farm's first hire holds none on the second (without
+  the rule, both).
+- `aTownsCrewTakesTheGrownFirst` is run with crews abroad left out (it tests its own town's order), and its children
+  hold one place each: those holding another hire's place take none of the crew's.
+- All 68 tests pass.
+
+**Measured** (120 days, as above; money conserved every day):
+
+- `base120`: f13f80e, digest 5a83102073050d54.
+- `r9`: 75ad0a4, digest 8dfd6f9d275a7904.
+- `r9b`: this commit, digest b5d14f2290ab957.
+
+The script is `r9/rules/py/summary.py`.
+
+| | `base120` | `r9` | `r9b` |
+|---|---|---|---|
+| Gini (households), day 56 / 120 | 0.531 / 0.575 | 0.529 / 0.566 | 0.553 / 0.596 |
+| Gini (residents), day 120 | 0.495 | 0.494 | 0.528 |
+| Poorer half, day 56 / 120 | 0.160 / 0.110 | 0.161 / 0.120 | 0.151 / 0.099 |
+| Shares on day 120: tills, households, Houses, towns, capital, church | .303, .447, .101, .054, .047, .048 | .284, .456, .117, .043, .050, .050 | .293, .470, .111, .021, .055, .051 |
+| The realm's rate, day 56 / 120 | 64.8 / 78.9p | 64.3 / 80.2p | 64.6 / 85.9p |
+| Ridgemere's rate, day 120 | 90.4p | 90.0p | 99.3p |
+| Hungry / starving (day 46 only) | 21 / 0 | 19 / 0 | 23 / 0 |
+| Jobless on day 120 | 68 | 65 | 64 |
+| The towns' treasuries, day 28 → 120 | 157k → 249k (+59%) | 146k → 199k (+36%) | 140k → 87k (−38%) |
+| Oakhaven | 39.5k → 127.3k (+222%) | 31.1k → 133.9k (+330%) | 30.1k → 42.5k (+41%) |
+| Larkfield | 31.1k → 64.9k (+109%) | 28.9k → 45.0k (+56%) | 27.4k → 24.3k (−11%) |
+| Frosthollow | 21.6k → 20.9k (−3%) | 20.9k → 0.1k (−100%) | 19.8k → 0.0k (−100%) |
+| Mirebridge | 19.6k → 14.9k (−24%) | 20.9k → 8.0k (−62%) | 19.1k → 7.8k (−59%) |
+| Southmeadow | 30.2k → 14.9k (−51%) | 29.5k → 6.9k (−77%) | 30.5k → 8.3k (−73%) |
+| Coldwater | 15.1k → 6.1k (−59%) | 14.9k → 5.5k (−63%) | 12.9k → 4.0k (−69%) |
+| The capital's treasury; the church's, day 28 → 120 | 282k → 235k; 249k → 242k | 282k → 250k; 249k → 248k | 281k → 275k; 243k → 254k |
+| The towns' works crews posted / worked a day; by wolves of other towns | 20.8 / 18.7; 0 | 45.0 / 30.1; 0 | 35.2 / 34.6; 34.2 |
+| Oakhaven's, days 84-118 | 18.0 / 13.2 | 47.0 / 22.0 | 29.6 / 29.5 |
+| Field places posted / taken / worked a day, days 61-90 | 61.7 / 58.8 / 23.9 | 65.5 / 57.5 / 25.3 | 52.6 / 36.2 / 25.4 |
+| of them held by wolves of another town (worked) | 25.2 (7.5) | 27.0 (10.1) | 11.0 (4.3) |
+| Field places worked a day, all days | 18.8 | 18.0 | 18.3 |
+| Gave way to a nearer hand | — | 149 | 62 |
+| Caravans' net a day, days 28-119: Oakhaven, Larkfield, Frosthollow, Mirebridge, Southmeadow, Coldwater | +1,893, +741, +226, +203, −1, +8 | +2,465, +937, +113, +219, −7, +26 | +2,166, +730, −19, +281, +15, −26 |
+| Pace, day 56 / 120 | 0.357 / 0.696 | 0.250 / 0.661 | 0.375 / 0.536 |
+| A tick | 0.0220 ms | 0.0223 ms | 0.0184 ms |
+
+**Read plainly:**
+
+- **The trading towns come into the band, or near it.** Oakhaven ends at 42.5k (+41%), Larkfield at 24.3k (−11%).
+  Their crews are now worked: Oakhaven's 29.5 of 29.6 places a day. Nearly all of them are worked by wolves from other
+  towns, the city's above all (34.2 of the towns' 34.6 a day). The town's own wolves take other work.
+- **The small towns still run dry.** Frosthollow is empty by day 120 (day 112: 2.8k), Mirebridge −59%, Southmeadow
+  −73%, Coldwater −69%. Posts first does what it says: Frosthollow posted no works crew at all. But its posts (about
+  290p a day of watch, service, labour and town funds, and 41p of works materials) are more than its tax (248p). Its
+  caravans now net below nothing (−19p a day against +226p in `base120`), so there is nothing to pay them from. The
+  rule can't help a town whose caravans bring nothing home. This is round 8's question 4: a town's posts against its
+  tax.
+- **The money goes to the city's wage earners, and to the rich.** The towns' share of the realm's money halves
+  (0.054 to 0.021), and the households' rises (0.447 to 0.470). But the Gini rises (0.575 to 0.596) and the poorer
+  half falls (0.110 to 0.099). The city's rate rises to 99.3p (90.4p): its wolves now have the towns' crews to choose
+  from, and the city's businesses pay more to keep them.
+- **The fields lose their far takers to the crews.** At the harvest the fields' places taken fall from 58.8 a day to
+  36.2, those held by wolves of another town from 25.2 to 11.0. Those worked hold (25.4 against 23.9). So the places
+  that went were the ones held and not worked. Fewer give way (62).
+- **One place a wolf** frees the second places; it can't be seen apart from the rest in one run.
+
+**For the user:**
+
+1. **The small towns' posts** (round 8's question 4). Their watch, service and labour cost more than their tax, and
+   their caravans can't carry it. (a) Size a town's posts to its tax, as the capital's are to its budget
+   (`keepPostsTo`). (b) A share of the capital's to the small towns. (c) More tax. Recommended: (a), the capital's own
+   rule.
+2. **The crews abroad draw the city's wolves.** The towns' crews are worked by the city's wolves, the city's rate rises
+   9p, and the Gini rises. Keep it, or open a town's crew to other towns' wolves only after its own have looked (from
+   noon, say)? Recommended: try the later hour, with two seeds.
