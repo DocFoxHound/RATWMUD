@@ -345,7 +345,8 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
     // 2026-10-26; the model's firm_week): before, it never let go, and the Heights' cheese and honey stalls held 31 and
     // 24 hands for the 1 each wanted, the realm's idle hands, out on every hire. Whatever the pace: what it wants
     // doesn't grow with it. The hand keeps its home (doc 64, question 3) and is a jobless wolf, taking hires and posts
-    // as the jobless do.
+    // as the jobless do. (Every business with no craft of its own: a fletcher, a cartographer, an arsenal, a dye works,
+    // a builders' yard too; their help makes nothing with work by the hours either. Doc 64, round 7's review.)
     const bool stall = !makesThings(till);
     if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till) ||
         (stall && (!weekly || !wageRule(StallsShed))))

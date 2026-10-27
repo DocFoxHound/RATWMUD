@@ -4988,6 +4988,10 @@ hands, out on every hire.
   wanted, at least one and at most those it had, keeper and all.
 - **C. A stall lets its surplus help go.** At its weekly review, a business that makes nothing (a stall or a
   moneychanger) lets go half the hands above those it wants, at least one, and keeps the post empty, as a maker does.
+  - "Makes nothing" is every business with no craft of its own in `crafts.json`, not only the stalls and the
+    moneychangers. In `abc` it also let hands go at the City Arsenal, the Blue Vats (a dye works), the Greatly Yard (a
+    builders' yard), the fletcher at The Grey Goose and the cartographer at Soundings. Their help makes nothing with work
+    by the hours either (Phase 13), so by the game's own reckoning they are surplus. (The round-7 review.)
   This is the model's `firm_week`.
   - It does this whatever the pace. A maker waits for pace 1 because its sales take more hours as the pace rises; a
     stall's wants don't grow with the pace.
@@ -5060,7 +5064,7 @@ Money was conserved every day in every run.
 | Idle grown wolves | 0 | 17 to 24 from day 7 | 1 to 8 |
 | Gini, day 56 / 120 | 0.562 / 0.587 | 0.562 / 0.595 | 0.375–0.396 on day 120 |
 | Poorer half, day 56 / 120 | 0.137 / 0.105 | 0.136 / 0.095 | 0.219–0.235 on day 120 |
-| Short-pay cuts a week (mean; last four weeks) | 32.4; 46–61 | 35.2; 53–79 | about 1 |
+| Short-pay cuts a week (mean; last four weeks) | 32.4; 46–61 | 35.2; 51–79 | about 1 |
 | `refusals.csv`: rows; standing on day 120 | 3,056; 54 | 2,612; 68 | |
 | Owners' investment a day, months 2 / 3 / 4 | 12.2k / 12.3k / 12.9k | 13.1k / 14.2k / 13.4k | |
 | Hungry on day 46 (the only hungry day) | 9 | 25 (none starving) | |
@@ -5088,12 +5092,26 @@ What each rule does:
 - **B moves the rate.** Without it the posts open as often, but the median stays at the one-hand businesses (61.3p).
   With B, on day 112, 22% of the weight sits at businesses with no employee, against the diagnosis's 76%.
 - **C frees the stall hands, and slows the rate a little.** 65 hands were let go at shop tills that make nothing and
-  6 at House tills, most of them in the first three weeks (39 by day 7). Four of them were apprentices: the let-go step
+  6 at House tills, most of them in the first three weeks (33 by day 7). 53 of them were the Heights' cheese and honey
+  stalls' (31 and 24 hands on day 119 in `w0`, 1 each in `abc`). Four of them were apprentices: the let-go step
   is the makers', which counts an apprentice's post among the help; the model's `firm_week` doesn't. On day 120, 63
   grown wolves were without work (9 in `w0`), and 32 of them were 65 or older. They took a fifth of the tills' hire places, places that would otherwise
   have stood open. The realm's idle went from 0 to about 20, which put the slack near 0.03. From day 37 the calm-week
   cuts began: 555 small cuts in month 2 and 312 in month 3, against none in `w0`. Without C the rate was 65.8p on day
   56, against 64.9p with it. The hands' money moved from paid civilians to the jobless: 120k on day 7.
+  - **Most of the jobless are not the hands let go, but old wolves who retired** (the round-7 review, from
+    `events.csv` and `residents.csv`). A holder past its retiring age retires only when a grown wolf without work lives
+    near enough to take its post (`RatwCareers.cpp`, succession). In `w0` there were almost none, so few retired. In
+    `abc` the hands let go were those successors: 47 wolves retired against 13 in `w0` (65 retirements against 32: some
+    retire more than once), 39 of them in the first week. Their posts were mostly the same street posts ("sits and
+    watches the world" 18, "minding the shop door" 13, "sits by the well" 7, "minds the shop's door" 4). Of the 63
+    without work on day 120, 41 had retired, 32 were 65 or older, and 8 were without work in `w0` too. Of the 65 without
+    work on day 7 who weren't in `w0`, 36 had retired; of the other 29, 26 held paid posts again on day 120. So C mostly
+    takes the old off the street posts' wages, not the young.
+  - **The capital let 7 of its own posts go** on days 105 and 112: the gaol's keeper, the City Office's clerks, the
+    permits, the records, a Counting House clerk. That is not C. It is the treasury's weekly budget for its posts
+    (`RatwInstitutions.cpp`), which no longer covered them as the going rate rose (its labour posts 20 → 14). In `w0`
+    it let none go. Over a year this is a place a rising wage could run on.
 
 **`t_slack`** (a trial, not committed): the slack leaves out the jobless at work on a hire that day. It tests whether the
 calm cuts are what holds the rate down.
@@ -5116,7 +5134,7 @@ So the calm cuts are not the brake.
   - About a quarter of the unskilled tills have a post open 4 or more days in a week. Each raise is 1–10% (`WageUp` to
     `WageUpShort`, times 0.3 to 1). That comes to about 1% a week, where the model makes about 3.5%.
   - The tills that never bid rise only by the floor, 0.85 of the rate. There were 705 floor lifts in month 4.
-  - The short-pay cuts grew with the wage, to 53–79 a week at the end. Those cuts take up to 4% each.
+  - The short-pay cuts grew with the wage, to 51–79 a week at the end. Those cuts take up to 4% each.
 - **The wage did not take the tills' margin.** The shop tills grew faster (+46%, against +37%).
 - **Paid civilians lost more** (643k against 813k on day 120). About 100k of that is the stall hands' money, now held
   as jobless. The rest is wages that rose while prices, which are costed at the wage, rose with them. Many paid
@@ -5144,9 +5162,12 @@ So the calm cuts are not the brake.
    - (c) Move to Lane 3 (the tills' working money) and Lane 2 (the crews for grown hands), as the plan has it.
 
    Recommended: (c), with a year's run of this branch beside it.
-3. **The stall hands let go.** Most stay jobless for the rest of the run (63 without work on day 120, half of them 65
-   or older). Their posts stay closed, and few posts open elsewhere. They take hires as the jobless do, a fifth of the
-   tills' hire places, so they keep earning. But they raised the slack to near 0.03. And the let-go step lets an
+3. **The stall hands let go.** Most found posts again, as the successors of old wolves who then retired (above): 63
+   are without work on day 120: 41 of them retired, and 32 are 65 or older. The posts let go stay closed,
+   the Heights' street posts among them (4 of the 5 lamplighters, the door-minders, the messengers). The jobless take
+   hires as the jobless do, a fifth of the tills' hire places, so they keep earning. But they raised the slack to near
+   0.03. Is the old wolves' retiring, off a paid post onto their savings, what the user wants? It is the model's (the
+   old have no earner there), but it falls on the poorer half. And the let-go step lets an
    apprentice go as a hand (four did), where the model's keeps its apprentices over and above: leave an apprentice's
    post out of the let-go, for makers and stalls alike? Recommended: yes, in the next round (the makers let none go yet:
    their rule waits for pace 1).

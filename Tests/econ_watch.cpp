@@ -1508,7 +1508,8 @@ int main(int argc, char** argv)
             for (const auto& [where, rate] : society.goingRates())
                 if (!where.empty())
                     std::cout << ", " << where << " " << rate << "p";
-            std::cout << std::defaultfloat << "\n" << std::flush;
+            // (Three figures after, as the gini left them before round 7: else the run's last line read "2e+01 min".)
+            std::cout << std::defaultfloat << std::setprecision(3) << "\n" << std::flush;
             day = now;
         }
         // Between ticks, as a player's command comes in; after the midnight's record, so what they do at midnight is the
