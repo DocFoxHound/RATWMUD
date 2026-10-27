@@ -144,17 +144,23 @@ std::int64_t Society::workingMoney(const std::string& positionId) const
             }
     (void)town;
     double day = (1 + help + std::min(open, 2)) * employerWage("till:" + positionId);   // (Its own wage: doc 64, Phase 6.)
-    // And the materials (or goods to sell on) its sales use a day, at what they cost it.
+    // And the materials (or goods to sell on) its sales use a day, at what they cost it: with work by the hours, goods to
+    // sell on for ResaleDays, not a month (doc 64, Phase 13, round 8).
+    double resale = 0;
     if (const auto rates = sellRate_.find(till); rates != sellRate_.end() && !keeper.empty())
         for (const auto& [good, rate] : rates->second)
             if (items::good(good) && !storePriced(good))
-                day += rate * materialsCost(keeper, good);
+            {
+                bool resold = false;
+                const double cost = rate * materialsCost(keeper, good, &resold);
+                (resold && workByHours() ? resale : day) += cost;
+            }
     // And a week of its standing orders on the roads (doc 61), paid when the caravan comes; and a field's hands' wages
     // for its window ahead.
     double orders = 0;
     if (const auto o = ordersCost_.find(till); o != ordersCost_.end())
         orders = double(o->second);
-    return std::int64_t(std::ceil(MonthDays * day + orders + fieldWages(till)));
+    return std::int64_t(std::ceil(MonthDays * day + ResaleDays * resale + orders + fieldWages(till)));
 }
 
 double Society::fieldWages(const std::string& till) const
@@ -232,6 +238,24 @@ bool Society::onCredit(const std::string& seller, const std::string& buyer, cons
     return true;
 }
 
+std::size_t Society::householdOf(const std::string& resident) const
+{
+    // Those living in its home, as its household rule counts them (RatwHouseholds.cpp): in a barracks, a bunkhouse,
+    // quarters or lodgings, or a home of more than eight grown, each grown wolf is its own.
+    const auto me = state_.residents.find(resident);
+    if (me == state_.residents.end() || me->second.homeCell.empty() || communalHome(me->second.homeCell))
+        return 1;
+    std::size_t people = 0, grown = 0;
+    for (const auto& [id, life] : state_.residents)
+        if (life.homeCell == me->second.homeCell)
+        {
+            ++people;
+            if (const auto* r = spec(id); r && r->age >= 16)
+                ++grown;
+        }
+    return grown > 8 ? 1 : std::max<std::size_t>(1, people);
+}
+
 void Society::tendOwners(std::int64_t day)
 {
     auto& memory = state_.memory;
@@ -289,7 +313,9 @@ void Society::tendOwners(std::int64_t day)
             if (short_ > 0 && putIn <= 2. * working)
             {
                 // (A keeper keeps a week's food for its household; a House gives what it has.)
-                const auto floor = owner.rfind("house:", 0) == 0 ? 0 : pennies(KeeperReserve, accountTown(owner));
+                const auto floor = owner.rfind("house:", 0) == 0 ? 0
+                                   : workByHours()                ? pennies(7 * FoodADay * double(householdOf(owner)), accountTown(owner))
+                                                                  : pennies(KeeperReserve, accountTown(owner));
                 if (const auto give = std::min<std::int64_t>(short_, account(owner)->cash - floor); give > 0 &&
                                                                                                     shift(owner, till, "", 0, give, "an owner's investment"))
                     putIn += double(give);

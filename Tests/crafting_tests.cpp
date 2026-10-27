@@ -3880,8 +3880,9 @@ void foundedAtTheFoundingDay()
                    std::to_string(late.account(Society::SharedChurch) ? late.account(Society::SharedChurch)->cash : -1) + "p, at least " +
                    std::to_string(least) + "p");
     }
-    // A keeper short of a week's working money in its shop's till puts in what it holds over its reserve, at its own
-    // town's day (the price review: untried): in the north at a fifth over the realm's, by the hours.
+    // A keeper short of a week's working money in its shop's till puts in what it holds over a week of its household's
+    // food (the baker and itself: doc 64, Phase 13, round 8), at its own town's day (the price review: untried): in the
+    // north at a fifth over the realm's, by the hours.
     {
         LifeDay towns;
         towns.communityOf = [](const std::string& cell) { return cell == "market" ? std::string("north") : std::string("south"); };
@@ -3902,7 +3903,7 @@ void foundedAtTheFoundingDay()
             state.memory.going = {{"", founding}, {"north", founding * 1.2}, {"south", founding}};
             state.memory.putIn.erase(till);
             expect(owners.restore(state), "the north a fifth over the realm");
-            reserve = owners.pennies(Society::KeeperReserve, "north");
+            reserve = owners.pennies(7 * Society::FoodADay * double(owners.householdOf("stall")), "north");
             owners.shift(till, "treasury", "", 0, owners.account(till)->cash, "test: the till short");
             if (const auto cash = owners.account("stall")->cash; cash > reserve + 7)
                 owners.shift("stall", "treasury", "", 0, cash - reserve - 7, "test: the keeper's purse");
@@ -3915,8 +3916,136 @@ void foundedAtTheFoundingDay()
                     invested = e.coins;
         }
         Society::setWorkByHours(false);
-        expect(invested == 7, "it puts in what it holds over its reserve at its town's day (" + std::to_string(reserve) + "p): " +
-                                  std::to_string(invested) + "p");
+        expect(owners.householdOf("stall") == 2 && invested == 7,
+               "it puts in what it holds over its household's week of food at its town's day (" + std::to_string(reserve) + "p): " +
+                   std::to_string(invested) + "p");
+    }
+}
+
+// A shop's goods to sell on for a fortnight (doc 64, Phase 13, round 8), with work by the hours: a stall that sells flour
+// it buys in keeps ResaleDays of it in its working money, beside a month of its keeper's wage; the baker keeps a month of
+// the flour its bread uses, as before. At the seconds' pace the stall keeps a month of its flour, as it did.
+void aShopsGoodsToSellOnForAFortnight()
+{
+    for (const bool hours : {true, false})
+    {
+        Society::setWorkByHours(hours);
+        auto s = town();
+        auto state = s.state();
+        state.memory.pace = 1;
+        expect(s.restore(state), "the calibrated hours restore");
+        expect(s.shift("treasury", "scribe", "", 0, 14 * 20, "test: the buyer's money"), "the buyer has money");
+        for (std::int64_t d = 1; d <= 14; ++d)
+        {
+            for (const auto& [keeper, good] : {std::pair{"stall", "flour"}, std::pair{"baker", "bread"}})
+            {
+                set(s, keeper, good, 10);
+                expect(s.sale(s.tillOf(keeper), "scribe", good, 10, 1, "test: the day's buying"), std::string("the buyer buys ") + good);
+            }
+            auto st = s.state();
+            st.accounts.at("scribe").stock.clear();
+            expect(s.restore(st), "used up");
+            s.spoil(d);
+        }
+        // What the stall keeps: a month of its keeper's wage, `days` of the flour it sells, its orders and its fields.
+        const auto stallTill = s.tillOf("stall");
+        bool resold = false;
+        const double flour = s.materialsCost("stall", "flour", &resold);
+        expect(resold, "the stall's flour is bought to sell on");
+        const auto kept = [&](double days) {
+            return std::int64_t(std::ceil(MonthDays * s.employerWage(stallTill) + days * s.sellRates(stallTill)->at("flour") * flour +
+                                          double(s.ordersCostOf(stallTill)) + s.fieldWages(stallTill)));
+        };
+        const auto stall = s.workingMoney(s.jobOf("stall")->id), fortnight = kept(Society::ResaleDays), month = kept(MonthDays);
+        expect(fortnight < month && std::llabs(stall - (hours ? fortnight : month)) <= 1,
+               std::string(hours ? "by the hours" : "at the seconds' pace") + ", the stall keeps " + (hours ? "a fortnight" : "a month") +
+                   " of its flour: " + std::to_string(stall) + "p (a fortnight " + std::to_string(fortnight) + "p, a month " +
+                   std::to_string(month) + "p)");
+        // The baker's: a month of its keeper and of its bread's flour, by the hours too.
+        const auto bakery = s.tillOf("baker");
+        resold = false;
+        const double materials = s.materialsCost("baker", "bread", &resold);
+        const auto baker = s.workingMoney(s.jobOf("baker")->id);
+        const auto bread = std::int64_t(std::ceil(MonthDays * (s.employerWage(bakery) + s.sellRates(bakery)->at("bread") * materials) +
+                                                  double(s.ordersCostOf(bakery)) + s.fieldWages(bakery)));
+        expect(!resold && materials > 0 && std::llabs(baker - bread) <= 1,
+               "and the baker a month of its bread's flour: " + std::to_string(baker) + "p, " + std::to_string(bread) + "p");
+    }
+    Society::setWorkByHours(false);
+}
+
+// A lone owner keeps a week of its household's food (doc 64, Phase 13, round 8; the model's owner_tops_up, 7 x
+// need_cost), with work by the hours: its till run dry, on its own day of the week a keeper living with its wife and
+// child puts in what it holds over three wolves' week of food, and a smith in a bunkhouse what it holds over its own.
+// At the seconds' pace each keeps KeeperReserve, as before.
+void aLoneOwnerKeepsAWeeksFood()
+{
+    for (const bool hours : {true, false})
+    {
+        Society::setWorkByHours(hours);
+        AuthoredRoster roster;
+        auto keeper = person("stall", "keeping the stall", {"market", 4.5, 4.5});
+        auto wife = person("wife", "the scribe", {"desk", 2.5, 2.5}, "civilian");
+        auto child = person("child", "at lessons", {"school", 2.5, 2.5}, "civilian");
+        auto smith = person("smith", "the smith at the forge", {"forge", 2.5, 2.5});
+        auto bunk = person("bunk", "the scribe", {"desk", 2.5, 2.5}, "civilian");
+        keeper.home = wife.home = child.home = {"stall_flat", 2.5, 2.5};
+        smith.home = bunk.home = {"forge_bunkhouse", 2.5, 2.5};
+        child.age = 10;
+        roster.residents = {keeper, wife, child, smith, bunk};
+        roster.economy.treasury = 5000;
+        Society s(Roster::None);
+        s.configure(roster);
+        expect(s.householdOf("stall") == 3 && s.householdOf("smith") == 1,
+               "the keeper's household three, the smith's in the bunkhouse one: " + std::to_string(s.householdOf("stall")) + ", " +
+                   std::to_string(s.householdOf("smith")));
+        std::map<std::string, std::int64_t> floor, invested;
+        for (const std::string who : {"stall", "smith"})
+        {
+            const auto till = s.tillOf(who);
+            expect(till.rfind("till:", 0) == 0, who + " keeps its own till");
+            s.shift(till, "treasury", "", 0, s.account(till)->cash, "test: the till run dry");
+            floor[who] = hours ? s.pennies(7 * Society::FoodADay * double(s.householdOf(who)), "")
+                               : s.pennies(Society::KeeperReserve, "");
+            const auto cash = s.account(who)->cash, want = floor[who] + 7;
+            if (cash > want)
+                s.shift(who, "treasury", "", 0, cash - want, "test: the keeper's purse");
+            else
+                s.shift("treasury", who, "", 0, want - cash, "test: the keeper's purse");
+        }
+        s.takeJournal();
+        // A week of days, each its owner's day of the week once.
+        for (std::int64_t day = 7; day < 14; ++day)
+            s.tendTills(day);
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "an owner's investment" && e.to == s.tillOf(e.from))
+                invested[e.from] += e.coins;
+        for (const std::string who : {"stall", "smith"})
+            expect(invested[who] == 7, std::string(hours ? "by the hours, " : "at the seconds' pace, ") + who + " puts in what it holds over " +
+                                           std::to_string(floor[who]) + "p: " + std::to_string(invested[who]) + "p");
+        expect(!hours || floor["stall"] > floor["smith"], "a household of three keeps more than one alone");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::setWorkByHours(false);
+    // A home of more than eight grown houses many who aren't a family, as the household rule counts them (the review):
+    // each grown wolf its own household. Eight grown and a child are still one household of nine.
+    for (const int many : {8, 9})
+    {
+        AuthoredRoster roster;
+        for (int i = 0; i <= many; ++i)
+        {
+            auto r = person("lodger" + std::to_string(i), "the scribe", {"desk", 2.5, 2.5}, "civilian");
+            r.home = {"great_hall", 2.5, 2.5};
+            if (i == many)
+                r.age = 10;
+            roster.residents.push_back(r);
+        }
+        roster.economy.treasury = 5000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto household = s.householdOf("lodger0");
+        expect(household == (many > 8 ? 1u : std::size_t(many + 1)),
+               std::to_string(many) + " grown and a child at home: a household of " + std::to_string(household));
     }
 }
 
@@ -3992,6 +4121,8 @@ int main()
         aRestartKeepsTheMonth();
         pricedAtTheHoursWorked();
         foundedAtTheFoundingDay();
+        aShopsGoodsToSellOnForAFortnight();
+        aLoneOwnerKeepsAWeeksFood();
     }
     catch (const std::exception& error)
     {

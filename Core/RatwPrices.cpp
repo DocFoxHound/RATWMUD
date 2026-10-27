@@ -148,7 +148,7 @@ double Society::buyingPrice(const std::string& town, const std::string& item) co
     return townPrice(town, item) / (1 + items::ladder().markup);
 }
 
-double Society::materialsCost(const std::string& seller, const std::string& item) const
+double Society::materialsCost(const std::string& seller, const std::string& item, bool* resold) const
 {
     const auto till = tillOf(seller);
     const auto base = items::baseOf(item);
@@ -188,6 +188,8 @@ double Society::materialsCost(const std::string& seller, const std::string& item
                 materials += q * (inputCost(till, in) + carriage(in, 1, town));
             return all > 0 ? materials * mine / all / n : materials / n;
         }
+    if (resold)
+        *resold = true;
     return costOf(till, item);                       // (Bought to sell on: the goods themselves.)
 }
 
