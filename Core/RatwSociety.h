@@ -391,6 +391,13 @@ struct EconomyMemory
     // (round 9, the user, 2026-10-27: the caravans pay its posts first, its works only with what's left; with work by the
     // hours). Its works see its caravans' money only once this is paid.
     std::map<std::string, double> postsOwed;
+    // A town's tax eased while its stores hold over their target (round 10, the user, 2026-10-27; with work by the hours;
+    // Society::easeTownTax): its rate as a share of the realm's (1 unless kept here, 0 at the least), its stores' mean
+    // holding (a week's, day by day), and a month of what its tax would bring at the full rate.
+    std::map<std::string, double> townTax, heldMean, taxBase;
+    // A town's caravans' road money inside its week's budget (round 10, with TownPosts): what is left of the week's
+    // allowance for it, and what they drew this week (Society::institutionsWeek, Society::roadMoneyFor).
+    std::map<std::string, double> roadLeft, roadWeek;
     std::int64_t revision = 0;
 };
 
@@ -873,6 +880,40 @@ class Society
     // from the capital's treasury to a town's ("a relief grant").
     static constexpr double MostTaxRate = .5;
     double taxRate() const { return state_.memory.taxRate; }
+    // A town's own rate (round 10, TaxEase): the realm's, eased while its stores hold over their target, TaxEaseMonths
+    // (the model's RULE["treasury"] k) of what its tax brings at the full rate. A resident's is its town's
+    // (treasuryOfResident). The capital's is the realm's.
+    double townTaxShare(const std::string& treasury) const
+    {
+        const auto found = state_.memory.townTax.find(treasury);
+        return found == state_.memory.townTax.end() ? 1. : found->second;
+    }
+    double townTaxRate(const std::string& treasury) const { return taxRate() * townTaxShare(treasury); }
+    double residentTaxRate(const std::string& id) const
+    {
+        return state_.memory.townTax.empty() || !workByHours() || !wageRule(TaxEase) ? taxRate()
+                                                                                     : taxRate() * townTaxShare(treasuryOfResident(id));
+    }
+    double townTaxTarget(const std::string& treasury) const
+    {
+        const auto found = state_.memory.taxBase.find(treasury);
+        return found == state_.memory.taxBase.end() ? 0. : TaxEaseMonths * found->second;
+    }
+    double townHeldMean(const std::string& treasury) const
+    {
+        const auto found = state_.memory.heldMean.find(treasury);
+        return found == state_.memory.heldMean.end() ? 0. : found->second;
+    }
+    static constexpr double TaxEaseMonths = 2;      // The model's RULE["treasury"]["k"]: a treasury holds two months.
+    static constexpr double TaxEaseWeeks = 4;       // The rate moves a quarter of the way to where it's wanted a week.
+    static constexpr double HeldMeanDays = 7;       // The stores' holding a week's mean: the caravans come and go.
+    // What a town's caravans may take on the road now (round 10, RoadBudget): what's left of its week's allowance, or -1
+    // where none is kept (the capital's, a House's; before its first week's budget).
+    std::int64_t roadMoneyFor(const std::string& trader) const;
+    static bool roadBudgeted()
+    {
+        return workByHours() && wageRule(CaravanIncome) && wageRule(CaravansAsTheyCome) && wageRule(TownPosts) && wageRule(RoadBudget);
+    }
     EconomyResult setTaxRate(double rate, const std::string& by);
     EconomyResult setMint(bool on, const std::string& by);
     EconomyResult reliefGrant(const std::string& town, std::int64_t coins);
@@ -1198,10 +1239,22 @@ class Society
         PostsFirst = 1024,                           // A town's caravans' week pays its own posts' shortfall first (round 9).
         CrewsAbroad = 2048,                          // A town's works crew may be taken by wolves of other towns (round 9).
         OnePlace = 4096,                             // A wolf holding a hire's place takes no other hire (round 9).
-        OwnersStop = 8192                            // A lone owner stops topping up a till short of its wages (round 9).
+        OwnersStop = 8192,                           // A lone owner stops topping up a till short of its wages (round 9).
+        TaxEase = 1048576,                           // A town's stores over their target lower its tax (round 10, towns).
+        TownPosts = 2097152,                         // A town's own posts are kept to its tax, as the capital's (round 10).
+        RoadBudget = 4194304,                        // ...and its caravans' road money is drawn from its week's budget.
+        TaxRebate = 8388608                          // An option, off unless asked: over twice its target, a rebate (round 10).
     };
-    static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
-    static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
+    // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
+    // 2026-10-27) and the rebate. `wageRulesOff(off, on)`: `off` the rest left out, `on` these put in; wageRulesOff(0)
+    // is the game's.
+    static constexpr unsigned OptInRules = CrewsAbroad | TaxRebate;
+    static void wageRulesOff(unsigned off, unsigned on = 0)
+    {
+        wageRulesOff_ = off & ~OptInRules;
+        wageRulesOn_ = on & OptInRules;
+    }
+    static bool wageRule(WageRule rule) { return (rule & OptInRules) ? (wageRulesOn_ & rule) != 0 : (wageRulesOff_ & rule) == 0; }
     std::string employerTownOf(const std::string& key) const
     {
         const auto found = employerTown_.find(key);
@@ -1800,7 +1853,7 @@ class Society
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
     static inline bool noteShorts_ = false;
-    static inline unsigned wageRulesOff_ = 0;
+    static inline unsigned wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
     std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
@@ -1812,6 +1865,12 @@ class Society
     void tendIncome();                                      // Daily, first: today's earnings into the week's and month's.
     void flushEarnings();                                   // (Those so far, without the month's daily decay.)
     void institutionsWeek(std::int64_t day);                // At the reckoning: each institution's week's budget, spent.
+    // At the reckoning (round 10, TaxEase): each town's rate for next week, from its stores' mean holding against
+    // TaxEaseMonths of `fullTax` (this week's tax at the full rate, by town), a quarter of the way a week.
+    void easeTownTax(const std::map<std::string, double>& fullTax);
+    // And the rebate (an option, off unless asked: TaxRebate): over twice its target, half of the rest back to its
+    // taxpayers by their week's incomes (`taxpayers`: each town's, with its income).
+    void rebateTownTax(const std::map<std::string, std::vector<std::pair<std::string, double>>>& taxpayers);
     // A town's posts kept to `share` of its week's budget (doc 64, Phase 13, round 6; the model's staff_to): the watch's
     // whatever, then its own (the city's clerks, its court, its lamplighters) in an order by lot that is the same week to
     // week, as many as the rest pays a week, PostWeekDays of a post's wage (the watch's seven). Past that, a post's holder

@@ -44,6 +44,14 @@
 // first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
 // take a second). With all six left out, a run is round 8's to the digest.
 // And round 9's tills: owners (a lone owner tops up a business short of its wages as before).
+// And round 10's towns: taxease (a town's tax is the realm's rate whatever its stores hold), townposts (a town pays its own
+// posts whatever its tax, as round 9, with its caravans' week paying their shortfall first; roadmoney goes with it),
+// roadmoney (a town's caravans take what its stores hold, their road money netted in its week as round 9).
+// --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
+// since round 10; `--without crews` is now a no-op, noted), rebate (an option: a town's stores holding over twice their
+// target pay its taxpayers back a share of their week's income, its rate below nothing, to minus the realm's at three
+// times). With
+// round 10's three left out and `--with crews`, a run is 4ef067b's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -122,6 +130,8 @@
 //   hunger.csv      day, town: residents, hungry, starving, and of them those holding less than the cheapest food a
 //                   resident paid for there in the last week (money-hunger; the rest is food-hunger), its shops'
 //                   shelves' food (units), and that cheapest price (each day's record);
+//   town_tax.csv    day, town: its tax's share of the realm's rate and the rate (round 10, towns: eased while its
+//                   stores hold over their target), its stores' holding, their week's mean and the target (weekly);
 //   sentinels.csv   day, kind, subject, value, threshold, weeks, detail: each sentinel fired at a week's check (and
 //                   in the log): drain (a House, a town's or the capital's treasury, the church or a caravan paying
 //                   out over 1.3 times what came in, at least 100p, four weeks in a row; with its top three kinds
@@ -332,6 +342,7 @@ int main(int argc, char** argv)
     bool askPayers = false;                         // --ask-payers.
     std::set<std::string> stopOn;                   // --stop-on-sentinel (round 10, lane 0).
     int sentinelWeeks = 4;                          // --sentinel-weeks.
+    unsigned rulesOff = 0, rulesOn = 0;             // --without, --with (Society::wageRulesOff).
     fs::path modelShares = fs::path(RATW_SOURCE_DIR) / "tools" / "econ_model" / "model_shares.csv";
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
@@ -410,9 +421,27 @@ int main(int argc, char** argv)
             modelShares = argv[++i];
         else if (std::string(argv[i]) == "--sentinel-weeks" && i + 1 < argc)
             sentinelWeeks = std::max(1, std::atoi(argv[++i]));
+        else if (std::string(argv[i]) == "--with" && i + 1 < argc)
+        {
+            for (std::stringstream list(argv[++i]); list.good();)
+            {
+                std::string name;
+                std::getline(list, name, ',');
+                if (name == "crews")
+                    rulesOn |= Society::CrewsAbroad;
+                else if (name == "rebate")
+                    rulesOn |= Society::TaxRebate;
+                else
+                {
+                    std::cerr << "--with is crews or rebate, not " << name << "\n";
+                    return 2;
+                }
+            }
+            Society::wageRulesOff(rulesOff, rulesOn);
+        }
         else if (std::string(argv[i]) == "--without" && i + 1 < argc)
         {
-            unsigned off = 0;
+            unsigned& off = rulesOff;
             for (std::stringstream list(argv[++i]); list.good();)
             {
                 std::string name;
@@ -439,20 +468,29 @@ int main(int argc, char** argv)
                     off |= Society::KeepersApprentice;
                 else if (name == "posts")
                     off |= Society::PostsFirst;
-                else if (name == "crews")
-                    off |= Society::CrewsAbroad;
                 else if (name == "oneplace")
                     off |= Society::OnePlace;
                 else if (name == "owners")
                     off |= Society::OwnersStop;
+                else if (name == "taxease")
+                    off |= Society::TaxEase;
+                else if (name == "townposts")
+                    off |= Society::TownPosts;
+                else if (name == "roadmoney")
+                    off |= Society::RoadBudget;
+                else if (name == "crews")
+                {
+                    std::cerr << "--without crews: a town's crews are their own town's unless asked since round 10 (--with crews)\n";
+                    rulesOn &= ~unsigned(Society::CrewsAbroad);
+                }
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace or owners, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, townposts or roadmoney, not "
                               << name << "\n";
                     return 2;
                 }
             }
-            Society::wageRulesOff(off);
+            Society::wageRulesOff(off, rulesOn);
         }
         else if (std::string(argv[i]) == "--hold-pace" && i + 1 < argc)
         {
@@ -1558,7 +1596,8 @@ int main(int argc, char** argv)
     // The run's tracking's files (round 10, lane 0): see the top of the file.
     std::ofstream accountsOut(out / "accounts.csv"), accountFlowsOut(out / "account_flows.csv"),
         accountPeersOut(out / "account_peers.csv"), goodsOut(out / "goods.csv"), hungerOut(out / "hunger.csv"),
-        sentinelsOut(out / "sentinels.csv");
+        sentinelsOut(out / "sentinels.csv"), townTaxOut(out / "town_tax.csv");
+    townTaxOut << "day,town,share,rate,held,held_mean,target\n";
     accountsOut << "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained\n";
     accountFlowsOut << "day,account,dir,kind,entries,coins\n";
     accountPeersOut << "day,account,dir,peer,peer_holder,coins\n";
@@ -1882,6 +1921,12 @@ int main(int argc, char** argv)
     // The week's accounts and goods (round 10, lane 0), at a week's record and the run's end; then a new week.
     int lastWeek = firstDay;
     const auto writeWeek = [&](int day) {
+        // Each town's tax as its stores' holding eases it (round 10, towns: Society::easeTownTax).
+        for (const auto& [id, a] : society.state().accounts)
+            if (id.rfind("stores:", 0) == 0)
+                townTaxOut << day << ',' << csv(id.substr(7)) << ',' << society.townTaxShare(id) << ',' << society.townTaxRate(id) << ','
+                           << a.cash << ',' << std::llround(society.townHeldMean(id)) << ',' << std::llround(society.townTaxTarget(id)) << '\n';
+        townTaxOut.flush();
         // (Every account tracked that held money or moved any: a caravan long gone has neither.)
         std::set<std::string> ids;
         for (const auto& [id, c] : opening)

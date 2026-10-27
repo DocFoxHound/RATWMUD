@@ -665,7 +665,7 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
                 purse += spendable(who);
                 if (!richest || spendable(who) > spendable(*richest))
                     richest = &who;
-                owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (taxRate() + TitheRate));
+                owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (residentTaxRate(who) + TitheRate));
             }
             if (const auto streak = state_.memory.comfort.find(home); streak != state_.memory.comfort.end() && streak->second < 0)
                 continue;
@@ -718,7 +718,7 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
             if (!richest || spendable(who) > spendable(*richest))
                 richest = &who;
             // (The tax and tithe on its week's income so far: doc 64, Phase 7.)
-            owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (taxRate() + TitheRate));
+            owed += std::llround((state_.memory.weekIncome.count(who) ? state_.memory.weekIncome.at(who) : 0.) * (residentTaxRate(who) + TitheRate));
         }
         for (const auto& who : grown)
             month += monthIncomeOf(who);
@@ -957,7 +957,7 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
         // The member whose turn it is (by lot), out of the household's want fund (doc 64, Phase 7: the household rule's),
         // as far as its purse goes past a week's food and the tax and tithe it owes.
         const auto& id = h.buyers[std::hash<std::string>{}(h.fund + "|want|" + std::to_string(day)) % h.buyers.size()];
-        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (taxRate() + TitheRate));
+        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (residentTaxRate(id) + TitheRate));
         const auto town = communityOfResident(id);
         const auto spare = account(id)->cash - pennies(7 * FoodADay, town) - owed;
         const auto budget = std::min<std::int64_t>(std::int64_t(fund->second), spare);
@@ -1116,7 +1116,7 @@ void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, Li
             continue;
         // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
         // week's food and the tax and tithe it owes.
-        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (taxRate() + TitheRate));
+        const auto owed = std::llround((state_.memory.weekIncome.count(id) ? state_.memory.weekIncome.at(id) : 0.) * (residentTaxRate(id) + TitheRate));
         const int under = std::max<int>(1, int(std::count_if(state_.residents.begin(), state_.residents.end(), [&](const auto& other) {
                                               const auto b = bodies.find(other.first);
                                               return other.second.homeCell == life.homeCell && b != bodies.end() && b->second.age >= 16;
@@ -1414,8 +1414,8 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
                 const auto reserve = std::int64_t(PayrollDays) * pennies(2 * PaidSpells / 12., community) * (town.guards + town.residents / 10);
                 auto spare = std::max<std::int64_t>(0, treasury.cash - reserve) / MonthDays;
                 // (The capital's, with work by the hours, inside what's left of its week's allowance for its buyers: doc
-                // 64, Phase 13, round 6. Before its first week's, as before.)
-                const bool budgeted = workByHours() && treasuryId == "treasury";
+                // 64, Phase 13, round 6. Before its first week's, as before. A town's too since round 10, TownPosts.)
+                const bool budgeted = workByHours() && (treasuryId == "treasury" || (treasuryId.rfind("stores:", 0) == 0 && wageRule(TownPosts)));
                 const auto allowance = budgeted ? state_.memory.fundsLeft.find(treasuryId) : state_.memory.fundsLeft.end();
                 if (allowance != state_.memory.fundsLeft.end())
                     spare = std::min(spare, std::int64_t(allowance->second));

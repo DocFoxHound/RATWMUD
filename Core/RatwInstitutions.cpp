@@ -37,7 +37,7 @@ bool Society::unearnedKind(const std::string& kind)
     return kind == "inheritance" || kind == "operator transfer" || kind == "the shop's till" || kind == "sale of a business" ||
            kind == "starting money" || kind == "a child's first pennies" || kind == "a child's stipend" || kind == "the household purse" ||
            kind == "the church's dole" || kind == "the church's share" || kind == "a gift" || kind == "a letter's enclosure" ||
-           kind == "an owner's investment" || kind == "relief" || kind == "a relief grant" || kind.rfind("test:", 0) == 0;   // (A test's money, put there.)
+           kind == "an owner's investment" || kind == "relief" || kind == "a relief grant" || kind == "a town's rebate" || kind.rfind("test:", 0) == 0;   // (A test's money, put there.)
 }
 
 double Society::monthIncomeOf(const std::string& account) const
@@ -49,6 +49,15 @@ double Society::monthIncomeOf(const std::string& account) const
 void Society::tendIncome()
 {
     auto& memory = state_.memory;
+    // Each town's stores' mean holding, a week's, day by day (round 10, TaxEase): its caravans' road money out and their
+    // takings home again swing it by a week's trade.
+    if (workByHours() && wageRule(TaxEase))
+        for (auto it = state_.accounts.lower_bound("stores:"); it != state_.accounts.end() && it->first.rfind("stores:", 0) == 0; ++it)
+        {
+            const auto [held, fresh] = memory.heldMean.try_emplace(it->first, double(it->second.cash));
+            if (!fresh)
+                held->second += (double(it->second.cash) - held->second) / HeldMeanDays;
+        }
     for (auto it = memory.monthIncome.begin(); it != memory.monthIncome.end();)
     {
         it->second *= double(MonthDays - 1) / MonthDays;
@@ -56,6 +65,74 @@ void Society::tendIncome()
         it = std::abs(it->second) < .5 && !earnedToday_.count(it->first) ? memory.monthIncome.erase(it) : std::next(it);
     }
     flushEarnings();
+}
+
+void Society::easeTownTax(const std::map<std::string, double>& fullTax)
+{
+    // A town's stores over their target lower its tax (round 10, the user, 2026-10-27: over grants, sending it to the
+    // capital, or capping its caravans' profit). The target is the model's: TaxEaseMonths of its income, what its tax
+    // brings in a month at the full rate (a running month, a quarter of the way to four of this week's a week), not at
+    // the eased one, or easing it would lower the target and ease it further. The rate wanted is the full one at the
+    // target and below it, falling as the mean holding rises over it, to nothing at twice the target; the rate moves a
+    // quarter of the way to it a week. Never above the full rate: a town short of money keeps its posts to its tax
+    // (TownPosts) instead.
+    auto& memory = state_.memory;
+    for (auto it = state_.accounts.lower_bound("stores:"); it != state_.accounts.end() && it->first.rfind("stores:", 0) == 0; ++it)
+    {
+        const auto& id = it->first;
+        const auto found = fullTax.find(id);
+        const double month = found == fullTax.end() ? 0. : 4 * found->second;
+        auto base = memory.taxBase.find(id);
+        if (base == memory.taxBase.end())
+        {
+            if (month <= 0)
+                continue;
+            base = memory.taxBase.emplace(id, month).first;
+        }
+        else
+            base->second += (month - base->second) / TaxEaseWeeks;
+        const double target = TaxEaseMonths * base->second;
+        if (target < 1)
+            continue;
+        const auto held = memory.heldMean.find(id);
+        const double want = std::clamp(1 - ((held == memory.heldMean.end() ? double(it->second.cash) : held->second) - target) / target, 0., 1.);
+        const double share = townTaxShare(id) + (want - townTaxShare(id)) / TaxEaseWeeks;
+        if (share > .999)
+            memory.townTax.erase(id);
+        else
+            memory.townTax[id] = share;
+    }
+    ++memory.revision;
+}
+
+void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<std::string, double>>>& taxpayers)
+{
+    // An option, off unless asked (econ_watch --with rebate; round 10): a town whose stores hold over twice their target
+    // (where the rate it wants is nothing) pays its taxpayers back half of what its stores hold over that a week (the
+    // lesser of what they hold and their week's mean), each by its share of the week's income: "a town's rebate".
+    // Oakhaven's caravans bring in several times its tax, so easing its tax alone can't bring it down.
+    for (const auto& [id, payers] : taxpayers)
+    {
+        const auto* stores = account(id);
+        const double target = townTaxTarget(id), held = std::min(double(stores ? stores->cash : 0), townHeldMean(id));
+        double incomes = 0;
+        for (const auto& [payer, income] : payers)
+            incomes += income;
+        if (target < 1 || held <= 2 * target || incomes < 1)
+            continue;
+        const double pool = (held - 2 * target) / 2;
+        for (const auto& [payer, income] : payers)
+            if (const auto back = std::min<std::int64_t>(account(id)->cash, std::llround(pool * income / incomes)); back > 0)
+                shift(id, payer, "", 0, back, "a town's rebate");
+    }
+}
+
+std::int64_t Society::roadMoneyFor(const std::string& trader) const
+{
+    if (!roadBudgeted() || trader.rfind("stores:", 0) != 0)
+        return -1;
+    const auto found = state_.memory.roadLeft.find(trader);
+    return found == state_.memory.roadLeft.end() ? -1 : std::int64_t(std::max(0., found->second));
 }
 
 void Society::flushEarnings()
@@ -222,7 +299,10 @@ void Society::institutionsWeek(std::int64_t day)
         // what's left of them, with what its tax budget leaves over its posts. (Before, its posts were taken from the tax
         // budget and the caravans' week together each week, and a week's takings went to its works while the weeks with
         // its caravans on the road paid its posts from its purse: Frosthollow's ran dry.)
-        const bool postsFirst = workByHours() && wageRule(CaravansAsTheyCome) && wageRule(PostsFirst) && id != "treasury";
+        // Since round 10 (the user, 2026-10-27; TownPosts) a town keeps its own posts to its tax as the capital does, below:
+        // its caravans' money then pays only what its watch comes to over that, and its buyers, its road money and its works.
+        const bool townPosts = workByHours() && wageRule(TownPosts) && id != "treasury";
+        const bool postsFirst = !townPosts && workByHours() && wageRule(CaravansAsTheyCome) && wageRule(PostsFirst) && id != "treasury";
         if (postsFirst)
         {
             const auto need = relief + wagesPaid(id);
@@ -235,21 +315,33 @@ void Society::institutionsWeek(std::int64_t day)
                 memory.postsOwed.erase(id);
             budget = std::min(std::max<std::int64_t>(0, taxed - need) + trade - std::int64_t(repaid), account(id)->cash);
         }
-        if (workByHours() && id == "treasury")
+        if (workByHours() && (id == "treasury" || townPosts))
         {
             // The capital, with work by the hours (doc 64, Phase 13, round 6; the model's treasury_week): its posts first,
             // the watch and then its own, to half its week's budget, its own let go if they come to more; then its buyers'
             // funds inside what's left (what they drew last week and a third over, and a twentieth of the rest besides;
             // its first week, all the rest); then its works, as a town's. Before, it paid its posts every spell and funded
             // its buyers day by day whatever its budget, and it ran dry in three months.
+            // A town since round 10 (TownPosts) the same, its posts to half its tax's budget (its caravans' week not
+            // counted: Frosthollow's posts came to 290p a day on 248p of tax). And its road money (RoadBudget) inside
+            // what's left after its buyers, as theirs is, its caravans' takings counted in its week as they come home.
             budget -= relief;
-            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, budget)) * TreasuryStaff, day);
-            const auto rest = std::max<std::int64_t>(0, budget);
-            const auto drew = memory.fundsWeek.find(id);
-            const auto funds = drew == memory.fundsWeek.end() ? rest : std::min(rest, std::int64_t(drew->second * 1.33) + rest / 20);
-            memory.fundsLeft[id] = double(funds);
-            memory.fundsWeek[id] = 0;
-            budget -= funds;
+            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, id == "treasury" ? budget : taxed - relief)) * TreasuryStaff, day);
+            // (A town's buyers and caravans that drew nothing since the rule began get a twentieth of the rest: the
+            // capital's first week, saved before round 6, all of it.)
+            const auto allow = [&](std::map<std::string, double>& left, std::map<std::string, double>& week) {
+                const auto rest = std::max<std::int64_t>(0, budget);
+                const auto drew = week.find(id);
+                const auto most = drew == week.end() && id == "treasury"
+                                      ? rest
+                                      : std::min(rest, std::int64_t((drew == week.end() ? 0. : drew->second) * 1.33) + rest / 20);
+                left[id] = double(most);
+                week[id] = 0;
+                budget -= most;
+            };
+            allow(memory.fundsLeft, memory.fundsWeek);
+            if (townPosts && roadBudgeted())
+                allow(memory.roadLeft, memory.roadWeek);
         }
         else if (!postsFirst)
             budget -= relief + wagesPaid(id);

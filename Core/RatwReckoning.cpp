@@ -100,6 +100,11 @@ void Society::reckon(std::int64_t day, bool force)
                 payers.push_back({h.id, treasuryOf(h.community)});
         // (A business isn't taxed: its profit is its owner's, and taxed as theirs. Doc 64, Phase 7.)
         flushEarnings();                            // (Today's too, when reckoned on demand.)
+        // (Each town's tax this week at the full rate, round 10: what its target is reckoned on. And its taxpayers' week's
+        // incomes, for the rebate: an option, off unless asked.)
+        const bool ease = workByHours() && wageRule(TaxEase);
+        std::map<std::string, double> fullTax;
+        std::map<std::string, std::vector<std::pair<std::string, double>>> taxpayers;
         for (const auto& [id, treasury] : payers)
         {
             const auto* purse = account(id);
@@ -115,7 +120,14 @@ void Society::reckon(std::int64_t day, bool force)
             if (income < 1)
                 continue;
             openAccount(town.church);
-            const auto tax = std::min<std::int64_t>(purse->cash, std::llround(income * taxRate())),
+            // (A town's own rate since round 10, eased while its stores hold over their target: Society::easeTownTax.)
+            const double rate = ease && treasury != "treasury" ? townTaxRate(treasury) : taxRate();
+            if (ease && treasury != "treasury")
+            {
+                fullTax[treasury] += income * taxRate();
+                taxpayers[treasury].push_back({id, income});
+            }
+            const auto tax = std::min<std::int64_t>(purse->cash, std::llround(income * rate)),
                        tithe = std::min<std::int64_t>(purse->cash - tax, std::llround(income * TitheRate));
             const bool paid = shift(id, treasury, "", 0, tax, "town tax");
             const bool tithed = shift(id, town.church, "", 0, tithe, "tithe");
@@ -131,6 +143,12 @@ void Society::reckon(std::int64_t day, bool force)
                 town.toCapital = share;
         // (No wealth tithe: tax and tithe are on income now, doc 64, Phase 7.)
         state_.memory.weekIncome.clear();
+        if (ease)
+        {
+            easeTownTax(fullTax);
+            if (wageRule(TaxRebate))
+                rebateTownTax(taxpayers);
+        }
         openAccount(SharedChurch);
         institutionsWeek(day);                      // Each institution's week's budget, spent (RatwInstitutions.cpp).
         for (auto& [treasury, town] : towns)

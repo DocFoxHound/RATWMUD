@@ -2129,7 +2129,7 @@ void aHouseKeepsItsCrew()
 void aTownsCrewTakesTheGrownFirst()
 {
     Society::setWorkByHours(true);
-    Society::wageRulesOff(Society::CrewsAbroad);    // (Its own town's wolves: since round 9 the capital's idle may take it too.)
+    Society::wageRulesOff(0);                       // (Its own town's wolves: with crews abroad, round 9's, asked for, the capital's idle may take it too.)
     AuthoredRoster roster;
     const auto far = [](ResidentSpec r) {
         r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2518,6 +2518,9 @@ void theOutOfWorkKeepTheirHours()
     Society::setWorkByHours(false);
 }
 
+// Round 10's rules for the towns (lane B): left out where a test is of the rules before them.
+constexpr unsigned Round10Towns = Society::TaxEase | Society::TownPosts | Society::RoadBudget;
+
 // Round 8 (the user, 2026-10-27): a town's caravans' net takings count in its budget as its tax does. Its road money out
 // counts against it (its month below nothing until the takings come home, and kept so on a day it earns nothing), its
 // takings for it, and what its stores paid for the caravan's unsold goods against it (that money came home in the
@@ -2534,7 +2537,7 @@ void aTownCountsItsCaravans()
         int crew = 0;
     };
     const auto run = [](unsigned off) {
-        Society::wageRulesOff(off);
+        Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2625,7 +2628,7 @@ void aTownSpendsItsTradeAsItComes()
         int crew35 = 0, crew42 = 0;
     };
     const auto run = [](unsigned off) {
-        Society::wageRulesOff(off);
+        Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2716,7 +2719,7 @@ void aTownsPostsComeFirst()
         int crew42 = 0;
     };
     const auto run = [](unsigned off) {
-        Society::wageRulesOff(off);
+        Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2792,8 +2795,9 @@ void aTownsPostsComeFirst()
 void aTownsCrewHiresAbroad()
 {
     Society::setWorkByHours(true);
-    const auto run = [](unsigned off) {
-        Society::wageRulesOff(off);
+    // (Off unless asked since round 10, the user, 2026-10-27: asked for here, Society::wageRulesOff's `on`.)
+    const auto run = [](unsigned on) {
+        Society::wageRulesOff(0, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2845,13 +2849,272 @@ void aTownsCrewHiresAbroad()
         Society::wageRulesOff(0);
         return std::make_tuple(slots, own, abroad, capitalAbroad);
     };
-    const auto [slots, own, abroad, capitalAbroad] = run(0);
+    const auto [slots, own, abroad, capitalAbroad] = run(Society::CrewsAbroad);
     expect(slots > 3 && own == 3 && abroad == slots - 3 && capitalAbroad == 0,
            "the town's own three hold places, the capital's idle the rest of its crew of " + std::to_string(slots) + ": " + std::to_string(own) +
                " and " + std::to_string(abroad) + "; none of the town's on the capital's crews: " + std::to_string(capitalAbroad));
-    const auto [slots0, own0, abroad0, capital0] = run(Society::CrewsAbroad);
+    const auto [slots0, own0, abroad0, capital0] = run(0);
     (void)capital0;
-    expect(own0 == 3 && abroad0 == 0 && slots0 > 3, "without the rule the rest stand open: " + std::to_string(own0) + " and " + std::to_string(abroad0));
+    expect(own0 == 3 && abroad0 == 0 && slots0 > 3, "without the rule (the game's since round 10) the rest stand open: " + std::to_string(own0) +
+                                                        " and " + std::to_string(abroad0));
+    Society::setWorkByHours(false);
+}
+
+// Round 10, towns (the user, 2026-10-27): a town's stores over their target lower its tax. The target is the model's
+// RULE["treasury"] k, two months of what its tax brings at the full rate. A far town of ten taxpayers, each earning 1,000p
+// a week (800p a week of tax at the full rate, a target of 6,400p; a little more with their own earnings), holds
+// 100,000p. Its rate falls a quarter of the way to nothing a week, never below it, and is kept through a save. Drained to
+// 1,000p it comes back toward the full rate, a
+// quarter of the way a week, never over it. Without the rule its rate is the realm's. With the rebate (an option, off
+// unless asked), over twice its target, half of the rest goes back to its taxpayers a week ("a town's rebate"), by their
+// incomes: by day 35 it holds under four times its target (without it, over ten).
+void aTownEasesItsTax()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        std::vector<double> share;                   // After each week's reckoning, days 7 to 84.
+        std::int64_t tax14 = 0, rebates = 0, held35 = 0, payer1 = 0;
+        double target = 0, saved = 0, savedMean = 0, mean = 0;
+        bool savedBase = false;
+    };
+    const auto run = [](unsigned off, unsigned on) {
+        Society::wageRulesOff(off, on);
+        AuthoredRoster roster;
+        const auto far = [](ResidentSpec r) {
+            r.home = r.evening = {"far_homes", 2.5, 2.5};
+            return r;
+        };
+        roster.residents.push_back(far(person("stall", "keeping the stall", {"far_market", 2.5, 2.5})));
+        for (int i = 1; i <= 10; ++i)
+        {
+            auto payer = far(person("payer" + std::to_string(i), "keeps the house", {"far_homes", 2.5, 2.5}, "civilian"));
+            payer.purse = 100000;
+            roster.residents.push_back(payer);
+        }
+        for (int i = 1; i <= 140; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) { return cell.rfind("far_", 0) == 0 ? std::string("far") : std::string("town"); };
+        s.setDay(plan);
+        s.openAccount("stores:far");
+        expect(s.shift("treasury", "stores:far", "", 0, 100000, "test: the town's money"), "the town's purse");
+        const auto bodies = atWork(s);
+        Seen seen;
+        for (std::int64_t d = 1; d <= 84; ++d)
+        {
+            if (d % 7 == 0)
+            {
+                // (Each taxpayer's week's earnings, 1,000p, as its reckoning finds them.)
+                auto st = s.state();
+                for (int i = 1; i <= 10; ++i)
+                    st.memory.weekIncome["payer" + std::to_string(i)] = 1000;
+                expect(s.restore(st), "the week's earnings");
+                s.takeJournal();
+            }
+            if (d == 36)
+                expect(s.shift("stores:far", "treasury", "", 0, s.account("stores:far")->cash - 1000, "test: the town's money spent"),
+                       "the town's purse drained");
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+            if (d % 7 == 0)
+            {
+                seen.share.push_back(s.townTaxShare("stores:far"));
+                for (const auto& e : s.takeJournal())
+                {
+                    if (d == 14 && e.kind == "town tax" && e.to == "stores:far")
+                        seen.tax14 += e.coins;
+                    if (e.kind == "a town's rebate" && e.from == "stores:far")
+                        seen.rebates += e.coins, seen.payer1 += e.to == "payer1" ? e.coins : 0;
+                }
+            }
+            if (d == 35)
+                seen.held35 = s.account("stores:far")->cash;
+            if (d == 28)
+            {
+                seen.target = s.townTaxTarget("stores:far");
+                seen.mean = s.townHeldMean("stores:far");
+                const auto m = wire::readSociety(wire::society(s.state())).memory;
+                seen.saved = m.townTax.count("stores:far") ? m.townTax.at("stores:far") : 1;
+                seen.savedMean = m.heldMean.count("stores:far") ? m.heldMean.at("stores:far") : 0;
+                seen.savedBase = m.taxBase.count("stores:far") && std::abs(Society::TaxEaseMonths * m.taxBase.at("stores:far") - seen.target) < 1e-6;
+            }
+        }
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto now = run(0, 0), without = run(Society::TaxEase, 0), rebate = run(0, Society::TaxRebate);
+    const auto& sh = now.share;
+    expect(sh.size() == 12 && std::abs(sh[0] - .75) < 1e-9 && std::abs(sh[1] - .5625) < 1e-9,
+           "over its target its rate falls a quarter of the way to nothing a week: " + std::to_string(sh[0]) + ", " + std::to_string(sh[1]));
+    expect(without.tax14 >= 800 && std::abs(double(now.tax14) - .75 * double(without.tax14)) <= 10,
+           "its week's tax at three-quarters of the full rate: " + std::to_string(now.tax14) + "p, against " + std::to_string(without.tax14) +
+               "p without the rule");
+    expect(std::abs(now.target - 6400) < 200, "its target about two months of its tax at the full rate: " + std::to_string(now.target));
+    expect(std::abs(now.saved - sh[3]) < 1e-9 && std::abs(now.savedMean - now.mean) < 1e-6 && now.savedBase,
+           "its rate, its mean holding and its month at the full rate kept through a save: " + std::to_string(now.saved));
+    bool smooth = true, bounded = true;
+    for (std::size_t k = 0; k < sh.size(); ++k)
+    {
+        bounded = bounded && sh[k] >= 0 && sh[k] <= 1;
+        smooth = smooth && std::abs(sh[k] - (k ? sh[k - 1] : 1.)) <= .25 + 1e-9;
+    }
+    expect(bounded && smooth, "never below nothing nor over the full rate, and a quarter of the way at most a week");
+    // (Drained on day 36, its week's mean holding comes down over the next fortnight.)
+    expect(sh[5] < sh[4] && sh[11] > sh[7] + .3 && sh[11] < 1 && sh[10] < sh[11],
+           "drained, it comes back toward the full rate: " + std::to_string(sh[5]) + " on day 42, " + std::to_string(sh[7]) + " on day 56, " +
+               std::to_string(sh[11]) + " on day 84");
+    bool full = true;
+    for (const auto v : without.share)
+        full = full && v == 1;
+    expect(full && without.rebates == 0, "without the rule its rate is the realm's");
+    double least = 1;
+    for (const auto v : rebate.share)
+        least = std::min(least, v);
+    expect(least >= 0 && rebate.rebates > 40000 && std::abs(double(rebate.payer1) * 10 - double(rebate.rebates)) < .02 * double(rebate.rebates) && now.rebates == 0,
+           "with the rebate its taxpayers are paid back, about a tenth each by their incomes, and its rate is never below nothing: " +
+               std::to_string(rebate.rebates) + "p, " + std::to_string(rebate.payer1) + "p to the first; " + std::to_string(least));
+    expect(rebate.held35 < 4 * rebate.target && now.held35 > 10 * now.target,
+           "by day 35 it holds under four times its target: " + std::to_string(rebate.held35) + "p (without the rebate " +
+               std::to_string(now.held35) + "p)");
+    Society::setWorkByHours(false);
+}
+
+// Round 10, towns (the user, 2026-10-27): a town's own posts are kept to its tax as the capital's are to its budget
+// (keepPostsTo): its watch, then its own, to half its week's tax budget, the rest let go and their posts kept empty. A
+// far town with a watch of two and six clerks of its own, on 3,000p and 800p a week of tax: by day 14 its clerks are let
+// go and its watch kept. Its buyers' funds are kept inside its week's budget, as the capital's. Without the rule all six
+// keep their posts.
+void aTownKeepsItsPostsToItsTax()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](unsigned off) {
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        const auto far = [](ResidentSpec r) {
+            r.home = r.evening = {"far_homes", 2.5, 2.5};
+            return r;
+        };
+        roster.residents.push_back(far(person("stall", "keeping the stall", {"far_market", 2.5, 2.5})));
+        for (int i = 1; i <= 2; ++i)
+            roster.residents.push_back(far(person("watch" + std::to_string(i), "keeps the watch", {"far_gate", 2.5 + i, 2.5}, "guard")));
+        for (int i = 1; i <= 6; ++i)
+            roster.residents.push_back(far(person("clerk" + std::to_string(i), "keeps the town's books", {"far_hall", 2.5 + i, 2.5}, "civilian")));
+        for (int i = 1; i <= 10; ++i)
+        {
+            auto payer = far(person("payer" + std::to_string(i), "keeps the house", {"far_homes", 2.5, 2.5}, "civilian"));
+            payer.purse = 100000;
+            roster.residents.push_back(payer);
+        }
+        for (int i = 1; i <= 140; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) { return cell.rfind("far_", 0) == 0 ? std::string("far") : std::string("town"); };
+        s.setDay(plan);
+        s.openAccount("stores:far");
+        expect(s.shift("treasury", "stores:far", "", 0, 3000, "test: the town's money"), "the town's purse");
+        expect(s.payerOf("clerk1", *s.jobOf("clerk1"), 30).account == "stores:far" && s.payerOf("watch1", *s.jobOf("watch1"), 30).account == "stores:far",
+               "its clerks and its watch are the town's: " + s.payerOf("clerk1", *s.jobOf("clerk1"), 30).account);
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 1; d <= 14; ++d)
+        {
+            if (d % 7 == 0)
+            {
+                auto st = s.state();
+                for (int i = 1; i <= 10; ++i)
+                    st.memory.weekIncome["payer" + std::to_string(i)] = 1000;
+                expect(s.restore(st), "the week's earnings");
+            }
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        }
+        int clerks = 0, watch = 0;
+        for (const auto& [id, ps] : s.state().careers.positions)
+        {
+            clerks += ps.holder.rfind("clerk", 0) == 0;
+            watch += ps.holder.rfind("watch", 0) == 0;
+        }
+        const bool funds = s.state().memory.fundsLeft.count("stores:far") > 0;
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return std::make_tuple(clerks, watch, funds);
+    };
+    const auto [clerks, watch, funds] = run(0);
+    expect(clerks == 0 && watch == 2 && funds, "its clerks let go, its watch kept, its buyers inside its budget: " + std::to_string(clerks) + " clerks, " +
+                                                    std::to_string(watch) + " of the watch");
+    const auto [clerks0, watch0, funds0] = run(Society::TownPosts);
+    expect(clerks0 == 6 && watch0 == 2 && !funds0, "without the rule all keep their posts: " + std::to_string(clerks0) + " clerks");
+    Society::setWorkByHours(false);
+}
+
+// Round 10, towns (the user, 2026-10-27): a town's caravans' road money comes from its week's budget, as its buyers'
+// funds do (the model's treasury_week). On 200,000p, its caravan takes 2,000p on day 3; the day-7 budget allows it that and a third
+// over, and a twentieth of what's left besides, and each coin it takes on the road comes off it. Its week counts its
+// takings, less the unsold goods its stores buy back: not the road money, which its allowance has paid. The capital's
+// caravans (its Houses') are not held to it. Without the rule there is no allowance, and the road money comes off its
+// week as in round 9.
+void aTownsRoadMoneyFromItsBudget()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        std::int64_t allowed = 0, after = 0, capital = 0;
+        double week = 0;
+    };
+    const auto run = [](unsigned off) {
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        const auto far = [](ResidentSpec r) {
+            r.home = r.evening = {"far_homes", 2.5, 2.5};
+            return r;
+        };
+        roster.residents.push_back(far(person("stall", "keeping the stall", {"far_market", 2.5, 2.5})));
+        for (int i = 1; i <= 140; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) { return cell.rfind("far_", 0) == 0 ? std::string("far") : std::string("town"); };
+        s.setDay(plan);
+        for (const auto* id : {"stores:far", "caravan:far1"})
+            s.openAccount(id);
+        expect(s.shift("treasury", "stores:far", "", 0, 200000, "test: the town's money"), "the town's purse");
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 1; d <= 7; ++d)
+        {
+            if (d == 3)
+                expect(s.shift("stores:far", "caravan:far1", "", 0, 2000, "money for the road"), "the caravan sets out");
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        }
+        Seen seen;
+        seen.allowed = s.roadMoneyFor("stores:far");
+        seen.capital = s.roadMoneyFor("treasury");
+        expect(s.shift("stores:far", "caravan:far1", "", 0, 1000, "money for the road") &&
+                   s.shift("caravan:far1", "stores:far", "", 0, 3000, "trade takings"),
+               "out again, and home");
+        seen.after = s.roadMoneyFor("stores:far");
+        const auto& week = s.state().memory.caravanWeek;
+        seen.week = week.count("stores:far") ? week.at("stores:far") : 0;
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto now = run(0), before = run(Society::RoadBudget);
+    expect(now.allowed > 2660 && now.allowed < 2660 + 1200 && now.after == now.allowed - 1000 && now.capital == -1,
+           "its road money allowed: what it took and a third over, and a twentieth of the rest: " + std::to_string(now.allowed) + "p, " +
+               std::to_string(now.after) + "p after 1,000p more; the capital's not held to it: " + std::to_string(now.capital));
+    expect(now.week == 3000, "its week counts its takings, not the road money its allowance paid: " + std::to_string(now.week));
+    expect(before.allowed == -1 && before.after == -1 && before.week == 0,
+           "without the rule no allowance, and its road money off its week, 2,000p and 1,000p against the 3,000p: " + std::to_string(before.week));
     Society::setWorkByHours(false);
 }
 
@@ -5176,6 +5439,9 @@ int main()
         aTownSpendsItsTradeAsItComes();
         aTownsPostsComeFirst();
         aTownsCrewHiresAbroad();
+        aTownEasesItsTax();
+        aTownKeepsItsPostsToItsTax();
+        aTownsRoadMoneyFromItsBudget();
         theKeepersOwnApprentice();
         aFarTakerGivesWay();
         aProducerKeepsItsOwnPost();

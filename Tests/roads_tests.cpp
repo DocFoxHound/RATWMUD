@@ -2194,6 +2194,46 @@ void tradeCaravansCarryGoodsAndMoney()
     expect(w.society().conserved(), "Money stays conserved");
 }
 
+// Round 10, towns (the user, 2026-10-27; Society::RoadBudget): with work by the hours a town's caravans take their road
+// money from its week's allowance for it, as its buyers' funds are. West's stores, its trader, with nothing left of the
+// week's allowance (kept through a save), send no caravan to east with its flour; without the rule they do.
+void aTownsCaravanKeepsToItsRoadMoney()
+{
+    Society::setWorkByHours(true);
+    const auto sends = [](unsigned off) {
+        Society::wageRulesOff(off);
+        // (West's mill and east's bakery: east is the capital, whose caravans are its treasury's, not held to it.)
+        auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", 7, 9.5, 8, 9.5) +
+                                        resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 9.5, 1, 9.5));
+        auto w = load(f);
+        w.tick(.6);
+        w.roads().camps.clear();
+        const auto mill = w.society().tillOf("miller"), bakery = w.society().tillOf("baker");
+        w.society().create(mill, "flour", 60, "test: a good harvest");
+        for (const auto& till : {bakery, w.society().tillOf("em")})
+            for (const auto& kind : Society::kindsHeld(*w.society().account(till), "flour"))
+                w.society().consume(till, kind, Society::stock(*w.society().account(till), kind), "test: a bad week");
+        w.society().shift("treasury", bakery, "", 0, 200, "test: takings");
+        auto st = w.society().state();
+        st.memory.roadLeft["stores:west"] = 0;
+        expect(w.society().restore(st), "the week's road money spent");
+        nextMorning(w);
+        w.roads().camps.clear();
+        const bool held = w.society().roadMoneyFor("stores:west") == 0;
+        bool out = false;
+        for (const auto& c : w.roads().caravans)
+            out |= !c.trader.empty() && c.from == "west" && c.to == "east";
+        expect(w.society().conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return std::make_pair(held, out);
+    };
+    const auto [held, out] = sends(0);
+    const auto [held0, out0] = sends(Society::RoadBudget);
+    expect(held && !out, "West's stores, with none of the week's road money left, send no caravan");
+    expect(!held0 && out0, "Without the rule they do");
+    Society::setWorkByHours(false);
+}
+
 // The church's care (doc 42, Phase 5): a poor wolf with healing wounds is tended free by a chapel keeper, with the
 // church's bandages, once a day: a quarter of each wound's rest, never all of it.
 void theChurchCares()
@@ -3883,6 +3923,7 @@ int main()
         residentsFillContractsForGoods();
         tradesWearAndCharity();
         tradeCaravansCarryGoodsAndMoney();
+        aTownsCaravanKeepsToItsRoadMoney();
         theChurchCares();
         townsWearAndAreMended();
         theMonitorWatches();

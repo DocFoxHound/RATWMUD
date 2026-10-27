@@ -7,7 +7,7 @@
 #
 # The export is $RATW_EXPORT (else artifacts/economy/export; make one with python3 tools/world_build.py export DIR).
 # The binary is $ECON_WATCH (else build-econ/econ_watch). Unless asked otherwise it runs --deterministic --hours
-# --threads 6; any options given go after those (e.g. --without crews, --stop-on-sentinel all, --players hoard).
+# --threads 6; any options given go after those (e.g. --with crews, --stop-on-sentinel all, --players hoard).
 # A name already used today is refused, so no run is written over. The CSVs and days.jsonl are not committed
 # (.gitignore); run.txt and report.txt may be.
 set -euo pipefail

@@ -346,7 +346,10 @@ void World::tradeCaravans()
         if (!purse)
             return false;
         const auto guards = society_.pennies(GuardsHire, from->id);
-        const auto budget = std::max<std::int64_t>(0, purse->cash - (from->store == trader ? 0 : guards));
+        auto budget = std::max<std::int64_t>(0, purse->cash - (from->store == trader ? 0 : guards));
+        // (A town's road money inside its week's allowance for it, since round 10: Society::roadMoneyFor.)
+        if (const auto road = society_.roadMoneyFor(trader); road >= 0)
+            budget = std::min(budget, road);
         if (const auto dear = cost(); dear > budget)
             for (auto& [item, n] : load)
                 n = int(std::int64_t(n) * budget / dear);

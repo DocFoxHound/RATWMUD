@@ -372,12 +372,21 @@ void Society::record(const std::string& kind, const std::string& from, const std
         // stores: not the capital's treasury, whose caravans are its Houses', nor a House's.) Since round 9 (the user,
         // 2026-10-27) they go to its week's budget on top of its tax's, spent as they come (caravanWeek), not to the month
         // its budget holds two of: counted there, Oakhaven held two months of its trade, +236% from day 28.
+        // Since round 10 (the user, 2026-10-27; RoadBudget, with TownPosts), its road money is drawn from its week's
+        // budget's allowance for it, not netted here: its week counts the takings less the unsold goods bought back.
+        const bool roadBudget = roadBudgeted();
+        if (roadBudget && kind == "money for the road" && from.rfind("stores:", 0) == 0 && to.rfind("caravan:", 0) == 0)
+        {
+            state_.memory.roadWeek[from] += double(coins);
+            if (const auto left = state_.memory.roadLeft.find(from); left != state_.memory.roadLeft.end())
+                left->second = std::max(0., left->second - double(coins));
+        }
         if (workByHours() && wageRule(CaravanIncome))
         {
             const bool asTheyCome = wageRule(CaravansAsTheyCome);
             if (kind == "trade takings" && to.rfind("stores:", 0) == 0 && from.rfind("caravan:", 0) == 0)
                 (asTheyCome ? state_.memory.caravanWeek[to] : earnedToday_[to]) += double(coins);
-            else if ((kind == "money for the road" || kind == "unsold, back to the stores") && from.rfind("stores:", 0) == 0 &&
+            else if (((kind == "money for the road" && !roadBudget) || kind == "unsold, back to the stores") && from.rfind("stores:", 0) == 0 &&
                      to.rfind("caravan:", 0) == 0)
                 (asTheyCome ? state_.memory.caravanWeek[from] : earnedToday_[from]) -= double(coins);
         }
