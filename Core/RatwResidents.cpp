@@ -869,6 +869,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                         shop = &shopList[i]->second.serve;
                         break;
                     }
+        const bool localShop = shop != nullptr;     // (One of its cell or its town is open to it.)
         if (!shop)
             for (const auto* open : shopList)
                 if (open->first != id)
@@ -876,6 +877,81 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                     shop = &open->second.serve;
                     break;
                 }
+        // Where a hungry wolf buys (round 10, lane C: FoodAtItsPrice, with work by the hours). Holding a day's wage it goes
+        // to that shop, as before. With less it goes where it can pay for something to eat: the nearest such shop of its
+        // cell, else the first of its town, else (none of its cell or town open) the first of all; with none, it asks
+        // alms. (Before, it went only with the bite, a third of a day, while a loaf costs a twelfth: those between asked
+        // alms, and when the church had nothing, went hungry with the price of a loaf.) Prices are worked out on first
+        // asking, so in its turn. Without the rule: with the bite, at that shop.
+        // And with no shop of its cell or town open to it (round 10, lane C, the user's: NearestShop), whatever its purse,
+        // it goes to the open shop nearest it on the map whose food it can pay for, not the realm's first by its keeper's
+        // name (Frosthollow's hungry walked to a smokehouse by the Sound); with none, it asks alms as before.
+        const bool atItsPrice = workByHours() && wageRule(FoodAtItsPrice);
+        const bool farNearest = !localShop && workByHours() && wageRule(NearestShop);
+        const auto buysAt = [&]() -> const Spot* {
+            const auto purse = spendable(id);
+            if (!atItsPrice && purse < bite)
+                return nullptr;
+            if (!farNearest && (!atItsPrice || purse >= aDay))
+                return shop;
+            if (atOnce)
+                throw DecideInTurn{};
+            const auto pays = [&](const std::string& holder) {
+                const auto least = holder == id ? 0 : cheapestFood(holder);
+                return least > 0 && least <= purse;
+            };
+            const Spot* found = nullptr;
+            if (farNearest)
+            {
+                double x = 0, y = 0, best = 0;
+                const bool placed = day_.onMap && day_.onMap(Spot{body.cell, body.x, body.y}, x, y);
+                for (const auto* any : shopList)
+                    if (pays(any->first))
+                    {
+                        double sx = 0, sy = 0;
+                        if (!placed || !day_.onMap(any->second.serve, sx, sy))
+                        {
+                            if (!found)
+                                found = &any->second.serve;   // (Off the map: the first, as before.)
+                            continue;
+                        }
+                        const double far = std::hypot(sx - x, sy - y);
+                        if (!found || far < best)
+                            found = &any->second.serve, best = far;
+                    }
+                return found;
+            }
+            bool open = false;                      // (A shop of its cell or its town is open to it.)
+            if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
+                for (const auto i : here->second)
+                {
+                    const auto& at = shopList[i]->second.serve;
+                    open = open || shopList[i]->first != id;
+                    if ((!found || std::hypot(at.x - body.x, at.y - body.y) < std::hypot(found->x - body.x, found->y - body.y)) &&
+                        pays(shopList[i]->first))
+                        found = &at;
+                }
+            if (!found && !home.empty())
+                if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
+                    for (const auto i : town->second)
+                    {
+                        open = open || shopList[i]->first != id;
+                        if (pays(shopList[i]->first))
+                        {
+                            found = &shopList[i]->second.serve;
+                            break;
+                        }
+                    }
+            if (!found && !open)
+                for (const auto* any : shopList)
+                    if (pays(any->first))
+                    {
+                        found = &any->second.serve;
+                        break;
+                    }
+            return found;
+        };
+        const Spot* buyAt = nullptr;
         // Hungry, with nothing to eat about it or at home, and no shop of its town with food left though some are open:
         // the meal it wanted, counted at one of those (by lot), in its turn (Society::missedMeal; doc 64, Phase 13).
         c.missed = nullptr;
@@ -940,10 +1016,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
         }
         // (A keeper whose own shelves hold nothing to eat buys a meal elsewhere too.) Only with the price of a meal.
-        else if (hunger >= 55 && !carriesFood && spendable(id) >= bite && shop)
+        else if (hunger >= 55 && !carriesFood && shop && (buyAt = buysAt()) != nullptr)
         {
             task = "buy food";
-            goal = *shop;
+            goal = *buyAt;
             reason = onDuty ? "A short meal break at the shop." : "Hungry; buying food at the shop.";
         }
         else if (hunger >= 55 && !carriesFood && !onDuty && shop && shop->cell != ""sv)
@@ -1356,8 +1432,23 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             continue;
         }
         // At a festival the town's stores feed everyone once (goods only: nothing is bought).
+        // (Round 10, lane C: with the feast laid in, FeastLaidIn, a meal if the stores hold one, else a meal's worth of
+        // the most filling food they hold, a few pieces at most.)
         if (task == "festival"sv && feasted_.insert(id).second)
-            shift(storeFor(life.homeCell), id, "meal", 1, 0, "festival feast");
+        {
+            const auto& store = storeFor(life.homeCell);
+            const auto* stores = account(store);
+            if (!(workByHours() && wageRule(FeastLaidIn)) || !stores || stock(*stores, "meal") > 0)
+                shift(store, id, "meal", 1, 0, "festival feast");
+            else
+                for (int fed = 0, pieces = 0; fed < 50 && pieces < 6; ++pieces)
+                {
+                    const auto food = bestFood(*account(store));
+                    if (food.empty() || !shift(store, id, food, 1, 0, "festival feast"))
+                        break;
+                    fed += nourishment(food);
+                }
+        }
         // An unpaid post held by a grown wolf (a foreman, a clerk) is paid by whoever it works for too (doc 42, Phase 3);
         // not a beggar's, nor the head of a great house's, who live on alms and on the house.
         const bool earns = job->paid || (!merchantRole && body.age >= 16 && body.age < RetireAge && !houseHead(job->title) &&

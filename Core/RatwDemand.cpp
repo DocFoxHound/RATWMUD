@@ -1,5 +1,6 @@
 #include "RatwSociety.h"
 
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 
 #include <algorithm>
@@ -475,6 +476,24 @@ const std::string& Society::foodMade(const std::string& shop) const
     return known.emplace(business->id, first).first->second;
 }
 
+std::int64_t Society::cheapestFood(const std::string& seller)
+{
+    const auto* shop = account(tillOf(seller));
+    if (!shop)
+        return 0;
+    const auto sold = wares(seller);
+    const bool stall = atStall_.count(seller) > 0;
+    std::int64_t least = 0;
+    for (const auto& [item, n] : shop->stock)
+        if (n > 0 && sellsFood(seller, item, sold))
+        {
+            const auto asked = shopPrice(seller, item);
+            const auto price = std::max<std::int64_t>(1, stall ? std::int64_t(std::floor(double(asked) * .9)) : asked);
+            least = least > 0 ? std::min(least, price) : price;
+        }
+    return least;
+}
+
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
 {
     const auto till = tillOf(seller);
@@ -619,6 +638,69 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
     if (under)
         *under = laysIn ? std::max(0, perDay * (1 + shut) - stocked) : 0;
     return bought;
+}
+
+void Society::layInTheFeast(std::int64_t day)
+{
+    // (Round 10, lane C, the user's: a festival on a Restday shut the shops all day, and the capital's stores held no
+    // meals for the feast, so those without a larder went from the morning to the next without a meal.) Every
+    // festival's, as the feast is every festival's; a festival a player or the DM calls isn't the calendar's, and isn't
+    // laid in for.
+    if (!workByHours() || !wageRule(FeastLaidIn) || !calendar::festivalDay(double(day) + .5))
+        return;
+    std::map<std::string, int> wanted;              // By the stores: the nourishment the feast wants.
+    for (const auto& [id, life] : state_.residents)
+        if (!life.homeCell.empty())
+            wanted[storeFor(life.homeCell)] += 50;
+    struct Piece
+    {
+        std::string seller, till, item;
+        std::int64_t price = 1;
+        int nourish = 0, left = 0;
+        bool meal = false;
+    };
+    std::map<std::string, std::vector<Piece>> pieces;   // By the stores: what their towns' food shops hold.
+    for (const auto& r : authored_.residents)
+    {
+        if (r.role != "merchant" || !state_.residents.count(r.id) || !foodShop(r.id) || smith(r.id))
+            continue;
+        const auto* job = jobOf(r.id);
+        const auto till = tillOf(r.id);
+        const auto* shelves = account(till);
+        if (!job || !shelves)
+            continue;
+        const auto sold = wares(r.id);
+        auto& list = pieces[storeFor(job->work.cell)];
+        for (const auto& [item, n] : shelves->stock)
+            if (const auto* good = n > 1 && sellsFood(r.id, item, sold) ? items::good(item) : nullptr; good && good->nourish > 0)
+                list.push_back({r.id, till, item, shopPrice(r.id, item), good->nourish, n / 2, items::baseOf(item) == "meal"});
+    }
+    for (auto& [store, want] : wanted)
+    {
+        const auto* stores = account(store);
+        const auto found = pieces.find(store);
+        if (!stores || found == pieces.end())
+            continue;
+        for (const auto& [item, n] : stores->stock)
+            if (const auto* good = n > 0 ? items::good(item) : nullptr; good && !good->drink && good->nourish > 0)
+                want -= n * good->nourish;
+        auto& list = found->second;
+        // Meals first (the feast's), then what feeds most for the money; of equals, by the shop's keeper and the item.
+        std::stable_sort(list.begin(), list.end(), [](const Piece& a, const Piece& b) {
+            if (a.meal != b.meal)
+                return a.meal;
+            return double(a.nourish) / double(a.price) > double(b.nourish) / double(b.price);
+        });
+        for (const auto& p : list)
+        {
+            if (want <= 0)
+                break;
+            const auto cash = account(store)->cash;
+            const int n = int(std::min<std::int64_t>({std::int64_t(p.left), std::int64_t((want + p.nourish - 1) / p.nourish), cash / p.price}));
+            if (n > 0 && transfer(p.till, store, p.item, n, p.price, "bought for the festival feast"))
+                want -= n * p.nourish;
+        }
+    }
 }
 
 void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, LifeBody>& bodies)

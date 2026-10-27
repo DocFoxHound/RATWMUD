@@ -5,7 +5,7 @@
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
 //              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers] [--without RULE[,RULE...]]
-//              [--stop-on-sentinel KINDS|all] [--model-shares FILE] [--sentinel-weeks N]
+//              [--stop-on-sentinel KINDS|all] [--model-shares FILE] [--sentinel-weeks N] [--trace-hunger]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
@@ -43,7 +43,10 @@
 // caravans' week goes to its works with its posts paid from the tax budget and its purse, not its posts' shortfall
 // first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
 // take a second). With all six left out, a run is round 8's to the digest.
-// And round 9's tills: owners (a lone owner tops up a business short of its wages as before).
+// And round 9's tills: owners (a lone owner tops up a business short of its wages as before). And round 10's, lane C:
+// foodprice (a hungry wolf goes to buy only with the bite, a third of a day, at the nearest shop, as before); and the
+// user's follow-ups: feast (a festival's feast is what the town's stores hold, nothing laid in), nearest (with no shop of
+// its cell or town open, a hungry wolf goes to the realm's first open shop by its keeper's name, as before).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -135,6 +138,8 @@
 // --stop-on-sentinel KINDS|all: the run ends at the first week's check one of those fires (drain, share, hoard, hunger,
 // gini), every file written to there, as a run's end. --model-shares FILE: the model's shares the share sentinel holds
 // the run to (tools/econ_model/model_shares.csv unless asked; without it, that sentinel is off, and the log says so).
+// --trace-hunger: every game hour, each wolf hungry while holding the price of its town's cheapest food, what it is
+// doing and why, to hunger_trace.csv (round 10, lane C). Off unless asked; it changes nothing.
 // --sentinel-weeks N: the weeks in a row a drain or a share takes to fire, and the weeks of income a hoard is weighed
 // on (4 unless asked: a month; 1, for a trial's or a test's short run).
 // days.jsonl's going is the realm's going rate ("") and each town's as its employers pay it (a town without a rate of
@@ -331,6 +336,7 @@ int main(int argc, char** argv)
     std::map<std::int64_t, double> heldPace;        // --hold-pace: the society's day -> its pace.
     bool askPayers = false;                         // --ask-payers.
     std::set<std::string> stopOn;                   // --stop-on-sentinel (round 10, lane 0).
+    bool traceHunger = false;                       // --trace-hunger (round 10, lane C).
     int sentinelWeeks = 4;                          // --sentinel-weeks.
     fs::path modelShares = fs::path(RATW_SOURCE_DIR) / "tools" / "econ_model" / "model_shares.csv";
     for (int i = 4; i < argc; ++i)
@@ -391,6 +397,8 @@ int main(int argc, char** argv)
         }
         else if (std::string(argv[i]) == "--ask-payers")
             askPayers = true;
+        else if (std::string(argv[i]) == "--trace-hunger")
+            traceHunger = true;
         else if (std::string(argv[i]) == "--stop-on-sentinel" && i + 1 < argc)
             for (std::stringstream list(argv[++i]); list.good();)
             {
@@ -445,9 +453,15 @@ int main(int argc, char** argv)
                     off |= Society::OnePlace;
                 else if (name == "owners")
                     off |= Society::OwnersStop;
+                else if (name == "foodprice")
+                    off |= Society::FoodAtItsPrice;
+                else if (name == "feast")
+                    off |= Society::FeastLaidIn;
+                else if (name == "nearest")
+                    off |= Society::NearestShop;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace or owners, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, foodprice, feast or nearest, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1637,6 +1651,62 @@ int main(int argc, char** argv)
         return towns;
     };
 
+    // --trace-hunger (round 10, lane C): every game hour, each hungry wolf (hunger 70 or more) holding at least the
+    // cheapest food a resident paid for in its town in the last week (food-hunger, as hunger.csv counts it), with what
+    // it is doing and why, its purse as it spends it (Society::spendable) and the bite a hungry wolf must hold to go and
+    // buy, the food it carries and its larder's (nourishment), to hunger_trace.csv. Read only; off unless asked.
+    std::ofstream hungerTraceOut;
+    if (traceHunger)
+    {
+        hungerTraceOut.open(out / "hunger_trace.csv");
+        hungerTraceOut << "day,resident,town,home,age,role,title,hunger,cash,spendable,bite,cheapest,task,goal,cell,offstage,carried,larder,reason\n";
+    }
+    const auto traceHungry = [&](double now) {
+        const int day = int(std::floor(now));
+        std::map<std::string, double> least;
+        double realm = 0;
+        for (const auto& [town, byDay] : foodPrices)
+            for (auto at = byDay.lower_bound(day - 7); at != byDay.end(); ++at)
+            {
+                auto& l = least[town];
+                l = l > 0 ? std::min(l, at->second) : at->second;
+                realm = realm > 0 ? std::min(realm, at->second) : at->second;
+            }
+        const auto bite = society.pennies(4 / 12., "");
+        const auto nourished = [](const EconomyAccount* a) {
+            int n = 0;
+            if (a)
+                for (const auto& [item, count] : a->stock)
+                    if (count > 0 && Society::edible(item))
+                        n += count * Society::nourishment(item);
+            return n;
+        };
+        for (const auto& [id, life] : society.state().residents)
+        {
+            if (life.hunger < 70)
+                continue;
+            const auto* e = server.entity(id);
+            if (!e || e->dead)
+                continue;
+            const auto town = server.communityOf(life.homeCell);
+            const auto found = least.find(town);
+            const double cheapest = found != least.end() ? found->second : realm;
+            const auto* a = society.account(id);
+            const double cash = double(a ? a->cash : 0);
+            if (cheapest > 0 ? cash < cheapest : cash <= 0)
+                continue;
+            const auto* r = society.spec(id);
+            const auto* job = society.jobOf(id);
+            hungerTraceOut << std::fixed << std::setprecision(3) << now << std::defaultfloat << ',' << csv(id) << ','
+                           << csv(town.empty() ? "(country)" : town) << ',' << csv(life.homeCell) << ',' << (r ? r->age : -1) << ','
+                           << csv(job ? job->role : std::string()) << ',' << csv(job ? job->title : std::string()) << ','
+                           << std::llround(life.hunger) << ',' << std::int64_t(cash) << ',' << society.spendable(id) << ',' << bite << ',' << cheapest
+                           << ',' << csv(life.task) << ',' << csv(life.goalCell) << ',' << csv(e->cellId) << ',' << (e->offstage ? 1 : 0)
+                           << ',' << nourished(a) << ',' << nourished(society.account(Society::homeStore(life.homeCell, "larder")))
+                           << ',' << csv(life.reason) << '\n';
+        }
+    };
+
     // The sentinels (round 10, lane 0), checked at each week's record: see the top of the file.
     constexpr double DrainRatio = 1.3, DrainLeast = 100, ShareBand = 1.5, ShareLeast = .02, HoardMonths = 3, GiniRise = .02;
     constexpr int HungryLeast = 5;
@@ -2070,6 +2140,8 @@ int main(int argc, char** argv)
         {
             nextHour += 1. / 24;
             sampleMaterials();
+            if (traceHunger)
+                traceHungry(server.calendarDays());
             if (askPayers)
                 askAll(-1);
             if (const double now = server.calendarDays(); int(std::floor((now - std::floor(now)) * 24 + 1e-9)) == 23)

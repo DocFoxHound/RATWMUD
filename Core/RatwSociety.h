@@ -1198,7 +1198,10 @@ class Society
         PostsFirst = 1024,                           // A town's caravans' week pays its own posts' shortfall first (round 9).
         CrewsAbroad = 2048,                          // A town's works crew may be taken by wolves of other towns (round 9).
         OnePlace = 4096,                             // A wolf holding a hire's place takes no other hire (round 9).
-        OwnersStop = 8192                            // A lone owner stops topping up a till short of its wages (round 9).
+        OwnersStop = 8192,                           // A lone owner stops topping up a till short of its wages (round 9).
+        FoodAtItsPrice = 67108864,                   // A hungry wolf buys where it can pay for food, not by the bite (round 10, C).
+        FeastLaidIn = 134217728,                     // A town's stores buy its festival's feast from its shops (round 10, C).
+        NearestShop = 268435456                      // With no shop of its town open, the nearest it can pay at (round 10, C).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1772,6 +1775,13 @@ class Society
     // In LD (20p at a 12p day: pennies()).
     static constexpr double KeeperReserve = 20 / 12.;
     std::int64_t spendable(const std::string& account) const;
+    // The least a hungry wolf pays at a shop for a piece of anything to eat it sells (as buyFood prices it: a stall's
+    // tenth off), or 0 for nothing to eat. Not const: the sellers' costs are worked out on first asking (round 10, C).
+    std::int64_t cheapestFood(const std::string& seller);
+    // A festival's feast (round 10, lane C, the user's): at the turn of a festival's day each town's stores buy from its
+    // food shops a meal's worth for each wolf living in it, less the food they hold: meals first, then what feeds most
+    // for the money; no more than half of what a shop holds of a food, and as far as the stores can pay.
+    void layInTheFeast(std::int64_t day);
 
   private:
     std::vector<OddJob> oddJobs_;

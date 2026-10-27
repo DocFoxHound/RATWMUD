@@ -662,6 +662,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             tendBelongings(day, bodies);               // What NPCs own, worn, mended or replaced (RatwBelongings.cpp).
             tendMint(day);                             // The mint: struck or melted, weekly (RatwMint.cpp).
             producersSell(day);                        // What the land gave, to the town's food shops.
+            layInTheFeast(day);                        // A festival's feast, bought from the shops (round 10, lane C).
             worldMoney(bodies);                        // The world's money made up, once (RatwFounding.cpp).
         }
     }
