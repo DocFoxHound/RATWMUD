@@ -1155,13 +1155,17 @@ class Society
     };
     static void noteShorts(bool on) { noteShorts_ = on; }
     std::vector<ShortNote> takeShorts() const { return std::exchange(shorts_, {}); }   // (A measure: taken, not moved.)
-    // A trial's (econ_watch --without, round 7): the wage book's rules of round 7 left out, one at a time, to see what
-    // each does. Not saved; the game never sets it.
+    // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
+    // a time, to see what each does. Not saved; the game never sets it.
     enum WageRule : unsigned
     {
         ChildrenOpen = 1,                            // A hire's place a child holds stands open in the wage book.
         ByEmployees = 2,                             // The going rate weighed by employees, not the keeper.
-        StallsShed = 4                               // A stall lets its surplus help go at its weekly review.
+        StallsShed = 4,                              // A stall lets its surplus help go at its weekly review.
+        SellersOnly = 8,                             // Only the stalls and the moneychangers let go (round 8).
+        KeepApprentices = 16,                        // No apprentice is let go, nor counted in the excess (round 8).
+        UnpaidFirst = 32,                            // Only the unpaid, not the out of work, look for crews early (round 8).
+        CaravanIncome = 64                           // A town's caravans' net takings count in its budget (round 8).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1530,6 +1534,9 @@ class Society
     // A business whose hands make something: one with crafts (and so its mending), or a producer; not a stall, whose
     // help sells and whose hours are no work in hand (Phase 13).
     bool makesThings(const std::string& till) const;
+    // A market stall or a moneychanger, by its business in the catalogue: a business whose help only sells, and the only
+    // ones that let surplus help go with nothing made (round 8, the user, 2026-10-27).
+    bool sellsOnly(const std::string& till) const;
     std::string wageKind(const Payer& payer, const Position& job) const;   // "help", "guard", "labour", "clergy".
     // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works; at RetireAge, retired.
     static constexpr const char* LabourTitle = "labouring for the Town Works";

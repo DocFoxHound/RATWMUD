@@ -52,7 +52,8 @@ void Society::tendIncome()
     for (auto it = memory.monthIncome.begin(); it != memory.monthIncome.end();)
     {
         it->second *= double(MonthDays - 1) / MonthDays;
-        it = it->second < .5 && !earnedToday_.count(it->first) ? memory.monthIncome.erase(it) : std::next(it);
+        // (A town's month can fall below nothing, its caravans' road money out before their takings come home: round 8.)
+        it = std::abs(it->second) < .5 && !earnedToday_.count(it->first) ? memory.monthIncome.erase(it) : std::next(it);
     }
     flushEarnings();
 }
@@ -198,6 +199,7 @@ void Society::institutionsWeek(std::int64_t day)
     for (const auto& id : towns)
     {
         const auto community = id == "treasury" ? capital() : id.substr(7);
+        // (A town's month is its tax, and with work by the hours its caravans' net takings too: round 8, Society::record.)
         auto budget = budgetOf(id, 2, .4);
         // The week's relief, set aside: what it gave last week and a third over, and a twentieth of its budget besides.
         const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);

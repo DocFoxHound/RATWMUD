@@ -5672,3 +5672,275 @@ Sundries.
 - **`householdOf` takes the age from the roster** (`spec`). `tendHouseholds` takes it from the day's bodies.
   `RatwInstitutions` and the orchestrator do the same as `householdOf`.
 - All 67 test binaries pass (`pg_tests` skipped: no database). `econ_players_tests` checks the new column.
+
+### Phase 13: the stalls' let-go, the harvest's middle course, the towns' caravans (round 8)
+
+Three of the user's decisions (2026-10-27), all with work by the hours only. Base: round 7 merged (1e192c0).
+
+**What changed:**
+
+- **1. Only the stalls and the moneychangers let surplus help go** (`Core/RatwLabour.cpp`, `reviewHands`). Round 7's
+  rule C let go at every business with no craft of its own in `crafts.json`: the stalls and the moneychangers, but also
+  the City Arsenal, the Blue Vats, the Greatly Yard, the fletcher at The Grey Goose, the cartographer at Soundings and
+  the stables. Now only a business whose catalogue business (`businesses.json`, matched from its keeper's title as
+  everywhere else) is `stall` or `moneychanger` lets go (`Society::sellsOnly`). The others keep their hands, as before
+  round 7. They still hire no one.
+- **And no apprentice is let go** (the same step, makers and stalls alike). A help post's holder who is apprenticed
+  (`apprenticedTo`) is skipped, and isn't counted in the excess: the model's `firm_week` counts its excess over its
+  hands that are not apprentices. Before, four apprentices were let go as hands.
+- **2. The middle course at the harvest** (`Core/RatwResidents.cpp`, `crewFree`). Free for a crew at any hour, before
+  the children, are now only those at a post nobody pays them for: idle at their own business (`idleHand`), for hire
+  with no payer (`forHire`), the household's keeper, unpaid work at home (`unpaidAtHome`), an unpaid post at their own
+  home. The out of work (no post, labouring for the Town Works, working the wild, an idling post) are not. They keep
+  their old hours (from 10:00, 8:00 if poor) and their old look, which weighs the businesses' and the farms' hires and
+  the crews together by pay.
+- **3. A town's caravans' net takings count in its budget** (`Core/RatwSociety.cpp`, `record`). A town's stores'
+  month of income (`monthIncome`, the window its budget reads its tax over) now has, besides its tax and the capital's
+  share:
+  - its caravans' "trade takings", for it;
+  - the "money for the road" it sends them out with, against it;
+  - what its stores pay for their unsold goods ("unsold, back to the stores"), against it, since that money comes home
+    in the takings.
+
+  Only a town's stores (`stores:`): not the capital's treasury, whose caravans are its Houses', nor a House, nor the
+  church. A month can now fall below nothing, with road money out before the takings come home. `tendIncome` no longer
+  drops such a month as spent (`std::abs`: the same for any month at or above nothing).
+- **For trials:** `econ_watch --without sellers,apprentices,unpaid,caravans` leaves each of the four out
+  (`Society::wageRulesOff`; not saved, the game never sets it). With all four left out, a 9-day `--hours` run gives
+  1e192c0's 438bb01794aed196.
+
+**Saves:** nothing new. (But a town's month below nothing was dropped on reading a save: mended in the review below.)
+
+**The seconds' pace** is as it was: a 5-day run without `--hours` gives d034a6316a8d0cb, on 1e192c0 and on this branch.
+
+**Tests** (`crafting_tests`; eight mutations, one at a time, all caught; the script is `r8-rules/py/mutate.py` in the
+scratch folder):
+
+- `onlyTheSellersLetGo`. A stall with three hands, a moneychanger with two and a fletcher with three, each wanting one.
+  Three weeks on, the stall and the moneychanger have let all theirs go, and the fletcher keeps its three (with round
+  7's rule: none). A second stall has four hands, the first apprenticed to the scribe. After two weeks two are let go,
+  one a week (with the apprentice in the excess: three). After three and four weeks the apprentice is still kept
+  (without the rule it goes with the rest).
+- `theOutOfWorkKeepTheirHours`. A far town's works crew of six. By 9:30 the three keeping the house hold places and the
+  three idling in the square none (with round 7's rule: all six). From 10:00 the idlers take the rest.
+- `aTownCountsItsCaravans`. A town sends a caravan out with 1,000p: its month falls by 1,000p and stays below nothing
+  over a day it earns nothing. The caravan comes home with 9,500p, and the stores pay 500p for its unsold bread: the
+  month holds the 8,000p net. The capital's treasury, trading too, and the church are as they were, and the town's next
+  works crew is the larger.
+- All 67 test binaries pass (`pg_tests` skipped: no database).
+
+**Measured** (120 days of DEV's export, `--deterministic --hours --threads 6`, one seed; money conserved every day in
+each run):
+
+- `run120`: round 7 merged (1e192c0), digest 520b658ecf7e10fc.
+- `r8`: this branch, digest 92790f2a1d3469ec.
+- `r8-u`: a trial, this branch with the middle course left out (`--without unpaid`), digest f917094c48918de1. `r8` and
+  `r8-u` differ by the middle course alone.
+
+The scripts are `r8-rules/py/m8.py`, `takers8.py` and `caravans.py` in the scratch folder. Hires are `hires.csv`'s, at
+23:00.
+
+| | `run120` | `r8` | `r8-u` |
+|---|---|---|---|
+| Hands let go at tills (`flows.csv`) | 71 (shop 65, House 6) | 57 (shop) | 57 (shop) |
+| of them apprentices | 4 | 0 | 0 |
+| at the fletcher, the builders' yard, the arsenal, the dye works | 3, 3, 2, 2 | none | none |
+| The capital's own posts let go (its budget, not rule C) | 3 | 5 | 5 |
+| Retirements (wolves); in the first week | 65 (45); 40 | 62 (46); 40 | 63 (45); 40 |
+| Jobless on day 120 | 70 wolves, 137k | 64, 114k | 65, 121k |
+| Field hires posted / worked a day, days 61-90 | 102.9 / 44.6 | 102.5 / 34.7 | 100.2 / 38.1 |
+| the same, all days | 47.0 / 26.1 | 52.8 / 23.1 | 48.5 / 23.1 |
+| Field places taken a day, days 61-90; of them by wolves from another town (worked) | 91.2; 34.8 (16.6) | 85.2; 48.5 (14.9) | 94.1; 42.9 (13.5) |
+| The fields' hours a day, days 61-90; all days | 825; 612 | 773; 605 | 821; 617 |
+| Crew places posted / worked a day, all days; grown share | 130.8 / 117.2; 0.969 | 135.8 / 122.4; 0.976 | 137.1 / 122.1; 0.974 |
+| the same, days 61-90 | 123.2 / 119.0; 0.980 | 127.6 / 122.7; 0.984 | 128.7 / 126.0; 0.990 |
+| Crew places taken by the out of work a day, days 61-90 | 2.4 | 0.9 | 0.9 |
+| The towns' works crews posted / worked a day | 19.9 / 17.8 | 24.4 / 21.8 | 23.3 / 20.8 |
+| What the towns paid residents a day, days 28-120 | 2,348 | 2,737 | 2,554 |
+| The towns' treasuries, day 28 → 120 | 151k → 289k (+92%) | 156k → 278k (+79%) | 165k → 264k (+60%) |
+| Oakhaven | 36.1k → 130.5k (+262%) | 38.7k → 131.2k (+239%) | 46.3k → 138.3k (+199%) |
+| Larkfield | 30.9k → 85.0k (+175%) | 31.0k → 92.3k (+198%) | 31.2k → 69.8k (+124%) |
+| Frosthollow | 21.9k → 39.6k (+81%) | 21.5k → 22.1k (+3%) | 21.6k → 14.6k (−32%) |
+| Mirebridge | 19.6k → 16.7k (−15%) | 21.5k → 17.3k (−20%) | 21.4k → 20.2k (−6%) |
+| Southmeadow | 28.5k → 16.0k (−44%) | 30.3k → 12.9k (−57%) | 30.2k → 15.3k (−49%) |
+| Coldwater | 13.8k → 1.1k (−92%) | 12.9k → 2.6k (−80%) | 14.2k → 5.9k (−59%) |
+| The capital's treasury; the church's, day 28 → 120 | 278k → 269k; 245k → 234k | 278k → 242k; 245k → 241k | 278k → 258k; 247k → 244k |
+| The realm's rate (`going[""]`), day 56 / 120 | 65.1 / 79.7p | 64.2 / 82.7p | 62.7 / 79.2p |
+| Ridgemere's rate, day 56 / 120 | 66.2 / 94.2p | 65.7 / 93.1p | 62.9 / 90.2p |
+| Gini, day 56 / 120 | 0.528 / 0.582 | 0.540 / 0.587 | 0.544 / 0.589 |
+| Poorer half, day 56 / 120 | 0.157 / 0.112 | 0.151 / 0.104 | 0.150 / 0.100 |
+| Shares on day 56: tills, households, Houses, towns, capital, church | 0.241, 0.424, 0.184, 0.034, 0.058, 0.053 | 0.229, 0.437, 0.181, 0.035, 0.058, 0.053 | 0.234, 0.433, 0.181, 0.034, 0.058, 0.053 |
+| the same, day 120 | 0.297, 0.431, 0.108, 0.058, 0.054, 0.047 | 0.310, 0.416, 0.117, 0.056, 0.048, 0.048 | 0.303, 0.424, 0.114, 0.053, 0.052, 0.049 |
+| Hungry / starving (day 46, the only hungry day) | 22 / 0 | 20 / 0 | 24 / 0 |
+| Short-pay cuts a week: mean; weeks to day 56; the last three full weeks | 29.5; 18.0; 40, 46, 63 | 29.2; 19.9; 34, 48, 52 | 28.4; 19.0; 31, 38, 50 |
+| `refusals.csv`: rows; standing on day 56 / 120 | 1,974; 18 / 28 | 1,887; 15 / 34 | 1,824; 14 / 28 |
+| Pace, day 56 / 120 | 0.286 / 0.768 | 0.375 / 0.571 | 0.375 / 0.554 |
+| A tick (other sessions' runs beside each) | 0.0206 ms | 0.0255 ms | 0.0217 ms |
+
+(Where the hands were let go is read from `tills.csv`: a till's hands that fell within two days of a day with hands
+let go. The flows don't name the till.)
+
+The towns' caravans, net a day over days 28-119 (`trade.csv`: their takings, less the road money and the unsold goods
+bought back), against tax of 0.3-0.5k a day a town:
+
+| | Oakhaven | Larkfield | Frosthollow | Mirebridge | Southmeadow | Coldwater |
+|---|---|---|---|---|---|---|
+| `run120` | +1,737 | +1,036 | +428 | +174 | +64 | −81 |
+| `r8` | +1,955 | +1,161 | +248 | +215 | +38 | −18 |
+
+**Read plainly:**
+
+- **The let-go is now the stalls' and the moneychangers' alone.** 57 hands went, all from shop tills, 54 of them
+  from stalls, most in the first three weeks as before. None went from the fletcher, the builders' yard, the arsenal or
+  the dye works (10 in `run120`), none from a House's till (6), and no apprentice went (4).
+- **The retirements are much as they were**: 62 against 65, 46 wolves against 45, 40 of them in the first week in both.
+  Round 7's review found that the hands let go became the successors of old wolves, who then retired. Those hands were
+  nearly all the stalls' (the Heights' cheese and honey stalls' above all), and they still go. Jobless on day 120: 64
+  wolves against 70.
+- **The middle course doesn't bring the harvest's hands back.** Field hires worked at the harvest are 34.7 a day in
+  `r8` and 38.1 in `r8-u`, against `run120`'s 44.6 and round 6's 68.6. The fields' hours are 773 and 821 a day,
+  against 825.
+  - The out of work hardly take crew places at any hour: 0.9 to 2.4 a day at the harvest in all three runs. Keeping
+    them to their old hours changes little. The crews' takers are those drawn by pay ("better", 66 a day) and those
+    `hires.csv` tags "other" (50), the keepers and the unpaid at home among them.
+  - The fields' places are taken, but not worked. 85 to 94 of about 100 places are held at 23:00, but only 35 to 45 are
+    worked that day. Wolves from another town hold 38-57% of them, and work a third to a half of those. (In round 7's
+    `c2`, where the idle hands kept their old hours too, 187 places were posted and 61 worked.)
+  - `r8` and `r8-u` differ by the middle course alone, yet their fields differ by 10% and their towns' treasuries by 19
+    points. One seed's spread is wide here.
+- **The towns spend more, but their treasuries stay far outside the band.** The towns' works crews worked 21.8 places
+  a day against 17.8, and the towns paid residents 2.7k a day against 2.3k. Oakhaven's crew grew to 20 places a week by
+  day 119 (16 in `run120`). The towns' treasuries rose 79% from day 28 (92%). Frosthollow came within the band (+3%).
+  Oakhaven (+239%) and Larkfield (+198%) did not, and Coldwater (−80%) and Southmeadow (−57%) fell further.
+  - **Why the band can't be met this way.** The budget rule is the model's `week_budget`: a week's budget is a quarter
+    of the month's income and 0.4 of what is held over two months of it. So in the end a town holds about two months of
+    its income. With the caravans counted, Oakhaven's income is about 2.3k a day, and two months of it is about 128k. On
+    day 120 it held 131k. The rule now holds the trading towns at two months of their trade, not of their tax, and that
+    is three to four times what they held on day 28.
+  - Coldwater and Southmeadow fall because their own posts and works spend more than their tax, and their caravans
+    bring in little. This rule can't lift them.
+- **The capital and the church are untouched by the rule** (the test above). Their purses differ between the runs with
+  the rest of the run: the capital let two more of its own posts go as the rate rose (round 7's first lane noted that its
+  posts' budget falls behind a rising rate).
+- **The wage and the shares are within one seed's spread** of `run120`: the realm's rate 82.7p on day 120 against
+  79.7p, Gini 0.587 against 0.582, the poorer half 0.104 against 0.112.
+
+**For the user:**
+
+1. **Rule C's scope and the apprentices, as built?** Recommended: yes. Know that the old wolves' retiring (round 7's
+   question 3) is not the other businesses' doing: it comes with the stalls' hands, which still go.
+2. **The harvest.** The middle course is built as decided, and does no harm, but the out of work were not what kept the
+   fields short. What holds them back is a field's place taken and not worked, mostly by wolves from another town.
+   - (a) Keep the middle course, and look next at a far taker's place: a place its taker hasn't reached by mid-morning
+     stands open again to those near, as a child's crew place does at dawn.
+   - (b) Go further, as round 7's `c2`: the idle hands at their old hours too.
+   - (c) Leave it.
+
+   Recommended: (a), with two or three seeds, since the fields moved 10% between two runs differing by one rule.
+3. **The towns' budget and their caravans.** As built, the caravans' net takings count as income and the towns spend
+   more, but the rule then holds two months of a town's trade.
+   - (a) Keep it, and judge the trading towns by two months of their income, not by day 28's holdings.
+   - (b) Count the caravans' week's net in the week's budget on top of the tax rule's, spent as it comes, not in the
+     month the holdings are measured against. A town would then hold two months of its tax: Oakhaven's would fall
+     toward about 18k, Larkfield's toward about 27k. Of these, only this one brings the trading towns near ±20%. Not
+     built or run.
+   - (c) Keep the model's rule, but with fewer than two months for the towns.
+
+   Recommended: (b), if ±20% of day 28 is the test.
+4. **Coldwater and Southmeadow** run down (−80% and −57%): their posts and works spend more than their tax. That is a
+   separate question: their budgets after their posts.
+
+### Phase 13: round 8's rules, reviewed
+
+A review of the lane above (0753f36). The committed build was built again and checked against its runs:
+
+- A 5-day run without `--hours` gives d034a6316a8d0cb, as on 1e192c0.
+- A 9-day `--hours` run with the four rules left out (`--without sellers,apprentices,unpaid,caravans`) gives
+  438bb01794aed196, the same as 1e192c0's.
+- A 5-day `--hours` run's files match the first five days of `r8`'s line by line, every file (`days.jsonl` but for its
+  closing line, which is the run's end). So `r8` is the committed code's, though its stamp says it was built from a
+  dirty tree.
+
+Its key figures were recomputed from `r8`'s, `r8-u`'s and `run120`'s files with the review's own script
+(`r8-rulesrev/py/rev.py` in the scratch folder). They hold: the let-go (74 and 62 in `flows.csv`, the capital's posts
+with them), retirements (65, 45 wolves; 62, 46), jobless on day 120 (70, 137k; 64, 114k), the field hires (102.9 / 44.6
+and 102.5 / 34.7 at the harvest; 47.0 / 26.1 and 52.8 / 23.1 all days), the crews (130.8 / 117.2 and 135.8 / 122.4;
+grown 0.976 in `r8`), the caravans' net (3.6k a day in `r8`, all towns), hunger (day 46 only: 22 and 20), the rates,
+Gini and the poorer half. The towns' and the capital's purses on day 120 differ a little: the lane read them from the
+run's closing line, a little after day 120's end (the capital's 241.8k against 245.6k at the day's end; Frosthollow
++3% against −4%). Nothing in the readings changes.
+
+**One fix: a town's month below nothing was lost in a save.** With the caravans counted, a town's month of income can
+fall below nothing, its road money out before its takings come home. The lane kept such a month in `tendIncome`, but
+reading a save (`wire::readEconomyMemory`) still took only months at or above nothing. A reload on such a day set the
+month to nothing, and when the takings came home the town counted them without the road money it had sent out.
+
+- **How often.** Worked out from `r8`'s tax and caravan flows: Coldwater's month is below nothing on about 25 days of
+  the 120, down to about −2.2k, Mirebridge's and Southmeadow's on about 6, Frosthollow's on 1. A reload on one of those
+  days gave the town up to about 2k too much income for a month. The runs never reload, so the measures don't change.
+- **The fix** (`Core/RatwWire.cpp`). A month's and a week's income are read as saved, below nothing too. The other
+  sums read with them still take nothing below nothing.
+- **The test.** `aTownCountsItsCaravans` saves the society on the day its month is below nothing and reads it back: the
+  month is as it was. With the fix undone: read back as nothing.
+
+**A test added: a maker keeps its apprentice.** The lane's tests had the apprentice at a stall. The same rule at a
+maker (the apprentice not counted in the excess, at the calibrated hours) had no test: undone, every test still
+passed. `aMakerKeepsItsApprentice` has a bakery selling nothing with four hands, the first apprenticed. A week on it has
+let one go; three weeks on, the other three, and the apprentice is kept. Without the rule: two the first week, all four
+by the third. With the maker's step undone: two the first week.
+
+The review's mutations (`r8-rulesrev/py/mutate.py`): the maker's excess, the apprentice kept, the save, the sellers,
+unpaid-first and the takings. Each was caught. All 67 test binaries pass with the fix (`pg_tests` skipped: no
+database).
+
+**Side effects the lane didn't measure:**
+
+- **The capital's fall is the Houses' unsold goods, not its posts.** In `r8` the capital ends 24k lower than in
+  `run120` (day 120: 245.6k against 270.0k). Over days 28-119, 30.5k more of it went on "unsold, back to the stores":
+  56.2k against 25.7k. That money buys the Houses' caravans' unsold goods back at what they paid, so it goes to the
+  Houses. Its own posts and the town funds it sends moved by under 5k. (The Houses' caravans come home with less than
+  they set out with: 371k of takings for 377k of road money in `r8`, 397k for 410k in `run120`.) The rule doesn't touch
+  the capital's accounts, so this is the run's, but it is money moving to the rich.
+- **The apprentices kept include hands learning from a fellow hand.** An apprenticeship is to any post with a
+  master's skill, a help post too, and a wolf may be taken on beside its own work (on the same cell). A 28-day probe
+  build (printing the kept apprentices at each review; not committed) showed who they are:
+  - At the Heights Market's cheese stall, three of its own city posts (it pays the realm's posts for hire there):
+    one "unloading ships on the wharf", apprenticed to another dock hand of the stall's; one "washing clothes by the
+    wharf", likewise; one who "runs messages about the city", apprenticed to the stall's hand who washes linen for
+    hire. The stall keeps 4 hands, its keeper and these three, from day 42 to day 120 (1 in `run120`), for the 1 it
+    wants. No apprenticeship finished in 120 days in either run, so they are kept for good. The stall pays their
+    wages: its till fell to 29p by day 120 (1,195p in `run120`).
+  - Elsewhere the keeper's own apprentice, as the rule means: the Greatly Bank's young Saltcot, the cooper's, the
+    provisioner's and the smith's helpers, the Wool Shed's.
+  - And a one-hand producer's own farmer or fisher, apprenticed to the neighbouring holding's (79 of the probe's 130
+    sightings). A producer's own post is among its till's posts, so its keeper is counted as an apprentice in its own
+    excess. Today it changes nothing (a one-hand producer has no excess), but see the minors.
+- **The towns' caravans trade less.** Counting the takings, the towns spend more of their money. So their caravans set
+  out with less: 938k of road money over days 28-119 against 1,088k, and 1,298k of takings against 1,428k. Their net
+  is still higher (3.6k a day against 3.4k).
+- **Nothing ran away.** The no-craft businesses that now keep their hands (the arsenal 3, the Blue Vats 3, the Greatly
+  Yard 4, the fletcher 3, the cartographer 2) pay about the rate (73-79p on day 120 against 93p), with no short pay and
+  no post open. Books with posts open on day 120: 104, with 240 posts (129 and 288 in `run120`).
+
+**Minors, not changed:**
+
+- A House in a town would be its town's trader (`World::traderOf`). Its caravan's unsold goods would then be bought
+  back by the town's stores, and the rule would count that against the town's month, though the takings went to the
+  House. No town has a House now (every town caravan in `r8` is its stores').
+- `crewFree`'s `unpaidHand || (outOfWork && unpaid())` is `unpaid()`. The second half is never true today: the out of
+  work's posts (the stand, labouring, the wild, idling) are neither for hire nor a till's.
+- The maker's hire still counts its apprentices as hands (`wanted > hands`), where the model's posts don't. Its let-go
+  no longer does. A maker with an apprentice hires one fewer than the model would.
+- A maker lets go only at the calibrated hours (pace 1), and no 120-day run reaches them (`r8`'s pace is 0.57 on day
+  120). So the makers' half of the apprentice rule hasn't acted in any run yet; its test is the only measure.
+- From before this round, and not changed: a producer's own post is among its till's posts (`helpPosts` leaves out
+  only a merchant's), so a producer's let-go, once the pace reaches 1, may let its own farmer go, whose post is the
+  till's. The lane's rule now keeps such a farmer when it is apprenticed to a neighbour, not otherwise. Worth a look
+  before the realm reaches the calibrated hours.
+
+**For the user** (beside the lane's four):
+
+5. **Whose apprentices are kept.** As built, a business keeps any hand who is apprenticed, to whichever post: a dock
+   hand learning from another dock hand too. Should only the keeper's own apprentice be kept (the model's apprentice
+   learns its firm's trade beside its master)? Recommended: yes. It would let the Heights cheese stall's three surplus
+   hands go, and keep the bank's, the cooper's, the provisioner's and the smith's.

@@ -1026,21 +1026,31 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         else if (const auto* odd = [&]() -> const OddJob* {
                      bool claims = false;
-                     const bool jobless = (job == &stand && !keepsHouse) || labourJob(rec, job) || outworkJob(rec, job) ||
-                                          (ownJob(rec, job) ? rec.idleJob : idlePost(job->title)) ||
-                                          (workByHours() && job->paid && [&] {
-                                              // (Work for hire that nobody pays takes hires as the jobless do: doc 64,
-                                              // Phase 13, round 6.)
-                                              const auto payer = payerOf(rec, *job, body.age);
-                                              return (payer.account.empty() && forHire(job->title)) || idleHand(rec, payer);
-                                          }());
+                     // Out of work: no post, labouring for the Town Works, working the wild, idling.
+                     const bool outOfWork = (job == &stand && !keepsHouse) || labourJob(rec, job) || outworkJob(rec, job) ||
+                                            (ownJob(rec, job) ? rec.idleJob : idlePost(job->title));
+                     const auto unpaid = [&] {
+                         // (Work for hire that nobody pays, or idle at its own business, takes hires as the jobless do:
+                         // doc 64, Phase 13, round 6.)
+                         if (!workByHours() || !job->paid)
+                             return false;
+                         const auto payer = payerOf(rec, *job, body.age);
+                         return (payer.account.empty() && forHire(job->title)) || idleHand(rec, payer);
+                     };
+                     const bool unpaidHand = !outOfWork && unpaid();
+                     const bool jobless = outOfWork || unpaidHand;
                      // Free for an institution's crew at any hour, before the children (the user, 2026-10-26; doc 64, Phase
-                     // 13, round 7; the model's staff_to): a grown wolf of working age out of work, idle at its business,
-                     // for hire, keeping its household's house, or at work at home that nobody pays (an unpaid post at its
-                     // own home too, not a House's head's). Not one retired, nor an apprentice.
+                     // 13, round 7; the model's staff_to): a grown wolf of working age at a post nobody pays it for: idle
+                     // at its business, for hire, keeping its household's house, or at work at home that nobody pays (an
+                     // unpaid post at its own home too, not a House's head's). Not one retired, nor an apprentice. Not
+                     // the out of work (round 8, the user, 2026-10-27: the middle course): they keep their hours and
+                     // their look, the businesses' and the farms' hires weighed with the crews by pay, so the fields
+                     // get them at the harvest. (Round 7 let them look from waking too, and the crews took them before
+                     // the farms' better-paid field hires were posted: the field hires worked at the harvest fell
+                     // by a third or more.)
                      const bool crewFree = workByHours() && body.age >= 16 && body.age < RetireAge && job->role == "civilian"sv &&
                                            job->title != "retired"sv && job->title.rfind("apprenticed", 0) != 0 &&
-                                           (jobless || keepsHouse ||
+                                           ((wageRule(UnpaidFirst) ? unpaidHand || (outOfWork && unpaid()) : jobless) || keepsHouse ||
                                             (job->paid ? unpaidAtHome(job->title)
                                                        : !houseHead(job->title) && payerOf(rec, *job, body.age).account.empty()));
                      const auto* held =

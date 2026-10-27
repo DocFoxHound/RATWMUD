@@ -365,6 +365,19 @@ void Society::record(const std::string& kind, const std::string& from, const std
             ((to == "treasury" || to.rfind("stores:", 0) == 0) && (kind == "town tax" || kind == "capital's share")) ||
             (to == SharedChurch && (kind == "tithe" || kind == "the collection")))
             earnedToday_[to] += double(coins);
+        // A town's caravans' net takings, as its tax, with work by the hours (round 8, the user, 2026-10-27): what they
+        // bring home, less the road money it sent them out with and what its stores paid for their unsold goods (money
+        // that comes home again in the takings). Before, its budget saw only its tax and the capital's share, and
+        // Oakhaven's and Larkfield's trade margin piled up in their treasuries (+70% from day 28 in round 7). (A town's
+        // stores: not the capital's treasury, whose caravans are its Houses', nor a House's.)
+        if (workByHours() && wageRule(CaravanIncome))
+        {
+            if (kind == "trade takings" && to.rfind("stores:", 0) == 0 && from.rfind("caravan:", 0) == 0)
+                earnedToday_[to] += double(coins);
+            else if ((kind == "money for the road" || kind == "unsold, back to the stores") && from.rfind("stores:", 0) == 0 &&
+                     to.rfind("caravan:", 0) == 0)
+                earnedToday_[from] -= double(coins);
+        }
         if ((from == "treasury" || from.rfind("stores:", 0) == 0 || from == SharedChurch) &&
             (kind == "watch wages" || kind == "day labour" || kind == "service wages"))
             state_.memory.wagesWeek[from] += double(coins);
