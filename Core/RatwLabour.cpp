@@ -249,12 +249,24 @@ bool Society::brakesOn(const items::Producer& p)
 
 bool Society::idleHand(const std::string& resident, const Payer& payer) const
 {
+    return idleHandOf(resident, nullptr, payer);
+}
+
+bool Society::idleHand(const ResidentRecord& resident, const Payer& payer) const
+{
+    return idleHandOf(resident.entry->first, &resident, payer);
+}
+
+bool Society::idleHandOf(const std::string& resident, const ResidentRecord* record, const Payer& payer) const
+{
     // A hand whose business has more work in hand than it can use (its shelves full, its materials short): free to take
     // a hire elsewhere (doc 63's harvest call: hands from trades with nothing to do go where they're wanted).
-    // (Asked at every decision of a paid wolf: the cheap tests first.)
+    // (Asked at every decision of a paid wolf: the cheap tests first. Its job, and its title's producer, by its record
+    // while the records hold.)
+    const bool holds = record && recordsHold();
     if (payer.account.rfind("till:", 0) == 0)
     {
-        const auto* job = jobOf(resident);
+        const auto* job = holds ? record->job : jobOf(resident);
         if (!job || job->role == "merchant")
             return false;
         // (A producer's help: free as its business is, its field's work done or its holder's work in hand full
@@ -268,8 +280,8 @@ bool Society::idleHand(const std::string& resident, const Payer& payer) const
     // windows, but each of ours is a one-hand farm, and it stood idle from sowing's end to the harvest).
     if (!payer.account.empty() || !fieldsOn())
         return false;
-    const auto* job = jobOf(resident);
-    const auto* producer = job ? items::producerFor(job->title) : nullptr;
+    const auto* job = holds ? record->job : jobOf(resident);
+    const auto* producer = holds ? record->jobProducer : job ? items::producerFor(job->title) : nullptr;
     if (!producer || !fieldWork(producer->id))
         return false;
     const auto till = tillOf(resident);

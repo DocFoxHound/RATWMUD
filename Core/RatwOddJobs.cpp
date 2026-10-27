@@ -113,8 +113,30 @@ void Society::indexOddJobs()
     }
 }
 
+void Society::markFarmHires()
+{
+    if (farmHiresVersion_ == oddVersion_ && farmHiresRoster_ == rosterRevision_ && farmHiresHours_ == workByHours() &&
+        farmHires_.size() == oddJobs_.size())
+        return;
+    farmHires_.resize(oddJobs_.size());
+    for (std::size_t i = 0; i < oddJobs_.size(); ++i)
+        farmHires_[i] = farmHire(oddJobs_[i]);
+    farmHiresVersion_ = oddVersion_;
+    farmHiresRoster_ = rosterRevision_;            // (After: spec() may move it on, finding the same.)
+    farmHiresHours_ = workByHours();
+}
+
+bool Society::farmHireOf(const OddJob& j) const
+{
+    const auto i = std::size_t(&j - oddJobs_.data());
+    if (farmHiresVersion_ == oddVersion_ && farmHiresRoster_ == rosterRevision_ && farmHiresHours_ == workByHours() &&
+        farmHires_.size() == oddJobs_.size() && i < farmHires_.size())
+        return farmHires_[i] != 0;
+    return farmHire(j);
+}
+
 const Society::OddJob* Society::oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                                         std::int64_t ownDayPay, bool* claims)
+                                         std::int64_t ownDayPay, bool* claims, const std::string* known)
 {
     if (!claims)
         indexOddJobs();                              // (On the game thread: the threads' was made before they began.)
@@ -140,7 +162,8 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return nullptr;
     if (hour >= 18 || hour < (poor ? 8 : 10) || job.role != "civilian")
         return nullptr;
-    const auto community = communityOfResident(id);
+    std::string spare;
+    const auto& community = known ? *known : (spare = communityOfResident(id));
     // Its town's jobs, and the farms' hires (which anyone from a city may take), in the list's order.
     static const std::vector<std::size_t> none;
     const auto town = indexed ? oddByTown_.find(community) : oddByTown_.end();
@@ -178,7 +201,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         return payer != state_.residents.end() && me != state_.residents.end() && payer->second.homeCell == me->second.homeCell;
     };
     const auto open = [&](const OddJob& j) {
-        return !j.ended && (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHire(j))) &&
+        return !j.ended && (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHireOf(j))) &&
                int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14) &&
                (j.kind != "about the home" || !ownHome(j));
     };
