@@ -139,22 +139,39 @@ const House* Society::seatOf(const std::string& cell) const
 
 Society::Payer Society::payerOf(const std::string& resident, const Position& job, int age) const
 {
+    return payerFor(resident, nullptr, job, age);
+}
+
+Society::Payer Society::payerOf(const ResidentRecord& resident, const Position& job, int age) const
+{
+    return payerFor(resident.entry->first, &resident, job, age);
+}
+
+Society::Payer Society::payerFor(const std::string& resident, const ResidentRecord* record, const Position& job, int age) const
+{
     if (age < 16)
         return {"", "a child"};
+    // (By its record while the records hold: its town, treasury and own work, and its own job's title, as they were found.)
+    const bool holds = record && recordsHold(), placed = holds && placesHold(), ownJob = holds && &job == record->job;
+    const auto treasury = [&] { return placed ? record->treasury : treasuryOfResident(resident); };
     // A fortress's garrison is the crown's: paid from the capital's treasury, not the fortress's own small purse.
-    const auto town = communityOfResident(resident);
+    std::string spare;
+    const auto& town = placed ? record->town : (spare = communityOfResident(resident));
     const bool fortress = town.find("fortress") != std::string::npos;
     if (job.role == "guard")
-        return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
-    if (outworkTitled(job.title))
+        return {fortress ? std::string("treasury") : treasury(), "the town"};
+    if (ownJob ? record->outworkJob : outworkTitled(job.title))
         return {"", "lives by what it brings in"};
-    if (job.title == LabourTitle)
-        return {treasuryOfResident(resident), "the Town Works"};
-    if (const auto* r = spec(resident); r && items::producerFor(r->workLabel))
+    if (ownJob ? record->labourJob : job.title == LabourTitle)
+        return {treasury(), "the Town Works"};
+    if (holds ? record->producer != nullptr : [&] {
+            const auto* r = spec(resident);
+            return r && items::producerFor(r->workLabel);
+        }())
         return {"", "lives by what it brings in"};
     // An apprentice: its master's business, on half pay (doc 64, Phase 8).
     if (job.title.rfind("apprenticed: ", 0) == 0)
-        if (const auto* learning = apprenticedTo(resident))
+        if (const auto* learning = holds ? record->learning : apprenticedTo(resident))
             if (const auto held = state_.careers.positions.find(learning->id); held != state_.careers.positions.end() && !held->second.holder.empty())
                 return {tillOf(held->second.holder), "the shop"};
     const auto& said = titleWages(job.title);
@@ -163,13 +180,16 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     if (said.household)
         return {"", "lives on the household"};
     if (said.church)
-        return {churchOf(treasuryOfResident(resident)), "the church"};
+        return {churchOf(treasury()), "the church"};
     const bool hours = workByHours();
     // An unpaid post, paid by whoever it works for (doc 42, Phase 3), with work by the hours (doc 64, Phase 13, round 6):
     // one worked at its holder's own home (at home in the Heights, at lessons, at leisure) is its household's own life,
     // no wage. Before, the household's richest paid it, a servant as often as not, or the town did.
-    const auto own = state_.residents.find(resident);
-    const auto home = own == state_.residents.end() ? std::string() : own->second.homeCell;
+    // (Its life by its record while the records hold.)
+    static const std::string nowhere;
+    const auto own = holds ? state_.residents.end() : state_.residents.find(resident);
+    const auto* life = holds ? &record->entry->second : own == state_.residents.end() ? nullptr : &own->second;
+    const auto& home = life ? life->homeCell : nowhere;
     if (hours && !job.paid && job.role == "civilian" && !home.empty() && houseOfRoom(home) == houseOfRoom(job.work.cell))
         return {"", "lives on the household"};
     // Someone with a shop, or a great house, where it works: the first of them there who isn't itself.
@@ -235,7 +255,7 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
         if (const auto master = richestAt(job.work.cell, resident, true); !master.empty())
             return {master, "the house"};
     }
-    else if (own == state_.residents.end() || own->second.homeCell != job.work.cell)
+    else if (!life || life->homeCell != job.work.cell)
         if (const auto master = richestAt(job.work.cell, resident); !master.empty())
             return {master, "the house"};
     // A hand at a trade's works (at the forge, working the saws, smoking fish): paid by a keeper of that trade in its
@@ -243,16 +263,29 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     if (const int trade = hours ? said.hoursTrade : said.trade; trade >= 0)
     {
         const auto& kinds = trades[std::size_t(trade)].second;
-        for (const auto& p : positions_)
-        {
-            if (p.role != "merchant" || communityOfResident(p.founder) != town)
-                continue;
-            const auto* business = items::businessFor(p.title);
+        const auto keeper = [&](const Position& p, const items::Business* business) -> const std::string* {
             const auto held = state_.careers.positions.find(p.id);
             if (business && std::find(kinds.begin(), kinds.end(), business->id) != kinds.end() &&
                 held != state_.careers.positions.end() && !held->second.holder.empty())
-                return {tillOf(held->second.holder), "the shop"};
+                return &held->second.holder;
+            return nullptr;
+        };
+        if (placesHold())
+        {
+            // (Its town's merchants, in the same order: placeRecords.)
+            if (const auto here = merchantsByTown_.find(town); here != merchantsByTown_.end())
+                for (const auto& [p, business] : here->second)
+                    if (const auto* holder = keeper(*p, business))
+                        return {tillOf(*holder), "the shop"};
         }
+        else
+            for (const auto& p : positions_)
+            {
+                if (p.role != "merchant" || communityOfResident(p.founder) != town)
+                    continue;
+                if (const auto* holder = keeper(p, items::businessFor(p.title)))
+                    return {tillOf(*holder), "the shop"};
+            }
         std::string house;
         std::int64_t most = -1;
         for (const auto& h : houses())
@@ -266,7 +299,7 @@ Society::Payer Society::payerOf(const std::string& resident, const Position& job
     // them as the payer of last resort.
     if (hours && said.forHire)
         return {"", "lives on the household"};
-    return {fortress ? std::string("treasury") : treasuryOfResident(resident), "the town"};
+    return {fortress ? std::string("treasury") : treasury(), "the town"};
 }
 
 double Society::dayWage(const std::string& town, const std::string& kind) const

@@ -21,6 +21,7 @@ namespace ratw
 {
 namespace items
 {
+struct Business;
 struct Craft;
 struct Item;
 struct Producer;
@@ -518,7 +519,11 @@ class Society
     bool openAccount(const std::string& id);
     bool closeAccount(const std::string& id);
     // Which store each cell's merchants restock from (default: the treasury, the one store of a single town).
-    void setStores(std::map<std::string, std::string> byCell) { storeForCell_ = std::move(byCell); }
+    void setStores(std::map<std::string, std::string> byCell)
+    {
+        storeForCell_ = std::move(byCell);
+        ++dayRevision_;
+    }
     // Home storage (Docs/Design/36-home-storage.md): each household's larder (food), chest (goods), wardrobe (wear)
     // and woodpile (fuel), an account each ("home:<home cell>:<kind>"), owned by everyone who lives there.
     static constexpr const char* StoreKinds[] = {"larder", "chest", "wardrobe", "woodpile"};
@@ -644,7 +649,11 @@ class Society
     bool unseenDecided() const { return unseenDecided_; }
     // The day's plans, for the decisions that follow (the world sets them before each tick; without, every day is
     // an ordinary working day under a fair sky).
-    void setDay(LifeDay day) { day_ = std::move(day); }
+    void setDay(LifeDay day)
+    {
+        day_ = std::move(day);
+        ++dayRevision_;                             // (The records' towns: placeRecords.)
+    }
     const LifeDay& day() const { return day_; }
     // How the residents' deciding is spread over threads (the world's runner, World::setParallel): run(count, job) calls
     // job(i) for every i below count and returns when all are done. Unset, the game thread decides alone, the same way.
@@ -686,6 +695,7 @@ class Society
     // The same by the age of what it holds (its oldest batch of each food): what an account eats first.
     std::string eatFirst(const std::string& id, const EconomyAccount& account) const;
     bool forSale(const std::string& id, const std::string& item) const;   // A producer's own goods, for the shops.
+    static bool producesForSale(const items::Producer* producer, const std::string& item);   // (Its work's producer's.)
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
     // Kept hands' meals (doc 64, Phase 13; doc 32): a wolf off its own day (a Hold's hand, a party's companion) eats what
     // it carries, and when it carries nothing takes a piece of food from its mess at the eat mark and eats it then: the
@@ -900,6 +910,18 @@ class Society
         const EconomyAccount* larderAccount = nullptr;   // and its account (null for none, yet).
         double* skill = nullptr;                    // Its skill at `job`, once it has one.
         const Spot* bed = nullptr;                  // Its place on a bed (doc 36), or null.
+        // Its own work's producer (its spec's workLabel), and what its job's title says: idlePost, outworkTitled, the
+        // Town Works', the title's producer.
+        const items::Producer* producer = nullptr;
+        const items::Producer* jobProducer = nullptr;
+        bool idleJob = false, outworkJob = false, labourJob = false;
+        // Its town and treasury (communityOfResident, treasuryOfResident), while placesHold().
+        std::string town, treasury;
+        // The day's plan at its home (its community's, or its nearest market's: decideAuthored), as of the day's plans
+        // `planned` (dayRevision_; 0: not since its home changed) and its home's point.
+        const DayPlan* plan = nullptr;
+        std::uint64_t planned = 0;
+        double planX = 0, planY = 0;
     };
     std::vector<ResidentRecord> records_;
     std::unordered_map<std::string, std::size_t> recordOf_;   // A resident's number, by ID.
@@ -915,6 +937,33 @@ class Society
     std::uint64_t recordsRevision_ = 0;             // The revision records_ were made at,
     const Society* recordsOf_ = nullptr;            // and by which society (a copy makes its own).
     void refreshRecords();
+    // Whether the records still stand: nothing they rest on has changed since they were made.
+    bool recordsHold() const { return recordsOf_ == this && recordsRevision_ == rosterRevision_ && careersIndexed_ && specsIndexed_; }
+    // The records' towns and treasuries, and the merchants by town (payerOf), rest on the day's communities too (setDay,
+    // setStores: dayRevision_) and on which accounts there are (the stores; counted, as one closed moves the roster on).
+    std::uint64_t dayRevision_ = 1;
+    struct PlacesStamp
+    {
+        const Society* of = nullptr;
+        std::uint64_t roster = 0, day = 0;
+        std::size_t accounts = 0;
+        bool operator==(const PlacesStamp& o) const { return of == o.of && roster == o.roster && day == o.day && accounts == o.accounts; }
+    };
+    PlacesStamp placesAt_;
+    PlacesStamp placesNow() const { return {this, rosterRevision_, dayRevision_, state_.accounts.size()}; }
+    bool placesHold() const { return recordsHold() && placesAt_ == placesNow(); }
+    void placeRecords();
+    // Each town's merchant positions, in positions_ order, with their business (placeRecords).
+    std::unordered_map<std::string, std::vector<std::pair<const Position*, const items::Business*>>> merchantsByTown_;
+    // communityOfResident and treasuryOfResident by its record: what the record keeps while placesHold(), else `spare`.
+    const std::string& communityOfResident(const ResidentRecord& r, std::string& spare) const
+    {
+        return placesHold() ? r.town : (spare = communityOfResident(r.entry->first));
+    }
+    const std::string& treasuryOfResident(const ResidentRecord& r, std::string& spare) const
+    {
+        return placesHold() ? r.treasury : (spare = treasuryOfResident(r.entry->first));
+    }
     // A resident's skill at a position, where it is kept (made, at 0, with `make`; else null for none yet).
     double* skillSlot(const std::string& resident, const std::string& position, bool make);
     std::int64_t secondsDecided_ = 0;               // Seconds decided since this society began (for UnseenStep; not saved).
@@ -1388,6 +1437,11 @@ class Society
         std::string account, whom;
     };
     Payer payerOf(const std::string& resident, const Position& job, int age) const;
+    // (By its record: what it keeps, for its town, its treasury, its own work and, when `job` is its own, its title.)
+    Payer payerOf(const ResidentRecord& resident, const Position& job, int age) const;
+  private:
+    Payer payerFor(const std::string& resident, const ResidentRecord* record, const Position& job, int age) const;
+  public:
     // A resident's town as the society reckons it, where it works or else where it lives: a hire's town (OddJob::community)
     // is its payer's so (econ_watch's hires.csv, doc 64, Phase 13, round 6).
     std::string townOfResident(const std::string& id) const { return communityOfResident(id); }
@@ -1437,6 +1491,10 @@ class Society
     // of the land, whose producers' shelves are always near bare.)
     int handsWanted(const std::string& till, bool bare = true) const;
     bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
+    bool idleHand(const ResidentRecord& resident, const Payer& payer) const;   // (By its record, as payerOf.)
+  private:
+    bool idleHandOf(const std::string& resident, const ResidentRecord* record, const Payer& payer) const;
+  public:
     // A business whose hands have more work in hand than it can use (its bank full at this turn of the day and the last:
     // its shelves full, its materials short; a producer's store full), or a field with none in its window (Phase 13).
     bool idleBusiness(const std::string& till) const;
@@ -1633,6 +1691,13 @@ class Society
     std::vector<std::size_t> oddFarmHires_;
     std::uint64_t oddVersion_ = 1, oddIndexed_ = 0;
     void indexOddJobs();
+    // Each odd job's farmHire, by its place in oddJobs_: made before the residents decide (markFarmHires), kept while the
+    // list, the roster and the pace stand (else farmHireOf asks afresh).
+    std::vector<char> farmHires_;
+    std::uint64_t farmHiresVersion_ = 0, farmHiresRoster_ = 0;
+    bool farmHiresHours_ = false;
+    void markFarmHires();
+    bool farmHireOf(const OddJob& j) const;
     // What each shop's till took in today (wages follow takings: RatwSurplus.cpp). Not saved.
     std::map<std::string, std::int64_t> takings_;
     std::unordered_map<std::string, std::int64_t> weekTakings_;   // A till's takings since its rent was last paid (doc 64).
@@ -1714,9 +1779,9 @@ class Society
     static constexpr double UpkeepALevel = 5 / 12.;   // (In LD: 5p at a 12p day.)
   private:
     // The odd job this resident holds, claiming one if it is free to (nullptr for none). With `claims`, nothing is claimed:
-    // it is set if one would be (deciding at once, RatwResidents.cpp).
+    // it is set if one would be (deciding at once, RatwResidents.cpp). `community`: its communityOfResident, if known.
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                            std::int64_t ownDayPay = 0, bool* claims = nullptr);
+                            std::int64_t ownDayPay = 0, bool* claims = nullptr, const std::string* community = nullptr);
   public:
     // A craft's or a producer's hours of work now (the old pace, or with work by the hours the realm's pace toward the
     // calibrated: hoursFor), for work done outside the society's own businesses (a Hold's workshops, doc 64, Phase 11).

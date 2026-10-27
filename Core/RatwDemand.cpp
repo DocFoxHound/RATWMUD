@@ -72,7 +72,11 @@ bool Society::forSale(const std::string& id, const std::string& item) const
     // What a producer brings in to sell (a rabbit farmer's rabbits, a fisher's catch: doc 42) goes to the shops, not the
     // family larder.
     const auto* r = spec(id);
-    const auto* producer = r ? items::producerFor(r->workLabel) : nullptr;
+    return producesForSale(r ? items::producerFor(r->workLabel) : nullptr, item);
+}
+
+bool Society::producesForSale(const items::Producer* producer, const std::string& item)
+{
     if (!producer)
         return false;
     const auto base = items::baseOf(item);
