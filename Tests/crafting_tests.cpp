@@ -1,6 +1,7 @@
 // Crafting by shopkeepers (Docs/Design/35-items-crafting-industry.md, Phase 5, first part; Data/Items/crafts.json):
 // makers start with a good store of materials, make a batch of what runs low from their own stock, buy more from a
 // supplier in town when it runs short, and make nothing from nothing.
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwSociety.h"
 #include "RatwTroubles.h"
@@ -5172,6 +5173,144 @@ void aHungryWolfBuysAtItsPrice()
     Society::setWorkByHours(false);
 }
 
+// A festival's feast laid in (doc 64, Phase 13, round 10, lane C, the user's), with work by the hours: at the turn of a
+// festival's day the town's stores buy from its food shops a meal's worth for each wolf living there, meals first, no
+// more than half of what a shop holds of a food; on another day, nothing. At the feast, with no meal in the stores, a
+// wolf is given a meal's worth of what they hold. Without the rule nothing is bought, and the feast (a meal from the
+// stores, which hold none) gives nothing.
+void aFestivalsFeastLaidIn()
+{
+    Society::setWorkByHours(true);
+    std::int64_t festival = -1, other = -1;
+    for (std::int64_t d = 1; d < 400 && festival < 0; ++d)
+        if (calendar::festivalDay(double(d) + .5))
+            festival = d;
+    other = festival - 3;
+    expect(festival > 0 && !calendar::festivalDay(double(other) + .5), "a festival's day in the calendar: " + std::to_string(festival));
+    const auto run = [&](bool rule, std::int64_t day) {
+        Society::wageRulesOff(rule ? 0 : Society::FeastLaidIn);
+        auto s = folkTown();
+        set(s, "baker", "bread", 40);
+        set(s, "baker", "meal", 4);
+        auto bare = s.state();
+        bare.accounts.at("treasury").stock.clear(); // (The stores hold no food, as the capital's on day 230.)
+        expect(s.restore(bare), "the bare stores restore");
+        s.takeJournal();
+        s.layInTheFeast(day);
+        int meals = 0, bread = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "bought for the festival feast")
+                (items::baseOf(e.item) == "meal" ? meals : bread) += e.quantity;
+        expect(s.conserved(), "money stays conserved");
+        return std::tuple{meals, bread, std::move(s)};
+    };
+    {
+        auto [meals, bread, s] = run(true, festival);
+        // Four wolves at home: 200 of nourishment. Two meals (half the baker's four) are 100, then seven loaves of 15.
+        expect(meals == 2 && bread == 7, "the stores buy the feast, meals first: " + std::to_string(meals) + " meals, " +
+                                             std::to_string(bread) + " loaves");
+        expect(Society::stock(*s.account("treasury"), "meal") == 2, "and hold it");
+        // The feast: the stores' meals given out first, then a meal's worth of their bread.
+        auto state = s.state();
+        state.accounts.at("treasury").stock.erase("meal");
+        expect(s.restore(state), "the stores without their meals restore");
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        DayPlan fair;
+        fair.kind = "festival";
+        fair.name = "the Fair";
+        fair.crowd = {{"square", 2.5, 2.5}};
+        plan.plans["town"] = fair;
+        s.setDay(plan);
+        auto bodies = atWork(s);
+        bodies["wren"] = {"square", 2.5, 2.5};
+        s.takeJournal();
+        for (int i = 0; i < 30; ++i)
+            s.tick(1, double(festival) + 13. / 24 + i / 86400., 0, bodies);
+        // (The day's turn, in the ticks, lays in again what the stores lack: a meal, and bread. Wren is given the meal.)
+        int given = 0, bought = 0;
+        for (const auto& e : s.takeJournal())
+        {
+            bought += e.kind == "bought for the festival feast" ? e.quantity : 0;
+            given += e.kind == "festival feast" && e.to == "wren" ? e.quantity * Society::nourishment(e.item) : 0;
+        }
+        expect(bought > 0 && given >= 50, "at the day's turn the stores lay in what they lack (" + std::to_string(bought) +
+                                              "), and at the feast wren is given a meal's worth: " + std::to_string(given));
+        // With only bread left in the stores, ash comes to the feast and is given a meal's worth of it: four loaves.
+        // Wren, fed once, is given no more.
+        state = s.state();
+        state.accounts.at("treasury").stock.clear();
+        state.accounts.at("treasury").stock["bread"] = 10;
+        expect(s.restore(state), "the stores with bread alone restore");
+        bodies["ash"] = {"square", 2.5, 2.5};
+        s.takeJournal();
+        int loaves = 0, again = 0;
+        for (int i = 0; i < 30; ++i)
+            s.tick(1, double(festival) + 14. / 24 + i / 86400., 0, bodies);
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "festival feast")
+                (e.to == "ash" && items::baseOf(e.item) == "bread" ? loaves : again) += e.quantity;
+        expect(loaves == 4 && again == 0, "ash is given four loaves, and wren nothing more: " + std::to_string(loaves) + ", " + std::to_string(again));
+    }
+    {
+        auto [meals, bread, s] = run(true, other);
+        expect(meals == 0 && bread == 0, "on another day, nothing is bought");
+    }
+    {
+        auto [meals, bread, s] = run(false, festival);
+        expect(meals == 0 && bread == 0, "without the rule, nothing is bought (as before)");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The nearest shop (doc 64, Phase 13, round 10, lane C, the user's), with work by the hours: a hungry wolf of a town with
+// no shop open goes to the open food shop nearest it on the map, not the realm's first by its keeper's name. Two bakeries
+// in two other towns, the first by name far off. Without the rule it goes to the first by name.
+void aFarShopIsTheNearest()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](bool rule) {
+        Society::wageRulesOff(rule ? 0 : Society::NearestShop);
+        AuthoredRoster roster;
+        auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+        wren.meals = 0;
+        auto far = person("abaker", "baker at The Loaf", {"west", 2.5, 2.5});
+        auto nearer = person("bbaker", "baker at The Loaf", {"east", 2.5, 2.5});
+        far.home = {"west_flat", 2.5, 2.5};
+        nearer.home = {"east_flat", 2.5, 2.5};
+        roster.residents = {far, nearer, wren};
+        roster.economy.treasury = 500;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay day;
+        day.communityOf = [](const std::string& cell) {
+            return cell.rfind("west", 0) == 0 ? std::string("w") : cell.rfind("east", 0) == 0 ? std::string("e") : std::string("home");
+        };
+        day.onMap = [](const Spot& at, double& x, double& y) {
+            const double base = at.cell.rfind("west", 0) == 0 ? 5000 : at.cell.rfind("east", 0) == 0 ? 200 : 0;
+            x = base + at.x;
+            y = at.y;
+            return true;
+        };
+        s.setDay(day);
+        auto state = s.state();
+        state.residents.at("wren").hunger = 70;
+        expect(s.restore(state), "hungry wren restores");
+        const auto bodies = atWork(s);              // (Wren at home: "homes".)
+        for (int i = 0; i < 5; ++i)
+            s.tick(1, 10. / 24 + i / 86400., 0, bodies);
+        const auto* life = s.resident("wren");
+        expect(s.conserved(), "money stays conserved");
+        return life ? life->task + " at " + life->goalCell : std::string("nobody");
+    };
+    const auto nearest = run(true), first = run(false);
+    expect(nearest == "buy food at east", "with no shop of its town open, wren goes to the nearest bakery: " + nearest);
+    expect(first == "buy food at west", "without the rule, to the first by name: " + first);
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -5260,6 +5399,8 @@ int main()
         aStoppedKeeperTakesAHire();
         aFarmIsJudgedAfterItsHarvest();
         aHungryWolfBuysAtItsPrice();
+        aFestivalsFeastLaidIn();
+        aFarShopIsTheNearest();
     }
     catch (const std::exception& error)
     {
