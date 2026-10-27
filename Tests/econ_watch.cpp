@@ -44,14 +44,15 @@
 // first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
 // take a second). With all six left out, a run is round 8's to the digest.
 // And round 9's tills: owners (a lone owner tops up a business short of its wages as before).
-// And round 10's towns: taxease (a town's tax is the realm's rate whatever its stores hold), townposts (a town pays its own
-// posts whatever its tax, as round 9, with its caravans' week paying their shortfall first; roadmoney goes with it),
-// roadmoney (a town's caravans take what its stores hold, their road money netted in its week as round 9).
+// And round 10's towns: taxease (a town's tax is the realm's rate whatever its stores hold; the rebate goes with it),
+// townposts (a town pays its own posts whatever its tax, as round 9, with its caravans' week paying their shortfall
+// first), rebate (a town's stores over twice their target keep it, not paying half of it back to their taxpayers),
+// founding (a town is founded with its share of the treasuries' by its residents, not at its target), daylabour (a
+// small town pays its own Town Works' day labour, not the capital).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
-// since round 10; `--without crews` is now a no-op, noted), rebate (an option: a town's stores holding over twice their
-// target pay its taxpayers back a share of their week's income, its rate below nothing, to minus the realm's at three
-// times). With
-// round 10's three left out and `--with crews`, a run is 4ef067b's to the digest.
+// since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user).
+// `--without crews` or `--without roadmoney` is a no-op, noted. With round 10's five left out and `--with crews`, a run
+// is 4ef067b's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -429,11 +430,11 @@ int main(int argc, char** argv)
                 std::getline(list, name, ',');
                 if (name == "crews")
                     rulesOn |= Society::CrewsAbroad;
-                else if (name == "rebate")
-                    rulesOn |= Society::TaxRebate;
+                else if (name == "roadmoney")
+                    rulesOn |= Society::RoadBudget;
                 else
                 {
-                    std::cerr << "--with is crews or rebate, not " << name << "\n";
+                    std::cerr << "--with is crews or roadmoney, not " << name << "\n";
                     return 2;
                 }
             }
@@ -476,16 +477,20 @@ int main(int argc, char** argv)
                     off |= Society::TaxEase;
                 else if (name == "townposts")
                     off |= Society::TownPosts;
-                else if (name == "roadmoney")
-                    off |= Society::RoadBudget;
-                else if (name == "crews")
+                else if (name == "rebate")
+                    off |= Society::TaxRebate;
+                else if (name == "founding")
+                    off |= Society::FoundAtTarget;
+                else if (name == "daylabour")
+                    off |= Society::CapitalLabour;
+                else if (name == "crews" || name == "roadmoney")
                 {
-                    std::cerr << "--without crews: a town's crews are their own town's unless asked since round 10 (--with crews)\n";
-                    rulesOn &= ~unsigned(Society::CrewsAbroad);
+                    std::cerr << "--without " << name << ": off unless asked since round 10 (--with " << name << ")\n";
+                    rulesOn &= ~unsigned(name == "crews" ? Society::CrewsAbroad : Society::RoadBudget);
                 }
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, townposts or roadmoney, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, townposts, rebate, founding or daylabour, not "
                               << name << "\n";
                     return 2;
                 }
@@ -510,6 +515,7 @@ int main(int argc, char** argv)
     }
     fs::create_directories(out);
     Society::noteShorts(true);                      // (shortpay.csv: read only, as every measure here.)
+    Society::noteTowns(true);                       // (town_tax.csv's day labour carried and rebates: read only too.)
     const auto stamp = runStamp(argc, argv);
     std::cout << stamp << std::flush;
     std::ofstream(out / "run.txt") << stamp;
@@ -1597,7 +1603,7 @@ int main(int argc, char** argv)
     std::ofstream accountsOut(out / "accounts.csv"), accountFlowsOut(out / "account_flows.csv"),
         accountPeersOut(out / "account_peers.csv"), goodsOut(out / "goods.csv"), hungerOut(out / "hunger.csv"),
         sentinelsOut(out / "sentinels.csv"), townTaxOut(out / "town_tax.csv");
-    townTaxOut << "day,town,share,rate,held,held_mean,target\n";
+    townTaxOut << "day,town,share,rate,held,held_mean,target,rebates,labour_by_capital\n";
     accountsOut << "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained\n";
     accountFlowsOut << "day,account,dir,kind,entries,coins\n";
     accountPeersOut << "day,account,dir,peer,peer_holder,coins\n";
@@ -1921,11 +1927,18 @@ int main(int argc, char** argv)
     // The week's accounts and goods (round 10, lane 0), at a week's record and the run's end; then a new week.
     int lastWeek = firstDay;
     const auto writeWeek = [&](int day) {
-        // Each town's tax as its stores' holding eases it (round 10, towns: Society::easeTownTax).
+        // Each town's tax as its stores' holding eases it (round 10, towns: Society::easeTownTax), its week's rebates and
+        // what the capital paid of its day labour.
+        const auto rebates = society.takeRebates(), carried = society.takeLabourCarried();
+        const auto of = [](const std::map<std::string, std::int64_t>& m, const std::string& id) {
+            const auto found = m.find(id);
+            return found == m.end() ? std::int64_t(0) : found->second;
+        };
         for (const auto& [id, a] : society.state().accounts)
             if (id.rfind("stores:", 0) == 0)
                 townTaxOut << day << ',' << csv(id.substr(7)) << ',' << society.townTaxShare(id) << ',' << society.townTaxRate(id) << ','
-                           << a.cash << ',' << std::llround(society.townHeldMean(id)) << ',' << std::llround(society.townTaxTarget(id)) << '\n';
+                           << a.cash << ',' << std::llround(society.townHeldMean(id)) << ',' << std::llround(society.townTaxTarget(id)) << ','
+                           << of(rebates, id) << ',' << of(carried, id) << '\n';
         townTaxOut.flush();
         // (Every account tracked that held money or moved any: a caravan long gone has neither.)
         std::set<std::string> ids;
@@ -2301,6 +2314,11 @@ int main(int argc, char** argv)
     }
     const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
     const double daysRun = days * double(ticksRun) / double(std::max(1L, ticks));
+    // (Round 10, FoundAtTarget: what the towns' targets left of their founding share, and where it went.)
+    if (const auto moved = society.foundingMoved(); moved.excess > 0)
+        std::cout << "founding: the towns at their targets, " << moved.excess << "p over them to the others; in all, households "
+                  << moved.homes << "p, businesses " << moved.businesses << "p, Houses " << moved.houses << "p, the church "
+                  << moved.church << "p\n";
     std::cout << "done: " << ticksRun << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(std::max(1L, ticksRun))
               << " ms a tick, " << wall / 60 / std::max(1e-9, daysRun) << " min a game day); digest "
               << std::hex << digest << std::dec << "\n";

@@ -107,7 +107,7 @@ void Society::easeTownTax(const std::map<std::string, double>& fullTax)
 
 void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<std::string, double>>>& taxpayers)
 {
-    // An option, off unless asked (econ_watch --with rebate; round 10): a town whose stores hold over twice their target
+    // Round 10 (the user, 2026-10-27: on, by income; TaxRebate): a town whose stores hold over twice their target
     // (where the rate it wants is nothing) pays its taxpayers back half of what its stores hold over that a week (the
     // lesser of what they hold and their week's mean), each by its share of the week's income: "a town's rebate".
     // Oakhaven's caravans bring in several times its tax, so easing its tax alone can't bring it down.
@@ -122,8 +122,9 @@ void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<st
             continue;
         const double pool = (held - 2 * target) / 2;
         for (const auto& [payer, income] : payers)
-            if (const auto back = std::min<std::int64_t>(account(id)->cash, std::llround(pool * income / incomes)); back > 0)
-                shift(id, payer, "", 0, back, "a town's rebate");
+            if (const auto back = std::min<std::int64_t>(account(id)->cash, std::llround(pool * income / incomes));
+                back > 0 && shift(id, payer, "", 0, back, "a town's rebate") && noteTowns_)
+                rebated_[id] += back;
     }
 }
 

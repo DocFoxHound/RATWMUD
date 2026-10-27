@@ -2129,7 +2129,9 @@ void aHouseKeepsItsCrew()
 void aTownsCrewTakesTheGrownFirst()
 {
     Society::setWorkByHours(true);
-    Society::wageRulesOff(0);                       // (Its own town's wolves: with crews abroad, round 9's, asked for, the capital's idle may take it too.)
+    // (Its own town's wolves: with crews abroad, round 9's, asked for, the capital's idle may take it too. And its town's
+    // money kept as put there: with round 10's rebate, a town holding fifty times its target pays half of it back at once.)
+    Society::wageRulesOff(Society::TaxRebate);
     AuthoredRoster roster;
     const auto far = [](ResidentSpec r) {
         r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -2519,7 +2521,7 @@ void theOutOfWorkKeepTheirHours()
 }
 
 // Round 10's rules for the towns (lane B): left out where a test is of the rules before them.
-constexpr unsigned Round10Towns = Society::TaxEase | Society::TownPosts | Society::RoadBudget;
+constexpr unsigned Round10Towns = Society::TaxEase | Society::TownPosts | Society::TaxRebate | Society::FoundAtTarget | Society::CapitalLabour;
 
 // Round 8 (the user, 2026-10-27): a town's caravans' net takings count in its budget as its tax does. Its road money out
 // counts against it (its month below nothing until the takings come home, and kept so on a day it earns nothing), its
@@ -2865,9 +2867,9 @@ void aTownsCrewHiresAbroad()
 // a week (800p a week of tax at the full rate, a target of 6,400p; a little more with their own earnings), holds
 // 100,000p. Its rate falls a quarter of the way to nothing a week, never below it, and is kept through a save. Drained to
 // 1,000p it comes back toward the full rate, a
-// quarter of the way a week, never over it. Without the rule its rate is the realm's. With the rebate (an option, off
-// unless asked), over twice its target, half of the rest goes back to its taxpayers a week ("a town's rebate"), by their
-// incomes: by day 35 it holds under four times its target (without it, over ten).
+// quarter of the way a week, never over it. Without the rule its rate is the realm's. With the rebate (the game's since
+// the user's word, 2026-10-27), over twice its target, half of the rest goes back to its taxpayers a week ("a town's
+// rebate"), by their incomes: by day 35 it holds under four times its target (without it, over ten).
 void aTownEasesItsTax()
 {
     Society::setWorkByHours(true);
@@ -2947,7 +2949,7 @@ void aTownEasesItsTax()
         Society::wageRulesOff(0);
         return seen;
     };
-    const auto now = run(0, 0), without = run(Society::TaxEase, 0), rebate = run(0, Society::TaxRebate);
+    const auto now = run(Society::TaxRebate, 0), without = run(Society::TaxEase, 0), rebate = run(0, 0);
     const auto& sh = now.share;
     expect(sh.size() == 12 && std::abs(sh[0] - .75) < 1e-9 && std::abs(sh[1] - .5625) < 1e-9,
            "over its target its rate falls a quarter of the way to nothing a week: " + std::to_string(sh[0]) + ", " + std::to_string(sh[1]));
@@ -3054,8 +3056,8 @@ void aTownKeepsItsPostsToItsTax()
     Society::setWorkByHours(false);
 }
 
-// Round 10, towns (the user, 2026-10-27): a town's caravans' road money comes from its week's budget, as its buyers'
-// funds do (the model's treasury_week). On 200,000p, its caravan takes 2,000p on day 3; the day-7 budget allows it that and a third
+// Round 10, towns (the user, 2026-10-27; dropped the same day, off unless asked): a town's caravans' road money comes
+// from its week's budget, as its buyers' funds do (the model's treasury_week). On 200,000p, its caravan takes 2,000p on day 3; the day-7 budget allows it that and a third
 // over, and a twentieth of what's left besides, and each coin it takes on the road comes off it. Its week counts its
 // takings, less the unsold goods its stores buy back: not the road money, which its allowance has paid. The capital's
 // caravans (its Houses') are not held to it. Without the rule there is no allowance, and the road money comes off its
@@ -3068,8 +3070,9 @@ void aTownsRoadMoneyFromItsBudget()
         std::int64_t allowed = 0, after = 0, capital = 0;
         double week = 0;
     };
-    const auto run = [](unsigned off) {
-        Society::wageRulesOff(off);
+    // (Off unless asked since the user's word, 2026-10-27: asked for here.)
+    const auto run = [](unsigned on) {
+        Society::wageRulesOff(0, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
@@ -3108,7 +3111,7 @@ void aTownsRoadMoneyFromItsBudget()
         Society::wageRulesOff(0);
         return seen;
     };
-    const auto now = run(0), before = run(Society::RoadBudget);
+    const auto now = run(Society::RoadBudget), before = run(0);
     expect(now.allowed > 2660 && now.allowed < 2660 + 1200 && now.after == now.allowed - 1000 && now.capital == -1,
            "its road money allowed: what it took and a third over, and a twentieth of the rest: " + std::to_string(now.allowed) + "p, " +
                std::to_string(now.after) + "p after 1,000p more; the capital's not held to it: " + std::to_string(now.capital));
@@ -3116,6 +3119,68 @@ void aTownsRoadMoneyFromItsBudget()
     expect(before.allowed == -1 && before.after == -1 && before.week == 0,
            "without the rule no allowance, and its road money off its week, 2,000p and 1,000p against the 3,000p: " + std::to_string(before.week));
     Society::setWorkByHours(false);
+}
+
+// Round 10, towns (the user, 2026-10-27; FoundAtTarget): a town is founded at its target, two months of what its tax
+// would bring at the founding's day (a TaxRate of a founding day's wage for each grown wolf of working age who pays it),
+// and what the treasuries' share would have given it over that goes to the households, the businesses, the Houses and
+// the church in their shares. A realm of 540: a far town of 40 grown wolves and the capital's 500. Founded so, the far
+// town holds its target (2 x 28 x 8% x 60p x 40 = 10,752p) and less than without the rule; the realm holds as much
+// either way (no Houses here: their share isn't made), and the households and the church hold the more by the excess's
+// shares of it.
+void aTownFoundedAtItsTarget()
+{
+    struct Seen
+    {
+        std::int64_t far = 0, capital = 0, homes = 0, church = 0, supply = 0;
+        Society::FoundingMoved moved;
+    };
+    const auto run = [](unsigned off) {
+        Society::wageRulesOff(off);
+        Society::noteTowns(true);
+        AuthoredRoster roster;
+        for (int i = 1; i <= 40; ++i)
+        {
+            auto r = person("far" + std::to_string(i), "keeps the house", {"far_homes", 2.5, 2.5}, "civilian");
+            r.home = r.evening = {"far_homes", 2.5, 2.5};
+            roster.residents.push_back(r);
+        }
+        for (int i = 1; i <= 500; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) { return cell.rfind("far_", 0) == 0 ? std::string("far") : std::string("town"); };
+        s.setDay(plan);
+        s.openAccount("stores:far");
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 1; d <= 2; ++d)   // (The purses after the first day's pass, the world's money the next.)
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        Seen seen;
+        seen.far = s.account("stores:far")->cash;
+        seen.capital = s.account("treasury")->cash;
+        seen.church = s.account(Society::SharedChurch) ? s.account(Society::SharedChurch)->cash : 0;
+        for (const auto& [id, life] : s.state().residents)
+            if (id.rfind("far", 0) == 0)
+                seen.homes += s.account(id)->cash;
+        seen.supply = s.moneySupply();
+        seen.moved = s.foundingMoved();
+        expect(s.conserved(), "money stays conserved");
+        Society::noteTowns(false);
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto now = run(0), before = run(Society::FoundAtTarget);
+    const std::int64_t target = 2 * 28 * 8 * 60 * 40 / 100;
+    expect(now.supply == before.supply && now.supply > 3000000,
+           "the realm holds its money either way: " + std::to_string(now.supply) + ", " + std::to_string(before.supply));
+    expect(std::abs(double(now.far - target)) <= 2 && before.far > now.far + 1000,
+           "the far town founded at its target, " + std::to_string(target) + "p: " + std::to_string(now.far) + "p (without the rule " +
+               std::to_string(before.far) + "p)");
+    expect(now.moved.excess > 0 && now.homes > before.homes && now.church > before.church && now.capital >= before.capital - 2,
+           "what was over it to the others, the households and the church among them: " + std::to_string(now.moved.excess) + "p; the far "
+               "town's households " + std::to_string(now.homes) + "p against " + std::to_string(before.homes) + "p");
 }
 
 // Round 9 (the user, 2026-10-27): only the business's own apprentice, its keeper's, is kept over and above at the
@@ -5442,6 +5507,7 @@ int main()
         aTownEasesItsTax();
         aTownKeepsItsPostsToItsTax();
         aTownsRoadMoneyFromItsBudget();
+        aTownFoundedAtItsTarget();
         theKeepersOwnApprentice();
         aFarTakerGivesWay();
         aProducerKeepsItsOwnPost();

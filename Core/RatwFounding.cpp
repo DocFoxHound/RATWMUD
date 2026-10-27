@@ -271,6 +271,78 @@ void Society::worldMoney(const std::map<std::string, LifeBody>& bodies)
         given += gets[i] = wanted > gap ? std::int64_t(double(wants[i]) * double(gap) / double(wanted)) : wants[i];
     gets[treasuries.empty() ? 0 : 4] += std::max<std::int64_t>(0, std::min(gap, wanted) - given);
     const auto give = [&](const std::string& id, std::int64_t coins) { startingMoney(id, coins); };
+    // Each town founded at its target since round 10 (the user, 2026-10-27; FoundAtTarget): TaxEaseMonths of what its
+    // tax would bring at the founding's day, a TaxRate of a founding day's wage for each grown wolf of working age who
+    // pays it (Society::easeTownTax's target, before there is a week's tax to reckon it on). What the treasuries' share
+    // would give a town over that goes to the realm's other holders, the households, the businesses, the Houses and the
+    // church, in their shares of the founding (WorldHomesShare and the rest, the model's), each spread among its own as
+    // its share is. The capital's treasury takes its own share as before. (Founded with its share by its residents, a
+    // town held two to three times its target, and every town's tax fell in its first month: round 10.)
+    if (wageRule(FoundAtTarget))
+    {
+        std::map<std::string, double> working;
+        for (const auto& [id, life] : state_.residents)
+        {
+            const auto body = bodies.find(id);
+            const auto* r = spec(id);
+            const int age = body != bodies.end() ? body->second.age : r ? r->age : 30;
+            if (age >= 16 && age < RetireAge)
+                ++working[treasuryOfResident(id)];
+        }
+        double total = 0;
+        for (const auto& [id, w] : treasuries)
+            total += w;
+        std::int64_t excess = 0;
+        std::vector<std::pair<std::string, double>> kept;
+        for (const auto& [id, w] : treasuries)
+        {
+            if (id == "treasury" || total <= 0)
+            {
+                kept.push_back({id, w});
+                continue;
+            }
+            const auto part = std::int64_t(double(gets[4]) * w / total);
+            const auto target = std::int64_t(TaxEaseMonths * MonthDays * TaxRate * items::ladder().foundingDay * working[id]);
+            const auto room = std::max<std::int64_t>(0, target - account(id)->cash);
+            if (part > room)
+            {
+                excess += part - room;
+                startingMoney(id, room);
+            }
+            else
+                startingMoney(id, part);
+            gets[4] -= part;
+        }
+        share(gets[4], kept, give);
+        const std::vector<std::pair<int, std::int64_t*>> others = {{WorldHomesShare, &gets[0]}, {WorldBusinessShare, &gets[1]},
+                                                                   {WorldHousesShare, &gets[2]}, {WorldChurchShare, &gets[3]}};
+        const std::vector<bool> any = {!homes.empty(), !businesses.empty(), !houses.empty(), account(SharedChurch) != nullptr};
+        int weights = 0;
+        for (std::size_t k = 0; k < others.size(); ++k)
+            weights += any[k] ? others[k].first : 0;
+        std::int64_t left = excess;
+        for (std::size_t k = 0; k < others.size() && weights > 0; ++k)
+            if (any[k])
+            {
+                const auto part = std::int64_t(double(excess) * others[k].first / weights);
+                *others[k].second += part;
+                left -= part;
+            }
+        for (std::size_t k = 0; k < others.size() && left > 0; ++k)
+            if (any[k])
+            {
+                *others[k].second += left;           // (The pennies the shares dropped, to the households.)
+                left = 0;
+            }
+        if (noteTowns_)
+            foundingMoved_ = {excess, gets[0], gets[1], gets[2], gets[3]};
+        share(gets[0], homes, give);
+        share(gets[1], businesses, give);
+        share(gets[2], houses, give);
+        if (gets[3] > 0)
+            startingMoney(SharedChurch, gets[3]);
+        return;
+    }
     share(gets[0], homes, give);
     share(gets[1], businesses, give);
     share(gets[2], houses, give);

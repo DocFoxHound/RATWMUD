@@ -1222,6 +1222,11 @@ class Society
     };
     static void noteShorts(bool on) { noteShorts_ = on; }
     std::vector<ShortNote> takeShorts() const { return std::exchange(shorts_, {}); }   // (A measure: taken, not moved.)
+    // What the capital paid of each town's Town Works' day labour (CapitalLabour), and each town's rebates (TaxRebate),
+    // since the last call, by its stores' account (econ_watch's town_tax.csv; a measure, kept only while asked).
+    static void noteTowns(bool on) { noteTowns_ = on; }
+    std::map<std::string, std::int64_t> takeLabourCarried() const { return std::exchange(labourCarried_, {}); }
+    std::map<std::string, std::int64_t> takeRebates() const { return std::exchange(rebated_, {}); }
     // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
     // a time, to see what each does. Not saved; the game never sets it.
     enum WageRule : unsigned
@@ -1242,13 +1247,15 @@ class Society
         OwnersStop = 8192,                           // A lone owner stops topping up a till short of its wages (round 9).
         TaxEase = 1048576,                           // A town's stores over their target lower its tax (round 10, towns).
         TownPosts = 2097152,                         // A town's own posts are kept to its tax, as the capital's (round 10).
-        RoadBudget = 4194304,                        // ...and its caravans' road money is drawn from its week's budget.
-        TaxRebate = 8388608                          // An option, off unless asked: over twice its target, a rebate (round 10).
+        RoadBudget = 4194304,                        // A town's caravans' road money from its week's budget (off unless asked).
+        TaxRebate = 8388608,                         // Over twice its target, a rebate to its taxpayers (round 10).
+        FoundAtTarget = 16777216,                    // A town is founded at its target, the rest to the realm's others.
+        CapitalLabour = 33554432                     // The capital pays the small towns' Town Works' day labour (round 10).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
-    // 2026-10-27) and the rebate. `wageRulesOff(off, on)`: `off` the rest left out, `on` these put in; wageRulesOff(0)
-    // is the game's.
-    static constexpr unsigned OptInRules = CrewsAbroad | TaxRebate;
+    // 2026-10-27) and its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27).
+    // `wageRulesOff(off, on)`: `off` the rest left out, `on` these put in; wageRulesOff(0) is the game's.
+    static constexpr unsigned OptInRules = CrewsAbroad | RoadBudget;
     static void wageRulesOff(unsigned off, unsigned on = 0)
     {
         wageRulesOff_ = off & ~OptInRules;
@@ -1855,6 +1862,18 @@ class Society
     static inline bool noteShorts_ = false;
     static inline unsigned wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
+    static inline bool noteTowns_ = false;
+    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_;
+  public:
+    // At the founding (FoundAtTarget, while noteTowns): what the towns' targets left of their share, and what each kind
+    // then got in all (households, businesses, Houses, the church). A measure.
+    struct FoundingMoved
+    {
+        std::int64_t excess = 0, homes = 0, businesses = 0, houses = 0, church = 0;
+    };
+    FoundingMoved foundingMoved() const { return foundingMoved_; }
+  private:
+    FoundingMoved foundingMoved_;
     std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
     std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
     double slack_ = 0;
@@ -1868,7 +1887,7 @@ class Society
     // At the reckoning (round 10, TaxEase): each town's rate for next week, from its stores' mean holding against
     // TaxEaseMonths of `fullTax` (this week's tax at the full rate, by town), a quarter of the way a week.
     void easeTownTax(const std::map<std::string, double>& fullTax);
-    // And the rebate (an option, off unless asked: TaxRebate): over twice its target, half of the rest back to its
+    // And the rebate (TaxRebate, since round 10): over twice its target, half of the rest back to its
     // taxpayers by their week's incomes (`taxpayers`: each town's, with its income).
     void rebateTownTax(const std::map<std::string, std::vector<std::pair<std::string, double>>>& taxpayers);
     // A town's posts kept to `share` of its week's budget (doc 64, Phase 13, round 6; the model's staff_to): the watch's

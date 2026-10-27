@@ -2194,14 +2194,16 @@ void tradeCaravansCarryGoodsAndMoney()
     expect(w.society().conserved(), "Money stays conserved");
 }
 
-// Round 10, towns (the user, 2026-10-27; Society::RoadBudget): with work by the hours a town's caravans take their road
+// Round 10, towns (the user, 2026-10-27; Society::RoadBudget, dropped the same day: off unless asked): with work by the
+// hours a town's caravans take their road
 // money from its week's allowance for it, as its buyers' funds are. West's stores, its trader, with nothing left of the
 // week's allowance (kept through a save), send no caravan to east with its flour; without the rule they do.
 void aTownsCaravanKeepsToItsRoadMoney()
 {
     Society::setWorkByHours(true);
-    const auto sends = [](unsigned off) {
-        Society::wageRulesOff(off);
+    // (Off unless asked since the user's word, 2026-10-27: asked for here.)
+    const auto sends = [](unsigned on) {
+        Society::wageRulesOff(0, on);
         // (West's mill and east's bakery: east is the capital, whose caravans are its treasury's, not held to it.)
         auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", 7, 9.5, 8, 9.5) +
                                         resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 9.5, 1, 9.5));
@@ -2227,10 +2229,45 @@ void aTownsCaravanKeepsToItsRoadMoney()
         Society::wageRulesOff(0);
         return std::make_pair(held, out);
     };
-    const auto [held, out] = sends(0);
-    const auto [held0, out0] = sends(Society::RoadBudget);
+    const auto [held, out] = sends(Society::RoadBudget);
+    const auto [held0, out0] = sends(0);
     expect(held && !out, "West's stores, with none of the week's road money left, send no caravan");
     expect(!held0 && out0, "Without the rule they do");
+    Society::setWorkByHours(false);
+}
+
+// Round 10, towns (the user, 2026-10-27; Society::CapitalLabour): with work by the hours, a small town's Town Works' day
+// labour, the living for every grown wolf out of work, is paid from the capital's treasury, at the town's own works'
+// wage. West's out-of-work wolf labours for its Town Works, paid by the capital; without the rule, by west's stores.
+void theCapitalCarriesTheTownWorks()
+{
+    Society::setWorkByHours(true);
+    const auto paidBy = [](unsigned off) {
+        Society::wageRulesOff(off);
+        auto f = strip("EE.....WW", resident("idle", "Idle Hand", "civilian", "-", 7, 11.5, 7, 11.5));
+        auto w = load(f);
+        {
+            auto saved = w.save();
+            saved.calendarDays = std::floor(saved.calendarDays) + 1.4;
+            expect(w.restore(saved).ok, "To the next morning");
+        }
+        w.tick(.6);
+        std::map<std::string, std::int64_t> paid;
+        for (int t = 0; t < 1500; ++t)
+        {
+            w.tick(1);
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail == "day labour" && e.target == "idle")
+                    paid[e.actor] += e.coins;
+        }
+        expect(w.society().resident("idle") && w.society().resident("idle")->task == Society::LabourTitle, "Idle labours for the Town Works");
+        expect(w.society().conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return paid;
+    };
+    const auto now = paidBy(0), before = paidBy(Society::CapitalLabour);
+    expect(now.count("treasury") && now.at("treasury") > 0 && !now.count("stores:west"), "West's Town Works' day labour paid by the capital");
+    expect(before.count("stores:west") && before.at("stores:west") > 0 && !before.count("treasury"), "Without the rule, by west's stores");
     Society::setWorkByHours(false);
 }
 
@@ -3924,6 +3961,7 @@ int main()
         tradesWearAndCharity();
         tradeCaravansCarryGoodsAndMoney();
         aTownsCaravanKeepsToItsRoadMoney();
+        theCapitalCarriesTheTownWorks();
         theChurchCares();
         townsWearAndAreMended();
         theMonitorWatches();

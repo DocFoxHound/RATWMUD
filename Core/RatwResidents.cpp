@@ -1484,11 +1484,19 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 auto& carry = wageCarry_[pair.first];
                 carry = std::min(carry + day / PaidSpells, day);
                 const std::int64_t wage = std::int64_t(std::floor(carry));
+                // (A small town's Town Works' day labour from the capital's treasury since round 10, the user,
+                // 2026-10-27: the living for every grown wolf is the realm's, not a small town's to carry. Its wage
+                // is still its town's works', at its town's rate: employer, above.)
+                const bool labour = labourJob(*c.record, job);
+                const bool carried = labour && workByHours() && wageRule(CapitalLabour) && payer.account.rfind("stores:", 0) == 0 && account("treasury");
+                const auto& from = carried ? std::string("treasury") : payer.account;
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (spendable(payer.account) >= wage &&
-                    shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : labourJob(*c.record, job) ? "day labour" : "service wages"))
+                else if (spendable(from) >= wage &&
+                    shift(from, pair.first, "", 0, wage, guard ? "watch wages" : labour ? "day labour" : "service wages"))
                 {
+                    if (carried && noteTowns_)
+                        labourCarried_[payer.account] += wage;
                     ++life.wagesToday;
                     carry -= double(wage);
                     notePay(pair.first, employer, wage, wage);
