@@ -6437,6 +6437,158 @@ the report shows:
 - From day 280, about half the hungry could pay the day's cheapest food: food-hunger 83 of 168. On day 308 it is 123
   of 361, and on day 364, 152 of 408.
 
+### Phase 13: round 10, lane A: the Houses spend with what they have, the church's alms from its budget (2026-10-27)
+
+The user's decisions (2026-10-27), with work by the hours only: every House outflow draws on its week's budget, by the
+model's rule, cut in a set order below its target and never below a floor; the church's alms and relief come from a
+budget, and it never spends below about a month of its income; and (a follow-up) alms buy the cheapest food that feeds
+the wolf. Base: p13 at 4ef067b. Phase 7's weekly budgets (`Core/RatwInstitutions.cpp`, `institutionsWeek`) are
+extended, not doubled.
+
+**What it does:**
+
+- **A House's week's budget, over all it pays out** (`HouseBudget`; `Society::houseParts`). The model's `house_week`
+  rule, its k 4 and a2 0.3: (month's income + 0.3 x (cash − 4 x month's income)) / 4, its month its rent and its
+  businesses' profit (its first month, a fifth of what it holds). What its caravans brought home since its last week's
+  budget comes on top, spent as it comes, as a town's has since round 9. The budget is cut into parts at the reckoning,
+  in this order: its posts' wages ("service wages"); its caravans ("money for the road" and "guards for the road"), at
+  least what they brought home; its investments in its businesses ("an owner's investment"); and the rest, its works and
+  crews as before (retainers, finery, "bought for a House's works", the estate crew: "an odd job: about the home",
+  "an odd job: building work"). The first three get what they paid out last week and a third over, a tenth of what's
+  left at least (the model's `church_week` relief rule). `Society::record` counts each part down as it is paid, and
+  `houseMay` says what may still be paid: when a part is spent, that outflow stops for the week. What's left of a part
+  stays in the purse and comes round in the next week's budget.
+- **The cuts below target.** Below its target (four months' income) its investments pause (their part is nothing), its
+  works and crews then shrink (they get what the posts and caravans leave), and its caravans go last.
+- **The floor** is a week's wages for 12 hands at its town's going rate (`HouseFloorHands`): the model's `house_week`
+  staffs its retainers first, twelve at most, so a House always holds its household's next week. `spendable` keeps it
+  for every coin a House pays out (wages, crews' shares, premises, road money, investments); only tax and tithe may go
+  under it. (The rule's own zero, at two-thirds of a month's income, is a floor too, but a House whose income stops
+  would spend 7.5% of what it holds each week to the last penny.)
+- **A House's business it doesn't top up** (`HouseTills`) trades on with what it has, as round 9's lone owner's does: a
+  look at which its House tops it up with less than it's short, while it holds under a week's wages, marks it (round
+  9's `shortTills`, stopped at once: it's the budget that stops, not four looks in a row); on a day its till can't pay
+  its manager's wage the manager is free for hire work (`ownerUnpaid`; `tendHouses` marks the day). A look that tops
+  it up in full, or finds a week's wages in it, clears the mark. Its hands paid from its till as far as it can, as any
+  business's.
+- **The church's alms inside its relief** (`ChurchBudget`). Its budget (k 2, a2 0.4) is held to what it holds over a
+  month of its income (its floor, kept by `spendable` for every coin it pays out). Its relief is set aside as the model's
+  `church_week`: min(budget, max(last week's x 1.33, budget x 0.1)), last week's now its alms and its relief together.
+  Alms bought for the hungry (the wolf asking at a shop, and the daily feeding of the penniless) draw on it (`almsMay`),
+  and stop when it's spent. Its own buying ("bought by the church", its basket) comes out of its budget as its clergy's
+  wages do; its clergy, works and masons as before (the model's: relief, clergy, works, the building fund's masons with
+  the rest). Before its first week's reckoning, alms buy as before.
+- **Alms buy the cheapest food that feeds** (`CheapAlms`; `Society::almsFood`; the user, 2026-10-27, lane C's finding):
+  at a shop, the cheapest on sale with a loaf's nourishment (`AlmsFeeds`, 15: a wolf asking at 55 is brought under 40),
+  else the cheapest it has; for the daily feeding, one each, at the shop that sells it cheapest. (Before, the shop's
+  most nourishing, and for the daily feeding 6p a head of whatever came first on the shelves.)
+- **For trials:** `econ_watch --without houses,housetills,church,cheapalms` (and `carry`, below).
+
+**Saves:** `spendLeft` (each part's left and the floors) and `spendWeek` (each part's week, and a House's caravans'
+takings since its last budget) in the economy's memory.
+
+**Reproduced.** 5 days without `--hours`: d034a6316a8d0cb. 9 days `--hours --without houses,housetills,church,cheapalms`:
+23bcbdc710fbcf75, 4ef067b's. 9 days `--hours`: 7a7f927d6925231b (8803d43719f8d90a with `--without cheapalms`, the year's
+build).
+
+**Tests** (`crafting_tests`; eleven mutations, all caught):
+
+- `aHouseSpendsInsideItsWeek`. House Fell, 5,000p on 1,000p a month: its floor a week's wages for twelve, spendable
+  keeping it; its parts a tenth of what's left each; road money drawing on its caravans' part; its stall topped up with
+  no more than its investments' part, nothing more that week; below its target (3,000p), nothing, the stall marked and
+  its manager free for hire on a day its till can't pay it; the parts and the mark through a save; at its target with a
+  large part, topped up in full and the mark cleared; its caravan's 2,000p home on top of its next budget, its caravans'
+  part 2,000p. Without the rule, topped up in full at every look; without the till's half, nothing marked.
+- `theChurchsAlmsInsideItsRelief`. 300,000p on 100,000p a month: its floor 100,000p; its relief 7,980p (6,000p last week
+  and a third); alms drawing on it, counted as given, stopping when it's spent; before its first reckoning, all it holds.
+  Without the rule, alms on top and no floor.
+- `theAlmsBuyTheCheapestThatFeeds`. A provisioner with eggs (cheapest, too little), smoked fish and jerky (richest): a
+  penniless child is given one smoked fish.
+- All 68 tests pass.
+
+**The year** (`artifacts/economy/2026-10-27-r10-A-year`, be28348, 365 days `--without crews`, against
+`2026-10-27-r10-base-year`, 4ef067b; money conserved every day). Shares are the game's, the model's in brackets.
+
+| Day | Gini, A / base | poorer half | Houses, A / base (model) | firms | church | towns | hungry (money-) / starving, A; base |
+|---|---|---|---|---|---|---|---|
+| 56 | 0.500 / 0.511 | 0.189 / 0.180 | 0.227 / 0.181 (0.264) | 0.173 / 0.188 (0.099) | 0.053 / 0.052 | 0.088 / 0.085 | 0; 0 |
+| 112 | 0.533 / 0.505 | 0.154 / 0.177 | 0.179 / 0.117 (0.162) | 0.253 / 0.250 (0.120) | 0.051 / 0.049 | 0.076 / 0.070 | 34 (11) / 10; 0 |
+| 168 | 0.612 / 0.574 | 0.092 / 0.118 | 0.145 / 0.059 (0.090) | 0.269 / 0.333 (0.209) | 0.050 / 0.042 | 0.073 / 0.072 | 0; 0 |
+| 196 | 0.649 / 0.632 | 0.055 / 0.076 | 0.132 / 0.034 (0.067) | 0.307 / 0.382 (0.269) | 0.041 / 0.038 | 0.074 / 0.078 | 245 (91) / 173; 0 |
+| 252 | 0.691 / 0.693 | 0.031 / 0.030 | 0.121 / 0.010 (0.067) | 0.263 / 0.393 (0.250) | 0.034 / 0.015 | 0.077 / 0.111 | 157 (42) / 122; 0 |
+| 308 | 0.726 / 0.734 | 0.022 / 0.021 | 0.113 / 0.003 (0.073) | 0.222 / 0.348 (0.249) | 0.028 / 0.005 | 0.063 / 0.117 | 273 (76) / 206; 361 (243) / 298 |
+| 364 | 0.754 / 0.771 | 0.011 / 0.007 | 0.109 / 0.000 (0.084) | 0.205 / 0.315 (0.259) | 0.024 / 0.002 | 0.057 / 0.101 | 319 (125) / 254; 408 (268) / 358 |
+
+| Purses, day 28 → 364 | A | base |
+|---|---|---|
+| The Houses | 1,306k → 545k | 1,157k → 0.7k |
+| The church | 252k → 119k | 246k → 11.5k |
+| The capital | 279k → 110k | 279k → 113k |
+| Oakhaven; Larkfield | 35.3k → 132.6k; 27.9k → 36.0k | 32.0k → 306.1k; 27.7k → 80.1k |
+| Coldwater, Frosthollow, Southmeadow; Mirebridge | under 1.3k from day 140; under 1.1k from day 224 | the same; from day 308 |
+
+A tick: 0.0409 ms against 0.0401 on 4ef067b, 30 days run side by side (+2%; b7da3f6, whose rules do the same work).
+
+**Read plainly:**
+
+- **The Houses hold their share.** They spend down from 0.26 to 0.11 and stay there, near the model's 0.08 (above it
+  from day 140 by 0.025–0.065), instead of falling to nothing by day 300. Their purses end at 545k. The drains that were
+  2–5 times their income are now the rule's spending down to its target (the sentinel's 1.4–4.9 out/in is that, and
+  their posts once their income falls). What they hold still runs above the model's: they pay out about 75–85% of their
+  budget (the parts' third over is kept, and an estate crew posted isn't all taken).
+- **The church isn't drained.** It ends at 119k (base: 1p): from day 196 its alms and relief take its whole budget, its
+  works and masons stop, and it holds near its floor (a month of its income, which falls with its tithes).
+- **The firms come into the model's band** (0.205 at the year's end against 0.259; base 0.315), and the towns' share
+  too (0.057 against 0.055; base 0.101): Oakhaven 132.6k (base 306.1k).
+- **But the hunger came earlier.** 34 hungry on day 112, and from day 196 156–323 at each month's end (base: none till day 280, then
+  168–408). Most of it is food-hunger: wolves who hold the price of the cheapest food (154 of 245 on day 196). The Gini
+  runs 0.02–0.04 over the base's from day 112 to 224, then a little under it (0.754 against 0.771 at the end). The Houses'
+  money that kept the homes up in the base (out at 2–5 times their income, into crews and their tills) now goes out at
+  the model's pace, and the firms' hoard (twice the model's share at day 112) is what the homes lack. In the base the
+  church's alms fed the food-hungry without limit; held to its relief, they go short. Lane C's bite fix (hungry wolves
+  under a third of a day's wage asked alms instead of buying a loaf) and the cheap alms below lower that demand.
+- **Cheap alms.** On 60 days (`t60-cheap`), alms cost 7.0p a piece against 16.7p (29.7p in the year's days 168–252):
+  678 bought for 4,751p, against 413 for 6,902p.
+
+**A trial thrown away.** The first year's build (b7da3f6, stopped at day 180,
+`artifacts/economy/2026-10-27-r10-houses-trial180-b7da3f6`) counted a House's caravans' takings in its month: it held
+four months of its trade (Mossgrave Court a 300k target on 14k a month of rent and profit). The Houses held 0.19 of the
+money on day 154 against the model's 0.105, and 93 starved by day 179. Its alms were also held to what dailyRelief set
+aside on the first day, before the church's founding money came: 21 starved in Ridgemere by day 7. Both fixed in be28348.
+
+**For the user:**
+
+1. **The year needs a run with lane C's bite fix and cheap alms** (`CheapAlms` came after the year's run; its own run is
+   best after the merge, since both change what alms are asked and cost).
+2. **The parts kept over.** A House pays out 75–85% of its budget: each part's third over, and crews posted but
+   untaken, stay in its purse. Carry what's left of last week's parts into this week's works and crews? Recommended:
+   yes, with the crews' untaken places counted back; it brings the Houses to the model's share.
+3. **The church at its floor** from day 196, its works stopped: keep the floor at a month (the user's), or let relief
+   draw it lower in a famine? Recommended: keep it; the hunger is the firms' hoard and the bite rule, not the church.
+
+**The user's answers (2026-10-27):** (2) yes; (3) keep the floor as built. (1) is measured in the combined run after
+lanes A, B and C are merged.
+
+**The carry** (`CarryParts`, `--without carry`). At a House's reckoning, what's left of each of last week's parts (its
+posts', its caravans', its investments') and of its works and crews' (their part is counted down too, by crews' shares,
+works and finery paid: a crew's places untaken, materials the shops hadn't, leave it unspent) goes to this week's works
+and crews on top: as far as it holds over its floor, and at most the week's own budget again (a House whose purse fell
+since, by its tax or a thief, doesn't spend the rest to its floor in a week on what it had set aside). It is money still
+in its purse, not counted twice; what this week leaves carries on to the next in its turn. Its parts are as before.
+
+- Its test, `aHouseCarriesWhatItDidntPay`: House Fell, 20,000p on 4,000p a month, pays nothing of a week's parts and
+  its crews go untaken; the next week's works and crews' part is the week's own and what was left, capped at the week's
+  own budget again; its parts the same as without the rule; a crew's share paid draws on the part. Three mutations, all
+  caught. `aHouseKeepsItsCrew`'s round-6 check of the next week's crew after its gangs were shut runs without the carry
+  (what the shut gangs left would go on top).
+- Digests: 5 days without `--hours` d034a6316a8d0cb; 9 days `--hours --without houses,housetills,church,cheapalms,carry`
+  23bcbdc710fbcf75 (4ef067b's); 9 days `--hours --without carry` 7a7f927d6925231b (the cheap alms' build); 9 days
+  `--hours` 7a7f927d6925231b too (the carry first acts at the second reckoning, day 14). All 68 tests pass.
+- **60 days** (`--hours --without crews`, the carry on and off): the Houses paid out 110% of their rule's budget over days
+  14–60 with it (102–125% a House: last weeks' unpaid caught up), 86% without (84–93%). Their share of the money on day 56
+  is 0.200 with it, 0.224 without (the model's 0.264; the year's run without it was 0.227 on day 56 and 0.03–0.06 over the
+  model's from day 140). Gini 0.498 against 0.513 on day 56; no hunger in either.
+
 ### Phase 13: round 10, lane C: food-hunger (2026-10-27)
 
 The year's run (`2026-10-27-r10-base-year`) has hungry wolves from day 229, and roughly a third of them hold the price

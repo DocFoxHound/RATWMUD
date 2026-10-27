@@ -391,6 +391,12 @@ struct EconomyMemory
     // (round 9, the user, 2026-10-27: the caravans pay its posts first, its works only with what's left; with work by the
     // hours). Its works see its caravans' money only once this is paid.
     std::map<std::string, double> postsOwed;
+    // Round 10, lane A (the user, 2026-10-27; with work by the hours): a House's week's budget in parts, what is left of
+    // each ("house:x|posts", "|road", "|tops") and the floor it never pays out below ("house:x|floor"; and the church's,
+    // "town:all:church|floor"), set at its week's reckoning (spendLeft); and what each part paid out this week, the next
+    // week's measure, and what its caravans brought home since its last week's budget ("house:x|takings", spent on top
+    // of its next: spendWeek).
+    std::map<std::string, double> spendLeft, spendWeek;
     std::int64_t revision = 0;
 };
 
@@ -1199,6 +1205,11 @@ class Society
         CrewsAbroad = 2048,                          // A town's works crew may be taken by wolves of other towns (round 9).
         OnePlace = 4096,                             // A wolf holding a hire's place takes no other hire (round 9).
         OwnersStop = 8192,                           // A lone owner stops topping up a till short of its wages (round 9).
+        HouseBudget = 16384,                         // Every House outflow draws on its week's budget (round 10, lane A).
+        HouseTills = 32768,                          // ...a House's till it can't top up trades on as a lone owner's (round 10).
+        ChurchBudget = 65536,                        // The church's alms with its relief, inside its budget, over a floor (round 10).
+        CheapAlms = 131072,                          // Alms buy the cheapest food that feeds the wolf, not the shop's best (round 10).
+        CarryParts = 262144,                         // A House's budget unpaid last week goes to this week's works and crews (round 10).
         FoodAtItsPrice = 67108864,                   // A hungry wolf buys where it can pay for food, not by the bite (round 10, C).
         FeastLaidIn = 134217728,                     // A town's stores buy its festival's feast from its shops (round 10, C).
         NearestShop = 268435456                      // With no shop of its town open, the nearest it can pay at (round 10, C).
@@ -1782,6 +1793,28 @@ class Society
     // food shops a meal's worth for each wolf living in it, less the food they hold: meals first, then what feeds most
     // for the money; no more than half of what a shop holds of a food, and as far as the stores can pay.
     void layInTheFeast(std::int64_t day);
+    // What a House may pay out now for `part` of its week's budget (round 10, lane A: HousePosts its posts' wages,
+    // HouseRoad its caravans' money and guards, HouseTops its owner's investments in its businesses): what is left of
+    // that part, and never below its floor. Not a House's, the rule off, or before its first week's reckoning: spendable.
+    enum HousePart
+    {
+        HousePosts,
+        HouseRoad,
+        HouseTops
+    };
+    std::int64_t houseMay(const std::string& house, HousePart part) const;
+    // What the church may spend now on alms bought for the hungry (round 10, lane A: ChurchBudget): what is left of its
+    // week's relief, over its floor. The rule off: what it holds.
+    std::int64_t almsMay() const;
+    // The food alms buy at a shop (round 10, lane A, the user, 2026-10-27: CheapAlms): the cheapest on sale there that
+    // feeds a wolf (AlmsFeeds of nourishment, a loaf's: a wolf asking at 55 is brought under 40), else the cheapest it
+    // has at all; "" for none. Its price in `price`. (Before, the most nourishing it had: a 36p meal where a 7p loaf does.)
+    std::string almsFood(const std::string& shop, std::int64_t& price) const;
+    static constexpr int AlmsFeeds = 15;
+    // The floor (round 10): a week's wages for HouseFloorHands at its town's going rate (the model's house_week keeps
+    // twelve retainers at most, staffed first), set at each week's reckoning.
+    static constexpr int HouseFloorHands = 12;
+    static constexpr double PartGrowth = 1.33, PartLeast = .1;   // (The model's church_week relief: last week's and a third, a tenth at least.)
 
   private:
     std::vector<OddJob> oddJobs_;
@@ -1828,6 +1861,9 @@ class Society
     // is let go and the post kept empty (memory.closed, as a business's help); within it again, a post it let go is open
     // again, for succession to fill. Returns the week's cost of the posts kept.
     std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day);
+    // A House's week's budget set in its parts (round 10, lane A: HouseBudget): returns what is left of it for its works
+    // and crews.
+    std::int64_t houseParts(const House& h, std::int64_t day);
     static constexpr double TreasuryStaff = .5;     // The capital's posts' share of its week's budget (the model's watch).
     static constexpr int PostWeekDays = 6;          // A post's working days a week (not Restday; the watch, every day).
     void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);

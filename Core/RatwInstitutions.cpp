@@ -272,6 +272,17 @@ void Society::institutionsWeek(std::int64_t day)
     if (account(SharedChurch))
     {
         auto budget = budgetOf(SharedChurch, 2, .4);
+        // With work by the hours (round 10, lane A, the user, 2026-10-27): never below a month of its income (its floor,
+        // which spendable keeps for every coin it pays out), and its alms bought for the hungry inside its week's relief
+        // with its relief (Society::record counts them; the alms ask what's left). Before, its relief was set aside but its
+        // alms were bought on top, as many as the hungry asked: it ran dry from day 170 of the year's run.
+        if (workByHours() && wageRule(ChurchBudget))
+        {
+            const double held = double(account(SharedChurch)->cash);
+            const auto floor = std::int64_t(day < MonthDays ? held / 3 : std::max(0., monthIncomeOf(SharedChurch)));
+            memory.spendLeft[std::string(SharedChurch) + "|floor"] = double(floor);
+            budget = std::min<std::int64_t>(budget, std::max<std::int64_t>(0, account(SharedChurch)->cash - floor));
+        }
         const auto relief = std::min<std::int64_t>(budget, std::max<std::int64_t>(std::int64_t(memory.reliefWeek[SharedChurch] * 1.33), budget / 10));
         memory.reliefLeft[SharedChurch] = double(relief);
         memory.reliefWeek[SharedChurch] = 0;
@@ -296,6 +307,8 @@ void Society::institutionsWeek(std::int64_t day)
     for (const auto& h : houses())
     {
         auto budget = budgetOf(h.id, 4, .3);
+        if (workByHours() && wageRule(HouseBudget) && account(h.id))
+            budget = houseParts(h, day);
         const auto* seat = position(h.head);
         if (budget <= 0 || !seat)
             continue;
@@ -327,6 +340,60 @@ void Society::institutionsWeek(std::int64_t day)
     }
     memory.wagesWeek.clear();
     ++memory.revision;
+}
+
+std::int64_t Society::houseParts(const House& h, std::int64_t day)
+{
+    // A House's week's budget, by the model's rule (house_week: k 4, a2 0.3), over all it pays out (round 10, lane A, the
+    // user, 2026-10-27). Its month's income is its rent and its businesses' profit (its first month, a fifth of what it
+    // holds). What its caravans brought home since its last week's budget comes on top, spent as it comes, as a town's
+    // since round 9: their road money draws on its budget, so their takings pay for the next. (Counted in its month, it
+    // held four months of its trade, the trial's Mossgrave Court 300,000p of target on 14,000p a month of rent and profit:
+    // the Houses held 0.19 of the money at day 154 against the model's 0.105, and the realm went hungry from day 112.)
+    // Never below its floor: a week's wages for HouseFloorHands at its town's going rate (spendable keeps it for every coin
+    // it pays out). Then its parts, in the order they are cut when it holds less than its target (four months' income):
+    // its posts' wages first, then its caravans, each what it paid out last week and a third over (a tenth of what's left
+    // at least: the model's church_week relief; its caravans at least what they brought home); then its investments in
+    // its businesses, the same, only while it holds its target (below it they pause first); and what's left is its works
+    // and crews' (retainers, finery, materials, its estate crew: below its target they shrink next, its caravans last).
+    // Each part paid out stops for the week when it's spent (houseMay); what's left of a part stays in its purse.
+    auto& memory = state_.memory;
+    const double held = double(account(h.id)->cash);
+    const double month = day < MonthDays ? held / 5 : monthIncomeOf(h.id);
+    auto& takings = memory.spendWeek[h.id + "|takings"];
+    const auto trade = std::int64_t(takings);
+    takings = 0;
+    const auto floor = 7 * HouseFloorHands * std::int64_t(std::ceil(goingRate(h.community) - 1e-9));
+    memory.spendLeft[h.id + "|floor"] = double(floor);
+    auto budget = std::int64_t(std::clamp((month + .3 * (held - 4 * month)) / 4 + double(trade), 0., std::max(0., held - double(floor))));
+    // What it didn't pay out of last week's budget (CarryParts; the user, 2026-10-27): what's left of each part, and of
+    // its works and crews' (a crew's places untaken, materials the shops hadn't), goes to this week's works and crews on
+    // top, as far as it holds over its floor. (Kept, a House paid out 75-85% of its budget in round 10's year, and held
+    // 0.025-0.065 of the money over the model's from day 140.) It is money still in its purse, not counted twice: what's
+    // left of this week's carries on to the next in its turn.
+    std::int64_t carried = 0;
+    if (wageRule(CarryParts))
+        for (const auto* name : {"|posts", "|road", "|tops", "|works"})
+            if (const auto left = memory.spendLeft.find(h.id + name); left != memory.spendLeft.end())
+                carried += std::max<std::int64_t>(0, std::int64_t(left->second));
+    const auto own = budget, room = std::max<std::int64_t>(0, std::int64_t(held) - floor - budget);
+    const auto part = [&](const char* name, bool open, std::int64_t least) {
+        auto& last = memory.spendWeek[h.id + name];
+        const auto give = open ? std::min<std::int64_t>(budget, std::max({std::int64_t(last * PartGrowth), std::int64_t(double(budget) * PartLeast), least}))
+                               : std::int64_t(0);
+        memory.spendLeft[h.id + name] = double(give);
+        last = 0;
+        budget -= give;
+    };
+    part("|posts", true, 0);
+    part("|road", true, trade);
+    part("|tops", held >= 4 * month, 0);
+    // (At most this week's own budget again: a House whose purse fell since, by its tax or a thief, doesn't spend the
+    // rest of it to its floor in a week on what it had set aside.)
+    budget += std::min({carried, room, own});
+    // (Its works and crews' part, counted down as they are paid, for the next week's carry.)
+    memory.spendLeft[h.id + "|works"] = double(budget);
+    return budget;
 }
 
 std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day)
@@ -420,7 +487,7 @@ void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody
                 memory.reliefLeft[payer] = double(account(payer)->cash) / 3 / 4 * (payer == SharedChurch ? .1 : .05);
             auto& left = memory.reliefLeft[payer];
             const auto give = std::min<std::int64_t>(want, std::int64_t(left));
-            if (give > 0 && account(payer) && account(payer)->cash >= give && shift(payer, eldest, "", 0, give, "relief"))
+            if (give > 0 && account(payer) && spendable(payer) >= give && shift(payer, eldest, "", 0, give, "relief"))
             {
                 left -= double(give);
                 memory.reliefWeek[payer] += double(give);

@@ -1411,10 +1411,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
                 {
                     const auto till = tillOf(open.first);
+                    // (With work by the hours, the cheapest food that feeds it, not the shop's best: round 10, CheapAlms.)
+                    const bool cheap = workByHours() && wageRule(CheapAlms);
+                    std::int64_t cheapPrice = 0;
                     if (const auto* shelves = account(till); shelves && account(church))
-                        if (const auto food = bestFood(*shelves); !food.empty())
-                            if (const auto price = shopPrice(open.first, food);
-                                account(church)->cash >= price && transfer(till, church, food, 1, price, "alms bought for the hungry"))
+                        if (const auto food = cheap ? almsFood(open.first, cheapPrice) : bestFood(*shelves); !food.empty())
+                            if (const auto price = cheap ? cheapPrice : shopPrice(open.first, food);
+                                (church == SharedChurch ? almsMay() : account(church)->cash) >= price &&   // (Round 10: inside its relief.)
+                                transfer(till, church, food, 1, price, "alms bought for the hungry"))
                                 shift(church, id, food, 1, 0, "alms");
                     break;
                 }
@@ -1577,7 +1581,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 const std::int64_t wage = std::int64_t(std::floor(carry));
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (spendable(payer.account) >= wage &&
+                else if ((payer.account[0] == 'h' ? houseMay(payer.account, HousePosts) : spendable(payer.account)) >= wage &&   // (A House's, inside its week's posts: round 10.)
                     shift(payer.account, pair.first, "", 0, wage, guard ? "watch wages" : labourJob(*c.record, job) ? "day labour" : "service wages"))
                 {
                     ++life.wagesToday;

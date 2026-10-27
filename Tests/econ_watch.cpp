@@ -47,6 +47,13 @@
 // foodprice (a hungry wolf goes to buy only with the bite, a third of a day, at the nearest shop, as before); and the
 // user's follow-ups: feast (a festival's feast is what the town's stores hold, nothing laid in), nearest (with no shop of
 // its cell or town open, a hungry wolf goes to the realm's first open shop by its keeper's name, as before).
+// And round 10's, lane A:
+// houses (a House's budget pays its retainers, finery, works and estate crew only; its posts, caravans and investments
+// draw on its purse as before), housetills (a House's business it doesn't top up isn't free to trade on as a lone
+// owner's: no record, its manager not free for hire), church (the church's alms bought on top of its relief, no floor),
+// cheapalms (alms buy the shop's most nourishing food, not the cheapest that feeds), carry (a House's budget unpaid
+// last week stays in its purse, not carried to its works and crews). With those five left out, a run is
+// 4ef067b's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -459,9 +466,19 @@ int main(int argc, char** argv)
                     off |= Society::FeastLaidIn;
                 else if (name == "nearest")
                     off |= Society::NearestShop;
+                else if (name == "houses")
+                    off |= Society::HouseBudget;
+                else if (name == "housetills")
+                    off |= Society::HouseTills;
+                else if (name == "church")
+                    off |= Society::ChurchBudget;
+                else if (name == "cheapalms")
+                    off |= Society::CheapAlms;
+                else if (name == "carry")
+                    off |= Society::CarryParts;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, foodprice, feast or nearest, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, houses, housetills, church, cheapalms, carry, foodprice, feast or nearest, not "
                               << name << "\n";
                     return 2;
                 }

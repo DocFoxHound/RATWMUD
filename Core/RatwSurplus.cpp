@@ -250,7 +250,35 @@ void Society::spendSurpluses(std::int64_t day)
             continue;
         // Food from the town's shops, the last of it too if need be (for the hungry, not the church's table).
         std::map<std::string, int> bread;
-        buyForSurplus(id, shops[town], [](const std::string& item) { return edible(item); }, std::int64_t(hungry.size()) * 6,
+        if (workByHours() && wageRule(CheapAlms))
+        {
+            // Each its own: the cheapest food in town that feeds it, at the shop that sells it cheapest (round 10, lane A,
+            // the user, 2026-10-27; before, whatever food the shops had, the first on their shelves, 6p of it a head).
+            for (const auto& who : hungry)
+            {
+                std::string at, food;
+                std::int64_t price = 0;
+                for (const auto& shop : shops[town])
+                {
+                    std::int64_t p = 0;
+                    const auto f = almsFood(shop, p);
+                    if (f.empty())
+                        continue;
+                    const bool feeds = nourishment(f) >= AlmsFeeds, fed = !food.empty() && nourishment(food) >= AlmsFeeds;
+                    if (food.empty() || (feeds && !fed) || (feeds == fed && (p < price || (p == price && nourishment(f) > nourishment(food)))))
+                        at = shop, food = f, price = p;
+                }
+                const auto may = wageRule(ChurchBudget) ? almsMay() : account(id)->cash;
+                if (food.empty() || may < price || !transfer(tillOf(at), id, food, 1, price, "alms bought for the hungry"))
+                    break;
+                shift(id, who, food, 1, 0, "alms");
+            }
+            continue;
+        }
+        // (With work by the hours, inside what's left of the church's week's relief, over its floor: round 10, lane A.)
+        buyForSurplus(id, shops[town], [](const std::string& item) { return edible(item); },
+                      workByHours() && wageRule(ChurchBudget) ? std::min<std::int64_t>(std::int64_t(hungry.size()) * 6, almsMay())
+                                                              : std::int64_t(hungry.size()) * 6,
                       "alms bought for the hungry", &bread, true);
         for (const auto& who : hungry)
             for (auto& [item, n] : bread)

@@ -384,6 +384,44 @@ void Society::record(const std::string& kind, const std::string& from, const std
         if ((from == "treasury" || from.rfind("stores:", 0) == 0 || from == SharedChurch) &&
             (kind == "watch wages" || kind == "day labour" || kind == "service wages"))
             state_.memory.wagesWeek[from] += double(coins);
+        // Round 10, lane A (the user, 2026-10-27; with work by the hours): what a House pays out from each part of its
+        // week's budget (its posts' wages, its caravans' money and guards, its investments in its businesses), and what
+        // its caravans bring home since its last week's budget (spent on top of it, as they come: the road money out of
+        // its budget, the takings into the next). The church's own buying (its basket) comes out of its budget as its wages do.
+        if (workByHours())
+        {
+            auto& m = state_.memory;
+            if (wageRule(HouseBudget) && !from.empty() && from[0] == 'h' && from.rfind("house:", 0) == 0)
+            {
+                const char* part = kind == "service wages" || kind == "day labour" || kind == "watch wages" ? "|posts"
+                                   : kind == "money for the road" || kind == "guards for the road" ? "|road"
+                                   : kind == "an owner's investment"                                  ? "|tops"
+                                                                                                      : nullptr;
+                if (part)
+                {
+                    m.spendWeek[from + part] += double(coins);
+                    if (const auto left = m.spendLeft.find(from + part); left != m.spendLeft.end())
+                        left->second -= double(coins);
+                }
+                // (Its works and crews', counted down for what it didn't pay out, carried to the next week: CarryParts.)
+                else if (kind == "an odd job: building work" || kind == "an odd job: about the home" || kind == "bought for a House's works" ||
+                         kind == "a House's finery")
+                    if (const auto left = m.spendLeft.find(from + "|works"); left != m.spendLeft.end())
+                        left->second -= double(coins);
+            }
+            else if (wageRule(HouseBudget) && !to.empty() && to[0] == 'h' && to.rfind("house:", 0) == 0 && kind == "trade takings" &&
+                     from.rfind("caravan:", 0) == 0)
+                m.spendWeek[to + "|takings"] += double(coins);
+            else if (wageRule(ChurchBudget) && from == SharedChurch && kind == "bought by the church")
+                m.wagesWeek[from] += double(coins);
+            else if (wageRule(ChurchBudget) && from == SharedChurch && kind == "alms bought for the hungry")
+            {
+                // (Its alms with its relief, out of what it set aside for the week: round 10, lane A.)
+                if (const auto left = m.reliefLeft.find(from); left != m.reliefLeft.end())
+                    left->second = std::max(0., left->second - double(coins));
+                m.reliefWeek[from] += double(coins);
+            }
+        }
     }
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
