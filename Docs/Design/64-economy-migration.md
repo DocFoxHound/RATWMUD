@@ -6639,3 +6639,144 @@ A town's stores' flows, a day, days 196–364 of `B-year` (`r10b/towns2.py`):
    town's.
 4. **The founding reserve.** Every town is founded with two to three times its target, so every town's tax falls in its
    first month and it spends down. Keep it (it is what the rule says), or found the towns at their target.
+
+### Phase 13: round 10, the towns, the user's follow-ups (2026-10-27)
+
+The user's decisions on the questions above: the rebate on, by income; the road money from the week's budget dropped;
+the capital carries the small towns' Town Works' day labour; every town founded at its target. Base: the lane above
+(3353e71 and the doc, 56f1fca).
+
+**What changed:**
+
+- **1. The rebate is on** (`Society::TaxRebate`, `rebateTownTax`, as built above, by the week's income), and
+  `econ_watch --without rebate` leaves it out. TaxEase is kept, and the rebate goes with it.
+- **2. The road money from the week's budget is off unless asked** (`Society::RoadBudget` among `OptInRules`;
+  `econ_watch --with roadmoney`). A town's caravans take what its stores hold, their road money netted in its week, as in
+  round 9.
+- **3. The capital carries the small towns' Town Works** (`Core/RatwResidents.cpp`, the spell's wage;
+  `Society::CapitalLabour`, `econ_watch --without daylabour`). With work by the hours, the day labour of a wolf
+  labouring for a small town's Town Works (the living for every grown wolf out of work, doc 42, Phase 3) is paid from
+  the capital's treasury, not the town's stores. Its wage is still its town's works' (`stores:<town>|works`, at its town's
+  rate), and a short purse is still marked against that employer. The capital's own Town Works are as they were. Nothing
+  else of the capital's week changes: as its own day labour, the day labour it carries is outside its week's budget
+  (round 6's `keepPostsTo` sizes its posts, not its Town Works).
+- **4. Every town founded at its target** (`Core/RatwFounding.cpp`, `worldMoney`; `Society::FoundAtTarget`,
+  `econ_watch --without founding`). Phase 1's founding makes the realm's money up to `WorldMoney` (5,000,000p), each kind
+  of holder to its share: households `WorldHomesShare` (40%), businesses `WorldBusinessShare` (15%), Houses
+  `WorldHousesShare` (30%), the church `WorldChurchShare` (5%), and the treasuries the rest (10%), spread among the capital's
+  and the towns' by the residents who pay each. Now a town's stores take no more of that than brings them to their
+  target: two months (`TaxEaseMonths`) of what their tax would bring at the founding's day, `TaxRate` of a founding day's
+  wage (`foundingDay`, 60p) for each of their grown wolves of working age (16 to `RetireAge`) — `easeTownTax`'s target
+  before there is a week's tax to reckon it on. What is over that goes to the households, the businesses, the Houses and
+  the church in their shares of the founding (40 : 15 : 30 : 5, the model's), each spread among its own as its share
+  is (households by lot, businesses by float, Houses by what they own; the pennies the split drops to the households).
+  The capital's treasury keeps its own share as before: it is a treasury too, and its own target is its own. On DEV's
+  export, 79,562p (`--hours`; 80,660p at the seconds' pace) went so, from a town held at about 2.5 times its target to
+  one held at it. `econ_watch` logs it at the end ("founding: ...").
+- **econ_watch:** `town_tax.csv` has each town's week's rebates and the day labour the capital paid for it
+  (`Society::takeRebates`, `takeLabourCarried`, read only while `noteTowns`).
+- **For trials:** `--without taxease,townposts,rebate,founding,daylabour --with crews` gives 4ef067b's 9-day `--hours`
+  digest, 23bcbdc710fbcf75.
+
+**Saves:** nothing new.
+
+**The seconds' pace changes, with the founding only** (accepted by the user for this rule). 5 days without `--hours`:
+7bb5b53a0bfc5dcf; with `--without founding`, d034a6316a8d0cb as before. 9 days `--hours` as built: 28f4d5808ecff878.
+
+**Tests** (five mutations, all caught: the capital paying, the founding's cap, the excess passed on, the rebate's default,
+the road money's; `r10b/mutate2.py`):
+
+- `aTownFoundedAtItsTarget`. A realm of 540: a far town of 40 grown wolves and the capital's 500. The far town is
+  founded at its target, 2 x 28 x 8% x 60p x 40 = 10,752p (37,037p without the rule); the realm holds as much either way;
+  what was over it goes to the others, the households and the church holding the more.
+- `theCapitalCarriesTheTownWorks` (`roads_tests`). West's wolf out of work labours for its Town Works and is paid by
+  the capital's treasury; without the rule by west's stores.
+- `aTownEasesItsTax` now tests the rebate as the game's, and the tax eased with it left out; `aTownsRoadMoneyFromItsBudget`
+  and `aTownsCaravanKeepsToItsRoadMoney` ask for the road money. `aTownsCrewTakesTheGrownFirst` leaves the rebate out
+  (its town is given fifty times its target). The round 8/9 tests leave all of round 10's towns' rules out.
+- All 68 tests pass.
+
+**Its cost.** 30 days `--hours --threads 4`, two pairs side by side: 0.0339 and 0.0307 ms a tick on 4ef067b, 0.0337 and
+0.0303 on this commit.
+
+**Measured** (365 days of DEV's export, `--deterministic --hours --threads 4`, one seed, beside two other lanes' runs;
+money conserved every day):
+
+- `base-year`: 4ef067b `--without crews`.
+- `B-year`: 3353e71, the lane above.
+- `B-year2`: this commit (6bc006f), as built (`artifacts/economy/2026-10-27-r10-B-year2`), digest 696a1b6f8800164.
+
+From `report.py` (28-day months; day 365 is the end's part-week):
+
+| | `base-year` | `B-year` | `B-year2` |
+|---|---|---|---|
+| Gini (households), day 112 / 168 / 224 / 280 / 336 / 364 | .505 / .574 / .663 / .720 / .756 / .771 | .532 / .631 / .727 / .758 / .781 / .796 | .511 / .602 / .696 / .707 / .735 / .758 |
+| Poorer half, day 112 / 224 / 280 / 364 | .177 / .047 / .026 / .007 | .153 / .021 / .011 / .005 | .175 / .040 / .029 / .010 |
+| Shares on day 364: homes, firms, Houses, church, town (model .559, .259, .084, .043, .055) | .581, .315, .000, .002, .101 | .647, .257, .008, .002, .084 | .629, .326, .002, .003, .039 |
+| Hungry (money-hunger) / starving, day 280 | 168 (81) / 81 | 306 (170) / 236 | 0 / 0 |
+| the same, day 308 / 336 / 364 | 361 / 367 / 408 | 337 / 354 / 357 | 102 (40) / 384 (222) / 435 (244) |
+| First hunger sentinel | day 231 | day 210 | day 308 (Frosthollow) |
+| The labourer's wage, day 224 / 364 | 99.4 / 103.5p | 94.3 / 80.0p | 89.5 / 109.5p |
+| The capital's treasury, day 112 / 224 / 364 | 246k / 203k / 113k | 250k / 222k / 82k | 208k / 121k / 24k |
+| The church's, day 196 / 280 / 364 | 192k / 18k / 12k | 77k / 14k / 11k | 188k / 113k / 14k |
+| The Houses' purses, day 252 / 364 | 50k / 0.7k | 109k / 42k | 128k / 12k |
+
+Each town's stores at the month's last week against its target (k), and its tax's share of the realm's rate (the
+weeks' mean), from `town_tax.csv` (`r10b/towns3.py`):
+
+| Month to day | Coldwater | Frosthollow | Larkfield | Mirebridge | Oakhaven | Southmeadow |
+|---|---|---|---|---|---|---|
+| 28 | 3.1/9.7, 1.00 | 12.8/9.3, 0.99 | 17.4/14.7, 1.00 | 13.3/11.6, 1.00 | 20.9/13.3, 0.92 | 17.5/13.2, 0.98 |
+| 56 | 2.3/12.0, 1.00 | 11.9/9.9, 0.93 | 23.8/20.6, 0.98 | 16.5/13.9, 0.98 | 30.9/14.3, 0.58 | 20.0/17.1, 0.94 |
+| 84 | 4.6/11.2, 1.00 | 11.0/12.5, 0.87 | 36.8/23.6, 0.91 | 17.2/14.4, 0.93 | 43.1/18.6, 0.25 | 19.9/16.7, 0.92 |
+| 112 | 3.2/11.2, 1.00 | 11.0/12.8, 0.94 | 47.4/28.1, 0.63 | 17.0/14.2, 0.87 | 48.3/20.4, 0.08 | 19.0/14.5, 0.84 |
+| 140 | 1.6/10.8, 1.00 | 10.9/11.4, 0.98 | 47.9/33.7, 0.53 | 16.8/13.8, 0.83 | 55.8/22.2, 0.03 | 18.5/16.0, 0.85 |
+| 168 | 1.4/11.1, 1.00 | 12.3/11.0, 0.99 | 41.2/35.5, 0.67 | 14.8/13.2, 0.82 | 52.7/23.2, 0.01 | 15.6/16.4, 0.91 |
+| 196 | 0.1/11.3, 1.00 | 14.2/11.6, 0.93 | 49.8/34.7, 0.72 | 13.5/13.9, 0.88 | 54.1/24.4, 0.00 | 15.4/16.2, 0.97 |
+| 224 | 0.9/13.5, 1.00 | 5.3/11.6, 0.93 | 58.6/30.6, 0.55 | 13.5/15.1, 0.96 | 55.3/23.8, 0.00 | 15.7/16.5, 0.99 |
+| 252 | 0.0/12.1, 1.00 | 2.8/12.4, 0.98 | 67.1/29.6, 0.23 | 13.4/14.7, 0.99 | 65.5/24.3, 0.00 | 14.7/14.9, 1.00 |
+| 280 | 0.0/11.5, 1.00 | 1.7/10.1, 0.99 | 63.7/31.9, 0.07 | 12.0/13.0, 1.00 | 56.2/26.6, 0.00 | 11.1/13.6, 1.00 |
+| 308 | 0.4/11.6, 1.00 | 0.8/8.2, 1.00 | 59.3/35.8, 0.08 | 12.2/13.9, 1.00 | 62.3/30.1, 0.03 | 11.8/14.6, 1.00 |
+| 336 | 0.0/11.0, 1.00 | 0.1/4.2, 1.00 | 60.3/40.1, 0.24 | 11.7/12.8, 1.00 | 73.0/32.4, 0.05 | 11.7/12.3, 1.00 |
+| 364 | 0.0/9.4, 1.00 | 0.0/1.8, 1.00 | 61.4/39.1, 0.35 | 10.2/11.5, 1.00 | 81.1/37.0, 0.02 | 10.3/12.7, 1.00 |
+| `base-year`, day 364 | 25 | 74 | 80.1k | 779 | 306k | 379 |
+
+**The rebates** in the year: 170,144p, Oakhaven's 134,913p (from day 63; 600–1,130p a day in days 84–112 and
+224–280) and Larkfield's 35,231p (days 224–280, 520–740p a day). The others paid none.
+
+**The day labour the capital carried:** 414,615p in the year, 1,136p a day: Frosthollow 128,221p, Southmeadow 106,844p,
+Coldwater 71,807p, Mirebridge 54,280p, Larkfield 46,592p, Oakhaven 6,871p. It rose through the year, from 175p a day in
+the first month to 1,700–2,100p a day in days 252–308 (Frosthollow's 640–720p, Southmeadow's 320–630p).
+
+**Read plainly:**
+
+- **Founded at their targets, the towns keep near them for most of the year.** Mirebridge and Southmeadow hold 0.8–1.2
+  times their targets all year, their rates within a few points of the full one. Frosthollow does to day 196. Oakhaven
+  ends at 81k, 2.2 times its 37k target (base 306k, `B-year` 217k), Larkfield at 61k, 1.6 times (80k, 115k): the rebate
+  holds them near twice their targets, as reckoned. Larkfield's rate came back from 0.07 to 0.35 as its holding fell
+  toward its target. Coldwater ran dry by day 28 and stayed there: its caravans lose money (its stores buy back their
+  unsold goods, 210p a day in the first month), and its tax just pays its watch. Frosthollow fell from day 196 as its
+  caravans' trade stopped (takings 3,700p a day in days 168–196, 4p by days 308–336) and its residents' incomes with it:
+  its target fell from 12k to 1.8k.
+- **Hunger comes eleven weeks later,** first on day 308 (base 231, `B-year` 210), and none on day 280 (base 168). By
+  day 364 it is as the base's (435 against 408), Ridgemere's above all (300). The Gini runs lower than `B-year`'s all year
+  and below the base's from day 280 (0.758 against 0.771 on day 364); the poorer half is as the base's or above it.
+- **The capital pays for it.** Its treasury falls from 301k (day 28) to 24k (day 364), against the base's 113k. The
+  difference is about the day labour it carried (415k). Its own week's budget doesn't see that day labour (as its own
+  doesn't), so it doesn't cut back for it: it runs down. The church holds out longer (113k on day 280 against 18k) and
+  ends as the base's.
+- **TownPosts now does little.** Four posts were let go in the year, by any treasury. A small town's posts are now its
+  watch (always kept) and nothing else (120p a day); its working part is its buyers' funds inside its week's allowance,
+  which held Coldwater's buyers to nothing from day 28, and the others' to 50–150p a day. The capital's carrying the day
+  labour is what keeps the small towns' purses.
+
+**For the user:**
+
+1. **The capital's purse.** Carrying the small towns' day labour, 1,136p a day over the year (2,000p at its height), it
+   ends at 24k. (a) Count the day labour it carries in its week's budget, as its posts are, and let it hire fewer of
+   its own when it is dear. (b) Send it a share of the rebated towns' surplus first. (c) Leave it, and watch it with
+   two seeds. Recommended: (a), as the model's treasury spends a budget, and this is spending it doesn't see.
+2. **TownPosts.** It lets go almost nothing now, and keeps a poor town's buyers short. (a) Keep it. (b) Leave it out
+   (`--without townposts`). Recommended: (b), unless the buyers' allowance is wanted for its own sake.
+3. **Coldwater's and Frosthollow's caravans.** Coldwater's trade loses money from the start, and Frosthollow's stops
+   in the autumn. That is the towns' trade, not their treasuries: worth a look of its own.
