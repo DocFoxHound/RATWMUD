@@ -750,7 +750,7 @@ int main(int argc, char** argv)
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
-                "hire_slots,hire_taken\n";
+                "hire_slots,hire_taken,resale_day\n";
     std::ofstream workOut(out / "work.csv");
     workOut << "day,account,title,credited,lost,till,banked\n";
     std::unordered_map<std::string, std::pair<double, double>> workBefore;
@@ -806,18 +806,26 @@ int main(int argc, char** argv)
                 const auto id = "till:" + p.id;
                 const auto held = society.state().careers.positions.find(p.id);
                 const auto keeper = held == society.state().careers.positions.end() ? std::string() : held->second.holder;
-                double units = 0, materials = 0;
+                // (`resale_day`: the part of `materials_day` bought to sell on, kept for ResaleDays by the hours: doc 64,
+                // Phase 13, round 8.)
+                double units = 0, materials = 0, resale = 0;
                 if (const auto* rates = society.sellRates(id))
                     for (const auto& [good, rate] : *rates)
                         if (items::good(good) && !Society::storePriced(good))
-                            units += rate, materials += keeper.empty() ? 0 : rate * society.materialsCost(keeper, good);
+                        {
+                            units += rate;
+                            bool resold = false;
+                            const double cost = keeper.empty() ? 0 : rate * society.materialsCost(keeper, good, &resold);
+                            materials += cost;
+                            resale += resold ? cost : 0;
+                        }
                 const auto sold = tillSold[id];
                 const auto hires = hiring.find(id);
                 tillsOut << day << ',' << csv(id) << ',' << csv(holder(server, id)) << ',' << csv(p.title) << ',' << till->cash << ','
                          << society.workingMoney(p.id) << ',' << society.owed(id) << ',' << units << ',' << materials << ','
                          << society.ordersCostOf(id) << ',' << sold.first << ',' << sold.second << ',' << society.handsOf(id) << ','
                          << society.handsWanted(id) << ',' << (hires == hiring.end() ? 0 : hires->second.first) << ','
-                         << (hires == hiring.end() ? 0 : hires->second.second) << '\n';
+                         << (hires == hiring.end() ? 0 : hires->second.second) << ',' << resale << '\n';
             }
         tillSold.clear();
         // Each business's and producer's hours of work today, and those lost to a full bank (doc 64, Phase 13), with the

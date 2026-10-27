@@ -1357,7 +1357,7 @@ void econWatchsFiles()
     };
     once("work.csv", 1, "day,account,title,credited,lost,till,banked");
     once("tills.csv", 1, "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
-                         "hire_slots,hire_taken");
+                         "hire_slots,hire_taken,resale_day");
     once("books.csv", 1, "day,key,town,wage,rate,open_days,calm,short_pay,vacancies,hands,skill");
     once("residents.csv", 1, "day,resident,home,holder,title,age,cash");
     // (hires.csv: at 23:00, a day's hires once each, if there are any; its columns: round 6, the round-5 review.)

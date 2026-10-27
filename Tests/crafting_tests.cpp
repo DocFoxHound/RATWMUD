@@ -4027,6 +4027,26 @@ void aLoneOwnerKeepsAWeeksFood()
         expect(s.conserved(), "money stays conserved");
     }
     Society::setWorkByHours(false);
+    // A home of more than eight grown houses many who aren't a family, as the household rule counts them (the review):
+    // each grown wolf its own household. Eight grown and a child are still one household of nine.
+    for (const int many : {8, 9})
+    {
+        AuthoredRoster roster;
+        for (int i = 0; i <= many; ++i)
+        {
+            auto r = person("lodger" + std::to_string(i), "the scribe", {"desk", 2.5, 2.5}, "civilian");
+            r.home = {"great_hall", 2.5, 2.5};
+            if (i == many)
+                r.age = 10;
+            roster.residents.push_back(r);
+        }
+        roster.economy.treasury = 5000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto household = s.householdOf("lodger0");
+        expect(household == (many > 8 ? 1u : std::size_t(many + 1)),
+               std::to_string(many) + " grown and a child at home: a household of " + std::to_string(household));
+    }
 }
 
 int main()

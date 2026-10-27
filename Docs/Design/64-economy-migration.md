@@ -5593,3 +5593,82 @@ there; in a communal home, the owner alone.)
    are households of one, so their floor rose by only 75p. Is a week's food the right floor, or should a lone owner
    whose till can't pay its wage stop topping it up sooner (the diagnosis's other half: look for hires as the jobless
    do)?
+
+### Phase 13: the tills' round 8, reviewed
+
+A review of the lane above. Nothing major was found, and the review changes no behaviour. It adds a test, a column
+in `econ_watch`'s `tills.csv`, and the measures below.
+
+**Reproduced.** The seconds' pace is as it was (5 days without `--hours`: d034a6316a8d0cb, with the review's build
+too). A 5-day `--hours` run of the committed build, and a 30-day one of the review's build (digest 375db311c96a8f49),
+match `t14`'s files row for row up to their last whole day: the 21 CSV files with a day column, `days.jsonl` and
+`orchestrator.jsonl`. So the committed code made `t14`, and the new column changes nothing else.
+
+**The code.** Both rules are gated on work by the hours, and at the seconds' pace `workingMoney` adds the same terms
+in the same order. `tendTills` and `tendOwners` run in the day's start, on one thread, before the labour market. Nothing
+new is saved. `workingMoney` is read only by `tendOwners` (and `econ_watch`), so the shorter working money moves the
+month's draw, the week's top-up to W/4 and the owner's two months' cap, and nothing else.
+
+**Recomputed** from run120's, `t14`'s and `t7`'s files with the review's own scripts (`r8-tillsrev/py/rev.py` in the
+scratch folder): the tills' shares, the shop and House tills' cash and W, the tills over W and under W/4, the owners'
+draws and top-ups by month, the refusals, Gini and poorer half, the rates and the hunger all match the table above.
+The bunkhouse producers' median, taken as the mean of the middle two, is 1,337p / 995p / 1,265p (the table takes the
+upper middle one).
+
+**The split of W, measured.** `tills.csv` now has `resale_day`, the part of `materials_day` bought to sell on.
+
+| `t14`'s shop tills (118) | day 14 | day 21 | day 28 |
+|---|---|---|---|
+| Goods bought to sell on, as a share of their goods (both at a month) | 0.51 | 0.51 | 0.53 |
+| Their goods at a month, as a share of their W at a month | 0.78 | 0.76 | 0.73 |
+| The House tills' goods bought to sell on, as a share of their goods | 0.05 | 0.06 | 0.06 |
+
+- The builder's estimate holds. About half of the shops' goods are bought to sell on. The diagnosis's three-quarters
+  was all their goods.
+- The House tills make what they sell. The diagnosis expected about 140k from the House tills, and this change could
+  never have released it.
+
+**Which tills gained, day 56 to day 120** (the 118 shop tills, classed by their day-28 goods in the 30-day run):
+
+| | run120 | `t14` | `t7` |
+|---|---|---|---|
+| 57 makers | 319k → 549k | 302k → 524k | 331k → 573k |
+| 55 that mostly sell on what they buy | 299k → 356k | 211k → 302k | 182k → 289k |
+
+The makers' gain is the same in every run (about 225k). The resellers' tills gave up 88k by day 56 and had won back
+34k of it by day 120. Each run's top gainers are the Fish Hall, the smokehouses, the dairies, Gullgut Fish and Sump
+Sundries.
+
+**Side effects looked for:**
+
+- **Money to the rich, once.** On day 56 the Gini is 0.545 against 0.528, and the top tenth holds 0.326 against 0.303.
+  That is the month-1 release to owners. By day 120 the top tenth holds 0.326 against 0.340, and the Gini is 0.588
+  against 0.582: within a seed's spread.
+- **Wage books.** On day 120, 3 / 6 / 3 books are more than 1.4 times their town's rate. The Slagstack till's is at
+  about 1.9 times in all three runs. Books short of pay on day 120: 31 / 40 / 30. Short pay owed over the run: 204k /
+  214k / 202k. No new runaway.
+- **Posts open that nobody fills.** The books' vacancies on day 120 are 288 / 204 / 262, and the model's `vacant` is
+  16 / 15 / 13. No rise.
+- **Refusals.** In all three runs 90-96% are by tills under W/4. 19 / 24 / 33 tills refused at some time. Milk, jerky,
+  firewood and the livestock lead.
+- **Hunger.** Only day 46, as before. Nobody starving.
+
+**Minors:**
+
+- **Each sharer of the purse keeps the floor (not changed).** The lone owner's floor is a week of its whole household's
+  food, but it is held against the owner's own purse. `tendHouseholds` evens the purse out after the tills are tended,
+  so week by week the household runs down to the floor times its grown sharers, not to one week as in the model. With
+  six grown in the home, it keeps six weeks. On day 120 of `t14`, 88 short tills (under W/4) belong to owners who share
+  a home's purse. In 18 of those homes, what the household holds lies between the model's floor and the floor as
+  built: the model would top up and the game doesn't. `KeeperReserve` had the same form. For the user: test the
+  household's purse against one week, so the owner gives at most the purse minus the week.
+- **The rule for more than eight grown was untested (now tested).** `aLoneOwnerKeepsAWeeksFood` now also has a home of
+  eight grown and a child, one household of nine, and a home of nine grown, each its own household. With the rule
+  undone the test fails: "9 grown and a child at home: a household of 10". The review undid ten rules one at a time
+  (`r8-tillsrev/py/mut.py`). The other nine fail as the builder said, including the resale split never made, and
+  counting the grown only.
+- **No test catches a House keeping a floor.** With the House's floor of 0 undone, every test still passes.
+  `roads_tests` asks only that a House puts in something. This was so before round 8.
+- **`householdOf` takes the age from the roster** (`spec`). `tendHouseholds` takes it from the day's bodies.
+  `RatwInstitutions` and the orchestrator do the same as `householdOf`.
+- All 67 test binaries pass (`pg_tests` skipped: no database). `econ_players_tests` checks the new column.
