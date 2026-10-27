@@ -2324,6 +2324,56 @@ void onlyTheSellersLetGo()
     Society::setWorkByHours(false);
 }
 
+// A maker keeps its apprentice too (round 8, the user, 2026-10-27; the model's firm_week: apprentices are hands over and
+// above), at the calibrated hours, where a maker lets its surplus help go. A bakery selling nothing wants one hand, its
+// baker, and has four besides, the first apprenticed to the scribe. A week on it has let one go, its excess three less
+// its apprentice; three weeks on the other three, and the apprentice is kept. (Round 8's review: the stalls' test had
+// it, the makers' step not.) Without the rule, two the first week, and by the third the apprentice with them.
+void aMakerKeepsItsApprentice()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    for (int i = 1; i <= 4; ++i)
+        roster.residents.push_back(person("hand" + std::to_string(i), "works at The Loaf", {"bakery", 3.5 + i, 3.5}, "civilian"));
+    roster.economy.treasury = 5000;
+    const auto run = [&](unsigned off, int days) {
+        Society::wageRulesOff(off);
+        auto s = std::make_unique<Society>(Roster::None);
+        s->configure(roster);
+        auto state = s->state();
+        state.memory.pace = 1;                      // (The calibrated hours: a maker lets go only at them.)
+        state.careers.positions["job:scribe"].apprentice = "hand1";
+        expect(s->restore(state), "the pace and the apprenticeship restore");
+        const auto bodies = atWork(*s);
+        for (std::int64_t d = 1; d <= days; ++d)
+            s->tick(1, double(d) + .5 / 24, 0, bodies);   // (The day's pass.)
+        Society::wageRulesOff(0);
+        return s;
+    };
+    const auto gone = [](const Society& s) {
+        int out = 0;
+        for (int i = 1; i <= 4; ++i)
+            out += s.jobOf("hand" + std::to_string(i)) == nullptr;
+        return out;
+    };
+    auto s = run(0, 1);
+    const auto till = s->tillOf("baker");
+    expect(s->makesThings(till) && s->handsOf(till) == 5 && s->handsWanted(till) == 1 && s->apprenticedTo("hand1"),
+           "the bakery makes things, has five hands, wants one, and its first is apprenticed: " + std::to_string(s->handsOf(till)) + ", " +
+               std::to_string(s->handsWanted(till)));
+    s = run(0, 7);
+    expect(gone(*s) == 1 && s->jobOf("hand1"), "a week on it has let one go, not its apprentice: " + std::to_string(gone(*s)));
+    s = run(0, 21);
+    expect(gone(*s) == 3 && s->jobOf("hand1"), "three weeks on, the other three, its apprentice kept: " + std::to_string(gone(*s)));
+    expect(s->conserved(), "money stays conserved");
+    s = run(Society::KeepApprentices, 7);
+    expect(gone(*s) == 2, "without the rule, two the first week: " + std::to_string(gone(*s)));
+    s = run(Society::KeepApprentices, 21);
+    expect(gone(*s) == 4, "and by the third the apprentice with them: " + std::to_string(gone(*s)));
+    Society::setWorkByHours(false);
+}
+
 // Round 8 (the user, 2026-10-27: the middle course): a wolf at a post nobody pays it for looks for an institution's crew
 // from waking, before the children; one out of work keeps its old hours and its old look, the businesses' and the farms'
 // hires weighed with the crews by pay. A far town's works crew of six: three keeping the house hold places by half past
@@ -2427,7 +2477,7 @@ void aTownCountsItsCaravans()
     Society::setWorkByHours(true);
     struct Seen
     {
-        double low = 0, month = 0, capital = 0, church = 0;
+        double low = 0, month = 0, capital = 0, church = 0, saved = 0, below = 0;
         int crew = 0;
     };
     const auto run = [](unsigned off) {
@@ -2464,6 +2514,10 @@ void aTownCountsItsCaravans()
         s.tick(1, 30 + .5 / 24, 0, bodies);
         s.tick(1, 31 + .5 / 24, 0, bodies);         // (A day with nothing earned: its month below nothing is kept.)
         seen.low = s.monthIncomeOf("stores:far") - month0;
+        // (Saved and read again as it is, below nothing too: the review.)
+        seen.below = s.monthIncomeOf("stores:far");
+        const auto reread = wire::readSociety(wire::society(s.state())).memory.monthIncome;
+        seen.saved = reread.count("stores:far") ? reread.at("stores:far") : 0;
         // Day 31: home, with their takings, and the town's stores buy back what its caravan didn't sell.
         auto st = s.state();
         st.accounts.at("caravan:far1").stock["bread"] = 10;
@@ -2488,6 +2542,8 @@ void aTownCountsItsCaravans()
     };
     const auto now = run(0), before = run(Society::CaravanIncome);
     const double decay = double(MonthDays - 1) / MonthDays;
+    expect(now.below < 0 && std::abs(now.saved - now.below) < 1e-6,
+           "a month below nothing is saved as it is: " + std::to_string(now.below) + ", read back " + std::to_string(now.saved));
     expect(std::abs(now.low - before.low + 1000 * decay) < 1e-6,
            "its road money out counts against its month, below nothing until the takings come: " + std::to_string(now.low - before.low));
     expect(std::abs(now.month - before.month - (9000 - 1000 * decay * decay)) < 1e-6,
@@ -4212,6 +4268,7 @@ int main()
         aHouseKeepsItsCrew();
         aTownsCrewTakesTheGrownFirst();
         onlyTheSellersLetGo();
+        aMakerKeepsItsApprentice();
         theOutOfWorkKeepTheirHours();
         aTownCountsItsCaravans();
         theCordGoesRoundNoMore();

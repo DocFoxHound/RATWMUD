@@ -5502,7 +5502,7 @@ Three of the user's decisions (2026-10-27), all with work by the hours only. Bas
   (`Society::wageRulesOff`; not saved, the game never sets it). With all four left out, a 9-day `--hours` run gives
   1e192c0's 438bb01794aed196.
 
-**Saves:** nothing new.
+**Saves:** nothing new. (But a town's month below nothing was dropped on reading a save: mended in the review below.)
 
 **The seconds' pace** is as it was: a 5-day run without `--hours` gives d034a6316a8d0cb, on 1e192c0 and on this branch.
 
@@ -5642,3 +5642,98 @@ bought back), against tax of 0.3-0.5k a day a town:
    Recommended: (b), if ±20% of day 28 is the test.
 4. **Coldwater and Southmeadow** run down (−80% and −57%): their posts and works spend more than their tax. That is a
    separate question: their budgets after their posts.
+
+### Phase 13: round 8's rules, reviewed
+
+A review of the lane above (0753f36). The committed build was built again and checked against its runs:
+
+- A 5-day run without `--hours` gives d034a6316a8d0cb, as on 1e192c0.
+- A 9-day `--hours` run with the four rules left out (`--without sellers,apprentices,unpaid,caravans`) gives
+  438bb01794aed196, the same as 1e192c0's.
+- A 5-day `--hours` run's files match the first five days of `r8`'s line by line, every file (`days.jsonl` but for its
+  closing line, which is the run's end). So `r8` is the committed code's, though its stamp says it was built from a
+  dirty tree.
+
+Its key figures were recomputed from `r8`'s, `r8-u`'s and `run120`'s files with the review's own script
+(`r8-rulesrev/py/rev.py` in the scratch folder). They hold: the let-go (74 and 62 in `flows.csv`, the capital's posts
+with them), retirements (65, 45 wolves; 62, 46), jobless on day 120 (70, 137k; 64, 114k), the field hires (102.9 / 44.6
+and 102.5 / 34.7 at the harvest; 47.0 / 26.1 and 52.8 / 23.1 all days), the crews (130.8 / 117.2 and 135.8 / 122.4;
+grown 0.976 in `r8`), the caravans' net (3.6k a day in `r8`, all towns), hunger (day 46 only: 22 and 20), the rates,
+Gini and the poorer half. The towns' and the capital's purses on day 120 differ a little: the lane read them from the
+run's closing line, a little after day 120's end (the capital's 241.8k against 245.6k at the day's end; Frosthollow
++3% against −4%). Nothing in the readings changes.
+
+**One fix: a town's month below nothing was lost in a save.** With the caravans counted, a town's month of income can
+fall below nothing, its road money out before its takings come home. The lane kept such a month in `tendIncome`, but
+reading a save (`wire::readEconomyMemory`) still took only months at or above nothing. A reload on such a day set the
+month to nothing, and when the takings came home the town counted them without the road money it had sent out.
+
+- **How often.** Worked out from `r8`'s tax and caravan flows: Coldwater's month is below nothing on about 25 days of
+  the 120, down to about −2.2k, Mirebridge's and Southmeadow's on about 6, Frosthollow's on 1. A reload on one of those
+  days gave the town up to about 2k too much income for a month. The runs never reload, so the measures don't change.
+- **The fix** (`Core/RatwWire.cpp`). A month's and a week's income are read as saved, below nothing too. The other
+  sums read with them still take nothing below nothing.
+- **The test.** `aTownCountsItsCaravans` saves the society on the day its month is below nothing and reads it back: the
+  month is as it was. With the fix undone: read back as nothing.
+
+**A test added: a maker keeps its apprentice.** The lane's tests had the apprentice at a stall. The same rule at a
+maker (the apprentice not counted in the excess, at the calibrated hours) had no test: undone, every test still
+passed. `aMakerKeepsItsApprentice` has a bakery selling nothing with four hands, the first apprenticed. A week on it has
+let one go; three weeks on, the other three, and the apprentice is kept. Without the rule: two the first week, all four
+by the third. With the maker's step undone: two the first week.
+
+The review's mutations (`r8-rulesrev/py/mutate.py`): the maker's excess, the apprentice kept, the save, the sellers,
+unpaid-first and the takings. Each was caught. All 67 test binaries pass with the fix (`pg_tests` skipped: no
+database).
+
+**Side effects the lane didn't measure:**
+
+- **The capital's fall is the Houses' unsold goods, not its posts.** In `r8` the capital ends 24k lower than in
+  `run120` (day 120: 245.6k against 270.0k). Over days 28-119, 30.5k more of it went on "unsold, back to the stores":
+  56.2k against 25.7k. That money buys the Houses' caravans' unsold goods back at what they paid, so it goes to the
+  Houses. Its own posts and the town funds it sends moved by under 5k. (The Houses' caravans come home with less than
+  they set out with: 371k of takings for 377k of road money in `r8`, 397k for 410k in `run120`.) The rule doesn't touch
+  the capital's accounts, so this is the run's, but it is money moving to the rich.
+- **The apprentices kept include hands learning from a fellow hand.** An apprenticeship is to any post with a
+  master's skill, a help post too, and a wolf may be taken on beside its own work (on the same cell). A 28-day probe
+  build (printing the kept apprentices at each review; not committed) showed who they are:
+  - At the Heights Market's cheese stall, three of its own city posts (it pays the realm's posts for hire there):
+    one "unloading ships on the wharf", apprenticed to another dock hand of the stall's; one "washing clothes by the
+    wharf", likewise; one who "runs messages about the city", apprenticed to the stall's hand who washes linen for
+    hire. The stall keeps 4 hands, its keeper and these three, from day 42 to day 120 (1 in `run120`), for the 1 it
+    wants. No apprenticeship finished in 120 days in either run, so they are kept for good. The stall pays their
+    wages: its till fell to 29p by day 120 (1,195p in `run120`).
+  - Elsewhere the keeper's own apprentice, as the rule means: the Greatly Bank's young Saltcot, the cooper's, the
+    provisioner's and the smith's helpers, the Wool Shed's.
+  - And a one-hand producer's own farmer or fisher, apprenticed to the neighbouring holding's (79 of the probe's 130
+    sightings). A producer's own post is among its till's posts, so its keeper is counted as an apprentice in its own
+    excess. Today it changes nothing (a one-hand producer has no excess), but see the minors.
+- **The towns' caravans trade less.** Counting the takings, the towns spend more of their money. So their caravans set
+  out with less: 938k of road money over days 28-119 against 1,088k, and 1,298k of takings against 1,428k. Their net
+  is still higher (3.6k a day against 3.4k).
+- **Nothing ran away.** The no-craft businesses that now keep their hands (the arsenal 3, the Blue Vats 3, the Greatly
+  Yard 4, the fletcher 3, the cartographer 2) pay about the rate (73-79p on day 120 against 93p), with no short pay and
+  no post open. Books with posts open on day 120: 104, with 240 posts (129 and 288 in `run120`).
+
+**Minors, not changed:**
+
+- A House in a town would be its town's trader (`World::traderOf`). Its caravan's unsold goods would then be bought
+  back by the town's stores, and the rule would count that against the town's month, though the takings went to the
+  House. No town has a House now (every town caravan in `r8` is its stores').
+- `crewFree`'s `unpaidHand || (outOfWork && unpaid())` is `unpaid()`. The second half is never true today: the out of
+  work's posts (the stand, labouring, the wild, idling) are neither for hire nor a till's.
+- The maker's hire still counts its apprentices as hands (`wanted > hands`), where the model's posts don't. Its let-go
+  no longer does. A maker with an apprentice hires one fewer than the model would.
+- A maker lets go only at the calibrated hours (pace 1), and no 120-day run reaches them (`r8`'s pace is 0.57 on day
+  120). So the makers' half of the apprentice rule hasn't acted in any run yet; its test is the only measure.
+- From before this round, and not changed: a producer's own post is among its till's posts (`helpPosts` leaves out
+  only a merchant's), so a producer's let-go, once the pace reaches 1, may let its own farmer go, whose post is the
+  till's. The lane's rule now keeps such a farmer when it is apprenticed to a neighbour, not otherwise. Worth a look
+  before the realm reaches the calibrated hours.
+
+**For the user** (beside the lane's four):
+
+5. **Whose apprentices are kept.** As built, a business keeps any hand who is apprenticed, to whichever post: a dock
+   hand learning from another dock hand too. Should only the keeper's own apprentice be kept (the model's apprentice
+   learns its firm's trade beside its master)? Recommended: yes. It would let the Heights cheese stall's three surplus
+   hands go, and keep the bank's, the cooper's, the provisioner's and the smith's.

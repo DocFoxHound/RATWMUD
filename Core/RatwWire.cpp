@@ -1271,7 +1271,10 @@ EconomyMemory readEconomyMemory(const Value& o)
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
              {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}})
         for (const auto& [key, v] : o.object(name).fields())
-            if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e12 && key.size() < 200)
+            // (A town's income can fall below nothing, its caravans' road money out before their takings come home:
+            // round 8. Read as saved, or a reload would count the takings without the road money.)
+            if (v.isNumber() && v.asNumber() >= (field == &m.monthIncome || field == &m.weekIncome ? -1e12 : 0) && v.asNumber() < 1e12 &&
+                key.size() < 200)
                 (*field)[key] = v.asNumber();
     for (const auto& v : o.array("closed"))
         if (v.isString() && v.asString().size() < 200)
