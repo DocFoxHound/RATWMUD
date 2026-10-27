@@ -352,6 +352,8 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         j.until = surplusDay_ - 1;
         j.ended = true;
         state_.memory.employers.try_emplace(j.payer, EmployerBook{employerWage(j.payer)}).first->second.shortPay = true;
+        if (noteShorts_)
+            shorts_.push_back({j.payer, "hire", share, account(j.payer) ? account(j.payer)->cash : 0});
     }
     stage = 2;
     ++oddVersion_;                                   // (Its share done: the next it holds, if any, or another.)
