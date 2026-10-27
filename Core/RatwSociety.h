@@ -1376,6 +1376,14 @@ class Society
     {
         return j.until >= 0 && j.payer.rfind("house:", 0) == 0 && (j.kind == "building work" || j.kind == "about the home");
     }
+    // An institution's crew for the week: a House's, a town's works (its treasury's or stores'), the church's masons. With
+    // work by the hours all are posted as a House's are (houseCrewForWeek) and taken by its rules (doc 64, Phase 13, round
+    // 7; the model's staff_to: grown hands first).
+    static bool crewPlace(const OddJob& j)
+    {
+        return houseCrew(j) || (j.until >= 0 && j.kind == "building work" &&
+                                (j.payer == "treasury" || j.payer.rfind("stores:", 0) == 0 || j.payer == SharedChurch));
+    }
     int estateMost() const;                          // A House's estate crew at most: EstateShare of the realm's workers.
     // A business's hire is a day's work (HireSpells at its premises), paid by the day like wages, at its town's pay for a
     // hand (Society::dayWage, doc 64, Phase 6).
@@ -1658,6 +1666,9 @@ class Society
     // hours, nobody's post to pay; the household keeps them, and they take hires as the jobless do (doc 64, Phase 13,
     // round 6: the capital's posts of last resort).
     static bool forHire(const std::string& title);
+    // Work at home that nobody pays (keeps the house, sits by the well, sells from a tray, begs): free to leave for an
+    // institution's crew, with work by the hours (doc 64, Phase 13, round 7). Not an apprentice's: it learns its trade.
+    static bool unpaidAtHome(const std::string& title);
     static constexpr int TaxShare = 10, TitheShare = 10, CapitalShare = 10;     // "a tenth": 1 / these.
     // Starting money (the user, 2026-10-05; RatwFounding.cpp): every resident and every body that keeps a purse begins with
     // a reasonable one, made once when the world is founded (an older save: the first time it runs with this). Placeholders:
@@ -1756,8 +1767,9 @@ class Society
     std::int64_t hireForWeek(const std::string& payer, const std::string& community, const std::string& kind, const std::string& what,
                              const Spot& at, int slots, std::int64_t wage, int days, std::int64_t day);
     Spot townSpot(const std::string& community, const std::string& salt) const;   // Somewhere public in town.
-    // A House's crew for the week, with work by the hours (doc 64, Phase 13, round 6): `slots` hands at `wage` a day in
-    // gangs of CrewGang, each at the next of `spots`. Returns what a day of them costs.
+    // A House's crew for the week, with work by the hours (doc 64, Phase 13, round 6; and a town's works and the church's
+    // masons, round 7): `slots` hands at `wage` a day in gangs of CrewGang, each at the next of `spots`. Returns what a
+    // day of them costs.
     std::int64_t houseCrewForWeek(const std::string& house, const std::string& community, const std::string& kind, const std::string& what,
                                   const std::vector<Spot>& spots, int slots, std::int64_t wage, std::int64_t day);
     // Spends up to `budget` of `payer`'s on goods its town's shops sell that `is` picks, used up ("used in <what>") or
@@ -1803,8 +1815,10 @@ class Society
   private:
     // The odd job this resident holds, claiming one if it is free to (nullptr for none). With `claims`, nothing is claimed:
     // it is set if one would be (deciding at once, RatwResidents.cpp). `community`: its communityOfResident, if known.
+    // `crewFree`: a grown wolf free for an institution's crew at any hour of its day (round 7).
     const OddJob* oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                            std::int64_t ownDayPay = 0, bool* claims = nullptr, const std::string* community = nullptr);
+                            std::int64_t ownDayPay = 0, bool* claims = nullptr, const std::string* community = nullptr,
+                            bool crewFree = false);
   public:
     // A craft's or a producer's hours of work now (the old pace, or with work by the hours the realm's pace toward the
     // calibrated: hoursFor), for work done outside the society's own businesses (a Hold's workshops, doc 64, Phase 11).

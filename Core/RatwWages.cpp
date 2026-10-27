@@ -83,6 +83,11 @@ bool Society::forHire(const std::string& title)
     return titleWages(title).forHire;
 }
 
+bool Society::unpaidAtHome(const std::string& title)
+{
+    return titleWages(title).household && title.find("apprenticed") == std::string::npos;
+}
+
 bool Society::houseHead(const std::string& title)
 {
     // The head of a great house (a lord, a lady, a hall's keeper): unpaid, living on the house's own money.
