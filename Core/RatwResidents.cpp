@@ -978,14 +978,16 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 reason = "Restday: at the morning service.";
             }
         }
-        else if (const auto* hire = merchantRole && !(night || fatigue >= 80 || (life.task == "sleep"sv && fatigue > 15 && hour < 8)) &&
+        else if (const auto* hire = merchantRole && !onHours && !(night || fatigue >= 80 || (life.task == "sleep"sv && fatigue > 15 && hour < 8)) &&
                                             ownerUnpaid(id, *job)
                                         ? [&]() -> const OddJob* {
                                               // A keeper whose till can't pay it, its owner having stopped topping it up
                                               // (round 9, the user, 2026-10-27): free for hire work as an unpaid hand is,
-                                              // a business's or a farm's hire or an institution's crew, at any hour of its
-                                              // day; with none to take, it keeps shop. (Asked as a civilian's post: a
-                                              // merchant's takes no odd job.)
+                                              // a business's or a farm's hire or an institution's crew, outside its own
+                                              // hours (on them it keeps shop, so the business can trade its way back: the
+                                              // user, the round's review); a hire it holds is called back at the day's
+                                              // turn (tendTills). (Asked as a civilian's post: a merchant's takes no odd
+                                              // job.)
                                               Position free = *job;
                                               free.role = "civilian";
                                               bool claims = false;

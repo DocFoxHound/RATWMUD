@@ -1629,6 +1629,10 @@ class Society
     // A keeper whose owner has stopped topping its till up, on a day the till couldn't pay its wage (round 9). (By its
     // post: the till is "till:" and the post's id.)
     bool ownerUnpaid(const std::string& resident, const Position& job) const;
+    // A seasonal field's farm (its till's year in memory.fields), judged over its season: it stops only at a look after a
+    // harvest's end (harvestEndedSince: a HarvestEnd day of the year in (from, day]). (The round-9 review, the user.)
+    bool seasonalField(const Position& p, const std::string& till) const;
+    static bool harvestEndedSince(std::int64_t from, std::int64_t day);
     // A seasonal field's hands' wages for its window's work still ahead (doc 64, Phase 13): kept in its working money
     // from a month before the window opens to its end, so the land pays the hands it hires when they're wanted.
     double fieldWages(const std::string& till) const;

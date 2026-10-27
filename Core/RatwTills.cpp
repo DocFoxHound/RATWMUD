@@ -97,16 +97,17 @@ void Society::tendTills(std::int64_t day)
             s->second.unpaid = day;
     }
     tendOwners(day);
-    // A shop's keeper on a hire, on a day its till pays it again (or its owner tops it up again), is called back to its
-    // shop: it keeps shop, and the hire's place is open to another. (A merchant keeps shop whenever it isn't free for
-    // hire work, ownerUnpaid, and so never came back to a hire it held: its place stood taken and unworked, and its
-    // own post open, while it kept shop. The round-9 review. A producer, as an unpaid hand, comes back to its hire.)
+    // A shop's keeper takes hire work a day at a time: at the day's turn it is called back to its shop from a hire it
+    // holds, and the hire's place is open to another. (A merchant keeps shop on its own hours, and on a day its till
+    // pays it all day: it took hire work only outside its hours on a day its till couldn't pay it, ownerUnpaid. Held on,
+    // the place stood taken and unworked, and its own post open, while it kept shop. The round-9 review; the user,
+    // 2026-10-27. A producer, as an unpaid hand, comes back to its hire.)
     if (workByHours() && wageRule(OwnersStop))
         for (auto& j : oddJobs_)
             for (auto it = j.stage.begin(); it != j.stage.end();)
             {
                 const auto* post = jobOf(it->first);
-                if (!post || post->role != "merchant" || ownerUnpaid(it->first, *post))
+                if (!post || post->role != "merchant")
                 {
                     ++it;
                     continue;
@@ -116,6 +117,22 @@ void Society::tendTills(std::int64_t day)
                 it = j.stage.erase(it);
                 ++oddVersion_;
             }
+}
+
+bool Society::seasonalField(const Position& p, const std::string& till) const
+{
+    // (As tendLabour's fieldOf: a producer whose fields are sown in spring and brought in at the harvest.)
+    const auto* producer = p.role == "merchant" ? nullptr : items::producerFor(p.title);
+    return producer && fieldsOn() && fieldWork(producer->id) && state_.memory.fields.count(till) > 0;
+}
+
+bool Society::harvestEndedSince(std::int64_t from, std::int64_t day)
+{
+    // A day of the year HarvestEnd (the harvest's window over) in (from, day].
+    const auto ends = [](std::int64_t d) {
+        return std::int64_t(std::floor(double(d - HarvestEnd) / calendar::DaysPerYear));
+    };
+    return ends(day) > ends(from);
 }
 
 bool Society::ownerUnpaid(const std::string& resident, const Position& job) const
@@ -369,7 +386,11 @@ void Society::tendOwners(std::int64_t day)
                         memory.shortTills.erase(s);   // (Paid its way: its owner tops it up again.)
                     else
                     {
-                        if (t.stopped < 0 && t.weeks >= StopWeeks)
+                        // (A seasonal field's farm, whose money comes at its harvest, is judged over its season (the
+                        // user, 2026-10-27, the round's review): it stops only if its till is still short at a look
+                        // after a harvest's end, short at every look since before it. `weeks` looks in a row began
+                        // 7 x (weeks - 1) days ago.)
+                        if (t.stopped < 0 && t.weeks >= StopWeeks && (!seasonalField(p, till) || harvestEndedSince(day - 7 * (t.weeks - 1), day)))
                             t.stopped = day;
                         stopped = t.stopped >= 0;
                     }
