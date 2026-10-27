@@ -1400,6 +1400,76 @@ void econWatchsFiles()
     for (const auto& r : rows(out / "players.csv"))
         hiredOnDay1 = hiredOnDay1 || (r.size() > 3 && r[0] == "1" && r[3] == "hired");
     expect(hiredOnDay1, "players.csv has the hiring on day 1");
+    // The run's tracking (doc 64, Phase 13, round 10, lane 0), at the end (two days: no week's record before it): every
+    // coin a tracked account holds came by the journal (nothing unexplained, the founding's first entries too), its
+    // kinds add up to its in and out, as many goods are carried into places as out of them, and each day has its hunger.
+    {
+        const auto header = [](const std::vector<std::vector<std::string>>& all) {
+            std::string head;
+            for (const auto& c : all.empty() ? std::vector<std::string>{} : all.front())
+                head += (head.empty() ? "" : ",") + c;
+            return head;
+        };
+        const auto accounts = rows(out / "accounts.csv"), flows = rows(out / "account_flows.csv"), goods = rows(out / "goods.csv");
+        expect(header(accounts) == "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained",
+               "accounts.csv's columns: " + header(accounts));
+        expect(header(flows) == "day,account,dir,kind,entries,coins", "account_flows.csv's columns: " + header(flows));
+        expect(header(rows(out / "account_peers.csv")) == "day,account,dir,peer,peer_holder,coins", "account_peers.csv's columns");
+        expect(header(goods) == "day,town,item,shelf,homes,stores,made,brought_in,used,eaten,spoiled,worn,carried_in,carried_out,"
+                                "sold,sold_coins,mean_price",
+               "goods.csv's columns: " + header(goods));
+        expect(header(rows(out / "hunger.csv")) == "day,town,residents,hungry,starving,hungry_poor,starving_poor,shelf_food,cheapest",
+               "hunger.csv's columns");
+        expect(header(rows(out / "sentinels.csv")) == "day,kind,subject,value,threshold,weeks,detail", "sentinels.csv's columns");
+        std::map<std::pair<std::string, std::string>, std::int64_t> kinds;   // (Account, dir) -> coins by its kinds.
+        for (std::size_t i = 1; i < flows.size(); ++i)
+            kinds[{flows[i][1], flows[i][2]}] += std::atoll(flows[i][5].c_str());
+        int tills = 0;
+        for (std::size_t i = 1; i < accounts.size(); ++i)
+        {
+            const auto& r = accounts[i];
+            expect(r[0] == "2", "accounts.csv's rows are the end's, day 2: " + r[0]);
+            expect(r[10] == "0", r[1] + "'s balance is explained by its entries: " + r[10] + " unexplained");
+            expect(kinds[{r[1], "in"}] == std::atoll(r[6].c_str()) && kinds[{r[1], "out"}] == std::atoll(r[7].c_str()),
+                   r[1] + "'s kinds add up to its in and out");
+            tills += r[1].rfind("till:", 0) == 0;
+        }
+        expect(tills > 0, "accounts.csv has the tills");
+        std::map<std::string, std::int64_t> carried;   // Good -> in less out.
+        for (std::size_t i = 1; i < goods.size(); ++i)
+            carried[goods[i][2]] += std::atoll(goods[i][12].c_str()) - std::atoll(goods[i][13].c_str());
+        for (const auto& [item, n] : carried)
+            expect(n == 0, item + ": as many carried in as out");
+        expect(goods.size() > 1, "goods.csv has rows");
+        std::set<std::string> hungerDays;
+        for (const auto& r : rows(out / "hunger.csv"))
+            hungerDays.insert(r[0]);
+        expect(hungerDays.count("1") && hungerDays.count("2"), "hunger.csv has each day's record");
+    }
+    // --stop-on-sentinel: a sentinel fired at a week's check (--sentinel-weeks 1: a week's drain, a week's income) ends
+    // the run there, every file written: the end's record that day, its accounts' week once.
+    {
+        const auto stopped = world.parent_path() / "out-stop", logged = world.parent_path() / "log-stop.txt";
+        const auto stop = "RATW_DATA_DIR='" + data + "' '" + RATW_ECON_WATCH + "' '" + world.string() + "' 15 '" + stopped.string() +
+                          "' --deterministic --threads 1 --sentinel-weeks 1 --stop-on-sentinel all > '" + logged.string() + "' 2>&1";
+        expect(std::system(stop.c_str()) == 0, "econ_watch runs to a sentinel: " + slurp(logged));
+        const auto fired = rows(stopped / "sentinels.csv");
+        expect(fired.size() > 1, "a sentinel fires on the little world: " + slurp(logged));
+        const auto day = fired.size() > 1 ? fired.back()[0] : std::string("?");
+        expect(slurp(logged).find("stopped on day " + day + ": the ") != std::string::npos, "the log says where it stopped");
+        std::string last;
+        std::ifstream records(stopped / "days.jsonl");
+        for (std::string line; std::getline(records, line);)
+            last = line.empty() ? last : line;
+        expect(last.find("\"day\":" + day + ",\"when\":\"end\"") != std::string::npos, "the end's record is that day's: " + last.substr(0, 60));
+        std::set<std::string> weeks;
+        for (const auto& r : rows(stopped / "accounts.csv"))
+            weeks.insert(r[0]);
+        expect(weeks.count(day) && !weeks.count(std::to_string(std::atoi(day.c_str()) + 1)), "its accounts' last week is that day's");
+    }
+    const auto unknown = "'" + std::string(RATW_ECON_WATCH) + "' '" + world.string() + "' 0.05 '" + (world.parent_path() / "out-unknown").string() +
+                         "' --stop-on-sentinel famine > /dev/null 2>&1";
+    expect(std::system(unknown.c_str()) != 0, "a sentinel it doesn't know is refused");
     // And it knows flood and strike by name (an hour and a bit: they join, and the strike's Hold takes its hand).
     const auto later = world.parent_path() / "out-names", logged = world.parent_path() / "log-names.txt";
     const auto names = std::string("'") + RATW_ECON_WATCH + "' '" + world.string() + "' 0.05 '" + later.string() +

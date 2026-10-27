@@ -6332,3 +6332,107 @@ The script is `r9/rules/py/summary.py`.
 2. **The crews abroad draw the city's wolves.** The towns' crews are worked by the city's wolves, the city's rate rises
    9p, and the Gini rises. Keep it, or open a town's crew to other towns' wolves only after its own have looked (from
    noon, say)? Recommended: try the later hour, with two seeds.
+
+### Phase 13: round 10, lane 0: tracking (2026-10-27)
+
+The first year's run (`r9/year1-nocrews`, 2ba1084) fell apart after day 120, and telling why took scratch Python over
+`flows.csv`, which counts by kind of holder, not by account. This lane makes one run's files say where the money and the
+goods went, warns while a run is going wrong, and puts a run on a page. It changes nothing the world does. Base: p13 at
+2ba1084.
+
+**The new files** (`Tests/econ_watch.cpp`; weekly from the run's first day, each week's rows at the record of its last
+midnight, and the run's last part-week at its end):
+
+- `accounts.csv`: day, account, holder, town, opening (its balance a week before), balance, in, out, in_entries,
+  out_entries, unexplained. One row a week for every House, town treasury (`stores:`), town account (watch, works,
+  docks, church ...), fund, the capital's treasury, the church, every caravan (its town is the one it set out from) and
+  every till (and a keeper's own purse that is its shop's till). `unexplained` is the balance's change less in and out:
+  0 everywhere in every run so far, so the journal has every coin. The founding's entries made before the first tick
+  come in the first week, and its opening is what each held before them (`Society::pendingJournal`, a read-only look).
+- `account_flows.csv`: day, account, dir (in or out), kind, entries, coins: the same accounts, by kind of entry.
+- `account_peers.csv`: day, account, dir, peer, peer_holder, coins: each account's five biggest payers and payees of the
+  week, and the rest as one `(others: N)`.
+- `goods.csv`: day, town, item (its base), shelf, homes, stores, made, brought_in, used, eaten, spoiled, worn,
+  carried_in, carried_out, sold, sold_coins, mean_price. Every good, not just food. Held at the week's end: on shelves
+  (tills), in homes (larders and pockets), in stores (the towns', the Houses', caravans' and the rest). In the week:
+  made (crafted), brought in (from the land, hunted, a year's store ...), used in crafting, eaten (and drunk),
+  spoiled, worn (worn out, or used up otherwise), carried in and out (between two places; a caravan's place is
+  `(road)`), and sold (by the seller's town). A sale's goods go from its seller to its buyer, every other entry's from
+  its actor to its target (inheritance and theft move goods and coins together). A farm's or a House's till counts
+  where its post works, so the farms' goods are no longer `(none)` as in `food_towns.csv`.
+- `hunger.csv`: day, town, residents, hungry, starving, hungry_poor, starving_poor, shelf_food, cheapest. Each day's
+  record. The poor are those holding less than the cheapest food a resident paid for in that town in the last week
+  (the realm's cheapest where the town had no sale): money-hunger. The rest could pay: food-hunger.
+- `sentinels.csv`: day, kind, subject, value, threshold, weeks, detail; each one also goes to the log as a `SENTINEL`
+  line.
+
+**The sentinels**, checked at each week's record. Each fires once, and again only after its condition has cleared:
+
+| Kind | Fires when |
+|---|---|
+| `drain` | A House, a town's or the capital's treasury, the church or a caravan pays out over 1.3 times what came in (at least 100p out) four weeks in a row. The detail names its top three kinds out. |
+| `share` | A group's share of the money (compare.py's groups: homes, firms, Houses, church, town) is over 1.5 times the model's, or under two-thirds of it, and more than 2 points off, four weeks in a row, from the run's fourth week. The grown wolves out of work count among the homes; `compare.py` leaves them in its "other". |
+| `hoard` | A treasury (a town's, the capital's) or the church holds over three months of its income, and more than it held four weeks before. Its income is the last four weeks' coins in, each payer's net of what it was paid: a caravan's road money comes off its takings. (Without the growth test, the small towns fired in their first weeks: founded with three or four months' reserve, which they were spending.) |
+| `hunger` | A town has hungry wolves (at least 5, and at least 1 in 100) while its shops' shelves hold a unit of food for each. The detail splits them into money-hunger and food-hunger. |
+| `gini` | The households' Gini is up over 0.02 on 30 days before. |
+
+The model's shares are in `tools/econ_model/model_shares.csv` (checked in), written by
+`tools/econ_model/model_shares.py`: week by week for three years, the mean of four seeds. A run longer than that is
+held to the last week. `--model-shares FILE` gives another file; without one, the share sentinel is off and the log
+says so.
+
+**New options.** `--stop-on-sentinel KINDS|all` ends the run at the first week's check where one of those kinds fires,
+as a run's end: the last records, the end's `days.jsonl` record, every file flushed, the digest. It is off unless
+asked. `--sentinel-weeks N` sets the weeks in a row a drain or a share takes to fire, and the weeks of income a hoard is
+weighed on (4 unless asked; 1 for a short trial or a test).
+
+**The report:** `python3 tools/econ_model/report.py RUN` (standard library only) prints:
+
+- month by month (28 days): the households' Gini and the poorer half, each group's share against the model's, the
+  labourer's wage, people, the hungry and the starving with money-hunger and food-hunger apart;
+- each town's treasury, the capital's, the church's and the Houses' purses;
+- each quarter (84 days), the five accounts that lost most (drains) and gained most (pumps), with the kinds that moved
+  most of it. A town's caravans count as one, and the founding's money is left out;
+- the sentinels fired.
+
+`report.py RUN_A RUN_B` sets two runs side by side, month by month, with their sentinels and their last quarter's
+drains. An older run has no `accounts.csv`, `hunger.csv` or `sentinels.csv`, and the report says so. Its quarters are
+the purses' changes from `days.jsonl`, without kinds. Its hunger split is taken from `days.jsonl`'s hungry residents
+against the day's cheapest food bought in `prices.csv`.
+
+**Runs out of /tmp:** `bash tools/econ_run.sh NAME DAYS [econ_watch options]` runs `--deterministic --hours --threads 6`
+(and the options given) on `$RATW_EXPORT` (else `artifacts/economy/export`). It writes into
+`artifacts/economy/<date>-<NAME>/`, with the log as `run.log`, and prints the report at the end (also kept as
+`report.txt`). A name already used that day is refused. `.gitignore` leaves out these runs' CSVs, `days.jsonl` and
+logs, and `artifacts/economy/export/`. A run's `run.txt` and `report.txt` may be committed. (The older runs' files
+committed before this stay tracked.) The big files are left out, not compressed: they can be made again from
+`run.txt`.
+
+**It changes nothing.** Everything new reads only. 5 days without `--hours` still give d034a6316a8d0cb. 9 days
+`--hours --without weekly,giveway,masters,posts,crews,oneplace,owners` give f4ad2f45081e44af, as on 2ba1084. 30 days
+`--hours` give 929504553a38732e on both, with the sentinels at a week (`--sentinel-weeks 1`) too.
+
+**Its cost.** On 30 days `--hours`, three runs each: 0.0165, 0.0164 and 0.0164 ms a tick on 2ba1084, and 0.0165,
+0.0164 and 0.0165 with the tracking (2.37–2.38 min each). That is within the noise, under 1%. The new files come to
+about 2.5 MB in 30 days: `account_peers.csv` 1.3 MB, `account_flows.csv` 0.8 MB, `goods.csv` 0.2 MB, `accounts.csv`
+0.2 MB, `hunger.csv` 7 kB. That is about 30 MB a year, beside the run's 184 MB.
+
+**Tests.** `econ_players_tests` checks the new files on its little world: their columns; that no tracked account has a
+coin unexplained; that each account's kinds add up to its in and out; that as many goods are carried in as out; and that
+each day has its hunger. It also checks that `--stop-on-sentinel all --sentinel-weeks 1` stops at the first week's
+sentinel, with the end's record on that day and the accounts' last week that day's, and that an unknown sentinel is
+refused. All 68 test binaries pass.
+
+**Seen while testing.** At a week (`--sentinel-weeks 1`, 30 days) the drains are there from day 14: three Houses paying
+out 3.6–5.5 times what came in (an owner's investment first, then building work and their works' goods), three small
+towns' stores 1.5–1.9 times (their caravans' road money first), and the capital 1.4 times (town funds). By day 21 the
+firms hold 0.164 of the money against the model's 0.109. On the year's run (`r9/year1-nocrews`, with the old files),
+the report shows:
+
+- The Houses fall from 0.231 of the money (day 28) to 0.000 (day 336), against the model's 0.08.
+- The tills rise from 0.168 to 0.396 (day 224), against the model's 0.25.
+- The church falls from 0.049 to 0.000 by day 365. It loses 138k over days 168–252.
+- Two smokehouses (Greywater, North Wharf) hold 220k and 190k by day 252, as working money for their fish (100k–210k).
+  In days 252–336 North Wharf loses 166k and Greywater 101k.
+- From day 280, about half the hungry could pay the day's cheapest food: food-hunger 83 of 168. On day 308 it is 123
+  of 361, and on day 364, 152 of 408.

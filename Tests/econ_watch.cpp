@@ -5,6 +5,7 @@
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
 //              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers] [--without RULE[,RULE...]]
+//              [--stop-on-sentinel KINDS|all] [--model-shares FILE] [--sentinel-weeks N]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
@@ -102,6 +103,40 @@
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
+// And the run's tracking (doc 64, Phase 13, round 10, lane 0), weekly from the run's first day (each week's rows at
+// the record of its last midnight, and the run's last part-week at its end), for one run's files to tell where the
+// money and goods went without scratch scripts (tools/econ_model/report.py reads them):
+//   accounts.csv    day, account, holder, town, its balance a week before (opening) and now, coins in and out in the
+//                   week and the entries, and what of its balance's change they don't explain (0 when the journal has
+//                   every coin): every House, town treasury, town account (watch, works, church ...), fund, the
+//                   capital's treasury, the church, every caravan (its town the one it set out from) and every till
+//                   (a keeper's own purse that is its shop's till too);
+//   account_flows.csv  day, account, in or out, kind: entries, coins (the same accounts, by kind of entry);
+//   account_peers.csv  day, account, in or out, peer, the peer's holder, coins: each account's five biggest payers
+//                   and payees of the week, and the rest as one "(others: N)";
+//   goods.csv       day, town, good (its base): what's held at the week's end on shelves (tills), in homes (larders
+//                   and pockets) and in stores (the towns', the Houses', caravans' ...), and in the week: made
+//                   (crafted), brought in (from the land, hunted, a year's store ...), used in crafting, eaten (and
+//                   drunk), spoiled, worn out or used up otherwise, carried in from and out to other places (a
+//                   caravan's is "(road)"), sold (units and coins) and its mean price;
+//   hunger.csv      day, town: residents, hungry, starving, and of them those holding less than the cheapest food a
+//                   resident paid for there in the last week (money-hunger; the rest is food-hunger), its shops'
+//                   shelves' food (units), and that cheapest price (each day's record);
+//   sentinels.csv   day, kind, subject, value, threshold, weeks, detail: each sentinel fired at a week's check (and
+//                   in the log): drain (a House, a town's or the capital's treasury, the church or a caravan paying
+//                   out over 1.3 times what came in, at least 100p, four weeks in a row; with its top three kinds
+//                   out), share (a kind of holder's share of the money, as compare.py groups them, off the model's
+//                   (tools/econ_model/model_shares.csv) by over half again or under two-thirds, and by over 2 points,
+//                   four weeks in a row, from the fourth week), hoard (a treasury or the church holding over three
+//                   months of its income: the last four weeks' in, each payer's net of what it was paid back, so a
+//                   caravan's road money comes off its takings; and more than it held four weeks before), hunger (a
+//                   town with hungry wolves, at least 5 and 1 in 100, while its shelves hold a unit of food for each), gini (the households' Gini up over 0.02
+//                   on 30 days before). Each fires once and again only after its condition has cleared.
+// --stop-on-sentinel KINDS|all: the run ends at the first week's check one of those fires (drain, share, hoard, hunger,
+// gini), every file written to there, as a run's end. --model-shares FILE: the model's shares the share sentinel holds
+// the run to (tools/econ_model/model_shares.csv unless asked; without it, that sentinel is off, and the log says so).
+// --sentinel-weeks N: the weeks in a row a drain or a share takes to fire, and the weeks of income a hoard is weighed
+// on (4 unless asked: a month; 1, for a trial's or a test's short run).
 // days.jsonl's going is the realm's going rate ("") and each town's as its employers pay it (a town without a rate of
 // its own, the realm's: doc 64, Phase 13, round 7); its model block has the rates the society keeps (going, "" the
 // realm's, and the towns with their own), and with --players a players block:
@@ -126,6 +161,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -136,6 +172,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 using namespace ratw;
@@ -247,6 +284,25 @@ struct Material
 {
     std::int64_t makerShort = 0, supplierShort = 0, held = 0, broughtIn = 0, crafted = 0, used = 0, bought = 0, carted = 0;
 };
+// An account's week (round 10, lane 0): its coins in and out by kind, and by whom.
+struct AccountWeek
+{
+    std::map<std::string, Flow> in, out;
+    std::unordered_map<std::string, std::int64_t> from, to;
+};
+// A town's good's week: what's held at its end, and what was made, used, moved and sold in it.
+struct GoodsWeek
+{
+    std::int64_t shelf = 0, homes = 0, stores = 0, made = 0, broughtIn = 0, used = 0, eaten = 0, spoiled = 0, worn = 0,
+                 carriedIn = 0, carriedOut = 0, sold = 0, soldCoins = 0;
+};
+// Entries that move goods with coins the same way (Society::shift), not a sale's (Society::transfer: the buyer pays
+// the seller, the goods go the other way). Of those an NPC world makes, inheritance and theft move both.
+bool bothForward(const std::string& kind)
+{
+    return kind == "inheritance" || kind == "stolen" || kind == "sale of a business" || kind == "a house no more" ||
+           kind == "the shop's till" || kind == "a gift" || kind == "picked up" || kind == "operator transfer";
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -256,7 +312,9 @@ int main(int argc, char** argv)
         std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
                      "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n"
-                     "                  [--ask-payers] [--without children|employees|stalls[,...]]\n";
+                     "                  [--ask-payers] [--without children|employees|stalls[,...]]\n"
+                     "                  [--stop-on-sentinel drain|share|hoard|hunger|gini[,...]|all] [--model-shares FILE]\n"
+                     "                  [--sentinel-weeks N]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -272,6 +330,9 @@ int main(int argc, char** argv)
     std::string staple = econ::Players::DefaultStaple;
     std::map<std::int64_t, double> heldPace;        // --hold-pace: the society's day -> its pace.
     bool askPayers = false;                         // --ask-payers.
+    std::set<std::string> stopOn;                   // --stop-on-sentinel (round 10, lane 0).
+    int sentinelWeeks = 4;                          // --sentinel-weeks.
+    fs::path modelShares = fs::path(RATW_SOURCE_DIR) / "tools" / "econ_model" / "model_shares.csv";
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
             from = std::atof(argv[++i]);
@@ -330,6 +391,25 @@ int main(int argc, char** argv)
         }
         else if (std::string(argv[i]) == "--ask-payers")
             askPayers = true;
+        else if (std::string(argv[i]) == "--stop-on-sentinel" && i + 1 < argc)
+            for (std::stringstream list(argv[++i]); list.good();)
+            {
+                std::string name;
+                std::getline(list, name, ',');
+                if (name == "all")
+                    stopOn.insert({"drain", "share", "hoard", "hunger", "gini"});
+                else if (name == "drain" || name == "share" || name == "hoard" || name == "hunger" || name == "gini")
+                    stopOn.insert(name);
+                else
+                {
+                    std::cerr << "--stop-on-sentinel is drain, share, hoard, hunger, gini or all, not " << name << "\n";
+                    return 2;
+                }
+            }
+        else if (std::string(argv[i]) == "--model-shares" && i + 1 < argc)
+            modelShares = argv[++i];
+        else if (std::string(argv[i]) == "--sentinel-weeks" && i + 1 < argc)
+            sentinelWeeks = std::max(1, std::atoi(argv[++i]));
         else if (std::string(argv[i]) == "--without" && i + 1 < argc)
         {
             unsigned off = 0;
@@ -555,6 +635,65 @@ int main(int argc, char** argv)
         }
     }
 
+    // The run's tracking (doc 64, Phase 13, round 10, lane 0): the week's accounts of interest, the towns' goods, and
+    // the food's cheapest price. All read only, as every measure here.
+    std::set<std::string> ownTills;                 // Keepers whose own purse is their shop's till.
+    std::map<std::string, std::string> tillTowns;   // A post's till -> the town its work is in.
+    const auto refreshTills = [&] {
+        ownTills.clear();
+        for (const auto& r : society.authored().residents)
+            if (r.role == "merchant" && society.state().residents.count(r.id) && society.tillOf(r.id) == r.id)
+                ownTills.insert(r.id);
+        for (const auto& p : society.positions())
+            tillTowns["till:" + p.id] = server.communityOf(p.work.cell);
+    };
+    refreshTills();
+    // Where an account is, for the tracking: as placeOf, and a farm's or a House's till where its post's work is (placeOf
+    // knows only the keepers' tills), a caravan's where it set out from.
+    const auto townOf = [&](const std::string& id) -> std::string {
+        auto town = placeOf(id);
+        if (town.empty() && id.rfind("till:", 0) == 0)
+            if (const auto found = tillTowns.find(id); found != tillTowns.end())
+                town = found->second.empty() ? "(country)" : found->second;
+        return town.empty() ? "(none)" : town;
+    };
+    const auto trackedAccount = [&](const std::string& id) {
+        return id.rfind("till:", 0) == 0 || id.rfind("house:", 0) == 0 || id.rfind("stores:", 0) == 0 ||
+               id.rfind("town:", 0) == 0 || id.rfind("caravan:", 0) == 0 || id.rfind("fund:", 0) == 0 || id == "treasury" ||
+               ownTills.count(id) > 0;
+    };
+    std::unordered_map<std::string, AccountWeek> accountWeeks;
+    std::map<std::string, std::int64_t> opening;    // Each tracked account's balance at the week's start.
+    for (const auto& [id, a] : society.state().accounts)
+        if (trackedAccount(id))
+            opening[id] = a.cash;
+    // (The founding's entries made before the first tick, not yet taken, come in the first week: its opening is what each
+    // held before them.)
+    const auto unpaid = [&](const std::string& from, const std::string& to, std::int64_t coins) {
+        if (coins <= 0)
+            return;
+        if (const auto found = opening.find(from); found != opening.end())
+            found->second += coins;
+        if (const auto found = opening.find(to); found != opening.end())
+            found->second -= coins;
+    };
+    for (const auto& e : server.recentEvents())
+        if (e.kind == "economy")
+            unpaid(e.actor, e.target, e.coins);
+    for (const auto& e : society.pendingJournal())
+        unpaid(e.from, e.to, e.coins);
+    std::map<std::string, std::string> caravanFrom;  // A caravan's account -> the town it set out from (kept when it's gone).
+    const auto weekOf = [&](const std::string& id) -> AccountWeek& {
+        const auto [it, made] = accountWeeks.try_emplace(id);
+        if (made && id.rfind("caravan:", 0) == 0 && !caravanFrom.count(id))
+            for (const auto& c : server.roads().caravans)
+                if (c.account == id)
+                    caravanFrom[id] = c.from;
+        return it->second;
+    };
+    std::map<std::pair<std::string, std::string>, GoodsWeek> goodsWeek;   // (Town, good) -> its week.
+    std::map<std::string, std::map<int, double>> foodPrices;   // Town -> day -> the least a resident paid a unit of food.
+
     // The day's tallies.
     // By the day each entry was made (the world stamps it), so the midnight's decisions (a month's reckoning) fall on
     // the new day.
@@ -625,6 +764,68 @@ int main(int argc, char** argv)
             const int d = int(std::floor(e.day));
             if (e.kind == "economy")
             {
+                // The tracking's (round 10, lane 0): the accounts' week, coins from the payer (actor) to the payee.
+                if (e.coins > 0)
+                {
+                    if (trackedAccount(e.actor))
+                    {
+                        auto& w = weekOf(e.actor);
+                        auto& f = w.out[e.detail];
+                        ++f.entries, f.coins += e.coins;
+                        w.to[e.target] += e.coins;
+                    }
+                    if (trackedAccount(e.target))
+                    {
+                        auto& w = weekOf(e.target);
+                        auto& f = w.in[e.detail];
+                        ++f.entries, f.coins += e.coins;
+                        w.from[e.actor] += e.coins;
+                    }
+                }
+                // And the towns' goods: a sale's go from its seller (the target) to its buyer, the rest from the actor to
+                // the target; made from nothing, or used up ("consumed").
+                if (e.quantity > 0 && !e.item.empty() && itemValid(e.item))
+                {
+                    const bool sale = e.coins > 0 && !bothForward(e.detail);
+                    const auto& src = sale ? e.target : e.actor;
+                    const auto& dst = sale ? e.actor : e.target;
+                    const auto base = items::baseOf(e.item);
+                    const auto& k = e.detail;
+                    if (src == dst)
+                    {
+                        // (A meal cooked in one's own pocket.)
+                    }
+                    else if (dst == "consumed")
+                    {
+                        auto& g = goodsWeek[{townOf(src), base}];
+                        (k == "used in crafting" ? g.used
+                         : k == "spoiled"         ? g.spoiled
+                         : k.rfind("eat", 0) == 0 || k == "drunk" ? g.eaten
+                                                                  : g.worn) += e.quantity;
+                    }
+                    else if (src == "made" || src == "outside" || src == "herb patch")
+                    {
+                        auto& g = goodsWeek[{townOf(dst), base}];
+                        (k == "crafted" ? g.made : g.broughtIn) += e.quantity;
+                    }
+                    else
+                    {
+                        const auto from = townOf(src), to = townOf(dst);
+                        if (from != to)
+                            goodsWeek[{from, base}].carriedOut += e.quantity, goodsWeek[{to, base}].carriedIn += e.quantity;
+                        if (sale)
+                        {
+                            auto& g = goodsWeek[{from, base}];
+                            g.sold += e.quantity, g.soldCoins += e.coins;
+                            if (k == "resident food purchase")
+                            {
+                                const double each = double(e.coins) / e.quantity;
+                                auto& least = foodPrices[from].try_emplace(d, each).first->second;
+                                least = std::min(least, each);
+                            }
+                        }
+                    }
+                }
                 if (e.coins > 0 && e.quantity > 0 && e.target.rfind("till:", 0) == 0)
                     tillSold[e.target].first += e.quantity, tillSold[e.target].second += e.coins;
                 if (e.coins > 0 && e.detail.rfind("an odd job: ", 0) == 0)
@@ -795,6 +996,7 @@ int main(int argc, char** argv)
     // masters, apprentices, elders, and the births and deaths since the last day.
     std::set<std::string> lastAlive;
     bool firstMeasure = true;
+    double householdGini = 0;                       // The households' Gini at the latest measure.
     std::ofstream residentsOut(out / "residents.csv");
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
@@ -962,6 +1164,7 @@ int main(int argc, char** argv)
             gini = 2 * weighted / (double(h) * double(total)) - double(h + 1) / double(h);
             poorer = low / double(total);
         }
+        householdGini = gini;                       // (The gini sentinel's: round 10, lane 0.)
         const auto town = society.capital().empty() ? server.communityOf(society.state().residents.begin()->second.homeCell)
                                                     : society.capital();
         const double wage = society.dayWage(town, "labour");
@@ -1352,7 +1555,426 @@ int main(int argc, char** argv)
         playersOut.flush();
     };
 
+    // The run's tracking's files (round 10, lane 0): see the top of the file.
+    std::ofstream accountsOut(out / "accounts.csv"), accountFlowsOut(out / "account_flows.csv"),
+        accountPeersOut(out / "account_peers.csv"), goodsOut(out / "goods.csv"), hungerOut(out / "hunger.csv"),
+        sentinelsOut(out / "sentinels.csv");
+    accountsOut << "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained\n";
+    accountFlowsOut << "day,account,dir,kind,entries,coins\n";
+    accountPeersOut << "day,account,dir,peer,peer_holder,coins\n";
+    goodsOut << "day,town,item,shelf,homes,stores,made,brought_in,used,eaten,spoiled,worn,carried_in,carried_out,sold,"
+                "sold_coins,mean_price\n";
+    hungerOut << "day,town,residents,hungry,starving,hungry_poor,starving_poor,shelf_food,cheapest\n";
+    sentinelsOut << "day,kind,subject,value,threshold,weeks,detail\n";
+    const auto accountTown = [&](const std::string& id) -> std::string {
+        if (id.rfind("caravan:", 0) == 0)
+        {
+            if (const auto found = caravanFrom.find(id); found != caravanFrom.end())
+                return found->second;
+            for (const auto& c : server.roads().caravans)
+                if (c.account == id)
+                    return caravanFrom[id] = c.from;
+            return "(road)";
+        }
+        return townOf(id);
+    };
+
+    // Each town's hungry and starving, by home, and of them those holding less than the cheapest food a resident paid
+    // for there in the last week (the realm's cheapest where the town had no sale); its shops' food (by where each
+    // keeper works). At each day's record, to hunger.csv; and the hunger sentinel's.
+    struct TownHunger
+    {
+        int residents = 0, hungry = 0, starving = 0, hungryPoor = 0, starvingPoor = 0;
+        std::int64_t shelf = 0;
+        double cheapest = 0;
+    };
+    const auto measureHunger = [&](int day) {
+        std::map<std::string, TownHunger> towns;
+        double realm = 0;
+        for (auto& [town, byDay] : foodPrices)
+        {
+            byDay.erase(byDay.begin(), byDay.lower_bound(day - 7));
+            double least = 0;
+            for (const auto& [d, p] : byDay)
+                least = least > 0 ? std::min(least, p) : p;
+            if (least > 0)
+                towns[town].cheapest = least, realm = realm > 0 ? std::min(realm, least) : least;
+        }
+        for (const auto& r : society.authored().residents)
+            if (r.role == "merchant" && society.state().residents.count(r.id))
+                if (const auto* till = society.account(society.tillOf(r.id)))
+                {
+                    const auto town = server.communityOf(r.work.cell);
+                    auto& t = towns[town.empty() ? "(country)" : town];
+                    for (const auto& [item, count] : till->stock)
+                        if (count > 0 && Society::edible(item))
+                            t.shelf += count;
+                }
+        for (const auto& [id, life] : society.state().residents)
+        {
+            const auto* e = server.entity(id);
+            if (!e || e->dead)
+                continue;
+            const auto town = server.communityOf(life.homeCell);
+            auto& t = towns[town.empty() ? "(country)" : town];
+            const auto* a = society.account(id);
+            const double cash = double(a ? a->cash : 0), cheapest = t.cheapest > 0 ? t.cheapest : realm;
+            ++t.residents;
+            t.hungry += life.hunger >= 70;
+            t.starving += life.hunger >= 90;
+            t.hungryPoor += life.hunger >= 70 && (cheapest > 0 ? cash < cheapest : cash <= 0);
+            t.starvingPoor += life.hunger >= 90 && (cheapest > 0 ? cash < cheapest : cash <= 0);
+        }
+        return towns;
+    };
+    const auto writeHunger = [&](int day) {
+        const auto towns = measureHunger(day);
+        for (const auto& [town, t] : towns)
+            if (t.residents || t.shelf)
+                hungerOut << day << ',' << csv(town) << ',' << t.residents << ',' << t.hungry << ',' << t.starving << ','
+                          << t.hungryPoor << ',' << t.starvingPoor << ',' << t.shelf << ',' << t.cheapest << '\n';
+        hungerOut.flush();
+        return towns;
+    };
+
+    // The sentinels (round 10, lane 0), checked at each week's record: see the top of the file.
+    constexpr double DrainRatio = 1.3, DrainLeast = 100, ShareBand = 1.5, ShareLeast = .02, HoardMonths = 3, GiniRise = .02;
+    constexpr int HungryLeast = 5;
+    const int SentinelWeeks = sentinelWeeks;
+    std::map<int, std::vector<double>> modelTargets;   // Day -> the model's homes, firms, Houses, church, town.
+    {
+        std::ifstream file(modelShares);
+        std::string line;
+        for (std::getline(file, line); std::getline(file, line);)
+        {
+            std::stringstream row(line);
+            std::string cell;
+            std::vector<double> values;
+            while (std::getline(row, cell, ','))
+                values.push_back(std::atof(cell.c_str()));
+            if (values.size() == 6)
+                modelTargets[int(values[0])] = {values.begin() + 1, values.end()};
+        }
+        std::cout << (modelTargets.empty() ? "no model shares in " : "model shares from ") << modelShares.string()
+                  << (modelTargets.empty() ? ": the share sentinel is off\n" : "\n");
+    }
+    static const char* const Groups[] = {"homes", "firms", "Houses", "church", "town"};
+    // A kind of holder's group, as compare.py's GROUPS (with the grown wolves out of work among the homes: compare.py
+    // leaves them in its "other").
+    const auto groupOf = [](const std::string& k) {
+        if (k == "merchant" || k == "guard" || k == "producer" || k == "paid civilian" || k == "unpaid civilian" ||
+            k == "apprentice" || k == "child" || k == "retired" || k == "resident" || k == "player" ||
+            k == "adult without work" || k.rfind("resident", 0) == 0)
+            return 0;
+        if (k == "shop till" || k == "house till" || k == "farm till")
+            return 1;
+        if (k == "great house")
+            return 2;
+        if (k == "town church")
+            return 3;
+        if (k == "town treasury" || k == "capital treasury" || k.rfind("town ", 0) == 0)
+            return 4;
+        return -1;
+    };
+    struct Streak
+    {
+        int weeks = 0;
+        bool fired = false;
+        std::int64_t in = 0, out = 0;
+        std::map<std::string, std::int64_t> outKinds;
+    };
+    std::map<std::string, Streak> drains, drifts, hoards, hungers;
+    Streak giniStreak;
+    std::deque<std::map<std::string, std::unordered_map<std::string, std::int64_t>>> treasuryWeeks;   // Peer nets, by week.
+    std::deque<std::map<std::string, std::int64_t>> treasuryOpenings;   // And each one's balance at its week's start.
+    std::map<int, double> giniByDay;
+    std::set<std::string> firedKinds;               // This week's, for --stop-on-sentinel.
+    int firstDay = int(std::floor(server.calendarDays()));
+    const auto fire = [&](int day, const std::string& kind, const std::string& subject, double value, double threshold,
+                          int weeks, const std::string& detail) {
+        sentinelsOut << day << ',' << kind << ',' << csv(subject) << ',' << value << ',' << threshold << ',' << weeks << ','
+                     << csv(detail) << '\n';
+        std::cout << "SENTINEL day " << day << " " << kind << " " << subject << ": " << detail << "\n";
+        firedKinds.insert(kind);
+    };
+    const auto weeksOf = [](int n) { return std::to_string(n) + (n == 1 ? " week" : " weeks"); };
+    const auto pennies_ = [](double coins) {
+        std::ostringstream s;
+        s << std::fixed << std::setprecision(0) << coins << "p";
+        return s.str();
+    };
+    const auto checkSentinels = [&](int day, const std::map<std::string, TownHunger>& hunger) {
+        // Drain: a House, a treasury, the church or a caravan paying out over 1.3 times what came in, four weeks in a row.
+        std::set<std::string> checked;
+        for (const auto& [id, w] : accountWeeks)
+            if (id.rfind("house:", 0) == 0 || id.rfind("stores:", 0) == 0 || id == "treasury" || id == Society::SharedChurch ||
+                id.rfind("caravan:", 0) == 0)
+                checked.insert(id);
+        for (auto& [id, s] : drains)
+            checked.insert(id);
+        for (const auto& id : checked)
+        {
+            std::int64_t in = 0, outgo = 0;
+            const auto w = accountWeeks.find(id);
+            if (w != accountWeeks.end())
+            {
+                for (const auto& [k, f] : w->second.in)
+                    in += f.coins;
+                for (const auto& [k, f] : w->second.out)
+                    outgo += f.coins;
+            }
+            auto& s = drains[id];
+            if (outgo < DrainLeast || double(outgo) <= DrainRatio * double(in))
+            {
+                s = {};
+                continue;
+            }
+            ++s.weeks, s.in += in, s.out += outgo;
+            for (const auto& [k, f] : w->second.out)
+                s.outKinds[k] += f.coins;
+            if (s.weeks != SentinelWeeks)
+                continue;
+            std::vector<std::pair<std::int64_t, std::string>> kinds;
+            for (const auto& [k, c] : s.outKinds)
+                kinds.push_back({-c, k});
+            std::sort(kinds.begin(), kinds.end());
+            std::ostringstream detail;
+            const auto* a = society.account(id);
+            detail << "out/in " << std::fixed << std::setprecision(2) << (s.in ? double(s.out) / double(s.in) : 0.)
+                   << " over " << weeksOf(SentinelWeeks) << " (out " << pennies_(double(s.out)) << ", in " << pennies_(double(s.in))
+                   << "), balance " << pennies_(double(a ? a->cash : 0)) << "; out most: ";
+            for (std::size_t i = 0; i < kinds.size() && i < 3; ++i)
+                detail << (i ? "; " : "") << kinds[i].second << " " << pennies_(double(-kinds[i].first));
+            // (Its value 999 when nothing came in.)
+            fire(day, "drain", id, s.in ? double(s.out) / double(s.in) : 999, DrainRatio, s.weeks, detail.str());
+        }
+        for (auto it = drains.begin(); it != drains.end();)
+            it = it->second.weeks == 0 ? drains.erase(it) : std::next(it);
+        // Share: a kind of holder's share off the model's, four weeks in a row, from the run's fourth week.
+        if (!modelTargets.empty() && day - firstDay >= 7 * SentinelWeeks)
+        {
+            double held[5] = {0, 0, 0, 0, 0}, total = 0;
+            for (const auto& [id, a] : society.state().accounts)
+                if (a.cash > 0)
+                {
+                    total += double(a.cash);
+                    if (const int g = groupOf(holder(server, id)); g >= 0)
+                        held[g] += double(a.cash);
+                }
+            auto target = modelTargets.upper_bound(day);
+            if (target != modelTargets.begin())
+                --target;
+            for (int g = 0; g < 5 && total > 0; ++g)
+            {
+                const double share = held[g] / total, model = target->second[std::size_t(g)];
+                auto& s = drifts[Groups[g]];
+                if (std::abs(share - model) <= ShareLeast || (share <= model * ShareBand && share * ShareBand >= model))
+                {
+                    s = {};
+                    continue;
+                }
+                if (++s.weeks == SentinelWeeks)
+                {
+                    std::ostringstream detail;
+                    detail << std::fixed << std::setprecision(3) << "hold " << share << " of the money against the model's "
+                           << model << " (its day " << target->first << "), off by over half again or a third " << weeksOf(SentinelWeeks)
+                           << " in a row";
+                    fire(day, "share", Groups[g], share, model, s.weeks, detail.str());
+                }
+            }
+        }
+        // Hoard: a treasury or the church holding over three months (28 days) of its last four weeks' income, and more
+        // than it held four weeks before (a town founded with a few months' reserve that it is spending is no hoard).
+        {
+            std::map<std::string, std::int64_t> opened;
+            for (const auto& [id, c] : opening)
+                if (id.rfind("stores:", 0) == 0 || id == "treasury" || id == Society::SharedChurch)
+                    opened[id] = c;
+            treasuryOpenings.push_back(std::move(opened));
+            std::map<std::string, std::unordered_map<std::string, std::int64_t>> nets;
+            for (const auto& [id, w] : accountWeeks)
+                if (id.rfind("stores:", 0) == 0 || id == "treasury" || id == Society::SharedChurch)
+                {
+                    auto& net = nets[id];
+                    for (const auto& [peer, c] : w.from)
+                        net[peer] += c;
+                    for (const auto& [peer, c] : w.to)
+                        net[peer] -= c;
+                }
+            treasuryWeeks.push_back(std::move(nets));
+            if (treasuryWeeks.size() > std::size_t(SentinelWeeks))
+                treasuryWeeks.pop_front(), treasuryOpenings.pop_front();
+            std::set<std::string> treasuries;
+            for (const auto& [id, a] : society.state().accounts)
+                if (id.rfind("stores:", 0) == 0 || id == "treasury" || id == Society::SharedChurch)
+                    treasuries.insert(id);
+            for (const auto& id : treasuries)
+            {
+                std::unordered_map<std::string, std::int64_t> net;
+                for (const auto& week : treasuryWeeks)
+                    if (const auto found = week.find(id); found != week.end())
+                        for (const auto& [peer, c] : found->second)
+                            net[peer] += c;
+                std::int64_t income = 0;
+                for (const auto& [peer, c] : net)
+                    income += std::max<std::int64_t>(0, c);
+                const auto* a = society.account(id);
+                // (Its income a month: four weeks', over the weeks in hand.)
+                const double month = double(income) * 4 / double(treasuryWeeks.size());
+                const double months = income > 0 && a ? double(a->cash) / month : 0;
+                const auto before = treasuryOpenings.front().find(id);
+                const bool grew = a && before != treasuryOpenings.front().end() && a->cash > before->second;
+                auto& s = hoards[id];
+                if (treasuryWeeks.size() < std::size_t(SentinelWeeks) || months <= HoardMonths || !grew)
+                {
+                    s = {};
+                    continue;
+                }
+                ++s.weeks;
+                if (!s.fired)
+                {
+                    s.fired = true;
+                    std::ostringstream detail;
+                    detail << "holds " << pennies_(double(a->cash)) << ", " << std::fixed << std::setprecision(1) << months
+                           << " months of its income (" << pennies_(month) << " a month, each payer net of what it was paid), up from "
+                           << pennies_(double(before->second)) << " " << weeksOf(int(treasuryWeeks.size())) << " before";
+                    fire(day, "hoard", id, months, HoardMonths, s.weeks, detail.str());
+                }
+            }
+        }
+        // Hunger: a town with hungry wolves while its shelves hold a unit of food for each.
+        for (const auto& [town, t] : hunger)
+        {
+            auto& s = hungers[town];
+            if (t.hungry < std::max(HungryLeast, (t.residents + 99) / 100) || t.shelf < t.hungry)
+            {
+                s = {};
+                continue;
+            }
+            ++s.weeks;
+            if (!s.fired)
+            {
+                s.fired = true;
+                std::ostringstream detail;
+                detail << t.hungry << " hungry (" << t.starving << " starving) of " << t.residents << " while its shelves hold "
+                       << t.shelf << " food; " << t.hungryPoor << " of them hold less than the cheapest, " << std::fixed
+                       << std::setprecision(1) << t.cheapest << "p (money-hunger), " << t.hungry - t.hungryPoor << " could pay (food-hunger)";
+                fire(day, "hunger", town, t.hungry, std::max(HungryLeast, (t.residents + 99) / 100), s.weeks, detail.str());
+            }
+        }
+        // Gini: the households' up over 0.02 on 30 days before.
+        if (const auto then = giniByDay.find(day - 30); then != giniByDay.end())
+        {
+            if (householdGini - then->second <= GiniRise)
+                giniStreak = {};
+            else if (++giniStreak.weeks, !giniStreak.fired)
+            {
+                giniStreak.fired = true;
+                std::ostringstream detail;
+                detail << std::fixed << std::setprecision(3) << "the households' Gini " << householdGini << ", up "
+                       << householdGini - then->second << " on day " << day - 30 << "'s " << then->second;
+                fire(day, "gini", "households", householdGini - then->second, GiniRise, giniStreak.weeks, detail.str());
+            }
+        }
+        sentinelsOut.flush();
+    };
+
+    // The week's accounts and goods (round 10, lane 0), at a week's record and the run's end; then a new week.
+    int lastWeek = firstDay;
+    const auto writeWeek = [&](int day) {
+        // (Every account tracked that held money or moved any: a caravan long gone has neither.)
+        std::set<std::string> ids;
+        for (const auto& [id, c] : opening)
+            ids.insert(id);
+        for (const auto& [id, w] : accountWeeks)
+            ids.insert(id);
+        for (const auto& [id, a] : society.state().accounts)
+            if (trackedAccount(id))
+                ids.insert(id);
+        for (const auto& id : ids)
+        {
+            const auto* a = society.account(id);
+            const std::int64_t balance = a ? a->cash : 0;
+            const auto was = opening.find(id);
+            const std::int64_t before = was == opening.end() ? 0 : was->second;
+            const auto w = accountWeeks.find(id);
+            if (w == accountWeeks.end() && balance == 0 && before == 0)
+                continue;
+            std::int64_t in = 0, outgo = 0, inEntries = 0, outEntries = 0;
+            if (w != accountWeeks.end())
+            {
+                for (const auto& [k, f] : w->second.in)
+                    in += f.coins, inEntries += f.entries;
+                for (const auto& [k, f] : w->second.out)
+                    outgo += f.coins, outEntries += f.entries;
+            }
+            accountsOut << day << ',' << csv(id) << ',' << csv(holder(server, id)) << ',' << csv(accountTown(id)) << ',' << before
+                        << ',' << balance << ',' << in << ',' << outgo << ',' << inEntries << ',' << outEntries << ','
+                        << balance - before - in + outgo << '\n';
+            if (w == accountWeeks.end())
+                continue;
+            for (const auto* dir : {"in", "out"})
+            {
+                const auto& kinds = std::string(dir) == "in" ? w->second.in : w->second.out;
+                for (const auto& [k, f] : kinds)
+                    accountFlowsOut << day << ',' << csv(id) << ',' << dir << ',' << csv(k) << ',' << f.entries << ',' << f.coins << '\n';
+                // Its five biggest payers (payees), and the rest as one.
+                const auto& peers = std::string(dir) == "in" ? w->second.from : w->second.to;
+                std::vector<std::pair<std::int64_t, std::string>> top;
+                for (const auto& [peer, c] : peers)
+                    top.push_back({-c, peer});
+                std::sort(top.begin(), top.end());
+                std::int64_t rest = 0;
+                for (std::size_t i = 0; i < top.size(); ++i)
+                    if (i < 5)
+                        accountPeersOut << day << ',' << csv(id) << ',' << dir << ',' << csv(top[i].second) << ','
+                                        << csv(holder(server, top[i].second)) << ',' << -top[i].first << '\n';
+                    else
+                        rest -= top[i].first;
+                if (top.size() > 5)
+                    accountPeersOut << day << ',' << csv(id) << ',' << dir << ',' << csv("(others: " + std::to_string(top.size() - 5) + ")")
+                                    << ",\"\"," << rest << '\n';
+            }
+        }
+        // What each town holds of each good at the week's end: on shelves (tills, and keepers' purses that are their
+        // tills), in homes (larders, and the residents' own), in stores (the rest).
+        for (const auto& [id, a] : society.state().accounts)
+        {
+            if (a.stock.empty())
+                continue;
+            const bool shelf = id.rfind("till:", 0) == 0 || ownTills.count(id);
+            const bool home = !shelf && (id.rfind("home:", 0) == 0 || society.state().residents.count(id));
+            const auto town = accountTown(id);
+            for (const auto& [item, q] : a.stock)
+                if (q > 0)
+                {
+                    auto& g = goodsWeek[{town, items::baseOf(item)}];
+                    (shelf ? g.shelf : home ? g.homes : g.stores) += q;
+                }
+        }
+        for (const auto& [key, g] : goodsWeek)
+            goodsOut << day << ',' << csv(key.first) << ',' << csv(key.second) << ',' << g.shelf << ',' << g.homes << ',' << g.stores
+                     << ',' << g.made << ',' << g.broughtIn << ',' << g.used << ',' << g.eaten << ',' << g.spoiled << ',' << g.worn
+                     << ',' << g.carriedIn << ',' << g.carriedOut << ',' << g.sold << ',' << g.soldCoins << ','
+                     << (g.sold ? double(g.soldCoins) / double(g.sold) : 0.) << '\n';
+        accountsOut.flush();
+        accountFlowsOut.flush();
+        accountPeersOut.flush();
+        goodsOut.flush();
+    };
+    const auto newWeek = [&](int day) {
+        refreshTills();                             // (A keeper's purse that has become its shop's till is tracked from now.)
+        opening.clear();
+        for (const auto& [id, a] : society.state().accounts)
+            if (trackedAccount(id))
+                opening[id] = a.cash;
+        accountWeeks.clear();
+        goodsWeek.clear();
+        lastWeek = day;
+    };
+
     snapshot(int(std::floor(server.calendarDays())), "start");
+    giniByDay[firstDay] = householdGini;
     std::cout << "residents " << society.state().residents.size() << ", makers and suppliers " << makers.size()
               << ", ingredients " << ingredients.size() << ", from calendar day " << server.calendarDays() << "\n"
               << std::flush;
@@ -1406,6 +2028,8 @@ int main(int argc, char** argv)
     };
     if (askPayers)
         askAll(-1);                                 // (Before the first tick: before the society has decided anything.)
+    std::string stopped;                            // The sentinel that ended the run (--stop-on-sentinel).
+    long ticksRun = ticks;
     double tickSeconds = 0;                         // (The server's own time in the day, apart from this watch's.)
     std::int64_t paceDay = -1;                      // (The society's day pace.csv last had.)
     for (long i = 0; i < ticks; ++i)
@@ -1523,6 +2147,20 @@ int main(int argc, char** argv)
             const auto [wageTotal, makerShort] = writeDay(day);
             writePlayers();
             const auto [supply, conserved, median, gini, short_, broke, starving] = snapshot(now, "day end");
+            // The tracking's (round 10, lane 0): the day's hunger, and at a week's record its accounts, goods and
+            // sentinels.
+            giniByDay[now] = householdGini;
+            const auto hunger = writeHunger(now);
+            if ((now - firstDay) % 7 == 0)
+            {
+                firedKinds.clear();
+                checkSentinels(now, hunger);
+                writeWeek(now);
+                newWeek(now);
+                for (const auto& kind : firedKinds)
+                    if (stopOn.count(kind))
+                        stopped = kind;
+            }
             // The roads' standing orders at the day's end (doc 64, Phase 3b): what each asks a week and how short it
             // has fallen since it was last agreed, and what its buyer couldn't pay for.
             {
@@ -1578,6 +2216,12 @@ int main(int argc, char** argv)
             // (Three figures after, as the gini left them before round 7: else the run's last line read "2e+01 min".)
             std::cout << std::defaultfloat << std::setprecision(3) << "\n" << std::flush;
             day = now;
+            if (!stopped.empty())
+            {
+                ticksRun = i + 1;
+                std::cout << "stopped on day " << now << ": the " << stopped << " sentinel fired (--stop-on-sentinel)\n";
+                break;
+            }
         }
         // Between ticks, as a player's command comes in; after the midnight's record, so what they do at midnight is the
         // new day's in days.jsonl as in players.csv and flows.csv.
@@ -1590,6 +2234,9 @@ int main(int argc, char** argv)
     for (const auto& b : server.society().takeBriefs())
         orchestraOut << orchestra::briefText(b) << '\n';
     snapshot(int(std::floor(server.calendarDays())), "end");
+    // The last part-week's accounts and goods (unless the run ended on a week's record).
+    if (const int last = int(std::floor(server.calendarDays())); last != lastWeek)
+        writeWeek(last);
     // As world_check's: where everyone ended up and what they were doing, and the money.
     std::uint64_t digest = 1469598103934665603ULL;
     const auto mix = [&](const void* data, std::size_t size) {
@@ -1608,12 +2255,13 @@ int main(int argc, char** argv)
             mix(&a->cash, sizeof a->cash);
     }
     const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
-    std::cout << "done: " << ticks << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(ticks) << " ms a tick, "
-              << wall / 60 / std::max(1e-9, days) << " min a game day); digest "
+    const double daysRun = days * double(ticksRun) / double(std::max(1L, ticks));
+    std::cout << "done: " << ticksRun << " ticks, " << wall / 60 << " min (" << wall * 1000 / double(std::max(1L, ticksRun))
+              << " ms a tick, " << wall / 60 / std::max(1e-9, daysRun) << " min a game day); digest "
               << std::hex << digest << std::dec << "\n";
     // Where the ticks went (ms a tick): the world's parts, and the schedules by stage.
     const auto& p = server.tickProfile();
-    const auto per = [&](double ms) { return ms / double(std::max<std::int64_t>(1, ticks)); };
+    const auto per = [&](double ms) { return ms / double(std::max<std::int64_t>(1, ticksRun)); };
     std::cout << std::fixed << std::setprecision(4) << "ms a tick: streaming " << per(p.streaming.total) << ", schedules "
               << per(p.schedules.total) << ", movement " << per(p.movement.total) << ", separation " << per(p.separation.total)
               << ", views " << per(p.views.total) << "\nschedules: society " << per(p.stages[0]) << ", bonds " << per(p.stages[1])

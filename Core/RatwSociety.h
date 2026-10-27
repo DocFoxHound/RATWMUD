@@ -882,6 +882,8 @@ class Society
     // For the world's event log; never saved. Keeps at most JournalKept if nobody collects it.
     static constexpr std::size_t JournalKept = 50000;
     std::vector<EconomyEntry> takeJournal();
+    // The entries waiting there, not taken (econ_watch's accounts: what the founding paid before its first tick).
+    const std::vector<EconomyEntry>& pendingJournal() const { return journal_; }
 
   private:
     LifeDay day_;

@@ -34,3 +34,11 @@ __pycache__/
 # The browser client (Client/): its tools and its build.
 /Client/node_modules/
 /Client/dist/
+
+# Economy runs (tools/econ_run.sh: artifacts/economy/<date>-<name>/): their CSVs, days.jsonl and logs are big and
+# reproducible from their run.txt; a run's run.txt and report.txt may be committed. (Older runs' files committed
+# before this stay tracked.) And the world export a run reads.
+/artifacts/economy/*/*.csv
+/artifacts/economy/*/*.jsonl
+/artifacts/economy/*/*.log
+/artifacts/economy/export/
