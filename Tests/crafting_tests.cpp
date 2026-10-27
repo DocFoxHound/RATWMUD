@@ -4517,6 +4517,20 @@ void aStoppedKeeperTakesAHire()
                             bodies[who] = {j.from.cell, j.from.x, j.from.y, false, bodies[who].age};
                     }
         }
+        // (The round-9 review.) The next day its till pays its keeper again: the stall's keeper is called back to its
+        // shop from the work it held, and the woodcutter, an unpaid hand, isn't (it comes back to it as the unpaid do).
+        if (!tillPays)
+            for (const std::string who : {"stall", "cutter"})
+                s.shift("treasury", s.tillOf(who), "", 0, std::int64_t(std::ceil(s.employerWage(s.tillOf(who)))) + 1, "test: a day's wage");
+        s.takeJournal();
+        s.tick(1, 3 + 5. / 24, 0, bodies);
+        std::set<std::string> back;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "called back to its shop")
+                back.insert(e.from);
+        expect(back == (tillPays ? std::set<std::string>{} : std::set<std::string>{"stall"}),
+               std::string(tillPays ? "none held work: nobody" : "its till paying it again, the stall's keeper") + " is called back to its shop (" +
+                   std::to_string(back.size()) + ")");
         expect(s.conserved(), "money stays conserved");
         return took;
     };

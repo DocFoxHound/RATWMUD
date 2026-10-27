@@ -585,7 +585,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                         ++oddVersion_;
                         continue;
                     }
-                    if (!idle)
+                    // (Nor is a keeper's whose till can't pay it, its owner having stopped topping it up: its business
+                    // can't pay the post it left, and an open post would raise the wage it can't pay. Round 9's review.)
+                    const auto* left = k->second.rfind("till:", 0) == 0 ? position(k->second.substr(5)) : nullptr;
+                    if (!idle && !(left && ownerUnpaid(it->first, *left)))
                         ++vacancies_[k->second];
                     ++it;
                 }

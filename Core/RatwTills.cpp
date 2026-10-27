@@ -97,6 +97,25 @@ void Society::tendTills(std::int64_t day)
             s->second.unpaid = day;
     }
     tendOwners(day);
+    // A shop's keeper on a hire, on a day its till pays it again (or its owner tops it up again), is called back to its
+    // shop: it keeps shop, and the hire's place is open to another. (A merchant keeps shop whenever it isn't free for
+    // hire work, ownerUnpaid, and so never came back to a hire it held: its place stood taken and unworked, and its
+    // own post open, while it kept shop. The round-9 review. A producer, as an unpaid hand, comes back to its hire.)
+    if (workByHours() && wageRule(OwnersStop))
+        for (auto& j : oddJobs_)
+            for (auto it = j.stage.begin(); it != j.stage.end();)
+            {
+                const auto* post = jobOf(it->first);
+                if (!post || post->role != "merchant" || ownerUnpaid(it->first, *post))
+                {
+                    ++it;
+                    continue;
+                }
+                record("called back to its shop", it->first, "till:" + post->id, "", 0, 0);
+                j.progress.erase(it->first);
+                it = j.stage.erase(it);
+                ++oddVersion_;
+            }
 }
 
 bool Society::ownerUnpaid(const std::string& resident, const Position& job) const
