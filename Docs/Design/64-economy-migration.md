@@ -6538,3 +6538,63 @@ every day): `r10-food-fix300` (ea4a82e, digest ce0858955ffc97f6) against `r10-ba
    the first open shop of the realm, by holder's name, not the nearest: Frosthollow's walked to the Greywater
    smokehouse. The nearest by the map, or waiting for its own town's shops, would be a small change; it is the old
    rule's ("a long walk for a meal"), so left.
+
+**The user's answers (2026-10-27), built** (ac081dc). The alms' food (question 1) went to lane A. The other two, each with
+work by the hours only:
+
+- **The feast laid in** (`Society::FeastLaidIn`, 134217728; `--without feast`; `Society::layInTheFeast`,
+  `Core/RatwDemand.cpp`). The town's stores already own the feast (`storeFor` a wolf's home: the capital's treasury,
+  a town's `stores:`), so they buy it. At the turn of a festival's day (the calendar's; one a player or the DM calls is
+  not laid in for), each town's stores buy from the food shops of their town a meal's worth (50 of nourishment) for
+  each wolf living there, less the food they hold: meals first, then what feeds most for the money, at each shop's
+  price, no more than half of what a shop holds of a food, as far as the stores can pay ("bought for the festival
+  feast"). At the feast, with no meal in the stores, a wolf is given a meal's worth of the most filling food they hold
+  (six pieces at most). The shops stay shut as before. Every festival, not only one on a Restday: the feast is every
+  festival's, and the capital's stores hold no meals at any of them.
+- **The nearest shop** (`Society::NearestShop`, 268435456; `--without nearest`; decide, `Core/RatwResidents.cpp`). A
+  hungry wolf with no shop of its cell or town open to it goes, whatever its purse, to the open shop nearest it on the
+  map (`LifeDay::onMap`, straight across) whose cheapest food it can pay for, not the realm's first by its keeper's
+  name. With none it asks alms as before. In its turn, as `FoodAtItsPrice`.
+
+**Reproduced.** 5 days without `--hours`: d034a6316a8d0cb. 9 days `--hours --without foodprice,feast,nearest`:
+4ef067b's 23bcbdc710fbcf75; `--without feast,nearest`: ea4a82e's 44f8949a028ab8ac; all three: 9a9ef0303303f212. 30
+days `--hours`: ec498a1a15266d31. A tick, 30 days, two pairs side by side: 0.0306 / 0.0303 ms on 4ef067b, 0.0308 /
+0.0304 here (+0.5%).
+
+**Tests** (`crafting_tests`): `aFestivalsFeastLaidIn`: four wolves and a baker with 40 loaves and 4 meals, the stores
+bare. At a festival's turn the stores buy two meals (half the baker's) and seven loaves (200 of nourishment), and hold
+them; on another day, and without the rule, nothing. At the feast the day's turn lays in what the stores lack and wren
+is given a meal's worth; with only bread left, ash is given four loaves, and wren, fed once, nothing more (without the
+rule, the feast's meal from bare stores gives nothing). `aFarShopIsTheNearest`: a hungry wolf of a town with no shop
+goes to the bakery 200 tiles off, not the one 5,000 off whose keeper's name comes first; without the rule, to that
+one. All 68 tests pass.
+
+**Measured** (300 days as above; money conserved every day): `r10-food-fix300b` (ac081dc, digest 33bfbcf1ec2a04b5)
+against `r10-food-fix300` (the rule above alone) and the baseline. `report.py`:
+
+| Day | Gini (300b / 300 / base) | Poorer half | Firms' share | Hungry (money, food) | Starving |
+|---|---|---|---|---|---|
+| 168 | 0.642 / 0.608 / 0.574 | 0.064 / 0.102 / 0.118 | 0.363 / 0.316 / 0.333 | 0 / 0 / 0 | 0 / 0 / 0 |
+| 224 | 0.736 / 0.686 / 0.663 | 0.026 / 0.039 / 0.047 | 0.410 / 0.382 / 0.396 | 0 / 0 / 0 | 0 / 0 / 0 |
+| 280 | 0.759 / 0.700 / 0.720 | 0.022 / 0.032 / 0.026 | 0.362 / 0.350 / 0.352 | 0 / 0 / 168 (81, 87) | 0 / 0 / 81 |
+| 300 | 0.750 / 0.693 / 0.709 | 0.025 / 0.035 / 0.028 | 0.359 / 0.373 / 0.377 | 276 (268, 8) / 214 (206, 8) / 415 (339, 76) | 223 / 143 / 396 |
+
+The church runs dry on day 292 (300: day 298; the baseline: 276). The towns' treasuries on day 300: 452k / 485k / 524k.
+
+**Read plainly:**
+
+- **The festivals feed.** At Harvest Home (days 230-231) Ridgemere has 1 and 0 hungry at the records (the baseline 7
+  and 20). The stores paid 14.1k for the spring feast (the capital 8.6k), 7.2k for midsummer's, 5.7k for the harvest's
+  (why less each time wasn't looked at). Frosthollow (15 hungry on day 230, 11 of them poor, its shelves
+  holding 29) and Oakhaven, whose shops are bare, still go hungry at a festival: their stores find little to buy.
+- **No more walks to the Sound.** Over the 300 days, hourly rows of hungry-but-able wolves on their way to buy fall from
+  1,812 to 450, and Frosthollow's walks to the Greywater and Eelwater smokehouses from 942 to none.
+- **Food-hunger stays gone; money-hunger comes sooner.** Day 300's food-hunger is 8, as in `fix300`. The hunger
+  sentinel fires on day 294 (Ridgemere, 81 hungry, 36 "could pay"): the day after the church's purse ran dry its poor
+  had been hungry all day (day 293: 92 hungry, 88 poor), the church's purse filled again at the turn (23.7k), and at the record
+  they are eating or fetching from their larders. The church runs dry 6 days before `fix300`'s.
+- **The Gini is higher, and one seed can't say why.** 0.642 against 0.608 on day 168, the firms' share 0.363 against
+  0.316. Two 170-day runs, each with one of the two left out, give 0.629 (without the feast; firms 0.310) and 0.616
+  (without the nearest shop; firms 0.340) on day 168. The feasts are 27k in all, under 1% of the money. The runs part
+  from the first days (the nearest shop) and at the spring feast (day 45), and spread from there about as far as round
+  9's seeds did (0.02-0.03). Two seeds each would tell.
