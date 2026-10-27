@@ -505,7 +505,8 @@ void World::tendNegotiators()
         const auto* porter = o.negotiator.empty() ? nullptr : entity(o.negotiator);
         if (!o.negotiator.empty() && (!porter || porter->dead))
             o.negotiator.clear();
-        const auto* from = town(o.from);
+        // (Its town looked up only for an order with a negotiator on its way: most have none.)
+        const auto* from = !porter || porter->dead ? nullptr : town(o.from);
         if (!porter || porter->dead || !from || porter->cellId != from->market ||
             std::hypot(porter->position.x - from->marketX, porter->position.y - from->marketY) > 3)
         {
