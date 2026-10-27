@@ -36,7 +36,13 @@
 // with no craft lets its surplus help go, not only the stalls and the moneychangers), apprentices (an apprentice is let
 // go as any hand), unpaid (the out of work look for crews from waking too), caravans (a town's budget counts its tax
 // only, not its caravans' net takings). With round 8's four left out, a run is round 7's (1e192c0) to the digest. And
-// round 9's: owners (a lone owner tops up a business short of its wages as before; a run is round 8's, f13f80e).
+// round 9's: weekly (a town's caravans' net takings in its month, as round 8, not on top of its week's budget), giveway
+// (a field's far taker on its way keeps its place), masters (any apprentice is kept, as round 8, not only the keeper's).
+// With those three left out, a run is round 8's (f13f80e) to the digest. And round 9's follow-ups: posts (a town's
+// caravans' week goes to its works with its posts paid from the tax budget and its purse, not its posts' shortfall
+// first), crews (a town's works crew is its own town's alone), oneplace (a wolf done with its day's share of a hire may
+// take a second). With all six left out, a run is round 8's to the digest.
+// And round 9's tills: owners (a lone owner tops up a business short of its wages as before).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -79,6 +85,9 @@
 //                   23:00), and of them those who worked the day's spells, those
 //                   from another town, those of them who worked, and those lodged away from home (doc 64, Phase 13:
 //                   a hire taken from afar);
+//   gaveway.csv     day, hour, each taker of a field's full place that gave way to a nearer hand: its town, how far it
+//                   lives from the field (tiles, straight across), the field's till and town, and the hand it gave way
+//                   to and its town (doc 64, Phase 13, round 9);
 //   payers.csv      (--ask-payers) day, resident: its home and work cells, title, who pays it and as what, at the day's
 //                   record;
 //   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
@@ -342,11 +351,24 @@ int main(int argc, char** argv)
                     off |= Society::UnpaidFirst;
                 else if (name == "caravans")
                     off |= Society::CaravanIncome;
+                else if (name == "weekly")
+                    off |= Society::CaravansAsTheyCome;
+                else if (name == "giveway")
+                    off |= Society::FarGiveWay;
+                else if (name == "masters")
+                    off |= Society::KeepersApprentice;
+                else if (name == "posts")
+                    off |= Society::PostsFirst;
+                else if (name == "crews")
+                    off |= Society::CrewsAbroad;
+                else if (name == "oneplace")
+                    off |= Society::OnePlace;
                 else if (name == "owners")
                     off |= Society::OwnersStop;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans or owners, not " << name << "\n";
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace or owners, not "
+                              << name << "\n";
                     return 2;
                 }
             }
@@ -452,7 +474,9 @@ int main(int argc, char** argv)
         materialsOut(out / "materials.csv"), eventsOut(out / "events.csv"), tradeOut(out / "trade.csv"),
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
-        foodMovesOut(out / "food_moves.csv"), paceOut(out / "pace.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv");
+        foodMovesOut(out / "food_moves.csv"), paceOut(out / "pace.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv"),
+        gaveWayOut(out / "gaveway.csv");
+    gaveWayOut << "day,hour,taker,taker_town,tiles,field,field_town,hand,hand_town\n";
     orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,player_in,player_out,player_goods\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     paceOut << "day,when,society_day,pace\n" << std::setprecision(17);
@@ -605,6 +629,11 @@ int main(int argc, char** argv)
                     tillSold[e.target].first += e.quantity, tillSold[e.target].second += e.coins;
                 if (e.coins > 0 && e.detail.rfind("an odd job: ", 0) == 0)
                     oddPaid[e.target] += e.coins;
+                if (e.detail == "gave way to a nearer hand")    // (Its quantity the tiles, its item the field's till.)
+                    gaveWayOut << d << ',' << std::fixed << std::setprecision(2) << (e.day - d) * 24 << std::defaultfloat << ','
+                               << csv(e.actor) << ',' << csv(society.townOfResident(e.actor)) << ',' << e.quantity << ',' << csv(e.item)
+                               << ',' << csv(society.employerTownOf(e.item)) << ',' << csv(e.target) << ','
+                               << csv(society.townOfResident(e.target)) << '\n';
                 auto& f = flows[d][{e.detail, holder(server, e.actor), holder(server, e.target)}];
                 ++f.entries;
                 f.coins += e.coins;
