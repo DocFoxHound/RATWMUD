@@ -475,6 +475,24 @@ const std::string& Society::foodMade(const std::string& shop) const
     return known.emplace(business->id, first).first->second;
 }
 
+std::int64_t Society::cheapestFood(const std::string& seller)
+{
+    const auto* shop = account(tillOf(seller));
+    if (!shop)
+        return 0;
+    const auto sold = wares(seller);
+    const bool stall = atStall_.count(seller) > 0;
+    std::int64_t least = 0;
+    for (const auto& [item, n] : shop->stock)
+        if (n > 0 && sellsFood(seller, item, sold))
+        {
+            const auto asked = shopPrice(seller, item);
+            const auto price = std::max<std::int64_t>(1, stall ? std::int64_t(std::floor(double(asked) * .9)) : asked);
+            least = least > 0 ? std::min(least, price) : price;
+        }
+    return least;
+}
+
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
 {
     const auto till = tillOf(seller);

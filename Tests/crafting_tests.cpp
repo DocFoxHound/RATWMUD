@@ -5123,6 +5123,55 @@ void aStoppedKeeperTakesAHire()
     Society::setWorkByHours(false);
 }
 
+// A hungry wolf buys where it can pay for food (doc 64, Phase 13, round 10, lane C), with work by the hours: at the
+// bakery's counter, holding the price of its cheapest loaf but less than the bite (a third of a day), it buys and eats;
+// holding less than the loaf it asks alms. Without the rule (as before), with the price of the loaf it asks alms too.
+void aHungryWolfBuysAtItsPrice()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](bool rule, bool loaf) {
+        Society::wageRulesOff(rule ? 0 : Society::FoodAtItsPrice);
+        auto s = folkTown();
+        auto state = s.state();
+        state.residents.at("wren").hunger = 70;
+        expect(s.restore(state), "hungry wren restores");
+        std::map<std::string, LifeBody> bodies = atWork(s);
+        bodies["wren"] = {"bakery", 2.5, 2.5};     // At the counter.
+        double day = 10. / 24;
+        s.tick(1, day, 0, bodies);                  // (The baker at its counter: the bakery open.)
+        const auto cheapest = s.cheapestFood("baker"), bite = s.pennies(4 / 12., "");
+        expect(cheapest > 0 && cheapest < bite, "the bakery's cheapest food (" + std::to_string(cheapest) + "p) under the bite (" +
+                                                    std::to_string(bite) + "p)");
+        const auto want = loaf ? cheapest : cheapest - 1, cash = s.account("wren")->cash;
+        if (cash > want)
+            s.shift("wren", "treasury", "", 0, cash - want, "test: wren's purse");
+        else
+            s.shift("treasury", "wren", "", 0, want - cash, "test: wren's purse");
+        s.takeJournal();
+        bool ate = false, alms = false;
+        for (int i = 0; i < 400 && !ate; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            ate = s.resident("wren")->hunger < 60;
+            alms = alms || s.resident("wren")->task == "seeking alms";
+        }
+        int bought = 0;
+        for (const auto& e : s.takeJournal())
+            bought += e.kind == "resident food purchase" && e.from == "wren" ? e.quantity : 0;
+        expect(s.conserved(), "money stays conserved");
+        return std::tuple{bought, ate, alms};
+    };
+    const auto [bought, ate, alms] = run(true, true);
+    expect(bought > 0 && ate && !alms, "with the price of a loaf and less than the bite, wren buys and eats: bought " + std::to_string(bought));
+    const auto [boughtShort, ateShort, almsShort] = run(true, false);
+    expect(boughtShort == 0 && almsShort, "a penny short of the loaf, wren asks alms");
+    const auto [boughtBefore, ateBefore, almsBefore] = run(false, true);
+    expect(boughtBefore == 0 && almsBefore, "without the rule, with the price of a loaf, wren asks alms (as before)");
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -5210,6 +5259,7 @@ int main()
         aLoneOwnerStopsToppingUp();
         aStoppedKeeperTakesAHire();
         aFarmIsJudgedAfterItsHarvest();
+        aHungryWolfBuysAtItsPrice();
     }
     catch (const std::exception& error)
     {

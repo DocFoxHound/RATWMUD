@@ -876,6 +876,57 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                     shop = &open->second.serve;
                     break;
                 }
+        // Where a hungry wolf buys (round 10, lane C: FoodAtItsPrice, with work by the hours). Holding a day's wage it goes
+        // to that shop, as before. With less it goes where it can pay for something to eat: the nearest such shop of its
+        // cell, else the first of its town, else (none of its cell or town open) the first of all; with none, it asks
+        // alms. (Before, it went only with the bite, a third of a day, while a loaf costs a twelfth: those between asked
+        // alms, and when the church had nothing, went hungry with the price of a loaf.) Prices are worked out on first
+        // asking, so in its turn. Without the rule: with the bite, at that shop.
+        const bool atItsPrice = workByHours() && wageRule(FoodAtItsPrice);
+        const auto buysAt = [&]() -> const Spot* {
+            const auto purse = spendable(id);
+            if (!atItsPrice)
+                return purse >= bite ? shop : nullptr;
+            if (purse >= aDay)
+                return shop;
+            if (atOnce)
+                throw DecideInTurn{};
+            const auto pays = [&](const std::string& holder) {
+                const auto least = holder == id ? 0 : cheapestFood(holder);
+                return least > 0 && least <= purse;
+            };
+            const Spot* found = nullptr;
+            bool open = false;                      // (A shop of its cell or its town is open to it.)
+            if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
+                for (const auto i : here->second)
+                {
+                    const auto& at = shopList[i]->second.serve;
+                    open = open || shopList[i]->first != id;
+                    if ((!found || std::hypot(at.x - body.x, at.y - body.y) < std::hypot(found->x - body.x, found->y - body.y)) &&
+                        pays(shopList[i]->first))
+                        found = &at;
+                }
+            if (!found && !home.empty())
+                if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
+                    for (const auto i : town->second)
+                    {
+                        open = open || shopList[i]->first != id;
+                        if (pays(shopList[i]->first))
+                        {
+                            found = &shopList[i]->second.serve;
+                            break;
+                        }
+                    }
+            if (!found && !open)
+                for (const auto* any : shopList)
+                    if (pays(any->first))
+                    {
+                        found = &any->second.serve;
+                        break;
+                    }
+            return found;
+        };
+        const Spot* buyAt = nullptr;
         // Hungry, with nothing to eat about it or at home, and no shop of its town with food left though some are open:
         // the meal it wanted, counted at one of those (by lot), in its turn (Society::missedMeal; doc 64, Phase 13).
         c.missed = nullptr;
@@ -940,10 +991,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
         }
         // (A keeper whose own shelves hold nothing to eat buys a meal elsewhere too.) Only with the price of a meal.
-        else if (hunger >= 55 && !carriesFood && spendable(id) >= bite && shop)
+        else if (hunger >= 55 && !carriesFood && shop && (buyAt = buysAt()) != nullptr)
         {
             task = "buy food";
-            goal = *shop;
+            goal = *buyAt;
             reason = onDuty ? "A short meal break at the shop." : "Hungry; buying food at the shop.";
         }
         else if (hunger >= 55 && !carriesFood && !onDuty && shop && shop->cell != ""sv)
