@@ -26,6 +26,13 @@
 #include <string_view>
 #include <thread>
 
+// A small lambda called from several places in a hot loop, made part of the loop (roadWay's relax).
+#if defined(__GNUC__)
+#define RATW_INLINE __attribute__((always_inline))
+#else
+#define RATW_INLINE
+#endif
+
 namespace ratw
 {
 using namespace std::string_view_literals;
@@ -3431,6 +3438,19 @@ Vec2 World::alongWay(Vec2 from, const std::vector<Vec2>& way, double fraction)
     return at;
 }
 
+void World::RoadMap::walkGrid()
+{
+    const int pw = width + 2;
+    walk.assign(std::size_t(std::max(0, pw)) * std::size_t(std::max(0, height + 2)), 0);
+    for (int y = 0; y < height; ++y)
+    {
+        const auto* row = &weight[std::size_t(y) * std::size_t(width)];
+        auto* into = &walk[std::size_t(y + 1) * std::size_t(pw) + 1];
+        for (int x = 0; x < width; ++x)
+            into[x] = row[x] > 0;
+    }
+}
+
 World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const
 {
     constexpr std::size_t Lookahead = 32;           // Tiles a straight run may skip.
@@ -3491,47 +3511,62 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
             s.wanted[std::size_t(t)] = 1, s.target[std::size_t(t)] = i;
     const auto weight = [&](int i) { return Tenths[m.weight[std::size_t(i)]]; };
     // Which tiles may be walked, on a grid with a border of none around the cell's (so a tile's neighbours need no
-    // looking at the map's edges). Where it starts and where it may end may be on tiles not to be walked (a door's
-    // step): they count as made ground.
+    // looking at the map's edges): the map's own (RoadMap::walk), copied only when the last call's was another map's.
+    // Where it starts and where it may end may be on tiles not to be walked (a door's step): they count as made ground,
+    // for this call (shut again at its end).
     const int pw = w + 2;
     auto& walk = s.walk;
-    walk.assign(std::size_t(pw) * std::size_t(h + 2), 0);
-    for (int y = 0; y < h; ++y)
+    if (s.walkOf != found->second)
     {
-        const auto* row = &m.weight[std::size_t(y) * std::size_t(w)];
-        auto* into = &walk[std::size_t(y + 1) * std::size_t(pw) + 1];
-        for (int x = 0; x < w; ++x)
-            into[x] = row[x] > 0;
+        walk = m.walk;
+        s.walkOf = found->second;
     }
     const auto bordered = [&](int i) { return std::size_t(i / w + 1) * std::size_t(pw) + std::size_t(i % w + 1); };
-    walk[bordered(start)] = 1;
+    s.opened.clear();
+    const auto open = [&](int i) {
+        if (auto& tile = walk[bordered(i)]; !tile)
+            tile = 1, s.opened.push_back(bordered(i));
+    };
+    open(start);
     for (const Vec2 t : targets)
-        walk[bordered(tileOf(t))] = 1;
-    const auto walkable = [&](int i) { return walk[bordered(i)] != 0; };
+        open(tileOf(t));
     auto& g = s.g;
     auto& previous = s.previous;
-    // The tiles to look at, cheapest first and then by index: a heap of each one's cost's bits over the tile (costs are
-    // never negative, so the keys sort as the costs and tiles do).
-    auto& queue = s.queue;
-    queue.clear();
-    const std::greater<std::uint64_t> later;
-    const auto push = [&](float cost, int tile) {
+    // The tiles to look at, cheapest first and then by index: each one's key, its cost's bits over the tile (costs are
+    // never negative, so the keys sort as the costs and tiles do), the cheapest taken out first. Kept in slots by tenths
+    // of their cost (a bucket queue): a key put in costs at least what was last taken out (a step adds to it), and no
+    // more than a step's most (a diagonal at the dearest weight, 25.5: 361 tenths) beyond it, so the slots ahead of the
+    // last taken out, round to it again, hold every key in order of their tenths; the least of the first slot holding any
+    // is the least of all, the next a heap would give.
+    static_assert(RoadScratch::Slots > 362, "a step's dearest tenths, and one, fit in the slots");
+    auto& slots = s.slots;
+    slots.resize(RoadScratch::Slots);
+    for (auto& slot : slots)
+        slot.clear();
+    s.queued = 0;
+    std::size_t tenth = 0;                          // The tenths of the cost last taken out.
+    const auto push = [&](float cost, int tile) RATW_INLINE {
         std::uint32_t bits;
         std::memcpy(&bits, &cost, sizeof bits);
-        queue.push_back(std::uint64_t(bits) << 32 | std::uint32_t(tile));
-        std::push_heap(queue.begin(), queue.end(), later);
+        slots[std::size_t(double(cost) * 10) % RoadScratch::Slots].push_back(std::uint64_t(bits) << 32 | std::uint32_t(tile));
+        ++s.queued;
     };
     const auto pop = [&] {
-        std::pop_heap(queue.begin(), queue.end(), later);
-        const std::uint64_t top = queue.back();
-        queue.pop_back();
+        while (slots[tenth % RoadScratch::Slots].empty())
+            ++tenth;
+        auto& slot = slots[tenth % RoadScratch::Slots];
+        const auto least = std::min_element(slot.begin(), slot.end());
+        const std::uint64_t top = *least;
+        *least = slot.back();
+        slot.pop_back();
+        --s.queued;
         return top;
     };
     g[std::size_t(start)] = 0;
     s.touched.push_back(start);
     push(0.f, start);
     int reached = -1;
-    while (!queue.empty())
+    while (s.queued > 0)
     {
         const std::uint64_t top = pop();
         const auto bits = std::uint32_t(top >> 32);
@@ -3545,7 +3580,7 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
             reached = current;
             break;
         }
-        const auto relax = [&](int next, bool diagonal) {
+        const auto relax = [&](int next, bool diagonal) RATW_INLINE {
             const double step = Steps[diagonal][m.weight[std::size_t(next)]];
             if (const float through = float(cost + step); through < g[std::size_t(next)])
             {
@@ -3607,9 +3642,11 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
                 bool clear = true;
                 for (int sample = 1; sample <= samples && clear; ++sample)
                 {
+                    // (tileOf, its column and row kept for the walk grid's border.)
                     const double f = double(sample) / samples;
-                    const int t = tileOf({anchor.x + (p.x - anchor.x) * f, anchor.y + (p.y - anchor.y) * f});
-                    clear = walkable(t);
+                    const int tx = std::clamp(int(std::floor(anchor.x + (p.x - anchor.x) * f)), 0, w - 1),
+                              ty = std::clamp(int(std::floor(anchor.y + (p.y - anchor.y) * f)), 0, h - 1), t = ty * w + tx;
+                    clear = walk[std::size_t(ty + 1) * std::size_t(pw) + std::size_t(tx + 1)] != 0;
                     direct += each * (m.weight[std::size_t(t)] ? weight(t) : 1.0);
                 }
                 if (!clear)
@@ -3629,6 +3666,8 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
     for (const int t : s.touched)
         g[std::size_t(t)] = std::numeric_limits<float>::infinity(), previous[std::size_t(t)] = -1;
     s.touched.clear();
+    for (const auto b : s.opened)
+        walk[b] = 0;
     for (const Vec2 t : targets)
         s.wanted[std::size_t(tileOf(t))] = 0;
     if (roadWays_.size() >= WaysKept)

@@ -904,7 +904,10 @@ void World::indexRoads()
         if (land)
             grounds_[id] = {double(snow) / double(land), double(marsh) / double(land), double(sand) / double(land)};
         if (any)
+        {
+            map->walkGrid();
             roadMaps_[id] = std::move(map);
+        }
     };
     // Each seam whose own tile is a road, with the seam it pairs with on the far side.
     std::map<std::string, std::pair<std::string, std::string>> onRoad;   // Seam -> (its cell, the far cell).

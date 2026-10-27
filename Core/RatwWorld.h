@@ -1454,7 +1454,7 @@ class World
     // The seams that cross on a road (a dirt road, a street, flagstones) on both sides, and each cell's neighbours a
     // road leads to. Worked out once at load from every cell's tiles (indexRoads), so a route never depends on which
     // cells happen to be in memory. Routes count a step along a road as 1 and one overland as OverlandCost.
-    std::set<std::string> roadSeams_;
+    std::unordered_set<std::string> roadSeams_;     // (Only ever asked whether a seam is one: hashed.)
     std::map<std::string, std::set<std::string>> roadExits_;
     static constexpr int OverlandCost = 3;
     void indexRoads();
@@ -1465,6 +1465,10 @@ class World
     {
         int width = 0, height = 0;
         std::vector<std::uint8_t> weight;
+        // Which tiles may be walked (1: a weight over 0), on a grid with a border of none around the map's, (width + 2)
+        // by (height + 2): made with the weights (walkGrid), so roadWay needn't make it again at every call.
+        std::vector<std::uint8_t> walk;
+        void walkGrid();
     };
     std::map<std::string, std::shared_ptr<const RoadMap>> roadMaps_;
     // The cheapest of `targets` to walk to from `from` on a cell's road map, and the way there (from `from`, straight
@@ -1483,10 +1487,16 @@ class World
     {
         std::vector<float> g;
         std::vector<int> previous;
-        std::vector<std::uint8_t> wanted, walk;     // (walk: each call's own, with a border.)
+        std::vector<std::uint8_t> wanted, walk;     // (walk: walkOf's RoadMap::walk, its start and targets opened.)
+        std::shared_ptr<const RoadMap> walkOf;      // The map walk was copied from (held: never another at its address).
+        std::vector<std::size_t> opened;            // walk's tiles opened for this call, shut again after.
         std::vector<std::size_t> target;            // The first target on each wanted tile.
         std::vector<int> touched;                   // Tiles whose g was set.
-        std::vector<std::uint64_t> queue;
+        // The tiles to look at, by tenths of their cost (roadWay's bucket queue): slot k % Slots holds the keys of cost
+        // k tenths to k + 1 (none further than a step's most ahead of the cheapest, so never two tenths in one slot).
+        static constexpr std::size_t Slots = 512;
+        std::vector<std::vector<std::uint64_t>> slots;
+        std::size_t queued = 0;
         RoadScratch() = default;
         RoadScratch(const RoadScratch&) {}
         RoadScratch& operator=(const RoadScratch&) { return *this; }
