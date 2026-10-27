@@ -449,13 +449,28 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         if (!holder.empty())
             keyOf[holder] = key;
     }
+    // A child's place on an institution's crew is the day's (doc 64, Phase 13, round 7: the grown first, the model's
+    // staff_to): open again at dawn to the grown free for it, the child's again from mid-afternoon if none took it.
+    // (Before, a child that took one held it the week.) (With work by the hours.)
+    if (workByHours())
+        for (auto& j : oddJobs_)
+            if (j.until >= day && crewPlace(j))
+                for (auto it = j.stage.begin(); it != j.stage.end();)
+                    if (ageOf(it->first) < 16)
+                    {
+                        j.progress.erase(it->first);
+                        it = j.stage.erase(it);
+                        ++oddVersion_;
+                    }
+                    else
+                        ++it;
     // Its hires not yet taken are posts open too. And a House's crews' places, under its own key (doc 64, Phase 13,
     // round 6: a House short of its crew showed in no measure); they pay the going rate (the model's), so no review moves
     // them, and no book is kept. (With work by the hours.)
     for (const auto& j : oddJobs_)
         if (j.until >= day && j.payer.rfind("till:", 0) == 0 && int(j.stage.size()) < j.slots)
             vacancies_[j.payer] += j.slots - int(j.stage.size());
-        else if (workByHours() && j.until >= day && !j.ended && houseCrew(j) && int(j.stage.size()) < j.slots)
+        else if (workByHours() && j.until >= day && !j.ended && crewPlace(j) && int(j.stage.size()) < j.slots)
             vacancies_[j.payer + "|crew"] += j.slots - int(j.stage.size());
     const auto crewKey = [](const std::string& key) { return key.size() > 5 && key.compare(key.size() - 5, 5, "|crew") == 0; };
     // A post whose holder is away on another business's hire stands open while it's away (doc 63's model: a hire opens
@@ -485,7 +500,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                 }
     if (workByHours())
         for (auto& j : oddJobs_)
-            if (j.until >= day && ((j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop")) || houseCrew(j)))
+            if (j.until >= day && ((j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop")) || crewPlace(j)))
                 for (auto it = j.stage.begin(); it != j.stage.end();)
                 {
                     const auto k = keyOf.find(it->first);

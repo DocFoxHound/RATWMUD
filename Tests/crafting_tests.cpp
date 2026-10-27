@@ -1894,8 +1894,9 @@ void aHouseKeepsItsCrew()
                 out.push_back(&j);
         return out;
     };
-    // A working morning to `end`: each minute, the hands at the spot of the hire they hold. (To 11:00 a hand does no
-    // share, so it isn't free to take a second place, as it is once its first is done.)
+    // A working morning to `end`: each minute, the hands at the spot of the hire they hold. (To 10:15 a hand does no
+    // share, so it isn't free to take a second place, as it is once its first is done. The idle look from 9:00 for an
+    // institution's crew since round 7; before, from 10:00, and the first morning ran to 11:00.)
     const auto morning = [](Society& s, std::map<std::string, LifeBody>& bodies, std::int64_t d, double end, const std::function<void()>& first) {
         for (double t = 9; t < end; t += 1. / 60)
         {
@@ -1947,7 +1948,7 @@ void aHouseKeepsItsCrew()
                "the fishery hires for more hands the same day, at half the going rate: " +
                    (fishery ? std::to_string(fishery->slots) + " at " + std::to_string(fishery->pay / fishery->slots) : std::string("none")) +
                    " against " + std::to_string(crew.front()->pay / crew.front()->slots));
-        morning(*s, bodies, 7, 11, {});
+        morning(*s, bodies, 7, 10.25, {});
         auto on = takers(*s);
         expect(on["house:house_fell|about the home"] == 12 && on["house:house_fell|building work"] == 1 && !on.count(till + "|a hand"),
                "the idle take the better-paid, the House's posts: " + told(on));
@@ -2003,7 +2004,7 @@ void aHouseKeepsItsCrew()
     }
     {
         auto [s, bodies] = week(2);
-        morning(*s, bodies, 7, 11, {});
+        morning(*s, bodies, 7, 10.25, {});
         auto on = takers(*s);
         int hired = 0;
         for (const auto& j : s->oddJobs())
@@ -2013,6 +2014,117 @@ void aHouseKeepsItsCrew()
                "paying twice the going rate, the fishery's hire is taken first: " + told(on));
         expect(s->conserved(), "money stays conserved");
     }
+    Society::setWorkByHours(false);
+}
+
+// Round 7 (the user, 2026-10-26: the institutions' crews go to grown wage earners first, the model's staff_to): a town's
+// works crew and the church's masons by a House's crew rules, and their places the grown's at any hour, before the
+// children's; a child's place is the day's.
+void aTownsCrewTakesTheGrownFirst()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    const auto far = [](ResidentSpec r) {
+        r.home = r.evening = {"far_homes", 2.5, 2.5};
+        return r;
+    };
+    const int keepers = 6, children = 6;
+    for (int i = 1; i <= keepers; ++i)
+        roster.residents.push_back(far(person("keeper" + std::to_string(i), "keeps the house", {"far_homes", 2.5, 2.5}, "civilian")));
+    for (int i = 1; i <= children; ++i)
+    {
+        auto child = far(person("child" + std::to_string(i), "plays in the square", {"far_square", 2.5, 2.5}, "civilian"));
+        child.purse = 0;                             // (Poor: it looks every afternoon.)
+        roster.residents.push_back(child);
+    }
+    roster.residents.push_back(far(person("stall", "keeping the stall", {"far_market", 2.5, 2.5})));   // (Where its gangs work.)
+    for (int i = 1; i <= 136; ++i)
+        roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+    roster.economy.treasury = 1000000;
+    Society s(Roster::None);
+    s.configure(roster);
+    s.setCapital("town");
+    LifeDay plan;
+    plan.communityOf = [](const std::string& cell) { return cell.rfind("far_", 0) == 0 ? std::string("far") : std::string("town"); };
+    s.setDay(plan);
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    s.openAccount("stores:far");
+    auto bodies = atWork(s);
+    for (int i = 1; i <= children; ++i)
+        bodies["child" + std::to_string(i)].age = 12;
+    const auto rested = [&] {
+        auto st = s.state();
+        for (auto& [id, life] : st.residents)
+            life.hunger = life.fatigue = 0;
+        expect(s.restore(st), "rested");
+    };
+    for (std::int64_t d = 1; d <= 6; ++d)
+    {
+        s.tick(1, double(d) + .5 / 24, 0, bodies);
+        rested();
+    }
+    // The reckoning's eve: the town's money and the church's.
+    expect(s.shift("treasury", "stores:far", "", 0, 100000, "test: the town's money") &&
+               s.shift("treasury", Society::SharedChurch, "", 0, 100000, "test: the church's money"),
+           "the town and the church have money");
+    s.tick(1, 7 + .5 / 24, 0, bodies);
+    expect(s.estateMost() == 14, "a tenth of its 143 grown wolves: " + std::to_string(s.estateMost()));
+    const auto crewOf = [&](const std::string& payer) {
+        int slots = 0, gangs = 0;
+        for (const auto& j : s.oddJobs())
+            if (j.payer == payer && j.kind == "building work" && j.until >= 7)
+                slots += j.slots, ++gangs;
+        return std::make_pair(slots, gangs);
+    };
+    const auto works = crewOf("stores:far"), masons = crewOf(Society::SharedChurch);
+    expect(works.first == 14 && works.second == 2, "the town's works crew is what its budget pays, up to a tenth of the realm, in gangs of twelve: " +
+                                                       std::to_string(works.first) + " in " + std::to_string(works.second));
+    expect(masons.first == 14 && masons.second == 2,
+           "and the church's masons: " + std::to_string(masons.first) + " in " + std::to_string(masons.second));
+    // The day: each minute, the hands at the spot of the place they hold.
+    const auto until = [&](std::int64_t d, double from, double end) {
+        for (double t = from; t < end; t += 1. / 60)
+        {
+            s.tick(60, double(d) + t / 24, 0, bodies);
+            std::set<std::string> placed;
+            for (const auto& j : s.oddJobs())
+                for (const auto& [who, stage] : j.stage)
+                    if (stage < 2 && !j.ended && placed.insert(who).second)
+                        bodies[who] = {j.from.cell, j.from.x, j.from.y, false, bodies[who].age};
+        }
+    };
+    const auto on = [&](const std::string& who) {
+        int n = 0;
+        for (int i = 1; i <= (who == "keeper" ? keepers : children); ++i)
+            for (const auto& j : s.oddJobs())
+                if (j.payer == "stores:far" && j.stage.count(who + std::to_string(i)))
+                {
+                    ++n;
+                    break;
+                }
+        return n;
+    };
+    until(7, 8, 9.5);
+    expect(on("keeper") == keepers && on("child") == 0,
+           "by half past nine the grown keeping the house hold the town's places, and no child: " + std::to_string(on("keeper")) + ", " +
+               std::to_string(on("child")));
+    until(7, 9.5, 13.5);
+    rested();                                        // (Fed by noon.)
+    until(7, 13.5, 15);
+    expect(on("child") >= 2, "from mid-afternoon the children take what's left (some of them take other odd jobs): " + std::to_string(on("child")));
+    // The next day's pass: a child's place is the day's, the grown keep theirs the week.
+    s.tick(1, 8 + .5 / 24, 0, bodies);
+    expect(on("child") == 0 && on("keeper") == keepers,
+           "at the day's pass the children's places open again, the grown's stand: " + std::to_string(on("child")) + ", " + std::to_string(on("keeper")));
+    // (A keeper whose first share was done by mid-morning may hold a second place.)
+    int held = 0;
+    for (const auto& j : s.oddJobs())
+        held += j.payer == "stores:far" && j.until >= 8 ? int(j.stage.size()) : 0;
+    expect(held >= keepers && s.vacanciesOf("stores:far|crew") == works.first - held,
+           "the town's places not taken are posts open: " + std::to_string(s.vacanciesOf("stores:far|crew")) + " (" + std::to_string(held) + " held)");
+    expect(s.conserved(), "money stays conserved");
     Society::setWorkByHours(false);
 }
 
@@ -3723,6 +3835,7 @@ int main()
         aHireTakenIsNoPostOpen("carries loads for hire");
         theCapitalsPostsOfLastResort();
         aHouseKeepsItsCrew();
+        aTownsCrewTakesTheGrownFirst();
         theCordGoesRoundNoMore();
         aFullStoreLosesItsHours();
         aTownsTradeBringsInMore();

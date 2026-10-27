@@ -106,7 +106,7 @@ void Society::indexOddJobs()
             if (stage < 2)
                 oddHeld_.try_emplace(who, i);        // (The first it holds, as a search down the list finds.)
         oddByTown_[j.community].push_back(i);
-        if (j.until >= 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || houseCrew(j)))
+        if (j.until >= 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || crewPlace(j)))
             oddHiresByTown_[j.community].push_back(i);   // (And a House's crews: its posts, doc 64, Phase 13, round 6.)
         if (j.until >= 0 && j.kind == "a hand" && farmHire(j))
             oddFarmHires_.push_back(i);
@@ -114,7 +114,7 @@ void Society::indexOddJobs()
 }
 
 const Society::OddJob* Society::oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
-                                         std::int64_t ownDayPay, bool* claims)
+                                         std::int64_t ownDayPay, bool* claims, bool crewFree)
 {
     if (!claims)
         indexOddJobs();                              // (On the game thread: the threads' was made before they began.)
@@ -138,7 +138,10 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     const bool child = age >= 8 && age < 16;
     if (child && (hour < 12 || (!poor && std::hash<std::string>{}(id + "|work|" + std::to_string(surplusDay_)) % 3 != 0)))
         return nullptr;
-    if (hour >= 18 || hour < (poor ? 8 : 10) || job.role != "civilian")
+    // (A grown wolf free for an institution's crew looks for one at any hour of its day: round 7.)
+    crewFree = crewFree && !child && workByHours();
+    const bool early = hour < (poor ? 8 : 10);
+    if (hour >= 18 || (early && !crewFree) || job.role != "civilian")
         return nullptr;
     const auto community = communityOfResident(id);
     // Its town's jobs, and the farms' hires (which anyone from a city may take), in the list's order.
@@ -167,7 +170,8 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     }();
     // (Called to the land: a field's hire only.)
     const bool called = !jobless && !child && !better && hour >= 8 && hour < 10 && calledToTheLand(id, job, age, surplusDay_);
-    if (!(jobless || child || better || called || (poor && !job.paid)))
+    const bool looks = !early && (jobless || child || better || called || (poor && !job.paid));
+    if (!looks && !crewFree)
         return nullptr;
     const auto& group = child ? friendGroup(id) : std::string();
     // (A farm's hire may be taken by anyone living in a city too: RatwFarmhands.cpp.)
@@ -197,12 +201,43 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     // with them by their pay (round 6: they were taken after every business's hire, by their place in the list, and went
     // mostly untaken). (With work by the hours: at the seconds' pace, the first open one, as it was.)
     OddJob* chosen = nullptr;
-    if (jobless && !child && !called && workByHours())
+    // A wolf free for a crew (round 7; the model's staff_to, the idle first): the best-paid institution's crew place open to
+    // it, and if it is out of work the businesses' hires too, at any hour; at equal pay a business's hire before a crew
+    // (the land first: its hands stay on the farms), then the first by the list. None: at the hour it may look at all, on.
+    if (crewFree)
+    {
+        std::int64_t best = 0;
+        bool bestCrew = false;
+        const auto bestOf = [&](const std::vector<std::size_t>& list) {
+            for (const auto i : list)
+            {
+                auto& j = oddJobs_[i];
+                const bool crew = crewPlace(j);
+                if (j.until < 0 || j.slots <= 0 || !(crew || (jobless && (j.kind == "a hand" || j.kind == "a hand at the shop"))))
+                    continue;
+                const auto pay = j.pay / j.slots;
+                if ((pay > best || (pay == best && chosen && (crew == bestCrew ? &j < chosen : !crew))) && open(j))
+                    best = pay, bestCrew = crew, chosen = &j;
+            }
+        };
+        if (!indexed)
+            bestOf(*look);
+        else
+        {
+            if (const auto hires = oddHiresByTown_.find(community); hires != oddHiresByTown_.end())
+                bestOf(hires->second);
+            if (fromCity && jobless)
+                bestOf(oddFarmHires_);
+        }
+        if (!chosen && !looks)
+            return nullptr;
+    }
+    if (!chosen && jobless && !child && !called && workByHours())
     {
         std::int64_t best = 0;
         const auto bestOf = [&](const std::vector<std::size_t>& list) {
             for (const auto i : list)
-                if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || houseCrew(j)) &&
+                if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || crewPlace(j)) &&
                                            (j.pay / j.slots > best || (j.pay / j.slots == best && chosen && &j < chosen)) && open(j))
                     best = j.pay / j.slots, chosen = &j;
         };
@@ -337,10 +372,11 @@ void Society::advanceOddJob(const std::string& id, int seconds)
         if (CrewMend > 0 && houseCrew(j) && j.kind == "building work" && workByHours() && condition(j.community) < 100)
             mendTown(j.community, CrewMend);
     }
-    else if (houseCrew(j) && workByHours())
+    else if (crewPlace(j) && workByHours())
     {
-        // A House that can't pay a day's share: that gang ends, shut from now, and next week's budget posts what it pays
-        // (the model's staff_to). (Its other hands are owed nothing more for a day it can't pay, as a business's.)
+        // A House (a town, the church: round 7) that can't pay a day's share: that gang ends, shut from now, and next
+        // week's budget posts what it pays (the model's staff_to). (Its other hands are owed nothing more for a day it
+        // can't pay, as a business's.)
         j.until = surplusDay_ - 1;
         j.ended = true;
     }

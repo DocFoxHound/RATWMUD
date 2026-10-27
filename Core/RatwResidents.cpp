@@ -933,20 +933,29 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         else if (const auto* odd = [&]() -> const OddJob* {
                      bool claims = false;
+                     const bool jobless = (job == &stand && !keepsHouse) || job->title == LabourTitle || outworkTitled(job->title) ||
+                                          idlePost(job->title) || (workByHours() && job->paid && [&] {
+                                              // (Work for hire that nobody pays takes hires as the jobless do: doc 64,
+                                              // Phase 13, round 6.)
+                                              const auto payer = payerOf(id, *job, body.age);
+                                              return (payer.account.empty() && forHire(job->title)) || idleHand(id, payer);
+                                          }());
+                     // Free for an institution's crew at any hour, before the children (the user, 2026-10-26; doc 64, Phase
+                     // 13, round 7; the model's staff_to): a grown wolf of working age out of work, idle at its business,
+                     // for hire, keeping its household's house, or at work at home that nobody pays (an unpaid post at its
+                     // own home too, not a House's head's). Not one retired, nor an apprentice.
+                     const bool crewFree = workByHours() && body.age >= 16 && body.age < RetireAge && job->role == "civilian"sv &&
+                                           job->title != "retired"sv && job->title.rfind("apprenticed", 0) != 0 &&
+                                           (jobless || keepsHouse ||
+                                            (job->paid ? unpaidAtHome(job->title)
+                                                       : !houseHead(job->title) && payerOf(id, *job, body.age).account.empty()));
                      const auto* held =
-                         oddJobFor(id, *job, (job == &stand && !keepsHouse) || job->title == LabourTitle || outworkTitled(job->title) || idlePost(job->title) ||
-                                                 (workByHours() && job->paid && [&] {
-                                                     // (Work for hire that nobody pays takes hires as the jobless do:
-                                                     // doc 64, Phase 13, round 6.)
-                                                     const auto payer = payerOf(id, *job, body.age);
-                                                     return (payer.account.empty() && forHire(job->title)) || idleHand(id, payer);
-                                                 }()),
-                                   body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
+                         oddJobFor(id, *job, jobless, body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
                                    // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
                                    job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
                                        ? lookingFor(id, payerOf(id, *job, body.age), *job, absoluteDay)
                                        : 0,
-                                   atOnce ? &claims : nullptr);
+                                   atOnce ? &claims : nullptr, crewFree);
                      if (claims)
                          throw DecideInTurn{};      // (Taken in its turn: a job has room for so many.)
                      return held;

@@ -179,6 +179,13 @@ void Society::institutionsWeek(std::int64_t day)
         const double month = day < MonthDays ? held / (k + 1) : monthIncomeOf(id);
         return std::int64_t(std::clamp((month + a2 * (held - k * month)) / 4, 0., held));
     };
+    // Where a crew's gangs of CrewGang work, with work by the hours: about its town, each at its own spot.
+    const auto gangsAbout = [&](const std::string& community, const std::string& salt, int most) {
+        std::vector<Spot> spots;
+        for (int k = 0; k * CrewGang < std::min(most, estateMost()); ++k)
+            spots.push_back(townSpot(community, salt + "|" + std::to_string(k)));
+        return spots;
+    };
     // The wages it paid this week are its own posts' (the watch, the clergy, the Town Works): out of its budget first.
     const auto wagesPaid = [&](const std::string& id) {
         const auto found = memory.wagesWeek.find(id);
@@ -216,10 +223,17 @@ void Society::institutionsWeek(std::int64_t day)
             budget -= relief + wagesPaid(id);
         if (budget <= 0 || community.empty())
             continue;
-        // Its works: a crew hired for the week with most of the rest, materials with what's left.
+        // Its works: a crew hired for the week with most of the rest, materials with what's left. With work by the hours,
+        // by a House's crew rules (doc 64, Phase 13, round 7; the model's treasury_week staffs its works to its budget):
+        // as many as that pays, up to a tenth of the realm's workers, in gangs about its town. (It was twelve at most, in
+        // one place: Oakhaven's was full from day 77 and the rest of its budget went unspent.)
         const auto wage = std::int64_t(std::ceil(goingRate(community) - 1e-9));
         const int crew = int(budget * 8 / 10 / std::max<std::int64_t>(1, wage * 7));
-        budget -= 7 * hireForWeek(id, community, "building work", "the town's works", townSpot(community, id + "|works"), crew, wage, 7, day);
+        if (workByHours())
+            budget -= 7 * houseCrewForWeek(id, community, "building work", "the town's works", gangsAbout(community, id + "|works", crew),
+                                           std::min(crew, estateMost()), wage, day);
+        else
+            budget -= 7 * hireForWeek(id, community, "building work", "the town's works", townSpot(community, id + "|works"), crew, wage, 7, day);
         buyAndUse(id, community, building, budget, "the town's works", false);
     }
     // The church: its relief (at least a tenth of its budget), its clergy, its works, and its own masons.
@@ -235,8 +249,15 @@ void Society::institutionsWeek(std::int64_t day)
             const auto community = capital();
             budget -= buyAndUse(SharedChurch, community, building, budget / 2, "the church's works", false);
             const auto wage = std::int64_t(std::ceil(goingRate(community) - 1e-9));
-            hireForWeek(SharedChurch, community, "building work", "the church's masons", townSpot(community, "church|masons"),
-                        int(budget / std::max<std::int64_t>(1, wage * 7)), wage, 7, day);
+            const int masons = int(budget / std::max<std::int64_t>(1, wage * 7));
+            // (With work by the hours, as a House's crew, up to a tenth of the realm's workers: the model's fabric. It was
+            // twelve every week, and the rest of its budget stayed in its purse: round 7.)
+            if (workByHours())
+                houseCrewForWeek(SharedChurch, community, "building work", "the church's masons", gangsAbout(community, "church|masons", masons),
+                                 std::min(masons, estateMost()), wage, day);
+            else
+                hireForWeek(SharedChurch, community, "building work", "the church's masons", townSpot(community, "church|masons"), masons,
+                            wage, 7, day);
         }
     }
     // The Houses: retainers, finery, works and an estate crew.
@@ -269,10 +290,8 @@ void Society::institutionsWeek(std::int64_t day)
         // tenth of the realm's workers, in gangs about its town, keeping its fabric (CrewMend). (It was twelve at most, in
         // its hall, and they went mostly untaken.)
         const int most = std::min(crew, estateMost());
-        std::vector<Spot> spots;
-        for (int k = 0; k * CrewGang < most; ++k)
-            spots.push_back(townSpot(h.community, h.id + "|estate|" + std::to_string(k)));
-        houseCrewForWeek(h.id, h.community, "building work", "the estate of " + h.name, spots, most, wage, day);
+        houseCrewForWeek(h.id, h.community, "building work", "the estate of " + h.name, gangsAbout(h.community, h.id + "|estate", most), most,
+                         wage, day);
     }
     memory.wagesWeek.clear();
     ++memory.revision;

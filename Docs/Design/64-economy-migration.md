@@ -4962,3 +4962,215 @@ in `bestOf`. More hires taken means more walking, and that cost is in the errand
    leave as it is. With so few grown takers, keeping them would change little, and it would need the hires saved.
 6. **The towns' works crews and the church's masons weighed by pay too** (as round 5's text suggested)? Recommended:
    not here. Their budgets are the capital's question (decision 2).
+
+### Phase 13: the institutions' crews go to grown wage earners first (round 7)
+
+The user's decision (2026-10-26): the institutions' crews go to grown wage earners first, as the model's `staff_to`
+staffs them. This is round 7's second lane (the round 7 plan: the labour market is the first, the tills' working money
+the third). It applies with work by the hours only.
+
+**The model** (`tools/econ_model/model.py`): `house_week`, `church_week` and `treasury_week` each staff a crew through
+`staff_to`, as many as the rest of the week's budget pays at the going rate, up to `len(workers) // 10` (the Houses'
+estates and the church's fabric) or `// 5` (the treasury's works). The idle take the places first, then hands drawn from
+other posts by pay. Nobody under 16 works.
+
+**The game before this round** (run120, round 6's merge at 18a0d81):
+
+- **Who looked.** A grown wolf looked for odd jobs only if it was out of work (with its business idle, or for hire,
+  counted so), poor with an unpaid post, drawn by better pay (8:00 to 10:00) or called to the land; and not before 10:00
+  (8:00 if poor). Children looked from noon and took grown work from 14:00, and a child that took a crew place held it
+  the week.
+- **The sizes.** The Houses' crews were budget-sized (round 6). The towns' works crews and the church's masons were
+  still `hireForWeek`'s twelve at most, in one place.
+- **Who took them.** Children took 52% of the crews' slot-days in all: 47% of the Houses' estate places, 49% of their
+  retainers', 46% of the towns' and 94% of the church's. About 76 of 140 places were worked a day.
+
+**What the towns' treasuries did with their budgets** (run120, days 28-119). The towns' treasuries rose from 158k to
+289k (+83%), outside the ±20% band:
+
+- **Two towns hold the rise.** Oakhaven went from 36k to 147k and Larkfield from 33k to 72k. Coldwater fell from 15k to
+  0.5k, Mirebridge and Southmeadow fell a little, Frosthollow rose a little.
+- **The money is the caravans'.** The towns' stores fund their towns' caravans: 10.0k a day of road money out, 13.4k
+  of takings back, and 0.6k of unsold goods bought back. Every town's own rules spend more than its tax (net -60 to
+  -500 a day each), so the rise is the trade's margin, and it lands in Oakhaven and Larkfield.
+- **The budget rule doesn't see that margin.** A town's income for its budget is its tax and the capital's share
+  (`earnedToday_`), 0.2-0.5k a day a town. The caravans' takings are not income. They reach the budget only as holdings
+  over two months of tax, 0.4 of the excess a month, a tenth a week. So a town that trades well piles up money until the
+  excess is about ten weeks of its margin.
+- **The crew cap left Oakhaven's unspent.** Oakhaven's crew was at the twelve every week from day 77, while its budget
+  by the rule came to about 10k-15k a week (147k held on day 120, 8k a month of tax). It spent about 5.5k a week. What
+  the cap kept back went to materials, and the town's shops had few to sell (185p a day).
+- **In Larkfield, untaken places.** Its crew was seven to ten, under the cap until day 119, but 40% of its places went
+  untaken (473 of 796 slot-days worked), and an untaken place's pay stays in the purse.
+- **The church's masons were at the twelve every week.** Its purse rose from 271k on day 28 to 305k (+12.5%).
+
+So both: the cap left Oakhaven's budget (and the church's) unspent, and the budget rule, which counts only tax as a
+town's income, leaves the trade's margin to pile up. This round lifts the cap and keeps the rule.
+
+**What changed** (`Core/RatwResidents.cpp`, `RatwOddJobs.cpp`, `RatwInstitutions.cpp`, `RatwLabour.cpp`,
+`RatwSociety.h`, `RatwWages.cpp`):
+
+- **Who is free for a crew** (`crewFree`, at the decision in `RatwResidents.cpp`). A grown wolf of working age (16 to
+  `RetireAge`), a civilian, not retired and not an apprentice, and any of:
+  - out of work (as the game counted it before: no post, labouring for the Town Works, working the wild, idling);
+  - idle at its own business (`idleHand`);
+  - working for hire with nobody to pay it (`forHire`: carries loads, washes linen, runs messages);
+  - keeping its household's house (the household rule's keeper, `keepsHouse`);
+  - at work at home that nobody pays (`Society::unpaidAtHome`): its title has the words of the posts `payerOf` gives
+    no payer ("keeps the house", "keeping the house", "sells from", "picks through", "sits ", "sits by", "telling
+    stories", "plays", "beg"), but not "apprenticed";
+  - an unpaid post with no payer (`payerOf` gives it to the household: one worked at its holder's own home), not a
+    House's head's.
+
+  Why these: nobody pays them a wage, and none of them makes anything (the game has no hawking or begging trade behind
+  those titles). The model has no such posts: every grown wolf is a worker, and `staff_to` draws the idle first.
+  In run120 on day 120 this is about 115 grown wolves by title, besides the idle hands and the household keepers:
+  "keeps the house" 50, "at home in the Heights" 23, "sells from a tray in the street" 18, "sits and watches the world"
+  6, "at lessons" 5, beggars 7, "sits by the well" 3, "at leisure" 2 and two without work. The unpaid posts of a
+  House's family and officers ("counting the House's money", "keeps the House's ships' accounts", "trading Mossgrave
+  grey") are paid by the House, so they don't count; `residents.csv` doesn't show the payer of the 20 or so others.
+- **At any hour, before the children** (`oddJobFor`). A wolf free for a crew looks from waking, not from 10:00 (8:00 if
+  poor). It takes the best-paid institution's crew place open to it in its town. One out of work weighs the businesses'
+  hires in the same look (a city wolf the farms' too). At equal pay a business's hire comes before a crew, so the land
+  keeps its hands at the same pay; then the first by the list. If none is open and the hour is before its usual one, it
+  looks no more. Children still look from noon and take crew places from 14:00.
+- **A child's crew place is the day's** (`tendLabour`). At the day's pass a child's hold on an institution's crew place
+  ends, so the place is open again at dawn to the grown free for it, and the child's again from mid-afternoon if none
+  took it. Before, a child that took a place held it the week. The task asked "before children"; without this, a place
+  a child took on the reckoning day was out of the grown's reach all week.
+- **The towns' works crews and the church's masons by the Houses' crew rules** (`institutionsWeek`). With work by the
+  hours they are posted through `houseCrewForWeek`: as many as the budget's share pays at the going rate, up to
+  `estateMost()` (a tenth of the realm's grown wolves, about 85), in gangs of `CrewGang` (12) about the town
+  (`townSpot`, one spot a gang), no more than a day of them the purse pays. Their places are crew places
+  (`Society::crewPlace`): weighed with the hires by pay in `bestOf`, counted open under `<payer>|crew` when untaken, a
+  holder's post left open while it's away, a farmer called back to its fields from them (the round 6 call-back, now on
+  every institution's crew), a gang shut if its payer can't pay a day.
+- **The budget rules are as they were.** A town's crew is still 0.8 of its week's budget after relief and its posts'
+  wages, materials with the rest. The church's masons are still the rest after its relief, its posts' wages and half
+  for its works' materials. So what the crews spend comes out of what was unspent (the cap's) or spent on materials.
+  The cap of a tenth of the realm is the Houses' (`EstateShare`), not the model's fifth for the treasury's works: the
+  game has seven treasuries to the model's one, and their budgets bind first.
+- **The seconds' pace is as it was.** A 5-day run gives d034a6316a8d0cb, as 18a0d81 does. A 9-day run (past the day-7
+  reckoning) gives 9ee1ea39ea8c7553, and every file but `run.txt` is identical to 18a0d81's.
+
+**Tests** (each fails with its change undone; seven mutations, one at a time, all caught; the script is
+`r7-crews/py/mutate.py` in the scratch folder):
+
+- `crafting_tests` `aTownsCrewTakesTheGrownFirst`. A far town of six wolves keeping the house, six poor children and a
+  stall; the capital's 136 scribes; 143 grown in all.
+  - The far town's works crew is 14 in gangs of twelve and two, and so is the church's masons' (with the old rule: 12 in
+    one).
+  - By 9:30 on the reckoning day the six keepers hold places on the town's crew and no child does (with `crewFree` off,
+    without the early look, or without the towns' crews in the index: none).
+  - From mid-afternoon children take what's left.
+  - At the next day's pass the children's places are open again and the keepers' stand (with the release undone: 4
+    children still hold them).
+  - The places untaken stand open under `stores:far|crew`, and money is conserved.
+- `crafting_tests` `aHouseKeepsItsCrew`: its first morning now runs from 9:00 to 10:15, not 11:00. Its idle wolves look
+  from 9:00 now, and a share done by 10:20 would free a hand to take a second place. With the crews left out of the new
+  look, the idle take the fishery's half-pay hire (11 and 2): caught.
+- All suites pass: 67 binaries, `pg_tests` skipped (no database). `troubles_tests` and `world_tests` failed once each
+  under the machine's load (another session's runs beside them) and passed alone.
+
+**Measured.** 120 days of DEV's export, `--deterministic --hours --threads 6`, one seed, against run120 (18a0d81, digest
+b7ef41c1a845a700), run on the same harness:
+
+- `c1`: this branch, digest c5be1b159ea60f94.
+- `c2`: a trial build, not committed, digest b7ec0c620d1f0aff: the same, but the out-of-work and the idle hands keep
+  their old hours and their old look. Only the keepers and those at unpaid work at home are free for a crew at any
+  hour.
+
+Money was conserved every day in each run. Each run's only hungry day is day 46 (run120 9, `c1` 4, `c2` 27), with none
+starving. Crew places are a day's averages over days 1-119 (`hires.csv`, sampled at 23:00), the rest day 120 unless
+said. The scripts are `r7-crews/py/crews.py`, `land.py`, `fieldpay.py`, `towncrews.py` and `townflows.py` in the
+scratch folder, beside round 6's `weeks.py`.
+
+| | run120 | `c1` | `c2` |
+|---|---|---|---|
+| Crew places posted / worked a day, all institutions | 139.8 / 75.6 | 148.8 / 131.1 | 146.4 / 132.2 |
+| the Houses' estate crews | 66.4 / 32.0 | 58.6 / 48.7 | 58.5 / 48.9 |
+| the Houses' retainers | 40.1 / 20.3 | 35.4 / 33.3 | 35.6 / 34.0 |
+| the towns' works crews | 21.9 / 15.1 | 26.3 / 21.0 | 24.0 / 21.5 |
+| the church's masons | 11.4 / 8.3 | 28.5 / 28.2 | 28.3 / 28.0 |
+| Grown takers' share of the crews' slot-days (estates, retainers, towns, church) | 0.48 (0.53, 0.51, 0.54, 0.06) | 0.98 (0.97, 0.99, 0.94, 1.00) | 0.97 (0.95, 1.00, 0.96, 1.00) |
+| The towns' treasuries, day 28 → 120 | 158k → 289k (+83%) | 167k → 284k (+70%) | 154k → 267k (+74%) |
+| Oakhaven's, day 28 → 120 | 36k → 147k | 47k → 154k | 34k → 122k |
+| The church's, day 28 → 120 | 271k → 305k (+12.5%) | 244k → 222k (−9%) | 245k → 223k (−9%) |
+| The Houses' money, and their share | 750k, 0.149 | 530k, 0.107 | 515k, 0.105 |
+| Tills' share; households' share | 0.278; 0.401 | 0.272; 0.465 | 0.269; 0.471 |
+| Paid civilians / unpaid / without work | 813k / 82k / 13k | 1,029k / 137k / 27k | 1,042k / 150k / 37k |
+| Poorer half | 0.105 | 0.115 | 0.122 |
+| Gini | 0.587 | 0.592 | 0.569 |
+| Ridgemere's wage | 67.5p | 64.2p | 65.5p |
+| Field hires posted / worked a day, all days | 71.1 / 33.9 | 51.9 / 23.4 | 83.6 / 34.2 |
+| the same, days 61-90 (the harvest) | 164.3 / 68.6 | 98.4 / 34.3 | 187.6 / 60.8 |
+| The fields' hours a day, days 61-90 | 990 | 779 | 925 |
+| The rest of the land's hires worked a day | 184.9 | 209.7 | 192.7 |
+| The land's hours a week (not the fields) | 23.8k | 23.3k | 23.0k |
+| Farmers called back to their fields, in all | 43 | 99 | 71 |
+| Pace | 0.679 | 0.714 | 0.500 |
+| A tick (other sessions' runs beside each) | 0.0503 ms | 0.0426 ms | 0.0271 ms |
+
+By week, `c1` against run120 (Gini, poorer half): day 28 0.536, 0.157 against 0.531, 0.162; day 56 0.541, 0.153
+against 0.562, 0.137; day 84 0.558, 0.141 against 0.572, 0.123; day 112 0.585, 0.119 against 0.585, 0.109.
+
+**Read plainly:**
+
+- **The crews now go to the grown.** 98% of their slot-days, against 48%. 131 places are worked a day, against 76.
+  The church's masons went from 8 worked a day to 28, the Houses' retainers from 20 to 33.
+- **The money reached the wage earners.** On day 120 paid civilians hold 1,029k against 813k, and unpaid civilians
+  137k against 82k. The households' share is 0.465 against 0.401 (the model's 0.58-0.59). The poorer half is 0.115
+  against 0.105.
+- **The Gini is no better on day 120** (0.592 against 0.587). It was better through the middle of the run (0.541 against
+  0.562 on day 56) and rose with run120's from day 77. One seed; round 5's two seeds differed by up to 0.016.
+- **The Houses now spend their whole budget, and fall below the band.** They end at 530k, 10.7% of the money, against
+  run120's 15.1% and the model's 15.4%. What their crews and retainers were paid rose by about 2.2k a day. Their road
+  money (3.4k a day) and their tills' top-ups (1.7k) are outside their week's budget, and the model's Houses have
+  neither. Before this round, their untaken places' pay stayed in their purses, which hid it.
+- **The towns' treasuries are still outside the band** (+70% from day 28). The cap is gone: Oakhaven's crew grew from 7
+  places a week to 26 by day 119, and its outgoings rose from 0.8k to 1.0k a day. But its budget follows what it holds,
+  not the caravans' margin, so it lags. Coldwater ran down to 1k by day 84 (8k in run120). Within ±20% needs the budget
+  rule to see the trade (decision 4).
+- **The church now spends its budget.** It fell 9% from day 28, within the band, to 4.4% of the money on day 120
+  (run120 6.1%, the model 7.0-7.6%).
+- **The crews pull hands off the fields at the harvest.** In `c1`:
+  - field hires worked fell from 33.9 to 23.4 a day over the run, and from 68.6 to 34.3 a day in days 61-90;
+  - the fields' hours fell from 990 to 779 a day in those days, a fifth;
+  - fewer field hires were posted (164 to 98 a day in days 61-90). Those posted were taken as often (89-90% held at
+    23:00) and paid more than the crews (74p a slot against 60p), so it is not the crews' pay that drew the hands;
+  - the rest of the land gained: its hires worked rose from 185 to 210 a day (children took 13.7k slot-days of them
+    against 8.8k), and the land's hours a week ended at 23.3k against 23.8k;
+  - the farm call-back still runs first in the day's pass, now on every institution's crew, and fired 99 times (43).
+- **`c2` finds the cause: the idle hands' and the out-of-work's look at any hour.** With them kept to their old hours
+  and look, the fields are as in run120 (34.2 field hires worked a day; 60.8 in the harvest; the fields' hours 925 a
+  day). The crews are as grown (97%) and as worked (132 a day): the keepers and those at unpaid work at home fill them.
+  The Gini is the best of the three (0.569) and so is the poorer half (0.122). But `c2`'s pace ended at 0.50 (0.68,
+  0.71), and its day-46 dip was 27 hungry (9, 4), on one seed each.
+- **What would test it:** two or three seeds of `c1` and `c2`, and a year's run for the Houses (the model's fall from
+  day 56 to 168).
+
+**For the user:**
+
+1. **The idle hands and the out-of-work at any hour?** As built, they are (the decision's words: "idle at its own
+   business, working for hire"). Recommended: `c2`, where they keep their old hours and their old look and only the
+   household's keepers and those at unpaid work at home take crew places at any hour. The crews fill from those just as
+   well, the fields keep their harvest hands, and the Gini and poorer half are the best of the three. It is one line
+   in `RatwResidents.cpp` (`crewFree` without `jobless`). Before choosing: `c2`'s pace and its day-46 hungry are worse,
+   on one seed.
+2. **Which posts at home count.** As built: "keeps the house" and the household's keeper, sitting by the well or
+   watching the world, selling from a tray, begging, picking through, telling stories, playing; and unpaid posts at the
+   holder's own home with no payer, such as "at home in the Heights" (23 grown), "at lessons" (5), "at leisure". Not
+   apprentices, the retired, the clergy, a House's head, or a House's family's posts that the House pays. Should the
+   Heights' grown families (the rich) take crew places? The places pay the going rate and they need it least.
+3. **A child's crew place is the day's** (added here, not in the decision's words). Without it a child that took a
+   place on the reckoning day kept it all week, out of the grown's reach. Recommended: keep.
+4. **The towns' budget rule doesn't see the caravans' margin.** A town's income for its budget is its tax only, while
+   the caravans' takings are 13.4k-14.4k a day against 10.0k-10.6k of road money. Options: count a town's caravans' net
+   takings (takings less the road money and the goods bought back) as its income, or leave the rule as the model's
+   (the model's treasury doesn't trade) and let Oakhaven and Larkfield hold the margin. Only the first brings the
+   towns within ±20%.
+5. **The Houses fall below their band** now their crews are taken: 10.7% on day 120 against the model's 15.4%.
+   Options: count their road money and their tills' top-ups inside their week's budget (as the capital's buyers' funds
+   are), or leave it and see a year's run.
+6. **The towns' crew cap** is the Houses' tenth of the realm (about 85), not the model's fifth for its one treasury.
+   No town's budget came near it in 120 days (Oakhaven's 26 was the most).
