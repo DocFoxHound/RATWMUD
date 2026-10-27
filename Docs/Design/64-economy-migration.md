@@ -5174,3 +5174,77 @@ against 0.562, 0.137; day 84 0.558, 0.141 against 0.572, 0.123; day 112 0.585, 0
    are), or leave it and see a year's run.
 6. **The towns' crew cap** is the Houses' tenth of the realm (about 85), not the model's fifth for its one treasury.
    No town's budget came near it in 120 days (Oakhaven's 26 was the most).
+
+### Phase 13: the crews' round 7, reviewed
+
+A review of the lane above. Its `c1` run was reproduced from its commit (digest c5be1b159ea60f94, the same), and its
+table's figures were recomputed from `c1`'s and run120's files; they hold. The seconds' pace is as it was (9 days:
+9ee1ea39ea8c7553, with this fix too).
+
+**One fix: a household's keeper on a crew left its post standing open.** The household's keeper (`memory.keeper`) is
+one of its grown members with a paid post, chosen once the household is comfortable. It keeps the house in place of
+its post, and the post stays held. Round 7 let keepers take crew places at any hour. The day's pass then took the
+keeper for "a holder away on another business's hire" and counted its post open (`tendLabour`). Nobody could take
+the post, so its employer's book bid its wage up every week.
+
+- **What it did in `c1`.** About eight keepers who are a House's staff stood on crews every day from week 3. The
+  Houses' staff's wage rose from 60p to 79-109p by day 119, against a rate of 64p (1.47 times the rate on average;
+  0.90 in run120). The book of the church's paid posts reached 1.82 times the rate (1.40 in run120). Tills more than
+  1.3 times the rate: 18 (4).
+- **What it did to the farms.** A keeper whose post is a field's was "called back to the fields" at each pass and
+  went on keeping the house. Call-backs: 99 in `c1`, 43 in run120.
+- **The fix** (`RatwLabour.cpp`). With work by the hours, a keeper on a hire or a crew opens no post and isn't called
+  back. Its leaving the post is the household's, not the hire's.
+- **The test.** `aTownsCrewTakesTheGrownFirst` has a stall's hand who keeps its house, holding a crew place. At the next
+  day's pass its post at the stall isn't open (with the fix undone: 2). The children's afternoon now runs to 16:00, not
+  15:00: the hand's two places left only one child a place by 15:00.
+- All 67 test binaries pass with the fix (`pg_tests` skipped: no database).
+
+**Measured** (`c3`: the branch with the fix, 120 days, `--deterministic --hours --threads 6`, digest
+829058685aa274cf; money conserved every day):
+
+| | run120 | `c1` | `c3` |
+|---|---|---|---|
+| Crew places posted / worked a day, all | 139.8 / 75.6 | 148.8 / 131.1 | 149.6 / 133.2 |
+| Grown takers' share of crew slot-days | 0.48 | 0.98 | 0.98 |
+| The Houses' staff's wage / the rate, day 119 | 0.90 | 1.47 | 0.94 |
+| The church's posts' wage / the rate, day 119 | 1.40 | 1.82 | 1.15 |
+| Tills over 1.3 times the rate, day 119 | 4 | 18 | 9 |
+| Farmers called back to their fields | 43 | 99 | 57 |
+| Field hires posted / worked a day | 71.1 / 33.9 | 51.9 / 23.4 | 57.7 / 24.5 |
+| the same, days 61-90 | 164.3 / 68.6 | 98.4 / 34.3 | 116.5 / 40.4 |
+| The fields' hours a day, days 61-90 | 990 | 779 | 844 |
+| The land's hours a week, day 120 | 23.8k | 23.3k | 22.4k |
+| The towns' treasuries, day 28 → 120 | +83% | +70% | +74% |
+| The church's, day 28 → 120 | +12.5% | −9% | −11% |
+| The Houses' money, and their share | 750k, 0.151 | 530k, 0.107 | 571k, 0.117 |
+| Paid civilians / unpaid / without work | 813k / 83k / 13k | 1,029k / 137k / 27k | 990k / 130k / 18k |
+| Poorer half; Gini | 0.105; 0.587 | 0.115; 0.592 | 0.107; 0.599 |
+| Ridgemere's wage; pace | 67.5p; 0.679 | 64.2p; 0.714 | 65.3p; 0.661 |
+| Hungry (day 46 only, none starving) | 9 | 4 | 11 |
+
+(The Houses' share is 0.151 by `crews.py` on run120's day 120; the table above gave 0.149.)
+
+**Read plainly:**
+
+- **The runaway is gone.** The Houses' staff's wage stays at the rate. Part of the Houses' fall in `c1` was that wage:
+  they end at 571k, not 530k. They are still below their band (decision 5 above stands).
+- **The fields still lose hands at the harvest.** Field hires worked in days 61-90 are 40 a day, against 69 in run120,
+  and the fields' hours 844 against 990. The brief said farm hires worked must not fall. They do, by 30-40%. Decision 1
+  above is still the user's.
+- **On decision 1.** `c2` drops `jobless` from `crewFree`, and `jobless` holds the idle hands (`idleHand`) and those for
+  hire (`forHire`). The user's decision named both. So `c2` is not the decision as given. A middle course, not built or
+  run: the idle and those for hire free for a crew at any hour, but the out-of-work's look at the businesses' hires kept
+  to its old hours.
+- **Gini and poorer half on day 120 are within one seed's spread of each other** (round 5's two seeds differed by up
+  to 0.016). Two or three seeds are still owed.
+
+**Minors, not changed:**
+
+- A wolf holding places on two hires counts its post open twice at the pass (round 6's rule). A wolf whose first
+  share is done may take a second place, as round 6 allowed, and with the look from waking it has the hours to. In
+  `c3`, 10 of the Houses' 60 estate places a day are held at 23:00 but not worked.
+- `unpaidAtHome` tests "apprenticed" as written, not lower-cased as `titleWages` does (`crewFree` also tests the title's
+  start: "apprenticed: ").
+- The keepers are comfortable households' members. On crews they bring a second wage into households that already
+  have money. That follows the decision's words ("keeps the house"), but it is no help to the poorer half.

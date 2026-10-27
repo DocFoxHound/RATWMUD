@@ -2019,7 +2019,7 @@ void aHouseKeepsItsCrew()
 
 // Round 7 (the user, 2026-10-26: the institutions' crews go to grown wage earners first, the model's staff_to): a town's
 // works crew and the church's masons by a House's crew rules, and their places the grown's at any hour, before the
-// children's; a child's place is the day's.
+// children's; a child's place is the day's. A household's keeper on the crew leaves no post open (round 7's review).
 void aTownsCrewTakesTheGrownFirst()
 {
     Society::setWorkByHours(true);
@@ -2038,7 +2038,12 @@ void aTownsCrewTakesTheGrownFirst()
         roster.residents.push_back(child);
     }
     roster.residents.push_back(far(person("stall", "keeping the stall", {"far_market", 2.5, 2.5})));   // (Where its gangs work.)
-    for (int i = 1; i <= 136; ++i)
+    // (The stall's hand keeps its house: its post isn't opened by its days on the crew.)
+    auto hand = far(person("hand", "a hand at the stall", {"far_market", 2.5, 2.5}, "civilian"));
+    hand.home = hand.evening = {"far_cottage", 2.5, 2.5};
+    hand.purse = 100000;
+    roster.residents.push_back(hand);
+    for (int i = 1; i <= 135; ++i)
         roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
     roster.economy.treasury = 1000000;
     Society s(Roster::None);
@@ -2049,6 +2054,7 @@ void aTownsCrewTakesTheGrownFirst()
     s.setDay(plan);
     auto state = s.state();
     state.memory.pace = 1;
+    state.memory.keeper["far_cottage"] = "hand";
     expect(s.restore(state), "the calibrated hours restore");
     s.openAccount("stores:far");
     auto bodies = atWork(s);
@@ -2112,12 +2118,27 @@ void aTownsCrewTakesTheGrownFirst()
                std::to_string(on("child")));
     until(7, 9.5, 13.5);
     rested();                                        // (Fed by noon.)
-    until(7, 13.5, 15);
-    expect(on("child") >= 2, "from mid-afternoon the children take what's left (some of them take other odd jobs): " + std::to_string(on("child")));
+    until(7, 13.5, 16);
+    const auto heldNow = [&] {
+        std::string out;
+        for (const auto& j : s.oddJobs())
+            if (j.payer == "stores:far" && j.until >= 7)
+                for (const auto& [who, stage] : j.stage)
+                    out += " " + who + ":" + std::to_string(stage);
+        return out;
+    };
+    expect(on("child") >= 2, "from mid-afternoon the children take what's left (some of them take other odd jobs): " + std::to_string(on("child")) +
+                                 " (" + heldNow() + ")");
     // The next day's pass: a child's place is the day's, the grown keep theirs the week.
     s.tick(1, 8 + .5 / 24, 0, bodies);
     expect(on("child") == 0 && on("keeper") == keepers,
            "at the day's pass the children's places open again, the grown's stand: " + std::to_string(on("child")) + ", " + std::to_string(on("keeper")));
+    bool handOn = false;
+    for (const auto& j : s.oddJobs())
+        handOn = handOn || (j.payer == "stores:far" && j.stage.count("hand"));
+    expect(s.state().memory.keeper.count("far_cottage") && handOn && s.vacanciesOf(s.tillOf("stall")) == 0,
+           "the stall's hand, keeping its house, holds a place on the crew, and its post at the stall isn't open for it: " +
+               std::to_string(handOn) + ", " + std::to_string(s.vacanciesOf(s.tillOf("stall"))));
     // (A keeper whose first share was done by mid-morning may hold a second place.)
     int held = 0;
     for (const auto& j : s.oddJobs())

@@ -498,13 +498,21 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                     reviewField(held != state_.careers.positions.end() && !held->second.holder.empty() ? held->second.holder : p->founder, till,
                                 *producer, double(day));
                 }
+    // (A household's keeper left its post to keep the house, not for the hire: its post isn't opened by it, nor is it called
+    // back to a field it doesn't work. Round 7's crews took keepers at any hour, and their posts stood open all week: a
+    // House's staff's wage, held at the rate before, rose half again by day 119, and nobody could take the post.)
+    std::set<std::string> keepers;
+    if (workByHours())
+        for (const auto& [home, who] : memory.keeper)
+            keepers.insert(who);
     if (workByHours())
         for (auto& j : oddJobs_)
             if (j.until >= day && ((j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop")) || crewPlace(j)))
                 for (auto it = j.stage.begin(); it != j.stage.end();)
                 {
                     const auto k = keyOf.find(it->first);
-                    if (k == keyOf.end() || k->second == j.payer || (k->second.size() > 6 && k->second.compare(k->second.size() - 6, 6, "|works") == 0))
+                    if (k == keyOf.end() || k->second == j.payer || keepers.count(it->first) ||
+                        (k->second.size() > 6 && k->second.compare(k->second.size() - 6, 6, "|works") == 0))
                     {
                         ++it;
                         continue;
