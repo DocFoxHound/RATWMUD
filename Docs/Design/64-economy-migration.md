@@ -6436,3 +6436,206 @@ the report shows:
   In days 252–336 North Wharf loses 166k and Greywater 101k.
 - From day 280, about half the hungry could pay the day's cheapest food: food-hunger 83 of 168. On day 308 it is 123
   of 361, and on day 364, 152 of 408.
+
+### Phase 13: round 10, the towns (lane B)
+
+Three of the user's decisions (2026-10-27), all with work by the hours only. Base: p13 at 4ef067b (round 9 merged, and
+the tracking).
+
+**What changed:**
+
+- **1. A town's stores over their target lower its tax** (`Core/RatwReckoning.cpp`, `reckon`; `Core/RatwInstitutions.cpp`,
+  `Society::easeTownTax`). The user's choice, over grants, sending the money to the capital, or capping the caravans'
+  profit.
+  - **The target** is the model's `RULE["treasury"]["k"]`, two months (`Society::TaxEaseMonths`) of the town's income:
+    what its tax brings in a month *at the full rate*. That month is kept running (`EconomyMemory::taxBase`: a quarter of
+    the way, each week, to four times the week's tax at the full rate). It is the full rate's, not the eased one's: on
+    the eased one, easing the tax would lower the target and ease it further, to nothing. The model's treasury budget
+    (`week_budget`) settles a treasury at the same two months, and a town's week's budget (`budgetOf(id, 2, .4)`) is
+    that rule already.
+  - **The holding** it is weighed on is the stores' mean over the last week (`heldMean`, a seventh of the way to the
+    day's holding each day): a town's caravans swing its stores by a week's trade, road money out and takings home.
+  - **The rate.** Each week's reckoning, the rate wanted is the full one at the target and below it, and falls as the
+    holding rises over it, to nothing at twice the target: `want = clamp(1 - (held - target) / target, 0, 1)`. The
+    town's rate (`townTax`, as a share of the realm's) moves a quarter of the way to it a week (`TaxEaseWeeks`), so it
+    takes a month to move most of the way, and can't flip from week to week. It is never below nothing, and never over
+    the realm's rate: a town short of money keeps its posts to its tax instead (2, below). The capital's rate is the
+    realm's (the Dungeon Master's lever) and isn't eased: the decision was the towns'.
+  - A town's residents pay its rate; the households' reckoning of what they owe (`RatwDemand.cpp`, four places) takes it
+    too (`residentTaxRate`). The capital's tenth of a town's tax falls with it.
+  - `econ_watch` writes `town_tax.csv` each week: each town's share, rate, holding, mean holding and target.
+- **2. A town's own posts are kept to its tax, as the capital's are** (`Core/RatwInstitutions.cpp`, `institutionsWeek`;
+  `Core/RatwDemand.cpp`, the buyers' funds). Round 9's question 1(a), the capital's rule (round 6, `keepPostsTo`): its
+  relief, then its watch and then its own posts to half (`TreasuryStaff`) of its week's *tax* budget (its caravans'
+  week not counted), its own posts let go past that and kept empty (`memory.closed`), and taken on again when the
+  budget comes back; then its buyers' funds inside what's left (what they drew last week and a third over, and a
+  twentieth of the rest besides), then its works. Its caravans' week, on top, pays what the watch comes to over its share,
+  its buyers, its road money and its works. Round 9's posts-first rule (`PostsFirst`, `postsOwed`) has nothing left to
+  do with this, and is skipped while it is on. A town's buyers' funds are drawn inside the week's allowance
+  (`fundsLeft`), as the capital's; one that drew nothing gets a twentieth of the rest (the capital's first week, as
+  before, all of it).
+- **3. And its caravans' money for the road from the same week's budget** (`Core/RatwTrade.cpp`, `send`;
+  `Core/RatwSociety.cpp`, `record`; the model's `treasury_week` buys inside its budget). After its buyers, the week's
+  allowance for its caravans (`roadLeft`): what they drew last week and a third over, and a twentieth of the rest
+  besides. A town's caravan takes no more than is left of it (`Society::roadMoneyFor`); the capital's (its Houses') and a
+  House's aren't held to it. So its week (`caravanWeek`, round 9) counts its takings less the unsold goods its stores buy
+  back, not the road money, which the allowance has paid.
+- **4. Crews from other towns are off unless asked** (`Society::CrewsAbroad`, round 9). The wage rules have a second
+  set, off unless asked (`Society::OptInRules`: the crews abroad, and the rebate below), and
+  `Society::wageRulesOff(off, on)` takes both: `wageRulesOff(0)`, the game's and what the tests reset to, leaves them
+  out. `econ_watch --with crews` puts the crews abroad back; `--without crews` is now a no-op, noted in the log.
+  `aTownsCrewHiresAbroad` asks for it.
+- **An option, off unless asked: the rebate** (`--with rebate`, `Society::TaxRebate`, `rebateTownTax`). See "The trading
+  towns" below.
+- **For trials:** `econ_watch --without taxease,townposts,roadmoney` leaves each of the three out (`roadmoney` goes with
+  `townposts`). With all three left out and `--with crews`, a 9-day `--hours` run gives 4ef067b's 23bcbdc710fbcf75. A
+  year's run no longer needs `--without crews`.
+
+**Saves:** `townTax`, `heldMean`, `taxBase`, `roadLeft`, `roadWeek` in the economy's memory. An old save has none: its
+towns' rates are the realm's until their first week, and their road money is as before until their first week's budget.
+
+**The seconds' pace** is as it was: a 5-day run without `--hours` gives d034a6316a8d0cb.
+
+**Tests** (`crafting_tests`, `roads_tests`; ten mutations, one at a time, all caught: the rate's quarter a week, its
+floor at nothing, the target at the full rate, the posts to the tax, the caravan held to its allowance, the allowance
+spent, the road money not netted, the save, the crews' default, the rebate; the script is `r10b/mutate.py` in the
+scratch folder):
+
+- `aTownEasesItsTax`. A far town of ten taxpayers earning 1,000p a week each (800p of tax at the full rate, a target of
+  about 6,400p) holds 100,000p. Its rate falls to three-quarters, then 0.5625, a quarter of the way to nothing a week,
+  and its next week's tax is three-quarters of the full one. Its rate, its mean holding and its month at the full rate
+  read back the same from a save. Drained to 1,000p on day 36, its rate falls a week more (its mean still high), then
+  climbs back toward the full rate, a quarter of the way a week (0.80 by day 84), never over it. Never below nothing,
+  never more than a quarter a week. Without the rule its rate is the realm's. With the rebate (asked for), its
+  taxpayers are paid back about a tenth each, over 40,000p, and by day 35 it holds under four times its target (without
+  it, over ten).
+- `aTownKeepsItsPostsToItsTax`. A far town with a watch of two and six clerks of its own, on 3,000p and 800p a week of
+  tax. By day 14 its clerks are let go and its watch kept, and its buyers draw inside its week's allowance. Without the
+  rule all six keep their posts.
+- `aTownsRoadMoneyFromItsBudget`. On 200,000p, its caravan takes 2,000p on day 3. The day-7 budget allows it that and a
+  third over, and a twentieth of what's left (3,702p), and 1,000p more on the road leaves 2,702p. Its week counts its
+  3,000p of takings, not the road money. The capital isn't held to it. Without the rule there's no allowance and its
+  road money nets against its takings (round 9's).
+- `aTownsCaravanKeepsToItsRoadMoney` (`roads_tests`). West's stores, its trader, with none of the week's road money
+  left (through a save), send no caravan with their flour; without the rule they do.
+- `aTownsCrewHiresAbroad` asks for the crews abroad (`wageRulesOff(0, CrewsAbroad)`); without them, as the game is now,
+  the rest of the crew stands open. `aTownsCrewTakesTheGrownFirst` resets with `wageRulesOff(0)`.
+  `aTownCountsItsCaravans`, `aTownSpendsItsTradeAsItComes` and `aTownsPostsComeFirst` test round 8's and 9's forms,
+  with round 10's three left out (`Round10Towns`).
+- All 68 tests pass (`ctest`).
+
+**Digests.** 5 days without `--hours`: d034a6316a8d0cb. 9 days `--hours --without taxease,townposts,roadmoney --with
+crews`: 23bcbdc710fbcf75, 4ef067b's. 9 days `--hours` as built: bc7c24f24512690d.
+
+**Its cost.** 30 days `--hours`, two pairs run side by side: 0.0315 and 0.0316 ms a tick on 4ef067b (`--without
+crews`), 0.0311 and 0.0311 on this branch. No worse.
+
+**Measured** (365 days of DEV's export, `--deterministic --hours --threads 6`, one seed; money conserved every day):
+
+- `base-year`: 4ef067b `--without crews`, the round's baseline (`artifacts/economy/2026-10-27-r10-base-year`).
+- `B-year`: this branch (3353e71), as built: crews off, the three rules on, no rebate
+  (`artifacts/economy/2026-10-27-r10-B-year`), digest a5346596f45f3536.
+
+From `report.py B-year base-year` (28-day months; day 365 is the run's last part-week, where every small town's stores
+show nothing in both runs: the end's record):
+
+| | `base-year` | `B-year` |
+|---|---|---|
+| Gini (households), day 56 / 112 / 168 / 224 / 280 / 364 | .511 / .505 / .574 / .663 / .720 / .771 | .523 / .532 / .631 / .727 / .758 / .796 |
+| Poorer half, day 112 / 224 / 364 | .177 / .047 / .007 | .153 / .021 / .005 |
+| Shares on day 364: homes, firms, Houses, church, town (model .559, .259, .084, .043, .055) | .581, .315, .000, .002, .101 | .647, .257, .008, .002, .084 |
+| Hungry (money-hunger) / starving, day 224 | 0 / 0 | 166 (60) / 127 |
+| the same, day 280 | 168 (81) / 81 | 306 (170) / 236 |
+| the same, day 364 | 408 (268) / 358 | 357 (206) / 298 |
+| First hunger sentinel | day 231 (Ridgemere) | day 210 (Coldwater, Ridgemere, Southmeadow) |
+| The labourer's wage, day 224 / 364 | 99.4 / 103.5p | 94.3 / 80.0p |
+| The capital's treasury, day 196 / 364 | 214k / 113k | 234k / 82k |
+| The church's, day 196 / 364 | 192k / 12k | 77k / 11k |
+| The Houses' purses, day 252 / 364 | 50k / 0.7k | 109k / 42k |
+| Oakhaven, day 112 / 224 / 364 (target 18k / 24k / 28k) | 43.6k / 135k / 306k | 84.2k / 141k / 217k |
+| Larkfield (target 24k / 30k / 29k) | 18.3k / 68.8k / 80.1k | 69.1k / 117k / 115k |
+| Frosthollow (target 4.8k / 1.7k / 0.5k) | 1.7k / 149 / 74 | 402 / 149 / 71 |
+| Mirebridge (target 13k / 12k / 8.4k) | 10.6k / 6.8k / 779 | 8.5k / 1.4k / 669 |
+| Southmeadow (target 15k / 14k / 4.8k) | 12.7k / 2.3k / 379 | 10.2k / 1.2k / 253 |
+| Coldwater (target 9.5k / 9.4k / 4.7k) | 2.2k / 324 / 25 | 949 / 900 / 431 |
+
+The towns' rates (`town_tax.csv`, shares of the realm's 8%):
+
+| Day | 56 | 112 | 168 | 224 on |
+|---|---|---|---|---|
+| Oakhaven, Larkfield | 0.10, 0.29 | 0.01, 0.05 | 0.00, 0.01 | 0.00 |
+| Coldwater, Frosthollow, Mirebridge, Southmeadow | 0.31, 0.26, 0.46, 0.12 | 0.90, 0.91, 0.94, 0.63 | 0.99, 0.99, 0.99, 0.96 | 1.00 |
+
+A town's stores' flows, a day, days 196–364 of `B-year` (`r10b/towns2.py`):
+
+| | tax | takings | road money | unsold | posts | buyers | works | net |
+|---|---|---|---|---|---|---|---|---|
+| Oakhaven | 0 | 5,690 | −1,980 | −100 | −140 | −80 | −2,850 | +530 |
+| Larkfield | 0 | 4,800 | −3,240 | −130 | −330 | −470 | −520 | +90 |
+| Mirebridge | 140 | 0 | 0 | 0 | −140 | 0 | 0 | −5 |
+| Southmeadow | 115 | 0 | 0 | 0 | −120 | 0 | 0 | −5 |
+
+**Read plainly:**
+
+- **The tax eases as asked, and comes back.** Every town was founded with two to three times its target (three or four
+  months of its tax), so every town's rate fell in the first month: to 0.1–0.46 by day 56. The small towns spent down
+  to their targets by day 84–112 and their rates came back, smoothly, to the full rate by day 170; they stayed there.
+  Oakhaven's and Larkfield's fell to nothing by day 112 and stayed there. No week-to-week flip-flop: the rate moved at
+  most a quarter of the way a week, and the mean holding a seventh a day.
+- **Easing the tax can't bring the trading towns down.** Their tax is a small part of their income: at the full rate
+  Oakhaven's would be about 500p a day, its caravans net 3,600p a day (takings 5,690p less 1,980p of road money and
+  100p of goods bought back): seven times its tax. Larkfield's net 1,430p, three times. With no tax at all from day
+  ~140, Oakhaven still gained 530p a day and ended at 217k, 7.8 times its 28k target (base: 306k), Larkfield at 115k, 4
+  times (base: 80k). Its works spend 2,850p a day and can't spend more: its crew is half unworked with the crews abroad
+  off (round 9's question 1).
+- **The small towns still end near empty.** Their posts are now kept to their tax, but very little was let go: three
+  posts in the year (`flows.csv`). What they pay is their watch (always kept, as the capital's is) and the Town Works'
+  day labour, the living for every grown wolf out of work (doc 42, Phase 3), which is no post and isn't sized to
+  anything: Mirebridge's 182p a day of day labour and 82p of watch on about 200p of tax (days 168–203). So each sits at
+  its tax in and its tax out, at 0.2–1.4k against targets of 5–13k, with its rate at the full one. And their targets fall
+  (Coldwater's 9.5k to 4.7k, Frosthollow's 4.8k to 0.5k) as their residents' incomes do.
+- **The road money from the week's budget stopped the small towns' trade.** Their week's budget (their tax's, and the
+  takings) after their posts and their buyers leaves little, and the allowance grows a third a week at most from what
+  they drew: Coldwater's caravans took 11p a day of road money in the first month (base: 466p), Mirebridge's next to
+  nothing from day 56 (base: 330–720p to day 252). A caravan buys its load from its town's shops ("bought for the
+  road"), so that was its residents' income: Coldwater's tax at the full rate fell from 148p a day (days 196–224) to
+  61p (days 336–364), Mirebridge's from 228p (days 140–168) to 121p. A 60-day trial with it left out (`--without roadmoney`,
+  `r10b/t60nr`): Coldwater's and Mirebridge's caravans kept going (takings 472p and 866p a day in days 28–56, against
+  0p and 3p with it), and their stores held 12.6k and 19.4k on day 56 (13.8k and 15.8k with it), and 12.7k and 19.2k on
+  day 60. With it, they were down to 6.3k and 11.4k by day 84.
+- **The realm fares worse, within what one seed can say.** Hunger begins three weeks earlier (day 210 against 231), and
+  is worse in days 210–308 (306 hungry on day 280 against 168), less on day 364 (357 against 408). The households'
+  Gini runs 0.03–0.06 higher from day 112, the poorer half lower. The church runs dry earlier (77k on day 196 against
+  192k). The Houses keep more (42k on day 364 against 0.7k), the firms hold less (0.257 against 0.315, the model's
+  0.259). Some of that is the small towns' trade lost; the rest moved with the run.
+- **The rebate, a 60-day trial** (`--with rebate`, `r10b/t60r`): Oakhaven paid back 350–600p a day from day 14 and held
+  27–33k on days 28–56, against 40–52k without it; Larkfield 27–29k against 34k. It would hold a trading town at about
+  twice its target and two weeks' surplus. Not run for a year.
+
+**Seen, not changed:**
+
+- A town's rate is a share that decays toward nothing and never reaches it exactly (Oakhaven's 1e-6 by day 336); its
+  tax rounds to nothing.
+- A town's stores' mean holding (`town_tax.csv`'s `held_mean`) is far below its end-of-week balance in the small towns:
+  their tax comes in once a week at the reckoning and is paid out over the week.
+
+**For the user:**
+
+1. **The trading towns.** Easing the tax alone can't bring Oakhaven and Larkfield down: their caravans bring in three
+   to seven times their tax. The smallest outlet in the same spirit, built and off (`--with rebate`): over twice its
+   target, half of what its stores hold over that goes back to its taxpayers each week, by their week's income ("a
+   town's rebate"). (a) Turn it on. (b) Pay it by household instead of by income: the money goes more to the poorer,
+   but it is then a grant. (c) Let a town's caravans pay its makers more for what they carry, the margin staying with
+   them. Recommended: (a), run for a year with two seeds.
+2. **The small towns' road money.** As built (decision 3) it stopped the small towns' trade, and with it much of their
+   residents' income. (a) Leave it out (`--without roadmoney`): their caravans take what their stores hold, as round 9.
+   (b) Keep it, but let the allowance be at least last week's takings, the trade turning over its own money.
+   Recommended: (a), then (b) if a town's caravans must be kept to its budget.
+3. **The small towns' posts.** Keeping posts to the tax lets go little, because what empties a small town is its watch
+   (always kept) and the Town Works' day labour (the living for the out of work, no post). (a) Keep a town's Town Works
+   to its budget too: past it, its out of work go unpaid (to relief, or another town's work). (b) Let the capital carry
+   the small towns' Town Works (the realm's living). (c) Keep the watch to the budget too, as the model does
+   (`staff_to(watch, budget * 0.5)`). Recommended: (b), the living for everyone is the realm's promise, not a small
+   town's.
+4. **The founding reserve.** Every town is founded with two to three times its target, so every town's tax falls in its
+   first month and it spends down. Keep it (it is what the rule says), or found the towns at their target.

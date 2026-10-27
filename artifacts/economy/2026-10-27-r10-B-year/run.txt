@@ -1,0 +1,4 @@
+run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch.3353e71 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 365 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-27-r10-B-year --deterministic --hours --threads 6 --threads 6
+built from: /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-a7138de2287bb8b85 at 3353e71ba3fa (3353e71ba3faa85567f56d00872ea8e56c3e3c41)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at 4ef067b16d47; its own changes since: none
+built: 2026-10-27 19:05:24 UTC (linked; econ_watch.cpp compiled Oct 27 2026 13:04:58, local time)
