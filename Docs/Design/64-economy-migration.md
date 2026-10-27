@@ -5977,7 +5977,8 @@ is caught by neither half: `tendTills` skips it (`ownTill`), and `tendOwners` er
 - **`econ_players_tests` failed.** It checks `tills.csv`'s columns, and the lane added three without it. All 68 test
   binaries pass now (`pg_tests` skipped: no database). `aStoppedKeeperTakesAHire` checks the call-back.
 
-**120 days** (`r9/tills/run120`, digest ca5f66ec271ea11, against `r9/base120`, f13f80e's build):
+**120 days** (`r9/tills/run120`, digest ca5f66ec271ea11, against `r9/base120`, f13f80e's build, digest
+5a83102073050d54):
 
 | Day 120 | base | round 9, tills |
 |---|---|---|
@@ -6019,3 +6020,50 @@ is caught by neither half: `tendTills` skips it (`ownTill`), and `tendOwners` er
 **For the user:** keep it, but decide whether a stopped keeper should keep shop on its hours and look for hire work
 only outside them (or on the days the shop has nothing to sell), so a stopped business can trade its way back; and
 whether a farm, the realm's food, should stop at all.
+
+**The user's two answers (2026-10-27), built** (ce49018):
+
+- **A farm is judged after its harvest.** A seasonal field's farm (a farm, an orchard or a vineyard whose till has
+  its year in `memory.fields`: `seasonalField`, as `tendLabour`'s `fieldOf`) is topped up however short it is until
+  a look after a harvest's end (day `HarvestEnd`, 274, of the year). It stops only if it is still short there, short
+  at every look since before it (`harvestEndedSince`: its short looks began 7 × (weeks − 1) days ago). A failing farm
+  is still caught, at its first look after the harvest. Other producers (the flocks, the herds, the fishers, the
+  woodlots, the mines) and the shops stop at their fourth short look as before. No 120-day run reaches a harvest, so
+  `aFarmIsJudgedAfterItsHarvest` drives a farm and a woodlot, their tills dry every day, from day 150 past the
+  harvest: the woodlot stops at its fourth look, the farm is topped up to the harvest and stops at its first look
+  after its end. With the season's test undone, the farm stops on day 174 and the test fails.
+- **A stopped shop keeps its hours.** Its keeper keeps shop on its own hours, and takes hire work only outside them
+  on a day its till can't pay it. Its hires are a day at a time: at the day's turn every merchant holding a hire is
+  called back to its shop (the review's fix, widened: a hire held into the next day's hours would stand taken and
+  unworked again). `aStoppedKeeperTakesAHire` has the stall's keeper keep its stall at ten and take the work at five;
+  with the rule undone it takes it at ten, and the test fails.
+
+All 68 tests pass; the seconds' pace d034a6316a8d0cb, 5 days `--hours --without owners` f9ec2fce12d4df45.
+`r9/tills/run120b` (digest 5facae7261dc047), day 120:
+
+| Day 120 | base | `run120` | `run120b` |
+|---|---|---|---|
+| Gini; poorer half; top tenth | 0.495; 0.150; 0.306 | 0.479; 0.158; 0.296 | 0.473; 0.163; 0.289 |
+| All tills' share (shop / farm / House tills) | 0.303 (0.174 / 0.039 / 0.090) | 0.262 (0.167 / 0.033 / 0.063) | 0.254 (0.154 / 0.029 / 0.071) |
+| Houses / treasuries / church / households | 0.101 / 0.097 / 0.048 / 0.445 | 0.113 / 0.095 / 0.045 / 0.480 | 0.103 / 0.095 / 0.048 / 0.494 |
+| The realm's rate; Ridgemere's | 78.9p; 90.4p | 63.3p; 70.3p | 67.4p; 78.5p |
+| Hungry (day 46 only, none starving) | 21 | 15 | 2 |
+| Books short of pay; posts open | 29; 274 | 53; 113 | 42; 194 |
+| Top-ups; draws; keepers' wages, days 91-120 | 412k; 180k; 617k | 173k; 285k; 371k | 240k; 217k; 440k |
+| Food brought in; crafted, days 91-120 | 69.9k; 64.0k | 59.8k; 73.2k | 61.3k; 73.0k |
+| Producers' tills stopped on day 120; ever; started again | | 166; 195; 43 | 114; 137; 33 |
+| Shops' tills stopped on day 120; ever; started again | | 47; 58; 14 | 47; 60; 13 |
+| Places taken by keepers its till can't pay (by shops' keepers) | | 2,614 (583) | 1,397 (144) |
+
+- **The farms.** Of the 44 field farms ("works the fields"), 4 are stopped on day 120, and 6 of 18 orchards: likely those
+  with no year of their own yet (not checked: `tills.csv` doesn't say). The producers stopped are the others: 14 of 15 sheep runs, 14 of 25 loggers, 8 of
+  12 mines, the fishers, the pigs, the rabbits. The food brought in is still 12% under the base's.
+- **The shops don't trade their way back.** As many stop (47 on day 120), and no more start again (13). Kept open
+  on their hours, the stopped shops take 134p a day against 127p (800-850p for a shop topped up), and their keepers
+  are paid 3p a day for odd jobs, against 43p. A stopped shop sells too little to hold a week's wages again.
+- The wage falls less (67.4p), and the tills' share a little more (0.254).
+
+**For the user, again:** the flocks, the herds and the fishers sell all year but in seasons too; should they be
+judged over a season as the fields are? And a stopped shop doesn't come back: should a look ask for less than a week's
+wages to start again (the stop's mark and the restart's the same today), or should the stop shrink the shop (its help
+let go) rather than leave its keeper short?
