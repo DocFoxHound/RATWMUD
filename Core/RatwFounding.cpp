@@ -73,6 +73,29 @@ std::int64_t Society::almsMay() const
                                                   : std::min<std::int64_t>(spendable(SharedChurch), std::int64_t(left->second));
 }
 
+std::string Society::almsFood(const std::string& shop, std::int64_t& price) const
+{
+    const auto* shelves = account(tillOf(shop));
+    if (!shelves)
+        return {};
+    std::vector<std::string> made;
+    const auto& sold = waresKept(shop, made);
+    std::string best;
+    bool feeds = false;
+    for (const auto& [item, n] : shelves->stock)
+    {
+        if (n < 1 || !edible(item) || !onSale(shop, item, sold))
+            continue;
+        const bool enough = nourishment(item) >= AlmsFeeds;
+        const auto p = shopPrice(shop, item);
+        // (One that feeds over one that doesn't; then the cheaper; then the more nourishing.)
+        if (best.empty() || (enough && !feeds) ||
+            (enough == feeds && (p < price || (p == price && nourishment(item) > nourishment(best)))))
+            best = item, price = p, feeds = enough;
+    }
+    return best;
+}
+
 void Society::startingMoney(const std::string& id, std::int64_t coins)
 {
     const auto found = state_.accounts.find(id);

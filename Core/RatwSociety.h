@@ -1207,7 +1207,8 @@ class Society
         OwnersStop = 8192,                           // A lone owner stops topping up a till short of its wages (round 9).
         HouseBudget = 16384,                         // Every House outflow draws on its week's budget (round 10, lane A).
         HouseTills = 32768,                          // ...a House's till it can't top up trades on as a lone owner's (round 10).
-        ChurchBudget = 65536                         // The church's alms with its relief, inside its budget, over a floor (round 10).
+        ChurchBudget = 65536,                        // The church's alms with its relief, inside its budget, over a floor (round 10).
+        CheapAlms = 131072                           // Alms buy the cheapest food that feeds the wolf, not the shop's best (round 10).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1794,6 +1795,11 @@ class Society
     // What the church may spend now on alms bought for the hungry (round 10, lane A: ChurchBudget): what is left of its
     // week's relief, over its floor. The rule off: what it holds.
     std::int64_t almsMay() const;
+    // The food alms buy at a shop (round 10, lane A, the user, 2026-10-27: CheapAlms): the cheapest on sale there that
+    // feeds a wolf (AlmsFeeds of nourishment, a loaf's: a wolf asking at 55 is brought under 40), else the cheapest it
+    // has at all; "" for none. Its price in `price`. (Before, the most nourishing it had: a 36p meal where a 7p loaf does.)
+    std::string almsFood(const std::string& shop, std::int64_t& price) const;
+    static constexpr int AlmsFeeds = 15;
     // The floor (round 10): a week's wages for HouseFloorHands at its town's going rate (the model's house_week keeps
     // twelve retainers at most, staffed first), set at each week's reckoning.
     static constexpr int HouseFloorHands = 12;

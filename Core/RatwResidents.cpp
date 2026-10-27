@@ -1335,9 +1335,12 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
                 {
                     const auto till = tillOf(open.first);
+                    // (With work by the hours, the cheapest food that feeds it, not the shop's best: round 10, CheapAlms.)
+                    const bool cheap = workByHours() && wageRule(CheapAlms);
+                    std::int64_t cheapPrice = 0;
                     if (const auto* shelves = account(till); shelves && account(church))
-                        if (const auto food = bestFood(*shelves); !food.empty())
-                            if (const auto price = shopPrice(open.first, food);
+                        if (const auto food = cheap ? almsFood(open.first, cheapPrice) : bestFood(*shelves); !food.empty())
+                            if (const auto price = cheap ? cheapPrice : shopPrice(open.first, food);
                                 (church == SharedChurch ? almsMay() : account(church)->cash) >= price &&   // (Round 10: inside its relief.)
                                 transfer(till, church, food, 1, price, "alms bought for the hungry"))
                                 shift(church, id, food, 1, 0, "alms");
