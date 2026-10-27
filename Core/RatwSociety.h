@@ -147,6 +147,10 @@ struct LifeDay
     Harvest harvest;
     std::function<std::string(const std::string& cell)> communityOf;
     std::function<int(const Spot& at)> sky;  // There: -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
+    // Where a spot is on the map, in tiles: its cell's place there (an outdoor cell's corner, an interior's footprint) and
+    // its own position on it; false where the cell isn't known. How far a wolf lives from a field's hire, straight
+    // across (doc 64, Phase 13, round 9): no path is searched. (Null: a society alone.)
+    std::function<bool(const Spot& at, double& x, double& y)> onMap;
 };
 // Careers (Docs/Design/26-living-npcs.md, Phase 4). A position is a job the town has, built from the authored
 // residents (the job each founding resident was written with); it outlives whoever holds it.
@@ -367,6 +371,10 @@ struct EconomyMemory
     // The capital's buyers' funds inside its week's budget (doc 64, Phase 13, round 6; with work by the hours): what is
     // left of the week's allowance for them, and what they drew this week (Society::institutionsWeek, townBuyers).
     std::map<std::string, double> fundsLeft, fundsWeek;
+    // A town's caravans' net takings since its last week's budget (round 9, the user, 2026-10-27; with work by the hours):
+    // spent in its next week's budget on top of its tax's, as they come. Below nothing (road money out, the takings not
+    // yet home), it stays to be netted against the takings when they come.
+    std::map<std::string, double> caravanWeek;
     std::int64_t revision = 0;
 };
 
@@ -1165,7 +1173,10 @@ class Society
         SellersOnly = 8,                             // Only the stalls and the moneychangers let go (round 8).
         KeepApprentices = 16,                        // No apprentice is let go, nor counted in the excess (round 8).
         UnpaidFirst = 32,                            // Only the unpaid, not the out of work, look for crews early (round 8).
-        CaravanIncome = 64                           // A town's caravans' net takings count in its budget (round 8).
+        CaravanIncome = 64,                          // A town's caravans' net takings count in its budget (round 8).
+        CaravansAsTheyCome = 128,                    // ...in its week's budget on top of its tax's, not its month (round 9).
+        FarGiveWay = 256,                            // A field's far taker, still on its way, gives way to a nearer (round 9).
+        KeepersApprentice = 512                      // Only the keeper's own apprentice is kept over and above (round 9).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
@@ -1800,6 +1811,14 @@ class Society
     // producer's hire is the land's, a farm's or not: doc 64, Phase 13.)
   public:
     bool farmHire(const OddJob& j) const;          // A hire posted by the land's (a farm, or with the hours any producer).
+    // How far a wolf lives from a spot: from its home (a lodging at a farm's bunkhouse while it lasts) straight across the
+    // map, in tiles (LifeDay::onMap); -1 where either isn't known.
+    double livesFrom(const std::string& id, const Spot& at) const;
+    // A field's place full, with work by the hours (doc 64, Phase 13, round 9; the user, 2026-10-27: "The ones travelling
+    // from furthest away should be released first in favor of someone closer."): the taker that gives way to `id`, a
+    // wolf of another town than the field's and than `id`'s, still on its way to it today (no work done there yet), living
+    // farther from it than `id` does, the farthest first. "" for none, or a place not full.
+    std::string givesWayTo(const OddJob& j, const std::string& id) const;
   private:
     static constexpr int BunkBeds = 10;
     static constexpr std::size_t CityResidents = 150;

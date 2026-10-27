@@ -5944,3 +5944,158 @@ database).
    hand learning from another dock hand too. Should only the keeper's own apprentice be kept (the model's apprentice
    learns its firm's trade beside its master)? Recommended: yes. It would let the Heights cheese stall's three surplus
    hands go, and keep the bank's, the cooper's, the provisioner's and the smith's.
+
+### Phase 13: the towns' trade as it comes, the far taker gives way, the keeper's apprentice (round 9, rules)
+
+Three of the user's decisions (2026-10-27) on round 8's questions 2, 3 and 5, all with work by the hours only. Base:
+round 8 reviewed and merged (f13f80e).
+
+**What changed:**
+
+- **1. A town's caravans' net takings go to its week's budget, spent as they come** (`Core/RatwSociety.cpp`, `record`;
+  `Core/RatwInstitutions.cpp`, `institutionsWeek`). Round 8 counted them in the town's month of income, and the budget
+  rule holds two months of it, so Oakhaven held two months of its trade. Now the same three flows (the "trade takings",
+  less the "money for the road" and what its stores pay for "unsold, back to the stores") go to a new sum,
+  `EconomyMemory::caravanWeek`, and the month is its tax alone, as before round 8. At the week's budget, a town whose
+  sum is above nothing adds all of it to the tax rule's budget (no more than its purse holds), and the sum starts again.
+  A sum below nothing (its road money out, the takings not yet home) adds nothing and stays, to be netted against the
+  takings when they come. Saved and read with the economy's memory, below nothing too. A town's stores only, as in
+  round 8.
+- **2. A field's far taker, still on its way, gives way to a nearer wolf** (`Core/RatwOddJobs.cpp`, `givesWayTo`,
+  `oddJobFor`). The user's words: "a field place held by a taker still travelling is released to a nearer wolf,
+  farthest-away first." A grown wolf looking at a field's hire whose places are all held may take one if a taker:
+  - is of another town than the field's and than its own (the city's idle never bump each other, nor a field's own
+    town's wolves);
+  - is still on its way to the field today (on the first leg, no work done there yet);
+  - lives farther from the field than it does.
+
+  The farthest of those gives way, is paid nothing for the day, and looks again at its next decision; the journal notes
+  "gave way to a nearer hand" with how far it lives (`econ_watch`'s `gaveway.csv`). How far is from the wolf's home (a
+  bunkhouse lodging while it lasts) to the field, straight across the map (`LifeDay::onMap`, from each cell's place on
+  the map; no path is searched). **No two wolves can bump each other:** the distance is from home, the same all day,
+  so a wolf only ever gives way to one living strictly nearer, and the one that took its place can't be bumped back by
+  it. Nor by its own townsfolk, who are of its town.
+- **3. Only the keeper's own apprentice is kept over and above** (`Core/RatwLabour.cpp`, `reviewHands`). Round 8 kept
+  any apprenticed hand out of the let-go and the excess. Now only one apprenticed to the business's own post, its
+  keeper's: a hand apprenticed to a fellow hand is help as any other. (The Heights' cheese stall kept three such for
+  good, and its till ran down to 29p.) **And a producer's own post is never let go** (round 8's review, minors): a
+  producer's own post (its farmer's, its fisher's) is among its till's posts, and with the keeper's apprentice rule a
+  farmer apprenticed to a neighbour is no longer counted out of its excess. The let-go skips the business's own post,
+  whatever the rules. (A maker's keeper's post isn't among its till's.)
+- **For trials:** `econ_watch --without weekly,giveway,masters` leaves each of the three out. With all three left out,
+  a 9-day `--hours` run gives f13f80e's f4ad2f45081e44af.
+
+**Saves:** `caravanWeek` in the economy's memory (`Core/RatwWire.cpp`), read as saved below nothing too. An old save
+has none: nothing is owed.
+
+**The seconds' pace** is as it was: a 5-day run without `--hours` gives d034a6316a8d0cb, on f13f80e and on this branch.
+
+**Tests** (`crafting_tests`; six mutations, one at a time, all caught: the town's week, the keeper only, the farthest
+first, the nearer only, the on-its-way only, the producer's post; the script is `r9/rules/mutate.py` in the scratch
+folder):
+
+- `aTownSpendsItsTradeAsItComes`. A town sends its caravan out with 1,000p on day 33. The day-35 budget adds nothing
+  for it, and the 1,000p stays below nothing, through a save too. Home on day 36 with 9,500p, its stores paying 500p
+  for the unsold bread: 8,000p, all of it in the day-42 budget, and that week's works crew larger than with its tax
+  alone and than round 8's. Its month is its tax alone. (`aTownCountsItsCaravans` now tests round 8's form, with round
+  9's rule left out.)
+- `theKeepersOwnApprentice`. A stall wanting one, with its keeper and four hands, the first apprenticed to its keeper,
+  the second to the third hand. A week on it has let the second go; three weeks on the other two as well, and it keeps
+  its keeper's apprentice. With round 8's rule both apprentices are kept.
+- `aProducerKeepsItsOwnPost`. A fishery wanting one, with its fisher (its post first among its till's) and the fisher's
+  apprentice. Three weeks on both keep their posts. With the apprentices' rule left out, a week on the apprentice is
+  let go, not the fisher. (Without the guard the fisher went.)
+- `aFarTakerGivesWay`. At the harvest a farm posts a field hire of three. The city's idle, living 1,010 to 1,030 tiles
+  off, take all of it (the rule left out that day) before three of the farm's town, living 50 tiles off, look. The
+  farthest of the city's three reaches the field and works. The next morning the farm posts a second hire, of six,
+  and the city's next idle take it. From ten the town's three look again: the two of the city still on their way to
+  the first give way to two of them, the farther first, and the third takes the second hire's farthest's place. None
+  of the three is paid for the day. A fourth of the town living 3,000 tiles off, farther than any of the city's, takes
+  nobody's place. Then the bumping test: each gave way to a wolf living nearer, once; none of them holds a field's
+  place again by the evening, nor could take one back from those that took theirs (`givesWayTo` is empty for each);
+  and nobody gives way after noon. Without the rule the town's find both hires full.
+- All 68 tests pass (`ctest`).
+
+**Measured** (120 days of DEV's export, `--deterministic --hours --threads 6`, one seed; money conserved every day in
+each run):
+
+- `base120`: round 8 merged (f13f80e), digest 8dfd6f9d275a7904.
+- `r9`: this branch, digest 5a83102073050d54.
+
+The scripts are `r9/rules/py/cmp.py`, `towns.py`, `oak.py` and `fields.py` in the scratch folder. Day 120's figures are
+its day-end line.
+
+| | `base120` | `r9` |
+|---|---|---|
+| Gini (households), day 56 / 120 | 0.531 / 0.575 | 0.529 / 0.566 |
+| Gini (residents), day 120 | 0.495 | 0.494 |
+| Poorer half (households), day 56 / 120 | 0.160 / 0.110 | 0.161 / 0.120 |
+| Shares on day 120: tills, households, Houses, towns, capital, church | 0.303, 0.447, 0.101, 0.054, 0.047, 0.048 | 0.284, 0.456, 0.117, 0.043, 0.050, 0.050 |
+| The realm's rate (`going[""]`), day 56 / 120 | 64.8 / 78.9p | 64.3 / 80.2p |
+| Ridgemere's rate, day 120 | 90.4p | 90.0p |
+| Hungry / starving (day 46, the only hungry day) | 21 / 0 | 19 / 0 |
+| Jobless on day 120 | 68 wolves, 138k | 65, 129k |
+| Hands let go (`flows.csv`) | 64 | 65 |
+| The Heights' cheese stall's hands, day 56 / 120; its till on day 120 | 4 / 4; 730p | 1 / 1; 0p |
+| The towns' treasuries, day 28 → 120 | 157k → 249k (+58%) | 146k → 199k (+36%) |
+| Oakhaven | 39.5k → 127.3k (+222%) | 31.1k → 133.9k (+331%) |
+| Larkfield | 31.1k → 64.9k (+109%) | 28.9k → 45.0k (+56%) |
+| Frosthollow | 21.6k → 20.9k (−3%) | 20.9k → 0.1k (−100%) |
+| Mirebridge | 19.6k → 14.9k (−24%) | 20.9k → 8.0k (−62%) |
+| Southmeadow | 30.2k → 14.9k (−51%) | 29.5k → 6.9k (−77%) |
+| Coldwater | 15.1k → 6.1k (−60%) | 14.9k → 5.5k (−63%) |
+| The capital's treasury; the church's, day 28 → 120 | 282k → 235k; 249k → 242k | 282k → 250k; 249k → 249k |
+| Oakhaven's works crew posted / worked a day, weeks 12-16 | 18 / 13 | 47 / 22 |
+| The towns' caravans' net a day, days 28-119: Oakhaven, Larkfield, Frosthollow | +1,893, +741, +226 | +2,465, +937, +113 |
+| Field places posted / taken / worked a day, days 61-90 | 61.7 / 58.8 / 23.9 | 65.5 / 57.5 / 25.3 |
+| of them held by wolves from another town (worked) | 25.2 (7.5) | 27.0 (10.1) |
+| Field places worked a day, all days | 18.8 | 18.0 |
+| Gave way to a nearer hand (`gaveway.csv`) | — | 149 |
+| Crew places posted / worked a day, all days | 100.9 / 88.9 | 125.0 / 100.3 |
+| Pace, day 56 / 120 | 0.357 / 0.696 | 0.250 / 0.661 |
+| A tick | 0.0223 ms | 0.0220 ms |
+
+**Read plainly:**
+
+- **Larkfield comes down, Oakhaven doesn't.** Larkfield ends at +56% from day 28 against +109%, about 45k, not the 27k
+  round 8 reckoned. Oakhaven ends higher than before. Its caravans' money does reach its budget: its works crew posted
+  43 to 50 places a day from week 12 against 16 to 19. But only 21 to 23 of them were worked (too few take
+  them), and a crew's unworked places cost nothing. So the money stays in its purse. And its caravans brought in more (+2.5k a day
+  net against +1.9k), as its town had more to spend. Round 8's 18k assumed the budget would be spent.
+- **The small towns run down faster.** Frosthollow is empty on day 120 (day 112: 7.1k), Mirebridge and Southmeadow lose
+  62% and 77%. Their own posts spend more than their tax (Frosthollow's: about 330p a day of watch, service, labour and
+  works funds against 216p of tax). In round 8 their caravans' net sat in their purses and paid for that. Now it is
+  spent on the week's works crew as it comes (Frosthollow's paid 89p a day against 32p), and the posts draw the purse
+  down. This is round 8's question 4, made sharper.
+- **The far takers give way, and nobody bumps back.** 149 places changed hands, all from Ridgemere's wolves, at
+  Larkfield's fields (115), Coldwater's quarry (29) and Southmeadow's (5). 148 pairs, none reversed. One wolf gave way
+  twice in a day at most: at two fields, or at one where it took a place that fell open and was bumped again by
+  another, nearer wolf. At the harvest, places worked rose a little (25.3 a day against 23.9), and those held by wolves
+  from another town worked more of them (10.1 against 7.5). Over all days the fields worked about as before (18.0
+  against 18.8): the harvest still works under half of the places it posts. Why the rest are held and not worked
+  wasn't measured here.
+- **The Heights' cheese stall lets its three go** (1 hand from day 56 against 4), but its till still runs to nothing
+  by day 119. The let-go elsewhere is as before (65 against 64).
+- **The wage and the shares are within one seed's spread.** The realm's rate 80.2p on day 120 against 78.9p,
+  household Gini 0.566 against 0.575, the poorer half 0.120 against 0.110. The towns' share falls (0.043 against
+  0.054), the Houses' and the households' rise. Hunger is as before.
+
+**Seen, not changed:**
+
+- In `aFarTakerGivesWay` the wolf at work on the farm's first hire is also listed on its second hire, posted the next
+  day. It happens with the rule left out too, so it is older than round 9: a wolf holding two of one farm's field places
+  at once. Worth a look.
+- A town whose caravans net below nothing for a long time carries the loss in `caravanWeek` until takings cover it. No
+  town does so for long in `r9`.
+
+**For the user:**
+
+1. **Oakhaven.** Its budget now carries its trade, but its works can't use it: half its crew goes unworked. (a) Let a
+   town's unspent works budget buy what it can't hire (materials, or a share sent to the capital's works). (b) Let
+   its crew be taken from other towns, as the fields' hires are. (c) Accept it. Recommended: (b) first, it brings the
+   money back to wages.
+2. **The small towns.** Their posts outspend their tax; round 8's caravan money hid it, and now it is spent on works.
+   (a) Pay a town's own posts first from its caravans' week, and its works only with what's left. (b) Fewer posts, or
+   more tax. Recommended: (a), a small change to this rule.
+3. **The far taker gives way, as built?** It does what was asked and nobody bumps back, but it changes little at the
+   harvest. Recommended: keep it, and look next at why the places held aren't worked.

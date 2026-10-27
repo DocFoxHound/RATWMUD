@@ -199,8 +199,17 @@ void Society::institutionsWeek(std::int64_t day)
     for (const auto& id : towns)
     {
         const auto community = id == "treasury" ? capital() : id.substr(7);
-        // (A town's month is its tax, and with work by the hours its caravans' net takings too: round 8, Society::record.)
+        // (A town's month is its tax; in round 8, with work by the hours, its caravans' net takings too: Society::record.)
         auto budget = budgetOf(id, 2, .4);
+        // Since round 9 its caravans' net takings since its last week's budget come on top, spent as they come (the user,
+        // 2026-10-27), and its month is its tax alone: it holds two months of its tax, not of its trade. A week below
+        // nothing (its road money out, the takings not yet home) adds nothing, and is netted against the takings to come.
+        // (A town's stores only: the capital's caravans are its Houses'.)
+        if (const auto trade = memory.caravanWeek.find(id); trade != memory.caravanWeek.end() && trade->second > 0)
+        {
+            budget = std::min(budget + std::int64_t(trade->second), account(id)->cash);
+            memory.caravanWeek.erase(trade);
+        }
         // The week's relief, set aside: what it gave last week and a third over, and a twentieth of its budget besides.
         const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
         memory.reliefLeft[id] = double(relief);

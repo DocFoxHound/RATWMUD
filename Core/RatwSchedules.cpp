@@ -422,6 +422,14 @@ void World::planDays()
     day.harvest = [this](const std::string& who, const WorkGround& at, int season) { return harvestAt(who, at, season); };
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
     day.sky = [this](const Spot& at) { return skyAt(at.cell, {at.x, at.y}); };   // The weather where they'd be.
+    day.onMap = [this](const Spot& at, double& x, double& y) {
+        const auto* c = cell(at.cell);
+        if (!c)
+            return false;
+        x = c->worldX + at.x;
+        y = c->worldY + at.y;
+        return true;
+    };
     society_.setDay(std::move(day));
 }
 } // namespace ratw

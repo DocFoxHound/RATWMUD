@@ -135,6 +135,41 @@ bool Society::farmHireOf(const OddJob& j) const
     return farmHire(j);
 }
 
+double Society::livesFrom(const std::string& id, const Spot& at) const
+{
+    const auto life = state_.residents.find(id);
+    double hx = 0, hy = 0, x = 0, y = 0;
+    if (!day_.onMap || life == state_.residents.end() || !day_.onMap({life->second.homeCell, life->second.homeX, life->second.homeY}, hx, hy) ||
+        !day_.onMap(at, x, y))
+        return -1;
+    return std::hypot(hx - x, hy - y);
+}
+
+std::string Society::givesWayTo(const OddJob& j, const std::string& id) const
+{
+    // (By its home, not where it stands: the same all day, so two wolves can't bump each other back and forth, and the one
+    // given way to stays the nearer for as long as it holds the place. Never to a wolf of its own town: the city's idle
+    // would otherwise bump each other down the morning by a street's walk, to no field's gain.)
+    if (!workByHours() || !wageRule(FarGiveWay) || !j.field || j.until < 0 || j.ended || int(j.stage.size()) < j.slots || j.stage.count(id))
+        return {};
+    double most = livesFrom(id, j.from);
+    if (most < 0)
+        return {};
+    const auto town = communityOfResident(id);
+    std::string farthest;
+    for (const auto& [who, stage] : j.stage)
+    {
+        const auto done = j.progress.find(who);
+        if (stage != 0 || (done != j.progress.end() && done->second > 0))
+            continue;
+        if (const auto theirs = communityOfResident(who); theirs == j.community || theirs == town)
+            continue;
+        if (const double far = livesFrom(who, j.from); far > most)
+            most = far, farthest = who;
+    }
+    return farthest;
+}
+
 const Society::OddJob* Society::oddJobFor(const std::string& id, const Position& job, bool jobless, int age, bool poor, double hour,
                                          std::int64_t ownDayPay, bool* claims, const std::string* known, bool crewFree)
 {
@@ -209,6 +244,13 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
                int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14) &&
                (j.kind != "about the home" || !ownHome(j));
     };
+    // Or a field's place, full, whose taker from another town, still on its way, lives farther from it than this grown
+    // wolf does (round 9, the user, 2026-10-27: givesWayTo). Round 8 found the fields' places held but not worked: wolves
+    // from another town held 38-57% of them at the harvest and worked a third to a half of those.
+    const auto takes = [&](const OddJob& j) {
+        return open(j) || (!child && j.field && !j.ended && int(j.stage.size()) >= j.slots &&
+                           (j.community == community || (fromCity && farmHireOf(j))) && !givesWayTo(j, id).empty());
+    };
     // The places to look, in order: its town's, and a city wolf's the farms' hires too.
     const auto* look = &candidates();
     if (indexed && fromCity && !oddFarmHires_.empty())
@@ -239,7 +281,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
                 if (j.until < 0 || j.slots <= 0 || !(crew || (jobless && (j.kind == "a hand" || j.kind == "a hand at the shop"))))
                     continue;
                 const auto pay = j.pay / j.slots;
-                if ((pay > best || (pay == best && chosen && (crew == bestCrew ? &j < chosen : !crew))) && open(j))
+                if ((pay > best || (pay == best && chosen && (crew == bestCrew ? &j < chosen : !crew))) && takes(j))
                     best = pay, bestCrew = crew, chosen = &j;
             }
         };
@@ -261,7 +303,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         const auto bestOf = [&](const std::vector<std::size_t>& list) {
             for (const auto i : list)
                 if (auto& j = oddJobs_[i]; j.until >= 0 && j.slots > 0 && (j.kind == "a hand" || j.kind == "a hand at the shop" || crewPlace(j)) &&
-                                           (j.pay / j.slots > best || (j.pay / j.slots == best && chosen && &j < chosen)) && open(j))
+                                           (j.pay / j.slots > best || (j.pay / j.slots == best && chosen && &j < chosen)) && takes(j))
                     best = j.pay / j.slots, chosen = &j;
         };
         // (Its town's hires, and a city wolf's the farms', from the index: the list is long with chores.)
@@ -284,7 +326,7 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
             }
     for (int pass = child ? 0 : 1; !chosen && pass < 2; ++pass)
         for (const auto i : *look)
-            if (auto& j = oddJobs_[i]; open(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay)) &&
+            if (auto& j = oddJobs_[i]; takes(j) && (pass == 1 || j.slots >= 2) && (!better || jobless || (j.until >= 0 && j.pay / j.slots >= ownDayPay)) &&
                                        (!called || j.field))
             {
                 chosen = &j;
@@ -297,6 +339,16 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         *claims = true;                             // (Only asked: nothing is claimed.)
         return nullptr;
     }
+    // A field's place full: its farthest taker still on its way gives way, unpaid for the day, and looks again at its next
+    // decision. (Noted with how far it lives from the field, in tiles, and the field's payer.)
+    if (int(chosen->stage.size()) >= chosen->slots)
+        if (const auto far = givesWayTo(*chosen, id); !far.empty())
+        {
+            record("gave way to a nearer hand", far, id, chosen->payer, int(std::lround(livesFrom(far, chosen->from))), 0);
+            chosen->stage.erase(far);
+            chosen->progress.erase(far);
+            ++oddVersion_;
+        }
     chosen->stage[id] = 0;
     chosen->progress[id] = 0;
     if (indexed)

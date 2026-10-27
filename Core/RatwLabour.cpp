@@ -373,20 +373,26 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
         return;
     const auto posts = helpPosts(till);
     // An apprentice is a hand over and above (the model's firm_week): never let go, nor counted in the excess, at a maker
-    // or a stall alike (round 8, the user, 2026-10-27; in round 7 four were let go as hands).
+    // or a stall alike (round 8, the user, 2026-10-27; in round 7 four were let go as hands). With work by the hours only
+    // the business's own apprentice, its keeper's (the round 9 decision, the user, 2026-10-27; the model's apprentice
+    // learns its firm's trade beside its master): one apprenticed to a fellow hand is help as any other. (The Heights'
+    // cheese stall kept three hands apprenticed to its own dock and wash hands for good, and its till ran down to 29p.
+    // Its owner is a House or its keeper, so the keeper is the one master who works there.)
     std::set<std::string> learners;
     if (weekly && wageRule(KeepApprentices))
         for (const auto& post : posts)
-            if (const auto ps = state_.careers.positions.find(post); ps != state_.careers.positions.end() && !ps->second.holder.empty() &&
-                                                                     apprenticedTo(ps->second.holder))
-                learners.insert(ps->second.holder);
+            if (const auto ps = state_.careers.positions.find(post); ps != state_.careers.positions.end() && !ps->second.holder.empty())
+                if (const auto* master = apprenticedTo(ps->second.holder);
+                    master && (!workByHours() || !wageRule(KeepersApprentice) || master->id == pid))
+                    learners.insert(ps->second.holder);
     const auto letGo = [&](int excess) {
-        // Half the excess, one at least, the post kept empty.
+        // Half the excess, one at least, the post kept empty. (Never its producer's own post, among its till's: its
+        // farmer, its fisher. Round 8's review.)
         int n = std::max(1, excess / 2);
         for (const auto& post : posts)
         {
             auto& ps = state_.careers.positions[post];
-            if (n <= 0 || ps.holder.empty() || learners.count(ps.holder))
+            if (n <= 0 || ps.holder.empty() || learners.count(ps.holder) || post == pid)
                 continue;
             record("laid off", till, ps.holder, "", 0, 0);
             ps.lastHolder = ps.holder;
