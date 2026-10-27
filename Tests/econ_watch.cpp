@@ -47,7 +47,8 @@
 // houses (a House's budget pays its retainers, finery, works and estate crew only; its posts, caravans and investments
 // draw on its purse as before), housetills (a House's business it doesn't top up isn't free to trade on as a lone
 // owner's: no record, its manager not free for hire), church (the church's alms bought on top of its relief, no floor),
-// cheapalms (alms buy the shop's most nourishing food, not the cheapest that feeds). With those four left out, a run is
+// cheapalms (alms buy the shop's most nourishing food, not the cheapest that feeds), carry (a House's budget unpaid
+// last week stays in its purse, not carried to its works and crews). With those five left out, a run is
 // 4ef067b's to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
@@ -458,9 +459,11 @@ int main(int argc, char** argv)
                     off |= Society::ChurchBudget;
                 else if (name == "cheapalms")
                     off |= Society::CheapAlms;
+                else if (name == "carry")
+                    off |= Society::CarryParts;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, houses, housetills, church or cheapalms, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, crews, oneplace, owners, houses, housetills, church, cheapalms or carry, not "
                               << name << "\n";
                     return 2;
                 }

@@ -2094,7 +2094,9 @@ void aHouseKeepsItsCrew()
                 (j.ended && j.until == 8 ? shut : open) += 1;
         expect(shut >= 2 && open == 0, "the House can't pay the day's shares: its gangs are shut, " + std::to_string(shut) + " (" +
                                            std::to_string(open) + " not)");
-        // Its next week, with 2,000p left: what its budget pays, one.
+        // Its next week, with 2,000p left: what its budget pays, one. (Without round 10's carry: what the gangs shut left of
+        // last week's would go on top, aHouseCarriesWhatItDidntPay.)
+        Society::wageRulesOff(Society::CarryParts);
         st = s->state();
         st.accounts.at("treasury").cash -= 2000;
         st.accounts.at("house:house_fell").cash = 2000;
@@ -2106,6 +2108,7 @@ void aHouseKeepsItsCrew()
             if (j.payer == "house:house_fell" && j.kind == "building work" && j.until >= 14)
                 next += j.slots;
         expect(next == 1, "with 2,000p, its next week's crew is what its budget pays: " + std::to_string(next));
+        Society::wageRulesOff(0);
         expect(s->conserved(), "money stays conserved");
     }
     {
@@ -5126,6 +5129,81 @@ void aHouseSpendsInsideItsWeek()
     expect(untilled.investedLow == 0 && !untilled.marked && !untilled.unpaid, "without the till's half, nothing is marked: " + say(untilled));
 }
 
+// Round 10, lane A's follow-up (the user, 2026-10-27), with work by the hours: what a House didn't pay out of last week's
+// budget goes to this week's works and crews. House Fell, 20,000p on a month's income of 4,000p, sets its week's parts
+// at the day-35 reckoning; nothing of its posts', caravans' or investments' parts is paid that week, nor all its works
+// and crews' (its crews' places stand untaken). At day 42 its works and crews' part is the week's own and what was left
+// of each last week, as far as it holds over its floor and at most the week's own budget again; without the rule, the
+// week's own. Its parts are the same both ways.
+void aHouseCarriesWhatItDidntPay()
+{
+    struct Run
+    {
+        std::int64_t left = 0, works = 0, posts = 0, road = 0, tops = 0, drawn = 0;
+    };
+    const auto run = [](unsigned off) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        roster.residents = {person("lord", "ruling House Fell", {"hall", 2.5, 2.5}, "civilian")};
+        for (int i = 1; i <= 20; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}, "civilian"));
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        const std::string house = "house:house_fell";
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 1; d <= 34; ++d)
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        const auto eve = [&] {
+            auto st = s.state();
+            auto& purse = st.accounts.at(house).cash;
+            st.accounts.at("treasury").cash += purse - 20000;
+            purse = 20000;
+            st.memory.monthIncome[house] = 4000 * 28. / 27;
+            for (const auto* part : {"|posts", "|road", "|tops", "|takings"})
+                st.memory.spendWeek[house + part] = 0;
+            expect(s.restore(st), "the eve restores");
+        };
+        const auto at = [&](const char* part) {
+            const auto& m = s.state().memory.spendLeft;
+            const auto found = m.find(house + part);
+            return found == m.end() ? std::int64_t(-1) : std::int64_t(found->second);
+        };
+        eve();
+        s.tick(1, 35 + .5 / 24, 0, bodies);
+        Run r;
+        // (A crew's share paid draws on its works and crews' part.)
+        const auto before = at("|works");
+        expect(s.shift(house, "scribe1", "", 0, 100, "an odd job: building work"), "a share paid");
+        r.drawn = before - at("|works");
+        eve();
+        for (const auto* part : {"|posts", "|road", "|tops", "|works"})
+            r.left += std::max<std::int64_t>(0, at(part));
+        s.tick(1, 42 + .5 / 24, 0, bodies);
+        r.works = at("|works"), r.posts = at("|posts"), r.road = at("|road"), r.tops = at("|tops");
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto r = run(0), without = run(Society::CarryParts);
+    const auto say = [](const Run& x) {
+        return "left " + std::to_string(x.left) + ", works " + std::to_string(x.works) + ", posts " + std::to_string(x.posts) + ", road " +
+               std::to_string(x.road) + ", tops " + std::to_string(x.tops);
+    };
+    expect(r.drawn == 100, "a crew's share draws on its works and crews' part: " + std::to_string(r.drawn));
+    expect(r.left > 0 && r.posts == without.posts && r.road == without.road && r.tops == without.tops,
+           "something was left, and its parts are the same: " + say(r) + "; without " + say(without));
+    // (At most the week's own budget again: its parts and its works and crews' without the carry.)
+    const auto own = without.works + without.posts + without.road + without.tops;
+    expect(r.works == without.works + std::min(r.left, own), "its works and crews get last week's unpaid on top, at most the week's own budget again: " +
+                                                                 say(r) + "; without " + say(without));
+}
+
 // Round 10, lane A (the user, 2026-10-27), with work by the hours: the church's alms bought for the hungry come out of
 // its week's relief with its relief, over its floor (a month of its income). At the day-35 reckoning it holds 300,000p
 // on a month's income of 100,000p: its floor 100,000p, and its relief what it gave last week (alms and relief) and a
@@ -5518,6 +5596,7 @@ int main()
         aHouseSpendsInsideItsWeek();
         theChurchsAlmsInsideItsRelief();
         theAlmsBuyTheCheapestThatFeeds();
+        aHouseCarriesWhatItDidntPay();
     }
     catch (const std::exception& error)
     {

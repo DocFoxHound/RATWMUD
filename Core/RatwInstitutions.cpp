@@ -366,6 +366,17 @@ std::int64_t Society::houseParts(const House& h, std::int64_t day)
     const auto floor = 7 * HouseFloorHands * std::int64_t(std::ceil(goingRate(h.community) - 1e-9));
     memory.spendLeft[h.id + "|floor"] = double(floor);
     auto budget = std::int64_t(std::clamp((month + .3 * (held - 4 * month)) / 4 + double(trade), 0., std::max(0., held - double(floor))));
+    // What it didn't pay out of last week's budget (CarryParts; the user, 2026-10-27): what's left of each part, and of
+    // its works and crews' (a crew's places untaken, materials the shops hadn't), goes to this week's works and crews on
+    // top, as far as it holds over its floor. (Kept, a House paid out 75-85% of its budget in round 10's year, and held
+    // 0.025-0.065 of the money over the model's from day 140.) It is money still in its purse, not counted twice: what's
+    // left of this week's carries on to the next in its turn.
+    std::int64_t carried = 0;
+    if (wageRule(CarryParts))
+        for (const auto* name : {"|posts", "|road", "|tops", "|works"})
+            if (const auto left = memory.spendLeft.find(h.id + name); left != memory.spendLeft.end())
+                carried += std::max<std::int64_t>(0, std::int64_t(left->second));
+    const auto own = budget, room = std::max<std::int64_t>(0, std::int64_t(held) - floor - budget);
     const auto part = [&](const char* name, bool open, std::int64_t least) {
         auto& last = memory.spendWeek[h.id + name];
         const auto give = open ? std::min<std::int64_t>(budget, std::max({std::int64_t(last * PartGrowth), std::int64_t(double(budget) * PartLeast), least}))
@@ -377,6 +388,11 @@ std::int64_t Society::houseParts(const House& h, std::int64_t day)
     part("|posts", true, 0);
     part("|road", true, trade);
     part("|tops", held >= 4 * month, 0);
+    // (At most this week's own budget again: a House whose purse fell since, by its tax or a thief, doesn't spend the
+    // rest of it to its floor in a week on what it had set aside.)
+    budget += std::min({carried, room, own});
+    // (Its works and crews' part, counted down as they are paid, for the next week's carry.)
+    memory.spendLeft[h.id + "|works"] = double(budget);
     return budget;
 }
 

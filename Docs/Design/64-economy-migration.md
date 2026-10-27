@@ -6482,7 +6482,7 @@ extended, not doubled.
   at a shop, the cheapest on sale with a loaf's nourishment (`AlmsFeeds`, 15: a wolf asking at 55 is brought under 40),
   else the cheapest it has; for the daily feeding, one each, at the shop that sells it cheapest. (Before, the shop's
   most nourishing, and for the daily feeding 6p a head of whatever came first on the shelves.)
-- **For trials:** `econ_watch --without houses,housetills,church,cheapalms`.
+- **For trials:** `econ_watch --without houses,housetills,church,cheapalms` (and `carry`, below).
 
 **Saves:** `spendLeft` (each part's left and the floors) and `spendWeek` (each part's week, and a House's caravans'
 takings since its last budget) in the economy's memory.
@@ -6565,3 +6565,26 @@ aside on the first day, before the church's founding money came: 21 starved in R
    yes, with the crews' untaken places counted back; it brings the Houses to the model's share.
 3. **The church at its floor** from day 196, its works stopped: keep the floor at a month (the user's), or let relief
    draw it lower in a famine? Recommended: keep it; the hunger is the firms' hoard and the bite rule, not the church.
+
+**The user's answers (2026-10-27):** (2) yes; (3) keep the floor as built. (1) is measured in the combined run after
+lanes A, B and C are merged.
+
+**The carry** (`CarryParts`, `--without carry`). At a House's reckoning, what's left of each of last week's parts (its
+posts', its caravans', its investments') and of its works and crews' (their part is counted down too, by crews' shares,
+works and finery paid: a crew's places untaken, materials the shops hadn't, leave it unspent) goes to this week's works
+and crews on top: as far as it holds over its floor, and at most the week's own budget again (a House whose purse fell
+since, by its tax or a thief, doesn't spend the rest to its floor in a week on what it had set aside). It is money still
+in its purse, not counted twice; what this week leaves carries on to the next in its turn. Its parts are as before.
+
+- Its test, `aHouseCarriesWhatItDidntPay`: House Fell, 20,000p on 4,000p a month, pays nothing of a week's parts and
+  its crews go untaken; the next week's works and crews' part is the week's own and what was left, capped at the week's
+  own budget again; its parts the same as without the rule; a crew's share paid draws on the part. Three mutations, all
+  caught. `aHouseKeepsItsCrew`'s round-6 check of the next week's crew after its gangs were shut runs without the carry
+  (what the shut gangs left would go on top).
+- Digests: 5 days without `--hours` d034a6316a8d0cb; 9 days `--hours --without houses,housetills,church,cheapalms,carry`
+  23bcbdc710fbcf75 (4ef067b's); 9 days `--hours --without carry` 7a7f927d6925231b (the cheap alms' build); 9 days
+  `--hours` 7a7f927d6925231b too (the carry first acts at the second reckoning, day 14). All 68 tests pass.
+- **60 days** (`--hours --without crews`, the carry on and off): the Houses paid out 110% of their rule's budget over days
+  14–60 with it (102–125% a House: last weeks' unpaid caught up), 86% without (84–93%). Their share of the money on day 56
+  is 0.200 with it, 0.224 without (the model's 0.264; the year's run without it was 0.227 on day 56 and 0.03–0.06 over the
+  model's from day 140). Gini 0.498 against 0.513 on day 56; no hunger in either.

@@ -1208,7 +1208,8 @@ class Society
         HouseBudget = 16384,                         // Every House outflow draws on its week's budget (round 10, lane A).
         HouseTills = 32768,                          // ...a House's till it can't top up trades on as a lone owner's (round 10).
         ChurchBudget = 65536,                        // The church's alms with its relief, inside its budget, over a floor (round 10).
-        CheapAlms = 131072                           // Alms buy the cheapest food that feeds the wolf, not the shop's best (round 10).
+        CheapAlms = 131072,                          // Alms buy the cheapest food that feeds the wolf, not the shop's best (round 10).
+        CarryParts = 262144                          // A House's budget unpaid last week goes to this week's works and crews (round 10).
     };
     static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
     static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }

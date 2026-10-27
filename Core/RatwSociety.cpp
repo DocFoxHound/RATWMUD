@@ -403,6 +403,11 @@ void Society::record(const std::string& kind, const std::string& from, const std
                     if (const auto left = m.spendLeft.find(from + part); left != m.spendLeft.end())
                         left->second -= double(coins);
                 }
+                // (Its works and crews', counted down for what it didn't pay out, carried to the next week: CarryParts.)
+                else if (kind == "an odd job: building work" || kind == "an odd job: about the home" || kind == "bought for a House's works" ||
+                         kind == "a House's finery")
+                    if (const auto left = m.spendLeft.find(from + "|works"); left != m.spendLeft.end())
+                        left->second -= double(coins);
             }
             else if (wageRule(HouseBudget) && !to.empty() && to[0] == 'h' && to.rfind("house:", 0) == 0 && kind == "trade takings" &&
                      from.rfind("caravan:", 0) == 0)
