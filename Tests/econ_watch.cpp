@@ -32,7 +32,10 @@
 // must give the same digest as one without: what is asked of the society, read only, never moves it.
 // --without: a trial's, round 7's rules of the wage book left out (doc 64, Phase 13, round 7; Society::wageRulesOff):
 // children (a hire's place a child holds counts filled, as before), employees (the going rate weighed by hands wanted,
-// keeper and all, as before), stalls (a stall never lets its help go, as before).
+// keeper and all, as before), stalls (a stall never lets its help go, as before); and round 8's: sellers (every business
+// with no craft lets its surplus help go, not only the stalls and the moneychangers), apprentices (an apprentice is let
+// go as any hand), unpaid (the out of work look for crews from waking too), caravans (a town's budget counts its tax
+// only, not its caravans' net takings). With round 8's four left out, a run is round 7's (1e192c0) to the digest.
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -327,9 +330,17 @@ int main(int argc, char** argv)
                     off |= Society::ByEmployees;
                 else if (name == "stalls")
                     off |= Society::StallsShed;
+                else if (name == "sellers")
+                    off |= Society::SellersOnly;
+                else if (name == "apprentices")
+                    off |= Society::KeepApprentices;
+                else if (name == "unpaid")
+                    off |= Society::UnpaidFirst;
+                else if (name == "caravans")
+                    off |= Society::CaravanIncome;
                 else
                 {
-                    std::cerr << "--without is children, employees or stalls, not " << name << "\n";
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid or caravans, not " << name << "\n";
                     return 2;
                 }
             }

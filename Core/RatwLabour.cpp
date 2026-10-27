@@ -347,6 +347,13 @@ bool Society::makesThings(const std::string& till) const
     return crafts.emplace(business->id, !items::craftsFor(business->id).empty()).first->second;
 }
 
+bool Society::sellsOnly(const std::string& till) const
+{
+    const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : jobOf(till);
+    const auto* business = p && !items::producerFor(p->title) ? items::businessFor(p->title) : nullptr;
+    return business && (business->id == "stall" || business->id == "moneychanger");
+}
+
 void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly, int wanted)
 {
     const auto pid = till.substr(5);
@@ -357,20 +364,29 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
     // 2026-10-26; the model's firm_week): before, it never let go, and the Heights' cheese and honey stalls held 31 and
     // 24 hands for the 1 each wanted, the realm's idle hands, out on every hire. Whatever the pace: what it wants
     // doesn't grow with it. The hand keeps its home (doc 64, question 3) and is a jobless wolf, taking hires and posts
-    // as the jobless do. (Every business with no craft of its own: a fletcher, a cartographer, an arsenal, a dye works,
-    // a builders' yard too; their help makes nothing with work by the hours either. Doc 64, round 7's review.)
+    // as the jobless do. Only a market stall or a moneychanger (sellsOnly): the other businesses with no craft of their
+    // own, a fletcher, a cartographer, an arsenal, a dye works, a builders' yard, keep their hands (round 8, the user,
+    // 2026-10-27; round 7 let every one of them go, doc 64, round 7's review).
     const bool stall = !makesThings(till);
     if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till) ||
-        (stall && (!weekly || !wageRule(StallsShed))))
+        (stall && (!weekly || !wageRule(StallsShed) || (wageRule(SellersOnly) && !sellsOnly(till)))))
         return;
     const auto posts = helpPosts(till);
+    // An apprentice is a hand over and above (the model's firm_week): never let go, nor counted in the excess, at a maker
+    // or a stall alike (round 8, the user, 2026-10-27; in round 7 four were let go as hands).
+    std::set<std::string> learners;
+    if (weekly && wageRule(KeepApprentices))
+        for (const auto& post : posts)
+            if (const auto ps = state_.careers.positions.find(post); ps != state_.careers.positions.end() && !ps->second.holder.empty() &&
+                                                                     apprenticedTo(ps->second.holder))
+                learners.insert(ps->second.holder);
     const auto letGo = [&](int excess) {
         // Half the excess, one at least, the post kept empty.
         int n = std::max(1, excess / 2);
         for (const auto& post : posts)
         {
             auto& ps = state_.careers.positions[post];
-            if (n <= 0 || ps.holder.empty())
+            if (n <= 0 || ps.holder.empty() || learners.count(ps.holder))
                 continue;
             record("laid off", till, ps.holder, "", 0, 0);
             ps.lastHolder = ps.holder;
@@ -384,7 +400,7 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
     };
     if (stall)
     {
-        if (const int excess = handsOf(till) - wanted; excess > 0)
+        if (const int excess = handsOf(till) - int(learners.size()) - wanted; excess > 0)
             letGo(excess);
         return;
     }
@@ -451,7 +467,7 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
         }
     }
     // (Not while the realm is still on its way to the calibrated hours: what its sales take grows week by week.)
-    else if (const int excess = hands - wanted - hired; weekly && excess > 0 && state_.memory.pace >= 1)
+    else if (const int excess = hands - int(learners.size()) - wanted - hired; weekly && excess > 0 && state_.memory.pace >= 1)
         letGo(excess);                               // (Over: its hires run out by themselves; then help let go.)
 }
 
