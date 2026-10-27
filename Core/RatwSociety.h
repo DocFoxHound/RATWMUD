@@ -1145,6 +1145,26 @@ class Society
     // And the labour market's (doc 64, Phase 13): each town's going rate ("" the realm's), an employer's town, and an
     // account's hours of work in hand.
     const std::map<std::string, double>& goingRates() const { return state_.memory.going; }
+    // Each time an employer is marked short of pay (econ_watch's shortpay.csv; doc 64, Phase 13, round 7): its key, what
+    // it was paying ("wage", a hand's spell; "hire", a hire's day), what it owed and what its purse held. Kept only when
+    // asked (noteShorts), until taken.
+    struct ShortNote
+    {
+        std::string key, what;
+        std::int64_t owed = 0, cash = 0;
+    };
+    static void noteShorts(bool on) { noteShorts_ = on; }
+    std::vector<ShortNote> takeShorts() const { return std::exchange(shorts_, {}); }   // (A measure: taken, not moved.)
+    // A trial's (econ_watch --without, round 7): the wage book's rules of round 7 left out, one at a time, to see what
+    // each does. Not saved; the game never sets it.
+    enum WageRule : unsigned
+    {
+        ChildrenOpen = 1,                            // A hire's place a child holds stands open in the wage book.
+        ByEmployees = 2,                             // The going rate weighed by employees, not the keeper.
+        StallsShed = 4                               // A stall lets its surplus help go at its weekly review.
+    };
+    static void wageRulesOff(unsigned rules) { wageRulesOff_ = rules; }
+    static bool wageRule(WageRule rule) { return (wageRulesOff_ & rule) == 0; }
     std::string employerTownOf(const std::string& key) const
     {
         const auto found = employerTown_.find(key);
@@ -1704,6 +1724,9 @@ class Society
     // The labour market's day (doc 64, Phase 6; RatwLabour.cpp): each employer's posts open and filled, and its town;
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
+    static inline bool noteShorts_ = false;
+    static inline unsigned wageRulesOff_ = 0;
+    mutable std::vector<ShortNote> shorts_;
     std::unordered_map<std::string, std::string> employerTown_, payKey_, postKey_;   // (postKey_: a post -> its employer.)
     std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
     double slack_ = 0;

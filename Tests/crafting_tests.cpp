@@ -1354,6 +1354,100 @@ void theGoingRateFromTheMakers()
     Society::setWorkByHours(false);
 }
 
+// The going rate by employees (round 7, the user, 2026-10-26; the model's market_wage, max(1, workers), owners not
+// workers): a scribe's office with three clerks paying 20p a labourer's day, and three scribes, each alone at its desk,
+// paying 10p. The office counts three, each lone scribe one: the rate is the office's 20p. Before (and without the rule),
+// each counted by the hands its work wanted, keeper and all, at most those it had: one each, and the lone scribes' 10p.
+// With two clerks the office counts two, not its scribe too: the lone scribes' 10p.
+void theGoingRateByEmployees()
+{
+    Society::setWorkByHours(true);
+    const auto rate = [&](unsigned off, int clerks) {
+        AuthoredRoster roster;
+        roster.residents = {person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+        for (int i = 1; i <= clerks; ++i)
+            roster.residents.push_back(person("clerk" + std::to_string(i), "works at the desk", {"desk", 2.5 + i, 3.5}, "civilian"));
+        for (int i = 1; i <= 3; ++i)
+            roster.residents.push_back(person("lone" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        roster.economy.treasury = 5000;
+        Society::wageRulesOff(off);
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto office = s.tillOf("scribe");
+        auto state = s.state();
+        const double skilled = 1 + s.employerSkill(office) / items::ladder().skillWage;
+        state.memory.employers[office] = {20 * skilled};
+        for (int i = 1; i <= 3; ++i)
+            state.memory.employers[s.tillOf("lone" + std::to_string(i))] = {10 * skilled};
+        expect(s.restore(state), "the employers' books restore");
+        double day = 1 + 10. / 24;
+        work(s, 1, day);
+        expect(s.handsOf(office) == 1 + clerks && s.handsWanted(office) == 1,
+               "the office has its scribe and its clerks, and wants one: " + std::to_string(s.handsOf(office)) + ", " + std::to_string(s.handsWanted(office)));
+        Society::wageRulesOff(0);
+        return s.goingRate("");
+    };
+    const double now = rate(0, 3), before = rate(Society::ByEmployees, 3), two = rate(0, 2);
+    expect(std::abs(now - 20) < 1e-6, "the going rate is the office's, by its three clerks: " + std::to_string(now));
+    expect(std::abs(before - 10) < 1e-6, "by the hands wanted, the lone scribes': " + std::to_string(before));
+    expect(std::abs(two - 10) < 1e-6, "with two clerks, its scribe not counted, the lone scribes': " + std::to_string(two));
+    Society::setWorkByHours(false);
+}
+
+// A stall lets its surplus help go (round 7, the user, 2026-10-26; the model's firm_week): a stall with four hands
+// beside its keeper wants one, its keeper. At each weekly review it lets half the excess go (one at least), whatever the
+// realm's pace: two, then one, then the last. Each let go keeps its home and is a jobless wolf, its post kept empty.
+// It hires nobody. Without the rule it keeps all four.
+void aStallLetsItsSurplusGo()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("stall", "keeping the stall", {"market", 4.5, 4.5}), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    for (int i = 1; i <= 4; ++i)
+        roster.residents.push_back(person("hand" + std::to_string(i), "works at the stall", {"market", 4.5 + i, 3.5}, "civilian"));
+    roster.economy.treasury = 5000;
+    const auto run = [&](unsigned off, int days) {
+        Society::wageRulesOff(off);
+        auto s = std::make_unique<Society>(Roster::None);
+        s->configure(roster);
+        auto state = s->state();
+        state.memory.pace = 0;                      // (Whatever the pace.)
+        expect(s->restore(state), "the pace restores");
+        const auto bodies = atWork(*s);
+        for (std::int64_t d = 1; d <= days; ++d)
+            s->tick(1, double(d) + .5 / 24, 0, bodies);   // (The day's pass.)
+        Society::wageRulesOff(0);
+        return s;
+    };
+    // (Its hands let go: those without a post, every one still in its home.)
+    const auto jobless = [](const Society& s) {
+        int n = 0;
+        for (int i = 1; i <= 4; ++i)
+            n += s.jobOf("hand" + std::to_string(i)) == nullptr;
+        return n;
+    };
+    const auto home = [](const Society& s) {
+        int n = 0;
+        for (int i = 1; i <= 4; ++i)
+            n += s.state().residents.at("hand" + std::to_string(i)).homeCell == "homes";
+        return n;
+    };
+    auto s = run(Society::StallsShed, 1);
+    const auto till = s->tillOf("stall");
+    expect(!s->makesThings(till) && s->handsOf(till) == 5 && s->handsWanted(till) == 1,
+           "the stall makes nothing, has five hands and wants one: " + std::to_string(s->handsOf(till)) + ", " + std::to_string(s->handsWanted(till)));
+    s = run(0, 7);
+    expect(jobless(*s) == 2 && home(*s) == 4, "a week on, it has let two go, both in their homes: " + std::to_string(jobless(*s)) + ", " +
+                                                  std::to_string(home(*s)));
+    expect(std::none_of(s->oddJobs().begin(), s->oddJobs().end(), [&](const auto& j) { return j.payer == till; }), "and it hires nobody");
+    s = run(0, 21);
+    expect(jobless(*s) == 4 && home(*s) == 4, "three weeks on, its keeper alone: " + std::to_string(jobless(*s)) + " let go");
+    s = run(Society::StallsShed, 21);
+    expect(jobless(*s) == 0, "without the rule, it keeps them all: " + std::to_string(jobless(*s)) + " let go");
+    expect(s->conserved(), "money stays conserved");
+    Society::setWorkByHours(false);
+}
+
 // At the seconds' pace the going rate is each town's, as it was before the hours (doc 64, Phase 13): a town whose
 // unskilled shops have nobody working keeps the rate it last had, not the realm's.
 void aTownKeepsItsRateAtTheOldPace()
@@ -1767,13 +1861,19 @@ void theCapitalsPostsOfLastResort()
 // A hire taken is no post open (doc 64, Phase 13, the review): a fishery whose sales want three hands' days has its
 // own and posts a hire for the rest; three idle wolves of its town take every slot of it, and nothing stands open. (And
 // three wolves who carry loads for hire, nobody's post to pay them since round 6: they take hires as the jobless do.)
-void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
+// Taken by children (twelve, from 14:00, as children take a grown wolf's work), they keep the places, and every place
+// stands open still (round 7: the model's, nobody under 16 works).
+void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square", int age = 30)
 {
     Society::setWorkByHours(true);
+    const bool children = age < 16;
     AuthoredRoster roster;
     roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
     for (int i = 1; i <= 3; ++i)
+    {
         roster.residents.push_back(person("idle" + std::to_string(i), takers, {"square", 2.5, 2.5}, "civilian"));
+        roster.residents.back().age = age;
+    }
     roster.economy.treasury = 100000;
     Society s(Roster::None);
     s.configure(roster);
@@ -1783,6 +1883,8 @@ void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
     const auto till = s.tillOf("fisher");
     expect(s.shift("treasury", till, "", 0, 20000, "test: the fishery's money"), "the fishery has money to hire with");
     std::map<std::string, LifeBody> bodies = atWork(s);
+    for (int i = 1; i <= 3; ++i)
+        bodies["idle" + std::to_string(i)].age = age;
     int taken = -1, slots = 0, open = -1, wanted = 0;
     for (std::int64_t d = 1; d <= 28 && open < 0; ++d)
     {
@@ -1794,11 +1896,12 @@ void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
                 full += j.slots, held += int(j.stage.size());
         if (full < 2 || held < full)
             full = -1;
-        // (The day's pass, then its working hours, the hands at the hire's spot when they hold it.)
-        for (double t = 10; t < 12; t += 1. / 60)
+        // (The day's pass, then its working hours, the hands at the hire's spot when they hold it. Children's from 14:00.)
+        const double start = children ? 14 : 10;
+        for (double t = start; t < start + 2; t += 1. / 60)
         {
             s.tick(1, double(d) + t / 24, 0, bodies);
-            if (t == 10 && full > 0 && d >= 8)
+            if (t == start && full > 0 && d >= 8)
             {
                 open = s.vacanciesOf(till), slots = full, wanted = s.handsWanted(till, false), taken = 0;
                 for (const auto& j : s.oddJobs())
@@ -1808,7 +1911,7 @@ void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
             for (const auto& j : s.oddJobs())
                 if (j.payer == till && j.until >= d)
                     for (const auto& [who, stage] : j.stage)
-                        bodies[who] = {j.from.cell, j.from.x, j.from.y};
+                        bodies[who] = {j.from.cell, j.from.x, j.from.y, false, bodies[who].age};
         }
         // (The day's fish sold and eaten, before the next day's pass.)
         set(s, "fisher", "fish", 24);
@@ -1823,7 +1926,10 @@ void aHireTakenIsNoPostOpen(const std::string& takers = "idling in the square")
     expect(wanted == 3 && slots >= 2 && taken == slots,
            "its sales three hands' days, its hires' slots all taken by those " + takers + ": " + std::to_string(taken) + " of " + std::to_string(slots) + " (" +
                std::to_string(wanted) + " wanted)");
-    expect(open == 0, "and no post stands open: " + std::to_string(open));
+    if (!children)
+        expect(open == 0, "and no post stands open: " + std::to_string(open));
+    else
+        expect(open == slots, "children hold them, and every place stands open: " + std::to_string(open) + " of " + std::to_string(slots));
     expect(s.conserved(), "money stays conserved");
     Society::setWorkByHours(false);
 }
@@ -3721,6 +3827,9 @@ int main()
         theBrakeReadsTheLandsHours();
         aHireTakenIsNoPostOpen();
         aHireTakenIsNoPostOpen("carries loads for hire");
+        aHireTakenIsNoPostOpen("idling in the square", 12);
+        theGoingRateByEmployees();
+        aStallLetsItsSurplusGo();
         theCapitalsPostsOfLastResort();
         aHouseKeepsItsCrew();
         theCordGoesRoundNoMore();

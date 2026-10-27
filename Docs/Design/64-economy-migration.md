@@ -4962,3 +4962,220 @@ in `bestOf`. More hires taken means more walking, and that cost is in the errand
    leave as it is. With so few grown takers, keeping them would change little, and it would need the hires saved.
 6. **The towns' works crews and the church's masons weighed by pay too** (as round 5's text suggested)? Recommended:
    not here. Their budgets are the capital's question (decision 2).
+
+### Phase 13: the shortage reaches the wage (round 7)
+
+The user's decision (2026-10-26): let the labour shortage reach the wage, with the model's three rules. The round-7
+diagnosis found that in `run120` the realm's going rate (`going[""]`) stood at 60p for all 120 days. The rising "wage"
+in `days.jsonl` was Ridgemere's own rate. Two things kept it there:
+
+- Hires taken by children counted as filled. Children held a fifth of the businesses' hire places and about half of
+  the crews'.
+- Three in four of the going rate's weights sat at one-hand businesses that never bid.
+
+The Heights' cheese and honey stalls held 31 and 24 hands for the one each wanted. Those hands were the realm's idle
+hands, out on every hire.
+
+**What changed** (`Core/RatwLabour.cpp`; with work by the hours only):
+
+- **A. A child's place stands open.** A place on a business's hire, or on a House's crew, held by a child (under 16)
+  counts as open in the wage book. The places in the hire-vacancy loop count it, and in `missing = min(want, 2n+2) - n -
+  onHires`, `onHires` counts only grown hands. The child keeps the work and the pay. This is the model's rule: nobody
+  under 16 works.
+- **B. The going rate by employees.** Each unskilled maker's labourer's day is counted once for each of its employees,
+  at least once: its help, and its hires' grown hands. Its keeper or farmer doesn't count. This is the model's
+  `market_wage`, `max(1, len(workers))`, whose owners aren't workers. Before, it was counted by the hands its work
+  wanted, at least one and at most those it had, keeper and all.
+- **C. A stall lets its surplus help go.** At its weekly review, a business that makes nothing (a stall or a
+  moneychanger) lets go half the hands above those it wants, at least one, and keeps the post empty, as a maker does.
+  - "Makes nothing" is every business with no craft of its own in `crafts.json`, not only the stalls and the
+    moneychangers. In `abc` it also let hands go at the City Arsenal, the Blue Vats (a dye works), the Greatly Yard (a
+    builders' yard), the fletcher at The Grey Goose and the cartographer at Soundings. Their help makes nothing with work
+    by the hours either (Phase 13), so by the game's own reckoning they are surplus. (The round-7 review.)
+  This is the model's `firm_week`.
+  - It does this whatever the pace. A maker waits for pace 1 because its sales take more hours as the pace rises; a
+    stall's wants don't grow with the pace.
+  - It still hires no one.
+  - The hand let go keeps its home (doc 64, question 3) and is a jobless wolf. It takes hires and posts as the jobless
+    do.
+  - The let-go step is shared with the makers' (`letGo`).
+- **For trials:** `Society::wageRulesOff` and `econ_watch --without children|employees|stalls` leave each rule out.
+  They are not saved, and the game never sets them.
+
+**Why short pay is flagged.** I logged every flag to `shortpay.csv`, a new econ_watch file (`Society::noteShorts`, read
+only). In the 120-day run with the three rules off (`w0`, the same digest as `run120`), there are about 32 cuts a
+week. Over 17 weeks they split into 312 at tills and 267 at households' help (a servant's master), with 4 others.
+
+- **Every flag is a purse out of money at that moment.** No flag came from a till that held the money.
+  - A hand's spell is paid only if the till holds that spell's few pennies. The tills' purses stood at a median of 3p
+    when they fell short (90th percentile 54p).
+  - A hire's day is paid only if the till holds the whole day's share.
+- **The purses mostly stayed empty.** By the day's end, 24% of the tills' short days and 45% of the households' had
+  taken in as much as one shortfall.
+- **The hours rule isn't the cause.** It only ends a hire that its till can't pay, and only on a till that couldn't.
+- **So the rule stays as it is.** It already flags short pay only when the payer couldn't pay, as in the model.
+- **The tills that run dry** are butchers, the water mills, woodcutters, loggers, fields, inns, the press, the ore
+  diggers and the stonecutters.
+
+**econ_watch.**
+- `days.jsonl` has a `going` block: the realm's rate (`""`) and each town's as its employers pay it. A town with no
+  rate of its own shows the realm's.
+- The daily line ends with `going Np`, then each town that has its own rate.
+- `shortpay.csv` is described above.
+
+**Saves:** nothing new.
+
+**The seconds' pace** is as it was. A 5-day run without `--hours` gives d034a6316a8d0cb, the same as 18a0d81. With the
+three rules off (`--without children,employees,stalls`):
+- a 5-day `--hours` run gives 18a0d81's 19d916fd323767da;
+- the 120-day run gives `run120`'s b7ef41c1a845a700.
+
+**Tests** (in `crafting_tests`; five mutations, one at a time, all caught; the script is `mutate.py` in the round's
+scratch folder):
+
+- `aHireTakenIsNoPostOpen("idling in the square", 12)`. A fishery wants three hands' days and posts a hire for two.
+  Children aged 12 take both places after 14:00, and both stand open (as grown takers: 0). The test's bodies now keep
+  their age when moved to the hire's spot.
+- `theGoingRateByEmployees`. A scribe's office has three clerks and pays 20p; three lone scribes pay 10p. The rate is
+  20p, and 10p without the rule. With two clerks it is 10p, so the office's scribe isn't counted (counted, it would be
+  20p).
+- `aStallLetsItsSurplusGo`. A stall has four hands beside its keeper, wants one, and the realm's pace is 0. After a week
+  two have been let go, after three weeks all four, and every one is in its own home. It posts no hire. Without the rule
+  it keeps all four. If it waited for the pace, none would go.
+- All 67 suites pass.
+
+**Measured** (120 days of DEV's export, `--deterministic --hours --threads 6`, one seed):
+
+- `w0`: this branch with the three rules off. It is `run120`.
+- `abc`: the three rules.
+- `noA`, `noB`, `noC`: one rule left out each, 60 days.
+- `t_slack`: a trial build, not committed, described below.
+
+Money was conserved every day in every run.
+
+| | `run120` (`w0`) | `abc` | the model at game scale |
+|---|---|---|---|
+| The realm's rate, days 56 / 84 / 112 / 120 | 60 / 60 / 60 / 60p | 64.9 / 70.8 / 79.8 / 81.7p | 79 / 87 / 97 / 101p |
+| Ridgemere's own, the same days | 60 / 61.8 / 66.0 / 67.5p | 65.2 / 72.2 / 90.5 / 92.8p | |
+| Employer-weeks (unskilled tills) with a post open 4+ days | 10.8% (weeks 2–8: 9.0%) | 23.2% (19.5%) | 22–54% |
+| Shop tills, day 56 → 120 | 623k → 856k (+37.5%) | 616k → 901k (+46.2%) | |
+| Paid civilians, day 2 / 56 / 120 | 978k / 817k / 813k | 970k / 679k / 643k | |
+| Jobless, day 120 | 13k | 113k | |
+| Idle grown wolves | 0 | 17 to 24 from day 7 | 1 to 8 |
+| Gini, day 56 / 120 | 0.562 / 0.587 | 0.562 / 0.595 | 0.375–0.396 on day 120 |
+| Poorer half, day 56 / 120 | 0.137 / 0.105 | 0.136 / 0.095 | 0.219–0.235 on day 120 |
+| Short-pay cuts a week (mean; last four weeks) | 32.4; 46–61 | 35.2; 51–79 | about 1 |
+| `refusals.csv`: rows; standing on day 120 | 3,056; 54 | 2,612; 68 | |
+| Owners' investment a day, months 2 / 3 / 4 | 12.2k / 12.3k / 12.9k | 13.1k / 14.2k / 13.4k | |
+| Hungry on day 46 (the only hungry day) | 9 | 25 (none starving) | |
+| Takers of the tills' hires: idle / children / jobless / drawn by pay | 52 / 21 / 1 / 22% | 35 / 22 / 20 / 19% | no hires |
+
+The realm's rate by week in `abc`:
+
+| day | 42 | 49 | 56 | 63 | 70 | 77 | 84 | 91 | 98 | 105 | 112 | 120 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rate | 60.8 | 63.8 | 64.9 | 67.2 | 68.1 | 70.0 | 70.8 | 74.1 | 77.4 | 78.6 | 79.8 | 81.7 |
+
+Each rule left out (day 56; the first 35 days are alike in all four runs):
+
+| | `abc` | without A (children) | without B (employees) | without C (stalls) |
+|---|---|---|---|---|
+| The realm's rate | 64.9p | 58.7p | 61.3p | 65.8p |
+| Employer-weeks with a post open 4+ days, weeks 2–8 | 19.5% | 9.0% | 18.8% | 20.0% |
+| Idle grown wolves | 18 | 18 | 18 | 0 |
+| Paid civilians | 679k | 676k | 687k | 805k |
+
+What each rule does:
+
+- **A opens the posts.** Without it the share of weeks with a post open is `run120`'s 9%, and the rate drifts down
+  (58.7p): the short-pay cuts still come, with few raises to answer them.
+- **B moves the rate.** Without it the posts open as often, but the median stays at the one-hand businesses (61.3p).
+  With B, on day 112, 22% of the weight sits at businesses with no employee, against the diagnosis's 76%.
+- **C frees the stall hands, and slows the rate a little.** 65 hands were let go at shop tills that make nothing and
+  6 at House tills, most of them in the first three weeks (33 by day 7). 53 of them were the Heights' cheese and honey
+  stalls' (31 and 24 hands on day 119 in `w0`, 1 each in `abc`). Four of them were apprentices: the let-go step
+  is the makers', which counts an apprentice's post among the help; the model's `firm_week` doesn't. On day 120, 63
+  grown wolves were without work (9 in `w0`), and 32 of them were 65 or older. They took a fifth of the tills' hire places, places that would otherwise
+  have stood open. The realm's idle went from 0 to about 20, which put the slack near 0.03. From day 37 the calm-week
+  cuts began: 555 small cuts in month 2 and 312 in month 3, against none in `w0`. Without C the rate was 65.8p on day
+  56, against 64.9p with it. The hands' money moved from paid civilians to the jobless: 120k on day 7.
+  - **Most of the jobless are not the hands let go, but old wolves who retired** (the round-7 review, from
+    `events.csv` and `residents.csv`). A holder past its retiring age retires only when a grown wolf without work lives
+    near enough to take its post (`RatwCareers.cpp`, succession). In `w0` there were almost none, so few retired. In
+    `abc` the hands let go were those successors: 47 wolves retired against 13 in `w0` (65 retirements against 32: some
+    retire more than once), 39 of them in the first week. Their posts were mostly the same street posts ("sits and
+    watches the world" 18, "minding the shop door" 13, "sits by the well" 7, "minds the shop's door" 4). Of the 63
+    without work on day 120, 41 had retired, 32 were 65 or older, and 8 were without work in `w0` too. Of the 65 without
+    work on day 7 who weren't in `w0`, 36 had retired; of the other 29, 26 held paid posts again on day 120. So C mostly
+    takes the old off the street posts' wages, not the young.
+  - **The capital let 7 of its own posts go** on days 105 and 112: the gaol's keeper, the City Office's clerks, the
+    permits, the records, a Counting House clerk. That is not C. It is the treasury's weekly budget for its posts
+    (`RatwInstitutions.cpp`), which no longer covered them as the going rate rose (its labour posts 20 → 14). In `w0`
+    it let none go. Over a year this is a place a rising wage could run on.
+
+**`t_slack`** (a trial, not committed): the slack leaves out the jobless at work on a hire that day. It tests whether the
+calm cuts are what holds the rate down.
+- The calm cuts stop: 5 to 11 a month.
+- The rate rose barely: 66.3 / 74.5 / 80.3 / 79.5p.
+- It did worse elsewhere: shop tills +58%, the Gini 0.589, the poorer half 0.097, and 39 hungry and 2 starving on day
+  46.
+
+So the calm cuts are not the brake.
+
+**Read plainly:**
+
+- **The shortage now reaches the wage.** The realm's rate rose every week from day 42, to 81.7p by day 120.
+- **But the target is missed.** The target was 79/87/97p within 10%. The rate ran about 18% under the model on days
+  56, 84 and 112 (64.9, 70.8 and 79.8p).
+- **Ridgemere came closer.** Its own rate, 90.5p on day 112, is within 10% of the model's 97p, but it was 17% under on
+  days 56 and 84.
+- **The posts-open target is met:** 23% of employer-weeks, against `run120`'s 11%.
+- **The rise is slow because few businesses bid each week.**
+  - About a quarter of the unskilled tills have a post open 4 or more days in a week. Each raise is 1–10% (`WageUp` to
+    `WageUpShort`, times 0.3 to 1). That comes to about 1% a week, where the model makes about 3.5%.
+  - The tills that never bid rise only by the floor, 0.85 of the rate. There were 705 floor lifts in month 4.
+  - The short-pay cuts grew with the wage, to 51–79 a week at the end. Those cuts take up to 4% each.
+- **The wage did not take the tills' margin.** The shop tills grew faster (+46%, against +37%).
+- **Paid civilians lost more** (643k against 813k on day 120). About 100k of that is the stall hands' money, now held
+  as jobless. The rest is wages that rose while prices, which are costed at the wage, rose with them. Many paid
+  civilians are paid by households or other payers, not by the bidding makers.
+- **The Gini and the poorer half are slightly worse** (0.595 and 0.095 against 0.587 and 0.105). One seed: round 5's
+  two seeds differed by up to 0.016.
+- **The day-46 dip is deeper:** 25 hungry against 9, none starving.
+- **The households' share did not rise.** Lane 1 alone doesn't move it. The rounds' plan expected Lane 3 (the tills'
+  working money) or Lane 2 (the institutions' crews for grown hands) to be needed beside it.
+
+**The tick:** 0.04 to 0.05 ms in every run, five runs sharing the machine with other sessions' runs. That is
+`run120`'s 0.050 ms, and the new work is a count of each hire's children a day.
+
+**For the user:**
+
+1. **Keep A, B and C as built?** Recommended: yes. They are the user's decision and the model's rules, the seconds' pace
+   is untouched, and with the rules off the run is `run120` to the digest. Know that they lift the rate to about 82% of
+   the model's path, not within 10%, and that by themselves they don't lift the households.
+2. **What next for the wage?** The bid is limited by how few businesses have a post open each week (23%, against the
+   model's 22–54%) and by the short-pay cuts.
+   - (a) Leave it. A year's run would show whether it keeps closing on the model: it gained about 1% a week from day
+     91.
+   - (b) Let a till with a post open 4 or more days raise even in a week it fell short. This is the diagnosis's change
+     C(ii); it departs from the model.
+   - (c) Move to Lane 3 (the tills' working money) and Lane 2 (the crews for grown hands), as the plan has it.
+
+   Recommended: (c), with a year's run of this branch beside it.
+3. **The stall hands let go.** Most found posts again, as the successors of old wolves who then retired (above): 63
+   are without work on day 120: 41 of them retired, and 32 are 65 or older. The posts let go stay closed,
+   the Heights' street posts among them (4 of the 5 lamplighters, the door-minders, the messengers). The jobless take
+   hires as the jobless do, a fifth of the tills' hire places, so they keep earning. But they raised the slack to near
+   0.03. Is the old wolves' retiring, off a paid post onto their savings, what the user wants? It is the model's (the
+   old have no earner there), but it falls on the poorer half. And the let-go step lets an
+   apprentice go as a hand (four did), where the model's keeps its apprentices over and above: leave an apprentice's
+   post out of the let-go, for makers and stalls alike? Recommended: yes, in the next round (the makers let none go yet:
+   their rule waits for pace 1).
+   - Keep them as jobless wolves, as built and as doc 64's question 3 has it, or let each look for a post at once in
+     its town.
+   - The model's slack counts the unemployed less those helped that day. Counting the jobless on a hire as at work
+     (`t_slack`) stopped the calm cuts but didn't lift the rate, and the hungry rose. Recommended: keep the slack as it
+     is.
+4. **Children on the crews** (round 6's decision 2) is now settled in the wage book. A child's place counts as open, and
+   the child keeps the work and the pay. Whether children should take the places at all is still open: in `abc` they
+   held 22% of the tills' hire places, as before.

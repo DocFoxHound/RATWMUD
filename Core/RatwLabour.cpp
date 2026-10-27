@@ -98,7 +98,14 @@ void Society::notePay(const std::string& resident, const std::string& key, std::
     paidToday_[resident] += double(coins);
     owedToday_[resident] += double(owed);
     if (coins < owed && !key.empty())
+    {
         state_.memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second.shortPay = true;
+        if (noteShorts_)
+        {
+            const auto* purse = account(key.substr(0, key.find('|')));
+            shorts_.push_back({key, "wage", owed - coins, purse ? purse->cash : 0});
+        }
+    }
 }
 
 std::int64_t Society::lookingFor(const std::string& resident, const Payer& payer, const Position& job, double day) const
@@ -345,12 +352,43 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
     const auto pid = till.substr(5);
     const auto* p = position(pid);
     const auto held = state_.careers.positions.find(pid);
-    // (A business that makes nothing, a stall or a moneychanger, neither hires nor lets go: its help sells, whatever its
-    // sales. Doc 64, Phase 13.)
-    if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till) || !makesThings(till))
+    // A business that makes nothing, a stall or a moneychanger, hires no one: its help sells, and it wants no hands for
+    // its sales (Phase 13). At its weekly review it lets its surplus help go as a maker does (round 7, the user,
+    // 2026-10-26; the model's firm_week): before, it never let go, and the Heights' cheese and honey stalls held 31 and
+    // 24 hands for the 1 each wanted, the realm's idle hands, out on every hire. Whatever the pace: what it wants
+    // doesn't grow with it. The hand keeps its home (doc 64, question 3) and is a jobless wolf, taking hires and posts
+    // as the jobless do. (Every business with no craft of its own: a fletcher, a cartographer, an arsenal, a dye works,
+    // a builders' yard too; their help makes nothing with work by the hours either. Doc 64, round 7's review.)
+    const bool stall = !makesThings(till);
+    if (!p || held == state_.careers.positions.end() || held->second.holder.empty() || !account(till) ||
+        (stall && (!weekly || !wageRule(StallsShed))))
         return;
-    const auto& keeper = held->second.holder;
     const auto posts = helpPosts(till);
+    const auto letGo = [&](int excess) {
+        // Half the excess, one at least, the post kept empty.
+        int n = std::max(1, excess / 2);
+        for (const auto& post : posts)
+        {
+            auto& ps = state_.careers.positions[post];
+            if (n <= 0 || ps.holder.empty())
+                continue;
+            record("laid off", till, ps.holder, "", 0, 0);
+            ps.lastHolder = ps.holder;
+            ps.holder.clear();
+            ps.vacantSince = double(day);
+            state_.memory.closed.insert(post);
+            ++state_.memory.revision;
+            forgetCareers();
+            --n;
+        }
+    };
+    if (stall)
+    {
+        if (const int excess = handsOf(till) - wanted; excess > 0)
+            letGo(excess);
+        return;
+    }
+    const auto& keeper = held->second.holder;
     // With more work in hand than its hands can use, it takes on no more, and its hires end: their hours would be lost
     // (doc 64, Phase 13; the model lets its excess go).
     const bool idle = idleBusiness(till);
@@ -414,24 +452,7 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
     }
     // (Not while the realm is still on its way to the calibrated hours: what its sales take grows week by week.)
     else if (const int excess = hands - wanted - hired; weekly && excess > 0 && state_.memory.pace >= 1)
-    {
-        // Over: its hires run out by themselves; then help let go, half the excess (one at least), the post kept empty.
-        int letGo = std::max(1, excess / 2);
-        for (const auto& post : posts)
-        {
-            auto& ps = state_.careers.positions[post];
-            if (letGo <= 0 || ps.holder.empty())
-                continue;
-            record("laid off", till, ps.holder, "", 0, 0);
-            ps.lastHolder = ps.holder;
-            ps.holder.clear();
-            ps.vacantSince = double(day);
-            state_.memory.closed.insert(post);
-            ++state_.memory.revision;
-            forgetCareers();
-            --letGo;
-        }
-    }
+        letGo(excess);                               // (Over: its hires run out by themselves; then help let go.)
 }
 
 void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
@@ -463,12 +484,22 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     }
     // Its hires not yet taken are posts open too. And a House's crews' places, under its own key (doc 64, Phase 13,
     // round 6: a House short of its crew showed in no measure); they pay the going rate (the model's), so no review moves
-    // them, and no book is kept. (With work by the hours.)
+    // them, and no book is kept. (With work by the hours.) A place a child holds stands open too, with work by the hours
+    // (round 7, the user, 2026-10-26; the model's: nobody under 16 works): the child keeps the work and its pay, but the
+    // business is short of a grown hand, and its wage hears it. Before, children held a fifth of the businesses' hires
+    // and half the crews', and the shortage never reached a wage.
+    const auto children = [&](const OddJob& j) {
+        int n = 0;
+        if (workByHours() && wageRule(ChildrenOpen))
+            for (const auto& [who, stage] : j.stage)
+                n += ageOf(who) < 16;
+        return n;
+    };
     for (const auto& j : oddJobs_)
-        if (j.until >= day && j.payer.rfind("till:", 0) == 0 && int(j.stage.size()) < j.slots)
-            vacancies_[j.payer] += j.slots - int(j.stage.size());
-        else if (workByHours() && j.until >= day && !j.ended && houseCrew(j) && int(j.stage.size()) < j.slots)
-            vacancies_[j.payer + "|crew"] += j.slots - int(j.stage.size());
+        if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (int(j.stage.size()) < j.slots || children(j) > 0))
+            vacancies_[j.payer] += j.slots - int(j.stage.size()) + children(j);
+        else if (workByHours() && j.until >= day && !j.ended && houseCrew(j) && (int(j.stage.size()) < j.slots || children(j) > 0))
+            vacancies_[j.payer + "|crew"] += j.slots - int(j.stage.size()) + children(j);
     const auto crewKey = [](const std::string& key) { return key.size() > 5 && key.compare(key.size() - 5, 5, "|crew") == 0; };
     // A post whose holder is away on another business's hire stands open while it's away (doc 63's model: a hire opens
     // the post it leaves; doc 64, Phase 13), unless its own business has no work for it: then its hands are free to go.
@@ -676,6 +707,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // stood half again short for good. Its hire is sized by them too, so a slot nobody takes is a hand its sales want:
     // doc 64, Phase 13, round 6, the round-5 review. Before, only its posts open past its hire were.)
     std::unordered_map<std::string, int> wanted;
+    std::map<std::string, int> onHires;             // (A business's hands at work on its hires: below.)
     if (workByHours())
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0)
@@ -695,10 +727,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // seconds' pace as it was.)
     if (workByHours())
     {
-        std::map<std::string, int> onHires;
+        // (Its hires' grown hands: a child's place stands open, above.)
         for (const auto& j : oddJobs_)
             if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
-                onHires[j.payer] += int(j.stage.size());
+                onHires[j.payer] += int(j.stage.size()) - children(j);
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
             {
@@ -716,11 +748,14 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             }
     }
     // The going rate (doc 63's model, market_wage; doc 64, Phase 13): the middle of what the unskilled trades that make
-    // things pay, each as a labourer's day (its skill's premium off), counted by the hands its work wants, one at least
-    // and those it has at most. The makers and the land's producers, but its seasonal fields (their pay follows the
-    // rate); not a stall or a moneychanger, whose wages no market moves. A town's own once TownRateWeight hands count in
-    // it, else the realm's: one market, as the model's, so a small town's producers are kept to twice the realm's rate.
-    // (At the seconds' pace, as it was: each town's own, the middle of what its unskilled shops pay, by their hands.)
+    // things pay, each as a labourer's day (its skill's premium off), counted by its employees, one at least: its help
+    // and its hires' grown hands, not its keeper or farmer (round 7, the user, 2026-10-26; the model's max(1, workers),
+    // whose owners aren't workers). Before, by the hands its work wanted, one at least and those it had at most, keeper
+    // and all: three in four of the weights were one-hand businesses that never bid, and the rate stood at 60p for 120
+    // days. The makers and the land's producers, but its seasonal fields (their pay follows the rate); not a stall or a
+    // moneychanger, whose wages no market moves. A town's own once TownRateWeight hands count in it, else the realm's:
+    // one market, as the model's, so a small town's producers are kept to twice the realm's rate. (At the seconds' pace,
+    // as it was: each town's own, the middle of what its unskilled shops pay, by their hands.)
     std::map<std::string, std::vector<double>> paid;
     for (const auto& [key, n] : hands_)
     {
@@ -738,7 +773,9 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         }
         if (!p || employerSkill(key) > 10 || !makesThings(key) || (producer && fieldsOn() && fieldWork(producer->id)))
             continue;
-        const int weight = std::clamp(wantedOf(key), 1, std::max(1, n));
+        const auto held = state_.careers.positions.find(p->id);
+        const int keeper = held != state_.careers.positions.end() && !held->second.holder.empty();
+        const int weight = wageRule(ByEmployees) ? std::max(1, n - keeper + onHires[key]) : std::clamp(wantedOf(key), 1, std::max(1, n));
         const double labourer = employerWage(key) / (1 + employerSkill(key) / items::ladder().skillWage);
         for (int k = 0; k < weight; ++k)
         {

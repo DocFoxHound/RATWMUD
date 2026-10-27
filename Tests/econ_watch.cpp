@@ -4,7 +4,7 @@
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
-//              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers]
+//              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers] [--without RULE[,RULE...]]
 //
 // --from HOUR: the hour of the first day to start at (6 unless asked); past 24, hours into the calendar (6006: day 250
 // at six in the morning).
@@ -30,6 +30,9 @@
 // --ask-payers: asks Society::payerOf of every resident with a post before the first tick and every game hour, as a talk
 // scene or a harness might, and writes payers.csv (doc 64, Phase 13, round 6: who pays the capital's posts). A run with it
 // must give the same digest as one without: what is asked of the society, read only, never moves it.
+// --without: a trial's, round 7's rules of the wage book left out (doc 64, Phase 13, round 7; Society::wageRulesOff):
+// children (a hire's place a child holds counts filled, as before), employees (the going rate weighed by hands wanted,
+// keeper and all, as before), stalls (a stall never lets its help go, as before).
 //
 // The log starts with the run's stamp (also run.txt): the command, the git state the binary was built from (taken at
 // build time: Tests/econ_watch_stamp.cmake), and when it was built; a warning if the code it was built from has
@@ -77,10 +80,15 @@
 //   orders.csv      day, the roads' standing orders: buyer, town, seller's town, good, a week's, delivered, short, unpaid;
 //   refusals.csv    day, buyer, good, the day its refusal was marked, its till's cash: the buyers whose order was cut or
 //                   ended for what they couldn't pay for (RoadsState::refused), at each day's end;
+//   shortpay.csv    day, employer, what (a hand's spell of "wage", a "hire"'s day), times, owed, its purse when it fell
+//                   short (the least), and at the day's end: each employer marked short of pay that day, for its weekly
+//                   review (doc 64, Phase 13, round 7);
 //   players.csv     day, player, scenario, action, item, quantity, coins: what --players' players did (kill's rows name
 //                   the resident who died; coins are pennies that moved, but for a Hold's "short", whose quantity is
 //                   the pennies it lacked, item "pennies lacking").
-// days.jsonl's model block has every town's going rate (going, "" the realm's), and with --players a players block:
+// days.jsonl's going is the realm's going rate ("") and each town's as its employers pay it (a town without a rate of
+// its own, the realm's: doc 64, Phase 13, round 7); its model block has the rates the society keeps (going, "" the
+// realm's, and the towns with their own), and with --players a players block:
 // each scenario's players, their money and goods, and what they did that day (the players act after the midnight's
 // record is made, so what they do at midnight is the new day's, in every file).
 // A line a day goes to stdout, so a long run can be followed. --deterministic does the world's work by counts, never the
@@ -111,6 +119,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 using namespace ratw;
@@ -231,7 +240,7 @@ int main(int argc, char** argv)
         std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
                      "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n"
-                     "                  [--ask-payers]\n";
+                     "                  [--ask-payers] [--without children|employees|stalls[,...]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -305,6 +314,27 @@ int main(int argc, char** argv)
         }
         else if (std::string(argv[i]) == "--ask-payers")
             askPayers = true;
+        else if (std::string(argv[i]) == "--without" && i + 1 < argc)
+        {
+            unsigned off = 0;
+            for (std::stringstream list(argv[++i]); list.good();)
+            {
+                std::string name;
+                std::getline(list, name, ',');
+                if (name == "children")
+                    off |= Society::ChildrenOpen;
+                else if (name == "employees")
+                    off |= Society::ByEmployees;
+                else if (name == "stalls")
+                    off |= Society::StallsShed;
+                else
+                {
+                    std::cerr << "--without is children, employees or stalls, not " << name << "\n";
+                    return 2;
+                }
+            }
+            Society::wageRulesOff(off);
+        }
         else if (std::string(argv[i]) == "--hold-pace" && i + 1 < argc)
         {
             heldPace = econ::readPace(slurp(argv[++i]));
@@ -322,6 +352,7 @@ int main(int argc, char** argv)
         return 2;
     }
     fs::create_directories(out);
+    Society::noteShorts(true);                      // (shortpay.csv: read only, as every measure here.)
     const auto stamp = runStamp(argc, argv);
     std::cout << stamp << std::flush;
     std::ofstream(out / "run.txt") << stamp;
@@ -1112,6 +1143,10 @@ int main(int argc, char** argv)
             daysOut << (first ? "" : ",") << json(community) << ':' << c;
             first = false;
         }
+        // The going rate (doc 64, Phase 13, round 7): the realm's, and each town's as its employers pay it.
+        daysOut << "},\"going\":{\"\":" << society.goingRate("");
+        for (const auto& [community, c] : society.state().memory.condition)
+            daysOut << ',' << json(community) << ':' << society.goingRate(community);
         daysOut << "},\"model\":" << modelMeasures(day, std::string(when) != "end");
         if (players)
             daysOut << ",\"players\":" << players->takeDay();
@@ -1443,12 +1478,38 @@ int main(int argc, char** argv)
                              << (till ? till->cash : 0) << "\n";
                 }
             }
+            // The employers marked short of pay in the day (doc 64, Phase 13, round 7): what fell short, how often,
+            // what it owed, and its purse then (the least) and now.
+            {
+                static std::ofstream shorts(out / "shortpay.csv");
+                static bool shortsHeader = (shorts << "day,employer,what,times,owed,cash_least,cash_end\n", true);
+                (void)shortsHeader;
+                std::map<std::pair<std::string, std::string>, std::tuple<int, std::int64_t, std::int64_t>> marked;
+                for (const auto& n : society.takeShorts())
+                {
+                    auto& [times, owed, least] = marked.try_emplace({n.key, n.what}, 0, 0, n.cash).first->second;
+                    ++times, owed += n.owed, least = std::min(least, n.cash);
+                }
+                for (const auto& [key, m] : marked)
+                {
+                    const auto* purse = society.account(key.first.substr(0, key.first.find('|')));
+                    shorts << day << "," << csv(key.first) << "," << key.second << "," << std::get<0>(m) << "," << std::get<1>(m) << ","
+                           << std::get<2>(m) << "," << (purse ? purse->cash : 0) << "\n";
+                }
+                shorts.flush();
+            }
             const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallBegin).count();
             std::cout << "day " << now << " (" << int(wall / 60) << " min): supply " << supply << (conserved ? "" : " NOT CONSERVED")
                       << ", median purse " << median << "p, gini " << std::fixed << std::setprecision(3) << gini
                       << std::defaultfloat << ", grown short " << short_ << ", broke " << broke << ", starving " << starving
-                      << ", wages " << wageTotal << "p, maker-hours short " << makerShort << "\n"
-                      << std::flush;
+                      << ", wages " << wageTotal << "p, maker-hours short " << makerShort << std::fixed << std::setprecision(1)
+                      << ", going " << society.goingRate("") << "p";
+            // (The towns with a rate of their own: the others pay the realm's.)
+            for (const auto& [where, rate] : society.goingRates())
+                if (!where.empty())
+                    std::cout << ", " << where << " " << rate << "p";
+            // (Three figures after, as the gini left them before round 7: else the run's last line read "2e+01 min".)
+            std::cout << std::defaultfloat << std::setprecision(3) << "\n" << std::flush;
             day = now;
         }
         // Between ticks, as a player's command comes in; after the midnight's record, so what they do at midnight is the
