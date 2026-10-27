@@ -5944,3 +5944,126 @@ database).
    hand learning from another dock hand too. Should only the keeper's own apprentice be kept (the model's apprentice
    learns its firm's trade beside its master)? Recommended: yes. It would let the Heights cheese stall's three surplus
    hands go, and keep the bank's, the cooper's, the provisioner's and the smith's.
+
+### Phase 13: the tills' round 9, reviewed
+
+The lane (79f5382) wrote no section of its own, so this one says what it does. The user's decision (2026-10-27):
+stop propping up failing tills, not the half-profit draw. With work by the hours only, a lone owner (a household, not
+a House) whose business holds less than a week of its wages (`staffing`: its keeper, its help and up to two open posts)
+at `StopWeeks` (4) of its weekly looks in a row stops topping it up (`memory.shortTills`, saved). The business trades on
+with what it has. On a day its till can't pay its keeper's whole wage, the keeper is free for hire work as an unpaid
+hand is (`ownerUnpaid`): a producer through the unpaid group, a shop's keeper by a step before keeping shop. A look that
+finds a week's wages in hand clears the record, and the owner tops it up again. Houses are unchanged.
+`--without owners` leaves it out.
+
+**Reproduced.** The seconds' pace is as it was (5 days without `--hours`: d034a6316a8d0cb), and 5 days `--hours
+--without owners` give f9ec2fce12d4df45, f13f80e's, both with the review's fixes too. The code: `tendTills` and
+`tendOwners` run in the day's start on one thread; `ownerUnpaid` only reads, on the threads, what they wrote; the
+records are a sorted map; the save reads back as written (`wire_tests`), an older save with none. A House-owned till
+is caught by neither half: `tendTills` skips it (`ownTill`), and `tendOwners` erases a record when its owner is a House.
+
+**Fixes** (95a4c3c):
+
+- **A shop's keeper double-booked.** A keeper free for hire work could take a hire of several days (a farm's, a
+  business's). But a merchant keeps shop whenever it isn't free, and nothing brought it back to the hire: on a day its
+  till paid it again (an order paid in, a debt repaid, its owner topping up again) it went back to its counter, and the
+  hire's place stood taken and unworked, its own post counted open. Now at the day's turn a merchant holding a hire
+  that isn't free for hire work that day is "called back to its shop" and the place opens. A producer, an unpaid hand,
+  comes back to its hire as the unpaid do, so it is left as it was. In the run: 208 call-backs, and 2 on day 9 of a
+  House shop's keepers, who held a hire from before this round (the same double booking, rare; released too).
+- **A stopped keeper's own post stood open.** A post whose holder is away on another's hire counts as a vacancy of
+  its own employer, so a keeper away because its till can't pay raised the wage its till couldn't pay. Its post is not
+  counted open now (`tendLabour`); the field's call-back is unchanged.
+- **`econ_players_tests` failed.** It checks `tills.csv`'s columns, and the lane added three without it. All 68 test
+  binaries pass now (`pg_tests` skipped: no database). `aStoppedKeeperTakesAHire` checks the call-back.
+
+**120 days** (`r9/tills/run120`, digest ca5f66ec271ea11, against `r9/base120`, f13f80e's build, digest
+5a83102073050d54):
+
+| Day 120 | base | round 9, tills |
+|---|---|---|
+| Gini; poorer half; top tenth | 0.495; 0.150; 0.306 | 0.479; 0.158; 0.296 |
+| All tills' share (shop / farm / House tills) | 0.303 (0.174 / 0.039 / 0.090) | 0.262 (0.167 / 0.033 / 0.063) |
+| Houses / treasuries / church / households | 0.101 / 0.097 / 0.048 / 0.445 | 0.113 / 0.095 / 0.045 / 0.480 |
+| Median purse | 1,626p | 1,883p |
+| The realm's rate; Ridgemere's | 78.9p; 90.4p | 63.3p; 70.3p |
+| Hungry (day 46 only, none starving) | 21 | 15 |
+| Books short of pay; posts open (books) | 29; 274 | 53; 113 |
+| Owners' top-ups; draws; keepers' wages, days 91-120 | 412k; 180k; 617k | 173k; 285k; 371k |
+| Food brought in; crafted, days 91-120 | 69.9k; 64.0k | 59.8k; 73.2k |
+
+- **Tills stopped.** 51 of the 384 lone owners' and Houses' tills on day 28, 139 on day 56, 213 on day 120: 166 of the
+  232 farm tills and 47 of the 118 shop tills. 253 stopped at some time, and 57 started again (59 times). 167 of the
+  213 hold nothing on day 120. Their takings, days 100-120: a stopped farm 51p a day against 237p, a stopped shop 127p
+  against 800p.
+- **Keepers on hire.** `hires.csv` counts 2,614 places taken by keepers its till couldn't pay ("owner"), about 24 a
+  day from day 28 (583 by shops' keepers). The keepers of 226 stopped tills (174 farms, 52 shops) were paid for odd
+  jobs at some time. Hires posted fell (26.5k rows against 31.8k).
+- **The aim.** The tills' share falls by 0.04, toward the model's 0.14 but far from it. The households gain it, and the
+  poorer half a little.
+
+**Suspicious, not changed:**
+
+- **A stop is nearly for good.** A shop is open only while its keeper keeps it, so a keeper away on a hire sells
+  nothing, the till stays dry, and the next day it is free again. Only 57 of 253 ever started again. The business
+  hasn't shrunk to what it can pay: it has stopped. Most stopped tills are farms, and the land brought in 14% less food
+  over the last month (crafted food rose, and nobody went hungry but on day 46).
+- **The wage fell a fifth** (the realm's 78.9p to 63.3p): twice the books short of pay, and fewer posts open, partly
+  the review's own fix (a stopped keeper's post no longer opens). One run can't tell the two apart.
+- **A new keeper inherits the stop.** The record is by till: a new holder of a stopped business (its owner too, for a
+  lone owner) starts stopped until a look finds a week's wages.
+- **A keeper's unpaid wage tells its book nothing** (`shortPay` is set by a hire it can't pay, not by the keeper's
+  wage), as before this round.
+- 5 places were the keeper's own till's hires, paid by the till that couldn't pay it (`oddJobFor` doesn't exclude its
+  own payer, as before for the idle at their own business).
+
+**For the user:** keep it, but decide whether a stopped keeper should keep shop on its hours and look for hire work
+only outside them (or on the days the shop has nothing to sell), so a stopped business can trade its way back; and
+whether a farm, the realm's food, should stop at all.
+
+**The user's two answers (2026-10-27), built** (ce49018):
+
+- **A farm is judged after its harvest.** A seasonal field's farm (a farm, an orchard or a vineyard whose till has
+  its year in `memory.fields`: `seasonalField`, as `tendLabour`'s `fieldOf`) is topped up however short it is until
+  a look after a harvest's end (day `HarvestEnd`, 274, of the year). It stops only if it is still short there, short
+  at every look since before it (`harvestEndedSince`: its short looks began 7 × (weeks − 1) days ago). A failing farm
+  is still caught, at its first look after the harvest. Other producers (the flocks, the herds, the fishers, the
+  woodlots, the mines) and the shops stop at their fourth short look as before. No 120-day run reaches a harvest, so
+  `aFarmIsJudgedAfterItsHarvest` drives a farm and a woodlot, their tills dry every day, from day 150 past the
+  harvest: the woodlot stops at its fourth look, the farm is topped up to the harvest and stops at its first look
+  after its end. With the season's test undone, the farm stops on day 174 and the test fails.
+- **A stopped shop keeps its hours.** Its keeper keeps shop on its own hours, and takes hire work only outside them
+  on a day its till can't pay it. Its hires are a day at a time: at the day's turn every merchant holding a hire is
+  called back to its shop (the review's fix, widened: a hire held into the next day's hours would stand taken and
+  unworked again). `aStoppedKeeperTakesAHire` has the stall's keeper keep its stall at ten and take the work at five;
+  with the rule undone it takes it at ten, and the test fails.
+
+All 68 tests pass; the seconds' pace d034a6316a8d0cb, 5 days `--hours --without owners` f9ec2fce12d4df45.
+`r9/tills/run120b` (digest 5facae7261dc047), day 120:
+
+| Day 120 | base | `run120` | `run120b` |
+|---|---|---|---|
+| Gini; poorer half; top tenth | 0.495; 0.150; 0.306 | 0.479; 0.158; 0.296 | 0.473; 0.163; 0.289 |
+| All tills' share (shop / farm / House tills) | 0.303 (0.174 / 0.039 / 0.090) | 0.262 (0.167 / 0.033 / 0.063) | 0.254 (0.154 / 0.029 / 0.071) |
+| Houses / treasuries / church / households | 0.101 / 0.097 / 0.048 / 0.445 | 0.113 / 0.095 / 0.045 / 0.480 | 0.103 / 0.095 / 0.048 / 0.494 |
+| The realm's rate; Ridgemere's | 78.9p; 90.4p | 63.3p; 70.3p | 67.4p; 78.5p |
+| Hungry (day 46 only, none starving) | 21 | 15 | 2 |
+| Books short of pay; posts open | 29; 274 | 53; 113 | 42; 194 |
+| Top-ups; draws; keepers' wages, days 91-120 | 412k; 180k; 617k | 173k; 285k; 371k | 240k; 217k; 440k |
+| Food brought in; crafted, days 91-120 | 69.9k; 64.0k | 59.8k; 73.2k | 61.3k; 73.0k |
+| Producers' tills stopped on day 120; ever; started again | | 166; 195; 43 | 114; 137; 33 |
+| Shops' tills stopped on day 120; ever; started again | | 47; 58; 14 | 47; 60; 13 |
+| Places taken by keepers its till can't pay (by shops' keepers) | | 2,614 (583) | 1,397 (144) |
+
+- **The farms.** Of the 44 field farms ("works the fields"), 4 are stopped on day 120, and 6 of 18 orchards: likely those
+  with no year of their own yet (not checked: `tills.csv` doesn't say). The producers stopped are the others: 14 of 15 sheep runs, 14 of 25 loggers, 8 of
+  12 mines, the fishers, the pigs, the rabbits. The food brought in is still 12% under the base's.
+- **The shops don't trade their way back.** As many stop (47 on day 120), and no more start again (13). Kept open
+  on their hours, the stopped shops take 134p a day against 127p (800-850p for a shop topped up), and their keepers
+  are paid 3p a day for odd jobs, against 43p. A stopped shop sells too little to hold a week's wages again.
+- The wage falls less (67.4p), and the tills' share a little more (0.254).
+
+**For the user, again:** the flocks, the herds and the fishers sell all year but in seasons too; should they be
+judged over a season as the fields are? And a stopped shop doesn't come back: should a look ask for less than a week's
+wages to start again (the stop's mark and the restart's the same today), or should the stop shrink the shop (its help
+let go) rather than leave its keeper short?

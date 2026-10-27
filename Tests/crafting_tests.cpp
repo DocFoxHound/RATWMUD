@@ -4350,6 +4350,269 @@ void aLoneOwnerKeepsAWeeksFood()
     }
 }
 
+// A lone owner stops topping up a business that can't pay its wages (doc 64, Phase 13, round 9; the user, 2026-10-27),
+// with work by the hours: a stall's till run dry each week is topped up at its owner's first three looks; at the fourth
+// in a row short of a week's wages its owner stops, and puts in nothing while it stays short. On a day its till can't
+// pay its keeper's wage, the keeper is free for hire work. Saved, the society reads back the same, and goes on so. A
+// look that finds it holding a week's wages of its own, and its owner tops it up again. A House's stall run dry each
+// week is topped up by its House every week. Without the rule (round 8's), and at the seconds' pace, the stall's owner
+// tops it up every week too.
+void aLoneOwnerStopsToppingUp()
+{
+    struct Run
+    {
+        std::vector<std::int64_t> invested, house;   // What its owner, and the House its stall, put in at each look.
+        bool unpaid = false, paidDay = true, saved = false, resumed = false;
+    };
+    const auto run = [](bool hours, unsigned off) {
+        Society::setWorkByHours(hours);
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        roster.residents = {person("stall", "keeping the stall", {"market", 4.5, 4.5}),
+                            person("scribe", "the scribe", {"desk", 2.5, 2.5}, "civilian"),
+                            person("lord", "ruling House Fell", {"hall", 2.5, 2.5}, "civilian"),
+                            person("housestall", "keeping the stall", {"market2", 4.5, 4.5})};
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto till = s.tillOf("stall"), houses = s.tillOf("housestall");
+        const auto& job = *s.jobOf("stall");
+        expect(till == "till:" + job.id, "the stall keeps its own till");
+        auto owned = s.state();
+        owned.houses.owner[s.jobOf("housestall")->id] = "house:house_fell";
+        owned.accounts["house:house_fell"].cash = 100000;   // (The House's purse.)
+        owned.accounts.at("treasury").cash -= 100000;
+        expect(s.restore(owned) && s.ownerOfBusiness(s.jobOf("housestall")->id) == "house:house_fell", "the other stall is House Fell's");
+        expect(s.shift("treasury", "stall", "", 0, 100000, "test: the owner's purse"), "the owner has money");
+        Run r;
+        const auto dry = [&] {
+            for (const auto& t : {till, houses})
+                s.shift(t, "treasury", "", 0, s.account(t)->cash, "test: the till run dry");
+        };
+        const auto week = [&](std::int64_t from) {
+            s.takeJournal();
+            for (std::int64_t day = from; day < from + 7; ++day)
+                s.tendTills(day);
+            std::int64_t in = 0, house = 0;
+            for (const auto& e : s.takeJournal())
+                if (e.kind == "an owner's investment")
+                    (e.to == till ? in : house) += e.to == till || e.to == houses ? e.coins : 0;
+            r.invested.push_back(in);
+            r.house.push_back(house);
+        };
+        for (std::int64_t w = 1; w <= 5; ++w)
+        {
+            dry();
+            week(7 * w);
+        }
+        // Stopped: a day its till is dry, its keeper's wage unpaid, the keeper is free for hire work; a day it pays it,
+        // not.
+        dry();
+        s.tendTills(42);
+        auto st = s.state();
+        st.budgetDay = 42;
+        expect(s.restore(st), "the day restores");
+        r.unpaid = s.ownerUnpaid("stall", job);
+        // Saved and read back: the same, and its owner still stopped.
+        const auto before = s.state().memory.shortTills;
+        expect(s.restore(wire::readSociety(wire::society(s.state()))), "the save restores");
+        const auto after = s.state().memory.shortTills;
+        r.saved = before.size() == after.size() &&
+                  std::equal(before.begin(), before.end(), after.begin(), [](const auto& a, const auto& b) {
+                      return a.first == b.first && a.second.weeks == b.second.weeks && a.second.stopped == b.second.stopped &&
+                             a.second.unpaid == b.second.unpaid;
+                  });
+        expect(!hours || off || s.ownerUnpaid("stall", job), "read back, its keeper is still free for hire work");
+        dry();
+        week(42);
+        s.shift("treasury", till, "", 0, std::int64_t(std::ceil(s.employerWage(till))), "test: a day's wage");
+        s.tendTills(49);
+        st = s.state();
+        st.budgetDay = 49;
+        expect(s.restore(st), "the day restores");
+        r.paidDay = s.ownerUnpaid("stall", job);
+        // A week's wages of its own at its look (a fortnight's put in: its keeper is paid its wage each day before it):
+        // its owner tops it up again.
+        dry();
+        s.shift("treasury", till, "", 0, std::int64_t(std::ceil(15 * s.staffing(job.id))), "test: a good week");
+        week(56);
+        r.resumed = !s.state().memory.shortTills.count(till);
+        dry();
+        week(63);
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto show = [](const std::vector<std::int64_t>& v) {
+        std::string text;
+        for (const auto x : v)
+            text += (text.empty() ? "" : ", ") + std::to_string(x);
+        return text;
+    };
+    const auto r = run(true, 0);
+    const auto& in = r.invested;
+    expect(in[0] > 0 && in[1] > 0 && in[2] > 0, "its owner tops it up at its first three looks: " + show(in));
+    expect(in[3] == 0 && in[4] == 0 && in[5] == 0, "at the fourth short of a week's wages it stops, and stays stopped: " + show(in));
+    expect(r.unpaid, "a day its till can't pay its keeper's wage, the keeper is free for hire work");
+    expect(!r.paidDay, "a day it pays it, not");
+    expect(r.saved, "what it remembers reads back from a save as it was");
+    expect(r.resumed && in[7] > 0, "a week's wages of its own, and its owner tops it up again: " + show(in));
+    expect(std::all_of(r.house.begin(), r.house.begin() + 6, [](std::int64_t x) { return x > 0; }),
+           "the House tops its stall up every week: " + show(r.house));
+    for (const auto& [hours, off] : {std::pair{true, unsigned(Society::OwnersStop)}, std::pair{false, 0u}})
+    {
+        const auto o = run(hours, off);
+        expect(std::all_of(o.invested.begin(), o.invested.begin() + 6, [](std::int64_t x) { return x > 0; }) && !o.unpaid,
+               std::string(hours ? "without the rule" : "at the seconds' pace") + ", its owner tops it up every week: " + show(o.invested));
+    }
+}
+
+// A seasonal field's farm (round 9's review, the user, 2026-10-27) is judged over its season: its money comes at the
+// harvest, so its owner tops it up through the year however short it is, and stops only if it is still short at a
+// look after the harvest's end. A farm with no fields of its year (a woodlot) stops at its fourth short look, as a
+// shop does.
+void aFarmIsJudgedAfterItsHarvest()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    roster.residents = {person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian"),
+                        person("cutter", "cuts wood in the copse", {"copse", 2.5, 2.5}, "civilian")};
+    roster.economy.treasury = 1000000;
+    Society s(Roster::None);
+    s.configure(roster);
+    const auto farm = s.tillOf("farmer"), copse = s.tillOf("cutter");
+    expect(farm.rfind("till:", 0) == 0 && copse.rfind("till:", 0) == 0, "each keeps its own till");
+    auto st = s.state();
+    st.memory.fields[farm] = FieldYear{10, 10, 10, 0, 0, false, 1, 0, false, 1, 0, 7};   // (Its year: sown, to bring in.)
+    expect(s.restore(st), "the farm's fields sown");
+    for (const std::string who : {"farmer", "cutter"})
+        expect(s.shift("treasury", who, "", 0, 100000, "test: the owner's purse"), "the owners have money");
+    // Every day from spring to past the harvest, its till run dry (no harvest's money comes): each week's look finds
+    // it short.
+    std::int64_t farmStopped = -1, copseStopped = -1, firstShort = -1;
+    std::int64_t putInBefore = 0, putInAfter = 0;
+    for (std::int64_t day = 150; day < Society::HarvestEnd + 21; ++day)
+    {
+        for (const auto& t : {farm, copse})
+            s.shift(t, "treasury", "", 0, s.account(t)->cash, "test: the till run dry");
+        s.takeJournal();
+        s.tendTills(day);
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "an owner's investment" && e.to == farm)
+                (day < Society::HarvestEnd ? putInBefore : putInAfter) += e.coins;
+        const auto& shorts = s.state().memory.shortTills;
+        if (const auto f = shorts.find(farm); f != shorts.end())
+        {
+            if (firstShort < 0)
+                firstShort = day;
+            if (farmStopped < 0 && f->second.stopped >= 0)
+                farmStopped = f->second.stopped;
+        }
+        if (const auto c = shorts.find(copse); c != shorts.end() && copseStopped < 0 && c->second.stopped >= 0)
+            copseStopped = c->second.stopped;
+    }
+    expect(firstShort >= 150 && firstShort < 157, "the farm's first look finds it short: day " + std::to_string(firstShort));
+    expect(copseStopped >= 150 + 21 && copseStopped < 150 + 28, "the woodlot stops at its fourth short look: day " + std::to_string(copseStopped));
+    expect(putInBefore > 0, "the farm's owner tops it up through the year to its harvest: " + std::to_string(putInBefore));
+    expect(farmStopped >= Society::HarvestEnd && farmStopped < Society::HarvestEnd + 7,
+           "still short after its harvest, at its first look after it the farm stops: day " + std::to_string(farmStopped));
+    expect(s.conserved(), "money stays conserved");
+    expect(Society::harvestEndedSince(Society::HarvestEnd - 1, Society::HarvestEnd) &&
+               !Society::harvestEndedSince(Society::HarvestEnd, Society::HarvestEnd + 300) &&
+               Society::harvestEndedSince(Society::HarvestEnd, Society::HarvestEnd + 365) && Society::harvestEndedSince(-5, Society::HarvestEnd),
+           "a harvest's end between two days, over the year's turn too");
+    Society::setWorkByHours(false);
+}
+
+// The keeper of a business its owner has stopped topping up (round 9), on a day its till can't pay it, looks for hire
+// work as an unpaid hand does: a stall's keeper after its own hours (on them it keeps shop), and a woodcutter leaves its
+// wood. A keeper whose owner still tops it up keeps to its own work, and so does a stopped one whose till paid it that
+// day.
+void aStoppedKeeperTakesAHire()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](bool tillPays) {
+        AuthoredRoster roster;
+        roster.residents = {person("stall", "keeping the stall", {"market", 4.5, 4.5}),
+                            person("stall2", "keeping the stall", {"market2", 4.5, 4.5}),
+                            person("cutter", "cuts wood in the copse", {"copse", 2.5, 2.5}, "civilian"),
+                            person("cutter2", "cuts wood in the copse", {"copse2", 2.5, 2.5}, "civilian")};
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        auto bodies = atWork(s);
+        s.tick(1, 1 + .5 / 24, 0, bodies);
+        // The stall's and the first woodcutter's owners have stopped; every till is run dry, or the stopped ones given a
+        // day's wage.
+        auto st = s.state();
+        for (const std::string who : {"stall", "cutter"})
+            st.memory.shortTills[s.tillOf(who)] = {Society::StopWeeks, 1, -1};
+        expect(s.restore(st), "the stopped owners restore");
+        for (const std::string who : {"stall", "stall2", "cutter", "cutter2"})
+        {
+            const auto till = s.tillOf(who);
+            expect(till.rfind("till:", 0) == 0, who + " keeps its own till");
+            s.shift(till, "treasury", "", 0, s.account(till)->cash, "test: the till run dry");
+            if (tillPays && (who == "stall" || who == "cutter"))
+                s.shift("treasury", till, "", 0, std::int64_t(std::ceil(s.employerWage(till))) + 1, "test: a day's wage");
+        }
+        s.tick(1, 2 + 9. / 24, 0, bodies);           // (The day's turn: the keepers' wages, as far as their tills pay.)
+        expect(!s.postOddJob("treasury", "town", "project", 4, 400, {"site", 2.5, 2.5}, "clearing the site").empty(), "a day's work posted");
+        // On its hours (10 to 11) and after them (17 to 18): who has taken a place on the day's work. (The stall keeps
+        // shop on its own hours, 8 to 17, and takes hire work only outside them: the user, the round's review.)
+        std::set<std::string> took;
+        for (const double from : {10., 17.})
+            for (double t = from; t < from + 1; t += 1. / 60)
+            {
+                s.tick(60, 2 + t / 24, 0, bodies);
+                for (const auto& j : s.oddJobs())
+                    for (const auto& [who, stage] : j.stage)
+                        if (j.kind == "project")
+                        {
+                            took.insert(from < 12 ? who : who + " (evening)");
+                            if (stage < 2)
+                                bodies[who] = {j.from.cell, j.from.x, j.from.y, false, bodies[who].age};
+                        }
+            }
+        for (const std::string who : {"stall", "cutter", "stall2", "cutter2"})
+            if (took.count(who))
+                took.erase(who + " (evening)");     // (Taken on its hours, held after.)
+        // (The round-9 review.) The next day its till pays its keeper again: the stall's keeper is called back to its
+        // shop from the work it held, and the woodcutter, an unpaid hand, isn't (it comes back to it as the unpaid do).
+        if (!tillPays)
+            for (const std::string who : {"stall", "cutter"})
+                s.shift("treasury", s.tillOf(who), "", 0, std::int64_t(std::ceil(s.employerWage(s.tillOf(who)))) + 1, "test: a day's wage");
+        s.takeJournal();
+        s.tick(1, 3 + 5. / 24, 0, bodies);
+        std::set<std::string> back;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "called back to its shop")
+                back.insert(e.from);
+        expect(back == (tillPays ? std::set<std::string>{} : std::set<std::string>{"stall"}),
+               std::string(tillPays ? "none held work: nobody" : "its till paying it again, the stall's keeper") + " is called back to its shop (" +
+                   std::to_string(back.size()) + ")");
+        expect(s.conserved(), "money stays conserved");
+        return took;
+    };
+    const auto took = run(false);
+    const auto names = [](const std::set<std::string>& v) {
+        std::string text;
+        for (const auto& x : v)
+            text += (text.empty() ? "" : ", ") + x;
+        return "{" + text + "}";
+    };
+    expect(took == std::set<std::string>{"stall (evening)", "cutter"},
+           "the woodcutter its till can't pay takes the day's work, and the stall's keeper after its hours; the others keep to "
+           "theirs: " + names(took));
+    const auto paid = run(true);
+    expect(paid.empty(), "paid by their tills that day, they keep to their own work: " + names(paid));
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -4428,6 +4691,9 @@ int main()
         foundedAtTheFoundingDay();
         aShopsGoodsToSellOnForAFortnight();
         aLoneOwnerKeepsAWeeksFood();
+        aLoneOwnerStopsToppingUp();
+        aStoppedKeeperTakesAHire();
+        aFarmIsJudgedAfterItsHarvest();
     }
     catch (const std::exception& error)
     {

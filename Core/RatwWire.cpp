@@ -979,6 +979,16 @@ Value economyMemory(const EconomyMemory& m)
     }
     o.add("putIn", putIn);
     o.add("credit", credit);
+    auto shortTills = Value::object();
+    for (const auto& [till, s] : m.shortTills)
+    {
+        auto v = Value::array();
+        v.push(double(s.weeks));
+        v.push(double(s.stopped));
+        v.push(double(s.unpaid));
+        shortTills.add(till, v);
+    }
+    o.add("shortTills", shortTills);
     auto fields = Value::object();
     for (const auto& [till, f] : m.fields)
     {
@@ -1143,6 +1153,13 @@ EconomyMemory readEconomyMemory(const Value& o)
         if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() && v.items()[0].asNumber() > 0 &&
             v.items()[0].asNumber() < 1e12 && key.find('|') != std::string::npos)
             m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
+    // (Saved before doc 64's Phase 13, round 9: no business short of its wages, each owner topping up as it did.)
+    for (const auto& [till, v] : o.object("shortTills").fields())
+        if (v.isArray() && v.items().size() == 3 && till.rfind("till:", 0) == 0 && till.size() < 200 &&
+            std::all_of(v.items().begin(), v.items().end(), [](const Value& x) {
+                return x.isNumber() && std::isfinite(x.asNumber()) && x.asNumber() >= -1 && x.asNumber() <= 365000000;
+            }))
+            m.shortTills[till] = {int(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber()), std::int64_t(v.items()[2].asNumber())};
     // (Saved before Phase 12: the tax rate it always had.)
     if (const auto* rate = o.find("taxRate"); rate && rate->isNumber() && rate->asNumber() >= 0 && rate->asNumber() <= Society::MostTaxRate)
         m.taxRate = rate->asNumber();
