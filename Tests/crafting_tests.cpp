@@ -4995,7 +4995,7 @@ void aHouseSpendsInsideItsWeek()
     struct Run
     {
         std::int64_t floor = 0, posts = 0, road = 0, tops = 0, budget = 0, rate = 0, cash = 0, spendable = 0, roadMay = 0, roadAfter = 0;
-        std::int64_t invested = 0, again = 0, investedLow = 0, invested3 = 0;
+        std::int64_t invested = 0, again = 0, investedLow = 0, invested3 = 0, posts56 = 0, road56 = 0;
         bool marked = false, unpaid = false, saved = false, cleared = false;
     };
     const auto run = [](unsigned off) {
@@ -5028,7 +5028,7 @@ void aHouseSpendsInsideItsWeek()
             st.accounts.at("treasury").cash += purse - cash;
             purse = cash;
             st.memory.monthIncome[house] = 1000 * 28. / 27;   // (A 28th off the next morning: 1,000p.)
-            st.memory.tradeMonth.erase(house);
+            st.memory.spendWeek[house + "|takings"] = 0;
             for (const auto* part : {"|posts", "|road"})
                 st.memory.spendWeek[house + part] = 0;
             st.memory.spendWeek[house + "|tops"] = lastTops;
@@ -5085,6 +5085,13 @@ void aHouseSpendsInsideItsWeek()
         s.tick(1, 49 + .5 / 24, 0, bodies);
         r.invested3 = week(49);
         r.cleared = !s.state().memory.shortTills.count(till);
+        // Its caravan home with 2,000p: on top of its next week's budget, and its caravans' part at least that.
+        eve(5000, 0);
+        s.openAccount("caravan:fell1");
+        expect(s.shift("treasury", "caravan:fell1", "", 0, 2000, "test: sold on the road") && s.shift("caravan:fell1", house, "", 0, 2000, "trade takings"),
+               "the caravan comes home");
+        s.tick(1, 56 + .5 / 24, 0, bodies);
+        r.posts56 = left("|posts"), r.road56 = left("|road");
         expect(s.conserved(), "money stays conserved");
         Society::wageRulesOff(0);
         Society::setWorkByHours(false);
@@ -5110,6 +5117,10 @@ void aHouseSpendsInsideItsWeek()
     expect(r.investedLow == 0 && r.marked && r.unpaid, "below its target its investments pause, and its stall trades on as a lone owner's: " + say(r));
     expect(r.saved, "its parts and its stall's mark read back from a save");
     expect(r.invested3 > r.tops && r.cleared, "topped up in full at its target, and the mark cleared: " + say(r));
+    // (Day 56: 325p and the 2,000p home, as far as it holds over its floor: its posts a tenth, its caravans the 2,000p.)
+    expect(r.posts56 >= 220 && r.posts56 <= 260 && r.road56 == 2000,
+           "its caravans' takings come on top of its next budget, and their part is at least what they brought: posts " +
+               std::to_string(r.posts56) + ", road " + std::to_string(r.road56));
     expect(without.invested > r.tops && without.again > 0 && without.investedLow > 0 && without.floor < 0 && without.spendable == without.cash,
            "without the rule, the House tops its stall up in full every look: " + say(without));
     expect(untilled.investedLow == 0 && !untilled.marked && !untilled.unpaid, "without the till's half, nothing is marked: " + say(untilled));

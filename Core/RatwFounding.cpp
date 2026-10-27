@@ -63,7 +63,10 @@ std::int64_t Society::almsMay() const
     const auto* purse = account(SharedChurch);
     if (!purse)
         return 0;
-    if (!workByHours() || !wageRule(ChurchBudget))
+    // (Before its first week's reckoning with the rule, as before: what dailyRelief set aside on its first day, from what
+    // it held before its founding money came, is no week's budget. Held to it, the first week's alms went unbought, and
+    // 21 starved in Ridgemere by day 7.)
+    if (!workByHours() || !wageRule(ChurchBudget) || !state_.memory.spendLeft.count(std::string(SharedChurch) + "|floor"))
         return purse->cash;
     const auto left = state_.memory.reliefLeft.find(SharedChurch);
     return left == state_.memory.reliefLeft.end() ? spendable(SharedChurch)

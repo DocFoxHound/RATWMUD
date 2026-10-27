@@ -386,8 +386,8 @@ void Society::record(const std::string& kind, const std::string& from, const std
             state_.memory.wagesWeek[from] += double(coins);
         // Round 10, lane A (the user, 2026-10-27; with work by the hours): what a House pays out from each part of its
         // week's budget (its posts' wages, its caravans' money and guards, its investments in its businesses), and what
-        // its caravans bring home, its income with its rent and profit (its budget is gross: the road money out of it,
-        // the takings into it). The church's own buying (its basket) comes out of its budget as its wages do.
+        // its caravans bring home since its last week's budget (spent on top of it, as they come: the road money out of
+        // its budget, the takings into the next). The church's own buying (its basket) comes out of its budget as its wages do.
         if (workByHours())
         {
             auto& m = state_.memory;
@@ -406,7 +406,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
             }
             else if (wageRule(HouseBudget) && !to.empty() && to[0] == 'h' && to.rfind("house:", 0) == 0 && kind == "trade takings" &&
                      from.rfind("caravan:", 0) == 0)
-                m.tradeMonth[to] += double(coins);
+                m.spendWeek[to + "|takings"] += double(coins);
             else if (wageRule(ChurchBudget) && from == SharedChurch && kind == "bought by the church")
                 m.wagesWeek[from] += double(coins);
             else if (wageRule(ChurchBudget) && from == SharedChurch && kind == "alms bought for the hungry")

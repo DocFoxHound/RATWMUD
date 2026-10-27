@@ -55,12 +55,6 @@ void Society::tendIncome()
         // (A town's month can fall below nothing, its caravans' road money out before their takings come home: round 8.)
         it = std::abs(it->second) < .5 && !earnedToday_.count(it->first) ? memory.monthIncome.erase(it) : std::next(it);
     }
-    // (A House's caravans' takings, its month's as its rent and profit: round 10, lane A.)
-    for (auto it = memory.tradeMonth.begin(); it != memory.tradeMonth.end();)
-    {
-        it->second *= double(MonthDays - 1) / MonthDays;
-        it = it->second < .5 ? memory.tradeMonth.erase(it) : std::next(it);
-    }
     flushEarnings();
 }
 
@@ -351,34 +345,38 @@ void Society::institutionsWeek(std::int64_t day)
 std::int64_t Society::houseParts(const House& h, std::int64_t day)
 {
     // A House's week's budget, by the model's rule (house_week: k 4, a2 0.3), over all it pays out (round 10, lane A, the
-    // user, 2026-10-27). Its month's income is its rent, its businesses' profit and its caravans' takings (tradeMonth);
-    // its first month, a fifth of what it holds. Never below its floor: a week's wages for HouseFloorHands at its town's
-    // going rate (spendable keeps it for every coin it pays out). Then its parts, in the order they are cut when it holds
-    // less than its target (four months' income): its posts' wages first, then its caravans, each what it paid out last
-    // week and a third over (a tenth of what's left at least: the model's church_week relief); then its investments in
+    // user, 2026-10-27). Its month's income is its rent and its businesses' profit (its first month, a fifth of what it
+    // holds). What its caravans brought home since its last week's budget comes on top, spent as it comes, as a town's
+    // since round 9: their road money draws on its budget, so their takings pay for the next. (Counted in its month, it
+    // held four months of its trade, the trial's Mossgrave Court 300,000p of target on 14,000p a month of rent and profit:
+    // the Houses held 0.19 of the money at day 154 against the model's 0.105, and the realm went hungry from day 112.)
+    // Never below its floor: a week's wages for HouseFloorHands at its town's going rate (spendable keeps it for every coin
+    // it pays out). Then its parts, in the order they are cut when it holds less than its target (four months' income):
+    // its posts' wages first, then its caravans, each what it paid out last week and a third over (a tenth of what's left
+    // at least: the model's church_week relief; its caravans at least what they brought home); then its investments in
     // its businesses, the same, only while it holds its target (below it they pause first); and what's left is its works
     // and crews' (retainers, finery, materials, its estate crew: below its target they shrink next, its caravans last).
     // Each part paid out stops for the week when it's spent (houseMay); what's left of a part stays in its purse.
     auto& memory = state_.memory;
     const double held = double(account(h.id)->cash);
-    const double month = day < MonthDays ? held / 5 : monthIncomeOf(h.id) + [&] {
-        const auto found = memory.tradeMonth.find(h.id);
-        return found == memory.tradeMonth.end() ? 0. : found->second;
-    }();
+    const double month = day < MonthDays ? held / 5 : monthIncomeOf(h.id);
+    auto& takings = memory.spendWeek[h.id + "|takings"];
+    const auto trade = std::int64_t(takings);
+    takings = 0;
     const auto floor = 7 * HouseFloorHands * std::int64_t(std::ceil(goingRate(h.community) - 1e-9));
     memory.spendLeft[h.id + "|floor"] = double(floor);
-    auto budget = std::int64_t(std::clamp((month + .3 * (held - 4 * month)) / 4, 0., std::max(0., held - double(floor))));
-    const auto part = [&](const char* name, bool open) {
+    auto budget = std::int64_t(std::clamp((month + .3 * (held - 4 * month)) / 4 + double(trade), 0., std::max(0., held - double(floor))));
+    const auto part = [&](const char* name, bool open, std::int64_t least) {
         auto& last = memory.spendWeek[h.id + name];
-        const auto give = open ? std::min<std::int64_t>(budget, std::max<std::int64_t>(std::int64_t(last * PartGrowth), std::int64_t(double(budget) * PartLeast)))
+        const auto give = open ? std::min<std::int64_t>(budget, std::max({std::int64_t(last * PartGrowth), std::int64_t(double(budget) * PartLeast), least}))
                                : std::int64_t(0);
         memory.spendLeft[h.id + name] = double(give);
         last = 0;
         budget -= give;
     };
-    part("|posts", true);
-    part("|road", true);
-    part("|tops", held >= 4 * month);
+    part("|posts", true, 0);
+    part("|road", true, trade);
+    part("|tops", held >= 4 * month, 0);
     return budget;
 }
 

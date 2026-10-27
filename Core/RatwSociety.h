@@ -393,10 +393,10 @@ struct EconomyMemory
     std::map<std::string, double> postsOwed;
     // Round 10, lane A (the user, 2026-10-27; with work by the hours): a House's week's budget in parts, what is left of
     // each ("house:x|posts", "|road", "|tops") and the floor it never pays out below ("house:x|floor"; and the church's,
-    // "town:all:church|floor"), set at its week's reckoning (spendLeft); what each part paid out this week (spendWeek,
-    // the next week's measure); and a House's caravans' takings over the last month (tradeMonth, a 28th off a day), its
-    // income with its rent and its businesses' profit.
-    std::map<std::string, double> spendLeft, spendWeek, tradeMonth;
+    // "town:all:church|floor"), set at its week's reckoning (spendLeft); and what each part paid out this week, the next
+    // week's measure, and what its caravans brought home since its last week's budget ("house:x|takings", spent on top
+    // of its next: spendWeek).
+    std::map<std::string, double> spendLeft, spendWeek;
     std::int64_t revision = 0;
 };
 
