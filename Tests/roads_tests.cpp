@@ -3897,6 +3897,47 @@ void aLoadIsForTheOrdersItLeftWith()
     expect(soc.conserved(), "Money is conserved");
 }
 
+// Food by need (doc 64, Phase 13, round 11, lane 3), with work by the hours: the west, thirty-one wolves and one inn with
+// nothing to eat on its shelves, and the capital's smokehouse with jerky to spare. With the rule the inn sends for its
+// share of the town's week of food (World::FedADay a wolf), not the dozen (FoodKept) it sent for before.
+void aTownShortOfFoodSendsForItsWeek()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](bool rule) {
+        Society::wageRulesOff(rule ? 0 : Society::FoodByNeed);
+        std::string extra = resident("smoker", "Sam Smoke", "merchant", "runs The East Smokehouse", 0, 12.5, 1, 12.5) +
+                            resident("inn", "Ina Ladle", "merchant", "keeps The West Lantern", 7, 12.5, 8, 12.5);
+        for (int n = 1; n <= 30; ++n)
+            extra += resident("wf" + std::to_string(n), "Westfolk " + std::to_string(n), "civilian", "working", 8, 3.5 + n % 9, 8, 3.5 + n % 9);
+        auto f = strip("EE.....WW", extra);
+        auto w = load(f);
+        w.tick(.6);
+        w.roads().camps.clear();
+        auto& soc = w.society();
+        const auto inn = soc.tillOf("inn"), smoker = soc.tillOf("smoker");
+        expect(soc.foodShop("inn"), "the inn is a food shop");
+        for (int k = 0; k < 6; ++k)
+            soc.create(smoker, "jerky", 99, "test: a smoked winter's jerky");
+        std::vector<std::pair<std::string, int>> held(soc.account(inn)->stock.begin(), soc.account(inn)->stock.end());
+        for (const auto& [item, n] : held)
+            if (n > 0 && Society::edible(item))
+                soc.consume(inn, item, n, "test: eaten bare");
+        soc.shift("treasury", inn, "", 0, 3000, "test: takings");
+        nextMorning(w);
+        int perWeek = 0;
+        for (const auto& o : w.roads().orders)
+            if (o.buyer == inn && o.item == "jerky")
+                perWeek = o.perWeek;
+        expect(soc.conserved(), "Money is conserved");
+        return perWeek;
+    };
+    const int byNeed = run(true), before = run(false);
+    expect(before > 0 && before <= 13, "Without the rule the inn sends for a dozen jerky a week (" + std::to_string(before) + ")");
+    expect(byNeed > before * 2, "With it, for its share of the west's week of food (" + std::to_string(byNeed) + " a week, from " + std::to_string(before) + ")");
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -3913,6 +3954,7 @@ int main()
         aBuyerWithoutMoneyEndsItsOrder();
         aFailedSellerIsForgottenInAMonth();
         aLoadIsForTheOrdersItLeftWith();
+        aTownShortOfFoodSendsForItsWeek();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();

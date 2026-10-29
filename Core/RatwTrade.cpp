@@ -80,7 +80,7 @@ World::Market World::marketOf(const std::string& town) const
             continue;
         for (const auto& [item, count] : shelves->stock)
             if (count > 0 && Society::edible(item))
-                m.food += count;
+                m.food += count, m.fed += double(count) * Society::nourishment(item);
         if (society_.foodShop(r.id))
             m.foodShops.push_back(till);
         const auto& supplies = items::suppliesFor(business->id);
@@ -160,7 +160,10 @@ void World::tradeCaravans()
     for (const auto& to : towns_)
     {
         auto& m = markets[to.id];
-        if (m.food >= FoodDaysKept * m.people || m.foodShops.empty())
+        // (By its people's need, not a meal's worth a head, with the rule: FoodByNeed, round 11, lane 3.)
+        const bool byNeed = Society::workByHours() && Society::wageRule(Society::FoodByNeed);
+        const double dayNeed = m.people * FedADay;
+        if ((byNeed ? m.fed >= FoodDaysKept * dayNeed : m.food >= FoodDaysKept * m.people) || m.foodShops.empty())
             continue;
         std::map<std::string, int> elsewhere;
         for (const auto& from : towns_)
@@ -173,10 +176,16 @@ void World::tradeCaravans()
             if (n > 0)
                 foods.push_back({n, item});
         std::sort(foods.rbegin(), foods.rend());
+        // A food shop's share of the town's week short, in this food (FoodKept at least).
+        const auto kept = [&](const std::string& food) {
+            const double share = (FoodWeek * dayNeed - m.fed) / double(std::min<std::size_t>(foods.size(), FoodsSent) * m.foodShops.size());
+            const int n = Society::nourishment(food);
+            return n > 0 ? std::max(FoodKept, int(std::ceil(share / n))) : FoodKept;
+        };
         for (std::size_t k = 0; k < foods.size() && k < std::size_t(FoodsSent); ++k)
             for (const auto& till : m.foodShops)
                 if (const auto* shelves = society_.account(till))
-                    if (const int want = FoodKept - Society::stockAll(*shelves, foods[k].second); want > 0)
+                    if (const int want = (byNeed ? kept(foods[k].second) : FoodKept) - Society::stockAll(*shelves, foods[k].second); want > 0)
                     {
                         m.want[foods[k].second] += want;
                         m.wanters[foods[k].second].push_back({till, want});

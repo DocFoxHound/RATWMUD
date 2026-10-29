@@ -967,6 +967,13 @@ Value economyMemory(const EconomyMemory& m)
         margins.add(key, v);
     o.add("costs", costs);
     o.add("margins", margins);
+    if (!m.markdowns.empty())                           // (Round 11, lane 3: only with the rule, so a save without it is as it was.)
+    {
+        auto markdowns = Value::object();
+        for (const auto& [key, d] : m.markdowns)
+            markdowns.add(key, double(d));
+        o.add("markdowns", markdowns);
+    }
     auto putIn = Value::object(), credit = Value::object();
     for (const auto& [till, v] : m.putIn)
         putIn.add(till, v);
@@ -1147,6 +1154,10 @@ EconomyMemory readEconomyMemory(const Value& o)
     for (const auto& [key, v] : o.object("margins").fields())
         if (v.isNumber() && v.asNumber() >= -1 && v.asNumber() <= 2 && key.find('|') != std::string::npos && key.size() < 200)
             m.margins[key] = v.asNumber();
+    // (Saved before round 11: none marked down.)
+    for (const auto& [key, v] : o.object("markdowns").fields())
+        if (v.isNumber() && v.asNumber() >= 1 && v.asNumber() <= Society::MarkdownDaysMost && key.find('|') != std::string::npos && key.size() < 200)
+            m.markdowns[key] = int(v.asNumber());
     // (Saved before doc 64's Phase 5: nothing put in, nothing owed.)
     for (const auto& [till, v] : o.object("putIn").fields())
         if (v.isNumber() && std::abs(v.asNumber()) < 1e12)

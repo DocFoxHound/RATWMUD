@@ -57,6 +57,9 @@
 // rebate (a town's stores over twice their target keep it, not paying half of it back to their taxpayers),
 // founding (a town is founded with its share of the treasuries' by its residents, not at its target), daylabour (a
 // small town pays its own Town Works' day labour, not the capital).
+// And round 11's, lane 3: markdowns (a seller's good over its shelf target keeps its price, its margin's weekly review
+// alone), foodneed (a town short of food sends for twelve of three foods a food shop, by a meal's worth a head, not its
+// people's week).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -517,9 +520,13 @@ int main(int argc, char** argv)
                     off |= Society::CheapAlms;
                 else if (name == "carry")
                     off |= Society::CarryParts;
+                else if (name == "markdowns")
+                    off |= Society::Markdowns;
+                else if (name == "foodneed")
+                    off |= Society::FoodByNeed;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast or nearest, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, markdowns or foodneed, not "
                               << name << "\n";
                     return 2;
                 }

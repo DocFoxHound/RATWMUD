@@ -339,6 +339,9 @@ struct EconomyMemory
     // the average cost a piece (pennies), and "account|good" -> the seller's margin. Copied from the society's own once
     // a day (Society::keepPrices), so they're saved with the rest.
     std::map<std::string, double> costs, margins;
+    // "till|good" -> the days a seller's good has stood over its shelf target, its markdown (Society::reviewMarkdowns;
+    // round 11, lane 3). Kept daily with the prices.
+    std::map<std::string, int> markdowns;
     // Businesses and owners (doc 64, Phase 5): what each business's owner has put into its till lately (till -> pennies,
     // a quarter's worth, wearing away by a thirteenth a week and paid back by its profits), and trade credit ("buyer's
     // till|seller's till" -> what it owes and the day it first owed it).
@@ -943,6 +946,7 @@ class Society
     // good -> its margin; and each seller's normal cost of a good it makes (by keeper or account), worked out once a day.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> cost_, margins_;
     mutable std::unordered_map<std::string, std::unordered_map<std::string, double>> unitCost_;
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> daysOver_;   // Till -> good -> days over its target.
     // Goods coming into a costed account: its average cost a piece, `had` held before, `n` more at `each`.
     void addCost(const std::string& account, const std::string& item, int had, int n, double each);
     void reviewMargins(std::int64_t day);           // Each seller's weekly review, on its own day of the week.
@@ -1267,7 +1271,9 @@ class Society
         CarryParts = 262144,                         // A House's budget unpaid last week goes to this week's works and crews (round 10).
         FoodAtItsPrice = 67108864,                   // A hungry wolf buys where it can pay for food, not by the bite (round 10, C).
         FeastLaidIn = 134217728,                     // A town's stores buy its festival's feast from its shops (round 10, C).
-        NearestShop = 268435456                      // With no shop of its town open, the nearest it can pay at (round 10, C).
+        NearestShop = 268435456,                     // With no shop of its town open, the nearest it can pay at (round 10, C).
+        Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
+        FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
@@ -1393,6 +1399,17 @@ class Society
     double normalCost(const std::string& seller, const std::string& item) const;
     double marginOf(const std::string& seller, const std::string& item) const;
     double priceAt(const std::string& seller, const std::string& item) const;   // Pennies a piece, not rounded.
+    // Markdowns (round 11, lane 3; the user, 2026-10-29: "Shops should mark down what sits over their shelf target for
+    // more than a day."): with work by the hours, once a day, each shop's and House's good held over its shelf target
+    // (shelfTarget, at least ProducerKept: no seller is marked down on the store every maker keeps) counts a day over,
+    // and one at or under it a day back; from its second day over, its price comes down MarkdownStep of itself a day,
+    // never below MarkdownFloor of its normal cost (the weekly review's own least margin: a glut is sold at a loss,
+    // as a seller's margin may sink to over weeks, but never given away). As the stock falls back under its target the
+    // price climbs back a step a day. Days over are kept to MarkdownDaysMost (past the floor, more mean nothing).
+    void reviewMarkdowns();
+    int daysOver(const std::string& seller, const std::string& item) const;
+    static constexpr double MarkdownStep = .05, MarkdownFloor = .7;   // (1 + MarginLeast.)
+    static constexpr int MarkdownDaysMost = 30;
     double offerAt(const std::string& seller, const std::string& item) const { return normalCost(seller, item); }
     double labourDay(const std::string& town) const { return goingRate(town); }
     // Households and institutions (Docs/Design/64-economy-migration.md, Phase 7; doc 63's model; RatwInstitutions.cpp).

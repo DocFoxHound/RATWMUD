@@ -1893,11 +1893,19 @@ class World
     // Food between towns (tradeCaravans): a town whose shops hold under FoodDaysKept days' food for its people sends for
     // the foods other towns have most to spare (FoodsSent of them), FoodKept of each for each of its food shops.
     static constexpr int FoodDaysKept = 2, FoodKept = 12, FoodsSent = 3;
+    // By need (Society::FoodByNeed; round 11, lane 3): with work by the hours, a town's shops holding under FoodDaysKept
+    // days of its people's food (FedADay a wolf: what its hunger wears away in a day, .0035 a second, eaten at 1.1) send
+    // for a FoodWeek of it, less what they hold, shared among the FoodsSent foods and its food shops (FoodKept of each
+    // at least, as before). Frosthollow, a mining town that makes only porridge, sent for twelve of three foods a shop
+    // whatever its 56 people ate, and its orders followed its shops' small sales.
+    static constexpr double FedADay = .0035 * 14400 / 1.1;
+    static constexpr int FoodWeek = 7;
     struct Market
     {
         std::map<std::string, int> spare, want;
         std::map<std::string, std::vector<std::pair<std::string, int>>> holders, wanters;   // Account, how many.
         int people = 0, food = 0;                   // Who lives there; the food on its shops' shelves (meals' worth).
+        double fed = 0;                             // ...that food's nourishment (FoodByNeed).
         std::vector<std::string> foodShops;         // Its food shops' tills.
     };
     std::string residentTown(const std::string& id) const;

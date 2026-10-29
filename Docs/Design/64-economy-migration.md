@@ -7094,3 +7094,96 @@ the first month to 1,700–2,100p a day in days 252–308 (Frosthollow's 640–7
    (`--without townposts`). Recommended: (b), unless the buyers' allowance is wanted for its own sake.
 3. **Coldwater's and Frosthollow's caravans.** Coldwater's trade loses money from the start, and Frosthollow's stops
    in the autumn. That is the towns' trade, not their treasuries: worth a look of its own.
+
+### Phase 13: round 11, lane 3: markdowns, Frosthollow's food (2026-10-29)
+
+The year's run (`2026-10-29-r10-all-year`, c09a211) has food dearer as wages fall: bread 4.0p to 6.7p, smoked rabbit
+11p to 21p, smoked fish 12.7p to 20.8p, a resident's food bought at 11.8p a unit on average to 17.2p. Smoked rabbit held
+near 22p with about 2,500 on the shelves in month 8. And Frosthollow ends the year with 33 of its 56 hungry. Base: p13 at
+a880120. Two rules, both with work by the hours.
+
+**Markdowns** (`Society::Markdowns`, `1ull << 34`; `econ_watch --without markdowns`; the user, 2026-10-29: "Shops should
+mark down what sits over their shelf target for more than a day."). A seller's price was its normal cost times one and
+its margin, and the margin moved only at its weekly review, a little most weeks (`MarginStep`, 0.04 at most), so a glut
+took months to clear. Now, at the turn of each day (`Society::reviewMarkdowns`, `Core/RatwPrices.cpp`), each shop's and
+House's good (not a town's stores, a caravan's load or a fund) held over its shelf target (`shelfTarget`, at least
+`ProducerKept`, 40: the store every maker keeps is not a glut) counts a day over; one at or under its target a day back.
+From its second day over, its price (`priceAt`, so every sale of it: to a wolf, a shop, a caravan) comes down
+`MarkdownStep` (5%) of itself a day, to `MarkdownFloor`, 0.7 of its normal cost: the weekly review's own least margin
+(`MarginLeast`, -0.3). A glut is sold at a loss, as a seller's margin may sink to over weeks, but never given away; a
+price the review has already put under the floor stays where it is. Back under its target, the price climbs a step a day
+(no jump: a shop just under its target isn't at once dear again). Days are kept to 30 (past the floor more mean nothing)
+and saved (`memory.markdowns`, "till|good" -> days, only when there are any, so a save without the rule is as before).
+Every good a shop sells, food included; not what's priced by the store (meals, herbs, swords: `storePriced`).
+
+Why 5% and 0.7: a staple at its most (twice its cost) reaches the floor in about 13 days over, a good at the ladder's
+15% in about 9; slow enough that a shelf one good day over its target loses a step, not its margin, fast enough that
+month 8's smoked rabbit (2,500 on the shelves) would be at its floor within a fortnight.
+
+**Frosthollow.** What the year's tables show (`hunger.csv`, `residents.csv`, `tills.csv`, `town_flows.csv`,
+`food_towns.csv`, `orders.csv`):
+
+- **Its wolves can't pay.** From day 280 a mean 19 of its 56 are hungry and 15.3 of them hold less than its cheapest
+  food (7p): `hungry_poor`. On day 361, 33 hungry, all 33 poor, 86 on its shelves. Of its own 43 residents on day 364,
+  13 hold under 7p; 26 earn nothing (11 keep the house, 11 children, 4 by the well); the town's money is the smelter's
+  (its keeper holds 125k, the smelter's till 6k-69k, against 135k for all 43). Its caravans' trade stopped in the autumn
+  (round 10, the towns: takings 3,700p a day in days 168-196, 4p by days 308-336; the smelter sells nothing to
+  Ridgemere's standing orders for bars, delivered 0 of 15), and its treasury with it: 27p-363p held at the year's end
+  against a 7,071p target, so its daily relief is 300p-1,800p a month. No church relief or alms is recorded in its town.
+  That is the towns' and businesses' lanes' (round 11).
+- **And its shelves run bare.** It makes only porridge (16,000 a year, from Larkfield's oats, which arrive: 75k of 33k
+  ordered), and eats some 3,700 pieces a month (fish and rabbit its trappers bring home among them). Its shops' other
+  food came by the "food between towns" orders: a town holding under two pieces of food a head sends for twelve
+  (`FoodKept`) of three foods a food shop, and the order then follows the shop's sales (`useRate`), which its poor keep
+  small; a review cuts it when the shop holds two weeks of them. From day 280, 44 of 86 days end with under 20 pieces
+  on its shelves; on those, 5 of the 20 hungry could have paid. Its orders mostly deliver (smoked fish 5,242 of 5,039
+  from Coldwater, jerky 8,864 of 9,755 from Ridgemere); cheese is the exception (794 of 2,590 from Larkfield, 547 of
+  3,768 from Ridgemere: the sellers' stock).
+
+So it is the money first (four in five of its hungry), and its food second. Lane 3 mends the second:
+
+**Food by need** (`Society::FoodByNeed`, `1ull << 35`; `econ_watch --without foodneed`; `World::tradeCaravans`,
+`Core/RatwTrade.cpp`). A town's shops' food is reckoned in nourishment (`Market::fed`), and a town holding under two days
+of its people's food (`FedADay` a wolf, 45.8: what its hunger wears away in a day, 0.0035 a second, eaten at 1.1) sends
+for its week (`FoodWeek`), less what its shops hold, shared among the three foods the others have most to spare and its
+food shops, in pieces of each (twelve at least, as before). The orders are signed as before (the seller's spare caps
+them; the buyer pays on delivery; the review cuts what piles up). For Frosthollow, 56 wolves: 2,565 of nourishment a
+day, a week of it about 18,000, against the 36 pieces of each of three foods a shop before. It brings the food; whether
+its poor can buy it is the money above (the markdowns help there a little).
+
+**Watching Frosthollow.** `hunger.csv` already has it: `hungry` against `hungry_poor` says whether it's the money,
+`shelf_food` whether it's the food. `orders.csv` (its buyers' `per_week`, `delivered`, `shortfall`, `unpaid`) says
+whether the orders are sized and filled. Nothing new was added.
+
+**Tests.** `aGlutIsMarkedDown` (crafting_tests): the baker's bread over its target keeps its price its first day, 5% off
+its second, at the floor (0.7 of its cost) weeks on, a step back up once under its target, its own price again in time,
+and a markdown comes back from the save; without the rule, its price throughout. `aTownShortOfFoodSendsForItsWeek`
+(roads_tests): a west of 31 wolves with a bare inn and the capital's smokehouse with jerky to spare: the inn sends for
+a dozen a week without the rule (12), for its share of the town's week with it (30: its week, about 9,900 of
+nourishment, shared among the three foods the capital has to spare).
+
+**Reproduced.** Both rules left out (`--without markdowns,foodneed`), 5 days `--deterministic --hours --threads 6` give
+c09a211's digest, 4f5286d0cb4ff064. 30 days with them (`--deterministic --hours
+--threads 6`): digest 43ffd23b59e0c887. Against the year's first 30 days (c09a211, the same arguments):
+
+| a resident's food bought | base, days 1-20 | base, days 21-30 | lane 3, days 1-20 | lane 3, days 21-30 |
+| --- | --- | --- | --- | --- |
+| all food, a unit | 12.24p | 10.74p | 11.66p | 9.59p |
+| bread | 4.01p | 4.06p | 3.94p | 3.87p |
+| smoked rabbit | 10.99p | 11.00p | 10.59p | 8.39p |
+| smoked fish | 12.73p | 12.91p | 11.97p | 10.75p |
+| smoked mutton | 22.46p | 22.47p | 21.39p | 16.51p |
+| porridge | 5.40p | 5.66p | 5.38p | 5.51p |
+
+Nobody is hungry anywhere by day 30 in either (Frosthollow's hunger begins after day 196). Frosthollow's food orders in
+the month (`orders.csv`, the rows' `per_week` summed): smoked rabbit 605 to 1,632 (1,350 delivered, against 293),
+jerky 1,000 to 1,274, smoked mutton 900 to 1,435; none unpaid. Its shelves at the day's end are as thin as before (0-40
+against 20-71): what comes is bought, at 5-6p its cheapest, as before. Whether the need-sized orders keep its shelves
+stocked once its money goes (the autumn) is the year's to say.
+
+**The pace.** Markdowns cost time: 5 days `--hours --threads 6` at 0.169 min a game day with them, 0.101 without
+(`--without markdowns`). Two fifths of it was a second look-up of the seller's till on every price asked; `priceAt` now
+finds the till and good once for its margin and its markdown (the results the same: digest 23768e949b6a0c62 both ways).
+The rest isn't traced: some of it the look-up (the old double look-up with its markdowns ignored ran at 0.135), the
+rest what the lower prices change (not the trade's volume: 5 days' sales by kind are the same to a few units). Left
+for a follow-up: a year with markdowns runs about 1.7 times as long.
