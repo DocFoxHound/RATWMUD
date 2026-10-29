@@ -7181,9 +7181,8 @@ jerky 1,000 to 1,274, smoked mutton 900 to 1,435; none unpaid. Its shelves at th
 against 20-71): what comes is bought, at 5-6p its cheapest, as before. Whether the need-sized orders keep its shelves
 stocked once its money goes (the autumn) is the year's to say.
 
-**The pace.** Markdowns cost time: 5 days `--hours --threads 6` at 0.169 min a game day with them, 0.101 without
-(`--without markdowns`). Two fifths of it was a second look-up of the seller's till on every price asked; `priceAt` now
-finds the till and good once for its margin and its markdown (the results the same: digest 23768e949b6a0c62 both ways).
-The rest isn't traced: some of it the look-up (the old double look-up with its markdowns ignored ran at 0.135), the
-rest what the lower prices change (not the trade's volume: 5 days' sales by kind are the same to a few units). Left
-for a follow-up: a year with markdowns runs about 1.7 times as long.
+**The pace.** No cost. A first reading had markdowns 1.7 times slower (0.169 min a game day against 0.101), but those
+runs were one after another on a machine other sessions were loading (load average 6 to 21): run side by side, so
+both see the same load, 5 days `--hours --threads 6` take 0.549 min with them and 0.552 `--without markdowns` (and
+1.24 against 1.25 at a load of 21). `priceAt` finds the seller's till and good once, for its margin and its markdown
+both (it had looked the till up a second time); the results are the same either way (5 days: 23768e949b6a0c62).
