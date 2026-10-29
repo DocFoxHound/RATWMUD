@@ -2518,6 +2518,7 @@ void thePaceIsSteadied()
 void aCityHandAtTheFishery()
 {
     Society::setWorkByHours(true);
+    Society::wageRulesOff(Society::MoreHands);   // (Its till given 3,000p: one hire by its sales, not round 11's more.)
     std::string extra = resident("wf", "Wade Fenn", "civilian", "fishes the waters off Westmere", 7, 9.5, 8, 9.5);
     for (int n = 1; n <= 150; ++n)
         extra += resident("ec" + std::to_string(n), "Idle " + std::to_string(n), "civilian", "idling in the square", 0, 2.5 + n % 12, 0, 2.5 + n % 12);
@@ -2594,6 +2595,7 @@ void aCityHandAtTheFishery()
         paid = paid || (e.from == till && e.to == hand && e.kind == "an odd job: a hand");
     expect(paid, "and it is paid from the fishery's till");
     expect(s.conserved(), "Every penny is kept");
+    Society::wageRulesOff(0);
     Society::setWorkByHours(false);
 }
 

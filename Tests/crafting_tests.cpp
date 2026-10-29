@@ -1647,6 +1647,7 @@ void aProducersPostsBySales()
 void aProducersHireBySales()
 {
     Society::setWorkByHours(true);
+    Society::wageRulesOff(Society::MoreHands);   // (Its till kept at 20,000p: its sales' hands, not round 11's over them.)
     AuthoredRoster roster;
     roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
     roster.economy.treasury = 100000;
@@ -1693,6 +1694,7 @@ void aProducersHireBySales()
            "its sales three hands' days: a hire for two at most, and no more open (" + std::to_string(three.first) + " over, a hire of " +
                std::to_string(three.second) + ")");
     expect(s.conserved(), "money stays conserved");
+    Society::wageRulesOff(0);
     Society::setWorkByHours(false);
 }
 
@@ -5310,6 +5312,115 @@ void aLoneOwnerStopsToppingUp()
     }
 }
 
+// Round 11, lane 1 (the user, 2026-10-29: "if there is no work, for them to just go idle and the owners to return to them
+// when there's demand"), with work by the hours: a lake's fisher whose owner stopped topping up its dry till on day 1
+// goes idle at its first look IdleWeeks after (IdleTills): no keeper's wage from then, its keeper free for hire work,
+// and it wants its keeper only. Saved, it reads back idle. A fortnight of 60 fish sold a day (its till emptied each
+// evening, so never a week's wages of its own): its owner returns to it (OwnerReturns), and it trades on. Without
+// OwnerReturns it stays idle; without IdleTills it never goes idle, its keeper paid what the till holds. And a business
+// holding over its working money takes on a hand more for each month of a hand's wage over it, up to doubling
+// (MoreHands); without the rule, only its sales' hands.
+void aStoppedBusinessIdlesAndReturns()
+{
+    struct Run
+    {
+        bool idled = false, wagePaid = false, freed = false, keeperOnly = false, saved = false, returned = false, stillIdle = false;
+        int wanted = 0, wantedRich = 0, wantedBare = 0, wantedBareRich = 0;
+        std::string why;   // (Its sales against its hands' wages, after the fortnight.)
+    };
+    const auto run = [](std::uint64_t off) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        auto state = s.state();
+        state.memory.pace = 1;
+        const auto till = s.tillOf("fisher");
+        const auto& job = *s.jobOf("fisher");
+        state.memory.shortTills[till] = {Society::StopWeeks, 1, -1};
+        expect(s.restore(state), "the stopped fisher restores");
+        Run r;
+        const auto dry = [&] {
+            for (const auto& who : {till, std::string("fisher")})
+                if (const auto cash = s.account(who)->cash; cash > 0)
+                    s.shift(who, "treasury", "", 0, cash, "test: the money taken");
+        };
+        // Five weeks of its looks, its till dry and a day's wage in it each morning.
+        std::int64_t d = 1;
+        for (; d <= 36; ++d)
+        {
+            dry();
+            s.shift("treasury", till, "", 0, std::int64_t(std::ceil(s.employerWage(till))), "test: a day's wage in its till");
+            s.takeJournal();
+            const bool idleBefore = s.tillIdle(till);   // (The day it goes idle it paid its wage first.)
+            s.tendTills(d);
+            for (const auto& e : s.takeJournal())
+                if (e.kind == "the keeper's wage" && idleBefore)
+                    r.wagePaid = true;
+        }
+        r.idled = s.tillIdle(till);
+        auto st = s.state();
+        st.budgetDay = double(d - 1);
+        expect(s.restore(st), "the day restores");
+        r.freed = s.ownerUnpaid("fisher", job);
+        r.keeperOnly = s.handsWanted(till) == 1;
+        expect(s.restore(wire::readSociety(wire::society(s.state()))), "the save restores");
+        r.saved = s.tillIdle(till) == r.idled;
+        // A fortnight of buyers: 60 fish a day, the till and the fisher emptied each evening.
+        const auto bodies = atWork(s);
+        for (int i = 0; i < 14; ++i, ++d)
+        {
+            set(s, "fisher", "fish", 60);
+            expect(s.shift("treasury", "scribe", "", 0, 60, "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(till, "scribe", "fish", 60, 1, "test: the day's fish"), "the buyer buys");
+            auto eaten = s.state();
+            eaten.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(eaten), "eaten");
+            dry();
+            s.takeJournal();
+            s.tick(1, double(d) + .5, 0, bodies);
+            for (const auto& e : s.takeJournal())
+                r.returned = r.returned || e.kind == "an owner returned to its business";
+        }
+        r.stillIdle = s.tillIdle(till);
+        r.why = std::to_string(s.sellRates(till) && s.sellRates(till)->count("fish") ? s.sellRates(till)->at("fish") : -1.) + " fish a day at " +
+                std::to_string(s.shopPrice("fisher", "fish")) + "p, " + std::to_string(s.hoursBySales(till, false)) + " hours at " +
+                std::to_string(s.employerWage(till)) + "p";
+        // Its hands by its sales, and with three months of a hand's wage over its working money.
+        r.wanted = s.handsWanted(till), r.wantedBare = s.handsWanted(till, false);
+        if (!r.stillIdle)
+        {
+            dry();
+            const auto over = s.workingMoney(job.id) + s.owed(till) + std::int64_t(3.5 * MonthDays * s.employerWage(till));
+            expect(s.shift("treasury", till, "", 0, over, "test: a good quarter"), "the till fills");
+            r.wantedRich = s.handsWanted(till), r.wantedBareRich = s.handsWanted(till, false);
+        }
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto r = run(0);
+    expect(r.idled && !r.wagePaid, "stopped four weeks and still short, it goes idle and pays no keeper's wage");
+    expect(r.freed && r.keeperOnly, "idle, its keeper is free for hire work, and it wants its keeper only");
+    expect(r.saved, "it reads back idle from a save");
+    expect(r.returned && !r.stillIdle, "buyers back for its fish, its owner returns to it: " + r.why);
+    expect(r.wantedRich == r.wanted + std::min(r.wanted, 3) && r.wantedBareRich == r.wantedBare + std::min(r.wantedBare, 3),
+           "holding three months of a hand's wage over its working money, it wants up to three more: " + std::to_string(r.wanted) +
+               " -> " + std::to_string(r.wantedRich) + ", " + std::to_string(r.wantedBare) + " -> " + std::to_string(r.wantedBareRich));
+    const auto stays = run(Society::OwnerReturns);
+    expect(stays.idled && !stays.returned && stays.stillIdle, "without OwnerReturns it stays idle while its till is dry");
+    const auto never = run(Society::IdleTills | Society::OwnerReturns);
+    expect(!never.idled && !never.returned && !never.stillIdle && never.wanted >= 1, "without IdleTills it never goes idle");
+    const auto plain = run(Society::MoreHands);
+    expect(plain.returned && plain.wantedRich == plain.wanted && plain.wantedBareRich == plain.wantedBare,
+           "without MoreHands, its sales' hands however much it holds: " + std::to_string(plain.wanted) + " -> " +
+               std::to_string(plain.wantedRich));
+}
+
 // Round 10, lane A (the user, 2026-10-27), with work by the hours: a House's week's budget, by the model's rule (k 4,
 // a2 0.3), over all it pays out, in parts. House Fell holds 5,000p on a month's income of 1,000p (and its caravans' 0)
 // at the day-35 reckoning: its budget (1,000 + 0.3 x (5,000 - 4,000)) / 4 = 325p. Its floor is a week's wages for
@@ -6111,6 +6222,7 @@ int main()
         aShopsGoodsToSellOnForAFortnight();
         aLoneOwnerKeepsAWeeksFood();
         aLoneOwnerStopsToppingUp();
+        aStoppedBusinessIdlesAndReturns();
         aStoppedKeeperTakesAHire();
         aFarmIsJudgedAfterItsHarvest();
         aHungryWolfBuysAtItsPrice();

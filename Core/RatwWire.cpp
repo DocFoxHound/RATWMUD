@@ -986,6 +986,8 @@ Value economyMemory(const EconomyMemory& m)
         v.push(double(s.weeks));
         v.push(double(s.stopped));
         v.push(double(s.unpaid));
+        if (s.idle >= 0)
+            v.push(double(s.idle));                 // (Gone idle: round 11, lane 1. A save of a till trading on is as before.)
         shortTills.add(till, v);
     }
     o.add("shortTills", shortTills);
@@ -1157,11 +1159,12 @@ EconomyMemory readEconomyMemory(const Value& o)
             m.credit[key] = {std::int64_t(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber())};
     // (Saved before doc 64's Phase 13, round 9: no business short of its wages, each owner topping up as it did.)
     for (const auto& [till, v] : o.object("shortTills").fields())
-        if (v.isArray() && v.items().size() == 3 && till.rfind("till:", 0) == 0 && till.size() < 200 &&
+        if (v.isArray() && (v.items().size() == 3 || v.items().size() == 4) && till.rfind("till:", 0) == 0 && till.size() < 200 &&
             std::all_of(v.items().begin(), v.items().end(), [](const Value& x) {
                 return x.isNumber() && std::isfinite(x.asNumber()) && x.asNumber() >= -1 && x.asNumber() <= 365000000;
             }))
-            m.shortTills[till] = {int(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber()), std::int64_t(v.items()[2].asNumber())};
+            m.shortTills[till] = {int(v.items()[0].asNumber()), std::int64_t(v.items()[1].asNumber()), std::int64_t(v.items()[2].asNumber()),
+                                  v.items().size() == 4 ? std::int64_t(v.items()[3].asNumber()) : -1};
     // (Saved before Phase 12: the tax rate it always had.)
     if (const auto* rate = o.find("taxRate"); rate && rate->isNumber() && rate->asNumber() >= 0 && rate->asNumber() <= Society::MostTaxRate)
         m.taxRate = rate->asNumber();

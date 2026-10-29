@@ -87,8 +87,9 @@ void Society::tendTills(std::int64_t day)
         const auto& keeper = held->second.holder;
         // The keeper's wage (its town's table, doc 46, Phase 4), as far as the till can pay it: one short of working
         // money is topped up by its owner (tendOwners).
+        // (An idle business pays no wage: its keeper is free for hire work all day. Round 11, lane 1, IdleTills.)
         const auto ownWage = std::int64_t(std::ceil(employerWage(till) - 1e-9));   // (Its business's wage: doc 64, Phase 6.)
-        const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash);
+        const auto wage = workByHours() && wageRule(IdleTills) && tillIdle(till) ? 0 : std::min<std::int64_t>(ownWage, account(till)->cash);
         if (wage > 0)
             shift(till, keeper, "", 0, wage, "the keeper's wage");
         // (A day it can't pay it, for a business short of its wages: its keeper is free for hire work while its owner has
@@ -133,6 +134,31 @@ bool Society::harvestEndedSince(std::int64_t from, std::int64_t day)
         return std::int64_t(std::floor(double(d - HarvestEnd) / calendar::DaysPerYear));
     };
     return ends(day) > ends(from);
+}
+
+bool Society::tillIdle(const std::string& till) const
+{
+    const auto s = state_.memory.shortTills.find(till);
+    return s != state_.memory.shortTills.end() && s->second.idle >= 0;
+}
+
+bool Society::ownerReturns(const Position& p, const std::string& till) const
+{
+    // What its sales would bring a day, its running sales with the sales it missed counting (sellRate_: the buyers who
+    // came for its goods and found none, a workshop's materials it went without), at its keeper's own prices, against the
+    // wages of the hands those sales want (at least its keeper), ReturnCover over: the owner sees buyers enough to pay for
+    // its work, and comes back (round 11, lane 1). The signals the code already has: an idle business's sales fall away,
+    // and only buyers coming back for its goods raise them again.
+    const auto rates = sellRate_.find(till);
+    const auto held = state_.careers.positions.find(p.id);
+    if (rates == sellRate_.end() || held == state_.careers.positions.end() || held->second.holder.empty())
+        return false;
+    double brings = 0;
+    for (const auto& [good, rate] : rates->second)
+        if (rate > 0 && items::good(good) && !storePriced(good))
+            brings += rate * double(shopPrice(held->second.holder, good));
+    const double hands = std::max(1., std::ceil(hoursBySales(till, false) / PaidSpells - 1e-9));
+    return brings > 0 && brings >= ReturnCover * hands * employerWage(till);
 }
 
 bool Society::ownerUnpaid(const std::string& resident, const Position& job) const
@@ -393,7 +419,21 @@ void Society::tendOwners(std::int64_t day)
                         // 7 x (weeks - 1) days ago.)
                         if (t.stopped < 0 && t.weeks >= StopWeeks && (!seasonalField(p, till) || harvestEndedSince(day - 7 * (t.weeks - 1), day)))
                             t.stopped = day;
-                        stopped = t.stopped >= 0;
+                        // Stopped IdleWeeks and still short, it goes idle; idle, its owner returns when its sales would
+                        // pay its hands (round 11, lane 1, the user, 2026-10-29: idle, not closed for good). Returned,
+                        // its looks begin again: it tops up again, and stops and idles again if it still can't pay.
+                        if (wageRule(IdleTills) && t.stopped >= 0 && t.idle < 0 && day - t.stopped >= 7 * IdleWeeks)
+                        {
+                            t.idle = day;
+                            record("a business gone idle", owner, till, "", 0, 0);
+                        }
+                        else if (t.idle >= 0 && wageRule(IdleTills) && wageRule(OwnerReturns) && ownerReturns(p, till))
+                        {
+                            record("an owner returned to its business", owner, till, "", 0, 0);
+                            memory.shortTills.erase(s);
+                            s = memory.shortTills.end();
+                        }
+                        stopped = s != memory.shortTills.end() && s->second.stopped >= 0;
                     }
                 }
             }

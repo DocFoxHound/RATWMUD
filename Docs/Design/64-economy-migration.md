@@ -7094,3 +7094,91 @@ the first month to 1,700–2,100p a day in days 252–308 (Frosthollow's 640–7
    (`--without townposts`). Recommended: (b), unless the buyers' allowance is wanted for its own sake.
 3. **Coldwater's and Frosthollow's caravans.** Coldwater's trade loses money from the start, and Frosthollow's stops
    in the autumn. That is the towns' trade, not their treasuries: worth a look of its own.
+
+### Phase 13: round 11, lane 1: businesses idle and return (2026-10-29)
+
+The year run of round 10 (`artifacts/economy/2026-10-29-r10-all-year`) stopped tills from 45 of 384 on day 28 to 240 on
+day 364 (farms 145 of 232, shops 92 of 152), and once stopped most stayed stopped: their keepers paid what the till held,
+their hands hired by their sales, their owners putting nothing in. Wolves paid a wage a month fell from 709 to 455, the
+"a hand" hires from about 9,000 slots a month to 4,200, and the paid civilians' median purse from 1,583p (day 84) to
+25p (day 364). The user (2026-10-29): "Do we have a way for those businesses to reopen? Or, if there is no work, for
+them to just go idle and the owners to return to them when there's demand/orders? I'd hate to hard-code that business
+just never fail." Base: p13 at a880120.
+
+**First, the logging camps', ore digs' and orchards' "no takings".** Not a bug, nor nobody buying. `tills.csv`'s
+`takings` is the measure day's alone (the coins of sales to the till since the last measure, a day), and those trades
+sell in lumps: a caravan's load (`bought for the road`), a workshop's materials (`materials bought`), and debts repaid
+for materials bought on credit (`a debt repaid`, no goods, so no takings). Summed over the year's rows, `takings` is
+783k for the logging camps, 224k for the ore digs and 118k for the orchards, and their `account_flows.csv` shows the
+rest: the logging camps took 452k for the road, 331k in materials and 98k in debts repaid, and paid 481k to their hired
+hands, 287k to their keepers, 82k in profit, 54k in tools and 38k in rent. They lose money because their wages
+outrun their sales (workshops' timber buying fell from 112k in the first two months to 7k by days 224-280), not because
+their sales go uncounted. Nothing changed for it.
+
+**What changed** (all with work by the hours):
+
+- **1. A stopped business goes idle** (`Society::IdleTills`, `1ull << 29`; `econ_watch --without idle`;
+  `Core/RatwTills.cpp`, `tendOwners`). A lone owner's business stopped (round 9's OwnersStop) and still short of a week's
+  wages at a look `IdleWeeks` (4) weeks after its owner stopped goes idle (`ShortTill::idle`, the day; journal "a
+  business gone idle"). Idle, it pays its keeper no wage (`tendTills`), so its keeper is free for hire work all day
+  (`ownerUnpaid`, as on a day its till couldn't pay it: the unpaid look for hires first), and it wants its keeper only
+  (`handsWanted` 1), so its weekly review lets its help go (their posts kept closed, `memory.closed`) and its hires run
+  out: they are out of work, and take hires and the Town Works as the jobless do. It keeps its stock and its till, and
+  sells what it has. It isn't closed: it can come back. A House's business isn't idled (its House tops it up as before).
+- **2. Its owner returns when there's demand** (`Society::OwnerReturns`, `1ull << 30`; `--without returns`;
+  `Society::ownerReturns`). At its weekly look an idle business's owner returns (journal "an owner returned to its
+  business"; its short looks forgotten, so it tops it up again) when what its sales would bring a day — its running sales
+  (`sellRate_`) with its missed sales counting (the buyers who came for its goods and found none, a workshop's
+  materials it went without: the signal the code already keeps for its hands), at its keeper's own prices
+  (`shopPrice`) — is at least `ReturnCover` (1) of the wages of the hands those sales want (`hoursBySales`, at least its
+  keeper, at its own wage). Its prices are its hours' cost and a margin, so that is buyers enough for its keeper's day at
+  prices over its hours' cost. (At 1.25 the test's fishery, at a 14% margin, never came back.) As in round 9, a look
+  that finds a week's wages in its till brings it back too, with or without the rule. Returned, it can fail again: four
+  short looks stop it, four more idle it. Failing is idling, not vanishing.
+- **3. A business with money over takes on hands** (`Society::MoreHands`, `1ull << 31`; `--without morehands`;
+  `Society::handsWanted`, its old body now `hoursBySales`). A business that makes things, holding over its working money
+  and its debts more than a month of a hand's wage (`MonthDays` x its own wage), wants a hand more for each such month,
+  up to doubling its sales' hands, so its buyers' money goes in wages before it goes to its owner as the month's profit.
+  It hires them only where there is work (its review hires none with more work in hand than its hands can use), and
+  their pay comes out of what it holds over, so it falls back as the money is spent.
+- **econ_watch:** `tills.csv` has a last column, `idle` (the day it went idle, -1 if not).
+
+**Saves:** a business short of its wages (`memory.shortTills`) saves the day it went idle as a fourth number when it has;
+a save of one trading on is as before, and an older save reads back trading on.
+
+**Tests:** `aStoppedBusinessIdlesAndReturns` (`crafting_tests`): a fisher whose owner stopped on day 1 goes idle at its
+look IdleWeeks after, pays no keeper's wage from then, its keeper free for hire work, wanting its keeper only; read back
+idle from a save; a fortnight of buyers for 60 fish a day (its till emptied each evening) and its owner returns. Without
+OwnerReturns it stays idle; without IdleTills it never goes idle. Holding 3.5 months of a hand's wage over its working
+money it wants up to three more hands than its sales' (no more than doubling them); without MoreHands its sales' alone.
+`wire_tests`: an idle business round trips. `aProducersHireBySales` and `aCityHandAtTheFishery` (`roads_tests`), whose
+tills are kept at 20,000p and 3,000p, leave MoreHands out. All 68 tests pass.
+
+**Digest:** `--without idle,returns,morehands`, 5 days of DEV's export `--deterministic --hours --threads 6`:
+4f5286d0cb4ff064, as c09a211's.
+
+**Measured** (30 days, the same, beside each other; `off`: `--without idle,returns,morehands`, digest 38e7271f88038c21;
+`on`: as built, ea706fa93f48eb9d):
+
+| | off | on |
+|---|---|---|
+| Stopped tills, day 28 / 30 | 45 / 56 | 47 / 58 |
+| Idle tills, day 30 | 0 | 0 |
+| Hands / wanted, day 28 | 536 / 941 | 535 / 860 |
+| "a hand" hire slots, days 0-27 (taken) | 8,581 (7,604) | 8,773 (7,668) |
+| Paid to hired hands / keepers, 30 days | 507k / 603k | 508k / 602k |
+| The owners' profit / investments, 30 days | 400k / 503k | 420k / 501k |
+| Wolves paid a wage, days 0-27 | 709 | 709 |
+| Median purse, day 30; Gini | 1,726p; .452 | 1,731p; .454 |
+
+**Read plainly:** 30 days is too short for idling: the first stops come at days 22-28, and a business idles four looks
+later, from about day 50. The year will show it. MoreHands does little in a month: 2% more hand slots, and the owners'
+profit no lower. A business seldom holds a month of a hand's wage over its working money (a month of its staffing and
+its materials) between its owner's monthly sweeps. If the year wants more of it, the knob is the month (a fortnight of
+a hand's wage would double its reach).
+
+**For the user:**
+
+1. **How soon a stopped business idles.** Four weeks after its owner stopped (eight after it first fell short). Shorter
+   frees its keeper and hands sooner; longer gives it more time to sell its way back.
+2. **MoreHands' reach**, after the year: keep a month of a hand's wage per hand, or a fortnight.

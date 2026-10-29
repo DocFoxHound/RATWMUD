@@ -57,6 +57,10 @@
 // rebate (a town's stores over twice their target keep it, not paying half of it back to their taxpayers),
 // founding (a town is founded with its share of the treasuries' by its residents, not at its target), daylabour (a
 // small town pays its own Town Works' day labour, not the capital).
+// And round 11's, lane 1: idle (a stopped business trades on as round 9's, paying its keeper and wanting hands by its
+// sales; returns goes with it), returns (an idle business's owner comes back only when its till holds a week's wages
+// again, not on its sales' return), morehands (a business holding over its working money wants only the hands its sales
+// want).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -517,9 +521,15 @@ int main(int argc, char** argv)
                     off |= Society::CheapAlms;
                 else if (name == "carry")
                     off |= Society::CarryParts;
+                else if (name == "idle")
+                    off |= Society::IdleTills;
+                else if (name == "returns")
+                    off |= Society::OwnerReturns;
+                else if (name == "morehands")
+                    off |= Society::MoreHands;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast or nearest, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns or morehands, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1074,7 +1084,7 @@ int main(int argc, char** argv)
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
-                "hire_slots,hire_taken,resale_day,short_weeks,stopped,keeper_odd_pay\n";
+                "hire_slots,hire_taken,resale_day,short_weeks,stopped,keeper_odd_pay,idle\n";
     std::ofstream workOut(out / "work.csv");
     workOut << "day,account,title,credited,lost,till,banked\n";
     std::unordered_map<std::string, std::pair<double, double>> workBefore;
@@ -1156,7 +1166,8 @@ int main(int argc, char** argv)
                          << (hires == hiring.end() ? 0 : hires->second.second) << ',' << resale << ','
                          << (shortTill == society.state().memory.shortTills.end() ? 0 : shortTill->second.weeks) << ','
                          << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.stopped) << ','
-                         << (paidOdd == oddPaid.end() ? 0 : paidOdd->second) << '\n';
+                         << (paidOdd == oddPaid.end() ? 0 : paidOdd->second) << ','
+                         << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.idle) << '\n';
             }
         tillSold.clear();
         if (rows)

@@ -162,11 +162,33 @@ std::vector<std::string> Society::helpPosts(const std::string& till) const
 
 int Society::handsWanted(const std::string& till, bool bare) const
 {
+    int hands = std::max(1, int(std::ceil(hoursBySales(till, bare) / PaidSpells - 1e-9)));
+    if (!workByHours() || (state_.memory.shortTills.empty() && !wageRule(MoreHands)))
+        return hands;
+    // An idle business wants its keeper, no more (round 11, lane 1: IdleTills).
+    if (wageRule(IdleTills) && tillIdle(till))
+        return 1;
+    // One holding over its working money (and its debts) takes on a hand more for each month of a hand's wage it holds
+    // over, up to doubling: what its buyers pay goes in wages, not in its owner's month's profit (MoreHands, the user,
+    // 2026-10-29). Not a stall (it hires no one) nor a business with no work for more (its review hires none then).
+    if (wageRule(MoreHands) && makesThings(till))
+        if (const auto* purse = account(till); purse && till.rfind("till:", 0) == 0)
+        {
+            const auto spare = double(purse->cash - workingMoney(till.substr(5)) - owed(till));
+            const double month = MonthDays * employerWage(till);
+            if (spare > month && month > 0)
+                hands += std::min(hands, int(spare / month));
+        }
+    return hands;
+}
+
+double Society::hoursBySales(const std::string& till, bool bare) const
+{
     const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
     const auto rates = sellRate_.find(till);
     const auto* shelves = account(till);
     if (!p || !shelves)
-        return 1;
+        return 0;
     // A craft short of materials today or yesterday, and what it could make a day (doc 63's model, feasible; doc 64,
     // Phase 13): what it made lately, or what a week of the materials in hand would make.
     const auto shortOf = [&](const items::Craft& k) {
@@ -246,7 +268,7 @@ int Society::handsWanted(const std::string& till, bool bare) const
                 hours += planned(use->out.front().first, use) / std::max(1, use->out.front().second) * hoursFor(*use);
             }
     }
-    return std::max(1, int(std::ceil(hours / PaidSpells - 1e-9)));
+    return hours;
 }
 
 bool Society::brakesOn(const items::Producer& p)

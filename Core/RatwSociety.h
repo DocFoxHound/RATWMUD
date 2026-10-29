@@ -276,6 +276,7 @@ struct ShortTill
 {
     int weeks = 0;
     std::int64_t stopped = -1, unpaid = -1;
+    std::int64_t idle = -1;                          // The day it went idle (round 11, IdleTills), -1 while it trades on.
 };
 // A field's year (doc 64, Phase 3b: seasonal fields, with work by the hours): the acres it plans to sow, those sown and
 // those still to bring in, a part-yield carried over, the year whose harvest's end it last planned at, and whether its
@@ -1267,7 +1268,10 @@ class Society
         CarryParts = 262144,                         // A House's budget unpaid last week goes to this week's works and crews (round 10).
         FoodAtItsPrice = 67108864,                   // A hungry wolf buys where it can pay for food, not by the bite (round 10, C).
         FeastLaidIn = 134217728,                     // A town's stores buy its festival's feast from its shops (round 10, C).
-        NearestShop = 268435456                      // With no shop of its town open, the nearest it can pay at (round 10, C).
+        NearestShop = 268435456,                     // With no shop of its town open, the nearest it can pay at (round 10, C).
+        IdleTills = 1ull << 29,                      // A stopped business goes idle: no wages, its hands let go (round 11).
+        OwnerReturns = 1ull << 30,                   // ...and its owner returns to it when its sales would pay (round 11).
+        MoreHands = 1ull << 31                       // A business holding well over its working money takes on hands (round 11).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
@@ -1635,7 +1639,12 @@ class Society
     std::vector<std::string> helpPosts(const std::string& till) const;   // Its help's posts (at its premises).
     // (`bare`: half again for a shelf near bare, as its maker plans; without, its sales as they are: the pace's measure
     // of the land, whose producers' shelves are always near bare.)
+    // (Round 11, lane 1: an idle business wants its keeper only (IdleTills); one holding over its working money takes on a
+    // hand more for each month of a hand's wage it holds over, up to doubling (MoreHands, the user, 2026-10-29: "trades
+    // with buyers take on more hands", so its buyers' money goes in wages, not its owner's profit). hoursBySales is
+    // the hours its sales want, as before.)
     int handsWanted(const std::string& till, bool bare = true) const;
+    double hoursBySales(const std::string& till, bool bare = true) const;   // The hours a day its sales want (handsWanted's).
     bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
     bool idleHand(const ResidentRecord& resident, const Payer& payer) const;   // (By its record, as payerOf.)
   private:
@@ -1724,7 +1733,21 @@ class Society
     // with what it has; on a day its till can't pay its keeper's wage the keeper is free for hire work as an unpaid hand
     // is (ownerUnpaid). Its owner tops it up again once a look finds it holding a week's wages of its own.
     static constexpr double RentShare = .15;
-    static constexpr int CreditDays = 7, CreditWrittenOff = 56, ResaleDays = 14, StopWeeks = 4;
+    // And (round 11, lane 1, the user, 2026-10-29: "if there is no work, for them to just go idle and the owners to return
+    // to them when there's demand") a stopped business still short IdleWeeks after its owner stopped goes idle
+    // (IdleTills): it pays no keeper's wage (its keeper free for hire work all day, ownerUnpaid) and wants no hands but its
+    // keeper, so its help is let go at its weekly review and its hires run out; it keeps its stock and sells what it has.
+    // It is not closed: its owner returns at a weekly look that finds what its sales would bring a day (its running sales
+    // with missed sales counting, at its own prices) at least ReturnCover of the wages of the hands those sales want
+    // (OwnerReturns), or, as in round 9, its till holding a week's wages again. Returned, its owner tops it up again; it
+    // can fail again, and idle again. Failing is idling, not vanishing. (ReturnCover 1: its prices are its hours' cost
+    // and a margin, so its sales cover its hands' wages but for the rounding of its hands up to whole ones, its keeper at
+    // least: what it comes back for is buyers enough to keep its keeper's day, at prices over its hours' cost. A fishery
+    // at a 14% margin didn't come back at 1.25.)
+    static constexpr double ReturnCover = 1;
+    static constexpr int CreditDays = 7, CreditWrittenOff = 56, ResaleDays = 14, StopWeeks = 4, IdleWeeks = 4;
+    bool tillIdle(const std::string& till) const;   // Gone idle (IdleTills) and not yet returned to.
+    bool ownerReturns(const Position& p, const std::string& till) const;   // Its sales would pay its hands again.
     std::int64_t workingMoney(const std::string& positionId) const;
     double staffing(const std::string& positionId) const;   // Its keeper's, its help's and two open posts' wages a day.
     // A keeper whose owner has stopped topping its till up, on a day the till couldn't pay its wage (round 9). (By its

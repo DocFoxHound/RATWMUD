@@ -583,6 +583,11 @@ void societyTests()
     expect(reread.size() == 2 && reread.at("till:a").weeks == 5 && reread.at("till:a").stopped == 40 && reread.at("till:a").unpaid == 44 &&
                reread.at("till:b").weeks == 2 && reread.at("till:b").stopped == -1 && reread.at("till:b").unpaid == 30,
            "a business short of its wages round trips, those that can't be dropped");
+    expect(reread.at("till:a").idle == -1 && reread.at("till:b").idle == -1, "neither gone idle");
+    // (One gone idle, round 11, lane 1: the day it went idle with the rest.)
+    state.memory.shortTills["till:e"] = {9, 20, 48, 48};
+    expect(wire::readSociety(wire::society(state)).memory.shortTills.at("till:e").idle == 48, "a business gone idle round trips");
+    state.memory.shortTills.erase("till:e");
     shorts.find("memory")->erase("shortTills");
     expect(wire::readSociety(shorts).memory.shortTills.empty(), "and an older save has none");
     // The day the realm was founded at (doc 64, Phase 13 review): saved; one that can't be is none (the catalogue's), as
