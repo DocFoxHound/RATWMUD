@@ -1067,11 +1067,12 @@ void Game::applyDmActions(double dt)
                     if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                         system(c, "Word goes round: " + outcome.message);
         }
-        else if (kind == "economy.tax" || kind == "economy.mint" || kind == "economy.relief")
+        else if (kind == "economy.tax" || kind == "economy.mint" || kind == "economy.relief" || kind == "economy.holdings")
         {
             // The Dungeon Master's levers on the economy (Docs/Design/64-economy-migration.md, decision 5), each logged in
             // the ledger: the tax rate (payload {"rate": 0 to 0.5 of a week's income}), the mint on or off ({"on"}), and a
-            // one-off relief grant from the capital's treasury to a town's (the target the town; {"coins"}).
+            // one-off relief grant from the capital's treasury to a town's (the target the town; {"coins"}); and since
+            // round 11 the holdings tax ({"rate": 0 to 0.1 a week of what a home holds over six months of its needs}).
             json::Value payload;
             std::string problem;
             if (row.size() > 4 && row[4])
@@ -1084,6 +1085,9 @@ void Game::applyDmActions(double dt)
             else if (kind == "economy.tax")
                 done = payload.find("rate") && payload["rate"].isNumber() ? society.setTaxRate(payload["rate"].asNumber(), by)
                                                                          : EconomyResult{false, "Give the tax rate."};
+            else if (kind == "economy.holdings")
+                done = payload.find("rate") && payload["rate"].isNumber() ? society.setHoldingsTax(payload["rate"].asNumber(), by)
+                                                                         : EconomyResult{false, "Give the holdings tax's rate."};
             else if (kind == "economy.mint")
                 done = payload.find("on") && payload["on"].isBool() ? society.setMint(payload["on"].asBool(), by)
                                                                     : EconomyResult{false, "Say whether the mint is on."};

@@ -377,6 +377,8 @@ struct EconomyMemory
     MintBook mint;                                   // The mint (Phase 11).
     double taxRate = .08;                            // The tax on a week's income (Society::TaxRate to start): the Dungeon
                                                      // Master's lever (Phase 12, Society::setTaxRate).
+    double holdingsTax = .01;                        // The holdings tax, a week's (Society::HoldingsTaxRate to start): the
+                                                     // Dungeon Master's lever (round 11, Society::setHoldingsTax).
     // Households and institutions (doc 64, Phase 7): each account's earned income this week (taxed at the reckoning)
     // and over the last month (a running sum, a 28th off a day); each home's want fund and help budget; each
     // institution's relief set aside for the week, its relief given this week, and the wages it paid this week.
@@ -890,6 +892,13 @@ class Society
     // from the capital's treasury to a town's ("a relief grant").
     static constexpr double MostTaxRate = .5;
     double taxRate() const { return state_.memory.taxRate; }
+    // And the holdings tax (round 11, lane 2; the user, 2026-10-29): a share of what a home holds over HoldingsMonths of
+    // its needs, a week's (HoldingsTaxRate to start, 0 to MostHoldingsTax; 0 is off), taken a seventh of it a day
+    // (Society::holdingsTax) and paid to its town. Saved (EconomyMemory::holdingsTax).
+    static constexpr double HoldingsTaxRate = .01, MostHoldingsTax = .1;
+    static constexpr int HoldingsMonths = 6;
+    double holdingsTaxRate() const { return state_.memory.holdingsTax; }
+    EconomyResult setHoldingsTax(double rate, const std::string& by = "");
     // A town's own rate (round 10, TaxEase): the realm's, eased while its stores hold over their target, TaxEaseMonths
     // (the model's RULE["treasury"] k) of what its tax brings at the full rate. A resident's is its town's
     // (treasuryOfResident). The capital's is the realm's.
@@ -1237,6 +1246,8 @@ class Society
     static void noteTowns(bool on) { noteTowns_ = on; }
     std::map<std::string, std::int64_t> takeLabourCarried() const { return std::exchange(labourCarried_, {}); }
     std::map<std::string, std::int64_t> takeRebates() const { return std::exchange(rebated_, {}); }
+    // And each treasury's holdings tax (HoldingsTax) since the last call, by its account ("treasury" the capital's).
+    std::map<std::string, std::int64_t> takeHoldingsTaxed() const { return std::exchange(holdingsTaxed_, {}); }
     // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
     // a time, to see what each does. Not saved; the game never sets it.
     enum WageRule : std::uint64_t
@@ -1271,7 +1282,9 @@ class Society
         NearestShop = 268435456,                     // With no shop of its town open, the nearest it can pay at (round 10, C).
         IdleTills = 1ull << 29,                      // A stopped business goes idle: no wages, its hands let go (round 11).
         OwnerReturns = 1ull << 30,                   // ...and its owner returns to it when its sales would pay (round 11).
-        MoreHands = 1ull << 31                       // A business holding well over its working money takes on hands (round 11).
+        MoreHands = 1ull << 31,                      // A business holding well over its working money takes on hands (round 11).
+        RichHomes = 1ull << 32,                      // A home's help, servants and wants scale with its budget (round 11, lane 2).
+        HoldingsTax = 1ull << 33                     // A home holding over HoldingsMonths of its needs pays the holdings tax (round 11).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
@@ -1436,6 +1449,11 @@ class Society
     bool important(const std::string& resident) const;     // In a master's place, keeping its own shop, or the clergy.
     void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
     static constexpr int HomeNeedDays = 10, ServantMonths = 6;
+    // A rich home spends with its budget (round 11, lane 2, RichHomes; the user, 2026-10-29): as many hands about the
+    // home as its help budget pays a week of, a post a day (hireForWeek's most), none while one of its places stands
+    // untaken; servants as a tenth of its excess pays a month (the model's), topped up any day; and, past its day's
+    // piece or works, up to RichWants more things it fancies while the day's spending is under half its want fund.
+    static constexpr int RichWants = 4;
     // A House's crews (doc 64, Phase 13, round 6; doc 63's model, house_week), with work by the hours: its estate crew as
     // many as what's left of its week's budget pays at the going rate, up to a tenth of the realm's grown wolves of
     // working age (EstateShare), posted in gangs of CrewGang about its town; their places weighed with the businesses'
@@ -1933,7 +1951,7 @@ class Society
     static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
-    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_;
+    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_;
   public:
     // At the founding (FoundAtTarget, while noteTowns): what the towns' targets left of their share, and what each kind
     // then got in all (households, businesses, Houses, the church). A measure.
@@ -1974,6 +1992,8 @@ class Society
     void dailyRelief(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // `lodger`: one wolf of a barracks, a bunkhouse, quarters or lodgings, its own household by its own purse (`home` its
     // ID): all its spare to its wants, no help about the home or servants for a bunk.
+    std::int64_t holdingsTax(const std::vector<std::string>& members, std::int64_t pot, std::int64_t need);
+    int homePlaces(const std::vector<std::string>& members, const char* what, std::int64_t day, bool untaken) const;
     void householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day,
                        bool lodger = false);
     void leftovers(std::int64_t day);                       // Bakers' bread that would spoil overnight, to the hungry.

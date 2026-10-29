@@ -7182,3 +7182,107 @@ a hand's wage would double its reach).
 1. **How soon a stopped business idles.** Four weeks after its owner stopped (eight after it first fell short). Shorter
    frees its keeper and hands sooner; longer gives it more time to sell its way back.
 2. **MoreHands' reach**, after the year: keep a month of a hand's wage per hand, or a fortnight.
+### Phase 13: round 11, lane 2: rich homes spend, the holdings tax (2026-10-29)
+
+Round 10's year (`artifacts/economy/2026-10-29-r10-all-year`) sent "the owner's profit" to the households at 567k a
+quarter in its first quarter and 1,264k in its second and third, while wages fell; the top 1% of residents went from 5%
+to 30% of the residents' money, the richest the food owners (Wetmeadow Dairy's keeper 445p -> 150,262p; Whiteleas
+Dairy's 116k; Frosthollow Smelter's 125k; the rabbit keepers 25-60k). The household rule (`Society::householdRule`) set
+a large spare into their want funds and help budgets, but its sinks were capped by count: one hand a day, three servants
+at most on one day in seven, one thing a day, works only as far as the builders' hours went. So the funds just grew, to
+their cap (what is held over the target). The user's decisions (2026-10-29): lift the count caps so a rich home's
+spending scales with its budget, and a holdings tax as a lever. Base: p13 at a880120. With work by the hours only.
+
+**What it does:**
+
+- **A rich home spends with its budget** (`Society::RichHomes`, `1ull << 32`; `econ_watch --without homespend`).
+  - *Help about the home:* as many hands as its help budget pays a week of (at .8 of the going rate, as before), in
+    one post a day of up to 12 places (`hireForWeek`'s most), and none while a place it posted stands untaken. The
+    model's `home_help` hires only the idle there are; a post no one takes would take the budget for nothing (it is
+    taken from the budget when posted, as before).
+  - *Servants:* as many as a tenth of its excess (over `ServantMonths` of its income) pays a month (the model's
+    `servants`), not three at most; topped up to that on any day (the places it has posted still running are counted),
+    not one day in seven, in posts of 12.
+  - *A lodger* (a bunkhouse's, quarters' or lodgings' wolf, its own household by its own purse) splits its spare as a
+    family does, half to its want fund and half to help, and keeps help and servants too: the richest of round 10's
+    year were keepers living in bunkhouses (Wetmeadow Dairy's), whose whole spare went to a want fund only things could
+    spend. (Not asked for in so many words: the user's "rich homes". `--without homespend` leaves it out with the rest.)
+  - *Wants:* past its day's piece, its works or its fancy, more things it fancies, each kind once in the day's order of
+    liking, `RichWants` (4) at most, while what it spent today is under half its want fund (the model's works: half the
+    fund a day) and its spare (a week's food and the tax and tithe it owes kept back). A treat is still 9p at most and
+    never in a town gone hungry.
+  - *Who takes them:* the hands and servants are odd jobs "about the home", taken by the out of work, children and the
+    idle; `oddJobFor` has the jobless and idle take the best-paid business's hire open to them before chores, and a wolf
+    with a post leaves it only for better pay than its own (help pays .8 and a servant .9 of the going rate). So they
+    don't empty the hire board of hands for the businesses; the code needed nothing new for it.
+- **The holdings tax** (`Society::HoldingsTax`, `1ull << 33`; `econ_watch --without holdings`). Each day, before the
+  household rule, a home pays a seventh of the holdings tax's rate (a week's: `HoldingsTaxRate`, 1%) of what it holds
+  over `HoldingsMonths` (6) months of its needs (six 28-day months of `householdNeed`), its members richest first (a
+  keeper's purse that is its own shop's till left out, as the household purse leaves it), to the town where its richest
+  pays its town tax (`treasuryOfResident`: `stores:<town>`, or the capital's `treasury`), kind "holdings tax". It counts
+  in the town's income for its week's budget, as its town tax does. The rule then works on what is left.
+  - *Why these defaults:* six months of its needs is about 14,000p for a household of two at a 100p labourer's day
+    (`FoodADay`, 5/12 of a day a head, 168 days): well above what a working home holds (the household rule's target is a month's income and ten days' needs), so only the
+    fortunes pay. A home's needs, not its income: by its income (the household rule's measure) the owners whose profit
+    piled up would be the ones spared. 1% a week is about 40% a year of what is held over it: alone it would hold a
+    150k fortune earning 1.5k a week of profit at about 150k, so it is the lever, and the spending above the sink.
+  - *The lever* (the Dungeon Master's, as the tax rate is: doc 64, Phase 12): `Society::setHoldingsTax(rate, by)`, 0 to
+    `MostHoldingsTax` (10% a week), 0 off, logged in the ledger ("the holdings tax set from 1% to 2%"), saved
+    (`EconomyMemory::holdingsTax`, `holdingsTax` in the save; a save from before it gets 1%). The game's DM action
+    `economy.holdings` with payload `{"rate"}`; `tools/dungeon_master.py`'s `set_holdings_tax` and
+    `POST /api/economy/holdings` queue it (DM rank), and `money()`'s `levers` reads it back (`holdingsTax`). (The DM
+    page's own control for it isn't built.)
+- **econ_watch:** `town_tax.csv` has a `holdings_tax` column, each town's week's holdings tax (`Society::takeHoldingsTaxed`,
+  while `noteTowns`); the capital's is flows.csv's "holdings tax" into `treasury`.
+
+**Saves:** `holdingsTax` (the lever's rate). The help budget of a lodger is saved as any home's (`helpBudget`, by its id).
+
+**Tests** (`crafting_tests`):
+
+- `aRichHomeSpendsWithItsBudget`: a household of two given 200,000p and a help budget of ten hands' weeks hires 10-12
+  hands on its first day, none more the next while they stand untaken, and as many servants as a tenth of its excess
+  pays a month, in posts of 12; a lodger the same. Without the rule one hand, three servants on one day in seven, a
+  lodger none.
+- `aRichHomeBuysMore`: a household with a 10,000p fund and only a butcher's meat to fancy has two treats on a day; one
+  without the rule.
+- `theHoldingsTax`: a household of two holding 100,400p pays a seventh of 1% of it, less six months of its needs, to
+  the treasury; the lever refuses 20%, sets 0 (none paid) and is saved; without the rule none.
+- `test_dungeon_master.py`'s levers test queues and audits `economy.holdings`, refuses a bad rate or a viewer, and reads
+  `holdingsTax` back (not run here: it needs the test Postgres).
+- The Phase 13 wants tests (`aHouseholdsWants` and the pieces' and works' tests, `noTreatsInAHungryTown`) leave
+  `RichHomes` out (one thing a day, as built); the round 8-10 tests from `aTownCountsItsCaravans` on leave both out
+  (`Round11Homes`), and `aTownsCrewTakesTheGrownFirst` `RichHomes` (its rich homes' help was a hire for its children).
+- All 68 tests pass.
+
+**For trials:** `--without homespend,holdings` gives the base's digest: 5 days of DEV's export, `--deterministic --hours
+--threads 6`, 4f5286d0cb4ff064 (c09a211's binary, the same).
+
+**Measured** (30 days of DEV's export, `--deterministic --hours --threads 6`, one seed; money conserved; `off`: this
+commit `--without homespend,holdings`, digest 38e7271f88038c21; `on`: as built, 502f1f7a937840c3):
+
+| | `off` | `on` |
+|---|---|---|
+| Top 1% of residents' money, day 14 / 28 / 30 | .070 / .062 / .062 | .073 / .061 / .061 |
+| Top 10%, poorer half, day 30 | .315, .190 | .314, .193 |
+| Residents' money, day 30 | 2,231,515p | 2,273,029p |
+| Holdings tax in the month | — | 8,121p (the capital 7,564p; the towns 557p: Larkfield 166, Oakhaven 132, Southmeadow 127, Coldwater 90, Frosthollow and Mirebridge 21 each) |
+| Help and servants ("an odd job: about the home") | 62,951p | 68,160p |
+| Their places posted / taken | 2,446 / 1,200 | 2,259 / 1,346 |
+| Wants (all "a want: ..."), works on the home | 215,381p, 65,491p | 216,767p, 47,566p |
+
+**Read plainly:** in the first month there is little for it to do. Round 10's fortunes grew in the second and third
+quarters (the top 1%'s share 5% -> 30% over the year); in the first month the top 1% hold 6-7% either way, and the
+richest residents are stall keepers (13-18k; where a keeper's purse is its own stall's till, neither rule touches it:
+it is the business's, as the household purse has it). Fewer home help places go untaken (the
+wait while one stands open), more are taken. The extra fancies move the want funds' money from works to things a little
+(works 48k against 65k, wants about the same). The holdings tax took 8k in a month, mostly from the capital's homes. The
+year will say whether they hold the fortunes down; the lever is there if 1% a week is too little.
+
+**For the user:**
+
+1. **A lodger keeps help and servants under the rule** (above): the richest of round 10's year lived in bunkhouses.
+   Keep it, or keep a lodger to things only (a switch of its own if wanted).
+2. **The holdings tax's threshold is a home's needs, not its income.** A home earning a great deal pays on its working
+   month too (a 30k month pays about 0.2k a week). Recommended: keep it; the alternative is the household rule's target
+   (a month's income and ten days' needs) times six.
+3. **The DM page** has no control for the holdings tax yet: the action, the tool's call and its endpoint are built.

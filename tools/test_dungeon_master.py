@@ -990,9 +990,9 @@ class MoneyTests(Fixture):
         self.save_orchestrator()
         money = self.dm.money('dev')
         self.assertEqual(self.ORCHESTRATOR, money['orchestrator'])
-        self.assertEqual({'taxRate': 0.08, 'mint': True}, money['levers'])         # A save from before the levers.
-        self.save_orchestrator({'taxRate': 0.1, 'mint': {'on': False}})
-        self.assertEqual({'taxRate': 0.1, 'mint': False}, self.dm.money('dev')['levers'])
+        self.assertEqual({'taxRate': 0.08, 'mint': True, 'holdingsTax': 0.01}, money['levers'])   # A save from before the levers.
+        self.save_orchestrator({'taxRate': 0.1, 'mint': {'on': False}, 'holdingsTax': 0})
+        self.assertEqual({'taxRate': 0.1, 'mint': False, 'holdingsTax': 0}, self.dm.money('dev')['levers'])
 
     def lever_rows(self, ids):
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
@@ -1002,14 +1002,17 @@ class MoneyTests(Fixture):
     def test_the_economys_levers(self):
         master = self.sign_in('dm-master')
         queued = [self.dm.set_tax_rate(master, 'dev', 0.1), self.dm.set_tax_rate(master, 'dev', 0),
-                  self.dm.set_mint(master, 'dev', False), self.dm.relief_grant(master, 'dev', 'greyfen', 500)]
+                  self.dm.set_mint(master, 'dev', False), self.dm.relief_grant(master, 'dev', 'greyfen', 500),
+                  self.dm.set_holdings_tax(master, 'dev', 0.02)]
         self.assertEqual([('economy.tax', 'land', {'rate': 0.1}, 'dm-master'), ('economy.tax', 'land', {'rate': 0.0}, 'dm-master'),
                           ('economy.mint', 'land', {'on': False}, 'dm-master'),
-                          ('economy.relief', 'greyfen', {'coins': 500}, 'dm-master')], self.lever_rows([q['id'] for q in queued]))
+                          ('economy.relief', 'greyfen', {'coins': 500}, 'dm-master'),
+                          ('economy.holdings', 'land', {'rate': 0.02}, 'dm-master')], self.lever_rows([q['id'] for q in queued]))
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
             audited = conn.execute("SELECT action, detail FROM dm.audit WHERE action LIKE 'economy.%%' ORDER BY sequence").fetchall()
-        self.assertEqual(['economy.tax', 'economy.tax', 'economy.mint', 'economy.relief'], [a for a, _ in audited])
-        self.assertIn('relief grant of 500p', audited[-1][1])
+        self.assertEqual(['economy.tax', 'economy.tax', 'economy.mint', 'economy.relief', 'economy.holdings'], [a for a, _ in audited])
+        self.assertIn('relief grant of 500p', audited[-2][1])
+        self.assertIn('holdings tax set to 2% a week', audited[-1][1])
         for bad in (lambda: self.dm.set_tax_rate(master, 'dev', 0.6),
                     lambda: self.dm.set_tax_rate(master, 'dev', -0.01),
                     lambda: self.dm.set_tax_rate(master, 'dev', True),
@@ -1022,14 +1025,17 @@ class MoneyTests(Fixture):
                     lambda: self.dm.relief_grant(master, 'dev', 'greyfen', True),
                     lambda: self.dm.relief_grant(master, 'dev', 'greyfen', D.MOST_RELIEF + 1),
                     lambda: self.dm.relief_grant(master, 'dev', 'nowhere', 10),
-                    lambda: self.dm.relief_grant(master, 'dev', '', 10)):
+                    lambda: self.dm.relief_grant(master, 'dev', '', 10),
+                    lambda: self.dm.set_holdings_tax(master, 'dev', D.MOST_HOLDINGS_TAX + 0.01),
+                    lambda: self.dm.set_holdings_tax(master, 'dev', -0.01),
+                    lambda: self.dm.set_holdings_tax(master, 'dev', False)):
             with self.assertRaises(D.DMError):
                 bad()
         with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            self.assertEqual(4, conn.execute("SELECT count(*) FROM dm.actions WHERE kind LIKE 'economy.%%'").fetchone()[0])
+            self.assertEqual(5, conn.execute("SELECT count(*) FROM dm.actions WHERE kind LIKE 'economy.%%'").fetchone()[0])
         viewer = self.sign_in('dm-viewer')
         for refused in (lambda: self.dm.set_tax_rate(viewer, 'dev', 0.1), lambda: self.dm.set_mint(viewer, 'dev', True),
-                        lambda: self.dm.relief_grant(viewer, 'dev', 'greyfen', 10)):
+                        lambda: self.dm.relief_grant(viewer, 'dev', 'greyfen', 10), lambda: self.dm.set_holdings_tax(viewer, 'dev', 0)):
             with self.assertRaises(D.DMError) as raised:
                 refused()
             self.assertEqual(403, raised.exception.status)

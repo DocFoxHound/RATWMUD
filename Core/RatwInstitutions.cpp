@@ -599,6 +599,50 @@ void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody
     }
 }
 
+std::int64_t Society::holdingsTax(const std::vector<std::string>& members, std::int64_t pot, std::int64_t need)
+{
+    // The holdings tax (round 11, lane 2, HoldingsTax; the user, 2026-10-29), with work by the hours: a seventh a day of
+    // holdingsTaxRate() (a week's, 1% to start) of what the home holds over HoldingsMonths of its needs (six 28-day
+    // months of householdNeed: the realm's measure of what a home must keep, not its income, which would spare just the
+    // owners' households whose profit piled up: Wetmeadow Dairy's keeper 445p -> 150,262p in round 10's year), paid by
+    // its members richest first to the town where the richest pays its tax (treasuryOfResident: stores:<town>, or the
+    // capital's treasury), as its town tax is, and counted as the town's income for its week's budget (record). A keeper's
+    // purse that is its own shop's till isn't the home's (tendHouseholds' pot leaves it out too).
+    const double rate = holdingsTaxRate() / 7;
+    const double over = double(pot) - double(HoldingsMonths) * MonthDays * double(need);
+    const auto owed = over > 0 && rate > 0 ? std::int64_t(std::floor(over * rate)) : std::int64_t(0);
+    if (owed < 1)
+        return 0;
+    std::vector<std::string> payers;
+    for (const auto& id : members)
+        if (const auto* r = spec(id); account(id) && account(id)->cash > 0 && !(r && r->role == "merchant" && tillOf(id) == id))
+            payers.push_back(id);
+    std::sort(payers.begin(), payers.end(), [&](const std::string& a, const std::string& b) {
+        return account(a)->cash > account(b)->cash || (account(a)->cash == account(b)->cash && a < b);
+    });
+    if (payers.empty())
+        return 0;
+    const auto treasury = treasuryOfResident(payers.front());
+    openAccount(treasury);
+    std::int64_t paid = 0;
+    for (const auto& id : payers)
+        if (const auto give = std::min(owed - paid, account(id)->cash); give > 0 && shift(id, treasury, "", 0, give, "holdings tax"))
+            paid += give;
+    if (noteTowns_ && paid > 0)
+        holdingsTaxed_[treasury] += paid;
+    return paid;
+}
+
+int Society::homePlaces(const std::vector<std::string>& members, const char* what, std::int64_t day, bool untaken) const
+{
+    // A home's places on a hire of its own still running (RichHomes): all of them, or those no one has taken.
+    int n = 0;
+    for (const auto& j : oddJobs_)
+        if (!j.ended && j.until >= day && j.what == what && std::find(members.begin(), members.end(), j.payer) != members.end())
+            n += untaken ? std::max(0, j.slots - int(j.stage.size())) : j.slots;
+    return n;
+}
+
 void Society::householdRule(const std::string& home, const std::vector<std::string>& members, std::int64_t pot, std::int64_t day,
                             bool lodger)
 {
@@ -608,6 +652,14 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         month += monthIncomeOf(id);
     const auto community = communityOfResident(members.front());
     const auto need = householdNeed(members.size(), community);
+    // (Round 11, lane 2: the holdings tax first, on what it holds today; the rule on what's left.)
+    if (workByHours() && wageRule(HoldingsTax))
+        pot -= holdingsTax(members, pot, need);
+    // A rich home spends with its budget (round 11, lane 2, RichHomes; the user, 2026-10-29), with work by the hours. A
+    // lodger (a bunkhouse's, quarters') is a home of its own for help and servants too: the richest of round 10's year
+    // were keepers living in bunkhouses, whose whole spare went to a want fund only things could spend.
+    const bool rich = workByHours() && wageRule(RichHomes);
+    const bool helps = !lodger || rich;
     // The one rule: a share of what's held over a month's income and HomeNeedDays of its needs, half towards things
     // and half on help about the home.
     const double target = month + HomeNeedDays * double(need);
@@ -617,7 +669,7 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
     auto& help = memory.helpBudget[home];
     if (spare <= 0)
         help *= .9;
-    else if (lodger)
+    else if (!helps)
         fund += spare;
     else
     {
@@ -628,7 +680,7 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
     // Doc 64, Phase 13, with work by the hours; at the old pace, as it was, only on a day with nothing to spare.)
     if (fieldsOn() || spare <= 0)
         fund = std::min(fund, std::max(0., double(pot) - target));
-    if (lodger)
+    if (!helps)
     {
         memory.helpBudget.erase(home);
         if (fund <= 0)
@@ -636,23 +688,47 @@ void Society::householdRule(const std::string& home, const std::vector<std::stri
         return;
     }
     // Help about the home: a hand for the week, at a little under the going rate, once the budget runs to it (a week's
-    // hire, not a day's: fewer jobs on the board, the same work).
+    // hire, not a day's: fewer jobs on the board, the same work). With RichHomes as many hands as the budget pays a week
+    // of, a post a day at most (hireForWeek's 12 places), and none while a place it posted stands untaken (the model's
+    // home_help hires only the idle there are: a place no one takes would spend the budget on nothing). Its takers are
+    // the out of work, children and the idle, who take a business's best-paid hire before chores (oddJobFor); one with a
+    // post leaves it only for better pay than its own, and help pays .8 of the going rate.
     const auto pay = std::int64_t(std::ceil(.8 * goingRate(community) - 1e-9));
     const auto* where = state_.residents.count(members.front()) ? &state_.residents.at(members.front()) : nullptr;
     const auto richest = *std::max_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) {
         return (account(a) ? account(a)->cash : 0) < (account(b) ? account(b)->cash : 0);
     });
-    if (where && help >= double(7 * pay) && hireForWeek(richest, community, "about the home", "help about the home",
-                                                        Spot{where->homeCell, where->homeX, where->homeY}, 1, pay, 7, day) > 0)
-        help -= double(7 * pay);
+    if (where && help >= double(7 * pay))
+    {
+        const int hands = !rich ? 1
+                          : homePlaces(members, "help about the home", day, true) > 0
+                              ? 0
+                              : int(std::min<double>({help / double(7 * pay), 12., double(spendable(richest)) / double(std::max<std::int64_t>(1, 7 * pay))}));
+        const auto daily = hands > 0 ? hireForWeek(richest, community, "about the home", "help about the home",
+                                                   Spot{where->homeCell, where->homeX, where->homeY}, hands, pay, 7, day)
+                                     : std::int64_t(0);
+        if (daily > 0)
+            help -= double(7 * daily);
+    }
     // Servants: holding over half a year of its income (an inheritance, a windfall), posts of its own for the week, as many
-    // as a tenth of the excess pays for a month.
+    // as a tenth of the excess pays for a month. (At most three, on one day in seven; with RichHomes as many as that pays
+    // for, topped up to it on any day, in posts of hireForWeek's 12.)
     const double excess = double(pot) - ServantMonths * std::max(month, 7. * double(need));
-    if (where && excess > 0 && std::int64_t(std::hash<std::string>{}(home + "|servants") % 7) == day % 7)
+    if (where && excess > 0 && (rich || std::int64_t(std::hash<std::string>{}(home + "|servants") % 7) == day % 7))
     {
         const auto wage = std::int64_t(std::ceil(.9 * goingRate(community) - 1e-9));
-        hireForWeek(richest, community, "about the home", "a servant of the house", Spot{where->homeCell, where->homeX, where->homeY},
-                    std::min(3, int(excess * .1 / double(wage * MonthDays))), wage, 7, day);
+        const Spot spot{where->homeCell, where->homeX, where->homeY};
+        const int wanted = int(excess * .1 / double(wage * MonthDays));
+        if (!rich)
+            hireForWeek(richest, community, "about the home", "a servant of the house", spot, std::min(3, wanted), wage, 7, day);
+        else
+            for (int more = wanted - homePlaces(members, "a servant of the house", day, false); more > 0;)
+            {
+                const auto posted = hireForWeek(richest, community, "about the home", "a servant of the house", spot, std::min(more, 12), wage, 7, day);
+                if (posted <= 0)
+                    break;
+                more -= int(posted / wage);
+            }
     }
     if (fund <= 0)
         memory.wantFund.erase(home);
