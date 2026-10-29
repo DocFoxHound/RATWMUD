@@ -1042,6 +1042,7 @@ Value economyMemory(const EconomyMemory& m)
     mint.add("spending", spending);
     o.add("mint", mint);
     o.add("taxRate", m.taxRate);                     // (The Dungeon Master's lever: doc 64, Phase 12.)
+    o.add("holdingsTax", m.holdingsTax);             // (The Dungeon Master's too: round 11, lane 2.)
     auto employers = Value::object();
     for (const auto& [key, e] : m.employers)
     {
@@ -1165,6 +1166,9 @@ EconomyMemory readEconomyMemory(const Value& o)
     // (Saved before Phase 12: the tax rate it always had.)
     if (const auto* rate = o.find("taxRate"); rate && rate->isNumber() && rate->asNumber() >= 0 && rate->asNumber() <= Society::MostTaxRate)
         m.taxRate = rate->asNumber();
+    // (Saved before round 11: the holdings tax at its start, HoldingsTaxRate.)
+    if (const auto* rate = o.find("holdingsTax"); rate && rate->isNumber() && rate->asNumber() >= 0 && rate->asNumber() <= Society::MostHoldingsTax)
+        m.holdingsTax = rate->asNumber();
     if (const auto& mint = o.object("mint"); mint.isObject())
     {
         const auto number = [&](const char* key, double most) {

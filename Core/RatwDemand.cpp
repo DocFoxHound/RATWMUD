@@ -1141,6 +1141,41 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             else if (const auto* good = got.empty() ? nullptr : items::good(got))
                 consume(id, got, 1, good->drink ? "drunk" : "used");
         }
+        // A rich home spends with its fund (round 11, lane 2, RichHomes; the user, 2026-10-29): past its piece, its works
+        // or its fancy, more things it fancies (each kind once, the day's liking first, RichWants at most), while what it
+        // spent today is under half the fund (the model's works: half the fund a day) and its spare. One thing a day held
+        // a fund of thousands to a few pence a day; Wetmeadow Dairy's keeper's spare went nowhere.
+        if (wageRule(RichHomes))
+        {
+            const auto aim = std::min<std::int64_t>(std::llround(fund->second / 2), budget);
+            std::vector<std::pair<double, const Want*>> fancies;
+            for (const auto& k : kinds)
+                fancies.push_back({(.2 + 1.6 * unit(id + "|want|" + k.name)) * unit(id + "|" + std::to_string(day) + "|more|" + k.name), &k});
+            std::stable_sort(fancies.begin(), fancies.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+            int more = 0;
+            for (const auto& [liking, fancy] : fancies)
+            {
+                const auto left = aim - (before - account(id)->cash);
+                if (more >= RichWants || left < pennies(2 / 12., town))
+                    break;
+                const bool treat = std::string(fancy->name) == "a treat";
+                if (treat && hungry.count(town))
+                    continue;
+                const auto thing = buyOne(id, onShelves(town, fancy->name, fancy->is), treat ? std::min(left, pennies(9 / 12., town)) : left,
+                                          std::string("a want: ") + fancy->name, salt + "more|" + fancy->name, false, treat);
+                if (thing.empty())
+                    continue;
+                ++more;
+                if (edible(thing))
+                {
+                    consume(id, thing, 1, "eat");
+                    auto& me = state_.residents.at(id);
+                    me.hunger = std::max(0., me.hunger - nourishment(thing) * 1.1);
+                }
+                else if (const auto* good = items::good(thing))
+                    consume(id, thing, 1, good->drink ? "drunk" : "used");
+            }
+        }
         if (const auto spent = before - account(id)->cash; spent > 0)
             fund->second = std::max(0., fund->second - double(spent));
     }

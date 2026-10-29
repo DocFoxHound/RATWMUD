@@ -359,6 +359,21 @@ EconomyResult Society::setTaxRate(double rate, const std::string& by)
     return {true, "From the next reckoning, " + percent(rate) + " of a week's income."};
 }
 
+EconomyResult Society::setHoldingsTax(double rate, const std::string& by)
+{
+    // (Round 11, lane 2: a share of a week of what a home holds over HoldingsMonths of its needs; 0 is off. From today's
+    // household pass: Society::holdingsTax.)
+    if (!std::isfinite(rate) || rate < 0 || rate > MostHoldingsTax)
+        return {false, "The holdings tax is 0% to " + percent(MostHoldingsTax) + " a week of what a home holds over " +
+                           std::to_string(HoldingsMonths) + " months of its needs."};
+    const double was = state_.memory.holdingsTax;
+    state_.memory.holdingsTax = rate;
+    ++state_.memory.revision;
+    record("the holdings tax set from " + percent(was) + " to " + percent(rate), by.empty() ? "a Dungeon Master" : by, {}, {}, 0, 0);
+    return {true, rate > 0 ? percent(rate) + " a week of what a home holds over " + std::to_string(HoldingsMonths) + " months of its needs."
+                           : "The holdings tax is off."};
+}
+
 EconomyResult Society::setMint(bool on, const std::string& by)
 {
     auto& mint = state_.memory.mint;

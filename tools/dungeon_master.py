@@ -136,6 +136,8 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # The Dungeon Master's levers on the economy (Docs/Design/64-economy-migration.md, decision 5): the tax rate, the
            # mint on or off, and a one-off relief grant from the capital's treasury to a town's.
            'economy.tax': 'dm', 'economy.mint': 'dm', 'economy.relief': 'dm',
+           # And the holdings tax (doc 64, Phase 13, round 11): a week's share of what a home holds over six months of its needs.
+           'economy.holdings': 'dm',
            # Notice boards and places to let (Docs/Design/54-gathering-places.md): a notice taken down; a place set to let,
            # or no longer (the game handled these already; the tool couldn't send them).
            'board.remove': 'dm', 'estate.set': 'dm', 'estate.clear': 'dm', 'estate.hold': 'dm', 'estate.release': 'dm',
@@ -177,6 +179,10 @@ RANK = {'viewer': 0, 'dm': 1, 'admin': 2}
 # The economy's levers (doc 64, Phase 12): the most tax the game takes of a week's income (Society::MostTaxRate), and
 # the largest relief grant one action may make.
 MOST_TAX_RATE = 0.5
+# The most holdings tax, a week's share of what a home holds over six months of its needs (Society::MostHoldingsTax; round
+# 11), and its rate to start (Society::HoldingsTaxRate).
+MOST_HOLDINGS_TAX = 0.1
+HOLDINGS_TAX = 0.01
 MOST_RELIEF = 1_000_000
 PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -969,12 +975,14 @@ class DungeonMaster:
 
     @staticmethod
     def levers(society):
-        """The tax rate and whether the mint is on, from a saved society."""
+        """The tax rate, whether the mint is on and the holdings tax, from a saved society."""
         memory = society.get('memory') if isinstance(society.get('memory'), dict) else {}
         rate = memory.get('taxRate')
+        holdings = memory.get('holdingsTax')
         mint = memory.get('mint') if isinstance(memory.get('mint'), dict) else {}
         return {'taxRate': rate if isinstance(rate, (int, float)) and not isinstance(rate, bool) else 0.08,
-                'mint': mint.get('on') is not False}
+                'mint': mint.get('on') is not False,
+                'holdingsTax': holdings if isinstance(holdings, (int, float)) and not isinstance(holdings, bool) else HOLDINGS_TAX}
 
     def call_festival(self, who, target, community, name='', in_days=0):
         """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
@@ -1018,6 +1026,14 @@ class DungeonMaster:
             raise DMError(f'The tax rate is 0 to {MOST_TAX_RATE:g} (a share of a week\'s income).')
         return self.queue_lever(who, target, 'economy.tax', 'land', {'rate': float(rate)},
                                 f'the tax rate set to {round(rate * 100, 1):g}% of a week\'s income')
+
+    def set_holdings_tax(self, who, target, rate):
+        """Sets the holdings tax, 0 (off) to MOST_HOLDINGS_TAX a week of what a home holds over six months of its needs."""
+        self.allowed(who, 'economy.holdings')
+        if isinstance(rate, bool) or not isinstance(rate, (int, float)) or rate != rate or not 0 <= rate <= MOST_HOLDINGS_TAX:
+            raise DMError(f'The holdings tax is 0 to {MOST_HOLDINGS_TAX:g} (a week\'s share of what a home holds over six months of its needs).')
+        return self.queue_lever(who, target, 'economy.holdings', 'land', {'rate': float(rate)},
+                                f'the holdings tax set to {round(rate * 100, 2):g}% a week' if rate else 'the holdings tax turned off')
 
     def set_mint(self, who, target, on):
         """Turns the mint on or off."""
@@ -2147,6 +2163,9 @@ def make_server(port=8766, dm=None):
             if method == 'POST' and path == '/api/economy/tax':
                 data = self.body()
                 return self.reply(200, dm.set_tax_rate(who, str(data.get('target', 'prod')), data.get('rate')))
+            if method == 'POST' and path == '/api/economy/holdings':
+                data = self.body()
+                return self.reply(200, dm.set_holdings_tax(who, str(data.get('target', 'prod')), data.get('rate')))
             if method == 'POST' and path == '/api/economy/mint':
                 data = self.body()
                 return self.reply(200, dm.set_mint(who, str(data.get('target', 'prod')), data.get('on')))

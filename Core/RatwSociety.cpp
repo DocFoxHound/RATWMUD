@@ -362,7 +362,7 @@ void Society::record(const std::string& kind, const std::string& from, const std
         const bool resident = state_.residents.count(to) > 0;
         if ((resident && !unearnedKind(kind)) ||
             (to.rfind("house:", 0) == 0 && (kind == "the owner's profit" || kind == "rent")) ||
-            ((to == "treasury" || to.rfind("stores:", 0) == 0) && (kind == "town tax" || kind == "capital's share")) ||
+            ((to == "treasury" || to.rfind("stores:", 0) == 0) && (kind == "town tax" || kind == "capital's share" || kind == "holdings tax")) ||
             (to == SharedChurch && (kind == "tithe" || kind == "the collection")))
             earnedToday_[to] += double(coins);
         // A town's caravans' net takings, as its tax, with work by the hours (round 8, the user, 2026-10-27): what they
