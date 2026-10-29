@@ -2202,7 +2202,7 @@ void aTownsCaravanKeepsToItsRoadMoney()
 {
     Society::setWorkByHours(true);
     // (Off unless asked since the user's word, 2026-10-27: asked for here.)
-    const auto sends = [](unsigned on) {
+    const auto sends = [](std::uint64_t on) {
         Society::wageRulesOff(0, on);
         // (West's mill and east's bakery: east is the capital, whose caravans are its treasury's, not held to it.)
         auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", 7, 9.5, 8, 9.5) +
@@ -2242,7 +2242,7 @@ void aTownsCaravanKeepsToItsRoadMoney()
 void theCapitalCarriesTheTownWorks()
 {
     Society::setWorkByHours(true);
-    const auto paidBy = [](unsigned off) {
+    const auto paidBy = [](std::uint64_t off) {
         Society::wageRulesOff(off);
         auto f = strip("EE.....WW", resident("idle", "Idle Hand", "civilian", "-", 7, 11.5, 7, 11.5));
         auto w = load(f);

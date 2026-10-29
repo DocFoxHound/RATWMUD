@@ -1238,7 +1238,7 @@ class Society
     std::map<std::string, std::int64_t> takeRebates() const { return std::exchange(rebated_, {}); }
     // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
     // a time, to see what each does. Not saved; the game never sets it.
-    enum WageRule : unsigned
+    enum WageRule : std::uint64_t
     {
         ChildrenOpen = 1,                            // A hire's place a child holds stands open in the wage book.
         ByEmployees = 2,                             // The going rate weighed by employees, not the keeper.
@@ -1273,8 +1273,8 @@ class Society
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
     // posts kept to its tax (round 10, dropped by the user, 2026-10-28).
     // `wageRulesOff(off, on)`: `off` the rest left out, `on` these put in; wageRulesOff(0) is the game's.
-    static constexpr unsigned OptInRules = CrewsAbroad | RoadBudget | TownPosts;
-    static void wageRulesOff(unsigned off, unsigned on = 0)
+    static constexpr std::uint64_t OptInRules = CrewsAbroad | RoadBudget | TownPosts;
+    static void wageRulesOff(std::uint64_t off, std::uint64_t on = 0)
     {
         wageRulesOff_ = off & ~OptInRules;
         wageRulesOn_ = on & OptInRules;
@@ -1907,7 +1907,7 @@ class Society
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
     static inline bool noteShorts_ = false;
-    static inline unsigned wageRulesOff_ = 0, wageRulesOn_ = 0;
+    static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
     mutable std::map<std::string, std::int64_t> labourCarried_, rebated_;

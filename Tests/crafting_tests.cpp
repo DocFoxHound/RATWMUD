@@ -1363,7 +1363,7 @@ void theGoingRateFromTheMakers()
 void theGoingRateByEmployees()
 {
     Society::setWorkByHours(true);
-    const auto rate = [&](unsigned off, int clerks) {
+    const auto rate = [&](std::uint64_t off, int clerks) {
         AuthoredRoster roster;
         roster.residents = {person("scribe", "the scribe", {"desk", 2.5, 2.5})};
         for (int i = 1; i <= clerks; ++i)
@@ -1407,7 +1407,7 @@ void aStallLetsItsSurplusGo()
     for (int i = 1; i <= 4; ++i)
         roster.residents.push_back(person("hand" + std::to_string(i), "works at the stall", {"market", 4.5 + i, 3.5}, "civilian"));
     roster.economy.treasury = 5000;
-    const auto run = [&](unsigned off, int days) {
+    const auto run = [&](std::uint64_t off, int days) {
         Society::wageRulesOff(off);
         auto s = std::make_unique<Society>(Roster::None);
         s->configure(roster);
@@ -2291,7 +2291,7 @@ void onlyTheSellersLetGo()
             roster.residents.push_back(person(shops[k].first + "_hand" + std::to_string(i), "works at the " + shops[k].first,
                                               {roster.residents[k == 3 ? 4 : k].work.cell, 4.5 + i, 3.5}, "civilian"));
     roster.economy.treasury = 5000;
-    const auto run = [&](unsigned off, int days) {
+    const auto run = [&](std::uint64_t off, int days) {
         Society::wageRulesOff(off);
         auto s = std::make_unique<Society>(Roster::None);
         s->configure(roster);
@@ -2353,7 +2353,7 @@ void aMakerKeepsItsApprentice()
     for (int i = 1; i <= 4; ++i)
         roster.residents.push_back(person("hand" + std::to_string(i), "works at The Loaf", {"bakery", 3.5 + i, 3.5}, "civilian"));
     roster.economy.treasury = 5000;
-    const auto run = [&](unsigned off, int days) {
+    const auto run = [&](std::uint64_t off, int days) {
         Society::wageRulesOff(off);
         auto s = std::make_unique<Society>(Roster::None);
         s->configure(roster);
@@ -2403,7 +2403,7 @@ void aProducerKeepsItsOwnPost()
     roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
                         person("learner", "apprenticed: fishing", {"lake", 5.5, 3.5}, "civilian")};
     roster.economy.treasury = 5000;
-    const auto run = [&](unsigned off, int days) {
+    const auto run = [&](std::uint64_t off, int days) {
         Society::wageRulesOff(off);
         auto s = std::make_unique<Society>(Roster::None);
         s->configure(roster);
@@ -2440,7 +2440,7 @@ void aProducerKeepsItsOwnPost()
 void theOutOfWorkKeepTheirHours()
 {
     Society::setWorkByHours(true);
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(off);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2525,7 +2525,7 @@ void theOutOfWorkKeepTheirHours()
 }
 
 // Round 10's rules for the towns (lane B): left out where a test is of the rules before them.
-constexpr unsigned Round10Towns = Society::TaxEase | Society::TownPosts | Society::TaxRebate | Society::FoundAtTarget | Society::CapitalLabour;
+constexpr std::uint64_t Round10Towns = Society::TaxEase | Society::TownPosts | Society::TaxRebate | Society::FoundAtTarget | Society::CapitalLabour;
 
 // Round 8 (the user, 2026-10-27): a town's caravans' net takings count in its budget as its tax does. Its road money out
 // counts against it (its month below nothing until the takings come home, and kept so on a day it earns nothing), its
@@ -2542,7 +2542,7 @@ void aTownCountsItsCaravans()
         double low = 0, month = 0, capital = 0, church = 0, saved = 0, below = 0;
         int crew = 0;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2633,7 +2633,7 @@ void aTownSpendsItsTradeAsItComes()
         double out = 0, saved = 0, home = 0, after = 0, month35 = 0, month42 = 0;
         int crew35 = 0, crew42 = 0;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2724,7 +2724,7 @@ void aTownsPostsComeFirst()
         double owed35 = 0, saved = 0, owed42 = 0;
         int crew42 = 0;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(off | Round10Towns);   // (Round 10's towns' rules left out: the forms before them.)
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2802,7 +2802,7 @@ void aTownsCrewHiresAbroad()
 {
     Society::setWorkByHours(true);
     // (Off unless asked since round 10, the user, 2026-10-27: asked for here, Society::wageRulesOff's `on`.)
-    const auto run = [](unsigned on) {
+    const auto run = [](std::uint64_t on) {
         Society::wageRulesOff(0, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2884,7 +2884,7 @@ void aTownEasesItsTax()
         double target = 0, saved = 0, savedMean = 0, mean = 0;
         bool savedBase = false;
     };
-    const auto run = [](unsigned off, unsigned on) {
+    const auto run = [](std::uint64_t off, std::uint64_t on) {
         Society::wageRulesOff(off, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -2998,7 +2998,7 @@ void aTownEasesItsTax()
 void aTownKeepsItsPostsToItsTax()
 {
     Society::setWorkByHours(true);
-    const auto run = [](unsigned on) {
+    const auto run = [](std::uint64_t on) {
         Society::wageRulesOff(0, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -3075,7 +3075,7 @@ void aTownsRoadMoneyFromItsBudget()
         double week = 0;
     };
     // (Off unless asked since the user's word, 2026-10-27: asked for here.)
-    const auto run = [](unsigned on) {
+    const auto run = [](std::uint64_t on) {
         Society::wageRulesOff(0, on);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
@@ -3139,7 +3139,7 @@ void aTownFoundedAtItsTarget()
         std::int64_t far = 0, capital = 0, homes = 0, church = 0, supply = 0;
         Society::FoundingMoved moved;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(off);
         Society::noteTowns(true);
         AuthoredRoster roster;
@@ -3200,7 +3200,7 @@ void theKeepersOwnApprentice()
     for (int i = 1; i <= 4; ++i)
         roster.residents.push_back(person("hand" + std::to_string(i), "works at the stall", {"market", 4.5 + i, 3.5}, "civilian"));
     roster.economy.treasury = 5000;
-    const auto run = [&](unsigned off, int days) {
+    const auto run = [&](std::uint64_t off, int days) {
         Society::wageRulesOff(off);
         auto s = std::make_unique<Society>(Roster::None);
         s->configure(roster);
@@ -3251,7 +3251,7 @@ void theKeepersOwnApprentice()
 void aFarTakerGivesWay()
 {
     Society::setWorkByHours(true);
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::wageRulesOff(Society::FarGiveWay);
         AuthoredRoster roster;
         auto farmer = person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian");
@@ -5206,7 +5206,7 @@ void aLoneOwnerStopsToppingUp()
         std::vector<std::int64_t> invested, house;   // What its owner, and the House its stall, put in at each look.
         bool unpaid = false, paidDay = true, saved = false, resumed = false;
     };
-    const auto run = [](bool hours, unsigned off) {
+    const auto run = [](bool hours, std::uint64_t off) {
         Society::setWorkByHours(hours);
         Society::wageRulesOff(off);
         AuthoredRoster roster;
@@ -5302,7 +5302,7 @@ void aLoneOwnerStopsToppingUp()
     expect(r.resumed && in[7] > 0, "a week's wages of its own, and its owner tops it up again: " + show(in));
     expect(std::all_of(r.house.begin(), r.house.begin() + 6, [](std::int64_t x) { return x > 0; }),
            "the House tops its stall up every week: " + show(r.house));
-    for (const auto& [hours, off] : {std::pair{true, unsigned(Society::OwnersStop)}, std::pair{false, 0u}})
+    for (const auto& [hours, off] : {std::pair{true, std::uint64_t(Society::OwnersStop)}, std::pair{false, std::uint64_t(0)}})
     {
         const auto o = run(hours, off);
         expect(std::all_of(o.invested.begin(), o.invested.begin() + 6, [](std::int64_t x) { return x > 0; }) && !o.unpaid,
@@ -5330,7 +5330,7 @@ void aHouseSpendsInsideItsWeek()
         std::int64_t invested = 0, again = 0, investedLow = 0, invested3 = 0, posts56 = 0, road56 = 0;
         bool marked = false, unpaid = false, saved = false, cleared = false;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::setWorkByHours(true);
         Society::wageRulesOff(off);
         AuthoredRoster roster;
@@ -5470,7 +5470,7 @@ void aHouseCarriesWhatItDidntPay()
     {
         std::int64_t left = 0, works = 0, posts = 0, road = 0, tops = 0, drawn = 0;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::setWorkByHours(true);
         Society::wageRulesOff(off);
         AuthoredRoster roster;
@@ -5546,7 +5546,7 @@ void theChurchsAlmsInsideItsRelief()
         double given = 0;
         bool early = false;
     };
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::setWorkByHours(true);
         Society::wageRulesOff(off);
         AuthoredRoster roster;
@@ -5630,7 +5630,7 @@ void theChurchsAlmsInsideItsRelief()
 // buys as before.
 void theAlmsBuyTheCheapestThatFeeds()
 {
-    const auto run = [](unsigned off) {
+    const auto run = [](std::uint64_t off) {
         Society::setWorkByHours(true);
         Society::wageRulesOff(off);
         AuthoredRoster roster;

@@ -354,7 +354,7 @@ int main(int argc, char** argv)
     std::set<std::string> stopOn;                   // --stop-on-sentinel (round 10, lane 0).
     bool traceHunger = false;                       // --trace-hunger (round 10, lane C).
     int sentinelWeeks = 4;                          // --sentinel-weeks.
-    unsigned rulesOff = 0, rulesOn = 0;             // --without, --with (Society::wageRulesOff).
+    std::uint64_t rulesOff = 0, rulesOn = 0;             // --without, --with (Society::wageRulesOff).
     fs::path modelShares = fs::path(RATW_SOURCE_DIR) / "tools" / "econ_model" / "model_shares.csv";
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
@@ -457,7 +457,7 @@ int main(int argc, char** argv)
         }
         else if (std::string(argv[i]) == "--without" && i + 1 < argc)
         {
-            unsigned& off = rulesOff;
+            std::uint64_t& off = rulesOff;
             for (std::stringstream list(argv[++i]); list.good();)
             {
                 std::string name;
@@ -499,7 +499,7 @@ int main(int argc, char** argv)
                 else if (name == "crews" || name == "roadmoney" || name == "townposts")
                 {
                     std::cerr << "--without " << name << ": off unless asked since round 10 (--with " << name << ")\n";
-                    rulesOn &= ~unsigned(name == "crews" ? Society::CrewsAbroad : name == "roadmoney" ? Society::RoadBudget : Society::TownPosts);
+                    rulesOn &= ~std::uint64_t(name == "crews" ? Society::CrewsAbroad : name == "roadmoney" ? Society::RoadBudget : Society::TownPosts);
                 }
                 else if (name == "foodprice")
                     off |= Society::FoodAtItsPrice;
