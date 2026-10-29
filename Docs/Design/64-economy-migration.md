@@ -7094,3 +7094,120 @@ the first month to 1,700–2,100p a day in days 252–308 (Frosthollow's 640–7
    (`--without townposts`). Recommended: (b), unless the buyers' allowance is wanted for its own sake.
 3. **Coldwater's and Frosthollow's caravans.** Coldwater's trade loses money from the start, and Frosthollow's stops
    in the autumn. That is the towns' trade, not their treasuries: worth a look of its own.
+
+### Phase 13: round 11, lane 4: the capital's treasury, the towns' share by their wealth (2026-10-29)
+
+The user's decision on round 10's question 1 (the capital's purse): "Implement all three suggested fixes, but make the
+tax fluctuate depending on the wealth of the towns." Base: p13 at a880120. All three with work by the hours only, each
+behind its own switch (`econ_watch --without labourposts,townfirst,sharewealth`).
+
+**The evidence** (round 10's year, `2026-10-29-r10-all-year`): the capital's treasury fell from 266k (day 84) to 11k (day
+365). Its tax brought ~300k a quarter; out went its own day labour (165–231k), its watch (80–100k), relief (30–60k) and
+the small towns' Town Works' day labour it carried (`CapitalLabour`, 125–165k a quarter). Since c09a211 its week counted
+the carried labour before its posts, so its own service wages and its buyers' funds fell to nearly nothing, but the
+carried labour itself was paid every spell without limit. Oakhaven held 50–72k with its tax eased to nothing while the
+capital paid its day labour.
+
+**What changed:**
+
+- **(a) The day labour the capital carries is kept to its posts' share** (`Society::CarriedPosts`, bit 36;
+  `institutionsWeek`, `keepPostsTo`'s new `carried`; the spell's wage in `RatwResidents.cpp`). At its week the capital
+  sets an allowance for it (`memory.labourLeft["treasury"]`) inside its posts' share (`TreasuryStaff`, half its week's
+  budget after relief): after its watch (always kept), what the carried labour asked last week, paid or not
+  (`labourWeek["treasury|asked"]`, a spell's worth each spell it was owed), and a tenth over (`CarriedGrowth`); then its
+  own posts, let go past what's left, as before; then what's left of the share goes on top of the allowance. So the
+  living comes before the city's clerks, and is cut only when the posts' share runs short. Past the allowance a small
+  town's day labour goes unpaid for the rest of the week, as a post let go (marked short against `stores:<town>|works`;
+  the wolves to relief), and it is counted in the ask for the next. The whole posts' share now comes off the capital's
+  budget (its buyers and works get the other half, the model's `staff_to(watch, budget * 0.5)`); before, the carried
+  labour came off the budget whole and the posts got half of what was left. (A first build gave the allowance the ask
+  alone: in the 30-day trial Frosthollow's and Coldwater's day labour went unpaid most days from day 7 on a treasury of
+  300k, the out of work growing faster than a tenth a week. The share's remainder on top fixed it.)
+- **(b) A small town pays its own day labour first** (`Society::TownLabourFirst`, bit 37). At its week, a town's
+  allowance for its own day labour (`memory.labourLeft["stores:<town>"]`) is its tax's week's budget (`budgetOf(id, 2,
+  .4)`, its caravans' week not counted: that is its works') after its relief and its other posts' wages last week (its
+  watch's; the day labour it paid itself is kept apart in `labourWeek["stores:<town>"]`, so it isn't counted twice).
+  Each spell its stores pay while the allowance and their purse last; the capital carries the shortfall (and (a) holds
+  that to its own allowance). What the town pays is in its wages paid the next week, as its watch's are (round 9's
+  posts-first need). The budget's holding term means a rich town pays its own: Oakhaven at 60k has a week's budget of
+  ~6k on no tax. Before its first week (and in an old save) the capital carries all of it, as before.
+- **(c) The capital's share by the towns' wealth** (`Society::ShareByWealth`, bit 38; `reckon`, `RatwReckoning.cpp`). The
+  share was a tenth of each town's week's tax (`CapitalShare`). Now, from the realm's second month (before it, the
+  capital has no month of income to weigh: a tenth, as before):
+
+      town    = clamp(held / target, 0, 2)                      (held: the stores' week's mean, as far as they hold it now)
+      capital = capital's purse / (CapitalMonths x its month's income)      (CapitalMonths = 1: "a month of its budget")
+      share   = tax / 10 x town x clamp(2 - capital, 0.5, 1.5)
+              + (held - target)+ x 1/8 x clamp(2 - capital, 0, 1)
+      at most what it holds; the surplus part never takes it below its target
+
+  The target is TaxEase's (two months of its tax at the full rate; a town with none counts as at its target).
+  **Bounds, and why.** The tax part runs from nothing (a town with empty stores keeps its tax for its own watch and day
+  labour: Coldwater, Frosthollow) to 30% of the tax (a town at twice its target and over, the capital empty); a tenth at
+  both targets, as before. The capital's factor never falls below a half: the realm's tenth halved, so a rich capital
+  still draws something and a town's tax is never wholly its own. The tax part alone can't move a trading town's surplus:
+  TaxEase eases Oakhaven's tax to nothing at twice its target. So the surplus part: an eighth a week of what a town holds
+  over its target, all of it while the capital is under its target, tapering to nothing at twice it. An eighth (about
+  half the surplus in five weeks) is slower than TaxEase's quarter a week and the rebate's half a week, so the three
+  don't flip a town from week to week, and on round 10's numbers (Oakhaven gaining ~900p a day with its rebates) it
+  takes about what a trading town gains. The capital's need is a month of its income (the user's "say, a month of its
+  budget": at its target holding of two months the model's budget spends a month of income a month); it includes the
+  shares themselves, a weak feedback that raises its target as they rise. So the treasury is refilled from the rich
+  towns while it is under its month, and stops drawing on them past two.
+  **The order, and no double counting.** At the week's reckoning: the tax is taken; then the capital's share (on the
+  week's tax and the town's holding with it); then TaxEase (next week's rate, on the mean holding) and the rebate (half of
+  what's over twice the target, on the lesser of the purse and the mean). The town's mean holding is lowered by what it
+  sent (`heldMean`), so TaxEase and the rebate weigh what it still holds, not what went to the capital: its surplus goes
+  to the realm first and only what is left over twice its target back to its taxpayers. The realm's need comes before
+  the rebate because the rebate only exists to drain a surplus nobody else takes.
+- **econ_watch:** `--without labourposts,townfirst,sharewealth`; `town_tax.csv` has two more columns, `to_capital` (the
+  capital's share each town sent in the week) and `labour_by_town` (the day labour it paid itself under (b)), beside
+  `labour_by_capital`.
+
+**Saves:** `labourLeft` in the economy's memory (and `labourWeek`'s new keys). An old save has none: no allowance till
+the first week, all carried by the capital as before.
+
+**Tests** (four mutations, one at a time, all caught: the share by wealth off, the capital's allowance not kept, the
+town not paying first, the allowance not held to the share):
+
+- `theCapitalsShareByWealth` (`crafting_tests`). A far town holding 100,000p against a target of about 6,400p: in the
+  first month a tenth of its tax; from day 35, with the capital short (a month of income twice its purse), over 10,000p
+  (an eighth of its surplus), its mean holding lowered by it; with the capital rich, a tenth of its tax at most; drained
+  to 1,000p, under a tenth; without the rule a tenth every week.
+- `theDayLabourAllowances` (`crafting_tests`). The town's allowance from its tax's budget, the capital's from its ask and
+  the rest of its posts' share, held to the share when asked for far more, both through a save; none without the rules.
+- `theTownPaysItsDayLabourFirst` (`roads_tests`). West's labourer is paid by west's stores while their allowance lasts,
+  by the capital with none of it left, by nobody with the capital's spent too (its ask counted); without the rules by
+  the capital whatever is left. `theCapitalCarriesTheTownWorks` as before (no allowance before the first week).
+- All 68 tests pass.
+
+**Digests.** With the three left out, 5 days `--hours --threads 6`: 4f5286d0cb4ff064, c09a211's. As built, 30 days:
+979b8da7d96728c6 (c09a211: 38e7271f88038c21). Money conserved.
+
+**30 days** (DEV's export, `--deterministic --hours --threads 6`; c09a211 beside it):
+
+| | c09a211 | this lane |
+|---|---|---|
+| The capital's treasury, day 14 / 21 / 28 / 30 | 305.3k / 303.9k / 302.4k / 316.2k | 307.9k / 309.1k / 309.7k / 318.9k |
+| Day labour the capital carried, days 1–30 | 5,327p | 1,855p (Frosthollow 969, Coldwater 695, Larkfield 191) |
+| Day labour the towns paid themselves (b) | 0 | 3,516p (Larkfield 2,097, Oakhaven 616, Southmeadow 472, Mirebridge 331) |
+| The capital's share, days 1–30 | 4,138p | 3,477p |
+| Small towns' day labour unpaid (`shortpay.csv`, `stores:*\|works`) | none | none |
+| The capital's own service wages / watch | 24,989p / 26,730p | 25,028p / 26,730p |
+
+Read plainly: in the first month (b) moves two-thirds of the carried labour back to the towns that can pay it, the
+trading towns and the middling ones; Coldwater and Frosthollow, whose tax just pays their watch, are still carried. (a)
+never bit: the capital holds 300k and its posts' share has room (with the ask alone it did bite, wrongly: above). (c)
+from day 28 only, with the capital at about three months of income: the tax part halved (its floor), no surplus drawn,
+so the share fell by about 650p. That is (c) working as designed for a rich capital; it starts to draw on Oakhaven's and
+Larkfield's surplus when the treasury falls under two months of its income, which in round 10's year was from about day
+200. The towns' stores are within a few hundred pennies of c09a211's.
+
+**For the user:**
+
+1. A year with two seeds is the coordinator's: the drain was in the second half of the year (carried labour 1,700–2,100p
+   a day by days 252–308), which 30 days can't show.
+2. Whether a rich capital should draw less than half the realm's tenth (`ShareCapitalLeast`), and whether its target
+   should be two months like the towns' rather than the one the user suggested.
+3. (a) now closes the capital's buyers and works to the half the posts don't take: if its works crew is wanted when its
+   posts are cheap, its posts' unused share could go back to them, at the cost of the allowance's room.

@@ -2271,6 +2271,64 @@ void theCapitalCarriesTheTownWorks()
     Society::setWorkByHours(false);
 }
 
+// Round 11, lane 4 (the user, 2026-10-29): who pays a small town's day labour, by the week's allowances. With west's
+// allowance for its own (TownLabourFirst) its stores pay it, and the capital nothing; with none of it left, the capital
+// carries it. With the capital's allowance for what it carries spent (CarriedPosts), nobody pays it, the post let go
+// for the week, and what it asked is counted for the next. Without the rules, the capital pays it whatever is left.
+void theTownPaysItsDayLabourFirst()
+{
+    Society::setWorkByHours(true);
+    struct Paid
+    {
+        std::map<std::string, std::int64_t> by;
+        double asked = 0;
+    };
+    const auto paidBy = [](std::uint64_t off, double town, double capital) {
+        Society::wageRulesOff(off);
+        auto f = strip("EE.....WW", resident("idle", "Idle Hand", "civilian", "-", 7, 11.5, 7, 11.5));
+        auto w = load(f);
+        {
+            auto saved = w.save();
+            saved.calendarDays = std::floor(saved.calendarDays) + 1.4;
+            expect(w.restore(saved).ok, "To the next morning");
+        }
+        w.tick(.6);
+        {
+            auto st = w.society().state();
+            if (town >= 0)
+                st.memory.labourLeft["stores:west"] = town;
+            if (capital >= 0)
+                st.memory.labourLeft["treasury"] = capital;
+            expect(w.society().restore(st), "the week's allowances");
+        }
+        Paid paid;
+        for (int t = 0; t < 1500; ++t)
+        {
+            w.tick(1);
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail == "day labour" && e.target == "idle")
+                    paid.by[e.actor] += e.coins;
+        }
+        const auto& m = w.society().state().memory;
+        paid.asked = m.labourWeek.count("treasury|asked") ? m.labourWeek.at("treasury|asked") : 0;
+        expect(w.society().resident("idle") && w.society().resident("idle")->task == Society::LabourTitle, "Idle labours for the Town Works");
+        expect(w.society().conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return paid;
+    };
+    const auto own = paidBy(0, 1e6, -1), spent = paidBy(0, 0, -1), closed = paidBy(0, 0, 0),
+               without = paidBy(Society::TownLabourFirst | Society::CarriedPosts, 1e6, 0);
+    expect(own.by.count("stores:west") && own.by.at("stores:west") > 0 && !own.by.count("treasury"),
+           "With its allowance, west's stores pay its day labour first");
+    expect(spent.by.count("treasury") && spent.by.at("treasury") > 0 && !spent.by.count("stores:west"),
+           "With none of it left, the capital carries it");
+    expect(closed.by.empty() && closed.asked > 0, "With the capital's allowance spent too, nobody pays it, and its ask is counted (" +
+                                                       std::to_string(closed.asked) + "p)");
+    expect(without.by.count("treasury") && without.by.at("treasury") > 0 && !without.by.count("stores:west") && without.asked == 0,
+           "Without the rules, the capital pays it whatever is left");
+    Society::setWorkByHours(false);
+}
+
 // The church's care (doc 42, Phase 5): a poor wolf with healing wounds is tended free by a chapel keeper, with the
 // church's bandages, once a day: a quarter of each wound's rest, never all of it.
 void theChurchCares()
@@ -3962,6 +4020,7 @@ int main()
         tradeCaravansCarryGoodsAndMoney();
         aTownsCaravanKeepsToItsRoadMoney();
         theCapitalCarriesTheTownWorks();
+        theTownPaysItsDayLabourFirst();
         theChurchCares();
         townsWearAndAreMended();
         theMonitorWatches();

@@ -295,6 +295,22 @@ void Society::institutionsWeek(std::int64_t day)
         const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
         memory.reliefLeft[id] = double(relief);
         memory.reliefWeek[id] = 0;
+        // A small town's day labour from its own tax first (round 11, the user, 2026-10-29; TownLabourFirst, with the
+        // capital carrying it): its week's allowance for it is its tax's budget after its relief and its other posts' wages
+        // last week (its watch's: the day labour it paid itself is its own measure, not counted twice), and the capital
+        // carries only what that doesn't cover. Its caravans' week isn't counted: that is its works'. What it pays is in
+        // its wages paid next week, as its watch's are (postsFirst's need, below). Before, the capital paid all of it:
+        // Oakhaven's too, holding 50-72k.
+        if (id != "treasury" && workByHours() && wageRule(CapitalLabour) && wageRule(TownLabourFirst))
+        {
+            std::int64_t own = 0;
+            if (const auto paid = memory.labourWeek.find(id); paid != memory.labourWeek.end())
+            {
+                own = std::int64_t(paid->second);
+                memory.labourWeek.erase(paid);
+            }
+            memory.labourLeft[id] = double(std::max<std::int64_t>(0, taxed - relief - std::max<std::int64_t>(0, wagesPaid(id) - own)));
+        }
         // Its caravans' money pays its own posts first (round 9, the user, 2026-10-27): what its posts and relief came to
         // over its tax budget, this week and before, is made good from its caravans' takings, and its works get only
         // what's left of them, with what its tax budget leaves over its posts. (Before, its posts were taken from the tax
@@ -329,12 +345,28 @@ void Society::institutionsWeek(std::int64_t day)
             budget -= relief;
             // (The capital's week, since round 10 (the user, 2026-10-28; CapitalLabour), counts first the small towns'
             // day labour it paid since its last: its posts and buyers get what's left of it.)
+            // Since round 11 (the user, 2026-10-29; CarriedPosts) it is counted among its posts instead, after its watch
+            // and before its own: what it asked last week (paid or not) and a tenth, inside its posts' share of the budget,
+            // and what its own posts leave of the share on top (so the whole share comes off its budget: its buyers and
+            // works get the rest, as the model's staff_to(watch, budget * 0.5)). Past that it is let go as its own posts
+            // are, the day labour unpaid for the rest of the week (the wolves to relief), its own posts closed first. Counted off the budget whole, it was paid every spell without limit,
+            // 125-165k a quarter, and the treasury fell from 266k to 11k in round 10's year.
+            const bool carriedPosts = id == "treasury" && wageRule(CapitalLabour) && wageRule(CarriedPosts);
+            double carried = 0;
             if (id == "treasury")
             {
-                budget -= std::int64_t(memory.labourWeek[id]);
+                const auto asked = memory.labourWeek.find("treasury|asked");
+                carried = asked != memory.labourWeek.end() ? asked->second : memory.labourWeek[id];
+                if (!carriedPosts)
+                    budget -= std::int64_t(memory.labourWeek[id]);
                 memory.labourWeek.erase(id);
+                memory.labourWeek.erase("treasury|asked");
+                carried *= CarriedGrowth;
             }
-            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, id == "treasury" ? budget : taxed - relief)) * TreasuryStaff, day);
+            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, id == "treasury" ? budget : taxed - relief)) * TreasuryStaff, day,
+                                  carriedPosts ? &carried : nullptr);
+            if (carriedPosts)
+                memory.labourLeft[id] = carried;
             // (A town's buyers and caravans that drew nothing since the rule began get a twentieth of the rest: the
             // capital's first week, saved before round 6, all of it.)
             const auto allow = [&](std::map<std::string, double>& left, std::map<std::string, double>& week) {
@@ -496,7 +528,7 @@ std::int64_t Society::houseParts(const House& h, std::int64_t day)
     return budget;
 }
 
-std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day)
+std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried)
 {
     // Its posts that draw a wage (an unpaid one too, held by a grown wolf: doc 42, Phase 3; not a beggar's, nor a great
     // house's head's), each with its employer as the labour market finds it (its holder's, else its founder's).
@@ -524,8 +556,23 @@ std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std
     });
     double left = share;
     bool room = true;
+    // (The day labour it carries, after its watch: what it asks, as far as what's left goes; and after its own posts,
+    // what's left of the share on top, so it is cut only when the posts' share runs short, not because the out of work
+    // grew faster than last week's ask: in a 30-day trial an allowance of the ask alone left Frosthollow's day labour unpaid on a
+    // treasury of 300k. Round 11, CarriedPosts.)
+    double* const given = carried;
+    const auto carry = [&] {
+        if (carried && *carried >= 0)
+        {
+            *carried = std::clamp(left, 0., *carried);
+            left -= *carried;
+            carried = nullptr;
+        }
+    };
     for (const auto& post : posts)
     {
+        if (!post.guard)
+            carry();
         room = room && (post.guard || left >= post.week);
         if (room)
         {
@@ -548,6 +595,12 @@ std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std
         }
         if (state_.memory.closed.insert(post.p->id).second)
             ++state_.memory.revision;
+    }
+    carry();
+    if (given && left > 0)
+    {
+        *given += left;
+        left = 0;
     }
     return std::int64_t(std::ceil(share - left));
 }

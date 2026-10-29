@@ -57,6 +57,10 @@
 // rebate (a town's stores over twice their target keep it, not paying half of it back to their taxpayers),
 // founding (a town is founded with its share of the treasuries' by its residents, not at its target), daylabour (a
 // small town pays its own Town Works' day labour, not the capital).
+// And round 11's, lane 4 (the capital's treasury): labourposts (the day labour the capital carries is paid every spell,
+// counted off its week's budget whole, as c09a211, not kept to its posts' share), townfirst (the capital carries a small
+// town's day labour whole, the town paying none of it from its tax), sharewealth (the capital's share is a tenth of a
+// town's tax, whatever the town or the capital holds). With all three left out, a run is c09a211's to the digest.
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -140,7 +144,9 @@
 //                   resident paid for there in the last week (money-hunger; the rest is food-hunger), its shops'
 //                   shelves' food (units), and that cheapest price (each day's record);
 //   town_tax.csv    day, town: its tax's share of the realm's rate and the rate (round 10, towns: eased while its
-//                   stores hold over their target), its stores' holding, their week's mean and the target (weekly);
+//                   stores hold over their target), its stores' holding, their week's mean and the target, its week's
+//                   rebates and the day labour the capital paid for it; and (round 11) the capital's share it sent and
+//                   the day labour it paid itself (weekly);
 //   sentinels.csv   day, kind, subject, value, threshold, weeks, detail: each sentinel fired at a week's check (and
 //                   in the log): drain (a House, a town's or the capital's treasury, the church or a caravan paying
 //                   out over 1.3 times what came in, at least 100p, four weeks in a row; with its top three kinds
@@ -496,6 +502,12 @@ int main(int argc, char** argv)
                     off |= Society::FoundAtTarget;
                 else if (name == "daylabour")
                     off |= Society::CapitalLabour;
+                else if (name == "labourposts")
+                    off |= Society::CarriedPosts;
+                else if (name == "townfirst")
+                    off |= Society::TownLabourFirst;
+                else if (name == "sharewealth")
+                    off |= Society::ShareByWealth;
                 else if (name == "crews" || name == "roadmoney" || name == "townposts")
                 {
                     std::cerr << "--without " << name << ": off unless asked since round 10 (--with " << name << ")\n";
@@ -519,7 +531,7 @@ int main(int argc, char** argv)
                     off |= Society::CarryParts;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast or nearest, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, labourposts, townfirst, sharewealth, houses, housetills, church, cheapalms, carry, foodprice, feast or nearest, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1632,7 +1644,7 @@ int main(int argc, char** argv)
     std::ofstream accountsOut(out / "accounts.csv"), accountFlowsOut(out / "account_flows.csv"),
         accountPeersOut(out / "account_peers.csv"), goodsOut(out / "goods.csv"), hungerOut(out / "hunger.csv"),
         sentinelsOut(out / "sentinels.csv"), townTaxOut(out / "town_tax.csv");
-    townTaxOut << "day,town,share,rate,held,held_mean,target,rebates,labour_by_capital\n";
+    townTaxOut << "day,town,share,rate,held,held_mean,target,rebates,labour_by_capital,to_capital,labour_by_town\n";
     accountsOut << "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained\n";
     accountFlowsOut << "day,account,dir,kind,entries,coins\n";
     accountPeersOut << "day,account,dir,peer,peer_holder,coins\n";
@@ -2014,7 +2026,8 @@ int main(int argc, char** argv)
     const auto writeWeek = [&](int day) {
         // Each town's tax as its stores' holding eases it (round 10, towns: Society::easeTownTax), its week's rebates and
         // what the capital paid of its day labour.
-        const auto rebates = society.takeRebates(), carried = society.takeLabourCarried();
+        const auto rebates = society.takeRebates(), carried = society.takeLabourCarried(), shares = society.takeShares(),
+                   own = society.takeLabourOwn();
         const auto of = [](const std::map<std::string, std::int64_t>& m, const std::string& id) {
             const auto found = m.find(id);
             return found == m.end() ? std::int64_t(0) : found->second;
@@ -2023,7 +2036,7 @@ int main(int argc, char** argv)
             if (id.rfind("stores:", 0) == 0)
                 townTaxOut << day << ',' << csv(id.substr(7)) << ',' << society.townTaxShare(id) << ',' << society.townTaxRate(id) << ','
                            << a.cash << ',' << std::llround(society.townHeldMean(id)) << ',' << std::llround(society.townTaxTarget(id)) << ','
-                           << of(rebates, id) << ',' << of(carried, id) << '\n';
+                           << of(rebates, id) << ',' << of(carried, id) << ',' << of(shares, id) << ',' << of(own, id) << '\n';
         townTaxOut.flush();
         // (Every account tracked that held money or moved any: a caravan long gone has neither.)
         std::set<std::string> ids;
