@@ -372,6 +372,7 @@ void Society::tendOwners(std::int64_t day)
             // week's wages again (round 9, the user, 2026-10-27; the model's owner_tops_up stops when what it put in
             // hasn't come back: the business shrinks to what it can pay for). A House tops its own up as before.
             bool stopped = false;
+            const bool houseTills = workByHours() && wageRule(HouseBudget) && wageRule(HouseTills) && owner.rfind("house:", 0) == 0;
             if (workByHours() && wageRule(OwnersStop) && owner.rfind("house:", 0) != 0)
             {
                 const bool wagesShort = double(account(till)->cash) < 7 * staffing(p.id);
@@ -396,20 +397,40 @@ void Society::tendOwners(std::int64_t day)
                     }
                 }
             }
-            else
+            else if (!houseTills)
                 memory.shortTills.erase(till);
             // Short of a week's working money: its owner puts in what it can spare, until two months' worth hasn't come back.
             putIn *= 12. / 13;
             const auto short_ = working / 4 - account(till)->cash;
+            std::int64_t given = 0;
             if (short_ > 0 && putIn <= 2. * working && !stopped)
             {
-                // (A keeper keeps a week's food for its household; a House gives what it has.)
-                const auto floor = owner.rfind("house:", 0) == 0 ? 0
+                // (A keeper keeps a week's food for its household; a House gives what it has, or, with its week's budget
+                // in parts, what's left of its investments' part over its floor: round 10, lane A.)
+                const bool house = owner.rfind("house:", 0) == 0;
+                const auto floor = house                          ? 0
                                    : workByHours()                ? pennies(7 * FoodADay * double(householdOf(owner)), accountTown(owner))
                                                                   : pennies(KeeperReserve, accountTown(owner));
-                if (const auto give = std::min<std::int64_t>(short_, account(owner)->cash - floor); give > 0 &&
-                                                                                                    shift(owner, till, "", 0, give, "an owner's investment"))
-                    putIn += double(give);
+                const auto can = house ? houseMay(owner, HouseTops) : account(owner)->cash - floor;
+                if (const auto give = std::min<std::int64_t>(short_, can); give > 0 && shift(owner, till, "", 0, give, "an owner's investment"))
+                    putIn += double(give), given = give;
+            }
+            // A House's business it doesn't top up in full while short of a week's wages (its budget spent, or paused below
+            // its target; or two months put in that haven't come back) trades on with what it has, as a lone owner's does
+            // once it stops (round 9): on a day its till can't pay its manager, the manager is free for hire work
+            // (ownerUnpaid; tendHouses marks the day). A look that tops it up in full, or finds a week's wages in it,
+            // clears it (round 10, lane A, the user, 2026-10-27).
+            if (houseTills)
+            {
+                if (short_ > 0 && given < short_ && double(account(till)->cash) < 7 * staffing(p.id))
+                {
+                    auto& t = memory.shortTills[till];
+                    ++t.weeks;
+                    if (t.stopped < 0)
+                        t.stopped = day;
+                }
+                else
+                    memory.shortTills.erase(till);
             }
         }
         if (putIn <= 0)

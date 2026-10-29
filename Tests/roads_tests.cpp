@@ -2229,7 +2229,7 @@ void aTownsCaravanKeepsToItsRoadMoney()
         Society::wageRulesOff(0);
         return std::make_pair(held, out);
     };
-    const auto [held, out] = sends(Society::RoadBudget);
+    const auto [held, out] = sends(Society::RoadBudget | Society::TownPosts);
     const auto [held0, out0] = sends(0);
     expect(held && !out, "West's stores, with none of the week's road money left, send no caravan");
     expect(!held0 && out0, "Without the rule they do");

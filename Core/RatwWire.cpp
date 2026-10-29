@@ -1087,7 +1087,8 @@ Value economyMemory(const EconomyMemory& m)
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
              {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed},
-             {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek}})
+             {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek},
+             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}})
     {
         auto map = Value::object();
         for (const auto& [key, v] : *field)
@@ -1288,12 +1289,13 @@ EconomyMemory readEconomyMemory(const Value& o)
              {"weekIncome", &m.weekIncome}, {"monthIncome", &m.monthIncome}, {"wantFund", &m.wantFund}, {"helpBudget", &m.helpBudget},
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
              {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed},
-             {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek}})
+             {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek},
+             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}})
         for (const auto& [key, v] : o.object(name).fields())
             // (A town's income can fall below nothing, its caravans' road money out before their takings come home:
             // round 8; and its caravans' week, round 9. Read as saved, or a reload would count the takings without the
             // road money.)
-            if (v.isNumber() && v.asNumber() >= (field == &m.monthIncome || field == &m.weekIncome || field == &m.caravanWeek ? -1e12 : 0) &&
+            if (v.isNumber() && v.asNumber() >= (field == &m.monthIncome || field == &m.weekIncome || field == &m.caravanWeek || field == &m.spendLeft ? -1e12 : 0) &&
                 v.asNumber() < 1e12 && key.size() < 200)
                 (*field)[key] = v.asNumber();
     for (const auto& v : o.array("closed"))

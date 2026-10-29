@@ -1,0 +1,4 @@
+run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch.r10a-b7da3f6 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 365 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-27-r10-houses-year --deterministic --hours --threads 6 --without crews
+built from: /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-a2d56da0e966db75e at b7da3f62a998 (b7da3f62a9982d5c7748c75d641ae197edcebf6c)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at 4ef067b16d47; its own changes since: none
+built: 2026-10-27 18:50:34 UTC (linked; econ_watch.cpp compiled Oct 27 2026 12:50:25, local time)

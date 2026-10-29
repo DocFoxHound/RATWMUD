@@ -306,8 +306,15 @@ void Society::tendHouses(std::int64_t day)
         // The manager's wage first.
         const auto& manager = state_.careers.positions[pid].holder;
         if (!manager.empty() && account(manager))
-            shift(till, manager, "", 0, std::min<std::int64_t>(std::int64_t(std::ceil(employerWage(till) - 1e-9)),
-                                                               account(till)->cash), "manager's wage");   // (Its own wage: doc 64, Phase 6.)
+        {
+            const auto ownWage = std::int64_t(std::ceil(employerWage(till) - 1e-9));
+            const auto wage = std::min<std::int64_t>(ownWage, account(till)->cash);
+            shift(till, manager, "", 0, wage, "manager's wage");   // (Its own wage: doc 64, Phase 6.)
+            // (A day it can't pay it, for a business its House has stopped topping up: its manager is free for hire work,
+            // as a lone owner's keeper is. Round 10, lane A: tendOwners.)
+            if (const auto s = state_.memory.shortTills.find(till); s != state_.memory.shortTills.end() && wage < ownWage)
+                s->second.unpaid = day;
+        }
         // (The takings above its float no longer go to the house each night, nor does the house prop it up or sell it
         // off: its month's profit is the house's, and the house tops it up when it runs short, as any owner does. Doc
         // 64, Phase 5: tendOwners.)
