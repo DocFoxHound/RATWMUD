@@ -137,10 +137,48 @@ void Society::reckon(std::int64_t day, bool force)
         }
         // (An owner's share of its business's profit is paid monthly now, on the business's own day: doc 64, Phase 5.)
         // The towns send the capital a tenth of what they took in.
+        // Since round 11 (the user, 2026-10-29: "make the tax fluctuate depending on the wealth of the towns";
+        // ShareByWealth, with work by the hours), by the town's wealth and the capital's (shareByWealth, below).
+        const bool byWealth = workByHours() && wageRule(ShareByWealth) && day >= MonthDays;
+        const auto* capitalPurse = account("treasury");
+        const double capitalMonth = CapitalMonths * monthIncomeOf("treasury");
+        const double capitalHeld = capitalPurse && capitalMonth >= 1 ? double(capitalPurse->cash) / capitalMonth : 1.;
         for (auto& [treasury, town] : towns)
-            if (const auto share = std::int64_t(double(town.tax / CapitalShare));
-                treasury != "treasury" && share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
+        {
+            if (treasury == "treasury" || !account(treasury))
+                continue;
+            auto share = std::int64_t(double(town.tax / CapitalShare));
+            if (byWealth)
+            {
+                // The town's holding (its stores' week's mean, as far as they hold it now: the rebate's) against its target
+                // (TaxEase's, two months of its tax at the full rate; none, and it counts as at its target). A tenth of its
+                // tax times its holding over its target (nothing empty, a tenth at its target, ShareTownMost tenths at
+                // twice it and over), times the capital's want: 2 less its holding over its own target (a month of its
+                // income), ShareCapitalLeast at 1.5 and over, ShareCapitalMost empty. So 0 to 30% of the tax. And a
+                // ShareSurplus of what the town holds over its target a week, all of it while the capital is under its
+                // target, less as it holds more, none at twice: a trading town's tax eases to nothing (TaxEase), so the
+                // tax alone can't bring its surplus to the realm. Never below its target by the surplus part, nor more
+                // than it holds.
+                const double cash = double(account(treasury)->cash), target = townTaxTarget(treasury);
+                const double held = target >= 1 ? std::min(cash, townHeldMean(treasury) > 0 ? townHeldMean(treasury) : cash) : 0;
+                const double wealth = target >= 1 ? std::clamp(held / target, 0., ShareTownMost) : 1.;
+                const double want = std::clamp(2 - capitalHeld, ShareCapitalLeast, ShareCapitalMost);
+                const double ofTax = double(town.tax) / CapitalShare * wealth * want;
+                const double over = std::max(0., held - target), surplus = over * ShareSurplus * std::clamp(2 - capitalHeld, 0., 1.);
+                share = std::llround(std::min(ofTax + std::min(surplus, std::max(0., cash - target - ofTax)), cash));
+            }
+            if (share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
+            {
                 town.toCapital = share;
+                // (The town's mean holding is what's left after it: TaxEase and the rebate, next, weigh what the town still
+                // holds, not what it sent, so its surplus isn't counted twice: to the capital, then back to its taxpayers.)
+                if (byWealth)
+                    if (const auto mean = state_.memory.heldMean.find(treasury); mean != state_.memory.heldMean.end())
+                        mean->second = std::max(0., mean->second - double(share));
+                if (noteTowns_)
+                    sharesSent_[treasury] += share;
+            }
+        }
         // (No wealth tithe: tax and tithe are on income now, doc 64, Phase 7.)
         state_.memory.weekIncome.clear();
         if (ease)

@@ -1583,15 +1583,36 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 // 2026-10-27: the living for every grown wolf is the realm's, not a small town's to carry. Its wage
                 // is still its town's works', at its town's rate: employer, above.)
                 const bool labour = labourJob(*c.record, job);
-                const bool carried = labour && workByHours() && wageRule(CapitalLabour) && payer.account.rfind("stores:", 0) == 0 && account("treasury");
+                const bool capitals = labour && workByHours() && wageRule(CapitalLabour) && payer.account.rfind("stores:", 0) == 0 && account("treasury");
+                // Since round 11 (the user, 2026-10-29; TownLabourFirst) the town pays its own first, inside its week's
+                // allowance for it (its tax's budget after its relief and its other posts), and the capital carries
+                // only the shortfall; and what the capital carries (CarriedPosts) is kept to its allowance, inside its
+                // posts' share after its watch: past it the day labour goes unpaid, as a post let go, till the next week.
+                auto& m = state_.memory;
+                const auto own = capitals && wage > 0 && wageRule(TownLabourFirst) ? m.labourLeft.find(payer.account) : m.labourLeft.end();
+                const bool townPays = own != m.labourLeft.end() && own->second >= double(wage) && spendable(payer.account) >= wage;
+                const bool carried = capitals && !townPays;
+                const auto kept = carried && wage > 0 && wageRule(CarriedPosts) ? m.labourLeft.find("treasury") : m.labourLeft.end();
+                if (carried && wage > 0 && wageRule(CarriedPosts))
+                    m.labourWeek["treasury|asked"] += day / PaidSpells;   // (A spell's worth, paid or not: its next week's ask.)
+                const bool closed = kept != m.labourLeft.end() && kept->second < double(wage);
                 const auto& from = carried ? std::string("treasury") : payer.account;
                 if (wage <= 0)
                     ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if ((carried ? spendable(from) : payer.account[0] == 'h' ? houseMay(payer.account, HousePosts) : spendable(from)) >= wage &&   // (A House's, inside its week's posts: round 10.)
+                else if (!closed && (carried ? spendable(from) : payer.account[0] == 'h' ? houseMay(payer.account, HousePosts) : spendable(from)) >= wage &&   // (A House's, inside its week's posts: round 10.)
                     shift(from, pair.first, "", 0, wage, guard ? "watch wages" : labour ? "day labour" : "service wages"))
                 {
                     if (carried)
-                        state_.memory.labourWeek["treasury"] += double(wage);
+                        m.labourWeek["treasury"] += double(wage);
+                    if (kept != m.labourLeft.end())
+                        kept->second -= double(wage);
+                    if (townPays)
+                    {
+                        own->second -= double(wage);
+                        m.labourWeek[payer.account] += double(wage);
+                        if (noteTowns_)
+                            labourOwn_[payer.account] += wage;
+                    }
                     if (carried && noteTowns_)
                         labourCarried_[payer.account] += wage;
                     ++life.wagesToday;

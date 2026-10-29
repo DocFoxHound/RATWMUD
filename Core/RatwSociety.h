@@ -404,6 +404,12 @@ struct EconomyMemory
     // The small towns' Town Works' day labour the capital paid since its last week's budget (CapitalLabour; the user,
     // 2026-10-28): counted in its next week's budget before its posts ("treasury").
     std::map<std::string, double> labourWeek;
+    // Round 11, lane 4 (the user, 2026-10-29; with work by the hours): what is left of the week's allowance for day labour,
+    // the capital's for the small towns' it carries ("treasury", CarriedPosts: inside its posts' share, after its watch)
+    // and each small town's for its own ("stores:x", TownLabourFirst: its tax's budget after its relief and its other
+    // posts). And in labourWeek, since: what the carried labour asked this week, paid or not ("treasury|asked"), and the
+    // day labour a town paid itself ("stores:x"), each its next week's measure.
+    std::map<std::string, double> labourLeft;
     // Round 10, lane A (the user, 2026-10-27; with work by the hours): a House's week's budget in parts, what is left of
     // each ("house:x|posts", "|road", "|tops") and the floor it never pays out below ("house:x|floor"; and the church's,
     // "town:all:church|floor"), set at its week's reckoning (spendLeft); and what each part paid out this week, the next
@@ -1248,6 +1254,9 @@ class Society
     std::map<std::string, std::int64_t> takeRebates() const { return std::exchange(rebated_, {}); }
     // And each treasury's holdings tax (HoldingsTax) since the last call, by its account ("treasury" the capital's).
     std::map<std::string, std::int64_t> takeHoldingsTaxed() const { return std::exchange(holdingsTaxed_, {}); }
+    // And (round 11, lane 4) the capital's share each town sent, and the day labour each paid itself (TownLabourFirst).
+    std::map<std::string, std::int64_t> takeShares() const { return std::exchange(sharesSent_, {}); }
+    std::map<std::string, std::int64_t> takeLabourOwn() const { return std::exchange(labourOwn_, {}); }
     // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
     // a time, to see what each does. Not saved; the game never sets it.
     enum WageRule : std::uint64_t
@@ -1284,7 +1293,10 @@ class Society
         OwnerReturns = 1ull << 30,                   // ...and its owner returns to it when its sales would pay (round 11).
         MoreHands = 1ull << 31,                      // A business holding well over its working money takes on hands (round 11).
         RichHomes = 1ull << 32,                      // A home's help, servants and wants scale with its budget (round 11, lane 2).
-        HoldingsTax = 1ull << 33                     // A home holding over HoldingsMonths of its needs pays the holdings tax (round 11).
+        HoldingsTax = 1ull << 33,                    // A home holding over HoldingsMonths of its needs pays the holdings tax (round 11).
+        CarriedPosts = 1ull << 36,                   // The day labour the capital carries is kept to its posts' share (round 11).
+        TownLabourFirst = 1ull << 37,                // A small town pays its own day labour from its tax's budget first (round 11).
+        ShareByWealth = 1ull << 38                   // The capital's share of a town's tax by its wealth and the capital's (round 11).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
@@ -1951,7 +1963,7 @@ class Society
     static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
-    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_;
+    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_, sharesSent_, labourOwn_;
   public:
     // At the founding (FoundAtTarget, while noteTowns): what the towns' targets left of their share, and what each kind
     // then got in all (households, businesses, Houses, the church). A measure.
@@ -1983,7 +1995,15 @@ class Society
     // week, as many as the rest pays a week, PostWeekDays of a post's wage (the watch's seven). Past that, a post's holder
     // is let go and the post kept empty (memory.closed, as a business's help); within it again, a post it let go is open
     // again, for succession to fill. Returns the week's cost of the posts kept.
-    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day);
+    // With `carried` (the capital's, CarriedPosts: round 11), the small towns' day labour it carries is counted among its
+    // posts after its watch and before its own: `carried` is what it asks, set to what it is given of what's left.
+    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried = nullptr);
+    // The capital's share of a town's tax by the towns' wealth (round 11, lane 4; ShareByWealth): of the tax, a tenth
+    // times the town's holding over its target (0 to ShareTownMost) times the capital's want (2 less its holding over its
+    // target, ShareCapitalLeast to ShareCapitalMost); and ShareSurplus a week of what the town holds over its target,
+    // while the capital holds under twice its own (CapitalMonths of its income), all of it under its target.
+    static constexpr double ShareTownMost = 2, ShareCapitalLeast = .5, ShareCapitalMost = 1.5, ShareSurplus = 1. / 8, CapitalMonths = 1;
+    static constexpr double CarriedGrowth = 1.1;    // The carried labour's allowance: what it asked last week and a tenth.
     // A House's week's budget set in its parts (round 10, lane A: HouseBudget): returns what is left of it for its works
     // and crews.
     std::int64_t houseParts(const House& h, std::int64_t day);
