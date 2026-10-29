@@ -3324,7 +3324,9 @@ void theCapitalsShareByWealth()
         double meanAfter = 0, meanBefore = 0;
     };
     const auto run = [](std::uint64_t off, double capitalMonth) {
-        Society::wageRulesOff(off | Society::TaxRebate);
+        // (The payers' 100,000p would pay round 11's holdings tax into the town, and spend on help: left out, so its
+        // holding is the test's.)
+        Society::wageRulesOff(off | Society::TaxRebate | Society::HoldingsTax | Society::RichHomes);
         AuthoredRoster roster;
         const auto far = [](ResidentSpec r) {
             r.home = r.evening = {"far_homes", 2.5, 2.5};
