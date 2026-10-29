@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <set>
 
 namespace ratw
 {
@@ -205,9 +206,79 @@ double Society::priceAt(const std::string& seller, const std::string& item) cons
 {
     if (!items::good(item))
         return 1;
-    if (storePriced(items::baseOf(item)))
+    const auto base = items::baseOf(item);
+    if (storePriced(base))
         return atGoingRate(std::max(1, items::good(item)->price), shopTown(seller));   // (Meals, herbs, swords: as before.)
-    return normalCost(seller, item) * (1 + marginOf(seller, item));
+    // (Its till and good found once for its margin and its markdown: a price is asked for very often, and a second
+    // look-up of the till cost the run two fifths of its pace.)
+    const auto till = tillOf(seller);
+    double margin = items::ladder().markup;
+    if (const auto a = margins_.find(till); a != margins_.end())
+        if (const auto m = a->second.find(base); m != a->second.end())
+            margin = m->second;
+    const double cost = normalCost(seller, item), price = cost * (1 + margin);
+    // Marked down from its second day over its shelf target, a step a day, to its floor (reviewMarkdowns; round 11,
+    // lane 3). (Not raised to the floor: a price the review has already put under it stays where it is.)
+    if (!daysOver_.empty())
+        if (const auto a = daysOver_.find(till); a != daysOver_.end())
+            if (const auto d = a->second.find(base); d != a->second.end() && d->second > 1)
+                return std::max(std::min(price, cost * MarkdownFloor), price * (1 - MarkdownStep * (d->second - 1)));
+    return price;
+}
+
+int Society::daysOver(const std::string& seller, const std::string& item) const
+{
+    if (const auto a = daysOver_.find(tillOf(seller)); a != daysOver_.end())
+        if (const auto d = a->second.find(items::baseOf(item)); d != a->second.end())
+            return d->second;
+    return 0;
+}
+
+void Society::reviewMarkdowns()
+{
+    // Each seller's goods, by its own shelf (the user, 2026-10-29; see RatwSociety.h): a day over its target, or a day
+    // back toward its price. A shop's and a House's (not the towns' stores, a caravan's load or a fund's).
+    if (!workByHours() || !wageRule(Markdowns))
+    {
+        daysOver_.clear();
+        return;
+    }
+    for (const auto& [till, rates] : sellRate_)
+    {
+        (void)rates;
+        const auto* shelves = till.rfind("till:", 0) == 0 || till.rfind("house:", 0) == 0 ? account(till) : nullptr;
+        if (!shelves)
+            continue;
+        std::set<std::string> goods;
+        for (const auto& [item, n] : shelves->stock)
+            if (n > 0)
+                goods.insert(items::baseOf(item));
+        auto found = daysOver_.find(till);
+        if (found != daysOver_.end())
+            for (const auto& [good, d] : found->second)
+                goods.insert(good);
+        for (const auto& good : goods)
+        {
+            if (!items::good(good) || storePriced(good))
+                continue;
+            const bool over = stockAll(*shelves, good) > shelfTarget(till, good, ProducerKept);
+            if (found == daysOver_.end())
+            {
+                if (!over)
+                    continue;
+                found = daysOver_.try_emplace(till).first;
+            }
+            auto& days = found->second[good];
+            days = over ? std::min(MarkdownDaysMost, days + 1) : days - 1;
+            if (days <= 0)
+                found->second.erase(good);
+        }
+        if (found != daysOver_.end() && found->second.empty())
+            daysOver_.erase(found);
+    }
+    // (A seller gone, or no longer selling, its days with it.)
+    for (auto it = daysOver_.begin(); it != daysOver_.end();)
+        it = account(it->first) && sellRate_.count(it->first) ? std::next(it) : daysOver_.erase(it);
 }
 
 double Society::keepDays(const std::string& item)
@@ -272,6 +343,10 @@ void Society::keepPrices()
         for (const auto& [good, m] : goods)
             if (std::abs(m - items::ladder().markup) > 1e-6)
                 memory.margins[account + "|" + good] = m;
+    memory.markdowns.clear();
+    for (const auto& [till, goods] : daysOver_)
+        for (const auto& [good, d] : goods)
+            memory.markdowns[till + "|" + good] = d;
 }
 
 void Society::loadPrices()
@@ -285,6 +360,10 @@ void Society::loadPrices()
     for (const auto& [key, m] : state_.memory.margins)
         if (const auto bar = key.rfind('|'); bar != std::string::npos)
             margins_[key.substr(0, bar)][key.substr(bar + 1)] = m;
+    daysOver_.clear();
+    for (const auto& [key, d] : state_.memory.markdowns)
+        if (const auto bar = key.rfind('|'); bar != std::string::npos && d > 0)
+            daysOver_[key.substr(0, bar)][key.substr(bar + 1)] = d;
 }
 
 } // namespace ratw

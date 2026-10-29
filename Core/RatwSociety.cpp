@@ -684,6 +684,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             // Sellers' margins, each on its own day of the week, and their costs kept for the save (doc 64, Phase 4);
             // makers' normal costs are worked out afresh.
             reviewMargins(day);
+            // What a seller holds over its shelf target a day, marked down (round 11, lane 3; the user, 2026-10-29).
+            reviewMarkdowns();
             keepPrices();
             unitCost_.clear();
         }

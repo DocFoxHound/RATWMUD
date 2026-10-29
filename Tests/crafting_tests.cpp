@@ -6487,6 +6487,57 @@ void aFarShopIsTheNearest()
     Society::setWorkByHours(false);
 }
 
+// Markdowns (doc 64, Phase 13, round 11, lane 3; the user, 2026-10-29: "Shops should mark down what sits over their
+// shelf target for more than a day."), with work by the hours: the baker's bread piled over its shelf target keeps its
+// price its first day over, then comes down a step (MarkdownStep) a day, never below MarkdownFloor of its normal cost;
+// its stock back under the target, the price climbs back a step a day. Without the rule, it keeps its price.
+void aGlutIsMarkedDown()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::Markdowns);
+        auto s = town();
+        auto state = s.state();
+        state.memory.pace = 1;
+        expect(s.restore(state), "the calibrated hours restore");
+        expect(s.shift("treasury", "scribe", "", 0, 200, "test: the buyer's money"), "the buyer has money");
+        set(s, "baker", "bread", 10);
+        expect(s.sale(s.tillOf("baker"), "scribe", "bread", 2, 1, "test: the day's buying"), "the scribe buys bread");
+        s.spoil(1);
+        const auto till = s.tillOf("baker");
+        const double before = s.priceAt("baker", "bread"), cost = s.normalCost("baker", "bread");
+        const int target = s.shelfTarget(till, "bread", Society::ProducerKept);
+        set(s, "baker", "bread", target + 50);
+        s.reviewMarkdowns();
+        expect(std::abs(s.priceAt("baker", "bread") - before) < 1e-9, "a day over its target, the bread keeps its price");
+        s.reviewMarkdowns();
+        const double second = s.priceAt("baker", "bread");
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(rule ? std::abs(second - before * (1 - Society::MarkdownStep)) < 1e-9 : std::abs(second - before) < 1e-9,
+               at + ", the second day over: " + std::to_string(second) + "p (from " + std::to_string(before) + "p)");
+        for (int d = 0; d < 40; ++d)
+            s.reviewMarkdowns();
+        const double floor = s.priceAt("baker", "bread");
+        expect(rule ? floor >= cost * Society::MarkdownFloor - 1e-9 && floor < second : std::abs(floor - before) < 1e-9,
+               at + ", weeks over: " + std::to_string(floor) + "p, the floor " + std::to_string(cost * Society::MarkdownFloor) + "p");
+        set(s, "baker", "bread", 0);
+        s.reviewMarkdowns();
+        expect(!rule || s.priceAt("baker", "bread") > floor, at + ", under its target again, the price climbs back a step");
+        for (int d = 0; d < 40; ++d)
+            s.reviewMarkdowns();
+        expect(std::abs(s.priceAt("baker", "bread") - before) < 1e-9, at + ", and in time is its own again");
+        // (Back from the save: three days over, two steps down.)
+        auto saved = s.state();
+        saved.memory.markdowns[till + "|bread"] = 3;
+        expect(s.restore(saved), "the markdowns restore");
+        expect(std::abs(s.priceAt("baker", "bread") - before * (1 - 2 * Society::MarkdownStep)) < 1e-9, at + ", a markdown comes back from the save");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -6587,6 +6638,7 @@ int main()
         aHungryWolfBuysAtItsPrice();
         aFestivalsFeastLaidIn();
         aFarShopIsTheNearest();
+        aGlutIsMarkedDown();
         aHouseSpendsInsideItsWeek();
         theChurchsAlmsInsideItsRelief();
         theAlmsBuyTheCheapestThatFeeds();
