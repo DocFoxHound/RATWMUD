@@ -483,7 +483,104 @@ void Society::setStandingOrders(const std::map<std::pair<std::string, std::strin
     ordersCost_ = std::move(costs);
 }
 
-void Society::craft(const std::string& id, const std::string& workCell, double absoluteDay)
+int Society::freshKept(const items::Business* business, const items::Craft& k, const std::string& item)
+{
+    // Preserving (salting, smoking: doc 42, "Pressure"): a shop that sells a fresh food it also preserves keeps GoodsKept
+    // of it fresh on the counter, for hot meals and those who eat it the day they buy it; only what's over is cured.
+    const auto* in = items::good(item);
+    const auto* out = items::good(k.out.front().first);
+    if (!business || !rots(in) || !out || out->keeps <= in->keeps)
+        return 0;
+    const auto sold = items::goodsSold(*business, 1 << 20);
+    return std::find(sold.begin(), sold.end(), item) != sold.end() ? GoodsKept : 0;
+}
+
+bool Society::batchHas(const std::string& till, const items::Business* business, const items::Craft& k) const
+{
+    const auto* shelves = account(till);
+    return shelves && std::all_of(k.in.begin(), k.in.end(), [&](const auto& i) {
+               return stockAll(*shelves, i.first) >= i.second + freshKept(business, k, i.first);
+           });
+}
+
+std::vector<const items::Craft*> Society::craftOrder(const std::string& till, const items::Business* business) const
+{
+    // What sells fastest first (and what was asked for and missed), so scarce materials (iron) go where they're wanted,
+    // not into goods that sit on the shelf; otherwise in file order (doc 42, "Pressure").
+    auto order = business ? items::craftsFor(business->id) : std::vector<const items::Craft*>{};
+    if (const auto rates = sellRate_.find(till); rates != sellRate_.end())
+        std::stable_sort(order.begin(), order.end(), [&](const items::Craft* a, const items::Craft* b) {
+            const auto rate = [&](const items::Craft* k) {
+                const auto sold = rates->second.find(k->out.front().first);
+                return sold == rates->second.end() ? 0. : sold->second;
+            };
+            return rate(a) > rate(b);
+        });
+    return order;
+}
+
+int Society::craftKept(const std::string& id, const std::string& till, const items::Craft& k, const std::vector<std::string>& supplies) const
+{
+    // Low, judged by what the batch is for (its first good; a butcher's meat, not the hides that come with it):
+    // under the few a shop keeps, or, for what other trades work with (a mill's flour), under half a supplier's store.
+    // (What other trades work with and keeps (a mill's flour, not a baker's bread): a full store, so there is some to
+    // spare for other towns' makers, doc 42, "Food between towns". Their standing orders take what is over half.)
+    const auto& made = k.out.front().first;
+    const auto* madeGood = items::good(made);
+    const bool keeps = !rots(madeGood);
+    const bool supplied = std::find(supplies.begin(), supplies.end(), made) != supplies.end();
+    // A shop curing food (what keeps longer than what it's made from) keeps half a store of it, not a few: more
+    // fresh meat and fish cured before it spoils, more salt and firewood bought (doc 42, "Pressure").
+    const bool cures = !k.in.empty() && madeGood && madeGood->nourish > 0 && [&] {
+        const auto* in = items::good(k.in.front().first);
+        return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
+    }();
+    // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
+    const auto town = communityOfResident(id);
+    const double trade = items::townGoodOf(town, made) ? items::tradeKeep() : 1;
+    const double least = items::traded(made) && keeps ? SuppliesKept * trade
+                         : supplied || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
+    // Its store follows its sales (doc 64, Phase 3b): what it sells in its days' keeping, and its share of a week of
+    // what the roads' standing orders take of it from this town (doc 61: kept at its usual store, a smelter had 60
+    // bars to send whatever was ordered of it); the old store a floor.
+    return shelfTarget(till, made, int(least));
+}
+
+bool Society::foodBatchReady(const std::string& keeper, double absoluteDay) const
+{
+    // (Round 13, lane 3, KitchenKept: as craft() would look now, buying nothing. Only reads: the residents' decisions ask
+    // it on the threads.) Its next look due within the quarter hour, craft's own pace (a look an hour off, after one
+    // that found its work in hand short, would keep it waiting at its counter the hour).
+    if (const auto next = craftNext_.find(keeper); next != craftNext_.end() && next->second > absoluteDay + 1. / 96)
+        return false;
+    const auto* r = spec(keeper);
+    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto till = tillOf(keeper);
+    const auto* shelves = account(till);
+    if (!business || !shelves)
+        return false;
+    // A food batch at work is on the shelf at that look, its materials still in: its keeper's own trade began it a
+    // decision ago, and it waits the minute for it rather than walking off as it comes out.
+    if (const auto atWork = craftAtWork_.find(keeper); atWork != craftAtWork_.end())
+    {
+        const auto crafts = items::craftsFor(business->id);
+        const auto k = std::find_if(crafts.begin(), crafts.end(), [&](const items::Craft* c) { return c->id == atWork->second; });
+        return k != crafts.end() && !(*k)->out.empty() && edible((*k)->out.front().first) && batchHas(till, business, **k);
+    }
+    const auto& supplies = items::suppliesFor(business->id);
+    const double banked = workBankedOf(till);
+    for (const auto* k : craftOrder(till, business))
+    {
+        if (k->out.empty() || stockAll(*shelves, k->out.front().first) >= craftKept(keeper, till, *k, supplies))
+            continue;                               // (Not low: craft() looks past it.)
+        if (!batchHas(till, business, *k))
+            continue;                               // (Short of materials: craft() would buy them, or look past it.)
+        return edible(k->out.front().first) && banked + 1e-9 >= hoursFor(*k);
+    }
+    return false;
+}
+
+void Society::craft(const std::string& id, const std::string& workCell, double absoluteDay, bool byHands)
 {
     const auto* r = spec(id);
     const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
@@ -499,20 +596,10 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     const auto madeHere = [&](const std::string& item) {
         return std::any_of(crafts.begin(), crafts.end(), [&](const items::Craft* k) { return !k->out.empty() && k->out.front().first == item; });
     };
-    // Preserving (salting, smoking: doc 42, "Pressure"): a shop that sells a fresh food it also preserves keeps GoodsKept
-    // of it fresh on the counter, for hot meals and those who eat it the day they buy it; only what's over is cured.
-    const auto fresh = [&](const items::Craft& k, const std::string& item) {
-        const auto* in = items::good(item);
-        const auto* out = items::good(k.out.front().first);
-        if (!business || !rots(in) || !out || out->keeps <= in->keeps)
-            return 0;
-        const auto sold = items::goodsSold(*business, 1 << 20);
-        return std::find(sold.begin(), sold.end(), item) != sold.end() ? GoodsKept : 0;
-    };
-    const auto has = [&](const items::Craft& k) {
-        return std::all_of(k.in.begin(), k.in.end(),
-                           [&](const auto& i) { return stockAll(*account(till), i.first) >= i.second + fresh(k, i.first); });
-    };
+    // (What it keeps fresh of a material it also sells, and whether its till holds a batch's materials: freshKept,
+    // batchHas, which foodBatchReady reads too.)
+    const auto fresh = [&](const items::Craft& k, const std::string& item) { return freshKept(business, k, item); };
+    const auto has = [&](const items::Craft& k) { return batchHas(till, business, k); };
     // A batch finished: its materials are used and its goods are on the shelf (if the materials are still there).
     if (const auto atWork = craftAtWork_.find(id); atWork != craftAtWork_.end())
     {
@@ -578,10 +665,12 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
         }
     }
     // A supplier's shelves: what has run below a quarter of its store is bought back up from workshops and producers.
-    // (Its store by what it sells, doc 64, Phase 3b: SuppliesKept at least.)
-    for (const auto& item : supplies)
-        if (const int store = shelfTarget(till, item, SuppliesKept); stockAll(*account(till), item) < store / 4)
-            buyMaterials(id, workCell, item, store - stockAll(*account(till), item), true);
+    // (Its store by what it sells, doc 64, Phase 3b: SuppliesKept at least.) (Its hands at work alone, KitchenKept: that
+    // waits for its keeper. It's buying to sell on, not making.)
+    if (!byHands)
+        for (const auto& item : supplies)
+            if (const int store = shelfTarget(till, item, SuppliesKept); stockAll(*account(till), item) < store / 4)
+                buyMaterials(id, workCell, item, store - stockAll(*account(till), item), true);
     // A food maker's materials (doc 64, Phase 13; the model's lay_in): once a day, whatever its shelves hold, laid in
     // to days of their use (inputStore), so a Restday or a short caravan doesn't empty its kitchen the day after; what
     // is over its batches' store only with what its till can spare, never on credit.
@@ -599,58 +688,34 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
     }
     // The keeper's own time at work since it last looked (doc 64, Phase 3): a gap over two game hours is a new day's
     // work begun, not work done. The skilled get more done in an hour (workPace), and so do improved premises and a
-    // player's paw lent; it goes to the business's work in hand, beside its help's spells (RatwResidents.cpp).
-    double worked = 0;
-    if (const auto last = lastAtWork_.find(id); last != lastAtWork_.end())
-        if (const double since = (absoluteDay - last->second) * 24; since > 0 && since <= 2)
-            worked = since;
-    lastAtWork_[id] = absoluteDay;
-    if (const auto* job = jobOf(id); job && worked > 0)
-        worked /= workPace(skill(id, job->id), job->level) * (1 - ImprovementPace * improvement(job->id));
-    if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
-        worked *= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
-    // A shopkeeper who also brings goods in (a stables' stock-breeding) does so with its time; one who makes things,
-    // its time goes to the business's work in hand.
-    if (items::producerFor(r->workLabel))
-        produce(id, absoluteDay, worked);
-    else
-        creditWork(till, worked);
-    double wait = 1. / 96;                          // Nothing to make: look again in a quarter of an hour.
-    // What sells fastest first (and what was asked for and missed), so scarce materials (iron) go where they're wanted,
-    // not into goods that sit on the shelf; otherwise in file order (doc 42, "Pressure").
-    auto order = crafts;
-    if (const auto rates = sellRate_.find(till); rates != sellRate_.end())
-            std::stable_sort(order.begin(), order.end(), [&](const items::Craft* a, const items::Craft* b) {
-                const auto rate = [&](const items::Craft* k) {
-                    const auto sold = rates->second.find(k->out.front().first);
-                    return sold == rates->second.end() ? 0. : sold->second;
-                };
-                return rate(a) > rate(b);
-            });
-    for (const auto* k : order)
+    // player's paw lent; it goes to the business's work in hand, beside its help's spells (RatwResidents.cpp). (Its hands
+    // at work alone, KitchenKept: none of the keeper's time, which it isn't putting in, nor its look's mark moved, so its
+    // time back at its counter counts as before.)
+    if (!byHands)
     {
-        // Low, judged by what the batch is for (its first good; a butcher's meat, not the hides that come with it):
-        // under the few a shop keeps, or, for what other trades work with (a mill's flour), under half a supplier's store.
-        // (What other trades work with and keeps (a mill's flour, not a baker's bread): a full store, so there is some to
-        // spare for other towns' makers, doc 42, "Food between towns". Their standing orders take what is over half.)
+        double worked = 0;
+        if (const auto last = lastAtWork_.find(id); last != lastAtWork_.end())
+            if (const double since = (absoluteDay - last->second) * 24; since > 0 && since <= 2)
+                worked = since;
+        lastAtWork_[id] = absoluteDay;
+        if (const auto* job = jobOf(id); job && worked > 0)
+            worked /= workPace(skill(id, job->id), job->level) * (1 - ImprovementPace * improvement(job->id));
+        if (const auto paw = pawLent_.find(id); paw != pawLent_.end() && paw->second.second >= absoluteDay)
+            worked *= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
+        // A shopkeeper who also brings goods in (a stables' stock-breeding) does so with its time; one who makes things,
+        // its time goes to the business's work in hand.
+        if (items::producerFor(r->workLabel))
+            produce(id, absoluteDay, worked);
+        else
+            creditWork(till, worked);
+    }
+    double wait = 1. / 96;                          // Nothing to make: look again in a quarter of an hour.
+    // (Its crafts, what sells fastest first: craftOrder.)
+    for (const auto* k : craftOrder(till, business))
+    {
+        // (Low: under the store it keeps of the batch's first good, craftKept.)
         const auto& made = k->out.front().first;
-        const auto* madeGood = items::good(made);
-        const bool keeps = !rots(madeGood);
-        // A shop curing food (what keeps longer than what it's made from) keeps half a store of it, not a few: more
-        // fresh meat and fish cured before it spoils, more salt and firewood bought (doc 42, "Pressure").
-        const bool cures = !k->in.empty() && madeGood && madeGood->nourish > 0 && [&] {
-            const auto* in = items::good(k->in.front().first);
-            return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
-        }();
-        // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
-        const auto town = communityOfResident(id);
-        const double trade = items::townGoodOf(town, made) ? items::tradeKeep() : 1;
-        const double least = items::traded(made) && keeps ? SuppliesKept * trade
-                             : supplied(made) || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
-        // Its store follows its sales (doc 64, Phase 3b): what it sells in its days' keeping, and its share of a week of
-        // what the roads' standing orders take of it from this town (doc 61: kept at its usual store, a smelter had 60
-        // bars to send whatever was ordered of it); the old store a floor.
-        const int kept = shelfTarget(till, made, int(least));
+        const int kept = craftKept(id, till, *k, supplies);
         const bool low = stockAll(*account(till), made) < kept;
         if (!low)
             continue;

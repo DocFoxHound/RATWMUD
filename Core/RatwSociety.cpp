@@ -1222,6 +1222,7 @@ bool Society::restore(const SocietyState& saved)
     state_ = s;
     richestDay_ = -1;                               // (Its households as the save has them: rollRichest.)
     indexTills();
+    kitchensDay_ = -1;                              // (And its kitchens by those tills: Society::kitchen, round 13.)
     forgetOrchestra();
     loadPrices();
     loadRates();                                    // (Makers' mending and builders' works: doc 64, Phase 13.)
