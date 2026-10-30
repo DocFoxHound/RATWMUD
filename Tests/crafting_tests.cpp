@@ -13,9 +13,12 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <tuple>
 
 using namespace ratw;
@@ -7204,7 +7207,8 @@ void aHungryWolfBuysAtItsPrice()
 {
     Society::setWorkByHours(true);
     const auto run = [](bool rule, bool loaf) {
-        Society::wageRulesOff(rule ? 0 : Society::FoodAtItsPrice);
+        // (Without it, round 14's ShopsCompared off too: it looks whatever the purse, so the bite's rule is round 10's.)
+        Society::wageRulesOff(rule ? 0 : Society::FoodAtItsPrice | Society::ShopsCompared);
         auto s = folkTown();
         auto state = s.state();
         state.residents.at("wren").hunger = 70;
@@ -7753,6 +7757,411 @@ void aGlutIsMarkedDown()
     Society::setWorkByHours(false);
 }
 
+// Round 14, lane 2 (the user, 2026-10-30: ShopsCompared, FestivalShopsOpen), with work by the hours. A food counter of
+// the shopping tests: its keeper, its work, where it serves, the one food it sells (40 of them), and that food's margin
+// (0: the ladder's).
+struct Counter
+{
+    std::string id, work;
+    Spot at;
+    std::string food;
+    double margin = 0;
+};
+// A town of food counters (one community, "town"; on the map, each cell `along` tiles east: the square at 0) and wren,
+// hungry (70), carrying nothing, holding `purse`; the stores hold no meals for a counter's wholesale restock, and each
+// counter only its own food. Ash, a second weaver, at home.
+Society shoppingTown(const std::vector<Counter>& counters, std::int64_t purse, bool mapped = false)
+{
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    auto ash = person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian");
+    wren.meals = ash.meals = 0;
+    for (const auto& c : counters)
+    {
+        auto keeper = person(c.id, c.work, c.at);
+        keeper.home = {c.id + "_flat", 2.5, 2.5};
+        keeper.meals = 0;
+        roster.residents.push_back(keeper);
+    }
+    roster.residents.push_back(wren);
+    roster.residents.push_back(ash);
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    LifeDay day;
+    day.communityOf = [](const std::string&) { return std::string("town"); };
+    if (mapped)
+        day.onMap = [](const Spot& at, double& x, double& y) {
+            static const std::map<std::string, double> along = {{"square", 0}, {"a", 10}, {"b", 15}, {"c", 20}, {"lane", 30}};
+            const auto found = along.find(at.cell);
+            x = (found == along.end() ? 200 : found->second) + at.x;
+            y = at.y;
+            return true;
+        };
+    s.setDay(day);
+    auto state = s.state();
+    state.memory.pace = 1;
+    state.memory.going[""] = 60;                    // (The realm's going rate as the runs': a loaf some 5p.)
+    state.residents.at("wren").hunger = 70;
+    state.accounts.at("treasury").stock.clear();
+    for (const auto& c : counters)
+    {
+        auto& shelves = state.accounts.at(s.tillOf(c.id)).stock;
+        for (auto it = shelves.begin(); it != shelves.end();)
+            it = Society::edible(it->first) ? shelves.erase(it) : std::next(it);
+        shelves[c.food] = 40;
+        if (c.margin > 0)
+            state.memory.margins[s.tillOf(c.id) + "|" + c.food] = c.margin;
+    }
+    auto& w = state.accounts.at("wren");
+    for (auto it = w.stock.begin(); it != w.stock.end();)
+        it = Society::edible(it->first) ? w.stock.erase(it) : std::next(it);
+    state.accounts.at("treasury").cash += w.cash - purse;
+    w.cash = purse;
+    expect(s.restore(state), "the shopping town restores");
+    return s;
+}
+
+// Where wren, at `at`, goes for food: its task and the counter it goes to (its goal's cell and x), after the keepers
+// have opened their counters (a second at 10:00). With `purse` (0 or more), its purse that after the day's turn (its
+// relief paid).
+std::string wrenGoes(Society& s, Spot at, std::int64_t purse = -1)
+{
+    auto bodies = atWork(s);
+    bodies["wren"] = {at.cell, at.x, at.y};
+    s.tick(1, 10. / 24, 0, bodies);                 // (The keepers to their trade.)
+    if (const auto cash = s.account("wren")->cash; purse >= 0 && cash != purse)
+        expect(cash > purse ? s.shift("wren", "treasury", "", 0, cash - purse, "test: wren's purse")
+                            : s.shift("treasury", "wren", "", 0, purse - cash, "test: wren's purse"),
+               "wren's purse set");
+    s.tick(1, 10. / 24 + 1. / 86400, 0, bodies);    // (Their counters open: wren decides.)
+    expect(s.conserved(), "money stays conserved");
+    const auto* life = s.resident("wren");
+    std::ostringstream said;
+    said << life->task << " at " << life->goalCell << " " << life->goalX;
+    return said.str();
+}
+
+// The cheaper shop wins (ShopsCompared): a bakery and a smokehouse in wren's cell, the smokehouse's counter nearer, the
+// smoked fish at a margin of 3 (some five times the bread's pennies for a unit of nourishment), wren hungry with 100p:
+// with the rule it goes to the bakery, without to the smokehouse, the nearest. A penny short of the bread (the cheapest),
+// it asks alms at the smokehouse, as before. The bakery across the town (30 tiles off, the smokehouse in its cell): with
+// the rule it walks to it; but with three smokehouses of its town nearer than the bakery (ShopsLooked), it doesn't look
+// so far, and buys at its own cell's.
+void theCheaperShopWins()
+{
+    Society::setWorkByHours(true);
+    const Counter bakery{"baker", "baker at The Loaf", {"square", 2.5, 2.5}, "bread"};
+    const Counter smokehouse{"smoker", "runs the smokehouse", {"square", 4.5, 2.5}, "smoked_fish", 3};
+    const Spot wrenAt{"square", 5.0, 2.5};
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::ShopsCompared);
+        const std::string with = rule ? "with the rule" : "without the rule";
+        {
+            auto s = shoppingTown({bakery, smokehouse}, 100);
+            const auto bread = s.shopPrice("baker", "bread"), fish = s.shopPrice("smoker", "smoked_fish");
+            const double breadValue = double(bread) / Society::nourishment("bread"), fishValue = double(fish) / Society::nourishment("smoked_fish");
+            expect(fishValue > breadValue * (1 + Society::ValueTie) * 3 && fish < 100,
+                   "the smoked fish dear: " + std::to_string(fish) + "p for " + std::to_string(Society::nourishment("smoked_fish")) +
+                       " against the bread's " + std::to_string(bread) + "p for " + std::to_string(Society::nourishment("bread")));
+            const auto went = wrenGoes(s, wrenAt);
+            expect(went == (rule ? "buy food at square 2.5" : "buy food at square 4.5"), with + ", with 100p wren goes: " + went);
+            if (rule)
+            {
+                std::cout << "  the shops compared: bread " << bread << "p (" << breadValue << "p a unit of nourishment), smoked fish " << fish
+                          << "p (" << fishValue << "p)\n";
+                const auto v = s.shopOffer("smoker");
+                expect(std::abs(v.value - fishValue) < 1e-9 && v.cheapest == fish, "the smokehouse valued at its price");
+                // (What's on its shelf is now: its smoked fish gone, it offers nothing; back, it offers it again.)
+                set(s, "smoker", "smoked_fish", 0);
+                expect(s.shopOffer("smoker").cheapest == 0, "its fish gone, the smokehouse offers nothing");
+                set(s, "smoker", "smoked_fish", 5);
+                expect(s.shopOffer("smoker").cheapest == fish, "its fish back, at the hour's price");
+            }
+            else
+                expect(!s.shopValue("smoker") && !s.shopValue("baker"), "without the rule no shop is valued");
+        }
+        {
+            auto probe = shoppingTown({bakery, smokehouse}, 100);
+            const auto bread = probe.shopPrice("baker", "bread");
+            auto s = shoppingTown({bakery, smokehouse}, bread - 1);
+            const auto went = wrenGoes(s, wrenAt, bread - 1);
+            expect(went == "seeking alms at square 4.5", with + ", a penny short of the bread (" + std::to_string(bread) + "p), wren asks alms: " + went);
+        }
+        {
+            auto far = bakery;
+            far.at = {"lane", 2.5, 2.5};
+            auto s = shoppingTown({far, smokehouse}, 100, true);
+            const auto went = wrenGoes(s, wrenAt);
+            expect(went == (rule ? "buy food at lane 2.5" : "buy food at square 4.5"), with + ", the bakery across the town: " + went);
+        }
+        {
+            auto far = bakery;
+            far.at = {"lane", 2.5, 2.5};
+            std::vector<Counter> counters = {far, smokehouse};
+            for (const auto* cell : {"a", "b", "c"})
+                counters.push_back({std::string("smoker_") + cell, "runs the smokehouse", {cell, 2.5, 2.5}, "smoked_fish", 3});
+            auto s = shoppingTown(counters, 100, true);
+            const auto went = wrenGoes(s, wrenAt);
+            expect(went == "buy food at square 4.5", with + ", three smokehouses nearer than the bakery: " + went);
+        }
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// Near enough is nearer (ShopsCompared, ValueTie): two bakeries in wren's cell, the farther (abaker, first by name) its
+// bread a few pennies cheaper, within a tenth: wren goes to the nearer. A fifth cheaper, to the farther. Without the
+// rule, to the nearer both times.
+void nearEnoughIsNearer()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::ShopsCompared);
+        const std::string with = rule ? "with the rule" : "without the rule";
+        const auto run = [&](double farMargin, double& tie) {
+            auto s = shoppingTown({{"abaker", "baker at The Loaf", {"square", 2.5, 2.5}, "bread", farMargin},
+                                   {"bbaker", "baker at The Crust", {"square", 4.5, 2.5}, "bread", 6}},
+                                  200);
+            tie = double(s.shopPrice("bbaker", "bread")) / double(s.shopPrice("abaker", "bread"));
+            return wrenGoes(s, {"square", 5.0, 2.5});
+        };
+        double tie = 0, wide = 0;
+        const auto near = run(5.6, tie);
+        expect(tie > 1 && tie <= 1 + Society::ValueTie, "the nearer's bread dearer, within a tenth: " + std::to_string(tie));
+        expect(near == "buy food at square 4.5", with + ", within a tenth wren goes to the nearer: " + near);
+        const auto far = run(4.6, wide);
+        if (rule)
+            std::cout << "  near enough: the nearer's bread dearer by " << tie << " (it wins), by " << wide << " (the farther wins)\n";
+        tie = wide;
+        expect(tie > 1 + Society::ValueTie, "the nearer's bread dearer by more than a tenth: " + std::to_string(tie));
+        expect(far == (rule ? "buy food at square 2.5" : "buy food at square 4.5"), with + ", a fifth cheaper: " + far);
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The larder lays in where it's cheap (ShopsCompared): wren and ash's larder bare, wren with 500p, two bakeries in town;
+// at the day's turn the household lays in. Without the rule it starts at a shop of its own (by its home); its bread made
+// dear (a margin of 3), with the rule it starts at the other, and without, still at its own; the two alike, with the rule
+// at its own.
+void theLarderLaysInWhereItsCheap()
+{
+    Society::setWorkByHours(true);
+    const auto first = [](bool rule, const std::string& dear) {
+        Society::wageRulesOff(rule ? 0 : Society::ShopsCompared);
+        std::vector<Counter> counters = {{"abaker", "baker at The Loaf", {"square", 2.5, 2.5}, "bread"},
+                                         {"bbaker", "baker at The Crust", {"lane", 2.5, 2.5}, "bread"}};
+        for (auto& c : counters)
+            c.margin = c.id == dear ? 3 : 0;
+        auto s = shoppingTown(counters, 500);
+        const auto larder = Society::homeStore("homes", "larder");
+        expect(s.openAccount(larder), "the household's larder");
+        auto state = s.state();
+        state.residents.at("wren").hunger = 0;      // (Laying in, not hungry.)
+        expect(s.restore(state), "wren fed restores");
+        auto bodies = atWork(s);
+        s.tick(1, 10. / 24, 0, bodies);
+        s.takeJournal();
+        s.tick(1, 1 + 10. / 24, 0, bodies);         // (The day's turn: the households' errands, householdShopping.)
+        std::string till;
+        int bought = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "resident food purchase" && (e.from == "wren" || e.from == "ash"))
+            {
+                if (till.empty())
+                    till = e.to;
+                bought += e.quantity;
+            }
+        expect(bought > 0, "the household lays in");
+        expect(s.conserved(), "money stays conserved");
+        return till == s.tillOf("abaker") ? std::string("abaker") : till == s.tillOf("bbaker") ? std::string("bbaker") : till;
+    };
+    const auto own = first(false, "");
+    expect(own == "abaker" || own == "bbaker", "the household's own start: " + own);
+    const auto other = own == "abaker" ? "bbaker" : "abaker";
+    const auto cheap = first(true, own), before = first(false, own);
+    expect(cheap == other, "with the rule, its own start's bread dear, it lays in at the other first: " + cheap);
+    expect(before == own, "without the rule, at its own start still: " + before);
+    const auto same = first(true, "");
+    expect(same == own, "with the rule and the two alike, at its own start: " + same);
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The values are the hour's (ShopsCompared): the bakery's bread made dear at 10:30, its value stays the hour's till the
+// hour turns, and wren still goes there; the values are worked out on the main thread, never a deciding thread's, with
+// 70 wolves deciding over two threads.
+void theValueIsHourly()
+{
+    Society::setWorkByHours(true);
+    Society::wageRulesOff(0);
+    AuthoredRoster roster;
+    auto baker = person("baker", "baker at The Loaf", {"square", 2.5, 2.5});
+    auto oven = person("oven", "baker at The Crust", {"square", 4.5, 2.5});
+    baker.home = {"bakers_flat", 2.5, 2.5};
+    oven.home = {"ovens_flat", 2.5, 2.5};
+    roster.residents = {baker, oven};
+    for (int i = 0; i < 70; ++i)
+    {
+        auto w = person("w" + std::to_string(100 + i), "weaving at home", {"homes", 2.5, 2.5}, "civilian");
+        w.meals = 0;
+        roster.residents.push_back(w);
+    }
+    roster.economy.treasury = 50000;
+    Society s(Roster::None);
+    s.configure(roster);
+    LifeDay day;
+    day.communityOf = [](const std::string&) { return std::string("town"); };
+    s.setDay(day);
+    std::set<std::thread::id> deciders;
+    std::size_t jobs = 0;
+    std::mutex seen;
+    s.setParallel([&](std::size_t count, const std::function<void(std::size_t)>& job) {
+        std::vector<std::thread> threads;
+        for (std::size_t t = 0; t < 2; ++t)
+            threads.emplace_back([&, t] {
+                for (std::size_t i = t; i < count; i += 2)
+                {
+                    job(i);
+                    const std::lock_guard<std::mutex> lock(seen);
+                    deciders.insert(std::this_thread::get_id());
+                    ++jobs;
+                }
+            });
+        for (auto& t : threads)
+            t.join();
+    });
+    {
+        auto state = s.state();
+        state.accounts.at("treasury").stock.clear();
+        for (const auto* keeper : {"baker", "oven"})
+        {
+            auto& shelves = state.accounts.at(s.tillOf(keeper)).stock;
+            for (auto it = shelves.begin(); it != shelves.end();)
+                it = Society::edible(it->first) ? shelves.erase(it) : std::next(it);
+            shelves["bread"] = 90;
+        }
+        for (auto& [id, life] : state.residents)
+            if (id.rfind("w1", 0) == 0)
+            {
+                life.hunger = 70;
+                auto& w = state.accounts.at(id);
+                for (auto it = w.stock.begin(); it != w.stock.end();)
+                    it = Society::edible(it->first) ? w.stock.erase(it) : std::next(it);
+            }
+        expect(s.restore(state), "the hungry town restores");
+    }
+    auto bodies = atWork(s);
+    bodies["w100"] = {"square", 5.0, 2.5};          // (Nearer the Crust.)
+    double at = 10. / 24;
+    s.tick(1, at, 0, bodies);
+    at += 1. / 86400;
+    s.tick(1, at, 0, bodies);
+    expect(s.shopValue("oven") && s.shopOffer("oven").value > 0, "the Crust valued as it opens");
+    const double before = s.shopOffer("oven").value;
+    const auto hours = s.shopValueHours();
+    expect(s.shopValuedBy() == std::this_thread::get_id(), "valued on the main thread");
+    expect(jobs > 0 && !deciders.empty() && !deciders.count(std::this_thread::get_id()), "the wolves decided on two other threads");
+    expect(s.resident("w100")->task == "buy food" && s.resident("w100")->goalX == 4.5, "w100 goes to the Crust, the nearer of two alike");
+    // At 10:30 the Crust's bread dear: its price is, its value isn't till 11:00.
+    auto state = s.state();
+    state.memory.margins[s.tillOf("oven") + "|bread"] = 3;
+    expect(s.restore(state), "the dear bread restores");
+    const double dear = double(s.shopPrice("oven", "bread")) / Society::nourishment("bread");
+    expect(dear > before * (1 + Society::ValueTie), "the Crust's bread dearer by more than a tenth");
+    at = 10.5 / 24;
+    for (int i = 0; i < 3; ++i, at += 1. / 86400)
+        s.tick(1, at, 0, bodies);
+    expect(std::abs(s.shopOffer("oven").value - before) < 1e-9 && s.shopValueHours() == hours, "mid-hour the Crust's value is the hour's");
+    expect(s.resident("w100")->goalX == 4.5, "and w100 still goes to it");
+    at = 11. / 24 + 1. / 86400;
+    for (int i = 0; i < 3; ++i, at += 1. / 86400)
+        s.tick(1, at, 0, bodies);
+    expect(s.shopValueHours() == hours + 1 && std::abs(s.shopOffer("oven").value - dear) < 1e-9,
+           "at 11:00 the Crust is valued afresh: " + std::to_string(s.shopOffer("oven").value) + " (" + std::to_string(dear) + ")");
+    expect(s.resident("w100")->task == "buy food" && s.resident("w100")->goalX == 2.5, "and w100 goes to the Loaf: " + s.resident("w100")->task);
+    expect(s.shopValuedBy() == std::this_thread::get_id(), "still on the main thread");
+    expect(s.conserved(), "money stays conserved");
+    s.setParallel({});
+    Society::setWorkByHours(false);
+}
+
+// A food shop opens at the festival (FestivalShopsOpen): a festival's day at 14:00, the baker on its hours (8 to 17).
+// With the rule its task is its trade and its counter open: wren, hungry with 20p, buys a loaf there. Without, it goes to
+// the festival, no shop is open, and wren buys nothing. After its hours (18:00) it goes to the festival with the rule
+// too.
+void aFoodShopOpensAtTheFestival()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::FestivalShopsOpen);
+        const std::string with = rule ? "with the rule" : "without the rule";
+        auto probe = shoppingTown({{"baker", "baker at The Loaf", {"square", 2.5, 2.5}, "bread"}}, 20);
+        auto s = shoppingTown({{"baker", "baker at The Loaf", {"square", 2.5, 2.5}, "bread"}}, 20);
+        expect(probe.shopPrice("baker", "bread") <= 20, "a loaf for 20p");
+        LifeDay plan = s.day();
+        DayPlan fair;
+        fair.kind = "festival";
+        fair.name = "the Fair";
+        fair.crowd = {{"fairground", 2.5, 2.5}};
+        plan.plans["town"] = fair;
+        s.setDay(plan);
+        auto bodies = atWork(s);
+        bodies["wren"] = {"square", 3.5, 2.5};
+        double at = 14. / 24;
+        s.tick(1, at, 0, bodies);
+        const auto* baker = s.resident("baker");
+        expect(rule ? baker->task == "trade" : baker->task == "festival", with + ", the baker at 14:00: " + baker->task + ", " + baker->reason);
+        s.takeJournal();
+        int loaves = 0;
+        bool open = false;
+        for (int i = 0; i < 120 && loaves == 0; ++i)
+        {
+            at += 1. / 86400;
+            s.tick(1, at, 0, bodies);
+            open = open || s.resident("wren")->task == "buy food";
+            for (const auto& e : s.takeJournal())
+                loaves += e.kind == "resident food purchase" && e.from == "wren" && e.to == s.tillOf("baker") ? e.quantity : 0;
+        }
+        expect(rule ? open && loaves > 0 : !open && loaves == 0, with + ", wren at the baker's counter: " + std::to_string(loaves) + " loaves");
+        expect(s.conserved(), "money stays conserved");
+        s.tick(1, 18. / 24, 0, bodies);
+        expect(s.resident("baker")->task == "festival", with + ", after its hours the baker goes to the festival: " + s.resident("baker")->task);
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// A smith still feasts (FestivalShopsOpen): the smith is no food shop; at 14:00 of a festival's day it goes to the
+// festival, with the rule and without.
+void aSmithStillFeasts()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::FestivalShopsOpen);
+        auto s = town();
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        DayPlan fair;
+        fair.kind = "festival";
+        fair.name = "the Fair";
+        fair.crowd = {{"fairground", 2.5, 2.5}};
+        plan.plans["town"] = fair;
+        s.setDay(plan);
+        s.tick(1, 14. / 24, 0, atWork(s));
+        expect(s.resident("smith")->task == "festival", std::string(rule ? "with" : "without") + " the rule, the smith goes to the festival: " +
+                                                            s.resident("smith")->task);
+        expect(s.resident("baker")->task == (rule ? "trade" : "festival"), "and the baker keeps its counter only with the rule: " + s.resident("baker")->task);
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -7868,6 +8277,12 @@ int main()
         theHandsBakeWithoutTheKeeper();
         theFeastIsBoughtAhead();
         aGlutIsMarkedDown();
+        theCheaperShopWins();
+        nearEnoughIsNearer();
+        theLarderLaysInWhereItsCheap();
+        theValueIsHourly();
+        aFoodShopOpensAtTheFestival();
+        aSmithStillFeasts();
         aHouseSpendsInsideItsWeek();
         theChurchsAlmsInsideItsRelief();
         theAlmsBuyTheCheapestThatFeeds();

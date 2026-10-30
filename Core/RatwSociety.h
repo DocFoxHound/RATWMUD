@@ -11,6 +11,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -1344,6 +1345,10 @@ class Society
         ChildrenKept = 1ull << 47,                   // Under ChildWorkAge no odd job; a child's spare to its home (round 13, 2).
         KitchenKept = 1ull << 48,                    // A food maker's kitchen runs with its keeper hungry or away (round 13, 3).
         FeastAhead = 1ull << 49,                     // A festival's feast bought in the week ahead, from what shops hold over (round 13, 3).
+        // Round 14, lane 2 (the user, 2026-10-30: shopping): the wolves compare the food shops near them, and the food
+        // shops keep their hours through a festival.
+        ShopsCompared = 1ull << 52,                  // The hungry and the larders go to the cheapest food near, not the nearest (round 14, 2).
+        FestivalShopsOpen = 1ull << 53,              // A food shop's keeper keeps its hours on a festival day (round 14, 2).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1411,8 +1416,66 @@ class Society
     // each food shop holds over its shelf target (what Markdowns would mark down), never meals (a meal shop restocks from
     // the stores at wholesale: they'd go back out); at the turn, as before. Every transfer 99 pieces at most.
     static constexpr int FeastAheadDays = 7;
+    // Round 14, lane 2 (the user, 2026-10-30: ShopsCompared, with work by the hours): the wolves compare the shops. A
+    // hungry wolf went to the nearest open food shop of its cell, else the first of its town, and a household laid in
+    // starting at a shop fixed by its home, so a dear seller lost no buyers: Ridgemere's smoked fish went from 9% to 52% of
+    // its residents' food spending over the two-year run (35p to 104p for 50 of nourishment, against bread's 15-20p), and
+    // its three smokehouses took 47% of the city's year-2 food bill. A food shop's value: the fewest pennies for a unit of
+    // nourishment among the foods it sells now (in stock, sellsFood, nourishment over 0: shopPrice / nourishment, a
+    // stall's at its .9, as cheapestFood), and its cheapest food, as cheapestFood (shopOffer):
+    //  - The hungry wolf, whatever its purse, looks at the open food shops of its cell and the ShopsLooked nearest of
+    //    its town beyond it (by the map; off it, the first ShopsLooked of its town), and goes to the one of least value
+    //    whose cheapest food its purse pays for; of values within ValueTie of the least, the nearest. None it can pay:
+    //    alms, as before. (No shop of its cell or town open: NearestShop's, as before.)
+    //  - A household lays in at its town's food shops least value first; those within ValueTie of each other in its own
+    //    order (from its home's start), so the households still spread over shops alike.
+    // Each food's price is the game hour's, asked at its first sight on the shelf in the hour (valueShop, on the main
+    // thread: prices are worked out on first asking, and that isn't for the decision threads), and what's on the shelf
+    // is now (shopOffer reads the till's stock): a bakery whose bread sold out at ten past is no cheap shop for the rest
+    // of the hour, and one that bakes at twenty past is one again.
+    // ShopsLooked: a city cell's walk, not across Ridgemere for a penny. ValueTie: within a tenth is the same price to a
+    // wolf, so its walk doesn't grow for nothing. A game hour: prices move at most a day (markdowns), a week (margins)
+    // or on a purchase (costs). Nothing is made and no money moves: a dear shop loses its buyers, and its markdowns and
+    // its margin bring it down; a cheap one's sales raise its shelf target and its batches.
+    static constexpr int ShopsLooked = 3;
+    static constexpr double ValueTie = .10;
+    struct ShopValue
+    {
+        struct Food
+        {
+            std::string item;                       // (Its stock's own name: its quality too.)
+            std::int64_t asked = 0;                 // Its price (shopPrice), as first seen in the hour.
+            int feeds = 0;                          // Its nourishment.
+        };
+        std::string till;
+        std::vector<Food> foods;                    // Each food it sells seen on its shelf this hour.
+    };
+    struct ShopOffer
+    {
+        double value = 0;                           // Pennies a unit of nourishment, at its best (0: nothing that feeds).
+        std::int64_t cheapest = 0;                  // Its cheapest food, as cheapestFood (0: none).
+    };
+    // A shop's prices this game hour (ShopsCompared), null if it wasn't valued this hour; and its offer now: the hour's
+    // prices of what its shelf holds now, at a stall at its .9. Both only read, so the decision threads may ask.
+    // valueShop: each food on its shelf not yet seen this hour priced (the hour begun afresh as it turns), on the main
+    // thread only.
+    const ShopValue* shopValue(const std::string& keeper) const
+    {
+        const auto found = shopValues_.find(keeper);
+        return found == shopValues_.end() ? nullptr : &found->second;
+    }
+    ShopOffer shopOffer(const std::string& keeper) const;
+    void valueShop(const std::string& keeper, double absoluteDay);
+    // (Tests': how many hours the prices were begun afresh, and the thread that last priced a shop's food.)
+    std::int64_t shopValueHours() const { return shopValueHours_; }
+    std::thread::id shopValuedBy() const { return shopValuedBy_; }
 
   private:
+    // The prices' hour (floor of the absolute day x 24, -1 for none) and its shops; the thread that priced last.
+    std::unordered_map<std::string, ShopValue> shopValues_;
+    std::int64_t shopValuesHour_ = -1, shopValueHours_ = 0;
+    std::thread::id shopValuedBy_;
+    double decidingAt_ = 0;                         // (The absolute day of the second being decided: decide().)
     int season_ = 0;                                // The season of the latest decision (0 spring .. 3 winter).
     // A shop's batch (RatwCrafting.cpp). `byHands` (KitchenKept): its hands' work in hand alone, its keeper away: no time
     // of the keeper's counted, credited or brought in, no supplier's restock; a batch finished, the day's materials laid

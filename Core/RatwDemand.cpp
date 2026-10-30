@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <tuple>
 
 // What townsfolk buy and use up (Docs/Design/35-items-crafting-industry.md, Part 7: households).
@@ -492,6 +493,63 @@ std::int64_t Society::cheapestFood(const std::string& seller)
             least = least > 0 ? std::min(least, price) : price;
         }
     return least;
+}
+
+void Society::valueShop(const std::string& keeper, double absoluteDay)
+{
+    // (Round 14, lane 2, ShopsCompared: each food a shop sells priced at its first sight on its shelf in the game hour,
+    // shopPrice as anyone pays it; asked of every open shop before the hour's decisions, and of its town's by a household
+    // laying in. On the main thread only: prices are worked out on first asking. A restore's are seen at the next hour.
+    // What it holds that it doesn't sell is noted unpriced, so it isn't asked again.)
+    const auto hour = std::int64_t(std::floor(absoluteDay * 24));
+    if (hour != shopValuesHour_)
+    {
+        shopValues_.clear();
+        shopValuesHour_ = hour;
+        ++shopValueHours_;
+    }
+    auto& v = shopValues_[keeper];
+    if (v.till.empty())
+        v.till = tillOf(keeper);
+    const auto* shop = account(v.till);
+    if (!shop || smith(keeper))
+        return;
+    std::vector<std::string> sold;                  // (Its wares, asked only for a food not seen yet.)
+    bool asked = false;
+    for (const auto& [item, n] : shop->stock)
+    {
+        if (n <= 0 || !edible(item) ||
+            std::any_of(v.foods.begin(), v.foods.end(), [&](const ShopValue::Food& f) { return f.item == item; }))
+            continue;
+        if (!asked)
+            sold = wares(keeper), asked = true;
+        shopValuedBy_ = std::this_thread::get_id();
+        v.foods.push_back({item, sellsFood(keeper, item, sold) ? shopPrice(keeper, item) : 0, nourishment(item)});
+    }
+}
+
+Society::ShopOffer Society::shopOffer(const std::string& keeper) const
+{
+    // (Round 14, lane 2, ShopsCompared: the hour's prices of the foods a shop's shelf holds now, a stall's at its .9, as
+    // cheapestFood; only read, so a decision thread may ask.)
+    ShopOffer o;
+    const auto found = shopValues_.find(keeper);
+    if (found == shopValues_.end())
+        return o;
+    const auto* shop = account(found->second.till);
+    if (!shop)
+        return o;
+    const bool stall = atStall_.count(keeper) > 0;
+    for (const auto& f : found->second.foods)
+        if (f.asked > 0)
+            if (const auto held = shop->stock.find(f.item); held != shop->stock.end() && held->second > 0)
+            {
+                const auto price = std::max<std::int64_t>(1, stall ? std::int64_t(std::floor(double(f.asked) * .9)) : f.asked);
+                o.cheapest = o.cheapest > 0 ? std::min(o.cheapest, price) : price;
+                if (f.feeds > 0)
+                    o.value = o.value > 0 ? std::min(o.value, double(price) / f.feeds) : double(price) / f.feeds;
+            }
+    return o;
 }
 
 bool Society::kitchen(const std::string& keeper)
@@ -1406,6 +1464,38 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
         if (r.role == "merchant" && state_.residents.count(r.id))
             shopsOf[communityOfResident(r.id)].push_back(r.id);
     const int reserve = items::householdReserve();
+    // A town's food shops in tiers by their value now (round 14, lane 2: ShopsCompared, with work by the hours): the
+    // first tier those within ValueTie of the least, the next those within it of the least left, and so on; those with
+    // nothing to sell last. Each household's own, its shelves as the households before it left them; the prices the game
+    // hour's (valueShop: here, at the day's turn, as its first decisions would, once a town).
+    const bool compared = workByHours() && wageRule(ShopsCompared);
+    std::set<std::string> priced;
+    std::vector<int> tier;
+    std::vector<double> value;
+    const auto tiersOf = [&](const std::string& town, const std::vector<std::string>& list) -> const std::vector<int>& {
+        if (priced.insert(town).second)
+            for (const auto& shop : list)
+                valueShop(shop, std::max(decidingAt_, double(day)));
+        value.resize(list.size());
+        for (std::size_t j = 0; j < list.size(); ++j)
+            value[j] = shopOffer(list[j]).value;
+        constexpr int last = std::numeric_limits<int>::max();
+        tier.assign(list.size(), last);
+        for (int t = 0;; ++t)
+        {
+            double least = 0;
+            for (std::size_t j = 0; j < list.size(); ++j)
+                if (tier[j] == last && value[j] > 0)
+                    least = least > 0 ? std::min(least, value[j]) : value[j];
+            if (least <= 0)
+                break;
+            for (std::size_t j = 0; j < list.size(); ++j)
+                if (tier[j] == last && value[j] > 0 && value[j] <= least * (1 + ValueTie))
+                    tier[j] = t;
+        }
+        return tier;
+    };
+    std::vector<std::size_t> order;                 // (The shops a household tries, by their number in its town's list.)
     for (const auto& [home, members] : homes)
     {
         // Who goes shopping: the one with the most money; how many grown wolves there are.
@@ -1449,10 +1539,22 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
             // in at (doc 64, Phase 13: not every household at the town's first shop, nor home with a crumb of it).
             const auto& list = shops->second;
             const std::size_t first = std::size_t(unit(home) * double(list.size())) % list.size();
+            // With the shops compared (round 14, lane 2: ShopsCompared, the user, 2026-10-30), least value first (its
+            // town's tiers, below); of a tier, from its own start, so the households still spread over shops alike. (What
+            // it buys at each is buyFood's, for the days it lays in for, as before.)
             if (!kept || held < 50 * int(members.size()))
+            {
+                order.resize(list.size());
                 for (std::size_t k = 0; k < list.size(); ++k)
+                    order[k] = (first + k) % list.size();
+                if (compared)
                 {
-                    const auto& shop = list[(first + k) % list.size()];
+                    const auto& tier = tiersOf(community, list);
+                    std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return tier[a] < tier[b]; });
+                }
+                for (const auto j : order)
+                {
+                    const auto& shop = list[j];
                     int under = 0;
                     if (shop == shopper || !shopHasFood(shop) || buyFood(shopper, shop, true, &under) == 0)
                         continue;
@@ -1467,6 +1569,7 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
                     if (under <= 0)
                         break;
                 }
+            }
         }
         const double offset = unit(home) * 30;          // (Not every household on the same day.)
         for (std::size_t k = 0; k < needs.size(); ++k)
