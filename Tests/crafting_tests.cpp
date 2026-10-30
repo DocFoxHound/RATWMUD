@@ -6558,6 +6558,240 @@ void aWageBidBySales()
     expect(extraBids.open > 0 && extraBids.wage > 10.05, "without the rule MoreHands' extra bids its wage up: " + show(extraBids));
 }
 
+Society fishTown();   // (Below: round 14's boat, fishmonger, smokehouse and scribe, one town.)
+
+// Round 16, lane 1 (ScarcityToHires; the user, 2026-10-30), with work by the hours: the trade a business's wage bid
+// reads is its sales at the ladder's margin. The boat sells 10 fish at 20p to the smokehouse: at a margin of 1.0 (a
+// staple's cap) its trade today is 115p with the rule (200 x 1.15 / 2), 200p without; at the ladder's 15%, or under
+// it, 200p both ways; the smokehouse's is -200p every way. Then at its weekly review, the boat short of hands (its
+// sales a hundred fish a day, three posts open past its one, four open days), its book at 400p (the realm's makers
+// all at 400p as a labourer's day), its trade today 2,000p at a margin of .8 against the higher wage for its one, its
+// none on hire and its three open, 1,648-1,760p: with the rule its trade is 1,278p, it can't pay, and it keeps its wage
+// and its weeks of calm; without, it bids up. At the ladder's margin it bids the same with and without.
+void aBidReadsTheLadder()
+{
+    Society::setWorkByHours(true);
+    const auto credited = [](bool rule, double margin) {
+        Society::wageRulesOff(rule ? 0 : Society::ScarcityToHires);
+        auto s = fishTown();
+        const auto boat = s.tillOf("fisher"), smoker = s.tillOf("smoker");
+        auto st = s.state();
+        st.memory.margins[boat + "|fish"] = margin;
+        st.memory.tradeNet[boat] = {0., 0};
+        st.memory.tradeNet[smoker] = {0., 0};
+        st.accounts.at(boat).stock["fish"] = 10;
+        st.accounts.at("treasury").cash -= 1000;
+        st.accounts.at(smoker).cash += 1000;
+        expect(s.restore(st), "the boat's margin and the smokehouse's money restore");
+        const auto before = s.account(smoker)->cash;
+        expect(s.sale(boat, smoker, "fish", 10, 20, "test: the smokehouse's fish"), "the smokehouse buys ten fish at 20p");
+        s.keepTradeNet();
+        expect(before - s.account(smoker)->cash == 200 && std::abs(s.tradeNetOf(smoker) + 200) < 1e-9,
+               "the buyer pays and is debited 200p: " + std::to_string(s.tradeNetOf(smoker)));
+        Society::wageRulesOff(0);
+        return s.tradeNetOf(boat);
+    };
+    const double cap = credited(true, 1.), capOff = credited(false, 1.), ladder = credited(true, items::ladder().markup),
+                 ladderOff = credited(false, items::ladder().markup), under = credited(true, .1);
+    std::cout << "  the bid at the ladder's: at 1.0 " << cap << "p (" << capOff << "p without), at the ladder's " << ladder << "p (" << ladderOff
+              << "p), under it " << under << "p\n";
+    expect(std::abs(cap - 115) < 1e-9 && std::abs(capOff - 200) < 1e-9, "at a staple's cap 200p of fish is 115p of trade with the rule, 200p without");
+    expect(std::abs(ladder - 200) < 1e-9 && std::abs(ladderOff - 200) < 1e-9 && std::abs(under - 200) < 1e-9,
+           "at the ladder's margin or under it, the whole sale both ways");
+    struct Run
+    {
+        double wage = 0, trade = 0;
+        int calm = 0, open = 0;
+    };
+    const auto review = [](bool rule, double margin) {
+        Society::wageRulesOff(Society::MoreHands | (rule ? 0 : Society::ScarcityToHires));
+        auto s = fishTown();
+        const auto boat = s.tillOf("fisher");
+        const auto bodies = atWork(s);
+        s.tick(1, 1 + .5 / 24, 0, bodies);           // (The first day's pass: the realm founded.)
+        const auto sells = [&](int n, std::int64_t price) {
+            auto st = s.state();
+            st.accounts.at(boat).stock["fish"] = n + 50;   // (Not sold out.)
+            st.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(st), "the day's catch");
+            for (int k = 0; k < n / 50; ++k)
+            {
+                expect(s.shift("treasury", "scribe", "", 0, 50 * price, "test: the buyer's money"), "the buyer has money");
+                expect(s.sale(boat, "scribe", "fish", 50, price, "test: the day's fish"), "the scribe buys fifty");
+            }
+        };
+        for (std::int64_t d = 2; d <= 15; ++d)
+        {
+            sells(100, 1);
+            s.spoil(d);
+        }
+        s.keepTradeNet();                           // (The fortnight's pennies out of today's trade.)
+        std::int64_t day = 16;
+        while (std::int64_t(std::hash<std::string>{}(boat + "|wage") % 7) != day % 7)
+            ++day;
+        {
+            auto st = s.state();
+            for (const auto& [key, account] : st.accounts)
+                if (key.rfind("till:", 0) == 0)
+                    st.memory.employers[key] = {400 * (1 + s.employerSkill(key) / items::ladder().skillWage)};
+            st.memory.employers[boat] = {400, Society::OpenDays, 2};
+            st.memory.tradeNet[boat] = {0., 0};
+            st.memory.margins[boat + "|fish"] = margin;
+            expect(s.restore(st), "its book, its trade and its margin restore");
+        }
+        sells(100, 20);                             // (Its review day's trade: 2,000p.)
+        s.tick(1, double(day) + .5 / 24, 0, bodies);
+        Run r;
+        r.wage = s.employerWage(boat), r.calm = s.state().memory.employers.at(boat).calm, r.open = s.vacanciesOf(boat), r.trade = s.tradeNetOf(boat);
+        expect(std::abs(s.goingRate("") - 400) < 1e-6, "the going rate at 400p: " + std::to_string(s.goingRate("")));
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return r;
+    };
+    const auto show = [](const Run& r) {
+        return std::to_string(r.wage) + "p, calm " + std::to_string(r.calm) + ", " + std::to_string(r.open) + " open, its trade " + std::to_string(r.trade) + "p";
+    };
+    const auto with = review(true, .8), without = review(false, .8);
+    std::cout << "  the bid at a margin of .8: with the rule " << show(with) << "; without, " << show(without) << "\n";
+    expect(with.open == 3 && without.open == 3, "short of three hands at its review: " + show(with));
+    expect(std::abs(with.trade - 1278) < 1e-9 && std::abs(without.trade - 2000) < 1e-9, "its trade 1,278p with the rule, 2,000p without");
+    expect(std::abs(with.wage - 400) < 1e-9 && with.calm == 2, "with the rule its trade can't pay more: it keeps its wage and its calm: " + show(with));
+    expect(without.wage > 400 * 1.02 && without.calm == 0, "without, its scarcity price pays the bid: " + show(without));
+    const auto shop = review(true, items::ladder().markup), shopOff = review(false, items::ladder().markup);
+    expect(shop.wage > 400 * 1.02 && std::abs(shop.wage - shopOff.wage) < 1e-9,
+           "at the ladder's margin it bids the same with and without: " + show(shop) + "; " + show(shopOff));
+    Society::setWorkByHours(false);
+}
+
+// Round 16, lane 1 (ScarcityToHires; the user, 2026-10-30), with work by the hours: a short producer's hire pays a
+// premium by its shortage. A boat with a book wage of 60p in a town at a 60p rate (its makers' middle: its scribe's and
+// its own), its sales with the buyers it turned away 40 a day for three weeks, short of hands (MoreHands left out),
+// nobody to take its hires (the residents' purses emptied each evening: nobody buys but the scribe the test pays). Half
+// its buyers turned away (20 a day: unmet .5, its scarcity 1): its hire pays 78p a slot, its wage half again (90p) kept
+// to WageHigh (1.3) times the rate. 11 of 40 (.275, a scarcity of .5): 75p. 2 of 40 (.05): 60p. A field's hire at
+// the harvest, its wheat's buyers half turned away: 75p, HarvestPay, with and without. Without the rule, 60p every
+// time. The book wage and the going rate are the same with and without.
+void aShortProducersHirePaysMore()
+{
+    Society::setWorkByHours(true);
+    struct Run
+    {
+        std::vector<std::int64_t> pays;
+        double unmet = 0, wage = 0, going = 0;
+    };
+    const auto run = [](bool rule, int missed) {
+        Society::wageRulesOff(Society::MoreHands | (rule ? 0 : Society::ScarcityToHires));
+        AuthoredRoster roster;
+        roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        const auto boat = s.tillOf("fisher");
+        {
+            auto st = s.state();
+            st.memory.pace = 1;
+            st.memory.employers[boat] = {60};
+            st.memory.employers[s.tillOf("scribe")] = {60 * (1 + s.employerSkill(s.tillOf("scribe")) / items::ladder().skillWage)};
+            st.accounts.at("treasury").cash -= 5000;
+            st.accounts.at(boat).cash += 5000;
+            expect(s.restore(st), "the boat in funds, its wage set");
+        }
+        const auto bodies = atWork(s);
+        Run r;
+        std::set<std::string> seen;
+        const int sold = 40 - missed;
+        for (std::int64_t d = 1; d <= 21; ++d)
+        {
+            for (const auto& who : {std::string("fisher"), std::string("scribe")})
+                if (const auto cash = s.account(who)->cash; cash > 0)
+                    s.shift(who, "treasury", "", 0, cash, "test: the evening's money taken");
+            set(s, "fisher", "fish", sold + 10);    // (Not sold out: no half again.)
+            expect(s.shift("treasury", "scribe", "", 0, sold, "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(boat, "scribe", "fish", sold, 1, "test: the day's fish"), "the scribe buys");
+            auto st = s.state();
+            st.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(st), "eaten");
+            s.missedAt("town", "fish", missed);
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+            for (const auto& j : s.oddJobs())
+                if (j.payer == boat && j.until >= d && seen.insert(j.id).second)
+                    r.pays.push_back(j.pay / j.slots);
+        }
+        r.unmet = s.missedRate(boat, "fish") / s.sellRates(boat)->at("fish");
+        r.wage = s.employerWage(boat), r.going = s.goingRate("");
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return r;
+    };
+    const auto show = [](const Run& r) {
+        std::string pays;
+        for (const auto p : r.pays)
+            pays += (pays.empty() ? "" : ", ") + std::to_string(p) + "p";
+        return "unmet " + std::to_string(r.unmet) + ", its hires " + pays + ", its wage " + std::to_string(r.wage) + "p, going " + std::to_string(r.going) + "p";
+    };
+    const auto all = [](const Run& r, std::int64_t pay) {
+        return !r.pays.empty() && std::all_of(r.pays.begin(), r.pays.end(), [&](std::int64_t p) { return p == pay; });
+    };
+    for (const auto& [missed, pay, unmet] : std::vector<std::tuple<int, std::int64_t, double>>{{20, 78, .5}, {11, 75, .275}, {2, 60, .05}})
+    {
+        const auto with = run(true, missed), without = run(false, missed);
+        std::cout << "  a short producer's hire, " << missed << " of 40 turned away: with the rule " << show(with) << "; without, " << show(without) << "\n";
+        expect(std::abs(with.unmet - unmet) < 1e-6 && std::abs(without.unmet - unmet) < 1e-6, "its buyers turned away: " + show(with));
+        expect(all(with, pay), "with the rule its hires pay " + std::to_string(pay) + "p a slot: " + show(with));
+        expect(all(without, 60), "without, its wage: " + show(without));
+        expect(std::abs(with.wage - without.wage) < 1e-9 && std::abs(with.going - without.going) < 1e-9 && std::abs(with.going - 60) < 1e-6,
+               "the book wage and the going rate the same with and without: " + show(with) + "; " + show(without));
+    }
+    // A field at the harvest, short of wheat's buyers too: HarvestPay, whatever the rule.
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::ScarcityToHires);
+        AuthoredRoster roster;
+        auto farmer = person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian");
+        farmer.home = {"farmhouse", 2.5, 2.5};
+        roster.residents = {farmer, person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+        roster.economy.treasury = 1000000;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        const auto till = s.tillOf("farmer");
+        const std::int64_t day = Society::HarvestStart + 7;
+        for (std::int64_t d = 1; d <= 14; ++d)
+        {
+            auto st = s.state();
+            st.accounts.at(till).stock["wheat"] = 30;
+            expect(s.restore(st), "the farm's wheat");
+            expect(s.shift("treasury", "scribe", "", 0, 20, "test: the buyer's money") && s.sale(till, "scribe", "wheat", 20, 1, "test: wheat"),
+                   "the scribe buys wheat");
+            s.missedAt("town", "wheat", 20);
+            s.spoil(d);
+        }
+        auto state = s.state();
+        state.budgetDay = day - 1;
+        state.memory.pace = 1;
+        state.memory.fields[till] = FieldYear{400, 400, 400, 0, 0, false, 0, -1, true};
+        state.memory.employers[till] = {60};
+        state.accounts.at("treasury").cash -= 100000;
+        state.accounts.at(till).cash += 100000;
+        expect(s.restore(state), "the farm at the harvest, in funds");
+        expect(s.missedRate(till, "wheat") > 5, "half its wheat's buyers turned away: " + std::to_string(s.missedRate(till, "wheat")));
+        s.tick(1, double(day) + .5 / 24, 0, atWork(s));
+        std::int64_t pay = 0;
+        for (const auto& j : s.oddJobs())
+            if (j.payer == till && j.field && j.until >= day)
+                pay = j.pay / j.slots;
+        expect(pay == 75, std::string(rule ? "with" : "without") + " the rule the field's harvest hire pays HarvestPay, 75p: " + std::to_string(pay) + "p");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 // Round 13, lane 1 (the user, 2026-10-29: the going rate's slide, 60p to 38.8p in two years), with work by the hours:
 // the realm's slack (the idle share of its grown wolves of working age; the weekly calm cut wants it over 3%) counts the
 // living only, and a wolf holding a place on a week's hire as at work (LivingSlack). Forty grown: a baker, a stall and
@@ -7253,6 +7487,125 @@ void aStoppedKeeperTakesAHire()
            "theirs: " + names(took));
     const auto paid = run(true);
     expect(paid.empty(), "paid by their tills that day, they keep to their own work: " + names(paid));
+    Society::setWorkByHours(false);
+}
+
+// Round 16, lane 1 (CalledBackLate; the user, 2026-10-30), with work by the hours: a boat selling 36 fish a day, three
+// hands' days, posts a hire of two for them; a jobless wolf and the keeper of a stall its owner has stopped topping up
+// take its places. Its sales then grow (a week at 90 a day: seven hands' days), so at the next day's pass it wants more.
+// With the rule the stall's keeper is called back to its shop only at the pass's end: the hire stands full through the
+// day's measures, its place no hole and no vacancy, the boat posts a new hire for what it still wants (MoreHands left
+// out: its sales' hands alone), the stall's own post isn't opened by its keeper's absence (on a day its till paid it
+// too), and the going rate, the middle of the boat's 70p, the scribe's and a lone scribe's 60p, weighs the boat as one
+// hand on its hire, as when its keeper was gone already. Without the rule the keeper is called back at tendTills, before
+// the measures: the place is a hole, a vacancy, and the boat posts no hire while it stands.
+void aKeeperCalledBackAfterTheMeasures()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        int boatOpen = -1, stallOpen = -1, newSlots = 0, hireTaken = -1;
+        bool calledBack = false, stillOn = true;
+        double going = 0;
+    };
+    const auto run = [](bool rule, bool tillPays) {
+        Society::wageRulesOff(Society::MoreHands | (rule ? 0 : Society::CalledBackLate));
+        AuthoredRoster roster;
+        roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                            person("stall", "keeping the stall", {"market", 4.5, 4.5}),
+                            person("idle1", "idling in the square", {"square", 2.5, 2.5}, "civilian"),
+                            person("scribe", "the scribe", {"desk", 2.5, 2.5}),
+                            person("lone1", "the scribe", {"desk1", 2.5, 2.5})};
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        const auto boat = s.tillOf("fisher"), stall = s.tillOf("stall");
+        {
+            auto st = s.state();
+            st.memory.pace = 1;
+            const double skilled = 1 + s.employerSkill(s.tillOf("scribe")) / items::ladder().skillWage;
+            st.memory.employers[boat] = {70};
+            for (const std::string who : {"scribe", "lone1"})
+                st.memory.employers[s.tillOf(who)] = {60 * skilled};
+            st.accounts.at("treasury").cash -= 5000;
+            st.accounts.at(boat).cash += 5000;
+            expect(s.restore(st), "the boat in funds, the wages set");
+        }
+        const auto bodies = atWork(s);
+        // (A day's `n` fish sold to the scribe at a penny and eaten; folded into its sales by `spoil` or the day's pass.)
+        const auto sells = [&](int n, std::int64_t day, bool fold) {
+            set(s, "fisher", "fish", n + 10);       // (Not sold out: no half again.)
+            expect(s.shift("treasury", "scribe", "", 0, n, "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(boat, "scribe", "fish", n, 1, "test: the day's fish"), "the scribe buys the boat's fish");
+            auto st = s.state();
+            st.accounts.at("scribe").stock.erase("fish");
+            expect(s.restore(st), "eaten");
+            if (fold)
+                s.spoil(day);
+        };
+        for (std::int64_t d = -14; d < 0; ++d)
+            sells(36, d, true);
+        sells(36, 1, false);
+        s.tick(1, 1 + .5 / 24, 0, bodies);           // (Day 1's pass: three hands' days, its hire for two.)
+        const Society::OddJob* first = nullptr;
+        for (const auto& j : s.oddJobs())
+            if (j.payer == boat && j.until >= 1)
+                first = &j;
+        expect(first && first->slots == 2, "the boat posts a hire of two for its three hands' days: " + std::to_string(first ? first->slots : 0));
+        const auto hire = first->id;
+        expect(s.holdPlace(hire, "idle1") && s.holdPlace(hire, "stall"), "the jobless wolf and the stall's keeper take its places");
+        {
+            auto st = s.state();
+            st.memory.shortTills[stall] = {Society::StopWeeks, 1, -1};   // (Its owner stopped topping it up.)
+            expect(s.restore(st), "the stall's owner stopped");
+        }
+        s.shift(stall, "treasury", "", 0, s.account(stall)->cash, "test: the stall's till run dry");
+        if (tillPays)
+            s.shift("treasury", stall, "", 0, std::int64_t(std::ceil(s.employerWage(stall))) + 1, "test: a day's wage");
+        for (int k = 0; k < 5; ++k)
+            sells(90, 1, true);                     // (Its sales of the week before, as one day's turn after another.)
+        sells(90, 1, false);
+        s.takeJournal();
+        s.tick(1, 2 + .5 / 24, 0, bodies);           // (Day 2's pass, its hire running to day 7.)
+        Seen seen;
+        seen.boatOpen = s.vacanciesOf(boat), seen.stallOpen = s.vacanciesOf(stall), seen.going = s.goingRate("");
+        for (const auto& j : s.oddJobs())
+            if (j.payer == boat && j.until >= 2)
+            {
+                if (j.id == hire)
+                    seen.hireTaken = int(j.stage.size()), seen.stillOn = j.stage.count("stall") > 0;
+                else
+                    seen.newSlots += j.slots;
+            }
+        for (const auto& e : s.takeJournal())
+            seen.calledBack |= e.kind == "called back to its shop" && e.from == "stall";
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto show = [](const Seen& r) {
+        return "the boat " + std::to_string(r.boatOpen) + " open, the stall " + std::to_string(r.stallOpen) + ", a new hire of " +
+               std::to_string(r.newSlots) + ", the hire's places held " + std::to_string(r.hireTaken) + ", going " + std::to_string(r.going) + "p";
+    };
+    for (const bool tillPays : {false, true})
+    {
+        const auto with = run(true, tillPays), without = run(false, tillPays);
+        const std::string day = tillPays ? " (its till paid it today)" : " (its till couldn't pay it)";
+        std::cout << "  called back late" << day << ": with the rule " << show(with) << "; without, " << show(without) << "\n";
+        // (Its posts missing past its hire: its sales' hands, two and twice its one at most, less its one and the two on its
+        // hire. Without the rule the hole is one more, and its missing are counted with one on its hire.)
+        expect(with.boatOpen == 1 && without.boatOpen == 2, "with the rule its hire's place is no hole" + day + ": " + show(with) + "; without, " + show(without));
+        expect(with.newSlots > 0 && without.newSlots == 0, "with the rule it posts a new hire for what it still wants; without, none" + day);
+        expect(with.stallOpen == 0 && without.stallOpen == 0, "the stall's own post isn't opened by its keeper away" + day + ": " + show(with));
+        expect(with.calledBack && without.calledBack && !with.stillOn && !without.stillOn && with.hireTaken == 1 && without.hireTaken == 1,
+               "the stall's keeper is called back to its shop, its place open again" + day);
+        expect(std::abs(with.going - without.going) < 1e-9 && std::abs(with.going - 60) < 1e-6,
+               "the going rate weighs the boat by its jobless hand alone, as without the rule" + day + ": " + std::to_string(with.going) + "p and " +
+                   std::to_string(without.going) + "p");
+    }
     Society::setWorkByHours(false);
 }
 
@@ -9273,9 +9626,12 @@ int main()
         aLoneOwnerStopsToppingUp();
         aStoppedBusinessIdlesAndReturns();
         aWageBidBySales();
+        aBidReadsTheLadder();
+        aShortProducersHirePaysMore();
         theSlackCountsTheLiving();
         aShortBusinessThatCantPayKeepsItsWage();
         aStoppedKeeperTakesAHire();
+        aKeeperCalledBackAfterTheMeasures();
         aFarmIsJudgedAfterItsHarvest();
         aHungryWolfBuysAtItsPrice();
         aFestivalsFeastLaidIn();

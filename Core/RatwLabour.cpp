@@ -468,7 +468,32 @@ void Society::reviewHands(const std::string& till, std::int64_t day, bool weekly
         const bool harvest = field || (producer && farmWork(producer->id) && !(fieldsOn() && fieldWork(producer->id)) &&
                                        (producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), season_) != producer->seasons.end()) &&
                                        (season_ == 0 || season_ == 2));
-        const auto pay = std::int64_t(std::ceil(employerWage(till) * (harvest ? HarvestPay : 1.) - 1e-9));
+        auto pay = std::int64_t(std::ceil(employerWage(till) * (harvest ? HarvestPay : 1.) - 1e-9));
+        // A producer short of what its buyers want pays its hire more by its shortage (round 16, lane 1, the user,
+        // 2026-10-30: ScarcityToHires, with WageBySales and work by the hours): its yields' buyers turned away over its
+        // rate (missedRate over sellRate, its whole `out`), from UnmetFrom to UnmetFull as reviewMargins' `scarce`,
+        // takes a slot from its wage to HirePremium over it, never past WageHigh times the going rate for its skill nor
+        // under its wage. The money a shortage brings goes to the day's hands it draws, not into the wage book: its bid
+        // reads its trade at the ladder's margin (noteTrade), and hire pay is in neither the going rate (the book's
+        // middle) nor any normal cost. Ridgemere's boats ran 2.5-10.4 hire slots each against 5-24 wanted for two years
+        // and turned away a fifth to a third of their buyers, and the owners' profit from their tills was 424-558k a
+        // quarter in year 4. (Not a harvest's hire: the land's sowing and harvest keep HarvestPay.)
+        if (producer && !harvest && workByHours() && wageRule(ScarcityToHires) && wageRule(WageBySales))
+        {
+            double missed = 0, rate = 0;
+            const auto rates = sellRate_.find(till);
+            for (const auto& [good, n] : producer->out)
+            {
+                missed += missedRate(till, good);
+                if (rates != sellRate_.end())
+                    if (const auto r = rates->second.find(good); r != rates->second.end())
+                        rate += r->second;
+            }
+            const double scarce = rate > .05 ? std::clamp((missed / rate - UnmetFrom) / (UnmetFull - UnmetFrom), 0., 1.) : 0.;
+            const double wage = employerWage(till);
+            const double most = goingRate(employerTownOf(till)) * (1 + employerSkill(till) / items::ladder().skillWage) * WageHigh;
+            pay = std::int64_t(std::ceil(std::max(wage, std::min(wage * (1 + HirePremium * scarce), most)) - 1e-9));
+        }
         // (Already hiring: its hire runs on, and what it still wants comes with the next.)
         const bool hiring = std::any_of(oddJobs_.begin(), oddJobs_.end(), [&](const OddJob& j) {
             return j.payer == till && j.until >= day && int(j.stage.size()) < j.slots;
@@ -593,13 +618,27 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     if (workByHours())
         for (const auto& [home, who] : memory.keeper)
             keepers.insert(who);
+    // With CalledBackLate (round 16, lane 1; the user, 2026-10-30; with work by the hours), a shop's keeper holding a
+    // place on a hire is called back to its shop at the end of this pass (callShopsBack), not at tendTills' before it:
+    // the day refills 95% of the places so left, so read as open they were holes that never stood a day. Each one blocked
+    // its payer's next hire (reviewHands posts none while a hire of its has a place untaken) and counted in its
+    // vacancies, so its open days reached OpenDays nearly every week and its wage was bid by sales. In days 1200-1399 of
+    // round 14's six years, a Ridgemere boat whose hires were all full at 23h but stood open at the turn posted a new
+    // hire on 15% of 1,245 days; with nothing open at the turn, on 100% of 338. (Round 12's principle for WagelessFirst's
+    // release: after the day's measures.) Until then the keeper is its hire's hand, but its own post isn't left: it is
+    // about to go back to it (below).
+    const bool lateCall = workByHours() && wageRule(OwnersStop) && wageRule(CalledBackLate);
+    const auto shopKeeper = [&](const std::string& id) {
+        const auto* post = jobOf(id);
+        return post && post->role == "merchant";
+    };
     if (workByHours())
         for (auto& j : oddJobs_)
             if (j.until >= day && ((j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop")) || crewPlace(j)))
                 for (auto it = j.stage.begin(); it != j.stage.end();)
                 {
                     const auto k = keyOf.find(it->first);
-                    if (k == keyOf.end() || k->second == j.payer || keepers.count(it->first) ||
+                    if (k == keyOf.end() || k->second == j.payer || keepers.count(it->first) || (lateCall && shopKeeper(it->first)) ||
                         (k->second.size() > 6 && k->second.compare(k->second.size() - 6, 6, "|works") == 0))
                     {
                         ++it;
@@ -808,6 +847,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // doc 64, Phase 13, round 6, the round-5 review. Before, only its posts open past its hire were.)
     std::unordered_map<std::string, int> wanted;
     std::map<std::string, int> onHires;             // (A business's hands at work on its hires: below.)
+    std::map<std::string, int> recalled;            // (Of them, shops' keepers called back at the pass's end: CalledBackLate.)
     if (workByHours())
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0)
@@ -827,10 +867,18 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // seconds' pace as it was.)
     if (workByHours())
     {
-        // (Its hires' grown hands: a child's place stands open, above.)
+        // (Its hires' grown hands: a child's place stands open, above. With CalledBackLate, the shops' keepers among them
+        // too, counted apart: they are its hands until the pass ends, and the day refills their places, so its posts
+        // missing, its hiring and its bid read them; the going rate's weight leaves them out, as before.)
         for (const auto& j : oddJobs_)
             if (j.until >= day && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop"))
+            {
                 onHires[j.payer] += int(j.stage.size()) - children(j);
+                if (lateCall)
+                    for (const auto& [who, stage] : j.stage)
+                        if (shopKeeper(who) && !(wageRule(ChildrenOpen) && ageOf(who) < 16))
+                            ++recalled[j.payer];
+            }
         for (const auto& [key, n] : hands_)
             if (key.rfind("till:", 0) == 0 && makesThings(key) && !idleBusiness(key))
             {
@@ -875,7 +923,11 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             continue;
         const auto held = state_.careers.positions.find(p->id);
         const int keeper = held != state_.careers.positions.end() && !held->second.holder.empty();
-        const int weight = wageRule(ByEmployees) ? std::max(1, n - keeper + onHires[key]) : std::clamp(wantedOf(key), 1, std::max(1, n));
+        // (With CalledBackLate, the shops' keepers on its hires are left out of its weight, as they were when called back
+        // before the pass: a boat's hands weighed 111 of 437 on day 1364 of round 14's six years.)
+        const auto back = lateCall ? recalled.find(key) : recalled.end();
+        const int weight = wageRule(ByEmployees) ? std::max(1, n - keeper + onHires[key] - (back != recalled.end() ? back->second : 0))
+                                                 : std::clamp(wantedOf(key), 1, std::max(1, n));
         const double labourer = employerWage(key) / (1 + employerSkill(key) / items::ladder().skillWage);
         for (int k = 0; k < weight; ++k)
         {
@@ -1002,6 +1054,10 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         book.wage = std::max(book.wage, rate * WageFloor * (clergy ? ClergyShare : 1.));
         book.openDays = 0;
     }
+    // The shops' keepers on hires called back now, the day's measures and reviews done (CalledBackLate: round 16, lane 1;
+    // the same keepers, at the same turn of the day, as tendTills' call, so the work done is as it was).
+    if (lateCall)
+        callShopsBack();
     // A business's hire (not a field's: the land's sowing and harvest keep every hand they can get) held by a keeper
     // drawing its own till's wage is the day's, as a child's crew place is: at dawn the jobless' again, the keeper's
     // from WagedFrom if none took it (round 12, lane A, the user, 2026-10-29: WagelessFirst). Released after the day's
