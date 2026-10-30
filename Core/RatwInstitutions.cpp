@@ -54,8 +54,9 @@ void Society::tendIncome()
     if (workByHours() && wageRule(TaxEase))
         for (auto it = state_.accounts.lower_bound("stores:"); it != state_.accounts.end() && it->first.rfind("stores:", 0) == 0; ++it)
         {
-            // (Its holdings tax not yet spent back left out: round 12, lane B, HoldingsBite.)
-            const double cash = std::max(0., double(it->second.cash) - biteHeld(it->first));
+            // (Its holdings tax not yet spent back left out: round 12, lane B, HoldingsBite. And the road's week its stores
+            // keep for their caravans, round 15, lane 2, RoadMoneyKept: working money, not a surplus to ease the tax by.)
+            const double cash = std::max(0., double(it->second.cash) - biteHeld(it->first) - roadFloat(it->first));
             const auto [held, fresh] = memory.heldMean.try_emplace(it->first, cash);
             if (!fresh)
                 held->second += (cash - held->second) / HeldMeanDays;
@@ -116,8 +117,10 @@ void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<st
     for (const auto& [id, payers] : taxpayers)
     {
         const auto* stores = account(id);
-        // (Its holdings tax not yet spent back isn't its to rebate: round 12, HoldingsBite.)
-        const double target = townTaxTarget(id), held = std::min(double(stores ? stores->cash : 0) - biteHeld(id), townHeldMean(id));
+        // (Its holdings tax not yet spent back isn't its to rebate: round 12, HoldingsBite. Nor the road's week its stores
+        // keep, round 15, lane 2, RoadMoneyKept: the caravans' working money, which comes home with the takings.)
+        const double road = roadFloat(id), cash = double(stores ? stores->cash : 0) - biteHeld(id);
+        const double target = townTaxTarget(id), held = std::min(road > 0 ? std::max(0., cash - road) : cash, townHeldMean(id));
         double incomes = 0;
         for (const auto& [payer, income] : payers)
             incomes += income;
@@ -144,6 +147,22 @@ std::int64_t Society::roadMoneyFor(const std::string& trader) const
         return -1;
     const auto found = state_.memory.roadLeft.find(trader);
     return found == state_.memory.roadLeft.end() ? -1 : std::int64_t(std::max(0., found->second));
+}
+
+double Society::roadFloat(const std::string& id) const
+{
+    // (A town's stores only, and only where they are its trader: a House of the town, if there is one, sends its
+    // caravans from its own purse, World::traderOf.)
+    if (!workByHours() || !wageRule(RoadMoneyKept) || roadWeekCost_.empty() || id.rfind("stores:", 0) != 0)
+        return 0.;
+    const auto town = id.substr(7);
+    const auto found = roadWeekCost_.find(town);
+    if (found == roadWeekCost_.end() || found->second <= 0)
+        return 0.;
+    for (const auto& h : houses())
+        if (h.community == town && account(h.id))
+            return 0.;
+    return RoadWeeksKept * found->second;
 }
 
 void Society::flushEarnings()
@@ -405,19 +424,23 @@ void Society::institutionsWeek(std::int64_t day)
                 memory.labourLeft[id] = carried;
             // (A town's buyers and caravans that drew nothing since the rule began get a twentieth of the rest: the
             // capital's first week, saved before round 6, all of it.)
-            const auto allow = [&](std::map<std::string, double>& left, std::map<std::string, double>& week) {
+            // (`least`: the road's, at least the road's week its stores keep, as far as the rest goes: round 15, lane 2,
+            // RoadMoneyKept. A week it drew little would leave its next week's loads cut.)
+            const auto allow = [&](std::map<std::string, double>& left, std::map<std::string, double>& week, double least) {
                 const auto rest = std::max<std::int64_t>(0, budget);
                 const auto drew = week.find(id);
-                const auto most = drew == week.end() && id == "treasury"
-                                      ? rest
-                                      : std::min(rest, std::int64_t((drew == week.end() ? 0. : drew->second) * 1.33) + rest / 20);
+                auto most = drew == week.end() && id == "treasury"
+                                ? rest
+                                : std::min(rest, std::int64_t((drew == week.end() ? 0. : drew->second) * 1.33) + rest / 20);
+                if (least > 0)
+                    most = std::max(most, std::min<std::int64_t>(rest, std::llround(least)));
                 left[id] = double(most);
                 week[id] = 0;
                 budget -= most;
             };
-            allow(memory.fundsLeft, memory.fundsWeek);
+            allow(memory.fundsLeft, memory.fundsWeek, 0.);
             if (townPosts && roadBudgeted())
-                allow(memory.roadLeft, memory.roadWeek);
+                allow(memory.roadLeft, memory.roadWeek, roadFloat(id));
         }
         else if (!postsFirst)
             budget -= relief + wagesPaid(id);
@@ -469,6 +492,16 @@ void Society::institutionsWeek(std::int64_t day)
                     memory.biteLeft.erase(bite);
                 }
             }
+        // A town's stores keep the road's week (round 15, lane 2; RoadMoneyKept; the user, 2026-10-30): its works are hired
+        // only from what they hold over a week and a quarter of their roads' loads (roadFloat), and what isn't spent stays
+        // in their cash for the caravans. In round 14's two years Frosthollow's works spent each week's takings: its
+        // stores held 14.6k on day 91 and 2.85k on day 364 against a week of its orders worth about 8k, its wagons went
+        // with 63% of what its orders owed in its third quarter, and the cut was booked to its mines. Inert where the
+        // stores already hold it (Larkfield's 60k); it shrinks as the orders do, and the works pause only until a week of
+        // loads is covered.
+        if (id != "treasury")
+            if (const double road = roadFloat(id); road > 0)
+                budget = std::min(budget, std::max<std::int64_t>(0, account(id)->cash - std::llround(road)));
         if (budget <= 0 || community.empty())
             continue;
         // Its works: a crew hired for the week with most of the rest, materials with what's left. With work by the hours,

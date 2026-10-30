@@ -971,6 +971,17 @@ class Society
     {
         return workByHours() && wageRule(CaravanIncome) && wageRule(CaravansAsTheyCome) && wageRule(TownPosts) && wageRule(RoadBudget);
     }
+    // The road's week a town's stores keep (round 15, lane 2; RoadMoneyKept; the user, 2026-10-30): RoadWeeksKept of
+    // what a week of the standing orders on its town cost at its town's price (roadWeekCost_, the estimate a wagon's
+    // load is cut by), for `id` "stores:<town>" when no House of the town is its trader (World::traderOf); otherwise, or
+    // without the rule, 0. Its works are hired only from what the stores hold over it, and TaxEase and the rebate leave
+    // it out of their holding: it is working money that comes home with the takings. In round 14's two years
+    // Frosthollow's works spent each week's takings, its stores held 2.85k on day 364 against a week of its orders worth
+    // about 8k, and its wagons went with 63% of what its orders owed in its third quarter.
+    double roadFloat(const std::string& id) const;
+    // A week of loads goes out at once (each road sends once a week and is back in RoundTripDays); the quarter over
+    // covers the orders signed and sent the same day, raises (a quarter a week) and holders asking over the town price.
+    static constexpr double RoadWeeksKept = 1.25;
     EconomyResult setTaxRate(double rate, const std::string& by);
     EconomyResult setMint(bool on, const std::string& by);
     EconomyResult reliefGrant(const std::string& town, std::int64_t coins);
@@ -1019,6 +1030,10 @@ class Society
     std::unordered_map<std::string, std::set<std::string>> ranOut_;
     std::map<std::pair<std::string, std::string>, int> ordersFrom_;    // (Town, good) -> each maker's share of a week's orders.
     std::map<std::string, std::int64_t> ordersCost_;                     // Buyer's till -> its standing orders' cost a week.
+    // Selling town -> a week of the standing orders on it at its town's price (round 15, lane 2; RoadMoneyKept, only with
+    // the rule): rebuilt by each day's trade (setStandingOrders), not saved; empty before the first after a restart, as if
+    // the rule were off.
+    std::map<std::string, double> roadWeekCost_;
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_;   // Account -> food -> (day, n).
     // A shop's food wanted today when it had none left: a hungry buyer's meal, in its first food's pieces (doc 64,
     // Phase 13), counted with its sales (Society::spoil). Not saved. With work by the hours, a wolf's meal counted once a
@@ -1363,6 +1378,11 @@ class Society
         // shops keep their hours through a festival.
         ShopsCompared = 1ull << 52,                  // The hungry and the larders go to the cheapest food near, not the nearest (round 14, 2).
         FestivalShopsOpen = 1ull << 53,              // A food shop's keeper keeps its hours on a festival day (round 14, 2).
+        // Round 15, lane 2 (the user, 2026-10-30: Frosthollow's mines idle in year 2, its ore order to the city halved
+        // for its stores' empty purse): a town's stores keep the road's week from their works, and what the trader's
+        // money didn't carry is not the seller's shortfall.
+        RoadMoneyKept = 1ull << 58,                  // A town's stores' works leave a week and a quarter of its roads' loads (round 15, 2).
+        PurseNotBlamed = 1ull << 59,                 // What a trader's purse didn't carry is an order's unfunded, not its seller's (round 15, 2).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };

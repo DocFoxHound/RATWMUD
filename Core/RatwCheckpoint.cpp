@@ -155,7 +155,7 @@ Value roads(const RoadsState& r)
         auto j = Value::object();
         j.add("id", o.id); j.add("buyer", o.buyer); j.add("town", o.town); j.add("item", o.item); j.add("from", o.from);
         j.add("perWeek", o.perWeek); j.add("price", double(o.price)); j.add("since", o.since); j.add("review", o.review);
-        j.add("delivered", o.delivered); j.add("shortfall", o.shortfall); j.add("unpaid", o.unpaid);
+        j.add("delivered", o.delivered); j.add("shortfall", o.shortfall); j.add("unpaid", o.unpaid); j.add("unfunded", o.unfunded);
         j.add("negotiator", o.negotiator);
         orders.push(j);
     }
@@ -744,6 +744,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             o.shortfall = std::max(0, int(num(j, "shortfall"))); o.negotiator = j.string("negotiator");
             // (Saved before doc 64's Phase 13 review: none refused.)
             o.unpaid = int(std::clamp(num(j, "unpaid"), 0.0, 1e6));
+            // (Saved before round 15, lane 2's PurseNotBlamed: nothing uncarried.)
+            o.unfunded = int(std::clamp(num(j, "unfunded"), 0.0, 1e6));
             if (!o.id.empty() && !o.buyer.empty() && !o.item.empty() && o.perWeek > 0)
                 saved.roads.orders.push_back(std::move(o));
         }

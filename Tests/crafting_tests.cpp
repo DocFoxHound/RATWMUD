@@ -8813,6 +8813,126 @@ void aResoldGoodAtTheLadder()
     Society::setWorkByHours(false);
 }
 
+// Round 15, lane 2 (RoadMoneyKept; the user, 2026-10-30), with work by the hours: a town's stores keep the road's week.
+// In needRealm (none of the city poor, so nothing is sent on), the far town's day-35 week: its going rate at 100p (a
+// works place 700p a week), its caravans' takings this week 3,000p (caravanWeek), and its standing orders (iron bars
+// from the far town, setStandingOrders) costing W, about 1,600p, a week at its price: its float a week and a quarter of
+// it, F. Its stores hold F and 2,000p (their mean holding still about the 100,000p they held): with the rule its works
+// are hired from the 2,000p over the float at the most (a smaller crew than without, whose budget is its takings); its
+// mean holding moves toward what it holds less the float (F/7 under it at the day's turn), and its rebate is reckoned on
+// what it holds less the float, half of F the less (with TaxRebate; the crews' runs leave it out, so the stores' cash
+// at its week is the same both ways). Holding F and 8,000p, its crew is the same both ways. A town whose trader is a
+// House (World::traderOf) keeps none; nor does any town without the rule.
+void theWorksLeaveTheRoadsWeek()
+{
+    Society::setWorkByHours(true);
+    Society::noteTowns(true);
+    struct Seen
+    {
+        int crew = 0;
+        double road = 0, meanBefore = 0, weekCost = 0;
+        std::int64_t rebate = 0, sent = 0;
+    };
+    const auto run = [](std::uint64_t off, std::int64_t over) {
+        // (The holdings tax left out, as aTownsSurplusGoesWhereTheNeedIs does: the payers' 100,000p would pay it.)
+        Society::wageRulesOff(off | Society::HoldingsTax | Society::RichHomes);
+        auto realm = needRealm(0);
+        auto& s = *realm.s;
+        Seen seen;
+        auto st = s.state();
+        st.memory.going["far"] = 100;
+        expect(s.restore(st), "the far town's going rate");
+        const auto price = Society::pennies(s.townPrice("far", "iron_bar"));
+        const int bars = int((1600 + price - 1) / price);
+        seen.weekCost = double(bars * price);
+        s.setStandingOrders({{{"far", "iron_bar"}, bars}}, {});
+        seen.road = s.roadFloat("stores:far");
+        const auto F = std::llround(Society::RoadWeeksKept * seen.weekCost);
+        st = s.state();
+        for (int i = 1; i <= 10; ++i)
+            st.memory.weekIncome["payer" + std::to_string(i)] = 100;
+        auto& stores = st.accounts.at("stores:far");
+        st.accounts.at("treasury").cash += stores.cash - (F + over);
+        stores.cash = F + over;
+        st.memory.caravanWeek["stores:far"] = 3000;
+        st.memory.biteLeft.clear();
+        st.memory.postsOwed.erase("stores:far");
+        expect(s.restore(st), "the far town's stores, its takings in");
+        s.takeJournal();
+        s.tick(1, 35 + .5 / 24, 0, realm.bodies);
+        for (const auto& e : s.takeJournal())
+            if (e.from == "stores:far")
+            {
+                seen.sent += e.kind == "capital's share" || e.kind == "a town's surplus sent on" ? e.coins : 0;
+                seen.rebate += e.kind == "a town's rebate" ? e.coins : 0;
+            }
+        // (Its mean holding at the day's turn: what the week's reckoning left it, and what it sent the capital.)
+        seen.meanBefore = s.townHeldMean("stores:far") + double(seen.sent);
+        for (const auto& j : s.oddJobs())
+            if (j.payer == "stores:far" && j.kind == "building work" && j.until >= 35)
+                seen.crew += j.slots;
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto thin = run(Society::TaxRebate, 2000), thinWithout = run(Society::TaxRebate | Society::RoadMoneyKept, 2000);
+    const double F = Society::RoadWeeksKept * thin.weekCost;
+    expect(thin.weekCost >= 1600 && std::abs(thin.road - F) < 1e-9 && thinWithout.road == 0,
+           "the far town's orders, " + std::to_string(thin.weekCost) + "p a week at its price: its float " + std::to_string(thin.road) +
+               "p with the rule, none without");
+    expect(thin.crew > 0 && thin.crew * 700 <= 2000 * 8 / 10 && thin.crew < thinWithout.crew,
+           "with the rule its works are hired from the 2,000p over the float at the most: a crew of " + std::to_string(thin.crew) +
+               ", against " + std::to_string(thinWithout.crew) + " without");
+    expect(std::abs(thin.meanBefore - (thinWithout.meanBefore - F / Society::HeldMeanDays)) < 1,
+           "its mean holding moves toward what it holds less the float: " + std::to_string(thin.meanBefore) + " against " +
+               std::to_string(thinWithout.meanBefore));
+    const auto rebated = run(0, 2000), rebatedWithout = run(Society::RoadMoneyKept, 2000);
+    // (Half of what it holds over two targets a week, after the capital's share: half the float less, but for any
+    // difference in the shares, and each payer's part rounded, ten of them.)
+    const double less = (F - double(rebatedWithout.sent - rebated.sent)) / 2;
+    expect(rebated.rebate > 0 && std::abs(double(rebatedWithout.rebate - rebated.rebate) - less) <= 10,
+           "its rebate is reckoned on what it holds over the float: " + std::to_string(rebated.rebate) + "p, against " +
+               std::to_string(rebatedWithout.rebate) + "p without (" + std::to_string(less) + "p less, its share " +
+               std::to_string(rebated.sent) + "p against " + std::to_string(rebatedWithout.sent) + "p)");
+    const auto rich = run(Society::TaxRebate, 8000), richWithout = run(Society::TaxRebate | Society::RoadMoneyKept, 8000);
+    expect(rich.crew > thinWithout.crew && rich.crew == richWithout.crew,
+           "holding well over it, its crew is the same both ways: " + std::to_string(rich.crew) + " and " + std::to_string(richWithout.crew));
+    // A town whose trader is a House: none; the town beside it without one, its float.
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::RoadMoneyKept);
+        AuthoredRoster roster;
+        auto lord = person("lord", "ruling House Fell", {"far_hall", 2.5, 2.5}, "civilian");
+        lord.home = lord.evening = {"far_homes", 2.5, 2.5};
+        roster.residents = {lord, person("scribe", "the scribe", {"desk", 2.5, 2.5}, "civilian")};
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) {
+            return cell.rfind("far_", 0) == 0 ? std::string("far") : cell.rfind("near_", 0) == 0 ? std::string("near") : std::string("town");
+        };
+        s.setDay(plan);
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 1; d <= 2; ++d)
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        const bool house = std::any_of(s.houses().begin(), s.houses().end(), [&](const House& h) { return h.community == "far" && s.account(h.id); });
+        s.setStandingOrders({{{"far", "iron_bar"}, 20}, {{"near", "iron_bar"}, 20}}, {});
+        const double near = Society::RoadWeeksKept * 20 * double(Society::pennies(s.townPrice("near", "iron_bar")));
+        if (rule)
+            expect(house && s.roadFloat("stores:far") == 0 && std::abs(s.roadFloat("stores:near") - near) < 1e-9,
+                   "the far town's trader a House, no float; the near town's " + std::to_string(s.roadFloat("stores:near")) + "p");
+        else
+            expect(s.roadFloat("stores:far") == 0 && s.roadFloat("stores:near") == 0, "without the rule, none");
+        expect(s.roadFloat("treasury") == 0, "and never the capital's");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::noteTowns(false);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -8939,6 +9059,7 @@ int main()
         aFieldsStoreIsNoGlut();
         aMakerBuysAtTheSource();
         aResoldGoodAtTheLadder();
+        theWorksLeaveTheRoadsWeek();
         theCheaperShopWins();
         nearEnoughIsNearer();
         theLarderLaysInWhereItsCheap();
