@@ -325,6 +325,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
     const bool night = hour < 6 || hour >= 22;
     const auto slot = std::int64_t(std::floor(absoluteDay * 96)); // Patrols move post every 15 game minutes.
+    // A patrol's post held for as many of the unseen's decisions as at the game's step (doc 64, Phase 13, "--fast pays
+    // the route watch"): 15 game minutes are 150 world seconds, 30 decisions at UnseenStep but five at an economy run's
+    // 30 s (econ_watch's --fast). Two of the five aren't at the post: the one that moves it (the body at the last) and
+    // the next (made before the walk's arrival is seen: World::moveOffstage, on the unseen's step). Three, 90 s, fall
+    // short of a watch's spell (120 s by its workPace, 93 to 117 s for the realm's), and the route watch went unpaid. A
+    // longer step holds each post that much longer (90 game minutes at 30 s); at the game's step, as it was.
+    const auto watchSlot =
+        unseenStep() > UnseenStep ? std::int64_t(std::floor(absoluteDay * 96 * UnseenStep / unseenStep())) : slot;
     const auto today = std::int64_t(std::floor(absoluteDay));
     if (state_.craftingStocked < CraftingStock)
     {
@@ -1494,7 +1502,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (c.routeGoal)
         {
             const auto& posts = authored_.routes.at(job->route).posts;
-            goal = posts[std::size_t(slot + walker * 3) % posts.size()];
+            // (A patrol's post by watchSlot, a traveller's by slot.)
+            goal = posts[std::size_t((c.guard ? watchSlot : slot) + walker * 3) % posts.size()];
         }
         if (c.arrivedHome)
         {

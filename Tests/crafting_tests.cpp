@@ -9878,10 +9878,94 @@ void theMessIsFedBeforeTheWorks()
     Society::setWorkByHours(false);
 }
 
+// --fast pays the route watch (doc 64, Phase 13, 2026-10-30): a patrol on a beat of three posts, unseen, the world's
+// part played as World::moveOffstage plays it on the unseen's step: it sets off for its goal after the decision that
+// gave it, 20 s a walk (the small towns' watch walks 13-21 s between posts), and is seen there at the first decision
+// after it arrives. From 06:00 to 10:00 (four game hours, 2,400 world seconds) at the game's step (5 s) and at an
+// economy run's (30 s, econ_watch's --fast) it is paid its day's spells, on its beat; at 30 s it was paid one, at the
+// post it stood on at the start (after that its post moved after five decisions, three of them at it: 90 s, short of
+// its spell, 120 s by its workPace).
+void theRouteWatchHoldsItsPost()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        int spells = 0, posts = 0;
+        std::int64_t wages = 0;
+    };
+    const auto run = [](int step) {
+        Society::setUnseenStep(step);
+        AuthoredRoster roster;
+        auto watch = person("watch", "stands watch", {"beat", 10.5, 10.5}, "guard");
+        watch.route = "beat";
+        watch.startHour = 6;
+        watch.endHour = 18;
+        roster.residents.push_back(watch);
+        roster.routes["beat"] = {"beat", {{"beat", 10.5, 10.5}, {"beat", 40.5, 10.5}, {"beat", 40.5, 40.5}}};
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(plan);
+        std::map<std::string, LifeBody> bodies{{"watch", {"beat", 10.5, 10.5}}};
+        auto& body = bodies.at("watch");
+        body.unseen = true;
+        constexpr double Walk = 20;
+        Spot heading{"beat", 10.5, 10.5};
+        double arrives = 0;
+        std::set<std::pair<double, double>> posts;
+        Seen seen;
+        for (int t = 0; t < 2400; ++t)
+        {
+            s.tick(1, 1 + 6. / 24 + t / calendar::SecondsPerDay, 0, bodies);
+            if (!s.unseenDecided())
+                continue;                   // (The world walks the unseen on their step.)
+            const auto* life = s.resident("watch");
+            if (life->goalCell != heading.cell || life->goalX != heading.x || life->goalY != heading.y)
+            {
+                heading = {life->goalCell, life->goalX, life->goalY};
+                arrives = t + Walk;
+            }
+            if (t >= arrives)
+            {
+                body.cell = heading.cell;
+                body.x = heading.x;
+                body.y = heading.y;
+                if (life->task == "patrol")
+                    posts.insert({heading.x, heading.y});
+            }
+        }
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "watch wages" && e.to == "watch")
+                seen.wages += e.coins;
+        seen.spells = s.resident("watch")->wagesToday;
+        seen.posts = int(posts.size());
+        expect(s.conserved(), "money stays conserved");
+        Society::setUnseenStep(Society::UnseenStep);
+        return seen;
+    };
+    std::int64_t day = 0;                   // (Its day's wage, the game's step's: a test town's going rate.)
+    for (const int step : {Society::UnseenStep, 30})
+    {
+        const auto seen = run(step);
+        std::cout << "  the route watch at a " << step << " s step: " << seen.spells << " spells, " << seen.wages
+                  << "p, " << seen.posts << " posts reached\n";
+        day = day ? day : seen.wages;
+        expect(seen.spells == Society::PaidSpells && seen.wages > 0 && seen.wages == day,
+               "at a " + std::to_string(step) + " s step its day's spells by 10:00: " + std::to_string(seen.spells) +
+                   ", " + std::to_string(seen.wages) + "p");
+        expect(seen.posts == 3, "it walks its beat, all three posts: " + std::to_string(seen.posts));
+    }
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
     {
+        theRouteWatchHoldsItsPost();
         theCapitalSpendsTheCarriageInItsWeek();
         theMessIsFedBeforeTheWorks();
         aHandsDayBringsInAtOnce();
