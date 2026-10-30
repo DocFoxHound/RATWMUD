@@ -9892,3 +9892,70 @@ targets: as briefed, the lane stops, no tuning; the six-year runs were not start
 4. **The brief's own form.** The aim's excess scales by `reach` at every scarcity, so the hold starts as soon as a
    town passes FoodNeedFrom (q2-q3 here, not q5), and a margin at its top comes down by the pull only (twelve weeks
    close 93% of the gap). Both are as briefed; the expectations assumed otherwise.
+
+### Phase 13: --fast pays the route watch (2026-10-30)
+
+In --fast runs 20 of the realm's 27 guards were almost never paid: the small towns' twelve "stands watch" and
+Ridgemere's five "on patrol" and three "on night patrol", the watch that walks a route ("stands watch" 42, 95, 16, 0,
+60 and 0p in years 0-5 of `2026-10-30-r16-6y-land`, against 261.7k and 256.8k a year in `2026-10-30-r15-2y-normal`).
+The gate guards, who hold one post, were paid in both, and the watch's book wage was 60p in both. Base: p13-r18
+(5c3bd2c).
+
+**The cause** (`Society::decideAuthored`, Core/RatwResidents.cpp: `slot`, and the route goal `posts[(slot + walker x 3)
+% n]`). A patrol moves post every 15 game minutes, and a game day is 14,400 world seconds (`calendar::SecondsPerDay`):
+a post is held 150 world seconds, 30 of the unseen's decisions at the game's step (`UnseenStep`, 5 s) but five at
+--fast's 30 s. Two of the five aren't at the post: the one that moves it (the body still at the last, its progress
+reset) and the next, made before the walk's arrival is seen (the society decides in the schedules' first stage and the
+errands walk the unseen in the fifth, `World::moveOffstage` on their step, so a leg set off after one decision, however
+short, lands after the next one is made). Three are, 90 s, and a watch's spell is 120 s x workPace, 93-117 s for the
+realm's (a guard's post has level 0, its holders' skill 5-45 from `defaultCareers`: pace .775-.975); the 30 s after the
+last decision at a post fall to the next, which has moved the goal. So a patrol's spells never finished; at the game's
+step the same losses are 5-10 s of the 150. Traced on tn_fh_vesper_icevein (`tn_fh_watch`, posts 27-41 tiles apart,
+straight legs of 13-21 s): near on the third, fourth and fifth decision at each post, progress 30, 60, 90, reset at the
+sixth.
+Separated over three days (`--deterministic --hours --threads 3 --without calledlate,scarcityhires`): "stands watch"
+was paid 42p with `--fast` and with `--unseen-step 30` alone, 2,520p with `--straight` alone and in normal mode. Not the
+walk's speed, the wage, the errands or the walker's place (it is stable).
+
+**The fix:** with an unseen step longer than the game's (`unseenStep() > UnseenStep`; the brief's "above 1", but the
+game's and normal mode's step is 5, and `--straight` alone pays the watch as normal mode does), a patrol's post is held
+for as many decisions as at the game's step: its slot is `floor(absoluteDay x 96 x UnseenStep / unseenStep())`
+(`watchSlot`: at 30 s, 16 a day, 90 game minutes a post). Guards only: a traveller's route (`rm_grayrock_journey`,
+never paid in either mode) keeps `slot`. Pay is as it was: a spell is 120 s x workPace within 1.2 tiles of the post,
+from the treasuries; a guard who doesn't reach its post isn't paid. At the game's step nothing changes.
+
+**Test** (`crafting_tests`, `theRouteWatchHoldsItsPost`): a guard on a beat of three posts, unseen, the world's part
+played as moveOffstage plays it (it sets off after the decision that moves its goal, 20 s a walk, and is seen at the
+first decision after it arrives), 06:00 to 10:00. At 5 s and at 30 s: its 8 spells (PaidSpells), the same day's wage,
+all three posts reached. Without the fix, at 30 s, 1 spell (at its first post, where it stood), 1p.
+
+**The digests** (`--deterministic --hours --threads 4`, three days, normal mode): e1a89963b633d13f, and `--without
+calledlate,scarcityhires` 64c928de2f1f0305, as before. --fast's three days (`--threads 3 --without
+calledlate,scarcityhires`): 99377c01ec6ad6ae before, a7951dd1c27bb405 after.
+
+**30 days** (`--fast --deterministic --hours --threads 3 --without calledlate,scarcityhires`, the default start, 90 s,
+digest 2071e8666df937d3, `artifacts/economy/2026-10-30-r18-fast-watch-30` in the lane's worktree), beside days 0-30 of
+`2026-10-30-r18-6y-fast` (5c3bd2c, the same arguments) and of `2026-10-30-r15-2y-normal`. Pay a day over days 0-29
+(`wages.csv`); the treasuries' least over days 2-30, after the founding (`days.jsonl` purses: `treasury`, and the six
+`stores:`); the household Gini and the poorer half (`model`) on day 30, their means over days 1-30 in brackets.
+
+| | fast, before | fast, after | normal |
+|---|---|---|---|
+| "stands watch" (12) | 1.4p | 720p | 720p |
+| "on patrol" (5) | 0.2p | 300p | 279.7p |
+| "on night patrol" (3) | 0 | 180p | 179.5p |
+| the gates (6) | 360p | 360p | 360p |
+| "commanding the Watch" | 60p | 60p | 59.7p |
+| the capital's treasury, least | 319,323p | 316,706p | 314,539p |
+| the six towns' together, least | 77,439p | 75,007p | 73,307p |
+| the lowest town's (Coldwater) | 2,996p | 2,103p | 2,643p |
+| the guards hold, day 30 | 38,741p | 69,248p | 68,492p |
+| household Gini | .5115 (.5169) | .5108 (.5126) | .4986 (.5071) |
+| poorer half | .1750 (.1615) | .1760 (.1655) | .1828 (.1692) |
+| money, day 30 | 5,000,000p | 5,000,120p | 5,000,120p |
+
+Money is conserved on every line (supply = minted, nothing sunk); the 120p is a newcomer's purse on day 29, as in
+normal mode. "On patrol" is 7% over normal mode's: there one of its five (rm_frederick_rainham, `rm_street_patrol`,
+posts in four cells) is paid 1,192p of 1,800p, its long legs eating its 150 s; held 900 s, it is paid in full. The
+route watch's 1,200p a day comes from the treasuries as the gates' does: the capital's and the towns' least fell 2.6k
+and 2.4k, still over normal mode's, and both measures of inequality moved toward normal mode's.
