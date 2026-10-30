@@ -1336,6 +1336,8 @@ class Society
         ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
         HoldingsBite = 1ull << 41,                   // The holdings tax graduated over its target, spent back in its town (round 12, B).
         CapitalByIncome = 1ull << 42,                // The capital's week kept to its income, over a reserve floor (round 12, B).
+        LivingSlack = 1ull << 44,                    // The realm's idle and grown are the living, a week's hire work (round 13, 1).
+        WageBookMended = 1ull << 45,                 // The weekly review one chain again: a short week no bid nor calm (round 13, 1).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1355,6 +1357,9 @@ class Society
         const auto found = employerTown_.find(key);
         return found == employerTown_.end() ? std::string() : found->second;
     }
+    // The realm's idle share of its grown wolves of working age at the last labour pass (the calm cut's, the mint's): with
+    // LivingSlack the living only, a wolf on a week's hire working (round 13, lane 1). A measure.
+    double slack() const { return slack_; }
     double workBankedOf(const std::string& account) const
     {
         const auto found = workBanked_.find(account);
@@ -2052,6 +2057,10 @@ class Society
     std::unordered_map<std::string, double> paidToday_, owedToday_, pay7_;   // (The going rates: memory.going.)
     double slack_ = 0;
     int grown_ = 0;                                  // (Its grown wolves of working age, at the last pass.)
+    // The living's hungry share at the last labour pass, the pace's (LivingSlack: round 13, lane 1), for the mint's harm
+    // to read the same; not saved (the next pass sets it before the mint reads it). Unset, the mint counts its own.
+    double hungryShare_ = 0;
+    bool hungryShareSet_ = false;
     void tendLabour(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
     // Households and institutions (doc 64, Phase 7; RatwInstitutions.cpp).
     std::unordered_map<std::string, double> earnedToday_;   // What each account earned today (into memory.weekIncome).
