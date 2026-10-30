@@ -8157,3 +8157,203 @@ came in year 2 (days 469 and 594), when the shops held 170 pieces at the turn, n
    could be kept to the hands' hours.
 3. **The feast's want** is 50 a resident however many come; the stores' leftovers (none in the 60 days) wait for the
    next festival. A store kept for the hungry between festivals is the step after.
+
+### Phase 13: round 14, lane 3: a hand's day brings in at once, the market follows the post (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved. Round 13's two-year runs (e0cb26e, `--fast`) passed hunger, wages, treasuries and
+businesses, and failed inequality (Gini .79) and prices (food 10.4p to 16.4p). Two leaks of capacity under them, neither
+a price nor a wage: work a producer's hands did that never became goods, and businesses whose founder died that went on
+under a successor the market couldn't see. Base: p13-r13 at e0cb26e.
+
+**Hands' work lost.** A hired hand's day on a producer is credited as `HireSpells` (8) hours at once when its spells are
+done (`advanceOddJob`), into a bank capped at `WorkBankedMost` (24); only the keeper's own paid spell (`produce(id,
+day, 1.)`) turned banked hours into yields. So the more a producer hired, the more it lost at the cap: Ridgemere's nine
+fisheries, days 91-729, lost 2-4% of their credited hours on days with 1-3 hires, 13% with 4, 19% with 6, 25-26% with
+7-8 and 34% with 9 or more; their catch levelled off at about 100 fish a day however many they hired (46, 86.5, 94.6 and
+100.5 sold a day at 3, 6, 7-8 and 9+ hires). 6.6-11.6k hours a quarter, some 15-23k fish against 56-61k sold, while
+the realm's makers went 21-28k hours a quarter short of fish. The warrens lost 9-16% the same way (their halving is
+mostly supply: the pace's .2 to .95 doubled a yield's hours, and cash-short warrens offered 2.6-5.3 hire slots against
+8-13 wanted; this rule doesn't claim it).
+
+**Successors the market couldn't see.** The market's lists were keyed on the founders' written records: `marketOf`
+looped over the written residents, passed over the dead and any whose written role wasn't a merchant's, and read the
+written work label; `sellersOf` cached its suppliers once from the written residents, by the founder's id (so
+`buyMaterials`' `tillOf(seller)` was the dead founder's empty purse); `produce`, `keepsBack`, `foodShop`, `normalCost`,
+the hand's day and Demand's merchant loops all read the written label. A successor written with another label (the
+smelter's 'works at The Frosthollow Smelter', a civilian) held the post and its till and sold nothing wholesale; so did
+every resident born or come later (a civilian, '-'). Sixteen founders died in the two years, the same in every run (94
+were 50 or over at the start; deaths come at a median 57); eight successors' labels don't match their trade: the Lake
+Oven bakery (which also lost its retail, 5,276p to 0), the Salt Pans, the smelter, the eel traps, the Cedar Phial, the
+Charcoal Store, Glasswater's fishing and the Redcoat orchard. The smelter: no wholesale from day 364, 148 bars unsold,
+every credited hour lost, stopped on day 427 (378, 392 and 441 in the other runs) and idle to day 730 in all four.
+Frosthollow's iron bars by half-year: 3,580, 3,163, 49, 0. It compounds every year at 6 and 12.
+
+**1. A hand's day brings in at once** (`Society::HandsBringIn`, `1ull << 54`; `econ_watch --without handsbringin`; with
+work by the hours). The hand's day on a producer is now `Society::handsDayOnTheLand(keeper, spells, day)` (from
+`advanceOddJob`, which is passed the second's day by its caller; public, a test's too). When its spells are done, and
+only while the producer holds its post with a till of its own (`tillOf(keeper) != keeper`: a dead founder's post is let
+go at its death and its till is its own purse again, so it is never stocked):
+
+- `produce(keeper, day, 0.)`: the yield loop on what its bank already holds (`creditWork` returns on 0: none of the
+  keeper's hours; the land's reading gets 0; its tools wear by the hours used, as `wear()` reckons them);
+- `creditWork(keeper, spells)` and the land's reading, as before;
+- `produce(keeper, day, 0.)` again.
+
+So a hand's hours become yields as soon as they're worked while the store is under its kept target (`shelfTarget`), and
+wait in the bank, lost past its cap, only while the store is full: work not wanted is still lost. The fields' sowing and
+harvest windows and their off-season yields go through the same `produce`. A shop's hands ("a hand at the shop") are
+as they were (a kitchen's already bake while it's away: KitchenKept). No constants; a yield's lots are fixed by its
+spell, so a run repeats. On the main thread: `advanceOddJob` runs in the residents' second half, in ID order, where it
+always credited work and created goods. No money moves.
+
+**2. The market follows the post** (`Society::TradeByPost`, `1ull << 55`; `--without tradebypost`; with work by the
+hours). New readers (RatwSociety.h/.cpp):
+
+- `tradeLabel(id)`: under the rule, the title of the post it holds when that post has a till (`tills_`) and names a
+  business or a producer; otherwise its written label ("" with no record). Returned by reference: it is asked of every
+  shop in the residents' decisions.
+- `keepsShop(id)`: under the rule, its post's role is a merchant's; otherwise its written role is.
+- `postTown(post)`: where its work is (its founder's work cell is the post's), else its founder's town; `sellerTown`:
+  under the rule the post's town for a post with a till, else `communityOfResident`. (A successor's written cell may not
+  be the shop's: a hand lives in the bunkhouse, a child in its home.) The shops' towns (`shopTown_`, so `accountTown`)
+  are their posts' too.
+- `traders()`: the written residents in their order; under the rule, for a founder whose post has a till, that post's
+  holder instead (nobody while it stands vacant: there's no one to sell), and nobody for a resident holding another
+  founder's post with a till (it stands at that founder's place). With no succession it is the written residents, so
+  the lists come out the same, in the same order.
+
+Where the economy reads a seller's trade they're used: `produce` (and its town's trade yields), `keepsBack`, `craft`,
+`craftKept` (its town), `foodBatchReady`, `missedAt`'s producers, `foodShop`, `smith`, `wares` and its cache (keyed by
+the label), `shopHasFood`, `foodMade`, `forSale`, `onSale`, `waresKept`, `offersOf`, `normalCost` and `materialsCost`
+(the post's title first when the seller holds the till's post; its town), the hand's day, `farmHire`, `builds` and
+`worksOnHome`, `payerOf`'s "lives by what it brings in", `sellsTo` and `sellBroughtIn`, a home's mending shops; and the
+"a keeper whose purse is its till" checks (the households' purses, the holdings tax, a keeper's spending, a home's food
+counted). The lists built from the written residents now come from `traders()`: `World::marketOf` (its people and hungry
+still every written resident there; its sellers the traders, each by `tradeLabel` and `keepsShop`, each in its post's
+town: `residentTown` reads the post's work cell first), `sellersOf` (cleared at each day's pass and on a restore under
+the rule: a succession moves no roster revision), `layInTheFeast`, `householdShopping`'s shops, the stipends' and wants'
+shops (both paces), `townBuyers`' shops and land workers, `producersSell`, `tradeUpkeep`'s shops, farm upkeep and
+businesses' upkeep, `spendSurpluses`' shops, the lodgers' food shops (RatwFarmhands), a home's clothes shops
+(RatwBelongings), `World::sourceFor`'s contract sellers (its home the holder's own), and econ_watch's places, shop food,
+shelf and holder counts. `RatwWages`' merchants of a town by `postTown` (the same town as before: the founder's work
+cell is the post's).
+
+Left as they were: talk, voice, the game's UI and players' trading (`merchant()`, a transfer's takings), authoring,
+careers, the gifts and paws lent; the founding (`stockMaterials` and `resetAuthored`'s swords read the written record:
+the starting materials are laid in before the founders take their posts, and the first try, by the post, laid in none
+and moved the day-1 digest; `smith()` with no post reads the written role for the same reason); `postFarmHires`' loop
+(it runs only without work by the hours); the economy monitor's snapshot; a hire's community (RatwLabour, the keeper's
+own); and `buyMaterials`' test of a seller's town, which lanes 1 and 2 own this round: it still asks
+`communityOfResident(seller)`, a successor's written town (a successor written in another town buys and sells as
+carted in, until it is moved to `sellerTown`).
+
+**Saves:** nothing new (the lists are worked out again). **econ_watch:** `--without handsbringin,tradebypost`, in its
+list, its error and its notes. **The digests** (3 days, `--deterministic --hours --threads 4`): both rules out,
+d82706c7cdc4e0cb, round 13's (e0cb26e's); TradeByPost alone (`--without handsbringin`), d82706c7cdc4e0cb too: by day 3
+three wolves retire (rm_thyra_ashley, tn_fh_linden_stonehollow, tn_mb_senna_eelbank), all from posts without a till
+("minding the shop door", "sits by the well"), and nobody dies; the first post with a till to change hands is the
+Harness Shop's saddler, whose keeper steps up to its family's "minding the shop door" on day 5 (another takes the
+saddler's post on day 9); HandsBringIn alone, 905a42ed34cf37d0; both, 905a42ed34cf37d0.
+
+**Tests** (`crafting_tests`, each with its rule and without; the fixture `fishery`, a fisher at the calibrated pace with
+a day's sales of 200 fish behind it, so its store's target is over 36 hours' yields):
+
+- `aHandsDayBringsInAtOnce`: its bank 20 hours, its store bare, two hands' days in the same second: with the rule 74
+  fish (37 yields of 36 hours), its bank under a yield's hours, nothing lost; without, no fish and 12 of the 16 hours
+  lost at the cap of 24.
+- `aFullStoreStillLosesWork`: its store at its target: both ways nothing comes in and 12 hours are lost.
+- `aDeadKeepersHandMakesNothing`: the fisher dead, its hand's day brings nothing in to its purse or the till.
+- `aSuccessorSellsOn`: the smelter's founder dies with 148 bars in its till and a hand written 'works at The Frosthollow
+  Smelter' (a civilian) takes its post; the fisher dies and kit, written '-', takes the fishery. With the rule, the next
+  day's sellers of bars are the holder's, the smith (out of iron and nails) buys 8 bars from the smelter's till, kit
+  brings in fish, and with the smelter's shelf under its store a batch of bars is made; without, the sellers are the
+  dead founder's (its purse empty), the smith buys none, kit brings in nothing, and the shelf, still full, makes none.
+  (Not "none of these" in craft itself: that label holds "smelter", which names the foundry, so its holder's `craft`
+  worked without the rule once its shelf was low. What it lacked was its buyers.)
+- `theListsAreTheSameWithNoSuccession`: eleven written residents, each alive in its own post: `traders()` is the written
+  residents both ways, and the sellers of every good in the catalog (`sellersListed`, a test's: `sellersOf` built
+  afresh) are the same, in the same order.
+- `roads_tests`, for the World's half: `aSuccessorsBarsAreOnTheMarket` (west's market lists the smelter's till holding
+  its bars with the rule, nobody without; its people counted alike) and `theMarketIsTheSameWithNoSuccession` (both
+  towns' markets, people, food, spare and wants, holders and wanters and food shops in order, the same both ways). For
+  them `World::marketFor`, a test's.
+- No older test changed. The suite (68 of 68) passes with both rules and with both forced off (a temporary build, the
+  new tests left out of it).
+
+**The 182-day check** (`--fast --deterministic --hours --threads 3`, the default start, both rules; base: the round 13
+default run, artifacts/economy/2026-10-30-r13-2y-fast, days 0-181; quarters as the scorecard's, q0 days 0-90, q1
+91-181):
+
+| | base | rules on |
+|---|---|---|
+| Ridgemere fisheries' hours lost on days with 4+ hires | 24.5% (5,277 of 21,554 h) | 0.4% (181 of 45,699 h) |
+| ...by hires that day: 1-3 / 4 / 5-6 / 7-8 / 9+ | 3.4 / 6.6 / 16.3 / 24.1 / 37.5% | 0.3 / 0.0 / 0.0 / 0.2 / 0.6% |
+| ...all their hours lost, by month 0-5 | 93, 78, 53, 1,064, 2,174, 3,633 | 0, 0, 0, 445, 0, 0 |
+| their fish sold, q0 / q1 | 23,556 / 48,138 | 25,348 (+7.6%) / 91,930 (+91%) |
+| ...by month 0-5 | 8.7k, 7.4k, 7.3k, 14.4k, 16.1k, 16.3k | 8.1k, 7.6k, 9.3k, 20.6k, 30.3k, 38.0k |
+| the warrens' hours lost (all towns) | 18.9% (20,549 h) | 2.9% (2,998 h) |
+| ...by month 0-5 | 15.8, 18.0, 19.0, 19.4, 18.6, 22.1% | 7.2, 4.7, 0.8, 1.7, 1.6, 1.6% |
+| fish: makers' hours short, q0 / q1 | 8,044 / 11,538 | 6,605 / 5,097 |
+| the boats' hands wanted, a fishery-day, months 0-6 | 6.7, 6.9, 7.2, 12.3, 15.3, 17.9, 18.7 | 6.1, 5.9, 8.0, 15.2, 22.8, 24.4, 30.7 |
+| model.slack, monthly mean (the most) | .002-.007 (.013) | .003-.006 (.022, day 1-30) |
+| the going rate | 60.0-61.1p | 60.0-62.3p |
+| days with hungry at or under 1% | 182 of 182 | 182 of 182 |
+| Gini / poorer half, day 181 | .562 / .156 | .505 / .182 |
+| money | conserved (5,000,120) | conserved (5,000,120) |
+
+Read: the gate's 15% is met in q1 (+91%), not q0 (+7.6%): in q0 few hands were hired and the base lost little (78-93
+hours a month), so the rule had little to save; from day 91 the hires grew and the base lost up to 37.5% of a fishery's
+hours, the rule under 1%. The catch no longer levels off: Ridgemere's fisheries sold more as they hired more, and their
+hands wanted, sized by their sales (RatwLabour), rose with them (30.7 a fishery-day in month 6 against 18.7): more
+fish sold wants more hands, not fewer, while the fish sells. Slack peaked at .022 on day 11 (the base's peak day too, at
+.013), under the calm cut's .03. The makers' fish shortage halved in q1.
+
+**TradeByPost on the road to day 450** (the same run to day 450: its first 182 days are the check above; base, the round
+13 default run's days 365-450; the smelter's founder died on day 362 in this run, its hand tn_fh_alder_cragpick "the
+family carries it on"):
+
+| days 365-450 | base | rules on |
+|---|---|---|
+| the smelter's sales to the road (entries, coins) | 0, 0p | 51, 40,098p |
+| ...all it sold, its takings | 0, 0p | 1,546, 49,683p |
+| ...days stopped | 23 (from day 427) | 7 |
+| Frosthollow's iron bars made, days 0-182 / 183-364 / 365-450 | 3,707 / 3,085 / 0 | 3,093 / 2,122 / 1,132 |
+| Frosthollow's residents' money, day 364 / 400 / 450 (median) | 122.5k (755p) / 104.3k (585p) / 74.5k (759p) | 129.9k (1,950p) / 124.1k (1,522p) / 101.4k (827p) |
+| the Lake Oven bakery (its successor from day 33): sold, takings, days idle | 0, 0p, 87 | 7,078, 34,827p, 0 |
+| the Salt Pans: sold, takings, days stopped | 2,442, 22,016p, 59 | 4,691, 55,726p, 13 |
+| the scorecard's q4 (to day 454 / 450): Gini, poorer half, food a unit | .701, .037, 15.5p | .635, .089, 11.5p |
+| days 182-450 with hungry at or under 1% | 268 of 269 | 266 of 269 |
+| slack, days 182-450: mean (most) | .004 (.013) | .010 (.035 on day 424; two days over .03) |
+| the going rate, days 182-450 | 59.7-64.2p | 59.9-61.8p |
+
+Read: the smelter's bars go back on the road under its holder, and Frosthollow makes iron again (1,132 bars in 86 days,
+about its first year's pace); its people's money falls more slowly (101k on day 450 against 74k). The Lake Oven, held
+by "the best-trained" from day 33, sold nothing for its last 87 days in the base and sells now; the Salt Pans' stopped
+days fell from 59 to 13. One run, and its scorecard is better on its two failures (Gini .635 against .701, food 11.5p
+against 15.5p, the scorecard's prices now a pass), but both rules move it and the runs part early (the fish from day
+91, the first successions from day 5), so neither is this lane's alone to claim. And a spike the base hadn't: the day
+after the festival of day 229, Larkfield 55 hungry of 131 (5 starving) on day 230 and Frosthollow 28 of 56 (20
+starving) on day 231, both clear the next day (the base's hungry most in its q2: 4). Larkfield's shops held 0-37
+pieces of food from day 200 (the base's 17-343), its food makers sold about half the base's over days 215-231 (the
+bakery 1,210 against 2,267, the butcher 423 against 928, the inn 1,059 against 1,622, the dairy 292 against 674) while
+fewer came to its harvest (105 there on day 225 against 165), and its stores' feast found 60p of food against 202p.
+Not traced to either rule in this lane's time (see 4 below).
+
+**For the user:**
+
+1. **The posts never refilled.** Six producer posts stood vacant through the two-year runs (the Rainwash mine, the
+   Greyscar quarry, Wetmeadow, the Snowpine logging, the Hayward fields and the Ramsfold sheep): `RatwCareers.cpp`'s
+   newcomer rule sends for a stranger only while the town is under its number, and these towns weren't. TradeByPost
+   doesn't touch it: a vacant post has nobody to sell, as its dead founder hasn't. A newcomer for a vacant post with a
+   till (whatever the town's number), or a hand of the business taking it on, would bring them back.
+2. **A seller's town in `buyMaterials`** still reads the successor's written town (lanes 1 and 2 own that function this
+   round): one line, `communityOfResident(seller.id)` to `sellerTown(seller.id)`, under the rule.
+3. **More fish wants more hands.** With the hands' work brought in, a fishery's sales grow with its hires and its hands
+   wanted with its sales; the fisheries' wanted rose to some 31 a fishery-day by month 6, and the realm's slack averaged
+   .010 over days 182-450 against the base's .004 (two days over the calm cut's .03). Whether that settles when the
+   fish's price comes down, or the hands' sizing wants a ceiling by the water, is the year's run to read.
+4. **The day after the festival of day 229** (above): Larkfield's and Frosthollow's shelves bare, half of Frosthollow
+   hungry for a day. Fewer hands at Larkfield's harvest fits the fisheries hiring more of the land's one labour market,
+   but it isn't traced. A run of days 0-232 with each rule out (`--without handsbringin`, `--without tradebypost`)
+   would say which rule, or neither, moves it.

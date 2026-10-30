@@ -72,8 +72,7 @@ bool Society::forSale(const std::string& id, const std::string& item) const
 {
     // What a producer brings in to sell (a rabbit farmer's rabbits, a fisher's catch: doc 42) goes to the shops, not the
     // family larder.
-    const auto* r = spec(id);
-    return producesForSale(r ? items::producerFor(r->workLabel) : nullptr, item);
+    return producesForSale(spec(id) ? items::producerFor(tradeLabel(id)) : nullptr, item);   // (Its post's: TradeByPost.)
 }
 
 bool Society::producesForSale(const items::Producer* producer, const std::string& item)
@@ -362,8 +361,8 @@ bool Society::shopHasFood(const std::string& merchant) const
     // (Its wares as wares() keeps them, not a copy: asked of every open shop every second.)
     std::vector<std::string> made;
     const std::vector<std::string>* sold = nullptr;
-    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant))
-        if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == r->workLabel)
+    if (roster_ != Roster::Demo && spec(merchant))
+        if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == tradeLabel(merchant))
             sold = &kept->second.second;
     if (!sold)
         made = wares(merchant), sold = &made;
@@ -401,7 +400,8 @@ void Society::tendPrices(std::int64_t day)
         const auto held = state_.careers.positions.find(p.id);
         if (held == state_.careers.positions.end() || held->second.holder.empty())
             continue;
-        shopTown_[tillOf(held->second.holder)] = communityOfResident(held->second.holder);
+        // (Its post's town, TradeByPost: a successor's own written cell may not be the shop's. Round 14, lane 3.)
+        shopTown_[tillOf(held->second.holder)] = tradeByPost() ? postTown(p) : communityOfResident(held->second.holder);
     }
 }
 
@@ -456,8 +456,7 @@ const std::string& Society::foodMade(const std::string& shop) const
     // shop sells (wares), which at a brewery nobody makes, nor what it only buys in to sell on. (Worked out once a
     // business: each thread remembers.)
     static const std::string none;
-    const auto* r = spec(shop);
-    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto* business = spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (Its post's: TradeByPost.)
     if (!business)
         return none;
     thread_local std::unordered_map<std::string, std::string> known;
@@ -567,8 +566,7 @@ int Society::buyFood(const std::string& resident, const std::string& seller, boo
                 atHome += n * good->nourish;
     };
     const auto carried = [&](const std::string& member) {
-        const auto* m = spec(member);
-        if (const auto* a = account(member); a && !(m && m->role == "merchant" && tillOf(member) == member))
+        if (const auto* a = account(member); a && !(keepsShop(member) && tillOf(member) == member))   // (TradeByPost: its post's.)
             count(*a, member);
     };
     if (laysIn)
@@ -720,29 +718,30 @@ void Society::layInTheFeast(std::int64_t day)
     };
     std::map<std::string, std::vector<Piece>> pieces;   // By the stores: what their towns' food shops hold.
     std::set<std::string> listed;                   // (Ahead: a House's till, serving several shops, counted once.)
-    for (const auto& r : authored_.residents)
+    // (TradeByPost, round 14, lane 3: the posts with a till by their living holders, in their founders' order.)
+    for (const auto& seller : traders())
     {
-        if (r.role != "merchant" || !state_.residents.count(r.id) || !foodShop(r.id) || smith(r.id))
+        if (!keepsShop(seller) || !state_.residents.count(seller) || !foodShop(seller) || smith(seller))
             continue;
-        const auto* job = jobOf(r.id);
-        const auto till = tillOf(r.id);
+        const auto* job = jobOf(seller);
+        const auto till = tillOf(seller);
         const auto* shelves = account(till);
         if (!job || !shelves)
             continue;
-        const auto sold = wares(r.id);
+        const auto sold = wares(seller);
         auto& list = pieces[storeFor(job->work.cell)];
         if (k == 0)
         {
             for (const auto& [item, n] : shelves->stock)
-                if (const auto* good = n > 1 && sellsFood(r.id, item, sold) ? items::good(item) : nullptr; good && good->nourish > 0)
-                    list.push_back({r.id, till, item, shopPrice(r.id, item), good->nourish, n / 2, items::baseOf(item) == "meal"});
+                if (const auto* good = n > 1 && sellsFood(seller, item, sold) ? items::good(item) : nullptr; good && good->nourish > 0)
+                    list.push_back({seller, till, item, shopPrice(seller, item), good->nourish, n / 2, items::baseOf(item) == "meal"});
             continue;
         }
         if (!listed.insert(till).second)
             continue;
         std::set<std::string> foods;                // (Each food by its common sort: its shelf target is the good's.)
         for (const auto& [item, n] : shelves->stock)
-            if (n > 0 && items::baseOf(item) != "meal" && sellsFood(r.id, item, sold))
+            if (n > 0 && items::baseOf(item) != "meal" && sellsFood(seller, item, sold))
                 foods.insert(items::baseOf(item));
         for (const auto& base : foods)
         {
@@ -755,7 +754,7 @@ void Society::layInTheFeast(std::int64_t day)
                 if (!good || good->drink || good->nourish <= 0)
                     continue;
                 const int n = std::min(over, stock(*shelves, sort));
-                list.push_back({r.id, till, sort, shopPrice(r.id, sort), good->nourish, n, false});
+                list.push_back({seller, till, sort, shopPrice(seller, sort), good->nourish, n, false});
                 over -= n;
             }
         }
@@ -828,9 +827,9 @@ void Society::childrenAndStipends(std::int64_t day, const std::map<std::string, 
         if (const auto body = bodies.find(id); body != bodies.end() && !life.homeCell.empty())
             (body->second.age < 16 ? homes[life.homeCell].second : homes[life.homeCell].first).push_back(id);
     std::map<std::string, std::vector<std::string>> shops;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
-            shops[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : traders())                // (TradeByPost: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id))
+            shops[sellerTown(id)].push_back(id);
     // With the hours off (the game's default), the old pace, as it was (doc 64): a stipend by two weeks' food kept back,
     // and a penny more for every hundred to spare; and up to half a child's pennies on anything of 3p or less it likes,
     // kept (as it was: "kept by a child"). Its amounts in LD, at a 12p day as they were (Phase 13: pennies()).
@@ -991,13 +990,13 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
     if (!fieldsOn())
         return wantsAtTheOldPace(day, bodies);
     std::map<std::string, std::vector<std::string>> shops, builders;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
+    for (const auto& id : traders())                // (TradeByPost: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id))
         {
-            const auto town = communityOfResident(r.id);
-            shops[town].push_back(r.id);
-            if (builds(r.id))
-                builders[town].push_back(r.id);
+            const auto town = sellerTown(id);
+            shops[town].push_back(id);
+            if (builds(id))
+                builders[town].push_back(id);
         }
     for (auto& [till, rate] : worksRate_)
         rate *= 1 - 1. / MonthDays;                  // (A month's running average of works hours a day, as mending's.)
@@ -1040,7 +1039,7 @@ void Society::wants(std::int64_t day, const std::map<std::string, LifeBody>& bod
             for (const auto& id : hh.grown)
             {
                 hh.income += monthIncomeOf(id);
-                if (const auto* r = spec(id); r && account(id) && !(r->role == "merchant" && tillOf(id) == id))
+                if (spec(id) && account(id) && !(keepsShop(id) && tillOf(id) == id))   // (TradeByPost: its post's.)
                     hh.buyers.push_back(id), hh.cash += account(id)->cash;
             }
             incomes.push_back(hh.income);
@@ -1298,9 +1297,9 @@ void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, Li
     // pastime, something for the home. Finery and jewellery are kept while it holds FineryKept pieces or fewer (nothing
     // is worn or mended: tendBelongings), the rest used up.
     std::map<std::string, std::vector<std::string>> shops;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
-            shops[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : traders())                // (TradeByPost: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id))
+            shops[sellerTown(id)].push_back(id);
     const auto category = [](const std::string& item) {
         const auto* good = items::good(item);
         return good ? good->category : std::string();
@@ -1332,7 +1331,7 @@ void Society::wantsAtTheOldPace(std::int64_t day, const std::map<std::string, Li
         const auto* r = spec(id);
         const auto* purse = account(id);
         // (A keeper whose shop is its own spends its surplus as a keeper: RatwSurplus.cpp.)
-        if (body == bodies.end() || body->second.age < 16 || !purse || !r || (r->role == "merchant" && tillOf(id) == id))
+        if (body == bodies.end() || body->second.age < 16 || !purse || !r || (keepsShop(id) && tillOf(id) == id))
             continue;
         // Its share of its household's want fund (doc 64, Phase 7: the household rule's), as far as its purse goes past a
         // week's food and the tax and tithe it owes.
@@ -1402,9 +1401,9 @@ void Society::householdShopping(std::int64_t day, int season, const std::map<std
         if (!life.homeCell.empty() && bodies.count(id))
             homes[life.homeCell].push_back(id);
     std::map<std::string, std::vector<std::string>> shopsOf;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
-            shopsOf[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : traders())                // (TradeByPost: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id))
+            shopsOf[sellerTown(id)].push_back(id);
     const int reserve = items::householdReserve();
     for (const auto& [home, members] : homes)
     {
@@ -1553,6 +1552,7 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
         std::map<std::string, int> workers;           // By producer (a mine's, a fishery's... doc 42, Phase 5).
     };
     std::map<std::string, Town> towns;
+    const bool byPost = tradeByPost();
     for (const auto& r : authored_.residents)
     {
         if (!state_.residents.count(r.id) || !bodies.count(r.id))
@@ -1563,13 +1563,29 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
         auto& t = towns[community];
         ++t.residents;
         t.guards += r.role == "guard";
-        if (r.role == "merchant")
+        if (r.role == "merchant" && !byPost)
             t.shops.push_back(r.id);
-        if (const auto* p = items::producerFor(r.workLabel))
+        if (const auto* p = byPost ? nullptr : items::producerFor(r.workLabel))
             ++t.workers[p->id];
         if (const auto* purse = account(r.id); purse && purse->cash < pennies(1, community) && !hasFood(*purse))
             t.poor.push_back(r.id);                 // (Under a day's wage, with nothing to eat.)
     }
+    // (TradeByPost, round 14, lane 3: its shops and its land's workers by the posts with a till and their living holders,
+    // in their founders' order, at their posts' towns.)
+    if (byPost)
+        for (const auto& id : traders())
+        {
+            if (!state_.residents.count(id) || !bodies.count(id))
+                continue;
+            const auto community = sellerTown(id);
+            if (community.empty())
+                continue;
+            auto& t = towns[community];
+            if (keepsShop(id))
+                t.shops.push_back(id);
+            if (const auto* p = items::producerFor(tradeLabel(id)))
+                ++t.workers[p->id];
+        }
     const double days = items::institutionDays();
     joinChurches();                                 // (An older save's churches' purses, into the one.)
     bool churchFounded = false;                     // The land's church opened today: each town's founds it.
@@ -1728,16 +1744,19 @@ void Society::producersSell(std::int64_t day)
     // land gives reaches the townsfolk. Each day from a different shop of the town, so none buys it all.
     if (roster_ != Roster::Authored)
         return;
+    // (TradeByPost, round 14, lane 3: the posts with a till by their living holders, in their founders' order, by their
+    // posts' trades and towns.)
+    const auto sellers = traders();
     std::map<std::string, std::vector<std::string>> shopsOf;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id) && foodShop(r.id))
-            shopsOf[communityOfResident(r.id)].push_back(r.id);
-    for (const auto& r : authored_.residents)
+    for (const auto& id : sellers)
+        if (keepsShop(id) && state_.residents.count(id) && foodShop(id))
+            shopsOf[sellerTown(id)].push_back(id);
+    for (const auto& id : sellers)
     {
-        if (!state_.residents.count(r.id) || !items::producerFor(r.workLabel))
+        if (!state_.residents.count(id) || !items::producerFor(tradeLabel(id)))
             continue;
-        const auto shops = shopsOf.find(communityOfResident(r.id));
-        const auto farm = tillOf(r.id);                 // (Its yield is its till's: doc 46, Phase 2.)
+        const auto shops = shopsOf.find(sellerTown(id));
+        const auto farm = tillOf(id);                 // (Its yield is its till's: doc 46, Phase 2.)
         const auto* purse = account(farm);
         if (shops == shopsOf.end() || shops->second.empty() || !purse)
             continue;
@@ -1756,7 +1775,7 @@ void Society::producersSell(std::int64_t day)
                 if (!shelves)
                     continue;
                 // At the farm's own price (doc 64, Phase 4).
-                const std::int64_t price = pennies(priceAt(r.id, item));
+                const std::int64_t price = pennies(priceAt(id, item));
                 // (A shelf of it by what the shop sells, FoodShelf at least: doc 64, Phase 3b.)
                 const int count = int(std::min<std::int64_t>({left, shelfTarget(till, item, FoodShelf) - stockAll(*shelves, item), 99, spendable(till) / price}));
                 if (count > 0 && transfer(farm, till, item, count, price, "brought in and sold"))
@@ -1770,14 +1789,16 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
 {
     if (roster_ != Roster::Authored)
         return;
-    // The shops of each community, and who sells what.
+    // The shops of each community, and who sells what. (TradeByPost, round 14, lane 3: the posts with a till by their
+    // living holders, in their founders' order, by their posts' trades and towns.)
+    const auto sellers = traders();
     std::map<std::string, std::vector<std::string>> shopsOf;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
-            shopsOf[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : sellers)
+        if (keepsShop(id) && state_.residents.count(id))
+            shopsOf[sellerTown(id)].push_back(id);
     const auto buy = [&](const std::string& who, const std::string& item, const std::string& kind) {
         const auto payer = tillOf(who);             // (A farm's tools and upkeep come out of its till: doc 46, Phase 2.)
-        const auto shops = shopsOf.find(communityOfResident(who));
+        const auto shops = shopsOf.find(sellerTown(who));
         if (shops == shopsOf.end())
             return false;
         for (const auto& shop : shops->second)
@@ -1820,36 +1841,36 @@ void Society::tradeUpkeep(std::int64_t day, const std::map<std::string, LifeBody
     // walls): what each farm worker wears out a day, bought whole when a whole one is owed, at its town's shops (which
     // order from the cities what the town lacks). Out of its own purse.
     if (const auto* farm = items::upkeepFor("(farm)"))
-        for (const auto& r : authored_.residents)
+        for (const auto& id : sellers)
         {
-            const auto* p = items::producerFor(r.workLabel);
-            const auto body = bodies.find(r.id);
-            if (!p || !farmWork(p->id) || body == bodies.end() || body->second.age < 16 || !state_.residents.count(r.id))
+            const auto* p = items::producerFor(tradeLabel(id));
+            const auto body = bodies.find(id);
+            if (!p || !farmWork(p->id) || body == bodies.end() || body->second.age < 16 || !state_.residents.count(id))
                 continue;
-            auto& owed = upkeepOwed_[r.id];
+            auto& owed = upkeepOwed_[id];
             for (const auto& [item, rate] : *farm)
-                if ((owed[item] += rate) >= 1 && buy(r.id, item, "the farm's upkeep"))
+                if ((owed[item] += rate) >= 1 && buy(id, item, "the farm's upkeep"))
                     owed[item] -= 1;
                 else
                     owed[item] = std::min(owed[item], 3.);   // (Gone without: owed, a few at most.)
         }
     // Businesses' upkeep (crafts.json `upkeep`): a stables' horses eat, from the till, bought like its materials.
-    for (const auto& r : authored_.residents)
+    for (const auto& id : sellers)
     {
-        if (r.role != "merchant" || !state_.residents.count(r.id))
+        if (!keepsShop(id) || !state_.residents.count(id))
             continue;
-        const auto* business = items::businessFor(r.workLabel);
+        const auto* business = items::businessFor(tradeLabel(id));
         const auto* upkeep = business ? items::upkeepFor(business->id) : nullptr;
-        const auto* job = jobOf(r.id);
+        const auto* job = jobOf(id);
         if (!upkeep || !job)
             continue;
-        const auto till = tillOf(r.id);
+        const auto till = tillOf(id);
         for (const auto& [item, rate] : *upkeep)
         {
             auto& owed = owed_[till + "|upkeep|" + item];
             owed += rate;
             if (const int want = int(owed) - stockAll(*account(till), item); want > 0)
-                buyMaterials(r.id, job->work.cell, item, want + int(std::ceil(rate * 3)));
+                buyMaterials(id, job->work.cell, item, want + int(std::ceil(rate * 3)));
             for (const auto& sort : kindsHeld(*account(till), item))
                 if (int(owed) > 0)
                     owed -= consume(till, sort, std::min(int(owed), stock(*account(till), sort)), "eaten by the horses");

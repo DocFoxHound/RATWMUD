@@ -1931,6 +1931,11 @@ class World
     };
     std::string residentTown(const std::string& id) const;
     Market marketOf(const std::string& town) const;
+  public:
+    // (A test's: a town's market as the day's trade reads it, round 14, lane 3: who holds what to spare and who wants
+    // what, in order.)
+    Market marketFor(const std::string& town) const { return marketOf(town); }
+  private:
     std::string traderOf(const Town& t) const;
     void tradeCaravans();
     // Standing orders (RatwTrade.cpp): the price a piece agreed with a town now, those of a road due a delivery, and the

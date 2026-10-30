@@ -7753,10 +7753,305 @@ void aGlutIsMarkedDown()
     Society::setWorkByHours(false);
 }
 
+// Round 14, lane 3 (the user, 2026-10-30), with work by the hours at the calibrated pace (a fishing yield, two fish, every
+// .971 hours): a fishery, its fisher's till, with a day's sales of 200 fish behind it, so its store's kept target
+// (shelfTarget) is over the 74 fish of 36 hours' yields; its store then `fish`, its work in hand `banked` hours. Its keeper
+// away: nothing ticks after it is made.
+Society fishery(int fish, double banked)
+{
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                        person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian")};
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    double day = 10. / 24;
+    work(s, 60, day);                               // (Its till and the purses founded.)
+    auto state = s.state();
+    state.memory.pace = 1;
+    expect(s.restore(state), "the calibrated hours restore");
+    const auto till = s.tillOf("fisher");
+    expect(till != "fisher", "the fishery has a till of its own");
+    set(s, "fisher", "fish", 200);
+    for (const int n : {99, 99, 2})
+        expect(s.sale(till, "treasury", "fish", n, 1, "test: a day's sales"), "a day's sales of fish");
+    s.spoil(0);                                     // (Into its running rate of sales: its store's target.)
+    set(s, "fisher", "fish", fish);
+    s.setWorkBanked("fisher", banked);     // (A producer's work in hand is its keeper's: produce, creditWork.)
+    return s;
+}
+
+// A hand's day brings in at once (HandsBringIn; the user, 2026-10-30): the fishery's work in hand 20 hours, its store
+// under its target, its keeper away, and two hired hands' days (8 hours each) done in the same second. With the rule the
+// store gains the yields of the 36 hours (37 yields, 74 fish, under its target), its work in hand is left under a yield's
+// hours, and none is lost. Without, 12 of the 16 hours are lost at the bank's cap of 24, and nothing comes in until its
+// keeper's own spell.
+void aHandsDayBringsInAtOnce()
+{
+    Society::setWorkByHours(true);
+    const auto* fishing = items::producerFor("fishes the lake");
+    expect(fishing && fishing->out.size() == 1 && fishing->out.front().second == 2, "a fishing yield is two fish");
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::HandsBringIn);
+        auto s = fishery(0, 20);
+        const auto till = s.tillOf("fisher");
+        const double yield = s.workHours(*fishing);
+        const int yields = int(std::floor(36 / yield + 1e-9));
+        expect(s.shelfTarget(till, "fish", Society::ProducerKept) >= yields * 2, "its store's target is over the 36 hours' fish: " +
+                                                                                    std::to_string(s.shelfTarget(till, "fish", Society::ProducerKept)));
+        const auto lost = [&] {
+            const auto found = s.workBy().find("fisher");
+            return found == s.workBy().end() ? 0. : found->second.second;
+        };
+        const double lostBefore = lost();
+        s.takeJournal();
+        const double day = 11. / 24;
+        s.handsDayOnTheLand("fisher", Society::HireSpells, day);
+        s.handsDayOnTheLand("fisher", Society::HireSpells, day);
+        const int fish = count(s.takeJournal(), "brought in", "fish");
+        if (rule)
+        {
+            expect(fish == yields * 2 && held(s, "fisher", "fish") == yields * 2,
+                   "with the rule the store gains the 36 hours' yields: " + std::to_string(fish) + " of " + std::to_string(yields * 2));
+            expect(s.workBankedOf("fisher") < yield && std::abs(s.workBankedOf("fisher") - (36 - yields * yield)) < 1e-6,
+                   "its work in hand under a yield's hours: " + std::to_string(s.workBankedOf("fisher")));
+            expect(lost() == lostBefore, "and none of it lost: " + std::to_string(lost() - lostBefore));
+        }
+        else
+        {
+            expect(fish == 0 && held(s, "fisher", "fish") == 0, "without the rule nothing comes in: " + std::to_string(fish));
+            expect(std::abs(lost() - lostBefore - 12) < 1e-9 && std::abs(s.workBankedOf("fisher") - 24.) < 1e-9,
+                   "and 12 of the 16 hours are lost at the cap: " + std::to_string(lost() - lostBefore));
+        }
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// A full store still loses work (HandsBringIn): the same fishery with its store at its target. With the rule as without,
+// the hands' hours wait in its work in hand, 12 of the 16 lost past its cap, and nothing comes in: work not wanted is lost.
+void aFullStoreStillLosesWork()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::HandsBringIn);
+        auto probe = fishery(0, 0);
+        const int target = probe.shelfTarget(probe.tillOf("fisher"), "fish", Society::ProducerKept);
+        auto s = fishery(target, 20);
+        expect(s.shelfTarget(s.tillOf("fisher"), "fish", Society::ProducerKept) == target, "its store at its target");
+        const auto lost = [&] {
+            const auto found = s.workBy().find("fisher");
+            return found == s.workBy().end() ? 0. : found->second.second;
+        };
+        const double lostBefore = lost();
+        s.takeJournal();
+        const double day = 11. / 24;
+        s.handsDayOnTheLand("fisher", Society::HireSpells, day);
+        s.handsDayOnTheLand("fisher", Society::HireSpells, day);
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(count(s.takeJournal(), "brought in", "fish") == 0 && held(s, "fisher", "fish") == target, at + ", nothing comes in");
+        expect(std::abs(lost() - lostBefore - 12) < 1e-9 && std::abs(s.workBankedOf("fisher") - 24.) < 1e-9,
+               at + ", the hours wait and 12 are lost past the cap: " + std::to_string(lost() - lostBefore));
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// A dead keeper's hand makes nothing (HandsBringIn): the fisher dies, its post let go (its till its purse no more), and a
+// hand's day it had hired finishes. With the rule as without, nothing is brought in to the deceased's purse or the till.
+void aDeadKeepersHandMakesNothing()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::HandsBringIn);
+        auto s = fishery(0, 20);
+        const auto till = s.tillOf("fisher");
+        s.died("fisher", 11. / 24);
+        expect(s.tillOf("fisher") == "fisher" && !s.jobOf("fisher"), "the dead fisher holds its post no more");
+        s.takeJournal();
+        s.handsDayOnTheLand("fisher", Society::HireSpells, 11. / 24);
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(count(s.takeJournal(), "brought in", "fish") == 0 && Society::stockAll(*s.account("fisher"), "fish") == 0 &&
+                   Society::stockAll(*s.account(till), "fish") == 0,
+               at + ", the hand's day brings nothing in to the deceased's purse");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// A successor sells on (TradeByPost, round 14, lane 3; the user, 2026-10-30), with work by the hours at the calibrated
+// pace. The smelter: its founder dies with 148 iron bars in its till, and one of its hands, written as a civilian who
+// 'works at The Frosthollow Smelter', takes its post (as a succession does: its own post let go); the forge in town is
+// out of iron. With the rule the next day's sellers of iron bars are the smelter's holder's, the smith buys bars from
+// the smelter's till, and with its shelf under its store (as if the roads took the rest) its holder starts a batch of
+// bars. The fishery: its founder dies too, and kit, written as born here ('-'), takes its post: it brings fish in at its
+// post's spells. Without the rule the sellers are the dead founder's (its purse empty), the smith buys none, the
+// smelter's shelf stays over its store and it makes nothing, and kit brings in nothing. (The marketOf half is
+// roads_tests' aSuccessorsBarsAreOnTheMarket.)
+void aSuccessorSellsOn()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::TradeByPost);
+        AuthoredRoster roster;
+        roster.residents = {person("thistle", "runs The Frosthollow Smelter", {"smelter", 2.5, 2.5}),
+                            person("brisk", "works at The Frosthollow Smelter", {"smelter", 5.5, 2.5}, "civilian"),
+                            person("smith", "the smith at the forge", {"forge", 2.5, 2.5}),
+                            person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                            person("kit", "-", {"homes", 5.5, 2.5}, "civilian"),
+                            person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian")};
+        roster.economy.treasury = 5000;
+        Society s(Roster::None);
+        s.configure(roster);
+        double day = 10. / 24;
+        work(s, 60, day);                           // (The tills and the purses founded.)
+        const auto smelter = s.tillOf("thistle"), forge = s.tillOf("smith"), boats = s.tillOf("fisher");
+        expect(smelter != "thistle" && forge != "smith" && boats != "fisher", "the smelter, the forge and the fishery have tills");
+        expect(Society::stockAll(*s.account(smelter), "iron_ore") >= 2 && Society::stockAll(*s.account(smelter), "charcoal") >= 1,
+               "the smelter holds ore and charcoal");
+        s.died("thistle", day);
+        s.died("fisher", day);
+        auto st = s.state();
+        st.memory.pace = 1;
+        auto& smelterPost = st.careers.positions.at("job:thistle");
+        smelterPost.holder = "brisk", smelterPost.vacantSince = -1;
+        st.careers.positions.at("job:brisk").holder.clear();
+        auto& boatsPost = st.careers.positions.at("job:fisher");
+        boatsPost.holder = "kit", boatsPost.vacantSince = -1;
+        st.accounts.at(smelter).stock["iron_bar"] = 148;
+        auto& shelves = st.accounts.at(forge).stock;    // (The forge out of iron and of nails; its swords, made first, in.)
+        for (auto it = shelves.begin(); it != shelves.end();)
+            it = items::baseOf(it->first) == "iron_bar" || items::baseOf(it->first) == "nails" ? shelves.erase(it) : std::next(it);
+        shelves["charcoal"] = 20, shelves["sword"] = 40;
+        st.accounts.at("treasury").cash -= 2000;       // (And the money to buy them: its takings.)
+        st.accounts.at(forge).cash += 2000;
+        st.accounts.at(boats).stock.erase("fish");
+        expect(s.restore(st), "the successions restore");
+        s.setWorkBanked("kit", 0);
+        expect(s.jobOf("brisk") && s.jobOf("brisk")->id == "job:thistle" && s.tillOf("brisk") == smelter, "brisk holds the smelter");
+        expect(s.tillOf("kit") == boats, "kit holds the fishery");
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(s.tradeLabel("brisk") == (rule ? "runs The Frosthollow Smelter" : "works at The Frosthollow Smelter") &&
+                   s.keepsShop("brisk") == rule && s.tradeLabel("kit") == (rule ? "fishes the lake" : "-"),
+               at + ", the successors' trades");
+        auto bodies = atWork(s);
+        bodies.erase("thistle");
+        bodies.erase("fisher");
+        bodies["brisk"] = {"smelter", 2.5, 2.5};    // (At its post's counter.)
+        bodies["kit"] = {"lake", 4.5, 4.5};         // (At its post's water.)
+        // The next day's pass, and a morning's work.
+        day = 1 + 10. / 24;
+        s.tick(1, day, 0, bodies);
+        const auto sellers = s.sellersListed("iron_bar");
+        const auto lists = [&](const std::string& id) {
+            return std::any_of(sellers.begin(), sellers.end(), [&](const auto& seller) { return seller.first == id && seller.second == 1; });
+        };
+        expect(rule ? lists("brisk") && !lists("thistle") : lists("thistle") && !lists("brisk"),
+               at + ", the smelter's bars are sold by " + (rule ? "its holder" : "its dead founder"));
+        s.takeJournal();
+        int bars = 0, fish = 0;
+        for (int i = 0; i < 3700; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            for (const auto& e : s.takeJournal())
+            {
+                if (e.kind == "materials bought" && e.from == forge && e.to == smelter && items::baseOf(e.item) == "iron_bar")
+                    bars += e.quantity;
+                if (e.kind == "brought in" && e.to == boats && items::baseOf(e.item) == "fish")
+                    fish += e.quantity;
+            }
+        }
+        expect(rule ? bars > 0 : bars == 0, at + ", the smith buys the smelter's bars: " + std::to_string(bars));
+        expect(rule ? fish >= 2 : fish == 0, at + ", the fishery's successor brings in fish: " + std::to_string(fish));
+        // The smelter's shelf under its store (with the rule, as if the roads took what the smith left), its work in hand
+        // full: a batch of bars begins.
+        st = s.state();
+        if (rule)
+            st.accounts.at(smelter).stock["iron_bar"] = 0;
+        expect(s.restore(st), "the smelter's shelf restores");
+        s.setWorkBanked(smelter, 24);
+        s.takeJournal();
+        int made = 0;
+        for (int i = 0; i < 3700; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            for (const auto& e : s.takeJournal())
+                if (e.kind == "crafted" && e.to == smelter && items::baseOf(e.item) == "iron_bar")
+                    made += e.quantity;
+        }
+        expect(rule ? made > 0 : made == 0, at + ", the smelter " + (rule ? "makes bars again" : "with its shelf full makes none") +
+                                                ": " + std::to_string(made));
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The lists are the same with no succession (TradeByPost): every founder alive in its post, the sellers of every good
+// (sellersOf, as buyMaterials reads them) with the rule are those without it, in the same order, and its sellers are
+// the written residents. (The markets' half is roads_tests' theMarketIsTheSameWithNoSuccession.)
+void theListsAreTheSameWithNoSuccession()
+{
+    Society::setWorkByHours(true);
+    AuthoredRoster roster;
+    auto farmer = person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian");
+    roster.residents = {farmer,
+                        person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                        person("miller", "runs The Ford Mill", {"mill", 2.5, 2.5}),
+                        person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}),
+                        person("stall", "keeping the stall", {"market", 4.5, 4.5}),
+                        person("smith", "the smith at the forge", {"forge", 2.5, 2.5}),
+                        person("thistle", "runs The Frosthollow Smelter", {"smelter", 2.5, 2.5}),
+                        person("brisk", "works at The Frosthollow Smelter", {"smelter", 5.5, 2.5}, "civilian"),
+                        person("chandler", "the chandler at the kettle", {"kettle", 2.5, 2.5}),
+                        person("keeper", "shopkeeper at the general store", {"store", 2.5, 2.5}),
+                        person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian")};
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    double day = 10. / 24;
+    work(s, 60, day);
+    std::vector<std::string> written;
+    for (const auto& r : s.authored().residents)
+        written.push_back(r.id);
+    int goods = 0, listed = 0;
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::TradeByPost);
+        expect(s.traders() == written, std::string(rule ? "with" : "without") + " the rule, the sellers are the written residents");
+    }
+    for (const auto& good : items::allGoods())
+    {
+        Society::wageRulesOff(0);
+        const auto with = s.sellersListed(good.id);
+        Society::wageRulesOff(Society::TradeByPost);
+        const auto without = s.sellersListed(good.id);
+        expect(with == without, "the sellers of " + good.id + " are the same, in the same order");
+        ++goods, listed += int(with.size());
+    }
+    expect(goods > 100 && listed > 20, "goods asked: " + std::to_string(goods) + ", sellers listed: " + std::to_string(listed));
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
     {
+        aHandsDayBringsInAtOnce();
+        aFullStoreStillLosesWork();
+        aDeadKeepersHandMakesNothing();
+        aSuccessorSellsOn();
+        theListsAreTheSameWithNoSuccession();
         startingMaterials();
         bakesFromMaterials();
         aPawLent();

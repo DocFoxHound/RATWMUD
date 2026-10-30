@@ -110,14 +110,13 @@ bool Society::onSale(const std::string& shop, const std::string& item, const std
         return true;
     if (!edible(item) || !foodShop(shop))
         return false;
-    const auto* keeper = spec(shop);
-    return !madeFrom(keeper ? items::businessFor(keeper->workLabel) : nullptr, base);
+    return !madeFrom(spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr, base);   // (Its post's: TradeByPost.)
 }
 
 const std::vector<std::string>& Society::waresKept(const std::string& shop, std::vector<std::string>& made) const
 {
-    if (const auto* r = roster_ == Roster::Demo ? nullptr : spec(shop))
-        if (const auto kept = waresCache_.find(shop); kept != waresCache_.end() && kept->second.first == r->workLabel)
+    if (roster_ != Roster::Demo && spec(shop))
+        if (const auto kept = waresCache_.find(shop); kept != waresCache_.end() && kept->second.first == tradeLabel(shop))
             return kept->second.second;
     made = wares(shop);
     return made;
@@ -137,8 +136,7 @@ std::vector<Society::Offer> Society::offersOf(const std::vector<std::string>& sh
         // (Its wares as wares() keeps them, not a copy, as shopHasFood; onSale's rule, its parts worked out once a shop.)
         const auto& sold = waresKept(shop, made);
         const bool food = foodShop(shop);
-        const auto* keeper = food ? spec(shop) : nullptr;
-        const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+        const auto* business = food && spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (TradeByPost.)
         for (const auto& [item, n] : shelves->stock)
         {
             if (n < 3)                               // (Never a shelf's last few: buyForSurplus's (n - 1) / 2.)
@@ -216,15 +214,22 @@ void Society::spendSurpluses(std::int64_t day)
     spentToday_.clear();
     ++state_.memory.revision;
     // The communities: who lives in each, and its shops.
+    // (TradeByPost, round 14, lane 3: its shops the posts with a till by their living holders, in their founders' order,
+    // at their posts' towns.)
     std::map<std::string, std::vector<std::string>> folk, shops;
+    const bool byPost = tradeByPost();
     for (const auto& r : authored_.residents)
         if (state_.residents.count(r.id))
         {
             const auto c = communityOfResident(r.id);
             folk[c].push_back(r.id);
-            if (r.role == "merchant")
+            if (r.role == "merchant" && !byPost)
                 shops[c].push_back(r.id);
         }
+    if (byPost)
+        for (const auto& id : traders())
+            if (state_.residents.count(id) && keepsShop(id))
+                shops[sellerTown(id)].push_back(id);
     // Each town's church feeds its town's poor every day, surplus or not (the user, 2026-10-05: no one starves with a church
     // in town): a day's food each to those with no food and no pennies to buy it (a child whose larder is empty, an
     // apprentice), hungry yet or not, bought at the town's shops with the land's purse (SharedChurch).

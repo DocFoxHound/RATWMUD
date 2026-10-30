@@ -52,39 +52,36 @@ World::Market World::marketOf(const std::string& town) const
     // What a town's shops and producers have to spare, and what its makers and suppliers are short of; and, when its
     // shops are running out of food, the food its food shops sell (Docs/Design/42, "Food between towns").
     Market m;
-    for (const auto& r : society_.authored().residents)
-    {
-        const auto* e = entity(r.id);
-        if (!e || e->dead || !society_.resident(r.id) || residentTown(r.id) != town)
-            continue;
-        ++m.people;
-        if (const auto* life = society_.resident(r.id); life && life->hunger >= HungryAt)
-            ++m.hungry;
-        if (const auto* p = items::producerFor(r.workLabel))
+    // A seller's goods, by its trade (`label`) and whether it keeps a shop: TradeByPost (round 14, lane 3; the user,
+    // 2026-10-30), its post's, held by its living holder, in its founder's written order; without, the written record's.
+    // A dead founder's successor written with another trade sold nothing wholesale: Frosthollow's smelter held 148 bars
+    // from day 364 of the two-year run, and stopped on day 427.
+    const auto sell = [&](const std::string& id, const std::string& label, bool shop) {
+        if (const auto* p = items::producerFor(label))
         {
-            const auto farm = society_.tillOf(r.id);   // (Its yield is its till's: doc 46, Phase 2.)
+            const auto farm = society_.tillOf(id);   // (Its yield is its till's: doc 46, Phase 2.)
             const auto* purse = society_.account(farm);
             if (!purse)
-                continue;
+                return;
             for (const auto& [item, n] : p->out)
                 if (const int held = Society::stockAll(*purse, item); held > 0)
                 {
                     m.spare[item] += held;
                     m.holders[item].push_back({farm, held});
                 }
-            continue;
+            return;
         }
-        if (r.role != "merchant")
-            continue;
-        const auto* business = items::businessFor(r.workLabel);
-        const auto till = society_.tillOf(r.id);
+        if (!shop)
+            return;
+        const auto* business = items::businessFor(label);
+        const auto till = society_.tillOf(id);
         const auto* shelves = society_.account(till);
         if (!business || !shelves)
-            continue;
+            return;
         for (const auto& [item, count] : shelves->stock)
             if (count > 0 && Society::edible(item))
                 m.food += count, m.fed += double(count) * Society::nourishment(item);
-        if (society_.foodShop(r.id))
+        if (society_.foodShop(id))
             m.foodShops.push_back(till);
         const auto& supplies = items::suppliesFor(business->id);
         std::map<std::string, int> tillWant;            // What this shop wants, by good.
@@ -123,7 +120,27 @@ World::Market World::marketOf(const std::string& town) const
                 m.want[item] += want;
                 m.wanters[item].push_back({till, want});
             }
+    };
+    const bool byPost = Society::tradeByPost();
+    const auto here = [&](const std::string& id) {
+        const auto* e = entity(id);
+        return e && !e->dead && society_.resident(id) && residentTown(id) == town;
+    };
+    for (const auto& r : society_.authored().residents)
+    {
+        if (!here(r.id))
+            continue;
+        ++m.people;
+        if (const auto* life = society_.resident(r.id); life && life->hunger >= HungryAt)
+            ++m.hungry;
+        if (!byPost)
+            sell(r.id, r.workLabel, r.role == "merchant");
     }
+    // (Its post's town: residentTown reads the post's work cell first.)
+    if (byPost)
+        for (const auto& id : society_.traders())
+            if (here(id))
+                sell(id, society_.tradeLabel(id), society_.keepsShop(id));
     for (auto* list : {&m.holders, &m.wanters})
         for (auto& [item, who] : *list)
             std::sort(who.begin(), who.end(), [](const auto& a, const auto& b) { return a.second > b.second; });

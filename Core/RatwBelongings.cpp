@@ -63,9 +63,9 @@ void Society::tendBelongings(std::int64_t day, const std::map<std::string, LifeB
         if (need.perPerson && !need.any.empty())
             clothes = need.any.front();
     std::map<std::string, std::vector<std::string>> shopsOf;
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id))
-            shopsOf[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : traders())                // (TradeByPost, round 14, lane 3: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id))
+            shopsOf[sellerTown(id)].push_back(id);
     auto& all = state_.memory.belongings;
     for (const auto& [id, life] : state_.residents)
     {
@@ -225,8 +225,7 @@ bool Society::seeTo(const std::string& id, Belonging& b, const std::string& kind
     double quote = 0;
     for (const auto& shop : shops)
     {
-        const auto* keeper = spec(shop);
-        const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+        const auto* business = spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (Its post's: TradeByPost.)
         if (!business || shop == id)
             continue;
         for (const auto* k : items::craftsFor(business->id))

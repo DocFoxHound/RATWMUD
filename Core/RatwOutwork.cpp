@@ -138,8 +138,7 @@ bool Society::carriesForSale(const std::string& resident) const
 
 bool Society::sellsTo(const std::string& resident, const std::string& shop) const
 {
-    const auto* keeper = spec(shop);
-    const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+    const auto* business = spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (Its post's: TradeByPost.)
     const auto* purse = account(resident);
     if (!business || !purse)
         return false;
@@ -191,8 +190,7 @@ int Society::keepForTheLarder(const std::string& resident)
 std::int64_t Society::sellBroughtIn(const std::string& resident, const std::string& shop)
 {
     keepForTheLarder(resident);                      // (Its household's food first: Phase 10.)
-    const auto* keeper = spec(shop);
-    const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+    const auto* business = spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (Its post's: TradeByPost.)
     const auto* purse = account(resident);
     const auto till = tillOf(shop);                  // (A house's business: its till.)
     if (!business || !purse || !account(till))

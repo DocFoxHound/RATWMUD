@@ -195,20 +195,24 @@ std::pair<std::string, int> World::sourceFor(const Contract& k) const
     std::string best;
     int bestSpare = 0;
     bool bestHome = false;
-    for (const auto& r : society_.authored().residents)
+    // (TradeByPost, round 14, lane 3: the posts with a till by their living holders, in their founders' order, each by
+    // its post's trade and role; its home the holder's own.)
+    for (const auto& id : society_.traders())
     {
         // A shop with it to spare, or someone who brings it in from the land (a quarry's stone, a farm's grain).
-        const auto* producer = items::producerFor(r.workLabel);
-        if ((r.role != "merchant" && !producer) || !society_.resident(r.id) || r.id == k.poster)
+        const auto* r = society_.spec(id);
+        const auto* producer = items::producerFor(society_.tradeLabel(id));
+        const bool shop = society_.keepsShop(id);
+        if (!r || (!shop && !producer) || !society_.resident(id) || id == k.poster)
             continue;
-        const auto* e = entity(r.id);
-        const auto* shelves = society_.account(society_.tillOf(r.id));
+        const auto* e = entity(id);
+        const auto* shelves = society_.account(society_.tillOf(id));
         if (!e || e->dead || !shelves)
             continue;
-        const int spare = Society::stockAll(*shelves, k.item) - (r.role == "merchant" ? Society::GoodsKept : 0);
-        const bool home = lawTown(r.home.cell) == k.town;
+        const int spare = Society::stockAll(*shelves, k.item) - (shop ? Society::GoodsKept : 0);
+        const bool home = lawTown(r->home.cell) == k.town;
         if (spare > 0 && (home > bestHome || (home == bestHome && spare > bestSpare)))
-            best = r.id, bestSpare = spare, bestHome = home;
+            best = id, bestSpare = spare, bestHome = home;
     }
     return {best, std::min(bestSpare, left)};
 }

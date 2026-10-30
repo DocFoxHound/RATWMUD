@@ -43,9 +43,9 @@ std::int64_t Society::spendable(const std::string& id) const
     }
     const auto* r = state_.residents.count(id) ? spec(id) : nullptr;
     // (Only a keeper whose purse is its shop's till keeps back its food money: one with a till of its own spends its own.
-    // At its town's day, accountTown, as the wealth line and an owner's top-up reckon it.)
-    return r && r->role == "merchant" && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, accountTown(id)))
-                                                         : purse->cash;
+    // At its town's day, accountTown, as the wealth line and an owner's top-up reckon it. Its post's, TradeByPost.)
+    return r && keepsShop(id) && tillOf(id) == id ? std::max<std::int64_t>(0, purse->cash - pennies(KeeperReserve, accountTown(id)))
+                                                 : purse->cash;
 }
 
 std::int64_t Society::houseMay(const std::string& house, HousePart part) const

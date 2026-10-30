@@ -405,7 +405,31 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
     return chosen;
 }
 
-void Society::advanceOddJob(const std::string& id, int seconds)
+void Society::handsDayOnTheLand(const std::string& keeper, int spells, double absoluteDay)
+{
+    // (Its trade the post's, TradeByPost: a successor written with another trade works its post's land.)
+    const auto* producer = items::producerFor(tradeLabel(keeper));
+    if (!producer)
+        return;
+    // A hand's day brought in at once (HandsBringIn, round 14, lane 3; the user, 2026-10-30): only the keeper's own paid
+    // spell made banked hours into yields, so a fishery hiring four or more lost 13-34% of its hands' hours at the bank's
+    // cap while its makers went short of fish. Now the yield loop runs on what the bank already holds, then on the day
+    // credited (produce with none of the keeper's hours: no keeper's time credited, the land's reading and its tools'
+    // wear by the hours used). Its store full, the hours wait in the bank and are lost past its cap, as before: work not
+    // wanted is still lost. Only for a producer alive and holding its post with a till of its own (so a dead founder's
+    // purse is never stocked: its post let go at its death, its till is its purse). On the main thread: the residents'
+    // second half, in ID order, as creditWork and create always were here.
+    const bool bringIn = handsBringIn() && tillOf(keeper) != keeper;
+    if (bringIn)
+        produce(keeper, absoluteDay, 0.);
+    creditWork(keeper, double(spells));
+    if (auto& land = state_.memory.landToday; land >= 0 && workByHours() && brakesOn(*producer))
+        land += double(spells);                     // (The pace's brake's reading: RatwLabour.cpp.)
+    if (bringIn)
+        produce(keeper, absoluteDay, 0.);
+}
+
+void Society::advanceOddJob(const std::string& id, int seconds, double absoluteDay)
 {
     indexOddJobs();
     auto it = oddJobs_.end();
@@ -433,12 +457,7 @@ void Society::advanceOddJob(const std::string& id, int seconds)
             craftNext_.erase(j.producer);           // (Its keeper looks again at once.)
         }
         if (j.kind == "a hand")
-            if (const auto* producer = spec(j.producer); producer && items::producerFor(producer->workLabel))
-            {
-                creditWork(j.producer, double(spells));
-                if (auto& land = state_.memory.landToday; land >= 0 && workByHours() && brakesOn(*items::producerFor(producer->workLabel)))
-                    land += double(spells);         // (The pace's brake's reading: RatwLabour.cpp.)
-            }
+            handsDayOnTheLand(j.producer, spells, absoluteDay);
         if ((j.kind == "gathering" || j.kind == "hunting") && day_.grounds && day_.harvest)
             if (const auto found = day_.grounds->find(j.community); found != day_.grounds->end() && j.ground < found->second.size())
                 for (const auto& [item, n] : day_.harvest(id, found->second[j.ground], season_))

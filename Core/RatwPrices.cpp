@@ -93,8 +93,9 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
         return found->second < 0 ? costOf(till, item) : found->second * quality;
     const auto* r = spec(seller);
     const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
-    const std::string label = r ? r->workLabel : p ? p->title : std::string();
-    const auto town = accountTown(till).empty() ? communityOfResident(seller) : accountTown(till);
+    // (The post's title first when the seller holds it, TradeByPost: round 14, lane 3.)
+    const std::string label = tradeByPost() && p && jobOf(seller) == p ? p->title : r ? r->workLabel : p ? p->title : std::string();
+    const auto town = accountTown(till).empty() ? sellerTown(seller) : accountTown(till);
     const double hour = labourDay(town) / PaidSpells;
     // A batch's goods share its cost by their worth (a sheep farm's mutton, wool and skin).
     const auto share = [&](const std::vector<std::pair<std::string, int>>& out) {
@@ -155,8 +156,9 @@ double Society::materialsCost(const std::string& seller, const std::string& item
     const auto base = items::baseOf(item);
     const auto* r = spec(seller);
     const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
-    const std::string label = r ? r->workLabel : p ? p->title : std::string();
-    const auto town = accountTown(till).empty() ? communityOfResident(seller) : accountTown(till);
+    // (The post's title first when the seller holds it, TradeByPost.)
+    const std::string label = tradeByPost() && p && jobOf(seller) == p ? p->title : r ? r->workLabel : p ? p->title : std::string();
+    const auto town = accountTown(till).empty() ? sellerTown(seller) : accountTown(till);
     if (const auto* producer = label.empty() ? nullptr : items::producerFor(label))
     {
         // A producer's: its tools' wear, a yield's share.

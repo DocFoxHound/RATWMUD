@@ -225,21 +225,103 @@ bool Society::smith(const std::string& id) const
     if (roster_ == Roster::Demo)
         return id == "npc_smith";
     const auto* r = spec(id);
-    if (!r || r->role != "merchant")
+    // (The post's trade and role, TradeByPost: round 14, lane 3. With no post, its written role: the founding asks before
+    // its founders take their posts, resetAuthored's swords.)
+    const auto* job = tradeByPost() ? jobOf(id) : nullptr;
+    if (!r || (job ? job->role : r->role) != "merchant")
         return false;
+    const auto& trade = tradeLabel(id);
     thread_local std::unordered_map<std::string, bool> known;   // By work label: asked of every shop, every decision.
-    if (const auto found = known.find(r->workLabel); found != known.end())
+    if (const auto found = known.find(trade); found != known.end())
         return found->second;
-    std::string work = r->workLabel;
+    std::string work = trade;
     std::transform(work.begin(), work.end(), work.begin(), [](unsigned char c) { return char(std::tolower(c)); });
-    return known.emplace(r->workLabel, work.find("smith") != std::string::npos || work.find("forge") != std::string::npos).first->second;
+    return known.emplace(trade, work.find("smith") != std::string::npos || work.find("forge") != std::string::npos).first->second;
 }
 bool Society::foodShop(const std::string& merchant) const
 {
     static const std::vector<std::string> food = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};
     const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
-    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto* business = r ? items::businessFor(tradeLabel(merchant)) : nullptr;   // (The post's trade, TradeByPost.)
     return business && std::find(food.begin(), food.end(), business->id) != food.end();
+}
+
+// Round 14, lane 3 (TradeByPost; the user, 2026-10-30): a seller's trade, its shop and its town are its post's, held by
+// whoever holds it, not its written record's (see RatwSociety.h).
+const std::string& Society::tradeLabel(const std::string& id) const
+{
+    // (The post's title or the written label, as they stand: no copy, asked of every shop in the residents' decisions.)
+    static const std::string none;
+    if (tradeByPost())
+        if (const auto* job = jobOf(id); job && tills_.count(job->id) && (items::businessFor(job->title) || items::producerFor(job->title)))
+            return job->title;
+    const auto* r = spec(id);
+    return r ? r->workLabel : none;
+}
+
+bool Society::keepsShop(const std::string& id) const
+{
+    if (tradeByPost())
+    {
+        const auto* job = jobOf(id);
+        return job && job->role == "merchant";
+    }
+    const auto* r = spec(id);
+    return r && r->role == "merchant";
+}
+
+std::string Society::postTown(const Position& p) const
+{
+    // (Its founder's work cell is the post's: buildPositions. So the post's town is its founder's, as communityOfResident
+    // finds it, also once the founder is dead.)
+    const auto of = [&](const std::string& cell) { return day_.communityOf ? day_.communityOf(cell) : storeFor(cell); };
+    auto here = of(p.work.cell);
+    return here.empty() ? communityOfResident(p.founder) : here;
+}
+
+std::string Society::sellerTown(const std::string& id) const
+{
+    // (A successor's own written cell may not be the shop's: a family's successor written as one of the smelter's hands
+    // lives in its bunkhouse; one born or come later, in its home.)
+    if (tradeByPost())
+        if (const auto* job = jobOf(id); job && tills_.count(job->id))
+            return postTown(*job);
+    return communityOfResident(id);
+}
+
+std::vector<std::string> Society::traders() const
+{
+    std::vector<std::string> out;
+    out.reserve(authored_.residents.size());
+    const bool byPost = tradeByPost();
+    for (const auto& r : authored_.residents)
+    {
+        if (byPost)
+        {
+            if (const auto* p = position("job:" + r.id); p && p->founder == r.id && tills_.count(p->id))
+            {
+                // (Its post's living holder, whoever it is: a vacant post, by nobody. A holder is let go at its death:
+                // Society::died.)
+                if (const auto held = state_.careers.positions.find(p->id); held != state_.careers.positions.end() && !held->second.holder.empty())
+                    out.push_back(held->second.holder);
+                continue;
+            }
+            if (const auto* job = jobOf(r.id); job && job->founder != r.id && tills_.count(job->id))
+                continue;                           // (It stands at its post's founder's place.)
+        }
+        out.push_back(r.id);
+    }
+    return out;
+}
+
+std::vector<std::pair<std::string, int>> Society::sellersListed(const std::string& item) const
+{
+    suppliers_.clear();
+    std::vector<std::pair<std::string, int>> out;
+    if (const auto* sellers = sellersOf(item))
+        for (const auto& s : *sellers)
+            out.push_back({s.id, s.kind});
+    return out;
 }
 
 bool Society::sellsFood(const std::string& merchant, const std::string& item, const std::vector<std::string>& sold) const
@@ -257,10 +339,10 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
     const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
     if (!r)
         return smith(merchant) ? std::vector<std::string>{"sword"} : std::vector<std::string>{"herbs", "meal"};
-    if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == r->workLabel)
+    if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == tradeLabel(merchant))
         return kept->second.second;
     std::vector<std::string> out;
-    const auto* business = items::businessFor(r->workLabel);
+    const auto* business = items::businessFor(tradeLabel(merchant));   // (Its post's trade, TradeByPost: the cache by it.)
     const auto crafts = business ? items::craftsFor(business->id) : std::vector<const items::Craft*>{};
     const auto& supplies = business ? items::suppliesFor(business->id) : std::vector<std::string>{};
     if (!crafts.empty() || !supplies.empty())
@@ -325,7 +407,7 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
     if (!business || business->id == "herbalist" || business->id == "apothecary" || business->id == "general" || business->id == "stall" ||
         business->id == "inn")
         out.push_back("herbs");
-    waresCache_[merchant] = {r->workLabel, out};
+    waresCache_[merchant] = {tradeLabel(merchant), out};
     return out;
 }
 const char* Society::itemName(const std::string& id)
@@ -695,6 +777,9 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         for (auto& resident : state_.residents)
             resident.second.wagesToday = 0;
         offered_.clear();                              // (The Restday plate, doc 42.)
+        // (Who sells what, by the posts as they're held today: a succession moves no roster revision. TradeByPost.)
+        if (tradeByPost())
+            suppliers_.clear();
         if (roster_ == Roster::Authored)
         {
             tendIncome();                              // Yesterday's earnings into the week's and month's (doc 64, Phase 7).
@@ -1223,6 +1308,8 @@ bool Society::restore(const SocietyState& saved)
     richestDay_ = -1;                               // (Its households as the save has them: rollRichest.)
     indexTills();
     kitchensDay_ = -1;                              // (And its kitchens by those tills: Society::kitchen, round 13.)
+    if (tradeByPost())
+        suppliers_.clear();                         // (Who sells what by the save's posts and holders: TradeByPost.)
     forgetOrchestra();
     loadPrices();
     loadRates();                                    // (Makers' mending and builders' works: doc 64, Phase 13.)

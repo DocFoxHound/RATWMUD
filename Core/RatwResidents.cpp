@@ -775,7 +775,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto keep = bestFood(wallet);
             std::vector<std::pair<std::string, int>> spare;
             for (const auto& [item, n] : wallet.stock)
-                if (n > 0 && edible(item) && !(recordsHold() ? producesForSale(rec.producer, item) : forSale(id, item)))
+                // (Its record's producer is its written trade's: under TradeByPost its post's, forSale.)
+                if (n > 0 && edible(item) && !(recordsHold() && !tradeByPost() ? producesForSale(rec.producer, item) : forSale(id, item)))
                     spare.push_back({item, item == keep ? n - 1 : n});
             for (const auto& [item, n] : spare)
                 if (n > 0)
@@ -1435,7 +1436,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         }
         if (task.rfind("odd job: ", 0) == 0)
         {
-            advanceOddJob(id, step);
+            advanceOddJob(id, step, absoluteDay);
             continue;
         }
         if (task == "seeking alms"sv)
