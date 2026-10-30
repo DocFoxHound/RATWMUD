@@ -87,6 +87,10 @@
 // its week, as round 11's).
 // And round 12's, lane C: shelforders (a town short of food sends for its people's week by foodneed, its hungry not
 // counted, from the towns with the most to spare however far, up to MostOfAGood an order, as p13-r11).
+// And round 12's, lane B: holdingsbite (the holdings tax flat on what a home holds over its target, as round 11's, and
+// counted in its town's income and holding, not spent back in the week on its relief, day labour and works),
+// capitalincome (the capital's week by its budget's rule, budgetOf, as round 11's: its own Town Works' day labour paid
+// every spell, its watch kept past half its budget, no reserve floor).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -173,7 +177,8 @@
 //                   stores hold over their target), its stores' holding, their week's mean and the target, its week's
 //                   rebates, its day labour the capital paid and its holdings tax, and the capital's share it sent
 //                   and the day labour it paid itself (round 11; weekly; the capital's holdings tax is flows.csv's
-//                   "holdings tax" into the treasury);
+//                   "holdings tax" into the treasury), and its holdings tax spent back in the week (round 12, lane B,
+//                   HoldingsBite: its relief, day labour and works);
 //   sentinels.csv   day, kind, subject, value, threshold, weeks, detail: each sentinel fired at a week's check (and
 //                   in the log): drain (a House, a town's or the capital's treasury, the church or a caravan paying
 //                   out over 1.3 times what came in, at least 100p, four weeks in a row; with its top three kinds
@@ -600,9 +605,13 @@ int main(int argc, char** argv)
                     off |= Society::WagelessFirst;
                 else if (name == "shelforders")
                     off |= Society::ShelfOrders;
+                else if (name == "holdingsbite")
+                    off |= Society::HoldingsBite;
+                else if (name == "capitalincome")
+                    off |= Society::CapitalByIncome;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst or shelforders, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite or capitalincome, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1716,7 +1725,7 @@ int main(int argc, char** argv)
     std::ofstream accountsOut(out / "accounts.csv"), accountFlowsOut(out / "account_flows.csv"),
         accountPeersOut(out / "account_peers.csv"), goodsOut(out / "goods.csv"), hungerOut(out / "hunger.csv"),
         sentinelsOut(out / "sentinels.csv"), townTaxOut(out / "town_tax.csv");
-    townTaxOut << "day,town,share,rate,held,held_mean,target,rebates,labour_by_capital,holdings_tax,to_capital,labour_by_town\n";
+    townTaxOut << "day,town,share,rate,held,held_mean,target,rebates,labour_by_capital,holdings_tax,to_capital,labour_by_town,bite_spent\n";
     accountsOut << "day,account,holder,town,opening,balance,in,out,in_entries,out_entries,unexplained\n";
     accountFlowsOut << "day,account,dir,kind,entries,coins\n";
     accountPeersOut << "day,account,dir,peer,peer_holder,coins\n";
@@ -2099,7 +2108,7 @@ int main(int argc, char** argv)
         // Each town's tax as its stores' holding eases it (round 10, towns: Society::easeTownTax), its week's rebates and
         // what the capital paid of its day labour.
         const auto rebates = society.takeRebates(), carried = society.takeLabourCarried(), holdings = society.takeHoldingsTaxed(),
-                   shares = society.takeShares(), own = society.takeLabourOwn();
+                   shares = society.takeShares(), own = society.takeLabourOwn(), bite = society.takeBiteSpent();
         const auto of = [](const std::map<std::string, std::int64_t>& m, const std::string& id) {
             const auto found = m.find(id);
             return found == m.end() ? std::int64_t(0) : found->second;
@@ -2108,7 +2117,8 @@ int main(int argc, char** argv)
             if (id.rfind("stores:", 0) == 0)
                 townTaxOut << day << ',' << csv(id.substr(7)) << ',' << society.townTaxShare(id) << ',' << society.townTaxRate(id) << ','
                            << a.cash << ',' << std::llround(society.townHeldMean(id)) << ',' << std::llround(society.townTaxTarget(id)) << ','
-                           << of(rebates, id) << ',' << of(carried, id) << ',' << of(holdings, id) << ',' << of(shares, id) << ',' << of(own, id) << '\n';
+                           << of(rebates, id) << ',' << of(carried, id) << ',' << of(holdings, id) << ',' << of(shares, id) << ',' << of(own, id) << ','
+                           << of(bite, id) << '\n';
         townTaxOut.flush();
         // (Every account tracked that held money or moved any: a caravan long gone has neither.)
         std::set<std::string> ids;

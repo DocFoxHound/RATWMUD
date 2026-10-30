@@ -54,9 +54,11 @@ void Society::tendIncome()
     if (workByHours() && wageRule(TaxEase))
         for (auto it = state_.accounts.lower_bound("stores:"); it != state_.accounts.end() && it->first.rfind("stores:", 0) == 0; ++it)
         {
-            const auto [held, fresh] = memory.heldMean.try_emplace(it->first, double(it->second.cash));
+            // (Its holdings tax not yet spent back left out: round 12, lane B, HoldingsBite.)
+            const double cash = std::max(0., double(it->second.cash) - biteHeld(it->first));
+            const auto [held, fresh] = memory.heldMean.try_emplace(it->first, cash);
             if (!fresh)
-                held->second += (double(it->second.cash) - held->second) / HeldMeanDays;
+                held->second += (cash - held->second) / HeldMeanDays;
         }
     for (auto it = memory.monthIncome.begin(); it != memory.monthIncome.end();)
     {
@@ -114,7 +116,8 @@ void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<st
     for (const auto& [id, payers] : taxpayers)
     {
         const auto* stores = account(id);
-        const double target = townTaxTarget(id), held = std::min(double(stores ? stores->cash : 0), townHeldMean(id));
+        // (Its holdings tax not yet spent back isn't its to rebate: round 12, HoldingsBite.)
+        const double target = townTaxTarget(id), held = std::min(double(stores ? stores->cash : 0) - biteHeld(id), townHeldMean(id));
         double incomes = 0;
         for (const auto& [payer, income] : payers)
             incomes += income;
@@ -254,7 +257,8 @@ void Society::institutionsWeek(std::int64_t day)
         const auto* purse = account(id);
         if (!purse)
             return std::int64_t(0);
-        const double held = double(purse->cash);
+        // (A town's holdings tax not yet spent back isn't its holding: it is spent at the week's end, on its works.)
+        const double held = double(purse->cash) - biteHeld(id);
         const double month = day < MonthDays ? held / (k + 1) : monthIncomeOf(id);
         return std::int64_t(std::clamp((month + a2 * (held - k * month)) / 4, 0., held));
     };
@@ -279,6 +283,26 @@ void Society::institutionsWeek(std::int64_t day)
         const auto community = id == "treasury" ? capital() : id.substr(7);
         // (A town's month is its tax; in round 8, with work by the hours, its caravans' net takings too: Society::record.)
         auto budget = budgetOf(id, 2, .4);
+        // The capital kept to its income (round 12, lane B; CapitalByIncome; the user, 2026-10-29), with work by the hours:
+        // a quarter of its month's income a week, and CapitalDraw of what it holds over CapitalReserveMonths of it; never
+        // its savings under that floor. Less what went out last week outside its parts (its caravans' unsold goods bought
+        // back, rewards set aside: Society::record). In round 11's year its budget was already about its income under two
+        // months of it, but its watch was kept past its posts' share, its own Town Works' day labour was paid every spell
+        // whatever its budget (3k a week in the spring, 12-17k in the last month as its wolves fell out of work) and its
+        // caravans' unsold goods came on top (3-8k a week): 315k to 144k. Below, its week's parts in the order of the cuts.
+        const bool byIncome = id == "treasury" && workByHours() && wageRule(CapitalByIncome);
+        if (byIncome)
+        {
+            const double held = std::max(0., double(account(id)->cash) - biteHeld(id));
+            const double month = day < MonthDays ? held / 3 : std::max(0., monthIncomeOf(id));
+            double other = 0;
+            if (const auto out = memory.spendWeek.find("treasury|other"); out != memory.spendWeek.end())
+            {
+                other = out->second;
+                memory.spendWeek.erase(out);
+            }
+            budget = std::int64_t(std::clamp(month / 4 + std::max(0., held - CapitalReserveMonths * month) * CapitalDraw - other, 0., held));
+        }
         // Since round 9 its caravans' net takings since its last week's budget come on top, spent as they come (the user,
         // 2026-10-27), and its month is its tax alone: it holds two months of its tax, not of its trade. A week below
         // nothing (its road money out, the takings not yet home) adds nothing, and is netted against the takings to come.
@@ -292,7 +316,8 @@ void Society::institutionsWeek(std::int64_t day)
             memory.caravanWeek.erase(found);
         }
         // The week's relief, set aside: what it gave last week and a third over, and a twentieth of its budget besides.
-        const auto relief = std::min<std::int64_t>(budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
+        // (With CapitalByIncome as much of the budget as that comes to: relief is the last cut.)
+        const auto relief = std::min<std::int64_t>(byIncome ? budget : budget * 3 / 10, std::int64_t(memory.reliefWeek[id] * 1.33) + budget / 20);
         memory.reliefLeft[id] = double(relief);
         memory.reliefWeek[id] = 0;
         // A small town's day labour from its own tax first (round 11, the user, 2026-10-29; TownLabourFirst, with the
@@ -351,7 +376,10 @@ void Society::institutionsWeek(std::int64_t day)
             // works get the rest, as the model's staff_to(watch, budget * 0.5)). Past that it is let go as its own posts
             // are, the day labour unpaid for the rest of the week (the wolves to relief), its own posts closed first. Counted off the budget whole, it was paid every spell without limit,
             // 125-165k a quarter, and the treasury fell from 266k to 11k in round 10's year.
-            const bool carriedPosts = id == "treasury" && wageRule(CapitalLabour) && wageRule(CarriedPosts);
+            // (Since round 12, CapitalByIncome, its own Town Works' day labour is in the allowance and the ask too, and the
+            // posts' share is all of its budget after relief: the watch, the day labour (at most CapitalLabourRoom over
+            // what it asked), its own posts; its buyers' funds get what's left, the first cut.)
+            const bool carriedPosts = id == "treasury" && ((wageRule(CapitalLabour) && wageRule(CarriedPosts)) || byIncome);
             double carried = 0;
             if (id == "treasury")
             {
@@ -363,8 +391,9 @@ void Society::institutionsWeek(std::int64_t day)
                 memory.labourWeek.erase("treasury|asked");
                 carried *= CarriedGrowth;
             }
-            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, id == "treasury" ? budget : taxed - relief)) * TreasuryStaff, day,
-                                  carriedPosts ? &carried : nullptr);
+            const double room = byIncome ? carried * CapitalLabourRoom : -1;
+            budget -= keepPostsTo(id, double(std::max<std::int64_t>(0, id == "treasury" ? budget : taxed - relief)) * (byIncome ? 1. : TreasuryStaff),
+                                  day, carriedPosts ? &carried : nullptr, room);
             if (carriedPosts)
                 memory.labourLeft[id] = carried;
             // (A town's buyers and caravans that drew nothing since the rule began get a twentieth of the rest: the
@@ -385,6 +414,17 @@ void Society::institutionsWeek(std::int64_t day)
         }
         else if (!postsFirst)
             budget -= relief + wagesPaid(id);
+        // Its holdings tax not yet spent back (round 12, lane B, HoldingsBite): on its works' crew this week, on top of
+        // its budget, not saved. (It was counted in nothing above: not its income, nor its holding.)
+        if (workByHours() && wageRule(HoldingsBite))
+            if (const auto bite = memory.biteLeft.find(id); bite != memory.biteLeft.end())
+            {
+                const auto spend = std::min<std::int64_t>(std::int64_t(std::max(0., bite->second)), account(id)->cash);
+                budget = std::max<std::int64_t>(0, budget) + spend;
+                if (noteTowns_)
+                    biteSpent_[id] += spend;
+                memory.biteLeft.erase(bite);
+            }
         if (budget <= 0 || community.empty())
             continue;
         // Its works: a crew hired for the week with most of the rest, materials with what's left. With work by the hours,
@@ -528,7 +568,7 @@ std::int64_t Society::houseParts(const House& h, std::int64_t day)
     return budget;
 }
 
-std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried)
+std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried, double over)
 {
     // Its posts that draw a wage (an unpaid one too, held by a grown wolf: doc 42, Phase 3; not a beggar's, nor a great
     // house's head's), each with its employer as the labour market finds it (its holder's, else its founder's).
@@ -597,10 +637,12 @@ std::int64_t Society::keepPostsTo(const std::string& treasury, double share, std
             ++state_.memory.revision;
     }
     carry();
+    // (With `over` (CapitalByIncome) what's left goes on top only so far: the rest is its buyers' funds'.)
     if (given && left > 0)
     {
-        *given += left;
-        left = 0;
+        const double more = over >= 0 ? std::min(left, over) : left;
+        *given += more;
+        left -= more;
     }
     return std::int64_t(std::ceil(share - left));
 }
@@ -649,6 +691,15 @@ void Society::dailyRelief(std::int64_t day, const std::map<std::string, LifeBody
             if (want <= 0)
                 break;
         }
+        // (Round 12, lane B, HoldingsBite: past its week's relief, its town's holdings tax not yet spent back gives it.)
+        if (want > 0)
+            if (const auto bite = std::min<std::int64_t>({want, std::int64_t(biteHeld(town)), spendable(town)});
+                bite > 0 && shift(town, eldest, "", 0, bite, "relief"))
+            {
+                memory.biteLeft[town] -= double(bite);
+                if (noteTowns_)
+                    biteSpent_[town] += bite;
+            }
     }
 }
 
@@ -661,9 +712,13 @@ std::int64_t Society::holdingsTax(const std::vector<std::string>& members, std::
     // its members richest first to the town where the richest pays its tax (treasuryOfResident: stores:<town>, or the
     // capital's treasury), as its town tax is, and counted as the town's income for its week's budget (record). A keeper's
     // purse that is its own shop's till isn't the home's (tendHouseholds' pot leaves it out too).
-    const double rate = holdingsTaxRate() / 7;
-    const double over = double(pot) - double(HoldingsMonths) * MonthDays * double(need);
-    const auto owed = over > 0 && rate > 0 ? std::int64_t(std::floor(over * rate)) : std::int64_t(0);
+    // Since round 12 (lane B, HoldingsBite; the user, 2026-10-29) graduated over the target (holdingsOwed), and what it
+    // brings kept to be spent back in the town in the week (biteLeft). In round 11's year it took 131k (the towns 67k, the
+    // capital 64k) while the residents over their targets held 25k over them on day 84 and 530k on day 364, a dairy's
+    // keeper 99k: 1% a week of the excess grows slower than an owner's profit.
+    const bool bite = workByHours() && wageRule(HoldingsBite);
+    const double target = double(HoldingsMonths) * MonthDays * double(need);
+    const auto owed = std::int64_t(std::floor(holdingsOwed(double(pot), target, holdingsTaxRate(), bite) / 7));
     if (owed < 1)
         return 0;
     std::vector<std::string> payers;
@@ -683,7 +738,29 @@ std::int64_t Society::holdingsTax(const std::vector<std::string>& members, std::
             paid += give;
     if (noteTowns_ && paid > 0)
         holdingsTaxed_[treasury] += paid;
+    if (bite && paid > 0)
+        state_.memory.biteLeft[treasury] += double(paid);
     return paid;
+}
+
+double Society::holdingsOwed(double pot, double target, double rate, bool graduated)
+{
+    // A week's: flat (round 11), the rate on what's held over the target. Graduated (round 12, HoldingsBite): the rate on
+    // the part up to BiteFrom targets, BiteMiddle times it on the part up to BiteTop, BiteHigh times it above (each at
+    // most MostHoldingsTax), so a working home over its target by a little pays as before and a fortune many times it
+    // pays most of its week's growth. At the 1% lever, for a lodger's target of about 7,000p (six months of a wolf's
+    // food at a 100p day): 1% of the next 7,000p, 3% of the next 14,000p, 6% over 28,000p; Whiteleas Dairy's keeper at
+    // 99k about 4,800p a week against round 11's 920p. Never more than what's held over the target.
+    const double over = pot - target;
+    if (over <= 0 || rate <= 0 || target < 0)
+        return 0;
+    if (!graduated)
+        return over * rate;
+    const double t = std::max(1., target);
+    const double low = std::min(over, (BiteFrom - 1) * t), mid = std::clamp(over - (BiteFrom - 1) * t, 0., (BiteTop - BiteFrom) * t),
+                 high = std::max(0., over - (BiteTop - 1) * t);
+    const double owed = low * rate + mid * std::min(MostHoldingsTax, rate * BiteMiddle) + high * std::min(MostHoldingsTax, rate * BiteHigh);
+    return std::min(owed, over);
 }
 
 int Society::homePlaces(const std::vector<std::string>& members, const char* what, std::int64_t day, bool untaken) const

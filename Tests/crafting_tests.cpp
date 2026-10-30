@@ -1310,7 +1310,8 @@ void theHoldingsTax()
     Society::setWorkByHours(true);
     for (const int pass : {0, 1, 2})
     {
-        Society::wageRulesOff(pass == 2 ? Society::HoldingsTax : 0);
+        // (Round 11's flat tax: round 12's HoldingsBite, graduated, left out; theHoldingsTaxBites.)
+        Society::wageRulesOff((pass == 2 ? Society::HoldingsTax : 0) | Society::HoldingsBite);
         AuthoredRoster roster;
         roster.residents = {person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian"),
                             person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian")};
@@ -3317,6 +3318,164 @@ void aTownsRoadMoneyFromItsBudget()
     Society::setWorkByHours(false);
 }
 
+// Round 12, lane B (HoldingsBite; the user, 2026-10-29), with work by the hours: the holdings tax graduated over a home's
+// target (the lever's rate up to twice it, three times the rate up to four times it, six times above; no band over 10%,
+// never below the target), and spent back in its town. A household of two given 100,000p pays its day's seventh of that,
+// over four times the flat tax; the treasury keeps it as the bite's (not its income), and the next day a broke
+// neighbour with the town's relief spent gets a day's food money from it; at the week what's left is gone to its works.
+// Without the rule, the flat tax (round 11), counted as the town's income, and no relief past its allowance.
+void theHoldingsTaxBites()
+{
+    const double t = 10000;
+    const auto owed = [&](double pot, double rate = .01, bool graduated = true) { return Society::holdingsOwed(pot, t, rate, graduated); };
+    expect(owed(t) == 0 && owed(t / 2) == 0, "nothing at its target or under it");
+    expect(std::abs(owed(2 * t) - 100) < 1e-6, "the lever's rate on the first target's worth over it: " + std::to_string(owed(2 * t)));
+    expect(std::abs(owed(4 * t) - 700) < 1e-6, "three times it up to four targets: " + std::to_string(owed(4 * t)));
+    expect(std::abs(owed(6 * t) - 1900) < 1e-6, "six times it above: " + std::to_string(owed(6 * t)));
+    expect(std::abs(owed(6 * t, .05) - 4500) < 1e-6, "no band over 10% a week: " + std::to_string(owed(6 * t, .05)));
+    expect(owed(1.5 * t, .1) <= .5 * t && owed(1.01 * t, .1) <= .01 * t + 1e-9, "never below its target");
+    expect(std::abs(owed(6 * t, .01, false) - 500) < 1e-6, "flat without it, as round 11's");
+    Society::setWorkByHours(true);
+    std::int64_t paidWith = 0, paidWithout = 0;
+    for (const bool rule : {true, false})
+    {
+        // (RichHomes left out: its help would hire the neighbour.)
+        Society::wageRulesOff((rule ? 0 : Society::HoldingsBite) | Society::RichHomes);
+        AuthoredRoster roster;
+        roster.residents = {person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian"),
+                            person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian")};
+        auto pip = person("pip", "weaving at home", {"hut", 2.5, 2.5}, "civilian");
+        pip.home = pip.evening = {"hut", 2.5, 2.5};
+        pip.purse = 0;
+        roster.residents.push_back(pip);
+        roster.economy.treasury = 150000;
+        Society s(Roster::None);
+        s.configure(roster);
+        double day = 10. / 24;
+        work(s, 60, day);
+        expect(s.shift("treasury", "ash", "", 0, 100000, "test: an inheritance"), "the household is given a fortune");
+        {
+            auto st = s.state();                    // (The town's and the church's relief for the week spent.)
+            st.memory.reliefLeft["treasury"] = 0;
+            st.memory.reliefLeft[Society::SharedChurch] = 0;
+            st.memory.monthIncome.erase("treasury");
+            expect(s.restore(st), "the week's relief spent");
+        }
+        s.takeJournal();
+        day = 1 + 10. / 24;
+        work(s, 60, day);
+        std::int64_t paid = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "holdings tax" && (e.from == "wren" || e.from == "ash") && e.to == "treasury")
+                paid += e.coins;
+        (rule ? paidWith : paidWithout) = paid;
+        const auto& m = s.state().memory;
+        const double bite = m.biteLeft.count("treasury") ? m.biteLeft.at("treasury") : 0;
+        expect(rule ? paid > 0 && std::abs(bite - double(paid)) < 1 : bite == 0,
+               "the bite kept to spend back: " + std::to_string(paid) + "p, " + std::to_string(bite) + "p");
+        if (const auto left = s.account("pip")->cash; left > 0)
+            expect(s.shift("pip", "treasury", "", 0, left, "test: spent"), "the neighbour broke again");
+        day = 2 + 10. / 24;
+        work(s, 60, day);
+        std::int64_t relief = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "relief" && e.from == "treasury" && e.to == "pip")
+                relief += e.coins;
+        const double after = s.state().memory.biteLeft.count("treasury") ? s.state().memory.biteLeft.at("treasury") : 0;
+        // (Its month's income as the next day reckons it: yesterday's earnings.)
+        if (rule)
+            expect(s.monthIncomeOf("treasury") < 1, "the bite isn't the town's income");
+        else
+            expect(s.monthIncomeOf("treasury") >= double(paid) * .9, "without the rule, the town's income: " + std::to_string(s.monthIncomeOf("treasury")));
+        if (rule)
+            expect(relief > 0 && after < bite + double(paid) && after >= 0,
+                   "a broke neighbour's relief from it, past the town's: " + std::to_string(relief) + "p");
+        else
+            expect(relief == 0, "without the rule, none past the town's relief");
+        // To the week's reckoning: what's left of it spent (on its works), not kept.
+        const auto bodies = atWork(s);
+        for (std::int64_t d = 3; d <= 7; ++d)
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        expect(!s.state().memory.biteLeft.count("treasury") || s.state().memory.biteLeft.at("treasury") < 1500,
+               "at its week the bite's rest goes to its works");
+        expect(wire::readSociety(wire::society(s.state())).memory.biteLeft == s.state().memory.biteLeft, "the bite saved");
+        expect(s.conserved(), "money stays conserved");
+    }
+    expect(paidWith > 4 * paidWithout && paidWithout > 0,
+           "graduated, a fortune pays over four times the flat tax: " + std::to_string(paidWith) + "p against " + std::to_string(paidWithout) + "p");
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// Round 12, lane B (CapitalByIncome; the user, 2026-10-29), with work by the hours: the capital's week kept to its
+// income. Its week's relief, day labour and buyers' funds come to a quarter of its month's income while it holds under
+// two months of it (its floor), and to that and an eighth of what it holds over the floor above it; the day labour's
+// allowance what it asked and a tenth, and half that over at most (its funds get the rest, the first cut). Without the
+// rule round 11's: its budget by budgetOf, its posts' share half of it, all of that share's rest on the day labour.
+void theCapitalKeptToItsIncome()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        double relief = 0, labour = 0, funds = 0, spent = 0;   // (Spent: what the day drew on them after its week.)
+        std::int64_t held = 0;
+    };
+    const auto run = [](std::uint64_t off, double month) {
+        Society::wageRulesOff(off | Society::HoldingsTax | Society::RichHomes);
+        AuthoredRoster roster;
+        for (int i = 1; i <= 10; ++i)
+        {
+            auto payer = person("payer" + std::to_string(i), "keeps the house", {"homes", 2.5, 2.5}, "civilian");
+            payer.purse = 1000;
+            roster.residents.push_back(payer);
+        }
+        roster.economy.treasury = 100000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto bodies = atWork(s);
+        Seen seen;
+        for (std::int64_t d = 1; d <= 35; ++d)    // (Its fifth week: past the realm's first month, its month's income its own.)
+        {
+            if (d == 35)
+            {
+                auto st = s.state();
+                st.memory.monthIncome["treasury"] = month;
+                st.memory.labourWeek["treasury|asked"] = 1000;
+                st.memory.fundsWeek.erase("treasury");
+                st.memory.reliefWeek.erase("treasury");
+                expect(s.restore(st), "the capital's month, and the day labour it was asked for");
+                seen.held = s.account("treasury")->cash;
+                s.takeJournal();
+            }
+            s.tick(1, double(d) + .5 / 24, 0, bodies);
+        }
+        for (const auto& e : s.takeJournal())
+            if (e.from == "treasury" && (e.kind == "town funds" || e.kind == "relief" || e.kind == "day labour"))
+                seen.spent += double(e.coins);
+        const auto& m = s.state().memory;
+        const auto of = [](const std::map<std::string, double>& map) { return map.count("treasury") ? map.at("treasury") : -1.; };
+        seen.relief = of(m.reliefLeft);
+        seen.labour = of(m.labourLeft);
+        seen.funds = of(m.fundsLeft);
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto poor = run(0, 60000), rich = run(0, 20000), without = run(Society::CapitalByIncome, 60000);
+    const auto week = [](const Seen& s) { return s.relief + s.labour + s.funds + s.spent; };
+    // (Its month as set, or a day's 27/28 less if its income was reckoned first; its tax of the week on top of what it held.)
+    expect(poor.labour > 1649 && poor.labour < 1651, "the day labour's allowance what it asked, a tenth, and half that over: " + std::to_string(poor.labour));
+    expect(week(poor) > 60000. * 27 / 28 / 4 - 2 && week(poor) < 15002,
+           "under its floor, a quarter of its month's income: " + std::to_string(week(poor)) + "p of a " + std::to_string(poor.held) + "p purse");
+    const double richWeek = 5000 + (double(rich.held) - 40000) / 8;
+    expect(std::abs(week(rich) - richWeek) < 250, "over it, an eighth of what it holds over its floor on top: " + std::to_string(week(rich)) + "p, about " +
+                                                      std::to_string(richWeek) + "p");
+    expect(without.labour > 3000 && week(without) < week(poor) - 1000,
+           "without the rule, its budget by its holding (less, under two months), all its posts' share's rest on the day labour: " +
+               std::to_string(without.labour) + "p of " + std::to_string(week(without)) + "p");
+    Society::setWorkByHours(false);
+}
+
 // Round 11, lane 4 (the user, 2026-10-29: "make the tax fluctuate depending on the wealth of the towns"; ShareByWealth):
 // the capital's share of a town's tax by the town's holding against its target and the capital's against a month of its
 // income. A far town of ten taxpayers (800p of tax a week at the full rate, a target of about 6,400p) holding 100,000p,
@@ -3435,7 +3594,9 @@ void theDayLabourAllowances()
         std::int64_t held = 0;
     };
     const auto run = [](std::uint64_t off, double asked) {
-        Society::wageRulesOff(off);
+        // (Round 11's posts' share, half the capital's budget, and its payers' holdings tax its income: round 12's
+        // CapitalByIncome and HoldingsBite left out, theCapitalKeptToItsIncome.)
+        Society::wageRulesOff(off | Society::CapitalByIncome | Society::HoldingsBite);
         AuthoredRoster roster;
         for (int i = 1; i <= 10; ++i)
         {
@@ -6689,6 +6850,8 @@ int main()
         aTownFoundedAtItsTarget();
         theCapitalsShareByWealth();
         theDayLabourAllowances();
+        theHoldingsTaxBites();
+        theCapitalKeptToItsIncome();
         theKeepersOwnApprentice();
         aFarTakerGivesWay();
         aProducerKeepsItsOwnPost();

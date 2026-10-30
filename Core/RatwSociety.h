@@ -419,6 +419,9 @@ struct EconomyMemory
     // posts). And in labourWeek, since: what the carried labour asked this week, paid or not ("treasury|asked"), and the
     // day labour a town paid itself ("stores:x"), each its next week's measure.
     std::map<std::string, double> labourLeft;
+    // Round 12, lane B (HoldingsBite; the user, 2026-10-29): each treasury's holdings tax not yet spent back in its town
+    // (its relief, its day labour, at its week its works), by its account.
+    std::map<std::string, double> biteLeft;
     // Round 10, lane A (the user, 2026-10-27; with work by the hours): a House's week's budget in parts, what is left of
     // each ("house:x|posts", "|road", "|tops") and the floor it never pays out below ("house:x|floor"; and the church's,
     // "town:all:church|floor"), set at its week's reckoning (spendLeft); and what each part paid out this week, the next
@@ -918,6 +921,21 @@ class Society
     static constexpr int HoldingsMonths = 6;
     double holdingsTaxRate() const { return state_.memory.holdingsTax; }
     EconomyResult setHoldingsTax(double rate, const std::string& by = "");
+    // The holdings tax that bites (round 12, lane B; HoldingsBite; the user, 2026-10-29): of what a home holds over its
+    // target (HoldingsMonths of its needs), the lever's rate on the first target's worth over it (holding up to
+    // BiteFrom targets), BiteMiddle times it up to BiteTop targets, BiteHigh times it above that; no band over
+    // MostHoldingsTax a week, and never below its target. What it brings is the town's to spend back in the week
+    // (EconomyMemory::biteLeft): its relief past its week's allowance, its day labour past its own, and what's left on
+    // its works' crew at its week. Not its income (its budget doesn't count it twice), nor its holding for the capital's
+    // share, TaxEase, the rebate or its budget (biteHeld).
+    static constexpr double BiteFrom = 2, BiteTop = 4, BiteMiddle = 3, BiteHigh = 6;
+    double biteHeld(const std::string& treasury) const
+    {
+        const auto found = state_.memory.biteLeft.find(treasury);
+        return found == state_.memory.biteLeft.end() || !workByHours() || !wageRule(HoldingsBite) ? 0. : std::max(0., found->second);
+    }
+    // A week's holdings tax on `pot` over `target` (the lever's rate, `rate`), graduated with HoldingsBite or flat.
+    static double holdingsOwed(double pot, double target, double rate, bool graduated);
     // A town's own rate (round 10, TaxEase): the realm's, eased while its stores hold over their target, TaxEaseMonths
     // (the model's RULE["treasury"] k) of what its tax brings at the full rate. A resident's is its town's
     // (treasuryOfResident). The capital's is the realm's.
@@ -1271,6 +1289,8 @@ class Society
     // And (round 11, lane 4) the capital's share each town sent, and the day labour each paid itself (TownLabourFirst).
     std::map<std::string, std::int64_t> takeShares() const { return std::exchange(sharesSent_, {}); }
     std::map<std::string, std::int64_t> takeLabourOwn() const { return std::exchange(labourOwn_, {}); }
+    // And (round 12, lane B) the holdings tax's money each town spent back (HoldingsBite: relief, day labour, its works).
+    std::map<std::string, std::int64_t> takeBiteSpent() const { return std::exchange(biteSpent_, {}); }
     // A trial's (econ_watch --without, rounds 7 and 8): the wage book's rules of round 7, and round 8's, left out, one at
     // a time, to see what each does. Not saved; the game never sets it.
     enum WageRule : std::uint64_t
@@ -1314,6 +1334,8 @@ class Society
         WageBySales = 1ull << 39,                    // A business raises its wage only if its sales pay it (round 12, lane A).
         WagelessFirst = 1ull << 40,                  // A business's hire goes to those without a wage of their own first (round 12).
         ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
+        HoldingsBite = 1ull << 41,                   // The holdings tax graduated over its target, spent back in its town (round 12, B).
+        CapitalByIncome = 1ull << 42,                // The capital's week kept to its income, over a reserve floor (round 12, B).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -2015,7 +2037,7 @@ class Society
     static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
-    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_, sharesSent_, labourOwn_;
+    mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_, sharesSent_, labourOwn_, biteSpent_;
   public:
     // At the founding (FoundAtTarget, while noteTowns): what the towns' targets left of their share, and what each kind
     // then got in all (households, businesses, Houses, the church). A measure.
@@ -2049,13 +2071,21 @@ class Society
     // again, for succession to fill. Returns the week's cost of the posts kept.
     // With `carried` (the capital's, CarriedPosts: round 11), the small towns' day labour it carries is counted among its
     // posts after its watch and before its own: `carried` is what it asks, set to what it is given of what's left.
-    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried = nullptr);
+    std::int64_t keepPostsTo(const std::string& treasury, double share, std::int64_t day, double* carried = nullptr, double over = -1);
     // The capital's share of a town's tax by the towns' wealth (round 11, lane 4; ShareByWealth): of the tax, a tenth
     // times the town's holding over its target (0 to ShareTownMost) times the capital's want (2 less its holding over its
     // target, ShareCapitalLeast to ShareCapitalMost); and ShareSurplus a week of what the town holds over its target,
     // while the capital holds under twice its own (CapitalMonths of its income), all of it under its target.
     static constexpr double ShareTownMost = 2, ShareCapitalLeast = .5, ShareCapitalMost = 1.5, ShareSurplus = 1. / 8, CapitalMonths = 1;
     static constexpr double CarriedGrowth = 1.1;    // The carried labour's allowance: what it asked last week and a tenth.
+    // The capital kept to its income (round 12, lane B; CapitalByIncome; the user, 2026-10-29): its week's budget a
+    // quarter of its month's income (its tax, the towns' share: a running month), and CapitalDraw a week of what it holds
+    // over CapitalReserveMonths of it, never its savings under that floor; its outgoings outside the week's parts (its
+    // caravans' unsold goods bought back, rewards set aside) counted off it the next week. Relief and its watch first,
+    // then the day labour (the small towns' it carries and its own, CapitalLabourRoom over what they asked at most),
+    // then its own posts, its buyers' funds last: the first cut.
+    static constexpr double CapitalReserveMonths = 2, CapitalDraw = 1. / 8, CapitalLabourRoom = .5;
+    bool carriedKept() const { return wageRule(CarriedPosts) || wageRule(CapitalByIncome); }
     // A House's week's budget set in its parts (round 10, lane A: HouseBudget): returns what is left of it for its works
     // and crews.
     std::int64_t houseParts(const House& h, std::int64_t day);

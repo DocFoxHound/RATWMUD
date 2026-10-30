@@ -1591,9 +1591,18 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 auto& m = state_.memory;
                 const auto own = capitals && wage > 0 && wageRule(TownLabourFirst) ? m.labourLeft.find(payer.account) : m.labourLeft.end();
                 const bool townPays = own != m.labourLeft.end() && own->second >= double(wage) && spendable(payer.account) >= wage;
-                const bool carried = capitals && !townPays;
-                const auto kept = carried && wage > 0 && wageRule(CarriedPosts) ? m.labourLeft.find("treasury") : m.labourLeft.end();
-                if (carried && wage > 0 && wageRule(CarriedPosts))
+                // Round 12, lane B (the user, 2026-10-29): the capital's own Town Works' day labour kept to its week's
+                // allowance with the day labour it carries (CapitalByIncome; it was paid every spell, whatever its
+                // budget), and a town's day labour its own allowance doesn't cover (or the capital's past its allowance)
+                // paid from its holdings tax not yet spent back (HoldingsBite), before the capital carries it.
+                const bool capitalOwn = labour && wage > 0 && workByHours() && wageRule(CapitalByIncome) && payer.account == "treasury";
+                const auto mine = capitalOwn ? m.labourLeft.find("treasury") : m.labourLeft.end();
+                const bool allowed = mine == m.labourLeft.end() || mine->second >= double(wage);
+                const bool bitePays = labour && wage > 0 && !townPays && (capitals || (capitalOwn && !allowed)) && biteHeld(payer.account) >= double(wage) &&
+                                      spendable(payer.account) >= wage;
+                const bool carried = capitals && !townPays && !bitePays;
+                const auto kept = carried && wage > 0 && carriedKept() ? m.labourLeft.find("treasury") : capitalOwn && !bitePays ? mine : m.labourLeft.end();
+                if ((carried && wage > 0 && carriedKept()) || capitalOwn)
                     m.labourWeek["treasury|asked"] += day / PaidSpells;   // (A spell's worth, paid or not: its next week's ask.)
                 const bool closed = kept != m.labourLeft.end() && kept->second < double(wage);
                 const auto& from = carried ? std::string("treasury") : payer.account;
@@ -1615,6 +1624,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                     }
                     if (carried && noteTowns_)
                         labourCarried_[payer.account] += wage;
+                    if (bitePays)
+                    {
+                        m.biteLeft[payer.account] -= double(wage);
+                        // (A town's own day labour, as its allowance's: not counted among its other posts next week.)
+                        if (capitals && wageRule(TownLabourFirst))
+                            m.labourWeek[payer.account] += double(wage);
+                        if (noteTowns_)
+                            biteSpent_[payer.account] += wage;
+                    }
                     ++life.wagesToday;
                     carry -= double(wage);
                     notePay(pair.first, employer, wage, wage);
