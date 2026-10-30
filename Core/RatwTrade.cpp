@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 namespace ratw
 {
@@ -57,6 +58,8 @@ World::Market World::marketOf(const std::string& town) const
         if (!e || e->dead || !society_.resident(r.id) || residentTown(r.id) != town)
             continue;
         ++m.people;
+        if (const auto* life = society_.resident(r.id); life && life->hunger >= HungryAt)
+            ++m.hungry;
         if (const auto* p = items::producerFor(r.workLabel))
         {
             const auto farm = society_.tillOf(r.id);   // (Its yield is its till's: doc 46, Phase 2.)
@@ -157,38 +160,70 @@ void World::tradeCaravans()
     // Food between towns (doc 42, the user, 2026-10-06): a town whose shops hold under FoodDaysKept days' food for its
     // people wants, for each of its food shops, FoodKept of each of the FoodsSent foods the other towns have most to spare,
     // as a maker wants its materials; standing orders bring them.
+    // (By its shelves and its hungry, from the nearest, with ShelfOrders: round 12, lane C. The road's cells between two
+    // towns' markets, worked out once a day's trade and only with the rule.)
+    const bool byShelves = Society::workByHours() && Society::wageRule(Society::ShelfOrders);
+    std::map<std::pair<std::string, std::string>, std::size_t> roadCells;
+    const auto cellsBetween = [&](const Town& a, const Town& b) {
+        const auto key = a.id < b.id ? std::pair{a.id, b.id} : std::pair{b.id, a.id};
+        auto found = roadCells.find(key);
+        if (found == roadCells.end())
+        {
+            const auto route = routeBetween(a.market, b.market);
+            found = roadCells.emplace(key, route.size() < 2 ? std::size_t(-1) : route.size()).first;   // (No road: last.)
+        }
+        return found->second;
+    };
+    std::set<std::pair<std::string, std::string>> shelfFood;   // (Town, food) sent for by its shelves (ShelfOrders).
     for (const auto& to : towns_)
     {
         auto& m = markets[to.id];
         // (By its people's need, not a meal's worth a head, with the rule: FoodByNeed, round 11, lane 3.)
         const bool byNeed = Society::workByHours() && Society::wageRule(Society::FoodByNeed);
         const double dayNeed = m.people * FedADay;
-        if ((byNeed ? m.fed >= FoodDaysKept * dayNeed : m.food >= FoodDaysKept * m.people) || m.foodShops.empty())
+        // (With ShelfOrders, by need too, and a town with hungry wolves sends while its shelves hold under a week.)
+        const bool hungry = byShelves && m.hungry > 0 && m.fed < FoodWeek * dayNeed;
+        if (((byNeed || byShelves) ? m.fed >= FoodDaysKept * dayNeed && !hungry : m.food >= FoodDaysKept * m.people) || m.foodShops.empty())
             continue;
         std::map<std::string, int> elsewhere;
+        std::map<std::string, std::size_t> nearest;                // (Each food's nearest town with some to spare: ShelfOrders.)
         for (const auto& from : towns_)
             if (&from != &to)
                 for (const auto& [item, n] : markets[from.id].spare)
                     if (const auto* good = items::good(item); good && !good->drink && Society::edible(item) && !rotsOnTheRoad(item))
-                        elsewhere[item] += n - (markets[from.id].want.count(item) ? markets[from.id].want.at(item) : 0);
+                    {
+                        const int spare = n - (markets[from.id].want.count(item) ? markets[from.id].want.at(item) : 0);
+                        elsewhere[item] += spare;
+                        if (byShelves && spare > 3)
+                            nearest[item] = std::min(nearest.count(item) ? nearest.at(item) : std::size_t(-1), cellsBetween(from, to));
+                    }
         std::vector<std::pair<int, std::string>> foods;
         for (const auto& [item, n] : elsewhere)
-            if (n > 0)
+            if (n > 0 && (!byShelves || nearest.count(item)))
                 foods.push_back({n, item});
         std::sort(foods.rbegin(), foods.rend());
-        // A food shop's share of the town's week short, in this food (FoodKept at least).
+        // (With ShelfOrders, the foods of the nearest towns first, the most to spare among those as near.)
+        if (byShelves)
+            std::stable_sort(foods.begin(), foods.end(), [&](const auto& a, const auto& b) { return nearest.at(a.second) < nearest.at(b.second); });
+        // A food shop's share of the town's week short, in this food (FoodKept at least). With ShelfOrders: of what
+        // brings its shelves back to FoodDaysKept days of need, and each hungry wolf's week of meals (what its shops
+        // would have sold it: unmet, not in their sales, so not in the orders that follow them).
         const auto kept = [&](const std::string& food) {
-            const double share = (FoodWeek * dayNeed - m.fed) / double(std::min<std::size_t>(foods.size(), FoodsSent) * m.foodShops.size());
+            const double short_ = byShelves ? std::max(0., FoodDaysKept * dayNeed - m.fed) + m.hungry * FedADay * FoodWeek
+                                            : FoodWeek * dayNeed - m.fed;
+            const double share = short_ / double(std::min<std::size_t>(foods.size(), FoodsSent) * m.foodShops.size());
             const int n = Society::nourishment(food);
             return n > 0 ? std::max(FoodKept, int(std::ceil(share / n))) : FoodKept;
         };
         for (std::size_t k = 0; k < foods.size() && k < std::size_t(FoodsSent); ++k)
             for (const auto& till : m.foodShops)
                 if (const auto* shelves = society_.account(till))
-                    if (const int want = (byNeed ? kept(foods[k].second) : FoodKept) - Society::stockAll(*shelves, foods[k].second); want > 0)
+                    if (const int want = ((byNeed || byShelves) ? kept(foods[k].second) : FoodKept) - Society::stockAll(*shelves, foods[k].second); want > 0)
                     {
                         m.want[foods[k].second] += want;
                         m.wanters[foods[k].second].push_back({till, want});
+                        if (byShelves)
+                            shelfFood.insert({to.id, foods[k].second});
                     }
         for (auto& [item, who] : m.wanters)
             std::sort(who.begin(), who.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
@@ -217,15 +252,27 @@ void World::tradeCaravans()
     const auto failedWith = [&](const std::string& buyer, const std::string& item, const std::string& from) {
         return !buyer.empty() && roads_.failed.count(buyer + "|" + item + "|" + from) > 0;
     };
+    // (A town's food sent for by its shelves, with ShelfOrders: the nearest town with some to spare, by the road's
+    // cells; as near, the most. Round 12, lane C: Frosthollow's were signed with the capital, the most to spare, days off,
+    // whose wagons went half loaded.)
     const auto bestFor = [&](const Town& to, const std::string& item, const std::string& buyer) {
         std::pair<const Town*, int> best{nullptr, 3};
         bool bestTrade = false;
+        const bool near = shelfFood.count({to.id, item}) > 0;
+        std::size_t bestCells = std::size_t(-1);
         for (const auto& from : towns_)
         {
             if (&from == &to || failedWith(buyer, item, from.id))
                 continue;
             auto& fm = markets[from.id];
             const int spare = (fm.spare.count(item) ? fm.spare.at(item) : 0) - (fm.want.count(item) ? fm.want.at(item) : 0);
+            if (near)
+            {
+                const auto cells = cellsBetween(from, to);
+                if (spare > 3 && (cells < bestCells || (cells == bestCells && spare > best.second)))
+                    best = {&from, spare}, bestCells = cells;
+                continue;
+            }
             const bool trade = items::townGoodOf(from.id, item);
             if (spare > 3 && ((trade && !bestTrade) || (trade == bestTrade && spare > best.second)))
                 best = {&from, spare}, bestTrade = trade;
@@ -246,7 +293,10 @@ void World::tradeCaravans()
                 continue;
             for (const auto& [buyer, wanted] : markets[to.id].wanters[item])
             {
-                if (bestSpare < 4)
+                // (Food sent for by its shelves: the nearest's spare promised, the next nearest with some, ShelfOrders.)
+                if (bestSpare < 4 && shelfFood.count({to.id, item}))
+                    std::tie(best, bestSpare) = bestFor(to, item, {});
+                if (!best || bestSpare < 4)
                     break;
                 if (buyers.count({buyer, item}))
                     continue;
@@ -255,7 +305,10 @@ void World::tradeCaravans()
                     continue;
                 // For a week of what it uses (doc 61), or what it is short now if that is more.
                 const int weekly = int(std::ceil(society_.useRate(buyer, item) * 7));
-                const int perWeek = std::clamp(std::max(wanted, weekly), 4, std::min(MostOfAGood, spare));
+                // (Food sent for by a town's shelves, a wagon's of it at most: ShelfOrders. Thirty a shop of each of three
+                // foods was a third of what Frosthollow's 56 ate in a week.)
+                const int most = shelfFood.count({to.id, item}) ? MostALoad : MostOfAGood;
+                const int perWeek = std::clamp(std::max(wanted, weekly), 4, std::min(most, spare));
                 const auto price = orderPrice(*seller, item);
                 // A buyer whose last order of it ended or was cut for what it couldn't pay for signs again only with a
                 // week of the new one in its till (RoadsState::refused; doc 64, Phase 13).

@@ -1301,6 +1301,7 @@ class Society
         CarriedPosts = 1ull << 36,                   // The day labour the capital carries is kept to its posts' share (round 11).
         TownLabourFirst = 1ull << 37,                // A small town pays its own day labour from its tax's budget first (round 11).
         ShareByWealth = 1ull << 38,                  // The capital's share of a town's tax by its wealth and the capital's (round 11).
+        ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };

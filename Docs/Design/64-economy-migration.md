@@ -7493,3 +7493,70 @@ runs were one after another on a machine other sessions were loading (load avera
 both see the same load, 5 days `--hours --threads 6` take 0.549 min with them and 0.552 `--without markdowns` (and
 1.24 against 1.25 at a load of 21). `priceAt` finds the seller's till and good once, for its margin and its markdown
 both (it had looked the till up a second time); the results are the same either way (5 days: 23768e949b6a0c62).
+
+### Phase 13: round 12, lane C: the small towns' food orders by their shelves and hunger (2026-10-29)
+
+Base: p13-r11 at dadf667. The user asked us to watch Frosthollow (56 residents) closely, and said not to run a
+simulation this round: what follows is read from the year's run (`2026-10-29-r11-year`, dadf667) and tested by the
+unit tests alone.
+
+**What kept its shelves bare** (`orders.csv` as daily deltas of each order's delivered, short and unpaid; `goods.csv`;
+`trade.csv`; `events.csv`'s "trade caravan departs"). Its shops' shelf food was 0-41 at every day's end; what came was
+bought the day it came (its imported foods' sales about equal what was handed over). It wasn't eaten from its shops:
+of its ~950 pieces a week, ~400 are porridge it makes, ~200 the fish and rabbit its trappers bring home, ~360 smoked
+fish its people buy in Coldwater on foot (`trade.csv`: "resident food purchase" from Frosthollow to Coldwater, 53k-110k
+p a quarter, against 0.6k-23k p in Ridgemere), ~75 bread the same way. The roads brought the rest:
+
+| days | ready food asked a week (the orders' sum, a day's mean) | handed over | short (not sent) | unpaid |
+| --- | --- | --- | --- | --- |
+| 1-90 | 279 | 1,755 | 1,422 | 0 |
+| 91-279 | 108 | 676 | 2,066 | 132 |
+| 280-364 | 108 | 221 | 933 | 121 |
+
+So: **the orders were small** (about a ninth of what it ate, signed for a dozen to thirty a shop and then following
+its shops' small sales; days 322-329 two orders, 2-4 a week, while its people began to go hungry), and **what was
+ordered mostly didn't come**: a quarter of it from day 91, a fifth from day 280. Nearly every food order was signed
+with the capital (the most to spare: `bestFor`), and its road's trader (Greatly House to month 2, then Grayrock Hall)
+sent part loads within its road budget: 2 of 3 goods, 7 of 9, 368 of 904, 128 of 199 (months 3-12); a seller that sent
+under half had its order halved and was marked failed for a month, and the shop then had nothing. Coldwater, the near
+town, filled its smoked fish orders through month 4 and then had none to spare (likely Frosthollow's walkers bought
+it: not traced). Its tills' money was the least of it: unpaid was a tenth of what was asked late in the year. When
+the shelves are bare the church's alms can't buy either (8,406p of "alms bought for the hungry" in its last quarter,
+from what shelves had).
+
+**Shelf orders** (`Society::ShelfOrders`, `1ull << 43`; `econ_watch --without shelforders`; `World::tradeCaravans`,
+`Core/RatwTrade.cpp`; with work by the hours; any town, nothing of Frosthollow's own):
+
+- **When.** As FoodByNeed: a town whose shops hold under `FoodDaysKept` (2) days of its people's need in nourishment
+  (`FedADay` a wolf); and, new, a town with any of its people hungry (`HungryAt`, 70: as `hunger.csv` counts them) and
+  under a `FoodWeek` on its shelves, though it holds its two days (its hungry found the food gone, or dear).
+- **How much.** What brings its shelves back to two days of need, and each hungry wolf's week of meals (`FedADay` x
+  7): a hungry wolf's meals are sales its shops didn't make, so not in the sales the orders and their reviews follow
+  (`useRate`; `missedMeal` counts one a day, at the first food a shop makes, never an imported one). Shared among the
+  three foods and its food shops, in pieces (twelve at least), and an order of food so sent for may be up to
+  `MostALoad` (80, a wagon's of a good) a week, not `MostOfAGood` (30): thirty a shop of three foods was a third of
+  what Frosthollow ate.
+- **From where.** The foods the nearest towns have to spare (by the road's cells between the markets,
+  `routeBetween`; as near, the most to spare), and each order signed with the nearest town that has more than three to
+  spare, not the one with most; its spare promised, the next nearest. A seller marked failed for the buyer is passed
+  over (as before), so a near town that can't keep up gives way to the next.
+- The orders are as before otherwise: the buyer pays on delivery, the review brings them to the shop's use and cuts
+  what piles up, the seller's spare caps them. No new state (the hungry are counted at each day's trade; the road's
+  cells worked out then), so nothing to save; no money moves that didn't.
+
+**The till.** A food shop that can't pay for what comes takes what its till runs to; the rest is refused (`unpaid`),
+offered to the town's other wanters, and rides home to the seller's stores; two weeks of it refused cuts the order and
+marks the buyer, who signs again only with a week of it in the till. At Frosthollow that was a tenth of the food
+asked, against three quarters not sent, so no relief buying is added: the near seller and the bigger orders are the
+fix. If a run shows the tills refusing once the food comes, the town's stores buying for its shops when its people are
+hungry (as the feast is laid in, FeastLaidIn) is the next step.
+
+**Tests.** `aTownsShelvesSendToTheNearest` (roads_tests): a west of 31 wolves with a bare inn, the capital's
+smokehouse (the road's far end) with 594 jerky, mid's (halfway) with 198. With the rule the inn's jerky is signed with
+mid, and for more with ten of the west hungry; without it, with the capital, and the hungry change nothing.
+`aTownShortOfFoodSendsForItsWeek` (FoodByNeed's) now leaves shelf orders out in both its runs (with them its
+without-FoodByNeed run sent for 54, by its shelves).
+
+**Not run.** No econ_watch, no digest (the user, 2026-10-29). With `--without shelforders` the code is p13-r11's
+(every new branch is behind `byShelves`), so dadf667's digests should hold; the next year's run says whether the
+near sellers keep up and whether Frosthollow's autumn is still hungry.

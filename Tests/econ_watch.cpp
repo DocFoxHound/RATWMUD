@@ -70,6 +70,8 @@
 // And round 11's, lane 3: markdowns (a seller's good over its shelf target keeps its price, its margin's weekly review
 // alone), foodneed (a town short of food sends for twelve of three foods a food shop, by a meal's worth a head, not its
 // people's week).
+// And round 12's, lane C: shelforders (a town short of food sends for its people's week by foodneed, its hungry not
+// counted, from the towns with the most to spare however far, up to MostOfAGood an order, as p13-r11).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -553,9 +555,11 @@ int main(int argc, char** argv)
                     off |= Society::Markdowns;
                 else if (name == "foodneed")
                     off |= Society::FoodByNeed;
+                else if (name == "shelforders")
+                    off |= Society::ShelfOrders;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns or foodneed, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed or shelforders, not "
                               << name << "\n";
                     return 2;
                 }

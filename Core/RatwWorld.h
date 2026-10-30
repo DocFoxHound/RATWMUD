@@ -1900,12 +1900,23 @@ class World
     // whatever its 56 people ate, and its orders followed its shops' small sales.
     static constexpr double FedADay = .0035 * 14400 / 1.1;
     static constexpr int FoodWeek = 7;
+    // By its shelves and its hungry, from the nearest (Society::ShelfOrders; round 12, lane C; the user, 2026-10-29): a
+    // town's food orders follow how low its shelves are and how many of its people are hungry (HungryAt: as hunger.csv
+    // counts them), each hungry wolf's week of meals counted as the shops' unmet sales, sized to bring its shelves back
+    // to FoodDaysKept days of its people's need besides; a town with hungry wolves and under a FoodWeek on its shelves
+    // sends even when it holds its FoodDaysKept days. Its foods are those the nearest towns (by the road's cells:
+    // routeBetween) have to spare, and each is signed with the nearest that has some, not the one with most, for up to
+    // MostALoad (a wagon's of a good) an order. Frosthollow, a mining town, ate ~950 pieces a week and sent for 23-170 of
+    // them most of the year, nearly all from the capital (the most to spare, 5-6 days' road), whose caravans went with
+    // half their loads.
+    static constexpr double HungryAt = 70;
     struct Market
     {
         std::map<std::string, int> spare, want;
         std::map<std::string, std::vector<std::pair<std::string, int>>> holders, wanters;   // Account, how many.
         int people = 0, food = 0;                   // Who lives there; the food on its shops' shelves (meals' worth).
         double fed = 0;                             // ...that food's nourishment (FoodByNeed).
+        int hungry = 0;                             // Its people hungry now (HungryAt; ShelfOrders).
         std::vector<std::string> foodShops;         // Its food shops' tills.
     };
     std::string residentTown(const std::string& id) const;
