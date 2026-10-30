@@ -1336,6 +1336,10 @@ class Society
         ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
         HoldingsBite = 1ull << 41,                   // The holdings tax graduated over its target, spent back in its town (round 12, B).
         CapitalByIncome = 1ull << 42,                // The capital's week kept to its income, over a reserve floor (round 12, B).
+        // Round 13, lane 2 (the user, 2026-10-29: inequality): a trading town's money that has no use among its own poor
+        // goes on to the city's poor, by how much poorer the city's homes are than the town's; and no baby works or hoards.
+        SurplusByNeed = 1ull << 46,                  // A town's surplus over two targets to the city's crews, by need (round 13, 2).
+        ChildrenKept = 1ull << 47,                   // Under ChildWorkAge no odd job; a child's spare to its home (round 13, 2).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -2038,7 +2042,14 @@ class Society
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
     mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_, sharesSent_, labourOwn_, biteSpent_;
+    // Round 13, lane 2 (SurplusByNeed): what each town sent on to the capital's pot ("a town's surplus sent on" and
+    // "holdings tax sent on"), a measure kept while noteTowns; each town's share of homes under PoorDays (tendHouseholds,
+    // daily, not saved); and each town's pull as its share was sent this week (reckon: its rebate is cut by it).
+    mutable std::map<std::string, std::int64_t> sentOn_;
+    std::map<std::string, double> poorShare_, pullSent_;
   public:
+    // (Round 13, lane 2: what each town sent on to the capital's pot since the last call, by its stores' account.)
+    std::map<std::string, std::int64_t> takeSentOn() const { return std::exchange(sentOn_, {}); }
     // At the founding (FoundAtTarget, while noteTowns): what the towns' targets left of their share, and what each kind
     // then got in all (households, businesses, Houses, the church). A measure.
     struct FoundingMoved
@@ -2086,6 +2097,40 @@ class Society
     // then its own posts, its buyers' funds last: the first cut.
     static constexpr double CapitalReserveMonths = 2, CapitalDraw = 1. / 8, CapitalLabourRoom = .5;
     bool carriedKept() const { return wageRule(CarriedPosts) || wageRule(CapitalByIncome); }
+  public:
+    // A town's surplus where the need is (round 13, lane 2; SurplusByNeed; the user, 2026-10-29), with work by the hours.
+    // A town's need: the share of its homes under PoorDays of food money (poorShare, each day's tendHouseholds), from
+    // NeedFrom (nothing) to NeedFull (all of it): in round 12's run Ridgemere's was .07 on day 90, .20 on day 181, .57 on
+    // day 727, the small towns' .04-.18. A town's pull toward the city (surplusPull): the city's need less its own, never
+    // below nothing. At the week's reckoning (after the capital's share) a town sends NeedShare of what it holds over
+    // two targets (where TaxEase has eased its tax to nothing and the rebate begins) times its pull to the capital's
+    // holdings-tax pot ("a town's surplus sent on"), not the capital's income; and at its week, its pull's part of its
+    // holdings tax not spent on its own relief and day labour ("holdings tax sent on"). Both inside the capital's room:
+    // CapitalBiteRoom weeks of the most its crew can be paid (estateMost at the city's going rate) less what the pot holds,
+    // so the pot can't pile up idle. The capital's pot then pays its crew as far as its places go, its relief past its
+    // allowance and its day labour past its own; the rest is kept. Its rebate (rebateTownTax) is cut by the part sent on.
+    static constexpr double NeedFrom = .05, NeedFull = .25, NeedShare = 1. / 4, CapitalBiteRoom = 2;
+    bool surplusByNeed() const { return workByHours() && wageRule(SurplusByNeed); }
+    double townNeed(const std::string& community) const
+    {
+        const auto found = poorShare_.find(community);
+        return found == poorShare_.end() ? 0. : std::clamp((found->second - NeedFrom) / (NeedFull - NeedFrom), 0., 1.);
+    }
+    double surplusPull(const std::string& community) const { return std::max(0., townNeed(capital()) - townNeed(community)); }
+    // Each town's share of homes under PoorDays of food money, by community (tendHouseholds, each day; not saved: empty
+    // after a restart, no need until the next day's count). A measure too (econ_watch's model.need).
+    const std::map<std::string, double>& poorShares() const { return poorShare_; }
+    // What room the capital's holdings-tax pot has for the towns' surplus this week (SurplusByNeed).
+    double capitalPotRoom() const;
+    // Children kept (round 13, lane 2; ChildrenKept; the user, 2026-10-29), with work by the hours: none under
+    // ChildWorkAge takes an odd job (a business's hire, a field's place, a crew's); and a child of a family home, not
+    // apprenticed nor holding a paid post, keeps ChildAllowance (a week of the largest stipend) and passes the rest to its
+    // household's purse. In round 12's run the 53 born_ residents earned 1,257,959p on hires from their first day and
+    // held 343,908p on day 729, 11% of the residents' money: a newborn stood "growing up", so out of work, and its age
+    // under eight wasn't a child's.
+    static constexpr int ChildWorkAge = 8;
+    std::int64_t childAllowance(const std::string& community) const { return pennies(7 * MostStipend, community); }
+  private:
     // A House's week's budget set in its parts (round 10, lane A: HouseBudget): returns what is left of it for its works
     // and crews.
     std::int64_t houseParts(const House& h, std::int64_t day);

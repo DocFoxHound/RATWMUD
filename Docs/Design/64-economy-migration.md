@@ -7780,3 +7780,138 @@ outgoings outside its parts in `spendWeek["treasury|other"]`.
    nobody takes leave it in the purse (then the town's own). An alternative: a rebate to the town's poorest.
 3. **The capital at its floor spends its income** and no more; it doesn't refill. If it should, its budget under the
    floor could be a share under its income (budgetOf did that: about 23k a week on 33k of income at 150k).
+
+### Phase 13: round 13, lane 2: a town's surplus where the need is, children kept (2026-10-29)
+
+Round 12's two years (`artifacts/economy/2026-10-29-r12-2y-fast`, from3 and noB agree, built from 8550cfe) failed on
+inequality: the household Gini .725 at its worst, the poorer half's share .030, rising .073 a year. The user's goal
+(2026-10-29): Gini .60 at most and the poorer half .10 at least, flat. Base: p13-r12 at 8550cfe. Two rules, with work by
+the hours; money only moves, nothing below a town's floor, no business touched.
+
+**Where the money went.** Ridgemere (60% of the residents, with the capital, the church and the Houses) lost 1.43M
+between days 91 and 728, Oakhaven gained 667k and Larkfield 533k; the between-town Gini (each home at its town's mean)
+rose .12 to .39. Three channels kept the small towns' money home:
+
+- *The holdings bite went round in a circle.* Larkfield's stores took 1,257,623p of holdings tax and paid 1,297,271p of
+  rebate (year 2: 991k in, 970k out), 82p of it relief. `institutionsWeek` folded the bite into its works' budget and
+  erased it; its crew was posted, but its places were taken 37% of the time in Larkfield and 46% in Oakhaven in the last
+  quarter (the capital's 2,576 of 2,576), so the untaken money became the stores' own, and `rebateTownTax` paid half of
+  what was over two targets back by income, mostly to the payers.
+- *The capital's surplus share was nothing.* `reckon`'s surplus part is `over x ShareSurplus x clamp(2 - capitalHeld,
+  0, 1)`, and under CapitalByIncome the capital held 2.5-3.6 months of its income at every month's end: Larkfield sent
+  4,746p and Oakhaven 1,608p in two years.
+- *What fed the trading towns:* mostly the carriage charged on standing orders with no carters paid (about 2.3M in two
+  years). Not mended this round; this lane sends what piles up toward need.
+
+And the babies: a newborn stands "growing up" (no post), so out of work, and `oddJobFor`'s child is eight to fifteen,
+so a wolf of nought looked as a grown one without work does. The 53 born_ earned 1,257,959p on the farms' (lodged) and
+shops' hires and held 343,908p on day 729, 11% of the residents' money and 280k of the 711k the city's top tenth of
+homes held; the home's purse and pot count only its members of sixteen and over.
+
+**1. A town's surplus where the need is** (`Society::SurplusByNeed`, `1ull << 46`; `econ_watch --without surplusneed`).
+
+- *The need* (`tendHouseholds`, daily, a measure counted whatever the rules): each town's share of homes under
+  `PoorDays` (7) of food money, the comfort streak's test: a family home by its shared purse, in a barracks, a
+  bunkhouse, quarters or lodgings each grown wolf by its own (a home whose only purse is a keeper's till isn't counted).
+  `poorShare_`, not saved: after a restart, no need until the next day's count. `townNeed(t) = clamp((poorShare(t) -
+  NeedFrom) / (NeedFull - NeedFrom), 0, 1)`, `NeedFrom` .05, `NeedFull` .25; a town's **pull**, `surplusPull(t) =
+  max(0, need(capital) - need(t))`: a town as needy as the city sends nothing.
+- *The share's need part* (`reckon`, with ShareByWealth, after the capital's share): each town is asked `pull x NeedShare
+  (1/4) x max(0, held - share - 2 x target)`, its holding as the share weighs it less the share just sent (so it keeps
+  its two targets and three quarters of what's over), two targets being where TaxEase has eased its tax to nothing and
+  the rebate begins (about two weeks of a trading town's road money: Larkfield's target about 18k, its road money about
+  19k a week). All the towns' asks scaled to the capital's **room**, `capitalPotRoom()`: `CapitalBiteRoom` (2) weeks of
+  the most its crew can be paid (`estateMost` at the city's going rate, a whole penny) less what its holdings-tax pot
+  holds, so the pot can't pile up idle. Sent as **"a town's surplus sent on"** into `biteLeft["treasury"]` (with
+  HoldingsBite; without it there is no pot and the money is the capital's own, spent by its week's budget), off the
+  town's mean holding as the share is. Not the capital's month's income (`record` leaves the kind out); and with the rule
+  the capital's own holding (`capitalHeld`) leaves its pot out, as a town's does.
+- *The rebate* (`rebateTownTax`): its pool times `1 - pull as sent` (the pull times what was sent over what was asked).
+  While the city needs it, a town's surplus over two targets goes there before it goes back to its own taxpayers; as the
+  need falls, or the capital's room fills, the rebate comes back.
+- *The bite goes on* (`institutionsWeek`, with HoldingsBite). A town: of what's left of its bite (its relief past its
+  allowance and its day labour past its own were paid from it in the week: its own poor first), its pull's part goes
+  on to the capital's pot inside the room left (**"holdings tax sent on"**), the rest to its works as before. The capital
+  (its week after the towns'): onto its works' budget only what brings its crew to `estateMost` (a week of 80% of the
+  budget at the going rate a place, the part of a place its own budget pays counted); the rest is kept in the pot, not
+  erased, for its relief past its allowance (`dailyRelief`), its own day labour past its own (`bitePays`) and next
+  week's crew. (So with the rule the capital's own holdings tax is kept too once its crew is full, need or none.)
+- *Self-correcting:* the pull falls to nothing as the city's poor share drops under 5%, or a town drains to two targets;
+  the bite shrinks as its payers' holdings fall to their targets; the room caps the pot at two weeks of the crew.
+
+**2. Children kept** (`Society::ChildrenKept`, `1ull << 47`; `econ_watch --without childrenkept`).
+
+- `oddJobFor`: after a job it already holds, nobody under `ChildWorkAge` (8) takes one: not a hire, a crew's place, nor
+  a field's with its lodging (a place held runs out with its hire, `HireDays` at most). Its comment already said
+  children look for work from eight.
+- `tendHouseholds`: in a family home with a grown member sharing its purse, each member under sixteen not apprenticed
+  (`apprenticedTo`) nor holding a paid post keeps `childAllowance(town)` = `pennies(7 x MostStipend)` (a week of the
+  largest stipend, 1.75 LD: 105p at a 60p day) and passes the rest to the poorest sharing member ("the household purse"),
+  before the purse is evened out; the pot counts it (its wants, its help, its holdings tax). Communal homes and homes with
+  no grown member: nothing moves.
+
+**econ_watch:** `--without surplusneed,childrenkept`; days.jsonl's `model.need` (each town's poor share, counted whatever
+the rules); `town_tax.csv`'s `sent_on` (each town's "a town's surplus sent on" and "holdings tax sent on").
+
+**Saves:** nothing new: the poor share is counted each day and the pull as sent is the reckoning's own (its rebate,
+moments later). The pot is round 12's `biteLeft["treasury"]`.
+
+**Tests** (`crafting_tests`; with a realm `needRealm`: the capital of forty homes and a baker, `poor` of them broke the
+day before the week, and a far town of ten taxpayers at 100,000p each):
+
+- `aTownsSurplusGoesWhereTheNeedIs`: the city 40% broke (need 1), the far town at four times its target (689p): its week
+  sends 344p, a quarter of what it holds over two targets after its 3p share, into the capital's pot, its rebate 0
+  against 700p without the rule; the capital's month's income and its share as without; at 2.5% poor, without the rule
+  and with the pot at its room (840p), nothing sent and the rebate 700p.
+- `theBiteGoesOn`: the far town's 10,000p of bite, the city's going rate 150p (room 10,500p), the capital lean: all of it
+  sent on, none on its works; at the capital's week 6,549p spent (its crew of five, and its relief past its allowance)
+  and 3,451p kept; its crew at its most (5), none without the rule, whose bite is folded into the far town's works and
+  erased.
+- `noBabyTakesAHire`: a newborn, the bakery's hire open (a week of bread sold) and a farm's field hire at the harvest:
+  no odd job all day with the rule; without, the bakery's place and the field's. A poor child of eight takes the
+  bakery's place in the afternoon. (Here, not in roads_tests beside `aKeeperGivesUpABusinesssHire`: the strip's
+  residents are written thirty, and these bodies' ages are the test's.)
+- `aChildsPenniesToTheHousehold`: a one-year-old with 10,000p in a home of two grown wolves keeps its allowance, the rest
+  passed to the grown, the home's money the same; without the rule, kept.
+- `theHoldingsTaxBites` (round 12) leaves SurplusByNeed out: with it the capital folds only its crew's room and keeps
+  the rest, so "at its week the bite's rest goes to its works" holds without it only.
+- All 68 tests pass. The 3-day digest with `--without surplusneed,childrenkept` is round 12's, 2d798a3e826ba1dd.
+
+**The 60-day check** (`--fast --threads 3`, default start; against `econ_watch-8550cfe`, the same args):
+
+| | 8550cfe | rules on |
+| --- | --- | --- |
+| Gini, day 60 | .501 | .500 |
+| poorer half | .178 | .181 |
+| Ridgemere's poor share (model.need), days 10/30/60 | (not logged) | .020/.009/.023 |
+| sent on (both kinds) | 0 | 0 |
+| the towns' rebates, days 1-60 | 0 | 0 |
+| the capital's crew, place-days taken (of posted) | 268 (268) | 296 (296) |
+| children's hire pay (flows.csv, to "child") | 8,891p | 0 |
+| "child" holder, day 60 | 6,997p / 6 | 493p / 9 |
+| field hires: places posted, taken, worked | 2,323, 2,163, 1,635 | 2,206, 2,167, 1,623 |
+| hungry at the most | 11 | 4 |
+| money conserved | every day | every day |
+
+So, as meant: the city's poor share stayed under NeedFrom (and the small towns' were higher: Oakhaven .15 and Larkfield
+.14 on day 60), so nothing was sent and no rebate moved (no town held over two targets in sixty days either); the
+capital's crews took a little more (its pot's rest is next week's crew, not materials). The babies took no hires and the
+children held about their allowances; the field places taken were within 0.2%, worked within 1%. Wall time 3.25 against
+3.31 minutes. The transfer itself wants the half-year (not run: one run of sixty days this round). Round 12's poor
+share was estimated from residents.csv at .02, .07 and .20 on days 30, 90 and 181; counted as the rule counts it (homes
+by their purse, each by its town as roster.csv has it), this run's was .009 on day 30 and .023 on day 60, and the same
+count of residents.csv gives 3 of 303 and 7 of 281 homes: so the pull may start later than the brief's day 90.
+
+**For the user:**
+
+1. **The need's measure.** Homes by purse, as the comfort streak counts them. On day 60 it read Ridgemere .023, the small
+   towns .02-.15: the pull starts only when the city's homes are poorer than the town's, and is full when a quarter are
+   under a week's food money and the town's are not. Lower `NeedFrom` (or count the poor's share of residents, not homes)
+   to start it sooner.
+2. **NeedShare** (a quarter a week of what's over two targets) **and the rebate** (cut by the same pull): a town over
+   its two targets drains a quarter a week to the city while it needs it, where it rebated a half a week to its own.
+3. **The capital's pot** (two weeks of its crew at the most): more room sends more, but its crew is its use; past that it
+   pays relief and day labour only. The capital's own holdings tax is kept in it too once its crew is full.
+4. **The child's allowance**, a week of the largest stipend: none of its pennies are its home's under it.
+5. **No longer run** (one run of 60 days this round): whether the city's poor share falls and the Gini stays under .60 is
+   the half-year's and the year's to say.

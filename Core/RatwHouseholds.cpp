@@ -32,6 +32,22 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
             if (body->second.age >= 16)
                 grown[life.homeCell].push_back(id);
         }
+    // Each town's homes, and those under PoorDays of food money, by community (round 13, lane 2: SurplusByNeed's need; a
+    // measure, so counted whatever the rules: it moves nothing). A family home by its shared purse; in a barracks, a
+    // bunkhouse, quarters or lodgings each grown wolf by its own; a home whose only purse is a keeper's till isn't counted.
+    std::map<std::string, std::pair<int, int>> poorHomes;     // Community -> homes poor, homes.
+    const auto count = [&](const std::string& community, std::int64_t pot, std::int64_t need) {
+        auto& [poor, all] = poorHomes[community];
+        ++all;
+        poor += pot < need * PoorDays;
+    };
+    // Children kept (round 13, lane 2; ChildrenKept; the user, 2026-10-29), with work by the hours: a child of a family
+    // home with a grown wolf sharing its purse, not apprenticed nor holding a paid post, keeps ChildAllowance (a week of
+    // the largest stipend) and passes the rest to the household's purse, its poorest sharing member, so the home's pot
+    // counts it (its wants, its help, its holdings tax). In round 12's run the babies took hires from their first day
+    // (a newborn stood "growing up", so out of work, its age under a child's eight) and the 53 born_ held 343,908p on day
+    // 729, 280k of the 711k the city's top tenth of homes held. Odd jobs from ChildWorkAge only: Society::oddJobFor.
+    const bool childrenKept = workByHours() && wageRule(ChildrenKept);
     for (const auto& [home, members] : homes)
     {
         const auto adults = grown.find(home);
@@ -46,7 +62,11 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
             for (const auto& id : adults->second)
                 if (const auto* r = spec(id); !(r && r->role == "merchant" && tillOf(id) == id))
                     if (const auto* a = account(id))
+                    {
+                        const auto community = communityOfResident(id);
+                        count(community, a->cash, householdNeed(1, community));
                         householdRule(id, {id}, a->cash, day, true);
+                    }
             continue;
         }
         // The household purse: its grown members' money, a keeper's till aside, evened out among them.
@@ -59,6 +79,23 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
                 continue;
             if (const auto* a = account(id))
                 pot += a->cash, sharing.push_back(id);
+        }
+        if (childrenKept && !sharing.empty())
+        {
+            const auto allowance = childAllowance(communityOfResident(members.front()));
+            for (const auto& id : members)
+            {
+                const auto body = bodies.find(id);
+                const auto* job = jobOf(id);
+                const auto* a = account(id);
+                if (body == bodies.end() || body->second.age >= 16 || !a || a->cash <= allowance || apprenticedTo(id) || (job && job->paid))
+                    continue;
+                const auto poorest = *std::min_element(sharing.begin(), sharing.end(), [&](const std::string& x, const std::string& y) {
+                    return account(x)->cash < account(y)->cash;
+                });
+                if (const auto excess = a->cash - allowance; shift(id, poorest, "", 0, excess, "the household purse"))
+                    pot += excess;
+            }
         }
         if (sharing.size() >= 2)
         {
@@ -75,6 +112,8 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         householdRule(home, members, pot, day);
         // Comfortable or poor, and for how long.
         const auto need = householdNeed(members.size(), communityOfResident(members.front()));
+        if (!sharing.empty())
+            count(communityOfResident(members.front()), pot, need);
         auto& streak = memory.comfort[home];
         if (pot >= need * ComfortDays)
             streak = std::max(0, streak) + 1;
@@ -104,6 +143,10 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         else if (streak >= 0)
             memory.toWork.erase(home);
     }
+    poorShare_.clear();
+    for (const auto& [community, homesPoor] : poorHomes)
+        if (homesPoor.second > 0)
+            poorShare_[community] = double(homesPoor.first) / homesPoor.second;
     ++memory.revision;
 }
 } // namespace ratw
