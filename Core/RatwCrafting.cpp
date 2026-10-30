@@ -145,47 +145,104 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
             }
         return n;
     };
+    // What it buys of one seller, each sort it holds as it comes: whether it has all it wanted. (`common`: the common
+    // sort's price at it, if already asked, else below 0.)
+    const auto buyFrom = [&](const Seller& seller, bool local, double common) {
+        const auto from = account(tillOf(seller.id));
+        const auto* buyer = account(till);
+        if (!from || !buyer)
+            return false;
+        // Any quality it has (doc 35, Part 4), at that quality's price. A workshop keeps a few common ones for its own
+        // shelf, and of what it works with too, its own batches' (keepsBack); a supplier or producer sells all it has.
+        const int keeps = seller.kind == 1 ? keepsBack(seller.id, item) : 0;
+        for (const auto& sort : kindsHeld(*from, item))
+        {
+            const auto* sortGood = items::good(sort);
+            const auto* buyerNow = account(till);
+            if (!sortGood || !buyerNow)
+                continue;
+            const int spare = stock(*from, sort) - (sort == item ? keeps : 0);
+            // At the seller's own price (doc 64, Phase 4); carted in from another town, its carriage besides.
+            const double each = sort == item && common >= 0 ? common : priceAt(seller.id, sort);
+            const std::int64_t price = pennies(each + (local ? 0. : carriage(sort, CarriageLegs, here)));
+            const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
+            if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
+                bought += n;
+            // Short of money: the rest on credit, up to a week of its turnover (doc 64, Phase 5).
+            int owing = 0;
+            if (const int rest = int(std::min<std::int64_t>({wanted - bought, spare - std::max(0, n), 99, creditLeft(till) / price}));
+                credit && rest > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, rest, price))
+                bought += rest, owing = rest;
+            if (bought >= wanted)
+                return true;
+            // (What it has left of what it would sell, as it keeps back: left for want of money or by a ledger entry's 99
+            // is no sale missed.)
+            more = more || (local && spare - std::max(0, n) - owing > 0);
+        }
+        return false;
+    };
     // Close to home first, at the price; then anywhere, carted in (in a world of towns, only the caravans bring what a
     // town lacks: doc 42, Phase 7).
+    //
+    // With ChainPricedOnce (round 14, lane 1, with work by the hours; the user, 2026-10-30), at home the cheapest
+    // first, whatever kind of seller: by kind, the suppliers came first whatever they asked, and Ridgemere's
+    // smokehouses bought four fifths of their fish from its provisioners and fishmongers at 18-20p while its boats sold
+    // at 9-11p. Every seller of the town it may buy from (a maker any; a supplier the workshops and the producers) with
+    // one to spare (of any sort; a workshop's past what it keeps back), by the whole penny its common sort would cost;
+    // level, the producer, then the workshop, then the supplier, then as listed. A dear seller loses the makers'
+    // custom, its shelf fills, and its glut lowers its margin. Each priced once a call (priceAt is the run's dearest
+    // ask: the seller with none to spare isn't asked). The carted-in pass as before.
+    const bool cheapest = workByHours() && wageRule(ChainPricedOnce);
     for (const bool local : {true, false})
+    {
+        if (local && cheapest)
+        {
+            struct Candidate
+            {
+                const Seller* seller;
+                double each;
+                std::int64_t price;
+                std::size_t order;
+            };
+            std::vector<Candidate> offers;
+            for (std::size_t k = 0; k < sellers->size(); ++k)
+            {
+                const auto& seller = (*sellers)[k];
+                if (seller.kind < (forSupplier ? 1 : 0) || seller.kind > 2 || seller.id == id || communityOfResident(seller.id) != here)
+                    continue;
+                const auto* from = account(tillOf(seller.id));
+                if (!from)
+                    continue;
+                const int keeps = seller.kind == 1 ? keepsBack(seller.id, item) : 0;
+                const auto sorts = kindsHeld(*from, item);
+                if (std::none_of(sorts.begin(), sorts.end(), [&](const std::string& sort) {
+                        return stock(*from, sort) - (sort == item ? keeps : 0) > 0;
+                    }))
+                    continue;
+                const double each = priceAt(seller.id, item);
+                offers.push_back({&seller, each, pennies(each), k});
+            }
+            std::sort(offers.begin(), offers.end(), [](const Candidate& a, const Candidate& b) {
+                if (a.price != b.price)
+                    return a.price < b.price;
+                if (a.seller->kind != b.seller->kind)
+                    return a.seller->kind > b.seller->kind;   // (2 a producer, 1 a workshop, 0 a supplier.)
+                return a.order < b.order;
+            });
+            for (const auto& o : offers)
+                if (buyFrom(*o.seller, true, o.each))
+                    return tally(bought, more);
+            continue;
+        }
         for (int kind = forSupplier ? 1 : 0; kind <= 2 && bought < wanted && (local || !tradeByCaravan_); ++kind)
             for (const auto& seller : *sellers)
             {
                 if (seller.kind != kind || seller.id == id || (communityOfResident(seller.id) == here) != local)
                     continue;
-                const auto from = account(tillOf(seller.id));
-                const auto* buyer = account(till);
-                if (!from || !buyer)
-                    continue;
-                // Any quality it has (doc 35, Part 4), at that quality's price. A workshop keeps a few common ones for
-                // its own shelf, and of what it works with too, its own batches' (keepsBack); a supplier or producer
-                // sells all it has.
-                const int keeps = kind == 1 ? keepsBack(seller.id, item) : 0;
-                for (const auto& sort : kindsHeld(*from, item))
-                {
-                    const auto* sortGood = items::good(sort);
-                    const auto* buyerNow = account(till);
-                    if (!sortGood || !buyerNow)
-                        continue;
-                    const int spare = stock(*from, sort) - (sort == item ? keeps : 0);
-                    // At the seller's own price (doc 64, Phase 4); carted in from another town, its carriage besides.
-                    const double each = priceAt(seller.id, sort);
-                    const std::int64_t price = pennies(each + (local ? 0. : carriage(sort, CarriageLegs, here)));
-                    const int n = int(std::min<std::int64_t>({wanted - bought, spare, 99, spendable(till) / price}));
-                    if (n > 0 && transfer(tillOf(seller.id), till, sort, n, price, local ? "materials bought" : "materials carted in"))
-                        bought += n;
-                    // Short of money: the rest on credit, up to a week of its turnover (doc 64, Phase 5).
-                    int owing = 0;
-                    if (const int rest = int(std::min<std::int64_t>({wanted - bought, spare - std::max(0, n), 99, creditLeft(till) / price}));
-                        credit && rest > 0 && till.rfind("till:", 0) == 0 && onCredit(tillOf(seller.id), till, sort, rest, price))
-                        bought += rest, owing = rest;
-                    if (bought >= wanted)
-                        return tally(bought, more);
-                    // (What it has left of what it would sell, as it keeps back: left for want of money or by a ledger
-                    // entry's 99 is no sale missed.)
-                    more = more || (local && spare - std::max(0, n) - owing > 0);
-                }
+                if (buyFrom(seller, local, -1))
+                    return tally(bought, more);
             }
+    }
     return tally(bought, more);
 }
 
