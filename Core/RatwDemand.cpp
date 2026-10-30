@@ -1657,6 +1657,25 @@ std::vector<Society::Procurement> Society::takeProcurements()
     return out;
 }
 
+std::vector<const items::Institution*> Society::townBuyersOrder()
+{
+    // In their written order; with MessesFirst (round 15, lane 1; the user, 2026-10-30) a stable partition of it, the
+    // same every day: first the buyers that feed the town's own people (not the church, which tithes; a food in the
+    // basket, as the watch's mess, the mines' and the quarries' rations), then the rest as written. Under the capital's
+    // week's allowance (fundsLeft) the first funded take it first: the Town Works, written first, took it before the
+    // watch's mess, which was funded nothing in the two-year run's seventh quarter.
+    const auto& list = items::institutions();
+    std::vector<const items::Institution*> order;
+    order.reserve(list.size());
+    for (const auto& in : list)
+        order.push_back(&in);
+    if (messesFirst())
+        std::stable_partition(order.begin(), order.end(), [](const items::Institution* in) {
+            return !in->tithes && std::any_of(in->basket.begin(), in->basket.end(), [](const auto& b) { return edible(b.first); });
+        });
+    return order;
+}
+
 void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies)
 {
     const auto& list = items::institutions();
@@ -1708,12 +1727,14 @@ void Society::townBuyers(std::int64_t day, const std::map<std::string, LifeBody>
     const double days = items::institutionDays();
     joinChurches();                                 // (An older save's churches' purses, into the one.)
     bool churchFounded = false;                     // The land's church opened today: each town's founds it.
+    const auto order = townBuyersOrder();
     for (auto& [community, town] : towns)
     {
         if (town.residents < 5)
             continue;                                   // (A hamlet's needs are its households'.)
-        for (const auto& in : list)
+        for (const auto* buyer : order)
         {
+            const auto& in = *buyer;
             const auto workers = in.perProducer.empty() ? 0 : town.workers.count(in.perProducer) ? town.workers.at(in.perProducer) : 0;
             double scale = !in.perProducer.empty() ? workers : in.perGuard ? town.guards : town.residents / 100.0;
             // The Town Works keeps the town's buildings (doc 42, Phase 5): they wear a point a day (two in winter); a
