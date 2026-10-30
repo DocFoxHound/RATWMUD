@@ -9606,3 +9606,289 @@ What the thousand days say:
    places are taken.
 6. **From3** was stopped at day 110 (`2026-10-30-r16-shortage-hands-2y-fast-from3`): its food in q0 8.15p against the
    base's 7.73p, the Gini on day 108 .492 against .484; no verdict.
+
+### Phase 13: round 18, lane 1: a food's scarcity held where the homes are poor (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved (5,000,120p), no handouts from nowhere. The candidate is p13-r16 (3a16e70) with
+`--without calledlate,scarcityhires` (round 16's lane 1 left out: it made inequality worse). Its six years
+(`artifacts/economy/2026-10-30-r16-6y-land`, built from b46a917) were NOT STABLE on inequality alone (Gini at most .739,
+the poorer half at least .027; prices passed, food 7.5-11.9p, the going rate 58-66p); from3 failed inequality and prices
+(food to 12.9p). Round 17's two lanes (the land's dues, the grain chain; unmerged) both made the 1,100-day Gini worse.
+Base: p13-r16 at 3a16e70. Two rules of the second word, with work by the hours and MarginsByShortage; prices only, no
+money moves; nothing new is saved; with both left out the code is 3a16e70's to the digest.
+
+**The evidence (the brief's, checked by a skeptic).**
+
+1. *The going rate cancels out of the real wage; the margin doesn't.* Every price is the going rate times its costed
+   hours times (1 + margin) (`normalCost`, `priceAt`; labourDay is the going rate). In the candidate's six years the
+   median wage bought 7.25 units of food in year 0 and 5.80 in year 4; the land tills' (1 + m), weighed by their
+   takings, went from 1.287 to 1.525.
+2. *The rent is Ridgemere's boats.* Of year 4's 2.75M of excess (days 1456-1819, `tills.csv`: takings x max(0, m -
+   .15) / (1 + m)), "fishes the waters off Greywater" took 1.19M (margin .72) and "fishes the Sound off the piers"
+   0.86M (.81); then logging 161k, the taproom 81k, Wetmeadow Dairy 73k (.36), the Greywater Smokehouse 64k (.45),
+   rabbits 58k (.32), the bakers 42k. The boats' margin by year: .55, .62, .72, .77, .81, .79. Their owners' net and
+   the Houses' rent rose from .28 to .43 of their sales; from year 0 to 4 the boats added 1.84M to property income, the
+   shop tills' owners 1.70M.
+3. *Inequality follows the food price.* Scorecard quarters at 8.5p a unit go with a Gini of .593-.653, at 10.6-11.9p
+   with .675-.739. The poorer half's mean cash: 1,554p at Ridgemere's food 9.39p (day 728), 552p at 13.26p (day 1456),
+   586p at 9.57p (day 2184).
+4. *The shortage the margin reads isn't hunger.* Ridgemere's shops held 1.7-2.5 days of food a head
+   (`orchestrator_towns.csv`, shop_food_days) and 99% of days had 1% or fewer hungry. Three quarters of the boats'
+   sales are makers' materials; residents buy the cheapest food that feeds them. In round 16 a catch 40% larger met 57%
+   more fish bought, so unmet and the margin rose; in round 17 money returned to the hands brought the boats 299 buyers
+   a boat-day against 187, and a margin of .82 against .69. So the margin rations little and keeps no hands: it is
+   rent.
+5. *Ridgemere's poor share is the failing criterion's own measure, by town.* It is `model.need`: the share of a town's
+   homes under PoorDays (7) of food money, `Society::poorShares()`, counted by each day's `tendHouseholds` whatever
+   the rules and not saved. Ridgemere's rose .025 (q1), .085 (q3), .127 (q4), .154 (q5), .16 (q7), .20 (q8), .25
+   (q10), .31 (q15 on); the small towns ran .04-.15, Oakhaven noisy at .06-.71.
+6. *What failed before.* Round 16's ScarcityToHires and round 17's dues both left the margin at its cap and made the
+   1,100-day Gini worse (.652-.653 against .633). Holding the scarcity share proportionally settles at a margin of
+   .55-.67, not its target (the skeptic's); a lower top on the aim is the simpler, testable form.
+
+**1. A staple food's margin held where its town's homes are poor** (`Society::FoodRentByNeed`, WageRule2 `1ull << 4`;
+`econ_watch --without foodrent`; with work by the hours and MarginsByShortage).
+
+- *Where:* `Society::reviewMargins`, MarginsByShortage's branch, for a staple food (`g->staple &&
+  nourishment(good) > 0`: fish, rabbit, shellfish, offal, marrow bones, eggs, porridge, bread). The aim's top comes
+  down by the till's town's need, `n = clamp((share - FoodNeedFrom) / (FoodNeedFull - FoodNeedFrom), 0, 1)`, `share`
+  its town's `poorShares()`: `top = usual + (most - usual) x (1 - (1 - FoodRentLeast) x n)`, the aim `usual + (top -
+  usual) x scarce` with `scarce` as before (in the code `usual + (most - usual) x reach x scarce`, `reach` 1 unheld, so
+  an unheld aim is the base's to the bit). The glut's step, the pull (`m += (aim - m) x step x MarginPull`),
+  ChainPricedOnce's cap on a good sold on and the clamp to `[MarginLeast, most]` with the good's own `most` are as they
+  were: a margin over the new top comes down by the pull, about a fifth of the gap a week, not at once.
+- *The till's town* (`Society::marginTown`, public): the town `normalCost` reckons for it, the key `communityOfResident`
+  gives and `poorShares()` counts by: `accountTown(till)` (a shop's post's town, `shopTown_`); else for a `till:job:`
+  till its post's town (`postTown`), else its holder's community; a `house:` till its House's community (its
+  `shopTown_` entry is only the last of its businesses). A caravan's, a fund's or a town's stores' (no town normalCost
+  reckons for them) reads none. `Society::foodRentNeed(till)` (public) gives `n`; a town with no count (no homes; a
+  restart, before that day's `tendHouseholds`) reads 0, the base's top.
+- *When the need is read:* the day's `tendHouseholds` runs after `reviewMargins` (both in `Society::tick`'s turn of the
+  day: tendIncome, leftovers, spoil, reviewMargins, reviewMarkdowns, keepPrices, ..., householdShopping,
+  tendHouseholds), so a review reads yesterday's count. `poorShare_` isn't saved: on a restart's first day the review
+  lot reads none and aims as the base does, its margins up to one review's pull apart from an unbroken run's, as
+  SurplusByNeed's need already is.
+
+**2. Every other food's the same** (`Society::FoodChainByNeed`, `1ull << 5`; `--without foodchain`; with work by the
+hours and MarginsByShortage): a food that isn't a staple (`nourishment > 0`, not staple: smoked and salt fish, cheese,
+butter, jerky, raw meat, mutton, sausage, pies, ...), its `most` MarginMost (.6). It closes the road by which the rent
+held at the boats could move down the chain to the curers; a bit of its own so that move can be measured.
+
+**Unchanged:** drinks (nourishment 0), materials, fuel, the store-priced goods (meals, herbs, swords) and every staple
+that isn't a food (wheat, flour, milk, vegetables, timber, firewood...).
+
+**The constants** (`Core/RatwSociety.h`, beside StapleMarginMost and UnmetFrom):
+
+- `FoodNeedFrom` = .05: SurplusByNeed's NeedFrom, a twentieth of homes poor is the realm in balance (Ridgemere was at
+  .025 in q1, the small towns at .04-.10).
+- `FoodNeedFull` = .15: Ridgemere passed it in q5 (about day 455), when its Gini first sat at .555-.578 and before it
+  climbed past .60 from q8: the hold is full where the base starts to fail.
+- `FoodRentLeast` = .3: at full need a staple's top is .15 + .85 x .3 = .405, another food's .15 + .45 x .3 = .285.
+  Round 15's STABLE two years ran the boats at .37-.62, the candidate's first half-year at .38-.48 with the Gini at
+  .47-.49. At .405 a boat still sells at 1.4 times its cost, about 1.2 after a House's 15% rent: a shortage still pays
+  its owner and its wage bid.
+
+**Why it can't spiral.** It only lowers an aim's ceiling: no wage, cost or going rate is raised (round 11's spiral
+came from bids over the rate). Nothing is pushed under the ladder's, so there is no round-12 slide; the going rate can
+fall only as far as the boats' bids fade, and WageBack and WageFloor are unchanged. It is strongest where homes are
+poorest and gives MarginsByShortage back in full where 5% of homes or fewer are poor; at unmet at or under UnmetFrom
+the aim is the ladder's either way. A business with no buyers still idles and fails; nothing is handed out.
+
+**Saves:** nothing new. **econ_watch:** `--without foodrent,foodchain` (the second word's: `off2 |=`), in its list,
+its error and its notes. No new measure: `tills.csv` has `margin` and `missed_units`, `days.jsonl` `model.need`.
+`Society::setPoorShare(community, share)` and `Society::turnAway(till, good, n)` (public, a test's): a town's poor share
+as the day's households count it (under 0 takes its count away), and buyers a maker turned away today (`missedAt`
+reaches the producers only).
+
+**Tests** (`crafting_tests`, beside `buyersTurnedAwayRaiseIt` and its `fishTown`; work by the hours set and put back;
+the rules on and off with `wageRules2Off` after `wageRulesOff`; every account the same after each review, `shortDay`'s
+check):
+
+- `aPoorTownHoldsItsFoodRent`: the boat turning away 30 of 60 a day for twelve weeks (unmet .5). Its town 0 or .05
+  poor: its peak .9478 with the rule and without, to the bit (as `buyersTurnedAwayRaiseIt`). .15 and .3: .3893 with
+  the rule (its top .405), .9478 without. .10 (n .5): .6685 (its top .7025). Served again six weeks, it comes down as
+  before (.2664 unheld, .2257 and .1849 held).
+- `aMarginAboveTheHoldComesDown`: the boat at .9, still half its buyers turned away, its town .2 poor. With the rule
+  its first review takes it to .712 (the pull's part of the way: half the gap at most), twelve weeks to .4405 (93% of
+  the gap to .405 closed), under .41 on day 132 and never under .405; without, .938, then .993 at twelve weeks. (The
+  brief asked for under .41 within twelve weeks; at the pull's fifth of the gap a week that is .495 x .8^12 = .034 over
+  the top, so the test asks nine tenths of the gap in twelve weeks and .41 within twenty-four.)
+- `theMakersFoodHeldToo`: the smokehouse's smoked fish (`turnAway`: half its buyers turned away), its town .2 poor:
+  .2685 with both rules (its top .285); .5450 with FoodRentByNeed alone and with neither, to the bit. A farm's wheat
+  (a staple that isn't a food): .9194 with both rules and with neither, to the bit.
+- `theBoatReadsItsTown`: the capital with ten homes, three broke on day 3, and a boat; a far town with five homes and a
+  boat; the moor's boat. After three days `tendHouseholds` counts the capital .25 poor, the far town and the moor 0;
+  `marginTown` of the capital's boat is the capital and `townOfResident` of its keeper, the far boat's the far town,
+  the moor's the moor; the moor's count then taken away (`setPoorShare(moor, -1)`). Twelve weeks of half turned away:
+  the capital's boat .3893 with the rule (.9478 without); the far town's .9453 and the moor's .8798 with the rule as
+  without, to the bit.
+- `theHoldLeavesTheGlutAndTheResold`: both rules on and off, the town .2 poor: a boat over its own shelf target comes
+  down the glut's step exactly (`aGlutOverItsOwnStore`), and the fishmonger's fish it sells on, half its buyers turned
+  away, is kept to the ladder's 15% (`aResoldGoodAtTheLadder`).
+- `aGlutOverItsOwnStore` and `aResoldGoodAtTheLadder` themselves are unchanged and pass with the rules on (their town
+  counts nobody poor). No older test changed. The suite passes (68 of 68) with both rules on, and with both forced off
+  in a temporary copy (not committed: `staplesHeld` and `chainHeld` false, the five new tests left out of main).
+
+**The digests** (`--deterministic --hours --threads 4`, three days, normal mode): `--without
+calledlate,scarcityhires,foodrent,foodchain` 64c928de2f1f0305 (3a16e70's candidate base); `--without foodrent,foodchain`
+e1a89963b633d13f (round 16's, all its rules); with the rules, `--without calledlate,scarcityhires`, 64c928de2f1f0305
+(in three days of normal mode no food till's review reads a town's need over .05 with buyers turned away: the rules move
+nothing yet); all rules (no `--without`) e1a89963b633d13f; FoodRentByNeed alone (`--without
+calledlate,scarcityhires,foodchain`) 64c928de2f1f0305.
+
+**The fast check** (`--fast --deterministic --hours --threads 3`, the default start, 1,100 days,
+`artifacts/economy/2026-10-30-r18-food-rent-1100` in the lane's worktree, digest 9362f9262d171602). The base is days
+0-1100 of `2026-10-30-r16-6y-land` (b46a917): the rules-off build (`--without calledlate,scarcityhires,foodrent,
+foodchain`, `2026-10-30-r18-food-rent-base`) matched its `days.jsonl` line for line over days 0-61 and was stopped
+there; the rules-on run first differs on day 2 (the margins' mean in the sixth decimal). FoodRentByNeed alone
+(`--without calledlate,scarcityhires,foodchain`, `2026-10-30-r18-food-rent-alone-1100`, digest cba14fdf18147005) ran
+beside it. Quarters of 91 days (q12 is days 1092-1100, nine days). The boats are Ridgemere's nine ("fishes the waters
+off Greywater", "fishes the Sound off the piers"): their margin weighed by their rates, unmet their missed units over
+their rate units, buyers their rate units and fish sold their sold units a boat-day (`tills.csv`), their book over the
+rate `books.csv`'s wage over rate. Excess: takings x max(0, m - .15) / (1 + m) a quarter, by holder kind. The
+smokehouses are the five "... Smokehouse" tills; the salters and fishmongers the Salt Pans, the three fishmongers and
+the Fish Hall. Food a unit is the scorecard's (`prices.csv`, residents' food purchases); Ridgemere's residents'
+`food_towns.csv` paid over bought. The going rates, the Gini and the poorer half are quarter means of `days.jsonl`.
+
+| by quarter | q0 | q1 | q2 | q3 | q4 | q5 | q6 | q7 | q8 | q9 | q10 | q11 | q12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Ridgemere's need, base | 0.023 | 0.025 | 0.059 | 0.085 | 0.127 | 0.154 | 0.143 | 0.160 | 0.204 | 0.220 | 0.246 | 0.245 | 0.267 |
+| Ridgemere's need, rules | 0.022 | 0.023 | 0.050 | 0.085 | 0.127 | 0.149 | 0.153 | 0.194 | 0.211 | 0.210 | 0.204 | 0.242 | 0.273 |
+| Ridgemere's need, rule 1 alone | 0.023 | 0.022 | 0.055 | 0.084 | 0.114 | 0.126 | 0.129 | 0.159 | 0.177 | 0.182 | 0.195 | 0.242 | 0.244 |
+| boats: margin, base | 0.38 | 0.48 | 0.65 | 0.56 | 0.73 | 0.63 | 0.53 | 0.59 | 0.71 | 0.72 | 0.78 | 0.69 | 0.77 |
+| boats: margin, rules | 0.38 | 0.44 | 0.50 | 0.47 | 0.43 | 0.33 | 0.29 | 0.31 | 0.29 | 0.32 | 0.34 | 0.34 | 0.36 |
+| boats: margin, rule 1 alone | 0.41 | 0.49 | 0.53 | 0.43 | 0.52 | 0.41 | 0.43 | 0.37 | 0.35 | 0.33 | 0.35 | 0.36 | 0.31 |
+| boats: unmet, base | 0.29 | 0.20 | 0.33 | 0.29 | 0.39 | 0.24 | 0.30 | 0.27 | 0.40 | 0.34 | 0.39 | 0.36 | 0.33 |
+| boats: unmet, rules | 0.29 | 0.15 | 0.28 | 0.23 | 0.40 | 0.32 | 0.34 | 0.32 | 0.32 | 0.39 | 0.40 | 0.44 | 0.49 |
+| boats: unmet, rule 1 alone | 0.30 | 0.18 | 0.31 | 0.24 | 0.45 | 0.32 | 0.39 | 0.39 | 0.42 | 0.38 | 0.46 | 0.44 | 0.39 |
+| boats: buyers a boat-day, base | 42 | 119 | 174 | 185 | 255 | 220 | 228 | 209 | 260 | 253 | 215 | 187 | 265 |
+| boats: buyers a boat-day, rules | 44 | 128 | 155 | 172 | 240 | 257 | 255 | 245 | 262 | 239 | 261 | 280 | 277 |
+| boats: buyers a boat-day, rule 1 alone | 43 | 104 | 180 | 164 | 263 | 225 | 261 | 244 | 266 | 244 | 277 | 279 | 218 |
+| boats: fish sold a boat-day, base | 28 | 86 | 88 | 105 | 125 | 134 | 131 | 125 | 129 | 138 | 118 | 107 | 169 |
+| boats: fish sold a boat-day, rules | 29 | 99 | 79 | 102 | 126 | 146 | 143 | 149 | 155 | 122 | 138 | 143 | 140 |
+| boats: fish sold a boat-day, rule 1 alone | 28 | 77 | 86 | 94 | 127 | 139 | 134 | 124 | 130 | 125 | 139 | 152 | 120 |
+| boats: book over the rate, base | 1.02 | 1.08 | 1.24 | 1.36 | 1.35 | 1.26 | 1.27 | 1.28 | 1.37 | 1.30 | 1.26 | 1.45 | 1.36 |
+| boats: book over the rate, rules | 1.03 | 1.08 | 1.23 | 1.26 | 1.34 | 1.26 | 1.30 | 1.31 | 1.23 | 1.35 | 1.27 | 1.31 | 1.35 |
+| boats: book over the rate, rule 1 alone | 1.02 | 1.07 | 1.23 | 1.27 | 1.31 | 1.31 | 1.34 | 1.37 | 1.40 | 1.41 | 1.35 | 1.35 | 1.28 |
+| farm tills' excess (k), base | 56 | 169 | 325 | 335 | 377 | 348 | 279 | 315 | 392 | 446 | 434 | 341 | 53 |
+| farm tills' excess (k), rules | 47 | 158 | 231 | 270 | 285 | 211 | 156 | 207 | 179 | 157 | 185 | 224 | 20 |
+| farm tills' excess (k), rule 1 alone | 53 | 174 | 261 | 222 | 290 | 234 | 213 | 201 | 179 | 177 | 210 | 260 | 18 |
+| shop tills' excess (k), base | 3 | 11 | 47 | 50 | 40 | 37 | 29 | 21 | 44 | 44 | 79 | 32 | 3 |
+| shop tills' excess (k), rules | 1 | 11 | 34 | 20 | 23 | 18 | 20 | 20 | 35 | 16 | 27 | 40 | 2 |
+| shop tills' excess (k), rule 1 alone | 2 | 5 | 46 | 32 | 41 | 30 | 38 | 39 | 49 | 45 | 45 | 50 | 3 |
+| smokehouses' margin, base | 0.13 | 0.12 | 0.16 | 0.21 | 0.24 | 0.21 | 0.24 | 0.19 | 0.25 | 0.27 | 0.22 | 0.18 | 0.18 |
+| smokehouses' margin, rules | 0.12 | 0.12 | 0.19 | 0.15 | 0.18 | 0.16 | 0.17 | 0.19 | 0.22 | 0.18 | 0.22 | 0.22 | 0.18 |
+| smokehouses' margin, rule 1 alone | 0.13 | 0.13 | 0.24 | 0.21 | 0.23 | 0.22 | 0.21 | 0.21 | 0.22 | 0.21 | 0.21 | 0.20 | 0.19 |
+| salters' and fishmongers' margin, base | 0.09 | 0.03 | 0.10 | 0.10 | 0.12 | 0.11 | 0.12 | 0.09 | 0.11 | 0.12 | 0.12 | 0.09 | 0.10 |
+| salters' and fishmongers' margin, rules | 0.09 | 0.04 | 0.05 | 0.04 | 0.09 | 0.11 | 0.09 | 0.12 | 0.12 | 0.11 | 0.11 | 0.14 | 0.15 |
+| salters' and fishmongers' margin, rule 1 alone | 0.09 | 0.03 | 0.05 | 0.10 | 0.11 | 0.12 | 0.11 | 0.11 | 0.13 | 0.13 | 0.13 | 0.15 | 0.13 |
+| food a unit (scorecard), base | 7.96 | 7.52 | 8.82 | 8.74 | 9.40 | 8.94 | 8.38 | 8.43 | 9.67 | 9.31 | 9.32 | 8.46 | 10.09 |
+| food a unit (scorecard), rules | 7.86 | 7.43 | 7.88 | 7.88 | 8.66 | 8.27 | 8.09 | 8.56 | 8.75 | 8.47 | 8.57 | 9.20 | 9.71 |
+| food a unit (scorecard), rule 1 alone | 8.08 | 7.61 | 8.21 | 7.65 | 9.19 | 7.94 | 8.34 | 8.17 | 8.20 | 8.24 | 8.87 | 8.90 | 8.02 |
+| Ridgemere residents' food a unit, base | 8.80 | 8.38 | 9.68 | 9.11 | 10.69 | 10.07 | 9.21 | 9.39 | 11.17 | 11.04 | 11.35 | 10.06 | 12.09 |
+| Ridgemere residents' food a unit, rules | 8.75 | 8.20 | 8.61 | 8.79 | 9.71 | 8.90 | 8.83 | 9.57 | 9.72 | 9.25 | 9.42 | 10.20 | 11.45 |
+| Ridgemere residents' food a unit, rule 1 alone | 8.99 | 8.51 | 9.33 | 8.30 | 10.59 | 8.68 | 9.18 | 9.34 | 9.38 | 9.24 | 10.08 | 10.19 | 8.48 |
+| the realm's going rate (mean), base | 60.0 | 60.0 | 59.7 | 59.3 | 59.3 | 59.3 | 58.9 | 58.8 | 58.9 | 59.1 | 58.9 | 59.4 | 59.7 |
+| the realm's going rate (mean), rules | 60.0 | 60.0 | 59.1 | 58.5 | 58.6 | 59.0 | 59.0 | 59.0 | 61.8 | 62.0 | 61.8 | 61.7 | 61.7 |
+| the realm's going rate (mean), rule 1 alone | 60.0 | 60.0 | 59.7 | 59.2 | 58.5 | 58.6 | 58.7 | 58.5 | 58.7 | 58.5 | 58.3 | 58.7 | 58.6 |
+| Ridgemere's going rate (mean), base | 60.0 | 61.4 | 60.8 | 61.1 | 61.5 | 63.2 | 61.7 | 61.9 | 61.8 | 62.7 | 61.4 | 62.5 | 65.8 |
+| Ridgemere's going rate (mean), rules | 60.0 | 60.8 | 60.2 | 60.3 | 61.7 | 63.9 | 63.1 | 64.1 | 67.8 | 65.2 | 63.9 | 64.0 | 63.4 |
+| Ridgemere's going rate (mean), rule 1 alone | 60.0 | 61.8 | 60.9 | 60.7 | 60.5 | 60.8 | 60.6 | 60.4 | 60.5 | 60.2 | 59.8 | 60.5 | 59.6 |
+| household Gini (mean), base | 0.500 | 0.480 | 0.540 | 0.562 | 0.568 | 0.565 | 0.564 | 0.550 | 0.576 | 0.589 | 0.615 | 0.595 | 0.600 |
+| household Gini (mean), rules | 0.500 | 0.478 | 0.521 | 0.543 | 0.544 | 0.546 | 0.554 | 0.549 | 0.560 | 0.560 | 0.574 | 0.584 | 0.612 |
+| household Gini (mean), rule 1 alone | 0.498 | 0.475 | 0.526 | 0.534 | 0.534 | 0.531 | 0.547 | 0.542 | 0.564 | 0.568 | 0.578 | 0.588 | 0.608 |
+| poorer half (mean), base | 0.174 | 0.182 | 0.134 | 0.115 | 0.117 | 0.121 | 0.119 | 0.130 | 0.112 | 0.106 | 0.089 | 0.103 | 0.091 |
+| poorer half (mean), rules | 0.175 | 0.185 | 0.146 | 0.132 | 0.133 | 0.129 | 0.122 | 0.129 | 0.119 | 0.121 | 0.108 | 0.103 | 0.086 |
+| poorer half (mean), rule 1 alone | 0.175 | 0.186 | 0.144 | 0.138 | 0.141 | 0.145 | 0.129 | 0.132 | 0.117 | 0.114 | 0.106 | 0.102 | 0.090 |
+
+Holders (`days.jsonl`), base / rules / rule 1 alone: on day 728 producers 1,258k / 1,230k / 1,323k, merchants 470k /
+482k / 497k, the Houses' tills 100k / 89k / 69k, the great Houses 224k / 239k / 199k, the farm tills 458k / 430k / 399k,
+the shop tills 415k / 496k / 480k; on day 1100 producers 1,203k / 1,195k / 1,156k, merchants 463k / 474k / 477k, the
+Houses' tills 154k / 86k / 103k, the great Houses 270k / 215k / 213k, the farm tills 445k / 471k / 472k, the shop tills
+522k / 621k / 621k. Also on day 1100 (base to rules): adults without work 162k to 243k, paid civilians 911k to 835k,
+apprentices 92k to 70k. Town medians on day 1100: Ridgemere 893p to 680p (its need .272 and .280), Coldwater 2,975p to
+5,187p, Larkfield 1,430p to 3,217p, Mirebridge 2,404p to 933p, Oakhaven 1,143p to 795p, Southmeadow 1,448p to 1,744p,
+Frosthollow 576p to 740p.
+
+| the gates (both rules) | base | rules | the brief's | |
+| --- | --- | --- | --- | --- |
+| the realm's going rate, every day | 58.3-60.0p | 58.0-62.0p | 55p at least | met |
+| Ridgemere's going rate | quarter means 60.0-65.8p (61.7p), at most 69.7p | 60.0-67.8p (62.9p), at most 74.5p; over the base's in q4-q11 by 0.2-6.0p | no higher than the base's | **missed** |
+| days with 1% or fewer hungry | 99.2% (days 92-1100) | 99.8% | 99% | met |
+| Ridgemere's hungry resident-days | 180 | 23 | the base's +20% at most | met |
+| the boats' fish sold a boat-day, from q4 | 125, 134, 131, 125, 129, 138, 118, 107, 169 | 126, 146, 143, 149, 155, 122, 138, 143, 140 | .9 of the base's | **missed in q9 (.88) and q12 (.83, nine days)** |
+| tills stopped | 28-37% | 25-35% | 45% at most | met |
+| money | conserved every day | conserved every day (5,000,000p and the newcomers' purses: 5,000,728p on day 1100) | conserved | met |
+| days 0-730 scorecard | STABLE (.588, .106, -.004) | STABLE (Gini at most .567, the poorer half at least .115, the trend +.010 a year) | STABLE | met |
+
+| the brief's expectations (both rules) | | |
+| --- | --- | --- |
+| q0-q3 within noise: boats' margin within .05, Gini within .01 | the margin .44 / .50 / .47 against .48 / .65 / .56 in q1-q3, the Gini .521 / .543 against .540 / .562 in q2-q3 | **missed (lower)**: the aim's whole excess is scaled by `reach`, so at Ridgemere's .085 (n .35) it is .755 of the base's, not only a ceiling over .79 |
+| q4: the boats' margin under the base's .73 | .43 | met |
+| from q5: the boats' margin .45 at most | .29-.36 | met |
+| from q5: the farm tills' excess 200k a quarter at most | 211k, 156k, 207k, 179k, 157k, 185k, 224k | **missed in q5, q7, q11** |
+| from q5: the boats' book over the rate under the base's | under in q8 and q11 only | **missed** |
+| from q6: food a unit 4% under the base's at least | -3.5%, +1.5%, -9.5%, -9.0%, -8.0%, +8.7% (q6-q11) | **missed in q6, q7, q11** |
+| from q6: Ridgemere's residents' food a unit 8% under at least | -4.1%, +1.9%, -13.0%, -16.2%, -17.0%, +1.4% | **missed in q6, q7, q11** |
+| day 1100, the scorecard over days 0-1100: Gini at most .61 | .616 (base .633) | **missed** |
+| ...the poorer half at least .09 | .082 (.076) | **missed** |
+| ...the last year's trend +.03 a year at most | +.055 (+.043) | **missed** |
+
+The scorecards (`stability.py`), days 0-1100: the base NOT STABLE on inequality alone (Gini at most .633, the poorer
+half at least .076, the trend +.043 a year), prices PASS (8.0p, then 7.5-10.1p), wages 58-61p, tills stopped 28-37%;
+the rules NOT STABLE on inequality alone (.616, .082, +.055), prices PASS (7.9p, then 7.4-9.7p), wages 58-63p, tills
+stopped 25-35%; FoodRentByNeed alone NOT STABLE on inequality (.617, .082, +.049) and prices (7.6-9.2p, but five
+quarters rising, q7-q11, 8.17p to 8.90p), wages 57-60p. Days 0-730 of the rules-on run: STABLE (.567, .115, +.010).
+
+**Gates are missed** (Ridgemere's going rate over the base's; the boats' catch in q9), and the day-1100 inequality
+targets: as briefed, the lane stops, no tuning; the six-year runs were not started. What the 1,100 days say:
+
+1. **The hold does what it says on the margin.** The boats ran .29-.36 from q5 (.53-.78 in the base), the farm tills'
+   excess fell from 279-446k a quarter to 156-224k, the shop tills' from 21-79k to 16-40k, and the curers didn't take it
+   up (the smokehouses .16-.22 against .18-.27 in q5-q11; with FoodRentByNeed alone .20-.22: the rent did not move down
+   the chain in any measure here). No spiral, no slide: the realm's rate never under 57.9p, hunger lower (Ridgemere's
+   hungry resident-days 23 against 180, Ridgemere's need .204 against .246 in q10).
+2. **The cheaper fish found more buyers, as briefed.** Buyers a boat-day 239-280 against 187-265 from q5, unmet up to
+   .44-.49 in q11-q12 (the base's .33-.36), the boats selling 143-155 a boat-day in q5-q8 (125-134) but 122 in q9 (138):
+   the catch is bounded by the hands, not the price. Ridgemere's residents bought 151-154k units a quarter in q8, q10
+   and q11 against 133-144k.
+3. **The going rate rose in Ridgemere, then the realm.** With both rules Ridgemere's rate was over the base's from q4
+   (67.8p against 61.8p in q8), the realm's 61.7-62.0p from q8 against 58.9-59.4p. The rate is the weighted median of
+   the makers' and producers' labourers' wages (their help and their hires' hands, `tendLabour`): in Ridgemere the
+   Houses' help sit at 60-63p and the boats', the ironworks' and the treasury's labour at 75-90p, so the median stands
+   on a gap, and the boats' few more hands at their book's 1.23-1.35 times the rate (11.2-11.9 places taken a boat-day
+   in q6-q8 against 10.3-10.7) carry it across. Every price is built from it, so it took back part of what the margin
+   gave: the boats' book wage in pennies was about the base's (1.23 x 67.8p = 83p in q8 against 1.37 x 61.8p = 84p).
+   With FoodRentByNeed alone the rate didn't rise (Ridgemere's 59.6-61.8p, the realm's 58.3-60.0p): the both-rules
+   run crossed the gap and the rule-1 run didn't, which this one pair of runs can't tell from chance.
+4. **Food a unit fell in most quarters; where it rose, the mix did it.** 8-10% under the base's in q8-q10, but over it
+   in q7 and q11 (+8.7%): in q11 Ridgemere's residents bought fish at 7.65p against 8.73p, yet salt fish (15.9p) 30.7k
+   units against 14.2k and porridge 4.2k against 22.4k, so the unit's average rose with the mix. Food a unit counts
+   units, not nourishment.
+5. **Inequality was lower for two years, then caught up.** The household Gini was under the base's from q2 to q10 (by up
+   to .04; level in q7) and the poorer half over it by up to .02, but in q11-q12 both met the base's (q12 .612 against
+   .600, the poorer half .086 against .091): the scorecard's maximum and minimum improved a little (.616 against .633,
+   .082 against .076), its last year's trend worsened (+.055 against +.043). By day 1100 Ridgemere's median purse was
+   680p against 893p, the shop tills held 99k more and the Houses' tills and the great Houses 123k less, idle adults 81k
+   more and paid civilians 76k less. Rule 1 alone was the same on inequality (.617, .082, +.049).
+
+**For the user:**
+
+1. **The margin was the rent, and holding it isn't enough.** The hold took about 200k a quarter of excess off the land
+   tills and the boats' margin to a third, food was cheaper most quarters and the city's hunger fell, yet the 1,100-day
+   Gini ended where the base's did. Holding the price takes the rent from the owners but doesn't by itself put money in
+   the poorer homes: their income is still the going rate's wages and their work. On this evidence the next lever is
+   on the income side (who gets hired and paid), not a lower price.
+2. **The going rate's median.** Ridgemere's rate stands on a gap between the Houses' help (60-63p) and the boats' and
+   works' (75-90p); a few hands moved it 6p in q8. Should the going rate be a smoother measure (a trimmed mean of the
+   middle half, say), so a quarter's few hires can't step every price in the city? That is the rate's design, not this
+   lane's.
+3. **Keep or drop.** Both rules are behind their bits, on by default as briefed. The days 0-730 scorecard was STABLE
+   with them (Gini at most .567 against .588) and hunger lower; the 1,100 days missed two gates (Ridgemere's rate, the
+   boats' catch in q9) and the inequality targets. FoodChainByNeed (rule 2) showed no rent moving to the curers with
+   rule 1 alone, and its run is the one whose going rate rose: if kept, rule 1 alone (`--without foodchain`) is the
+   simpler choice. The user's call; no six-year run was started.
+4. **The brief's own form.** The aim's excess scales by `reach` at every scarcity, so the hold starts as soon as a
+   town passes FoodNeedFrom (q2-q3 here, not q5), and a margin at its top comes down by the pull only (twelve weeks
+   close 93% of the gap). Both are as briefed; the expectations assumed otherwise.

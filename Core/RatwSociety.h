@@ -1420,6 +1420,13 @@ class Society
     // so a rule can't be read in the other's) and gated by workByHours() as the first word's are. None is opt-in.
     enum WageRule2 : std::uint64_t
     {
+        // (Bits 0-3: round 17's lanes, unmerged; 6-7: round 18, lane 2's.)
+        // Round 18, lane 1 (the user, 2026-10-30: inequality follows the food price, and Ridgemere's boats' scarcity margin
+        // is rent, not rationing): a food's margin aims no higher than its town's poor homes allow (MarginsByShortage's
+        // top lowered by the town's share of homes under PoorDays, from FoodNeedFrom to FoodNeedFull), a staple's by
+        // the first bit, every other food's by the second, so the rent held at the boats can be seen moving to the curers.
+        FoodRentByNeed = 1ull << 4,                  // A staple food's margin's top held where its town's homes are poor (round 18, 1).
+        FoodChainByNeed = 1ull << 5,                 // ...and every other food's, the makers' (round 18, 1).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
@@ -1833,6 +1840,33 @@ class Society
     // about three months: a fifth of the gap a week, its step's mean .5 and three weeks in four reviewed). It never
     // rises with sales or a wage, only with buyers turned away.
     static constexpr double UnmetFrom = .05, UnmetFull = .5, MarginPull = .5;
+    // Round 18, lane 1 (FoodRentByNeed, FoodChainByNeed; with work by the hours and MarginsByShortage; the user,
+    // 2026-10-30): a food's scarcity held where its town's homes are poor. Every price is the going rate times its
+    // costed hours times (1 + margin), so the going rate cancels out of what a wage buys and the margin doesn't: in round
+    // 16's six years the median wage bought 7.25 units of food in year 0 and 5.80 in year 4, the land tills' (1 + m)
+    // weighed by their takings 1.287 to 1.525. Of year 4's 2.75M of excess over a .15 margin, Ridgemere's boats took
+    // 2.05M (margins .72 and .81), while its shops held 1.7-2.5 days of food a head and 99% of days had 1% or fewer
+    // hungry: three quarters of the boats' sales are makers' materials and residents buy the cheapest food that feeds,
+    // so more catch only met more buyers (round 16) and more money to the hands more still (round 17). The margin
+    // rationed little and kept no hands: it was rent, and the Gini followed the food price (.593-.653 at 8.5p a unit,
+    // .675-.739 at 10.6-11.9p). So the aim's top comes down by the town's need, n = (share - FoodNeedFrom) /
+    // (FoodNeedFull - FoodNeedFrom) clamped to [0, 1], `share` its homes under PoorDays of food money (poorShares(),
+    // the failing criterion's own measure by town): top = usual + (most - usual) x (1 - (1 - FoodRentLeast) x n), the
+    // aim usual + (top - usual) x scarce, the pull, the glut step, ChainPricedOnce and the clamp to [MarginLeast, most]
+    // as they were (a margin over the new top comes down by the pull, a fifth of the gap a week, not at once).
+    // FoodNeedFrom is SurplusByNeed's NeedFrom, the realm in balance (Ridgemere .025 in its first quarter, the small
+    // towns .04-.10); FoodNeedFull Ridgemere's share at about day 455, where its Gini first sat at .555-.578 and before
+    // it climbed past .60: the hold is full where the base starts to fail. At full need a staple's top is .405 (the
+    // boats ran .37-.62 in round 15's STABLE two years, .38-.48 in the candidate's first half-year), another food's
+    // .285: a boat still sells at 1.4 times its cost, 1.2 after a House's rent, so a shortage still pays its owner and
+    // its bid. It only lowers a ceiling (no wage, cost or rate raised; nothing pushed under the ladder's), and a town
+    // with no count (no homes; a restart, before the day's tendHouseholds) holds nothing.
+    static constexpr double FoodNeedFrom = .05, FoodNeedFull = .15, FoodRentLeast = .3;
+    // The town a till's margin reads (normalCost's: accountTown; a "till:" post's town, postTown; else its keeper's
+    // community; a "house:" till its House's), the key poorShares() counts by; "" for none (a caravan's, a fund's).
+    std::string marginTown(const std::string& till) const;
+    // Its town's need for the hold, n above, from 0 (FoodNeedFrom or under, or no count) to 1 (FoodNeedFull or over).
+    double foodRentNeed(const std::string& till) const;
     // How many days of sales a seller keeps of a good: food by how long it keeps, else by its worth.
     static double keepDays(const std::string& item);
     // Improvements to premises (RatwOddJobs.cpp): a business's level (0 to MostImprovement); each makes its batches (a
@@ -1912,6 +1946,18 @@ class Society
             }
         return false;
     }
+    // (A test's, round 18, lane 1: a town's share of homes under PoorDays as the day's tendHouseholds counts it; a share
+    // under 0 takes its count away, as a restart does.)
+    void setPoorShare(const std::string& community, double share)
+    {
+        if (share < 0)
+            poorShare_.erase(community);
+        else
+            poorShare_[community] = share;
+    }
+    // (And `n` buyers a maker turned away of `good` today, as a hungry wolf's meal at its bare shelf counts them:
+    // missedAt reaches the producers only.)
+    void turnAway(const std::string& till, const std::string& good, int n) { missedToday_[till][good] += n; }
     // An odd job posted from outside the society (Docs/Design/57-changing-the-world.md: a town project's hands, kind
     // "project"): `slots` wolves for the day, `pay` for all of them, paid by `payer` as each finishes a spell's work at
     // `at`. Taken like any odd job (the jobless first). Its id, or "" if `payer` can't cover it.

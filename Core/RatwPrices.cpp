@@ -378,9 +378,15 @@ void Society::reviewMargins(std::int64_t day)
     // target, about 1.8 times its rate, it never held 2.55 times it): the margin climbed to its cap in about 57 weeks
     // and stayed. With ChainPricedOnce, a good it only sells on is kept to the ladder's at most, as priceAt prices it
     // (nothing builds up hidden behind the price).
+    //
+    // With FoodRentByNeed (round 18, lane 1, with MarginsByShortage; the user, 2026-10-30), a staple food's aim tops out
+    // lower where its town's homes are poor (FoodRentLeast's part of the way down at FoodNeedFull: RatwSociety.h), and
+    // with FoodChainByNeed every other food's. The need is yesterday's count: the day's tendHouseholds runs after this
+    // review (Society::tick), so a restart's first day reads none and holds nothing, its review lot's margins a day off.
     const double usual = items::ladder().markup;
     const bool byShortage = workByHours() && wageRule(MarginsByShortage);
     const bool once = workByHours() && wageRule(ChainPricedOnce);
+    const bool staplesHeld = byShortage && wageRule(FoodRentByNeed), chainHeld = byShortage && wageRule(FoodChainByNeed);
     for (const auto& [till, rates] : sellRate_)
     {
         if (!costed(till) || std::int64_t(std::hash<std::string>{}(till) % 7) != day % 7)
@@ -389,6 +395,7 @@ void Society::reviewMargins(std::int64_t day)
         if (!shelves)
             continue;
         const bool field = byShortage && state_.memory.fields.count(till);
+        double need = -1;                           // (Its town's, found once a till and only for a food held: foodRentNeed.)
         for (const auto& [good, rate] : rates)
         {
             const auto* g = items::good(good);
@@ -411,7 +418,15 @@ void Society::reviewMargins(std::int64_t day)
                 else
                 {
                     const double scarce = rate > .05 ? std::clamp((unmet - UnmetFrom) / (UnmetFull - UnmetFrom), 0., 1.) : 0.;
-                    m += (usual + (most - usual) * scarce - m) * step * MarginPull;
+                    // (The top's reach over the ladder's, 1 unheld: (most - usual) x 1 is the base's to the bit.)
+                    double reach = 1;
+                    if ((g->staple ? staplesHeld : chainHeld) && nourishment(good) > 0)
+                    {
+                        if (need < 0)
+                            need = foodRentNeed(till);
+                        reach = 1 - (1 - FoodRentLeast) * need;
+                    }
+                    m += (usual + (most - usual) * reach * scarce - m) * step * MarginPull;
                 }
             }
             else if (rate > .05 && days < keep * .3)
@@ -425,6 +440,37 @@ void Society::reviewMargins(std::int64_t day)
             m = std::clamp(m, MarginLeast, most);
         }
     }
+}
+
+std::string Society::marginTown(const std::string& till) const
+{
+    // (normalCost's town for the till, the key communityOfResident gives and poorShares() counts by. A House's till
+    // serves its businesses, shopTown_ holding the last of them: the House's own community instead.)
+    if (till.rfind("house:", 0) == 0)
+    {
+        for (const auto& h : houses())
+            if (h.id == till)
+                return h.community;
+        return {};
+    }
+    if (auto town = accountTown(till); !town.empty())
+        return town;
+    if (till.rfind("till:", 0) == 0)
+        if (const auto* p = position(till.substr(5)))
+        {
+            if (auto town = postTown(*p); !town.empty())
+                return town;
+            if (const auto held = state_.careers.positions.find(p->id); held != state_.careers.positions.end() && !held->second.holder.empty())
+                return communityOfResident(held->second.holder);
+        }
+    return {};
+}
+
+double Society::foodRentNeed(const std::string& till) const
+{
+    const auto town = marginTown(till);
+    const auto found = town.empty() ? poorShare_.end() : poorShare_.find(town);
+    return found == poorShare_.end() ? 0. : std::clamp((found->second - FoodNeedFrom) / (FoodNeedFull - FoodNeedFrom), 0., 1.);
 }
 
 void Society::keepPrices()

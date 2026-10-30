@@ -9220,6 +9220,369 @@ void aResoldGoodAtTheLadder()
     Society::setWorkByHours(false);
 }
 
+// Round 18, lane 1 (FoodRentByNeed, FoodChainByNeed; the user, 2026-10-30): a food's scarcity held where the homes are
+// poor. Each test sets work by the hours and puts it back, runs the rules on and off (foodRules: wageRules2Off after
+// wageRulesOff, which puts the second word back) and sets a town's share of homes under PoorDays as the day's
+// households count it (setPoorShare), but theBoatReadsItsTown, whose homes are counted. The reviews move only prices:
+// every account the same after each (shortDay).
+void foodRules(std::uint64_t off)
+{
+    Society::wageRulesOff(0);
+    Society::wageRules2Off(off);
+}
+
+using Ledger = std::map<std::string, std::pair<std::int64_t, std::map<std::string, int>>>;
+Ledger ledger(const Society& s)
+{
+    Ledger out;
+    for (const auto& [id, a] : s.state().accounts)
+        out[id] = {a.cash, a.stock};
+    return out;
+}
+
+// A seller's day: `sold` of `item` on its shelf, bought by `buyer` (its money back), `away` more turned away (at a
+// producer, its town's makers finding none: missedAt; at a maker, hungry wolves at its bare shelf: turnAway).
+struct ShortSeller
+{
+    std::string id, town, item;
+    int sold = 30, away = 30;
+    bool maker = false;
+    std::string buyer = "scribe";
+};
+// The sellers' day, its turn and its margin review, which moves no money nor goods.
+void shortDay(Society& s, const std::vector<ShortSeller>& sellers, std::int64_t day)
+{
+    for (const auto& x : sellers)
+    {
+        const auto till = s.tillOf(x.id);
+        restock(s, x.id, x.item, x.sold);
+        expect(s.sale(till, x.buyer, x.item, x.sold, 1, "test: the day's buying") && s.shift(till, x.buyer, "", 0, x.sold, "test: back"),
+               x.buyer + " buys " + x.id + "'s shelf");
+        if (x.away > 0 && x.maker)
+            s.turnAway(till, x.item, x.away);
+        else if (x.away > 0)
+            s.missedAt(x.town, x.item, x.away);
+    }
+    s.spoil(day);
+    const auto before = ledger(s);
+    s.reviewMargins(day);
+    expect(ledger(s) == before, "the margins' review moves no money and no goods");
+}
+
+// Twelve weeks (from `day`) of the sellers turning away half their buyers (30 sold, 30 away a day): each one's highest
+// margin.
+std::vector<double> halfAway(Society& s, const std::vector<ShortSeller>& sellers, std::int64_t& day)
+{
+    std::vector<double> peak(sellers.size(), -1);
+    for (const auto end = day + 84; day < end; ++day)
+    {
+        shortDay(s, sellers, day);
+        for (std::size_t k = 0; k < sellers.size(); ++k)
+            peak[k] = std::max(peak[k], s.marginOf(sellers[k].id, sellers[k].item));
+    }
+    return peak;
+}
+
+// FoodRentByNeed, with work by the hours and MarginsByShortage: round 14's boat turning away 30 of 60 a day for twelve
+// weeks (unmet .5), its town's share of poor homes set. At none or .05 (FoodNeedFrom: the realm in balance) its margin
+// climbs toward a staple's most as in buyersTurnedAwayRaiseIt, with the rule the same to the bit as without; at .15
+// (FoodNeedFull) and .3 no higher than .405 with the rule (.15 + .85 x .3), at .10 (n .5) .7025 (.15 + .85 x .65);
+// without, as at none. Served again for six weeks, it comes back down as before.
+void aPoorTownHoldsItsFoodRent()
+{
+    Society::setWorkByHours(true);
+    const double usual = items::ladder().markup;
+    std::map<double, double> without;               // The town's share -> the boat's peak without the rule.
+    for (const bool rule : {false, true})
+        for (const double share : {0., .05, .10, .15, .3})
+        {
+            foodRules(rule ? 0 : std::uint64_t(Society::FoodRentByNeed));
+            auto s = fishTown();
+            s.setPoorShare("town", share);
+            const auto till = s.tillOf("fisher");
+            const std::string at = std::string(rule ? "with" : "without") + " the rule, the town " + std::to_string(share) + " poor";
+            const double n = std::clamp((share - Society::FoodNeedFrom) / (Society::FoodNeedFull - Society::FoodNeedFrom), 0., 1.);
+            expect(s.marginTown(till) == "town" && std::abs(s.foodRentNeed(till) - n) < 1e-12,
+                   at + ": the boat reads its town's need, " + std::to_string(s.foodRentNeed(till)));
+            std::int64_t day = 1;
+            const double peak = halfAway(s, {{"fisher", "town", "fish"}}, day)[0];
+            const double unmet = s.missedRate(till, "fish") / s.sellRates(till)->at("fish");
+            expect(std::abs(unmet - .5) < .01, at + ": half its buyers turned away (" + std::to_string(unmet) + ")");
+            std::cout << "  a poor town's food rent, " << at << ": the boat's peak " << peak;
+            if (!rule)
+            {
+                without[share] = peak;
+                expect(peak > .9 && peak <= Society::StapleMarginMost + 1e-12 && peak == without[0.],
+                       at + ": its margin climbs toward a staple's most, as with none poor: " + std::to_string(peak));
+            }
+            else if (share <= Society::FoodNeedFrom)
+                expect(peak == without[share], at + ": as without it, to the bit: " + std::to_string(peak) + " against " + std::to_string(without[share]));
+            else
+            {
+                const double top = usual + (Society::StapleMarginMost - usual) * (1 - (1 - Society::FoodRentLeast) * n);
+                expect(std::abs(top - (share >= Society::FoodNeedFull ? .405 : .7025)) < 1e-9 && peak <= top + 1e-12 && peak > top - .05,
+                       at + ": held under its top, " + std::to_string(top) + ": " + std::to_string(peak) + " (" + std::to_string(without[share]) +
+                           " without)");
+            }
+            // The shortage over: it sells out, turning none away.
+            std::vector<double> after;
+            double before = s.marginOf("fisher", "fish");
+            for (const auto end = day + 42; day < end; ++day)
+            {
+                shortDay(s, {{"fisher", "town", "fish", 30, 0}}, day);
+                if (const double m = s.marginOf("fisher", "fish"); m != before)
+                    after.push_back(m), before = m;
+            }
+            std::string moves;
+            for (const double m : after)
+                moves += " " + std::to_string(m);
+            std::cout << ", served again six weeks " << after.back() << "\n";
+            expect(after.size() >= 3 && after.back() < after.front() && after.back() < usual + (peak - usual) * .5,
+                   at + ", served again its margin comes back down:" + moves + " (from " + std::to_string(peak) + ")");
+            expect(s.conserved(), "money stays conserved");
+        }
+    foodRules(0);
+    Society::setWorkByHours(false);
+}
+
+// FoodRentByNeed: the boat at .9 (its margin in the base's fifth year), still turning half its buyers away, its town now
+// .2 poor (the hold full). With the rule its first review pulls it toward the new top, .405, a part of the way (MarginPull
+// times its step lot: half the gap at the most), not at once; twelve weeks of reviews take nine tenths of the gap away
+// and it is under .41 by the twenty-fourth. Without, it goes on toward a staple's most.
+void aMarginAboveTheHoldComesDown()
+{
+    Society::setWorkByHours(true);
+    const double top = .405;
+    for (const bool rule : {true, false})
+    {
+        foodRules(rule ? 0 : std::uint64_t(Society::FoodRentByNeed));
+        auto s = fishTown();
+        const auto till = s.tillOf("fisher");
+        const std::string at = rule ? "with the rule" : "without the rule";
+        std::int64_t day = 1;
+        for (; day <= 14; ++day)                    // (Its rates built: half turned away, none poor yet.)
+            shortDay(s, {{"fisher", "town", "fish"}}, day);
+        auto state = s.state();
+        state.memory.margins[till + "|fish"] = .9;
+        expect(s.restore(state), "its margin at .9 restores");
+        s.setPoorShare("town", .2);
+        std::vector<double> reviews;
+        double before = .9, twelve = 0;
+        std::int64_t under = -1;
+        for (const auto start = day; day < start + 168; ++day)
+        {
+            shortDay(s, {{"fisher", "town", "fish"}}, day);
+            const double m = s.marginOf("fisher", "fish");
+            if (m != before)
+                reviews.push_back(m), before = m;
+            if (day == start + 83)
+                twelve = m;
+            if (under < 0 && m < .41)
+                under = day - start + 1;
+        }
+        expect(!reviews.empty(), at + ": its margin was reviewed");
+        std::cout << "  a margin above the hold, " << at << ": its first review " << reviews[0] << ", twelve weeks " << twelve << ", under .41 on day "
+                  << under << ", 24 weeks " << before << "\n";
+        if (rule)
+        {
+            expect(reviews[0] < .9 && reviews[0] >= .9 - Society::MarginPull * (.9 - top) - 1e-12,
+                   at + ", its first review pulls it a part of the way toward .405: " + std::to_string(reviews[0]));
+            expect(twelve > top && twelve - top < .1 * (.9 - top), at + ", twelve weeks take nine tenths of the gap: " + std::to_string(twelve));
+            expect(under > 84 && under <= 168 && before >= top - 1e-12,
+                   at + ", under .41 on day " + std::to_string(under) + " of 168, never under its top: " + std::to_string(before));
+        }
+        else
+            expect(reviews[0] > .9 && twelve > .95 && before <= Society::StapleMarginMost + 1e-12,
+                   at + ", it goes on toward a staple's most: " + std::to_string(reviews[0]) + ", " + std::to_string(twelve));
+        expect(s.conserved(), "money stays conserved");
+    }
+    foodRules(0);
+    Society::setWorkByHours(false);
+}
+
+// FoodChainByNeed: the smokehouse's smoked fish (a food, not a staple: MarginMost, .6), half its buyers turned away for
+// twelve weeks, its town .2 poor. With both rules no higher than .285 (.15 + .45 x .3); with FoodRentByNeed alone as
+// with neither, toward .6, to the bit. A staple that isn't a food (a farm's wheat) climbs toward a staple's most with
+// both rules as with neither, to the bit.
+void theMakersFoodHeldToo()
+{
+    Society::setWorkByHours(true);
+    const std::uint64_t both = Society::FoodRentByNeed | Society::FoodChainByNeed;
+    std::vector<double> smoked;
+    for (const std::uint64_t off : {std::uint64_t(0), std::uint64_t(Society::FoodChainByNeed), both})
+    {
+        foodRules(off);
+        auto s = fishTown();
+        s.setPoorShare("town", .2);
+        expect(items::good("smoked_fish") && !items::good("smoked_fish")->staple && Society::nourishment("smoked_fish") > 0 &&
+                   s.marginTown(s.tillOf("smoker")) == "town",
+               "smoked fish is a food, not a staple; the smokehouse's town is the boat's");
+        std::int64_t day = 1;
+        smoked.push_back(halfAway(s, {{"smoker", "town", "smoked_fish", 30, 30, true}}, day)[0]);
+        const double unmet = s.missedRate(s.tillOf("smoker"), "smoked_fish") / s.sellRates(s.tillOf("smoker"))->at("smoked_fish");
+        expect(std::abs(unmet - .5) < .01, "half the smokehouse's buyers turned away (" + std::to_string(unmet) + ")");
+        expect(s.conserved(), "money stays conserved");
+    }
+    std::cout << "  the makers' food, the smoked fish's peak: both rules " << smoked[0] << ", FoodRentByNeed alone " << smoked[1] << ", neither " << smoked[2];
+    expect(smoked[0] <= .285 + 1e-12 && smoked[0] > .235, "with both rules the smoked fish held under .285: " + std::to_string(smoked[0]));
+    expect(smoked[1] == smoked[2] && smoked[1] > .5 && smoked[1] <= Society::MarginMost + 1e-12,
+           "with FoodRentByNeed alone, as with neither: " + std::to_string(smoked[1]) + ", " + std::to_string(smoked[2]));
+    std::vector<double> wheat;
+    for (const std::uint64_t off : {std::uint64_t(0), both})
+    {
+        foodRules(off);
+        auto s = farmTown();
+        expect(s.shift("treasury", "stall", "", 0, 400, "test: the stall's money"), "the stall has money");
+        s.setPoorShare("town", .2);
+        expect(items::good("wheat")->staple && Society::nourishment("wheat") == 0 && s.foodRentNeed(s.tillOf("farmer")) == 1,
+               "wheat is a staple that isn't a food; the farm's town is .2 poor");
+        std::int64_t day = 1;
+        wheat.push_back(halfAway(s, {{"farmer", "town", "wheat", 30, 30, false, "stall"}}, day)[0]);
+        expect(s.conserved(), "money stays conserved");
+    }
+    std::cout << "; the farm's wheat, both rules " << wheat[0] << ", neither " << wheat[1] << "\n";
+    expect(wheat[0] == wheat[1] && wheat[0] > .9, "the farm's wheat climbs toward a staple's most with both rules as with neither: " +
+                                                      std::to_string(wheat[0]) + ", " + std::to_string(wheat[1]));
+    foodRules(0);
+    Society::setWorkByHours(false);
+}
+
+// FoodRentByNeed: the till reads its own town, by the key the day's households count by. The capital, "town", with a
+// boat on its lake and ten homes keeping the house; a far town with a boat and five; the moor's boat, its keeper's home
+// the moor's only one. Three days run, the third with three of the capital's homes broke: its households count it .2
+// poor or more (with the boat's and the scribe's homes), the far town and the moor none. Then twelve weeks of each boat
+// turning away half its buyers, the moor's count taken away (as a restart leaves it): with the rule the capital's boat
+// is held under .405, the far town's and the moor's climb as without, to the bit.
+void theBoatReadsItsTown()
+{
+    Society::setWorkByHours(true);
+    std::vector<std::vector<double>> peaks;
+    for (const bool rule : {true, false})
+    {
+        foodRules(rule ? 0 : std::uint64_t(Society::FoodRentByNeed));
+        AuthoredRoster roster;
+        const auto homed = [](ResidentSpec r, const std::string& home) {
+            r.home = r.evening = {home, 2.5, 2.5};
+            return r;
+        };
+        roster.residents = {homed(person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"), "lake_home"),
+                            homed(person("farfisher", "fishes the lake", {"far_lake", 4.5, 4.5}, "civilian"), "far_lake_home"),
+                            homed(person("moorfisher", "fishes the lake", {"moor_lake", 4.5, 4.5}, "civilian"), "moor_home"),
+                            person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+        for (int i = 1; i <= 15; ++i)
+        {
+            const auto cell = (i > 10 ? "far_home" : "city_home") + std::to_string(i);
+            auto c = homed(person("c" + std::to_string(i), "keeps the house", {cell, 2.5, 2.5}, "civilian"), cell);
+            c.purse = 5000;
+            roster.residents.push_back(c);
+        }
+        roster.economy.treasury = 100000;
+        auto s = std::make_unique<Society>(Roster::None);
+        s->configure(roster);
+        s->setCapital("town");
+        LifeDay plan;
+        plan.communityOf = [](const std::string& cell) {
+            return cell.rfind("far_", 0) == 0 ? std::string("far") : cell.rfind("moor_", 0) == 0 ? std::string("moor") : std::string("town");
+        };
+        s->setDay(plan);
+        expect(s->shift("treasury", "scribe", "", 0, 10000, "test: the buyer's money"), "the buyer has money");
+        const auto bodies = atWork(*s);
+        for (std::int64_t d = 1; d <= 3; ++d)
+        {
+            if (d == 3)
+            {
+                auto st = s->state();
+                for (int i = 1; i <= 3; ++i)
+                {
+                    auto& a = st.accounts.at("c" + std::to_string(i));
+                    st.accounts.at("treasury").cash += a.cash;
+                    a.cash = 0;
+                }
+                expect(s->restore(st), "three of the capital's homes broke");
+            }
+            s->tick(1, double(d) + .5 / 24, 0, bodies);
+        }
+        const auto& shares = s->poorShares();
+        const auto share = [&](const std::string& town) { return shares.count(town) ? shares.at(town) : -1.; };
+        const auto boat = s->tillOf("fisher"), far = s->tillOf("farfisher"), moor = s->tillOf("moorfisher");
+        expect(share("town") >= Society::FoodNeedFull && share("far") == 0 && share("moor") == 0,
+               "the households count the capital " + std::to_string(share("town")) + " poor, the far town " + std::to_string(share("far")) +
+                   ", the moor " + std::to_string(share("moor")));
+        expect(s->marginTown(boat) == s->capital() && s->marginTown(boat) == s->townOfResident("fisher") && s->marginTown(far) == "far" &&
+                   s->marginTown(moor) == "moor" && s->foodRentNeed(boat) == 1 && s->foodRentNeed(far) == 0,
+               "each boat reads its own town's count: " + s->marginTown(boat) + ", " + s->marginTown(far) + ", " + s->marginTown(moor));
+        s->setPoorShare("moor", -1);
+        expect(!s->poorShares().count("moor") && s->foodRentNeed(moor) == 0, "the moor uncounted, its need none");
+        std::int64_t day = 4;
+        peaks.push_back(halfAway(*s, {{"fisher", "town", "fish"}, {"farfisher", "far", "fish"}, {"moorfisher", "moor", "fish"}}, day));
+        const auto& p = peaks.back();
+        const std::string at = rule ? "with the rule" : "without the rule";
+        std::cout << "  the boat reads its town, " << at << ": the capital " << share("town") << " poor, its boat's peak " << p[0] << "; the far town's "
+                  << p[1] << ", the moor's " << p[2] << "\n";
+        expect(rule ? p[0] <= .405 + 1e-12 && p[0] > .355 : p[0] > .8, at + ", the capital's boat: " + std::to_string(p[0]));
+        expect(p[1] > .8 && p[2] > .8, at + ", the far town's and the moor's boats climb: " + std::to_string(p[1]) + ", " + std::to_string(p[2]));
+        expect(s->conserved(), "money stays conserved");
+    }
+    expect(peaks[0][1] == peaks[1][1] && peaks[0][2] == peaks[1][2], "the far town's and the moor's boats as without the rule, to the bit");
+    foodRules(0);
+    Society::setWorkByHours(false);
+}
+
+// Both rules, the town .2 poor: the glut step and the resold cap as before. A boat selling 40 a day holding 90, over its
+// shelf target (aGlutOverItsOwnStore): its margin comes down a step, the same with the rules as without. The
+// fishmonger's fish, bought at 9p, its margin .9, sold out at each day's turn with as many again turned away (the town's
+// hungry at its shelf): kept to the ladder's (aResoldGoodAtTheLadder), both ways.
+void theHoldLeavesTheGlutAndTheResold()
+{
+    Society::setWorkByHours(true);
+    const double usual = items::ladder().markup;
+    for (const bool rule : {true, false})
+    {
+        const std::string at = rule ? "with the rules" : "without them";
+        foodRules(rule ? 0 : std::uint64_t(Society::FoodRentByNeed | Society::FoodChainByNeed));
+        {
+            auto s = fishTown();
+            s.setPoorShare("town", .2);
+            const auto till = s.tillOf("fisher");
+            for (std::int64_t day = 1; day <= 40; ++day)
+            {
+                set(s, "fisher", "fish", 200);
+                expect(s.sale(till, "scribe", "fish", 40, 1, "test: the day's buying") && s.shift(till, "scribe", "", 0, 40, "test: back"),
+                       "the scribe buys forty");
+                s.spoil(day);
+            }
+            set(s, "fisher", "fish", 90);
+            std::int64_t day = 41;
+            while (!reviewedOn(till, "fish", day))
+                ++day;
+            s.reviewMargins(day);
+            const double m = s.marginOf("fisher", "fish"), step = reviewStep(till, "fish", day);
+            expect(std::abs(m - (usual - step * Society::MarginStep)) < 1e-12, at + ": the glut's step, " + std::to_string(m));
+        }
+        {
+            auto s = fishTown();
+            s.setPoorShare("town", .2);
+            const auto monger = s.tillOf("monger");
+            auto state = s.state();
+            state.memory.costs[monger + "|fish"] = 9;
+            state.memory.margins[monger + "|fish"] = .9;
+            state.accounts.at(monger).stock["fish"] = 30;
+            expect(s.restore(state), "the fishmonger's fish restores");
+            int reviews = 0;
+            for (std::int64_t day = 1; day <= 60 && reviews < 2; ++day)
+            {
+                reviews += reviewedOn(monger, "fish", day);
+                shortDay(s, {{"monger", "town", "fish", 30, 30, true}}, day);
+            }
+            expect(reviews == 2 && std::abs(s.marginOf("monger", "fish") - usual) < 1e-12,
+                   at + ": the fish it sells on kept to the ladder's: " + std::to_string(s.marginOf("monger", "fish")));
+            expect(s.conserved(), "money stays conserved");
+        }
+    }
+    foodRules(0);
+    Society::setWorkByHours(false);
+}
+
 // Round 15, lane 2 (RoadMoneyKept; the user, 2026-10-30), with work by the hours: a town's stores keep the road's week.
 // In needRealm (none of the city poor, so nothing is sent on), the far town's day-35 week: its going rate at 100p (a
 // works place 700p a week), its caravans' takings this week 3,000p (caravanWeek), and its standing orders (iron bars
@@ -9647,6 +10010,11 @@ int main()
         aFieldsStoreIsNoGlut();
         aMakerBuysAtTheSource();
         aResoldGoodAtTheLadder();
+        aPoorTownHoldsItsFoodRent();
+        aMarginAboveTheHoldComesDown();
+        theMakersFoodHeldToo();
+        theBoatReadsItsTown();
+        theHoldLeavesTheGlutAndTheResold();
         theWorksLeaveTheRoadsWeek();
         theCheaperShopWins();
         nearEnoughIsNearer();
