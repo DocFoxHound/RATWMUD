@@ -81,7 +81,7 @@ double Society::carriage(const std::string& item, double legs, const std::string
     return good ? items::ladder().carryPerWeight * good->weight * legs * labourDay(town) / PaidSpells : 0;
 }
 
-double Society::normalCost(const std::string& seller, const std::string& item) const
+double Society::normalCost(const std::string& seller, const std::string& item, bool* resold) const
 {
     const auto till = tillOf(seller);
     const auto base = items::baseOf(item);
@@ -90,7 +90,11 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
     const double quality = plainWorth > 0 ? items::worthOf(item) / plainWorth : 1;
     auto& cached = unitCost_[seller];               // (By the seller: a house's till serves several businesses.)
     if (const auto found = cached.find(base); found != cached.end())
+    {
+        if (resold)
+            *resold = found->second < 0;            // (Round 14, lane 1: told without a second look-up, ChainPricedOnce.)
         return found->second < 0 ? costOf(till, item) : found->second * quality;
+    }
     const auto* r = spec(seller);
     const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
     const std::string label = r ? r->workLabel : p ? p->title : std::string();
@@ -141,7 +145,59 @@ double Society::normalCost(const std::string& seller, const std::string& item) c
                     break;
                 }
     cached[base] = unit;                             // (-1: it doesn't make it, and sells it at what it paid.)
+    if (resold)
+        *resold = unit < 0;
     return unit < 0 ? costOf(till, item) : unit * quality;
+}
+
+bool Society::resells(const std::string& till, const std::string& good) const
+{
+    // normalCost's paths by a trade's label: its yield (in season or out), or a craft of its business, makes the good.
+    const auto base = items::baseOf(good);
+    const auto makes = [&](const std::string& label) {
+        const auto has = [&](const std::vector<std::pair<std::string, int>>& out) {
+            double all = 0;
+            int n = 0;
+            for (const auto& [o, count] : out)
+            {
+                all += count * items::worthOf(o);
+                if (o == base)
+                    n = count;
+            }
+            return n > 0 && all > 0;                 // (As normalCost's share: no worth, no cost of its own.)
+        };
+        if (const auto* producer = label.empty() ? nullptr : items::producerFor(label))
+            if (has(producer->out) || has(producer->offSeason))
+                return true;
+        if (const auto* business = label.empty() ? nullptr : items::businessFor(label))
+            for (const auto* k : items::craftsFor(business->id))
+                if (has(k->out))
+                    return true;
+        return false;
+    };
+    if (till.rfind("till:", 0) == 0)
+    {
+        const auto* p = position(till.substr(5));
+        return !p || !makes(p->title);
+    }
+    // (A House's till serves several businesses: what any of them makes is the House's own.)
+    if (till.rfind("house:", 0) == 0)
+    {
+        for (const auto& [pid, house] : state_.houses.owner)
+            if (house == till)
+                if (const auto* p = position(pid); p && makes(p->title))
+                    return false;
+        return true;
+    }
+    return true;
+}
+
+double Society::missedRate(const std::string& till, const std::string& good) const
+{
+    if (const auto a = missedRate_.find(till); a != missedRate_.end())
+        if (const auto m = a->second.find(items::baseOf(good)); m != a->second.end())
+            return m->second;
+    return 0;
 }
 
 double Society::buyingPrice(const std::string& town, const std::string& item) const
@@ -216,7 +272,18 @@ double Society::priceAt(const std::string& seller, const std::string& item) cons
     if (const auto a = margins_.find(till); a != margins_.end())
         if (const auto m = a->second.find(base); m != a->second.end())
             margin = m->second;
-    const double cost = normalCost(seller, item), price = cost * (1 + margin);
+    // A good it only sells on (it makes none of it: normalCost's -1, at what it paid) carries the ladder's handling at
+    // most (round 14, lane 1, ChainPricedOnce; the user, 2026-10-30): a shortage is priced once, where the good is made
+    // (MarginsByShortage), not again by every shop it passes through. Ridgemere's resellers sold fish at 1.89 times the
+    // boats' price, and its smoked fish reached 41-44p. (A House's till asked by itself has no trade of its own to tell:
+    // its businesses' crafts do, resells. Its markdowns below as before, so a reseller's glut still sells off.)
+    bool resold = false;
+    const double cost = normalCost(seller, item, workByHours() && wageRule(ChainPricedOnce) ? &resold : nullptr);
+    if (resold && seller.rfind("house:", 0) == 0)
+        resold = resells(seller, base);
+    if (resold)
+        margin = std::min(margin, items::ladder().markup);
+    const double price = cost * (1 + margin);
     // Marked down from its second day over its shelf target, a step a day, to its floor (reviewMarkdowns; round 11,
     // lane 3). (Not raised to the floor: a price the review has already put under it stays where it is.)
     if (!daysOver_.empty())
@@ -297,7 +364,21 @@ void Society::reviewMargins(std::int64_t day)
     // Each seller, once a week on its own day: a shelf emptying faster than it keeps (under three tenths of its days)
     // raises the margin a little, most weeks; one that won't move (over 1.7 times them, and more on it than a maker
     // keeps) lowers it; between, competition wears it back toward the ladder's. Staples may rise to double their cost.
+    //
+    // With MarginsByShortage (round 14, lane 1, with work by the hours; the user, 2026-10-30), the margin aims at what
+    // its seller's shortage earns now: the share of its buyers it turned away (missedRate_ over its rate, missed sales
+    // counting) from UnmetFrom to UnmetFull takes the aim from the ladder's to its most, and the review pulls it
+    // MarginPull of the way (times its step lot) there. A glut, more on it than 1.7 times its keeping days or over its
+    // own shelf target (Markdowns' own test; not a seasonal field's store, which holds the year by design), comes down
+    // a step as before. This replaces the raise for a shelf bare at the turn, which a seller serving every buyer and
+    // selling its last at dusk earned every week: North Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6. And
+    // the fall could never reach a producer or supplier selling more than about 16 a day (stocked to its shelf target,
+    // about 1.8 times its rate, it never held 2.55 times it): the margin climbed to its cap in about 57 weeks and stayed.
+    // With ChainPricedOnce, a good it only sells on is kept to the ladder's at most, as priceAt prices it (nothing builds
+    // up hidden behind the price).
     const double usual = items::ladder().markup;
+    const bool byShortage = workByHours() && wageRule(MarginsByShortage);
+    const bool once = workByHours() && wageRule(ChainPricedOnce);
     for (const auto& [till, rates] : sellRate_)
     {
         if (!costed(till) || std::int64_t(std::hash<std::string>{}(till) % 7) != day % 7)
@@ -305,6 +386,7 @@ void Society::reviewMargins(std::int64_t day)
         const auto* shelves = account(till);
         if (!shelves)
             continue;
+        const bool field = byShortage && state_.memory.fields.count(till);
         for (const auto& [good, rate] : rates)
         {
             const auto* g = items::good(good);
@@ -318,13 +400,27 @@ void Society::reviewMargins(std::int64_t day)
             const double days = rate > .01 ? held / rate : held > 0 ? 999 : 0;
             auto& m = margins_[till].try_emplace(good, usual).first->second;
             const double step = lot(words + "|step");
-            if (rate > .05 && days < keep * .3)
+            const double most = g->staple ? StapleMarginMost : MarginMost;
+            if (byShortage)
+            {
+                const double unmet = rate > .01 ? std::min(1., missedRate(till, good) / rate) : 0.;
+                if ((days > keep * 1.7 && held > GoodsKept) || (!field && held > shelfTarget(till, good, ProducerKept)))
+                    m -= step * MarginStep;
+                else
+                {
+                    const double scarce = rate > .05 ? std::clamp((unmet - UnmetFrom) / (UnmetFull - UnmetFrom), 0., 1.) : 0.;
+                    m += (usual + (most - usual) * scarce - m) * step * MarginPull;
+                }
+            }
+            else if (rate > .05 && days < keep * .3)
                 m += step * MarginStep;
             else if (days > keep * 1.7 && held > GoodsKept)
                 m -= step * MarginStep;
             else
                 m += (usual - m) * step * .25;
-            m = std::clamp(m, MarginLeast, g->staple ? StapleMarginMost : MarginMost);
+            if (once && m > usual && resells(till, good))
+                m = usual;
+            m = std::clamp(m, MarginLeast, most);
         }
     }
 }

@@ -764,7 +764,9 @@ void piecesItCantGetGoOnToWorks()
 // lot. (The fund is the cheapest piece's price before the day's share comes into it.)
 void aMissedPieceIsOneItCouldPayFor()
 {
-    Society::wageRulesOff(Society::RichHomes);   // (Round 11's rich homes left out: as built before them.)
+    // (Round 11's rich homes left out: as built before them. And round 14's ChainPricedOnce: the store's charms, which it
+    // only sells on, would be kept to the ladder's margin, not its dear 19.)
+    Society::wageRulesOff(Society::RichHomes | Society::ChainPricedOnce);
     Society::setWorkByHours(true);
     for (const bool sword : {true, false})
     {
@@ -7753,6 +7755,364 @@ void aGlutIsMarkedDown()
     Society::setWorkByHours(false);
 }
 
+// Round 14, lane 1 (the margins; the user, 2026-10-30): a fishing boat, a fishmonger, a smokehouse and a scribe to buy,
+// one town.
+Society fishTown()
+{
+    AuthoredRoster roster;
+    roster.residents = {person("fisher", "fishes the lake", {"lake", 4.5, 4.5}, "civilian"),
+                        person("monger", "the fishmonger by the wharf", {"wharf", 2.5, 2.5}),
+                        person("smoker", "the smokehouse on the quay", {"quay", 2.5, 2.5}),
+                        person("scribe", "the scribe", {"desk", 2.5, 2.5})};
+    roster.economy.treasury = 50000;
+    Society s(Roster::None);
+    s.configure(roster);
+    LifeDay day;
+    day.communityOf = [](const std::string&) { return std::string("town"); };
+    s.setDay(day);
+    expect(s.shift("treasury", "scribe", "", 0, 10000, "test: the buyer's money"), "the buyer has money");
+    return s;
+}
+
+// A seller's shelf set as set() sets it, its margins kept: restore loads them from the save, which the day's pass writes.
+void restock(Society& s, const std::string& id, const std::string& item, int count)
+{
+    auto state = s.state();
+    state.accounts.at(s.tillOf(id)).stock[item] = count;
+    state.memory.margins.clear();
+    for (const auto& [seller, goods] : s.margins())
+        for (const auto& [good, m] : goods)
+            state.memory.margins[seller + "|" + good] = m;
+    expect(s.restore(state), "the restocked shelf restores");
+}
+
+// A day's sales of a seller's whole shelf, `n`, to the scribe (its money back to it), the day's turn (spoil) and the
+// day's margin review.
+void sellOut(Society& s, const std::string& id, const std::string& item, int n, std::int64_t day, bool review = true)
+{
+    const auto till = s.tillOf(id);
+    restock(s, id, item, n);
+    expect(s.sale(till, "scribe", item, n, 1, "test: the day's buying") && s.shift(till, "scribe", "", 0, n, "test: the scribe's money back"),
+           "the scribe buys the shelf");
+    s.spoil(day);
+    if (review)
+        s.reviewMargins(day);
+}
+
+// Whether a till's goods are reviewed on a day (reviewMargins: its own weekday, three weeks in four), and the review's
+// step (both lots as RatwPrices.cpp draws them).
+double reviewLot(const std::string& words)
+{
+    return double(std::hash<std::string>{}(words) % 100000) / 100000;
+}
+bool reviewedOn(const std::string& till, const std::string& good, std::int64_t day)
+{
+    return std::int64_t(std::hash<std::string>{}(till) % 7) == day % 7 &&
+           reviewLot(till + "|" + good + "|" + std::to_string(day) + "|review") < .75;
+}
+double reviewStep(const std::string& till, const std::string& good, std::int64_t day)
+{
+    return reviewLot(till + "|" + good + "|" + std::to_string(day) + "|step");
+}
+
+// MarginsByShortage (round 14, lane 1), with work by the hours: a fishing boat that sells its whole shelf by the turn of
+// each day, turning nobody away, is short of nothing. Its margin set to .9, its reviews pull it back toward the ladder's
+// 15%; without the rule its shelf bare at the turn raises it toward a staple's most, 1.0, review by review. (North
+// Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6 times its cost.)
+void aSoldOutShelfServingAllKeepsTheLadder()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::MarginsByShortage);
+        auto s = fishTown();
+        const auto till = s.tillOf("fisher");
+        expect(till.rfind("till:", 0) == 0 && items::good("fish") && items::good("fish")->staple, "the boat has a till, and fish is a staple");
+        std::int64_t day = 1;
+        for (; day <= 14; ++day)
+            sellOut(s, "fisher", "fish", 30, day, false);
+        auto state = s.state();
+        state.memory.margins[till + "|fish"] = .9;
+        expect(s.restore(state), "its margin at .9 restores");
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(s.sellRates(till) && s.sellRates(till)->at("fish") >= 30 && s.missedRate(till, "fish") == 0,
+               at + ": it sells 30 a day, sold out (" + std::to_string(s.sellRates(till)->at("fish")) + " with the half again), turning none away");
+        std::vector<double> reviews;
+        double before = .9;
+        for (; reviews.size() < 2 && day < 80; ++day)
+        {
+            sellOut(s, "fisher", "fish", 30, day);
+            if (const double m = s.marginOf("fisher", "fish"); m != before)
+                reviews.push_back(m), before = m;
+        }
+        expect(reviews.size() == 2, at + ": two reviews moved its margin");
+        if (rule)
+            expect(reviews[0] < .9 && reviews[1] < reviews[0] && reviews[1] > .15,
+                   at + ", two reviews bring it down toward the ladder's: " + std::to_string(reviews[0]) + ", " + std::to_string(reviews[1]));
+        else
+            expect(reviews[0] > .9 && reviews[1] > reviews[0] && reviews[1] <= Society::StapleMarginMost + 1e-12,
+                   at + ", a bare shelf at the turn raises it: " + std::to_string(reviews[0]) + ", " + std::to_string(reviews[1]));
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// MarginsByShortage, with work by the hours: the same boat with as many again turned away each day (the town's makers
+// finding no fish: missedAt), half its buyers. Its margin climbs toward a staple's most; once the buyers are served again
+// it comes back down within a few reviews (the turned away wear out of its average in a week). Without the rule it
+// rises by its bare shelf alone, and never comes down while it sells out.
+void buyersTurnedAwayRaiseIt()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::MarginsByShortage);
+        auto s = fishTown();
+        const auto till = s.tillOf("fisher");
+        const std::string at = rule ? "with the rule" : "without the rule";
+        double peak = 0;
+        std::int64_t day = 1;
+        for (; day <= 84; ++day)                    // (Twelve weeks short.)
+        {
+            restock(s, "fisher", "fish", 30);
+            expect(s.sale(till, "scribe", "fish", 30, 1, "test: the day's buying") && s.shift(till, "scribe", "", 0, 30, "test: back"),
+                   "the scribe buys the boat's catch");
+            s.missedAt("town", "fish", 30);
+            s.spoil(day);
+            s.reviewMargins(day);
+            peak = std::max(peak, s.marginOf("fisher", "fish"));
+        }
+        const double unmet = s.missedRate(till, "fish") / s.sellRates(till)->at("fish");
+        expect(std::abs(unmet - .5) < .01, at + ": half its buyers turned away (" + std::to_string(unmet) + ")");
+        if (rule)
+            expect(peak > .7 && peak <= Society::StapleMarginMost + 1e-12, at + ", its margin climbs toward a staple's most: " + std::to_string(peak));
+        else
+            expect(peak > .2 && peak < .7, at + ", its bare shelf raises it a step a review: " + std::to_string(peak));
+        // The shortage over: it sells out, turning none away.
+        std::vector<double> after;
+        double before = s.marginOf("fisher", "fish");
+        for (const auto end = day + 42; day < end; ++day)
+        {
+            sellOut(s, "fisher", "fish", 30, day);
+            if (const double m = s.marginOf("fisher", "fish"); m != before)
+                after.push_back(m), before = m;
+        }
+        expect(after.size() >= 3, at + ": three reviews or more in the six weeks after");
+        std::string moves;
+        for (const double m : after)
+            moves += " " + std::to_string(m);
+        if (rule)
+            expect(after[2] < peak - .15 && after.back() < after[2] && after.back() < .5,
+                   at + ", served again its margin comes back down:" + moves + " (from " + std::to_string(peak) + ")");
+        else
+            expect(after.front() > peak && after.back() > after.front(), at + ", it goes on rising:" + moves);
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// MarginsByShortage, with work by the hours: a boat selling 40 a day holding 90, over its own shelf target (72: a day and
+// a half's keeping and a staple's fifth over) but under the 2.55 days' sales the old test asked of a glut, which a
+// producer stocked to its target never reached. With the rule its margin comes down a step (MarginStep times the
+// review's lot); without, it only wears back toward the ladder's (here, at it, it stays).
+void aGlutOverItsOwnStore()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::MarginsByShortage);
+        auto s = fishTown();
+        const auto till = s.tillOf("fisher");
+        for (std::int64_t day = 1; day <= 40; ++day)
+        {
+            set(s, "fisher", "fish", 200);           // (Not sold out: no half again.)
+            expect(s.sale(till, "scribe", "fish", 40, 1, "test: the day's buying") && s.shift(till, "scribe", "", 0, 40, "test: back"),
+                   "the scribe buys forty");
+            s.spoil(day);
+        }
+        set(s, "fisher", "fish", 90);
+        const double rate = s.sellRates(till)->at("fish");
+        const int target = s.shelfTarget(till, "fish", Society::ProducerKept);
+        const std::string at = rule ? "with the rule" : "without the rule";
+        expect(std::abs(rate - 40) < .01 && target == 72 && 90 < Society::keepDays("fish") * 1.7 * rate,
+               at + ": 40 a day, a target of " + std::to_string(target) + ", 90 under the old glut's " +
+                   std::to_string(Society::keepDays("fish") * 1.7 * rate));
+        std::int64_t day = 41;
+        while (!reviewedOn(till, "fish", day))
+            ++day;
+        const double usual = items::ladder().markup;
+        s.reviewMargins(day);
+        const double m = s.marginOf("fisher", "fish"), step = reviewStep(till, "fish", day);
+        expect(rule ? std::abs(m - (usual - step * Society::MarginStep)) < 1e-12 && m < usual : std::abs(m - usual) < 1e-12,
+               at + ": its margin " + std::to_string(m) + " (a step " + std::to_string(step) + ")");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// MarginsByShortage, with work by the hours: a farm whose year is planned (its till under memory.fields) holds a store
+// by design. Over its shelf target (90 of wheat at 10 a day: a target of 72) but not 1.7 times its keeping days, it isn't
+// lowered by the own-target test; the same farm unplanned is.
+void aFieldsStoreIsNoGlut()
+{
+    Society::setWorkByHours(true);
+    for (const bool field : {true, false})
+    {
+        Society::wageRulesOff(0);
+        auto s = farmTown();
+        const auto till = s.tillOf("farmer");
+        expect(s.shift("treasury", "stall", "", 0, 400, "test: the stall's money"), "the stall has money");
+        for (std::int64_t day = 1; day <= 40; ++day)
+        {
+            set(s, "farmer", "wheat", 200);
+            expect(s.sale(till, "stall", "wheat", 10, 1, "test: the day's wheat") && s.shift(till, "stall", "", 0, 10, "test: back"),
+                   "the stall buys ten wheat");
+            s.spoil(day);
+        }
+        auto state = s.state();
+        state.accounts.at(till).stock["wheat"] = 90;
+        if (field)
+            state.memory.fields[till] = FieldYear{};
+        expect(s.restore(state), "its store restores");
+        const double rate = s.sellRates(till)->at("wheat");
+        const int target = s.shelfTarget(till, "wheat", Society::ProducerKept);
+        expect(target < 90 && 90 < Society::keepDays("wheat") * 1.7 * rate,
+               "90 over its target, " + std::to_string(target) + ", under 1.7 times its keeping days' sales");
+        std::int64_t day = 41;
+        while (!reviewedOn(till, "wheat", day))
+            ++day;
+        const double usual = items::ladder().markup;
+        s.reviewMargins(day);
+        const double m = s.marginOf("farmer", "wheat");
+        expect(field ? std::abs(m - usual) < 1e-12 : m < usual,
+               std::string(field ? "a planned field's store isn't lowered: " : "an unplanned farm's is: ") + std::to_string(m));
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// ChainPricedOnce (round 14, lane 1), with work by the hours: the smokehouse wants ten fish, at a 120p day. The boat sells
+// at its cost and the ladder's 15% (about 8.5p); the fishmonger holds fifty, its margin .9. Bought at the boat's price:
+// with the rule the smokehouse buys from the boat at the boat's price, and with the boat sold out from the fishmonger at
+// what it paid and the ladder's 15%. Bought at half the boat's: from the fishmonger, the cheaper, whatever its kind.
+// Bought so that it asks the boat's penny: from the boat (level, the producer first). Without the rule, from the
+// fishmonger every time (a supplier first, whatever it asks), at its cost and its .9. (Ridgemere's smokehouses bought
+// four fifths of their fish from its resellers at 18-20p while its boats sold at 9-11p.)
+void aMakerBuysAtTheSource()
+{
+    Society::setWorkByHours(true);
+    struct Case
+    {
+        const char* what;
+        int boat;
+        double paid;                                // What the fishmonger paid, of the boat's price.
+        bool fromBoat;                              // With the rule.
+    };
+    for (const bool rule : {true, false})
+        for (const auto& c : {Case{"the boat with fish", 50, 1, true}, Case{"the boat sold out", 0, 1, false},
+                              Case{"the fishmonger's bought at half", 50, .5, false}, Case{"the same penny", 50, 1 / 1.15, true}})
+        {
+            Society::wageRulesOff(rule ? 0 : Society::ChainPricedOnce);
+            auto s = fishTown();
+            const auto fishery = s.tillOf("fisher"), monger = s.tillOf("monger"), smokehouse = s.tillOf("smoker");
+            expect(items::businessFor("the fishmonger by the wharf") && items::businessFor("the fishmonger by the wharf")->id == "fishmonger" &&
+                       items::businessFor("the smokehouse on the quay") && items::businessFor("the smokehouse on the quay")->id == "smokehouse",
+                   "a fishmonger and a smokehouse");
+            auto state = s.state();
+            state.memory.going["town"] = 120;
+            expect(s.restore(state), "the town's 120p day restores");
+            const double source = s.priceAt("fisher", "fish");
+            state = s.state();
+            state.accounts.at(fishery).stock["fish"] = c.boat;
+            state.accounts.at(monger).stock["fish"] = 50;
+            state.accounts.at(smokehouse).stock.erase("fish");
+            state.memory.costs[monger + "|fish"] = source * c.paid;
+            state.memory.margins[monger + "|fish"] = .9;
+            expect(s.restore(state), "the fish town restores");
+            expect(s.shift("treasury", smokehouse, "", 0, 2000, "test: the smokehouse's money"), "the smokehouse has money");
+            expect(std::abs(s.priceAt("fisher", "fish") - source) < 1e-9 && std::abs(s.marginOf("fisher", "fish") - .15) < 1e-12 && source > 8 &&
+                       source < 10,
+                   "the boat at its cost and the ladder's 15%: " + std::to_string(source) + "p");
+            s.takeJournal();
+            const int bought = s.buyMaterials("smoker", "quay", "fish", 10);
+            std::map<std::string, std::pair<int, std::int64_t>> from;   // Seller's till -> pieces, coins.
+            for (const auto& e : s.takeJournal())
+                if (e.kind == "materials bought" && e.from == smokehouse)
+                    from[e.to].first += e.quantity, from[e.to].second += e.coins;
+            const auto at = [&](const std::string& who) { return from.count(who) ? from.at(who) : std::pair<int, std::int64_t>{0, 0}; };
+            const std::string what = std::string(rule ? "with the rule, " : "without the rule, ") + c.what;
+            expect(bought == 10, what + ": ten bought");
+            if (rule && c.fromBoat)
+                expect(at(fishery).first == 10 && at(fishery).second == 10 * Society::pennies(source),
+                       what + ": from the boat at its price, " + std::to_string(at(fishery).second) + "p for " + std::to_string(at(fishery).first));
+            else
+            {
+                const double each = source * c.paid * (1 + (rule ? .15 : .9));
+                expect(at(monger).first == 10 && at(monger).second == 10 * Society::pennies(each),
+                       what + ": from the fishmonger at " + std::to_string(each) + "p a piece: " + std::to_string(at(monger).second) + "p for " +
+                           std::to_string(at(monger).first));
+            }
+            expect(s.conserved(), "money stays conserved");
+        }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// ChainPricedOnce, with work by the hours: the fishmonger's fish, bought at 9p, its margin .9, sold out at each day's
+// turn. With the rule it is priced at what it paid and the ladder's 15% from the first, and its bare-shelf review (the
+// old raise, MarginsByShortage left out; or the new aim, both rules) keeps its margin to the ladder's, nothing hidden
+// behind the price; a glut over its target is still marked down (Markdowns). Without the rule, its cost and its own
+// margin, raised by the review.
+void aResoldGoodAtTheLadder()
+{
+    Society::setWorkByHours(true);
+    const double usual = items::ladder().markup;
+    for (const std::uint64_t off : {std::uint64_t(0), std::uint64_t(Society::MarginsByShortage),
+                                    std::uint64_t(Society::MarginsByShortage | Society::ChainPricedOnce)})
+    {
+        Society::wageRulesOff(off);
+        const bool rule = !(off & Society::ChainPricedOnce);
+        const std::string at = rule ? (off ? "with the rule (the old review)" : "with both rules") : "without the rule";
+        auto s = fishTown();
+        const auto monger = s.tillOf("monger");
+        auto state = s.state();
+        state.memory.costs[monger + "|fish"] = 9;
+        state.memory.margins[monger + "|fish"] = .9;
+        state.accounts.at(monger).stock["fish"] = 30;
+        expect(s.restore(state), "the fishmonger's fish restores");
+        expect(s.resells(monger, "fish") && !s.resells(monger, "smoked_fish") && !s.resells(s.tillOf("fisher"), "fish"),
+               "the fishmonger sells its fish on and smokes its own; the boat makes its fish");
+        expect(std::abs(s.priceAt("monger", "fish") - 9 * (1 + (rule ? usual : .9))) < 1e-9,
+               at + ": priced at " + std::to_string(s.priceAt("monger", "fish")) + "p");
+        std::int64_t day = 1;
+        int reviews = 0;
+        for (; day <= 60 && reviews < 2; ++day)
+        {
+            reviews += reviewedOn(monger, "fish", day);
+            sellOut(s, "monger", "fish", 30, day);
+        }
+        expect(reviews == 2, at + ": two reviews of its fish");
+        const double m = s.marginOf("monger", "fish");
+        if (rule)
+            expect(std::abs(m - usual) < 1e-12 && std::abs(s.priceAt("monger", "fish") - 9 * (1 + usual)) < 1e-9,
+                   at + ": its margin kept to the ladder's (" + std::to_string(m) + "), 9p and 15%");
+        else
+            expect(m > .9 && std::abs(s.priceAt("monger", "fish") - 9 * (1 + m)) < 1e-9, at + ": its bare shelf raised its margin to " + std::to_string(m));
+        // A glut: two days over its target, a step marked down.
+        const double before = s.priceAt("monger", "fish");
+        restock(s, "monger", "fish", s.shelfTarget(monger, "fish", Society::ProducerKept) + 50);
+        s.reviewMarkdowns();
+        s.reviewMarkdowns();
+        expect(std::abs(s.priceAt("monger", "fish") - before * (1 - Society::MarkdownStep)) < 1e-9,
+               at + ": over its target it is marked down: " + std::to_string(s.priceAt("monger", "fish")) + "p from " + std::to_string(before) + "p");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -7868,6 +8228,12 @@ int main()
         theHandsBakeWithoutTheKeeper();
         theFeastIsBoughtAhead();
         aGlutIsMarkedDown();
+        aSoldOutShelfServingAllKeepsTheLadder();
+        buyersTurnedAwayRaiseIt();
+        aGlutOverItsOwnStore();
+        aFieldsStoreIsNoGlut();
+        aMakerBuysAtTheSource();
+        aResoldGoodAtTheLadder();
         aHouseSpendsInsideItsWeek();
         theChurchsAlmsInsideItsRelief();
         theAlmsBuyTheCheapestThatFeeds();

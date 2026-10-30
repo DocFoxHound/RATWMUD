@@ -103,6 +103,12 @@
 // and its batches begin only at its trade, as round 12's: no piece "bought at its own counter", no baking first, its
 // hands' hours lost to the full bank while it's away), feastahead (a festival's feast bought at its turn alone, from
 // half of what each shop holds, in one transfer a food, as round 12's: a shop holding 200 or more of it sells none).
+// And round 14's, lane 1 (the margins): marginshortage (a seller's margin rises a step at its weekly review when its
+// shelf is bare at the turn and only wears back otherwise, as round 13's: not aimed by the buyers it turned away),
+// chainonce (a maker buys in its town from the suppliers first, then the workshops, then the producers, whatever they
+// ask, and a good sold on carries its seller's own margin, as round 13's). tills.csv's `missed_units` (the buyers each
+// till turned away a day, Society::missedRate) and `margin` (its goods' margins weighed by their rates) are measures
+// whatever the rules.
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -641,9 +647,13 @@ int main(int argc, char** argv)
                     off |= Society::KitchenKept;
                 else if (name == "feastahead")
                     off |= Society::FeastAhead;
+                else if (name == "marginshortage")
+                    off |= Society::MarginsByShortage;
+                else if (name == "chainonce")
+                    off |= Society::ChainPricedOnce;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept or feastahead, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, marginshortage or chainonce, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1198,7 +1208,7 @@ int main(int argc, char** argv)
     residentsOut << "day,resident,home,holder,title,age,cash\n";
     std::ofstream tillsOut(out / "tills.csv");
     tillsOut << "day,till,holder,title,cash,working,owed,rate_units,materials_day,orders_week,sold_units,takings,hands,wanted,"
-                "hire_slots,hire_taken,resale_day,short_weeks,stopped,keeper_odd_pay,idle\n";
+                "hire_slots,hire_taken,resale_day,short_weeks,stopped,keeper_odd_pay,idle,missed_units,margin\n";
     std::ofstream workOut(out / "work.csv");
     workOut << "day,account,title,credited,lost,till,banked\n";
     std::unordered_map<std::string, std::pair<double, double>> workBefore;
@@ -1256,17 +1266,25 @@ int main(int argc, char** argv)
                 const auto keeper = held == society.state().careers.positions.end() ? std::string() : held->second.holder;
                 // (`resale_day`: the part of `materials_day` bought to sell on, kept for ResaleDays by the hours: doc 64,
                 // Phase 13, round 8.)
-                double units = 0, materials = 0, resale = 0;
+                double units = 0, materials = 0, resale = 0, margined = 0;
                 if (const auto* rates = society.sellRates(id))
                     for (const auto& [good, rate] : *rates)
                         if (items::good(good) && !Society::storePriced(good))
                         {
                             units += rate;
+                            margined += rate * society.marginOf(id, good);
                             bool resold = false;
                             const double cost = keeper.empty() ? 0 : rate * society.materialsCost(keeper, good, &resold);
                             materials += cost;
                             resale += resold ? cost : 0;
                         }
+                // (`missed_units`: of `rate_units`, the buyers it turned away, a day; `margin`, its goods' margins by their
+                // rates, a price over its normal cost less one before any markdown: round 14, lane 1's measures.)
+                double missed = 0;
+                if (const auto* turned = society.missedRates(id))
+                    for (const auto& [good, rate] : *turned)
+                        if (items::good(good) && !Society::storePriced(good))
+                            missed += rate;
                 const auto sold = tillSold[id];
                 const auto hires = hiring.find(id);
                 // (Round 9: its owner's looks in a row that found it short of a week's wages, the day its owner stopped
@@ -1281,7 +1299,8 @@ int main(int argc, char** argv)
                          << (shortTill == society.state().memory.shortTills.end() ? 0 : shortTill->second.weeks) << ','
                          << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.stopped) << ','
                          << (paidOdd == oddPaid.end() ? 0 : paidOdd->second) << ','
-                         << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.idle) << '\n';
+                         << (shortTill == society.state().memory.shortTills.end() ? -1 : shortTill->second.idle) << ',' << missed << ','
+                         << (units > 0 ? margined / units : items::ladder().markup) << '\n';
             }
         tillSold.clear();
         if (rows)
