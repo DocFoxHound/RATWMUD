@@ -147,6 +147,12 @@ void Society::planField(const std::string& id, const std::string& till, const it
     // At the harvest's end: what's left in the fields is lost, and next year's acres are planned, the store's carry off.
     const double carry = std::max(0., held - daily * (HarvestStart + calendar::DaysPerYear - HarvestEnd));
     f.acres = std::max(0., daily * year * FieldMargin * (f.dry ? DryYear : 1.) - carry) / FieldYields;
+    // AcresByHarvest (round 16, lane 2; the user, 2026-10-30): a field that left more than a tenth of what it sowed in
+    // the ground plans no more than half again what it brought in (its acres harvested this year: the harvest counts
+    // toHarvest down), and no less than half its plan. What its hands couldn't bring in they needn't sow: next spring's
+    // hours go to the boats and the other hires instead of to acres dropped at this harvest's end.
+    if (const double broughtIn = f.sown - f.toHarvest; acresByHarvest() && f.sown > 0 && broughtIn < AcresBroughtFull * f.sown)
+        f.acres = std::min(f.acres, std::max(AcresGrowth * broughtIn, AcresLeast * f.acres));
     f.sown = f.toHarvest = 0;
     f.dry = false;
     f.year = day / calendar::DaysPerYear;

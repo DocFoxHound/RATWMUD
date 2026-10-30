@@ -619,6 +619,18 @@ class Society
     static constexpr int SowEnd = 92, HarvestStart = 213, HarvestEnd = 274, FieldYields = 20;
     static constexpr int WinterStart = 275;         // (The calendar's: days of the year from 275 to its end.)
     static constexpr double SowShare = 1. / 3, FieldMargin = 1.1, DryYear = 1.5;
+    // AcresByHarvest (round 16, lane 2, with work by the hours; the user, 2026-10-30): at the harvest's end, a field that
+    // left more than a tenth of what it sowed in the ground (brought in under AcresBroughtFull of it) plans next year no
+    // more than AcresGrowth times what it brought in, and no less than AcresLeast of its plan, after the carry and DryYear.
+    // Round 14's six years brought in .28-.43 of what the fields sowed, years 1-5 (the harvest's hands bind, not its
+    // acres: distance, ten bunk beds a farm, OnePlace, the posting limits), the rest dropped at the harvest's end; once
+    // the oats ran out every field planned DryYear times its need, and its sowing (49k hours a year by year 3, 26k in
+    // year 1) took the hands the boats wanted in January to March, when the other start's famines began. Half again
+    // covers a better harvest year (the share brought in swung x1.54 at most year to year), a half at the least keeps
+    // one bad harvest (a dead farmer, an idle field) from taking the plan to nothing, and a harvest of nine tenths isn't
+    // short of hands, so the plan is as before: inert in balance. Nothing new is saved (sown and toHarvest are).
+    static constexpr double AcresGrowth = 1.5, AcresLeast = .5, AcresBroughtFull = .9;
+    static bool acresByHarvest() { return workByHours() && wageRule(AcresByHarvest); }
     // The mint (doc 64, Phase 11; RatwMint.cpp), daily in the day's pass and weighing up on the week's first day: a
     // player's purse or a Hold's treasury (`hoarder`), whose spending it follows (noteSpent, from record).
     static bool hoarder(const std::string& account);
@@ -1388,6 +1400,13 @@ class Society
         // half the buying town's, and a town's buyers that feed its people are funded before the rest.
         CarriageShared = 1ull << 56,                 // The buying town keeps half the carriage of what it buys off a wagon (round 15, 1).
         MessesFirst = 1ull << 57,                    // A town's buyers that feed its people funded first, the rest in order (round 15, 1).
+        // Round 16, lane 2 (the user, 2026-10-30: years 3-6; round 14's six years left 24 land posts empty by day 2067,
+        // 61-65k locked in their tills, and its fields sowed half again what any harvest brought in): a land post empty a
+        // week whose goods are wanted goes to a wolf of its own town, and a field plans by what its harvest brought in.
+        // These are the word's last two bits: the next rule needs a second word (wageRulesOff_'s, OptInRules' and
+        // econ_watch's parsing are all std::uint64_t, nothing shifts or casts a rule through a signed or 32-bit type).
+        LandPostsFilled = 1ull << 62,                // A land post empty a week, its goods wanted, to its town's jobless or poor (round 16, 2).
+        AcresByHarvest = 1ull << 63,                 // A field short of hands plans half again its last harvest at most (round 16, 2).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1730,6 +1749,16 @@ class Society
     //  - A household of more than HouseholdMost sends a young grown member to a free home in its town.
     static constexpr double DeathA = .0004, DeathB = .085, InfantDeath = .03;
     static constexpr int RetireLeast = 58, RetireMost = 66, HouseholdMost = 6;
+    // LandPostsFilled (round 16, lane 2, with work by the hours; the user, 2026-10-30): a land post (a producer's, not a
+    // shop's) empty LandPostWait days, whose goods its town wants (a twentieth of its other sellers' buyers turned away,
+    // or no other seller of them there), goes to a wolf of the post's own town, without the passes' region test: first
+    // one out of work, else one poor (under a month's food money of its own) in an unpaid post; never a House's family
+    // (its head's household, whose shared purse holds thousands). Its farm's work cell is in the country's region, its town's wolves in the
+    // town's, so only its apprentice or family could take it before: round 14's six years filled every spell they filled
+    // within 13 days (median 3), and none of 14 days or more, ever. A week leaves the apprentice (2 days) and the family
+    // (3) their time; a field empty longer loses its sowing or its harvest.
+    static constexpr int LandPostWait = 7;
+    static bool landPostsFilled() { return workByHours() && wageRule(LandPostsFilled); }
     static constexpr double LearnBeside = 8, LearnHead = 4, LearnAlone = .3, SkillTop = 85, ApprenticePay = .5;
     static constexpr double TradeSkilled = 30, TradeMasters = 50;
     static int retireAge(const std::string& resident);

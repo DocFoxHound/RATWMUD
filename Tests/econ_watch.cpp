@@ -128,6 +128,11 @@
 // mess, the mines' and the quarries' first). The buying town's half is "carriage to the buying town" in flows.csv and
 // account_flows.csv, from the caravan to its stores (the capital's treasury); not in town_flows.csv, which holds the
 // money between two of one town's accounts (a caravan's is no town's, as with its trade takings).
+// And round 16's, lane 2 (the land kept): landposts (a land post empty past its apprentice's and family's days stays
+// empty, as round 15's: the other passes want the taker's home in its work cell's region, a farm's the country's; a
+// stranger comes only for a town under its number), acresharvest (a field plans next year by its sales, the carry and
+// DryYear alone, as round 15's, whatever its harvest brought in). events.csv notes the new successions as "someone in
+// town takes up the land". These are the WageRule word's last two bits (62 and 63): the next rule needs a second word.
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -691,9 +696,13 @@ int main(int argc, char** argv)
                     off |= Society::CarriageShared;
                 else if (name == "messesfirst")
                     off |= Society::MessesFirst;
+                else if (name == "landposts")
+                    off |= Society::LandPostsFilled;
+                else if (name == "acresharvest")
+                    off |= Society::AcresByHarvest;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage, chainonce, roadkept, pursenotblamed, carriagesplit or messesfirst, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage, chainonce, roadkept, pursenotblamed, carriagesplit, messesfirst, landposts or acresharvest, not "
                               << name << "\n";
                     return 2;
                 }

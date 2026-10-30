@@ -9105,3 +9105,238 @@ What the run says:
 4. **Larkfield's harvest-time hunger** (day 270: 29 hungry and 14 starving for a day, its shelves bare in both runs
    those days; the base's worst, day 232, 12 and 7): not traced to either rule in this lane's time.
 5. One run of 365 days this round, as briefed; nothing longer.
+
+### Phase 13: round 16, lane 2: the land kept, the acres by the harvest (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved (5,000,120p). Round 15's two years (`artifacts/economy/2026-10-30-r15-2y-fast`, built
+from a5d8575) were STABLE; round 16 looks at years 3-6, from round 14's six-year runs (`2026-10-30-r14-6y-fast` and
+`-from3`, c088eb9, without round 15's rules). Base: p13-r15 at a5d8575. Two rules, with work by the hours; no money made
+or lost, nothing new saved.
+
+**The evidence (the brief's).** (1) Land posts that fall empty past their apprentice's and family's days are never
+filled. In both six-year starts the tills with no keeper went 3, 7, 13, 16, 19 and 24 (days 91, 273, 1001, 1365, 1911,
+2067), nearly all land (fields, four warrens, three dairies, two pig farms, Greywater's boat, mines, logging, vines),
+61-65k locked in them by day 2067 (Hayward's field 13,634p from day 272). Of 453 vacancy spells filled, all were within
+13 days (median 3), none of 14 days or more; the land's successions were apprentice 184, family 167, "someone local" 4.
+Round 15's two years: 3, 6, 7, then 8-10 (20-23k). The cause is `tendCareers`' region test: the "someone local" and
+"best-trained" passes want `world.near(p.work.cell, homeCell)` (the same region: `World::careerWorld`), and a land
+post's work cell is in a country region (warmwood, folds, ridgemere_sound...), its town's wolves in the town's. (2)
+Fields plan acres no harvest brings in: field hours in the harvest window were .28-.43 of the 2x sowing hours their crop
+needs in years 1-5, the rest dropped at HarvestEnd; the hands bind, not the plan or the pay. Once the oats run out
+(about day 840-915) every field is dry and plans DryYear (1.5) times its need: sowing went from 25.7k hours (round 15,
+year 1) to 49.2k (round 14 from3, year 3) against 38.1k harvest hours, in January to March, when the other start's
+hunger spells begin (days 1105, 1469, 1837) and fishing fell from about 1,200 to 400-900 hours a day.
+
+**3. A land post empty a week, its goods wanted, goes to a wolf of its own town** (`Society::LandPostsFilled`, `1ull <<
+62`; `econ_watch --without landposts`; with work by the hours).
+
+- *Where:* a new pass in `tendCareers`' empty-posts loop, after the best-trained pass (the passes before it unchanged),
+  for a post that isn't a shop (`role != "merchant"`) and names a producer (`items::producerFor(title)`: a House's or a
+  lone owner's land), empty and not let go (`memory.closed`), nobody chosen yet, `LandPostWait` (7) days empty, its town
+  known and its goods wanted (below). No region test. The post's town is its founder's (`communityOfResident`, the
+  employer town `tendLabour` gives its till); the wolf's is its town as the town's number counts it (its lodging's home
+  if lodged, else its home cell's town, else `communityOfResident`: `townOf`, hoisted above the loop, the count
+  unchanged).
+- *Who:* alive, 16 to its retiring age, no one's apprentice, of the post's town. First one with no post; only when there
+  is none, one in an unpaid post (`rank` 0), not important, whose own purse is under a month's food money
+  (`pennies(MonthDays x FoodADay, town)`, foundTills' month's living): a beggar, a poor student. Within a tier, by the
+  local pass's score (its skill at the post twice, and the last holder's regard). No skill test (the best-trained's way:
+  the new keeper learns the work). Noted as a "succession", "...: someone in town takes up the land". Then as the loop
+  does: the wolf's own post (an unpaid one, in the second tier) falls empty, its skill is at least 5, `forgetCareers`.
+- *Never a House's family, in either tier* (one step beyond the brief's letter, to its "never a House's family"): the
+  purse test keeps a House's family out of the unpaid tier, but a House has its jobless too. Mossgrave Court's daughter
+  (rm_wenna_mossgrave, 34, out of work in round 15's two years on days 182, 364 and 728, her purse 1.8k evened with the
+  head's household) would have stood in the first tier. So both tiers leave out the Houses' heads' households (the homes
+  of `houses()`' heads' holders, or their founders' while the head's post is vacant): in the code's terms a House's
+  family is its head's household, which shares its purse.
+- *Wanted* (`landWanted`): for some good it brings in, the post's town has no other land seller of it (`sellersOf`, kind
+  2, alive, holding a post that isn't this one, `sellerTown` the post's town), so nobody there hears its buyers and the
+  new keeper's own sales will tell (OwnersStop and IdleTills stop and idle it if none come); or those sellers' tills
+  together turn away `max(1, UnmetFrom x their sales a day)` of it a day (`missedRate` against `sellRate_`, the margin
+  rule's twentieth). Never the empty till's own rates (they decay a day at a time and never reach nought). A post not
+  wanted waits and is asked again the next day: a dead market stays dead, and a business may still fail.
+- *Who sells what* (`suppliers_`) is cached until the day's pass (a succession moves no revision); after one of these,
+  under TradeByPost, the cache is cleared, so a second empty post of the same goods in the town hears the new keeper the
+  same day, not its absence.
+- *Money:* none moves. The till keeps its cash as the new keeper's working money; `tendTills` pays its wage from it, and
+  OwnersStop and IdleTills apply as to any till. The newcomer rule is as it was.
+
+**4. A field short of hands plans by its harvest** (`Society::AcresByHarvest`, `1ull << 63`; `--without acresharvest`;
+with work by the hours). In `planField`'s harvest's-end branch, after the carry and DryYear and before `sown` and
+`toHarvest` are reset: `broughtIn = sown - toHarvest` (the harvest counts `toHarvest` down); with the rule, if `sown >
+0` and `broughtIn < AcresBroughtFull x sown`, `acres = min(acres, max(AcresGrowth x broughtIn, AcresLeast x acres))`.
+`dry`, the carry, the founding branch and `reviewField` (the founding spring) are as they were; nothing new is saved.
+Beside FieldMargin and DryYear: `AcresGrowth` 1.5 (the share brought in swung .28-.43 year to year in round 14's six
+years, x1.54 at most, so half again covers a better harvest year), `AcresLeast` .5 (one bad harvest, a dead farmer or an
+idle field, can't take the plan to nothing), `AcresBroughtFull` .9 (a harvest of nine tenths isn't short of hands: the
+plan as before, inert in balance).
+
+**The word is full.** These are bits 62 and 63, the last two of the 64-bit `WageRule` word. Checked: the enum is
+`std::uint64_t`; `wageRulesOff_`, `wageRulesOn_` and `OptInRules` are `std::uint64_t` and `wageRule` tests them with
+`&`; econ_watch's `--without` and `--with` parse into `std::uint64_t` with `|=` of the enum; nothing in Core, Tests or
+Server casts a rule to `int`, shifts `1 <<` for one or builds one through a signed or 32-bit type (`rule ? 0 :
+Society::X` in the tests takes the enum's 64-bit type). The next rule needs a second word.
+
+**econ_watch:** `--without landposts,acresharvest`, in its list, its error and its notes. events.csv's successions carry
+the new "someone in town takes up the land".
+
+**Tests** (each rule on and off, work by the hours set and put back):
+
+- `careers_tests`, a town whose farms' fields lie in the country (`byRegion`: CareerWorld.near as RatwWorld's, the
+  fields "warmwood", "far_" cells the far town's, the rest the town's; `landTown`: the day's communityOf, the fields in
+  none):
+  - `anEmptyFieldTakenInTown`: a farmer of 45 dies at day 1.5 with no apprentice or family; of the town a wolf of 30
+    with no post, a beggar (unpaid) holding 20p and a House member (unpaid, "at home in the Heights") holding 5,000p; of
+    the far town a wolf with no post whom the farmer regarded at 50 (by the score it would come first). With the rule
+    nobody takes the farm before it has waited 7 days, and the wolf out of work takes it on day 9 (the first pass after
+    day 8.5), noted "farms the valley fields: someone in town takes up the land". Without that wolf, the beggar, on day
+    9, its begging falling empty. With only the House member and the far wolf, nobody through day 30. With the House's
+    head and her daughter of 34 out of work in its household too (purse 200p), nobody (tried with the household test
+    left out: the daughter took it). Without the rule, nobody through day 30 (the region test). Money conserved every
+    day.
+  - `aFieldWithNoBuyersWaits`: two farms of the valley fields in the town, the second selling the mill 20 wheat a day
+    from a barn of 900; the first's farmer dies at day 1.5. The other turning none away, the empty one is still empty
+    on day 30. The other turning away 2 more a day (`missedAt`, the days' passes bringing its `missedRate` to 1.88 by
+    day 9): taken on day 9. The other farm in the far town (none of its goods in the empty one's town): taken on day 9.
+- `crafting_tests`' `aFieldPlansWhatItBroughtIn` (beside `seasonalFields`): the valley fields, their sales a day set to
+  plan 100 acres at the harvest's end of year 1, the store empty (no carry), `planField` called there. Sown 100 with 70
+  left (30 brought in): 100 planned becomes 50 (AcresLeast), 80 becomes 45 (AcresGrowth). Sown 100 with 5 left: 100.
+  Nothing sown: 100. Dry: its 150 becomes 75. Without the rule: 100, 80, 100, 100 and 150. Each time its year begun
+  afresh (sown, left and dry reset, year 1), money conserved.
+- No older test changed. The suite (68 of 68) passes with both rules. `troubles_behaviors` failed in two full runs under
+  the machine's load (its replies wait on the dialogue thread by the wall clock, 80 x 20 ms; alone it failed 4 of 6 at a
+  load of about 21 and passed 5 of 5 at about 13) and passed on ctest's retry (`--repeat until-pass:3`). With both rules
+  forced off (a temporary copy of the tree, not committed: `wageRule` false for the two, the three new tests left out of
+  main) the suite is 68 of 68 too, and its `troubles_tests` fails the same way under load (2 of 8 run four at a time
+  beside the rules' build, whose 8 passed). With work by the hours off (the troubles tests', the game's) neither rule's
+  code runs.
+
+**The digests** (3 days, `--deterministic --hours --threads 4`, normal mode): `--without landposts,acresharvest`
+64c928de2f1f0305, round 15's; with both rules 64c928de2f1f0305 too (no land post waits 7 days, and no harvest ends, in
+three days).
+
+**The fast check and the sanity runs** (`--fast --deterministic --hours --threads 3`, the default start, 1,100 days,
+side by side from one binary: both rules, `artifacts/economy/2026-10-30-r16-land-kept-fast`, and `--without
+landposts,acresharvest`, `...-fast-base`, in the lane's worktree, not committed; read with python3 -I). The base run's
+days.jsonl is the same, line for line, as round 15's `2026-10-30-r15-2y-fast` (built from a5d8575) over its days 0-730,
+so the brief's base numbers are this run's. The rules' run parts from it on day 20 (the first land post taken, day 19).
+Quarters of 91 days; the posts, the jobless and the scorecard at each quarter's turn (records of days 91, 182, ..., the
+state at the end of days 90, 181, ...); the hours credited on the land's tills by their titles (`work.csv` against
+`tills.csv`); "the fields" the 'works the fields' tills, the brief's; the sowing window days 0-91 of a year, the harvest
+213-273. (The scorecard's rows end a day before the turn's record.)
+
+| at the quarter's turn, base / rules | 91 | 182 | 273 | 364 | 455 | 546 | 637 | 728 | 819 | 910 | 1001 | 1092 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tills with no keeper | 3 / 2 | 6 / 3 | 7 / 3 | 8 / 1 | 9 / 1 | 9 / 1 | 10 / 2 | 9 / 1 | 11 / 3 | 12 / 4 | 12 / 4 | 14 / 5 |
+| ...their cash | 1.8k / 1.5k | 3.2k / 3.3k | 20.2k / 14.7k | 20.0k / 1.8k | 23.3k / 1.8k | 23.3k / 1.8k | 23.3k / 1.8k | 23.3k / 1.8k | 23.9k / 2.1k | 24.1k / 2.4k | 24.1k / 2.4k | 24.6k / 2.4k |
+| grown without work (16-59) | 15 / 14 | 16 / 9 | 11 / 7 | 16 / 40 | 44 / 19 | 36 / 25 | 25 / 22 | 36 / 29 | 27 / 17 | 21 / 16 | 21 / 7 | 23 / 5 |
+| household Gini | .476 / .473 | .490 / .488 | .532 / .552 | .533 / .556 | .556 / .578 | .536 / .555 | .564 / .570 | .550 / .550 | .601 / .602 | .561 / .585 | .621 / .623 | .638 / .593 |
+| poorer half | .189 / .190 | .174 / .176 | .133 / .122 | .139 / .121 | .124 / .113 | .141 / .123 | .122 / .114 | .126 / .128 | .084 / .094 | .120 / .107 | .083 / .084 | .071 / .096 |
+| food a unit, the quarter | 8.0 / 8.0 | 7.3 / 7.5 | 8.1 / 8.8 | 8.0 / 8.7 | 8.6 / 9.4 | 8.1 / 8.9 | 8.5 / 8.4 | 8.1 / 8.4 | 9.2 / 9.7 | 8.9 / 9.3 | 9.8 / 9.3 | 9.5 / 8.5 |
+
+| by quarter, base / rules | q0 | q1 | q2 | q3 | q4 | q5 | q6 | q7 | q8 | q9 | q10 | q11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| "someone in town takes up the land" | - / 1 | - / 2 | - / 1 | - / 3 | - / 1 | - / 0 | - / 0 | - / 0 | - / 0 | - / 0 | - / 0 | - / 0 |
+| the fields' hours | 25.7k / 27.5k | 11.4k / 10.9k | 35.7k / 39.4k | 8.1k / 8.2k | 25.2k / 25.6k | 7.9k / 8.5k | 21.2k / 21.6k | 5.8k / 6.3k | 25.1k / 30.7k | 6.2k / 8.2k | 19.7k / 21.4k | 5.3k / 6.3k |
+| the other fields' (orchards, vines, the other farms) | 30.3k / 32.8k | 10.9k / 10.4k | 30.8k / 19.5k | 9.1k / 8.7k | 27.3k / 30.5k | 9.9k / 11.2k | 33.4k / 33.4k | 6.8k / 7.9k | 35.0k / 32.5k | 7.4k / 9.3k | 29.6k / 35.3k | 8.0k / 7.3k |
+| fishing's hours | 32.7k / 30.5k | 62.2k / 60.0k | 58.7k / 60.9k | 81.6k / 74.8k | 72.6k / 78.2k | 79.2k / 89.6k | 73.1k / 81.4k | 77.8k / 78.7k | 72.5k / 74.5k | 79.6k / 85.0k | 75.4k / 68.8k | 86.3k / 64.4k |
+
+| by year, base / rules | year 0 | year 1 | year 2 |
+| --- | --- | --- | --- |
+| the fields' sowing hours (days 0-91) | 25.8k / 27.7k | 25.7k / 26.1k (1.01) | 25.7k / 31.5k (1.22) |
+| ...their sowing slots posted, taken | 1,397, 1,176 / 2,004, 1,635 | 4,974, 1,983 / 4,336, 1,713 (.87) | 5,615, 1,988 / 6,685, 3,069 |
+| the fields' harvest hours (days 213-273) | 32.7k / 36.2k | 19.2k / 19.2k | 18.7k / 20.0k |
+| the other fields' harvest hours | 27.3k / 16.1k | 30.5k / 29.7k | 27.9k / 32.8k |
+| wheat brought in (the harvest window) | 40.0k / 38.1k | 18.2k / 19.1k | 18.9k / 35.6k |
+| oats brought in | 21.7k / 18.8k | 10.1k / 10.6k | 10.1k / 19.0k |
+| fishing's hours, days 0-30 | 11.9k / 11.8k | 21.6k / 22.8k | 22.7k / 24.6k |
+
+(The brief's 4,995 sowing slots in year 1 are 4,974 by this reckoning, 1,983 taken against its 2,004: the slots of the
+'works the fields' tills' field hires in days 365-456.)
+
+| the brief's gates (the fast check, days 0-730) | base | rules | |
+| --- | --- | --- | --- |
+| tills with no keeper, day 273 (at most 4) | 7 | 3 | met |
+| ...day 728 (at most 5) | 9 | 1 | met |
+| ...their cash, day 728 (under 12k) | 23.3k | 1.8k | met |
+| "someone in town takes up the land": only land, never a House's family | none | 8, all land (an ore mine, a quarry, two fields, two dairies, a sheep run, logging; four to Ridgemere's wolves), none of a House's household | met |
+| grown without work, days 273 / 456 / 640 (no higher) | 11 / 43 / 25 | 7 / 19 / 23 | met (day 364 40 against 16: below) |
+| **the fields' hours, days 365-456 (at most .85 of 25.7k, 21.9k)** | 25.7k | **26.1k (1.01)** | **missed** |
+| **their sowing slots, the same days (at most .85 of 4,995)** | 4,974 | **4,336 (.87)** | **missed** |
+| wheat, oats brought in, days 578-639 (at least .9) | 18.2k, 10.1k | 19.1k, 10.6k | met |
+| the fields' harvest hours, days 578-639 (at least .9 of 19.2k) | 19.2k | 19.2k | met |
+| fishing's hours, days 365-395 (no lower) | 21.6k | 22.8k | met |
+| the scorecard (to day 730) | STABLE | STABLE | met |
+| hunger | 100% | 100% | met |
+| **Gini at most .582; poorer half at least .110; trend at most +.016** | .582; .110; +.016 | **.588; .106**; -.004 | **missed** |
+| **food 7.3-8.6p, not five quarters rising** | 7.3-8.6p; no | **7.4-9.4p**; no | **missed** |
+| going rate 57-60p, within 2p | 57-60p | 58-60p | met |
+| treasuries, tills stopped, population | capital at least 254k, church 192k; 30-38%; 1087-1097 | 254k, 195k; 28-36%; 1088-1098 | met |
+| money | conserved every day (5,000,000p, then 5,000,120p, 5,000,239p and 5,000,359p by day 730: three newcomers' purses) | conserved every day (5,000,000p, then 5,000,117p: one newcomer's) | met |
+
+The scorecards of the 1,100 days: the base NOT STABLE on inequality (Gini at most .662, the poorer half at least .054,
+the last year's trend +.101 a year; hunger 100%); the rules NOT STABLE on inequality too (Gini at most .633, the poorer
+half at least .076, the trend +.044 a year; hunger 99%: q10's harvest, days 909-1000, had a day of 51 hungry and 32
+starving where the base's worst was 3); the other five pass in both.
+
+**Gates are missed: the sowing, and the two years' inequality and food price.** As briefed, the lane stops: no tuning.
+What the runs say:
+
+1. **LandPostsFilled did what it was for, in the first year.** It took eight land posts in days 19-390, each a week or
+   more empty, all to wolves out of work: five so in the day's record before; three (Southmeadow's Cider House hand, a
+   Larkmill mill hand and Frosthollow's Pass Provisioner's) held a paid post in it and none when chosen (no "vacancy"
+   was noted for them, as the loop notes for a post it empties: they had lost it that day). None came from the unpaid
+   tier, none of a House. Rainwash's ore mine (day 19), Wetmeadow's dairy, Greyscar's quarry, Wheatley's field,
+   Hayward's field (day 303, its till then about 10.6k), Ramsfold's sheep run, Snowpine's logging and Whiteleas' dairy
+   (day 390). The keeperless tills held 1.8-2.4k from day 364 to day 1092 (4.0k on day 1100) against the base's 20-25k
+   (47k on day 1100, Sump Sundries' 22.6k with it). From day 391 none was taken: the five left on day 1100 (two pig
+   farms, the Charcoal Store, Lakeside's field, Meadowarren's warren; 4.0k) stood unwanted or with nobody free in their
+   towns. Mudwallow's pigs (1,821p, empty from day 126, when its apprentice stepped up to the farm's other post) looks
+   like the dead market the brief kept: that other post sold almost nothing (a rate of 0 to .9 a day on days 200-1099,
+   none turned away), so it wasn't wanted (the other four not traced). The grown without work fell (5-8 on days
+   1001-1100 against 21-33).
+2. **AcresByHarvest didn't cut the sowing.** The fields sowed 26.1k hours in year 1 (1.01 of the base) and 31.5k in year
+   2 (1.22), with more slots taken (3,069 against 1,988). Year 0's harvest was the founding's (its fields "as if sown"
+   when founded, no sowing hours) and brought in 36.2k hours, about 550 acres at 65 hours an acre (two thirds of an
+   acre's 98 hours: the farm's 4.907 a yield, FieldYields 20); half again of it, about 830 acres, is over what year 1's
+   hands sow (26k hours, about 800 acres at 33 an acre), so over the fields together the cap couldn't bite in year 1. In
+   year 2 its floor holds it off: half the plan is the least, and the plans stand well over twice what the hands sow
+   (the brief: planned exceeds sown exceeds harvested), so `max(AcresGrowth x broughtIn, AcresLeast x acres)` is half a
+   plan still over the sowing hands' reach (an inference: the CSVs don't carry a field's plan). And LandPostsFilled kept
+   fields the base lost (Wheatley's and Hayward's keepers posted sowing hires the base's empty fields didn't): year 2's
+   slots posted 6,685 against 5,615. Year 2's harvest brought in about twice the base's wheat and oats (35.6k and 19.0k
+   against 18.9k and 10.1k) on 7% more of the fields' harvest hours (17% more of the other fields'): not traced in this
+   lane's time.
+3. **The inequality and the food price parted in year 0.** The rules' Gini ran .020-.023 over the base's from q2 to q4
+   (.578 against .556 on day 455) and the poorer half .011-.018 under; the food a unit .7-.8p over in q2-q5 (9.4p in
+   q4): fish dearer (7.73p against 6.82p in q4, smoked 16.0p against 13.7p, salt 17.2p against 16.0p) and more of it
+   bought (85.8k against 75.6k), fewer rabbits (18.4k against 25.8k). Year 0's harvest went differently already
+   (orchards, vines and the other farms 16.1k hours against 27.3k, its wheat 38.1k against 40.0k), from the first posts
+   taken: chaos from day 20 as much as either rule; not traced further. In year 3 the order turned: on day 1092 the
+   rules' Gini .593 against .638, the poorer half .096 against .071, the last year's trend +.044 against +.101.
+4. **Day 364's jobless** (40 against 16; 34 of them Ridgemere's) had mostly held town posts 30 days before (shop-door
+   minders, the tannery's, the rag mill's, the Blue Vats' and the Ropewalk's hands); the base's count rose to 44 by
+   day 455. Not the land posts' doing: their takers come from the jobless.
+
+**For the user:**
+
+1. **The WageRule word is full.** LandPostsFilled and AcresByHarvest are bits 62 and 63 (lane 1 adds its two beside
+   them), the last two of the 64-bit word. The next rule needs a second word: a second `std::uint64_t` pair beside
+   `wageRulesOff_` and `wageRulesOn_` (or a `std::bitset<128>`), `wageRule` taking a rule of either word, and
+   econ_watch's `--without` and `--with` parsing into both.
+2. **A newcomer for a land post?** No stranger has ever been sent for a land post: the newcomer rule asks whether the
+   town of the post's work cell is under its number (`wanted[communityOf(p.work.cell)]`), and a country cell is in no
+   town (`World::lawTown` gives none in a world of towns), so a land post's town reads as nobody's (round 14's six years
+   sent for 43 strangers, all for town posts). Where its town has nobody free, a stranger could come for a land post
+   with its till paying the purse (the till's cash is the post's working money, so the stranger's 120-150p from it
+   creates no money, where the newcomer's purse from outside does), its town reckoned by the post's founder
+   (`communityOfResident`, as this rule does), and only when the post is wanted (`landWanted`, so a dead market still
+   fails). Whether a stranger should come for a post whose town has nobody free is yours to say. (Of the five left empty
+   in this run, the one traced, Mudwallow's pigs, wasn't wanted: a stranger wouldn't have come for it by that test
+   either.)
+3. **AcresByHarvest's floor.** `AcresLeast x acres` keeps half a plan that is over twice what the hands sow, so the cap
+   bites only where the plan is near what is sown. A floor on last year's sown acres instead (or on what was brought in)
+   would bite; and year 1's cap reads year 0's founding harvest, which no sowing made. Not changed: no tuning.
+4. **The six-year question is still open.** These are 1,100 days, as the sanity check allows; AcresByHarvest's DryYear
+   effect (years 3-6) and the from3 famines (day 1105 on) are past them.
