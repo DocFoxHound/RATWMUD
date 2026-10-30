@@ -514,8 +514,21 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
         if (stockAll(s, items::baseOf(item)) == 0)
             ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
     }
+    noteTrade(seller, buyer, total);
     record(kind, buyer, seller, item, quantity, total);
     return true;
+}
+void Society::noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total)
+{
+    // A till's sales in, its buying (goods for its shelves, materials, on credit too) out: the trade its weekly review
+    // sees its wages paid from (round 12, lane A, WageBySales; with work by the hours). Not saved: the day's, folded in at
+    // the day's pass (keepTradeNet).
+    if (!workByHours() || !wageRule(WageBySales))
+        return;
+    if (seller.rfind("till:", 0) == 0)
+        netToday_[seller] += total;
+    if (buyer.rfind("till:", 0) == 0)
+        netToday_[buyer] -= total;
 }
 EconomyResult Society::quote(const std::string& player, const std::string& seller, const std::string& item,
                              int quantity, bool buy) const

@@ -2657,6 +2657,86 @@ void aCityHandAtTheFishery()
     Society::setWorkByHours(false);
 }
 
+// A business's hire to the wageless first (round 12, lane A, the user, 2026-10-29: WagelessFirst), with work by the
+// hours: the city wolf holding a place on west's fishery's hire is made the keeper of east's rabbit farm, whose till
+// pays it its keeper's wage. At the next day's pass its place is the jobless' again (the city's idle take it before
+// WagedFrom); without the rule it holds it the hire's week. A keeper whose business has gone idle (IdleTills) draws no
+// wage, and holds its place. (A merchant keeper is called back to its shop at the day's turn as before: round 9.)
+void aKeeperGivesUpABusinesssHire()
+{
+    const auto go = [](std::uint64_t off, bool idle) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(Society::MoreHands | off);
+        std::string extra = resident("wf", "Wade Fenn", "civilian", "fishes the waters off Westmere", 7, 9.5, 8, 9.5) +
+                            resident("es", "Rook Hutch", "civilian", "keeps rabbits by the road", 0, 6.5, 1, 6.5);
+        for (int n = 1; n <= 150; ++n)
+            extra += resident("ec" + std::to_string(n), "Idle " + std::to_string(n), "civilian", "idling in the square", 0, 2.5 + n % 12, 0, 2.5 + n % 12);
+        auto f = strip("EE.....WW", extra);
+        auto w = load(f);
+        w.tick(.6);
+        auto& s = w.society();
+        const auto till = s.tillOf("wf"), farm = s.tillOf("es");
+        expect(s.account(till) && s.account(farm) && farm != "es", "the fishery and the rabbit farm keep tills: " + farm);
+        for (std::int64_t day = 3; day <= 4; ++day)
+        {
+            auto saved = w.save();
+            saved.calendarDays = double(day) + 22. / 24;
+            saved.society.memory.pace = .5;
+            saved.society.memory.paceCover.clear();
+            for (auto& [who, life] : saved.society.residents)
+                life.hunger = life.fatigue = 0;
+            saved.society.accounts.at(till).stock["fish"] = 80;
+            saved.society.accounts.at("treasury").cash -= 80 + 3000;
+            saved.society.accounts.at("e1").cash += 80;
+            saved.society.accounts.at(till).cash += 3000;
+            expect(w.restore(saved).ok, "To an evening");
+            expect(s.sale(till, "e1", "fish", 80, 1, "test: the day's fish"), "the day's fish sold");
+            run(w, 600 * 3);
+        }
+        const auto hire = [&]() -> const Society::OddJob* {
+            for (const auto& j : s.oddJobs())
+                if (j.payer == till && j.until >= 0 && j.kind == "a hand")
+                    return &j;
+            return nullptr;
+        };
+        while (w.calendarDays() < 5 + 14. / 24)
+            w.tick(1);
+        std::string hand;
+        if (const auto* j = hire())
+            for (const auto& [who, stage] : j->stage)
+                if (who.rfind("ec", 0) == 0 && hand.empty())
+                    hand = who;
+        expect(!hand.empty() && Society::businessHire(*hire()), "a city wolf holds a place on the fishery's hire");
+        // The farm's post to the city wolf; its till pays it (or, idle, doesn't).
+        auto st = s.state();
+        for (auto& [pid, post] : st.careers.positions)
+            if (post.holder == "es")
+                post.holder = hand;
+        if (idle)
+            st.memory.shortTills[farm] = {0, 1, -1, 1};   // (Idle since day 1, its till as it is.)
+        else
+        {
+            st.accounts.at("treasury").cash -= 500;
+            st.accounts.at(farm).cash += 500;
+        }
+        expect(s.restore(st), "the city wolf keeps the rabbit farm");
+        const bool waged = s.keeperWaged(hand);
+        while (w.calendarDays() < 6 + 3. / 24)
+            w.tick(1);
+        const bool holds = hire() && hire()->stage.count(hand) > 0;
+        expect(s.conserved(), "Every penny is kept");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return std::pair{waged, holds};
+    };
+    const auto [waged, holds] = go(0, false);
+    expect(waged && !holds, "a keeper drawing its till's wage gives up the business's hire at the day's pass");
+    const auto [without, still] = go(Society::WagelessFirst, false);
+    expect(without && still, "without the rule it holds its place its week");
+    const auto [idleWaged, idleHolds] = go(0, true);
+    expect(!idleWaged && idleHolds, "a keeper of an idle business draws no wage, and holds its place");
+}
+
 // And with land (doc 64, Phase 13): a rabbit farm on the strip, its holder its one hand, its shelf bare (a producer's goods
 // go on to the shops). Its sales wanting a hand's day, the pace goes on, though the farm, planning half again for its
 // bare shelf, hires. Its sales wanting three hands' days, the land falls behind: since 2026-10-26 that no longer holds
@@ -4071,6 +4151,7 @@ int main()
         thePaceIsSteadied();
         thePaceStepsUpWithTheLand();
         aCityHandAtTheFishery();
+        aKeeperGivesUpABusinesssHire();
         sellersPriceFromCost();
     }
     catch (const std::exception& error)

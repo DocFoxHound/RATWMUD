@@ -7528,3 +7528,87 @@ three threads, the default start, beside two runs without (both starts):
 
 So --fast at 30 sits within what the start alone moves; at 60 it doesn't. A year beside one without is still to be
 run before a fast year's numbers are taken as the game's.
+
+### Phase 13: round 12, lane A: the wage spiral, hires to the wageless first (2026-10-29)
+
+The year of round 11 (`artifacts/economy/2026-10-29-r11-year`, built from dadf667) ran a wage-price spiral. The
+residents bought about 190k food units a quarter, flat, but paid 11.3p, 16.1p, 19.6p and 22.8p a unit by quarter
+(cheese 38p to 75p), and the going rate (`memory.going`, the middle of the unskilled makers' wages) went 60p to 115p
+(round 10's year peaked about 94p, and its food prices rose then fell). Prices are built from cost (`normalCost`: hours
+at the town's labourer's day, and materials), so every price follows the rate, and the rate is the middle of the
+wages the weekly review bids: a business with posts open four days of its week (`book.openDays >= OpenDays`) raised its
+wage 3-10% up to twice the rate, nothing asking whether its sales paid the higher wage. Round 11's MoreHands made a
+till holding spare money want up to twice its hands; those were posts open, so wage bids. And the hires' places went
+more and more to producers who already drew their own farm till's keeper's wage (5.0k to 8.0k hire days a quarter)
+while the wage-earners' fell (13.5k to 8.6k): their food bill rose 1.0M to 1.9M a quarter on income of 2.4M to 3.1M, they
+ran out of money by day 336, and about 260 went hungry. The user (2026-10-29) approved the two rules below. Base:
+p13-r11 at dadf667. (No run: the user asked for none this round; the unit tests only.)
+
+**What changed** (both with work by the hours):
+
+- **1. A business bids its wage up only if its sales pay it** (`Society::WageBySales`, `1ull << 39`; `econ_watch
+  --without wagecap`; `Society::tendLabour`'s weekly review). A business that makes things (a maker or the land's; not
+  a stall, nor the town's, the church's or a House's own posts) keeps its **trade lately**, `memory.tradeNet`: what its
+  sales took less what it paid for goods and materials (on credit too, the day bought: `Society::noteTrade`, from
+  `transfer` and `onCredit`), a day, a running mean over its first `SalesDays` (28) days and then a 28-day running
+  average (`keepTradeNet`, at the day's pass). Its wages, its rent, its tools and its owner's profit are what is left.
+  At its weekly review, short of hands four days of its week, it bids only if
+
+  `tradeNet >= up x max(1, hands + hires' hands + bidOpen)`,
+
+  `up` the wage it would bid (as before: its wage x 1 + 3-10% by how short it is, at most twice the rate), `hands` its
+  posts held (its keeper too: it is paid the business's wage), `hires' hands` the grown hands on its hires, and
+  `bidOpen` its posts open less **MoreHands' extra** (`handsWanted(till)` less `handsWanted(till, bare, false)`, the
+  hands its sales want alone). So: those extra hands bid no wage at all (they are hands it could take on from what it
+  holds over, not hands it lacks: a till whose only open posts are those never bids), and a business short of the hands
+  its sales want but whose trade can't pay them at the higher wage keeps its wage and its posts open, its hires still
+  posted at its wage. **The drift back:** a business whose posts are filled (none open by its sales, or not four days of
+  its week) and whose wage stands over the rate comes `WageBack` (a quarter) of the way back to the rate (for its skill)
+  each weekly review, never below it. Before, the only ways down were six calm weeks in a realm over 3% idle (2% at
+  most a week) or 5% a week over 1.3 times the rate. A bid's wage now comes back in a few weeks once its posts fill, so
+  the middle of the wages, the going rate, follows what is short now, not every shortage since.
+- **Why the extra is taken off at the review, not where posts are counted.** MoreHands' extra reaches the open posts
+  three ways: as the hands it wants and hasn't (the daily `missing`), as its hires' slots nobody took (its hires are
+  sized by the hands it wants), and through `openDays`, which any open post counts. Taking `extra` off `open` at the
+  review covers all three and leaves the posts themselves, and the hires, as they were: the jobless still see them
+  and take them. (The days counted stay any post's; a till whose four open days were all MoreHands' extra and whose
+  open posts today are its extra bids nothing.)
+- **2. A business's hire to the wageless first** (`Society::WagelessFirst`, `1ull << 40`; `--without wagelessfirst`;
+  `Society::oddJobFor`, `Society::keeperWaged`). A grown wolf keeping a business whose till pays it its keeper's (or a
+  House's manager's) wage today (`keeperWaged`: it holds the post, the business isn't idle, its till didn't fail to pay
+  it today) takes a **business's hire** (`businessHire`: "a hand" or "a hand at the shop", a till's, for the week; not
+  a field's place) only from `WagedFrom` (14:00), as a child takes a grown wolf's work: before then they are for the
+  jobless, the idle, the unpaid (a keeper whose till couldn't pay it, an idle business's keeper), and the hands whose
+  business has no work and pays them by the spell they work (they are paid nothing while away, so they are wageless
+  that day, and with a better-paid hire they look as before). And its place is the day's: at the day's pass, after the
+  day's measures (so a place a keeper held yesterday is not read as open and bids no wage), a keeper drawing its wage
+  is taken off a business's hire, and the place is the jobless' again in the morning, the keeper's again from 14:00 if
+  none took it. **The fields' places** (sowing and the harvest, `j.field`) are left out: there the land wants every hand
+  it can get, the keepers' too, and the harvest call is as before. The institutions' crews are left as they were (they
+  have their own order: the unpaid first, round 7).
+- **Saves:** `memory.tradeNet` (`"tradeNet"`, each till's mean a day and its days counted), written only when it has
+  any: a save from before reads none, each business's trade counted from its next day. No money moves for either rule.
+- **econ_watch:** `--without wagecap`, `--without wagelessfirst`.
+
+**Tests.** `aWageBidBySales` (`crafting_tests`): a scribe's office and three lone scribes at a 10p labourer's day. Its
+clerk's post open, its book four days open: its trade 1,000p a day, it bids its wage over 10p; its trade nothing, it
+keeps 10p and its post open; without the rule it bids whatever it sells. Its two clerks at their desks at 12.5p: it
+comes to 11.875p in its week (a quarter of the way back to 10p); without the rule it keeps 12.5p. Holding 20,000p in its
+till, its only open post MoreHands' extra: it bids nothing with the rule, whatever its trade; without, it bids.
+`aKeeperGivesUpABusinesssHire` (`roads_tests`): the city wolf holding a place on the fishery's hire made the keeper of
+east's rabbit farm, its till paying it: at the next day's pass it no longer holds the place; without the rule it holds
+it; a keeper of an idle farm draws no wage and holds its place. (A merchant keeper was already called back to its shop
+at the day's turn, round 9: the rule is the civilian keepers', the land's.) `aShortBusinessBidsUp`: its 30 loaves bring
+about 30p a day, short of its hands' wage: without WageBySales it bids up as before, with it it keeps its wage, its
+posts open. `farmersCalledBackAndHiresShut`, whose farmer takes the bakery's hire at ten, leaves WagelessFirst out.
+`wire_tests`: a business's trade lately round trips, none written when there is none. All 68 tests pass.
+
+**For the user** (no run this round: these want the year):
+
+1. **The affordability measure.** Trade less goods and materials over four weeks, against the hands it has and those
+   its sales want at the higher wage. It leaves out its rent and its tools (a few percent); a stricter test would
+   keep its margin over the wage bill.
+2. **The drift back**, a quarter of the way to the rate a week. Faster brings the rate down sooner; slower keeps more
+   of a bid that filled its posts.
+3. **The keepers' hour** (14:00). Later keeps more hires for the wageless; the keepers then take what is left of the
+   afternoon only. Or never: a keeper's wage is a wage.

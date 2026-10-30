@@ -260,8 +260,12 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
                 return true;
         return false;
     }();
+    // A keeper drawing its own till's wage today takes a business's hire (not a field's) only from WagedFrom, when none
+    // without a wage of its own has taken it (round 12, lane A, the user, 2026-10-29: WagelessFirst; the place is the
+    // day's, the jobless' again at dawn: tendLabour).
+    const bool waged = !child && hour < WagedFrom && workByHours() && wageRule(WagelessFirst) && keeperWaged(id);
     const auto open = [&](const OddJob& j) {
-        return !j.ended && (j.until < 0 || !holdsHire) &&
+        return !j.ended && (j.until < 0 || !holdsHire) && (!waged || !businessHire(j)) &&
                (j.community == community || (fromCity && j.until >= 0 && j.kind == "a hand" && farmHireOf(j)) || (abroad && townCrew(j))) &&
                int(j.stage.size()) < j.slots && !j.stage.count(id) && (!child || j.forChildren || hour >= 14) &&
                (j.kind != "about the home" || !ownHome(j));

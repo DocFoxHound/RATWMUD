@@ -81,6 +81,10 @@
 // And round 11's, lane 3: markdowns (a seller's good over its shelf target keeps its price, its margin's weekly review
 // alone), foodneed (a town short of food sends for twelve of three foods a food shop, by a meal's worth a head, not its
 // people's week).
+// And round 12's, lane A (the wage spiral): wagecap (a business short of hands bids its wage up whatever its sales pay,
+// its posts open past its sales' hands, MoreHands' extra, bidding too, and a filled one's wage comes down only as
+// round 11's did), wagelessfirst (a keeper drawing its own till's wage takes a business's hire at any hour, and holds it
+// its week, as round 11's).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -588,9 +592,13 @@ int main(int argc, char** argv)
                     off |= Society::Markdowns;
                 else if (name == "foodneed")
                     off |= Society::FoodByNeed;
+                else if (name == "wagecap")
+                    off |= Society::WageBySales;
+                else if (name == "wagelessfirst")
+                    off |= Society::WagelessFirst;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns or foodneed, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap or wagelessfirst, not "
                               << name << "\n";
                     return 2;
                 }
