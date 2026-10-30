@@ -123,7 +123,14 @@ void Society::rebateTownTax(const std::map<std::string, std::vector<std::pair<st
             incomes += income;
         if (target < 1 || held <= 2 * target || incomes < 1)
             continue;
-        const double pool = (held - 2 * target) / 2;
+        // (Round 13, lane 2, SurplusByNeed: less its pull as its surplus was sent on this week. While the city's homes are
+        // poorer than its own, what it holds over two targets goes to the city's poor before it goes back to its own
+        // taxpayers; as the need falls, or the capital's pot fills, the rebate comes back. In round 12's run Larkfield's
+        // stores took 1,257,623p of holdings tax and paid 1,297,271p of rebate, mostly to the same payers.)
+        double pool = (held - 2 * target) / 2;
+        if (surplusByNeed())
+            if (const auto pull = pullSent_.find(id); pull != pullSent_.end())
+                pool *= 1 - std::clamp(pull->second, 0., 1.);
         for (const auto& [payer, income] : payers)
             if (const auto back = std::min<std::int64_t>(account(id)->cash, std::llround(pool * income / incomes));
                 back > 0 && shift(id, payer, "", 0, back, "a town's rebate") && noteTowns_)
@@ -419,11 +426,48 @@ void Society::institutionsWeek(std::int64_t day)
         if (workByHours() && wageRule(HoldingsBite))
             if (const auto bite = memory.biteLeft.find(id); bite != memory.biteLeft.end())
             {
-                const auto spend = std::min<std::int64_t>(std::int64_t(std::max(0., bite->second)), account(id)->cash);
-                budget = std::max<std::int64_t>(0, budget) + spend;
-                if (noteTowns_)
-                    biteSpent_[id] += spend;
-                memory.biteLeft.erase(bite);
+                auto spend = std::min<std::int64_t>(std::int64_t(std::max(0., bite->second)), account(id)->cash);
+                // Round 13, lane 2 (SurplusByNeed; the user, 2026-10-29). A town: its pull's part of what's left of its bite
+                // (its relief past its allowance and its day labour past its own were paid from it this week: its own poor
+                // first) goes on to the capital's pot, inside the room it has ("holdings tax sent on"); the rest to its
+                // works as before. In round 12's run the works' places were taken 37% of the time in Larkfield and 46% in
+                // Oakhaven in the last quarter (the capital's all of them): what wasn't paid out became the stores' own and
+                // went back to the payers by the rebate.
+                if (surplusByNeed() && id != "treasury")
+                    if (const auto send = std::min<std::int64_t>(std::llround(double(spend) * surplusPull(community)), std::int64_t(capitalPotRoom()));
+                        send > 0 && shift(id, "treasury", "", 0, send, "holdings tax sent on"))
+                    {
+                        memory.biteLeft["treasury"] += double(send);
+                        spend -= send;
+                        if (noteTowns_)
+                            sentOn_[id] += send;
+                    }
+                // The capital: on its works' crew only what its places can take on top of its budget's crew (estateMost
+                // at the most); the rest kept in its pot, not erased, for its relief past its allowance, its own day labour
+                // past its own (Society's day labour, bitePays) and next week's crew.
+                if (surplusByNeed() && id == "treasury")
+                {
+                    // (What brings its crew, a week of 80% of the budget at the going rate a place, to estateMost: the
+                    // places its budget's crew leaves, and the part of one its budget already pays.)
+                    const auto wage = std::int64_t(std::ceil(goingRate(community) - 1e-9));
+                    const auto base = std::max<std::int64_t>(0, budget);
+                    const auto most = std::int64_t(estateMost()) * std::max<std::int64_t>(1, wage * 7) * 10;
+                    const auto foldable = std::max<std::int64_t>(0, (most - 8 * base + 7) / 8);
+                    spend = std::min(spend, foldable);
+                    budget = base + spend;
+                    if (noteTowns_)
+                        biteSpent_[id] += spend;
+                    bite->second -= double(spend);
+                    if (bite->second < 1)
+                        memory.biteLeft.erase(bite);
+                }
+                else
+                {
+                    budget = std::max<std::int64_t>(0, budget) + spend;
+                    if (noteTowns_)
+                        biteSpent_[id] += spend;
+                    memory.biteLeft.erase(bite);
+                }
             }
         if (budget <= 0 || community.empty())
             continue;

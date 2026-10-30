@@ -194,6 +194,12 @@ const Society::OddJob* Society::oddJobFor(const std::string& id, const Position&
         for (const auto& j : oddJobs_)
             if (const auto mine = j.stage.find(id); !j.ended && mine != j.stage.end() && mine->second < 2)
                 return &j;
+    // Nobody under ChildWorkAge (8) takes one (round 13, lane 2; ChildrenKept; the user, 2026-10-29): not a hire, a crew's
+    // place nor a field's with its lodging. A newborn stands "growing up", so out of work, and its age isn't a child's
+    // (eight to fifteen, below), so it looked as a grown wolf without work does: in round 12's run the 53 born_ earned
+    // 1,257,959p on the farms' and shops' hires. (A place it holds already runs out with its hire, HireDays at most.)
+    if (age < ChildWorkAge && workByHours() && wageRule(ChildrenKept))
+        return nullptr;
     // Who seeks them out: those without other work, and children (eight and up, not apprenticed), in the day; the poor
     // and hungry from eight, others from ten. Children would rather not work (the user, 2026-10-05): they look from noon,
     // on one day in three unless poor or hungry; and work that isn't for children (a hand at a farm, a hunt) is theirs only

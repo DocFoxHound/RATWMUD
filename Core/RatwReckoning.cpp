@@ -140,14 +140,27 @@ void Society::reckon(std::int64_t day, bool force)
         // Since round 11 (the user, 2026-10-29: "make the tax fluctuate depending on the wealth of the towns";
         // ShareByWealth, with work by the hours), by the town's wealth and the capital's (shareByWealth, below).
         const bool byWealth = workByHours() && wageRule(ShareByWealth) && day >= MonthDays;
+        // (Round 13, lane 2, SurplusByNeed: the capital's holding leaves its holdings-tax pot out, as a town's does, now
+        // that the towns' surplus goes into it.)
+        const bool byNeed = byWealth && surplusByNeed();
         const auto* capitalPurse = account("treasury");
         const double capitalMonth = CapitalMonths * monthIncomeOf("treasury");
-        const double capitalHeld = capitalPurse && capitalMonth >= 1 ? double(capitalPurse->cash) / capitalMonth : 1.;
+        const double capitalCash = capitalPurse ? std::max(0., double(capitalPurse->cash) - (byNeed ? biteHeld("treasury") : 0.)) : 0.;
+        const double capitalHeld = capitalPurse && capitalMonth >= 1 ? capitalCash / capitalMonth : 1.;
+        // What each town is asked to send on to the city's poor (SurplusByNeed, below), and its pull.
+        struct Ask
+        {
+            std::string treasury;
+            double asked = 0, pull = 0;
+        };
+        std::vector<Ask> asks;
+        pullSent_.clear();
         for (auto& [treasury, town] : towns)
         {
             if (treasury == "treasury" || !account(treasury))
                 continue;
             auto share = std::int64_t(double(town.tax / CapitalShare));
+            double held = 0, target = 0;            // (ShareByWealth's: the town's holding and its target.)
             if (byWealth)
             {
                 // The town's holding (its stores' week's mean, as far as they hold it now: the rebate's) against its target
@@ -161,8 +174,9 @@ void Society::reckon(std::int64_t day, bool force)
                 // than it holds.
                 // (Its holdings tax not yet spent back left out: the town's to spend, at its week, on its works. Round 12,
                 // lane B, HoldingsBite: so the bite isn't sent to the capital, nor rebated, nor saved.)
-                const double cash = std::max(0., double(account(treasury)->cash) - biteHeld(treasury)), target = townTaxTarget(treasury);
-                const double held = target >= 1 ? std::min(cash, townHeldMean(treasury) > 0 ? townHeldMean(treasury) : cash) : 0;
+                const double cash = std::max(0., double(account(treasury)->cash) - biteHeld(treasury));
+                target = townTaxTarget(treasury);
+                held = target >= 1 ? std::min(cash, townHeldMean(treasury) > 0 ? townHeldMean(treasury) : cash) : 0;
                 const double wealth = target >= 1 ? std::clamp(held / target, 0., ShareTownMost) : 1.;
                 const double want = std::clamp(2 - capitalHeld, ShareCapitalLeast, ShareCapitalMost);
                 const double ofTax = double(town.tax) / CapitalShare * wealth * want;
@@ -172,6 +186,7 @@ void Society::reckon(std::int64_t day, bool force)
             if (share > 0 && shift(treasury, "treasury", "", 0, std::min(share, account(treasury)->cash), "capital's share"))
             {
                 town.toCapital = share;
+                held = std::max(0., held - double(share));
                 // (The town's mean holding is what's left after it: TaxEase and the rebate, next, weigh what the town still
                 // holds, not what it sent, so its surplus isn't counted twice: to the capital, then back to its taxpayers.)
                 if (byWealth)
@@ -179,6 +194,47 @@ void Society::reckon(std::int64_t day, bool force)
                         mean->second = std::max(0., mean->second - double(share));
                 if (noteTowns_)
                     sharesSent_[treasury] += share;
+            }
+            // A town's surplus where the need is (round 13, lane 2; SurplusByNeed; the user, 2026-10-29): its pull (the
+            // city's need less its own) times NeedShare of what it still holds over two targets (where TaxEase has eased
+            // its tax to nothing and the rebate begins; about two weeks of a trading town's road money), asked of it for
+            // the capital's holdings-tax pot, which pays the city's crews, relief and day labour. In round 12's run
+            // Ridgemere lost 1.43M between days 91 and 728 while Oakhaven gained 667k and Larkfield 533k, and the share's
+            // surplus part was nothing all along (the capital held 2.5-3.6 months of its income under CapitalByIncome).
+            if (byNeed)
+                if (const double pull = surplusPull(treasury.substr(7)); pull > 0)
+                {
+                    pullSent_[treasury] = pull;
+                    if (const double asked = pull * NeedShare * std::max(0., held - 2 * target); asked >= 1)
+                        asks.push_back({treasury, asked, pull});
+                }
+        }
+        // Sent, every town's ask scaled to the room the capital's pot has (CapitalBiteRoom weeks of its crew at the most):
+        // not the capital's income (Society::record leaves the kind out), and taken off the town's mean holding as its
+        // share is, so TaxEase and its rebate weigh what it still holds. Its pull as sent cuts its rebate (rebateTownTax).
+        // (Without HoldingsBite there is no pot: what is sent is the capital's own, spent by its week's budget.)
+        if (!asks.empty())
+        {
+            double all = 0;
+            for (const auto& a : asks)
+                all += a.asked;
+            const double scale = std::min(1., capitalPotRoom() / all);
+            for (const auto& a : asks)
+            {
+                const auto sent = std::min<std::int64_t>(std::llround(a.asked * scale),
+                                                         std::int64_t(std::max(0., double(account(a.treasury)->cash) - biteHeld(a.treasury))));
+                if (sent > 0 && shift(a.treasury, "treasury", "", 0, sent, "a town's surplus sent on"))
+                {
+                    if (wageRule(HoldingsBite))
+                        state_.memory.biteLeft["treasury"] += double(sent);
+                    if (const auto mean = state_.memory.heldMean.find(a.treasury); mean != state_.memory.heldMean.end())
+                        mean->second = std::max(0., mean->second - double(sent));
+                    if (noteTowns_)
+                        sentOn_[a.treasury] += sent;
+                    pullSent_[a.treasury] = a.pull * std::min(1., double(sent) / std::max(1., std::round(a.asked)));
+                }
+                else
+                    pullSent_[a.treasury] = 0;
             }
         }
         // (No wealth tithe: tax and tithe are on income now, doc 64, Phase 7.)
@@ -218,6 +274,13 @@ void Society::reckon(std::int64_t day, bool force)
     for (const auto& p : positions_)
         if (const auto till = ownTill(p.id); !till.empty())
             open(till);
+}
+
+double Society::capitalPotRoom() const
+{
+    // (Round 13, lane 2, SurplusByNeed: CapitalBiteRoom weeks of the most the capital's crew can be paid, estateMost at the
+    // city's going rate, less what its holdings-tax pot holds.)
+    return std::max(0., CapitalBiteRoom * 7 * double(estateMost()) * std::ceil(goingRate(capital()) - 1e-9) - biteHeld("treasury"));
 }
 
 std::vector<Society::Reckoning> Society::takeReckonings()
