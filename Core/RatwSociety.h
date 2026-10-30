@@ -1468,8 +1468,6 @@ class Society
     // (A test's: who sells a good as buyMaterials reads them, built afresh: by id and kind, 0 supplier, 1 workshop, 2
     // producer.)
     std::vector<std::pair<std::string, int>> sellersListed(const std::string& item) const;
-
-  private:
     // Round 14, lane 2 (the user, 2026-10-30: ShopsCompared, with work by the hours): the wolves compare the shops. A
     // hungry wolf went to the nearest open food shop of its cell, else the first of its town, and a household laid in
     // starting at a shop fixed by its home, so a dear seller lost no buyers: Ridgemere's smoked fish went from 9% to 52% of
