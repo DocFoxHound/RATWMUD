@@ -1308,7 +1308,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 return false;
             const double since = order[i]->second.decidedAt < 0 ? 1
                                  : std::round((absoluteDay - order[i]->second.decidedAt) * calendar::SecondsPerDay);
-            c.step = int(std::clamp(since, 1., double(UnseenStep)));
+            c.step = int(std::clamp(since, 1., double(unseenStep())));
         }
         else
             c.step = 1;

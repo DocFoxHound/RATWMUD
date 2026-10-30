@@ -3,6 +3,7 @@
 // second, simulation tiers on), and every coin and good that moves is tallied from the society's journal.
 //
 //   econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]
+//              [--unseen-step SECONDS] [--straight] [--road-ways N] [--fast]
 //              [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N] [--players-bodies HOW]
 //              [--players-staple ITEM] [--hold-pace PACE_CSV] [--ask-payers] [--without RULE[,RULE...]]
 //              [--stop-on-sentinel KINDS|all] [--model-shares FILE] [--sentinel-weeks N] [--trace-hunger]
@@ -15,6 +16,16 @@
 // days asked kept. World::tick moves the world in steps of 1/30 s at most whatever it is given, and its schedules come
 // every half second of world time, so a longer step saves only each tick's own work (streaming, views, the journal,
 // this watch's tallies); past half a second, the scripted players' looks (twice a world second) come once a tick.
+// --unseen-step SECONDS: the world seconds between the unseen residents' decisions (Society::UnseenStep, 5, unless
+// asked), each a step's worth: an economy run's fewer, longer decisions, the same rules (every resident is unseen here).
+// Not the game's: a run with it differs from one without by its timing, not by its rules.
+// --straight: the unseen walk straight, each leg's time by its line (World::setStraightOffstage), no road way looked for:
+// half an economy run's time went in finding them. --road-ways N: the road ways kept before they're let go (8192).
+// --fast: an economy run's settings, --unseen-step 30 and --straight (the user, 2026-10-29: "our simulations are just
+// taking way too long"): about 2.4 times as fast (30 days in 86 s, not 211 s, at three threads). Its digest is its own;
+// over 30 days what it measures sat between two runs without it from their two starts (Gini .517 to their .510 and .515;
+// food 10.6p a unit to their 10.7p and 11.1p); at 60 (3.1 times as fast) it fell outside (Gini .524, trade takings 15%
+// short). Docs/Design/64-economy-migration.md, "the fast economy run".
 // --players: scripted players who push (doc 64, Phase 13; Tests/econ_players.h has each): hoard, corner, dump, whale,
 // poach, kill, theft, visit, winter, flood, strike, buyout, drain, gift. They act from --players-from DAY (7 unless
 // asked: the realm's money stands from day 2;
@@ -213,6 +224,11 @@
 #include <vector>
 
 using namespace ratw;
+
+namespace
+{
+constexpr int FastUnseenStep = 30;                 // --fast: the unseen's decisions half a world minute apart.
+}
 namespace fs = std::filesystem;
 
 namespace
@@ -346,7 +362,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS]\n"
+        std::cerr << "usage: econ_watch EXPORT_DIR DAYS OUT_DIR [--from HOUR] [--deterministic] [--threads N] [--hours] [--step SECONDS] [--unseen-step SECONDS] [--straight] [--road-ways N] [--fast]\n"
                      "                  [--players SCENARIO[,SCENARIO...]] [--players-from DAY] [--players-days N]\n"
                      "                  [--players-bodies walk|still|jump] [--players-staple ITEM] [--hold-pace PACE_CSV]\n"
                      "                  [--ask-payers] [--without children|employees|stalls[,...]]\n"
@@ -390,6 +406,25 @@ int main(int argc, char** argv)
         }
         else if (std::string(argv[i]) == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
+        else if (std::string(argv[i]) == "--straight")
+            World::setStraightOffstage(true);
+        else if (std::string(argv[i]) == "--fast")
+        {
+            Society::setUnseenStep(FastUnseenStep);     // (A later --unseen-step has the last word.)
+            World::setStraightOffstage(true);
+        }
+        else if (std::string(argv[i]) == "--road-ways" && i + 1 < argc)
+            World::setRoadWaysKept(std::size_t(std::max(1, std::atoi(argv[++i]))));
+        else if (std::string(argv[i]) == "--unseen-step" && i + 1 < argc)
+        {
+            const int seconds = std::atoi(argv[++i]);
+            if (seconds < 1 || seconds > 600)
+            {
+                std::cerr << "--unseen-step is world seconds between the unseen's decisions, 1 to 600, not " << argv[i] << "\n";
+                return 2;
+            }
+            Society::setUnseenStep(seconds);
+        }
         else if (std::string(argv[i]) == "--players" && i + 1 < argc)
             for (std::stringstream list(argv[++i]); list.good();)
             {

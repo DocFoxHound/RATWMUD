@@ -3328,7 +3328,8 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     };
     if (e.cellId == goalCell)
     {
-        auto way = roadWay(e.cellId, e.position, {goal}).way;
+        // (A harness's economy run walks the unseen straight, the way's time by its line: setStraightOffstage.)
+        auto way = straightOffstage_ ? std::vector<Vec2>{} : roadWay(e.cellId, e.position, {goal}).way;
         leg = {goalCell, goal, false, {}, goal, {}, setOff + timed(goal, way), std::move(way), e.position, setOff};
         return;
     }
@@ -3391,7 +3392,7 @@ void World::moveOffstage(Entity& e, const std::string& task, const std::string& 
     // The road may lead to a better crossing than the nearest: the crossings on a road into the next cell are weighed
     // with it, by the way there along the roads, and the cheapest taken.
     std::vector<Vec2> along;
-    if (roadMaps_.count(e.cellId))
+    if (!straightOffstage_ && roadMaps_.count(e.cellId))
     {
         std::vector<const Door*> ways{way};
         const auto consider = [&](const Door& other) {
@@ -3454,7 +3455,6 @@ void World::RoadMap::walkGrid()
 World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const
 {
     constexpr std::size_t Lookahead = 32;           // Tiles a straight run may skip.
-    constexpr std::size_t WaysKept = 8192;
     const auto found = roadMaps_.find(cellId);
     if (found == roadMaps_.end() || targets.empty())
         return {};
@@ -3670,7 +3670,7 @@ World::RoadWay World::roadWay(const std::string& cellId, Vec2 from, const std::v
         walk[b] = 0;
     for (const Vec2 t : targets)
         s.wanted[std::size_t(tileOf(t))] = 0;
-    if (roadWays_.size() >= WaysKept)
+    if (roadWays_.size() >= roadWaysKept_)
         roadWays_.clear();
     roadWays_.emplace(key, result);
     return result;

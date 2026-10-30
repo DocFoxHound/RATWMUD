@@ -7493,3 +7493,38 @@ runs were one after another on a machine other sessions were loading (load avera
 both see the same load, 5 days `--hours --threads 6` take 0.549 min with them and 0.552 `--without markdowns` (and
 1.24 against 1.25 at a load of 21). `priceAt` finds the seller's till and good once, for its margin and its markdown
 both (it had looked the till up a second time); the results are the same either way (5 days: 23768e949b6a0c62).
+
+### Phase 13: the fast economy run (2026-10-29)
+
+The user, 2026-10-29: "our simulations are just taking way too long." A year took 59 minutes (r11, dadf667). Its own
+measure (econ_watch's cost lines) put 95% of a tick in the half-second schedules, not in walking (movement 1%), and a
+callgrind profile of a day at a longer step put half of what was left in finding the unseen's road ways
+(World::roadWay, from moveOffstage) and a fifth in the residents' decisions.
+
+- `--unseen-step SECONDS` (Society::setUnseenStep, 5 unless asked, the game's UnseenStep): the unseen decide that many
+  seconds apart, each decision a step's worth (as they always have, a step at a time). In econ_watch everyone is unseen.
+- `--straight` (World::setStraightOffstage): the unseen walk straight, a leg's time by its line and the detour a walk
+  takes, no road way found nor a road's crossing weighed. Nobody sees them walk.
+- `--road-ways N` (World::setRoadWaysKept, 8192): the ways kept before they're let go. Raised, it changed nothing in 3
+  days (the ways found were new ones), so --fast leaves it.
+- `--fast`: `--unseen-step 30 --straight`.
+
+Left alone: `--step` (0.5 saved 2% and moved the digest), the threads (3 run as fast as 6: the decisions are spread over
+them, the rest isn't; so three runs side by side cost what one does), the half-second schedules themselves (crime,
+bonds, roads, errands assume their half second; crime's grows with the year's thefts, to 0.03-0.1 ms a tick late in r11).
+
+Without them a run is as it was: the 3-day digest 594a7eb3b8f4c514 with and without these changes. With them, 30 days at
+three threads, the default start, beside two runs without (both starts):
+
+| | without | without, --from 3 | --fast (30) | --unseen-step 60 --straight |
+|---|---|---|---|---|
+| wall time | 211 s | 211 s | 86 s | 69 s |
+| Gini, day 30 | .515 | .510 | .517 | .524 |
+| poorer half | .173 | .178 | .170 | .165 |
+| food, a unit, days 14-30 | 10.7p | 11.1p | 10.6p | 11.0p |
+| hire-days a day | 269 | 281 | 270 | 266 |
+| trade takings a day | 13.1k | 13.0k | 13.2k | 11.1k |
+| tills stopped, day 30 | 60 | 60 | 65 | 54 |
+
+So --fast at 30 sits within what the start alone moves; at 60 it doesn't. A year beside one without is still to be
+run before a fast year's numbers are taken as the game's.

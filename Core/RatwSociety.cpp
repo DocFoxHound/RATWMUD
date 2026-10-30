@@ -656,7 +656,7 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
 {
     if (!decidesWithin(seconds))
         return false;
-    return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
+    return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % unseenStep() == 0 ||
            std::int64_t(std::floor(absoluteDay)) > state_.budgetDay || state_.memory.purses < 1 || state_.books.month < 0 ||
            wantsSnapshot(absoluteDay);                 // (The monitor's snapshot: everyone, doc 46.)
 }
@@ -664,7 +664,7 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
 {
     season_ = season;
-    unseenDecided_ = ++secondsDecided_ % UnseenStep == 0;
+    unseenDecided_ = ++secondsDecided_ % unseenStep() == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
     orchestrate(absoluteDay, bodies);                  // The economy's monitor: its measures and snapshot (doc 46).
     if (day > state_.budgetDay)

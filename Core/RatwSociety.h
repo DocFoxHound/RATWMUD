@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <algorithm>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -693,7 +694,11 @@ class Society
     // Whether tick(seconds) would decide anything: the bodies it is given go unread otherwise.
     bool decidesWithin(double seconds) const { return state_.enabled && state_.decisionRemainder + seconds + 1e-8 >= 1.; }
     // Unseen residents decide every UnseenStep seconds, a step's worth at a time; those a player may see, every second.
+    // A harness may lengthen it (setUnseenStep: econ_watch's --unseen-step, an economy run's fewer, longer decisions; the
+    // game keeps UnseenStep).
     static constexpr int UnseenStep = 5;
+    static int unseenStep() { return unseenStep_; }
+    static void setUnseenStep(int seconds) { unseenStep_ = std::clamp(seconds, 1, 600); }
     // Whether tick(seconds) at absoluteDay needs the bodies at all: anyone seen (`anySeen`), the unseen's step, a new day,
     // or the society's first decisions. Otherwise it is given none, and nothing happens to anyone that second.
     bool needsBodies(double seconds, double absoluteDay, bool anySeen) const;
@@ -1977,6 +1982,7 @@ class Society
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
     static inline bool noteShorts_ = false;
+    static inline int unseenStep_ = UnseenStep;
     static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;

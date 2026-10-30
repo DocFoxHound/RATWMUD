@@ -1063,6 +1063,14 @@ class World
     double tranceGain(const BattleFighter& f, double perLevel) const;   // A Trance's part, by its level and the family.
     // The simulator's: a family's Trance depths (at 2:1 .. 5:1; below 0 for the default between), how much deeper a grown
     // Quickened wolf's runs, and how deep among friends.
+    // The road ways a world keeps, by cell, start tile and targets, before it lets them all go and finds them afresh
+    // (8192 unless asked): a harness's economy run (econ_watch --fast) keeps more, its thousand walkers' ways found once.
+    // A way kept is one found from another spot of the same tile, so how many are kept moves a walker a little.
+    static void setRoadWaysKept(std::size_t ways) { roadWaysKept_ = std::max<std::size_t>(1, ways); }
+    // The unseen walk straight, a leg's time by its line and the detour a walk takes (no road way looked for, nor a road's
+    // crossing weighed against the nearest): a harness's economy run (econ_watch --fast), where nobody sees them walk and
+    // half its time went in finding their ways. The game walks them by the roads.
+    static void setStraightOffstage(bool straight) { straightOffstage_ = straight; }
     static void setTranceDepth(const std::string& family, double at2, double at3, double at4, double at5, double grown, double party);
     // A work ability used out of a fight (Mend, Shortcut, Lighten Load...).
     Result useWorkGift(const std::string& id, const std::string& ability, const std::string& target);
@@ -1481,6 +1489,8 @@ class World
     RoadWay roadWay(const std::string& cellId, Vec2 from, const std::vector<Vec2>& targets) const;
     static Vec2 alongWay(Vec2 from, const std::vector<Vec2>& way, double fraction);   // That far along it (0 to 1).
     mutable std::map<std::tuple<std::string, int, int, std::uint64_t>, RoadWay> roadWays_;   // By cell, start tile, targets.
+    static inline bool straightOffstage_ = false;    // (setStraightOffstage.)
+    static inline std::size_t roadWaysKept_ = 8192;   // The ways kept before they're all let go (setRoadWaysKept).
     // roadWay's working grids, kept between calls (main thread only) and left as found: g infinite, previous -1, no
     // tile wanted. Not copied with the World.
     struct RoadScratch
