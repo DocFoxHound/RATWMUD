@@ -1313,6 +1313,7 @@ class Society
         ShareByWealth = 1ull << 38,                  // The capital's share of a town's tax by its wealth and the capital's (round 11).
         WageBySales = 1ull << 39,                    // A business raises its wage only if its sales pay it (round 12, lane A).
         WagelessFirst = 1ull << 40,                  // A business's hire goes to those without a wage of their own first (round 12).
+        ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };

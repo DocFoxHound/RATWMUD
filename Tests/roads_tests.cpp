@@ -4044,7 +4044,8 @@ void aTownShortOfFoodSendsForItsWeek()
 {
     Society::setWorkByHours(true);
     const auto run = [](bool rule) {
-        Society::wageRulesOff(rule ? 0 : Society::FoodByNeed);
+        // (Shelf orders left out, as round 11 had it: they size and source the same food their own way.)
+        Society::wageRulesOff(Society::ShelfOrders | (rule ? 0 : Society::FoodByNeed));
         std::string extra = resident("smoker", "Sam Smoke", "merchant", "runs The East Smokehouse", 0, 12.5, 1, 12.5) +
                             resident("inn", "Ina Ladle", "merchant", "keeps The West Lantern", 7, 12.5, 8, 12.5);
         for (int n = 1; n <= 30; ++n)
@@ -4078,6 +4079,60 @@ void aTownShortOfFoodSendsForItsWeek()
     Society::setWorkByHours(false);
 }
 
+// Shelf orders (doc 64, Phase 13, round 12, lane C), with work by the hours: the west, thirty-one wolves and a bare inn;
+// the capital's smokehouse (the far end of the road) with six hundred jerky to spare, mid's (halfway) with two hundred.
+// With the rule the inn's jerky is signed with mid, the nearest with some to spare, and for more when ten of the west's
+// wolves are hungry (each one's week of meals, unmet, on top of its shelves' two days); without it, with the capital (the
+// most to spare), and the hungry change nothing.
+void aTownsShelvesSendToTheNearest()
+{
+    Society::setWorkByHours(true);
+    const auto run = [](bool rule, int hungry) {
+        Society::wageRulesOff(rule ? 0 : Society::ShelfOrders);
+        std::string extra = resident("smoker", "Sam Smoke", "merchant", "runs The East Smokehouse", 0, 12.5, 1, 12.5) +
+                            resident("midsmoker", "Mo Smoke", "merchant", "runs The Mid Smokehouse", 5, 12.5, 6, 12.5) +
+                            resident("inn", "Ina Ladle", "merchant", "keeps The West Lantern", 10, 12.5, 11, 12.5);
+        for (int n = 1; n <= 30; ++n)
+            extra += resident("wf" + std::to_string(n), "Westfolk " + std::to_string(n), "civilian", "working", 11, 3.5 + n % 9, 11, 3.5 + n % 9);
+        auto f = strip("EE...MM...WW", extra);
+        auto w = load(f);
+        w.tick(.6);
+        w.roads().camps.clear();
+        auto& soc = w.society();
+        const auto inn = soc.tillOf("inn");
+        expect(soc.foodShop("inn"), "the inn is a food shop");
+        for (int k = 0; k < 6; ++k)
+            soc.create(soc.tillOf("smoker"), "jerky", 99, "test: a smoked winter's jerky");
+        for (int k = 0; k < 2; ++k)
+            soc.create(soc.tillOf("midsmoker"), "jerky", 99, "test: mid's winter jerky");
+        std::vector<std::pair<std::string, int>> held(soc.account(inn)->stock.begin(), soc.account(inn)->stock.end());
+        for (const auto& [item, n] : held)
+            if (n > 0 && Society::edible(item))
+                soc.consume(inn, item, n, "test: eaten bare");
+        soc.shift("treasury", inn, "", 0, 3000, "test: takings");
+        auto state = soc.state();
+        for (int n = 1; n <= hungry; ++n)
+            state.residents["wf" + std::to_string(n)].hunger = 80;
+        expect(soc.restore(state), "The society takes the hungry");
+        nextMorning(w);
+        std::pair<std::string, int> order{"", 0};
+        for (const auto& o : w.roads().orders)
+            if (o.buyer == inn && o.item == "jerky")
+                order = {o.from, o.perWeek};
+        expect(soc.conserved(), "Money is conserved");
+        return order;
+    };
+    const auto nearest = run(true, 0), hungry = run(true, 10), most = run(false, 0), mostHungry = run(false, 10);
+    expect(nearest.first == "mid", "With the rule the inn's jerky comes from mid, the nearest (" + nearest.first + ")");
+    expect(most.first == "east", "Without it, from the capital, the most to spare (" + most.first + ")");
+    expect(hungry.first == "mid" && hungry.second > nearest.second,
+           "With ten hungry, for more (" + std::to_string(hungry.second) + " a week, from " + std::to_string(nearest.second) + ")");
+    expect(mostHungry.second == most.second, "Without it, the hungry change nothing (" + std::to_string(mostHungry.second) + ", " +
+                                                 std::to_string(most.second) + ")");
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
@@ -4095,6 +4150,7 @@ int main()
         aFailedSellerIsForgottenInAMonth();
         aLoadIsForTheOrdersItLeftWith();
         aTownShortOfFoodSendsForItsWeek();
+        aTownsShelvesSendToTheNearest();
         travelKeepsToTheRoads();
         aTownsMarketIsInTheTown();
         housesKeepToTheirTrades();

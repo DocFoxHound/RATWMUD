@@ -85,6 +85,8 @@
 // its posts open past its sales' hands, MoreHands' extra, bidding too, and a filled one's wage comes down only as
 // round 11's did), wagelessfirst (a keeper drawing its own till's wage takes a business's hire at any hour, and holds it
 // its week, as round 11's).
+// And round 12's, lane C: shelforders (a town short of food sends for its people's week by foodneed, its hungry not
+// counted, from the towns with the most to spare however far, up to MostOfAGood an order, as p13-r11).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -596,9 +598,11 @@ int main(int argc, char** argv)
                     off |= Society::WageBySales;
                 else if (name == "wagelessfirst")
                     off |= Society::WagelessFirst;
+                else if (name == "shelforders")
+                    off |= Society::ShelfOrders;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap or wagelessfirst, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst or shelforders, not "
                               << name << "\n";
                     return 2;
                 }
