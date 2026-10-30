@@ -161,6 +161,62 @@ bool Society::ownerReturns(const Position& p, const std::string& till) const
     return brings > 0 && brings >= ReturnCover * hands * employerWage(till);
 }
 
+bool Society::keeperWaged(const std::string& resident) const
+{
+    // Its post's till pays it its keeper's wage today (tendTills; a House's manager's the same, RatwHouses.cpp): it holds
+    // the post, the business isn't idle, and its till paid it (not unpaid today). A grown wolf's alone.
+    const auto* job = jobOf(resident);
+    if (!job || !workByHours() || (spec(resident) && spec(resident)->age < 16))
+        return false;
+    const auto till = "till:" + job->id;
+    const auto held = state_.careers.positions.find(job->id);
+    if (!account(till) || held == state_.careers.positions.end() || held->second.holder != resident)
+        return false;
+    if (wageRule(IdleTills) && tillIdle(till))
+        return false;
+    const auto s = state_.memory.shortTills.find(till);
+    return s == state_.memory.shortTills.end() || s->second.unpaid != state_.budgetDay;
+}
+
+void Society::keepTradeNet()
+{
+    // The day's net trade into each till's running average: a mean over its first SalesDays days (so a new business isn't
+    // read as selling nothing), then a SalesDays-day running average. Every business is counted each day, a day with no
+    // trade too. (With WageBySales and work by the hours; the rest leave memory as it was.)
+    auto& net = state_.memory.tradeNet;
+    if (!workByHours() || !wageRule(WageBySales))
+    {
+        netToday_.clear();
+        return;
+    }
+    for (const auto& [key, n] : hands_)
+        if (key.rfind("till:", 0) == 0)
+            net.try_emplace(key, std::pair<double, int>{0., 0});
+    for (const auto& [till, today] : netToday_)
+        if (account(till))
+            net.try_emplace(till, std::pair<double, int>{0., 0});
+    for (auto it = net.begin(); it != net.end();)
+    {
+        if (!account(it->first))
+        {
+            it = net.erase(it);
+            continue;
+        }
+        const auto today = netToday_.find(it->first);
+        auto& [mean, days] = it->second;
+        days = std::min(SalesDays, days + 1);
+        mean += ((today != netToday_.end() ? double(today->second) : 0.) - mean) / days;
+        ++it;
+    }
+    netToday_.clear();
+}
+
+double Society::tradeNetOf(const std::string& till) const
+{
+    const auto found = state_.memory.tradeNet.find(till);
+    return found == state_.memory.tradeNet.end() ? 0. : found->second.first;
+}
+
 bool Society::ownerUnpaid(const std::string& resident, const Position& job) const
 {
     // (Asked at a paid wolf's every decision: with none stopped, at once.)
@@ -320,6 +376,7 @@ bool Society::onCredit(const std::string& seller, const std::string& buyer, cons
     soldToday_[seller][items::baseOf(item)] += quantity;
     if (stockAll(a->second, items::baseOf(item)) == 0)
         ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
+    noteTrade(seller, buyer, price * quantity);     // (Its cost and its sale the day bought: round 12, WageBySales.)
     record("bought on credit", buyer, seller, item, quantity, 0);
     return true;
 }

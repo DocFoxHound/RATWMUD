@@ -353,6 +353,11 @@ struct EconomyMemory
     // (-1 while it still does), and the last day it couldn't pay its keeper its wage.
     std::map<std::string, ShortTill> shortTills;
     std::map<std::string, EmployerBook> employers;   // Employer (Society::employerKey) -> its book (doc 64, Phase 6).
+    // A business's trade lately (round 12, lane A, WageBySales; with work by the hours): its till -> what its sales took
+    // less what it paid for goods and materials (on credit too), a day, a running mean over its first SalesDays days and
+    // then a SalesDays-day running average; and the days counted (to SalesDays). What its weekly review sees its wage
+    // bill paid from.
+    std::map<std::string, std::pair<double, int>> tradeNet;
     std::map<std::string, double> going;             // Town ("" the realm) -> its going rate, as last measured (Phase 13).
     // The realm's labourer's day when its money was founded (Society::foundWage: ladder.json's foundingDay); 0 for a
     // realm founded before Phase 13 (at the catalogue's 12p) or a village. The amounts' day at the seconds' pace.
@@ -1301,6 +1306,8 @@ class Society
         CarriedPosts = 1ull << 36,                   // The day labour the capital carries is kept to its posts' share (round 11).
         TownLabourFirst = 1ull << 37,                // A small town pays its own day labour from its tax's budget first (round 11).
         ShareByWealth = 1ull << 38,                  // The capital's share of a town's tax by its wealth and the capital's (round 11).
+        WageBySales = 1ull << 39,                    // A business raises its wage only if its sales pay it (round 12, lane A).
+        WagelessFirst = 1ull << 40,                  // A business's hire goes to those without a wage of their own first (round 12).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1547,6 +1554,11 @@ class Society
     // 7; the model's staff_to: grown hands first).
     // A town's works crew for the week (its stores'), which with work by the hours any town's grown wolves may take (doc
     // 64, Phase 13, round 9; the user, 2026-10-27).
+    // A business's hire for the week, not a field's (round 12, WagelessFirst: the jobless' first).
+    static bool businessHire(const OddJob& j)
+    {
+        return j.until >= 0 && !j.field && j.payer.rfind("till:", 0) == 0 && (j.kind == "a hand" || j.kind == "a hand at the shop");
+    }
     static bool townCrew(const OddJob& j) { return j.until >= 0 && j.kind == "building work" && j.payer.rfind("stores:", 0) == 0; }
     static bool crewPlace(const OddJob& j)
     {
@@ -1673,6 +1685,13 @@ class Society
     static constexpr double WageUp = .03, WageUpShort = .10, WageDown = .02, WageFloor = .85, WageMost = 2, WageHigh = 1.3,
                             LeaveBelow = .4, LookBelow = .6, PoachGap = .1, PoachChance = .04, WorksShare = .85, ClergyShare = 1.1;
     static constexpr int CalmWeeks = 6, OpenDays = 4, TownRateWeight = 40;
+    // Round 12, lane A (the user, 2026-10-29): a business's wage bid only while its trade lately (memory.tradeNet) pays its
+    // hands' and its open posts' wage at the higher wage, its posts open past its sales' hands (MoreHands' extra) left
+    // out of the bid (WageBySales); filled, its wage drifts WageBack of the way back to the rate a week. A keeper drawing
+    // its own till's wage takes a business's hire (not a field's) only from WagedFrom, and its place is the jobless'
+    // again at dawn (WagelessFirst).
+    static constexpr double WageBack = .25, WagedFrom = 14;
+    static constexpr int SalesDays = 28;
     // Hands by sales (doc 64, Phase 6), at its weekly review: the hours its sales take a day (its crafts' or yields'
     // hours for what it sells, a fifth more for staples, half again with its shelf near bare, a fifth less with it
     // glutted), in hands of PaidSpells hours; at least its keeper. Short, it opens the posts it let go, then hires for
@@ -1690,7 +1709,8 @@ class Society
     // hand more for each month of a hand's wage it holds over, up to doubling (MoreHands, the user, 2026-10-29: "trades
     // with buyers take on more hands", so its buyers' money goes in wages, not its owner's profit). hoursBySales is
     // the hours its sales want, as before.)
-    int handsWanted(const std::string& till, bool bare = true) const;
+    // (`more`: with MoreHands' extra; without, the hands its sales want alone: round 12's wage bid, WageBySales.)
+    int handsWanted(const std::string& till, bool bare = true, bool more = true) const;
     double hoursBySales(const std::string& till, bool bare = true) const;   // The hours a day its sales want (handsWanted's).
     bool idleHand(const std::string& resident, const Payer& payer) const;   // Its business has no work for it.
     bool idleHand(const ResidentRecord& resident, const Payer& payer) const;   // (By its record, as payerOf.)
@@ -1800,6 +1820,12 @@ class Society
     // A keeper whose owner has stopped topping its till up, on a day the till couldn't pay its wage (round 9). (By its
     // post: the till is "till:" and the post's id.)
     bool ownerUnpaid(const std::string& resident, const Position& job) const;
+    // A grown wolf keeping a business whose till pays it its keeper's wage today: not idle, not unpaid (round 12, lane A,
+    // WagelessFirst: a business's hire goes to those without a wage of their own first).
+    bool keeperWaged(const std::string& resident) const;
+    // The day's net trade of each till into its running average (WageBySales); and what that average is a day.
+    void keepTradeNet();
+    double tradeNetOf(const std::string& till) const;
     // A seasonal field's farm (its till's year in memory.fields), judged over its season: it stops only at a look after a
     // harvest's end (harvestEndedSince: a HarvestEnd day of the year in (from, day]). (The round-9 review, the user.)
     bool seasonalField(const Position& p, const std::string& till) const;
@@ -1973,6 +1999,8 @@ class Society
     // What each shop's till took in today (wages follow takings: RatwSurplus.cpp). Not saved.
     std::map<std::string, std::int64_t> takings_;
     std::unordered_map<std::string, std::int64_t> weekTakings_;   // A till's takings since its rent was last paid (doc 64).
+    std::unordered_map<std::string, std::int64_t> netToday_;      // A till's sales less its buying today (WageBySales).
+    void noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total);
     // The labour market's day (doc 64, Phase 6; RatwLabour.cpp): each employer's posts open and filled, and its town;
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;

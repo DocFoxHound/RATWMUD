@@ -590,6 +590,14 @@ void societyTests()
     state.memory.shortTills.erase("till:e");
     shorts.find("memory")->erase("shortTills");
     expect(wire::readSociety(shorts).memory.shortTills.empty(), "and an older save has none");
+    // A business's trade lately (round 12, lane A, WageBySales): its mean a day and its days counted; none is written
+    // when there is none (an older save's), and one that can't be is dropped.
+    expect(wire::society(state).find("memory")->find("tradeNet") == nullptr, "no trade counted, none written");
+    state.memory.tradeNet = {{"till:a", {123.5, 28}}, {"till:b", {-40, 3}}, {"till:c", {1e12, 5}}};
+    const auto trade = wire::readSociety(wire::society(state)).memory.tradeNet;
+    expect(trade.size() == 2 && trade.at("till:a") == std::pair{123.5, 28} && trade.at("till:b") == std::pair{-40., 3},
+           "a business's trade lately round trips, one that can't be dropped");
+    state.memory.tradeNet.clear();
     // The day the realm was founded at (doc 64, Phase 13 review): saved; one that can't be is none (the catalogue's), as
     // is an older save's.
     for (const auto& [day, back] : {std::pair{60., 60.}, std::pair{-5., 0.}, std::pair{1e7, 0.}})

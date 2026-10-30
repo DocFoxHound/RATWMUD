@@ -1063,6 +1063,20 @@ Value economyMemory(const EconomyMemory& m)
         employers.add(key, book);
     }
     o.add("employers", employers);
+    // (A business's trade lately, its mean a day and its days counted: round 12, lane A, WageBySales. None saved, none
+    // written: a save without the rule is as before.)
+    if (!m.tradeNet.empty())
+    {
+        auto net = Value::object();
+        for (const auto& [till, t] : m.tradeNet)
+        {
+            auto v = Value::array();
+            v.push(t.first);
+            v.push(double(t.second));
+            net.add(till, v);
+        }
+        o.add("tradeNet", net);
+    }
     auto going = Value::object();
     for (const auto& [town, rate] : m.going)
         going.add(town, rate);
@@ -1254,6 +1268,11 @@ EconomyMemory readEconomyMemory(const Value& o)
             v.items()[0].asNumber() > 0 && v.items()[0].asNumber() < 1e6 && key.size() < 200)
             m.employers[key] = {v.items()[0].asNumber(), std::clamp(int(v.items()[1].asNumber()), 0, 7),
                                 std::clamp(int(v.items()[2].asNumber()), 0, 1000), v.items()[3].asNumber() > 0};
+    // (Saved before round 12: none; each business's trade counted from its next day.)
+    for (const auto& [till, v] : o.object("tradeNet").fields())
+        if (v.isArray() && v.items().size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber() &&
+            std::isfinite(v.items()[0].asNumber()) && std::abs(v.items()[0].asNumber()) < 1e9 && till.size() < 200)
+            m.tradeNet[till] = {v.items()[0].asNumber(), std::clamp(int(v.items()[1].asNumber()), 0, Society::SalesDays)};
     // (Saved before doc 64's Phase 13: none, and the labourer's day is the catalogue's until the first measure.)
     for (const auto& [town, v] : o.object("going").fields())
         if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() > 0 && v.asNumber() < 1e6 && town.size() < 200)

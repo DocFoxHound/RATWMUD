@@ -160,7 +160,7 @@ std::vector<std::string> Society::helpPosts(const std::string& till) const
     return posts;
 }
 
-int Society::handsWanted(const std::string& till, bool bare) const
+int Society::handsWanted(const std::string& till, bool bare, bool more) const
 {
     int hands = std::max(1, int(std::ceil(hoursBySales(till, bare) / PaidSpells - 1e-9)));
     if (!workByHours() || (state_.memory.shortTills.empty() && !wageRule(MoreHands)))
@@ -171,7 +171,7 @@ int Society::handsWanted(const std::string& till, bool bare) const
     // One holding over its working money (and its debts) takes on a hand more for each month of a hand's wage it holds
     // over, up to doubling: what its buyers pay goes in wages, not in its owner's month's profit (MoreHands, the user,
     // 2026-10-29). Not a stall (it hires no one) nor a business with no work for more (its review hires none then).
-    if (wageRule(MoreHands) && makesThings(till))
+    if (more && wageRule(MoreHands) && makesThings(till))
         if (const auto* purse = account(till); purse && till.rfind("till:", 0) == 0)
         {
             const auto spare = double(purse->cash - workingMoney(till.substr(5)) - owed(till));
@@ -526,6 +526,7 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
         if (!holder.empty())
             keyOf[holder] = key;
     }
+    keepTradeNet();                                 // (Each business's trade lately: its wage bid's measure, WageBySales.)
     // A child's place on an institution's crew is the day's (doc 64, Phase 13, round 7: the grown first, the model's
     // staff_to): open again at dawn to the grown free for it, the child's again from mid-afternoon if none took it.
     // (Before, a child that took one held it the week.) (With work by the hours.)
@@ -909,21 +910,69 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             book.shortPay = false;
             book.wage *= 1 - lot(words + "|short") * WageDown * 2;
         }
-        else if (book.openDays >= OpenDays)
+        // A business's bid by its sales (round 12, lane A, the user, 2026-10-29: WageBySales; with work by the hours). Its
+        // posts open past the hands its sales want are MoreHands' extra, hands it could take on out of what it holds
+        // over, not hands it lacks: they bid no wage (the round-11 year's spiral: tills holding spare money stood short
+        // of twice their hands, bid, and the going rate, their middle, went 60p to 115p, and every price, built from it,
+        // with it). And it bids only while its trade lately (memory.tradeNet: its sales less its goods and materials,
+        // a day, over SalesDays) pays its hands, its hires' hands and its posts open by its sales at the higher wage:
+        // short of hands but unable to pay more, it keeps its posts open (its hires still post) at the wage it pays.
+        // (Not the town's, the church's or a House's own posts: their budgets pay them. A stall, which makes nothing,
+        // bids as before.)
+        const bool bySales = workByHours() && wageRule(WageBySales) && key.rfind("till:", 0) == 0 && makesThings(key);
+        int bidOpen = open;
+        if (bySales && wageRule(MoreHands))
         {
-            const double short_ = double(open) / std::max(1, open + hands);
-            const double step = WageUp + (WageUpShort - WageUp) * std::min(1., short_ * 2);
-            book.wage = std::min(book.wage * (1 + (.3 + .7 * lot(words + "|up")) * step), rate * WageMost);
+            const auto* p = position(key.substr(5));
+            const int extra = wantedOf(key) - handsWanted(key, !(p && items::producerFor(p->title)), false);
+            bidOpen = std::max(0, open - std::max(0, extra));
+        }
+        const double up = std::min(book.wage * (1 + (.3 + .7 * lot(words + "|up")) * (WageUp + (WageUpShort - WageUp) *
+                                                                                   std::min(1., double(bidOpen) / std::max(1, bidOpen + hands) * 2))),
+                                   rate * WageMost);
+        const auto onHire = onHires.find(key);
+        const bool pays = !bySales || (bidOpen > 0 && tradeNetOf(key) >= up * std::max(1, hands + (onHire != onHires.end() ? onHire->second : 0) + bidOpen));
+        if (book.shortPay)
+        {
+            book.shortPay = false;
+            book.wage *= 1 - lot(words + "|short") * WageDown * 2;
+        }
+        else if (book.openDays >= OpenDays && pays)
+        {
+            book.wage = up;
             book.calm = 0;
         }
         else if (++book.calm >= CalmWeeks && slack_ > .03)
             book.wage *= 1 - lot(words + "|down") * WageDown;
         if (open == 0 && book.wage > rate * WageHigh)
             book.wage *= .95;
+        // Its posts filled (none open, or none it bid for), it drifts WageBack of the way back to the rate a week, not
+        // below it: the round-11 rule's one way out of a wage bid up was CalmWeeks (six) weeks calm and a slack realm,
+        // two in a hundred at most, or 5% a week once it stood over WageHigh (1.3) of the rate. (WageBySales.)
+        if (bySales && (bidOpen == 0 || book.openDays < OpenDays) && book.wage > rate)
+            book.wage = rate + (book.wage - rate) * (1 - WageBack);
         const bool clergy = key.size() > 7 && key.compare(key.size() - 7, 7, "|clergy") == 0;
         book.wage = std::max(book.wage, rate * WageFloor * (clergy ? ClergyShare : 1.));
         book.openDays = 0;
     }
+    // A business's hire (not a field's: the land's sowing and harvest keep every hand they can get) held by a keeper
+    // drawing its own till's wage is the day's, as a child's crew place is: at dawn the jobless' again, the keeper's
+    // from WagedFrom if none took it (round 12, lane A, the user, 2026-10-29: WagelessFirst). Released after the day's
+    // measures, so a place a keeper took yesterday isn't read as open, and bids no wage, today. (The round-11 year's
+    // producers, drawing their farms' keeper's wage, took 5.0k to 8.0k of the hires' days a quarter while the paid
+    // hands' fell 13.5k to 8.6k, and those ran out of money by day 336.)
+    if (workByHours() && wageRule(WagelessFirst))
+        for (auto& j : oddJobs_)
+            if (businessHire(j) && j.until >= day)
+                for (auto it = j.stage.begin(); it != j.stage.end();)
+                    if (keeperWaged(it->first))
+                    {
+                        j.progress.erase(it->first);
+                        it = j.stage.erase(it);
+                        ++oddVersion_;
+                    }
+                    else
+                        ++it;
     // Whose work in hand is full at this turn of the day: a business full at the next too has more than it uses.
     fullBanks_.clear();
     for (const auto& [account, banked] : workBanked_)
