@@ -406,6 +406,60 @@ void seasonalFields()
     Society::setWorkByHours(false);
 }
 
+// AcresByHarvest (round 16, lane 2; the user, 2026-10-30), with work by the hours: at the harvest's end a field that left
+// more than a tenth of what it sowed in the ground plans no more than half again what it brought in, and no less than
+// half its plan; one that brought in nine tenths, or sowed nothing, plans as before; a dry year's half again comes
+// first. Planned here by its sales a day alone, its store empty (no carry): 100 acres at its rate, 150 in a dry year.
+void aFieldPlansWhatItBroughtIn()
+{
+    Society::setWorkByHours(true);
+    const auto* farm = items::producerFor("farms the valley fields");
+    expect(farm && Society::fieldWork(farm->id), "the valley fields are a farm's");
+    const double year = calendar::DaysPerYear + Society::HarvestEnd - Society::HarvestStart;
+    const double hundred = 100. * Society::FieldYields / (year * Society::FieldMargin);   // (Its sales a day for 100 acres.)
+    // Its acres planned at the harvest's end of year 1, from what it sowed and what is left in the ground.
+    const auto planned = [&](bool rule, double acresAtItsRate, double sown, double left, bool dry) {
+        Society::wageRulesOff(rule ? 0 : Society::AcresByHarvest);
+        auto s = farmTown();
+        const auto till = s.tillOf("farmer");
+        auto st = s.state();
+        auto& f = st.memory.fields[till];
+        f.rate = f.month = hundred * acresAtItsRate / 100;
+        f.monthDays = 28;
+        f.sown = sown;
+        f.toHarvest = left;
+        f.dry = dry;
+        f.year = 0;
+        f.founded = 10;
+        for (const auto& [good, n] : farm->out)
+            st.accounts.at(till).stock.erase(good);
+        expect(s.restore(st), "the field's year restores");
+        s.planField("farmer", till, *farm, calendar::DaysPerYear + Society::HarvestEnd + .1, false);
+        const auto after = s.state().memory.fields.at(till);
+        expect(after.sown == 0 && after.toHarvest == 0 && !after.dry && after.year == 1, "its year begun afresh");
+        expect(s.conserved(), "money is conserved");
+        Society::wageRulesOff(0);
+        return after.acres;
+    };
+    const auto near = [](double a, double b) { return std::abs(a - b) < 1e-6; };
+    for (const bool rule : {true, false})
+    {
+        const auto with = [&](double ruled, double otherwise) { return rule ? ruled : otherwise; };
+        const auto said = [&](double acres) { return std::to_string(acres) + (rule ? "" : ", without the rule"); };
+        double a = planned(rule, 100, 100, 70, false);
+        expect(near(a, with(50, 100)), "sown 100, 30 brought in: planned 100 comes down to half (AcresLeast): " + said(a));
+        a = planned(rule, 80, 100, 70, false);
+        expect(near(a, with(45, 80)), "planned 80 comes down to half again the 30 brought in (AcresGrowth): " + said(a));
+        a = planned(rule, 100, 100, 5, false);
+        expect(near(a, 100), "95 of 100 brought in: as planned: " + said(a));
+        a = planned(rule, 100, 0, 0, false);
+        expect(near(a, 100), "nothing sown: as planned: " + said(a));
+        a = planned(rule, 100, 100, 70, true);
+        expect(near(a, with(75, 150)), "a dry year's 150, 30 brought in: half of it: " + said(a));
+    }
+    Society::setWorkByHours(false);
+}
+
 // Wood laid in for winter (doc 64, Phase 3b): a month before it, firewood's seller keeps its winter rate's store
 // (households burn it twice as fast then: crafts.json `winterDays`); bread's store doesn't change.
 void woodLaidInForWinter()
@@ -9128,6 +9182,7 @@ int main()
         olderSavesGetTheirGrantOnce();
         farmerBringsIn();
         seasonalFields();
+        aFieldPlansWhatItBroughtIn();
         woodLaidInForWinter();
         foodKeptOverRestday();
         piecesWornAndMended();

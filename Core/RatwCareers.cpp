@@ -680,8 +680,54 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     //  - family after three, a local out of work after five: as skilled as the trade needs (its best at that kind of
     //    work);
     //  - else, after five, the best-trained wolf about who isn't in a master's place or an important post: it heads the
-    //    business and works toward mastership.
+    //    business and works toward mastership;
+    //  - with LandPostsFilled (round 16, lane 2), a land post empty LandPostWait days whose goods are wanted: a wolf of
+    //    its own town out of work, else one poor in an unpaid post (below).
     // Whoever moves up leaves its own post empty in turn.
+    // A wolf's town, as its town's number counts it (below): its own home's, a hand lodged at a farm's bunkhouse living at
+    // its own home still (doc 64, Phase 8).
+    const auto townOf = [&](const std::string& id) {
+        const auto r = state_.residents.find(id);
+        auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
+        if (const auto lodged = state_.memory.lodging.find(id); lodged != state_.memory.lodging.end())
+            home = lodged->second.substr(0, lodged->second.find('|'));
+        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
+        return town.empty() ? communityOfResident(id) : town;
+    };
+    // LandPostsFilled's question of a land post: whether its goods are wanted in its town (the user, 2026-10-30), for
+    // some good it brings in: no other land seller of it there with a living holder (nobody there to hear its buyers:
+    // the new keeper's own sales will tell, and OwnersStop and IdleTills stop and idle it if none come), or its town's
+    // other land sellers of it, together, turning away a twentieth of their buyers and at least one a day (the margin
+    // rule's UnmetFrom). Never the empty till's own rates: they decay a day at a time and never reach nought (1e-50 to
+    // 1e-317 in tills.csv). A post not wanted waits and is asked again each day, so a dead market stays dead.
+    const bool landPosts = landPostsFilled();
+    std::set<std::string> seats;                    // (The Houses' heads' homes: their households, a House's family.)
+    bool seatsKnown = false;
+    const auto landWanted = [&](const Position& p, const items::Producer& producer, const std::string& town) {
+        for (const auto& [good, n] : producer.out)
+        {
+            const auto* sellers = sellersOf(good);
+            std::set<std::string> tills;
+            if (sellers)
+                for (const auto& s : *sellers)
+                    if (const auto* job = s.kind == 2 && alive(s.id) ? jobOf(s.id) : nullptr; job && job->id != p.id && sellerTown(s.id) == town)
+                        tills.insert(tillOf(s.id));
+            if (tills.empty())
+                return true;
+            double missed = 0, rate = 0;
+            const auto base = items::baseOf(good);
+            for (const auto& till : tills)
+            {
+                missed += missedRate(till, good);
+                if (const auto* rates = sellRates(till))
+                    if (const auto r = rates->find(base); r != rates->end())
+                        rate += r->second;
+            }
+            if (missed >= std::max(1., UnmetFrom * rate))
+                return true;
+        }
+        return false;
+    };
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
@@ -749,6 +795,62 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             if (!chosen.empty())
                 how = "the best-trained takes it on, to work toward mastership";
         }
+        // LandPostsFilled (round 16, lane 2; the user, 2026-10-30): a land post (a producer's, a House's or a lone
+        // owner's) empty LandPostWait days whose goods are wanted is taken by a wolf of the post's own town (its
+        // founder's, the employer town tendLabour gives its till; the wolf's as its town's number counts it), with no
+        // region test: the passes above want the wolf's home in its work cell's region, and a farm's is the country's,
+        // so only its apprentice or family ever took one. First one out of work; only with none, one in an unpaid post,
+        // not important, whose own purse is under a month's food money (foundTills' month's living): a beggar, a poor
+        // student; never a House's family, their shared purse evened among them in the thousands. No skill test, as the
+        // best-trained's: the new keeper learns the work. Of each, by the local pass's score. No money moves: the till
+        // keeps its cash as the new keeper's working money (tendTills pays its wage from it; OwnersStop and IdleTills
+        // apply as to any till). (And in neither tier one of a House head's household, whatever its post: the purse
+        // test keeps the House's family out of the unpaid tier, but a House has its jobless too, Mossgrave Court's
+        // daughter of 34 among Ridgemere's out of work in round 15's two years, its purse 1.8k shared with the head's.)
+        if (chosen.empty() && landPosts && waited >= LandPostWait && p.role != "merchant")
+            if (const auto* producer = items::producerFor(p.title))
+                if (const auto town = communityOfResident(p.founder); !town.empty() && landWanted(p, *producer, town))
+                {
+                    const auto living = pennies(MonthDays * FoodADay, town);
+                    if (!seatsKnown)
+                    {
+                        seatsKnown = true;
+                        for (const auto& h : houses())
+                            if (const auto held = c.positions.find(h.head); held != c.positions.end())
+                                if (const auto* head = resident(held->second.holder.empty() ? h.head.substr(4) : held->second.holder);
+                                    head && !head->homeCell.empty())
+                                    seats.insert(head->homeCell);
+                    }
+                    for (const int tier : {1, 2})
+                    {
+                        double best = -1;
+                        for (const auto& [id, life] : state_.residents)
+                        {
+                            const int age = world.age(id);
+                            if (!alive(id) || age < 16 || age >= retireAge(id) || apprenticedTo(id))
+                                continue;
+                            const auto* own = jobOf(id);
+                            const auto* purse = own ? account(id) : nullptr;
+                            if (tier == 1 ? own != nullptr : !own || rank(own) != 0 || important(id) || !purse || purse->cash >= living)
+                                continue;
+                            if (townOf(id) != town || seats.count(life.homeCell))
+                                continue;
+                            const double score = skill(id, p.id) * 2 + (ps.lastHolder.empty() ? 0 : world.regard(ps.lastHolder, id));
+                            if (score > best)
+                                best = score, chosen = id;
+                        }
+                        if (!chosen.empty())
+                            break;
+                    }
+                    if (!chosen.empty())
+                    {
+                        how = "someone in town takes up the land";
+                        // (Who sells what is cached until the day's pass: a succession moves no revision. The town's
+                        // next empty post of the same goods hears this keeper's buyers, not its absence.)
+                        if (tradeByPost())
+                            suppliers_.clear();
+                    }
+                }
         if (chosen.empty())
             continue;
         for (auto& [otherId, other] : c.positions)
@@ -831,15 +933,6 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     // Each town's number (doc 62: the world stays about the size it was made; the user, 2026-10-14: births follow deaths):
     // how many live there against how many did on its first day, less the children and strangers already asked for.
     std::map<std::string, int> living, wanted;
-    const auto townOf = [&](const std::string& id) {
-        const auto r = state_.residents.find(id);
-        auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
-        // (A hand lodged at a farm's bunkhouse lives at its own home still: doc 64, Phase 8.)
-        if (const auto lodged = state_.memory.lodging.find(id); lodged != state_.memory.lodging.end())
-            home = lodged->second.substr(0, lodged->second.find('|'));
-        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
-        return town.empty() ? communityOfResident(id) : town;
-    };
     for (const auto& [id, life] : state_.residents)
         if (alive(id))
             ++living[townOf(id)];
