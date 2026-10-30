@@ -25,6 +25,7 @@ namespace items
 {
 struct Business;
 struct Craft;
+struct Institution;
 struct Item;
 struct Producer;
 } // namespace items
@@ -1383,6 +1384,10 @@ class Society
         // money didn't carry is not the seller's shortfall.
         RoadMoneyKept = 1ull << 58,                  // A town's stores' works leave a week and a quarter of its roads' loads (round 15, 2).
         PurseNotBlamed = 1ull << 59,                 // What a trader's purse didn't carry is an order's unfunded, not its seller's (round 15, 2).
+        // Round 15, lane 1 (the user, 2026-10-30: inequality, Ridgemere's): the carriage priced into what a wagon sells is
+        // half the buying town's, and a town's buyers that feed its people are funded before the rest.
+        CarriageShared = 1ull << 56,                 // The buying town keeps half the carriage of what it buys off a wagon (round 15, 1).
+        MessesFirst = 1ull << 57,                    // A town's buyers that feed its people funded first, the rest in order (round 15, 1).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1752,6 +1757,25 @@ class Society
     // Carting a piece `legs` steps (ladder.json carryPerWeight: labourer's hours a unit of weight a step), in pennies.
     double carriage(const std::string& item, double legs, const std::string& town = {}) const;
     static constexpr double CarriageLegs = 10;       // Steps between towns, for what's carted from one to another.
+    // Round 15, lane 1 (CarriageShared, with work by the hours; the user, 2026-10-30): of the carriage priced into each unit
+    // a wagon sells (an order's at its selling town's day, as orderPrice; the rest carted in at its buyer's town's), the
+    // buying town's share, from the wagon to its stores (the capital's treasury) as "carriage to the buying town", once
+    // the wagon has sold, and counted in that town's week as its caravans' takings are (caravanWeek), not its month: the
+    // labour of carting is at both ends of a road, the loading and the road out at one, the haul in and the unloading at
+    // the other, and no carter is paid for it. Before, the whole carriage rode home to the selling town as its trader's
+    // takings: Ridgemere's buyers paid 170-231k a quarter of it and earned 3-11k as a seller, and Oakhaven's and
+    // Larkfield's stores paid 783k and 832k of building work to their own over the two years. A fixed share: it reads no
+    // price, wage or need, so it can't spiral; on a road carrying alike both ways it nets to nothing.
+    static constexpr double CarriageBuyersShare = .5;
+    static bool carriageShared() { return workByHours() && wageRule(CarriageShared); }
+    // Round 15, lane 1 (MessesFirst, with work by the hours): a town's own buyers (townBuyers) funded from its treasury in
+    // a stable order, those that feed its people first (not tithing, a food in its basket: the watch, the mines', the
+    // quarries'), then the rest as written (the Town Works first of them). Only the order: each one's grant, use and
+    // buying as before. Under CapitalByIncome the capital's buyers draw on the week's allowance (fundsLeft) day by day in
+    // that order, and with the Town Works written first its materials took the allowance before the watch's mess: the
+    // city's watch was funded 64.5k in the first quarter of the two-year run and nothing in the seventh, the Works 41-79k
+    // a quarter the while, and its guards, eight of fifteen without a wage, ate from their own purses.
+    static bool messesFirst() { return workByHours() && wageRule(MessesFirst); }
     static constexpr double MarginLeast = -.3, MarginMost = .6, StapleMarginMost = 1.;
     static constexpr double MarginStep = .04;
     // Round 14, lane 1 (MarginsByShortage, with work by the hours; the user, 2026-10-30): at its weekly review a
@@ -1859,6 +1883,9 @@ class Society
         std::int64_t price = 1;                          // A piece, at the going price (doc 64, Phase 4).
     };
     void townBuyers(std::int64_t day, const std::map<std::string, LifeBody>& bodies);
+    // The order a town's own buyers are funded and buy in (crafts.json's institutions, as written; with MessesFirst those
+    // that feed the town's people first, the rest as written). Public: a test's too.
+    static std::vector<const items::Institution*> townBuyersOrder();
     std::vector<Procurement> takeProcurements();
 
     // Town purses and the month's reckoning (Docs/Design/42-money-in-circulation.md, Phase 1; RatwReckoning.cpp).

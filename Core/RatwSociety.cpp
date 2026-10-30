@@ -473,6 +473,13 @@ void Society::record(const std::string& kind, const std::string& from, const std
                      to.rfind("caravan:", 0) == 0)
                 (asTheyCome ? state_.memory.caravanWeek[from] : earnedToday_[from]) -= double(coins);
         }
+        // The buying town's half of the carriage (round 15, lane 1, CarriageShared; the user, 2026-10-30): in its week, as
+        // its caravans' takings are, the capital's too (institutionsWeek adds any town's caravanWeek to its budget). Never
+        // its earnings: a town's month is its tax, and under CapitalByIncome the capital's budget is a quarter of its
+        // month's income on top of which its week's trade comes; counted in both it would be spent twice.
+        if (kind == "carriage to the buying town" && carriageShared() && from.rfind("caravan:", 0) == 0 &&
+            (to == "treasury" || to.rfind("stores:", 0) == 0))
+            state_.memory.caravanWeek[to] += double(coins);
         if ((from == "treasury" || from.rfind("stores:", 0) == 0 || from == SharedChurch) &&
             (kind == "watch wages" || kind == "day labour" || kind == "service wages"))
             state_.memory.wagesWeek[from] += double(coins);

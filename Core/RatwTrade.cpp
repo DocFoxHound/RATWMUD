@@ -794,6 +794,10 @@ void World::tradeCaravanArrived(Caravan& c)
     // (Each hand-over stops at what it was to have, at the wagon's last of the good, or at what its buyer's money ran
     // to: `broke`, then.)
     std::vector<char> broke(carried.size(), 0);
+    // The buying town's half of the carriage priced into what it sells (round 15, lane 1, CarriageShared; the user,
+    // 2026-10-30), summed over every unit sold and paid to the town's stores once it has sold (below).
+    const bool shared = Society::carriageShared();
+    double carriageHere = 0;
     const auto hand = [&](std::size_t i, int most) {
         const auto& o = *carried[i];
         int given = 0;
@@ -809,6 +813,10 @@ void World::tradeCaravanArrived(Caravan& c)
                 if (k <= 0 || !society_.sale(c.account, o.buyer, sort, k, o.price, "a standing order"))
                     break;
                 given += k, made += o.price * k;
+                // (The order's carriage as orderPrice prices it: at the selling town's day.)
+                if (shared)
+                    carriageHere += k * Society::CarriageBuyersShare * society_.carriage(o.item, Society::CarriageLegs, c.from) *
+                                    (1 + items::ladder().markup);
             }
         return given;
     };
@@ -855,11 +863,20 @@ void World::tradeCaravanArrived(Caravan& c)
                 if (k <= 0 || !society_.sale(c.account, buyer, item, k, price, "carted in by caravan"))
                     break;
                 left -= k, want -= k, made += price * k;
+                // (Its carriage as priced here: at the buying town's day.)
+                if (shared)
+                    carriageHere += k * Society::CarriageBuyersShare * society_.carriage(item, Society::CarriageLegs, to->id) *
+                                    (1 + items::ladder().markup);
             }
             if (left <= 0)
                 break;
         }
     }
+    // Paid once, from what the wagon took: the prices and what its buyers paid are as before, and the takings it brings
+    // home (tradeCaravanHome) less by it. Counted in the buying town's week (Society::record), not its month.
+    if (const auto share = std::llround(carriageHere); shared && share > 0)
+        if (const auto* wagon = society_.account(c.account); wagon && wagon->cash > 0)
+            society_.shift(c.account, to->store, "", 0, std::min<std::int64_t>(wagon->cash, share), "carriage to the buying town");
     recordEvent({"trade caravan sells", c.id, c.to, c.cell, 0, 0, {}, 0, made, "sold for " + std::to_string(made) + "p in " + c.to});
 }
 

@@ -4530,10 +4530,161 @@ void anOrdersUnfundedIsSaved()
     expect(older == 0, "and an older save's reads none: " + std::to_string(older));
 }
 
+// Round 15, lane 1 (CarriageShared; the user, 2026-10-30), with work by the hours: one trader's caravan on the strip,
+// a mill in one town and a bakery short of flour in the other (aTownsCaravanKeepsToItsRoadMoney's, without its rules),
+// at the realm's founding day, 60p, in both towns (at the strip's 12p a unit of flour carts for a third of a penny),
+// watched from setting out to home. What it sold (by standing order, and carted in past its orders), the buying town's
+// half of the carriage priced into each sale (at the second it was sold: an order's at its selling town's day, as
+// orderPrice prices it, the rest at its buyer's), the share paid and where, the buying town's caravans' week before and
+// after, and the takings home. `buyersDay`: the buying town's going rate once the wagon is out (0: as it is).
+struct CarriageSeen
+{
+    int ordered = 0, carted = 0, entries = 0;
+    std::int64_t share = 0, takings = 0;
+    std::string to, takingsTo;
+    double expected = 0, allSellers = 0, week = 0, sellersDay = 0, buyersDay = 0, sellersCarriage = 0;
+    bool home = false, conserved = false;
+};
+CarriageSeen carriageOnTheRoad(bool millWest, bool rule, double buyersDay = 0)
+{
+    Society::wageRulesOff(rule ? 0 : Society::CarriageShared);
+    const int mill = millWest ? 7 : 0, bakery = millWest ? 0 : 7;
+    auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", mill, 9.5, mill + 1, 9.5) +
+                                    resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", bakery, 9.5, bakery + 1, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();                       // (No bandits.)
+    auto& s = w.society();
+    const auto millTill = s.tillOf("miller"), bakeryTill = s.tillOf("baker");
+    s.create(millTill, "flour", 60, "test: a good harvest");
+    for (const auto& till : {bakeryTill, s.tillOf(millWest ? "em" : "wm")})
+        for (const auto& kind : Society::kindsHeld(*s.account(till), "flour"))
+            s.consume(till, kind, Society::stock(*s.account(till), kind), "test: a bad week");
+    expect(s.shift("treasury", bakeryTill, "", 0, 2000, "test: takings"), "the bakery's money");
+    {
+        auto st = s.state();
+        st.memory.going[""] = st.memory.going["east"] = st.memory.going["west"] = 60;
+        expect(s.restore(st), "a 60p day");
+    }
+    nextMorning(w);
+    w.roads().camps.clear();
+    const std::string from = millWest ? "west" : "east", to = millWest ? "east" : "west";
+    const std::string store = to == "east" ? "treasury" : "stores:" + to;
+    std::string id, wagon;
+    for (const auto& c : w.roads().caravans)
+        if (!c.trader.empty() && c.from == from && c.to == to)
+            id = c.id, wagon = c.account;
+    expect(!id.empty(), "A trader's caravan sets out from " + from + " for " + to);
+    if (buyersDay > 0)
+    {
+        auto st = s.state();
+        st.memory.going[to] = buyersDay;
+        expect(s.restore(st), "the buying town's day");
+    }
+    const auto weekOf = [&] {
+        const auto& m = s.state().memory.caravanWeek;
+        const auto found = m.find(store);
+        return found == m.end() ? 0. : found->second;
+    };
+    const double share = Society::CarriageBuyersShare * (1 + items::ladder().markup);
+    CarriageSeen seen;
+    for (int t = 0; t < 6000 && !seen.home; ++t)
+    {
+        const double before = weekOf();
+        w.tick(1);
+        const double sellers = s.carriage("flour", Society::CarriageLegs, from), buyers = s.carriage("flour", Society::CarriageLegs, to);
+        for (const auto& e : w.takeEvents())
+        {
+            if (e.kind == "economy" && e.target == wagon && e.detail == "a standing order")
+                seen.ordered += e.quantity, seen.expected += e.quantity * share * sellers, seen.allSellers += e.quantity * share * sellers;
+            if (e.kind == "economy" && e.target == wagon && e.detail == "carted in by caravan")
+                seen.carted += e.quantity, seen.expected += e.quantity * share * buyers, seen.allSellers += e.quantity * share * sellers;
+            if (e.kind == "economy" && e.actor == wagon && e.detail == "carriage to the buying town")
+            {
+                ++seen.entries, seen.share += e.coins, seen.to = e.target;
+                seen.week = weekOf() - before;
+                seen.sellersDay = s.labourDay(from), seen.buyersDay = s.labourDay(to), seen.sellersCarriage = sellers;
+            }
+            if (e.kind == "economy" && e.actor == wagon && e.detail == "trade takings")
+                seen.takings += e.coins, seen.takingsTo = e.target;
+            seen.home |= e.kind == "caravan home" && e.actor == id;
+        }
+    }
+    seen.conserved = s.conserved();
+    Society::wageRulesOff(0);
+    return seen;
+}
+
+// The buying town keeps half the carriage (CarriageShared): west's mill sends the capital's bakery its flour (8 on its
+// order and 8 carted in past it, 1.5p of carriage a unit at a 60p day). With the rule one entry, "carriage to the buying
+// town", from the wagon to the treasury, half the carriage priced into each unit handed over and the carrier's margin on
+// it (14p); the capital's week holds it (caravanWeek), and the takings home to west's stores are less by it (102p, not
+// 116p). Without, no entry and the takings whole. The reverse road, the capital's mill and west's bakery: west's stores
+// get the share, the capital's takings less by it.
+void halfTheCarriageGoesToTheBuyingTown()
+{
+    Society::setWorkByHours(true);
+    const auto with = carriageOnTheRoad(true, true), without = carriageOnTheRoad(true, false);
+    const auto back = carriageOnTheRoad(false, true), backWithout = carriageOnTheRoad(false, false);
+    const auto said = [](const CarriageSeen& c) {
+        return std::to_string(c.ordered) + " ordered, " + std::to_string(c.carted) + " carted in, " + std::to_string(c.share) + "p in " +
+               std::to_string(c.entries) + " entries to " + c.to + " (" + std::to_string(c.expected) + "p priced), week +" + std::to_string(c.week) +
+               ", takings " + std::to_string(c.takings) + "p to " + c.takingsTo;
+    };
+    std::cout << "  half the carriage: " << said(with) << "; without, " << said(without) << "\n";
+    expect(with.home && without.home && back.home && backWithout.home, "every caravan comes home");
+    expect(with.ordered > 0 && with.ordered == without.ordered && with.carted == without.carted, "the same flour handed over both ways: " + said(with));
+    // (Both towns at 60p: what was carted in at the buyer's day is at west's too.)
+    const auto halved = std::llround(Society::CarriageBuyersShare * (with.ordered + with.carted) * with.sellersCarriage * (1 + items::ladder().markup));
+    expect(with.entries == 1 && with.to == "treasury" && with.share > 0 && std::abs(double(with.share) - double(std::llround(with.expected))) <= 1 &&
+               std::abs(with.share - halved) <= 1,
+           "with the rule, one entry to the capital, half the carriage of what it sold: " + said(with));
+    expect(std::abs(with.week - double(with.share)) < 1e-9, "the capital's caravans' week holds it: " + said(with));
+    expect(with.takingsTo == "stores:west" && without.takingsTo == "stores:west" && without.takings - with.takings == with.share,
+           "west's takings home less by it: " + said(with) + "; without, " + said(without));
+    expect(without.entries == 0 && without.share == 0, "without the rule nothing to the buying town: " + said(without));
+    expect(back.ordered > 0 && back.entries == 1 && back.to == "stores:west" && back.share > 0 &&
+               std::abs(double(back.share) - double(std::llround(back.expected))) <= 1 && std::abs(back.week - double(back.share)) < 1e-9,
+           "the reverse road: west's stores keep the share, in their week: " + said(back));
+    expect(backWithout.entries == 0 && backWithout.takings - back.takings == back.share, "and the capital's takings less by it: " + said(backWithout));
+    expect(with.conserved && without.conserved && back.conserved && backWithout.conserved, "Money stays conserved");
+    Society::setWorkByHours(false);
+}
+
+// What a wagon carts in past its orders (CarriageShared): west's wagon, out with 16 flour on an order of 8, and the
+// capital's day set at three times west's (180p) once it is out. The order is handed over first, the rest sold to the
+// capital's wanters ("carted in by caravan", priced with its carriage at the buyer's day), and the share is half the
+// carriage of each, the order's at west's day and what was carted in at the capital's (28p, where all at west's day
+// would be 14p).
+void carriedInCarriageToo()
+{
+    Society::setWorkByHours(true);
+    const auto plain = carriageOnTheRoad(true, true);
+    const double day = 3 * plain.sellersDay;
+    const auto with = carriageOnTheRoad(true, true, day), without = carriageOnTheRoad(true, false, day);
+    const auto said = [](const CarriageSeen& c) {
+        return std::to_string(c.ordered) + " ordered, " + std::to_string(c.carted) + " carted in, " + std::to_string(c.share) + "p (" +
+               std::to_string(c.expected) + "p priced, " + std::to_string(c.allSellers) + "p at the seller's day; days " + std::to_string(c.sellersDay) +
+               " and " + std::to_string(c.buyersDay) + ")";
+    };
+    std::cout << "  carted in: " << said(with) << "\n";
+    expect(with.home && without.home, "both caravans come home");
+    expect(with.ordered > 0 && with.carted > 0 && with.carted == without.carted, "the orders handed over, and flour carted in past them: " + said(with));
+    expect(with.buyersDay > with.sellersDay * 2, "the capital's day over west's: " + said(with));
+    expect(with.entries == 1 && std::abs(double(with.share) - double(std::llround(with.expected))) <= 1,
+           "the share, the carted in at the buyer's day: " + said(with));
+    expect(std::abs(double(with.share) - with.allSellers) > 2, "not all at the seller's day: " + said(with));
+    expect(without.entries == 0, "without the rule nothing to the buying town");
+    expect(with.conserved && without.conserved, "Money stays conserved");
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
     {
+        halfTheCarriageGoesToTheBuyingTown();
+        carriedInCarriageToo();
         aSuccessorsBarsAreOnTheMarket();
         theMarketIsTheSameWithNoSuccession();
         aWagonKeptHomeForMoneyIsUnfunded();

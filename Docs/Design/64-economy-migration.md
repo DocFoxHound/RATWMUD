@@ -8917,3 +8917,191 @@ stops here: no tuning. What the run says of it:
 4. **The Houses' road part.** PurseNotBlamed books a House trader's cut loads as unfunded, so the towns' orders from the
    city keep their size, brought down to what was carried only after two weeks uncarried. Whether a House's road part
    should keep a week of its orders, as the stores' float does, is the same question one level up.
+### Phase 13: round 15, lane 1: the buying town's half of the carriage, the messes fed first (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved (5,000,120p). Round 14's two years (`artifacts/economy/2026-10-30-r14-2y-fast`, built
+from c088eb9, `--fast`, the default start) failed only on inequality: Gini at most .602, the poorer half at least .095,
+year 2's trend +.057 a year (the 6-year run on the same binary .648 and .069 by day 818); the other start passed. Base:
+p13-r14 at c088eb9.
+
+**The evidence (the brief's, from that run).** The fault is Ridgemere's (630-683 residents): its residents' median fell
+from 2,834p (day 91) to 1,224p (day 728), its homes under PoorDays of food money (`model.need`) rose from .05 to
+.23-.28, and from day 182 to 728 its paid civilians lost 231k, its shopkeepers 129k, its unpaid civilians 87k and its
+guards 33k. The largest steady drain was carriage no carter is paid: `World::orderPrice` is the selling town's price
+and `carriage(item, CarriageLegs, from)` with the carrier's 15%, the caravan pays its sellers their own price, and
+`tradeCaravanHome` sends all its cash home as "trade takings", for a small town into its stores, whose week pays its
+works crew. Ridgemere's buyers paid 170-231k a quarter of carriage and earned 3-11k as a seller; in year 2 Oakhaven's
+road netted +100k to +137k a quarter and Larkfield's +63k to +117k, and over the two years their stores paid 783k and
+832k of building work to their own (Oakhaven's at-home adults among the realm's richest homes: tn_oh_the_long_house
+84k on day 728). The other start has the same leak (2.81M). A carters' labour (hires) was looked at and set aside: the
+towns' works places go mostly to crew-free wolves at home, who take institution crews and never business hires;
+untaken carting would cut loads (Oakhaven sends about 60% of the city's firewood); and carting at the going rate
+risks the wage spiral of rounds 9 and 11. And the capital's messes: under CapitalByIncome its buyers get `allow()` of
+its week (fundsLeft), drawn day by day in crafts.json's order, the Town Works first: the city's "town funds" to its
+buyers fell from 215k to 41-59k a quarter, its watch's from 64.5k to 0-0.8k (the Works still 41-79k a quarter in year
+2); its 15 guards held 48k on day 182 and 9k on day 728, 8 of them without a wage.
+
+**1. The buying town keeps half the carriage** (`Society::CarriageShared`, `1ull << 56`; `econ_watch --without
+carriagesplit`; with work by the hours). In `World::tradeCaravanArrived`, for every unit sold off the wagon, the
+buying town's share of the carriage priced into the sale, `k x CarriageBuyersShare x carriage(item, CarriageLegs,
+town) x (1 + markup)`, summed as a double: a standing order's at its selling town's day (`c.from`, as `orderPrice`
+prices it), what is carted in past the orders at its buyer's (`to->id`, as its price there is reckoned). Once both
+loops are done, `llround` of the sum (the wagon's cash at most) goes from the wagon to the buying town's stores (the
+capital's treasury) as "carriage to the buying town". Prices and what the buyers pay are as they were; the takings
+the wagon brings home are less by exactly the share. `Society::record` counts it into the buying town's week
+(`caravanWeek[to]`, from a `caravan:` to `treasury` or `stores:`), never its earnings (`earnedToday_`): a town's month
+is its tax, and the capital's month under CapitalByIncome is the income its budget is a quarter of, on top of which
+its week's trade comes, so counted in both it would be spent twice. `institutionsWeek` already adds any town's
+caravanWeek to its week's budget as its trade (the capital's too: the comment says a town's stores only, the code
+doesn't filter), so the capital spends it as the rest of its budget: its relief and posts' share, its buyers'
+allowance and its works' crew (a week of 80% of what's left at the going rate a place, estateMost at the most); a
+small town (PostsFirst) repays its posts owed first, then its works. Nothing new is saved (caravanWeek is).
+`Society::CarriageBuyersShare` = .5, beside CarriageLegs: carting is labour at both ends of a road, the loading and
+the road out, the haul in and the unloading. A fixed share, not a feedback: it reads no price, wage or need, so it
+can't spiral; on a road carrying alike both ways it nets to nothing, and it is largest where trade is one-sided.
+
+**2. The messes fed first** (`Society::MessesFirst`, `1ull << 57`; `--without messesfirst`; with work by the hours).
+`Society::townBuyersOrder()` (public, a test's too): the institutions in their written order; with the rule a stable
+partition of it, the same every day: first those that feed the town's people (not tithing, a food in the basket:
+the watch, the mines', the quarries'), then the rest as written (the Town Works, the church, the docks, the hall).
+`townBuyers` funds and runs them in that order; each one's grant (twice its days' basket at the premium, less what it
+holds, inside `spare` and the treasury's allowance), its use and its buying as before. When the capital's allowance
+binds, the messes are funded before the Works' materials. No constants; money moves only between one treasury's
+buyers.
+
+**Saves:** nothing new. **econ_watch:** `--without carriagesplit,messesfirst`, in its list, its error and its notes;
+flows.csv and account_flows.csv carry "carriage to the buying town" on their own (not town_flows.csv, which holds the
+money between two of one town's accounts: a caravan's is no town's, as with its trade takings). **The digests**
+(`--deterministic --hours --threads 4`, normal mode): 3 days with both rules out, b1935fcbb8d9f1fd, round 14's
+(c088eb9's); both rules, 64c928de2f1f0305; MessesFirst alone (`--without carriagesplit`) 64c928de2f1f0305;
+CarriageShared alone (`--without messesfirst`) b1935fcbb8d9f1fd, because the digest mixes the entities' places,
+doings and purses, and in three days the shares (3,610p to the treasury, 138p to the towns' stores) only sit in the
+stores until the first week's budgets on day 7. So also 8 days: c088eb9's binary 18981c581d1cd696, this build with both
+out 18981c581d1cd696, CarriageShared alone 8e5ee4e88d1da4d5, both 838775ae5b51f548.
+
+**Tests** (each rule on and off, work by the hours set and put back):
+
+- `roads_tests`, through `carriageOnTheRoad`: the strip with a mill in one town and a bakery short of flour in the
+  other (aTownsCaravanKeepsToItsRoadMoney's, without its rules), at a 60p day in both towns (at the strip's 12p a unit
+  of flour carts for a third of a penny), one trader's caravan watched from setting out to home, the share each sale
+  carries reckoned at the second it was sold.
+  - `halfTheCarriageGoesToTheBuyingTown`: west's mill, the capital's bakery: 8 flour on the order and 8 carted in past
+    it, 1.5p of carriage a unit. With the rule one entry, 14p (13.8p reckoned: half of each unit's carriage at west's
+    day, and 15%), from the wagon to the treasury; the capital's caravanWeek up by 14p; west's takings home 102p, 116p
+    without. Without, no entry. The reverse road (the capital's mill, west's bakery): west's stores keep the share, in
+    their week, the capital's takings less by it. Money conserved in all four.
+  - `carriedInCarriageToo`: the same road, the capital's day set at three times west's (180p) once the wagon is out:
+    28p (27.6p reckoned: the order's at 60p, what was carted in at 180p), where all at west's day would be 13.8p.
+- `crafting_tests`:
+  - `theCapitalSpendsTheCarriageInItsWeek`: a city of 151 (estateMost 15), a 60p day, its month 4,000p and its treasury
+    20,000p, on the morning of its fifth week (day 35), no day labour asked, no holdings tax in hand; a `caravan:t`
+    pays it 4,200p as the carriage. With the rule its caravanWeek holds 4,200p, and at its week its relief set aside is
+    210p more (a twentieth: 361p against 151p), its buyers' allowance 200p more (a twentieth of the rest: 343p against
+    143p), and its crew 12 places against 5 (80% of the rest at a week of 60p a place: 7.2 more); 14,000p brings it to
+    15, estateMost, and no further. Its month's income and week's earnings are those without the rule. Without, the
+    entry adds nothing to its week.
+  - `theMessIsFedBeforeTheWorks`: a capital of two guards and a hundred scribes, its buyers' working money spent, the
+    week's allowance for its buyers set at the watch's one day's grant (130p; the Works' 273p, both with the allowance
+    unbounded): with the rule the watch gets its 130p and the Works none that day; without, the Works takes the 130p
+    and the watch none. The order: watch, mines, quarries, works, church, docks, hall with the rule (the tithing church
+    keeps its place after the Works, its bread notwithstanding); as written without.
+- No older test changed. The suite (68 of 68) passes with both rules; with both forced off (a temporary copy, not
+  committed: `wageRule` false for the two, the four new tests left out of main) 68 of 68 too. (newcomer_behaviors,
+  which sleeps by the clock, failed once under the machine's load with both rules on, and passed run alone and in the
+  whole suite again.)
+
+**The 365-day check** (`--fast --deterministic --hours --threads 3`, the default start, both rules, built from this
+lane: `artifacts/economy/2026-10-30-r15-carriage-365` in the lane's worktree; the base is days 0-364 of
+`2026-10-30-r14-2y-fast`, the same arguments from c088eb9; quarters of 91 days, q0 days 0-90 to q3 273-363; the flows
+by `flows.csv`, `town_flows.csv` and `account_flows.csv`, the crew by `hires.csv`):
+
+| by quarter, q0 / q1 / q2 / q3 | base | rules on | the brief's aim |
+| --- | --- | --- | --- |
+| carriage to the buying town, into the treasury | none | 102.8k / 139.4k / 139.9k / 131.7k | 70k a quarter at least from q1: met |
+| ...into the towns' stores (all six) | none | 16.6k / 20.8k / 33.2k / 41.8k | |
+| the capital's crew, places a day (all taken) | 6.7 / 5.6 / 10.0 / 18.1 | 18.4 / 20.8 / 22.6 / 22.2 | +10 in each of q1-q3: **q3 +4.1, missed** |
+| ...the most in a day; estateMost | 15 / 7 / 16 / 21; 84-85 | 30 / 27 / 30 / 29; 84-85 | |
+| the capital's building work paid | 35.5k / 30.5k / 54.9k / 100.3k | 97.7k / 113.7k / 125.4k / 123.4k | |
+| Ridgemere's watch's town funds | 60.2k / 72.0k / 60.5k / 45.9k | 63.2k / 72.2k / 75.5k / 81.0k | q3 55k at least: met |
+| Ridgemere's Works' town funds | 105.8k / 102.1k / 90.9k / 86.6k | 109.4k / 103.8k / 101.6k / 115.5k | |
+| Oakhaven's stores' building work | 70.6k / 125.4k / 85.1k / 110.9k | 39.6k / 66.0k / 70.4k / 85.8k | q1-q3 25% lower each: **-47%, -17%, -23%** |
+| Larkfield's stores' building work | 59.0k / 140.0k / 92.0k / 154.6k | 49.7k / 127.9k / 68.6k / 142.4k | **-9%, -25%, -8%** |
+| Oakhaven's road margin (takings less road money and unsold) | 79.4k / 158.4k / 128.4k / 113.7k | 42.9k / 78.7k / 77.8k / 78.1k | -33k to -75k a quarter |
+| Larkfield's road margin | 125.6k / 165.5k / 126.3k / 119.2k | 64.2k / 132.1k / 104.2k / 91.6k | -35k to -60k |
+| Coldwater's road margin; carriage it kept as a buyer | -9.6k / 5.9k / 12.0k / 1.6k | -8.7k / 2.0k / 6.3k / 3.7k; 2.3-2.7k | +5k to +25k (**net -3k to +5k**) |
+| Frosthollow's road margin; carriage it kept | 46.6k / 49.7k / 32.3k / 18.8k | 43.7k / 39.1k / 16.5k / 29.7k; 2.9k / 3.4k / 6.1k / 16.5k | about -4k to -9k (net 0, -7k, -10k, +27k) |
+| Frosthollow's stores at the quarter's end | 14.3k / 8.6k / 8.9k / 4.4k | 15.8k / 8.3k / 11.1k / 4.1k | |
+| holdings tax sent on (all towns) | 0 / 0 / 4.1k / 26.5k | 0 / 0 / 0.3k / 16.7k | (to report) |
+| gate: food a unit (the scorecard's) | 8.1p / 7.3p / 8.7p / 8.6p | 8.0p / 7.7p / 8.5p / 8.8p | within 10%: met |
+| gate: tills stopped (of 384, at the quarter's end) | 133 / 101 / 108 / 132 | 141 / 115 / 96 / 135 | at most 5 points over: met (+3.6 at most) |
+
+| on day 364 (and the gates) | base | rules on | the brief's aim |
+| --- | --- | --- | --- |
+| Ridgemere's residents' held | 1,833k | 1,882k | **1,910k at least: missed** |
+| ...their median | 1,849p | 1,804p | **2,050p at least: missed (lower)** |
+| ...`model.need.ridgemere` | .118 | .114 | **.09 at most: missed** |
+| Oakhaven's, Larkfield's residents' held | 216k, 429k | 121k, 347k | lower: met |
+| ...their medians; Southmeadow's | 3,416p, 2,440p; 1,220p | 1,477p, 1,507p; 731p | |
+| Frosthollow's residents' held (median) | 104k (1,008p) | 108k (1,602p) | |
+| the household Gini | .532 | .544 | **.52 at most: missed (higher)** |
+| the poorer half | .143 | .134 | **.150 at least: missed (lower)** |
+| the Gini's rise, day 182 to 364 | +.047 (.485 to .532) | +.063 (.480 to .544) | **+.035 at most: missed** |
+| gate: money | conserved every day (5,000,120p) | conserved every day (5,000,000p: no newcomer came with a purse) | met |
+| gate: days with hungry at or under 1% | 99.7% | 99.5% | 95%: met |
+| gate: `model.going` | 58.5-60.0p | 59.1-60.0p | 57-64p: met |
+| gate: Ridgemere's going rate over 64p | 9 days (65.5p at most) | 2 days (66.2p) | no more than the base: met |
+| gate: the capital's treasury | 229k | 295k | 80% of the base at least: met |
+| gate: the towns' stores; the watches' wages | 1,344p at the least; 38.2k a quarter | 2,505p; 38.2k a quarter | at least 0, paid: met |
+| gate: the Houses' cash | 242k | 250k | 90% of the base at least: met |
+
+The scorecard (stability.py) for the run: Gini .468, .478, .548, .538 and the poorer half .198, .185, .128, .136 by
+quarter (the base's .481, .481, .559, .525 and .189, .182, .122, .146); hunger, prices, wages, treasuries, businesses
+and population PASS; inequality FAIL (Gini at most .553, the poorer half at least .124, the trend over days 92-364
++.091 a year; the base's over the same days +.065); NOT STABLE on its year. The hungry at most 31 in a day (day 270:
+Larkfield 29 hungry and 14 starving for a day, its shelves bare, as they were in the base those days; the base's worst
+in the year was day 232's 12, Larkfield's too; and on day 231 here, Larkfield 11).
+
+Every gate holds; most of the measures the brief said should move didn't, and the inequality is worse, not better.
+What the run says:
+
+1. **The money moved as reckoned, and more of it.** 514k of carriage went into the treasury in the year (132-140k a
+   quarter from q1, over the brief's 85-115k) and 112k into the small towns' stores; Oakhaven's and Larkfield's road
+   margins fell about as foreseen (Oakhaven's 37-80k a quarter, Larkfield's 22-61k). The capital spent it: building
+   work paid +62k, +83k, +70k and +23k a quarter, its buyers' town funds 205-226k a quarter (the base's 133-207k), its
+   Works' own materials 28-35k (10-29k). Its treasury ended at 295k against 229k: it went from 307k to 281k over the
+   year where the base's went from 294k to 220k.
+2. **The capital's crew grew, but not where the poor are.** Its places went from 6-18 a day to 18-23 (all taken), but
+   the takers are of the same sort as before: hires.csv's takers of the city's building work, days 0-364, were 6,247
+   wolf-days holding an unpaid post (econ_watch's "other": at home), 1,141 with a paid post of their own ("better"),
+   140 idle hands, 97 owners and 24 with no post (the base's 3,121, 319, 35, 112 and 99). Ridgemere's written residents
+   (rm_ and rmx_, 605 of its 678) ended with their paid civilians +96k (688k), unpaid civilians +19k, shopkeepers +23k,
+   guards +5k and adults without work -66k (45 of them against 69). Its median fell 45p and its need moved .004.
+3. **What the small towns lost was their middle.** The building work their stores no longer paid was their at-home
+   wolves' living: Oakhaven's median went from 3,416p to 1,477p, Larkfield's from 2,440p to 1,507p, Southmeadow's from
+   1,220p to 731p (its stores' building work in q3 12.1k against 68.3k), and the producers held 1,101k against
+   1,259k. In the realm's household Gini those homes fell toward the bottom while the city's median didn't rise: the
+   poorer half held .134 against .143, and 37 of its homes were the small towns' paid civilians' (the base's 29).
+4. **The messes are fed.** The city's watch drew 81.0k in q3 (the base's 45.9k) while the Works drew more too (115.5k
+   against 86.6k): with rule 1's larger allowance it seldom bound in year 1, so this run says little of MessesFirst
+   alone; its test shows the order when the allowance binds (the base's year-2 collapse, its watch's 18.3k and 3.4k in
+   q4-q5, is outside the window).
+5. **Not estateMost, and less sent on.** The crew's most in a day was 30 against estateMost's 84, so SurplusByNeed's
+   pot was never capped by it; the towns' "holdings tax sent on" fell (0.3k and 16.7k in q2-q3 against 4.1k and 26.5k)
+   because their holdings tax fell (Larkfield's 15.9k and 76.5k against 33.4k and 89.3k): its rich homes hold less.
+
+**For the user:**
+
+1. **The share works as a transfer, not as a remedy.** It moves about half a million a year from the trading towns'
+   works to the capital's week, and the capital spends it on crews whose places go to wolves at home whatever their
+   purse, and on its buyers, whose money goes to the shops' tills; so the city's middle gains a little, the trading
+   towns' middle loses a lot, and the realm's Gini rises. For the carriage to reach Ridgemere's poor, the capital's
+   crew places would go to the homes in need first (as WagelessFirst orders a business's hires), or the share to the
+   city's relief rather than its week. Neither is this lane's to tune.
+2. **CarriageBuyersShare at .5** is a fixed share by its reasoning (both ends of a road). This run doesn't say a smaller
+   one would help: the Gini's rise is the transfer's direction, not its size.
+3. **MessesFirst** is cheap and holds the watch's mess when the allowance binds; it could stand on its own (with
+   `--without carriagesplit`) in a two-year run, where the base's watch funding collapsed in year 2.
+4. **Larkfield's harvest-time hunger** (day 270: 29 hungry and 14 starving for a day, its shelves bare in both runs
+   those days; the base's worst, day 232, 12 and 7): not traced to either rule in this lane's time.
+5. One run of 365 days this round, as briefed; nothing longer.
