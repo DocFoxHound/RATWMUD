@@ -236,8 +236,7 @@ bool Society::farmHire(const OddJob& j) const
     // A farm's; with work by the hours, any of the land's (a fishery's, a quarry's, a mine's, a logging camp's): one labour
     // market, as the model's (doc 64, Phase 13). Its own town's folk alone took a fishery's or a quarry's hires, and the
     // land's hands, those short most, stood a fifth short with the city's idle a walk away.
-    const auto* r = spec(j.producer);
-    const auto* p = r ? items::producerFor(r->workLabel) : nullptr;
+    const auto* p = spec(j.producer) ? items::producerFor(tradeLabel(j.producer)) : nullptr;   // (Its post's: TradeByPost.)
     return p && (farmWork(p->id) || workByHours());
 }
 
@@ -360,9 +359,9 @@ void Society::stockBunkhouses(std::int64_t day)
                     if (const auto bunk = bunkhouses_.find(j.producer); bunk != bunkhouses_.end())
                         payers[bunk->second.cell].push_back(j.producer);
     std::map<std::string, std::vector<std::string>> shops;     // Community -> its food shops.
-    for (const auto& r : authored_.residents)
-        if (r.role == "merchant" && state_.residents.count(r.id) && foodShop(r.id))
-            shops[communityOfResident(r.id)].push_back(r.id);
+    for (const auto& id : traders())                // (TradeByPost: the posts by their holders, their towns.)
+        if (keepsShop(id) && state_.residents.count(id) && foodShop(id))
+            shops[sellerTown(id)].push_back(id);
     for (const auto& [cell, farms] : payers)
     {
         const auto larder = homeStore(cell, "larder");

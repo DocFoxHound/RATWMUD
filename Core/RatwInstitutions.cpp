@@ -767,7 +767,7 @@ std::int64_t Society::holdingsTax(const std::vector<std::string>& members, std::
         return 0;
     std::vector<std::string> payers;
     for (const auto& id : members)
-        if (const auto* r = spec(id); account(id) && account(id)->cash > 0 && !(r && r->role == "merchant" && tillOf(id) == id))
+        if (account(id) && account(id)->cash > 0 && !(keepsShop(id) && tillOf(id) == id))   // (TradeByPost: its post's.)
             payers.push_back(id);
     std::sort(payers.begin(), payers.end(), [&](const std::string& a, const std::string& b) {
         return account(a)->cash > account(b)->cash || (account(a)->cash == account(b)->cash && a < b);
@@ -915,8 +915,7 @@ bool Society::builds(const std::string& shop) const
     // (The building trades by name: a smithy's nails and fittings, a tinker's nails, a potter's bricks are a few of their
     // wares, and their hands are for their tools, blades and pots. Doc 64, Phase 13.)
     static const char* Trades[] = {"carpenter", "sawmill", "mason", "brickworks", "plasterworks"};
-    const auto* keeper = spec(shop);
-    const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+    const auto* business = spec(shop) ? items::businessFor(tradeLabel(shop)) : nullptr;   // (Its post's: TradeByPost.)
     if (!business || std::find(std::begin(Trades), std::end(Trades), business->id) == std::end(Trades))
         return false;
     for (const auto* k : items::craftsFor(business->id))
@@ -945,7 +944,7 @@ std::int64_t Society::worksOnHome(const std::string& payer, const std::vector<st
     for (const auto& [l, shop] : order)
     {
         const auto* keeper = *shop == payer || quotes.size() >= WantSample ? nullptr : spec(*shop);
-        const auto* business = keeper ? items::businessFor(keeper->workLabel) : nullptr;
+        const auto* business = keeper ? items::businessFor(tradeLabel(*shop)) : nullptr;   // (Its post's: TradeByPost.)
         const auto till = tillOf(*shop);
         const auto* shelves = account(till);
         if (!business || !shelves || till == payer)

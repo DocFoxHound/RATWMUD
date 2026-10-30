@@ -1344,7 +1344,11 @@ class Society
         ChildrenKept = 1ull << 47,                   // Under ChildWorkAge no odd job; a child's spare to its home (round 13, 2).
         KitchenKept = 1ull << 48,                    // A food maker's kitchen runs with its keeper hungry or away (round 13, 3).
         FeastAhead = 1ull << 49,                     // A festival's feast bought in the week ahead, from what shops hold over (round 13, 3).
-        Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
+        // Round 14, lane 3 (the user, 2026-10-30): a hand's day on the land brings in at once, and the market follows the
+        // post and whoever holds it, not its founder's written record.
+        HandsBringIn = 1ull << 54,                   // A hand's day on a producer's land made into yields when it's done (round 14, 3).
+        TradeByPost = 1ull << 55,                    // A seller's trade, lists and town are its post's, held by its holder (round 14, 3).
+        Markdowns = 1ull << 34,                     // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
@@ -1411,9 +1415,47 @@ class Society
     // each food shop holds over its shelf target (what Markdowns would mark down), never meals (a meal shop restocks from
     // the stores at wholesale: they'd go back out); at the turn, as before. Every transfer 99 pieces at most.
     static constexpr int FeastAheadDays = 7;
+    // Round 14, lane 3 (the user, 2026-10-30), with work by the hours.
+    // HandsBringIn: a hand's day on a producer (a fishery's, a warren's, a field's) was credited at once as HireSpells
+    // hours to a bank capped at WorkBankedMost, but only the keeper's own paid spell made banked hours into yields, so a
+    // producer hiring four or more lost 13-34% of what its hands worked (Ridgemere's fisheries, days 91-729: 6.6-11.6k
+    // hours a quarter, 15-23k fish, while its makers went 21-28k hours a quarter short of fish; its catch levelled off at
+    // about 100 a day however many it hired). Under the rule, when a hand's day on a producer is done, and only while
+    // the producer is alive and holds its post with a till of its own, the yield loop runs on what its bank holds, the
+    // day is credited, and the loop runs again (produce with no hours of the keeper's): the hours become yields at once
+    // while its store is under its kept target, and wait in the bank (lost past its cap) only while the store is full.
+    // TradeByPost: the market's lists (World::marketOf, sellersOf, the shops of each town...) were built from the
+    // authored residents by their written role and work label, so a dead founder's post, held by a successor written
+    // with another label (a smelter's 'works at The Frosthollow Smelter', a civilian) or by one born or come later
+    // (civilian, '-'), sold nothing wholesale, made nothing and was bought from nowhere: the Frosthollow smelter held 148
+    // bars unsold from day 364, and stopped. Under the rule a seller's trade is its post's (tradeLabel, keepsShop), its
+    // town its post's (sellerTown), and the lists are of the posts with a till and a living holder, in their founders'
+    // written order, the holder standing for the seller (traders): with no succession, the same lists in the same order.
+    static bool handsBringIn() { return workByHours() && wageRule(HandsBringIn); }
+    // A hired hand's day (`spells` hours) on the land done for its producer `keeper` (advanceOddJob; a test's too): its
+    // hours to the producer's work in hand, and with HandsBringIn its yields brought in then.
+    void handsDayOnTheLand(const std::string& keeper, int spells, double absoluteDay);
+    static bool tradeByPost() { return workByHours() && wageRule(TradeByPost); }
+    // A seller's trade: under TradeByPost, the title of the post it holds when that post has a till and names a business
+    // or a producer; otherwise its written work label ("" with no record). Whether it keeps a shop: under the rule, its
+    // post's role is a merchant's; otherwise its written role is.
+    const std::string& tradeLabel(const std::string& id) const;
+    bool keepsShop(const std::string& id) const;
+    // A post's town (where its work is; with no work cell, its founder's, as communityOfResident finds it), and a seller's
+    // (under TradeByPost, the post's it holds with a till; otherwise, or with none, communityOfResident).
+    std::string postTown(const Position& p) const;
+    std::string sellerTown(const std::string& id) const;
+    // The economy's sellers, in the written order: each written resident; under TradeByPost, for a founder whose post has
+    // a till, that post's holder instead (none while it stands vacant: there is nobody to sell), and nobody for a
+    // resident holding another founder's post with a till (it stands at that founder's place). The callers' filters
+    // (alive, role, trade) apply to whoever is listed.
+    std::vector<std::string> traders() const;
+    // (A test's: who sells a good as buyMaterials reads them, built afresh: by id and kind, 0 supplier, 1 workshop, 2
+    // producer.)
+    std::vector<std::pair<std::string, int>> sellersListed(const std::string& item) const;
 
   private:
-    int season_ = 0;                                // The season of the latest decision (0 spring .. 3 winter).
+    int season_ = 0;                               // The season of the latest decision (0 spring .. 3 winter).
     // A shop's batch (RatwCrafting.cpp). `byHands` (KitchenKept): its hands' work in hand alone, its keeper away: no time
     // of the keeper's counted, credited or brought in, no supplier's restock; a batch finished, the day's materials laid
     // in and the next batch begun from the work in hand, as with the keeper.
@@ -2287,7 +2329,8 @@ class Society
     static constexpr double LandCall = .1;
   private:
     // Arrived where its odd job takes it: the work done there, and paid when finished.
-    void advanceOddJob(const std::string& id, int seconds = 1);   // (A step's seconds of its work.)
+    // (A step's seconds of its work, at the second's game day: a hand's day on the land brought in then, HandsBringIn.)
+    void advanceOddJob(const std::string& id, int seconds, double absoluteDay);
     // Made into `account` as starting money: counted as made, and kept out of the month's profit.
     void startingMoney(const std::string& account, std::int64_t coins);
     // The realm's labourer's day as it is founded (doc 64, Phase 13): in a land of WorldMoneyResidents or more, whose

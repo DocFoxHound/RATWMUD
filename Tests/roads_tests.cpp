@@ -4205,10 +4205,110 @@ void aTownsShelvesSendToTheNearest()
     Society::setWorkByHours(false);
 }
 
+// A successor's bars are on the market (TradeByPost, round 14, lane 3; the user, 2026-10-30; the Society's half is
+// crafting_tests' aSuccessorSellsOn), with work by the hours: west's smelter dies with 148 iron bars in its till, and
+// brisk, written as one of its hands (a civilian who 'works at The Frosthollow Smelter'), takes its post. With the rule,
+// west's market (what the day's trade reads) lists the smelter's till holding its bars over its store; without, nobody
+// holds them: the founder is dead, and brisk's written role keeps no shop. The town's people are counted alike.
+void aSuccessorsBarsAreOnTheMarket()
+{
+    Society::setWorkByHours(true);
+    const auto market = [](bool rule, int& people) {
+        Society::wageRulesOff(rule ? 0 : Society::TradeByPost);
+        auto f = strip("EE.....WW", resident("thistle", "Thistle Icefell", "merchant", "runs The Frosthollow Smelter", 7, 9.5, 8, 9.5) +
+                                        resident("brisk", "Brisk Icepick", "civilian", "works at The Frosthollow Smelter", 7, 10.5, 8, 10.5));
+        auto w = load(f);
+        w.tick(.6);
+        auto& s = w.society();
+        const auto smelter = s.tillOf("thistle");
+        expect(smelter != "thistle", "the smelter has a till");
+        expect(w.setDead("thistle", true).ok, "the smelter's founder dies");
+        auto st = s.state();
+        auto& post = st.careers.positions.at("job:thistle");
+        post.holder = "brisk", post.vacantSince = -1;
+        st.careers.positions.at("job:brisk").holder.clear();   // (Its own post let go, as a succession does.)
+        for (auto& [item, n] : st.accounts.at(smelter).stock)
+            if (items::baseOf(item) == "iron_bar")
+                n = 0;
+        st.accounts.at(smelter).stock["iron_bar"] = 148;
+        expect(s.restore(st), "brisk takes the smelter's post");
+        expect(s.tillOf("brisk") == smelter, "brisk keeps the smelter's till");
+        const auto m = w.marketFor("west");
+        people = m.people;
+        int held = 0;
+        if (const auto found = m.holders.find("iron_bar"); found != m.holders.end())
+            for (const auto& [account, n] : found->second)
+                held += account == smelter ? n : 0;
+        expect(s.conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return held;
+    };
+    int people = 0, peopleWithout = 0;
+    const int with = market(true, people), without = market(false, peopleWithout);
+    expect(with > 100, "With the rule west's market holds the smelter's bars over its store: " + std::to_string(with));
+    expect(without == 0, "Without it nobody holds them: " + std::to_string(without));
+    expect(people == peopleWithout && people > 0, "West's people are counted alike: " + std::to_string(people) + " and " +
+                                                       std::to_string(peopleWithout));
+    Society::setWorkByHours(false);
+}
+
+// The market is the same with no succession (TradeByPost), with work by the hours: every founder alive in its post (a
+// mill and a bakery in the capital, a smelter, its hand, a smith and a fisher in west, the strip's stalls), each town's
+// market with the rule (the posts with a till by their holders, in their founders' written order) is the one without
+// (the written residents): its people, its hungry, its food, what it holds to spare and wants, and who holds and wants
+// each good, in the same order.
+void theMarketIsTheSameWithNoSuccession()
+{
+    Society::setWorkByHours(true);
+    auto f = strip("EE.....WW", resident("miller", "Flour Dust", "merchant", "keeps the water mill at Eastford", 0, 9.5, 1, 9.5) +
+                                    resident("baker", "Bram Loaf", "merchant", "baker at The Amber Loaf", 0, 10.5, 1, 10.5) +
+                                    resident("thistle", "Thistle Icefell", "merchant", "runs The Frosthollow Smelter", 7, 9.5, 8, 9.5) +
+                                    resident("brisk", "Brisk Icepick", "civilian", "works at The Frosthollow Smelter", 7, 10.5, 8, 10.5) +
+                                    resident("smith", "Sorrel Anvil", "merchant", "the smith at the forge", 7, 11.5, 8, 11.5) +
+                                    resident("fisher", "Pike Reed", "civilian", "fishes the lake", 7, 12.5, 8, 12.5));
+    auto w = load(f);
+    w.tick(.6);
+    auto& s = w.society();
+    // (Some of it short and some over: the mill's flour piled, the bakery's and the forge's materials gone.)
+    s.create(s.tillOf("miller"), "flour", 90, "test: a good harvest");
+    for (const auto& [who, item] : std::vector<std::pair<std::string, std::string>>{{"baker", "flour"}, {"smith", "iron_bar"}})
+        for (const auto& kind : Society::kindsHeld(*s.account(s.tillOf(who)), item))
+            s.consume(s.tillOf(who), kind, Society::stock(*s.account(s.tillOf(who)), kind), "test: a bad week");
+    s.create(s.tillOf("thistle"), "iron_bar", 90, "test: a good week at the furnace");
+    int towns = 0, listed = 0;
+    for (const auto& town : {"east", "west"})
+    {
+        Society::wageRulesOff(0);
+        const auto with = w.marketFor(town);
+        Society::wageRulesOff(Society::TradeByPost);
+        const auto without = w.marketFor(town);
+        const std::string at = std::string(" in ") + town;
+        expect(with.people == without.people && with.hungry == without.hungry && with.food == without.food &&
+                   std::abs(with.fed - without.fed) < 1e-9,
+               "Its people, hungry and food are the same" + at);
+        expect(with.spare == without.spare && with.want == without.want, "What it has to spare and wants is the same" + at);
+        expect(with.holders == without.holders && with.wanters == without.wanters, "Who holds and wants each good is the same, in order" + at);
+        expect(with.foodShops == without.foodShops, "Its food shops are the same, in order" + at);
+        ++towns;
+        for (const auto& [item, who] : with.holders)
+            listed += int(who.size());
+        for (const auto& [item, who] : with.wanters)
+            listed += int(who.size());
+        if (std::string(town) == "west")
+            expect(with.holders.count("iron_bar") && with.wanters.count("iron_bar"), "West's bars held by the smelter and wanted by the forge");
+    }
+    expect(towns == 2 && listed >= 4, "Markets compared: " + std::to_string(towns) + ", their holders and wanters " + std::to_string(listed));
+    expect(s.conserved(), "Money stays conserved");
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 int main()
 {
     try
     {
+        aSuccessorsBarsAreOnTheMarket();
+        theMarketIsTheSameWithNoSuccession();
         caravansCarryWholeOrders();
         noRoadOrdersForWhatRots();
         anOrderRisesNoFasterThanItsSeller();

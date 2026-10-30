@@ -169,10 +169,14 @@ Society::Payer Society::payerFor(const std::string& resident, const ResidentReco
         return {"", "lives by what it brings in"};
     if (ownJob ? record->labourJob : job.title == LabourTitle)
         return {treasury(), "the Town Works"};
-    if (holds ? record->producer != nullptr : [&] {
-            const auto* r = spec(resident);
-            return r && items::producerFor(r->workLabel);
-        }())
+    // (Its post's trade, TradeByPost: a successor written with another trade lives by what its post's land brings in.
+    // Round 14, lane 3.)
+    if (tradeByPost() ? spec(resident) && items::producerFor(tradeLabel(resident))
+        : holds       ? record->producer != nullptr
+                      : [&] {
+                            const auto* r = spec(resident);
+                            return r && items::producerFor(r->workLabel);
+                        }())
         return {"", "lives by what it brings in"};
     // An apprentice: its master's business, on half pay (doc 64, Phase 8).
     if (job.title.rfind("apprenticed: ", 0) == 0)
@@ -286,7 +290,7 @@ Society::Payer Society::payerFor(const std::string& resident, const ResidentReco
         else
             for (const auto& p : positions_)
             {
-                if (p.role != "merchant" || communityOfResident(p.founder) != town)
+                if (p.role != "merchant" || postTown(p) != town)   // (The post's town: its founder's work's.)
                     continue;
                 if (const auto* holder = keeper(p, items::businessFor(p.title)))
                     return {tillOf(*holder), "the shop"};

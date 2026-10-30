@@ -103,6 +103,10 @@
 // and its batches begin only at its trade, as round 12's: no piece "bought at its own counter", no baking first, its
 // hands' hours lost to the full bank while it's away), feastahead (a festival's feast bought at its turn alone, from
 // half of what each shop holds, in one transfer a food, as round 12's: a shop holding 200 or more of it sells none).
+// And round 14's, lane 3 (hands and posts): handsbringin (a hand's day on a producer's land is banked and made into yields
+// only at its keeper's own paid spell, as round 13's: past the bank's cap of 24 its hours are lost), tradebypost (the
+// market's lists, a seller's trade and its town read from the founders' written records, as round 13's: a successor
+// written with another trade, or born or come later, sells nothing wholesale and makes or brings in nothing by its post).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -350,7 +354,7 @@ std::string holder(const World& server, const std::string& id)
         const auto* r = society.spec(id);
         return job ? (job->role == "merchant"                       ? "merchant"
                       : job->role == "guard"                        ? "guard"
-                      : r && items::producerFor(r->workLabel)       ? "producer"
+                      : r && items::producerFor(society.tradeLabel(id)) ? "producer"   // (Its post's: TradeByPost.)
                       : job->paid                                   ? "paid civilian"
                                                                     : "unpaid civilian")
              : society.apprenticedTo(id) ? "apprentice"
@@ -641,9 +645,13 @@ int main(int argc, char** argv)
                     off |= Society::KitchenKept;
                 else if (name == "feastahead")
                     off |= Society::FeastAhead;
+                else if (name == "handsbringin")
+                    off |= Society::HandsBringIn;
+                else if (name == "tradebypost")
+                    off |= Society::TradeByPost;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept or feastahead, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin or tradebypost, not "
                               << name << "\n";
                     return 2;
                 }
@@ -787,9 +795,11 @@ int main(int argc, char** argv)
         places.clear();
         for (const auto& [id, life] : society.state().residents)
             places[id] = server.communityOf(life.homeCell);
-        for (const auto& r : society.authored().residents)
-            if (r.role == "merchant" && society.state().residents.count(r.id))
-                places[society.tillOf(r.id)] = server.communityOf(r.work.cell);
+        // (TradeByPost, round 14, lane 3: the posts with a till by their living holders, where the post's work is.)
+        for (const auto& id : society.traders())
+            if (society.keepsShop(id) && society.state().residents.count(id))
+                if (const auto* job = society.jobOf(id); job || !Society::tradeByPost())
+                    places[society.tillOf(id)] = server.communityOf(job && Society::tradeByPost() ? job->work.cell : society.spec(id)->work.cell);
     };
     const auto placeOf = [&](const std::string& id) -> std::string {
         if (const auto found = places.find(id); found != places.end())
@@ -838,9 +848,9 @@ int main(int argc, char** argv)
     std::map<std::string, std::string> tillTowns;   // A post's till -> the town its work is in.
     const auto refreshTills = [&] {
         ownTills.clear();
-        for (const auto& r : society.authored().residents)
-            if (r.role == "merchant" && society.state().residents.count(r.id) && society.tillOf(r.id) == r.id)
-                ownTills.insert(r.id);
+        for (const auto& id : society.traders())    // (TradeByPost: the posts by their holders.)
+            if (society.keepsShop(id) && society.state().residents.count(id) && society.tillOf(id) == id)
+                ownTills.insert(id);
         for (const auto& p : society.positions())
             tillTowns["till:" + p.id] = server.communityOf(p.work.cell);
     };
@@ -1152,8 +1162,7 @@ int main(int argc, char** argv)
                 food += nourishIn(*larder);
             for (const auto& id : members)
             {
-                const auto* r = society.spec(id);
-                if (const auto* a = society.account(id); a && !(r && r->role == "merchant" && society.tillOf(id) == id))
+                if (const auto* a = society.account(id); a && !(society.keepsShop(id) && society.tillOf(id) == id))
                     food += nourishIn(*a, id);
             }
             const auto town = server.communityOf(home);
@@ -1164,21 +1173,21 @@ int main(int argc, char** argv)
             t.days += days;
             (days < 1 ? t.under1 : days < 2 ? t.d12 : days <= 5 ? t.d25 : t.over5) += 1;
         }
-        for (const auto& r : society.authored().residents)
+        for (const auto& id : society.traders())    // (TradeByPost: the posts by their holders, by their trades.)
         {
-            if (!society.state().residents.count(r.id))
+            if (!society.state().residents.count(id))
                 continue;
-            const auto* e = server.entity(r.id);
+            const auto* e = server.entity(id);
             if (!e || e->dead)
                 continue;
-            if (r.role == "merchant")
+            if (society.keepsShop(id))
             {
-                if (const auto* till = society.account(society.tillOf(r.id)))
-                    towns[placeOf(society.tillOf(r.id)).empty() ? "(country)" : placeOf(society.tillOf(r.id))].shop += nourishIn(*till);
+                if (const auto* till = society.account(society.tillOf(id)))
+                    towns[placeOf(society.tillOf(id)).empty() ? "(country)" : placeOf(society.tillOf(id))].shop += nourishIn(*till);
             }
-            else if (items::producerFor(r.workLabel))
-                if (const auto* a = society.account(r.id))
-                    towns[placeOf(r.id).empty() ? "(country)" : placeOf(r.id)].producer += nourishIn(*a);
+            else if (items::producerFor(society.tradeLabel(id)))
+                if (const auto* a = society.account(id))
+                    towns[placeOf(id).empty() ? "(country)" : placeOf(id)].producer += nourishIn(*a);
         }
         for (const auto& [town, t] : towns)
             lardersOut << day << ',' << csv(town) << ',' << t.households << ',' << t.people << ','
@@ -1573,7 +1582,7 @@ int main(int argc, char** argv)
             t.broke += cash <= 0;
             t.hungry += life.hunger >= 70;
             t.starving += life.hunger >= 90;
-            if (const auto* r = society.spec(id); r && items::producerFor(r->workLabel))
+            if (society.spec(id) && items::producerFor(society.tradeLabel(id)))   // (Its post's: TradeByPost.)
                 t.producers += cash;
         }
         refreshPlaces();
@@ -1588,16 +1597,18 @@ int main(int argc, char** argv)
                 (till ? towns[where].keepers : towns[where].town) += a.cash;
             }
         }
-        // And each town's shops' food (by where each keeper works).
-        for (const auto& r : society.authored().residents)
-            if (r.role == "merchant" && society.state().residents.count(r.id))
-                if (const auto* till = society.account(society.tillOf(r.id)))
+        // And each town's shops' food (by where each keeper works: TradeByPost, the posts by their holders, at the post's
+        // work).
+        for (const auto& id : society.traders())
+            if (society.keepsShop(id) && society.state().residents.count(id))
+                if (const auto* till = society.account(society.tillOf(id)))
                 {
                     int meals = 0;
                     for (const auto& [item, count] : till->stock)
                         if (count > 0 && Society::edible(item))
                             meals += count;
-                    auto& t = towns[server.communityOf(r.work.cell)];
+                    const auto* job = society.jobOf(id);
+                    auto& t = towns[server.communityOf(job && Society::tradeByPost() ? job->work.cell : society.spec(id)->work.cell)];
                     t.food += meals;
                     t.foodShops += meals > 0;
                 }
@@ -1812,11 +1823,12 @@ int main(int argc, char** argv)
             if (least > 0)
                 towns[town].cheapest = least, realm = realm > 0 ? std::min(realm, least) : least;
         }
-        for (const auto& r : society.authored().residents)
-            if (r.role == "merchant" && society.state().residents.count(r.id))
-                if (const auto* till = society.account(society.tillOf(r.id)))
+        for (const auto& id : society.traders())    // (TradeByPost: the posts by their holders, at the post's work.)
+            if (society.keepsShop(id) && society.state().residents.count(id))
+                if (const auto* till = society.account(society.tillOf(id)))
                 {
-                    const auto town = server.communityOf(r.work.cell);
+                    const auto* job = society.jobOf(id);
+                    const auto town = server.communityOf(job && Society::tradeByPost() ? job->work.cell : society.spec(id)->work.cell);
                     auto& t = towns[town.empty() ? "(country)" : town];
                     for (const auto& [item, count] : till->stock)
                         if (count > 0 && Society::edible(item))

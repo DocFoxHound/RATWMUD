@@ -18,6 +18,8 @@ namespace ratw
 {
 int Society::stockMaterials(const std::string& id)
 {
+    // (By its written record, under TradeByPost too: these are the founding's materials, laid in before the founders take
+    // their posts (resetAuthored: defaultCareers comes after), and a successor takes the till's stock as it stands.)
     const auto* r = spec(id);
     const auto* business = r && r->role == "merchant" ? items::businessFor(r->workLabel) : nullptr;
     const auto found = state_.accounts.find(tillOf(id));   // (A house's business: its till, doc 42.)
@@ -56,25 +58,34 @@ std::string Society::communityOfResident(const std::string& id) const
 
 const std::vector<Society::Seller>* Society::sellersOf(const std::string& item) const
 {
-    if (suppliers_.empty())
-        for (const auto& r : authored_.residents)
+    const auto add = [&](const std::string& id, const std::string& label, bool shop) {
+        if (const auto* producer = items::producerFor(label))
+            for (const auto& [made, n] : producer->out)
+                suppliers_[made].push_back({id, 2});
+        if (!shop)
+            return;
+        if (const auto* business = items::businessFor(label))
         {
-            if (const auto* producer = items::producerFor(r.workLabel))
-                for (const auto& [made, n] : producer->out)
-                    suppliers_[made].push_back({r.id, 2});
-            if (r.role != "merchant")
-                continue;
-            if (const auto* business = items::businessFor(r.workLabel))
-            {
-                for (const auto& supply : items::suppliesFor(business->id))
-                    suppliers_[supply].push_back({r.id, 0});
-                for (const auto* craft : items::craftsFor(business->id))
-                    for (const auto& [made, n] : craft->out)
-                        if (std::none_of(suppliers_[made].begin(), suppliers_[made].end(),
-                                         [&](const Seller& s) { return s.id == r.id; }))
-                            suppliers_[made].push_back({r.id, 1});
-            }
+            for (const auto& supply : items::suppliesFor(business->id))
+                suppliers_[supply].push_back({id, 0});
+            for (const auto* craft : items::craftsFor(business->id))
+                for (const auto& [made, n] : craft->out)
+                    if (std::none_of(suppliers_[made].begin(), suppliers_[made].end(), [&](const Seller& s) { return s.id == id; }))
+                        suppliers_[made].push_back({id, 1});
         }
+    };
+    // (TradeByPost, round 14, lane 3: the posts with a till by their living holders, in their founders' order, each by
+    // its post's trade; cleared at each day's pass and on a restore, a succession moving no revision. Without, each
+    // written resident by its written record, cached once.)
+    if (suppliers_.empty())
+    {
+        if (tradeByPost())
+            for (const auto& id : traders())
+                add(id, tradeLabel(id), keepsShop(id));
+        else
+            for (const auto& r : authored_.residents)
+                add(r.id, r.workLabel, r.role == "merchant");
+    }
     const auto found = suppliers_.find(item);
     return found == suppliers_.end() ? nullptr : &found->second;
 }
@@ -86,7 +97,7 @@ void Society::missedAt(const std::string& town, const std::string& item, int n)
         return;
     std::vector<std::string> producers;
     for (const auto& s : *sellers)
-        if (s.kind == 2 && state_.residents.count(s.id) && communityOfResident(s.id) == town)
+        if (s.kind == 2 && state_.residents.count(s.id) && sellerTown(s.id) == town)   // (Its post's town: TradeByPost.)
             producers.push_back(tillOf(s.id));
     // (Shared out whole, the odd ones to the first. With the buyers who found none, not with its sales: a producer that
     // sold its last that day counts its missed sales or its sold-out half again, the more, not both. Society::spoil.)
@@ -183,8 +194,7 @@ int Society::keepsBack(const std::string& seller, const std::string& item) const
     // (A workshop that works with it too, a chandler's cord for its candles, keeps back what its own batches want before
     // it buys more: two chandlers stripped each other. Doc 64, Phase 13. Not a store of them: a butcher held back two
     // dozen raw meat that spoiled, a plasterworks four dozen lime.)
-    const auto* r = spec(seller);
-    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto* business = spec(seller) ? items::businessFor(tradeLabel(seller)) : nullptr;   // (The post's: TradeByPost.)
     if (!business || rots(items::good(item)))
         return GoodsKept;
     // (Its crafts' need of each material, worked out once a business: each thread remembers.)
@@ -203,8 +213,9 @@ int Society::keepsBack(const std::string& seller, const std::string& item) const
 
 bool Society::produce(const std::string& id, double absoluteDay, double hours)
 {
-    const auto* r = spec(id);
-    const auto* producer = r ? items::producerFor(r->workLabel) : nullptr;
+    // (Its post's trade, TradeByPost: round 14, lane 3. A successor written with another trade worked its land and
+    // brought in nothing: the eel traps', the orchard's, Glasswater's fishing's.)
+    const auto* producer = spec(id) ? items::producerFor(tradeLabel(id)) : nullptr;
     const auto till = tillOf(id);
     if (!producer || !account(till))
         return false;
@@ -264,7 +275,7 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
             for (const auto& [item, count] : producer->out)
             {
                 int brought = yields * count;
-                if (items::townGoodOf(communityOfResident(id), item))
+                if (items::townGoodOf(sellerTown(id), item))
                     brought = int(std::lround(brought * items::tradeYield()));
                 for (; brought > 0; brought -= 99)           // (A ledger entry holds 99 at most.)
                 {
@@ -298,7 +309,7 @@ bool Society::produce(const std::string& id, double absoluteDay, double hours)
     // the spell (so a run repeats), and keep more of them in store to send away. (A yield's hours are taken only when it
     // brought something in: with its store full they stay in hand, and are lost. Doc 64, Phase 13; with work by the
     // hours: at the seconds' pace, taken whatever it brought, as they were.)
-    const auto town = communityOfResident(id);
+    const auto town = sellerTown(id);               // (Its post's town: TradeByPost.)
     for (int yield = 0; banked >= hoursFor(*producer); ++yield)
     {
         bool made = false;
@@ -535,8 +546,9 @@ int Society::craftKept(const std::string& id, const std::string& till, const ite
         const auto* in = items::good(k.in.front().first);
         return in && in->keeps > 0 && (madeGood->keeps <= 0 || madeGood->keeps > in->keeps);
     }();
-    // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads.
-    const auto town = communityOfResident(id);
+    // A town's trade (doc 61): its makers keep a bigger store of its goods, the spare that goes out on the roads. (Its
+    // post's town, TradeByPost.)
+    const auto town = sellerTown(id);
     const double trade = items::townGoodOf(town, made) ? items::tradeKeep() : 1;
     const double least = items::traded(made) && keeps ? SuppliesKept * trade
                          : supplied || items::traded(made) || cures ? SuppliesKept / 2 * trade : GoodsKept;
@@ -553,8 +565,7 @@ bool Society::foodBatchReady(const std::string& keeper, double absoluteDay) cons
     // that found its work in hand short, would keep it waiting at its counter the hour).
     if (const auto next = craftNext_.find(keeper); next != craftNext_.end() && next->second > absoluteDay + 1. / 96)
         return false;
-    const auto* r = spec(keeper);
-    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto* business = spec(keeper) ? items::businessFor(tradeLabel(keeper)) : nullptr;   // (The post's: TradeByPost.)
     const auto till = tillOf(keeper);
     const auto* shelves = account(till);
     if (!business || !shelves)
@@ -583,7 +594,8 @@ bool Society::foodBatchReady(const std::string& keeper, double absoluteDay) cons
 void Society::craft(const std::string& id, const std::string& workCell, double absoluteDay, bool byHands)
 {
     const auto* r = spec(id);
-    const auto* business = r ? items::businessFor(r->workLabel) : nullptr;
+    const auto& trade = tradeLabel(id);             // (Its post's, TradeByPost: round 14, lane 3.)
+    const auto* business = r ? items::businessFor(trade) : nullptr;
     const auto till = tillOf(id);                   // The shop's shelves (its house's till, doc 42).
     if (!r || !account(till))
         return;
@@ -654,7 +666,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             double worth = 0;
             for (const auto& [item, count] : (*k)->out)
                 worth += count * items::worthOf(item);
-            const double batch = costedHours(**k) * (1 + (*k)->skill / items::ladder().skillWage) * labourDay(communityOfResident(id)) / PaidSpells + materials;
+            const double batch = costedHours(**k) * (1 + (*k)->skill / items::ladder().skillWage) * labourDay(sellerTown(id)) / PaidSpells + materials;
             for (const auto& [item, count] : (*k)->out)
             {
                 const auto made = quality == 3 ? items::withMaker(items::withQuality(item, 3), id) : items::withQuality(item, quality);
@@ -704,7 +716,7 @@ void Society::craft(const std::string& id, const std::string& workCell, double a
             worked *= std::max(1., paw->second.first);   // (A player's paw at the work: doc 53, 3.)
         // A shopkeeper who also brings goods in (a stables' stock-breeding) does so with its time; one who makes things,
         // its time goes to the business's work in hand.
-        if (items::producerFor(r->workLabel))
+        if (items::producerFor(trade))
             produce(id, absoluteDay, worked);
         else
             creditWork(till, worked);

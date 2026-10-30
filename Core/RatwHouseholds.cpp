@@ -60,7 +60,7 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
             // Each its own household, by its own purse: the rule all the same, or its purse only fills (a bunkhouse's
             // farmers and loggers held half the households' money by day 60, doc 64, "The households' gap").
             for (const auto& id : adults->second)
-                if (const auto* r = spec(id); !(r && r->role == "merchant" && tillOf(id) == id))
+                if (!(keepsShop(id) && tillOf(id) == id))   // (A keeper whose purse is its till; its post's, TradeByPost.)
                     if (const auto* a = account(id))
                     {
                         const auto community = communityOfResident(id);
@@ -74,8 +74,7 @@ void Society::tendHouseholds(std::int64_t day, const std::map<std::string, LifeB
         std::int64_t pot = 0;
         for (const auto& id : adults->second)
         {
-            const auto* r = spec(id);
-            if (r && r->role == "merchant" && tillOf(id) == id)
+            if (keepsShop(id) && tillOf(id) == id)   // (Its post's, TradeByPost.)
                 continue;
             if (const auto* a = account(id))
                 pot += a->cash, sharing.push_back(id);
