@@ -7780,3 +7780,113 @@ outgoings outside its parts in `spendWeek["treasury|other"]`.
    nobody takes leave it in the purse (then the town's own). An alternative: a rebate to the town's poorest.
 3. **The capital at its floor spends its income** and no more; it doesn't refill. If it should, its budget under the
    floor could be a share under its income (budgetOf did that: about 23k a week on 33k of income at 150k).
+
+### Phase 13: round 13, lane 1: the wage book reads the living, its review one chain again (2026-10-29)
+
+Round 12's two years at the fast settings (`artifacts/economy/2026-10-29-r12-2y-fast`, built from 8550cfe; the other
+start, the run without lane B and the run without lane A the same) failed the wages: the going rate slid from 60p to
+38.8p, falling all along (the user's goal, 2026-10-29: 42p to 96p, and flat). The weekly review's moves at the tills
+the going rate is the middle of, weighted by their employees (`books.csv`), over the two years: the calm cut about -47
+log points, the short-pay cuts -18, the drift back and the rest -18, against the bids +25 and the floor +8. What the
+book read and how it reviewed, not any market:
+
+- **The calm cut read the dead.** `++calm >= CalmWeeks && slack_ > .03`, and `slack_` was taken over every entry of the
+  residents: the dead stay there (`RatwCareers.cpp` settles an estate and keeps the resident), and with no body
+  `ageOf` gave them their written age, `jobOf` none: 33 of the 53 dead were 16 to 64, each an idle wolf. The living's
+  slack stood over 3% on 7, 0, 0, 0, 3, 54, 73 and 91 days of the quarters; so counted, on 9, 38, 34, 64, 91, 91, 91
+  and 91. The cut follows the counted value exactly (2-3% of the eligible reviews under 3%, all of them at it or
+  over), and those on days the living's slack was 3% or under are about 26 of its 49 log points.
+- **Nor is the living's slack idleness.** Nearly every living jobless grown wolf holds a place on a week's hire: their
+  days on hires (`hires.csv`) are 1.04 to 1.21 times their days jobless, at about the going rate a day.
+- **A short week ran the whole chain** (a regression from 8511309, round 12, lane A). The short-pay cut became a
+  standalone `if`, and the chain's own `if (book.shortPay)` below it could never fire (the flag was cleared), so a
+  short week went on to the bid or the calm: calm counted in 94-97% of the short weeks, 2 to 97 a quarter cut twice
+  (over 4% in one review), and in the run without lane A 2,138 of 3,893 ended higher (cut, then bid). Every employer,
+  not only WageBySales': the largest short payers are households' help and the town's and the church's posts.
+- **A business short of hands that couldn't pay more counted calm.** WageBySales' business short of the hands its sales
+  want (`bidOpen > 0`, four days open) whose trade can't pay a higher wage fell through to `++calm` and the calm cut:
+  21-34% of the calm cuts, by hands, were at tills four days open. Round 12 says it "keeps its wage and its posts open".
+
+**What changed** (both with work by the hours; no money moves; with a rule left out, as at 8550cfe):
+
+- **1. The realm's labour measures count the living, and a week's hire as work** (`Society::LivingSlack`, `1ull << 44`;
+  `econ_watch --without livingslack`; `Society::tendLabour`). Living is having a body (`bodies` holds only the living;
+  none given, everyone: Demand and Institutions skip the rest the same way). A wolf holding a place (`j.stage`) on any
+  odd job running today for the week (`!j.ended && j.until >= day`: a business's hire, a field's, the treasury's, a
+  town's or the church's crew, a House's, about a home; not a day's odd job) is at work. So `slack_` (the idle share of
+  the grown of working age: the calm cut's, the mint's harm, a masters' trade taking the young from plain work) and
+  `grown_` (`estateMost`, the House's estate crews' cap) are the living's. The pace's hungry share counts and divides by
+  the living (a dead wolf's hunger stood where it died), and the mint's harm reads the same share
+  (`Society::hungryShare_`, set by the pass, not saved: unset, the mint counts its own, as before). `Society::slack()`
+  reads it.
+- **2. The weekly review is one chain again** (`Society::WageBookMended`, `1ull << 45`; `--without wagebook`; every
+  employer, not only WageBySales'). A week it fell short paying (`book.shortPay`) is cut (up to 4%), and that is all: no
+  bid, no week of calm (it wasn't calm). Else, four days open and its trade pays (or no WageBySales): it bids, as
+  before. Else, WageBySales' business short of the hands its sales want whose trade can't pay more (`bidOpen > 0`, four
+  days open, not `pays`): its wage and its calm stay as they are. Else, a week of calm and, at `CalmWeeks` with the realm
+  over 3% idle, the calm cut, as before. WageHigh, the drift back (which already leaves out a business short and unable
+  to pay) and the floor follow as before. The chain's dead second short-pay cut is gone. No new constants.
+- **econ_watch:** `--without livingslack`, `--without wagebook`; `days.jsonl`'s model block has `slack`
+  (`society.slack()`). And, a measure whatever the rules, a dead wolf's purse (its spec's, its body gone or dead) is the
+  holder **"deceased"**, not an "adult without work" (52 of the 134 on day 729 of the 2-year run were the dead's);
+  econ_watch's share sentinel and `tools/econ_model/report.py` count it among the homes, as before.
+- **Saves:** nothing new.
+
+**Tests** (`crafting_tests`):
+
+- `theSlackCountsTheLiving`: forty grown (a baker, a stall, 33 lone scribes; five with no post: three dead, in the
+  residents with no body, one on the bakery's hire for the week, one with nothing): the slack is 1/37 and a House's
+  estate crew at most 3; without the rule 5/40 and 4. (Forty, not twenty: one idle wolf of twenty is 5%, over the calm
+  cut's 3%.) A household's help's book CalmWeeks less one calm, nothing open, reviewed that day: it keeps its wage
+  (13.2p); without the rule the dead push the slack over, and it is cut (13.01p).
+- `aShortPayWeekNeitherBidsNorCalms`: a household's help's book short of its pay, seven days open, CalmWeeks less one
+  calm: cut once (12p to 11.66p), its calm 5; without the rule cut, then bid (11.86p), calm 0. Nothing open and the
+  realm a fifth idle: cut once, calm 5; without, calm 6 and cut twice (11.48p).
+- `aShortBusinessThatCantPayKeepsItsWage`: `aWageBidBySales`' office, its clerk's post open, four days open, CalmWeeks
+  less one calm, its trade nothing, the realm a fifth idle: its wage 10p and its calm 5 kept; without the rule calm 6 and
+  the calm cut (9.94p).
+- No older test changed. The whole suite passes with both rules on (68 of 68), and with both forced off (a temporary
+  build, not committed: so each older test passes on the rules as it was written for).
+
+**The digest:** 3 days, `--deterministic --hours --threads 4 --without livingslack,wagebook`: 2d798a3e826ba1dd, round
+12's.
+
+**60 days at the fast settings** (default start, three threads), beside `econ_watch-8550cfe` with the same arguments.
+The going rate's slide is a second year's (the calm cut took 0.2 log points in the 2-year run's first quarter), so 60
+days checks the mechanics, not the slide:
+
+| | 8550cfe | round 13, lane 1 |
+|---|---|---|
+| going rate, days 1-60 | 60p | 60p |
+| slack (`model.slack`), days 1-60 | (about .024 counted the old way) | mean .003, max .019; 58 of 61 days at .01 or under |
+| short-pay reviews | 341 | 354 |
+| ... whose calm rose | 328 | 0 |
+| ... bid after the cut | 11 | 0 |
+| ... ended higher | 13 | 0 |
+| calm cuts (calm 6+, not short, under 2%, at or under its rate) | 57 | 2 (short cuts between two records) |
+| falls over 4% in a review, at or under its rate (cut twice) | 1 | 0 |
+| falls over 4% in all (drift back, over the rate) | 21 | 26 |
+| bids at the going rate's tills (hands) | 147 (190) | 147 (167) |
+| their log points: bids, short cuts, drift back, calm cuts | +2.28, -1.99, -0.61, -0.11 | +2.20, -2.30, -0.78, -0.01 |
+| money, day 60 | 5,000,120p, conserved | 5,000,120p, conserved |
+| hungry, mean (max); starving | 0.19 (11); 0 | 0.23 (14); 0 |
+| Gini, poorer half, day 60 | .501, .178 | .505, .178 |
+| "deceased", day 60 | (among the adults without work) | 5 accounts, 5p; 5 deaths |
+| adults without work; living idle (`model.idle`), day 60 | 57; 13 | 54; 14 |
+
+(The reviews are told apart in `books.csv` by their changes: open days reset, calm or wage moved, short pay cleared.
+The society's day turns on either side of the watch's midnight, so a review isn't always on its weekday's record; and a
+week short and reviewed between two records shows as no short week. The scorecard's towns column, 84k to 120k on day
+60, is the day's timing: the town treasuries swing 55k to 120k within the week in both runs.)
+
+**For the user** (these want the year, or the two):
+
+1. **The slide.** What moved the rate down in the second year was mostly the calm cut on a slack the living didn't
+   have. With these, the calm cut fires only while the living are idle and off the hires (none of the 60 days); the
+   short-pay cuts (-2.3 log points in 60 days, now never followed by a bid) and the drift back are what's left against
+   the bids. Whether the rate holds flat at 60p over two years, or climbs (the spiral watch: at or under about 66p, the
+   bids per quarter as the baseline's), is the 2-year run's to say: not run here.
+2. **The short-pay cut** is now the one way a short week moves the wage (up to 4%). At the going rate's tills it took
+   2.3 log points in the 60 days (2.0 before, when a bid often followed it). Whether a till short of its pay should cut
+   its wage that much, or less, is the user's to say; it is Phase 6's rule, unchanged.
+3. **"Deceased"** is a measure: in the 2-year run 52 of the 134 "adults without work" on day 729 were the dead's purses.

@@ -29,8 +29,9 @@ from collections import defaultdict
 HERE = pathlib.Path(__file__).resolve().parent
 GROUPS = ("homes", "firms", "Houses", "church", "town")
 FOUNDING = {"starting money", "initial funding", "a great house's fortune"}   # (Left out of the quarters' nets.)
+# (The dead's purses, "deceased" from round 13, lane 1, among the homes, as when econ_watch counted them adults without work.)
 HOMES = {"merchant", "guard", "producer", "paid civilian", "unpaid civilian", "apprentice", "child", "retired", "resident",
-         "player", "adult without work"}
+         "player", "adult without work", "deceased"}
 
 
 def group_of(kind):

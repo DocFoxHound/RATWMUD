@@ -1772,6 +1772,65 @@ void aShortBusinessBidsUp()
     Society::setWorkByHours(false);
 }
 
+// Round 13, lane 1 (the user, 2026-10-29), with work by the hours: a week an employer fell short paying, it is cut (up
+// to 4%), and with WageBookMended that is the week's one move, for every employer (here a household's help, whose
+// purse pays it: no WageBySales, its bid always "pays"). Round 12's cut stood apart from the review's chain (its
+// second, in the chain, could never fire), so a short week went on to the bid or to a week of calm: its book seven days
+// open, it was cut, then bid up; nothing open, CalmWeeks less one calm and the realm over 3% idle, it was cut twice.
+// With the rule: cut once, its calm as it was.
+void aShortPayWeekNeitherBidsNorCalms()
+{
+    struct Run
+    {
+        double wage = 0, before = 0, slack = 0;
+        int calm = 0;
+    };
+    const auto run = [](std::uint64_t off, int openDays) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("stall", "keeping the stall", {"market", 4.5, 4.5}),
+                            person("smith", "the smith at the forge", {"forge", 2.5, 2.5}), person("scribe", "the scribe", {"desk", 2.5, 2.5}),
+                            person("idle1", "-", {"square", 2.5, 2.5}, "civilian")};
+        roster.economy.treasury = 5000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const std::string key = "scribe|help";
+        const auto bodies = atWork(s);
+        const auto review = std::int64_t(std::hash<std::string>{}(key + "|wage") % 7);
+        std::int64_t on = 2;
+        while (on % 7 != review)
+            ++on;
+        for (std::int64_t d = 1; d < on; ++d)
+            s.tick(1, double(d) + .5 / 24, 0, bodies);   // (The days' passes before its review: the going rate.)
+        Run r;
+        r.before = s.goingRate("");
+        auto state = s.state();
+        state.memory.employers[key] = EmployerBook{r.before, openDays, Society::CalmWeeks - 1, true};
+        expect(s.restore(state), "its book restores");
+        s.tick(1, double(on) + .5 / 24, 0, bodies);
+        const auto& book = s.state().memory.employers.at(key);
+        r.wage = book.wage, r.calm = book.calm, r.slack = s.slack();
+        expect(!book.shortPay && book.openDays == 0, "its week reviewed");
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto show = [](const Run& r) {
+        return std::to_string(r.before) + "p to " + std::to_string(r.wage) + "p, calm " + std::to_string(r.calm);
+    };
+    const auto cut = [](const Run& r) { return r.wage <= r.before + 1e-9 && r.wage >= r.before * (1 - 2 * Society::WageDown) - 1e-9; };
+    const auto open = run(0, 7), openBefore = run(Society::WageBookMended, 7);
+    expect(cut(open) && open.calm == Society::CalmWeeks - 1, "seven days open but short of its pay: cut once, no bid, no calm: " + show(open));
+    expect(openBefore.calm == 0 && openBefore.wage > open.wage + 1e-9, "without the rule, cut, then bid up: " + show(openBefore));
+    const auto calm = run(0, 0), calmBefore = run(Society::WageBookMended, 0);
+    expect(calm.slack > .03 && calmBefore.slack > .03, "the realm over 3% idle: " + std::to_string(calm.slack));
+    expect(cut(calm) && calm.calm == Society::CalmWeeks - 1, "nothing open, short of its pay: cut once, its calm as it was: " + show(calm));
+    expect(calmBefore.calm == Society::CalmWeeks && calmBefore.wage < calm.wage - 1e-9,
+           "without the rule, a sixth week of calm and cut twice in one review: " + show(calmBefore));
+}
+
 // A producer's posts open by its sales as they are (doc 64, Phase 13, the review): a fishery's goods go on to the shops,
 // so its shelf is always near bare, and planning half again for that it would stand short for good. Its sales a hand's
 // day, though it plans for two: no post open. Its sales three hands' days: two open. Its sales ten and more: three, its
@@ -6025,6 +6084,179 @@ void aWageBidBySales()
     expect(extraBids.open > 0 && extraBids.wage > 10.05, "without the rule MoreHands' extra bids its wage up: " + show(extraBids));
 }
 
+// Round 13, lane 1 (the user, 2026-10-29: the going rate's slide, 60p to 38.8p in two years), with work by the hours:
+// the realm's slack (the idle share of its grown wolves of working age; the weekly calm cut wants it over 3%) counts the
+// living only, and a wolf holding a place on a week's hire as at work (LivingSlack). Forty grown: a baker, a stall and
+// 33 lone scribes at their posts, and five with none. Three of the five are dead (in the residents, no body: an estate
+// is settled, the resident kept), one holds a place on the bakery's hire for the week, one holds none: the slack is 1
+// of the 37 living (2.7%), its grown the 37 (a House's estate crew a tenth of them: 3). Without the rule the dead and
+// the hired are idle: 5 of 40 (12.5%), its grown 40 (4). (Forty, not twenty: one idle of twenty is 5%, over the calm
+// cut's 3%.) And an employer CalmWeeks less one calm, nothing open, at its review: with the rule, the realm under 3%
+// idle, it keeps its wage; without, the dead push the slack over, and it is cut.
+void theSlackCountsTheLiving()
+{
+    struct Run
+    {
+        double slack = 0, wage = 0, before = 0;
+        int estate = 0, calm = 0;
+        bool hired = false, onReview = false;
+    };
+    const auto run = [](std::uint64_t off) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(off);
+        AuthoredRoster roster;
+        roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("stall", "keeping the stall", {"market", 4.5, 4.5})};
+        for (int i = 1; i <= 33; ++i)
+            roster.residents.push_back(person("scribe" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        for (int i = 1; i <= 5; ++i)
+            roster.residents.push_back(person("free" + std::to_string(i), "-", {"square", 2.5 + i, 2.5}, "civilian"));
+        roster.economy.treasury = 200000;
+        Society s(Roster::None);
+        s.configure(roster);
+        oneTown(s);
+        {
+            auto state = s.state();
+            state.memory.pace = 1;
+            expect(s.restore(state), "the calibrated hours restore");
+        }
+        const auto bakery = s.tillOf("baker");
+        // The living (free1 to free3 dead: no body), and free4 alone about at ten, to take the bakery's hire.
+        auto living = atWork(s);
+        for (const char* dead : {"free1", "free2", "free3"})
+            living.erase(dead);
+        const std::map<std::string, LifeBody> taker = {{"free4", living.at("free4")}};
+        // (Its bread bought each day and eaten, its till kept funded: it wants hands, and posts its hire for the week. The
+        // day's pass at half past midnight, nobody about to take it.)
+        const auto pass = [&](std::int64_t d) {
+            set(s, "baker", "bread", 30);
+            set(s, "baker", "flour", 40);
+            expect(s.shift("treasury", "scribe1", "", 0, 30 * s.shopPrice("baker", "bread"), "test: the buyer's money"), "the buyer has money");
+            expect(s.sale(bakery, "scribe1", "bread", 30, s.shopPrice("baker", "bread"), "test: the day's buying"), "the buyer buys");
+            auto st = s.state();
+            st.accounts.at("scribe1").stock.erase("bread");
+            expect(s.restore(st), "eaten");
+            if (const auto cash = s.account(bakery)->cash; cash < 5000)
+                expect(s.shift("treasury", bakery, "", 0, 5000 - cash, "test: its till kept funded"), "its till funded");
+            s.tick(1, double(d) + .5 / 24, 0, living);
+        };
+        // Its hire running past today with a place open, and free4 holding a place on it.
+        const auto hire = [&](std::int64_t d) {
+            return std::any_of(s.oddJobs().begin(), s.oddJobs().end(), [&](const Society::OddJob& j) {
+                return j.payer == bakery && Society::businessHire(j) && j.until > d && !j.ended && int(j.stage.size()) < j.slots;
+            });
+        };
+        const auto holds = [&](std::int64_t d) {
+            return std::any_of(s.oddJobs().begin(), s.oddJobs().end(), [&](const Society::OddJob& j) {
+                return j.payer == bakery && Society::businessHire(j) && j.until > d && !j.ended && j.stage.count("free4") > 0;
+            });
+        };
+        std::int64_t d = 0;
+        while (d < 14)
+            pass(++d);
+        Run r;
+        for (int tries = 0; tries < 8 && !r.hired; ++tries)
+        {
+            pass(++d);
+            if (hire(d))
+                for (int i = 1; i <= 120; ++i)
+                    s.tick(1, double(d) + 10. / 24 + i / 86400., 0, taker);
+            r.hired = holds(d);
+        }
+        expect(r.hired, "free4 holds a place on the bakery's hire for the week");
+        // Tomorrow's pass, the hire running: the slack, and an employer (a household's help, nothing open) at its review
+        // that day, CalmWeeks less one calm.
+        const std::int64_t m = d + 1;
+        std::string key;
+        for (const auto& [id, life] : s.state().residents)
+            if (key.empty() && std::int64_t(std::hash<std::string>{}(id + "|help|wage") % 7) == m % 7)
+                key = id + "|help";
+        expect(!key.empty(), "a household's help reviewed that day");
+        auto state = s.state();
+        r.before = 1.1 * s.goingRate("");
+        state.memory.employers[key] = EmployerBook{r.before, 0, Society::CalmWeeks - 1};
+        expect(s.restore(state), "its book restores");
+        pass(m);
+        r.onReview = holds(m - 1);
+        r.slack = s.slack(), r.estate = s.estateMost();
+        r.wage = s.state().memory.employers.at(key).wage, r.calm = s.state().memory.employers.at(key).calm;
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto show = [](const Run& r) {
+        return std::to_string(r.slack) + " slack, estate crews " + std::to_string(r.estate) + "; its wage " + std::to_string(r.before) + "p to " +
+               std::to_string(r.wage) + "p, calm " + std::to_string(r.calm);
+    };
+    const auto now = run(0), before = run(Society::LivingSlack);
+    expect(now.onReview && before.onReview, "free4 on the hire at the review's pass");
+    expect(std::abs(now.slack - 1. / 37) < 1e-9 && now.estate == 3, "the living's slack, one of 37, the hired at work: " + show(now));
+    expect(std::abs(before.slack - 5. / 40) < 1e-9 && before.estate == 4, "without the rule, the dead and the hired idle, five of 40: " + show(before));
+    expect(std::abs(now.wage - now.before) < 1e-9 && now.calm == Society::CalmWeeks, "the realm under 3% idle, it keeps its wage: " + show(now));
+    expect(before.wage < before.before - 1e-9 && before.calm == Society::CalmWeeks, "without the rule, the dead push it over, and it is cut: " + show(before));
+}
+
+// Round 13, lane 1 (the user, 2026-10-29), with work by the hours: a business short of the hands its sales want whose
+// trade can't pay a higher wage keeps its wage and its posts open (WageBySales, round 12: doc 64), and with
+// WageBookMended its weeks of calm too (it isn't calm: it is short). Before, it went on to count a week of calm, and at
+// CalmWeeks to the calm cut: a fifth to a third of those cuts, by hands, in the 2-year run, were at tills four days open.
+// aWageBidBySales's office, its clerk's post open (the clerk out of work: the realm a fifth idle), its book four days
+// open and CalmWeeks less one calm, its trade nothing: with the rule, its wage and its calm as they were; without, a
+// sixth week of calm, and the calm cut.
+void aShortBusinessThatCantPayKeepsItsWage()
+{
+    struct Run
+    {
+        double wage = 0, slack = 0;
+        int calm = 0;
+        bool open = false;
+    };
+    const auto run = [](std::uint64_t off) {
+        Society::setWorkByHours(true);
+        Society::wageRulesOff(off | Society::MoreHands);   // (Its posts open by its sales alone, as aWageBidBySales's.)
+        AuthoredRoster roster;
+        roster.residents = {person("scribe", "the scribe", {"desk", 2.5, 2.5}), person("clerk1", "works at the desk", {"desk", 3.5, 3.5}, "civilian")};
+        for (int i = 1; i <= 3; ++i)
+            roster.residents.push_back(person("lone" + std::to_string(i), "the scribe", {"desk" + std::to_string(i), 2.5, 2.5}));
+        roster.economy.treasury = 50000;
+        Society s(Roster::None);
+        s.configure(roster);
+        const auto office = s.tillOf("scribe");
+        auto state = s.state();
+        const double skilled = 1 + s.employerSkill(office) / items::ladder().skillWage;
+        state.memory.employers[office] = {10 * skilled, Society::OpenDays, Society::CalmWeeks - 1};
+        for (int i = 1; i <= 3; ++i)
+            state.memory.employers[s.tillOf("lone" + std::to_string(i))] = {10 * skilled};
+        for (auto& [pid, post] : state.careers.positions)
+            if (post.holder == "clerk1")
+                post.holder.clear();
+        state.memory.tradeNet[office] = {0, Society::SalesDays};
+        expect(s.restore(state), "the office restores");
+        const auto bodies = atWork(s);
+        const auto review = std::int64_t(std::hash<std::string>{}(office + "|wage") % 7);
+        Run r;
+        for (std::int64_t d = 1; d <= 7; ++d)
+        {
+            s.tick(1, double(d) + .5 / 24, 0, bodies);   // (The day's pass: its review on one of the seven.)
+            if (d % 7 == review)
+                r.open = s.vacanciesOf(office) > 0, r.slack = s.slack();
+        }
+        r.wage = s.employerWage(office) / skilled, r.calm = s.state().memory.employers.at(office).calm;
+        expect(s.conserved(), "money stays conserved");
+        Society::wageRulesOff(0);
+        Society::setWorkByHours(false);
+        return r;
+    };
+    const auto show = [](const Run& r) {
+        return std::to_string(r.wage) + "p, calm " + std::to_string(r.calm) + (r.open ? ", its post open" : ", nothing open") + ", slack " +
+               std::to_string(r.slack);
+    };
+    const auto now = run(0), before = run(Society::WageBookMended);
+    expect(now.open && before.open && now.slack > .03 && before.slack > .03, "its post open at its review, the realm over 3% idle: " + show(now));
+    expect(std::abs(now.wage - 10) < 1e-6 && now.calm == Society::CalmWeeks - 1, "short of hands, its trade unable to pay more, it keeps its wage and its calm: " + show(now));
+    expect(before.wage < 10 - 1e-6 && before.calm == Society::CalmWeeks, "without the rule, a sixth week of calm, and the calm cut: " + show(before));
+}
+
 // Round 10, lane A (the user, 2026-10-27), with work by the hours: a House's week's budget, by the model's rule (k 4,
 // a2 0.3), over all it pays out, in parts. House Fell holds 5,000p on a month's income of 1,000p (and its caravans' 0)
 // at the day-35 reckoning: its budget (1,000 + 0.3 x (5,000 - 4,000)) / 4 = 325p. Its floor is a week's wages for
@@ -6825,6 +7057,7 @@ int main()
         aTownKeepsItsRateAtTheOldPace();
         handsByWhatCanBeMade();
         aShortBusinessBidsUp();
+        aShortPayWeekNeitherBidsNorCalms();
         theLandsHiresForAnyone();
         aProducersPostsBySales();
         aProducersHireBySales();
@@ -6886,6 +7119,8 @@ int main()
         aLoneOwnerStopsToppingUp();
         aStoppedBusinessIdlesAndReturns();
         aWageBidBySales();
+        theSlackCountsTheLiving();
+        aShortBusinessThatCantPayKeepsItsWage();
         aStoppedKeeperTakesAHire();
         aFarmIsJudgedAfterItsHarvest();
         aHungryWolfBuysAtItsPrice();

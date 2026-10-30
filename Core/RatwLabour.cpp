@@ -627,13 +627,30 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             auto& book = memory.employers.try_emplace(key, EmployerBook{employerWage(key)}).first->second;
             book.openDays = std::min(7, book.openDays + 1);
         }
-    // The idle: grown wolves of working age with no post.
+    // The idle: grown wolves of working age with no post. With LivingSlack (round 13, lane 1, the user, 2026-10-29; with
+    // work by the hours), the living only, and a wolf holding a place on a week's hire (a business's, a field's, a town's,
+    // the treasury's or the church's crew, a House's, about a home) is at work, not idle. The dead stay in the residents
+    // (an estate is settled, the resident kept), and with no body their written age counted them: in the 2-year run
+    // (8550cfe) the slack so counted stood over 3% on 9, 38, 34 and 64 days of the first year's quarters and on every
+    // day of the second's, the living's on 7, 0, 0, 0, then 3, 54, 73 and 91; and the weekly calm cut (it wants the
+    // slack over 3%) took about 47 log points off the going rate, about half of them on days the living's was 3% or
+    // under. And the living jobless hold the week's hires' places (their days on them 1.04 to 1.21 times their own),
+    // at about the going rate: working, not slack. (Bodies holds only the living: Demand and Institutions skip the rest
+    // the same way. A day's odd job is the day's: not counted.)
+    const bool livingSlack = workByHours() && wageRule(LivingSlack);
+    const auto living = [&](const std::string& id) { return !livingSlack || bodies.empty() || bodies.count(id) > 0; };
+    std::unordered_set<std::string> hired;
+    if (livingSlack)
+        for (const auto& j : oddJobs_)
+            if (!j.ended && j.until >= day)
+                for (const auto& [who, stage] : j.stage)
+                    hired.insert(who);
     int grown = 0, idle = 0;
     for (const auto& [id, life] : state_.residents)
-        if (const int age = ageOf(id); age >= 16 && age < RetireAge)
+        if (const int age = ageOf(id); living(id) && age >= 16 && age < RetireAge)
         {
             ++grown;
-            idle += !jobOf(id) && !apprenticedTo(id);
+            idle += !jobOf(id) && !apprenticedTo(id) && !hired.count(id);
         }
     slack_ = grown ? double(idle) / grown : 0;
     grown_ = grown;
@@ -646,10 +663,22 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
     // following it to the land. (The model has no pace to borrow a rule from: its hours are the calibrated from day one.)
     if (workByHours())
     {
-        int hungry = 0;
+        // (With LivingSlack, the living's hungry share: a dead wolf's hunger stood where it died, a starved one's high, and
+        // it counted in the realm's. Kept for the mint's harm, which reads the same: hungryShare_.)
+        int hungry = 0, counted = 0;
         for (const auto& [id, life] : state_.residents)
-            hungry += life.hunger >= 60;
-        const bool fed = state_.residents.empty() || double(hungry) / double(state_.residents.size()) < PaceHungry;
+            if (living(id))
+            {
+                hungry += life.hunger >= 60;
+                ++counted;
+            }
+        const double hungryShare = counted ? double(hungry) / double(counted) : 0;
+        if (livingSlack)
+        {
+            hungryShare_ = hungryShare;
+            hungryShareSet_ = true;
+        }
+        const bool fed = counted == 0 || hungryShare < PaceHungry;
         // The realm's food in hand, days a head: its homes' and its shelves', each town's at most PaceCoverCap (a glutted
         // town doesn't hide a hungry one). The monitor's, measured last evening for today (if it missed the evening, none).
         const auto& last = state_.orchestrator.last;
@@ -905,6 +934,8 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
             book.openDays = 0;
             continue;
         }
+        // A week it fell short paying: cut, once (up to 4%). (With WageBookMended, nothing more this week: below.)
+        const bool shortWeek = book.shortPay;
         if (book.shortPay)
         {
             book.shortPay = false;
@@ -932,10 +963,26 @@ void Society::tendLabour(std::int64_t day, const std::map<std::string, LifeBody>
                                    rate * WageMost);
         const auto onHire = onHires.find(key);
         const bool pays = !bySales || (bidOpen > 0 && tradeNetOf(key) >= up * std::max(1, hands + (onHire != onHires.end() ? onHire->second : 0) + bidOpen));
-        if (book.shortPay)
+        // The week's one move (round 13, lane 1, the user, 2026-10-29: WageBookMended; with work by the hours; every
+        // employer, its household's help, the town's and the church's posts too). Round 12's short-pay cut came out of
+        // the chain (its second, below it, could never fire: the flag was cleared), so a short week ran the bid and the
+        // calm as well: calm was counted in 94-97% of the short weeks, 2 to 97 a quarter were cut twice (over 4% in one
+        // review), and with round 12's lane A off 2,138 of 3,893 ended higher (cut, then bid). (The largest short payers
+        // are households' help and the town's and the church's posts.) Now a short week is cut and that is all: no bid, and
+        // no week of calm (it wasn't calm). And a business short of hands its sales want whose trade can't pay the
+        // higher wage (WageBySales: bidOpen, its four open days, and not `pays`) keeps its wage and its weeks of calm as
+        // doc 64 says it does: before, it fell through to the calm cut, a fifth to a third of those cuts by hands, at
+        // tills with four open days. (Its drift back needs its posts filled: it is left out of that already, below.)
+        if (workByHours() && wageRule(WageBookMended))
         {
-            book.shortPay = false;
-            book.wage *= 1 - lot(words + "|short") * WageDown * 2;
+            const bool shortCantPay = bySales && bidOpen > 0 && book.openDays >= OpenDays && !pays;
+            if (!shortWeek && book.openDays >= OpenDays && pays)
+            {
+                book.wage = up;
+                book.calm = 0;
+            }
+            else if (!shortWeek && !shortCantPay && ++book.calm >= CalmWeeks && slack_ > .03)
+                book.wage *= 1 - lot(words + "|down") * WageDown;
         }
         else if (book.openDays >= OpenDays && pays)
         {

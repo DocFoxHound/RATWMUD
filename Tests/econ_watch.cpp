@@ -91,6 +91,10 @@
 // counted in its town's income and holding, not spent back in the week on its relief, day labour and works),
 // capitalincome (the capital's week by its budget's rule, budgetOf, as round 11's: its own Town Works' day labour paid
 // every spell, its watch kept past half its budget, no reserve floor).
+// And round 13's, lane 1 (the wage book's reading and review): livingslack (the realm's idle and grown counted over
+// every resident, the dead by their written age and a wolf on a week's hire idle, and the pace's and the mint's hungry
+// share over every resident, as round 12's), wagebook (a short-pay week's cut followed by the bid or the calm, and a
+// business short of hands whose trade can't pay more counting calm weeks and cut by them, as round 12's).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -104,7 +108,8 @@
 // happened in it; the run's last, "end", where it stops, with no rows of its own in the per-day CSVs):
 //   days.jsonl      money by holder, every collector's and till's purse, residents' purses (median, poorest and richest
 //                   tenth, Gini, shares), hunger, contracts, each town's residents (held, median, short, broke, hungry,
-//                   starving), and whether money is conserved;
+//                   starving), and whether money is conserved (a dead wolf's purse, its account kept, is "deceased"
+//                   from round 13, lane 1: before, an "adult without work");
 //   flows.csv       day, kind, from-holder, to-holder: entries, coins, goods;
 //   wages.csv       day, resident, position title, wages received;
 //   materials.csv   day, good: maker-hours short of it, supplier-hours short of it, the stock held world-wide, brought
@@ -198,7 +203,8 @@
 // on (4 unless asked: a month; 1, for a trial's or a test's short run).
 // days.jsonl's going is the realm's going rate ("") and each town's as its employers pay it (a town without a rate of
 // its own, the realm's: doc 64, Phase 13, round 7); its model block has the rates the society keeps (going, "" the
-// realm's, and the towns with their own), and with --players a players block:
+// realm's, and the towns with their own), and its slack, the realm's idle share of its grown of working age as the
+// calm cut and the mint read it (round 13, lane 1); and with --players a players block:
 // each scenario's players, their money and goods, and what they did that day (the players act after the midnight's
 // record is made, so what they do at midnight is the new day's, in every file).
 // A line a day goes to stdout, so a long run can be followed. --deterministic does the world's work by counts, never the
@@ -326,6 +332,10 @@ std::string holder(const World& server, const std::string& id)
     {
         const auto* job = society.jobOf(id);
         const auto* e = server.entity(id);
+        // (A dead wolf's purse, its estate settled but its account kept, is no adult's without work: round 13, lane 1, a
+        // measure. On the 2-year run's day 729, 52 of the 134 so counted were the dead's.)
+        if (!e || e->dead)
+            return "deceased";
         // (A producer, bringing goods in from the land, apart from the rest of the paid: doc 42, "Pressure".)
         const auto* r = society.spec(id);
         return job ? (job->role == "merchant"                       ? "merchant"
@@ -609,9 +619,13 @@ int main(int argc, char** argv)
                     off |= Society::HoldingsBite;
                 else if (name == "capitalincome")
                     off |= Society::CapitalByIncome;
+                else if (name == "livingslack")
+                    off |= Society::LivingSlack;
+                else if (name == "wagebook")
+                    off |= Society::WageBookMended;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite or capitalincome, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack or wagebook, not "
                               << name << "\n";
                     return 2;
                 }
@@ -1339,6 +1353,7 @@ int main(int argc, char** argv)
             << ",\"poorer_half\":" << poorer << ",\"median_household\":" << (h ? money[h / 2] : 0) << ",\"idle\":" << idle
             << ",\"masters\":" << masters << ",\"apprentices\":" << apprentices << ",\"elders\":" << elders
             << ",\"births\":" << births << ",\"deaths\":" << deaths << ",\"vacant\":" << vacant << ",\"vacant_trade\":" << vacantTrade << ",\"wage\":" << wage << ",\"town\":" << json(town)
+            << ",\"slack\":" << society.slack()
             << ",\"going\":{";
         // Every town's going rate, and the realm's ("") (doc 64, Phase 6).
         {
@@ -1883,11 +1898,11 @@ int main(int argc, char** argv)
     }
     static const char* const Groups[] = {"homes", "firms", "Houses", "church", "town"};
     // A kind of holder's group, as compare.py's GROUPS (with the grown wolves out of work among the homes: compare.py
-    // leaves them in its "other").
+    // leaves them in its "other"; and the dead's purses, counted among them as adults without work until round 13, lane 1).
     const auto groupOf = [](const std::string& k) {
         if (k == "merchant" || k == "guard" || k == "producer" || k == "paid civilian" || k == "unpaid civilian" ||
             k == "apprentice" || k == "child" || k == "retired" || k == "resident" || k == "player" ||
-            k == "adult without work" || k.rfind("resident", 0) == 0)
+            k == "adult without work" || k == "deceased" || k.rfind("resident", 0) == 0)
             return 0;
         if (k == "shop till" || k == "house till" || k == "farm till")
             return 1;

@@ -55,11 +55,19 @@ void Society::tendMint(std::int64_t day)
         mint.recent.erase(mint.recent.begin());
     const double hoarded = std::accumulate(mint.recent.begin(), mint.recent.end(), 0.) / double(mint.recent.size());
     const double trend = mint.wages.size() == 8 && mint.wages.front() > 0 ? mint.wages.back() / mint.wages.front() - 1 : 0;
-    int hungry = 0;
-    for (const auto& [id, life] : state_.residents)
-        hungry += life.hunger >= 60;
-    const bool harm = trend < -MintWageFall || slack_ > MintIdle ||
-                      (!state_.residents.empty() && double(hungry) / double(state_.residents.size()) > MintHungry);
+    // The realm's hungry share: with LivingSlack the labour pass's, the living's (round 13, lane 1: the dead's hunger
+    // stood where they died, and counted); else every resident's, as before.
+    bool hungryHarm = false;
+    if (workByHours() && wageRule(LivingSlack) && hungryShareSet_)
+        hungryHarm = hungryShare_ > MintHungry;
+    else
+    {
+        int hungry = 0;
+        for (const auto& [id, life] : state_.residents)
+            hungry += life.hunger >= 60;
+        hungryHarm = !state_.residents.empty() && double(hungry) / double(state_.residents.size()) > MintHungry;
+    }
+    const bool harm = trend < -MintWageFall || slack_ > MintIdle || hungryHarm;
     const double gap = mint.target - (money - std::max(0., hoarded));
     if (!mint.on)
         return;
