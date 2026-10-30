@@ -9105,3 +9105,269 @@ What the run says:
 4. **Larkfield's harvest-time hunger** (day 270: 29 hungry and 14 starving for a day, its shelves bare in both runs
    those days; the base's worst, day 232, 12 and 7): not traced to either rule in this lane's time.
 5. One run of 365 days this round, as briefed; nothing longer.
+### Phase 13: round 16, lane 1: the shortage's hands (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved (5,000,120p). Round 14's six years (`artifacts/economy/2026-10-30-r14-6y-fast` and
+`-from3`, built from c088eb9) were NOT STABLE on inequality (Gini at most .764 and .705, the poorer half at least .020
+and .030) and on prices (food from 8.1p to 13-16p a unit); round 15's two years (`2026-10-30-r15-2y-fast`, built from
+a5d8575) were STABLE (Gini at most .582, the poorer half at least .110, year 2's trend +.016 a year), `-from3` failing
+prices only (five quarters rising). This round is for years 3-6. Base: p13-r15 at a5d8575. Two rules, with work by
+the hours; no money moves; nothing new is saved; with both left out the code is a5d8575's to the digest.
+
+**The evidence (the brief's).**
+
+1. *Short land producers can't add hands, so MarginsByShortage turns their shortage into rent.* Ridgemere's 9 boats
+   ("fishes the waters off Greywater", "fishes the Sound off the piers") turned away a quarter to a half of their buyers
+   for six years (Greywater by year: margin .57, .55, .73, .82, .78, .67; unmet .25, .25, .37, .44, .41, .33). The
+   owners' profit from the boat tills was 424k, 558k and 516k a quarter in q13-q15, the rent to House Fell and Grayrock
+   Hall 212-250k a quarter, and the fishers' purses went from 159k (day 728) to 380k (day 1365); later the same rent
+   moved to milk, rabbits and pigs. In round 15's two years the boats ran 2.5-10.4 hire slots each against 5-24 wanted,
+   unmet .18-.34, margin .37-.62, their wage book 1.03 to 1.28 times the rate. Cash never bound (their 5th percentile
+   3,037p against about 720p for 8 slots), `produce()` has no limit on the grounds, and 95% of posted slots were taken
+   by the day's end.
+2. *The block is the hiring gate.* `reviewHands` posts no new hire while a hire of the same payer has fewer takers than
+   slots, and the holes came from OwnersStop's call-back (`tendTills`), which ran before `tendLabour` and took every
+   merchant's post holder off every hire's stage just before the day's measures and reviews. Days 1200-1399 of the six
+   years: with every hire full at 23h but places open at the turn, a boat posted a new hire on 15% of 1,245 days; with
+   nothing open at the turn, on 100% of 338. 63-68% of a new hire's day-0 takers were unpaid keepers (`ownerUnpaid`),
+   the merchants among them recalled the next morning.
+3. *The same holes drive the wage ratchet.* They counted in `vacancies_`, so `openDays` reached OpenDays nearly every
+   week, and the boats bid under WageBySales because `pays` read `tradeNetOf` at the scarcity price: their wage sat at
+   WageHigh (1.29 times the rate), the .95 pull firing only on a day with nothing open. The going rate is a median
+   weighted by hires' grown hands (the boats 111 of 437 on day 1364), and the calm cut has been dead since LivingSlack
+   (slack about .006). Round 14's going rate: 58.5p (day 727), 67.6p (day 2067), 72.5p (q23); the median wage bought
+   7.4-8.2 units of food in years 0-1 and 4.9-5.7 in years 4-6.
+4. *Takers choose the best-paid open hire* (`oddJobFor`). Round 15's boats' taker-days in year 1: jobless 28%, a
+   better-paid post's 25%, idle at their own business 22%, owners 15%, children 10%.
+
+**1. A shop's keeper called back after the day's measures** (`Society::CalledBackLate`, `1ull << 60`; `econ_watch
+--without calledlate`; with work by the hours and OwnersStop).
+
+- *The move.* The call-back loop is `Society::callShopsBack()` (private), unchanged: every stage member whose post
+  (`jobOf`) is a merchant's is recorded "called back to its shop", its progress and its place erased, `++oddVersion_`.
+  `tendTills` calls it without the rule; with it, `tendLabour` calls it at the end of its pass, after the weekly
+  reviews and just before WagelessFirst's release. The same keepers at the same turn of the day, so the work done is as
+  it was; only the day's measures and reviews see their places still taken (round 12's principle for WagelessFirst's
+  release).
+- *Two guards in `tendLabour`, under the rule only.* (a) The pass that opens a post whose holder is away on another
+  business's hire skips a taker whose own post is a merchant's: it is about to be called back, so its shop isn't left
+  (without the guard one whose till paid it today, `ownerUnpaid` false, would open its own post and bid its shop's
+  wage). (b) The going rate's weights as they were: where `onHires` is counted, `recalled[payer]` counts the grown
+  takers whose own post is a merchant's, and the weight is `max(1, n - keeper + onHires - recalled)`. Everything else
+  reads `onHires` with them: `missing`, `reviewHands`' `hiring` and `hired`, and `pays`; they are the hire's hands until
+  the pass ends, and the day refills 95% of places.
+- *Bounds.* Posting is unchanged (eight slots a hire at most; wanted capped at twice its posts and running slots and
+  two; `spendable >= pay x slots`; MoreHands' doubling). The rule only stops a hole the day will fill from blocking the
+  next hire and from counting as a vacancy.
+
+**2. The scarcity money to the day's hands** (`Society::ScarcityToHires`, `1ull << 61`; `--without scarcityhires`; with
+work by the hours and WageBySales).
+
+- *(a) The wage bid reads trade at the ladder's margin.* `noteTrade(seller, buyer, total, item)` (its callers
+  `transfer` and `onCredit`): for a seller till whose margin for the good (`margins_[seller][baseOf(item)]`) is over
+  the ladder's markup `u`, the day's trade is credited `llround(total x (1 + u) / (1 + m))`, else the whole `total`;
+  the buyer is debited the whole as before. Only `pays` reads `memory.tradeNet` (still saved; under the rule it means
+  trade at the ladder's). At a staple's cap a sale counts .575 of itself. A short producer whose sales pay the higher
+  wage only at its scarcity price keeps its wage and its calm (WageBookMended's `shortCantPay`), and once its hires
+  are full it drifts back (WageBack, the .95 pull over WageHigh).
+- *(b) A short producer's hire pays a premium by its shortage* (`reviewHands`, a producer's hire that isn't a
+  harvest's: seasonal fields and the farms' windows keep HarvestPay). `w = employerWage(till)`; `cap = goingRate(its
+  town) x (1 + skill / skillWage) x WageHigh`; `unmet` its yields' `missedRate` over their `sellRate`, the sum of the
+  rates over .05, and `s = clamp((unmet - UnmetFrom) / (UnmetFull - UnmetFrom), 0, 1)` (reviewMargins' `scarce`); a
+  slot pays `ceil(max(w, min(w x (1 + HirePremium x s), cap)) - 1e-9)`, and `spendable >= pay x slots` as before.
+  `Society::HirePremium` = .5, beside WageHigh: at the shortage the boats ran at in round 15 (unmet about .25, `s` about
+  .44) a hire pays about 22% over the wage, about what their book had bid to (1.19-1.28 times the rate in year 2); at
+  UnmetFull it reaches WageHigh times the rate, the book's own ceiling; at UnmetFrom or under, nothing. Hire pay is in
+  neither the going rate (the book wages' median) nor a normal cost (labourDay is the going rate), and the premium
+  falls as the hands it draws close the shortage.
+
+**Saves:** nothing new. **econ_watch:** `--without calledlate,scarcityhires`, in its list, its error and its notes.
+`Society::holdPlace(hire, who)` (public, a test's): a taker holding a place on a hire as one who came would.
+
+**The digests** (`--deterministic --hours --threads 4`, 3 days, normal mode): both rules out, 64c928de2f1f0305 (round
+15's, a5d8575's); both in, e1a89963b633d13f; CalledBackLate alone (`--without scarcityhires`) 64c928de2f1f0305 (no
+till is stopped in three days, so no keeper holds a hire: the rule has nothing to move yet); ScarcityToHires alone
+(`--without calledlate`) e1a89963b633d13f.
+
+**Tests** (`crafting_tests`, each rule on and off, work by the hours set and put back):
+
+- `aKeeperCalledBackAfterTheMeasures` (beside `aStoppedKeeperTakesAHire`): a boat selling 36 fish a day (three hands'
+  days, MoreHands left out) posts a hire of two on day 1; a jobless wolf and a stopped stall's keeper take its places
+  (`holdPlace`); its sales grow (a week at 90 a day); at day 2's pass, with the rule, the boat's vacancies are its
+  posts missing past the hire alone (1; without, 2: the hole too), it posts a new hire of four (without, none), the
+  stall shows no vacancy, "called back to its shop" is recorded and the place is open (1 of 2 held), and the going
+  rate, the middle of the boat's 70p and two scribes' 60p, is 60p both ways; all of it again on a day the stall's till
+  paid its keeper. Each guard was checked by leaving it out of a temporary build: without the weight guard the going
+  rate is 70p (the boat weighed twice); without the away-post guard the stall shows a vacancy on its paid day.
+- `aBidReadsTheLadder` (beside `aWageBidBySales`): ten fish at 20p to the smokehouse at a margin of 1.0 credit the boat
+  115p with the rule, 200p without; at the ladder's 15% or under it, 200p both ways; the smokehouse -200p every way.
+  At its review, the boat short of three hands (four open days), its book 400p (the realm's makers at 400p), its
+  trade today 2,000p at a margin of .8 against the higher wage for its one hand and three open (1,648-1,760p): with the
+  rule its trade is 1,278p, it keeps 400p and its two calm weeks; without, it bids to 424.08p, calm 0. At the ladder's
+  margin it bids the same both ways.
+- `aShortProducersHirePaysMore`: a boat with a 60p book in a 60p town, its sales with the turned away 40 a day for
+  three weeks, nobody to take its hires: 20 of 40 turned away (unmet .5) its hires pay 78p a slot (90p kept to 1.3 x
+  60p), 11 of 40 (.275) 75p, 2 of 40 (.05) 60p; without the rule 60p each time; its book wage and the going rate the
+  same both ways. A field's harvest hire, its wheat's buyers half turned away: 75p (HarvestPay) both ways.
+- No older test changed. The suite (68 of 68) passes with both rules forced off (a temporary copy, not committed:
+  `wageRule` of the two false at their four sites, the three new tests left out of main). With both rules all pass
+  but `troubles_behaviors`, intermittently: it failed in three of four parallel `ctest` runs (the full suite twice, and
+  `-R "crafting|econ|roads|troubles"` once of twice) with an empty reply ("the loan paid: ": its harness gives the
+  dialogue thread half a game-second, the machine's load at 10-14), and passed alone every time (`ctest -R`, the binary
+  eight times) and started beside three other tests at once (3 of 3; the main checkout's older build the same, 3 of 3).
+  The loan's handler reads neither rule.
+
+**The fast check** (`--fast --deterministic --hours --threads 3`, the default start, both rules, built from this lane:
+`artifacts/economy/2026-10-30-r16-shortage-hands-fast` in the lane's worktree, run to day 1000 (below); its days 0-272
+here; the base is days 0-272 of `2026-10-30-r15-2y-fast`, a5d8575, the same arguments. Quarters of 91 days, q0 / q1 /
+q2. The boats are Ridgemere's nine; their margin weighed by their rates, unmet their missed units over their rate
+units (`tills.csv`); a hire's pay over Ridgemere's going rate that day; "a new hire posted while short" a boat-day
+whose `tills.csv` row wants more than its hands and hire slots with a hire whose last day is six days on; the
+hire-heavy producers the 60 producer tills with two hire slots a day or more in the base, their book vacancies
+`books.csv`'s; a wage bid a `books.csv` wage up on the day before, at a till whose margin that day was over .4):
+
+| by quarter, q0 / q1 / q2 | base (a5d8575) | rules on | the brief's aim |
+| --- | --- | --- | --- |
+| hire slots a boat; wanted | 2.5 / 7.2 / 8.2; 5.1 / 14.1 / 16.8 | 3.2 / 9.0 / 13.0; 6.3 / 16.7 / 26.2 | q2 12 at least, three quarters of wanted: **13.0, but a half of wanted** |
+| short boat-days with a new hire posted | 22% / 31% / 28% | 27% / 40% / 33% | over 70%: **missed** |
+| unmet | .267 / .198 / .293 | .196 / .239 / .340 | .15 at most: **missed (higher)** |
+| margin | .367 / .464 / .544 | .307 / .485 / .667 | .35 at most: **missed (higher)** |
+| takings a piece | 6.61p / 7.07p / 7.43p | 6.41p / 7.12p / 8.00p | 6.9p at most: **missed** |
+| book over rate | 1.034 / 1.074 / 1.221 | 1.027 / 1.045 / 1.109 | 1.10 at most and falling: **1.109, rising** (the base's 1.221) |
+| hire pay a slot over the rate | 1.043 / 1.100 / 1.258 | 1.196 / 1.234 / 1.299 | 1.05-1.30: met |
+| "called back to its shop" | 1,185 / 2,058 / 3,031 (6,274) | 1,267 / 2,366 / 2,833 (6,466) | within 10% of the base: met (+3%) |
+| book vacancies, hire-heavy producers (a day) | 1.59 / 1.79 / 2.33 | 1.31 / 1.73 / 2.39 | down: q0 and q1, **not q2** |
+| wage bids at tills with margin over .4 (all tills' bids) | 5 / 34 / 58 (146 / 243 / 338) | 4 / 18 / 36 (155 / 152 / 218) | close to none: **about half the base's** |
+| the boats a boat-day: sold; rate; turned away | 30.9, 44.4, 11.9 / 85.2, 120.4, 23.9 / 77.2, 146.5, 43.0 | 43.2, 56.3, 11.0 / 93.2, 144.8, 34.6 / 107.7, 224.3, 76.2 | |
+| ...their cash a boat-day | 1,882p / 3,604p / 3,819p | 1,589p / 3,164p / 5,318p | |
+| ...their hires: taken at 23h; worked | 55%, 42% / 87%, 74% / 81%, 64% | 73%, 60% / 82%, 67% / 74%, 57% | |
+| ...their takers: jobless, a better-paid post's, idle at their own, owners, children (q2) | 24%, 22%, 23%, 14%, 16% | 32%, 25%, 18%, 17%, 7% | |
+| Ridgemere's residents' fish bought (`food_towns.csv`), a unit | 4.2k, 7.33p / 37.9k, 7.57p / 35.4k, 7.63p | 8.7k, 7.09p / 43.4k, 6.86p / 55.7k, 7.61p | |
+| gate: the realm's going rate | 60.0p / 59.4-60.0p / 58.0-59.8p | 60.0p / 59.3-60.0p / 56.8-59.8p | 55-62p: met |
+| gate: Ridgemere's going rate (mean) | 60.0p / 60.0-62.6p (60.4p) / 58.8-61.5p (59.9p) | 60.0p / 60.0-60.8p (60.0p) / 57.0-60.5p (59.5p) | no higher than the base's: met |
+| gate: slack at most | .016 / .017 / .018 | .013 / .013 / .014 | .03: met |
+| gate: days with hungry at or under 1% | 100% / 100% / 97% | 100% / 100% / 100% | 95%: met |
+| gate: tills stopped at most | 36% / 34% / 33% | 35% / 35% / 33% | 50%: met |
+| gate: money | conserved every day (5,000,000p) | conserved every day (5,000,120p: a newcomer's purse) | met |
+| gate: Gini, poorer half on day 273 (the record of day 272) | .532, .133 | .552, .130 | .537 at most, .128 at least: **the Gini missed** |
+| gate: food a unit, q1 and q2 | 7.35p, 8.11p | 7.20p, 8.17p | no higher than the base's: **q2 missed (+0.7%)** |
+
+(Short boat-days read by cause, the state at day d-1's end against what day d's pass posted, q1 and q2: in the base
+31% and 28% posted, 35% and 39% had a place untaken at 23h, 32% and 31% had every place taken and the cash and posted
+none (the holes); with the rules 40% and 33% posted, 45% and 61% had a place untaken, 16% and 6% the holes.)
+
+**Two gates are missed: the Gini on day 273 and food in q2.** As briefed, the lane stops: no tuning; the from3 two-year
+run (`2026-10-30-r16-shortage-hands-2y-fast-from3`) was stopped at day 110. The day-273 Gini is a point reading in a
+noisy series (the base's own ran .531-.545 over days 268-276): by 30-day windows the rules-on run's household Gini is
+.020 over the base's in days 240-269 (.546 against .526), level in 270-299 (.541, .536) and under it in 300-329 (.534,
+.537), its poorer half .138 and .145 against .132 and .134. The default run, already going, went on to day 1000 as the
+lane's side-by-side check (below), its first two years scored there. What the 273 days say:
+
+1. **Rule 1 does what it says.** The holes are gone: short boat-days with every place taken, the cash in hand and no
+   hire fell from 31% of them to 6% in q2, and the keepers called back are as many as before (+3%). The ablation below
+   shows it alone doesn't move the wage book.
+2. **What blocks the boats now is takers.** A place untaken at 23h stood on 61% of their short days in q2 (the base's
+   39%); their hires were 74% taken and 57% worked. With the realm's slack at .013-.014 there are few idle hands. The
+   premium drew more all the same: places taken a boat-day in q2 9.6 against 6.6, their takers more often the jobless
+   (32% against 24%) and stopped owners (17% against 14%), less often children (7% against 16%).
+3. **More fish, more buyers.** The boats caught 40% more in q2 (107.7 a boat-day against 77.2), and Ridgemere's
+   residents bought 57% more fish (55.7k units against 35.4k) at the same 7.6p a unit: households buy the cheapest
+   food that feeds them, and fish is it. So the buyers turned away grew faster than the catch (76.2 against 43.0 a
+   boat-day), unmet rose to .34 and MarginsByShortage took the margin to .667: the shortage the margin reads grows with
+   the supply that answers it.
+4. **The rent still fills the tills, and MoreHands turns it into slots.** The boats held 5,318p a boat-day in q2
+   (3,819p), so MoreHands doubled their wanted hands (26.2 against 16.8): those extra slots are the ones untaken, and
+   posting "while short" stayed at a third.
+5. **The wage book held.** The boats' book was 1.11 times the rate in q2 against 1.22, the wage bids at tills over a
+   .4 margin half the base's, the going rate no higher (Ridgemere's 59.5p against 59.9p). The premium paid 1.20, 1.23
+   and 1.30 times the rate (q2's near the cap: unmet .34 gives a scarcity of .64).
+
+**The ablation** (`--without scarcityhires`: rule 1 alone, 182 days, `2026-10-30-r16-shortage-hands-noscarcity-182`;
+q0 / q1): the boats' book over the rate 1.029 / 1.070 (base 1.034 / 1.074), hire slots 2.3 / 8.2 (2.5 / 7.2), short
+boat-days posting 20% / 42% (22% / 31%), unmet .302 / .172 (.267 / .198), margin .405 / .525 (.367 / .464), wage bids
+at tills over a .4 margin 4 / 33 (5 / 34), the going rate 60.0p, the Gini on day 182 .495 (.491). The book stays at the
+base's, far under the 1.35 of round 11's spiral shape: on this evidence rule 1 could ship without rule 2 (182 days
+only).
+
+**The side-by-side check to day 1000** (the same run; its base `2026-10-30-r15-6y-fast`, a5d8575 with the same
+arguments, which is this build with both rules out to the digest, and which matches `2026-10-30-r15-2y-fast` line for
+line over days 0-729; quarters q0-q10, q10 days 910-999):
+
+| by quarter | base (a5d8575) | rules on |
+| --- | --- | --- |
+| boats: hire slots a boat, q3 / q5 / q7 / q9 / q10 | 9.9 / 10.1 / 10.4 / 10.7 / 11.2 | 13.1 / 14.1 / 14.4 / 18.5 / 18.6 |
+| ...short boat-days posting, q3-q10 | 25-31% | 43-50% |
+| ...sold a boat-day, q3 / q5 / q7 / q9 / q10 | 119 / 122 / 118 / 119 / 134 | 138 / 144 / 137 / 187 / 196 |
+| ...unmet, q3-q10 | .179, .343, .210, .330, .229, .334, .341, .436 | .248, .266, .212, .238, .229, .272, .340, .302 |
+| ...margin, q3-q10 | .470, .616, .547, .586, .544, .657, .641, .806 | .598, .552, .509, .518, .535, .572, .660, .650 |
+| ...takings a piece, q3-q10 | 7.09p to 8.96p (q10) | 7.16p to 8.21p (q9), 8.16p (q10) |
+| ...book over rate, q3-q10 | 1.188, 1.264, 1.256, 1.280, 1.242, 1.275, 1.346, 1.243 | 1.115, 1.076, 1.065, 1.072, 1.072, 1.087, 1.076, 1.097 |
+| ...hire pay a slot over the rate | 1.04-1.39 | 1.20-1.30 |
+| book vacancies, hire-heavy producers, q3-q10 | 1.84-2.50 | 1.40-2.02 |
+| wage bids at tills with margin over .4, q3-q10 | 40-114 a quarter | 36-95 |
+| the realm's going rate, mean q4 / q7 / q10 (least) | 57.9p / 57.6p / 58.5p (57.0p) | 57.8p / 56.1p / 56.0p (53.7p, in q7) |
+| Ridgemere's going rate, mean q4 / q7 / q10 | 59.8p / 60.9p / 61.5p | 59.3p / 58.5p / 60.7p |
+| food a unit, q3-q10 | 8.05, 8.61, 8.13, 8.54, 8.12, 9.19, 8.88, 9.79p | 8.52, 7.90, 7.66, 7.64, 7.90, 8.47, 9.33, 9.15p |
+| Ridgemere's wage in food (its rate over food a unit), q4 / q7 / q10 | 6.95 / 7.49 / 6.28 | 7.50 / 7.40 / 6.64 |
+| household Gini, mean q4 / q6 / q8 / q10 | .551 / .560 / .581 / .598 | .547 / .576 / .601 / .637 |
+| poorer half, mean q4 / q6 / q8 / q10 | .127 / .124 / .104 / .094 | .136 / .115 / .096 / .075 |
+| Ridgemere's need, its median, q10 | .241, 859p | .256, 967p |
+| hunger, money, tills stopped | days hungry at or under 1% 100%; conserved every day; 29-38% | the same; conserved; 29-38% |
+
+Holders on day 999, base to rules on: producers 1,361k to 1,175k (-186k), farm tills -28k, Houses' tills 68k to 152k
+(+84k), the great Houses 243k to 311k (+68k), merchants +42k, shop tills +39k, adults without work +27k, paid
+civilians +16k, apprentices -15k, unpaid civilians -12k, the towns' treasuries -29k. Coldwater's, Frosthollow's,
+Larkfield's and Mirebridge's medians fell (6,991p to 4,770p, 1,026p to 671p, 1,384p to 1,095p, 4,106p to 2,498p);
+Ridgemere's rose (753p to 1,052p).
+
+The scorecards (stability.py, days 0-999 of each): the base NOT STABLE on inequality alone (Gini at most .633, the
+poorer half at least .073, the last year's trend +.060 a year), prices PASS (8.0p, then 7.3-9.8p), wages 57-60p; with
+the rules NOT STABLE on inequality alone (.653, .065, +.066 a year), prices PASS (7.2-9.3p), wages 54-60p. Days 0-730
+of the rules-on run: NOT STABLE on inequality (.590, .103, +.052 a year) where round 15's two years were STABLE (.582,
+.110, +.016): the brief's "default stays STABLE" is not met.
+
+What the thousand days say:
+
+1. **The ratchet is broken.** The boats' book stayed 1.07-1.12 times the rate from q3 to q10 against the base's
+   1.19-1.35, and their hires paid 1.20-1.30 times it; the bids at high-margin tills were fewer in most quarters.
+2. **The boats got their hands and caught more**: 13-19 hire slots a boat against 10-11, posting on 43-50% of their
+   short days against 25-31%, selling 133-196 fish a boat-day against 113-134. The shortage they turned buyers away
+   for was a little smaller (unmet .21-.34 against .18-.44) and their margin lower in most quarters (.51-.66 against
+   .54-.81): food cost less in q4-q8 (7.6-8.5p against 8.1-9.2p) and at q10 (9.15p against 9.79p), more in q9
+   (9.33p against 8.88p).
+3. **But the rent didn't go to the poor.** The producers' own purses (whose wage the bid no longer raised) held 186k
+   less on day 999; the Houses' tills and the great Houses 152k more, the merchants and the shop tills 81k more. The
+   boats' extra catch earns at their margin, and the margin's money goes to the owners as before; what the bid used to
+   send to the producers' wages (the land's keepers, and through the going rate everyone paid by it) now stays in
+   their owners' month's profit. The realm's going rate fell to 56p (53.7p at the least) against 58.5p, the poorer
+   half's share fell faster, and the small towns' medians fell.
+
+**For the user:**
+
+1. **Should the scarcity rent go to the hands?** This lane sends part of it to them (the premium on the hires, 1.20-1.30
+   times the rate) and takes it out of the wage bid; the rest stays with the boats' owners, and over a thousand days
+   that made the realm less equal, not more (the Gini at most .653 against .633). In this economy the bid was the one
+   channel that carried a scarcity rent to wages generally (through the going rate, which the boats were a quarter of
+   by weight): taking it out lowered the going rate 2-3p and kept the owners' share. If the rent is to reach the
+   hands, it needs a channel of its own from the owner's profit (for instance a producer's owner's month's profit over
+   its normal cost shared to its hands of that month), not the bid; or MarginsByShortage's aim kept lower, so less of
+   the rent is made. Neither is this lane's to tune.
+2. **HirePremium's size (.5).** It paid as reckoned and drew hands: places taken a boat-day 9.6 against 6.6 in q2, 13-19
+   slots a boat against 10-11 later, the catch up 16-57% a quarter. The realm's slack was .013-.031, so the hands came
+   from other hires and stopped owners (17-32% of the boats' takers). A larger premium would take more hands from the
+   other trades; a smaller one fewer. Capped at WageHigh, it never spiralled. Its size isn't what failed: the extra
+   catch still sells at the scarcity margin, because Ridgemere's residents buy fish as it comes (57% more in q2 at the
+   same 7.6p) and the buyers turned away grow with the catch.
+3. **The ablation.** Rule 1 alone kept the boats' book at the base's for 182 days (1.03, 1.07): no spiral shape;
+   CalledBackLate could stand on its own. It removes the holes (the short boat-days with every place taken and no hire
+   posted fell from 31% to 6%), and is cheap; on this evidence it is the part worth keeping. ScarcityToHires alone was
+   not run.
+4. **The missed gates.** The day-273 Gini (.552 against .537 at most) is a point in a noisy series, but the longer run
+   confirms its direction; food in q2 (+0.7%) is within noise and later quarters are cheaper. The realm's going rate
+   also went under the check's 55p floor in year 2 (53.7p at the least, in q7; 54.1p on day 727).
+5. **MoreHands for a producer with untaken hires.** The boats' tills, full of the margin's money, doubled their wanted
+   hands (26 against 17 in q2): slots posted that nobody takes. A producer's extra hands could wait until its posted
+   places are taken.
+6. **From3** was stopped at day 110 (`2026-10-30-r16-shortage-hands-2y-fast-from3`): its food in q0 8.15p against the
+   base's 7.73p, the Gini on day 108 .492 against .484; no verdict.

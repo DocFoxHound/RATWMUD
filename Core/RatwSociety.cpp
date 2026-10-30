@@ -609,11 +609,11 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
         if (stockAll(s, items::baseOf(item)) == 0)
             ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
     }
-    noteTrade(seller, buyer, total);
+    noteTrade(seller, buyer, total, item);
     record(kind, buyer, seller, item, quantity, total);
     return true;
 }
-void Society::noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total)
+void Society::noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total, const std::string& item)
 {
     // A till's sales in, its buying (goods for its shelves, materials, on credit too) out: the trade its weekly review
     // sees its wages paid from (round 12, lane A, WageBySales; with work by the hours). Not saved: the day's, folded in at
@@ -621,7 +621,24 @@ void Society::noteTrade(const std::string& seller, const std::string& buyer, std
     if (!workByHours() || !wageRule(WageBySales))
         return;
     if (seller.rfind("till:", 0) == 0)
-        netToday_[seller] += total;
+    {
+        // With ScarcityToHires (round 16, lane 1; the user, 2026-10-30), a sale over the ladder's margin counts as the
+        // same sale at the ladder's: what its buyers turned away earn (MarginsByShortage) is no trade that pays a higher
+        // wage. Ridgemere's boats, short of hands and turning away a quarter to a half of their buyers for six years, bid
+        // their wage to WageHigh on their scarcity price (`pays` read it), and the going rate, of which they were a
+        // quarter by weight, rose with them: 58.5p on day 727, 72.5p in year 6, the median wage buying 7.4-8.2 units of
+        // food in years 0-1 and 4.9-5.7 in years 4-6. A short producer whose sales pay more only at that price keeps its
+        // wage and its weeks of calm (WageBookMended's shortCantPay); its hire pays the premium (reviewHands). At a
+        // staple's cap (1.0) a sale counts .575 of itself; at the ladder's margin or under, in full (a good sold on is at
+        // the ladder's under ChainPricedOnce). The buyer's side is the whole sale, as before. Only the bid reads it.
+        auto credit = total;
+        if (workByHours() && wageRule(ScarcityToHires))
+            if (const auto a = margins_.find(seller); a != margins_.end())
+                if (const auto m = a->second.find(items::baseOf(item)); m != a->second.end())
+                    if (const double u = items::ladder().markup; m->second > u)
+                        credit = std::llround(double(total) * (1 + u) / (1 + m->second));
+        netToday_[seller] += credit;
+    }
     if (buyer.rfind("till:", 0) == 0)
         netToday_[buyer] -= total;
 }

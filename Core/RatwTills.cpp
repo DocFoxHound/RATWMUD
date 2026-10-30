@@ -102,22 +102,28 @@ void Society::tendTills(std::int64_t day)
     // holds, and the hire's place is open to another. (A merchant keeps shop on its own hours, and on a day its till
     // pays it all day: it took hire work only outside its hours on a day its till couldn't pay it, ownerUnpaid. Held on,
     // the place stood taken and unworked, and its own post open, while it kept shop. The round-9 review; the user,
-    // 2026-10-27. A producer, as an unpaid hand, comes back to its hire.)
-    if (workByHours() && wageRule(OwnersStop))
-        for (auto& j : oddJobs_)
-            for (auto it = j.stage.begin(); it != j.stage.end();)
+    // 2026-10-27. A producer, as an unpaid hand, comes back to its hire.) With CalledBackLate (round 16, lane 1), at the
+    // same turn but after the day's measures and reviews: tendLabour calls them back at the end of its pass.
+    if (workByHours() && wageRule(OwnersStop) && !wageRule(CalledBackLate))
+        callShopsBack();
+}
+
+void Society::callShopsBack()
+{
+    for (auto& j : oddJobs_)
+        for (auto it = j.stage.begin(); it != j.stage.end();)
+        {
+            const auto* post = jobOf(it->first);
+            if (!post || post->role != "merchant")
             {
-                const auto* post = jobOf(it->first);
-                if (!post || post->role != "merchant")
-                {
-                    ++it;
-                    continue;
-                }
-                record("called back to its shop", it->first, "till:" + post->id, "", 0, 0);
-                j.progress.erase(it->first);
-                it = j.stage.erase(it);
-                ++oddVersion_;
+                ++it;
+                continue;
             }
+            record("called back to its shop", it->first, "till:" + post->id, "", 0, 0);
+            j.progress.erase(it->first);
+            it = j.stage.erase(it);
+            ++oddVersion_;
+        }
 }
 
 bool Society::seasonalField(const Position& p, const std::string& till) const
@@ -376,7 +382,7 @@ bool Society::onCredit(const std::string& seller, const std::string& buyer, cons
     soldToday_[seller][items::baseOf(item)] += quantity;
     if (stockAll(a->second, items::baseOf(item)) == 0)
         ranOut_[seller].insert(items::baseOf(item));   // (Its last one: doc 64, Phase 3b.)
-    noteTrade(seller, buyer, price * quantity);     // (Its cost and its sale the day bought: round 12, WageBySales.)
+    noteTrade(seller, buyer, price * quantity, item);   // (Its cost and its sale the day bought: round 12, WageBySales.)
     record("bought on credit", buyer, seller, item, quantity, 0);
     return true;
 }

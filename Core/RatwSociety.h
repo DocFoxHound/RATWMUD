@@ -1388,6 +1388,11 @@ class Society
         // half the buying town's, and a town's buyers that feed its people are funded before the rest.
         CarriageShared = 1ull << 56,                 // The buying town keeps half the carriage of what it buys off a wagon (round 15, 1).
         MessesFirst = 1ull << 57,                    // A town's buyers that feed its people funded first, the rest in order (round 15, 1).
+        // Round 16, lane 1 (the user, 2026-10-30: years 3-6, the boats' shortage turned to rent): a shop's keeper on a
+        // hire is called back after the day's measures, so the place the day refills blocks no hire and counts as no
+        // vacancy; and the money a shortage brings goes to the hands it hires, not into the wage book's bid.
+        CalledBackLate = 1ull << 60,                 // A shop's keeper is called back from its hire after the day's measures (round 16, 1).
+        ScarcityToHires = 1ull << 61,                // The bid reads trade at the ladder's margin; a short producer's hire pays more (round 16, 1).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1855,6 +1860,19 @@ class Society
     // and take odd jobs together. A child's group ("" for none).
     const std::string& friendGroup(const std::string& child) const;
     const std::vector<OddJob>& oddJobs() const { return oddJobs_; }
+    // (A test's, round 16, lane 1: `who` holds a place on the hire `id`, at its work there (stage 1), as a taker who came
+    // and stayed would. False with no such job running, or no place free on it.)
+    bool holdPlace(const std::string& id, const std::string& who)
+    {
+        for (auto& j : oddJobs_)
+            if (j.id == id && j.until >= 0 && int(j.stage.size()) < j.slots && !j.stage.count(who))
+            {
+                j.stage[who] = 1;
+                ++oddVersion_;
+                return true;
+            }
+        return false;
+    }
     // An odd job posted from outside the society (Docs/Design/57-changing-the-world.md: a town project's hands, kind
     // "project"): `slots` wolves for the day, `pay` for all of them, paid by `payer` as each finishes a spell's work at
     // `at`. Taken like any odd job (the jobless first). Its id, or "" if `payer` can't cover it.
@@ -1977,6 +1995,14 @@ class Society
     // again at dawn (WagelessFirst).
     static constexpr double WageBack = .25, WagedFrom = 14;
     static constexpr int SalesDays = 28;
+    // Round 16, lane 1 (ScarcityToHires, with WageBySales and work by the hours; the user, 2026-10-30): a producer short
+    // of what its buyers want (reviewMargins' `scarce`: the share of its yields' buyers it turned away, from UnmetFrom
+    // to UnmetFull) posts its hire at up to HirePremium over its wage, at its shortage's full, and never past WageHigh
+    // times the going rate for its skill (the wage book's own ceiling): at the shortage Ridgemere's boats ran at in
+    // round 15 (unmet about .25) a hire paid about 22% over the wage, about what their book had bid to (1.19-1.28 times
+    // the rate in year 2). Hire pay is in neither the going rate nor a normal cost, and it falls as the hands it draws
+    // close the shortage: no spiral. Not a harvest's hire (HarvestPay).
+    static constexpr double HirePremium = .5;
     // Hands by sales (doc 64, Phase 6), at its weekly review: the hours its sales take a day (its crafts' or yields'
     // hours for what it sells, a fifth more for staples, half again with its shelf near bare, a fifth less with it
     // glutted), in hands of PaidSpells hours; at least its keeper. Short, it opens the posts it let go, then hires for
@@ -2287,7 +2313,11 @@ class Society
     std::map<std::string, std::int64_t> takings_;
     std::unordered_map<std::string, std::int64_t> weekTakings_;   // A till's takings since its rent was last paid (doc 64).
     std::unordered_map<std::string, std::int64_t> netToday_;      // A till's sales less its buying today (WageBySales).
-    void noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total);
+    // (With ScarcityToHires, a seller till's sale of `item` over the ladder's margin credited at the ladder's: round 16.)
+    void noteTrade(const std::string& seller, const std::string& buyer, std::int64_t total, const std::string& item);
+    // Every shop's keeper holding a place on any hire, called back to its shop (OwnersStop; tendTills, or with
+    // CalledBackLate the end of tendLabour: round 16, lane 1).
+    void callShopsBack();
     // The labour market's day (doc 64, Phase 6; RatwLabour.cpp): each employer's posts open and filled, and its town;
     // each town's going rate; the idle share of grown wolves; each wolf's pay today and lately, and whose it is.
     std::unordered_map<std::string, int> vacancies_, hands_;
