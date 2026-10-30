@@ -150,9 +150,10 @@ void Society::spoil(std::int64_t day)
         for (const auto& [item, n] : goods)
             if (const auto today = soldToday_.find(till); today == soldToday_.end() || !today->second.count(item))
                 sold(till, item, n);
-    // And of them, the buyers it turned away, the same running average (round 14, lane 1: what MarginsByShortage's margin
-    // follows; a measure whatever the rules). Today's missed alone: the makers and caravans that found none in its town
-    // (missedAt), the hungry at its bare shelf (missedMeal), a fund's piece on no shelf; not the sold-out half again.
+    // And of them, the buyers it turned away, the same running average (round 14, lane 1: what MarginsByShortage's
+    // margin follows; a measure whatever the rules). Today's missed alone: the makers and caravans that found none in
+    // its town (missedAt), the hungry at its bare shelf (missedMeal), a fund's piece on no shelf; not the sold-out half
+    // again.
     for (auto& [till, goods] : missedRate_)
         for (auto& [item, rate] : goods)
             rate *= .7;

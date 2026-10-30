@@ -8157,3 +8157,178 @@ came in year 2 (days 469 and 594), when the shops held 170 pieces at the turn, n
    could be kept to the hands' hours.
 3. **The feast's want** is 50 a resident however many come; the stores' leftovers (none in the 60 days) wait for the
    next festival. A store kept for the hungry between festivals is the step after.
+
+### Phase 13: round 14, lane 1: the margin follows the buyers turned away, the chain priced once (2026-10-30)
+
+Round 13's two years (`artifacts/economy/2026-10-30-r13-2y-fast`, built from e0cb26e; the other start and the runs
+without lanes 2 and 3 agree) failed on prices: food 10.4p to 16.4p a unit, five quarters rising. The rise is
+Ridgemere's: its residents paid 10.8p, 13.5p, 15.4p, 19.1p, 20.7p, 21.4p, 20.8p and 20.0p a unit by quarter
+(`food_towns.csv`) while the other towns paid 8.4-9.8p. Its 9 boats went 6.1p to 11.2p a fish (1.97 times their normal
+cost in Q7, the staple cap), its 12 warrens 6.1p to 12.4p, and the owners' profit to the merchants 345k to 951k a
+quarter, 68% of year 2's to 12 food-chain tills. Three mechanisms, read from the code (base: p13-r13 at e0cb26e):
+
+- *The bare-shelf raise ratchets.* `reviewMargins` raised a margin when held over rate was under .3 of its keeping days
+  at the turn, which a seller serving every buyer and selling its last at dusk shows every week (North Wharf's
+  smokehouse sold 143 of a rate of 144 and sat at 1.6), and its fall (1.7 times the keeping days) was out of reach of a
+  producer or supplier selling over about 16 a day: stocked to its shelf target, about 1.8 times its rate, it never held
+  2.55 times it. So a margin climbed to its cap in about 57 weeks and stayed.
+- *Suppliers first, whatever they ask.* `buyMaterials` tried the suppliers (kind 0) before the producers (kind 2), so
+  the smokehouses bought 80-85% of their fish from provisioners and fishmongers at 18-20p while the boats sold at 9-11p.
+- *The margins compound.* A good a seller only sells on is priced at what it paid times its own ratcheted margin, so
+  residents paid 21.1p for fish at the resellers (1.89 times the boats) and Ridgemere's smoked fish reached 41-44p.
+
+And the boats' shortage is real: makers were short of fish 22-28k hours a quarter in year 2, and the boats' rate with
+the missed sales counting was 145-194 against 55-83 sold.
+
+**What changed** (both with work by the hours; no money moves; nothing new is saved; with both left out, the code is
+e0cb26e's to the digest):
+
+- **1. A margin follows the buyers turned away** (`Society::MarginsByShortage`, `1ull << 50`; `econ_watch --without
+  marginshortage`; `Society::reviewMargins`, `Core/RatwPrices.cpp`).
+  - *The measure* (`Society::missedRate_`, till -> good -> a day, beside `sellRate_`; not saved; kept whatever the
+    rules, since it moves nothing by itself): at each day's turn (`Society::spoil`) every entry is taken down to .7 of
+    itself and .3 of the day's `missedToday_` added, entries under .01 dropped. `missedToday_` holds only buyers there
+    were: a maker that found no seller in its town with any left (`missedAt`, shared among the town's producers), a
+    caravan's order its town couldn't spare (`missedAt` too, `RatwTrade.cpp`), a hungry wolf's meal at a bare shelf
+    (`missedMeal`), and a household fund's piece on no shelf. Not the sold-out "half again" (`spoil`'s guess at the
+    buyers after a shelf's last piece, which a shelf selling out at dusk earns daily).
+  - *The review* (same weekday, the same 75% review lot and step lot): `unmet = rate > .01 ? min(1, missedRate / rate) :
+    0`; a glut is `days > 1.7 x keep and held > GoodsKept`, or `held > shelfTarget(till, good, ProducerKept)`
+    (Markdowns' own test: over its own stock target; not for a planned field's store, `memory.fields`, which holds the
+    year by design). A glut comes down `step x MarginStep` as before; otherwise `aim = usual + (most - usual) x
+    clamp((unmet - UnmetFrom) / (UnmetFull - UnmetFrom), 0, 1)` (`most` a staple's 1.0 or 0.6; `rate <= .05`: the
+    ladder's) and `m += (aim - m) x step x MarginPull`, then the clamps as before. It replaces the bare-shelf raise and
+    the plain wear back. `UnmetFrom` .05 (a twentieth turned away is a sale missed at closing), `UnmetFull` .5 (half
+    turned away earns the cap: the boats ran at about .55-.6), `MarginPull` .5 (a fifth of the gap a week: from the cap
+    to the ladder's in about three months once a shortage ends).
+- **2. The chain priced once** (`Society::ChainPricedOnce`, `1ull << 51`; `--without chainonce`).
+  - *A maker buys at the cheapest seller in its town* (`buyMaterials`, the local pass): every seller of the kinds it may
+    buy from (a maker suppliers, workshops and producers; a supplier restocking workshops and producers) with one to
+    spare (any sort; a workshop's past what it keeps back) is priced once at its common sort (`priceAt`; the seller with
+    none to spare isn't asked) and tried cheapest first. Credit, the ledger's 99, `more` and the missed sales' tally as
+    before; the carted-in pass as before. One departure from the brief: the order is by the **whole penny** it would pay
+    (`pennies(priceAt)`), so a tie means the same price paid, and a tie goes to the producer, then the workshop, then
+    the supplier, then the list's order (by the double, a reseller a tenth of a penny under the boat would win, at the
+    same penny).
+  - *A good it only sells on carries the ladder's margin at most* (`priceAt`): `normalCost` gained an out-parameter,
+    `resold`, set on its -1 path (it makes none of the good, at what it paid) from the same cache look-up, so no second
+    till or account look-up (`RatwPrices.cpp`'s pace note). Priced `cost x (1 + min(margin, markup))`, then the
+    markdowns as before (a reseller's glut still sells off). A House's till asked by itself (a caravan's buying,
+    `RatwTrade.cpp`) has no trade label, so every good would look resold: `Society::resells(till, good)` asks its
+    businesses' crafts (`houses.owner`), and the same function tells `reviewMargins`, which keeps a resold good's margin
+    at the ladder's at most (nothing builds up hidden). A good the seller makes (a provisioner's smoked fish) keeps its
+    own margin.
+- **econ_watch:** `--without marginshortage,chainonce`; `tills.csv` has two measures at its end, `missed_units` (the
+  till's buyers turned away a day, `missedRate`, summed as `rate_units` is) and `margin` (its goods' margins weighed by
+  their rates), whatever the rules (`econ_players_tests` checks the columns). `days.jsonl`'s `model.margins` as it was.
+- `reviewMargins` and `buyMaterials` are public, for the tests.
+
+**Tests** (`crafting_tests`, after `aGlutIsMarkedDown`; `fishTown`: a boat, a fishmonger, a smokehouse and a scribe;
+each with its rule on and off):
+
+- `aSoldOutShelfServingAllKeepsTheLadder`: the boat sells its 30 a day by the turn for a fortnight (its rate 44.7 with
+  the half again, nothing turned away), its margin set to .9: with the rule two reviews take it to .615 and .414;
+  without, to .930 and .965.
+- `buyersTurnedAwayRaiseIt`: the same with 30 a day turned away (`missedAt`, unmet .500): in twelve weeks its margin
+  climbs to .948 with the rule (.328 without, a bare-shelf step a review); served again, it comes down .819, .559, .369,
+  .301, .266 in six weeks; without, it goes on rising (.342 to .453).
+- `aGlutOverItsOwnStore`: 40 a day, holding 90 against its target of 72 (under the old test's 102): its margin a step
+  down (.132 at a step lot of .439) with the rule, .15 without.
+- `aFieldsStoreIsNoGlut`: a farm selling 10 wheat a day holding 90 (target 72, under 1.7 times its keeping days' sales):
+  planned (`memory.fields`), its margin stays .15; unplanned, .123.
+- `aMakerBuysAtTheSource`: at a 120p day the boat's fish is 8.49p at the ladder's 15%; the fishmonger holds 50, its
+  margin .9. With the rule the smokehouse buys its ten from the boat at 8p (80p); the boat sold out, from the fishmonger
+  at 9.76p (100p); the fishmonger's bought at half the boat's, from it at 4.88p (the cheaper, whatever its kind); bought
+  so that it asks the boat's penny, from the boat (the tie). Without, from the fishmonger every time at its cost and .9
+  (16.13p, 8.07p, 14.03p).
+- `aResoldGoodAtTheLadder`: the fishmonger's fish at 9p, margin .9: with the rule priced 10.35p from the first and its
+  margin .15 after two bare-shelf reviews, both with MarginsByShortage and with the old review; two days over its target
+  it is marked down a step (9.83p). Without, 17.10p and its margin raised to .960.
+- Older tests: `aMissedPieceIsOneItCouldPayFor` leaves ChainPricedOnce out (the general store's charms, set dear at a
+  margin of 19, are a good it only sells on: with the rule they'd be at the ladder's). No other changed. All 68 tests
+  pass with both rules on, and with both forced off (a temporary build, not committed, the six new tests left out
+  there).
+
+**The digest:** 3 days, `--deterministic --hours --threads 4 --without marginshortage,chainonce`: d82706c7cdc4e0cb,
+round 13's. With both rules: 883143da5450ceda.
+
+**The 182-day check** (`--fast --deterministic --hours --threads 3`, the default start, built from d85d636:
+`artifacts/economy/2026-10-30-r14-margins-182d`; the base is days 0-181 of `2026-10-30-r13-2y-fast`, the same
+arguments). Quarters of 91 days, Q0 then Q1:
+
+| | base (e0cb26e) | rules on | the brief's aim |
+| --- | --- | --- | --- |
+| food a unit, the scorecard | 10.35p, 11.62p | 10.34p, 12.20p | Q1 about 11p at most, flat |
+| Ridgemere residents' food a unit (`food_towns.csv`) | 10.81p, 13.44p | 10.99p, 14.65p | Q1 11.5p at most |
+| ... their fish | 7.02p, 8.50p | 8.55p, 11.97p | |
+| Ridgemere smoked fish sold (`goods.csv`, coins over pieces) | 13.46p, 19.21p | 14.62p, 21.59p | Q1 16p at most |
+| Ridgemere's boats, takings a piece | 6.09p, 7.21p | 7.54p, 10.23p | (may stay high while short) |
+| ... their margin (`tills.csv`), by month | (not logged) | .26, .60, .79, .84, .92, .95, .98 | |
+| ... their buyers turned away, of their rate | (not logged) | .48, .57 (.45 in month 0) | |
+| Ridgemere's warrens, takings a piece; margin by month | 6.0p to 7.8p (M0-M6) | 6.0p to 10.3p; .16 to .71 | |
+| residents' fish at the resellers over the boats' takings | 1.15, 1.18 | 1.13, 1.17 | about 1.15 |
+| fishmongers', provisioners' margins | (not logged) | .13-.15, .10-.14 | |
+| smokehouses' materials coins to the boats; fishmongers; provisioners | 0%, 0%; 3%, 16%; 4%, 8% | 0%, 0%; 1%, 34%; 5%, 20% | 60% from the boats |
+| margins over .3 (`model.margins.high`, mean) | .01, .05 | .03, .08 | below the base |
+| the owners' profit to the merchants | 345k, 256k | 373k, 211k (.57 of Q0) | Q1 1.3 x Q0 at most |
+| Gini, poorer half, day 182 | .525, .156 | .519, .153 | .525 at most, .156 at least |
+| **gate:** the going rate (`model.going`) | 60.0-61.1p | 60.0-61.6p | 57-64p |
+| **gate:** Ridgemere's going rate | 60.0-64.8p (2 days over 64p) | 60.0-72.9p (**70 days over 64p, from day 102**) | 58-64p |
+| gate: slack, at the most | .01 | .02 | .03 |
+| gate: days with hungry at or under 1% | 100% | 100% | 95% |
+| gate: tills stopped, at the most | 30% | 28% | 50% |
+| gate: money | conserved; 5,000,120p from day 28 | conserved; 5,000,000p | conserved |
+
+(The smokehouses' payees are `account_peers.csv`'s, a week's five largest each way: no boat was among them in any week
+of either run; a provisioner's coins hold its firewood too. The money: the base's 120p is a newcomer's purse on day 28,
+"new resident" from outside; this run's newcomers that week were born, with none. Every day's `conserved` is true.)
+
+**A gate is missed: Ridgemere's going rate.** It stood over 64p on 70 of the 80 days from day 102, at 68-70p over days
+150-182 and 72.9p on day 174, against the base's two days over (64.8p at most). As briefed, the lane stops here: no
+tuning, no longer run. What the run says:
+
+1. **The boats' and the warrens' shortage is real and early, and rule 1 prices it within three months.** Ridgemere's
+   boats turned away about half their buyers from the first month (.45 in month 0, .57-.60 by months 4-6), the warrens
+   about a third from month 2: their aim was the staple's cap from the start, and the pull took the boats' margin to .92
+   by month 4 and the warrens' to .73. The old ratchet took about a year; so the base's year-2 prices (boats 11.2p) came
+   in six months (10.8p in month 6). The bakeries, short of nothing, stayed at the ladder's (.14, bread 5.3p to 4.7p).
+2. **The resale cap holds, but it caps the margin over a cost that is the source's.** The fishmongers and provisioners
+   sold at .10-.15, and the residents' fish at the resellers stayed 1.13-1.17 times the boats' takings a piece (the
+   base's was 1.15-1.18 in its first half-year too: the compounding the brief measured is year 2's); so the boats'
+   scarcity price flowed through whole, to residents' fish at 12.0p in Q1 (8.5p in the base) and smoked fish at 21.6p.
+3. **The scarcity margin is trade that pays a wage bid.** WageBySales lets a business bid when its trade lately covers
+   the higher wage: the hands at Ridgemere's tills that bid up were 163, 238 and 394 in months 3-5 (the base's 91, 112,
+   238), the warrens, the boats and the smokehouses among the most; on day 181, 53 of 231 unskilled hands were paid over
+   64p (the base's 32). The brief's spiral guard holds for the margin (it never rises with a wage), not for the wage: a
+   margin earned by buyers turned away raises the trade that WageBySales reads. Short-pay cuts in Ridgemere by month, as
+   `books.csv` shows them: 61, 75, 83, 75, 57, 77, 68 (the base's 65, 63, 85, 117, 115, 91, 68): no more.
+4. **Cheapest first didn't bring the smokehouses to the boats.** No boat was among their five largest payees in any week
+   (their fish came from the fishmongers and the provisioners, more than in the base: 34% and 20% of their materials'
+   coins in Q1). A boat turning away half its buyers has nothing to spare when they come, and when it has, it asks its
+   scarcity price, over the resellers' cost and 15% (bought earlier, cheaper, and in part at the producers' daily sale
+   to the food shops, `producersSell`, at the town's buying price). The rule does what it says; the brief's premise,
+   that the boats are the cheap source, fails once the boats carry the scarcity margin. Ridgemere's shops let more fish
+   rot (8,496 in Q1 against 4,518) as its residents bought less of it (5,157 against 7,696) at the dearer price.
+
+**For the user:**
+
+1. **How fast a shortage is priced.** `UnmetFull` .5 gives half turned away the whole cap; `MarginPull` .5 gets there in
+   about three months. A slower pull (.1-.2), or `UnmetFull` at .8-1.0 (half turned away earns half the cap), would
+   price Ridgemere's shortage more gently; neither makes more fish. `UnmetFrom` .05 left the bakeries and the small
+   towns' boats near the ladder's (Coldwater's, short for a fortnight around day 45, rose to .15-.69 and came back to
+   .06-.24 by day 168: the unwinding works).
+2. **The supply side.** Boats and warrens that turn away half their buyers for six months, with a scarcity margin,
+   caught little more (the boats sold 599 a day in Q1, the base 529, against a rate of 1,474 with the missed counting).
+   Whether their hires by sales find hands, or the land caps them, is the question the price can't answer: without more
+   fish, a scarcity margin moves money to the producers (their holders 1,212k in Q1 against 1,117k) and, through
+   WageBySales, Ridgemere's wage.
+3. **WageBySales and scarcity.** If a scarcity margin shouldn't fund wage bids, the bid could read the trade at its
+   normal cost (its sales at cost and the ladder's) rather than at its price; or the scarcity part could go to the
+   owner, not the wage.
+4. **The resale cap** (the ladder's 15% over what was paid) works as meant, and the cheapest-first buying lets a
+   reseller's cheaper stock reach the makers; both want the source's price to mean something first.
+5. **A stopped producer keeps a share of the town's missed sales.** `missedAt` shares them among the town's producers
+   whatever they sell: Coldwater's boat `tn_cw_grist_reedmere`, stopped on day 80 and idle from day 108, sold nothing
+   and was told of its share every day, so its unmet stood at 1.0 and its margin at .99 (harmless while it has nothing
+   to sell; dear when it returns), and the working boats were told less. Sharing among the producers that are working
+   (not stopped, not idle) would mend both.

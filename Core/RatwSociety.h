@@ -1006,12 +1006,12 @@ class Society
     // What each shop sells of each good a day, and the sales it missed for having none (a running average; Society::spoil
     // keeps it daily): a maker short of materials makes first what is wanted (TRIAL make_what_sells, doc 42). Not saved.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> sellRate_;
-    // Round 14, lane 1: of those, the buyers it turned away (till -> good -> a day, a running average as sellRate_'s, kept
-    // by Society::spoil from missedToday_ whatever the rules: it moves nothing by itself; MarginsByShortage's margin
-    // reads it). Only the buyers there were: a maker or a caravan's order that found no seller in its town with any left
-    // (missedAt, at the town's producers), a hungry wolf's meal at a bare shelf (missedMeal), a household's fund that
-    // found its piece on no shelf; not the sold-out half again, a guess at buyers that a shelf selling its last at dusk
-    // earns every day. Entries under .01 dropped. Not saved.
+    // Round 14, lane 1: of those, the buyers it turned away (till -> good -> a day, a running average as sellRate_'s,
+    // kept by Society::spoil from missedToday_ whatever the rules: it moves nothing by itself; MarginsByShortage's
+    // margin reads it). Only the buyers there were: a maker or a caravan's order that found no seller in its town with
+    // any left (missedAt, at the town's producers), a hungry wolf's meal at a bare shelf (missedMeal), a household's
+    // fund that found its piece on no shelf; not the sold-out half again, a guess at buyers that a shelf selling its
+    // last at dusk earns every day. Entries under .01 dropped. Not saved.
     std::unordered_map<std::string, std::unordered_map<std::string, double>> missedRate_;
     // What each seller sold out of today (its last one sold): the sales it missed after are counted as half again its
     // day's (doc 64, Phase 3b), so a shelf that empties every day keeps more until it doesn't. Not saved.
@@ -1350,8 +1350,8 @@ class Society
         ChildrenKept = 1ull << 47,                   // Under ChildWorkAge no odd job; a child's spare to its home (round 13, 2).
         KitchenKept = 1ull << 48,                    // A food maker's kitchen runs with its keeper hungry or away (round 13, 3).
         FeastAhead = 1ull << 49,                     // A festival's feast bought in the week ahead, from what shops hold over (round 13, 3).
-        // Round 14, lane 1 (the user, 2026-10-30: Ridgemere's food dearer every quarter, its margins at their caps along
-        // the chain): a seller's margin follows the buyers it turns away, and a good only sold on is priced once.
+        // Round 14, lane 1 (the user, 2026-10-30: Ridgemere's food dearer every quarter, its margins at their caps
+        // along the chain): a seller's margin follows the buyers it turns away, and a good only sold on is priced once.
         MarginsByShortage = 1ull << 50,              // A margin aims by the buyers turned away, not a shelf bare at the turn (round 14, 1).
         ChainPricedOnce = 1ull << 51,                // A maker buys at the cheapest seller; a good sold on carries the ladder's margin (round 14, 1).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
@@ -1439,12 +1439,12 @@ class Society
     std::int64_t kitchensDay_ = -1;
 
   public:
-    // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
-    // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier. Without
+    // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in. A
+    // supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier. Without
     // `credit`, only with what its till can spare. In its town by the kind of seller, suppliers, then workshops, then
     // producers; with ChainPricedOnce (round 14, lane 1, with work by the hours), every seller there that has one to
-    // spare, the cheapest first (by the whole penny it would pay; level, the producer, the workshop, the supplier). (Public
-    // for the tests.)
+    // spare, the cheapest first (by the whole penny it would pay; level, the producer, the workshop, the supplier).
+    // (Public for the tests.)
     int buyMaterials(const std::string& id, const std::string& workCell, const std::string& item, int wanted,
                      bool forSupplier = false, bool credit = true);
     // What a workshop selling `item` keeps back of it, its common sort (doc 64, Phase 13): GoodsKept for its shelf, or,
@@ -1537,7 +1537,7 @@ class Society
     double costOf(const std::string& account, const std::string& item) const;   // Pennies a piece.
     // What a material cost it, or with no record what it would pay for it (the town's going price).
     double inputCost(const std::string& account, const std::string& item) const;
-    // `resold`, if given, is set when the seller makes none of the good and sells it at what it paid (its cost's -1 path).
+    // `resold`, if given, is set when the seller makes none of the good and sells it at what it paid (the -1 path).
     double normalCost(const std::string& seller, const std::string& item, bool* resold = nullptr) const;
     double marginOf(const std::string& seller, const std::string& item) const;
     // Round 14, lane 1 (ChainPricedOnce, with work by the hours): a good the seller only sells on (normalCost's resold)
@@ -1545,7 +1545,8 @@ class Society
     // whose businesses tell what it makes: resells); its markdowns as before. A good it makes keeps its own margin.
     double priceAt(const std::string& seller, const std::string& item) const;   // Pennies a piece, not rounded.
     // Whether the account selling from `till` makes none of `good` (normalCost's -1 by its trade): a business's till by
-    // its post's trade, a House's by any of its businesses', anything else (a caravan's load, a town's stores) sells on.
+    // its post's trade, a House's by any of its businesses', anything else (a caravan's load, a town's stores) sells
+    // on.
     bool resells(const std::string& till, const std::string& good) const;
     // Each seller's weekly review of its margins, on its own day of the week (RatwPrices.cpp; public for the tests).
     void reviewMargins(std::int64_t day);
@@ -1628,16 +1629,16 @@ class Society
     static constexpr double CarriageLegs = 10;       // Steps between towns, for what's carted from one to another.
     static constexpr double MarginLeast = -.3, MarginMost = .6, StapleMarginMost = 1.;
     static constexpr double MarginStep = .04;
-    // Round 14, lane 1 (MarginsByShortage, with work by the hours; the user, 2026-10-30): at its weekly review a seller's
-    // margin is pulled MarginPull of the way (times its review's step lot) toward an aim set by the share of its buyers it
-    // turned away (missedRate over its rate, `unmet`): the ladder's at UnmetFrom or under (a twentieth turned away is a
-    // sale missed at closing, not scarcity), its most (StapleMarginMost for a staple, else MarginMost) from UnmetFull
-    // (half its buyers turned away: Ridgemere's boats ran at about .55-.6), straight between. A glut (over 1.7 times its
-    // keeping days and more than GoodsKept, or over its own shelf target, a seasonal field's store aside) still comes
-    // down MarginStep a step. So the margin is a function of how short the seller is now: it can't wind up past what
-    // its shortage earns, and it unwinds as the shortage closes (from the cap back to the ladder's in about three
-    // months: a fifth of the gap a week, its step's mean .5 and three weeks in four reviewed). It never rises with sales
-    // or a wage, only with buyers turned away.
+    // Round 14, lane 1 (MarginsByShortage, with work by the hours; the user, 2026-10-30): at its weekly review a
+    // seller's margin is pulled MarginPull of the way (times its review's step lot) toward an aim set by the share of
+    // its buyers it turned away (missedRate over its rate, `unmet`): the ladder's at UnmetFrom or under (a twentieth
+    // turned away is a sale missed at closing, not scarcity), its most (StapleMarginMost for a staple, else MarginMost)
+    // from UnmetFull (half its buyers turned away: Ridgemere's boats ran at about .55-.6), straight between. A glut
+    // (over 1.7 times its keeping days and more than GoodsKept, or over its own shelf target, a seasonal field's store
+    // aside) still comes down MarginStep a step. So the margin is a function of how short the seller is now: it can't
+    // wind up past what its shortage earns, and it unwinds as the shortage closes (from the cap back to the ladder's in
+    // about three months: a fifth of the gap a week, its step's mean .5 and three weeks in four reviewed). It never
+    // rises with sales or a wage, only with buyers turned away.
     static constexpr double UnmetFrom = .05, UnmetFull = .5, MarginPull = .5;
     // How many days of sales a seller keeps of a good: food by how long it keeps, else by its worth.
     static double keepDays(const std::string& item);

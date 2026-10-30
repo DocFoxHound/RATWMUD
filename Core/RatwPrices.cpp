@@ -92,7 +92,7 @@ double Society::normalCost(const std::string& seller, const std::string& item, b
     if (const auto found = cached.find(base); found != cached.end())
     {
         if (resold)
-            *resold = found->second < 0;            // (Round 14, lane 1: told without a second look-up, ChainPricedOnce.)
+            *resold = found->second < 0;            // (Round 14, lane 1: no second look-up for it.)
         return found->second < 0 ? costOf(till, item) : found->second * quality;
     }
     const auto* r = spec(seller);
@@ -275,8 +275,8 @@ double Society::priceAt(const std::string& seller, const std::string& item) cons
     // A good it only sells on (it makes none of it: normalCost's -1, at what it paid) carries the ladder's handling at
     // most (round 14, lane 1, ChainPricedOnce; the user, 2026-10-30): a shortage is priced once, where the good is made
     // (MarginsByShortage), not again by every shop it passes through. Ridgemere's resellers sold fish at 1.89 times the
-    // boats' price, and its smoked fish reached 41-44p. (A House's till asked by itself has no trade of its own to tell:
-    // its businesses' crafts do, resells. Its markdowns below as before, so a reseller's glut still sells off.)
+    // boats' price, and its smoked fish reached 41-44p. (A House's till asked by itself has no trade of its own to
+    // tell: its businesses' crafts do, resells. Its markdowns below as before, so a reseller's glut still sells off.)
     bool resold = false;
     const double cost = normalCost(seller, item, workByHours() && wageRule(ChainPricedOnce) ? &resold : nullptr);
     if (resold && seller.rfind("house:", 0) == 0)
@@ -371,11 +371,11 @@ void Society::reviewMargins(std::int64_t day)
     // MarginPull of the way (times its step lot) there. A glut, more on it than 1.7 times its keeping days or over its
     // own shelf target (Markdowns' own test; not a seasonal field's store, which holds the year by design), comes down
     // a step as before. This replaces the raise for a shelf bare at the turn, which a seller serving every buyer and
-    // selling its last at dusk earned every week: North Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6. And
-    // the fall could never reach a producer or supplier selling more than about 16 a day (stocked to its shelf target,
-    // about 1.8 times its rate, it never held 2.55 times it): the margin climbed to its cap in about 57 weeks and stayed.
-    // With ChainPricedOnce, a good it only sells on is kept to the ladder's at most, as priceAt prices it (nothing builds
-    // up hidden behind the price).
+    // selling its last at dusk earned every week: North Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6.
+    // And the fall could never reach a producer or supplier selling more than about 16 a day (stocked to its shelf
+    // target, about 1.8 times its rate, it never held 2.55 times it): the margin climbed to its cap in about 57 weeks
+    // and stayed. With ChainPricedOnce, a good it only sells on is kept to the ladder's at most, as priceAt prices it
+    // (nothing builds up hidden behind the price).
     const double usual = items::ladder().markup;
     const bool byShortage = workByHours() && wageRule(MarginsByShortage);
     const bool once = workByHours() && wageRule(ChainPricedOnce);

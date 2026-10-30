@@ -764,8 +764,8 @@ void piecesItCantGetGoOnToWorks()
 // lot. (The fund is the cheapest piece's price before the day's share comes into it.)
 void aMissedPieceIsOneItCouldPayFor()
 {
-    // (Round 11's rich homes left out: as built before them. And round 14's ChainPricedOnce: the store's charms, which it
-    // only sells on, would be kept to the ladder's margin, not its dear 19.)
+    // (Round 11's rich homes left out: as built before them. And round 14's ChainPricedOnce: the store's charms, which
+    // it only sells on, would be kept to the ladder's margin, not its dear 19.)
     Society::wageRulesOff(Society::RichHomes | Society::ChainPricedOnce);
     Society::setWorkByHours(true);
     for (const bool sword : {true, false})
@@ -7774,7 +7774,8 @@ Society fishTown()
     return s;
 }
 
-// A seller's shelf set as set() sets it, its margins kept: restore loads them from the save, which the day's pass writes.
+// A seller's shelf set as set() sets it, its margins kept: restore loads them from the save, which the day's pass
+// writes.
 void restock(Society& s, const std::string& id, const std::string& item, int count)
 {
     auto state = s.state();
@@ -7815,10 +7816,10 @@ double reviewStep(const std::string& till, const std::string& good, std::int64_t
     return reviewLot(till + "|" + good + "|" + std::to_string(day) + "|step");
 }
 
-// MarginsByShortage (round 14, lane 1), with work by the hours: a fishing boat that sells its whole shelf by the turn of
-// each day, turning nobody away, is short of nothing. Its margin set to .9, its reviews pull it back toward the ladder's
-// 15%; without the rule its shelf bare at the turn raises it toward a staple's most, 1.0, review by review. (North
-// Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6 times its cost.)
+// MarginsByShortage (round 14, lane 1), with work by the hours: a fishing boat that sells its whole shelf by the turn
+// of each day, turning nobody away, is short of nothing. Its margin set to .9, its reviews pull it back toward the
+// ladder's 15%; without the rule its shelf bare at the turn raises it toward a staple's most, 1.0, review by review.
+// (North Wharf's smokehouse sold 143 of a rate of 144 and sat at 1.6 times its cost.)
 void aSoldOutShelfServingAllKeepsTheLadder()
 {
     Society::setWorkByHours(true);
@@ -7859,9 +7860,9 @@ void aSoldOutShelfServingAllKeepsTheLadder()
 }
 
 // MarginsByShortage, with work by the hours: the same boat with as many again turned away each day (the town's makers
-// finding no fish: missedAt), half its buyers. Its margin climbs toward a staple's most; once the buyers are served again
-// it comes back down within a few reviews (the turned away wear out of its average in a week). Without the rule it
-// rises by its bare shelf alone, and never comes down while it sells out.
+// finding no fish: missedAt), half its buyers. Its margin climbs toward a staple's most; once the buyers are served
+// again it comes back down within a few reviews (the turned away wear out of its average in a week). Without the rule
+// it rises by its bare shelf alone, and never comes down while it sells out.
 void buyersTurnedAwayRaiseIt()
 {
     Society::setWorkByHours(true);
@@ -7913,8 +7914,8 @@ void buyersTurnedAwayRaiseIt()
     Society::setWorkByHours(false);
 }
 
-// MarginsByShortage, with work by the hours: a boat selling 40 a day holding 90, over its own shelf target (72: a day and
-// a half's keeping and a staple's fifth over) but under the 2.55 days' sales the old test asked of a glut, which a
+// MarginsByShortage, with work by the hours: a boat selling 40 a day holding 90, over its own shelf target (72: a day
+// and a half's keeping and a staple's fifth over) but under the 2.55 days' sales the old test asked of a glut, which a
 // producer stocked to its target never reached. With the rule its margin comes down a step (MarginStep times the
 // review's lot); without, it only wears back toward the ladder's (here, at it, it stays).
 void aGlutOverItsOwnStore()
@@ -7953,8 +7954,8 @@ void aGlutOverItsOwnStore()
 }
 
 // MarginsByShortage, with work by the hours: a farm whose year is planned (its till under memory.fields) holds a store
-// by design. Over its shelf target (90 of wheat at 10 a day: a target of 72) but not 1.7 times its keeping days, it isn't
-// lowered by the own-target test; the same farm unplanned is.
+// by design. Over its shelf target (90 of wheat at 10 a day: a target of 72) but not 1.7 times its keeping days, it
+// isn't lowered by the own-target test; the same farm unplanned is.
 void aFieldsStoreIsNoGlut()
 {
     Society::setWorkByHours(true);
@@ -7993,13 +7994,13 @@ void aFieldsStoreIsNoGlut()
     Society::setWorkByHours(false);
 }
 
-// ChainPricedOnce (round 14, lane 1), with work by the hours: the smokehouse wants ten fish, at a 120p day. The boat sells
-// at its cost and the ladder's 15% (about 8.5p); the fishmonger holds fifty, its margin .9. Bought at the boat's price:
-// with the rule the smokehouse buys from the boat at the boat's price, and with the boat sold out from the fishmonger at
-// what it paid and the ladder's 15%. Bought at half the boat's: from the fishmonger, the cheaper, whatever its kind.
-// Bought so that it asks the boat's penny: from the boat (level, the producer first). Without the rule, from the
-// fishmonger every time (a supplier first, whatever it asks), at its cost and its .9. (Ridgemere's smokehouses bought
-// four fifths of their fish from its resellers at 18-20p while its boats sold at 9-11p.)
+// ChainPricedOnce (round 14, lane 1), with work by the hours: the smokehouse wants ten fish, at a 120p day. The boat
+// sells at its cost and the ladder's 15% (about 8.5p); the fishmonger holds fifty, its margin .9. Bought at the boat's
+// price: with the rule the smokehouse buys from the boat at the boat's price, and with the boat sold out from the
+// fishmonger at what it paid and the ladder's 15%. Bought at half the boat's: from the fishmonger, the cheaper,
+// whatever its kind. Bought so that it asks the boat's penny: from the boat (level, the producer first). Without the
+// rule, from the fishmonger every time (a supplier first, whatever it asks), at its cost and its .9. (Ridgemere's
+// smokehouses bought four fifths of their fish from its resellers at 18-20p while its boats sold at 9-11p.)
 void aMakerBuysAtTheSource()
 {
     Society::setWorkByHours(true);

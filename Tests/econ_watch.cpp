@@ -1278,8 +1278,8 @@ int main(int argc, char** argv)
                             materials += cost;
                             resale += resold ? cost : 0;
                         }
-                // (`missed_units`: of `rate_units`, the buyers it turned away, a day; `margin`, its goods' margins by their
-                // rates, a price over its normal cost less one before any markdown: round 14, lane 1's measures.)
+                // (`missed_units`: of `rate_units`, the buyers it turned away, a day; `margin`, its goods' margins by
+                // their rates, a price over its normal cost less one before any markdown: round 14, lane 1's measures.)
                 double missed = 0;
                 if (const auto* turned = society.missedRates(id))
                     for (const auto& [good, rate] : *turned)

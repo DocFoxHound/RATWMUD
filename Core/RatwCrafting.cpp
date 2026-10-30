@@ -173,14 +173,14 @@ int Society::buyMaterials(const std::string& id, const std::string& workCell, co
     // Close to home first, at the price; then anywhere, carted in (in a world of towns, only the caravans bring what a
     // town lacks: doc 42, Phase 7).
     //
-    // With ChainPricedOnce (round 14, lane 1, with work by the hours; the user, 2026-10-30), at home the cheapest first,
-    // whatever kind of seller: by kind, the suppliers came first whatever they asked, and Ridgemere's smokehouses bought
-    // four fifths of their fish from its provisioners and fishmongers at 18-20p while its boats sold at 9-11p. Every
-    // seller of the town it may buy from (a maker any; a supplier the workshops and the producers) with one to spare (of
-    // any sort; a workshop's past what it keeps back), by the whole penny its common sort would cost; level, the
-    // producer, then the workshop, then the supplier, then as listed. A dear seller loses the makers' custom, its shelf
-    // fills, and its glut lowers its margin. Each priced once a call (priceAt is the run's dearest ask: the seller with
-    // none to spare isn't asked). The carted-in pass as before.
+    // With ChainPricedOnce (round 14, lane 1, with work by the hours; the user, 2026-10-30), at home the cheapest
+    // first, whatever kind of seller: by kind, the suppliers came first whatever they asked, and Ridgemere's
+    // smokehouses bought four fifths of their fish from its provisioners and fishmongers at 18-20p while its boats sold
+    // at 9-11p. Every seller of the town it may buy from (a maker any; a supplier the workshops and the producers) with
+    // one to spare (of any sort; a workshop's past what it keeps back), by the whole penny its common sort would cost;
+    // level, the producer, then the workshop, then the supplier, then as listed. A dear seller loses the makers'
+    // custom, its shelf fills, and its glut lowers its margin. Each priced once a call (priceAt is the run's dearest
+    // ask: the seller with none to spare isn't asked). The carted-in pass as before.
     const bool cheapest = workByHours() && wageRule(ChainPricedOnce);
     for (const bool local : {true, false})
     {
