@@ -362,7 +362,8 @@ void Society::record(const std::string& kind, const std::string& from, const std
         const bool resident = state_.residents.count(to) > 0;
         if ((resident && !unearnedKind(kind)) ||
             (to.rfind("house:", 0) == 0 && (kind == "the owner's profit" || kind == "rent")) ||
-            ((to == "treasury" || to.rfind("stores:", 0) == 0) && (kind == "town tax" || kind == "capital's share" || kind == "holdings tax")) ||
+            ((to == "treasury" || to.rfind("stores:", 0) == 0) &&
+             (kind == "town tax" || kind == "capital's share" || (kind == "holdings tax" && !(workByHours() && wageRule(HoldingsBite))))) ||
             (to == SharedChurch && (kind == "tithe" || kind == "the collection")))
             earnedToday_[to] += double(coins);
         // A town's caravans' net takings, as its tax, with work by the hours (round 8, the user, 2026-10-27): what they
@@ -393,6 +394,11 @@ void Society::record(const std::string& kind, const std::string& from, const std
         if ((from == "treasury" || from.rfind("stores:", 0) == 0 || from == SharedChurch) &&
             (kind == "watch wages" || kind == "day labour" || kind == "service wages"))
             state_.memory.wagesWeek[from] += double(coins);
+        // (The capital's outgoings outside its week's parts, counted off its next week's budget: round 12, lane B,
+        // CapitalByIncome. Its holdings tax is spent back on its own, HoldingsBite, and isn't its income either.)
+        if (from == "treasury" && (kind == "unsold, back to the stores" || kind == "reward set aside") && workByHours() &&
+            wageRule(CapitalByIncome))
+            state_.memory.spendWeek["treasury|other"] += double(coins);
         // Round 10, lane A (the user, 2026-10-27; with work by the hours): what a House pays out from each part of its
         // week's budget (its posts' wages, its caravans' money and guards, its investments in its businesses), and what
         // its caravans bring home since its last week's budget (spent on top of it, as they come: the road money out of

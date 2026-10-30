@@ -7493,3 +7493,106 @@ runs were one after another on a machine other sessions were loading (load avera
 both see the same load, 5 days `--hours --threads 6` take 0.549 min with them and 0.552 `--without markdowns` (and
 1.24 against 1.25 at a load of 21). `priceAt` finds the seller's till and good once, for its margin and its markdown
 both (it had looked the till up a second time); the results are the same either way (5 days: 23768e949b6a0c62).
+
+### Phase 13: round 12, lane B: the holdings tax that bites, the capital kept to its income (2026-10-29)
+
+Round 11's year (`artifacts/economy/2026-10-29-r11-year`, dadf667) has the money piling up with the food producers
+(their holders 671k on day 84, 1,214k on day 364; the two dairy keepers 99k and 54k), the wage-earners' median cash
+1,730p to 52p, and the capital's treasury 315k to 144k. The user's decisions (2026-10-29): make the holdings tax reach
+the money that piles up, graduated, spent back in its town in the week; and keep the capital's week to its income over a
+reserve floor. Base: p13-r11 at dadf667. With work by the hours only. No run was made for this lane (the user: no
+simulation); the numbers below are the year's CSVs read with Python.
+
+**Why the holdings tax took so little.** It took 131,159p in the year, not 66,774p: `town_tax.csv`'s column is the small
+towns' (Larkfield 61.8k of it), and the capital's 64.4k is flows.csv's "holdings tax" into the treasury. By quarter 22k,
+21k, 40k, 46k. Nothing kept it from the money it was meant for: the lodgers (a bunkhouse's keepers and hands) are taxed
+each on its own purse, as homes, and the dairy keepers' purses are their own (their dairies have tills of their own); a
+keeper whose purse is its shop's till, the one purse left out, held 8.9k in all on day 364. And the rate stayed at 1%
+(no lever moved). It was the design:
+
+- **The target sheltered most of it.** Of the producers' 1,214k on day 364, 452k was held by producers under their
+  target (six months of a wolf's food, about 7,000p for a lodger at a 100p day), and about 518k was the targets of the
+  95 lodgers and 14 homes over theirs: 244k was over. All residents' holdings over their targets: 25k on day 84, 268k on
+  day 182, 373k on day 280, 530k on day 364 (at a 75p day, 91k to 825k). At 1% a week that is 0.25k to 5.3k a week,
+  which is what it took.
+- **1% a week grows slower than an owner's profit.** Whiteleas Dairy's keeper paid about 920p a week on 99k; the
+  lodgers' excess rose from 195k (day 182) to 422k (day 364) while being taxed.
+- **The tills are not homes.** The farm tills held 534k on day 364 against working money of 1,344k (the harvest window's
+  wages), 145k over it; a till's cash over its working money is swept to its owner each month ("the owner's profit",
+  187k in the last quarter) and taxed in the owner's home. So the tills are left as they are.
+
+**What it does:**
+
+- **The holdings tax bites** (`Society::HoldingsBite`, `1ull << 41`; `econ_watch --without holdingsbite`). Graduated
+  over a home's target T (as before, `HoldingsMonths` of its needs): the lever's rate (1%) on what's held from T to
+  `BiteFrom` (2) T, `BiteMiddle` (3) times it from 2T to `BiteTop` (4) T, `BiteHigh` (6) times it over 4T; no band over
+  `MostHoldingsTax` (10%) a week; never more than what's held over T (`Society::holdingsOwed`). Taken a seventh a day, as
+  before. For a lodger (T about 7,000p): 1% of the next 7,000p, 3% of the next 14,000p, 6% over 28,000p; the Whiteleas
+  keeper's 99k pays about 4,750p a week (920p before); a home just over its target pays what it did. The lever scales
+  the whole schedule (at 2%: 2/6/10%).
+  - *Spent back in the week, not saved* (`EconomyMemory::biteLeft`, by treasury): what it brings is kept apart in the
+    town's purse and spent in its town: (1) relief, each day, to a household short of a day's food money or hungry,
+    past the town's own week's relief allowance (`dailyRelief`); (2) day labour, each spell, a town's Town Works' day
+    labour its own allowance doesn't cover, before the capital carries it (counted as the town's own, so it isn't one of
+    its "other posts" next week), and the capital's own past its allowance (with `CapitalByIncome`); (3) at the town's
+    week, what's left goes to its works' crew on top of its budget (`institutionsWeek`: hired for the week, 80% wages).
+  - *Not counted twice:* the holdings tax isn't the town's income under the rule (`record`: its month's income, so its
+    budget doesn't spend it again), nor its holding: `budgetOf`'s holding, the stores' mean (`tendIncome`, TaxEase's),
+    the capital's share by wealth (`reckon`: its cash and mean) and the rebate (`rebateTownTax`) all leave `biteHeld`
+    out. **The order at the week's reckoning:** the tax; the capital's share (on the town's holding less its bite);
+    TaxEase and the rebate (the same); then `institutionsWeek`, where the bite's rest goes to the works. So the bite is
+    never sent to the capital, rebated to the taxpayers or saved; what the share and the rebate move is the town's own.
+- **The capital kept to its income** (`Society::CapitalByIncome`, `1ull << 42`; `econ_watch --without capitalincome`).
+  What drained it, week by week from `account_flows.csv`: its budget (`budgetOf`, a month's income and .4 of what it
+  holds over two months, a quarter a week) was already under its income below two months of it (about 23k a week at
+  150k), but its watch was kept past its posts' half of it (10k a week), its own Town Works' day labour was paid every
+  spell whatever its budget (1-3k a week in the spring, 12-17k in the last month, none of it the towns' carried labour
+  by then), and its caravans' unsold goods bought back came on top (3-8k a week). Now:
+
+      month   = its month's income (its tax and the towns' share: the running month; the realm's first month, a third of
+                what it holds), the holdings tax not in it (HoldingsBite: spent on its own)
+      floor   = CapitalReserveMonths (2) x month
+      budget  = month / 4 + CapitalDraw (1/8) x (held - floor)+  - last week's outgoings outside its parts
+                (its caravans' unsold goods bought back, rewards set aside), 0 to what it holds
+
+  So under its floor it spends its income and no more; over it, an eighth a week of the excess on top. Its parts in the
+  order of the cuts: relief first, up to the whole budget (what it gave last week and a third over, and a twentieth of
+  the budget: relief keeps people fed); then its posts' share, now all the rest (not half): its watch (kept, always),
+  the day labour (the small towns' it carries and, new, its own: its ask is both, and its allowance what they asked and
+  a tenth, and `CapitalLabourRoom` (half) of that over at most from what's left), its own posts (let go past it, as
+  before); then its buyers' funds, from what's left: the first cut; then its works. The capital's own day labour past
+  its allowance is paid from its holdings tax not yet spent back, else unpaid for the rest of the week (the wolves to
+  relief). (With the rule, the carried labour is kept to its allowance even with `CarriedPosts` left out.)
+- **econ_watch:** `--without holdingsbite,capitalincome`; `town_tax.csv` has a `bite_spent` column (each town's holdings
+  tax spent back in the week: relief, day labour, and what went to its works). The capital's isn't in it (no row).
+
+**Saves:** `biteLeft` in the economy's memory (an old save: none, the bite starts from today's tax); the capital's
+outgoings outside its parts in `spendWeek["treasury|other"]`.
+
+**Tests:**
+
+- `theHoldingsTaxBites` (`crafting_tests`): the schedule (nothing at the target, 1% then 3% then 6%, no band over 10%,
+  never below the target, flat without the rule); a household given 100,000p pays over four times the flat tax, kept as
+  the bite and not the town's income; the next day a broke neighbour, the town's relief spent, gets relief from it; at
+  the week what's left has gone; saved. Without the rule the flat tax, the town's income, no relief past its allowance.
+- `theCapitalKeptToItsIncome` (`crafting_tests`): in its fifth week, under its floor its relief, day labour and funds
+  come to a quarter of its month's income; over it, that and an eighth of the excess; the day labour's allowance what
+  it asked, a tenth and half that over (1,650p of 1,000p asked); without the rule budgetOf's (less) and all the posts'
+  share's rest on the day labour.
+- `theDayLabourInsideTheBudgets` (`roads_tests`): west's day labour, its allowances spent, paid from its bite (none
+  without the rule); the capital's own inside its allowance (ask counted), none past it, from its bite past it, and
+  every spell without the rule.
+- Older tests of round 11's or round 6's rules leave these out: `theHoldingsTax` (the flat tax) `HoldingsBite`;
+  `theDayLabourAllowances` both; `theCapitalKeepsToItsBudget` (its posts to half its budget) `CapitalByIncome`;
+  `theTownPaysItsDayLabourFirst`'s without-case `CapitalByIncome` (it keeps the carried labour to its allowance too).
+- All 68 tests pass.
+
+**For the user:**
+
+1. **No run was made.** Whether 3%/6% bites enough (or too hard: a 99k fortune loses about 5% a week) is the year's to
+   say; the lever moves the whole schedule. The money under the target (970k of the producers' 1,214k on day 364) is out
+   of any holdings tax's reach without a lower target; that is the keeper's wage against the hands'.
+2. **The bite's works.** What relief and day labour don't use goes to the town's works' crew, posted for the week; places
+   nobody takes leave it in the purse (then the town's own). An alternative: a rebate to the town's poorest.
+3. **The capital at its floor spends its income** and no more; it doesn't refill. If it should, its budget under the
+   floor could be a share under its income (budgetOf did that: about 23k a week on 33k of income at 150k).

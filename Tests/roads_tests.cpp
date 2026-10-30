@@ -1179,6 +1179,8 @@ void askingWhoPaysLeavesTheRun(bool hours)
 void theCapitalKeepsToItsBudget()
 {
     Society::setWorkByHours(true);
+    // (Round 6's budget, its posts to half of it: round 12's CapitalByIncome gives them all of it after relief.)
+    Society::wageRulesOff(Society::CapitalByIncome);
     std::string extra = resident("g1", "Ward Gate", "guard", "keeping the gate", 0, 9.5, 2, 9.5) +
                         resident("wb", "Wick Gate", "guard", "keeping the gate", 0, 9.5, 2, 10.5);
     for (int i = 1; i <= 4; ++i)
@@ -1272,6 +1274,7 @@ void theCapitalKeepsToItsBudget()
                "an older save reads none, the rest as it was");
     }
     expect(w.society().conserved(), "Money stays conserved");
+    Society::wageRulesOff(0);
     Society::setWorkByHours(false);
 }
 
@@ -2317,7 +2320,8 @@ void theTownPaysItsDayLabourFirst()
         return paid;
     };
     const auto own = paidBy(0, 1e6, -1), spent = paidBy(0, 0, -1), closed = paidBy(0, 0, 0),
-               without = paidBy(Society::TownLabourFirst | Society::CarriedPosts, 1e6, 0);
+               without = paidBy(Society::TownLabourFirst | Society::CarriedPosts | Society::CapitalByIncome, 1e6, 0);   // (Round 12's
+                                                                                       // CapitalByIncome keeps the carried labour to its allowance too.)
     expect(own.by.count("stores:west") && own.by.at("stores:west") > 0 && !own.by.count("treasury"),
            "With its allowance, west's stores pay its day labour first");
     expect(spent.by.count("treasury") && spent.by.at("treasury") > 0 && !spent.by.count("stores:west"),
@@ -2326,6 +2330,74 @@ void theTownPaysItsDayLabourFirst()
                                                        std::to_string(closed.asked) + "p)");
     expect(without.by.count("treasury") && without.by.at("treasury") > 0 && !without.by.count("stores:west") && without.asked == 0,
            "Without the rules, the capital pays it whatever is left");
+    Society::setWorkByHours(false);
+}
+
+// Round 12, lane B (the user, 2026-10-29), with work by the hours. HoldingsBite: west's day labour, its own allowance and
+// the capital's spent, is paid from west's holdings tax not yet spent back, before the capital carries it (without the
+// rule nobody pays it). CapitalByIncome: the capital's own Town Works' day labour (east's) is kept to its week's
+// allowance, its ask counted; past it, paid from the capital's holdings tax not yet spent back; without the rule paid
+// every spell whatever its allowance, as before.
+void theDayLabourInsideTheBudgets()
+{
+    Society::setWorkByHours(true);
+    struct Paid
+    {
+        std::map<std::string, std::int64_t> by;
+        double asked = 0, biteWest = 0, biteCapital = 0, allowance = 0;
+    };
+    const auto paidBy = [](std::uint64_t off, bool east, double capital, double biteWest, double biteCapital) {
+        Society::wageRulesOff(off);
+        auto f = strip("EE.....WW", east ? resident("idle", "Idle Hand", "civilian", "-", 0, 11.5, 0, 11.5)
+                                         : resident("idle", "Idle Hand", "civilian", "-", 7, 11.5, 7, 11.5));
+        auto w = load(f);
+        {
+            auto saved = w.save();
+            saved.calendarDays = std::floor(saved.calendarDays) + 1.4;
+            expect(w.restore(saved).ok, "To the next morning");
+        }
+        w.tick(.6);
+        {
+            auto st = w.society().state();
+            st.memory.labourLeft["stores:west"] = 0;
+            st.memory.labourLeft["treasury"] = capital;
+            if (biteWest > 0)
+                st.memory.biteLeft["stores:west"] = biteWest;
+            if (biteCapital > 0)
+                st.memory.biteLeft["treasury"] = biteCapital;
+            expect(w.society().restore(st), "the week's allowances, and the holdings tax to spend back");
+        }
+        Paid paid;
+        for (int t = 0; t < 1500; ++t)
+        {
+            w.tick(1);
+            for (const auto& e : w.takeEvents())
+                if (e.kind == "economy" && e.detail == "day labour" && e.target == "idle")
+                    paid.by[e.actor] += e.coins;
+        }
+        const auto& m = w.society().state().memory;
+        const auto of = [](const std::map<std::string, double>& map, const char* id) { return map.count(id) ? map.at(id) : 0.; };
+        paid.asked = of(m.labourWeek, "treasury|asked");
+        paid.biteWest = of(m.biteLeft, "stores:west");
+        paid.biteCapital = of(m.biteLeft, "treasury");
+        paid.allowance = of(m.labourLeft, "treasury");
+        expect(w.society().resident("idle") && w.society().resident("idle")->task == Society::LabourTitle, "Idle labours for the Town Works");
+        expect(w.society().conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return paid;
+    };
+    const auto bite = paidBy(0, false, 0, 10000, 0), noBite = paidBy(Society::HoldingsBite, false, 0, 10000, 0);
+    expect(bite.by.count("stores:west") && !bite.by.count("treasury") && bite.biteWest < 10000 &&
+               std::abs(10000 - bite.biteWest - double(bite.by.at("stores:west"))) < 1,
+           "Its allowances spent, west's day labour from its holdings tax (" + std::to_string(bite.biteWest) + "p left)");
+    expect(noBite.by.empty(), "and without the rule nobody pays it");
+    const auto shut = paidBy(0, true, 0, 0, 0), open = paidBy(0, true, 1e6, 0, 0), fromBite = paidBy(0, true, 0, 0, 10000),
+               before = paidBy(Society::CapitalByIncome, true, 0, 0, 0);
+    expect(open.by.count("treasury") && open.by.size() == 1 && open.allowance < 1e6 && open.asked > 0,
+           "The capital pays its own day labour inside its allowance, and counts the ask (" + std::to_string(open.asked) + "p)");
+    expect(shut.by.empty() && shut.asked > 0, "with its allowance spent, nobody pays it, the ask counted");
+    expect(fromBite.by.count("treasury") && fromBite.biteCapital < 10000, "past it, from the capital's holdings tax");
+    expect(before.by.count("treasury") && before.asked == 0, "without the rule, paid whatever its allowance");
     Society::setWorkByHours(false);
 }
 
@@ -4065,6 +4137,7 @@ int main()
         aTownsCaravanKeepsToItsRoadMoney();
         theCapitalCarriesTheTownWorks();
         theTownPaysItsDayLabourFirst();
+        theDayLabourInsideTheBudgets();
         theChurchCares();
         townsWearAndAreMended();
         theMonitorWatches();

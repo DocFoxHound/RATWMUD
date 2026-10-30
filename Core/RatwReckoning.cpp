@@ -159,7 +159,9 @@ void Society::reckon(std::int64_t day, bool force)
                 // target, less as it holds more, none at twice: a trading town's tax eases to nothing (TaxEase), so the
                 // tax alone can't bring its surplus to the realm. Never below its target by the surplus part, nor more
                 // than it holds.
-                const double cash = double(account(treasury)->cash), target = townTaxTarget(treasury);
+                // (Its holdings tax not yet spent back left out: the town's to spend, at its week, on its works. Round 12,
+                // lane B, HoldingsBite: so the bite isn't sent to the capital, nor rebated, nor saved.)
+                const double cash = std::max(0., double(account(treasury)->cash) - biteHeld(treasury)), target = townTaxTarget(treasury);
                 const double held = target >= 1 ? std::min(cash, townHeldMean(treasury) > 0 ? townHeldMean(treasury) : cash) : 0;
                 const double wealth = target >= 1 ? std::clamp(held / target, 0., ShareTownMost) : 1.;
                 const double want = std::clamp(2 - capitalHeld, ShareCapitalLeast, ShareCapitalMost);

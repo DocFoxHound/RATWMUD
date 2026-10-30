@@ -1098,7 +1098,8 @@ Value economyMemory(const EconomyMemory& m)
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
              {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed},
              {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek},
-             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}, {"labourLeft", &m.labourLeft}})
+             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}, {"labourLeft", &m.labourLeft},
+             {"biteLeft", &m.biteLeft}})
     {
         auto map = Value::object();
         for (const auto& [key, v] : *field)
@@ -1308,7 +1309,8 @@ EconomyMemory readEconomyMemory(const Value& o)
              {"reliefLeft", &m.reliefLeft}, {"reliefWeek", &m.reliefWeek}, {"wagesWeek", &m.wagesWeek},
              {"fundsLeft", &m.fundsLeft}, {"fundsWeek", &m.fundsWeek}, {"caravanWeek", &m.caravanWeek}, {"postsOwed", &m.postsOwed},
              {"townTax", &m.townTax}, {"heldMean", &m.heldMean}, {"taxBase", &m.taxBase}, {"roadLeft", &m.roadLeft}, {"roadWeek", &m.roadWeek},
-             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}, {"labourLeft", &m.labourLeft}})
+             {"spendLeft", &m.spendLeft}, {"spendWeek", &m.spendWeek}, {"labourWeek", &m.labourWeek}, {"labourLeft", &m.labourLeft},
+             {"biteLeft", &m.biteLeft}})
         for (const auto& [key, v] : o.object(name).fields())
             // (A town's income can fall below nothing, its caravans' road money out before their takings come home:
             // round 8; and its caravans' week, round 9. Read as saved, or a reload would count the takings without the
