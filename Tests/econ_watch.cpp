@@ -456,7 +456,7 @@ int main(int argc, char** argv)
     std::set<std::string> stopOn;                   // --stop-on-sentinel (round 10, lane 0).
     bool traceHunger = false;                       // --trace-hunger (round 10, lane C).
     int sentinelWeeks = 4;                          // --sentinel-weeks.
-    std::uint64_t rulesOff = 0, rulesOn = 0;             // --without, --with (Society::wageRulesOff).
+    std::uint64_t rulesOff = 0, rulesOn = 0, rulesOff2 = 0; // --without, --with (Society::wageRulesOff, wageRules2Off).
     fs::path modelShares = fs::path(RATW_SOURCE_DIR) / "tools" / "econ_model" / "model_shares.csv";
     for (int i = 4; i < argc; ++i)
         if (std::string(argv[i]) == "--from" && i + 1 < argc)
@@ -575,10 +575,12 @@ int main(int argc, char** argv)
                 }
             }
             Society::wageRulesOff(rulesOff, rulesOn);
+            Society::wageRules2Off(rulesOff2);
         }
         else if (std::string(argv[i]) == "--without" && i + 1 < argc)
         {
             std::uint64_t& off = rulesOff;
+            [[maybe_unused]] std::uint64_t& off2 = rulesOff2; // The second word's (Society::WageRule2): off2 |= ...
             for (std::stringstream list(argv[++i]); list.good();)
             {
                 std::string name;
@@ -716,6 +718,7 @@ int main(int argc, char** argv)
                 }
             }
             Society::wageRulesOff(off, rulesOn);
+            Society::wageRules2Off(rulesOff2);
         }
         else if (std::string(argv[i]) == "--hold-pace" && i + 1 < argc)
         {

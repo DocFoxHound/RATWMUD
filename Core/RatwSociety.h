@@ -1415,6 +1415,12 @@ class Society
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
+    // The rules' second word (the user, 2026-10-30: round 17 on): WageRule's 64 bits are all taken, so the next rules are
+    // WageRule2's, each its own bit from 1ull << 0, checked with the same wageRule() (an overload: each word its own enum,
+    // so a rule can't be read in the other's) and gated by workByHours() as the first word's are. None is opt-in.
+    enum WageRule2 : std::uint64_t
+    {
+    };
     // The rules that are off unless asked (econ_watch --with): a town's crew abroad (round 9, off since round 10: the user,
     // 2026-10-27), its caravans' road money from its week's budget (round 10, dropped by the user, 2026-10-27) and its own
     // posts kept to its tax (round 10, dropped by the user, 2026-10-28).
@@ -1424,8 +1430,12 @@ class Society
     {
         wageRulesOff_ = off & ~OptInRules;
         wageRulesOn_ = on & OptInRules;
+        wageRules2Off_ = 0;
     }
     static bool wageRule(WageRule rule) { return (rule & OptInRules) ? (wageRulesOn_ & rule) != 0 : (wageRulesOff_ & rule) == 0; }
+    // The second word's rules left out (econ_watch --without), after wageRulesOff(), which puts them all back.
+    static void wageRules2Off(std::uint64_t off) { wageRules2Off_ = off; }
+    static bool wageRule(WageRule2 rule) { return (wageRules2Off_ & rule) == 0; }
     std::string employerTownOf(const std::string& key) const
     {
         const auto found = employerTown_.find(key);
@@ -2352,7 +2362,7 @@ class Society
     std::unordered_map<std::string, int> vacancies_, hands_;
     static inline bool noteShorts_ = false;
     static inline int unseenStep_ = UnseenStep;
-    static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0;
+    static inline std::uint64_t wageRulesOff_ = 0, wageRulesOn_ = 0, wageRules2Off_ = 0;
     mutable std::vector<ShortNote> shorts_;
     static inline bool noteTowns_ = false;
     mutable std::map<std::string, std::int64_t> labourCarried_, rebated_, holdingsTaxed_, sharesSent_, labourOwn_, biteSpent_;
