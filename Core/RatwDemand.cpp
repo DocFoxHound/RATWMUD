@@ -494,6 +494,41 @@ std::int64_t Society::cheapestFood(const std::string& seller)
     return least;
 }
 
+bool Society::kitchen(const std::string& keeper)
+{
+    // (Round 13, lane 3, KitchenKept: a food shop that makes or supplies a food, with a till of its own. Asked each second
+    // of the shops whose keepers are away, so worked out once a day a keeper; on the main thread only.)
+    if (kitchensDay_ != state_.budgetDay)
+    {
+        kitchens_.clear();
+        kitchensDay_ = state_.budgetDay;
+    }
+    if (const auto found = kitchens_.find(keeper); found != kitchens_.end())
+        return found->second;
+    return kitchens_.emplace(keeper, foodShop(keeper) && !smith(keeper) && !foodMade(keeper).empty() && tillOf(keeper) != keeper).first->second;
+}
+
+std::string Society::counterFood(const std::string& keeper, std::int64_t purse, std::int64_t* price)
+{
+    // (Round 13, lane 3, KitchenKept: what a hungry keeper buys at its own counter. Of what its till holds that it sells,
+    // the most nourishment for the money that its purse pays; of equals, the first by name. Its own price, as anyone pays:
+    // worked out on first asking, so not on the threads.)
+    const auto* shelves = account(tillOf(keeper));
+    std::string best;
+    std::int64_t bestPrice = 0;
+    if (!shelves)
+        return best;
+    const auto sold = wares(keeper);
+    for (const auto& [item, n] : shelves->stock)
+        if (n > 0 && sellsFood(keeper, item, sold))
+            if (const auto asked = shopPrice(keeper, item); asked >= 1 && asked <= purse &&
+                (best.empty() || double(nourishment(item)) / double(asked) > double(nourishment(best)) / double(bestPrice)))
+                best = item, bestPrice = asked;
+    if (price)
+        *price = bestPrice;
+    return best;
+}
+
 int Society::buyFood(const std::string& resident, const std::string& seller, bool stocking, int* under)
 {
     const auto till = tillOf(seller);
@@ -646,12 +681,36 @@ void Society::layInTheFeast(std::int64_t day)
     // meals for the feast, so those without a larder went from the morning to the next without a meal.) Every
     // festival's, as the feast is every festival's; a festival a player or the DM calls isn't the calendar's, and isn't
     // laid in for.
-    if (!workByHours() || !wageRule(FeastLaidIn) || !calendar::festivalDay(double(day) + .5))
+    if (!workByHours() || !wageRule(FeastLaidIn))
         return;
+    // Bought ahead (round 13, lane 3, the user, 2026-10-29: FeastAhead). At the turn, after the eve's sales, the shops
+    // held what was left: the capital bought 1,006 pieces at the two-year run's first festival, 167 at its eighth, and
+    // none (feeding 35) on the day the start's other run went hungry (161 hungry, 121 starving, days 321-328). Now, a
+    // festival k days ahead (up to FeastAheadDays), each town's stores buy toward (FeastAheadDays + 1 - k) /
+    // (FeastAheadDays + 1) of the feast's want, less what they hold (they don't spoil: spoil() passes the stores over),
+    // only from what a food shop holds over its shelf target (shelfTarget at ProducerKept, as Markdowns reckons the
+    // glut: never its customers' shelf), never meals (a meal shop restocks its meals from the stores at wholesale: they'd
+    // go straight back out), the most nourishment for the money first. They are the shops' sales (soldToday_), so the
+    // makers' rates and shelf targets rise with the week. Each town from its own shops, as at the turn. And every
+    // transfer is of 99 pieces at most (transfer refuses more: a shop holding 200 or more of a food sold the turn's
+    // feast nothing of it).
+    const bool ahead = wageRule(FeastAhead);
+    int k = 0;                                      // The days to the festival: 0, its turn.
+    if (!calendar::festivalDay(double(day) + .5))
+    {
+        for (int d = 1; ahead && d <= FeastAheadDays && k == 0; ++d)
+            if (calendar::festivalDay(double(day + d) + .5))
+                k = d;
+        if (k == 0)
+            return;
+    }
     std::map<std::string, int> wanted;              // By the stores: the nourishment the feast wants.
     for (const auto& [id, life] : state_.residents)
         if (!life.homeCell.empty())
             wanted[storeFor(life.homeCell)] += 50;
+    if (k > 0)
+        for (auto& [store, want] : wanted)
+            want = want * (FeastAheadDays + 1 - k) / (FeastAheadDays + 1);   // (Its share by today: 1/8 a week ahead.)
     struct Piece
     {
         std::string seller, till, item;
@@ -660,6 +719,7 @@ void Society::layInTheFeast(std::int64_t day)
         bool meal = false;
     };
     std::map<std::string, std::vector<Piece>> pieces;   // By the stores: what their towns' food shops hold.
+    std::set<std::string> listed;                   // (Ahead: a House's till, serving several shops, counted once.)
     for (const auto& r : authored_.residents)
     {
         if (r.role != "merchant" || !state_.residents.count(r.id) || !foodShop(r.id) || smith(r.id))
@@ -671,9 +731,34 @@ void Society::layInTheFeast(std::int64_t day)
             continue;
         const auto sold = wares(r.id);
         auto& list = pieces[storeFor(job->work.cell)];
+        if (k == 0)
+        {
+            for (const auto& [item, n] : shelves->stock)
+                if (const auto* good = n > 1 && sellsFood(r.id, item, sold) ? items::good(item) : nullptr; good && good->nourish > 0)
+                    list.push_back({r.id, till, item, shopPrice(r.id, item), good->nourish, n / 2, items::baseOf(item) == "meal"});
+            continue;
+        }
+        if (!listed.insert(till).second)
+            continue;
+        std::set<std::string> foods;                // (Each food by its common sort: its shelf target is the good's.)
         for (const auto& [item, n] : shelves->stock)
-            if (const auto* good = n > 1 && sellsFood(r.id, item, sold) ? items::good(item) : nullptr; good && good->nourish > 0)
-                list.push_back({r.id, till, item, shopPrice(r.id, item), good->nourish, n / 2, items::baseOf(item) == "meal"});
+            if (n > 0 && items::baseOf(item) != "meal" && sellsFood(r.id, item, sold))
+                foods.insert(items::baseOf(item));
+        for (const auto& base : foods)
+        {
+            int over = stockAll(*shelves, base) - shelfTarget(till, base, ProducerKept);
+            for (const auto& sort : kindsHeld(*shelves, base))   // (The plainest first.)
+            {
+                if (over <= 0)
+                    break;
+                const auto* good = items::good(sort);
+                if (!good || good->drink || good->nourish <= 0)
+                    continue;
+                const int n = std::min(over, stock(*shelves, sort));
+                list.push_back({r.id, till, sort, shopPrice(r.id, sort), good->nourish, n, false});
+                over -= n;
+            }
+        }
     }
     for (auto& [store, want] : wanted)
     {
@@ -686,19 +771,37 @@ void Society::layInTheFeast(std::int64_t day)
                 want -= n * good->nourish;
         auto& list = found->second;
         // Meals first (the feast's), then what feeds most for the money; of equals, by the shop's keeper and the item.
-        std::stable_sort(list.begin(), list.end(), [](const Piece& a, const Piece& b) {
-            if (a.meal != b.meal)
-                return a.meal;
-            return double(a.nourish) / double(a.price) > double(b.nourish) / double(b.price);
-        });
+        // (Ahead, no meals: by the money, then the keeper and the item, whatever order the residents are in.)
+        if (k == 0)
+            std::stable_sort(list.begin(), list.end(), [](const Piece& a, const Piece& b) {
+                if (a.meal != b.meal)
+                    return a.meal;
+                return double(a.nourish) / double(a.price) > double(b.nourish) / double(b.price);
+            });
+        else
+            std::stable_sort(list.begin(), list.end(), [](const Piece& a, const Piece& b) {
+                const double x = double(a.nourish) / double(a.price), y = double(b.nourish) / double(b.price);
+                return x != y ? x > y : a.seller != b.seller ? a.seller < b.seller : a.item < b.item;
+            });
         for (const auto& p : list)
         {
             if (want <= 0)
                 break;
             const auto cash = account(store)->cash;
-            const int n = int(std::min<std::int64_t>({std::int64_t(p.left), std::int64_t((want + p.nourish - 1) / p.nourish), cash / p.price}));
-            if (n > 0 && transfer(p.till, store, p.item, n, p.price, "bought for the festival feast"))
-                want -= n * p.nourish;
+            int n = int(std::min<std::int64_t>({std::int64_t(p.left), std::int64_t((want + p.nourish - 1) / p.nourish), cash / p.price}));
+            if (!ahead)
+            {
+                if (n > 0 && transfer(p.till, store, p.item, n, p.price, "bought for the festival feast"))
+                    want -= n * p.nourish;
+                continue;
+            }
+            for (int part = 0; n > 0; n -= part)    // (In 99s: transfer's most.)
+            {
+                part = std::min(n, 99);
+                if (!transfer(p.till, store, p.item, part, p.price, "bought for the festival feast"))
+                    break;
+                want -= part * p.nourish;
+            }
         }
     }
 }

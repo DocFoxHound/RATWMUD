@@ -525,6 +525,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 atStall_.insert(holder);
         }
     }
+    // A food maker's kitchen kept going with its keeper hungry or away (round 13, lane 3: KitchenKept; Society::kitchen).
+    const bool kitchenKept = workByHours() && wageRule(KitchenKept);
     // Each town's food shops open for trade with nothing left to eat (in ID order), that make or supply a food: where a
     // hungry wolf that finds no food in its town counts the meal it wanted (doc 64, Phase 13: Society::missedMeal; not a
     // brewery, whose meal nobody makes). With work by the hours: at the seconds' pace, as it was.
@@ -991,6 +993,31 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                                 hour >= visit() && hour < visit() + 1;
         c.routeGoal = false;
         c.arrivedHome = false;
+        // Round 13, lane 3 (the user, 2026-10-29: KitchenKept, with work by the hours): a kitchen's keeper (a food maker's,
+        // its till its own: Society::kitchen) on duty, hungry and with nothing on it, keeps its kitchen going. Its till
+        // holding a food it sells that its purse pays for, it eats at its own counter (bought in the trade, below); its
+        // shelf bare but a food batch ready to begin (foodBatchReady), it bakes first, short of BakeFirstBelow. Before, it
+        // went off to eat elsewhere (it can't buy at its own shop: buysAt passes it over), or slept hungry, and with it its
+        // shop shut and its bakes: Ridgemere's bakers at hunger 92-95 with 300-400p, three of four bakeries cold for five
+        // days, the city's bread 480-786 a day down to 30-222. (Its prices and its kitchen worked out on first asking, so
+        // in its turn: only a hungry food keeper's.)
+        std::string counter;
+        bool bakeFirst = false;
+        if (kitchenKept && merchantRole && managed && onHours && hunger >= 55 && !carriesFood && foodShop(id))
+        {
+            if (atOnce)
+                throw DecideInTurn{};
+            if (kitchen(id))
+            {
+                counter = counterFood(id, spendable(id));
+                const auto* shelves = account(tillOf(id));
+                const auto sold = wares(id);
+                const bool onShelf = shelves && std::any_of(shelves->stock.begin(), shelves->stock.end(), [&](const auto& s) {
+                                         return s.second > 0 && sellsFood(id, s.first, sold);
+                                     });
+                bakeFirst = counter.empty() && !onShelf && hunger < BakeFirstBelow && foodBatchReady(id, absoluteDay);
+            }
+        }
         if (!life.relocationCell.empty())
         {
             task = "relocate";
@@ -1008,6 +1035,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const bool continuing = life.task == "eat"sv && life.goalCell == body.cell;
             goal = {body.cell, continuing ? life.goalX : body.x, continuing ? life.goalY : body.y};
             reason = "Hungry; carrying something to eat.";
+        }
+        else if (!counter.empty() || bakeFirst)
+        {
+            // (KitchenKept, above: at its trade, its shop open, the piece bought there and eaten once hunger is 60.)
+            task = "trade";
+            goal = tradingAt(*job, id);
+            reason = bakeFirst ? "Hungry; baking first" : "Hungry; eating at its own counter";
         }
         else if ((!merchantRole || managed) && hunger >= 55 && !carriesFood && larderHasFood)
         {
@@ -1661,6 +1695,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (task == "trade"sv)
         {
             const auto sold = wares(pair.first);
+            // A kitchen's keeper hungry and with nothing on it (round 13, lane 3: KitchenKept) buys a piece at its own
+            // counter, the most nourishment for its money, purse to till at its price: a sale, as anyone's, that its shelf
+            // target sees. It eats it at 60 (the "eat" above), its shop open the while.
+            if (kitchenKept && life.hunger >= 55 && !hasFood(wallet) && kitchen(pair.first))
+            {
+                std::int64_t price = 0;
+                if (const auto food = counterFood(pair.first, spendable(pair.first), &price); !food.empty())
+                    transfer(tillOf(pair.first), pair.first, food, 1, price, "bought at its own counter");
+            }
             // The shop's own goods (doc 35, Phase 5): a batch of whatever has run low, made from materials. A shop
             // that makes nothing yet sells what it has.
             craft(pair.first, job->work.cell, absoluteDay);
@@ -1690,5 +1733,22 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 transfer(storeId, till, "herbs", herbs, herbsAt, "wholesale restock");
         }
     }
+    // The hands bake while the keeper is away (round 13, lane 3: KitchenKept; the user, 2026-10-29). A kitchen's batch
+    // began only in its keeper's trade, so a keeper off eating, asleep or ill left its hands' hours piling to the bank's
+    // cap and lost: the Sugar Loaf was credited 16 to 24 hand-spells a day and lost 17 to 24 hours of them with its bank
+    // full, selling nothing for three days. Now each second, after everyone's turn, a kitchen whose keeper wasn't keeping
+    // it as the second began crafts from its work in hand (Society::craft's byHands: a batch finished, the day's
+    // materials laid in, the next batch begun from the hands' hours, at craft's own pace; none of the keeper's time). Its
+    // shop is open only with its keeper: the food waits on its shelf.
+    if (kitchenKept)
+        for (const auto& k : keepers)
+            if (!k.keeping)
+            {
+                const auto& holder = *k.holder;
+                if (const auto next = craftNext_.find(holder); next != craftNext_.end() && absoluteDay < next->second)
+                    continue;                       // (Not yet its next look: craft's own pace.)
+                if (kitchen(holder))
+                    craft(holder, k.position->work.cell, absoluteDay, true);
+            }
 }
 } // namespace ratw

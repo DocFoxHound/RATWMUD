@@ -6737,6 +6737,324 @@ void aFarShopIsTheNearest()
     Society::setWorkByHours(false);
 }
 
+// The kitchens (doc 64, Phase 13, round 13, lane 3: KitchenKept; the user, 2026-10-29). folkTown with its baker hungry
+// on duty at hunger `hunger`: nothing on it, no larder, its purse 100p, its till's food only `bread` loaves (none of
+// its cakes or meals, and none in the stores to restock its meals from), the general store open with bread of its own;
+// the calibrated hours. Hand: a hand at the bakery's bench too, paid by its till.
+Society hungryBakery(double hunger, int bread, bool hand = false)
+{
+    AuthoredRoster roster;
+    auto wren = person("wren", "weaving at home", {"homes", 3.5, 2.5}, "civilian");
+    auto ash = person("ash", "weaving at home", {"homes", 4.5, 2.5}, "civilian");
+    wren.meals = ash.meals = 0;
+    wren.purse = 60;
+    auto baker = person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5});
+    auto keeper = person("keeper", "shopkeeper at the general store", {"store", 2.5, 2.5});
+    baker.home = {"bakers_flat", 2.5, 2.5};
+    keeper.home = {"store_flat", 2.5, 2.5};
+    baker.meals = keeper.meals = 0;
+    roster.residents = {baker, keeper, wren, ash};
+    if (hand)
+    {
+        auto help = person("hand", "helping out", {"bakery", 3.5, 2.5}, "civilian");
+        help.home = {"cottage", 2.5, 2.5};
+        help.meals = 0;
+        roster.residents.push_back(help);
+    }
+    roster.economy.treasury = 5000;
+    Society s(Roster::None);
+    s.configure(roster);
+    auto state = s.state();
+    state.memory.pace = 1;
+    state.residents.at("baker").hunger = hunger;
+    auto& shelves = state.accounts.at(s.tillOf("baker")).stock;
+    for (auto it = shelves.begin(); it != shelves.end();)
+        it = Society::edible(it->first) ? shelves.erase(it) : std::next(it);
+    shelves["meal"] = 0;
+    if (bread > 0)
+        shelves["bread"] = bread;
+    state.accounts.at(s.tillOf("keeper")).stock["bread"] = 20;
+    state.accounts.at("treasury").stock.clear();    // (No meals in the stores for its counter's wholesale restock.)
+    auto& purse = state.accounts.at("baker");
+    for (auto it = purse.stock.begin(); it != purse.stock.end();)
+        it = Society::edible(it->first) ? purse.stock.erase(it) : std::next(it);
+    state.accounts.at("treasury").cash += purse.cash - 100;
+    purse.cash = 100;
+    expect(s.restore(state), "the hungry bakery restores");
+    expect(s.tillOf("baker") != "baker", "the bakery has a till of its own");
+    return s;
+}
+
+// A hungry baker eats at its own counter (KitchenKept), with work by the hours: on duty at hunger 60, its larder bare,
+// its till holding bread and its purse 100p, it stays at its trade and buys a loaf from its own till ("bought at its own
+// counter": its purse down by the price, its till up by it, the money conserved), eats it, and its shop is open the
+// while (wren, hungry, comes to its counter and buys there). Without the rule it goes to buy food at the general store.
+void aHungryBakerEatsAtItsCounter()
+{
+    Society::setWorkByHours(true);
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::KitchenKept);
+        auto s = hungryBakery(60, 40);
+        const auto till = s.tillOf("baker");
+        auto bodies = atWork(s);                    // (The baker at its counter, the keeper at its store.)
+        double day = 10. / 24;
+        s.tick(1, day, 0, bodies);                  // (The day's turn.)
+        const auto purse = s.account("baker")->cash;
+        s.takeJournal();
+        std::set<std::string> tasks;
+        bool ate = false;
+        for (int i = 0; i < 120 && !ate; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            const auto* life = s.resident("baker");
+            tasks.insert(life->task);
+            ate = life->hunger < 55;
+        }
+        const auto journal = s.takeJournal();
+        expect(s.conserved(), "money stays conserved");
+        if (!rule)
+        {
+            const auto* life = s.resident("baker");
+            expect(!ate && life->task == "buy food" && life->goalCell == "store",
+                   "without the rule, the hungry baker goes to buy food at the general store: " + life->task + " at " + life->goalCell);
+            continue;
+        }
+        int bought = 0;
+        std::int64_t paid = 0;
+        for (const auto& e : journal)
+            if (e.kind == "bought at its own counter")
+            {
+                expect(e.from == "baker" && e.to == till && items::baseOf(e.item) == "bread", "bought from its own till");
+                bought += e.quantity, paid += e.coins;
+            }
+        expect(bought == 1 && paid == s.shopPrice("baker", "bread"), "it buys one loaf at its own price: " + std::to_string(bought) +
+                                                                           " for " + std::to_string(paid) + "p");
+        expect(s.account("baker")->cash == purse - paid, "its purse down by the price");
+        expect(ate && tasks.count("trade") && tasks.count("eat") && !tasks.count("buy food"),
+               "it eats at its trade, never going off to buy food");
+        day += 1. / 86400;
+        s.tick(1, day, 0, bodies);
+        expect(s.resident("baker")->task == "trade", "and is back at its trade");
+        // Its shop open: wren, hungry at its counter, buys there.
+        auto state = s.state();
+        state.residents.at("wren").hunger = 70;
+        expect(s.restore(state), "hungry wren restores");
+        bodies["wren"] = {"bakery", 2.5, 2.5};
+        bool served = false;
+        for (int i = 0; i < 120 && !served; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            for (const auto& e : s.takeJournal())
+                served = served || (e.kind == "resident food purchase" && e.from == "wren" && e.to == till);
+        }
+        expect(served, "its shop stays open: wren buys at its counter");
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// A hungry baker bakes first (KitchenKept), with work by the hours: on duty at hunger 60 with its shelf bare, its flour
+// and firewood in its till and its work in hand over a batch of bread's hours, it stays at its trade ("Hungry; baking
+// first"); a minute on its bread is on the shelf, and it buys a loaf of it at its own counter. At hunger 85 it goes for
+// food as before (it can't wait itself to starve); without the rule it does at 60.
+void aHungryBakerBakesFirst()
+{
+    Society::setWorkByHours(true);
+    const auto* bread = items::craftsFor("bakery").front();
+    expect(bread->id == "bread", "the bakery's first craft is bread");
+    const auto run = [&](bool rule, double hunger, bool& baked, bool& bought) {
+        Society::wageRulesOff(rule ? 0 : Society::KitchenKept);
+        auto s = hungryBakery(hunger, 0);
+        const auto till = s.tillOf("baker");
+        expect(held(s, "baker", "flour") >= 1 && held(s, "baker", "firewood") >= 1, "its flour and firewood in");
+        auto bodies = atWork(s);
+        s.setWorkBanked(till, s.workHours(*bread) + .5);
+        double day = 10. / 24;
+        s.takeJournal();
+        for (int i = 0; i < 2; ++i, day += 1. / 86400)
+            s.tick(1, day, 0, bodies);              // (The day's turn, and its first decisions.)
+        const auto* life = s.resident("baker");
+        const std::string first = life->task + ": " + life->reason;
+        baked = bought = false;
+        for (int i = 0; i < 300 && !bought; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            for (const auto& e : s.takeJournal())
+            {
+                baked = baked || (e.kind == "crafted" && items::baseOf(e.item) == "bread" && e.to == till);
+                bought = bought || (e.kind == "bought at its own counter" && e.from == "baker");
+            }
+            if (!rule || hunger >= Society::BakeFirstBelow)
+                break;                              // (Only the first decision is asked of these.)
+        }
+        expect(s.conserved(), "money stays conserved");
+        return first;
+    };
+    bool baked = false, bought = false;
+    const auto with = run(true, 60, baked, bought);
+    expect(with == "trade: Hungry; baking first", "with the rule, its shelf bare and a batch ready, it bakes first: " + with);
+    expect(baked && bought, "its bread on the shelf a minute on, it buys a loaf at its counter");
+    const auto late = run(true, 85, baked, bought);
+    expect(late.rfind("buy food", 0) == 0, "at hunger 85 it goes for food: " + late);
+    const auto without = run(false, 60, baked, bought);
+    expect(without.rfind("buy food", 0) == 0, "without the rule, at 60 it goes for food: " + without);
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The hands bake without the keeper (KitchenKept), with work by the hours: the baker at home, not keeping its shop, its
+// bread gone, its flour in, its work in hand full (24 hours). With the rule a batch of bread begins from its hands' hours
+// and is on the shelf a minute on, its work in hand down by the batch's hours, none of the keeper's time counted (its
+// last time at work unchanged); its hand's next spell is put in hand, not lost. Without, no batch, and the hand's spell
+// is lost at the cap.
+void theHandsBakeWithoutTheKeeper()
+{
+    Society::setWorkByHours(true);
+    const auto* bread = items::craftsFor("bakery").front();
+    const double full = 24;                         // (Society::WorkBankedMost.)
+    for (const bool rule : {true, false})
+    {
+        Society::wageRulesOff(rule ? 0 : Society::KitchenKept);
+        auto s = hungryBakery(0, 0, true);
+        auto state = s.state();
+        state.accounts.at(s.tillOf("baker")).stock["honey_cake"] = 20;   // (Its cakes in: only its bread is low.)
+        expect(s.restore(state), "its cakes restore");
+        const auto till = s.tillOf("baker");
+        expect(s.payerOf("hand", *s.jobOf("hand"), 30).account == till, "the bakery pays its hand");
+        auto bodies = atWork(s);
+        bodies["baker"] = {"bakers_flat", 2.5, 2.5};   // (At home: its shop shut.)
+        s.setWorkBanked(till, full);
+        const double lastAtWork = s.lastAtWorkOf("baker");
+        double day = 10. / 24;
+        const auto lostSoFar = [&] {
+            const auto found = s.workBy().find(till);
+            return found == s.workBy().end() ? 0. : found->second.second;
+        };
+        const double lost = lostSoFar();
+        s.takeJournal();
+        int baked = 0;
+        for (int i = 0; i < 120; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+            for (const auto& e : s.takeJournal())
+                baked += e.kind == "crafted" && items::baseOf(e.item) == "bread" ? e.quantity : 0;
+        }
+        expect(s.resident("baker")->task == "trade" && s.resident("baker")->goalCell == "bakery", "the baker is on its way, not at its counter");
+        if (rule)
+        {
+            // (A batch a minute, to its shelf's store of bread: the first done, the next begun.)
+            const int batches = baked / bread->out.front().second + (s.batchAtWork("baker") ? 1 : 0);
+            expect(baked >= bread->out.front().second && baked % bread->out.front().second == 0,
+                   "a batch of bread begun from the hands' hours and finished: " + std::to_string(baked));
+            expect(std::abs(s.workBankedOf(till) - (full - batches * s.workHours(*bread))) < 1e-6,
+                   "its work in hand down by the batches' hours: " + std::to_string(s.workBankedOf(till)) + " for " + std::to_string(batches));
+            expect(s.lastAtWorkOf("baker") == lastAtWork, "none of the keeper's time counted");
+        }
+        else
+            expect(baked == 0 && !s.batchAtWork("baker") && s.workBankedOf(till) >= full - 1e-9, "without the rule, no batch, its work in hand full");
+        // The hand's next spell (one in an hour's work).
+        for (int i = 0; i < 3600; ++i)
+        {
+            day += 1. / 86400;
+            s.tick(1, day, 0, bodies);
+        }
+        if (rule)
+            expect(lostSoFar() == lost, "its hand's spell put in hand, none lost: " + std::to_string(lostSoFar() - lost));
+        else
+            expect(lostSoFar() >= lost + 1 - 1e-9, "without the rule, its hand's spell is lost at the cap: " + std::to_string(lostSoFar() - lost));
+        expect(s.conserved(), "money stays conserved");
+    }
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
+// The feast bought ahead (doc 64, Phase 13, round 13, lane 3: FeastAhead; the user, 2026-10-29), with work by the hours:
+// a baker holding 150 loaves against a shelf target of 40 and a general store 70 meals (30 over its 40), and sixty more
+// wolves at home (62 in all: the feast's want 3,100). Three days before the festival the stores buy toward five eighths
+// of the want: all 110 loaves over the baker's target, no meals, 99 at most a transfer; a week before, an eighth (26
+// loaves); holding bread already, toward the rest. At the turn, a baker holding 220 sells its half, 110, in two. Without
+// the rule nothing ahead, and at the turn the one transfer of 110 is refused.
+void theFeastIsBoughtAhead()
+{
+    Society::setWorkByHours(true);
+    std::int64_t festival = -1;
+    for (std::int64_t d = 10; d < 400 && festival < 0; ++d)
+        if (calendar::festivalDay(double(d) + .5))
+            festival = d;
+    for (std::int64_t d = festival - Society::FeastAheadDays; d < festival; ++d)
+        expect(!calendar::festivalDay(double(d) + .5), "no festival in the week before");
+    // Bread and meals bought for the feast, its transfers and the most in one.
+    struct Bought
+    {
+        int bread = 0, meals = 0, transfers = 0, most = 0;
+    };
+    const auto run = [&](bool rule, std::int64_t day, int bread, int meals, int stored) {
+        Society::wageRulesOff(rule ? 0 : Society::FeastAhead);
+        AuthoredRoster roster;
+        auto baker = person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5});
+        auto keeper = person("keeper", "shopkeeper at the general store", {"store", 2.5, 2.5});
+        baker.home = {"bakers_flat", 2.5, 2.5};
+        keeper.home = {"store_flat", 2.5, 2.5};
+        roster.residents = {baker, keeper};
+        for (int i = 0; i < 60; ++i)
+        {
+            auto w = person("w" + std::to_string(100 + i), "weaving at home", {"homes", 2.5, 2.5}, "civilian");
+            w.meals = 0;
+            roster.residents.push_back(w);
+        }
+        roster.economy.treasury = 50000;
+        Society s(Roster::None);
+        s.configure(roster);
+        auto state = s.state();
+        state.accounts.at("treasury").stock.clear();
+        if (stored > 0)
+            state.accounts.at("treasury").stock["bread"] = stored;
+        state.accounts.at(s.tillOf("baker")).stock["bread"] = bread;
+        state.accounts.at(s.tillOf("keeper")).stock["meal"] = meals;
+        expect(s.restore(state), "the feast's town restores");
+        expect(s.shelfTarget(s.tillOf("baker"), "bread", Society::ProducerKept) == 40 &&
+                   s.shelfTarget(s.tillOf("keeper"), "meal", Society::ProducerKept) == 40,
+               "the shelf targets are 40");
+        s.takeJournal();
+        s.layInTheFeast(day);
+        Bought b;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "bought for the festival feast")
+            {
+                b.meals += items::baseOf(e.item) == "meal" ? e.quantity : 0;
+                if (items::baseOf(e.item) == "bread")
+                    b.bread += e.quantity, ++b.transfers;
+                b.most = std::max(b.most, e.quantity);
+            }
+        expect(s.conserved(), "money stays conserved");
+        return b;
+    };
+    // Three days ahead: 3,100 x 5/8 = 1,937, more than the 110 loaves over target (1,650).
+    const auto three = run(true, festival - 3, 150, 70, 0);
+    expect(three.bread == 110 && three.meals == 0 && three.most <= 99 && three.transfers == 2,
+           "three days ahead the stores buy the 110 loaves over target, no meals, in 99s: " + std::to_string(three.bread) + " in " +
+               std::to_string(three.transfers) + ", " + std::to_string(three.meals) + " meals");
+    const auto week = run(true, festival - 7, 150, 70, 0);
+    expect(week.bread == 26 && week.meals == 0, "a week ahead, an eighth of the want (387): " + std::to_string(week.bread) + " loaves");
+    const auto held = run(true, festival - 3, 150, 70, 100);
+    expect(held.bread == 30, "holding 100 loaves, toward the rest (437): " + std::to_string(held.bread) + " loaves");
+    const auto turn = run(true, festival, 220, 0, 0);
+    expect(turn.bread == 110 && turn.transfers == 2 && turn.most <= 99,
+           "at the turn, a baker holding 220 sells its half in two: " + std::to_string(turn.bread) + " in " + std::to_string(turn.transfers));
+    const auto before = run(false, festival - 3, 150, 70, 0);
+    expect(before.bread == 0 && before.meals == 0, "without the rule nothing is bought ahead");
+    const auto refused = run(false, festival, 220, 0, 0);
+    expect(refused.bread == 0, "and at the turn the one transfer of 110 is refused: " + std::to_string(refused.bread));
+    Society::wageRulesOff(0);
+    Society::setWorkByHours(false);
+}
+
 // Markdowns (doc 64, Phase 13, round 11, lane 3; the user, 2026-10-29: "Shops should mark down what sits over their
 // shelf target for more than a day."), with work by the hours: the baker's bread piled over its shelf target keeps its
 // price its first day over, then comes down a step (MarkdownStep) a day, never below MarkdownFloor of its normal cost;
@@ -6891,6 +7209,10 @@ int main()
         aHungryWolfBuysAtItsPrice();
         aFestivalsFeastLaidIn();
         aFarShopIsTheNearest();
+        aHungryBakerEatsAtItsCounter();
+        aHungryBakerBakesFirst();
+        theHandsBakeWithoutTheKeeper();
+        theFeastIsBoughtAhead();
         aGlutIsMarkedDown();
         aHouseSpendsInsideItsWeek();
         theChurchsAlmsInsideItsRelief();

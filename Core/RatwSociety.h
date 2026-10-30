@@ -1336,6 +1336,8 @@ class Society
         ShelfOrders = 1ull << 43,                    // A town's food orders by its shelves and its hungry, from the nearest (round 12, C).
         HoldingsBite = 1ull << 41,                   // The holdings tax graduated over its target, spent back in its town (round 12, B).
         CapitalByIncome = 1ull << 42,                // The capital's week kept to its income, over a reserve floor (round 12, B).
+        KitchenKept = 1ull << 48,                    // A food maker's kitchen runs with its keeper hungry or away (round 13, 3).
+        FeastAhead = 1ull << 49,                     // A festival's feast bought in the week ahead, from what shops hold over (round 13, 3).
         Markdowns = 1ull << 34,                      // What a seller holds over its shelf target a day marked down (round 11, 3).
         FoodByNeed = 1ull << 35                      // A town short of food sends for its people's week, not a dozen a shop (round 11, 3).
     };
@@ -1361,9 +1363,61 @@ class Society
         return found == workBanked_.end() ? 0. : found->second;
     }
 
+    // (Tests': a till's hours in hand set as its hands' spells would leave them; when a keeper's own time at work was last
+    // counted, -1 for never; whether a batch is at work for it.)
+    void setWorkBanked(const std::string& account, double hours) { workBanked_[account] = std::clamp(hours, 0., WorkBankedMost); }
+    double lastAtWorkOf(const std::string& keeper) const
+    {
+        const auto found = lastAtWork_.find(keeper);
+        return found == lastAtWork_.end() ? -1. : found->second;
+    }
+    bool batchAtWork(const std::string& keeper) const { return craftAtWork_.count(keeper) > 0; }
+    // Round 13, lane 3 (the user, 2026-10-29: KitchenKept, with work by the hours): a food maker's kitchen kept running
+    // when its keeper is hungry or away. Ridgemere's hunger spikes (days 469-473 of the two-year run, 119 hungry, 27
+    // starving) came with flour and firewood in town, the church holding 166-231k and 97% of the hungry holding the price
+    // of the cheapest food: three of its four bakeries baked nothing for five days, their work in hand full, because a
+    // batch starts only in craft(), craft() only in its keeper's trade, and a hungry keeper (it can't buy at its own shop)
+    // went off to eat, or slept at hunger 92-95 holding 300-400p. A kitchen: a food shop (foodShop) that makes or supplies
+    // a food (foodMade) and has a till of its own (tillOf: not a keeper whose purse is the till, which eats its own stock
+    // as before). Worked out once a day a keeper (kitchens_), on the main thread.
+    //  - It eats at its own counter: on duty, hunger 55 or more and nothing on it, its till holding a food it sells that
+    //    its purse pays for, it stays at its trade and buys one piece (counterFood: the most nourishment for the money),
+    //    purse to till at the shop's price, a sale like any other ("bought at its own counter").
+    //  - It bakes first: hunger from 55 to under BakeFirstBelow, nothing it sells on its shelf, but a food batch it could
+    //    start now (foodBatchReady), it stays at its trade; the batch is on the shelf a minute on, and it eats at its
+    //    counter. From BakeFirstBelow, or with no batch ready, it goes for food as before: it can't wait itself to starve.
+    //  - The hands bake while it is away: each second, after the residents' turns, a kitchen whose keeper isn't keeping
+    //    it crafts from its work in hand (craft's byHands: no keeper's time counted or credited, no yield, no supplier's
+    //    restock); the shop opens only with its keeper, the food waiting on its shelf till then.
+    static constexpr double BakeFirstBelow = 80;
+    bool kitchen(const std::string& keeper);
+    std::string counterFood(const std::string& keeper, std::int64_t purse, std::int64_t* price = nullptr);
+    // Whether a kitchen's next batch, as craft() would choose it (in its order, the first whose good is under its shelf
+    // target and whose materials its till holds), is a food its work in hand covers now; or the batch at work is a food,
+    // on the shelf at its next look. Only with that look due within a quarter hour. Only reads: asked from the
+    // residents' decisions.
+    bool foodBatchReady(const std::string& keeper, double absoluteDay) const;
+    // Round 13, lane 3 (FeastAhead, with FeastLaidIn): a festival's feast bought over the FeastAheadDays before it (k days
+    // ahead, (FeastAheadDays + 1 - k) / (FeastAheadDays + 1) of the feast's want, less what the stores hold), from what
+    // each food shop holds over its shelf target (what Markdowns would mark down), never meals (a meal shop restocks from
+    // the stores at wholesale: they'd go back out); at the turn, as before. Every transfer 99 pieces at most.
+    static constexpr int FeastAheadDays = 7;
+
   private:
     int season_ = 0;                                // The season of the latest decision (0 spring .. 3 winter).
-    void craft(const std::string& id, const std::string& workCell, double absoluteDay);
+    // A shop's batch (RatwCrafting.cpp). `byHands` (KitchenKept): its hands' work in hand alone, its keeper away: no time
+    // of the keeper's counted, credited or brought in, no supplier's restock; a batch finished, the day's materials laid
+    // in and the next batch begun from the work in hand, as with the keeper.
+    void craft(const std::string& id, const std::string& workCell, double absoluteDay, bool byHands = false);
+    // craft()'s parts, read by foodBatchReady too: what a shop keeps fresh of a material it also sells (preserving), whether
+    // its till holds a batch's materials, its crafts in the order it looks at them (what sells fastest first), and the
+    // store of a craft's first good it keeps on its shelf.
+    static int freshKept(const items::Business* business, const items::Craft& k, const std::string& item);
+    bool batchHas(const std::string& till, const items::Business* business, const items::Craft& k) const;
+    std::vector<const items::Craft*> craftOrder(const std::string& till, const items::Business* business) const;
+    int craftKept(const std::string& id, const std::string& till, const items::Craft& k, const std::vector<std::string>& supplies) const;
+    std::unordered_map<std::string, bool> kitchens_;   // Keeper -> a kitchen (kitchen()), on kitchensDay_. Not saved.
+    std::int64_t kitchensDay_ = -1;
     // Buys up to `wanted` of an item for `id`: in its own community at the price, then from anywhere, carted in.
     // A supplier restocking (`forSupplier`) buys from workshops and producers, never from another supplier. Without
     // `credit`, only with what its till can spare.
@@ -1979,7 +2033,9 @@ class Society
     std::int64_t cheapestFood(const std::string& seller);
     // A festival's feast (round 10, lane C, the user's): at the turn of a festival's day each town's stores buy from its
     // food shops a meal's worth for each wolf living in it, less the food they hold: meals first, then what feeds most
-    // for the money; no more than half of what a shop holds of a food, and as far as the stores can pay.
+    // for the money; no more than half of what a shop holds of a food, and as far as the stores can pay. With FeastAhead
+    // (round 13, lane 3), bought ahead too over the week before, from what the shops hold over their shelf targets
+    // (FeastAheadDays), and every transfer in 99s.
     void layInTheFeast(std::int64_t day);
     // What a House may pay out now for `part` of its week's budget (round 10, lane A: HousePosts its posts' wages,
     // HouseRoad its caravans' money and guards, HouseTops its owner's investments in its businesses): what is left of

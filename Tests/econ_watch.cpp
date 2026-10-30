@@ -91,6 +91,10 @@
 // counted in its town's income and holding, not spent back in the week on its relief, day labour and works),
 // capitalincome (the capital's week by its budget's rule, budgetOf, as round 11's: its own Town Works' day labour paid
 // every spell, its watch kept past half its budget, no reserve floor).
+// And round 13's, lane 3 (the kitchens): kitchenkept (a food maker's keeper, hungry on duty, goes off to eat elsewhere
+// and its batches begin only at its trade, as round 12's: no piece "bought at its own counter", no baking first, its
+// hands' hours lost to the full bank while it's away), feastahead (a festival's feast bought at its turn alone, from
+// half of what each shop holds, in one transfer a food, as round 12's: a shop holding 200 or more of it sells none).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -609,9 +613,13 @@ int main(int argc, char** argv)
                     off |= Society::HoldingsBite;
                 else if (name == "capitalincome")
                     off |= Society::CapitalByIncome;
+                else if (name == "kitchenkept")
+                    off |= Society::KitchenKept;
+                else if (name == "feastahead")
+                    off |= Society::FeastAhead;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite or capitalincome, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, kitchenkept or feastahead, not "
                               << name << "\n";
                     return 2;
                 }

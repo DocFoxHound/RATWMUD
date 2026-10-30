@@ -7780,3 +7780,137 @@ outgoings outside its parts in `spendWeek["treasury|other"]`.
    nobody takes leave it in the purse (then the town's own). An alternative: a rebate to the town's poorest.
 3. **The capital at its floor spends its income** and no more; it doesn't refill. If it should, its budget under the
    floor could be a share under its income (budgetOf did that: about 23k a week on 33k of income at 150k).
+
+### Phase 13: round 13, lane 3: the kitchens kept, the feast bought ahead (2026-10-29)
+
+The user's goal (2026-10-29): an economy stable over 2, 6 and 12 years, businesses free to idle or fail with no demand,
+money conserved. Round 12's two-year runs (8550cfe, `--fast`) had multi-day hunger spikes in Ridgemere alone: the
+default start days 469-473, 119 hungry and 27 starving; the other start days 321-328, 161 and 121; without lane B days
+595-607, 252 and 210. Base: p13-r12 at 8550cfe.
+
+**Not money, not supply.** 97% of the hungry held the price of the cheapest food; the city held 6,400-7,000 flour and
+2,500-5,300 firewood; the church 166-231k. The bread stopped: 480-786 loaves a day fell to 30-222 on default days
+468-472, three of the four live bakeries baking nothing for five or six days with their work in hand full. The Sugar
+Loaf (`till:job:rm_liv_pitchhand`) was credited 16, 24 and 24 hand-spells on days 470-472, lost 17-24 hours of them on
+471-472 at a bank of 24, and sold nothing on 469-471. Why: a batch begins only in `Society::craft`, `craft` is called
+only by its keeper in its trade, a shop is open only while its keeper trades at its counter, a keeper can't buy at its
+own shop (`buysAt` passes it over), and every hunger branch comes before the trade. So a hungry keeper went off to eat,
+or slept: on default day 470 Grist & Crust's and the Morning Oven's bakers slept at hunger 92-95 holding 300-400p; in
+the run without lane B, 8-15 of the 25 food keepers were hungry on days 597-603. And the feast: `layInTheFeast` bought at
+the festival's turn, after the eve's sales, half of what each shop had left: the capital bought 1,006, 672, 604, 636,
+427, 467, 170 and 167 pieces at the default's eight festivals; on the other start's day 320, the first of its spike, it
+bought none and fed 35 (its want is about 32.5k of nourishment). And two traps: `transfer` refuses more than 99, and
+the feast asked for a shop's half in one transfer, so a shop holding 200 or more of a food sold the feast none of it;
+and a meal shop restocks its meals from the stores at wholesale (its trade), so meals laid in early would go back out.
+
+**1. The kitchens kept** (`Society::KitchenKept`, `1ull << 48`; `econ_watch --without kitchenkept`; with work by the
+hours). A kitchen (`Society::kitchen`, worked out once a day a keeper, on the main thread): a food shop (`foodShop`)
+that makes or supplies a food (`foodMade`) with a till of its own (`tillOf(keeper) != keeper`: a keeper whose purse is
+the till eats its own stock, as before). Its keeper:
+
+- **Eats at its own counter.** In `decideAuthored`'s decisions, after "eat" and before "fetch food": on duty (its
+  hours), hunger 55 or more, nothing on it, its till holding a food it sells (`sellsFood`) that its purse pays at the
+  shop's price: task "trade" at its trading spot, "Hungry; eating at its own counter". In the trade, before `craft`,
+  still hungry and with nothing on it, it buys one piece (`counterFood`: the most nourishment for the money its purse
+  pays), `transfer(tillOf(keeper), keeper, item, 1, shopPrice, "bought at its own counter")`: purse to till, a sale like
+  any other, that its shelf target sees. The "eat" branch eats it at 60; its shop is shut only for the eating.
+- **Bakes first.** Hunger from 55 to under `BakeFirstBelow` (80), nothing it sells on its shelf, and a food batch ready
+  (`foodBatchReady`, const, only reads): it stays at its trade, "Hungry; baking first"; the batch is on the shelf a
+  minute on, and it eats at its counter. From 80, or with nothing ready, the hunger branches run as before: it can't
+  wait itself to starve. Ready: as `craft` would choose now (its order, `craftOrder`; the first craft under its store,
+  `craftKept`, whose materials its till holds, `batchHas`; buying nothing), a food its work in hand covers. Two
+  departures from the brief, both found by the tests: **a food batch at work counts as ready** (the brief had none at
+  work: but the keeper's own trade begins the batch a decision before, and it would walk off a minute before the bread
+  came out, every time), and **its next look must be due within a quarter hour** (`craftNext_`: a look that found the
+  work in hand short is put off up to an hour, and it would stand at its counter the hour).
+- (Prices are worked out on first asking, so a hungry food keeper on duty decides in its turn, not on the threads:
+  a few a second.)
+- **The hands bake while it is away.** Each second, after everyone's turn, each kitchen whose keeper wasn't keeping it
+  as the second began (`decideAuthored`'s keepers) is crafted for (`craft(keeper, its work cell, day, byHands)`, at
+  `craftNext_`'s pace). With `byHands` craft finishes a batch at work, lays in the day's materials (`laidIn_`), and
+  begins the next from the work in hand; it counts none of the keeper's time (no `lastAtWork_`, no `creditWork` of its
+  time, no yield), and, a third departure, no supplier's restock (buying to sell on waits for the keeper). The food
+  waits on the shelf till the keeper is back: a shop opens only with its keeper (hand-run counters are not this round).
+  A kitchen by the definition can make things that aren't food (the general store's hats and charms): its hands make
+  those too, from hours already worked.
+- `craft`'s parts are now shared (`freshKept`, `batchHas`, `craftOrder`, `craftKept`), the same code; without the rule
+  the digest is round 12's.
+
+**2. The feast bought ahead** (`Society::FeastAhead`, `1ull << 49`; `--without feastahead`; with work by the hours and
+`FeastLaidIn`). In `layInTheFeast`, at each day's pass:
+
+- A calendar festival `k` days ahead (1 to `FeastAheadDays`, 7): each town's stores buy toward `want x (8 - k) / 8` (an
+  eighth a week ahead, seven eighths the eve), `want` 50 a resident by `storeFor(homeCell)` as before, less the
+  nourishment they hold. They don't spoil (`spoil` passes the stores over), and the feast feeds from them as before.
+- Only from what each food shop holds over its shelf target, `shelfTarget(till, item, ProducerKept)`: Markdowns' own
+  reckoning of a glut (the brief wrote `GoodsKept`, a floor of four; Markdowns marks down over `ProducerKept`, and that's
+  the stock meant; the test's target of 40 is it). Never meals. The most nourishment for the money first, then by keeper
+  and item; the plainest sort first; a House's till counted once. At the shop's price, "bought for the festival feast"
+  (the tools count it): the shops' sales (`soldToday_`), so their rates and shelf targets rise in the week before.
+- At the turn, as before (meals first, half of each stock), in transfers of 99 at most (the refusal fixed, under this
+  rule only). Each town from its own shops (no buying across towns this round).
+
+**Saves:** nothing new (the kitchens are worked out again; the feast reads the calendar). **econ_watch:** `--without
+kitchenkept,feastahead`. **The digest:** `--without kitchenkept,feastahead`, 3 days, `--deterministic --hours
+--threads 4`: 2d798a3e826ba1dd, round 12's.
+
+**Tests** (`crafting_tests`; the fixture `hungryBakery`, folkTown's bakery with its baker hungry on duty, nothing on
+it, its purse 100p, the general store open with bread):
+
+- `aHungryBakerEatsAtItsCounter`: at hunger 60 with 40 loaves on its shelf, with the rule it stays at its trade, buys
+  one loaf from its own till ("bought at its own counter", its purse down by the price, money conserved), eats it, is
+  back at its trade, and wren, hungry at its counter, buys there (its shop open); without, "buy food" at the store.
+- `aHungryBakerBakesFirst`: shelf bare, flour and firewood in, its work in hand a batch's hours and a half: with the
+  rule "trade: Hungry; baking first", its bread crafted a minute on and a loaf bought at its counter; at hunger 85, "buy
+  food"; without the rule, "buy food" at 60.
+- `theHandsBakeWithoutTheKeeper`: the baker at home, its bread gone, its work in hand 24 and a hand at the bench: with
+  the rule batches of bread from the hands' hours, the work in hand down by exactly their hours, its keeper's last time
+  at work unchanged, and its hand's next spell put in hand (none lost); without, no batch, and the hand's spell lost at
+  the cap.
+- `theFeastIsBoughtAhead`: 62 wolves (want 3,100), a baker with 150 loaves against a target of 40, a general store with
+  70 meals (30 over): three days ahead the stores buy the 110 loaves over the target in two transfers (99 at most), no
+  meals; a week ahead 26 (an eighth, 387); holding 100 loaves, 30 (toward the rest); at the turn a baker with 220 sells
+  110 in two. Without the rule nothing ahead, and the turn's one transfer of 110 is refused (none sold).
+- No older test changed: they run with both rules (68 of 68 pass).
+
+**The 60-day check** (`--fast --threads 3`, the default start; base: `econ_watch-8550cfe`, the same args, which is this
+build with both rules out; the first festival day 45):
+
+| | base | rules on |
+|---|---|---|
+| feast bought days 38-44 (entries) | 0 | 14 (492 pieces: the capital 240, the towns 252) |
+| feast pieces bought by day 45, all stores / the capital's | 1,530 / 1,006 | 1,547 / 834 |
+| "festival feast" pieces handed out, all / the capital's | 1,980 / 1,394 | 2,125 / 1,387 |
+| Ridgemere hungry, days 45 / 46 / 47 (starving) | 0 / 0 / 0 (0) | 0 / 1 / 0 (0) |
+| "bought at its own counter": days of 60, pieces | 0, 0 | 58, 1,830 |
+| Ridgemere's 24 food makers' hours lost to full banks | 14,269 | 14,031 (-1.7%) |
+| food crafted in Ridgemere (food_towns.csv) | 73,139 | 77,204 (+5.6%) |
+| food spoiled, all towns / Ridgemere | 59,181 / 30,036 | 58,913 / 31,035 (+3.3%) |
+| food, a unit (the scorecard) | 10.4p | 10.6p |
+| hungry, the sum of the days / the worst day (all towns) | 11 / 11 | 5 / 5 |
+| money | conserved | conserved (supply 5,000,120 both) |
+
+(The ahead purchases: 38, 2, 12, 145, 181, 37 and 77 pieces on days 38-44, the capital's 63, 100 and 77 of them on
+days 41, 42 and 44; Ridgemere's 24 food makers are its bakeries, inns, provisioners, fishmongers and butchers.)
+
+Read: the kitchens' rules are at work (a counter piece most days, more baked, a little fewer hours lost; in 60 days
+without a spike the full banks are mostly full shelves, which the rule leaves alone: work not wanted is lost, as it
+should be). The capital's pieces fell short of the brief's 1,006 and 1,394. Its stores already held more: on day 42,
+744 pieces (18.4k of nourishment: more of the caravans' unsold goods bought back, and the ahead's first 163) against the
+base's 414 (11.8k), and the turn buys only toward the want less what they hold: 594 pieces, not 1,006 (coins 6,039p in
+all against 8,204p; the nourishment bought isn't logged by kind, so whether the turn met the want in both is read, not
+counted). Both stores were bare by day 49, and the handout, by who comes (a meal, or a meal's worth of pieces), was
+1,387 against 1,394. The small towns' feast grew (their handout 738 against 586). Markdowns aren't counted by
+econ_watch; the food price a unit moved 2%. (The towns' treasuries on day 60, 84k against 120k on the scorecard, are a
+weekly outflow a day apart: Larkfield's swings 30-40k a day, and over days 50-60 the two run within 5%.) The spikes
+came in year 2 (days 469 and 594), when the shops held 170 pieces at the turn, not 1,006: the two-year run decides
+(hungry at or under about 1.5% outside the festival days; year 2's feasts at 600 pieces or more).
+
+**For the user:**
+
+1. **Hand-run counters.** The food the hands bake waits for its keeper; with a keeper ill or asleep for days the
+   shelf fills but the shop stays shut. A counter its hands keep (or its apprentice) would sell it.
+2. **The hands bake at night** from the hours already worked (the bank holds them; nothing else limits the look). It
+   could be kept to the hands' hours.
+3. **The feast's want** is 50 a resident however many come; the stores' leftovers (none in the 60 days) wait for the
+   next festival. A store kept for the hungry between festivals is the step after.
