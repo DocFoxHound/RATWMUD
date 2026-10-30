@@ -137,6 +137,11 @@
 // tendTills, before the day's measures, as round 15's: its place reads as a hole, counts in its payer's vacancies and
 // blocks its next hire), scarcityhires (a till's wage bid reads its sales at their price, its scarcity margin too, and a
 // short producer's hire pays its wage, as round 15's: no premium by its shortage).
+// And round 18's, lane 1 (a food's scarcity held where the homes are poor; the rules' second word, Society::WageRule2):
+// foodrent (a staple food's margin aims at a staple's most by the buyers it turns away whatever its town's poor share,
+// as round 16's), foodchain (every other food's, smoked or salt fish, cheese, at MarginMost the same). No new measure:
+// tills.csv's `margin` and `missed_units`, and days.jsonl's model.need (each town's share of homes under PoorDays, what
+// the hold reads), are written whatever the rules.
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -580,7 +585,7 @@ int main(int argc, char** argv)
         else if (std::string(argv[i]) == "--without" && i + 1 < argc)
         {
             std::uint64_t& off = rulesOff;
-            [[maybe_unused]] std::uint64_t& off2 = rulesOff2; // The second word's (Society::WageRule2): off2 |= ...
+            std::uint64_t& off2 = rulesOff2; // The second word's (Society::WageRule2).
             for (std::stringstream list(argv[++i]); list.good();)
             {
                 std::string name;
@@ -710,9 +715,13 @@ int main(int argc, char** argv)
                     off |= Society::CalledBackLate;
                 else if (name == "scarcityhires")
                     off |= Society::ScarcityToHires;
+                else if (name == "foodrent")
+                    off2 |= Society::FoodRentByNeed;
+                else if (name == "foodchain")
+                    off2 |= Society::FoodChainByNeed;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage, chainonce, roadkept, pursenotblamed, carriagesplit, messesfirst, landposts, acresharvest, calledlate or scarcityhires, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage, chainonce, roadkept, pursenotblamed, carriagesplit, messesfirst, landposts, acresharvest, calledlate, scarcityhires, foodrent or foodchain, not "
                               << name << "\n";
                     return 2;
                 }
