@@ -549,6 +549,14 @@ void Society::setStandingOrders(const std::map<std::pair<std::string, std::strin
         ordersFrom_[key] = (n + shares - 1) / shares;
     }
     ordersCost_ = std::move(costs);
+    // A week of each town's orders at its town's price (round 15, lane 2; RoadMoneyKept): what its trader's wagons would
+    // pay for their loads, the estimate a load is cut by when the trader can't pay it whole (World::tradeCaravans), kept
+    // by its stores from their works (roadFloat).
+    roadWeekCost_.clear();
+    if (workByHours() && wageRule(RoadMoneyKept))
+        for (const auto& [key, n] : perWeek)
+            if (items::good(key.second))
+                roadWeekCost_[key.first] += double(pennies(townPrice(key.first, key.second))) * n;
 }
 
 int Society::freshKept(const items::Business* business, const items::Craft& k, const std::string& item)

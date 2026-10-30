@@ -117,6 +117,11 @@
 // ask, and a good sold on carries its seller's own margin, as round 13's). tills.csv's `missed_units` (the buyers each
 // till turned away a day, Society::missedRate) and `margin` (its goods' margins weighed by their rates) are measures
 // whatever the rules.
+// And round 15's, lane 2 (the road's float): roadkept (a town's stores spend their week's takings on their works whatever
+// a week of their roads' loads costs, and TaxEase and the rebate count that money as their holding, as round 14's),
+// pursenotblamed (a wagon kept home or its load cut for its trader's money is its seller's shortfall, halving and ending
+// its orders and marking it failed, as round 14's). orders.csv's `unfunded` (of an order's weeks since it was last
+// agreed, what its trader's money didn't carry) is written whatever the rules; nought without the rule.
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -176,7 +181,8 @@
 //   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
 //                   society's days' turns (--hold-pace's to read; a turn can fall on either side of the watch's
 //                   midnight, so not at the day's records);
-//   orders.csv      day, the roads' standing orders: buyer, town, seller's town, good, a week's, delivered, short, unpaid;
+//   orders.csv      day, the roads' standing orders: buyer, town, seller's town, good, a week's, delivered, short, unpaid,
+//                   unfunded (round 15, lane 2: what its trader's money didn't carry);
 //   refusals.csv    day, buyer, good, the day its refusal was marked, its till's cash: the buyers whose order was cut or
 //                   ended for what they couldn't pay for (RoadsState::refused), at each day's end;
 //   shortpay.csv    day, employer, what (a hand's spell of "wage", a "hire"'s day), times, owed, its purse when it fell
@@ -671,9 +677,13 @@ int main(int argc, char** argv)
                     off |= Society::MarginsByShortage;
                 else if (name == "chainonce")
                     off |= Society::ChainPricedOnce;
+                else if (name == "roadkept")
+                    off |= Society::RoadMoneyKept;
+                else if (name == "pursenotblamed")
+                    off |= Society::PurseNotBlamed;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage or chainonce, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared, festivalshops, marginshortage, chainonce, roadkept or pursenotblamed, not "
                               << name << "\n";
                     return 2;
                 }
@@ -2506,11 +2516,11 @@ int main(int argc, char** argv)
             // has fallen since it was last agreed, and what its buyer couldn't pay for.
             {
                 static std::ofstream orders(out / "orders.csv");
-                static bool header = (orders << "day,buyer,town,from,item,per_week,delivered,shortfall,unpaid\n", true);
+                static bool header = (orders << "day,buyer,town,from,item,per_week,delivered,shortfall,unpaid,unfunded\n", true);
                 (void)header;
                 for (const auto& o : server.roads().orders)
                     orders << now << ",\"" << o.buyer << "\",\"" << o.town << "\",\"" << o.from << "\",\"" << o.item << "\","
-                           << o.perWeek << "," << o.delivered << "," << o.shortfall << "," << o.unpaid << "\n";
+                           << o.perWeek << "," << o.delivered << "," << o.shortfall << "," << o.unpaid << "," << o.unfunded << "\n";
                 // And the buyers' refusals standing (RoadsState::refused; round 6, the roads' review): since when, and
                 // the money in the buyer's till now, against which a new order's week is weighed.
                 static std::ofstream refusals(out / "refusals.csv");

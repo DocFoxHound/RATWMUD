@@ -100,6 +100,9 @@ struct StandingOrder
     double since = 0, review = 0;                // Calendar days: signed, and next renegotiated.
     int delivered = 0, shortfall = 0;            // Since it was last agreed.
     int unpaid = 0;                              // ...and what came that its buyer hadn't the money for (doc 64, Phase 13).
+    // ...and of its weeks since, what its trader's money didn't carry: a wagon kept home for want of it, or a load cut to
+    // what it could pay for (round 15, lane 2; Society::PurseNotBlamed). Not its seller's shortfall: the seller had it.
+    int unfunded = 0;
     std::string negotiator;                      // A porter on the way to renegotiate it ("" for nobody).
 };
 

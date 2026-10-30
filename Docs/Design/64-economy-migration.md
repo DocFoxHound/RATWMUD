@@ -8715,3 +8715,205 @@ tuning, no longer run. What the run says:
    and was told of its share every day, so its unmet stood at 1.0 and its margin at .99 (harmless while it has nothing
    to sell; dear when it returns), and the working boats were told less. Sharing among the producers that are working
    (not stopped, not idle) would mend both.
+### Phase 13: round 15, lane 2: the road's week kept, the purse not the seller's (2026-10-30)
+
+Round 14's two years (`artifacts/economy/2026-10-30-r14-2y-fast`, built from c088eb9) failed only on inequality, and the
+poorest town went under: Frosthollow (56 residents, no House) held 133k on day 273, 104k on day 364 and 31k on day 728
+(model.need .12 on day 364, .38 by day 728); its iron-ore order to the city ran 606 a week on day 273, 464 on day 364
+and 174 on day 420; its mines stood stopped 0-27% of their days in year 1 and 52-71% in year 2, their tills' cash from
+368-798p a till-day (q1-q3) to 87-117p. Not hands (the works' and the mines' pools are disjoint by code): the trader's
+money. Frosthollow's trader is its stores, and its works spent each week's takings (`institutionsWeek`'s PostsFirst
+path: its taxed budget less its posts, and all of this week's caravan takings), so its stores held 14.6k on day 91,
+about 9k by day 280, 3-6k after day 330 and 2.85k on day 364, against a week of its orders worth about 8-13k at its
+price. A wagon its trader can't pay for whole goes cut (`send`'s `cost()`, at the town's price), and each order on it
+was still booked loaded for its whole week (`c->loaded[o.id] = o.perWeek`): on arrival what the money cut was its
+seller's shortfall, `agreeAgain` halved an order whose seller "sent under half", ended one that sent nothing in two
+weeks and marked the seller failed (`roads_.failed`: the buyer won't sign with it for a month), and a raise wants the
+seller to have kept up. So the trader's empty purse was booked against the mines: their orders halved (31 of
+Frosthollow's orders halved in q3, 26 in q4), their sales and tills dried, and dry tills post no hires. Rich stores'
+roads are loaded whole (Larkfield to Ridgemere 2,236 of about 2,104 owed, 60k in its stores); the thin ones
+(Coldwater, Mirebridge, Southmeadow) are cut in some quarters. Base: p13-r14 at c088eb9. Two rules, with work by the
+hours; no money made or lost, nothing new saved but an order's tally.
+
+**1. A town's stores keep the road's week** (`Society::RoadMoneyKept`, `1ull << 58`; `econ_watch --without roadkept`).
+
+- *The float.* `Society::roadWeekCost_` (selling town -> coins, not saved), set by `setStandingOrders` from the day's
+  trade's `perWeek` (keyed by selling town and good) with the rule: the sum of `perWeek x pennies(townPrice(town,
+  good))`, the estimate `send`'s `cost()` cuts a load by. `Society::roadFloat(id)` is `RoadWeeksKept` (1.25) times it,
+  for `id` "stores:<town>" when no House of the town has an account (World::traderOf would make that House the
+  trader); otherwise, or without the rule, 0. Rebuilt every day's trade; after a restart it is empty until the first,
+  as if the rule were off.
+- *The works leave it.* In `institutionsWeek`, for a town's stores, after the PostsFirst (or TownPosts) parts and the
+  HoldingsBite block and just before the works: `budget = min(budget, max(0, cash - llround(roadFloat)))`. The crew
+  and materials are bought only from what the stores hold over a week and a quarter of the road's loads; what isn't
+  spent stays in their cash for the caravans. (A holdings tax folded into the budget and not spent so is the stores'
+  own, as an untaken crew's always was; `town_tax.csv`'s `bite_spent` still counts it as spent.)
+- *With RoadBudget asked* (opt-in, off in the runs): the road's allowance (`allow(roadLeft, roadWeek)`) is at least
+  `min(rest, roadFloat)`.
+- *Not the stores' surplus.* Where the town's holding is judged with its bite left out, the float is left out too, at
+  nothing at the least: `tendIncome`'s week's mean holding (`heldMean`, which TaxEase reads, and the share's reckoning
+  through `townHeldMean`), and `rebateTownTax`'s holding. So TaxEase doesn't ease the tax, nor the rebate pay back,
+  the caravans' working money. `budgetOf` is as it was (the cap above does its work), and the share's reckoning reads
+  the lesser of the stores' cash and that mean, as before (the mean now without the float).
+- *Why 1.25:* each road sends once a week and is back in `RoundTripDays` (2), so a week of loads goes out at once; the
+  quarter over covers the orders signed and sent the same day (the extra wagons), raises (`agreeAgain` allows a
+  quarter more a week) and holders asking over the town price.
+- *Bounds:* the works lose at most the float, once: it comes home with the takings, which exceed the road money by the
+  order margin. Inert where the stores hold it already (Larkfield's 60k, Oakhaven's 31-48k against weekly loads of a
+  few thousand to about 10k); it follows the order book, so it shrinks when the orders do, and a thin town's works
+  pause only until a week of loads is covered.
+
+**2. The trader's empty purse is not the seller's shortfall** (`Society::PurseNotBlamed`, `1ull << 59`; `--without
+pursenotblamed`).
+
+- *The tally:* `StandingOrder::unfunded`, of its weeks since it was last agreed, what its trader's money didn't carry;
+  saved with the roads beside `delivered`, `shortfall` and `unpaid` (`RatwCheckpoint.cpp`, read 0 to 1e6; an older
+  save reads 0), reset with them in `agreeAgain`.
+- *Loading* (`World::tradeCaravans`' `send`): the load as asked is kept before the money's cut; each order the wagon
+  carries is loaded for its share of its good's cut load, `perWeek x load[good] / asked[good]` (its week when nothing
+  was asked), and the rest of its week is its `unfunded`. On arrival `week[i] = min(perWeek, loaded)` already holds the
+  seller's shortfall to what its town couldn't spare of that share; what the money didn't stretch to at the holders'
+  own prices is still the seller's, as it was, and `missedAt` is as it was.
+- *A wagon that didn't go:* `send` says why: sent, not sent, or short of money (no purse for the trader, or after the
+  cut nothing to spend or less in the purse than the spend). A due road kept home for money adds its orders' weeks to
+  `unfunded`, not `shortfall` (not an order signed today, as before); the day's cap (`TradeCaravansADay`), a wagon
+  still out, a town missing or `sendCaravan` failing are still the road's shortfall.
+- *`agreeAgain`:* what the seller owed is `sent + shortfall` as before, so the halving and `roads_.failed` fire only on
+  its own shortfall. After the refused branch, `unfunded >= 2 x perWeek` brings the order down to `min(perWeek - 1,
+  ceil(perWeek x carried / (carried + unfunded)))`, `carried = sent + shortfall`: no failed mark, no refusal; under two
+  it ends, and the buyer may sign again with any town. No raise while more than a fifth of its weeks went uncarried
+  (`unfunded x 4 <= owed + unfunded`).
+- *The reviews:* the due tests (`residentsRenegotiate`, `tradeCaravanArrived`) also look at an order two weeks
+  uncarried. Without the rule `unfunded` is always 0.
+- No new constants: two weeks and a fifth are the refused and raise thresholds already there.
+
+**econ_watch:** `--without roadkept,pursenotblamed`, in its list, its error and its notes. `orders.csv` gains
+`unfunded` at its end, written whatever the rules (no test reads its header).
+
+**Tests** (each rule on and off, with work by the hours):
+
+- `roads_tests`, on the iron road (`ironRoad`, `ironWorld`; Frosthollow's trader its stores):
+  - `aWagonKeptHomeForMoneyIsUnfunded`: as `anOrderItsSellerCantFillIsCut`'s first part, Frosthollow's stores emptied
+    on the eve of its road's day and no caravan sent: with the rule each of its two orders of 8 has 8 unfunded and
+    nothing short; without, each is 8 short and nothing unfunded.
+  - `aLoadCutForMoneyIsNotTheSellers`: on each road's eve the stores hold a quarter of the road's week at its town's
+    price (the smelter's bars at 11p against the town's 12p, plenty to spare); two orders of 8. With the rule each is
+    loaded for 2 (its share of the cut load of 4), and on arrival 0 short, 6 unfunded, 2 delivered; agreed again at
+    the next week's caravan (review 0) it stays at 8, not halved, not raised (12 uncarried against 2 carried), no failed
+    key. A quarter of each week carried and three quarters not, two weeks' worth comes in the third week after
+    that review (19 uncarried against 5 carried, one week's load having been 1 as the price moved), not the second as
+    the brief had it (two weeks at three quarters is a week and a half), and it is brought down to `ceil(8 x 5 / 24)`
+    = 2, no failed key, no refusal. Without the rule each is loaded for 8, 6 short on arrival, halved to 4 at its
+    review and its seller marked failed.
+  - `anOrdersUnfundedIsSaved`: a checkpoint's round trip keeps an order's 13 unfunded; the same save with the field
+    renamed (an older save's) reads 0.
+- `crafting_tests`' `theWorksLeaveTheRoadsWeek` (needRealm, none of the city poor): the far town's going rate 100p (a
+  works place 700p a week), 3,000p of caravan takings this week, standing orders of iron bars from it costing W =
+  1,600p a week at its price (F = 2,000p). Its stores at F + 2,000p (their week's mean about the 100,000p they held):
+  with the rule its crew is 2 (at most 80% of the 2,000p over the float), 3 without; at the day's turn its mean
+  holding is F/7 under the one without; and with TaxRebate its rebate is 340p against 1,340p, half the float less (to
+  within the payers' rounding). At F + 8,000p its crew is 4 both ways. A town whose trader is a House (House Fell's
+  far) has no float, the town beside it 1.25 x 20 bars at its 12p, 300p; none without the rule, and never the
+  capital's.
+- No older test moved: `anOrderItsSellerCantFillIsCut`, `aWagonShortOfMoneyMissesNoSale`,
+  `aShortLoadIsTheSellersShortfall` run without work by the hours, and `aTownsCaravanKeepsToItsRoadMoney` (with
+  RoadBudget asked) passes with both rules. The suite (68 of 68) passes with both rules, and with both forced off (a
+  temporary build in a copy of the tree, `wageRule` answering false for the two, the three new tests that need them
+  left out of it; `anOrdersUnfundedIsSaved` kept). One full run with the rules failed `newcomer_behaviors` once under
+  the machine's load (16 s in); it passed alone and on the next full run, and with the rules forced off.
+
+**The digests** (3 days, `--deterministic --hours --threads 4`): `--without roadkept,pursenotblamed` b1935fcbb8d9f1fd,
+round 14's (c088eb9's); with both rules b1935fcbb8d9f1fd too: in three days no wagon is cut for money and no week's
+works are hired (the float moves the stores' mean holding from day 1, but TaxEase reads it only at the week).
+
+**The 365-day check, run on to day 455** (`--fast --deterministic --hours --threads 3`, the default start, both rules;
+one run, `artifacts/economy/2026-10-30-r15-road-float-fast` in the lane's worktree, not committed; its first 365 days
+are the 365-day check. Base: days 0-454 of `2026-10-30-r14-2y-fast`, `econ_watch-c088eb9`, the same arguments.
+Quarters as the scorecard's: q0 days 0-90, q1 91-181, q2 182-272, q3 273-363, q4 364-454.) Loaded share: the goods
+a town's wagons bought over what its orders owed in the quarter (each day's per_week of its roads, a seventh of it a
+day): every wagon counted, the extra ones with an order new that day too, which carry that order's first week. (Each
+wagon against its road's whole per_week the day before, the brief's way, counts an extra wagon of a new order against
+the whole road: by that count the base's q3 is .35 and the rules' .65; the brief's .63 is about the base's q2, .66 so.)
+
+| | base (c088eb9), q0 / q1 / q2 / q3 / q4 | rules on |
+| --- | --- | --- |
+| Frosthollow's loaded share | .89 / .83 / .77 / .52 / .67 | .95 / .86 / .87 / .90 / .85 |
+| ...its road to Ridgemere | .91 / .83 / .81 / .51 / .70 | .99 / .88 / .88 / .92 / .88 |
+| ...each wagon, the brief's count | .79 / .72 / .66 / .35 / .47 | .73 / .79 / .75 / .65 / .70 |
+| Frosthollow's orders: delivered, its own shortfall | 4.7k, .8k / 6.6k, 1.6k / 7.0k, 2.4k / 5.7k, 5.4k / 3.6k, 2.1k | 5.5k, .6k / 9.3k, 1.6k / 8.9k, 1.2k / 9.1k, 1.4k / 7.2k, 1.4k |
+| ...unfunded | (none: no rule) | 0 every quarter |
+| ...halved at review (by its own shortfall) | 16 / 19 / 18 / 31 / 26 | 14 / 13 / 17 / 20 / 15 |
+| its iron ore a week, days 273 / 364 / 420 / 455 | 606 / 464 / 174 / 258 | 517 / 317 / 219 / 276 |
+| its iron ore delivered | 3.0k / 5.3k / 4.9k / 3.6k / 2.4k | 3.0k / 5.6k / 5.3k / 5.1k / 3.2k |
+| its mines: cash a till-day; stopped | 305p, 27% / 368p, 27% / 798p, 0% / 598p, 8% / 117p, 52% | 333p, 32% / 994p, 5% / 1,672p, 0% / 1,596p, 0% / 505p, 8% |
+| its stores' cash, mean (least) | 12.5k (2.1k) / 8.2k (39p) / 6.6k (42p) / 4.7k (23p) / 4.6k (1.0k) | 16.5k (2.1k) / 21.5k (3.1k) / 15.4k (3.7k) / 13.8k (872p) / 15.5k (10.7k) |
+| ...on days 120-364 (-454) with a week of its orders at its price | 7% (5%) | 76% (79%) |
+| its works ("an odd job: building work") | 40.0k / 39.8k / 25.7k / 13.3k / 15.6k | 34.3k / 56.8k / 31.6k / 16.4k / 35.9k |
+| its residents' money, days 182 / 273 / 364 / 454 | 126k / 134k / 104k / 66k | 146k / 164k / 157k / 149k |
+| model.need.frosthollow, days 364 / 454 | .12 / .23 | .04 / .08 |
+| Coldwater's loaded share | .73 / .72 / .53 / .71 / .75 | .77 / .99 / .36 / .67 / .79 |
+| Mirebridge's | .95 / .74 / .89 / .96 / .84 | .98 / .87 / .84 / .89 / .96 |
+| Southmeadow's | 1.02 / .44 / 1.16 / .83 / .12 | 1.01 / .53 / 1.10 / .76 / .12 |
+| Larkfield's (to Ridgemere) | 1.03 / .98 / .96 / .84 / .99 (1.04 / .99 / .97 / .81 / 1.01) | 1.03 / 1.01 / 1.01 / .81 / 1.00 (1.03 / 1.03 / 1.01 / .81 / 1.02) |
+| Oakhaven's (to Ridgemere) | 1.07 / 1.02 / .83 / .65 / .69 (1.09 / 1.02 / .82 / .64 / .67) | 1.07 / 1.02 / .95 / .72 / .76 (1.08 / 1.02 / .97 / .69 / .76) |
+| scorecard Gini / poorer half | .481/.189, .481/.182, .559/.122, .525/.146, .570/.117 | .477/.191, .478/.184, .529/.140, .517/.149, .557/.129 |
+| scorecard food a unit; towns' treasuries | 8.1, 7.3, 8.7, 8.6, 9.3p; 128k, 136k, 136k, 115k, 128k | 8.0, 7.6, 8.3, 8.7, 8.9p; 186k, 161k, 202k, 136k, 136k |
+| **gate:** money | conserved every day (5,000,120p) | conserved every day (5,000,000p: no newcomer's purse from outside) |
+| **gate:** days with hungry at or under 1% | 99.8% | 100% |
+| **gate:** the going rate | 58.1-60.0p | 58.4-60.0p (Ridgemere's 59.5-67.4p, the base's 59.3-70.7p) |
+| **gate:** Ridgemere's carriage paid, days 0-364 / 365-454 | 820k / 192k | 728k / 155k |
+| **gate: Ridgemere's buyers' refusals (unpaid)** | 18.9k / 23.6k / 15.2k / 10.7k / 6.0k | **20.6k / 32.1k / 21.9k / 14.8k / 8.3k (days 0-364 +31%)** |
+| **gate:** the towns' stores at their least | 23p (Frosthollow), 2p (Southmeadow) | 36p (Mirebridge) |
+| **gate:** Frosthollow's tax rate, mean | .057 / .063 / .080 / .080 / .080 | .080 every quarter |
+| **gate:** Gini, day 364 | .532 | .527 |
+| **gate:** tills stopped, days 91 / 182 / 273 / 364 / 455 | 34.6 / 26.3 / 28.1 / 34.4 / 31.2% | 36.2 / 27.1 / 32.3 / 34.4 / 28.6% |
+
+(Frosthollow's week of orders at its price is reckoned from each of its roads' last wagon, its road money over its cut
+load a piece; its stores' cash is the day's record, at midnight. The scorecard's verdict to day 455: NOT STABLE on
+inequality alone, Gini at most .578 and the poorer half at least .111, the last year's trend +.082 a year over the
+455 days; the base's to day 455, .570 and .117.)
+
+**A gate is missed: Ridgemere's buyers' refusals.** What its buyers' orders brought that they couldn't pay for rose
+from 68.4k to 89.5k over days 0-364 (+9% in q0, +36% in q1, +44% in q2, +39% in q3; +38% in q4). As briefed, the lane
+stops here: no tuning. What the run says of it:
+
+1. **It is not on Frosthollow's roads.** The rise is Larkfield's apples (q1 15.5k against 8.9k) and Oakhaven's firewood
+   (q2 7.6k against 1.6k) to Ridgemere's shops: rich stores' roads, where the float is inert (their stores hold several
+   weeks of their loads) and nothing was unfunded. The runs part from the first week (Frosthollow's TaxEase, its works,
+   its fuller loads), and Ridgemere's keepers held 3-8% less in the year's middle (434k against 469k on day 182, 400k
+   against 427k on day 273); more of the city's money went to Frosthollow's ore and bars (its sellers' delivered 27.4k
+   against 19.2k in q1-q3). Not traced further in this lane's time.
+2. **The float did all of Frosthollow's work; PurseNotBlamed none there.** Frosthollow's orders had nothing unfunded in
+   any quarter: its stores held about a week and a quarter of loads from day 120 on (no wagon of its was cut for
+   money), and its own shortfall fell from 5.4k to 1.4k in q3 (-74%), its iron ore delivered +41%, its mines' tills
+   2.1-2.7 times the base's and never stopped in q2-q3, its residents 157k on day 364 against 104k (149k against 66k on day
+   454). PurseNotBlamed acted on Ridgemere's House traders instead, kept to their road part (`houseMay(HouseRoad)`):
+   4.6k, 4.1k, 11.1k, 0.9k and 1.3k unfunded a quarter where the base booked a shortfall (Ridgemere's sellers' own
+   shortfall 1.7k, 2.3k, 0.4k, 3.5k against 6.1k, 4.8k, 6.3k, 4.1k), so the towns' orders from the city weren't halved
+   for the Houses' budget; and on Mirebridge, 176 in q3.
+3. **The brief's ore aim (520 a week on day 364) is not met, from the buyer's side.** The ore order still fell, 517 on
+   day 273 to 317 on day 364 and 219 by day 400, but a quarter at a time (413, 309, 231, 173, 129, 100 for the city's
+   smelter rm_mab_coalridge): `agreeAgain`'s lowering, the buyer holding over two weeks of its use once the loads came
+   whole; the base's 464 to 174 came with halvings for the seller's shortfall. The ore delivered is the better measure
+   of the mines' trade: 5.1k against 3.6k in q3, 3.2k against 2.4k in q4.
+4. **Frosthollow's loaded share q2 .87, not .95:** what is left is its own shortfall, its producers with nothing to spare
+   (1.2k in q2), not money. Its stores' week covered on 76% of days 120-364, under the brief's 80%: at midnight, after
+   the day's wagons, its road to Ridgemere (about 85% of its week's loads) has taken its money and the takings come home
+   two days later, so for about two days a week the stores hold the float less that wagon.
+
+**For the user:**
+
+1. **The refusals gate.** The rise is on roads neither rule touches in this run (Larkfield's and Oakhaven's to the city,
+   nothing unfunded, their stores well over the float). The run to day 182 with each rule out (`--without roadkept`,
+   `--without pursenotblamed`) would say whether either moves it, or the runs' parting does.
+2. **TaxEase in a thin trading town.** With the float out of its mean holding, Frosthollow's tax stayed at the full 8%
+   all year (the base eased it to 5.7% and 6.3% in its first half-year, while its stores still held its takings): its
+   residents paid the tax the base let them keep, and its stores held it, as briefed. If the road's money shouldn't
+   hold the tax up, TaxEase could weigh the holding with the float in, and the rebate without it.
+3. **A week at every midnight.** `RoadWeeksKept` 1.25 covers a week of loads as they go out; for the stores to hold a
+   week at every day's record, after the week's big wagon has gone, it would want about 2. Frosthollow's works dipped
+   only in q0, while the float built (34k against 40k), then 57k, 32k, 16k and 36k against 40k, 26k, 13k and 16k: the
+   float came home with the takings.
+4. **The Houses' road part.** PurseNotBlamed books a House trader's cut loads as unfunded, so the towns' orders from the
+   city keep their size, brought down to what was carried only after two weeks uncarried. Whether a House's road part
+   should keep a week of its orders, as the stores' float does, is the same question one level up.

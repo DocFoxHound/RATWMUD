@@ -4303,12 +4303,242 @@ void theMarketIsTheSameWithNoSuccession()
     Society::setWorkByHours(false);
 }
 
+// Round 15, lane 2 (PurseNotBlamed; the user, 2026-10-30), with work by the hours: a wagon kept home for its trader's
+// money is its orders' week unfunded, not their seller's shortfall. As in anOrderItsSellerCantFillIsCut: on its road's
+// day Frosthollow's stores are emptied, and its trader sends no caravan. With the rule each of its two orders has its
+// week (8) unfunded and nothing short; without, each is a week short, and nothing unfunded.
+void aWagonKeptHomeForMoneyIsUnfunded()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        int shortfall[2] = {-1, -1}, unfunded[2] = {-1, -1};
+        bool dry = false;
+    };
+    const auto run = [](bool rule) {
+        Society::wageRulesOff(rule ? 0 : Society::PurseNotBlamed);
+        auto f = ironRoad(2);
+        auto w = ironWorld(f, 297);
+        auto& soc = w.society();
+        const std::string road = "frosthollow>west";
+        w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+        w.roads().orders.push_back(ironOrder(w, "lowsmith", 8));
+        Seen seen;
+        for (int d = 0; d < 9 && !seen.dry; ++d)
+        {
+            if ((seen.dry = dueIn(road, std::floor(w.calendarDays()) + 1) == 0))
+                if (const auto cash = soc.account("stores:frosthollow")->cash; cash > 0)
+                    soc.shift("stores:frosthollow", "treasury", "", 0, cash, "test: the trade money spent");
+            nextMorning(w);
+            w.roads().camps.clear();
+            expect(!seen.dry || !ironOnTheWay(w), "Frosthollow's trader, without a penny, sends no caravan on its road's day");
+            tickWhileOnTheWay(w);
+        }
+        for (int k = 0; k < 2; ++k)
+            if (const auto* o = orderOf(w, k == 0 ? "so-westsmith" : "so-lowsmith"))
+                seen.shortfall[k] = o->shortfall, seen.unfunded[k] = o->unfunded;
+        expect(soc.conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto with = run(true), without = run(false);
+    expect(with.dry && with.unfunded[0] == 8 && with.unfunded[1] == 8 && with.shortfall[0] == 0 && with.shortfall[1] == 0,
+           "With the rule each order's week is unfunded, none of it short: " + std::to_string(with.unfunded[0]) + " and " +
+               std::to_string(with.unfunded[1]) + " unfunded, " + std::to_string(with.shortfall[0]) + " and " + std::to_string(with.shortfall[1]) +
+               " short");
+    expect(without.dry && without.shortfall[0] == 8 && without.shortfall[1] == 8 && without.unfunded[0] == 0 && without.unfunded[1] == 0,
+           "Without, each is a week short: " + std::to_string(without.shortfall[0]) + " and " + std::to_string(without.shortfall[1]));
+    Society::setWorkByHours(false);
+}
+
+// To the road's next day, Frosthollow's stores holding `cash` on its eve: its week's caravan sent and come home. What each
+// order was loaded for as it set out (Caravan::loaded; none if no caravan went), and the orders as they stood then.
+struct IronWeek
+{
+    std::map<std::string, int> loaded;
+    std::vector<StandingOrder> atDeparture;
+    bool went = false;
+};
+IronWeek ironWeek(World& w, std::int64_t cash, std::vector<WorldEvent>* seen = nullptr)
+{
+    auto& soc = w.society();
+    IronWeek week;
+    for (int d = 0; d < 9; ++d)
+    {
+        const bool eve = dueIn("frosthollow>west", std::floor(w.calendarDays()) + 1) == 0;
+        if (eve)
+        {
+            const auto has = soc.account("stores:frosthollow")->cash;
+            if (has > cash)
+                soc.shift("stores:frosthollow", "treasury", "", 0, has - cash, "test: the trade money spent");
+            else if (has < cash)
+                soc.shift("treasury", "stores:frosthollow", "", 0, cash - has, "test: the town's trade money");
+        }
+        nextMorning(w);
+        w.roads().camps.clear();
+        if (eve)
+        {
+            for (const auto& c : w.roads().caravans)
+                if (!c.trader.empty() && c.from == "frosthollow" && c.to == "west" && c.status == "travelling")
+                    week.loaded = c.loaded, week.went = true;
+            week.atDeparture = w.roads().orders;
+        }
+        tickWhileOnTheWay(w, seen);
+        if (eve)
+            break;
+    }
+    return week;
+}
+
+// Round 15, lane 2 (PurseNotBlamed), with work by the hours: a load cut for its trader's money is not its seller's
+// shortfall. Frosthollow's stores hold a quarter of its road's week at its town's price on each road's eve, the smelter
+// bars to spare: two orders of 8. With the rule each order is loaded for its share of the cut load, about a quarter of
+// its week, the rest unfunded; on arrival nothing is short. Agreed again at its next week's caravan (review 0), neither
+// is halved nor its seller marked failed, nor raised (more than a fifth of its weeks uncarried). Once two weeks' worth
+// has gone uncarried (the third such week, at three quarters a week) each is brought down to its share the money
+// carried, about a quarter (ceil), its seller unblamed and its buyer unrefused. Without the rule each order is loaded for
+// its week, three quarters short, halved at its review and its seller marked failed.
+void aLoadCutForMoneyIsNotTheSellers()
+{
+    Society::setWorkByHours(true);
+    struct Seen
+    {
+        int loaded[2] = {-1, -1}, shortfall = -1, unfunded = -1, delivered = -1;
+        int reviewed = -1, reviewedUnfunded = -1, cut = -1, cutUnfunded = -1, cutCarried = -1, weeks = 0;
+        bool failed = true, failedAtCut = true, refused = true, sellerHeld = false;
+        double priceAt = 0, townPrice = 0;
+    };
+    const auto run = [](bool rule) {
+        Society::wageRulesOff(rule ? 0 : Society::PurseNotBlamed);
+        auto f = ironRoad(2);
+        auto w = ironWorld(f, 594);                 // (Bars to spare, whatever its loads.)
+        auto& soc = w.society();
+        const auto smelter = soc.tillOf("smelter");
+        w.roads().orders.push_back(ironOrder(w, "westsmith", 8));
+        w.roads().orders.push_back(ironOrder(w, "lowsmith", 8));
+        // (A quarter of all the road's orders cost at the town's price, whatever else the forges have signed for.)
+        const auto quarter = [&] {
+            std::int64_t cost = 0;
+            for (const auto& o : w.roads().orders)
+                if (o.from == "frosthollow" && o.town == "west" && items::good(o.item))
+                    cost += Society::pennies(soc.townPrice("frosthollow", o.item)) * o.perWeek;
+            return (cost + 3) / 4;
+        };
+        const auto failed = [&] {
+            bool any = false;
+            for (const auto* smith : {"westsmith", "lowsmith"})
+                any |= w.roads().failed.count(soc.tillOf(smith) + "|iron_bar|frosthollow") > 0;
+            return any;
+        };
+        const auto refused = [&] {
+            bool any = false;
+            for (const auto* smith : {"westsmith", "lowsmith"})
+                any |= w.roads().refused.count(soc.tillOf(smith) + "|iron_bar") > 0;
+            return any;
+        };
+        Seen seen;
+        seen.priceAt = soc.priceAt(smelter, "iron_bar");
+        seen.townPrice = soc.townPrice("frosthollow", "iron_bar");
+        const auto first = ironWeek(w, quarter());
+        for (int k = 0; k < 2; ++k)
+            if (const auto l = first.loaded.find(k == 0 ? "so-westsmith" : "so-lowsmith"); l != first.loaded.end())
+                seen.loaded[k] = l->second;
+        if (const auto* o = orderOf(w, "so-westsmith"))
+            seen.shortfall = o->shortfall, seen.unfunded = o->unfunded, seen.delivered = o->delivered;
+        seen.sellerHeld = Society::stockAll(*soc.account(smelter), "iron_bar") > 100;
+        // Its next week's caravan agrees it again.
+        for (auto& o : w.roads().orders)
+            o.review = o.id.rfind("so-", 0) == 0 ? 0 : o.review;
+        const auto second = ironWeek(w, quarter());
+        for (const auto& o : second.atDeparture)
+            if (o.id == "so-westsmith")
+                seen.reviewedUnfunded = o.unfunded;
+        if (const auto* o = orderOf(w, "so-westsmith"))
+            seen.reviewed = o->perWeek;
+        seen.failed = failed();
+        // With the rule, the weeks it takes for two weeks' worth to go uncarried.
+        if (rule)
+            for (int k = 0; k < 4 && orderOf(w, "so-westsmith") && orderOf(w, "so-westsmith")->perWeek == 8; ++k)
+            {
+                const auto next = ironWeek(w, quarter());
+                ++seen.weeks;
+                for (const auto& o : next.atDeparture)
+                    if (o.id == "so-westsmith")
+                        seen.cutUnfunded = o.unfunded, seen.cutCarried = o.delivered + o.unpaid + o.shortfall;
+                seen.cut = orderOf(w, "so-westsmith") ? orderOf(w, "so-westsmith")->perWeek : 0;
+            }
+        seen.failedAtCut = failed();
+        seen.refused = refused();
+        expect(soc.conserved(), "Money stays conserved");
+        Society::wageRulesOff(0);
+        return seen;
+    };
+    const auto with = run(true), without = run(false);
+    expect(with.sellerHeld && Society::pennies(with.priceAt) <= Society::pennies(with.townPrice),
+           "Frosthollow's smelter has bars to spare at about the town's price: " + std::to_string(with.priceAt) + "p, against " +
+               std::to_string(with.townPrice) + "p");
+    expect(with.loaded[0] >= 1 && with.loaded[0] <= 3 && with.loaded[1] == with.loaded[0],
+           "With the rule each order is loaded for its share of the cut load, about a quarter of its week: " + std::to_string(with.loaded[0]) +
+               " and " + std::to_string(with.loaded[1]));
+    expect(with.shortfall == 0 && with.unfunded == 8 - with.loaded[0] && with.delivered == with.loaded[0],
+           "on arrival nothing is short, the rest of its week unfunded: " + std::to_string(with.shortfall) + " short, " +
+               std::to_string(with.unfunded) + " unfunded, " + std::to_string(with.delivered) + " delivered");
+    expect(with.reviewed == 8 && !with.failed && with.reviewedUnfunded >= 2 * (8 - with.loaded[0]),
+           "agreed again at its next caravan, not halved, nor raised, its seller not marked: " + std::to_string(with.reviewed) + " a week");
+    // (What came since its last review, as the week's caravan set out: the loads of the weeks before, the review's week's
+    // among them; what went uncarried, booked as each set out, this week's too. The review is on arrival, before its
+    // goods are handed over.)
+    const int carried = with.cutCarried;
+    expect(with.cutUnfunded >= 16 && carried > 0 && with.cut == int(std::ceil(8. * carried / (carried + with.cutUnfunded))) &&
+               with.cut >= 2 && with.cut <= 3 && !with.failedAtCut && !with.refused,
+           "two weeks' worth uncarried (" + std::to_string(with.cutUnfunded) + " in " + std::to_string(with.weeks) + " weeks, " +
+               std::to_string(carried) + " carried), it is brought down to the share the money carried: " + std::to_string(with.cut) +
+               " a week, nobody blamed");
+    expect(without.loaded[0] == 8 && without.loaded[1] == 8 && without.shortfall == 8 - without.delivered && without.shortfall >= 5 &&
+               without.unfunded == 0,
+           "Without, each is loaded for its week, three quarters of it short: " + std::to_string(without.shortfall) + " short");
+    expect(without.reviewed == 4 && without.failed, "and halved at its review, its seller marked failed: " + std::to_string(without.reviewed));
+    Society::setWorkByHours(false);
+}
+
+// Round 15, lane 2 (PurseNotBlamed): what an order's trader's money didn't carry is saved with the roads (a checkpoint's
+// round trip), and an older save, without it, reads none.
+void anOrdersUnfundedIsSaved()
+{
+    auto f = ironRoad(1);
+    auto w = ironWorld(f, 297);
+    auto o = ironOrder(w, "westsmith", 8);
+    o.unfunded = 13;
+    w.roads().orders.push_back(o);
+    const auto read = [&](const std::string& text) {
+        checkpoint::ServerState server;
+        PersistedWorld back;
+        json::Value root;
+        std::string problem;
+        expect(json::parse(text, root, problem) && checkpoint::decode(root, back, server, problem), "The world reads back: " + problem);
+        const auto found = std::find_if(back.roads.orders.begin(), back.roads.orders.end(), [](const StandingOrder& s) { return s.id == "so-westsmith"; });
+        return found == back.roads.orders.end() ? -1 : found->unfunded;
+    };
+    checkpoint::ServerState server;
+    auto text = json::dump(checkpoint::encode(w.save(), server, {}, 0));
+    const int saved = read(text);
+    expect(saved == 13, "An order's unfunded is saved with the roads: " + std::to_string(saved));
+    // (An older save: the field under another name, so not there to read.)
+    for (auto at = text.find("\"unfunded\""); at != std::string::npos; at = text.find("\"unfunded\"", at))
+        text.replace(at, 10, "\"unfundex\"");
+    const int older = read(text);
+    expect(older == 0, "and an older save's reads none: " + std::to_string(older));
+}
+
 int main()
 {
     try
     {
         aSuccessorsBarsAreOnTheMarket();
         theMarketIsTheSameWithNoSuccession();
+        aWagonKeptHomeForMoneyIsUnfunded();
+        aLoadCutForMoneyIsNotTheSellers();
+        anOrdersUnfundedIsSaved();
         caravansCarryWholeOrders();
         noRoadOrdersForWhatRots();
         anOrderRisesNoFasterThanItsSeller();
