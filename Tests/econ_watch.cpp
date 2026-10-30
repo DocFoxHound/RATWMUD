@@ -107,6 +107,10 @@
 // only at its keeper's own paid spell, as round 13's: past the bank's cap of 24 its hours are lost), tradebypost (the
 // market's lists, a seller's trade and its town read from the founders' written records, as round 13's: a successor
 // written with another trade, or born or come later, sells nothing wholesale and makes or brings in nothing by its post).
+// And round 14's, lane 2 (shopping): shopscompared (a hungry wolf goes to the nearest open food shop of its cell, else
+// the first of its town, and a household lays in from the shop its home starts at, whatever their prices, as round
+// 13's), festivalshops (on a festival day work stops from noon for the food shops' keepers too, as round 13's: no shop
+// open in a festival's hours).
 // --with: the rules off unless asked: crews (a town's works crew may be taken by wolves of other towns: round 9's, off
 // since round 10), roadmoney (a town's caravans' road money from its week's budget: round 10's, dropped by the user),
 // townposts (a town's own posts kept to its tax, as the capital's: round 10's, dropped by the user, 2026-10-28).
@@ -158,6 +162,9 @@
 //   gaveway.csv     day, hour, each taker of a field's full place that gave way to a nearer hand: its town, how far it
 //                   lives from the field (tiles, straight across), the field's till and town, and the hand it gave way
 //                   to and its town (doc 64, Phase 13, round 9);
+//   festival_food.csv  day, hour, each food sale in a festival's hours (noon to eleven): a wolf's at a shop ("resident
+//                   food purchase"), the church's alms bought there, a keeper's at its own counter; the payer, the
+//                   till, its town, the good, units and coins (round 14, lane 2: FestivalShopsOpen);
 //   payers.csv      (--ask-payers) day, resident: its home and work cells, title, who pays it and as what, at the day's
 //                   record;
 //   pace.csv        day, "turn", the society's day, the realm's pace that day, to the last digit, at each of the
@@ -225,6 +232,7 @@
 // clock (World::setDeterministic): the run repeats exactly, and ends with a digest of where everyone is and what they do.
 // --threads N: how many threads the world's work is spread over (8 unless asked: four cores and their twins; 1, none but
 // the main one). The same run gives the same digest on any number.
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
@@ -649,9 +657,13 @@ int main(int argc, char** argv)
                     off |= Society::HandsBringIn;
                 else if (name == "tradebypost")
                     off |= Society::TradeByPost;
+                else if (name == "shopscompared")
+                    off |= Society::ShopsCompared;
+                else if (name == "festivalshops")
+                    off |= Society::FestivalShopsOpen;
                 else
                 {
-                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin or tradebypost, not "
+                    std::cerr << "--without is children, employees, stalls, sellers, apprentices, unpaid, caravans, weekly, giveway, masters, posts, oneplace, owners, taxease, rebate, founding, daylabour, houses, housetills, church, cheapalms, carry, foodprice, feast, nearest, idle, returns, morehands, homespend, holdings, labourposts, townfirst, sharewealth, markdowns, foodneed, wagecap, wagelessfirst, shelforders, holdingsbite, capitalincome, livingslack, wagebook, surplusneed, childrenkept, kitchenkept, feastahead, handsbringin, tradebypost, shopscompared or festivalshops, not "
                               << name << "\n";
                     return 2;
                 }
@@ -760,8 +772,9 @@ int main(int argc, char** argv)
         foodOut(out / "food.csv"), foodTownsOut(out / "food_towns.csv"), pricesOut(out / "prices.csv"),
         lardersOut(out / "larders.csv"), townFlowsOut(out / "town_flows.csv"),
         foodMovesOut(out / "food_moves.csv"), paceOut(out / "pace.csv"), orchestraOut(out / "orchestrator.jsonl"), orchestraTownsOut(out / "orchestrator_towns.csv"),
-        gaveWayOut(out / "gaveway.csv");
+        gaveWayOut(out / "gaveway.csv"), festivalOut(out / "festival_food.csv");
     gaveWayOut << "day,hour,taker,taker_town,tiles,field,field_town,hand,hand_town\n";
+    festivalOut << "day,hour,kind,buyer,seller,town,item,units,coins\n";
     orchestraTownsOut << "day,town,people,distress,raw,kind,food_cost,hungry,starving,short,poor,idle,shop_food_days,takings_ratio,net_inflow,player_in,player_out,player_goods\n";
     flowsOut << "day,kind,from,to,entries,coins,goods\n";
     paceOut << "day,when,society_day,pace\n" << std::setprecision(17);
@@ -1037,6 +1050,18 @@ int main(int argc, char** argv)
                     tillSold[e.target].first += e.quantity, tillSold[e.target].second += e.coins;
                 if (e.coins > 0 && e.detail.rfind("an odd job: ", 0) == 0)
                     oddPaid[e.target] += e.coins;
+                // A festival's hours' food sales (round 14, lane 2: FestivalShopsOpen): a wolf's at a shop, the church's
+                // alms bought there, a keeper's at its own counter, from noon to eleven of a festival's day.
+                if ((e.detail == "resident food purchase" || e.detail == "alms bought for the hungry" || e.detail == "bought at its own counter") &&
+                    e.quantity > 0 && calendar::festivalDay(e.day) && (e.day - d) * 24 >= 12 && (e.day - d) * 24 < 23)
+                {
+                    // (The payer the actor, the till the target: the alms' payer the church.)
+                    const auto& buyer = e.actor;
+                    const auto& seller = e.target;
+                    festivalOut << d << ',' << std::fixed << std::setprecision(2) << (e.day - d) * 24 << std::defaultfloat << ','
+                                << csv(e.detail) << ',' << csv(buyer) << ',' << csv(seller) << ',' << csv(townOf(seller)) << ','
+                                << csv(items::baseOf(e.item)) << ',' << e.quantity << ',' << e.coins << '\n';
+                }
                 if (e.detail == "gave way to a nearer hand")    // (Its quantity the tiles, its item the field's till.)
                     gaveWayOut << d << ',' << std::fixed << std::setprecision(2) << (e.day - d) * 24 << std::defaultfloat << ','
                                << csv(e.actor) << ',' << csv(society.townOfResident(e.actor)) << ',' << e.quantity << ',' << csv(e.item)

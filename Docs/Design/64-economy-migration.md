@@ -8357,3 +8357,187 @@ Not traced to either rule in this lane's time (see 4 below).
    hungry for a day. Fewer hands at Larkfield's harvest fits the fisheries hiring more of the land's one labour market,
    but it isn't traced. A run of days 0-232 with each rule out (`--without handsbringin`, `--without tradebypost`)
    would say which rule, or neither, moves it.
+### Phase 13: round 14, lane 2: the wolves compare the shops, the food shops open through a festival (2026-10-30)
+
+The user's goal (2026-10-29): an economy stable and resilient over 2, 6 and 12 years, businesses free to idle or fail
+with no demand, money conserved. Round 13's two-year runs (`artifacts/economy/2026-10-30-r13-2y-fast*`, e0cb26e) passed
+hunger, wages, treasuries and businesses, and failed prices (food 10.4p a unit to 16.4p, five quarters rising) and
+inequality (Gini .485 to .788). Base: p13-r13 at e0cb26e.
+
+**No shopping around.** A hungry wolf went to the nearest open food shop of its cell, else the first of its town
+(`decideAuthored`); FoodAtItsPrice's `buysAt` asked only whether it could pay, and only of a wolf holding less than a
+day's wage. Inside the one shop the foods are ranked by nourishment for the price (and taste), but nothing ranked the
+shops: a household laid in from a shop fixed by its home (`householdShopping`, `unit(home) x list.size()`). So a dear
+seller lost no buyers. Ridgemere's smoked fish was 9, 21, 39, 42, 44, 51, 52 and 44% of its residents' food spending by
+quarter, at 35p to 104p for 50 of nourishment against bread's 15-20p and porridge's 13-17p; the three smokehouses took
+47% of the city's year-2 food bill (4.59M of about 9.73M), and even the church's alms, which compare (CheapAlms), bought
+8,157 smoked fish at 37.7p when the cheap food had sold out.
+
+**The festivals.** Work stopped from noon to eleven for everyone, the food shops too ("Work stops for ..."), and the
+trade branch needs `onHours`: the feast was the only food those hours. hunger.csv's day N is the count at the end of day
+N-1: Ridgemere's year-2 festival midnights found 30, 21, 36 and 110 hungry, the run's worst days; on day 686's count 123
+of the 125 hungry were asleep at hunger 70-80, 81 holding 20p or more, with 1,340 food on the city's shelves, and the
+next day none. The capital's feast fell from 1,479 pieces handed out (day 45) to 62 (day 685) for about 680 residents.
+
+**1. The shops compared** (`Society::ShopsCompared`, `1ull << 52`; `econ_watch --without shopscompared`; with work by
+the hours). A food shop's offer (`shopOffer`): the fewest pennies for a unit of nourishment among the foods it sells now
+(in stock, `sellsFood`, nourishment over 0: `shopPrice / nourishment`, a stall's at its .9, as `cheapestFood`), and its
+cheapest food (as `cheapestFood`).
+
+- **The hungry wolf** (`decideAuthored`'s `comparedAt`), whatever its purse, with a shop of its cell or its town open:
+  the open food shops of its cell, and the `ShopsLooked` (3) nearest open food shops of its town beyond its cell (by the
+  map, as NearestShop measures; off the map, within its cell, and the rest after it, by keeper). It goes to the one of
+  least value whose cheapest food its purse pays for (FoodAtItsPrice's `pays`); of values within `ValueTie` (.10) of the
+  least, the nearest. None it can pay: alms at its nearest, as before. No shop of its cell or town open: NearestShop's,
+  as before. What it buys inside the shop, the alms and the meal shops' store-priced meals are as they were.
+- **The household's laying in** (`householdShopping`): its town's shops in tiers, the first those within `ValueTie` of
+  the least value, the next within it of the least left, and so on, those with nothing to sell last; within a tier, from
+  its home's own start (`unit(home)`), so households still spread over shops alike. Each household's tiers are its own,
+  the shelves as the households before it left them. `buyFood` still chooses what keeps for its days.
+- **Prices the hour's, the shelf now.** Each food's price is asked at its first sight on a shop's shelf in the game hour
+  (`valueShop`): for every open shop on the main thread before the threads decide, and for a town's shops by its first
+  household laying in, at the day's turn. The decision threads only read (`shopOffer`: the hour's prices of what the
+  shelf holds now, no `priceAt`, no DecideInTurn: the hungry with less than a day's wage used to decide in their turn
+  for it). The wolf's own place on the map is read on its thread, as NearestShop reads it (the world's cells, only
+  read).
+- **Departures from the brief, both for the same reason** (the shelf moves by the minute, the prices by the day): (a)
+  the brief kept the whole value an hour; here the prices are the hour's but the shelf is now, so a bakery whose bread
+  sold out at ten past is no cheap shop for the rest of the hour (its buyers would have walked to it for its cakes), and
+  one that bakes at twenty past (round 13's bake-first) is one again; (b) a food first on the shelf after the hour's
+  first look is priced as it comes (on the main thread, before the threads), not left out till the next hour. A price
+  changed mid-hour (a margin, a markdown, a cost) is still not seen till the next hour.
+- **Reading of "plus the ShopsLooked nearest of its town":** the three nearest beyond its cell. With the three nearest
+  counted from all the town's shops, a wolf in a cell of three dear shops would never look past them, which is
+  Ridgemere's smokehouse case.
+- **Watch** (the brief's): demand moves to the bread and porridge, whose bakers are pace-limited; bread already went
+  4.5p to 6.1p in Ridgemere over the two years, and without lane 1 the old margin review ratchets a bare shelf's price;
+  a baker's extra trade can fund WageBySales bids (RatwLabour.cpp), so the going rate is a gate.
+
+**2. The food shops open through a festival** (`Society::FestivalShopsOpen`, `1ull << 53`; `--without festivalshops`;
+with work by the hours). On a festival day a food shop's keeper (`foodShop`, a merchant) within its hours is given no
+"Work stops for ..." (as the food makers keep at it on Restday after the service): it keeps its hours, takes its trade
+before the festival, and its shop is open. The hungry with money buy there (comparing, with rule 1), and those without
+seek alms there (the church's budget). A keeper on duty misses the gathering's handout and eats at its own counter
+(KitchenKept) or buys. Its hands, and everyone else, keep the festival as before; the feast's turn (`layInTheFeast`) is
+unchanged. No constants, no wage or price feedback: a few hours of sales four times a year.
+
+**Saves:** nothing new (the prices are asked again in the hour after a restart; a restore's are seen at the next hour).
+**econ_watch:** `--without shopscompared,festivalshops`, and `festival_food.csv` (each food sale in a festival's hours:
+a wolf's at a shop, the church's alms bought there, a keeper's at its own counter; its payer, till, town, good, units
+and coins). **The digest:** `--without shopscompared,festivalshops`, 3 days, `--deterministic --hours --threads 4`:
+d82706c7cdc4e0cb, round 13's. With both rules 981ce9b02b6f9afc, the same at one thread and four.
+
+**Tests** (`crafting_tests`, each with its rule on and off; the fixture `shoppingTown`: food counters each selling 40 of
+one food at a margin of its own, the realm's going rate 60p, the stores without meals, and wren hungry at 70 with a
+purse of its own; on the map, when asked, the square at 0 and other cells of the town 10 to 30 tiles east):
+
+- `theCheaperShopWins`: a bakery (bread 4p, 0.27p a unit of nourishment) and a smokehouse (smoked fish 36p at a margin
+  of 3, 1.8p) in wren's cell, the smokehouse's counter nearer: with 100p, with the rule wren goes to the bakery, without
+  to the smokehouse; the smokehouse's offer is its price, and with its fish gone it offers nothing, back at the hour's
+  price. A penny short of the bread, alms at the smokehouse either way. The bakery 30 tiles off across the town: with
+  the rule wren walks to it, without to the smokehouse; with three more smokehouses of its town at 10, 15 and 20 tiles
+  (nearer than the bakery: ShopsLooked), at its own cell's smokehouse either way.
+- `nearEnoughIsNearer`: two bakeries in wren's cell, the farther first by name: the nearer's bread 4.8% dearer, wren
+  goes to the nearer; 22% dearer, to the farther (without the rule, the nearer both times).
+- `theLarderLaysInWhereItsCheap`: wren and ash's larder bare, two bakeries in town, the day's turn: without the rule the
+  household starts at its own (by its home); that one's bread at a margin of 3, with the rule it starts at the other,
+  without at its own still; the two alike, with the rule at its own.
+- `theValueIsHourly`: 70 wolves and two bakeries alike, the parallel runner on two threads of the test's own: the Crust
+  is valued as it opens, on the test's thread, and the wolves decided on the other two; w100 goes to the Crust, the
+  nearer; its bread made dear at 10:30 (its price is), its offer the hour's till 11:00, w100 still going to it; at 11:00
+  valued afresh, once (`shopValueHours`), and w100 goes to the Loaf; still on the test's thread.
+- `aFoodShopOpensAtTheFestival`: a festival at 14:00, the baker on its hours (8-17): with the rule "trade", its counter
+  open and wren (20p) buys a loaf there; without, the baker at the festival, no shop open, no loaf. At 18:00, past its
+  hours, the baker at the festival with the rule too.
+- `aSmithStillFeasts`: town()'s smith at the festival with the rule and without; its baker at its trade only with it.
+- Older tests: `aHungryWolfBuysAtItsPrice` (round 10) turns ShopsCompared off with FoodAtItsPrice in its run without the
+  rule (the bite's rule there is round 10's; with ShopsCompared the wolf compares whatever its purse). No other test
+  changed. All 68 tests pass with both rules; with both forced off (a temporary build, the six new tests left out), all
+  68 pass too.
+
+**The 182-day check** (`--fast --deterministic --hours --threads 3`, the default start, built from 444d374, against days
+0-182 of `2026-10-30-r13-2y-fast`, the same args from e0cb26e; the run in
+`artifacts/economy/2026-10-30-r14-shopping-182` of the lane's worktree; Ridgemere's food spending is food_towns.csv's
+"resident food purchase" by the seller's town, its nourishment by items.json):
+
+| by month (days) | 0-29 | 30-59 | 60-89 | 90-119 | 120-149 | 150-182 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Ridgemere smoked fish, share of food spending | 10.3 / 5.7% | 6.4 / 3.4% | 10.6 / 4.4% | 12.9 / 15.0% | 21.1 / 20.6% | 26.8 / 23.4% |
+| Ridgemere food spending | 405k / 355k | 399k / 363k | 427k / 399k | 507k / 454k | 528k / 415k | 674k / 472k |
+| Ridgemere pennies for 50 nourishment | 27.0 / 23.9 | 24.7 / 23.0 | 26.3 / 23.5 | 30.9 / 27.0 | 33.1 / 25.8 | 37.3 / 25.8 |
+| Ridgemere bread, units | 3,734 / 9,566 | 4,282 / 6,888 | 4,736 / 5,763 | 7,319 / 3,259 | 7,866 / 6,731 | 8,583 / 6,860 |
+| Ridgemere porridge, units | 1,070 / 3,174 | 1,361 / 4,847 | 1,487 / 5,929 | 1,300 / 6,431 | 1,272 / 6,760 | 1,643 / 7,240 |
+| Ridgemere smoked fish, units | 3,103 / 1,484 | 1,906 / 931 | 2,912 / 1,654 | 3,611 / 4,631 | 5,500 / 4,961 | 8,202 / 6,271 |
+| Ridgemere bread, a loaf | 4.0 / 4.0p | 4.3 / 4.0p | 5.0 / 4.1p | 4.8 / 4.7p | 4.8 / 4.9p | 4.6 / 4.7p |
+| Ridgemere smoked fish, a piece | 13.4 / 13.6p | 13.3 / 13.3p | 15.6 / 10.6p | 18.2 / 14.7p | 20.2 / 17.2p | 22.0 / 17.6p |
+| food, a unit (the scorecard's) | 11.1 / 9.4p | 9.8 / 8.8p | 10.3 / 8.8p | 10.9 / 9.7p | 11.4 / 9.0p | 12.5 / 8.8p |
+| the bakeries' units (all eight) | 12,388 / 21,955 | 12,888 / 19,370 | 15,960 / 15,706 | 18,723 / 13,155 | 20,356 / 20,053 | 22,049 / 21,623 |
+| Ridgemere's smokehouses' units (two tills) | 4,860 / 521 | 1,574 / 938 | 5,148 / 613 | 7,826 / 870 | 7,499 / 793 | 10,808 / 1,083 |
+| Ridgemere's provisioners' units (three) | 8,981 / 6,868 | 7,737 / 7,191 | 8,600 / 17,528 | 9,451 / 20,234 | 12,581 / 19,720 | 16,207 / 21,262 |
+| makers' hours short of flour | 1,949 / 3,608 | 2,102 / 2,726 | 1,509 / 2,442 | 576 / 2,001 | 551 / 1,832 | 1,256 / 1,623 |
+| makers' hours short of fish | 2,848 / 1,413 | 2,050 / 1,652 | 3,005 / 1,978 | 2,659 / 2,150 | 3,773 / 2,064 | 5,350 / 2,865 |
+| going rate, the realm's | 60 / 60p | 60 / 60p | 60 / 60p | 60 / 60p | 60 / 60p | 60-61 / 60p |
+| going rate, Ridgemere's | 60 / 60p | 60 / 60p | 60 / 60p | 60-62 / 60-61p | 60-63 / 60-62p | 61-65 / 60-61p |
+| hungry, the worst day | 0 / 1 | 10 / 0 | 0 / 0 | 0 / 0 | 5 / 0 | 0 / 0 |
+
+(Each cell base / rules. The bakeries' and the shops' units are tills.csv's sold units, all their goods.)
+
+| gate or target (Q1: days 91-182) | base | rules | |
+| --- | --- | --- | --- |
+| Ridgemere smoked fish's share of food spending, Q1 (at most 15%) | 21.0% | 19.7% | **missed** (Q0 9.1% to 4.5%) |
+| bread and porridge units, Ridgemere Q1 | 23,595 + 4,170 | 16,850 + 20,225 | up a third together; bread down 29% |
+| the realm's, Q1 | 44,139 + 10,184 | 39,513 + 27,823 | up 23% together |
+| food a unit, Q1 (at or under base) | 11.6p | 9.1p | met |
+| Ridgemere pennies for 50 nourishment, Q1 (at or under base) | 34.0p | 26.2p | met |
+| festival midnights, hunger.csv days 46 / 138 (at or under base) | 10 / 5 | 0 / 0 | met |
+| food sold in the festivals' hours (festival_food.csv) | none (all shut) | 114 sales (see below) | |
+| Ridgemere bread, a loaf, Q1 | 4.7p | 4.8p | |
+| wall time, cost days 1-182 (within +15%) | 9.75 min | 9.25 min | met (-5%; other runs beside both) |
+| going rate 57-64p, Ridgemere at most 66p | 60-61, R. 60-65 | 60, R. 60-62 | met |
+| days with hungry at or under 1% (at least 95%) | 100% | 100% | met |
+| money | conserved (5,000,120) | conserved (5,000,120) | met |
+
+The scorecard (stability.py, quarters of 91 days), base then rules: Gini .485 / .502 (Q0) and .518 / .502 (Q1); the
+poorer half .187 / .171 and .160 / .169; broke 5 / 6 and 16 / 9; tills stopped 103 / 109 and 97 / 112 of 384; the
+capital 291k / 296k and 239k / 227k; the church 234k / 237k and 219k / 212k; verdict STABLE on its 182 days. The
+festivals' hours: day 45, 38 wolves' purchases (71 units, 760p), 22 keepers' at their own counters, 3 alms; day 137, 24
+purchases (30 units), 27 at their counters, no alms. Most where the base's festival hunger was: Frosthollow's inn's
+porridge (26 sales; the base's 5 hungry on day 138, its shelves 22 food) and Oakhaven's bakery and inn (16 on day 45, 9
+of them its bread; the base's 9 hungry on day 46, its shelves bare at the count). Ridgemere's: 13 purchases, 33 at
+counters. The bakeries' missed meals aren't in econ_watch's files (Society::missedMeal's counts are its own); the
+nearest there is, hungry wolves holding the price of their town's cheapest food (hunger.csv's hungry less its
+hungry_poor), was 12 wolf-days in the base's six months and 2 in the rules' (one each on days 18 and 19, Ridgemere).
+
+Read: the walk-ins and the larders found the cheap food: in the second quarter Ridgemere's smokehouses sold a tenth of
+what they did, its provisioners half again as much (61k units against 38k), five times the porridge, and the city paid
+23% less for its nourishment (34.0p to 26.2p for 50), food a unit 9.1p against 11.6p, with no rise over the six months
+(the base's rose from 9.8p in its second month to 12.5p in its sixth). The Gini at the half year .502 against .518, the
+poorer half .169 against .160: cheaper food leaves the poor more, though six months don't say it lasts. The fish wanted
+fell (makers short of fish 2,150-2,865 hours a month in the second quarter against 2,659-5,350) and the flour wanted
+rose (2,001 against 576 in the fourth month): the bread was pace- and flour-limited as the brief warned, its sales down
+in the fourth month, the porridge taking the place; its price stayed 4.7-4.9p, and the going rate didn't move (60p,
+Ridgemere at most 62p against the base's 65p). But the smoked fish's share came back in the second quarter, 15-23% a
+month, short of the 15% target: its units fell only 8% there (15,863 against 17,285), its price 20% (16.6p against 20.7p
+a piece). The likeliest cause, the larders (not counted: econ_watch doesn't tell a lay-in's purchases from a meal's):
+`buyFood` lays in for its stocking days no more of a food than keeps (porridge a day, bread four), and the rest in what
+keeps, of which the smoked fish (30 days) is the cheapest the city's shops have; and a walk-in with a larder at home
+lays in too. The rule moved that buying from the smokehouses (their sold units, all their goods, some 2,700 in the
+quarter against 26,100) to the provisioners' and fishmongers' cheaper smoked fish, as it should, but didn't take it
+away: what keeps is `buyFood`'s choice, left as it was. The two festivals' hours sold little (114 sales), but where the
+base's midnights were hungry (Oakhaven, Frosthollow); both runs' festival midnights were small in the first half year,
+the brief's large ones (30 to 125) were year 2's.
+
+**For the user:**
+
+1. **What keeps.** The smoked fish's share is now the larders' keeping food (`buyFood`'s stocking days, its Item::keeps
+   cap), not the dear shop's walk-ins. To bring it under 15%: lay in fewer days where the cheap food doesn't keep (the
+   stocking days by what keeps at a fair price), or buy the keeping part at the best value of what keeps across the
+   town's shops (cheese 30 for its 40 days, salt fish 18 for 120, where they're made). That's buyFood's, not this
+   round's.
+2. **ShopsLooked** (3 beyond the cell) and **ValueTie** (.10): wider looks draw harder to the porridge and bread, whose
+   makers are flour- and pace-limited (the flour shortage tripled in the fourth month).
+3. **The prices' hour**: each food priced at its first sight in the hour; the shelf read now. An hour is cheap (the run
+   was 5% quicker, with other runs beside both; the hungry short of a day's wage no longer decide in their turn to ask
+   the prices).
+4. **Run longer**: one run of 182 days this round; whether the cheaper food holds the Gini under .55 and the prices flat
+   is the two-year run's to say, with lane 1's margins beside it (not merged into this branch, so not run with it).

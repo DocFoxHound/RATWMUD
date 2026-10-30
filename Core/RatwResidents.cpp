@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
+#include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -546,6 +547,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             shopsOfCommunity[open.second.community].push_back(shopList.size());
         shopList.push_back(&open);
     }
+    // The shops compared (round 14, lane 2: ShopsCompared, with work by the hours): each open food shop's prices this game
+    // hour, here, on the main thread, before the threads decide (prices are worked out on first asking, and that isn't
+    // for the threads: they only read them, with what's on its shelf now, shopOffer). Each food priced at its first sight
+    // on its shelf in the hour: at the hour's first second, or as it's baked since.
+    const bool compared = workByHours() && wageRule(ShopsCompared);
+    if (compared)
+        for (const auto* open : shopList)
+            valueShop(open->first, absoluteDay);
     // Each home's household (doc 42, the user: who keeps the house shops for it and minds its children): those living
     // there who are about this second, asked only of homes whose keeper wants to know.
     if (householdsDay_ != today || householdsOf_ != state_.residents.size())
@@ -824,11 +833,19 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             endHour -= 2;                           // Rain: outdoor work ends early.
         bool onHours = within(hour, job->startHour, endHour);
         std::string resting;                        // Why a working day isn't one.
+        // A food shop's keeper keeps its hours on a festival day (round 14, lane 2: FestivalShopsOpen, the user,
+        // 2026-10-30), as the food makers do on Restday after the service: work stopped from noon to eleven for everyone,
+        // the food shops too, and the feast was the only food those hours. As the larders thinned, Ridgemere's festival
+        // midnights of the two-year run found 30, 21, 36 and 110 hungry, the run's worst days: on day 686's count 123 of
+        // the 125 hungry were asleep at hunger 70-80, 81 of them holding 20p or more, its shelves holding 1,340 food; the
+        // next day none. Now its shop is open, its trade before the festival, the hungry buy there or seek alms there; it
+        // misses the gathering's handout, and eats at its own counter or buys. Everyone else's festival is as it was.
+        const bool festivalShop = festival && merchantRole && onHours && workByHours() && wageRule(FestivalShopsOpen) && foodShop(id);
         if (!guard)
         {
             if (workSky == 2)
                 resting = "Foul weather: outdoor work has stopped.";
-            else if (festival)
+            else if (festival && !festivalShop)
                 resting = "Work stops for " + plan.name + ".";
             // Shops open after the service, so everyone can eat (doc 42); those that make food keep at it all afternoon,
             // so the shelves are stocked for the day (the user, 2026-10-07: food makers work Restday after service); and
@@ -891,8 +908,77 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         // name (Frosthollow's hungry walked to a smokehouse by the Sound); with none, it asks alms as before.
         const bool atItsPrice = workByHours() && wageRule(FoodAtItsPrice);
         const bool farNearest = !localShop && workByHours() && wageRule(NearestShop);
+        // The wolves compare the shops (round 14, lane 2: ShopsCompared, the user, 2026-10-30). With a shop of its cell or
+        // its town open, whatever its purse, it looks at the open food shops of its cell and the ShopsLooked nearest of its
+        // town beyond the cell (by the map, as NearestShop measures; off it, the first ShopsLooked of its town), and goes
+        // to the one of least value (the fewest pennies for a unit of nourishment it sells) whose cheapest food its purse
+        // pays for; of those within ValueTie of the least, the nearest. None it can pay: alms, as before. Before, a dear
+        // seller lost no buyers: Ridgemere's smoked fish was 9% of its residents' food spending in the first quarter of
+        // the two-year run and 52% in the seventh, 35p to 104p for 50 of nourishment against bread's 15-20p. (Its prices
+        // the hour's, worked out before the threads decide, valueShop; what's on its shelf now: shopOffer. Only read, so
+        // decided at once. The wolf's place and the counters' on the map as NearestShop reads them, LifeDay::onMap: the
+        // world's cells, only read.)
+        const auto comparedAt = [&](std::int64_t purse) -> const Spot* {
+            double wx = 0, wy = 0;
+            const bool placed = day_.onMap && day_.onMap(Spot{body.cell, body.x, body.y}, wx, wy);
+            // (How far a counter is: across the map; off it, within its cell, else past the cell's every shop.)
+            const auto far = [&](const Spot& at) {
+                double sx = 0, sy = 0;
+                if (placed && day_.onMap(at, sx, sy))
+                    return std::hypot(sx - wx, sy - wy);
+                return at.cell == body.cell ? std::hypot(at.x - body.x, at.y - body.y) : std::numeric_limits<double>::infinity();
+            };
+            thread_local std::vector<std::pair<std::size_t, double>> seen;   // (A shop's number in shopList, how far.)
+            seen.clear();
+            if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
+                for (const auto i : here->second)
+                    if (shopList[i]->first != id)
+                        seen.emplace_back(i, far(shopList[i]->second.serve));
+            const auto inCell = std::ptrdiff_t(seen.size());
+            int looked = 0;
+            if (!home.empty())
+                if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
+                    for (const auto i : town->second)
+                    {
+                        const auto& at = shopList[i]->second.serve;
+                        if (shopList[i]->first == id || at.cell == body.cell)
+                            continue;               // (Its own, or of its cell: looked at already.)
+                        // (The ShopsLooked nearest, kept in order; of equals, the first by its keeper.)
+                        const double d = far(at);
+                        if (looked == ShopsLooked)
+                        {
+                            if (!(d < seen.back().second))
+                                continue;
+                            seen.pop_back();
+                            --looked;
+                        }
+                        auto to = seen.begin() + inCell;
+                        while (to != seen.end() && !(d < to->second))
+                            ++to;
+                        seen.emplace(to, i, d);
+                        ++looked;
+                    }
+            // (Each one's offer, and whether its purse pays its cheapest food, as FoodAtItsPrice's `pays`: 0 if not.)
+            thread_local std::vector<double> value;
+            value.assign(seen.size(), 0.);
+            double least = 0;
+            for (std::size_t k = 0; k < seen.size(); ++k)
+                if (const auto o = shopOffer(shopList[seen[k].first]->first); o.value > 0 && o.cheapest > 0 && o.cheapest <= purse)
+                {
+                    value[k] = o.value;
+                    least = least > 0 ? std::min(least, o.value) : o.value;
+                }
+            const Spot* found = nullptr;
+            double nearest = 0;
+            for (std::size_t k = 0; k < seen.size(); ++k)
+                if (value[k] > 0 && value[k] <= least * (1 + ValueTie) && (!found || seen[k].second < nearest))
+                    found = &shopList[seen[k].first]->second.serve, nearest = seen[k].second;
+            return found;
+        };
         const auto buysAt = [&]() -> const Spot* {
             const auto purse = spendable(id);
+            if (compared && localShop)
+                return comparedAt(purse);
             if (!atItsPrice && purse < bite)
                 return nullptr;
             if (!farNearest && (!atItsPrice || purse >= aDay))

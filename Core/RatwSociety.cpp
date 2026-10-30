@@ -765,6 +765,7 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
 {
     season_ = season;
+    decidingAt_ = absoluteDay;                         // (The shops' values' hour, at the day's turn too: valueShop.)
     unseenDecided_ = ++secondsDecided_ % unseenStep() == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
     orchestrate(absoluteDay, bodies);                  // The economy's monitor: its measures and snapshot (doc 46).
