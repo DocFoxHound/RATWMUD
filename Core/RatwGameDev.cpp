@@ -145,11 +145,6 @@ void Game::devCommand(Connection* c, const json::Value& j)
             result = {true, said.str(), {}};
         }
     }
-    else if (command == "reckon")
-    {
-        result = {true, world_.reckonNow(), {}};
-        record(Economy, "");
-    }
     else
         result = {false, "No such command: /" + command + ". Try /help.", {}};
 

@@ -492,10 +492,12 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         else if (command == "economy")
         {
             auto& e = roster.economy;
-            fields >> e.treasury >> e.storeHerbs >> e.storeMeals >> e.dailyHerbs >> e.dailyMeals;
+            // (The daily herbs and meals the capital's caravans once carried are read and set aside: doc 66, Phase 5.)
+            int dailyHerbs = 0, dailyMeals = 0;
+            fields >> e.treasury >> e.storeHerbs >> e.storeMeals >> dailyHerbs >> dailyMeals;
             if (economy || !end(fields) || e.treasury < 0 || e.treasury > 1000000 || e.storeHerbs < 0 ||
-                e.storeHerbs > 10000 || e.storeMeals < 0 || e.storeMeals > 10000 || e.dailyHerbs < 0 ||
-                e.dailyHerbs > 1000 || e.dailyMeals < 0 || e.dailyMeals > 1000)
+                e.storeHerbs > 10000 || e.storeMeals < 0 || e.storeMeals > 10000 || dailyHerbs < 0 ||
+                dailyHerbs > 1000 || dailyMeals < 0 || dailyMeals > 1000)
                 return reject("Invalid or duplicate economy record.");
             economy = true;
         }

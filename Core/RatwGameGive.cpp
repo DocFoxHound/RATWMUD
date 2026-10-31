@@ -72,7 +72,7 @@ std::string Game::giveRefusal(const std::string& giver, const std::string& targe
         return "Give what?";
     if (!item.empty() && (quantity < 1 || quantity > 99 || spareOf(giver, item) < quantity))
         return "You haven't that to give (what you wear stays on you).";
-    if (coins < 0 || coins > 10000 || world_.society().spendable(giver) < coins)
+    if (coins < 0 || coins > 10000 || world_.society().cash(giver) < coins)
         return "You haven't that much.";
     if (!item.empty())
         if (const auto* a = world_.society().account(target);

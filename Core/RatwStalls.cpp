@@ -21,13 +21,9 @@ using json::Value;
 
 namespace
 {
-// A stall's rent for the morning, and the dearest price laid on it, in LD (3p and 999p at a 12p day, Society::pennies,
-// doc 64, Phase 13): the rent at its town's day, the price at the realm's, as the ledger's dearest piece (PieceMost) is,
-// so a price a stall takes is one the ledger moves. And one it sells at: a price past today's dearest (the realm's rate
-// measured lower since it was laid out: a stall stands a market morning, the rate is measured at the day's turn, so only
-// across a save) isn't sold at until its keeper prices it again (the price review). A resident pays no more than its
-// town's price for what it wants, which is far under it (the dearest such, a jewelled collar, 600p at a 12p day).
-constexpr double StallFee = 3 / 12., PriceMost = 999 / 12.;
+// A stall's rent for the morning, and the dearest price laid on it, in pennies (under the ledger's dearest piece,
+// Society::PieceMost, so a price a stall takes is one the ledger moves).
+constexpr std::int64_t StallFee = 3, PriceMost = 999;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;
 
@@ -86,7 +82,7 @@ void Game::clearStall(Stall& st, const std::string& why, bool refund)
     if (refund && st.fee > 0)
     {
         const auto treasury = society.treasuryOf(st.community);
-        society.shift(treasury, st.keeper, "", 0, std::min(st.fee, society.spendable(treasury)), "stall fee returned");
+        society.shift(treasury, st.keeper, "", 0, std::min(st.fee, society.cash(treasury)), "stall fee returned");
     }
     if (!st.closed)
         world_.recordEvent({"stall closed", st.keeper, {}, st.cell, 0, 0, {}, 0, st.takings, st.id});
@@ -97,92 +93,8 @@ void Game::clearStall(Stall& st, const std::string& why, bool refund)
     record(Economy | Character, st.keeper);
 }
 
-void Game::residentsAtStalls()
-{
-    // Grown residents of the stall's own town, within 6 tiles of it, while its keeper is there: each looks over the wares
-    // once a market day, and buys the first it wants (a treat, a household need, finery, care, a pastime, something for
-    // the home) at no more than the town's price and within a tenth of what it has beyond a week's food. Three buyers a
-    // stall an hour at most; about one in three who look buy.
-    auto& society = world_.society();
-    const double today = std::floor(world_.calendarDays());
-    const auto& residents = society.state().residents;
-    const auto wanted = [](const std::string& item) {
-        const auto base = items::baseOf(item);
-        const auto* g = items::good(base);
-        if (!g)
-            return false;
-        if (Society::edible(base))
-            return g->price >= 3;                   // (A treat: bread and porridge come from the shops.)
-        for (const auto& need : items::householdNeeds())
-            if (std::find(need.any.begin(), need.any.end(), base) != need.any.end())
-                return true;
-        const auto& c = g->category;
-        return c == "jewelry" || c == "hat" || c == "scarf" || c == "shawl" || c == "paw_wear" || c == "care" || c == "luxury" ||
-               c == "instrument" || c == "household";
-    };
-    for (auto& st : stalls_)
-    {
-        if (st.closed || st.prices.empty() || !keeperPresent(st))
-            continue;
-        int buyers = 0;
-        for (const auto* e : world_.entitiesIn(st.cell))
-        {
-            if (buyers >= 3)
-                break;
-            if (!e || !e->npc || e->dead || e->age < 16 || std::hypot(e->position.x - st.x, e->position.y - st.y) > 6)
-                continue;
-            const auto life = residents.find(e->id);
-            const auto key = e->id + "|" + std::to_string(std::int64_t(today));
-            if (life == residents.end() || world_.lawTown(life->second.homeCell) != st.community || stallBuyers_.count(key))
-                continue;
-            stallBuyers_.insert(key);
-            if (double(std::hash<std::string>{}(key + "|stall") % 1000) / 1000 >= .35)
-                continue;                           // (Looked, and walked on.)
-            const auto* purse = society.account(e->id);
-            const auto budget = purse ? (purse->cash - society.pennies(7 * Society::FoodADay, st.community)) / 10 : 0;
-            const auto* wares = society.account(account(st));
-            for (const auto& [item, price] : st.prices)
-            {
-                if (!wares || Society::stock(*wares, item) <= 0 || !wanted(item) || price > budget ||
-                    double(price) > std::floor(society.townPrice(st.community, item) + 1e-9))
-                    continue;
-                if (!purse->stock.count(item) && purse->stock.size() >= MaxGoodsKinds)
-                    continue;
-                if (!society.shift(account(st), e->id, item, 1, 0, "stall sale"))
-                    continue;
-                if (!society.shift(e->id, st.keeper, "", 0, price, "stall sale"))
-                {
-                    society.shift(e->id, account(st), item, 1, 0, "stall sale undone");
-                    continue;
-                }
-                if (!Society::edible(items::baseOf(item)))
-                    society.consume(e->id, item, 1, "used at home");   // (Food is eaten as it eats what it carries.)
-                moveScents(st.keeper, e->id, item, 1, false);
-                st.takings += price;
-                ++buyers;
-                world_.recordEvent({"stall sale", e->id, st.keeper, st.cell, 0, 0, item, 1, price, st.id});
-                record(Economy | Character, st.keeper);
-                if (auto* k = clientOf(st.keeper))
-                    system(k, names::capitalised(labelFor(st.keeper, e->id)) + " buys " + goodsWords(item, 1, 0) + " from your stall for " +
-                                  std::to_string(price) + "p.");
-                break;
-            }
-        }
-        if (const auto* left = society.account(account(st)))
-            for (auto it = st.prices.begin(); it != st.prices.end();)
-                it = Society::stock(*left, it->first) <= 0 ? st.prices.erase(it) : std::next(it);
-    }
-}
-
 void Game::tendStalls()
 {
-    if (const double hour = std::floor(world_.calendarDays() * 24); hour != stallBuyersHour_)
-    {
-        stallBuyersHour_ = hour;
-        if (stallBuyers_.size() > 20000)
-            stallBuyers_.clear();
-        residentsAtStalls();
-    }
     if (stalls_.empty())
         return;
     const double today = std::floor(world_.calendarDays());
@@ -273,8 +185,8 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         if (let >= squareMost(world_, community))
             return result = {false, "The town has let all the stalls it lets today.", {}}, true;
         const auto treasury = society.treasuryOf(community);
-        const auto fee = society.pennies(StallFee, community);
-        if (society.spendable(me) < fee || !society.shift(me, treasury, "", 0, fee, "stall rent"))
+        const auto fee = StallFee;
+        if (society.cash(me) < fee || !society.shift(me, treasury, "", 0, fee, "stall rent"))
             return result = {false, "A stall costs " + std::to_string(fee) + "p.", {}}, true;
         Stall st;
         st.id = "st" + std::to_string(nextStall_++);
@@ -311,11 +223,11 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto price = st->prices.find(item);
         if (!a || price == st->prices.end() || Society::stock(*a, item) < quantity)
             return result = {false, "The stall hasn't that many.", {}}, true;
-        if (const auto most = society.pennies(PriceMost, ""); price->second > most)
+        if (const auto most = PriceMost; price->second > most)
             return result = {false, "That is priced past the dearest a piece sells for today (" + std::to_string(most) +
                                         "p); the keeper must price it again.", {}}, true;
         const auto cost = price->second * quantity;
-        if (society.spendable(me) < cost)
+        if (society.cash(me) < cost)
             return result = {false, "You haven't " + std::to_string(cost) + "p.", {}}, true;
         if (const auto* purse = society.account(me); purse && !purse->stock.count(item) && purse->stock.size() >= MaxGoodsKinds)
             return result = {false, "You can't carry another kind of thing.", {}}, true;
@@ -355,7 +267,7 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
     {
         const int quantity = std::clamp(int(j.number("quantity", 1)), 1, 99);
         const auto price = std::int64_t(j.number("price", 0));
-        if (const auto most = society.pennies(PriceMost, ""); price < 1 || price > most)
+        if (const auto most = PriceMost; price < 1 || price > most)
             return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         if (!items::good(items::baseOf(item)) || spareOf(me, item) < quantity)
             return result = {false, "You haven't that to sell (what you wear, and what is lent to you, stays off the stall).", {}}, true;
@@ -386,7 +298,7 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto found = st.prices.find(item);
         if (found == st.prices.end())
             return result = {false, "That isn't on your stall.", {}}, true;
-        if (const auto most = society.pennies(PriceMost, ""); price < 1 || price > most)
+        if (const auto most = PriceMost; price < 1 || price > most)
             return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
         found->second = price;
         return result = {true, "Now " + std::to_string(price) + "p apiece.", {}}, true;
@@ -452,7 +364,7 @@ json::Value Game::stallSelf(const std::string& viewer)
             o.add("here", d <= KeeperReach);
             o.add("takings", double(st.takings));
             o.add("wares", wares(st, false));
-            o.add("priceMost", double(world_.society().pennies(PriceMost, "")));   // (For the price box.)
+            o.add("priceMost", double(PriceMost));   // (For the price box.)
             out.add("mine", o);
             any = true;
         }
@@ -481,7 +393,7 @@ json::Value Game::stallSelf(const std::string& viewer)
                 if (!taken && let < squareMost(world_, community) && marketOpen(community))
                 {
                     auto o = Value::object();
-                    o.add("fee", double(world_.society().pennies(StallFee, community)));
+                    o.add("fee", double(StallFee));
                     out.add("offer", o);
                     any = true;
                 }

@@ -5,7 +5,7 @@ option(RATW_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwCrafting.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwDemand.cpp Core/RatwPrices.cpp Core/RatwLabour.cpp Core/RatwInstitutions.cpp Core/RatwProcure.cpp Core/RatwReckoning.cpp Core/RatwWages.cpp Core/RatwOutwork.cpp Core/RatwHouses.cpp Core/RatwTills.cpp Core/RatwFounding.cpp Core/RatwOddJobs.cpp Core/RatwFarmhands.cpp Core/RatwBelongings.cpp Core/RatwMint.cpp Core/RatwHouseholds.cpp Core/RatwSurplus.cpp Core/RatwOrchestrator.cpp Core/RatwOrchestrate.cpp Core/RatwSermons.cpp Core/RatwTrade.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwTalk.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
+add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwSermons.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwTalk.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
 find_package(Threads REQUIRED)
 target_link_libraries(ratw_core PUBLIC ${CMAKE_DL_LIBS} Threads::Threads)
 target_include_directories(ratw_core PUBLIC Core)
@@ -189,9 +189,6 @@ add_test(NAME hold_behaviors COMMAND hold_tests)
 add_executable(journal_tests Tests/journal_tests.cpp)
 target_link_libraries(journal_tests PRIVATE ratw_core)
 add_test(NAME journal_behaviors COMMAND journal_tests)
-add_executable(orchestrator_tests Tests/orchestrator_tests.cpp)
-target_link_libraries(orchestrator_tests PRIVATE ratw_core)
-add_test(NAME orchestrator_behaviors COMMAND orchestrator_tests)
 add_executable(game_tests Tests/game_tests.cpp)
 target_link_libraries(game_tests PRIVATE ratw_core)
 target_compile_definitions(game_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -208,9 +205,9 @@ add_test(NAME server_end_to_end COMMAND server_smoke $<TARGET_FILE:ratw_server>)
 add_executable(careers_tests Tests/careers_tests.cpp)
 target_link_libraries(careers_tests PRIVATE ratw_core)
 add_test(NAME careers_behaviors COMMAND careers_tests)
-add_executable(crafting_tests Tests/crafting_tests.cpp)
-target_link_libraries(crafting_tests PRIVATE ratw_core)
-add_test(NAME crafting_behaviors COMMAND crafting_tests)
+add_executable(shops_tests Tests/shops_tests.cpp)
+target_link_libraries(shops_tests PRIVATE ratw_core)
+add_test(NAME shops_behaviors COMMAND shops_tests)
 add_executable(hunt_tests Tests/hunt_tests.cpp)
 target_link_libraries(hunt_tests PRIVATE ratw_core)
 add_test(NAME hunt_behaviors COMMAND hunt_tests)
@@ -235,28 +232,6 @@ target_compile_definitions(practice_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT
 # Not a test: loads a streamed world export the way the server does (see Tests/world_check.cpp).
 add_executable(world_check Tests/world_check.cpp)
 target_link_libraries(world_check PRIVATE ratw_core)
-# Nor this: a world's economy left to its residents for days on end, every coin tallied (see Tests/econ_watch.cpp).
-add_executable(econ_watch Tests/econ_watch.cpp Tests/econ_players.cpp)
-target_link_libraries(econ_watch PRIVATE ratw_core ${RATW_FAST_MALLOC})
-target_compile_definitions(econ_watch PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-# Its log's stamp (doc 64's Phase 13): the source's git state at each build, into econ_watch_stamp.h beside the build
-# (rewritten only when it changes; Tests/econ_watch_stamp.cmake).
-add_custom_target(econ_watch_stamp
-  COMMAND ${CMAKE_COMMAND} -DSOURCE=${CMAKE_CURRENT_SOURCE_DIR} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/stamp/econ_watch_stamp.h
-          -P ${CMAKE_CURRENT_SOURCE_DIR}/Tests/econ_watch_stamp.cmake
-  BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/stamp/econ_watch_stamp.h
-  COMMENT "econ_watch's stamp")
-add_dependencies(econ_watch econ_watch_stamp)
-target_include_directories(econ_watch PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/stamp)
-# The players who push, and econ_watch's files, checked (a test: Tests/econ_players_tests.cpp runs econ_watch on a
-# little world of its own, and the stamp's script on a git tree of its own, with the cmake that built it).
-add_executable(econ_players_tests Tests/econ_players_tests.cpp Tests/econ_players.cpp)
-target_link_libraries(econ_players_tests PRIVATE ratw_core)
-target_compile_definitions(econ_players_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-                           RATW_ECON_WATCH="$<TARGET_FILE:econ_watch>" RATW_CMAKE="${CMAKE_COMMAND}")
-add_dependencies(econ_players_tests econ_watch econ_watch_stamp)
-target_include_directories(econ_players_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/stamp)
-add_test(NAME econ_players COMMAND econ_players_tests)
 # Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
 add_executable(game_load Tests/game_load.cpp)
 target_link_libraries(game_load PRIVATE ratw_core ${RATW_FAST_MALLOC})

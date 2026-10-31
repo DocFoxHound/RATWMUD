@@ -267,9 +267,7 @@ void Game::troubleActions(const Entity& self, const Entity& e, double apart, Val
         if (!t || t.kind != h.kind)
             continue;
         const auto* kind = rules.kind(t.kind);
-        if (t.kind == "debt" && e.id == resident && apart <= 3)
-            actions.push("trouble:loan:" + resident + "|Pay off their loan (" + std::to_string(t.coins) + "p)");
-        else if (t.kind == "short" && e.id == resident && apart <= 3)
+        if (t.kind == "short" && e.id == resident && apart <= 3)
             actions.push("trouble:help:" + resident + "|Help the household (" + std::to_string(t.coins) + "p)");
         else if (t.kind == "feud" && (e.id == resident || e.id == t.other) && apart <= rules.peaceTiles)
             actions.push("trouble:peace:" + resident + "|Make peace with " + labelFor(self.id, e.id == resident ? t.other : resident));
@@ -277,7 +275,7 @@ void Game::troubleActions(const Entity& self, const Entity& e, double apart, Val
             actions.push("trouble:speak:" + resident + "|Speak for " + labelFor(self.id, resident));
         else if (t.kind == "child" && e.id != resident && e.id != t.other && apart <= 3 && mastersTrade(e.id))
             actions.push("trouble:sponsor:" + resident + "|Sponsor " + labelFor(self.id, t.other) + "'s apprenticeship (" +
-                         std::to_string(atTheDay(kind ? kind->fee : 20, townFor(e.cellId))) + "p)");
+                         std::to_string((kind ? kind->fee : 20)) + "p)");
     }
 }
 
@@ -307,21 +305,6 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
     const auto* purse = society.account(wolf);
     const auto cash = purse ? purse->cash : 0;
     const auto name = [&](const std::string& id) { return names::capitalised(labelFor(wolf, id)); };
-    if (verb == "loan" && t.kind == "debt" && target == resident)
-    {
-        if (cash < t.coins)
-            return {false, "You haven't " + std::to_string(t.coins) + " pennies.", {}};
-        const auto paid = society.repayRescue(t.other, wolf, t.coins);
-        if (paid <= 0)
-            return {false, "The loan can't be paid just now.", {}};
-        record(Economy | Character, wolf);
-        const auto* at = world_.entity(wolf);
-        const auto notable = atTheDay(rules.notableDebt, at ? townFor(at->cellId) : std::string());   // (At a 12p day.)
-        troubleSolved(wolf, t, "paid_debt", paid >= notable ? fame::Notable : -1, paid,
-                      "You pay off the loan: " + std::to_string(paid) + " pennies to the town's rescue fund. " + name(resident) +
-                          "'s shop owes nothing now, and stays open.");
-        return {true, {}, resident};
-    }
     if (verb == "help" && t.kind == "short" && target == resident)
     {
         if (cash < t.coins)
@@ -390,9 +373,7 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
             return {false, name(target) + " can't take an apprentice just now.", {}};
         if (const auto* b = world_.bonds().find(target, wolf); !b || b->trust < rules.masterTrust)
             return {false, name(target) + " doesn't know you well enough to take your word for it.", {}};
-        // (troubles.json's fee is at a 12p day, as the catalogue's prices: at the town's day, doc 64, Phase 13.)
-        const auto* at = world_.entity(target);
-        const auto fee = atTheDay(kind->fee, at ? townFor(at->cellId) : std::string());
+        const auto fee = kind->fee;                 // (troubles.json's, in pennies.)
         if (cash < fee)
             return {false, "The fee is " + std::to_string(fee) + " pennies; you haven't so much.", {}};
         const auto done = world_.apprenticeResident(trade->id, t.other);

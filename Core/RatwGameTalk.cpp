@@ -44,7 +44,7 @@ double Game::talkRichLine()
     {
         std::sort(days.begin(), days.end());
         richLine_ = std::max(42.0, days[days.size() * 19 / 20]);
-        poorLine_ = std::max(double(Society::PoorDays), days[days.size() / 5]);
+        poorLine_ = std::max(7.0, days[days.size() / 5]);
     }
     return richLine_;
 }
@@ -114,7 +114,8 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     }
 
     // Means: the household's money and food in days of plain food for everyone in it (troubles::foodDays, as the
-    // troubles read it), the dole's own test, debts, and how their business does.
+    // troubles read it), and debts. (Nobody is on a dole and no business thrives or fails since the economy's rules were
+    // erased, doc 66's Phase 5: those facts stay "no" and "none" until rules say otherwise.)
     std::vector<std::string> household;
     if (Society::communalHome(life->homeCell) || life->homeCell.empty())
         household.push_back(e.id);
@@ -126,38 +127,21 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     std::int64_t held = 0;
     const double days = troubles::foodDays(household, life->homeCell, troubleReads(), &held);
     f["wealth_days"] = std::to_string(int(std::floor(days)));
-    // (Lines: under three days destitute; poor, the bottom fifth of the world's households (never under the society's
-    // own poor line); rich, the top twentieth (never under six weeks' food). Standing is added below.)
+    // (Lines: under three days destitute; poor, the bottom fifth of the world's households (never under a week's
+    // food); rich, the top twentieth (never under six weeks' food). Standing is added below.)
     const double richLine = talkRichLine();
     int wealth = days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
-    std::int64_t cash = 0;
-    for (const auto& id : household)
-        if (const auto* a = society.account(id))
-            cash += a->cash;
-    f["on_dole"] = yes(cash < society.pennies(Society::PoorDays * Society::FoodADay * double(household.size()), ""));
+    f["on_dole"] = "no";
     bool owes = false;
     if (const auto* bonds = world_.bonds().of(e.id))
         for (const auto& [other, b] : *bonds)
             owes |= b.owed < 0;
-    std::string business = "none";
-    if (post && society.ownsTill(*post))
-    {
-        const auto till = society.tillOf(e.id);
-        const bool loan = society.state().memory.loans.count(till) > 0;
-        owes |= loan;
-        const auto* account = society.account(till);
-        const auto money = account ? account->cash : 0;
-        const auto floor = society.floatOf(post->id);
-        const auto propped = society.state().houses.propped.find(post->id);
-        const bool low = propped != society.state().houses.propped.end() && propped->second.size() >= 3;
-        business = loan || low || money < floor / 2 ? "failing" : money >= floor * 2 ? "thriving" : "steady";
-    }
+    const std::string business = "none";
     f["owes"] = yes(owes);
     f["business"] = business;
     // Standing (doc 62, phase 7; the user, 2026-10-13): food in hand doesn't measure a fortune. A great House's head
-    // and the head's family are rich, whatever their own purse; the owner of a thriving business, and those who live
-    // in the Heights or on an estate (not their servants), are comfortable at least; the Sump's are poor at most; the
-    // homeless are destitute.
+    // and the head's family are rich, whatever their own purse; those who live in the Heights or on an estate (not
+    // their servants), are comfortable at least; the Sump's are poor at most; the homeless are destitute.
     for (const auto& h : society.houses())
     {
         const auto head = society.state().careers.positions.find(h.head);
@@ -166,8 +150,7 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
             wealth = 3;
     }
     const auto quarter = f.find("quarter");
-    if (business == "thriving" ||
-        (quarter != f.end() && (quarter->second == "heights" || quarter->second == "estate") && job != "servant"))
+    if (quarter != f.end() && (quarter->second == "heights" || quarter->second == "estate") && job != "servant")
         wealth = std::max(wealth, 2);
     else if (quarter != f.end() && quarter->second == "sump")
         wealth = std::min(wealth, 1);           // (The Sump is poor, whatever's in the larder.)
@@ -249,13 +232,12 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
         if (const auto state = society.state().careers.positions.find(post->id); state != society.state().careers.positions.end())
             master = !state->second.apprentice.empty();
     f["master"] = yes(master);
-    // A House's: its head, kin of its head, or working at one of its businesses.
+    // A House's: its head, or kin of its head.
     for (const auto& h : society.houses())
     {
         const auto head = society.state().careers.positions.find(h.head);
         const auto& headHolder = head != society.state().careers.positions.end() ? head->second.holder : std::string();
-        const bool of = (post && post->id == h.head) || (!headHolder.empty() && society.family(e.id, headHolder)) ||
-                        (post && society.ownerOf(post->id) == h.id);
+        const bool of = (post && post->id == h.head) || (!headHolder.empty() && society.family(e.id, headHolder));
         if (of)
         {
             f["house"] = h.id.substr(h.id.find(':') + 1);
@@ -300,19 +282,12 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
     facts["pair.kin"] = kin;
     if (!elder.empty())
         facts["pair.elder"] = elder;
-    // Who pays whom: a till's keeper, a household's purse, a House's head.
+    // Who works for whom: a shop's keeper and the help at its premises (nobody pays a wage since doc 66's Phase 5; the
+    // shop is still the keeper's).
     const auto paidBy = [&](const std::string& worker, const std::string& boss) {
         const auto* job = society.jobOf(worker);
-        const auto* e = world_.entity(worker);
-        if (!job || !e)
-            return false;
-        const auto payer = society.payerOf(worker, *job, e->age);
-        if (payer.account == boss)
-            return true;
-        if (payer.account.rfind("till:", 0) == 0)
-            if (const auto s = society.state().careers.positions.find(payer.account.substr(5)); s != society.state().careers.positions.end())
-                return s->second.holder == boss && boss != worker;
-        return false;
+        const auto* own = society.jobOf(boss);
+        return job && own && worker != boss && own->role == "merchant" && job->role != "merchant" && job->work.cell == own->work.cell;
     };
     facts["pair.boss"] = paidBy(b, a) ? "a" : paidBy(a, b) ? "b" : "no";
     // Neighbours, and those they deal with (decision 8): who buys from whom, who is whose priest.
@@ -784,8 +759,7 @@ std::map<std::string, std::string> Game::peopleOf(const std::string& id)
         if (head == society.state().careers.positions.end() || head->second.holder.empty() || head->second.holder == id ||
             !living(head->second.holder))
             continue;
-        const auto* post = society.jobOf(id);
-        const bool own = (post && society.ownerOf(post->id) == h.id) || society.family(id, head->second.holder);
+        const bool own = society.family(id, head->second.holder);
         if (own || (!out.count("leader") && h.community == town))
             out["leader"] = head->second.holder;
         if (own)

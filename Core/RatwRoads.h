@@ -10,7 +10,7 @@
 namespace ratw
 {
 // A settlement: a region (cells' territory) with homes and a market. The capital's store is the treasury; each
-// other town has its own ("stores:<town>"), filled by caravans, which is also its own treasury (doc 42).
+// other town has its own ("stores:<town>"), which is also its own treasury.
 struct Town
 {
     std::string id, market, store;
@@ -35,14 +35,6 @@ struct Caravan
     double x = 0, y = 0;
     double waitUntil = 0;                 // Calendar day: it waits at the market this long for its escorts.
     std::map<std::string, int> with;      // Cells each escort entered alongside it: paid only for being there.
-    // A trade caravan (doc 42, Phase 7): the house or treasury whose money bought its load and to whom its takings go
-    // home. Empty for the capital's daily caravans.
-    std::string trader;
-    // The standing orders it carries, when it went for those signed that day only (doc 64, Phase 13); empty for all of
-    // its road's. And what each order it set out with was for a week then: what it was loaded for, its share of the
-    // load on arrival (a raise agreed while it was on the road is next week's). Empty in an older save.
-    std::vector<std::string> orders;
-    std::map<std::string, int> loaded;
 };
 
 // Robbers in wild country along a road. Loot feeds them; hunger makes them bold; starving, they scatter.
@@ -57,23 +49,16 @@ struct BanditCamp
     double x = -1, y = -1;                // Where they camp in the cell (found the first time anyone comes near).
 };
 
-// Work anyone may take: a bounty on a camp, an escort, a supply run, a letter to carry. The reward is held in trust
-// ("contract:<id>") until it is paid, or returned.
+// Work anyone may take: a bounty on a camp, an escort, a letter to carry, a town project's work (doc 57). The reward is
+// held in trust ("contract:<id>") until it is paid, or returned.
 struct Contract
 {
-    std::string id, kind, poster, town;   // kind: "bounty", "escort", "supply", "courier", "procure".
+    std::string id, kind, poster, town;   // kind: "bounty", "escort", "courier"...
     std::string target;                   // Bounty: the camp; courier: the recipient; escort/supply: the town.
     std::string taker, status = "open";   // "open", "taken", "done", "expired".
     std::int64_t reward = 0;
     double created = 0, due = 0;          // Calendar days.
     std::string detail;
-    // A contract for goods ("procure", doc 35 Part 7): what, how many, and how many delivered so far. The reward left in
-    // escrow is `reward` (it shrinks as deliveries are paid).
-    std::string item;
-    int quantity = 0, delivered = 0;
-    // Taken by a resident (doc 42, Phase 4): the shop it fetches the goods from, and how many it carries now.
-    std::string source;
-    int carried = 0;
     // Offered by letter to one player first (doc 55, 5): only they may take it, from anywhere, until then.
     std::string offeredTo;
     double offeredUntil = 0;
@@ -88,47 +73,12 @@ struct Belief
     std::string as;                       // The name the holder knows the subject by ("" none: by look). Doc 56.
 };
 
-// A standing order between towns (the user, 2026-10-05): a shop that needs a good week after week that its own town
-// can't supply buys it from another town on a standing order, at an agreed price, carried by that road's weekly trade
-// caravan. Every four weeks (sooner if deliveries fall short) a porter of its town walks to the other to renegotiate
-// it: more or less a week as the shop's need shows, at the price the goods fetch there now.
-struct StandingOrder
-{
-    std::string id, buyer, town, item, from;     // buyer: its till; town: the buyer's; from: the selling town.
-    int perWeek = 0;
-    std::int64_t price = 0;                      // A piece, agreed.
-    double since = 0, review = 0;                // Calendar days: signed, and next renegotiated.
-    int delivered = 0, shortfall = 0;            // Since it was last agreed.
-    int unpaid = 0;                              // ...and what came that its buyer hadn't the money for (doc 64, Phase 13).
-    // ...and of its weeks since, what its trader's money didn't carry: a wagon kept home for want of it, or a load cut to
-    // what it could pay for (round 15, lane 2; Society::PurseNotBlamed). Not its seller's shortfall: the seller had it.
-    int unfunded = 0;
-    std::string negotiator;                      // A porter on the way to renegotiate it ("" for nobody).
-};
-
 struct RoadsState
 {
     std::vector<Caravan> caravans;
-    std::vector<StandingOrder> orders;
     std::vector<BanditCamp> camps;
     std::vector<Contract> contracts;
     std::vector<Belief> beliefs;
-    // A road whose week's caravan went early, with an order new that day ("from>to" -> the day it was due): it doesn't
-    // go again that day (doc 64, Phase 13).
-    std::map<std::string, std::int64_t> sentEarly;
-    // A seller whose order was cut or ended for what it didn't send ("buyer|good|from" -> the day): the buyer signs
-    // with another town for MonthDays, not again with it the next day (doc 64, Phase 13).
-    std::map<std::string, std::int64_t> failed;
-    // A buyer whose order of a good was cut or ended for what it couldn't pay for ("buyer|good" -> the day): it signs
-    // for that good again only with a week of the order in its till, the seller never blamed (doc 64, Phase 13: signed
-    // again the next day, penniless, every fortnight, its seller's trader buying a load a week nobody paid for). Forgotten
-    // after RefusedKeptDays, a season (round 6, the roads' review: a shop living from hand to mouth, paying for each load
-    // from that week's takings, may never hold a week of it at once, and one slump kept it from the good for good), or
-    // when an order of it still running is looked at again with everything that came paid for.
-    std::map<std::string, std::int64_t> refused;
-    static constexpr int RefusedKeptDays = 84;
     std::int64_t day = -1, nextId = 1;
-    bool stocked = false;                 // The towns' stores have had their first share from the treasury.
-    bool purses = false;                  // ...and their share of its money, as their own treasuries (doc 42).
 };
 } // namespace ratw

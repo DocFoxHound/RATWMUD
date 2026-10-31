@@ -58,11 +58,8 @@ Rules parse(const std::string& text)
     r.hourShare = doc.number("hourShare", r.hourShare);
     r.nameShare = doc.object("name").number("share", r.nameShare);
     r.nameWorth = std::int64_t(doc.object("name").number("worth", double(r.nameWorth)));
-    r.upkeepUnder = doc.number("upkeepUnder", r.upkeepUnder);
     r.greatWorth = std::int64_t(doc.object("deeds").number("greatWorth", double(r.greatWorth)));
     r.otherShare = doc.object("deeds").number("otherShare", r.otherShare);
-    r.handHours = doc.object("hands").number("hours", r.handHours);
-    r.handsMost = std::max(0, int(doc.object("hands").number("most", r.handsMost)));
     for (const auto& k : doc.array("kinds"))
     {
         Kind kind;

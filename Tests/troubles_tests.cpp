@@ -116,14 +116,6 @@ void seen()
         expect(trouble.kind == "child" && trouble.other == "u2" && trouble.age == 15, "u3's child has no trade: " + trouble.kind);
         expect(t.g.troubleNow("u2").kind != "work", "a youth under 16 isn't 'no steady work'");
 
-        // A shop in debt: the inn's till holds a rescue loan.
-        const auto till = s.tillOf("ui");
-        expect(till.rfind("till:", 0) == 0, "the inn keeps a till of its own: " + till);
-        alter(s, [&](SocietyState& st) { st.memory.loans[till] = {40, std::int64_t(w.calendarDays())}; });
-        t.g.forgetTroubles();
-        trouble = t.g.troubleNow("ui");
-        expect(trouble.kind == "debt" && trouble.coins == 40, "the inn owes the town 40p: " + trouble.kind);
-
         // Short of coin: the head of the household (its eldest) with under a week's food in purses, savings and larder.
         w.entity("u1")->age = 50;
         for (const auto& [id, life] : s.state().residents)
@@ -141,21 +133,21 @@ void seen()
         expect(s.conserved(), "nothing minted or lost by looking");
 
         // Spoken of only to a wolf it trusts.
-        expect(t.g.troubleBriefingFor("ui", ash).empty(), "a stranger isn't told");
-        w.bonds().change("ui", ash, {10, 15, 25, 0, 0}, w.calendarDays());
-        const auto briefing = t.g.troubleBriefingFor("ui", ash);
-        expect(contains(briefing, "borrowed 40 pennies") && contains(briefing, "Never ask outright"), "the Mind is told: " + briefing);
+        expect(t.g.troubleBriefingFor("u1", ash).empty(), "a stranger isn't told");
+        w.bonds().change("u1", ash, {10, 15, 25, 0, 0}, w.calendarDays());
+        const auto briefing = t.g.troubleBriefingFor("u1", ash);
+        expect(contains(briefing, "money and food for only about") && contains(briefing, "Never ask outright"), "the Mind is told: " + briefing);
         // The game's own answer.
-        put("ui", 1, 11.5);
+        put("u1", 1, 11.5);
         t.run(.5);
         t.ash.events.clear();
-        say(t, t.ash, "Is something troubling you?", "ui");
-        auto answer = replyFits(t, t.ash, [](const std::string& text) { return contains(text, "40 pennies"); });
-        expect(!answer.empty(), "the innkeeper says what's wrong");
-        expect(t.g.troublesHeardBy(ash).count("ui") && t.g.troublesHeardBy(ash).at("ui") == "debt", "she has heard it");
+        say(t, t.ash, "Is something troubling you?", "u1");
+        auto answer = replyFits(t, t.ash, [](const std::string& text) { return contains(text, "days"); });
+        expect(!answer.empty(), "the head of the household says what's wrong");
+        expect(t.g.troublesHeardBy(ash).count("u1") && t.g.troublesHeardBy(ash).at("u1") == "short", "she has heard it");
         bool listed = false;
         for (const auto& o : t.selfOf(t.ash)["unfinished"].items())
-            listed |= contains(o.string("text"), "shop owes the town 40 pennies");
+            listed |= contains(o.string("text"), "household is short of coin");
         expect(listed, "in her unfinished business");
         // Not to a wolf it doesn't trust.
         put("u3", 1, 9.5);
@@ -173,7 +165,7 @@ void seen()
     {
         Town t(world, save, 120, true);
         t.enter(t.ash, 1, "ash", "Ash", 1, 10.5);
-        expect(t.g.troublesHeardBy(t.ash.entityId).count("ui"), "what she heard survives a restart");
+        expect(t.g.troublesHeardBy(t.ash.entityId).count("u1"), "what she heard survives a restart");
     }
     fs::remove_all(root);
     fs::remove(save);
@@ -240,29 +232,6 @@ void solved()
             w.bonds().change(who, wolf, {10, trust, 30, 0, 0}, w.calendarDays());
         };
 
-        // A shop's loan paid off.
-        const auto till = s.tillOf("ui");
-        alter(s, [&](SocietyState& st) { st.memory.loans[till] = {40, std::int64_t(w.calendarDays())}; });
-        trusts("ui", ash, 15);
-        put("ui", 1, 11.5);
-        t.g.forgetTroubles();
-        t.g.hearTroubleFor(ash, "ui");
-        expect(t.g.troublesHeardBy(ash).count("ui"), "she heard of the inn's loan");
-        const auto loan = offered(t, t.ash, "ui", "trouble:loan:ui");
-        expect(contains(loan, "Pay off their loan (40p)"), "offered: pay off their loan");
-        const auto before = s.account(ash)->cash;
-        const double liking = w.bonds().find("ui", ash)->affinity;
-        auto done = act(t, t.ash, loan, "ui");
-        expect(contains(done.message, "owes nothing now"), "the loan paid: " + done.message);
-        expect(s.account(ash)->cash == before - 40 && !s.state().memory.loans.count(till), "40p from her purse, and no loan");
-        expect(s.conserved(), "money conserved");
-        expect(w.bonds().find("ui", ash)->affinity > liking, "the innkeeper warms to her");
-        expect(deedFor(t, ash, "paid_debt"), "a deed: paid off the debt");
-        expect(!t.g.troublesHeardBy(ash).count("ui"), "out of her unfinished business");
-        alter(s, [&](SocietyState& st) { st.memory.loans[till] = {30, std::int64_t(w.calendarDays())}; });
-        t.g.forgetTroubles();
-        expect(!t.g.troubleNow("ui"), "a solved kind rests a while");
-
         // A feud ended.
         w.bonds().change("um", "u2", {-30, 0, 10, 0, 0}, w.calendarDays());
         w.bonds().change("u2", "um", {-30, 0, 10, 0, 0}, w.calendarDays());
@@ -276,7 +245,7 @@ void solved()
         t.g.hearTroubleFor(ash, "um");
         const auto peace = offered(t, t.ash, "um", "trouble:peace:um");
         expect(!peace.empty(), "offered: make peace");
-        done = act(t, t.ash, peace, "um");
+        auto done = act(t, t.ash, peace, "um");
         expect(contains(done.message, "make their peace"), "peace made: " + done.message);
         expect(w.bonds().find("um", "u2")->affinity > -25 && w.bonds().find("u2", "um")->affinity > -25, "no longer at daggers drawn");
         expect(deedFor(t, ash, "made_peace"), "a deed: made peace");
@@ -387,14 +356,16 @@ void solved()
         t.enter(t.ash, 1, "ash", "Ash", 1, 10.5);
         auto& w = t.g.world();
         auto& s = w.society();
-        const auto till = s.tillOf("ui");
-        alter(s, [&](SocietyState& st) { st.memory.loans[till] = {30, std::int64_t(w.calendarDays())}; });
+        // (Their feud again: Ash made peace between them this season.)
+        w.bonds().change("um", "u2", {-60, 0, 10, 0, 0}, w.calendarDays());
+        w.bonds().change("u2", "um", {-60, 0, 10, 0, 0}, w.calendarDays());
         t.g.forgetTroubles();
-        t.g.hearTroubleFor(t.ash.entityId, "ui");
-        auto* ui = w.entity("ui");
-        ui->cellId = cellId(1), ui->position = {11.5, 8.5}, ui->path.clear();
-        expect(offered(t, t.ash, "ui", "trouble:").empty(), "the season's limit survives a restart");
-        expect(deedFor(t, t.ash.entityId, "paid_debt"), "and so does her deed");
+        t.g.hearTroubleFor(t.ash.entityId, "um");
+        auto* um = w.entity("um");
+        um->cellId = cellId(1), um->position = {11.5, 8.5}, um->path.clear();
+        (void)s;
+        expect(offered(t, t.ash, "um", "trouble:").empty(), "the season's limit survives a restart");
+        expect(deedFor(t, t.ash.entityId, "made_peace"), "and so does her deed");
     }
     fs::remove_all(root);
     fs::remove(save);

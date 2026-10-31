@@ -2782,7 +2782,6 @@ void World::recordEvent(WorldEvent event)
     bondsFromEvent(event);
     rumoursFromEvent(event);
     noteNews(event);
-    contractsFromEvent(event);
     if (eventWatcher_)
         eventWatcher_(event);
     events_.push_back(std::move(event));
@@ -3076,8 +3075,7 @@ int World::makeRequestedResidents()
         r.joinable = r.protectedNpc = false;
         r.description = child ? "A young wolf, born here to " + model->name + "'s family." : "A stranger lately come to town.";
         r.backstory = child ? "Born in the world, not written." : std::string();
-        const auto purse = child ? std::int64_t(0)
-                                 : std::int64_t(std::llround(Society::NewcomerWageDays * society_.labourDay(communityOf(r.home.cell))));
+        const auto purse = child ? std::int64_t(0) : Society::NewcomerPurse;
         if (!society_.addResident(r, purse))
             continue;
         Entity e = *body;
@@ -4377,24 +4375,6 @@ void World::furnishHomes()
         }
     society_.setHomeStores(homeStoreSpots_);
     society_.setBeds(beds_);
-    // Each farm worker's bunkhouse, for its hired hands (doc 42, "Farmhands"): the room "<site> Bunkhouse" for one who
-    // works "... at <site>".
-    std::map<std::string, const Cell*> bunkhouses;
-    for (const auto& [id, c] : cells_)
-        if (c.name.size() > 10 && c.name.compare(c.name.size() - 10, 10, " Bunkhouse") == 0)
-            bunkhouses[c.name.substr(0, c.name.size() - 10)] = &c;
-    std::map<std::string, Spot> byWorker;
-    for (const auto& r : society_.authored().residents)
-        if (const auto* p = items::producerFor(r.workLabel); p && Society::farmWork(p->id))
-            if (const auto at = r.workLabel.rfind(" at "); at != std::string::npos)
-            {
-                // (A work label is cut at 40 letters: the site's name may be the start of the bunkhouse's.)
-                const auto site = r.workLabel.substr(at + 4);
-                if (const auto found = bunkhouses.lower_bound(site);
-                    !site.empty() && found != bunkhouses.end() && found->first.compare(0, site.size(), site) == 0)
-                    byWorker[r.id] = {found->second->id, found->second->width / 2.0, found->second->height / 2.0};
-            }
-    society_.setBunkhouses(std::move(byWorker));
 }
 
 std::vector<std::pair<int, int>> World::bedTiles(const std::string& cellId) const
@@ -5477,11 +5457,7 @@ Result World::trade(const std::string& player, const std::string& trader, const 
         distance(p->position, m->position) > 2. || visionClarity(player, trader) <= 0)
         return {false, "No accessible trader is within reach.", {}};
     if (m->posture == "lying" || (life && life->task == "sleep")) return {false, "The trader is sleeping.", trader};
-    const auto* here = townOf(m->cellId);
-    const bool short_ = !buy && here && townShortOf(here->id, item);   // (Doc 57, 5: trade that moves prices.)
     auto result = society_.trade(player, trader, item, quantity, buy);
-    if (result.ok && short_)
-        noteTrade(here->id, item, player, quantity);
     absorbJournal();
     return {result.ok, result.message, trader};
 }
@@ -6147,11 +6123,8 @@ Result World::restore(const PersistedWorld& saved)
     memories_ = state.memories;
     lastObserved_.clear();
     bonds_ = std::move(restoredBonds);
-    // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again, and what
-    // they have to spare at the next day's trade (doc 64, Phase 13: an order agreed before it read the last timeline's).
+    // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
     roads_ = state.roads;
-    canSpare_.clear();
-    canSpareKnown_ = false;
     crime_ = state.crime;
     festivals_ = state.festivals;
     ++festivalsChanged_;
@@ -6179,7 +6152,6 @@ Result World::restore(const PersistedWorld& saved)
     battles_.clear();
     challenges_.clear();
     settleUntil_.clear();
-    priceHour_ = -1;
     promises_.clear();
     for (const auto& p : state.promises)
         if (!p.by.empty() && !p.to.empty() && p.by.size() <= 80 && p.to.size() <= 80 && p.what.size() <= 200 &&

@@ -135,28 +135,27 @@ void dailyLife()
     World demo;
     expect(!demo.restore(saved).ok, "Town checkpoints are rejected by the demo world");
 }
-void wagesAndFood()
+// The economy's rules erased (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5): a hungry civilian with nothing doesn't go
+// shopping, its hunger stays where it was (Society::NeedsPaused), and nobody is paid a wage.
+void needsPaused()
 {
     auto world = town();
     world.setTimeOfDay(12);
     auto state = world.save();
     state.society.residents.at("linden").hunger = 58;
     state.society.accounts.at("linden").stock.erase("meal");
-    // (Nothing in the larder at home either, or that is where Linden would go: larderFirst.)
-    if (auto larder = state.society.accounts.find(Society::homeStore(state.society.residents.at("linden").homeCell, "larder"));
-        larder != state.society.accounts.end())
-        larder->second.stock.erase("meal");
     expect(world.restore(state).ok, "Hungry fixture restores");
     const auto treasury = world.society().account("treasury")->cash;
+    const auto purse = world.society().account("linden")->cash;
     run(world, 900);
-    bool bought = false;
     for (const auto& entry : world.society().state().ledger)
-        bought = bought || (entry.kind == "resident food purchase" && entry.from == "linden");
-    expect(bought, "Hungry civilian walks to the shop and buys a meal");
-    expect(world.society().account("treasury")->cash < treasury, "Guards and workers draw wages from the treasury");
+        expect(entry.kind != "resident food purchase" && entry.kind.find("wages") == std::string::npos, "nothing bought, nobody paid: " + entry.kind);
+    expect(world.society().resident("linden")->hunger == 58, "hunger paused");
+    expect(world.society().account("treasury")->cash == treasury && world.society().account("linden")->cash == purse, "the purses as they were");
+    expect(world.society().conserved(), "Money is conserved");
 }
 // Home storage (Docs/Design/36-home-storage.md): every home indoors has a larder, a chest, a wardrobe and a woodpile,
-// the larder stocked for the household; a hungry resident eats from it before buying, and puts spare meals away.
+// empty to begin with (what goes in them is the household's own: nothing stocks them since doc 66's Phase 5).
 void larderFirst()
 {
     auto world = town();
@@ -165,7 +164,7 @@ void larderFirst()
     for (const char* kind : Society::StoreKinds)
         expect(world.society().account(Society::homeStore(home, kind)), std::string("Linden's home has a ") + kind);
     const auto* larder = world.society().account(larderId);
-    expect(larder && Society::stock(*larder, "meal") >= Society::LarderMealsEach, "its larder stocked for the household");
+    expect(larder && larder->stock.empty(), "its larder empty to begin with");
     world.ensureLoaded(home);
     const auto spots = world.homeStoreSpots();
     expect(spots.count(home) && spots.at(home).count("larder"), "and standing somewhere in the home");
@@ -173,21 +172,6 @@ void larderFirst()
     const auto* c = world.cell(home);
     const auto* t = c->tile(int(at.x), int(at.y));
     expect(t && !t->solid, "on open floor");
-    // Hungry, nothing carried: home to the larder, not to the shop.
-    world.setTimeOfDay(12);
-    auto state = world.save();
-    state.society.residents.at("linden").hunger = 58;
-    state.society.accounts.at("linden").stock.erase("meal");
-    expect(world.restore(state).ok, "Hungry fixture restores");
-    const int before = Society::stock(*world.society().account(larderId), "meal");
-    const auto purse = world.society().account("linden")->cash;
-    run(world, 900);
-    // (Read from the accounts, not the ledger: it keeps only its newest entries.)
-    expect(Society::stock(*world.society().account(larderId), "meal") < before && world.society().resident("linden")->hunger < 50,
-           "A hungry resident with food at home fetches a meal from the larder and eats");
-    expect(world.society().account("linden")->cash >= purse, "rather than spending at the shop");
-    expect(Society::stock(*world.society().account(larderId), "meal") < before, "and the larder has one fewer");
-    expect(world.society().conserved(), "Money is conserved");
     // Beds (doc 36): everyone sleeps on a bed at home, up to four to a bed, never on top of one another. Greyfen's
     // homes have no beds (its residents sleep where they always did); one bed in the cottage, and its two share it.
     world.cell("cottage")->tile(2, 7)->glyph = 'b';
@@ -591,7 +575,7 @@ int main()
         layout();
         playerServices();
         dailyLife();
-        wagesAndFood();
+        needsPaused();
         larderFirst();
         rejectsBadResidents();
         doorsWalkThrough();

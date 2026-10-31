@@ -920,25 +920,6 @@ class World
     // A camp's odds of robbing a caravan with so many guards in a cell (a watch post's two guards counted), and whether a
     // camp may gather in a cell (none within two cells of a watch post).
     double raidOdds(double strength, double hunger, int guards, const std::string& cellId) const;
-    // Trade that moves prices (doc 57, 5): goods a player sells or hands in where the town is short of them (its store
-    // under two days' meals or herbs; its shops under a shop's keeping of anything else) are noted, at most 32 a town;
-    // when that good's going price there falls a tenth or more within a week, the note becomes the cause the town talks
-    // of. A wolf who brings a day's food for a tenth of a town in "empty shelves" has fed the town ("fed the town").
-    struct TradeNote
-    {
-        std::string item, who;
-        int quantity = 0;
-        double day = 0, price = 0;                  // When, and the going price then.
-    };
-    struct PriceCause
-    {
-        std::string item, who;
-        double day = 0;
-    };
-    void noteTrade(const std::string& town, const std::string& item, const std::string& who, int quantity);
-    bool townShortOf(const std::string& town, const std::string& item) const;
-    double goingPrice(const std::string& town, const std::string& item) const;
-    const std::map<std::string, std::vector<PriceCause>>& priceCauses() const { return priceCauses_; }
     // How a knower names a wolf (doc 57: "as the town knows them"), and whether by a name: the game's.
     struct Known
     {
@@ -962,9 +943,9 @@ class World
     // the home it asked for. The host makes them and then calls welcomeResident with their new ID.
     std::vector<ResidentRequest> takeResidentRequests();
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
-    // A world without a database (a world from files, econ_watch, tests) makes the residents asked for itself, each
-    // like its template (the mother, the last holder of the post): a child with nothing, a newcomer with two days'
-    // wages (doc 64, Phase 8). Returns how many it made.
+    // A world without a database (a world from files, tests) makes the residents asked for itself, each like its
+    // template (the mother, the last holder of the post): a child with nothing, a newcomer with Society::NewcomerPurse.
+    // Returns how many it made.
     int makeRequestedResidents();
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.
@@ -972,16 +953,16 @@ class World
     const RoadsState& roads() const { return roads_; }
     RoadsState& roads() { return roads_; }                 // For operators (clear a camp, say) and tests.
     const Town* townOf(const std::string& cellId) const;
+    // A caravan from one town's market to another's, loaded from `from`'s stores (what they hold of `load`), with the
+    // escorts who took the road's escort and the letters nobody took. Nothing sends one since the economy's rules were
+    // erased (doc 66, Phase 5): the hook for the rules to come. Null if there's no road.
+    Caravan* sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load);
     // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
     // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
     std::vector<const Contract*> contractsNear(const std::string& player) const;
     Result takeContract(const std::string& player, const std::string& contractId);
     Result takeOfferedContract(const std::string& player, const std::string& contractId);
     Result completeContract(const std::string& contractId, const std::string& by);
-    // A contract for goods (doc 35, Part 7; RatwProcure.cpp): the town's buyers' requests posted as contracts, and a
-    // taker delivering what they carry of it to a merchant of that town, paid by the piece.
-    Result deliverContract(const std::string& player, const std::string& contractId);
-    std::vector<const Contract*> deliverable(const std::string& player) const;   // Taken by them, for here, and carried.
     // Posts work, the reward set aside from the poster's purse at once (no reward if they can't pay).
     // A poster's contract still open or taken, withdrawn (doc 57: a cancelled project's): the reward left in escrow goes
     // back to the poster. False if there is none.
@@ -1448,13 +1429,8 @@ class World
     // A streamed world's cell graph through seams (explicit doors are always in doors_).
     std::map<std::string, std::set<std::string>> exits_;
     StandingWorks works_;                           // Town projects standing (doc 57).
-    std::map<std::string, std::vector<TradeNote>> tradeNotes_;    // Town -> its latest notes (doc 57, 5).
-    std::map<std::string, std::vector<PriceCause>> priceCauses_;  // Town -> prices lately lowered, and by whom.
-    std::map<std::string, double> fedToday_;        // "town|wolf|day" -> nourishment brought in that day.
-    std::map<std::string, std::map<std::string, double>> storeFactor_;   // Town -> meal and herbs -> its price factor now.
     std::function<Known(const std::string&, const std::string&)> knower_;
     std::function<bool(const std::string&)> protected_;
-    void tendTradeNotes();
     std::map<std::string, std::set<std::int64_t>> foulMarkets_;   // Community -> market days kept in by the weather.
     std::map<std::string, std::map<std::string, std::set<std::int64_t>>> stormWaits_;   // Town -> cell -> days.
     double watchedNear(const std::string& cellId, int within) const;   // The strongest watch post this many cells off.
@@ -1625,12 +1601,6 @@ class World
     std::map<std::string, double> ambientLast_;
     std::map<std::string, std::vector<AmbientNews>> news_;
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
-    struct PriceSeen
-    {
-        double factor = 1, day = -100;
-        int dir = 0;                    // The last change worth talking of: +1 dearer, -1 cheaper.
-    };
-    std::map<std::string, std::map<std::string, PriceSeen>> priceSeen_;   // Town -> item.
     void noteNews(const WorldEvent& event);
     std::string townIdOf(const std::string& cellId) const;
   public:
@@ -1644,9 +1614,6 @@ class World
     void talkTown(const std::string& who, std::map<std::string, std::string>& facts);
     // Who `a` and `b` are to each other: spouses, family, apprentice, rivals, friends, acquaintances or strangers.
     std::string pairBand(const std::string& a, const std::string& b) const;
-    // The price of a meal or herbs as the town talks of it when its stores' price moves (whole pennies, a penny at least):
-    // the catalogue's at the town's day for amounts, by the stores' factor (doc 64, Phase 13).
-    std::int64_t talkedOfPrice(const std::string& town, const std::string& item, double factor) const;
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
@@ -1776,7 +1743,6 @@ class World
     void tendRoads();
     void roadsDaily();
     void rumoursFromEvent(const WorldEvent& event);
-    void contractsFromEvent(const WorldEvent& event);
     void settleContract(Contract& c, const std::string& status, const std::string& paidTo);
     // Road folk: each one's part, keyed by entity ID ("road:...").
     struct RoadFolk
@@ -1879,12 +1845,7 @@ class World
     std::map<std::string, std::pair<double, double>> huntArrivals_;   // Hunt -> when another may wander in, and how many it expects.
     mutable std::map<std::string, std::map<std::string, double>> groundCache_;   // Cell and block -> its ground (it doesn't change).
     std::map<std::string, std::pair<int, double>> forage_;      // Patch -> pickings taken, the day they were counted.
-    // Working out of town (doc 42, Phase 3b; RatwOutwork.cpp): the ground near each town, found once; each hunting
-    // ground's mix of country; a spell of work's yield; one picking from a forage patch (shared with players).
-    std::shared_ptr<const std::map<std::string, std::vector<WorkGround>>> workGrounds_;
-    std::map<std::string, std::map<std::string, double>> huntGround_;
-    void findWorkGrounds();
-    std::vector<std::pair<std::string, int>> harvestAt(const std::string& who, const WorkGround& at, int season);
+    // One picking from a forage patch (doc 41: shared by everyone who forages there).
     bool takeFromPatch(const std::string& cellId, int x, int y, int extra = 0);   // extra: pickings more (doc 53).
     std::map<std::string, double> forageNext_;                  // Wolf -> when it may forage again (world seconds).
     std::function<bool(const std::string&, const std::string&)> friends_;
@@ -1892,91 +1853,7 @@ class World
     std::map<std::string, std::vector<Track>> tracks_;            // Wolf -> the trails it has found (not saved).
     double lastWearDay_ = -1;                                     // When clothes last wore with the days.
     double nextMarkCheck_ = 0;                                    // When noses near thieves are next tried.
-    void postProcurements();
-    std::vector<std::string> noteReckonings(); // The month's reckoning in the event log (doc 42): each town's line.
-    // Residents filling contracts for goods (doc 42, Phase 4; RatwProcure.cpp): the shop with goods to spare for one
-    // (and how many), taking them on, and the carriers' fetching and delivering.
-    std::pair<std::string, int> sourceFor(const Contract& k) const;
-    // Trade between towns (doc 42, Phase 7; RatwTrade.cpp): a town's market (what its shops and producers have to
-    // spare and who holds it; what its makers and suppliers are short of and who), its trading house, the day's trade
-    // caravans, and a trade caravan's arrival and homecoming.
-    // Food between towns (tradeCaravans): a town whose shops hold under FoodDaysKept days' food for its people sends for
-    // the foods other towns have most to spare (FoodsSent of them), FoodKept of each for each of its food shops.
-    static constexpr int FoodDaysKept = 2, FoodKept = 12, FoodsSent = 3;
-    // By need (Society::FoodByNeed; round 11, lane 3): with work by the hours, a town's shops holding under FoodDaysKept
-    // days of its people's food (FedADay a wolf: what its hunger wears away in a day, .0035 a second, eaten at 1.1) send
-    // for a FoodWeek of it, less what they hold, shared among the FoodsSent foods and its food shops (FoodKept of each
-    // at least, as before). Frosthollow, a mining town that makes only porridge, sent for twelve of three foods a shop
-    // whatever its 56 people ate, and its orders followed its shops' small sales.
-    static constexpr double FedADay = .0035 * 14400 / 1.1;
-    static constexpr int FoodWeek = 7;
-    // By its shelves and its hungry, from the nearest (Society::ShelfOrders; round 12, lane C; the user, 2026-10-29): a
-    // town's food orders follow how low its shelves are and how many of its people are hungry (HungryAt: as hunger.csv
-    // counts them), each hungry wolf's week of meals counted as the shops' unmet sales, sized to bring its shelves back
-    // to FoodDaysKept days of its people's need besides; a town with hungry wolves and under a FoodWeek on its shelves
-    // sends even when it holds its FoodDaysKept days. Its foods are those the nearest towns (by the road's cells:
-    // routeBetween) have to spare, and each is signed with the nearest that has some, not the one with most, for up to
-    // MostALoad (a wagon's of a good) an order. Frosthollow, a mining town, ate ~950 pieces a week and sent for 23-170 of
-    // them most of the year, nearly all from the capital (the most to spare, 5-6 days' road), whose caravans went with
-    // half their loads.
-    static constexpr double HungryAt = 70;
-    struct Market
-    {
-        std::map<std::string, int> spare, want;
-        std::map<std::string, std::vector<std::pair<std::string, int>>> holders, wanters;   // Account, how many.
-        int people = 0, food = 0;                   // Who lives there; the food on its shops' shelves (meals' worth).
-        double fed = 0;                             // ...that food's nourishment (FoodByNeed).
-        int hungry = 0;                             // Its people hungry now (HungryAt; ShelfOrders).
-        std::vector<std::string> foodShops;         // Its food shops' tills.
-    };
-    std::string residentTown(const std::string& id) const;
-    Market marketOf(const std::string& town) const;
-  public:
-    // (A test's: a town's market as the day's trade reads it, round 14, lane 3: who holds what to spare and who wants
-    // what, in order.)
-    Market marketFor(const std::string& town) const { return marketOf(town); }
-  private:
-    std::string traderOf(const Town& t) const;
-    void tradeCaravans();
-    // Standing orders (RatwTrade.cpp): the price a piece agreed with a town now, those of a road due a delivery, and the
-    // porters sent to renegotiate them (chosen once a day among those free to go; done on arriving at the market).
-    std::int64_t orderPrice(const Town& from, const std::string& item) const;
-    void residentsRenegotiate(std::set<std::string>& busy);
-    void tendNegotiators();
-    // An order agreed again (doc 61), by a porter at the selling town's market or, in a town with nobody free to go, by
-    // the trader whose caravan brings it: brought toward a week of the buyer's use, at the selling town's price now.
-    // Returns how many a week it was before, or -1 when it can't be agreed yet: it would be raised, and what its seller's
-    // town has to spare isn't known (no day's trade since the world was loaded). It stays due.
-    int agreeAgain(StandingOrder& o, const Town& from);
-    // What each town had to spare of each good at the day's trade (tradeCaravans), over what its own makers want and the
-    // roads' orders promise: as far as an order with it may be raised until the next (doc 64, Phase 13). Not saved:
-    // unknown (canSpareKnown_) until the first day's trade after a load.
-    std::map<std::pair<std::string, std::string>, int> canSpare_;
-    bool canSpareKnown_ = false;
-    // Food for the road for one going from `town` to `toCell` and back, paid by `payer` up to `budget`: a meal for every
-    // ten places of the way, two at least, bought at its town's shops; what can't be bought, the money for it. Returns
-    // what it cost. Never made.
-    std::int64_t provisionTraveller(const std::string& traveller, const std::string& payer, const std::string& town,
-                                    const std::string& toCell, std::int64_t budget);
     void recoverHoard(const BanditCamp& camp, const std::string& to, const std::string& kind);
-    std::map<std::string, std::int64_t> churchCared_;   // Player -> the day the church last tended them.
-    void tradeCaravanArrived(Caravan& c);
-    void tradeCaravanHome(Caravan& c);
-    void residentsFillContracts(std::set<std::string>& busy);
-    // Food for the road for a carrier going to another town for a contract's goods (RatwProcure.cpp).
-    void provisionCarrier(Contract& k, int quantity);
-    void tendContractCarriers();
-  public:
-    // The month's reckoning at once (the Dev Console's /reckon): what each town took in, as a line each.
-    std::string reckonNow();
-    // The church's care (doc 42, Phase 5): a priest or chapel keeper tends a poor wolf's healing wounds with the
-    // church's bandages, free, once a day: a quarter of each wound's rest. Poor: under PoorPurse, in LD (20p at a 12p day:
-    // Society::pennies, doc 64, Phase 13).
-    static constexpr double PoorPurse = 20 / 12.;
-    bool churchCares(const std::string& player, const std::string& clergy) const;
-    Result churchCare(const std::string& player, const std::string& clergy);
-    // The storehouse of a cleric's town's church (Society::churchStore): its bandages, bread and candles.
-    std::string churchStoreOf(const std::string& clergy) const;
   private:
     void tendMarks();
     void wearGear(Entity& e, const std::string& item, double amount);
@@ -2128,7 +2005,6 @@ class World
   private:
     std::vector<std::pair<std::string, std::string>> notices_;
     std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two towns (cells), for bandits.
-    std::int64_t priceHour_ = -1;
     struct RouteBudget;
     void tendRoadFolk();
     void tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& budget);
@@ -2157,16 +2033,13 @@ class World
     std::string injurerWords(const std::string& by) const;
     std::uint64_t nextInjury_ = 0;
     std::string injuryId() { return "injury-" + std::to_string(std::int64_t(calendarDays_ * 14400)) + "-" + std::to_string(++nextInjury_) + "-"; }
-    void tendPrices();
     void residentsTakeWork();
-    void tradeBetweenTowns();
-    Caravan* sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load);
     // Work on the road a resident has taken (a letter to carry, a caravan to guard): where it takes them now,
     // in place of the day's plan. False if they have none, or it waits (for the morning, say).
-    // Who has work on the roads (doc 46's speed pass): a resident's taken contracts and the standing orders it is sent to
-    // renegotiate, by their places in roads_ (in order), remade at each errand pass (indexErrands), so errand() needn't
-    // look through all the land's contracts for each resident.
-    std::unordered_map<std::string, std::vector<std::size_t>> errandContracts_, errandOrders_;
+    // Who has work on the roads (doc 46's speed pass): a resident's taken contracts, by their places in roads_ (in
+    // order), remade at each errand pass (indexErrands), so errand() needn't look through all the land's contracts for
+    // each resident.
+    std::unordered_map<std::string, std::vector<std::size_t>> errandContracts_;
     void indexErrands();
     bool errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                 std::string& goalCell, Vec2& goal) const;

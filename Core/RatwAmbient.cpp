@@ -383,12 +383,6 @@ std::string World::pairBand(const std::string& a, const std::string& b) const
     return "strangers";
 }
 
-std::int64_t World::talkedOfPrice(const std::string& town, const std::string& item, double factor) const
-{
-    // (The catalogue's 6p or 2p at the town's day, as its stores price it: doc 64, Phase 13.)
-    return std::max<std::int64_t>(1, std::lround(factor * society_.atGoingRate(item == "meal" ? 6 : 2, town)));
-}
-
 void World::talkTown(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // What the town has been talking of (doc 62's world.* facts): the same news the topics are made of, as facts any
@@ -397,10 +391,6 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
     if (!e)
         return;
     const auto townId = townIdOf(e->cellId);
-    if (const auto seen = priceSeen_.find(townId); seen != priceSeen_.end())
-        for (const auto& [item, p] : seen->second)
-            if (p.dir != 0 && calendarDays_ - p.day <= 1.5 && (item == "herbs" || item == "meal"))
-                facts["world." + item + "_price"] = p.dir > 0 ? "up" : "down";
     bool bandits = false;
     for (const auto& c : roads_.caravans)
         bandits |= c.status == "raided" && (c.from == townId || c.to == townId);
@@ -531,35 +521,6 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         t.score = score;
         return t;
     };
-    // Prices that moved lately in this town.
-    if (const auto seen = priceSeen_.find(townId); seen != priceSeen_.end())
-        for (const auto& [item, p] : seen->second)
-            if (p.dir != 0 && calendarDays_ - p.day <= 1.5)
-            {
-                auto t = topic("prices", 2.2);
-                t.talk["topic.item"] = item;
-                t.talk["topic.dir"] = p.dir > 0 ? "up" : "down";
-                t.talk["topic.what"] = item == "meal" ? "a meal" : "herbs";
-                t.talk["topic.price"] = std::to_string(talkedOfPrice(townId, item, p.factor)) + " pennies";
-                t.facts.push_back(std::string(item == "meal" ? "Meals" : "Herbs") + " cost " + (p.dir > 0 ? "more" : "less") + " in town lately.");
-                consider(std::move(t));
-            }
-    // A price a wolf's trade lowered lately (doc 57, 5): said with its cause, the wolf named as the teller knows them
-    // (a name it was given, or how they look), never by a name it wasn't.
-    if (const auto causes = priceCauses_.find(townId); causes != priceCauses_.end() && knower_)
-        for (const auto& cause : causes->second)
-            if (calendarDays_ - cause.day <= 1.5)
-            {
-                const auto known = knower_(a, cause.who);
-                const auto* good = items::good(cause.item);
-                auto t = topic("price_cause", 2.6);
-                t.subject = cause.who;
-                t.talk["topic.known"] = known.byName ? "yes" : "no";
-                t.talk["topic.who"] = known.words;
-                t.talk["topic.what"] = cause.item == "meal" ? "meals" : good ? lowered(good->name.substr(0, good->name.find(" ("))) : cause.item;
-                t.facts.push_back(name(a) + " says " + t.talk["topic.what"] + " got cheaper in town since " + known.words + " brought some in.");
-                consider(std::move(t));
-            }
     // Caravans to and from this town, and the bandits on the roads.
     for (const auto& c : roads_.caravans)
     {

@@ -93,7 +93,6 @@ Rules parse(const std::string& text)
     r.peaceTiles = limits.number("peaceTiles", r.peaceTiles);
     r.employerTrust = limits.number("employerTrust", r.employerTrust);
     r.masterTrust = limits.number("masterTrust", r.masterTrust);
-    r.notableDebt = std::int64_t(limits.number("notableDebt", double(r.notableDebt)));
     const auto& kinds = doc.object("kinds");
     for (const auto& id : strings(doc["order"]))
     {
@@ -136,12 +135,8 @@ double foodDays(const std::vector<std::string>& household, const std::string& ho
                 double* dayCost)
 {
     const auto& s = *r.society;
-    const auto town = r.communityOf ? r.communityOf(homeCell) : homeCell;
-    double cost = double(s.pennies(Society::FoodADay, town));   // (In LD, at the town's day for amounts.)
-    for (const auto& t : s.orchestrator().last.towns)
-        if (t.id == town && t.foodCost > 0)
-            cost = t.foodCost;
-    // Their purses and the food they carry, and the larder's food, at the town's price.
+    const double cost = PlainFoodADay;
+    // Their purses and the food they carry, and the larder's food, at the catalogue's price.
     double money = 0;
     for (const auto& id : household)
         if (const auto* a = s.account(id))
@@ -149,12 +144,12 @@ double foodDays(const std::vector<std::string>& household, const std::string& ho
             money += double(a->cash);
             for (const auto& [item, n] : a->stock)
                 if (n > 0 && Society::edible(item))
-                    money += n * s.townPrice(town, item);
+                    money += double(n * Society::catalogPrice(item));
         }
     if (const auto* larder = s.account(Society::homeStore(homeCell, "larder")))
         for (const auto& [item, n] : larder->stock)
             if (n > 0 && Society::edible(item))
-                money += n * s.townPrice(town, item);
+                money += double(n * Society::catalogPrice(item));
     if (held)
         *held = std::int64_t(money);
     if (dayCost)
@@ -174,20 +169,6 @@ Trouble kindOf(const std::string& kindId, const std::string& resident, const Rea
         found.resident = resident;
         return found;
     };
-    if (kindId == "debt")
-    {
-        // The keeper of a business its town's rescue fund has lent to (doc 46, Phase 6).
-        if (!s.jobOf(resident))
-            return t;
-        const auto till = s.tillOf(resident);
-        const auto loan = s.state().memory.loans.find(till);
-        if (till == resident || loan == s.state().memory.loans.end() || loan->second.first <= 0)
-            return t;
-        Trouble found;
-        found.other = till;
-        found.coins = loan->second.first;
-        return give(found);
-    }
     if (kindId == "short")
     {
         // The head of a household (its eldest grown wolf) whose purses, savings and larder hold under underDays of plain
@@ -238,9 +219,6 @@ Trouble kindOf(const std::string& kindId, const std::string& resident, const Rea
         const int age = ageOf(resident, r);
         if (age < k->youngest || age > k->oldest || s.jobOf(resident) || s.apprenticedTo(resident))
             return t;
-        for (const auto& [home, keeper] : s.state().memory.keeper)
-            if (keeper == resident)
-                return t;
         Trouble found;
         found.days = r.idleDays ? r.idleDays(resident) : 0;
         return give(found);

@@ -14,15 +14,15 @@
 #include <string_view>
 
 // Daily routines for residents authored in a world file (Atlas Workshop).
-// Everything here is driven by ResidentSpec data: roles, hours, places,
-// patrol routes and the town economy. Nothing names a particular world.
+// Everything here is driven by ResidentSpec data: roles, hours, places and
+// patrol routes. Nothing names a particular world. The economy's rules that
+// once ran through their days (wages, shopping, odd jobs, alms, larders,
+// production) were erased in Docs/Design/66-worlds-atlas-and-dm.md, Phase 5.
 namespace ratw
 {
 using namespace std::string_view_literals;
 namespace
 {
-constexpr std::int64_t MoneyLimit = 1000000000;
-
 bool near(const LifeBody& body, const Spot& spot)
 {
     return body.cell == spot.cell && std::hypot(body.x - spot.x, body.y - spot.y) <= 1.2;
@@ -36,24 +36,6 @@ bool within(double hour, double start, double end)
 {
     return start <= end ? hour >= start && hour < end : hour >= start || hour < end;
 }
-// A map keyed by resident ID looked up as the residents go, in ID order: walked once a pass instead of searched for
-// each. What find() would give, so long as nothing at or after the cursor is erased in between (inserts are fine).
-template <class Map>
-class InOrder
-{
-  public:
-    explicit InOrder(Map& map) : map_(map), at_(map.begin()) {}
-    auto find(const std::string& key)
-    {
-        while (at_ != map_.end() && at_->first < key)
-            ++at_;
-        return at_ != map_.end() && at_->first == key ? at_ : map_.end();
-    }
-
-  private:
-    Map& map_;
-    decltype(std::declval<Map&>().begin()) at_;
-};
 // A place to work or rest: a cell (its name, kept where it is) and a point on it, to the millionth of a tile.
 struct Station
 {
@@ -67,21 +49,6 @@ struct StationHash
     {
         return std::hash<std::string>{}(*s.cell) ^ (std::size_t(s.x) * 0x9e3779b97f4a7c15ULL) ^ (std::size_t(s.y) * 0xc2b2ae3d27d4eb4fULL);
     }
-};
-// A producer of the land's food (a fisher, a rabbit or sheep farm) or of its milk (the dairy's and the pasture's, for the
-// realm's porridge and cheese): what the food makers need on Dawnday (doc 64, Phase 13).
-bool landFood(const items::Producer* producer)
-{
-    if (producer)
-        for (const auto& [item, n] : producer->out)
-            if (item == "milk" || Society::edible(item))
-                return true;
-    return false;
-}
-// Thrown by a resident deciding at once with the others, on a thread, when its deciding would change something shared:
-// it decides in its turn instead (Society::decideAuthored).
-struct DecideInTurn
-{
 };
 } // namespace
 
@@ -115,12 +82,8 @@ void Society::resetAuthored()
         state_.residents[r.id] = life;
     }
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
-    for (const auto& r : authored_.residents)
-        stockMaterials(r.id);                       // What the makers make things from, and the suppliers sell them.
-    state_.craftingStocked = CraftingStock;
     defaultCareers();
-    foundWage();                                    // The realm's labourer's day, founded (RatwFounding.cpp, doc 64).
-    foundTills();                                   // Every business its own till (RatwTills.cpp, doc 46).
+    foundShops();                                   // Every shop's goods and money its own till's.
 }
 
 bool Society::adoptResident(const Society& from, const std::string& id)
@@ -244,115 +207,40 @@ void Society::refreshRecords()
             r.skill = r.job ? skillSlot(entry.first, r.job->id, false) : nullptr;
             if (const auto bed = beds_.find(entry.first); bed != beds_.end())
                 r.bed = &bed->second;
-            r.producer = r.spec ? items::producerFor(r.spec->workLabel) : nullptr;
-            if (r.job)
-            {
-                r.jobProducer = items::producerFor(r.job->title);
-                r.idleJob = idlePost(r.job->title);
-                r.outworkJob = outworkTitled(r.job->title);
-                r.labourJob = r.job->title == LabourTitle;
-            }
-            r.home = "\n";                          // (Its larder, below.)
+            r.home = "\n";                          // (Its community, below.)
             recordOf_.emplace(entry.first, records_.size());
             records_.push_back(std::move(r));
         }
         recordsRevision_ = rosterRevision_;
         recordsOf_ = this;
     }
-    if (recordsHold() && !(placesAt_ == placesNow()))
-        placeRecords();
-    // A home's larder: again when the home changes, or while it has none (a home's stores are furnished later).
+    // A home's community: again when the home changes.
     for (auto& r : records_)
     {
         const auto& home = r.entry->second.homeCell;
         if (r.home != home)
         {
             r.home = home;
-            r.larder = home.empty() ? std::string() : homeStore(home, "larder");
-            r.larderAccount = nullptr;
             r.community = day_.communityOf ? day_.communityOf(home) : std::string();
             r.planned = 0;                          // (Its plan again: decideAuthored.)
         }
-        if (!r.larderAccount && !r.larder.empty())
-            r.larderAccount = account(r.larder);
     }
 }
 
-void Society::placeRecords()
-{
-    // Each record's town and treasury, as communityOfResident and treasuryOfResident find them (each cell's community
-    // asked once, each community's treasury once), and each town's merchants for payerOf.
-    const auto stamp = placesNow();
-    std::unordered_map<std::string, std::string> cells, treasuries;
-    const auto of = [&](const std::string& cell) -> const std::string& {
-        auto found = cells.find(cell);
-        if (found == cells.end())
-            found = cells.emplace(cell, day_.communityOf ? day_.communityOf(cell) : storeFor(cell)).first;
-        return found->second;
-    };
-    const auto treasuryFor = [&](const std::string& community) -> const std::string& {
-        auto found = treasuries.find(community);
-        if (found == treasuries.end())
-            found = treasuries.emplace(community, treasuryOf(community)).first;
-        return found->second;
-    };
-    const auto townOf = [&](const ResidentSpec* r) -> const std::string& {
-        static const std::string none;
-        if (!r)
-            return none;
-        const auto& here = of(r->work.cell);
-        return here.empty() ? of(r->home.cell) : here;
-    };
-    for (auto& r : records_)
-    {
-        r.town = townOf(r.spec);
-        if (!r.spec)
-            r.treasury = "treasury";
-        else if (const auto& work = treasuryFor(r.town); work != "treasury")
-            r.treasury = work;
-        else
-            r.treasury = treasuryFor(of(r.spec->home.cell));
-    }
-    merchantsByTown_.clear();
-    for (const auto& p : positions_)
-        if (p.role == "merchant")
-            merchantsByTown_[townOf(spec(p.founder))].push_back({&p, items::businessFor(p.title)});
-    placesAt_ = placesNow() == stamp ? stamp : PlacesStamp{};
-}
 
 void Society::decideAuthored(double absoluteDay, const std::map<std::string, LifeBody>& bodies)
 {
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
     const bool night = hour < 6 || hour >= 22;
     const auto slot = std::int64_t(std::floor(absoluteDay * 96)); // Patrols move post every 15 game minutes.
-    // A patrol's post held for as many of the unseen's decisions as at the game's step (doc 64, Phase 13, "--fast pays
-    // the route watch"): 15 game minutes are 150 world seconds, 30 decisions at UnseenStep but five at an economy run's
-    // 30 s (econ_watch's --fast). Two of the five aren't at the post: the one that moves it (the body at the last) and
-    // the next (made before the walk's arrival is seen: World::moveOffstage, on the unseen's step). Three, 90 s, fall
-    // short of a watch's spell (120 s by its workPace, 93 to 117 s for the realm's), and the route watch went unpaid. A
-    // longer step holds each post that much longer (90 game minutes at 30 s); at the game's step, as it was.
-    const auto watchSlot =
-        unseenStep() > UnseenStep ? std::int64_t(std::floor(absoluteDay * 96 * UnseenStep / unseenStep())) : slot;
     const auto today = std::int64_t(std::floor(absoluteDay));
-    if (state_.craftingStocked < CraftingStock)
-    {
-        // A world saved before crafting (doc 35, Phase 5): its makers and suppliers get their starting materials once.
-        for (const auto& r : authored_.residents)
-            stockMaterials(r.id);
-        state_.craftingStocked = CraftingStock;
-    }
-    if (today != feastDay_)
-    {
-        feasted_.clear();
-        feastDay_ = today;
-    }
     if (bodies.empty())
         return;                                     // (A second with no one due: see needsBodies.)
-    // What a wolf's purse is weighed against, at the realm's going rate (doc 64, Phase 13; at a 12p day: the price of a
-    // bite 4p, a day's wage, 5p to lay in the larder, and the plate's 1p or 2p from over 20p or 60p): pennies().
-    const auto bite = pennies(4 / 12., ""), aDay = pennies(1., ""), layIn = pennies(5 / 12., "");
-    const auto plateOne = pennies(1 / 12., ""), plateTwo = pennies(2 / 12., ""), plateFrom = pennies(20 / 12., ""),
-               plateMore = pennies(60 / 12., "");
+    if (groupsDay_ != today)
+    {
+        groupChildren(bodies);                      // Each town's children in their friend groups, for the day.
+        groupsDay_ = today;
+    }
     // The day's plan for a place's community, and its sky (Phase 9): an ordinary day under a fair sky without them.
     static const DayPlan ordinary;
     // A cell's community and its plan, asked of the same few hundred cells over and over in a pass: kept for the pass.
@@ -369,13 +257,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         return p;
     };
     std::unordered_map<std::string, Place> places;
-    bool sharing = false;                           // While the threads decide (below): the caches here are only read.
+    bool sharing = false;                           // While the threads decide (below): the places are only read.
     const auto place = [&](const std::string& cell) -> const Place& {
         auto found = places.find(cell);
         if (found == places.end())
         {
             if (sharing)
-                throw DecideInTurn{};
+            {
+                thread_local Place spare;           // (Not kept: worked out for this asking.)
+                spare = makePlace(cell);
+                return spare;
+            }
             found = places.emplace(cell, makePlace(cell)).first;
         }
         return found->second;
@@ -395,7 +287,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     };
     // Where a merchant trades now: a stall on the square on Marketday mornings (unless the weather is foul), else the
     // shop. Only a city has stalls built (Docs/Design/39), and its own stallholders keep them every day; a town has
-    // none, and no market day.
+    // none, and no market day. (Asked before the threads decide: places are kept as they're first asked.)
     const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
         const auto* nearest = marketPlan(p.work.cell, p.work.x, p.work.y);
         const auto& plan = nearest ? *nearest : planFor(p.work.cell);
@@ -404,15 +296,6 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 return *stall;
         return p.work;
     };
-    // A shop is open while whoever holds a merchant's position is trading there (by holder), at its counter or its
-    // stall, and customers are served where the merchant stands.
-    struct Open
-    {
-        const Position* position;
-        Spot serve;
-        std::string community;                      // Of where it serves.
-    };
-    std::map<std::string, Open> openShops, trading;   // Open with food for sale; open for trade at all.
     atStall_.clear();
     // Work spread over the threads where there are some (setParallel), `share` at a time; the same, alone, without.
     const auto spread = [&](std::size_t count, std::size_t share, const std::function<void(std::size_t)>& job) {
@@ -427,28 +310,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     };
     // What the threads read that is otherwise worked out on first asking.
     indexCareers();
-    indexEmployers();
     (void)spec(std::string());
-    (void)houses();
-    // (Each household's richest: at the day's turn, or here, at a day's first decision with none yet, a restart's or a
-    // founding's. Never at whoever asks first: doc 64, Phase 13, round 6.)
-    if (richestDay_ != state_.budgetDay)
-        rollRichest();
-    rollOutwork();
-    indexOddJobs();
     refreshRecords();                               // (Each resident by number: see ResidentRecord.)
-    markFarmHires();
-    // What a job's title says, kept by a record for its own job while the records hold.
-    const auto ownJob = [&](const ResidentRecord& rec, const Position* job) { return job == rec.job && recordsHold(); };
-    const auto outworkJob = [&](const ResidentRecord& rec, const Position* job) {
-        return ownJob(rec, job) ? rec.outworkJob : outworkTitled(job->title);
-    };
-    const auto labourJob = [&](const ResidentRecord& rec, const Position* job) {
-        return ownJob(rec, job) ? rec.labourJob : job->title == LabourTitle;
-    };
-    const auto producerOf = [&](const ResidentRecord& rec, const Position* job) {
-        return ownJob(rec, job) ? rec.jobProducer : items::producerFor(job->title);
-    };
     // The day's plan at a resident's home: its community's (by its record), or in a city of several markets, the nearest
     // market's. Kept by the record for the day's plans and that home, made here before the threads.
     const auto planAt = [&](const ResidentRecord& rec) {
@@ -473,7 +336,6 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             r.planX = r.entry->second.homeX;
             r.planY = r.entry->second.homeY;
         }
-    const auto homePlan = [&](const ResidentRecord& rec) { return planned(rec) ? rec.plan : planAt(rec); };
     // Each one's body, by number: the bodies walked alongside the residents (both in ID order).
     std::vector<const LifeBody*> bodyOf(records_.size(), nullptr);
     {
@@ -487,140 +349,32 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 bodyOf[i] = &body->second;
         }
     }
-    // Whether each shop's keeper is keeping it (on the threads: each looks only at its own), then the lists, in order.
-    struct Keeper
-    {
-        const Position* position;
-        const std::string* holder;
-        Spot at, serve;
-        bool stall = false, keeping = false;
-        std::string community;                      // Of where it serves.
-    };
-    std::vector<Keeper> keepers;
+    // Each shop's keeper: where it trades now (worked out here, before the threads), and whether it is there keeping it.
+    // A shop is open to players while its keeper keeps it; one keeping a stall sells at the stall's price (quote).
     for (const auto& shop : shopkeeping_)
     {
         if (shop.holder->empty())
             continue;                               // An empty shop is shut.
-        place(shop.position->work.cell);            // (Known before the threads ask: where each trade trades.)
-        keepers.push_back({shop.position, shop.holder, {}, {}, false, false, {}});
-    }
-    sharing = true;
-    spread(keepers.size(), 16, [&](std::size_t i) {
-        auto& k = keepers[i];
-        const auto& p = *k.position;
-        const auto number = recordOf_.find(*k.holder);
+        const auto number = recordOf_.find(*shop.holder);
         const auto* body = number == recordOf_.end() ? nullptr : bodyOf[number->second];
         const auto* life = number == recordOf_.end() ? nullptr : &records_[number->second].entry->second;
-        k.at = tradingAt(p, *k.holder);
-        k.stall = k.at.cell != p.work.cell || k.at.x != p.work.x || k.at.y != p.work.y;
-        k.serve = k.stall ? k.at : p.serve;
-        k.keeping = body && !body->companion && life && life->task == "trade"sv && near(*body, k.at);
-        if (k.keeping && day_.communityOf)
-            k.community = day_.communityOf(k.serve.cell);
-    });
-    sharing = false;
-    for (const auto& k : keepers)
-    {
-        if (!k.keeping)
-            continue;
-        const auto& holder = *k.holder;
-        trading[holder] = {k.position, k.serve, k.community};   // Open for trade: where wolves sell what they bring in (doc 42).
-        if (smith(holder))
-            continue;                               // A forge sells to players, not food to the town.
-        if (shopHasFood(holder))                    // (Any food: bread, porridge, a meal... doc 35, Part 7.)
-        {
-            openShops[holder] = {k.position, k.serve, k.community};
-            if (k.stall)
-                atStall_.insert(holder);
-        }
+        const auto at = tradingAt(*shop.position, *shop.holder);
+        const bool stall = at.cell != shop.position->work.cell || at.x != shop.position->work.x || at.y != shop.position->work.y;
+        if (stall && body && !body->companion && life && life->task == "trade"sv && near(*body, at))
+            atStall_.insert(*shop.holder);
     }
-    // A food maker's kitchen kept going with its keeper hungry or away (round 13, lane 3: KitchenKept; Society::kitchen).
-    const bool kitchenKept = workByHours() && wageRule(KitchenKept);
-    // Each town's food shops open for trade with nothing left to eat (in ID order), that make or supply a food: where a
-    // hungry wolf that finds no food in its town counts the meal it wanted (doc 64, Phase 13: Society::missedMeal; not a
-    // brewery, whose meal nobody makes). With work by the hours: at the seconds' pace, as it was.
-    std::unordered_map<std::string, std::vector<const std::string*>> bareShops;
-    if (workByHours())
-        for (const auto& [holder, open] : trading)
-            if (!open.community.empty() && !openShops.count(holder) && !smith(holder) && foodShop(holder) && !foodMade(holder).empty())
-                bareShops[open.community].push_back(&holder);
-    // The open shops indexed for the nearest-shop search below: by the cell they serve in and by community, each list in
-    // ID order (openShops' order), so the search finds what walking them all in that order found.
-    std::vector<const std::pair<const std::string, Open>*> shopList;
-    std::unordered_map<std::string, std::vector<std::size_t>> shopsInCell, shopsOfCommunity;
-    for (const auto& open : openShops)
-    {
-        shopsInCell[open.second.serve.cell].push_back(shopList.size());
-        if (!open.second.community.empty())
-            shopsOfCommunity[open.second.community].push_back(shopList.size());
-        shopList.push_back(&open);
-    }
-    // The shops compared (round 14, lane 2: ShopsCompared, with work by the hours): each open food shop's prices this game
-    // hour, here, on the main thread, before the threads decide (prices are worked out on first asking, and that isn't
-    // for the threads: they only read them, with what's on its shelf now, shopOffer). Each food priced at its first sight
-    // on its shelf in the hour: at the hour's first second, or as it's baked since.
-    const bool compared = workByHours() && wageRule(ShopsCompared);
-    if (compared)
-        for (const auto* open : shopList)
-            valueShop(open->first, absoluteDay);
-    // Each home's household (doc 42, the user: who keeps the house shops for it and minds its children): those living
-    // there who are about this second, asked only of homes whose keeper wants to know.
-    if (householdsDay_ != today || householdsOf_ != state_.residents.size())
-    {
-        households_.clear();
-        for (const auto& [id, life] : state_.residents)
-            if (!life.homeCell.empty())
-                households_[life.homeCell].push_back(id);
-        householdsDay_ = today;
-        householdsOf_ = state_.residents.size();
-    }
-    const auto householdSize = [&](const std::string& home) {
-        int n = 0;
-        if (const auto found = households_.find(home); found != households_.end())
-            for (const auto& id : found->second)
-                n += bodies.count(id) > 0;
-        return n;
-    };
-    const auto withChildren = [&](const std::string& home) {
-        if (const auto found = households_.find(home); found != households_.end())
-            for (const auto& id : found->second)
-                if (const auto body = bodies.find(id); body != bodies.end() && body->second.age < 16)
-                    return true;
-        return false;
-    };
-    const auto larderLow = [&](const std::string& home) {
-        const auto* store = account(homeStore(home, "larder"));
-        int held = 0;
-        if (store)
-            for (const auto& [item, n] : store->stock)
-                if (edible(item))
-                    held += n * nourishment(item);
-        return held < 50 * 2 * std::max(1, householdSize(home));
-    };
     // What each resident does this second comes in two halves (Docs/Design/31-responsiveness.md, "Fast-forward"): what
     // it decides to do, and doing it. Everyone decides at once, from where things stood as the pass began, spread over
-    // the pool's threads; then, in ID order, each does what it decided. One whose deciding would change something others
-    // see (claim an odd job, take a ground out of town for the day, put food away, draw rations, give up waiting on
-    // wages) decides in its turn instead, as everyone did before, after those before it have done theirs.
+    // the pool's threads (nothing in deciding changes anything shared); then, in ID order, each does what it decided.
     struct Choice
     {
-        enum class Kind : std::uint8_t
-        {
-            Skip,                                   // No spec or no body: nothing this second.
-            InTurn,                                 // To decide in its turn.
-            Decided
-        };
-        Kind kind = Kind::Skip;
+        bool skip = true;                           // No spec or no body: nothing this second.
         int step = 1;                               // The seconds this decision stands for (UnseenStep for the unseen).
         ResidentRecord* record = nullptr;
         const ResidentSpec* r = nullptr;
         const LifeBody* body = nullptr;
-        EconomyAccount* wallet = nullptr;
-        Place home;                                 // Where it lives: its community and the day's plan there.
-        std::string larder;                         // Its home's larder, and the account (null for none).
-        const EconomyAccount* larderAccount = nullptr;
         double hunger = 0, fatigue = 0;             // As they will be this second.
-        // The job it works today (`stand`: one made up for it, when its own isn't), and the trade it learns.
+        // The job it works today (`stand`: one made up for it, when it holds none), and the trade it learns.
         Position stand;
         const Position* job = nullptr;
         const Position* learning = nullptr;
@@ -628,8 +382,6 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         bool walksRoute = false;                    // A patrol or a traveller: counted among its route's walkers.
         bool routeGoal = false;                     // Its goal is a post on its route, by its place among the walkers.
         bool companion = false, arrivedHome = false;
-        const std::string* seller = nullptr;        // Where it sells what it brought in.
-        const std::string* missed = nullptr;        // A bare food shop of its town, where the meal it wanted is counted.
         std::string task, reason;
         Spot goal;
     };
@@ -643,43 +395,25 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     for (auto& r : records_)
         order.push_back(r.entry);
 
-    // The first half: what a resident decides. At once (on a thread), nothing is changed, and anything that would change
-    // something throws DecideInTurn; in its turn, it is changed as it goes.
-    const auto decide = [&](std::pair<const std::string, ResidentLife>& pair, Choice& c, bool atOnce) {
+    // The first half: what a resident decides. Nothing is changed.
+    const auto decide = [&](std::pair<const std::string, ResidentLife>& pair, Choice& c) {
         const auto& id = pair.first;
         const auto& life = pair.second;
         const auto* r = c.r;
         const auto& body = *c.body;
-        auto& wallet = *c.wallet;
-        // Its community and the day's plan there (both kept by its record).
-        c.home.community = c.record->community;
-        c.home.plan = homePlan(*c.record);
-        const Place& homePlace = c.home;
-        c.larder = c.record->larder;
-        c.larderAccount = c.record->larderAccount;
-        c.hunger = std::min(100., life.hunger + .0035 * c.step);
+        const auto& rec = *c.record;
+        const DayPlan& plan = *(planned(rec) ? rec.plan : planAt(rec));
+        // Needs (Society::NeedsPaused): hunger grows only once the economy's rules say how it is met; tiredness as ever.
+        c.hunger = NeedsPaused ? life.hunger : std::min(100., life.hunger + .0035 * c.step);
         c.fatigue = std::min(100., life.fatigue + .0025 * c.step);
         const double hunger = c.hunger, fatigue = c.fatigue;
-        const auto outwork = [&](const std::string& community) -> const WorkGround* {
-            if (!atOnce)
-                return outworkOf(id, community);
-            bool known = false;
-            const auto* ground = outworkKnown(id, community, known);
-            if (!known)
-                throw DecideInTurn{};               // (Chosen in its turn: the grounds have room for so many.)
-            return ground;
-        };
-        // The job comes from the position this resident holds (see Position). With none: an apprentice works
-        // beside their master, unpaid, in the master's hours; anyone else looks for work.
-        const auto& rec = *c.record;
+        // The job comes from the position this resident holds (see Position). With none: an apprentice works beside its
+        // master in the master's hours; a child grows up; one past its retiring age has retired; anyone else is out of
+        // work, and spends its days where it spends its evenings.
         const Position* job = rec.job;
         const Position* learning = rec.learning;
         c.learning = learning;
         Position& stand = c.stand;                  // (Made afresh wherever it is made: unread otherwise.)
-        // A grown wolf whose post is only idling (doc 42, Phase 3b) works out of town like one without a post.
-        if (job && job->role == "civilian"sv && body.age >= 16 && body.age < RetireAge &&
-            (ownJob(rec, job) ? rec.idleJob : idlePost(job->title)) && outwork(homePlace.community))
-            job = nullptr;
         if (!job)
         {
             stand = Position{};
@@ -687,82 +421,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             stand.paid = false;
             stand.startHour = learning ? learning->startHour : r->startHour;
             stand.endHour = learning ? learning->endHour : r->endHour;
-            stand.title = learning ? "apprenticed: " + learning->title : body.age < 16 ? "growing up" : "looking for work";
+            stand.title = learning ? "apprenticed: " + learning->title
+                          : body.age < 16 ? "growing up"
+                          : body.age >= retireAge(id) ? "retired"
+                                                      : "looking for work";
             stand.work = learning ? learning->work : r->evening;
-            // A living for every grown wolf (doc 42, Phase 3): one out of work labours for the Town Works, at the
-            // town's square (or where it spends its days), paid by the town; one of RetireAge or more has retired.
-            if (!learning && body.age >= 16)
-            {
-                if (body.age >= retireAge(id))
-                    stand.title = "retired";             // (At its own age, 58 to 66: doc 64, Phase 8.)
-                else if (const auto* ground = outwork(homePlace.community))
-                {
-                    // A trade of its own out of town (Phase 3b): it lives by what it brings back.
-                    stand.title = outworkTitle(ground->trade);
-                    stand.work = ground->spot;
-                    stand.paid = true;
-                }
-                else
-                {
-                    stand.title = LabourTitle;
-                    if (const auto* square = pick(homePlace.plan->crowd, id))
-                        stand.work = *square;
-                    stand.paid = true;
-                }
-            }
-            job = &stand;
-        }
-        else if (const auto unpaid = state_.memory.unpaidSince.find(id); unpaid != state_.memory.unpaidSince.end() && job->role == "civilian"sv)
-        {
-            // A week without wages (doc 42, Phase 3): a week of day labour for the Town Works, then back to try again.
-            const double since = absoluteDay - unpaid->second;
-            if (since >= 14)
-            {
-                if (atOnce)
-                    throw DecideInTurn{};
-                state_.memory.unpaidSince.erase(unpaid), ++state_.memory.revision;
-            }
-            else if (since >= 7 && body.age < RetireAge)
-            {
-                stand = *job;
-                stand.id.clear();
-                stand.title = LabourTitle;
-                stand.paid = true;
-                if (const auto* square = pick(homePlace.plan->crowd, id))
-                    stand.work = *square;
-                job = &stand;
-            }
-        }
-        // A household's keeper stays home (RatwHouseholds.cpp); a poor household's homemaker goes out to labour.
-        const auto keeperOf = state_.memory.keeper.find(life.homeCell);
-        const bool keepsHouse = keeperOf != state_.memory.keeper.end() && keeperOf->second == id && body.age >= 16;
-        const bool sentToWork = !keepsHouse && state_.memory.toWork.count(life.homeCell) && body.age >= 16 && body.age < RetireAge &&
-                                homemaking(job->title);
-        if (keepsHouse || sentToWork)
-        {
-            stand = Position{};
-            stand.role = "civilian";
-            stand.paid = sentToWork;
-            stand.startHour = 8;
-            stand.endHour = 18;
-            stand.title = keepsHouse ? "keeping the house" : LabourTitle;
-            stand.work = {life.homeCell, life.homeX, life.homeY};
-            if (sentToWork)
-                if (const auto* square = pick(homePlace.plan->crowd, id))
-                    stand.work = *square;
             job = &stand;
         }
         c.job = job;
         const bool guard = job->role == "guard"sv, merchantRole = job->role == "merchant"sv;
         c.guard = guard;
         c.merchantRole = merchantRole;
-        // A house's manager (doc 42, Phase 5b): the shop's goods are its till's, so it feeds itself like anyone.
-        const bool managed = merchantRole && [&] {
-            if (!recordsHold())
-                return tillOf(id) != id;
-            const auto till = rec.job ? tills_.find(rec.job->id) : tills_.end();   // (tillOf, by its record's job.)
-            return till != tills_.end() && till->second != id;
-        }();
         const auto route = authored_.routes.find(job->route);
         const bool patrols = guard && route != authored_.routes.end() && !route->second.posts.empty();
         // A civilian or merchant with a route is a traveller: they walk it through their working hours and, being
@@ -771,69 +440,13 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         c.walksRoute = patrols || travels;          // (Its place among the route's walkers is counted in its turn.)
         if (body.companion)
         {
-            // Off its own day, kept by a Hold or a party: it eats from its mess, and nothing else (doc 64, Phase 13).
-            c.companion = true;
-            bool eats = false;
-            if (!keptHandDecides(id, wallet, hunger, atOnce, eats))
-                throw DecideInTurn{};               // (A meal drawn from its mess: in its turn.)
-            c.task = eats ? "eat" : "";
-            c.kind = Choice::Kind::Decided;
+            c.companion = true;                     // Off its own day, with whoever keeps it (a Hold, a party).
+            c.task.clear();
+            c.skip = false;
             return;
         }
-        // Let go with a piece from its mess uneaten (dismissed as it sat down to it): given back, in its turn (round 6).
-        if (!giveBackDrawn(id, atOnce))
-            throw DecideInTurn{};
-        // Home storage (doc 36): food beyond the one carried (the best of it) is put away in the larder whenever they're
-        // home (a shopkeeper's are the shop's stock, kept), and a larder with food in it is where a hungry wolf goes first.
-        const std::string& larder = c.larder;
-        const auto* larderAccount = c.larderAccount;
-        if (larderAccount && (!merchantRole || managed) && body.cell == life.homeCell)
-        {
-            const auto keep = bestFood(wallet);
-            std::vector<std::pair<std::string, int>> spare;
-            for (const auto& [item, n] : wallet.stock)
-                // (Its record's producer is its written trade's: under TradeByPost its post's, forSale.)
-                if (n > 0 && edible(item) && !(recordsHold() && !tradeByPost() ? producesForSale(rec.producer, item) : forSale(id, item)))
-                    spare.push_back({item, item == keep ? n - 1 : n});
-            for (const auto& [item, n] : spare)
-                if (n > 0)
-                {
-                    if (atOnce)
-                        throw DecideInTurn{};
-                    shift(id, larder, item, std::min(n, 99), 0, "put away in the larder");
-                }
-        }
-        // Rations (the user, 2026-10-05): a hungry guard eats from the watch's mess, a miner or quarryman from its works'
-        // bread, before spending its own pennies: the town bought them for it.
-        bool carries = hasFood(wallet);             // (Again only if rations change it.)
-        if (hunger >= 55 && !carries)
-        {
-            const auto& community = homePlace.community;
-            const auto* producer = producerOf(rec, job);
-            const std::string mess = community.empty() ? std::string()
-                                   : guard ? "town:" + community + ":watch"
-                                   : producer && producer->id == "mine"sv ? "town:" + community + ":mines"
-                                   : producer && producer->id == "quarry"sv ? "town:" + community + ":quarries"
-                                                                          : std::string();
-            if (const auto* rations = mess.empty() ? nullptr : account(mess))
-                if (const auto food = bestFood(*rations); !food.empty())
-                {
-                    if (atOnce)
-                        throw DecideInTurn{};
-                    shift(mess, id, food, 1, 0, "rations");
-                    carries = hasFood(wallet);
-                }
-        }
-        const bool carriesFood = carries;
-        const bool larderHasFood = larderAccount && hasFood(*larderAccount) && !travels;
-        const auto larderSpot = [&]() -> Spot {
-            if (const auto home = homeStores_.find(life.homeCell); home != homeStores_.end())
-                if (const auto at = home->second.find("larder"); at != home->second.end())
-                    return at->second;
-            return {life.homeCell, life.homeX, life.homeY};
-        };
+        const bool carriesFood = rec.wallet && hasFood(*rec.wallet);
         // The day and the sky (Phase 9). The watch keeps its hours whatever the day and the weather.
-        const auto& plan = *homePlace.plan;
         const int workSky = sky(job->work);
         const bool festival = plan.kind == "festival"sv && hour >= 12 && hour < 23;
         double endHour = job->endHour;
@@ -841,25 +454,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             endHour -= 2;                           // Rain: outdoor work ends early.
         bool onHours = within(hour, job->startHour, endHour);
         std::string resting;                        // Why a working day isn't one.
-        // A food shop's keeper keeps its hours on a festival day (round 14, lane 2: FestivalShopsOpen, the user,
-        // 2026-10-30), as the food makers do on Restday after the service: work stopped from noon to eleven for everyone,
-        // the food shops too, and the feast was the only food those hours. As the larders thinned, Ridgemere's festival
-        // midnights of the two-year run found 30, 21, 36 and 110 hungry, the run's worst days: on day 686's count 123 of
-        // the 125 hungry were asleep at hunger 70-80, 81 of them holding 20p or more, its shelves holding 1,340 food; the
-        // next day none. Now its shop is open, its trade before the festival, the hungry buy there or seek alms there; it
-        // misses the gathering's handout, and eats at its own counter or buys. Everyone else's festival is as it was.
-        const bool festivalShop = festival && merchantRole && onHours && workByHours() && wageRule(FestivalShopsOpen) && foodShop(id);
         if (!guard)
         {
             if (workSky == 2)
                 resting = "Foul weather: outdoor work has stopped.";
-            else if (festival && !festivalShop)
+            else if (festival)
                 resting = "Work stops for " + plan.name + ".";
-            // Shops open after the service, so everyone can eat (doc 42); those that make food keep at it all afternoon,
-            // so the shelves are stocked for the day (the user, 2026-10-07: food makers work Restday after service); and
-            // so do the land's producers of food and milk, so Dawnday's makers have their materials (doc 64, Phase 13).
-            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && (hour < ServiceEnd + 4 || (foodShop(id) && onHours))) &&
-                     !(!merchantRole && hour >= ServiceEnd && onHours && landFood(producerOf(rec, job))))
+            // Restday: no work, but the shops open for a few hours after the service.
+            else if (plan.kind == "rest"sv && !(merchantRole && hour >= ServiceEnd && hour < ServiceEnd + 4))
                 resting = "Restday: no work today.";
             if (!resting.empty())
                 onHours = false;
@@ -872,247 +474,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         task.clear();
         reason.clear();
         goal = {life.homeCell, life.homeX, life.homeY};
-        if (const auto* bed = c.record->bed; bed && bed->cell == life.homeCell)
+        if (const auto* bed = rec.bed; bed && bed->cell == life.homeCell)
             goal = *bed;                            // Their place on a bed at home (doc 36).
-        // Nearest open shop: in the same cell, else in the same town, else any (a long walk for a meal). The nearest of
-        // the best: everyone hungry in a cell went to the same shop (the first in ID order), and walked there together.
-        // (Searched by the index: of the same cell, the nearest, the first of equals; else the first of the town; else the
-        // first of all; never its own.)
-        const Spot* shop = nullptr;
-        const auto& home = homePlace.community;
-        if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
-            for (const auto i : here->second)
-            {
-                const auto& open = *shopList[i];
-                const auto& at = open.second.serve;
-                if (open.first != id &&
-                    (!shop || std::hypot(at.x - body.x, at.y - body.y) < std::hypot(shop->x - body.x, shop->y - body.y)))
-                    shop = &at;
-            }
-        if (!shop && !home.empty())
-            if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
-                for (const auto i : town->second)
-                    if (shopList[i]->first != id)
-                    {
-                        shop = &shopList[i]->second.serve;
-                        break;
-                    }
-        const bool localShop = shop != nullptr;     // (One of its cell or its town is open to it.)
-        if (!shop)
-            for (const auto* open : shopList)
-                if (open->first != id)
-                {
-                    shop = &open->second.serve;
-                    break;
-                }
-        // Where a hungry wolf buys (round 10, lane C: FoodAtItsPrice, with work by the hours). Holding a day's wage it goes
-        // to that shop, as before. With less it goes where it can pay for something to eat: the nearest such shop of its
-        // cell, else the first of its town, else (none of its cell or town open) the first of all; with none, it asks
-        // alms. (Before, it went only with the bite, a third of a day, while a loaf costs a twelfth: those between asked
-        // alms, and when the church had nothing, went hungry with the price of a loaf.) Prices are worked out on first
-        // asking, so in its turn. Without the rule: with the bite, at that shop.
-        // And with no shop of its cell or town open to it (round 10, lane C, the user's: NearestShop), whatever its purse,
-        // it goes to the open shop nearest it on the map whose food it can pay for, not the realm's first by its keeper's
-        // name (Frosthollow's hungry walked to a smokehouse by the Sound); with none, it asks alms as before.
-        const bool atItsPrice = workByHours() && wageRule(FoodAtItsPrice);
-        const bool farNearest = !localShop && workByHours() && wageRule(NearestShop);
-        // The wolves compare the shops (round 14, lane 2: ShopsCompared, the user, 2026-10-30). With a shop of its cell or
-        // its town open, whatever its purse, it looks at the open food shops of its cell and the ShopsLooked nearest of its
-        // town beyond the cell (by the map, as NearestShop measures; off it, the first ShopsLooked of its town), and goes
-        // to the one of least value (the fewest pennies for a unit of nourishment it sells) whose cheapest food its purse
-        // pays for; of those within ValueTie of the least, the nearest. None it can pay: alms, as before. Before, a dear
-        // seller lost no buyers: Ridgemere's smoked fish was 9% of its residents' food spending in the first quarter of
-        // the two-year run and 52% in the seventh, 35p to 104p for 50 of nourishment against bread's 15-20p. (Its prices
-        // the hour's, worked out before the threads decide, valueShop; what's on its shelf now: shopOffer. Only read, so
-        // decided at once. The wolf's place and the counters' on the map as NearestShop reads them, LifeDay::onMap: the
-        // world's cells, only read.)
-        const auto comparedAt = [&](std::int64_t purse) -> const Spot* {
-            double wx = 0, wy = 0;
-            const bool placed = day_.onMap && day_.onMap(Spot{body.cell, body.x, body.y}, wx, wy);
-            // (How far a counter is: across the map; off it, within its cell, else past the cell's every shop.)
-            const auto far = [&](const Spot& at) {
-                double sx = 0, sy = 0;
-                if (placed && day_.onMap(at, sx, sy))
-                    return std::hypot(sx - wx, sy - wy);
-                return at.cell == body.cell ? std::hypot(at.x - body.x, at.y - body.y) : std::numeric_limits<double>::infinity();
-            };
-            thread_local std::vector<std::pair<std::size_t, double>> seen;   // (A shop's number in shopList, how far.)
-            seen.clear();
-            if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
-                for (const auto i : here->second)
-                    if (shopList[i]->first != id)
-                        seen.emplace_back(i, far(shopList[i]->second.serve));
-            const auto inCell = std::ptrdiff_t(seen.size());
-            int looked = 0;
-            if (!home.empty())
-                if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
-                    for (const auto i : town->second)
-                    {
-                        const auto& at = shopList[i]->second.serve;
-                        if (shopList[i]->first == id || at.cell == body.cell)
-                            continue;               // (Its own, or of its cell: looked at already.)
-                        // (The ShopsLooked nearest, kept in order; of equals, the first by its keeper.)
-                        const double d = far(at);
-                        if (looked == ShopsLooked)
-                        {
-                            if (!(d < seen.back().second))
-                                continue;
-                            seen.pop_back();
-                            --looked;
-                        }
-                        auto to = seen.begin() + inCell;
-                        while (to != seen.end() && !(d < to->second))
-                            ++to;
-                        seen.emplace(to, i, d);
-                        ++looked;
-                    }
-            // (Each one's offer, and whether its purse pays its cheapest food, as FoodAtItsPrice's `pays`: 0 if not.)
-            thread_local std::vector<double> value;
-            value.assign(seen.size(), 0.);
-            double least = 0;
-            for (std::size_t k = 0; k < seen.size(); ++k)
-                if (const auto o = shopOffer(shopList[seen[k].first]->first); o.value > 0 && o.cheapest > 0 && o.cheapest <= purse)
-                {
-                    value[k] = o.value;
-                    least = least > 0 ? std::min(least, o.value) : o.value;
-                }
-            const Spot* found = nullptr;
-            double nearest = 0;
-            for (std::size_t k = 0; k < seen.size(); ++k)
-                if (value[k] > 0 && value[k] <= least * (1 + ValueTie) && (!found || seen[k].second < nearest))
-                    found = &shopList[seen[k].first]->second.serve, nearest = seen[k].second;
-            return found;
-        };
-        const auto buysAt = [&]() -> const Spot* {
-            const auto purse = spendable(id);
-            if (compared && localShop)
-                return comparedAt(purse);
-            if (!atItsPrice && purse < bite)
-                return nullptr;
-            if (!farNearest && (!atItsPrice || purse >= aDay))
-                return shop;
-            if (atOnce)
-                throw DecideInTurn{};
-            const auto pays = [&](const std::string& holder) {
-                const auto least = holder == id ? 0 : cheapestFood(holder);
-                return least > 0 && least <= purse;
-            };
-            const Spot* found = nullptr;
-            if (farNearest)
-            {
-                double x = 0, y = 0, best = 0;
-                const bool placed = day_.onMap && day_.onMap(Spot{body.cell, body.x, body.y}, x, y);
-                for (const auto* any : shopList)
-                    if (pays(any->first))
-                    {
-                        double sx = 0, sy = 0;
-                        if (!placed || !day_.onMap(any->second.serve, sx, sy))
-                        {
-                            if (!found)
-                                found = &any->second.serve;   // (Off the map: the first, as before.)
-                            continue;
-                        }
-                        const double far = std::hypot(sx - x, sy - y);
-                        if (!found || far < best)
-                            found = &any->second.serve, best = far;
-                    }
-                return found;
-            }
-            bool open = false;                      // (A shop of its cell or its town is open to it.)
-            if (const auto here = shopsInCell.find(body.cell); here != shopsInCell.end())
-                for (const auto i : here->second)
-                {
-                    const auto& at = shopList[i]->second.serve;
-                    open = open || shopList[i]->first != id;
-                    if ((!found || std::hypot(at.x - body.x, at.y - body.y) < std::hypot(found->x - body.x, found->y - body.y)) &&
-                        pays(shopList[i]->first))
-                        found = &at;
-                }
-            if (!found && !home.empty())
-                if (const auto town = shopsOfCommunity.find(home); town != shopsOfCommunity.end())
-                    for (const auto i : town->second)
-                    {
-                        open = open || shopList[i]->first != id;
-                        if (pays(shopList[i]->first))
-                        {
-                            found = &shopList[i]->second.serve;
-                            break;
-                        }
-                    }
-            if (!found && !open)
-                for (const auto* any : shopList)
-                    if (pays(any->first))
-                    {
-                        found = &any->second.serve;
-                        break;
-                    }
-            return found;
-        };
-        const Spot* buyAt = nullptr;
-        // Hungry, with nothing to eat about it or at home, and no shop of its town with food left though some are open:
-        // the meal it wanted, counted at one of those (by lot), in its turn (Society::missedMeal; doc 64, Phase 13).
-        c.missed = nullptr;
-        if (hunger >= 60 && !carriesFood && !larderHasFood && !home.empty() && !missedBy_.count(id))
-            if (const auto bare = bareShops.find(home); bare != bareShops.end())
-            {
-                const auto town = shopsOfCommunity.find(home);
-                const bool food = town != shopsOfCommunity.end() &&
-                                  std::any_of(town->second.begin(), town->second.end(), [&](std::size_t i) { return shopList[i]->first != id; });
-                std::size_t others = 0;
-                for (const auto* holder : bare->second)
-                    others += *holder != id;
-                if (!food && others > 0)
-                {
-                    std::size_t which = std::hash<std::string>{}(id + "|missed") % others;
-                    for (const auto* holder : bare->second)
-                        if (*holder != id && which-- == 0)
-                        {
-                            c.missed = holder;
-                            break;
-                        }
-                }
-            }
         // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
         const auto visit = [&] { return 8 + int(std::hash<std::string>{}(id + "market") % 5); };
-        // Where a wolf who works out of town sells what it brings in: an open shop of its town that takes it.
-        const std::string* seller = nullptr;
-        if (outworkJob(rec, job))
-            for (const auto& open : trading)
-                if (open.first != id && (home.empty() || open.second.community == home) && sellsTo(id, open.first))
-                {
-                    seller = &open.first;
-                    break;
-                }
-        c.seller = seller;
         const bool marketHour = plan.kind == "market"sv && !plan.foul && !plan.crowd.empty() && !guard && !merchantRole &&
                                 hour >= visit() && hour < visit() + 1;
         c.routeGoal = false;
         c.arrivedHome = false;
-        // Round 13, lane 3 (the user, 2026-10-29: KitchenKept, with work by the hours): a kitchen's keeper (a food maker's,
-        // its till its own: Society::kitchen) on duty, hungry and with nothing on it, keeps its kitchen going. Its till
-        // holding a food it sells that its purse pays for, it eats at its own counter (bought in the trade, below); its
-        // shelf bare but a food batch ready to begin (foodBatchReady), it bakes first, short of BakeFirstBelow. Before, it
-        // went off to eat elsewhere (it can't buy at its own shop: buysAt passes it over), or slept hungry, and with it its
-        // shop shut and its bakes: Ridgemere's bakers at hunger 92-95 with 300-400p, three of four bakeries cold for five
-        // days, the city's bread 480-786 a day down to 30-222. (Its prices and its kitchen worked out on first asking, so
-        // in its turn: only a hungry food keeper's.)
-        std::string counter;
-        bool bakeFirst = false;
-        if (kitchenKept && merchantRole && managed && onHours && hunger >= 55 && !carriesFood && foodShop(id))
-        {
-            if (atOnce)
-                throw DecideInTurn{};
-            if (kitchen(id))
-            {
-                counter = counterFood(id, spendable(id));
-                const auto* shelves = account(tillOf(id));
-                const auto sold = wares(id);
-                const bool onShelf = shelves && std::any_of(shelves->stock.begin(), shelves->stock.end(), [&](const auto& s) {
-                                         return s.second > 0 && sellsFood(id, s.first, sold);
-                                     });
-                bakeFirst = counter.empty() && !onShelf && hunger < BakeFirstBelow && foodBatchReady(id, absoluteDay);
-            }
-        }
         if (!life.relocationCell.empty())
         {
             task = "relocate";
@@ -1131,45 +500,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             goal = {body.cell, continuing ? life.goalX : body.x, continuing ? life.goalY : body.y};
             reason = "Hungry; carrying something to eat.";
         }
-        else if (!counter.empty() || bakeFirst)
-        {
-            // (KitchenKept, above: at its trade, its shop open, the piece bought there and eaten once hunger is 60.)
-            task = "trade";
-            goal = tradingAt(*job, id);
-            reason = bakeFirst ? "Hungry; baking first" : "Hungry; eating at its own counter";
-        }
-        else if ((!merchantRole || managed) && hunger >= 55 && !carriesFood && larderHasFood)
-        {
-            task = "fetch food";
-            goal = larderSpot();
-            reason = onDuty ? "A short meal break at home." : "Hungry; fetching a meal from the larder at home.";
-        }
-        // (A keeper whose own shelves hold nothing to eat buys a meal elsewhere too.) Only with the price of a meal.
-        else if (hunger >= 55 && !carriesFood && shop && (buyAt = buysAt()) != nullptr)
-        {
-            task = "buy food";
-            goal = *buyAt;
-            reason = onDuty ? "A short meal break at the shop." : "Hungry; buying food at the shop.";
-        }
-        else if (hunger >= 55 && !carriesFood && !onDuty && shop && shop->cell != ""sv)
-        {
-            // Hungry, with nothing to eat and not the price of a meal: alms, at the shop, the church paying (the user,
-            // 2026-10-05: no one starves with a church in town).
-            task = "seeking alms";
-            goal = *shop;
-            reason = "Hungry and penniless; asking alms, which the church pays for.";
-        }
         else if (onDuty)
         {
             task = patrols ? "patrol" : "watch";
             goal = job->work;
             c.routeGoal = patrols;
-            reason = "On watch; paid by the town treasury.";
+            reason = "On watch for the town.";
         }
         else if (plan.kind == "rest"sv && !plan.pews.empty() && hour >= ServiceStart && hour < ServiceEnd && !guard &&
-                 (clergy(job->title) || goesToChurch(id, std::int64_t(std::floor(absoluteDay)))))
+                 (clergy(job->title) || goesToChurch(id, today)))
         {
-            // Restday's service (doc 42, Phase 6): the clergy at the pulpit, a third of the town on the benches.
+            // Restday's service: the clergy at the pulpit, a third of the town on the benches.
             if (clergy(job->title))
             {
                 task = "preaching";
@@ -1183,39 +524,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 reason = "Restday: at the morning service.";
             }
         }
-        else if (const auto* hire = merchantRole && !onHours && !(night || fatigue >= 80 || (life.task == "sleep"sv && fatigue > 15 && hour < 8)) &&
-                                            ownerUnpaid(id, *job)
-                                        ? [&]() -> const OddJob* {
-                                              // A keeper whose till can't pay it, its owner having stopped topping it up
-                                              // (round 9, the user, 2026-10-27): free for hire work as an unpaid hand is,
-                                              // a business's or a farm's hire or an institution's crew, outside its own
-                                              // hours (on them it keeps shop, so the business can trade its way back: the
-                                              // user, the round's review); a hire it holds is called back at the day's
-                                              // turn (tendTills). (Asked as a civilian's post: a merchant's takes no odd
-                                              // job.)
-                                              Position free = *job;
-                                              free.role = "civilian";
-                                              bool claims = false;
-                                              const auto* held = oddJobFor(id, free, true, body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood),
-                                                                           hour, 0, atOnce ? &claims : nullptr, placesHold() ? &rec.town : nullptr, true);
-                                              if (claims)
-                                                  throw DecideInTurn{};
-                                              return held;
-                                          }()
-                                        : nullptr)
-        {
-            task = "odd job: " + hire->kind;
-            goal = hire->stage.at(id) == 0 ? hire->from : hire->to;
-            reason = "Its till can't pay it: an odd job, " + hire->what + ".";
-        }
         else if (merchantRole && onHours)
         {
             task = "trade";
             goal = tradingAt(*job, id);
-            reason = atStall_.count(id) || goal.cell != job->work.cell || goal.x != job->work.x
+            reason = goal.cell != job->work.cell || goal.x != job->work.x || goal.y != job->work.y
                          ? plan.kind == "market"sv ? "Marketday: trading from a stall at the market."
-                                                 : "A morning at a food stall in the market square."
-                         : "Keeping shop; restocks from the town stores.";
+                                                   : "A morning at a stall in the market square."
+                         : "Keeping shop.";
         }
         else if (festival && !night && fatigue < 80 && !(guard && within(hour, job->startHour, job->endHour)))
         {
@@ -1236,7 +552,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         {
             task = "at the market";
             goal = *pick(plan.crowd, id);
-            reason = "Marketday: buying and gossiping at the stalls.";
+            reason = "Marketday: gossiping at the stalls.";
         }
         else if (guard)
         {
@@ -1252,77 +568,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         {
             task = "at home";
             goal = r->evening;
-            reason = "The shop is shut; tallying accounts.";
-        }
-        else if (const auto* odd = [&]() -> const OddJob* {
-                     bool claims = false;
-                     // Out of work: no post, labouring for the Town Works, working the wild, idling.
-                     const bool outOfWork = (job == &stand && !keepsHouse) || labourJob(rec, job) || outworkJob(rec, job) ||
-                                            (ownJob(rec, job) ? rec.idleJob : idlePost(job->title));
-                     const auto unpaid = [&] {
-                         // (Work for hire that nobody pays, or idle at its own business, takes hires as the jobless do:
-                         // doc 64, Phase 13, round 6.)
-                         if (!workByHours() || !job->paid)
-                             return false;
-                         // (And a keeper whose till can't pay it, its owner having stopped topping it up: round 9.)
-                         if (ownerUnpaid(id, *job))
-                             return true;
-                         const auto payer = payerOf(rec, *job, body.age);
-                         return (payer.account.empty() && forHire(job->title)) || idleHand(rec, payer);
-                     };
-                     const bool unpaidHand = !outOfWork && unpaid();
-                     const bool jobless = outOfWork || unpaidHand;
-                     // Free for an institution's crew at any hour, before the children (the user, 2026-10-26; doc 64, Phase
-                     // 13, round 7; the model's staff_to): a grown wolf of working age at a post nobody pays it for: idle
-                     // at its business, for hire, keeping its household's house, or at work at home that nobody pays (an
-                     // unpaid post at its own home too, not a House's head's). Not one retired, nor an apprentice. Not
-                     // the out of work (round 8, the user, 2026-10-27: the middle course): they keep their hours and
-                     // their look, the businesses' and the farms' hires weighed with the crews by pay, so the fields
-                     // get them at the harvest. (Round 7 let them look from waking too, and the crews took them before
-                     // the farms' better-paid field hires were posted: the field hires worked at the harvest fell
-                     // by a third or more.)
-                     const bool crewFree = workByHours() && body.age >= 16 && body.age < RetireAge && job->role == "civilian"sv &&
-                                           job->title != "retired"sv && job->title.rfind("apprenticed", 0) != 0 &&
-                                           ((wageRule(UnpaidFirst) ? unpaidHand || (outOfWork && unpaid()) : jobless) || keepsHouse ||
-                                            (job->paid ? unpaidAtHome(job->title)
-                                                       : !houseHead(job->title) && payerOf(rec, *job, body.age).account.empty()));
-                     const auto* held =
-                         oddJobFor(id, *job, jobless, body.age, wallet.cash < aDay || (hunger >= 55 && !carriesFood), hour,
-                                   // (What a better-paid hire must pay to draw it from its own post: doc 64, Phase 6.)
-                                   job->paid && job != &stand && body.age >= 16 && hour >= 8 && hour < 10
-                                       ? lookingFor(id, payerOf(rec, *job, body.age), *job, absoluteDay)
-                                       : 0,
-                                   atOnce ? &claims : nullptr, placesHold() ? &rec.town : nullptr, crewFree);
-                     if (claims)
-                         throw DecideInTurn{};      // (Taken in its turn: a job has room for so many.)
-                     return held;
-                 }())
-        {
-            // An odd job (RatwOddJobs.cpp): to where it begins, then to where it ends.
-            task = "odd job: " + odd->kind;
-            goal = odd->stage.at(id) == 0 ? odd->from : odd->to;
-            reason = "An odd job: " + odd->what + ".";
-        }
-        else if (keepsHouse && onHours)
-        {
-            // Keeping the house: the household's food first, then the children, then a look about the town.
-            if (larderLow(life.homeCell) && wallet.cash >= layIn && shop)
-            {
-                task = "shopping for the household";
-                goal = *shop;
-                reason = "Laying in the household's food with the household purse.";
-            }
-            else if (withChildren(life.homeCell))
-            {
-                task = "minding the children";
-                reason = "Keeping the house and minding the children.";
-            }
-            else
-            {
-                task = "about the town";
-                goal = r->evening;
-                reason = "Keeping the house; out and about while the others work.";
-            }
+            reason = "The shop is shut.";
         }
         else if (onHours && travels)
         {
@@ -1330,31 +576,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             c.routeGoal = true;
             reason = "On the road; their business keeps them travelling.";
         }
-        else if (onHours && outworkJob(rec, job) && hour >= endHour - 1.5 && carriesForSale(id) && seller)
-        {
-            // The last of the day: back to town to sell what it brought in.
-            task = "selling";
-            goal = trading.at(*seller).serve;
-            reason = "Back from the wild to sell what it brought in.";
-        }
         else if (onHours)
         {
             task = job->title;
             goal = job->work;
-            reason = labourJob(rec, job)    ? "Day labour for the Town Works, paid by the town."
-                     : outworkJob(rec, job) ? "Working the country out of town; lives by what it sells."
-                     : job->title == "retired"sv   ? "Retired; spending the day in familiar company."
-                     : job->paid                 ? "Daily work, for wages."
-                                                 : "Spending the day in familiar company.";
-            if (state_.memory.unpaidSince.count(id) && !labourJob(rec, job))
-            {
-                const auto payer = payerOf(rec, *job, body.age);
-                // (A shop pays from its till: the one owed is its keeper, doc 46.)
-                const auto held = payer.account.rfind("till:", 0) == 0 ? state_.careers.positions.find(payer.account.substr(5))
-                                                                         : state_.careers.positions.end();
-                const auto* boss = spec(held != state_.careers.positions.end() ? held->second.holder : payer.account);
-                reason = "Waiting on wages from " + (boss ? boss->name : payer.whom) + ".";
-            }
+            reason = job->title == "retired"sv            ? "Retired; spending the day in familiar company."
+                     : job->title == "looking for work"sv ? "Out of work; spending the day in familiar company."
+                     : job == &stand                      ? "Spending the day in familiar company."
+                                                          : "At work.";
         }
         else if (!resting.empty() && within(hour, job->startHour, job->endHour))
         {
@@ -1386,8 +615,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             task = "morning at home";
             reason = "Waking slowly before the working day.";
         }
-        if (travels && !(onHours && task == job->title) && task != "eat"sv && task != "buy food"sv && task != "fetch food"sv && task != "relocate"sv &&
-            task != "festival"sv && task != "at the market"sv && task != "at church"sv && task != "preaching"sv)
+        if (travels && !(onHours && task == job->title) && task != "eat"sv && task != "relocate"sv && task != "festival"sv &&
+            task != "at the market"sv && task != "at church"sv && task != "preaching"sv)
         {
             // Off the road's hours: stay put, camped or lodged where the day ended.
             goal = {body.cell, std::floor(body.x) + .5, std::floor(body.y) + .5};
@@ -1412,57 +641,44 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             c.routeGoal = false;
             reason = task == "socialize"sv ? "Free time; roaming familiar ground." : "Roaming the area they keep to.";
         }
-        c.kind = Choice::Kind::Decided;
+        c.skip = false;
     };
 
     // Everyone at once: over the threads where there are some (setParallel), a share of the residents each.
-    // Who it is, where its body is, and its purse (a resident with neither spec nor body does nothing this second).
-    const auto find = [&](std::size_t i) {
+    // Who it is and where its body is (a resident with neither spec nor body does nothing this second).
+    const auto atOnce = [&](std::size_t i) {
         auto& c = choices[i];
-        c.kind = Choice::Kind::Skip;
+        c.skip = true;
         c.companion = false;
-        c.missed = nullptr;
         c.body = nullptr;
-        c.wallet = nullptr;
         c.record = &records_[i];
         c.r = c.record->spec;
         const auto* body = bodyOf[i];
         if (!c.r || !body || body->cell.empty() || body->cell.size() > 80 || !validNumber(body->x, 0, 256) || !validNumber(body->y, 0, 256))
-            return false;
+            return;
         c.body = body;
         if (body->unseen)
         {
             // Out of sight: only on the unseen's second, and then for every second since it last decided.
             if (!unseenDecided_)
-                return false;
+                return;
             const double since = order[i]->second.decidedAt < 0 ? 1
                                  : std::round((absoluteDay - order[i]->second.decidedAt) * calendar::SecondsPerDay);
-            c.step = int(std::clamp(since, 1., double(unseenStep())));
+            c.step = int(std::clamp(since, 1., double(UnseenStep)));
         }
         else
             c.step = 1;
-        c.wallet = c.record->wallet;
-        c.kind = Choice::Kind::InTurn;
-        return c.wallet != nullptr;                 // (Without a purse: in its turn, where that fails as it always did.)
+        decide(*order[i], c);
     };
-    const auto atOnce = [&](std::size_t i) {
-        auto& c = choices[i];
-        if (!find(i))
-            return;
-        try
-        {
-            decide(*order[i], c, true);
-        }
-        catch (const DecideInTurn&)
-        {
-            c.kind = Choice::Kind::InTurn;
-        }
-    };
+    // (Each record's plan and every work cell's place are known by now: the threads only read them.)
+    for (const auto& r : records_)
+        if (const auto* job = r.job ? r.job : r.learning)
+            place(job->work.cell);
     sharing = true;
     spread(order.size(), 64, atOnce);
     sharing = false;
 
-    // The second half, in ID order: each does what it decided (deciding first, if it is its turn to).
+    // The second half, in ID order: each does what it decided.
     std::unordered_set<Station, StationHash> reservations;
     reservations.reserve(order.size());
     std::map<std::string, int> routeWalkers;
@@ -1470,31 +686,25 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     {
         auto& pair = *order[i];
         auto& c = choices[i];
-        if (c.kind == Choice::Kind::Skip)
+        if (c.skip)
             continue;
-        if (c.kind == Choice::Kind::InTurn)
-        {
-            if (!c.wallet)
-                c.wallet = &state_.accounts.at(pair.first);
-            decide(pair, c, false);
-        }
         const auto& id = pair.first;
         auto& life = pair.second;
         const auto& body = *c.body;
-        auto& wallet = *c.wallet;
         life.hunger = c.hunger;
         life.fatigue = c.fatigue;
         life.decidedAt = absoluteDay;
-        if (c.missed)
-            missedMeal(id, *c.missed);              // (Its town's shops bare: the meal it wanted, doc 64, Phase 13.)
         const int step = c.step;
         const Position* job = c.job;
         const Position* learning = c.learning;
-        const bool guard = c.guard, merchantRole = c.merchantRole, onHours = c.onHours;
+        const bool onHours = c.onHours;
         const int walker = c.walksRoute ? routeWalkers[job->route]++ : 0;
         if (c.companion)
         {
-            keptHandDoes(id, life, wallet, c.task == "eat"sv, step);
+            life.task = "companion";                // (Its work and its walking are the game's: a Hold's, a party's.)
+            life.goalCell.clear();
+            life.reason = "Ordinary work is suspended while recruited.";
+            life.progress = 0;
             continue;
         }
         const auto& task = c.task;
@@ -1502,8 +712,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         if (c.routeGoal)
         {
             const auto& posts = authored_.routes.at(job->route).posts;
-            // (A patrol's post by watchSlot, a traveller's by slot.)
-            goal = posts[std::size_t((c.guard ? watchSlot : slot) + walker * 3) % posts.size()];
+            goal = posts[std::size_t(slot + walker * 3) % posts.size()];
         }
         if (c.arrivedHome)
         {
@@ -1513,10 +722,6 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.relocationCell.clear();
             life.relocationX = life.relocationY = 0;
         }
-        const auto& home = c.home.community;
-        const std::string& larder = c.larder;
-        const auto* larderAccount = c.larderAccount;
-        const std::string* seller = c.seller;
         if (task != life.task || goal.cell != life.goalCell || goal.x != life.goalX || goal.y != life.goalY)
             life.progress = 0;
         life.task = task;
@@ -1529,81 +734,23 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.progress = 0;
             continue;
         }
-        if (task.rfind("odd job: ", 0) == 0)
-        {
-            advanceOddJob(id, step, absoluteDay);
-            continue;
-        }
-        if (task == "seeking alms"sv)
-        {
-            const auto church = churchOf(treasuryOf(home));
-            for (const auto& open : openShops)
-                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
-                {
-                    const auto till = tillOf(open.first);
-                    // (With work by the hours, the cheapest food that feeds it, not the shop's best: round 10, CheapAlms.)
-                    const bool cheap = workByHours() && wageRule(CheapAlms);
-                    std::int64_t cheapPrice = 0;
-                    if (const auto* shelves = account(till); shelves && account(church))
-                        if (const auto food = cheap ? almsFood(open.first, cheapPrice) : bestFood(*shelves); !food.empty())
-                            if (const auto price = cheap ? cheapPrice : shopPrice(open.first, food);
-                                (church == SharedChurch ? almsMay() : account(church)->cash) >= price &&   // (Round 10: inside its relief.)
-                                transfer(till, church, food, 1, price, "alms bought for the hungry"))
-                                shift(church, id, food, 1, 0, "alms");
-                    break;
-                }
-            continue;
-        }
-        if (task == "shopping for the household"sv)
-        {
-            // A trip's worth for everyone at home (the household's habit), put away in the larder once home.
-            for (const auto& open : openShops)
-                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
-                {
-                    buyFood(id, open.first, true);
-                    break;
-                }
-            continue;
-        }
-        // At a festival the town's stores feed everyone once (goods only: nothing is bought).
-        // (Round 10, lane C: with the feast laid in, FeastLaidIn, a meal if the stores hold one, else a meal's worth of
-        // the most filling food they hold, a few pieces at most.)
-        if (task == "festival"sv && feasted_.insert(id).second)
-        {
-            const auto& store = storeFor(life.homeCell);
-            const auto* stores = account(store);
-            if (!(workByHours() && wageRule(FeastLaidIn)) || !stores || stock(*stores, "meal") > 0)
-                shift(store, id, "meal", 1, 0, "festival feast");
-            else
-                for (int fed = 0, pieces = 0; fed < 50 && pieces < 6; ++pieces)
-                {
-                    const auto food = bestFood(*account(store));
-                    if (food.empty() || !shift(store, id, food, 1, 0, "festival feast"))
-                        break;
-                    fed += nourishment(food);
-                }
-        }
-        // An unpaid post held by a grown wolf (a foreman, a clerk) is paid by whoever it works for too (doc 42, Phase 3);
-        // not a beggar's, nor the head of a great house's, who live on alms and on the house.
-        const bool earns = job->paid || (!merchantRole && body.age >= 16 && body.age < RetireAge && !houseHead(job->title) &&
-                                         job->title.find("beg") == std::string::npos);
-        const bool paidWork = earns && (task == "patrol"sv || task == "watch"sv || (task == job->title && onHours));
+        // At its post in its hours: working at it (nothing is made or paid for it since doc 66's Phase 5).
+        const bool atWork = onHours && job != &c.stand &&
+                            (task == job->title || task == "trade"sv || task == "watch"sv || task == "patrol"sv);
         // Working at their post in its hours, they grow more skilled at it; an apprentice beside a master who is
-        // there too learns three times as fast. Nothing else depends on skill yet but who succeeds whom.
-        double skilled = -1;                        // Its skill at its post, once known.
-        if (onHours && job != &c.stand && (task == job->title || task == "trade"sv || task == "watch"sv || task == "patrol"sv))
+        // there too learns faster. Nothing else depends on skill yet but who succeeds whom.
+        if (atWork)
         {
             // (Its skill where the record keeps it: practise without the lookup.)
             auto& record = *c.record;
             double* at = job != record.job ? skillSlot(id, job->id, true)
                                            : record.skill ? record.skill : (record.skill = skillSlot(id, job->id, true));
-            // (Doc 64, Phase 8, a year's: a shop's or farm's head short of its trade's level LearnHead, else LearnAlone;
-            // never past SkillTop, nor back from where it is.)
-            const bool head = (job->role == "merchant"sv || producerOf(record, job)) && *at < job->level;
+            // (A year's: a shop's or farm's head short of its trade's level LearnHead, else LearnAlone; never past
+            // SkillTop, nor back from where it is.)
+            const bool head = (job->role == "merchant"sv || items::producerFor(job->title)) && *at < job->level;
             const double year = calendar::DaysPerYear * PaidSpells * 600.;
             if (*at < SkillTop)
                 *at = std::min(SkillTop, *at + (head ? LearnHead : LearnAlone) * step / year);
-            skilled = *at;
         }
         if (learning && body.cell == learning->work.cell && within(hour, learning->startHour, learning->endHour))
         {
@@ -1611,22 +758,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const auto there = bodies.find(master);
             if (there != bodies.end() && there->second.cell == body.cell)
             {
-                // Beside a better hand (doc 64, Phase 8): LearnBeside a year, up to five short of the master, or the
-                // trade's level where the master is at it, and never past it and five.
+                // Beside a better hand: LearnBeside a year, up to five short of the master, or the trade's level where
+                // the master is at it, and never past it and five.
                 const double best = skill(master, learning->id), level = std::max(learning->level, TradeSkilled);
                 const double reach = std::min(level + 5, std::max(best - 5, best >= level ? level : 0.));
                 double* at = skillSlot(id, learning->id, true);
                 if (*at < reach)
                     *at = std::min(reach, *at + LearnBeside * step / (calendar::DaysPerYear * PaidSpells * 600.));
-                const double learnt = *at;
-                if (learning->id == job->id)
-                    skilled = learnt;
             }
         }
-        // (Out in the fields or on the water a producer's place is no one's alone: two fishers fish the same shore.)
-        if (task == "sleep"sv || (paidWork && !producerOf(*c.record, job)))
+        // A place to work or rest is one wolf's. (Out in the fields or on the water a producer's place is no one's alone:
+        // two fishers fish the same shore.)
+        if (task == "sleep"sv || ((task == "watch"sv || task == "patrol"sv || (atWork && task == job->title)) &&
+                                  !items::producerFor(job->title)))
         {
-            // A place to work or rest is one wolf's.
             if (!reservations.insert({&goal.cell, std::llround(goal.x * 1e6), std::llround(goal.y * 1e6)}).second)
             {
                 life.reason = "Waiting for an occupied work or rest place.";
@@ -1638,213 +783,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.fatigue = std::max(0., life.fatigue - .012 * step);
             continue;
         }
-        life.progress += step;
-        // The skilled finish paid work sooner (workPace: 1 at skill 50).
-        const double duration = paidWork ? (guard ? 120. : 600.) * workPace(skilled >= 0 ? skilled : skill(id, job->id), job->level)
-                                         : task == "eat"sv ? 8. : 12.;
-        if (life.progress < duration)
+        if (task != "eat"sv)
             continue;
-        // (A step past the end carries on into the next: work takes the same time in steps as by the second.)
-        life.progress = step > 1 ? std::max(0., life.progress - duration) : 0;
-        if (task == "fetch food"sv)
-        {
-            const auto food = larderAccount ? eatFirst(larder, *larderAccount) : std::string();   // (What spoils soonest.)
-            if (food.empty() || !shift(larder, pair.first, food, 1, 0, "taken from the larder"))
-                life.reason = "The larder is empty.";
-            else
-                larderTaken_[larder] += nourishment(food);
-        }
-        else if (task == "eat"sv)
-        {
-            // What it carries that spoils soonest, the most nourishing of those (doc 35, Part 7: a meal fills a wolf, a
-            // loaf less, by what each feeds; doc 42, "Spoilage").
-            const auto food = eatFirst(pair.first, wallet);
-            if (!food.empty())
+        life.progress += step;
+        if (life.progress < 8.)
+            continue;
+        life.progress = 0;
+        // What it carries that spoils soonest, the most nourishing of those (doc 35, Part 7: a meal fills a wolf, a loaf
+        // less, by what each feeds).
+        if (const auto* wallet = c.record->wallet)
+            if (const auto food = eatFirst(*wallet); !food.empty())
             {
-                consume(pair.first, food, 1, "eat");
+                consume(id, food, 1, "eat");
                 life.hunger = std::max(0., life.hunger - nourishment(food) * 1.1);
             }
-        }
-        else if (task == "at church"sv && hour >= ServiceEnd - .5 && offered_.insert(pair.first).second)
-        {
-            // The plate goes round as the service ends: a penny or two from those who can spare it.
-            if (const std::int64_t gift = wallet.cash > plateMore ? plateTwo : wallet.cash > plateFrom ? plateOne : 0; gift > 0)
-            {
-                std::string spare;
-                const auto church = churchOf(treasuryOfResident(*c.record, spare));
-                openAccount(church);
-                shift(pair.first, church, "", 0, gift, "the collection");
-            }
-        }
-        else if (task == "selling"sv)
-        {
-            if (!seller || sellBroughtIn(pair.first, *seller) == 0)
-                life.reason = "The shop wants none of it today.";
-        }
-        else if (paidWork && outworkJob(*c.record, job))
-        {
-            // A spell's work out of town: what the ground gives (doc 41's patches and game, shared with players).
-            if (const auto* ground = outworkOf(pair.first, home); ground && day_.harvest)
-                for (const auto& [item, n] : day_.harvest(pair.first, *ground, season_))
-                    create(pair.first, item, n, ground->trade == "hunting"sv ? "hunted" : "brought in");
-        }
-        else if (paidWork)
-        {
-            produce(pair.first, absoluteDay, 1.);   // A farmer's, fisher's... yield (Data/Items/crafts.json): a spell's hour.
-            // Wages from whoever the work is for (doc 42, Phase 2): the shop, the town, the church, the house.
-            const auto payer = payerOf(*c.record, *job, body.age);
-            // An hour of the business's work, if the work is a business's (doc 64, Phase 3): a shop's help, a hand at a
-            // house's works. What it makes is made from the hours its hands put in. (Not a stall's, with work by the
-            // hours: its help sells, and makes nothing. Doc 64, Phase 13.)
-            if ((payer.whom == "the shop"sv || (payer.whom == "the house"sv && payer.account.rfind("till:", 0) == 0)) &&
-                (!workByHours() || makesThings(payer.account)))
-                creditWork(payer.account, 1.);
-            if (!payer.account.empty() && life.wagesToday < PaidSpells)
-            {
-                // Its employer's own wage (doc 64, Phase 6): a PaidSpells-th of a day's a spell, the pennies' fractions
-                // carried to the next (never more than a day's owed).
-                const auto employer = employerKey(payer, *job);
-                // (An apprentice is paid ApprenticePay of it: doc 64, Phase 8.)
-                const double day = employerWage(employer) * (job->title.rfind("apprenticed: ", 0) == 0 ? ApprenticePay : 1.);
-                auto& carry = wageCarry_[pair.first];
-                carry = std::min(carry + day / PaidSpells, day);
-                const std::int64_t wage = std::int64_t(std::floor(carry));
-                // (A small town's Town Works' day labour from the capital's treasury since round 10, the user,
-                // 2026-10-27: the living for every grown wolf is the realm's, not a small town's to carry. Its wage
-                // is still its town's works', at its town's rate: employer, above.)
-                const bool labour = labourJob(*c.record, job);
-                const bool capitals = labour && workByHours() && wageRule(CapitalLabour) && payer.account.rfind("stores:", 0) == 0 && account("treasury");
-                // Since round 11 (the user, 2026-10-29; TownLabourFirst) the town pays its own first, inside its week's
-                // allowance for it (its tax's budget after its relief and its other posts), and the capital carries
-                // only the shortfall; and what the capital carries (CarriedPosts) is kept to its allowance, inside its
-                // posts' share after its watch: past it the day labour goes unpaid, as a post let go, till the next week.
-                auto& m = state_.memory;
-                const auto own = capitals && wage > 0 && wageRule(TownLabourFirst) ? m.labourLeft.find(payer.account) : m.labourLeft.end();
-                const bool townPays = own != m.labourLeft.end() && own->second >= double(wage) && spendable(payer.account) >= wage;
-                // Round 12, lane B (the user, 2026-10-29): the capital's own Town Works' day labour kept to its week's
-                // allowance with the day labour it carries (CapitalByIncome; it was paid every spell, whatever its
-                // budget), and a town's day labour its own allowance doesn't cover (or the capital's past its allowance)
-                // paid from its holdings tax not yet spent back (HoldingsBite), before the capital carries it.
-                const bool capitalOwn = labour && wage > 0 && workByHours() && wageRule(CapitalByIncome) && payer.account == "treasury";
-                const auto mine = capitalOwn ? m.labourLeft.find("treasury") : m.labourLeft.end();
-                const bool allowed = mine == m.labourLeft.end() || mine->second >= double(wage);
-                const bool bitePays = labour && wage > 0 && !townPays && (capitals || (capitalOwn && !allowed)) && biteHeld(payer.account) >= double(wage) &&
-                                      spendable(payer.account) >= wage;
-                const bool carried = capitals && !townPays && !bitePays;
-                const auto kept = carried && wage > 0 && carriedKept() ? m.labourLeft.find("treasury") : capitalOwn && !bitePays ? mine : m.labourLeft.end();
-                if ((carried && wage > 0 && carriedKept()) || capitalOwn)
-                    m.labourWeek["treasury|asked"] += day / PaidSpells;   // (A spell's worth, paid or not: its next week's ask.)
-                const bool closed = kept != m.labourLeft.end() && kept->second < double(wage);
-                const auto& from = carried ? std::string("treasury") : payer.account;
-                if (wage <= 0)
-                    ++life.wagesToday;                   // (Under a penny this spell: carried.)
-                else if (!closed && (carried ? spendable(from) : payer.account[0] == 'h' ? houseMay(payer.account, HousePosts) : spendable(from)) >= wage &&   // (A House's, inside its week's posts: round 10.)
-                    shift(from, pair.first, "", 0, wage, guard ? "watch wages" : labour ? "day labour" : "service wages"))
-                {
-                    if (carried)
-                        m.labourWeek["treasury"] += double(wage);
-                    if (kept != m.labourLeft.end())
-                        kept->second -= double(wage);
-                    if (townPays)
-                    {
-                        own->second -= double(wage);
-                        m.labourWeek[payer.account] += double(wage);
-                        if (noteTowns_)
-                            labourOwn_[payer.account] += wage;
-                    }
-                    if (carried && noteTowns_)
-                        labourCarried_[payer.account] += wage;
-                    if (bitePays)
-                    {
-                        m.biteLeft[payer.account] -= double(wage);
-                        // (A town's own day labour, as its allowance's: not counted among its other posts next week.)
-                        if (capitals && wageRule(TownLabourFirst))
-                            m.labourWeek[payer.account] += double(wage);
-                        if (noteTowns_)
-                            biteSpent_[payer.account] += wage;
-                    }
-                    ++life.wagesToday;
-                    carry -= double(wage);
-                    notePay(pair.first, employer, wage, wage);
-                    if (!labourJob(*c.record, job) && state_.memory.unpaidSince.erase(pair.first))
-                        ++state_.memory.revision;
-                }
-                else
-                {
-                    notePay(pair.first, employer, 0, wage);   // (Its employer fell short: its review marks it.)
-                    state_.memory.revision += state_.memory.unpaidSince.emplace(pair.first, absoluteDay).second;
-                }
-            }
-        }
-        else if (task == "buy food"sv)
-        {
-            const std::string* keeper = nullptr;
-            for (const auto& open : openShops)
-                if (open.second.serve.cell == goal.cell && open.second.serve.x == goal.x && open.second.serve.y == goal.y)
-                    keeper = &open.first;
-            // Something to eat and, where there is a larder, a couple of days more (doc 36): one trip feeds them for
-            // days, and a town doesn't all queue at the shop each morning. What, by what gives the most for the money
-            // to this wolf's taste (doc 35, Part 7: bread and porridge, a meal now and then).
-            if (!keeper || buyFood(pair.first, *keeper, larderAccount != nullptr) == 0)
-                life.reason = "Cannot buy food: the shop, its stock or the purse is unavailable.";
-        }
-        else if (task == "trade"sv)
-        {
-            const auto sold = wares(pair.first);
-            // A kitchen's keeper hungry and with nothing on it (round 13, lane 3: KitchenKept) buys a piece at its own
-            // counter, the most nourishment for its money, purse to till at its price: a sale, as anyone's, that its shelf
-            // target sees. It eats it at 60 (the "eat" above), its shop open the while.
-            if (kitchenKept && life.hunger >= 55 && !hasFood(wallet) && kitchen(pair.first))
-            {
-                std::int64_t price = 0;
-                if (const auto food = counterFood(pair.first, spendable(pair.first), &price); !food.empty())
-                    transfer(tillOf(pair.first), pair.first, food, 1, price, "bought at its own counter");
-            }
-            // The shop's own goods (doc 35, Phase 5): a batch of whatever has run low, made from materials. A shop
-            // that makes nothing yet sells what it has.
-            craft(pair.first, job->work.cell, absoluteDay);
-            const bool sellsMeals = std::find(sold.begin(), sold.end(), "meal") != sold.end();
-            const bool sellsHerbs = std::find(sold.begin(), sold.end(), "herbs") != sold.end();
-            if (!sellsMeals && !sellsHerbs)
-                continue;
-            // From the town's own stores (the treasury, where there is one town): what the caravans have brought.
-            const std::string& storeId = storeFor(job->work.cell);
-            const auto& stores = *account(storeId);
-            // A stall on Marketday carries more. Prepared meals keep three days: a shop carries about two days of what it
-            // sells (mealsSold_), at least three (doc 42, "Spoilage").
-            const auto till = tillOf(pair.first);   // The shop's shelves (its house's till, doc 42).
-            const auto sells = mealsSold_.count(till) ? mealsSold_.at(till) : 6.;
-            const int carried = std::clamp(int(std::ceil(sells * 2)) + 1, 3, atStall_.count(pair.first) ? 20 : 12);
-            const auto& shelves = state_.accounts.at(till);
-            // (Wholesale, at the going rate: a meal 4p and herbs 1p at a 12p day.)
-            const auto town = shopTown(pair.first);
-            const auto mealAt = pennies(4 / 12., town), herbsAt = pennies(1 / 12., town);
-            const int meals = !sellsMeals ? 0 : std::min({3, carried - stock(shelves, "meal"), stock(stores, "meal"),
-                                        int(std::min<std::int64_t>(3, spendable(till) / mealAt))});
-            if (meals > 0)
-                transfer(storeId, till, "meal", meals, mealAt, "wholesale restock");
-            const int herbs = !sellsHerbs ? 0 : std::min({3, 8 - stock(shelves, "herbs"), stock(stores, "herbs"),
-                                        int(std::min<std::int64_t>(3, spendable(till) / herbsAt))});
-            if (herbs > 0)
-                transfer(storeId, till, "herbs", herbs, herbsAt, "wholesale restock");
-        }
     }
-    // The hands bake while the keeper is away (round 13, lane 3: KitchenKept; the user, 2026-10-29). A kitchen's batch
-    // began only in its keeper's trade, so a keeper off eating, asleep or ill left its hands' hours piling to the bank's
-    // cap and lost: the Sugar Loaf was credited 16 to 24 hand-spells a day and lost 17 to 24 hours of them with its bank
-    // full, selling nothing for three days. Now each second, after everyone's turn, a kitchen whose keeper wasn't keeping
-    // it as the second began crafts from its work in hand (Society::craft's byHands: a batch finished, the day's
-    // materials laid in, the next batch begun from the hands' hours, at craft's own pace; none of the keeper's time). Its
-    // shop is open only with its keeper: the food waits on its shelf.
-    if (kitchenKept)
-        for (const auto& k : keepers)
-            if (!k.keeping)
-            {
-                const auto& holder = *k.holder;
-                if (const auto next = craftNext_.find(holder); next != craftNext_.end() && absoluteDay < next->second)
-                    continue;                       // (Not yet its next look: craft's own pace.)
-                if (kitchen(holder))
-                    craft(holder, k.position->work.cell, absoluteDay, true);
-            }
 }
 } // namespace ratw

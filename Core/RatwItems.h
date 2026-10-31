@@ -49,10 +49,9 @@ struct Item
     // Basic however well made.
     int tier = 0;
     Weapon weapon;                                  // A weapon's blow (weapon.kind empty for anything else).
-    // What it's worth (Docs/Design/64-economy-migration.md, Phase 4): its place on the worth ladder (items.json
-    // `worth`, Data/Economy/ladder.json), in a labourer's day-wages (LD); 0 when it has none. See items::worthOf.
+    // What it's worth: its place on the worth ladder (items.json `worth`, Data/Economy/ladder.json), in a labourer's
+    // day-wages (LD); 0 when it has none. Catalogue data (nothing prices by it since doc 66's Phase 5).
     double worth = 0;
-    bool staple = false;                            // On the ladder's lowest rung (its sellers' margins may reach +100%).
 };
 
 struct Business
@@ -114,92 +113,15 @@ struct Producer
     // Out of its seasons, what the work brings in instead (a farm threshing the barn's grain in winter), or nothing.
     std::vector<std::pair<std::string, int>> offSeason;
 };
-// Whether other trades buy this to work with: an ingredient of some craft, or something a shop supplies; or, a staple,
-// something households or the town's own buyers use up every day or so (bread, candles: doc 35, Part 7).
-bool traded(const std::string& item);
-// Whether some craft takes it to work with (raw meat, flour, eggs; a keep's workshop too, which makes the crafts:
-// Game::keepWork), in any quality. A kept hand's mess gives what no craft takes first (Society::messFood).
-bool ingredient(const std::string& item);
 // The producer a resident is, from the words of their work label, or null.
 const Producer* producerFor(const std::string& workLabel);
-// Whether a good comes in only in some seasons (every producer that brings it in has its seasons: grapes, apples), so
-// those who work with it lay in a year's store at the harvest.
-bool seasonal(const std::string& item);
-// What households use up besides food (crafts.json `households`; doc 35, Part 7).
-struct HouseholdNeed
-{
-    std::vector<std::string> any;                   // One of these, whichever a shop has.
-    double everyDays = 1, winterDays = 0;           // How often; in winter (0: as ever).
-    bool perPerson = false;                         // For each grown wolf in the household.
-};
-const std::vector<HouseholdNeed>& householdNeeds();
-// A town's own buyers (crafts.json `institutions`; doc 35, Part 7): the Town Works, the watch, the church.
-struct Institution
-{
-    std::string id, name;
-    bool perGuard = false;                          // Its basket is per guard (else per 100 residents) a day.
-    bool tithes = false;                            // Lives on tithes (the church, doc 42), not the treasury.
-    std::string perProducer;                        // Its basket is per worker of this producer (crafts.json "per":
-                                                    // "producer:mine"; doc 42, Phase 5), not per resident.
-    int minResidents = 0;                           // Only in communities at least this big (a city's administration).
-    std::vector<std::pair<std::string, double>> basket;
-};
-// Tools a trade wears out (crafts.json `tools`; doc 42, Phase 5): every so often a worker of `producer` buys `item` from
-// a shop of its community, out of its own purse, and wears it out at work.
-struct ToolNeed
-{
-    std::string producer, item;
-    double everyDays = 20;
-};
-const std::vector<ToolNeed>& toolNeeds();
-// The worth ladder's settings (Data/Economy/ladder.json; doc 63, doc 64 Phase 4): the catalogue's labourer's day (an
-// item with no place is worth its price over it), the margin the hours were calibrated at, the skill premium (a trade
-// needing skill s pays 1 + s / skillWage a labourer's wage) and carriage (labourer's hours to cart a unit of weight).
-// foundingDay: a labourer's day when the realm's money is founded (doc 64, Phase 13: 60p, for 5,000,000p), the going
-// rate it starts at (Society::foundWage); the catalogue's day if it has none. costAtPace: with work by the hours, goods
-// costed at the hours worked at the realm's pace, not the calibrated (Society::costedHours; off until paid hours follow).
+// The worth ladder's settings (Data/Economy/ladder.json): the catalogue's labourer's day, what an item's price was
+// written against (an item's place on the ladder, Item::worth, is read with the catalogue).
 struct Ladder
 {
-    double catalogueDay = 12, foundingDay = 12, markup = .15, skillWage = 150, carryPerWeight = .004;
-    bool costAtPace = false;
+    double catalogueDay = 12;
 };
 const Ladder& ladder();
-// What a good is worth in a labourer's day-wages: its place on the ladder (a quality its share of the plain good's), or
-// with none its catalogue price over the catalogue's day. 0 for an unknown id.
-double worthOf(const std::string& id);
-// What a kind of business uses up a day to keep going (crafts.json `upkeep`: a stables' horses eat hay and oats),
-// bought like its materials and paid from its till; null for none. "(farm)": what a farm worker wears out a day
-// (crafts.json `farmUpkeep`).
-const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business);
-const std::vector<Institution>& institutions();
-double institutionDays();                           // Days of its basket an institution keeps in stock.
-double contractPremium();                           // A contract's reward against the goods' price.
-int householdReserve();                             // Pennies a head a household keeps back for food.
-// The great houses' trades (Docs/Design/61-industry-of-the-realm.md; Data/Economy/houses.json): which house is which,
-// by a word of its name, and the kinds of business it owns in its city. Empty for a world without the file.
-struct HouseTrade
-{
-    std::string id, name, trade;
-    std::vector<std::string> names;                 // Words of its name: "grayrock" (in "Grayrock Hall", "the Grayrock Foundry").
-    std::vector<std::string> businesses;            // The kinds of business (businesses.json ids) that are its trade.
-};
-const std::vector<HouseTrade>& houseTrades();
-// The trade of a house, by its name ("Grayrock Hall", "House Fell"), or null.
-const HouseTrade* houseTradeOf(const std::string& houseName);
-// Whether `text` holds `word` as a word of its own (letters on neither side), ignoring case.
-bool holdsWord(const std::string& text, const std::string& word);
-// What houses.json says, as text that changes whenever it does (a save gives its businesses out again then).
-const std::string& houseRules();
-// A town's trade (doc 61; Data/Economy/specialties.json): the goods it is known for and sends out, and what it needs.
-struct TownTrade
-{
-    std::string town, trade;
-    std::vector<std::string> goods, needs;
-};
-const TownTrade* townTrade(const std::string& town);         // Null for a town with none.
-bool townGoodOf(const std::string& town, const std::string& item);   // Whether the good is the town's trade.
-double tradeYield();                                // How much more a town's producers bring in of its goods.
-double tradeKeep();                                 // How much more of them they keep in store to send away.
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

@@ -1067,36 +1067,6 @@ void Game::applyDmActions(double dt)
                     if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                         system(c, "Word goes round: " + outcome.message);
         }
-        else if (kind == "economy.tax" || kind == "economy.mint" || kind == "economy.relief" || kind == "economy.holdings")
-        {
-            // The Dungeon Master's levers on the economy (Docs/Design/64-economy-migration.md, decision 5), each logged in
-            // the ledger: the tax rate (payload {"rate": 0 to 0.5 of a week's income}), the mint on or off ({"on"}), and a
-            // one-off relief grant from the capital's treasury to a town's (the target the town; {"coins"}); and since
-            // round 11 the holdings tax ({"rate": 0 to 0.1 a week of what a home holds over six months of its needs}).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            auto& society = world_.society();
-            const auto by = "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?"));
-            EconomyResult done;
-            if (!payload.isObject())
-                done = {false, "The lever can't be read."};
-            else if (kind == "economy.tax")
-                done = payload.find("rate") && payload["rate"].isNumber() ? society.setTaxRate(payload["rate"].asNumber(), by)
-                                                                         : EconomyResult{false, "Give the tax rate."};
-            else if (kind == "economy.holdings")
-                done = payload.find("rate") && payload["rate"].isNumber() ? society.setHoldingsTax(payload["rate"].asNumber(), by)
-                                                                         : EconomyResult{false, "Give the holdings tax's rate."};
-            else if (kind == "economy.mint")
-                done = payload.find("on") && payload["on"].isBool() ? society.setMint(payload["on"].asBool(), by)
-                                                                    : EconomyResult{false, "Say whether the mint is on."};
-            else
-                done = society.reliefGrant(target, std::int64_t(std::clamp(payload.number("coins"), 0., 1e12)));
-            outcome = {done.ok, done.message, target};
-            if (outcome.ok)
-                saveSoon();
-        }
         else if (kind == "npc.kill" || kind == "npc.revive")
         {
             const auto* npc = world_.entity(target);
@@ -1375,21 +1345,14 @@ void Game::applyDmActions(double dt)
     }
 }
 
-std::int64_t Game::atTheDay(std::int64_t pennies, const std::string& town) const
+std::int64_t Game::reportFee(const std::string&) const
 {
-    return pennies > 0 ? world_.society().pennies(double(pennies) / 12., town) : 0;
+    return 5;
 }
 
-std::int64_t Game::reportFee(const std::string& who) const
+std::int64_t Game::titheFee(const std::string&) const
 {
-    const auto* e = world_.entity(who);
-    return atTheDay(5, e ? townFor(e->cellId) : std::string());
-}
-
-std::int64_t Game::titheFee(const std::string& who) const
-{
-    const auto* e = world_.entity(who);
-    return atTheDay(20, e ? townFor(e->cellId) : std::string());
+    return 20;
 }
 
 std::string Game::priceWords(std::int64_t pennies)
@@ -1397,13 +1360,9 @@ std::string Game::priceWords(std::int64_t pennies)
     return pennies == 1 ? std::string("a penny") : std::to_string(pennies) + "p";
 }
 
-std::int64_t Game::newcomerPurse(const std::string& homeCell) const
+std::int64_t Game::newcomerPurse(const std::string&) const
 {
-    const auto& society = world_.society();
-    auto town = world_.communityOf(homeCell);
-    if (town.empty())
-        town = society.capital();
-    return std::max<std::int64_t>(1, std::int64_t(std::lround(Society::NewcomerWageDays * society.dayWage(town, "labour"))));
+    return Society::NewcomerPurse;
 }
 
 void Game::makeResidents()
@@ -2487,7 +2446,6 @@ void Game::tick(double dt)
     for (auto* c : clients_)
         if (const auto* e = world_.entity(c->entityId))
             beforeCells[e->id] = e->cellId;
-    feedKeptHands(dt);                              // Hold hands' and companions' messes, before they decide (doc 64, Phase 13).
     {
         perf::Scope world(meter_, perf::World);
         world_.tick(dt);
@@ -3085,11 +3043,9 @@ void Game::sendSnapshot(Connection* c)
                 row.add("role", words);
                 row.add("beats", m.beats);
                 members.push(row);
-                if (m.id == id && act && act->byBeat())
-                    o.add("earned", m.earned);
             }
             o.add("members", members);
-            // Farm work: whose it is, and how long until the next spell is counted (and paid).
+            // Farm work: whose it is, and how long until the next spell is counted.
             if (act && act->byBeat())
             {
                 o.add("farmer", names::capitalised(labelFor(id, joint->target)));
@@ -3430,8 +3386,6 @@ void Game::sendSnapshot(Connection* c)
                 if (e.age >= battle::YoungestFighter)
                     actions.push("attack");             // Never a youngster (doc 33: they don't fight; they run).
             }
-            if (near(e) && world_.churchCares(view.self.id, e.id))
-                actions.push("ask for the church's care");   // (Doc 42: free care for a poor wolf's wounds.)
             if (guard && near(e) && !e.dead)
             {
                 actions.push("report");
@@ -3459,9 +3413,6 @@ void Game::sendSnapshot(Connection* c)
                     actions.push("ask for work");
                 for (std::size_t i = 0; i < work.size() && i < 3; ++i)
                     actions.push("take " + work[i]->id);
-                // Goods one has taken on to bring (doc 35, Part 7), handed in at any merchant of the town.
-                for (const auto* k : world_.deliverable(view.self.id))
-                    actions.push("hand in goods " + k->id);   // ("deliver" is a Chapter mission's.)
             }
             // Ask to learn their trade: close by, a master with no apprentice, and not already learning one.
             if (const auto* job = world_.society().jobOf(e.id);
@@ -5203,13 +5154,6 @@ void Game::command(Connection* c, const std::string& raw)
                 list += "\n  " + k->id + "  " + k->detail + (k->reward ? " (" + std::to_string(k->reward) + " pennies)" : std::string());
             system(c, list.empty() ? "There is no work to be had here just now." : "Work to be had:" + list);
         }
-        else if (action.rfind("hand in goods ", 0) == 0)
-        {
-            const auto done = world_.deliverContract(id, action.substr(14));
-            system(c, done.message);
-            if (done.ok)
-                record(Roads | Economy | Character, id);
-        }
         else if (action.rfind("take ", 0) == 0)
         {
             const auto taken = world_.takeContract(id, action.substr(5));
@@ -5240,11 +5184,6 @@ void Game::command(Connection* c, const std::string& raw)
         {
             result = troubleAction(id, target, action);   // (A resident's trouble: doc 57, 3.)
             report = !result.message.empty();
-        }
-        else if (action == "ask for the church's care")
-        {
-            result = world_.churchCare(id, target);
-            report = true;
         }
         else if (action == "wait here" || action == "follow me" || action == "go home" || action == "dismiss")
         {

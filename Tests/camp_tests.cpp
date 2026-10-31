@@ -25,21 +25,6 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 
-// A resident's hunger set (the society's state restored with it), and what it carries that feeds eaten up.
-void hungry(World& w, const std::string& id, double hunger)
-{
-    auto& s = w.society();
-    std::vector<std::pair<std::string, int>> food;
-    for (const auto& [item, n] : s.account(id)->stock)
-        if (n > 0 && Society::edible(item))
-            food.push_back({item, n});
-    for (const auto& [item, n] : food)
-        s.consume(id, item, n, "test: eaten");
-    auto state = s.state();
-    state.residents[id].hunger = hunger;
-    expect(s.restore(state), id + " is hungry");
-}
-
 json::Value parsed(const std::string& text)
 {
     json::Value v;
@@ -221,32 +206,6 @@ void campingThroughTheGame(const std::string& save)
             tick(camp::SecondsPerWorkHour + 1);
         }
         expect(g.camps().campStanding(lodge), "a camp standing");
-        // Taken back unbuilt, a building's materials come back as they were paid for, whatever its kind costs since
-        // (doc 64, Phase 13, the price review: by the hours the cost is at the town's day, which moves day to day).
-        {
-            Society::setWorkByHours(true);
-            auto& society = w.society();
-            const auto chapter = "chapter:" + lodge;
-            a->position = {33.5, 23.5};
-            const auto cash = society.account(chapter)->cash;
-            g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "firepit"}}));
-            tick(.2);
-            const auto* st = g.camps().structureAt("exterior", 33, 23);
-            expect(st && st->paid > 0 && st->paid == cash - society.account(chapter)->cash, "a firepit planned, what it cost kept:\n" + ada.said());
-            const auto id = st->id;
-            const auto paid = st->paid;
-            auto state = society.state();
-            for (auto& [town, rate] : state.memory.going)
-                rate *= 2;
-            state.memory.going[""] = 2 * society.goingRate("");
-            expect(society.restore(state) && g.buildingCost(*camp::kind("firepit"), "exterior") > paid, "a firepit costs more now");
-            const auto planned = society.account(chapter)->cash;
-            g.command(&ada, cmd({{"type", "chapter"}, {"verb", "unplan"}, {"target", id}}));
-            tick(.2);
-            expect(!g.camps().structure(id) && society.account(chapter)->cash == planned + paid,
-                   "taken back, what was paid refunded: " + std::to_string(society.account(chapter)->cash - planned) + "p of " + std::to_string(paid) + "p");
-            Society::setWorkByHours(false);
-        }
         // Not beside a full step up or down: the ground must be level enough to build on.
         auto* ground = w.cell("exterior");
         const double was = ground->tile(38, 20)->height;
@@ -308,8 +267,8 @@ void campingThroughTheGame(const std::string& save)
         w.advanceCalendar(1);
         tick(1);
         expect(w.society().account("chapter:" + lodge)->cash == treasury - 6, "and is paid at dawn from the treasury");
-        // A keep's work (doc 64, Phase 11): a workshop at the Hall, taken up as a smithy, Bracken its hand; it makes
-        // swords from the bronze in the Chapter's stores, into them.
+        // A workshop at the Hall, taken up as a smithy, Bracken its hand (what it makes is for the economy's rules to come:
+        // doc 66, Phase 5).
         w.society().shift("treasury", "chapter:" + lodge, "", 0, 200, "test: the Chapter's savings");
         a->position = {37.5, 22.5};
         g.command(&ada, cmd({{"type", "chapter"}, {"verb", "plan"}, {"kind", "workshop"}}));
@@ -327,15 +286,6 @@ void campingThroughTheGame(const std::string& save)
         tick(.2);
         expect(g.camps().structure(workshop)->trade == "smithy", "the workshop takes up the smithy's work:\n" + ada.said());
         g.camps().staff()["npc_scout"].role = "smith's hand";
-        const auto store = "chapter:" + lodge;
-        for (const auto& [item, n] : {std::pair{"bronze_bar", 3}, std::pair{"charcoal", 3}})
-            w.society().create(store, item, n, "test: laid in");
-        const int swords = Society::stock(*w.society().account(store), "sword");
-        w.advanceCalendar(1);
-        tick(1);
-        expect(Society::stock(*w.society().account(store), "sword") > swords && Society::stock(*w.society().account(store), "bronze_bar") < 3,
-               "a day's work at the bench: swords from the stores' bronze (" +
-                   std::to_string(Society::stock(*w.society().account(store), "sword") - swords) + ")");
         // (The first level, open tile along the row.)
         const auto fields = [&] {
             int n = 0;
@@ -351,15 +301,6 @@ void campingThroughTheGame(const std::string& save)
                 tick(.2);
             }
         expect(fields() == 1, "and a field planned:\n" + ada.said());
-        // Kept hands' meals (doc 64, Phase 13): hungry, Bracken eats from the Chapter's stores, which his site's storage
-        // pile reaches; the meal goes from them by the ledger.
-        expect(w.society().create(store, "meal", 2, "test: laid in"), "meals in the stores");
-        const int laidIn = Society::stock(*w.society().account(store), "meal");
-        hungry(w, "npc_scout", 61);
-        tick(10);
-        expect(Society::stock(*w.society().account(store), "meal") == laidIn - 1 && w.society().resident("npc_scout")->hunger < 61 - 50,
-               "Bracken eats a meal from the Chapter's stores (hunger " + std::to_string(w.society().resident("npc_scout")->hunger) + ")");
-        expect(g.camps().staff().count("npc_scout") && w.entity("npc_scout")->leaderId == "camp:" + site, "and keeps the camp");
         a->position = {37.5, 20.5};
         g.save();
     }
@@ -370,48 +311,6 @@ void campingThroughTheGame(const std::string& save)
         expect(g.camps().sitesOf(lodge).size() == 1 && g.camps().structuresOf(site).size() == 6 && g.camps().staff().count("npc_scout"),
                "the camp, its structures and its staff survive a restart");
         expect(g.camps().structureAt("exterior", 37, 22) && g.camps().structureAt("exterior", 37, 22)->trade == "smithy", "and the workshop's trade");
-        // The stores bare: the Chapter is told its hands go hungry, once that day; unfed still at KeptLeaveHunger, Bracken
-        // leaves the camp for his own life, where he eats as anyone does.
-        Client ada;
-        ada.id = 1;
-        g.connect(&ada);
-        g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
-        auto& w = g.world();
-        const auto store = "chapter:" + lodge;
-        std::vector<std::pair<std::string, int>> food;
-        for (const auto& [item, n] : w.society().account(store)->stock)
-            if (n > 0 && Society::edible(item))
-                food.push_back({item, n});
-        for (const auto& [item, n] : food)
-            w.society().consume(store, item, n, "test: spoiled");
-        hungry(w, "npc_scout", Society::KeptToldHunger + 1);
-        for (int i = 0; i < 40; ++i)
-            g.tick(.05);
-        expect(ada.said().find("The Chapter's stores have nothing to eat, and the hands at Juniper Camp are going hungry.") != std::string::npos,
-               "the Chapter is told:\n" + ada.said());
-        expect(g.camps().staff().count("npc_scout"), "he stays a while yet");
-        // A second camp of the Chapter's, with no storage pile, and a hand there going hungry the same day: told of too,
-        // by its own site (round 6, the companions' review: told once a day by Chapter, the second site's hands left unsaid).
-        const auto second = g.camps().found(lodge, "exterior", 8, 30, "Rowan Camp", w.calendarDays(), w.time());
-        expect(second.ok, "a second camp: " + second.message);
-        g.camps().staff()["npc_porter"] = camp::Staff{"npc_porter", second.message, "porter", 5, std::floor(w.calendarDays()) + 1, false, w.calendarDays()};
-        hungry(w, "npc_porter", Society::KeptToldHunger + 1);
-        for (int i = 0; i < 40; ++i)
-            g.tick(.05);
-        expect(ada.said().find("The hands at Rowan Camp are going hungry: build a storage pile there") != std::string::npos,
-               "the Chapter is told of the second camp's hands too:\n" + ada.said());
-        g.camps().staff().erase("npc_porter");
-        w.entity("npc_porter")->leaderId.clear();
-        hungry(w, "npc_scout", Society::KeptLeaveHunger + .5);
-        for (int i = 0; i < 40; ++i)
-            g.tick(.05);
-        expect(!g.camps().staff().count("npc_scout") && w.entity("npc_scout")->leaderId.empty() &&
-                   ada.said().find("leaves Juniper Camp: there was nothing to eat.") != std::string::npos,
-               "unfed, he leaves:\n" + ada.said());
-        int told = 0;
-        for (std::size_t at = 0; (at = ada.said().find("Juniper Camp are going hungry", at)) != std::string::npos; ++at)
-            ++told;
-        expect(told == 1, "told once that day of each camp: " + std::to_string(told));
     }
     std::remove(save.c_str());
 }

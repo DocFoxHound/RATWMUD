@@ -67,9 +67,6 @@ struct Member
     bool resident = false;
     double joined = 0, lastActed = 0;
     int beats = 0;
-    // Farm work: pennies earned here, and the fraction of a penny carried to the next beat.
-    int earned = 0;
-    double carry = 0;
     // A Gifted member's work Gift on the joint (doc 53, 4): until when it holds, and which. While it holds the member
     // counts as another angle and every member works 0.2 faster.
     double giftUntil = -1;

@@ -25,10 +25,8 @@ struct Rules
 {
     std::vector<Kind> kinds;
     int perTown = 1, perCity = 2;
-    double lapseDays = 60, hourShare = .125, nameShare = .4, upkeepUnder = 60, otherShare = .1;
+    double lapseDays = 60, hourShare = .125, nameShare = .4, otherShare = .1;
     std::int64_t nameWorth = 300, greatWorth = 1000;
-    double handHours = 2;
-    int handsMost = 3;
     const Kind* kind(const std::string& id) const;
 };
 const Rules& rules();                               // Data/Town/projects.json, read once.

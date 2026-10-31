@@ -224,12 +224,9 @@ void World::setupTowns()
     if (capital == towns_.end())
         capital = std::max_element(towns_.begin(), towns_.end(), [](const Town& a, const Town& b) { return a.residents < b.residents; });
     std::rotate(towns_.begin(), capital, capital + 1);    // The capital first.
-    std::map<std::string, std::string> stores;
-    int total = 0;
     for (auto& t : towns_)
     {
         t.store = &t == &towns_.front() ? "treasury" : "stores:" + t.id;
-        total += t.residents;
         if (t.store != "treasury")
             society_.openAccount(t.store);
     }
@@ -239,36 +236,8 @@ void World::setupTowns()
             {
                 townOfCell_[cellId] = t.id;
                 townIndex_[cellId] = std::size_t(&t - towns_.data());
-                stores[cellId] = t.store;
             }
-    society_.setStores(stores);
-    if (!roads_.stocked)
-    {
-        // Once: each town's share of the treasury's goods, by how many live there.
-        const auto* treasury = society_.account("treasury");
-        const int meals = treasury ? Society::stock(*treasury, "meal") : 0, herbs = treasury ? Society::stock(*treasury, "herbs") : 0;
-        for (std::size_t i = 1; i < towns_.size(); ++i)
-        {
-            const double share = double(towns_[i].residents) / std::max(1, total);
-            society_.shift("treasury", towns_[i].store, "meal", int(meals * share), 0, "stores stocked");
-            society_.shift("treasury", towns_[i].store, "herbs", int(herbs * share), 0, "stores stocked");
-        }
-        roads_.stocked = true;
-    }
     society_.setCapital(towns_.front().id);
-    society_.setTradeByCaravan(true);               // What a town lacks comes by caravan (doc 42, Phase 7).
-    if (!roads_.purses)
-    {
-        // Once (doc 42): each town keeps its own purse, its share of the treasury's money by how many live there.
-        const std::int64_t cash = society_.account("treasury") ? society_.account("treasury")->cash : 0;
-        for (std::size_t i = 1; i < towns_.size(); ++i)
-        {
-            const auto share = std::int64_t(double(cash) * towns_[i].residents / std::max(1, total));
-            if (share > 0)
-                society_.shift("treasury", towns_[i].store, "", 0, share, "town purse");
-        }
-        roads_.purses = true;
-    }
     // The roads between every two towns; bandits camp in wild country along them (one in six such cells, to begin
     // with).
     for (std::size_t i = 0; i < towns_.size(); ++i)
@@ -473,45 +442,12 @@ void World::rumoursFromEvent(const WorldEvent& e)
             witnesses(who->cellId, e.actor, "is new in town", .8);
 }
 
-void World::contractsFromEvent(const WorldEvent& e)
-{
-    // A supply run is done by selling the goods to a merchant of that town while the contract is yours.
-    if (e.kind != "economy" || e.detail != "local trade" || e.item.empty())
-        return;
-    for (auto& c : roads_.contracts)
-    {
-        if (c.kind != "supply" || c.status != "taken" || c.taker != e.target)
-            continue;
-        // (Sold to a shop's till since doc 46's Phase 2: the shop is its position, the merchant its keeper.)
-        std::string keeper = e.actor;
-        const Position* job = nullptr;
-        if (e.actor.rfind("till:", 0) == 0)
-        {
-            job = society_.position(e.actor.substr(5));
-            const auto held = society_.state().careers.positions.find(e.actor.substr(5));
-            keeper = held != society_.state().careers.positions.end() ? held->second.holder : std::string();
-        }
-        else
-            job = society_.jobOf(e.actor);
-        const auto* merchant = entity(keeper);
-        const auto* town = job ? townOf(job->work.cell) : merchant ? townOf(merchant->cellId) : nullptr;
-        if (town && town->id == c.town)
-        {
-            settleContract(c, "done", c.taker);
-            if (!keeper.empty())
-                bonds_.change(keeper, c.taker, {2, 3, 1, 0, 1}, calendarDays_);
-        }
-    }
-}
-
 void World::tendRoads()
 {
     if (!townsReady_)
         setupTowns();
-    noteReckonings();
     if (towns_.size() < 2)
         return;
-    tendPrices();
     // A courier is done when the one who took it stands before the recipient.
     for (auto& c : roads_.contracts)
     {
@@ -529,49 +465,14 @@ void World::tendRoads()
                 notice(c.taker, "You hand " + to->name + " the letter" + (c.reward ? " and are paid " + pennies(c.reward) : "") + ".");
         }
     }
-    tendContractCarriers();                         // Residents fetching and delivering goods for contracts (doc 42).
-    tendNegotiators();                              // And renegotiating standing orders (RatwTrade.cpp).
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (today != roads_.day)
     {
         roads_.day = today;
         roadsDaily();
     }
-    postProcurements();                             // The town's own buyers' wants (doc 35, Part 7): contracts for goods.
     tendRoadFolk();
     absorbJournal();
-}
-
-void World::tendPrices()
-{
-    // Once a game hour: a town's prices follow how much it has in store for the people living there.
-    const auto hour = std::int64_t(std::floor(calendarDays_ * 24));
-    if (hour == priceHour_)
-        return;
-    priceHour_ = hour;
-    // (Every other good's price is its seller's own, doc 64, Phase 4: Society::priceAt.)
-    std::map<std::string, std::map<std::string, double>> factors;
-    for (const auto& t : towns_)
-        if (const auto* store = society_.account(t.store))
-            for (const auto& [item, each] : {std::pair<const char*, double>{"meal", .5}, {"herbs", .25}})
-            {
-                const double enough = std::max(1.0, t.residents * each);
-                const double factor = std::clamp(1.4 - .4 * Society::stock(*store, item) / enough, .85, 1.6);
-                factors[t.store][item] = factor;
-                storeFactor_[t.id][item] = factor;
-                // A change worth talking of (doc 30): a tenth or more since the last one noticed.
-                auto& seen = priceSeen_[t.id][item];
-                if (seen.day < -50)
-                    seen = {factor, calendarDays_ - 10, 0};      // First seen: the price as it is, not a change.
-                else if (std::abs(factor - seen.factor) >= .1)
-                {
-                    seen.dir = factor > seen.factor ? 1 : -1;
-                    seen.day = calendarDays_;
-                    seen.factor = factor;
-                }
-            }
-    society_.setPriceFactors(std::move(factors));
-    tendTradeNotes();                               // (Prices players' trade lowered: doc 57, 5.)
 }
 
 Entity& World::addRoadFolk(const std::string& id, const std::string& name, const std::string& description,
@@ -817,19 +718,19 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         for (const auto& id : watching)
             notice(id, "Bandits burst from cover and fall on the caravan! In the struggle they make off with its load, "
                        "and the carters turn back for " + c.from + ".");
-        // The town posts a bounty on the camp, and asks for guards for the next caravan (at a 12p day, 20p and 3p a point
-        // of the camp's strength, and 12p: at the going rate, doc 64, Phase 13).
+        // The town posts a bounty on the camp, and asks for guards for the next caravan (20p and 3p a point of the camp's
+        // strength, and 12p).
         const bool bounty = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken");
         });
         if (!bounty)
-            postContract("bounty", "treasury", c.to, camp.id, society_.pennies((20 + std::int64_t(camp.strength * 3)) / 12., c.to), 20,
+            postContract("bounty", "treasury", c.to, camp.id, 20 + std::int64_t(camp.strength * 3), 20,
                          "the bandits robbing the road at " + cellId);
         const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "escort" && k.town == c.to && (k.status == "open" || k.status == "taken");
         });
         if (!escort)
-            postContract("escort", "treasury", c.to, c.to, society_.pennies(1., c.to), 7, "guarding the next caravan to " + c.to);
+            postContract("escort", "treasury", c.to, c.to, 12, 7, "guarding the next caravan to " + c.to);
         for (const auto& p : society_.positions())
             if (p.role == "merchant" && townOf(p.work.cell) && townOf(p.work.cell)->id == c.to)
                 if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
@@ -843,8 +744,6 @@ void World::caravanArrived(Caravan& c)
     const auto* wagon = entity("road:" + c.id);
     if (homeward(c))
     {
-        if (!c.trader.empty())
-            tradeCaravanHome(c);                    // A trader's: its takings home (doc 42, Phase 7).
         // Back where it set out: anything it still carries goes back into the stores, and it is done.
         const auto* home = town(c.from);
         if (const auto* load = society_.account(c.account); load && home)
@@ -863,21 +762,12 @@ void World::caravanArrived(Caravan& c)
         c.status = "returning";
         return;
     }
-    if (!c.trader.empty())
-        tradeCaravanArrived(c);                     // A trader's: sold to the shops that want it (doc 42, Phase 7).
-    // The load into the town's stores. Between two towns' stores it is a sale, at a wholesale price, as far as the
-    // buyer can pay; from the capital it is the town's share, as ever.
-    std::int64_t owed = 0;
-    for (const std::string item : {"meal", "herbs"})
-        if (const auto* load = society_.account(c.account); load && Society::stock(*load, item) > 0)
-        {
-            const int n = Society::stock(*load, item);
-            if (society_.shift(c.account, to->store, item, n, 0, "caravan delivered"))
-                owed += n * (item == "meal" ? 3 : 1);
-        }
-    if (from->store != "treasury" && to->store != "treasury" && owed > 0)
-        if (const auto* buyer = society_.account(to->store); buyer && buyer->cash > 0)
-            society_.shift(to->store, from->store, "", 0, std::min(owed, buyer->cash), "goods from " + from->id);
+    // The load into the town's stores (nothing is bought or sold on the road since doc 66's Phase 5: whoever sends a
+    // caravan says what its goods are for).
+    if (const auto* load = society_.account(c.account))
+        for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
+            for (int left = n; left > 0; left -= 99)
+                society_.shift(c.account, to->store, item, std::min(left, 99), 0, "caravan delivered");
     // Escorts are paid for having been there: at the end, and for at least half the road.
     for (const auto& who : c.escorts)
         for (auto& k : roads_.contracts)
@@ -1014,19 +904,7 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             goal = {o.x + double(at % 3) - 1, o.y + 1 + double(at / 3)};
             return true;
         }
-    // To another town's market, to renegotiate a standing order (RatwTrade.cpp); not by night.
     static const std::vector<std::size_t> none;
-    const auto ordersOf = errandOrders_.find(resident);
-    for (const auto i : ordersOf != errandOrders_.end() ? ordersOf->second : none)
-        if (i < roads_.orders.size() && roads_.orders[i].negotiator == resident && life.task != "sleep")
-            if (const auto& o = roads_.orders[i]; const auto* from = town(o.from))
-            {
-                task = "renegotiating an order";
-                reason = "for " + o.item + ", at the market in " + o.from;
-                goalCell = from->market;
-                goal = {from->marketX, from->marketY + 1};
-                return true;
-            }
     const auto contractsOf = errandContracts_.find(resident);
     for (const auto i : contractsOf != errandContracts_.end() ? contractsOf->second : none)
     {
@@ -1054,34 +932,6 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             {
                 goalCell = to->cellId;
                 goal = to->position;
-            }
-            return true;
-        }
-        if (k.kind == "procure" && !k.source.empty())
-        {
-            // Goods for a contract (doc 42, Phase 4): to the shop that has them, then to the market that wants them.
-            if (life.task == "sleep")
-                return false;
-            const auto* job = society_.jobOf(k.source);
-            const auto* dest = town(k.town);
-            if (!job || !dest)
-                return false;
-            const auto* good = items::good(k.item);
-            const std::string what = good ? good->name : k.item;
-            if (k.carried == 0)
-            {
-                const auto& at = job->role == "merchant" ? job->serve : job->work;
-                task = "fetching goods";
-                reason = what + " for " + k.detail;
-                goalCell = at.cell;
-                goal = {at.x, at.y};
-            }
-            else
-            {
-                task = "delivering goods";
-                reason = what + " to the market in " + dest->id;
-                goalCell = dest->market;
-                goal = {dest->marketX, dest->marketY + 1};
             }
             return true;
         }
@@ -1115,13 +965,9 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
 void World::indexErrands()
 {
     errandContracts_.clear();
-    errandOrders_.clear();
     for (std::size_t i = 0; i < roads_.contracts.size(); ++i)
         if (roads_.contracts[i].status == "taken")
             errandContracts_[roads_.contracts[i].taker].push_back(i);
-    for (std::size_t i = 0; i < roads_.orders.size(); ++i)
-        if (!roads_.orders[i].negotiator.empty())
-            errandOrders_[roads_.orders[i].negotiator].push_back(i);
 }
 
 void World::residentsTakeWork()
@@ -1160,62 +1006,13 @@ void World::residentsTakeWork()
         busy.insert(chosen);
         recordEvent({"contract taken", chosen, k.poster, entity(chosen)->cellId, 0, 0, {}, 0, k.reward, k.kind + ": " + k.detail});
     }
-    residentsFillContracts(busy);                   // Contracts for goods, after a day for the players (doc 42).
-    residentsRenegotiate(busy);                     // Porters sent to renegotiate standing orders (RatwTrade.cpp).
-}
-
-void World::tradeBetweenTowns()
-{
-    // Towns other than the capital trade with each other: one with plenty for its people sends to one with little.
-    for (std::size_t i = 1; i < towns_.size(); ++i)
-        for (std::size_t j = 1; j < towns_.size(); ++j)
-        {
-            if (i == j)
-                continue;
-            const auto& from = towns_[i];
-            const auto& to = towns_[j];
-            const bool going = std::any_of(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& c) {
-                return c.from == from.id && c.to == to.id && c.status == "travelling";
-            });
-            const auto* have = society_.account(from.store);
-            const auto* want = society_.account(to.store);
-            if (going || !have || !want)
-                continue;
-            std::map<std::string, int> load;
-            for (const std::string item : {"meal", "herbs"})
-            {
-                const double mine = double(Society::stock(*have, item)) / std::max(1, from.residents);
-                const double theirs = double(Society::stock(*want, item)) / std::max(1, to.residents);
-                if (Society::stock(*have, item) < 8 || mine < 2 * theirs + .2)
-                    continue;
-                const int spare = int((Society::stock(*have, item) - theirs * from.residents) / 3);
-                if (spare >= 3)
-                    load[item] = std::min(12, spare);
-            }
-            if (!load.empty())
-                sendCaravan(from, to, load);
-        }
 }
 
 void World::roadsDaily()
 {
     const auto today = roads_.day;
-    const auto& capital = towns_.front();
-    const auto& economy = society_.authored().economy;
-    int total = 0;
-    for (const auto& t : towns_)
-        total += t.residents;
-
-    // Caravans set out for every other town with its share of what came into the capital, and between the other
-    // towns where one has plenty and another little.
-    for (std::size_t i = 1; i < towns_.size(); ++i)
-    {
-        const double share = double(towns_[i].residents) / std::max(1, total);
-        sendCaravan(capital, towns_[i], {{"meal", std::max(1, int(std::lround(economy.dailyMeals * share)))},
-                                         {"herbs", std::max(1, int(std::lround(economy.dailyHerbs * share)))}});
-    }
-    tradeBetweenTowns();
-    tradeCaravans();                                // Traders' caravans: goods where they're wanted (doc 42, Phase 7).
+    // (No caravans set out of themselves since the economy's rules were erased, doc 66's Phase 5: the daily caravans
+    // with the capital's share and the towns' trade went with them. sendCaravan is there for the rules to come.)
     residentsTakeWork();
 
     // Bandits: hunger grows; starving camps dwindle and scatter; where a road has none, some gather now and then.
@@ -1296,21 +1093,9 @@ void World::roadsDaily()
                                           }),
                            roads_.contracts.end());
 
-    // A town running short of food sends out for more: a supply run anyone can make.
-    for (std::size_t i = 1; i < towns_.size(); ++i)
-    {
-        const auto* store = society_.account(towns_[i].store);
-        const bool asked = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
-            return k.kind == "supply" && k.town == towns_[i].id && (k.status == "open" || k.status == "taken");
-        });
-        if (store && Society::stock(*store, "meal") < 4 && !asked)
-            postContract("supply", "treasury", towns_[i].id, towns_[i].id, society_.pennies(15 / 12., towns_[i].id), 7,
-                         "bringing food to " + towns_[i].id + "'s market");   // (15p at a 12p day.)
-    }
-
-    // Letters: someone who cares for another in a different town may pay to have word carried (with 10p in its purse
-    // at a 12p day, 3p to 7p for the carrying: at the going rate, doc 64, Phase 13).
-    const auto writes = society_.pennies(10 / 12., "");
+    // Letters: someone who cares for another in a different town may pay to have word carried (with 10p in its purse,
+    // 3p to 7p for the carrying).
+    const std::int64_t writes = 10;
     std::set<std::string> writing;
     for (const auto& k : roads_.contracts)
         if (k.kind == "courier" && (k.status == "open" || k.status == "taken"))
@@ -1328,7 +1113,7 @@ void World::roadsDaily()
             const auto* there = o ? townOf(o->cellId) : nullptr;
             if (!o || !o->npc || o->dead || b.affinity < 40 || !there || there == here || chance(id + other, today) > .025)
                 continue;
-            postContract("courier", id, there->id, other, society_.pennies((3 + std::int64_t(roll(id, today) % 5)) / 12., here->id), ContractDays,
+            postContract("courier", id, there->id, other, 3 + std::int64_t(roll(id, today) % 5), ContractDays,
                          "a letter from " + e.name + " to " + o->name + " in " + there->id);
             writing.insert(id);
             break;
@@ -1826,90 +1611,4 @@ std::map<std::string, int> World::stormWaits(const std::string& community) const
     return out;
 }
 
-bool World::townShortOf(const std::string& town, const std::string& item) const
-{
-    // Meals and herbs by its store (under two days' worth for its people: tendPrices' reading); anything else by its
-    // shops together, under one shop's keeping of it (Society::GoodsKept).
-    const auto base = items::baseOf(items::unmarked(item));
-    const auto t = std::find_if(towns_.begin(), towns_.end(), [&](const Town& x) { return x.id == town; });
-    if (t == towns_.end())
-        return false;
-    if (Society::storePriced(base))
-    {
-        const auto* store = society_.account(t->store);
-        const double need = 2 * std::max(1.0, t->residents * (base == "meal" ? .5 : .25));
-        return store && Society::stock(*store, base) < need;
-    }
-    int held = 0;
-    for (const auto& p : society_.positions())
-        if (p.role == "merchant" && townOf(p.work.cell) == &*t)
-            if (const auto* till = society_.account(society_.tillOf(society_.state().careers.positions.count(p.id)
-                                                                     ? society_.state().careers.positions.at(p.id).holder : p.founder)))
-                held += Society::stockAll(*till, base);
-    return held < Society::GoodsKept;
-}
-
-double World::goingPrice(const std::string& town, const std::string& item) const
-{
-    const auto base = items::baseOf(items::unmarked(item));
-    if (Society::storePriced(base) && base != "sword")
-    {
-        // (Meals and herbs follow the town's store, hourly: tendPrices.)
-        const auto t = storeFactor_.find(town);
-        if (t == storeFactor_.end())
-            return 1;
-        const auto f = t->second.find(base);
-        return f == t->second.end() ? 1 : f->second;
-    }
-    return society_.townPrice(town, base);
-}
-
-void World::noteTrade(const std::string& town, const std::string& item, const std::string& who, int quantity)
-{
-    const auto base = items::baseOf(items::unmarked(item));
-    if (town.empty() || base.empty() || quantity <= 0)
-        return;
-    auto& notes = tradeNotes_[town];
-    notes.push_back({base, who, quantity, calendarDays_, goingPrice(town, base)});
-    if (notes.size() > 32)
-        notes.erase(notes.begin());
-    // Food brought into a town in "empty shelves": a day's food for a tenth of its people feeds the town (a deed).
-    if (const int nourish = Society::nourishment(base); nourish > 0)
-        for (const auto& reading : society_.orchestrator().last.towns)
-            if (reading.id == town && reading.kind == "empty shelves")
-            {
-                const auto key = town + "|" + who + "|" + std::to_string(std::int64_t(std::floor(calendarDays_)));
-                auto& fed = fedToday_[key];
-                const double before = fed;
-                fed += double(nourish) * quantity;
-                const double enough = std::max(1, reading.people) / 10.0 * orchestra::NourishADay;
-                if (before < enough && fed >= enough)
-                    recordEvent({"fed the town", who, town, {}, 0, 0, base, quantity, 0, "brought food into " + town + " when its shelves were bare"});
-            }
-}
-
-void World::tendTradeNotes()
-{
-    // Hourly: a note whose good has fallen a tenth or more since becomes the town's talk of why; a week on, it is forgotten.
-    for (auto& [town, notes] : tradeNotes_)
-        for (auto it = notes.begin(); it != notes.end();)
-        {
-            const double now = goingPrice(town, it->item);
-            if (it->price > 0 && now <= it->price * .9)
-            {
-                auto& causes = priceCauses_[town];
-                causes.push_back({it->item, it->who, calendarDays_});
-                if (causes.size() > 8)
-                    causes.erase(causes.begin());
-                recordEvent({"price lowered", it->who, town, {}, 0, 0, it->item, it->quantity, 0, it->item + " cheaper in " + town});
-                it = notes.erase(it);
-            }
-            else if (calendarDays_ - it->day > 7)
-                it = notes.erase(it);
-            else
-                ++it;
-        }
-    for (auto it = fedToday_.begin(); it != fedToday_.end();)
-        it = it->first.size() > 2 && std::stoll(it->first.substr(it->first.rfind('|') + 1)) < std::int64_t(calendarDays_) - 1 ? fedToday_.erase(it) : std::next(it);
-}
 } // namespace ratw

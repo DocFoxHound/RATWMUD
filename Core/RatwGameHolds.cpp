@@ -14,7 +14,7 @@ using json::Value;
 namespace
 {
 std::string treasuryOf(const std::string& chapterId) { return "chapter:" + chapterId; }
-constexpr std::int64_t TollMost = 5;             // A Hold's toll at most, at a 12p day (doc 32, 5.5).
+constexpr std::int64_t TollMost = 5;             // A Hold's toll at most, in pennies (doc 32, 5.5).
 } // namespace
 
 bool Game::treatyAllows(const std::string& factionId, const std::string& chapterId, const std::string&) const
@@ -206,7 +206,7 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
         else if (const auto posts = camps_.freePosts(site->id); posts.empty())
             result = {false, "There's no work for them at the Hold. Build a workshop, a stable, a well...", target};
         else if (const auto* purse = world_.society().account(treasuryOf(chapter->id));
-                 !purse || purse->cash < std::int64_t(faction::Factions::WeekDays) * keepWage())
+                 !purse || purse->cash < std::int64_t(faction::Factions::WeekDays) * camp::HoldWage)
             result = {false, "The treasury can't promise them a week's wages.", target};
         else
         {
@@ -217,7 +217,7 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
             else
             {
                 offers.erase(found);
-                camps_.staff()[target] = camp::Staff{target, site->id, role, keepWage(), 0, true, day};
+                camps_.staff()[target] = camp::Staff{target, site->id, role, camp::HoldWage, 0, true, day};
                 resentLoss(target, chapter->id);
                 tellChapter(chapter->id, names::capitalised(strangerLabel(target)) + " sets out to live and work at " + site->name + ".", id);
                 result = {true, "They set out for the Hold, to work there as " + role + ".", target};
@@ -231,7 +231,7 @@ bool Game::holdCommand(Connection* c, const Value& j, Result& result)
             result = {false, "Only the Head sets the toll.", {}};
         else if (chapter->claimCell.empty())
             result = {false, "Only a Hold's claimed place has a toll.", {}};
-        else if (const auto most = atTheDay(TollMost, townFor(chapter->claimCell)); toll < 0 || toll > most)
+        else if (const auto most = TollMost; toll < 0 || toll > most)
             result = {false, "A toll is 0 to " + std::to_string(most) + " pennies.", {}};
         else
         {
@@ -520,7 +520,7 @@ void Game::resentLoss(const std::string& npcId, const std::string& chapterId)
 bool Game::drawnToAHold(const std::string& npcId) const
 {
     const auto* purse = world_.society().account(npcId);
-    return purse && purse->cash < world_.society().pennies(30 / 12., "");
+    return purse && purse->cash < 30;
 }
 
 void Game::migrationTick(double day)
@@ -603,7 +603,7 @@ Value Game::holdView(const std::string& chapterId, const std::string& viewer) co
     {
         v.add("claims", world_.cell(c->claimCell) ? world_.cell(c->claimCell)->name : c->claimCell);
         v.add("toll", c->toll);
-        v.add("tollMost", double(atTheDay(TollMost, townFor(c->claimCell))));   // (5p at a 12p day: doc 64, Phase 13.)
+        v.add("tollMost", double(TollMost));
     }
     auto treaties = Value::array();
     for (const auto& t : factions_.treaties())
