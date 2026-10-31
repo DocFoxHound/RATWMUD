@@ -40,7 +40,7 @@
    "kind:home": 8,
    "homes": 11,
    "beds": 43,
-   "posts": 45,
+   "posts": 43,
    "business:inn": 1,
    "business:smithy": 3,
    "business:armory": 1,
@@ -66,7 +66,7 @@
    "kind:flats": 10,
    "homes": 86,
    "beds": 285,
-   "posts": 142,
+   "posts": 143,
    "business:provisioner": 3,
    "business:inn": 3,
    "business:saddlery": 3,
@@ -104,7 +104,7 @@
    "kind:home": 3,
    "homes": 4,
    "beds": 17,
-   "posts": 15,
+   "posts": 16,
    "business:press": 1,
    "business:preserver": 1,
    "business:distillery": 1
@@ -257,10 +257,9 @@
   },
   "posts": {
    "stallkeeper": 14,
-   "staff": 79,
+   "staff": 81,
    "kept": 57,
    "pool": 55,
-   "hands": 46,
    "clergy": 18,
    "food": 2,
    "hallkeeper": 6,
@@ -271,7 +270,8 @@
    "a child at home": 4,
    "guard": 5,
    "patrol": 16,
-   "gate": 9
+   "gate": 9,
+   "hands": 44
   },
   "evenings": {
    "rm_the_last_lamp": 40,
@@ -392,7 +392,11 @@
    "resale": []
   },
   "builders_works": {
-   "making": [],
+   "making": [
+    "charcoal",
+    "iron_bar",
+    "timber"
+   ],
    "resale": []
   },
   "builders_yard": {
@@ -481,7 +485,13 @@
    "resale": []
   },
   "distillery": {
-   "making": [],
+   "making": [
+    "berries",
+    "cider",
+    "firewood",
+    "honey",
+    "wine"
+   ],
    "resale": []
   },
   "fishmonger": {
@@ -646,7 +656,11 @@
    "resale": []
   },
   "preserver": {
-   "making": [],
+   "making": [
+    "apples",
+    "firewood",
+    "honey"
+   ],
    "resale": []
   },
   "press": {
@@ -686,7 +700,17 @@
   },
   "rag_and_bone": {
    "making": [],
-   "resale": []
+   "resale": [
+    "blanket",
+    "clay_pot",
+    "cookpot",
+    "crate",
+    "cushion",
+    "floor_bowl_wood",
+    "oil_lamp",
+    "sack",
+    "wool_scarf"
+   ]
   },
   "ropewalk": {
    "making": [
@@ -784,7 +808,15 @@
   },
   "vintner": {
    "making": [],
-   "resale": []
+   "resale": [
+    "apple_brandy",
+    "aqua_vitae",
+    "berry_cordial",
+    "brandy",
+    "cider",
+    "mead",
+    "wine"
+   ]
   },
   "weaver": {
    "making": [
@@ -891,7 +923,7 @@
   [
    "rm_arne_ashton",
    "civilian",
-   "working at The Charcoal Store",
+   "working at The Timberland Charcoal Store",
    "charcoal"
   ],
   [
@@ -921,7 +953,7 @@
   [
    "rm_beatha_millgate",
    "civilian",
-   "works at The Fell Sawmill",
+   "works at The Timberland Sawmill",
    "sawmill"
   ],
   [
@@ -987,7 +1019,7 @@
   [
    "rm_brand_cindermore",
    "civilian",
-   "helping at Southgate Ironmongers",
+   "helping at Eastgate Ironmongers",
    null
   ],
   [
@@ -1017,7 +1049,7 @@
   [
    "rm_brenna_ropehand",
    "civilian",
-   "helping at Southgate Farriers",
+   "helping at Eastgate Farriers",
    null
   ],
   [
@@ -1089,8 +1121,8 @@
   [
    "rm_corwin_fell_",
    "civilian",
-   "working at The Fell Sawmill",
-   "sawmill"
+   "keeping the Fell cellars",
+   null
   ],
   [
    "rm_corwin_kelpby",
@@ -1149,7 +1181,7 @@
   [
    "rm_dagfinn_ropeby",
    "civilian",
-   "works at The Lime Kilns",
+   "works at The Greatly Lime Kilns",
    "brickworks"
   ],
   [
@@ -1335,7 +1367,7 @@
   [
    "rm_edric_cindermarsh",
    "civilian",
-   "works at The Grayrock Ironworks",
+   "works at The Timberland Ironworks",
    "ironworks"
   ],
   [
@@ -1401,7 +1433,7 @@
   [
    "rm_eleanor_wickhand",
    "civilian",
-   "works at The Fell Sawmill",
+   "works at The Timberland Sawmill",
    "sawmill"
   ],
   [
@@ -1485,7 +1517,7 @@
   [
    "rm_finn_slagmarsh",
    "civilian",
-   "works at The Grayrock Ironworks",
+   "works at The Timberland Ironworks",
    "ironworks"
   ],
   [
@@ -1665,7 +1697,7 @@
   [
    "rm_gudrun_pitchridge",
    "civilian",
-   "works at The Grayrock Ironworks",
+   "works at The Timberland Ironworks",
    "ironworks"
   ],
   [
@@ -1695,7 +1727,7 @@
   [
    "rm_gunnar_harrowgate",
    "civilian",
-   "buying Grayrock iron",
+   "buying Timberland iron",
    null
   ],
   [
@@ -1845,7 +1877,7 @@
   [
    "rm_hollis_greydale",
    "civilian",
-   "works at The Grayrock Foundry",
+   "works at The Timberland Foundry",
    "foundry"
   ],
   [
@@ -1857,7 +1889,7 @@
   [
    "rm_hollis_nailwick",
    "civilian",
-   "stewarding Mossgrave Court",
+   "stewarding Timberland Court",
    null
   ],
   [
@@ -1881,13 +1913,13 @@
   [
    "rm_ilse_coalley",
    "merchant",
-   "runs The Fell Sawmill",
+   "runs The Timberland Sawmill",
    "sawmill"
   ],
   [
    "rm_ilse_fogridge",
    "merchant",
-   "runs The Charcoal Store",
+   "runs The Timberland Charcoal Store",
    "charcoal"
   ],
   [
@@ -1923,7 +1955,7 @@
   [
    "rm_imogen_tarcot",
    "civilian",
-   "works at The Grayrock Ironworks",
+   "works at The Timberland Ironworks",
    "ironworks"
   ],
   [
@@ -2013,7 +2045,7 @@
   [
    "rm_ivo_slagby",
    "merchant",
-   "smith at The Anchor Forge",
+   "smith at Timberland's Anchor Forge",
    "smithy"
   ],
   [
@@ -2049,7 +2081,7 @@
   [
    "rm_jorunn_cindermore",
    "merchant",
-   "smith at Southgate Ironmongers",
+   "smith at Eastgate Ironmongers",
    "smithy"
   ],
   [
@@ -2091,8 +2123,8 @@
   [
    "rm_julian_greatly",
    "civilian",
-   "keeping the Bonded Warehouse",
-   null
+   "keeping the Greatly Yard's books",
+   "builders_yard"
   ],
   [
    "rm_kari_bilgehand",
@@ -2193,7 +2225,7 @@
   [
    "rm_leif_fogcot",
    "merchant",
-   "runs The Lime Kilns",
+   "runs The Greatly Lime Kilns",
    "brickworks"
   ],
   [
@@ -2265,7 +2297,7 @@
   [
    "rm_mab_coalridge",
    "merchant",
-   "runs The Grayrock Foundry",
+   "runs The Timberland Foundry",
    "foundry"
   ],
   [
@@ -2367,7 +2399,7 @@
   [
    "rm_mogens_greycot",
    "civilian",
-   "works at The Tileworks",
+   "works at The Greatly Tileworks",
    "brickworks"
   ],
   [
@@ -2529,7 +2561,7 @@
   [
    "rm_osric_mossgrave",
    "civilian",
-   "riding out to the Folds",
+   "riding out on House business",
    null
   ],
   [
@@ -2751,7 +2783,7 @@
   [
    "rm_rune_cinderwick",
    "civilian",
-   "works at The Tileworks",
+   "works at The Greatly Tileworks",
    "brickworks"
   ],
   [
@@ -2787,7 +2819,7 @@
   [
    "rm_rupert_cindergate",
    "merchant",
-   "runs The Tileworks",
+   "runs The Greatly Tileworks",
    "brickworks"
   ],
   [
@@ -2805,7 +2837,7 @@
   [
    "rm_rupert_ropehand",
    "merchant",
-   "smith at Southgate Farriers",
+   "smith at Eastgate Farriers",
    "smithy"
   ],
   [
@@ -2847,7 +2879,7 @@
   [
    "rm_signe_mossgrave",
    "civilian",
-   "keeping Mossgrave Court",
+   "keeping Timberland Court",
    null
   ],
   [
@@ -2883,7 +2915,7 @@
   [
    "rm_silas_sootworth",
    "civilian",
-   "helping at Nailers' Forge",
+   "helping at Timberland's Nailers' Forge",
    "smithy"
   ],
   [
@@ -2955,7 +2987,7 @@
   [
    "rm_sybil_tardale",
    "civilian",
-   "works at The Grayrock Foundry",
+   "works at The Timberland Foundry",
    "foundry"
   ],
   [
@@ -3021,8 +3053,8 @@
   [
    "rm_tobias_grayrock_",
    "civilian",
-   "working at The Grayrock Ironworks",
-   "ironworks"
+   "keeping the wharf's books",
+   null
   ],
   [
    "rm_tobias_kelpton",
@@ -3153,8 +3185,8 @@
   [
    "rm_wenna_mossgrave",
    "civilian",
-   "running the wool shed",
-   "weaver"
+   "running the House's iron trade",
+   null
   ],
   [
    "rm_wenna_naildale",
@@ -3207,7 +3239,7 @@
   [
    "rm_wynn_sootworth",
    "merchant",
-   "smith at Nailers' Forge",
+   "smith at Timberland's Nailers' Forge",
    "smithy"
   ],
   [
@@ -3219,7 +3251,7 @@
   [
    "rm_wystan_coalmarsh",
    "merchant",
-   "runs The Grayrock Ironworks",
+   "runs The Timberland Ironworks",
    "ironworks"
   ],
   [
@@ -4466,10 +4498,7 @@
    "detail": ""
   }
  ],
- "issues": [
-  "rm_vance_house: straw bedding added for 1",
-  "rm_stanmore_house: straw bedding added for 1"
- ],
+ "issues": [],
  "notes": [
   "The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is off (doc 67, Q2).",
   "House Timberland keeps the ids of House Mossgrave (house_mossgrave, rm_mossgrave_court...): only the text changes (lane C), and the ids still read \"mossgrave\" in Atlas and the DM."

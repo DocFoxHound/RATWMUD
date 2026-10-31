@@ -2017,6 +2017,10 @@
     "z": 0,
     "beds": [
      {
+      "x": 1,
+      "y": 1
+     },
+     {
       "x": 12,
       "y": 18
      }
@@ -2079,6 +2083,10 @@
     "name": "Stanmore House",
     "z": 0,
     "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
      {
       "x": 18,
       "y": 1
@@ -2856,7 +2864,7 @@
  },
  {
   "id": "rm_southgate_ironmongers",
-  "name": "Southgate Ironmongers",
+  "name": "Eastgate Ironmongers",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -2869,7 +2877,7 @@
   "rooms": [
    {
     "id": "rm_southgate_ironmongers",
-    "name": "Southgate Ironmongers",
+    "name": "Eastgate Ironmongers",
     "z": 0,
     "beds": [],
     "work": [],
@@ -2877,7 +2885,7 @@
    },
    {
     "id": "rm_southgate_ironmongers_flat",
-    "name": "Southgate Ironmongers, the flat above",
+    "name": "Eastgate Ironmongers, the flat above",
     "z": 1,
     "beds": [
      {
@@ -4446,7 +4454,7 @@
  },
  {
   "id": "rm_southgate_farriers",
-  "name": "Southgate Farriers",
+  "name": "Eastgate Farriers",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -4459,7 +4467,7 @@
   "rooms": [
    {
     "id": "rm_southgate_farriers",
-    "name": "Southgate Farriers",
+    "name": "Eastgate Farriers",
     "z": 0,
     "beds": [],
     "work": [],
@@ -4467,7 +4475,7 @@
    },
    {
     "id": "rm_southgate_farriers_flat",
-    "name": "Southgate Farriers, the flat above",
+    "name": "Eastgate Farriers, the flat above",
     "z": 1,
     "beds": [
      {
@@ -7272,7 +7280,7 @@
  },
  {
   "id": "rm_the_grayrock_ironworks",
-  "name": "The Grayrock Ironworks",
+  "name": "The Timberland Ironworks",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7285,7 +7293,7 @@
   "rooms": [
    {
     "id": "rm_the_grayrock_ironworks",
-    "name": "The Grayrock Ironworks",
+    "name": "The Timberland Ironworks",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7305,7 +7313,7 @@
  },
  {
   "id": "rm_the_fell_sawmill",
-  "name": "The Fell Sawmill",
+  "name": "The Timberland Sawmill",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7318,7 +7326,7 @@
   "rooms": [
    {
     "id": "rm_the_fell_sawmill",
-    "name": "The Fell Sawmill",
+    "name": "The Timberland Sawmill",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7371,7 +7379,7 @@
  },
  {
   "id": "rm_the_tileworks",
-  "name": "The Tileworks",
+  "name": "The Greatly Tileworks",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7384,7 +7392,7 @@
   "rooms": [
    {
     "id": "rm_the_tileworks",
-    "name": "The Tileworks",
+    "name": "The Greatly Tileworks",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7404,7 +7412,7 @@
  },
  {
   "id": "rm_the_grayrock_iron_store",
-  "name": "The Grayrock Iron Store",
+  "name": "The Timberland Iron Store",
   "kind": "store",
   "district": "works",
   "style": "ridgemere",
@@ -7417,7 +7425,7 @@
   "rooms": [
    {
     "id": "rm_the_grayrock_iron_store",
-    "name": "The Grayrock Iron Store",
+    "name": "The Timberland Iron Store",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7571,7 +7579,7 @@
  },
  {
   "id": "rm_the_grayrock_foundry",
-  "name": "The Grayrock Foundry",
+  "name": "The Timberland Foundry",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7584,7 +7592,7 @@
   "rooms": [
    {
     "id": "rm_the_grayrock_foundry",
-    "name": "The Grayrock Foundry",
+    "name": "The Timberland Foundry",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7670,7 +7678,7 @@
  },
  {
   "id": "rm_the_charcoal_store",
-  "name": "The Charcoal Store",
+  "name": "The Timberland Charcoal Store",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7683,7 +7691,7 @@
   "rooms": [
    {
     "id": "rm_the_charcoal_store",
-    "name": "The Charcoal Store",
+    "name": "The Timberland Charcoal Store",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7703,7 +7711,7 @@
  },
  {
   "id": "rm_nailers_forge",
-  "name": "Nailers' Forge",
+  "name": "Timberland's Nailers' Forge",
   "kind": "shop",
   "district": "works",
   "style": "ridgemere",
@@ -7716,7 +7724,7 @@
   "rooms": [
    {
     "id": "rm_nailers_forge",
-    "name": "Nailers' Forge",
+    "name": "Timberland's Nailers' Forge",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7724,7 +7732,7 @@
    },
    {
     "id": "rm_nailers_forge_flat",
-    "name": "Nailers' Forge, the flat above",
+    "name": "Timberland's Nailers' Forge, the flat above",
     "z": 1,
     "beds": [
      {
@@ -7811,7 +7819,7 @@
  },
  {
   "id": "rm_the_lime_kilns",
-  "name": "The Lime Kilns",
+  "name": "The Greatly Lime Kilns",
   "kind": "works",
   "district": "works",
   "style": "works",
@@ -7824,7 +7832,7 @@
   "rooms": [
    {
     "id": "rm_the_lime_kilns",
-    "name": "The Lime Kilns",
+    "name": "The Greatly Lime Kilns",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7944,7 +7952,7 @@
  },
  {
   "id": "rm_the_anchor_forge",
-  "name": "The Anchor Forge",
+  "name": "Timberland's Anchor Forge",
   "kind": "shop",
   "district": "works",
   "style": "ridgemere",
@@ -7957,7 +7965,7 @@
   "rooms": [
    {
     "id": "rm_the_anchor_forge",
-    "name": "The Anchor Forge",
+    "name": "Timberland's Anchor Forge",
     "z": 0,
     "beds": [],
     "work": [],
@@ -7965,7 +7973,7 @@
    },
    {
     "id": "rm_the_anchor_forge_flat",
-    "name": "The Anchor Forge, the flat above",
+    "name": "Timberland's Anchor Forge, the flat above",
     "z": 1,
     "beds": [
      {
@@ -8736,7 +8744,7 @@
  },
  {
   "id": "rm_the_greatly_bonded_warehouse",
-  "name": "The Greatly Bonded Warehouse",
+  "name": "The Grayrock Bonded Warehouse",
   "kind": "store",
   "district": "wharf",
   "style": "ridgemere",
@@ -8749,7 +8757,7 @@
   "rooms": [
    {
     "id": "rm_the_greatly_bonded_warehouse",
-    "name": "The Greatly Bonded Warehouse",
+    "name": "The Grayrock Bonded Warehouse",
     "z": 0,
     "beds": [],
     "work": [],
@@ -8769,7 +8777,7 @@
  },
  {
   "id": "rm_the_fell_timber_store",
-  "name": "The Fell Timber Store",
+  "name": "The Grayrock Long Store",
   "kind": "store",
   "district": "wharf",
   "style": "ridgemere",
@@ -8782,7 +8790,7 @@
   "rooms": [
    {
     "id": "rm_the_fell_timber_store",
-    "name": "The Fell Timber Store",
+    "name": "The Grayrock Long Store",
     "z": 0,
     "beds": [],
     "work": [],
@@ -9034,7 +9042,7 @@
  },
  {
   "id": "rm_the_harbourmaster_s_office",
-  "name": "The Harbourmaster's Office",
+  "name": "The Grayrock Wharf Office",
   "kind": "hall",
   "district": "wharf",
   "style": "ridgemere",
@@ -9047,7 +9055,7 @@
   "rooms": [
    {
     "id": "rm_the_harbourmaster_s_office",
-    "name": "The Harbourmaster's Office",
+    "name": "The Grayrock Wharf Office",
     "z": 0,
     "beds": [],
     "work": [],
@@ -15119,7 +15127,7 @@
  },
  {
   "id": "rm_mossgrave_court",
-  "name": "Mossgrave Court",
+  "name": "Timberland Court",
   "kind": "seat",
   "district": "estate_mossgrave",
   "style": "manor",
@@ -15132,7 +15140,7 @@
   "rooms": [
    {
     "id": "rm_mossgrave_court",
-    "name": "Mossgrave Court",
+    "name": "Timberland Court",
     "z": 0,
     "beds": [],
     "work": [],
@@ -15140,7 +15148,7 @@
    },
    {
     "id": "rm_mossgrave_court_down",
-    "name": "Mossgrave Court, kitchens and servants' hall",
+    "name": "Timberland Court, kitchens and servants' hall",
     "z": -1,
     "beds": [
      {
@@ -15173,7 +15181,7 @@
    },
    {
     "id": "rm_mossgrave_court_up",
-    "name": "Mossgrave Court, the family's chambers",
+    "name": "Timberland Court, the family's chambers",
     "z": 1,
     "beds": [
      {
@@ -15210,7 +15218,7 @@
  },
  {
   "id": "rm_the_mossgrave_stables",
-  "name": "The Mossgrave Stables",
+  "name": "The Timberland Stables",
   "kind": "works",
   "district": "estate_mossgrave",
   "style": "ridgemere",
@@ -15223,7 +15231,7 @@
   "rooms": [
    {
     "id": "rm_the_mossgrave_stables",
-    "name": "The Mossgrave Stables",
+    "name": "The Timberland Stables",
     "z": 0,
     "beds": [],
     "work": [],
@@ -15243,7 +15251,7 @@
  },
  {
   "id": "rm_mossgrave_cottages",
-  "name": "Mossgrave Cottages",
+  "name": "Timberland Cottages",
   "kind": "home",
   "district": "estate_mossgrave",
   "style": "ridgemere",
@@ -15256,7 +15264,7 @@
   "rooms": [
    {
     "id": "rm_mossgrave_cottages",
-    "name": "Mossgrave Cottages",
+    "name": "Timberland Cottages",
     "z": 0,
     "beds": [
      {
@@ -15297,7 +15305,7 @@
  },
  {
   "id": "rm_the_mossgrave_summerhouse",
-  "name": "The Mossgrave Summerhouse",
+  "name": "The Timberland Summerhouse",
   "kind": "hall",
   "district": "estate_mossgrave",
   "style": "ridgemere",
@@ -15310,7 +15318,7 @@
   "rooms": [
    {
     "id": "rm_the_mossgrave_summerhouse",
-    "name": "The Mossgrave Summerhouse",
+    "name": "The Timberland Summerhouse",
     "z": 0,
     "beds": [],
     "work": [],
@@ -15330,7 +15338,7 @@
  },
  {
   "id": "rm_the_mossgrave_gatehouse",
-  "name": "The Mossgrave Gatehouse",
+  "name": "The Timberland Gatehouse",
   "kind": "home",
   "district": "estate_mossgrave",
   "style": "ridgemere",
@@ -15343,7 +15351,7 @@
   "rooms": [
    {
     "id": "rm_the_mossgrave_gatehouse",
-    "name": "The Mossgrave Gatehouse",
+    "name": "The Timberland Gatehouse",
     "z": 0,
     "beds": [
      {

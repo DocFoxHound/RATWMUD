@@ -646,7 +646,9 @@ class RidgemereCity(Ridgemere):
             c.codes[dy, dx] = ord('+')
             cid, lx, ly = self.site.cell_at(dx, dy)
             d = g['door']
-            self.site.links.append({'id': d['id'], 'name': d['name'], 'kind': 'door',
+            # Named from the interior as the world has it now (so a rename, doc 67 lane C, survives a rewrite); every
+            # old door was named "<its ground room> door".
+            self.site.links.append({'id': d['id'], 'name': f"{g['name']} door", 'kind': 'door',
                                     'open': spec.kind not in ('home', 'villa', 'seat', 'lodging'),
                                     'a': {'cell': cid, 'x': lx, 'y': ly}, 'b': {'cell': g['ground'], 'x': d['b_x'], 'y': d['b_y']}})
             bid = g['ground']

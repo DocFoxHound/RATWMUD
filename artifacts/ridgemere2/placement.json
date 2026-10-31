@@ -2063,9 +2063,9 @@
 "y": 2
 },
 "work": {
-"cell": "rm_the_fell_sawmill",
-"x": 20,
-"y": 10
+"cell": "rm_fellhall",
+"x": 14,
+"y": 4
 },
 "evening": {
 "cell": "rm_fellhall_up",
@@ -2075,9 +2075,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "rm_the_fell_sawmill",
+"post": "staff",
+"template": "keeping the Fell cellars",
+"structure": "rm_fellhall",
 "route": "",
 "homeKept": true
 },
@@ -6445,9 +6445,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_greatly_bonded_warehouse",
-"x": 8,
-"y": 8
+"cell": "rm_the_greatly_yard",
+"x": 3,
+"y": 2
 },
 "evening": {
 "cell": "rm_greatly_house_up",
@@ -6458,8 +6458,8 @@
 "business": null,
 "role": "civilian",
 "post": "staff",
-"template": "keeping the Bonded Warehouse",
-"structure": "rm_the_greatly_bonded_warehouse",
+"template": "keeping the Greatly Yard's books",
+"structure": "rm_the_greatly_yard",
 "route": "",
 "homeKept": true
 },
@@ -10575,9 +10575,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_grayrock_ironworks",
-"x": 10,
-"y": 3
+"cell": "rm_the_greatly_bonded_warehouse",
+"x": 8,
+"y": 8
 },
 "evening": {
 "cell": "rm_grayrock_hall_up",
@@ -10587,9 +10587,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "rm_the_grayrock_ironworks",
+"post": "staff",
+"template": "keeping the wharf's books",
+"structure": "rm_the_greatly_bonded_warehouse",
 "route": "",
 "homeKept": true
 },

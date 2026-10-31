@@ -381,6 +381,17 @@ POOLS = [
     ('sump', 'crying wares in the Rag Market', 6, 'tray_sellers'),
 ]
 
+# The Houses' own people work their own House's business (doc 67, section 7; lane C's tools/rename_house.py WORK_MOVES):
+# "keeping the wharf's books" goes from Greatly to Grayrock, so Tobias Grayrock takes Julian Greatly's desk at the
+# (renamed) Grayrock Bonded Warehouse and Julian goes to the Greatly Yard; the Fell heir leaves the Timberland Sawmill for
+# his own House's hall. {npc: (structure key, label, preferred spot or None)}. Applied after the evenings, so the rest of
+# the plan (and its random draws) is unchanged.
+HOUSE_POSTS = {
+    'rm_tobias_grayrock_': ('rm_the_greatly_bonded_warehouse', "keeping the wharf's books", (8, 8)),
+    'rm_julian_greatly': ('rm_the_greatly_yard', "keeping the Greatly Yard's books", (3, 2)),
+    'rm_corwin_fell_': ('rm_fellhall', 'keeping the Fell cellars', None),
+}
+
 
 class Placement:
     """The NPC plan: for every NPC, placed (home, work, evening, business, role, route) or unplaced and why."""
@@ -513,7 +524,23 @@ class Placement:
         self.homes()
         self.jobs()
         self.evenings()
+        self.house_posts()
         return self.plan
+
+    def house_posts(self):
+        """HOUSE_POSTS: a House's family member moved to his own House's business (a civilian staff post)."""
+        moving = [(pid, *post) for pid, post in HOUSE_POSTS.items()
+                  if self.plan.get(pid, {}).get('placed') and post[0] in self.records]
+        for pid, *_ in moving:                                  # Free the spots they leave first.
+            w = self.plan[pid].get('work')
+            if w:
+                self.taken.discard((w['cell'], w['x'], w['y']))
+        for pid, record, label, spot in moving:
+            rec = self.records[record]
+            work = self.spot_near(rec['rooms'][0]['id'], *spot) if spot else None
+            self.plan[pid].update({'work': work or self.work_spot(rec, 'staff'), 'business': None, 'role': 'civilian',
+                                   'post': 'staff', 'template': label, 'record': record, 'route': '', 'kept': False,
+                                   'at': self.at.get(record)})
 
     # -- homes ---------------------------------------------------------------------------------------------------------
     def home_rooms(self):
@@ -1040,7 +1067,8 @@ def render_labels(plan, people, names, current=None):
         elif post == 'a child at home':
             label = p['workLabel'] if p['age'] < 6 else 'at home'
         elif post == 'keeper':
-            kept = p['workLabel'] if e.get('kept') and p['role'] == 'merchant' else None
+            # The label as the world has it now (renamed by doc 67's lane C, when it has run), not the one before the city.
+            kept = (current or {}).get(pid, p['workLabel']) if e.get('kept') and p['role'] == 'merchant' else None
             if kept and business_for(kept) == e.get('business') and not label_problems(kept, e.get('business')):
                 label = kept
             elif tpl in (None, 'runs'):
