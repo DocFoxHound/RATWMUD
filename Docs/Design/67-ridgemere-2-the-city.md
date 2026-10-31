@@ -678,6 +678,9 @@ sleepers to a bed.
 
 ## 4. Businesses and jobs
 
+(The business mix below is the plan as first built. Since 2026-10-31 the city is rebalanced toward food and has a
+Carters' Yard: see Progress, "Food rebalance".)
+
 **How a job works** (doc 66, Phase 5):
 
 - A job is one position per NPC: `job:<npc id>`. It is made from the NPC's work label, work spot, hours, route and role.
@@ -1715,6 +1718,10 @@ killed afterwards.
    an hour, when a ware is below its starting stock, a maker draws one batch's inputs and makes it, and a vendor draws
    back up to its starting stock". Until you turn it on in Atlas or give another rule, no NPC uses the store. Confirm
    this rule, or tell us yours.
+   - **Answered (2026-10-31): the rule is on**, by the user's decision ("The restock rule should be turned on for
+     now"). Switched on in `ratw_ridgemere2` through the studio's Economy code (`studio.Economy.set_store`, a keyed
+     `live_edit`, revision 50 to 51); the manifest reads `store on 100 resale on 75 rule on`. See Progress, "Food
+     rebalance".
 3. **Who is King.** The old Ridgemere had no monarch; the Council of Houses ruled. Decided:
    - The Harrowgate household (a cut Minor House) moves whole into the King's Residence.
    - Gunnar Harrowgate (62) is King, "reigning at the Great Palace", with Oda and Ottilie and their two servants.
@@ -2115,3 +2122,128 @@ old 35%); `fund:store` 0p. A scratch server starts on it with 559 residents and 
 - The middle town has almost no spare homes (the Sump has 24). Growth that wants middle-class homes will need more row
   houses (raise `ROWS_COMMONS`; they go wherever a lot on a lane is left).
 - The client walk (section 8, step 7) is still not made; the graph walk covers reachability.
+
+### Food rebalance (2026-10-31)
+
+Branch `r2-city-food`, from `ridgemere2` (ed9d4f3). The user (verbatim): "The restock rule should be turned on for now.
+... As for rebalancing toward food, yeah let's do that." The recommendation agreed: about 45–55 food businesses, most
+with a keeper and one or two hands, sized so the food trades' keepers and hands cover what the city eats; 10–15
+household-goods shops. Then (the coordinator, for the user: "Those wolves need to be paid too") a Carters' Yard for the
+wagons to and from the Country. Backup before: `Saved/Backups/ratw_ridgemere2-before-food.dump` (main repo). The write
+moved the world from revision 48 to 50 (build 44); the rule, 50 to 51 (build 45).
+
+**The capacity estimate** is `tools/city_capacity.py EXPORT_DIR` (read only; tests `tools/test_city_capacity.py`):
+what the placed residents buy a day with the old demand model (food by nourishment for the price over the foods the
+city's businesses sell, households' needs, upkeep, the Works, the Watch, the church and the hall), as hours of each
+trade's own last step (its inputs come from the store room), over 8: keeper-days. A trade's keepers and hands are a
+day's work each. The generator runs it on the plan: a new check (R35) wants the food trades' keepers and hands within
+25% of their keeper-days overall and no food trade below half of its own, and the report prints the table below.
+
+| Trade | Businesses | Keepers | Hands | Keeper-days demanded |
+|---|---|---|---|---|
+| bakery | 4 → 8 | 4 → 8 | 3 → 6 | 14.0 → 14.0 |
+| butcher | 2 → 7 | 2 → 7 | 2 → 7 | 15.8 → 17.4 |
+| inn | 12 → 15 | 12 → 15 | 13 → 9 | 15.8 → 15.8 |
+| provisioner | 4 → 7 | 4 → 7 | 3 → 5 | 12.1 → 12.4 |
+| preserver | 1 → 5 | 1 → 5 | 1 → 4 | 10.2 → 10.2 |
+| dairy | 1 → 4 | 1 → 4 | 1 → 3 | 9.2 → 9.2 |
+| fishmonger | 4 → 4 | 4 → 4 | 4 → 2 | 2.6 → 1.9 |
+| smokehouse | 1 → 1 | 1 → 1 | 1 → 1 | 2.6 → 1.4 |
+| brewery | 3 → 3 | 3 → 3 | 4 → 2 | 0.6 → 0.6 |
+| press | 1 → 1 | 1 → 1 | 2 → 2 | 0.2 → 0.2 |
+| stall | 4 → 3 | 4 → 3 | 0 → 0 | 0 → 0 |
+| **food** | **37 → 58** (33 → 55 without the stalls) | | | **71 → 99 staffed for 83.2 (85% → 119%)** |
+
+Before, bakery, butcher, preserver and dairy were each below half of their demand; now none is. The staffed total is
+19% over, inside the ±25%: the twelve taverns are the city's evening places (each takes up to 40) and keep their
+keepers, and the fish, brewery and press trades are the wharf's and the Houses' and keep theirs. "Hands" counts grown
+helpers working in the keeper's building (stalls and Market Hall counters have none; a helper under 16 doesn't count).
+
+Household goods: 29 → 15 businesses (chandlery 3 → 2, smithy 5, armory 1, weaver 3 → 1, tailor 3 → 1, apothecary 2 →
+1, herbalist 2 → 1, pottery 2 → 1, tinker 3 → 1, general 5 → 1); Timberland's six forges are 6 of the 15. Industry
+and the Houses' businesses are all kept (the forges, foundry, ironworks, plasterworks; Greatly's works, yard, masons
+and colour works; Fell's press, distillery, preserving house and wine vaults; Grayrock's ropewalk, shipwright,
+chandlery and stores), and so are makers of what the Country will buy (two coopers, three carpenters, the sawmill,
+brick and tile, glass, a weaver, a potter, the smiths). Kept one of a kind: the pawnbroker, the moneychanger (the
+Greatly Bank), the cartographer, the perfumer, the barber, one jeweller (Silver & Rain), one rag-and-bone dealer and
+the Rag Market, the Eastgate livery stables, one saddler (the Harness Shop). The fletcher (the Grey Goose) had no
+buyers and cooks now.
+
+**What became what.**
+
+- **Reused shops refitted in place** (`REFIT` in `ridgemere2.py`: the wall of goods opposite the door and the fixtures
+  by it are made the new trade's, from `buildings.TRADES`, with three new trades `cheesemaker`, `preserver` and
+  `cook`; walls, door, stairs, counter and flat untouched; doing it twice changes nothing; a new description, and a
+  new name where the old one named the old trade): Rainford's Store, general → provisioner (Northgate); The Grey
+  Goose, fletcher → cookshop ("cooking for Northgate", an inn, and Northgate's first evening place); The Bung Hole,
+  cooper → the wharf's ship's provisioner; Moss & Marrow, herbalist → butcher; Vane & Daughters, tailor →
+  cheesemonger; The Cough Jar, apothecary → The Honey Crock, preserver; Oilcloth & Wool, weaver → The Apple Loft,
+  preserver; Collar and Trace, saddler → The Eastgate Bakehouse; Commons Sundries, general → Commons Provisions.
+- **New and replaced buildings:** the Sump's Rag-and-Bone Yard is now **The Penny Loaf**, the Sump's bakehouse (a works
+  kind `bakehouse`: ovens and boards, on the same lot); **Cinder Butchers** in the Cinders (a shop with its flat);
+  **The Carters' Yard** in the east Commons, inside the East Gate (a works kind `carters_yard`: four wagon bays,
+  straw for the teams, a yard of beaten earth and a trough). The two new ones are placed right after their quarter's
+  large buildings, each from its own random sequence (`food_addition`, `own_shop`), so the rest of the city is drawn
+  as before: only the Commons' row houses moved (two three-home rows became a three-home and two two-home rows), and
+  the Sump is unchanged.
+- **Market Square** (8 stalls, each in its old place): the pie stall's keeper bakes and the cheese stall's makes cheese;
+  greens and fruit stalls (the `stall` produce list), a preserver, a butcher, "ladling soup on Market Square" (hot
+  food, an inn) and the herbalist (kept, for players). The weaver, potter, tinker, chandler and shopkeeper are gone.
+- **The Rag Market** (6): ladling soup, a baker (the porridge stall's keeper), the fishmonger, a greens stall, a butcher
+  and the rag-and-bone dealer. The tinker and the shopkeeper are gone.
+- **The Market Hall** (6 counters): a butcher, a cheesemaker, a preserver and the provisioner, with the cooper and the
+  carpenter kept; the tailor, saddler and jeweller are gone.
+- **Hands:** bakeries and butchers 1 + 1 or 1 + 2 (the Penny Loaf, Mutton Lane, the Hook and Cleaver and Cinder
+  Butchers 1 + 2), the Round and Rind and the Fell Preserving House 1 + 2, the Lamp & Wick 1 + 2. To keep the total
+  inside 25%, the Sailors' Rest, the Grey Gull, the Rainwater Brewery and the Fish Hall lost a hand, and the Drowned
+  Lantern, the Tarred Rope, the Slate & Ledger, the Wet Slab, Southway Provisions and the Hopyard are a keeper alone.
+- **The Carters' Yard:** business `carters` (`businesses.json`, matching "carters' yard", "driving for the carters" and
+  "wagoner"; no crafts and no supply list, so it draws nothing from the store: it sells carriage, not goods; in the
+  label fixture and the C++ store test). A keeper ("keeping the Carters' Yard") and `CARTERS` = 6 drivers ("driving for
+  the carters"), a constant in `ridgemere2_people.py` for when the Country's trade is sized. A check wants both.
+
+**People.** The same 559 are placed (524 not), families together; 110 merchants (108 before: the two new businesses).
+The new keepers and hands came from the converted businesses and stalls, the trimmed taverns' helpers and the pools,
+which hold 48 now (55; the dockers 26 → 19). The allocator now keeps whoever holds a post in the world as it is
+(`Placement(..., current=...)`, `keep_current`: a staff or clergy post by its label, a keeper's, helper's or hand's by
+its building, a stall or counter by its place, a pool by its label and spot, a child by the school they go to); it
+fills the posts that are gone or new first from those whose post went, then from the pools; and a lost merchant gets a
+keeper's post of their own trade first. So 48 labels changed, 34 people changed home (the Commons' rows) and 23 their
+workplace. A second plan from the written world changes no label, home, workplace, evening place or text (only tiles in
+the same rooms).
+
+**People's text** (`ridgemere2_people.person_text`, applied by `compose`): a placed NPC's description ends in what they
+do, and their greeting in a line of their work. 259 were written again: **46** whose job changed here (description,
+greeting, and a backstory line after the old one); **158** stale ones whose text contradicted the job they already had
+(merchants moved to the markets still "keeping the honey stall on the Heights Market", House servants moved to the
+piers, the Records Office's clerks described as porters and street sellers, the old Bridge Lamp's keeper at the
+Knucklebones...); and **55** greetings mended ("I am carries loads for hire today" → "I am carrying loads for hire
+today"). The looks and the old backstory stay; figures with descriptions of their own (the Houses' heads, heirs and
+stewards, the Chancellor, the Speaker, the Captain, the advocates) and children are left. No "dog". Two figures the
+text pass found in the wrong work were moved (`HOUSE_POSTS`): Lord Aldric Grayrock, "always at the wharf", was a deacon
+at the cathedral and now oversees the Grayrock wharf from the Wharf Office; the Chancellor of Ridgemere, Oskar
+Gullworth, was one of the City Office's clerks and is now "Chancellor of Ridgemere" there. (Gerrit Mudhand, described
+as the Speaker of the Council, holds the post "chancellor of the Council": left as it is.)
+
+**The restocking rule** is on (section 9, Q2), switched through the studio's Economy code
+(`studio.Economy.set_store('ridgemere2', {'storeRule': True})`, a keyed `live_edit`, revision 51). The rebuilt export's
+manifest reads `store on 100 resale on 75 rule on`. `world_check` with it on, 20 players: 6:00–8:00, `fund:store` 0 →
+14p and the tills 16,110 → 16,096p; 6:00–14:00, the fund 28p and the tills 16,082p; money conserved both times (52,946p
+in all). Keepers do restock and every penny they pay is in the fund, but little sells, so little is restocked:
+residents' needs are still paused (`Society::NeedsPaused`), as expected.
+
+**Results.** All 60 checks pass (58, the food check and the Carters' Yard's). 9 cells, 819 interiors (193 new), 240
+structures, 513 links. `rename_house.py --dry-run`: 0 changes. `world_check` (6:00–8:00, 20 players): 828 places, 0
+failures, p99 5.0 ms, money conserved, 0 without a route, 5 of 559 (0.89%) held at 6:00 on the Commons School's door
+(as before). A scratch server starts on it with 559 residents and serves the client. Tests: `test_ridgemere2.py` (26;
+new: the food labels, people's text, the refit, the food trades and the carters, placed text that fits),
+`test_city_capacity.py` (6), `test_rename_house.py`, `test_item_catalog.py`, `test_studio.py`, `test_world_store.py`
+and the C++ `store_room_behaviors` (242 checks) pass; `test_map_editor.py` fails only the known Greyfen 11-vs-10.
+
+**For the user.**
+
+- The food trades are staffed 19% over what the estimate says the city eats, nearly all of it the taverns; if the
+  economy test shows idle cooks, the taverns' helpers are the place to trim.
+- 55 food businesses besides the three produce stalls is at the top of "about 45–55": the converted stalls and counters
+  are businesses of one keeper each.
+- `CARTERS` (6) is a placeholder until the Country's trade is sized; the yard has room for more.

@@ -61,6 +61,7 @@
     {"id": "barber", "label": "Barber-surgeon", "trades": ["barber"], "stations": [], "kind": "shop", "tier": "town", "sells": ["bandages"], "match": ["barber"]},
     {"id": "pawnbroker", "label": "Pawnbroker", "trades": ["pawnbroker"], "stations": [], "kind": "shop", "tier": "city", "sells": ["jewelry", "household", "tool"], "match": ["pawn"]},
     {"id": "rag_and_bone", "label": "Rag-and-bone yard", "trades": ["rag-and-bone"], "stations": [], "kind": "yard", "tier": "city", "sells": ["household", "container"], "match": ["rag-and-bone", "rag and bone"]},
+    {"id": "carters", "label": "Carters' yard", "trades": ["carter"], "stations": [], "kind": "yard", "tier": "city", "sells": [], "match": ["carters' yard", "driving for the carters", "wagoner"]},
     {"id": "inn", "label": "Inn or tavern", "trades": ["cook"], "stations": ["hearth"], "kind": "shop", "tier": "hamlet", "sells": ["meal", "porridge", "cider"], "match": ["keeping the inn", "taproom", "tavern", "refectory", "cooking for", "ladling soup", "feeding the", "keeps the "]}
   ]
 }

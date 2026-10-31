@@ -598,6 +598,31 @@ ROOM_RENAMES = {
                                "rafters, a bell on the counter, and couriers coming in wet from every quarter of the city "
                                "with the Records Office's post."),
 }
+# Reused shops given over to another trade by the food rebalance (doc 67, Progress, "Food rebalance"): {ground floor id:
+# (trade (buildings.TRADES), new name or None, description)}. The shop keeps its rooms, door, stairs and flat; its wall of
+# goods and its fixtures are refitted for the new trade (refit_shop), and the keeper's post is in POSTS.
+REFIT = {
+    'rm_rainford_s_store': ('provisioner', None, "Rainford's Store, provisioner. Sacks of oats and flour by the door, "
+                            'salt fish and smoked rabbit hung from the beams: what a traveller wants before the north '
+                            'road, and what Northgate wants for its supper.'),
+    'rm_the_grey_goose': ('cook', None, "The Grey Goose, cookshop. A hearth at each end, a long counter and a pot of stew "
+                          "that is never quite empty: Northgate's suppers, eaten standing or carried home in a crock."),
+    'rm_the_bung_hole': ('provisioner', None, "The Bung Hole, ship's provisioner. Casks of salt pork, sacks of oats and "
+                         'strings of smoked fish for the Grayrock crews, sold over a counter worn smooth by a hundred '
+                         'sailing days.'),
+    'rm_moss_marrow': ('butcher', None, 'Moss & Marrow, butcher. Marrow bones, mutton and rabbit on hooks, sausages in '
+                       'loops, and a block scrubbed white every evening.'),
+    'rm_vane_daughters': ('cheesemaker', None, 'Vane & Daughters, cheesemongers. Rounds ripening on slatted shelves, '
+                          'butter in crocks, and the press creaking in the back.'),
+    'rm_the_cough_jar': ('preserver', 'The Honey Crock', 'The Honey Crock, preserving shop. Preserving pans on the '
+                         'hearth, crocks of apple jam sealed with wax, and apple rings drying on racks by the window.'),
+    'rm_oilcloth_wool': ('preserver', 'The Apple Loft', 'The Apple Loft, preserving shop. Dried apples in strings, '
+                         'preserves in stone jars, and the sweet smoke of the drying racks over everything.'),
+    'rm_collar_and_trace': ('baker', 'The Eastgate Bakehouse', 'The Eastgate Bakehouse, bakery. Loaves for the carters '
+                            'and the gate before dawn, honey cakes by noon, and an oven that warms the street outside.'),
+    'rm_commons_sundries': ('provisioner', 'Commons Provisions', 'Commons Provisions, provisioner. Flour and oats by '
+                            'the sack, smoked fish and salt pork by the pound, milk in the mornings.'),
+}
 
 
 class Spec:
@@ -856,6 +881,12 @@ class RidgemereCity(Ridgemere):
         rooms, stairs, (w, h) = shop_with_flat(self.new_rng, style, trade, name, text, people=people)
         return Building('shop', name, style, fp(w, h), rooms, stairs, '', '', trade)
 
+    def own_shop(self, trade, name, text, style='ridgemere'):
+        """A shop with its flat drawn from its own random sequence (so adding it moves nothing else): (footprint, rooms,
+        stairs) for a Building."""
+        rooms, stairs, (w, h) = shop_with_flat(random.Random(f'{name}:shop'), style, trade, name, text)
+        return fp(w, h), rooms, stairs
+
     def new_tavern(self, name, text, style='ridgemere', footprint=None):
         plans, _ = tavern(self.new_rng, style, False)
         return Building('tavern', name, style, footprint or fp(plans[0].w, plans[0].h),
@@ -898,8 +929,10 @@ class RidgemereCity(Ridgemere):
         small = {}
         small['admin'] = self.place_large('admin', self.admin_specs(), 120)
         small['cinders'] = self.place_large('cinders', self.cinders_specs(), 90)
+        self.food_addition('cinders')
         com, north = self.commons_specs()
         small['commons'] = self.place_large('commons', com, 130)
+        self.food_addition('commons')
         small['northgate'] = self.place_large('northgate', north, 130)
         self.sump_named()
         # 2. Lanes and alleys, then the borders stitched across by many passages.
@@ -1916,6 +1949,39 @@ class RidgemereCity(Ridgemere):
         ]
         return specs
 
+    def food_addition(self, district):
+        """The food rebalance's new buildings (doc 67, Progress), each placed after its quarter's large buildings and
+        from its own random sequence, so the rest of the city is drawn as before: a butcher for the Cinders' crews, and
+        the Carters' Yard inside the East Gate (the roads to Fellhall and the country), whose wagons take the city's
+        goods out and bring the country's in."""
+        specs = {
+            'cinders': Spec('r2_cinder_butchers', 'Cinder Butchers', 'cinders', 'shop', homes=1, near=(280, 432),
+                            business='butcher',
+                            make=lambda: Building('shop', 'Cinder Butchers', 'works', *self.own_shop(
+                                'butcher', 'Cinder Butchers', 'Mutton, pork and rabbit for the forges\' and the kilns\' '
+                                'crews, salt pork by the slab, and bones for the pot at a farthing.', 'works'), '', '',
+                                'butcher')),
+            'commons': Spec('r2_carters_yard', "The Carters' Yard", 'commons', 'works', near=(452, 290),
+                            business='carters',
+                            make=lambda: self.new_works('carters_yard', "The Carters' Yard", 'Inside the East Gate, '
+                                                        'where the Fellhall road and the country road come in: the '
+                                                        'teams go out loaded before dawn and come back after dark.', 7,
+                                                        style='ridgemere', size=(22, 13))),
+        }
+        spec = specs[district]
+        rng, self.rng = self.rng, random.Random(f'{self.world.seed}:{spec.key}')
+        try:
+            for gap, jitter in ((None, 6), (0, 6), (0, 40)):
+                lots = Lots(self.ground_of(district), self.street) if gap is None else \
+                    Lots(self.ground_of(district), self.street, gap=gap)
+                if not self.place_list(lots, [spec], self.street, jitter=jitter, report=False):
+                    return
+                spec.near = None if jitter == 40 else spec.near
+            self.unplaced.append(spec.key)
+            print(f'  ridgemere2: {spec.name} not placed ({district})')
+        finally:
+            self.rng = rng
+
     # -- the Rise -------------------------------------------------------------------------------------------------------
     def rise(self):
         """Five Minor House mansions, each in a small railed garden (their grounds about 40% smaller than before), their
@@ -2080,11 +2146,12 @@ class RidgemereCity(Ridgemere):
                  make=lambda: self.new_works('washhouse', 'The Washhouse', 'Where the Sump and half the Commons send '
                                              'their washing: a penny a bundle, back by dark, still damp.', 6,
                                              style='ridgemere', size=(18, 12))),
-            Spec('r2_rag_and_bone_yard', 'The Rag-and-Bone Yard', 'sump', 'works', near=(250, 336),
-                 business='rag_and_bone',
-                 make=lambda: self.new_works('rag_and_bone', 'The Rag-and-Bone Yard', 'Old Nan Tarrow buys anything, '
-                                             'sells most of it back, and knows where every pot in the Sump came from.',
-                                             2, style='ridgemere', size=(14, 10))),
+            # (The food rebalance: the Sump's own bakery where the rag-and-bone yard stood; the Rag Market keeps its
+            # second-hand dealer.)
+            Spec('r2_penny_loaf', 'The Penny Loaf', 'sump', 'works', near=(250, 336), business='bakery',
+                 make=lambda: self.new_works('bakehouse', 'The Penny Loaf', 'The Sump\'s bakehouse: coarse brown loaves '
+                                             'a penny each from before dawn, the oven\'s warmth leaking out into the '
+                                             'alley, and a queue in the rain.', 3, style='ridgemere', size=(14, 10))),
             Spec('r2_lamp_store', 'The Lamp Store', 'sump', 'hall', near=(280, 260),
                  make=lambda: self.new_hall('warehouse', 'The Lamp Store', 'The lamplighters\' post: ladders, wicks, '
                                             'casks of fish oil and the city\'s spare lanterns.', 12, 9)),
@@ -2721,6 +2788,65 @@ def strip_city(project):
     return p
 
 
+def refit_shop(room, trade):
+    """A reused shop's ground floor furnished for another trade, in place: the wall of goods opposite its street door
+    (buildings.shop's goods row) and the fixtures two rows in from the door are made the new trade's; walls, the door,
+    the stairs, the counter and the floor are untouched. Doing it twice changes nothing."""
+    from .buildings import STAND_IN, TRADES
+    g = [list(row) for row in room['terrain']]
+    h, w = len(g), len(g[0])
+    door = next(((x, y) for y in range(h) for x in range(w) if g[y][x] == '+' and (x in (0, w - 1) or y in (0, h - 1))),
+                None)
+    if door is None:
+        return False
+    dx, dy = door
+    # The shop as buildings.shop lays it out (door on the bottom edge): canonical (cx, cy) -> the room's (x, y).
+    if dy == h - 1:
+        cw, ch_, at = w, h, lambda cx, cy: (cx, cy)
+    elif dy == 0:
+        cw, ch_, at = w, h, lambda cx, cy: (w - 1 - cx, h - 1 - cy)
+    elif dx == 0:
+        cw, ch_, at = h, w, lambda cx, cy: (w - 1 - cy, cx)
+    else:
+        cw, ch_, at = h, w, lambda cx, cy: (cy, cx)
+    floor = Counter(c for row in g[1:-1] for c in row[1:-1]).most_common(1)[0][0]
+    fixed = set('#HM]j+^=' + floor)
+    t = TRADES[trade]
+    goods = t['goods']
+    for cx in range(1, cw - 1):
+        x, y = at(cx, 1)
+        if g[y][x] not in fixed:
+            c = goods[cx % len(goods)]
+            g[y][x] = STAND_IN['oven'] if c == 'v' and t.get('oven_goods') else c
+    spots = [(2, ch_ - 3), (3, ch_ - 3), (cw - 3, ch_ - 3), (cw - 4, ch_ - 3)]
+    for cx, cy in spots:
+        x, y = at(cx, cy)
+        if g[y][x] not in fixed:
+            g[y][x] = floor
+    for fx, fy, c, _ in t.get('fixtures', ()):
+        x, y = at(fx if fx >= 0 else cw + fx, fy if fy >= 0 else ch_ + fy)
+        if g[y][x] == floor and (x, y) != (dx, dy):
+            g[y][x] = c
+    room['terrain'] = [''.join(row) for row in g]
+    return True
+
+
+def refit_rooms(project):
+    """REFIT: each reused shop given over to another trade, its name (and its flat's), description and furniture."""
+    rooms = {r['id']: r for r in project['rooms']}
+    for rid, (trade, name, text) in REFIT.items():
+        r = rooms.get(rid)
+        if r is None:
+            continue
+        refit_shop(r, trade)
+        r['description'] = text
+        if name:
+            r['name'] = name
+            flat = rooms.get(f'{rid}_flat')
+            if flat is not None:
+                flat['name'] = f'{name}, the flat above'
+
+
 def make_city(project, seed=SEED, report=print):
     """The city laid out over a copy of the project's rooms: (project as the plan reads it, world, city)."""
     from . import ridgemere2_people as people
@@ -2729,6 +2855,7 @@ def make_city(project, seed=SEED, report=print):
     for r in project['rooms']:
         if r['id'] in ROOM_RENAMES:
             r['name'], r['description'] = ROOM_RENAMES[r['id']]
+    refit_rooms(project)
     for x in project['people']:
         x.update(json.loads(json.dumps(baseline[x['id']])))
     old = placements()
@@ -2768,7 +2895,7 @@ def default_claims(district, key):
     return ['council_of_houses']
 
 
-def compose(project, world, city, plan, labels, baseline):
+def compose(project, world, city, plan, labels, baseline, place_names=None):
     """The world as a project: the 12 cells, every interior (new ones added), the links, the spawn, the routes' posts,
     and the people's places (doc 67, section 8 A, the write's step 2)."""
     p = json.loads(json.dumps(project))
@@ -2804,11 +2931,13 @@ def compose(project, world, city, plan, labels, baseline):
         if pts:
             r['posts'] = [x for x in (snap.outdoor(*pt, share=True) for pt in pts) if x]
     # The people.
+    city.text_fixes, city.text_fixed = Counter(), []
     for person in p['people']:
         e = plan.get(person['id'])
         if not e or not e.get('placed'):
             person['home'] = person['work'] = person['evening'] = None
             continue
+        before = person['workLabel'] if person['home'] else None       # (the label as the world has it now)
         person['home'] = e['home']
         person['work'] = e['work']
         person['evening'] = e['evening']
@@ -2819,6 +2948,12 @@ def compose(project, world, city, plan, labels, baseline):
             person['route'] = ''
         person['workLabel'] = labels[person['id']]
         person.update(pl.ROYAL_TEXT.get(person['id'], {}))
+        # Their description, greeting and backstory to fit the post (doc 67, Progress, "Food rebalance").
+        text, why = pl.person_text(person, e, person['workLabel'], before, place_names or {})
+        if text:
+            person.update(text)
+            city.text_fixes[why] += 1
+            city.text_fixed.append((person['id'], why))
     # The Market Square keepers first: the game takes the first merchant of the market's cell as its middle.
     first = [pp for pp in p['people'] if plan.get(pp['id'], {}).get('record') == 'market_square'
              and plan[pp['id']].get('post') == 'stallkeeper']
@@ -2980,7 +3115,7 @@ def _components(codes, heights, seams=None):
 # ---------------------------------------------------------------------------------------------------------------
 # The checks (doc 67, section 8 A, Acceptance) and the report
 # ---------------------------------------------------------------------------------------------------------------
-def checks(p, world, city, plan, labels, walk):
+def checks(p, world, city, plan, labels, walk, capacity=None):
     """Every acceptance check of section 8 A: [(requirement, name, ok, detail)]."""
     from . import ridgemere2_people as pp
     out = []
@@ -3104,8 +3239,8 @@ def checks(p, world, city, plan, labels, walk):
         'r2_abbey_infirmary', 'r2_greatly_forge', 'r2_the_keep', 'r2_kings_residence', 'r2_palace_antechamber',
         'r2_administrative_wing', 'r2_market_hall', 'r2_records_office', 'r2_barber', 'r2_fell_wine_vaults',
         'r2_cheesemonger', 'r2_bathhouse', 'r2_forge_row', 'r2_cinder_wheelwrights', 'r2_the_washhouse',
-        'r2_rag_and_bone_yard', 'r2_lamp_store', 'r2_the_knucklebones', 'r2_fell_press_house', 'r2_fell_distillery',
-        'r2_fell_preserving_house', 'r2_fell_cellars', 'r2_mossgrave_cottage', 'r2_fell_cottage', 'r2_grayrock_cottage',
+        'r2_penny_loaf', 'r2_cinder_butchers', 'r2_carters_yard', 'r2_lamp_store', 'r2_the_knucklebones',
+        'r2_fell_press_house', 'r2_fell_distillery', 'r2_fell_preserving_house', 'r2_fell_cellars', 'r2_mossgrave_cottage', 'r2_fell_cottage', 'r2_grayrock_cottage',
         'r2_bay_light', 'r2_clock_tower', 'r2_sunken_street', 'r2_tallow_arcade'}
     lost = sorted(k for k in wanted if k not in city.named)
     check('R30', 'every building the plan keeps or adds is placed (the same businesses, houses and landmarks)',
@@ -3229,6 +3364,17 @@ def checks(p, world, city, plan, labels, walk):
     ev = Counter(plan[x['id']].get('eveningPlace') for x in placed)
     over = {k: v for k, v in ev.items() if k != 'home' and v > 40}
     check('', 'no evening place takes more than 40', not over, f'{dict(ev)}')
+    # -- the food rebalance (doc 67, Progress): the capacity estimate of what the placed residents buy a day --
+    if capacity is not None:
+        cap = capacity['after']
+        f = cap['food']
+        rows = ', '.join(f'{b} {k}+{h}/{d:.1f}' for b, _, k, h, d in cap['rows'][:11])
+        check('R35', "the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their "
+              'own crafts, tools/city_capacity.py), and no food trade below half of its own', cap['ok'],
+              f'{f["staffed"]} staffed for {f["demand"]:.1f} keeper-days ({f["ratio"]:.0%}); below half: '
+              f'{f["short"] or "none"}; keepers+hands/demand: {rows}')
+        check('', 'the Carters\' Yard has its keeper and drivers', cap['businesses'].get('carters') == 1 and
+              sum(1 for x in placed if x['workLabel'] == 'driving for the carters') == pp.CARTERS)
     # -- the graph walk --
     miss = walk['missing']
     check('R1', 'every link end, home, work spot, evening place and route post is reached from the spawn',
@@ -3433,7 +3579,7 @@ def make_all(project, seed=SEED, report=print):
     from . import ridgemere2_people as pp
     current = strip_city(project)
     base, world, city = make_city(project, seed, report)
-    placement = pp.Placement(base, city)
+    placement = pp.Placement(base, city, current={x['id']: x for x in current['people']})
     plan = placement.run()
     names = {rec['key']: rec['name'] for rec in city.records}
     # Names as the world has them now (renamed by doc 67's lane C, when it has run): each reused room's own name.
@@ -3441,11 +3587,47 @@ def make_all(project, seed=SEED, report=print):
         if rec.get('reused'):
             names[rec['key']] = city.rooms[rec['id']]['name']
     labels = pp.render_labels(plan, placement.people, names, {x['id']: x['workLabel'] for x in current['people']})
-    final = compose(current, world, city, plan, labels, {x['id']: x for x in base['people']})
+    final = compose(current, world, city, plan, labels, {x['id']: x for x in base['people']}, names)
     walk = area_graph_reachable(final, placed_rooms={room['id'] for r in city.records for room in r['rooms']})
-    result = checks(final, world, city, plan, labels, walk)
+    capacity = {'before': food_capacity(current), 'after': food_capacity(final)}
+    result = checks(final, world, city, plan, labels, walk, capacity)
     return {'base': base, 'world': world, 'city': city, 'placement': placement, 'plan': plan, 'labels': labels,
-            'project': final, 'walk': walk, 'checks': result}
+            'project': final, 'walk': walk, 'checks': result, 'capacity': capacity}
+
+
+def buildings_by_stairs(project):
+    """{interior: its building} (the interiors joined by stairs, named by the first of them)."""
+    adj = defaultdict(set)
+    for l in project['links']:
+        if l['kind'] == 'stairs':
+            adj[l['a']['cell']].add(l['b']['cell'])
+            adj[l['b']['cell']].add(l['a']['cell'])
+    out = {}
+    for r in sorted(adj):
+        if r in out:
+            continue
+        group, todo = set(), [r]
+        while todo:
+            x = todo.pop()
+            if x not in group:
+                group.add(x)
+                todo += adj[x]
+        for x in group:
+            out[x] = min(group)
+    return out
+
+
+def food_capacity(project):
+    """The capacity estimate (tools/city_capacity.py) for a project's placed people: what they buy a day as keeper-days
+    of each trade, the trades' keepers and hands, and the food check's figures."""
+    import city_capacity as cc
+    folk, keepers, hands = cc.from_project(project, buildings_by_stairs(project))
+    est = cc.estimate(folk, keepers)
+    ok, food = cc.food_balance(est, keepers + hands)
+    rows = cc.trade_rows(est, keepers, hands, cc.FOOD_TRADES + cc.HOUSEHOLD_TRADES)
+    return {'ok': ok, 'food': food, 'rows': rows, 'businesses': dict(keepers),
+            'foodBusinesses': sum(keepers.get(b, 0) for b in cc.FOOD_TRADES),
+            'householdBusinesses': sum(keepers.get(b, 0) for b in cc.HOUSEHOLD_TRADES)}
 
 
 def write_outputs(m, folder=ART, images=True):
@@ -3554,6 +3736,8 @@ def report_data(m):
         'stables': [x['id'] for x in placed if pp.producer_for(x['workLabel']) == 'stock_breeding'],
         'sump': sump,
         'checks': m['checks'],
+        'capacity': {**m['capacity'], 'textFixes': dict(getattr(city, 'text_fixes', {})),
+                     'textFixed': getattr(city, 'text_fixed', [])},
         'issues': m['placement'].issues[:50],
         'notes': ['The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is '
                   'off (doc 67, Q2).',
@@ -3613,6 +3797,21 @@ def report_text(rep):
                  f'{s["through"]}, passages {s["passages"]} in chains {s["chains"]}, courts {s["courts"]}, homes '
                  f'{s["homes"]}, infill {s["infill"]}')
     lines.append('')
+    cap = rep.get('capacity')
+    if cap:
+        b, a = cap['before'], cap['after']
+        lines.append('The trades against what the placed residents buy a day (tools/city_capacity.py; keeper-days: the '
+                     'hours of each trade\'s own last step over 8), before and after this write:')
+        lines.append(f'  {"trade":12} {"businesses":>17} {"keepers":>13} {"hands":>11} {"keeper-days":>15}')
+        for (t, bb, bk, bh, bd), (_, ab, ak, ah, ad) in zip(b['rows'], a['rows']):
+            lines.append(f'  {t:12} {bb:8} -> {ab:<5} {bk:6} -> {ak:<4} {bh:4} -> {ah:<4} {bd:6.1f} -> {ad:<5.1f}')
+        for k, v in (('before', b), ('after', a)):
+            f = v['food']
+            lines.append(f'  {k}: food {v["foodBusinesses"]} businesses, {f["staffed"]} keepers and hands for '
+                         f'{f["demand"]:.1f} keeper-days ({f["ratio"]:.0%}), below half: {f["short"] or "none"}; '
+                         f'household goods {v["householdBusinesses"]} businesses')
+        lines.append(f'  People\'s text written again: {cap.get("textFixes", {})}')
+        lines.append('')
     lines.append('Checks:')
     for c in rep['checks']:
         lines.append(f'  [{"ok" if c["ok"] else "FAIL"}] {c["req"]:6} {c["check"]}' + (f': {c["detail"]}' if c['detail'] else ''))

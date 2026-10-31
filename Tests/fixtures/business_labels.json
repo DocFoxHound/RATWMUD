@@ -86,6 +86,14 @@
       "business": "rag_and_bone"
     },
     {
+      "label": "keeping the Carters' Yard",
+      "business": "carters"
+    },
+    {
+      "label": "driving for the carters",
+      "business": "carters"
+    },
+    {
       "label": "selling rag and bone",
       "business": "rag_and_bone"
     },
@@ -254,6 +262,12 @@
         "crate",
         "wool_scarf"
       ]
+    },
+    {
+      "keeper": "r2_carter",
+      "label": "keeping the Carters' Yard",
+      "making": [],
+      "resale": []
     },
     {
       "keeper": "r2_pawn",

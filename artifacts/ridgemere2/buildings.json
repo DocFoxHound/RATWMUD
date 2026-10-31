@@ -3140,6 +3140,80 @@
   "area": "cinders"
  },
  {
+  "id": "r2_cinder_butchers",
+  "name": "Cinder Butchers",
+  "kind": "shop",
+  "district": "works",
+  "style": "works",
+  "trade": "butcher",
+  "door": {
+   "x": 281,
+   "y": 402
+  },
+  "facing": "S",
+  "rooms": [
+   {
+    "id": "r2_cinder_butchers",
+    "name": "Cinder Butchers",
+    "z": 0,
+    "beds": [],
+    "work": [
+     {
+      "x": 8,
+      "y": 3
+     }
+    ],
+    "stations": [
+     {
+      "x": 2,
+      "y": 8,
+      "station": "butcher_block"
+     },
+     {
+      "x": 3,
+      "y": 8,
+      "station": "butcher_block"
+     }
+    ]
+   },
+   {
+    "id": "r2_cinder_butchers_flat",
+    "name": "Cinder Butchers, the flat above",
+    "z": 1,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 5
+     }
+    ],
+    "work": [],
+    "stations": []
+   }
+  ],
+  "block": {
+   "x": 275,
+   "y": 396,
+   "w": 12,
+   "h": 7
+  },
+  "reused": false,
+  "key": "r2_cinder_butchers",
+  "business": "butcher",
+  "area": "cinders"
+ },
+ {
   "id": "rm_the_grey_gull_inn",
   "name": "The Grey Gull Inn",
   "kind": "inn",
@@ -3592,7 +3666,7 @@
  },
  {
   "id": "rm_collar_and_trace",
-  "name": "Collar and Trace",
+  "name": "The Eastgate Bakehouse",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -3605,7 +3679,7 @@
   "rooms": [
    {
     "id": "rm_collar_and_trace",
-    "name": "Collar and Trace",
+    "name": "The Eastgate Bakehouse",
     "z": 0,
     "beds": [],
     "work": [],
@@ -3613,7 +3687,7 @@
    },
    {
     "id": "rm_collar_and_trace_flat",
-    "name": "Collar and Trace, the flat above",
+    "name": "The Eastgate Bakehouse, the flat above",
     "z": 1,
     "beds": [
      {
@@ -3650,7 +3724,7 @@
  },
  {
   "id": "rm_commons_sundries",
-  "name": "Commons Sundries",
+  "name": "Commons Provisions",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -3663,7 +3737,7 @@
   "rooms": [
    {
     "id": "rm_commons_sundries",
-    "name": "Commons Sundries",
+    "name": "Commons Provisions",
     "z": 0,
     "beds": [],
     "work": [],
@@ -3671,7 +3745,7 @@
    },
    {
     "id": "rm_commons_sundries_flat",
-    "name": "Commons Sundries, the flat above",
+    "name": "Commons Provisions, the flat above",
     "z": 1,
     "beds": [
      {
@@ -4031,6 +4105,56 @@
   "area": "commons"
  },
  {
+  "id": "r2_the_carters_yard",
+  "name": "The Carters' Yard",
+  "kind": "works",
+  "district": "commons",
+  "style": "ridgemere",
+  "trade": "carters_yard",
+  "door": {
+   "x": 433,
+   "y": 290
+  },
+  "facing": "W",
+  "rooms": [
+   {
+    "id": "r2_the_carters_yard",
+    "name": "The Carters' Yard",
+    "z": 0,
+    "beds": [],
+    "work": [
+     {
+      "x": 8,
+      "y": 4
+     },
+     {
+      "x": 8,
+      "y": 9
+     },
+     {
+      "x": 8,
+      "y": 14
+     },
+     {
+      "x": 8,
+      "y": 19
+     }
+    ],
+    "stations": []
+   }
+  ],
+  "block": {
+   "x": 433,
+   "y": 282,
+   "w": 8,
+   "h": 16
+  },
+  "reused": false,
+  "key": "r2_carters_yard",
+  "business": "carters",
+  "area": "commons"
+ },
+ {
   "id": "rm_rainford_s_store",
   "name": "Rainford's Store",
   "kind": "shop",
@@ -4379,12 +4503,12 @@
   "area": "sump"
  },
  {
-  "id": "r2_the_rag_and_bone_yard",
-  "name": "The Rag-and-Bone Yard",
+  "id": "r2_the_penny_loaf",
+  "name": "The Penny Loaf",
   "kind": "works",
   "district": "sump",
   "style": "ridgemere",
-  "trade": "rag_and_bone",
+  "trade": "bakehouse",
   "door": {
    "x": 246,
    "y": 334
@@ -4392,21 +4516,51 @@
   "facing": "E",
   "rooms": [
    {
-    "id": "r2_the_rag_and_bone_yard",
-    "name": "The Rag-and-Bone Yard",
+    "id": "r2_the_penny_loaf",
+    "name": "The Penny Loaf",
     "z": 0,
     "beds": [],
     "work": [
      {
-      "x": 3,
+      "x": 2,
+      "y": 11
+     },
+     {
+      "x": 2,
       "y": 8
      },
      {
-      "x": 3,
+      "x": 2,
       "y": 5
      }
     ],
-    "stations": []
+    "stations": [
+     {
+      "x": 1,
+      "y": 11,
+      "station": "oven"
+     },
+     {
+      "x": 1,
+      "y": 8,
+      "station": "oven"
+     },
+     {
+      "x": 1,
+      "y": 5,
+      "station": "oven"
+     },
+     {
+      "x": 1,
+      "y": 2,
+      "station": "workbench"
+     },
+     {
+      "x": 4,
+      "y": 12,
+      "station": "workbench"
+     }
+    ]
    }
   ],
   "block": {
@@ -4416,8 +4570,8 @@
    "h": 10
   },
   "reused": false,
-  "key": "r2_rag_and_bone_yard",
-  "business": "rag_and_bone",
+  "key": "r2_penny_loaf",
+  "business": "bakery",
   "area": "sump"
  },
  {
@@ -5459,10 +5613,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 277,
-   "y": 399
+   "x": 246,
+   "y": 389
   },
-  "facing": "E",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_ashcote_house",
@@ -5495,10 +5649,10 @@
    }
   ],
   "block": {
-   "x": 269,
-   "y": 396,
-   "w": 9,
-   "h": 6
+   "x": 243,
+   "y": 381,
+   "w": 6,
+   "h": 9
   },
   "reused": true,
   "key": "rm_ashcote_house",
@@ -5546,7 +5700,7 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 330,
+   "x": 333,
    "y": 242
   },
   "facing": "S",
@@ -5582,7 +5736,7 @@
    }
   ],
   "block": {
-   "x": 323,
+   "x": 326,
    "y": 235,
    "w": 15,
    "h": 8
@@ -5704,10 +5858,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 393,
-   "y": 281
+   "x": 386,
+   "y": 273
   },
-  "facing": "N",
+  "facing": "W",
   "rooms": [
    {
     "id": "rm_moss_marrow",
@@ -5741,7 +5895,7 @@
   ],
   "block": {
    "x": 386,
-   "y": 281,
+   "y": 269,
    "w": 14,
    "h": 8
   },
@@ -5752,7 +5906,7 @@
  },
  {
   "id": "rm_oilcloth_wool",
-  "name": "Oilcloth & Wool",
+  "name": "The Apple Loft",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -5765,7 +5919,7 @@
   "rooms": [
    {
     "id": "rm_oilcloth_wool",
-    "name": "Oilcloth & Wool",
+    "name": "The Apple Loft",
     "z": 0,
     "beds": [],
     "work": [],
@@ -5773,7 +5927,7 @@
    },
    {
     "id": "rm_oilcloth_wool_flat",
-    "name": "Oilcloth & Wool, the flat above",
+    "name": "The Apple Loft, the flat above",
     "z": 1,
     "beds": [
      {
@@ -5916,8 +6070,8 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 315,
-   "y": 338
+   "x": 311,
+   "y": 339
   },
   "facing": "S",
   "rooms": [
@@ -5948,10 +6102,10 @@
    }
   ],
   "block": {
-   "x": 308,
-   "y": 331,
-   "w": 14,
-   "h": 8
+   "x": 307,
+   "y": 326,
+   "w": 8,
+   "h": 14
   },
   "reused": true,
   "key": "rm_the_hopyard",
@@ -5966,10 +6120,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 371,
-   "y": 320
+   "x": 363,
+   "y": 328
   },
-  "facing": "N",
+  "facing": "W",
   "rooms": [
    {
     "id": "rm_the_rain_pot",
@@ -5998,10 +6152,10 @@
    }
   ],
   "block": {
-   "x": 364,
-   "y": 320,
-   "w": 14,
-   "h": 8
+   "x": 363,
+   "y": 321,
+   "w": 8,
+   "h": 14
   },
   "reused": true,
   "key": "rm_the_rain_pot",
@@ -6070,7 +6224,7 @@
   "style": "manor",
   "trade": "",
   "door": {
-   "x": 374,
+   "x": 377,
    "y": 335
   },
   "facing": "S",
@@ -6102,10 +6256,10 @@
    }
   ],
   "block": {
-   "x": 367,
-   "y": 328,
-   "w": 14,
-   "h": 8
+   "x": 373,
+   "y": 322,
+   "w": 8,
+   "h": 14
   },
   "reused": true,
   "key": "rm_ashworth_house",
@@ -6120,10 +6274,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 400,
-   "y": 257
+   "x": 407,
+   "y": 268
   },
-  "facing": "S",
+  "facing": "E",
   "rooms": [
    {
     "id": "rm_pennock_house",
@@ -6152,10 +6306,10 @@
    }
   ],
   "block": {
-   "x": 393,
-   "y": 250,
-   "w": 14,
-   "h": 8
+   "x": 400,
+   "y": 261,
+   "w": 8,
+   "h": 14
   },
   "reused": true,
   "key": "rm_pennock_house",
@@ -6170,7 +6324,7 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 448,
+   "x": 450,
    "y": 273
   },
   "facing": "S",
@@ -6202,7 +6356,7 @@
    }
   ],
   "block": {
-   "x": 441,
+   "x": 443,
    "y": 266,
    "w": 14,
    "h": 8
@@ -6220,8 +6374,8 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 391,
-   "y": 262
+   "x": 393,
+   "y": 281
   },
   "facing": "N",
   "rooms": [
@@ -6252,10 +6406,10 @@
    }
   ],
   "block": {
-   "x": 387,
-   "y": 262,
-   "w": 8,
-   "h": 14
+   "x": 386,
+   "y": 281,
+   "w": 14,
+   "h": 8
   },
   "reused": true,
   "key": "rm_abbot_house",
@@ -6271,7 +6425,7 @@
   "trade": "",
   "door": {
    "x": 314,
-   "y": 352
+   "y": 350
   },
   "facing": "E",
   "rooms": [
@@ -6303,7 +6457,7 @@
   ],
   "block": {
    "x": 307,
-   "y": 345,
+   "y": 343,
    "w": 8,
    "h": 14
   },
@@ -6321,7 +6475,7 @@
   "trade": "",
   "door": {
    "x": 443,
-   "y": 228
+   "y": 229
   },
   "facing": "W",
   "rooms": [
@@ -6353,7 +6507,7 @@
   ],
   "block": {
    "x": 443,
-   "y": 224,
+   "y": 225,
    "w": 14,
    "h": 8
   },
@@ -6514,20 +6668,20 @@
  },
  {
   "id": "rm_the_cough_jar",
-  "name": "The Cough Jar",
+  "name": "The Honey Crock",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 303,
+   "x": 302,
    "y": 324
   },
   "facing": "N",
   "rooms": [
    {
     "id": "rm_the_cough_jar",
-    "name": "The Cough Jar",
+    "name": "The Honey Crock",
     "z": 0,
     "beds": [],
     "work": [],
@@ -6535,7 +6689,7 @@
    },
    {
     "id": "rm_the_cough_jar_flat",
-    "name": "The Cough Jar, the flat above",
+    "name": "The Honey Crock, the flat above",
     "z": 1,
     "beds": [
      {
@@ -6560,7 +6714,7 @@
    }
   ],
   "block": {
-   "x": 299,
+   "x": 298,
    "y": 324,
    "w": 9,
    "h": 12
@@ -6578,10 +6732,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 407,
-   "y": 270
+   "x": 415,
+   "y": 275
   },
-  "facing": "E",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_the_greatly_bank",
@@ -6614,7 +6768,7 @@
    }
   ],
   "block": {
-   "x": 399,
+   "x": 411,
    "y": 264,
    "w": 9,
    "h": 12
@@ -6632,10 +6786,10 @@
   "style": "manor",
   "trade": "",
   "door": {
-   "x": 391,
-   "y": 224
+   "x": 386,
+   "y": 220
   },
-  "facing": "N",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_thorncote_house",
@@ -6668,8 +6822,8 @@
    }
   ],
   "block": {
-   "x": 385,
-   "y": 224,
+   "x": 380,
+   "y": 212,
    "w": 12,
    "h": 9
   },
@@ -6686,10 +6840,10 @@
   "style": "manor",
   "trade": "",
   "door": {
-   "x": 411,
-   "y": 271
+   "x": 376,
+   "y": 253
   },
-  "facing": "W",
+  "facing": "E",
   "rooms": [
    {
     "id": "rm_carrow_house",
@@ -6718,8 +6872,8 @@
    }
   ],
   "block": {
-   "x": 411,
-   "y": 267,
+   "x": 365,
+   "y": 249,
    "w": 12,
    "h": 9
   },
@@ -6736,10 +6890,10 @@
   "style": "manor",
   "trade": "",
   "door": {
-   "x": 378,
-   "y": 215
+   "x": 389,
+   "y": 224
   },
-  "facing": "W",
+  "facing": "N",
   "rooms": [
    {
     "id": "rm_rook_house",
@@ -6768,8 +6922,8 @@
    }
   ],
   "block": {
-   "x": 378,
-   "y": 211,
+   "x": 383,
+   "y": 224,
    "w": 12,
    "h": 9
   },
@@ -6786,10 +6940,10 @@
   "style": "manor",
   "trade": "",
   "door": {
-   "x": 417,
-   "y": 230
+   "x": 413,
+   "y": 237
   },
-  "facing": "E",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_saltwick_house",
@@ -6819,7 +6973,7 @@
   ],
   "block": {
    "x": 409,
-   "y": 224,
+   "y": 226,
    "w": 9,
    "h": 12
   },
@@ -6836,10 +6990,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 363,
-   "y": 253
+   "x": 398,
+   "y": 257
   },
-  "facing": "W",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_tarncote_house",
@@ -6868,7 +7022,7 @@
    }
   ],
   "block": {
-   "x": 363,
+   "x": 392,
    "y": 249,
    "w": 12,
    "h": 9
@@ -7194,10 +7348,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 423,
-   "y": 256
+   "x": 427,
+   "y": 269
   },
-  "facing": "S",
+  "facing": "E",
   "rooms": [
    {
     "id": "rm_the_wet_loaf",
@@ -7230,8 +7384,8 @@
    }
   ],
   "block": {
-   "x": 419,
-   "y": 244,
+   "x": 420,
+   "y": 263,
    "w": 8,
    "h": 13
   },
@@ -7294,8 +7448,8 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 401,
-   "y": 238
+   "x": 423,
+   "y": 256
   },
   "facing": "S",
   "rooms": [
@@ -7326,8 +7480,8 @@
    }
   ],
   "block": {
-   "x": 397,
-   "y": 228,
+   "x": 419,
+   "y": 246,
    "w": 9,
    "h": 11
   },
@@ -7344,10 +7498,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 464,
-   "y": 267
+   "x": 401,
+   "y": 238
   },
-  "facing": "E",
+  "facing": "S",
   "rooms": [
    {
     "id": "rm_southgate_farriers",
@@ -7380,8 +7534,8 @@
    }
   ],
   "block": {
-   "x": 456,
-   "y": 262,
+   "x": 397,
+   "y": 228,
    "w": 9,
    "h": 11
   },
@@ -7552,10 +7706,10 @@
   "style": "ridgemere",
   "trade": "provisioner",
   "door": {
-   "x": 385,
-   "y": 239
+   "x": 392,
+   "y": 262
   },
-  "facing": "S",
+  "facing": "N",
   "rooms": [
    {
     "id": "r2_the_fell_wine_vaults",
@@ -7564,8 +7718,8 @@
     "beds": [],
     "work": [
      {
-      "x": 8,
-      "y": 3
+      "x": 7,
+      "y": 7
      }
     ],
     "stations": []
@@ -7576,16 +7730,16 @@
     "z": 1,
     "beds": [
      {
-      "x": 1,
-      "y": 1
-     },
-     {
-      "x": 1,
-      "y": 3
+      "x": 14,
+      "y": 9
      },
      {
       "x": 14,
-      "y": 1
+      "y": 7
+     },
+     {
+      "x": 1,
+      "y": 9
      }
     ],
     "work": [],
@@ -7593,8 +7747,8 @@
    }
   ],
   "block": {
-   "x": 379,
-   "y": 233,
+   "x": 386,
+   "y": 262,
    "w": 12,
    "h": 7
   },
@@ -7778,9 +7932,9 @@
   "trade": "",
   "door": {
    "x": 324,
-   "y": 168
+   "y": 157
   },
-  "facing": "S",
+  "facing": "N",
   "rooms": [
    {
     "id": "rm_cobbett_house",
@@ -7810,7 +7964,7 @@
   ],
   "block": {
    "x": 317,
-   "y": 161,
+   "y": 157,
    "w": 14,
    "h": 8
   },
@@ -7827,7 +7981,7 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 330,
+   "x": 331,
    "y": 172
   },
   "facing": "N",
@@ -7859,7 +8013,7 @@
    }
   ],
   "block": {
-   "x": 323,
+   "x": 324,
    "y": 172,
    "w": 14,
    "h": 8
@@ -7986,7 +8140,7 @@
   "trade": "",
   "door": {
    "x": 338,
-   "y": 195
+   "y": 196
   },
   "facing": "E",
   "rooms": [
@@ -8021,10 +8175,10 @@
    }
   ],
   "block": {
-   "x": 328,
+   "x": 330,
    "y": 191,
-   "w": 11,
-   "h": 9
+   "w": 9,
+   "h": 11
   },
   "reused": true,
   "key": "rm_the_grey_goose",
@@ -8131,10 +8285,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 461,
-   "y": 239
+   "x": 321,
+   "y": 333
   },
-  "facing": "N",
+  "facing": "E",
   "rooms": [
    {
     "id": "r2_gull_rents",
@@ -8142,16 +8296,12 @@
     "z": 0,
     "beds": [
      {
-      "x": 7,
-      "y": 9
+      "x": 1,
+      "y": 8
      },
      {
       "x": 1,
-      "y": 9
-     },
-     {
-      "x": 7,
-      "y": 7
+      "y": 1
      }
     ],
     "work": [],
@@ -8163,16 +8313,16 @@
     "z": 1,
     "beds": [
      {
-      "x": 7,
-      "y": 9
+      "x": 1,
+      "y": 8
      },
      {
       "x": 1,
-      "y": 9
+      "y": 1
      },
      {
-      "x": 7,
-      "y": 7
+      "x": 3,
+      "y": 8
      }
     ],
     "work": [],
@@ -8184,12 +8334,20 @@
     "z": 2,
     "beds": [
      {
-      "x": 7,
-      "y": 9
+      "x": 1,
+      "y": 8
      },
      {
       "x": 1,
-      "y": 9
+      "y": 1
+     },
+     {
+      "x": 3,
+      "y": 8
+     },
+     {
+      "x": 3,
+      "y": 1
      }
     ],
     "work": [],
@@ -8197,10 +8355,10 @@
    }
   ],
   "block": {
-   "x": 458,
-   "y": 239,
+   "x": 315,
+   "y": 329,
    "w": 7,
-   "h": 9
+   "h": 8
   },
   "reused": false,
   "key": "r2_row_0",
@@ -8215,8 +8373,8 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 323,
-   "y": 224
+   "x": 322,
+   "y": 243
   },
   "facing": "S",
   "rooms": [
@@ -8230,15 +8388,11 @@
       "y": 1
      },
      {
-      "x": 8,
+      "x": 7,
       "y": 1
      },
      {
       "x": 1,
-      "y": 3
-     },
-     {
-      "x": 8,
       "y": 3
      }
     ],
@@ -8255,12 +8409,8 @@
       "y": 1
      },
      {
-      "x": 8,
+      "x": 7,
       "y": 1
-     },
-     {
-      "x": 1,
-      "y": 3
      }
     ],
     "work": [],
@@ -8276,11 +8426,15 @@
       "y": 1
      },
      {
-      "x": 8,
+      "x": 7,
       "y": 1
      },
      {
       "x": 1,
+      "y": 3
+     },
+     {
+      "x": 7,
       "y": 3
      }
     ],
@@ -8290,9 +8444,9 @@
   ],
   "block": {
    "x": 319,
-   "y": 217,
-   "w": 8,
-   "h": 8
+   "y": 235,
+   "w": 7,
+   "h": 9
   },
   "reused": false,
   "key": "r2_row_1",
@@ -8307,10 +8461,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 327,
-   "y": 319
+   "x": 461,
+   "y": 258
   },
-  "facing": "S",
+  "facing": "N",
   "rooms": [
    {
     "id": "r2_rain_rents",
@@ -8318,16 +8472,16 @@
     "z": 0,
     "beds": [
      {
+      "x": 7,
+      "y": 9
+     },
+     {
       "x": 1,
-      "y": 1
+      "y": 9
      },
      {
       "x": 7,
-      "y": 1
-     },
-     {
-      "x": 1,
-      "y": 3
+      "y": 7
      }
     ],
     "work": [],
@@ -8339,16 +8493,12 @@
     "z": 1,
     "beds": [
      {
-      "x": 1,
-      "y": 1
-     },
-     {
       "x": 7,
-      "y": 1
+      "y": 9
      },
      {
       "x": 1,
-      "y": 3
+      "y": 9
      }
     ],
     "work": [],
@@ -8360,12 +8510,20 @@
     "z": 2,
     "beds": [
      {
+      "x": 7,
+      "y": 9
+     },
+     {
       "x": 1,
-      "y": 1
+      "y": 9
      },
      {
       "x": 7,
-      "y": 1
+      "y": 7
+     },
+     {
+      "x": 1,
+      "y": 7
      }
     ],
     "work": [],
@@ -8373,8 +8531,8 @@
    }
   ],
   "block": {
-   "x": 324,
-   "y": 311,
+   "x": 458,
+   "y": 258,
    "w": 7,
    "h": 9
   },
@@ -8391,10 +8549,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 458,
-   "y": 254
+   "x": 464,
+   "y": 250
   },
-  "facing": "S",
+  "facing": "E",
   "rooms": [
    {
     "id": "r2_pitch_rents",
@@ -8403,10 +8561,10 @@
     "beds": [
      {
       "x": 1,
-      "y": 1
+      "y": 8
      },
      {
-      "x": 8,
+      "x": 1,
       "y": 1
      }
     ],
@@ -8420,19 +8578,19 @@
     "beds": [
      {
       "x": 1,
-      "y": 1
-     },
-     {
-      "x": 8,
-      "y": 1
+      "y": 8
      },
      {
       "x": 1,
-      "y": 3
+      "y": 1
      },
      {
-      "x": 8,
-      "y": 3
+      "x": 3,
+      "y": 8
+     },
+     {
+      "x": 3,
+      "y": 1
      }
     ],
     "work": [],
@@ -8445,19 +8603,19 @@
     "beds": [
      {
       "x": 1,
-      "y": 1
-     },
-     {
-      "x": 8,
-      "y": 1
+      "y": 8
      },
      {
       "x": 1,
-      "y": 3
+      "y": 1
      },
      {
-      "x": 8,
-      "y": 3
+      "x": 3,
+      "y": 8
+     },
+     {
+      "x": 3,
+      "y": 1
      }
     ],
     "work": [],
@@ -8465,10 +8623,10 @@
    }
   ],
   "block": {
-   "x": 454,
-   "y": 248,
-   "w": 8,
-   "h": 7
+   "x": 458,
+   "y": 246,
+   "w": 7,
+   "h": 8
   },
   "reused": false,
   "key": "r2_row_3",
@@ -8483,10 +8641,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 401,
-   "y": 242
+   "x": 464,
+   "y": 230
   },
-  "facing": "N",
+  "facing": "E",
   "rooms": [
    {
     "id": "r2_lantern_row",
@@ -8494,12 +8652,12 @@
     "z": 0,
     "beds": [
      {
-      "x": 10,
-      "y": 8
+      "x": 1,
+      "y": 10
      },
      {
       "x": 1,
-      "y": 8
+      "y": 1
      }
     ],
     "work": [],
@@ -8511,16 +8669,16 @@
     "z": 1,
     "beds": [
      {
-      "x": 10,
-      "y": 8
+      "x": 1,
+      "y": 10
      },
      {
       "x": 1,
-      "y": 8
+      "y": 1
      },
      {
-      "x": 10,
-      "y": 6
+      "x": 3,
+      "y": 10
      }
     ],
     "work": [],
@@ -8532,16 +8690,16 @@
     "z": 2,
     "beds": [
      {
-      "x": 10,
-      "y": 8
+      "x": 1,
+      "y": 10
      },
      {
       "x": 1,
-      "y": 8
+      "y": 1
      },
      {
-      "x": 10,
-      "y": 6
+      "x": 3,
+      "y": 10
      }
     ],
     "work": [],
@@ -8549,10 +8707,10 @@
    }
   ],
   "block": {
-   "x": 397,
-   "y": 242,
-   "w": 9,
-   "h": 8
+   "x": 457,
+   "y": 226,
+   "w": 8,
+   "h": 9
   },
   "reused": false,
   "key": "r2_row_4",
@@ -8567,10 +8725,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 438,
-   "y": 335
+   "x": 324,
+   "y": 315
   },
-  "facing": "N",
+  "facing": "W",
   "rooms": [
    {
     "id": "r2_saltgate_row",
@@ -8579,15 +8737,15 @@
     "beds": [
      {
       "x": 8,
-      "y": 8
-     },
-     {
-      "x": 1,
-      "y": 8
+      "y": 1
      },
      {
       "x": 8,
-      "y": 6
+      "y": 8
+     },
+     {
+      "x": 6,
+      "y": 1
      }
     ],
     "work": [],
@@ -8600,15 +8758,15 @@
     "beds": [
      {
       "x": 8,
-      "y": 8
-     },
-     {
-      "x": 1,
-      "y": 8
+      "y": 1
      },
      {
       "x": 8,
-      "y": 6
+      "y": 8
+     },
+     {
+      "x": 6,
+      "y": 1
      }
     ],
     "work": [],
@@ -8621,10 +8779,10 @@
     "beds": [
      {
       "x": 8,
-      "y": 8
+      "y": 1
      },
      {
-      "x": 1,
+      "x": 8,
       "y": 8
      }
     ],
@@ -8633,8 +8791,8 @@
    }
   ],
   "block": {
-   "x": 434,
-   "y": 335,
+   "x": 324,
+   "y": 311,
    "w": 8,
    "h": 8
   },
@@ -8651,10 +8809,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 464,
-   "y": 231
+   "x": 454,
+   "y": 258
   },
-  "facing": "E",
+  "facing": "N",
   "rooms": [
    {
     "id": "r2_rainford_row",
@@ -8662,16 +8820,16 @@
     "z": 0,
     "beds": [
      {
-      "x": 1,
+      "x": 8,
       "y": 8
      },
      {
       "x": 1,
-      "y": 1
+      "y": 8
      },
      {
-      "x": 3,
-      "y": 8
+      "x": 8,
+      "y": 6
      }
     ],
     "work": [],
@@ -8683,12 +8841,12 @@
     "z": 1,
     "beds": [
      {
-      "x": 1,
+      "x": 8,
       "y": 8
      },
      {
       "x": 1,
-      "y": 1
+      "y": 8
      }
     ],
     "work": [],
@@ -8700,16 +8858,16 @@
     "z": 2,
     "beds": [
      {
-      "x": 1,
+      "x": 8,
       "y": 8
      },
      {
       "x": 1,
-      "y": 1
+      "y": 8
      },
      {
-      "x": 3,
-      "y": 8
+      "x": 8,
+      "y": 6
      }
     ],
     "work": [],
@@ -8717,8 +8875,8 @@
    }
   ],
   "block": {
-   "x": 457,
-   "y": 227,
+   "x": 450,
+   "y": 258,
    "w": 8,
    "h": 8
   },
@@ -8808,50 +8966,50 @@
   "area": "commons"
  },
  {
-  "id": "r2_ash_walk_houses",
-  "name": "Ash Walk Houses",
+  "id": "r2_kettle_close",
+  "name": "Kettle Close",
   "kind": "flats",
   "district": "commons",
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 427,
-   "y": 263
+   "x": 323,
+   "y": 224
   },
-  "facing": "E",
+  "facing": "S",
   "rooms": [
    {
-    "id": "r2_ash_walk_houses",
-    "name": "Ash Walk Houses, the ground floor",
+    "id": "r2_kettle_close",
+    "name": "Kettle Close, the ground floor",
     "z": 0,
     "beds": [
      {
       "x": 1,
-      "y": 7
-     },
-     {
-      "x": 1,
       "y": 1
      },
      {
-      "x": 3,
-      "y": 7
+      "x": 10,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
      }
     ],
     "work": [],
     "stations": []
    },
    {
-    "id": "r2_ash_walk_houses_up",
-    "name": "Ash Walk Houses, the first floor",
+    "id": "r2_kettle_close_up",
+    "name": "Kettle Close, the first floor",
     "z": 1,
     "beds": [
      {
       "x": 1,
-      "y": 7
+      "y": 1
      },
      {
-      "x": 1,
+      "x": 10,
       "y": 1
      }
     ],
@@ -8859,16 +9017,16 @@
     "stations": []
    },
    {
-    "id": "r2_ash_walk_houses_top",
-    "name": "Ash Walk Houses, the top floor",
+    "id": "r2_kettle_close_top",
+    "name": "Kettle Close, the top floor",
     "z": 2,
     "beds": [
      {
       "x": 1,
-      "y": 7
+      "y": 1
      },
      {
-      "x": 1,
+      "x": 10,
       "y": 1
      }
     ],
@@ -8877,97 +9035,13 @@
    }
   ],
   "block": {
-   "x": 418,
-   "y": 260,
-   "w": 10,
-   "h": 7
+   "x": 319,
+   "y": 217,
+   "w": 9,
+   "h": 8
   },
   "reused": false,
-  "key": "r2_row_9",
-  "business": null,
-  "area": "commons"
- },
- {
-  "id": "r2_mossy_steps_houses",
-  "name": "Mossy Steps Houses",
-  "kind": "flats",
-  "district": "commons",
-  "style": "ridgemere",
-  "trade": "",
-  "door": {
-   "x": 437,
-   "y": 321
-  },
-  "facing": "N",
-  "rooms": [
-   {
-    "id": "r2_mossy_steps_houses",
-    "name": "Mossy Steps Houses, the ground floor",
-    "z": 0,
-    "beds": [
-     {
-      "x": 7,
-      "y": 9
-     },
-     {
-      "x": 1,
-      "y": 9
-     },
-     {
-      "x": 7,
-      "y": 7
-     }
-    ],
-    "work": [],
-    "stations": []
-   },
-   {
-    "id": "r2_mossy_steps_houses_up",
-    "name": "Mossy Steps Houses, the first floor",
-    "z": 1,
-    "beds": [
-     {
-      "x": 7,
-      "y": 9
-     },
-     {
-      "x": 1,
-      "y": 9
-     }
-    ],
-    "work": [],
-    "stations": []
-   },
-   {
-    "id": "r2_mossy_steps_houses_top",
-    "name": "Mossy Steps Houses, the top floor",
-    "z": 2,
-    "beds": [
-     {
-      "x": 7,
-      "y": 9
-     },
-     {
-      "x": 1,
-      "y": 9
-     },
-     {
-      "x": 7,
-      "y": 7
-     }
-    ],
-    "work": [],
-    "stations": []
-   }
-  ],
-  "block": {
-   "x": 434,
-   "y": 321,
-   "w": 7,
-   "h": 9
-  },
-  "reused": false,
-  "key": "r2_row_10",
+  "key": "r2_row_8",
   "business": null,
   "area": "commons"
  },
@@ -9060,6 +9134,132 @@
   "area": "commons"
  },
  {
+  "id": "r2_pewter_row",
+  "name": "Pewter Row",
+  "kind": "flats",
+  "district": "commons",
+  "style": "ridgemere",
+  "trade": "",
+  "door": {
+   "x": 438,
+   "y": 335
+  },
+  "facing": "N",
+  "rooms": [
+   {
+    "id": "r2_pewter_row",
+    "name": "Pewter Row, the ground floor",
+    "z": 0,
+    "beds": [
+     {
+      "x": 8,
+      "y": 8
+     },
+     {
+      "x": 1,
+      "y": 8
+     }
+    ],
+    "work": [],
+    "stations": []
+   },
+   {
+    "id": "r2_pewter_row_up",
+    "name": "Pewter Row, the first floor",
+    "z": 1,
+    "beds": [
+     {
+      "x": 8,
+      "y": 8
+     },
+     {
+      "x": 1,
+      "y": 8
+     },
+     {
+      "x": 8,
+      "y": 6
+     }
+    ],
+    "work": [],
+    "stations": []
+   }
+  ],
+  "block": {
+   "x": 434,
+   "y": 335,
+   "w": 8,
+   "h": 8
+  },
+  "reused": false,
+  "key": "r2_row_14",
+  "business": null,
+  "area": "commons"
+ },
+ {
+  "id": "r2_slate_row",
+  "name": "Slate Row",
+  "kind": "flats",
+  "district": "commons",
+  "style": "ridgemere",
+  "trade": "",
+  "door": {
+   "x": 379,
+   "y": 236
+  },
+  "facing": "W",
+  "rooms": [
+   {
+    "id": "r2_slate_row",
+    "name": "Slate Row, the ground floor",
+    "z": 0,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 7
+     }
+    ],
+    "work": [],
+    "stations": []
+   },
+   {
+    "id": "r2_slate_row_up",
+    "name": "Slate Row, the first floor",
+    "z": 1,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 7
+     },
+     {
+      "x": 7,
+      "y": 1
+     }
+    ],
+    "work": [],
+    "stations": []
+   }
+  ],
+  "block": {
+   "x": 379,
+   "y": 233,
+   "w": 9,
+   "h": 7
+  },
+  "reused": false,
+  "key": "r2_row_15",
+  "business": null,
+  "area": "commons"
+ },
+ {
   "id": "r2_cooper_s_close",
   "name": "Cooper's Close",
   "kind": "flats",
@@ -9067,10 +9267,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 294,
-   "y": 170
+   "x": 303,
+   "y": 157
   },
-  "facing": "S",
+  "facing": "N",
   "rooms": [
    {
     "id": "r2_cooper_s_close",
@@ -9078,16 +9278,16 @@
     "z": 0,
     "beds": [
      {
+      "x": 8,
+      "y": 9
+     },
+     {
       "x": 1,
-      "y": 1
+      "y": 9
      },
      {
       "x": 8,
-      "y": 1
-     },
-     {
-      "x": 1,
-      "y": 3
+      "y": 7
      }
     ],
     "work": [],
@@ -9099,12 +9299,12 @@
     "z": 1,
     "beds": [
      {
-      "x": 1,
-      "y": 1
+      "x": 8,
+      "y": 9
      },
      {
-      "x": 8,
-      "y": 1
+      "x": 1,
+      "y": 9
      }
     ],
     "work": [],
@@ -9116,16 +9316,16 @@
     "z": 2,
     "beds": [
      {
+      "x": 8,
+      "y": 9
+     },
+     {
       "x": 1,
-      "y": 1
+      "y": 9
      },
      {
       "x": 8,
-      "y": 1
-     },
-     {
-      "x": 1,
-      "y": 3
+      "y": 7
      }
     ],
     "work": [],
@@ -9133,10 +9333,10 @@
    }
   ],
   "block": {
-   "x": 290,
-   "y": 163,
+   "x": 299,
+   "y": 157,
    "w": 8,
-   "h": 8
+   "h": 9
   },
   "reused": false,
   "key": "r2_row_16",
@@ -9151,10 +9351,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 309,
-   "y": 204
+   "x": 374,
+   "y": 193
   },
-  "facing": "E",
+  "facing": "W",
   "rooms": [
    {
     "id": "r2_weavers_terrace",
@@ -9162,16 +9362,16 @@
     "z": 0,
     "beds": [
      {
-      "x": 1,
-      "y": 8
-     },
-     {
-      "x": 1,
+      "x": 9,
       "y": 1
      },
      {
-      "x": 3,
+      "x": 9,
       "y": 8
+     },
+     {
+      "x": 7,
+      "y": 1
      }
     ],
     "work": [],
@@ -9183,16 +9383,16 @@
     "z": 1,
     "beds": [
      {
-      "x": 1,
-      "y": 8
-     },
-     {
-      "x": 1,
+      "x": 9,
       "y": 1
      },
      {
-      "x": 3,
+      "x": 9,
       "y": 8
+     },
+     {
+      "x": 7,
+      "y": 1
      }
     ],
     "work": [],
@@ -9204,11 +9404,15 @@
     "z": 2,
     "beds": [
      {
-      "x": 1,
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 9,
       "y": 8
      },
      {
-      "x": 1,
+      "x": 7,
       "y": 1
      }
     ],
@@ -9217,8 +9421,8 @@
    }
   ],
   "block": {
-   "x": 301,
-   "y": 200,
+   "x": 374,
+   "y": 189,
    "w": 9,
    "h": 8
   },
@@ -9235,10 +9439,10 @@
   "style": "ridgemere",
   "trade": "",
   "door": {
-   "x": 374,
-   "y": 192
+   "x": 350,
+   "y": 193
   },
-  "facing": "W",
+  "facing": "E",
   "rooms": [
    {
     "id": "r2_gutter_lane_houses",
@@ -9246,16 +9450,16 @@
     "z": 0,
     "beds": [
      {
-      "x": 9,
-      "y": 1
-     },
-     {
-      "x": 9,
+      "x": 1,
       "y": 7
      },
      {
-      "x": 7,
+      "x": 1,
       "y": 1
+     },
+     {
+      "x": 3,
+      "y": 7
      }
     ],
     "work": [],
@@ -9267,12 +9471,12 @@
     "z": 1,
     "beds": [
      {
-      "x": 9,
-      "y": 1
+      "x": 1,
+      "y": 7
      },
      {
-      "x": 9,
-      "y": 7
+      "x": 1,
+      "y": 1
      }
     ],
     "work": [],
@@ -9284,16 +9488,16 @@
     "z": 2,
     "beds": [
      {
-      "x": 9,
-      "y": 1
-     },
-     {
-      "x": 9,
+      "x": 1,
       "y": 7
      },
      {
-      "x": 7,
+      "x": 1,
       "y": 1
+     },
+     {
+      "x": 3,
+      "y": 7
      }
     ],
     "work": [],
@@ -9301,8 +9505,8 @@
    }
   ],
   "block": {
-   "x": 374,
-   "y": 189,
+   "x": 342,
+   "y": 190,
    "w": 9,
    "h": 7
   },
