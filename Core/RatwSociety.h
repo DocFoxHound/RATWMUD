@@ -590,6 +590,9 @@ class Society
         int wage = 0;
     };
     Pay payOf(const Position& post) const;
+    // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
+    // (Public for world_check's --economy-detail, which reads it.)
+    std::map<std::string, std::vector<std::string>> households() const;
     // A shop's crew (its keeper and hands): the hours an hour it can give to making.
     int crewOf(const std::string& till) const;
     // The carters' till that takes carriage now (the one holding least), or CarriageFund where there is none.
@@ -789,8 +792,6 @@ class Society
     std::int64_t loopHour_ = -1;                    // The last game hour the loop ran (-1: not yet; the first is not run).
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
-    // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
-    std::map<std::string, std::vector<std::string>> households() const;
     void giveAlms();
     void countryBuys(int hourOfDay);
     void payWages();
