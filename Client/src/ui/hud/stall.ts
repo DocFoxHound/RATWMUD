@@ -32,7 +32,7 @@ export class StallPanel {
         const send = (fields: Record<string, unknown>) => s.send({type: 'stall', ...fields});
         if (mine) {
             setText(this.title, 'YOUR STALL');
-            const most = num(mine, 'priceMost', 999);   // (The dearest price a stall takes, from the server.)
+            const most = num(mine, 'priceMost', Number.MAX_SAFE_INTEGER);   // (What the ledger can hold, from the server: no cap.)
             el('div', 'small', this.body, `Takings this morning: ${num(mine, 'takings')}p · until 2, while you stand by it`);
             const wares = arr(mine, 'wares').filter(isObject);
             if (!wares.length) el('div', 'muted small', this.body, 'Nothing laid out yet.');
@@ -41,7 +41,7 @@ export class StallPanel {
                 el('span', 'small', row, `${str(w, 'name')} × ${num(w, 'quantity')} · ${num(w, 'price')}p`);
                 if (!bool(mine, 'here')) continue;
                 button('PRICE', 'small', row, () => {
-                    const price = Number(window.prompt(`Price apiece for ${str(w, 'name')} (1 to ${most}p)`, String(num(w, 'price'))));
+                    const price = Number(window.prompt(`Price apiece for ${str(w, 'name')} (in pennies, 1 or more)`, String(num(w, 'price'))));
                     if (price >= 1) send({verb: 'price', item: str(w, 'id'), price: Math.trunc(price)});
                 });
                 button('TAKE OFF', 'small', row, () => send({verb: 'unlist', item: str(w, 'id')}));
@@ -59,7 +59,7 @@ export class StallPanel {
                 qty.type = 'number'; qty.min = '1'; qty.max = '99'; qty.value = '1'; qty.style.width = '3.5em';
                 qty.title = 'How many';
                 const price = el('input', '', row);
-                price.type = 'number'; price.min = '1'; price.max = String(most); price.value = '5'; price.style.width = '4em';
+                price.type = 'number'; price.min = '1'; price.max = String(most); price.value = '5'; price.style.width = '7em';
                 price.title = 'Price apiece (p)';
                 button('LAY OUT', 'small', row, () => {
                     if (pick.value) send({verb: 'list', item: pick.value, quantity: Math.trunc(Number(qty.value)), price: Math.trunc(Number(price.value))});

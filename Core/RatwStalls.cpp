@@ -3,7 +3,7 @@
 // treasury, at most 6 a square (half its spots, in a square with fewer than 12), one a wolf. A spot let to a player is
 // left out of the merchants' plan that day (World::setLetStalls), so they set up at the others (two may share, as
 // before). Wares go from the purse into the stall (`stall:<id>`), so nothing listed can be sold elsewhere, given or
-// eaten until it is taken off; each has a price apiece (1 to 999p) the keeper may change at any time. A buyer within 2
+// eaten until it is taken off; each has a price apiece (1p or more, no top: the user, 2026-10-30) the keeper may change at any time. A buyer within 2
 // tiles buys only while the keeper stands within 3 tiles of the stall and has stirred in the last 10 minutes: face to
 // face. Goods and coins move at once (Society::shift, "stall sale", with the 64 kinds a purse may hold). At 2 the stall
 // clears and its goods go home; foul weather clears it too, and the fee comes back.
@@ -11,6 +11,7 @@
 
 #include "RatwItems.h"
 
+#include <limits>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -21,9 +22,10 @@ using json::Value;
 
 namespace
 {
-// A stall's rent for the morning, and the dearest price laid on it, in pennies (the stall's own limit: the ledger has
-// none on what a piece costs).
-constexpr std::int64_t StallFee = 3, PriceMost = 999;
+// A stall's rent for the morning, in pennies. No cap on a piece's price (the user, 2026-10-30: "There shouldn't be a cap
+// on what a single item can cost"): PriceMost is only what the ledger's sums can hold for a stack (Society::transfer's
+// guard, a stack being at most 99).
+constexpr std::int64_t StallFee = 3, PriceMost = std::numeric_limits<std::int64_t>::max() / 99;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;
 
