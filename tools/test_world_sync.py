@@ -41,6 +41,18 @@ def npc(name='Wren', greeting='Hello.', purse=0):
     return {'world_id': 'w', 'id': 'wren', 'name': name, 'greeting': greeting, 'purse': purse}
 
 
+def unmigrate(key):
+    """Takes migration 0055 back off a throwaway world: as DEV and PROD are until the user migrates them."""
+    sql = (W.MIGRATIONS / '0053_postless_routes.sql').read_text(encoding='utf-8')
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute('DROP TABLE live.business_settings')
+            conn.execute('ALTER TABLE live.economy DROP COLUMN internal_store, DROP COLUMN store_markup, DROP COLUMN store_resale, '
+                         'DROP COLUMN resale_markup, DROP COLUMN store_rule')
+            conn.execute(sql)
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0055'")
+
+
 class ThreeWayTests(unittest.TestCase):
     """Section 4's table, row by row, on NPC rows."""
 
@@ -238,6 +250,39 @@ class PullTests(ScratchWorlds, unittest.TestCase):
         after = WS.diff(self.dev)
         self.assertEqual((after['counts'], after['base']['how']), ({'live': 0, 'dev': 1, 'conflicts': 0}, 'pull'))
 
+    def test_business_settings_are_pulled_and_the_store_switches_are_not(self):
+        # Doc 67, 6: a business's store room switch is authored and travels; the world's switches and markups
+        # (live.economy) are each world's own lever.
+        self.sql(self.live, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'brann', false)")
+        self.sql(self.live, 'UPDATE live.economy SET store_markup = 10, store_rule = true')
+        plan = WS.diff(self.dev)
+        self.assertEqual(self.ids(plan['liveChanges']), ['live.business_settings/brann'])
+        self.assertEqual(plan['summary']['live']['live'], {'business settings': {'added': 1, 'changed': 0, 'removed': 0}})
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.sql(self.dev, 'SELECT npc_id, internal_store FROM live.business_settings'), [('brann', False)])
+        self.assertEqual(self.sql(self.dev, 'SELECT store_markup, store_rule FROM live.economy'), [(100, False)], 'not the economy')
+        with W.connect(self.dev, 'editor') as editor:
+            self.assertEqual(S.load_world(editor, 'greyfen')[0]['economy']['businesses'], {'brann': {'internalStore': False}})
+
+    def test_a_world_without_the_business_settings_counts_as_having_none(self):
+        # A live world not yet migrated to 0055 (as PROD is): the table missing on one side is no rows on both, and
+        # pulls and imports go on as before; the other side's rows are left as they are.
+        self.sql(self.dev, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'wren', false)")
+        unmigrate(self.live)
+        self.sql(self.live, "UPDATE live.npcs SET purse = 66 WHERE id = 'wren'")
+        plan = WS.diff(self.dev)
+        self.assertEqual(self.ids(plan['liveChanges']), ['live.npcs/wren'])
+        self.assertEqual(plan['devChanges'], [], 'the dev world\'s business settings are not compared')
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 66)
+        self.assertEqual(self.sql(self.dev, 'SELECT npc_id FROM live.business_settings'), [('wren',)], 'kept')
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Hi from dev.' WHERE id = 'sloe'")
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        result = WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
+        self.assertEqual(self.sql(self.dev, 'SELECT npc_id FROM live.business_settings'), [('wren',)], 'still kept after the import')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+
     def test_conflicts_field_by_field(self):
         self.sql(self.dev, "UPDATE live.npcs SET name = 'Wrenna', greeting = 'Dev greeting.' WHERE id = 'wren'")
         self.sql(self.live, "UPDATE live.npcs SET name = 'Wren the Elder', purse = 5 WHERE id = 'wren'")
@@ -347,6 +392,17 @@ class ImportTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(WS.Sync().rollback(self.live, 1, 'password', 'Ada')['release'], 3)
         self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Old Shop')
         self.assertEqual(self.one(self.live, 'SELECT kind FROM admin.releases WHERE number = 3'), 'rollback')
+
+    def test_business_settings_are_imported(self):
+        self.sql(self.dev, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'wren', false)")
+        self.sql(self.dev, 'UPDATE live.economy SET resale_markup = 50')
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        result = WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(result['summary']['live'], {'business settings': {'added': 1, 'changed': 0, 'removed': 0}})
+        self.assertEqual(self.sql(self.live, 'SELECT npc_id, internal_store FROM live.business_settings'), [('wren', False)])
+        self.assertEqual(self.one(self.live, 'SELECT resale_markup FROM live.economy'), 75, 'the world\'s markups stay its own')
+        manifest = self.one(self.live, "SELECT live.people_manifest('greyfen')")
+        self.assertIn('nostore "wren"', manifest.split('\n'))
 
     def test_conflicts_are_resolved_at_import_and_dev_ends_level_with_live(self):
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev greeting.' WHERE id = 'sloe'")

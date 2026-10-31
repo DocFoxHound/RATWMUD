@@ -61,7 +61,13 @@ export interface Slot {
     home: Place | null; work: Place | null; evening: Place | null;
 }
 export interface Route { id: string; name: string; posts: Place[] }
-export interface Economy { treasury: number; storeHerbs: number; storeMeals: number; dailyHerbs: number; dailyMeals: number }
+export interface Economy {
+    treasury: number; storeHerbs: number; storeMeals: number; dailyHerbs: number; dailyMeals: number;
+    // The store room (doc 67, 6): optional, at STORE_DEFAULTS when absent; businesses switched off by founder.
+    internalStore?: boolean; storeMarkup?: number; storeResale?: boolean; resaleMarkup?: number; storeRule?: boolean;
+    businesses?: Record<string, {internalStore: boolean}>;
+}
+export const STORE_DEFAULTS: {internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean};
 export interface Faction { id: string; name: string; color: string }
 export interface Chapter { id: string; name: string }
 

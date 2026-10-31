@@ -2,7 +2,8 @@
 // One sign-in (a Dungeon Master account) and a top bar: the suite switch, the suite's world, who is signed in.
 //   Atlas  builds worlds, on dev worlds (its picker switches Atlas's world): the Workshop (the map, interiors, people,
 //          characters: App.tsx), its NPC pages (NPCs with their routes, areas, spawn rules and talk; factions), and
-//          Update from live (doc 66, section 4: a copy of a live world takes live's changes, conflicts chosen).
+//          Update from live (doc 66, section 4: a copy of a live world takes live's changes, conflicts chosen), and the
+//          Economy controls (doc 67, 6: the store room's switches, for the world and each business).
 //   DM     runs the live world (the live server's; its Server & import tab switches it, in maintenance): DmSuite.
 // Each suite and page is its own page load (?suite=atlas&page=npcs): their maps share one lazy-ground list
 // (lib/lazyGround.ts), and Atlas's live session runs for as long as the page does.
@@ -14,13 +15,15 @@ import {FactionsTab} from '../dm/FactionsTab';
 import {dmApi, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
 import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
 import {UpdateFromLive} from './UpdateFromLive';
+import {EconomyControls} from './EconomyControls';
 
 type Suite = 'atlas' | 'dm';
-type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'sync';
+type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'economy' | 'sync';
 const ATLAS_PAGES: {id: AtlasPage; label: string; title: string}[] = [
     {id: 'workshop', label: 'Workshop', title: 'The map, interiors, people and characters'},
     {id: 'npcs', label: 'NPCs & areas', title: 'NPCs with their patrol routes, painted areas, spawn rules, voices, dialects and figures'},
     {id: 'factions', label: 'Factions', title: 'Factions, their territory, members and relations'},
+    {id: 'economy', label: 'Economy', title: 'The store room and other economy controls'},
     {id: 'sync', label: '⇩ Update from live', title: 'Take the live world\'s changes into this copy of it, choosing where both changed'},
 ];
 
@@ -105,6 +108,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             : <div className="dm-center"><p className="hint">No live world is chosen (python3 tools/world_db.py list).</p></div>)
             : page === 'workshop' ? <Workshop me={me} />
             : page === 'sync' ? <div className="app dm dev"><UpdateFromLive me={me} onWorkshop={() => go('atlas')} /></div>
+            : page === 'economy' ? <div className="app dm dev"><EconomyControls me={me} /></div>
             : <div className="app dm dev">{page === 'npcs' ? <NpcTab me={me} target={atlasKey} suite="atlas" />
                 : <FactionsTab me={me} target={atlasKey} />}</div>}
     </div>;

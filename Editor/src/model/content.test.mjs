@@ -79,6 +79,20 @@ test('removing a route frees its guards; removing a person is atomic', () => {
     assert.throws(() => removePerson(p, 'gus'), /Unknown person/);
 });
 
+test('the store room\'s economy keys are optional, checked and kept (doc 67, 6)', () => {
+    const p = world();
+    assert.deepEqual(validate(p).errors, [], 'without them');
+    const store = {internalStore: false, storeMarkup: 120, storeResale: true, resaleMarkup: 0, storeRule: true,
+        businesses: {rm_smith: {internalStore: false}}};
+    setEconomy(p, store);
+    assert.deepEqual(validate(p).errors, []);
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
+    for (const bad of [{storeMarkup: 1001}, {resaleMarkup: -1}, {storeMarkup: 7.5}, {storeRule: 'yes'},
+                       {businesses: {rm_smith: {internalStore: 0}}}, {businesses: {rm_smith: {internalStore: false, x: 1}}}, {shopping: true}])
+        assert.throws(() => setEconomy(p, bad), /Economy requires|store room/, JSON.stringify(bad));
+    assert.equal(p.economy.storeMarkup, 120, 'unchanged after a rejected edit');
+});
+
 test('economy, herb patch and movePlace validate atomically', () => {
     const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
     setEconomy(p, {treasury: 500});

@@ -249,6 +249,111 @@ def check_wild():
     return problems
 
 
+def business_for(label, businesses=None):
+    """The kind of shop a work label marks, as the game finds it (Core's items::businessFor): the label in lower case,
+    the first business in file order with a match word in it; None for none."""
+    work = (label or '').lower()
+    for b in (businesses or BUSINESSES).values():
+        if any(m and m in work for m in b['match']):
+            return b['id']
+    return None
+
+
+def crafts_for(business):
+    """The crafts a kind of shop makes, in file order (Core's items::craftsFor)."""
+    return [c for c in CRAFTS if business in c['makers']]
+
+
+CHEAP_PRICE = 6           # Core's Society::CheapPrice: a shop's handful of goods cost at most this.
+FOOD_SHOPS = ('general', 'provisioner', 'stall', 'bakery', 'butcher', 'fishmonger', 'brewery', 'inn')   # Society::foodShop
+_FNV_OFFSET, _FNV_PRIME, _MASK = 1469598103934665603, 1099511628211, (1 << 64) - 1
+
+
+def _fnv(h, text):
+    for ch in text.encode('utf-8'):
+        h = ((h ^ ch) * _FNV_PRIME) & _MASK
+    return h
+
+
+def goods_sold(business, max_price):
+    """What a business sells (by id or category) costing at most max_price, in catalogue order (items::goodsSold)."""
+    sells = BUSINESSES[business]['sells']
+    return [i['id'] for i in ITEMS.values() if 1 <= i['price'] <= max_price and (i['id'] in sells or i['category'] in sells)]
+
+
+def wares(label, keeper, role='merchant'):
+    """What a shopkeeper sells, as the game's Society::wares has it for an authored resident: a maker's goods and a
+    supplier's supply list, else a handful of its kind's cheap goods chosen by the keeper's id; what it buys from players;
+    swords at a smith's, meals at a food shop (and anywhere without a business), herbs at the herb and food trades."""
+    business = business_for(label)
+    out = []
+    crafts = crafts_for(business) if business else []
+    supplies = SUPPLIES.get(business, []) if business else []
+    if crafts or supplies:
+        for c in crafts:
+            out += [k for k in c['out'] if k not in out]
+        out += [k for k in supplies if k not in out]
+        out = [k for k in out if k not in ('meal', 'herbs')]
+    elif business:
+        cheap = goods_sold(business, CHEAP_PRICE)
+        if len(cheap) < 3:
+            dearer = sorted(goods_sold(business, 1_000_000), key=lambda k: ITEMS[k]['price'])[:3]   # (A stable sort, as Core's.)
+            cheap += [k for k in dearer if k not in cheap]
+        h = _fnv(_FNV_OFFSET, keeper)
+        want = min(len(cheap), 3 + h % 4)
+        ranked = sorted((_fnv(h, k), k) for k in cheap)
+        out = sorted((k for _, k in ranked[:want]), key=cheap.index)
+        out = [k for k in out if k not in ('meal', 'herbs')]
+    if business:
+        out += [k for k in BUYS.get(business, []) if k not in ('meal', 'herbs') and k not in out]
+    lower = (label or '').lower()
+    if role == 'merchant' and ('smith' in lower or 'forge' in lower) and 'sword' not in out:
+        out.insert(0, 'sword')
+    if not business or business in FOOD_SHOPS:
+        out.append('meal')
+    if not business or business in ('herbalist', 'apothecary', 'general', 'stall', 'inn'):
+        out.append('herbs')
+    return out
+
+
+def store_goods(business, keeper=None, label=None):
+    """What a business draws from the store room (Docs/Design/67-ridgemere2-city.md, 6), as the game reckons it
+    (Society::storeGoods): `making`, every input of its own crafts (the sorted union of their `in`, intermediates too),
+    and `resale`, its supply list (crafts.json `supplies`) in file order, then (given its founding keeper's id and label)
+    the kinds of wares that keeper started with that its crafts don't make; a good both ways is a making good."""
+    crafts = crafts_for(business) if business else []
+    making = sorted({k for c in crafts for k in c['in']})
+    made = {k for c in crafts for k in c['out']}
+    resale = []
+    for k in (SUPPLIES.get(business, []) if business else []):
+        if k not in making and k not in resale:
+            resale.append(k)
+    if keeper is not None:
+        for k in wares(label if label is not None else '', keeper):
+            if k not in made and k not in making and k not in resale:
+                resale.append(k)
+    return {'making': making, 'resale': resale}
+
+
+def store_price(item):
+    """A good's catalogue price a piece (Society::catalogPrice): a meal 6p, herbs 2p, anything else its own (at least 1)."""
+    if item == 'meal':
+        return 6
+    if item == 'herbs':
+        return 2
+    if item == 'sword':
+        return ITEMS['sword']['price'] if ITEMS.get('sword', {}).get('price', 0) > 0 else 30
+    price = ITEMS.get(item, {}).get('price', 0)
+    return price if price > 0 else 1
+
+
+def store_cost(item, quantity, markup):
+    """What a draw costs (Society::storeCost): ceil(price × quantity × markup / 100); 0 at a markup of 0, else at least 1."""
+    if markup <= 0 or quantity < 1:
+        return 0
+    return max(1, -(-store_price(item) * quantity * markup // 100))
+
+
 def unsupplied():
     """Ingredients of the starter crafts that nothing in the game supplies, makes or produces (only a maker's
     starting stock)."""

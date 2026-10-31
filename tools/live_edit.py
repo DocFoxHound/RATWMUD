@@ -166,8 +166,7 @@ class Batch:
             found = self.rows("SELECT area, x, y FROM world.resources WHERE world_id = %s AND id = %s", S.HERB_PATCH)
             return {'cell': found[0]['area'], 'x': found[0]['x'], 'y': found[0]['y']} if found else None
         if key == 'economy':
-            found = self.rows('SELECT * FROM live.economy WHERE world_id = %s')
-            return S.economy_entity(found[0]) if found else None
+            return S.economy_value(self.conn, self.w)    # (With the store room's settings: doc 67, 6.)
         raise ValueError(f'Unknown edit key: {key}')
 
     # -- applying ----------------------------------------------------------------
@@ -217,8 +216,8 @@ class Batch:
             return row[0]
         return self.conn.execute(f'SELECT coalesce(max(position) + 1, 0) FROM {table} WHERE world_id = %s', (self.w,)).fetchone()[0]
 
-    def upsert(self, table, row):
-        keys, columns = S.TABLES[table]
+    def upsert(self, table, row, tables=None):
+        keys, columns = (tables or S.TABLES)[table]
         rest = [c for c in columns if c not in keys]
         values = [S.Jsonb(v) if c in S.JSON_COLUMNS else v for c, v in zip(columns, row)]
         self.conn.execute(f'INSERT INTO {table} ({", ".join(columns)}) VALUES ({", ".join(["%s"] * len(columns))}) '
@@ -317,7 +316,25 @@ class Batch:
                 self.conn.execute("INSERT INTO world.resources (world_id, id, kind, area, x, y) VALUES (%s, %s, 'herb', %s, %s, %s)",
                                   (w, S.HERB_PATCH, *S.place(value)))
         elif key == 'economy':
-            self.upsert('live.economy', S.economy_row(w, value))
+            # The town economy and the store room's settings (doc 67, 6): checked as a save checks them; a world without
+            # migration 0055 keeps its store room at the defaults. A business back at its default keeps no row.
+            if value is None:
+                raise ValueError('The economy cannot be removed.')
+            people = {r[0] for r in self.conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (w,)).fetchall()}
+            problems = map_editor.check_economy(value, people)
+            if problems:
+                raise ValueError(' '.join(problems))
+            tables = S.tables_for(self.conn)
+            if tables is S.LEGACY_TABLES and S.store_differs(value):
+                raise ValueError(f'The store room\'s settings can\'t be changed: {S.NO_STORE}.')
+            self.upsert('live.economy', S.economy_row(w, value, store=tables is S.TABLES), tables)
+            if tables is S.TABLES:
+                off = {row[1] for row in S.business_rows(w, value)}
+                self.conn.execute('DELETE FROM live.business_settings WHERE world_id = %s AND NOT (npc_id = ANY(%s))', (w, sorted(off)))
+                for npc in sorted(off):
+                    self.conn.execute('INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES (%s, %s, false) '
+                                      'ON CONFLICT (world_id, npc_id) DO UPDATE SET internal_store = false, updated_at = now()',
+                                      (w, npc))
 
 
 # --------------------------------------------------------------------------- Service

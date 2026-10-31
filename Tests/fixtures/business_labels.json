@@ -1,0 +1,425 @@
+{
+  "about": "Work labels and the business each resolves to (Docs/Design/67-ridgemere2-city.md, 4): the lower-cased label, the first business in Data/Items/businesses.json order with a match word in it, or null; and some merchant keepers' store room goods (doc 67, 6: making, then resale). Read by tools/test_item_catalog.py (item_catalog.business_for, store_goods) and Tests/store_room_tests.cpp (items::businessFor, Society::storeGoods), so the two cannot drift.",
+  "labels": [
+    {
+      "label": "working at the Greatly works",
+      "business": "builders_works"
+    },
+    {
+      "label": "smith at the Greatly builders' forge",
+      "business": "builders_works"
+    },
+    {
+      "label": "the smith at the forge",
+      "business": "smithy"
+    },
+    {
+      "label": "keeping the inn",
+      "business": "inn"
+    },
+    {
+      "label": "keeps the Bilge",
+      "business": "inn"
+    },
+    {
+      "label": "keeping the rolls at the Records Office",
+      "business": null
+    },
+    {
+      "label": "printing at the Council Press",
+      "business": "printing_house"
+    },
+    {
+      "label": "working at the Fell Press House",
+      "business": "press"
+    },
+    {
+      "label": "distiller at the Fell Distillery",
+      "business": "distillery"
+    },
+    {
+      "label": "working the Fell still house",
+      "business": "distillery"
+    },
+    {
+      "label": "working the Fell Preserving House",
+      "business": "preserver"
+    },
+    {
+      "label": "preserver at Fellhall",
+      "business": "preserver"
+    },
+    {
+      "label": "vintner at the Fell Wine Vaults",
+      "business": "vintner"
+    },
+    {
+      "label": "wine merchant in the Commons",
+      "business": "vintner"
+    },
+    {
+      "label": "shipwright at the Grayrock slipway",
+      "business": "shipwright"
+    },
+    {
+      "label": "launderer at the Washhouse",
+      "business": "laundry"
+    },
+    {
+      "label": "keeping the bathhouse",
+      "business": "bathhouse"
+    },
+    {
+      "label": "barber-surgeon in the Commons",
+      "business": "barber"
+    },
+    {
+      "label": "keeping the Pawn and Ledger",
+      "business": "pawnbroker"
+    },
+    {
+      "label": "helping at The Pawn and Ledger",
+      "business": "pawnbroker"
+    },
+    {
+      "label": "rag-and-bone man in the Sump",
+      "business": "rag_and_bone"
+    },
+    {
+      "label": "selling rag and bone",
+      "business": "rag_and_bone"
+    },
+    {
+      "label": "cheesemaker in the Commons",
+      "business": "dairy"
+    },
+    {
+      "label": "wheelwright in the Cinders",
+      "business": "cartwright"
+    },
+    {
+      "label": "keeping the Watch's weapon racks",
+      "business": null
+    },
+    {
+      "label": "armourer at Rivet and Rain",
+      "business": "armory"
+    },
+    {
+      "label": "working at the Wharf Tannery",
+      "business": "tannery"
+    },
+    {
+      "label": "working the Charcoal Store",
+      "business": "charcoal"
+    },
+    {
+      "label": "glassblower at Clearwater Glass",
+      "business": "glassworks"
+    },
+    {
+      "label": "reigning at the Great Palace",
+      "business": null
+    },
+    {
+      "label": "cooking for the King's household",
+      "business": "inn"
+    },
+    {
+      "label": "ladling soup",
+      "business": "inn"
+    },
+    {
+      "label": "brewer at the abbey brewhouse",
+      "business": "brewery"
+    },
+    {
+      "label": "fishmonger at the Fish Hall",
+      "business": "fishmonger"
+    },
+    {
+      "label": "keeping the Greatly Yard",
+      "business": "builders_yard"
+    },
+    {
+      "label": "plasterer at the Greatly Plasterworks",
+      "business": "plasterworks"
+    },
+    {
+      "label": "keeping the Greatly Lime Kilns",
+      "business": "brickworks"
+    },
+    {
+      "label": "working the Timberland Ironworks",
+      "business": "ironworks"
+    },
+    {
+      "label": "keeping the Timberland Foundry",
+      "business": "foundry"
+    },
+    {
+      "label": "working the saws at the Timberland Sawmill",
+      "business": "sawmill"
+    },
+    {
+      "label": "keeping a food stall",
+      "business": "stall"
+    },
+    {
+      "label": "baker at The Amber Loaf",
+      "business": "bakery"
+    },
+    {
+      "label": "clerking at the Timberland iron office",
+      "business": null
+    },
+    {
+      "label": "tending the gardens",
+      "business": null
+    },
+    {
+      "label": "-",
+      "business": null
+    }
+  ],
+  "keepers": [
+    {
+      "keeper": "rm_tobias_hammer",
+      "label": "the smith at the forge",
+      "making": [
+        "bronze_bar",
+        "charcoal",
+        "iron_bar",
+        "leather",
+        "timber"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_mae_stall",
+      "label": "keeping a food stall",
+      "making": [],
+      "resale": [
+        "flour",
+        "oats",
+        "milk",
+        "vegetables",
+        "apples",
+        "mushrooms",
+        "berries",
+        "shellfish",
+        "raw_meat",
+        "meal",
+        "herbs"
+      ]
+    },
+    {
+      "keeper": "rm_bea_baker",
+      "label": "baker at The Amber Loaf",
+      "making": [
+        "firewood",
+        "flour",
+        "honey"
+      ],
+      "resale": [
+        "meal"
+      ]
+    },
+    {
+      "keeper": "r2_vint",
+      "label": "vintner at the Fell Wine Vaults",
+      "making": [],
+      "resale": [
+        "wine",
+        "cider",
+        "mead",
+        "aqua_vitae",
+        "brandy",
+        "apple_brandy",
+        "berry_cordial"
+      ]
+    },
+    {
+      "keeper": "r2_ragbone",
+      "label": "rag-and-bone man in the Sump",
+      "making": [],
+      "resale": [
+        "clay_pot",
+        "cookpot",
+        "blanket",
+        "cushion",
+        "floor_bowl_wood",
+        "oil_lamp",
+        "sack",
+        "crate",
+        "wool_scarf"
+      ]
+    },
+    {
+      "keeper": "r2_pawn",
+      "label": "keeping the Pawn and Ledger",
+      "making": [],
+      "resale": [
+        "bone_clip",
+        "brass_bracelet",
+        "oil_lamp",
+        "key",
+        "paw_mallet",
+        "ear_ring",
+        "charm",
+        "mirror",
+        "cookpot",
+        "lock",
+        "draw_saw",
+        "blanket",
+        "wool_shawl"
+      ]
+    },
+    {
+      "keeper": "r2_ship",
+      "label": "shipwright at the Grayrock slipway",
+      "making": [],
+      "resale": []
+    },
+    {
+      "keeper": "r2_still",
+      "label": "distiller at the Fell Distillery",
+      "making": [
+        "berries",
+        "cider",
+        "firewood",
+        "honey",
+        "wine"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "r2_gw",
+      "label": "working at the Greatly works",
+      "making": [
+        "charcoal",
+        "iron_bar",
+        "timber"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_hall",
+      "label": "fishmonger at the Fish Hall",
+      "making": [
+        "firewood",
+        "fish",
+        "salt"
+      ],
+      "resale": [
+        "shellfish",
+        "meal"
+      ]
+    },
+    {
+      "keeper": "rm_tap",
+      "label": "keeps the Bilge",
+      "making": [
+        "apples",
+        "milk",
+        "oats",
+        "raw_meat",
+        "vegetables"
+      ],
+      "resale": [
+        "mushrooms",
+        "berries",
+        "herbs"
+      ]
+    },
+    {
+      "keeper": "rm_tinker",
+      "label": "tinker at Mend & Make Do",
+      "making": [
+        "bones",
+        "charcoal",
+        "cord",
+        "iron_bar"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_general",
+      "label": "shopkeeper at Sump Sundries",
+      "making": [
+        "bones",
+        "cord",
+        "hemp",
+        "straw"
+      ],
+      "resale": [
+        "flour",
+        "oats",
+        "firewood",
+        "wool",
+        "linen_cloth",
+        "tallow",
+        "clay",
+        "nails",
+        "planks",
+        "plaster",
+        "whitewash",
+        "glass_beads",
+        "charm",
+        "fine_soap",
+        "perfume_cedar",
+        "pamphlet",
+        "mushrooms",
+        "berries",
+        "resin",
+        "reeds",
+        "feathers",
+        "oak_galls",
+        "stone",
+        "sand",
+        "small_pelt",
+        "meal",
+        "herbs"
+      ]
+    },
+    {
+      "keeper": "rm_tailor",
+      "label": "tailor in the Commons",
+      "making": [
+        "linen_cloth",
+        "wool"
+      ],
+      "resale": [
+        "small_pelt",
+        "fox_pelt",
+        "badger_pelt"
+      ]
+    },
+    {
+      "keeper": "rm_pot",
+      "label": "potter in the Commons",
+      "making": [
+        "clay",
+        "firewood"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_barber",
+      "label": "barber-surgeon in the Commons",
+      "making": [],
+      "resale": [
+        "bandages"
+      ]
+    },
+    {
+      "keeper": "rm_odd",
+      "label": "keeping the market",
+      "making": [],
+      "resale": [
+        "meal",
+        "herbs"
+      ]
+    }
+  ]
+}

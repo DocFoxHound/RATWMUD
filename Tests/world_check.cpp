@@ -418,6 +418,16 @@ int main(int argc, char** argv)
     std::size_t picked = 0;
     times.reserve(std::size_t(ticks));
     std::size_t mostLoaded = 0;
+    // Residents held more than ten game minutes on one tile while bound elsewhere (a game minute is 10 s, 200 ticks).
+    struct Held
+    {
+        std::tuple<std::string, int, int> at;
+        int since = 0;
+        bool counted = false;
+    };
+    constexpr int HeldTicks = 10 * 200;
+    std::map<std::string, Held> held;
+    std::vector<std::string> heldOnce;
     RoadTally roads;
     roads.load(root);
     for (int i = 0; i < ticks; ++i)
@@ -432,6 +442,34 @@ int main(int argc, char** argv)
         const auto& profileAfter = server.tickProfile();
         if (i % 20 == 0)
             roads.sample(server);
+        if (i % 20 == 0)
+        {
+            // Held (Docs/Design/67-ridgemere2-city.md, 8: the Sump's narrow passages): a resident bound somewhere else
+            // that stays on one tile, sampled every second.
+            for (const auto& [id, e] : server.entities())
+            {
+                const auto* life = e.npc && !e.dead ? server.society().resident(id) : nullptr;
+                auto& h = held[id];
+                const std::tuple<std::string, int, int> at{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
+                const bool bound = life && !life->goalCell.empty() &&
+                                   (e.cellId != life->goalCell || std::hypot(e.position.x - life->goalX, e.position.y - life->goalY) > 1.5) &&
+                                   e.activity.find("route unavailable") == std::string::npos;
+                if (!bound || at != h.at)
+                {
+                    h.at = at;
+                    h.since = i;
+                    continue;
+                }
+                if (i - h.since > HeldTicks && !h.counted)
+                {
+                    h.counted = true;
+                    std::ostringstream where;
+                    where << id << " (in " << e.cellId << " " << std::get<1>(at) << "," << std::get<2>(at) << ", bound for " << life->goalCell
+                          << ", at " << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00)";
+                    heldOnce.push_back(where.str());
+                }
+            }
+        }
         if (i % 100 == 0 && !std::getenv("RATW_NO_AMBIENT_LOOK"))
         {
             // Only looked at, never spoken: the simulation goes on exactly as without it.
@@ -714,6 +752,21 @@ int main(int argc, char** argv)
               << lost.size() << '\n';
     for (const auto& who : lost)
         std::cout << "    " << who << '\n';
+    {
+        std::size_t placed = 0;
+        for (const auto& [id, e] : server.entities())
+            placed += e.npc && server.society().resident(id) != nullptr;
+        std::cout << "  held more than 10 game minutes on one tile while bound elsewhere: " << heldOnce.size() << " of " << placed
+                  << " residents (" << (placed ? 100.0 * double(heldOnce.size()) / double(placed) : 0.0) << "%)\n";
+        for (std::size_t k = 0; k < heldOnce.size() && k < 40; ++k)
+            std::cout << "    " << heldOnce[k] << '\n';
+        if (heldOnce.size() > 40)
+            std::cout << "    ... and " << heldOnce.size() - 40 << " more\n";
+    }
+    // The store room (doc 67, 6): what its draws have paid, kept in the world.
+    std::cout << "  store room fund (" << ratw::Society::StoreFund << "): " << server.society().cash(ratw::Society::StoreFund) << "p"
+              << (server.society().account(ratw::Society::StoreFund) ? "" : " (no fund: not an authored world)")
+              << "; restocking rule " << (server.society().authored().economy.storeRule ? "on" : "off") << '\n';
     std::sort(motions.begin(), motions.end());
     double motionTotal = 0;
     for (double m : motions)

@@ -199,6 +199,51 @@ class StoreTests(unittest.TestCase):
         with self.assertRaisesRegex(S.StoreError, 'astronomer'):
             self.create(p)
 
+    def test_store_room_settings_round_trip(self):
+        # Doc 67, 6: the world's switches and markups in live.economy, a business switched off in live.business_settings,
+        # all in the export's records; a business back on keeps no row.
+        p = greyfen()
+        p['economy'] = {**p['economy'], 'internalStore': False, 'storeMarkup': 120, 'storeResale': True, 'resaleMarkup': 60,
+                        'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], p['economy'])
+        self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        self.assertIn('store off 120 resale on 60 rule on', lines)
+        self.assertEqual(lines[lines.index('store off 120 resale on 60 rule on') - 1].split(' ')[0], 'economy')
+        brann = next(i for i, l in enumerate(lines) if l.startswith('resident "brann"'))
+        self.assertIn('nostore "brann"', lines[brann + 1:brann + 5])
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        loaded['economy'] = {**loaded['economy'], **S.STORE_DEFAULTS, 'businesses': {'brann': {'internalStore': True}}}
+        S.save_world(self.conn, loaded, revision)
+        self.assertEqual(self.conn.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0)
+        again, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(again['economy']['businesses'], {})
+        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
+        self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in lines), 'at the defaults: no store records')
+        # A business key must name an NPC, a markup must be 0 to 1000.
+        for bad in ({'businesses': {'nobody': {'internalStore': False}}}, {'storeMarkup': 1001}, {'resaleMarkup': -1},
+                    {'storeRule': 'yes'}, {'businesses': {'brann': {'internalStore': 0}}}):
+            with self.assertRaises(E.ValidationError, msg=str(bad)):
+                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+
+    def test_a_missing_economy_row_is_made_from_the_defaults(self):
+        # Ridgemere 2.0 has no live.economy row: its first save makes one from DEFAULT_ECONOMY (1000p), never the
+        # table's column defaults (a treasury of 0).
+        self.create(greyfen())
+        self.conn.execute('DELETE FROM live.economy')
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], S.DEFAULT_ECONOMY)
+        loaded['economy']['businesses']['wren'] = {'internalStore': False}
+        self.assertEqual(S.DEFAULT_ECONOMY['businesses'], {}, 'the defaults are never shared')
+        S.save_world(self.conn, loaded, revision)
+        row = S.dict_rows(self.conn, 'SELECT * FROM live.economy', ())[0]
+        self.assertEqual((row['treasury'], row['store_herbs'], row['store_meals'], row['internal_store'], row['store_markup'],
+                          row['store_resale'], row['resale_markup'], row['store_rule']), (1000, 100, 50, True, 100, True, 75, False))
+
     def test_roster_round_trip_and_order(self):
         roster = R.load()
         self.assertEqual(S.load_roster(self.conn), roster)
@@ -208,6 +253,50 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(S.save_roster(self.conn, changed), R.check_roster(changed))
         S.save_roster(self.conn, roster)
         self.assertEqual(S.load_roster(self.conn), roster)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration55Tests(unittest.TestCase):
+    """A world without migration 0055 (DEV and PROD until the user migrates them) loads, saves and builds as before;
+    only a store room setting away from its default is refused."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+        with W.connect('dev', 'owner', dbname=cls.name) as owner:
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0055'])
+        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
+        S.save_roster(cls.conn, R.load())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
+
+    def test_loads_and_saves_unchanged_and_refuses_a_store_setting(self):
+        self.assertFalse(S.store_supported(self.conn))
+        source = greyfen()
+        S.save_world(self.conn, source, None, create=True)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}}, 'the defaults, read')
+        roster = R.load()
+        before, after = E.export_files(source, roster), E.export_files(loaded, roster)
+        del before['atlas.json'], after['atlas.json']
+        self.assertEqual(before, after)
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.LEGACY_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        self.assertEqual(S.save_world(self.conn, loaded, revision), revision + 1)
+        for change in ({'storeMarkup': 50}, {'businesses': {'brann': {'internalStore': False}}}):
+            with self.assertRaisesRegex(S.StoreError, '0055'):
+                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+        import world_build
+        self.assertTrue(world_build.fingerprint(self.conn, 'greyfen', S.load_roster(self.conn)))
 
 
 if __name__ == '__main__':

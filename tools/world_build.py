@@ -35,7 +35,8 @@ KEEP_CELLS = 3          # Builds whose cell rows are kept (the server loads the 
 # Everything a build is made from besides the world's own tables (whose revision rises with every edit): the live
 # layers, which the game server and the Dungeon Master change directly.
 LIVE_LAYERS = ('live.npcs', 'live.profession_slots', 'live.patrol_routes', 'live.patrol_posts', 'live.factions',
-               'live.faction_claims', 'live.economy', 'live.npc_relations')   # (Families: doc 62.)
+               'live.faction_claims', 'live.economy', 'live.npc_relations',   # (Families: doc 62.)
+               'live.business_settings')   # (The store room's switches: doc 67, 6; skipped where migration 0055 is missing.)
 
 
 def fingerprint(conn, world_id, roster) -> str:
@@ -43,6 +44,8 @@ def fingerprint(conn, world_id, roster) -> str:
     digest = hashlib.sha256()
     digest.update(repr(conn.execute('SELECT revision, updated_at FROM world.worlds WHERE id = %s', (world_id,)).fetchone()).encode())
     for table in LIVE_LAYERS:
+        if not conn.execute("SELECT to_regclass(%s) IS NOT NULL", (table,)).fetchone()[0]:
+            continue                                # (A table this world lacks: a migration not applied yet.)
         rows = conn.execute(f"SELECT md5(coalesce(string_agg(t::text, E'\\n' ORDER BY t::text), '')) FROM {table} t "
                             'WHERE world_id = %s', (world_id,)).fetchone()[0]
         digest.update(f'{table}={rows};'.encode())

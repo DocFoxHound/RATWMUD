@@ -127,6 +127,9 @@ struct Options
     // A world from the database: its key in the world registry (Database/worlds.json: "prod", "dev"...), read with `conninfo` (a libpq connection string). Else a world
     // file (RATW_WORLD manifest, absolute path), else the built-in demo world.
     std::string database, conninfo, worldFile;
+    // The registry's kind for `database` ("dev" or "live"; the launcher passes it: --world-kind), "" when unknown or a
+    // world from files. A dev world's Dungeon Masters may draw from the store room by hand (/store: doc 67, 6).
+    std::string worldKind;
     // A world build exported as files (world.ratw and the rest, cells/ID.cell, seams/ID: what tools/world_build.py
     // export writes), played offline with its residents as built: the load test's world. In place of worldFile.
     std::string worldExport;
@@ -199,6 +202,9 @@ class Game
 
     // Where the save of a world not from the database lives, in place of `savePath`: set before start().
     void useStore(std::unique_ptr<Store> store) { customStore_ = std::move(store); }
+    // A build's manifest without the people's records (residents, routes, the economy and store room, factions, families),
+    // which come from live.people_manifest instead (loadWithLivePeople).
+    static std::string withoutPeople(const std::string& manifest);
     // Loads the world and its save. False, with the problem, if the server must not run.
     bool start(std::string& problem);
     // Server health (doc 31, the health tracker; Core/RatwHealth.h): a minute's window as the host's meter saw it, with
@@ -1580,7 +1586,6 @@ class Game
     bool loadExport(std::string& problem);
     World::CellSource cellSource();
     bool loadWithLivePeople(World& into, std::string& problem);
-    static std::string withoutPeople(const std::string& manifest);
     void readNotifications();
     void watchReleases(double dt);
     void applyDmActions(double dt);

@@ -306,7 +306,8 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false;
+    bool economy = false, herbs = false, store = false;
+    std::set<std::string> noStore;                 // Businesses kept out of the store room (nostore records), by founder.
     std::vector<std::pair<std::string, Spot>> places;
     std::size_t cellFiles = 0;
     std::map<std::string, std::tuple<std::string, std::string, std::vector<std::string>>> territories;
@@ -501,6 +502,34 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Invalid or duplicate economy record.");
             economy = true;
         }
+        else if (command == "store")
+        {
+            // The store room's switches and markups (Docs/Design/67-ridgemere2-city.md, 6), once:
+            // store on|off MARKUP resale on|off MARKUP rule on|off. Without it, everything is at its default.
+            auto& e = roster.economy;
+            std::string make, resaleWord, resale, ruleWord, rule;
+            int markup = -1, resaleMarkup = -1;
+            fields >> make >> markup >> resaleWord >> resale >> resaleMarkup >> ruleWord >> rule;
+            const auto onOff = [](const std::string& word) { return word == "on" || word == "off"; };
+            if (store || !end(fields) || !onOff(make) || !onOff(resale) || !onOff(rule) || resaleWord != "resale" ||
+                ruleWord != "rule" || markup < 0 || markup > 1000 || resaleMarkup < 0 || resaleMarkup > 1000)
+                return reject("Invalid or duplicate store record.");
+            e.internalStore = make == "on";
+            e.storeMarkup = markup;
+            e.storeResale = resale == "on";
+            e.resaleMarkup = resaleMarkup;
+            e.storeRule = rule == "on";
+            store = true;
+        }
+        else if (command == "nostore")
+        {
+            // A business kept out of the store room (doc 67, 6): its founder's ID. Checked once every resident is known.
+            std::string id;
+            if (!quoted(fields, id) || !end(fields) || !identifier(id, 48))
+                return reject("Malformed nostore record.");
+            if (!noStore.insert(id).second)
+                return reject("Duplicate nostore record: " + id);
+        }
         else if (command == "herbs")
         {
             Spot spot;
@@ -694,6 +723,16 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         for (const auto* spot : {&r.home, &r.work, &r.evening})
             places.push_back({"resident " + r.id, *spot});
         ++it;
+    }
+    // The businesses kept out of the store room (doc 67, 6): a resident's is switched off; an unplaced founder's is
+    // accepted and set aside (a business with no keeper here draws nothing); anyone else is an error.
+    for (const auto& id : noStore)
+    {
+        const auto owner = std::find_if(roster.residents.begin(), roster.residents.end(), [&](const ResidentSpec& r) { return r.id == id; });
+        if (owner != roster.residents.end())
+            owner->internalStore = false;
+        else if (std::none_of(roster.unplaced.begin(), roster.unplaced.end(), [&](const ResidentSpec& r) { return r.id == id; }))
+            return reject("nostore names no resident: " + id);
     }
     for (const auto& [id, to] : candidate.exits_)
         for (const auto& next : to)
