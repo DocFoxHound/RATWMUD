@@ -325,7 +325,7 @@ POSTS = {
     'rm_the_grey_gull_inn': [k('keeping the inn', 'inn'), ('help', None, 1)],
     'rm_the_black_tun': [k('keeping the taproom', 'inn'), ('help', None, 1)],
     'rm_the_last_lamp': [k('keeping the taproom', 'inn'), ('help', None, 1)],
-    'rm_the_greatly_yard': [k("runs the Greatly builders' yard", 'builders_yard'), ('hands', None, 3)],
+    'rm_the_greatly_yard': [k('runs', 'builders_yard'), ('hands', None, 3)],
     # The food rebalance (doc 67, Progress): reused shops given over to food (worldgen.ridgemere2.REFIT refits their
     # rooms), the food shops' hands, and the Carters' Yard.
     'rm_commons_sundries': [k('provisioner', 'provisioner'), ('help', None, 1)],
@@ -428,6 +428,9 @@ HOUSE_POSTS = {
     # at the wharf", was a deacon at the cathedral; the Chancellor of Ridgemere was one of the City Office's clerks.
     'rm_aldric_grayrock_': ('rm_the_harbourmaster_s_office', 'overseeing the Grayrock wharf', None),
     'rm_oskar_gullworth': ('rm_the_city_office', 'Chancellor of Ridgemere', None),
+    # The jobs by class (doc 67, Progress): the Lord of House Greatly, "the richest wolf in Ridgemere", was one of his own
+    # Counting House's three clerks; he oversees it now (the "counting house" wage rule: the Country's, as before).
+    'rm_ambrose_greatly': ('rm_the_greatly_counting_house', 'overseeing the Counting House', None),
     # The Crown (doc 67, Q3): the King reigns from the Antechamber's dais (the speaker's seat at (20, 2)); the Queen and
     # their daughter keep the royal household upstairs in the Residence. (A spot (x, y, z) is on the structure's floor z.)
     'rm_gunnar_harrowgate': ('r2_palace_antechamber', 'reigning at the Great Palace', (20, 3)),
@@ -454,6 +457,125 @@ ROYAL_TEXT = {
         'greeting': 'Take your time; there is no hurry. The palace keeps its own hours.',
         'backstory': "Ottilie carries the Crown's petitions to the City Office herself, and goes back every week to ask "
                      'after them.'},
+}
+
+
+# --- Jobs by class (doc 67, Progress, "Jobs by class") ----------------------------------------------------------------
+# The user (2026-10-31): "Employment type should match the region of the city. ... Minor Houses should own larger
+# businesses or should be merchants, along with high government positions. Middle-Class families will be stall and shop
+# owners and lower government positions. Lower-class will be waged labor and similar unskilled work."
+#
+# A household's class is where it lives: the Rise's five Minor Houses and the Great Houses' families (their seats, the
+# Greatly compound and the three estates) are upper; the Commons, Northgate and the administrative sector's houses are
+# middle; the Sump, the Cinders and the wharf are lower. Where the quarters blend, the home's building decides: a shop
+# with its flat is a shopkeeper's (middle, in any quarter); the Commons' "... Rents" tenements on the Sump's edge are
+# lower. Those who live in a House's seat, villa or the King's Residence without being of its family (servants, stewards,
+# the estates' gatehouses and cottages) live in service: lower. The Watch's barracks and the clergy are their own cases.
+HOUSE_FAMILIES = ('Carlisle', 'Thornbury', 'Vance', 'Stanmore', 'Grantham', 'Greatly', 'Fell', 'Grayrock', 'Timberland',
+                  'Harrowgate')
+MINOR_FAMILIES = ('Carlisle', 'Thornbury', 'Vance', 'Stanmore', 'Grantham')
+# The larger businesses: {structure key: who owns them}. 'own': the city's independent large businesses, owned by whoever
+# keeps them (the keeper takes the till's profit, doc 68): an upper job. 'house': a Great House's works, yards, stores and
+# bank, owned by the House: their master or storekeeper runs it for the House, a middle job. Nobody from the Sump, the
+# Cinders or the wharf keeps either.
+LARGE = {
+    'r2_carters_yard': 'own', 'rm_the_rainwater_brewery': 'own', 'rm_the_rag_mill': 'own', 'rm_the_wharf_tannery': 'own',
+    'rm_the_grey_gull_inn': 'own', 'rm_the_sailors_rest': 'own',
+    'rm_the_grayrock_ironworks': 'house', 'rm_the_grayrock_foundry': 'house', 'rm_the_fell_sawmill': 'house',
+    'rm_the_grayrock_iron_store': 'house', 'rm_the_greatly_plasterworks': 'house', 'rm_the_tileworks': 'house',
+    'rm_the_lime_kilns': 'house', 'rm_the_cinder_glassworks': 'house', 'r2_greatly_forge': 'house',
+    'rm_the_greatly_yard': 'house', 'rm_the_greatly_masons_yard': 'house', 'rm_the_greatly_colour_works': 'house',
+    'rm_the_greatly_bank': 'house', 'r2_grayrock_shipwrights': 'house', 'rm_the_ropewalk': 'house',
+    'rm_the_greatly_bonded_warehouse': 'house', 'rm_the_fell_timber_store': 'house', 'r2_new_store': 'house',
+    'r2_fell_press_house': 'house', 'r2_fell_distillery': 'house', 'r2_fell_preserving_house': 'house',
+}
+# The keepers of these are the large business's (a warehouse's keeper is a staff post, not a till's).
+LARGE_KEEPERS = ('keeping the bonded warehouse', 'keeping the long store', 'keeping the new store', 'keeping the iron store')
+# A job's class by its label (lower case, by substring), after the posts' own rules (Placement.job_class): high government,
+# the law, the Council, finance and the Heights' physician are upper; lower government, clerks and the offices' skilled
+# staff are middle; service, carrying, washing, the lamps and the grounds are lower.
+UPPER_WORDS = ('reigning at', 'the queen,', "the king's daughter", 'chancellor', 'royal secretary', "the crown's treasurer",
+               "collecting the crown's customs", 'harbourmaster', 'running the city office', 'keeping the rolls',
+               'hearing cases', 'overseeing', 'warden of the market hall', 'pleading cases', "drafting the council's",
+               'lending', 'visiting the sick of the heights')
+MIDDLE_WORDS = ('clerking', 'copying', 'tallying', 'weighing', 'couriers', 'teaching', 'herald', 'usher',
+                'keeping order in court', 'keeping the washhouse', 'keeping the bathhouse', 'keeping the fell cellars',
+                "keeping the watch's", 'keeping the bonded warehouse', 'keeping the long store', 'keeping the new store',
+                'keeping the iron store')
+LOWER_WORDS = ('serving', 'in service to', 'keeping the chambers', 'stewarding', 'cooking for the king', 'lighting the lamps',
+               'working at', 'washing at', 'driving for', 'keeping the greatly stables', 'unloading', 'working the cranes',
+               'carrying from', 'portering', 'crying wares', 'gate', 'garden', 'groom', 'stable')
+LEISURE = ('at home in the heights', 'reading in the gardens', 'walking the gardens')
+# The Sump's own street trade is its own: the Rag Market's pitches and the Soup Kitchen's ladle are lower (the poor's
+# market and its charity), as the tray sellers crying wares beside them are; Market Square's stalls and the Market
+# Hall's counters are shopkeepers' (middle).
+STREET_TRADE = ('rag_market', 'rm_the_soup_kitchen')
+CLASS_SCORE = {('upper', 'upper'): 1, ('middle', 'middle'): 1, ('lower', 'lower'): 1, ('upper', 'lower'): -1,
+               ('lower', 'upper'): -1}
+# The Minor Houses' members at leisure ("at home in the Heights") and the Carlisle who drove a carters' wagon take the
+# city's independent large businesses and a high office: {npc: (structure key, post kind, post label or None)}. Whoever
+# held each is moved by the class pass.
+MINOR_POSTS = {
+    'rmx_orm_carlisle': ('r2_carters_yard', 'keeper', None),
+    'rm_mab_carlisle': ('rm_the_sailors_rest', 'keeper', None),
+    'rm_desmond_grantham': ('rm_the_rainwater_brewery', 'keeper', None),
+    'rm_karin_stanmore': ('r2_administrative_wing', 'staff', "the Crown's treasurer"),
+    'rm_eleanor_vance': ('rm_the_rag_mill', 'keeper', None),
+}
+# Their own text (their descriptions keep "of the X household"; applied by the write, as ROYAL_TEXT is).
+MINOR_TEXT = {
+    'rmx_orm_carlisle': {
+        'description': "A long-limbed cream timber wolf with a white blaze down the chest, of the Carlisle household, who "
+                       "keeps the Carters' Yard by the East Gate for the Carlisles.",
+        'greeting': "Ho! Come in, come in! The Carlisles' wagons go out at dawn. What do you want carried?",
+        'backstory': 'Orm believes the Houses will fall out with each other before the next winter. Orm drove a team for '
+                     'the yard for a season to learn the roads, and keeps it now for the Carlisles.'},
+    'rm_mab_carlisle': {
+        'description': "A rangy cream arctic wolf with one torn ear, of the Carlisle household, who keeps The Sailors' Rest "
+                       'on the wharf for the Carlisles.',
+        'greeting': "Good day to you. Dry yourself by the fire; the Sailors' Rest keeps a good one.",
+        'backstory': "Mab carries a letter meant for Lord Grayrock, who is never home to take it. Mab took the Sailors' "
+                     'Rest for the Carlisles, to be on the wharf when his ships come in.'},
+    'rm_desmond_grantham': {
+        'description': 'A long-limbed grey arctic wolf with a grey-frosted muzzle, of the Grantham household, who runs The '
+                       "Rainwater Brewery, the Granthams' brewhouse in the Cinders.",
+        'greeting': 'Good day to you. Ale by the barrel, and no credit.',
+        'backstory': 'Desmond believes the Houses will fall out with each other before the next winter. Desmond put the '
+                     'Grantham money into the Rainwater Brewery: the city drinks, whoever is winning.'},
+    'rm_karin_stanmore': {
+        'description': "A tall grey timber wolf with a coat kept meticulously clean, of the Stanmore household, who keeps "
+                       "the Crown's purse in the Administrative Wing as its treasurer.",
+        'greeting': 'Good day to you. The Crown pays what it owes, in its own time.',
+        'backstory': "Karin keeps a secret list of which Houses pay the Watch to look away. Karin was made the Crown's "
+                     'treasurer on the Stanmores\' word in the Council, and the list has grown longer since.'},
+    'rm_eleanor_vance': {
+        'description': 'A compact sandy timber wolf with a braided cord at the throat, of the Vance household, who runs The '
+                       "Rag Mill, where the Vances' ledgers are made.",
+        'greeting': 'Good day to you. Paper by the quire; the Council buys the rest.',
+        'backstory': 'Eleanor believes the Houses will fall out with each other before the next winter. Eleanor runs the '
+                     "Vances' Rag Mill: every quarrel needs paper."},
+}
+# A swapped post's fields (the person keeps the rest: home, evening; the post's hours go with it, as 'hours').
+JOB_KEYS = ('work', 'business', 'role', 'post', 'template', 'record', 'route', 'kept', 'recruit', 'promoted', 'demoted',
+            'at', 'labelKept')
+SWAPPABLE = ('keeper', 'stallkeeper', 'hallkeeper', 'help', 'hands', 'staff', 'food', 'pool')
+# Where an outdoor post is, for the tie-break that keeps work near home.
+POST_DISTRICT = {'market_square': 'commons', 'rag_market': 'sump', 'pier': 'wharf', 'crane': 'wharf',
+                 'sump_stairs': 'sump', 'tray_sellers': 'sump', 'market_porters': 'commons'}
+CLERK_WORDS = ('clerk', 'copy', 'copi', 'record', 'ledger', 'tally', 'scribe', 'letters', 'books', 'count')
+# A line of backstory for whoever changes job here, by the class and kind of the job they go to.
+CLASS_BACK = {
+    'middle/office': ("{first} learned letters and figures young, and was glad to put them to use when a desk came free.",
+                      '{first} left the old work for a desk when one came free, and writes a careful, square hand.'),
+    'middle/works': ('{first} was taken on to run {name} for the House that owns it, and answers to its steward for every '
+                     'load.', '{first} came up through the Commons trades to run {name}; the House that owns it counts '
+                     'every farthing.'),
+    'middle/shop': ('{first} took over the counter here when it came free, and means to keep it in the family.',),
+    'middle/work': ('{first} took the post when it came free: respectable work, as the family wanted.',),
+    'lower/work': ('{first} lost the old post to someone better placed, and took the work the city had going.',
+                   '{first} went back to waged work when the old place went to someone better placed, and does not '
+                   'complain where anyone can hear.'),
+    'upper/work': ('{first} took {name} on when its old keeper gave it up, and keeps its profit now.',),
 }
 
 
@@ -592,6 +714,7 @@ class Placement:
         self.jobs()
         self.evenings()
         self.house_posts()
+        self.class_jobs()
         return self.plan
 
     def house_posts(self):
@@ -612,6 +735,213 @@ class Placement:
                                    'post': 'staff', 'template': label, 'record': record, 'route': '', 'kept': False,
                                    'labelKept': False,
                                    'at': self.at.get(record)})
+
+    # -- jobs by class (doc 67, Progress, "Jobs by class") ---------------------------------------------------------------
+    def home_class(self, pid):
+        """(class, why) of a placed NPC's household, by the building it lives in."""
+        rec = self.room_record.get(((self.plan.get(pid) or {}).get('home') or {}).get('cell'))
+        if rec is None:
+            return 'lower', 'no home building'
+        kind, area = rec.get('kindOf'), rec['area']
+        family = self.people[pid]['name'].split()[-1] in HOUSE_FAMILIES
+        if kind in ('seat', 'villa'):
+            return ('upper', f'of the House, at {rec["name"]}') if family else ('lower', f'in service at {rec["name"]}')
+        if area == 'keep':
+            return 'watch', "the Watch's barracks"
+        if area.startswith('estate_'):
+            return 'lower', f"an estate's gatehouse or cottages, {rec['name']}"
+        if kind == 'shop':
+            return 'middle', f'a shop with its flat, {rec["name"]}'
+        if area in ('sump', 'cinders', 'wharf'):
+            return 'lower', f'the {area}'
+        if (self.city.named.get(rec['key']) or {}).get('tenement') or rec['name'].endswith(' Rents'):
+            return 'lower', f"a tenement on the Sump's edge, {rec['name']}"
+        return 'middle', area
+
+    def label_of(self, pid, e):
+        """The label a post will have (render_labels' for the posts the class pass moves; the kept label otherwise)."""
+        if e.get('labelKept') or e.get('post') in ('kept', 'outdoor'):
+            return (self.current.get(pid) or self.people[pid])['workLabel']
+        return e.get('template') or ''
+
+    def job_class(self, pid, e=None, label=None):
+        """(class, why) of the job a post gives pid (None for children, pupils and the retired; 'clergy' and 'watch' are
+        their own cases; 'leisure' is no job)."""
+        e = self.plan[pid] if e is None else e
+        label = self.label_of(pid, e) if label is None else label
+        t, post, rec, age = label.lower(), e.get('post'), e.get('record'), self.people[pid]['age']
+        if age < 16 or post in ('at lessons', 'retired', 'a child at home') or 'lessons' in t:
+            return None, 'not an earner'
+        if e.get('role') == 'guard':
+            return 'watch', 'the Watch'
+        if post == 'clergy' or is_clergy(label):
+            return 'clergy', 'the abbey'
+        if t.startswith(LEISURE):
+            return (None, 'retired') if age >= 60 else ('leisure', 'at leisure')
+        if self.home_class(pid)[0] == 'upper' and (pid in HOUSE_POSTS or post in ('kept', 'outdoor')):
+            return 'upper', "the House's own"
+        if house_head(label):
+            return 'upper', 'a House head'
+        if post in ('keeper', 'stallkeeper', 'hallkeeper'):
+            owner = LARGE.get(rec)
+            if owner == 'own':
+                return 'upper', 'owns a large business'
+            if owner == 'house':
+                return 'middle', "runs a Great House's works for it"
+            if rec in STREET_TRADE:
+                return 'lower', "the Sump's street trade"
+            return 'middle', 'keeps a shop, stall or counter'
+        if post in ('help', 'hands'):
+            home = self.room_record.get(((self.plan.get(pid) or {}).get('home') or {}).get('cell'))
+            if home is not None and home['key'] == rec:
+                return 'middle', 'helps in the family shop'
+            return 'lower', 'a hand'
+        for words, cls, why in ((UPPER_WORDS, 'upper', 'high office'), (MIDDLE_WORDS, 'middle', 'lower office'),
+                                (LOWER_WORDS, 'lower', 'waged or service work')):
+            if any(w in t for w in words):
+                return cls, why
+        if post == 'pool':
+            return 'lower', 'waged work'
+        return 'middle', 'unclassified'
+
+    def large_keeper(self, e):
+        """Whether a post keeps one of the larger businesses (LARGE)."""
+        if e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper'):
+            return e.get('record') in LARGE
+        return e.get('post') == 'staff' and (e.get('template') or '').lower().startswith(LARGE_KEEPERS)
+
+    def movable(self, pid):
+        """Whether the class pass may give pid another post: an NPC of 16-69 in a post of the city's lists (not the
+        Watch, the clergy, a House's own, a figure with a description of their own, or a shopkeeper's family in the shop
+        they live over)."""
+        e, p = self.plan.get(pid) or {}, self.people[pid]
+        if not e.get('placed') or not 16 <= p['age'] <= 69 or e.get('post') not in SWAPPABLE or e.get('role') == 'guard':
+            return False
+        if pid in HOUSE_POSTS or pid in ROYAL_TEXT or pid in MINOR_POSTS:
+            return False
+        if self.job_class(pid)[0] in (None, 'clergy', 'watch', 'leisure'):
+            return False
+        home = self.room_record.get((e.get('home') or {}).get('cell'))
+        if home is not None and home['key'] == e.get('record'):
+            return False
+        look = split_description(p['description'])
+        return look is not None and not any(t in look[1] for t in KEY_TITLES)
+
+    def post_district(self, e):
+        rec = e.get('record')
+        return POST_DISTRICT.get(rec) or (self.records[rec]['area'] if rec in self.records else None)
+
+    def class_jobs(self):
+        """The class pass: the Minor Houses' members take the city's independent large businesses and a high office
+        (MINOR_POSTS), then posts are swapped between NPCs of 16-69 while that gives more of them a job of their
+        household's class (and moves the Sump's, the Cinders' and the wharf's out of the larger businesses), best swap
+        first. Homes, evenings and the posts themselves (their labels, spots, roles, hours) don't change; only who holds
+        them."""
+        placed = [pid for pid in sorted(self.plan) if self.plan[pid].get('placed')]
+        self.class_before = class_summary(self, placed, lambda pid: self.label_of(pid, self.plan[pid]))
+        self.class_moves = {}
+        # 1. The Minor Houses' claims.
+        pool_load = Counter(self.plan[x].get('template') for x in placed if self.plan[x].get('post') == 'pool')
+        for pid, (record, kind, label) in sorted(MINOR_POSTS.items()):
+            if not self.plan.get(pid, {}).get('placed'):
+                continue
+            holder = next((h for h in placed if self.plan[h].get('record') == record and self.plan[h].get('post') == kind
+                           and label in (None, self.plan[h].get('template'))), None)
+            if holder is None or holder == pid:
+                continue
+            job = {k: self.plan[holder].get(k) for k in JOB_KEYS} | {'hours': dict(self.people[holder]['hours'])}
+            mine = {k: self.plan[pid].get(k) for k in JOB_KEYS} | {'hours': dict(self.people[pid]['hours'])}
+            if mine['post'] in SWAPPABLE:
+                self.plan[holder].update(mine, kept=False)
+            else:                                   # (A job of the Houses' own: the one displaced goes to a pool.)
+                dist, label, cap, where = next((p for p in POOLS if pool_load[p[1]] < p[2]),
+                                               ('wharf', 'unloading ships at the piers', 999, 'pier'))
+                pool_load[label] += 1
+                for k in JOB_KEYS:
+                    self.plan[holder].pop(k, None)
+                self.work_entry(holder, {'kind': 'pool', 'label': label, 'where': where, 'record': where},
+                                self.plan[holder])
+                self.plan[holder]['at'] = self.at.get(where)
+            self.plan[pid].update(job, kept=False, labelKept=False)
+            self.class_moves[pid] = self.class_moves[holder] = 'claim'
+        # 2. Swaps.
+        movers = [pid for pid in placed if self.movable(pid)]
+        # (A post's hours go with it: a till opens when its keeper is at it.)
+        slots = [{k: self.plan[pid].get(k) for k in JOB_KEYS} | {'hours': self.plan[pid].get('hours') or
+                                                                  dict(self.people[pid]['hours'])} for pid in movers]
+        hc = {pid: self.home_class(pid)[0] for pid in movers}
+        slot_of = {pid: i for i, pid in enumerate(movers)}
+        start = dict(slot_of)
+        cache = {}
+
+        def value(pid, i):
+            key = (pid, i)
+            if key not in cache:
+                e = slots[i]
+                p = self.people[pid]
+                if e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper') and p['age'] < 18 or \
+                        e.get('post') == 'pool' and p['age'] >= 60:         # (The pools are 16-59.)
+                    cache[key] = (-99, 0)
+                    return cache[key]
+                jc = self.job_class(pid, e)[0]
+                score = CLASS_SCORE.get((hc[pid], jc), 1 if hc[pid] == jc else 0)
+                if hc[pid] == 'lower' and self.large_keeper(e):
+                    score -= 3
+                # The tie-break: the same trade, a merchant to a till, a clerk to a desk, work near home.
+                cur = self.current.get(pid) or p
+                labs = (cur['workLabel'], p['workLabel'])
+                aff = 0
+                trade = e.get('business') or e.get('at')
+                if e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper', 'help', 'hands') and trade and \
+                        trade in {business_for(x) for x in labs}:
+                    aff += 3
+                if e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper') and cur['role'] == 'merchant':
+                    aff += 2
+                if self.large_keeper(e) and p['age'] >= 30:         # (A larger business wants some years behind it.)
+                    aff += 2
+                tpl = (e.get('template') or '').lower()
+                if any(w in tpl for w in CLERK_WORDS) and any(w in x.lower() for x in labs for w in CLERK_WORDS):
+                    aff += 2
+                home = self.room_record.get(self.plan[pid]['home']['cell'])
+                if home is not None and self.post_district(e) == home['area']:
+                    aff += 1
+                cache[key] = (score, aff)
+            return cache[key]
+        while True:
+            best = None
+            for x in movers:
+                ix = slot_of[x]
+                vx = value(x, ix)
+                if vx[0] >= 1:
+                    continue
+                for y in movers:
+                    if y == x:
+                        continue
+                    iy = slot_of[y]
+                    vy = value(y, iy)
+                    a, b = value(x, iy), value(y, ix)
+                    gain = a[0] + b[0] - vx[0] - vy[0]
+                    if gain <= 0:
+                        continue
+                    cand = (gain, a[1] + b[1] - vx[1] - vy[1], x, y)
+                    if best is None or cand[:2] > best[:2]:
+                        best = cand
+            if best is None:
+                break
+            _, _, x, y = best
+            slot_of[x], slot_of[y] = slot_of[y], slot_of[x]
+        for pid in movers:
+            if slot_of[pid] != start[pid]:
+                self.plan[pid].update(slots[slot_of[pid]], kept=False, labelKept=False)
+                self.class_moves[pid] = 'swap'
+        for pid in self.class_moves:                     # (For the backstory line: the class and kind of the job.)
+            cls, why = self.job_class(pid)
+            e = self.plan[pid]
+            office = any(w in self.label_of(pid, e).lower() for w in ('clerk', 'copy', 'tally', 'weigh'))
+            kind = 'office' if why == 'lower office' and office else 'works' if LARGE.get(e.get('record')) == 'house' and \
+                e.get('post') == 'keeper' else 'shop' if e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper') and \
+                cls == 'middle' else 'work'
+            e['classMove'] = f'{cls}/{kind}' if f'{cls}/{kind}' in CLASS_BACK else f'{cls}/work'
 
     # -- homes ---------------------------------------------------------------------------------------------------------
     def home_rooms(self):
@@ -814,10 +1144,14 @@ class Placement:
                  'rm_the_bridge_lamp': 'r2_the_knucklebones', 'rm_the_wagon_yard': 'r2_cinder_wheelwrights',
                  'rm_old_kettle_smokehouse': 'rm_the_north_wharf_smokehouse', 'rm_the_old_kettle_smokehouse':
                      'rm_the_north_wharf_smokehouse', 'rm_the_watch_house': 'r2_the_keep'}
+        # 0. Whoever holds a post in the world as it is now keeps it (the food rebalance; since the jobs by class, first:
+        # a rewrite then keeps the class pass's moves, whatever the posts were before the city).
+        self.keep_current(posts, jobs, adults, placed_rooms)
+        pool_labels = {p[1] for p in POOLS}
         for pid in sorted(self.placed, key=lambda q: (self.people[q]['role'] != 'merchant', q)):
             p = self.people[pid]
-            if not p['work']:
-                continue
+            if not p['work'] or pid in jobs or (self.current.get(pid) or {}).get('workLabel') in pool_labels:
+                continue                                # (In a pool now: kept there, below.)
             room = p['work']['cell']
             rec = placed_rooms.get(room)
             target = MOVED.get(room) or (rec['key'] if rec else None)
@@ -889,12 +1223,8 @@ class Placement:
             pid = recruits.pop(0)
             q['filled'] = pid
             jobs[pid] = {'kind': q['kind'], 'post': q, 'record': q['record'], 'recruit': True}
-        # 2b. Whoever holds a post in the world as it is now keeps it, so a rewrite moves only those whose post is gone
-        # or new (the food rebalance).
-        self.keep_current(posts, jobs, adults, placed_rooms)
         # 3. Fixed posts from those whose posts were lost and the idle, by what they did: first those whose post in a
         # building of the city is gone now, then those in a pool now (no real job), then the rest.
-        pool_labels = {p[1] for p in POOLS}
 
         def lost_first(x):
             c = self.current.get(x, {})
@@ -1022,9 +1352,12 @@ class Placement:
                         if now.get('workLabel') == 'at lessons' and (now.get('work') or {}).get('cell') in \
                                 {r['id'] for r in self.records[key]['rooms']}:
                             school = key
-                    entry.update({'work': self.floor(self.records[school]['rooms'][0]['id']), 'business': None,
-                                  'role': 'civilian',
-                                  'post': 'at lessons', 'record': school})
+                    room = self.records[school]['rooms'][0]['id']
+                    spot = self.floor(room)
+                    if now.get('workLabel') == 'at lessons' and (now.get('work') or {}).get('cell') == room:
+                        spot = dict(now['work'])                # (The place they sit now: a rewrite moves nobody.)
+                    entry.update({'work': spot, 'business': None, 'role': 'civilian', 'post': 'at lessons',
+                                  'record': school})
                 else:
                     entry.update({'work': None, 'business': None, 'role': 'civilian',
                                   'post': 'retired' if age >= 60 else 'a child at home', 'record': None})
@@ -1095,7 +1428,13 @@ class Placement:
         if kind == 'outdoor':
             spots = self.city.posts[j['where']]
             x, y = spots[self.rng.randrange(len(spots))]
-            entry.update({'work': self.outdoor(x, y), 'business': None, 'role': 'civilian', 'post': 'kept',
+            work = self.outdoor(x, y)
+            now = (self.current.get(pid) or {}).get('work')
+            if now and work and now['cell'] == work['cell'] and any(
+                    (sx // 256, sy // 256) == tuple(map(int, now['cell'].rsplit('_', 2)[1:])) and
+                    abs(sx % 256 - now['x']) <= 2 and abs(sy % 256 - now['y']) <= 2 for sx, sy in spots):
+                work = dict(now)                            # (The spot they work now, by the same post.)
+            entry.update({'work': work, 'business': None, 'role': 'civilian', 'post': 'kept',
                           'labelKept': True, 'record': None, 'route': p['route']})
             return
         if kind == 'pool':
@@ -1204,6 +1543,55 @@ class Placement:
                 entry['evening'] = dict(home) if home else None
                 entry['eveningPlace'] = 'home'
         self.evening_load = load
+
+
+def class_summary(placement, pids, label_of):
+    """The class-match report (doc 67, Progress, "Jobs by class"): per household class, how many earners hold a job of
+    their class, and the rest with the reason; the Watch and the clergy apart; the Minor Houses' upper jobs; and who from
+    the Sump, the Cinders or the wharf keeps a larger business."""
+    out = {c: {'earners': 0, 'matched': 0} for c in ('upper', 'middle', 'lower')}
+    unmatched, own = [], Counter()
+    upper_households, minor_households, large_lower = set(), set(), []
+    for pid in pids:
+        e = placement.plan[pid]
+        label = label_of(pid)
+        jc, jwhy = placement.job_class(pid, e, label)
+        hc, hwhy = placement.home_class(pid)
+        family = placement.people[pid]['name'].split()[-1]
+        hh = placement.par.get(pid, pid)
+        if hc == 'upper' and family in MINOR_FAMILIES:
+            minor_households.add(hh)
+        if jc is None:
+            continue
+        if jc == 'upper' and hc == 'upper':
+            upper_households.add(hh)
+        if hc == 'lower' and placement.large_keeper(e):
+            large_lower.append(f'{pid} ({hwhy}): {label}')
+        if jc in ('clergy', 'watch') or hc == 'watch':
+            own[jc if jc in ('clergy', 'watch') else 'watch'] += 1
+            continue
+        out[hc]['earners'] += 1
+        if jc == hc:
+            out[hc]['matched'] += 1
+        else:
+            an = lambda w: f'an {w}' if w[0] in 'aeiou' else f'a {w}'
+            unmatched.append(f'{pid}: {an(hc)} household ({hwhy}) in {an(jc)} job ({jwhy}): {label}')
+    earners = sum(v['earners'] for v in out.values())
+    matched = sum(v['matched'] for v in out.values())
+    for v in out.values():
+        v['rate'] = round(v['matched'] / v['earners'], 3) if v['earners'] else 1.0
+    return {'classes': out, 'earners': earners, 'matched': matched, 'rate': round(matched / earners, 3) if earners else 1.0,
+            'ownCases': dict(own), 'unmatched': unmatched,
+            'minorWithoutUpper': sorted(minor_households - upper_households), 'largeLower': large_lower}
+
+
+def class_report(placement, plan, labels):
+    """The class-match report of the finished plan (its labels rendered), with the class pass's before."""
+    pids = [pid for pid in sorted(plan) if plan[pid].get('placed')]
+    after = class_summary(placement, pids, lambda pid: labels[pid])
+    moves = sorted(getattr(placement, 'class_moves', {}).items())
+    return {'before': getattr(placement, 'class_before', None), 'after': after,
+            'moves': [f'{pid} ({why}): {placement.home_class(pid)[0]}, now {labels[pid]}' for pid, why in moves]}
 
 
 def render_labels(plan, people, names, current=None):
@@ -1504,7 +1892,7 @@ def person_text(person, entry, label, before_label, names):
     mended = re.sub(r"\bI am ([a-z]+s)\b", lambda m: m.group(0) if m.group(1) in ('always', 'yours', 'perhaps', 'less')
                     else f'I am {gerund(m.group(1))}', person['greeting'])
     grammar = ({'greeting': mended}, 'grammar') if mended != person['greeting'] else ({}, None)
-    if person['id'] in HOUSE_POSTS or person['id'] in ROYAL_TEXT or person['age'] < 16:
+    if person['id'] in HOUSE_POSTS or person['id'] in ROYAL_TEXT or person['id'] in MINOR_TEXT or person['age'] < 16:
         return grammar
     look = split_description(person['description'])
     if look is None or any(t in look[1] for t in KEY_TITLES):
@@ -1513,6 +1901,8 @@ def person_text(person, entry, label, before_label, names):
     if job is None:
         return grammar
     phrase, line, words, back = job
+    if entry.get('classMove') in CLASS_BACK:            # (Moved by the jobs by class: a line of why.)
+        back = CLASS_BACK[entry['classMove']]
     out, why = {}, None
     changed = before_label is not None and before_label != label
     desc = split_description(person['description'])
@@ -1525,7 +1915,8 @@ def person_text(person, entry, label, before_label, names):
             out['description'] = f'{desc[0]}, {phrase}.'
         out['greeting'] = f'{greet[0] if greet else "Good day to you."} {line}'
         if changed:
-            extra = back[hash_pick(person['id'], len(back))].format(first=person['name'].split()[0])
+            extra = back[hash_pick(person['id'], len(back))].format(first=person['name'].split()[0],
+                                                                    name=names.get(entry.get('record'), '') or 'it')
             if extra not in person['backstory']:
                 out['backstory'] = f'{person["backstory"].rstrip()} {extra}'.strip()
     elif broken:

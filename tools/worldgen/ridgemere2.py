@@ -2948,7 +2948,11 @@ def compose(project, world, city, plan, labels, baseline, place_names=None):
         if person['role'] == 'merchant':
             person['route'] = ''
         person['workLabel'] = labels[person['id']]
+        if e.get('hours'):                                  # (A post the jobs by class moved: its hours with it.)
+            person['hours'] = dict(e['hours'])
         person.update(pl.ROYAL_TEXT.get(person['id'], {}))
+        person.update(pl.MINOR_TEXT.get(person['id'], {}) if e.get('record') == pl.MINOR_POSTS.get(person['id'], ('',))[0]
+                      else {})
         # Their description, greeting and backstory to fit the post (doc 67, Progress, "Food rebalance").
         text, why = pl.person_text(person, e, person['workLabel'], before, place_names or {})
         if text:
@@ -3116,7 +3120,7 @@ def _components(codes, heights, seams=None):
 # ---------------------------------------------------------------------------------------------------------------
 # The checks (doc 67, section 8 A, Acceptance) and the report
 # ---------------------------------------------------------------------------------------------------------------
-def checks(p, world, city, plan, labels, walk, capacity=None):
+def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
     """Every acceptance check of section 8 A: [(requirement, name, ok, detail)]."""
     from . import ridgemere2_people as pp
     out = []
@@ -3376,6 +3380,16 @@ def checks(p, world, city, plan, labels, walk, capacity=None):
               f'{f["short"] or "none"}; keepers+hands/demand: {rows}')
         check('', 'the Carters\' Yard has its keeper and drivers', cap['businesses'].get('carters') == 1 and
               sum(1 for x in placed if x['workLabel'] == 'driving for the carters') == pp.CARTERS)
+    # -- the jobs by class (doc 67, Progress): each household's earners in work of its quarter's class --
+    if classes is not None:
+        c_ = classes['after']
+        per = ', '.join(f'{k} {v["matched"]}/{v["earners"]}' for k, v in c_['classes'].items())
+        check('', f'at least {CLASS_TARGET:.0%} of earners hold a job of their household\'s class (the Watch and the '
+              'clergy apart)', c_['rate'] >= CLASS_TARGET, f'{c_["matched"]}/{c_["earners"]} ({c_["rate"]:.1%}): {per}')
+        check('', 'every Minor House household has an upper job (a large business, a merchant\'s, high office)',
+              not c_['minorWithoutUpper'], ', '.join(c_['minorWithoutUpper']))
+        check('', 'nobody from the Sump, the Cinders or the wharf keeps a larger business', not c_['largeLower'],
+              '; '.join(c_['largeLower'][:6]))
     # -- the graph walk --
     miss = walk['missing']
     check('R1', 'every link end, home, work spot, evening place and route post is reached from the spawn',
@@ -3385,6 +3399,7 @@ def checks(p, world, city, plan, labels, walk, capacity=None):
     return out
 
 
+CLASS_TARGET = .85                       # (the jobs by class: the share of earners in work of their class)
 CLERGY_PLACES = {'r2_cathedral', 'r2_abbey_scriptorium', 'r2_abbey_brewhouse', 'r2_abbey_school', 'r2_chapter_house',
                  'rm_the_sump_infirmary', 'rm_the_chapel_of_the_tide', 'rm_the_house_of_mending'}
 
@@ -3591,9 +3606,10 @@ def make_all(project, seed=SEED, report=print):
     final = compose(current, world, city, plan, labels, {x['id']: x for x in base['people']}, names)
     walk = area_graph_reachable(final, placed_rooms={room['id'] for r in city.records for room in r['rooms']})
     capacity = {'before': food_capacity(current), 'after': food_capacity(final)}
-    result = checks(final, world, city, plan, labels, walk, capacity)
+    classes = pp.class_report(placement, plan, labels)
+    result = checks(final, world, city, plan, labels, walk, capacity, classes)
     return {'base': base, 'world': world, 'city': city, 'placement': placement, 'plan': plan, 'labels': labels,
-            'project': final, 'walk': walk, 'checks': result, 'capacity': capacity}
+            'project': final, 'walk': walk, 'checks': result, 'capacity': capacity, 'classes': classes}
 
 
 def buildings_by_stairs(project):
@@ -3739,6 +3755,7 @@ def report_data(m):
         'checks': m['checks'],
         'capacity': {**m['capacity'], 'textFixes': dict(getattr(city, 'text_fixes', {})),
                      'textFixed': getattr(city, 'text_fixed', [])},
+        'classes': m.get('classes'),
         'issues': m['placement'].issues[:50],
         'notes': ['The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is '
                   'off (doc 67, Q2).',
@@ -3812,6 +3829,22 @@ def report_text(rep):
                          f'{f["demand"]:.1f} keeper-days ({f["ratio"]:.0%}), below half: {f["short"] or "none"}; '
                          f'household goods {v["householdBusinesses"]} businesses')
         lines.append(f'  People\'s text written again: {cap.get("textFixes", {})}')
+        lines.append('')
+    cl = rep.get('classes')
+    if cl:
+        lines.append('Jobs by class (doc 67, Progress): earners whose job is of their household\'s class (the Watch and the '
+                     'clergy apart), before and after the class pass:')
+        for k, v in (('before', cl['before']), ('after', cl['after'])):
+            if v:
+                lines.append(f'  {k}: {v["matched"]}/{v["earners"]} ({v["rate"]:.1%}); ' + ', '.join(
+                    f'{c} {x["matched"]}/{x["earners"]} ({x["rate"]:.0%})' for c, x in v['classes'].items()) +
+                    f'; own cases {v["ownCases"]}; Minor House households without an upper job: '
+                    f'{v["minorWithoutUpper"] or "none"}; larger businesses kept from the Sump, the Cinders or the wharf: '
+                    f'{len(v["largeLower"])}')
+        lines.append('  Not of their class (after):')
+        lines += [f'    - {u}' for u in cl['after']['unmatched']]
+        lines.append(f'  Moved by the class pass ({len(cl["moves"])}):')
+        lines += [f'    - {u}' for u in cl['moves']]
         lines.append('')
     lines.append('Checks:')
     for c in rep['checks']:

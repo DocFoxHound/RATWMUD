@@ -817,8 +817,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 5,
-"y": 10
+"x": 10,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
 "business": "carpenter",
@@ -863,21 +863,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_market_hall",
-"x": 11,
-"y": 2
+"cell": "r2_the_fell_preserving_house",
+"x": 16,
+"y": 1
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 7,
-"y": 4
+"x": 4,
+"y": 9
 },
 "eveningPlace": "rm_the_bilge",
 "business": "preserver",
-"role": "merchant",
-"post": "hallkeeper",
-"template": "preserver in the Market Hall",
-"structure": "r2_market_hall",
+"role": "civilian",
+"post": "hands",
+"template": null,
+"structure": "r2_fell_preserving_house",
 "route": "",
 "homeKept": false
 },
@@ -947,8 +947,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 14,
-"y": 1
+"x": 10,
+"y": 5
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "fishmonger",
@@ -973,8 +973,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 10,
-"y": 11
+"x": 7,
+"y": 5
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "inn",
@@ -999,8 +999,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 37,
-"y": 12
+"x": 11,
+"y": 5
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -1025,8 +1025,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 34,
-"y": 20
+"x": 2,
+"y": 13
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -1047,12 +1047,12 @@
 "work": {
 "cell": "rm_the_harbourmaster_s_office",
 "x": 4,
-"y": 2
+"y": 1
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 27,
-"y": 9
+"x": 6,
+"y": 5
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -1077,8 +1077,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 16,
-"y": 7
+"x": 12,
+"y": 12
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -1124,8 +1124,8 @@
 },
 "work": {
 "cell": "rm_the_greatly_counting_house",
-"x": 10,
-"y": 3
+"x": 16,
+"y": 5
 },
 "evening": {
 "cell": "rm_greatly_house_up",
@@ -1136,7 +1136,7 @@
 "business": null,
 "role": "civilian",
 "post": "staff",
-"template": "clerking at the Counting House",
+"template": "overseeing the Counting House",
 "structure": "rm_the_greatly_counting_house",
 "route": "",
 "homeKept": true
@@ -1179,21 +1179,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_greatly_masons_yard",
-"x": 10,
-"y": 2
+"cell": "r2_the_knucklebones",
+"x": 8,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 12,
-"y": 4
+"x": 4,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
-"business": "mason",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_greatly_masons_yard",
+"business": null,
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "r2_the_knucklebones",
 "route": "",
 "homeKept": false
 },
@@ -1211,8 +1211,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 7,
-"y": 3
+"x": 17,
+"y": 7
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -1264,7 +1264,7 @@
 "evening": {
 "cell": "rm_the_bilge",
 "x": 12,
-"y": 7
+"y": 9
 },
 "eveningPlace": "rm_the_bilge",
 "business": "brewery",
@@ -1289,8 +1289,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 5,
-"y": 12
+"x": 9,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -1311,8 +1311,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 6,
-"y": 6
+"x": 5,
+"y": 20
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -1337,8 +1337,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 11,
-"y": 8
+"x": 9,
+"y": 7
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -1363,8 +1363,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 16,
-"y": 5
+"x": 11,
+"y": 8
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "armory",
@@ -1389,8 +1389,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 11,
-"y": 21
+"x": 35,
+"y": 11
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -1423,7 +1423,7 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 11,
+"x": 8,
 "y": 11
 },
 "eveningPlace": "rm_the_black_tun",
@@ -1443,21 +1443,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_ropewalk",
-"x": 3,
-"y": 3
+"cell": "w_ridgemere_0_0",
+"x": 159,
+"y": 208
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 2,
-"y": 12
+"x": 15,
+"y": 5
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": "ropewalk",
-"role": "merchant",
-"post": "keeper",
-"template": "ropemaker at the ropewalk",
-"structure": "rm_the_ropewalk",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": true
 },
@@ -1527,8 +1527,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 19,
-"y": 18
+"x": 37,
+"y": 12
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -1553,8 +1553,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 11,
-"y": 8
+"x": 10,
+"y": 5
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -1579,8 +1579,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 16,
-"y": 5
+"x": 11,
+"y": 10
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -1605,8 +1605,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 3,
-"y": 12
+"x": 12,
+"y": 2
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "bakery",
@@ -1635,8 +1635,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 12,
-"y": 1
+"x": 2,
+"y": 9
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -1683,8 +1683,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 6,
-"y": 9
+"x": 5,
+"y": 3
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -1709,8 +1709,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 9,
-"y": 3
+"x": 10,
+"y": 5
 },
 "eveningPlace": "rm_the_bilge",
 "business": "inn",
@@ -1735,8 +1735,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 2,
-"y": 10
+"x": 10,
+"y": 6
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -1761,8 +1761,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 9,
-"y": 12
+"x": 16,
+"y": 8
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -1787,8 +1787,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 10,
-"y": 3
+"x": 1,
+"y": 8
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "shipwright",
@@ -1809,8 +1809,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 6,
-"y": 17
+"x": 1,
+"y": 14
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -1835,8 +1835,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 4,
-"y": 13
+"x": 6,
+"y": 6
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -1891,8 +1891,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 8,
-"y": 8
+"x": 5,
+"y": 6
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": "inn",
@@ -1917,8 +1917,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 10,
-"y": 5
+"x": 6,
+"y": 9
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "fishmonger",
@@ -2017,8 +2017,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 9,
-"y": 11
+"x": 3,
+"y": 18
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -2037,21 +2037,21 @@
 "y": 2
 },
 "work": {
-"cell": "rm_the_greatly_yard",
-"x": 8,
+"cell": "r2_the_lamp_store",
+"x": 9,
 "y": 4
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 18,
-"y": 2
+"x": 13,
+"y": 4
 },
 "eveningPlace": "rm_the_bilge",
-"business": "builders_yard",
-"role": "merchant",
-"post": "keeper",
-"template": "runs the Greatly builders' yard",
-"structure": "rm_the_greatly_yard",
+"business": null,
+"role": "civilian",
+"post": "staff",
+"template": "lighting the lamps at dusk",
+"structure": "r2_lamp_store",
 "route": "",
 "homeKept": false
 },
@@ -2064,7 +2064,7 @@
 },
 "work": {
 "cell": "rm_fellhall",
-"x": 1,
+"x": 12,
 "y": 3
 },
 "evening": {
@@ -2095,8 +2095,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 32,
-"y": 11
+"x": 14,
+"y": 2
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -2121,8 +2121,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 2,
-"y": 7
+"x": 10,
+"y": 1
 },
 "eveningPlace": "rm_the_bilge",
 "business": "butcher",
@@ -2147,7 +2147,7 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 13,
+"x": 1,
 "y": 9
 },
 "eveningPlace": "rm_the_bilge",
@@ -2199,8 +2199,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 4,
-"y": 12
+"x": 18,
+"y": 3
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -2273,8 +2273,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 11,
-"y": 9
+"x": 10,
+"y": 23
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -2299,8 +2299,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 1,
-"y": 3
+"x": 7,
+"y": 11
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "tailor",
@@ -2325,8 +2325,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 3,
-"y": 2
+"x": 1,
+"y": 4
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": null,
@@ -2351,8 +2351,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 3,
-"y": 19
+"x": 29,
+"y": 15
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -2403,8 +2403,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 3,
-"y": 16
+"x": 8,
+"y": 13
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -2429,8 +2429,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 12,
-"y": 4
+"x": 18,
+"y": 6
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -2455,7 +2455,7 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 14,
+"x": 1,
 "y": 4
 },
 "eveningPlace": "rm_the_black_tun",
@@ -2481,8 +2481,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 26,
-"y": 5
+"x": 12,
+"y": 15
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -2507,8 +2507,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 1,
-"y": 16
+"x": 25,
+"y": 24
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -2533,8 +2533,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 4,
-"y": 5
+"x": 15,
+"y": 6
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "vintner",
@@ -2559,8 +2559,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 4,
-"y": 1
+"x": 15,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -2607,8 +2607,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 10,
-"y": 10
+"x": 16,
+"y": 7
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -2637,8 +2637,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 7,
-"y": 22
+"x": 1,
+"y": 26
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -2657,9 +2657,9 @@
 "y": 2
 },
 "work": {
-"cell": "rm_grantham_house",
-"x": 9,
-"y": 3
+"cell": "rm_the_rainwater_brewery",
+"x": 2,
+"y": 17
 },
 "evening": {
 "cell": "rm_grantham_house_up",
@@ -2667,11 +2667,11 @@
 "y": 2
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "kept",
-"template": null,
-"structure": "rm_grantham_house",
+"business": "brewery",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_rainwater_brewery",
 "route": "",
 "homeKept": true
 },
@@ -2715,8 +2715,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 11,
-"y": 9
+"x": 10,
+"y": 3
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -2741,8 +2741,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 36,
-"y": 14
+"x": 32,
+"y": 3
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -2767,8 +2767,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 6,
-"y": 2
+"x": 10,
+"y": 4
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -2793,8 +2793,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 9,
-"y": 7
+"x": 2,
+"y": 11
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -2813,21 +2813,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_greatly_stables",
-"x": 3,
-"y": 6
+"cell": "rm_the_wharf_tannery",
+"x": 2,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 17,
-"y": 2
+"x": 5,
+"y": 6
 },
 "eveningPlace": "rm_the_black_tun",
-"business": "stables",
-"role": "civilian",
-"post": "staff",
-"template": "keeping the Greatly stables",
-"structure": "rm_the_greatly_stables",
+"business": "tannery",
+"role": "merchant",
+"post": "keeper",
+"template": "tanner",
+"structure": "rm_the_wharf_tannery",
 "route": "",
 "homeKept": true
 },
@@ -2845,8 +2845,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 3,
-"y": 9
+"x": 12,
+"y": 3
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -2872,7 +2872,7 @@
 "evening": {
 "cell": "rm_the_slag_anchor",
 "x": 18,
-"y": 4
+"y": 7
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -2923,8 +2923,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 5,
-"y": 8
+"x": 3,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -2943,21 +2943,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_cinder_glassworks",
-"x": 13,
+"cell": "r2_the_lamp_store",
+"x": 1,
 "y": 7
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 3,
-"y": 3
+"x": 1,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
-"business": "glassworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_cinder_glassworks",
+"business": null,
+"role": "civilian",
+"post": "staff",
+"template": "lighting the lamps at dusk",
+"structure": "r2_lamp_store",
 "route": "",
 "homeKept": false
 },
@@ -2975,8 +2975,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 13,
-"y": 8
+"x": 9,
+"y": 12
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -3002,7 +3002,7 @@
 "evening": {
 "cell": "rm_the_black_tun",
 "x": 17,
-"y": 6
+"y": 10
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "dairy",
@@ -3027,8 +3027,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 1,
-"y": 2
+"x": 11,
+"y": 3
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "brewery",
@@ -3079,8 +3079,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 12,
-"y": 2
+"x": 14,
+"y": 5
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -3135,8 +3135,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 12,
-"y": 7
+"x": 17,
+"y": 5
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -3187,8 +3187,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 18,
-"y": 9
+"x": 13,
+"y": 10
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "cooperage",
@@ -3213,8 +3213,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 27,
-"y": 23
+"x": 5,
+"y": 7
 },
 "eveningPlace": "r2_cathedral",
 "business": "brewery",
@@ -3240,7 +3240,7 @@
 "evening": {
 "cell": "rm_the_slag_anchor",
 "x": 3,
-"y": 12
+"y": 10
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -3291,8 +3291,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 18,
-"y": 7
+"x": 16,
+"y": 11
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3317,8 +3317,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 2,
-"y": 1
+"x": 1,
+"y": 8
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -3363,9 +3363,9 @@
 "y": 2
 },
 "work": {
-"cell": "rm_vance_house",
-"x": 6,
-"y": 8
+"cell": "rm_the_rag_mill",
+"x": 17,
+"y": 9
 },
 "evening": {
 "cell": "rm_vance_house_up",
@@ -3373,11 +3373,11 @@
 "y": 2
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "kept",
-"template": null,
-"structure": "rm_vance_house",
+"business": "papermill",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_rag_mill",
 "route": "",
 "homeKept": true
 },
@@ -3395,8 +3395,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 7,
-"y": 24
+"x": 3,
+"y": 10
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -3421,8 +3421,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 16,
-"y": 1
+"x": 4,
+"y": 11
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -3473,8 +3473,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 16,
-"y": 9
+"x": 2,
+"y": 8
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "provisioner",
@@ -3551,8 +3551,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 8,
-"y": 8
+"x": 9,
+"y": 7
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "chandlery",
@@ -3577,8 +3577,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 7,
-"y": 7
+"x": 2,
+"y": 9
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -3651,8 +3651,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 10,
-"y": 11
+"x": 11,
+"y": 2
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -3677,8 +3677,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 1,
-"y": 5
+"x": 7,
+"y": 12
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3729,8 +3729,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 10,
-"y": 2
+"x": 7,
+"y": 10
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3759,8 +3759,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 6,
-"y": 9
+"x": 3,
+"y": 4
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -3785,8 +3785,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 11,
-"y": 2
+"x": 14,
+"y": 8
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -3811,8 +3811,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 11,
-"y": 1
+"x": 14,
+"y": 7
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3841,8 +3841,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 16,
-"y": 6
+"x": 8,
+"y": 5
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -3863,8 +3863,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 16,
-"y": 3
+"x": 1,
+"y": 2
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3889,7 +3889,7 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 16,
+"x": 2,
 "y": 2
 },
 "eveningPlace": "rm_the_black_tun",
@@ -3941,8 +3941,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 1,
-"y": 15
+"x": 17,
+"y": 19
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -3967,8 +3967,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 6,
-"y": 4
+"x": 17,
+"y": 2
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -3989,8 +3989,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 3,
-"y": 18
+"x": 10,
+"y": 19
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -4019,8 +4019,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 4,
-"y": 6
+"x": 3,
+"y": 26
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -4045,8 +4045,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 14,
-"y": 2
+"x": 10,
+"y": 11
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": "provisioner",
@@ -4071,7 +4071,7 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 4,
+"x": 7,
 "y": 3
 },
 "eveningPlace": "rm_the_bilge",
@@ -4097,7 +4097,7 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 6,
+"x": 11,
 "y": 3
 },
 "eveningPlace": "rm_the_bilge",
@@ -4123,8 +4123,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 5,
-"y": 3
+"x": 15,
+"y": 6
 },
 "eveningPlace": "rm_the_bilge",
 "business": "tinker",
@@ -4153,8 +4153,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 1,
-"y": 11
+"x": 8,
+"y": 8
 },
 "eveningPlace": "rm_the_black_tun",
 "business": null,
@@ -4179,8 +4179,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 13,
-"y": 9
+"x": 2,
+"y": 8
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -4205,8 +4205,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 10,
-"y": 4
+"x": 5,
+"y": 8
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "barber",
@@ -4231,8 +4231,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 4,
-"y": 10
+"x": 1,
+"y": 4
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4257,8 +4257,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 11,
-"y": 9
+"x": 5,
+"y": 11
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "inn",
@@ -4283,7 +4283,7 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 14,
+"x": 10,
 "y": 8
 },
 "eveningPlace": "rm_the_bilge",
@@ -4313,8 +4313,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 15,
-"y": 4
+"x": 14,
+"y": 11
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "pottery",
@@ -4343,8 +4343,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 15,
-"y": 11
+"x": 7,
+"y": 1
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4369,8 +4369,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 29,
-"y": 2
+"x": 38,
+"y": 4
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -4395,8 +4395,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 1,
-"y": 1
+"x": 7,
+"y": 11
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4421,8 +4421,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 6,
-"y": 9
+"x": 7,
+"y": 7
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "press",
@@ -4448,7 +4448,7 @@
 "evening": {
 "cell": "rm_the_bilge",
 "x": 7,
-"y": 2
+"y": 12
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4473,8 +4473,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 16,
-"y": 8
+"x": 4,
+"y": 12
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4499,8 +4499,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 4,
-"y": 6
+"x": 5,
+"y": 11
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4525,8 +4525,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 4,
-"y": 12
+"x": 1,
+"y": 6
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4581,8 +4581,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 10,
-"y": 1
+"x": 18,
+"y": 4
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -4607,8 +4607,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 3,
-"y": 12
+"x": 8,
+"y": 9
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": "provisioner",
@@ -4627,21 +4627,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_greatly_forge_workshop",
-"x": 8,
-"y": 2
+"cell": "rm_the_greatly_plasterworks",
+"x": 17,
+"y": 9
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 7,
-"y": 9
+"x": 11,
+"y": 7
 },
 "eveningPlace": "rm_the_black_tun",
-"business": "builders_works",
-"role": "civilian",
-"post": "staff",
-"template": "working at the Greatly works",
-"structure": "r2_greatly_forge",
+"business": "plasterworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_greatly_plasterworks",
 "route": "",
 "homeKept": true
 },
@@ -4659,8 +4659,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 14,
-"y": 2
+"x": 12,
+"y": 3
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "weaver",
@@ -4741,8 +4741,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 3,
-"y": 8
+"x": 2,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4768,7 +4768,7 @@
 "evening": {
 "cell": "rm_the_slag_anchor",
 "x": 5,
-"y": 5
+"y": 2
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -4793,8 +4793,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 2,
-"y": 11
+"x": 3,
+"y": 7
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4819,8 +4819,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 15,
-"y": 5
+"x": 3,
+"y": 6
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -4849,7 +4849,7 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 6,
+"x": 9,
 "y": 11
 },
 "eveningPlace": "rm_the_bilge",
@@ -4927,8 +4927,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 9,
-"y": 8
+"x": 14,
+"y": 2
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -4979,8 +4979,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 14,
-"y": 7
+"x": 15,
+"y": 10
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "saddlery",
@@ -5031,8 +5031,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 12,
-"y": 17
+"x": 10,
+"y": 2
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -5057,8 +5057,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 8,
-"y": 11
+"x": 5,
+"y": 1
 },
 "eveningPlace": "rm_the_bilge",
 "business": "inn",
@@ -5105,8 +5105,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 5,
-"y": 11
+"x": 4,
+"y": 24
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -5131,8 +5131,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 2,
-"y": 19
+"x": 12,
+"y": 21
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -5157,8 +5157,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 8,
-"y": 3
+"x": 12,
+"y": 7
 },
 "eveningPlace": "rm_the_bilge",
 "business": "provisioner",
@@ -5205,8 +5205,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 1,
-"y": 5
+"x": 8,
+"y": 7
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": null,
@@ -5309,8 +5309,8 @@
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 1,
-"y": 11
+"x": 18,
+"y": 1
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -5335,8 +5335,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 20,
-"y": 21
+"x": 25,
+"y": 23
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -5362,7 +5362,7 @@
 "evening": {
 "cell": "rm_the_bilge",
 "x": 2,
-"y": 5
+"y": 3
 },
 "eveningPlace": "rm_the_bilge",
 "business": null,
@@ -5387,8 +5387,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 9,
-"y": 5
+"x": 16,
+"y": 4
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "inn",
@@ -5491,8 +5491,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 8,
-"y": 1
+"x": 4,
+"y": 2
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -5511,21 +5511,21 @@
 "y": 3
 },
 "work": {
-"cell": "rm_the_fell_sawmill",
-"x": 6,
-"y": 10
+"cell": "r2_the_lamp_store",
+"x": 8,
+"y": 7
 },
 "evening": {
 "cell": "rm_the_bilge",
-"x": 13,
-"y": 2
+"x": 3,
+"y": 5
 },
 "eveningPlace": "rm_the_bilge",
-"business": "sawmill",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_fell_sawmill",
+"business": null,
+"role": "civilian",
+"post": "staff",
+"template": "lighting the lamps at dusk",
+"structure": "r2_lamp_store",
 "route": "",
 "homeKept": false
 },
@@ -5547,8 +5547,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 1,
-"y": 3
+"x": 8,
+"y": 11
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "charcoal",
@@ -5603,7 +5603,7 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 8,
+"x": 11,
 "y": 5
 },
 "eveningPlace": "rm_the_black_tun",
@@ -5629,8 +5629,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 2,
-"y": 4
+"x": 7,
+"y": 7
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -5655,8 +5655,8 @@
 },
 "evening": {
 "cell": "rm_the_black_tun",
-"x": 15,
-"y": 1
+"x": 8,
+"y": 5
 },
 "eveningPlace": "rm_the_black_tun",
 "business": "carpenter",
@@ -5685,8 +5685,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 12,
-"y": 8
+"x": 3,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "cartographer",
@@ -5711,8 +5711,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 7,
-"y": 12
+"x": 18,
+"y": 3
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -5737,8 +5737,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 3,
-"y": 2
+"x": 17,
+"y": 9
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -5789,8 +5789,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 5,
-"y": 3
+"x": 2,
+"y": 9
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -5815,8 +5815,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 3,
-"y": 8
+"x": 16,
+"y": 3
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "preserver",
@@ -5841,8 +5841,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 14,
-"y": 3
+"x": 3,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "bakery",
@@ -5944,19 +5944,19 @@
 },
 "work": {
 "cell": "r2_the_carters_yard",
-"x": 8,
-"y": 4
+"x": 6,
+"y": 11
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 10,
-"y": 6
+"x": 15,
+"y": 7
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "carters",
-"role": "merchant",
-"post": "keeper",
-"template": "keeping the Carters' Yard",
+"role": "civilian",
+"post": "staff",
+"template": "driving for the carters",
 "structure": "r2_carters_yard",
 "route": "",
 "homeKept": false
@@ -5975,8 +5975,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 12,
-"y": 3
+"x": 2,
+"y": 7
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -6001,8 +6001,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 13,
-"y": 8
+"x": 14,
+"y": 5
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6027,8 +6027,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 5,
-"y": 16
+"x": 9,
+"y": 6
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -6053,8 +6053,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 12,
-"y": 6
+"x": 14,
+"y": 3
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6073,21 +6073,21 @@
 "y": 3
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 117,
-"y": 8
+"cell": "r2_the_washhouse",
+"x": 2,
+"y": 4
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 12,
-"y": 3
+"x": 10,
+"y": 6
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": null,
+"business": "laundry",
 "role": "civilian",
-"post": "pool",
-"template": "working the cranes",
-"structure": "crane",
+"post": "staff",
+"template": "keeping the Washhouse",
+"structure": "r2_the_washhouse",
 "route": "",
 "homeKept": true
 },
@@ -6105,8 +6105,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 7,
-"y": 2
+"x": 12,
+"y": 3
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "smithy",
@@ -6132,7 +6132,7 @@
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 2,
-"y": 4
+"y": 8
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "dairy",
@@ -6183,8 +6183,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 5,
-"y": 11
+"x": 11,
+"y": 4
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6209,7 +6209,7 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 1,
+"x": 5,
 "y": 9
 },
 "eveningPlace": "rm_the_last_lamp",
@@ -6235,8 +6235,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 8,
-"y": 5
+"x": 17,
+"y": 3
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -6261,8 +6261,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 9,
-"y": 9
+"x": 14,
+"y": 4
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "smithy",
@@ -6291,8 +6291,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 9,
-"y": 7
+"x": 2,
+"y": 8
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "pawnbroker",
@@ -6318,7 +6318,7 @@
 "evening": {
 "cell": "rm_the_rainbarrel",
 "x": 18,
-"y": 2
+"y": 8
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "bakery",
@@ -6343,8 +6343,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 18,
-"y": 4
+"x": 8,
+"y": 5
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "bakery",
@@ -6399,8 +6399,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 17,
-"y": 1
+"x": 15,
+"y": 12
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "general",
@@ -6471,21 +6471,21 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_sailors_rest",
-"x": 2,
-"y": 18
+"cell": "rm_the_ropewalk",
+"x": 3,
+"y": 3
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 1,
+"x": 11,
 "y": 6
 },
 "eveningPlace": "rm_the_last_lamp",
-"business": "inn",
+"business": "ropewalk",
 "role": "merchant",
 "post": "keeper",
-"template": "keeping the inn",
-"structure": "rm_the_sailors_rest",
+"template": "ropemaker at the ropewalk",
+"structure": "rm_the_ropewalk",
 "route": "",
 "homeKept": true
 },
@@ -6511,8 +6511,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 18,
-"y": 3
+"x": 14,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "inn",
@@ -6537,8 +6537,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 5,
-"y": 11
+"x": 3,
+"y": 8
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": "scriptorium",
@@ -6557,9 +6557,9 @@
 "y": 11
 },
 "work": {
-"cell": "rm_stanmore_house",
-"x": 11,
-"y": 5
+"cell": "r2_the_administrative_wing",
+"x": 40,
+"y": 18
 },
 "evening": {
 "cell": "rm_stanmore_house_up",
@@ -6569,9 +6569,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "kept",
-"template": null,
-"structure": "rm_stanmore_house",
+"post": "staff",
+"template": "the Crown's treasurer",
+"structure": "r2_administrative_wing",
 "route": "",
 "homeKept": true
 },
@@ -6615,8 +6615,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 5,
-"y": 6
+"x": 13,
+"y": 3
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "fishmonger",
@@ -6642,7 +6642,7 @@
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 8,
-"y": 5
+"y": 2
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "preserver",
@@ -6667,8 +6667,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 7,
-"y": 10
+"x": 15,
+"y": 8
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -6745,8 +6745,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 15,
-"y": 4
+"x": 17,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6779,8 +6779,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 14,
-"y": 4
+"x": 15,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6857,7 +6857,7 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 16,
+"x": 9,
 "y": 4
 },
 "eveningPlace": "rm_the_rainbarrel",
@@ -6911,21 +6911,21 @@
 "y": 10
 },
 "work": {
-"cell": "rm_the_lime_kilns",
-"x": 15,
-"y": 9
+"cell": "w_ridgemere_0_0",
+"x": 158,
+"y": 208
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 6,
-"y": 10
+"x": 16,
+"y": 11
 },
 "eveningPlace": "rm_the_drowned_lantern",
-"business": "brickworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_lime_kilns",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": true
 },
@@ -6943,8 +6943,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 11,
-"y": 5
+"x": 1,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -6969,8 +6969,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 2,
-"y": 9
+"x": 9,
+"y": 2
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -6995,7 +6995,7 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 11,
+"x": 34,
 "y": 3
 },
 "eveningPlace": "r2_cathedral",
@@ -7021,8 +7021,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 8,
-"y": 7
+"x": 17,
+"y": 12
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7047,8 +7047,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 6,
-"y": 21
+"x": 5,
+"y": 25
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -7073,8 +7073,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 9,
-"y": 9
+"x": 3,
+"y": 11
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": "bakery",
@@ -7100,7 +7100,7 @@
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 7,
-"y": 9
+"y": 2
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "preserver",
@@ -7125,8 +7125,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 3,
-"y": 5
+"x": 2,
+"y": 12
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -7151,8 +7151,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 15,
-"y": 11
+"x": 10,
+"y": 4
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7197,9 +7197,9 @@
 "y": 2
 },
 "work": {
-"cell": "rm_carlisle_house",
-"x": 12,
-"y": 10
+"cell": "rm_the_sailors_rest",
+"x": 2,
+"y": 18
 },
 "evening": {
 "cell": "rm_carlisle_house_up",
@@ -7207,11 +7207,11 @@
 "y": 2
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "kept",
-"template": null,
-"structure": "rm_carlisle_house",
+"business": "inn",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the inn",
+"structure": "rm_the_sailors_rest",
 "route": "",
 "homeKept": true
 },
@@ -7223,21 +7223,21 @@
 "y": 4
 },
 "work": {
-"cell": "rm_the_grayrock_foundry",
-"x": 2,
-"y": 2
+"cell": "r2_the_king_s_residence_down",
+"x": 39,
+"y": 18
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 10,
-"y": 3
+"x": 4,
+"y": 4
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": "foundry",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_grayrock_foundry",
+"business": null,
+"role": "civilian",
+"post": "staff",
+"template": "serving in the King's household",
+"structure": "r2_kings_residence",
 "route": "",
 "homeKept": true
 },
@@ -7249,21 +7249,21 @@
 "y": 8
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 180,
-"y": 37
+"cell": "r2_the_grayrock_new_store",
+"x": 5,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 14,
-"y": 4
+"x": 10,
+"y": 8
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "carrying from Sump Stairs",
-"structure": "sump_stairs",
+"post": "staff",
+"template": "keeping the New Store",
+"structure": "r2_new_store",
 "route": "",
 "homeKept": true
 },
@@ -7341,8 +7341,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 8,
-"y": 10
+"x": 3,
+"y": 2
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -7361,21 +7361,21 @@
 "y": 6
 },
 "work": {
-"cell": "rm_the_greatly_colour_works",
+"cell": "r2_the_washhouse",
 "x": 2,
-"y": 2
+"y": 11
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 9,
-"y": 4
+"x": 10,
+"y": 3
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "paintworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_greatly_colour_works",
+"business": "laundry",
+"role": "civilian",
+"post": "staff",
+"template": "washing at the Washhouse",
+"structure": "r2_the_washhouse",
 "route": "",
 "homeKept": false
 },
@@ -7476,7 +7476,7 @@
 "evening": {
 "cell": "rm_the_rainbarrel",
 "x": 6,
-"y": 11
+"y": 8
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7527,8 +7527,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 17,
-"y": 12
+"x": 16,
+"y": 7
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7554,7 +7554,7 @@
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 10,
-"y": 6
+"y": 2
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -7579,8 +7579,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 1,
-"y": 2
+"x": 6,
+"y": 7
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7635,8 +7635,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 2,
-"y": 1
+"x": 16,
+"y": 11
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -7665,8 +7665,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 5,
-"y": 5
+"x": 8,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "stall",
@@ -7691,8 +7691,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 15,
-"y": 3
+"x": 18,
+"y": 4
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7717,8 +7717,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 18,
-"y": 12
+"x": 16,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "stall",
@@ -7769,8 +7769,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 14,
-"y": 1
+"x": 4,
+"y": 2
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -7795,8 +7795,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 6,
-"y": 11
+"x": 2,
+"y": 2
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -7821,8 +7821,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 1,
-"y": 8
+"x": 9,
+"y": 10
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -7855,8 +7855,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 7,
-"y": 4
+"x": 3,
+"y": 8
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": "carpenter",
@@ -7907,8 +7907,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 1,
-"y": 4
+"x": 16,
+"y": 5
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "rag_and_bone",
@@ -7959,8 +7959,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 9,
-"y": 2
+"x": 15,
+"y": 3
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -8089,8 +8089,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 2,
-"y": 8
+"x": 10,
+"y": 2
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -8115,8 +8115,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 7,
-"y": 5
+"x": 5,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "stall",
@@ -8167,8 +8167,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 5,
-"y": 11
+"x": 13,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "butcher",
@@ -8245,8 +8245,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 18,
-"y": 7
+"x": 2,
+"y": 2
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "butcher",
@@ -8266,13 +8266,13 @@
 },
 "work": {
 "cell": "rm_the_city_office",
-"x": 5,
-"y": 10
+"x": 2,
+"y": 21
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 9,
-"y": 6
+"x": 6,
+"y": 3
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -8297,8 +8297,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 14,
-"y": 6
+"x": 17,
+"y": 11
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": null,
@@ -8323,8 +8323,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 6,
-"y": 9
+"x": 17,
+"y": 4
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "provisioner",
@@ -8427,8 +8427,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 11,
-"y": 6
+"x": 12,
+"y": 19
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -8453,8 +8453,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 11,
-"y": 11
+"x": 14,
+"y": 6
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "dairy",
@@ -8479,8 +8479,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 1,
-"y": 7
+"x": 10,
+"y": 9
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -8499,21 +8499,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_rag_mill",
-"x": 17,
-"y": 9
+"cell": "w_ridgemere_0_1",
+"x": 157,
+"y": 8
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 7,
-"y": 12
+"x": 4,
+"y": 4
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "papermill",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_rag_mill",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": false
 },
@@ -8557,8 +8557,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 1,
-"y": 5
+"x": 10,
+"y": 2
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -8583,8 +8583,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 13,
-"y": 11
+"x": 2,
+"y": 4
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -8609,8 +8609,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 18,
-"y": 1
+"x": 13,
+"y": 11
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "preserver",
@@ -8639,8 +8639,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 3,
-"y": 15
+"x": 4,
+"y": 1
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -8665,7 +8665,7 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 11,
+"x": 18,
 "y": 9
 },
 "eveningPlace": "rm_the_rainbarrel",
@@ -8717,7 +8717,7 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 2,
+"x": 7,
 "y": 5
 },
 "eveningPlace": "rm_the_rainbarrel",
@@ -8770,7 +8770,7 @@
 "evening": {
 "cell": "rm_the_rainbarrel",
 "x": 16,
-"y": 8
+"y": 9
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "fishmonger",
@@ -8815,21 +8815,21 @@
 "y": 8
 },
 "work": {
-"cell": "rm_the_wharf_tannery",
-"x": 2,
-"y": 2
+"cell": "rm_the_greatly_stables",
+"x": 3,
+"y": 6
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 2,
-"y": 6
+"x": 12,
+"y": 2
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "tannery",
-"role": "merchant",
-"post": "keeper",
-"template": "tanner",
-"structure": "rm_the_wharf_tannery",
+"business": "stables",
+"role": "civilian",
+"post": "staff",
+"template": "keeping the Greatly stables",
+"structure": "rm_the_greatly_stables",
 "route": "",
 "homeKept": false
 },
@@ -8851,8 +8851,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 11,
-"y": 11
+"x": 3,
+"y": 6
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": "cartwright",
@@ -8877,8 +8877,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 10,
-"y": 3
+"x": 3,
+"y": 11
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "inn",
@@ -8903,8 +8903,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 7,
-"y": 2
+"x": 11,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -8933,8 +8933,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 9,
-"y": 3
+"x": 11,
+"y": 11
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": null,
@@ -8986,7 +8986,7 @@
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 9,
-"y": 2
+"y": 8
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "provisioner",
@@ -9011,8 +9011,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 18,
-"y": 2
+"x": 6,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "stables",
@@ -9115,7 +9115,7 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 4,
+"x": 2,
 "y": 12
 },
 "eveningPlace": "rm_the_rainbarrel",
@@ -9141,8 +9141,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 17,
-"y": 4
+"x": 10,
+"y": 3
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -9193,8 +9193,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 9,
-"y": 21
+"x": 1,
+"y": 2
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -9219,7 +9219,7 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 3,
+"x": 1,
 "y": 9
 },
 "eveningPlace": "rm_the_last_lamp",
@@ -9245,8 +9245,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 5,
-"y": 12
+"x": 4,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "dairy",
@@ -9265,21 +9265,21 @@
 "y": 3
 },
 "work": {
-"cell": "r2_the_king_s_residence_down",
-"x": 39,
-"y": 18
+"cell": "rm_the_grayrock_foundry",
+"x": 2,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 3,
-"y": 10
+"x": 2,
+"y": 11
 },
 "eveningPlace": "rm_the_last_lamp",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "serving in the King's household",
-"structure": "r2_kings_residence",
+"business": "foundry",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_grayrock_foundry",
 "route": "",
 "homeKept": true
 },
@@ -9297,8 +9297,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 7,
-"y": 8
+"x": 15,
+"y": 5
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "inn",
@@ -9327,8 +9327,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 14,
-"y": 2
+"x": 1,
+"y": 5
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -9353,8 +9353,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 1,
-"y": 12
+"x": 8,
+"y": 8
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -9379,8 +9379,8 @@
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
-"x": 3,
-"y": 5
+"x": 2,
+"y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": null,
@@ -9457,8 +9457,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 17,
-"y": 9
+"x": 16,
+"y": 2
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -9505,8 +9505,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 10,
-"y": 11
+"x": 2,
+"y": 16
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -9525,21 +9525,21 @@
 "y": 11
 },
 "work": {
-"cell": "rm_the_tileworks",
-"x": 2,
+"cell": "r2_the_lamp_store",
+"x": 5,
 "y": 2
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 7,
-"y": 6
+"x": 2,
+"y": 13
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": "brickworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_tileworks",
+"business": null,
+"role": "civilian",
+"post": "staff",
+"template": "lighting the lamps at dusk",
+"structure": "r2_lamp_store",
 "route": "",
 "homeKept": false
 },
@@ -9561,8 +9561,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 4,
-"y": 4
+"x": 18,
+"y": 1
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "apothecary",
@@ -9587,8 +9587,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 3,
-"y": 1
+"x": 2,
+"y": 3
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "herbalist",
@@ -9613,8 +9613,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 17,
-"y": 1
+"x": 4,
+"y": 4
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "smithy",
@@ -9639,8 +9639,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 14,
-"y": 1
+"x": 17,
+"y": 9
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -9667,21 +9667,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_eastgate_stables",
-"x": 3,
-"y": 4
+"cell": "rm_the_harbourmaster_s_office",
+"x": 7,
+"y": 10
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 15,
-"y": 2
+"x": 3,
+"y": 7
 },
 "eveningPlace": "rm_the_last_lamp",
-"business": "stables",
+"business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "rm_the_eastgate_stables",
+"post": "staff",
+"template": "clerking at the Wharf Office",
+"structure": "rm_the_harbourmaster_s_office",
 "route": "",
 "homeKept": true
 },
@@ -9699,8 +9699,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 18,
-"y": 1
+"x": 1,
+"y": 4
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -9751,8 +9751,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 12,
-"y": 10
+"x": 11,
+"y": 6
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "laundry",
@@ -9773,8 +9773,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 4,
-"y": 16
+"x": 2,
+"y": 17
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -9819,21 +9819,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_rainwater_brewery",
-"x": 2,
-"y": 17
+"cell": "w_ridgemere_0_0",
+"x": 139,
+"y": 208
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 3,
-"y": 12
+"x": 2,
+"y": 1
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": "brewery",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_rainwater_brewery",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": false
 },
@@ -9855,8 +9855,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 12,
-"y": 15
+"x": 2,
+"y": 2
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "cooperage",
@@ -9967,8 +9967,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 15,
-"y": 9
+"x": 3,
+"y": 8
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -9989,8 +9989,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 1,
-"y": 14
+"x": 9,
+"y": 19
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -10019,7 +10019,7 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 17,
+"x": 18,
 "y": 11
 },
 "eveningPlace": "rm_the_drowned_lantern",
@@ -10045,8 +10045,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 18,
-"y": 17
+"x": 6,
+"y": 8
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -10071,8 +10071,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 8,
-"y": 6
+"x": 3,
+"y": 14
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10097,8 +10097,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 4,
-"y": 4
+"x": 1,
+"y": 7
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -10117,21 +10117,21 @@
 "y": 7
 },
 "work": {
-"cell": "r2_the_carters_yard",
-"x": 8,
-"y": 14
+"cell": "r2_the_administrative_wing",
+"x": 35,
+"y": 18
 },
 "evening": {
 "cell": "rm_the_last_lamp",
 "x": 5,
-"y": 12
+"y": 3
 },
 "eveningPlace": "rm_the_last_lamp",
-"business": "carters",
+"business": null,
 "role": "civilian",
 "post": "staff",
-"template": "driving for the carters",
-"structure": "r2_carters_yard",
+"template": "clerking in the Administrative Wing",
+"structure": "r2_administrative_wing",
 "route": "",
 "homeKept": true
 },
@@ -10145,8 +10145,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 8,
-"y": 3
+"x": 4,
+"y": 12
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -10171,8 +10171,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 1
+"x": 11,
+"y": 10
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10201,8 +10201,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 15,
-"y": 1
+"x": 7,
+"y": 6
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": "chandlery",
@@ -10227,8 +10227,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 5,
-"y": 7
+"x": 8,
+"y": 6
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -10279,8 +10279,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 4
+"x": 5,
+"y": 5
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10309,8 +10309,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 5,
-"y": 12
+"x": 8,
+"y": 5
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": "butcher",
@@ -10335,8 +10335,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 15,
-"y": 9
+"x": 1,
+"y": 4
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -10361,8 +10361,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 10,
-"y": 17
+"x": 12,
+"y": 11
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "laundry",
@@ -10387,8 +10387,8 @@
 },
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 10,
-"y": 8
+"x": 5,
+"y": 11
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": "butcher",
@@ -10413,8 +10413,8 @@
 },
 "evening": {
 "cell": "r2_the_cathedral_of_ridgemere",
-"x": 30,
-"y": 4
+"x": 28,
+"y": 9
 },
 "eveningPlace": "r2_cathedral",
 "business": null,
@@ -10435,8 +10435,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_last_lamp",
-"x": 4,
-"y": 9
+"x": 3,
+"y": 8
 },
 "eveningPlace": "rm_the_last_lamp",
 "business": null,
@@ -10491,8 +10491,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 20,
-"y": 4
+"x": 11,
+"y": 2
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "inn",
@@ -10521,8 +10521,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 12,
-"y": 5
+"x": 18,
+"y": 1
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -10551,8 +10551,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 5,
-"y": 9
+"x": 12,
+"y": 22
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -10603,8 +10603,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 7,
-"y": 15
+"x": 3,
+"y": 6
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10629,8 +10629,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 14,
-"y": 2
+"x": 6,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "bakery",
@@ -10653,21 +10653,21 @@
 "y": 5
 },
 "work": {
-"cell": "w_ridgemere_1_1",
-"x": 119,
-"y": 54
+"cell": "rm_the_grey_gull_inn",
+"x": 18,
+"y": 13
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 6,
-"y": 2
+"x": 11,
+"y": 9
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": "inn",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "ladling soup on Market Square",
-"structure": "market_square",
+"business": null,
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "rm_the_grey_gull_inn",
 "route": "",
 "homeKept": false
 },
@@ -10685,8 +10685,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 2,
-"y": 5
+"x": 7,
+"y": 12
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "bakery",
@@ -10738,7 +10738,7 @@
 "evening": {
 "cell": "r2_the_knucklebones",
 "x": 1,
-"y": 2
+"y": 8
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10767,8 +10767,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 12,
-"y": 6
+"x": 21,
+"y": 11
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -10853,8 +10853,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 5,
-"y": 11
+"x": 9,
+"y": 6
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "laundry",
@@ -10873,21 +10873,21 @@
 "y": 13
 },
 "work": {
-"cell": "r2_the_washhouse",
+"cell": "rm_the_greatly_colour_works",
 "x": 2,
-"y": 11
+"y": 2
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 3,
-"y": 3
+"x": 5,
+"y": 11
 },
 "eveningPlace": "rm_the_grey_goose",
-"business": "laundry",
-"role": "civilian",
-"post": "staff",
-"template": "washing at the Washhouse",
-"structure": "r2_the_washhouse",
+"business": "paintworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_greatly_colour_works",
 "route": "",
 "homeKept": true
 },
@@ -10905,8 +10905,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 16,
-"y": 12
+"x": 5,
+"y": 4
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "bakery",
@@ -10931,8 +10931,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 6,
-"y": 7
+"x": 9,
+"y": 9
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -10953,8 +10953,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 17
+"x": 3,
+"y": 3
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -11005,8 +11005,8 @@
 },
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 5,
-"y": 26
+"x": 1,
+"y": 1
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -11031,8 +11031,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 11,
-"y": 11
+"x": 3,
+"y": 2
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -11110,7 +11110,7 @@
 "evening": {
 "cell": "r2_the_knucklebones",
 "x": 3,
-"y": 6
+"y": 9
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -11191,8 +11191,8 @@
 },
 "evening": {
 "cell": "rm_the_drowned_lantern",
-"x": 11,
-"y": 1
+"x": 2,
+"y": 3
 },
 "eveningPlace": "rm_the_drowned_lantern",
 "business": "cartwright",
@@ -11217,8 +11217,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 6,
-"y": 8
+"x": 3,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "inn",
@@ -11243,8 +11243,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 15,
-"y": 8
+"x": 22,
+"y": 14
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "inn",
@@ -11269,8 +11269,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 6,
-"y": 4
+"x": 14,
+"y": 1
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "butcher",
@@ -11347,8 +11347,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 4,
-"y": 7
+"x": 15,
+"y": 14
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "butcher",
@@ -11367,9 +11367,9 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_antechamber",
-"x": 20,
-"y": 5
+"cell": "rm_the_hook_and_cleaver",
+"x": 8,
+"y": 3
 },
 "evening": {
 "cell": "rm_fell_cottages",
@@ -11379,9 +11379,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "usher in the Antechamber",
-"structure": "r2_palace_antechamber",
+"post": "help",
+"template": null,
+"structure": "rm_the_hook_and_cleaver",
 "route": "",
 "homeKept": true
 },
@@ -11399,8 +11399,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 6,
-"y": 8
+"x": 8,
+"y": 5
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "smithy",
@@ -11419,21 +11419,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_greatly_plasterworks",
-"x": 17,
-"y": 9
+"cell": "r2_the_greatly_forge_workshop",
+"x": 8,
+"y": 2
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 12
+"x": 4,
+"y": 2
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": "plasterworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_greatly_plasterworks",
+"business": "builders_works",
+"role": "civilian",
+"post": "staff",
+"template": "working at the Greatly works",
+"structure": "r2_greatly_forge",
 "route": "",
 "homeKept": false
 },
@@ -11445,21 +11445,21 @@
 "y": 8
 },
 "work": {
-"cell": "rm_the_grayrock_ironworks",
-"x": 10,
-"y": 7
+"cell": "w_ridgemere_0_1",
+"x": 158,
+"y": 97
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 6,
-"y": 11
+"x": 16,
+"y": 1
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": "ironworks",
-"role": "merchant",
-"post": "keeper",
-"template": "runs",
-"structure": "rm_the_grayrock_ironworks",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": true
 },
@@ -11473,8 +11473,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 2,
-"y": 15
+"x": 3,
+"y": 4
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -11525,8 +11525,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 19,
-"y": 4
+"x": 10,
+"y": 14
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -11551,8 +11551,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 7,
-"y": 18
+"x": 4,
+"y": 1
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "laundry",
@@ -11577,8 +11577,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 15,
-"y": 1
+"x": 12,
+"y": 11
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -11633,8 +11633,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 6,
-"y": 18
+"x": 7,
+"y": 10
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -11681,8 +11681,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 16,
-"y": 3
+"x": 6,
+"y": 9
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -11707,8 +11707,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 1,
-"y": 3
+"x": 8,
+"y": 18
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "carters",
@@ -11727,21 +11727,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_antechamber",
-"x": 19,
-"y": 5
+"cell": "r2_the_washhouse",
+"x": 4,
+"y": 13
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 11,
-"y": 13
+"x": 5,
+"y": 12
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "usher in the Antechamber",
-"structure": "r2_palace_antechamber",
+"post": "pool",
+"template": "washing at the Washhouse",
+"structure": "r2_the_washhouse",
 "route": "",
 "homeKept": false
 },
@@ -11756,7 +11756,7 @@
 "evening": {
 "cell": "rm_the_watch_house",
 "x": 3,
-"y": 11
+"y": 10
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -11778,7 +11778,7 @@
 "evening": {
 "cell": "rm_the_watch_house",
 "x": 9,
-"y": 14
+"y": 17
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -11799,8 +11799,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 2,
-"y": 11
+"x": 17,
+"y": 1
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -11845,21 +11845,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_lamp_store",
-"x": 5,
+"cell": "rm_the_tileworks",
+"x": 2,
 "y": 2
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 4,
-"y": 8
+"x": 15,
+"y": 7
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "lighting the lamps at dusk",
-"structure": "r2_lamp_store",
+"business": "brickworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_tileworks",
 "route": "",
 "homeKept": false
 },
@@ -11877,8 +11877,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 16,
-"y": 6
+"x": 11,
+"y": 14
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -11903,8 +11903,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 9,
-"y": 8
+"x": 3,
+"y": 7
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -11923,21 +11923,21 @@
 "y": 8
 },
 "work": {
-"cell": "r2_the_washhouse",
-"x": 4,
-"y": 13
+"cell": "r2_the_antechamber",
+"x": 19,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 5,
-"y": 1
+"x": 8,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "washing at the Washhouse",
-"structure": "r2_the_washhouse",
+"post": "staff",
+"template": "usher in the Antechamber",
+"structure": "r2_palace_antechamber",
 "route": "",
 "homeKept": false
 },
@@ -11975,21 +11975,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_administrative_wing",
-"x": 40,
-"y": 18
+"cell": "rm_the_lime_kilns",
+"x": 15,
+"y": 9
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 15,
-"y": 1
+"x": 3,
+"y": 11
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "the Crown's treasurer",
-"structure": "r2_administrative_wing",
+"business": "brickworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_lime_kilns",
 "route": "",
 "homeKept": true
 },
@@ -12003,8 +12003,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 8,
-"y": 6
+"x": 3,
+"y": 5
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12023,21 +12023,21 @@
 "y": 3
 },
 "work": {
-"cell": "r2_the_penny_loaf",
-"x": 2,
-"y": 8
+"cell": "r2_the_customs_house_up",
+"x": 8,
+"y": 7
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 8,
-"y": 13
+"x": 9,
+"y": 8
 },
 "eveningPlace": "rm_the_grey_goose",
-"business": "bakery",
+"business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "r2_penny_loaf",
+"post": "staff",
+"template": "weighing at the Customs House",
+"structure": "r2_customs_house",
 "route": "",
 "homeKept": true
 },
@@ -12051,8 +12051,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 5,
-"y": 1
+"x": 12,
+"y": 5
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -12073,8 +12073,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 6,
-"y": 9
+"x": 9,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12095,8 +12095,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 10,
-"y": 15
+"x": 5,
+"y": 3
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12115,21 +12115,21 @@
 "y": 7
 },
 "work": {
-"cell": "r2_the_washhouse",
-"x": 2,
-"y": 4
+"cell": "w_ridgemere_0_1",
+"x": 117,
+"y": 8
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 9,
-"y": 7
+"x": 5,
+"y": 9
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": "laundry",
+"business": null,
 "role": "civilian",
-"post": "staff",
-"template": "keeping the Washhouse",
-"structure": "r2_the_washhouse",
+"post": "pool",
+"template": "working the cranes",
+"structure": "crane",
 "route": "",
 "homeKept": true
 },
@@ -12141,21 +12141,21 @@
 "y": 1
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 239,
-"y": 45
+"cell": "r2_the_fell_cellars",
+"x": 4,
+"y": 7
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 2,
-"y": 11
+"x": 5,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "crying wares in the Rag Market",
-"structure": "tray_sellers",
+"post": "staff",
+"template": "keeping the Fell Cellars",
+"structure": "r2_fell_cellars",
 "route": "",
 "homeKept": false
 },
@@ -12169,8 +12169,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 7,
-"y": 6
+"x": 4,
+"y": 1
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -12189,21 +12189,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_administrative_wing",
-"x": 35,
-"y": 18
+"cell": "r2_the_carters_yard",
+"x": 8,
+"y": 14
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
 "x": 7,
-"y": 2
+"y": 8
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
+"business": "carters",
 "role": "civilian",
 "post": "staff",
-"template": "clerking in the Administrative Wing",
-"structure": "r2_administrative_wing",
+"template": "driving for the carters",
+"structure": "r2_carters_yard",
 "route": "",
 "homeKept": false
 },
@@ -12215,21 +12215,21 @@
 "y": 8
 },
 "work": {
-"cell": "r2_the_administrative_wing",
-"x": 30,
-"y": 18
+"cell": "rm_clearwater_glass",
+"x": 1,
+"y": 8
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 17,
-"y": 12
+"x": 9,
+"y": 5
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "clerking in the Administrative Wing",
-"structure": "r2_administrative_wing",
+"post": "help",
+"template": null,
+"structure": "rm_clearwater_glass",
 "route": "",
 "homeKept": false
 },
@@ -12241,21 +12241,21 @@
 "y": 6
 },
 "work": {
-"cell": "rm_the_hook_and_cleaver",
-"x": 8,
-"y": 3
+"cell": "r2_the_antechamber",
+"x": 20,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 1,
-"y": 8
+"x": 14,
+"y": 11
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "rm_the_hook_and_cleaver",
+"post": "staff",
+"template": "usher in the Antechamber",
+"structure": "r2_palace_antechamber",
 "route": "",
 "homeKept": true
 },
@@ -12269,8 +12269,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 3,
-"y": 23
+"x": 2,
+"y": 10
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12295,8 +12295,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 8,
-"y": 4
+"x": 7,
+"y": 7
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -12315,21 +12315,21 @@
 "y": 3
 },
 "work": {
-"cell": "r2_the_lamp_store",
-"x": 9,
+"cell": "rm_the_greatly_yard",
+"x": 8,
 "y": 4
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 11,
-"y": 12
+"x": 5,
+"y": 5
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "lighting the lamps at dusk",
-"structure": "r2_lamp_store",
+"business": "builders_yard",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_greatly_yard",
 "route": "",
 "homeKept": true
 },
@@ -12347,8 +12347,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 7,
-"y": 13
+"x": 15,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12395,8 +12395,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 2,
-"y": 6
+"x": 9,
+"y": 13
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -12447,8 +12447,8 @@
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 14,
-"y": 5
+"x": 17,
+"y": 6
 },
 "eveningPlace": "rm_the_slate_ledger",
 "business": null,
@@ -12467,21 +12467,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_administrative_wing",
-"x": 15,
-"y": 18
+"cell": "w_ridgemere_0_1",
+"x": 247,
+"y": 44
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 6,
-"y": 9
+"x": 10,
+"y": 15
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "clerking in the Administrative Wing",
-"structure": "r2_administrative_wing",
+"post": "pool",
+"template": "crying wares in the Rag Market",
+"structure": "tray_sellers",
 "route": "",
 "homeKept": false
 },
@@ -12495,8 +12495,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 6,
-"y": 9
+"x": 12,
+"y": 18
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12517,8 +12517,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 4,
-"y": 16
+"x": 9,
+"y": 20
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12543,8 +12543,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 19,
-"y": 10
+"x": 6,
+"y": 7
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12591,8 +12591,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 8,
-"y": 7
+"x": 4,
+"y": 11
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -12613,8 +12613,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 5,
-"y": 15
+"x": 4,
+"y": 5
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -12661,8 +12661,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_watch_house",
-"x": 1,
-"y": 12
+"x": 9,
+"y": 4
 },
 "eveningPlace": "rm_the_watch_house",
 "business": null,
@@ -12687,8 +12687,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 2,
-"y": 8
+"x": 9,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12713,8 +12713,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 5
+"x": 11,
+"y": 16
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -12735,8 +12735,8 @@
 "work": null,
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 5,
-"y": 5
+"x": 8,
+"y": 8
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -12761,8 +12761,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 1,
-"y": 2
+"x": 2,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12807,21 +12807,21 @@
 "y": 7
 },
 "work": {
-"cell": "r2_the_knucklebones",
-"x": 8,
-"y": 5
+"cell": "rm_the_greatly_masons_yard",
+"x": 10,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 2,
-"y": 13
+"x": 7,
+"y": 2
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
-"role": "civilian",
-"post": "help",
-"template": null,
-"structure": "r2_the_knucklebones",
+"business": "mason",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_greatly_masons_yard",
 "route": "",
 "homeKept": true
 },
@@ -12835,8 +12835,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 11,
-"y": 13
+"x": 2,
+"y": 4
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -12855,21 +12855,21 @@
 "y": 9
 },
 "work": {
-"cell": "r2_the_lamp_store",
-"x": 1,
+"cell": "rm_the_cinder_glassworks",
+"x": 13,
 "y": 7
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 4,
-"y": 13
+"x": 2,
+"y": 7
 },
 "eveningPlace": "rm_the_grey_goose",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "lighting the lamps at dusk",
-"structure": "r2_lamp_store",
+"business": "glassworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_cinder_glassworks",
 "route": "",
 "homeKept": false
 },
@@ -12881,21 +12881,21 @@
 "y": 5
 },
 "work": {
-"cell": "r2_the_customs_house_up",
-"x": 8,
-"y": 7
+"cell": "r2_the_penny_loaf",
+"x": 2,
+"y": 8
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 4,
+"x": 6,
 "y": 1
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": null,
+"business": "bakery",
 "role": "civilian",
-"post": "staff",
-"template": "weighing at the Customs House",
-"structure": "r2_customs_house",
+"post": "help",
+"template": null,
+"structure": "r2_penny_loaf",
 "route": "",
 "homeKept": false
 },
@@ -12939,8 +12939,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 9,
-"y": 2
+"x": 2,
+"y": 1
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -12959,21 +12959,21 @@
 "y": 3
 },
 "work": {
-"cell": "r2_grayrock_shipwrights",
+"cell": "rm_the_harbourmaster_s_office",
 "x": 3,
-"y": 5
+"y": 3
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 7,
-"y": 3
+"x": 3,
+"y": 12
 },
 "eveningPlace": "rm_the_grey_goose",
-"business": "shipwright",
+"business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "r2_grayrock_shipwrights",
+"post": "staff",
+"template": "clerking at the Wharf Office",
+"structure": "rm_the_harbourmaster_s_office",
 "route": "",
 "homeKept": true
 },
@@ -12987,8 +12987,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 21,
-"y": 2
+"x": 3,
+"y": 5
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -13009,8 +13009,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 2,
-"y": 2
+"x": 17,
+"y": 6
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -13061,7 +13061,7 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 4,
+"x": 6,
 "y": 4
 },
 "eveningPlace": "rm_the_grey_gull_inn",
@@ -13081,21 +13081,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_grayrock_shipwrights",
-"x": 11,
-"y": 13
+"cell": "r2_the_records_office_up",
+"x": 12,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 1,
-"y": 11
+"x": 13,
+"y": 1
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": "shipwright",
+"business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "r2_grayrock_shipwrights",
+"post": "staff",
+"template": "clerking at the Records Office",
+"structure": "r2_records_office",
 "route": "",
 "homeKept": true
 },
@@ -13107,21 +13107,21 @@
 "y": 3
 },
 "work": {
-"cell": "r2_grayrock_shipwrights",
-"x": 4,
-"y": 18
+"cell": "r2_the_records_office_up",
+"x": 7,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 4,
-"y": 5
+"x": 1,
+"y": 10
 },
 "eveningPlace": "rm_the_slate_ledger",
-"business": "shipwright",
+"business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "r2_grayrock_shipwrights",
+"post": "staff",
+"template": "clerking at the Records Office",
+"structure": "r2_records_office",
 "route": "",
 "homeKept": true
 },
@@ -13185,21 +13185,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_grayrock_shipwrights",
-"x": 9,
-"y": 11
+"cell": "r2_the_records_office_up",
+"x": 17,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 5,
+"x": 9,
 "y": 9
 },
 "eveningPlace": "rm_the_grey_goose",
-"business": "shipwright",
+"business": null,
 "role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "r2_grayrock_shipwrights",
+"post": "staff",
+"template": "copying at the Records Office",
+"structure": "r2_records_office",
 "route": "",
 "homeKept": false
 },
@@ -13265,8 +13265,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_goose",
-"x": 6,
-"y": 6
+"x": 8,
+"y": 4
 },
 "eveningPlace": "rm_the_grey_goose",
 "business": null,
@@ -13287,8 +13287,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 13,
-"y": 7
+"x": 18,
+"y": 1
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -13313,8 +13313,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 1,
-"y": 11
+"x": 7,
+"y": 2
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -13339,8 +13339,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 8,
-"y": 7
+"x": 9,
+"y": 8
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "butcher",
@@ -13365,8 +13365,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 5,
-"y": 3
+"x": 9,
+"y": 5
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -13417,8 +13417,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 3,
-"y": 2
+"x": 10,
+"y": 14
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
@@ -13463,21 +13463,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_greatly_bonded_warehouse",
-"x": 9,
-"y": 16
+"cell": "r2_the_bathhouse",
+"x": 3,
+"y": 9
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 14,
-"y": 11
+"x": 2,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
+"business": "bathhouse",
 "role": "civilian",
 "post": "staff",
-"template": "tallying in the Bonded Warehouse",
-"structure": "rm_the_greatly_bonded_warehouse",
+"template": "working at the Bathhouse",
+"structure": "r2_bathhouse",
 "route": "",
 "homeKept": false
 },
@@ -13489,21 +13489,21 @@
 "y": 5
 },
 "work": {
-"cell": "rm_the_fell_timber_store",
-"x": 5,
-"y": 14
+"cell": "rm_the_slag_anchor",
+"x": 14,
+"y": 9
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 8,
-"y": 8
+"x": 7,
+"y": 1
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "keeping the Long Store",
-"structure": "rm_the_fell_timber_store",
+"post": "help",
+"template": null,
+"structure": "rm_the_slag_anchor",
 "route": "",
 "homeKept": true
 },
@@ -13515,21 +13515,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_fell_timber_store",
-"x": 2,
-"y": 2
+"cell": "w_ridgemere_0_0",
+"x": 158,
+"y": 178
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 11,
-"y": 18
+"x": 12,
+"y": 14
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "tallying in the Long Store",
-"structure": "rm_the_fell_timber_store",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": false
 },
@@ -13547,8 +13547,8 @@
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 9,
-"y": 11
+"x": 2,
+"y": 4
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "butcher",
@@ -13567,21 +13567,21 @@
 "y": 6
 },
 "work": {
-"cell": "r2_the_grayrock_new_store",
-"x": 5,
-"y": 5
+"cell": "w_ridgemere_0_1",
+"x": 180,
+"y": 37
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 7,
-"y": 12
+"x": 5,
+"y": 3
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "keeping the New Store",
-"structure": "r2_new_store",
+"post": "pool",
+"template": "carrying from Sump Stairs",
+"structure": "sump_stairs",
 "route": "",
 "homeKept": false
 },
@@ -13593,21 +13593,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_grayrock_new_store",
-"x": 4,
-"y": 5
+"cell": "w_ridgemere_0_0",
+"x": 139,
+"y": 238
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 3,
-"y": 11
+"x": 7,
+"y": 15
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "tallying in the New Store",
-"structure": "r2_new_store",
+"post": "pool",
+"template": "unloading ships at the piers",
+"structure": "pier",
 "route": "",
 "homeKept": false
 },
@@ -13619,21 +13619,21 @@
 "y": 9
 },
 "work": {
-"cell": "rm_the_harbourmaster_s_office",
-"x": 7,
-"y": 10
+"cell": "rm_the_eastgate_stables",
+"x": 3,
+"y": 4
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 14,
-"y": 3
+"x": 11,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
+"business": "stables",
 "role": "civilian",
-"post": "staff",
-"template": "clerking at the Wharf Office",
-"structure": "rm_the_harbourmaster_s_office",
+"post": "hands",
+"template": null,
+"structure": "rm_the_eastgate_stables",
 "route": "",
 "homeKept": false
 },
@@ -13645,21 +13645,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_lamp_store",
-"x": 8,
-"y": 7
+"cell": "rm_the_fell_sawmill",
+"x": 6,
+"y": 10
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
-"x": 7,
-"y": 2
+"x": 6,
+"y": 11
 },
 "eveningPlace": "rm_the_slate_ledger",
-"business": null,
-"role": "civilian",
-"post": "staff",
-"template": "lighting the lamps at dusk",
-"structure": "r2_lamp_store",
+"business": "sawmill",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_fell_sawmill",
 "route": "",
 "homeKept": true
 },
@@ -13671,21 +13671,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_harbourmaster_s_office",
+"cell": "r2_grayrock_shipwrights",
 "x": 3,
-"y": 3
+"y": 5
 },
 "evening": {
 "cell": "r2_the_knucklebones",
 "x": 11,
-"y": 1
+"y": 18
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": null,
+"business": "shipwright",
 "role": "civilian",
-"post": "staff",
-"template": "clerking at the Wharf Office",
-"structure": "rm_the_harbourmaster_s_office",
+"post": "hands",
+"template": null,
+"structure": "r2_grayrock_shipwrights",
 "route": "",
 "homeKept": false
 },
@@ -13703,8 +13703,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 8,
-"y": 13
+"x": 11,
+"y": 7
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -13723,21 +13723,21 @@
 "y": 2
 },
 "work": {
-"cell": "r2_the_records_office_up",
-"x": 7,
-"y": 5
+"cell": "r2_grayrock_shipwrights",
+"x": 4,
+"y": 18
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 3,
-"y": 3
+"x": 10,
+"y": 1
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": null,
+"business": "shipwright",
 "role": "civilian",
-"post": "staff",
-"template": "clerking at the Records Office",
-"structure": "r2_records_office",
+"post": "hands",
+"template": null,
+"structure": "r2_grayrock_shipwrights",
 "route": "",
 "homeKept": false
 },
@@ -13775,21 +13775,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_records_office_up",
-"x": 12,
-"y": 5
+"cell": "r2_grayrock_shipwrights",
+"x": 11,
+"y": 13
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 3,
-"y": 8
+"x": 13,
+"y": 5
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
+"business": "shipwright",
 "role": "civilian",
-"post": "staff",
-"template": "clerking at the Records Office",
-"structure": "r2_records_office",
+"post": "hands",
+"template": null,
+"structure": "r2_grayrock_shipwrights",
 "route": "",
 "homeKept": false
 },
@@ -13801,21 +13801,21 @@
 "y": 4
 },
 "work": {
-"cell": "r2_the_records_office_up",
-"x": 17,
-"y": 5
+"cell": "r2_grayrock_shipwrights",
+"x": 9,
+"y": 11
 },
 "evening": {
 "cell": "r2_the_knucklebones",
-"x": 6,
-"y": 1
+"x": 2,
+"y": 8
 },
 "eveningPlace": "r2_the_knucklebones",
-"business": null,
+"business": "shipwright",
 "role": "civilian",
-"post": "staff",
-"template": "copying at the Records Office",
-"structure": "r2_records_office",
+"post": "hands",
+"template": null,
+"structure": "r2_grayrock_shipwrights",
 "route": "",
 "homeKept": false
 },
@@ -13853,21 +13853,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_records_office_up",
-"x": 22,
-"y": 5
+"cell": "r2_the_fell_wine_vaults",
+"x": 13,
+"y": 3
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 1,
+"x": 20,
 "y": 12
 },
 "eveningPlace": "rm_the_soup_kitchen",
-"business": null,
+"business": "vintner",
 "role": "civilian",
-"post": "staff",
-"template": "copying at the Records Office",
-"structure": "r2_records_office",
+"post": "help",
+"template": null,
+"structure": "r2_fell_wine_vaults",
 "route": "",
 "homeKept": false
 },
@@ -13879,21 +13879,21 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_magistrate_s_court",
-"x": 3,
-"y": 11
+"cell": "r2_timberland_s_forge_row",
+"x": 5,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 3,
-"y": 9
+"x": 1,
+"y": 7
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": null,
+"business": "smithy",
 "role": "civilian",
-"post": "staff",
-"template": "clerking for the magistrate",
-"structure": "rm_the_magistrate_s_court",
+"post": "help",
+"template": null,
+"structure": "r2_forge_row",
 "route": "",
 "homeKept": true
 },
@@ -13907,8 +13907,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 18,
-"y": 11
+"x": 8,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -13933,8 +13933,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 6,
-"y": 1
+"x": 12,
+"y": 11
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "carters",
@@ -13985,8 +13985,8 @@
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 21,
-"y": 3
+"x": 3,
+"y": 8
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -14037,8 +14037,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 13,
-"y": 2
+"x": 12,
+"y": 10
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14083,21 +14083,21 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_slag_anchor",
-"x": 14,
-"y": 9
+"cell": "rm_the_fell_timber_store",
+"x": 5,
+"y": 14
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 6,
-"y": 5
+"x": 1,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "rm_the_slag_anchor",
+"post": "staff",
+"template": "keeping the Long Store",
+"structure": "rm_the_fell_timber_store",
 "route": "",
 "homeKept": true
 },
@@ -14109,21 +14109,21 @@
 "y": 3
 },
 "work": {
-"cell": "rm_the_grey_gull_inn",
-"x": 18,
-"y": 13
+"cell": "w_ridgemere_1_1",
+"x": 119,
+"y": 54
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 22,
-"y": 12
+"x": 14,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": null,
-"role": "civilian",
-"post": "help",
-"template": null,
-"structure": "rm_the_grey_gull_inn",
+"business": "inn",
+"role": "merchant",
+"post": "stallkeeper",
+"template": "ladling soup on Market Square",
+"structure": "market_square",
 "route": "",
 "homeKept": true
 },
@@ -14189,8 +14189,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 9,
-"y": 11
+"x": 10,
+"y": 13
 },
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": null,
@@ -14210,8 +14210,8 @@
 },
 "work": {
 "cell": "r2_the_carters_yard",
-"x": 6,
-"y": 11
+"x": 8,
+"y": 4
 },
 "evening": {
 "cell": "rm_carlisle_house",
@@ -14220,9 +14220,9 @@
 },
 "eveningPlace": "home",
 "business": "carters",
-"role": "civilian",
-"post": "staff",
-"template": "driving for the carters",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the Carters' Yard",
 "structure": "r2_carters_yard",
 "route": "",
 "homeKept": true
@@ -14241,8 +14241,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 13,
-"y": 5
+"x": 19,
+"y": 3
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14267,8 +14267,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 13,
-"y": 12
+"x": 9,
+"y": 3
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14293,8 +14293,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 20,
-"y": 4
+"x": 7,
+"y": 11
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14371,7 +14371,7 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 5,
+"x": 9,
 "y": 12
 },
 "eveningPlace": "rm_the_slag_anchor",
@@ -14397,8 +14397,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 11,
-"y": 10
+"x": 9,
+"y": 1
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14417,21 +14417,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_timberland_s_forge_row",
-"x": 5,
-"y": 5
+"cell": "rm_the_magistrate_s_court",
+"x": 3,
+"y": 11
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
-"x": 5,
-"y": 4
+"x": 3,
+"y": 10
 },
 "eveningPlace": "rm_the_grey_gull_inn",
-"business": "smithy",
+"business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "r2_forge_row",
+"post": "staff",
+"template": "clerking for the magistrate",
+"structure": "rm_the_magistrate_s_court",
 "route": "",
 "homeKept": false
 },
@@ -14443,9 +14443,9 @@
 "y": 9
 },
 "work": {
-"cell": "rm_clearwater_glass",
-"x": 1,
-"y": 8
+"cell": "r2_the_administrative_wing",
+"x": 30,
+"y": 18
 },
 "evening": {
 "cell": "r2_lantern_row",
@@ -14455,9 +14455,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "rm_clearwater_glass",
+"post": "staff",
+"template": "clerking in the Administrative Wing",
+"structure": "r2_administrative_wing",
 "route": "",
 "homeKept": false
 },
@@ -14543,21 +14543,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_bathhouse",
-"x": 9,
-"y": 3
+"cell": "r2_the_washhouse",
+"x": 6,
+"y": 14
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 2,
-"y": 9
+"x": 13,
+"y": 5
 },
 "eveningPlace": "rm_the_soup_kitchen",
-"business": "bathhouse",
+"business": null,
 "role": "civilian",
-"post": "staff",
-"template": "keeping the Bathhouse",
-"structure": "r2_bathhouse",
+"post": "pool",
+"template": "washing at the Washhouse",
+"structure": "r2_the_washhouse",
 "route": "",
 "homeKept": false
 },
@@ -14601,8 +14601,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 2,
-"y": 11
+"x": 16,
+"y": 3
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "bathhouse",
@@ -14621,9 +14621,9 @@
 "y": 3
 },
 "work": {
-"cell": "r2_the_washhouse",
-"x": 6,
-"y": 14
+"cell": "r2_the_bathhouse",
+"x": 9,
+"y": 3
 },
 "evening": {
 "cell": "rm_toft_house_2",
@@ -14631,11 +14631,11 @@
 "y": 3
 },
 "eveningPlace": "home",
-"business": null,
+"business": "bathhouse",
 "role": "civilian",
-"post": "pool",
-"template": "washing at the Washhouse",
-"structure": "r2_the_washhouse",
+"post": "staff",
+"template": "keeping the Bathhouse",
+"structure": "r2_bathhouse",
 "route": "",
 "homeKept": true
 },
@@ -14675,8 +14675,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 6,
-"y": 11
+"x": 12,
+"y": 12
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14695,9 +14695,9 @@
 "y": 7
 },
 "work": {
-"cell": "r2_the_bathhouse",
-"x": 3,
-"y": 9
+"cell": "rm_the_greatly_bonded_warehouse",
+"x": 9,
+"y": 16
 },
 "evening": {
 "cell": "rm_hatherley_house",
@@ -14705,11 +14705,11 @@
 "y": 7
 },
 "eveningPlace": "home",
-"business": "bathhouse",
+"business": null,
 "role": "civilian",
 "post": "staff",
-"template": "working at the Bathhouse",
-"structure": "r2_bathhouse",
+"template": "tallying in the Bonded Warehouse",
+"structure": "rm_the_greatly_bonded_warehouse",
 "route": "",
 "homeKept": true
 },
@@ -14721,9 +14721,9 @@
 "y": 8
 },
 "work": {
-"cell": "r2_the_fell_wine_vaults",
-"x": 13,
-"y": 3
+"cell": "r2_the_records_office_up",
+"x": 22,
+"y": 5
 },
 "evening": {
 "cell": "r2_saltgate_row_up",
@@ -14731,11 +14731,11 @@
 "y": 8
 },
 "eveningPlace": "home",
-"business": "vintner",
+"business": null,
 "role": "civilian",
-"post": "help",
-"template": null,
-"structure": "r2_fell_wine_vaults",
+"post": "staff",
+"template": "copying at the Records Office",
+"structure": "r2_records_office",
 "route": "",
 "homeKept": false
 },
@@ -14779,8 +14779,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 11,
-"y": 11
+"x": 16,
+"y": 2
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "dairy",
@@ -14805,8 +14805,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 16,
-"y": 3
+"x": 11,
+"y": 8
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "barber",
@@ -14827,8 +14827,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 2,
-"y": 8
+"x": 5,
+"y": 11
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -14847,21 +14847,21 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_fell_cellars",
-"x": 4,
-"y": 7
+"cell": "w_ridgemere_0_1",
+"x": 239,
+"y": 45
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
 "x": 2,
-"y": 2
+"y": 10
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
 "role": "civilian",
-"post": "staff",
-"template": "keeping the Fell Cellars",
-"structure": "r2_fell_cellars",
+"post": "pool",
+"template": "crying wares in the Rag Market",
+"structure": "tray_sellers",
 "route": "",
 "homeKept": false
 },
@@ -14879,8 +14879,8 @@
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 4,
-"y": 5
+"x": 13,
+"y": 4
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "press",
@@ -14905,8 +14905,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 14,
-"y": 9
+"x": 6,
+"y": 1
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "press",
@@ -14957,8 +14957,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 6,
-"y": 1
+"x": 5,
+"y": 2
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "distillery",
@@ -14983,8 +14983,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 6,
-"y": 12
+"x": 10,
+"y": 4
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "distillery",
@@ -15009,8 +15009,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 20,
-"y": 11
+"x": 14,
+"y": 2
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "preserver",
@@ -15029,9 +15029,9 @@
 "y": 7
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 247,
-"y": 44
+"cell": "r2_the_administrative_wing",
+"x": 15,
+"y": 18
 },
 "evening": {
 "cell": "r2_wet_lane_houses_top",
@@ -15041,9 +15041,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "crying wares in the Rag Market",
-"structure": "tray_sellers",
+"post": "staff",
+"template": "clerking in the Administrative Wing",
+"structure": "r2_administrative_wing",
 "route": "",
 "homeKept": false
 },
@@ -15087,8 +15087,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 8,
-"y": 11
+"x": 2,
+"y": 12
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": "bakery",
@@ -15107,9 +15107,9 @@
 "y": 14
 },
 "work": {
-"cell": "w_ridgemere_0_0",
-"x": 158,
-"y": 178
+"cell": "rm_the_fell_timber_store",
+"x": 2,
+"y": 2
 },
 "evening": {
 "cell": "rm_mossdale_house",
@@ -15119,9 +15119,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "unloading ships at the piers",
-"structure": "pier",
+"post": "staff",
+"template": "tallying in the Long Store",
+"structure": "rm_the_fell_timber_store",
 "route": "",
 "homeKept": true
 },
@@ -15139,7 +15139,7 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 10,
+"x": 11,
 "y": 4
 },
 "eveningPlace": "rm_the_soup_kitchen",
@@ -15159,9 +15159,9 @@
 "y": 1
 },
 "work": {
-"cell": "r2_the_fell_preserving_house",
-"x": 16,
-"y": 1
+"cell": "r2_the_market_hall",
+"x": 11,
+"y": 2
 },
 "evening": {
 "cell": "r2_slate_row",
@@ -15170,10 +15170,10 @@
 },
 "eveningPlace": "home",
 "business": "preserver",
-"role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "r2_fell_preserving_house",
+"role": "merchant",
+"post": "hallkeeper",
+"template": "preserver in the Market Hall",
+"structure": "r2_market_hall",
 "route": "",
 "homeKept": false
 },
@@ -15191,8 +15191,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 15,
-"y": 4
+"x": 19,
+"y": 12
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,
@@ -15213,8 +15213,8 @@
 "work": null,
 "evening": {
 "cell": "rm_the_slag_anchor",
-"x": 8,
-"y": 1
+"x": 10,
+"y": 9
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": null,
@@ -15233,9 +15233,9 @@
 "y": 1
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 158,
-"y": 97
+"cell": "rm_the_grayrock_ironworks",
+"x": 10,
+"y": 7
 },
 "evening": {
 "cell": "rm_toft_house_2",
@@ -15243,11 +15243,11 @@
 "y": 1
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "pool",
-"template": "unloading ships at the piers",
-"structure": "pier",
+"business": "ironworks",
+"role": "merchant",
+"post": "keeper",
+"template": "runs",
+"structure": "rm_the_grayrock_ironworks",
 "route": "",
 "homeKept": true
 },
@@ -15285,9 +15285,9 @@
 "y": 1
 },
 "work": {
-"cell": "w_ridgemere_0_0",
-"x": 139,
-"y": 238
+"cell": "r2_the_grayrock_new_store",
+"x": 4,
+"y": 5
 },
 "evening": {
 "cell": "r2_lantern_row",
@@ -15297,9 +15297,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "pool",
-"template": "unloading ships at the piers",
-"structure": "pier",
+"post": "staff",
+"template": "tallying in the New Store",
+"structure": "r2_new_store",
 "route": "",
 "homeKept": false
 },
@@ -15317,8 +15317,8 @@
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
-"x": 13,
-"y": 8
+"x": 11,
+"y": 2
 },
 "eveningPlace": "rm_the_soup_kitchen",
 "business": null,

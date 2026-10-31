@@ -152,6 +152,27 @@ class PeoplesText(unittest.TestCase):
         self.assertEqual(PP.person_text(child, {'post': 'help', 'record': 'r'}, 'helping at X', 'y', {}), ({}, None))
 
 
+    def test_a_job_changed_by_class_gets_a_line_of_why(self):
+        entry = {'post': 'staff', 'record': 'r2_records_office', 'template': 'clerking at the Records Office',
+                 'classMove': 'middle/office'}
+        out, why = PP.person_text(dict(self.PERSON), entry, 'clerking at the Records Office', 'unloading ships at the piers',
+                                  {'r2_records_office': 'The Records Office'})
+        self.assertEqual(why, 'job')
+        self.assertIn('a clerk at the Records Office', out['description'])
+        added = out['backstory'][len(self.PERSON['backstory']):]
+        self.assertIn(added.strip(), [x.format(first='Hanne', name='The Records Office')
+                                      for x in PP.CLASS_BACK['middle/office']])
+
+    def test_the_minor_houses_text(self):
+        for pid, text in PP.MINOR_TEXT.items():
+            self.assertIn(pid, PP.MINOR_POSTS)
+            self.assertRegex(text['description'], r'of the (Carlisle|Grantham|Stanmore|Vance) household, who ')
+            self.assertNotIn('dog', ' '.join(text.values()).lower())
+        for line in [x for v in PP.CLASS_BACK.values() for x in v]:
+            self.assertNotIn('dog', line.lower())
+            self.assertNotRegex(line, r'\b(he|she|him|her|his|hers)\b')        # (Pronouns would need the sex.)
+
+
 class Refit(unittest.TestCase):
     def test_a_shop_refitted_for_another_trade_keeps_its_walls_door_and_stairs(self):
         from worldgen import ridgemere2 as R
@@ -209,6 +230,8 @@ class City(unittest.TestCase):
             for key in ('name', 'description', 'backstory', 'personality', 'greeting', 'appearance', 'age', 'voice'):
                 if key in PP.ROYAL_TEXT.get(x['id'], {}):
                     self.assertEqual(x[key], PP.ROYAL_TEXT[x['id']][key], (x['id'], key))   # The Crown's own text.
+                elif key in PP.MINOR_TEXT.get(x['id'], {}):
+                    self.assertEqual(x[key], PP.MINOR_TEXT[x['id']][key], (x['id'], key))   # The Minor Houses' new posts.
                 elif x['id'] in fixed and key in ('description', 'greeting', 'backstory'):
                     # Written again for the post (the food rebalance): the looks and the old backstory stay.
                     if key == 'description':
@@ -244,6 +267,32 @@ class City(unittest.TestCase):
             self.assertNotIn('Heights Market', x['description'], x['id'])
             if 'Records Office' in x['workLabel']:
                 self.assertTrue(any(w in x['description'] for w in ('clerk', 'copyist', 'rolls', 'record')), x['id'])
+
+    # -- Jobs by class (doc 67, Progress, "Jobs by class") --
+    def test_jobs_by_class(self):
+        from worldgen import ridgemere2 as R
+        after = self.m['classes']['after']
+        self.assertGreaterEqual(after['rate'], R.CLASS_TARGET)
+        for c, v in after['classes'].items():
+            self.assertGreaterEqual(v['rate'], .85, c)
+        self.assertEqual(after['minorWithoutUpper'], [])
+        self.assertEqual(after['largeLower'], [])
+        people = {x['id']: x for x in self.m['project']['people']}
+        plan = self.m['plan']
+        for pid, (record, kind, label) in PP.MINOR_POSTS.items():
+            self.assertEqual((plan[pid]['record'], plan[pid]['post']), (record, kind), pid)
+            self.assertEqual(people[pid]['role'], 'merchant' if kind == 'keeper' else 'civilian', pid)
+            if label:
+                self.assertEqual(people[pid]['workLabel'], label)
+        self.assertEqual(people['rm_ambrose_greatly']['workLabel'], 'overseeing the Counting House')
+
+    def test_the_class_pass_moves_nobody_twice(self):
+        placement = self.m['placement']
+        plan = json.loads(json.dumps(placement.plan))
+        placement.class_jobs()
+        self.assertEqual({pid: {k: e.get(k) for k in PP.JOB_KEYS} for pid, e in placement.plan.items()},
+                         {pid: {k: e.get(k) for k in PP.JOB_KEYS} for pid, e in plan.items()})
+        self.assertEqual(placement.class_moves, {})
 
     def test_the_king_reigns_at_the_great_palace(self):
         people = {x['id']: x for x in self.m['project']['people']}
