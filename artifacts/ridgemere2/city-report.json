@@ -464,20 +464,20 @@
    "homes": 11,
    "beds": 45,
    "posts": 45,
+   "business:plasterworks": 1,
+   "business:foundry": 1,
+   "business:papermill": 1,
+   "business:brewery": 1,
    "business:inn": 1,
    "business:smithy": 3,
    "business:armory": 1,
-   "business:ironworks": 1,
-   "business:foundry": 1,
-   "business:sawmill": 1,
    "business:butcher": 1,
-   "business:glassworks": 1,
-   "business:brickworks": 2,
-   "business:brewery": 1,
-   "business:papermill": 1,
    "business:cartwright": 1,
    "business:charcoal": 1,
-   "business:plasterworks": 1
+   "business:brickworks": 2,
+   "business:ironworks": 1,
+   "business:glassworks": 1,
+   "business:sawmill": 1
   },
   "commons": {
    "buildings": 76,
@@ -516,9 +516,9 @@
    "business:fishmonger": 1,
    "business:barber": 1,
    "business:vintner": 1,
+   "business:stables": 1,
    "business:carters": 1,
-   "business:builders_yard": 1,
-   "business:stables": 1
+   "business:builders_yard": 1
   },
   "estate_fell": {
    "buildings": 9,
@@ -561,8 +561,8 @@
    "homes": 2,
    "beds": 10,
    "posts": 24,
-   "business:builders_works": 1,
    "business:paintworks": 1,
+   "business:builders_works": 1,
    "business:mason": 1
   },
   "keep": {
@@ -592,7 +592,7 @@
    "business:carpenter": 1
   },
   "outdoors": {
-   "posts": 71,
+   "posts": 75,
    "business:dairy": 1,
    "business:herbalist": 1,
    "business:stall": 3,
@@ -616,7 +616,7 @@
    "kind:villa": 5,
    "homes": 10,
    "beds": 29,
-   "posts": 26
+   "posts": 22
   },
   "sump": {
    "buildings": 49,
@@ -649,12 +649,12 @@
    "homes": 3,
    "beds": 12,
    "posts": 36,
+   "business:tannery": 1,
    "business:inn": 3,
+   "business:ropewalk": 1,
    "business:provisioner": 1,
    "business:chandlery": 1,
    "business:shipwright": 1,
-   "business:tannery": 1,
-   "business:ropewalk": 1,
    "business:fishmonger": 1,
    "business:smokehouse": 1
   }
@@ -684,15 +684,15 @@
   },
   "posts": {
    "stallkeeper": 14,
+   "help": 64,
    "staff": 91,
-   "kept": 54,
-   "pool": 48,
+   "kept": 50,
+   "pool": 52,
+   "keeper": 90,
    "food": 2,
    "clergy": 17,
    "hallkeeper": 6,
-   "keeper": 90,
    "at lessons": 67,
-   "help": 64,
    "retired": 30,
    "a child at home": 4,
    "guard": 5,
@@ -703,6 +703,7 @@
   "evenings": {
    "rm_the_last_lamp": 40,
    "rm_the_rainbarrel": 40,
+   "rm_the_grey_gull_inn": 40,
    "r2_the_knucklebones": 40,
    "home": 167,
    "rm_the_black_tun": 40,
@@ -710,7 +711,6 @@
    "r2_cathedral": 18,
    "rm_the_grey_goose": 21,
    "rm_the_bilge": 40,
-   "rm_the_grey_gull_inn": 40,
    "rm_the_slag_anchor": 28,
    "rm_the_drowned_lantern": 10,
    "rm_the_watch_house": 30,
@@ -1281,8 +1281,8 @@
   ],
   [
    "rm_agna_bilgecot",
-   "merchant",
-   "preserver in the Market Hall",
+   "civilian",
+   "working at The Fell Preserving House",
    "preserver"
   ],
   [
@@ -1342,7 +1342,7 @@
   [
    "rm_ambrose_greatly",
    "civilian",
-   "clerking at the Counting House",
+   "overseeing the Counting House",
    null
   ],
   [
@@ -1353,9 +1353,9 @@
   ],
   [
    "rm_ansel_wickdale",
-   "merchant",
-   "runs The Greatly Masons' Yard",
-   "mason"
+   "civilian",
+   "helping at The Knucklebones",
+   null
   ],
   [
    "rm_arne_ashton",
@@ -1413,9 +1413,9 @@
   ],
   [
    "rm_berit_mudton",
-   "merchant",
-   "runs The Ropewalk",
-   "ropewalk"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_berit_wickton",
@@ -1551,9 +1551,9 @@
   ],
   [
    "rm_corwin_bilgestack",
-   "merchant",
-   "runs The Greatly Yard",
-   "builders_yard"
+   "civilian",
+   "lighting the lamps at dusk",
+   null
   ],
   [
    "rm_corwin_fell_",
@@ -1695,9 +1695,9 @@
   ],
   [
    "rm_desmond_grantham",
-   "civilian",
-   "at home in the Heights",
-   null
+   "merchant",
+   "runs The Rainwater Brewery",
+   "brewery"
   ],
   [
    "rm_dirk_rainmore",
@@ -1731,9 +1731,9 @@
   ],
   [
    "rm_dunstan_greywick",
-   "civilian",
-   "keeping the Greatly stables",
-   "stables"
+   "merchant",
+   "tanner at The Wharf Tannery",
+   "tannery"
   ],
   [
    "rm_dunstan_slagley",
@@ -1761,9 +1761,9 @@
   ],
   [
    "rm_edda_gullford",
-   "merchant",
-   "runs The Cinder Glassworks",
-   "glassworks"
+   "civilian",
+   "lighting the lamps at dusk",
+   null
   ],
   [
    "rm_edda_mudmore",
@@ -1857,9 +1857,9 @@
   ],
   [
    "rm_eleanor_vance",
-   "civilian",
-   "at home in the Heights",
-   null
+   "merchant",
+   "runs The Rag Mill",
+   "papermill"
   ],
   [
    "rm_eleanor_wetby",
@@ -2145,9 +2145,9 @@
   ],
   [
    "rm_gudrun_rustwick",
-   "civilian",
-   "working at the Greatly works",
-   "builders_works"
+   "merchant",
+   "runs The Greatly Plasterworks",
+   "plasterworks"
   ],
   [
    "rm_gudrun_targate",
@@ -2349,9 +2349,9 @@
   ],
   [
    "rm_ilse_coalley",
-   "merchant",
-   "runs The Timberland Sawmill",
-   "sawmill"
+   "civilian",
+   "lighting the lamps at dusk",
+   null
   ],
   [
    "rm_ilse_fogridge",
@@ -2445,8 +2445,8 @@
   ],
   [
    "rm_ivar_nailham",
-   "merchant",
-   "keeping the Carters' Yard",
+   "civilian",
+   "driving for the carters",
    "carters"
   ],
   [
@@ -2476,8 +2476,8 @@
   [
    "rm_ivo_fogstack",
    "civilian",
-   "working the cranes",
-   null
+   "keeping the Washhouse",
+   "laundry"
   ],
   [
    "rm_ivo_slagby",
@@ -2566,8 +2566,8 @@
   [
    "rm_kari_bilgehand",
    "merchant",
-   "keeping the inn",
-   "inn"
+   "ropemaker at the ropewalk",
+   "ropewalk"
   ],
   [
    "rm_karin_ashgate",
@@ -2584,7 +2584,7 @@
   [
    "rm_karin_stanmore",
    "civilian",
-   "at home in the Heights",
+   "the Crown's treasurer",
    null
   ],
   [
@@ -2661,9 +2661,9 @@
   ],
   [
    "rm_leif_fogcot",
-   "merchant",
-   "runs The Greatly Lime Kilns",
-   "brickworks"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_lionel_dripworth",
@@ -2727,20 +2727,20 @@
   ],
   [
    "rm_mab_carlisle",
-   "civilian",
-   "at home in the Heights",
-   null
+   "merchant",
+   "keeping the inn",
+   "inn"
   ],
   [
    "rm_mab_coalridge",
-   "merchant",
-   "runs The Timberland Foundry",
-   "foundry"
+   "civilian",
+   "serving in the King's household",
+   null
   ],
   [
    "rm_mab_pitchcot",
    "civilian",
-   "carrying from Sump Stairs",
+   "keeping the New Store",
    null
   ],
   [
@@ -2763,9 +2763,9 @@
   ],
   [
    "rm_magnus_greycot",
-   "merchant",
-   "runs The Greatly Colour Works",
-   "paintworks"
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
   ],
   [
    "rm_magnus_stanmore",
@@ -3021,9 +3021,9 @@
   ],
   [
    "rm_osric_wetford",
-   "merchant",
-   "runs The Rag Mill",
-   "papermill"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_ottilie_harrowgate",
@@ -3093,9 +3093,9 @@
   ],
   [
    "rm_philippa_rustton",
-   "merchant",
-   "runs The Wharf Tannery",
-   "tannery"
+   "civilian",
+   "keeping the Greatly stables",
+   "stables"
   ],
   [
    "rm_piet_muddale",
@@ -3195,9 +3195,9 @@
   ],
   [
    "rm_runa_coalhand",
-   "civilian",
-   "serving in the King's household",
-   null
+   "merchant",
+   "runs The Timberland Foundry",
+   "foundry"
   ],
   [
    "rm_runa_gullley",
@@ -3255,9 +3255,9 @@
   ],
   [
    "rm_rupert_cindergate",
-   "merchant",
-   "runs The Greatly Tileworks",
-   "brickworks"
+   "civilian",
+   "lighting the lamps at dusk",
+   null
   ],
   [
    "rm_rupert_fogton",
@@ -3286,8 +3286,8 @@
   [
    "rm_septimus_plankmarsh",
    "civilian",
-   "works at The Eastgate Stables",
-   "stables"
+   "clerking at the Wharf Office",
+   null
   ],
   [
    "rm_septimus_slagby",
@@ -3321,9 +3321,9 @@
   ],
   [
    "rm_signe_sootwell",
-   "merchant",
-   "runs The Rainwater Brewery",
-   "brewery"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_sigrun_kelphand",
@@ -3388,8 +3388,8 @@
   [
    "rm_soren_kelpstack",
    "civilian",
-   "driving for the carters",
-   "carters"
+   "clerking in the Administrative Wing",
+   null
   ],
   [
    "rm_soren_millwell",
@@ -3507,9 +3507,9 @@
   ],
   [
    "rm_torvald_slagton",
-   "merchant",
-   "ladling soup on Market Square",
-   "inn"
+   "civilian",
+   "helping at The Grey Gull Inn",
+   null
   ],
   [
    "rm_tove_brinegate",
@@ -3555,9 +3555,9 @@
   ],
   [
    "rm_ulla_rustham",
-   "civilian",
-   "washing at the Washhouse",
-   "laundry"
+   "merchant",
+   "runs The Greatly Colour Works",
+   "paintworks"
   ],
   [
    "rm_una_pitchcot",
@@ -3670,7 +3670,7 @@
   [
    "rm_wynn_sootridge",
    "civilian",
-   "usher in the Antechamber",
+   "helping at The Hook and Cleaver",
    null
   ],
   [
@@ -3681,15 +3681,15 @@
   ],
   [
    "rm_wynn_tarhand",
-   "merchant",
-   "runs The Greatly Plasterworks",
-   "plasterworks"
+   "civilian",
+   "working at the Greatly works",
+   "builders_works"
   ],
   [
    "rm_wystan_coalmarsh",
-   "merchant",
-   "runs The Timberland Ironworks",
-   "ironworks"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_wystan_mudcot",
@@ -3754,8 +3754,8 @@
   [
    "rmx_bartholomew_sootmore",
    "civilian",
-   "usher in the Antechamber",
-   null
+   "washing at the Washhouse",
+   "laundry"
   ],
   [
    "rmx_bertil_coalley",
@@ -3783,9 +3783,9 @@
   ],
   [
    "rmx_bo_gilbey",
-   "civilian",
-   "lighting the lamps at dusk",
-   null
+   "merchant",
+   "runs The Greatly Tileworks",
+   "brickworks"
   ],
   [
    "rmx_brenna_abbot",
@@ -3802,8 +3802,8 @@
   [
    "rmx_corra_coldridge",
    "civilian",
-   "washing at the Washhouse",
-   "laundry"
+   "usher in the Antechamber",
+   null
   ],
   [
    "rmx_corra_gullford",
@@ -3813,9 +3813,9 @@
   ],
   [
    "rmx_corra_pennock",
-   "civilian",
-   "the Crown's treasurer",
-   null
+   "merchant",
+   "runs The Greatly Lime Kilns",
+   "brickworks"
   ],
   [
    "rmx_cressida_cotton",
@@ -3826,7 +3826,7 @@
   [
    "rmx_cressida_mallory",
    "civilian",
-   "helping at The Penny Loaf",
+   "weighing at the Customs House",
    null
   ],
   [
@@ -3850,13 +3850,13 @@
   [
    "rmx_dagfinn_wainwright",
    "civilian",
-   "keeping the Washhouse",
-   "laundry"
+   "working the cranes",
+   null
   ],
   [
    "rmx_dagny_catterick",
    "civilian",
-   "crying wares in the Rag Market",
+   "keeping the Fell Cellars",
    null
   ],
   [
@@ -3868,19 +3868,19 @@
   [
    "rmx_delphine_brackwick",
    "civilian",
-   "clerking in the Administrative Wing",
-   null
+   "driving for the carters",
+   "carters"
   ],
   [
    "rmx_delphine_redfern",
    "civilian",
-   "clerking in the Administrative Wing",
+   "helping at Clearwater Glass",
    null
   ],
   [
    "rmx_desmond_farrow",
    "civilian",
-   "helping at The Hook and Cleaver",
+   "usher in the Antechamber",
    null
   ],
   [
@@ -3897,9 +3897,9 @@
   ],
   [
    "rmx_desmond_toft",
-   "civilian",
-   "lighting the lamps at dusk",
-   null
+   "merchant",
+   "runs The Greatly Yard",
+   "builders_yard"
   ],
   [
    "rmx_dirk_langstead",
@@ -3934,7 +3934,7 @@
   [
    "rmx_dorcas_brineley",
    "civilian",
-   "clerking in the Administrative Wing",
+   "crying wares in the Rag Market",
    null
   ],
   [
@@ -4017,9 +4017,9 @@
   ],
   [
    "rmx_frida_netherby",
-   "civilian",
-   "helping at The Knucklebones",
-   null
+   "merchant",
+   "runs The Greatly Masons' Yard",
+   "mason"
   ],
   [
    "rmx_gerrit_hollis",
@@ -4029,14 +4029,14 @@
   ],
   [
    "rmx_gorm_halford",
-   "civilian",
-   "lighting the lamps at dusk",
-   null
+   "merchant",
+   "runs The Cinder Glassworks",
+   "glassworks"
   ],
   [
    "rmx_gorm_saltstack",
    "civilian",
-   "weighing at the Customs House",
+   "helping at The Penny Loaf",
    null
   ],
   [
@@ -4054,8 +4054,8 @@
   [
    "rmx_grete_dunn",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "clerking at the Wharf Office",
+   null
   ],
   [
    "rmx_gudrun_mossdale",
@@ -4084,14 +4084,14 @@
   [
    "rmx_harriet_pennock",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "clerking at the Records Office",
+   null
   ],
   [
    "rmx_harriet_platt",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "clerking at the Records Office",
+   null
   ],
   [
    "rmx_hester_greyby",
@@ -4108,8 +4108,8 @@
   [
    "rmx_hollis_shaw",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "copying at the Records Office",
+   null
   ],
   [
    "rmx_humphrey_sootton",
@@ -4174,19 +4174,19 @@
   [
    "rmx_josephine_fenwick",
    "civilian",
-   "tallying in the Bonded Warehouse",
-   null
+   "working at the Bathhouse",
+   "bathhouse"
   ],
   [
    "rmx_josephine_wickwick",
    "civilian",
-   "keeping the Long Store",
+   "helping at The Slag & Anchor",
    null
   ],
   [
    "rmx_kari_wickworth",
    "civilian",
-   "tallying in the Long Store",
+   "unloading ships at the piers",
    null
   ],
   [
@@ -4198,32 +4198,32 @@
   [
    "rmx_kjell_coalham",
    "civilian",
-   "keeping the New Store",
+   "carrying from Sump Stairs",
    null
   ],
   [
    "rmx_knut_sootley",
    "civilian",
-   "tallying in the New Store",
+   "unloading ships at the piers",
    null
   ],
   [
    "rmx_lionel_lowe",
    "civilian",
-   "clerking at the Wharf Office",
-   null
+   "working at The Eastgate Stables",
+   "stables"
   ],
   [
    "rmx_lionel_platt",
-   "civilian",
-   "lighting the lamps at dusk",
-   null
+   "merchant",
+   "runs The Timberland Sawmill",
+   "sawmill"
   ],
   [
    "rmx_liv_tarmarsh",
    "civilian",
-   "clerking at the Wharf Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_lothar_abbot",
@@ -4234,8 +4234,8 @@
   [
    "rmx_mab_fogham",
    "civilian",
-   "clerking at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_mab_plankridge",
@@ -4246,14 +4246,14 @@
   [
    "rmx_magda_orme",
    "civilian",
-   "clerking at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_magnus_millley",
    "civilian",
-   "copying at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_magnus_saltford",
@@ -4264,14 +4264,14 @@
   [
    "rmx_magnus_tarton",
    "civilian",
-   "copying at the Records Office",
-   null
+   "helping at The Fell Wine Vaults",
+   "vintner"
   ],
   [
    "rmx_magnus_wetherell",
    "civilian",
-   "clerking for the magistrate",
-   null
+   "helping at Timberland's Forge Row",
+   "smithy"
   ],
   [
    "rmx_maren_hatherley",
@@ -4318,14 +4318,14 @@
   [
    "rmx_oda_cotton",
    "civilian",
-   "helping at The Slag & Anchor",
+   "keeping the Long Store",
    null
   ],
   [
    "rmx_oda_marrowby",
-   "civilian",
-   "helping at The Grey Gull Inn",
-   null
+   "merchant",
+   "ladling soup on Market Square",
+   "inn"
   ],
   [
    "rmx_olaf_stoneley",
@@ -4347,8 +4347,8 @@
   ],
   [
    "rmx_orm_carlisle",
-   "civilian",
-   "driving for the carters",
+   "merchant",
+   "keeping the Carters' Yard",
    "carters"
   ],
   [
@@ -4396,13 +4396,13 @@
   [
    "rmx_philippa_coldby",
    "civilian",
-   "helping at Timberland's Forge Row",
-   "smithy"
+   "clerking for the magistrate",
+   null
   ],
   [
    "rmx_philippa_pitchstack",
    "civilian",
-   "helping at Clearwater Glass",
+   "clerking in the Administrative Wing",
    null
   ],
   [
@@ -4426,8 +4426,8 @@
   [
    "rmx_rika_gullwell",
    "civilian",
-   "keeping the Bathhouse",
-   "bathhouse"
+   "washing at the Washhouse",
+   "laundry"
   ],
   [
    "rmx_rika_tarnham",
@@ -4444,8 +4444,8 @@
   [
    "rmx_roald_toft",
    "civilian",
-   "washing at the Washhouse",
-   "laundry"
+   "keeping the Bathhouse",
+   "bathhouse"
   ],
   [
    "rmx_rosamund_ash",
@@ -4462,14 +4462,14 @@
   [
    "rmx_rupert_hatherley",
    "civilian",
-   "working at the Bathhouse",
-   "bathhouse"
+   "tallying in the Bonded Warehouse",
+   null
   ],
   [
    "rmx_septimus_ives",
    "civilian",
-   "helping at The Fell Wine Vaults",
-   "vintner"
+   "copying at the Records Office",
+   null
   ],
   [
    "rmx_signe_bilgewell",
@@ -4498,7 +4498,7 @@
   [
    "rmx_solveig_nailstack",
    "civilian",
-   "keeping the Fell Cellars",
+   "crying wares in the Rag Market",
    null
   ],
   [
@@ -4540,7 +4540,7 @@
   [
    "rmx_tobias_blackford",
    "civilian",
-   "crying wares in the Rag Market",
+   "clerking in the Administrative Wing",
    null
   ],
   [
@@ -4558,7 +4558,7 @@
   [
    "rmx_tove_mossdale",
    "civilian",
-   "unloading ships at the piers",
+   "tallying in the Long Store",
    null
   ],
   [
@@ -4569,8 +4569,8 @@
   ],
   [
    "rmx_ulla_brindle",
-   "civilian",
-   "working at The Fell Preserving House",
+   "merchant",
+   "preserver in the Market Hall",
    "preserver"
   ],
   [
@@ -4587,9 +4587,9 @@
   ],
   [
    "rmx_una_toft",
-   "civilian",
-   "unloading ships at the piers",
-   null
+   "merchant",
+   "runs The Timberland Ironworks",
+   "ironworks"
   ],
   [
    "rmx_vidar_kettleham",
@@ -4600,7 +4600,7 @@
   [
    "rmx_wenna_sootham",
    "civilian",
-   "unloading ships at the piers",
+   "tallying in the New Store",
    null
   ],
   [
@@ -4623,10 +4623,10 @@
   ]
  ],
  "stables": [
-  "rm_dunstan_greywick",
   "rm_oda_kelpworth",
+  "rm_philippa_rustton",
   "rm_ragnar_roperidge",
-  "rm_septimus_plankmarsh"
+  "rmx_lionel_lowe"
  ],
  "sump": {
   "coverage": 0.6642775696367487,
@@ -4988,7 +4988,7 @@
    "req": "R34",
    "check": "no placed NPC works a food or raw-resource producer (stables listed)",
    "ok": true,
-   "detail": "stables: ['rm_dunstan_greywick', 'rm_oda_kelpworth', 'rm_ragnar_roperidge', 'rm_septimus_plankmarsh']; bad: []"
+   "detail": "stables: ['rm_oda_kelpworth', 'rm_philippa_rustton', 'rm_ragnar_roperidge', 'rmx_lionel_lowe']; bad: []"
   },
   {
    "req": "R13",
@@ -5006,7 +5006,7 @@
    "req": "",
    "check": "no evening place takes more than 40",
    "ok": true,
-   "detail": "{'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+   "detail": "{'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'rm_the_grey_gull_inn': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
   },
   {
    "req": "R35",
@@ -5021,6 +5021,24 @@
    "detail": ""
   },
   {
+   "req": "",
+   "check": "at least 85% of earners hold a job of their household's class (the Watch and the clergy apart)",
+   "ok": true,
+   "detail": "373/396 (94.2%): upper 25/26, middle 168/179, lower 180/191"
+  },
+  {
+   "req": "",
+   "check": "every Minor House household has an upper job (a large business, a merchant's, high office)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "",
+   "check": "nobody from the Sump, the Cinders or the wharf keeps a larger business",
+   "ok": true,
+   "detail": ""
+  },
+  {
    "req": "R1",
    "check": "every link end, home, work spot, evening place and route post is reached from the spawn",
    "ok": true,
@@ -5029,226 +5047,6 @@
  ],
  "capacity": {
   "before": {
-   "ok": false,
-   "food": {
-    "demand": 83.16294412922561,
-    "staffed": 71,
-    "ratio": 0.8537456284577203,
-    "short": [
-     "bakery",
-     "butcher",
-     "preserver",
-     "dairy"
-    ]
-   },
-   "rows": [
-    [
-     "bakery",
-     4,
-     4,
-     3,
-     14.03418778708134
-    ],
-    [
-     "butcher",
-     2,
-     2,
-     2,
-     15.82656878857222
-    ],
-    [
-     "inn",
-     12,
-     12,
-     13,
-     15.752012845849803
-    ],
-    [
-     "provisioner",
-     4,
-     4,
-     3,
-     12.12731684565911
-    ],
-    [
-     "preserver",
-     1,
-     1,
-     1,
-     10.212710214270855
-    ],
-    [
-     "dairy",
-     1,
-     1,
-     1,
-     9.195835313085084
-    ],
-    [
-     "fishmonger",
-     4,
-     4,
-     4,
-     2.5880425096213853
-    ],
-    [
-     "smokehouse",
-     1,
-     1,
-     1,
-     2.5674985125858125
-    ],
-    [
-     "brewery",
-     3,
-     3,
-     4,
-     0.6440784843749999
-    ],
-    [
-     "press",
-     1,
-     1,
-     2,
-     0.21469282812499998
-    ],
-    [
-     "stall",
-     4,
-     4,
-     0,
-     0.0
-    ],
-    [
-     "chandlery",
-     3,
-     3,
-     2,
-     5.758166145833334
-    ],
-    [
-     "smithy",
-     5,
-     5,
-     5,
-     3.4589548668981482
-    ],
-    [
-     "weaver",
-     3,
-     3,
-     2,
-     2.008468125
-    ],
-    [
-     "apothecary",
-     2,
-     2,
-     2,
-     0.7580295312499999
-    ],
-    [
-     "herbalist",
-     2,
-     2,
-     1,
-     0.7580295312499999
-    ],
-    [
-     "pottery",
-     2,
-     2,
-     1,
-     0.9263702083333334
-    ],
-    [
-     "tinker",
-     3,
-     3,
-     1,
-     0.812424670138889
-    ],
-    [
-     "general",
-     5,
-     5,
-     3,
-     0.6881718749999999
-    ],
-    [
-     "armory",
-     1,
-     1,
-     1,
-     0.5699337499999999
-    ],
-    [
-     "tailor",
-     3,
-     3,
-     2,
-     0.35934
-    ]
-   ],
-   "businesses": {
-    "stall": 4,
-    "herbalist": 2,
-    "pottery": 2,
-    "chandlery": 3,
-    "weaver": 3,
-    "tinker": 3,
-    "general": 5,
-    "provisioner": 4,
-    "inn": 12,
-    "smithy": 5,
-    "armory": 1,
-    "saddlery": 3,
-    "pawnbroker": 1,
-    "fishmonger": 4,
-    "scriptorium": 1,
-    "printing_house": 1,
-    "cartographer": 1,
-    "apothecary": 2,
-    "bakery": 4,
-    "butcher": 2,
-    "cooperage": 3,
-    "carpenter": 3,
-    "brewery": 3,
-    "fletcher": 1,
-    "tailor": 3,
-    "jeweler": 2,
-    "perfumer": 1,
-    "glassworks": 2,
-    "moneychanger": 1,
-    "press": 1,
-    "builders_works": 1,
-    "barber": 1,
-    "preserver": 1,
-    "vintner": 1,
-    "dairy": 1,
-    "distillery": 1,
-    "shipwright": 1,
-    "rag_and_bone": 2,
-    "ironworks": 1,
-    "foundry": 1,
-    "sawmill": 1,
-    "tannery": 1,
-    "brickworks": 2,
-    "papermill": 1,
-    "cartwright": 1,
-    "charcoal": 1,
-    "builders_yard": 1,
-    "ropewalk": 1,
-    "smokehouse": 1,
-    "stables": 1,
-    "plasterworks": 1,
-    "paintworks": 1,
-    "mason": 1
-   },
-   "foodBusinesses": 37,
-   "householdBusinesses": 29
-  },
-  "after": {
    "ok": true,
    "food": {
     "demand": 83.16294412922561,
@@ -5463,146 +5261,251 @@
    "foodBusinesses": 58,
    "householdBusinesses": 15
   },
+  "after": {
+   "ok": true,
+   "food": {
+    "demand": 83.16294412922561,
+    "staffed": 99,
+    "ratio": 1.190434045314286,
+    "short": []
+   },
+   "rows": [
+    [
+     "bakery",
+     8,
+     8,
+     6,
+     14.03418778708134
+    ],
+    [
+     "butcher",
+     7,
+     7,
+     7,
+     17.449740424121075
+    ],
+    [
+     "inn",
+     15,
+     15,
+     9,
+     15.848447056376118
+    ],
+    [
+     "provisioner",
+     7,
+     7,
+     5,
+     12.425562320337765
+    ],
+    [
+     "preserver",
+     5,
+     5,
+     4,
+     10.212710214270855
+    ],
+    [
+     "dairy",
+     4,
+     4,
+     3,
+     9.195835313085084
+    ],
+    [
+     "fishmonger",
+     4,
+     4,
+     2,
+     1.8822127342700985
+    ],
+    [
+     "smokehouse",
+     1,
+     1,
+     1,
+     1.3519111777095905
+    ],
+    [
+     "brewery",
+     3,
+     3,
+     2,
+     0.5717528264802632
+    ],
+    [
+     "press",
+     1,
+     1,
+     2,
+     0.19058427549342102
+    ],
+    [
+     "stall",
+     3,
+     3,
+     0,
+     0.0
+    ],
+    [
+     "chandlery",
+     2,
+     2,
+     3,
+     5.758166145833334
+    ],
+    [
+     "smithy",
+     5,
+     5,
+     5,
+     3.87853378968254
+    ],
+    [
+     "weaver",
+     1,
+     1,
+     1,
+     2.1461024999999996
+    ],
+    [
+     "apothecary",
+     1,
+     1,
+     1,
+     0.7580295312499999
+    ],
+    [
+     "herbalist",
+     1,
+     1,
+     0,
+     0.7580295312499999
+    ],
+    [
+     "pottery",
+     1,
+     1,
+     1,
+     0.8680245833333334
+    ],
+    [
+     "tinker",
+     1,
+     1,
+     1,
+     0.354724007936508
+    ],
+    [
+     "general",
+     1,
+     1,
+     1,
+     0.5505374999999999
+    ],
+    [
+     "armory",
+     1,
+     1,
+     1,
+     0.60228125
+    ],
+    [
+     "tailor",
+     1,
+     1,
+     1,
+     0.35934
+    ]
+   ],
+   "businesses": {
+    "dairy": 4,
+    "herbalist": 1,
+    "stall": 3,
+    "butcher": 7,
+    "preserver": 5,
+    "bakery": 8,
+    "inn": 15,
+    "plasterworks": 1,
+    "foundry": 1,
+    "tannery": 1,
+    "provisioner": 7,
+    "papermill": 1,
+    "brewery": 3,
+    "ropewalk": 1,
+    "smithy": 5,
+    "armory": 1,
+    "saddlery": 1,
+    "general": 1,
+    "pawnbroker": 1,
+    "fishmonger": 4,
+    "scriptorium": 1,
+    "printing_house": 1,
+    "cartographer": 1,
+    "chandlery": 2,
+    "cooperage": 2,
+    "weaver": 1,
+    "pottery": 1,
+    "carpenter": 3,
+    "tinker": 1,
+    "paintworks": 1,
+    "tailor": 1,
+    "jeweler": 1,
+    "perfumer": 1,
+    "glassworks": 2,
+    "moneychanger": 1,
+    "apothecary": 1,
+    "press": 1,
+    "builders_works": 1,
+    "barber": 1,
+    "vintner": 1,
+    "distillery": 1,
+    "shipwright": 1,
+    "rag_and_bone": 1,
+    "cartwright": 1,
+    "charcoal": 1,
+    "smokehouse": 1,
+    "stables": 1,
+    "brickworks": 2,
+    "ironworks": 1,
+    "mason": 1,
+    "sawmill": 1,
+    "carters": 1,
+    "builders_yard": 1
+   },
+   "foodBusinesses": 58,
+   "householdBusinesses": 15
+  },
   "textFixes": {
-   "job": 46,
-   "stale": 158,
-   "grammar": 55
+   "job": 73
   },
   "textFixed": [
-   [
-    "rm_ivo_tarmarsh",
-    "job"
-   ],
-   [
-    "rm_rupert_pitchford",
-    "stale"
-   ],
-   [
-    "rm_orla_rainworth",
-    "job"
-   ],
-   [
-    "rm_theodora_ropemarsh",
-    "job"
-   ],
-   [
-    "rm_mogens_dripley",
-    "job"
-   ],
-   [
-    "rm_palle_bilgemarsh",
-    "job"
-   ],
-   [
-    "rm_isolde_brineton",
-    "job"
-   ],
    [
     "rm_torvald_slagton",
     "job"
    ],
    [
-    "rm_frederick_foghand",
-    "stale"
+    "rm_gudrun_rustwick",
+    "job"
    ],
    [
     "rm_runa_coalhand",
-    "stale"
+    "job"
    ],
    [
-    "rm_lavinia_bilgedale",
-    "stale"
-   ],
-   [
-    "rm_oda_kelpworth",
-    "stale"
+    "rm_dunstan_greywick",
+    "job"
    ],
    [
     "rm_wynn_sootridge",
-    "stale"
+    "job"
    ],
    [
-    "rm_erland_fogley",
-    "stale"
-   ],
-   [
-    "rm_philippa_fogwick",
-    "stale"
-   ],
-   [
-    "rm_corra_ropewell",
-    "stale"
-   ],
-   [
-    "rm_sybil_bilgeby",
-    "stale"
-   ],
-   [
-    "rm_disa_raincot",
-    "stale"
-   ],
-   [
-    "rm_agna_dripridge",
-    "stale"
-   ],
-   [
-    "rm_tove_wetgate",
-    "stale"
-   ],
-   [
-    "rm_oskar_sootwick",
-    "stale"
-   ],
-   [
-    "rm_lotte_greyley",
-    "stale"
-   ],
-   [
-    "rm_berit_coalworth",
-    "stale"
-   ],
-   [
-    "rm_signe_ashstack",
-    "stale"
-   ],
-   [
-    "rm_bertil_slagley",
-    "stale"
-   ],
-   [
-    "rm_dagny_pitchton",
-    "stale"
-   ],
-   [
-    "rm_frederick_nailgate",
-    "stale"
-   ],
-   [
-    "rm_brand_mudridge",
-    "stale"
-   ],
-   [
-    "rm_karin_ashgate",
-    "stale"
+    "rm_kari_bilgehand",
+    "job"
    ],
    [
     "rm_ivo_fogstack",
-    "stale"
-   ],
-   [
-    "rm_rupert_sootley",
-    "job"
-   ],
-   [
-    "rm_liv_slagstack",
-    "job"
-   ],
-   [
-    "rm_kjell_cinderley",
-    "job"
-   ],
-   [
-    "rm_ragnar_millmarsh",
     "job"
    ],
    [
@@ -5610,680 +5513,180 @@
     "job"
    ],
    [
-    "rm_orla_wickby",
-    "job"
-   ],
-   [
-    "rm_clemence_rustham",
-    "job"
-   ],
-   [
     "rm_ulla_rustham",
-    "stale"
-   ],
-   [
-    "rm_gudrun_ropeford",
-    "job"
-   ],
-   [
-    "rm_frida_brineford",
-    "job"
-   ],
-   [
-    "rm_osric_ropeworth",
-    "job"
-   ],
-   [
-    "rm_jorunn_tarham",
-    "job"
-   ],
-   [
-    "rm_una_pitchcot",
     "job"
    ],
    [
     "rm_mab_pitchcot",
-    "stale"
-   ],
-   [
-    "rm_wynn_rustworth",
     "job"
    ],
    [
-    "rm_gorm_rustmarsh",
-    "stale"
-   ],
-   [
-    "rm_berit_kelpwick",
-    "stale"
-   ],
-   [
-    "rm_dagny_slaghand",
-    "stale"
-   ],
-   [
-    "rm_gerrit_nailford",
-    "stale"
-   ],
-   [
-    "rm_ingrid_saltstack",
-    "stale"
-   ],
-   [
-    "rm_delphine_saltwick",
-    "stale"
-   ],
-   [
-    "rm_ilse_saltley",
-    "stale"
-   ],
-   [
-    "rm_brenna_slaggate",
-    "stale"
-   ],
-   [
-    "rm_jorunn_saltdale",
+    "rm_wystan_coalmarsh",
     "job"
    ],
    [
-    "rm_karin_wetridge",
-    "stale"
-   ],
-   [
-    "rm_orm_wickwick",
+    "rm_mab_coalridge",
     "job"
    ],
    [
-    "rm_sigrun_kelphand",
-    "stale"
-   ],
-   [
-    "rm_hanne_sootham",
+    "rm_ilse_coalley",
     "job"
    ],
    [
-    "rm_moll_dripdale",
+    "rm_philippa_rustton",
     "job"
    ],
    [
-    "rm_runa_ashridge",
+    "rm_edda_gullford",
     "job"
    ],
    [
-    "rm_gorm_slagworth",
-    "stale"
-   ],
-   [
-    "rm_piet_wickridge",
-    "stale"
-   ],
-   [
-    "rm_corwin_sootstack",
+    "rm_rupert_cindergate",
     "job"
    ],
    [
-    "rm_tristram_rainley",
-    "stale"
-   ],
-   [
-    "rm_frida_kelpford",
-    "stale"
-   ],
-   [
-    "rm_lotte_bilgeton",
-    "stale"
-   ],
-   [
-    "rm_arne_wickdale",
-    "stale"
-   ],
-   [
-    "rm_ada_greyhand",
-    "stale"
-   ],
-   [
-    "rm_gerrit_tarmore",
-    "stale"
-   ],
-   [
-    "rm_mathis_slagwell",
-    "stale"
-   ],
-   [
-    "rm_mathis_plankham",
-    "stale"
+    "rm_signe_sootwell",
+    "job"
    ],
    [
     "rm_ivar_nailham",
     "job"
    ],
    [
-    "rm_wenna_naildale",
-    "stale"
-   ],
-   [
-    "rm_solveig_cinderton",
-    "stale"
-   ],
-   [
-    "rm_ottilie_nailmarsh",
-    "stale"
-   ],
-   [
-    "rm_yrsa_nailwell",
-    "stale"
-   ],
-   [
-    "rm_gorm_plankworth",
-    "stale"
-   ],
-   [
-    "rm_corwin_sootton",
-    "stale"
-   ],
-   [
-    "rm_brenna_milldale",
-    "stale"
-   ],
-   [
-    "rm_finn_saltwell",
-    "stale"
-   ],
-   [
-    "rm_liv_cinderby",
-    "stale"
-   ],
-   [
-    "rm_dorcas_rainford",
-    "stale"
-   ],
-   [
-    "rm_gwen_brineby",
-    "stale"
-   ],
-   [
-    "rm_greta_gullton",
-    "stale"
-   ],
-   [
-    "rm_thyra_wetmarsh",
-    "stale"
-   ],
-   [
-    "rm_petra_plankhand",
+    "rm_osric_wetford",
     "job"
    ],
    [
-    "rm_soren_coaldale",
-    "stale"
+    "rm_leif_fogcot",
+    "job"
    ],
    [
-    "rm_lavinia_brinemarsh",
-    "stale"
+    "rm_corwin_bilgestack",
+    "job"
    ],
    [
-    "rm_ivo_cinderham",
-    "stale"
+    "rm_berit_mudton",
+    "job"
    ],
    [
-    "rm_florence_millhand",
-    "stale"
-   ],
-   [
-    "rm_jarl_greyford",
-    "stale"
-   ],
-   [
-    "rm_aldric_fogwell",
-    "stale"
-   ],
-   [
-    "rm_corwin_kelpby",
-    "stale"
-   ],
-   [
-    "rm_una_plankton",
-    "stale"
-   ],
-   [
-    "rm_edric_saltby",
-    "stale"
-   ],
-   [
-    "rm_maren_tarhand",
-    "stale"
-   ],
-   [
-    "rm_delphine_dripham",
-    "stale"
-   ],
-   [
-    "rm_dagny_pitchley",
-    "stale"
-   ],
-   [
-    "rm_delphine_mudwick",
-    "stale"
-   ],
-   [
-    "rm_frida_rainhand",
-    "stale"
-   ],
-   [
-    "rm_eleanor_wetby",
-    "stale"
-   ],
-   [
-    "rm_montague_millcot",
-    "stale"
-   ],
-   [
-    "rm_oda_kelpridge",
-    "stale"
+    "rm_septimus_plankmarsh",
+    "job"
    ],
    [
     "rm_agna_bilgecot",
     "job"
    ],
    [
-    "rm_percival_rustford",
-    "stale"
-   ],
-   [
-    "rm_agnes_wetley",
-    "stale"
-   ],
-   [
-    "rm_runa_nailton",
-    "stale"
-   ],
-   [
-    "rm_lionel_ropestack",
-    "stale"
-   ],
-   [
-    "rm_frida_bilgewell",
-    "stale"
-   ],
-   [
-    "rm_rosamund_sootmarsh",
-    "stale"
-   ],
-   [
-    "rm_desmond_dripcot",
-    "stale"
-   ],
-   [
-    "rm_hanne_coalton",
-    "stale"
-   ],
-   [
-    "rm_palle_plankmore",
-    "stale"
-   ],
-   [
-    "rm_bettany_nailley",
-    "stale"
-   ],
-   [
-    "rm_dagny_ropeley",
-    "stale"
-   ],
-   [
-    "rmx_lothar_abbot",
-    "stale"
-   ],
-   [
-    "rmx_yrsa_kelpstack",
-    "grammar"
-   ],
-   [
-    "rmx_frida_marrowby",
-    "grammar"
-   ],
-   [
-    "rmx_jasper_coalcot",
-    "job"
-   ],
-   [
-    "rmx_soren_cindermarsh",
-    "stale"
-   ],
-   [
-    "rmx_ottilie_dripdale",
-    "stale"
-   ],
-   [
     "rmx_tove_mossdale",
-    "stale"
-   ],
-   [
-    "rmx_dunstan_sallow",
-    "stale"
-   ],
-   [
-    "rmx_bertil_saltcot",
-    "stale"
-   ],
-   [
-    "rmx_disa_slagwick",
-    "stale"
+    "job"
    ],
    [
     "rmx_dagfinn_wainwright",
-    "grammar"
+    "job"
    ],
    [
     "rmx_magnus_millley",
-    "stale"
+    "job"
    ],
    [
     "rmx_gorm_saltstack",
-    "stale"
-   ],
-   [
-    "rmx_orm_blackwood",
-    "grammar"
-   ],
-   [
-    "rmx_bertil_slagwick",
-    "grammar"
-   ],
-   [
-    "rmx_gerrit_hollis",
-    "grammar"
-   ],
-   [
-    "rmx_ivo_wainwright",
     "job"
-   ],
-   [
-    "rmx_greta_thornworth",
-    "grammar"
-   ],
-   [
-    "rmx_magnus_saltford",
-    "grammar"
    ],
    [
     "rmx_magda_orme",
-    "stale"
-   ],
-   [
-    "rmx_montague_kettlecote",
-    "stale"
+    "job"
    ],
    [
     "rmx_josephine_fenwick",
-    "stale"
-   ],
-   [
-    "rmx_montague_kettlewick",
-    "grammar"
-   ],
-   [
-    "rmx_aud_kemp",
-    "grammar"
-   ],
-   [
-    "rmx_cressida_wetherell",
-    "grammar"
+    "job"
    ],
    [
     "rmx_philippa_pitchstack",
-    "stale"
-   ],
-   [
-    "rmx_tage_slagworth",
-    "stale"
-   ],
-   [
-    "rmx_soren_ashcote",
-    "stale"
-   ],
-   [
-    "rmx_sigrun_wickham",
-    "grammar"
+    "job"
    ],
    [
     "rmx_wenna_sootham",
-    "stale"
-   ],
-   [
-    "rmx_cressida_cotton",
-    "stale"
+    "job"
    ],
    [
     "rmx_septimus_ives",
-    "stale"
-   ],
-   [
-    "rmx_ulf_kelpmarsh",
     "job"
-   ],
-   [
-    "rmx_disa_bilgemarsh",
-    "grammar"
-   ],
-   [
-    "rmx_millicent_wickwick",
-    "job"
-   ],
-   [
-    "rmx_maren_hatherley",
-    "grammar"
-   ],
-   [
-    "rmx_grete_dimmock",
-    "stale"
    ],
    [
     "rmx_bo_gilbey",
-    "grammar"
-   ],
-   [
-    "rmx_rika_tarnham",
-    "grammar"
-   ],
-   [
-    "rmx_knut_sootley",
-    "stale"
-   ],
-   [
-    "rmx_hanne_ash",
-    "stale"
-   ],
-   [
-    "rmx_oda_marrowby",
-    "stale"
-   ],
-   [
-    "rmx_disa_nettleby",
-    "grammar"
-   ],
-   [
-    "rmx_sigrun_mudworth",
-    "stale"
-   ],
-   [
-    "rmx_delphine_brackwick",
-    "stale"
-   ],
-   [
-    "rmx_rupert_hatherley",
-    "stale"
-   ],
-   [
-    "rmx_egil_dunn",
-    "stale"
-   ],
-   [
-    "rmx_sigrun_mudmore",
-    "stale"
-   ],
-   [
-    "rmx_jarl_greywell",
     "job"
    ],
    [
-    "rmx_ivo_pitchridge",
-    "stale"
+    "rmx_knut_sootley",
+    "job"
    ],
    [
-    "rmx_tilde_slagwell",
-    "stale"
+    "rmx_oda_marrowby",
+    "job"
+   ],
+   [
+    "rmx_delphine_brackwick",
+    "job"
+   ],
+   [
+    "rmx_rupert_hatherley",
+    "job"
    ],
    [
     "rmx_mab_fogham",
-    "stale"
-   ],
-   [
-    "rmx_jorunn_wetcombe",
-    "grammar"
-   ],
-   [
-    "rmx_orm_nailhand",
-    "stale"
-   ],
-   [
-    "rmx_nessa_slagmarsh",
-    "stale"
-   ],
-   [
-    "rmx_delphine_birch",
-    "grammar"
-   ],
-   [
-    "rmx_desmond_rook",
-    "stale"
+    "job"
    ],
    [
     "rmx_desmond_farrow",
     "job"
    ],
    [
-    "rmx_karin_bilgeford",
-    "job"
-   ],
-   [
-    "rmx_roald_greyham",
-    "stale"
-   ],
-   [
-    "rmx_pim_pitchham",
-    "grammar"
-   ],
-   [
     "rmx_una_toft",
-    "stale"
-   ],
-   [
-    "rmx_moll_coldharbour",
-    "grammar"
-   ],
-   [
-    "rmx_bertil_coalley",
-    "stale"
+    "job"
    ],
    [
     "rmx_solveig_nailstack",
-    "stale"
-   ],
-   [
-    "rmx_edmund_sootford",
-    "grammar"
-   ],
-   [
-    "rmx_rupert_greyley",
     "job"
    ],
    [
-    "rmx_florence_pennock",
-    "stale"
-   ],
-   [
     "rmx_hollis_shaw",
-    "stale"
-   ],
-   [
-    "rmx_percival_thornham",
     "job"
    ],
    [
     "rmx_harriet_platt",
-    "stale"
-   ],
-   [
-    "rmx_kari_wickworth",
-    "stale"
-   ],
-   [
-    "rmx_vidar_kettleham",
-    "grammar"
-   ],
-   [
-    "rmx_delphine_redfern",
-    "stale"
-   ],
-   [
-    "rmx_dagfinn_thornham",
-    "stale"
-   ],
-   [
-    "rmx_rika_gullwell",
-    "stale"
-   ],
-   [
-    "rmx_aldric_thackeray",
-    "grammar"
-   ],
-   [
-    "rmx_dagny_catterick",
-    "stale"
-   ],
-   [
-    "rmx_corra_coldridge",
-    "stale"
-   ],
-   [
-    "rmx_lionel_lowe",
-    "stale"
-   ],
-   [
-    "rmx_ingrid_kendrick",
-    "grammar"
-   ],
-   [
-    "rmx_frida_netherby",
-    "stale"
-   ],
-   [
-    "rmx_ebba_heath",
-    "stale"
-   ],
-   [
-    "rmx_tobias_rainley",
     "job"
    ],
    [
-    "rmx_olaf_stoneley",
-    "grammar"
+    "rmx_kari_wickworth",
+    "job"
    ],
    [
-    "rmx_piet_lumley",
-    "grammar"
+    "rmx_delphine_redfern",
+    "job"
+   ],
+   [
+    "rmx_rika_gullwell",
+    "job"
+   ],
+   [
+    "rmx_dagny_catterick",
+    "job"
+   ],
+   [
+    "rmx_corra_coldridge",
+    "job"
+   ],
+   [
+    "rmx_lionel_lowe",
+    "job"
+   ],
+   [
+    "rmx_frida_netherby",
+    "job"
    ],
    [
     "rmx_gorm_halford",
-    "grammar"
-   ],
-   [
-    "rmx_wystan_wethand",
-    "grammar"
-   ],
-   [
-    "rmx_fenwick_mossdale",
-    "stale"
+    "job"
    ],
    [
     "rmx_tobias_blackford",
@@ -6291,220 +5694,372 @@
    ],
    [
     "rmx_grete_dunn",
-    "stale"
-   ],
-   [
-    "rmx_ottilie_slagley",
-    "stale"
-   ],
-   [
-    "rmx_una_thackeray",
-    "grammar"
+    "job"
    ],
    [
     "rmx_cressida_mallory",
     "job"
    ],
    [
-    "rmx_philippa_rainford",
-    "grammar"
-   ],
-   [
-    "rmx_ilse_netherby",
-    "grammar"
-   ],
-   [
-    "rmx_corra_gullford",
-    "grammar"
-   ],
-   [
-    "rmx_aud_saltridge",
+    "rmx_josephine_wickwick",
     "job"
    ],
    [
-    "rmx_florence_gullworth",
-    "grammar"
-   ],
-   [
-    "rmx_humphrey_sootton",
-    "grammar"
-   ],
-   [
-    "rmx_rosamund_ash",
-    "grammar"
-   ],
-   [
-    "rmx_finn_dripwick",
-    "stale"
-   ],
-   [
-    "rmx_josephine_wickwick",
-    "stale"
-   ],
-   [
-    "rmx_ebba_netherby",
-    "grammar"
-   ],
-   [
-    "rmx_arne_rainworth",
-    "grammar"
-   ],
-   [
-    "rmx_dagfinn_kettlecote",
-    "grammar"
-   ],
-   [
     "rmx_kjell_coalham",
-    "stale"
-   ],
-   [
-    "rmx_dunstan_plankham",
-    "stale"
+    "job"
    ],
    [
     "rmx_bartholomew_sootmore",
-    "stale"
+    "job"
    ],
    [
     "rmx_dorcas_brineley",
-    "stale"
-   ],
-   [
-    "rmx_mab_plankridge",
-    "grammar"
-   ],
-   [
-    "rmx_sybil_pickering",
-    "grammar"
+    "job"
    ],
    [
     "rmx_lionel_platt",
-    "grammar"
-   ],
-   [
-    "rmx_brenna_abbot",
-    "stale"
-   ],
-   [
-    "rmx_orla_wetridge",
-    "grammar"
-   ],
-   [
-    "rmx_petra_ashgate",
     "job"
    ],
    [
     "rmx_magnus_tarton",
-    "stale"
-   ],
-   [
-    "rmx_una_brineridge",
-    "stale"
-   ],
-   [
-    "rmx_palle_brinewell",
-    "grammar"
+    "job"
    ],
    [
     "rmx_oda_cotton",
-    "stale"
+    "job"
    ],
    [
     "rmx_philippa_coldby",
-    "stale"
+    "job"
    ],
    [
     "rmx_liv_tarmarsh",
-    "stale"
-   ],
-   [
-    "rmx_ivar_netherworth",
-    "grammar"
-   ],
-   [
-    "rmx_gudrun_mossdale",
-    "grammar"
-   ],
-   [
-    "rmx_dirk_langstead",
-    "stale"
-   ],
-   [
-    "rmx_edda_muddale",
-    "grammar"
-   ],
-   [
-    "rmx_winifred_nailton",
-    "stale"
+    "job"
    ],
    [
     "rmx_harriet_pennock",
-    "stale"
-   ],
-   [
-    "rmx_desmond_hollis",
-    "stale"
+    "job"
    ],
    [
     "rmx_ulla_brindle",
     "job"
    ],
    [
-    "rmx_hollis_kendrick",
-    "grammar"
-   ],
-   [
-    "rmx_theodora_pitchwick",
-    "stale"
-   ],
-   [
     "rmx_roald_toft",
     "job"
    ],
    [
-    "rmx_cedric_rook",
-    "stale"
-   ],
-   [
     "rmx_magnus_wetherell",
-    "stale"
-   ],
-   [
-    "rmx_orm_carlisle",
     "job"
    ],
    [
-    "rmx_hester_greyby",
-    "grammar"
-   ],
-   [
-    "rmx_tobias_dunley",
-    "grammar"
-   ],
-   [
-    "rmx_ansel_kelpford",
-    "grammar"
-   ],
-   [
-    "rmx_gunnar_farrow",
-    "grammar"
-   ],
-   [
-    "rmx_egil_blackcombe",
-    "grammar"
-   ],
-   [
     "rmx_desmond_toft",
-    "grammar"
-   ],
-   [
-    "rmx_bettany_bilgehand",
-    "grammar"
+    "job"
    ],
    [
     "rmx_corra_pennock",
-    "stale"
+    "job"
+   ],
+   [
+    "rm_wynn_tarhand",
+    "job"
+   ],
+   [
+    "rm_magnus_greycot",
+    "job"
+   ],
+   [
+    "rm_ansel_wickdale",
+    "job"
    ]
+  ]
+ },
+ "classes": {
+  "before": {
+   "classes": {
+    "upper": {
+     "earners": 26,
+     "matched": 20,
+     "rate": 0.769
+    },
+    "middle": {
+     "earners": 179,
+     "matched": 134,
+     "rate": 0.749
+    },
+    "lower": {
+     "earners": 191,
+     "matched": 142,
+     "rate": 0.743
+    }
+   },
+   "earners": 396,
+   "matched": 296,
+   "rate": 0.747,
+   "ownCases": {
+    "clergy": 18,
+    "watch": 30
+   },
+   "unmatched": [
+    "rm_ada_greyhand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): carpenter in the Market Hall",
+    "rm_agna_bilgecot: a lower household (the sump) in a middle job (keeps a shop, stall or counter): preserver in the Market Hall",
+    "rm_agna_dripridge: a lower household (an estate's gatehouse or cottages, Grayrock Cottages) in a middle job (keeps a shop, stall or counter): provisioner in the Market Hall",
+    "rm_ansel_wickdale: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_berit_mudton: a lower household (the cinders) in a middle job (runs a Great House's works for it): ropemaker at the ropewalk",
+    "rm_corra_coalcot: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): fishmonger",
+    "rm_corwin_bilgestack: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_corwin_sootstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher",
+    "rm_dagny_rustcot: a middle household (admin) in an upper job (high office): harbourmaster of the Wharf Office",
+    "rm_desmond_grantham: an upper household (of the House, at Grantham House) in a leisure job (at leisure): at home in the Heights",
+    "rm_dunstan_greywick: a middle household (commons) in a lower job (waged or service work): keeping the Greatly stables",
+    "rm_edda_gullford: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_edmund_sootcot: a middle household (admin) in an upper job (high office): running the City Office",
+    "rm_eleanor_mudworth: a middle household (admin) in an upper job (high office): keeping the rolls at the Records Office",
+    "rm_eleanor_vance: an upper household (of the House, at Vance House) in a leisure job (at leisure): at home in the Heights",
+    "rm_erland_ashworth: a middle household (admin) in an upper job (high office): hearing cases",
+    "rm_gerrit_mudhand: a middle household (admin) in an upper job (high office): chancellor of the Council",
+    "rm_gudrun_rustwick: a middle household (commons) in a lower job (waged or service work): working at the Greatly works",
+    "rm_ilse_coalley: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_ilse_fogridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs",
+    "rm_isolde_brineton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker on Market Square",
+    "rm_ivar_nailham: a lower household (the sump) in an upper job (owns a large business): keeping the Carters' Yard",
+    "rm_ivo_fogstack: a middle household (a shop with its flat, Harbour Provisions) in a lower job (waged or service work): working the cranes",
+    "rm_jasper_bilgeford: a middle household (admin) in an upper job (high office): collecting the Crown's customs",
+    "rm_kari_bilgehand: a middle household (commons) in an upper job (owns a large business): keeping the inn",
+    "rm_karin_stanmore: an upper household (of the House, at Stanmore House) in a leisure job (at leisure): at home in the Heights",
+    "rm_leif_fogcot: a lower household (the wharf) in a middle job (runs a Great House's works for it): runs",
+    "rm_mab_carlisle: an upper household (of the House, at Carlisle House) in a leisure job (at leisure): at home in the Heights",
+    "rm_mab_coalridge: a lower household (the cinders) in a middle job (runs a Great House's works for it): runs",
+    "rm_mab_pitchcot: a middle household (a shop with its flat, The Eastgate Bakehouse) in a lower job (waged or service work): carrying from Sump Stairs",
+    "rm_magnus_greycot: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_oskar_gullworth: a middle household (admin) in an upper job (high office): Chancellor of Ridgemere",
+    "rm_osric_wetford: a lower household (the sump) in an upper job (owns a large business): runs",
+    "rm_philippa_rustton: a lower household (the sump) in an upper job (owns a large business): tanner",
+    "rm_rosalind_greatly: an upper household (of the House, at Greatly House) in a leisure job (at leisure): reading in the gardens",
+    "rm_rosamund_coalford: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs",
+    "rm_rosamund_tarridge: a middle household (commons) in an upper job (owns a large business): keeping the inn",
+    "rm_runa_ashridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cheesemaker in the Market Hall",
+    "rm_runa_coalhand: a middle household (commons) in a lower job (waged or service work): serving in the King's household",
+    "rm_rupert_cindergate: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_septimus_plankmarsh: a middle household (commons) in a lower job (a hand): ",
+    "rm_signe_sootwell: a lower household (the sump) in an upper job (owns a large business): runs",
+    "rm_sigrun_kelphand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cooper in the Market Hall",
+    "rm_soren_kelpstack: a middle household (a shop with its flat, The Hopyard) in a lower job (waged or service work): driving for the carters",
+    "rm_torvald_slagton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): ladling soup on Market Square",
+    "rm_ulla_rustham: a middle household (a shop with its flat, The Grey Goose) in a lower job (waged or service work): washing at the Washhouse",
+    "rm_wenna_naildale: a lower household (the wharf) in a middle job (keeps a shop, stall or counter): wheelwright",
+    "rm_wynn_sootridge: a lower household (an estate's gatehouse or cottages, Fell Cottages) in a middle job (lower office): usher in the Antechamber",
+    "rm_wynn_tarhand: a lower household (the sump) in a middle job (runs a Great House's works for it): runs",
+    "rm_wystan_coalmarsh: a lower household (the cinders) in a middle job (runs a Great House's works for it): runs",
+    "rmx_bartholomew_sootmore: a lower household (the sump) in a middle job (lower office): usher in the Antechamber",
+    "rmx_bo_gilbey: a middle household (commons) in a lower job (waged or service work): lighting the lamps at dusk",
+    "rmx_cedric_rook: a middle household (admin) in an upper job (high office): royal secretary",
+    "rmx_corra_coldridge: a middle household (northgate) in a lower job (waged or service work): washing at the Washhouse",
+    "rmx_corra_pennock: a middle household (commons) in an upper job (high office): the Crown's treasurer",
+    "rmx_cressida_mallory: a middle household (northgate) in a lower job (a hand): ",
+    "rmx_dagfinn_wainwright: a lower household (the cinders) in a middle job (lower office): keeping the Washhouse",
+    "rmx_dagny_catterick: a middle household (northgate) in a lower job (waged or service work): crying wares in the Rag Market",
+    "rmx_delphine_brackwick: a lower household (a tenement on the Sump's edge, Gull Rents) in a middle job (lower office): clerking in the Administrative Wing",
+    "rmx_delphine_redfern: a lower household (a tenement on the Sump's edge, Gull Rents) in a middle job (lower office): clerking in the Administrative Wing",
+    "rmx_desmond_farrow: a middle household (commons) in a lower job (a hand): ",
+    "rmx_desmond_toft: a middle household (commons) in a lower job (waged or service work): lighting the lamps at dusk",
+    "rmx_dorcas_brineley: a lower household (the sump) in a middle job (lower office): clerking in the Administrative Wing",
+    "rmx_fenwick_mossdale: a middle household (commons) in an upper job (high office): warden of the Market Hall",
+    "rmx_frida_netherby: a middle household (commons) in a lower job (a hand): ",
+    "rmx_gorm_halford: a middle household (northgate) in a lower job (waged or service work): lighting the lamps at dusk",
+    "rmx_gorm_saltstack: a lower household (the sump) in a middle job (lower office): weighing at the Customs House",
+    "rmx_grete_dunn: a middle household (northgate) in a lower job (a hand): ",
+    "rmx_harriet_pennock: a middle household (commons) in a lower job (a hand): ",
+    "rmx_harriet_platt: a middle household (admin) in a lower job (a hand): ",
+    "rmx_hollis_shaw: a middle household (northgate) in a lower job (a hand): ",
+    "rmx_josephine_fenwick: a lower household (a tenement on the Sump's edge, Rain Rents) in a middle job (lower office): tallying in the Bonded Warehouse",
+    "rmx_josephine_wickwick: a lower household (the cinders) in a middle job (lower office): keeping the Long Store",
+    "rmx_kari_wickworth: a lower household (the sump) in a middle job (lower office): tallying in the Long Store",
+    "rmx_kjell_coalham: a lower household (the sump) in a middle job (lower office): keeping the New Store",
+    "rmx_knut_sootley: a lower household (the sump) in a middle job (lower office): tallying in the New Store",
+    "rmx_lionel_lowe: a lower household (a tenement on the Sump's edge, Rain Rents) in a middle job (lower office): clerking at the Wharf Office",
+    "rmx_lionel_platt: a middle household (admin) in a lower job (waged or service work): lighting the lamps at dusk",
+    "rmx_liv_tarmarsh: a lower household (the sump) in a middle job (lower office): clerking at the Wharf Office",
+    "rmx_mab_fogham: a lower household (the sump) in a middle job (lower office): clerking at the Records Office",
+    "rmx_magda_orme: a lower household (a tenement on the Sump's edge, Pitch Rents) in a middle job (lower office): clerking at the Records Office",
+    "rmx_magnus_millley: a lower household (the sump) in a middle job (lower office): copying at the Records Office",
+    "rmx_magnus_tarton: a lower household (the sump) in a middle job (lower office): copying at the Records Office",
+    "rmx_magnus_wetherell: a lower household (the cinders) in a middle job (lower office): clerking for the magistrate",
+    "rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store",
+    "rmx_oda_cotton: a middle household (commons) in a lower job (a hand): ",
+    "rmx_oda_marrowby: a middle household (commons) in a lower job (a hand): ",
+    "rmx_orm_carlisle: an upper household (of the House, at Carlisle House) in a lower job (waged or service work): driving for the carters",
+    "rmx_philippa_coldby: a middle household (commons) in a lower job (a hand): ",
+    "rmx_philippa_pitchstack: a middle household (commons) in a lower job (a hand): ",
+    "rmx_rika_gullwell: a lower household (the sump) in a middle job (lower office): keeping the Bathhouse",
+    "rmx_roald_toft: a middle household (commons) in a lower job (waged or service work): washing at the Washhouse",
+    "rmx_rupert_hatherley: a middle household (commons) in a lower job (waged or service work): working at the Bathhouse",
+    "rmx_septimus_ives: a middle household (commons) in a lower job (a hand): ",
+    "rmx_solveig_nailstack: a lower household (the sump) in a middle job (lower office): keeping the Fell Cellars",
+    "rmx_tobias_blackford: a middle household (commons) in a lower job (waged or service work): crying wares in the Rag Market",
+    "rmx_tove_mossdale: a middle household (commons) in a lower job (waged or service work): unloading ships at the piers",
+    "rmx_ulla_brindle: a middle household (commons) in a lower job (a hand): ",
+    "rmx_una_toft: a middle household (commons) in a lower job (waged or service work): unloading ships at the piers",
+    "rmx_wenna_sootham: a middle household (commons) in a lower job (waged or service work): unloading ships at the piers"
+   ],
+   "minorWithoutUpper": [
+    "rm_eleanor_vance",
+    "rm_hakon_grantham",
+    "rm_thyra_carlisle",
+    "rmx_orm_carlisle"
+   ],
+   "largeLower": [
+    "rm_ansel_wickdale (the sump): runs",
+    "rm_berit_mudton (the cinders): ropemaker at the ropewalk",
+    "rm_corwin_bilgestack (the sump): runs",
+    "rm_edda_gullford (the sump): runs",
+    "rm_ilse_coalley (the sump): runs",
+    "rm_ivar_nailham (the sump): keeping the Carters' Yard",
+    "rm_leif_fogcot (the wharf): runs",
+    "rm_mab_coalridge (the cinders): runs",
+    "rm_magnus_greycot (the sump): runs",
+    "rm_osric_wetford (the sump): runs",
+    "rm_philippa_rustton (the sump): tanner",
+    "rm_rupert_cindergate (the sump): runs",
+    "rm_signe_sootwell (the sump): runs",
+    "rm_wynn_tarhand (the sump): runs",
+    "rm_wystan_coalmarsh (the cinders): runs",
+    "rmx_josephine_wickwick (the cinders): keeping the Long Store",
+    "rmx_kjell_coalham (the sump): keeping the New Store"
+   ]
+  },
+  "after": {
+   "classes": {
+    "upper": {
+     "earners": 26,
+     "matched": 25,
+     "rate": 0.962
+    },
+    "middle": {
+     "earners": 179,
+     "matched": 168,
+     "rate": 0.939
+    },
+    "lower": {
+     "earners": 191,
+     "matched": 180,
+     "rate": 0.942
+    }
+   },
+   "earners": 396,
+   "matched": 373,
+   "rate": 0.942,
+   "ownCases": {
+    "clergy": 18,
+    "watch": 30
+   },
+   "unmatched": [
+    "rm_ada_greyhand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): carpenter in the Market Hall",
+    "rm_agna_dripridge: a lower household (an estate's gatehouse or cottages, Grayrock Cottages) in a middle job (keeps a shop, stall or counter): provisioner in the Market Hall",
+    "rm_corra_coalcot: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): runs The Fish Hall",
+    "rm_corwin_sootstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher at Cinder Butchers",
+    "rm_dagny_rustcot: a middle household (admin) in an upper job (high office): harbourmaster of the Wharf Office",
+    "rm_dunstan_greywick: a middle household (commons) in an upper job (owns a large business): tanner at The Wharf Tannery",
+    "rm_edmund_sootcot: a middle household (admin) in an upper job (high office): running the City Office",
+    "rm_eleanor_mudworth: a middle household (admin) in an upper job (high office): keeping the rolls at the Records Office",
+    "rm_erland_ashworth: a middle household (admin) in an upper job (high office): hearing cases",
+    "rm_gerrit_mudhand: a middle household (admin) in an upper job (high office): chancellor of the Council",
+    "rm_ilse_fogridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The Timberland Charcoal Store",
+    "rm_isolde_brineton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker on Market Square",
+    "rm_jasper_bilgeford: a middle household (admin) in an upper job (high office): collecting the Crown's customs",
+    "rm_oskar_gullworth: a middle household (admin) in an upper job (high office): Chancellor of Ridgemere",
+    "rm_rosalind_greatly: an upper household (of the House, at Greatly House) in a leisure job (at leisure): reading in the gardens",
+    "rm_rosamund_coalford: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The North Wharf Smokehouse",
+    "rm_rosamund_tarridge: a middle household (commons) in an upper job (owns a large business): keeping the inn",
+    "rm_runa_ashridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cheesemaker in the Market Hall",
+    "rm_sigrun_kelphand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cooper in the Market Hall",
+    "rm_wenna_naildale: a lower household (the wharf) in a middle job (keeps a shop, stall or counter): wheelwright at Cinder Wheelwrights",
+    "rmx_cedric_rook: a middle household (admin) in an upper job (high office): royal secretary",
+    "rmx_fenwick_mossdale: a middle household (commons) in an upper job (high office): warden of the Market Hall",
+    "rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store"
+   ],
+   "minorWithoutUpper": [],
+   "largeLower": []
+  },
+  "moves": [
+   "rm_agna_bilgecot (swap): lower, now working at The Fell Preserving House",
+   "rm_ansel_wickdale (swap): lower, now helping at The Knucklebones",
+   "rm_berit_mudton (swap): lower, now unloading ships at the piers",
+   "rm_corwin_bilgestack (swap): lower, now lighting the lamps at dusk",
+   "rm_desmond_grantham (claim): upper, now runs The Rainwater Brewery",
+   "rm_dunstan_greywick (swap): middle, now tanner at The Wharf Tannery",
+   "rm_edda_gullford (swap): lower, now lighting the lamps at dusk",
+   "rm_eleanor_vance (claim): upper, now runs The Rag Mill",
+   "rm_gudrun_rustwick (swap): middle, now runs The Greatly Plasterworks",
+   "rm_ilse_coalley (swap): lower, now lighting the lamps at dusk",
+   "rm_ivar_nailham (claim): lower, now driving for the carters",
+   "rm_ivo_fogstack (swap): middle, now keeping the Washhouse",
+   "rm_kari_bilgehand (swap): middle, now ropemaker at the ropewalk",
+   "rm_karin_stanmore (claim): upper, now the Crown's treasurer",
+   "rm_leif_fogcot (swap): lower, now unloading ships at the piers",
+   "rm_mab_carlisle (claim): upper, now keeping the inn",
+   "rm_mab_coalridge (swap): lower, now serving in the King's household",
+   "rm_mab_pitchcot (swap): middle, now keeping the New Store",
+   "rm_magnus_greycot (swap): lower, now washing at the Washhouse",
+   "rm_osric_wetford (claim): lower, now unloading ships at the piers",
+   "rm_philippa_rustton (swap): lower, now keeping the Greatly stables",
+   "rm_runa_coalhand (swap): middle, now runs The Timberland Foundry",
+   "rm_rupert_cindergate (swap): lower, now lighting the lamps at dusk",
+   "rm_septimus_plankmarsh (swap): middle, now clerking at the Wharf Office",
+   "rm_signe_sootwell (claim): lower, now unloading ships at the piers",
+   "rm_soren_kelpstack (swap): middle, now clerking in the Administrative Wing",
+   "rm_torvald_slagton (swap): lower, now helping at The Grey Gull Inn",
+   "rm_ulla_rustham (swap): middle, now runs The Greatly Colour Works",
+   "rm_wynn_sootridge (swap): lower, now helping at The Hook and Cleaver",
+   "rm_wynn_tarhand (swap): lower, now working at the Greatly works",
+   "rm_wystan_coalmarsh (swap): lower, now unloading ships at the piers",
+   "rmx_bartholomew_sootmore (swap): lower, now washing at the Washhouse",
+   "rmx_bo_gilbey (swap): middle, now runs The Greatly Tileworks",
+   "rmx_corra_coldridge (swap): middle, now usher in the Antechamber",
+   "rmx_corra_pennock (swap): middle, now runs The Greatly Lime Kilns",
+   "rmx_cressida_mallory (swap): middle, now weighing at the Customs House",
+   "rmx_dagfinn_wainwright (swap): lower, now working the cranes",
+   "rmx_dagny_catterick (swap): middle, now keeping the Fell Cellars",
+   "rmx_delphine_brackwick (swap): lower, now driving for the carters",
+   "rmx_delphine_redfern (swap): lower, now helping at Clearwater Glass",
+   "rmx_desmond_farrow (swap): middle, now usher in the Antechamber",
+   "rmx_desmond_toft (swap): middle, now runs The Greatly Yard",
+   "rmx_dorcas_brineley (swap): lower, now crying wares in the Rag Market",
+   "rmx_frida_netherby (swap): middle, now runs The Greatly Masons' Yard",
+   "rmx_gorm_halford (swap): middle, now runs The Cinder Glassworks",
+   "rmx_gorm_saltstack (swap): lower, now helping at The Penny Loaf",
+   "rmx_grete_dunn (swap): middle, now clerking at the Wharf Office",
+   "rmx_harriet_pennock (swap): middle, now clerking at the Records Office",
+   "rmx_harriet_platt (swap): middle, now clerking at the Records Office",
+   "rmx_hollis_shaw (swap): middle, now copying at the Records Office",
+   "rmx_josephine_fenwick (swap): lower, now working at the Bathhouse",
+   "rmx_josephine_wickwick (swap): lower, now helping at The Slag & Anchor",
+   "rmx_kari_wickworth (swap): lower, now unloading ships at the piers",
+   "rmx_kjell_coalham (swap): lower, now carrying from Sump Stairs",
+   "rmx_knut_sootley (swap): lower, now unloading ships at the piers",
+   "rmx_lionel_lowe (swap): lower, now working at The Eastgate Stables",
+   "rmx_lionel_platt (swap): middle, now runs The Timberland Sawmill",
+   "rmx_liv_tarmarsh (swap): lower, now working at Grayrock Shipwrights",
+   "rmx_mab_fogham (swap): lower, now working at Grayrock Shipwrights",
+   "rmx_magda_orme (swap): lower, now working at Grayrock Shipwrights",
+   "rmx_magnus_millley (swap): lower, now working at Grayrock Shipwrights",
+   "rmx_magnus_tarton (swap): lower, now helping at The Fell Wine Vaults",
+   "rmx_magnus_wetherell (swap): lower, now helping at Timberland's Forge Row",
+   "rmx_oda_cotton (swap): middle, now keeping the Long Store",
+   "rmx_oda_marrowby (swap): middle, now ladling soup on Market Square",
+   "rmx_orm_carlisle (claim): upper, now keeping the Carters' Yard",
+   "rmx_philippa_coldby (swap): middle, now clerking for the magistrate",
+   "rmx_philippa_pitchstack (swap): middle, now clerking in the Administrative Wing",
+   "rmx_rika_gullwell (swap): lower, now washing at the Washhouse",
+   "rmx_roald_toft (swap): middle, now keeping the Bathhouse",
+   "rmx_rupert_hatherley (swap): middle, now tallying in the Bonded Warehouse",
+   "rmx_septimus_ives (swap): middle, now copying at the Records Office",
+   "rmx_solveig_nailstack (swap): lower, now crying wares in the Rag Market",
+   "rmx_tobias_blackford (swap): middle, now clerking in the Administrative Wing",
+   "rmx_tove_mossdale (swap): middle, now tallying in the Long Store",
+   "rmx_ulla_brindle (swap): middle, now preserver in the Market Hall",
+   "rmx_una_toft (swap): middle, now runs The Timberland Ironworks",
+   "rmx_wenna_sootham (swap): middle, now tallying in the New Store"
   ]
  },
  "issues": [],

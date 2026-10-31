@@ -2247,3 +2247,131 @@ and the C++ `store_room_behaviors` (242 checks) pass; `test_map_editor.py` fails
 - 55 food businesses besides the three produce stalls is at the top of "about 45–55": the converted stalls and counters
   are businesses of one keeper each.
 - `CARTERS` (6) is a placeholder until the Country's trade is sized; the yard has room for more.
+
+### Jobs by class (2026-10-31)
+
+Branch `r2-class-jobs`, from `ridgemere2` (4863fb6). The user (verbatim): "Employment type should match the region of
+the city. For example, Minor Houses should own larger businesses or should be merchants, along with high government
+positions. Middle-Class families will be stall and shop owners and lower government positions. Lower-class will be
+waged labor and similar unskilled work. Prioritize these matchings where you can and ensure that there's at least the
+spirit of each city sector to the jobs people are working." Backup before:
+`Saved/Backups/ratw_ridgemere2-before-class-jobs.dump` (main repo). The write moved DEV from revision 51 to 53 (build 49).
+
+**A household's class is where it lives** (`Placement.home_class`):
+
+- **Upper:** the five Minor Houses in the Rise, the Great Houses' families (their seats, the Greatly compound, the three
+  estates) and the Crown: a member of the House's family (by surname: Carlisle, Thornbury, Vance, Stanmore, Grantham,
+  Greatly, Fell, Grayrock, Timberland, Harrowgate) living in its seat, villa or the King's Residence.
+- **Middle:** the Commons, Northgate and the administrative sector's houses.
+- **Lower:** the Sump, the Cinders and the wharf.
+- **Where the quarters blend, the home's building decides:** a shop with its flat is a shopkeeper's home, middle in any
+  quarter (the Sump's own shops stand on its Commons edge); the four "... Rents" tenements on the Commons' Sump edge
+  are lower.
+- **Live-in service is lower:** those in a House's seat or villa or the Residence who are not of its family (servants,
+  stewards), and the estates' gatehouses and cottages.
+- **Their own cases**, apart from the rate: the Watch (every guard post, and the Keep's barracks: a guard's rank goes by
+  service) and the clergy (the abbey's).
+
+**A job's class** (`Placement.job_class`):
+
+- **Upper:** owning one of the city's independent larger businesses (keeping the Carters' Yard, the Rainwater Brewery,
+  the Rag Mill, the Wharf Tannery, the Grey Gull Inn or the Sailors' Rest: the keeper takes the till's profit, doc 68);
+  high office (the Crown, the Chancellor, the Speaker, running the City Office, the keeper of the rolls, the magistrate,
+  the royal secretary, the Crown's treasurer, the customs collector, the harbourmaster, the warden of the Market Hall,
+  "overseeing"); the law, the Council and money (pleading cases, drafting the Council's letters, lending, the Heights'
+  physician); a House's own posts (its head, family and their House business).
+- **Middle:** keeping a shop, a stall, a counter or a tavern; running a Great House's works, yards, stores or bank for it
+  (the Timberland Ironworks, Foundry, Sawmill and Iron Store; Greatly's plaster, lime, tile, glass, colour, masons' and
+  builders' works and the Greatly Bank; Grayrock's shipwrights, ropewalk and three warehouses; Fell's press, distillery
+  and preserving house: the House owns it, its master runs it); lower office (clerks, copyists, tallymen, weighers,
+  couriers, teachers, the herald and the ushers, the bailiff, the keepers of the Washhouse, the Bathhouse and the Fell
+  Cellars, the Watch's two civilians); helping in the family's own shop (a helper who lives over it).
+- **Lower:** hands and helpers in someone else's business; the pools (dockers, cranemen, porters, washers, tray
+  sellers); the carters' drivers; service (servants, stewards, grooms, the King's household's servants and cooks); the
+  lamplighters; and the Sump's own street trade, the Rag Market's pitches and the Soup Kitchen (the poor's market and its
+  charity, beside the tray sellers).
+- **No job:** "at home in the Heights" and "reading in the gardens" (an earner under 60 there is unmatched). Children,
+  pupils and the retired are not earners.
+- **The larger businesses** (`LARGE`) are those two lists. Nobody from the Sump, the Cinders or the wharf keeps one, nor
+  a warehouse.
+
+**The class pass** (`Placement.class_jobs`, after the House posts):
+
+1. **The Minor Houses' claims** (`MINOR_POSTS`): their four members at leisure and the Carlisle cousin who drove a wagon
+   take four independent larger businesses and a high office. Orm Carlisle keeps the Carters' Yard (its keeper, Ivar
+   Nailham of the Sump, drives in Orm's place); Mab Carlisle keeps the Sailors' Rest; Desmond Grantham runs the
+   Rainwater Brewery; Eleanor Vance runs the Rag Mill; Karin Stanmore is the Crown's treasurer. Their text is their own
+   (`MINOR_TEXT`: "of the Carlisle household, who keeps..."). Whoever they displace goes to the docks, then the swaps.
+2. **Swaps:** posts are exchanged between NPCs of 16-69 (not the Watch, the clergy, a House's own, the Crown, a figure
+   with a description of its own, or a shopkeeper's family in the shop it lives over) while that gives more earners a
+   job of their class. A lower household keeping a larger business counts heavily against; a lower household in an
+   upper job, or an upper one in a lower job, is worse than either in a middle one. Best swap first; ties go to the
+   same trade, a merchant to a till, a clerk to a desk, some years behind a larger business, work near home. Nobody
+   over 59 goes to a pool; keepers are 18 or more.
+3. **Nothing else moves:** homes, families, evenings, the posts themselves (label, spot, role, and their **hours**, which
+   now go with the post: a till opens when its keeper is at it), the business mix and its counts. No household moved.
+4. **HOUSE_POSTS**, adjusted once where a House post contradicted the rule: Lord Ambrose Greatly, "the richest wolf in
+   Ridgemere", was one of his own Counting House's three clerks; he is "overseeing the Counting House" now (still the
+   Country's wage, by "counting house"; the Counting House keeps two clerks).
+
+**Results** (`city-report.txt`, "Jobs by class"; three new checks, 63 in all, all pass):
+
+| Households | Before | After |
+|---|---|---|
+| Upper | 20/26 (77%) | 25/26 (96%) |
+| Middle | 134/179 (75%) | 168/179 (94%) |
+| Lower | 142/191 (74%) | 180/191 (94%) |
+| **All earners** | **296/396 (74.7%)** | **373/396 (94.2%)** (the check wants 85%) |
+| Minor House households without an upper job | 4 | 0 |
+| Larger businesses kept by the Sump, the Cinders or the wharf | 17 | 0 |
+
+The Watch (30) and the clergy (18) are apart. 78 NPCs changed post (5 claims, 73 by swaps); 79 labels changed with Lord
+Greatly's. The 23 still not of their class:
+
+- 11 middle: eight high offices held by the administrative sector's career officials (the Chancellor and the Speaker
+  are figures with their own text), the warden of the Market Hall, and two independents (the Grey Gull Inn, the Wharf
+  Tannery) kept by Commons families;
+- 11 lower: ten Sump, Cinders or wharf households keeping a middle shop or counter (the Market Hall's carpenter, cooper,
+  cheesemaker and provisioner; the Fish Hall, the smokehouse, the charcoal store, Cinder Butchers, the wheelwright, a
+  baker on Market Square) and one tallyman. The city has more lower-class earners than lower-class work, and every
+  middle-class earner already has middle or upper work;
+- 1 upper: Rosalind Greatly, a Great House's daughter at leisure.
+
+**Who holds what now:**
+
+- The Great Houses' works are run by Commons and Northgate masters: the Timberland Ironworks by Una Toft, the Foundry by
+  Runa Coalhand, the Sawmill by Lionel Platt; the Greatly Plasterworks by Gudrun Rustwick, the Tileworks by Bo Gilbey,
+  the Lime Kilns by Corra Pennock (the treasurer before Karin Stanmore), the Colour Works by Ulla Rustham, the Masons'
+  Yard by Frida Netherby, the Greatly Yard by Desmond Toft, the Cinder Glassworks by Gorm Halford; the Ropewalk by Kari
+  Bilgehand (who kept the Sailors' Rest before Mab Carlisle); the Wharf Tannery by Dunstan Greywick; the Long and New
+  Stores by Commons storekeepers. Their old Sump, Cinders and wharf keepers work the docks, the cranes, the lamps, the
+  Washhouse, the stables and the works' hands.
+- The offices: the Sump's clerks left the Records Office, the Wharf Office, the Administrative Wing, the Customs House
+  and the magistrate's desk for the shipwrights, the docks and the shops' help; Commons families took the desks. The
+  Records Office is still 1 + 4 + 2 on its floors.
+- **Text** (`person_text`): the 73 swapped get a description and greeting of their post and a line of backstory by the
+  class and kind of the post they went to (`CLASS_BACK`: a desk, a House's works, a counter, waged work); the five
+  claimants theirs from `MINOR_TEXT`. No "dog", no pronouns (the lines use names).
+- **Wages** (doc 68; `country.json` unchanged): every post keeps its payer, since its label and room are unchanged: 110
+  keepers, 116 hands, 30 watch, 104 public, 91 the Country's; 2,468p a day from the tills, 1,072p from the treasury and
+  728p from the Country, as on build 45 (`city_loop.py`). Food: 99 staffed for 83.2 keeper-days (119%), as before.
+- **Rewrites keep it:** the allocator now keeps whoever holds a post in the world first (before the posts kept from
+  before the city) and those in a pool there, and children at lessons and the grounds' people keep their tiles. A
+  second plan from the written world changes nothing at all (labels, homes, work and evening tiles, text, hours).
+  `rename_house.py --dry-run`: 0 changes.
+
+**Checks:** all 63 generator checks; `tools/test_ridgemere2.py` (30; new: the class rules on the city, the class pass
+moves nobody twice, a class move's text, the Minor Houses' text), `test_rename_house.py`, `test_city_capacity.py`,
+`test_studio.py` and `test_world_store.py` pass; `test_map_editor.py` fails only the known Greyfen 11-vs-10.
+`world_check` on build 49 (6:00-8:00, no player, `--economy`): 828 places loaded, 0 failures, money conserved, 0
+without a route (497 at their place at 8:00, 62 on their way).
+
+**For the user:**
+
+- The high offices stay with the administrative sector's officials (eight of the 23). More Minor House members in office
+  (the royal secretary, the keeper of the rolls, the harbourmaster) would need more Minor House adults: every working-age
+  member of the five households now holds an upper post.
+- A Great House's works count as a middle-class master's (the House owns it). Counted as upper, their 17 Commons
+  masters would be unmatched (about 90%); nothing else would change.
+- The Rag Market's stallholders and the Soup Kitchen count as the Sump's own (lower). Counted as shopkeepers, their seven
+  Sump keepers would be unmatched, and the city has no middle-class earners left to take them.
