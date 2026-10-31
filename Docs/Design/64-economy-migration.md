@@ -1,5 +1,13 @@
 # 64. Bringing the model into the game
 
+> **Removed (2026-10-30).** On Ridgemere 2.0 every mechanism this document describes was erased from the code, with
+> those of docs 42, 61 and 63 (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5; the user: "erase all economy rules that
+> we have put in place so far"): work by the hours, the books, the worth ladder's pricing, production, costed prices and
+> margins, the tills' owners, the labour market, odd jobs and crews, households' purses, institutions, taxes, the mint,
+> the wages and the WageRule switches, `econ_watch` and its tests. What is left (money, the catalogue, shops at catalogue
+> prices, NPCs' lives with their needs paused) and where the user's own rules plug in is in doc 66's Progress, "Phase
+> 5". This document, the code it describes and every balancing round remain in git history (up to 6c4a1b5).
+
 The user, 2026-10-14: translate doc 63's simulation into the game itself; there's a lot of work to tweak the game to
 match it.
 

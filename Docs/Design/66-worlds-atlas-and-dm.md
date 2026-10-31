@@ -165,3 +165,85 @@ them.
 5. The economy rules erased.
 
 Phases 1, 2 and 5 can be built side by side; 3 needs 1; 4 needs 1 and 3.
+
+## Progress
+
+### Phase 5: built (2026-10-30)
+
+Branch `r2-p5-no-economy`, from `ridgemere2` (6c4a1b5). About 40,000 lines out, 1,200 in: Core −18,400, Tests −21,800.
+
+**Removed.** The simulated economy's mechanisms, whole:
+
+- Doc 64's phases 0 to 13 and every balancing round: work by the hours and the realm's pace, the books, the worth
+  ladder's pricing (costed prices, margins, markdowns, carriage), production by hours (makers' batches, producers'
+  yields, seasonal fields, tools' wear, upkeep, laying in), businesses' tills as owned businesses (owners topping up,
+  stopping, idling and returning, credit, rent, working money), the labour market (employers' wages, going rates,
+  hands by sales, hires, poaching), odd jobs, crews and farmhands, households' purses, keepers, wants, pieces and works,
+  children's stipends, institutions' budgets, relief and alms, taxes, the holdings tax, the mint, wages of every kind,
+  kept hands' meals, NPCs' belongings and mending, the economy's monitor, and the WageRule and WageRule2 switches with
+  every rule behind them. Files: `Core/RatwDemand`, `RatwPrices`, `RatwLabour`, `RatwInstitutions`, `RatwProcure`,
+  `RatwReckoning`, `RatwWages`, `RatwOutwork`, `RatwHouses`, `RatwTills`, `RatwFounding`, `RatwOddJobs`,
+  `RatwFarmhands`, `RatwBelongings`, `RatwMint`, `RatwHouseholds`, `RatwSurplus`, `RatwOrchestrator(.h, Json.h)`,
+  `RatwOrchestrate`, `RatwTrade`, `RatwCrafting`; `RatwSociety.h` from 2,721 lines to 646, `RatwResidents.cpp`'s day
+  from 1,500 lines to 450.
+- Doc 42's: town purses (the treasury's share at founding), the weekly reckoning, the church's Restday plate and its
+  care, rents, living costs, the rule against hoarding, the Town Works and the towns' repair, outwork, the daily
+  carter's and the towns' caravans of food, supply runs, contracts for goods (procurement), store-priced meals and
+  herbs.
+- Doc 61's: Houses owning trades, the towns' specialties, standing orders and their porters (`Data/Economy/houses.json`
+  and `specialties.json` deleted). Doc 63's model is gone from the game (`tools/econ_model` untouched).
+- Doc 57, 5's trade that moves prices (price notes, "fed the town"), the town talking of prices, residents buying at
+  players' stalls, town projects' hired hands and contracts for materials, the town's mending project.
+- The DM's levers: `tools/dungeon_master.py`'s tax rate, holdings tax, mint and relief grant (and their routes), the
+  money view's month, levers and monitor; `Editor/src/dm/OrchestratorPanel.tsx`; the game's `economy.*` actions and the
+  Dev Console's `/reckon`; `world_check --reckon`.
+- `Tests/econ_watch.cpp`, `econ_players*`, `econ_watch_stamp.cmake`, `crafting_tests.cpp`, `orchestrator_tests.cpp`,
+  `founded_fixture.h`, `tools/econ_run.sh`, `econ_compare.py`; the economy's tests in `roads_tests` (4,774 lines to 830)
+  and elsewhere.
+- Saved state: the society's `books`, `houses`, `memory`, `orchestrator` and `craftingStocked`; the roads' standing
+  orders, `sentEarly`, `failed`, `refused`, `stocked`, `purses`, a caravan's trader and orders, a contract's goods. An
+  older save still loads: those fields are read past (`wire::readSociety`, `checkpoint`), and a procurement contract in
+  it simply runs out.
+
+**Kept.** Money (accounts in whole pennies, `shift`, `sale`, `create`, `consume`, the ledger and the journal,
+conservation); players paying and being paid (contracts, couriers, bounties, escorts, lodgings, stalls between players,
+tables, festivals' entries, letters, fines, the Hold's staff at `camp::HoldWage`, companions' hire); the catalogue
+(`Data/Items`: items, qualities, recipes, crafts, producers, businesses, stations, regions; `Data/Economy/ladder.json`
+for the items' worth and the catalogue's day); buildings; players' crafting and foraging; shops: each merchant post's
+till (`till:<position>`, founded once with its keeper's wares and its founder's authored purse's worth), its wares
+(`Society::wares`), at the catalogue's price (`Society::catalogPrice`; a tenth off at a stall), buying from players at
+`SellBackShare` (.55) up to a store of a good (`SuppliesKept`, `GoodsKept`); NPCs' lives: schedules, posts as titles,
+careers, skills and apprentices, succession, families, births, deaths, ageing, retirement, newcomers (with
+`NewcomerPurse`), estates inherited, households splitting, Restday's service (the plate gone), festivals and market
+days, patrols, travellers, wander areas, children's friend groups, talk, relations, troubles (the shop's loan gone), the
+Mind. The Great Houses as people (a head, its family, a leader in talk), not owners. The demo roster's own little
+economy (doc 26's six) is untouched. The caravan machinery is kept but nothing sends one (`World::sendCaravan`, public).
+The DM's money view stays, as a read of where the money is.
+
+Kept with a change: a player's farm or bench work beside a resident (doc 53) still practises and lends the paw, but
+pays nothing and brings nothing in; the Hold's workshops and fields are built but make nothing; a talk speaker's
+`on_dole` is "no" and `business` "none"; a trouble's household is reckoned in days of `troubles::PlainFoodADay` (5p) at
+catalogue prices; the hungry thief marks a shop whose till holds meals. A town project's placement now loads its cell
+first (no caravan walks a road to load it any more).
+
+**Paused.** Needs that buying met: `Society::NeedsPaused` (true). A resident's hunger neither grows nor sends it
+anywhere (no shopping, larders, alms, rations or kitchens); one hungry from a save still eats what it carries. Home
+stores are opened empty. Nobody restocks a shop: what it sells stays sold until rules say how goods come in.
+
+**Where the user's rules plug in.**
+
+- Needs: `Society::NeedsPaused` and the line in `Society::decideAuthored` (`RatwResidents.cpp`, the first half) where
+  hunger would grow; the "eat" branch below it.
+- A day's rules: the day's turn in `Society::decide` (`RatwSociety.cpp`, where `budgetDay` moves on), before
+  `decideAuthored`.
+- Work: `atWork` in `decideAuthored`'s second half: a resident at its post in its hours (trade, watch, its title).
+  Making and paying go there; `Society::giftLiftOf` and `pawRateOf` keep the Gifts and paws players lend a maker.
+- Prices and shops: `Society::catalogPrice`, `quote`/`trade`, `tillOf`, `foundShops`, `wares`.
+- Goods between towns: `World::sendCaravan` (`RatwRoads.cpp`); a caravan's arrival unloads into the town's stores.
+- Players' work for residents: `World::workBeat` (`RatwTogether.cpp`); a Hold's work: `Game::campTick`
+  (`RatwGameCamps.cpp`); town projects: `Game::projectTick` (`RatwGameProjects.cpp`).
+- The primitives every rule uses: `Society::shift`, `sale`, `create`, `consume`, `openAccount`, `cash`.
+
+Tests: 66 of 66 (`shops_tests` new: the catalogue, a shop's till, a player's trade at catalogue prices, a day and a half
+with nothing bought, made or paid and hunger held, an older save read). A scratch server on the town world started and
+ran.
