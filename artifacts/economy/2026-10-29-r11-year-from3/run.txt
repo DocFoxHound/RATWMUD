@@ -1,0 +1,4 @@
+run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch-dadf667 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 365 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-29-r11-year-from3 --deterministic --hours --threads 6 --from 3
+built from: /home/martinb/Documents/GitHub/MUDProject at 34e00448c323-dirty 312a44f1c61c (34e00448c323b1b292ee2737c40ed62399c29a2f)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at dadf667da7e9; its own changes since: none
+built: 2026-10-29 17:40:03 UTC (linked; econ_watch.cpp compiled Oct 29 2026 11:38:46, local time)

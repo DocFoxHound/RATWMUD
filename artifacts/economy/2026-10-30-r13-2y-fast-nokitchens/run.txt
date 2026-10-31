@@ -1,0 +1,4 @@
+run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch-e0cb26e /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 730 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-30-r13-2y-fast-nokitchens --deterministic --hours --threads 6 --threads 3 --fast --without kitchenkept,feastahead
+built from: /home/martinb/Documents/GitHub/MUDProject at e0cb26e08b98 (e0cb26e08b98e3163df05ea0dc9bfd95971d0ea5)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at e0cb26e08b98; its own changes since: none
+built: 2026-10-30 05:55:27 UTC (linked; econ_watch.cpp compiled Oct 29 2026 23:53:37, local time)

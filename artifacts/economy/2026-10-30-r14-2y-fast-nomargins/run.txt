@@ -1,0 +1,4 @@
+run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch-c088eb9 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 730 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-30-r14-2y-fast-nomargins --deterministic --hours --threads 6 --threads 3 --fast --without marginshortage,chainonce
+built from: /home/martinb/Documents/GitHub/MUDProject at 323cde652b2c-dirty 6e3287825a14 (323cde652b2cd36fd6e2a8f8e615dd4797524d49)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at c088eb90e3d6; its own changes since: none
+built: 2026-10-30 09:25:20 UTC (linked; econ_watch.cpp compiled Oct 30 2026 03:23:42, local time)

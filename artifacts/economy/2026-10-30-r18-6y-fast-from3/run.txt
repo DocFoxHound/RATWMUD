@@ -1,0 +1,4 @@
+run: artifacts/economy/bin/econ_watch-5c3bd2c /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 2190 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-30-r18-6y-fast-from3 --deterministic --hours --threads 6 --threads 3 --fast --from 3 --without calledlate,scarcityhires
+built from: /home/martinb/Documents/GitHub/MUDProject at 5c3bd2c779f4 (5c3bd2c779f4049ed6063f6cd52f9e584659486f)
+data: /home/martinb/Documents/GitHub/MUDProject/Data at 5c3bd2c779f4; its own changes since: none
+built: 2026-10-30 22:52:47 UTC (linked; econ_watch.cpp compiled Oct 30 2026 16:52:05, local time)

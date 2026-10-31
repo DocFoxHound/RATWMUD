@@ -1,0 +1,4 @@
+run: runs/bin/econ_watch.r10c-food2 runs/export 170 runs/2026-10-27-r10-food-fix170-nofeast --deterministic --hours --threads 4 --without crews,feast
+built from: /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-a5152d7bd62056b1a at ac081dc2acff (ac081dc2acffa985efed01c0b6442646e6df4f14)
+data: /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-a5152d7bd62056b1a/Data at ac081dc2acff; its own changes since: none
+built: 2026-10-27 21:23:06 UTC (linked; econ_watch.cpp compiled Oct 27 2026 15:22:57, local time)

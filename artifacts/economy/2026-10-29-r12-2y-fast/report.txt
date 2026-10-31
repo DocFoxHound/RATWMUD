@@ -1,0 +1,294 @@
+== /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-29-r12-2y-fast
+   run: /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/bin/econ_watch-8550cfe /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/export 730 /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/2026-10-29-r12-2y-fast --deterministic --hours --threads 6 --threads 3 --fast
+   built from: /home/martinb/Documents/GitHub/MUDProject at 8304d9da945c-dirty 07696f2f537f (8304d9da945c4a8068c249a3bae697aa1bbfccfa)
+   days 0 to 730; money conserved every day
+   minted after the founding: day 29 +120p, day 372 +102p, day 379 +106p, day 382 +106p, day 385 +119p, day 389 +121p, day 404 +116p, day 408 +104p
+
+Month by month (28 days). Shares of all money, game/model. Hungry (m money-hunger, f food-hunger)/starving.
+ day  gini poor½       homes       firms      Houses      church        town   wage people  hungry/starving
+   0 0.507 0.156 0.156/0.399 0.794/0.151 0.000/0.300 0.000/0.050 0.049/0.100   60.0   1083  -
+  28 0.514 0.171 0.452/0.453 0.148/0.104 0.260/0.301 0.051/0.058 0.087/0.085   60.0   1082  0(0m,0f)/0(0m)
+  56 0.506 0.177 0.480/0.502 0.173/0.099 0.200/0.264 0.052/0.065 0.093/0.071   60.0   1084  0(0m,0f)/0(0m)
+  84 0.504 0.172 0.504/0.552 0.190/0.102 0.161/0.217 0.050/0.068 0.094/0.062   61.0   1088  0(0m,0f)/0(0m)
+ 112 0.497 0.175 0.518/0.593 0.205/0.120 0.137/0.162 0.049/0.069 0.090/0.056   62.6   1090  0(0m,0f)/0(0m)
+ 140 0.505 0.171 0.533/0.598 0.224/0.162 0.110/0.122 0.048/0.065 0.083/0.053   62.8   1090  0(0m,0f)/0(0m)
+ 168 0.514 0.163 0.559/0.589 0.211/0.209 0.097/0.090 0.048/0.058 0.084/0.053   61.8   1090  0(0m,0f)/0(0m)
+ 196 0.550 0.135 0.511/0.557 0.272/0.269 0.084/0.067 0.047/0.052 0.084/0.055   59.5   1093  0(0m,0f)/0(0m)
+ 224 0.567 0.122 0.516/0.580 0.283/0.246 0.074/0.063 0.046/0.050 0.079/0.059   57.9   1094  0(0m,0f)/0(0m)
+ 252 0.595 0.103 0.540/0.577 0.271/0.250 0.065/0.067 0.044/0.047 0.078/0.059   58.4   1096  0(0m,0f)/0(0m)
+ 280 0.613 0.089 0.545/0.582 0.276/0.239 0.060/0.073 0.044/0.047 0.074/0.059   58.8   1096  0(0m,0f)/0(0m)
+ 308 0.624 0.087 0.586/0.575 0.229/0.249 0.052/0.073 0.047/0.045 0.084/0.058   60.9   1096  0(0m,0f)/0(0m)
+ 336 0.645 0.076 0.599/0.564 0.220/0.258 0.053/0.078 0.046/0.044 0.081/0.056   59.1   1096  0(0m,0f)/0(0m)
+ 364 0.651 0.074 0.566/0.559 0.261/0.259 0.049/0.084 0.045/0.043 0.076/0.055   57.7   1096  0(0m,0f)/0(0m)
+ 392 0.661 0.070 0.576/0.589 0.256/0.230 0.050/0.082 0.041/0.043 0.076/0.056   59.4   1096  0(0m,0f)/0(0m)
+ 420 0.682 0.061 0.602/0.599 0.229/0.221 0.051/0.083 0.042/0.043 0.076/0.055   56.8   1098  0(0m,0f)/0(0m)
+ 448 0.685 0.055 0.606/0.597 0.220/0.223 0.052/0.085 0.042/0.042 0.078/0.054   57.0   1098  0(0m,0f)/0(0m)
+ 476 0.673 0.062 0.641/0.595 0.186/0.222 0.049/0.087 0.044/0.042 0.080/0.054   54.2   1098  7(6m,1f)/4(3m)
+ 504 0.674 0.061 0.643/0.597 0.184/0.222 0.048/0.086 0.041/0.042 0.082/0.054   53.0   1098  4(4m,0f)/0(0m)
+ 532 0.669 0.062 0.661/0.597 0.172/0.227 0.047/0.082 0.041/0.041 0.078/0.053   52.5   1098  0(0m,0f)/0(0m)
+ 560 0.683 0.056 0.652/0.601 0.188/0.234 0.045/0.072 0.039/0.041 0.074/0.053   52.6   1098  0(0m,0f)/0(0m)
+ 588 0.709 0.043 0.667/0.654 0.174/0.179 0.042/0.071 0.040/0.042 0.076/0.054   50.7   1098  0(0m,0f)/0(0m)
+ 616 0.699 0.046 0.660/0.656 0.183/0.186 0.041/0.065 0.039/0.040 0.077/0.053   48.7   1099  9(8m,1f)/0(0m)
+ 644 0.692 0.051 0.663/0.674 0.187/0.172 0.036/0.057 0.038/0.042 0.076/0.056   47.5   1098  0(0m,0f)/0(0m)
+ 672 0.700 0.046 0.680/0.675 0.167/0.170 0.035/0.058 0.037/0.042 0.081/0.056   44.4   1097  0(0m,0f)/0(0m)
+ 700 0.714 0.037 0.690/0.670 0.160/0.186 0.033/0.049 0.036/0.041 0.081/0.054   43.0   1097  0(0m,0f)/0(0m)
+ 728 0.717 0.036 0.627/0.662 0.233/0.197 0.032/0.048 0.034/0.040 0.073/0.053   41.9   1096  0(0m,0f)/0(0m)
+ 730 0.718 0.034 0.628/0.662 0.231/0.197 0.032/0.048 0.037/0.040 0.071/0.053   38.3   1096  0(0m,0f)/0(0m)
+
+Treasuries, month by month (the towns' stores, the capital's, the church's, and the Houses' purses):
+ day   coldwater frosthollow   larkfield  mirebridge    oakhaven southmeadow    (Houses)   (capital)    (church)
+   0           0           0           0           0           0           0           0       20.0k           0
+  28        2.5k       12.1k       20.3k        9.8k       24.1k       15.0k    1,300.8k      324.7k      255.4k
+  56        3.9k       16.2k       44.1k       10.6k       20.8k       19.3k      998.9k      325.0k      262.4k
+  84           7       13.9k       53.8k        9.7k       32.8k       17.5k      803.6k      314.6k      249.5k
+ 112           4       12.6k       51.2k        6.4k       38.7k       13.6k      683.0k      301.8k      244.3k
+ 140        3.2k       10.2k       35.7k        4.8k       49.1k       10.6k      551.6k      276.9k      238.4k
+ 168        4.2k       11.4k       54.5k        5.8k       44.1k       10.8k      483.5k      263.5k      237.9k
+ 196         433       10.9k       85.1k        4.5k       38.7k        9.3k      422.1k      244.8k      232.8k
+ 224        1.2k       11.5k       74.0k        4.9k       37.0k        9.0k      371.9k      241.5k      227.6k
+ 252        4.4k       13.7k       66.2k        4.7k       44.2k        8.3k      322.6k      233.1k      222.5k
+ 280        4.6k       15.3k       57.2k        4.8k       39.4k        7.1k      298.3k      228.7k      219.4k
+ 308        3.2k       12.0k      107.8k        4.6k       44.3k        6.5k      262.2k      228.2k      232.6k
+ 336        2.4k       11.7k      102.5k        4.1k       41.5k        6.7k      264.1k      226.4k      228.0k
+ 364        3.3k        9.9k       76.1k        4.2k       44.3k        6.9k      247.3k      227.9k      225.2k
+ 392        4.2k        7.3k       90.6k        4.3k       43.3k        7.4k      247.6k      215.5k      207.2k
+ 420        3.8k        6.6k       84.7k        4.0k       43.9k        8.9k      254.2k      218.8k      209.5k
+ 448        1.4k        9.9k       79.5k        4.0k       41.4k       16.4k      260.9k      230.1k      210.5k
+ 476         901        9.9k       95.0k        3.1k       39.9k       12.7k      245.3k      221.2k      217.8k
+ 504        1.9k        6.8k      126.4k        4.1k       45.1k        9.0k      241.1k      210.4k      206.7k
+ 532        3.6k        4.8k      110.4k        3.7k       43.3k        8.5k      235.1k      208.1k      205.1k
+ 560        4.2k        3.7k       97.7k        3.3k       42.2k        6.9k      227.3k      204.4k      197.0k
+ 588        3.2k        3.4k      104.2k        3.3k       50.4k        5.7k      211.8k      205.1k      199.4k
+ 616        4.1k        1.3k      106.7k        3.5k       53.4k        5.5k      205.2k      207.1k      193.4k
+ 644        3.6k        2.7k      109.0k        3.4k       52.4k        4.1k      180.1k      202.7k      187.6k
+ 672        3.4k        3.7k      121.8k        3.5k       62.0k        6.0k      175.0k      199.6k      187.1k
+ 700        4.5k         901      124.8k        3.4k       62.5k        4.4k      166.1k      197.2k      180.6k
+ 728        5.1k        3.4k       93.2k        3.2k       62.8k        5.1k      162.5k      186.5k      171.2k
+ 730        5.9k        3.5k       78.1k        3.1k       55.5k        5.4k      161.6k      193.8k      183.8k
+
+Drains and pumps by quarter (84 days): each account's net, with the kinds that moved most of it (the founding's money left out).
+  days 0-84:
+    drain house:greatly_house                             -235,333p (in 142,226, out 377,559, out/in 2.65; holds 204,268)
+          an odd job: building work -100,174; money for the road -82,521; bought for a House's works -59,076
+    drain house:mossgrave_court                           -205,527p (in 106,041, out 311,568, out/in 2.94; holds 234,077)
+          an owner's investment -84,776; an odd job: building work -56,420; bought for a House's works -54,978
+    drain house:house_fell                                -148,874p (in 52,992, out 201,866, out/in 3.81; holds 171,654)
+          an odd job: building work -50,957; bought for a House's works -39,838; an odd job: about the home -37,736
+    drain house:grayrock_hall                             -126,915p (in 94,709, out 221,624, out/in 2.34; holds 193,613)
+          an owner's investment -104,363; service wages -31,212; an odd job: building work -29,848
+    drain treasury                                         -35,658p (in 355,661, out 391,319, out/in 1.10; holds 314,590)
+          town funds -220,808; service wages -66,231; watch wages -35,301
+    pump  till:job:rm_mab_coalridge                        +86,895p (in 378,677, out 291,782, out/in 0.77; holds 89,076)
+          materials bought +96,376; a debt repaid +22,715; an owner's investment +21,682
+    pump  till:job:cty_isolde_gullwick                     +50,806p (in 215,135, out 164,329, out/in 0.76; holds 51,782)
+          resident food purchase +184,274; bought by the watch +28,285; an owner's investment +1,775
+    pump  stores:larkfield                                 +38,687p (in 434,262, out 395,575, out/in 0.91; holds 53,847)
+          trade takings +408,311; town tax +21,592; wholesale restock +1,760
+    pump  till:job:rm_wystan_coalmarsh                     +37,804p (in 364,858, out 327,054, out/in 0.90; holds 41,945)
+          materials bought +90,594; an owner's investment +14,363; a debt repaid +14,000
+    pump  till:job:rm_brenna_greyworth                     +36,187p (in 208,398, out 172,211, out/in 0.83; holds 36,981)
+          household purchase +80,853; provisions for the road +43,624; resident food purchase +34,829
+  days 84-168:
+    drain house:mossgrave_court                           -136,880p (in 134,097, out 270,977, out/in 2.02; holds 97,197)
+          money for the road -79,325; an owner's investment -50,794; an odd job: building work -48,615
+    drain house:greatly_house                              -85,022p (in 56,383, out 141,405, out/in 2.51; holds 119,246)
+          an odd job: building work -37,422; service wages -25,086; an odd job: about the home -25,015
+    drain till:job:rm_mab_coalridge                        -75,734p (in 151,171, out 226,905, out/in 1.50; holds 13,342)
+          the owner's profit -55,121; a standing order -46,813; an odd job: a hand at the shop -23,350
+    drain house:house_fell                                 -65,537p (in 51,487, out 117,024, out/in 2.27; holds 106,117)
+          service wages -29,407; an odd job: building work -25,176; an owner's investment -21,903
+    drain treasury                                         -51,116p (in 331,466, out 382,582, out/in 1.15; holds 263,474)
+          town funds -216,996; service wages -63,591; watch wages -34,202
+    pump  till:job:rm_corra_coalcot                        +53,116p (in 214,093, out 160,977, out/in 0.75; holds 73,485)
+          resident food purchase +166,737; a debt repaid +4,001; a negotiator's pay -18
+    pump  till:job:rm_josephine_dripgate                   +44,907p (in 430,007, out 385,100, out/in 0.90; holds 56,962)
+          household purchase +135,409; materials bought +78,222; bought for a House's works +20,836
+    pump  till:job:rm_tobias_kelpton                       +30,445p (in 293,420, out 262,975, out/in 0.90; holds 38,108)
+          resident food purchase +289,687; an owner's investment +3,215; a want: a treat +518
+    pump  till:job:rm_agna_tarham                          +19,604p (in 110,287, out 90,683, out/in 0.82; holds 28,218)
+          resident food purchase +50,040; a want: a treat +11,534; a debt repaid +3,460
+    pump  till:job:tn_lf_pike_chalkley                     +16,400p (in 66,351, out 49,951, out/in 0.75; holds 32,164)
+          the farm's upkeep +17,378; a child's spending +13,884; resident food purchase +8,299
+  days 168-252:
+    drain house:grayrock_hall                              -49,203p (in 311,174, out 360,377, out/in 1.16; holds 111,781)
+          money for the road -218,521; an odd job: building work -35,998; service wages -32,151
+    drain house:mossgrave_court                            -42,633p (in 23,240, out 65,873, out/in 2.83; holds 54,564)
+          service wages -30,150; an owner's investment -20,900; bought for a House's works -5,716
+    drain house:house_fell                                 -36,036p (in 38,351, out 74,387, out/in 1.94; holds 70,081)
+          service wages -29,303; an owner's investment -18,666; an odd job: building work -8,874
+    drain house:greatly_house                              -33,085p (in 54,532, out 87,617, out/in 1.61; holds 86,161)
+          an owner's investment -31,992; service wages -21,092; an odd job: building work -11,301
+    drain till:job:rm_corra_coalcot                        -32,802p (in 246,481, out 279,283, out/in 1.13; holds 40,683)
+          the owner's profit -115,300; materials bought -92,578; the keeper's wage -5,558
+    pump  till:job:rm_tobias_kelpton                       +41,451p (in 269,005, out 227,554, out/in 0.85; holds 79,559)
+          resident food purchase +266,574; bought for the road +2,263; a want: a treat +168
+    pump  till:job:cty_emrys_wheatmead                     +39,010p (in 65,470, out 26,460, out/in 0.40; holds 47,996)
+          an owner's investment +44,333; bought for the road +18,520; a debt repaid +1,386
+    pump  till:job:cty_orrin_wheatley                      +29,587p (in 44,876, out 15,289, out/in 0.34; holds 35,920)
+          an owner's investment +28,324; bought for the road +13,813; materials bought +1,241
+    pump  till:job:cty_dagfinn_brineby                     +25,418p (in 351,663, out 326,245, out/in 0.93; holds 41,501)
+          resident food purchase +348,894; alms bought for the hungry +2,769; a negotiator's pay -12
+    pump  till:job:rm_emmerich_sootley                     +25,161p (in 151,252, out 126,091, out/in 0.83; holds 30,099)
+          household purchase +98,698; bought by the church +25,122; a want: something for the home +7,105
+  days 252-336:
+    drain till:job:cty_emrys_wheatmead                     -43,967p (in 17,140, out 61,107, out/in 3.57; holds 4,029)
+          the owner's profit -44,511; an odd job: a hand -7,770; the keeper's wage -4,613
+    drain till:job:cty_orrin_wheatley                      -33,693p (in 10,073, out 43,766, out/in 4.34; holds 2,227)
+          the owner's profit -37,209; the keeper's wage -4,271; an odd job: a hand -975
+    drain till:job:rm_tobias_kelpton                       -29,053p (in 254,623, out 283,676, out/in 1.11; holds 50,506)
+          materials bought -195,030; an odd job: a hand at the shop -33,338; the owner's profit -32,852
+    drain till:job:tn_lf_rook_wheatfield                   -26,912p (in 6,375, out 33,287, out/in 5.22; holds 1,390)
+          the owner's profit -28,155; the keeper's wage -4,172; the farm's upkeep -768
+    drain house:grayrock_hall                              -26,756p (in 314,312, out 341,068, out/in 1.09; holds 85,025)
+          money for the road -227,203; service wages -33,475; an odd job: building work -27,106
+    pump  till:job:rm_corra_coalcot                        +53,219p (in 316,672, out 263,453, out/in 0.83; holds 93,902)
+          resident food purchase +265,845; a debt repaid +658; a negotiator's pay -9
+    pump  stores:larkfield                                 +36,275p (in 564,690, out 528,415, out/in 0.94; holds 102,495)
+          trade takings +424,290; holdings tax +132,847; town tax +7,391
+    pump  till:job:rm_mab_coalridge                        +18,963p (in 110,877, out 91,914, out/in 0.83; holds 18,963)
+          materials bought +23,967; bought for the road +15,223; a debt repaid +2,691
+    pump  till:job:cty_dagfinn_brineby                     +18,476p (in 341,568, out 323,092, out/in 0.95; holds 59,977)
+          resident food purchase +332,611; alms bought for the hungry +8,957; a negotiator's pay -9
+    pump  till:job:rm_philippa_dripworth                   +13,974p (in 116,966, out 102,992, out/in 0.88; holds 35,757)
+          resident food purchase +81,263; bought by the watch +5,563; a debt repaid +2,169
+  days 336-420:
+    drain till:job:rm_corra_coalcot                        -71,712p (in 302,410, out 374,122, out/in 1.24; holds 22,190)
+          the owner's profit -171,669; materials bought -120,975; an odd job: a hand at the shop -9,180
+    drain till:job:rm_ivo_slagby                           -26,253p (in 117,119, out 143,372, out/in 1.22; holds 11,425)
+          materials bought -73,261; an odd job: a hand at the shop -40,704; manager's wage -6,398
+    drain town:all:church                                  -18,499p (in 271,131, out 289,630, out/in 1.07; holds 209,491)
+          an odd job: building work -70,224; bought for the church's works -67,020; relief -58,234
+    drain stores:larkfield                                 -17,792p (in 402,377, out 420,169, out/in 1.04; holds 84,703)
+          a town's rebate -172,391; money for the road -147,310; an odd job: building work -79,410
+    drain house:house_fell                                 -15,271p (in 25,053, out 40,324, out/in 1.61; holds 41,364)
+          service wages -26,919; an odd job: building work -4,476; bought for a House's works -3,561
+    pump  till:job:cty_emrys_wheatmead                     +29,893p (in 44,691, out 14,798, out/in 0.33; holds 33,922)
+          an owner's investment +37,510; bought for the road +6,089; a debt repaid +495
+    pump  till:job:tn_lf_rook_wheatfield                   +24,414p (in 31,834, out 7,420, out/in 0.23; holds 25,804)
+          an owner's investment +26,331; materials bought +2,555; bought for the road +1,644
+    pump  till:job:cty_orrin_wheatley                      +21,370p (in 30,760, out 9,390, out/in 0.31; holds 23,597)
+          an owner's investment +23,236; bought for the road +6,432; a debt repaid +495
+    pump  till:job:tn_lf_eskar_wheatfield                  +18,223p (in 28,913, out 10,690, out/in 0.37; holds 21,132)
+          an owner's investment +19,113; bought for the road +3,743; materials bought +3,301
+    pump  till:job:cty_isolde_gullwick                     +17,021p (in 107,272, out 90,251, out/in 0.84; holds 32,794)
+          resident food purchase +98,617; bought by the watch +3,591; sold on a contract +2,137
+  days 420-504:
+    drain till:job:cty_emrys_wheatmead                     -32,578p (in 9,448, out 42,026, out/in 4.45; holds 1,344)
+          the owner's profit -33,454; the keeper's wage -3,700; an odd job: a hand -3,699
+    drain till:job:tn_lf_rook_wheatfield                   -24,570p (in 11,126, out 35,696, out/in 3.21; holds 1,234)
+          the owner's profit -30,373; the keeper's wage -3,621; an odd job: a hand -935
+    drain till:job:rm_wystan_coalmarsh                     -24,331p (in 212,823, out 237,154, out/in 1.11; holds 23,627)
+          a standing order -57,654; an odd job: a hand at the shop -44,660; service wages -15,261
+    drain till:job:cty_orrin_wheatley                      -22,866p (in 7,915, out 30,781, out/in 3.89; holds 731)
+          the owner's profit -21,949; an odd job: a hand -4,015; the keeper's wage -3,603
+    drain till:job:tn_lf_eskar_wheatfield                  -19,396p (in 8,877, out 28,273, out/in 3.18; holds 1,736)
+          the owner's profit -20,065; the keeper's wage -3,689; an odd job: a hand -3,559
+    pump  till:job:rm_hester_fogstack                      +52,870p (in 341,482, out 288,612, out/in 0.85; holds 70,411)
+          resident food purchase +107,047; a debt repaid +45,432; household purchase +17,534
+    pump  stores:larkfield                                 +41,739p (in 369,337, out 327,598, out/in 0.89; holds 126,442)
+          trade takings +189,812; holdings tax +178,935; town tax +590
+    pump  till:job:rm_elspet_saltmarsh                     +11,427p (in 157,697, out 146,270, out/in 0.93; holds 12,355)
+          resident food purchase +63,659; bought for the road +4,664; a want: a treat +3,142
+    pump  till:job:rm_brenna_greyworth                     +11,261p (in 136,686, out 125,425, out/in 0.92; holds 27,323)
+          household purchase +69,285; resident food purchase +38,606; a want: a drink +16,096
+    pump  till:job:rm_philippa_dripworth                   +10,471p (in 79,580, out 69,109, out/in 0.87; holds 34,029)
+          resident food purchase +33,443; materials bought +5,720; bought by the watch +1,516
+  days 504-588:
+    drain till:job:rm_brenna_greyworth                     -25,474p (in 71,498, out 96,972, out/in 1.36; holds 1,849)
+          materials bought -49,488; the owner's profit -25,187; an odd job: a hand at the shop -11,579
+    drain stores:larkfield                                 -22,244p (in 418,681, out 440,925, out/in 1.05; holds 104,198)
+          a town's rebate -228,962; an odd job: building work -96,845; money for the road -93,743
+    drain till:job:cty_varg_barleyfield                    -17,360p (in 131,377, out 148,737, out/in 1.13; holds 15,841)
+          the owner's profit -60,628; materials bought -47,882; an odd job: a hand at the shop -32,512
+    drain house:grayrock_hall                              -16,954p (in 228,854, out 245,808, out/in 1.07; holds 73,110)
+          money for the road -148,098; service wages -33,719; an odd job: building work -22,792
+    drain till:job:rm_wystan_coalmarsh                     -16,172p (in 203,980, out 220,152, out/in 1.08; holds 7,455)
+          a standing order -51,349; an odd job: a hand at the shop -34,582; service wages -16,759
+    pump  till:job:cty_dagfinn_brineby                     +10,895p (in 287,916, out 277,021, out/in 0.96; holds 74,234)
+          resident food purchase +271,996; alms bought for the hungry +13,657; bought by the watch +2,263
+    pump  till:job:rm_elspet_saltmarsh                      +9,742p (in 127,490, out 117,748, out/in 0.92; holds 22,097)
+          resident food purchase +40,755; bought for the road +4,972; a debt repaid +3,680
+    pump  till:job:cty_heather_fernwood                     +8,025p (in 11,277, out 3,252, out/in 0.29; holds 8,025)
+          an owner's investment +9,805; materials bought +1,468; a debt repaid +4
+    pump  till:job:cty_isolde_gullwick                      +7,933p (in 156,046, out 148,113, out/in 0.95; holds 43,579)
+          resident food purchase +138,779; bought by the watch +6,807; alms bought for the hungry +6,804
+    pump  till:job:rm_corra_coalcot                         +7,507p (in 178,970, out 171,463, out/in 0.96; holds 31,211)
+          resident food purchase +67,879; a debt repaid +13,746; materials bought +3,326
+  days 588-672:
+    drain till:job:cty_isolde_gullwick                     -23,411p (in 135,736, out 159,147, out/in 1.17; holds 20,168)
+          the owner's profit -52,633; materials bought -45,544; an odd job: a hand at the shop -34,191
+    drain house:grayrock_hall                              -22,489p (in 133,398, out 155,887, out/in 1.17; holds 50,621)
+          money for the road -69,968; service wages -38,129; an odd job: building work -16,825
+    drain till:job:rm_agna_tarham                          -20,434p (in 122,589, out 143,023, out/in 1.17; holds 23,327)
+          the owner's profit -72,104; the keeper's wage -4,426; service wages -1,535
+    drain town:all:church                                  -12,324p (in 250,093, out 262,417, out/in 1.05; holds 187,073)
+          bought for the church's works -60,269; an odd job: building work -56,902; relief -52,879
+    drain till:job:rm_philippa_dripworth                    -8,915p (in 55,254, out 64,169, out/in 1.16; holds 12,994)
+          the owner's profit -33,478; the keeper's wage -4,046; a standing order -756
+    pump  till:job:rm_tobias_kelpton                       +31,427p (in 318,240, out 286,813, out/in 0.90; holds 58,275)
+          resident food purchase +316,594; bought by the watch +1,037; sold on a contract +368
+    pump  till:job:rm_elspet_saltmarsh                     +24,001p (in 153,942, out 129,941, out/in 0.84; holds 46,098)
+          resident food purchase +64,698; a debt repaid +8,930; household purchase +5,373
+    pump  stores:larkfield                                 +17,606p (in 577,295, out 559,689, out/in 0.97; holds 121,804)
+          trade takings +309,358; holdings tax +267,937; day labour -304
+    pump  till:job:rm_oskar_millwell                       +14,236p (in 295,511, out 281,275, out/in 0.95; holds 56,009)
+          resident food purchase +122,688; a debt repaid +35,793; household purchase +2,343
+    pump  till:job:tn_oh_thorn_ashwood                     +13,981p (in 61,604, out 47,623, out/in 0.77; holds 14,462)
+          a want: a drink +50,914; an owner's investment +5,732; household purchase +4,688
+  days 672-730:
+    drain stores:larkfield                                 -40,730p (in 344,326, out 385,056, out/in 1.12; holds 81,074)
+          a town's rebate -217,074; money for the road -87,296; an odd job: building work -68,040
+    drain till:job:rm_elspet_saltmarsh                     -16,062p (in 119,899, out 135,961, out/in 1.13; holds 30,036)
+          the owner's profit -45,001; materials bought -9,772; a standing order -7,087
+    drain till:job:tn_oh_thorn_ashwood                     -12,793p (in 12,841, out 25,634, out/in 2.00; holds 1,669)
+          the owner's profit -19,620; the keeper's wage -2,981; service wages -1,735
+    drain till:job:tn_lf_rowan_downridge                   -11,772p (in 22,355, out 34,127, out/in 1.53; holds 2,909)
+          the owner's profit -15,676; materials bought -11,275; the keeper's wage -2,945
+    drain house:greatly_house                               -8,191p (in 28,304, out 36,495, out/in 1.29; holds 49,282)
+          service wages -17,635; an odd job: building work -4,534; bought for a House's works -4,217
+    pump  till:job:tn_lf_eskar_wheatfield                  +24,925p (in 28,018, out 3,093, out/in 0.11; holds 27,139)
+          an owner's investment +25,915; bought for the road +1,336; materials bought +701
+    pump  till:job:cty_orrin_wheatley                      +23,528p (in 26,491, out 2,963, out/in 0.11; holds 24,736)
+          an owner's investment +23,026; bought for the road +2,277; materials bought +618
+    pump  till:job:cty_emrys_wheatmead                     +22,083p (in 26,113, out 4,030, out/in 0.15; holds 25,202)
+          an owner's investment +21,566; bought for the road +1,705; materials bought +1,485
+    pump  till:job:cty_nettle_sunridge                     +22,075p (in 25,132, out 3,057, out/in 0.12; holds 23,466)
+          an owner's investment +21,876; bought for the road +1,916; materials bought +724
+    pump  till:job:cty_willa_wheatcombe                    +21,516p (in 24,194, out 2,678, out/in 0.11; holds 22,106)
+          an owner's investment +20,223; bought for the road +3,356; materials bought +354
+
+Sentinels: 34 fired (drain 11, gini 9, hunger 9, share 5):
+  day   35 drain  house:grayrock_hall: out/in 2.00 over 4 weeks (out 71083p, in 35465p), balance 252764p; out most: an owner's investment 28587p; service wages 11564p; an odd job: building work 11340p
+  day   35 drain  house:greatly_house: out/in 1.60 over 4 weeks (out 163868p, in 102401p), balance 372891p; out most: money for the road 72969p; an owner's investment 27427p; an odd job: building work 21420p
+  day   35 drain  house:house_fell: out/in 4.51 over 4 weeks (out 76620p, in 16972p), balance 251312p; out most: an odd job: building work 21000p; an odd job: about the home 15540p; bought for a House's works 14537p
+  day   35 drain  house:mossgrave_court: out/in 3.40 over 4 weeks (out 96447p, in 28407p), balance 357152p; out most: an owner's investment 33755p; an odd job: building work 19320p; bought for a House's works 16096p
+  day   63 share  firms: hold 0.174 of the money against the model's 0.095 (its day 63), off by over half again or a third 4 weeks in a row
+  day  105 share  town: hold 0.091 of the money against the model's 0.057 (its day 105), off by over half again or a third 4 weeks in a row
+  day  140 drain  house:grayrock_hall: out/in 1.84 over 4 weeks (out 55134p, in 29889p), balance 162620p; out most: an odd job: building work 12075p; service wages 9417p; an odd job: about the home 8197p
+  day  147 drain  house:mossgrave_court: out/in 3.19 over 4 weeks (out 93162p, in 29236p), balance 116280p; out most: an odd job: building work 25550p; bought for a House's works 17133p; an owner's investment 16026p
+  day  189 gini   households: the households' Gini 0.547, up 0.027 on day 159's 0.519
+  day  231 gini   households: the households' Gini 0.584, up 0.031 on day 201's 0.553
+  day  245 drain  house:greatly_house: out/in 1.93 over 4 weeks (out 26648p, in 13798p), balance 88448p; out most: an owner's investment 12358p; service wages 6860p; an odd job: building work 2369p
+  day  252 drain  house:house_fell: out/in 1.78 over 4 weeks (out 21461p, in 12043p), balance 70081p; out most: service wages 10036p; an owner's investment 5524p; bought for a House's works 1820p
+  day  259 gini   households: the households' Gini 0.605, up 0.029 on day 229's 0.576
+  day  294 hunger ridgemere: 7 hungry (0 starving) of 672 while its shelves hold 2561 food; 6 of them hold less than the cheapest, 2.0p (money-hunger), 1 could pay (food-hunger)
+  day  315 gini   households: the households' Gini 0.631, up 0.020 on day 285's 0.611
+  day  336 gini   households: the households' Gini 0.645, up 0.023 on day 306's 0.622
+  day  364 drain  house:house_fell: out/in 1.65 over 4 weeks (out 15086p, in 9165p), balance 50714p; out most: service wages 8985p; an owner's investment 1658p; an odd job: building work 1645p
+  day  364 share  Houses: hold 0.049 of the money against the model's 0.084 (its day 364), off by over half again or a third 4 weeks in a row
+  day  371 gini   households: the households' Gini 0.663, up 0.025 on day 341's 0.638
+  day  413 gini   households: the households' Gini 0.675, up 0.023 on day 383's 0.652
+  day  434 gini   households: the households' Gini 0.682, up 0.022 on day 404's 0.660
+  day  469 hunger ridgemere: 45 hungry (31 starving) of 676 while its shelves hold 1553 food; 0 of them hold less than the cheapest, 3.0p (money-hunger), 45 could pay (food-hunger)
+  day  504 share  town: hold 0.082 of the money against the model's 0.054 (its day 504), off by over half again or a third 4 weeks in a row
+  day  588 gini   households: the households' Gini 0.709, up 0.027 on day 558's 0.682
+  day  595 drain  house:mossgrave_court: out/in 1.52 over 4 weeks (out 10480p, in 6884p), balance 34906p; out most: service wages 9118p; town tax 653p; tithe 489p
+  day  595 hunger frosthollow: 8 hungry (0 starving) of 56 while its shelves hold 20 food; 1 of them hold less than the cheapest, 6.0p (money-hunger), 7 could pay (food-hunger)
+  day  595 hunger larkfield: 10 hungry (0 starving) of 155 while its shelves hold 34 food; 1 of them hold less than the cheapest, 3.0p (money-hunger), 9 could pay (food-hunger)
+  day  595 hunger ridgemere: 34 hungry (0 starving) of 602 while its shelves hold 1501 food; 1 of them hold less than the cheapest, 3.0p (money-hunger), 33 could pay (food-hunger)
+  day  616 hunger ridgemere: 7 hungry (0 starving) of 632 while its shelves hold 2822 food; 6 of them hold less than the cheapest, 3.0p (money-hunger), 1 could pay (food-hunger)
+  day  644 drain  house:house_fell: out/in 1.52 over 4 weeks (out 11359p, in 7461p), balance 36646p; out most: service wages 9365p; town tax 750p; bought for a House's works 682p
+  day  665 share  Houses: hold 0.034 of the money against the model's 0.055 (its day 665), off by over half again or a third 4 weeks in a row
+  day  686 hunger frosthollow: 9 hungry (0 starving) of 56 while its shelves hold 22 food; 1 of them hold less than the cheapest, 6.0p (money-hunger), 8 could pay (food-hunger)
+  day  686 hunger ridgemere: 41 hungry (0 starving) of 666 while its shelves hold 1778 food; 1 of them hold less than the cheapest, 2.0p (money-hunger), 40 could pay (food-hunger)
+  day  707 hunger southmeadow: 5 hungry (0 starving) of 78 while its shelves hold 183 food; 5 of them hold less than the cheapest, 3.0p (money-hunger), 0 could pay (food-hunger)
