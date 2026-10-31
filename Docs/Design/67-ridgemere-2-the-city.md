@@ -1836,3 +1836,41 @@ killed afterwards.
   built.
 - **Shrinking the Sump** (feasibility review 13, first option). The spec wants it to front the wharf and be large and
   dense, so the plan adds buildings and infill instead.
+
+## Progress
+
+### Lane A: built and written (2026-10-31)
+
+Branch `r2-city-map`, from `ridgemere2` (94e025d). Step 0 was not on `ridgemere2` yet: the analysts' files and the old
+map's placements were committed on this branch (`artifacts/ridgemere2/analysis/`, `old-map-placements.json`).
+
+**Built.** `tools/worldgen/ridgemere2.py` (`MiniRealm`, `RidgemereCity`, the checks, the report, the write; `preview`,
+`place`, `write`), `tools/worldgen/ridgemere2_people.py` (who is placed, homes, jobs, evenings, the label rules),
+the kit pieces in `buildings.py` and `site.py` (old recipes unchanged), `talk_seed` reading
+`artifacts/<world key>/buildings.json`, and `tools/test_ridgemere2.py`. The seed is fixed; a run takes about 30 s.
+
+**Written into `ratw_ridgemere2`** (revision 28 to 30; backups `Saved/Backups/ratw_ridgemere2-before-city.dump` and
+`artifacts/backups/ratw_ridgemere2_20261031-011822.pgdump`): 12 cells, 845 interiors (219 new `r2_`), 555 links
+(340 doors, 187 stairs, 28 passages), 301 structures, 559 NPCs placed and 524 unplaced (262 towns, 200 country, 62 of
+the Minor Houses not kept), 1,083 voices and 329 relations kept, 239 voices given their new quarter, 51 patrol posts on
+6 routes. All 46 acceptance checks pass (`artifacts/ridgemere2/city-report.txt`). `world_build.py ridgemere2` builds;
+`world_check` loads all 857 places with no failures and simulates 6:00-8:00 with 20 players (p99 5.5 ms, no resident
+without a route); a scratch server starts on it (559 residents) and serves the client.
+
+**Rerunnable.** The first write keeps the NPCs as they were before the city in
+`artifacts/ridgemere2/people-before-city.json`; every later run plans from it (so the plan is the same) and strips the
+city it wrote before (its cells, `r2_` interiors and links) and makes it again with the same ids. Kept labels are taken
+from the world as it is then, so lane C's renames are kept. A second write of the same world changed no NPC's place.
+
+**Differs from the plan, or found on the way.**
+
+- Homes: 225 homes in use (most 2 in one structure; the Sump offers 151, of which 77 are used); 10 people live alone.
+- The Knucklebones and the Fell Cellars are new interiors, not reused ones (the reused rooms would have kept the
+  names "The Bridge Lamp" and "The Customs House"); Forge Row's smithy is new ("Timberland's Forge Row").
+- The old Hall of Records' staff move to the Records Office; the old building is the Couriers' Office.
+- Sump passages also join buildings across a snicket or an alley (cellar runs): wall-to-wall neighbours alone gave too
+  few for 25 passages in six chains of five (24 at most on the ground floors), so floors 1 and 2 get passages too.
+- Mansion servants' floors with one bed got a second (straw bedding), for the two-bed rule.
+- The dead-end check counts the alley stubs laid that still end blind (51), not every corner.
+- A's branch resolves labels with a stub of B's new business types (`STUB_BUSINESSES`); with B's
+  `businesses.json` merged the real ones are read instead.
