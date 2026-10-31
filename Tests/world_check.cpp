@@ -330,6 +330,16 @@ struct EconomyWatch
         std::int64_t purses = 0;
         for (const auto& [id, life] : society.state().residents)
             purses += society.cash(id);
+        // Who is hungry now (at most twelve): their post and what they hold, to see why.
+        std::string who;
+        int listed = 0;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* e = server.entity(id); e && !e->dead && life.hunger >= 80 && listed++ < 12)
+            {
+                const auto* job = society.jobOf(id);
+                who += (who.empty() ? "" : "; ") + id + " (" + (job ? job->title : std::string("no post")) + ", " +
+                       std::to_string(society.cash(id)) + "p, home " + life.homeCell + ")";
+            }
         const auto& d = society.loopToday();
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
@@ -344,7 +354,8 @@ struct EconomyWatch
             << ", \"carters\": " << society.cash(society.carters()) << ", \"tills\": " << tills << ", \"till_median\": "
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
-            << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << "}" << std::endl;
+            << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"hungry_who\": \""
+            << who << "\"}" << std::endl;
         hours = hungrySum = hungryMost = 0;
     }
 };

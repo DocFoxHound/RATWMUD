@@ -179,7 +179,7 @@ void aDrawSplit()
     const auto cost = s.storeCost("smith", "iron_bar", 400);
     const auto drawn = s.drawFromStore("smith", "iron_bar", 400);
     expect(drawn.ok, "the draw: " + drawn.message);
-    const auto toll = cost * 25 / 100;
+    const auto toll = cost * 30 / 100;
     expect(s.cash(Society::CountryFund) - c0 == cost - toll, "the Country takes the cost less the toll");
     expect(s.cash("treasury") - r0 == toll - 3, "the treasury the toll, less its 3p of the carriage");
     expect(s.cash("till:job:carter") - k0 == 12, "the carters the carriage, 12p");
@@ -364,7 +364,7 @@ void theRecords()
         World w;
         expect(w.loadWorldFiles(files(""), "test").ok, "a world without loop records loads");
         const auto& e = w.society().authored().economy;
-        expect(!e.needsPaused && e.country && e.countryReserve == 200 && e.gateToll == 25 && e.carriage == 6 && e.wageKeeper == 14 &&
+        expect(!e.needsPaused && e.country && e.countryReserve == 200 && e.gateToll == 30 && e.carriage == 6 && e.wageKeeper == 14 &&
                    e.wageHand == 8 && e.wagePublic == 8 && e.wageCountry == 8 && e.countryOff.empty() && e.subsidies.at("carriage") == 25,
                "with the defaults");
     }

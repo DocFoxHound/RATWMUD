@@ -10,14 +10,14 @@
 --   country_off      goods the Country no longer supplies (their real producers' now)
 --   subsidies        services the treasury pays a share of, in percent ({"carriage": 25}: a quarter of every delivery's carriage)
 --
--- Defaults: off (not paused), on, 200, 25, 6, 14, 8, 8, 8, none, carriage 25. The game reads them in the NPC records: one
+-- Defaults: off (not paused), on, 200, 30, 6, 14, 8, 8, 8, none, carriage 25. The game reads them in the NPC records: one
 -- "loop" line after the "store" line, only when a value differs from its default; a "countryoff" line a good; a
 -- "subsidy" line a service away from its default.
 ALTER TABLE live.economy
     ADD COLUMN needs_paused    boolean NOT NULL DEFAULT false,
     ADD COLUMN country         boolean NOT NULL DEFAULT true,
     ADD COLUMN country_reserve integer NOT NULL DEFAULT 200 CHECK (country_reserve BETWEEN 0 AND 100000),
-    ADD COLUMN gate_toll       integer NOT NULL DEFAULT 25  CHECK (gate_toll BETWEEN 0 AND 90),
+    ADD COLUMN gate_toll       integer NOT NULL DEFAULT 30  CHECK (gate_toll BETWEEN 0 AND 90),
     ADD COLUMN carriage        integer NOT NULL DEFAULT 6   CHECK (carriage BETWEEN 0 AND 1000),
     ADD COLUMN wage_keeper     integer NOT NULL DEFAULT 14  CHECK (wage_keeper BETWEEN 0 AND 1000),
     ADD COLUMN wage_hand       integer NOT NULL DEFAULT 8   CHECK (wage_hand BETWEEN 0 AND 1000),
@@ -68,7 +68,7 @@ LANGUAGE sql STABLE AS $$
                                      'country', CASE WHEN country THEN 'on' ELSE 'off' END, 'reserve', country_reserve,
                                      'toll', gate_toll, 'carriage', carriage, 'wages', wage_keeper, wage_hand, wage_public, wage_country)
         FROM live.economy WHERE world_id = p_world AND p_npc IS NULL
-          AND (needs_paused OR NOT country OR country_reserve <> 200 OR gate_toll <> 25 OR carriage <> 6 OR wage_keeper <> 14
+          AND (needs_paused OR NOT country OR country_reserve <> 200 OR gate_toll <> 30 OR carriage <> 6 OR wage_keeper <> 14
                OR wage_hand <> 8 OR wage_public <> 8 OR wage_country <> 8)
         UNION ALL
         SELECT 0, 0, 0, 3, 'countryoff ' || live.q(g)

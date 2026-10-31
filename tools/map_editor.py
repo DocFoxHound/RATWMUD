@@ -62,7 +62,7 @@ STORE_MARKUPS = ('storeMarkup', 'resaleMarkup')
 # The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): optional economy keys, at these
 # defaults: residents' needs paused, the Country spending back, its reserve, the gate toll, carriage a wagon load, the
 # day's wages, the goods the Country no longer supplies, and the services the treasury pays a share of.
-LOOP_DEFAULTS = {'needsPaused': False, 'country': True, 'countryReserve': 200, 'gateToll': 25, 'carriage': 6,
+LOOP_DEFAULTS = {'needsPaused': False, 'country': True, 'countryReserve': 200, 'gateToll': 30, 'carriage': 6,
                  'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8, 'wageCountry': 8, 'countryOff': [],
                  'subsidies': {'carriage': 25}}
 LOOP_SWITCHES = ('needsPaused', 'country')

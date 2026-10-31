@@ -97,7 +97,7 @@ export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeal
 export const STORE_DEFAULTS = {internalStore: true, storeMarkup: 100, storeResale: true, resaleMarkup: 75, storeRule: false};
 // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9): optional economy keys at these defaults, as
 // tools/map_editor.py's LOOP_DEFAULTS.
-export const LOOP_DEFAULTS = {needsPaused: false, country: true, countryReserve: 200, gateToll: 25, carriage: 6,
+export const LOOP_DEFAULTS = {needsPaused: false, country: true, countryReserve: 200, gateToll: 30, carriage: 6,
     wageKeeper: 14, wageHand: 8, wagePublic: 8, wageCountry: 8, countryOff: [], subsidies: {carriage: 25}};
 const LOOP_LIMITS = {countryReserve: 100000, gateToll: 90, carriage: 1000, wageKeeper: 1000, wageHand: 1000, wagePublic: 1000, wageCountry: 1000};
 export const SUBSIDISED = ['carriage'];

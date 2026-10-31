@@ -284,7 +284,7 @@ struct EconomySpec
     bool needsPaused = false;
     bool country = true;
     std::int64_t countryReserve = 200;
-    int gateToll = 25;
+    int gateToll = 30;
     int carriage = 6;
     int wageKeeper = 14, wageHand = 8, wagePublic = 8, wageCountry = 8;
     std::set<std::string> countryOff;
