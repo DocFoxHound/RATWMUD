@@ -558,17 +558,14 @@ void welcomeBack()
     };
     // Unfinished business.
     w.promise(ash, "um", "bring a pot of honey", 3);
-    auto& k = w.postContract("procure", "um", w.lawTown(cellId(1)), "um", 10, 5, "smoked fish for the stall");
-    k.item = "smoked_fish";
-    k.quantity = 5;
-    k.delivered = 3;
+    auto& k = w.postContract("escort", "um", w.lawTown(cellId(1)), w.lawTown(cellId(1)), 10, 5, "a letter for the stall");
     k.taker = ash;
     k.status = "taken";
     t.run(2.5);
     std::string open;
     for (const auto& u : t.selfOf(t.ash).array("unfinished"))
         open += u.string("text") + "\n";
-    expect(contains(open, "You promised") && contains(open, "bring a pot of honey") && contains(open, "3 of 5 handed in"),
+    expect(contains(open, "You promised") && contains(open, "bring a pot of honey") && contains(open, "a letter for the stall"),
            "her open threads: " + open);
     w.recordEvent({"gift", ash, "um", cellId(1), 0, 0, "honey", 1, 0, {}});
     for (auto& c : w.roads().contracts)

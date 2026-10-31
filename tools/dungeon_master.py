@@ -152,11 +152,6 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # Turning an account's mentoring off until restored, and restoring it (Docs/Design/52-newcomers.md, Phase 2).
            'mentor.revoke': 'dm', 'mentor.restore': 'dm', 'tie.end': 'dm',
            'npc.move': 'dm', 'character.move': 'dm', 'visitor.add': 'dm', 'visitor.leave': 'dm',
-           # The Dungeon Master's levers on the economy (Docs/Design/64-economy-migration.md, decision 5): the tax rate, the
-           # mint on or off, and a one-off relief grant from the capital's treasury to a town's.
-           'economy.tax': 'dm', 'economy.mint': 'dm', 'economy.relief': 'dm',
-           # And the holdings tax (doc 64, Phase 13, round 11): a week's share of what a home holds over six months of its needs.
-           'economy.holdings': 'dm',
            # Notice boards and places to let (Docs/Design/54-gathering-places.md): a notice taken down; a place set to let,
            # or no longer (the game handled these already; the tool couldn't send them).
            'board.remove': 'dm', 'estate.set': 'dm', 'estate.clear': 'dm', 'estate.hold': 'dm', 'estate.release': 'dm',
@@ -195,14 +190,6 @@ STANCES = ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
 MAX_FACTIONS = 64                                          # What the game's world loader accepts.
 ID = re.compile(r'^[a-z][a-z0-9_]{0,39}$')          # Within ratw_id (48), leaving room for suffixes.
 RANK = {'viewer': 0, 'dm': 1, 'admin': 2}
-# The economy's levers (doc 64, Phase 12): the most tax the game takes of a week's income (Society::MostTaxRate), and
-# the largest relief grant one action may make.
-MOST_TAX_RATE = 0.5
-# The most holdings tax, a week's share of what a home holds over six months of its needs (Society::MostHoldingsTax; round
-# 11), and its rate to start (Society::HoldingsTaxRate).
-MOST_HOLDINGS_TAX = 0.1
-HOLDINGS_TAX = 0.01
-MOST_RELIEF = 1_000_000
 PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
         '.woff2': 'font/woff2', '.ico': 'image/x-icon'}
@@ -941,13 +928,11 @@ class DungeonMaster:
         return {'target': target, 'today': today, 'communities': communities, 'actions': actions,
                 'weekdays': list(C.WEEKDAYS)}
 
-    # -- where the money is (Docs/Design/42-money-in-circulation.md, Phase 8) -------------
-    MONEY_EVENTS = ('reckoning', 'surplus spent', 'trade caravan departs', 'trade caravan sells', 'sermon')
-
+    # -- where the money is -------------------------------------------------------------
     def money(self, target):
-        """The economy as last saved: each town's treasury, church and buyers; the great houses and their tills;
+        """The money as last saved: each town's treasury, church and buyers; the great houses and the shops' tills;
         residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food money;
-        money on the road; and the latest reckonings, surplus spending, trade caravans and sermons."""
+        money on the road. (Nothing moves it of itself since the economy's rules were erased: doc 66, Phase 5.)"""
         with self.connect(target) as conn:
             world = C.world_of(conn)
             if not world:
@@ -955,10 +940,6 @@ class DungeonMaster:
             project, _ = S.load_world(conn, world)
             row = conn.execute("SELECT payload::jsonb->'society', (payload::jsonb->>'calendarDays')::double precision "
                                'FROM game.checkpoints WHERE world_id = %s', (world,)).fetchone()
-            events = [{'kind': r[0], 'actor': r[1], 'target': r[2], 'day': r[3], 'detail': r[4], 'at': r[5].isoformat()}
-                      for r in conn.execute('SELECT kind, actor, target, game_day, detail, recorded_at FROM game.events '
-                                            'WHERE world_id = %s AND kind = ANY(%s) ORDER BY id DESC LIMIT 60',
-                                            (world, list(self.MONEY_EVENTS))).fetchall()]
         society = row[0] if row and row[0] else {}
         if isinstance(society, str):
             society = json.loads(society)
@@ -974,7 +955,7 @@ class DungeonMaster:
                       if k.startswith(f'town:{town}:') and not k.endswith((':church', ':granary'))}
             # Every town's church keeps one purse, the land's (doc 42, "One church"): 'church' is that purse, the same for all.
             towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get('town:all:church', accounts.get(f'town:{town}:church')),
-                           'buyers': buyers, 'condition': ((society.get('memory') or {}).get('condition') or {}).get(town)}
+                           'buyers': buyers}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
         purses = sorted(v for k, v in accounts.items() if k in people)
@@ -996,23 +977,7 @@ class DungeonMaster:
         return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
                 'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
                 'tills': {'count': len(tills), 'total': sum(tills.values())}, 'residents': residents, 'road': road,
-                'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-'))),
-                'month': (society.get('books') or {}).get('month'), 'events': events,
-                # The levers as they stand (doc 64, Phase 12): the tax rate (8% in a save from before it) and the mint.
-                'levers': self.levers(society),
-                # The economy's monitor's latest measures (doc 46, Part 9; doc 64, Phase 12); older saves have none.
-                'orchestrator': society.get('orchestrator') if isinstance(society.get('orchestrator'), dict) else None}
-
-    @staticmethod
-    def levers(society):
-        """The tax rate, whether the mint is on and the holdings tax, from a saved society."""
-        memory = society.get('memory') if isinstance(society.get('memory'), dict) else {}
-        rate = memory.get('taxRate')
-        holdings = memory.get('holdingsTax')
-        mint = memory.get('mint') if isinstance(memory.get('mint'), dict) else {}
-        return {'taxRate': rate if isinstance(rate, (int, float)) and not isinstance(rate, bool) else 0.08,
-                'mint': mint.get('on') is not False,
-                'holdingsTax': holdings if isinstance(holdings, (int, float)) and not isinstance(holdings, bool) else HOLDINGS_TAX}
+                'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-')))}
 
     def call_festival(self, who, target, community, name='', in_days=0):
         """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
@@ -1036,52 +1001,6 @@ class DungeonMaster:
                 self.audit(conn, who['username'], 'festival.call', community,
                            f'{target.upper()}: a festival{" (" + name + ")" if name else ""} in {community}, {when}')
         return {'id': action, 'status': 'queued'}
-
-    # -- the economy's levers (Docs/Design/64-economy-migration.md, decision 5) -----------------------------
-    def queue_lever(self, who, target, kind, target_id, payload, what):
-        """Queues one of the economy's levers for the game server and audits it; the game logs it in its ledger."""
-        with self.connect(target) as conn:
-            with conn.transaction():
-                action = conn.execute('''INSERT INTO dm.actions (kind, target_id, payload, requested_by)
-                                         VALUES (%s, %s, %s, %s) RETURNING id''',
-                                      (kind, target_id, json.dumps(payload), who['username'])).fetchone()[0]
-                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
-                self.audit(conn, who['username'], kind, target_id, f'{target.upper()}: {what}')
-        return {'id': action, 'status': 'queued'}
-
-    def set_tax_rate(self, who, target, rate):
-        """Sets the tax on a week's income, 0 to MOST_TAX_RATE, from the next reckoning."""
-        self.allowed(who, 'economy.tax')
-        if isinstance(rate, bool) or not isinstance(rate, (int, float)) or rate != rate or not 0 <= rate <= MOST_TAX_RATE:
-            raise DMError(f'The tax rate is 0 to {MOST_TAX_RATE:g} (a share of a week\'s income).')
-        return self.queue_lever(who, target, 'economy.tax', 'land', {'rate': float(rate)},
-                                f'the tax rate set to {round(rate * 100, 1):g}% of a week\'s income')
-
-    def set_holdings_tax(self, who, target, rate):
-        """Sets the holdings tax, 0 (off) to MOST_HOLDINGS_TAX a week of what a home holds over six months of its needs."""
-        self.allowed(who, 'economy.holdings')
-        if isinstance(rate, bool) or not isinstance(rate, (int, float)) or rate != rate or not 0 <= rate <= MOST_HOLDINGS_TAX:
-            raise DMError(f'The holdings tax is 0 to {MOST_HOLDINGS_TAX:g} (a week\'s share of what a home holds over six months of its needs).')
-        return self.queue_lever(who, target, 'economy.holdings', 'land', {'rate': float(rate)},
-                                f'the holdings tax set to {round(rate * 100, 2):g}% a week' if rate else 'the holdings tax turned off')
-
-    def set_mint(self, who, target, on):
-        """Turns the mint on or off."""
-        self.allowed(who, 'economy.mint')
-        if not isinstance(on, bool):
-            raise DMError('Say whether the mint is on (true) or off (false).')
-        return self.queue_lever(who, target, 'economy.mint', 'land', {'on': on}, f'the mint turned {"on" if on else "off"}')
-
-    def relief_grant(self, who, target, town, coins):
-        """A one-off grant of coins from the capital's treasury to a town's treasury."""
-        self.allowed(who, 'economy.relief')
-        town = town.strip() if isinstance(town, str) else ''
-        if isinstance(coins, bool) or not isinstance(coins, int) or not 1 <= coins <= MOST_RELIEF:
-            raise DMError(f'A relief grant is 1 to {MOST_RELIEF:,} whole pennies.')
-        if not town or town not in self.money(target)['towns']:
-            raise DMError(f'No town called {town or "(none)"} in {target.upper()}.', 404)
-        return self.queue_lever(who, target, 'economy.relief', town, {'coins': coins},
-                                f'a relief grant of {coins:,}p from the capital\'s treasury to {town}')
 
     # -- uploaded portraits (Docs/Design/29-client-polish.md, phase 9) -------------
     def artwork(self, target):
@@ -2222,18 +2141,6 @@ def make_handler(dm=None, offers=None, world=None, kinds=None):
                 data = self.body()
                 return self.reply(200, dm.call_festival(who, self.posted(data), data.get('community', ''),
                                                         data.get('name', ''), data.get('inDays', 0)))
-            if method == 'POST' and path == '/api/economy/tax':
-                data = self.body()
-                return self.reply(200, dm.set_tax_rate(who, self.posted(data), data.get('rate')))
-            if method == 'POST' and path == '/api/economy/holdings':
-                data = self.body()
-                return self.reply(200, dm.set_holdings_tax(who, self.posted(data), data.get('rate')))
-            if method == 'POST' and path == '/api/economy/mint':
-                data = self.body()
-                return self.reply(200, dm.set_mint(who, self.posted(data), data.get('on')))
-            if method == 'POST' and path == '/api/economy/relief':
-                data = self.body()
-                return self.reply(200, dm.relief_grant(who, self.posted(data), data.get('town', ''), data.get('coins')))
             if method == 'GET' and path == '/api/artwork':
                 return self.reply(200, dm.artwork(self.target(query)))
             if method == 'POST' and path == '/api/artwork/review':

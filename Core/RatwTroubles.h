@@ -1,6 +1,6 @@
 #pragma once
 // Residents' troubles (Docs/Design/57-changing-the-world.md, 3): what weighs on a resident, read only from the
-// simulation's real state (the society's purses, loans, careers and households, and the bonds), never invented. Pure:
+// simulation's real state (the society's purses, careers and households, and the bonds), never invented. Pure:
 // `troubleOf` reads, and changes nothing. The kinds, their order, thresholds and lines are Data/Town/troubles.json.
 #include "RatwJsonDoc.h"
 
@@ -38,7 +38,6 @@ struct Rules
     double perWolfDays = 92;                        // One of a resident's troubles solved by the same wolf a season.
     double peaceTrust = 30, peaceTiles = 4;         // Making peace: trusted by both, the three of them this close.
     double employerTrust = 30, masterTrust = 20;    // Speaking for a resident; sponsoring an apprenticeship.
-    std::int64_t notableDebt = 100;                 // A debt paid off this large is a notable deed.
     std::vector<std::string> refusal;
     const Kind* kind(const std::string& id) const;
 };
@@ -49,8 +48,8 @@ struct Trouble
 {
     std::string kind;                               // "" for none.
     std::string resident;                           // Whose it is.
-    std::string other;                              // feud: the other; child: the youth; debt: the till.
-    std::int64_t coins = 0;                         // debt: what is owed; short: what would bring it to refillDays.
+    std::string other;                              // feud: the other; child: the youth.
+    std::int64_t coins = 0;                         // short: what would bring it to refillDays.
     double days = 0;                                // short: days of food held; work: days without a post.
     int age = 0;                                    // child: the youth's age.
     std::vector<std::string> household;             // short: who lives there (the head first).
@@ -75,7 +74,9 @@ Trouble troubleOf(const std::string& resident, const Reads& reads, const Rules& 
 // Each kind alone (troubleOf takes the first that holds), for tests and for checking a solution worked.
 Trouble kindOf(const std::string& kind, const std::string& resident, const Reads& reads, const Rules& rules = troubles::rules());
 
-// The household's money and food at the town's price, in days of a day's plain food for everyone in it.
+// The household's money and food at the catalogue's price, in days of a day's plain food for everyone in it
+// (PlainFoodADay a wolf: a loaf and a bowl of porridge).
+constexpr double PlainFoodADay = 5;
 double foodDays(const std::vector<std::string>& household, const std::string& homeCell, const Reads& reads, std::int64_t* held = nullptr,
                 double* dayCost = nullptr);
 

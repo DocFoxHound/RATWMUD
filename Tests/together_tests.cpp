@@ -295,45 +295,20 @@ void farmWork()
     const auto started = w.helpAtWork("player-ash", "hale");
     expect(started.ok && w.jointOf("player-ash") && w.jointOf("player-ash") == w.jointOf("hale"), "Ash sets to work beside Hale: " + started.message);
     expect(std::abs(w.workRate("player-ash") - 1.4) < 1e-9, "a player and the farmer: 1.4");
-    // Four spells: each pays the hand wage a spell times 1.4 (12 / 8 x 1.4 = 2.1p), fractions carried.
+    // Four spells worked beside him: practice, and nothing paid or brought in (the economy's rules to come, doc 66's
+    // Phase 5: the hand's wage and the yields went with them).
     workFor(w, 4 * 300 + 2, {"player-ash"});
     workFor(control, 4 * 300 + 2, {});
-    const auto paid = cashOf(w, "player-ash") - ashBefore;
     expect(w.jointOf("player-ash") && w.jointOf("player-ash")->members.back().beats == 4, "four spells worked");
-    expect(paid == 8, "paid four spells at 2.1p each, fractions carried: " + std::to_string(paid));
-    expect(tillBefore - cashOf(w, till) == paid, "from Hale's till");
+    expect(cashOf(w, "player-ash") == ashBefore && cashOf(w, till) == tillBefore, "nobody paid");
     expect(allCash(w) - moneyBefore == allCash(control) - controlMoney, "money only moved (doc 15)");
-    const int brought = (barn(w) - barnBefore) - (barn(control) - controlBarn);
-    std::cout << "  threshing, four spells beside Hale: paid " << paid << "p from his till; " << brought << " more goods in his barn than he alone brought in\n";
-    expect(brought >= 3 && brought <= 12, "and the barn has more than Hale alone would bring in: " + std::to_string(brought));
-    // Bo lends a paw: two players and the farmer, 2.0 each; pay follows the rate.
+    expect(barn(w) - barnBefore == barn(control) - controlBarn, "and nothing brought in");
+    // Bo lends a paw: two players and the farmer, 2.0 each.
     expect(w.lendAPaw("player-bo", "player-ash").ok && std::abs(w.workRate("player-bo") - 2.0) < 1e-9, "Bo lends a paw: 2.0 each");
-    const auto boBefore = cashOf(w, "player-bo");
-    const auto ashMid = cashOf(w, "player-ash");
     workFor(w, 2 * 300, {"player-ash", "player-bo"});
-    const auto boPaid = cashOf(w, "player-bo") - boBefore, ashPaid = cashOf(w, "player-ash") - ashMid;
-    std::cout << "  two spells with Bo too: Ash paid " << ashPaid << "p, Bo " << boPaid << "p\n";
-    expect(boPaid >= 5 && boPaid <= 7 && ashPaid >= 5 && ashPaid <= 7, "at 2.0 each, 3p a spell (Bo's first nearly whole): Ash " +
-                                                                             std::to_string(ashPaid) + ", Bo " + std::to_string(boPaid));
-    // Idle a whole spell: Ash has left off, and isn't paid for it.
-    const auto ashIdle = cashOf(w, "player-ash");
+    // Idle a whole spell: Ash has left off.
     workFor(w, 330, {"player-bo"});
-    expect(!w.jointOf("player-ash") && cashOf(w, "player-ash") - ashIdle <= 3, "Ash, idle a spell, has left off");
-    // A full barn: no more work.
-    for (const auto& item : {"wheat", "oats", "firewood"})
-        if (const int held = Society::stock(*w.society().account(till), item); held < Society::ProducerKept)
-            w.society().create(till, item, Society::ProducerKept - held, "test");
-    workFor(w, 301, {"player-bo"});
-    expect(!w.jointOf("player-bo") && !w.jointOf("hale"), "the barn full: the work ends");
-    const auto full = w.helpAtWork("player-bo", "hale");
-    expect(!full.ok && full.message.find("barn is full") != std::string::npos, "and can't start: " + full.message);
-    // An empty till: no work.
-    auto poor = farm(3);
-    wolf(poor, "player-ash", 21.5, 20.5).cellId = "fields";
-    const auto poorTill = poor.society().tillOf("hale");
-    poor.society().shift(poorTill, "player-ash", "", 0, poor.society().spendable(poorTill), "test");
-    const auto broke = poor.helpAtWork("player-ash", "hale");
-    expect(!broke.ok && broke.message.find("can't pay") != std::string::npos, "an empty till: " + broke.message);
+    expect(!w.jointOf("player-ash"), "Ash, idle a spell, has left off");
     // Not from afar.
     auto far = farm(3);
     wolf(far, "player-ash", 34.5, 20.5).cellId = "fields";
@@ -396,8 +371,8 @@ void training()
     expect(!elsewhere.practiseAtPost("player-ash").ok, "no post off a training ground");
 }
 
-// A hand at a resident's bench (doc 53, 3, part A): Tam bakes at The Loaf; Ash lends a paw at the workshop, paid by the
-// spell from the shop's till, at x1.4 beside the maker (who leads).
+// A hand at a resident's bench (doc 53, 3, part A): Tam bakes at The Loaf; Ash lends a paw at the workshop, at x1.4
+// beside the maker (who leads); the paw is lent to the maker (Society::pawRateOf) for the economy's rules to come.
 void benchWork()
 {
     auto w = yard("bakery", "baker at The Loaf");
@@ -411,12 +386,11 @@ void benchWork()
            "Ash hands, Tam leads: " + started.message);
     expect(std::abs(w.workRate("player-ash") - 1.4) < 1e-9, "beside the maker: 1.4");
     workFor(w, 2 * 300 + 2, {"player-ash"});
-    const auto paid = cashOf(w, "player-ash") - ashBefore;
-    std::int64_t recorded = 0;
+    int spells = 0;
     for (const auto& e : w.takeEvents())
-        if (e.kind == "bench work" && e.actor == "player-ash" && e.target == "tam")
-            recorded += e.coins;
-    expect(paid >= 3 && recorded == paid, "two spells paid from the shop's till: " + std::to_string(paid) + "p");
+        spells += e.kind == "bench work" && e.actor == "player-ash" && e.target == "tam";
+    expect(spells == 2 && cashOf(w, "player-ash") == ashBefore, "two spells at the bench, unpaid");
+    expect(std::abs(w.society().pawRateOf("tam") - 1.4) < 1e-9, "the paw lent to Tam: " + std::to_string(w.society().pawRateOf("tam")));
     expect(w.jointOf("player-ash") && w.jointOf("player-ash")->members.back().beats == 2, "two spells at the bench");
     // Not a farm's harvest: a farmer isn't a workshop, nor a baker a farm.
     expect(!w.residentWorkAt("player-ash"), "a player is nobody's bench");

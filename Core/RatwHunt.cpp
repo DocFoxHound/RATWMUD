@@ -1746,4 +1746,22 @@ bool World::huntHelperTurn(Battle& b, BattleFighter& f)
         battleAct(f.id, "wait");                    // (Crouched and not having bitten: it lies in wait.)
     return true;
 }
+bool World::takeFromPatch(const std::string& cellId, int x, int y, int extra)
+{
+    const auto& data = wild::forage();
+    const auto patch = cellId + "|" + std::to_string(x / data.patchTiles) + "|" + std::to_string(y / data.patchTiles);
+    auto& [used, day] = forage_[patch];
+    const double regrown = (calendarDays_ - day) * 24 / data.regrowHours;
+    if (regrown >= 1)
+    {
+        used = std::max(0, used - int(regrown));
+        day = calendarDays_;
+    }
+    if (used == 0)
+        day = calendarDays_;
+    if (used >= data.picks + extra)
+        return false;
+    ++used;
+    return true;
+}
 } // namespace ratw

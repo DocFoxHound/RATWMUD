@@ -31,9 +31,10 @@ double Game::projectStrength(const projects::Project& p)
     return !standing(p) ? 0 : p.condition >= 50 ? 1 : p.condition > 0 ? .5 : 0;
 }
 
-double Game::projectHourValue(const std::string& town) const
+double Game::projectHourValue(const std::string&) const
 {
-    return std::max(.5, world_.society().dayWage(town, "labour") * projects::rules().hourShare);
+    // (A work-hour on the plaque: hourShare of the catalogue's labourer's day, Data/Economy/ladder.json.)
+    return std::max(.5, items::ladder().catalogueDay * projects::rules().hourShare);
 }
 
 int Game::projectHas(const projects::Project& p, const std::string& item) const
@@ -87,6 +88,10 @@ bool Game::placeProject(projects::Project& p)
             p.cell = about.front().cell, p.x = int(std::floor(about.front().x)), p.y = int(std::floor(about.front().y));
         return true;
     }
+    // (The cell given loaded first: a road's cell nobody has passed through lately is streamed out, and no caravan walks
+    // it to bring it in since doc 66's Phase 5.)
+    if (!p.cell.empty())
+        world_.ensureLoaded(p.cell);
     bool found = !p.cell.empty() && fits(p.cell, p.x, p.y);
     for (std::size_t i = 0; !found && i < about.size(); ++i)
         for (int r = 2; !found && r <= 10; ++r)
@@ -211,7 +216,6 @@ bool Game::projectCommand(Connection* c, const Value& j, Result& result)
                 projects::Ledger::give(*p, id, "coin", "", double(coins), double(coins), today);
             world_.recordEvent({"project gift", id, p->id, me->cellId, 0, 0, "coin", 0, coins, p->title});
             record(Economy | Character, id);
-            projectSpend(*p);                       // (The coin goes to work at once: contracts and hands.)
             result = {true, "You give " + std::to_string(coins) + " pennies to " + p->title + (upkeep ? ", for its upkeep." : "."), {}};
             saveSoon();
         }
@@ -241,7 +245,7 @@ bool Game::projectCommand(Connection* c, const Value& j, Result& result)
                 result = {false, "It can't be handed in just now.", {}};
             else
             {
-                const double value = n * society.townPrice(p->town, base);
+                const double value = double(n * Society::catalogPrice(base));
                 projects::Ledger::give(*p, id, "goods", base, double(n), value, today);
                 world_.recordEvent({"project gift", id, p->id, me->cellId, 0, 0, base, n, 0, p->title});
                 record(Economy | Character, id);
@@ -287,56 +291,6 @@ bool Game::projectCommand(Connection* c, const Value& j, Result& result)
     return true;
 }
 
-void Game::projectSpend(projects::Project& p)
-{
-    // The project's coin does work: contracts for the materials still missing (not counting those already asked for),
-    // and the day's hired hands for the hours still missing, each only as far as it can pay.
-    auto& society = world_.society();
-    const auto* purse = society.account(p.purse());
-    const auto& rules = projects::rules();
-    const bool mending = standing(p) && p.condition < rules.upkeepUnder;
-    if (!purse || (p.state != "open" && !mending))
-        return;
-    std::int64_t cash = purse->cash;
-    for (const auto& [item, need] : p.needs)
-    {
-        if (mending)
-            break;                                  // (Mending takes hands; its materials are in it.)
-        int asked = 0;
-        for (const auto& k : world_.roads().contracts)
-            if (k.poster == p.purse() && k.kind == "procure" && k.item == item && (k.status == "open" || k.status == "taken"))
-                asked += std::max(0, k.quantity - k.delivered);
-        const int missing = need - projectHas(p, item) - asked;
-        if (missing <= 0)
-            continue;
-        const auto price = Society::pennies(society.townPrice(p.town, item));
-        const auto reward = std::int64_t(std::ceil(double(price) * missing * items::contractPremium()));
-        if (cash < reward)
-            continue;
-        const auto* good = items::good(item);
-        auto& k = world_.postContract("procure", p.purse(), p.town, p.purse(), reward, 7,
-                                      names::capitalised(p.title) + " wants " + std::to_string(missing) + " " +
-                                          (good ? good->name : item));
-        k.item = item;
-        k.quantity = missing;
-        cash -= reward;
-    }
-    const double missingHours = mending ? (100 - p.condition) / 100 * p.hours : p.hours - p.worked;
-    const auto today = std::int64_t(std::floor(world_.calendarDays()));
-    auto& posted = projectHands_[p.id];
-    if (posted.first != today)
-        posted = {today, 0};
-    const int slots = std::min(rules.handsMost - posted.second,
-                               int(std::ceil(std::max(0.0, missingHours - posted.second * rules.handHours) / std::max(.1, rules.handHours))));
-    const auto pay = std::max<std::int64_t>(1, std::int64_t(std::ceil(society.dayWage(p.town, "odd job") - 1e-9)));
-    if (slots > 0 && cash >= pay * slots)
-    {
-        const Spot at{p.cell, p.x + .5, p.y + 1.5};
-        if (!society.postOddJob(p.purse(), p.town, "project", slots, pay * slots, at, "work on " + p.title).empty())
-            posted.second += slots;
-    }
-}
-
 void Game::projectsFromEvent(const WorldEvent& e)
 {
     if (e.kind == "raid")                           // (A caravan robbed on a town's road: the proposer's watch post.)
@@ -345,19 +299,6 @@ void Game::projectsFromEvent(const WorldEvent& e)
         raids.push_back({e.cell, world_.calendarDays()});
         if (raids.size() > 16)
             raids.erase(raids.begin());
-        return;
-    }
-    // A hired hand's spell done (its pay, from the project's purse): so many work-hours more.
-    if (e.kind != "economy" || e.detail != "an odd job: project" || e.actor.rfind("project:", 0) != 0)
-        return;
-    if (auto* p = projects_.find(e.actor.substr(8)); p && p->state == "open")
-        p->worked = std::min(p->hours, p->worked + projects::rules().handHours);
-    else if (p && standing(*p))
-    {
-        p->condition = std::min(100.0, p->condition + projects::rules().handHours / p->hours * 100);
-        p->state = p->condition < 50 ? "worn" : "built";
-        if (auto* st = camps_.structure(p->structure))
-            st->condition = p->condition;
     }
 }
 
@@ -426,14 +367,9 @@ void Game::projectTick(double dt)
             {
                 if (today - p.posted >= projects::rules().lapseDays)
                     lapsed.push_back(id);
-                else
-                    projectSpend(p);
             }
         for (const auto& id : lapsed)
             cancelProject(id, "unfinished after " + std::to_string(int(projects::rules().lapseDays)) + " days");
-        for (auto& [id, p] : projects_.every())
-            if (standing(p))
-                projectSpend(p);                    // (Its upkeep: hands hired to mend it when it is worn.)
         refreshWorks();
     }
     if (std::floor(today) != proposedDay_ && hourOf(today) >= 6)
@@ -454,25 +390,13 @@ void Game::projectTick(double dt)
 void Game::finishProject(projects::Project& p)
 {
     // Its materials used up (goods only: the coin left stays as its upkeep), the structure standing, the plaque and
-    // perhaps a name, and the givers' deeds. A mending stands as nothing: its materials go to the Town Works' stock,
-    // used by its own rule, and its hours mend the town now.
+    // perhaps a name, and the givers' deeds. A mending stands as nothing (the town's repair went with the Town Works in
+    // doc 66's Phase 5): its materials are used up as any project's are.
     auto& society = world_.society();
     const auto* kindRule = projects::rules().kind(p.kind);
     const bool mendingKind = kindRule && kindRule->structure.empty();
-    if (mendingKind)
-    {
-        const auto works = "town:" + p.town + ":works";
-        society.openAccount(works);
-        if (const auto* purse = society.account(p.purse()))
-            for (const auto& [kind, n] : std::map<std::string, int>(purse->stock.begin(), purse->stock.end()))
-                if (p.needs.count(items::baseOf(items::unmarked(kind))))
-                    society.shift(p.purse(), works, kind, n, 0, "for the Town Works, from " + p.title.substr(0, 50));
-        society.mendTown(p.town, p.hours);
-    }
     for (const auto& [item, need] : p.needs)
     {
-        if (mendingKind)
-            break;
         int left = need;
         if (const auto* purse = society.account(p.purse()))
             for (const auto& kind : Society::kindsHeld(*purse, item))
@@ -716,14 +640,6 @@ void Game::refreshWorks()
     }
     if (!(works == world_.standingWorks()))
         world_.setStandingWorks(std::move(works));
-    if (projects_.all().size() != projectTowns_)
-    {
-        std::map<std::string, std::string> towns;   // (Players' gifts to a project count as help to its town: doc 57, 5.)
-        for (const auto& [id, p] : projects_.all())
-            towns[p.purse()] = p.town;
-        projectTowns_ = towns.size();
-        world_.society().setProjectTowns(std::move(towns));
-    }
 }
 
 void Game::wearProjects(double days)
@@ -773,9 +689,6 @@ void Game::proposeProjects()
             world_.recordEvent({"project proposed", "town:" + town, made.targetId, cell, 0, 0, kind, 0, 0, why});
         return made.ok;
     };
-    // The town in disrepair: its mending.
-    if (society.condition(town) < 50 && post("mend", "", "the town is in disrepair"))
-        return;
     // A caravan robbed on one of its roads lately: a watch post where it happened most.
     {
         std::map<std::string, int> robbed;
@@ -803,25 +716,11 @@ void Game::proposeProjects()
         if (days >= 3 && post("waystation", most, "caravans held up by storms on its road"))
             return;
     }
-    // Empty shelves at two decisions running, or its granary empty at the turn of autumn: a granary.
-    const auto& decision = society.orchestrator().decision;
-    if (decision.decided && double(decision.day) != distressDay_)
-    {
-        distressDay_ = double(decision.day);
-        for (const auto& t : decision.towns)
-        {
-            auto& run = distressRun_[t.id];
-            run.push_back(t.kind);
-            if (run.size() > 2)
-                run.erase(run.begin());
-        }
-    }
-    const auto run = distressRun_.find(town);
-    const bool shelves = run != distressRun_.end() && run->second.size() == 2 && run->second[0] == "empty shelves" && run->second[1] == "empty shelves";
+    // Its granary empty at the turn of autumn: a granary.
     const auto* granary = society.account("town:" + town + ":granary");
     const auto date = calendar::calendarAt(today);
     const bool emptyAutumn = int(date.season) == 2 && date.dayOfSeason <= 7 && (!granary || granary->stock.empty());
-    if (shelves || emptyAutumn)
-        post("granary", "", shelves ? "empty shelves" : "an empty granary at the turn of autumn");
+    if (emptyAutumn)
+        post("granary", "", "an empty granary at the turn of autumn");
 }
 } // namespace ratw::game

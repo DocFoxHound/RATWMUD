@@ -1,7 +1,7 @@
 // Notice boards (Docs/Design/54-gathering-places.md, 2; Phase 2). One by each town's square (World::boardSpot), read from
 // within 2 tiles. The work side is built when read: the town's open contracts (World::contractsNear's rule), with TAKE
 // IT ON. The public side is players' notices: documents of kind "notice" (doc 55's store), a penny to the board's own
-// town (at a 12p day, at the town's day: Game::atTheDay, doc 64, Phase 13), seven game days, three a writer and thirty a board; each carries its writer's scent as a letter does. Residents
+// town, seven game days, three a writer and thirty a board; each carries its writer's scent as a letter does. Residents
 // answer a seeking notice's structured *what* (an item: a shop in town that has it; an apprenticeship: a master of the
 // trade who trusts the writer), and an offering one (an item: a maker who uses it), never its words, which never reach
 // a prompt. Checked on posting and once a game day; one answer a notice.
@@ -239,7 +239,7 @@ void Game::sendBoard(Connection* c, const std::string& community)
     e.add("town", townWords(community));
     e.add("work", work);
     e.add("notices", notices);
-    e.add("noticeFee", double(atTheDay(NoticeFee, community)));   // (For the form.)
+    e.add("noticeFee", double(NoticeFee));   // (For the form.)
     if (const auto festival = festivalBoard(community); !festival.isNull())
         e.add("festival", festival);                // (The festival's programme, from three days before: doc 54, 6.)
     send(c, e);
@@ -329,8 +329,8 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)
         return result = {false, "You have three notices up here already.", {}}, true;
     const auto treasury = world_.society().treasuryOf(community);
-    const auto fee = atTheDay(NoticeFee, community);
-    if (world_.society().spendable(me) < fee || !world_.society().shift(me, treasury, "", 0, fee, "a notice pinned"))
+    const auto fee = NoticeFee;
+    if (world_.society().cash(me) < fee || !world_.society().shift(me, treasury, "", 0, fee, "a notice pinned"))
         return result = {false, "A notice costs " + priceWords(fee) + " to the town.", {}}, true;
     documents::Document d;
     d.kind = "notice";

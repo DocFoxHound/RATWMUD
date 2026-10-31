@@ -162,29 +162,46 @@ void sources()
         const auto ash = t.ash.entityId, bo = t.bo.entityId;
         s.shift("treasury", ash, "", 0, 200, "test purse");
         s.shift("treasury", bo, "", 0, 200, "test purse");
-        // A trouble: the inn's loan.
-        const auto till = s.tillOf("ui");
-        auto st = s.state();
-        st.memory.loans[till] = {40, std::int64_t(w.calendarDays())};
-        expect(s.restore(st), "the inn owes the town");
+        // A trouble: the inn's household short of coin (its purses emptied into the treasury, its food eaten).
+        const auto home = s.resident("ui")->homeCell;
+        std::string head;
+        for (const auto& [id, life] : s.state().residents)
+            if (life.homeCell == home)
+            {
+                if (const auto cash = s.account(id)->cash; cash > 0)
+                    s.shift(id, "treasury", "", 0, cash, "test: spent");
+                for (const auto& [item, n] : std::map<std::string, int>(s.account(id)->stock))
+                    if (n > 0 && Society::edible(item))
+                        s.consume(id, item, n, "test: eaten");
+                if (const auto* e = w.entity(id); e && e->age >= 16 && (head.empty() || e->age > w.entity(head)->age))
+                    head = id;
+            }
+        if (const auto* larder = s.account(Society::homeStore(home, "larder")))
+            for (const auto& [item, n] : std::map<std::string, int>(larder->stock))
+                if (n > 0 && Society::edible(item))
+                    s.consume(Society::homeStore(home, "larder"), item, n, "test: eaten");
+        expect(!head.empty(), "the inn's household has a head");
         t.g.forgetTroubles();
-        t.g.hearTroubleFor(ash, "ui");
-        t.g.hearTroubleFor(bo, "ui");
+        expect(t.g.troubleNow(head).kind == "short", "and it is short of coin: " + t.g.troubleNow(head).kind);
+        t.g.hearTroubleFor(ash, head);
+        t.g.hearTroubleFor(bo, head);
         std::string mine, theirs;
         for (const auto& [id, line] : t.g.storylineBook().all())
             if (line.source == "trouble")
                 (line.owner == ash ? mine : theirs) = id;
         expect(!mine.empty() && !theirs.empty(), "each who heard it has its storyline");
         expect(t.g.storylineBook().find(mine)->current() == 1, "begun, heard ticked");
-        w.bonds().change("ui", ash, {10, 15, 30, 0, 0}, w.calendarDays());
-        auto* ui = w.entity("ui");
+        w.bonds().change(head, ash, {10, 15, 30, 0, 0}, w.calendarDays());
+        auto* ui = w.entity(head);
         ui->cellId = cellId(1), ui->position = {11.5, 8.5}, ui->path.clear();
         t.place(t.ash, 1, 10.5);
         t.run(.5);
         t.ash.events.clear();
-        t.g.command(&t.ash, cmd({{"type", "action"}, {"action", "trouble:loan:ui"}, {"target", "ui"}}));
+        if (const auto need = t.g.troubleNow(head).coins; need > s.account(ash)->cash)
+            s.shift("treasury", ash, "", 0, need - s.account(ash)->cash, "test: enough to help");
+        t.g.command(&t.ash, cmd({{"type", "action"}, {"action", "trouble:help:" + head}, {"target", head}}));
         t.run(.5);
-        expect(t.g.storylineBook().find(mine)->state == "done", "solved by her: her storyline is done");
+        expect(t.g.storylineBook().find(mine)->state == "done", "solved by her: her storyline is done: " + t.ash.said());   // (Her coin keeps them fed.)
         expect(t.g.storylineBook().find(theirs)->state == "ended", "Bo's ends: someone else saw to it");
         bool deed = false;
         for (const auto* d : t.g.deeds().byDoer(ash))

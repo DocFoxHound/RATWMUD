@@ -159,7 +159,7 @@ struct Options
     // real server and any number of other scratch servers.
     bool scratch = false;
     // Re-found the economy (Docs/Design/64-economy-migration.md, Phase 1; the user, 2026-10-15: "reset dev's economy"):
-    // the save's society (every purse, till, house, career, the ledger, the orchestrator) and its roads' trade
+    // the save's society (every purse, till, career, the ledger) and its roads' trade
     // (caravans, contracts, camps' hoards) are set aside on start, and the realm's money stands afresh from the world.
     // The world's people (their bodies, ages, homes), its players and everything else load as saved.
     bool refoundEconomy = false;
@@ -995,25 +995,20 @@ class Game
         if (const auto& t = troubleOf(npc))
             heardTrouble(wolf, npc, t.kind);
     }
-    // Whether a resident's purse is light enough to draw it to a Hold's offer of a home and work (doc 32, 5.5): under 30p
-    // at a 12p day, at the realm's day for amounts (doc 64, Phase 13).
+    // Whether a resident's purse is light enough to draw it to a Hold's offer of a home and work (doc 32, 5.5): under 30p.
     bool drawnToAHold(const std::string& npcId) const;
     // A price the game asks, of players and of residents at its tables and festivals (a bed, a notice, a festival's
-    // entry, a stake, a courier's fee, a companion's wage...), written in pennies at a 12p day, the catalogue's (in code
-    // or in Data, as the catalogue's own prices are): in whole pennies at the town's day for amounts (Society::pennies;
-    // doc 64, Phase 13), so in a realm founded at 12p each is what it was. None stays none. And how it is said: "a penny"
-    // for one, "5p" for more.
-    std::int64_t atTheDay(std::int64_t pennies, const std::string& town) const;
+    // entry, a stake, a courier's fee, a companion's wage...), is in pennies as written, as the catalogue's own prices
+    // are. How it is said: "a penny" for one, "5p" for more.
     static std::string priceWords(std::int64_t pennies);
-    // A faction official's report (5p at a 12p day) and a Chapter's tithe to the faction (20p), where the wolf stands.
+    // A faction official's report (5p) and a Chapter's tithe to the faction (20p), where the wolf stands.
     std::int64_t reportFee(const std::string& who) const;
     std::int64_t titheFee(const std::string& who) const;
-    // A Chapter's building's materials (camp::Kind::cost, at a 12p day) where it builds.
-    std::int64_t buildingCost(const camp::Kind& k, const std::string& cell) const { return atTheDay(k.cost, townFor(cell)); }
+    // A Chapter's building's materials (camp::Kind::cost) where it builds.
+    std::int64_t buildingCost(const camp::Kind& k, const std::string&) const { return k.cost; }
     std::int64_t archivePay(const std::string& cell, bool half = false) const;   // An archive task's pay there (RatwArchive.cpp).
-    // A resident's letter of thanks (doc 55, 5): whether a gift is worth one (5p or more at a 12p day, coins and the
-    // goods' catalogue price), and the few pennies it may send with it (a tenth of its purse, 6p at most at a 12p day),
-    // each at the resident's town's day (doc 64, Phase 13).
+    // A resident's letter of thanks (doc 55, 5): whether a gift is worth one (5p or more, coins and the
+    // goods' catalogue price), and the few pennies it may send with it (a tenth of its purse, 6p at most).
     bool giftWorthThanks(const WorldEvent& e) const;
     std::int64_t thanksGift(const std::string& resident) const;
 
@@ -1200,11 +1195,9 @@ class Game
         std::string project, role;
     };
     std::map<std::string, ProjectWorker> projectWork_;   // By wolf.
-    std::map<std::string, std::pair<std::int64_t, int>> projectHands_;   // Project -> (day, hands posted that day).
     double projectAccumulator_ = 0, projectDay_ = -1;
     bool projectCommand(Connection* c, const json::Value& j, Result& result);
     void projectTick(double dt);
-    void projectSpend(projects::Project& p);
     bool projectReady(const projects::Project& p) const;
     void finishProject(projects::Project& p);
     void refundProject(projects::Project& p);
@@ -1216,12 +1209,9 @@ class Game
     // Phase 4: what standing projects do (handed to the world when it changes), their wear and mending, and the
     // proposer that posts a town's projects from its real needs, one town a day at dawn.
     std::string worksKey_;
-    std::size_t projectTowns_ = 0;                  // How many projects the economy was last told the towns of.
     std::size_t proposeNext_ = 0;
     double proposedDay_ = -1;
     std::map<std::string, std::vector<std::pair<std::string, double>>> recentRaids_;   // Town -> (cell, day) robbed lately.
-    std::map<std::string, std::vector<std::string>> distressRun_;   // Town -> its distress at the latest decisions.
-    double distressDay_ = -1;
     void refreshWorks();
     void wearProjects(double days);
     void proposeProjects();
@@ -1370,11 +1360,6 @@ class Game
     json::Value stallsView(const std::string& cellId);
     json::Value stallSelf(const std::string& viewer);
     void tendStalls();
-    // Residents at players' stalls (doc 54, 3, its second part): once a game hour, grown townsfolk near a kept stall buy
-    // one thing a day there if it is something a household wants and no dearer than in the town's shops.
-    std::set<std::string> stallBuyers_;             // "resident|day": bought at a stall today.
-    double stallBuyersHour_ = -1;
-    void residentsAtStalls();
     void clearStall(Stall& st, const std::string& why, bool refund);
     bool marketOpen(const std::string& community);
     bool keeperPresent(const Stall& st);
@@ -1472,23 +1457,9 @@ class Game
     std::map<std::string, std::string> building_;                    // Player → the structure they work on.
     std::set<std::string> townCells_;
     double campAccumulator_ = 0, lastWearDay_ = -1;
-    // A keep's work (doc 64, Phase 11; RatwGameCamps.cpp): each workshop's and field's hours in hand, and the last day
-    // its hands' work was done.
-    std::map<std::string, double> keepHours_;
-    double lastKeepDay_ = -1;
-    void keepWork(double day);
-    std::int64_t keepWage() const;
     std::string whyNotGround(const std::string& cellId, int x, int y, bool town = false) const;   // (town: a town's project, doc 57)
     bool campCommand(Connection* c, const json::Value& j, Result& result);
     void campTick(double dt);
-    // Kept hands' meals (doc 64, Phase 13; RatwGameCamps.cpp): each Hold's hand's and companion's mess for the society
-    // (Society::setMesses), what they ate from a player's pack told, and those long unfed told of and let go. The day
-    // each Chapter (by its site: "chapter|site") or hirer ("player|") was last told its hands go hungry (not saved: a
-    // restart may tell it once more).
-    double messAccumulator_ = 0;
-    bool messesSet_ = false;
-    std::map<std::string, std::int64_t> hungerTold_;
-    void feedKeptHands(double dt);
     json::Value structuresView(const std::string& viewer, const std::string& cellId) const;
     json::Value storesView(const std::string& cellId) const;     // Home storage (doc 36).
     json::Value campView(const std::string& viewer) const;
@@ -1616,7 +1587,7 @@ class Game
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
     void makeResidents();
-    // A newcomer's purse: NewcomerWageDays of its new town's labourer's wage (the user, 2026-10-15; doc 64).
+    // A newcomer's purse: Society::NewcomerPurse.
     std::int64_t newcomerPurse(const std::string& homeCell) const;
     void runSpawns(double dt);
     bool spawnTile(const std::string& area, const std::string& tilesJson, int& x, int& y);
@@ -1714,7 +1685,7 @@ class Game
     // The food-days lines above which a household is rich (the top twentieth of the world's households) and below which
     // it is poor (the bottom fifth), worked out once a game day (doc 62, phase 7). Not saved.
     double talkRichLine();
-    double richLine_ = 42, poorLine_ = Society::PoorDays;    // (And the bottom fifth's: poor.)
+    double richLine_ = 42, poorLine_ = 7;                   // (And the bottom fifth's: poor.)
     std::int64_t richLineDay_ = -1;
     std::map<std::string, RegardBudget> regardBudget_;                  // "holder|other|source" (not saved).
     std::set<std::string> voiceLayers_, voiceRules_;   // Residents with their own grammar, their own rules, loaded.
@@ -1823,9 +1794,6 @@ class Game
         std::vector<std::int64_t> economy;          // Its counters, in a fixed order.
         std::uint64_t ledgerLast = 0;
         std::size_t ledgerSize = 0;
-        std::int64_t books = -1;                    // The month's books' revision.
-        std::int64_t houses = -1;                   // The great houses' state's revision.
-        std::int64_t memory = -1;                   // The economy's memory's revision (doc 42).
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
     };

@@ -1,10 +1,9 @@
 // Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N]]
 //
-// --reckon ends the run with the month's reckoning (doc 42), as if the month were up, and says where the money went.
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
 // --players N (default 1) adds walking players: the first at the spawn, the rest beside residents spread over the
@@ -239,7 +238,6 @@ int main(int argc, char** argv)
     bool check = true;
     bool full = false;                              // --full: every NPC in full simulation (no tiers).
     bool deterministic = false;                     // --deterministic: work by counts, never the clock (World::setDeterministic).
-    bool reckon = false;                            // --reckon: the month's reckoning at the end.
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     unsigned threads = 8;                           // --threads N.
     bool usage = argc != 2 && !simulate;
@@ -250,8 +248,6 @@ int main(int argc, char** argv)
             playerCount = std::max(1, std::atoi(argv[++i]));
         else if (flag == "--no-check")
             check = false;
-        else if (flag == "--reckon")
-            reckon = true;
         else if (flag == "--full")
             full = true;
         else if (flag == "--deterministic")
@@ -265,7 +261,7 @@ int main(int argc, char** argv)
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--reckon] [--threads N]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--threads N]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -624,11 +620,6 @@ int main(int argc, char** argv)
               << (server.society().conserved() ? "conserved" : "NOT CONSERVED") << "; " << server.loadedCells()
               << " places in memory at the end; " << server.bonds().count() << " bonds between them\n";
     moneyReport(server, "at the end");
-    if (reckon)
-    {
-        std::cout << "  " << server.reckonNow() << "\n";
-        moneyReport(server, "after the reckoning");
-    }
     {
         const auto& roads = server.roads();
         std::size_t travelling = 0, raided = 0, camps = 0, beliefs = 0, open = 0;

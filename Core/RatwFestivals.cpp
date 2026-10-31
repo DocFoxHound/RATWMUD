@@ -20,7 +20,6 @@
 //     the most different wolves at the square, none counting themself. No stars, no winner.
 //   - 20:00 the crier (doc 56's slot, empty); 21:00 games at the inn (the tables, doc 54's Phase 5).
 // Winners are called by the steward to the square, recorded (`festival won`), and known to the town's residents that day.
-// Its pennies are at a 12p day, at the town's day for amounts (Game::atTheDay; doc 64, Phase 13).
 #include "RatwGame.h"
 
 #include "RatwCalendar.h"
@@ -126,7 +125,7 @@ void Game::endContest(Fair& f, Contest& c, const std::vector<std::string>& ranke
     if (ranked.empty())
     {
         for (const auto& [who, n] : c.paid)
-            society.shift(account, who.empty() ? treasury : who, "", 0, std::min(n, society.spendable(account)), "festival entry returned");
+            society.shift(account, who.empty() ? treasury : who, "", 0, std::min(n, society.cash(account)), "festival entry returned");
         if (c.result.empty())
             c.result = "No winner in " + contestWords(c.kind) + " this year.";
         const auto line = c.result;
@@ -194,7 +193,7 @@ void Game::beginContest(Fair& f, Contest& c)
         {
             const auto* e = world_.entity(id);
             const auto* purse = society.account(id);
-            if (!e || e->dead || e->age < 16 || !purse || purse->cash < atTheDay(ResidentPurseLeast, f.community) || life.task == "sleep" ||
+            if (!e || e->dead || e->age < 16 || !purse || purse->cash < ResidentPurseLeast || life.task == "sleep" ||
                 world_.lawTown(life.homeCell) != f.community || world_.seatedResident(id) || world_.guardOnDuty(id))
                 continue;
             double order = unit(id + "|" + std::to_string(f.day) + "|" + c.kind);
@@ -204,7 +203,7 @@ void Game::beginContest(Fair& f, Contest& c)
         }
         std::sort(folk.begin(), folk.end());
         const int wanted = 2 + int(unit(f.community + std::to_string(f.day) + c.kind) * 2);
-        const auto entry = atTheDay(Entry, f.community);
+        const auto entry = Entry;
         for (int i = 0; i < wanted && i < int(folk.size()); ++i)
             if (society.shift(folk[std::size_t(i)].second, account, "", 0, entry, "festival entry"))
             {
@@ -214,8 +213,8 @@ void Game::beginContest(Fair& f, Contest& c)
     }
     // The town adds to the pot.
     const auto treasury = society.treasuryOf(f.community);
-    const auto add = std::min({atTheDay(TownMost, f.community), atTheDay(TownPerEntrant, f.community) * std::int64_t(c.entrants.size()),
-                               society.spendable(treasury)});
+    const auto add = std::min({TownMost, TownPerEntrant * std::int64_t(c.entrants.size()),
+                               society.cash(treasury)});
     if (add > 0 && society.shift(treasury, account, "", 0, add, "the town's festival purse"))
         c.paid[""] += add;
     if (c.entrants.size() < 2)
@@ -604,7 +603,7 @@ void Game::tendFestivals(double dt)
                     {
                         if (f.fed.insert(e->id).second)
                         {
-                            const auto store = society.storeFor(world_.marketSpot(f.community)->cell);
+                            const auto store = society.treasuryOf(f.community);
                             if (!store.empty() && society.shift(store, e->id, "meal", 1, 0, "festival feast"))
                             {
                                 system(cl, "The feast for " + f.name + ": the town gives you a meal. Eat with the others.");
@@ -665,8 +664,8 @@ bool Game::festivalCommand(Connection* c, const json::Value& j, Result& result)
             return result = {false, "You have entered already.", {}}, true;
         auto& society = world_.society();
         society.openAccount(pot(*f, ct));
-        const auto entry = atTheDay(Entry, community);
-        if (society.spendable(me) < entry || !society.shift(me, pot(*f, ct), "", 0, entry, "festival entry"))
+        const auto entry = Entry;
+        if (society.cash(me) < entry || !society.shift(me, pot(*f, ct), "", 0, entry, "festival entry"))
             return result = {false, "Entry is " + priceWords(entry) + ".", {}}, true;
         ct.entrants.push_back(me);
         ct.paid[me] += entry;
@@ -784,7 +783,7 @@ json::Value Game::festivalBoard(const std::string& community)
             for (const auto& s : Programme)
                 lines.push(std::to_string(int(s.hour)) + ":00 " + s.what);
             o.add("programme", lines);
-            o.add("entry", double(atTheDay(Entry, community)));   // (A contest's entry, for the board.)
+            o.add("entry", double(Entry));   // (A contest's entry, for the board.)
             return o;
         }
     return {};
@@ -817,7 +816,7 @@ json::Value Game::festivalSelf(const std::string& viewer)
     o.add("name", f->name);
     o.add("inDays", 0);
     o.add("here", atSquare(*e, community));
-    o.add("entry", double(atTheDay(Entry, community)));       // (A contest's entry, for ENTER.)
+    o.add("entry", double(Entry));       // (A contest's entry, for ENTER.)
     auto programme = Value::array();
     for (const auto& s : Programme)
     {

@@ -72,9 +72,9 @@ int bedsIn(const std::string& kind);              // tent 1, lean-to 1, hall 4, 
 // The work a building gives, one role per post: workshop 2 (smith's hand), field 2 (farmhand), stable (groom), well
 // (water-carrier), cookfire (cook), storage pile (storekeeper).
 std::vector<std::string> postsIn(const std::string& kind);
-constexpr std::int64_t HoldWage = 5;              // Pennies a game day at least for work at a Hold (else the going rate).
+constexpr std::int64_t HoldWage = 5;              // Pennies a game day for work at a Hold.
 constexpr double PaidMost = 1e7;                  // The most a saved building's materials may have cost (a bound).
-// A keep's work (doc 63; doc 64, Phase 11): at most so many workshops and fields at a site.
+// At most so many workshops and fields at a site (what they make is for the economy's rules to come: doc 66, Phase 5).
 constexpr int WorkshopsMost = 3, FieldsMost = 1;
 constexpr double OfferDays = 7;                   // How long those willing to come wait for an answer.
 

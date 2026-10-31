@@ -148,21 +148,16 @@ void Game::watchEvent(const WorldEvent& e)
 
 bool Game::giftWorthThanks(const WorldEvent& e) const
 {
-    // Coins and the goods' catalogue price, at the receiver's town's day, against 5p at a 12p day (doc 64, Phase 13).
-    const auto& society = world_.society();
-    const auto* resident = world_.entity(e.target);
-    const auto town = resident ? world_.lawTown(resident->cellId) : std::string();
+    // Coins and the goods' catalogue price, against 5p.
     const auto* good = e.item.empty() ? nullptr : items::good(e.item.substr(0, e.item.find('~')));
-    return double(e.coins) + (good ? society.atGoingRate(good->price, town) : 0.) * e.quantity >= double(society.pennies(5 / 12., town));
+    return double(e.coins) + (good ? double(good->price) : 0.) * e.quantity >= 5.;
 }
 
 std::int64_t Game::thanksGift(const std::string& resident) const
 {
-    // A tenth of its purse, 6p at most at a 12p day, at its town's day (doc 64, Phase 13).
-    const auto& society = world_.society();
-    const auto* purse = society.account(resident);
-    const auto* r = world_.entity(resident);
-    return purse ? std::min<std::int64_t>(society.pennies(6 / 12., r ? world_.lawTown(r->cellId) : std::string()), purse->cash / 10) : 0;
+    // A tenth of its purse, 6p at most.
+    const auto* purse = world_.society().account(resident);
+    return purse ? std::min<std::int64_t>(6, purse->cash / 10) : 0;
 }
 
 bool Game::residentLetterRoom(const std::string& resident, const std::string& player) const

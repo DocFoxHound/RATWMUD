@@ -4,8 +4,7 @@
 // and a resident takes a seat: awake, not at work, 14 or more (16 for stakes). The game begins with two or more (Wolves
 // and Deer, two). Liar's Bones may be played for 0 to 5p each, held in `table:<id>` and paid to the winner less a
 // penny to the house (the inn's till; a venue's landlord; else the town). Residents stake only from purses of 30p or
-// more, 3 staked games a game day, never over a twentieth of the purse. (Those pennies at a 12p day, at the table's
-// town's day for amounts: Game::atTheDay, doc 64, Phase 13.) A seated resident keeps its seat (World's
+// more, 3 staked games a game day, never over a twentieth of the purse. A seated resident keeps its seat (World's
 // errand) and moves after two seconds. Each move shows to the table and to watchers within 4 tiles; talk is talk, and
 // counts toward scenes like any other. A wolf gone from the table a minute, or not moving for ten, forfeits its stake.
 // Playing sharpens a wolf's skill at the game (Entity::gameSkills, 0..100): faster against a better player.
@@ -103,7 +102,7 @@ void Game::endTable(Table& t, int winner, const std::string& why)
     if (winner >= 0 && winner < int(t.seats.size()))
     {
         const auto& who = t.seats[std::size_t(winner)];
-        const auto cut = coins > 0 ? std::min(atTheDay(HousePenny, world_.lawTown(t.cell)), coins) : 0;
+        const auto cut = coins > 0 ? std::min(HousePenny, coins) : 0;
         if (cut > 0)
             society.shift(account(t), t.house, "", 0, cut, "the house's penny");
         if (coins - cut > 0)
@@ -287,8 +286,8 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
         if (game != "knucklebones" && game != "wolves" && game != "liars")
             return result = {false, "Knucklebones, Wolves and Deer, or Liar's Bones.", {}}, true;
         const auto stake =
-            game == "liars" ? std::int64_t(std::clamp(j.number("stake", 0), 0., double(atTheDay(StakeMost, world_.lawTown(e->cellId))))) : 0;
-        if (stake > 0 && society.spendable(me) < stake)
+            game == "liars" ? std::int64_t(std::clamp(j.number("stake", 0), 0., double(StakeMost))) : 0;
+        if (stake > 0 && society.cash(me) < stake)
             return result = {false, "You haven't " + std::to_string(stake) + "p to stake.", {}}, true;
         Table t;
         t.id = "t" + std::to_string(std::hash<std::string>{}(key + std::to_string(world_.time())) % 1000000000);
@@ -322,7 +321,7 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
             return result = {false, "You are at a game already.", {}}, true;
         if (t.begun || int(t.seats.size()) >= seatsMost(t.game))
             return result = {false, "There's no seat at this game.", {}}, true;
-        if (t.stake > 0 && society.spendable(me) < t.stake)
+        if (t.stake > 0 && society.cash(me) < t.stake)
             return result = {false, "You haven't " + std::to_string(t.stake) + "p to stake.", {}}, true;
         t.seats.push_back(me);
         tableSay(t, me, " sat down to " + gameName(t.game) + ".");
@@ -353,7 +352,7 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
             if (t.stake > 0)
             {
                 const auto* purse = society.account(r->id);
-                if (!purse || purse->cash < atTheDay(ResidentPurseLeast, world_.lawTown(t.cell)) || t.stake * 20 > purse->cash ||
+                if (!purse || purse->cash < ResidentPurseLeast || t.stake * 20 > purse->cash ||
                     stakedToday_[r->id + "|" + today] >= StakedGamesADay)
                     continue;
             }
@@ -393,7 +392,7 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
             std::vector<std::string> paid;
             for (const auto& s : t.seats)
             {
-                if (society.spendable(s) < t.stake || !society.shift(s, account(t), "", 0, t.stake, "a stake"))
+                if (society.cash(s) < t.stake || !society.shift(s, account(t), "", 0, t.stake, "a stake"))
                 {
                     for (const auto& p : paid)
                         society.shift(account(t), p, "", 0, t.stake, "stakes returned");
@@ -557,7 +556,7 @@ json::Value Game::tableSelf(const std::string& viewer)
             return {};
         auto o = Value::object();
         o.add("offer", true);
-        o.add("stakeMost", double(atTheDay(StakeMost, world_.lawTown(e->cellId))));   // (Liar's Bones' stakes, to choose.)
+        o.add("stakeMost", double(StakeMost));   // (Liar's Bones' stakes, to choose.)
         return o;
     }
     const auto& t = *shown;

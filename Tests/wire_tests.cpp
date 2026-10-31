@@ -523,105 +523,13 @@ void societyTests()
     stringCash.find("accounts")->find(firstAccount)->set("cash", "10");
     refused(stringCash, "cash as a string");
     refused(Value("society"), "a society that isn't an object");
-    // The pace's week of readings (doc 64, Phase 13): saved, and dropped (the society still read) when there are more
-    // than a week's, or one is out of bounds.
-    // Each reading with its day, in order; a save from before they carried their days (bare readings) reads as none.
-    auto state = w.save().society;
-    using Readings = std::vector<std::pair<std::int64_t, double>>;
-    state.memory.paceCover = {{3, 1.5}, {4, 1.25}, {6, 2}, {7, 0}, {10, 4}};
-    const auto read = wire::readSociety(wire::society(state));
-    expect(read.memory.paceCover == state.memory.paceCover, "the pace's readings round trip, with their days");
-    Readings week;
-    for (std::int64_t d = 0; d <= Society::PaceWeek; ++d)
-        week.push_back({d, 1.});
-    for (const auto& wrong : {week, Readings{{1, 1}, {2, -1}}, Readings{{1, 1}, {2, Society::PaceCoverCap + 1}}, Readings{{2, 1}, {2, 1}},
-                              Readings{{3, 1}, {2, 1}}, Readings{{-1, 1}}})
-    {
-        state.memory.paceCover = wrong;
-        const auto back = wire::readSociety(wire::society(state));
-        expect(back.minted >= 0 && back.memory.paceCover.empty(), "readings that can't be are dropped, the rest kept");
-    }
-    auto older = wire::society(state);
-    auto bare = Value::array();
-    for (const double x : {1.5, 1.25, 2.})
-        bare.push(x);
-    auto* memory = older.find("memory");
-    expect(memory != nullptr, "the society's memory is saved");
-    memory->set("paceCover", bare);
-    memory->set("paceHands", bare);
-    const auto old = wire::readSociety(older);
-    expect(old.minted >= 0 && old.memory.paceCover.empty(), "an older save's bare readings, and its land's hands, read as none");
-    // Households' pieces founded, and makers' mending and builders' works, hours a day (doc 64, Phase 13): saved, a rate
-    // that can't be dropped; an older save has none, and its pieces were never founded.
-    state.memory.piecesFounded = 1;
-    state.memory.mendRate = {{"till:smith", .5}};
-    state.memory.worksRate = {{"till:carpenter", 2.25}, {"till:mason", -1}, {"till:sawmill", 1e7}};
-    auto saved = wire::society(state);
-    const auto rates = wire::readSociety(saved).memory;
-    expect(rates.piecesFounded == 1 && rates.mendRate.size() == 1 && rates.mendRate.at("till:smith") == .5 && rates.worksRate.size() == 1 &&
-               rates.worksRate.at("till:carpenter") == 2.25,
-           "the founding and the mending and works round trip, the rates that can't be dropped");
-    for (const char* key : {"piecesFounded", "mendRate", "worksRate"})
-        saved.find("memory")->erase(key);
-    const auto olderRates = wire::readSociety(saved);
-    expect(olderRates.minted >= 0 && olderRates.memory.piecesFounded == 0 && olderRates.memory.mendRate.empty() && olderRates.memory.worksRate.empty(),
-           "an older save reads with none");
-    // A household's wait for a piece (doc 64, Phase 13 review): the day it began, saved; a day that can't be is dropped,
-    // and an older save has none.
-    state.memory.pieceWait = {{"home:a", 40}, {"home:b", -3}, {"home:c", 1e12}};
-    auto waits = wire::society(state);
-    const auto waited = wire::readSociety(waits).memory.pieceWait;
-    expect(waited.size() == 1 && waited.at("home:a") == 40, "a household's wait round trips, the days that can't be dropped");
-    waits.find("memory")->erase("pieceWait");
-    expect(wire::readSociety(waits).memory.pieceWait.empty(), "and an older save has none");
-    // A business short of its wages (doc 64, Phase 13, round 9): its looks short in a row, the day its owner stopped
-    // topping it up and the last day it couldn't pay its keeper, saved; one not a till's, or a day that can't be, is
-    // dropped, and an older save has none.
-    state.memory.shortTills = {{"till:a", {5, 40, 44}}, {"till:b", {2, -1, 30}}, {"home:c", {4, 1, 1}}, {"till:d", {4, -7, 1}}};
-    auto shorts = wire::society(state);
-    const auto reread = wire::readSociety(shorts).memory.shortTills;
-    expect(reread.size() == 2 && reread.at("till:a").weeks == 5 && reread.at("till:a").stopped == 40 && reread.at("till:a").unpaid == 44 &&
-               reread.at("till:b").weeks == 2 && reread.at("till:b").stopped == -1 && reread.at("till:b").unpaid == 30,
-           "a business short of its wages round trips, those that can't be dropped");
-    expect(reread.at("till:a").idle == -1 && reread.at("till:b").idle == -1, "neither gone idle");
-    // (One gone idle, round 11, lane 1: the day it went idle with the rest.)
-    state.memory.shortTills["till:e"] = {9, 20, 48, 48};
-    expect(wire::readSociety(wire::society(state)).memory.shortTills.at("till:e").idle == 48, "a business gone idle round trips");
-    state.memory.shortTills.erase("till:e");
-    shorts.find("memory")->erase("shortTills");
-    expect(wire::readSociety(shorts).memory.shortTills.empty(), "and an older save has none");
-    // A business's trade lately (round 12, lane A, WageBySales): its mean a day and its days counted; none is written
-    // when there is none (an older save's), and one that can't be is dropped.
-    expect(wire::society(state).find("memory")->find("tradeNet") == nullptr, "no trade counted, none written");
-    state.memory.tradeNet = {{"till:a", {123.5, 28}}, {"till:b", {-40, 3}}, {"till:c", {1e12, 5}}};
-    const auto trade = wire::readSociety(wire::society(state)).memory.tradeNet;
-    expect(trade.size() == 2 && trade.at("till:a") == std::pair{123.5, 28} && trade.at("till:b") == std::pair{-40., 3},
-           "a business's trade lately round trips, one that can't be dropped");
-    state.memory.tradeNet.clear();
-    // The day the realm was founded at (doc 64, Phase 13 review): saved; one that can't be is none (the catalogue's), as
-    // is an older save's.
-    for (const auto& [day, back] : {std::pair{60., 60.}, std::pair{-5., 0.}, std::pair{1e7, 0.}})
-    {
-        state.memory.foundedDay = day;
-        expect(wire::readSociety(wire::society(state)).memory.foundedDay == back, "the founding's day round trips, or is dropped: " + std::to_string(day));
-    }
-    const double catalogue = items::ladder().catalogueDay, founding = items::ladder().foundingDay;
-    state.memory.purses = 1;
-    state.memory.going[""] = catalogue * 16 / 15;   // (The seconds' pace's measure, a skill's premium in.)
-    auto unfounded = wire::society(state);
-    unfounded.find("memory")->erase("foundedDay");
-    expect(wire::readSociety(unfounded).memory.foundedDay == 0, "and an older save was founded at the catalogue's");
-    // One founded at 60p by the price level's first builds (904d48c, 3cec19a), which didn't save the day: its realm's
-    // rate well above the catalogue's (the price review). Its purses unfounded, it was founded at none.
-    state.memory.going[""] = 61.5;
-    auto sixty = wire::society(state);
-    sixty.find("memory")->erase("foundedDay");
-    expect(wire::readSociety(sixty).memory.foundedDay == (founding > 1.5 * catalogue ? founding : 61.5),
-           "an older save founded at 60p is known by its rate: " + std::to_string(wire::readSociety(sixty).memory.foundedDay));
-    state.memory.purses = 0;
-    auto never = wire::society(state);
-    never.find("memory")->erase("foundedDay");
-    expect(wire::readSociety(never).memory.foundedDay == 0, "and one never founded, at none");
+    // A save from before doc 66's Phase 5 carries the economy's state (its books, houses, memory, monitor and crafting
+    // grant): read past, the society read all the same.
+    auto older = good;
+    for (const char* gone : {"books", "houses", "memory", "orchestrator"})
+        older.add(gone, Value::object());
+    older.add("craftingStocked", 3);
+    expect(wire::readSociety(older).minted >= 0, "an older save's economy is read past");
 }
 
 void commandTests()

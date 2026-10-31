@@ -214,50 +214,17 @@ export interface Health {
     players: {name: string; ms: number; at: string}[];
 }
 
-/** Where the money is (Docs/Design/42-money-in-circulation.md, Phase 8), from the last save. Pennies; null where an
- *  account doesn't exist yet. */
-export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number>;
-    /** Its buildings' repair, 0 to 100, as the Town Works keeps them; null before its first day. */
-    condition: number | null }
+/** Where the money is, from the last save (nothing moves it of itself since the economy's rules were erased:
+ *  Docs/Design/66-worlds-atlas-and-dm.md, Phase 5). Pennies; null where an account doesn't exist yet. */
+export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number> }
 export interface MoneyGroup { count: number; total: number; median: number }
 export interface Money {
-    target: Target; day: number | null; total: number; capital: number | null; month: number | null;
+    target: Target; day: number | null; total: number; capital: number | null;
     towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
     residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;
         shortOfFood: number; byRole: Record<string, MoneyGroup>};
     road: {caravans: number; contracts: number; bandits: number}; players: number;
-    events: {kind: string; actor: string; target: string; day: number; detail: string; at: string}[];
-    /** The economy's monitor's latest measures (Docs/Design/46-economy-orchestrator.md, Part 9; doc 64, Phase 12); null
-     *  in saves before it ran. */
-    orchestrator?: Orchestrator | null;
-    /** The Dungeon Master's levers as they stand (doc 64, Phase 12); absent in older hosts' replies. */
-    levers?: EconomyLevers;
 }
-
-/** Why a town is in distress: "" when it is well. */
-export type DistressKind = '' | 'empty shelves' | 'empty purses' | 'no work' | 'failing trade' | 'draining';
-export interface OrchestratorTown {
-    id: string; people: number; distress: number; week?: number; kind: DistressKind; foodCost: number; hungry: number; starving: number; short: number;
-    poor: number; idle: number; shopFoodDays: number; takingsRatio: number; netInflow: number;
-    /** Players' help since the last measure (doc 57): coins they spent there, coins its shops paid them, goods they brought (at its price). */
-    playerIn?: number; playerOut?: number; playerGoods?: number;
-}
-export interface OrchestratorBrief {
-    day: number; decided?: boolean; landDistress: number; moneySupply: number; median: number; gini: number;
-    /** Residents' share of the land's money, 0..1. */
-    residentShare?: number;
-    /** The poorer half of households' share of the households' money, 0..1. */
-    bottomShare?: number;
-    towns: OrchestratorTown[];
-}
-/** The economy's monitor (doc 46; doc 64, Phase 12): it measures every day (`brief`, the latest day's) and weighs the week the
- *  evening of the reckoning (`decision`). It sets nothing. */
-export interface Orchestrator {
-    day: number; memory?: unknown;
-    brief?: OrchestratorBrief | null; decision?: OrchestratorBrief | null;
-}
-/** The Dungeon Master's levers (doc 64, decision 5): the tax on a week's income (0..0.5) and whether the mint is on. */
-export interface EconomyLevers { taxRate: number; mint: boolean }
 
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/dm/login', {username, password}); setToken(r.token); return r as Me; },
@@ -315,11 +282,6 @@ export const dmApi = {
     calendar: (target: Target) => call<WorldCalendar>(`${at(target)}calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
         call<{id: number}>(`${at(target)}festivals/call`, {target, community, name, inDays}),
-    /** The economy's levers (doc 64, decision 5), each queued for the game and logged in its ledger: the tax rate from the
-     *  next reckoning, the mint on or off, and a one-off relief grant from the capital's treasury to a town's. */
-    setTaxRate: (target: Target, rate: number) => call<{id: number}>(`${at(target)}economy/tax`, {target, rate}),
-    setMint: (target: Target, on: boolean) => call<{id: number}>(`${at(target)}economy/mint`, {target, on}),
-    reliefGrant: (target: Target, town: string, coins: number) => call<{id: number}>(`${at(target)}economy/relief`, {target, town, coins}),
     artwork: (target: Target) => call<Portraits>(`${at(target)}artwork?target=${target}`),
     reports: (target: Target) => call<Reports>(`${at(target)}reports?target=${target}`),
     storytellers: (target: Target) => call<Storytellers>(`${at(target)}storytellers?target=${target}`),

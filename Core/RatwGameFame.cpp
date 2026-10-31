@@ -688,8 +688,7 @@ json::Value Game::unfinishedView(const std::string& id)
     }
     for (const auto& k : world_.roads().contracts)
         if (k.taker == id && k.status == "taken")
-            threads.push_back({"Work for " + (world_.entity(k.poster) ? label(k.poster) : townWords(k.town)) + ": " + k.detail +
-                                   (k.quantity > 0 ? " (" + std::to_string(k.delivered) + " of " + std::to_string(k.quantity) + " handed in)" : ""),
+            threads.push_back({"Work for " + (world_.entity(k.poster) ? label(k.poster) : townWords(k.town)) + ": " + k.detail,
                                k.due > 0 ? k.due - today : 1e8});
     for (const auto& [bookId, b] : books_)
         if (b.state == "finishing" && std::find(b.wolves.begin(), b.wolves.end(), id) != b.wolves.end() && !b.agreed.count(id) && !b.objected.count(id))

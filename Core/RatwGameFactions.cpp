@@ -338,7 +338,7 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
         bool paid = false;
         if (verb == "payreport")
         {
-            // (5p at a 12p day, and a tithe 20p, at the town's day for amounts: doc 64, Phase 13.)
+            // (5p, and a tithe 20p.)
             const auto fee = reportFee(id);
             paid = world_.society().shift(id, target, "", 0, fee, "faction report fee");
             if (!paid)

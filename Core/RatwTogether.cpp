@@ -461,24 +461,12 @@ void World::tendJoints(double dt)
 //
 // A resident farmer at work at its post in the harvest (autumn) or at threshing (winter) may be helped by a player
 // near: a joint with the farmer as a resident hand, so one player works at ×1.4 and two at ×2.0 each. Its beats come by
-// the clock, a spell (30 game minutes) each: every player there, and doing something in it,
-// brings in its rate times a share of a spell's yield for the farm (up to ProducerKept) and is paid the town's hand wage
-// a spell (dayWage / PaidSpells) times its rate from the farm's till, a piece rate, fractions carried; a spell it came
-// part of the way through, in part. Money only moves.
-// The farmer's own spells go on as before.
+// the clock, a spell (30 game minutes) each: every player there, and doing something in it, practises beside the
+// farmer, for the part of the spell it was there. What its work brings in, and what it is paid, are the economy's rules
+// to come (erased in doc 66's Phase 5, with the yields and the hand's wage).
 
 namespace
 {
-double farmOdds(const std::string& key, std::int64_t n)
-{
-    std::uint64_t h = 1469598103934665603ULL ^ std::uint64_t(n) * 0x9E3779B97F4A7C15ULL;
-    for (unsigned char c : key)
-        h = (h ^ c) * 1099511628211ULL;
-    h ^= h >> 31;
-    h *= 0xBF58476D1CE4E5B9ULL;
-    return double((h ^ (h >> 29)) % 100000) / 100000.0;
-}
-
 std::string lower(std::string name)                // ("Wheat" in a sentence: "wheat".)
 {
     if (!name.empty())
@@ -486,11 +474,6 @@ std::string lower(std::string name)                // ("Wheat" in a sentence: "w
     return name;
 }
 
-int farmWhole(double expected, double roll)
-{
-    const double base = std::floor(std::max(0.0, expected));
-    return int(base) + (roll < expected - base ? 1 : 0);
-}
 } // namespace
 
 const together::Activity* World::residentWorkAt(const std::string& farmer) const
@@ -535,28 +518,10 @@ Result World::helpAtWork(const std::string& player, const std::string& farmer)
         return {false, f->name + " has no harvest or threshing to help with just now.", {}};
     if (const auto* j = jointOf(player); j && j->target == farmer)
         return {false, "You are already at it.", {}};
-    // No work where the farm can't pay a hand's spell, or its barn is full.
-    const auto till = society_.tillOf(farmer);
-    const auto* account = society_.account(till);
     const auto* spec = society_.spec(farmer);
     const auto* producer = spec ? items::producerFor(spec->workLabel) : nullptr;
-    if (!account || !spec || (act->at == "farm" && !producer))
+    if (!spec || (act->at == "farm" && !producer))
         return {false, f->name + " has no work for hands.", {}};
-    const auto town = [&] {
-        auto t = communityOf(spec->work.cell);
-        return t.empty() ? communityOf(spec->home.cell) : t;
-    }();
-    if (society_.spendable(till) < std::int64_t(std::ceil(society_.dayWage(town, "hand") / Society::PaidSpells * 2)))
-        return {false, f->name + " can't pay for more hands today.", {}};
-    bool room = act->at != "farm";
-    if (producer && !room)
-    {
-        const bool inSeason = producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), act->season) != producer->seasons.end();
-        for (const auto& [item, count] : inSeason ? producer->out : producer->offSeason)
-            room = room || Society::stock(*account, item) < society_.shelfTarget(till, item, Society::ProducerKept);
-    }
-    if (!room)
-        return {false, "The barn is full; " + f->name + " has no more work for hands today.", {}};
     if (jointOf(player))
         leaveWork(player);
     std::string jointId;
@@ -588,8 +553,7 @@ Result World::helpAtWork(const std::string& player, const std::string& farmer)
     if (act->at == "workshop")                      // (The paw helps from the start: doc 53, 3.)
         society_.lendPaw(farmer, together::rateOf(joints_[jointId], time_),
                          calendarDays_ + act->beat * 1.5 / calendar::SecondsPerDay);
-    return {true, "You set to work beside " + f->name + ": you " + yours + ". " + (act->at == "farm" ? act->name : std::string("The work")) +
-                      " pays by the spell, from the " + (act->at == "farm" ? "farm" : "shop") + "'s till.", {}};
+    return {true, "You set to work beside " + f->name + ": you " + yours + ".", {}};
 }
 
 void World::noteActive(const std::string& player)
@@ -608,70 +572,20 @@ void World::workBeat(together::JointWork& joint)
     const auto* f = entity(joint.target);
     const auto* spec = society_.spec(joint.target);
     const auto* producer = spec ? items::producerFor(spec->workLabel) : nullptr;
-    const auto till = society_.tillOf(joint.target);
     const bool farm = act && act->at == "farm";
-    if (!act || !f || !spec || (farm && !producer) || !society_.account(till))
+    if (!act || !f || !spec || (farm && !producer))
         return;
     const double beatStart = joint.nextBeat - act->beat;
     const double rate = together::rateOf(joint, time_);
-    const auto town = [&] {
-        auto t = communityOf(spec->work.cell);
-        return t.empty() ? communityOf(spec->home.cell) : t;
-    }();
-    const double wage = society_.dayWage(town, "hand") / Society::PaidSpells * rate;
-    // A farm's hands bring in a share of a spell's yield; a workshop's make its maker's batches go faster (below).
-    static const std::vector<std::pair<std::string, int>> none;
-    const bool inSeason = producer && (producer->seasons.empty() || std::find(producer->seasons.begin(), producer->seasons.end(), act->season) != producer->seasons.end());
-    const auto& yield = !farm ? none : inSeason ? producer->out : producer->offSeason;
     std::vector<std::string> worked;
-    std::string stop;
     for (auto& m : joint.members)
     {
-        // A hand doing something in the beat, paid and bringing in for the part of it it was there.
+        // A hand doing something in the beat, for the part of it it was there.
         if (m.resident || m.lastActed < beatStart)
             continue;
         const double part = std::clamp((joint.nextBeat - std::max(m.joined, beatStart)) / act->beat, 0., 1.);
         if (part <= 0)
             continue;
-        const auto* account = society_.account(till);
-        bool room = !farm;
-        for (const auto& [item, count] : yield)
-            room = room || Society::stock(*account, item) < society_.shelfTarget(till, item, Society::ProducerKept);
-        if (!room)
-        {
-            stop = "The barn is full; " + f->name + " has no more work for hands today.";
-            break;
-        }
-        m.carry += wage * part;
-        const auto pay = std::int64_t(std::floor(m.carry));
-        if (pay > 0 && society_.spendable(till) < pay)
-        {
-            m.carry -= wage * part;
-            stop = f->name + " can't pay for more hands today.";
-            break;
-        }
-        // What the hand's spell brings in, at the joint's rate: a share of a spell's yield.
-        std::string brought;
-        int goods = 0;
-        for (const auto& [item, count] : yield)
-        {
-            const int held = Society::stock(*society_.account(till), item);
-            // Weathereye (a Gifted Seer, doc 43) at the harvest, as at foraging: a quarter more (doc 53, 4).
-            const auto* me = entity(m.id);
-            const double seer = act->id == "harvest" && me && me->gift == "seer" && !me->quickened ? 1.25 : 1.;
-            const int n = std::min(society_.shelfTarget(till, item, Society::ProducerKept) - held,
-                                   farmWhole(count * act->share * rate * part * seer, farmOdds(m.id + item, std::int64_t(time_ * 1000))));
-            if (n > 0 && society_.create(till, item, n, "brought in by a hand"))
-            {
-                goods += n;
-                brought += (brought.empty() ? "" : ", ") + std::to_string(n) + " " + lower(Society::itemName(item));
-            }
-        }
-        if (pay > 0 && society_.shift(till, m.id, "", 0, pay, farm ? "farm work" : "a hand at the bench"))
-        {
-            m.carry -= double(pay);
-            m.earned += int(pay);
-        }
         ++m.beats;
         worked.push_back(m.id);
         // A spell's practice beside the resident, the master (doc 49's apprentice source by the family of work).
@@ -679,14 +593,12 @@ void World::workBeat(together::JointWork& joint)
         context.teacher = joint.target;
         context.amount = 60 * part;
         practise(m.id, farm ? "apprentice.labour" : "apprentice.craft", context);
-        notice(m.id, (farm ? "A spell's " + lower(act->name.rfind("The ", 0) == 0 ? act->name.substr(4) : act->name) + " beside " + f->name + ": " +
-                                 (brought.empty() ? std::string("little to show for it") : brought + " brought in")
-                           : "A spell at the bench beside " + f->name + ": the work goes faster for your paw") +
-                         "; you are paid " + std::to_string(pay) + "p (" + std::to_string(m.earned) + "p so far).");
-        recordEvent({farm ? "farm work" : "bench work", m.id, joint.target, joint.cellId, 0, 0, joint.kind, goods, int(pay), joint.id});
+        notice(m.id, farm ? "A spell's " + lower(act->name.rfind("The ", 0) == 0 ? act->name.substr(4) : act->name) + " beside " + f->name + "."
+                          : "A spell at the bench beside " + f->name + ": the work goes faster for your paw.");
+        recordEvent({farm ? "farm work" : "bench work", m.id, joint.target, joint.cellId, 0, 0, joint.kind, 0, 0, joint.id});
     }
     // A workshop: the maker's batches begun in the next spell and a half go faster by the joint's rate (doc 53, 3).
-    if (!farm && !worked.empty() && stop.empty())
+    if (!farm && !worked.empty())
         society_.lendPaw(joint.target, rate, calendarDays_ + act->beat * 1.5 / calendar::SecondsPerDay);
     // Beats together: each hand who worked with each other and with the farmer.
     for (std::size_t a = 0; a < worked.size(); ++a)
@@ -696,14 +608,8 @@ void World::workBeat(together::JointWork& joint)
         for (std::size_t b = a + 1; b < worked.size(); ++b)
             ++joint.beatsTogether[x < worked[b] ? x + "|" + worked[b] : worked[b] + "|" + x];
     }
-    if (!stop.empty())
-    {
-        for (const auto& m : joint.members)
-            if (!m.resident)
-                notice(m.id, stop);
-        joint.nextBeat = -1;                         // (Ended by tendJoints.)
-    }
 }
+
 // ------------------------------------------------------------------ Gifted and Quickened at work (doc 53, 4; Phase 6)
 
 bool World::jointTakesGift(const std::string& id, const std::string& ability) const

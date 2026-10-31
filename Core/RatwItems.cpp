@@ -30,17 +30,7 @@ struct Catalog
     std::vector<Item> goodVariants, wearVariants;
     std::unordered_map<std::string, const Item*> goodIndex, wearIndex;
     std::vector<Producer> producers;
-    std::vector<HouseholdNeed> needs;
-    std::vector<Institution> institutions;
-    std::vector<ToolNeed> tools;
-    std::map<std::string, std::vector<std::pair<std::string, double>>> upkeep;
-    double institutionDays = 3, premium = 1.3;
-    int reserve = 6;
     std::map<std::string, std::vector<std::string>> supplies, buys;
-    std::vector<HouseTrade> houses;                 // Data/Economy/houses.json (doc 61).
-    std::string houseRules;
-    std::vector<TownTrade> towns;                   // Data/Economy/specialties.json (doc 61).
-    double tradeYield = 1, tradeKeep = 1;
     Ladder ladder;
 };
 
@@ -100,10 +90,9 @@ Catalog build()
     const auto dir = itemsDir();
     if (!readJson(dir / "items.json", items, c.error) || !readJson(dir / "businesses.json", businesses, c.error))
         return c;
-    // The worth ladder (doc 64, Phase 4): its rungs, each a range of LD an item's `at` places it in on a log scale. A
-    // world without the file has no places: every item is worth its catalogue price.
+    // The worth ladder (Data/Economy/ladder.json): the catalogue's labourer's day, and its rungs, each a range of LD an
+    // item's `at` places it in on a log scale. A world without the file has no places.
     std::map<std::string, std::pair<double, double>> rungs;
-    std::string lowestRung;
     if (const auto file = dir.parent_path() / "Economy" / "ladder.json"; std::filesystem::exists(file))
     {
         json::Value ladder;
@@ -111,18 +100,9 @@ Catalog build()
         if (readJson(file, ladder, problem))
         {
             c.ladder.catalogueDay = std::max(1.0, ladder.number("catalogueDay", 12));
-            c.ladder.foundingDay = std::clamp(ladder.number("foundingDay", c.ladder.catalogueDay), 1.0, 100000.0);
-            c.ladder.costAtPace = ladder.boolean("costAtPace", false);
-            c.ladder.markup = std::clamp(ladder.number("markup", .15), 0.0, 1.0);
-            c.ladder.skillWage = std::max(1.0, ladder.number("skillWage", 150));
-            c.ladder.carryPerWeight = std::max(0.0, ladder.number("carryPerWeight", .004));
             for (const auto& r : ladder.array("rungs"))
                 if (const double from = r.number("from", 0), to = r.number("to", 0); from > 0 && to > from)
-                {
                     rungs[r.string("id")] = {from, to};
-                    if (lowestRung.empty() || from < rungs[lowestRung].first)
-                        lowestRung = r.string("id");
-                }
         }
     }
     for (const auto& i : items.array("items"))
@@ -144,7 +124,6 @@ Catalog build()
         {
             const double at = std::clamp(i.object("worth").number("at", .5), 0.0, 1.0);
             good.worth = r->second.first * std::pow(r->second.second / r->second.first, at);
-            good.staple = r->first == lowestRung;
         }
         if (const auto& w = i.object("weapon"); i.has("weapon"))
         {
@@ -266,52 +245,6 @@ Catalog build()
                 std::all_of(producer.seasons.begin(), producer.seasons.end(), [](int s) { return s >= 0 && s <= 3; }))
                 c.producers.push_back(std::move(producer));
         }
-        const auto& households = crafts.object("households");
-        c.reserve = std::max(0, int(households.number("reserve", 6)));
-        for (const auto& n : households.array("needs"))
-        {
-            HouseholdNeed need;
-            for (const auto& g : n.array("any"))
-                if (known(g.asString({})))
-                    need.any.push_back(g.asString({}));
-            need.everyDays = std::max(.1, n.number("everyDays", 1));
-            need.winterDays = std::max(0.0, n.number("winterDays", 0));
-            need.perPerson = n.boolean("perPerson");
-            if (!need.any.empty())
-                c.needs.push_back(std::move(need));
-        }
-        const auto& inst = crafts.object("institutions");
-        c.institutionDays = std::max(.5, inst.number("days", 3));
-        c.premium = std::max(1.0, inst.number("premium", 1.3));
-        for (const auto& n : inst.array("list"))
-        {
-            Institution in;
-            in.id = n.string("id");
-            in.name = n.string("name");
-            in.perGuard = n.string("per") == "guards";
-            in.tithes = n.string("funds") == "tithes";
-            if (const auto per = n.string("per"); per.rfind("producer:", 0) == 0)
-                in.perProducer = per.substr(9);
-            in.minResidents = std::max(0, int(n.number("minResidents", 0)));
-            for (const auto& [item, rate] : n.object("basket").fields())
-                if (known(item) && rate.asNumber(0) > 0)
-                    in.basket.push_back({item, rate.asNumber(0)});
-            if (!in.id.empty() && !in.basket.empty())
-                c.institutions.push_back(std::move(in));
-        }
-        for (const auto& t : crafts.array("tools"))
-        {
-            ToolNeed need{t.string("producer"), t.string("item"), std::max(1.0, t.number("everyDays", 20))};
-            if (!need.producer.empty() && known(need.item))
-                c.tools.push_back(std::move(need));
-        }
-        for (const auto& [business, basket] : crafts.object("upkeep").fields())
-            for (const auto& [item, rate] : basket.fields())
-                if (known(item) && rate.asNumber(0) > 0)
-                    c.upkeep[business].push_back({item, rate.asNumber(0)});
-        for (const auto& [item, rate] : crafts.object("farmUpkeep").fields())   // (Under "(farm)": upkeepFor.)
-            if (known(item) && rate.asNumber(0) > 0)
-                c.upkeep["(farm)"].push_back({item, rate.asNumber(0)});
         for (const auto& [business, goods] : crafts.object("buys").fields())
             for (const auto& g : goods.items())
                 if (known(g.asString({})))
@@ -320,52 +253,6 @@ Catalog build()
             for (const auto& g : goods.items())
                 if (known(g.asString({})))
                     c.supplies[business].push_back(g.asString({}));
-    }
-    // The great houses' trades (doc 61), beside the items in Data/Economy; a world without the file has none.
-    if (const auto file = dir.parent_path() / "Economy" / "houses.json"; std::filesystem::exists(file))
-    {
-        json::Value houses;
-        std::string problem;
-        if (readJson(file, houses, problem))
-            for (const auto& h : houses.array("houses"))
-            {
-                HouseTrade t{h.string("id"), h.string("name"), h.string("trade"), {}, {}};
-                for (const auto& w : h.array("names"))
-                    if (!w.asString({}).empty())
-                        t.names.push_back(w.asString({}));
-                for (const auto& b : h.array("businesses"))
-                    t.businesses.push_back(b.asString({}));
-                c.houseRules += t.id + ":";
-                for (const auto& w : t.names)
-                    c.houseRules += w + ",";
-                c.houseRules += ":";
-                for (const auto& b : t.businesses)
-                    c.houseRules += b + ",";
-                c.houseRules += ";";
-                if (!t.id.empty() && !t.names.empty())
-                    c.houses.push_back(std::move(t));
-            }
-    }
-    // The towns' trades (doc 61), likewise.
-    if (const auto file = dir.parent_path() / "Economy" / "specialties.json"; std::filesystem::exists(file))
-    {
-        json::Value towns;
-        std::string problem;
-        if (readJson(file, towns, problem))
-        {
-            c.tradeYield = std::clamp(towns.number("yield", 1), 1.0, 4.0);
-            c.tradeKeep = std::clamp(towns.number("keep", 1), 1.0, 4.0);
-            for (const auto& t : towns.array("towns"))
-            {
-                TownTrade trade{t.string("town"), t.string("trade"), {}, {}};
-                for (const auto& g : t.array("goods"))
-                    trade.goods.push_back(g.asString({}));
-                for (const auto& g : t.array("needs"))
-                    trade.needs.push_back(g.asString({}));
-                if (!trade.town.empty())
-                    c.towns.push_back(std::move(trade));
-            }
-        }
     }
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
@@ -422,69 +309,6 @@ const Catalog& catalog()
     return c;
 }
 } // namespace
-
-const std::vector<HouseTrade>& houseTrades()
-{
-    return catalog().houses;
-}
-
-bool holdsWord(const std::string& text, const std::string& word)
-{
-    if (word.empty())
-        return false;
-    const auto lower = [](std::string s) {
-        for (auto& ch : s)
-            ch = char(std::tolower(static_cast<unsigned char>(ch)));
-        return s;
-    };
-    const auto t = lower(text), w = lower(word);
-    for (auto at = t.find(w); at != std::string::npos; at = t.find(w, at + 1))
-    {
-        const bool before = at == 0 || !std::isalpha(static_cast<unsigned char>(t[at - 1]));
-        const bool after = at + w.size() >= t.size() || !std::isalpha(static_cast<unsigned char>(t[at + w.size()]));
-        if (before && after)
-            return true;
-    }
-    return false;
-}
-
-const HouseTrade* houseTradeOf(const std::string& houseName)
-{
-    for (const auto& h : houseTrades())
-        for (const auto& w : h.names)
-            if (holdsWord(houseName, w))
-                return &h;
-    return nullptr;
-}
-
-const std::string& houseRules()
-{
-    return catalog().houseRules;
-}
-
-const TownTrade* townTrade(const std::string& town)
-{
-    for (const auto& t : catalog().towns)
-        if (t.town == town)
-            return &t;
-    return nullptr;
-}
-
-bool townGoodOf(const std::string& town, const std::string& item)
-{
-    const auto* t = townTrade(town);
-    return t && std::find(t->goods.begin(), t->goods.end(), baseOf(item)) != t->goods.end();
-}
-
-double tradeYield()
-{
-    return catalog().tradeYield;
-}
-
-double tradeKeep()
-{
-    return catalog().tradeKeep;
-}
 
 bool load(std::string* error)
 {
@@ -685,103 +509,9 @@ std::vector<std::string> goodsSold(const Business& business, int maxPrice)
     return out;
 }
 
-bool traded(const std::string& item)
-{
-    for (const auto& craft : catalog().crafts)
-        for (const auto& i : craft.in)
-            if (i.first == item)
-                return true;
-    for (const auto& [business, goods] : catalog().supplies)
-        if (std::find(goods.begin(), goods.end(), item) != goods.end())
-            return true;
-    for (const auto& need : catalog().needs)
-        if (need.everyDays <= 7 && std::find(need.any.begin(), need.any.end(), item) != need.any.end())
-            return true;
-    for (const auto& in : catalog().institutions)
-        for (const auto& [want, rate] : in.basket)
-            if (want == item)
-                return true;
-    return item == "bread" || item == "porridge" || item == "meal";   // (What the hungry buy most.)
-}
-
-bool ingredient(const std::string& item)
-{
-    const auto base = baseOf(item);
-    for (const auto& craft : catalog().crafts)
-        for (const auto& i : craft.in)
-            if (i.first == base)
-                return true;
-    return false;
-}
-
-const std::vector<HouseholdNeed>& householdNeeds()
-{
-    return catalog().needs;
-}
-
-const std::vector<Institution>& institutions()
-{
-    return catalog().institutions;
-}
-
-const std::vector<ToolNeed>& toolNeeds()
-{
-    return catalog().tools;
-}
-
 const Ladder& ladder()
 {
     return catalog().ladder;
-}
-
-double worthOf(const std::string& id)
-{
-    const auto* g = good(id);
-    if (!g)
-        return 0;
-    const auto* plain = good(baseOf(id));
-    if (!plain || plain->worth <= 0)
-        return std::max(1, g->price) / ladder().catalogueDay;
-    // (A quality's share of the plain good's, as its price is: crude 0.6, fine 1.6, a masterwork 3.)
-    return plain->worth * (plain->price > 0 && g != plain ? double(g->price) / plain->price : 1.);
-}
-
-const std::vector<std::pair<std::string, double>>* upkeepFor(const std::string& business)
-{
-    const auto& u = catalog().upkeep;
-    const auto found = u.find(business);
-    return found == u.end() ? nullptr : &found->second;
-}
-
-double institutionDays()
-{
-    return catalog().institutionDays;
-}
-
-double contractPremium()
-{
-    return catalog().premium;
-}
-
-int householdReserve()
-{
-    return catalog().reserve;
-}
-
-bool seasonal(const std::string& item)
-{
-    if (!load())
-        return false;
-    bool any = false;
-    for (const auto& p : catalog().producers)
-        for (const auto& [made, n] : p.out)
-            if (made == item)
-            {
-                if (p.seasons.empty())
-                    return false;
-                any = true;
-            }
-    return any;
 }
 
 const Producer* producerFor(const std::string& workLabel)

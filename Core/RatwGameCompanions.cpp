@@ -86,11 +86,10 @@ std::string Game::whyNotJoin(const std::string& npcId) const
 
 std::int64_t Game::wageFor(const std::string& npcId) const
 {
-    // 6p a day, 10p for a trade that wanders for a living, at a 12p day: at its town's day (doc 64, Phase 13).
+    // 6p a day, 10p for a trade that wanders for a living.
     const auto* job = world_.society().jobOf(npcId);
     const auto* spec = world_.society().spec(npcId);
-    const auto* e = world_.entity(npcId);
-    return atTheDay(roving(job ? job->title : spec ? spec->workLabel : std::string()) ? 10 : 6, e ? townFor(e->cellId) : std::string());
+    return (roving(job ? job->title : spec ? spec->workLabel : std::string()) ? 10 : 6);
 }
 
 void Game::companionSays(const std::string& npcId, const std::string& words)

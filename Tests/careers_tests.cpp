@@ -258,8 +258,6 @@ void skillFamiliesAndPace()
     expect(std::string(skillFamily("working the saws")) == "labour" && std::string(skillFamily("blowing glass")) == "craft" &&
                std::string(skillFamily("on the wall walk")) == "watch" && std::string(skillFamily("dreaming")) == "general",
            "and so on, with anything unknown general");
-    expect(workPace(50) == 1 && workPace(90) < 1 && workPace(10) > 1 && workPace(100) >= .75 && workPace(-5) <= 1.25,
-           "The skilled work faster, within bounds");
     Society s(Roster::None);
     s.configure(town());
     expect(s.familySkill("hale", "trade") == s.skill("hale", "job:hale") && s.familySkill("hale", "craft") == 0,
@@ -399,116 +397,6 @@ ResidentSpec unpaid(ResidentSpec r, std::int64_t purse)
     return r;
 }
 
-void anEmptyFieldTakenInTown()
-{
-    Society::setWorkByHours(true);
-    const auto farmer = person("farmer", "Fern Furrow", "civilian", "farms the valley fields", 45, {"farmhouse", 3.5, 3.5}, {"fields", 4.5, 4.5});
-    const auto idle = person("idle", "Ash Idle", "civilian", "-", 30, {"row_a", 3.5, 3.5}, {"row_a", 3.5, 3.5});
-    const auto beggar = unpaid(person("beggar", "Bryn Alms", "civilian", "begging in the market", 40, {"row_b", 3.5, 3.5}, {"market", 4.5, 4.5}), 20);
-    const auto heir = unpaid(person("heir", "Hollis Fell", "civilian", "at home in the Heights", 35, {"heights", 3.5, 3.5}, {"heights", 4.5, 4.5}), 5000);
-    // (And the House's head, and its daughter out of work: of its head's household, the House's family, whatever her post.)
-    const auto head = unpaid(person("head", "Isolde Fell", "civilian", "ruling House Fell", 55, {"heights", 4.5, 3.5}, {"heights", 5.5, 4.5}), 5000);
-    const auto kin = unpaid(person("kin", "Wenna Fell", "civilian", "-", 34, {"heights", 5.5, 3.5}, {"heights", 5.5, 4.5}), 200);
-    // (Of the far town, out of work, the dead farmer's friend: by the score it would come first, but it isn't the post's.)
-    const auto far = person("far", "Fen Faraway", "civilian", "-", 30, {"far_row", 3.5, 3.5}, {"far_row", 3.5, 3.5});
-    // Who takes the farm by day 30, and on which day; and the notes.
-    const auto run = [&](bool rule, const std::vector<ResidentSpec>& residents, std::vector<CareerNote>& notes) {
-        Society::wageRulesOff(rule ? 0 : Society::LandPostsFilled);
-        auto s = landTown(residents);
-        Fates fates;
-        fates.regard["farmer"]["far"] = 50;
-        expect(s.position("job:farmer") && items::producerFor(s.position("job:farmer")->title) && s.position("job:farmer")->role != "merchant",
-               "the farm is a land post");
-        s.tendCareers(1.1, byRegion(fates, s));     // (The town's number, as it was made.)
-        fates.dead.insert("farmer");
-        s.died("farmer", 1.5);
-        std::pair<std::string, int> took;
-        for (int day = 2; day <= 30 && took.first.empty(); ++day)
-        {
-            for (auto& n : s.tendCareers(day + .1, byRegion(fates, s)))
-                notes.push_back(n);
-            if (const auto& held = s.state().careers.positions.at("job:farmer").holder; !held.empty())
-                took = {held, day};
-            expect(s.conserved(), "money is conserved");
-        }
-        Society::wageRulesOff(0);
-        return took;
-    };
-    const auto how = [](const std::vector<CareerNote>& notes, const std::string& who) {
-        for (const auto& n : notes)
-            if (n.kind == "succession" && n.actor == who)
-                return n.detail;
-        return std::string();
-    };
-    std::vector<CareerNote> notes;
-    // (Dead at 1.5: waited 7 at 8.5, so the day's pass at 9.1 is the first after.)
-    auto took = run(true, {farmer, idle, beggar, heir, far}, notes);
-    expect(took.first == "idle" && took.second == 9,
-           "a week on, the town's wolf out of work takes up the farm (" + took.first + " on day " + std::to_string(took.second) + ")");
-    expect(how(notes, "idle") == "farms the valley fields: someone in town takes up the land", "noted as someone in town taking up the land");
-    notes.clear();
-    took = run(true, {farmer, beggar, heir, far}, notes);
-    expect(took.first == "beggar" && took.second == 9, "with nobody out of work in town, the beggar (" + took.first + ")");
-    expect(noted(notes, "vacancy", "beggar"), "whose begging falls empty in turn");
-    notes.clear();
-    took = run(true, {farmer, heir, far}, notes);
-    expect(took.first.empty(), "never the House's family, its purse in the thousands, nor a wolf of the far town (" + took.first + ")");
-    notes.clear();
-    took = run(true, {farmer, head, heir, kin, far}, notes);
-    expect(took.first.empty(), "nor the House's daughter out of work, of its head's household (" + took.first + ")");
-    notes.clear();
-    took = run(false, {farmer, idle, beggar, heir, far}, notes);
-    expect(took.first.empty(), "without the rule the farm stands empty through day 30: its fields aren't the town's region (" + took.first + ")");
-    Society::setWorkByHours(false);
-}
-
-// LandPostsFilled's question: whether the empty farm's goods are wanted in its town. Its town's other farm turning away
-// none of its buyers, it waits (a dead market stays dead); a tenth of them (missedAt, the days' passes making the running
-// average missedRate), it's taken a week on; with no other farm of its goods in its town, it's taken.
-void aFieldWithNoBuyersWaits()
-{
-    Society::setWorkByHours(true);
-    const auto run = [&](bool missed, bool otherInTown) {
-        const auto a = person("a", "Alder Acre", "civilian", "farms the valley fields", 45, {"farmhouse_a", 3.5, 3.5}, {"fields_a", 4.5, 4.5});
-        const auto b = person("b", "Bram Barley", "civilian", "farms the valley fields", 45,
-                              {otherInTown ? "farmhouse_b" : "far_farmhouse_b", 3.5, 3.5}, {"fields_b", 4.5, 4.5});
-        auto miller = person("miller", "Moll Grist", "merchant", "runs The Ford Mill", 50, {"mill_house", 3.5, 3.5}, {"mill", 4.5, 4.5});
-        miller.purse = 5000;
-        const auto idle = person("idle", "Ash Idle", "civilian", "-", 30, {"row_a", 3.5, 3.5}, {"row_a", 3.5, 3.5});
-        auto s = landTown({a, b, miller, idle});
-        auto st = s.state();
-        st.accounts.at(s.tillOf("b")).stock["wheat"] = 900;
-        expect(s.restore(st), "the other farm's barn restores");
-        Fates fates;
-        s.tendCareers(1.1, byRegion(fates, s));
-        fates.dead.insert("a");
-        s.died("a", 1.5);
-        s.sellersListed("wheat");                    // (Who sells what afresh, after the death: the day's pass would.)
-        int took = -1;
-        for (int day = 2; day <= 30 && took < 0; ++day)
-        {
-            // The other farm sells the mill 20 wheat a day, and turns away 2 more (or none).
-            expect(s.sale(s.tillOf("b"), s.tillOf("miller"), "wheat", 20, 1, "test: the mill's order"), "the mill buys the other farm's wheat");
-            if (missed)
-                s.missedAt("town", "wheat", 2);
-            s.spoil(day);
-            s.tendCareers(day + .1, byRegion(fates, s));
-            if (s.state().careers.positions.at("job:a").holder == "idle")
-                took = day;
-            expect(s.conserved(), "money is conserved");
-        }
-        if (otherInTown)
-            expect(s.missedRate(s.tillOf("b"), "wheat") > (missed ? 1.8 : -1) && s.missedRate(s.tillOf("b"), "wheat") < (missed ? 2 : .01),
-                   "the other farm's buyers turned away, a day: " + std::to_string(s.missedRate(s.tillOf("b"), "wheat")));
-        return took;
-    };
-    expect(run(false, true) < 0, "its town's other farm turning none away, the empty one waits through day 30");
-    expect(run(true, true) == 9, "a tenth of its buyers turned away, it's taken a week on");
-    expect(run(false, false) == 9, "with no other farm of its goods in its town, it's taken a week on");
-    Society::wageRulesOff(0);
-    Society::setWorkByHours(false);
-}
-
 // In a world: a death empties a job and those close to the dead grieve.
 void griefInTheWorld()
 {
@@ -541,8 +429,6 @@ int main()
         griefInTheWorld();
         skillFamiliesAndPace();
         strangersAndChildren();
-        anEmptyFieldTakenInTown();
-        aFieldWithNoBuyersWaits();
     }
     catch (const std::exception& error)
     {

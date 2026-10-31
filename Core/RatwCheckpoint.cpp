@@ -95,8 +95,6 @@ Value roads(const RoadsState& r)
     auto roads = Value::object();
     roads.add("day", double(r.day));
     roads.add("nextId", double(r.nextId));
-    roads.add("stocked", r.stocked);
-    roads.add("purses", r.purses);
     auto caravans = Value::array(), camps = Value::array(), contracts = Value::array();
     for (const auto& t : r.caravans)
     {
@@ -112,17 +110,6 @@ Value roads(const RoadsState& r)
         for (const auto& [who, cells] : t.with)
             with.add(who, cells);
         j.add("with", with);
-        if (!t.trader.empty())
-            j.add("trader", t.trader);
-        if (!t.orders.empty())
-            j.add("orders", strings(t.orders));
-        if (!t.loaded.empty())
-        {
-            auto loaded = Value::object();
-            for (const auto& [order, n] : t.loaded)
-                loaded.add(order, double(n));
-            j.add("loaded", loaded);
-        }
         caravans.push(j);
     }
     for (const auto& b : r.camps)
@@ -140,38 +127,10 @@ Value roads(const RoadsState& r)
         j.add("target", k.target); j.add("taker", k.taker); j.add("status", k.status);
         j.add("reward", double(k.reward)); j.add("created", k.created);
         j.add("due", k.due); j.add("detail", k.detail);
-        if (!k.item.empty())
-        {
-            j.add("item", k.item); j.add("quantity", k.quantity); j.add("delivered", k.delivered);
-            if (!k.source.empty()) { j.add("source", k.source); j.add("carried", k.carried); }
-            if (!k.offeredTo.empty()) { j.add("offeredTo", k.offeredTo); j.add("offeredUntil", k.offeredUntil); }   // (Doc 55, 5.)
-        }
+        if (!k.offeredTo.empty()) { j.add("offeredTo", k.offeredTo); j.add("offeredUntil", k.offeredUntil); }   // (Doc 55, 5.)
         contracts.push(j);
     }
     roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
-    auto orders = Value::array();
-    for (const auto& o : r.orders)
-    {
-        auto j = Value::object();
-        j.add("id", o.id); j.add("buyer", o.buyer); j.add("town", o.town); j.add("item", o.item); j.add("from", o.from);
-        j.add("perWeek", o.perWeek); j.add("price", double(o.price)); j.add("since", o.since); j.add("review", o.review);
-        j.add("delivered", o.delivered); j.add("shortfall", o.shortfall); j.add("unpaid", o.unpaid); j.add("unfunded", o.unfunded);
-        j.add("negotiator", o.negotiator);
-        orders.push(j);
-    }
-    roads.add("orders", orders);
-    auto early = Value::object();
-    for (const auto& [road, due] : r.sentEarly)
-        early.add(road, double(due));
-    roads.add("sentEarly", early);
-    auto failed = Value::object();
-    for (const auto& [key, day] : r.failed)
-        failed.add(key, double(day));
-    roads.add("failed", failed);
-    auto refused = Value::object();
-    for (const auto& [key, day] : r.refused)
-        refused.add(key, double(day));
-    roads.add("refused", refused);
     return roads;
 }
 
@@ -689,8 +648,6 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     {
         saved.roads.day = std::int64_t(num(roads, "day", -1));
         saved.roads.nextId = std::max<std::int64_t>(1, std::int64_t(num(roads, "nextId", 1)));
-        saved.roads.stocked = roads.boolean("stocked");
-        saved.roads.purses = roads.boolean("purses");
         for (const auto& j : roads.array("caravans"))
         {
             Caravan t;
@@ -701,13 +658,6 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             t.status = j.string("status"); t.escorts = readStrings(j, "escorts"); t.letters = readStrings(j, "letters");
             t.cell = j.string("cell"); t.x = num(j, "x"); t.y = num(j, "y");
             t.waitUntil = num(j, "waitUntil");
-            t.trader = j.string("trader");
-            for (const auto& order : readStrings(j, "orders"))
-                if (order.size() < 40 && t.orders.size() < 256)
-                    t.orders.push_back(order);
-            for (const auto& [order, n] : j.object("loaded").fields())   // (Saved before doc 64's Phase 13 review: none.)
-                if (n.isNumber() && std::isfinite(n.asNumber()) && order.size() < 40 && t.loaded.size() < 256)
-                    t.loaded[order] = std::clamp(int(n.asNumber()), 0, Society::ShelfMost);
             for (const auto& [who, cells] : j.object("with").fields())
                 if (cells.isNumber())
                     t.with[who] = int(cells.asNumber());
@@ -724,43 +674,10 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.town = j.string("town"); k.target = j.string("target"); k.taker = j.string("taker");
             k.status = j.string("status"); k.reward = std::int64_t(num(j, "reward"));
             k.created = num(j, "created"); k.due = num(j, "due"); k.detail = j.string("detail");
-            k.item = j.string("item");
-            k.quantity = std::clamp(int(num(j, "quantity")), 0, 999);
-            k.delivered = std::clamp(int(num(j, "delivered")), 0, k.quantity);
-            k.source = j.string("source");
-            k.carried = std::clamp(int(num(j, "carried")), 0, k.quantity);
             k.offeredTo = j.string("offeredTo");
             k.offeredUntil = num(j, "offeredUntil");
             saved.roads.contracts.push_back(std::move(k));
         }
-        for (const auto& j : roads.array("orders"))      // (Saved before standing orders: none.)
-        {
-            StandingOrder o;
-            o.id = j.string("id"); o.buyer = j.string("buyer"); o.town = j.string("town"); o.item = j.string("item");
-            // (As many a week as a shelf holds: doc 64, Phase 13 raised the 90 a week orders stopped at.)
-            o.from = j.string("from"); o.perWeek = std::clamp(int(num(j, "perWeek")), 0, Society::ShelfMost);
-            o.price = std::clamp<std::int64_t>(std::int64_t(num(j, "price")), 0, 100000); o.since = num(j, "since");
-            o.review = num(j, "review"); o.delivered = std::max(0, int(num(j, "delivered")));
-            o.shortfall = std::max(0, int(num(j, "shortfall"))); o.negotiator = j.string("negotiator");
-            // (Saved before doc 64's Phase 13 review: none refused.)
-            o.unpaid = int(std::clamp(num(j, "unpaid"), 0.0, 1e6));
-            // (Saved before round 15, lane 2's PurseNotBlamed: nothing uncarried.)
-            o.unfunded = int(std::clamp(num(j, "unfunded"), 0.0, 1e6));
-            if (!o.id.empty() && !o.buyer.empty() && !o.item.empty() && o.perWeek > 0)
-                saved.roads.orders.push_back(std::move(o));
-        }
-        for (const auto& [road, due] : roads.object("sentEarly").fields())   // (Saved before doc 64's Phase 13: none.)
-            if (due.isNumber() && std::isfinite(due.asNumber()) && std::abs(due.asNumber()) < 1e9 && road.size() < 200 &&
-                saved.roads.sentEarly.size() < 4096)
-                saved.roads.sentEarly[road] = std::int64_t(due.asNumber());
-        for (const auto& [key, day] : roads.object("failed").fields())   // (Saved before doc 64's Phase 13 review: none.)
-            if (day.isNumber() && std::isfinite(day.asNumber()) && std::abs(day.asNumber()) < 1e9 && key.size() < 400 &&
-                saved.roads.failed.size() < 4096)
-                saved.roads.failed[key] = std::int64_t(day.asNumber());
-        for (const auto& [key, day] : roads.object("refused").fields())   // (Saved before doc 64's Phase 13, round 5: none.)
-            if (day.isNumber() && std::isfinite(day.asNumber()) && std::abs(day.asNumber()) < 1e9 && key.size() < 400 &&
-                saved.roads.refused.size() < 4096)
-                saved.roads.refused[key] = std::int64_t(day.asNumber());
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
