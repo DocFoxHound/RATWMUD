@@ -893,6 +893,23 @@ WORKS_TRADE.update({
     'distillery': 'distiller', 'preserving_house': 'preserver', 'builders_works': 'builder', 'washhouse': 'launderer',
     'rag_and_bone': 'rag-and-bone dealer', 'bathhouse': 'bath keeper',
 })
+# Doc 67's food rebalance: the shops a city of food sellers needs (TRADES is only ever read by key), and the carters'
+# yard that takes the city's goods out to the country and brings the country's in.
+TRADES.update({
+    'cheesemaker': {'goods': 'OxO', 'label': 'Cheesemonger', 'fixtures': [(2, -3, 'x', 'press'), (3, -3, 'T', 'workbench')]},
+    'preserver': {'goods': 'OkO', 'label': 'Preserving shop', 'fixtures': [(2, -3, 'h', 'hearth'),
+                                                                           (-3, -3, '|', 'drying_rack')]},
+    'cook': {'goods': 'OxO', 'label': 'Cookshop', 'fixtures': [(2, -3, 'h', 'hearth'), (3, -3, 'h', 'hearth'),
+                                                               (-3, -3, 'T', None)]},
+})
+WORKS['bakehouse'] = ((14, 10), 'a bread oven across the back wall, a kneading trough and boards, and sacks of flour '
+                      'by the door')
+WORKS_STATIONS['bakehouse'] = [('oven', 3), ('workbench', 2)]
+WORKS_TRADE['bakehouse'] = 'baker'
+WORKS['carters_yard'] =((24, 14), 'a wagon shed of four bays, harness on the posts and a yard of beaten earth where the '
+                         'teams are put to before dawn')
+WORKS_STATIONS['carters_yard'] = []
+WORKS_TRADE['carters_yard'] = 'carter'
 
 
 def plain_works(p: Plan, kind):
@@ -918,6 +935,24 @@ def plain_works(p: Plan, kind):
         p.run(w // 2 + 2, h // 2 + 1, 1, 0, w // 2 - 4, 'p')
         p.put(1, 1, 'h')
         return [(w // 2, 3), (w // 2, h // 2), (3, h - 3)]
+    if kind == 'carters_yard':                   # Wagon bays along the back, stalls for the teams, an open yard.
+        spots = []
+        for x in range(2, w - 4, 5):             # Each bay: a wagon (crates on its bed) under the shed roof.
+            for y in (2, 3):
+                p.put(x, y, 'x')
+                p.put(x + 1, y, 'x')
+            p.put(x + 3, 1, 'z')                 # Straw for the horses between the bays.
+            spots.append((x + 2, 4))
+        p.run(1, h // 2, 1, 0, w - 2, '|')       # The shed's rail; the yard below it, open earth.
+        for x in (w // 2 - 1, w // 2, w // 2 + 1, 3, w - 4):
+            p.g[h // 2][x] = p.floor
+        for y in range(h // 2 + 1, h - 1):
+            for x in range(1, w - 1):
+                if (x, y) not in p.keep and p.g[y][x] == p.floor:
+                    p.g[y][x] = 'd'
+        p.put(w - 3, h - 3, 'U')                  # The trough.
+        p.put(2, h - 3, 'O')
+        return spots + [(w // 2, h - 3)]
     # rag_and_bone: heaps of crates and barrels.
     for y in range(2, h - 4, 3):
         for x in range(2, w - 2):

@@ -97,6 +97,78 @@ class Labels(unittest.TestCase):
         self.assertTrue(PP.label_problems('burns charcoal at the Charcoal Store'))
         self.assertEqual(PP.label_problems('priest at the cathedral', clergy=True), [])
 
+    def test_the_food_rebalance_labels(self):
+        # Each market stall's label is its trade's, and the Carters' Yard is a business of its own.
+        for labels in PP.OUTDOOR.values():
+            for label in labels:
+                key = label.split(' on ')[0].split(' in ')[0].split(',')[0]
+                self.assertEqual(PP.business_for(label), PP.OUTDOOR_BUSINESS[key], label)
+                self.assertEqual(PP.label_problems(label, PP.OUTDOOR_BUSINESS[key], food=True), [], label)
+        for label, business in PP.HALL_KEEPERS:
+            self.assertEqual(PP.business_for(label), business, label)
+        self.assertEqual(PP.business_for("keeping the Carters' Yard"), 'carters')
+        self.assertEqual(PP.business_for('driving for the carters'), 'carters')
+        self.assertEqual(PP.business_for('cooking for Northgate'), 'inn')
+        self.assertEqual(PP.label_problems('cooking for Northgate', 'inn', food=True), [])
+
+
+class PeoplesText(unittest.TestCase):
+    PERSON = {'id': 'rm_test_wolf', 'name': 'Hanne Testwick', 'age': 30,
+              'description': 'A lean grey timber wolf with a missing claw, who keeps the egg stall on the Heights Market.',
+              'greeting': 'Good day to you. Fine egg, fresh this morning.',
+              'backstory': 'Hanne lost a brother on the wharf.'}
+
+    def test_a_job_changed_here_gets_its_text(self):
+        entry = {'post': 'keeper', 'business': 'bakery', 'record': 'rm_x'}
+        out, why = PP.person_text(dict(self.PERSON), entry, 'baker at The Penny Loaf', 'tinker at Mend & Make Do',
+                                  {'rm_x': 'The Penny Loaf'})
+        self.assertEqual(why, 'job')
+        self.assertTrue(out['description'].startswith('A lean grey timber wolf with a missing claw, '))
+        self.assertIn('baker who keeps The Penny Loaf', out['description'])
+        self.assertTrue(out['greeting'].startswith('Good day to you. '))
+        self.assertTrue(out['backstory'].startswith('Hanne lost a brother on the wharf. Hanne '))
+        self.assertNotIn('dog', ' '.join(out.values()).lower())
+
+    def test_stale_text_is_fixed_and_fitting_text_left(self):
+        entry = {'post': 'pool', 'record': 'pier'}
+        same = 'unloading ships at the piers'
+        out, why = PP.person_text(dict(self.PERSON), entry, same, same, {})
+        self.assertEqual(why, 'stale')
+        self.assertIn('a docker on the piers', out['description'])
+        self.assertNotIn('backstory', out)                     # (Their job didn't change here.)
+        fitting = dict(self.PERSON, description='A lean grey timber wolf with a missing claw, a docker on the piers.',
+                       greeting='Good day to you. Mind your feet.')
+        self.assertEqual(PP.person_text(fitting, entry, same, same, {}), ({}, None))
+        broken = dict(fitting, greeting='Good day to you. I am carries loads for hire today.')
+        out, why = PP.person_text(broken, entry, same, same, {})
+        self.assertEqual(why, 'grammar')
+        self.assertNotIn('I am carries', out['greeting'])
+
+    def test_the_citys_figures_keep_their_own_text(self):
+        lord = dict(self.PERSON, description='A lean grey timber wolf with a missing claw, Lord of House Testwick.')
+        self.assertEqual(PP.person_text(lord, {'post': 'staff', 'record': 'r'}, 'clerking at the City Office', 'x', {}),
+                         ({}, None))
+        child = dict(self.PERSON, age=12)
+        self.assertEqual(PP.person_text(child, {'post': 'help', 'record': 'r'}, 'helping at X', 'y', {}), ({}, None))
+
+
+class Refit(unittest.TestCase):
+    def test_a_shop_refitted_for_another_trade_keeps_its_walls_door_and_stairs(self):
+        from worldgen import ridgemere2 as R
+        p = B.shop(random.Random(7), 'ridgemere', 'tinker')
+        p.g[3][1] = '^'
+        room = {'terrain': [''.join(r) for r in p.g]}
+        before = room['terrain']
+        self.assertTrue(R.refit_shop(room, 'baker'))
+        once = room['terrain']
+        R.refit_shop(room, 'baker')
+        self.assertEqual(room['terrain'], once)                # Twice is once.
+        self.assertIn('v', once[1])                             # The ovens along the back.
+        for y, (a, b) in enumerate(zip(before, once)):
+            for x, (ca, cb) in enumerate(zip(a, b)):
+                if ca in '#+^=':
+                    self.assertEqual(ca, cb, (x, y))
+
 
 def project_for_checks():
     path = os.environ.get('RATW_R2_PROJECT')
@@ -131,13 +203,47 @@ class City(unittest.TestCase):
         p = self.m['project']
         self.assertEqual(len(p['people']), 1083)
         before = {x['id']: x for x in self.m['base']['people']}
+        fixed = {pid for pid, _ in self.m['city'].text_fixed}
         for x in p['people']:
             b = before[x['id']]
             for key in ('name', 'description', 'backstory', 'personality', 'greeting', 'appearance', 'age', 'voice'):
                 if key in PP.ROYAL_TEXT.get(x['id'], {}):
                     self.assertEqual(x[key], PP.ROYAL_TEXT[x['id']][key], (x['id'], key))   # The Crown's own text.
+                elif x['id'] in fixed and key in ('description', 'greeting', 'backstory'):
+                    # Written again for the post (the food rebalance): the looks and the old backstory stay.
+                    if key == 'description':
+                        self.assertEqual(PP.split_description(x[key])[0], PP.split_description(b[key])[0])
+                    if key == 'backstory':
+                        self.assertTrue(x[key].startswith(b[key].rstrip()), x['id'])
                 else:
                     self.assertEqual(x[key], b[key], (x['id'], key))
+        self.assertTrue(all(x['home'] for x in p['people'] if x['id'] in fixed))     # (Only the placed.)
+
+    # -- The food rebalance (doc 67, Progress, "Food rebalance") --
+    def test_the_food_trades_and_the_carters(self):
+        from worldgen import ridgemere2 as R
+        cap = self.m['capacity']['after']
+        self.assertTrue(cap['ok'], cap['food'])
+        self.assertLessEqual(cap['foodBusinesses'] - cap['businesses'].get('stall', 0), 56)
+        self.assertGreaterEqual(cap['foodBusinesses'], 45)
+        self.assertLessEqual(cap['householdBusinesses'], 15)
+        people = self.m['project']['people']
+        self.assertEqual(sum(1 for x in people if x['workLabel'] == 'driving for the carters'), PP.CARTERS)
+        rooms = {r['id']: r for r in self.m['project']['rooms']}
+        for rid, (trade, name, text) in R.REFIT.items():
+            self.assertEqual(rooms[rid]['description'], text)
+            if name:
+                self.assertEqual(rooms[rid]['name'], name)
+
+    def test_placed_text_fits(self):
+        import re
+        for x in self.m['project']['people']:
+            if not x['home']:
+                continue
+            self.assertIsNone(re.search(r"I am [a-z]+s ", x['greeting']), (x['id'], x['greeting']))
+            self.assertNotIn('Heights Market', x['description'], x['id'])
+            if 'Records Office' in x['workLabel']:
+                self.assertTrue(any(w in x['description'] for w in ('clerk', 'copyist', 'rolls', 'record')), x['id'])
 
     def test_the_king_reigns_at_the_great_palace(self):
         people = {x['id']: x for x in self.m['project']['people']}

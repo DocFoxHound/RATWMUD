@@ -21,10 +21,10 @@
    },
    "northgate": {
     "land": 5718,
-    "built": 0.259,
-    "open": 4237,
+    "built": 0.256,
+    "open": 4252,
     "residents": 33,
-    "openPerResident": 128.4,
+    "openPerResident": 128.8,
     "fill": 0.837,
     "meanHeight": 2.58
    },
@@ -48,10 +48,10 @@
    },
    "commons": {
     "land": 20989,
-    "built": 0.457,
-    "open": 11388,
+    "built": 0.46,
+    "open": 11336,
     "residents": 178,
-    "openPerResident": 64.0,
+    "openPerResident": 63.7,
     "fill": 0.594,
     "meanHeight": 2.72
    },
@@ -66,19 +66,19 @@
    },
    "admin": {
     "land": 6608,
-    "built": 0.406,
-    "open": 3925,
+    "built": 0.407,
+    "open": 3920,
     "residents": 27,
-    "openPerResident": 145.4,
+    "openPerResident": 145.2,
     "fill": 0.644,
     "meanHeight": 1.79
    },
    "cinders": {
     "land": 4893,
-    "built": 0.63,
-    "open": 1812,
+    "built": 0.637,
+    "open": 1777,
     "residents": 32,
-    "openPerResident": 56.6,
+    "openPerResident": 55.5,
     "fill": 0.784,
     "meanHeight": 1.36
    },
@@ -102,7 +102,7 @@
    }
   },
   "insideArea": 88208,
-  "builtInside": 0.396,
+  "builtInside": 0.397,
   "meanHeight": {
    "wharf": 0.5,
    "abbey": 1.5,
@@ -117,8 +117,8 @@
    "rise": 3.46
   },
   "wallsOnBorders": 0,
-  "stepOnBorder": 0.008324661810613945,
-  "stepOffBorder": 0.018068913290420294,
+  "stepOnBorder": 0.008376963350785341,
+  "stepOffBorder": 0.01779181151609916,
   "crossings": {
    "abbey/northgate": 1,
    "abbey/sump": 1,
@@ -127,7 +127,7 @@
    "admin/palace": 2,
    "admin/rise": 4,
    "admin/sump": 7,
-   "cinders/palace": 3,
+   "cinders/palace": 4,
    "cinders/sump": 1,
    "cinders/wharf": 6,
    "commons/greatly": 1,
@@ -143,16 +143,16 @@
    "abbey/northgate": 5,
    "abbey/sump": 5,
    "admin/cinders": 90,
-   "admin/commons": 100,
+   "admin/commons": 101,
    "admin/palace": 101,
    "admin/rise": 50,
    "admin/sump": 88,
-   "cinders/palace": 57,
+   "cinders/palace": 50,
    "cinders/sump": 2,
    "cinders/wharf": 49,
    "commons/greatly": 5,
    "commons/keep": 5,
-   "commons/northgate": 122,
+   "commons/northgate": 121,
    "commons/rise": 69,
    "commons/sump": 97,
    "northgate/sump": 29,
@@ -404,9 +404,9 @@
  ],
  "homesPerStructure": {
   "built": {
-   "1": 105,
-   "2": 13,
-   "3": 42
+   "1": 106,
+   "2": 15,
+   "3": 41
   },
   "livedIn": {
    "1": 94,
@@ -424,14 +424,14 @@
  },
  "world": {
   "cells": 9,
-  "interiors": 815,
-  "newInteriors": 189,
+  "interiors": 819,
+  "newInteriors": 193,
   "links": {
-   "stairs": 205,
-   "door": 261,
+   "stairs": 206,
+   "door": 264,
    "passage": 43
   },
-  "structures": 237
+  "structures": 240
  },
  "districts": {
   "abbey": {
@@ -439,7 +439,7 @@
    "kind:hall": 6,
    "kind:lodging": 1,
    "kind:works": 1,
-   "posts": 38,
+   "posts": 37,
    "business:brewery": 1
   },
   "admin": {
@@ -450,26 +450,27 @@
    "kind:shop": 1,
    "homes": 9,
    "beds": 33,
-   "posts": 22,
+   "posts": 21,
    "business:inn": 1,
    "business:scriptorium": 1
   },
   "cinders": {
-   "buildings": 25,
+   "buildings": 26,
    "kind:works": 11,
    "kind:store": 1,
    "kind:tavern": 1,
-   "kind:shop": 4,
+   "kind:shop": 5,
    "kind:home": 8,
    "homes": 11,
    "beds": 45,
-   "posts": 43,
+   "posts": 45,
    "business:inn": 1,
    "business:smithy": 3,
    "business:armory": 1,
    "business:ironworks": 1,
    "business:foundry": 1,
    "business:sawmill": 1,
+   "business:butcher": 1,
    "business:glassworks": 1,
    "business:brickworks": 2,
    "business:brewery": 1,
@@ -479,43 +480,43 @@
    "business:plasterworks": 1
   },
   "commons": {
-   "buildings": 74,
+   "buildings": 76,
    "kind:hall": 4,
    "kind:inn": 1,
-   "kind:works": 3,
+   "kind:works": 4,
    "kind:tavern": 2,
    "kind:shop": 33,
    "kind:home": 20,
-   "kind:flats": 11,
+   "kind:flats": 12,
    "homes": 82,
    "beds": 255,
-   "posts": 136,
-   "business:provisioner": 3,
+   "posts": 142,
+   "business:provisioner": 4,
    "business:inn": 3,
-   "business:saddlery": 3,
+   "business:saddlery": 1,
    "business:printing_house": 1,
    "business:cartographer": 1,
    "business:chandlery": 1,
-   "business:apothecary": 2,
-   "business:bakery": 3,
+   "business:preserver": 3,
+   "business:bakery": 4,
    "business:cooperage": 2,
-   "business:weaver": 2,
-   "business:general": 1,
+   "business:weaver": 1,
    "business:pottery": 1,
    "business:carpenter": 2,
    "business:brewery": 1,
-   "business:herbalist": 1,
-   "business:butcher": 1,
+   "business:butcher": 3,
    "business:smithy": 2,
-   "business:tailor": 3,
-   "business:jeweler": 2,
+   "business:tailor": 1,
+   "business:jeweler": 1,
    "business:perfumer": 1,
+   "business:dairy": 3,
    "business:glassworks": 1,
    "business:moneychanger": 1,
+   "business:apothecary": 1,
    "business:fishmonger": 1,
    "business:barber": 1,
    "business:vintner": 1,
-   "business:dairy": 1,
+   "business:carters": 1,
    "business:builders_yard": 1,
    "business:stables": 1
   },
@@ -527,7 +528,7 @@
    "kind:home": 3,
    "homes": 4,
    "beds": 17,
-   "posts": 16,
+   "posts": 17,
    "business:press": 1,
    "business:preserver": 1,
    "business:distillery": 1
@@ -582,23 +583,23 @@
    "kind:home": 4,
    "kind:flats": 3,
    "homes": 18,
-   "beds": 52,
-   "posts": 10,
+   "beds": 53,
+   "posts": 11,
    "business:butcher": 1,
-   "business:fletcher": 1,
-   "business:general": 1,
+   "business:inn": 1,
+   "business:provisioner": 1,
    "business:bakery": 1,
    "business:carpenter": 1
   },
   "outdoors": {
-   "posts": 78,
-   "business:stall": 4,
+   "posts": 71,
+   "business:dairy": 1,
    "business:herbalist": 1,
-   "business:pottery": 1,
-   "business:chandlery": 1,
-   "business:weaver": 1,
-   "business:tinker": 2,
-   "business:general": 2,
+   "business:stall": 3,
+   "business:butcher": 2,
+   "business:preserver": 1,
+   "business:bakery": 2,
+   "business:inn": 2,
    "business:fishmonger": 1,
    "business:rag_and_bone": 1
   },
@@ -627,14 +628,14 @@
    "kind:home": 3,
    "homes": 74,
    "beds": 218,
-   "posts": 36,
+   "posts": 37,
    "business:inn": 4,
    "business:general": 1,
    "business:pawnbroker": 1,
    "business:fishmonger": 1,
    "business:provisioner": 1,
    "business:tinker": 1,
-   "business:rag_and_bone": 1
+   "business:bakery": 1
   },
   "wharf": {
    "buildings": 17,
@@ -647,9 +648,9 @@
    "kind:lodging": 1,
    "homes": 3,
    "beds": 12,
-   "posts": 39,
+   "posts": 36,
    "business:inn": 3,
-   "business:cooperage": 1,
+   "business:provisioner": 1,
    "business:chandlery": 1,
    "business:shipwright": 1,
    "business:tannery": 1,
@@ -677,38 +678,39 @@
    "the country": 200
   },
   "roles": {
-   "merchant": 108,
-   "civilian": 421,
+   "merchant": 110,
+   "civilian": 419,
    "guard": 30
   },
   "posts": {
    "stallkeeper": 14,
-   "staff": 84,
+   "staff": 91,
    "kept": 54,
-   "pool": 55,
-   "clergy": 18,
+   "pool": 48,
    "food": 2,
+   "clergy": 17,
    "hallkeeper": 6,
-   "keeper": 88,
+   "keeper": 90,
    "at lessons": 67,
    "help": 64,
-   "retired": 29,
+   "retired": 30,
    "a child at home": 4,
    "guard": 5,
    "patrol": 16,
    "gate": 9,
-   "hands": 44
+   "hands": 42
   },
   "evenings": {
    "rm_the_last_lamp": 40,
-   "rm_the_grey_gull_inn": 40,
    "rm_the_rainbarrel": 40,
    "r2_the_knucklebones": 40,
-   "home": 188,
+   "home": 167,
    "rm_the_black_tun": 40,
    "rm_the_slate_ledger": 24,
    "r2_cathedral": 18,
+   "rm_the_grey_goose": 21,
    "rm_the_bilge": 40,
+   "rm_the_grey_gull_inn": 40,
    "rm_the_slag_anchor": 28,
    "rm_the_drowned_lantern": 10,
    "rm_the_watch_house": 30,
@@ -716,32 +718,32 @@
   }
  },
  "businesses": {
-  "apothecary": 2,
+  "apothecary": 1,
   "armory": 1,
-  "bakery": 4,
+  "bakery": 8,
   "barber": 1,
   "brewery": 3,
   "brickworks": 2,
   "builders_works": 1,
   "builders_yard": 1,
-  "butcher": 2,
+  "butcher": 7,
   "carpenter": 3,
+  "carters": 1,
   "cartographer": 1,
   "cartwright": 1,
-  "chandlery": 3,
+  "chandlery": 2,
   "charcoal": 1,
-  "cooperage": 3,
-  "dairy": 1,
+  "cooperage": 2,
+  "dairy": 4,
   "distillery": 1,
   "fishmonger": 4,
-  "fletcher": 1,
   "foundry": 1,
-  "general": 5,
+  "general": 1,
   "glassworks": 2,
-  "herbalist": 2,
-  "inn": 12,
+  "herbalist": 1,
+  "inn": 15,
   "ironworks": 1,
-  "jeweler": 2,
+  "jeweler": 1,
   "mason": 1,
   "moneychanger": 1,
   "paintworks": 1,
@@ -749,26 +751,26 @@
   "pawnbroker": 1,
   "perfumer": 1,
   "plasterworks": 1,
-  "pottery": 2,
-  "preserver": 1,
+  "pottery": 1,
+  "preserver": 5,
   "press": 1,
   "printing_house": 1,
-  "provisioner": 4,
-  "rag_and_bone": 2,
+  "provisioner": 7,
+  "rag_and_bone": 1,
   "ropewalk": 1,
-  "saddlery": 3,
+  "saddlery": 1,
   "sawmill": 1,
   "scriptorium": 1,
   "shipwright": 1,
   "smithy": 5,
   "smokehouse": 1,
   "stables": 1,
-  "stall": 4,
-  "tailor": 3,
+  "stall": 3,
+  "tailor": 1,
   "tannery": 1,
-  "tinker": 3,
+  "tinker": 1,
   "vintner": 1,
-  "weaver": 3
+  "weaver": 1
  },
  "draws": {
   "apothecary": {
@@ -869,6 +871,10 @@
    ],
    "resale": []
   },
+  "carters": {
+   "making": [],
+   "resale": []
+  },
   "cartographer": {
    "making": [
     "ink",
@@ -934,16 +940,6 @@
    "resale": [
     "fish"
    ]
-  },
-  "fletcher": {
-   "making": [
-    "cord",
-    "iron_bar",
-    "iron_wire",
-    "planks",
-    "steel_bar"
-   ],
-   "resale": []
   },
   "foundry": {
    "making": [
@@ -1286,8 +1282,8 @@
   [
    "rm_agna_bilgecot",
    "merchant",
-   "jeweller in the Market Hall",
-   "jeweler"
+   "preserver in the Market Hall",
+   "preserver"
   ],
   [
    "rm_agna_dripgate",
@@ -1328,7 +1324,7 @@
   [
    "rm_aldric_grayrock_",
    "civilian",
-   "deacon at the cathedral",
+   "overseeing the Grayrock wharf",
    null
   ],
   [
@@ -1520,8 +1516,8 @@
   [
    "rm_clemence_rustham",
    "merchant",
-   "fletcher at The Grey Goose",
-   "fletcher"
+   "cooking for Northgate",
+   "inn"
   ],
   [
    "rm_corra_coalcot",
@@ -1574,8 +1570,8 @@
   [
    "rm_corwin_sootstack",
    "merchant",
-   "rag-and-bone dealer at Rag-and-Bone Yard",
-   "rag_and_bone"
+   "butcher at Cinder Butchers",
+   "butcher"
   ],
   [
    "rm_corwin_sootton",
@@ -2018,8 +2014,8 @@
   [
    "rm_frida_brineford",
    "merchant",
-   "cooper at The Bung Hole",
-   "cooperage"
+   "provisioner at The Bung Hole",
+   "provisioner"
   ],
   [
    "rm_frida_kelpford",
@@ -2144,8 +2140,8 @@
   [
    "rm_gudrun_ropeford",
    "merchant",
-   "shopkeeper at Rainford's Store",
-   "general"
+   "provisioner at Rainford's Store",
+   "provisioner"
   ],
   [
    "rm_gudrun_rustwick",
@@ -2246,8 +2242,8 @@
   [
    "rm_hanne_sootham",
    "merchant",
-   "soup stall in the Rag Market",
-   "stall"
+   "ladling soup in the Rag Market",
+   "inn"
   ],
   [
    "rm_hanne_thornbury",
@@ -2426,8 +2422,8 @@
   [
    "rm_isolde_brineton",
    "merchant",
-   "pie stall on Market Square",
-   "stall"
+   "baker on Market Square",
+   "bakery"
   ],
   [
    "rm_isolde_fell_",
@@ -2449,9 +2445,9 @@
   ],
   [
    "rm_ivar_nailham",
-   "civilian",
-   "works at The Rainwater Brewery",
-   "brewery"
+   "merchant",
+   "keeping the Carters' Yard",
+   "carters"
   ],
   [
    "rm_ivar_pitchwick",
@@ -2492,8 +2488,8 @@
   [
    "rm_ivo_tarmarsh",
    "merchant",
-   "cheese stall on Market Square",
-   "stall"
+   "cheesemaker on Market Square",
+   "dairy"
   ],
   [
    "rm_ivo_wickgate",
@@ -2534,14 +2530,14 @@
   [
    "rm_jorunn_saltdale",
    "merchant",
-   "porridge stall in the Rag Market",
-   "stall"
+   "baker in the Rag Market",
+   "bakery"
   ],
   [
    "rm_jorunn_tarham",
-   "civilian",
-   "helping at The Wet Slab",
-   null
+   "merchant",
+   "baker at The Penny Loaf",
+   "bakery"
   ],
   [
    "rm_josephine_brineford",
@@ -2606,8 +2602,8 @@
   [
    "rm_kjell_cinderley",
    "merchant",
-   "tailor at Oilcloth & Wool",
-   "weaver"
+   "preserver at The Apple Loft",
+   "preserver"
   ],
   [
    "rm_kjell_cinderwell",
@@ -2708,8 +2704,8 @@
   [
    "rm_liv_slagstack",
    "merchant",
-   "apothecary at The Cough Jar",
-   "apothecary"
+   "preserver at The Honey Crock",
+   "preserver"
   ],
   [
    "rm_lotte_ashford",
@@ -2834,8 +2830,8 @@
   [
    "rm_mogens_dripley",
    "merchant",
-   "weaver on Market Square",
-   "weaver"
+   "greens stall on Market Square",
+   "stall"
   ],
   [
    "rm_mogens_greycot",
@@ -2846,8 +2842,8 @@
   [
    "rm_moll_dripdale",
    "merchant",
-   "tinker in the Rag Market",
-   "tinker"
+   "greens stall in the Rag Market",
+   "stall"
   ],
   [
    "rm_moll_millton",
@@ -2936,8 +2932,8 @@
   [
    "rm_orla_rainworth",
    "merchant",
-   "potter on Market Square",
-   "pottery"
+   "fruit stall on Market Square",
+   "stall"
   ],
   [
    "rm_orla_ropeworth",
@@ -2948,8 +2944,8 @@
   [
    "rm_orla_wickby",
    "merchant",
-   "herbalist at Moss & Marrow",
-   "herbalist"
+   "butcher at Moss & Marrow",
+   "butcher"
   ],
   [
    "rm_orm_fogmore",
@@ -2966,13 +2962,13 @@
   [
    "rm_orm_wickwick",
    "merchant",
-   "shopkeeper in the Rag Market",
-   "general"
+   "butcher in the Rag Market",
+   "butcher"
   ],
   [
    "rm_oskar_gullworth",
    "civilian",
-   "clerking at the City Office",
+   "Chancellor of Ridgemere",
    null
   ],
   [
@@ -3014,8 +3010,8 @@
   [
    "rm_osric_ropeworth",
    "merchant",
-   "tailor at Vane & Daughters",
-   "tailor"
+   "cheesemaker at Vane & Daughters",
+   "dairy"
   ],
   [
    "rm_osric_slagstack",
@@ -3050,8 +3046,8 @@
   [
    "rm_palle_bilgemarsh",
    "merchant",
-   "tinker on Market Square",
-   "tinker"
+   "preserver on Market Square",
+   "preserver"
   ],
   [
    "rm_palle_plankmore",
@@ -3074,8 +3070,8 @@
   [
    "rm_petra_plankhand",
    "civilian",
-   "works at The Fish Hall",
-   "fishmonger"
+   "driving for the carters",
+   "carters"
   ],
   [
    "rm_petra_vance",
@@ -3134,8 +3130,8 @@
   [
    "rm_ragnar_millmarsh",
    "merchant",
-   "shopkeeper at Commons Sundries",
-   "general"
+   "provisioner at Commons Provisions",
+   "provisioner"
   ],
   [
    "rm_ragnar_roperidge",
@@ -3194,8 +3190,8 @@
   [
    "rm_runa_ashridge",
    "merchant",
-   "saddler in the Market Hall",
-   "saddlery"
+   "cheesemaker in the Market Hall",
+   "dairy"
   ],
   [
    "rm_runa_coalhand",
@@ -3284,7 +3280,7 @@
   [
    "rm_rupert_sootley",
    "civilian",
-   "portering in Market Square",
+   "helping at The Lamp & Wick",
    null
   ],
   [
@@ -3392,8 +3388,8 @@
   [
    "rm_soren_kelpstack",
    "civilian",
-   "helping at The Hopyard",
-   null
+   "driving for the carters",
+   "carters"
   ],
   [
    "rm_soren_millwell",
@@ -3452,8 +3448,8 @@
   [
    "rm_theodora_ropemarsh",
    "merchant",
-   "chandler on Market Square",
-   "chandlery"
+   "butcher on Market Square",
+   "butcher"
   ],
   [
    "rm_theodora_wickley",
@@ -3512,8 +3508,8 @@
   [
    "rm_torvald_slagton",
    "merchant",
-   "shopkeeper on Market Square",
-   "general"
+   "ladling soup on Market Square",
+   "inn"
   ],
   [
    "rm_tove_brinegate",
@@ -3566,8 +3562,8 @@
   [
    "rm_una_pitchcot",
    "merchant",
-   "saddler at Collar and Trace",
-   "saddlery"
+   "baker at The Eastgate Bakehouse",
+   "bakery"
   ],
   [
    "rm_una_plankton",
@@ -3668,8 +3664,8 @@
   [
    "rm_wynn_rustworth",
    "merchant",
-   "tailor in the Market Hall",
-   "tailor"
+   "butcher in the Market Hall",
+   "butcher"
   ],
   [
    "rm_wynn_sootridge",
@@ -3752,8 +3748,8 @@
   [
    "rmx_aud_saltridge",
    "civilian",
-   "washing at the Washhouse",
-   "laundry"
+   "driving for the carters",
+   "carters"
   ],
   [
    "rmx_bartholomew_sootmore",
@@ -3830,8 +3826,8 @@
   [
    "rmx_cressida_mallory",
    "civilian",
-   "washing at the Washhouse",
-   "laundry"
+   "helping at The Penny Loaf",
+   null
   ],
   [
    "rmx_cressida_wetherell",
@@ -3884,7 +3880,7 @@
   [
    "rmx_desmond_farrow",
    "civilian",
-   "crying wares in the Rag Market",
+   "helping at The Hook and Cleaver",
    null
   ],
   [
@@ -4148,14 +4144,14 @@
   [
    "rmx_ivo_wainwright",
    "civilian",
-   "helping at The Sailors' Rest",
-   null
+   "helping at Cinder Butchers",
+   "butcher"
   ],
   [
    "rmx_jarl_greywell",
    "civilian",
-   "crying wares in the Rag Market",
-   null
+   "helping at Mutton Lane Butchers",
+   "butcher"
   ],
   [
    "rmx_jasper_brackham",
@@ -4166,7 +4162,7 @@
   [
    "rmx_jasper_coalcot",
    "civilian",
-   "unloading ships at the piers",
+   "portering in Market Square",
    null
   ],
   [
@@ -4196,8 +4192,8 @@
   [
    "rmx_karin_bilgeford",
    "civilian",
-   "helping at The Drowned Lantern",
-   null
+   "helping at Cinder Butchers",
+   "butcher"
   ],
   [
    "rmx_kjell_coalham",
@@ -4286,8 +4282,8 @@
   [
    "rmx_millicent_wickwick",
    "civilian",
-   "helping at The Slate & Ledger",
-   null
+   "driving for the carters",
+   "carters"
   ],
   [
    "rmx_moll_coldharbour",
@@ -4352,8 +4348,8 @@
   [
    "rmx_orm_carlisle",
    "civilian",
-   "helping at The Grey Gull Inn",
-   null
+   "driving for the carters",
+   "carters"
   ],
   [
    "rmx_orm_nailhand",
@@ -4388,14 +4384,14 @@
   [
    "rmx_percival_thornham",
    "civilian",
-   "helping at The Tarred Rope",
-   null
+   "driving for the carters",
+   "carters"
   ],
   [
    "rmx_petra_ashgate",
    "civilian",
-   "working at The Rag-and-Bone Yard",
-   "rag_and_bone"
+   "washing at the Washhouse",
+   "laundry"
   ],
   [
    "rmx_philippa_coldby",
@@ -4448,8 +4444,8 @@
   [
    "rmx_roald_toft",
    "civilian",
-   "unloading ships at the piers",
-   null
+   "washing at the Washhouse",
+   "laundry"
   ],
   [
    "rmx_rosamund_ash",
@@ -4460,7 +4456,7 @@
   [
    "rmx_rupert_greyley",
    "civilian",
-   "unloading ships at the piers",
+   "crying wares in the Rag Market",
    null
   ],
   [
@@ -4544,7 +4540,7 @@
   [
    "rmx_tobias_blackford",
    "civilian",
-   "unloading ships at the piers",
+   "crying wares in the Rag Market",
    null
   ],
   [
@@ -4556,7 +4552,7 @@
   [
    "rmx_tobias_rainley",
    "civilian",
-   "unloading ships at the piers",
+   "helping at The Penny Loaf",
    null
   ],
   [
@@ -4568,14 +4564,14 @@
   [
    "rmx_ulf_kelpmarsh",
    "civilian",
-   "unloading ships at the piers",
+   "helping at The Round and Rind",
    null
   ],
   [
    "rmx_ulla_brindle",
    "civilian",
-   "unloading ships at the piers",
-   null
+   "working at The Fell Preserving House",
+   "preserver"
   ],
   [
    "rmx_una_brineridge",
@@ -4661,11 +4657,11 @@
    "connected": 14,
    "back_snickets": 12,
    "passages": 41,
-   "admin_sheds": 35,
-   "cinders_sheds": 25,
-   "commons_sheds": 44,
+   "admin_sheds": 33,
+   "cinders_sheds": 24,
+   "commons_sheds": 39,
    "commons_yards": 1,
-   "northgate_sheds": 12,
+   "northgate_sheds": 11,
    "rise_sheds": 6
   }
  },
@@ -4680,7 +4676,7 @@
    "req": "R2",
    "check": "every placed interior has region ridgemere",
    "ok": true,
-   "detail": "400 placed interiors"
+   "detail": "404 placed interiors"
   },
   {
    "req": "R1",
@@ -4812,7 +4808,7 @@
    "req": "",
    "check": "many street crossings between neighbouring districts (separate openings, or as many 8-tile lengths of open border)",
    "ok": true,
-   "detail": "short: {}; all: {'abbey/northgate': 1, 'abbey/sump': 1, 'admin/cinders': 2, 'admin/commons': 4, 'admin/palace': 2, 'admin/rise': 4, 'admin/sump': 7, 'cinders/palace': 3, 'cinders/sump': 1, 'cinders/wharf': 6, 'commons/greatly': 1, 'commons/keep': 1, 'commons/northgate': 5, 'commons/rise': 5, 'commons/sump': 11, 'northgate/sump': 2, 'palace/rise': 1, 'sump/wharf': 12}"
+   "detail": "short: {}; all: {'abbey/northgate': 1, 'abbey/sump': 1, 'admin/cinders': 2, 'admin/commons': 4, 'admin/palace': 2, 'admin/rise': 4, 'admin/sump': 7, 'cinders/palace': 4, 'cinders/sump': 1, 'cinders/wharf': 6, 'commons/greatly': 1, 'commons/keep': 1, 'commons/northgate': 5, 'commons/rise': 5, 'commons/sump': 11, 'northgate/sump': 2, 'palace/rise': 1, 'sump/wharf': 12}"
   },
   {
    "req": "",
@@ -4926,7 +4922,7 @@
    "req": "R32",
    "check": "no structure is built with more than 3 homes",
    "ok": true,
-   "detail": "{0: 77, 1: 105, 2: 13, 3: 42}"
+   "detail": "{0: 78, 1: 106, 2: 15, 3: 41}"
   },
   {
    "req": "R32",
@@ -4944,7 +4940,7 @@
    "req": "",
    "check": "links number 2,048 or fewer",
    "ok": true,
-   "detail": "509 links"
+   "detail": "513 links"
   },
   {
    "req": "R31",
@@ -5010,7 +5006,19 @@
    "req": "",
    "check": "no evening place takes more than 40",
    "ok": true,
-   "detail": "{'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 188, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+   "detail": "{'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+  },
+  {
+   "req": "R35",
+   "check": "the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their own crafts, tools/city_capacity.py), and no food trade below half of its own",
+   "ok": true,
+   "detail": "99 staffed for 83.2 keeper-days (119%); below half: none; keepers+hands/demand: bakery 8+6/14.0, butcher 7+7/17.4, inn 15+9/15.8, provisioner 7+5/12.4, preserver 5+4/10.2, dairy 4+3/9.2, fishmonger 4+2/1.9, smokehouse 1+1/1.4, brewery 3+2/0.6, press 1+2/0.2, stall 3+0/0.0"
+  },
+  {
+   "req": "",
+   "check": "the Carters' Yard has its keeper and drivers",
+   "ok": true,
+   "detail": ""
   },
   {
    "req": "R1",
@@ -5019,6 +5027,1486 @@
    "detail": ""
   }
  ],
+ "capacity": {
+  "before": {
+   "ok": false,
+   "food": {
+    "demand": 83.16294412922561,
+    "staffed": 71,
+    "ratio": 0.8537456284577203,
+    "short": [
+     "bakery",
+     "butcher",
+     "preserver",
+     "dairy"
+    ]
+   },
+   "rows": [
+    [
+     "bakery",
+     4,
+     4,
+     3,
+     14.03418778708134
+    ],
+    [
+     "butcher",
+     2,
+     2,
+     2,
+     15.82656878857222
+    ],
+    [
+     "inn",
+     12,
+     12,
+     13,
+     15.752012845849803
+    ],
+    [
+     "provisioner",
+     4,
+     4,
+     3,
+     12.12731684565911
+    ],
+    [
+     "preserver",
+     1,
+     1,
+     1,
+     10.212710214270855
+    ],
+    [
+     "dairy",
+     1,
+     1,
+     1,
+     9.195835313085084
+    ],
+    [
+     "fishmonger",
+     4,
+     4,
+     4,
+     2.5880425096213853
+    ],
+    [
+     "smokehouse",
+     1,
+     1,
+     1,
+     2.5674985125858125
+    ],
+    [
+     "brewery",
+     3,
+     3,
+     4,
+     0.6440784843749999
+    ],
+    [
+     "press",
+     1,
+     1,
+     2,
+     0.21469282812499998
+    ],
+    [
+     "stall",
+     4,
+     4,
+     0,
+     0.0
+    ],
+    [
+     "chandlery",
+     3,
+     3,
+     2,
+     5.758166145833334
+    ],
+    [
+     "smithy",
+     5,
+     5,
+     5,
+     3.4589548668981482
+    ],
+    [
+     "weaver",
+     3,
+     3,
+     2,
+     2.008468125
+    ],
+    [
+     "apothecary",
+     2,
+     2,
+     2,
+     0.7580295312499999
+    ],
+    [
+     "herbalist",
+     2,
+     2,
+     1,
+     0.7580295312499999
+    ],
+    [
+     "pottery",
+     2,
+     2,
+     1,
+     0.9263702083333334
+    ],
+    [
+     "tinker",
+     3,
+     3,
+     1,
+     0.812424670138889
+    ],
+    [
+     "general",
+     5,
+     5,
+     3,
+     0.6881718749999999
+    ],
+    [
+     "armory",
+     1,
+     1,
+     1,
+     0.5699337499999999
+    ],
+    [
+     "tailor",
+     3,
+     3,
+     2,
+     0.35934
+    ]
+   ],
+   "businesses": {
+    "stall": 4,
+    "herbalist": 2,
+    "pottery": 2,
+    "chandlery": 3,
+    "weaver": 3,
+    "tinker": 3,
+    "general": 5,
+    "provisioner": 4,
+    "inn": 12,
+    "smithy": 5,
+    "armory": 1,
+    "saddlery": 3,
+    "pawnbroker": 1,
+    "fishmonger": 4,
+    "scriptorium": 1,
+    "printing_house": 1,
+    "cartographer": 1,
+    "apothecary": 2,
+    "bakery": 4,
+    "butcher": 2,
+    "cooperage": 3,
+    "carpenter": 3,
+    "brewery": 3,
+    "fletcher": 1,
+    "tailor": 3,
+    "jeweler": 2,
+    "perfumer": 1,
+    "glassworks": 2,
+    "moneychanger": 1,
+    "press": 1,
+    "builders_works": 1,
+    "barber": 1,
+    "preserver": 1,
+    "vintner": 1,
+    "dairy": 1,
+    "distillery": 1,
+    "shipwright": 1,
+    "rag_and_bone": 2,
+    "ironworks": 1,
+    "foundry": 1,
+    "sawmill": 1,
+    "tannery": 1,
+    "brickworks": 2,
+    "papermill": 1,
+    "cartwright": 1,
+    "charcoal": 1,
+    "builders_yard": 1,
+    "ropewalk": 1,
+    "smokehouse": 1,
+    "stables": 1,
+    "plasterworks": 1,
+    "paintworks": 1,
+    "mason": 1
+   },
+   "foodBusinesses": 37,
+   "householdBusinesses": 29
+  },
+  "after": {
+   "ok": true,
+   "food": {
+    "demand": 83.16294412922561,
+    "staffed": 99,
+    "ratio": 1.190434045314286,
+    "short": []
+   },
+   "rows": [
+    [
+     "bakery",
+     8,
+     8,
+     6,
+     14.03418778708134
+    ],
+    [
+     "butcher",
+     7,
+     7,
+     7,
+     17.449740424121075
+    ],
+    [
+     "inn",
+     15,
+     15,
+     9,
+     15.848447056376118
+    ],
+    [
+     "provisioner",
+     7,
+     7,
+     5,
+     12.425562320337765
+    ],
+    [
+     "preserver",
+     5,
+     5,
+     4,
+     10.212710214270855
+    ],
+    [
+     "dairy",
+     4,
+     4,
+     3,
+     9.195835313085084
+    ],
+    [
+     "fishmonger",
+     4,
+     4,
+     2,
+     1.8822127342700985
+    ],
+    [
+     "smokehouse",
+     1,
+     1,
+     1,
+     1.3519111777095905
+    ],
+    [
+     "brewery",
+     3,
+     3,
+     2,
+     0.5717528264802632
+    ],
+    [
+     "press",
+     1,
+     1,
+     2,
+     0.19058427549342102
+    ],
+    [
+     "stall",
+     3,
+     3,
+     0,
+     0.0
+    ],
+    [
+     "chandlery",
+     2,
+     2,
+     3,
+     5.758166145833334
+    ],
+    [
+     "smithy",
+     5,
+     5,
+     5,
+     3.87853378968254
+    ],
+    [
+     "weaver",
+     1,
+     1,
+     1,
+     2.1461024999999996
+    ],
+    [
+     "apothecary",
+     1,
+     1,
+     1,
+     0.7580295312499999
+    ],
+    [
+     "herbalist",
+     1,
+     1,
+     0,
+     0.7580295312499999
+    ],
+    [
+     "pottery",
+     1,
+     1,
+     1,
+     0.8680245833333334
+    ],
+    [
+     "tinker",
+     1,
+     1,
+     1,
+     0.354724007936508
+    ],
+    [
+     "general",
+     1,
+     1,
+     1,
+     0.5505374999999999
+    ],
+    [
+     "armory",
+     1,
+     1,
+     1,
+     0.60228125
+    ],
+    [
+     "tailor",
+     1,
+     1,
+     1,
+     0.35934
+    ]
+   ],
+   "businesses": {
+    "dairy": 4,
+    "herbalist": 1,
+    "stall": 3,
+    "butcher": 7,
+    "preserver": 5,
+    "bakery": 8,
+    "inn": 15,
+    "provisioner": 7,
+    "smithy": 5,
+    "armory": 1,
+    "saddlery": 1,
+    "general": 1,
+    "pawnbroker": 1,
+    "fishmonger": 4,
+    "scriptorium": 1,
+    "printing_house": 1,
+    "cartographer": 1,
+    "chandlery": 2,
+    "cooperage": 2,
+    "weaver": 1,
+    "pottery": 1,
+    "carpenter": 3,
+    "brewery": 3,
+    "tinker": 1,
+    "tailor": 1,
+    "jeweler": 1,
+    "perfumer": 1,
+    "glassworks": 2,
+    "moneychanger": 1,
+    "apothecary": 1,
+    "press": 1,
+    "builders_works": 1,
+    "barber": 1,
+    "vintner": 1,
+    "distillery": 1,
+    "shipwright": 1,
+    "rag_and_bone": 1,
+    "ironworks": 1,
+    "foundry": 1,
+    "sawmill": 1,
+    "tannery": 1,
+    "brickworks": 2,
+    "carters": 1,
+    "papermill": 1,
+    "cartwright": 1,
+    "charcoal": 1,
+    "builders_yard": 1,
+    "ropewalk": 1,
+    "smokehouse": 1,
+    "stables": 1,
+    "plasterworks": 1,
+    "paintworks": 1,
+    "mason": 1
+   },
+   "foodBusinesses": 58,
+   "householdBusinesses": 15
+  },
+  "textFixes": {
+   "job": 46,
+   "stale": 158,
+   "grammar": 55
+  },
+  "textFixed": [
+   [
+    "rm_ivo_tarmarsh",
+    "job"
+   ],
+   [
+    "rm_rupert_pitchford",
+    "stale"
+   ],
+   [
+    "rm_orla_rainworth",
+    "job"
+   ],
+   [
+    "rm_theodora_ropemarsh",
+    "job"
+   ],
+   [
+    "rm_mogens_dripley",
+    "job"
+   ],
+   [
+    "rm_palle_bilgemarsh",
+    "job"
+   ],
+   [
+    "rm_isolde_brineton",
+    "job"
+   ],
+   [
+    "rm_torvald_slagton",
+    "job"
+   ],
+   [
+    "rm_frederick_foghand",
+    "stale"
+   ],
+   [
+    "rm_runa_coalhand",
+    "stale"
+   ],
+   [
+    "rm_lavinia_bilgedale",
+    "stale"
+   ],
+   [
+    "rm_oda_kelpworth",
+    "stale"
+   ],
+   [
+    "rm_wynn_sootridge",
+    "stale"
+   ],
+   [
+    "rm_erland_fogley",
+    "stale"
+   ],
+   [
+    "rm_philippa_fogwick",
+    "stale"
+   ],
+   [
+    "rm_corra_ropewell",
+    "stale"
+   ],
+   [
+    "rm_sybil_bilgeby",
+    "stale"
+   ],
+   [
+    "rm_disa_raincot",
+    "stale"
+   ],
+   [
+    "rm_agna_dripridge",
+    "stale"
+   ],
+   [
+    "rm_tove_wetgate",
+    "stale"
+   ],
+   [
+    "rm_oskar_sootwick",
+    "stale"
+   ],
+   [
+    "rm_lotte_greyley",
+    "stale"
+   ],
+   [
+    "rm_berit_coalworth",
+    "stale"
+   ],
+   [
+    "rm_signe_ashstack",
+    "stale"
+   ],
+   [
+    "rm_bertil_slagley",
+    "stale"
+   ],
+   [
+    "rm_dagny_pitchton",
+    "stale"
+   ],
+   [
+    "rm_frederick_nailgate",
+    "stale"
+   ],
+   [
+    "rm_brand_mudridge",
+    "stale"
+   ],
+   [
+    "rm_karin_ashgate",
+    "stale"
+   ],
+   [
+    "rm_ivo_fogstack",
+    "stale"
+   ],
+   [
+    "rm_rupert_sootley",
+    "job"
+   ],
+   [
+    "rm_liv_slagstack",
+    "job"
+   ],
+   [
+    "rm_kjell_cinderley",
+    "job"
+   ],
+   [
+    "rm_ragnar_millmarsh",
+    "job"
+   ],
+   [
+    "rm_soren_kelpstack",
+    "job"
+   ],
+   [
+    "rm_orla_wickby",
+    "job"
+   ],
+   [
+    "rm_clemence_rustham",
+    "job"
+   ],
+   [
+    "rm_ulla_rustham",
+    "stale"
+   ],
+   [
+    "rm_gudrun_ropeford",
+    "job"
+   ],
+   [
+    "rm_frida_brineford",
+    "job"
+   ],
+   [
+    "rm_osric_ropeworth",
+    "job"
+   ],
+   [
+    "rm_jorunn_tarham",
+    "job"
+   ],
+   [
+    "rm_una_pitchcot",
+    "job"
+   ],
+   [
+    "rm_mab_pitchcot",
+    "stale"
+   ],
+   [
+    "rm_wynn_rustworth",
+    "job"
+   ],
+   [
+    "rm_gorm_rustmarsh",
+    "stale"
+   ],
+   [
+    "rm_berit_kelpwick",
+    "stale"
+   ],
+   [
+    "rm_dagny_slaghand",
+    "stale"
+   ],
+   [
+    "rm_gerrit_nailford",
+    "stale"
+   ],
+   [
+    "rm_ingrid_saltstack",
+    "stale"
+   ],
+   [
+    "rm_delphine_saltwick",
+    "stale"
+   ],
+   [
+    "rm_ilse_saltley",
+    "stale"
+   ],
+   [
+    "rm_brenna_slaggate",
+    "stale"
+   ],
+   [
+    "rm_jorunn_saltdale",
+    "job"
+   ],
+   [
+    "rm_karin_wetridge",
+    "stale"
+   ],
+   [
+    "rm_orm_wickwick",
+    "job"
+   ],
+   [
+    "rm_sigrun_kelphand",
+    "stale"
+   ],
+   [
+    "rm_hanne_sootham",
+    "job"
+   ],
+   [
+    "rm_moll_dripdale",
+    "job"
+   ],
+   [
+    "rm_runa_ashridge",
+    "job"
+   ],
+   [
+    "rm_gorm_slagworth",
+    "stale"
+   ],
+   [
+    "rm_piet_wickridge",
+    "stale"
+   ],
+   [
+    "rm_corwin_sootstack",
+    "job"
+   ],
+   [
+    "rm_tristram_rainley",
+    "stale"
+   ],
+   [
+    "rm_frida_kelpford",
+    "stale"
+   ],
+   [
+    "rm_lotte_bilgeton",
+    "stale"
+   ],
+   [
+    "rm_arne_wickdale",
+    "stale"
+   ],
+   [
+    "rm_ada_greyhand",
+    "stale"
+   ],
+   [
+    "rm_gerrit_tarmore",
+    "stale"
+   ],
+   [
+    "rm_mathis_slagwell",
+    "stale"
+   ],
+   [
+    "rm_mathis_plankham",
+    "stale"
+   ],
+   [
+    "rm_ivar_nailham",
+    "job"
+   ],
+   [
+    "rm_wenna_naildale",
+    "stale"
+   ],
+   [
+    "rm_solveig_cinderton",
+    "stale"
+   ],
+   [
+    "rm_ottilie_nailmarsh",
+    "stale"
+   ],
+   [
+    "rm_yrsa_nailwell",
+    "stale"
+   ],
+   [
+    "rm_gorm_plankworth",
+    "stale"
+   ],
+   [
+    "rm_corwin_sootton",
+    "stale"
+   ],
+   [
+    "rm_brenna_milldale",
+    "stale"
+   ],
+   [
+    "rm_finn_saltwell",
+    "stale"
+   ],
+   [
+    "rm_liv_cinderby",
+    "stale"
+   ],
+   [
+    "rm_dorcas_rainford",
+    "stale"
+   ],
+   [
+    "rm_gwen_brineby",
+    "stale"
+   ],
+   [
+    "rm_greta_gullton",
+    "stale"
+   ],
+   [
+    "rm_thyra_wetmarsh",
+    "stale"
+   ],
+   [
+    "rm_petra_plankhand",
+    "job"
+   ],
+   [
+    "rm_soren_coaldale",
+    "stale"
+   ],
+   [
+    "rm_lavinia_brinemarsh",
+    "stale"
+   ],
+   [
+    "rm_ivo_cinderham",
+    "stale"
+   ],
+   [
+    "rm_florence_millhand",
+    "stale"
+   ],
+   [
+    "rm_jarl_greyford",
+    "stale"
+   ],
+   [
+    "rm_aldric_fogwell",
+    "stale"
+   ],
+   [
+    "rm_corwin_kelpby",
+    "stale"
+   ],
+   [
+    "rm_una_plankton",
+    "stale"
+   ],
+   [
+    "rm_edric_saltby",
+    "stale"
+   ],
+   [
+    "rm_maren_tarhand",
+    "stale"
+   ],
+   [
+    "rm_delphine_dripham",
+    "stale"
+   ],
+   [
+    "rm_dagny_pitchley",
+    "stale"
+   ],
+   [
+    "rm_delphine_mudwick",
+    "stale"
+   ],
+   [
+    "rm_frida_rainhand",
+    "stale"
+   ],
+   [
+    "rm_eleanor_wetby",
+    "stale"
+   ],
+   [
+    "rm_montague_millcot",
+    "stale"
+   ],
+   [
+    "rm_oda_kelpridge",
+    "stale"
+   ],
+   [
+    "rm_agna_bilgecot",
+    "job"
+   ],
+   [
+    "rm_percival_rustford",
+    "stale"
+   ],
+   [
+    "rm_agnes_wetley",
+    "stale"
+   ],
+   [
+    "rm_runa_nailton",
+    "stale"
+   ],
+   [
+    "rm_lionel_ropestack",
+    "stale"
+   ],
+   [
+    "rm_frida_bilgewell",
+    "stale"
+   ],
+   [
+    "rm_rosamund_sootmarsh",
+    "stale"
+   ],
+   [
+    "rm_desmond_dripcot",
+    "stale"
+   ],
+   [
+    "rm_hanne_coalton",
+    "stale"
+   ],
+   [
+    "rm_palle_plankmore",
+    "stale"
+   ],
+   [
+    "rm_bettany_nailley",
+    "stale"
+   ],
+   [
+    "rm_dagny_ropeley",
+    "stale"
+   ],
+   [
+    "rmx_lothar_abbot",
+    "stale"
+   ],
+   [
+    "rmx_yrsa_kelpstack",
+    "grammar"
+   ],
+   [
+    "rmx_frida_marrowby",
+    "grammar"
+   ],
+   [
+    "rmx_jasper_coalcot",
+    "job"
+   ],
+   [
+    "rmx_soren_cindermarsh",
+    "stale"
+   ],
+   [
+    "rmx_ottilie_dripdale",
+    "stale"
+   ],
+   [
+    "rmx_tove_mossdale",
+    "stale"
+   ],
+   [
+    "rmx_dunstan_sallow",
+    "stale"
+   ],
+   [
+    "rmx_bertil_saltcot",
+    "stale"
+   ],
+   [
+    "rmx_disa_slagwick",
+    "stale"
+   ],
+   [
+    "rmx_dagfinn_wainwright",
+    "grammar"
+   ],
+   [
+    "rmx_magnus_millley",
+    "stale"
+   ],
+   [
+    "rmx_gorm_saltstack",
+    "stale"
+   ],
+   [
+    "rmx_orm_blackwood",
+    "grammar"
+   ],
+   [
+    "rmx_bertil_slagwick",
+    "grammar"
+   ],
+   [
+    "rmx_gerrit_hollis",
+    "grammar"
+   ],
+   [
+    "rmx_ivo_wainwright",
+    "job"
+   ],
+   [
+    "rmx_greta_thornworth",
+    "grammar"
+   ],
+   [
+    "rmx_magnus_saltford",
+    "grammar"
+   ],
+   [
+    "rmx_magda_orme",
+    "stale"
+   ],
+   [
+    "rmx_montague_kettlecote",
+    "stale"
+   ],
+   [
+    "rmx_josephine_fenwick",
+    "stale"
+   ],
+   [
+    "rmx_montague_kettlewick",
+    "grammar"
+   ],
+   [
+    "rmx_aud_kemp",
+    "grammar"
+   ],
+   [
+    "rmx_cressida_wetherell",
+    "grammar"
+   ],
+   [
+    "rmx_philippa_pitchstack",
+    "stale"
+   ],
+   [
+    "rmx_tage_slagworth",
+    "stale"
+   ],
+   [
+    "rmx_soren_ashcote",
+    "stale"
+   ],
+   [
+    "rmx_sigrun_wickham",
+    "grammar"
+   ],
+   [
+    "rmx_wenna_sootham",
+    "stale"
+   ],
+   [
+    "rmx_cressida_cotton",
+    "stale"
+   ],
+   [
+    "rmx_septimus_ives",
+    "stale"
+   ],
+   [
+    "rmx_ulf_kelpmarsh",
+    "job"
+   ],
+   [
+    "rmx_disa_bilgemarsh",
+    "grammar"
+   ],
+   [
+    "rmx_millicent_wickwick",
+    "job"
+   ],
+   [
+    "rmx_maren_hatherley",
+    "grammar"
+   ],
+   [
+    "rmx_grete_dimmock",
+    "stale"
+   ],
+   [
+    "rmx_bo_gilbey",
+    "grammar"
+   ],
+   [
+    "rmx_rika_tarnham",
+    "grammar"
+   ],
+   [
+    "rmx_knut_sootley",
+    "stale"
+   ],
+   [
+    "rmx_hanne_ash",
+    "stale"
+   ],
+   [
+    "rmx_oda_marrowby",
+    "stale"
+   ],
+   [
+    "rmx_disa_nettleby",
+    "grammar"
+   ],
+   [
+    "rmx_sigrun_mudworth",
+    "stale"
+   ],
+   [
+    "rmx_delphine_brackwick",
+    "stale"
+   ],
+   [
+    "rmx_rupert_hatherley",
+    "stale"
+   ],
+   [
+    "rmx_egil_dunn",
+    "stale"
+   ],
+   [
+    "rmx_sigrun_mudmore",
+    "stale"
+   ],
+   [
+    "rmx_jarl_greywell",
+    "job"
+   ],
+   [
+    "rmx_ivo_pitchridge",
+    "stale"
+   ],
+   [
+    "rmx_tilde_slagwell",
+    "stale"
+   ],
+   [
+    "rmx_mab_fogham",
+    "stale"
+   ],
+   [
+    "rmx_jorunn_wetcombe",
+    "grammar"
+   ],
+   [
+    "rmx_orm_nailhand",
+    "stale"
+   ],
+   [
+    "rmx_nessa_slagmarsh",
+    "stale"
+   ],
+   [
+    "rmx_delphine_birch",
+    "grammar"
+   ],
+   [
+    "rmx_desmond_rook",
+    "stale"
+   ],
+   [
+    "rmx_desmond_farrow",
+    "job"
+   ],
+   [
+    "rmx_karin_bilgeford",
+    "job"
+   ],
+   [
+    "rmx_roald_greyham",
+    "stale"
+   ],
+   [
+    "rmx_pim_pitchham",
+    "grammar"
+   ],
+   [
+    "rmx_una_toft",
+    "stale"
+   ],
+   [
+    "rmx_moll_coldharbour",
+    "grammar"
+   ],
+   [
+    "rmx_bertil_coalley",
+    "stale"
+   ],
+   [
+    "rmx_solveig_nailstack",
+    "stale"
+   ],
+   [
+    "rmx_edmund_sootford",
+    "grammar"
+   ],
+   [
+    "rmx_rupert_greyley",
+    "job"
+   ],
+   [
+    "rmx_florence_pennock",
+    "stale"
+   ],
+   [
+    "rmx_hollis_shaw",
+    "stale"
+   ],
+   [
+    "rmx_percival_thornham",
+    "job"
+   ],
+   [
+    "rmx_harriet_platt",
+    "stale"
+   ],
+   [
+    "rmx_kari_wickworth",
+    "stale"
+   ],
+   [
+    "rmx_vidar_kettleham",
+    "grammar"
+   ],
+   [
+    "rmx_delphine_redfern",
+    "stale"
+   ],
+   [
+    "rmx_dagfinn_thornham",
+    "stale"
+   ],
+   [
+    "rmx_rika_gullwell",
+    "stale"
+   ],
+   [
+    "rmx_aldric_thackeray",
+    "grammar"
+   ],
+   [
+    "rmx_dagny_catterick",
+    "stale"
+   ],
+   [
+    "rmx_corra_coldridge",
+    "stale"
+   ],
+   [
+    "rmx_lionel_lowe",
+    "stale"
+   ],
+   [
+    "rmx_ingrid_kendrick",
+    "grammar"
+   ],
+   [
+    "rmx_frida_netherby",
+    "stale"
+   ],
+   [
+    "rmx_ebba_heath",
+    "stale"
+   ],
+   [
+    "rmx_tobias_rainley",
+    "job"
+   ],
+   [
+    "rmx_olaf_stoneley",
+    "grammar"
+   ],
+   [
+    "rmx_piet_lumley",
+    "grammar"
+   ],
+   [
+    "rmx_gorm_halford",
+    "grammar"
+   ],
+   [
+    "rmx_wystan_wethand",
+    "grammar"
+   ],
+   [
+    "rmx_fenwick_mossdale",
+    "stale"
+   ],
+   [
+    "rmx_tobias_blackford",
+    "job"
+   ],
+   [
+    "rmx_grete_dunn",
+    "stale"
+   ],
+   [
+    "rmx_ottilie_slagley",
+    "stale"
+   ],
+   [
+    "rmx_una_thackeray",
+    "grammar"
+   ],
+   [
+    "rmx_cressida_mallory",
+    "job"
+   ],
+   [
+    "rmx_philippa_rainford",
+    "grammar"
+   ],
+   [
+    "rmx_ilse_netherby",
+    "grammar"
+   ],
+   [
+    "rmx_corra_gullford",
+    "grammar"
+   ],
+   [
+    "rmx_aud_saltridge",
+    "job"
+   ],
+   [
+    "rmx_florence_gullworth",
+    "grammar"
+   ],
+   [
+    "rmx_humphrey_sootton",
+    "grammar"
+   ],
+   [
+    "rmx_rosamund_ash",
+    "grammar"
+   ],
+   [
+    "rmx_finn_dripwick",
+    "stale"
+   ],
+   [
+    "rmx_josephine_wickwick",
+    "stale"
+   ],
+   [
+    "rmx_ebba_netherby",
+    "grammar"
+   ],
+   [
+    "rmx_arne_rainworth",
+    "grammar"
+   ],
+   [
+    "rmx_dagfinn_kettlecote",
+    "grammar"
+   ],
+   [
+    "rmx_kjell_coalham",
+    "stale"
+   ],
+   [
+    "rmx_dunstan_plankham",
+    "stale"
+   ],
+   [
+    "rmx_bartholomew_sootmore",
+    "stale"
+   ],
+   [
+    "rmx_dorcas_brineley",
+    "stale"
+   ],
+   [
+    "rmx_mab_plankridge",
+    "grammar"
+   ],
+   [
+    "rmx_sybil_pickering",
+    "grammar"
+   ],
+   [
+    "rmx_lionel_platt",
+    "grammar"
+   ],
+   [
+    "rmx_brenna_abbot",
+    "stale"
+   ],
+   [
+    "rmx_orla_wetridge",
+    "grammar"
+   ],
+   [
+    "rmx_petra_ashgate",
+    "job"
+   ],
+   [
+    "rmx_magnus_tarton",
+    "stale"
+   ],
+   [
+    "rmx_una_brineridge",
+    "stale"
+   ],
+   [
+    "rmx_palle_brinewell",
+    "grammar"
+   ],
+   [
+    "rmx_oda_cotton",
+    "stale"
+   ],
+   [
+    "rmx_philippa_coldby",
+    "stale"
+   ],
+   [
+    "rmx_liv_tarmarsh",
+    "stale"
+   ],
+   [
+    "rmx_ivar_netherworth",
+    "grammar"
+   ],
+   [
+    "rmx_gudrun_mossdale",
+    "grammar"
+   ],
+   [
+    "rmx_dirk_langstead",
+    "stale"
+   ],
+   [
+    "rmx_edda_muddale",
+    "grammar"
+   ],
+   [
+    "rmx_winifred_nailton",
+    "stale"
+   ],
+   [
+    "rmx_harriet_pennock",
+    "stale"
+   ],
+   [
+    "rmx_desmond_hollis",
+    "stale"
+   ],
+   [
+    "rmx_ulla_brindle",
+    "job"
+   ],
+   [
+    "rmx_hollis_kendrick",
+    "grammar"
+   ],
+   [
+    "rmx_theodora_pitchwick",
+    "stale"
+   ],
+   [
+    "rmx_roald_toft",
+    "job"
+   ],
+   [
+    "rmx_cedric_rook",
+    "stale"
+   ],
+   [
+    "rmx_magnus_wetherell",
+    "stale"
+   ],
+   [
+    "rmx_orm_carlisle",
+    "job"
+   ],
+   [
+    "rmx_hester_greyby",
+    "grammar"
+   ],
+   [
+    "rmx_tobias_dunley",
+    "grammar"
+   ],
+   [
+    "rmx_ansel_kelpford",
+    "grammar"
+   ],
+   [
+    "rmx_gunnar_farrow",
+    "grammar"
+   ],
+   [
+    "rmx_egil_blackcombe",
+    "grammar"
+   ],
+   [
+    "rmx_desmond_toft",
+    "grammar"
+   ],
+   [
+    "rmx_bettany_bilgehand",
+    "grammar"
+   ],
+   [
+    "rmx_corra_pennock",
+    "stale"
+   ]
+  ]
+ },
  "issues": [],
  "notes": [
   "The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is off (doc 67, Q2).",
