@@ -355,7 +355,8 @@ void bounds()
     const auto save = (fs::temp_directory_path() / ("ratw-projects6-" + std::to_string(::getpid()) + ".json")).string();
     fs::remove(save);
     const auto world = writeStrip(root);
-    std::ofstream(root / "world.ratw", std::ios::app) << "protected \"um\"\n";
+    // (The city's loop paused, so that nothing but a theft would move the keeper's coins: doc 68.)
+    std::ofstream(root / "world.ratw", std::ios::app) << "protected \"um\"\nloop needs off country on reserve 200 toll 25 carriage 6 wages 14 8 8 8\n";
     {
         Town t(world, save);
         auto& w = t.g.world();

@@ -136,11 +136,25 @@ void dailyLife()
     World demo;
     expect(!demo.restore(saved).ok, "Town checkpoints are rejected by the demo world");
 }
-// The economy's rules erased (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5): a hungry civilian with nothing doesn't go
-// shopping, its hunger stays where it was (Society::NeedsPaused), and nobody is paid a wage.
+// The economy's rules erased (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5), as a switch since doc 68 (the world's
+// "loop needs off" record): a hungry civilian with nothing doesn't go shopping, its hunger stays where it was, and nobody
+// is paid a wage.
+World pausedTown()
+{
+    namespace fs = std::filesystem;
+    const auto dir = fs::temp_directory_path() / ("ratw-town-paused-" + std::to_string(std::hash<std::string>{}(__FILE__) % 100000));
+    fs::remove_all(dir);
+    fs::copy(RATW_SOURCE_DIR "/Data/Worlds/Greyfen", dir, fs::copy_options::recursive);
+    std::ofstream(dir / "world.ratw", std::ios::app) << "loop needs off country on reserve 200 toll 25 carriage 6 wages 14 8 8 8\n";
+    World world;
+    const auto loaded = world.loadWorldFile((dir / "world.ratw").string());
+    expect(loaded.ok, "Town (needs paused) loads: " + loaded.message);
+    expect(world.society().needsPaused(), "with its needs paused");
+    return world;
+}
 void needsPaused()
 {
-    auto world = town();
+    auto world = pausedTown();
     world.setTimeOfDay(12);
     auto state = world.save();
     state.society.residents.at("linden").hunger = 58;

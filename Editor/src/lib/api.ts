@@ -8,7 +8,7 @@ import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 import {authHeaders, studioCall} from '../dm/api';
 import type {Choice, PullPlan, PullResult} from './sync';
-import type {BusinessesBody, EconomyChange, EconomyControls, StoreSwitches} from './economy';
+import type {BusinessesBody, EconomyChange, EconomyControls, GoodsBody, LoopSettings, StoreSwitches} from './economy';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
@@ -124,6 +124,12 @@ export const api = {
             studioCall<EconomyChange>(ATLAS + 'economy/store', changes, {'X-RATW-Editor': await session()}),
         setBusinesses: async (body: BusinessesBody) =>
             studioCall<EconomyChange>(ATLAS + 'economy/businesses', body, {'X-RATW-Editor': await session()}),
+        /** The city's loop (doc 68, 9): wages, the Country, the gate toll, carriage, subsidies, needs paused. */
+        setLoop: async (changes: Partial<LoopSettings>) =>
+            studioCall<EconomyChange>(ATLAS + 'economy/loop', changes, {'X-RATW-Editor': await session()}),
+        /** Which goods the Country supplies (off: their real producers'). */
+        setGoods: async (body: GoodsBody) =>
+            studioCall<EconomyChange>(ATLAS + 'economy/goods', body, {'X-RATW-Editor': await session()}),
     },
     ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {

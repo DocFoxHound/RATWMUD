@@ -59,6 +59,21 @@ DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'daily
 STORE_DEFAULTS = {'internalStore': True, 'storeMarkup': 100, 'storeResale': True, 'resaleMarkup': 75, 'storeRule': False}
 STORE_SWITCHES = ('internalStore', 'storeResale', 'storeRule')
 STORE_MARKUPS = ('storeMarkup', 'resaleMarkup')
+# The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): optional economy keys, at these
+# defaults: residents' needs paused, the Country spending back, its reserve, the gate toll, carriage a wagon load, the
+# day's wages, the goods the Country no longer supplies, and the services the treasury pays a share of.
+LOOP_DEFAULTS = {'needsPaused': False, 'country': True, 'countryReserve': 200, 'gateToll': 30, 'carriage': 6,
+                 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8, 'wageCountry': 8, 'countryOff': [],
+                 'subsidies': {'carriage': 25}}
+LOOP_SWITCHES = ('needsPaused', 'country')
+LOOP_NUMBERS = {'countryReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wageKeeper': 1000, 'wageHand': 1000,
+                'wagePublic': 1000, 'wageCountry': 1000}
+SUBSIDISED = ('carriage',)                           # Society::Subsidised
+
+
+def loop_defaults() -> dict:
+    """LOOP_DEFAULTS, a copy of its own."""
+    return {k: (list(v) if isinstance(v, list) else dict(v) if isinstance(v, dict) else v) for k, v in LOOP_DEFAULTS.items()}
 
 
 def check_economy(economy, person_ids=None) -> list[str]:
@@ -67,9 +82,24 @@ def check_economy(economy, person_ids=None) -> list[str]:
         return ['economy must be an object.']
     errors = []
     keys = set(economy)
-    if not set(ECONOMY_KEYS) <= keys <= set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'}:
+    if not set(ECONOMY_KEYS) <= keys <= set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS):
         errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
-                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule and businesses).')
+                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses '
+                      'and the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ').')
+    for key in LOOP_SWITCHES:
+        if type(economy.get(key, LOOP_DEFAULTS[key])) is not bool:
+            errors.append(f'economy.{key} must be true or false.')
+    for key, limit in LOOP_NUMBERS.items():
+        if not number(economy.get(key, LOOP_DEFAULTS[key]), 0, limit, integer=True):
+            errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
+    off = economy.get('countryOff', [])
+    if (not isinstance(off, list) or len(set(off)) != len(off) or
+            any(not isinstance(g, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', g) for g in off)):
+        errors.append('economy.countryOff must be a list of distinct item ids.')
+    subsidies = economy.get('subsidies', LOOP_DEFAULTS['subsidies'])
+    if (not isinstance(subsidies, dict) or set(subsidies) - set(SUBSIDISED) or
+            any(not number(v, 0, 100, integer=True) for v in subsidies.values())):
+        errors.append('economy.subsidies must be {service: percent 0 to 100} for ' + ', '.join(SUBSIDISED) + '.')
     for key, limit in ECONOMY_KEYS.items():
         if not number(economy.get(key), 0, limit, integer=True):
             errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
@@ -99,6 +129,22 @@ def store_line(economy) -> str | None:
     word = lambda on: 'on' if on else 'off'
     return (f'store {word(e["internalStore"])} {e["storeMarkup"]} resale {word(e["storeResale"])} {e["resaleMarkup"]} '
             f'rule {word(e["storeRule"])}')
+
+
+def loop_lines(economy) -> list[str]:
+    """The NPC records' loop lines (live.people_manifest's, doc 68, 9): a "loop" line when a setting differs from its
+    default, a "countryoff" line a good, a "subsidy" line a service away from its default."""
+    e = {**LOOP_DEFAULTS, **(economy or {})}
+    word = lambda on: 'on' if on else 'off'
+    out = []
+    if any(e[k] != LOOP_DEFAULTS[k] for k in (*LOOP_SWITCHES, *LOOP_NUMBERS)):
+        out.append(f'loop needs {word(not e["needsPaused"])} country {word(e["country"])} reserve {e["countryReserve"]} '
+                   f'toll {e["gateToll"]} carriage {e["carriage"]} wages {e["wageKeeper"]} {e["wageHand"]} {e["wagePublic"]} '
+                   f'{e["wageCountry"]}')
+    out += [f'countryoff {quote(g)}' for g in sorted(e['countryOff'])]
+    defaults = LOOP_DEFAULTS['subsidies']
+    out += [f'subsidy {quote(k)} {v}' for k, v in sorted(e['subsidies'].items()) if defaults.get(k) != v]
+    return out
 
 
 class ValidationError(ValueError):
@@ -772,6 +818,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         manifest.append(f'economy {e["treasury"]} {e["storeHerbs"]} {e["storeMeals"]} {e["dailyHerbs"]} {e["dailyMeals"]}')
         if store_line(e):
             manifest.append(store_line(e))          # The store room's switches, when not at their defaults (doc 67, 6).
+        manifest += loop_lines(e)                   # The city's loop's, likewise (doc 68, 9).
     off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.

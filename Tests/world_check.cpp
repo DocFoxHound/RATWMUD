@@ -13,6 +13,7 @@
 // every NPC in full wherever it is (as before tiers), for comparison. --threads N (default 8; 1: the main thread alone)
 // spreads the world's work over threads as the server's pool does (Docs/Design/31, "Fast-forward"); a deterministic run
 // ends the same on any number.
+#include "RatwItems.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
 
@@ -29,6 +30,7 @@
 #include <map>
 #include <tuple>
 #include <sstream>
+#include <set>
 #include <string>
 
 using namespace ratw;
@@ -229,6 +231,134 @@ void moneyReport(const World& server, const char* when)
                   << "p\n";
     }
 }
+// The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 10): every game hour, the residents hungry (80 or
+// more); at noon, the households with nobody hungry and the shops holding goods; at 23:00 a JSON line for the day.
+struct EconomyWatch
+{
+    int hours = 0, hungrySum = 0, hungryMost = 0, fedHouseholds = 0, households = 0, shops = 0, shopsStocked = 0,
+        foodShops = 0, foodShopsStocked = 0, residents = 0;
+    std::int64_t money0 = -1;
+    static double gini(std::vector<double> v)
+    {
+        if (v.size() < 2)
+            return 0;
+        std::sort(v.begin(), v.end());
+        double sum = 0, weighted = 0;
+        for (std::size_t i = 0; i < v.size(); ++i)
+        {
+            sum += v[i];
+            weighted += double(i + 1) * v[i];
+        }
+        return sum <= 0 ? 0 : (2 * weighted) / (double(v.size()) * sum) - (double(v.size()) + 1) / double(v.size());
+    }
+    void hour(const World& server, int absoluteHour, std::ostream& out)
+    {
+        const auto& society = server.society();
+        if (money0 < 0)
+            money0 = society.moneySupply();
+        const int hod = ((absoluteHour % 24) + 24) % 24;
+        std::map<std::string, std::vector<std::string>> homes;
+        int hungry = 0;
+        residents = 0;
+        for (const auto& [id, life] : society.state().residents)
+        {
+            const auto* e = server.entity(id);
+            if (!e || e->dead)
+                continue;
+            ++residents;
+            hungry += life.hunger >= 80;
+            homes[Society::communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell].push_back(id);
+        }
+        ++hours;
+        hungrySum += hungry;
+        hungryMost = std::max(hungryMost, hungry);
+        if (hod == 12)
+        {
+            households = int(homes.size());
+            fedHouseholds = 0;
+            for (const auto& [home, members] : homes)
+                fedHouseholds += std::all_of(members.begin(), members.end(), [&](const std::string& m) { return society.resident(m)->hunger < 80; });
+            shops = shopsStocked = foodShops = foodShopsStocked = 0;
+            for (const auto& p : society.positions())
+            {
+                if (p.role != "merchant")
+                    continue;
+                const auto held = society.state().careers.positions.find(p.id);
+                if (held == society.state().careers.positions.end() || held->second.holder.empty())
+                    continue;
+                const auto* till = society.account("till:" + p.id);
+                if (!till)
+                    continue;
+                ++shops;
+                const auto sold = society.wares(held->second.holder);
+                shopsStocked += std::any_of(till->stock.begin(), till->stock.end(), [&](const auto& g) {
+                    return g.second > 0 && std::find(sold.begin(), sold.end(), items::baseOf(g.first)) != sold.end();
+                });
+                if (society.foodShop(held->second.holder))
+                {
+                    ++foodShops;
+                    foodShopsStocked += Society::hasFood(*till);
+                }
+            }
+        }
+        if (hod != 23)
+            return;
+        // Gini of cash over earning households (a household with a paid post; doc 68, 10).
+        std::set<std::string> earners;
+        for (const auto& p : society.positions())
+            if (const auto held = society.state().careers.positions.find(p.id);
+                held != society.state().careers.positions.end() && !held->second.holder.empty() && !society.payOf(p).kind.empty())
+                earners.insert(held->second.holder);
+        std::vector<double> wealth;
+        for (const auto& [home, members] : homes)
+            if (std::any_of(members.begin(), members.end(), [&](const std::string& m) { return earners.count(m) > 0; }))
+            {
+                double w = 0;
+                for (const auto& m : members)
+                    w += double(society.cash(m));
+                wealth.push_back(w);
+            }
+        std::int64_t tills = 0;
+        std::vector<std::int64_t> tillCash;
+        for (const auto& [id, a] : society.state().accounts)
+            if (id.rfind("till:", 0) == 0)
+            {
+                tills += a.cash;
+                tillCash.push_back(a.cash);
+            }
+        std::sort(tillCash.begin(), tillCash.end());
+        std::int64_t purses = 0;
+        for (const auto& [id, life] : society.state().residents)
+            purses += society.cash(id);
+        // Who is hungry now (at most twelve): their post and what they hold, to see why.
+        std::string who;
+        int listed = 0;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* e = server.entity(id); e && !e->dead && life.hunger >= 80 && listed++ < 12)
+            {
+                const auto* job = society.jobOf(id);
+                who += (who.empty() ? "" : "; ") + id + " (" + (job ? job->title : std::string("no post")) + ", " +
+                       std::to_string(society.cash(id)) + "p, home " + life.homeCell + ")";
+            }
+        const auto& d = society.loopToday();
+        out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
+            << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
+            << ", \"households_fed\": " << fedHouseholds << ", \"shops\": " << shops << ", \"shops_stocked\": " << shopsStocked
+            << ", \"food_shops\": " << foodShops << ", \"food_shops_stocked\": " << foodShopsStocked
+            << ", \"residents_spent\": " << d.residentsSpent << ", \"food_bought\": " << d.foodBought << ", \"needs_bought\": "
+            << d.needsBought << ", \"comforts_bought\": " << d.comfortsBought << ", \"households_short\": " << d.householdsShort
+            << ", \"country_spent\": " << d.countrySpent << ", \"country_unspent\": " << d.countryUnspent << ", \"drawn\": " << d.drawn
+            << ", \"toll\": " << d.toll << ", \"carriage\": " << d.carriage << ", \"wages_owed\": " << d.wagesOwed
+            << ", \"wages_paid\": " << d.wagesPaid << ", \"tills_short\": " << d.tillsShort << ", \"profit\": " << d.profit << ", \"subsidy\": " << d.subsidy << ", \"alms\": " << d.alms
+            << ", \"country\": " << society.cash(Society::CountryFund) << ", \"treasury\": " << society.cash("treasury")
+            << ", \"carters\": " << society.cash(society.carters()) << ", \"tills\": " << tills << ", \"till_median\": "
+            << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
+            << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
+            << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"hungry_who\": \""
+            << who << "\"}" << std::endl;
+        hours = hungrySum = hungryMost = 0;
+    }
+};
 } // namespace
 
 int main(int argc, char** argv)
@@ -240,6 +370,7 @@ int main(int argc, char** argv)
     bool deterministic = false;                     // --deterministic: work by counts, never the clock (World::setDeterministic).
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     unsigned threads = 8;                           // --threads N.
+    std::string economyFile;                        // --economy FILE: the city's loop, a JSON line a game day (doc 68, 10).
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -256,12 +387,14 @@ int main(int argc, char** argv)
             eventsFile = argv[++i];
         else if (flag == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
+        else if (flag == "--economy" && i + 1 < argc)
+            economyFile = argv[++i];
         else
             usage = true;
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--threads N]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--threads N] [--economy FILE]]\n";
         return 2;
     }
     const fs::path root = argv[1];
@@ -430,8 +563,14 @@ int main(int argc, char** argv)
     std::vector<std::string> heldOnce;
     RoadTally roads;
     roads.load(root);
+    std::ofstream economyOut;
+    if (!economyFile.empty())
+        economyOut.open(economyFile);
+    EconomyWatch watch;
     for (int i = 0; i < ticks; ++i)
     {
+        if (economyOut && i % 12000 == 0)          // Each game hour (12,000 ticks): the economy's samples.
+            watch.hour(server, int(std::floor(from + i * 0.05 / 600.0 + 1e-9)), economyOut);
         const auto begin = std::chrono::steady_clock::now();
         const auto loadedBefore = server.loadedCells();
         if (i % 300 == 0)                          // Walk east and west, as a player would.
@@ -763,10 +902,16 @@ int main(int argc, char** argv)
         if (heldOnce.size() > 40)
             std::cout << "    ... and " << heldOnce.size() - 40 << " more\n";
     }
-    // The store room (doc 67, 6): what its draws have paid, kept in the world.
-    std::cout << "  store room fund (" << ratw::Society::StoreFund << "): " << server.society().cash(ratw::Society::StoreFund) << "p"
-              << (server.society().account(ratw::Society::StoreFund) ? "" : " (no fund: not an authored world)")
-              << "; restocking rule " << (server.society().authored().economy.storeRule ? "on" : "off") << '\n';
+    // The store room and the city's loop (docs 67, 68): the Country's purse, the treasury, the carters.
+    {
+        const auto& society = server.society();
+        const auto carters = society.carters();
+        std::cout << "  the Country (" << ratw::Society::CountryFund << "): " << society.cash(ratw::Society::CountryFund) << "p"
+                  << (society.account(ratw::Society::CountryFund) ? "" : " (no purse: not an authored world)") << "; treasury "
+                  << society.cash("treasury") << "p; carriage to " << carters << " " << society.cash(carters) << "p"
+                  << (carters == ratw::Society::CarriageFund ? " (no carters' yard in this world)" : "") << "; restocking rule "
+                  << (society.authored().economy.storeRule ? "on" : "off") << "; needs " << (society.needsPaused() ? "paused" : "on") << '\n';
+    }
     std::sort(motions.begin(), motions.end());
     double motionTotal = 0;
     for (double m : motions)

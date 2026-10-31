@@ -93,6 +93,19 @@ test('the store room\'s economy keys are optional, checked and kept (doc 67, 6)'
     assert.equal(p.economy.storeMarkup, 120, 'unchanged after a rejected edit');
 });
 
+test('the city loop\'s economy keys are optional, checked and kept (doc 68, 9)', () => {
+    const p = world();
+    const loop = {needsPaused: true, country: false, countryReserve: 50, gateToll: 30, carriage: 9, wageKeeper: 20, wageHand: 9,
+        wagePublic: 7, wageCountry: 6, countryOff: ['fish'], subsidies: {carriage: 40}};
+    setEconomy(p, loop);
+    assert.deepEqual(validate(p).errors, []);
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
+    for (const bad of [{gateToll: 91}, {carriage: -1}, {needsPaused: 'no'}, {countryOff: ['fish', 'fish']}, {countryOff: 'fish'},
+                       {subsidies: {roads: 5}}, {subsidies: {carriage: 101}}, {wageKeeper: 2.5}])
+        assert.throws(() => setEconomy(p, bad), /Economy requires|loop/, JSON.stringify(bad));
+    assert.equal(p.economy.gateToll, 30, 'unchanged after a rejected edit');
+});
+
 test('economy, herb patch and movePlace validate atomically', () => {
     const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
     setEconomy(p, {treasury: 500});

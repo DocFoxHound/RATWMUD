@@ -1,7 +1,7 @@
 // The base the economy's rules were erased to (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5): the catalogue's goods
 // and qualities, shops that hold stock at catalogue prices in their tills, players buying from them and selling to
 // them, money conserved; and residents who go about their days with nothing bought, made, paid or eaten up, their
-// hunger paused (Society::NeedsPaused). An older save, with the economy's state in it, still loads.
+// hunger paused (EconomySpec::needsPaused, doc 68's switch). An older save, with the economy's state in it, still loads.
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -51,6 +51,7 @@ Society town(std::int64_t treasury = 500)
                         person("smith", "the smith at the forge", {"forge", 2.5, 2.5}), person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian"),
                         person("idler", "-", {"square", 3.5, 3.5}, "civilian")};
     roster.economy.treasury = treasury;
+    roster.economy.needsPaused = true;              // (Phase 5's pause, a switch since doc 68: the loop is country_tests'.)
     Society s(Roster::None);
     s.configure(roster);
     return s;

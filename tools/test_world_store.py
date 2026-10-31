@@ -207,7 +207,7 @@ class StoreTests(unittest.TestCase):
                         'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], p['economy'])
+        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS})
         self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
         lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
         self.assertIn('store off 120 resale on 60 rule on', lines)
@@ -227,6 +227,35 @@ class StoreTests(unittest.TestCase):
         # A business key must name an NPC, a markup must be 0 to 1000.
         for bad in ({'businesses': {'nobody': {'internalStore': False}}}, {'storeMarkup': 1001}, {'resaleMarkup': -1},
                     {'storeRule': 'yes'}, {'businesses': {'brann': {'internalStore': 0}}}):
+            with self.assertRaises(E.ValidationError, msg=str(bad)):
+                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+
+    def test_city_loop_settings_round_trip(self):
+        # Doc 68, 9: the loop's settings in live.economy and in the export's records ("loop", "countryoff", "subsidy"
+        # after the "store" line); back at the defaults, no records.
+        p = greyfen()
+        p['economy'] = {**p['economy'], 'gateToll': 30, 'carriage': 9, 'wageHand': 7, 'countryOff': ['fish', 'flour'],
+                        'subsidies': {'carriage': 40}}
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        at = lines.index('loop needs on country on reserve 200 toll 30 carriage 9 wages 14 7 8 8')
+        self.assertEqual(lines[at - 1].split(' ')[0], 'economy')
+        self.assertEqual(lines[at + 1:at + 4], ['countryoff "fish"', 'countryoff "flour"', 'subsidy "carriage" 40'])
+        # The database's own manifest writes the same lines.
+        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+        self.assertEqual(manifest[manifest.index(lines[at]):manifest.index(lines[at]) + 4], lines[at:at + 4])
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        loaded['economy'] = {**loaded['economy'], **E.loop_defaults()}
+        S.save_world(self.conn, loaded, revision)
+        again, _ = S.load_world(self.conn, 'greyfen')
+        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
+        self.assertFalse(any(l.startswith(('loop ', 'countryoff ', 'subsidy ')) for l in lines), 'at the defaults: no loop records')
+        for bad in ({'gateToll': 91}, {'carriage': -1}, {'needsPaused': 'no'}, {'countryOff': ['fish', 'fish']},
+                    {'subsidies': {'roads': 10}}, {'subsidies': {'carriage': 101}}, {'wageKeeper': 1001}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
 
@@ -282,7 +311,7 @@ class WithoutMigration55Tests(unittest.TestCase):
         source = greyfen()
         S.save_world(self.conn, source, None, create=True)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}}, 'the defaults, read')
+        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS}, 'the defaults, read')
         roster = R.load()
         before, after = E.export_files(source, roster), E.export_files(loaded, roster)
         del before['atlas.json'], after['atlas.json']
@@ -297,6 +326,46 @@ class WithoutMigration55Tests(unittest.TestCase):
                 S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
         import world_build
         self.assertTrue(world_build.fingerprint(self.conn, 'greyfen', S.load_roster(self.conn)))
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration56Tests(unittest.TestCase):
+    """A world with 0055 but not 0056 loads and saves as before, reading the loop's defaults; a loop setting away from
+    its default is refused."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+        with W.connect('dev', 'owner', dbname=cls.name) as owner:
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0056'])
+        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
+        S.save_roster(cls.conn, R.load())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
+
+    def test_loads_and_saves_and_refuses_a_loop_setting(self):
+        self.assertTrue(S.store_supported(self.conn))
+        self.assertFalse(S.loop_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.STORE_TABLES)
+        source = greyfen()
+        S.save_world(self.conn, source, None, create=True)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.STORE_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'storeRule': True}}, revision), revision + 1)
+        for change in ({'gateToll': 10}, {'countryOff': ['fish']}, {'subsidies': {'carriage': 0}}):
+            with self.assertRaisesRegex(S.StoreError, '0056'):
+                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
 
 
 if __name__ == '__main__':

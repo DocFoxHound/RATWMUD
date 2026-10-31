@@ -7,7 +7,8 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {api} from '../lib/api';
 import type {Me} from '../dm/api';
 import {ANY, bulk, choices, filtered, goodsText, markupOf, percent, switchText, wouldChange, type EconomyControls as Controls,
-    type Filter, type StoreSwitches} from '../lib/economy';
+    type Filter, type GoodsBody, type LoopSettings, type StoreSwitches} from '../lib/economy';
+import {CountryPanel} from './CountryPanel';
 
 const KEPT = 'ratw.economy.filter';
 const savedFilter = (): Filter => {
@@ -44,6 +45,8 @@ export function EconomyControls({me}: {me: Me}) {
         finally { setBusy(false); }
     };
     const setStore = (changes: Partial<StoreSwitches>) => change(() => api.economy.setStore(changes));
+    const setLoop = (changes: Partial<LoopSettings>) => void change(() => api.economy.setLoop(changes));
+    const setGoods = (body: GoodsBody) => void change(() => api.economy.setGoods(body));
     const setOne = (npc: string, on: boolean) => change(() => api.economy.setBusinesses({set: {[npc]: on}}));
     const setShown = (on: boolean) => {
         const n = wouldChange(shown, on);
@@ -72,7 +75,7 @@ export function EconomyControls({me}: {me: Me}) {
         <div className="sync-body">
             <p className="hint">Every shop keeper, vendor, smith and maker can draw from its store room: the inputs of its own crafts,
                 and what it sells, without end. Not a place: the goods go into its till, and what they cost (the catalogue's price times
-                the markup, Common quality) goes to the store room's fund, kept in the world. {data.note}</p>
+                the markup, Common quality) goes to the Country (doc 68), less the gate toll, the treasury's. {data.note}</p>
             {!data.supported && <p className="publish-error">{data.problem}</p>}
             {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm or admin account.</p>}
             <section className="economy-switches">
@@ -92,12 +95,14 @@ export function EconomyControls({me}: {me: Me}) {
                     <small>{percent(data.resaleMarkup)} (under 100, so a vendor keeps a margin)</small></label>
                 <label className="toggle-row"><input type="checkbox" checked={data.storeRule} disabled={locked}
                     onChange={e => {
-                        if (e.target.checked && !window.confirm('Turn on the restocking rule? At work, at most once a game hour, each keeper brings its wares back to their starting stock: a maker draws one batch\'s inputs and makes it, a vendor draws its goods. It is off until the user confirms this rule (doc 67, Q2).')) return;
+                        if (e.target.checked && !window.confirm('Turn on the restocking rule? At work, once a game hour, each keeper brings its wares back to their shelves (a quarter more than sold yesterday): a maker makes batches from drawn inputs as its crew\'s hours allow, a vendor draws its goods (doc 68, 7).')) return;
                         void setStore({storeRule: e.target.checked});
                     }} /> {switchText('rule', data.storeRule)}</label>
                 <p className="hint">{data.storeRule ? 'Keepers restock from the store room as they work.'
                     : 'With the rule off, no NPC uses the store room: only the Dev Console\'s /store does.'} {data.takesEffect}</p>
             </section>
+            <CountryPanel data={data} locked={!canChange || busy} setLoop={setLoop} setGoods={setGoods} />
+            <h3>The store room, business by business</h3>
             <div className="economy-filters">
                 <label>Business <select value={filter.business} onChange={e => setFilter(f => ({...f, business: e.target.value}))}>
                     <option value={ANY}>every business</option>
