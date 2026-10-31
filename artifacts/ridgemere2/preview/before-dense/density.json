@@ -1,0 +1,156 @@
+{
+ "inside_area": 225456,
+ "districts": {
+  "wharf": {
+   "land": 23100,
+   "built%": 16.0,
+   "open": 19412,
+   "residents": 12,
+   "open/res": 1617.7,
+   "homes": 3
+  },
+  "abbey": {
+   "land": 8424,
+   "built%": 25.9,
+   "open": 6243,
+   "residents": 0,
+   "open/res": null,
+   "homes": 0
+  },
+  "northgate": {
+   "land": 20160,
+   "built%": 5.7,
+   "open": 19011,
+   "residents": 29,
+   "open/res": 655.6,
+   "homes": 12
+  },
+  "greatly": {
+   "land": 13920,
+   "built%": 11.9,
+   "open": 12270,
+   "residents": 9,
+   "open/res": 1363.3,
+   "homes": 2
+  },
+  "sump": {
+   "land": 33184,
+   "built%": 71.7,
+   "open": 9390,
+   "residents": 181,
+   "open/res": 51.9,
+   "homes": 77
+  },
+  "commons": {
+   "land": 61220,
+   "built%": 14.4,
+   "open": 52409,
+   "residents": 188,
+   "open/res": 278.8,
+   "homes": 86
+  },
+  "keep": {
+   "land": 3300,
+   "built%": 38.8,
+   "open": 2019,
+   "residents": 15,
+   "open/res": 134.6,
+   "homes": 1
+  },
+  "admin": {
+   "land": 16800,
+   "built%": 14.0,
+   "open": 14445,
+   "residents": 24,
+   "open/res": 601.9,
+   "homes": 9
+  },
+  "cinders": {
+   "land": 10708,
+   "built%": 28.1,
+   "open": 7700,
+   "residents": 27,
+   "open/res": 285.2,
+   "homes": 11
+  },
+  "palace": {
+   "land": 18920,
+   "built%": 25.3,
+   "open": 14128,
+   "residents": 5,
+   "open/res": 2825.6,
+   "homes": 2
+  },
+  "rise": {
+   "land": 15720,
+   "built%": 11.2,
+   "open": 13966,
+   "residents": 27,
+   "open/res": 517.3,
+   "homes": 10
+  }
+ },
+ "homes_used": 225,
+ "occupied_homes_per_structure": {
+  "1": 159,
+  "2": 33
+ },
+ "sump_occupied": {
+  "1": 51,
+  "2": 13
+ },
+ "design_homes_per_structure": {
+  "1": 154,
+  "2": 67,
+  "3": 7
+ },
+ "sump_design": {
+  "1": 41,
+  "2": 47,
+  "3": 7
+ },
+ "wall_tiles_on_district_borders(excl. walled pieces)": 752,
+ "within1": 752,
+ "tier_edge_wall_tiles": 752,
+ "stairs": 32,
+ "built_inside%": 24.2,
+ "crossings": {
+  "abbey/northgate": 1,
+  "sump/wharf": 10,
+  "commons/sump": 1,
+  "cinders/wharf": 11,
+  "admin/cinders": 3,
+  "admin/rise": 1,
+  "cinders/palace": 1,
+  "palace/rise": 1,
+  "abbey/sump": 1,
+  "commons/northgate": 1,
+  "commons/greatly": 1,
+  "commons/keep": 1,
+  "cinders/sump": 1,
+  "admin/sump": 1,
+  "admin/commons": 3,
+  "commons/rise": 2,
+  "admin/palace": 1
+ },
+ "openBorder": {
+  "abbey/northgate": 5,
+  "sump/wharf": 162,
+  "commons/sump": 5,
+  "cinders/wharf": 95,
+  "admin/cinders": 7,
+  "admin/rise": 3,
+  "cinders/palace": 3,
+  "palace/rise": 3,
+  "abbey/sump": 5,
+  "commons/northgate": 174,
+  "commons/greatly": 5,
+  "commons/keep": 5,
+  "cinders/sump": 22,
+  "admin/sump": 3,
+  "admin/commons": 139,
+  "commons/rise": 8,
+  "admin/palace": 216
+ },
+ "note": "Measured on the city as written before doc 67 Dense city (ridgemere2 a42d3d6): built = not public (solid or shut in); open/res = public open tiles per resident; tier_edge_wall_tiles = the # retaining walls on district borders; crossings = separate openings between two districts; openBorder = open tile pairs on the border."
+}

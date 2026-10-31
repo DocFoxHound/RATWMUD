@@ -142,6 +142,11 @@ checks (section 8) verify every one.
 
 ## 2. The map
 
+> **Superseded in part (2026-10-31): the city was made denser.** The canvas, the walls, the districts' shapes and
+> heights and most coordinates below describe the first build. The current layout is in the Progress notes, "Dense
+> city": a 768 × 768 canvas (3 × 3 cells), the inside of the walls x 172–468, y 154–452, irregular district borders,
+> no retaining walls, ground that climbs by slopes and stair-streets. The geography (what borders what) is unchanged.
+
 **Canvas.** The canvas is 1,024 × 768 tiles in cells of 256, so 4 × 3 = 12 cells:
 
 - Ids are `w_ridgemere_<cx>_<cy>` (cx 0–3, cy 0–2). North is up and y grows southward.
@@ -1980,3 +1985,133 @@ Backup before: `Saved/Backups/ratw_ridgemere2-before-fix.dump`. The write was re
   5.1 ms, money conserved, 0 without a route, the same 5 of 559 held at the Commons School at 6:00. A scratch server
   starts with 559 residents and serves the client. All 68 C++ tests pass (`store_room_behaviors`: 239 checks). The client
   walk (section 8, step 7) is still not made.
+
+### Dense city (2026-10-31)
+
+Branch `r2-city-dense`, from `ridgemere2` (a42d3d6). The user (verbatim):
+
+> each area (sump, middle class, upper class) shouldn't have such hard boundaries between them, and it shouldn't be so
+> defined. The border between these regions should blend better and transition a little bit. It looks like there may be
+> walls between them and I don't want that either. The city should also be a bit more condensed. Put more families
+> together in the slums, reduce the amount of space someone gets in the middle class area (Ridgemere is a dense city,
+> really the only people that get any space at all are the Minor and Major Houses). Shrink the size of the grounds for
+> all Minor and Major houses, including the abbey. Make the city more compact and condensed, and also give it some
+> interesting things.
+
+Backup before: `Saved/Backups/ratw_ridgemere2-before-dense.dump` (main repo). The write was rerun (revision 42 to 47,
+build 43; each write also backs up into `artifacts/backups/`). The old overview, Sump view, report and measured density
+are in `artifacts/ridgemere2/preview/before-dense/` for comparison.
+
+**The layout.**
+
+- **Canvas:** 768 × 768, 3 × 3 cells (the empty east column of moor is gone). The city is in cells 0_0, 1_0, 0_1 and
+  1_1; Grayrock Hall in 0_2, Timberland Court in 1_2, Fellhall in 2_1. Cell names and claims follow (`house_greatly` on
+  1_0, `house_fell` on 2_1).
+- **Inside the walls:** x 172–468, y 154–452, **88,208 tiles, 61% less than the 225,456 before.** This is more than the
+  35–50% first aimed at: at 50% the Commons and the Sump were still about twice the land their buildings needed (the
+  previews showed whole blocks of empty yards), so the east wall came in 40 more and the south band 30 more. The quay is
+  still at x 168–172 and the wharf x 172–210; the walls, gates (N 360, E 300, S 412, Cinder 240, Harbour 190), eight
+  piers, four cranes and the slipway moved with it.
+- **Districts are not rectangles.** `lay_districts` draws the borders on coordinates warped by noise (up to about 22
+  tiles), then pins only the set pieces: the wharf, the abbey (x 210–290, y 154–216), the Greatly compound (x 392–468,
+  y 154–224), the Old Keep (x 390–434, y 322–364, on the Commons/Rise border), the palace (x 288–382, y 392–450), the
+  squares and the Rise's lots. Crumbs of one district inside another join their neighbour. A blurred "wealth" field
+  (Sump 0, Commons 1, Rise and Houses 2) picks what is built in the band where two meet.
+- **No walls between districts.** `tier_edges`/`paint_edges` are gone. The only walls inside the city are the city wall,
+  the Keep's, the abbey's and the Greatly compound's. Checked: **0 wall tiles on district borders (752 before)**.
+- **Slopes, not tiers.** `lay_heights` makes one ground field: 0.5 at the wharf, rising east from about 1.0 at the quay
+  to 3.5 on the Rise and in the Greatly compound, with low hills, its contours bowed so they cross the borders rather
+  than follow them. The squares, the walled pieces and the palace's forecourt are levelled, and the ground eases into
+  them at most 0.12 a tile; a last pass smooths any step over a half. So **no two neighbouring open tiles differ by more
+  than half a step** (checked; gates and stairs aside), and a step is no likelier on a border between quarters (0.8% of
+  border pairs) than off one (1.8%). Wherever a street climbs half a step, its upper tile is painted `^`: the
+  stair-streets climbing from the wharf. Every building stands at the height of the street outside its door, and each
+  door's sill is set to its street.
+- **Many crossings.** After the lanes and alleys are laid, `stitch_borders` cuts a passage two wide across each border
+  about every 14 tiles, from a street on one side to one on the other; `connect_streets` then joins (or drops) any lane
+  the buildings cut off. Open border between the Sump and the Commons: **97 tiles in 11 openings (5 tiles, 1 opening,
+  the Gut's stairs, before)**; Commons/Rise 69 tiles in 5 (8 in 2 before); admin/Sump 88 in 7 (3 in 1).
+- **Blending.** The Sump's own shops stand on its edge toward the Commons; four three-home tenements ("... Rents") stand
+  on the Commons' edge toward the Sump; the six largest middle-class houses stand nearest the Rise in the manor style.
+
+**Density.**
+
+| District | Land (before) | Built (before) | Open tiles a resident (before) | Residents |
+|---|---|---|---|---|
+| The Sump | 12,278 (33,184) | 66% (72%) | 23 (52) | 179 |
+| The Commons | 20,989 (61,220) | 46% (14%) | 64 (279) | 178 |
+| Northgate | 5,718 (20,160) | 26% (6%) | 128 (656) | 33 |
+| Admin | 6,608 (16,800) | 41% (14%) | 145 (602) | 27 |
+| The Cinders | 4,893 (10,708) | 63% (28%) | 57 (285) | 32 |
+| The Rise | 8,111 (15,720) | 14% (11%) | 258 (517) | 27 |
+| Greatly compound | 5,320 (13,920) | 25% (12%) | 444 (1,363) | 9 |
+| The abbey | 4,960 (8,424) | 33% (26%) | - | 0 |
+| The palace | 6,159 (18,920) | 34% (25%) | 812 (2,826) | 5 |
+| The wharf | 11,324 (23,100) | 25% (16%) | 711 (1,618) | 12 |
+| **Inside the walls** | **88,208 (225,456)** | **40% (24%)** | | 559 placed |
+
+"Built" is what is not public open ground (solid tiles and tiles shut in), as `district_metrics` measures it. The Sump's
+share fell a little because it now holds the Rag Market, Cistern Court, the Hundred Steps and the Gut on a third of the
+land; its open ground per resident halved.
+
+- **Homes (R32):** 224 lived in. No structure is built with more than 3 homes (built: 105 of 1, 13 of 2, 42 of 3; lived
+  in: 94, 11 and 36). **The Sump's houses:** 28 built with three homes, 3 with two, 3 one-room cottages; **all 23 lived in
+  hold three households.** `Placement.homes` now fills houses floor by floor, one house after another (three-home houses
+  first), so the spare ones are left whole (24 spare Sump homes: five three-home houses, the two-home houses and the
+  cottages; one spare in the middle town's new houses). Sump floors are smaller (about 1.2 × the block).
+- **The middle class:** 24 old houses kept (not 40), their households moving into new row houses of two and three homes
+  on narrow lots and Sump-edge tenements of three (14 built, 42 homes: as many of the 19 planned as found a lot on a
+  lane once the shops and houses were in). Everything in the middle town is terraced along its lanes (no
+  gap), its reused blocks drawn about as big as their rooms, its leftover ground one outhouse and a yard at most.
+- **Grounds:** the Greatly compound 76 × 70 (was 120 × 116), the abbey 80 × 62 (108 × 78), the palace 94 × 58 with a
+  small privy garden and no wall (220 × 86), the five Rise mansions in railed lots of 22–30 × 28 (44 × 30, walled), the
+  estates outside 112 × 78, 128 × 104 and 100 × 78 (150 × 100, 160 × 130, 125 × 100).
+
+**Landmarks** (each in `city.landmarks`, the report and the cell descriptions; no new jobs, the business mix unchanged):
+
+1. **The Bay Light and the Mole:** the north pier runs on 40 tiles as a stone breakwater; a two-storey lighthouse at its
+   head (`r2_the_bay_light`, `_up`, the lamp room with four braziers).
+2. **The Clock Tower** on Clock Square, where Abbey Row meets Gate Street: two storeys, the clock and the bell loft
+   (`r2_the_clock_tower`, `_up`).
+3. **The Wall-Builders:** a statue of the first Greatly masons on Greatly Square below the compound gate.
+4. **Pillory Square** before the Old Keep's gate: the gallows, the pillory and the stocks.
+5. **The Mercy:** an old Grayrock carrack hauled up on the quay, a hull-shaped block; the Knucklebones tavern is inside
+   her (its interior and keeper unchanged, its description says where it is).
+6. **The Cisterns and the Runnel:** three stone rain tanks on Cistern Court in the Sump, and an open gutter channel (`~`)
+   from them down to the Gut and along it to the quay. The bathhouse, moved to the Sump's edge, says it is fed from them.
+7. **The Hundred Steps:** a stair-street two wide from the quay up through the north Sump to Abbey Row.
+8. **The Sunken Street:** the old street level under the Sump's edge, a vaulted lane 54 tiles long at z −1
+   (`r2_the_sunken_street`), with a stair-house in the Sump and another in the Commons (two door links).
+9. **The Tallow Arcade:** a covered arcade, a through-building between two streets of the Commons on the Sump's edge
+   (`r2_the_tallow_arcade`).
+
+**Checks** (`checks()`, 58, all pass; `tools/test_ridgemere2.py`, 19 tests): the old ones moved to the new geometry
+(R4 allows the Mole; R6, R11, R16, R17, R20, R23, R24 test borders and touching rather than coordinates; the tier-edge and
+seam checks are replaced), and new ones: no wall on a district border; no step over half a tile; the ground climbs at
+least 1.5 from the Sump to the Rise and the compound; steps no likelier on borders; no district fills 90% of its bounding
+box; crossings per border (openings, or 8-tile lengths of open border); the city 35–65% smaller than before; no structure
+built with more than 3 homes; the Sump's houses mostly three homes and most lived-in ones full; every building the plan
+keeps or adds placed; 6–10 named landmarks. The Sump's targets (R7–R9) all still pass (coverage 66%, widest open 6, 67%
+narrow, 26 dead ends, 18 sizes, 15 L-shapes, 20 through-buildings (12 by a snicket cut from the back to an alley), 41
+passages in chains of 5, 5, 4, 3 and 3, 6 courts). One is measured differently: the share of alleys two wide or less
+leaves out the Sump's named lanes, squares and courts (the Gut, Tarry Lane, the Rag Market, Cistern Court, the Hundred
+Steps, the courts), which are wide by design and on a third of the land would otherwise outweigh its alleys; the share
+of all its public tiles is reported beside it.
+
+**Results.** 559 placed, 524 unplaced; the same people, families together, every one with a home and beds;
+`HOUSE_POSTS`, the Crown, `ROOM_RENAMES`, `CLAIMS_TO`, the Records Office's staff kept; 1,083 voices and 329 relations
+kept; no "dog". 9 cells, 815 interiors (189 new `r2_`), 509 links (205 stairs, 261 doors, 43 passages). A second plan
+from the written world changes no NPC's place, and `rename_house.py --dry-run` finds 0 changes. `world_check` (6:00–8:00,
+20 players): 824 places loaded, 0 failures, p99 5.0 ms, money conserved, 0 without a route, 4 of 559 (0.72%) held at 6:00,
+all on the Commons School's door (the abbey school has a door at each end now; the share of children sent to it is the
+old 35%); `fund:store` 0p. A scratch server starts on it with 559 residents and serves the client.
+
+**For the user.**
+
+- The city is 61% smaller, not 35–50%: see above. If it feels too tight in play, the east wall can go back out by
+  changing `INSIDE`, `GREATLY`, `KEEP` and the east coordinates together.
+- `ridgemere2_people.reused_houses` keeps 24 middle-class houses instead of 40 (`MIDDLE_HOUSES`); the other 16 households
+  live in row houses now.
+- The middle town has almost no spare homes (the Sump has 24). Growth that wants middle-class homes will need more row
+  houses (raise `ROWS_COMMONS`; they go wherever a lot on a lane is left).
+- The client walk (section 8, step 7) is still not made; the graph walk covers reachability.

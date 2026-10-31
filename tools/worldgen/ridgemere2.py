@@ -40,25 +40,27 @@ from . import field, preview  # noqa: E402
 from .buildings import (STYLES, Building, Plan, boarded, cathedral, dorter, flats, hall, keep_tower,  # noqa: E402
                         market_hall, office_floor, palace_antechamber, palace_residence, palace_wing, shed,
                         shop_with_flat, stacks, stairs_between, tavern, works_kit)
-from .canvas import DEFAULT_HEIGHT, RAMP, SOLID, Canvas, half  # noqa: E402
-from .cities import CitySite, Ridgemere, fp, grow  # noqa: E402
+from .canvas import DEFAULT_HEIGHT, RAMP, SOLID, Canvas, half  # noqa: E402  (RAMP: district_metrics)
+from .cities import CitySite, Ridgemere, fp, grow, shrink  # noqa: E402
 from .site import OPPOSITE, STEP as DOOR_STEP, TURNS, Lots, door_tile, footprint_size  # noqa: E402
 
 import terrain_catalog  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 ART = ROOT / 'artifacts' / 'ridgemere2'
-W, H = 1024, 768
+W, H = 768, 768
 CELL = 256
 SEED = 20261030
 REGION = 'ridgemere'
 
-# --- The plan's geometry (doc 67, section 2). Coordinates are canvas tiles; ranges are half-open. -----------------
+# --- The plan's geometry (doc 67, section 2; "Dense city" in its Progress notes). Canvas tiles; ranges half-open. ----
+# The city was made denser on 2026-10-31: the inside of the walls shrank from 488 x 462 to 336 x 330 tiles (about half),
+# the districts lost their rectangles and their retaining walls, and the ground climbs from the bay by slopes and
+# stair-streets instead of walled tiers.
 SHORE = [(96, 0), (110, 120), (168, 170), (168, 610), (120, 660), (96, 768)]
-INSIDE = (172, 660, 154, 616)            # x0, x1, y0, y1 inside the wall
+INSIDE = (172, 468, 154, 452)            # x0, x1, y0, y1 inside the wall
+QUAY_X = 210                             # the wharf is x 172-210; the Sump and the Cinders meet it there
 WALL = 4
-LEVEL = {'wharf': .5, 'sump': 1.0, 'cinders': 1.0, 'abbey': 2.0, 'northgate': 2.0, 'commons': 2.0, 'keep': 2.0,
-         'admin': 2.0, 'palace': 2.0, 'greatly': 3.0, 'rise': 3.0}
 DISTRICT_IDS = ['outside', 'wharf', 'abbey', 'northgate', 'greatly', 'sump', 'commons', 'keep', 'admin', 'cinders',
                 'palace', 'rise', 'wall']
 # The talk quarter each district's buildings are filed under (doc 67, section 5, Talk; talk_seed.quarter_of).
@@ -67,20 +69,59 @@ TALK_DISTRICT = {'wharf': 'wharf', 'abbey': 'commons_abbey', 'northgate': 'commo
                  'palace': 'office_palace', 'rise': 'heights'}
 GROUND = {'wharf': 'f', 'abbey': 'f', 'northgate': '.', 'greatly': ',', 'sump': '.', 'commons': '.', 'keep': 'f',
           'admin': 'f', 'cinders': '>', 'palace': 'f', 'rise': ','}
-GATES = {'N': (476, 150), 'E': (660, 360), 'S': (600, 620), 'cinder': (290, 620), 'harbour': (197, 620)}
-PIERS = [200, 245, 290, 335, 380, 425, 470, 515]
-CRANES = [245, 335, 425, 515]
-SQUARES = {'market': ((470, 360), (24, 16)), 'rag': ((290, 350), (12, 8)), 'records': ((400, 499), (16, 11)),
-           'palace': ((430, 542), (60, 9)), 'greatly': ((600, 282), (14, 8))}
-SPAWN = (470, 380)
-ESTATES = {'mossgrave': ('Timberland Court', (330, 650, 150, 100)), 'fell': ('Fellhall', (780, 300, 160, 130)),
-           'grayrock': ('Grayrock Hall', (125, 650, 125, 100))}
+# How well-off each district is: blurred over the borders, it picks the buildings of the band where two districts meet
+# (doc 67, Dense city: the borders blend).
+WEALTH = {'wharf': .2, 'abbey': 1.0, 'northgate': 1.0, 'greatly': 2.2, 'sump': 0.0, 'commons': 1.0, 'keep': 1.2,
+          'admin': 1.2, 'cinders': .2, 'palace': 2.2, 'rise': 2.0}
+# The walled pieces inside the city (the only walls inside it besides the city wall itself).
+ABBEY = (210, 290, 154, 216)
+GREATLY = (392, 468, 154, 224)
+KEEP = (390, 434, 322, 364)
+PALACE = (288, 382, 392, 450)
+GATES = {'N': (360, 150), 'E': (468, 300), 'S': (412, 452), 'cinder': (240, 452), 'harbour': (190, 452)}
+PIERS = [176, 206, 236, 262, 290, 320, 350, 380]
+CRANES = [206, 262, 320, 380]
+CUSTOMS_PIER, STAIRS_PIER = 380, 290
+SQUARES = {'market': ((360, 300), (22, 14)), 'rag': ((244, 302), (11, 7)), 'records': ((330, 372), (13, 7)),
+           'palace': ((336, 397), (45, 4)), 'greatly': ((430, 233), (12, 7)), 'pillory': ((412, 311), (11, 6)),
+           'clock': ((362, 188), (11, 6))}
+SPAWN = (360, 312)
+# The three Houses' estates outside the walls, their grounds about 40% smaller than before.
+ESTATES = {'mossgrave': ('Timberland Court', (300, 524, 112, 78)), 'fell': ('Fellhall', (552, 266, 128, 104)),
+           'grayrock': ('Grayrock Hall', (140, 646, 100, 78))}
+# The Rise: five Minor House lots (x, y, w, h), each a house in a small railed garden.
+RISE_LOTS = [(388, 374, 22, 28), (418, 374, 22, 28), (442, 374, 22, 28), (388, 408, 22, 28), (418, 408, 22, 28)]
+# Old district boxes -> new, to carry the old map's anchors for the reused buildings over.
+REMAP = {'wharf': ((172, 222, 154, 616), (172, 210, 154, 444)), 'sump': ((222, 364, 232, 470), (212, 298, 216, 344)),
+         'commons': ((364, 660, 250, 470), (300, 466, 228, 350)), 'northgate': ((330, 540, 154, 250), (290, 392, 158, 214)),
+         'admin': ((260, 540, 470, 530), (248, 380, 350, 388)), 'cinders': ((222, 320, 470, 616), (212, 270, 376, 450))}
+
+
+def remap(district, pt):
+    if pt is None or district not in REMAP:
+        return pt
+    (a0, a1, b0, b1), (c0, c1, d0, d1) = REMAP[district]
+    return (c0 + (pt[0] - a0) * (c1 - c0) / (a1 - a0), d0 + (pt[1] - b0) * (d1 - d0) / (b1 - b0))
 
 
 def box(x0, x1, y0, y1):
     m = np.zeros((H, W), dtype=bool)
     m[max(0, y0):max(0, y1), max(0, x0):max(0, x1)] = True
     return m
+
+
+def blur(a, r):
+    """A box blur of radius r (twice, so it is smooth)."""
+    a = a.astype(np.float32)
+    for _ in range(2):
+        for axis in (0, 1):
+            pad = [(0, 0), (0, 0)]
+            pad[axis] = (r + 1, r)
+            s = np.cumsum(np.pad(a, pad, mode='edge'), axis=axis)
+            hi = np.take(s, range(2 * r + 1, s.shape[axis]), axis=axis)
+            lo = np.take(s, range(0, s.shape[axis] - 2 * r - 1), axis=axis)
+            a = (hi - lo) / (2 * r + 1)
+    return a
 
 
 def shore_x(y):
@@ -349,26 +390,22 @@ class MiniRealm:
 
 
 CELL_NAMES = {
-    (0, 0): ('Ridgemere Bay, North Headland', 'The north headland of Ridgemere Bay: wet moor above the water, and the '
-             'abbey\'s wall and the wharf\'s north end inside the city wall.'),
-    (1, 0): ('Ridgemere, Northgate', 'Northgate: the middle town\'s north quarter under the North Gate, the abbey close '
-             'at its west end and the North Road running out across the moor.'),
-    (2, 0): ('Ridgemere, the Greatly Compound', 'House Greatly\'s walled compound in the city\'s north-east corner, '
-             'hard under the wall the Greatlys say they built.'),
-    (3, 0): ('The Rainward Moor, North', 'Wet heath and moor north-east of the city walls.'),
-    (0, 1): ('Ridgemere, the Wharf', 'The wharf inside the sea wall: piers, cranes and warehouses, and the first '
-             'crooked alleys of the Sump running down to the quay.'),
-    (1, 1): ('Ridgemere, the Sump and the Commons', 'The Sump\'s alleys and the Rag Market below; up the stairs, the '
-             'Commons and Market Square, the city\'s market.'),
-    (2, 1): ('Ridgemere, the East Commons', 'The Commons\' east end: the Old Keep, the East Gate and the East Road out '
-             'of it.'),
-    (3, 1): ('Fellhall', 'House Fell\'s estate on the East Road: the hall, its press house, distillery and cellars.'),
-    (0, 2): ('Grayrock Hall', 'The Cinders\' smoke over the south wharf and the slipway; outside the Harbour Gate, '
-             'House Grayrock\'s hall on the south headland.'),
-    (1, 2): ('Ridgemere, the Cinders and the Palace', 'The Cinders, the city\'s forges and kilns; the Records Office and '
-             'the Great Palace above them; outside the Cinder Gate, Timberland Court.'),
-    (2, 2): ('Ridgemere, the Rise', 'The Rise, where the Minor Houses keep their walled mansions, and the South Gate.'),
-    (3, 2): ('The Rainward Moor, South', 'Wet heath and moor south-east of the city walls.'),
+    (0, 0): ('Ridgemere Bay, North Headland', 'The north headland of Ridgemere Bay: the Mole running out into the bay to '
+             'the Bay Light, the abbey\'s wall over the wharf\'s north end, and the Hundred Steps climbing from the quay.'),
+    (1, 0): ('Ridgemere, Northgate', 'Northgate under the North Gate: tight middle-town streets round the Clock Tower, '
+             'and House Greatly\'s walled compound in the corner, the Wall-Builders on Greatly Square below its gate.'),
+    (2, 0): ('The Rainward Moor, North', 'Wet heath and moor north-east of the city walls.'),
+    (0, 1): ('Ridgemere, the Wharf and the Sump', 'The wharf inside the sea wall, its piers and cranes; behind it the '
+             'Sump\'s alleys, the Rag Market, the Cisterns, and the old hulk the Mercy hauled up on the quay; the Cinders\' '
+             'smoke to the south.'),
+    (1, 1): ('Ridgemere, the Commons and the Rise', 'The middle town climbing east from the Sump: Market Square and its '
+             'Hall, the Records Office, the Great Palace, the Old Keep over Pillory Square, and the Rise\'s railed '
+             'mansions under the South Gate.'),
+    (2, 1): ('Fellhall', 'House Fell\'s estate on the East Road: the hall, its press house, distillery and cellars.'),
+    (0, 2): ('Grayrock Hall', 'House Grayrock\'s hall on the south headland, at the end of the Wharf Road.'),
+    (1, 2): ('Timberland Court', 'House Timberland\'s court on the moor south of the city, at the end of the Cinder '
+             'Road.'),
+    (2, 2): ('The Rainward Moor, South', 'Wet heath and moor south-east of the city walls.'),
 }
 
 
@@ -572,13 +609,14 @@ class Spec:
         self.make, self.reuse, self.near = make, reuse, near
         self.homes, self.style, self.open_door = homes, style, open_door
         self.claims, self.business = claims, business
+        self.scale = .72                  # (a reused building's block: its interior's size times this)
         self.building = make() if make else None
 
     @property
     def footprint(self):
         if self.building is not None:
             return self.building.footprint
-        return fp(*self.reuse['size'])
+        return fp(*self.reuse['size'], scale=self.scale)
 
     @property
     def area(self):
@@ -590,7 +628,7 @@ class Spec:
 # The city
 # ---------------------------------------------------------------------------------------------------------------
 class RidgemereCity(Ridgemere):
-    """Ridgemere 2.0 inside its walls (doc 67, sections 2 and 3)."""
+    """Ridgemere 2.0 inside its walls (doc 67, sections 2 and 3, and its Dense city notes)."""
 
     def __init__(self, world, site, project, old):
         super().__init__(world, site)
@@ -610,10 +648,15 @@ class RidgemereCity(Ridgemere):
         self.yards_count = 0
         self.structure_district = {}
         self.street = np.zeros((H, W), dtype=bool)
-        self.edges = np.zeros((H, W), dtype=bool)
+        self.edges = np.zeros((H, W), dtype=bool)     # (no retaining edges any more: kept for the lot finders)
+        self.stairs_mask = np.zeros((H, W), dtype=bool)
+        self.mole = np.zeros((H, W), dtype=bool)
         self.infill = Counter()
-        self.gate_inside = {'N': (476, 159), 'E': (654, 360), 'S': (600, 609), 'harbour': (197, 610),
-                            'cinder': (290, 610), 'customs': (179, 473)}
+        self.landmarks = []               # [{'name', 'where', 'what', 'x', 'y', 'interiors'}]
+        self.stitches = Counter()
+        self.unplaced = []                # specs that found no lot (a check fails on any)
+        self.gate_inside = {'N': (360, 159), 'E': (462, 300), 'S': (412, 446), 'harbour': (190, 446),
+                            'cinder': (240, 446), 'customs': (179, CUSTOMS_PIER + 3)}
 
     # -- helpers ---------------------------------------------------------------------------------------------------
     def D(self, name):
@@ -635,27 +678,34 @@ class RidgemereCity(Ridgemere):
         return m
 
     def level_at(self, x, y):
-        return float(self.levels_map[int(y), int(x)])
+        return float(self.c.heights[int(y), int(x)])
+
+    def landmark(self, name, where, what, x, y, interiors=()):
+        self.landmarks.append({'name': name, 'district': where, 'what': what, 'x': int(x), 'y': int(y),
+                               'interiors': list(interiors)})
 
     # -- placing a building ------------------------------------------------------------------------------------------
     def put(self, spec, x0, y0, facing, w=None, h=None, mask=None):
-        """Place a spec at (x0, y0) with its door on `facing`; w, h: the block as placed (a reused building's)."""
+        """Place a spec at (x0, y0) with its door on `facing`; w, h: the block as placed (a reused building's). The block
+        stands at the height of the ground outside its door."""
         c = self.c
         if spec.building is not None:
             b = spec.building
             b.district = TALK_DISTRICT.get(spec.district, spec.district)
-            ground = self.level_at(x0 + footprint_size(b, facing)[0] // 2, y0 + footprint_size(b, facing)[1] // 2)
+            fw_, fh_ = footprint_size(b, facing)
+            _, (ox, oy) = door_tile(x0, y0, fw_, fh_, facing)
+            ground = self.level_at(ox, oy)
             bid, outside = self.site.place(b, x0, y0, facing, REGION, open_door=spec.open_door, mask=mask,
                                            ground=ground)
             record = self.site.manifest[-1]
-            w, h = footprint_size(b, facing)
+            w, h = fw_, fh_
         else:
             g = spec.reuse
-            ground = self.level_at(x0 + w // 2, y0 + h // 2)
+            (dx, dy), outside = door_tile(x0, y0, w, h, facing)
+            ground = self.level_at(*outside)
             style = STYLES[spec.style]
             c.rect(x0, y0, w, h, style['outer'], ground)
             c.rect(x0 + 1, y0 + 1, w - 2, h - 2, style['roof'][0], ground)
-            (dx, dy), outside = door_tile(x0, y0, w, h, facing)
             c.codes[dy, dx] = ord('+')
             cid, lx, ly = self.site.cell_at(dx, dy)
             d = g['door']
@@ -695,20 +745,7 @@ class RidgemereCity(Ridgemere):
         self.structure_district[bid] = spec.district
         return record
 
-    def door_ok(self, x0, y0, w, h, facing, street, deep=False):
-        """The door's tile and the street tile outside it are in the same cell, the street tile is a street (not a tier
-        edge); `deep`: the tile beyond it too, so the door opens onto a passage at least two wide."""
-        (dx, dy), (ox, oy) = door_tile(x0, y0, w, h, facing)
-        if not (0 <= ox < W and 0 <= oy < H) or not street[oy, ox] or self.edges[oy, ox]:
-            return False
-        if deep:
-            sx, sy = DOOR_STEP[facing]
-            px, py = ox + sx, oy + sy
-            if not (0 <= px < W and 0 <= py < H) or not street[py, px]:
-                return False
-        return cell_of(dx, dy) == cell_of(ox, oy)
-
-    def fit(self, lots, spec, near, street, orient=True, limit=60000, facings='SNEW', deep=False):
+    def fit(self, lots, spec, near, street, orient=True, facings='SNEW', deep=False, back=False):
         """The nearest lot for a spec (both ways round for a reused building, whose facing is cosmetic)."""
         fw, fh = spec.footprint
         shapes = [(fw, fh)]
@@ -716,15 +753,15 @@ class RidgemereCity(Ridgemere):
             shapes.append((fh, fw))
         best = None
         for sw, sh in shapes:
-            got = self.nearest_lot(lots, sw, sh, near, street, facings=facings, deep=deep)
+            got = self.nearest_lot(lots, sw, sh, near, street, facings=facings, deep=deep, back=back)
             if got and (best is None or got[0] < best[0]):
                 best = got
         return best
 
-    def nearest_lot(self, lots, w_ns, h_ns, near, street, deep=False, facings='SNEW'):
-        """Lots.candidates, all at once: the nearest clear footprint whose door opens onto the street (in the same
-        cell, not onto a tier edge; `deep`, onto a passage at least two wide). (d, x0, y0, facing, w, h) or None."""
-        ys, xs = np.nonzero(lots.street & street & ~self.edges)
+    def nearest_lot(self, lots, w_ns, h_ns, near, street, deep=False, facings='SNEW', back=False):
+        """The nearest clear footprint whose door opens onto the street, in the same cell (`deep`: onto a passage at
+        least two wide; `back`: a back door on the far side onto a street too). (d, x0, y0, facing, w, h) or None."""
+        ys, xs = np.nonzero(lots.street & street)
         if not len(xs):
             return None
         best = None
@@ -742,7 +779,7 @@ class RidgemereCity(Ridgemere):
                 x0, y0 = dx - (w - 1), dy - h // 2
             else:
                 x0, y0 = dx, dy - h // 2
-            ok = (x0 >= 0) & (y0 >= 0) & (x0 + w <= Ww) & (y0 + h <= Hh)
+            ok = (x0 >= 1) & (y0 >= 1) & (x0 + w <= Ww - 1) & (y0 + h <= Hh - 1)
             x0, y0, dxo, dyo, ox, oy = x0[ok], y0[ok], dx[ok], dy[ok], xs[ok], ys[ok]
             area = s[y0 + h, x0 + w] - s[y0, x0 + w] - s[y0 + h, x0] + s[y0, x0]
             ok = (area == w * h) & (dxo // CELL == ox // CELL) & (dyo // CELL == oy // CELL)
@@ -751,6 +788,18 @@ class RidgemereCity(Ridgemere):
                 inb = (px >= 0) & (py >= 0) & (px < Ww) & (py < Hh)
                 ok &= inb
                 ok[inb] &= street[py[inb], px[inb]]
+            if back:                                     # The far side's middle, one step out, is a street too.
+                if facing == 'S':
+                    bx, by, tx, ty = x0 + w // 2, y0 - 1, x0 + w // 2, y0
+                elif facing == 'N':
+                    bx, by, tx, ty = x0 + w // 2, y0 + h, x0 + w // 2, y0 + h - 1
+                elif facing == 'E':
+                    bx, by, tx, ty = x0 - 1, y0 + h // 2, x0, y0 + h // 2
+                else:
+                    bx, by, tx, ty = x0 + w, y0 + h // 2, x0 + w - 1, y0 + h // 2
+                inb = (bx >= 0) & (by >= 0) & (bx < Ww) & (by < Hh)
+                ok &= inb
+                ok[inb] &= street[by[inb], bx[inb]] & (bx[inb] // CELL == tx[inb] // CELL) & (by[inb] // CELL == ty[inb] // CELL)
             if not ok.any():
                 continue
             x0, y0 = x0[ok], y0[ok]
@@ -760,15 +809,17 @@ class RidgemereCity(Ridgemere):
                 best = (float(d[i]), int(x0[i]), int(y0[i]), facing, w, h)
         return best
 
-    def place_list(self, lots, specs, street, jitter=6, gap=None, facings='SNEW', deep=False):
+    def place_list(self, lots, specs, street, jitter=6, gap=None, facings='SNEW', deep=False, report=True):
         missing = []
         for spec in specs:
             near = spec.near or self.anchor(spec.district)
             near = (near[0] + self.rng.uniform(-jitter, jitter), near[1] + self.rng.uniform(-jitter, jitter))
-            got = self.fit(lots, spec, near, street, facings=facings, deep=deep)
+            got = self.fit(lots, spec, near, street, facings=facings, deep=deep,
+                           back=bool(spec.building is not None and getattr(spec.building, 'back', False)))
             if got is None:
                 missing.append(spec)
-                print(f'  ridgemere2: no lot for {spec.name} ({spec.district})')
+                if report:
+                    print(f'  ridgemere2: no lot for {spec.name} ({spec.district})')
                 continue
             _, x0, y0, facing, w, h = got
             self.put(spec, x0, y0, facing, w, h)
@@ -805,16 +856,18 @@ class RidgemereCity(Ridgemere):
         rooms, stairs, (w, h) = shop_with_flat(self.new_rng, style, trade, name, text, people=people)
         return Building('shop', name, style, fp(w, h), rooms, stairs, '', '', trade)
 
-    def new_tavern(self, name, text, style='ridgemere'):
+    def new_tavern(self, name, text, style='ridgemere', footprint=None):
         plans, _ = tavern(self.new_rng, style, False)
-        return Building('tavern', name, style, fp(plans[0].w, plans[0].h), [plans[0].room('', name, text)], [], '')
+        return Building('tavern', name, style, footprint or fp(plans[0].w, plans[0].h),
+                        [plans[0].room('', name, text)], [], '')
 
-    def new_flats(self, name, homes, beds, size, footprint, notch=None, back=False, style='ridgemere', prose=''):
+    def new_flats(self, name, homes, beds, size, footprint, notch=None, back=False, style='ridgemere', prose='',
+                  texts=None):
         plans, pairs = flats(self.new_rng, style, homes, beds, size, notch, back)
         keys, zs = ['', 'up', 'top'][:homes], [0, 1, 2][:homes]
         floors = ['the ground floor', 'the first floor', 'the top floor']
         names = [name if homes == 1 else f'{name}, {floors[i]}' for i in range(homes)]
-        texts = [prose or self.new_rng.choice(FLATS_PROSE) for _ in range(homes)]
+        texts = texts or [prose or self.new_rng.choice(FLATS_PROSE) for _ in range(homes)]
         b = self.multi('flats' if homes > 1 else 'house', name, plans, pairs, keys, zs, names, texts, style, footprint)
         b.back = back
         return b
@@ -828,91 +881,219 @@ class RidgemereCity(Ridgemere):
         """Lay out the city. `houses`: {district: [reused house ids]} (the people's step chooses them)."""
         self.houses = houses
         self.lay_districts()
+        self.lay_heights()
         self.lay_wall()
         self.lay_streets()
-        self.edges = self.tier_edges()
-        self.reserved = self.edges | grow(self.wall_band, 1) | self.rings
+        self.reserved = grow(self.wall_band, 1) | self.rings
         self.waterfront_map()
         self.abbey()
         self.greatly_compound()
         self.old_keep()
         self.palace()
         self.market_square()
-        self.admin()
         self.rise()
-        self.commons()
-        self.cinders()
+        self.fixed_landmarks()
         self.wharf()
-        self.sump()
-        self.paint_edges()
+        # 1. The large buildings of each quarter on its avenues, and the Sump's own on the Gut and Tarry Lane.
+        small = {}
+        small['admin'] = self.place_large('admin', self.admin_specs(), 120)
+        small['cinders'] = self.place_large('cinders', self.cinders_specs(), 90)
+        com, north = self.commons_specs()
+        small['commons'] = self.place_large('commons', com, 130)
+        small['northgate'] = self.place_large('northgate', north, 130)
+        self.sump_named()
+        # 2. Lanes and alleys, then the borders stitched across by many passages.
+        self.lanes_in(self.ground_of('admin'), (34, 26), 3, 0.0, '_')
+        self.lanes_in(self.ground_of('cinders'), (30, 22), 3, .05, '_')
+        self.lanes_in(self.ground_of('commons'), (30, 19), 3, -.06, '_')
+        self.lanes_in(self.ground_of('northgate'), (30, 19), 3, -.06, '_')
+        self.sump_alleys()
+        self.stitch_borders()
+        self.connect_streets()
+        self.sunken_second_door()
+        for where in ('commons', 'northgate'):          # The Tallow Arcade: a lot with a street at each end.
+            lots = Lots(self.ground_of(where), self.street, gap=0)
+            if not self.place_list(lots, [self.arcade_spec], self.street, jitter=4, report=False):
+                break
+            self.arcade_spec.near = None
+        # 3. The rest of each quarter, terraced along its lanes.
+        for name in ('admin', 'cinders', 'commons', 'northgate'):
+            self.place_small(name, small[name])
+        if 'r2_tallow_arcade' in self.named:
+            rec = self.named['r2_tallow_arcade']
+            self.landmark('The Tallow Arcade', 'commons', 'a covered arcade, a through-building of pillars and benches '
+                          'between two streets of the Commons on the Sump\'s edge, out of the rain',
+                          rec['door']['x'], rec['door']['y'], [r['id'] for r in rec['rooms']])
+        self.commons_rows()
+        self.sump_homes()
+        # 4. What is left: yards, sheds and the ground; then the stairs where streets climb, and the doors' sills.
+        for name, grass, extra in (('admin', 'f', (('S', .002), ('I', .002), ('B', .01))),
+                                   ('cinders', '>', (('x', .015), ('O', .01), ('<', .012), ('7', .004))),
+                                   ('commons', '.', (('Y', .006), ('B', .01), ('3', .006), ('O', .006))),
+                                   ('northgate', '.', (('Y', .006), ('B', .01), ('3', .006))),
+                                   ('rise', ',', (('Y', .02), ('B', .02), ('3', .02)))):
+            self.infill_yards(name, grass, extra)
+        self.paint_stairs()
         self.outside()
+        self.fix_doors()
         self.patrols()
         return self
 
+    # -- districts and the ground --------------------------------------------------------------------------------------
     def lay_districts(self):
-        c = self.c
-        d = np.zeros((H, W), dtype=np.int8)
-        parts = {
-            'wharf': box(172, 222, 154, 616), 'abbey': box(222, 330, 154, 232), 'northgate': box(330, 540, 154, 250),
-            'greatly': box(540, 660, 154, 270), 'sump': box(222, 330, 232, 470) | box(330, 364, 250, 470),
-            'commons': box(364, 540, 250, 470) | box(540, 660, 270, 470), 'admin': box(260, 540, 470, 530),
-            'cinders': box(222, 260, 470, 530) | box(222, 320, 530, 616), 'palace': box(320, 540, 530, 616),
-            'rise': box(540, 660, 470, 616), 'keep': box(580, 640, 445, 500)}
-        for name, m in parts.items():
-            d[m] = DISTRICT_IDS.index(name)
-        self.district = d
-        self.levels_map = np.full((H, W), np.nan, dtype=np.float32)
-        for name, level in LEVEL.items():
-            m = d == DISTRICT_IDS.index(name)
-            self.levels_map[m] = level
-            c.paint(m, GROUND[name], level)
+        """The districts partition the inside of the walls, but none is a rectangle: their borders are drawn on
+        coordinates warped by noise (up to 14 tiles), so the Sump, the Commons, the Rise and the rest run into each
+        other irregularly. Only the walled pieces (the abbey, the Greatly compound, the Keep), the palace and the
+        squares keep their shapes."""
+        c, seed = self.c, self.world.seed
+        ys, xs = np.mgrid[0:H, 0:W]
+        A = 14
+        X = xs + (field.fbm(W, H, 34, seed % 1000 + 21, 3) - .5) * 2 * A * 1.6
+        Y = ys + (field.fbm(W, H, 34, seed % 1000 + 47, 3) - .5) * 2 * A * 1.6
+        idx = DISTRICT_IDS.index
+        d = np.full((H, W), idx('commons'), dtype=np.int8)
+        d[(X < 298) & (Y < 346)] = idx('sump')
+        d[(X >= 292) & (X < 396) & (Y < 216)] = idx('northgate')
+        cinders = ((Y >= 372) & (X < 244)) | ((Y >= 392) & (X < 290))
+        d[(Y >= 346) & (X < 382) & ~cinders] = idx('admin')
+        d[cinders] = idx('cinders')
+        d[(Y >= 392) & (X >= 290) & (X < 382)] = idx('palace')
+        d[(Y >= 350) & (X >= 382)] = idx('rise')
+        fixed = [('sump', box(QUAY_X, QUAY_X + 6, 218, 372)), ('wharf', box(172, QUAY_X, 154, 452)), ('abbey', box(*ABBEY)), ('greatly', box(*GREATLY)),
+                 ('keep', box(*KEEP)), ('palace', box(*PALACE)), ('commons', box(334, 386, 258, 316)),
+                 ('sump', box(232, 257, 294, 311)), ('admin', box(316, 345, 348, 381)), ('commons', box(417, 444, 225, 242)),
+                 ('commons', box(400, 425, 304, 320)), ('northgate', box(350, 375, 175, 196)),
+                 ('northgate', box(290, 300, 154, 205))]
+        for x, y, w_, h_ in RISE_LOTS:
+            fixed.append(('rise', box(x - 2, x + w_ + 2, y - 2, y + h_ + 2)))
+        for name, m in fixed:
+            d[m] = idx(name)
         self.inside = box(*INSIDE)
-        # The walled pieces inside the walls (the greatly() pattern: the region and its ring at the piece's height).
+        d[~self.inside] = 0
+        # Small islands of one district inside another (the noise's crumbs) join their neighbours.
+        for name in DISTRICT_IDS[1:-1]:
+            m = d == idx(name)
+            ll, inf = label(m)
+            for k, (x0, x1, y0, y1, size) in inf.items():
+                if size < 60:
+                    comp = ll == k
+                    ring_ = grow(comp, 1) & ~comp & (d > 0)
+                    if ring_.any():
+                        d[comp] = Counter(d[ring_].tolist()).most_common(1)[0][0]
+        for name, m in fixed:
+            d[m & self.inside] = idx(name)
+        self.district = d
+        # How well-off the ground is, blurred over the borders: picks what is built in the band where two meet.
+        wealth = np.zeros((H, W), dtype=np.float32)
+        for name, v in WEALTH.items():
+            wealth[d == idx(name)] = v
+        self.wealth = blur(wealth, 9)
+        # The walled pieces inside the walls.
         self.rings = np.zeros((H, W), dtype=bool)
-        abbey = self.D('abbey')                 # The city wall to the north, a wall two thick round the rest.
-        ring = abbey & ~box(224, 328, 154, 230)
-        c.paint(ring, 'H', 2.0)
-        self.rings |= ring
-        greatly = self.D('greatly')             # The city wall north and east, a compound wall west and south.
-        ring = greatly & ~box(542, 660, 154, 268)
-        c.paint(ring, 'H', 3.0)
-        self.rings |= ring
-        keep = self.D('keep')                   # Four walls three thick, a tower at each corner.
-        ring = keep & ~box(583, 637, 448, 497)
-        for tx, ty in ((580, 445), (633, 445), (580, 493), (633, 493)):
-            ring |= box(tx, tx + 7, ty, ty + 7)
-        c.paint(ring, '#', 2.0)
-        self.rings |= ring
+        ax0, ax1, ay0, ay1 = ABBEY
+        self.abbey_ring = box(*ABBEY) & ~box(ax0 + 2, ax1 - 2, ay0, ay1 - 2)
+        gx0, gx1, gy0, gy1 = GREATLY
+        self.greatly_ring = box(*GREATLY) & ~box(gx0 + 2, gx1, gy0, gy1 - 2)
+        kx0, kx1, ky0, ky1 = KEEP
+        ring = box(*KEEP) & ~box(kx0 + 3, kx1 - 3, ky0 + 3, ky1 - 3)
+        for tx, ty in ((kx0, ky0), (kx1 - 6, ky0), (kx0, ky1 - 6), (kx1 - 6, ky1 - 6)):
+            ring |= box(tx, tx + 6, ty, ty + 6)
+        self.keep_ring = ring
+        self.rings = self.abbey_ring | self.greatly_ring | self.keep_ring
+
+    def lay_heights(self):
+        """The ground climbs from the bay eastward, as Seattle's does: about half a step every 40 tiles, with low hills
+        on it, and no step on a district's border more than anywhere else. Squares, the palace and the walled pieces are
+        levelled, and the ground eases into them (never more than 0.12 a tile), so nowhere outdoors is a step more than
+        half a tile: the climbs are slopes and stair-streets, never walls."""
+        c, seed = self.c, self.world.seed
+        ys, xs = np.mgrid[0:H, 0:W]
+        t = np.clip((xs - 222 + .0025 * (ys - 300) ** 2) / 236, 0, 1)   # (contours bow, across the borders)
+        hills = field.fbm(W, H, 70, seed % 991 + 11, 3)
+        F = 1.0 + 2.3 * t * t * (3 - 2 * t) + (hills - .5) * .9 * np.clip(t * 3, 0, 1) + \
+            .3 * np.clip((ys - 300) / 130, -1, 1) * t
+        F = F.astype(np.float32)
+        flat = []
+        mean = lambda m: float(half(F[m].mean()))
+        flat.append((box(172, QUAY_X, 150, 456), .5))
+        for b in (ABBEY, KEEP):
+            m = box(*b)
+            flat.append((m, mean(m)))
+        g = box(*GREATLY) | box(417, 444, 224, 242)          # (Greatly Square at the compound's own level, its gate's)
+        flat.append((g, mean(box(*GREATLY))))
+        keep_sq = box(400, 425, 304, 326)                      # (Pillory Square at the Keep's)
+        flat.append((keep_sq, flat[2][1]))
+        px0, px1, py0, py1 = PALACE                            # (the forecourt and the palace; its garden slopes)
+        for m in (box(334, 386, 258, 316), box(232, 257, 294, 311), box(316, 345, 348, 381), box(px0 + 2, px1, py0, py0 + 32),
+                  box(350, 375, 175, 196)):
+            flat.append((m, mean(m)))
+        L = .12
+        for m, v in flat:
+            dist = field.distance_to_mask(m, 40)
+            F = np.clip(F, v - L * dist, v + L * dist)
+        for m, v in flat:
+            F[m] = v
+        self.flats_ = flat
+        h = half(F)
+        fixed_m = np.zeros((H, W), dtype=bool)
+        for m, _ in flat:
+            fixed_m |= m
+        for _ in range(12):
+            hi = np.full((H, W), -99.0, dtype=np.float32)
+            lo = np.full((H, W), 99.0, dtype=np.float32)
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nh = np.roll(h, (dy, dx), (0, 1))
+                hi = np.maximum(hi, nh)
+                lo = np.minimum(lo, nh)
+            fix = ~fixed_m & ((hi - h > .5) | (h - lo > .5)) & (hi - lo <= 1)
+            if not fix.any():
+                break
+            h[fix] = ((hi + lo) / 2)[fix]
+            h = half(h)
+        inside = self.inside
+        c.heights[inside] = h[inside]
+        self.levels_map = np.full((H, W), np.nan, dtype=np.float32)
+        self.levels_map[inside] = h[inside]
+        for name in GROUND:
+            m = self.D(name)
+            c.paint(m, GROUND[name], None)
+        self.abbey_level = float(h[box(*ABBEY)].max())
+        self.greatly_level = float(h[box(*GREATLY)].max())
+        self.keep_level = float(h[box(*KEEP)].max())
+        c.paint(self.abbey_ring, 'H', None)
+        c.paint(self.greatly_ring, 'H', None)
+        c.paint(self.keep_ring, '#', None)
 
     def lay_wall(self):
         c, w = self.c, self.world
-        band = box(168, 664, 150, 620) & ~self.inside
+        band = box(168, 472, 150, 456) & ~self.inside
         self.wall_band = band
         c.paint(band, '#', 2.0)
-        # Towers at the corners and about every 100 tiles, standing out from the wall (never on a gate or an arch).
-        for tx, ty, side in ((168, 150, 'NW'), (660, 150, 'NE'), (168, 616, 'SW'), (660, 616, 'SE'), (270, 150, 'N'),
-                             (380, 150, 'N'), (580, 150, 'N'), (660, 250, 'E'), (660, 460, 'E'), (660, 540, 'E'),
-                             (400, 616, 'S'), (500, 616, 'S'), (240, 616, 'S')):
+        # Towers at the corners and about every 90 tiles, standing out from the wall (never on a gate or an arch).
+        for tx, ty in ((168, 150), (468, 150), (168, 452), (468, 452), (250, 150), (300, 150), (420, 150), (468, 220),
+                       (468, 380), (300, 452), (360, 452)):
             m = box(tx - 2, tx + 5, ty - 2, ty + 5) & ~self.inside
             c.paint(m, '#', 2.0)
-        spans = {'N': box(474, 479, 146, 154), 'E': box(660, 667, 358, 363), 'S': box(598, 603, 616, 623),
-                 'cinder': box(288, 293, 616, 623), 'harbour': box(195, 200, 616, 623)}
-        outside_pt = {'N': (476.5, 141.0), 'E': (671.0, 360.5), 'S': (600.5, 627.0), 'cinder': (290.5, 627.0),
-                      'harbour': (197.5, 627.0)}
-        levels = {'N': 2.0, 'E': 2.0, 'S': 3.0, 'cinder': 1.0, 'harbour': .5}
+        spans = {'N': box(358, 363, 146, 154), 'E': box(468, 475, 298, 303), 'S': box(410, 415, 452, 459),
+                 'cinder': box(238, 243, 452, 459), 'harbour': box(188, 192, 452, 459)}
+        outside_pt = {'N': (360.5, 141.0), 'E': (479.0, 300.5), 'S': (412.5, 463.0), 'cinder': (240.5, 463.0),
+                      'harbour': (190.5, 463.0)}
+        inner = {'N': (360, 155), 'E': (467, 300), 'S': (412, 451), 'cinder': (240, 451), 'harbour': (190, 451)}
         self.gate_masks = {}
         for key, m in spans.items():
             m = m & (band | ~self.inside)
-            c.paint(m, 'G', levels[key])
+            x, y = inner[key]
+            level = float(c.heights[y, x])
+            c.paint(m, 'G', level)
             w.gates[('ridgemere', key)] = outside_pt[key]
-            w.gate_levels[('ridgemere', key)] = levels[key]
+            w.gate_levels[('ridgemere', key)] = level
             self.gate_masks[key] = m
         self.arches = {}
         for y in PIERS:                          # The sea wall's pier arches, at the wharf's height.
             m = box(168, 172, y, y + 6)
             c.paint(m, 'G', .5)
             self.arches[y] = m
-        slip = box(150, 172, 574, 586)           # The slipway: an opening in the sea wall, a ramp into the water.
+        slip = box(150, 172, 414, 426)           # The slipway: an opening in the sea wall, a ramp into the water.
         ys, xs = np.nonzero(slip)
         c.codes[ys, xs] = ord(':')
         c.heights[ys, xs] = half(np.clip((xs - 150) / 21 * .5, 0, .5))
@@ -925,118 +1106,288 @@ class RidgemereCity(Ridgemere):
         inside_open = self.inside & ~self.rings
         for key, ((sx, sy), (hx, hy)) in SQUARES.items():
             m = box(sx - hx, sx + hx + 1, sy - hy, sy + hy + 1) & inside_open
-            ch = {'market': '_', 'rag': 'D', 'records': 'f', 'palace': 'f', 'greatly': '_'}[key]
+            ch = {'market': '_', 'rag': 'D', 'records': 'f', 'palace': 'f', 'greatly': '_', 'pillory': 'f',
+                  'clock': '_'}[key]
             c.paint(m, ch, None)
             self.street |= m
             self.spots[f'square_{key}'] = (sx, sy)
+        gates = self.gate_masks['N'] | self.gate_masks['E'] | self.gate_masks['S']
         avenues = {
-            'High Street': [[(662, 360.5), (364, 360.5)]],
-            'Gate Street': [[(476.5, 146), (476.5, 316)]],
-            'Crown Street': [[(468.5, 376), (468.5, 497.5)], [(468.5, 497.5), (414, 497.5)], [(400.5, 509), (400.5, 534)]],
-            'Keep Street': [[(494, 374.5), (610.5, 374.5)], [(610.5, 374.5), (610.5, 446)]],
-            'Rise Lane': [[(610.5, 420.5), (574.5, 420.5)], [(574.5, 420.5), (574.5, 505.5)], [(574.5, 505.5), (600.5, 505.5)],
-                          [(600.5, 505.5), (600.5, 621)]],
-            'Abbey Row': [[(330, 195.5), (476.5, 195.5)]],
-            'Greatly Way': [[(600.5, 271), (600.5, 360.5)]],
+            'High Street': ([[(474, 300.5), (382, 300.5)]], 5),
+            'Gate Street': ([[(360.5, 146), (360.5, 258)]], 5),
+            'Crown Street': ([[(360.5, 316), (360.5, 372.5)], [(360.5, 372.5), (343, 372.5)],
+                              [(330.5, 379), (330.5, 394)]], 5),
+            'Keep Street': ([[(382, 313.5), (402, 313.5)], [(412.5, 316), (412.5, 323)]], 5),
+            'Rise Lane': ([[(384.5, 316), (384.5, 373)]], 4),
+            'Rise Walk': ([[(372, 371.5), (468, 371.5)]], 4),
+            'South Lane': ([[(414.5, 371.5), (414.5, 459)]], 4),
+            'Mews Lane': ([[(384, 440.5), (468, 440.5)]], 3),
+            'Abbey Row': ([[(288, 186.5), (360.5, 186.5)]], 5),
+            'Greatly Way': ([[(430.5, 224), (430.5, 300.5)]], 5),
         }
-        self.avenue_lines = avenues
-        for name, lines in avenues.items():
+        self.avenue_lines = {k: v[0] for k, v in avenues.items()}
+        for name, (lines, width) in avenues.items():
             for pts in lines:
-                self.paint_line(pts, 5, '_', None, within=inside_open | self.gate_masks.get('N', box(0, 0, 0, 0))
-                                | self.gate_masks['E'] | self.gate_masks['S'])
-        for m in (box(438, 507, 312, 322), box(438, 446, 312, 344), box(494, 507, 312, 344)):
+                self.paint_line(pts, width, '_', None, within=inside_open | gates)
+        for m in (box(334, 386, 258, 264), box(334, 340, 258, 287), box(380, 386, 258, 287)):
             c.paint(m, '_', None)                # About the Market Hall.
             self.street |= m
-        # The inner ring, 3 wide (north, east and south; on the west the Wharf Road), and the 3-wide links.
-        for m in (box(330, 540, 154, 157), box(657, 660, 270, 616), box(320, 660, 613, 616)):
+        # The inner ring, 3 wide (north, east and south; on the west the Wharf Road), the wall-walk patrol's line.
+        for m in (box(290, 392, 154, 157), box(465, 468, 224, 452), box(274, 468, 449, 452)):
             m &= inside_open
             c.paint(m, '_', None)
             self.street |= m
-        lanes3 = {'Records Lane': [(416, 500.5), (576, 500.5)], "Clerks' Row": [(262, 474.5), (385.5, 474.5), (385.5, 489)],
-                  'Cinder Lane': [(222, 500.5), (264, 500.5)], 'Cinder Road': [(290.5, 621), (290.5, 528)]}
+        lanes3 = {"Clerks' Row": [(244, 372.5), (317, 372.5)], 'Records Lane': [(344, 378.5), (380, 378.5), (380, 370)],
+                  'Cinder Lane': [(QUAY_X, 404.5), (290, 404.5)], 'Cinder Road': [(240.5, 459), (240.5, 374)],
+                  'Palace Walk': [(276, 394.5), (291, 394.5)], 'Slag Steps': [(224.5, 352), (224.5, 392)]}
         for name, pts in lanes3.items():
-            self.paint_line(pts, 3, '_', None, within=inside_open | self.gate_masks['cinder'])
-        for m in (box(196, 199, 154, 472), box(196, 222, 469, 472), box(196, 222, 497, 500), box(196, 199, 500, 623)):
-            m &= inside_open | self.gate_masks['harbour']
-            c.paint(m, '_', None)                # The Wharf Road, round the Customs House by the quay.
-            self.street |= m
-        self.quay = box(218, 222, 154, 616) & ~self.rings
+            narrow = name == 'Slag Steps'                # (down from the Sump into the Cinders: an alley, two wide)
+            self.paint_line(pts, 2 if narrow else 3, '.' if narrow else '_', None,
+                            within=inside_open | self.gate_masks['cinder'])
+        m = box(188, 192, 154, 459) & (inside_open | self.gate_masks['harbour'])
+        c.paint(m, '_', None)                    # The Wharf Road.
+        self.street |= m
+        self.quay = box(206, QUAY_X, 154, 452) & ~self.rings
+        c.paint(self.quay, 'f', None)
         self.street |= self.quay
         for y in PIERS:                          # From each pier's arch across the wharf to the quay.
-            m = box(168, 218, y + 1, y + 5)
+            m = box(168, 192 if y == CUSTOMS_PIER else 206, y + 1, y + 5)
             c.paint(m & ~self.arches[y], '_', None)
             self.street |= m
         rng = self.rng
-        gut = [(366.0, 359.5)]                   # The Gut and Tarry Lane: 3 wide, crooked.
-        x, y = 366.0, 359.5
-        while x > 230:
-            x -= 12
-            y = y + rng.uniform(-3, 3) - 1.2
-            gut.append((max(226.0, x), y))
-        gut += [(222.0, 341.0), (216.0, 338.5)]
+        gut = [(338.0, 300.5)]                   # The Gut and Tarry Lane: 3 wide, crooked.
+        x, y = 338.0, 300.5
+        while x > 222:
+            x -= 11
+            y = y + rng.uniform(-2.5, 2.5) - .7
+            y = float(np.clip(y, 288, 306))
+            gut.append((max(214.0, x), y))
+        gut += [(QUAY_X + 1.0, 293.0), (204.0, 293.0)]
         self.gut_line = gut
         self.paint_line(gut, 3, '.', None, within=self.D('sump') | self.D('wharf') | self.D('commons'))
-        tarry = [(300.5, 232.0)]
-        y = 232.0
-        while y < 458:
+        tarry = [(250.5, 216.0)]
+        y = 216.0
+        while y < 358:
             y += 12
-            tarry.append((292.5 + rng.uniform(-3, 3), min(462.0, y)))
-        tarry += [(292.5, 470.0), (292.5, 476.0)]
+            tarry.append((248.5 + rng.uniform(-3, 3), min(364.0, y)))
+        tarry += [(248.5, 374.0)]
         self.tarry_line = tarry
-        self.paint_line(tarry, 3, '.', None, within=(self.D('sump') | self.D('admin')))
-        # The abbey's gates (the south a half step down onto Tarry Lane), Greatly's (a half step down onto Greatly
-        # Square), the Old Keep's in its north wall facing Keep Street.
-        c.paint(box(298, 303, 230, 232), 'G', 1.5)
-        c.paint(box(298, 303, 232, 233), '^', 1.0)
-        self.street |= box(298, 303, 232, 236)
-        c.paint(box(328, 330, 193, 198), 'G', 2.0)
-        c.paint(box(598, 603, 268, 270), 'G', 2.5)
-        c.paint(box(598, 603, 270, 271), '^', 2.0)
-        self.street |= box(598, 603, 270, 274)
-        c.paint(box(608, 613, 445, 448), 'G', 2.0)
-        self.gate_spots = {'abbey_south': (300, 228), 'abbey_east': (326, 195), 'greatly': (600, 264),
-                           'keep': (610, 451)}
+        self.paint_line(tarry, 3, '.', None, within=(self.D('sump') | self.D('admin') | self.D('cinders')))
+        # The walled pieces' gates: the abbey's south (onto Tarry Lane) and east (onto Abbey Row), Greatly's onto
+        # Greatly Square, the Old Keep's onto Pillory Square. Each gate is at its piece's level, a half step down if the
+        # ground outside is lower.
+        self.piece_gate(box(248, 253, 214, 216), self.abbey_level, box(248, 253, 216, 218))
+        self.piece_gate(box(288, 290, 184, 189), self.abbey_level, box(290, 292, 184, 189))
+        self.piece_gate(box(428, 433, 222, 224), self.greatly_level, box(428, 433, 224, 226))
+        self.piece_gate(box(409, 414, 322, 325), self.keep_level, box(409, 414, 320, 322))
+        self.gate_spots = {'abbey_south': (250, 211), 'abbey_east': (286, 186), 'greatly': (430, 219),
+                           'keep': (412, 328)}
 
-    def tier_edges(self):
-        """The retaining walls between tiers: the higher of two neighbouring open tiles a whole step or more apart."""
-        lvl = np.where(np.isnan(self.levels_map), -9, self.levels_map)
-        solid = SOLID[self.c.codes] | self.rings | self.wall_band
-        open_ = self.inside & ~solid
-        edge = np.zeros((H, W), dtype=bool)
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            n_l = np.roll(lvl, (dy, dx), (0, 1))
-            n_o = np.roll(open_, (dy, dx), (0, 1))
-            edge |= open_ & n_o & (lvl - n_l >= 1)
-        return edge
-
-    def paint_edges(self):
-        stairs = self.edges & self.street
-        self.c.paint(self.edges & ~stairs, '#', None)
-        self.c.paint(stairs, '^', None)
-        self.stairs_mask = stairs
+    def piece_gate(self, gate, level, outside):
+        """A walled piece's gate at its level; where the ground outside is more than half a step away, the gate is at the
+        half step and the tiles outside it a stair."""
+        c = self.c
+        out = float(np.median(c.heights[outside]))
+        if abs(out - level) <= .5:
+            c.paint(gate, 'G', level)
+        else:
+            c.paint(gate, 'G', float(half((out + level) / 2)))
+            c.paint(outside, '^', None)
+        self.street |= gate | outside
 
     def ground_of(self, name):
         return self.D(name) & ~self.reserved & ~self.street & ~self.built
 
-    def lanes_in(self, ground, spacing, width, angle, ch):
-        lanes = self.lanes(ground, spacing, width, angle=angle) & ground & ~grow(self.built, 1)
+    def lanes_in(self, ground, spacing, width, angle, ch, offset=(0, 0)):
+        lanes = self.lanes(ground, spacing, width, angle=angle, offset=offset) & ground & ~grow(self.built, 1)
         self.c.paint(lanes, ch, None)
         self.street |= lanes
         return lanes
 
-    def fill(self, name, specs, spacing=None, width=3, angle=-.08, lane_ch='_', ground=None, jitter=8, big=130):
-        """A district's buildings: the large ones first, each on an avenue; then lanes are cut between them and the
-        rest fill in along lanes and avenues. Returns the ground left over."""
-        ground = self.ground_of(name) if ground is None else ground
+    def place_large(self, name, specs, big):
+        """A quarter's large buildings, each on an avenue or square; returns the rest."""
         large = sorted([s for s in specs if s.area >= big], key=lambda s: -s.area)
-        small = sorted([s for s in specs if s.area < big], key=lambda s: -s.area)
-        lots = Lots(ground & ~self.street, self.street)
-        self.place_list(lots, large, self.street, jitter=jitter)
-        if spacing:
-            self.lanes_in(ground & ~self.built & ~self.street, spacing, width, angle, lane_ch)
-        lots = Lots(ground & ~self.street & ~grow(self.built, 1), self.street)
-        self.place_list(lots, small, self.street, jitter=jitter)
-        return lots.open & ground & ~self.street
+        small = [s for s in specs if s.area < big]
+        lots = Lots(self.ground_of(name), self.street)
+        missing = self.place_list(lots, large, self.street, jitter=6, report=False)
+        return small + missing
+
+    def place_small(self, name, specs, gap=0):
+        """The rest of a quarter, terraced along its lanes (wall to wall, no yards between)."""
+        lots = Lots(self.ground_of(name), self.street, gap=gap)
+        order = sorted(specs, key=lambda s: -s.area)
+        missing = self.place_list(lots, order, self.street, jitter=4, report=False)
+        if missing:                                    # Anywhere in the quarter, then.
+            lots = Lots(self.ground_of(name), self.street, gap=0)
+            for s in missing:
+                s.near = None
+            missing = self.place_list(lots, missing, self.street, jitter=40, report=False)
+            for s in missing:                          # A reused building's block can be smaller than its rooms.
+                s.scale = .58
+            missing = self.place_list(lots, missing, self.street, jitter=40, report=False)
+            if missing and name in NEIGHBOUR:           # Or stand on the edge of the next quarter.
+                lots = Lots((self.ground_of(name) | self.ground_of(NEIGHBOUR[name])) & grow(self.D(name), 24),
+                            self.street, gap=0)
+                for s in missing:
+                    s.near = self.anchor(name)
+            for s in self.place_list(lots, missing, self.street, jitter=40, report=False):
+                self.unplaced.append(s.key)
+                print(f'  ridgemere2: {s.name} not placed ({name})')
+        return lots
+
+    def stitch_borders(self):
+        """Many crossings between neighbouring quarters: every 14 tiles or so along each border, a passage two wide
+        straight across from a street on one side to a street on the other (no wall, no step, between them)."""
+        c = self.c
+        pairs = [('sump', 'commons'), ('sump', 'northgate'), ('sump', 'admin'), ('sump', 'cinders'), ('cinders', 'admin'),
+                 ('admin', 'commons'), ('admin', 'rise'), ('commons', 'northgate'), ('commons', 'rise'),
+                 ('palace', 'admin'), ('palace', 'cinders'), ('palace', 'rise')]
+        blocked = self.built | self.reserved | ~self.inside | self.D('wharf') | self.D('keep') | self.D('abbey') | \
+            self.D('greatly')
+        for a, b in pairs:
+            A, B = self.D(a), self.D(b)
+            border = A & grow(B, 1)
+            ys, xs = np.nonzero(border)
+            if not len(xs):
+                continue
+            order = np.lexsort((ys, xs)) if (xs.max() - xs.min()) > (ys.max() - ys.min()) else np.lexsort((xs, ys))
+            chosen = []
+            for i in order:
+                p = (int(xs[i]), int(ys[i]))
+                if all(abs(p[0] - q[0]) + abs(p[1] - q[1]) >= 14 for q in chosen):
+                    chosen.append(p)
+            for (x, y) in chosen:
+                ends = []
+                for side in (A, B):
+                    near = self.street & side & ~self.rings
+                    y0, y1, x0, x1 = max(0, y - 16), min(H, y + 17), max(0, x - 16), min(W, x + 17)
+                    sy, sx = np.nonzero(near[y0:y1, x0:x1])
+                    if not len(sx):
+                        break
+                    k = int(np.argmin(np.abs(sx + x0 - x) + np.abs(sy + y0 - y)))
+                    ends.append((float(sx[k] + x0) + .5, float(sy[k] + y0) + .5))
+                if len(ends) < 2:
+                    continue
+                (ax, ay), (bx, by) = ends
+                pts = [(ax, ay), (bx, ay), (bx, by)] if self.rng.random() < .5 else [(ax, ay), (ax, by), (bx, by)]
+                m = c.line_mask(pts, 2)
+                if (m & blocked).any() or (m & self.rag_stalls).any():
+                    continue
+                ch = '.' if a in ('sump', 'cinders') or b in ('sump',) else '_'
+                c.paint(m & ~self.street, ch, None)
+                self.street |= m
+                self.stitches[f'{a}/{b}'] += 1
+
+    def connect_streets(self):
+        """Every piece of street joins the city's network: a lane cut off by the buildings round it gets a passage to
+        the nearest street that is joined (if one can be cut through open ground), or stops being a street (so no door
+        opens onto it)."""
+        c = self.c
+        net = self.street & self.inside & ~SOLID[c.codes]
+        lab, info = label(net)
+        sx, sy = SPAWN
+        main = lab[sy, sx]
+        blocked = self.built | self.reserved | ~self.inside | SOLID[c.codes] & ~net
+        for k, (x0, x1, y0, y1, size) in info.items():
+            if k == main:
+                continue
+            comp = lab == k
+            ys, xs = np.nonzero(comp)
+            X0, X1, Y0, Y1 = max(0, x0 - 30), min(W, x1 + 30), max(0, y0 - 30), min(H, y1 + 30)
+            my, mx = np.nonzero(lab[Y0:Y1, X0:X1] == main)
+            done = False
+            if len(mx):
+                mx, my = mx + X0, my + Y0
+                pick = np.arange(0, len(xs), max(1, len(xs) // 40))
+                best = None
+                for i in pick:
+                    d = np.abs(mx - xs[i]) + np.abs(my - ys[i])
+                    j = int(np.argmin(d))
+                    if best is None or d[j] < best[0]:
+                        best = (int(d[j]), int(xs[i]), int(ys[i]), int(mx[j]), int(my[j]))
+                if best and best[0] <= 30:
+                    _, ax, ay, bx, by = best
+                    for pts in ([(ax + .5, ay + .5), (bx + .5, ay + .5), (bx + .5, by + .5)],
+                                [(ax + .5, ay + .5), (ax + .5, by + .5), (bx + .5, by + .5)]):
+                        m = c.line_mask(pts, 2) & ~net
+                        if not (m & blocked).any():
+                            ch = '.' if self.D('sump')[ay, ax] or self.D('cinders')[ay, ax] else '_'
+                            c.paint(m, ch, None)
+                            self.street |= m
+                            net |= m
+                            done = True
+                            self.infill['connected'] += 1
+                            break
+            if not done:
+                self.street[comp] = False
+                self.infill['streets_dropped'] += 1
+
+    def infill_yards(self, name, grass, extra):
+        """A quarter's leftover ground: sheds and outhouses where they fit, small fenced back-yards in what is shut in by
+        buildings, and the rest its own ground with its clutter."""
+        c, rng = self.c, self.rng
+        D = self.D(name)
+        left = D & ~self.street & ~self.built & ~self.reserved & self.inside
+        lab, comps = label(left)
+        for k, (x0, x1, y0, y1, area) in comps.items():
+            if area < 9:
+                continue
+            comp = lab == k
+            for _ in range(1 if name in ('commons', 'northgate', 'rise') else 4):
+                spot = None
+                for bw, bh in ((6, 4), (5, 4), (4, 4), (4, 3), (3, 3)):
+                    spot = fit_rect(comp & ~grow(self.street, 1), bw, bh) or fit_rect(comp & ~grow(self.street, 1), bh, bw)
+                    if spot:
+                        break
+                if not spot:
+                    break
+                rx, ry, rw, rh = spot
+                c.stamp(rx, ry, shed(rw, rh), None)
+                comp[ry:ry + rh, rx:rx + rw] = False
+                self.built[ry:ry + rh, rx:rx + rw] = True
+                self.infill[f'{name}_sheds'] += 1
+            rest = comp & ~self.built
+            if rest.sum() >= 6 and not (rest & grow(self.street, 1)).any():
+                ry, rx = np.nonzero(rest)
+                for j in range(0, len(rx), 7):
+                    c.codes[ry[j], rx[j]] = ord(rng.choice('xO'))
+                self.infill[f'{name}_yards'] += 1
+        self.leftover(D & ~self.street & ~self.built & ~self.reserved & self.inside, grass, extra=extra)
+
+    def paint_stairs(self):
+        """Where a street climbs half a step, its upper tile is a stair: the stair-streets that climb from the wharf."""
+        c = self.c
+        h = c.heights
+        walk = self.street & self.inside & np.isin(c.codes, [ord(x) for x in '_.fdD']) & ~self.built
+        up = np.zeros((H, W), dtype=bool)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nh = np.roll(h, (dy, dx), (0, 1))
+            nw = np.roll(walk, (dy, dx), (0, 1))
+            up |= walk & nw & (h - nh >= .5)
+        flat_squares = np.zeros((H, W), dtype=bool)
+        for m, _ in self.flats_:
+            flat_squares |= m
+        up &= ~shrink(flat_squares, 1)
+        c.paint(up, '^', None)
+        self.stairs_mask |= up
+
+    def fix_doors(self):
+        """Each street door's sill at the height of the street it opens onto."""
+        c = self.c
+        for link in self.site.links:
+            if link['kind'] != 'door' or not link['a']['cell'].startswith(('@', 'w_')):
+                continue
+            cid = link['a']['cell']
+            cx, cy = map(int, cid.lstrip('@').split('_')[-2:])
+            x, y = cx * CELL + link['a']['x'], cy * CELL + link['a']['y']
+            best = None
+            for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                nx_, ny_ = x + dx, y + dy
+                if 0 <= nx_ < W and 0 <= ny_ < H and not SOLID[c.codes[ny_, nx_]] and c.codes[ny_, nx_] != ord('+'):
+                    if best is None or self.street[ny_, nx_]:
+                        best = (nx_, ny_)
+            if best:
+                c.heights[y, x] = c.heights[best[1], best[0]]
 
     def leftover(self, open_ground, grass=',', extra=(), density=.08):
         """Whatever is left between buildings: the district's ground, with its clutter."""
@@ -1068,14 +1419,16 @@ class RidgemereCity(Ridgemere):
         self.infill['sheds'] += made
         return made
 
-    def random_point(self, district):
-        ys, xs = np.nonzero(self.D(district))
+    def random_point(self, district, where=None):
+        m = self.D(district) if where is None else where
+        ys, xs = np.nonzero(m)
         i = self.rng.randrange(len(xs))
         return float(xs[i]), float(ys[i])
 
     # -- the wharf ---------------------------------------------------------------------------------------------------
     def waterfront_map(self):
-        """Piers out from the arches, cranes at their ends (doc 67, section 2)."""
+        """Piers out from the arches, cranes at their ends; the north pier runs on as the Mole, a stone breakwater out
+        into the bay with the Bay Light at its head (doc 67, Dense city)."""
         c = self.c
         for y in PIERS:
             m = box(112, 168, y, y + 6)
@@ -1088,8 +1441,15 @@ class RidgemereCity(Ridgemere):
         for y in CRANES:
             c.paint(box(113, 116, y + 1, y + 4), 'I', .5)
             self.posts['crane'].append((117, y + 2))
-        self.spots['sump_stairs'] = (179, 339)
-        self.spots['customs_pier'] = (178, 473)
+        mole = box(72, 112, PIERS[0], PIERS[0] + 6)
+        c.paint(mole, 'f', .5)
+        for x in range(74, 112, 6):
+            c.codes[PIERS[0] + 5, x] = ord('i')   # Bollards along its south edge.
+        self.world.water[mole] = False
+        self.mole |= mole
+        self.street |= mole
+        self.spots['sump_stairs'] = (179, STAIRS_PIER + 3)
+        self.spots['customs_pier'] = (178, CUSTOMS_PIER + 3)
 
     def wharf(self):
         specs = [self.reuse_spec(g) for g in (
@@ -1097,10 +1457,11 @@ class RidgemereCity(Ridgemere):
             'rm_the_greatly_bonded_warehouse', 'rm_the_fell_timber_store', 'rm_the_north_wharf_smokehouse',
             'rm_the_drowned_lantern', 'rm_the_tarred_rope', 'rm_wickham_s_chandlery', 'rm_the_bung_hole',
             'rm_the_harbourmaster_s_office', 'rm_the_barracks')]
-        specs.append(Spec('r2_new_store', 'The Grayrock New Store', 'wharf', 'store', near=(185, 470),
+        specs.append(Spec('r2_new_store', 'The Grayrock New Store', 'wharf', 'store', near=(180, 340),
                           make=lambda: self.new_hall('warehouse', 'The Grayrock New Store', 'Grayrock\'s newest store '
                                                      'on the wharf: bales, casks and crates stacked to the beams, '
-                                                     'tallied twice and guarded.', 14, 24), claims=['house_grayrock']))
+                                                     'tallied twice and guarded.', 14, 24, footprint=(9, 14)),
+                          claims=['house_grayrock']))
         # The Customs House, the Crown's, at the Customs Pier; the shipwright's yard behind the slipway.
         low = hall(self.new_rng, 'civic', 30, 14, 'reading')
         up = office_floor(self.new_rng, 'civic', 30, 14, 6, door=False)
@@ -1111,35 +1472,39 @@ class RidgemereCity(Ridgemere):
                                                ['The Crown\'s Customs House on the wharf: long counters where every cask '
                                                 'and bale off the ships is weighed, stamped and taxed.',
                                                 'The collector\'s office over the counters: ledgers, seals and a window '
-                                                'on the Customs Pier.'], 'civic', footprint=(18, 42)))
-        self.put(customs, 176, 476, 'E')
+                                                'on the Customs Pier.'], 'civic', footprint=(28, 14)))
+        self.put(customs, 192, CUSTOMS_PIER - 6, 'W')
         yard = Spec('r2_grayrock_shipwrights', 'Grayrock Shipwrights', 'wharf', 'works', business='shipwright',
                     claims=['house_grayrock'],
                     make=lambda: self.new_works('shipwright', 'Grayrock Shipwrights', 'House Grayrock\'s yard at the '
                                                 'slipway: hulls are built and mended here and run down into the bay.', 5,
-                                                footprint=(14, 20)))
-        self.put(yard, 176, 566, 'E')
-        ground = self.ground_of('wharf') & ~self.quay & ~box(172, 176, 150, 620) & ~box(172, 200, 560, 616)
+                                                footprint=(20, 14)))
+        self.put(yard, 174, 410, 'E')
+        ground = self.ground_of('wharf') & ~self.quay & ~box(172, 174, 150, 458) & ~box(172, 188, 406, 430)
         for y in PIERS:
             ground &= ~box(168, 182, y - 1, y + 7)
         lots = Lots(ground, self.street)
         self.place_list(lots, sorted(specs, key=lambda s: -s.area), self.street, jitter=4)
-        self.sheds_in(lots, 18, 'wharf')
+        self.sheds_in(lots, 14, 'wharf')
         self.leftover(lots.open & ground, 'f', extra=(('|', .03), ('x', .01), ('O', .01), ('<', .006)))
 
-    def reuse_spec(self, gid, district=None, near=None, kind=None, homes=None):
+    def reuse_spec(self, gid, district=None, near=None, kind=None, homes=None, scale=.72):
         dist, k, anchor = REUSE.get(gid, (district, kind, near))
         g = self.structures[gid]
         style = 'manor' if k in ('seat', 'villa') else 'works' if dist == 'cinders' and k == 'works' else 'ridgemere'
         if homes is None:
             homes = {'home': 1, 'lodging': 1, 'shop': 1, 'villa': 2, 'seat': 2}.get(k, 0)
-        return Spec(gid, g['name'], district or dist, kind or k, reuse=g, near=near or anchor, style=style, homes=homes,
-                    business='stables' if 'stables' in gid else None)
+        s = Spec(gid, g['name'], district or dist, kind or k, reuse=g, near=near or remap(dist, anchor), style=style,
+                 homes=homes, business='stables' if 'stables' in gid else None)
+        s.scale = scale
+        return s
 
     # -- the abbey and cathedral close ----------------------------------------------------------------------------
     def abbey(self):
         c = self.c
-        inner = box(224, 328, 154, 230)
+        ax0, ax1, ay0, ay1 = ABBEY
+        inner = box(ax0 + 2, ax1 - 2, ay0, ay1 - 2)
+        lv = self.abbey_level
         nave, crypt, pairs = cathedral(self.new_rng, 'ridgemere')
         cat = Spec('r2_cathedral', 'The Cathedral of Ridgemere', 'abbey', 'hall', claims=['council_of_houses'],
                    make=lambda: self.multi('hall', 'The Cathedral of Ridgemere', [nave, crypt], pairs, ['', 'crypt'], [0, -1],
@@ -1147,87 +1512,86 @@ class RidgemereCity(Ridgemere):
                                            ['The cathedral of the abbey: a great nave of soot-dark stone, pillared '
                                             'aisles, rain on the high windows, the altar and the saint\'s statue at its '
                                             'head.', 'The crypt under the nave: the city\'s old dead in their niches, '
-                                            'and the cold of the hill.'], 'ridgemere', footprint=(40, 22)))
-        self.put(cat, 236, 157, 'S')
-        # The cloister garth: lawn inside an arcade of pillars, south of the cathedral.
-        garth = box(256, 278, 186, 206)
-        c.paint(garth, ',', 2.0)
-        edge = garth & ~box(257, 277, 187, 205)
+                                            'and the cold of the hill.'], 'ridgemere', footprint=(34, 20)))
+        self.put(cat, 214, 156, 'S')
+        # The cloister garth: lawn inside an arcade of pillars, east of the cathedral.
+        garth = box(256, 280, 157, 175)
+        c.paint(garth, ',', lv)
+        edge = garth & ~box(257, 279, 158, 174)
         ys, xs = np.nonzero(edge)
         pillars = ((xs + ys) % 3 == 0)
         c.codes[ys[pillars], xs[pillars]] = ord('I')
-        self.spots['cloister'] = (267, 196)
-        # Paths: round the garth, along the cathedral's front, to each gate.
-        paths = (box(252, 282, 182, 186) | box(252, 282, 206, 210) | box(252, 256, 182, 210) | box(278, 282, 182, 210)
-                 | box(226, 326, 179, 182) | box(298, 303, 210, 230) | box(282, 328, 193, 198))
+        self.spots['cloister'] = (268, 166)
+        # Paths: along the cathedral's front, to each gate.
+        paths = box(212, 288, 176, 180) | box(248, 253, 180, 214) | box(253, 288, 184, 189)
         paths &= inner
-        c.paint(paths, 'f', 2.0)
+        c.paint(paths, 'f', lv)
         self.street |= paths
         S = 'ridgemere'
         specs = [
-            Spec('r2_chapter_house', 'The Chapter House', 'abbey', 'hall', near=(240, 195),
+            Spec('r2_chapter_house', 'The Chapter House', 'abbey', 'hall', near=(225, 186),
                  make=lambda: self.new_hall('hearing', 'The Chapter House', 'The abbey\'s chapter house: stone benches '
                                             'round the walls, the abbot\'s chair, and the rule read aloud each morning.',
-                                            16, 12)),
-            Spec('r2_abbey_quarters', 'Abbey Quarters', 'abbey', 'lodging', near=(240, 220), homes=1,
+                                            14, 10)),
+            Spec('r2_abbey_quarters', 'Abbey Quarters', 'abbey', 'lodging', near=(225, 205), homes=1,
                  make=lambda: self.one('house', 'Abbey Quarters', dorter(self.new_rng, S, 12, 20, 12),
                                        'The dorter: a long dormitory of cells, a pallet and a peg in each, where the '
-                                       'brothers and sisters of the abbey sleep.', S)),
-            Spec('r2_abbey_refectory', 'The Refectory', 'abbey', 'hall', near=(300, 200),
+                                       'brothers and sisters of the abbey sleep.', S, footprint=(13, 8))),
+            Spec('r2_abbey_refectory', 'The Refectory', 'abbey', 'hall', near=(270, 200),
                  make=lambda: self.new_hall('refectory', 'The Refectory', 'The abbey\'s refectory: long tables, a reader\'s '
-                                            'lectern and the smell of the day\'s pottage.', 22, 14)),
-            Spec('r2_abbey_scriptorium', 'The Scriptorium', 'abbey', 'hall', near=(300, 220),
+                                            'lectern and the smell of the day\'s pottage.', 18, 12)),
+            Spec('r2_abbey_scriptorium', 'The Scriptorium', 'abbey', 'hall', near=(240, 200),
                  make=lambda: self.new_hall('reading', 'The Scriptorium', 'Desks under the windows where the abbey\'s '
-                                            'scribes copy and bind, and shelves of what they have made.', 18, 12)),
-            Spec('r2_abbey_brewhouse', 'The Abbey Brewhouse', 'abbey', 'works', near=(315, 215), business='brewery',
+                                            'scribes copy and bind, and shelves of what they have made.', 16, 10)),
+            Spec('r2_abbey_brewhouse', 'The Abbey Brewhouse', 'abbey', 'works', near=(280, 205), business='brewery',
                  make=lambda: self.new_works('brewery', 'The Abbey Brewhouse', 'The abbey\'s brewhouse: the brothers\' '
-                                             'ale, brewed by the cellarer.', 2, style=S)),
-            Spec('r2_abbey_school', 'The Abbey School', 'abbey', 'hall', near=(240, 210),
-                 make=lambda: self.new_hall('reading', 'The Abbey School', 'Benches and slates where the abbey teaches the '
-                                            'Sump\'s and the Commons\' children their letters.', 18, 11)),
-            Spec('r2_abbey_infirmary', 'The Abbey Infirmary', 'abbey', 'hall', near=(315, 190),
+                                             'ale, brewed by the cellarer.', 2, style=S, size=(14, 10))),
+            Spec('r2_abbey_school', 'The Abbey School', 'abbey', 'hall', near=(268, 182),
+                 make=lambda: self._school()),
+            Spec('r2_abbey_infirmary', 'The Abbey Infirmary', 'abbey', 'hall', near=(225, 196),
                  make=lambda: self.new_hall('healer', 'The Abbey Infirmary', 'The abbey\'s own infirmary: clean beds, '
-                                            'herbs drying and a brother on watch.', 18, 10)),
+                                            'herbs drying and a brother on watch.', 16, 9)),
         ]
         ground = inner & ~self.built & ~grow(self.built, 1) & ~garth & ~self.street
-        lots = Lots(ground, self.street)
+        lots = Lots(ground, self.street, gap=0)
         self.place_list(lots, sorted(specs, key=lambda s: -s.area), self.street, jitter=4)
         self.leftover(lots.open & ground, ',', extra=(('3', .02), ('Y', .01), ('B', .02)))
 
     # -- House Greatly's compound -------------------------------------------------------------------------------------
     def greatly_compound(self):
+        """House Greatly's compound, its grounds less than half what they were: the forge and workshop, the masons',
+        the colour works and the stables in the back (north) yard; the house; the fountain in the front (south) yard."""
         c = self.c
-        inner = box(542, 660, 154, 268)
-        north = box(542, 660, 154, 194)
-        c.paint(north & inner, 'f', 3.0)
-        lanes = box(544, 658, 174, 178) | box(574, 579, 174, 222) | box(614, 619, 174, 222) | box(544, 658, 216, 222)
-        lanes &= inner
-        c.paint(lanes, 'f', 3.0)
-        drive = box(598, 603, 213, 268)
-        court = box(590, 611, 236, 255)
-        c.paint(drive | court, 'd', 3.0)
-        c.paint(box(598, 603, 243, 248), 'F', 3.0)           # The fountain in the front yard.
-        path = box(603, 630, 231, 235)
-        c.paint(path, 'd', 3.0)
-        self.street |= lanes | drive | court | path
-        self.spots['greatly_fountain'] = (597, 245)
+        lv = self.greatly_level
+        gx0, gx1, gy0, gy1 = GREATLY
+        inner = box(gx0 + 2, gx1, gy0, gy1 - 2)
+        north = box(gx0 + 2, gx1, gy0, 171)
+        c.paint(north & inner, 'f', lv)
+        lanes = box(394, 468, 171, 175) | box(394, 398, 175, 220) | box(394, 428, 216, 220)
+        c.paint(lanes & inner, 'f', lv)
+        drive = box(428, 433, 190, 222)
+        court = box(421, 440, 200, 215)
+        path = box(440, 446, 197, 201)
+        c.paint(drive | court | path, 'd', lv)
+        c.paint(box(428, 433, 205, 210), 'F', lv)            # The fountain in the front yard.
+        self.street |= (lanes & inner) | drive | court | path
+        self.spots['greatly_fountain'] = (427, 207)
         forge = Spec('r2_greatly_forge', 'The Greatly Forge & Workshop', 'greatly', 'works', business='builders_works',
                      claims=['house_greatly'],
                      make=lambda: self.new_works('builders_works', 'The Greatly Forge & Workshop', 'House Greatly\'s own '
                                                  'works behind the house, for its building trade alone: cramps, nails and '
                                                  'hinges, roof timbers and doors. (The city\'s forges are Timberland\'s.)',
                                                  3, footprint=(24, 14)))
-        self.put(forge, 546, 159, 'S')
-        house = self.reuse_spec('rm_greatly_house')
-        self.put(house, 590, 202, 'S', 19, 11)
-        self.put(self.reuse_spec('rm_the_greatly_masons_yard'), 580, 160, 'S', 14, 9)
-        self.put(self.reuse_spec('rm_the_greatly_colour_works'), 600, 160, 'S', 13, 7)
-        self.put(self.reuse_spec('rm_the_greatly_stables'), 622, 160, 'S', 13, 6)
-        self.put(self.reuse_spec('rm_the_greatly_counting_house'), 630, 228, 'W', 14, 7)
-        ground = inner & ~self.built & ~self.street & ~north
+        self.put(forge, 396, 157, 'S')
+        self.put(self.reuse_spec('rm_greatly_house'), 421, 179, 'S', 19, 11)
+        self.put(self.reuse_spec('rm_the_greatly_masons_yard'), 422, 162, 'S', 14, 9)
+        self.put(self.reuse_spec('rm_the_greatly_colour_works'), 438, 164, 'S', 13, 7)
+        self.put(self.reuse_spec('rm_the_greatly_stables'), 453, 165, 'S', 13, 6)
+        self.put(self.reuse_spec('rm_the_greatly_counting_house'), 446, 196, 'W', 14, 7)
+        ground = inner & ~self.built & ~self.street & ~north & ~box(394, 468, 171, 175)
         self.gardens_plain(ground, 'greatly')
-        self.posts['greatly_gardens'] = [(570, 245), (630, 255)]
-        self.posts['greatly_gate'] = [(600, 264)]
+        self.posts['greatly_gardens'] = [(406, 205), (454, 212)]
+        self.posts['greatly_gate'] = [(430, 219)]
 
     def gardens_plain(self, ground, key, trees='Y'):
         """gardens(crops=False): lawns, clipped hedges, flowerbeds and specimen trees; no kitchen garden, orchard,
@@ -1257,17 +1621,21 @@ class RidgemereCity(Ridgemere):
                                               'racks: spears, crossbows and the cudgels counted every night.',
                                               'The cells under the Keep: a corridor of barred cells cut into the hill, '
                                               'a bench in each, and the gaoler\'s table at the end.'], 'civic',
-                                             footprint=(20, 20)))
-        self.put(tower, 590, 462, 'N')
+                                             footprint=(16, 16)))
+        self.put(tower, 396, 338, 'N')
         barracks = self.reuse_spec('rm_the_watch_house')
         barracks.claims = ['council_of_houses', 'ridgemere_watch']
-        self.put(barracks, 624, 458, 'W', 10, 18)
-        court = box(583, 637, 448, 497) & ~self.built & ~self.rings
+        self.put(barracks, 420, 330, 'W', 10, 18)
+        kx0, kx1, ky0, ky1 = KEEP
+        court = box(kx0 + 3, kx1 - 3, ky0 + 3, ky1 - 3) & ~self.built & ~self.rings
+        self.c.paint(court, 'f', None)
         self.street |= court
-        self.posts['keep_yard'] = [(600, 452), (615, 490), (586, 490)]
+        self.posts['keep_yard'] = [(406, 328), (416, 358), (398, 358)]
 
     # -- the Great Palace ---------------------------------------------------------------------------------------------
     def palace(self):
+        """The Great Palace on its forecourt, its three parts touching; behind them a modest privy garden (no wall: the
+        palace's guards are its wall)."""
         c = self.c
         rp, rpairs = palace_residence(self.new_rng, 'palace', 48, 24, 3, 6)
         residence = Spec('r2_kings_residence', "The King's Residence", 'palace', 'seat', homes=2,
@@ -1276,16 +1644,16 @@ class RidgemereCity(Ridgemere):
                                                  ["The King's Residence", "The King's Residence, the royal bedchambers",
                                                   "The King's Residence, the kitchens"],
                                                  ['The palace\'s west wing, the King\'s Residence: receiving rooms hung '
-                                                  'with the Crown\'s banners, looking west over a garden wall at the '
-                                                  'Cinders\' smoke.', 'The royal bedchambers above: curtained beds, '
+                                                  'with the Crown\'s banners, looking west over the Cinders\' smoke.',
+                                                  'The royal bedchambers above: curtained beds, '
                                                   'fires in every room and rain on tall windows.',
                                                   'The palace kitchens and the servants\' hall beneath the Residence, '
-                                                  'warm and never quiet.'], 'palace', footprint=(28, 60)))
+                                                  'warm and never quiet.'], 'palace', footprint=(22, 34)))
         ante = Spec('r2_palace_antechamber', 'The Antechamber', 'palace', 'hall', claims=['council_of_houses'],
                     make=lambda: self.one('hall', 'The Antechamber', palace_antechamber(self.new_rng, 'palace', 40, 24),
                                           'The Great Palace\'s antechamber, its court and senate: tiered benches under '
                                           'the four Houses\' banners where the Council of Houses sits, the Chancellor\'s '
-                                          'dais, and the great door on the forecourt.', 'palace', footprint=(28, 40)))
+                                          'dais, and the great door on the forecourt.', 'palace', footprint=(22, 24)))
         wp, wpairs = palace_wing(self.new_rng, 'palace', 48, 24, 8)
         wing = Spec('r2_administrative_wing', 'The Administrative Wing', 'palace', 'hall', claims=['council_of_houses'],
                     make=lambda: self.multi('hall', 'The Administrative Wing', wp, wpairs, ['', 'up'], [0, 1],
@@ -1293,31 +1661,28 @@ class RidgemereCity(Ridgemere):
                                             ['The palace\'s east wing: the royal secretary\'s and the treasurer\'s '
                                              'offices, clerks at long desks and the Crown\'s papers in presses.',
                                              'More desks under the eaves, and the Crown\'s rolls in their cabinets.'],
-                                            'palace', footprint=(28, 60)))
-        # (Footprints are given door edge first, so each block is 60 or 40 along the forecourt and 28 deep.)
-        residence.building.footprint = (60, 28)
-        ante.building.footprint = (40, 28)
-        wing.building.footprint = (60, 28)
-        self.put(residence, 350, 552, 'N')
-        self.put(ante, 410, 552, 'N')
-        self.put(wing, 450, 552, 'N')
+                                            'palace', footprint=(22, 34)))
+        # (Footprints are given door edge first: 34, 24 and 34 along the forecourt, 22 deep.)
+        residence.building.footprint = (34, 22)
+        ante.building.footprint = (24, 22)
+        wing.building.footprint = (34, 22)
+        self.put(residence, 290, 402, 'N')
+        self.put(ante, 324, 402, 'N')
+        self.put(wing, 348, 402, 'N')
         ground = lambda key: self.named[key]['rooms'][0]['id']
         self.passage(ground('r2_kings_residence'), 'E', ground('r2_palace_antechamber'), 'W',
                      "The King's Residence to the Antechamber")
         self.passage(ground('r2_palace_antechamber'), 'E', ground('r2_administrative_wing'), 'W',
                      'The Antechamber to the Administrative Wing')
-        # The privy garden behind, walled from the Cinders: lawns, hedges and a fountain (no crops).
-        garden = box(322, 540, 584, 612)
-        paths = box(340, 348, 534, 612) | box(512, 520, 534, 612) | box(340, 520, 582, 586)
-        paths &= self.D('palace') & ~self.built
-        c.paint(paths, 'f', 2.0)
-        self.street |= paths
-        g = garden & ~paths & ~self.built & ~self.reserved
+        # The privy garden behind: lawns, hedges and a fountain (no crops), with walks round it.
+        garden = box(290, 380, 424, 449)
+        paths = box(288, 290, 392, 449) | box(380, 382, 392, 449) | box(290, 380, 435, 438)
+        c.paint(paths & ~self.built, 'f', None)
+        self.street |= paths & ~self.built
+        g = garden & ~paths & ~self.built & ~self.reserved & ~self.street
         self.gardens_plain(g, 'palace')
-        c.paint(box(428, 433, 596, 601), 'F', 2.0)
-        self.posts['palace_gardens'] = [(430, 590), (380, 600)]
-        rest = self.D('palace') & ~self.built & ~self.street & ~self.reserved & ~garden
-        self.leftover(rest, 'f', extra=(('I', .004), ('S', .002)))
+        c.paint(box(334, 337, 428, 431), 'F', None)
+        self.posts['palace_gardens'] = [(336, 444), (308, 430)]
 
     def passage(self, a, side_a, b, side_b, name):
         """A passage link between two interiors that touch (a door knocked through): a doorway carved in each one's wall
@@ -1326,7 +1691,10 @@ class RidgemereCity(Ridgemere):
         ea, eb = self.carve(ra, side_a), self.carve(rb, side_b)
         if ea is None or eb is None:
             return False
-        self.site.links.append({'id': f'{a}_to_{b}', 'name': name, 'kind': 'passage', 'open': True,
+        lid = f'{a}_to_{b}'
+        if len(lid) > 48:                                # (Atlas ids are at most 48 characters)
+            lid = f'{lid[:41]}_{__import__("hashlib").md5(lid.encode()).hexdigest()[:6]}'
+        self.site.links.append({'id': lid, 'name': name, 'kind': 'passage', 'open': True,
                                 'a': {'cell': a, 'x': ea[0], 'y': ea[1]}, 'b': {'cell': b, 'x': eb[0], 'y': eb[1]}})
         self.passages.append((a, b))
         return True
@@ -1366,39 +1734,39 @@ class RidgemereCity(Ridgemere):
     # -- the market ----------------------------------------------------------------------------------------------------
     def market_square(self):
         c = self.c
+        (mx, my), _ = SQUARES['market']
         keepers = []
-        for x in (452, 458, 479, 485):                  # The north row of stalls: four two-tile stalls.
-            c.stamp(x, 351, ['uu'], None)
-            keepers.append((x, 350))
-        for x, row in ((452, 'uu'), (460, 'u'), (479, 'u'), (485, 'uu')):   # The south row: two double, two single.
-            c.stamp(x, 369, [row], None)
-            keepers.append((x, 370))
-        c.stamp(470, 349, ['U'], None)                   # The well.
+        for x in (mx - 18, mx - 12, mx + 9, mx + 15):    # The north row of stalls: four two-tile stalls.
+            c.stamp(x, my - 9, ['uu'], None)
+            keepers.append((x, my - 10))
+        for x, row in ((mx - 18, 'uu'), (mx - 10, 'u'), (mx + 9, 'u'), (mx + 15, 'uu')):   # The south row.
+            c.stamp(x, my + 9, [row], None)
+            keepers.append((x, my + 10))
+        c.stamp(mx, my - 11, ['U'], None)                 # The well.
         self.posts['market_square'] = keepers
-        self.posts['market_porters'] = [(447, 346), (493, 346), (447, 374), (493, 374)]
+        self.posts['market_porters'] = [(mx - 21, my - 4), (mx + 21, my - 4), (mx - 21, my + 4), (mx + 21, my + 4)]
         hall_plan = market_hall(self.new_rng, 'ridgemere', 20, 48, 6)
         hall_ = Spec('r2_market_hall', 'The Market Hall', 'commons', 'hall', claims=['council_of_houses'],
                      make=lambda: self.one('hall', 'The Market Hall', hall_plan, 'The covered Market Hall on the north side '
                                            'of Market Square: six counters under a slate roof on oak posts, out of the '
-                                           'rain, a door at each end.', 'ridgemere', footprint=(20, 48)))
-        self.put(hall_, 446, 322, 'W')
+                                           'rain, a door at each end.', 'ridgemere', footprint=(16, 40)))
+        self.put(hall_, 340, 264, 'W')
         # The Rag Market in the Sump: six makeshift stalls round its edges, a pump against a wall.
-        stalls = [((280, 343), (280, 344)), ((288, 343), (288, 344)), ((296, 343), (296, 344)),
-                  ((280, 357), (280, 356)), ((290, 357), (290, 356)), ((298, 357), (298, 356))]
-        # ((290, 357), not (288, 357): a Sump house's door opens north at (288, 359), and needs two open tiles.)
+        (rx, ry), _ = SQUARES['rag']
+        stalls = [((rx - 8, ry - 6), (rx - 8, ry - 5)), ((rx, ry - 6), (rx, ry - 5)), ((rx + 8, ry - 6), (rx + 8, ry - 5)),
+                  ((rx - 8, ry + 6), (rx - 8, ry + 5)), ((rx + 1, ry + 6), (rx + 1, ry + 5)), ((rx + 8, ry + 6), (rx + 8, ry + 5))]
         rag = []
         self.rag_stalls = np.zeros((H, W), dtype=bool)   # (The Sump's alleys are cut round them, never over them.)
         for (sx, sy), keeper in stalls:
             c.stamp(sx, sy, ['u'], None)
             self.rag_stalls[sy, sx] = True
             rag.append(keeper)
-        c.stamp(302, 345, ['U'], None)
+        c.stamp(rx + 10, ry - 2, ['U'], None)
         self.posts['rag_market'] = rag
-        self.posts['tray_sellers'] = [(284, 350), (294, 350), (300, 352), (286, 354)]
+        self.posts['tray_sellers'] = [(rx - 5, ry - 1), (rx + 4, ry - 1), (rx + 6, ry + 2), (rx - 3, ry + 3)]
 
     # -- the administrative sector ------------------------------------------------------------------------------------
-    def admin(self):
-        c = self.c
+    def admin_specs(self):
         ground_p = hall(self.new_rng, 'civic', 30, 20, 'reading')
         up = office_floor(self.new_rng, 'civic', 30, 20, 8, door=False)
         top = stacks(self.new_rng, 'civic', 30, 20, deep=False)
@@ -1417,162 +1785,380 @@ class RidgemereCity(Ridgemere):
                                                 'The rolls at the top of the house: shelves of ledgers and deed-boxes to '
                                                 'the rafters, every household of Ridgemere written down.'], 'civic',
                                                footprint=(24, 16)))
-        self.put(records, 388, 472, 'S')
-        specs = [self.reuse_spec(g) for g in ('rm_the_city_office', 'rm_the_magistrate_s_court', 'rm_the_hall_of_records',
-                                               'rm_wetink_lane_scriveners', 'rm_the_slate_ledger')]
-        specs[0].near, specs[1].near = (440, 505), (362, 500)
+        self.put(records, 318, 349, 'S')
+        specs = [self.reuse_spec(g, scale=.85) for g in ('rm_the_city_office', 'rm_the_magistrate_s_court',
+                                                         'rm_the_hall_of_records', 'rm_wetink_lane_scriveners',
+                                                         'rm_the_slate_ledger')]
+        specs[0].near, specs[1].near, specs[2].near = (368, 360), (298, 362), (290, 384)
+        for s in specs:
+            s.style = 'civic' if s.kind == 'hall' else s.style
         for i, gid in enumerate(self.houses.get('admin', [])):
-            specs.append(self.reuse_spec(gid, 'admin', (300 + 30 * (i % 8), 515), 'home'))
-        left = self.fill('admin', specs, spacing=(28, 21), angle=0)
-        # The civic style: flagstones, and arcades of pillars along the streets.
-        arcade = left & grow(self.street, 1) & ~self.reserved
-        ys, xs = np.nonzero(arcade)
-        pick = (xs + ys) % 4 == 0
-        c.codes[ys[pick], xs[pick]] = ord('I')
-        self.leftover(left & ~arcade, 'f', extra=(('S', .002), ('I', .002), ('B', .01)))
+            specs.append(self.reuse_spec(gid, 'admin', (256 + 14 * (i % 8), 362 + 16 * (i % 2)), 'home', scale=.8))
+        return specs
 
     # -- the Commons and Northgate ------------------------------------------------------------------------------------
-    def commons(self):
+    def commons_specs(self):
         S = 'ridgemere'
         com, north = [], []
         for gid, (dist, kind, anchor) in REUSE.items():
             if dist in ('commons', 'northgate'):
-                (com if dist == 'commons' else north).append(self.reuse_spec(gid))
-        for i, gid in enumerate(self.houses.get('commons', [])):
-            com.append(self.reuse_spec(gid, 'commons', None, 'home'))
-        for i, gid in enumerate(self.houses.get('northgate', [])):
-            north.append(self.reuse_spec(gid, 'northgate', None, 'home'))
-        prose = 'A tall narrow house of the Commons shared by two families, one up and one down, a stair between.'
-        for i in range(10):
-            name = DOUBLE_NAMES[i]
-            com.append(Spec(f'r2_double_{i}', name, 'commons', 'flats', homes=2, open_door=False,
-                            make=lambda name=name: self.new_flats(name, 2, (3, 3), (14, 12), (10, 8), prose=prose)))
+                (com if dist == 'commons' else north).append(self.reuse_spec(gid, scale=.85))
+        # The middle town's houses, their lots narrower: the largest stand nearest the Rise, in its better style.
+        houses = [(gid, 'commons') for gid in self.houses.get('commons', [])] + \
+                 [(gid, 'northgate') for gid in self.houses.get('northgate', [])]
+        houses.sort(key=lambda t: -self.structures[t[0]]['size'][0] * self.structures[t[0]]['size'][1])
+        rise_edge = self.D('commons') & (self.wealth > 1.25)
+        for i, (gid, dist) in enumerate(houses):
+            s = self.reuse_spec(gid, dist, None, 'home', scale=.85)
+            if dist == 'commons' and i < 6 and rise_edge.any():
+                s.near = self.random_point('commons', rise_edge)
+                s.style = 'manor'
+            else:
+                s.near = self.random_point(dist)
+            (com if dist == 'commons' else north).append(s)
         com += [
-            Spec('r2_barber', "The Barber's Pole", 'commons', 'shop', homes=1, near=(390, 340), business='barber',
+            Spec('r2_barber', "The Barber's Pole", 'commons', 'shop', homes=1, near=(326, 300), business='barber',
                  make=lambda: self.new_shop('apothecary', "The Barber's Pole", 'A barber-surgeon\'s: a chair by the '
                                             'window, razors and lancets laid out, and a striped pole by the door.')),
-            Spec('r2_fell_wine_vaults', 'The Fell Wine Vaults', 'commons', 'shop', homes=1, near=(540, 360),
+            Spec('r2_fell_wine_vaults', 'The Fell Wine Vaults', 'commons', 'shop', homes=1, near=(372, 280),
                  business='vintner', claims=['house_fell'],
                  make=lambda: self.new_shop('provisioner', 'The Fell Wine Vaults', 'House Fell\'s wine merchant in the '
                                             'city: casks of Fellhall wine and brandy racked to the ceiling, cordials '
                                             'and preserves on the counter.')),
-            Spec('r2_cheesemonger', 'The Round and Rind', 'commons', 'shop', homes=1, near=(430, 400), business='dairy',
+            Spec('r2_cheesemonger', 'The Round and Rind', 'commons', 'shop', homes=1, near=(350, 330), business='dairy',
                  make=lambda: self.new_shop('provisioner', 'The Round and Rind', 'A cheesemonger\'s: rounds ripening '
                                             'on cool shelves, butter in crocks and a wire for cutting.')),
-            Spec('r2_bathhouse', 'The Bathhouse', 'commons', 'works', near=(372, 420), business='bathhouse',
-                 make=lambda: self.new_works('bathhouse', 'The Bathhouse', 'The Commons\' bathhouse by the Sump\'s edge: '
-                                             'a penny for the hot pool, two for a towel.', 3, style=S)),
+            Spec('r2_bathhouse', 'The Bathhouse', 'commons', 'works', near=(312, 318), business='bathhouse',
+                 make=lambda: self.new_works('bathhouse', 'The Bathhouse', 'The public bathhouse on the Sump\'s edge, fed '
+                                             'from the Cisterns: a penny for the hot pool, two for a towel, and steam '
+                                             'rolling out of its door into the rain.', 3, style=S, size=(18, 12))),
         ]
-        for s in com + north:
-            if s.near is None:
-                s.near = self.random_point(s.district)
-        left = self.fill('commons', com, spacing=(26, 19), angle=-.06)
-        self.leftover(left, ',', extra=(('Y', .012), ('B', .015), ('3', .01), ('U', .0008)))
-        left = self.fill('northgate', north, spacing=(26, 19), angle=-.06)
-        self.leftover(left, ',', extra=(('Y', .012), ('B', .015), ('3', .01)))
+        # The Tallow Arcade: a covered way through a row of shops' backs, from one street to the next.
+        arc = Plan(9, 18, '#', 'f', self.new_rng)
+        arc.back_door()
+        for y in range(3, 15, 4):
+            arc.put(2, y, 'I')
+            arc.put(6, y, 'I')
+            arc.put(1, y + 1, 'p')
+            arc.put(7, y + 2, 'O')
+        arcade = Spec('r2_tallow_arcade', 'The Tallow Arcade', 'commons', 'hall', near=(318, 270),
+                      make=lambda: self._through('The Tallow Arcade', arc, 'A covered arcade through the backs of the '
+                                                 'houses, out of the rain: a vaulted way of soot-black pillars, '
+                                                 'benches against the walls, chandlers\' smell and wet boots, from one '
+                                                 'street to the next.', (6, 13)))
+        self.arcade_spec = arcade
+        return com, north
+
+    def _school(self):
+        """The abbey school, with a door at each end (its children come and go by both)."""
+        p = hall(self.new_rng, 'ridgemere', 16, 10, 'reading')
+        x = next((x for x in sorted(range(1, p.w - 1), key=lambda x: abs(x - p.w // 2)) if p.g[1][x] == p.floor), p.w // 2)
+        p.g[1][x] = p.floor
+        p.back_door(x)
+        return self._through('The Abbey School', p, 'Benches and slates where the abbey teaches the Sump\'s and the '
+                             'Commons\' children their letters, a door to the close at each end.', (12, 4))
+
+    def _through(self, name, plan, text, footprint):
+        b = self.one('hall', name, plan, text, 'ridgemere', footprint)
+        b.back = True
+        return b
+
+    def commons_rows(self):
+        """The middle town's new houses: row houses of two and three homes on narrow lots (no yards), and on the Sump's
+        edge cheaper tenements of three homes creeping in; then whatever lot is left along a lane takes one more row."""
+        made = []
+        lots = {name: Lots(self.ground_of(name), self.street, gap=0) for name in ('commons', 'northgate')}
+        sump_edge = self.D('commons') & (self.wealth < .72)
+        names = iter(ROW_NAMES)
+        tnames = iter(sump_names(random.Random(self.world.seed + 5), 40))
+        plan = [('tenement', 'commons', 3)] * TENEMENTS + [('row', 'commons', 3)] * ROWS_COMMONS + \
+               [('row', 'commons', 2)] * ROWS_COMMONS_2 + [('row', 'northgate', 3)] * ROWS_NORTHGATE
+        for i, (kind, dist, homes) in enumerate(plan):
+            if kind == 'tenement':
+                name = f'{next(tnames).split()[0]} Rents'
+                style, beds, prose = 'ridgemere', tuple(self.rng.choice([2, 3, 3, 4]) for _ in range(homes)), None
+                near = self.random_point('commons', sump_edge) if sump_edge.any() else None
+                sizes = [(8, 7), (9, 7), (7, 9), (8, 8)]
+            else:
+                name = next(names)
+                style, beds, prose = 'ridgemere', tuple(self.rng.choice([2, 3, 3]) for _ in range(homes)), ROW_PROSE
+                near = self.random_point(dist)
+                sizes = [(7, 9), (8, 9), (7, 10), (8, 8), (9, 8)]
+            fw, fh = self.rng.choice(sizes)
+            iw, ih = int(np.clip(round(fw * 1.3), 8, 12)), int(np.clip(round(fh * 1.2), 8, 12))
+            spec = Spec(f'r2_row_{i}', name, dist, 'flats', homes=homes, open_door=False, near=near,
+                        make=lambda name=name, homes=homes, beds=beds, iw=iw, ih=ih, fw=fw, fh=fh, prose=prose, style=style:
+                        self.new_flats(name, homes, beds, (iw, ih), (fw, fh), style=style, prose=prose or ''))
+            got = self.place_list(lots[dist], [spec], self.street, jitter=6, report=False)
+            if got:                                         # No lot near: anywhere in the quarter.
+                spec.near = self.random_point(dist)
+                got = self.place_list(lots[dist], [spec], self.street, jitter=60, report=False)
+            if not got:
+                made.append(spec.key)
+                self.named[spec.key]['tenement'] = kind == 'tenement'
+        self.rows_made = made
 
     # -- the Cinders -------------------------------------------------------------------------------------------------
-    def cinders(self):
-        specs = [self.reuse_spec(g) for g, (d, k, a) in REUSE.items() if d == 'cinders']
+    def cinders_specs(self):
+        specs = [self.reuse_spec(g, scale=.74) for g, (d, k, a) in REUSE.items() if d == 'cinders']
         for i, gid in enumerate(self.houses.get('cinders', [])):
-            specs.append(self.reuse_spec(gid, 'cinders', (230 + 12 * i, 610), 'home'))
+            specs.append(self.reuse_spec(gid, 'cinders', (216 + 9 * i, 444), 'home', scale=.66))
         specs += [
-            Spec('r2_forge_row', "Timberland's Forge Row", 'cinders', 'shop', homes=1, near=(300, 520),
+            Spec('r2_forge_row', "Timberland's Forge Row", 'cinders', 'shop', homes=1, near=(262, 380),
                  business='smithy', claims=['house_mossgrave'],
                  make=lambda: self.new_shop('smith', "Timberland's Forge Row", 'A smithy of House Timberland\'s on the '
                                             'Cinders: horseshoes, hinges and cart iron, the forge never let out.',
                                             style='works')),
-            Spec('r2_cinder_wheelwrights', 'Cinder Wheelwrights', 'cinders', 'works', near=(250, 610),
+            Spec('r2_cinder_wheelwrights', 'Cinder Wheelwrights', 'cinders', 'works', near=(230, 430),
                  business='cartwright',
                  make=lambda: self.new_works('cartwright', 'Cinder Wheelwrights', 'Wheels and axles for the city\'s carts '
-                                             'and the Houses\' wagons.', 2, size=(19, 14))),
+                                             'and the Houses\' wagons.', 2, size=(16, 12))),
         ]
-        left = self.fill('cinders', specs, spacing=(34, 26), angle=.05, lane_ch='_', big=90)
-        lots = Lots(left, self.street)
-        self.sheds_in(lots, 16, 'cinders')
-        self.leftover(lots.open & left, '>', extra=(('x', .015), ('O', .01), ('<', .012), ('7', .004)))
+        return specs
 
     # -- the Rise -------------------------------------------------------------------------------------------------------
     def rise(self):
-        """Five walled mansions of the Minor Houses, their gates on Rise Lane (doc 67, R15)."""
+        """Five Minor House mansions, each in a small railed garden (their grounds about 40% smaller than before), their
+        gates on Rise Walk and the Mews; no walls."""
         c = self.c
-        lots = [((548, 508), 'E'), ((606, 508), 'W'), ((548, 543), 'E'), ((606, 543), 'W'), ((548, 578), 'E')]
-        for ((x0, y0), side), gid in zip(lots, MINOR_HOUSES):
-            lw, lh = 44, 30
+        for (x0, y0, lw, lh), gid in zip(RISE_LOTS, MINOR_HOUSES):
             region = box(x0, x0 + lw, y0, y0 + lh)
-            ring = region & ~box(x0 + 1, x0 + lw - 1, y0 + 1, y0 + lh - 1)
-            c.paint(region, ',', 3.0)
-            c.paint(ring, 'H', 3.0)
-            self.rings |= ring
-            gy = y0 + lh // 2
-            gx = x0 + lw - 1 if side == 'E' else x0
-            c.paint(box(gx, gx + 1, gy - 1, gy + 2), 'G', 3.0)
-            # A path from the gate to the house door, and out to Rise Lane.
-            hx0 = x0 + 15
-            hy0 = y0 + 11
-            out = box(gx + 1, 598, gy - 1, gy + 2) if side == 'E' else box(603, gx, gy - 1, gy + 2)
-            inner_path = box(hx0 + 14, gx, gy - 1, gy + 2) if side == 'E' else box(gx + 1, hx0, gy - 1, gy + 2)
-            c.paint(out | inner_path, 'f', 3.0)
-            self.street |= out | inner_path
+            rail = region & ~box(x0 + 1, x0 + lw - 1, y0 + 1, y0 + lh - 1)
+            c.paint(region, ',', None)
+            c.paint(rail, '|', None)
+            # The gate on the lot's north side (onto Rise Walk) or south side (onto the Mews), and a path to the door.
+            north = y0 < 404
+            gx = x0 + lw // 2
+            gy = y0 if north else y0 + lh - 1
+            gate = box(gx - 1, gx + 2, gy, gy + 1)
+            c.paint(gate, 'f', None)
             spec = self.reuse_spec(gid, 'rise', None, 'villa')
-            # The house's block: 14 x 8 (fp of its 20 x 14 interior), its door toward the gate.
-            if side == 'E':
-                self.put(spec, hx0, hy0, 'E', 14, 8)
-            else:
-                self.put(spec, x0 + lw - 15 - 14, hy0, 'W', 14, 8)
-            garden = region & ~ring & ~self.built & ~self.street
+            bw, bh = 14, 8
+            hx = x0 + (lw - bw) // 2
+            hy = y0 + lh - 1 - 3 - bh if north else y0 + 4
+            path = box(gx - 1, gx + 2, y0 + 1, hy) if north else box(gx - 1, gx + 2, hy + bh, y0 + lh - 1)
+            c.paint(path, 'f', None)
+            out = box(gx - 1, gx + 2, y0 - 2, y0) if north else box(gx - 1, gx + 2, y0 + lh, y0 + lh + 2)
+            c.paint(out & ~self.street, 'f', None)
+            self.street |= gate | path | out
+            self.put(spec, hx, hy, 'N' if north else 'S', bw, bh)
+            garden = region & ~rail & ~self.built & ~self.street
             self.gardens_plain(garden, gid)
-            fx, fy = (x0 + 8, y0 + 6) if side == 'E' else (x0 + lw - 9, y0 + 6)
-            c.paint(box(fx, fx + 2, fy, fy + 2), 'F', 3.0)
-            self.posts.setdefault('mansion_gardens', []).append((x0 + lw // 2, y0 + 4))
-        rest = self.D('rise') & ~self.built & ~self.street & ~self.reserved & ~box(548, 650, 508, 608)
-        self.leftover(rest, ',', extra=(('Y', .02), ('B', .02), ('3', .02), ('S', .002)))
-        park = box(606, 650, 578, 608) & ~self.street
-        self.gardens_plain(park, 'rise_green')
+            fx, fy = x0 + 3, (y0 + 3 if not north else y0 + 4)
+            c.paint(box(fx, fx + 2, fy, fy + 2), 'F', None)
+            self.posts.setdefault('mansion_gardens', []).append((x0 + lw - 5, y0 + lh // 2))
+
+    # -- the landmarks ---------------------------------------------------------------------------------------------------
+    def fixed_landmarks(self):
+        """The city's memorable places (doc 67, Dense city): the Bay Light on the Mole, the Clock Tower, the
+        Wall-Builders, Pillory Square, the Mercy, the Cisterns and the Runnel, and the Hundred Steps."""
+        c = self.c
+        # The Bay Light: a lighthouse at the head of the Mole, two floors, the lamp at the top.
+        low = Plan(9, 9, 'H', 'f', self.new_rng)
+        top = Plan(9, 9, 'H', 'f', self.new_rng)
+        top.g[8][4] = 'H'
+        top.keep = set()
+        stairs_between(low, top, 6, 6)
+        low.put(2, 2, 'O')
+        low.put(6, 2, 'x')
+        low.put(2, 6, 'k')
+        for x, y in ((3, 3), (5, 3), (3, 5), (5, 5)):
+            top.put(x, y, 'i')
+        light = Spec('r2_bay_light', 'The Bay Light', 'wharf', 'hall', claims=['house_grayrock'],
+                     make=lambda: self.multi('hall', 'The Bay Light', [low, top], [(('', 6, 6), ('up', 6, 6))],
+                                             ['', 'up'], [0, 1], ['The Bay Light', 'The Bay Light, the lamp room'],
+                                             ['The foot of the lighthouse at the head of the Mole: oil casks, coils of '
+                                              'wick and a stair winding up the wet stone, the bay slapping at the door.',
+                                              'The lamp room at the top of the Bay Light: four great braziers behind '
+                                              'thick glass, kept burning all night for the ships feeling their way in '
+                                              'through the rain.'], 'civic', footprint=(8, 8)))
+        self.put(light, 64, PIERS[0] - 1, 'E')
+        self.world.water[PIERS[0] - 1:PIERS[0] + 7, 64:72] = False
+        self.mole[PIERS[0] - 1:PIERS[0] + 7, 64:72] = True
+        self.landmark('The Bay Light and the Mole', 'wharf', 'a stone breakwater running 100 tiles out into the bay '
+                      'from the north pier, a two-storey lighthouse at its head', 68, PIERS[0] + 3,
+                      [r['id'] for r in self.named['r2_bay_light']['rooms']])
+        # The Clock Tower on Clock Square, where Abbey Row meets Gate Street.
+        (qx, qy), (_, qh) = SQUARES['clock']
+        low = Plan(8, 8, 'H', 'f', self.new_rng)
+        up = Plan(8, 8, 'H', 'f', self.new_rng)
+        up.g[7][4] = 'H'
+        up.keep = set()
+        stairs_between(low, up, 6, 5)
+        low.put(2, 2, 'o')
+        low.put(5, 2, 'o')
+        up.put(3, 2, 'U')
+        up.put(2, 4, 'x')
+        tower = Spec('r2_clock_tower', 'The Clock Tower', 'northgate', 'hall', claims=['house_greatly'],
+                     make=lambda: self.multi('hall', 'The Clock Tower', [low, up], [(('', 6, 5), ('up', 6, 5))],
+                                             ['', 'up'], [0, 1], ['The Clock Tower', 'The Clock Tower, the bell loft'],
+                                             ['The foot of the Clock Tower that House Greatly raised over Northgate: the '
+                                              'weights hanging in their shaft and the iron works of the clock ticking '
+                                              'above.', 'The bell loft: the great bell that rings the hours over the '
+                                              'rain, the clock\'s four dials glowing at night, and the whole wet city '
+                                              'below.'], 'civic', footprint=(7, 7)))
+        self.put(tower, qx + 4, qy - qh - 7, 'S')
+        self.landmark('The Clock Tower', 'northgate', 'a two-storey clock and bell tower on Clock Square, where Abbey '
+                      'Row meets Gate Street', qx + 7, qy - qh - 4, [r['id'] for r in self.named['r2_clock_tower']['rooms']])
+        # The Wall-Builders: the statue of House Greatly's masons on Greatly Square.
+        (gx, gy), _ = SQUARES['greatly']
+        c.paint(box(gx + 7, gx + 10, gy - 3, gy), 'S', None)
+        self.landmark('The Wall-Builders', 'commons', 'a statue group of the first Greatly masons with trowel and plumb '
+                      'line, on Greatly Square below the compound gate: "They raised the wall; the wall raised the city"',
+                      gx + 8, gy - 2)
+        # Pillory Square before the Keep gate: the gallows, the pillory and the stocks.
+        (px, py), _ = SQUARES['pillory']
+        for x in (px - 9, px - 6):
+            c.stamp(x, py - 4, ['I'], None)                 # The gallows' posts.
+        c.stamp(px + 6, py - 4, ['I'], None)                # The pillory.
+        c.stamp(px + 5, py + 3, ['ppp'], None)              # The stocks.
+        self.posts['pillory'] = [(px - 3, py), (px + 3, py + 1)]
+        self.landmark('Pillory Square', 'commons', 'the square before the Old Keep\'s gate: the gallows, the pillory and '
+                      'the stocks where the Watch shows its catch', px, py)
+        # The Mercy: an old hulk hauled up on the quay at the Sump's edge, the Knucklebones inside it.
+        hx0, hy0, hw, hh = QUAY_X, 318, 24, 11
+        mask = np.zeros((hh, hw), dtype=bool)
+        for x in range(hw):
+            half_h = 5 if x < 14 else 5 - (x - 13) * .45
+            for y in range(hh):
+                mask[y, x] = abs(y - 5) <= half_h + .01
+        mercy = Spec('r2_the_knucklebones', 'The Knucklebones', 'sump', 'tavern',
+                     make=lambda: self.new_tavern('The Knucklebones', 'A dice-and-card tavern in the hull of the Mercy, '
+                                                  'an old Grayrock carrack hauled up the quay and left: ship\'s lamps '
+                                                  'over every table, the ribs overhead, the house\'s cut on every pot, '
+                                                  'and nobody asks where the stake came from.', footprint=(11, 24)))
+        rec = self.put(mercy, hx0, hy0, 'W', mask=mask)
+        whole = np.zeros((H, W), dtype=bool)
+        whole[hy0:hy0 + hh, hx0:hx0 + hw] = mask
+        inner = whole.copy()
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            inner &= np.roll(whole, (dy, dx), (0, 1))
+        hull = whole & ~inner & (c.codes != ord('+'))
+        c.paint(hull, '<', None)
+        c.paint(inner, 'L', None)
+        c.stamp(hx0 + 12, hy0 + 5, ['I'], None)             # The stump of her mast.
+        self.landmark('The Mercy', 'sump', 'an old Grayrock carrack hauled up on the quay at the Sump\'s edge, her hull '
+                      'the Knucklebones tavern', hx0 + 10, hy0 + 5, [r['id'] for r in rec['rooms']])
+        # The Cisterns: three stone rain tanks on a court in the Sump, and the Runnel, the gutter channel down to the
+        # Gut and along it to the quay.
+        cx0, cy0 = 262, 272
+        court = box(cx0, cx0 + 16, cy0, cy0 + 11)
+        c.paint(court, 'f', None)
+        for i in range(3):
+            tx = cx0 + 1 + 5 * i
+            c.stamp(tx, cy0 + 1, ['QQQQ', 'QUUQ', 'QUUQ', 'QQQQ'], None)
+            self.built[cy0 + 1:cy0 + 5, tx:tx + 4] = True
+        self.street |= court & ~self.built
+        self.cistern_court = court
+        run = self.c.line_mask([(cx0 + 8.5, cy0 + 11), (cx0 + 8.5, 296)], 3) & self.D('sump') & ~self.built
+        c.paint(run, '.', None)
+        self.street |= run
+        gut_edge = self.c.line_mask([(x, y + 1.5) for x, y in self.gut_line], 1) & self.c.line_mask(self.gut_line, 3)
+        channel = (self.c.line_mask([(cx0 + 8.5, cy0 + 11), (cx0 + 8.5, 296)], 1) & run) | \
+            (gut_edge & ~box(334, 400, 250, 330) & ~self.D('wharf'))
+        c.paint(channel, '~', None)
+        self.runnel = channel
+        self.landmark('The Cisterns and the Runnel', 'sump', 'three stone rain tanks on Cistern Court that feed the '
+                      'bathhouse, and the Runnel, an open gutter channel running from them down the Gut to the quay',
+                      cx0 + 8, cy0 + 6)
+        # The Hundred Steps: a stair-street climbing from the quay up through the north Sump to Abbey Row.
+        steps = [(QUAY_X - 1.0, 236.5), (238.0, 236.5), (262.0, 224.5), (294.5, 224.5), (294.5, 188.0)]
+        m = self.c.line_mask(steps, 2) & self.inside & ~self.rings & ~self.built & ~self.D('abbey')
+        c.paint(m, '^', None)
+        self.street |= m
+        self.hundred_steps = m
+        self.landmark('The Hundred Steps', 'sump', 'a stair-street two wide climbing from the quay up through the north '
+                      'Sump and the Northgate edge to Abbey Row', 262, 230)
 
     # -- the Sump ---------------------------------------------------------------------------------------------------------
-    def sump(self):
-        """The slums by the wharf (doc 67, section 2, "The Sump in detail"): its businesses along the Gut and Tarry Lane
-        first; then a crooked grid of alleys one and two tiles wide, cut for dead ends and bent into doglegs; courts in
-        the bigger blocks reached by snickets; flats and cottages packed along the alleys, terraced or a snicket apart;
-        and whatever is left filled with sheds, boarded-up houses and walled yards."""
-        c, rng = self.c, self.rng
+    def sump_named(self):
+        """The Sump's own places on the Gut, Tarry Lane and the quay (its shops go later, on its edge)."""
         S = self.D('sump')
-        self.infill.update({'boarded': 0, 'yards': 0, 'courts': 0, 'dead_ends': 0})
-        # 1. Its businesses, on the through-lanes and the Rag Market.
-        named = [self.reuse_spec(g) for g, (d, k, a) in REUSE.items() if d == 'sump']
+        named = [self.reuse_spec(g) for g, (d, k, a) in REUSE.items() if d == 'sump' and k != 'shop']
         named += [
-            Spec('r2_the_washhouse', 'The Washhouse', 'sump', 'works', near=(250, 400), business='laundry',
+            Spec('r2_the_washhouse', 'The Washhouse', 'sump', 'works', near=(230, 330), business='laundry',
                  make=lambda: self.new_works('washhouse', 'The Washhouse', 'Where the Sump and half the Commons send '
                                              'their washing: a penny a bundle, back by dark, still damp.', 6,
-                                             style='ridgemere', size=(22, 13))),
-            Spec('r2_rag_and_bone_yard', 'The Rag-and-Bone Yard', 'sump', 'works', near=(255, 440),
+                                             style='ridgemere', size=(18, 12))),
+            Spec('r2_rag_and_bone_yard', 'The Rag-and-Bone Yard', 'sump', 'works', near=(250, 336),
                  business='rag_and_bone',
                  make=lambda: self.new_works('rag_and_bone', 'The Rag-and-Bone Yard', 'Old Nan Tarrow buys anything, '
                                              'sells most of it back, and knows where every pot in the Sump came from.',
-                                             2, style='ridgemere', size=(16, 12))),
-            Spec('r2_lamp_store', 'The Lamp Store', 'sump', 'hall', near=(320, 300),
+                                             2, style='ridgemere', size=(14, 10))),
+            Spec('r2_lamp_store', 'The Lamp Store', 'sump', 'hall', near=(280, 260),
                  make=lambda: self.new_hall('warehouse', 'The Lamp Store', 'The lamplighters\' post: ladders, wicks, '
                                             'casks of fish oil and the city\'s spare lanterns.', 12, 9)),
-            Spec('r2_the_knucklebones', 'The Knucklebones', 'sump', 'tavern', near=(330, 410),
-                 make=lambda: self.new_tavern('The Knucklebones', 'A dice-and-card tavern: low lamps over every table, '
-                                              'the house\'s cut on every pot, and nobody asks where the stake came from.')),
         ]
+        # The Sunken Street: the city's old street level, under the Sump's edge, with a stair-house at each end.
+        sunk = Plan(54, 7, '#', '_', self.new_rng)
+        for x in range(3, 52, 6):
+            sunk.g[0][x] = 'j'
+            sunk.g[6][x] = 'j' if (x, 6) != sunk.door else sunk.g[6][x]
+            sunk.put(x, 1, 'I')
+            sunk.put(x, 5, 'I')
+        for x, y, ch in ((8, 3, '~'), (9, 3, '~'), (20, 2, 'X'), (21, 2, 'X'), (33, 4, '~'), (40, 2, 'O'), (46, 4, 'X'),
+                         (14, 4, 'O'), (27, 1, 'S')):
+            sunk.put(x, y, ch)
+        self.sunken = Spec('r2_sunken_street', 'The Sunken Street', 'sump', 'hall', near=(276, 320),
+                           make=lambda: Building('hall', 'The Sunken Street', 'ridgemere', (6, 6),
+                                                 [sunk.room('', 'The Sunken Street', 'The old street level of Ridgemere, '
+                                                            'paved over when the Greatlys raised the city on its new '
+                                                            'walls: a cobbled lane under the houses, its shopfronts '
+                                                            'bricked up, water dripping from the vaults, lamps where '
+                                                            'someone has hung them.', z=-1)], [], '', 'Q', ''))
+        named.append(self.sunken)
         lanes = (self.street & S) | (self.quay & grow(S, 2))
         ground = S & ~self.street & ~self.reserved & ~self.built
         lots = Lots(ground, lanes)
         self.place_list(lots, sorted(named, key=lambda s: -s.area), lanes, jitter=3, deep=True)
-        # 2. The alleys: a jittered grid, 9-16 apart.
-        xs, x = [222], 222
-        while x < 350:
-            x += rng.randint(9, 16)
-            xs.append(min(x, 362))
-        ys, y = [233], 233
-        while y < 456:
-            y += rng.randint(9, 16)
-            ys.append(min(y, 468))
-        # (Nodes on tile corners: a line two wide along them covers two tiles; a one-wide line is moved to the
-        # tiles' middles.)
+        self.landmark('The Sunken Street', 'sump', 'the city\'s old street level under the Sump\'s edge, a vaulted cobbled '
+                      'lane 54 tiles long, reached by a stair-house in the Sump and another in the Commons',
+                      *self.named['r2_sunken_street']['outside'].values(),
+                      [r['id'] for r in self.named['r2_sunken_street']['rooms']])
+
+    def sunken_second_door(self):
+        """The Sunken Street's other stair-house, in the Commons: a small house whose door leads down into its east
+        end."""
+        c = self.c
+        rec = self.named['r2_sunken_street']
+        room = self.site_room(rec['rooms'][0]['id'])
+        ground = self.ground_of('commons') & self.inside
+        lots = Lots(ground, self.street, gap=0)
+        got = self.nearest_lot(lots, 6, 6, (318, 322), self.street)
+        if not got:
+            return
+        _, x0, y0, facing, w, h = got
+        c.rect(x0, y0, w, h, '#', None)
+        c.rect(x0 + 1, y0 + 1, w - 2, h - 2, 'Q', None)
+        (dx, dy), (ox, oy) = door_tile(x0, y0, w, h, facing)
+        c.codes[dy, dx] = ord('+')
+        c.heights[y0:y0 + h, x0:x0 + w] = c.heights[oy, ox]
+        self.built[y0:y0 + h, x0:x0 + w] = True
+        side = 'E' if room['width'] > room['height'] else 'S'
+        end = self.carve(room, side)
+        cid, lx, ly = self.site.cell_at(dx, dy)
+        self.site.links.append({'id': f'{room["id"]}_door_east', 'name': 'The Sunken Street, the Commons stair',
+                                'kind': 'door', 'open': True, 'a': {'cell': cid, 'x': lx, 'y': ly},
+                                'b': {'cell': room['id'], 'x': end[0], 'y': end[1]}})
+        self.sunken_east = (dx, dy)
+
+    def sump_alleys(self):
+        """A crooked grid of alleys one and two tiles wide, 8 to 13 apart, cut for dead ends and bent into doglegs;
+        courts in the bigger blocks reached by snickets."""
+        c, rng = self.c, self.rng
+        S = self.D('sump')
+        self.infill.update({'boarded': 0, 'yards': 0, 'courts': 0, 'dead_ends': 0})
+        ys_, xs_ = np.nonzero(S)
+        bx0, bx1, by0, by1 = int(xs_.min()), int(xs_.max()) + 1, int(ys_.min()), int(ys_.max()) + 1
+        xs, x = [bx0 + rng.randint(7, 11)], bx0
+        x = xs[0]
+        while x < bx1 - 6:
+            x += rng.randint(12, 17)
+            xs.append(min(x, bx1 - 1))
+        ys, y = [by0 + 1], by0 + 1
+        while y < by1 - 6:
+            y += rng.randint(11, 16)
+            ys.append(min(y, by1 - 1))
         node = {(i, j): (float(xs[i] + (rng.randint(-2, 2) if 0 < i < len(xs) - 1 else 0)),
                          float(ys[j] + (rng.randint(-2, 2) if 0 < j < len(ys) - 1 else 0)))
                 for i in range(len(xs)) for j in range(len(ys))}
@@ -1582,12 +2168,12 @@ class RidgemereCity(Ridgemere):
         alleys = np.zeros((H, W), dtype=bool)
         narrow = np.zeros((H, W), dtype=bool)
         stubs = []
-        free = S & ~self.built & ~self.reserved
+        free = S & ~self.built & ~self.reserved & ~self.hundred_steps & ~self.runnel & ~self.cistern_court
         for a, b in segments:
             pa, pb = node[a], node[b]
             r = rng.random()
             if r < .25:                                       # Cut: the blocks either side merge...
-                if rng.random() < .5:                         # ...or half of it stays, a dead end.
+                if rng.random() < .55:                        # ...or half of it stays, a dead end.
                     mid = ((pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2)
                     pts = [pa, mid] if rng.random() < .5 else [pb, mid]
                     m = c.line_mask(pts, 2) & free
@@ -1598,7 +2184,7 @@ class RidgemereCity(Ridgemere):
             if rng.random() < .15:                            # A dogleg.
                 off = rng.choice([-1, 1]) * rng.randint(2, 4)
                 mid = ((pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2)
-                if a[0] == b[0]:                              # Vertical: step sideways halfway down.
+                if a[0] == b[0]:
                     pts = [pa, (pa[0], mid[1]), (pa[0] + off, mid[1]), (pb[0] + off, pb[1])]
                 else:
                     pts = [pa, (mid[0], pa[1]), (mid[0], pa[1] + off), (pb[0], pb[1] + off)]
@@ -1609,25 +2195,25 @@ class RidgemereCity(Ridgemere):
             alleys |= m
             if width == 1:
                 narrow |= m
-        # 3. Courts: small yards inside the biggest blocks, each reached by a one-tile snicket.
+        alleys &= ~self.rag_stalls & ~self.cistern_court & ~self.hundred_steps & ~self.runnel
+        # Courts: small yards inside the biggest blocks, each reached by a one-tile snicket.
         open_ = (alleys | (self.street & S)) & ~self.built
         self.blocks_mask, blocks = label(S & ~open_ & ~self.built & ~self.reserved)
         courts = np.zeros((H, W), dtype=bool)
         snickets = np.zeros((H, W), dtype=bool)
         made = 0
         for lab, (bx0, bx1, by0, by1, area) in sorted(blocks.items(), key=lambda kv: -kv[1][4]):
-            if made >= 8:
+            if made >= 6:
                 break
             bw, bh = bx1 - bx0, by1 - by0
-            if bw < 12 or bh < 11:
+            if bw < 11 or bh < 10:
                 continue
-            cw, ch_ = rng.randint(6, min(10, bw - 5)), rng.randint(6, min(8, bh - 4))
+            cw, ch_ = rng.randint(6, min(7, bw - 5)), rng.randint(6, min(7, bh - 4))
             cx0, cy0 = bx0 + (bw - cw) // 2, by0 + (bh - ch_) // 2
             court = box(cx0, cx0 + cw, cy0, cy0 + ch_)
             inner_block = self.blocks_mask == lab
             if not (court & inner_block).sum() == cw * ch_:
                 continue
-            # The snicket: straight out of the court's west or north side to the nearest alley.
             best = None
             for side, (sx, sy, dx, dy) in {'W': (cx0 - 1, cy0 + ch_ // 2, -1, 0), 'E': (cx0 + cw, cy0 + ch_ // 2, 1, 0),
                                            'N': (cx0 + cw // 2, cy0 - 1, 0, -1), 'S': (cx0 + cw // 2, cy0 + ch_, 0, 1)}.items():
@@ -1648,61 +2234,108 @@ class RidgemereCity(Ridgemere):
             for x, y in best:
                 snickets[y, x] = True
             made += 1
-        c.paint(courts, 'D', 1.0)
-        c.paint(snickets, '.', 1.0)
+        c.paint(courts, 'D', None)
+        c.paint(snickets, '.', None)
         self.infill['courts'] = made
         self.court_mask = courts
         self.snickets = snickets
-        alleys &= ~self.rag_stalls
-        c.paint(alleys & ~self.built, '.', 1.0)
+        c.paint(alleys & ~self.built, '.', None)
         self.alleys = alleys | snickets
-        open_ = (self.alleys | (self.street & S) | courts) & ~self.built
+        self.street |= (alleys | snickets | courts) & ~self.built
+        self.sump_stubs = stubs
+        self.sump_narrow = narrow
+
+    def sump_homes(self):
+        """The Sump's own shops on its edge with the Commons (its better street), then its houses: three homes to most
+        (never more), on small floors, packed along the alleys, terraced or a snicket apart; then whatever is left is
+        sheds, boarded-up houses and walled yards."""
+        c, rng = self.c, self.rng
+        S = self.D('sump')
+        open_ = (self.alleys | (self.street & S) | self.court_mask) & ~self.built
         self.sump_open_planned = open_.copy()
-        # Doors open only onto passages two or more wide: the tile outside and the one beyond it both open, not courts.
         lab_o, _ = label(open_ | (self.quay & grow(S, 3)))
-        gx, gy = int(self.gut_line[2][0]), int(self.gut_line[2][1])
+        (gx, gy), _ = SQUARES['rag']
         joined = lab_o == lab_o[gy, gx]
-        door_street = open_ & joined & ~courts & ~snickets & ~narrow
-        # 4. Flats and cottages along the alleys.
-        ground = S & ~open_ & ~self.built & ~self.reserved
-        lots = Lots(ground, door_street, gap=0)
+        door_street = (open_ | (self.quay & grow(S, 2))) & joined & ~self.court_mask & ~self.snickets & ~self.sump_narrow
+        # 1. The shops, on the edge toward the Commons.
+        edge = S & (self.wealth > .3)
+        shops = [self.reuse_spec(g) for g, (d, k, a) in REUSE.items() if d == 'sump' and k == 'shop']
+        for s in shops:
+            s.near = self.random_point('sump', edge) if edge.any() else s.near
+        lots = Lots(S & ~open_ & ~self.built & ~self.reserved, door_street, gap=0)
+        self.place_list(lots, shops, door_street, jitter=3, deep=True)
+        # 2. The houses.
         homes = []
-        flats_sizes = [(7, 6), (8, 6), (8, 7), (9, 7), (10, 7), (10, 8), (11, 8), (12, 8), (12, 9), (13, 9), (14, 10),
-                       (15, 10), (16, 12), (18, 14), (7, 12), (6, 11), (7, 13), (6, 13), (9, 11), (8, 10), (11, 10)]
-        cottage_sizes = [(5, 5), (6, 5), (6, 6), (7, 5), (7, 6), (8, 6), (9, 7), (5, 7)]
-        want = [('flats', rng.choice(flats_sizes)) for _ in range(64)] + \
-               [('cottage', rng.choice(cottage_sizes)) for _ in range(36)]
+        flats_sizes = [(6, 6), (7, 6), (8, 6), (7, 7), (8, 7), (9, 6), (6, 7), (6, 8), (9, 7), (10, 6), (7, 8), (10, 7),
+                       (8, 8), (11, 7), (6, 9)]
+        cottage_sizes = [(5, 5), (6, 5), (5, 6), (6, 6)]
+        want = [('flats', rng.choice(flats_sizes), 3) for _ in range(46)] + \
+               [('flats', rng.choice(flats_sizes), 2) for _ in range(SUMP_TWOS)] + \
+               [('cottage', rng.choice(cottage_sizes), 1) for _ in range(SUMP_COTTAGES)]
         want.sort(key=lambda t: -t[1][0] * t[1][1])
-        for kind, (bw, bd) in want:
-            near = self.random_point('sump')
+        offered = 0
+        last = None
+        for kind, (bw, bd), n in want:
+            if offered >= SUMP_HOMES and n == 3:
+                continue
+            lots.street = door_street
+            near = last if last and rng.random() < .85 else self.random_point('sump')
             got = None
             for orient in ((bw, bd), (bd, bw)):
                 hit = self.nearest_lot(lots, orient[0], orient[1], near, door_street, deep=True)
-                if hit and hit[0] < 40:
+                if hit and hit[0] < 70:
                     got = (hit[1], hit[2], hit[3], hit[4], hit[5], orient)
                     break
             if not got:
                 continue
             x0, y0, facing, w, h, orient = got
-            lots.gap = 0 if rng.random() < .6 else 1
+            lots.gap = 0 if rng.random() < .7 else 1
             lots.take(x0, y0, w, h)
             self.built[y0:y0 + h, x0:x0 + w] = True
             homes.append({'kind': kind, 'x0': x0, 'y0': y0, 'w': w, 'h': h, 'facing': facing,
-                          'fw': orient[0], 'fh': orient[1]})
-        # 5. Infill: what is left inside the blocks.
+                          'fw': orient[0], 'fh': orient[1], 'n': n})
+            last = (x0 + w / 2, y0 + h / 2)
+            offered += n
+        # 3. Snickets: where a house's back is a few tiles from an alley, a passage one wide is cut through to it, and
+        # the house gets a back door (a through-building).
+        for hm in homes:
+            x0, y0, w, h, facing = hm['x0'], hm['y0'], hm['w'], hm['h'], hm['facing']
+            (bx, by), (ox, oy) = door_tile(x0, y0, w, h, OPPOSITE[facing])
+            sx, sy = DOOR_STEP[OPPOSITE[facing]]
+            path, x, y = [], ox, oy
+            for _ in range(5):
+                if not (0 <= x < W and 0 <= y < H) or cell_of(x, y) != cell_of(bx, by):
+                    path = None
+                    break
+                if open_[y, x] and not self.court_mask[y, x]:
+                    break
+                if not S[y, x] or self.built[y, x] or self.reserved[y, x] or self.street[y, x]:
+                    path = None
+                    break
+                path.append((x, y))
+                x, y = x + sx, y + sy
+            else:
+                path = None
+            if path and rng.random() < .8:
+                for x, y in path:
+                    c.codes[y, x] = ord('.')
+                    self.street[y, x] = True
+                    open_[y, x] = True
+                    self.snickets[y, x] = True
+                self.infill['back_snickets'] += 1
+        # 4. Infill: what is left inside the blocks.
         self.sump_infill(S, open_)
-        # 6. The buildings themselves: back doors where the back opens onto a passage, L-shapes, their homes.
+        # 4. The buildings themselves: back doors where the back opens onto a passage, L-shapes, their homes.
         names = sump_names(rng, len(homes))
         open_now = (S | self.D('wharf')) & ~SOLID[c.codes] & ~self.built
         for i, hm in enumerate(homes):
             x0, y0, w, h, facing = hm['x0'], hm['y0'], hm['w'], hm['h'], hm['facing']
             fw, fh = (w, h) if facing in 'NS' else (h, w)
             (bx, by), (ox, oy) = door_tile(x0, y0, w, h, OPPOSITE[facing])
-            back = (0 <= ox < W and 0 <= oy < H and open_now[oy, ox] and cell_of(bx, by) == cell_of(ox, oy)
-                    and not self.edges[oy, ox])
+            back = (0 <= ox < W and 0 <= oy < H and open_now[oy, ox] and cell_of(bx, by) == cell_of(ox, oy))
             notch = None
             mask = None
-            if hm['kind'] == 'flats' and fw >= 8 and fh >= 7 and rng.random() < .3:
+            if hm['kind'] == 'flats' and min(fw, fh) >= 6 and fw * fh >= 42 and rng.random() < .6:
                 nw, nh = max(2, round(fw * .3)), max(2, round(fh * .3))
                 corner = rng.choice(['NE', 'NW'])
                 plan_mask = [[True] * fw for _ in range(fh)]
@@ -1715,11 +2348,8 @@ class RidgemereCity(Ridgemere):
                 if back and not mask[by - y0, bx - x0]:
                     back = False
             iw, ih = sump_interior(fw, fh)
-            if hm['kind'] == 'flats':
-                n = 3 if fw * fh >= 90 and rng.random() < .6 else 2
-                beds = tuple(rng.choice([2, 2, 3, 3, 3, 4, 5]) for _ in range(n))
-            else:
-                n, beds = 1, (rng.choice([2, 2, 3]),)
+            n = hm['n']
+            beds = tuple(rng.choice([2, 2, 3, 3, 3, 4]) for _ in range(n))
             name = names[i]
             b = self.new_flats(name, n, beds, (iw, ih), (fw, fh), notch=notch, back=back, style='ridgemere')
             spec = Spec(f'sump_home_{i}', name, 'sump', 'flats' if n > 1 else 'home', homes=n, open_door=False)
@@ -1729,23 +2359,20 @@ class RidgemereCity(Ridgemere):
             rec['lshape'] = notch is not None
             rec['sump_home'] = True
             hm['record'] = rec
-        self.sump_homes = homes
+        self.sump_homes_ = homes
         self.sump_passages(homes)
-        self.infill['dead_ends'] = len(stubs)
-        self.sump_stubs = stubs
-        self.sump_narrow = narrow
+        self.infill['dead_ends'] = len(self.sump_stubs)
 
     def sump_infill(self, S, open_):
         """Sheds, boarded-up houses and walled back-yards in whatever the buildings left inside the blocks."""
         c, rng = self.c, self.rng
-        left = S & ~open_ & ~self.built & ~self.reserved
+        left = S & ~open_ & ~self.built & ~self.reserved & ~self.street
         lab, comps = label(left)
         for k, (x0, x1, y0, y1, area) in comps.items():
             comp = lab == k
             if area <= 2:
                 continue
-            # Boarded-up houses, then sheds, wherever a rectangle fits.
-            for kind, sizes in (('boarded', [(14, 10), (12, 10), (12, 8), (10, 8), (8, 8)]),
+            for kind, sizes in (('boarded', [(12, 9), (10, 8), (9, 7), (8, 7), (7, 6)]),
                                 ('shed', [(6, 4), (5, 4), (4, 4), (4, 3), (3, 3)])):
                 for _ in range(8):
                     placed = False
@@ -1761,7 +2388,6 @@ class RidgemereCity(Ridgemere):
                             break
                     if not placed:
                         break
-            # What is still open: a walled back-yard where it is more than a sliver (fenced off from the alleys).
             rest = comp & ~self.built
             if rest.sum() >= 6:
                 touch = rest & grow(open_, 1)
@@ -1783,14 +2409,13 @@ class RidgemereCity(Ridgemere):
                 if j <= i:
                     continue
                 bx0, by0, bw, bh = b['block']['x'], b['block']['y'], b['block']['w'], b['block']['h']
-                # Side by side, wall to wall or across a one-tile snicket (a cellar run under it).
-                if 0 <= bx0 - (ax0 + aw) <= 3 or 0 <= ax0 - (bx0 + bw) <= 3:
+                if 0 <= bx0 - (ax0 + aw) <= 4 or 0 <= ax0 - (bx0 + bw) <= 4:
                     overlap = min(ay0 + ah, by0 + bh) - max(ay0, by0)
                     if overlap >= 3:
                         side = 'E' if bx0 >= ax0 + aw else 'W'
                         nbr[i].append((j, side))
                         nbr[j].append((i, OPPOSITE[side]))
-                elif 0 <= by0 - (ay0 + ah) <= 3 or 0 <= ay0 - (by0 + bh) <= 3:
+                elif 0 <= by0 - (ay0 + ah) <= 4 or 0 <= ay0 - (by0 + bh) <= 4:
                     overlap = min(ax0 + aw, bx0 + bw) - max(ax0, bx0)
                     if overlap >= 3:
                         side = 'S' if by0 >= ay0 + ah else 'N'
@@ -1800,7 +2425,6 @@ class RidgemereCity(Ridgemere):
         chains = []
 
         def longest(path, seen):
-            """The longest chain (up to five) from the path's last building."""
             if len(path) == 5:
                 return path
             best = path
@@ -1812,7 +2436,7 @@ class RidgemereCity(Ridgemere):
                         if len(best) == 5:
                             break
             return best
-        while len(chains) < 6:                              # The longest chains first.
+        while len(chains) < 6:
             best = []
             for start in sorted(nbr):
                 if start in used:
@@ -1835,7 +2459,7 @@ class RidgemereCity(Ridgemere):
                 ga, gb = ra['rooms'][0]['id'], rb['rooms'][0]['id']
                 if self.passage(ga, side, gb, OPPOSITE[side], f'{ra["name"]} to {rb["name"]}'):
                     made += 1
-                for z in (1, 2):                            # Upstairs too, where both have the floor.
+                for z in (1, 2):
                     ua = [r['id'] for r in ra['rooms'] if r['z'] == z]
                     ub = [r['id'] for r in rb['rooms'] if r['z'] == z]
                     if ua and ub and self.passage(ua[0], side, ub[0], OPPOSITE[side],
@@ -1866,10 +2490,10 @@ class RidgemereCity(Ridgemere):
         weight = 1 - field.smoothstep(3, 30, near)
         freem = ~c.locked & ~w.water & (t >= 0) & ~self.inside & ~self.wall_band
         c.heights[freem] = half(c.heights * (1 - weight) + t * weight)[freem]
-        w.places['ridgemere'] = box(160, 672, 142, 628)
+        w.places['ridgemere'] = box(160, 480, 142, 456)
         # The three Houses' estates (doc 67, R26), each a walled compound within one cell: the seat, its gatehouse,
-        # stables and cottages; no fields, orchards, vineyards or pens.
-        gates = {'mossgrave': ('N', (380, 640)), 'fell': ('W', (770, 366)), 'grayrock': ('N', (190, 640))}
+        # stables and cottages; no fields, orchards, vineyards or pens. Their grounds are smaller than they were.
+        gates = {'mossgrave': ('N', (356, 518)), 'fell': ('W', (544, 310)), 'grayrock': ('N', (190, 640))}
         for house, (seat, (x, y, ew, eh)) in ESTATES.items():
             sid = f'estate_{house}'
             side, target = gates[house]
@@ -1893,20 +2517,20 @@ class RidgemereCity(Ridgemere):
             self.posts[f'{sid}_gate'] = [insides[side]]
         # The roads: out of the North, East and South Gates to the canvas's edge, the Cinder Road to Timberland Court
         # and the Wharf Road on from the Harbour Gate to Grayrock Hall.
-        cost = w.route_costs()
         roads = {
-            'The North Road': [w.gates[('ridgemere', 'N')], (476.5, 0.0)],
-            'The South Road': [w.gates[('ridgemere', 'S')], (600.5, 767.0)],
+            'The North Road': ([w.gates[('ridgemere', 'N')], (360.5, 0.0)], 'N'),
+            'The South Road': ([w.gates[('ridgemere', 'S')], (412.5, 767.0)], 'S'),
         }
-        for name, pts in roads.items():
-            w.road(name, pts, width=3, ends=(w.gate_levels[('ridgemere', 'N' if 'North' in name else 'S')], None))
+        for name, (pts, key) in roads.items():
+            w.road(name, pts, width=3, ends=(w.gate_levels[('ridgemere', key)], None))
         fell_gate = w.gates[('estate_fell', 'W')]
-        east = [w.gates[('ridgemere', 'E')], (fell_gate[0] - 10, 360.5), fell_gate]
-        w.road('The East Road', east, width=3, ends=(2.0, w.gate_levels[('estate_fell', 'W')]))
-        on = w.route((fell_gate[0] - 10, 360.5), (1023.0, 330.0), w.route_costs())
+        east = [w.gates[('ridgemere', 'E')], (fell_gate[0] - 10, 300.5), fell_gate]
+        w.road('The East Road', east, width=3, ends=(w.gate_levels[('ridgemere', 'E')], w.gate_levels[('estate_fell', 'W')]))
+        on = w.route((fell_gate[0] - 10, 300.5), (767.0, 250.0), w.route_costs())
         w.road('The East Road, past Fellhall', on, width=3)
         line = w.route(w.gates[('ridgemere', 'cinder')], w.gates[('estate_mossgrave', 'N')], w.route_costs())
-        w.road('The Cinder Road', line, width=3, ends=(1.0, w.gate_levels[('estate_mossgrave', 'N')]))
+        w.road('The Cinder Road', line, width=3, ends=(w.gate_levels[('ridgemere', 'cinder')],
+                                                       w.gate_levels[('estate_mossgrave', 'N')]))
         line = w.route(w.gates[('ridgemere', 'harbour')], w.gates[('estate_grayrock', 'N')], w.route_costs())
         w.road('The Wharf Road', line, width=3, ends=(.5, w.gate_levels[('estate_grayrock', 'N')]))
         w.mark_cliffs()
@@ -1948,16 +2572,16 @@ class RidgemereCity(Ridgemere):
         """Posts for every route in use (doc 67, section 4): the wall walk round the abbey and the Greatly compound by
         street, the streets, the wharf, the Sump, the palace round, and Lord Grayrock's road."""
         self.route_points = {
-            'rm_wall_walk': [(334, 155), (430, 155), (536, 155), (476, 250), (590, 282), (658, 300), (658, 400),
-                             (658, 500), (658, 600), (560, 614), (430, 614), (330, 614), (197, 600), (197, 400),
-                             (197, 200)],
-            'rm_street_patrol': [(640, 360), (560, 360), (470, 356), (470, 380), (468, 440), (440, 497), (400, 520),
-                                 (430, 540), (468, 420), (470, 360)],
-            'rm_wharf_patrol': [(197, 170), (197, 250), (197, 338), (197, 420), (220, 485), (197, 560), (197, 610)],
-            'r2_sump_patrol': [(360, 359), (330, 356), (300, 350), (260, 348), (226, 342), (292, 300), (300, 240),
-                               (292, 400), (292, 465)],
-            'r2_palace_round': [(375, 536), (430, 538), (485, 536), (485, 549), (430, 550), (375, 549)],
-            'rm_grayrock_journey': [(197, 300), (197, 600), self.world.gates[('ridgemere', 'harbour')],
+            'rm_wall_walk': [(292, 155), (360, 155), (388, 155), (430, 232), (466, 240), (466, 320), (466, 400),
+                             (466, 450), (414, 450), (360, 450), (300, 450), (190, 440), (190, 330), (190, 170)],
+            'rm_street_patrol': [(460, 300), (400, 300), (360, 316), (360, 340), (360, 365), (330, 382), (327, 397),
+                                 (412, 311), (384, 330), (360, 300)],
+            'rm_wharf_patrol': [(190, 170), (190, 240), (190, 293), (190, 350), (190, CUSTOMS_PIER + 3), (190, 420),
+                                (190, 446)],
+            'r2_sump_patrol': [(336, 300), (300, 298), (270, 297), (244, 302), (220, 295), (249, 260), (250, 222),
+                               (248, 320), (248, 340), (270, 284)],
+            'r2_palace_round': [(295, 397), (336, 397), (378, 397), (381, 415), (336, 436), (289, 415)],
+            'rm_grayrock_journey': [(190, 300), (190, 440), self.world.gates[('ridgemere', 'harbour')],
                                     self.spots['estate_grayrock_gate']],
         }
 
@@ -1966,6 +2590,17 @@ class RidgemereCity(Ridgemere):
 # Small helpers
 # ---------------------------------------------------------------------------------------------------------------
 STYLE_ROOF = {'ridgemere': 'Z', 'manor': 'Z', 'works': 'Z', 'civic': 'Q', 'palace': '['}
+# How many homes the city's new houses offer (doc 67, Dense city): the Sump's houses three homes to most, never more;
+# the middle town's new row houses two and three, its Sump-edge tenements three.
+SUMP_HOMES, SUMP_TWOS, SUMP_COTTAGES = 84, 3, 3
+NEIGHBOUR = {'cinders': 'admin', 'admin': 'cinders', 'commons': 'northgate', 'northgate': 'commons'}
+TENEMENTS, ROWS_COMMONS, ROWS_COMMONS_2, ROWS_NORTHGATE = 4, 9, 3, 3
+ROW_NAMES = ['Lantern Row', 'Saltgate Row', 'Rainford Row', 'Two Gables', 'Kettle Close', 'Ash Walk Houses',
+             'Mossy Steps Houses', "Chandlers' Row", 'Wet Lane Houses', 'Greystone Row', 'Pewter Row', 'Slate Row',
+             'Cooper\'s Close', 'Weavers\' Terrace', 'Gutter Lane Houses', 'Bell Row', 'Clockface Houses', 'Mason Row',
+             'Tallow Row', 'Drizzle Row']
+ROW_PROSE = ('A home on one floor of a narrow row house of the Commons, two or three families stacked up its stair: a '
+             'hearth, a table, beds against the wall and a window on the lane.')
 SOLID_CHARS = set(terrain_catalog.SOLID)
 WALL_CHARS = set('#HM]')
 MINOR_HOUSES = ['rm_carlisle_house', 'rm_thornbury_house', 'rm_vance_house', 'rm_stanmore_house', 'rm_grantham_house']
@@ -1992,8 +2627,8 @@ def sump_names(rng, n):
 
 
 def sump_interior(fw, fh):
-    """An interior roomier than its block (fp is x0.72 wide, x0.65 deep), within reason."""
-    return int(np.clip(round(fw / .72), 7, 20)), int(np.clip(round(fh / .65), 6, 18))
+    """A Sump floor: small rooms, a little roomier than the block (doc 67, Dense city: smaller rooms in the Sump)."""
+    return int(np.clip(round(fw * 1.2), 8, 14)), int(np.clip(round(fh * 1.2), 7, 12))
 
 
 def rotate_rows(rows, turns):
@@ -2053,6 +2688,7 @@ def fit_rect(comp, w, h):
 # Making the city and the plan
 # ---------------------------------------------------------------------------------------------------------------
 BASELINE = ART / 'people-before-city.json'
+BEFORE = ART / 'preview' / 'before-dense' / 'density.json'      # (the city before doc 67's Dense city, measured)
 PEOPLE_KEYS = ('role', 'workLabel', 'home', 'work', 'evening', 'route')
 
 
@@ -2115,9 +2751,9 @@ def make_city(project, seed=SEED, report=print):
 def claims_of_cell(cx, cy):
     out = set()
     x0, y0 = cx * CELL, cy * CELL
-    if x0 < 664 and x0 + CELL > 168 and y0 < 620 and y0 + CELL > 150:
+    if x0 < 472 and x0 + CELL > 168 and y0 < 456 and y0 + CELL > 150:
         out |= {'ridgemere_watch', 'council_of_houses'}
-    out |= {(2, 0): {'house_greatly'}, (1, 2): {'house_mossgrave'}, (3, 1): {'house_fell'}, (0, 0): {'house_grayrock'},
+    out |= {(1, 0): {'house_greatly'}, (1, 2): {'house_mossgrave'}, (2, 1): {'house_fell'}, (0, 0): {'house_grayrock'},
             (0, 1): {'house_grayrock'}, (0, 2): {'house_grayrock'}}.get((cx, cy), set())
     return sorted(out)
 
@@ -2359,7 +2995,8 @@ def checks(p, world, city, plan, labels, walk):
     new_rooms = {r['id'] for r in city.site.rooms}
     # -- the map --
     cells = p['cells']
-    check('R2', '12 cells, all rain, region ridgemere', len(cells) == 12 and all(x['weather'] == 'rain' and
+    n_cells = (W // CELL) * (H // CELL)
+    check('R2', f'{n_cells} cells, all rain, region ridgemere', len(cells) == n_cells and all(x['weather'] == 'rain' and
           x['territory']['region'] == REGION for x in cells), f'{len(cells)} cells')
     placed_rooms = {room['id'] for rec in city.records for room in rec['rooms']}
     check('R2', 'every placed interior has region ridgemere',
@@ -2369,81 +3006,116 @@ def checks(p, world, city, plan, labels, walk):
     bay = np.zeros((H, W), dtype=bool)
     for y in range(170, 610):
         bay[y, :int(shore_x(y))] = True
-    built_over = np.isin(codes, [ord(ch) for ch in '8iI:'])
-    check('R4', 'water lies west of x = 168 between the headlands', bool((world.water | built_over)[bay].all()))
-    sea = codes[150:620, 168:172]
+    built_over = np.isin(codes, [ord(ch) for ch in '8iI:']) | city.mole
+    check('R4', 'water lies west of x = 168 between the headlands (the piers, the Mole and the Bay Light aside)',
+          bool((world.water | built_over)[bay].all()))
+    x0_, x1_, y0_, y1_ = INSIDE
+    sea = codes[y0_ - WALL:y1_ + WALL, 168:172]
     check('R5', 'the sea wall runs along the quay (x 168-172)', bool(np.isin(sea, [ord('#'), ord('G'), ord(':')]).all()))
-    check('R5', 'the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall\'s span (y 150-620)',
-          all(150 <= y and y + 6 <= 620 for y in PIERS) and all(codes[y + 2, 169] == ord('G') for y in PIERS)
-          and bool(city.slip.any()) and all(150 <= y <= 620 for y in CRANES))
-    wharf_x, sump_x = 221, 222
-    open_pairs = sum(1 for y in range(232, 470) if not SOLID[codes[y, wharf_x]] and not SOLID[codes[y, sump_x]]
+    check('R5', 'the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall\'s span',
+          all(y0_ - WALL <= y and y + 6 <= y1_ + WALL for y in PIERS) and all(codes[y + 2, 169] == ord('G') for y in PIERS)
+          and bool(city.slip.any()) and all(y0_ <= y <= y1_ for y in CRANES))
+    wharf_x, sump_x = QUAY_X - 1, QUAY_X
+    sump_rows = [y for y in range(y0_, y1_) if city.district[y, sump_x] == DISTRICT_IDS.index('sump')]
+    open_pairs = sum(1 for y in sump_rows if not SOLID[codes[y, wharf_x]] and not SOLID[codes[y, sump_x]]
                      and abs(heights[y, wharf_x] - heights[y, sump_x]) <= .5)
-    walled = sum(1 for y in range(232, 470) if codes[y, sump_x] in (ord('#'), ord('H')) and
-                 not city.built[y, sump_x])
+    walled = sum(1 for y in sump_rows if codes[y, sump_x] in (ord('#'), ord('H')) and not city.built[y, sump_x])
     check('R6', 'the Sump meets the wharf with no wall between', walled == 0 and open_pairs > 0,
           f'{open_pairs} open crossings, {walled} wall tiles on the line')
-    check('R6', 'the Sump holds at least 50% of the wharf frontage', (470 - 232) / (616 - 154) >= .5,
-          f'{(470 - 232) / (616 - 154):.0%}')
+    check('R6', 'the Sump holds at least 50% of the wharf frontage', len(sump_rows) / (y1_ - y0_) >= .5,
+          f'{len(sump_rows) / (y1_ - y0_):.0%}')
     seen = walk['seen']
     node = walk['node']
 
     def reached(x, y):
         return node(cell_id(int(x) // CELL, int(y) // CELL), int(x) % CELL, int(y) % CELL) in seen
     gate_ok = {k: reached(*city.gate_inside[k]) and bool(city.gate_masks[k].any()) for k in GATES}
-    arch_ok = {y: reached(176, y + 3) and codes[y + 2, 170] == ord('G') for y in (470, 335)}
+    arch_ok = {y: reached(176, y + 3) and codes[y + 2, 170] == ord('G') for y in (CUSTOMS_PIER, STAIRS_PIER)}
     check('R5', 'the 5 gates and the 2 guarded pier arches are cut and reached', all(gate_ok.values()) and all(arch_ok.values()),
           f'gates {gate_ok}, arches {arch_ok}')
     inside = box(*INSIDE)
     check('R10', 'the districts partition the inside of the wall', bool((city.district[inside] > 0).all()))
+    touches = lambda a, b: bool((grow(a, 1) & b).any())
+    S, A = city.D('sump'), city.D('admin')
+    check('R10', 'the Sump is bordered on the east by the middle class', touches(S, city.D('commons')) and
+          np.nonzero(city.D('commons') & grow(S, 1))[1].mean() > np.nonzero(S)[1].mean())
+    south_edge = S & ~np.roll(S, -1, 0) & inside
+    below = np.roll(city.district, -1, 0)[south_edge]
+    below = below[below != DISTRICT_IDS.index('sump')]
+    share = float(np.mean(below == DISTRICT_IDS.index('admin'))) if below.size else 0
+    check('R11', 'the Sump is bordered on the south by the administrative sector (most of its south edge)',
+          share >= .5, f'{share:.0%} of the Sump\'s south edge meets admin')
+    check('R17', 'the administrative sector borders the Sump (north) and the upper class (east)',
+          touches(A, S) and touches(A, city.D('rise')))
     area = lambda n: int(city.D(n).sum())
     middle = area('northgate') + area('commons')
     check('R15', "the Rise's area is at most half the middle class's", area('rise') <= .5 * middle,
           f'rise {area("rise")}, middle class {middle} ({area("rise") / middle:.2f})')
     ab = city.D('abbey')
-    touches = lambda a, b: bool((grow(a, 1) & b).any())
     check('R20', 'the abbey close is in the north-west corner, touching the Sump and the middle class',
-          touches(ab, city.D('sump')) and touches(ab, city.D('northgate')) and
-          np.nonzero(ab)[1].min() <= 222 and np.nonzero(ab)[0].min() <= 154)
+          touches(ab, S) and touches(ab, city.D('northgate')) and
+          np.nonzero(ab)[1].min() <= QUAY_X and np.nonzero(ab)[0].min() <= y0_)
     kp = city.D('keep')
-    kys, kxs = np.nonzero(kp)
-    check('R16', 'the Keep is at one height, straddles y = 470, with four walls, a courtyard and one gate',
-          len(set(np.unique(city.levels_map[kp]))) == 1 and kys.min() < 470 < kys.max() and
-          int((codes[445:448, 583:637] == ord('G')).sum()) > 0 and
-          int((codes[kp] == ord('G')).sum()) == int((codes[445:448, 608:613] == ord('G')).sum()))
-    gn = codes[150:154, 540:660]
-    between = ~SOLID[codes[150:154, 540:660]]
+    kx0, kx1, ky0, ky1 = KEEP
+    court = kp & ~city.keep_ring & ~city.built
+    check('R16', 'the Keep is at one height on the Commons/Rise border, with four walls, a courtyard and one gate',
+          len(set(np.unique(heights[court]))) == 1 and touches(kp, city.D('commons')) and touches(kp, city.D('rise')) and
+          int((codes[kp] == ord('G')).sum()) > 0 and
+          int((codes[kp] == ord('G')).sum()) == int((codes[ky0:ky0 + 3, kx0:kx1] == ord('G')).sum()))
+    gx0, gx1, gy0, gy1 = GREATLY
+    between = ~SOLID[codes[y0_ - WALL:y0_, gx0:gx1]]
     check('R24', 'the Greatly compound sits against the city wall, no public tile between',
-          not between.any() and int(city.D('greatly')[154, 545:655].all()))
+          not between.any() and bool(city.D('greatly')[y0_, gx0 + 5:gx1 - 5].all()))
     fx, fy = city.spots['greatly_fountain']
     forge = city.named['r2_greatly_forge']['block']
+    house = city.named['rm_greatly_house']['block']
     check('R23', 'the Greatly fountain is in the south yard, the forge and workshop in the north yard',
-          220 <= fy <= 268 and forge['y'] + forge['h'] <= 194 and codes[245, 600] == ord('F'))
-    check('R2', 'gates joining heights more than 0.5 apart have their half step and ^ run',
-          heights[231, 300] == 1.5 and codes[232, 300] == ord('^') and heights[269, 600] == 2.5 and codes[270, 600] == ord('^'))
-    seam = np.zeros((H, W), dtype=bool)
-    for s in (256, 512, 768):
-        seam[:, s - 2:s + 2] = True
-    for s in (256, 512):
-        seam[s - 2:s + 2, :] = True
-    lvl = np.where(np.isnan(city.levels_map), -9, city.levels_map)
-    across_x = np.zeros((H, W), dtype=bool)          # an edge whose lower side is east or west: a north-south line
-    for dx in (1, -1):
-        across_x |= city.edges & (lvl - np.roll(lvl, -dx, 1) >= 1)
-    across_y = city.edges & ~across_x
-    near_x = np.zeros((H, W), dtype=bool)
-    near_y = np.zeros((H, W), dtype=bool)
-    for s_ in (256, 512, 768):
-        near_x[:, s_ - 2:s_ + 2] = True
-    for s_ in (256, 512):
-        near_y[s_ - 2:s_ + 2, :] = True
-    bad_edges = (across_x & near_x) | (across_y & near_y) | (city.stairs_mask & (near_x | near_y))
-    check('R2', 'no tier edge or stair within 2 tiles of a cell seam (an edge may cross a seam at right angles)',
-          not bad_edges.any(), f'{int(bad_edges.sum())} tiles: {[tuple(map(int, t[::-1])) for t in np.argwhere(bad_edges)[:6]]}')
+          house['y'] + house['h'] <= fy <= gy1 and forge['y'] + forge['h'] <= house['y'] and
+          bool((codes[gy0:gy1, gx0:gx1] == ord('F')).any()))
+    # -- no walls between the districts, and slopes rather than tiers --
+    m_ = district_metrics(city, walk)
+    check('', 'no wall tile on a district border, other than the city wall and the walled pieces (the Keep, the abbey, '
+          'the Greatly compound)', m_['wallsOnBorders'] == 0, f'{m_["wallsOnBorders"]} tiles')
+    check('R2', 'no step of more than half a tile between neighbouring open tiles inside the walls (a stair at most 1)',
+          not m_['badSteps'], f'{len(m_["badSteps"])}: {m_["badSteps"][:6]}')
+    check('R2', 'the ground climbs from the bay: the Rise and the Greatly compound stand at least 1.5 above the Sump',
+          m_['meanHeight']['rise'] - m_['meanHeight']['sump'] >= 1.5 and
+          m_['meanHeight']['greatly'] - m_['meanHeight']['sump'] >= 1.5, f'{m_["meanHeight"]}')
+    check('', 'height steps do not follow the borders between the quarters (a step at most twice as likely on a border '
+          'as off it)', m_['stepOnBorder'] <= max(.03, 2 * m_['stepOffBorder']),
+          f'{m_["stepOnBorder"]:.1%} of border pairs step, {m_["stepOffBorder"]:.1%} elsewhere')
+    irregular = {n: m_['districts'][n]['fill'] for n in ('sump', 'commons', 'northgate', 'admin', 'cinders', 'rise')}
+    check('', 'the districts are not rectangles (each fills under 90% of its bounding box)',
+          all(v < .9 for v in irregular.values()), f'{irregular}')
+    need = {'commons/sump': 8, 'northgate/sump': 2, 'admin/sump': 3, 'commons/rise': 3, 'admin/commons': 2,
+            'commons/northgate': 4, 'admin/cinders': 2, 'cinders/sump': 1, 'admin/rise': 2}
+    short = {k: m_['crossings'].get(k, 0) for k, v in need.items()
+             if m_['crossings'].get(k, 0) < v and m_['openBorder'].get(k, 0) < 8 * v}
+    check('', 'many street crossings between neighbouring districts (separate openings, or as many 8-tile lengths of '
+          'open border)', not short,
+          f'short: {short}; all: {m_["crossings"]}')
+    old_px = 225456
+    smaller = 1 - int(inside.sum()) / old_px
+    check('', 'the city inside the walls is 35-65% smaller than before (225,456 tiles)', .35 <= smaller <= .65,
+          f'{int(inside.sum())} tiles, {smaller:.0%} smaller')
+    wanted = set(REUSE) | {g for v in city.houses.values() for g in v} | {
+        'r2_customs_house', 'r2_grayrock_shipwrights', 'r2_new_store', 'r2_cathedral', 'r2_chapter_house',
+        'r2_abbey_quarters', 'r2_abbey_refectory', 'r2_abbey_scriptorium', 'r2_abbey_brewhouse', 'r2_abbey_school',
+        'r2_abbey_infirmary', 'r2_greatly_forge', 'r2_the_keep', 'r2_kings_residence', 'r2_palace_antechamber',
+        'r2_administrative_wing', 'r2_market_hall', 'r2_records_office', 'r2_barber', 'r2_fell_wine_vaults',
+        'r2_cheesemonger', 'r2_bathhouse', 'r2_forge_row', 'r2_cinder_wheelwrights', 'r2_the_washhouse',
+        'r2_rag_and_bone_yard', 'r2_lamp_store', 'r2_the_knucklebones', 'r2_fell_press_house', 'r2_fell_distillery',
+        'r2_fell_preserving_house', 'r2_fell_cellars', 'r2_mossgrave_cottage', 'r2_fell_cottage', 'r2_grayrock_cottage',
+        'r2_bay_light', 'r2_clock_tower', 'r2_sunken_street', 'r2_tallow_arcade'}
+    lost = sorted(k for k in wanted if k not in city.named)
+    check('R30', 'every building the plan keeps or adds is placed (the same businesses, houses and landmarks)',
+          not lost and not city.unplaced, ', '.join(lost + city.unplaced))
+    check('', '6-10 landmarks, each named and described', 6 <= len(city.landmarks) <= 12 and
+          all(lm['name'] and lm['what'] for lm in city.landmarks), ', '.join(lm['name'] for lm in city.landmarks))
     est_ok = []
     for house, (_, (x, y, ew, eh)) in ESTATES.items():
         one_cell = cell_of(x, y) == cell_of(x + ew - 1, y + eh - 1)
-        outside = not (box(x, x + ew, y, y + eh) & box(168, 664, 150, 620)).any()
+        outside = not (box(x, x + ew, y, y + eh) & box(168, 472, 150, 456)).any()
         est_ok.append(one_cell and outside)
     check('R26', 'the three estates are outside the wall, each within one cell', all(est_ok))
     check('R34', 'no field, orchard, vineyard or pen glyphs (crop fields) anywhere', not (codes == ord('4')).any())
@@ -2474,6 +3146,14 @@ def checks(p, world, city, plan, labels, walk):
         homes_of[room_struct.get(room, room)] += 1
     check('R32', 'no structure has more than 3 homes', max(homes_of.values()) <= 3,
           f'most {max(homes_of.values())}: {homes_of.most_common(1)}')
+    design = Counter(r.get('homes', 0) for r in city.records)
+    check('R32', 'no structure is built with more than 3 homes', max(design) <= 3, f'{dict(sorted(design.items()))}')
+    sump_built = [r for r in city.records if r.get('sump_home')]
+    sump3 = sum(1 for r in sump_built if r.get('homes') == 3)
+    sump_used = Counter(homes_of[r['id']] for r in sump_built if homes_of[r['id']])
+    check('R32', 'the Sump\'s houses are mostly three homes, and most lived-in ones hold three households',
+          sump3 >= .7 * len(sump_built) and sump_used[3] >= .6 * sum(sump_used.values()),
+          f'{sump3} of {len(sump_built)} built with 3 homes; lived in: {dict(sorted(sump_used.items()))}')
     bad_beds = []
     for room, n in sleepers.items():
         beds = sum(row.count('b') + row.count('z') for row in rooms[room]['terrain'])
@@ -2580,6 +3260,7 @@ def sump_metrics(self, walk):
     planned = (int(self.built[S].sum())) / land
     exempt = box(SQUARES['rag'][0][0] - 13, SQUARES['rag'][0][0] + 14, SQUARES['rag'][0][1] - 9, SQUARES['rag'][0][1] + 10)
     exempt |= self.c.line_mask(self.gut_line, 3) | self.c.line_mask(self.tarry_line, 3) | grow(self.court_mask, 1)
+    exempt |= grow(self.cistern_court, 1) | grow(self.hundred_steps, 1) | grow(self.runnel, 2)
     open_ = public & ~exempt
     dist = field.distance_to_mask(~open_ | ~S, 8)
     widest = int(dist[open_].max()) * 2 if open_.any() else 0
@@ -2593,8 +3274,13 @@ def sump_metrics(self, walk):
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
             wide |= np.roll(core3, (dy, dx), (0, 1))
-    narrow = public & ~wide
-    share = narrow.sum() / max(1, public.sum())
+    # (The Sump's named lanes, squares and courts are wide on purpose: the Gut and Tarry Lane, the Rag Market, Cistern
+    # Court, the Hundred Steps and the courts. The share is of the rest, its alleys and passages; the share of all its
+    # public tiles is reported beside it.)
+    named_open = exempt & S
+    narrow = public & ~wide & ~named_open
+    share = narrow.sum() / max(1, (public & ~named_open).sum())
+    share_all = (public & ~wide).sum() / max(1, public.sum())
     recs = [r for r in self.records if r.get('area') == 'sump']
     homes = [r for r in recs if r.get('sump_home')]
     sizes = {(r['block']['w'], r['block']['h']) for r in recs}
@@ -2622,7 +3308,8 @@ def sump_metrics(self, walk):
         ('built coverage of at least 55% of the Sump', coverage >= .55, f'{coverage:.1%} (buildings and infill blocks alone: {planned:.1%})'),
         ('no open space wider than 12 tiles (bar the Rag Market, the Gut, Tarry Lane and the courts)', widest <= 12,
          f'widest {widest}'),
-        ('at least 60% of outdoor walkable tiles in alleys 2 wide or less', share >= .6, f'{share:.1%}'),
+        ('at least 60% of outdoor walkable tiles (outside its named lanes, squares and courts) in alleys 2 wide or '
+         'less', share >= .6, f'{share:.1%} ({share_all:.1%} of all its public tiles)'),
         ('at least 10 dead ends', dead_ends >= 10, f'{dead_ends} alley stubs ending blind (of {len(self.sump_stubs)} laid)'),
         ('at least 12 distinct footprint sizes and 8 L-shapes', len(sizes) >= 12 and lshape >= 8,
          f'{len(sizes)} sizes, {lshape} L-shaped'),
@@ -2638,6 +3325,86 @@ def sump_metrics(self, walk):
 
 
 RidgemereCity.sump_metrics = sump_metrics
+
+
+CLASS_IDS = [DISTRICT_IDS.index(n) for n in ('sump', 'commons', 'northgate', 'admin', 'cinders', 'palace', 'rise')]
+
+
+def district_metrics(city, walk, residents=None):
+    """Density and borders by district (doc 67, Dense city): land, built coverage (solid tiles and tiles shut in, not
+    public), public open tiles, residents and open tiles per resident; the wall tiles on district borders (other than
+    the walled pieces' and the city wall), the height steps on and off the borders, the crossings between districts
+    (separate openings), how irregular each district is, and every step over half a tile between open tiles."""
+    c = city.c
+    codes, h = c.codes, c.heights
+    lab = walk['labels']['@cells']
+    start = walk['start']
+    solid = SOLID[codes]
+    public = ~solid & (lab == start[1]) if start and start[0] == '@cells' else ~solid
+    inside = box(*INSIDE)
+    d = city.district
+    out = {'districts': {}, 'insideArea': int(inside.sum()),
+           'builtInside': round(float((inside & ~public).sum()) / int(inside.sum()), 3)}
+    residents = residents or {}
+    for name in DISTRICT_IDS[1:-1]:
+        D = city.D(name) & inside
+        land = int(D.sum())
+        if not land:
+            continue
+        ys, xs = np.nonzero(D)
+        bbox = (xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1)
+        open_ = int((D & public).sum())
+        n = residents.get(name, 0)
+        out['districts'][name] = {'land': land, 'built': round(1 - open_ / land, 3), 'open': open_, 'residents': n,
+                                  'openPerResident': round(open_ / n, 1) if n else None, 'fill': round(land / bbox, 3),
+                                  'meanHeight': round(float(h[D].mean()), 2)}
+    out['meanHeight'] = {k: v['meanHeight'] for k, v in out['districts'].items()}
+    border = np.zeros(d.shape, dtype=bool)
+    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        nb = np.roll(d, (dy, dx), (0, 1))
+        border |= (d != nb) & (nb > 0) & (d > 0)
+    border &= inside
+    wallish = np.isin(codes, [ord(ch) for ch in '#HM]'])
+    out['wallsOnBorders'] = int((grow(border, 1) & inside & wallish & ~city.rings & ~city.built & ~city.wall_band).sum())
+    # Steps: pairs of neighbouring open tiles inside the walls.
+    on = off = on_n = off_n = 0
+    bad = []
+    cross = defaultdict(lambda: np.zeros(d.shape, dtype=bool))
+    walk_ok = ~solid & inside
+    for dy, dx in ((0, 1), (1, 0)):
+        nb = np.roll(d, (-dy, -dx), (0, 1))
+        both = walk_ok & np.roll(walk_ok, (-dy, -dx), (0, 1))
+        both[-1, :] = False
+        both[:, -1] = False
+        rise = np.abs(h - np.roll(h, (-dy, -dx), (0, 1)))
+        ramp = RAMP[codes] | np.roll(RAMP[codes], (-dy, -dx), (0, 1))
+        step = both & (rise > 0)
+        diff = both & (d != nb) & (d > 0) & (nb > 0)
+        classes = np.isin(d, CLASS_IDS) & np.isin(nb, CLASS_IDS)
+        diff_c = diff & classes
+        same_c = both & ~diff & np.isin(d, CLASS_IDS)
+        on_n += int(diff_c.sum())
+        on += int((diff_c & step).sum())
+        off_n += int(same_c.sum())
+        off += int((same_c & step).sum())
+        too = both & ((rise > 1) | ((rise > .5) & ~ramp))
+        too &= ~(np.isin(codes, [ord('G')]) | np.roll(np.isin(codes, [ord('G')]), (-dy, -dx), (0, 1)))
+        for y, x in np.argwhere(too)[:20]:
+            bad.append((int(x), int(y)))
+        ok = diff & public & np.roll(public, (-dy, -dx), (0, 1)) & ((rise <= .5) | ((rise <= 1) & ramp))
+        for y, x in zip(*np.nonzero(ok)):
+            k = '/'.join(sorted((DISTRICT_IDS[d[y, x]], DISTRICT_IDS[nb[y, x]])))
+            cross[k][y, x] = True
+    out['stepOnBorder'] = on / max(1, on_n)
+    out['stepOffBorder'] = off / max(1, off_n)
+    out['badSteps'] = bad
+    out['crossings'] = {}
+    out['openBorder'] = {}
+    for k, m in sorted(cross.items()):
+        _, info = label(grow(m, 1))
+        out['crossings'][k] = len(info)
+        out['openBorder'][k] = int(m.sum())
+    return out
 
 
 def count_dead_ends(public, region):
@@ -2754,7 +3521,24 @@ def report_data(m):
     links = Counter(l['kind'] for l in p['links'])
     sump = city.sump_metrics(m['walk'])
     sump.pop('checks', None)
+    residents = Counter()
+    for x in placed:
+        rec = room_struct.get(x['home']['cell'])
+        if rec:
+            residents[rec['area']] += 1
+    density = district_metrics(city, m['walk'], residents)
+    density.pop('badSteps', None)
+    design = Counter(r.get('homes', 0) for r in city.records if r.get('homes'))
+    sump_design = Counter(r.get('homes', 0) for r in city.records if r.get('sump_home'))
+    used = Counter(per_struct[r['id']] for r in city.records if per_struct.get(r['id']))
+    sump_used = Counter(per_struct[r['id']] for r in city.records if r.get('sump_home') and per_struct.get(r['id']))
+    before = {}
+    if BEFORE.exists():
+        before = json.loads(BEFORE.read_text(encoding='utf-8'))
     return {
+        'density': density, 'before': before, 'landmarks': city.landmarks,
+        'homesPerStructure': {'built': dict(sorted(design.items())), 'livedIn': dict(sorted(used.items())),
+                              'sumpBuilt': dict(sorted(sump_design.items())), 'sumpLivedIn': dict(sorted(sump_used.items()))},
         'world': {'cells': len(p['cells']), 'interiors': len(p['rooms']), 'newInteriors': len(city.site.rooms),
                   'links': dict(links), 'structures': len(city.records)},
         'districts': {d: dict(v) for d, v in sorted(by_dist.items())},
@@ -2801,6 +3585,28 @@ def report_text(rep):
     for b, d in rep['draws'].items():
         lines.append(f'  {b}: making {", ".join(d["making"]) or "-"}; resale {", ".join(d["resale"]) or "-"}')
     lines.append('')
+    d, b = rep['density'], rep.get('before') or {}
+    bd = b.get('districts', {})
+    lines.append(f'Density (doc 67, Dense city): inside the walls {d["insideArea"]:,} tiles (before {b.get("inside_area", 0):,}), '
+                 f'built {d["builtInside"]:.0%} (before {b.get("built_inside%", 0)}%)')
+    lines.append('  district     land (before)     built (before)   open tiles a resident (before)   residents')
+    for name, v in d['districts'].items():
+        o = bd.get(name, {})
+        lines.append(f'  {name:11} {v["land"]:6} ({o.get("land", "-"):>6})   {v["built"]:5.0%} ({o.get("built%", "-"):>5}%)   '
+                     f'{str(v["openPerResident"]):>8} ({str(o.get("open/res", "-")):>7})            {v["residents"]}')
+    hp = rep['homesPerStructure']
+    lines.append(f'Homes in one structure: built {hp["built"]}, lived in {hp["livedIn"]}; the Sump: built {hp["sumpBuilt"]}, '
+                 f'lived in {hp["sumpLivedIn"]}')
+    lines.append(f'Walls on district borders: {d["wallsOnBorders"]} (before: {b.get("tier_edge_wall_tiles", "-")} retaining-wall '
+                 f'tiles); height steps on the quarters\' borders {d["stepOnBorder"]:.1%}, elsewhere {d["stepOffBorder"]:.1%}')
+    lines.append(f'Crossings between districts (separate openings): {d["crossings"]} (before: {b.get("crossings", "-")})')
+    lines.append(f'Open border (tiles): {d["openBorder"]}')
+    lines.append('')
+    lines.append('Landmarks:')
+    for lm in rep['landmarks']:
+        lines.append(f'  {lm["name"]} ({lm["district"]}, {lm["x"]},{lm["y"]}): {lm["what"]}' +
+                     (f'; interiors {", ".join(lm["interiors"])}' if lm['interiors'] else ''))
+    lines.append('')
     s = rep['sump']
     lines.append(f'The Sump: coverage {s["coverage"]:.1%} (planned {s["planned"]:.1%}), widest open {s["widest"]}, narrow '
                  f'{s["narrow"]:.0%}, dead ends {s["dead_ends"]}, sizes {s["sizes"]}, L-shapes {s["lshape"]}, through '
@@ -2827,27 +3633,42 @@ def previews(m, folder):
     c = world.c
     cells = [{'x': x['x'], 'y': x['y'], 'width': CELL, 'height': CELL, 'name': x['name'][:34]} for x in p['cells']]
     labels = [((x - 20, y), name) for name, (x, y) in {
-        'THE WHARF': (176, 300), 'ABBEY': (250, 215), 'NORTHGATE': (400, 230), 'GREATLY': (580, 196),
-        'THE SUMP': (250, 300), 'THE COMMONS': (520, 420), 'MARKET SQ': (470, 384), 'OLD KEEP': (600, 440),
-        'ADMIN': (300, 515), 'CINDERS': (240, 600), 'GREAT PALACE': (420, 545), 'THE RISE': (580, 600),
-        'TIMBERLAND COURT': (360, 660), 'FELLHALL': (820, 296), 'GRAYROCK HALL': (140, 660)}.items()]
+        'THE WHARF': (186, 250), 'ABBEY': (236, 200), 'NORTHGATE': (330, 168), 'GREATLY': (420, 196),
+        'THE SUMP': (240, 330), 'THE COMMONS': (420, 270), 'MARKET SQ': (365, 322), 'OLD KEEP': (412, 332),
+        'ADMIN': (290, 356), 'CINDERS': (236, 420), 'GREAT PALACE': (340, 406), 'THE RISE': (430, 400),
+        'TIMBERLAND COURT': (356, 520), 'FELLHALL': (600, 262), 'GRAYROCK HALL': (190, 642), 'BAY LIGHT': (70, 168)}.items()]
     preview.overview(c.codes, c.heights, cells, folder / 'overview.png', scale=2, labels=labels, relief=1.5)
-    views = {'sump': (215, 225, 155, 250), 'market_square_and_hall': (430, 300, 90, 90), 'keep': (570, 435, 80, 75),
-             'palace': (315, 525, 230, 95), 'abbey': (215, 148, 120, 92), 'greatly_compound': (535, 148, 132, 132),
-             'records_square': (370, 465, 70, 50), 'wharf': (105, 150, 125, 470), 'cinders': (215, 465, 110, 155),
-             'estate_timberland_court': (320, 640, 170, 120), 'estate_fellhall': (770, 290, 180, 150),
-             'estate_grayrock_hall': (115, 640, 145, 120), 'rise': (535, 465, 130, 155)}
+    city_box = (160, 142, 320, 320)
+    x0, y0, w, h = city_box
+    crop = np.s_[y0:y0 + h, x0:x0 + w]
+    preview.overview(c.codes[crop], c.heights[crop], [], folder / 'city.png', scale=4,
+                     labels=[((x - x0, y - y0), t) for (x, y), t in labels if x0 <= x < x0 + w and y0 <= y < y0 + h],
+                     relief=1.5)
+    views = {'sump': (205, 205, 110, 150), 'market_square_and_hall': (320, 250, 90, 80), 'keep': (380, 290, 90, 80),
+             'palace': (264, 340, 130, 106), 'abbey': (205, 150, 100, 72), 'greatly_compound': (385, 150, 87, 100),
+             'records_square': (300, 340, 70, 50), 'wharf': (60, 150, 160, 300), 'cinders': (205, 340, 80, 108),
+             'estate_timberland_court': (290, 514, 132, 98), 'estate_fellhall': (542, 256, 148, 124),
+             'estate_grayrock_hall': (130, 636, 120, 98), 'rise': (370, 340, 102, 108),
+             'commons_west_edge': (270, 250, 90, 110), 'commons_east': (370, 210, 102, 130),
+             'northgate': (280, 150, 160, 80), 'mercy_and_cisterns': (205, 260, 80, 80)}
     for name, (x0, y0, w, h) in views.items():
         preview.glyphs(c.codes, c.heights, folder / f'{name}.png', x0, y0, min(w, W - x0), min(h, H - y0), px=8)
+    for stale in ('interior_r2_eel_rents.png', 'interior_r2_eel_rents_up.png', 'interior_r2_peg_corner.png',
+                  'interior_r2_peg_corner_up.png', 'interior_r2_rag_buildings.png', 'interior_r2_rag_buildings_up.png'):
+        if (folder / stale).exists():
+            (folder / stale).unlink()
     rooms = {r['id']: r for r in p['rooms']}
     for key in ('r2_records_office', 'r2_the_keep', 'r2_market_hall', 'r2_palace_antechamber', 'r2_kings_residence',
-                'r2_administrative_wing', 'r2_cathedral'):
+                'r2_administrative_wing', 'r2_cathedral', 'r2_bay_light', 'r2_clock_tower', 'r2_the_knucklebones',
+                'r2_sunken_street', 'r2_tallow_arcade'):
+        if key not in city.named:
+            continue
         for room in city.named[key]['rooms']:
             r = rooms[room['id']]
             codes = np.frombuffer(''.join(r['terrain']).encode('ascii'), dtype=np.uint8).reshape(r['height'], r['width'])
             preview.glyphs(codes, np.zeros(codes.shape, dtype=np.float32), folder / f'interior_{room["id"]}.png', 0, 0,
                            r['width'], r['height'], px=14)
-    for hm in city.sump_homes[:3]:
+    for hm in city.sump_homes_[:3]:
         for room in hm['record']['rooms']:
             r = rooms[room['id']]
             codes = np.frombuffer(''.join(r['terrain']).encode('ascii'), dtype=np.uint8).reshape(r['height'], r['width'])

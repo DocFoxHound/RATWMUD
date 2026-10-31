@@ -196,9 +196,13 @@ def placed_ids(project, a=None):
     return out & set(people)
 
 
+MIDDLE_HOUSES, NORTHGATE_HOUSES = 24, 8
+
+
 def reused_houses(project, structures, placed, reuse_ids):
-    """The old houses kept (doc 67, section 3: 40 middle-class, 8 clerks', 6 Cinders row houses): the single-room
-    houses most of the placed live in, by where their people work."""
+    """The old houses kept (doc 67, section 3: 8 clerks', 6 Cinders row houses, and since the Dense city 24 middle-class
+    houses, not 40: the rest of their households move into the Commons' row houses of two and three homes): the
+    single-room houses most of the placed live in, by where their people work."""
     people = [p for p in project['people'] if p['id'] in placed and p['home']]
     rooms = {r['id']: r for r in project['rooms']}
     by_home = defaultdict(list)
@@ -226,8 +230,9 @@ def reused_houses(project, structures, placed, reuse_ids):
             out['admin'].append(gid)
         elif cinder and len(out['cinders']) < 6:
             out['cinders'].append(gid)
-        elif len(out['commons']) + len(out['northgate']) < 40:
-            out['northgate' if cell in ('w_ridgemere_1_0',) and len(out['northgate']) < 14 else 'commons'].append(gid)
+        elif len(out['commons']) + len(out['northgate']) < MIDDLE_HOUSES:
+            out['northgate' if cell in ('w_ridgemere_1_0',) and len(out['northgate']) < NORTHGATE_HOUSES
+                else 'commons'].append(gid)
     for gid in [c[1] for c in cands]:                  # Fill the clerks' and the Cinders' rows from what is left.
         if all(gid not in v for v in out.values()):
             if len(out['admin']) < 8:
@@ -668,25 +673,30 @@ class Placement:
                 singles = singles[n:]
         self.alone = alone
         # Where each unit goes: by where it lived (doc 67, section 5): old rows and tenements to the Sump, old houses
-        # to the Commons' double houses first.
+        # to the Commons' row houses first. Houses fill floor by floor, one house after another (doc 67, Dense city: more
+        # families together), so the Sump's houses hold three households each and the empty ones are left whole.
         free = {room: info for room, info in rooms.items() if info['new'] and not info['communal']}
-        order_s = sorted([r for r, i in free.items() if i['district'] == 'sump'])
-        order_c = sorted([r for r, i in free.items() if i['district'] == 'commons'])
-        self.rng.shuffle(order_s)
+
+        def by_house(district):
+            houses = defaultdict(list)
+            for r, i in free.items():
+                if i['district'] in district:
+                    houses[i['structure']].append(r)
+            order = sorted(houses)
+            self.rng.shuffle(order)
+            order.sort(key=lambda h: -len(houses[h]))           # (the three-home houses first)
+            return [r for h in order for r in sorted(houses[h])]
+        order_s = by_house(('sump',))
+        order_c = by_house(('commons', 'northgate'))
         units.sort(key=lambda u: (-len(u), u[0]))
         for u in units:
             old = self.people[u[0]]['home']['cell'] if self.people[u[0]]['home'] else ''
             house_like = old.endswith('_house') or old.endswith('_house_2') or old in ('rm_the_heights_watch_post',)
             prefs = (order_c + order_s) if house_like else (order_s + order_c)
-            need = max(2, math.ceil(len(u) / 2))
-            for room in prefs:
-                if load[room] == 0 and rooms[room]['beds'] >= need:
-                    break
-            else:
-                room = next((r for r in prefs if load[r] == 0), None)
-                if room is None:
-                    room = min(prefs, key=lambda r: load[r] / max(1, rooms[r]['cap']))
-                    self.issues.append(f'unit {u} shares {room}')
+            room = next((r for r in prefs if load[r] == 0), None)
+            if room is None:
+                room = min(prefs, key=lambda r: load[r] / max(1, rooms[r]['cap']))
+                self.issues.append(f'unit {u} shares {room}')
             for pid in u:
                 self.plan[pid] = {'placed': True, 'home': self.bed_spot(room), 'homeKept': False}
             load[room] += len(u)

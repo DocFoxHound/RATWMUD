@@ -187,7 +187,61 @@ class City(unittest.TestCase):
 
     def test_it_is_made_the_same_each_time(self):
         rec = self.m['city'].records
-        self.assertGreater(len(rec), 250)
+        self.assertGreater(len(rec), 200)
+
+    # -- The dense city (doc 67, Progress, "Dense city") --
+    def test_no_walls_between_the_districts(self):
+        from worldgen import ridgemere2 as R
+        city = self.m['city']
+        d = R.district_metrics(city, self.m['walk'])
+        self.assertEqual(d['wallsOnBorders'], 0)
+        self.assertEqual(d['badSteps'], [])
+        # Wall glyphs inside the walls are buildings' own walls or the walled pieces' (the Keep, the abbey, Greatly).
+        inside = R.box(*R.INSIDE)
+        wall = np.isin(city.c.codes, [ord(ch) for ch in '#H']) & inside
+        self.assertFalse((wall & ~city.built & ~city.rings).any())
+        self.assertFalse(city.edges.any())
+
+    def test_districts_blend(self):
+        from worldgen import ridgemere2 as R
+        d = R.district_metrics(self.m['city'], self.m['walk'])
+        self.assertGreaterEqual(d['crossings'].get('commons/sump', 0), 8)
+        self.assertGreaterEqual(d['openBorder'].get('commons/sump', 0), 60)
+        self.assertGreaterEqual(d['openBorder'].get('commons/rise', 0), 30)
+        for name in ('sump', 'commons', 'rise', 'admin'):
+            self.assertLess(d['districts'][name]['fill'], .9, name)
+
+    def test_homes_three_at_most_and_the_sump_full(self):
+        city, p = self.m['city'], self.m['project']
+        self.assertLessEqual(max(r.get('homes', 0) for r in city.records), 3)
+        room_struct = {room['id']: r for r in city.records for room in r['rooms']}
+        lived = {}
+        for x in p['people']:
+            if x['home']:
+                rec = room_struct.get(x['home']['cell'])
+                if rec:
+                    lived.setdefault(rec['id'], set()).add(x['home']['cell'])
+        self.assertLessEqual(max(len(v) for v in lived.values()), 3)
+        sump = [len(lived[r['id']]) for r in city.records if r.get('sump_home') and r['id'] in lived]
+        self.assertGreaterEqual(sum(1 for n in sump if n == 3), .8 * len(sump))
+
+    def test_the_city_is_compact(self):
+        from worldgen import ridgemere2 as R
+        d = R.district_metrics(self.m['city'], self.m['walk'])
+        self.assertLess(d['insideArea'], .65 * 225456)
+        self.assertGreater(d['builtInside'], .3)
+
+    def test_the_landmarks(self):
+        names = {lm['name'] for lm in self.m['city'].landmarks}
+        for name in ('The Bay Light and the Mole', 'The Clock Tower', 'The Wall-Builders', 'Pillory Square', 'The Mercy',
+                     'The Cisterns and the Runnel', 'The Hundred Steps', 'The Sunken Street', 'The Tallow Arcade'):
+            self.assertIn(name, names)
+        rooms = {r['id'] for r in self.m['project']['rooms']}
+        for rid in ('r2_the_bay_light', 'r2_the_bay_light_up', 'r2_the_clock_tower_up', 'r2_the_sunken_street',
+                    'r2_the_tallow_arcade', 'r2_the_knucklebones'):
+            self.assertIn(rid, rooms)
+        links = [l for l in self.m['project']['links'] if 'r2_the_sunken_street' in (l['a']['cell'], l['b']['cell'])]
+        self.assertEqual(len(links), 2)                      # A stair-house at each end.
 
 
 if __name__ == '__main__':

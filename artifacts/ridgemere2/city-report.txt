@@ -1,28 +1,28 @@
 Ridgemere 2.0: the city (doc 67), the generator's report
 
-12 cells; 845 interiors (219 new); 301 structures placed; links {'stairs': 187, 'door': 340, 'passage': 28}
+9 cells; 815 interiors (189 new); 237 structures placed; links {'stairs': 205, 'door': 261, 'passage': 43}
 People: 559 placed, 524 unplaced {'a Minor House not kept': 62, 'a town': 262, 'the country': 200}; roles {'merchant': 108, 'civilian': 421, 'guard': 30}
 Posts: {'stallkeeper': 14, 'staff': 84, 'kept': 54, 'pool': 55, 'clergy': 18, 'food': 2, 'hallkeeper': 6, 'keeper': 88, 'at lessons': 67, 'help': 64, 'retired': 29, 'a child at home': 4, 'guard': 5, 'patrol': 16, 'gate': 9, 'hands': 44}
-Evenings: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 197, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 20, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 23, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
-Homes: 225; most in one structure 2; structures by homes {1: 159, 2: 33}; 10 living alone
+Evenings: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 188, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
+Homes: 224; most in one structure 3; structures by homes {1: 94, 3: 36, 2: 11}; 10 living alone
 
 By district:
-  abbey: buildings 8, business:brewery 1, kind:hall 6, kind:lodging 1, kind:works 1, posts 31
-  admin: beds 30, buildings 14, business:inn 1, business:scriptorium 1, homes 9, kind:hall 4, kind:home 8, kind:shop 1, kind:tavern 1, posts 22
-  cinders: beds 43, buildings 25, business:armory 1, business:brewery 1, business:brickworks 2, business:cartwright 1, business:charcoal 1, business:foundry 1, business:glassworks 1, business:inn 1, business:ironworks 1, business:papermill 1, business:plasterworks 1, business:sawmill 1, business:smithy 3, homes 11, kind:home 8, kind:shop 4, kind:store 1, kind:tavern 1, kind:works 11, posts 43
-  commons: beds 285, buildings 85, business:apothecary 2, business:bakery 3, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 1, business:carpenter 2, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:dairy 1, business:fishmonger 1, business:general 1, business:glassworks 1, business:herbalist 1, business:inn 3, business:jeweler 2, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:printing_house 1, business:provisioner 3, business:saddlery 3, business:smithy 2, business:stables 1, business:tailor 3, business:vintner 1, business:weaver 2, homes 86, kind:flats 10, kind:hall 3, kind:home 33, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 3, posts 143
+  abbey: buildings 8, business:brewery 1, kind:hall 6, kind:lodging 1, kind:works 1, posts 38
+  admin: beds 33, buildings 14, business:inn 1, business:scriptorium 1, homes 9, kind:hall 4, kind:home 8, kind:shop 1, kind:tavern 1, posts 22
+  cinders: beds 45, buildings 25, business:armory 1, business:brewery 1, business:brickworks 2, business:cartwright 1, business:charcoal 1, business:foundry 1, business:glassworks 1, business:inn 1, business:ironworks 1, business:papermill 1, business:plasterworks 1, business:sawmill 1, business:smithy 3, homes 11, kind:home 8, kind:shop 4, kind:store 1, kind:tavern 1, kind:works 11, posts 43
+  commons: beds 255, buildings 74, business:apothecary 2, business:bakery 3, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 1, business:carpenter 2, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:dairy 1, business:fishmonger 1, business:general 1, business:glassworks 1, business:herbalist 1, business:inn 3, business:jeweler 2, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:printing_house 1, business:provisioner 3, business:saddlery 3, business:smithy 2, business:stables 1, business:tailor 3, business:vintner 1, business:weaver 2, homes 82, kind:flats 11, kind:hall 4, kind:home 20, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 3, posts 136
   estate_fell: beds 17, buildings 9, business:distillery 1, business:preserver 1, business:press 1, homes 4, kind:home 3, kind:seat 1, kind:store 1, kind:works 4, posts 16
   estate_grayrock: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 6
   estate_mossgrave: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 7
   greatly: beds 10, buildings 6, business:builders_works 1, business:mason 1, business:paintworks 1, homes 2, kind:hall 1, kind:seat 1, kind:works 4, posts 24
   keep: beds 15, buildings 2, homes 1, kind:hall 1, kind:lodging 1, posts 7
   none: posts 16
-  northgate: beds 40, buildings 12, business:bakery 1, business:butcher 1, business:carpenter 1, business:fletcher 1, business:general 1, homes 12, kind:home 7, kind:shop 5, posts 10
+  northgate: beds 52, buildings 13, business:bakery 1, business:butcher 1, business:carpenter 1, business:fletcher 1, business:general 1, homes 18, kind:flats 3, kind:hall 1, kind:home 4, kind:shop 5, posts 10
   outdoors: business:chandlery 1, business:fishmonger 1, business:general 2, business:herbalist 1, business:pottery 1, business:rag_and_bone 1, business:stall 4, business:tinker 2, business:weaver 1, posts 78
   palace: beds 9, buildings 3, homes 2, kind:hall 2, kind:seat 1, posts 22
   rise: beds 29, buildings 5, homes 10, kind:villa 5, posts 26
-  sump: beds 230, buildings 104, business:fishmonger 1, business:general 1, business:inn 4, business:pawnbroker 1, business:provisioner 1, business:rag_and_bone 1, business:tinker 1, homes 77, kind:flats 54, kind:hall 4, kind:home 36, kind:shop 5, kind:tavern 3, kind:works 2, posts 36
-  wharf: beds 12, buildings 16, business:chandlery 1, business:cooperage 1, business:fishmonger 1, business:inn 3, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 2, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 39
+  sump: beds 218, buildings 49, business:fishmonger 1, business:general 1, business:inn 4, business:pawnbroker 1, business:provisioner 1, business:rag_and_bone 1, business:tinker 1, homes 74, kind:flats 31, kind:hall 5, kind:home 3, kind:shop 5, kind:tavern 3, kind:works 2, posts 36
+  wharf: beds 12, buildings 17, business:chandlery 1, business:cooperage 1, business:fishmonger 1, business:inn 3, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 3, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 39
 
 Businesses with a till (merchants): apothecary 2, armory 1, bakery 4, barber 1, brewery 3, brickworks 2, builders_works 1, builders_yard 1, butcher 2, carpenter 3, cartographer 1, cartwright 1, chandlery 3, charcoal 1, cooperage 3, dairy 1, distillery 1, fishmonger 4, fletcher 1, foundry 1, general 5, glassworks 2, herbalist 2, inn 12, ironworks 1, jeweler 2, mason 1, moneychanger 1, paintworks 1, papermill 1, pawnbroker 1, perfumer 1, plasterworks 1, pottery 2, preserver 1, press 1, printing_house 1, provisioner 4, rag_and_bone 2, ropewalk 1, saddlery 3, sawmill 1, scriptorium 1, shipwright 1, smithy 5, smokehouse 1, stables 1, stall 4, tailor 3, tannery 1, tinker 3, vintner 1, weaver 3
 
@@ -81,43 +81,84 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   vintner: making -; resale apple_brandy, aqua_vitae, berry_cordial, brandy, cider, mead, wine
   weaver: making flax, hemp, linen_cloth, straw, wool; resale -
 
-The Sump: coverage 71.7% (planned 51.1%), widest open 6, narrow 66%, dead ends 51, sizes 28, L-shapes 12, through 38, passages 26 in chains [5, 4, 4, 4, 3, 3], courts 8, homes 90, infill {'sheds': 410, 'boarded': 34, 'yards': 174, 'courts': 8, 'dead_ends': 57, 'passages': 26}
+Density (doc 67, Dense city): inside the walls 88,208 tiles (before 225,456), built 40% (before 24.2%)
+  district     land (before)     built (before)   open tiles a resident (before)   residents
+  wharf        11324 ( 23100)     25% ( 16.0%)      710.9 ( 1617.7)            12
+  abbey         4960 (  8424)     33% ( 25.9%)       None (   None)            0
+  northgate     5718 ( 20160)     26% (  5.7%)      128.4 (  655.6)            33
+  greatly       5320 ( 13920)     25% ( 11.9%)      444.0 ( 1363.3)            9
+  sump         12278 ( 33184)     66% ( 71.7%)       23.0 (   51.9)            179
+  commons      20989 ( 61220)     46% ( 14.4%)       64.0 (  278.8)            178
+  keep          1848 (  3300)     51% ( 38.8%)       60.9 (  134.6)            15
+  admin         6608 ( 16800)     41% ( 14.0%)      145.4 (  601.9)            27
+  cinders       4893 ( 10708)     63% ( 28.1%)       56.6 (  285.2)            32
+  palace        6159 ( 18920)     34% ( 25.3%)      811.6 ( 2825.6)            5
+  rise          8111 ( 15720)     14% ( 11.2%)      257.5 (  517.3)            27
+Homes in one structure: built {1: 105, 2: 13, 3: 42}, lived in {1: 94, 2: 11, 3: 36}; the Sump: built {1: 3, 2: 3, 3: 28}, lived in {3: 23}
+Walls on district borders: 0 (before: 752 retaining-wall tiles); height steps on the quarters' borders 0.8%, elsewhere 1.8%
+Crossings between districts (separate openings): {'abbey/northgate': 1, 'abbey/sump': 1, 'admin/cinders': 2, 'admin/commons': 4, 'admin/palace': 2, 'admin/rise': 4, 'admin/sump': 7, 'cinders/palace': 3, 'cinders/sump': 1, 'cinders/wharf': 6, 'commons/greatly': 1, 'commons/keep': 1, 'commons/northgate': 5, 'commons/rise': 5, 'commons/sump': 11, 'northgate/sump': 2, 'palace/rise': 1, 'sump/wharf': 12} (before: {'abbey/northgate': 1, 'sump/wharf': 10, 'commons/sump': 1, 'cinders/wharf': 11, 'admin/cinders': 3, 'admin/rise': 1, 'cinders/palace': 1, 'palace/rise': 1, 'abbey/sump': 1, 'commons/northgate': 1, 'commons/greatly': 1, 'commons/keep': 1, 'cinders/sump': 1, 'admin/sump': 1, 'admin/commons': 3, 'commons/rise': 2, 'admin/palace': 1})
+Open border (tiles): {'abbey/northgate': 5, 'abbey/sump': 5, 'admin/cinders': 90, 'admin/commons': 100, 'admin/palace': 101, 'admin/rise': 50, 'admin/sump': 88, 'cinders/palace': 57, 'cinders/sump': 2, 'cinders/wharf': 49, 'commons/greatly': 5, 'commons/keep': 5, 'commons/northgate': 122, 'commons/rise': 69, 'commons/sump': 97, 'northgate/sump': 29, 'palace/rise': 60, 'sump/wharf': 24}
+
+Landmarks:
+  The Bay Light and the Mole (wharf, 68,179): a stone breakwater running 100 tiles out into the bay from the north pier, a two-storey lighthouse at its head; interiors r2_the_bay_light, r2_the_bay_light_up
+  The Clock Tower (northgate, 369,178): a two-storey clock and bell tower on Clock Square, where Abbey Row meets Gate Street; interiors r2_the_clock_tower, r2_the_clock_tower_up
+  The Wall-Builders (commons, 438,231): a statue group of the first Greatly masons with trowel and plumb line, on Greatly Square below the compound gate: "They raised the wall; the wall raised the city"
+  Pillory Square (commons, 412,311): the square before the Old Keep's gate: the gallows, the pillory and the stocks where the Watch shows its catch
+  The Mercy (sump, 220,323): an old Grayrock carrack hauled up on the quay at the Sump's edge, her hull the Knucklebones tavern; interiors r2_the_knucklebones
+  The Cisterns and the Runnel (sump, 270,278): three stone rain tanks on Cistern Court that feed the bathhouse, and the Runnel, an open gutter channel running from them down the Gut to the quay
+  The Hundred Steps (sump, 262,230): a stair-street two wide climbing from the quay up through the north Sump and the Northgate edge to Abbey Row
+  The Sunken Street (sump, 273,299): the city's old street level under the Sump's edge, a vaulted cobbled lane 54 tiles long, reached by a stair-house in the Sump and another in the Commons; interiors r2_the_sunken_street
+  The Tallow Arcade (commons, 333,269): a covered arcade, a through-building of pillars and benches between two streets of the Commons on the Sump's edge, out of the rain; interiors r2_the_tallow_arcade
+
+The Sump: coverage 66.4% (planned 56.4%), widest open 6, narrow 67%, dead ends 26, sizes 18, L-shapes 15, through 20, passages 41 in chains [5, 5, 4, 3, 3], courts 6, homes 34, infill {'sheds': 141, 'boarded': 24, 'yards': 72, 'courts': 6, 'dead_ends': 30, 'streets_dropped': 3, 'connected': 14, 'back_snickets': 12, 'passages': 41, 'admin_sheds': 35, 'cinders_sheds': 25, 'commons_sheds': 44, 'commons_yards': 1, 'northgate_sheds': 12, 'rise_sheds': 6}
 
 Checks:
-  [ok] R2     12 cells, all rain, region ridgemere: 12 cells
-  [ok] R2     every placed interior has region ridgemere: 446 placed interiors
+  [ok] R2     9 cells, all rain, region ridgemere: 9 cells
+  [ok] R2     every placed interior has region ridgemere: 400 placed interiors
   [ok] R1     no cell overlaps another
-  [ok] R4     water lies west of x = 168 between the headlands
+  [ok] R4     water lies west of x = 168 between the headlands (the piers, the Mole and the Bay Light aside)
   [ok] R5     the sea wall runs along the quay (x 168-172)
-  [ok] R5     the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall's span (y 150-620)
-  [ok] R6     the Sump meets the wharf with no wall between: 162 open crossings, 0 wall tiles on the line
+  [ok] R5     the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall's span
+  [ok] R6     the Sump meets the wharf with no wall between: 24 open crossings, 0 wall tiles on the line
   [ok] R6     the Sump holds at least 50% of the wharf frontage: 52%
-  [ok] R5     the 5 gates and the 2 guarded pier arches are cut and reached: gates {'N': True, 'E': True, 'S': True, 'cinder': True, 'harbour': True}, arches {470: np.True_, 335: np.True_}
+  [ok] R5     the 5 gates and the 2 guarded pier arches are cut and reached: gates {'N': True, 'E': True, 'S': True, 'cinder': True, 'harbour': True}, arches {380: np.True_, 290: np.True_}
   [ok] R10    the districts partition the inside of the wall
-  [ok] R15    the Rise's area is at most half the middle class's: rise 15720, middle class 81380 (0.19)
+  [ok] R10    the Sump is bordered on the east by the middle class
+  [ok] R11    the Sump is bordered on the south by the administrative sector (most of its south edge): 76% of the Sump's south edge meets admin
+  [ok] R17    the administrative sector borders the Sump (north) and the upper class (east)
+  [ok] R15    the Rise's area is at most half the middle class's: rise 8111, middle class 26707 (0.30)
   [ok] R20    the abbey close is in the north-west corner, touching the Sump and the middle class
-  [ok] R16    the Keep is at one height, straddles y = 470, with four walls, a courtyard and one gate
+  [ok] R16    the Keep is at one height on the Commons/Rise border, with four walls, a courtyard and one gate
   [ok] R24    the Greatly compound sits against the city wall, no public tile between
   [ok] R23    the Greatly fountain is in the south yard, the forge and workshop in the north yard
-  [ok] R2     gates joining heights more than 0.5 apart have their half step and ^ run
-  [ok] R2     no tier edge or stair within 2 tiles of a cell seam (an edge may cross a seam at right angles): 0 tiles: []
+  [ok]        no wall tile on a district border, other than the city wall and the walled pieces (the Keep, the abbey, the Greatly compound): 0 tiles
+  [ok] R2     no step of more than half a tile between neighbouring open tiles inside the walls (a stair at most 1): 0: []
+  [ok] R2     the ground climbs from the bay: the Rise and the Greatly compound stand at least 1.5 above the Sump: {'wharf': 0.5, 'abbey': 1.5, 'northgate': 2.58, 'greatly': 3.0, 'sump': 1.18, 'commons': 2.72, 'keep': 3.5, 'admin': 1.79, 'cinders': 1.36, 'palace': 2.62, 'rise': 3.46}
+  [ok]        height steps do not follow the borders between the quarters (a step at most twice as likely on a border as off it): 0.8% of border pairs step, 1.8% elsewhere
+  [ok]        the districts are not rectangles (each fills under 90% of its bounding box): {'sump': np.float64(0.743), 'commons': np.float64(0.594), 'northgate': np.float64(0.837), 'admin': np.float64(0.644), 'cinders': np.float64(0.784), 'rise': np.float64(0.747)}
+  [ok]        many street crossings between neighbouring districts (separate openings, or as many 8-tile lengths of open border): short: {}; all: {'abbey/northgate': 1, 'abbey/sump': 1, 'admin/cinders': 2, 'admin/commons': 4, 'admin/palace': 2, 'admin/rise': 4, 'admin/sump': 7, 'cinders/palace': 3, 'cinders/sump': 1, 'cinders/wharf': 6, 'commons/greatly': 1, 'commons/keep': 1, 'commons/northgate': 5, 'commons/rise': 5, 'commons/sump': 11, 'northgate/sump': 2, 'palace/rise': 1, 'sump/wharf': 12}
+  [ok]        the city inside the walls is 35-65% smaller than before (225,456 tiles): 88208 tiles, 61% smaller
+  [ok] R30    every building the plan keeps or adds is placed (the same businesses, houses and landmarks)
+  [ok]        6-10 landmarks, each named and described: The Bay Light and the Mole, The Clock Tower, The Wall-Builders, Pillory Square, The Mercy, The Cisterns and the Runnel, The Hundred Steps, The Sunken Street, The Tallow Arcade
   [ok] R26    the three estates are outside the wall, each within one cell
   [ok] R34    no field, orchard, vineyard or pen glyphs (crop fields) anywhere
   [ok] R34    resources empty and no game spawns
-  [ok] R7-R9  built coverage of at least 55% of the Sump: 71.7% (buildings and infill blocks alone: 51.1%)
+  [ok] R7-R9  built coverage of at least 55% of the Sump: 66.4% (buildings and infill blocks alone: 56.4%)
   [ok] R7-R9  no open space wider than 12 tiles (bar the Rag Market, the Gut, Tarry Lane and the courts): widest 6
-  [ok] R7-R9  at least 60% of outdoor walkable tiles in alleys 2 wide or less: 66.5%
-  [ok] R7-R9  at least 10 dead ends: 51 alley stubs ending blind (of 57 laid)
-  [ok] R7-R9  at least 12 distinct footprint sizes and 8 L-shapes: 28 sizes, 12 L-shaped
+  [ok] R7-R9  at least 60% of outdoor walkable tiles (outside its named lanes, squares and courts) in alleys 2 wide or less: 66.8% (40.8% of all its public tiles)
+  [ok] R7-R9  at least 10 dead ends: 26 alley stubs ending blind (of 30 laid)
+  [ok] R7-R9  at least 12 distinct footprint sizes and 8 L-shapes: 18 sizes, 15 L-shaped
   [ok] R7-R9  every home and work door on a passage at least 2 wide
-  [ok] R7-R9  at least 14 through-buildings: 38
-  [ok] R7-R9  at least 25 passages, in 4-6 chains of 3-5 buildings: 26 passages, chains [5, 4, 4, 4, 3, 3]
-  [ok] R7-R9  at least 6 courts: 8
+  [ok] R7-R9  at least 14 through-buildings: 20
+  [ok] R7-R9  at least 25 passages, in 4-6 chains of 3-5 buildings: 41 passages, chains [5, 5, 4, 3, 3]
+  [ok] R7-R9  at least 6 courts: 6
   [ok] R18    the Records Office has three floors (z 0, 1, 2), two stair pairs on distinct tiles
   [ok] R19    the palace's three parts touch, joined by passages, the Residence west and the Wing east
-  [ok] R32    no structure has more than 3 homes: most 2: [('r2_ladle_corner', 2)]
+  [ok] R32    no structure has more than 3 homes: most 3: [('r2_salt_row_house', 3)]
+  [ok] R32    no structure is built with more than 3 homes: {0: 77, 1: 105, 2: 13, 3: 42}
+  [ok] R32    the Sump's houses are mostly three homes, and most lived-in ones hold three households: 28 of 34 built with 3 homes; lived in: {3: 23}
   [ok] R32    every home has at least ceil(people / 2) beds, and at least 2
-  [ok]        links number 2,048 or fewer: 555 links
+  [ok]        links number 2,048 or fewer: 509 links
   [ok] R31    480-580 placed, every one with a home: 559 placed
   [ok] R33    every placed NPC aged 16-59 has work
   [ok] R33    every label is at most 40 characters and breaks none of the label rules: 0: 
@@ -126,9 +167,9 @@ Checks:
   [ok] R33    30 guards, with posts on every route in use: 30 guards; routes in use ['r2_palace_round', 'r2_sump_patrol', 'rm_street_patrol', 'rm_wall_walk', 'rm_wharf_patrol']
   [ok]        clergy have clergy words, and nobody else has them
   [ok] R34    no placed NPC works a food or raw-resource producer (stables listed): stables: ['rm_dunstan_greywick', 'rm_oda_kelpworth', 'rm_ragnar_roperidge', 'rm_septimus_plankmarsh']; bad: []
-  [ok] R13    the Rag Market is more than 40 tiles from Market Square: 180
-  [ok] R14    Market Square has more merchants than the Market Hall; the Hall's doors within 40 of its stalls: square 8, hall 6, doors 20 from the stalls
-  [ok]        no evening place takes more than 40: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 197, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 20, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 23, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
+  [ok] R13    the Rag Market is more than 40 tiles from Market Square: 116
+  [ok] R14    Market Square has more merchants than the Market Hall; the Hall's doors within 40 of its stalls: square 8, hall 6, doors 18 from the stalls
+  [ok]        no evening place takes more than 40: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 188, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
   [ok] R1     every link end, home, work spot, evening place and route post is reached from the spawn
 
 Stables (stock_breeding, horses not food): rm_dunstan_greywick, rm_oda_kelpworth, rm_ragnar_roperidge, rm_septimus_plankmarsh
@@ -175,7 +216,7 @@ Labels (npc, role, label, business):
   rm_brenna_greyworth            merchant  ladling soup                               inn
   rm_brenna_milldale             civilian  unloading ships at the piers               None
   rm_brenna_ropehand             civilian  helping at Eastgate Farriers               None
-  rm_brenna_slaggate             merchant  vintner at The Fell Wine Vaults            vintner
+  rm_brenna_slaggate             merchant  shipwright at Grayrock Shipwrights         shipwright
   rm_cedric_ashcot               guard     walking the wall                           None
   rm_cedric_mudley               guard     holding the north gate                     None
   rm_celestine_greatly           civilian  keeping Greatly House                      None
@@ -188,7 +229,7 @@ Labels (npc, role, label, business):
   rm_corwin_bilgestack           merchant  runs The Greatly Yard                      builders_yard
   rm_corwin_fell_                civilian  keeping the Fell cellars                   None
   rm_corwin_kelpby               civilian  singing in the cathedral choir             None
-  rm_corwin_sootstack            merchant  barber at The Barber's Pole                barber
+  rm_corwin_sootstack            merchant  rag-and-bone dealer at Rag-and-Bone Yard   rag_and_bone
   rm_corwin_sootton              civilian  unloading ships at the piers               None
   rm_cressida_carlisle           civilian  pleading cases                             None
   rm_cressida_dripmore           civilian  helping at The Rain Pot                    None
@@ -197,14 +238,14 @@ Labels (npc, role, label, business):
   rm_dagfinn_brineley            guard     on patrol on the wharf                     None
   rm_dagfinn_gullham             merchant  tailor at Needle & Drip                    tailor
   rm_dagfinn_ropeby              civilian  works at The Greatly Lime Kilns            brickworks
-  rm_dagny_pitchley              civilian  brother at the abbey brewhouse             None
+  rm_dagny_pitchley              civilian  scribe of the abbey                        scriptorium
   rm_dagny_pitchton              civilian  unloading ships at the piers               None
   rm_dagny_ropeley               guard     sergeant of the Watch                      None
   rm_dagny_rustcot               civilian  harbourmaster of the Wharf Office          None
-  rm_dagny_slaghand              merchant  cheesemaker in the Commons                 dairy
+  rm_dagny_slaghand              merchant  smith at Timberland's Forge Row            smithy
   rm_delphine_dripham            civilian  scribe of the abbey                        scriptorium
-  rm_delphine_mudwick            civilian  scribe of the abbey                        scriptorium
-  rm_delphine_saltwick           merchant  smith at Timberland's Forge Row            smithy
+  rm_delphine_mudwick            civilian  porter of the abbey                        None
+  rm_delphine_saltwick           merchant  vintner at The Fell Wine Vaults            vintner
   rm_desmond_ashwick             civilian  works at The Rainwater Brewery             brewery
   rm_desmond_bilgeridge          civilian  at lessons                                 None
   rm_desmond_cindermore          civilian  minding the shop door                      None
@@ -212,7 +253,7 @@ Labels (npc, role, label, business):
   rm_desmond_grantham            civilian  at home in the Heights                     None
   rm_dirk_rainmore               civilian  minding the shop door                      None
   rm_disa_millley                civilian  helping at The Rivet and Rain              None
-  rm_disa_raincot                civilian  porter of the abbey                        None
+  rm_disa_raincot                civilian  almoner of the abbey                       None
   rm_disa_sootley                civilian  minding the shop door                      None
   rm_dorcas_rainford             civilian  unloading ships at the piers               None
   rm_dunstan_greywick            civilian  keeping the Greatly stables                stables
@@ -222,7 +263,7 @@ Labels (npc, role, label, business):
   rm_edda_bilgeridge             civilian  helping at The Hook and Cleaver            None
   rm_edda_gullford               merchant  runs The Cinder Glassworks                 glassworks
   rm_edda_mudmore                civilian  unloading ships at the piers               None
-  rm_edda_ropeton                merchant  shipwright at Grayrock Shipwrights         shipwright
+  rm_edda_ropeton                merchant  cheesemaker in the Commons                 dairy
   rm_edmund_kelpstack            merchant  brewer at The Hopyard                      brewery
   rm_edmund_saltham              civilian  keeping the chambers                       None
   rm_edmund_sootcot              civilian  running the City Office                    None
@@ -230,7 +271,7 @@ Labels (npc, role, label, business):
   rm_edric_cindermarsh           civilian  works at The Timberland Ironworks          ironworks
   rm_edric_kelpham               civilian  stewarding Greatly House                   None
   rm_edric_millton               merchant  cooper at Staves & Hoops                   cooperage
-  rm_edric_saltby                civilian  almoner of the abbey                       None
+  rm_edric_saltby                civilian  brother at the abbey brewhouse             None
   rm_egil_brineham               civilian  works at The Fish Hall                     fishmonger
   rm_egil_grantham               civilian  visiting the sick of the Heights           None
   rm_egil_targate                civilian  helping at Greywool                        weaver
@@ -268,7 +309,7 @@ Labels (npc, role, label, business):
   rm_frida_wickwell              merchant  tinker at Mend & Make Do                   tinker
   rm_gerrit_gullham              civilian  helping at Needle & Drip                   None
   rm_gerrit_mudhand              civilian  chancellor of the Council                  None
-  rm_gerrit_nailford             merchant  rag-and-bone dealer at Rag-and-Bone Yard   rag_and_bone
+  rm_gerrit_nailford             merchant  barber at The Barber's Pole                barber
   rm_gerrit_ropewick             civilian  works at The Greatly Masons' Yard          mason
   rm_gerrit_sootgate             merchant  keeping the taproom                        inn
   rm_gerrit_tarmore              civilian  unloading ships at the piers               None
@@ -596,85 +637,85 @@ Labels (npc, role, label, business):
   rmx_florence_gullworth         civilian  sits and watches the world                 None
   rmx_florence_pennock           civilian  carrying for the Couriers' Office          None
   rmx_frida_marrowby             civilian  at lessons                                 None
-  rmx_frida_netherby             civilian  clerking at the Records Office             None
+  rmx_frida_netherby             civilian  helping at The Knucklebones                None
   rmx_gerrit_hollis              civilian  sits and watches the world                 None
   rmx_gorm_halford               civilian  lighting the lamps at dusk                 None
-  rmx_gorm_saltstack             civilian  clerking at the Records Office             None
+  rmx_gorm_saltstack             civilian  weighing at the Customs House              None
   rmx_greta_thornworth           civilian  at lessons                                 None
   rmx_grete_dimmock              civilian  carrying for the Couriers' Office          None
-  rmx_grete_dunn                 civilian  clerking at the Records Office             None
+  rmx_grete_dunn                 civilian  working at Grayrock Shipwrights            shipwright
   rmx_gudrun_mossdale            civilian  sits and watches the world                 None
   rmx_gunnar_farrow              civilian  sits and watches the world                 None
   rmx_halvard_fenworth           civilian  at lessons                                 None
   rmx_hanne_ash                  civilian  carrying for the Couriers' Office          None
-  rmx_harriet_pennock            civilian  copying at the Records Office              None
-  rmx_harriet_platt              civilian  copying at the Records Office              None
+  rmx_harriet_pennock            civilian  working at Grayrock Shipwrights            shipwright
+  rmx_harriet_platt              civilian  working at Grayrock Shipwrights            shipwright
   rmx_hester_greyby              civilian  at lessons                                 None
   rmx_hollis_kendrick            civilian  at lessons                                 None
-  rmx_hollis_shaw                civilian  clerking for the magistrate                None
+  rmx_hollis_shaw                civilian  working at Grayrock Shipwrights            shipwright
   rmx_humphrey_sootton           civilian  at lessons                                 None
   rmx_ilse_netherby              civilian  at lessons                                 None
   rmx_ingrid_kendrick            civilian  sits and watches the world                 None
   rmx_ivar_netherworth           civilian  sits and watches the world                 None
   rmx_ivo_pitchridge             civilian  crying wares in the Rag Market             None
-  rmx_ivo_wainwright             civilian  helping at The Slate & Ledger              None
+  rmx_ivo_wainwright             civilian  helping at The Sailors' Rest               None
   rmx_jarl_greywell              civilian  crying wares in the Rag Market             None
   rmx_jasper_brackham            civilian  at lessons                                 None
   rmx_jasper_coalcot             civilian  unloading ships at the piers               None
   rmx_jorunn_wetcombe            civilian  at lessons                                 None
-  rmx_josephine_fenwick          civilian  helping at The Grey Gull Inn               None
-  rmx_josephine_wickwick         civilian  helping at The Grey Gull Inn               None
-  rmx_kari_wickworth             civilian  keeping the Bathhouse                      bathhouse
-  rmx_karin_bilgeford            civilian  working at the Bathhouse                   bathhouse
-  rmx_kjell_coalham              civilian  working at the Bathhouse                   bathhouse
-  rmx_knut_sootley               civilian  helping at The Last Lamp                   None
-  rmx_lionel_lowe                civilian  helping at The Fell Wine Vaults            vintner
+  rmx_josephine_fenwick          civilian  tallying in the Bonded Warehouse           None
+  rmx_josephine_wickwick         civilian  keeping the Long Store                     None
+  rmx_kari_wickworth             civilian  tallying in the Long Store                 None
+  rmx_karin_bilgeford            civilian  helping at The Drowned Lantern             None
+  rmx_kjell_coalham              civilian  keeping the New Store                      None
+  rmx_knut_sootley               civilian  tallying in the New Store                  None
+  rmx_lionel_lowe                civilian  clerking at the Wharf Office               None
   rmx_lionel_platt               civilian  lighting the lamps at dusk                 None
-  rmx_liv_tarmarsh               civilian  helping at Clearwater Glass                None
-  rmx_lothar_abbot               civilian  helping at The Barber's Pole               barber
-  rmx_mab_fogham                 civilian  helping at The Round and Rind              None
+  rmx_liv_tarmarsh               civilian  clerking at the Wharf Office               None
+  rmx_lothar_abbot               civilian  clerking at the Records Office             None
+  rmx_mab_fogham                 civilian  clerking at the Records Office             None
   rmx_mab_plankridge             civilian  at lessons                                 None
-  rmx_magda_orme                 civilian  keeping the Iron Store                     None
-  rmx_magnus_millley             civilian  tallying in the Iron Store                 None
+  rmx_magda_orme                 civilian  clerking at the Records Office             None
+  rmx_magnus_millley             civilian  copying at the Records Office              None
   rmx_magnus_saltford            civilian  at lessons                                 None
-  rmx_magnus_tarton              civilian  helping at The Slag & Anchor               None
-  rmx_magnus_wetherell           civilian  helping at Timberland's Forge Row          smithy
+  rmx_magnus_tarton              civilian  copying at the Records Office              None
+  rmx_magnus_wetherell           civilian  clerking for the magistrate                None
   rmx_maren_hatherley            civilian  sits and watches the world                 None
-  rmx_millicent_wickwick         civilian  weighing at the Customs House              None
+  rmx_millicent_wickwick         civilian  helping at The Slate & Ledger              None
   rmx_moll_coldharbour           civilian  at lessons                                 None
-  rmx_montague_kettlecote        civilian  working at Grayrock Shipwrights            shipwright
+  rmx_montague_kettlecote        civilian  keeping the Iron Store                     None
   rmx_montague_kettlewick        civilian  at lessons                                 None
-  rmx_nessa_slagmarsh            civilian  working at Grayrock Shipwrights            shipwright
+  rmx_nessa_slagmarsh            civilian  tallying in the Iron Store                 None
   rmx_oda_cinderby               civilian  at lessons                                 None
-  rmx_oda_cotton                 civilian  working at Grayrock Shipwrights            shipwright
-  rmx_oda_marrowby               civilian  working at Grayrock Shipwrights            shipwright
+  rmx_oda_cotton                 civilian  helping at The Slag & Anchor               None
+  rmx_oda_marrowby               civilian  helping at The Grey Gull Inn               None
   rmx_olaf_stoneley              civilian  at lessons                                 None
   rmx_orla_wetridge              civilian  at lessons                                 None
   rmx_orm_blackwood              civilian  sits and watches the world                 None
-  rmx_orm_carlisle               civilian  helping at The Sailors' Rest               None
-  rmx_orm_nailhand               civilian  keeping the New Store                      None
-  rmx_ottilie_dripdale           civilian  tallying in the New Store                  None
-  rmx_ottilie_slagley            civilian  tallying in the Bonded Warehouse           None
+  rmx_orm_carlisle               civilian  helping at The Grey Gull Inn               None
+  rmx_orm_nailhand               civilian  helping at The Last Lamp                   None
+  rmx_ottilie_dripdale           civilian  helping at The Soup Kitchen                None
+  rmx_ottilie_slagley            civilian  helping at The Bilge                       None
   rmx_palle_brinewell            civilian  at lessons                                 None
   rmx_palle_mireby               civilian  at lessons                                 None
   rmx_percival_thornham          civilian  helping at The Tarred Rope                 None
-  rmx_petra_ashgate              civilian  keeping the Long Store                     None
-  rmx_philippa_coldby            civilian  tallying in the Long Store                 None
-  rmx_philippa_pitchstack        civilian  helping at The Drowned Lantern             None
+  rmx_petra_ashgate              civilian  working at The Rag-and-Bone Yard           rag_and_bone
+  rmx_philippa_coldby            civilian  helping at Timberland's Forge Row          smithy
+  rmx_philippa_pitchstack        civilian  helping at Clearwater Glass                None
   rmx_philippa_rainford          civilian  at lessons                                 None
   rmx_piet_lumley                civilian  lights the lamps at dusk                   None
   rmx_pim_pitchham               civilian  at lessons                                 None
-  rmx_rika_gullwell              civilian  clerking at the Wharf Office               None
+  rmx_rika_gullwell              civilian  keeping the Bathhouse                      bathhouse
   rmx_rika_tarnham               civilian  at lessons                                 None
-  rmx_roald_greyham              civilian  clerking at the Wharf Office               None
+  rmx_roald_greyham              civilian  working at the Bathhouse                   bathhouse
   rmx_roald_toft                 civilian  unloading ships at the piers               None
   rmx_rosamund_ash               civilian  sits and watches the world                 None
   rmx_rupert_greyley             civilian  unloading ships at the piers               None
-  rmx_rupert_hatherley           civilian  helping at The Soup Kitchen                None
-  rmx_septimus_ives              civilian  helping at The Bilge                       None
+  rmx_rupert_hatherley           civilian  working at the Bathhouse                   bathhouse
+  rmx_septimus_ives              civilian  helping at The Fell Wine Vaults            vintner
   rmx_signe_bilgewell            civilian  helping at The Morning Oven                None
-  rmx_sigrun_mudmore             civilian  helping at The Knucklebones                None
-  rmx_sigrun_mudworth            civilian  working at The Rag-and-Bone Yard           rag_and_bone
+  rmx_sigrun_mudmore             civilian  helping at The Round and Rind              None
+  rmx_sigrun_mudworth            civilian  helping at The Barber's Pole               barber
   rmx_sigrun_wickham             civilian  sits and watches the world                 None
   rmx_solveig_nailstack          civilian  keeping the Fell Cellars                   None
   rmx_soren_ashcote              civilian  working at The Fell Press House            press

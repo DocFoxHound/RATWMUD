@@ -1,14 +1,437 @@
 {
- "world": {
-  "cells": 12,
-  "interiors": 845,
-  "newInteriors": 219,
-  "links": {
-   "stairs": 187,
-   "door": 340,
-   "passage": 28
+ "density": {
+  "districts": {
+   "wharf": {
+    "land": 11324,
+    "built": 0.247,
+    "open": 8531,
+    "residents": 12,
+    "openPerResident": 710.9,
+    "fill": 1.0,
+    "meanHeight": 0.5
+   },
+   "abbey": {
+    "land": 4960,
+    "built": 0.326,
+    "open": 3343,
+    "residents": 0,
+    "openPerResident": null,
+    "fill": 1.0,
+    "meanHeight": 1.5
+   },
+   "northgate": {
+    "land": 5718,
+    "built": 0.259,
+    "open": 4237,
+    "residents": 33,
+    "openPerResident": 128.4,
+    "fill": 0.837,
+    "meanHeight": 2.58
+   },
+   "greatly": {
+    "land": 5320,
+    "built": 0.249,
+    "open": 3996,
+    "residents": 9,
+    "openPerResident": 444.0,
+    "fill": 1.0,
+    "meanHeight": 3.0
+   },
+   "sump": {
+    "land": 12278,
+    "built": 0.664,
+    "open": 4122,
+    "residents": 179,
+    "openPerResident": 23.0,
+    "fill": 0.743,
+    "meanHeight": 1.18
+   },
+   "commons": {
+    "land": 20989,
+    "built": 0.457,
+    "open": 11388,
+    "residents": 178,
+    "openPerResident": 64.0,
+    "fill": 0.594,
+    "meanHeight": 2.72
+   },
+   "keep": {
+    "land": 1848,
+    "built": 0.506,
+    "open": 913,
+    "residents": 15,
+    "openPerResident": 60.9,
+    "fill": 1.0,
+    "meanHeight": 3.5
+   },
+   "admin": {
+    "land": 6608,
+    "built": 0.406,
+    "open": 3925,
+    "residents": 27,
+    "openPerResident": 145.4,
+    "fill": 0.644,
+    "meanHeight": 1.79
+   },
+   "cinders": {
+    "land": 4893,
+    "built": 0.63,
+    "open": 1812,
+    "residents": 32,
+    "openPerResident": 56.6,
+    "fill": 0.784,
+    "meanHeight": 1.36
+   },
+   "palace": {
+    "land": 6159,
+    "built": 0.341,
+    "open": 4058,
+    "residents": 5,
+    "openPerResident": 811.6,
+    "fill": 0.899,
+    "meanHeight": 2.62
+   },
+   "rise": {
+    "land": 8111,
+    "built": 0.143,
+    "open": 6953,
+    "residents": 27,
+    "openPerResident": 257.5,
+    "fill": 0.747,
+    "meanHeight": 3.46
+   }
   },
-  "structures": 301
+  "insideArea": 88208,
+  "builtInside": 0.396,
+  "meanHeight": {
+   "wharf": 0.5,
+   "abbey": 1.5,
+   "northgate": 2.58,
+   "greatly": 3.0,
+   "sump": 1.18,
+   "commons": 2.72,
+   "keep": 3.5,
+   "admin": 1.79,
+   "cinders": 1.36,
+   "palace": 2.62,
+   "rise": 3.46
+  },
+  "wallsOnBorders": 0,
+  "stepOnBorder": 0.008324661810613945,
+  "stepOffBorder": 0.018068913290420294,
+  "crossings": {
+   "abbey/northgate": 1,
+   "abbey/sump": 1,
+   "admin/cinders": 2,
+   "admin/commons": 4,
+   "admin/palace": 2,
+   "admin/rise": 4,
+   "admin/sump": 7,
+   "cinders/palace": 3,
+   "cinders/sump": 1,
+   "cinders/wharf": 6,
+   "commons/greatly": 1,
+   "commons/keep": 1,
+   "commons/northgate": 5,
+   "commons/rise": 5,
+   "commons/sump": 11,
+   "northgate/sump": 2,
+   "palace/rise": 1,
+   "sump/wharf": 12
+  },
+  "openBorder": {
+   "abbey/northgate": 5,
+   "abbey/sump": 5,
+   "admin/cinders": 90,
+   "admin/commons": 100,
+   "admin/palace": 101,
+   "admin/rise": 50,
+   "admin/sump": 88,
+   "cinders/palace": 57,
+   "cinders/sump": 2,
+   "cinders/wharf": 49,
+   "commons/greatly": 5,
+   "commons/keep": 5,
+   "commons/northgate": 122,
+   "commons/rise": 69,
+   "commons/sump": 97,
+   "northgate/sump": 29,
+   "palace/rise": 60,
+   "sump/wharf": 24
+  }
+ },
+ "before": {
+  "inside_area": 225456,
+  "districts": {
+   "wharf": {
+    "land": 23100,
+    "built%": 16.0,
+    "open": 19412,
+    "residents": 12,
+    "open/res": 1617.7,
+    "homes": 3
+   },
+   "abbey": {
+    "land": 8424,
+    "built%": 25.9,
+    "open": 6243,
+    "residents": 0,
+    "open/res": null,
+    "homes": 0
+   },
+   "northgate": {
+    "land": 20160,
+    "built%": 5.7,
+    "open": 19011,
+    "residents": 29,
+    "open/res": 655.6,
+    "homes": 12
+   },
+   "greatly": {
+    "land": 13920,
+    "built%": 11.9,
+    "open": 12270,
+    "residents": 9,
+    "open/res": 1363.3,
+    "homes": 2
+   },
+   "sump": {
+    "land": 33184,
+    "built%": 71.7,
+    "open": 9390,
+    "residents": 181,
+    "open/res": 51.9,
+    "homes": 77
+   },
+   "commons": {
+    "land": 61220,
+    "built%": 14.4,
+    "open": 52409,
+    "residents": 188,
+    "open/res": 278.8,
+    "homes": 86
+   },
+   "keep": {
+    "land": 3300,
+    "built%": 38.8,
+    "open": 2019,
+    "residents": 15,
+    "open/res": 134.6,
+    "homes": 1
+   },
+   "admin": {
+    "land": 16800,
+    "built%": 14.0,
+    "open": 14445,
+    "residents": 24,
+    "open/res": 601.9,
+    "homes": 9
+   },
+   "cinders": {
+    "land": 10708,
+    "built%": 28.1,
+    "open": 7700,
+    "residents": 27,
+    "open/res": 285.2,
+    "homes": 11
+   },
+   "palace": {
+    "land": 18920,
+    "built%": 25.3,
+    "open": 14128,
+    "residents": 5,
+    "open/res": 2825.6,
+    "homes": 2
+   },
+   "rise": {
+    "land": 15720,
+    "built%": 11.2,
+    "open": 13966,
+    "residents": 27,
+    "open/res": 517.3,
+    "homes": 10
+   }
+  },
+  "homes_used": 225,
+  "occupied_homes_per_structure": {
+   "1": 159,
+   "2": 33
+  },
+  "sump_occupied": {
+   "1": 51,
+   "2": 13
+  },
+  "design_homes_per_structure": {
+   "1": 154,
+   "2": 67,
+   "3": 7
+  },
+  "sump_design": {
+   "1": 41,
+   "2": 47,
+   "3": 7
+  },
+  "wall_tiles_on_district_borders(excl. walled pieces)": 752,
+  "within1": 752,
+  "tier_edge_wall_tiles": 752,
+  "stairs": 32,
+  "built_inside%": 24.2,
+  "crossings": {
+   "abbey/northgate": 1,
+   "sump/wharf": 10,
+   "commons/sump": 1,
+   "cinders/wharf": 11,
+   "admin/cinders": 3,
+   "admin/rise": 1,
+   "cinders/palace": 1,
+   "palace/rise": 1,
+   "abbey/sump": 1,
+   "commons/northgate": 1,
+   "commons/greatly": 1,
+   "commons/keep": 1,
+   "cinders/sump": 1,
+   "admin/sump": 1,
+   "admin/commons": 3,
+   "commons/rise": 2,
+   "admin/palace": 1
+  },
+  "openBorder": {
+   "abbey/northgate": 5,
+   "sump/wharf": 162,
+   "commons/sump": 5,
+   "cinders/wharf": 95,
+   "admin/cinders": 7,
+   "admin/rise": 3,
+   "cinders/palace": 3,
+   "palace/rise": 3,
+   "abbey/sump": 5,
+   "commons/northgate": 174,
+   "commons/greatly": 5,
+   "commons/keep": 5,
+   "cinders/sump": 22,
+   "admin/sump": 3,
+   "admin/commons": 139,
+   "commons/rise": 8,
+   "admin/palace": 216
+  },
+  "note": "Measured on the city as written before doc 67 Dense city (ridgemere2 a42d3d6): built = not public (solid or shut in); open/res = public open tiles per resident; tier_edge_wall_tiles = the # retaining walls on district borders; crossings = separate openings between two districts; openBorder = open tile pairs on the border."
+ },
+ "landmarks": [
+  {
+   "name": "The Bay Light and the Mole",
+   "district": "wharf",
+   "what": "a stone breakwater running 100 tiles out into the bay from the north pier, a two-storey lighthouse at its head",
+   "x": 68,
+   "y": 179,
+   "interiors": [
+    "r2_the_bay_light",
+    "r2_the_bay_light_up"
+   ]
+  },
+  {
+   "name": "The Clock Tower",
+   "district": "northgate",
+   "what": "a two-storey clock and bell tower on Clock Square, where Abbey Row meets Gate Street",
+   "x": 369,
+   "y": 178,
+   "interiors": [
+    "r2_the_clock_tower",
+    "r2_the_clock_tower_up"
+   ]
+  },
+  {
+   "name": "The Wall-Builders",
+   "district": "commons",
+   "what": "a statue group of the first Greatly masons with trowel and plumb line, on Greatly Square below the compound gate: \"They raised the wall; the wall raised the city\"",
+   "x": 438,
+   "y": 231,
+   "interiors": []
+  },
+  {
+   "name": "Pillory Square",
+   "district": "commons",
+   "what": "the square before the Old Keep's gate: the gallows, the pillory and the stocks where the Watch shows its catch",
+   "x": 412,
+   "y": 311,
+   "interiors": []
+  },
+  {
+   "name": "The Mercy",
+   "district": "sump",
+   "what": "an old Grayrock carrack hauled up on the quay at the Sump's edge, her hull the Knucklebones tavern",
+   "x": 220,
+   "y": 323,
+   "interiors": [
+    "r2_the_knucklebones"
+   ]
+  },
+  {
+   "name": "The Cisterns and the Runnel",
+   "district": "sump",
+   "what": "three stone rain tanks on Cistern Court that feed the bathhouse, and the Runnel, an open gutter channel running from them down the Gut to the quay",
+   "x": 270,
+   "y": 278,
+   "interiors": []
+  },
+  {
+   "name": "The Hundred Steps",
+   "district": "sump",
+   "what": "a stair-street two wide climbing from the quay up through the north Sump and the Northgate edge to Abbey Row",
+   "x": 262,
+   "y": 230,
+   "interiors": []
+  },
+  {
+   "name": "The Sunken Street",
+   "district": "sump",
+   "what": "the city's old street level under the Sump's edge, a vaulted cobbled lane 54 tiles long, reached by a stair-house in the Sump and another in the Commons",
+   "x": 273,
+   "y": 299,
+   "interiors": [
+    "r2_the_sunken_street"
+   ]
+  },
+  {
+   "name": "The Tallow Arcade",
+   "district": "commons",
+   "what": "a covered arcade, a through-building of pillars and benches between two streets of the Commons on the Sump's edge, out of the rain",
+   "x": 333,
+   "y": 269,
+   "interiors": [
+    "r2_the_tallow_arcade"
+   ]
+  }
+ ],
+ "homesPerStructure": {
+  "built": {
+   "1": 105,
+   "2": 13,
+   "3": 42
+  },
+  "livedIn": {
+   "1": 94,
+   "2": 11,
+   "3": 36
+  },
+  "sumpBuilt": {
+   "1": 3,
+   "2": 3,
+   "3": 28
+  },
+  "sumpLivedIn": {
+   "3": 23
+  }
+ },
+ "world": {
+  "cells": 9,
+  "interiors": 815,
+  "newInteriors": 189,
+  "links": {
+   "stairs": 205,
+   "door": 261,
+   "passage": 43
+  },
+  "structures": 237
  },
  "districts": {
   "abbey": {
@@ -16,7 +439,7 @@
    "kind:hall": 6,
    "kind:lodging": 1,
    "kind:works": 1,
-   "posts": 31,
+   "posts": 38,
    "business:brewery": 1
   },
   "admin": {
@@ -26,7 +449,7 @@
    "kind:home": 8,
    "kind:shop": 1,
    "homes": 9,
-   "beds": 30,
+   "beds": 33,
    "posts": 22,
    "business:inn": 1,
    "business:scriptorium": 1
@@ -39,7 +462,7 @@
    "kind:shop": 4,
    "kind:home": 8,
    "homes": 11,
-   "beds": 43,
+   "beds": 45,
    "posts": 43,
    "business:inn": 1,
    "business:smithy": 3,
@@ -56,17 +479,17 @@
    "business:plasterworks": 1
   },
   "commons": {
-   "buildings": 85,
-   "kind:hall": 3,
+   "buildings": 74,
+   "kind:hall": 4,
    "kind:inn": 1,
    "kind:works": 3,
    "kind:tavern": 2,
    "kind:shop": 33,
-   "kind:home": 33,
-   "kind:flats": 10,
-   "homes": 86,
-   "beds": 285,
-   "posts": 143,
+   "kind:home": 20,
+   "kind:flats": 11,
+   "homes": 82,
+   "beds": 255,
+   "posts": 136,
    "business:provisioner": 3,
    "business:inn": 3,
    "business:saddlery": 3,
@@ -90,9 +513,9 @@
    "business:glassworks": 1,
    "business:moneychanger": 1,
    "business:fishmonger": 1,
-   "business:dairy": 1,
-   "business:vintner": 1,
    "business:barber": 1,
+   "business:vintner": 1,
+   "business:dairy": 1,
    "business:builders_yard": 1,
    "business:stables": 1
   },
@@ -153,11 +576,13 @@
    "posts": 16
   },
   "northgate": {
-   "buildings": 12,
+   "buildings": 13,
+   "kind:hall": 1,
    "kind:shop": 5,
-   "kind:home": 7,
-   "homes": 12,
-   "beds": 40,
+   "kind:home": 4,
+   "kind:flats": 3,
+   "homes": 18,
+   "beds": 52,
    "posts": 10,
    "business:butcher": 1,
    "business:fletcher": 1,
@@ -193,15 +618,15 @@
    "posts": 26
   },
   "sump": {
-   "buildings": 104,
-   "kind:hall": 4,
-   "kind:works": 2,
+   "buildings": 49,
    "kind:tavern": 3,
+   "kind:hall": 5,
+   "kind:works": 2,
    "kind:shop": 5,
-   "kind:flats": 54,
-   "kind:home": 36,
-   "homes": 77,
-   "beds": 230,
+   "kind:flats": 31,
+   "kind:home": 3,
+   "homes": 74,
+   "beds": 218,
    "posts": 36,
    "business:inn": 4,
    "business:general": 1,
@@ -212,12 +637,12 @@
    "business:rag_and_bone": 1
   },
   "wharf": {
-   "buildings": 16,
-   "kind:hall": 2,
+   "buildings": 17,
+   "kind:hall": 3,
    "kind:works": 5,
    "kind:inn": 1,
-   "kind:store": 3,
    "kind:tavern": 2,
+   "kind:store": 3,
    "kind:shop": 2,
    "kind:lodging": 1,
    "homes": 3,
@@ -234,11 +659,12 @@
   }
  },
  "homes": {
-  "total": 225,
-  "perStructureMax": 2,
+  "total": 224,
+  "perStructureMax": 3,
   "perStructure": {
-   "1": 159,
-   "2": 33
+   "1": 94,
+   "3": 36,
+   "2": 11
   },
   "aloneHomes": 10
  },
@@ -278,12 +704,12 @@
    "rm_the_grey_gull_inn": 40,
    "rm_the_rainbarrel": 40,
    "r2_the_knucklebones": 40,
-   "home": 197,
+   "home": 188,
    "rm_the_black_tun": 40,
-   "rm_the_slate_ledger": 20,
+   "rm_the_slate_ledger": 24,
    "r2_cathedral": 18,
    "rm_the_bilge": 40,
-   "rm_the_slag_anchor": 23,
+   "rm_the_slag_anchor": 28,
    "rm_the_drowned_lantern": 10,
    "rm_the_watch_house": 30,
    "rm_the_soup_kitchen": 21
@@ -1070,8 +1496,8 @@
   [
    "rm_brenna_slaggate",
    "merchant",
-   "vintner at The Fell Wine Vaults",
-   "vintner"
+   "shipwright at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rm_cedric_ashcot",
@@ -1148,8 +1574,8 @@
   [
    "rm_corwin_sootstack",
    "merchant",
-   "barber at The Barber's Pole",
-   "barber"
+   "rag-and-bone dealer at Rag-and-Bone Yard",
+   "rag_and_bone"
   ],
   [
    "rm_corwin_sootton",
@@ -1202,8 +1628,8 @@
   [
    "rm_dagny_pitchley",
    "civilian",
-   "brother at the abbey brewhouse",
-   null
+   "scribe of the abbey",
+   "scriptorium"
   ],
   [
    "rm_dagny_pitchton",
@@ -1226,8 +1652,8 @@
   [
    "rm_dagny_slaghand",
    "merchant",
-   "cheesemaker in the Commons",
-   "dairy"
+   "smith at Timberland's Forge Row",
+   "smithy"
   ],
   [
    "rm_delphine_dripham",
@@ -1238,14 +1664,14 @@
   [
    "rm_delphine_mudwick",
    "civilian",
-   "scribe of the abbey",
-   "scriptorium"
+   "porter of the abbey",
+   null
   ],
   [
    "rm_delphine_saltwick",
    "merchant",
-   "smith at Timberland's Forge Row",
-   "smithy"
+   "vintner at The Fell Wine Vaults",
+   "vintner"
   ],
   [
    "rm_desmond_ashwick",
@@ -1292,7 +1718,7 @@
   [
    "rm_disa_raincot",
    "civilian",
-   "porter of the abbey",
+   "almoner of the abbey",
    null
   ],
   [
@@ -1352,8 +1778,8 @@
   [
    "rm_edda_ropeton",
    "merchant",
-   "shipwright at Grayrock Shipwrights",
-   "shipwright"
+   "cheesemaker in the Commons",
+   "dairy"
   ],
   [
    "rm_edmund_kelpstack",
@@ -1400,7 +1826,7 @@
   [
    "rm_edric_saltby",
    "civilian",
-   "almoner of the abbey",
+   "brother at the abbey brewhouse",
    null
   ],
   [
@@ -1628,8 +2054,8 @@
   [
    "rm_gerrit_nailford",
    "merchant",
-   "rag-and-bone dealer at Rag-and-Bone Yard",
-   "rag_and_bone"
+   "barber at The Barber's Pole",
+   "barber"
   ],
   [
    "rm_gerrit_ropewick",
@@ -3596,7 +4022,7 @@
   [
    "rmx_frida_netherby",
    "civilian",
-   "clerking at the Records Office",
+   "helping at The Knucklebones",
    null
   ],
   [
@@ -3614,7 +4040,7 @@
   [
    "rmx_gorm_saltstack",
    "civilian",
-   "clerking at the Records Office",
+   "weighing at the Customs House",
    null
   ],
   [
@@ -3632,8 +4058,8 @@
   [
    "rmx_grete_dunn",
    "civilian",
-   "clerking at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_gudrun_mossdale",
@@ -3662,14 +4088,14 @@
   [
    "rmx_harriet_pennock",
    "civilian",
-   "copying at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_harriet_platt",
    "civilian",
-   "copying at the Records Office",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_hester_greyby",
@@ -3686,8 +4112,8 @@
   [
    "rmx_hollis_shaw",
    "civilian",
-   "clerking for the magistrate",
-   null
+   "working at Grayrock Shipwrights",
+   "shipwright"
   ],
   [
    "rmx_humphrey_sootton",
@@ -3722,7 +4148,7 @@
   [
    "rmx_ivo_wainwright",
    "civilian",
-   "helping at The Slate & Ledger",
+   "helping at The Sailors' Rest",
    null
   ],
   [
@@ -3752,44 +4178,44 @@
   [
    "rmx_josephine_fenwick",
    "civilian",
-   "helping at The Grey Gull Inn",
+   "tallying in the Bonded Warehouse",
    null
   ],
   [
    "rmx_josephine_wickwick",
    "civilian",
-   "helping at The Grey Gull Inn",
+   "keeping the Long Store",
    null
   ],
   [
    "rmx_kari_wickworth",
    "civilian",
-   "keeping the Bathhouse",
-   "bathhouse"
+   "tallying in the Long Store",
+   null
   ],
   [
    "rmx_karin_bilgeford",
    "civilian",
-   "working at the Bathhouse",
-   "bathhouse"
+   "helping at The Drowned Lantern",
+   null
   ],
   [
    "rmx_kjell_coalham",
    "civilian",
-   "working at the Bathhouse",
-   "bathhouse"
+   "keeping the New Store",
+   null
   ],
   [
    "rmx_knut_sootley",
    "civilian",
-   "helping at The Last Lamp",
+   "tallying in the New Store",
    null
   ],
   [
    "rmx_lionel_lowe",
    "civilian",
-   "helping at The Fell Wine Vaults",
-   "vintner"
+   "clerking at the Wharf Office",
+   null
   ],
   [
    "rmx_lionel_platt",
@@ -3800,19 +4226,19 @@
   [
    "rmx_liv_tarmarsh",
    "civilian",
-   "helping at Clearwater Glass",
+   "clerking at the Wharf Office",
    null
   ],
   [
    "rmx_lothar_abbot",
    "civilian",
-   "helping at The Barber's Pole",
-   "barber"
+   "clerking at the Records Office",
+   null
   ],
   [
    "rmx_mab_fogham",
    "civilian",
-   "helping at The Round and Rind",
+   "clerking at the Records Office",
    null
   ],
   [
@@ -3824,13 +4250,13 @@
   [
    "rmx_magda_orme",
    "civilian",
-   "keeping the Iron Store",
+   "clerking at the Records Office",
    null
   ],
   [
    "rmx_magnus_millley",
    "civilian",
-   "tallying in the Iron Store",
+   "copying at the Records Office",
    null
   ],
   [
@@ -3842,14 +4268,14 @@
   [
    "rmx_magnus_tarton",
    "civilian",
-   "helping at The Slag & Anchor",
+   "copying at the Records Office",
    null
   ],
   [
    "rmx_magnus_wetherell",
    "civilian",
-   "helping at Timberland's Forge Row",
-   "smithy"
+   "clerking for the magistrate",
+   null
   ],
   [
    "rmx_maren_hatherley",
@@ -3860,7 +4286,7 @@
   [
    "rmx_millicent_wickwick",
    "civilian",
-   "weighing at the Customs House",
+   "helping at The Slate & Ledger",
    null
   ],
   [
@@ -3872,8 +4298,8 @@
   [
    "rmx_montague_kettlecote",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "keeping the Iron Store",
+   null
   ],
   [
    "rmx_montague_kettlewick",
@@ -3884,8 +4310,8 @@
   [
    "rmx_nessa_slagmarsh",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "tallying in the Iron Store",
+   null
   ],
   [
    "rmx_oda_cinderby",
@@ -3896,14 +4322,14 @@
   [
    "rmx_oda_cotton",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "helping at The Slag & Anchor",
+   null
   ],
   [
    "rmx_oda_marrowby",
    "civilian",
-   "working at Grayrock Shipwrights",
-   "shipwright"
+   "helping at The Grey Gull Inn",
+   null
   ],
   [
    "rmx_olaf_stoneley",
@@ -3926,25 +4352,25 @@
   [
    "rmx_orm_carlisle",
    "civilian",
-   "helping at The Sailors' Rest",
+   "helping at The Grey Gull Inn",
    null
   ],
   [
    "rmx_orm_nailhand",
    "civilian",
-   "keeping the New Store",
+   "helping at The Last Lamp",
    null
   ],
   [
    "rmx_ottilie_dripdale",
    "civilian",
-   "tallying in the New Store",
+   "helping at The Soup Kitchen",
    null
   ],
   [
    "rmx_ottilie_slagley",
    "civilian",
-   "tallying in the Bonded Warehouse",
+   "helping at The Bilge",
    null
   ],
   [
@@ -3968,19 +4394,19 @@
   [
    "rmx_petra_ashgate",
    "civilian",
-   "keeping the Long Store",
-   null
+   "working at The Rag-and-Bone Yard",
+   "rag_and_bone"
   ],
   [
    "rmx_philippa_coldby",
    "civilian",
-   "tallying in the Long Store",
-   null
+   "helping at Timberland's Forge Row",
+   "smithy"
   ],
   [
    "rmx_philippa_pitchstack",
    "civilian",
-   "helping at The Drowned Lantern",
+   "helping at Clearwater Glass",
    null
   ],
   [
@@ -4004,8 +4430,8 @@
   [
    "rmx_rika_gullwell",
    "civilian",
-   "clerking at the Wharf Office",
-   null
+   "keeping the Bathhouse",
+   "bathhouse"
   ],
   [
    "rmx_rika_tarnham",
@@ -4016,8 +4442,8 @@
   [
    "rmx_roald_greyham",
    "civilian",
-   "clerking at the Wharf Office",
-   null
+   "working at the Bathhouse",
+   "bathhouse"
   ],
   [
    "rmx_roald_toft",
@@ -4040,14 +4466,14 @@
   [
    "rmx_rupert_hatherley",
    "civilian",
-   "helping at The Soup Kitchen",
-   null
+   "working at the Bathhouse",
+   "bathhouse"
   ],
   [
    "rmx_septimus_ives",
    "civilian",
-   "helping at The Bilge",
-   null
+   "helping at The Fell Wine Vaults",
+   "vintner"
   ],
   [
    "rmx_signe_bilgewell",
@@ -4058,14 +4484,14 @@
   [
    "rmx_sigrun_mudmore",
    "civilian",
-   "helping at The Knucklebones",
+   "helping at The Round and Rind",
    null
   ],
   [
    "rmx_sigrun_mudworth",
    "civilian",
-   "working at The Rag-and-Bone Yard",
-   "rag_and_bone"
+   "helping at The Barber's Pole",
+   "barber"
   ],
   [
    "rmx_sigrun_wickham",
@@ -4207,46 +4633,54 @@
   "rm_septimus_plankmarsh"
  ],
  "sump": {
-  "coverage": 0.7170323047251688,
-  "planned": 0.5109992767598843,
+  "coverage": 0.6642775696367487,
+  "planned": 0.5640983873595048,
   "widest": 6,
-  "narrow": 0.6645367412140575,
-  "dead_ends": 51,
-  "sizes": 28,
-  "lshape": 12,
-  "through": 38,
-  "passages": 26,
+  "narrow": 0.6676633917129432,
+  "dead_ends": 26,
+  "sizes": 18,
+  "lshape": 15,
+  "through": 20,
+  "passages": 41,
   "chains": [
    5,
-   4,
-   4,
+   5,
    4,
    3,
    3
   ],
-  "courts": 8,
-  "homes": 90,
+  "courts": 6,
+  "homes": 34,
   "infill": {
-   "sheds": 410,
-   "boarded": 34,
-   "yards": 174,
-   "courts": 8,
-   "dead_ends": 57,
-   "passages": 26
+   "sheds": 141,
+   "boarded": 24,
+   "yards": 72,
+   "courts": 6,
+   "dead_ends": 30,
+   "streets_dropped": 3,
+   "connected": 14,
+   "back_snickets": 12,
+   "passages": 41,
+   "admin_sheds": 35,
+   "cinders_sheds": 25,
+   "commons_sheds": 44,
+   "commons_yards": 1,
+   "northgate_sheds": 12,
+   "rise_sheds": 6
   }
  },
  "checks": [
   {
    "req": "R2",
-   "check": "12 cells, all rain, region ridgemere",
+   "check": "9 cells, all rain, region ridgemere",
    "ok": true,
-   "detail": "12 cells"
+   "detail": "9 cells"
   },
   {
    "req": "R2",
    "check": "every placed interior has region ridgemere",
    "ok": true,
-   "detail": "446 placed interiors"
+   "detail": "400 placed interiors"
   },
   {
    "req": "R1",
@@ -4256,7 +4690,7 @@
   },
   {
    "req": "R4",
-   "check": "water lies west of x = 168 between the headlands",
+   "check": "water lies west of x = 168 between the headlands (the piers, the Mole and the Bay Light aside)",
    "ok": true,
    "detail": ""
   },
@@ -4268,7 +4702,7 @@
   },
   {
    "req": "R5",
-   "check": "the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall's span (y 150-620)",
+   "check": "the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall's span",
    "ok": true,
    "detail": ""
   },
@@ -4276,7 +4710,7 @@
    "req": "R6",
    "check": "the Sump meets the wharf with no wall between",
    "ok": true,
-   "detail": "162 open crossings, 0 wall tiles on the line"
+   "detail": "24 open crossings, 0 wall tiles on the line"
   },
   {
    "req": "R6",
@@ -4288,7 +4722,7 @@
    "req": "R5",
    "check": "the 5 gates and the 2 guarded pier arches are cut and reached",
    "ok": true,
-   "detail": "gates {'N': True, 'E': True, 'S': True, 'cinder': True, 'harbour': True}, arches {470: np.True_, 335: np.True_}"
+   "detail": "gates {'N': True, 'E': True, 'S': True, 'cinder': True, 'harbour': True}, arches {380: np.True_, 290: np.True_}"
   },
   {
    "req": "R10",
@@ -4297,10 +4731,28 @@
    "detail": ""
   },
   {
+   "req": "R10",
+   "check": "the Sump is bordered on the east by the middle class",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R11",
+   "check": "the Sump is bordered on the south by the administrative sector (most of its south edge)",
+   "ok": true,
+   "detail": "76% of the Sump's south edge meets admin"
+  },
+  {
+   "req": "R17",
+   "check": "the administrative sector borders the Sump (north) and the upper class (east)",
+   "ok": true,
+   "detail": ""
+  },
+  {
    "req": "R15",
    "check": "the Rise's area is at most half the middle class's",
    "ok": true,
-   "detail": "rise 15720, middle class 81380 (0.19)"
+   "detail": "rise 8111, middle class 26707 (0.30)"
   },
   {
    "req": "R20",
@@ -4310,7 +4762,7 @@
   },
   {
    "req": "R16",
-   "check": "the Keep is at one height, straddles y = 470, with four walls, a courtyard and one gate",
+   "check": "the Keep is at one height on the Commons/Rise border, with four walls, a courtyard and one gate",
    "ok": true,
    "detail": ""
   },
@@ -4327,16 +4779,58 @@
    "detail": ""
   },
   {
+   "req": "",
+   "check": "no wall tile on a district border, other than the city wall and the walled pieces (the Keep, the abbey, the Greatly compound)",
+   "ok": true,
+   "detail": "0 tiles"
+  },
+  {
    "req": "R2",
-   "check": "gates joining heights more than 0.5 apart have their half step and ^ run",
+   "check": "no step of more than half a tile between neighbouring open tiles inside the walls (a stair at most 1)",
+   "ok": true,
+   "detail": "0: []"
+  },
+  {
+   "req": "R2",
+   "check": "the ground climbs from the bay: the Rise and the Greatly compound stand at least 1.5 above the Sump",
+   "ok": true,
+   "detail": "{'wharf': 0.5, 'abbey': 1.5, 'northgate': 2.58, 'greatly': 3.0, 'sump': 1.18, 'commons': 2.72, 'keep': 3.5, 'admin': 1.79, 'cinders': 1.36, 'palace': 2.62, 'rise': 3.46}"
+  },
+  {
+   "req": "",
+   "check": "height steps do not follow the borders between the quarters (a step at most twice as likely on a border as off it)",
+   "ok": true,
+   "detail": "0.8% of border pairs step, 1.8% elsewhere"
+  },
+  {
+   "req": "",
+   "check": "the districts are not rectangles (each fills under 90% of its bounding box)",
+   "ok": true,
+   "detail": "{'sump': np.float64(0.743), 'commons': np.float64(0.594), 'northgate': np.float64(0.837), 'admin': np.float64(0.644), 'cinders': np.float64(0.784), 'rise': np.float64(0.747)}"
+  },
+  {
+   "req": "",
+   "check": "many street crossings between neighbouring districts (separate openings, or as many 8-tile lengths of open border)",
+   "ok": true,
+   "detail": "short: {}; all: {'abbey/northgate': 1, 'abbey/sump': 1, 'admin/cinders': 2, 'admin/commons': 4, 'admin/palace': 2, 'admin/rise': 4, 'admin/sump': 7, 'cinders/palace': 3, 'cinders/sump': 1, 'cinders/wharf': 6, 'commons/greatly': 1, 'commons/keep': 1, 'commons/northgate': 5, 'commons/rise': 5, 'commons/sump': 11, 'northgate/sump': 2, 'palace/rise': 1, 'sump/wharf': 12}"
+  },
+  {
+   "req": "",
+   "check": "the city inside the walls is 35-65% smaller than before (225,456 tiles)",
+   "ok": true,
+   "detail": "88208 tiles, 61% smaller"
+  },
+  {
+   "req": "R30",
+   "check": "every building the plan keeps or adds is placed (the same businesses, houses and landmarks)",
    "ok": true,
    "detail": ""
   },
   {
-   "req": "R2",
-   "check": "no tier edge or stair within 2 tiles of a cell seam (an edge may cross a seam at right angles)",
+   "req": "",
+   "check": "6-10 landmarks, each named and described",
    "ok": true,
-   "detail": "0 tiles: []"
+   "detail": "The Bay Light and the Mole, The Clock Tower, The Wall-Builders, Pillory Square, The Mercy, The Cisterns and the Runnel, The Hundred Steps, The Sunken Street, The Tallow Arcade"
   },
   {
    "req": "R26",
@@ -4360,7 +4854,7 @@
    "req": "R7-R9",
    "check": "built coverage of at least 55% of the Sump",
    "ok": true,
-   "detail": "71.7% (buildings and infill blocks alone: 51.1%)"
+   "detail": "66.4% (buildings and infill blocks alone: 56.4%)"
   },
   {
    "req": "R7-R9",
@@ -4370,21 +4864,21 @@
   },
   {
    "req": "R7-R9",
-   "check": "at least 60% of outdoor walkable tiles in alleys 2 wide or less",
+   "check": "at least 60% of outdoor walkable tiles (outside its named lanes, squares and courts) in alleys 2 wide or less",
    "ok": true,
-   "detail": "66.5%"
+   "detail": "66.8% (40.8% of all its public tiles)"
   },
   {
    "req": "R7-R9",
    "check": "at least 10 dead ends",
    "ok": true,
-   "detail": "51 alley stubs ending blind (of 57 laid)"
+   "detail": "26 alley stubs ending blind (of 30 laid)"
   },
   {
    "req": "R7-R9",
    "check": "at least 12 distinct footprint sizes and 8 L-shapes",
    "ok": true,
-   "detail": "28 sizes, 12 L-shaped"
+   "detail": "18 sizes, 15 L-shaped"
   },
   {
    "req": "R7-R9",
@@ -4396,19 +4890,19 @@
    "req": "R7-R9",
    "check": "at least 14 through-buildings",
    "ok": true,
-   "detail": "38"
+   "detail": "20"
   },
   {
    "req": "R7-R9",
    "check": "at least 25 passages, in 4-6 chains of 3-5 buildings",
    "ok": true,
-   "detail": "26 passages, chains [5, 4, 4, 4, 3, 3]"
+   "detail": "41 passages, chains [5, 5, 4, 3, 3]"
   },
   {
    "req": "R7-R9",
    "check": "at least 6 courts",
    "ok": true,
-   "detail": "8"
+   "detail": "6"
   },
   {
    "req": "R18",
@@ -4426,7 +4920,19 @@
    "req": "R32",
    "check": "no structure has more than 3 homes",
    "ok": true,
-   "detail": "most 2: [('r2_ladle_corner', 2)]"
+   "detail": "most 3: [('r2_salt_row_house', 3)]"
+  },
+  {
+   "req": "R32",
+   "check": "no structure is built with more than 3 homes",
+   "ok": true,
+   "detail": "{0: 77, 1: 105, 2: 13, 3: 42}"
+  },
+  {
+   "req": "R32",
+   "check": "the Sump's houses are mostly three homes, and most lived-in ones hold three households",
+   "ok": true,
+   "detail": "28 of 34 built with 3 homes; lived in: {3: 23}"
   },
   {
    "req": "R32",
@@ -4438,7 +4944,7 @@
    "req": "",
    "check": "links number 2,048 or fewer",
    "ok": true,
-   "detail": "555 links"
+   "detail": "509 links"
   },
   {
    "req": "R31",
@@ -4492,19 +4998,19 @@
    "req": "R13",
    "check": "the Rag Market is more than 40 tiles from Market Square",
    "ok": true,
-   "detail": "180"
+   "detail": "116"
   },
   {
    "req": "R14",
    "check": "Market Square has more merchants than the Market Hall; the Hall's doors within 40 of its stalls",
    "ok": true,
-   "detail": "square 8, hall 6, doors 20 from the stalls"
+   "detail": "square 8, hall 6, doors 18 from the stalls"
   },
   {
    "req": "",
    "check": "no evening place takes more than 40",
    "ok": true,
-   "detail": "{'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 197, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 20, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 23, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+   "detail": "{'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 188, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 28, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
   },
   {
    "req": "R1",
