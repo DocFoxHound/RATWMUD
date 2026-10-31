@@ -150,7 +150,9 @@ every action is saved as it happens, shared with everyone else editing.
 ## Push to live
 
 Implemented in `tools/publish.py` (the editor's **⇪ Push to live** dialog and
-`python3 tools/publish.py` use the same functions). A push:
+`python3 tools/publish.py` use the same functions). Since 2026-10-30 the studio's
+Atlas no longer offers the dialog: it becomes the DM's Import from dev (doc 66,
+Phase 4); `python3 tools/publish.py` still pushes. A push:
 
 1. Checks the publish password against the salted scrypt hash in PROD
    `admin.settings` (initially `password`). Every attempt is recorded in
@@ -420,6 +422,9 @@ the design and its Progress section what was built.
 - `migrate` and `status` cover every registered world; `conninfo` and `psql` take any key (or `atlas`, `live`).
 - The launchers take a key and default to the local choice: `live.sh server [KEY]` (the live world), `live.sh play
   [KEY]` and `scratch.sh [KEY]` (Atlas's world), `server.sh --database KEY`; so do `world_build.py`, Atlas
-  (`map_editor.py serve [--world KEY]`), the DM (every world, the live one first) and the other tools.
+  (`studio.py serve [--world KEY]`, its world switched in the studio's top bar too), the DM (the live worlds) and the
+  other tools.
+- Atlas and the DM are one tool, `bash tools/studio.sh` (`editor.sh` and `dungeon-master.sh` open it on their suite),
+  on http://127.0.0.1:8765, signed in with a DM account (doc 66, section 3).
 - Push to live (`publish.py`) is still DEV to PROD, now read from the registry as the dev world with an upstream and
   that live world; doc 66's Phase 4 replaces it.

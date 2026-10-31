@@ -1,7 +1,12 @@
 # Dungeon Master: running the living world
 
-Status: plan agreed 2026-09-25 (decisions at the end). Phase 1 is built: the app
-(`Editor/dm.html`, `Editor/src/dm/`, `tools/dungeon_master.py`,
+Status: plan agreed 2026-09-25 (decisions at the end). Since 2026-10-30 the DM is
+the DM suite of one tool, RATW Studio (`bash tools/studio.sh`, or
+`bash tools/dungeon-master.sh` to open on the DM; `tools/studio.py` hosts
+`tools/dungeon_master.py`'s routes under `/api/dm/`, http://127.0.0.1:8765): one
+sign-in with these DM accounts for both suites, and the authoring (NPCs, routes,
+areas, spawn rules, factions, talk) moved to Atlas (doc 66, section 3). Phase 1 is
+built: the app (`Editor/src/dm/`, `tools/dungeon_master.py`,
 `tools/dungeon-master.sh`), the three DM accounts, the `ratw_dm` database login,
 the live action queue (`dm.actions`, applied by the game server), death in the
 game, and the Players tab with kill and resurrect (migration 0013). Phase 2 is

@@ -277,3 +277,71 @@ written), it exports, and the game's own loader (`world_check`), with the NPC re
 reads them, loads all 626 interiors and 1,083 residents; half an hour simulated runs (125 residents find no way to a
 place in another building: there is no map between them). Once a spawn is set (in a cell or any interior), it
 should build and load on a scratch server; nothing else stood in the way.
+
+### Phase 3: built (2026-10-30)
+
+**One host**, `tools/studio.py serve [--port N] [--suite atlas|dm] [--world KEY]` (`bash tools/studio.sh` builds the UI
+when its sources changed, as the old launchers did, then serves it), on one port, 8765 by default, local only.
+`editor.sh` and `dungeon-master.sh` start it opening on their suite, and so do `map_editor.py serve` and
+`dungeon_master.py serve`; a second start on a port where a studio already answers prints its address and exits. The
+old hosts are modules: `map_editor.make_handler(...)` and `dungeon_master.make_handler(dm, offers, world, kinds)` give
+their request handlers (their `make_server`s stay, for the tests), and the studio hands each request, path rewritten,
+to the right one:
+
+| Path | Handler | Guard |
+|---|---|---|
+| `/`, `/assets/...`, `/portraits/...` | the built app (`Editor/dist/index.html`) | the local origin |
+| `/api/dm/...` | the DM's, without the routes that moved to Atlas, and only on live worlds (a dev world named is refused) | the DM's sign-in and roles, as before |
+| `/api/atlas/...` | Atlas's (`map_editor`), without Push to live (`/api/atlas/publish...` answer 404 with why) | a `dm` or `admin` sign-in, then Atlas's own session token on every write, as before |
+| `/api/atlas/layers/...` | the DM's methods for what moved to Atlas, on Atlas's world only (another world named: 409) | a `dm` or `admin` sign-in; the DM's roles and audit |
+| `/api/studio/...` | `ping`; `session` (who, the suite to open on, Atlas's world and the dev worlds, the live worlds and the one the live server runs); `atlas-world` (POST: switches Atlas's world, `world_db.set_local(atlas=KEY)` as `world_db.py use` does, and the Atlas handler's database) | a sign-in; switching, `dm` or `admin` |
+
+Every request needs the local origin (the old hosts' check, which also lets the Vite dev server's proxy through). The
+old hosts' paths (`/api/session`, `/api/players`, ...) are not kept: their front ends moved to the new prefixes and
+both old hosts start the studio, so nothing calls them. The Storykeeper (`dm_service.py`) is untouched: nothing in the
+DM's host reached it over HTTP, and it stays its own service.
+
+**What moved** (`studio.MOVED_TO_ATLAS`): making, changing and deleting NPCs (`npcs/save`, `npcs/delete`), wander
+areas (`npcs/wander`), patrol routes, NPC areas and spawn rules (`routes/*`, `areas/*`, `spawns/*`), factions with
+their claims, relations and members (`factions/*`), and talk (`talk/voice`, `kin`, `dialect`, `figure`). The DM keeps
+reading them (its LIVE map's layers). It keeps live life: kill and revive (`npcs/life`), move, visitors, players and
+their actions, reports, artwork, the calendar and festivals, money and the levers (moved as they are: Phase 5 is
+removing them), health, storytellers and milestones, chapters, chronicles.
+
+**One app**, `Editor/index.html` (`src/studio/`; `dm.html` and the two old entries are gone), with a top bar: the suite
+switch (Atlas | DM; Atlas greyed for a viewer), the suite's world (Atlas: a picker of the dev worlds, which switches
+Atlas's world for everyone using the studio, after asking; DM: the live worlds, the live server's marked, read only,
+"Switching it: Phase 4"), and the signed-in account with Sign out. One sign-in, the DM's (`dm.admins` in PROD), kept in
+the tab as before; Atlas's calls carry it beside Atlas's session token. Atlas's editor name defaults to the account's.
+Each suite and Atlas page is its own page load (`?suite=atlas&page=npcs`): Atlas's Workshop and the DM's maps share
+one lazy-ground list and Atlas's live session runs as long as its page, so they are never mounted together.
+
+- **Atlas suite**: the **Workshop** (today's Atlas: map, interiors, people, characters; no brand of its own, and no
+  ⇪ Push to live button or command), **NPCs & areas** (the DM's NPC tab in its Atlas form: NPCs created, placed,
+  changed and deleted with their routes, areas, spawn rules, wander areas, voices, the dialects and figures; no kill,
+  revive, life story or calendar), and **Factions** (the DM's Factions tab as it was), the last two on Atlas's world.
+- **DM suite**: LIVE, **NPC Life** (the NPC tab in its DM form: NPCs and their layers view only, kill and revive, each
+  one's life, the calendar), Chapters, Story Creator (still to come), Players, Money, Server Health, and **Import from
+  dev (coming in Phase 4)**, a placeholder. LIVE's spawn brings visitors only; an NPC who stays is made in Atlas.
+  Factions left for Atlas. The DM's maps have no editing tools left: painting areas and claims went with their tabs.
+- Calls go by world (`dm/api.ts`): a live world's to `/api/dm/`, a dev world's to `/api/atlas/layers/`, so the moved
+  panels are the same components.
+
+**Tests**: `tools/test_studio.py`: the app and the local origin; one sign-in and each suite's worlds; Atlas needs a
+`dm` or `admin` account and still its session token on writes; Push to live is not in Atlas; Atlas offers no
+storyline, live-life or sign-in routes; the DM suite offers none of the moved authoring (or Atlas's own routes) but
+keeps kill/revive, players and storylines; the DM works on live worlds only, Atlas's NPC pages on Atlas's world only
+(and audit as the signed-in account); switching Atlas's world (dev worlds only, `dm` or `admin`, a new Atlas session);
+the old paths gone; with the local PostgreSQL, a real sign-in on scratch databases opening both suites, and an NPC area
+painted from Atlas landing in Atlas's (scratch) world and refused from the DM.
+
+**Differs from section 3, or found on the way.**
+
+- The DM suite no longer rehearses on dev worlds: section 3 gives it live worlds, and its methods' writes to a dev
+  world are Atlas's now. `DungeonMaster` itself still takes any registered world (its tests use DEV).
+- PROD is behind on its migrations (`live.npc_relations` and others missing), so the DM suite's NPC Life, its world map
+  and whatever reads the newer tables answer 500 there ("The studio could not answer (UndefinedTable ...)") until
+  `world_db.py migrate --db prod`; the old DM host failed the same way (it dropped the connection). Players and the
+  calendar read.
+- `npcs/wander` and spawn rules count as NPC-area editing (Atlas); talk (voices, dialects, figures) and factions follow
+  the table (Atlas).

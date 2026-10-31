@@ -1,6 +1,6 @@
-// Dungeon Master: runs the living world (Docs/Design/21-dungeon-master.md, 34-dungeon-master-refresh.md).
-// Atlas builds places; this app manages everything alive in them, in a live world or a dev world (rehearsal): the
-// worlds are the registry's (Database/worlds.json, doc 66), the live server's world first and chosen to begin with.
+// Dungeon Master: runs the living world (Docs/Design/21-dungeon-master.md, 34-dungeon-master-refresh.md), the studio's DM
+// suite (Docs/Design/66-worlds-atlas-and-dm.md, section 3; src/studio/Studio.tsx). Atlas builds places, NPCs and the
+// layers they live by; this suite manages everything alive in them, in a live world (the live server's).
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {Project} from '../model/model.mjs';
 import * as M from '../model/model.mjs';
@@ -10,7 +10,6 @@ import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
 import {LiveTab} from './LiveTab';
 import {useWorld} from './world';
-import {FactionsTab} from './FactionsTab';
 import {ChaptersTab} from './ChaptersTab';
 import {HealthTab} from './HealthTab';
 import {MoneyTab} from './MoneyTab';
@@ -18,35 +17,28 @@ import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
-import {isLive, worldName, setWorlds, dmApi, signedIn, type World, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
+import {isLive, worldName, dmApi, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
-type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money';
+type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money' | 'import';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
+// Making NPCs, their routes and areas, factions and talk are Atlas's (doc 66, section 3): the NPC tab here is live life.
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
     {id: 'live', label: 'LIVE', icon: '●', ready: true, blurb: ''},
-    {id: 'npcs', label: 'NPC Management', icon: '☺', ready: true, blurb: ''},
-    {id: 'factions', label: 'Factions', icon: '⚑', ready: true,
-        blurb: 'NPC factions, cities, and player guilds and clans; paint territory; set how they regard each other, up to war. Coming in phase 4.'},
+    {id: 'npcs', label: 'NPC Life', icon: '☺', ready: true, blurb: ''},
     {id: 'chapters', label: 'Chapters', icon: '♞', ready: true, blurb: ''},
     {id: 'stories', label: 'Story Creator', icon: '✦', ready: false,
         blurb: 'Build, save and load multi-phase world stories with triggers and actions; test on DEV, run on PROD. Coming in phase 5.'},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
     {id: 'money', label: 'Money', icon: '¤', ready: true, blurb: ''},
     {id: 'health', label: 'Server Health', icon: '♥', ready: true, blurb: ''},
+    {id: 'import', label: 'Import from dev', icon: '⇪', ready: false,
+        blurb: 'Import from dev (coming in Phase 4): during maintenance, bring a dev world’s changes into the live world, ' +
+            'choose what to keep where both changed, and record a release you can roll back (Docs/Design/66-worlds-atlas-and-dm.md, ' +
+            'section 4). It replaces Push to live, which has left Atlas.'},
 ];
 
-export function DmApp() {
-    const [me, setMe] = useState<Me | null>(null);
-    const [checking, setChecking] = useState(signedIn());
-    useEffect(() => {
-        if (!signedIn()) return;
-        dmApi.me().then(setMe).catch(() => undefined).finally(() => setChecking(false));
-    }, []);
-    if (checking) return <div className="dm-center"><p className="hint">Checking your session…</p></div>;
-    return me ? <Shell me={me} onSignOut={() => setMe(null)} /> : <SignIn onSignedIn={setMe} />;
-}
-
-function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
+/** The sign-in for the whole studio: a Dungeon Master account (doc 66, 3), separate from player accounts. */
+export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
     const [username, setUsername] = useState(''), [password, setPassword] = useState('');
     const [problem, setProblem] = useState(''), [busy, setBusy] = useState(false);
     const submit = async () => {
@@ -57,7 +49,7 @@ function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
     };
     return <div className="dm-center">
         <form className="dm-signin" onSubmit={e => { e.preventDefault(); void submit(); }}>
-            <div className="brand"><span className="mark">D<i>›</i></span><div><b>DUNGEON MASTER</b><small>Runs Against the World</small></div></div>
+            <div className="brand"><span className="mark">R<i>›</i></span><div><b>RATW STUDIO</b><small>Atlas · Dungeon Master</small></div></div>
             <p className="hint">Sign in with a Dungeon Master account. These are separate from player accounts.</p>
             <label className="field"><span>Account</span><input autoFocus autoComplete="username" value={username} onChange={e => setUsername(e.target.value)} /></label>
             <label className="field"><span>Password</span><input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} /></label>
@@ -67,37 +59,19 @@ function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
     </div>;
 }
 
-function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
+/** The DM suite (doc 66, 3): running a live world. Its world (the live server's) is the studio's top bar's. */
+export function DmSuite({me, target}: {me: Me; target: Target}) {
     const [tab, setTab] = useState<Tab>('live');
-    const [target, setTarget] = useState<Target>('');
-    const [worlds, setKnown] = useState<World[]>([]);
-    useEffect(() => {
-        void dmApi.worlds().then(w => { setWorlds(w.worlds); setKnown(w.worlds); setTarget(w.live); })
-            .catch(() => { setKnown([{key: 'prod', name: 'PROD', kind: 'live'}]); setTarget('prod'); });
-    }, []);
     const current = TABS.find(t => t.id === tab)!;
-    if (!target) return <div className="app dm"><p className="hint">Loading the worlds…</p></div>;
     return <div className={isLive(target) ? 'app dm prod' : 'app dm dev'}>
-        <header className="topbar">
-            <div className="brand"><span className="mark">D<i>›</i></span><div><b>DUNGEON MASTER</b><small>Runs Against the World</small></div></div>
+        <header className="topbar dm-tabs">
             <div className="workspace-tabs" role="tablist">
                 {TABS.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
                     title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => setTab(t.id)}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
             </div>
-            <div className="dm-target segmented" role="radiogroup" aria-label="Which world">
-                {worlds.map(w => <button key={w.key} role="radio" aria-checked={target === w.key}
-                    className={target === w.key ? (w.kind === 'live' ? 'on prod' : 'on') : ''} onClick={() => setTarget(w.key)}
-                    title={w.kind === 'live' ? `${w.name}: a world players are in` : `${w.name}: a rehearsal world`}>
-                    {w.name} · {w.kind === 'live' ? 'players' : 'rehearsal'}</button>)}
-            </div>
-            <div className="top-actions">
-                <span className="dm-me" title={`Signed in as ${me.username}`}>{me.username}<small>{me.role}</small></span>
-                <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>
-            </div>
         </header>
         {tab === 'live' ? <LiveTab me={me} target={target} key={target} />
-            : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} />
-            : tab === 'factions' ? <FactionsTab me={me} target={target} key={target} />
+            : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
             : tab === 'money' ? <MoneyTab target={target} key={target} me={me} />
