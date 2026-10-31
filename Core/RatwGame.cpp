@@ -535,6 +535,15 @@ bool Game::loadFromDatabase(std::string& problem)
     }
     if (options_.scratch)
         worldDb_.exec("SET default_transaction_read_only = on");   // Whatever slips through is refused by the database.
+    else if (std::string why; maintenanceState(why) == 1)
+    {
+        // (A scratch server writes nothing and may look at a world in maintenance; the real one waits: tools/live.sh.)
+        problem = "the " + options_.database + " world is closed for maintenance" + (why.empty() ? "" : " (" + why + ")") +
+                  "; its server starts once it is opened again (the DM, or python3 tools/world_sync.py maintenance " +
+                  options_.database + " off).";
+        exit_ = MaintenanceExit;
+        return false;
+    }
     const auto build = worldDb_.exec("SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
                                      "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
     if (!build.ok || build.rows.empty() || !build.rows[0][3])
@@ -594,6 +603,8 @@ bool Game::loadFromDatabase(std::string& problem)
         note("warning", "RATW will not hear about new releases: " + listen);
     if (!worldDb_.listen("ratw_dm", listen))
         note("warning", "RATW will check for Dungeon Master actions once a minute: " + listen);
+    if (!options_.scratch && !worldDb_.listen("ratw_maintenance", listen))
+        note("warning", "RATW will check for maintenance once a minute: " + listen);
     loadVoices();                                   // (Each resident's voice, the dialects, figures: doc 62, phase 6.)
     note("info", "RATW_DATABASE_WORLD_LOADED database=" + options_.database + " world=" + liveWorldId_ + " build=" +
                      std::to_string(loadedBuild_) + " release=" + (row[2] ? *row[2] : "0") + " cells=" + std::to_string(world_.cells().size()) +
@@ -744,6 +755,11 @@ void Game::readNotifications()
             dmNotified_ = true;
             continue;
         }
+        if (channel == "ratw_maintenance")
+        {
+            maintenanceCheck_ = true;                // (The table says what is so; the payload only says to look.)
+            continue;
+        }
         Value v;
         std::string error;
         if (channel != "ratw_release" || !json::parse(payload, v, error) || !v.isObject())
@@ -758,13 +774,87 @@ void Game::readNotifications()
     }
 }
 
+int Game::maintenanceState(std::string& why)
+{
+    const auto state = worldDb_.exec("SELECT state, note FROM admin.server_state LIMIT 1");
+    if (!state.ok || state.rows.empty() || !state.rows[0][0])
+        return -1;                                  // (Unreadable, or a world without migration 0054: taken as open.)
+    why = state.rows[0][1] ? *state.rows[0][1] : "";
+    return *state.rows[0][0] == "maintenance" ? 1 : 0;
+}
+
+void Game::beginMaintenance(const std::string& why)
+{
+    if (closingForMaintenance() || exit_ >= 0)
+        return;
+    maintenanceLeft_ = maintenanceReminded_ = MaintenanceGrace;
+    note("info", "RATW_MAINTENANCE the world is closing for maintenance" + (why.empty() ? std::string() : ": " + why) + "; " +
+                     std::to_string(clients_.size()) + " connected, " + std::to_string(int(MaintenanceGrace)) + " s to leave.");
+    for (auto* c : clients_)
+        system(c, "The world is closing for maintenance in " + std::to_string(int(MaintenanceGrace)) + " seconds" +
+                      (why.empty() ? std::string() : " (" + why + ")") +
+                      ". Everything is saved as it stands; come back when it opens again.");
+}
+
+void Game::endMaintenance()
+{
+    if (!closingForMaintenance())
+        return;
+    maintenanceLeft_ = -1;
+    note("info", "RATW_MAINTENANCE called off: the world stays open.");
+    for (auto* c : clients_)
+        system(c, "The maintenance was called off: the world stays open.");
+}
+
+void Game::watchMaintenance(double real)
+{
+    if (exit_ >= 0)
+        return;
+    if (!options_.database.empty() && !options_.scratch)
+    {
+        if ((maintenanceAccumulator_ += real) >= 60)
+        {
+            maintenanceAccumulator_ = 0;            // (A notification missed is caught within the minute.)
+            maintenanceCheck_ = true;
+        }
+        if (maintenanceCheck_)
+        {
+            maintenanceCheck_ = false;
+            std::string why;
+            const int state = maintenanceState(why);
+            if (state == 1)
+                beginMaintenance(why);
+            else if (state == 0)
+                endMaintenance();                   // (Not if it couldn't be read: a closing goes on.)
+        }
+    }
+    if (!closingForMaintenance())
+        return;
+    maintenanceLeft_ -= real;
+    if (clients_.empty() || maintenanceLeft_ <= 0)
+    {
+        for (auto* c : clients_)
+            system(c, "The world is closing for maintenance now.");
+        save();
+        note("info", "RATW_MAINTENANCE saved; exiting (status " + std::to_string(MaintenanceExit) + ") until the world is opened again.");
+        maintenanceLeft_ = -1;
+        exit_ = MaintenanceExit;
+    }
+    else if (maintenanceLeft_ <= 10 && maintenanceReminded_ > 10)
+    {
+        maintenanceReminded_ = maintenanceLeft_;
+        for (auto* c : clients_)
+            system(c, "The world is closing for maintenance in 10 seconds.");
+    }
+}
+
 void Game::watchReleases(double dt)
 {
     if (options_.database.empty() || (releaseAccumulator_ += dt) < 2)
         return;
     releaseAccumulator_ = 0;
     readNotifications();
-    if (!pendingRelease_)
+    if (!pendingRelease_ || closingForMaintenance() || exit_ >= 0)
         return;
     if (clients_.empty())
     {
@@ -2600,6 +2690,7 @@ void Game::tick(double dt)
                 e->transitioned = false;
     }
     watchReleases(real);
+    watchMaintenance(real);                         // (After the notifications are read.)
     applyDmActions(real);
     feedWatch(real);
     runSpawns(dt);

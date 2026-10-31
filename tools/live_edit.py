@@ -28,6 +28,7 @@ import terrain_catalog
 MAX_OPS = 250_000
 PRESENCE_SECONDS = 20
 MAX_CHANGES = 20_000
+RELOAD = 'reload'          # An edit-log key: everything may have changed (tools/world_sync.py pulled or imported).
 GLYPHS = terrain_catalog.GLYPHS
 
 
@@ -499,7 +500,8 @@ def sync(conn, client_id, editor, color, since, state, world=None):
                                   FROM world.editors WHERE client_id <> %s AND seen_at > now() - interval '{PRESENCE_SECONDS} seconds'
                                   ORDER BY editor''', (client_id,)).fetchall()
     editors = [{'clientId': r[0], 'editor': r[1], 'color': r[2], 'state': r[3], 'idle': round(float(r[4]), 1)} for r in others]
-    if len(rows) > MAX_CHANGES:
+    # A pull or import (tools/world_sync.py) rewrites rows the keyed edits don't describe, and logs RELOAD: reload.
+    if len(rows) > MAX_CHANGES or any(r[4] == RELOAD for r in rows):
         return {'reload': True, 'seq': rows[-1][0], 'changes': [], 'editors': editors}
     changes = [{'seq': r[0], 'clientId': r[1], 'editor': r[2], 'label': r[3], 'key': r[4], 'after': r[5]} for r in rows]
     return {'seq': rows[-1][0] if rows else since, 'changes': changes, 'editors': editors}

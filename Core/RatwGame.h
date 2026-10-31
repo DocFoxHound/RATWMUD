@@ -248,8 +248,17 @@ class Game
     };
     // Held around a fight: this close to a standing hostile, or this soon after a blow or an offence.
     static constexpr double HostileNear = 8, HeldAfter = 10;
-    // A status the host should exit with, once asked (75: a new release was published and nobody is playing).
+    // A status the host should exit with, once asked (75: a new release was published and nobody is playing; 76: the
+    // world closed for maintenance, or is closed and the server refused to start).
     int exitRequested() const { return exit_; }
+    // Maintenance (doc 66, section 4): the world's admin.server_state says maintenance (NOTIFY ratw_maintenance, or the
+    // minute's check). Players are told and given MaintenanceGrace seconds (none if nobody is connected); then the
+    // world is saved and the host exits with MaintenanceExit. Called off again before then, play goes on.
+    static constexpr int MaintenanceExit = 76;
+    static constexpr double MaintenanceGrace = 60;
+    void beginMaintenance(const std::string& why);
+    void endMaintenance();
+    bool closingForMaintenance() const { return maintenanceLeft_ >= 0; }
     // Where the game thread's time is counted (Docs/Design/31-responsiveness.md, Phase 1); none by default.
     void setMeter(perf::Meter* meter)
     {
@@ -1580,6 +1589,13 @@ class Game
     double watchAccumulator_ = 0;
     bool streamedBuild_ = false, releaseAnnounced_ = false, storageReady_ = false;
     int exit_ = -1;
+    // Closing for maintenance: seconds of grace left (-1: not closing), the last reminder given, and whether the
+    // database's state is due to be read (a notification came, or the minute's check).
+    double maintenanceLeft_ = -1, maintenanceReminded_ = 0, maintenanceAccumulator_ = 0;
+    bool maintenanceCheck_ = false;
+    void watchMaintenance(double real);
+    // The world's server state from admin.server_state: 1 maintenance (and why), 0 running, -1 unreadable.
+    int maintenanceState(std::string& why);
     std::mt19937_64 random_;
     std::shared_ptr<bool> alive_ = std::make_shared<bool>(true);   // Answers arriving after the game is gone are dropped.
 
