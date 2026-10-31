@@ -1,0 +1,5 @@
+{"worlds": [
+  {"key": "prod",       "name": "Ridgemere (live)", "database": "ratw_prod",       "kind": "live"},
+  {"key": "dev",        "name": "Ridgemere (dev)",  "database": "ratw_dev",        "kind": "dev", "upstream": "prod"},
+  {"key": "ridgemere2", "name": "Ridgemere 2.0",    "database": "ratw_ridgemere2", "kind": "dev"}
+]}

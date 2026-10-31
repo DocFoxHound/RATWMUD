@@ -1,5 +1,6 @@
 // Dungeon Master: runs the living world (Docs/Design/21-dungeon-master.md, 34-dungeon-master-refresh.md).
-// Atlas builds places; this app manages everything alive in them, in PROD (live) or DEV (rehearsal).
+// Atlas builds places; this app manages everything alive in them, in a live world or a dev world (rehearsal): the
+// worlds are the registry's (Database/worlds.json, doc 66), the live server's world first and chosen to begin with.
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {Project} from '../model/model.mjs';
 import * as M from '../model/model.mjs';
@@ -17,7 +18,7 @@ import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
-import {dmApi, signedIn, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
+import {isLive, worldName, setWorlds, dmApi, signedIn, type World, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
 type Tab = 'npcs' | 'factions' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
@@ -68,9 +69,15 @@ function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 
 function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
     const [tab, setTab] = useState<Tab>('live');
-    const [target, setTarget] = useState<Target>('prod');
+    const [target, setTarget] = useState<Target>('');
+    const [worlds, setKnown] = useState<World[]>([]);
+    useEffect(() => {
+        void dmApi.worlds().then(w => { setWorlds(w.worlds); setKnown(w.worlds); setTarget(w.live); })
+            .catch(() => { setKnown([{key: 'prod', name: 'PROD', kind: 'live'}]); setTarget('prod'); });
+    }, []);
     const current = TABS.find(t => t.id === tab)!;
-    return <div className={target === 'prod' ? 'app dm prod' : 'app dm dev'}>
+    if (!target) return <div className="app dm"><p className="hint">Loading the worlds…</p></div>;
+    return <div className={isLive(target) ? 'app dm prod' : 'app dm dev'}>
         <header className="topbar">
             <div className="brand"><span className="mark">D<i>›</i></span><div><b>DUNGEON MASTER</b><small>Runs Against the World</small></div></div>
             <div className="workspace-tabs" role="tablist">
@@ -78,10 +85,10 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                     title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => setTab(t.id)}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
             </div>
             <div className="dm-target segmented" role="radiogroup" aria-label="Which world">
-                <button role="radio" aria-checked={target === 'prod'} className={target === 'prod' ? 'on prod' : ''} onClick={() => setTarget('prod')}
-                    title="The world players are in">PROD · players</button>
-                <button role="radio" aria-checked={target === 'dev'} className={target === 'dev' ? 'on' : ''} onClick={() => setTarget('dev')}
-                    title="The rehearsal world">DEV · rehearsal</button>
+                {worlds.map(w => <button key={w.key} role="radio" aria-checked={target === w.key}
+                    className={target === w.key ? (w.kind === 'live' ? 'on prod' : 'on') : ''} onClick={() => setTarget(w.key)}
+                    title={w.kind === 'live' ? `${w.name}: a world players are in` : `${w.name}: a rehearsal world`}>
+                    {w.name} · {w.kind === 'live' ? 'players' : 'rehearsal'}</button>)}
             </div>
             <div className="top-actions">
                 <span className="dm-me" title={`Signed in as ${me.username}`}>{me.username}<small>{me.role}</small></span>
@@ -218,7 +225,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     const canAct = me.role !== 'viewer';
     const act = async (kind: 'character.kill' | 'character.resurrect') => {
         const verb = kind === 'character.kill' ? 'Kill' : 'Resurrect';
-        if (target === 'prod' && !window.confirm(`${verb} ${character.name} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${verb} ${character.name} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, kind, character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -228,7 +235,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     const [family, setFamily] = useState(character.gift || 'fire');
     const gift = async (kind: string, quickened: boolean) => {
         const words = kind ? (quickened ? `Make Quickened (${kind})` : `Give the Gift (${kind}) to`) : 'Take the Gift from';
-        if (target === 'prod' && !window.confirm(`${words} ${character.name} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${words} ${character.name} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -236,7 +243,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // An account's earned Gift tiers (doc 49, Phase 5): grant or revoke a tier, or hold new unlocks (in place of reports).
     const unlock = async (op: 'grant' | 'revoke' | 'hold' | 'release', tier: '' | 'gifted' | 'quickened', words: string) => {
-        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'account.unlock', character.id, reason, {op, tier}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -245,7 +252,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     // Mentoring (doc 52): turned off for the account until restored (an upheld report also turns it off), or restored.
     const mentor = async (revoke: boolean) => {
         const words = `${revoke ? 'Turn off' : 'Restore'} mentoring for ${character.account?.name ?? character.name}`;
-        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, revoke ? 'mentor.revoke' : 'mentor.restore', character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -253,7 +260,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // A tie (doc 52): ended for them, as the newcomer or the mentor.
     const endTie = async () => {
-        if (target === 'prod' && !window.confirm(`End ${character.name}'s tie on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`End ${character.name}'s tie on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'tie.end', character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -261,7 +268,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // A Dungeon Master in the game: the player has the Dev Console (the ` key in the game), for trying things out.
     const markDm = async (on: boolean) => {
-        if (target === 'prod' && !window.confirm(`${on ? 'Make' : 'Unmake'} ${character.name} a Dungeon Master in the game on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${on ? 'Make' : 'Unmake'} ${character.name} a Dungeon Master in the game on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.dm', character.id, reason, {dungeonMaster: on}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -269,7 +276,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // Bandits called up near them (doc 33): a small camp a few strides off, for a fight that isn't with townsfolk.
     const callBandits = async (count: number) => {
-        if (target === 'prod' && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'bandits.call', character.id, reason, {count}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -278,7 +285,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     // Injuries (doc 38, phase 5): a correction, or a storyline's wound; given or taken away, online or offline.
     const [injuryType, setInjuryType] = useState('cracked_rib'), [injurySeverity, setInjurySeverity] = useState(2), [injurySide, setInjurySide] = useState('');
     const injure = async (payload: {add: string; severity: number; side: string} | {remove: string}, words: string) => {
-        if (target === 'prod' && !window.confirm(`${words} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.injury', character.id, reason, payload); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }

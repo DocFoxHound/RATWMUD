@@ -9,7 +9,7 @@ import {ROLE_INFO, formatHour} from '../lib/glyphs';
 import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
-import {dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
+import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
 import {DialectsPanel, FiguresPanel, VoicePanel} from './TalkPanels';
@@ -170,15 +170,15 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
-    const live = target === 'prod';
-    const sure = (what: string) => !live || window.confirm(`${what} on PROD?`);
+    const live = isLive(target);
+    const sure = (what: string) => !live || window.confirm(`${what} on ${worldName(target)}?`);
     const taken = () => [...(data?.people ?? []).map(p => p.id), ...(data?.holders ?? []).map(h => h.id)];
     const save = () => {
         if (!draft || !sure(`Save ${draft.name}`)) return;
         const person = isNew ? {...draft, id: idFrom(draft.name, taken(), 'npc')} : draft;
         return finish(async () => { await dmApi.saveNpc(target, person); setSelected(person.id); }, `Saved ${person.name}.`);
     };
-    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ' from PROD' : ''}? They leave the world entirely.`) &&
+    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ` from ${worldName(target)}` : ''}? They leave the world entirely.`) &&
         (!live || window.confirm(`Really delete ${draft.name}? This cannot be undone.`)) &&
         finish(() => dmApi.deleteNpc(target, draft.id).then(() => setSelected(null)), `Deleted ${draft.name}.`);
     const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`) &&
@@ -214,7 +214,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         return finish(async () => { await dmApi.saveSpawn(target, rule); setSelected(rule.id); }, `Saved ${rule.name}.`);
     };
     const deleteLayer = (what: string, name: string, run: () => Promise<unknown>) =>
-        window.confirm(`Delete ${what} ${name}${live ? ' from PROD' : ''}?`) && finish(() => run().then(() => setSelected(null)), `Deleted ${name}.`);
+        window.confirm(`Delete ${what} ${name}${live ? ` from ${worldName(target)}` : ''}?`) && finish(() => run().then(() => setSelected(null)), `Deleted ${name}.`);
     const revert = () => {
         if (isNew) { setIsNew(false); setSelected(null); setDraft(null); setRouteDraft(null); setAreaDraft(null); setSpawnDraft(null); setAddingPosts(false); return; }
         setDraft(saved ? M.clone(saved) : null); setRouteDraft(savedRoute ? M.clone(savedRoute) : null);
@@ -343,7 +343,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
 }
 
 function Overview({title, target, children}: {title: string; target: Target; children: React.ReactNode}) {
-    return <div className="dm-panel"><header><div><small>{title}</small><h2>{target === 'prod' ? 'PROD: the players’ world' : 'DEV: the rehearsal world'}</h2></div></header>{children}</div>;
+    return <div className="dm-panel"><header><div><small>{title}</small><h2>{isLive(target) ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>{children}</div>;
 }
 
 function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onPick, onSave, onRevert, onDelete, onLife}: {
@@ -393,7 +393,7 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
         </fieldset>
         {canAct && <>
             <div className="button-grid">
-                <button className={target === 'prod' ? 'publish' : 'primary'} disabled={busy || !dirty} onClick={onSave}>{busy ? 'Saving…' : `Save to ${target.toUpperCase()}`}</button>
+                <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy || !dirty} onClick={onSave}>{busy ? 'Saving…' : `Save to ${worldName(target)}`}</button>
                 <button disabled={busy || !dirty} onClick={onRevert}>{isNew ? 'Discard' : 'Revert'}</button>
             </div>
             {!isNew && <div className="button-grid">

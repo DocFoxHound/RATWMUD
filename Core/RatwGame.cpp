@@ -516,9 +516,11 @@ bool Game::start(std::string& problem)
 
 bool Game::loadFromDatabase(std::string& problem)
 {
-    if (options_.database != "prod" && options_.database != "dev" && options_.database != "ridgemere2")
+    // Any registered world (Database/worlds.json, doc 66): its launcher checks the key against the registry and gives
+    // its connection; the key only names it here.
+    if (options_.database.empty())
     {
-        problem = "the database must be prod, dev or ridgemere2 (Ridgemere 2.0).";
+        problem = "name the world's database (a key from python3 tools/world_db.py list).";
         return false;
     }
     if (options_.conninfo.empty())
@@ -538,7 +540,7 @@ bool Game::loadFromDatabase(std::string& problem)
     if (!build.ok || build.rows.empty() || !build.rows[0][3])
     {
         problem = "the " + options_.database + " database has no world build yet" +
-                  (build.ok ? std::string(" (Push to live makes one for PROD; python3 tools/world_build.py dev for DEV)") : ": " + build.error);
+                  (build.ok ? std::string(" (Push to live makes one for a live world; python3 tools/world_build.py " + options_.database + " for a dev world)") : ": " + build.error);
         return false;
     }
     const auto& row = build.rows[0];

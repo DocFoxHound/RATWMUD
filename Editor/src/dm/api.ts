@@ -3,7 +3,18 @@ import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 
-export type Target = 'prod' | 'dev';
+/** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
+export type Target = string;
+/** A registered world, as GET api/worlds gives it. */
+export interface World { key: string; name: string; kind: 'live' | 'dev'; upstream?: string }
+export interface Worlds { worlds: World[]; live: Target }
+let known: World[] = [{key: 'prod', name: 'PROD', kind: 'live'}];
+/** The registry as the host gave it (DmApp sets it once signed in). */
+export const setWorlds = (worlds: World[]) => { if (worlds.length) known = worlds; };
+/** A live world: what players are in, so changes there are confirmed first. */
+export const isLive = (target: Target) => known.find(w => w.key === target)?.kind === 'live';
+/** A world's name, for headings. */
+export const worldName = (target: Target) => known.find(w => w.key === target)?.name ?? target.toUpperCase();
 export type Role = 'viewer' | 'dm' | 'admin';
 export interface Me { username: string; role: Role }
 export interface Character {
@@ -245,6 +256,7 @@ export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
     logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
     me: () => call<Me>('api/me'),
+    worlds: () => call<Worlds>('api/worlds'),
     players: (target: Target) => call<Players>(`api/players?target=${target}`),
     health: (target: Target, hours: number) => call<Health>(`api/health?target=${target}&hours=${hours}`),
     money: (target: Target) => call<Money>(`api/money?target=${target}`),

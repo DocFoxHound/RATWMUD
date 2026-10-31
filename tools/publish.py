@@ -562,9 +562,12 @@ def releases(prod, limit=50):
 
 
 class Publisher:
-    """Push to live for the editor host: DEV and PROD as ratw_publisher."""
+    """Push to live for the editor host: DEV and PROD as ratw_publisher. "DEV" and "PROD" are the registry's dev world
+    with an upstream and that live world (tools/world_db.py push_worlds: ratw_dev and ratw_prod), until doc 66
+    Phase 4 replaces Push to live."""
 
-    def __init__(self, connect=None):
+    def __init__(self, connect=None, worlds=None):
+        self.dev, self.prod = worlds or world_db.push_worlds()
         self._connect = connect or (lambda database: world_db.connect(database, 'publisher'))
 
     def connect(self, database):
@@ -574,11 +577,11 @@ class Publisher:
             raise S.Unavailable(f'Cannot reach the {database.upper()} database: {error}') from error
 
     def preview(self):
-        with self.connect('dev') as dev, self.connect('prod') as prod:
+        with self.connect(self.dev) as dev, self.connect(self.prod) as prod:
             return {**preview(dev, prod), 'releases': releases(prod)}
 
     def push(self, data):
-        with self.connect('dev') as dev, self.connect('prod') as prod:
+        with self.connect(self.dev) as dev, self.connect(self.prod) as prod:
             result = push(dev, prod, data.get('password'), str(data.get('editor') or 'Someone'), str(data.get('note') or ''))
             # DEV then mirrors the live NPCs, so the next edits start from what is actually happening in PROD.
             try:
@@ -588,14 +591,14 @@ class Publisher:
             return result
 
     def pull(self, data):
-        with self.connect('dev') as dev, self.connect('prod') as prod:
+        with self.connect(self.dev) as dev, self.connect(self.prod) as prod:
             return pull_npcs(dev, prod, str(data.get('editor') or 'Live copy'))
 
     def rollback(self, data):
         number = data.get('release')
         if not isinstance(number, int):
             raise PublishError('Choose a release to roll back to.')
-        with self.connect('prod') as prod:
+        with self.connect(self.prod) as prod:
             return rollback(prod, number, data.get('password'), str(data.get('editor') or 'Someone'), str(data.get('note') or ''))
 
 

@@ -389,7 +389,8 @@ server running and start another. Now a server owns the world it runs (`Core/Rat
 Several sessions at once may want a game server to look at something. A scratch server is one of their own: it runs
 beside the real server, writes nothing, and goes away by itself.
 
-- `bash tools/scratch.sh dev` (or `prod`, or `town` for Greyfen), or `ratw_server --scratch ...`.
+- `bash tools/scratch.sh dev` (or any registered world, or nothing for Atlas's world, or `town` for Greyfen), or
+  `ratw_server --scratch ...`.
 - **It writes nothing:** it reads the world and its latest save (and the journal since) as the real server would, but
   its store keeps nothing: no saves, journal, events, DM actions taken (they wait for the real server), spawns
   recorded, artwork, LIVE map frames, health rows or voice ledger. Its database session is read-only besides
@@ -403,3 +404,22 @@ beside the real server, writes nothing, and goes away by itself.
   unless asked otherwise.
 - `tools/test_one_server.py`: a scratch server runs beside the owner on a scratch database, stops when asked to (with
   `--idle-exit`), and leaves the checkpoint, journal, events, health and the DM's queued action exactly as they were.
+
+## Worlds (2026-10-30)
+
+There are no longer only DEV and PROD: every world is listed in a registry, `Database/worlds.json` (in the repository),
+one database each, and is a **dev** world (edited in Atlas, run on local and scratch servers) or a **live** one (what
+players join). A dev world may name an **upstream** live world it is a working copy of (DEV's is PROD). Which world
+Atlas and the tools use, and which one the live server runs, is each computer's choice, `Saved/Config/worlds.local.json`
+(never committed; Ridgemere 2.0 and PROD while it is missing). Docs/Design/66-worlds-atlas-and-dm.md, section 1, has
+the design and its Progress section what was built.
+
+- `python3 tools/world_db.py list`, `use KEY` (Atlas's world), `serve-world KEY --yes` (the live one; rarely wise),
+  `new KEY --name NAME [--kind dev|live] [--upstream KEY] [--from KEY [--without-map]]` (a new world: empty with every
+  migration, or a copy, optionally with its map taken away as was done for Ridgemere 2.0), `resolve atlas|live|KEY`.
+- `migrate` and `status` cover every registered world; `conninfo` and `psql` take any key (or `atlas`, `live`).
+- The launchers take a key and default to the local choice: `live.sh server [KEY]` (the live world), `live.sh play
+  [KEY]` and `scratch.sh [KEY]` (Atlas's world), `server.sh --database KEY`; so do `world_build.py`, Atlas
+  (`map_editor.py serve [--world KEY]`), the DM (every world, the live one first) and the other tools.
+- Push to live (`publish.py`) is still DEV to PROD, now read from the registry as the dev world with an upstream and
+  that live world; doc 66's Phase 4 replaces it.

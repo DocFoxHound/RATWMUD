@@ -4,7 +4,7 @@
 //   talk_check [--data DIR] CONCEPT [key=value ...] [--seed N] [--many N] [--all]
 //       A moment from the facts given: a.name=Maren a.sex=female a.job=baker here.place=market topic.item=herbs...
 //       (`b.` facts make a second speaker; without them the concept is said to no one).
-//   talk_check [--data DIR] --world dev|prod|EXPORT_DIR A_ID [B_ID] CONCEPT [key=value ...] [--seed N] [--many N] [--all]
+//   talk_check [--data DIR] --world KEY|EXPORT_DIR A_ID [B_ID] CONCEPT [key=value ...] [--seed N] [--many N] [--all]
 //       Two residents (or one) and where they stand now, from a world read as a scratch server reads it (nothing
 //       written). CONCEPT `talk`: the topic the world would choose for the two now, with its facts, as the ambient
 //       director asks. Any other concept: the topic's facts (topic.item=herbs) are given as key=value, which also
@@ -18,10 +18,12 @@
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
-//   talk_check [--data DIR] --world dev|prod|EXPORT_DIR [--run HOURS] --residents [key=value]
+//   talk_check [--data DIR] --world KEY|EXPORT_DIR [--run HOURS] --residents [key=value]
 //       Every resident's facts, counted: how many are each job, each wealth, injured... With key=value, those
 //       residents (up to 40) and their facts. With --json, every resident's facts, a JSON object a line.
 //
+// KEY is a world in the registry (python3 tools/world_db.py list; atlas and live are the local choices), else a
+// world_build.py export directory.
 // --run HOURS runs the world on that many game hours first (written nowhere), so hunger, work and the rest move.
 // --many N picks N times with different seeds and counts what was said (the tiers' odds, heard by ear). --all lists
 // every rule and scene that didn't fit, and why. DIR defaults to the source tree's Data/Talk.
@@ -44,27 +46,34 @@ namespace
 int usage()
 {
     std::cerr << "usage: talk_check [--data DIR] CONCEPT [key=value ...] [--seed N] [--many N] [--all]\n"
-                 "       talk_check [--data DIR] --world dev|prod|EXPORT_DIR A_ID [B_ID] CONCEPT [key=value ...] [--seed N] [--many N] [--all]\n"
+                 "       talk_check [--data DIR] --world KEY|EXPORT_DIR A_ID [B_ID] CONCEPT [key=value ...] [--seed N] [--many N] [--all]\n"
                  "       talk_check [--data DIR] --validate FILE...\n";
     return 2;
 }
 
-std::string conninfo(const std::string& database)
+// What tools/world_db.py prints for a command ("" if it failed), its last line ending trimmed.
+std::string worldDb(const std::string& arguments)
 {
-    if (const char* url = std::getenv("RATW_DATABASE_URL"))
-        return url;
-    const std::string command = "python3 '" RATW_SOURCE_DIR "/tools/world_db.py' conninfo " + database + " --role game";
+    const std::string command = "python3 '" RATW_SOURCE_DIR "/tools/world_db.py' " + arguments;
     std::string out;
     if (FILE* p = ::popen(command.c_str(), "r"))
     {
         char buffer[512];
         while (std::fgets(buffer, sizeof buffer, p))
             out += buffer;
-        ::pclose(p);
+        if (::pclose(p) != 0)
+            return "";
     }
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
         out.pop_back();
     return out;
+}
+
+std::string conninfo(const std::string& database)
+{
+    if (const char* url = std::getenv("RATW_DATABASE_URL"))
+        return url;
+    return worldDb("conninfo " + database + " --role game");
 }
 
 void printFacts(const talk::Query& q)
@@ -293,10 +302,17 @@ int main(int argc, char** argv)
     o.scratch = true;
     o.forkSnapshots = false;
     o.savePath = "/tmp/ratw-talk-check-" + std::to_string(::getpid()) + ".json";
-    if (world == "dev" || world == "prod" || world == "ridgemere2")
+    if (!std::filesystem::is_directory(world))
     {
-        o.database = world;
-        o.conninfo = conninfo(world);
+        // A world in the database: a registered key (or atlas, live), as the registry says.
+        const auto key = worldDb("resolve '" + world + "'");
+        if (key.empty())
+        {
+            std::cerr << "'" << world << "' is neither an export directory nor a registered world (python3 tools/world_db.py list)\n";
+            return 2;
+        }
+        o.database = key;
+        o.conninfo = conninfo(key);
     }
     else
         o.worldExport = world;

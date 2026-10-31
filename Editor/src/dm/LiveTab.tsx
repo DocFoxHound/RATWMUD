@@ -12,7 +12,7 @@ import {useWorld} from './world';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
+import {isLive, worldName, dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
 type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'projects' | 'weather';
@@ -69,7 +69,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     const [factions, setFactions] = useState<Factions | null>(null);
     const [chapters, setChapters] = useState<Chapters | null>(null);
     const canAct = me.role !== 'viewer';
-    const prod = target === 'prod';
+    const prod = isLive(target);
 
     // Watching: one frame now, then every couple of seconds while the tab is open and the page visible.
     const poll = useCallback(() => dmApi.live(target).then(l => { setLive(l); setProblem(''); }).catch(e => setProblem((e as Error).message)), [target]);
@@ -238,7 +238,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         catch (error) { setNote((error as Error).message); }
         finally { setBusy(false); }
     };
-    const sure = (what: string) => !prod || window.confirm(`${what} on PROD?`);
+    const sure = (what: string) => !prod || window.confirm(`${what} on ${worldName(target)}?`);
     const onMapClick = (place: Place | null, marker: Marker | null) => {
         if (pick) {
             if (!place) { setNote('Choose a tile inside a place.'); return; }
@@ -458,7 +458,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 <Hint>Manage it in the Chapters tab.</Hint></div>
             : room ? <div className="dm-panel"><header><div><small>STRUCTURE</small><h2>{room.name}</h2></div></header>
                 <Hint>An interior, {room.width} × {room.height}.</Hint><button onClick={() => setView({kind: 'cell', id: room.id})}>Open it</button></div>
-            : <div className="dm-panel"><header><div><small>LIVE</small><h2>{prod ? 'PROD: the players’ world' : 'DEV: the rehearsal world'}</h2></div></header>
+            : <div className="dm-panel"><header><div><small>LIVE</small><h2>{prod ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>
                 <Hint>{live?.frame ? `${counts.online} players in the world, ${counts.offline} away; ${counts.npcs} NPCs and ${counts.road} on the road.`
                     : 'Positions appear once a game server for this world is running; it writes them only while this screen is open.'}</Hint>
                 {!on.size && <Hint>Every layer starts switched off. Switch on what you want to see on the left.</Hint>}

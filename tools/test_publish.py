@@ -32,7 +32,7 @@ class PublishTests(unittest.TestCase):
         W.seed_publish_password(cls.owner['prod'])
         cls.dev = W.connect('dev', 'editor', dbname=cls.names['dev'])
         S.save_roster(cls.dev, R.load())
-        cls.publisher = P.Publisher(lambda db: W.connect(db, 'publisher', dbname=cls.names[db]))
+        cls.publisher = P.Publisher(lambda db: W.connect(db, 'publisher', dbname=cls.names[db]), worlds=('dev', 'prod'))
 
     @classmethod
     def tearDownClass(cls):

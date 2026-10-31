@@ -5,7 +5,7 @@
 // It sets nothing. The levers (doc 64, decision 5): the tax rate, the mint on or off, and a one-off relief grant from the
 // capital's treasury to a town's, each queued for the game and logged in its ledger.
 import {useEffect, useMemo, useState} from 'react';
-import {dmApi, type Me, type Money, type Orchestrator, type Role, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type Money, type Orchestrator, type Role, type Target} from './api';
 
 export const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 export const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -64,7 +64,7 @@ function Levers({money, target, canAct, onChanged}: {money: Money; target: Targe
     const place = town || towns[0] || '';
 
     const queue = async (what: string, act: () => Promise<unknown>) => {
-        if (target === 'prod' && !window.confirm(`${what} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${what} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem(''); setMessage('');
         try { await act(); setMessage(`Queued: ${what.toLowerCase()}. The game logs it in its ledger.`); onChanged(); }
         catch (error) { setProblem((error as Error).message); }
@@ -90,11 +90,11 @@ function Levers({money, target, canAct, onChanged}: {money: Money; target: Targe
             <div className="row">
                 <label className="field"><span>Tax rate (% of a week's income, from the next reckoning)</span>
                     <input type="number" value={rate} min={0} max={50} step={0.5} onChange={e => setRate(e.target.value)} /></label>
-                <button className={target === 'prod' ? 'publish' : 'primary'} onClick={setTax}>Set</button>
+                <button className={isLive(target) ? 'publish' : 'primary'} onClick={setTax}>Set</button>
             </div>
             <div className="row">
                 <span className="hint">The mint strikes when money in use runs short and does harm, and melts what it struck when there's too much.</span>
-                <button className={target === 'prod' ? 'publish' : 'primary'} disabled={levers?.mint === true}
+                <button className={isLive(target) ? 'publish' : 'primary'} disabled={levers?.mint === true}
                     onClick={() => void queue('Turn the mint on', () => dmApi.setMint(target, true))}>Mint on</button>
                 <button className="danger" disabled={levers?.mint === false}
                     onClick={() => void queue('Turn the mint off', () => dmApi.setMint(target, false))}>Mint off</button>
@@ -105,7 +105,7 @@ function Levers({money, target, canAct, onChanged}: {money: Money; target: Targe
                         {towns.map(t => <option key={t} value={t}>{title(t)}</option>)}</select></label>
                 <label className="field"><span>Pennies, from the capital's treasury</span>
                     <input type="number" value={coins} min={1} step={1} onChange={e => setCoins(Math.round(Number(e.target.value)))} /></label>
-                <button className={target === 'prod' ? 'publish' : 'primary'} onClick={grant}>Grant</button>
+                <button className={isLive(target) ? 'publish' : 'primary'} onClick={grant}>Grant</button>
             </div>
         </fieldset>
         {!canAct && <p className="hint">Viewers can't move the levers.</p>}

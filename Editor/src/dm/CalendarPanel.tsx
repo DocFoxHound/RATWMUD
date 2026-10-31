@@ -1,7 +1,7 @@
 // The world's week and its festivals, for the Dungeon Master (Docs/Design/26-living-npcs.md, Phase 9): today as the
 // game last saved it, when the next market, rest day and festival fall, and calling a festival for a town.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Me, type Target, type WorldCalendar} from './api';
+import {isLive, worldName, dmApi, type Me, type Target, type WorldCalendar} from './api';
 
 const days = (n: number) => n === 0 ? 'today' : n === 1 ? 'tomorrow' : `in ${n} days`;
 
@@ -15,7 +15,7 @@ export function CalendarPanel({me, target}: {me: Me; target: Target}) {
     }, [target]);
     useEffect(() => { void load(); }, [load]);
     const call = async () => {
-        if (target === 'prod' && !window.confirm(`Call a festival in ${town} on PROD, ${days(when)}?`)) return;
+        if (isLive(target) && !window.confirm(`Call a festival in ${town} on ${worldName(target)}, ${days(when)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.callFestival(target, town, name.trim(), when); setName(''); await load(); }
         catch (error) { setProblem((error as Error).message); }
@@ -42,7 +42,7 @@ export function CalendarPanel({me, target}: {me: Me; target: Target}) {
                 <label className="field"><span>When</span>
                     <select value={when} onChange={e => setWhen(Number(e.target.value))}>
                         {[0, 1, 2, 3, 7, 14].map(n => <option key={n} value={n}>{days(n)}{n === 0 ? ' (from noon)' : ''}</option>)}</select></label>
-                <button className={target === 'prod' ? 'publish' : 'primary'} disabled={busy || !town} onClick={() => void call()}>
+                <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy || !town} onClick={() => void call()}>
                     {busy ? 'Calling…' : 'Call the festival'}</button>
             </div>}
             {cal.actions.length > 0 && <ol className="dm-actions">{cal.actions.slice(0, 5).map(a => <li key={a.id} className={a.status}>

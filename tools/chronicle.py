@@ -17,6 +17,7 @@ season. Nothing is invented and nothing is stored: the log stays the one record,
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import re
 import sys
 
@@ -451,15 +452,16 @@ def from_export(path: str) -> tuple[list[dict], dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('source', help="dev or prod (a world database), or a world_check --events file")
+    parser.add_argument('source', help="a world key (python3 tools/world_db.py list; atlas, live: the local choices), "
+                                       "or a world_check --events file")
     parser.add_argument('subject', nargs='?', help="an NPC's or a character's ID (without it: the fullest lives)")
     parser.add_argument('--top', type=int, default=10, help='how many of the fullest lives to list')
     args = parser.parse_args()
-    if args.source in ('dev', 'prod', 'ridgemere2'):
+    import world_db
+    if args.source in ('atlas', 'live') or (args.source in world_db.keys() and not Path(args.source).exists()):
         if not args.subject:
             parser.error('name someone to read from a database')
-        import world_db
-        with world_db.connect(args.source, 'dm') as conn:
+        with world_db.connect(world_db.resolve(args.source), 'dm') as conn:
             chronicle = load(conn, args.subject)
     else:
         rows, names = from_export(args.source)

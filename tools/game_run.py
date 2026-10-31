@@ -50,7 +50,14 @@ class GameServer:
                  flags: list[str] | None = None, log: Path | None = None, dev_identity: bool = True, env: dict | None = None):
         self.port = free_port()
         command = [str(ensure_server()), '--port', str(self.port), '--web', str(ensure_client())]
+        env = dict(env or {})
         if database:
+            # A registered world (tools/world_db.py; atlas and live are the local choices), its connection made here
+            # unless the caller gives one.
+            import world_db
+            database = world_db.resolve(database)
+            if 'RATW_DATABASE_URL' not in env:
+                env['RATW_DATABASE_URL'] = world_db.libpq_conninfo(database, 'game')
             command += ['--database', database]
         else:
             command += ['--save', str(save)]
@@ -63,7 +70,7 @@ class GameServer:
         self.log.parent.mkdir(parents=True, exist_ok=True)
         self.handle = self.log.open('w')
         self.process = subprocess.Popen(command, cwd=ROOT, stdout=self.handle, stderr=subprocess.STDOUT,
-                                        env={**os.environ, **(env or {})})
+                                        env={**os.environ, **env})
         deadline = time.monotonic() + 60
         while f'listening on port {self.port}' not in self.log.read_text(errors='replace'):
             if self.process.poll() is not None or time.monotonic() > deadline:

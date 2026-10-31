@@ -64,8 +64,8 @@ def database_errors():
     return psycopg.Error
 
 
-# Where the Storykeeper keeps its state: the dm schema of the DEV database unless told otherwise
-# (--database prod). Tests point this at a scratch database.
+# Where the Storykeeper keeps its state: the dm schema of a world's database, Atlas's world unless told otherwise
+# (--database KEY, e.g. prod; python3 tools/world_db.py list). Tests point this at a scratch database.
 DATABASE = 'dev'
 
 
@@ -958,11 +958,15 @@ def main():
     parser.add_argument('--exchange', type=Path, default=ROOT / 'Saved/DMBridge')
     parser.add_argument('--port', type=int, default=8780)
     parser.add_argument('--frontend', type=Path, default=ROOT / 'DM')
-    parser.add_argument('--database', choices=tuple(world_db.DATABASES), default=world_db.WORKING,
-                        help='whose dm schema holds the Storykeeper state (default the working world)')
+    parser.add_argument('--database', default='atlas',
+                        help="the world whose dm schema holds the Storykeeper state: a key, atlas (the default: Atlas's "
+                             'world) or live (the live one)')
     args = parser.parse_args()
     global DATABASE
-    DATABASE = args.database
+    try:
+        DATABASE = world_db.resolve(args.database)
+    except world_db.DatabaseError as error:
+        parser.error(str(error))
     checked(1 <= args.port <= 65535, 'Invalid local port.')
     service = DMService(args.state_dir, args.exchange)
     token = secrets.token_urlsafe(32)

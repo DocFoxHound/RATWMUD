@@ -1,7 +1,7 @@
 // Portraits players upload, for the Dungeon Master (Docs/Design/29-client-polish.md, phase 9): each new or reported one
 // with its image, approved or rejected with a reason. The game server applies the decision and tells the owner.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Me, type Portrait, type Portraits, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type Portrait, type Portraits, type Target} from './api';
 
 export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<Portraits | null>(null);
@@ -15,7 +15,7 @@ export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
     const decide = async (p: Portrait, decision: 'approve' | 'reject') => {
         const reason = (reasons[p.id] ?? '').trim();
         if (decision === 'reject' && !reason && !window.confirm(`Reject ${p.name}'s portrait without a reason?`)) return;
-        if (target === 'prod' && !window.confirm(`${decision === 'approve' ? 'Approve' : 'Reject'} ${p.name}'s portrait on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${decision === 'approve' ? 'Approve' : 'Reject'} ${p.name}'s portrait on ${worldName(target)}?`)) return;
         setBusy(p.id); setProblem('');
         try { await dmApi.reviewArtwork(target, p.id, decision, reason); await load(); }
         catch (error) { setProblem((error as Error).message); }

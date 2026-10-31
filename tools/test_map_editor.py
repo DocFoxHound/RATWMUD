@@ -655,7 +655,7 @@ class LiveHostTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         roster_path = Path(cls.temp.name) / 'roster.json'
         editor.roster_lib.save({**editor.roster_lib.load(), 'characters': []}, roster_path)
-        world = type('LiveWorld', (), {'roster': editor.RosterFile(roster_path)})()
+        world = type('LiveWorld', (), {'roster': editor.RosterFile(roster_path), 'key': 'dev'})()
         cls.launched, cls.streamed = [], []
         cls.server = editor.make_server(0, ai_config_path=Path(cls.temp.name) / 'missing.json', world=world,
                                         launcher=lambda *args: cls.launched.append(args) or ['play'],
@@ -691,14 +691,22 @@ class LiveHostTests(unittest.TestCase):
     def test_a_big_world_validates_with_a_note(self):
         status, data = self.post('/api/validate', self.big())
         self.assertEqual(status, 200, data)
-        self.assertTrue(any('DEV database' in w for w in data['warnings']))
+        self.assertTrue(any('dev database' in w for w in data['warnings']))
 
     def test_play_streams_a_big_world_from_dev(self):
         status, data = self.post('/api/playtest', {'project': self.big(), 'quickStart': True})
         self.assertEqual(status, 200, data)
         self.assertEqual(len(self.streamed), 1)
+        self.assertEqual(self.streamed[0][2], 'dev', "the playtest plays Atlas's world")
         self.assertEqual(self.launched, [])
-        self.assertIn('DEV database', data['manifest'])
+        self.assertIn('dev database', data['manifest'])
+
+    def test_the_session_says_which_world_atlas_is_on(self):
+        conn = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=30)
+        conn.request('GET', '/api/session')
+        session = json.loads(conn.getresponse().read())
+        conn.close()
+        self.assertEqual(session['world'], {'key': 'dev', 'name': 'Ridgemere (dev)', 'kind': 'dev', 'upstream': 'prod'})
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

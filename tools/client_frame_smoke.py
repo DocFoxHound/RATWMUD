@@ -5,7 +5,7 @@ Starts a server on a disposable copy of a world, walks a development wolf around
 game's work per frame and any long frames (see tools/client/frames.mjs for the budget).
 
     python3 tools/client_frame_smoke.py                    the demo world
-    python3 tools/client_frame_smoke.py --database dev     the DEV database world (the server saves into it: ask first)
+    python3 tools/client_frame_smoke.py --database KEY     a database world (atlas: Atlas's; the server saves into it: ask first)
     python3 tools/client_frame_smoke.py --seconds 40 --lenient
 """
 import argparse
@@ -19,7 +19,7 @@ from game_run import GameServer, ROOT
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--database', help='Play a database world (dev) instead of the demo')
+    parser.add_argument('--database', help="Play a database world (a world key; atlas: Atlas's) instead of the demo")
     parser.add_argument('--world', type=lambda p: Path(p).resolve(), help='A world manifest to play')
     parser.add_argument('--seconds', type=int, default=20)
     parser.add_argument('--lenient', action='store_true', help='Report only; never fail')
