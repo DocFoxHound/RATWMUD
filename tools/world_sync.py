@@ -859,9 +859,53 @@ def new_identity(name, by='', how='new'):
             'by': str(by)[:60], 'how': how}
 
 
+LAYOUT_KEYS = {'cells': ('id', 'x', 'y', 'z', 'width', 'height', 'outdoors', 'terrain', 'heights'),
+               'rooms': ('id', 'worldX', 'worldY', 'z', 'width', 'height', 'outdoors', 'terrain', 'heights'),
+               'links': ('id', 'kind', 'open', 'a', 'b')}
+
+
+def layout_fingerprint(project):
+    """A map's layout as a digest: its cells, interiors and links, their terrain, heights and places, and the spawn. Not
+    people, names, descriptions, lighting, weather or claims: a write that changes only those is on the same map."""
+    import hashlib
+    parts = {kind: sorted(([{k: x.get(k) for k in keys} for x in project.get(kind) or []]), key=lambda x: str(x['id']))
+             for kind, keys in LAYOUT_KEYS.items()}
+    parts['spawn'] = project.get('spawn')
+    text = json.dumps(parts, sort_keys=True, separators=(',', ':'), default=str)
+    return 'sha256:' + hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+def map_for_layout(stamp, layout, mode='auto'):
+    """Whether a generator's write keeps the world's map identity ('keep') or stamps a new one ('new'): 'new' and 'same'
+    say so outright; 'auto' keeps a stamp whose recorded layout is this one, and stamps anew otherwise (a stamp without a
+    layout, from before fingerprints, can't be shown to be the same map)."""
+    if mode not in ('auto', 'new', 'same'):
+        raise ValueError(f'map mode {mode!r}: auto, new or same')
+    if mode == 'new' or stamp is None:
+        return 'new'
+    if mode == 'same':
+        return 'keep'
+    return 'keep' if stamp.get('layout') == layout else 'new'
+
+
+def stamp_for_layout(conn, layout, name, by='', how='generated', mode='auto'):
+    """A generator's write (as the owner, in its transaction): keeps the stamp when the layout is the same map
+    (map_for_layout; recording the layout on it if it had none) or stamps a new identity carrying the layout. Returns
+    (identity, 'kept' or 'new')."""
+    row = conn.execute('SELECT value FROM admin.settings WHERE key = %s', (MAP_SETTING,)).fetchone() \
+        if _has(conn, 'admin.settings') else None
+    stamp = row[0] if row and _identity(row[0], 'stamp') else None
+    if map_for_layout(stamp, layout, mode) == 'keep':
+        if stamp.get('layout') != layout:
+            stamp_map(conn, name, identity={**stamp, 'layout': layout})
+        return _identity(stamp, 'stamp'), 'kept'
+    return stamp_map(conn, name, by, how, identity={**new_identity(name, by, how), 'layout': layout}), 'new'
+
+
 def stamp_map(conn, name, by='', how='new', identity=None):
     """Gives a world a new map identity (its map was generated new): admin.settings 'map'. Needs the owner (the
-    settings are the owner's), inside the caller's transaction or its own. Returns the identity."""
+    settings are the owner's), inside the caller's transaction or its own. Returns the identity. (`identity`: a whole
+    stamp to write instead, e.g. one restored; a generator's write uses stamp_for_layout.)"""
     value = identity or new_identity(name, by, how)
     conn.execute('''INSERT INTO admin.settings (key, value, updated_at) VALUES (%s, %s, now())
                     ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()''',

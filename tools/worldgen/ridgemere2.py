@@ -3944,7 +3944,7 @@ def backup(world_key, project, revision):
     return dump, atlas
 
 
-def write(world_key, seed=SEED, dry=False, report=print):
+def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
     """Steps 1-4: back up; load the world fresh and lay the city over it; check; save, with the voices' quarters, in
     one transaction; tell open Atlas sessions to reload. Refuses, writing nothing, if any check fails."""
     import map_editor
@@ -3980,20 +3980,26 @@ def write(world_key, seed=SEED, dry=False, report=print):
     report(f'Backed up to {dump} and {atlas}. (To restore: close every connection, then pg_restore --clean -d '
            f'"<owner conninfo>" {dump}.)')
     quarters = voice_quarters(m)
-    # As the owner: the city is a new map, so the world gets a new map identity (admin.settings, the owner's) in the same
-    # transaction; pull and import with a world on the old map are refused from now on (doc 66, "The same map").
+    # As the owner: a changed layout is a new map, so the world gets a new map identity (admin.settings, the owner's) in
+    # the same transaction, and pull and import with a world on the old map are refused from then on (doc 66, "The same
+    # map"); a write that changes people alone keeps the identity (world_sync.stamp_for_layout, by the layout's
+    # fingerprint; --new-map or --same-map say so outright).
     with world_db.connect(world_key, 'owner') as conn:
         with conn.transaction():
             new = world_store.save_world(conn, p, revision)
-            ident = world_sync.stamp_map(conn, 'Ridgemere 2.0: the city (doc 67)', 'worldgen.ridgemere2', 'generated')
+            # A new map identity only when the layout changed (or --new-map): a write of people alone stays on its map.
+            ident, kept = world_sync.stamp_for_layout(conn, world_sync.layout_fingerprint(p),
+                                                      'Ridgemere 2.0: the city (doc 67)', 'worldgen.ridgemere2', 'generated',
+                                                      map_mode)
             wid = p['id']
             changed = 0
             for npc, quarter in quarters.items():
                 changed += conn.execute('UPDATE live.npc_voice SET quarter = %s WHERE world_id = %s AND npc_id = %s '
                                         'AND quarter IS DISTINCT FROM %s', (quarter, wid, npc, quarter)).rowcount
             world_sync.tell_editors(conn, wid, 'ridgemere2.py', 'Ridgemere 2.0: the city (doc 67)')
-    report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; a new map '
-           f'identity, {ident["id"]}.')
+    report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; ' +
+           (f'the same map, {ident["id"]} (its layout unchanged).' if kept == 'kept' else
+            f'a new map identity, {ident["id"]} (the layout changed; pull and import with a world on the old map are refused).'))
     return 0
 
 
@@ -4023,9 +4029,15 @@ def main(argv=None):
         s.add_argument('--world', default='ridgemere2')
         s.add_argument('--from-file', type=Path, help='a project JSON (load_world\'s) instead of the database')
         s.add_argument('--dry-run', action='store_true')
+        if name == 'write':
+            m = s.add_mutually_exclusive_group()
+            m.add_argument('--new-map', action='store_const', const='new', dest='map_mode',
+                           help='stamp a new map identity whatever the layout')
+            m.add_argument('--same-map', action='store_const', const='same', dest='map_mode',
+                           help='keep the world\'s map identity whatever the layout')
     args = parser.parse_args(argv)
     if args.command == 'write':
-        return write(args.world, args.seed, dry=args.dry_run)
+        return write(args.world, args.seed, dry=args.dry_run, map_mode=args.map_mode or 'auto')
     if args.from_file:
         data = json.loads(args.from_file.read_text(encoding='utf-8'))
         project = data.get('project', data)
