@@ -516,9 +516,9 @@ bool Game::start(std::string& problem)
 
 bool Game::loadFromDatabase(std::string& problem)
 {
-    if (options_.database != "prod" && options_.database != "dev")
+    if (options_.database != "prod" && options_.database != "dev" && options_.database != "ridgemere2")
     {
-        problem = "the database must be prod or dev.";
+        problem = "the database must be prod, dev or ridgemere2 (Ridgemere 2.0).";
         return false;
     }
     if (options_.conninfo.empty())

@@ -293,7 +293,7 @@ int main(int argc, char** argv)
     o.scratch = true;
     o.forkSnapshots = false;
     o.savePath = "/tmp/ratw-talk-check-" + std::to_string(::getpid()) + ".json";
-    if (world == "dev" || world == "prod")
+    if (world == "dev" || world == "prod" || world == "ridgemere2")
     {
         o.database = world;
         o.conninfo = conninfo(world);

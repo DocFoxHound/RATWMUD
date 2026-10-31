@@ -34,7 +34,13 @@ ROOT = Path(__file__).resolve().parent.parent
 DATABASE_DIR = ROOT / 'Database'
 ENV_FILE = DATABASE_DIR / '.env'
 MIGRATIONS = DATABASE_DIR / 'migrations'
-DATABASES = {'dev': 'ratw_dev', 'prod': 'ratw_prod'}
+# Ridgemere 2.0 (the user, 2026-10-30): a fresh map beside DEV's, copied from DEV with its map taken away (its NPCs, their
+# talk and the buildings kept), so the old world stays as it was.
+DATABASES = {'dev': 'ratw_dev', 'prod': 'ratw_prod', 'ridgemere2': 'ratw_ridgemere2'}
+# The world authored and run day to day (the user, 2026-10-30: "Switch them all to the new 2.0"): the editor, the builds,
+# the scratch and local servers and the talk and voice tools work on it unless told otherwise. DEV and PROD stay as
+# they were; Push to live is still DEV to PROD.
+WORKING = 'ridgemere2'
 ROLES = ('owner', 'editor', 'publisher', 'game', 'dm')
 PASSWORD_KEYS = ['POSTGRES_PASSWORD'] + [f'RATW_{r.upper()}_PASSWORD' for r in ROLES]
 DEFAULT_PUBLISH_PASSWORD = 'password'
@@ -111,9 +117,9 @@ def settings() -> dict[str, str]:
 
 
 def conninfo(database: str, role: str) -> dict[str, str]:
-    """Connection keywords for one of the two databases as one of the RATW roles."""
+    """Connection keywords for one of the databases as one of the RATW roles."""
     if database not in DATABASES:
-        raise DatabaseError(f'Unknown database {database!r}; use dev or prod.')
+        raise DatabaseError(f'Unknown database {database!r}; use one of {", ".join(DATABASES)}.')
     if role not in ROLES:
         raise DatabaseError(f'Unknown role {role!r}; use one of {", ".join(ROLES)}.')
     s = settings()
@@ -373,7 +379,7 @@ def cmd_down(args) -> int:
 def cmd_migrate(args) -> int:
     for role in ensure_roles():
         print(f'Created login role {role}.')
-    for database in (['dev', 'prod'] if args.db == 'all' else [args.db]):
+    for database in (list(DATABASES) if args.db == 'all' else [args.db]):   # (Every database: their schemas never drift.)
         with connect(database, 'owner') as conn:
             applied = migrate(conn)
             print(f'{DATABASES[database]}: ' + (f'applied {", ".join(applied)}' if applied else 'up to date'))
@@ -438,7 +444,7 @@ def main(argv=None) -> int:
     sub.add_parser('up', help='start PostgreSQL in Docker').set_defaults(run=cmd_up)
     sub.add_parser('down', help='stop PostgreSQL (data is kept)').set_defaults(run=cmd_down)
     m = sub.add_parser('migrate', help='apply pending migrations')
-    m.add_argument('--db', choices=('dev', 'prod', 'all'), default='all')
+    m.add_argument('--db', choices=(*DATABASES, 'all'), default='all')
     m.set_defaults(run=cmd_migrate)
     sub.add_parser('status', help='show migrations and row counts').set_defaults(run=cmd_status)
     sub.add_parser('set-publish-password', help='change the Push to live password').set_defaults(run=cmd_set_publish_password)

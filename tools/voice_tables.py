@@ -195,7 +195,7 @@ def main() -> int:
     if args.all and not (args.yes or args.dry_run):
         parser.error('--all makes a paid call for every resident: add --yes')
     people = residents()
-    with world_db.connect('dev', 'editor') as conn:
+    with world_db.connect(world_db.WORKING, 'editor') as conn:
         world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
         rows = {r[0]: dict(zip(('id', 'description', 'personality', 'backstory', 'greeting', 'work_label', 'persona'), r))
                 for r in conn.execute('SELECT n.id, n.description, n.personality, n.backstory, n.greeting, n.work_label, '

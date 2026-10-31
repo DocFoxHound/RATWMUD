@@ -952,13 +952,14 @@ def handler_class(service, token, frontend):
 
 
 def main():
+    import world_db
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--state-dir', type=Path, default=ROOT / 'Saved/DM')
     parser.add_argument('--exchange', type=Path, default=ROOT / 'Saved/DMBridge')
     parser.add_argument('--port', type=int, default=8780)
     parser.add_argument('--frontend', type=Path, default=ROOT / 'DM')
-    parser.add_argument('--database', choices=('dev', 'prod'), default='dev',
-                        help='whose dm schema holds the Storykeeper state (default dev)')
+    parser.add_argument('--database', choices=tuple(world_db.DATABASES), default=world_db.WORKING,
+                        help='whose dm schema holds the Storykeeper state (default the working world)')
     args = parser.parse_args()
     global DATABASE
     DATABASE = args.database

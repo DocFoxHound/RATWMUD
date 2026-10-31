@@ -144,7 +144,7 @@ def main() -> int:
     parser.add_argument('--replace', default='', help='comma-separated: dialects, voices, relations (overwrite those)')
     args = parser.parse_args()
     replace = {r for r in args.replace.split(',') if r}
-    with world_db.connect('dev', 'editor') as conn:
+    with world_db.connect(world_db.WORKING, 'editor') as conn:
         worlds = [r[0] for r in conn.execute('SELECT id FROM world.worlds').fetchall()]
         if len(worlds) != 1:
             sys.exit(f'Expected one world in DEV, found {worlds}')

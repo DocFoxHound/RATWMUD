@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Compile the world in a database into a build the game server loads.
 
-  python3 tools/world_build.py dev      build DEV's current world (for a local DEV server), unless the newest
-                                        build was made from exactly what DEV is now (--force: build anyway)
+  python3 tools/world_build.py [WORLD]  build a world's current state (for a local server): ridgemere2 (the
+                                        working world, Ridgemere 2.0) or dev, unless the newest build was made
+                                        from exactly what it is now (--force: build anyway)
   python3 tools/world_build.py latest   show the newest build in DEV and PROD
-  python3 tools/world_build.py export DIR
-                                        write DEV's newest build to DIR as files (world_check and game_load read it)
+  python3 tools/world_build.py export DIR [--world WORLD]
+                                        write the working world's (or WORLD's) newest build to DIR as files (world_check and game_load read it)
 
 PROD builds are made by Push to live (tools/publish.py), one per release.
 A build is what the game server loads, produced by the same exporter as
@@ -125,31 +126,36 @@ def export(conn, build_id, directory: Path) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', choices=('dev', 'latest', 'export'))
+    parser.add_argument('command', nargs='?', default=world_db.WORKING,
+                        choices=(*(d for d in world_db.DATABASES if d != 'prod'), 'latest', 'export'))
     parser.add_argument('directory', nargs='?', type=Path, help='export: where to write the build')
-    parser.add_argument('--force', action='store_true', help='build DEV even if nothing has changed since the last build')
+    parser.add_argument('--force', action='store_true', help='build even if nothing has changed since the last build')
+    parser.add_argument('--world', default=world_db.WORKING, choices=tuple(d for d in world_db.DATABASES if d != 'prod'),
+                        help='export: the world to export')
     args = parser.parse_args(argv)
     try:
         if args.command == 'export':
             if not args.directory:
                 parser.error('export needs a directory')
-            with world_db.connect('dev', 'editor') as conn:
+            name = args.world.upper()
+            with world_db.connect(args.world, 'editor') as conn:
                 info = latest(conn)
                 if not info:
-                    print('DEV has no builds yet (python3 tools/world_build.py dev).', file=sys.stderr)
+                    print(f'{name} has no builds yet (python3 tools/world_build.py {args.world}).', file=sys.stderr)
                     return 1
                 count = export(conn, info['id'], args.directory)
-            print(f'DEV build {info["id"]}: {count} files written to {args.directory}.')
-        elif args.command == 'dev':
-            with world_db.connect('dev', 'editor') as conn:
+            print(f'{name} build {info["id"]}: {count} files written to {args.directory}.')
+        elif args.command != 'latest':
+            name = args.command.upper()
+            with world_db.connect(args.command, 'editor') as conn:
                 kept = None if args.force else current(conn)
                 if kept:
-                    print(f'DEV build {kept[0]} is current ({kept[1]} cells); nothing changed since it was made.')
+                    print(f'{name} build {kept[0]} is current ({kept[1]} cells); nothing changed since it was made.')
                     return 0
                 build_id, count = build(conn, 'world_build.py')
-            print(f'DEV build {build_id}: {count} cells.')
+            print(f'{name} build {build_id}: {count} cells.')
         else:
-            for database in ('dev', 'prod'):
+            for database in world_db.DATABASES:
                 with world_db.connect(database, 'publisher') as conn:
                     info = latest(conn)
                 print(f'{database.upper()}: ' + (f'build {info["id"]} of {info["world"]}, {info["files"]} files, '

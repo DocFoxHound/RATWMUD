@@ -455,7 +455,7 @@ def main() -> int:
     parser.add_argument('subject', nargs='?', help="an NPC's or a character's ID (without it: the fullest lives)")
     parser.add_argument('--top', type=int, default=10, help='how many of the fullest lives to list')
     args = parser.parse_args()
-    if args.source in ('dev', 'prod'):
+    if args.source in ('dev', 'prod', 'ridgemere2'):
         if not args.subject:
             parser.error('name someone to read from a database')
         import world_db

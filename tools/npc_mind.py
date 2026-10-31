@@ -869,7 +869,7 @@ def main() -> int:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--config", type=Path, help="Existing server-side RATW NPC config (see npc_bridge.py)")
     source.add_argument("--fixture", action="store_true", help="Offline replies (no provider, no cost)")
-    parser.add_argument("--database", choices=("dev", "prod"), help="Read the pair's history from this event log")
+    parser.add_argument("--database", choices=("dev", "prod", "ridgemere2"), help="Read the pair's history from this event log")
     parser.add_argument("--port", type=int, default=18766)
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--per-hour", type=int, default=600, help="Replies an hour, overall")

@@ -62,7 +62,7 @@ def main(argv=None) -> int:
         return 0
     tiles = sum(a != b for cid, rows in changes.items() for r1, r2 in zip(rows, next(c for c in base['cells'] if c['id'] == cid)['terrain'])
                 for a, b in zip(r1, r2))
-    with world_db.connect('dev', 'editor') as conn:
+    with world_db.connect(world_db.WORKING, 'editor') as conn:
         world_id = world_store.list_worlds(conn)[0]['id']
         dev, revision = world_store.load_world(conn, world_id)
         if args.revision is not None and revision != args.revision:

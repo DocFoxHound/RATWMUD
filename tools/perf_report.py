@@ -103,7 +103,7 @@ def report(records, hours: float, out=sys.stdout):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument('--database', choices=['dev', 'prod'])
+    source.add_argument('--database', choices=['dev', 'prod', 'ridgemere2'])
     source.add_argument('--file', type=Path)
     parser.add_argument('--hours', type=float, default=24)
     args = parser.parse_args(argv)

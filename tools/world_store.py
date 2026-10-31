@@ -640,7 +640,7 @@ def save_roster(conn, roster: dict) -> dict:
 class DbRoster:
     """The shared roster in DEV, with the same load/save interface as a roster file."""
 
-    def __init__(self, connect=lambda: world_db.connect('dev', 'editor')):
+    def __init__(self, connect=lambda: world_db.connect(world_db.WORKING, 'editor')):
         self.connect = connect
 
     def load(self) -> dict:
@@ -686,7 +686,7 @@ def main(argv=None) -> int:
     sub.add_parser('list', help='list worlds in DEV')
     args = parser.parse_args(argv)
     try:
-        with world_db.connect('dev', 'editor') as conn:
+        with world_db.connect(world_db.WORKING, 'editor') as conn:
             if args.command == 'import':
                 import_files(conn, args.replace)
             else:
