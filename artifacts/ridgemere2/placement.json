@@ -967,9 +967,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_tarred_rope",
-"x": 11,
-"y": 5
+"cell": "w_ridgemere_0_1",
+"x": 236,
+"y": 51
 },
 "evening": {
 "cell": "rm_the_black_tun",
@@ -977,11 +977,11 @@
 "y": 5
 },
 "eveningPlace": "rm_the_black_tun",
-"business": "inn",
+"business": "stall",
 "role": "merchant",
-"post": "keeper",
-"template": "keeping the taproom",
-"structure": "rm_the_tarred_rope",
+"post": "stallkeeper",
+"template": "greens stall in the Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -1180,7 +1180,7 @@
 },
 "work": {
 "cell": "r2_the_knucklebones",
-"x": 8,
+"x": 11,
 "y": 5
 },
 "evening": {
@@ -1189,10 +1189,10 @@
 "y": 2
 },
 "eveningPlace": "rm_the_bilge",
-"business": null,
-"role": "civilian",
-"post": "help",
-"template": null,
+"business": "inn",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the taproom",
 "structure": "r2_the_knucklebones",
 "route": "",
 "homeKept": false
@@ -1703,9 +1703,9 @@
 "y": 5
 },
 "work": {
-"cell": "rm_the_soup_kitchen",
-"x": 4,
-"y": 2
+"cell": "r2_the_knucklebones",
+"x": 8,
+"y": 5
 },
 "evening": {
 "cell": "rm_the_bilge",
@@ -1713,11 +1713,11 @@
 "y": 5
 },
 "eveningPlace": "rm_the_bilge",
-"business": "inn",
-"role": "merchant",
-"post": "keeper",
-"template": "ladling soup",
-"structure": "rm_the_soup_kitchen",
+"business": null,
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "r2_the_knucklebones",
 "route": "",
 "homeKept": false
 },
@@ -2449,9 +2449,9 @@
 "y": 3
 },
 "work": {
-"cell": "r2_timberland_s_forge_row",
-"x": 8,
-"y": 3
+"cell": "w_ridgemere_0_1",
+"x": 252,
+"y": 41
 },
 "evening": {
 "cell": "rm_the_black_tun",
@@ -2459,11 +2459,11 @@
 "y": 4
 },
 "eveningPlace": "rm_the_black_tun",
-"business": "smithy",
+"business": "fishmonger",
 "role": "merchant",
-"post": "keeper",
-"template": "smith",
-"structure": "r2_forge_row",
+"post": "stallkeeper",
+"template": "fishmonger in the Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -3233,9 +3233,9 @@
 "y": 5
 },
 "work": {
-"cell": "rm_the_fish_hall",
-"x": 9,
-"y": 17
+"cell": "r2_timberland_s_forge_row",
+"x": 8,
+"y": 3
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
@@ -3243,11 +3243,11 @@
 "y": 10
 },
 "eveningPlace": "rm_the_slag_anchor",
-"business": null,
-"role": "civilian",
-"post": "hands",
-"template": null,
-"structure": "rm_the_fish_hall",
+"business": "smithy",
+"role": "merchant",
+"post": "keeper",
+"template": "smith",
+"structure": "r2_forge_row",
 "route": "",
 "homeKept": true
 },
@@ -4251,9 +4251,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_slag_anchor",
-"x": 14,
-"y": 11
+"cell": "w_ridgemere_0_1",
+"x": 245,
+"y": 51
 },
 "evening": {
 "cell": "rm_the_black_tun",
@@ -4261,11 +4261,11 @@
 "y": 11
 },
 "eveningPlace": "rm_the_black_tun",
-"business": "inn",
+"business": "rag_and_bone",
 "role": "merchant",
-"post": "keeper",
-"template": "keeping the taproom",
-"structure": "rm_the_slag_anchor",
+"post": "stallkeeper",
+"template": "rag-and-bone dealer, Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -5051,9 +5051,9 @@
 "y": 10
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 236,
-"y": 41
+"cell": "rm_the_soup_kitchen",
+"x": 9,
+"y": 11
 },
 "evening": {
 "cell": "rm_the_bilge",
@@ -5061,11 +5061,11 @@
 "y": 1
 },
 "eveningPlace": "rm_the_bilge",
-"business": "inn",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "ladling soup in the Rag Market",
-"structure": "rag_market",
+"business": null,
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "rm_the_soup_kitchen",
 "route": "",
 "homeKept": false
 },
@@ -6311,9 +6311,9 @@
 "y": 3
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 244,
-"y": 41
+"cell": "r2_the_penny_loaf",
+"x": 2,
+"y": 8
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
@@ -6322,10 +6322,10 @@
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "bakery",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "baker in the Rag Market",
-"structure": "rag_market",
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "r2_penny_loaf",
 "route": "",
 "homeKept": false
 },
@@ -6337,9 +6337,9 @@
 "y": 16
 },
 "work": {
-"cell": "r2_the_penny_loaf",
-"x": 2,
-"y": 11
+"cell": "w_ridgemere_0_1",
+"x": 244,
+"y": 41
 },
 "evening": {
 "cell": "rm_the_last_lamp",
@@ -6349,9 +6349,9 @@
 "eveningPlace": "rm_the_last_lamp",
 "business": "bakery",
 "role": "merchant",
-"post": "keeper",
-"template": "baker",
-"structure": "r2_penny_loaf",
+"post": "stallkeeper",
+"template": "baker in the Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -6505,9 +6505,9 @@
 "y": 14
 },
 "work": {
-"cell": "r2_the_knucklebones",
-"x": 11,
-"y": 5
+"cell": "rm_the_soup_kitchen",
+"x": 4,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_last_lamp",
@@ -6518,8 +6518,8 @@
 "business": "inn",
 "role": "merchant",
 "post": "keeper",
-"template": "keeping the taproom",
-"structure": "r2_the_knucklebones",
+"template": "ladling soup",
+"structure": "rm_the_soup_kitchen",
 "route": "",
 "homeKept": true
 },
@@ -6609,9 +6609,9 @@
 "y": 4
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 252,
-"y": 41
+"cell": "rm_the_fish_hall",
+"x": 9,
+"y": 17
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
@@ -6619,11 +6619,11 @@
 "y": 3
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "fishmonger",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "fishmonger in the Rag Market",
-"structure": "rag_market",
+"business": null,
+"role": "civilian",
+"post": "hands",
+"template": null,
+"structure": "rm_the_fish_hall",
 "route": "",
 "homeKept": false
 },
@@ -6825,9 +6825,9 @@
 "y": 1
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 179,
-"y": 37
+"cell": "rm_the_tarred_rope",
+"x": 11,
+"y": 5
 },
 "evening": {
 "cell": "rm_fellhall_down",
@@ -6835,11 +6835,11 @@
 "y": 1
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "pool",
-"template": "carrying from Sump Stairs",
-"structure": "sump_stairs",
+"business": "inn",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the taproom",
+"structure": "rm_the_tarred_rope",
 "route": "",
 "homeKept": false
 },
@@ -7171,9 +7171,9 @@
 "y": 8
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 178,
-"y": 37
+"cell": "rm_the_slag_anchor",
+"x": 14,
+"y": 11
 },
 "evening": {
 "cell": "rm_mossgrave_court_down",
@@ -7181,11 +7181,11 @@
 "y": 8
 },
 "eveningPlace": "home",
-"business": null,
-"role": "civilian",
-"post": "pool",
-"template": "carrying from Sump Stairs",
-"structure": "sump_stairs",
+"business": "inn",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the taproom",
+"structure": "rm_the_slag_anchor",
 "route": "",
 "homeKept": false
 },
@@ -7712,8 +7712,8 @@
 },
 "work": {
 "cell": "w_ridgemere_0_1",
-"x": 236,
-"y": 51
+"x": 179,
+"y": 37
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
@@ -7721,11 +7721,11 @@
 "y": 10
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "stall",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "greens stall in the Rag Market",
-"structure": "rag_market",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "carrying from Sump Stairs",
+"structure": "sump_stairs",
 "route": "",
 "homeKept": false
 },
@@ -7902,8 +7902,8 @@
 },
 "work": {
 "cell": "w_ridgemere_0_1",
-"x": 245,
-"y": 51
+"x": 178,
+"y": 37
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
@@ -7911,11 +7911,11 @@
 "y": 5
 },
 "eveningPlace": "rm_the_rainbarrel",
-"business": "rag_and_bone",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "rag-and-bone dealer, Rag Market",
-"structure": "rag_market",
+"business": null,
+"role": "civilian",
+"post": "pool",
+"template": "carrying from Sump Stairs",
+"structure": "sump_stairs",
 "route": "",
 "homeKept": false
 },
@@ -8239,9 +8239,9 @@
 "y": 9
 },
 "work": {
-"cell": "w_ridgemere_0_1",
-"x": 252,
-"y": 51
+"cell": "r2_cinder_butchers",
+"x": 5,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_rainbarrel",
@@ -8250,10 +8250,10 @@
 },
 "eveningPlace": "rm_the_rainbarrel",
 "business": "butcher",
-"role": "merchant",
-"post": "stallkeeper",
-"template": "butcher in the Rag Market",
-"structure": "rag_market",
+"role": "civilian",
+"post": "help",
+"template": null,
+"structure": "r2_cinder_butchers",
 "route": "",
 "homeKept": false
 },
@@ -10381,9 +10381,9 @@
 "y": 1
 },
 "work": {
-"cell": "w_ridgemere_1_1",
-"x": 113,
-"y": 54
+"cell": "w_ridgemere_0_1",
+"x": 252,
+"y": 51
 },
 "evening": {
 "cell": "rm_the_last_lamp",
@@ -10394,8 +10394,8 @@
 "business": "butcher",
 "role": "merchant",
 "post": "stallkeeper",
-"template": "butcher on Market Square",
-"structure": "market_square",
+"template": "butcher in the Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -11211,9 +11211,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_rainbarrel",
-"x": 5,
-"y": 2
+"cell": "w_ridgemere_0_1",
+"x": 236,
+"y": 41
 },
 "evening": {
 "cell": "rm_the_grey_gull_inn",
@@ -11223,9 +11223,9 @@
 "eveningPlace": "rm_the_grey_gull_inn",
 "business": "inn",
 "role": "merchant",
-"post": "keeper",
-"template": "keeping the taproom",
-"structure": "rm_the_rainbarrel",
+"post": "stallkeeper",
+"template": "ladling soup in the Rag Market",
+"structure": "rag_market",
 "route": "",
 "homeKept": true
 },
@@ -12883,7 +12883,7 @@
 "work": {
 "cell": "r2_the_penny_loaf",
 "x": 2,
-"y": 8
+"y": 11
 },
 "evening": {
 "cell": "r2_the_knucklebones",
@@ -12892,9 +12892,9 @@
 },
 "eveningPlace": "r2_the_knucklebones",
 "business": "bakery",
-"role": "civilian",
-"post": "help",
-"template": null,
+"role": "merchant",
+"post": "keeper",
+"template": "baker",
 "structure": "r2_penny_loaf",
 "route": "",
 "homeKept": false
@@ -13333,9 +13333,9 @@
 "y": 7
 },
 "work": {
-"cell": "r2_cinder_butchers",
-"x": 5,
-"y": 2
+"cell": "w_ridgemere_1_1",
+"x": 113,
+"y": 54
 },
 "evening": {
 "cell": "rm_the_slag_anchor",
@@ -13344,10 +13344,10 @@
 },
 "eveningPlace": "rm_the_slag_anchor",
 "business": "butcher",
-"role": "civilian",
-"post": "help",
-"template": null,
-"structure": "r2_cinder_butchers",
+"role": "merchant",
+"post": "stallkeeper",
+"template": "butcher on Market Square",
+"structure": "market_square",
 "route": "",
 "homeKept": true
 },
@@ -14261,9 +14261,9 @@
 "y": 2
 },
 "work": {
-"cell": "rm_the_soup_kitchen",
-"x": 9,
-"y": 11
+"cell": "rm_the_rainbarrel",
+"x": 5,
+"y": 2
 },
 "evening": {
 "cell": "rm_the_soup_kitchen",
@@ -14271,11 +14271,11 @@
 "y": 3
 },
 "eveningPlace": "rm_the_soup_kitchen",
-"business": null,
-"role": "civilian",
-"post": "help",
-"template": null,
-"structure": "rm_the_soup_kitchen",
+"business": "inn",
+"role": "merchant",
+"post": "keeper",
+"template": "keeping the taproom",
+"structure": "rm_the_rainbarrel",
 "route": "",
 "homeKept": false
 },

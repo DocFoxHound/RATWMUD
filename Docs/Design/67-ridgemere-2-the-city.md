@@ -2288,8 +2288,8 @@ spirit of each city sector to the jobs people are working." Backup before:
   Cellars, the Watch's two civilians); helping in the family's own shop (a helper who lives over it).
 - **Lower:** hands and helpers in someone else's business; the pools (dockers, cranemen, porters, washers, tray
   sellers); the carters' drivers; service (servants, stewards, grooms, the King's household's servants and cooks); the
-  lamplighters; and the Sump's own street trade, the Rag Market's pitches and the Soup Kitchen (the poor's market and its
-  charity, beside the tray sellers).
+  lamplighters. (The Rag Market's pitches and the Soup Kitchen were counted lower here, as the Sump's own street trade;
+  since "Rag Market first", below, they are shopkeeping, middle.)
 - **No job:** "at home in the Heights" and "reading in the gardens" (an earner under 60 there is unmatched). Children,
   pupils and the retired are not earners.
 - **The larger businesses** (`LARGE`) are those two lists. Nobody from the Sump, the Cinders or the wharf keeps one, nor
@@ -2372,6 +2372,54 @@ without a route (497 at their place at 8:00, 62 on their way).
   (the royal secretary, the keeper of the rolls, the harbourmaster) would need more Minor House adults: every working-age
   member of the five households now holds an upper post.
 - A Great House's works count as a middle-class master's (the House owns it). Counted as upper, their 17 Commons
-  masters would be unmatched (about 90%); nothing else would change.
+  masters would be unmatched (about 90%); nothing else would change. (The user: "the Great Houses having middle class
+  masters is fine".)
 - The Rag Market's stallholders and the Soup Kitchen count as the Sump's own (lower). Counted as shopkeepers, their seven
-  Sump keepers would be unmatched, and the city has no middle-class earners left to take them.
+  Sump keepers would be unmatched, and the city has no middle-class earners left to take them. (The user: they "should
+  be run by middle class adults before sump adults": done below.)
+
+#### Rag Market first (2026-10-31)
+
+Branch `r2-class-jobs-2`, from `ridgemere2` (5d00cee, then 289e9ed merged in). The user (verbatim): "No, I think the
+Great Houses having middle class masters is fine. The Rag Market stalls should be run by middle class adults before
+sump adults, so that does need to be fixed." Backup before: `Saved/Backups/ratw_ridgemere2-before-ragmarket.dump`
+(main repo). The write moved DEV from revision 53 to 55 (build 50), on the same map (doc 66, Progress, "A generator's
+write keeps its map").
+
+- **The class:** the Rag Market's six stalls and the Soup Kitchen's keeper are shopkeeping (middle), like any other till
+  (the Soup Kitchen is a till business of the same kind, a cookshop, and is counted with them; its helper is a hand,
+  lower). The tray sellers crying wares beside them stay waged street work (lower). `RAG_FIRST`.
+- **Middle-class adults first:** there are none out of work. The middle-class adults placed without a paid post are four
+  over 60 (retired), so every stall had to come from a middle-class earner.
+- **So each Sump keeper's stall goes by a three-way move** (`Placement.class_jobs`, before the swaps): a Commons keeper of
+  another till takes the stall, that till goes to a Sump, Cinders or wharf earner in waged work (a till in the Sump's,
+  the wharf's or the Cinders' own streets first), and the Sump keeper takes that waged work. A Sump keeper at the Rag
+  Market now counts against the plan more than one at another counter, so the swaps never give a stall back. A new
+  check: the Rag Market's stalls and the Soup Kitchen are kept by middle-class households (64 checks, all pass).
+- **Filled: all 7 with middle-class adults** (the seven Sump keepers before):
+
+  | Post | Now kept by (their old till) | The Sump keeper before, now |
+  |---|---|---|
+  | the Soup Kitchen | Karin Ashgate (a taproom) | Brenna Greyworth, helping at the Knucklebones |
+  | soup, Rag Market | Wenna Tarford (a taproom) | Hanne Sootham, helping at the Soup Kitchen |
+  | baker, Rag Market | Jorunn Tarham (the Penny Loaf) | Jorunn Saltdale, helping at the Penny Loaf |
+  | fishmonger, Rag Market | Dagny Slaghand (Timberland's Forge Row) | Karin Wetridge, working at the Fish Hall |
+  | greens, Rag Market | Agnes Millford (a taproom) | Moll Dripdale, carrying from Sump Stairs |
+  | rag-and-bone, Rag Market | Gerrit Sootgate (a taproom) | Oda Greywell, carrying from Sump Stairs |
+  | butcher, Rag Market | Theodora Ropemarsh (butcher on Market Square) | Orm Wickwick, helping at Cinder Butchers |
+
+- **What it cost elsewhere:** the mismatch moved, it couldn't shrink. Seven other tills went to lower-class earners from
+  waged work: the taprooms of the Knucklebones (Ansel Wickdale), the Rainbarrel (Ottilie Dripdale), the Tarred Rope
+  (Lavinia Bilgedale, a Fellhall servant) and the Slag & Anchor (Lotte Greyley, a Timberland Court servant); the Penny
+  Loaf (Gorm Saltstack, its helper); Timberland's Forge Row (Egil Brineham, a Fish Hall hand); and a butcher's stall on
+  Market Square (Ivo Wainwright, Cinder Butchers' helper). Five of the seven are in the Sump's, the wharf's or the
+  Cinders' own streets. 21 NPCs changed post; hours went with the posts; each got the post's text and a line of why.
+- **The rate:** counted the new way, 366 of 396 (92.4%) before and after (upper 25/26, middle 168/179, lower 173/191);
+  the jobs by class above counted the Rag Market lower and read 94.2%. Minor Houses without an upper job, and larger
+  businesses kept from the Sump, the Cinders or the wharf: none. Wages unchanged (110 keepers, 116 hands, 30 watch, 104
+  public, 91 the Country's; 2,468p, 1,072p and 728p a day); food 99 staffed for 83.2 keeper-days (119%).
+- **Checks:** the 64 generator checks; a second plan from the written world changes nothing (labels, homes, tiles, text,
+  hours); `rename_house.py --dry-run` 0 changes; `test_ridgemere2.py` (30), `test_world_sync` (34, 3 skipped without
+  a server build), `test_rename_house.py`, `test_city_capacity.py` pass; `test_map_editor.py` fails only the known
+  Greyfen 11-vs-10. `world_check` on build 50 (6:00-8:00, no player): 828 places, 0 failures, money conserved, 0
+  without a route.

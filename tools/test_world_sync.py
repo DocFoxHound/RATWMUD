@@ -138,6 +138,36 @@ class ThreeWayTests(unittest.TestCase):
         self.assertEqual(WS.normalized(WS.from_json(once)), once, 'a row read back from the base is the same row')
 
 
+class LayoutTests(unittest.TestCase):
+    """A generator's write and the map identity (doc 66, Progress): a new identity only for a new layout."""
+
+    def test_the_layout_is_cells_interiors_and_links_not_people(self):
+        p = {'cells': [{'id': 'c', 'terrain': ['..'], 'name': 'C', 'weather': 'rain'}],
+             'rooms': [{'id': 'r', 'terrain': ['#'], 'description': 'A room.'}],
+             'links': [{'id': 'l', 'kind': 'door', 'a': {'cell': 'c'}, 'b': {'cell': 'r'}, 'name': 'Door'}],
+             'people': [{'id': 'wren', 'workLabel': 'baker'}]}
+        fp = WS.layout_fingerprint(p)
+        same = json.loads(json.dumps(p))
+        same['people'][0]['workLabel'] = 'docker'
+        same['rooms'][0]['description'] = 'Another room.'
+        same['cells'][0]['weather'] = 'clear'
+        same['links'].reverse()
+        self.assertEqual(WS.layout_fingerprint(same), fp)
+        for change in (lambda q: q['cells'][0].update(terrain=['.#']), lambda q: q['rooms'].append({'id': 'r2'}),
+                       lambda q: q['links'][0]['b'].update(x=3)):
+            other = json.loads(json.dumps(p))
+            change(other)
+            self.assertNotEqual(WS.layout_fingerprint(other), fp)
+
+    def test_auto_keeps_only_a_stamp_of_the_same_layout(self):
+        self.assertEqual(WS.map_for_layout({'id': 'm', 'layout': 'a'}, 'a'), 'keep')
+        self.assertEqual(WS.map_for_layout({'id': 'm', 'layout': 'a'}, 'b'), 'new')
+        self.assertEqual(WS.map_for_layout({'id': 'm'}, 'a'), 'new', 'a stamp from before fingerprints')
+        self.assertEqual(WS.map_for_layout(None, 'a', 'same'), 'new', 'nothing to keep')
+        self.assertEqual(WS.map_for_layout({'id': 'm'}, 'a', 'same'), 'keep')
+        self.assertEqual(WS.map_for_layout({'id': 'm', 'layout': 'a'}, 'a', 'new'), 'new')
+
+
 class ScratchWorlds:
     """A scratch registry for the class, a live world with Greyfen to copy from, and for each test a live world and a
     dev world copied from it (its upstream, so with its base)."""
@@ -487,6 +517,28 @@ class MapTests(ScratchWorlds, unittest.TestCase):
             self.sql(self.dev, f"DELETE FROM {table} WHERE {column} = 'cottage'")
         self.sql(self.dev, "DELETE FROM world.links WHERE a_area = 'cottage' OR b_area = 'cottage'")
         self.sql(self.dev, "DELETE FROM world.areas WHERE id = 'cottage'")
+
+    def test_a_generators_write_keeps_its_map_while_its_layout_is_the_same(self):
+        project = {'cells': [{'id': 'c', 'x': 0, 'y': 0, 'width': 2, 'height': 1, 'terrain': ['..'], 'name': 'C'}],
+                   'rooms': [], 'links': [], 'spawn': {'cell': 'c', 'x': 0, 'y': 0}, 'people': [{'id': 'wren'}]}
+
+        def write(p, mode='auto'):
+            with W.connect(self.dev, 'owner') as conn:
+                with conn.transaction():
+                    return WS.stamp_for_layout(conn, WS.layout_fingerprint(p), 'Generated', 'Ada', 'generated', mode)
+        first, how = write(project)
+        self.assertEqual(how, 'new')
+        self.assertEqual(WS.status(self.dev)['map']['id'], first['id'])
+        people_only = dict(project, people=[], cells=[dict(project['cells'][0], name='Renamed')])
+        self.assertEqual(write(people_only), (first, 'kept'), 'people and names are not the layout')
+        self.assertEqual(WS.status(self.dev)['map']['id'], first['id'])
+        moved = dict(project, cells=[dict(project['cells'][0], terrain=['.#'])])
+        self.assertEqual(write(moved, 'same')[1], 'kept', '--same-map, whatever the layout')
+        self.assertEqual(write(moved)[1], 'kept', 'and the kept stamp records the layout it was told is the same map')
+        second, how = write(project)
+        self.assertEqual(how, 'new', 'a changed layout is a new map')
+        self.assertNotEqual(second['id'], first['id'])
+        self.assertEqual(write(project, 'new')[1], 'new', '--new-map, whatever the layout')
 
     def test_a_copy_is_on_its_upstreams_map_and_ordinary_edits_keep_it(self):
         dev, live = WS.status(self.dev)['map'], WS.status(self.live)['map']

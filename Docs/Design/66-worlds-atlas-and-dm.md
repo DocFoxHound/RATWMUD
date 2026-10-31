@@ -855,3 +855,36 @@ starting a server once, Play's address and its refusals; the DM's picker apart f
 the live choice on PROD), `test_world_store` (a whole-world save keeps a newborn), `test_world_sync` (a real server on a
 dev world restarts on a new build with 75 and names its port; a scratch one stays), `Editor/src/lib/sync.test.ts`
 (`gameUrl`).
+
+### A generator's write keeps its map when the layout is the same (2026-10-31)
+
+Branch `r2-class-jobs-2`. The user: "Yeah fix that map identity problem." The Ridgemere 2.0 generator stamped a **new
+map identity on every write**, even when it only moved people: doc 67's jobs by class (revision 51 to 53) gave DEV
+`map-20261031-2e244e4d06e9` although its layout hadn't changed, which would have refused every pull and import with a
+world still on `map-20261031-6b080cecb7f6`.
+
+- **The layout's fingerprint** (`world_sync.layout_fingerprint(project)`): a SHA-256 of the cells (id, place, size,
+  terrain, heights), the interiors (the same, with their world place), the links (id, kind, open, both ends) and the
+  spawn. Not people, names, descriptions, lighting, weather or claims.
+- **The stamp records it:** `admin.settings` `map` is `{id, name, made, by, how, layout}`. `world_sync.stamp_for_layout`
+  (the generator's write, as the owner, in its transaction) keeps the stamp when `map_for_layout` says so and records
+  the layout on it, or stamps a new identity carrying the layout:
+  - `auto` (the default): keeps a stamp whose layout is this write's; anything else is a new map (a stamp from before
+    fingerprints can't be shown to be the same map, so it gets a new one, as before);
+  - `python3 -m worldgen.ridgemere2 write --same-map` keeps the identity whatever the layout; `--new-map` stamps a new
+    one whatever it is.
+  The write says which: "the same map, ... (its layout unchanged)" or "a new map identity, ... (the layout changed ...)".
+- **Still only the generator's:** Atlas and the DM never stamp, and an Atlas edit that changes the layout (a new cell)
+  keeps the identity as before ("Why this design", above): the fingerprint only decides whether a *generated* map is
+  new. `world_sync.py map KEY --new` is unchanged.
+- **DEV restored:** its stamp was put back to the one the DEV switch gave it, `map-20261031-6b080cecb7f6`, "Ridgemere 2.0:
+  the city (doc 67)", made 2026-10-31 17:30 UTC, exactly as recorded in `Saved/Backups/ratw_ridgemere2-before-class-jobs.dump`
+  (as the owner, `world_sync.stamp_map(conn, ..., identity=...)`). The layout really is the same since then: the
+  fingerprint of DEV at revision 51 (before the jobs by class) is that of DEV now,
+  `sha256:0bdf406d...7efb77`. The next write (doc 67, "Rag Market first", revision 53 to 55) ran with `--same-map`,
+  which recorded that layout on the restored stamp; a write from DEV now keeps it by `auto`.
+- **Tests:** `test_world_sync.LayoutTests` (the fingerprint ignores people, text, weather and link order and sees
+  terrain, a new interior and a moved link end; `auto`, `same`, `new` and a stamp without a layout) and
+  `MapTests.test_a_generators_write_keeps_its_map_while_its_layout_is_the_same` (on scratch worlds: a first write stamps,
+  a people-only write keeps, `--same-map` keeps a changed layout and records it, a changed layout is a new map,
+  `--new-map` always is).

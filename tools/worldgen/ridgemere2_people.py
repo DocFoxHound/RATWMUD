@@ -506,12 +506,13 @@ LOWER_WORDS = ('serving', 'in service to', 'keeping the chambers', 'stewarding',
                'working at', 'washing at', 'driving for', 'keeping the greatly stables', 'unloading', 'working the cranes',
                'carrying from', 'portering', 'crying wares', 'gate', 'garden', 'groom', 'stable')
 LEISURE = ('at home in the heights', 'reading in the gardens', 'walking the gardens')
-# The Sump's own street trade is its own: the Rag Market's pitches and the Soup Kitchen's ladle are lower (the poor's
-# market and its charity), as the tray sellers crying wares beside them are; Market Square's stalls and the Market
-# Hall's counters are shopkeepers' (middle).
-STREET_TRADE = ('rag_market', 'rm_the_soup_kitchen')
+# The Rag Market's stalls and the Soup Kitchen's ladle are shopkeeping like any other (middle; the user, 2026-10-31: "The
+# Rag Market stalls should be run by middle class adults before sump adults"), and they come first: a Sump keeper there
+# counts against the plan more than one at another counter, so the class pass gives them to the Commons before any other
+# till it can't fill from the middle class. (The tray sellers crying wares beside them are waged street work, lower.)
+RAG_FIRST = ('rag_market', 'rm_the_soup_kitchen')
 CLASS_SCORE = {('upper', 'upper'): 1, ('middle', 'middle'): 1, ('lower', 'lower'): 1, ('upper', 'lower'): -1,
-               ('lower', 'upper'): -1}
+               ('lower', 'upper'): -2}
 # The Minor Houses' members at leisure ("at home in the Heights") and the Carlisle who drove a carters' wagon take the
 # city's independent large businesses and a high office: {npc: (structure key, post kind, post label or None)}. Whoever
 # held each is moved by the class pass.
@@ -788,8 +789,6 @@ class Placement:
                 return 'upper', 'owns a large business'
             if owner == 'house':
                 return 'middle', "runs a Great House's works for it"
-            if rec in STREET_TRADE:
-                return 'lower', "the Sump's street trade"
             return 'middle', 'keeps a shop, stall or counter'
         if post in ('help', 'hands'):
             home = self.room_record.get(((self.plan.get(pid) or {}).get('home') or {}).get('cell'))
@@ -803,6 +802,10 @@ class Placement:
         if post == 'pool':
             return 'lower', 'waged work'
         return 'middle', 'unclassified'
+
+    def rag_keeper(self, e):
+        """Whether a post keeps a Rag Market stall or the Soup Kitchen (RAG_FIRST)."""
+        return e.get('post') in ('keeper', 'stallkeeper', 'hallkeeper') and e.get('record') in RAG_FIRST
 
     def large_keeper(self, e):
         """Whether a post keeps one of the larger businesses (LARGE)."""
@@ -887,6 +890,8 @@ class Placement:
                 score = CLASS_SCORE.get((hc[pid], jc), 1 if hc[pid] == jc else 0)
                 if hc[pid] == 'lower' and self.large_keeper(e):
                     score -= 3
+                if hc[pid] == 'lower' and self.rag_keeper(e):
+                    score -= 1
                 # The tie-break: the same trade, a merchant to a till, a clerk to a desk, work near home.
                 cur = self.current.get(pid) or p
                 labs = (cur['workLabel'], p['workLabel'])
@@ -907,6 +912,35 @@ class Placement:
                     aff += 1
                 cache[key] = (score, aff)
             return cache[key]
+        # The Rag Market first: each of its keepers from the Sump gives the till to a Commons keeper of another till,
+        # that till goes to a Sump earner in waged work, and the Sump keeper takes that work (a three-way move: the
+        # city has no middle-class adults out of work, so the mismatch moves to a till the Commons can spare, one in the
+        # Sump's, the wharf's or the Cinders' own streets first).
+        self.rag_cycles, cycled = [], set()
+        for a in [x for x in movers if self.rag_keeper(slots[slot_of[x]]) and value(x, slot_of[x])[0] < 1]:
+            ir = slot_of[a]
+            best = None
+            for m in movers:
+                im = slot_of[m]
+                if m == a or m in cycled or value(m, im)[0] != 1 or hc[m] != 'middle' or self.rag_keeper(slots[im]) or \
+                        slots[im].get('post') not in ('keeper', 'stallkeeper', 'hallkeeper') or value(m, ir)[0] != 1:
+                    continue
+                near = 3 if self.post_district(slots[im]) in ('sump', 'wharf', 'cinders') else 0
+                for b in movers:
+                    ib = slot_of[b]
+                    if b in (a, m) or b in cycled or hc[b] != 'lower' or value(b, ib)[0] != 1 or value(a, ib)[0] != 1 or \
+                            value(b, im)[0] < 0:
+                        continue
+                    fit = value(m, ir)[1] + value(b, im)[1] + value(a, ib)[1] + near
+                    if best is None or fit > best[0]:
+                        best = (fit, m, b)
+            if best is None:
+                continue
+            _, m, b = best
+            im, ib = slot_of[m], slot_of[b]
+            slot_of[m], slot_of[b], slot_of[a] = ir, im, ib
+            self.rag_cycles.append((a, m, b))
+            cycled |= {a, m, b}
         while True:
             best = None
             for x in movers:
@@ -933,7 +967,7 @@ class Placement:
         for pid in movers:
             if slot_of[pid] != start[pid]:
                 self.plan[pid].update(slots[slot_of[pid]], kept=False, labelKept=False)
-                self.class_moves[pid] = 'swap'
+                self.class_moves[pid] = 'Rag Market first' if pid in cycled else 'swap'
         for pid in self.class_moves:                     # (For the backstory line: the class and kind of the job.)
             cls, why = self.job_class(pid)
             e = self.plan[pid]
@@ -1551,7 +1585,7 @@ def class_summary(placement, pids, label_of):
     the Sump, the Cinders or the wharf keeps a larger business."""
     out = {c: {'earners': 0, 'matched': 0} for c in ('upper', 'middle', 'lower')}
     unmatched, own = [], Counter()
-    upper_households, minor_households, large_lower = set(), set(), []
+    upper_households, minor_households, large_lower, rag_lower = set(), set(), [], []
     for pid in pids:
         e = placement.plan[pid]
         label = label_of(pid)
@@ -1567,6 +1601,8 @@ def class_summary(placement, pids, label_of):
             upper_households.add(hh)
         if hc == 'lower' and placement.large_keeper(e):
             large_lower.append(f'{pid} ({hwhy}): {label}')
+        if hc != 'middle' and placement.rag_keeper(e):
+            rag_lower.append(f'{pid} ({hc}, {hwhy}): {label}')
         if jc in ('clergy', 'watch') or hc == 'watch':
             own[jc if jc in ('clergy', 'watch') else 'watch'] += 1
             continue
@@ -1582,7 +1618,8 @@ def class_summary(placement, pids, label_of):
         v['rate'] = round(v['matched'] / v['earners'], 3) if v['earners'] else 1.0
     return {'classes': out, 'earners': earners, 'matched': matched, 'rate': round(matched / earners, 3) if earners else 1.0,
             'ownCases': dict(own), 'unmatched': unmatched,
-            'minorWithoutUpper': sorted(minor_households - upper_households), 'largeLower': large_lower}
+            'minorWithoutUpper': sorted(minor_households - upper_households), 'largeLower': large_lower,
+            'ragNotMiddle': rag_lower}
 
 
 def class_report(placement, plan, labels):

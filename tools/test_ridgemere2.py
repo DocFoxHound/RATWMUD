@@ -277,6 +277,7 @@ class City(unittest.TestCase):
             self.assertGreaterEqual(v['rate'], .85, c)
         self.assertEqual(after['minorWithoutUpper'], [])
         self.assertEqual(after['largeLower'], [])
+        self.assertEqual(after['ragNotMiddle'], [])                 # (The Rag Market by the middle class first.)
         people = {x['id']: x for x in self.m['project']['people']}
         plan = self.m['plan']
         for pid, (record, kind, label) in PP.MINOR_POSTS.items():

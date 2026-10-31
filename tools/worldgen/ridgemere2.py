@@ -3390,6 +3390,8 @@ def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
               not c_['minorWithoutUpper'], ', '.join(c_['minorWithoutUpper']))
         check('', 'nobody from the Sump, the Cinders or the wharf keeps a larger business', not c_['largeLower'],
               '; '.join(c_['largeLower'][:6]))
+        check('', "the Rag Market's stalls and the Soup Kitchen are kept by middle-class households",
+              not c_.get('ragNotMiddle'), '; '.join(c_.get('ragNotMiddle', [])[:7]))
     # -- the graph walk --
     miss = walk['missing']
     check('R1', 'every link end, home, work spot, evening place and route post is reached from the spawn',
@@ -3840,7 +3842,7 @@ def report_text(rep):
                     f'{c} {x["matched"]}/{x["earners"]} ({x["rate"]:.0%})' for c, x in v['classes'].items()) +
                     f'; own cases {v["ownCases"]}; Minor House households without an upper job: '
                     f'{v["minorWithoutUpper"] or "none"}; larger businesses kept from the Sump, the Cinders or the wharf: '
-                    f'{len(v["largeLower"])}')
+                    f'{len(v["largeLower"])}; Rag Market keepers not of the middle class: {len(v.get("ragNotMiddle", []))}')
         lines.append('  Not of their class (after):')
         lines += [f'    - {u}' for u in cl['after']['unmatched']]
         lines.append(f'  Moved by the class pass ({len(cl["moves"])}):')
