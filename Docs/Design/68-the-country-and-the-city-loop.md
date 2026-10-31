@@ -460,7 +460,7 @@ runs).
 1. **The toll.** The treasury lives on a 30% gate toll on what the shops draw from the Country. Decided for now; a toll
    on sales, or the Country paying the Crown a rent, are the other choices.
 2. **Who the Country pays.** The dockers, cranes, Sump carriers and the Country's warehouses, and the Houses' people
-   (98 posts) are paid by the Country, as the people of its trade and its estates. Decided for now; the other choice is
+   (91 posts) are paid by the Country, as the people of its trade and its estates. Decided for now; the other choice is
    the treasury, or no wage.
 3. **Clergy are paid by the treasury** (no tithe). Decided for now.
 4. **Wages are flat by kind** (keeper 14, hand 8, public 8, the Country's 8), every day including Restday. Decided for
@@ -470,14 +470,14 @@ runs).
    prop them up; the food rebalance or a change of trade can.
 6. **The institutions' baskets** (Town Works, the watch's bread, the church's candles) are not bought. Decided for now.
 7. **Rent** is left out (section 8).
+8. **Carriage** is 6p a wagon load each way, the shop paying in and the Country paying out (section 6). Decided for now.
+9. **Shelves follow a day's sales and making takes its hours** (section 7). Decided for now.
 10. **Alms, not a pension.** A household still short of a day's food money after the wages is topped up by the
     treasury (7p a head). Decided for now; the other choice is a pension for the retired (19 now, more as they retire).
 11. **The carriage subsidy** is 25% of every delivery's carriage, from the treasury, capped at a twentieth of it a day and
     giving way before public wages. Decided for now; more services (road upkeep, market upkeep, lamps) can join.
 12. **The Carters' Yard has 6 drivers; the flows want about 10.** Decided for now: the yard keeps the difference as
     profit. Four more drivers would fit.
-8. **Carriage** is 6p a wagon load each way, the shop paying in and the Country paying out (section 6). Decided for now.
-9. **Shelves follow a day's sales and making takes its hours** (section 7). Decided for now.
 
 ## 12. Trades we could add for exports
 
@@ -500,4 +500,103 @@ a catalogue change and the bookseller adds no making. Whether the Country's mone
 
 ## Progress
 
-(Filled in as it is built.)
+### Built (2026-10-31)
+
+Branch `r2-country`, from `ridgemere2` (ed9d4f3), with `ridgemere2` merged at 6189ee7 (the food rebalance and the
+Carters' Yard). The plan was committed first (d249de1).
+
+- **Core.** `Core/RatwCityLoop.cpp` (new): who pays a post (`payOf`), crews, the households (by home, joined by kin),
+  their food, needs and comforts, the Country's buying spread over its makers by stock, wages, a till's profit, the
+  alms, the restocking rule revised (shelves from yesterday's sales, making by the crew's hours), the gate toll and
+  carriage with the treasury's capped subsidy. `RatwSociety`: `drawFromStore` splits its cost (the Country, the toll) and
+  pays carriage; `CountryFund` (`outside:country`) replaces `fund:store`, whose coins an older save hands over;
+  `needsPaused()` a switch (off); the loop runs hourly from `decide`. `RatwItems`: `country.json` and `crafts.json`'s
+  households. `RatwAuthoring`: the `loop`, `countryoff` and `subsidy` records; `Game::withoutPeople` strips them.
+  `/store` and `world_check` print the Country's purse, the treasury and the carters; `world_check --economy FILE`
+  writes the day's measures.
+- **Data.** `Data/Items/country.json` (new): one market, the Country, with its 57-good basket; the wage rules; the
+  residents' food and comforts. `crafts.json` is not touched.
+- **Migration** `Database/migrations/0056_country.sql`: **not applied to any world.** Tested on a scratch copy of
+  `ratw_ridgemere2` (made by `CREATE DATABASE ... TEMPLATE`, migrated with `world_db.py migrate`, read and written
+  through Atlas's routes, then dropped): it applies cleanly after 0055, writes no new record at the defaults, and
+  writes `countryoff` and `subsidy` lines when set.
+- **Tools.** `world_store` (0056's columns, `STORE_TABLES` for a world with 0055 only, refusals naming 0056),
+  `live_edit`, `map_editor` (the checks and the exported records), `studio` (`POST /api/atlas/economy/loop` and
+  `/goods`; the DM's `GET /api/dm/economy`, `POST /api/dm/economy/loop` on live worlds), `dungeon_master` (the money
+  view lists `outside:` funds and the carters' tills), `tools/city_loop.py` (the plan's arithmetic and `--suggest`).
+- **Atlas.** `Editor/src/studio/CountryPanel.tsx` (new) on the Economy page: residents' needs, the Country on or off,
+  its reserve, the toll, carriage, the carriage subsidy, the four wages, the basket, per-good supply. The DM's money
+  tab names the Country's purse and the carters.
+- **Tests.** `Tests/country_tests.cpp` (565 checks: who pays each post; a draw's split and carriage, to the carters' yard
+  and to `fund:carriage`; small draws' fractions; the subsidy's cap and its giving way before public wages; a day of the
+  loop conserved, everyone fed, a child upstairs and an orphan fed, wages from all three payers, the Country buying from
+  both smithies and only makers' goods; needs paused; the Country off; an older save's `fund:store`; the records and
+  their refusals). `store_room_tests`, `shops_tests`, `town_tests`, `project_tests` and `game_tests` updated (the store
+  room's tests pause the loop; `/store` shows the Country). All 69 C++ tests pass. Python: `test_world_store` (the
+  loop's settings round trip, a world with 0055 but not 0056), `test_studio` (the loop and goods routes, the DM's
+  levers on a live world); the suites run (`test_world_store`, `test_studio`, `test_live_edit`, `test_map_editor`,
+  `test_dungeon_master`, `test_world_sync`, `test_world_build`, `test_item_catalog`, `test_city_capacity`) all pass but
+  one test, `test_map_editor`'s Greyfen resident count (11, not 10), which is not this work's (Greyfen's data is untouched). Editor: `tsc` clean; `npm test` 76 of 77, the same Greyfen count failing.
+
+**Found on the way.**
+
+- A wage rule word must not catch another post: "watch" caught "sits and watches the world"; the rule says "the watch".
+- The generator gave 21 children a home of their own (a floor upstairs from their parents), and placed a few orphans
+  and the retired alone: households are joined by kin, and the alms catch the rest.
+- Succession retires the old from their posts as the run goes on: they lose their wage, so the alms grow.
+- The Old Keep's watch house is its own community with a shop or two but no food: a household buys from every open
+  shop when its own community's have none.
+- Two short runs before the last code (a pension instead of alms, households by home only, community-bound shopping)
+  showed hunger rising to 20-24 residents by day 7; those runs were replaced by the two below.
+
+### Measured: 30 days (2026-10-31)
+
+`world_check` on build 45's export (`--simulate 6 726 --no-check --deterministic --threads 4 --economy`), the defaults
+above. 8.64 million ticks: mean 0.37 ms, p99 2.16 ms, worst 59 ms; 3 of 559 held over ten minutes.
+
+| Gate | Pass | Result |
+|---|---|---|
+| Hunger is rare | under 2% mean, no day over 5% | **pass**: mean 0.08% (0.42 of 559) over days 5-29; the worst hour 3 (0.5%) |
+| Families fed | 98% every day after day 3 | **pass**: lowest 99.2%, mean 99.8% |
+| Shops stocked | 90% of shops, 90% of food shops | **pass**: lowest 95.5% of shops; food shops 100% every day |
+| Tills | under 10% short; the median not falling | **fail**: 23% of tills short at 18:00 on average (most 43 of 110); the median till 89p on day 20, 107p on day 29 |
+| Wages | 90% paid | **fail**: 88.0% |
+| The Country | within its reserve and two days' intake, no trend | **pass**: 516p to 704p, at most 790p; 68p a day left unspent on average |
+| The treasury | above 200p, within ±25% | **fail on the band**: 986p to 4,121p (most 4,683p); it rose for three weeks, then held at 3,400-4,700p as the alms grew |
+| Money | conserved | **pass**: 52,946p at the start and end, every day |
+| Inequality | reported | Gini of cash over 209 earning households: .489 to .624 |
+
+Where the money went, a day on average: residents spent 4,878p (1,196 pieces of food, 292 needs, 270 comforts); the
+Country bought 2,373p; shops drew 4,490p from the store (the toll 1,345p); wages owed 4,052p, paid 3,566p; profit to
+keepers 983p; alms 339p (rising from about 140p in week 1 to 500-580p in week 4); the carriage subsidy 31.5p (always
+funded: the treasury never came near its cap's limits); carriage 125p a day to the Carters' Yard.
+
+**Reading it.** The residents are fed and the shops stocked, with money conserved: the loop works. What does not hold
+is where the money settles. A fifth of the tills can't pay their posts (the trades with too few buyers, section 2), while
+the busiest tills pay their keepers about 1,000p a day of profit; so keepers' households grow rich (the Gini rising), the
+hands of the poor shops go short, and the treasury's alms make up the difference. The treasury takes more in toll than
+it pays out until the alms catch up.
+
+### 60 days: stopped
+
+A 60-day run of the same world and code was started beside the 30-day one and stopped at the user's request after 32
+game days (its first 30 days are the run above, which is deterministic). It is not restarted here: the fast harness
+being built on `r2-sim-fast` (from d4dd755) will redo the long runs in minutes.
+
+### Proposals for the user (none applied; each needs a run to confirm)
+
+The coordinator asked for no further runs: these are the tuning I would make next, for the user to approve.
+
+1. **The toll to 27%.** The treasury gained about 105p a day over the 30 days with the alms paid; 27% would hold it near
+   where it starts, leaving more with the Country (and so more of the city's goods bought).
+2. **Profit shared with the hands, and a lower cap.** A till over its float and three days' wages (not seven) pays the
+   excess half to its keeper and half among its hands. Money then stays with the people who spend it on food rather than
+   piling with keepers; it should lower the Gini and the alms.
+3. **The poor trades.** The 20-40 short tills are the trades with too few buyers (section 2: moneychanger, pawnbroker,
+   shipwright, stables, the Market stalls' supply-only lists, vintner, barber, builders' yard, rag-and-bone, and
+   whichever smithies and works the Country passes over). Either give them goods people buy (a stall that sells food it
+   makes, the vintner's wine in the comforts), or let the city place fewer of them. The loop doesn't prop them up.
+4. **Comforts sooner.** A household over 40p a head (not 60p) spends a fifth (not a tenth) of the excess: savings
+   come back to the shops faster.
+5. **Four more drivers** at the Carters' Yard (it has 6; the loads want about 10), or carriage at 4p a load.
+6. **A locksmith and a cobbler** (section 12), if the smithy and foundry stay near 70%.
