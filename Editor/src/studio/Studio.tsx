@@ -1,8 +1,9 @@
 // RATW Studio: one tool, two suites (Docs/Design/66-worlds-atlas-and-dm.md, section 3; tools/studio.py).
 // One sign-in (a Dungeon Master account) and a top bar: the suite switch, the suite's world, who is signed in.
 //   Atlas  builds worlds, on dev worlds (its picker switches Atlas's world): the Workshop (the map, interiors, people,
-//          characters: App.tsx) and its NPC pages (NPCs with their routes, areas, spawn rules and talk; factions).
-//   DM     runs the live world (the live server's; switching it comes with Phase 4): dm/DmApp.tsx's DmSuite.
+//          characters: App.tsx), its NPC pages (NPCs with their routes, areas, spawn rules and talk; factions), and
+//          Update from live (doc 66, section 4: a copy of a live world takes live's changes, conflicts chosen).
+//   DM     runs the live world (the live server's; its Server & import tab switches it, in maintenance): DmSuite.
 // Each suite and page is its own page load (?suite=atlas&page=npcs): their maps share one lazy-ground list
 // (lib/lazyGround.ts), and Atlas's live session runs for as long as the page does.
 import {useEffect, useState} from 'react';
@@ -12,13 +13,15 @@ import {NpcTab} from '../dm/NpcTab';
 import {FactionsTab} from '../dm/FactionsTab';
 import {dmApi, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
 import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
+import {UpdateFromLive} from './UpdateFromLive';
 
 type Suite = 'atlas' | 'dm';
-type AtlasPage = 'workshop' | 'npcs' | 'factions';
+type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'sync';
 const ATLAS_PAGES: {id: AtlasPage; label: string; title: string}[] = [
     {id: 'workshop', label: 'Workshop', title: 'The map, interiors, people and characters'},
     {id: 'npcs', label: 'NPCs & areas', title: 'NPCs with their patrol routes, painted areas, spawn rules, voices, dialects and figures'},
     {id: 'factions', label: 'Factions', title: 'Factions, their territory, members and relations'},
+    {id: 'sync', label: '⇩ Update from live', title: 'Take the live world\'s changes into this copy of it, choosing where both changed'},
 ];
 
 export function Studio() {
@@ -82,14 +85,15 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                     </select>
                 </label>
                 <div className="segmented" role="tablist" aria-label="Atlas page">{ATLAS_PAGES.map(p =>
-                    <button key={p.id} role="tab" aria-selected={page === p.id} className={page === p.id ? 'on' : ''} title={p.title}
+                    <button key={p.id} role="tab" aria-selected={page === p.id} className={page === p.id ? 'on' : ''}
+                        title={p.id === 'sync' && !session.atlas.world.upstream ? `${session.atlas.world.name} has no upstream live world: a side project, with nothing to update from` : p.title}
                         onClick={() => page !== p.id && go('atlas', p.id)}>{p.label}</button>)}</div>
             </> : <div className="studio-world" title={session.dm.switch}>
                 <span>Live world</span>
                 <div className="segmented" role="radiogroup" aria-label="Live world (read only)">{session.dm.worlds.map(w =>
                     <button key={w.key} role="radio" aria-checked={w.key === live} className={w.key === live ? 'on prod' : ''} disabled>
                         {w.name}{w.key === live ? ' · the live server' : ''}</button>)}</div>
-                <small>Switching it: Phase 4</small>
+                <small>Switched in Server &amp; import, during maintenance</small>
             </div>}
             {problem && <span className="hint error-text">{problem}</span>}
             <div className="top-actions">
@@ -100,6 +104,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
         {suite === 'dm' ? (live ? <DmSuite me={me} target={live} />
             : <div className="dm-center"><p className="hint">No live world is chosen (python3 tools/world_db.py list).</p></div>)
             : page === 'workshop' ? <Workshop me={me} />
+            : page === 'sync' ? <div className="app dm dev"><UpdateFromLive me={me} onWorkshop={() => go('atlas')} /></div>
             : <div className="app dm dev">{page === 'npcs' ? <NpcTab me={me} target={atlasKey} suite="atlas" />
                 : <FactionsTab me={me} target={atlasKey} />}</div>}
     </div>;

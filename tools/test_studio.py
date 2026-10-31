@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""The studio (tools/studio.py, doc 66 section 3): one host, one sign-in, two suites kept apart.
+"""The studio (tools/studio.py, doc 66 sections 3 and 4): one host, one sign-in, two suites kept apart; Atlas's Update
+from live and the DM's server, maintenance, live switch, Import from dev and releases.
 
-Offline with a stand-in DM (accounts by token, every other method recorded); one class signs in for real on scratch
-databases (dropped afterwards; skipped without the local PostgreSQL)."""
+Offline with a stand-in DM (accounts by token, every other method recorded) and a stand-in sync engine; two classes
+work for real on scratch databases (dropped afterwards; skipped without the local PostgreSQL): a sign-in, and pull,
+import, rollback and the live switch on throwaway worlds (test_world_sync's). DEV and PROD are never touched."""
 import http.client
 import json
+import os
 from pathlib import Path
 import tempfile
 import threading
@@ -14,8 +17,11 @@ import dungeon_master as D
 import map_editor
 import studio as ST
 import world_db as W
+import world_sync as WS
 from test_dungeon_master import Fixture
+from test_world_db import database_available, superuser
 from test_world_store import greyfen
+from test_world_sync import ScratchWorlds
 
 TOKENS = {'admin-token': 'admin', 'dm-token': 'dm', 'viewer-token': 'viewer'}
 
@@ -38,10 +44,29 @@ class StandInDM:
         return method
 
 
+class StandInSync:
+    """tools/world_sync.py's Sync: every call recorded and answered, or refused with `fail`."""
+
+    def __init__(self):
+        self.calls, self.fail = [], None
+
+    def __getattr__(self, name):
+        def method(*args):
+            self.calls.append((name, args))
+            if self.fail is not None:
+                raise self.fail
+            if name == 'status':
+                return {'key': args[0], 'server': {'state': 'running', 'by': '', 'at': None, 'note': ''}, 'serverRunning': False,
+                        'release': 4}
+            return {'called': name, 'release': 5, 'applied': {'world': {}, 'live': {'NPCs': {'added': 1, 'changed': 2, 'removed': 0}}},
+                    'conflicts': 0}
+        return method
+
+
 class Running:
     """A studio on a free port; Atlas without a database (a roster file of its own)."""
 
-    def __init__(self, dm, atlas_key):
+    def __init__(self, dm, atlas_key, sync=None):
         self.temp = tempfile.TemporaryDirectory()
         roster = Path(self.temp.name) / 'roster.json'
         map_editor.roster_lib.save({**map_editor.roster_lib.load(), 'characters': []}, roster)
@@ -50,7 +75,7 @@ class Running:
         def atlas(key):
             self.made.append(key)
             return map_editor.make_handler(roster_path=roster, ai_config_path=Path(self.temp.name) / 'missing.json')
-        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append)
+        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append, sync=sync)
         self.server = ST.make_server(0, self.studio)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -253,6 +278,245 @@ class SignInTests(Fixture):
         status, data = self.host.call('GET', '/api/atlas/layers/npcs', token=master)
         self.assertEqual((status, data['target']), (200, 'dev'))
         self.assertIn('studio_meadow', [a['id'] for a in data['areas']])
+
+
+class SyncRouteTests(unittest.TestCase):
+    """The new routes with stand-ins: who may call them, what reaches the engine, and its errors as HTTP. Atlas on DEV
+    (in name only: its upstream is PROD); a scratch registry adds a second live world for the switch."""
+
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        registry = Path(self.folder.name) / 'worlds.json'
+        entries = json.loads(W.WORLDS_FILE.read_text(encoding='utf-8'))['worlds']
+        entries.append({'key': 'other', 'name': 'Other live', 'database': 'ratw_other_unused', 'kind': 'live'})
+        registry.write_text(json.dumps({'worlds': entries}), encoding='utf-8')
+        self.saved = {k: os.environ.get(k) for k in ('RATW_WORLDS_FILE', 'RATW_WORLDS_LOCAL')}
+        os.environ.update({'RATW_WORLDS_FILE': str(registry), 'RATW_WORLDS_LOCAL': str(Path(self.folder.name) / 'local.json')})
+        W.worlds()
+        self.sync = StandInSync()
+        self.host = Running(StandInDM(), 'dev', self.sync)
+        self.dm, self.call = self.host.dm, self.host.call
+
+    def tearDown(self):
+        self.host.stop()
+        for key, value in self.saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        W.worlds()
+        self.folder.cleanup()
+
+    def logged(self):
+        return [args for name, args in self.dm.calls if name == 'log']
+
+    def test_update_from_live_needs_an_upstream_a_builder_and_atlas_token_to_pull(self):
+        self.assertEqual(self.call('GET', '/api/atlas/sync/diff')[0], 401)
+        self.assertEqual(self.call('GET', '/api/atlas/sync/diff', token='viewer-token')[0], 403)
+        status, data = self.call('GET', '/api/atlas/sync/diff', token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual((data['called'], data['devWorld']['key'], data['liveWorld']['key']), ('diff', 'dev', 'prod'))
+        self.assertEqual(data['liveServer'], {'state': {'state': 'running', 'by': '', 'at': None, 'note': ''}, 'running': False,
+                                              'release': 4})
+        body = {'choices': {'live.npcs/wren': {'name': 'live'}}, 'expect': 'abc'}
+        self.assertEqual(self.call('POST', '/api/atlas/sync/pull', body, token='dm-token')[0], 403, 'Atlas\'s token too')
+        status, data = self.call('POST', '/api/atlas/sync/pull', body, token='dm-token',
+                                 headers={'X-RATW-Editor': self.host.atlas_token()})
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('pull', ('dev', {'live.npcs/wren': {'name': 'live'}}, 'dm-user', 'abc')))
+        (who, world, action, target, detail), = self.logged()
+        self.assertEqual((who['username'], world, action, target), ('dm-user', 'dev', 'world.pull', 'prod'))
+        self.assertIn('3 rows', detail)
+        # A side project has nothing to update from.
+        self.assertEqual(self.call('POST', '/api/studio/atlas-world', {'key': 'ridgemere2'}, token='dm-token')[0], 200)
+        status, data = self.call('GET', '/api/atlas/sync/diff', token='dm-token')
+        self.assertEqual(status, 409, data)
+        self.assertIn('no upstream', data['error'])
+
+    def test_server_status_and_maintenance(self):
+        status, data = self.call('GET', '/api/dm/server/status', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual((data['key'], data['live']), ('prod', 'prod'))
+        self.assertIn('rarely wise', data['warning'])
+        self.assertEqual(self.call('GET', '/api/dm/server/status?world=other', token='viewer-token')[1]['key'], 'other')
+        self.assertEqual(self.call('GET', '/api/dm/server/status?world=dev', token='viewer-token')[0], 400, 'live worlds only')
+        self.assertEqual(self.call('GET', '/api/dm/server/status?world=nowhere', token='viewer-token')[0], 400)
+        self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': True}, token='viewer-token')[0], 403)
+        self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': 'yes'}, token='dm-token')[0], 400)
+        status, data = self.call('POST', '/api/dm/server/maintenance', {'on': True, 'note': 'New houses'}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('maintenance', ('prod', True, 'dm-user', 'New houses')))
+        self.call('POST', '/api/dm/server/maintenance', {'world': 'prod', 'on': False}, token='admin-token')
+        self.assertEqual(self.sync.calls[-1], ('maintenance', ('prod', False, 'admin-user', '')))
+        self.assertEqual([a[2] for a in self.logged()], ['server.maintenance', 'server.running'])
+
+    def test_switching_the_live_world_asks_twice(self):
+        for body, why in (({'world': 'other'}, 'no confirmation'), ({'world': 'other', 'confirm': 'yes'}, 'not the key'),
+                          ({'world': 'dev', 'confirm': 'dev'}, 'a dev world'), ({'world': 'prod', 'confirm': 'prod'}, 'already live')):
+            status, data = self.call('POST', '/api/dm/server/switch', body, token='admin-token')
+            self.assertEqual(status, 400, (why, data))
+        self.assertIn('rarely wise', self.call('POST', '/api/dm/server/switch', {'world': 'other'}, token='admin-token')[1]['error'])
+        self.assertEqual(self.call('POST', '/api/dm/server/switch', {'world': 'other', 'confirm': 'other'}, token='viewer-token')[0], 403)
+        self.assertEqual(self.sync.calls, [])
+        self.sync.fail = WS.NotInMaintenance('prod is not in maintenance.')
+        status, data = self.call('POST', '/api/dm/server/switch', {'world': 'other', 'confirm': 'other'}, token='admin-token')
+        self.assertEqual((status, data['error']), (409, 'prod is not in maintenance.'))
+        self.sync.fail = None
+        status, data = self.call('POST', '/api/dm/server/switch', {'world': 'other', 'confirm': 'other'}, token='admin-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('switch_live', ('other', 'admin-user')))
+        self.assertEqual([(a[1], a[2]) for a in self.logged()], [('prod', 'server.switch'), ('other', 'server.switch')])
+
+    def test_import_plan_lists_the_live_world_s_copies(self):
+        status, data = self.call('GET', '/api/dm/import/plan', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(([c['key'] for c in data['candidates']], data['dev'], data['live']['key']), (['dev'], 'dev', 'prod'))
+        self.assertEqual(self.sync.calls[-1], ('plan_import', ('dev',)))
+        self.assertEqual(self.call('GET', '/api/dm/import/plan?dev=ridgemere2', token='viewer-token')[0], 400, 'not a copy of prod')
+        self.sync.fail = WS.PublishError('dev has no base yet: take one.')
+        status, data = self.call('GET', '/api/dm/import/plan', token='viewer-token')
+        self.assertEqual((status, data['plan'], data['problem']), (200, None, 'dev has no base yet: take one.'), 'said, with the worlds')
+
+    def test_import_and_the_engine_s_errors(self):
+        body = {'dev': 'dev', 'choices': {'live.npcs/wren': 'dev'}, 'password': 'secret', 'note': 'Houses', 'expect': 'd1'}
+        self.assertEqual(self.call('POST', '/api/dm/import', body, token='viewer-token')[0], 403)
+        self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'password': ''}, token='dm-token')[0], 400)
+        self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'dev': 'ridgemere2'}, token='dm-token')[0], 400)
+        self.assertEqual(self.sync.calls, [])
+        status, data = self.call('POST', '/api/dm/import', body, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('import_', ('dev', {'live.npcs/wren': 'dev'}, 'secret', 'dm-user', 'Houses', 'd1')))
+        self.assertEqual(self.logged()[-1][1:4], ('prod', 'world.import', 'dev'))
+        left = [{'id': 'live.npcs/wren', 'fields': []}]
+        for error, code in ((WS.WrongPassword('Wrong publish password.'), 401), (WS.Locked('Too many tries.'), 429),
+                            (WS.NotInMaintenance('Not in maintenance.'), 409), (WS.Moved('The worlds changed.'), 409),
+                            (WS.Unresolved('1 conflict to resolve.', left), 409),
+                            (WS.PublishError('Refused.', ['rook would be stranded']), 422)):
+            self.sync.fail = error
+            status, data = self.call('POST', '/api/dm/import', body, token='dm-token')
+            self.assertEqual((status, data['error']), (code, str(error)), type(error).__name__)
+            self.assertEqual(data['errors'], error.errors)
+        self.assertEqual(data['errors'], ['rook would be stranded'])
+        self.sync.fail = WS.Unresolved('1 conflict to resolve.', left)
+        self.assertEqual(self.call('POST', '/api/dm/import', body, token='dm-token')[1]['conflicts'], left)
+
+    def test_releases_and_rollback(self):
+        status, data = self.call('GET', '/api/dm/releases', token='viewer-token')
+        self.assertEqual((status, data['world']), (200, 'prod'))
+        self.assertEqual(self.call('POST', '/api/dm/rollback', {'number': 2, 'password': 'p'}, token='viewer-token')[0], 403)
+        self.assertEqual(self.call('POST', '/api/dm/rollback', {'number': 'two', 'password': 'p'}, token='dm-token')[0], 400)
+        status, data = self.call('POST', '/api/dm/rollback', {'number': 2, 'password': 'p', 'note': 'Oops'}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('rollback', ('prod', 2, 'p', 'dm-user', 'Oops')))
+        self.assertEqual(self.logged()[-1][2:4], ('world.rollback', '2'))
+
+    def test_the_session_says_where_switching_is(self):
+        self.assertIn('Server & import', self.call('GET', '/api/studio/session', token='dm-token')[1]['dm']['switch'])
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class SyncFlowTests(ScratchWorlds, unittest.TestCase):
+    """The user's flow through the studio on throwaway worlds (a live Greyfen and its dev copy): Atlas updates from
+    live choosing a conflict field by field; the DM closes the world, imports choosing a conflict, rolls back and
+    reopens; and the live switch. The DM's accounts are stand-ins; its audit is the real one, in each world."""
+
+    def setUp(self):
+        super().setUp()
+        W.set_local(atlas=self.dev, live=self.live)
+        self.dm = StandInDM()
+        self.dm.log = D.DungeonMaster(lambda key: W.connect(key, 'dm')).log
+        self.host = Running(self.dm, self.dev)
+        self.call = self.host.call
+
+    def tearDown(self):
+        self.host.stop()
+        super().tearDown()
+
+    def audit(self, key):
+        return [r[0] for r in self.sql(key, 'SELECT action FROM dm.audit ORDER BY at, action')]
+
+    def test_update_from_live_then_import_into_it(self):
+        self.sql(self.dev, "UPDATE live.npcs SET name = 'Wrenna', greeting = 'Dev greeting.' WHERE id = 'wren'")
+        self.sql(self.live, "UPDATE live.npcs SET name = 'Wren the Elder', purse = 5 WHERE id = 'wren'")
+        self.sql(self.live, "INSERT INTO live.factions (world_id, id, name) VALUES ('greyfen', 'wardens', 'Wardens')")
+        status, plan = self.call('GET', '/api/atlas/sync/diff', token='dm-token')
+        self.assertEqual(status, 200, plan)
+        self.assertEqual((plan['counts'], plan['liveWorld']['key']), ({'live': 1, 'dev': 0, 'conflicts': 1}, self.live))
+        self.assertTrue(plan['warnings'], 'the live world is running')
+        token = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/sync/pull', {'expect': plan['digest']}, token='dm-token', headers=token)
+        self.assertEqual(status, 409, data)
+        self.assertEqual([c['id'] for c in data['conflicts']], ['live.npcs/wren'])
+        status, data = self.call('POST', '/api/atlas/sync/pull', {'choices': {'live.npcs/wren': 'dev'}, 'expect': '0' * 40},
+                                 token='dm-token', headers=token)
+        self.assertEqual(status, 409, 'the worlds moved since that plan')
+        status, data = self.call('POST', '/api/atlas/sync/pull', {'choices': {'live.npcs/wren': {'name': 'dev'}},
+                                                                  'expect': plan['digest']}, token='dm-token', headers=token)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sql(self.dev, "SELECT name, greeting, purse FROM live.npcs WHERE id = 'wren'")[0],
+                         ('Wrenna', 'Dev greeting.', 5))
+        self.assertEqual(self.one(self.dev, "SELECT name FROM live.factions WHERE id = 'wardens'"), 'Wardens')
+        self.assertEqual(self.audit(self.dev), ['world.pull'])
+
+        # The DM: Import from dev is blocked until maintenance.
+        status, data = self.call('GET', '/api/dm/import/plan', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(([c['key'] for c in data['candidates']], data['dev']), ([self.dev], self.dev))
+        self.assertTrue(any('not in maintenance' in b for b in data['plan']['blocked']))
+        self.assertEqual([c['id'] for c in data['plan']['devChanges']], ['live.npcs/wren'])
+        body = {'dev': self.dev, 'password': 'password', 'note': 'Wren renamed'}
+        self.assertEqual(self.call('POST', '/api/dm/import', body, token='dm-token')[0], 409, 'not in maintenance')
+        status, data = self.call('POST', '/api/dm/server/maintenance', {'on': True, 'note': 'Renaming'}, token='dm-token')
+        self.assertEqual((status, data['server']['state'], data['server']['by']), (200, 'maintenance', 'dm-user'), data)
+        status, data = self.call('GET', '/api/dm/server/status', token='viewer-token')
+        self.assertEqual((data['key'], data['server']['state'], data['serverRunning']), (self.live, 'maintenance', False))
+        # Live moves during maintenance (the DM's own change): a conflict at import.
+        self.sql(self.live, "UPDATE live.npcs SET greeting = 'Live greeting.' WHERE id = 'wren'")
+        status, plan = self.call('GET', '/api/dm/import/plan', token='dm-token')
+        self.assertEqual((plan['plan']['blocked'], [c['id'] for c in plan['plan']['conflicts']]), ([], ['live.npcs/wren']))
+        self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'password': 'guess'}, token='dm-token')[0], 401)
+        status, data = self.call('POST', '/api/dm/import', body, token='dm-token')
+        self.assertEqual((status, [c['id'] for c in data['conflicts']]), (409, ['live.npcs/wren']))
+        status, data = self.call('POST', '/api/dm/import', {**body, 'choices': {'live.npcs/wren': {'greeting': 'live'}},
+                                                             'expect': plan['plan']['digest']}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(data['release'], 1)
+        self.assertEqual(self.sql(self.live, "SELECT name, greeting FROM live.npcs WHERE id = 'wren'")[0], ('Wrenna', 'Live greeting.'))
+        status, data = self.call('GET', '/api/dm/releases', token='viewer-token')
+        self.assertEqual([(r['number'], r['kind'], r['by']) for r in data['releases']], [(1, 'import', 'dm-user')])
+        self.sql(self.dev, "UPDATE world.interiors SET name = 'The New Shop' WHERE id = 'shop'")
+        status, data = self.call('POST', '/api/dm/import', {**body, 'note': 'Shop sign'}, token='dm-token')
+        self.assertEqual((status, data.get('release')), (200, 2), data)
+        status, data = self.call('POST', '/api/dm/rollback', {'number': 1, 'password': 'password', 'note': 'Old sign'}, token='dm-token')
+        self.assertEqual((status, data.get('release')), (200, 3), data)
+        self.assertNotEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The New Shop')
+        status, data = self.call('POST', '/api/dm/server/maintenance', {'on': False}, token='dm-token')
+        self.assertEqual((status, data['server']['state']), (200, 'running'))
+        self.assertEqual(self.audit(self.live), ['server.maintenance', 'world.import', 'world.import', 'world.rollback',
+                                                 'server.running'])
+
+    def test_switching_the_live_world(self):
+        other = f'{self.live}o'
+        W.new_world(other, 'Other', 'live', source=self.seed, log=lambda *_: None)
+        try:
+            switch = {'world': other, 'confirm': other}
+            self.assertEqual(self.call('POST', '/api/dm/server/switch', {'world': other, 'confirm': 'x'}, token='admin-token')[0], 400)
+            status, data = self.call('POST', '/api/dm/server/switch', switch, token='admin-token')
+            self.assertEqual(status, 409, data)
+            self.assertIn('not in maintenance', data['error'])
+            self.call('POST', '/api/dm/server/maintenance', {'on': True}, token='admin-token')
+            status, data = self.call('POST', '/api/dm/server/switch', switch, token='admin-token')
+            self.assertEqual((status, data['live'], data['was']), (200, other, self.live), data)
+            self.assertEqual(W.live_world(), other)
+            status, data = self.call('GET', '/api/dm/server/status', token='viewer-token')
+            self.assertEqual((data['key'], data['server']['state']), (other, 'maintenance'), 'it opens when the DM turns it on')
+            self.assertEqual(self.call('GET', '/api/studio/session', token='viewer-token')[1]['dm']['live'], other)
+            self.assertEqual(self.audit(other), ['server.switch'])
+            # Atlas's dev world is a copy of the old live world: nothing to import into the new one.
+            self.assertEqual(self.call('GET', '/api/dm/import/plan', token='dm-token')[1]['candidates'], [])
+        finally:
+            with superuser() as su:
+                su.execute(f'DROP DATABASE IF EXISTS ratw_{other} WITH (FORCE)')
 
 
 if __name__ == '__main__':

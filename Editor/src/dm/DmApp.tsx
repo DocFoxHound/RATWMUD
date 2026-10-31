@@ -12,6 +12,7 @@ import {LiveTab} from './LiveTab';
 import {useWorld} from './world';
 import {ChaptersTab} from './ChaptersTab';
 import {HealthTab} from './HealthTab';
+import {ServerTab} from './ServerTab';
 import {MoneyTab} from './MoneyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
@@ -19,7 +20,7 @@ import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
 import {isLive, worldName, dmApi, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
-type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money' | 'import';
+type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'money' | 'server';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
 // Making NPCs, their routes and areas, factions and talk are Atlas's (doc 66, section 3): the NPC tab here is live life.
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
@@ -31,10 +32,8 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
     {id: 'money', label: 'Money', icon: '¤', ready: true, blurb: ''},
     {id: 'health', label: 'Server Health', icon: '♥', ready: true, blurb: ''},
-    {id: 'import', label: 'Import from dev', icon: '⇪', ready: false,
-        blurb: 'Import from dev (coming in Phase 4): during maintenance, bring a dev world’s changes into the live world, ' +
-            'choose what to keep where both changed, and record a release you can roll back (Docs/Design/66-worlds-atlas-and-dm.md, ' +
-            'section 4). It replaces Push to live, which has left Atlas.'},
+    // The server (maintenance, the live world switch), Import from dev and the releases (doc 66, section 4).
+    {id: 'server', label: 'Server & import', icon: '⇪', ready: true, blurb: ''},
 ];
 
 /** The sign-in for the whole studio: a Dungeon Master account (doc 66, 3), separate from player accounts. */
@@ -74,6 +73,7 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
+            : tab === 'server' ? <ServerTab me={me} target={target} key={target} />
             : tab === 'money' ? <MoneyTab target={target} key={target} me={me} />
             : current.ready ? <PlayersTab me={me} target={target} key={target} />
             : <div className="dm-center"><div className="empty-sheet"><h2>{current.icon} {current.label}</h2><p>{current.blurb}</p></div></div>}

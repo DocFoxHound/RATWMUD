@@ -628,8 +628,9 @@ class HttpTests(unittest.TestCase):
         # Without the database there is no live world, and the host says so.
         self.assertEqual(self.request('GET', '/api/live/world')[0], 503)
         self.assertEqual(self.request('POST', '/api/live/sync', json.dumps({'since': 0}), self.auth())[0], 503)
-        self.assertEqual(self.request('GET', '/api/publish')[0], 503)
-        self.assertEqual(self.request('POST', '/api/publish/push', json.dumps({'password': 'x'}), self.auth())[0], 503)
+        # Push to live has gone from Atlas (doc 66, section 4: the studio's Update from live and Import from dev).
+        self.assertEqual(self.request('GET', '/api/publish')[0], 404)
+        self.assertEqual(self.request('POST', '/api/publish/push', json.dumps({'password': 'x'}), self.auth())[0], 404)
         status, headers, _ = self.request('GET', '/portraits/timber.png')
         self.assertEqual((status, headers['Content-Type']), (200, 'image/png'))
         self.assertEqual(self.request('GET', '/portraits/..%2Fsecret.png')[0], 404)
