@@ -141,7 +141,7 @@ def check_project(value: object, for_game: bool = True, playable: bool = True) -
     if errors:
         raise ValidationError(errors)
     if for_game:
-        require(len(p['cells']) + len(p['rooms']) <= 256, '▶ Play and file exports load at most 256 cells and interiors; Push to live and database servers (tools/live.sh) stream any number.')
+        require(len(p['cells']) + len(p['rooms']) <= 256, '▶ Play and file exports load at most 256 cells and interiors; imports and database servers (tools/live.sh) stream any number.')
     require(len(p['cells']) + len(p['rooms']) <= 65536, 'At most 65536 cells and interiors are supported.')
     require(len(p['links']) <= 2048, 'At most 2048 explicit links are supported.')
 
@@ -268,7 +268,7 @@ def check_project(value: object, for_game: bool = True, playable: bool = True) -
                 c['x'], c['y'] = int(c['x']), int(c['y'])
     if for_game:
         require(total_tiles <= MAX_TILES, f'Cells plus interiors cover {total_tiles} tiles; ▶ Play and file exports load at most '
-                f'{MAX_TILES}. Push to live and database servers (tools/live.sh) stream any number.')
+                f'{MAX_TILES}. Imports and database servers (tools/live.sh) stream any number.')
     if errors:
         raise ValidationError(errors[:100])
 
@@ -1001,21 +1001,19 @@ def tile_count(project) -> int:
                if isinstance(a, dict) and isinstance(a.get('width'), int) and isinstance(a.get('height'), int))
 
 
-def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_path=None, world=None, publisher=None,
-                live_launcher=launch_live, push_unavailable=None):
+def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_path=None, world=None,
+                live_launcher=launch_live):
     """Atlas on its own (the tests); the tool itself is tools/studio.py, which hosts make_handler's Handler."""
     server = ThreadingHTTPServer(('127.0.0.1', port), make_handler(
-        roster_path=roster_path, launcher=launcher, ai_config_path=ai_config_path, world=world, publisher=publisher,
-        live_launcher=live_launcher, push_unavailable=push_unavailable))
+        roster_path=roster_path, launcher=launcher, ai_config_path=ai_config_path, world=world, live_launcher=live_launcher))
     server.daemon_threads = True
     return server
 
 
-def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, world=None, publisher=None,
-                 live_launcher=launch_live, push_unavailable=None):
-    """Atlas's request handler. `world` is Atlas's world (live_edit.LiveWorld) and `publisher` Push to live
-    (publish.Publisher); without them only the roster file and exports work. `push_unavailable` says why there is no
-    publisher. Every write needs this handler's session token (GET /api/session), new each time it is made."""
+def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, world=None, live_launcher=launch_live):
+    """Atlas's request handler. `world` is Atlas's world (live_edit.LiveWorld); without it only the roster file and
+    exports work. Every write needs this handler's session token (GET /api/session), new each time it is made. (Push to
+    live has gone: Atlas's Update from live and the DM's Import from dev are tools/studio.py's, over tools/world_sync.py.)"""
     token = secrets.token_urlsafe(24)
     atlas_world = None
     if world is not None and getattr(world, 'key', None):
@@ -1032,13 +1030,6 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
             error.status = 503
             raise error
         return world
-
-    def publishing():
-        if publisher is None:
-            error = HostError(push_unavailable or 'Push to live needs the DEV and PROD databases; start the editor with tools/editor.sh.')
-            error.status = 503
-            raise error
-        return publisher
     lock = threading.Lock()  # One roster read-modify-write at a time.
     ai = {'config': None, 'error': 'No AI config found (Saved/Config/RATWNPCAI.local.json or RATW_AI_CONFIG).'}
     config_path = ai_config_path or roster_lib.default_ai_config()
@@ -1122,8 +1113,6 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                     return self.reply(200, live().ground(ids))
                 if path == '/api/live/camps':
                     return self.reply(200, live().camps())
-                if path == '/api/publish':
-                    return self.reply(200, publishing().preview())
                 if path == '/api/roster':
                     with lock:
                         return self.reply(200, rosters.load())
@@ -1135,8 +1124,12 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                 return self.reply(200, {'available': ai['config'] is not None, 'model': getattr(ai['config'], 'model', ''), 'error': ai['error']})
             return self.static(path)
 
+        def editing(self):
+            """Whether this request comes from this computer with this handler's session token (every write needs it)."""
+            return self.trusted() and secrets.compare_digest(self.headers.get('X-RATW-Editor', ''), token)
+
         def do_POST(self):
-            if not self.trusted() or not secrets.compare_digest(self.headers.get('X-RATW-Editor', ''), token):
+            if not self.editing():
                 return self.reply(403, {'error': 'Local editor session required.'})
             path = urlsplit(self.path).path
             try:
@@ -1170,12 +1163,6 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                         # Conflicts and refusals carry the current values so the editor can show the true state.
                         extra = {k: getattr(error, k) for k in ('conflicts', 'current') if hasattr(error, k)}
                         return self.reply(error.status, {'error': str(error), **extra})
-                if path in ('/api/publish/push', '/api/publish/rollback', '/api/publish/pull'):
-                    if not isinstance(data, dict):
-                        raise ValueError('Bad request.')
-                    with lock:
-                        run = {'push': publishing().push, 'rollback': publishing().rollback, 'pull': publishing().pull}[path.rsplit('/', 1)[1]]
-                        return self.reply(200, run(data))
                 if path == '/api/roster':
                     with lock:
                         merged = rosters.save(merge_roster(data, rosters.load()))

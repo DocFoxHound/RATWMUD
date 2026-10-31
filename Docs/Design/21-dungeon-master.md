@@ -14,6 +14,17 @@ built: the server builds its NPCs from the live tables (`live.people_manifest`,
 migration 0014), NPC changes sync into a running server, and the NPC Management
 tab creates, places, changes, kills, revives and deletes named NPCs.
 
+Since 2026-10-30 (doc 66, section 4, "Phase 4 screens") the DM is also the
+server's controller: its **Server & import** tab starts and ends maintenance (the
+game server warns its players for a minute, saves and stops; ending it lets the
+launcher start the server again), switches the live world (rarely wise; only in
+maintenance, with the world's key typed to confirm), imports a dev world into
+the live world with conflicts chosen field by field (a numbered release), and
+lists the releases with rollback. Push to live, its add-only rules and "copy the
+live NPCs back" are gone: Atlas updates its copy from live (choosing conflicts),
+the DM imports. The table below is the 2026-09-25 plan; "Push to live" there now
+means the import.
+
 ## What it is
 
 **Atlas builds the world. Dungeon Master runs everything alive in it.**

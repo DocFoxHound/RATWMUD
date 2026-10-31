@@ -538,3 +538,90 @@ stores are opened empty. Nobody restocks a shop: what it sells stays sold until 
 Tests: 66 of 66 (`shops_tests` new: the catalogue, a shop's till, a player's trade at catalogue prices, a day and a half
 with nothing bought, made or paid and hunger held, an older save read). A scratch server on the town world started and
 ran.
+
+### Phase 4 screens: built (2026-10-30)
+
+Section 4's screens, over the engine (`tools/world_sync.py`), in the one tool.
+
+**The studio's routes** (`tools/studio.py`, answered by the studio itself; the local origin and the one sign-in as
+before; reads for any account, writes for `dm` and `admin`; every pull, import, maintenance change, switch and rollback
+audited in that world's `dm.audit` through `DungeonMaster.log`):
+
+| Route | Does |
+|---|---|
+| `GET /api/atlas/sync/diff` | the plan of Atlas's world against its upstream, with both worlds and the live server's state; 409 with why when Atlas's world has no upstream (a side project) |
+| `POST /api/atlas/sync/pull` `{choices, expect}` | the pull (also needs Atlas's own session token, as Atlas's writes do) |
+| `GET /api/dm/server/status?world=KEY` | a live world's status (default the live server's), the live choice, the switch warning |
+| `POST /api/dm/server/maintenance` `{world, on, note}` | maintenance on or off |
+| `POST /api/dm/server/switch` `{world, confirm}` | the live switch: `confirm` must be the world's key typed again; refused for a dev world or the live one; the engine refuses it outside maintenance |
+| `GET /api/dm/import/plan?dev=KEY` | the dev worlds whose upstream is the live server's world (Atlas's first) and the plan of one (default the first); a refusal such as "no base yet" comes back as `problem` with the worlds still listed |
+| `POST /api/dm/import` `{dev, choices, password, note, expect}` | the import into the live server's world, from one of its copies only |
+| `GET /api/dm/releases?world=KEY`, `POST /api/dm/rollback` `{number, password, note}` | releases and rollback |
+
+The engine's errors keep their meaning: `PublishError` 422 with `errors`, `WrongPassword` 401, `Locked` 429,
+`Unresolved` 409 with `conflicts` (the plan's items left), `NotInMaintenance` 409, `S.Unavailable` 503, an unknown
+world 400. **Changed in the engine:** a stale `expect` or choices for conflicts no longer there raise
+`world_sync.Moved` (a `PublishError`, 409) instead of a plain 422, so both screens can tell "the worlds moved: look
+again" from a refusal.
+
+**Atlas: ⇩ Update from live**, a page of its own in Atlas's bar (`?suite=atlas&page=sync`, `src/studio/
+UpdateFromLive.tsx`). On a world without an upstream it says why (and how a copy of a live world is made). Otherwise:
+the two worlds, the live release, the base (release, how, by whom, when), a warning while the live server runs, the
+counts (live changes to take, dev changes kept, conflicts), live's changes grouped by table label (each group and each
+row collapsible, a row opening to its fields base / dev / live), the conflicts, and dev's own changes (kept, folded
+away). Each conflict: Keep dev's / Take live's, or for a row both sides have **Field by field** (each differing field
+chosen; a field only one side changed starts on that side; the ones both changed are marked and must be chosen); all
+conflicts at once with one click; long values shown as "long value (N characters, digest …)". Update sends the choices
+and the plan's digest as `expect`; on a 409 (the worlds moved, or conflicts left) or a refusal it compares again, keeps
+the picks that still apply and shows what is left. After a pull other Atlas sessions reload (the engine's `reload`
+edit); the page offers the Workshop.
+
+**DM: Server & import** (`src/dm/ServerTab.tsx`, the tab that replaced the placeholder):
+
+- **The server**: the live world (name, key), running or in maintenance (by whom, when, the note), whether a game
+  server holds it (watched every 5 s while it is closing). Start maintenance (a note; it says players get 60 seconds,
+  again at 10, then the server saves and stops), End maintenance (turns the server back on: `tools/live.sh server`
+  starts it on the live world).
+- **Import from dev**: the dev world (its copies), the plan (what dev's changes will write to live, by table, rows
+  opening to their fields; live's own changes, kept; the conflicts with the same choices as Atlas: Import dev's / Keep
+  live's / field by field), the dev world's errors and warnings, the blocked reasons, a note and the publish password.
+  Disabled with the reason outside maintenance or while the game server is still stopping. Then the release number, its
+  summary, how the dev world was brought level, and a reminder to end maintenance.
+- **Switch the live world**: the other live worlds, during maintenance only, under the warning "Switching the live
+  world is rarely wise: players' characters and progress belong to each world.", the world's key typed to confirm. The
+  new world starts in maintenance; the page reloads on it.
+- **Releases**: the list, and Roll back to this (password, note) for the authored content.
+
+The choices logic is one pure module, `src/lib/sync.ts` (`buildChoices`: the UI's picks to the engine's choices,
+naming only the fields both sides changed and a one-sided field when the other side's is taken; `prunePicks` after a
+new plan; the value and summary texts), tested in `src/lib/sync.test.ts`. The views both screens share are
+`src/studio/SyncViews.tsx`.
+
+**Removed:** Atlas's old Push to live dialog (`PublishDialog`, `api.publish`, `PublishRefusal` and their types) and
+`map_editor`'s `/api/publish...` routes and `publisher` argument (nothing passed one since Phase 3); the studio still
+answers those paths 404 with where things went. `tools/publish.py` stays, the engine's compatibility command line.
+
+**Tests.** `tools/test_studio.py`: with stand-ins, who may call each route, what reaches the engine, a side project
+refused, the pull needing Atlas's token, the switch's typed confirmation, the import's copies only, and every engine
+error as HTTP; on throwaway worlds (`test_world_sync`'s live Greyfen and its copy; dropped after), the user's flow
+through the routes: a pull choosing a conflict field by field (refused unresolved, refused on a stale plan), the
+import refused outside maintenance, maintenance, a conflict made during maintenance chosen at import, a wrong password,
+two releases and a rollback, maintenance ended, each step in the world's audit; and the live switch (refused outside
+maintenance, the new world in maintenance, nothing left to import into it). The Editor's type-check, build and tests
+(the one known model failure, Greyfen 11 against 10, aside).
+
+**The user's flow in the tool** (adding a few buildings to Ridgemere; DEV is the copy of PROD, its upstream):
+
+1. **DM ▸ Server & import ▸ Start maintenance**, with a note. Players are warned for a minute; the game server saves
+   and stops ("No game server holds this world" once it has).
+2. **Atlas** (dev world: DEV) **▸ ⇩ Update from live**: look at live's changes, choose each conflict (Keep dev's / Take
+   live's, or field by field), **Update**. DEV now has everything live did, and live's state is its base.
+3. **Atlas ▸ Workshop** (and NPCs & areas): make the changes. Atlas saves as you go.
+4. **DM ▸ Server & import ▸ Import from dev**: choose DEV, read what will be written, resolve any conflicts left (live
+   may have moved since the update), add a note and the publish password, **Import**. A release is recorded and DEV is
+   brought level with live.
+5. **End maintenance**: the launcher starts the server again and players come back.
+
+(Switching the live world, rarely: during maintenance, **Switch the live world**, type its key; it opens when its
+maintenance is ended.) Before the first use on the real worlds: `python3 tools/world_db.py migrate` (0054) and
+`python3 tools/world_sync.py init-base dev` (the user's to run; not done here).

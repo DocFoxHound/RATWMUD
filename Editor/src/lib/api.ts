@@ -6,7 +6,8 @@ import type {Character, Roster, SlotPreview} from './roster';
 import * as M from '../model/model.mjs';
 import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
-import {authHeaders} from '../dm/api';
+import {authHeaders, studioCall} from '../dm/api';
+import type {Choice, PullPlan, PullResult} from './sync';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
@@ -36,18 +37,6 @@ async function json<T>(response: Response): Promise<T> {
 export interface HostValidation { valid: boolean; errors: string[]; warnings: string[] }
 import type {Change, Editor} from './live';
 
-export type Counts = Record<string, number>;
-export interface PublishSummary { world: Record<string, Counts>; live: Record<string, Counts> }
-export interface Release { number: number; at: string; by: string; note: string; kind: 'push' | 'rollback'; restored: number | null; summary: PublishSummary }
-export interface NpcCopy { copied: Record<string, number>; skipped: string[]; error?: string }
-export interface PublishPreview {
-    world: string; devRevision: number; release: number; errors: string[]; warnings: string[]; changed: boolean;
-    summary: PublishSummary; releases: Release[];
-}
-/** A refused push or rollback: the message, and the problems behind it (e.g. what blocks publishing). */
-export class PublishRefusal extends Error {
-    constructor(message: string, readonly errors: string[], readonly status: number) { super(message); }
-}
 export interface PlaytestResult { folder: string; manifest: string; command: string }
 
 /** What "who fills each profession slot" depends on: the slots, who is already named, and the ground beside each
@@ -118,18 +107,13 @@ export const api = {
         answer.catch(() => { if (lastPlan?.key === key) lastPlan = null; });
         return answer;
     },
-    /** Push to live (tools/publish.py). */
-    publish: {
-        preview: async () => json<PublishPreview>(await get('publish')),
-        push: async (body: {password: string; note: string; editor: string}) => published(await post('publish/push', body)),
-        rollback: async (body: {release: number; password: string; note: string; editor: string}) => published(await post('publish/rollback', body)),
-        /** Copies PROD's NPCs and their running state into DEV (no password: it only writes DEV). */
-        pull: async (body: {editor: string}) => {
-            const response = await post('publish/pull', body);
-            const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
-            if (!response.ok) throw new PublishRefusal(data.error ?? 'Refused.', data.errors ?? [], response.status);
-            return data as NpcCopy;
-        },
+    /** Update from live (doc 66, section 4; tools/world_sync.py): the three-way plan of Atlas's world against its
+     *  upstream, and the pull (live's changes and the chosen side of each conflict into Atlas's world). Refusals are
+     *  DmErrors with the engine's `errors` and, on a 409, the `conflicts` left. */
+    sync: {
+        diff: () => studioCall<PullPlan>(ATLAS + 'sync/diff'),
+        pull: async (choices: Record<string, Choice>, expect: string) =>
+            studioCall<PullResult>(ATLAS + 'sync/pull', {choices, expect}, {'X-RATW-Editor': await session()}),
     },
     ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {
@@ -144,12 +128,6 @@ export const api = {
         return data;
     },
 };
-
-async function published(response: Response): Promise<{release: number; summary: PublishSummary; pulled?: NpcCopy}> {
-    const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
-    if (!response.ok) throw new PublishRefusal(data.error ?? 'Refused.', data.errors ?? [], response.status);
-    return data;
-}
 
 export function download(name: string, data: Blob | string, type = 'application/json') {
     const url = URL.createObjectURL(typeof data === 'string' ? new Blob([data], {type}) : data);

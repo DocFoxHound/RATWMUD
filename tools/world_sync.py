@@ -116,6 +116,12 @@ class NotInMaintenance(PublishError):
     status = 409
 
 
+class Moved(PublishError):
+    """The worlds changed since the plan the choices were made on (a stale `expect`, or choices for conflicts no
+    longer there): look at the new plan and choose again."""
+    status = 409
+
+
 _shapes = {}
 
 
@@ -604,7 +610,7 @@ def resolve(items, choices) -> dict[str, dict | None]:
     conflicts = {i.id: i for i in items if i.side == 'conflict'}
     stale = sorted(set(choices) - set(conflicts))
     if stale:
-        raise PublishError('Some choices are for conflicts that are no longer there (the worlds changed): look again.', stale)
+        raise Moved('Some choices are for conflicts that are no longer there (the worlds changed): look again.', stale)
     missing = [conflicts[c] for c in conflicts if c not in choices]
     if missing:
         raise Unresolved(f'{len(missing)} conflict{"s" if len(missing) != 1 else ""} to resolve: choose dev or live for each.',
@@ -790,7 +796,7 @@ def plan(dev, live, dev_key, live_key):
 
 def check_expected(info, expect):
     if expect and expect != info['digest']:
-        raise PublishError('The worlds changed since this plan was made: look at the new plan and choose again.')
+        raise Moved('The worlds changed since this plan was made: look at the new plan and choose again.')
 
 
 def counts_of(changes, have):

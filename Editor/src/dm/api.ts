@@ -3,6 +3,7 @@
 import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
+import type {Choice, ImportPlan, ImportResult, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -84,21 +85,36 @@ export const authHeaders = (): Record<string, string> => (token ? {Authorization
  *  NPC pages (the same methods, on Atlas's world only). */
 const at = (target: Target) => (isLive(target) ? 'api/dm/' : 'api/atlas/layers/');
 
-export class DmError extends Error { constructor(message: string, readonly status: number) { super(message); } }
+/** A refusal from the studio: its message and status, and from the sync engine (tools/world_sync.py) the problems
+ *  behind it (`errors`) and the conflicts left to choose (`conflicts`, on a 409). */
+export class DmError extends Error {
+    readonly status: number;
+    readonly errors: string[];
+    readonly conflicts: SyncItem[] | null;
+    constructor(message: string, status: number, data: {errors?: unknown; conflicts?: unknown} = {}) {
+        super(message);
+        this.status = status;
+        this.errors = Array.isArray(data.errors) ? data.errors.map(String) : [];
+        this.conflicts = Array.isArray(data.conflicts) ? data.conflicts as SyncItem[] : null;
+    }
+}
 
-async function call<T>(path: string, body?: unknown): Promise<T> {
+async function call<T>(path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {
     const response = await fetch(path, {
         method: body === undefined ? 'GET' : 'POST',
-        headers: {...authHeaders(), ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
+        headers: {...authHeaders(), ...(body === undefined ? {} : {'Content-Type': 'application/json'}), ...headers},
         body: body === undefined ? undefined : JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
     if (!response.ok) {
-        if (response.status === 401) setToken('');
-        throw new DmError(data.error ?? `Host replied ${response.status}.`, response.status);
+        // (A wrong publish password is a 401 too, but not the end of the sign-in: the studio says which.)
+        if (response.status === 401 && /sign in|session/i.test(String(data.error ?? ''))) setToken('');
+        throw new DmError(data.error ?? `Host replied ${response.status}.`, response.status, data);
     }
     return data as T;
 }
+/** The studio's calls, for other modules' routes (Atlas's Update from live, which also carries Atlas's token). */
+export const studioCall = call;
 function setToken(value: string) {
     token = value;
     try { if (value) sessionStorage.setItem(KEY, value); else sessionStorage.removeItem(KEY); } catch { /* private window */ }
@@ -312,10 +328,26 @@ export const dmApi = {
     studio: () => call<StudioSession>('api/studio/session'),
     /** Switches Atlas's world (a dev world), as `world_db.py use KEY` does. */
     useAtlasWorld: (key: Target) => call<{world: World}>('api/studio/atlas-world', {key}),
+    // The server and imports (doc 66, section 4; tools/studio.py over tools/world_sync.py), on live worlds.
+    /** A live world's state (running or maintenance), whether a game server holds it, its release; and the live choice. */
+    serverStatus: (world?: Target) => call<ServerStatus>(`api/dm/server/status${world ? `?world=${encodeURIComponent(world)}` : ''}`),
+    /** Closes a live world for maintenance (its players get a minute) or turns it back on (the launcher restarts it). */
+    maintenance: (world: Target, on: boolean, note = '') => call<ServerStatus>('api/dm/server/maintenance', {world, on, note}),
+    /** Switches the live server's world: during maintenance, with the world's key typed again as `confirm`. */
+    switchLive: (world: Target, confirm: string) =>
+        call<{live: Target; was: Target; name: string; server: ServerStatus['server']}>('api/dm/server/switch', {world, confirm}),
+    /** The dev worlds copied from the live world, and what importing one (`dev`, else the first) would do. */
+    importPlan: (dev?: Target) => call<{live: SyncWorld; candidates: SyncWorld[]; dev: Target | null; plan: ImportPlan | null;
+        problem: string; errors: string[]}>(`api/dm/import/plan${dev ? `?dev=${encodeURIComponent(dev)}` : ''}`),
+    importDev: (body: {dev: Target; choices: Record<string, Choice>; password: string; note: string; expect: string}) =>
+        call<ImportResult>('api/dm/import', body),
+    releases: (world?: Target) => call<{world: Target; releases: Release[]}>(`api/dm/releases${world ? `?world=${encodeURIComponent(world)}` : ''}`),
+    rollback: (world: Target, number: number, password: string, note: string) =>
+        call<{release: number; summary: Release['summary']}>('api/dm/rollback', {world, number, password, note}),
 };
 
 /** What the studio's top bar shows (doc 66, 3). Atlas is for dm and admin accounts (`available`); the DM shows the live
- *  worlds and the one the live server runs (switching it is Phase 4's: `switch` says so). */
+ *  worlds and the one the live server runs (`switch` says where it is switched: the DM's Server & import tab). */
 export interface StudioSession {
     me: Me; suite: 'atlas' | 'dm';
     atlas: {available: boolean; world: World; worlds: World[]};

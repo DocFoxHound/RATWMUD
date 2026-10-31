@@ -308,6 +308,13 @@ class DungeonMaster:
         conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (%s, %s, %s, %s, %s)',
                      (self.clock(), action, target, detail[:2000], who))
 
+    def log(self, who, world, action, target, detail):
+        """Audits something done outside the DM's own methods (the studio's pull, import, maintenance, the live switch,
+        rollback: doc 66, Phase 4) in that world's audit."""
+        with self.connect(world) as conn:
+            self.audit(conn, who['username'], action, str(target)[:200], f'{world.upper()}: {detail}')
+        return True
+
     # -- players ---------------------------------------------------------------
     def players(self, target):
         """Every player character as last saved, with world-map positions, and recent actions on them."""

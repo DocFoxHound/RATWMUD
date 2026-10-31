@@ -29,7 +29,7 @@ export type Pending =
     | {kind: 'place'; ref: PlaceRef; label: string}
     | {kind: 'link'; a: Place | null; linkKind: 'door' | 'passage' | 'stairs'}
     | null;
-export type Dialog = 'identity' | 'conflict' | 'publish' | 'cut' | 'split' | 'room' | 'politics' | 'play' | 'shortcuts' | 'about' | 'generate' | null;
+export type Dialog = 'identity' | 'conflict' | 'cut' | 'split' | 'room' | 'politics' | 'play' | 'shortcuts' | 'about' | 'generate' | null;
 export interface Toast { id: number; text: string; tone: 'info' | 'error' | 'success' }
 export interface Overlays { cuts: boolean; links: boolean; territory: boolean; people: boolean; routes: boolean; grid: boolean; camps: boolean; ways: boolean }
 

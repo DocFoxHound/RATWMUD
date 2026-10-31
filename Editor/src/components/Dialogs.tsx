@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState, type ReactNode} from 'react';
 import * as M from '../model/model.mjs';
-import {api, PublishRefusal, type NpcCopy, type PlaytestResult, type PublishPreview, type PublishSummary} from '../lib/api';
+import {api, type PlaytestResult} from '../lib/api';
 import {COMMANDS} from '../lib/commands';
 import {EDITOR_COLORS} from '../lib/live';
 import {setIdentity} from '../lib/session';
@@ -30,7 +30,6 @@ export function Dialogs() {
     switch (dialog) {
         case 'identity': return <IdentityDialog />;
         case 'conflict': return <ConflictDialog />;
-        case 'publish': return <PublishDialog />;
         case 'cut': return <CutDialog />;
         case 'split': return <SplitDialog />;
         case 'room': return <RoomDialog />;
@@ -78,83 +77,6 @@ function ConflictDialog() {
         </ul> : <p className="hint error-text">{notice.message}</p>}
         <Hint>The map now shows the current version. Make your change again if it still makes sense.</Hint>
         <div className="modal-actions"><button className="primary" onClick={done}>OK</button></div>
-    </Modal>;
-}
-
-/** "3 added, 1 changed" for one line of a publish summary; '' when nothing happens to it. */
-const countsText = (counts: Record<string, number>) => Object.entries(counts).filter(([, n]) => n).map(([k, n]) => `${n} ${k}`).join(', ');
-
-function SummaryTable({summary}: {summary: PublishSummary}) {
-    const rows = [...Object.entries(summary.world), ...Object.entries(summary.live)].map(([what, counts]) => [what, countsText(counts)]).filter(([, t]) => t);
-    if (!rows.length) return <p className="meta">Nothing changes.</p>;
-    return <table className="summary"><tbody>{rows.map(([what, text]) => <tr key={what}><th>{what}</th><td>{text}</td></tr>)}</tbody></table>;
-}
-
-function PublishDialog() {
-    const me = useStore(s => s.identity);
-    const pending = useStore(s => s.live.pending);
-    const [info, setInfo] = useState<PublishPreview | null>(null);
-    const [problem, setProblem] = useState<{message: string; errors: string[]} | null>(null);
-    const [note, setNote] = useState(''), [password, setPassword] = useState(''), [busy, setBusy] = useState(false);
-    const [done_, setDone] = useState('');
-    const load = () => api.publish.preview().then(setInfo).catch(e => setProblem({message: (e as Error).message, errors: []}));
-    useEffect(() => { void load(); }, [pending === 0]); // eslint-disable-line react-hooks/exhaustive-deps
-    const copyText = (c: NpcCopy) => c.error ? `Copying the live NPCs into DEV failed: ${c.error}`
-        : `DEV now has the live NPCs (${countsText(c.copied) || 'already up to date'})${c.skipped.length ? `; skipped ${c.skipped.length}: ${c.skipped.join(' ')}` : ''}.`;
-    const pull = async () => {
-        setBusy(true); setProblem(null); setDone('');
-        try { const c = await api.publish.pull({editor}); setDone(copyText(c)); toast('Copied the live NPCs into DEV.', 'success'); }
-        catch (error) { setProblem({message: (error as Error).message, errors: error instanceof PublishRefusal ? error.errors : []}); }
-        finally { setBusy(false); }
-    };
-    const run = async (action: () => Promise<{release: number; pulled?: NpcCopy}>, what: string) => {
-        setBusy(true); setProblem(null); setDone('');
-        try {
-            const result = await action();
-            setDone(`${what}: release ${result.release} is live.${result.pulled ? ' ' + copyText(result.pulled) : ''}`);
-            toast(`Release ${result.release} is live.`, 'success');
-            setPassword(''); setNote(''); await load();
-        } catch (error) {
-            setProblem({message: (error as Error).message, errors: error instanceof PublishRefusal ? error.errors : []});
-            if (error instanceof PublishRefusal && error.status === 401) setPassword('');
-        } finally { setBusy(false); }
-    };
-    const editor = me?.name ?? 'Someone';
-    const blocked = !info || info.errors.length > 0 || pending > 0;
-    const when = (at: string) => new Date(at).toLocaleString();
-    return <Modal eyebrow="PUSH TO LIVE" title="Publish the world to PROD" wide>
-        <Hint>Copies the world from DEV to PROD, where the live game reads it. Terrain, places and doors become exactly DEV's.
-            NPCs already live are never changed by a push (players, events and deaths shape them there): only new NPCs, jobs and routes are added,
-            and afterwards DEV copies the live NPCs back so your next edits start from what is really happening. Every push is a numbered release you can roll back to.</Hint>
-        {!info && !problem && <p className="hint">Comparing DEV with PROD…</p>}
-        {info && <p className="meta">DEV world <b>{info.world}</b> at revision {info.devRevision} · live release {info.release || 'none yet'}</p>}
-        {pending > 0 && <p className="hint">Waiting for your last {pending > 1 ? `${pending} changes` : 'change'} to save…</p>}
-        {info && info.errors.length > 0 && <div className="publish-errors"><b>Fix these in DEV before publishing:</b>
-            <ul>{info.errors.slice(0, 12).map((e, i) => <li key={i}>{e}</li>)}</ul></div>}
-        {info && !info.errors.length && (info.changed ? <><b className="summary-title">This push will change:</b><SummaryTable summary={info.summary} /></>
-            : <p className="meta">PROD already matches DEV.</p>)}
-        {problem && <div className="publish-errors"><b>{problem.message}</b>
-            {problem.errors.length > 0 && <ul>{problem.errors.slice(0, 12).map((e, i) => <li key={i}>{e}</li>)}</ul>}</div>}
-        {done_ && <p className="publish-done">{done_}</p>}
-        <TextField label="What changed (for the release history)" value={note} max={2000} multiline placeholder="e.g. Opened the east fields and the mill." onCommit={setNote} />
-        <label className="field"><span>Publish password</span>
-            <input type="password" autoComplete="off" value={password} onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && password && !blocked && info?.changed) void run(() => api.publish.push({password, note, editor}), 'Pushed'); }} /></label>
-        <div className="modal-actions"><button onClick={done}>Close</button>
-            <button disabled={busy || !info?.release} title="Make DEV's NPCs, their state and the economy match PROD (only DEV changes)"
-                onClick={pull}>Copy NPC state from live</button>
-            <button className="publish" disabled={busy || blocked || !info?.changed || !password}
-                onClick={() => run(() => api.publish.push({password, note, editor}), 'Pushed')}>{busy ? 'Publishing…' : '⇪ Push to live'}</button></div>
-        {info && info.releases.length > 0 && <details className="releases" open>
-            <summary>Release history ({info.releases.length})</summary>
-            <ol>{info.releases.map((r, i) => <li key={r.number}>
-                <div><b>#{r.number}</b> {r.kind === 'rollback' ? `rolled back to #${r.restored}` : 'push'} · {r.by || 'someone'} · {when(r.at)}
-                    {r.note && <p>{r.note}</p>}<small>{countsText(Object.fromEntries(Object.entries(r.summary.world ?? {}).map(([k, c]) => [k, Object.values(c).reduce((a, b) => a + b, 0)])))}</small></div>
-                {i > 0 && <button disabled={busy || !password} title={password ? `Put release ${r.number}'s world back live` : 'Enter the publish password first'}
-                    onClick={() => { if (window.confirm(`Put release #${r.number}'s world back live? Live NPCs and the economy are not changed; DEV is not changed.`))
-                        void run(() => api.publish.rollback({release: r.number, password, note, editor}), `Rolled back to #${r.number}`); }}>Roll back to this</button>}
-            </li>)}</ol>
-        </details>}
     </Modal>;
 }
 
