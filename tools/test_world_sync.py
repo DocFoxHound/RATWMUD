@@ -214,7 +214,7 @@ class PullTests(ScratchWorlds, unittest.TestCase):
         plan = WS.diff(self.dev)
         self.assertEqual(plan['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
         with self.assertRaisesRegex(WS.PublishError, 'no upstream'):
-            WS.diff('ridgemere2')
+            WS.diff('dev-old')                 # (The old map's archive: a side project now.)
         with self.assertRaisesRegex(WS.PublishError, 'live world'):
             WS.diff(self.live)
 
@@ -378,8 +378,10 @@ class ImportTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Old Shop')
         note = next(listener.notifies(timeout=2, stop_after=1))
         self.assertEqual((note.channel, json.loads(note.payload)['release']), ('ratw_release', 1))
-        release = self.sql(self.live, 'SELECT number, kind, pushed_by, note, summary, content IS NOT NULL FROM admin.releases')
-        self.assertEqual(release, [(1, 'import', 'Ada', 'Older shop sign', result['summary'], True)])
+        release = self.sql(self.live, "SELECT number, kind, pushed_by, note, summary - 'map', content IS NOT NULL, summary->'map'->>'id' "
+                                      'FROM admin.releases')
+        self.assertEqual(release, [(1, 'import', 'Ada', 'Older shop sign', result['summary'], True, 'original:greyfen')],
+                         'the release records the map live is on')
         self.assertEqual(self.one(self.live, 'SELECT count(*) FROM world.builds WHERE release = 1'), 1, 'and its game build')
         self.assertEqual(self.game_data(self.live), game, "players' data untouched")
         self.assertEqual(self.one(self.live, 'SELECT count(*) FROM live.npc_state'), 1)
@@ -463,6 +465,135 @@ class ImportTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(WS.status(self.live)['server']['state'], 'running')
         with W.connect(self.live, 'dm') as dm:
             self.assertEqual(WS.server_state(dm)['state'], 'running', 'the DM reads it')
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class MapTests(ScratchWorlds, unittest.TestCase):
+    """The same map (doc 66): a map identity per world; pull only between worlds on one map; an import of another map
+    only with the replace-the-map confirmation (and live's migrations), live data never erased."""
+
+    def new_map(self, key, name='Greyfen the Second'):
+        with W.connect(key, 'owner') as conn:
+            with conn.transaction():
+                return WS.stamp_map(conn, name, 'Ada', 'generated')
+
+    def take_the_cottage_away(self):
+        """Dev's own map change: the cottage goes (its residents unplaced in dev first, as Atlas would)."""
+        for column in ('home_area', 'work_area', 'evening_area'):
+            self.sql(self.dev, f"UPDATE live.npcs SET {column} = NULL WHERE {column} = 'cottage'")
+            self.sql(self.dev, f"UPDATE live.profession_slots SET {column} = NULL WHERE {column} = 'cottage'")
+        for table, column in (('world.places', 'area'), ('world.resources', 'area'), ('live.faction_claims', 'area'),
+                              ('live.npc_areas', 'area'), ('live.patrol_posts', 'area')):
+            self.sql(self.dev, f"DELETE FROM {table} WHERE {column} = 'cottage'")
+        self.sql(self.dev, "DELETE FROM world.links WHERE a_area = 'cottage' OR b_area = 'cottage'")
+        self.sql(self.dev, "DELETE FROM world.areas WHERE id = 'cottage'")
+
+    def test_a_copy_is_on_its_upstreams_map_and_ordinary_edits_keep_it(self):
+        dev, live = WS.status(self.dev)['map'], WS.status(self.live)['map']
+        self.assertEqual((dev['id'], live['id'], dev['from']), ('original:greyfen', 'original:greyfen', 'original'))
+        self.sql(self.dev, "UPDATE world.interiors SET name = 'The Old Shop' WHERE id = 'shop'")    # (An Atlas edit.)
+        self.sql(self.live, "UPDATE live.npcs SET purse = 12 WHERE id = 'wren'")
+        plan = WS.diff(self.dev)
+        self.assertTrue(plan['maps']['same'])
+        self.assertFalse(plan['replacesMap'])
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 12, 'the same map pulls as ever')
+        self.assertEqual(WS.status(self.dev)['map']['id'], 'original:greyfen', 'and keeps its map')
+
+    def test_pull_is_refused_between_two_maps(self):
+        stamp = self.new_map(self.dev)
+        self.assertEqual(WS.status(self.dev)['map'], stamp)
+        self.sql(self.live, "UPDATE live.npcs SET purse = 12 WHERE id = 'wren'")
+        revision = self.one(self.dev, 'SELECT revision FROM world.worlds')
+        for attempt in (lambda: WS.diff(self.dev), lambda: WS.pull(self.dev, editor='Ada')):
+            with self.assertRaises(WS.DifferentMap) as refused:
+                attempt()
+            self.assertEqual(refused.exception.status, 409)
+            message = str(refused.exception)
+            self.assertIn("on a different map (Greyfen Crossing's original map)", message)
+            self.assertIn('(Greyfen the Second)', message)
+            self.assertIn('nothing to update from', message)
+            self.assertEqual((refused.exception.maps['dev']['id'], refused.exception.maps['live']['id'], refused.exception.maps['same']),
+                             (stamp['id'], 'original:greyfen', False))
+        self.assertNotEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 12, 'nothing pulled')
+        self.assertEqual(self.one(self.dev, 'SELECT revision FROM world.worlds'), revision)
+
+    def test_an_import_of_another_map_needs_the_confirmation_and_never_erases_live_data(self):
+        stamp = self.new_map(self.dev)
+        self.take_the_cottage_away()
+        self.sql(self.dev, "UPDATE world.interiors SET name = 'The New Shop' WHERE id = 'shop'")
+        sloe = self.sql(self.live, "SELECT name, greeting FROM live.npcs WHERE id = 'sloe'")
+        self.sql(self.dev, "DELETE FROM live.npcs WHERE id = 'sloe'")                  # (Not on the new map's roster.)
+        # Live, meanwhile: a newcomer, someone's evenings moved into the cottage, a players' save.
+        self.sql(self.live, "INSERT INTO live.npcs (world_id, id, position, name, role, description, greeting, personality, backstory, "
+                            "work_label, age, voice, appearance, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, "
+                            "home_y, work_area, work_x, work_y, evening_area, evening_x, evening_y, origin) SELECT world_id, 'born_x', "
+                            "999, 'Briar', role, description, greeting, personality, backstory, work_label, 0, voice, appearance, paid, "
+                            "0, 0, 1, hours_start, hours_end, 'cottage', 1, 1, 'cottage', 1, 1, 'cottage', 1, 1, 'runtime' "
+                            "FROM live.npcs WHERE id = 'wren'")
+        self.sql(self.live, "UPDATE live.npcs SET evening_area = 'cottage', evening_x = 1, evening_y = 1 WHERE id = 'rook'")
+        self.sql(self.live, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES ('greyfen', 1, 4, '{\"x\": 1}')")
+        game = self.game_data(self.live)
+        WS.maintenance(self.live, True, 'Ada', 'A new map')
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(plan['replacesMap'])
+        self.assertEqual((plan['maps']['dev']['id'], plan['maps']['live']['id']), (stamp['id'], 'original:greyfen'))
+        self.assertEqual(plan['blocked'], [], 'nothing blocks it but the confirmation')
+        self.assertTrue(any('replaces' in w for w in plan['warnings']))
+        self.assertIn('live.npcs/sloe', self.ids(plan['liveChanges']), 'removed in dev, kept live')
+        self.assertIn('world.interiors/cottage', self.ids(plan['devChanges']), "the map is dev's")
+        self.assertGreaterEqual(plan['letGo']['npcs'], 2)
+        self.assertIn('Briar', plan['letGo']['names'])
+        with self.assertRaises(WS.DifferentMap) as refused:
+            WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertIn('confirm it', str(refused.exception))
+        self.assertEqual(self.one(self.live, 'SELECT count(*) FROM admin.releases'), 0, 'nothing imported')
+        with self.assertRaises(WS.WrongPassword):
+            WS.import_(self.dev, {}, 'guess', 'Ada', replace_map=True)
+        result = WS.import_(self.dev, {}, 'password', 'Ada', 'The new map', expect=plan['digest'], replace_map=True)
+        self.assertTrue(result['replacedMap'])
+        self.assertGreaterEqual(result['summary']['letGo']['npcs'], 2)
+        self.assertEqual(self.one(self.live, "SELECT count(*) FROM world.interiors WHERE id = 'cottage'"), 0, 'the old map is gone')
+        self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The New Shop')
+        self.assertEqual(self.sql(self.live, "SELECT name, greeting FROM live.npcs WHERE id = 'sloe'"), sloe, 'never erased')
+        self.assertEqual(self.sql(self.live, "SELECT home_area, work_area, evening_area FROM live.npcs WHERE id = 'born_x'"),
+                         [(None, None, None)], 'the newcomer kept, unplaced: its house is not on the new map')
+        self.assertIsNone(self.one(self.live, "SELECT evening_area FROM live.npcs WHERE id = 'rook'"), "rook's evenings let go")
+        self.assertIsNotNone(self.one(self.live, "SELECT home_area FROM live.npcs WHERE id = 'rook'"), 'the rest of rook kept')
+        self.assertEqual(self.game_data(self.live), game, "players' data untouched")
+        release = self.one(self.live, 'SELECT summary FROM admin.releases WHERE number = 1')
+        self.assertEqual((release['map']['id'], release['replacedMap']['id']), (stamp['id'], 'original:greyfen'))
+        # Both on one map now, level: Update from live works again, and the newcomer came to dev.
+        self.assertEqual(WS.status(self.live)['map']['id'], stamp['id'])
+        after = WS.diff(self.dev)
+        self.assertTrue(after['maps']['same'])
+        self.assertEqual(after['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+        self.assertEqual(self.one(self.dev, "SELECT name FROM live.npcs WHERE id = 'born_x'"), 'Briar')
+        self.sql(self.live, "UPDATE live.npcs SET purse = 21 WHERE id = 'wren'")
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 21)
+
+    def test_a_new_map_needs_every_migration_its_dev_world_has(self):
+        self.new_map(self.dev)
+        unmigrate(self.live)                         # (As PROD is: behind DEV.)
+        WS.maintenance(self.live, True, 'Ada')
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(any('lacks migrations' in b and 'live.business_settings' in b for b in plan['blocked']), plan['blocked'])
+        with self.assertRaisesRegex(WS.PublishError, 'lacks migrations') as refused:
+            WS.import_(self.dev, {}, 'password', 'Ada', replace_map=True)
+        self.assertTrue(any('live.business_settings' in e for e in refused.exception.errors))
+        self.assertEqual(self.one(self.live, 'SELECT count(*) FROM admin.releases'), 0)
+
+    def test_the_identity_of_a_live_world_follows_its_releases(self):
+        with W.connect(self.live, 'owner') as conn:
+            self.assertEqual(WS.map_identity(conn, 'live')['id'], 'original:greyfen')
+            conn.execute("INSERT INTO admin.releases (world_id, number, pushed_by, note, kind, content, summary) VALUES "
+                         "('greyfen', 7, 'Ada', '', 'import', '{}', '{\"map\": {\"id\": \"map-x\", \"name\": \"X\"}}')")
+            self.assertEqual((WS.map_identity(conn, 'live')['id'], WS.map_identity(conn, 'live')['release']), ('map-x', 7))
+            self.assertEqual(WS.map_identity(conn, 'live', upto=6)['id'], 'original:greyfen', 'as it was before release 7')
+        stamp = self.new_map(self.dev)
+        with W.connect(self.dev, 'owner') as conn:
+            self.assertEqual(WS.map_identity(conn, 'dev'), stamp, "a dev world's own stamp")
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')

@@ -260,6 +260,7 @@ class DungeonMaster:
 
     def connect(self, target):
         try:
+            target = world_db.canonical(target) if isinstance(target, str) else target    # (An alias names its world.)
             known = targets()
         except world_db.DatabaseError as error:
             raise DMError(str(error), 503) from error
@@ -2026,10 +2027,10 @@ def make_handler(dm=None, offers=None, world=None, kinds=None):
             """The world a request works on: the one it names, else the default (the live world, or `world()`)."""
             if world is not None:
                 key = world()
-                if asked and asked != key:
+                if asked and world_db.canonical(asked) != key:
                     raise DMError(f'This works on Atlas\'s world, {key}, not {asked}.', 409)
                 return key
-            key = asked or default_target()
+            key = world_db.canonical(asked) if asked else default_target()
             if kinds is not None and key in targets() and world_db.kind(key) not in kinds:
                 raise DMError(f'{key} is a {world_db.kind(key)} world; this works on {" and ".join(kinds)} worlds '
                               f'({", ".join(k for k in targets() if world_db.kind(k) in kinds) or "none registered"}).', 400)

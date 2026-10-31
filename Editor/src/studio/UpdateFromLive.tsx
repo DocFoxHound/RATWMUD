@@ -2,18 +2,19 @@
 // against the live world it is a copy of (its upstream). Every change live made since the last pull or import comes in;
 // dev's own changes stay; where both changed a row, the user keeps dev's or takes live's (whole, or field by field).
 // Live's state becomes the base. Open Atlas sessions reload (the engine logs a "reload" edit), and the Workshop opens
-// on the new world.
+// on the new world. Only between two worlds on one map (doc 66, "The same map"): on another map the engine refuses and the
+// page says so, naming both maps.
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {api} from '../lib/api';
 import {DmError, type Me} from '../dm/api';
-import {buildChoices, prunePicks, summaryLine, summaryTotal, type Picks, type PullPlan, type PullResult} from '../lib/sync';
+import {buildChoices, prunePicks, summaryLine, summaryTotal, type MapPair, type Picks, type PullPlan, type PullResult} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from './SyncViews';
 
 const LABELS = {dev: 'Keep dev\'s', live: 'Take live\'s'} as const;
 
 export function UpdateFromLive({me, onWorkshop}: {me: Me; onWorkshop: () => void}) {
     const [plan, setPlan] = useState<PullPlan | null>(null);
-    const [refusal, setRefusal] = useState<{message: string; status: number} | null>(null);
+    const [refusal, setRefusal] = useState<{message: string; status: number; maps: MapPair | null} | null>(null);
     const [problem, setProblem] = useState<{message: string; errors: string[]} | null>(null);
     const [picks, setPicks] = useState<Picks>({});
     const [busy, setBusy] = useState(false), [loading, setLoading] = useState(true);
@@ -26,7 +27,8 @@ export function UpdateFromLive({me, onWorkshop}: {me: Me; onWorkshop: () => void
             setPicks(p => prunePicks(p, next.conflicts));
             return next;
         } catch (error) {
-            setRefusal({message: (error as Error).message, status: error instanceof DmError ? error.status : 0});
+            setRefusal({message: (error as Error).message, status: error instanceof DmError ? error.status : 0,
+                maps: error instanceof DmError ? error.maps : null});
             return null;
         } finally { setLoading(false); }
     }, []);
@@ -36,7 +38,15 @@ export function UpdateFromLive({me, onWorkshop}: {me: Me; onWorkshop: () => void
     if (refusal && !plan) return <div className="dm-center"><div className="empty-sheet">
         <h2>⇩ Update from live</h2>
         <p>{refusal.message}</p>
-        {refusal.status === 409 && <p>A side project is built on its own; when it is ready, make a world copied from the live world
+        {refusal.maps && !refusal.maps.same ? <>
+            <table className="summary"><tbody>
+                <tr><th>Atlas's world</th><td>{refusal.maps.dev.name} <span className="meta">({refusal.maps.dev.id})</span></td></tr>
+                <tr><th>The live world</th><td>{refusal.maps.live.name} <span className="meta">({refusal.maps.live.id})</span></td></tr>
+            </tbody></table>
+            <p className="hint">Update from live compares the same map row by row, so it works only while both worlds are on one map.
+                Edit this world freely; when it is ready, the DM's Import from dev can replace the live map with it (with its own
+                confirmation), and from then on both are on one map again.</p>
+        </> : refusal.status === 409 && <p>A side project is built on its own; when it is ready, make a world copied from the live world
             and bring the work over there, or ask for it to be given an upstream in <code>Database/worlds.json</code> (then
             <code> python3 tools/world_sync.py init-base KEY</code>).</p>}
         <button onClick={() => void load()}>Try again</button></div></div>;

@@ -1,5 +1,5 @@
 {"worlds": [
-  {"key": "prod",       "name": "Ridgemere (live)", "database": "ratw_prod",       "kind": "live"},
-  {"key": "dev",        "name": "Ridgemere (dev)",  "database": "ratw_dev",        "kind": "dev", "upstream": "prod"},
-  {"key": "ridgemere2", "name": "Ridgemere 2.0",    "database": "ratw_ridgemere2", "kind": "dev"}
+  {"key": "prod",    "name": "Ridgemere (live)",              "database": "ratw_prod",       "kind": "live"},
+  {"key": "dev",     "name": "Ridgemere 2.0 (dev)",           "database": "ratw_ridgemere2", "kind": "dev", "upstream": "prod", "aliases": ["ridgemere2"]},
+  {"key": "dev-old", "name": "Ridgemere (old map, archive)",  "database": "ratw_dev",        "kind": "dev"}
 ]}

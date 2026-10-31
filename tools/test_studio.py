@@ -105,10 +105,10 @@ class Running:
 
 
 class Host(unittest.TestCase):
-    """A studio with the stand-in DM, made afresh for each test, Atlas on Ridgemere 2.0 (in name only)."""
+    """A studio with the stand-in DM, made afresh for each test, Atlas on the old map's archive dev-old (a side project, in name only)."""
 
     def setUp(self):
-        self.host = Running(StandInDM(), 'ridgemere2')
+        self.host = Running(StandInDM(), 'dev-old')
         self.dm, self.chosen, self.made = self.host.dm, self.host.chosen, self.host.made
         self.call, self.atlas_token = self.host.call, self.host.atlas_token
 
@@ -133,7 +133,7 @@ class StudioTests(Host):
         self.assertEqual(status, 200, data)
         self.assertEqual(data['me'], {'username': 'dm-user', 'role': 'dm'})
         self.assertTrue(data['atlas']['available'])
-        self.assertEqual(data['atlas']['world']['key'], 'ridgemere2')
+        self.assertEqual(data['atlas']['world']['key'], 'dev-old')
         self.assertEqual([w['key'] for w in data['atlas']['worlds']], W.keys('dev'))
         self.assertEqual([w['key'] for w in data['dm']['worlds']], W.keys('live'))
         self.assertEqual(data['dm']['live'], W.live_world())
@@ -175,7 +175,7 @@ class StudioTests(Host):
                 self.assertEqual(self.call('GET', prefix + path, token='admin-token')[0], 404, prefix + path)
         for path in ('milestone', 'storytellers/visitor', 'chapters/decide', 'chronicle/story', 'npcs/life', 'live/move',
                      'live/visit', 'live/action', 'actions', 'festivals/call', 'economy/tax', 'reports/decide', 'login'):
-            self.assertEqual(self.call('POST', '/api/atlas/layers/' + path, {'target': 'ridgemere2'}, token='admin-token')[0],
+            self.assertEqual(self.call('POST', '/api/atlas/layers/' + path, {'target': 'dev-old'}, token='admin-token')[0],
                              404, path)
         self.assertEqual(self.dm.calls, [], 'nothing reached the DM')
 
@@ -195,7 +195,7 @@ class StudioTests(Host):
             self.assertEqual(self.call('GET', '/api/dm/' + path, token='viewer-token')[0], 200, path)
 
     def test_the_dm_suite_works_on_live_worlds(self):
-        status, data = self.call('GET', '/api/dm/players?target=ridgemere2', token='admin-token')
+        status, data = self.call('GET', '/api/dm/players?target=dev-old', token='admin-token')
         self.assertEqual(status, 400, data)
         self.assertIn('live', data['error'])
         status, data = self.call('GET', f'/api/dm/players?target={W.live_world()}', token='admin-token')
@@ -203,14 +203,14 @@ class StudioTests(Host):
 
     def test_atlas_npc_pages_work_on_atlas_world_only(self):
         status, data = self.call('GET', '/api/atlas/layers/npcs', token='dm-token')
-        self.assertEqual((status, data), (200, {'called': 'npcs', 'target': 'ridgemere2'}))
+        self.assertEqual((status, data), (200, {'called': 'npcs', 'target': 'dev-old'}))
         status, data = self.call('GET', f'/api/atlas/layers/npcs?target={W.live_world()}', token='dm-token')
         self.assertEqual(status, 409, data)
         route = {'id': 'north_walk', 'name': 'North walk', 'posts': []}
         status, data = self.call('POST', '/api/atlas/layers/routes/save', {'route': route}, token='dm-token')
         self.assertEqual(status, 200, data)
         name, args = self.dm.calls[-1]
-        self.assertEqual((name, args[1], args[2]), ('save_route', 'ridgemere2', route))
+        self.assertEqual((name, args[1], args[2]), ('save_route', 'dev-old', route))
         self.assertEqual(args[0]['username'], 'dm-user', 'audited as the signed-in account')
         status, _ = self.call('POST', '/api/atlas/layers/factions/save', {'target': W.live_world(), 'faction': {}}, token='dm-token')
         self.assertEqual(status, 409, 'never a live world from Atlas')
@@ -224,7 +224,7 @@ class StudioTests(Host):
         old = self.atlas_token()
         status, data = self.call('POST', '/api/studio/atlas-world', {'key': 'dev'}, token='dm-token')
         self.assertEqual((status, data['world']['key']), (200, 'dev'), data)
-        self.assertEqual((self.chosen, self.made), (['dev'], ['ridgemere2', 'dev']))
+        self.assertEqual((self.chosen, self.made), (['dev'], ['dev-old', 'dev']))
         self.assertEqual(self.call('GET', '/api/atlas/layers/npcs', token='dm-token')[1]['target'], 'dev')
         self.assertEqual(self.call('GET', '/api/studio/session', token='dm-token')[1]['atlas']['world']['key'], 'dev')
         self.assertNotEqual(self.atlas_token(), old, 'a new Atlas session for the new world')
@@ -327,8 +327,15 @@ class SyncRouteTests(unittest.TestCase):
         (who, world, action, target, detail), = self.logged()
         self.assertEqual((who['username'], world, action, target), ('dm-user', 'dev', 'world.pull', 'prod'))
         self.assertIn('3 rows', detail)
+        # Another map: refused, both maps named, for the page to say so.
+        maps = {'dev': {'id': 'map-new', 'name': 'Ridgemere 2.0: the city'}, 'live': {'id': 'original:w', 'name': "W's original map"},
+                'same': False}
+        self.sync.fail = WS.DifferentMap('PROD is on a different map: there is nothing to update from.', maps)
+        status, data = self.call('GET', '/api/atlas/sync/diff', token='dm-token')
+        self.assertEqual((status, data['maps'], data['error']), (409, maps, 'PROD is on a different map: there is nothing to update from.'))
+        self.sync.fail = None
         # A side project has nothing to update from.
-        self.assertEqual(self.call('POST', '/api/studio/atlas-world', {'key': 'ridgemere2'}, token='dm-token')[0], 200)
+        self.assertEqual(self.call('POST', '/api/studio/atlas-world', {'key': 'dev-old'}, token='dm-token')[0], 200)
         status, data = self.call('GET', '/api/atlas/sync/diff', token='dm-token')
         self.assertEqual(status, 409, data)
         self.assertIn('no upstream', data['error'])
@@ -372,7 +379,7 @@ class SyncRouteTests(unittest.TestCase):
         self.assertEqual(status, 200, data)
         self.assertEqual(([c['key'] for c in data['candidates']], data['dev'], data['live']['key']), (['dev'], 'dev', 'prod'))
         self.assertEqual(self.sync.calls[-1], ('plan_import', ('dev',)))
-        self.assertEqual(self.call('GET', '/api/dm/import/plan?dev=ridgemere2', token='viewer-token')[0], 400, 'not a copy of prod')
+        self.assertEqual(self.call('GET', '/api/dm/import/plan?dev=dev-old', token='viewer-token')[0], 400, 'not a copy of prod')
         self.sync.fail = WS.PublishError('dev has no base yet: take one.')
         status, data = self.call('GET', '/api/dm/import/plan', token='viewer-token')
         self.assertEqual((status, data['plan'], data['problem']), (200, None, 'dev has no base yet: take one.'), 'said, with the worlds')
@@ -381,12 +388,21 @@ class SyncRouteTests(unittest.TestCase):
         body = {'dev': 'dev', 'choices': {'live.npcs/wren': 'dev'}, 'password': 'secret', 'note': 'Houses', 'expect': 'd1'}
         self.assertEqual(self.call('POST', '/api/dm/import', body, token='viewer-token')[0], 403)
         self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'password': ''}, token='dm-token')[0], 400)
-        self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'dev': 'ridgemere2'}, token='dm-token')[0], 400)
+        self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'dev': 'dev-old'}, token='dm-token')[0], 400)
         self.assertEqual(self.sync.calls, [])
         status, data = self.call('POST', '/api/dm/import', body, token='dm-token')
         self.assertEqual(status, 200, data)
-        self.assertEqual(self.sync.calls[-1], ('import_', ('dev', {'live.npcs/wren': 'dev'}, 'secret', 'dm-user', 'Houses', 'd1')))
+        self.assertEqual(self.sync.calls[-1], ('import_', ('dev', {'live.npcs/wren': 'dev'}, 'secret', 'dm-user', 'Houses', 'd1', False)))
         self.assertEqual(self.logged()[-1][1:4], ('prod', 'world.import', 'dev'))
+        # Another map: the replace-the-map confirmation reaches the engine only as a true replaceMap.
+        for asked, sent in (('yes', False), (True, True)):
+            self.assertEqual(self.call('POST', '/api/dm/import', {**body, 'replaceMap': asked}, token='dm-token')[0], 200)
+            self.assertEqual(self.sync.calls[-1][1][-1], sent)
+        maps = {'dev': {'id': 'map-new', 'name': 'Ridgemere 2.0: the city'}, 'live': {'id': 'original:w', 'name': "W's original map"},
+                'same': False}
+        self.sync.fail = WS.DifferentMap('PROD is on a different map: confirm it.', maps)
+        status, data = self.call('POST', '/api/dm/import', body, token='dm-token')
+        self.assertEqual((status, data['maps']), (409, maps), 'the screens are told both maps')
         left = [{'id': 'live.npcs/wren', 'fields': []}]
         for error, code in ((WS.WrongPassword('Wrong publish password.'), 401), (WS.Locked('Too many tries.'), 429),
                             (WS.NotInMaintenance('Not in maintenance.'), 409), (WS.Moved('The worlds changed.'), 409),
@@ -552,7 +568,7 @@ class EconomyRouteTests(unittest.TestCase):
 
     def setUp(self):
         self.economy = StandInEconomy()
-        self.host = Running(StandInDM(), 'ridgemere2', economy=self.economy)
+        self.host = Running(StandInDM(), 'dev-old', economy=self.economy)
         self.dm, self.call = self.host.dm, self.host.call
 
     def tearDown(self):
@@ -562,7 +578,7 @@ class EconomyRouteTests(unittest.TestCase):
         self.assertEqual(self.call('GET', '/api/atlas/economy')[0], 401)
         status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
         self.assertEqual(status, 200, data)
-        self.assertEqual((data['world'], data['worldInfo']['key']), ('w', 'ridgemere2'))
+        self.assertEqual((data['world'], data['worldInfo']['key']), ('w', 'dev-old'))
         body = {'storeMarkup': 50}
         self.assertEqual(self.call('POST', '/api/atlas/economy/store', body, token='viewer-token')[0], 403, 'a viewer reads only')
         self.assertEqual(self.call('POST', '/api/atlas/economy/store', body, token='dm-token')[0], 403, 'Atlas\'s token too')
@@ -570,20 +586,20 @@ class EconomyRouteTests(unittest.TestCase):
         editor = {'X-RATW-Editor': self.host.atlas_token()}
         status, data = self.call('POST', '/api/atlas/economy/store', body, token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
-        self.assertIn(('set_store', 'ridgemere2', body, 'dm-user'), self.economy.calls)
+        self.assertIn(('set_store', 'dev-old', body, 'dm-user'), self.economy.calls)
         status, data = self.call('POST', '/api/atlas/economy/businesses', {'set': {'rm_smith': False}}, token='admin-token', headers=editor)
         self.assertEqual(status, 200, data)
         bulk = {'all': False, 'business': 'smithy', 'district': 'works'}
         self.assertEqual(self.call('POST', '/api/atlas/economy/businesses', bulk, token='dm-token', headers=editor)[0], 200)
-        self.assertIn(('set_businesses', 'ridgemere2', bulk, 'dm-user'), self.economy.calls, 'the bulk filters reach the controls')
+        self.assertIn(('set_businesses', 'dev-old', bulk, 'dm-user'), self.economy.calls, 'the bulk filters reach the controls')
         logged = [args for name, args in self.dm.calls if name == 'log']
         self.assertEqual([(who['username'], world, action, target) for who, world, action, target, _ in logged],
-                         [('dm-user', 'ridgemere2', 'economy.store', 'store room'), ('admin-user', 'ridgemere2', 'economy.businesses', 'rm_smith'),
-                          ('dm-user', 'ridgemere2', 'economy.businesses', 'businesses')])
+                         [('dm-user', 'dev-old', 'economy.store', 'store room'), ('admin-user', 'dev-old', 'economy.businesses', 'rm_smith'),
+                          ('dm-user', 'dev-old', 'economy.businesses', 'businesses')])
         # Doc 68, 9: the loop's levers in Atlas, and the DM's view of a live world's (dm and admin change it, no Atlas token).
         status, data = self.call('POST', '/api/atlas/economy/loop', {'gateToll': 30}, token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
-        self.assertIn(('set_loop', 'ridgemere2', {'gateToll': 30}, 'dm-user'), self.economy.calls)
+        self.assertIn(('set_loop', 'dev-old', {'gateToll': 30}, 'dm-user'), self.economy.calls)
         self.assertEqual(self.call('POST', '/api/atlas/economy/goods', {'set': {'fish': False}}, token='dm-token', headers=editor)[0], 200)
         self.assertEqual(self.call('POST', '/api/atlas/economy/loop', {'gateToll': 30}, token='dm-token')[0], 403, 'Atlas\'s token')
         live = W.live_world()
@@ -594,7 +610,7 @@ class EconomyRouteTests(unittest.TestCase):
         status, data = self.call('POST', '/api/dm/economy/loop', {'subsidies': {'carriage': 10}}, token='dm-token')
         self.assertEqual(status, 200, data)
         self.assertIn(('set_loop', live, {'subsidies': {'carriage': 10}}, 'dm-user'), self.economy.calls)
-        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'ridgemere2', 'gateToll': 1}, token='dm-token')[0], 400,
+        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'dev-old', 'gateToll': 1}, token='dm-token')[0], 400,
                          'the DM works on live worlds')
 
     def test_route_sets_are_apart(self):

@@ -4,7 +4,8 @@
 
 Several sessions work on this project at once. **To start a game server for yourself, use a scratch server**:
 
-    bash tools/scratch.sh dev      # DEV's world, read only
+    bash tools/scratch.sh dev      # DEV's world (Ridgemere 2.0 since 2026-10-31), read only
+    bash tools/scratch.sh dev-old  # the old map's DEV, kept as an archive (PROD is still on that map)
     bash tools/scratch.sh town     # Greyfen Crossing
 
 Run it in the background. It prints its port ("RATW server listening on port N"; open http://127.0.0.1:N/) and its

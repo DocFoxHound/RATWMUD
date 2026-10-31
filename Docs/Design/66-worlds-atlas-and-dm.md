@@ -40,7 +40,7 @@ Builds on doc 20 (the world database, Push to live), doc 21 and 34 (the Dungeon 
 
 ## 1. Worlds: a registry, and switching
 
-**The registry**, `Database/worlds.json` (in git), lists every world:
+**The registry**, `Database/worlds.json` (in git), lists every world. As planned (2026-10-30):
 
     {"worlds": [
       {"key": "prod",       "name": "Ridgemere (live)", "database": "ratw_prod",       "kind": "live"},
@@ -48,13 +48,17 @@ Builds on doc 20 (the world database, Push to live), doc 21 and 34 (the Dungeon 
       {"key": "ridgemere2", "name": "Ridgemere 2.0",    "database": "ratw_ridgemere2", "kind": "dev"}
     ]}
 
+Since 2026-10-31 DEV is Ridgemere 2.0 (`dev` is `ratw_ridgemere2`, also called `ridgemere2`) and the old DEV is the
+archive `dev-old`: Progress, "DEV is Ridgemere 2.0; the same map".
+
 - `kind`: **dev** worlds are edited in Atlas and run on local and scratch servers; **live** worlds are what players
   join, run and managed from the DM.
 - `upstream` (dev worlds only): the live world it is a working copy of. Only a dev world with an upstream can pull
   from live or be imported into it. Side projects have none.
 - Each database holds one world, as now. Schemas never drift: `world_db.py migrate` covers every registered world.
 
-**Local choices**, `Saved/Config/worlds.local.json` (not in git): `{"atlas": "ridgemere2", "live": "prod"}`.
+**Local choices**, `Saved/Config/worlds.local.json` (not in git): `{"atlas": "dev", "live": "prod"}` (was
+`"ridgemere2"`, the same world since 2026-10-31).
 
 - `atlas`: the dev world Atlas, the world builder, local and scratch servers and the talk/voice tools use by default.
   Switched in Atlas (or `world_db.py use KEY`).
@@ -625,3 +629,112 @@ maintenance, the new world in maintenance, nothing left to import into it). The 
 (Switching the live world, rarely: during maintenance, **Switch the live world**, type its key; it opens when its
 maintenance is ended.) Before the first use on the real worlds: `python3 tools/world_db.py migrate` (0054) and
 `python3 tools/world_sync.py init-base dev` (the user's to run; not done here).
+
+### DEV is Ridgemere 2.0; the same map (2026-10-31)
+
+The user, 2026-10-31: "For what it's worth, this map and all of these changes should definitely touch Dev. We are being
+too protective of it." They chose: **Ridgemere 2.0 becomes DEV**, the old DEV kept as an archive (nothing copied or
+lost; easy to undo). And: "The update from prod should only work between Prod and Dev if the maps are the same."
+
+**The registry** (`Database/worlds.json`), branch `r2-dev-switch`:
+
+    {"worlds": [
+      {"key": "prod",    "name": "Ridgemere (live)",             "database": "ratw_prod",       "kind": "live"},
+      {"key": "dev",     "name": "Ridgemere 2.0 (dev)",          "database": "ratw_ridgemere2", "kind": "dev", "upstream": "prod", "aliases": ["ridgemere2"]},
+      {"key": "dev-old", "name": "Ridgemere (old map, archive)", "database": "ratw_dev",        "kind": "dev"}
+    ]}
+
+- `dev` is the Ridgemere 2.0 database (at migration 56). Everything that defaulted to DEV reaches the new city: Atlas,
+  `scratch.sh dev` (checked: build 46, 828 cells and interiors, 559 placed residents), `world_build.py dev`, `live.sh
+  play`, `server.sh --database dev`, the DM's world list, the Storykeeper (`dm_service.py`, default `dev`). With no
+  local choice Atlas's world is `dev` (was `ridgemere2`).
+- **`ridgemere2` is another name for `dev`** (a registry entry's `aliases`): `world_db.world()`, `resolve()`,
+  `conninfo()`, the local choices, the studio and the DM take it and mean `dev` (`world_db.canonical(key)`). It is
+  never listed as a world of its own (`keys()`, the DM's targets, `migrate`), so nothing reaches the database twice.
+  The one-server-per-world lock is the database's own advisory lock, so a server on `dev` and one on `ridgemere2` are
+  one world and the second is refused. The generator (`python3 -m worldgen.ridgemere2 write`, default `--world
+  ridgemere2`), `Tests/talk_check.cpp --world ridgemere2`, `tools/test_ridgemere2.py`, `rename_house.py` (now default
+  `dev`) keep working unchanged. A local choice saying `ridgemere2` still works and is written back as `dev`.
+- **`dev-old`** is the old DEV (`ratw_dev`, at migration 54, left there: an archive), a dev world without an upstream.
+  Its sync base from PROD (the first import, release 3) is still in it, unused. Keys may now hold a `-`; a world's
+  connection settings name it with `_` (`RATW_DEV_OLD_HOST`).
+- PROD keeps the old map, untouched (migration 54), until the user chooses to import the new one.
+- The generator and `rename_house.py` refuse the old map's worlds (PROD, `ratw_dev`) by database, not by key.
+- Backups before any write: `Saved/Backups/ratw_dev-2026-10-31-before-dev-switch.dump` and
+  `ratw_ridgemere2-2026-10-31-before-dev-switch.dump`. Undo: put the registry back as it was (and
+  `Saved/Config/worlds.local.json`); no database was renamed.
+
+**The same map: the map identity.** Pull and import compare a dev world with its upstream row by row (cells, terrain
+blocks, interiors, NPCs by their keys). Between two different maps that comparison means nothing: Ridgemere 2.0 kept
+the old world's id (`upper_accord`), its NPCs and many interior ids, so a pull would have tried to "take live's
+changes", putting the old map's 57 cells back. So every world has a **map identity**:
+
+| | |
+|---|---|
+| What | `{id, name, made, by, how}`, e.g. `map-20261031-6b080cecb7f6`, "Ridgemere 2.0: the city (doc 67)" |
+| Made | when a map is generated new: the Ridgemere 2.0 generator's write (in its own transaction, as the database owner), `world_db.py new --without-map` (no map is a map of its own), or by hand, `python3 tools/world_sync.py map KEY --new --name "..."` |
+| Kept | by every ordinary edit, a new cell included (nothing in Atlas or the DM touches it), and by a copy (`new --from`: the database is copied whole) |
+| A dev world's | its stamp, `admin.settings` key `map` (the owner's table, readable by the publisher, as the sync reads it) |
+| A live world's | the newest release that records one (`admin.releases.summary.map`): every import now records the dev world's identity, a rollback the one of the release it restores; else a stamp copied with the database |
+| Neither | the world's **original map**, `original:<world id>`, named "<world name>'s original map": PROD, `dev-old` and every world made before 2026-10-31 (an empty world is `none`, which takes any map) |
+
+**Why this design:** it needs nothing new in PROD's schema. PROD stays at migration 54 (the user's decision), and its
+identity comes from what it already has: its releases (the publisher may insert releases, never update settings) or,
+with none recorded, its world id. DEV's stamp lives in DEV's own database, in a table every world has had since
+migration 0004. A fingerprint of the outdoor cell grid was the other candidate and was turned down: adding a cell in
+Atlas would change it, and the identity must survive ordinary edits. No migration is needed for this, now or later.
+
+Today: DEV is stamped (Ridgemere 2.0's city, dated by the generator's write, 2026-10-31 17:30 UTC; the stamp was given
+by hand on the switch, as the generator's write came before this). PROD and `dev-old` are both `original:upper_accord`
+("Ridgemere's original map"): the same map, so a pull between them would work if `dev-old` were given its upstream back.
+
+**Pull (Atlas's Update from live) refuses two maps** (`world_sync.DifferentMap`, 409, with both maps), before anything
+else (a missing base included): "PROD is on a different map (Ridgemere's original map) from DEV (Ridgemere 2.0: the
+city (doc 67)): there is nothing to update from until DEV's map is imported into PROD (the DM's Import from dev,
+replacing PROD's map)." Atlas's page shows that and the two maps; `world_sync.py diff/pull` print it.
+
+**Import of a different map** (the DM's Import from dev, `world_sync.py plan-import` / `import --replace-map`):
+
+- The plan says so (`replacesMap`, `maps`, a warning naming both) and what the new map lets go of (`letGo`, below).
+  The DM's screen shows the two maps and a checkbox "Replace PROD's map (Ridgemere's original map) with DEV's
+  (...)", and the button stays off until it is ticked; it sends `replaceMap: true` on top of the password. Without it
+  the engine refuses (`DifferentMap`).
+- **Refused while the live world lacks migrations the dev world has** (columns and tables of the synced schemas):
+  a new map needs them all. Today PROD (54) lacks DEV's 0055 and 0056 (`live.business_settings` and sixteen
+  `live.economy` columns: the store room and the Country), so the import of the new city into PROD is blocked with a
+  message naming them, until the user decides to migrate PROD. (Imports on one map tolerate it as before.)
+- **The map** (the world part: the world row, cells, interiors, terrain, doors, places, resources, chapters) becomes
+  dev's whole; there are no map conflicts.
+- **Live data** is compared three ways as ever, against the dev world's base of this upstream, or, with none (DEV has
+  none: it was copied from the old DEV before bases existed), against live as it is (every difference counts as dev's).
+  Conflicts are chosen as usual. **Nothing live has is ever removed:** a row dev lacks (an NPC born in PROD, the eight
+  NPCs PROD got in release 3, a faction, a family) stays as live has it. Whatever it kept that stands in a place the new
+  map hasn't is let go, in the same transaction: an NPC's or profession slot's home, work or evening place there is
+  unset (unplaced or without work, section 2: it keeps its name, talk, relations and memories; spawned NPCs too); the
+  old map's patrol posts, territory claims and NPC areas there (with their spawn rules) go. Players' data (`game.*`),
+  the save, the economy and NPCs' running state are never written: a player who stood in a place the new map hasn't
+  wakes at its spawn (`World::restore`, doc 60), residents at their homes. (Not checked: players' camps and lodgings,
+  `game.camp_sites` and `game.lodgings`, name cells; on a new map theirs point nowhere until the game handles it.)
+- The release records `map` (dev's identity), `replacedMap` (live's old one) and `letGo` (the counts). Afterwards the
+  dev world is brought level with live as after any import (it takes the NPCs live kept) and that is its new base:
+  both share one identity and Update from live works again.
+- Today's plan of DEV into PROD: 3,206 dev changes (57 cells and 220 terrain blocks removed, 193 interiors added, 1,083
+  NPCs changed), 19 of PROD's rows kept, one territory claim let go; blocked by the migrations (and maintenance).
+
+Tests: `test_world_sync.MapTests` (a copy is on its upstream's map and keeps it through edits, and pulls; pull and diff
+refused between two maps, naming both, nothing written; an import of another map refused without the confirmation,
+then made with it: the cottage gone, an NPC dev removed kept, a newcomer and someone's evenings in the removed cottage
+unplaced, players' data untouched, the release recording both maps, both worlds level and pulling again; a new map
+refused while live lacks a migration; a live world's identity following its releases); `test_world_db` (the registry,
+`ridgemere2` as `dev`, aliases checked, a `-` in a key; a copy on its source's map, a copy without its map on a map of its
+own); `test_studio` (both maps in a refusal, `replaceMap` only when true); `Editor/src/lib/sync.test.ts` (the two
+messages and the let-go line).
+
+**Births: male or female.** Every child was a daughter: it was its mother's record copied (appearance and all). Now the
+birth request carries the child's sex (`ResidentRequest::sex`, `birthSex(couple, day)` in `Core/RatwCareers.cpp`: half
+and half from the couple's key and the day, the society's own deterministic mix, so a run repeats), and both makers use
+it: `World::makeRequestedResidents` (files, the fast run) sets the record's and the body's sex, `Game::makeResidents`
+(a database world) writes the row's `appearance.sex`. Pronouns follow the body's sex (`Game::pronounsOf`); the
+placeholder names were never one sex's. Tests: `careers_behaviors` (each child a son or a daughter; 4,000 couples about
+half and half; one couple's days about half and half; the same couple and day give the same child), `sim_fast_behaviors`
+(a made resident's body is the sex its record says).

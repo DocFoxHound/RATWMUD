@@ -2,7 +2,7 @@
 """Ridgemere 2.0, the city (Docs/Design/67, section 8 A): the new kit pieces, and every acceptance check of the
 generator's city and NPC plan.
 
-  python3 tools/test_ridgemere2.py              the kit tests, and the city's checks on Atlas's world ridgemere2
+  python3 tools/test_ridgemere2.py              the kit tests, and the city's checks on DEV (ridgemere2, Ridgemere 2.0)
                                                 (read only; skipped without the database)
   RATW_R2_PROJECT=FILE python3 tools/test_ridgemere2.py
                                                 the city's checks on a saved project (load_world's JSON)

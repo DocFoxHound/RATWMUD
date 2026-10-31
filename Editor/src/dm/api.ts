@@ -3,7 +3,7 @@
 import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
-import type {Choice, ImportPlan, ImportResult, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
+import type {Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -91,11 +91,14 @@ export class DmError extends Error {
     readonly status: number;
     readonly errors: string[];
     readonly conflicts: SyncItem[] | null;
-    constructor(message: string, status: number, data: {errors?: unknown; conflicts?: unknown} = {}) {
+    /** Two worlds on different maps (doc 66, "The same map"): both maps, as the engine names them. */
+    readonly maps: MapPair | null;
+    constructor(message: string, status: number, data: {errors?: unknown; conflicts?: unknown; maps?: unknown} = {}) {
         super(message);
         this.status = status;
         this.errors = Array.isArray(data.errors) ? data.errors.map(String) : [];
         this.conflicts = Array.isArray(data.conflicts) ? data.conflicts as SyncItem[] : null;
+        this.maps = data.maps && typeof data.maps === 'object' ? data.maps as MapPair : null;
     }
 }
 
@@ -343,7 +346,7 @@ export const dmApi = {
     /** The dev worlds copied from the live world, and what importing one (`dev`, else the first) would do. */
     importPlan: (dev?: Target) => call<{live: SyncWorld; candidates: SyncWorld[]; dev: Target | null; plan: ImportPlan | null;
         problem: string; errors: string[]}>(`api/dm/import/plan${dev ? `?dev=${encodeURIComponent(dev)}` : ''}`),
-    importDev: (body: {dev: Target; choices: Record<string, Choice>; password: string; note: string; expect: string}) =>
+    importDev: (body: {dev: Target; choices: Record<string, Choice>; password: string; note: string; expect: string; replaceMap?: boolean}) =>
         call<ImportResult>('api/dm/import', body),
     releases: (world?: Target) => call<{world: Target; releases: Release[]}>(`api/dm/releases${world ? `?world=${encodeURIComponent(world)}` : ''}`),
     rollback: (world: Target, number: number, password: string, note: string) =>

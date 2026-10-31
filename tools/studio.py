@@ -378,11 +378,12 @@ class Studio:
         self._lock = threading.Lock()
         self.dm_suite = D.make_handler(self.dm, offers=dm_offers, kinds=('live',))
         self.layers = D.make_handler(self.dm, offers=layer_offers, world=lambda: self.atlas_key)
-        self.atlas_key = atlas_key or world_db.atlas_world()
+        self.atlas_key = world_db.canonical(atlas_key) if atlas_key else world_db.atlas_world()
         self.atlas = atlas(self.atlas_key)
 
     def use(self, key: str) -> str:
         """Switches Atlas's world (a dev world): this computer's choice, and the Atlas suite's database."""
+        key = world_db.canonical(key)                     # (ridgemere2 is DEV.)
         if key not in world_db.keys('dev'):
             raise D.DMError(f'Atlas works on dev worlds: {", ".join(world_db.keys("dev")) or "none registered"}.', 400)
         with self._lock:
@@ -482,6 +483,8 @@ def make_handler(studio: Studio):
                 answer = {'error': str(error), 'errors': list(getattr(error, 'errors', []) or [])}
                 if getattr(error, 'conflicts', None) is not None:
                     answer['conflicts'] = error.conflicts
+                if getattr(error, 'maps', None) is not None:           # (Two maps: doc 66, "The same map".)
+                    answer['maps'] = error.maps
                 return self.reply(getattr(error, 'status', 422), answer)
             except world_db.DatabaseError as error:          # An unknown world, or the local choice unusable.
                 return self.reply(400, {'error': str(error)})
@@ -643,11 +646,13 @@ def make_handler(studio: Studio):
                 live = self.live_key()
                 dev = self.copy_of(live, str(data.get('dev') or ''))
                 expect = data.get('expect') or None
+                replace = data.get('replaceMap') is True               # The replace-the-map confirmation (two maps).
                 result = studio.sync.import_(dev, data.get('choices') or {}, password, who['username'], note,
-                                             None if expect is None else str(expect))
+                                             None if expect is None else str(expect), replace)
                 return self.reply(200, self.audited(who, live, 'world.import', dev,
-                                                    f'Release {result.get("release")} imported from {dev}' + (f': {note}' if note else '.'),
-                                                    result))
+                                                    f'Release {result.get("release")} imported from {dev}'
+                                                    + (', replacing the map' if result.get('replacedMap') else '')
+                                                    + (f': {note}' if note else '.'), result))
             key = self.live_key(str(data.get('world') or ''))                 # /api/rollback
             number = data.get('number')
             if not isinstance(number, int) or isinstance(number, bool) or number < 1:

@@ -84,8 +84,8 @@ class Rules(unittest.TestCase):
 
 
 class Worlds(unittest.TestCase):
-    def test_dev_and_prod_are_refused(self):
-        for key in ('dev', 'prod'):
+    def test_the_old_maps_worlds_are_refused(self):
+        for key in ('dev-old', 'prod'):
             with self.assertRaises(R.Refused):
                 R.refuse_world(key)
 
@@ -94,13 +94,14 @@ class Worlds(unittest.TestCase):
             with self.assertRaises(R.Refused):
                 R.refuse_world(key)
 
-    def test_the_command_refuses_dev_without_connecting(self):
-        self.assertEqual(R.main(['--dry-run', '--world', 'dev']), 1)
+    def test_the_command_refuses_the_archive_without_connecting(self):
+        self.assertEqual(R.main(['--dry-run', '--world', 'dev-old']), 1)
         self.assertEqual(R.main(['--apply', '--world', 'prod']), 1)
 
-    def test_ridgemere2_is_allowed(self):
-        if 'ridgemere2' in world_db.keys():
-            self.assertEqual(R.refuse_world('ridgemere2')['key'], 'ridgemere2')
+    def test_ridgemere2_is_allowed_as_dev(self):
+        # (DEV is Ridgemere 2.0 since 2026-10-31; ridgemere2 still names it.)
+        self.assertEqual(R.refuse_world('ridgemere2')['database'], 'ratw_ridgemere2')
+        self.assertEqual(R.refuse_world('dev')['database'], 'ratw_ridgemere2')
 
 
 if __name__ == '__main__':

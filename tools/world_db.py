@@ -17,14 +17,15 @@
 
 The worlds (Docs/Design/66-worlds-atlas-and-dm.md, section 1) are listed in Database/worlds.json (in git). Which one
 is Atlas's and which one the live server runs is this computer's choice, in Saved/Config/worlds.local.json (not in
-git; {"atlas": "ridgemere2", "live": "prod"} while it is missing). RATW_WORLDS_FILE and RATW_WORLDS_LOCAL point
-elsewhere (tests use scratch ones).
+git; {"atlas": "dev", "live": "prod"} while it is missing). RATW_WORLDS_FILE and RATW_WORLDS_LOCAL point
+elsewhere (tests use scratch ones). A world may have other names ("aliases": ridgemere2 is DEV, the Ridgemere 2.0
+database): every tool takes them and means that world.
 
 Connection settings come from Database/.env, overridden by environment
 variables of the same name. RATW_<KEY>_HOST/RATW_<KEY>_PORT (RATW_PROD_HOST,
 RATW_PROD_PORT...) point one world's database elsewhere (e.g. a hosted PROD);
 otherwise all use RATW_DB_HOST/RATW_DB_PORT (127.0.0.1:5433).
-RATW_<KEY>_DBNAME renames a database (tests use scratch ones).
+RATW_<KEY>_DBNAME renames a database (tests use scratch ones). (KEY in capitals, a '-' as '_': RATW_DEV_OLD_HOST.)
 """
 from __future__ import annotations
 
@@ -52,15 +53,19 @@ ARTIFACTS = ROOT / 'artifacts'
 # The worlds (doc 66, section 1): the registry in git, and this computer's choice of Atlas's world and the live one.
 WORLDS_FILE = DATABASE_DIR / 'worlds.json'
 LOCAL_FILE = ROOT / 'Saved' / 'Config' / 'worlds.local.json'
-# With no local choice: Atlas, the builds, the local and scratch servers and the talk and voice tools on Ridgemere 2.0
-# (the user, 2026-10-30: "Switch them all to the new 2.0"); the live server on PROD.
-DEFAULT_LOCAL = {'atlas': 'ridgemere2', 'live': 'prod'}
+# With no local choice: Atlas, the builds, the local and scratch servers and the talk and voice tools on DEV, which is
+# Ridgemere 2.0 since 2026-10-31 (the user: "this map and all of these changes should definitely touch Dev"); the live
+# server on PROD.
+DEFAULT_LOCAL = {'atlas': 'dev', 'live': 'prod'}
 KINDS = ('dev', 'live')
 # Words the tools take in place of a world key (or beside one), so no world may be called them.
 RESERVED_KEYS = frozenset({'all', 'atlas', 'live', 'town', 'latest', 'export', 'demo', 'none'})
-KEY_PATTERN = re.compile(r'^[a-z][a-z0-9_]{0,30}$')
-# {key: database name} of every registered world. Kept up to date in place (worlds()), so callers may hold on to it.
+KEY_PATTERN = re.compile(r'^[a-z][a-z0-9_-]{0,30}$')
+# {key: database name} of every registered world, and of each of its aliases. Kept up to date in place (worlds()), so
+# callers may hold on to it.
 DATABASES: dict[str, str] = {}
+# {alias: key}: a world's other names (its "aliases" in the registry).
+ALIASES: dict[str, str] = {}
 ROLES = ('owner', 'editor', 'publisher', 'game', 'dm')
 # Who may connect to a world's database: a live world's isn't Atlas's to edit (doc 20: the editor never reaches PROD).
 CONNECT_ROLES = {'dev': ('editor', 'publisher', 'game', 'dm'), 'live': ('publisher', 'game', 'dm')}
@@ -83,9 +88,14 @@ def local_file() -> Path:
     return Path(os.environ.get('RATW_WORLDS_LOCAL') or LOCAL_FILE)
 
 
+def env_prefix(key: str) -> str:
+    """RATW_<KEY>_ for a world's own connection settings (a '-' in a key as '_')."""
+    return f'RATW_{key.upper().replace("-", "_")}_'
+
+
 def check_registry(entries) -> list[dict]:
-    """The registry's worlds, checked: unique keys and databases, a kind each, upstreams only on dev worlds and only
-    to live ones."""
+    """The registry's worlds, checked: unique keys (aliases included) and databases, a kind each, upstreams only on dev
+    worlds and only to live ones."""
     if not isinstance(entries, list) or not entries:
         raise DatabaseError('The world registry lists no worlds.')
     seen, databases, out = set(), set(), []
@@ -101,10 +111,20 @@ def check_registry(entries) -> list[dict]:
             raise DatabaseError(f'World {key}: database {database!r} must be a lowercase name used by no other world.')
         if kind not in KINDS:
             raise DatabaseError(f'World {key}: kind must be dev or live, not {kind!r}.')
+        aliases = entry.get('aliases') or []
+        if not isinstance(aliases, list):
+            raise DatabaseError(f'World {key}: aliases must be a list of keys.')
         seen.add(key)
+        for alias in aliases:
+            if not isinstance(alias, str) or not KEY_PATTERN.match(alias) or alias in RESERVED_KEYS:
+                raise DatabaseError(f'World {key}: alias {alias!r} must be a lowercase name, not one of the reserved words.')
+            if alias in seen:
+                raise DatabaseError(f'Two worlds are called {alias}.')
+            seen.add(alias)
         databases.add(database)
         out.append({'key': key, 'name': str(entry.get('name') or key), 'database': database, 'kind': kind,
-                    **({'upstream': entry['upstream']} if entry.get('upstream') else {})})
+                    **({'upstream': entry['upstream']} if entry.get('upstream') else {}),
+                    **({'aliases': list(aliases)} if aliases else {})})
     kinds = {w['key']: w['kind'] for w in out}
     for w in out:
         if 'upstream' in w and (w['kind'] != 'dev' or kinds.get(w['upstream']) != 'live'):
@@ -131,11 +151,20 @@ def worlds() -> list[dict]:
         entries = check_registry(data.get('worlds') if isinstance(data, dict) else None)
         _registry_cache.update(stamp=stamp, worlds=entries)
         DATABASES.clear()
-        DATABASES.update({w['key']: w['database'] for w in entries})
+        DATABASES.update({name: w['database'] for w in entries for name in [w['key'], *w.get('aliases', [])]})
+        ALIASES.clear()
+        ALIASES.update({alias: w['key'] for w in entries for alias in w.get('aliases', [])})
     return [dict(w) for w in _registry_cache['worlds']]
 
 
+def canonical(key: str) -> str:
+    """A world's key from one of its names (an alias gives its world's key; anything else is returned as it is)."""
+    worlds()
+    return ALIASES.get(key, key)
+
+
 def world(key: str) -> dict:
+    key = canonical(key)
     for w in worlds():
         if w['key'] == key:
             return w
@@ -152,7 +181,7 @@ def upstream(key: str) -> str | None:
 
 
 def keys(of_kind: str | None = None) -> list[str]:
-    """The registered worlds' keys, or only the dev or the live ones."""
+    """The registered worlds' keys (not their aliases), or only the dev or the live ones."""
     return [w['key'] for w in worlds() if of_kind in (None, w['kind'])]
 
 
@@ -171,7 +200,7 @@ def local_choice() -> dict[str, str]:
 
 
 def _chosen(which: str, of_kind: str, command: str) -> str:
-    key = local_choice()[which]
+    key = canonical(local_choice()[which])
     if key not in keys(of_kind):
         raise DatabaseError(f'The {which} world is {key}, which is not a registered {of_kind} world. Choose one: '
                             f'python3 tools/world_db.py {command} KEY')
@@ -223,7 +252,7 @@ def _write_json(path: Path, text: str) -> None:
 def set_local(**choice: str) -> dict[str, str]:
     """Changes this computer's choice (atlas=KEY, live=KEY), keeping the rest."""
     current = local_choice()
-    current.update(choice)
+    current.update({which: canonical(key) for which, key in choice.items()})
     _write_json(local_file(), json.dumps(current, indent=2) + '\n')
     return current
 
@@ -332,13 +361,14 @@ def settings() -> dict[str, str]:
 def conninfo(database: str, role: str) -> dict[str, str]:
     """Connection keywords for a registered world's database (`database` is its key) as one of the RATW roles."""
     entry = world(database)
+    database = entry['key']
     if role not in ROLES:
         raise DatabaseError(f'Unknown role {role!r}; use one of {", ".join(ROLES)}.')
     s = settings()
     password = s.get(f'RATW_{role.upper()}_PASSWORD')
     if not password:
         raise DatabaseError(f'No password for ratw_{role}. Run `python3 tools/world_db.py up` first.')
-    prefix = f'RATW_{database.upper()}_'
+    prefix = env_prefix(database)
     return {'host': s.get(prefix + 'HOST', s.get('RATW_DB_HOST', '127.0.0.1')),
             'port': s.get(prefix + 'PORT', s.get('RATW_DB_PORT', '5433')),
             'dbname': s.get(prefix + 'DBNAME', entry['database']), 'user': f'ratw_{role}', 'password': password,
@@ -600,7 +630,7 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
     from psycopg import sql
     database = database or f'ratw_{key}'
     entry = {'key': key, 'name': name, 'database': database, 'kind': of_kind, **({'upstream': upstream_key} if upstream_key else {})}
-    if key in keys():
+    if key in keys() or key in ALIASES:
         raise DatabaseError(f'There is already a world called {key}.')
     check_registry(worlds() + [entry])
     if without_map and not source:
@@ -748,6 +778,10 @@ def take_map_away(conn, key: str, saved: Path | None = None) -> dict:
             conn.execute(f'DELETE FROM {table} WHERE world_id = %s', (wid,))
         if held:
             placements['note'] += f' Home, work and evening places on cells now point at the holding room {holding}.'
+        if _has_table(conn, 'admin.settings'):
+            # No map is not the map it was copied with: a map identity of its own (doc 66, "The same map").
+            import world_sync
+            world_sync.stamp_map(conn, f'{key}: no map yet (taken away {time.strftime("%Y-%m-%d")})', 'world_db new', 'without-map')
         saved.parent.mkdir(parents=True, exist_ok=True)
         saved.write_text(json.dumps(placements, indent=1) + '\n', encoding='utf-8')
     shown = saved.relative_to(ROOT) if ROOT in saved.parents else saved
@@ -772,13 +806,14 @@ def cmd_down(args) -> int:
 
 def cmd_list(args) -> int:
     choice = local_choice()
-    rows = [(w['key'], w['name'], w['kind'], w.get('upstream', ''), w['database'],
-             ' '.join(f'[{which}]' for which in ('atlas', 'live') if choice[which] == w['key'])) for w in worlds()]
+    rows = [(w['key'], w['name'] + (f' (also {", ".join(w["aliases"])})' if w.get('aliases') else ''), w['kind'],
+             w.get('upstream', ''), w['database'],
+             ' '.join(f'[{which}]' for which in ('atlas', 'live') if canonical(choice[which]) == w['key'])) for w in worlds()]
     widths = [max(len(str(r[i])) for r in rows + [('KEY', 'NAME', 'KIND', 'UPSTREAM', 'DATABASE', '')]) for i in range(5)]
     for r in [('KEY', 'NAME', 'KIND', 'UPSTREAM', 'DATABASE', '')] + rows:
         print('  '.join(str(v).ljust(widths[i]) for i, v in enumerate(r[:5])) + ('  ' + r[5] if r[5] else ''))
     for which in ('atlas', 'live'):
-        if choice[which] not in keys():
+        if canonical(choice[which]) not in keys():
             print(f'(The {which} choice, {choice[which]}, is not a registered world.)')
     return 0
 
@@ -843,7 +878,7 @@ def cmd_status(args) -> int:
     for database in keys():
         w = world(database)
         label = f'{w["database"]} ({database}, a {w["kind"]} world' + ''.join(
-            f', {what}' for which, what in (('atlas', "Atlas's"), ('live', 'the live one')) if choice[which] == database) + ')'
+            f', {what}' for which, what in (('atlas', "Atlas's"), ('live', 'the live one')) if canonical(choice[which]) == database) + ')'
         try:
             conn = connect(database, 'owner')
         except DatabaseError as error:

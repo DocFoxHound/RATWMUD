@@ -168,6 +168,8 @@ before are gone.
   both changed differently, or removed on one side and changed on the other: a **conflict**, shown field by field,
   which the user resolves as dev's or live's (or, for a row both sides have, field by field: a field only one side
   changed goes that way).
+- **One map only** (doc 66, Progress, "the same map"): pull refuses a dev world on another map than its upstream's
+  (their map identities differ); an import of one replaces live's map, with its own confirmation (`--replace-map`).
 - **Pull** (Atlas's Update from live, `world_sync.py pull DEV`): every live-only change and the chosen side of each
   conflict into the dev world in one transaction, references and deferred constraints checked; live's snapshot becomes
   the base; open Atlas sessions reload (a `reload` entry in the edit log); warns while the live server runs.
@@ -391,8 +393,8 @@ server running and start another. Now a server owns the world it runs (`Core/Rat
 Several sessions at once may want a game server to look at something. A scratch server is one of their own: it runs
 beside the real server, writes nothing, and goes away by itself.
 
-- `bash tools/scratch.sh dev` (or any registered world, or nothing for Atlas's world, or `town` for Greyfen), or
-  `ratw_server --scratch ...`.
+- `bash tools/scratch.sh dev` (DEV: Ridgemere 2.0 since 2026-10-31; `dev-old` for the old map's DEV; or any
+  registered world, or nothing for Atlas's world, or `town` for Greyfen), or `ratw_server --scratch ...`.
 - **It writes nothing:** it reads the world and its latest save (and the journal since) as the real server would, but
   its store keeps nothing: no saves, journal, events, DM actions taken (they wait for the real server), spawns
   recorded, artwork, LIVE map frames, health rows or voice ledger. Its database session is read-only besides
@@ -413,8 +415,22 @@ There are no longer only DEV and PROD: every world is listed in a registry, `Dat
 one database each, and is a **dev** world (edited in Atlas, run on local and scratch servers) or a **live** one (what
 players join). A dev world may name an **upstream** live world it is a working copy of (DEV's is PROD). Which world
 Atlas and the tools use, and which one the live server runs, is each computer's choice, `Saved/Config/worlds.local.json`
-(never committed; Ridgemere 2.0 and PROD while it is missing). Docs/Design/66-worlds-atlas-and-dm.md, section 1, has
+(never committed; DEV and PROD while it is missing). Docs/Design/66-worlds-atlas-and-dm.md, section 1, has
 the design and its Progress section what was built.
+
+**Since 2026-10-31 DEV is Ridgemere 2.0** (the user: "this map and all of these changes should definitely touch Dev"):
+
+| Key | World | Database | |
+|---|---|---|---|
+| `prod` | Ridgemere (live) | `ratw_prod` | the old map, until the user imports the new one |
+| `dev` (also `ridgemere2`) | Ridgemere 2.0 (dev), the new city | `ratw_ridgemere2` | upstream `prod`; Atlas's, scratch servers', builds' default |
+| `dev-old` | Ridgemere (old map, archive) | `ratw_dev` | the old DEV, kept as it was; no upstream |
+
+- **The same map** (doc 66, Progress): every world has a map identity, stamped when a map is generated new and kept by
+  every edit. Pull (Atlas's Update from live) works only between two worlds on one map; DEV and PROD are on two, so it
+  is refused, naming both. An import of a different map replaces live's map, only with the DM's replace-the-map
+  confirmation on top of the password and only while live has every migration the dev world has (PROD lacks DEV's 0055
+  and 0056 today, so it is blocked); live data is never erased (what stood on the old map is unplaced or let go).
 
 - `python3 tools/world_db.py list`, `use KEY` (Atlas's world), `serve-world KEY --yes` (the live one; rarely wise),
   `new KEY --name NAME [--kind dev|live] [--upstream KEY] [--from KEY [--without-map]]` (a new world: empty with every

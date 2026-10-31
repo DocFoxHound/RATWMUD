@@ -6,12 +6,14 @@ Docs/Design/66-worlds-atlas-and-dm.md, section 4.
   python3 tools/world_sync.py diff DEV [--json]               the three-way plan: live-only, dev-only, conflicts
   python3 tools/world_sync.py pull DEV [--choices FILE]       Atlas's Update from live: live's changes into dev
   python3 tools/world_sync.py plan-import DEV [--json]        what an import would do (and what blocks it)
-  python3 tools/world_sync.py import DEV [--choices FILE] --note "..."
-                                                              the DM's Import from dev (asks for the publish password)
+  python3 tools/world_sync.py import DEV [--choices FILE] [--replace-map] --note "..."
+                                                              the DM's Import from dev (asks for the publish password;
+                                                              --replace-map: a dev world on another map replaces live's)
   python3 tools/world_sync.py init-base DEV [--prefer dev|live]
                                                               take a dev world's first base
   python3 tools/world_sync.py maintenance KEY on|off [--note "..."]
                                                               close a world's game server for maintenance, or reopen it
+  python3 tools/world_sync.py map KEY [--new --name NAME]     a world's map identity (--new: stamp a new one, as owner)
 
 The base. A dev world with an upstream keeps the snapshot of its upstream as of its last pull or import
 (admin.sync_base and admin.sync_base_rows in the dev world, migration 0054): every synced row by (table, key). Each
@@ -43,6 +45,18 @@ relations, NPC voices, families (npc_relations), dialects, figures, story visito
 (players, the save, the event log, memories), live.economy, live.npc_state, dm.*. Timestamps (updated_at) and the
 world's revision are not compared.
 
+The map identity (doc 66, "The same map"). Pull and import compare a world with its upstream row by row, which only
+means something while both are the same map. Every world has a map identity: a stamp made when a map is generated new
+(the Ridgemere 2.0 generator's write, world_db.py new --without-map, or `map KEY --new`), kept by every ordinary edit
+(adding a cell included) and copied with the database. A dev world's stamp is admin.settings 'map'; a live world's is
+the newest release that records one (summary 'map': every import records the dev world's); a world with neither is on
+its original map ('original:<world id>'). Pull (and Atlas's Update from live) refuses when the identities differ. An
+import of a different map replaces live's map: only with the replace-the-map confirmation on top of the password, and
+only while the live world has every migration the dev world has. Its map (the world part) becomes dev's whole; its live
+data is compared three ways as ever (against the base, or live as it is when there is none), but nothing live has is
+ever removed: an NPC or profession slot in a place the new map hasn't is unplaced, and the old map's NPC areas, claims
+and patrol posts go with it. Afterwards both worlds share the identity and pull works again.
+
 A world's server state (admin.server_state): running or maintenance. The game server hears a change (NOTIFY
 ratw_maintenance), tells its players, gives them a minute, saves and exits with status 76; it refuses to start while
 its world is in maintenance (also 76); tools/live.sh waits and starts it again (on the live choice) once it is running.
@@ -55,6 +69,7 @@ import datetime
 import getpass
 import hashlib
 import json
+import secrets
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -114,6 +129,16 @@ class Unresolved(PublishError):
 
 class NotInMaintenance(PublishError):
     status = 409
+
+
+class DifferentMap(PublishError):
+    """The two worlds are on different maps (their map identities differ): nothing to pull, and an import would
+    replace live's map. `maps` is {'dev': identity, 'live': identity, 'same': False}."""
+    status = 409
+
+    def __init__(self, message, maps, errors=None):
+        super().__init__(message, errors)
+        self.maps = maps
 
 
 class Moved(PublishError):
@@ -344,10 +369,13 @@ def rollback(prod, number, password, editor, note=''):
             rows = [from_json(r) for r in row[0].get(table, [])]
             content[table] = {tuple(r[k] for k in keys): r for r in rows}
         plan, summary = plan_world(prod, content, world_id)
+        # (The map that release was on comes back with it: map_identity reads it from the newest release.)
+        was_on = map_identity(prod, 'live', world_id, upto=number)
         apply_world(prod, plan)
         finish(prod, world_id)
         new = record(prod, world_id, editor, note or f'Rolled back to release {number}.', 'rollback', content,
-                     {'world': summary, 'live': {}}, restored=number)
+                     {'world': summary, 'live': {}, 'map': {k: was_on[k] for k in ('id', 'name', 'made', 'by', 'how')}},
+                     restored=number)
     return {'release': new, 'summary': {'world': summary, 'live': {}}}
 
 
@@ -753,6 +781,186 @@ def set_state(conn, state, editor='', note=''):
     return server_state(conn)
 
 
+# --------------------------------------------------------------------------- The map identity
+
+MAP_SETTING = 'map'                  # admin.settings key: a dev world's map identity (written by the owner only).
+
+
+def _has(conn, table):
+    return conn.execute('SELECT to_regclass(%s) IS NOT NULL', (table,)).fetchone()[0]
+
+
+def _identity(value, source, **extra):
+    if not isinstance(value, dict) or not isinstance(value.get('id'), str) or not value['id']:
+        return None
+    return {'id': value['id'], 'name': str(value.get('name') or value['id']), 'made': value.get('made'),
+            'by': str(value.get('by') or ''), 'how': str(value.get('how') or ''), 'from': source, **extra}
+
+
+def stamped_map(conn):
+    """The world's own stamp (admin.settings 'map'), or None. (Read, never guessed: a role that may not read the
+    settings gets an error, not the original map.)"""
+    if not _has(conn, 'admin.settings'):
+        return None
+    row = conn.execute('SELECT value FROM admin.settings WHERE key = %s', (MAP_SETTING,)).fetchone()
+    return _identity(row[0], 'stamp') if row else None
+
+
+def released_map(conn, world_id, upto=None):
+    """The map the newest release (up to `upto`) recorded, or None."""
+    if world_id is None or not _has(conn, 'admin.releases'):
+        return None
+    row = conn.execute('''SELECT number, summary->'map' FROM admin.releases WHERE world_id = %s AND summary ? 'map'
+                          AND (%s::integer IS NULL OR number <= %s::integer) ORDER BY number DESC LIMIT 1''',
+                       (world_id, upto, upto)).fetchone()
+    return _identity(row[1], 'release', release=row[0]) if row else None
+
+
+def original_map(conn, world_id):
+    """A world stamped by nothing (made before map identities): its original map, named after it."""
+    if world_id is None:
+        return {'id': 'none', 'name': 'no map', 'made': None, 'by': '', 'how': 'none', 'from': 'original'}
+    row = conn.execute('SELECT name FROM world.worlds WHERE id = %s', (world_id,)).fetchone()
+    name = row[0] if row and row[0] else world_id
+    return {'id': f'original:{world_id}', 'name': f"{name}'s original map", 'made': None, 'by': '', 'how': 'original',
+            'from': 'original'}
+
+
+def map_identity(conn, of_kind, world_id=None, upto=None):
+    """A world's map identity, {id, name, made, by, how, from: stamp|release|original[, release]}. A dev world: its
+    stamp, else the newest release's (a copy of a live world), else its original map. A live world: the newest
+    release's (an import records the dev world's), else its stamp (copied with it), else its original map."""
+    world_id = world_id if world_id is not None else the_world(conn, 'This world')
+    if of_kind == 'live':
+        found = released_map(conn, world_id, upto) or stamped_map(conn)
+    else:
+        found = stamped_map(conn) or released_map(conn, world_id, upto)
+    return found or original_map(conn, world_id)
+
+
+def new_identity(name, by='', how='new'):
+    made = datetime.datetime.now(datetime.timezone.utc)
+    return {'id': f'map-{made:%Y%m%d}-{secrets.token_hex(6)}', 'name': str(name)[:200], 'made': made.isoformat(),
+            'by': str(by)[:60], 'how': how}
+
+
+def stamp_map(conn, name, by='', how='new', identity=None):
+    """Gives a world a new map identity (its map was generated new): admin.settings 'map'. Needs the owner (the
+    settings are the owner's), inside the caller's transaction or its own. Returns the identity."""
+    value = identity or new_identity(name, by, how)
+    conn.execute('''INSERT INTO admin.settings (key, value, updated_at) VALUES (%s, %s, now())
+                    ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now()''',
+                 (MAP_SETTING, S.Jsonb(value)))
+    return _identity(value, 'stamp')
+
+
+def maps_of(dev, live, dev_world=None, live_world=None):
+    """{'dev': identity, 'live': identity, 'same': bool} of a dev world and its upstream."""
+    d, l = map_identity(dev, 'dev', dev_world), map_identity(live, 'live', live_world)
+    # (A world with no map yet, an empty one, takes any map: its first import is no replacement.)
+    return {'dev': d, 'live': l, 'same': d['id'] == l['id'] or 'none' in (d['id'], l['id'])}
+
+
+def maps_differ_text(maps, dev_key, live_key):
+    """'PROD is on a different map (its name) from DEV (its name)'."""
+    return (f'{live_key.upper()} is on a different map ({maps["live"]["name"]}) from {dev_key.upper()} '
+            f'({maps["dev"]["name"]})')
+
+
+def different_maps_text(maps, dev_key, live_key):
+    """The plain refusal of a pull between two maps."""
+    return (f'{maps_differ_text(maps, dev_key, live_key)}: there is nothing to update from until {dev_key.upper()}\'s map is imported into '
+            f'{live_key.upper()} (the DM\'s Import from dev, replacing {live_key.upper()}\'s map).')
+
+
+def schema_columns(conn):
+    """{table: {column}} of the synced schemas, as this connection sees them."""
+    out = {}
+    for table, column in conn.execute('''SELECT table_schema || '.' || table_name, column_name FROM information_schema.columns
+                                         WHERE table_schema IN ('world', 'live')''').fetchall():
+        out.setdefault(table, set()).add(column)
+    return out
+
+
+def behind(dev, live):
+    """What the dev world's schema has and the live world's lacks (migrations not applied there): ['table', 'table
+    (N columns)', ...]. A live world behind is fine for a pull or an import on one map (the tables one side lacks are
+    left out); a new map needs everything its dev world has."""
+    d, l = schema_columns(dev), schema_columns(live)
+    out = []
+    for table in sorted(d):
+        if table not in l:
+            out.append(table)
+        elif d[table] - l[table]:
+            out.append(f'{table} ({len(d[table] - l[table])} column{"s" if len(d[table] - l[table]) != 1 else ""}: '
+                       f'{", ".join(sorted(d[table] - l[table])[:6])}{"..." if len(d[table] - l[table]) > 6 else ""})')
+    return out
+
+
+# Live data that stands on the map: what a new map lets go of when it no longer has the place.
+PLACED = ('home', 'work', 'evening')
+
+
+def let_go_of_old_map(conn, world_id):
+    """After a map-replacing import's rows are written (inside its transaction): whatever live kept that stands in a
+    place the new map hasn't is let go, never removed with its people. An NPC or profession slot (spawned NPCs too) has
+    each such place unset (unplaced or without work: doc 66, 2); patrol posts, faction claims and NPC areas (with
+    their spawn rules; who wandered one wanders nowhere) there go. Returns the counts."""
+    gone = 'NOT EXISTS (SELECT 1 FROM world.areas a WHERE a.world_id = t.world_id AND a.id = t.{})'
+    counts = {}
+    for table, label in (('live.npcs', 'npcs'), ('live.profession_slots', 'slots')):
+        ids = set()
+        for place in PLACED:
+            ids |= {r[0] for r in conn.execute(
+                f'UPDATE {table} t SET {place}_area = NULL, {place}_x = 0, {place}_y = 0 WHERE t.world_id = %s AND '
+                f't.{place}_area IS NOT NULL AND ' + gone.format(f'{place}_area') + ' RETURNING t.id', (world_id,)).fetchall()}
+        counts[label] = len(ids)
+    for table, label in (('live.patrol_posts', 'posts'), ('live.faction_claims', 'claims'), ('live.npc_areas', 'npcAreas')):
+        counts[label] = conn.execute(f'DELETE FROM {table} t WHERE t.world_id = %s AND ' + gone.format('area'),
+                                     (world_id,)).rowcount
+    return counts
+
+
+def preview_let_go(items, dev_snap):
+    """What a map-replacing import would let go of, from the plan: live's rows that stay as live has them (the live part's
+    'live' side) and stand in places dev's map hasn't. ({counts}, [NPC names unplaced, at most 30])."""
+    areas = set()
+    for table in AREAS_OF:
+        areas |= {k[0] for k in dev_snap.get(table, {})}
+    counts, names = {'npcs': 0, 'slots': 0, 'posts': 0, 'claims': 0, 'npcAreas': 0}, []
+    for item in items:
+        row = item.live
+        if item.side != 'live' or item.spec.part != 'live' or row is None:
+            continue
+        table = item.spec.table
+        if table in ('live.npcs', 'live.profession_slots'):
+            if any(row.get(f'{p}_area') is not None and row[f'{p}_area'] not in areas for p in PLACED):
+                counts['npcs' if table == 'live.npcs' else 'slots'] += 1
+                if table == 'live.npcs' and len(names) < 30:
+                    names.append(str(row.get('name') or row.get('id')))
+        elif table == 'live.patrol_routes':
+            counts['posts'] += sum(1 for post in row.get('posts', []) if post.get('area') not in areas)
+        elif table == 'live.faction_claims' and row.get('area') not in areas:
+            counts['claims'] += 1
+        elif table == 'live.npc_areas' and row.get('area') not in areas:
+            counts['npcAreas'] += 1
+    return counts, names
+
+
+def replacing(items):
+    """A map-replacing import's plan from the three-way one: the map (the world part) is dev's whole, and nothing live
+    has is removed (a row dev lacks stays as live has it; let_go_of_old_map unsets what stood on the old map)."""
+    out = []
+    for item in items:
+        if item.spec.part == 'world':
+            out.append(item._replace(side='dev'))
+        elif item.dev is None and item.live is not None:
+            out.append(item._replace(side='live'))
+        else:
+            out.append(item)
+    return out
+
+
 # --------------------------------------------------------------------------- The two worlds
 
 def pair(dev_key):
@@ -791,24 +999,57 @@ def base_or_refuse(dev, dev_key, live_key):
     return header, base
 
 
-def plan(dev, live, dev_key, live_key):
-    """(plan JSON, items, snapshots) of a dev world against its upstream."""
+def replacing_base(dev, live_key, snap_live):
+    """The base a map-replacing import compares live data against: the dev world's own base of this upstream if it
+    has one (so live's changes since are live's), else live as it is now (every difference counts as dev's; what dev
+    lacks is kept all the same). The header says which."""
+    header, base = load_base(dev)
+    if header is not None and header['upstream'] == live_key:
+        return header, base
+    copy = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
+    return {'upstream': live_key, 'world': None, 'release': 0, 'takenAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'by': '', 'how': 'none (live as it is now)', 'rows': copy.count()}, copy
+
+
+def same_map_or_refuse(dev, live, dev_key, live_key):
+    """The two worlds' maps ({'dev', 'live', 'same'}); refuses (DifferentMap) when they differ: a pull, an Update from
+    live, compares the same map only."""
+    maps = maps_of(dev, live)
+    if not maps['same']:
+        raise DifferentMap(different_maps_text(maps, dev_key, live_key), maps)
+    return maps
+
+
+def plan(dev, live, dev_key, live_key, replace=False):
+    """(plan JSON, items, snapshots) of a dev world against its upstream. On one map only, unless `replace` (an
+    import's plan): then two maps give the map-replacing plan, against the base or, with none, live as it is."""
+    maps = maps_of(dev, live)
+    if not maps['same'] and not replace:
+        raise DifferentMap(different_maps_text(maps, dev_key, live_key), maps)
     snap_live, live_id, release = read_live(live)
     with dev.transaction():
         dev.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
-        header, base = base_or_refuse(dev, dev_key, live_key)
+        if maps['same']:
+            header, base = base_or_refuse(dev, dev_key, live_key)
+        else:
+            header, base = replacing_base(dev, live_key, snap_live)
         dev_id = the_world(dev, 'The dev world')
         snap_dev = snapshot(dev, dev_id)
     unshared(dev, live, base, snap_dev, snap_live)
     world_id = same_world(dev_id, live_id)
     items = three_way(base, snap_dev, snap_live)
+    if not maps['same']:
+        items = replacing(items)
     by_side = {s: [describe(i) for i in items if i.side == s] for s in ('live', 'dev', 'conflict')}
     info = {'dev': dev_key, 'live': live_key, 'world': world_id, 'base': header, 'liveRelease': release,
             'counts': {'live': len(by_side['live']), 'dev': len(by_side['dev']), 'conflicts': len(by_side['conflict'])},
             'summary': {'live': summarize(items, lambda its: [(i, i.base, i.live) for i in its if i.side == 'live']),
                         'dev': summarize(items, lambda its: [(i, i.base, i.dev) for i in its if i.side == 'dev'])},
             'liveChanges': by_side['live'], 'devChanges': by_side['dev'], 'conflicts': by_side['conflict'],
-            'digest': plan_digest(items)}
+            'digest': plan_digest(items), 'maps': maps, 'replacesMap': not maps['same']}
+    if not maps['same']:
+        counts, names = preview_let_go(items, snap_dev)
+        info['letGo'] = {**counts, 'names': names}
     return info, items, (base, snap_dev, snap_live, world_id, release, header)
 
 
@@ -854,10 +1095,11 @@ class Sync:
                               'by': row[4], 'how': row[5], 'rows': row[6]}
             return {'key': key, 'name': entry['name'], 'kind': entry['kind'], 'upstream': entry.get('upstream'), 'world': world_id,
                     'server': server_state(conn), 'serverRunning': server_running(conn), 'base': header,
-                    'release': release_of(conn, world_id)}
+                    'release': release_of(conn, world_id), 'map': map_identity(conn, entry['kind'], world_id)}
 
     def diff(self, dev_key):
-        """The three-way plan (Atlas's Update from live shows it; warns while the live server runs)."""
+        """The three-way plan (Atlas's Update from live shows it; warns while the live server runs). Refused
+        (DifferentMap) when the two worlds are on different maps."""
         dev_key, live_key = pair(dev_key)
         with self.connect(dev_key) as dev, self.connect(live_key) as live:
             info, _, _ = plan(dev, live, dev_key, live_key)
@@ -866,14 +1108,24 @@ class Sync:
         return info
 
     def plan_import(self, dev_key):
-        """What Import from dev would do, and what blocks it now (maintenance, a running server, the dev world's problems)."""
+        """What Import from dev would do, and what blocks it now (maintenance, a running server, the dev world's problems).
+        Two maps give the map-replacing plan (`replacesMap`, `maps`, `letGo`): blocked while live lacks migrations dev
+        has; the import itself needs the replace-the-map confirmation."""
         dev_key, live_key = pair(dev_key)
         with self.connect(dev_key) as dev, self.connect(live_key) as live:
-            info, _, _ = plan(dev, live, dev_key, live_key)
+            info, _, _ = plan(dev, live, dev_key, live_key, replace=True)
             _, revision, errors, warnings = validate_dev(dev)
             state, running = server_state(live), server_running(live)
             history = releases(live) if info['world'] else []
+            lacking = behind(dev, live) if info['replacesMap'] else []
         blocked = []
+        if info['replacesMap']:
+            warnings = [maps_differ_text(info['maps'], dev_key, live_key) + ': importing replaces '
+                        f'{live_key.upper()}\'s map with {dev_key.upper()}\'s.', *warnings]
+            if lacking:
+                blocked.append(f'{live_key.upper()} lacks migrations {dev_key.upper()} has ({"; ".join(lacking)}): a new map needs '
+                               f'them all. Migrating {live_key.upper()} is the user\'s decision (python3 tools/world_db.py migrate '
+                               f'--db {live_key}); nothing is imported until then.')
         if state['state'] != 'maintenance':
             blocked.append(f'{live_key} is not in maintenance: close it first (the DM, or python3 tools/world_sync.py maintenance {live_key} on).')
         elif running:
@@ -910,6 +1162,7 @@ class Sync:
         dev_key, live_key = pair(dev_key)
         editor = str(editor or 'Someone')[:60]
         with self.connect(dev_key) as dev, self.connect(live_key) as live:
+            same_map_or_refuse(dev, live, dev_key, live_key)       # (One map only: doc 66, "The same map".)
             snap_live, live_id, release = read_live(live)
             with dev.transaction():
                 lock_world(dev)
@@ -941,9 +1194,11 @@ class Sync:
                 'warnings': ['The live server is running: live data may still move; the import compares again.'] if running else []}
 
     # -- import ------------------------------------------------------------------
-    def import_(self, dev_key, choices=None, password=None, editor='', note='', expect=None):
+    def import_(self, dev_key, choices=None, password=None, editor='', note='', expect=None, replace_map=False):
         """The DM's Import from dev: during maintenance only; one transaction on live and a release; then dev is
-        brought level with live and takes it as its base."""
+        brought level with live and takes it as its base. A dev world on another map replaces live's map only with
+        `replace_map` (the confirmation, on top of the password) and only while live has every migration dev has; live
+        data is never removed (what stood on the old map is let go: let_go_of_old_map)."""
         dev_key, live_key = pair(dev_key)
         editor = str(editor or 'Someone')[:60]
         with self.connect(dev_key) as dev, self.connect(live_key) as live:
@@ -951,10 +1206,26 @@ class Sync:
             if state['state'] != 'maintenance':
                 raise NotInMaintenance(f'{live_key} is not in maintenance. Close it first: its players are told and its game '
                                        f'server stops (python3 tools/world_sync.py maintenance {live_key} on).')
+            maps = maps_of(dev, live)
+            if not maps['same']:
+                if replace_map is not True:
+                    raise DifferentMap(f'{maps_differ_text(maps, dev_key, live_key)}. Importing replaces '
+                                       f'{live_key.upper()}\'s map with {dev_key.upper()}\'s: confirm it (replace the map) to go on.',
+                                       maps)
+                lacking = behind(dev, live)
+                if lacking:
+                    raise PublishError(f'{live_key.upper()} lacks migrations {dev_key.upper()} has: a new map needs them all. '
+                                       f'Migrating {live_key.upper()} is the user\'s decision (python3 tools/world_db.py migrate '
+                                       f'--db {live_key}).', lacking)
             check_password(live, password, editor, 'import')
             with dev.transaction():
                 dev.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')     # One consistent copy of dev.
-                header, base = base_or_refuse(dev, dev_key, live_key)
+                if maps['same']:
+                    header, base = base_or_refuse(dev, dev_key, live_key)
+                else:
+                    header, base = load_base(dev)
+                    if header is None or header['upstream'] != live_key:
+                        base = None                       # (Live as it is, read in the import's own transaction.)
                 dev_id, _, errors, _ = validate_dev(dev)
                 if errors:
                     raise PublishError('The dev world has problems that block publishing.', errors)
@@ -967,9 +1238,15 @@ class Sync:
                 live.execute('SELECT pg_advisory_xact_lock(%s)', (PUBLISH_LOCK,))
                 live_id = the_world(live, 'The live world')
                 world_id = same_world(dev_id, live_id)
+                if map_identity(live, 'live', live_id)['id'] != maps['live']['id']:
+                    raise Moved('The live world\'s map changed since: look at the new plan and choose again.')
                 snap_live = snapshot(live, live_id)
+                if base is None:
+                    base = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
                 missing = unshared(dev, live, base, snap_dev, snap_live)
                 items = three_way(base, snap_dev, snap_live)
+                if not maps['same']:
+                    items = replacing(items)
                 check_expected({'digest': plan_digest(items)}, expect)
                 chosen = resolve(items, choices)
                 changes = [(i.spec, i.key, i.dev) for i in items if i.side == 'dev']
@@ -978,13 +1255,21 @@ class Sync:
                 if not changes:
                     raise PublishError('There is nothing to import: live already has every change made in dev.')
                 apply_rows(live, world_id, changes, snap_live)
+                let_go = None if maps['same'] else let_go_of_old_map(live, world_id)
                 finish(live, world_id)
                 summary = counts_of(changes, snap_live)
-                number = record(live, world_id, editor, note, 'import', dev_content(live, world_id), summary)
+                # The release records the map live is on now (the dev world's): a live world's identity (map_identity).
+                recorded = {**summary, 'map': {k: maps['dev'][k] for k in ('id', 'name', 'made', 'by', 'how')}}
+                if let_go is not None:
+                    recorded['replacedMap'] = {k: maps['live'][k] for k in ('id', 'name', 'made', 'by', 'how')}
+                    recorded['letGo'] = let_go
+                    summary = {**summary, 'letGo': let_go}
+                number = record(live, world_id, editor, note, 'import', dev_content(live, world_id), recorded)
                 after = snapshot(live, world_id)              # (After the build: it saves the roster's assignments.)
                 unshared(dev, live, after)
             level = self._level(dev, dev_key, live_key, world_id, number, base, snap_dev, after, editor, missing)
-        return {'release': number, 'summary': summary, 'conflicts': sum(1 for i in items if i.side == 'conflict'), 'dev': level}
+        return {'release': number, 'summary': summary, 'conflicts': sum(1 for i in items if i.side == 'conflict'), 'dev': level,
+                'replacedMap': not maps['same'], 'map': maps['dev']}
 
     def _level(self, dev, dev_key, live_key, world_id, number, base, planned, after, editor, missing=()):
         """After an import: dev takes live's version of every row nobody edited in dev meanwhile, and the base
@@ -1074,8 +1359,15 @@ def plan_import(dev_key, connect=None):
     return Sync(connect).plan_import(dev_key)
 
 
-def import_(dev_key, choices=None, password=None, editor='', note='', connect=None, expect=None):
-    return Sync(connect).import_(dev_key, choices, password, editor, note, expect)
+def import_(dev_key, choices=None, password=None, editor='', note='', connect=None, expect=None, replace_map=False):
+    return Sync(connect).import_(dev_key, choices, password, editor, note, expect, replace_map)
+
+
+def stamp(key, name, editor='', how='new'):
+    """`map KEY --new`: a world's new map identity, as its owner."""
+    with world_db.connect(world_db.resolve(key), 'owner') as conn:
+        with conn.transaction():
+            return stamp_map(conn, name, editor, how)
 
 
 def init_base(dev_key, editor='', prefer='dev', connect=None):
@@ -1124,6 +1416,14 @@ def print_plan(info):
     print(f'{info["dev"]} against {info["live"]} (world {info["world"]}, live release {info["liveRelease"]}); base taken '
           f'{base["takenAt"][:19]} by {base["by"] or "?"} ({base["how"]}, release {base["release"]})')
     print(f'  live changed ({info["counts"]["live"]}): taken by a pull\n{counts_line(info["summary"]["live"])}')
+    maps = info.get('maps')
+    if maps:
+        print(f'  map: {maps["dev"]["name"]} ({maps["dev"]["id"]}) in dev, {maps["live"]["name"]} ({maps["live"]["id"]}) live'
+              + ('' if maps['same'] else ': DIFFERENT MAPS, an import replaces live\'s map (--replace-map)'))
+    if info.get('letGo'):
+        g = info['letGo']
+        print(f'  let go with the old map: {g["npcs"]} NPCs and {g["slots"]} profession slots unplaced, {g["posts"]} patrol '
+              f'posts, {g["claims"]} claims and {g["npcAreas"]} NPC areas' + (f' (NPCs: {", ".join(g["names"][:10])}...)' if g['names'] else ''))
     print(f'  dev changed ({info["counts"]["dev"]}): taken by an import\n{counts_line(info["summary"]["dev"])}')
     print(f'  conflicts ({info["counts"]["conflicts"]}):')
     for c in info['conflicts']:
@@ -1161,6 +1461,12 @@ def main(argv=None) -> int:
     p.add_argument('dev')
     p.add_argument('--choices')
     p.add_argument('--note', default='')
+    p.add_argument('--replace-map', action='store_true',
+                   help="the dev world is on another map: replace the live world's map with it (live data is kept)")
+    p = sub.add_parser('map', help="a world's map identity (--new: stamp a new one, as the database owner)")
+    p.add_argument('key')
+    p.add_argument('--new', action='store_true', help='the map was made new: give the world a new identity')
+    p.add_argument('--name', default='', help='with --new: what the map is called (e.g. "Ridgemere 2.0: the city")')
     p = sub.add_parser('init-base', help="take a dev world's first base")
     p.add_argument('dev')
     p.add_argument('--prefer', choices=('dev', 'live'), default='dev',
@@ -1185,6 +1491,7 @@ def main(argv=None) -> int:
                 print(f'  server: {srv["state"]}' + (f' since {srv["at"][:19]} by {srv["by"] or "?"}' if srv['at'] else '')
                       + (f': {srv["note"]}' if srv['note'] else '') + ('; a game server holds it' if info['serverRunning'] else ''))
                 print(f'  release: {info["release"]}')
+                print(f'  map: {info["map"]["name"]} ({info["map"]["id"]})')
                 if info['kind'] == 'dev' and info['upstream']:
                     b = info['base']
                     print(f'  base: {b["upstream"]} release {b["release"]}, taken {b["takenAt"][:19]} by {b["by"] or "?"} ({b["how"]}, '
@@ -1207,10 +1514,22 @@ def main(argv=None) -> int:
         elif args.command == 'import':
             choices = load_choices(args.choices)
             password = getpass.getpass('Publish password: ')
-            result = sync.import_(args.dev, choices, password, me, args.note)
+            result = sync.import_(args.dev, choices, password, me, args.note, None, args.replace_map)
             print(f'Release {result["release"]} is live.\n{counts_line(result["summary"])}')
             if result['dev'].get('error'):
                 print(result['dev']['error'], file=sys.stderr)
+        elif args.command == 'map':
+            key = world_db.resolve(args.key)
+            if args.new:
+                if not args.name.strip():
+                    raise PublishError('Name the new map: --name "..."')
+                ident = stamp(key, args.name.strip(), me)
+                print(f'{key}: a new map identity, {ident["name"]} ({ident["id"]}). Pull and import with any world on '
+                      'another map are refused (an import into live replaces its map).')
+            else:
+                ident = sync.status(key)['map']
+                print(f'{key}: {ident["name"]} ({ident["id"]}; from its {ident["from"]}'
+                      + (f' {ident["release"]}' if ident.get('release') else '') + ')')
         elif args.command == 'init-base':
             r = sync.init_base(args.dev, me, args.prefer)
             print(f'{r["dev"]}: base taken from {r["live"]} (release {r["release"]}, {r["rows"]} rows); differences there are '

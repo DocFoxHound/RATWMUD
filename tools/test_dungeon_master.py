@@ -18,7 +18,15 @@ class TargetTests(unittest.TestCase):
     def test_every_registered_world_live_ones_first(self):
         self.assertEqual(D.targets(), W.keys('live') + W.keys('dev'))
         self.assertEqual(D.targets()[:1], ['prod'])
-        self.assertIn('ridgemere2', D.targets())
+        self.assertIn('dev-old', D.targets())
+        self.assertNotIn('ridgemere2', D.targets(), 'another name for dev: one world, listed once')
+
+    def test_an_alias_reaches_its_world(self):
+        reached = []
+        dm = D.DungeonMaster(connect=lambda target: reached.append(target) or self.fail('stop here'))
+        with self.assertRaises(AssertionError):
+            dm.connect('ridgemere2')
+        self.assertEqual(reached, ['dev'])
 
     def test_the_default_is_the_live_world_and_unknown_worlds_are_refused(self):
         self.assertEqual(D.default_target(), W.live_world())

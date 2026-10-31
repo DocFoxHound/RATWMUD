@@ -4,11 +4,12 @@ Lays out the city alone on a canvas of 1,024 x 768 tiles (4 x 3 cells): the bay 
 wall, the Sump, the Commons and Northgate, the abbey, House Greatly's compound, the Old Keep, the administrative sector,
 the Cinders, the Great Palace and the Rise inside the walls; the three Houses' estates and the roads outside. Reused
 interiors keep their IDs; new ones are r2_. Then places about 560 of the world's NPCs in it (worldgen.ridgemere2_people)
-and writes the city into Atlas's world ratw_ridgemere2, keeping every NPC, their voices, families and talk.
+and writes the city into DEV (ratw_ridgemere2, also called ridgemere2), keeping every NPC, their voices, families and talk.
 
   cd tools && python3 -m worldgen.ridgemere2 preview [--seed N]     preview images, the report and the manifest
   cd tools && python3 -m worldgen.ridgemere2 place                  the NPC plan (artifacts/ridgemere2/placement.json)
-  cd tools && python3 -m worldgen.ridgemere2 write --world ridgemere2   back up, then write the city into the world
+  cd tools && python3 -m worldgen.ridgemere2 write [--world dev]   back up, then write the city into DEV (also called
+                                                                   ridgemere2; a new map identity: doc 66)
 
 (python3 tools/worldgen/ridgemere2.py ... works too.) The seed is fixed, so every run makes the same city; a write loads
 the world fresh and rewrites only the map and the placed NPCs' places, so it can be run again.
@@ -3918,8 +3919,10 @@ def write(world_key, seed=SEED, dry=False, report=print):
     import world_store
     import world_sync
     from . import ridgemere2_people as pp
-    if world_key in ('dev', 'prod'):
-        raise SystemExit('Ridgemere 2.0 is written only into its own world, never dev or prod.')
+    entry = world_db.world(world_key)
+    if entry['kind'] != 'dev' or entry['database'] == 'ratw_dev':
+        raise SystemExit('Ridgemere 2.0 is written only into its own world (dev, also called ridgemere2), never a live '
+                         'world or the old map\'s archive dev-old.')
     project, revision = load(world_key)
     m = make_all(project, seed, report)
     failed = [c for c in m['checks'] if not c['ok']]
@@ -3944,16 +3947,20 @@ def write(world_key, seed=SEED, dry=False, report=print):
     report(f'Backed up to {dump} and {atlas}. (To restore: close every connection, then pg_restore --clean -d '
            f'"<owner conninfo>" {dump}.)')
     quarters = voice_quarters(m)
-    with world_db.connect(world_key, 'editor') as conn:
+    # As the owner: the city is a new map, so the world gets a new map identity (admin.settings, the owner's) in the same
+    # transaction; pull and import with a world on the old map are refused from now on (doc 66, "The same map").
+    with world_db.connect(world_key, 'owner') as conn:
         with conn.transaction():
             new = world_store.save_world(conn, p, revision)
+            ident = world_sync.stamp_map(conn, 'Ridgemere 2.0: the city (doc 67)', 'worldgen.ridgemere2', 'generated')
             wid = p['id']
             changed = 0
             for npc, quarter in quarters.items():
                 changed += conn.execute('UPDATE live.npc_voice SET quarter = %s WHERE world_id = %s AND npc_id = %s '
                                         'AND quarter IS DISTINCT FROM %s', (quarter, wid, npc, quarter)).rowcount
             world_sync.tell_editors(conn, wid, 'ridgemere2.py', 'Ridgemere 2.0: the city (doc 67)')
-    report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter.')
+    report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; a new map '
+           f'identity, {ident["id"]}.')
     return 0
 
 

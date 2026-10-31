@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allFrom, buildChoices, groupByLabel, prunePicks, rowChangeText, sideChangeText, summaryLine, summaryRows, summaryTotal, valueText,
+import {allFrom, buildChoices, differentMapText, groupByLabel, letGoText, prunePicks, replaceMapText, rowChangeText, sideChangeText,
+    summaryLine, summaryRows, summaryTotal, valueText,
     type SyncField, type SyncItem} from './sync.ts';
 
 const field = (name: string, changed: SyncField['changed'], base: unknown = 'b', dev: unknown = 'd', live: unknown = 'l'): SyncField =>
@@ -64,4 +65,31 @@ test('values, groups and summaries as the screens show them', () => {
     assert.equal(rowChangeText(sloe), 'removed in dev, changed live');
     assert.equal(sideChangeText(wren, 'live'), 'changed: name, purse');
     assert.equal(sideChangeText(sloe, 'dev'), 'removed');
+});
+
+// The same map (doc 66): Update from live between two maps says so, naming both; the DM's import asks to replace the map.
+const maps = {dev: {id: 'map-20261031-a', name: 'Ridgemere 2.0: the city'}, live: {id: 'original:upper_accord', name: "Ridgemere's original map"},
+    same: false};
+
+test('two maps: Update from live has nothing to do, and says why in plain words', () => {
+    assert.equal(differentMapText(maps, 'dev', 'prod'),
+        "PROD is on a different map (Ridgemere's original map) from DEV (Ridgemere 2.0: the city): there is nothing to update from " +
+        "until DEV's map is imported into PROD (the DM's Import from dev, replacing PROD's map).");
+    assert.equal(differentMapText({...maps, same: true}, 'dev', 'prod'), null, 'one map: nothing to say');
+    assert.equal(differentMapText(undefined, 'dev', 'prod'), null);
+});
+
+test("two maps: the import warns, and asks to replace live's map by name", () => {
+    const {warning, confirm} = replaceMapText(maps, 'dev', 'prod');
+    assert.match(warning, /^DEV is on a different map \(Ridgemere 2\.0: the city\) from PROD \(Ridgemere's original map\)\./);
+    assert.match(warning, /Players' data and everyone in PROD are kept/);
+    assert.equal(confirm, "Replace PROD's map (Ridgemere's original map) with DEV's (Ridgemere 2.0: the city)");
+});
+
+test('what a new map lets go of, in a line', () => {
+    assert.equal(letGoText(undefined), '');
+    assert.equal(letGoText({npcs: 0, slots: 0, posts: 0, claims: 0, npcAreas: 0}), '');
+    assert.equal(letGoText({npcs: 2, slots: 1, posts: 3, claims: 1, npcAreas: 0, names: ['Briar', 'Rook']}),
+        '2 NPCs and 1 profession slot unplaced (Briar, Rook); 3 patrol posts and 1 territory claim let go');
+    assert.equal(letGoText({npcs: 0, slots: 0, posts: 0, claims: 2, npcAreas: 1}), '2 territory claims and 1 NPC area let go');
 });

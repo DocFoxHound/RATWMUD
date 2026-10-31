@@ -23,7 +23,13 @@ export interface SyncBase { upstream: string; world: string; release: number; ta
 export interface ServerState { state: 'running' | 'maintenance'; by: string; at: string | null; note: string }
 export interface Release { number: number; at: string; by: string; note: string; kind: 'push' | 'import' | 'rollback'; restored: number | null; summary: Summary }
 /** A registered world as the studio shows it. */
-export interface SyncWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
+export interface SyncWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string; aliases?: string[] }
+/** A world's map identity (doc 66, "The same map"): a stamp made when a map is generated new, kept by every edit. */
+export interface MapIdentity { id: string; name: string; made?: string | null; by?: string; how?: string; from?: 'stamp' | 'release' | 'original' }
+/** The two worlds' maps, and whether they are one. */
+export interface MapPair { dev: MapIdentity; live: MapIdentity; same: boolean }
+/** What a map-replacing import lets go of: live's rows standing in places the new map hasn't (never removed with them). */
+export interface LetGo { npcs: number; slots: number; posts: number; claims: number; npcAreas: number; names?: string[] }
 /** The three-way plan of a dev world against its upstream (world_sync.diff). */
 export interface SyncPlan {
     dev: string; live: string; world: string | null; base: SyncBase; liveRelease: number;
@@ -31,6 +37,8 @@ export interface SyncPlan {
     summary: {live: Summary; dev: Summary};
     liveChanges: SyncItem[]; devChanges: SyncItem[]; conflicts: SyncItem[];
     digest: string; warnings: string[];
+    /** The two maps (always on a plan from the engine); `replacesMap` on an import's plan between two maps. */
+    maps?: MapPair; replacesMap?: boolean; letGo?: LetGo;
 }
 /** Atlas's Update from live: the plan, the two worlds, and the live server's state (null when it can't be read). */
 export interface PullPlan extends SyncPlan {
@@ -43,7 +51,7 @@ export interface ImportPlan extends SyncPlan {
     devRevision: number; errors: string[]; server: ServerState; serverRunning: boolean; blocked: string[]; releases: Release[];
 }
 export interface ImportResult {
-    release: number; summary: Summary; conflicts: number;
+    release: number; summary: Summary & {letGo?: LetGo}; conflicts: number; replacedMap?: boolean; map?: MapIdentity;
     dev: {updated: number; editedMeanwhile?: string[]; error?: string}; warnings?: string[];
 }
 export interface ServerStatus {
@@ -166,4 +174,38 @@ export function sideChangeText(item: SyncItem, side: Side): string {
     if (what !== 'changed') return what;
     const fields = item.fields.filter(f => f.changed === side || f.changed === 'conflict' || f.changed === null).map(f => f.field);
     return fields.length ? `changed: ${fields.join(', ')}` : 'changed';
+}
+
+/** Why Update from live has nothing to do between two maps (the engine refuses the same way): "PROD is on a different
+ *  map (Ridgemere's original map) from DEV (Ridgemere 2.0: the city): ...". Null on one map. */
+export function differentMapText(maps: MapPair | null | undefined, dev: string, live: string): string | null {
+    if (!maps || maps.same) return null;
+    const D = dev.toUpperCase(), L = live.toUpperCase();
+    return `${L} is on a different map (${maps.live.name}) from ${D} (${maps.dev.name}): there is nothing to update from until ` +
+        `${D}'s map is imported into ${L} (the DM's Import from dev, replacing ${L}'s map).`;
+}
+
+/** What the DM's import says before replacing live's map, and the confirmation it asks for. */
+export function replaceMapText(maps: MapPair, dev: string, live: string): {warning: string; confirm: string} {
+    const D = dev.toUpperCase(), L = live.toUpperCase();
+    return {
+        warning: `${D} is on a different map (${maps.dev.name}) from ${L} (${maps.live.name}). Importing replaces ${L}'s map with ` +
+            `${D}'s whole: its cells, interiors, doors and places. Players' data and everyone in ${L} are kept; afterwards both share ` +
+            `one map and Update from live works again.`,
+        confirm: `Replace ${L}'s map (${maps.live.name}) with ${D}'s (${maps.dev.name})`,
+    };
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** "2 NPCs unplaced (Briar, Rook); 3 patrol posts and 1 territory claim let go" ('' when nothing). */
+export function letGoText(letGo: LetGo | undefined): string {
+    if (!letGo) return '';
+    const unplaced = [letGo.npcs ? plural(letGo.npcs, 'NPC') : '', letGo.slots ? plural(letGo.slots, 'profession slot') : '']
+        .filter(Boolean).join(' and ');
+    const names = letGo.names?.length ? ` (${letGo.names.slice(0, 8).join(', ')}${letGo.names.length > 8 ? ', …' : ''})` : '';
+    const gone = [letGo.posts ? plural(letGo.posts, 'patrol post') : '', letGo.claims ? plural(letGo.claims, 'territory claim') : '',
+        letGo.npcAreas ? plural(letGo.npcAreas, 'NPC area') : ''].filter(Boolean);
+    const goneText = gone.length > 1 ? `${gone.slice(0, -1).join(', ')} and ${gone[gone.length - 1]}` : gone[0] ?? '';
+    return [unplaced ? `${unplaced} unplaced${names}` : '', goneText ? `${goneText} let go` : ''].filter(Boolean).join('; ');
 }

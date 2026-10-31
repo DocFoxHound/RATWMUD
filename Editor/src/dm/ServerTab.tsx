@@ -5,8 +5,8 @@
 // (rarely wise; maintenance only, typed confirmation), and the releases with rollback of the authored content.
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {dmApi, DmError, isLive, type Me, type Target, type World} from './api';
-import {buildChoices, prunePicks, type ImportPlan, type ImportResult, type Picks, type Release, type ServerStatus,
-    type SyncWorld} from '../lib/sync';
+import {buildChoices, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
+    type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
 
 const LABELS = {dev: 'Import dev\'s', live: 'Keep live\'s'} as const;
@@ -90,6 +90,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
     const [dev, setDev] = useState<Target | null>(null);
     const [picks, setPicks] = useState<Picks>({});
     const [note, setNote] = useState(''), [password, setPassword] = useState('');
+    const [replace, setReplace] = useState(false);              // The replace-the-map confirmation (two maps only).
     const [busy, setBusy] = useState(false), [loading, setLoading] = useState(false);
     const [problem, setProblem] = useState<{message: string; errors: string[]} | null>(null);
     const [done, setDone] = useState<ImportResult | null>(null);
@@ -98,6 +99,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
         try {
             const next = await dmApi.importPlan(which ?? undefined);
             setData(next); setDev(next.dev);
+            if (!next.plan?.replacesMap) setReplace(false);
             setPicks(p => prunePicks(p, next.plan?.conflicts ?? []));
         } catch (error) { setProblem({message: (error as Error).message, errors: []}); }
         finally { setLoading(false); }
@@ -107,13 +109,17 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
     const plan: ImportPlan | null = data?.plan ?? null;
     const {choices, missing} = useMemo(() => buildChoices(plan?.conflicts ?? [], picks), [plan, picks]);
 
+    const replacing = plan?.replacesMap && plan.maps ? replaceMapText(plan.maps, dev ?? plan.dev, live.key) : null;
     const run = async () => {
         if (!plan || !dev) return;
-        if (!window.confirm(`Import ${worldLabel(data?.candidates, dev)} into ${live.name}?\n\nThis writes the live world in one go and records a release (it can be rolled back).`)) return;
+        const ask = replacing
+            ? `Replace ${live.name}'s map with ${worldLabel(data?.candidates, dev)}'s?\n\n${replacing.warning}\n\nThis writes the live world in one go and records a release.`
+            : `Import ${worldLabel(data?.candidates, dev)} into ${live.name}?\n\nThis writes the live world in one go and records a release (it can be rolled back).`;
+        if (!window.confirm(ask)) return;
         setBusy(true); setProblem(null); setDone(null);
         try {
-            const result = await dmApi.importDev({dev, choices, password, note, expect: plan.digest});
-            setDone(result); setPassword(''); setNote(''); setPicks({});
+            const result = await dmApi.importDev({dev, choices, password, note, expect: plan.digest, ...(replacing ? {replaceMap: replace} : {})});
+            setDone(result); setPassword(''); setNote(''); setPicks({}); setReplace(false);
             onImported();
             await load(dev);
         } catch (error) {
@@ -144,7 +150,8 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
                 </div>
                 {data.problem && <Problems title={data.problem} items={data.errors} />}
                 {why && <p className="sync-blocked">{why}</p>}
-                {done && <div className="publish-done">Release {done.release} is live{done.conflicts ? ` (${done.conflicts} conflict${done.conflicts === 1 ? '' : 's'} chosen)` : ''}.
+                {done && <div className="publish-done">Release {done.release} is live{done.conflicts ? ` (${done.conflicts} conflict${done.conflicts === 1 ? '' : 's'} chosen)` : ''}{done.replacedMap ? `, on the new map (${done.map?.name ?? 'dev\'s'})` : ''}.
+                    {done.summary.letGo && letGoText(done.summary.letGo) && <p className="meta">With the old map: {letGoText(done.summary.letGo)}.</p>}
                     <SummaryTable summary={done.summary} />
                     {done.dev.error ? <p className="hint error-text">{done.dev.error}</p>
                         : <p className="meta">The dev world was brought level with live ({done.dev.updated} row{done.dev.updated === 1 ? '' : 's'})
@@ -159,6 +166,11 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
                     </div>
                     <p className="meta">Live release {plan.liveRelease || 'none yet'} · dev revision {plan.devRevision} · base: release {plan.base.release || 0},
                         {' '}{plan.base.how} by {plan.base.by || 'someone'} {when(plan.base.takenAt)}</p>
+                    {replacing && <div className="sync-warning">
+                        <p><b>A different map.</b> {replacing.warning}</p>
+                        {letGoText(plan.letGo) && <p className="meta">Kept, but standing on the old map: {letGoText(plan.letGo)}.</p>}
+                        <label><input type="checkbox" checked={replace} disabled={busy} onChange={e => setReplace(e.target.checked)} /> {replacing.confirm}</label>
+                    </div>}
                     {plan.errors.length > 0 && <Problems title="Fix these in Atlas before importing:" items={plan.errors} />}
                     {blocked.length > 0 && <Problems title="Not yet:" items={blocked} />}
                     {plan.warnings.length > 0 && <ul className="hint">{plan.warnings.slice(0, 12).map((w, i) => <li key={i}>{w}</li>)}</ul>}
@@ -177,9 +189,11 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
                     </div>
                     <div className="sync-apply">
                         {missing.length > 0 && <span className="hint">{missing.length} conflict{missing.length === 1 ? '' : 's'} still to choose.</span>}
-                        <button className="publish" disabled={!canAct || busy || loading || !!why || blocked.length > 0 || missing.length > 0 || !password}
-                            title={why || blocked[0] || (missing.length ? 'Choose for every conflict first' : !password ? 'Enter the publish password' : '')}
-                            onClick={() => void run()}>{busy ? 'Importing…' : `⇪ Import into ${live.name}`}</button>
+                        <button className="publish" disabled={!canAct || busy || loading || !!why || blocked.length > 0 || missing.length > 0 || !password
+                                || (!!replacing && !replace)}
+                            title={why || blocked[0] || (missing.length ? 'Choose for every conflict first' : replacing && !replace
+                                ? 'Confirm replacing the map first' : !password ? 'Enter the publish password' : '')}
+                            onClick={() => void run()}>{busy ? 'Importing…' : replacing ? `⇪ Replace ${live.name}'s map` : `⇪ Import into ${live.name}`}</button>
                     </div>
                 </>}
             </>}

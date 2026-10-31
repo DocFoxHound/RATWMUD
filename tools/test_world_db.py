@@ -475,19 +475,38 @@ class ScratchRegistry:
 
 class RegistryTests(ScratchRegistry, unittest.TestCase):
     def test_the_registry_lists_the_three_worlds(self):
-        self.assertEqual(W.keys(), ['prod', 'dev', 'ridgemere2'])
+        # 2026-10-31: DEV is Ridgemere 2.0 (its database ratw_ridgemere2); the old DEV is the archive dev-old.
+        self.assertEqual(W.keys(), ['prod', 'dev', 'dev-old'])
         self.assertEqual(W.keys('live'), ['prod'])
-        self.assertEqual((W.kind('dev'), W.upstream('dev'), W.upstream('ridgemere2')), ('dev', 'prod', None))
-        self.assertEqual(W.world('ridgemere2')['name'], 'Ridgemere 2.0')
-        self.assertEqual(W.DATABASES, {'prod': 'ratw_prod', 'dev': 'ratw_dev', 'ridgemere2': 'ratw_ridgemere2'})
+        self.assertEqual((W.kind('dev'), W.upstream('dev'), W.upstream('dev-old'), W.kind('dev-old')), ('dev', 'prod', None, 'dev'))
+        self.assertEqual((W.world('dev')['name'], W.world('dev-old')['name']), ('Ridgemere 2.0 (dev)', 'Ridgemere (old map, archive)'))
+        self.assertEqual(W.DATABASES, {'prod': 'ratw_prod', 'dev': 'ratw_ridgemere2', 'ridgemere2': 'ratw_ridgemere2',
+                                       'dev-old': 'ratw_dev'})
         with self.assertRaisesRegex(W.DatabaseError, 'Unknown world'):
             W.world('atlantis')
 
-    def test_without_a_local_choice_atlas_is_ridgemere2_and_live_is_prod(self):
+    def test_ridgemere2_is_another_name_for_dev(self):
+        self.assertEqual(W.world('ridgemere2')['key'], 'dev')
+        self.assertEqual((W.resolve('ridgemere2'), W.resolve('ridgemere2', 'dev'), W.canonical('ridgemere2')), ('dev', 'dev', 'dev'))
+        self.assertNotIn('ridgemere2', W.keys(), 'one world, listed once (the DM and migrate see it once)')
+        self.assertEqual(self.run_quietly('resolve', 'ridgemere2', '--with-kind')[1].strip(), 'dev dev')
+        W.set_local(atlas='ridgemere2')
+        self.assertEqual((W.atlas_world(), json.loads(self.local.read_text())['atlas']), ('dev', 'dev'), 'chosen by its key')
+        self.local.write_text('{"atlas": "ridgemere2"}')             # (A choice made before the switch still works.)
+        self.assertEqual(W.atlas_world(), 'dev')
+        with self.assertRaisesRegex(W.DatabaseError, 'Two worlds are called ridgemere2'):
+            W.check_registry([{'key': 'dev', 'database': 'a', 'kind': 'dev', 'aliases': ['ridgemere2']},
+                              {'key': 'ridgemere2', 'database': 'b', 'kind': 'dev'}])
+        with self.assertRaisesRegex(W.DatabaseError, 'reserved'):
+            W.check_registry([{'key': 'dev', 'database': 'a', 'kind': 'dev', 'aliases': ['atlas']}])
+        with self.assertRaisesRegex(W.DatabaseError, 'already a world called ridgemere2'):
+            W.new_world('ridgemere2', 'Again', log=lambda *_: None)
+
+    def test_without_a_local_choice_atlas_is_dev_and_live_is_prod(self):
         self.assertFalse(self.local.exists())
-        self.assertEqual((W.atlas_world(), W.live_world()), ('ridgemere2', 'prod'))
-        self.assertEqual(W.WORKING, 'ridgemere2', 'the old name still answers')
-        self.assertEqual((W.resolve('atlas'), W.resolve('live'), W.resolve('dev')), ('ridgemere2', 'prod', 'dev'))
+        self.assertEqual((W.atlas_world(), W.live_world()), ('dev', 'prod'))
+        self.assertEqual(W.WORKING, 'dev', 'the old name still answers')
+        self.assertEqual((W.resolve('atlas'), W.resolve('live'), W.resolve('dev-old')), ('dev', 'prod', 'dev-old'))
         with self.assertRaisesRegex(W.DatabaseError, 'dev world'):
             W.resolve('prod', 'dev')
 
@@ -555,7 +574,13 @@ class RegistryTests(ScratchRegistry, unittest.TestCase):
     def test_connection_settings_follow_the_registry(self):
         os.environ['RATW_GAME_PASSWORD'] = 'x'
         self.assertEqual(W.conninfo('ridgemere2', 'game')['dbname'], 'ratw_ridgemere2')
-        self.assertIn("dbname='ratw_dev'", W.libpq_conninfo('dev', 'game'))
+        self.assertIn("dbname='ratw_ridgemere2'", W.libpq_conninfo('dev', 'game'))
+        self.assertIn("dbname='ratw_dev'", W.libpq_conninfo('dev-old', 'game'))
+        os.environ['RATW_DEV_OLD_PORT'] = '6000'                     # (A '-' in a key is '_' in its settings' names.)
+        self.assertEqual(W.conninfo('dev-old', 'game')['port'], '6000')
+        os.environ['RATW_DEV_DBNAME'] = 'ratw_elsewhere'              # (An alias's settings are its world's.)
+        self.assertEqual(W.conninfo('ridgemere2', 'game')['dbname'], 'ratw_elsewhere')
+        del os.environ['RATW_DEV_DBNAME']
         self.assertEqual(self.run_quietly('conninfo', 'atlas')[0], 0)
         self.assertIn("dbname='ratw_ridgemere2'", self.run_quietly('conninfo', 'atlas')[1])
         with self.assertRaisesRegex(W.DatabaseError, 'Unknown world'):
@@ -678,6 +703,11 @@ class NewWorldTests(ScratchRegistry, unittest.TestCase):
         self.assertEqual(placements['spawn'], ['town', 2, 2])
         self.assertEqual([(a['id'], a['area']) for a in placements['npc_areas']], [('square', 'town')])
         self.assertEqual({n['id']: n['wander_area'] for n in placements['npcs']}, {'ada': None, 'wren': 'square'})
+        import world_sync
+        with self.owner(key) as conn, self.owner(source) as was:
+            mine, theirs = world_sync.map_identity(conn, 'dev'), world_sync.map_identity(was, 'dev')
+        self.assertEqual((mine['from'], mine['how']), ('stamp', 'without-map'), 'a map of its own: none')
+        self.assertNotEqual(mine['id'], theirs['id'], 'not the map it was copied with')
 
     def test_a_plain_copy_is_the_same_world(self):
         source = self.make_source()
@@ -686,6 +716,9 @@ class NewWorldTests(ScratchRegistry, unittest.TestCase):
         with self.owner(key) as conn:
             self.assertEqual(conn.execute("SELECT count(*) FROM world.areas").fetchone()[0], 2)
             self.assertEqual(conn.execute("SELECT count(*) FROM live.npcs").fetchone()[0], 2)
+            import world_sync
+            with self.owner(source) as was:
+                self.assertEqual(world_sync.map_identity(conn, 'dev'), world_sync.map_identity(was, 'dev'), 'on the same map')
 
     def test_a_copy_is_refused_while_someone_uses_the_world(self):
         source = self.make_source()
@@ -713,7 +746,7 @@ class NewWorldTests(ScratchRegistry, unittest.TestCase):
         self.assertIn('rarely wise', err, 'the warning is given even when it goes ahead')
         self.assertEqual(W.live_world(), two)
         self.assertEqual(world_sync.status(two)['server']['state'], 'maintenance', 'the new one waits until the DM opens it')
-        self.assertEqual(W.atlas_world(), 'ridgemere2', 'the other choice is kept')
+        self.assertEqual(W.atlas_world(), 'dev', 'the other choice is kept')
 
     def test_without_map_needs_a_world_to_copy(self):
         with self.assertRaisesRegex(W.DatabaseError, '--from'):

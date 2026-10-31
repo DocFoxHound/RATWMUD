@@ -3,7 +3,7 @@
 # "Scratch servers"). It reads the world and its save but writes nothing back, and stops by itself.
 #
 #   bash tools/scratch.sh            Atlas's world (python3 tools/world_db.py list), read only
-#   bash tools/scratch.sh KEY        any registered world (dev, prod, ridgemere2...; atlas, live: the local choices)
+#   bash tools/scratch.sh KEY        any registered world (dev: Ridgemere 2.0; dev-old, prod: the old map; atlas, live)
 #   bash tools/scratch.sh town       Greyfen Crossing (its save read, never written)
 #
 # It takes any free port and prints it ("RATW server listening on port N"): open http://127.0.0.1:N/ in a browser.

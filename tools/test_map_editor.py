@@ -707,7 +707,8 @@ class LiveHostTests(unittest.TestCase):
         conn.request('GET', '/api/session')
         session = json.loads(conn.getresponse().read())
         conn.close()
-        self.assertEqual(session['world'], {'key': 'dev', 'name': 'Ridgemere (dev)', 'kind': 'dev', 'upstream': 'prod'})
+        self.assertEqual(session['world'], {'key': 'dev', 'name': 'Ridgemere 2.0 (dev)', 'kind': 'dev', 'upstream': 'prod',
+                                            'aliases': ['ridgemere2']})
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -41,7 +41,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import world_db  # noqa: E402
 
-REFUSED_KEYS = {'dev', 'prod'}
+# The old map's worlds keep the old name (doc 67, section 7): PROD, and the old DEV, now the archive dev-old (DEV is
+# Ridgemere 2.0 since 2026-10-31: doc 66). Refused by database, whatever key names it.
+REFUSED_KEYS = {'dev-old', 'prod'}
 REFUSED_DATABASES = {'ratw_dev', 'ratw_prod'}
 LABEL_MOST = 40   # tools/map_editor.py refuses longer work labels.
 
@@ -261,8 +263,9 @@ class Refused(Exception):
 
 def refuse_world(key: str) -> dict:
     entry = world_db.world(key)
-    if key in REFUSED_KEYS or entry['database'] in REFUSED_DATABASES:
-        raise Refused(f'{key} ({entry["database"]}) is refused: DEV and PROD keep the name {OLD} (doc 67, section 7).')
+    if entry['key'] in REFUSED_KEYS or entry['database'] in REFUSED_DATABASES:
+        raise Refused(f'{key} ({entry["database"]}) is refused: the old map\'s worlds (PROD and the archive dev-old) keep '
+                      f'the name {OLD} (doc 67, section 7).')
     if entry['kind'] != 'dev':
         raise Refused(f'{key} is a {entry["kind"]} world; this renames a dev world only.')
     return entry
@@ -430,7 +433,7 @@ def main(argv=None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--dry-run', action='store_true', help='list every change; write nothing')
     mode.add_argument('--apply', action='store_true', help='make the changes, in one transaction')
-    parser.add_argument('--world', default='ridgemere2', help='a dev world key (default ridgemere2; never dev or prod)')
+    parser.add_argument('--world', default='dev', help='a dev world key (default dev, Ridgemere 2.0; never dev-old or prod)')
     parser.add_argument('--report', help='also write the list to this file')
     parser.add_argument('--editor', default='rename_house', help='who the edit log names')
     args = parser.parse_args(argv)
