@@ -937,7 +937,7 @@ class DungeonMaster:
 
     # -- where the money is -------------------------------------------------------------
     def money(self, target):
-        """The money as last saved: each town's treasury, church and buyers; the great houses and the shops' tills;
+        """The money as last saved: each town's treasury, church and buyers; the great houses, the shops' tills and the funds;
         residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food money;
         money on the road. (Nothing moves it of itself since the economy's rules were erased: doc 66, Phase 5.)"""
         with self.connect(target) as conn:
@@ -965,6 +965,8 @@ class DungeonMaster:
                            'buyers': buyers}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
+        # Facility funds (fund:...), the store room's among them (Docs/Design/67-ridgemere2-city.md, 6: what its draws paid).
+        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('fund:')]
         purses = sorted(v for k, v in accounts.items() if k in people)
         by_role = defaultdict(list)
         for k, v in accounts.items():
@@ -983,7 +985,7 @@ class DungeonMaster:
                 'bandits': sum(v for k, v in accounts.items() if k.startswith('bandits:'))}
         return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
                 'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
-                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'residents': residents, 'road': road,
+                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'funds': funds, 'residents': residents, 'road': road,
                 'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-')))}
 
     def call_festival(self, who, target, community, name='', in_days=0):

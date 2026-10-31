@@ -678,8 +678,8 @@ std::string Game::withoutPeople(const std::string& manifest)
         }
         else if (line.rfind("economy ", 0) == 0 || line.rfind("route ", 0) == 0 || line.rfind("resident ", 0) == 0 ||
                  line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0 ||
-                 line.rfind("kin ", 0) == 0)
-            continue;
+                 line.rfind("kin ", 0) == 0 || line.rfind("store ", 0) == 0 || line.rfind("nostore ", 0) == 0)
+            continue;                              // (The store room's records come with the people's: doc 67, 6.)
         else if (line.rfind("territory ", 0) == 0)
         {
             std::istringstream fields(line.substr(10));

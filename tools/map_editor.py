@@ -54,6 +54,51 @@ SLOT_KEYS = {'id', 'name', 'profession', 'workLabel', 'hours', 'route', 'paid', 
 APPEARANCE_KEYS = {'species', 'sex', 'stature', 'pattern', 'baseColor', 'gradientColor', 'markingColor'}
 ECONOMY_KEYS = {'treasury': 1000000, 'storeHerbs': 10000, 'storeMeals': 10000, 'dailyHerbs': 1000, 'dailyMeals': 1000}
 DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12}
+# The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults, and `businesses`
+# ({npc id: {internalStore: false}}, the businesses switched off, by founder).
+STORE_DEFAULTS = {'internalStore': True, 'storeMarkup': 100, 'storeResale': True, 'resaleMarkup': 75, 'storeRule': False}
+STORE_SWITCHES = ('internalStore', 'storeResale', 'storeRule')
+STORE_MARKUPS = ('storeMarkup', 'resaleMarkup')
+
+
+def check_economy(economy, person_ids=None) -> list[str]:
+    """The economy entity's problems (none: it is sound). `person_ids`: the NPCs a `businesses` key may name."""
+    if not isinstance(economy, dict):
+        return ['economy must be an object.']
+    errors = []
+    keys = set(economy)
+    if not set(ECONOMY_KEYS) <= keys <= set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'}:
+        errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
+                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule and businesses).')
+    for key, limit in ECONOMY_KEYS.items():
+        if not number(economy.get(key), 0, limit, integer=True):
+            errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
+    for key in STORE_SWITCHES:
+        if type(economy.get(key, STORE_DEFAULTS[key])) is not bool:
+            errors.append(f'economy.{key} must be true or false.')
+    for key in STORE_MARKUPS:
+        if not number(economy.get(key, STORE_DEFAULTS[key]), 0, 1000, integer=True):
+            errors.append(f'economy.{key} must be a whole number from 0 to 1000 (a percentage of the catalogue price).')
+    businesses = economy.get('businesses', {})
+    if not isinstance(businesses, dict):
+        errors.append('economy.businesses must be an object of NPC IDs.')
+    else:
+        for npc, setting in businesses.items():
+            if not isinstance(setting, dict) or set(setting) != {'internalStore'} or type(setting['internalStore']) is not bool:
+                errors.append(f'economy.businesses.{npc} must be {{"internalStore": true or false}}.')
+            elif person_ids is not None and npc not in person_ids:
+                errors.append(f'economy.businesses names no NPC: {npc}.')
+    return errors
+
+
+def store_line(economy) -> str | None:
+    """The NPC records' "store" line (live.people_manifest's): only when a setting differs from its default."""
+    e = {**STORE_DEFAULTS, **(economy or {})}
+    if all(e[k] == v for k, v in STORE_DEFAULTS.items()):
+        return None
+    word = lambda on: 'on' if on else 'off'
+    return (f'store {word(e["internalStore"])} {e["storeMarkup"]} resale {word(e["storeResale"])} {e["resaleMarkup"]} '
+            f'rule {word(e["storeRule"])}')
 
 
 class ValidationError(ValueError):
@@ -369,11 +414,9 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         return ok
 
     economy = p.get('economy', DEFAULT_ECONOMY)
-    require(isinstance(economy, dict) and set(economy) == set(ECONOMY_KEYS),
-            'economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals.')
-    if isinstance(economy, dict):
-        for key, limit in ECONOMY_KEYS.items():
-            require(number(economy.get(key), 0, limit, integer=True), f'economy.{key} must be a whole number from 0 to {limit}.')
+    people_list = p.get('people', [])
+    errors += check_economy(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
+                            if isinstance(people_list, list) else set())
     herbs = p.get('herbPatch')
     if herbs is not None:
         place(herbs, 'Herb patch')
@@ -727,6 +770,9 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
     if content:
         e = p.get('economy', DEFAULT_ECONOMY)
         manifest.append(f'economy {e["treasury"]} {e["storeHerbs"]} {e["storeMeals"]} {e["dailyHerbs"]} {e["dailyMeals"]}')
+        if store_line(e):
+            manifest.append(store_line(e))          # The store room's switches, when not at their defaults (doc 67, 6).
+    off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.
     if p.get('herbPatch'):
@@ -752,6 +798,8 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(f'joinable {quote(r["id"])}')     # May travel with a player's party (doc 32, 2.3).
         if r.get('protected'):
             manifest.append(f'protected {quote(r["id"])}')    # Can't be attacked or robbed of coin by players (doc 57, 6).
+        if r['id'] in off and r['home']:
+            manifest.append(f'nostore {quote(r["id"])}')      # Its business kept out of the store room (doc 67, 6).
     # Families (doc 62, decision 8), after everyone: "kin" a b spouse|parent.
     people = {r['id'] for r in p.get('people', [])}
     for k in p.get('relations', []):

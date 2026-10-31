@@ -32,7 +32,42 @@ constexpr DevCommand DevCommands[] = {
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
     {"reckon", "The week's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
     {"speed", "speed [N]: how fast the world runs, 1 (as ever) to 1000 times; nothing is skipped, it just runs faster. Without N, the speed now."},
+    {"store", "store <keeper> [item count]: a shop keeper's store room (doc 67): its goods, prices and the fund; with an item and a count, draws them into its till. Dev worlds only."},
 };
+
+// The store room by hand (Docs/Design/67-ridgemere2-city.md, 6): a keeper's goods, or a draw.
+Result storeCommand(Society& society, const std::string& rest)
+{
+    std::istringstream words(rest);
+    std::string keeper, item, extra;
+    int count = 0;
+    words >> keeper >> item;
+    const bool draw = !item.empty();
+    if (draw && !(words >> count))
+        return {false, "Usage: /store <keeper> [item count].", {}};
+    if (keeper.empty() || (words >> extra))
+        return {false, "Usage: /store <keeper> [item count].", {}};
+    const auto fund = [&] { return "The store room's fund (" + std::string(Society::StoreFund) + ") holds " + std::to_string(society.cash(Society::StoreFund)) + "p."; };
+    if (draw)
+    {
+        const auto drawn = society.drawFromStore(keeper, item, count, "dev console: from the store room");
+        return {drawn.ok, drawn.message + " Till " + society.tillOf(keeper) + ": " + std::to_string(society.cash(society.tillOf(keeper))) + "p. " + fund(), {}};
+    }
+    const auto closed = society.storeClosed(keeper);
+    std::string text = keeper + ": the store room is " + (closed.empty() ? std::string("open") : "closed (" + closed + ")") + ". Till " +
+                       society.tillOf(keeper) + ": " + std::to_string(society.cash(society.tillOf(keeper))) + "p.";
+    const auto& goods = society.storeGoods(keeper);
+    for (const auto& good : goods)
+        text += "\n" + good + " (" + (society.storeUse(keeper, good) == Society::StoreUse::Make ? "making" : "resale") + "): " +
+                std::to_string(society.storeCost(keeper, good, 1)) + "p each (catalogue " + std::to_string(Society::catalogPrice(good)) + "p)";
+    if (goods.empty())
+        text += "\nNothing to draw.";
+    return {true, text + "\n" + fund(), {}};
+}
+} // namespace
+
+namespace
+{
 } // namespace
 
 void Game::devCommand(Connection* c, const json::Value& j)
@@ -45,8 +80,8 @@ void Game::devCommand(Connection* c, const json::Value& j)
     if (!command.empty() && command.front() == '/')
         command.erase(0, 1);
     std::transform(command.begin(), command.end(), command.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
-    if (command.size() > 60)
-        command.resize(60);
+    if (command.size() > (command.rfind("store ", 0) == 0 ? 120u : 60u))
+        command.resize(command.rfind("store ", 0) == 0 ? 120 : 60);   // (A keeper's ID and an item's take room.)
 
     const auto* me = world_.entity(id);
     if (j.string("type") == "devCommands")
@@ -145,6 +180,10 @@ void Game::devCommand(Connection* c, const json::Value& j)
             result = {true, said.str(), {}};
         }
     }
+    else if (command == "store" || command.rfind("store ", 0) == 0)
+        result = options_.worldKind != "dev" ? Result{false, "The store room's console is for dev worlds only (this world's kind: " +
+                                                                 (options_.worldKind.empty() ? std::string("unknown") : options_.worldKind) + ").", {}}
+                                             : storeCommand(world_.society(), command.size() > 6 ? command.substr(6) : std::string());
     else
         result = {false, "No such command: /" + command + ". Try /help.", {}};
 

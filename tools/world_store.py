@@ -13,6 +13,7 @@ and refuses if someone else saved the world since it was opened.
 from __future__ import annotations
 
 import argparse
+import copy
 import pickle
 import sys
 import threading
@@ -23,8 +24,20 @@ import world_db
 
 DEFAULT_LIGHTING = {'artificial': 1, 'daylightAccess': 1, 'tone': 'warm'}
 DEFAULT_TERRITORY = {'region': 'unassigned', 'claims': [], 'chapter': ''}
-DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12}
+# The store room's settings (Docs/Design/67-ridgemere2-city.md, 6; migration 0055): the world's switches and markups
+# (live.economy) and each business's own switch (live.business_settings, by its founder), all optional, at these defaults.
+STORE_DEFAULTS = map_editor.STORE_DEFAULTS
+STORE_COLUMNS = {'internalStore': 'internal_store', 'storeMarkup': 'store_markup', 'storeResale': 'store_resale',
+                 'resaleMarkup': 'resale_markup', 'storeRule': 'store_rule'}
+DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12,
+                   **STORE_DEFAULTS, 'businesses': {}}
+NO_STORE = 'this world lacks migration 0055 (python3 tools/world_db.py migrate --db KEY): its store room stays at its defaults'
 HERB_PATCH = 'herb_patch'
+
+
+def default_economy() -> dict:
+    """DEFAULT_ECONOMY, a copy of its own (its `businesses` too)."""
+    return copy.deepcopy(DEFAULT_ECONOMY)
 
 
 class StoreError(map_editor.HostError):
@@ -79,12 +92,39 @@ TABLES = {
                                                    'paid', 'purse', 'herbs', 'meals', 'hours_start', 'hours_end',
                                                    'home_area', 'home_x', 'home_y', 'work_area', 'work_x', 'work_y',
                                                    'evening_area', 'evening_x', 'evening_y')),
-    'live.economy': (('world_id',), ('world_id', 'treasury', 'store_herbs', 'store_meals', 'daily_herbs', 'daily_meals')),
+    'live.economy': (('world_id',), ('world_id', 'treasury', 'store_herbs', 'store_meals', 'daily_herbs', 'daily_meals',
+                                     *STORE_COLUMNS.values())),
+    # A business kept out of the store room (doc 67, 6): a row only while it is off.
+    'live.business_settings': (('world_id', 'npc_id'), ('world_id', 'npc_id', 'internal_store')),
 }
+# A world without migration 0055 (DEV and PROD until the user migrates them): no store columns, no business settings.
+LEGACY_TABLES = {**{t: v for t, v in TABLES.items() if t != 'live.business_settings'},
+                 'live.economy': (('world_id',), TABLES['live.economy'][1][:6])}
 # Children are deleted before parents and written after them; deferred foreign keys settle the rest at commit.
 WRITE_ORDER = ['world.areas', 'world.terrain_chunks', 'world.cells', 'world.interiors', 'world.links', 'world.resources',
                'live.factions', 'world.chapters', 'live.patrol_routes', 'live.patrol_posts', 'live.npcs',
-               'live.profession_slots', 'live.economy']
+               'live.profession_slots', 'live.economy', 'live.business_settings']
+
+
+def store_supported(conn) -> bool:
+    """Whether this world has migration 0055 (the store room's columns and table), as world_build checks fingerprints."""
+    return bool(conn.execute("""
+        SELECT (SELECT count(*) FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
+                AND column_name IN ('internal_store', 'store_markup', 'store_resale', 'resale_markup', 'store_rule')) = 5
+           AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'live' AND table_name = 'business_settings')
+    """).fetchone()[0])
+
+
+def tables_for(conn) -> dict:
+    """The tables (and columns) this world's database has: TABLES, or LEGACY_TABLES without migration 0055."""
+    return TABLES if store_supported(conn) else LEGACY_TABLES
+
+
+def store_differs(economy) -> bool:
+    """Whether an economy entity sets anything of the store room away from its default (which needs migration 0055)."""
+    e = economy or {}
+    return (any(e.get(k, v) != v for k, v in STORE_DEFAULTS.items())
+            or any(isinstance(s, dict) and s.get('internalStore') is False for s in (e.get('businesses') or {}).values()))
 JSON_COLUMNS = {'heights', 'appearance', 'letting'}
 
 
@@ -193,9 +233,17 @@ def slot_row(w, s, position):
             *npc_place(s['home']), *npc_place(s['work']), *npc_place(s['evening']))
 
 
-def economy_row(w, economy):
+def economy_row(w, economy, store=True):
+    """A live.economy row; with `store` (a world with migration 0055), the store room's switches and markups too."""
     e = {**DEFAULT_ECONOMY, **(economy or {})}
-    return (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
+    row = (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
+    return row + tuple(e[k] for k in STORE_COLUMNS) if store else row
+
+
+def business_rows(w, economy):
+    """live.business_settings rows: one per business switched off (a row back at its default is not kept)."""
+    businesses = (economy or {}).get('businesses') or {}
+    return [(w, npc, False) for npc, s in sorted(businesses.items()) if isinstance(s, dict) and s.get('internalStore') is False]
 
 
 def _details(r):
@@ -252,9 +300,23 @@ def slot_entity(r):
     return {'id': r['id'], 'name': r['name'], 'profession': r['profession'], **_resident(r)}
 
 
-def economy_entity(r):
+def economy_entity(r, businesses=None):
+    """A live.economy row as the editor's economy: a world without migration 0055 reads the store room's defaults.
+    `businesses`: live.business_settings rows ({npc_id, internal_store}) for the businesses switched off."""
     return {'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
-            'dailyHerbs': r['daily_herbs'], 'dailyMeals': r['daily_meals']}
+            'dailyHerbs': r['daily_herbs'], 'dailyMeals': r['daily_meals'],
+            **{k: r.get(c, STORE_DEFAULTS[k]) for k, c in STORE_COLUMNS.items()},
+            'businesses': {b['npc_id']: {'internalStore': False} for b in businesses or [] if b['internal_store'] is False}}
+
+
+def economy_value(conn, world_id):
+    """The economy entity as stored (Atlas's keyed edit `economy`), or None while the world has no live.economy row."""
+    found = dict_rows(conn, 'SELECT * FROM live.economy WHERE world_id = %s', (world_id,))
+    if not found:
+        return None
+    businesses = (dict_rows(conn, 'SELECT npc_id, internal_store FROM live.business_settings WHERE world_id = %s ORDER BY npc_id',
+                            (world_id,)) if store_supported(conn) else [])
+    return economy_entity(found[0], businesses)
 
 
 def dict_rows(conn, sql, params):
@@ -263,10 +325,12 @@ def dict_rows(conn, sql, params):
     return [dict(zip(names, r)) for r in cur.fetchall()]
 
 
-def project_rows(p: dict, chunk_size: int) -> dict[str, list[tuple]]:
-    """Every row a validated (atlas v3) project stores, per table. Cells and terrain are stored in world coordinates."""
+def project_rows(p: dict, chunk_size: int, tables=None) -> dict[str, list[tuple]]:
+    """Every row a validated (atlas v3) project stores, per table. Cells and terrain are stored in world coordinates.
+    `tables`: the database's (tables_for), TABLES unless said; without migration 0055 the store room's are left out."""
+    tables = TABLES if tables is None else tables
     w = p['id']
-    rows = {table: [] for table in TABLES}
+    rows = {table: [] for table in tables}
     for c in p['cells']:
         rows['world.areas'].append((w, c['id'], 'cell'))
     for r in p['rooms']:
@@ -311,37 +375,43 @@ def project_rows(p: dict, chunk_size: int) -> dict[str, list[tuple]]:
         rows['live.npcs'].append(npc_row(w, n, i))
     for i, slot in enumerate(p.get('slots', [])):
         rows['live.profession_slots'].append(slot_row(w, slot, i))
-    rows['live.economy'].append(economy_row(w, p.get('economy', {})))
+    # (A world without a live.economy row gets one at DEFAULT_ECONOMY's values, never the table's column defaults.)
+    rows['live.economy'].append(economy_row(w, p.get('economy', {}), store='live.business_settings' in tables))
+    if 'live.business_settings' in tables:
+        rows['live.business_settings'] = business_rows(w, p.get('economy', {}))
     return rows
 
 
-def stored_rows(conn, world_id: str) -> dict[str, list[tuple]]:
+def stored_rows(conn, world_id: str, tables=None) -> dict[str, list[tuple]]:
     out = {}
-    for table, (_, columns) in TABLES.items():
+    for table, (_, columns) in (tables_for(conn) if tables is None else tables).items():
         out[table] = [tuple(r) for r in conn.execute(
             f'SELECT {", ".join(columns)} FROM {table} WHERE world_id = %s', (world_id,)).fetchall()]
     return out
 
 
-def write_rows(conn, desired: dict[str, list[tuple]], current: dict[str, list[tuple]]) -> int:
-    """Deletes, updates and inserts only what differs. Returns the number of rows changed."""
+def write_rows(conn, desired: dict[str, list[tuple]], current: dict[str, list[tuple]], tables=None) -> int:
+    """Deletes, updates and inserts only what differs. Returns the number of rows changed. `tables`: as project_rows
+    made `desired` (TABLES, or LEGACY_TABLES without the store room's)."""
+    tables = tables or (TABLES if 'live.business_settings' in desired else LEGACY_TABLES)
+    order = [t for t in WRITE_ORDER if t in tables]
     changed = 0
     plans = {}
-    for table in WRITE_ORDER:
-        keys, columns = TABLES[table]
+    for table in order:
+        keys, columns = tables[table]
         n = len(keys)
         have = {r[:n]: r for r in current[table]}
         want = {r[:n]: r for r in desired[table]}
         stale = [k for k in have if k not in want]
         fresh = [r for k, r in want.items() if k not in have or tuple(map(comparable, have[k])) != tuple(map(comparable, r))]
         plans[table] = (stale, fresh)
-    for table in reversed(WRITE_ORDER):
-        keys, _ = TABLES[table]
+    for table in reversed(order):
+        keys, _ = tables[table]
         for key in plans[table][0]:
             conn.execute(f'DELETE FROM {table} WHERE ' + ' AND '.join(f'{k} = %s' for k in keys), key)
             changed += 1
-    for table in WRITE_ORDER:
-        keys, columns = TABLES[table]
+    for table in order:
+        keys, columns = tables[table]
         rest = [c for c in columns if c not in keys]
         update = ', '.join(f'{c} = excluded.{c}' for c in rest) if rest else None
         sql = (f'INSERT INTO {table} ({", ".join(columns)}) VALUES ({", ".join(["%s"] * len(columns))}) '
@@ -391,7 +461,10 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False) 
                          - {r[0] for r in conn.execute('SELECT id FROM live.professions').fetchall()})
         if missing:
             raise StoreError(f'Profession slots use professions the roster does not have: {", ".join(missing)}.')
-        write_rows(conn, project_rows(p, chunk_size), stored_rows(conn, p['id']))
+        tables = tables_for(conn)
+        if tables is LEGACY_TABLES and store_differs(p.get('economy')):
+            raise StoreError(f'The store room\'s settings can\'t be saved: {NO_STORE}.')
+        write_rows(conn, project_rows(p, chunk_size, tables), stored_rows(conn, p['id'], tables), tables)
         conn.execute('DELETE FROM live.faction_claims WHERE world_id = %s AND NOT (area = ANY(%s))',
                      (p['id'], [a['id'] for a in p['cells'] + p['rooms']]))
         for area in p['cells'] + p['rooms']:
@@ -552,8 +625,7 @@ def load_world(conn, world_id: str, ground: bool = True) -> tuple[dict, int]:
         posts.setdefault(route_id, []).append({'cell': area, 'x': x, 'y': y})
     people = [person_entity(r) for r in dicts('SELECT * FROM live.npcs WHERE world_id = %s ORDER BY position')]
     slots = [slot_entity(r) for r in dicts('SELECT * FROM live.profession_slots WHERE world_id = %s ORDER BY position')]
-    economy = dicts('SELECT * FROM live.economy WHERE world_id = %s')
-    e = economy[0] if economy else None
+    economy = economy_value(conn, world_id)
     project = {
         'format': 'ratw-atlas', 'version': 3, 'id': world_id, 'name': name,
         'cells': cells, 'rooms': rooms, 'links': links,
@@ -564,7 +636,7 @@ def load_world(conn, world_id: str, ground: bool = True) -> tuple[dict, int]:
         'people': people,
         'routes': [{'id': r[0], 'name': r[1], 'posts': posts.get(r[0], [])}
                    for r in q('SELECT id, name FROM live.patrol_routes WHERE world_id = %s ORDER BY position')],
-        'economy': economy_entity(e) if e else dict(DEFAULT_ECONOMY),
+        'economy': economy if economy is not None else default_economy(),
         'herbPatch': {'cell': herb[0][0], 'x': herb[0][1], 'y': herb[0][2]} if herb else None,
         'slots': slots,
         # Families (doc 62, decision 8): `npc` is `other`'s spouse, or `npc` is `other`'s parent.

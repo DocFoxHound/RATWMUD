@@ -29,7 +29,8 @@ while [[ $# -gt 0 ]]; do
 done
 if [[ -n "$database" ]]; then
   # A registered world (doc 66): the server takes any key; the registry says which there are.
-  database="$(python3 "$ratw_root/tools/world_db.py" resolve "$database")" || exit 2
+  resolved="$(python3 "$ratw_root/tools/world_db.py" resolve "$database" --with-kind)" || exit 2
+  database="${resolved%% *}" world_kind="${resolved##* }"
   if [[ -z "${RATW_DATABASE_URL:-}" ]]; then
     RATW_DATABASE_URL="$(python3 "$ratw_root/tools/world_db.py" conninfo "$database" --role game)"
     export RATW_DATABASE_URL
@@ -46,7 +47,7 @@ if [[ "${RATW_VOICE:-on}" != off ]]; then
   command+=(--voice-data "$ratw_root/Data/Voice" --voice-log "$ratw_root/Saved/Logs/npc-voices.jsonl")
 fi
 if [[ -n "$database" ]]; then
-  command+=(--database "$database")
+  command+=(--database "$database" --world-kind "$world_kind")   # (A dev world's Dungeon Masters may /store: doc 67.)
 else
   if [[ -z "$save" ]]; then
     if [[ -n "$world" ]]; then

@@ -637,6 +637,45 @@ class NpcTests(NpcFixture):
         self.assertTrue(any('"free_hand"' in l for l in sql), 'the job holder is a resident')
         self.assertEqual(sql, python)
 
+    def test_people_manifest_matches_the_exporter_with_the_store_room(self):
+        # Doc 67, 6: the "store" line after the economy line (only off its defaults), a "nostore" line after a placed
+        # founder's records (an unplaced one's is left out), exactly as the exporter writes them; and none at the defaults.
+        import map_editor as E
+        import world_build
+        kinds = ('economy', 'route', 'resident', 'story', 'joinable', 'protected', 'store', 'nostore')
+        with W.connect('dev', 'editor', dbname=self.names['dev']) as editor:
+            project, revision = S.load_world(editor, 'greyfen')
+            people = {p['id']: p for p in project['people']}
+            people['rook'].update(home=None, work=None, evening=None)
+            project['economy'] = {**project['economy'], 'storeMarkup': 40, 'storeRule': True,
+                                  'businesses': {'brann': {'internalStore': False}, 'rook': {'internalStore': False}}}
+            revision = S.save_world(editor, project, revision)
+            world_build.build(editor, 'test')
+            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
+            python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in kinds]
+            self.assertEqual([l for l in sql if l.split(' ', 1)[0] in kinds], python)
+            self.assertIn('store on 40 resale on 75 rule on', sql)
+            self.assertIn('nostore "brann"', sql)
+            self.assertNotIn('nostore "rook"', sql)
+            one = editor.execute("SELECT live.people_manifest('greyfen', 'brann')").fetchone()[0].split('\n')
+            self.assertEqual((one[0].split(' ', 1)[0], one[-1]), ('resident', 'nostore "brann"'), 'one NPC\'s records end with its own')
+            project, revision = S.load_world(editor, 'greyfen')
+            project['economy'] = {**project['economy'], **S.STORE_DEFAULTS, 'businesses': {}}
+            people = {p['id']: p for p in project['people']}
+            people['rook'].update(home=people['linden']['home'], work=people['linden']['home'], evening=people['linden']['home'])
+            S.save_world(editor, project, revision)
+            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
+            python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in kinds]
+            self.assertEqual([l for l in sql if l.split(' ', 1)[0] in kinds], python)
+            self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in sql), 'at the defaults: no store records')
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            self.assertEqual(game.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0, 'the game reads it')
+            import psycopg
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                game.execute("INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'brann', false)")
+
     def test_npcs_without_a_map_in_the_manifest_and_the_dm(self):
         # Doc 66, 2: an unplaced NPC, a jobless one and a job holder without a home, as the exporter writes them.
         import map_editor as E

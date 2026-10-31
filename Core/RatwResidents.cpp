@@ -84,6 +84,7 @@ void Society::resetAuthored()
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
     defaultCareers();
     foundShops();                                   // Every shop's goods and money its own till's.
+    openAccount(StoreFund);                         // What the store room is paid (doc 67, 6), empty to begin with.
 }
 
 bool Society::adoptResident(const Society& from, const std::string& id)
@@ -762,6 +763,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const double year = calendar::DaysPerYear * PaidSpells * 600.;
             if (*at < SkillTop)
                 *at = std::min(SkillTop, *at + (head ? LearnHead : LearnAlone) * step / year);
+            // The store room's restocking rule (Docs/Design/67-ridgemere2-city.md, 6; off until the user confirms it,
+            // Q2): a keeper at work brings its wares back to their starting stock, at most once a game hour.
+            if (authored_.economy.storeRule && job->role == "merchant"sv)
+                restockFromStore(id, absoluteDay);
         }
         if (learning && body.cell == learning->work.cell && within(hour, learning->startHour, learning->endHour))
         {

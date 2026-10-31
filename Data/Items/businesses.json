@@ -11,6 +11,7 @@
     {"id": "fishmonger", "label": "Fishmonger", "trades": ["fishmonger"], "stations": ["smokehouse", "rendering_pot"], "kind": "shop", "tier": "town", "sells": ["fish", "shellfish", "smoked_fish", "salt_fish", "lamp_oil"], "worldgen": "fishmonger", "match": ["fishmonger", "fish hall"]},
     {"id": "brewery", "label": "Brewery", "trades": ["brewer"], "stations": ["brew_kettle", "press", "kiln"], "kind": "shop", "tier": "town", "sells": ["ale", "mead", "cider", "wine", "malt"], "worldgen": "brewer", "match": ["brewer"]},
     {"id": "mill", "label": "Mill", "trades": ["miller"], "stations": ["millstones"], "kind": "works", "tier": "town", "sells": ["flour"], "match": ["ford mill", "mulino", "millers' row", "water mill"]},
+    {"id": "builders_works", "label": "Builders' works", "trades": ["smith", "carpenter"], "stations": ["forge", "workbench"], "kind": "works", "tier": "city", "sells": ["nails", "planks", "beam", "fittings"], "match": ["greatly works", "builders' forge"]},
     {"id": "smithy", "label": "Smithy", "trades": ["smith"], "stations": ["forge", "grindstone"], "kind": "shop", "tier": "town", "sells": ["tool", "nails", "fittings", "chain", "iron_sword", "sword", "fang_knife"], "worldgen": "smith", "match": ["smith at", "smith,", "the smith", "smithy", "forge"]},
     {"id": "ironworks", "label": "Ironworks", "trades": ["smith"], "stations": ["smelter", "forge", "forge"], "kind": "works", "tier": "industrial", "sells": ["iron_bar", "steel_bar", "nails", "chain", "iron_hoops"], "worldgen": "ironworks", "match": ["ironworks"]},
     {"id": "foundry", "label": "Foundry", "trades": ["smith", "tinker"], "stations": ["crucible", "smelter"], "kind": "works", "tier": "city", "sells": ["bronze_bar", "brass_bar", "pewter_bar", "handbell", "type_metal"], "match": ["foundry", "fonderia", "bloomery", "furnace row", "smelter"]},
@@ -51,6 +52,15 @@
     {"id": "arsenal", "label": "Arsenal", "trades": ["engineer"], "stations": ["siege_frame", "forge", "ropewalk"], "kind": "works", "tier": "city", "sells": ["wall_crossbow", "siege_crossbow"], "match": ["arsenal"]},
     {"id": "stables", "label": "Stables and horse-dealer", "trades": ["drover"], "stations": [], "kind": "yard", "tier": "town", "sells": ["horse", "horse_tack", "hay", "oats"], "match": ["stables"]},
     {"id": "dairy", "label": "Dairy", "trades": ["farmer"], "stations": ["press"], "kind": "yard", "tier": "hamlet", "sells": ["milk_drink", "butter", "cheese"], "match": ["dairy", "cheesemaker"]},
+    {"id": "distillery", "label": "Distillery", "trades": ["distiller"], "stations": ["still"], "kind": "works", "tier": "city", "sells": ["aqua_vitae", "brandy", "apple_brandy", "berry_cordial"], "match": ["distiller", "still house"]},
+    {"id": "preserver", "label": "Preserving house", "trades": ["preserver"], "stations": ["hearth", "drying_rack"], "kind": "works", "tier": "town", "sells": ["fruit_preserves", "dried_apples"], "match": ["preserving house", "preserver"]},
+    {"id": "vintner", "label": "Vintner", "trades": ["vintner"], "stations": [], "kind": "shop", "tier": "city", "sells": ["wine", "cider", "mead", "aqua_vitae", "brandy", "apple_brandy", "berry_cordial"], "match": ["vintner", "wine vault", "wine merchant"]},
+    {"id": "shipwright", "label": "Shipwright", "trades": ["shipwright"], "stations": ["workbench", "saw_pit"], "kind": "works", "tier": "city", "sells": [], "match": ["shipwright", "slipway"]},
+    {"id": "laundry", "label": "Washhouse", "trades": ["launderer"], "stations": [], "kind": "works", "tier": "town", "sells": [], "match": ["washhouse", "laundr"]},
+    {"id": "bathhouse", "label": "Bathhouse", "trades": ["bath keeper"], "stations": [], "kind": "works", "tier": "city", "sells": [], "match": ["bathhouse", "bath house"]},
+    {"id": "barber", "label": "Barber-surgeon", "trades": ["barber"], "stations": [], "kind": "shop", "tier": "town", "sells": ["bandages"], "match": ["barber"]},
+    {"id": "pawnbroker", "label": "Pawnbroker", "trades": ["pawnbroker"], "stations": [], "kind": "shop", "tier": "city", "sells": ["jewelry", "household", "tool"], "match": ["pawn"]},
+    {"id": "rag_and_bone", "label": "Rag-and-bone yard", "trades": ["rag-and-bone"], "stations": [], "kind": "yard", "tier": "city", "sells": ["household", "container"], "match": ["rag-and-bone", "rag and bone"]},
     {"id": "inn", "label": "Inn or tavern", "trades": ["cook"], "stations": ["hearth"], "kind": "shop", "tier": "hamlet", "sells": ["meal", "porridge", "cider"], "match": ["keeping the inn", "taproom", "tavern", "refectory", "cooking for", "ladling soup", "feeding the", "keeps the "]}
   ]
 }

@@ -2,7 +2,8 @@
 // one port. A browser opens http://host:port/ for the client's files (--web) and plays over a WebSocket at /ws
 // (RatwWeb.h), each message one of the game's (RatwLink.h).
 //
-//   ratw_server --database KEY               a world in the database (RATW_DATABASE_URL), as tools/live.sh runs it
+//   ratw_server --database KEY               a world in the database (RATW_DATABASE_URL), as tools/live.sh runs it;
+//                                            --world-kind dev|live: its kind in the registry (a dev world's DMs may /store)
 //   ratw_server [--world MANIFEST] --save F  a world from files (or the built-in demo), saved to a private file
 //   ratw_server --world-export DIR --save F  a world build exported as files (tools/world_build.py export), with its
 //                                            residents as built: for tests and trying a build offline
@@ -531,7 +532,7 @@ bool readFile(const std::string& path, std::string& out)
 
 void usage()
 {
-    std::cerr << "usage: ratw_server (--database KEY | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
+    std::cerr << "usage: ratw_server (--database KEY [--world-kind dev|live] | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
 }
@@ -562,6 +563,7 @@ int main(int argc, char** argv)
             return argv[++i];
         };
         if (a == "--database") options.database = next();
+        else if (a == "--world-kind") options.worldKind = next();   // The registry's kind (dev, live): tools/server.sh.
         else if (a == "--world") options.worldFile = next();
         else if (a == "--world-export") options.worldExport = next();
         else if (a == "--save") options.savePath = next();

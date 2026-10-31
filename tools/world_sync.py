@@ -126,8 +126,11 @@ _shapes = {}
 
 
 def shape(conn, table):
-    """(columns, key columns, {column: type}) of a table, from the catalog."""
-    if table not in _shapes:
+    """(columns, key columns, {column: type}) of a table, from the catalog. Kept per database: two worlds may differ
+    by a migration (0055's business settings are in one and not the other)."""
+    info = getattr(conn, 'info', None)
+    known = (getattr(info, 'host', ''), getattr(info, 'port', ''), getattr(info, 'dbname', ''), table)
+    if known not in _shapes:
         schema, name = table.split('.')
         cols = conn.execute('''SELECT column_name, data_type FROM information_schema.columns
                                WHERE table_schema = %s AND table_name = %s ORDER BY ordinal_position''', (schema, name)).fetchall()
@@ -136,8 +139,8 @@ def shape(conn, table):
         keys = [r[0] for r in conn.execute('''SELECT a.attname FROM pg_index i
             JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
             WHERE i.indrelid = %s::regclass AND i.indisprimary ORDER BY array_position(i.indkey, a.attnum)''', (table,)).fetchall()]
-        _shapes[table] = ([c for c, _ in cols], keys, dict(cols))
-    return _shapes[table]
+        _shapes[known] = ([c for c, _ in cols], keys, dict(cols))
+    return _shapes[known]
 
 
 def world_column(table):
@@ -386,6 +389,7 @@ SYNCED = [Spec(*s) for s in (
     ('live.faction_relations', 'faction relations', 'live'),
     ('live.npc_voice', 'NPC voices', 'live'),
     ('live.npc_relations', 'families', 'live'),
+    ('live.business_settings', 'business settings', 'live'),   # The store room's per-business switch (doc 67, 6; 0055).
     ('live.dialects', 'dialects', 'live'),
     ('live.figures', 'figures', 'live'),
     ('live.story_visitors', 'story visitors', 'live'),
@@ -397,7 +401,8 @@ VOLATILE = ('updated_at', 'revision')
 SPAWNED = '(SELECT id FROM live.npcs WHERE spawn_id IS NOT NULL)'
 ONLY = {'live.npcs': 'spawn_id IS NULL', 'live.npc_voice': f'npc_id NOT IN {SPAWNED}',
         'live.faction_members': f'npc_id NOT IN {SPAWNED}',
-        'live.npc_relations': f'npc_id NOT IN {SPAWNED} AND other_id NOT IN {SPAWNED}'}
+        'live.npc_relations': f'npc_id NOT IN {SPAWNED} AND other_id NOT IN {SPAWNED}',
+        'live.business_settings': f'npc_id NOT IN {SPAWNED}'}
 AREAS_OF = {'world.cells': 'cell', 'world.interiors': 'interior'}
 
 
@@ -460,6 +465,18 @@ def snapshot(conn, world_id) -> Snapshot:
                 rows[row_key(table, row, keys)] = (digest_of(row), row)
         snap[table] = rows
     return snap
+
+
+def unshared(dev, live, *snaps) -> set:
+    """Tables one of the two worlds lacks (a migration not applied there yet, as 0055's business settings in DEV and
+    PROD): counted as having no rows on either side, so nothing is compared, pulled or imported for them. Empties them
+    in each snapshot given; returns them."""
+    missing = {spec.table for spec in SYNCED if not shape(dev, spec.table)[0] or not shape(live, spec.table)[0]}
+    for snap in snaps:
+        if snap is not None:
+            for table in missing:
+                snap[table] = {}
+    return missing
 
 
 # --------------------------------------------------------------------------- The base
@@ -782,6 +799,7 @@ def plan(dev, live, dev_key, live_key):
         header, base = base_or_refuse(dev, dev_key, live_key)
         dev_id = the_world(dev, 'The dev world')
         snap_dev = snapshot(dev, dev_id)
+    unshared(dev, live, base, snap_dev, snap_live)
     world_id = same_world(dev_id, live_id)
     items = three_way(base, snap_dev, snap_live)
     by_side = {s: [describe(i) for i in items if i.side == s] for s in ('live', 'dev', 'conflict')}
@@ -899,6 +917,7 @@ class Sync:
                 dev_id = the_world(dev, 'The dev world')
                 world_id = same_world(dev_id, live_id)
                 snap_dev = snapshot(dev, dev_id)
+                unshared(dev, live, base, snap_dev, snap_live)
                 items = three_way(base, snap_dev, snap_live)
                 check_expected({'digest': plan_digest(items)}, expect)
                 chosen = resolve(items, choices)
@@ -949,6 +968,7 @@ class Sync:
                 live_id = the_world(live, 'The live world')
                 world_id = same_world(dev_id, live_id)
                 snap_live = snapshot(live, live_id)
+                missing = unshared(dev, live, base, snap_dev, snap_live)
                 items = three_way(base, snap_dev, snap_live)
                 check_expected({'digest': plan_digest(items)}, expect)
                 chosen = resolve(items, choices)
@@ -962,10 +982,11 @@ class Sync:
                 summary = counts_of(changes, snap_live)
                 number = record(live, world_id, editor, note, 'import', dev_content(live, world_id), summary)
                 after = snapshot(live, world_id)              # (After the build: it saves the roster's assignments.)
-            level = self._level(dev, dev_key, live_key, world_id, number, base, snap_dev, after, editor)
+                unshared(dev, live, after)
+            level = self._level(dev, dev_key, live_key, world_id, number, base, snap_dev, after, editor, missing)
         return {'release': number, 'summary': summary, 'conflicts': sum(1 for i in items if i.side == 'conflict'), 'dev': level}
 
-    def _level(self, dev, dev_key, live_key, world_id, number, base, planned, after, editor):
+    def _level(self, dev, dev_key, live_key, world_id, number, base, planned, after, editor, missing=()):
         """After an import: dev takes live's version of every row nobody edited in dev meanwhile, and the base
         follows. A row edited in dev during the import keeps its edit and its old base (so it is still compared
         three ways next time)."""
@@ -973,6 +994,8 @@ class Sync:
             with dev.transaction():
                 lock_world(dev)
                 now = snapshot(dev, world_id)
+                for table in missing:                        # (A table one side lacks: left as it is.)
+                    now[table] = {}
                 changes, moved = [], []
                 for spec in SYNCED:
                     t = spec.table

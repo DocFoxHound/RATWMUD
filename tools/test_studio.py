@@ -66,7 +66,7 @@ class StandInSync:
 class Running:
     """A studio on a free port; Atlas without a database (a roster file of its own)."""
 
-    def __init__(self, dm, atlas_key, sync=None):
+    def __init__(self, dm, atlas_key, sync=None, economy=None):
         self.temp = tempfile.TemporaryDirectory()
         roster = Path(self.temp.name) / 'roster.json'
         map_editor.roster_lib.save({**map_editor.roster_lib.load(), 'characters': []}, roster)
@@ -75,7 +75,7 @@ class Running:
         def atlas(key):
             self.made.append(key)
             return map_editor.make_handler(roster_path=roster, ai_config_path=Path(self.temp.name) / 'missing.json')
-        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append, sync=sync)
+        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append, sync=sync, economy=economy)
         self.server = ST.make_server(0, self.studio)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -517,6 +517,147 @@ class SyncFlowTests(ScratchWorlds, unittest.TestCase):
         finally:
             with superuser() as su:
                 su.execute(f'DROP DATABASE IF EXISTS ratw_{other} WITH (FORCE)')
+
+
+class StandInEconomy:
+    """Atlas's Economy controls (studio.Economy): every call recorded and answered."""
+
+    def __init__(self):
+        self.calls = []
+
+    def read(self, key):
+        self.calls.append(('read', key))
+        return {'world': 'w', 'supported': True, 'internalStore': True, 'businesses': []}
+
+    def set_store(self, key, data, editor):
+        self.calls.append(('set_store', key, data, editor))
+        return {'changed': True, 'detail': 'The store room: storeMarkup 50.'}
+
+    def set_businesses(self, key, data, editor):
+        self.calls.append(('set_businesses', key, data, editor))
+        return {'changed': True, 'detail': 'The store room for 1 business: 0 on, 1 off.'}
+
+
+class EconomyRouteTests(unittest.TestCase):
+    """Doc 67, 6: the Economy controls' routes with a stand-in: reads for anyone signed in, writes for dm and admin with
+    Atlas's session token, each audited in Atlas's world."""
+
+    def setUp(self):
+        self.economy = StandInEconomy()
+        self.host = Running(StandInDM(), 'ridgemere2', economy=self.economy)
+        self.dm, self.call = self.host.dm, self.host.call
+
+    def tearDown(self):
+        self.host.stop()
+
+    def test_who_may_read_and_change_them(self):
+        self.assertEqual(self.call('GET', '/api/atlas/economy')[0], 401)
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual((data['world'], data['worldInfo']['key']), ('w', 'ridgemere2'))
+        body = {'storeMarkup': 50}
+        self.assertEqual(self.call('POST', '/api/atlas/economy/store', body, token='viewer-token')[0], 403, 'a viewer reads only')
+        self.assertEqual(self.call('POST', '/api/atlas/economy/store', body, token='dm-token')[0], 403, 'Atlas\'s token too')
+        self.assertFalse([c for c in self.economy.calls if c[0] != 'read'], 'nothing reached the controls')
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/store', body, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertIn(('set_store', 'ridgemere2', body, 'dm-user'), self.economy.calls)
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'set': {'rm_smith': False}}, token='admin-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        bulk = {'all': False, 'business': 'smithy', 'district': 'works'}
+        self.assertEqual(self.call('POST', '/api/atlas/economy/businesses', bulk, token='dm-token', headers=editor)[0], 200)
+        self.assertIn(('set_businesses', 'ridgemere2', bulk, 'dm-user'), self.economy.calls, 'the bulk filters reach the controls')
+        logged = [args for name, args in self.dm.calls if name == 'log']
+        self.assertEqual([(who['username'], world, action, target) for who, world, action, target, _ in logged],
+                         [('dm-user', 'ridgemere2', 'economy.store', 'store room'), ('admin-user', 'ridgemere2', 'economy.businesses', 'rm_smith'),
+                          ('dm-user', 'ridgemere2', 'economy.businesses', 'businesses')])
+        self.assertNotEqual(self.call('GET', '/api/dm/economy', token='dm-token')[0], 200, 'not the DM suite\'s')
+
+    def test_route_sets_are_apart(self):
+        self.assertFalse(ST.ECONOMY_ROUTES & ST.SYNC_ROUTES)
+        self.assertFalse({p for _, p in ST.ECONOMY_ROUTES} & (ST.MOVED_TO_ATLAS | ST.LAYER_READS | ST.NOT_IN_ATLAS))
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
+    """The Economy controls for real on a throwaway dev world (test_world_sync's copy of a live Greyfen): the world's
+    switches, one business and many, what reaches the NPC records, the edit log and the audit; a world without 0055."""
+
+    def setUp(self):
+        super().setUp()
+        W.set_local(atlas=self.dev, live=self.live)
+        self.dm = StandInDM()
+        self.dm.log = D.DungeonMaster(lambda key: W.connect(key, 'dm')).log
+        self.host = Running(self.dm, self.dev)
+        self.call = self.host.call
+
+    def tearDown(self):
+        self.host.stop()
+        super().tearDown()
+
+    def test_the_store_room_switched_for_the_world_and_by_business(self):
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['supported'])
+        self.assertEqual((data['internalStore'], data['storeMarkup'], data['storeResale'], data['resaleMarkup'], data['storeRule']),
+                         (True, 100, True, 75, False))
+        shops = {b['npc']: b for b in data['businesses']}
+        self.assertEqual(set(shops), {'wren', 'brann'}, 'every placed merchant')
+        brann = shops['brann']
+        self.assertEqual((brann['business'], brann['effective'], brann['internalStore']), ('smithy', 'on', True))
+        self.assertEqual([g['item'] for g in brann['making']], ['bronze_bar', 'charcoal', 'iron_bar', 'leather', 'timber'])
+        self.assertEqual(next(g for g in brann['making'] if g['item'] == 'iron_bar')['cost'], next(g for g in brann['making'] if g['item'] == 'iron_bar')['price'])
+        self.assertEqual([g['item'] for g in shops['wren']['resale']], ['meal', 'herbs'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'set': {'brann': False}}, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(next(b for b in data['businesses'] if b['npc'] == 'brann')['effective'], 'off (this business)')
+        self.assertEqual(self.sql(self.dev, 'SELECT npc_id, internal_store FROM live.business_settings'), [('brann', False)])
+        self.assertIn('nostore "brann"', self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n'))
+        status, data = self.call('POST', '/api/atlas/economy/store', {'internalStore': False, 'resaleMarkup': 40}, token='dm-token',
+                                 headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(next(b for b in data['businesses'] if b['npc'] == 'brann')['effective'], 'off (whole world)')
+        self.assertEqual(next(b for b in data['businesses'] if b['npc'] == 'wren')['resale'][0]['cost'], 3, '40% of a 6p meal, rounded up')
+        self.assertIn('store off 100 resale on 40 rule off', self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n'))
+        self.assertEqual(self.one(self.dev, 'SELECT treasury FROM live.economy'), 1000, 'the rest of the economy kept')
+        # Every listed business at once, filtered or not; back at its default, no row is kept.
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'all': True}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['count']), (200, 2), data)
+        self.assertEqual(self.one(self.dev, 'SELECT count(*) FROM live.business_settings'), 0)
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'all': False, 'business': 'smithy'}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['count']), (200, 1), data)
+        self.assertEqual(self.sql(self.dev, 'SELECT npc_id FROM live.business_settings'), [('brann',)], 'only the smithy')
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'all': False, 'district': 'nowhere'}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['count'], data['changed']), (200, 0, False), data)
+        status, data = self.call('POST', '/api/atlas/economy/businesses', {'all': True}, token='dm-token', headers=editor)
+        self.assertEqual(self.one(self.dev, 'SELECT count(*) FROM live.business_settings'), 0)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/store', dict(ST.S.STORE_DEFAULTS), token='dm-token',
+                                   headers=editor)[0], 200)
+        self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')))
+        # Refusals: an unknown business, a markup out of range.
+        self.assertEqual(self.call('POST', '/api/atlas/economy/businesses', {'set': {'nobody': False}}, token='dm-token', headers=editor)[0], 400)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/store', {'storeMarkup': 5000}, token='dm-token', headers=editor)[0], 400)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/store', {'treasury': 5}, token='dm-token', headers=editor)[0], 400)
+        # The edit log keeps open Workshop sessions current; the audit says who.
+        keys = [r[0] for r in self.sql(self.dev, 'SELECT key FROM world.edits ORDER BY seq')]
+        self.assertEqual(keys.count('economy'), 6)
+        actions = [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit ORDER BY at')]
+        self.assertEqual(actions.count('economy.businesses'), 4)
+        self.assertEqual(actions.count('economy.store'), 2)
+
+    def test_a_world_without_migration_0055(self):
+        from test_world_sync import unmigrate
+        unmigrate(self.dev)
+        status, data = self.call('GET', '/api/atlas/economy', token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertFalse(data['supported'])
+        self.assertIn('lacks migration 0055', data['problem'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/store', {'storeMarkup': 50}, token='dm-token', headers=editor)
+        self.assertEqual(status, 409, data)
+        self.assertIn('0055', data['error'])
 
 
 if __name__ == '__main__':

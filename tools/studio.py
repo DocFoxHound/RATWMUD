@@ -15,6 +15,11 @@ One host on one port (default 8765, local only) serves one app (Editor/index.htm
                                  Atlas's world. No storylines, no Push to live (the DM's Import from dev).
          /api/atlas/sync/...     Update from live (tools/world_sync.py; doc 66, section 4): GET diff, POST pull
                                  {choices, expect}, on Atlas's world when it has an upstream.
+         /api/atlas/economy...   the Economy controls (Docs/Design/67-ridgemere2-city.md, 6): GET economy (the store
+                                 room's switches and every placed merchant's business, what it would draw and whether
+                                 it may), POST economy/store {internalStore?, storeMarkup?, storeResale?, resaleMarkup?,
+                                 storeRule?}, POST economy/businesses {set: {npc: bool}} or {all: bool, business?,
+                                 district?}; reads for anyone signed in, writes for dm and admin with Atlas's token.
   DM     runs live worlds: the server, live NPC life (kill, revive, move, visit), players, reports, artwork, the
          calendar, money, health, storytellers, chapters. Its routes: /api/dm/... (tools/dungeon_master.py's Handler)
          without the map and NPC authoring that moved to Atlas, and only on live worlds; and the server and imports
@@ -37,6 +42,7 @@ service, as before. Every request needs the local origin, as both hosts did.
 from __future__ import annotations
 
 import argparse
+import copy
 import errno
 import http.client
 import json
@@ -75,6 +81,147 @@ SERVER_ROUTES = frozenset({('GET', '/api/server/status'), ('POST', '/api/server/
                            ('GET', '/api/import/plan'), ('POST', '/api/import'), ('GET', '/api/releases'),
                            ('POST', '/api/rollback')})
 SYNC_ROUTES = frozenset({('GET', '/api/sync/diff'), ('POST', '/api/sync/pull')})
+# Atlas's Economy controls (Docs/Design/67-ridgemere2-city.md, 6): the store room's switches, on Atlas's world. Reads for
+# any signed-in account; writes for dm and admin with Atlas's session token, through live_edit's economy entity.
+ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses')})
+ECONOMY_NOTE = 'Per world; not carried by Update from live or Import from dev (each world\'s own lever).'
+TAKES_EFFECT = 'Takes effect when a server next starts on this world.'
+
+
+class Economy:
+    """The store room's settings of a dev world (doc 67, 6): the world's switches and markups, and each placed
+    merchant's business with what it would draw, as the game reckons it (tools/item_catalog.py mirrors Core)."""
+
+    def __init__(self, connect=None):
+        self._connect = connect or (lambda key: world_db.connect(key, 'editor'))
+
+    def connect(self, key):
+        try:
+            return self._connect(key)
+        except world_db.DatabaseError as error:
+            raise S.Unavailable(f'Cannot reach the {key} world\'s database: {error}') from error
+
+    def districts(self, key) -> dict:
+        """{interior id: district} from the world's building manifest (artifacts/<key>/buildings.json), if it has one."""
+        import pathlib
+        path = pathlib.Path(__file__).resolve().parent.parent / 'artifacts' / key / 'buildings.json'
+        try:
+            records = json.loads(path.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            return {}
+        records = records.get('buildings', []) if isinstance(records, dict) else records
+        out = {}
+        for b in records if isinstance(records, list) else []:
+            if isinstance(b, dict):
+                for room in b.get('rooms') or [{'id': b.get('id')}]:
+                    if isinstance(room, dict) and room.get('id'):
+                        out[room['id']] = b.get('district') or ''
+        return out
+
+    def read(self, key) -> dict:
+        import item_catalog as C
+        with self.connect(key) as conn:
+            world = conn.execute('SELECT id FROM world.worlds').fetchone()
+            if not world:
+                raise D.DMError(f'{key} has no world yet.', 409)
+            w = world[0]
+            supported = S.store_supported(conn)
+            economy = S.economy_value(conn, w) or S.default_economy()
+            rows = S.dict_rows(conn, '''
+                SELECT n.id, n.name, n.work_label, n.work_area, coalesce(i.name, c.name, n.work_area) AS interior,
+                       coalesce(i.region, c.region, '') AS region
+                FROM live.npcs n
+                LEFT JOIN world.interiors i ON i.world_id = n.world_id AND i.id = n.work_area
+                LEFT JOIN world.cells c ON c.world_id = n.world_id AND c.id = n.work_area
+                WHERE n.world_id = %s AND n.role = 'merchant' AND n.home_area IS NOT NULL AND n.spawn_id IS NULL
+                ORDER BY n.position, n.id''', (w,))
+        districts = self.districts(key)
+        off = {npc for npc, s in economy['businesses'].items() if s.get('internalStore') is False}
+        businesses = []
+        for r in rows:
+            business = C.business_for(r['work_label'])
+            goods = C.store_goods(business, r['id'], r['work_label'])
+            making = [{'item': k, 'price': C.store_price(k), 'cost': C.store_cost(k, 1, economy['storeMarkup'])} for k in goods['making']]
+            resale = [{'item': k, 'price': C.store_price(k), 'cost': C.store_cost(k, 1, economy['resaleMarkup'])} for k in goods['resale']]
+            drawn = (making if economy['internalStore'] else []) + (resale if economy['storeResale'] else [])
+            own = r['id'] not in off
+            if not making and not resale:
+                effective, why = 'draws nothing', 'Its business has no crafts and nothing to resell.'
+            elif not drawn:
+                effective, why = 'off (whole world)', 'The world\'s switch for its kind of goods is off.'
+            elif not own:
+                effective, why = 'off (this business)', 'Switched off for this business.'
+            else:
+                effective, why = 'on', ''
+            businesses.append({'npc': r['id'], 'name': r['name'], 'label': r['work_label'], 'business': business,
+                               'district': districts.get(r['work_area']) or r['region'] or '', 'interior': r['interior'] or '',
+                               'making': making, 'resale': resale, 'internalStore': own, 'effective': effective, 'why': why})
+        return {'world': w, 'supported': supported, **{k: economy[k] for k in S.STORE_DEFAULTS}, 'businesses': businesses,
+                'note': ECONOMY_NOTE, 'takesEffect': TAKES_EFFECT,
+                'problem': '' if supported else 'This world lacks migration 0055: the store is on at its defaults and can\'t be changed here.'}
+
+    def _edit(self, key, editor, label, change):
+        """One keyed edit of the economy entity (live_edit: logged, so open Atlas sessions follow it)."""
+        import live_edit
+        with self.connect(key) as conn:
+            if not S.store_supported(conn):
+                raise D.DMError('This world lacks migration 0055: the store is on at its defaults and can\'t be changed here '
+                                f'(python3 tools/world_db.py migrate --db {key}).', 409)
+            world = conn.execute('SELECT id FROM world.worlds').fetchone()
+            if not world:
+                raise D.DMError(f'{key} has no world yet.', 409)
+            before = S.economy_value(conn, world[0])
+            after = change(copy.deepcopy(before) if before is not None else S.default_economy())
+            if before is not None and live_edit.canonical(before) == live_edit.canonical(after):
+                return {'changed': False}
+            seq = live_edit.apply_edit(conn, 'studio-economy', editor, label, [{'key': 'economy', 'before': before, 'after': after}])
+        return {'changed': True, 'seq': seq}
+
+    def set_store(self, key, data, editor) -> dict:
+        """The world's switches (all at once) and markups: {internalStore?, storeMarkup?, storeResale?, resaleMarkup?, storeRule?}."""
+        if not isinstance(data, dict) or not data or set(data) - set(S.STORE_DEFAULTS):
+            raise D.DMError('Send any of: ' + ', '.join(S.STORE_DEFAULTS) + '.', 400)
+        problems = map_editor.check_economy({**S.default_economy(), **data})
+        if problems:
+            raise D.DMError(' '.join(problems), 400)
+        said = ', '.join(f'{k} {"on" if v is True else "off" if v is False else v}' for k, v in data.items())
+        result = self._edit(key, editor, f'The store room: {said}', lambda e: {**e, **data})
+        return {**result, 'detail': f'The store room: {said}.'}
+
+    def set_businesses(self, key, data, editor) -> dict:
+        """Per business ({set: {npc: bool}}), or every listed business at once ({all: bool, business?, district?})."""
+        if not isinstance(data, dict):
+            raise D.DMError('Send {"set": {npc: true|false}} or {"all": true|false}.', 400)
+        listed = self.read(key)['businesses']
+        if 'set' in data:
+            wanted = data['set']
+            if not isinstance(wanted, dict) or not wanted or not all(isinstance(v, bool) for v in wanted.values()):
+                raise D.DMError('set is {npc id: true or false}.', 400)
+            known = {b['npc'] for b in listed}
+            unknown = sorted(set(wanted) - known)
+            if unknown:
+                raise D.DMError(f'Not a placed merchant\'s business here: {", ".join(unknown[:8])}.', 400)
+        elif isinstance(data.get('all'), bool):
+            chosen = [b for b in listed if (not data.get('business') or b['business'] == data['business'])
+                      and (not data.get('district') or b['district'] == data['district'])]
+            wanted = {b['npc']: data['all'] for b in chosen}
+        else:
+            raise D.DMError('Send {"set": {npc: true|false}} or {"all": true|false, "business"?, "district"?}.', 400)
+
+        def change(e):
+            shops = dict(e.get('businesses') or {})
+            for npc, on in wanted.items():
+                if on:
+                    shops.pop(npc, None)                 # (Back at its default: no row kept.)
+                else:
+                    shops[npc] = {'internalStore': False}
+            return {**e, 'businesses': shops}
+        on = sum(1 for v in wanted.values() if v)
+        detail = (f'The store room for {len(wanted)} business{"es" if len(wanted) != 1 else ""}: {on} on, {len(wanted) - on} off'
+                  + (f' ({data.get("business") or "every business"}, {data.get("district") or "every district"})' if 'all' in data else '')
+                  + '.')
+        result = self._edit(key, editor, detail, change) if wanted else {'changed': False}
+        return {**result, 'count': len(wanted), 'detail': detail}
 SWITCH_WARNING = 'Switching the live world is rarely wise: players\' characters and progress belong to each world.'
 
 
@@ -104,7 +251,7 @@ def shown(key: str) -> dict:
 class Studio:
     """The tool's state: the DM (accounts, the live worlds), Atlas's world and its Handler, the suite to open on."""
 
-    def __init__(self, dm=None, atlas=atlas_suite, atlas_key=None, suite='atlas', choose=None, sync=None):
+    def __init__(self, dm=None, atlas=atlas_suite, atlas_key=None, suite='atlas', choose=None, sync=None, economy=None):
         if suite not in SUITES:
             raise ValueError(f'A suite is one of: {", ".join(SUITES)}.')
         self.dm = dm or D.DungeonMaster()
@@ -112,6 +259,7 @@ class Studio:
             import world_sync
             sync = world_sync.Sync()
         self.sync = sync                       # Pull, import, maintenance, the live switch (tools/world_sync.py).
+        self.economy = economy or Economy()    # Atlas's Economy controls: the store room (doc 67, 6).
         self.suite = suite
         self._make_atlas = atlas
         self._choose = choose or (lambda key: world_db.set_local(atlas=key))   # Saved/Config/worlds.local.json
@@ -205,6 +353,8 @@ def make_handler(studio: Studio):
                     return self.as_(studio.dm_suite).dispatch(method)
                 if suite == 'atlas' and (method, inner) in SYNC_ROUTES:
                     return self.update_from_live(method)
+                if suite == 'atlas' and (method, inner) in ECONOMY_ROUTES:
+                    return self.economy_routes(method, inner)
                 self.builder()
                 if suite == 'layers':
                     return self.as_(studio.layers).dispatch(method)
@@ -280,6 +430,27 @@ def make_handler(studio: Studio):
             return self.reply(200, self.audited(who, key, 'world.pull', live,
                                                 f'Updated from {live} (live release {result.get("release")}): {applied} rows '
                                                 f'changed, {result.get("conflicts", 0)} conflicts chosen.', result))
+
+        def economy_routes(self, method, path):
+            """Atlas's Economy controls (doc 67, 6) on Atlas's world: read by anyone signed in; changed by dm and admin
+            with Atlas's session token, as one keyed edit, audited in the world's DM audit."""
+            who = self.signed_in()
+            key = studio.atlas_key
+            if method == 'GET':
+                return self.reply(200, {**studio.economy.read(key), 'worldInfo': shown(key)})
+            self.writer(who)
+            if not self.as_(studio.atlas).editing():
+                raise D.DMError('Local editor session required.', 403)
+            data = self.as_(studio.dm_suite).body()
+            if path == '/api/economy/store':
+                result = studio.economy.set_store(key, data, who['username'])
+                action, target = 'economy.store', 'store room'
+            else:
+                result = studio.economy.set_businesses(key, data, who['username'])
+                action, target = 'economy.businesses', next(iter(data.get('set') or {}), '') if isinstance(data.get('set'), dict) and len(data['set']) == 1 else 'businesses'
+            if result.get('changed'):
+                result = self.audited(who, key, action, target, result['detail'], result)
+            return self.reply(200, {**result, **studio.economy.read(key)})
 
         def server_routes(self, method, path, query):
             """The DM's server and imports: maintenance, the live switch, Import from dev, releases and rollback."""

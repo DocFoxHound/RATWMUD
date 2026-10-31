@@ -23,7 +23,7 @@
     {"id": "clay_pot", "makers": ["pottery"], "seconds": 180, "hours": 1.61, "in": {"clay": 1}, "out": {"clay_pot": 2}},
     {"id": "bandages", "makers": ["apothecary", "herbalist"], "seconds": 120, "hours": 1.285, "in": {"linen_cloth": 1}, "out": {"bandages": 2}},
     {"id": "sword", "makers": ["smithy"], "seconds": 900, "hours": 4.873, "in": {"bronze_bar": 1, "charcoal": 1}, "out": {"sword": 1}},
-    {"id": "nails", "makers": ["smithy", "tinker"], "seconds": 120, "hours": 3.433, "in": {"iron_bar": 1, "charcoal": 1}, "out": {"nails": 6}},
+    {"id": "nails", "makers": ["smithy", "tinker", "builders_works"], "seconds": 120, "hours": 3.433, "in": {"iron_bar": 1, "charcoal": 1}, "out": {"nails": 6}},
     {"id": "flour", "makers": ["mill"], "seconds": 60, "hours": 0.255, "in": {"wheat": 2}, "out": {"flour": 2}},
     {"id": "linen_cloth", "makers": ["weaver"], "seconds": 240, "hours": 1.446, "in": {"flax": 2}, "out": {"linen_cloth": 1}},
     {"id": "leather", "makers": ["tannery"], "seconds": 300, "hours": 2.143, "in": {"hide": 1, "oak_bark": 2}, "out": {"leather": 2}},
@@ -43,7 +43,7 @@
     {"id": "linseed_oil", "makers": ["paintworks"], "seconds": 120, "hours": 1.044, "in": {"flax": 3}, "out": {"linseed_oil": 2}},
     {"id": "mortar", "makers": ["mason", "plasterworks"], "seconds": 90, "hours": 0.69, "in": {"lime": 1, "sand": 2}, "out": {"mortar": 3}},
     {"id": "cut_stone", "makers": ["mason"], "seconds": 180, "hours": 0.45, "in": {"stone": 2}, "out": {"cut_stone": 1}},
-    {"id": "beam", "makers": ["sawmill"], "seconds": 120, "hours": 0.884, "in": {"timber": 1}, "out": {"beam": 1}},
+    {"id": "beam", "makers": ["sawmill", "builders_works"], "seconds": 120, "hours": 0.884, "in": {"timber": 1}, "out": {"beam": 1}},
     {"id": "glass_pane", "makers": ["glassworks"], "seconds": 200, "hours": 6.823, "in": {"sand": 2, "firewood": 1}, "out": {"glass_pane": 3}},
     {"id": "charcoal", "makers": ["charcoal", "foundry", "ironworks"], "seconds": 240, "hours": 3.046, "in": {"timber": 2}, "out": {"charcoal": 2}},
     {"id": "plaster", "makers": ["plasterworks"], "seconds": 240, "hours": 3.319, "in": {"lime": 2, "small_pelt": 1}, "out": {"plaster": 4}},
@@ -61,9 +61,15 @@
     {"id": "broadsheet", "makers": ["printing_house"], "seconds": 180, "hours": 8.157, "in": {"paper": 1, "ink": 1}, "out": {"broadsheet": 4}},
     {"id": "bricks", "makers": ["brickworks", "pottery"], "seconds": 240, "hours": 2.004, "in": {"clay": 3, "firewood": 1}, "out": {"bricks": 2}},
     {"id": "roof_tiles", "makers": ["brickworks"], "seconds": 300, "hours": 1.2, "in": {"clay": 3, "firewood": 1}, "out": {"roof_tiles": 1}},
-    {"id": "planks", "makers": ["sawmill", "carpenter"], "seconds": 60, "hours": 3.839, "in": {"timber": 1}, "out": {"planks": 4}},
+    {"id": "planks", "makers": ["sawmill", "carpenter", "builders_works"], "seconds": 60, "hours": 3.839, "in": {"timber": 1}, "out": {"planks": 4}},
     {"id": "cheese", "makers": ["dairy"], "seconds": 240, "hours": 1.391, "in": {"milk": 4}, "out": {"cheese": 1}},
     {"id": "wine", "makers": ["brewery", "press"], "seconds": 300, "hours": 7.099, "in": {"grapes": 4}, "out": {"wine": 2}},
+    {"id": "aqua_vitae", "makers": ["distillery"], "seconds": 240, "hours": 3.293, "in": {"wine": 1, "firewood": 1}, "out": {"aqua_vitae": 2}},
+    {"id": "brandy", "makers": ["distillery"], "seconds": 300, "hours": 8.997, "in": {"wine": 2, "firewood": 1}, "out": {"brandy": 1}},
+    {"id": "apple_brandy", "makers": ["distillery"], "seconds": 240, "hours": 1.984, "in": {"cider": 3, "firewood": 1}, "out": {"apple_brandy": 1}},
+    {"id": "berry_cordial", "makers": ["distillery"], "seconds": 180, "hours": 1.313, "in": {"berries": 3, "honey": 1}, "out": {"berry_cordial": 1}},
+    {"id": "fruit_preserves", "makers": ["preserver"], "seconds": 180, "hours": 1.316, "in": {"apples": 2, "honey": 1}, "out": {"fruit_preserves": 2}},
+    {"id": "dried_apples", "makers": ["preserver"], "seconds": 120, "hours": 1.104, "in": {"apples": 3, "firewood": 1}, "out": {"dried_apples": 2}},
     {"id": "candle_wax", "makers": ["chandlery"], "seconds": 120, "hours": 4.069, "in": {"beeswax": 2, "cord": 1}, "out": {"candle_wax": 2}},
     {"id": "smoked_fish_works", "makers": ["smokehouse"], "seconds": 180, "hours": 0.835, "in": {"fish": 2, "firewood": 1}, "out": {"smoked_fish": 2}},
     {"id": "smoked_mutton", "makers": ["butcher", "smokehouse"], "seconds": 240, "hours": 0.945, "in": {"mutton": 2, "firewood": 1}, "out": {"smoked_mutton": 2}},
@@ -90,7 +96,7 @@
     {"id": "ink", "makers": ["scriptorium", "printing_house"], "seconds": 120, "hours": 1.81, "in": {"charcoal": 1}, "out": {"ink": 2}},
     {"id": "ledger", "makers": ["scriptorium", "printing_house"], "seconds": 600, "hours": 4.006, "in": {"paper": 4, "leather": 1}, "out": {"ledger": 1}},
     {"id": "steel_bar", "makers": ["smithy", "armory", "ironworks"], "seconds": 300, "hours": 2.292, "in": {"iron_bar": 1, "charcoal": 1}, "out": {"steel_bar": 1}},
-    {"id": "fittings", "makers": ["smithy"], "seconds": 180, "hours": 3.84, "in": {"iron_bar": 1}, "out": {"fittings": 2}},
+    {"id": "fittings", "makers": ["smithy", "builders_works"], "seconds": 180, "hours": 3.84, "in": {"iron_bar": 1}, "out": {"fittings": 2}},
     {"id": "chain", "makers": ["smithy"], "seconds": 240, "hours": 1.59, "in": {"iron_bar": 1}, "out": {"chain": 1}},
     {"id": "rivets", "makers": ["smithy", "armory"], "seconds": 120, "hours": 2.154, "in": {"iron_bar": 1}, "out": {"rivets": 6}},
     {"id": "buckles", "makers": ["smithy", "saddlery"], "seconds": 120, "hours": 1.903, "in": {"iron_bar": 1}, "out": {"buckles": 5}},
@@ -215,7 +221,8 @@
     "tannery": ["hide", "oak_bark", "small_pelt", "fox_pelt", "badger_pelt", "bear_pelt"],
     "tailor": ["small_pelt", "fox_pelt", "badger_pelt"],
     "chandlery": ["fat_scraps", "resin", "beeswax", "reeds"],
-    "fishmonger": ["shellfish", "fish"]
+    "fishmonger": ["shellfish", "fish"],
+    "pawnbroker": ["ear_ring", "charm", "brass_bracelet", "mirror", "cookpot", "lock", "draw_saw", "blanket", "wool_shawl"]
   },
   "supplies": {
     "stall": ["flour", "oats", "milk", "vegetables", "apples"],
@@ -225,6 +232,8 @@
     "butcher": ["raw_meat", "bones", "tallow", "leather"],
     "fishmonger": ["fish"],
     "saltworks": ["salt"],
-    "herbalist": ["wormwood"]
+    "herbalist": ["wormwood"],
+    "vintner": ["wine", "cider", "mead", "aqua_vitae", "brandy", "apple_brandy", "berry_cordial"],
+    "rag_and_bone": ["clay_pot", "cookpot", "blanket", "cushion", "floor_bowl_wood", "oil_lamp", "sack", "crate", "wool_scarf"]
   }
 }

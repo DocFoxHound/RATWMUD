@@ -253,6 +253,9 @@ struct ResidentSpec
     bool joinable = false;
     // Can't be attacked by players, nor robbed of coin (Atlas; Docs/Design/57-changing-the-world.md, 6).
     bool protectedNpc = false;
+    // Its business may draw from the store room (Docs/Design/67-ridgemere2-city.md, 6: Atlas's per-business switch, a
+    // "nostore" record for off). Read for the position it founded: the flag follows the business, not who keeps it.
+    bool internalStore = true;
 };
 struct PatrolRoute
 {
@@ -264,6 +267,15 @@ struct EconomySpec
 {
     std::int64_t treasury = 1000;
     int storeHerbs = 100, storeMeals = 50;
+    // The store room (Docs/Design/67-ridgemere2-city.md, 6; the world's "store" record, live.economy): makers drawing
+    // their crafts' inputs (internalStore, at storeMarkup percent of the catalogue's price), vendors drawing what they
+    // sell (storeResale, at resaleMarkup), and the restocking rule that has keepers draw at work (storeRule: off until
+    // the user confirms it, doc 67 Q2). Defaults: on, 100, on, 75, off.
+    bool internalStore = true;
+    int storeMarkup = 100;
+    bool storeResale = true;
+    int resaleMarkup = 75;
+    bool storeRule = false;
 };
 // A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
 struct Kin
@@ -479,6 +491,39 @@ class Society
     // A shop's account (its shelves and its money): its post's till ("till:<position>"), or its keeper's own purse for
     // one that has none (the demo's, a merchant without a post).
     std::string tillOf(const std::string& keeper) const;
+    // The store room (Docs/Design/67-ridgemere2-city.md, 6): a business's craft inputs (making goods: the inputs of its
+    // own crafts, intermediates too) and the goods it resells (its supply list and the kinds of wares its founder started
+    // with that its crafts don't make), without end, at the catalogue's price times a markup, Common quality. Not a place:
+    // its keeper draws into the position's till, and the coins go to StoreFund, kept in the world (conserved). Who may
+    // draw: the keeper of a merchant position with a till, whose business has goods to draw, while the world's switch
+    // for that kind of good is on and the business's own (its founder's ResidentSpec::internalStore; a founder whose
+    // spec is gone counts as on).
+    static constexpr const char* StoreFund = "fund:store";
+    static constexpr int StoreDrawMost = 1000;        // The most of one good a draw takes.
+    enum class StoreUse
+    {
+        None,
+        Make,
+        Resell
+    };
+    bool storeOpen(const std::string& keeper) const { return storeClosed(keeper).empty(); }
+    // Why the store is closed to this keeper ("" when it is open).
+    std::string storeClosed(const std::string& keeper) const;
+    // Its goods for the modes that are on (making goods sorted first, then resale goods), kept per keeper like wares.
+    const std::vector<std::string>& storeGoods(const std::string& keeper) const;
+    StoreUse storeUse(const std::string& keeper, const std::string& item) const;   // Make wins when an item is both.
+    // ceil(catalogPrice × quantity × markup / 100): 0 at a markup of 0 (free: goods move, no money), else at least 1.
+    std::int64_t storeCost(const std::string& keeper, const std::string& item, int quantity) const;
+    EconomyResult drawFromStore(const std::string& keeper, const std::string& item, int quantity,
+                                const std::string& why = "from the store room");
+    // The restocking rule (doc 67, 6; EconomySpec::storeRule, off by default): a keeper at work, at most once a game
+    // hour, brings each ware below its starting stock back: one batch made from drawn inputs where its crafts make it,
+    // else drawn up to its starting stock. What was done (empty for nothing).
+    std::vector<std::string> restockFromStore(const std::string& keeper, double absoluteDay);
+    // For tests: the next draw's goods fail to arrive after it is paid for (its money must come back).
+    void failNextStoreCreate() { failStoreCreate_ = true; }
+    // A ware's starting stock on a new shop's shelves (resetAuthored): GoodsKept, or SmithSwords of swords.
+    static int startingStock(const std::string& ware);
     static constexpr int SmithSwords = 3;
     static constexpr int CheapPrice = 6;              // A shop's handful of goods cost at most this (pennies), for now.
     static constexpr int GoodsKept = 4;               // How many of each good a new shop starts with, and buys up to.
@@ -600,6 +645,17 @@ class Society
     // adds, removes or replaces authored_.residents must call forgetSpecs().
     mutable std::unordered_map<std::string, std::size_t> specIndex_;
     mutable std::unordered_map<std::string, std::pair<std::string, std::vector<std::string>>> waresCache_;   // id -> (label, wares)
+    // The store room's goods by keeper (storeGoods), kept while its business, founder and the world's modes stay.
+    struct StoreList
+    {
+        std::string signature;
+        std::vector<std::string> making, resale, goods;
+        bool anything = false;                      // Goods of either kind, the world's switches aside.
+    };
+    bool failStoreCreate_ = false;                  // (failNextStoreCreate.)
+    mutable std::unordered_map<std::string, StoreList> storeCache_;
+    const StoreList& storeList(const std::string& keeper) const;
+    std::unordered_map<std::string, std::int64_t> restockedAt_;   // Keeper -> the game hour it last restocked (not saved).
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
     std::unordered_map<std::string, std::size_t> positionIndex_;
     mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).
