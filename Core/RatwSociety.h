@@ -547,6 +547,8 @@ class Society
     // are reckoned from the day's sales (0:00). Runs from decide() while !needsPaused().
     static constexpr int ShopOpen = 8, ShopShut = 18, PayHour = 18;
     static constexpr std::int64_t TillFloat = 20, TreasuryFloat = 200;
+    // The city's alms (doc 68, 4): a day's food money a head for a household with no paid post and less than that.
+    static constexpr std::int64_t AlmsADay = 7;
     static constexpr int CarriageLoad = 1000;         // A wagon load, in items.json's weight.
     static constexpr const char* CarriageFund = "fund:carriage";   // Carriage where a world has no carters' yard.
     // A market's purse ("outside:<id>"), and which market supplies a good (the first in country.json: one for now).
@@ -582,7 +584,7 @@ class Society
     {
         std::int64_t day = -1;
         std::int64_t residentsSpent = 0, countrySpent = 0, countryUnspent = 0, drawn = 0, toll = 0, carriage = 0;
-        std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0;
+        std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0, alms = 0;
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
     };
     const LoopDay& loopToday() const { return loopToday_; }
@@ -725,6 +727,9 @@ class Society
     std::int64_t loopHour_ = -1;                    // The last game hour the loop ran (-1: not yet; the first is not run).
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
+    // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
+    std::map<std::string, std::vector<std::string>> households() const;
+    void giveAlms();
     void countryBuys(int hourOfDay);
     void payWages();
     void turnShelves();

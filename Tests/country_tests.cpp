@@ -100,6 +100,7 @@ AuthoredRoster roster(bool carters = true)
                    person("clerk", "civilian", "clerking at the City Office", {"office", 2.5, 2.5}, "home_clerk"),
                    person("child", "civilian", "at lessons", {"school", 2.5, 2.5}, "home_clerk", 8, 0),
                    person("upstairs", "civilian", "at lessons", {"school", 4.5, 2.5}, "home_clerk_up", 12, 0),
+                   person("orphan", "civilian", "at lessons", {"school", 6.5, 2.5}, "home_orphan", 10, 0),
                    person("docker", "civilian", "unloading ships at the piers", {"piers", 2.5, 2.5}, "home_docker"),
                    person("elder", "civilian", "sits and watches the world", {"square", 2.5, 2.5}, "home_docker", 70, 10)};
     if (carters)
@@ -163,7 +164,7 @@ void whoPays()
     expect(pay("clerk").kind == "public" && pay("clerk").payer == "treasury", "a clerk: the treasury (country.json's rules)");
     expect(pay("docker").kind == "country" && pay("docker").payer == Society::CountryFund, "a docker: the Country");
     expect(pay("child").kind.empty(), "a child at lessons: nobody");
-    expect(pay("elder").kind == "public" && pay("elder").payer == "treasury", "the old who sit and watch: the city's pension");
+    expect(pay("elder").kind.empty(), "the old who sit and watch: nobody (the alms keep them if their household runs short)");
     expect(s.crewOf("till:job:smith") == 2 && s.crewOf("till:job:baker") == 1, "a crew: its keeper and hands");
     expect(s.carters() == "till:job:carter", "carriage goes to the carters' yard");
     expect(city({}, false).carters() == Society::CarriageFund, "and without one, to fund:carriage");
@@ -296,6 +297,12 @@ void aDayOfTheLoop()
     };
     expect(paid("treasury", "clerk") && paid("treasury", "guard"), "the treasury paid the clerk and the watch");
     expect(paid(Society::CountryFund, "docker"), "the Country paid the docker");
+    bool alms = false;
+    for (const auto& e : journal)
+        alms = alms || (e.kind == "alms" && e.from == "treasury" && e.to == "orphan" && e.coins > 0);
+    expect(alms, "the city's alms keep a child whose household runs short");
+    expect(Society::hasFood(*s.account("orphan")) || s.resident("orphan")->hunger < 60 || s.cash("orphan") >= Society::AlmsADay,
+           "and it eats, or holds a day's food money for tomorrow");
     expect(paid("till:job:smith", "hand") && paid("till:job:smith", "smith"), "the smithy paid its hand and keeper");
     // The Country spent on the city's goods, spread over both smithies (never the first in a list).
     std::map<std::string, int> sold;

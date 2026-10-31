@@ -124,9 +124,10 @@ decides (a fresh world, a restore) are not run, so nothing is paid twice.
 | Carriage on the Country's purchases (3,570 weight out) | 21 |
 | of the carriage, the treasury's subsidy (25%) | 29 |
 | Wages from tills (keepers 110 × 14, hands 116 × 8) | 2,468 |
-| Wages from the treasury (153 × 8: 104 public posts, 19 pensions, 30 of the watch) | 1,224 |
+| Wages from the treasury (134 × 8: 104 public posts, 30 of the watch) | 1,072 |
+| The treasury's alms (households still short of a day's food after the wages) | measured |
 | Wages from the Country (91 × 8) | 728 |
-| **All wages** | **4,420** |
+| **All wages** | **4,268** |
 
 **The arithmetic that balances.** In a steady day every account takes in what it pays out:
 
@@ -137,9 +138,8 @@ decides (a fresh world, a restore) are not run, so nothing is paid twice.
   *The Country's purchases are its net intake divided by the makers' margin*: each penny it spends comes back to it as
   the shop restocks, so with no toll and no posts it would have to buy 2,784 / 0.40 ≈ 7,000p a day, more than the
   city's spare making. The toll and its own posts are what keep its buying inside what the city can make.
-- *The treasury:* `toll × draws = 0.30 × 4,015 = 1,204p` against 1,224p of public wages and 29p of subsidy: 48p short
-  a day at catalogue prices with every need met, which the 1,000p it starts with covers for three weeks; the run
-  (Progress) measures it.
+- *The treasury:* `toll × draws = 0.30 × 4,015 = 1,204p` against 1,072p of public wages and 29p of subsidy, about
+  100p a day over, for the alms (section 4) and its balance; the run (Progress) measures it.
 - *The shops:* their net is `1,558p` from the residents and `0.403 × 2,061 ≈ 830p` from the Country, `2,376p`,
   against `2,468p` of keepers' and hands' wages; the carters take `114p` against their own crew's.
 - *The residents:* wages in, `4,420p`; spending, `4,329p`. Wages paid equal what residents spend because every other
@@ -258,7 +258,8 @@ when they are placed on farms (the replacement above), they are the producers.
   18:00. Food goes into each member's own purse (where the eating branch looks); it is paid for by whichever member has
   the most money and can pay (children and the retired are fed by whoever earns).
 - **What food.** Among the foods the household's community's open shops hold (an open shop: its keeper at its post,
-  `trade`), picked at random weighted by nourishment for the price, so cheap filling food is bought most but every food
+  `trade`), or every open shop's where its own community's have none (the Old Keep's watch house has a shop or two
+  but no food), picked at random weighted by nourishment for the price, so cheap filling food is bought most but every food
   shop sells; the seller weighted by stock, as the Country's are.
 - **Needs**: the eight in `crafts.json`'s `households.needs` (firewood a day, twice in winter; candles every 2 days;
   cider every 4; clothes every 25 a grown head; bandages and nails every 20; a clay pot every 30; a cookpot every 60),
@@ -283,15 +284,13 @@ when they are placed on farms (the replacement above), they are the producers.
    - the Country (`wageCountry`, 8p): carriage by sea and its stores (unloading ships, the cranes, carrying up from
      the wharf, the Bonded Warehouse and the Iron, Long and New Stores, the Wharf Office); and the Great and Minor
      Houses' people, kept by their estates (heads, stewards, servants, the Houses' trades, the Heights' gentry);
-   - the treasury (`wagePublic`, 8p), a pension: "sits and watches the world", the old who have left their work (19);
    - the treasury (`wagePublic`, 8p): the Crown and the Council, the courts, the offices, the Records Office, the
      customs, the lamps, the markets' hands, the washhouse and baths, the teachers, the abbey, the cathedral and the
      chapels (clergy are paid: there is no tithe);
 5. otherwise nobody: children, apprentices (they learn), the retired, those out of work, and posts such as "sits and
    watches the world", "lending", the Queen and the King's daughter (their households feed them).
 
-On build 45 that is 110 keepers, 116 hands, 30 watch, 104 public posts, 19 pensions, 91 the Country's: **470 paid
-posts**. (A rule word must not catch another post: "watch" alone caught "sits and watches the world"; the rule says "the
+On build 45 that is 110 keepers, 116 hands, 30 watch, 104 public posts, 91 the Country's: **451 paid posts**. (A rule word must not catch another post: "watch" alone caught "sits and watches the world"; the rule says "the
 watch".)
 
 **Paying, at 18:00.** Each payer pays every holder of its posts once a day, every day (a week's wage spread over its
@@ -299,6 +298,12 @@ days, Restday too). A till pays from what it holds above its **float** (20p, or 
 more: its working money); short of the whole, it pays each post the same share of its wage. The treasury keeps 200p
 back (players' welcome grants); the Country its reserve. A till holding more than its float and a week of its wages
 pays its keeper the rest as **profit**.
+
+**The city's alms**, at 18:00 after the wages: a household still holding less than a day's food money a head
+(`Society::AlmsADay`, 7p) is given what makes it up, from what the treasury holds over its float, paid to its member
+with the least. This is the safety net under every rule above: the old who have retired (succession takes their posts:
+19 "sit and watch the world", and more retire in a run), orphans (the generator placed some children alone), the out of
+work living alone, and a family whose shop couldn't pay its wage. It is paid only from money the treasury has.
 
 **The numbers** are set from the city's spending, not doc 64's 60p: at today's catalogue prices a resident needs about
 6.3p of food and 1.5p of needs a day, and a household has about 2.1 earners for 2.5 mouths, so a hand's 8p feeds a
@@ -321,7 +326,8 @@ one, so many small draws pay what one large one would. It is conserved, it grows
 
 1. **Public wages** at 18:00: the watch, the offices, the Records Office, the palace, the courts, the church, the lamps,
    the markets' hands, the pensions. It keeps a 200p float (players' welcome grants).
-2. **Service subsidies**: services that help businesses, each a share of its cost the treasury pays
+2. **The city's alms** (section 4), after the wages.
+3. **Service subsidies**: services that help businesses, each a share of its cost the treasury pays
    (`EconomySpec::subsidies`, by service; `Society::Subsidised` lists the services). The first is **carriage**: the
    treasury pays `subsidies.carriage` percent (25) of every delivery's carriage, in (a shop's store draw) and out (the
    Country's purchases), to the carters, so the shop or the Country pays the rest. Later services join the list the
@@ -464,8 +470,8 @@ runs).
    prop them up; the food rebalance or a change of trade can.
 6. **The institutions' baskets** (Town Works, the watch's bread, the church's candles) are not bought. Decided for now.
 7. **Rent** is left out (section 8).
-10. **A pension.** "Sits and watches the world" (19 of the old, most alone) is paid the public wage by the treasury, so
-    the old without family can eat. Decided for now; the other choice is alms only for those with nothing.
+10. **Alms, not a pension.** A household still short of a day's food money after the wages is topped up by the
+    treasury (7p a head). Decided for now; the other choice is a pension for the retired (19 now, more as they retire).
 11. **The carriage subsidy** is 25% of every delivery's carriage, from the treasury, capped at a twentieth of it a day and
     giving way before public wages. Decided for now; more services (road upkeep, market upkeep, lamps) can join.
 12. **The Carters' Yard has 6 drivers; the flows want about 10.** Decided for now: the yard keeps the difference as

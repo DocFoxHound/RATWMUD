@@ -24,11 +24,6 @@
       },
       {
         "payer": "treasury",
-        "about": "The city's pension for the old who have left their work (decided for now: doc 68, 11).",
-        "words": ["sits and watches the world"]
-      },
-      {
-        "payer": "treasury",
         "about": "Public posts: the Crown and the Council, the courts, the offices, the Records Office, the customs, the lamps, the markets' hands, the washhouse and baths, the teachers, the abbey, the cathedral and the chapels.",
         "words": ["reigning", "the crown's", "royal secretary", "herald", "usher", "the king's household", "keeping the chambers", "chancellor", "the council", "hearing cases", "pleading cases", "keeping order in court", "magistrate", "clerking", "copying", "keeping the rolls", "records office", "customs", "couriers", "lamps", "warden of the market", "the watch", "minding the shop door", "portering", "crying wares", "washhouse", "bathhouse", "teaching", "abbey", "abbot", "cathedral", "chapel", "priest", "deacon", "sexton", "choir"]
       }

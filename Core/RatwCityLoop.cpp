@@ -11,6 +11,7 @@
 #include <cmath>
 #include <functional>
 #include <map>
+#include <set>
 
 namespace ratw
 {
@@ -222,7 +223,10 @@ void Society::loopHourly(std::int64_t hour, int season)
             countryBuys(hod);
     }
     if (hod == PayHour)
+    {
         payWages();
+        giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
+    }
 }
 
 void Society::turnShelves()
@@ -252,25 +256,8 @@ struct OpenShop
 };
 } // namespace
 
-void Society::householdsShop(int hod, std::int64_t day, int season)
+std::map<std::string, std::vector<std::string>> Society::households() const
 {
-    const auto& cfg = items::country();
-    std::vector<OpenShop> open;
-    for (const auto& p : positions_)
-    {
-        if (p.role != "merchant")
-            continue;
-        const auto held = state_.careers.positions.find(p.id);
-        if (held == state_.careers.positions.end() || held->second.holder.empty())
-            continue;
-        const auto* life = resident(held->second.holder);
-        const auto till = "till:" + p.id;
-        if (!life || life->task != "trade" || !account(till))
-            continue;
-        open.push_back({till, day_.communityOf ? day_.communityOf(p.work.cell) : std::string(), items::businessFor(p.title)});
-    }
-    if (open.empty())
-        return;
     // A household: the residents sharing a home (in a communal home, each alone), with a child under 16 and a spouse who
     // live elsewhere (a child given a room of its own upstairs): whoever earns feeds the family.
     std::map<std::string, std::string> keyOf;          // Resident -> its home's key.
@@ -299,6 +286,29 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
     std::map<std::string, std::vector<std::string>> homes;
     for (const auto& [id, key] : keyOf)
         homes[root(key)].push_back(id);
+    return homes;
+}
+
+void Society::householdsShop(int hod, std::int64_t day, int season)
+{
+    const auto& cfg = items::country();
+    std::vector<OpenShop> open;
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty())
+            continue;
+        const auto* life = resident(held->second.holder);
+        const auto till = "till:" + p.id;
+        if (!life || life->task != "trade" || !account(till))
+            continue;
+        open.push_back({till, day_.communityOf ? day_.communityOf(p.work.cell) : std::string(), items::businessFor(p.title)});
+    }
+    if (open.empty())
+        return;
+    const auto homes = households();
     // The shops a household buys from: its community's open ones, or every open one where its community has none.
     std::map<std::string, std::vector<const OpenShop*>> byCommunity;
     for (const auto& s : open)
@@ -306,16 +316,22 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
     std::vector<const OpenShop*> all;
     for (const auto& s : open)
         all.push_back(&s);
+    // Who holds a good: the household's own community's open shops, or, where none of them has it, every open shop.
     const auto sellersOf = [&](const std::vector<const OpenShop*>& shops, const std::string& item, std::vector<const std::string*>& out,
                                std::vector<double>& weights) {
-        out.clear();
-        weights.clear();
-        for (const auto* s : shops)
-            if (const int n = stock(*account(s->till), item); n > 0)
-            {
-                out.push_back(&s->till);
-                weights.push_back(n);
-            }
+        for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
+        {
+            out.clear();
+            weights.clear();
+            for (const auto* s : *list)
+                if (const int n = stock(*account(s->till), item); n > 0)
+                {
+                    out.push_back(&s->till);
+                    weights.push_back(n);
+                }
+            if (!out.empty())
+                return;
+        }
     };
     std::vector<const std::string*> tills;
     std::vector<double> weights;
@@ -380,13 +396,18 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 // The food: among what these shops hold, the better nourishment for the price the likelier.
                 std::vector<std::string> foods;
                 std::vector<double> value;
-                for (const auto* s : shops)
-                    for (const auto& [item, n] : account(s->till)->stock)
-                        if (n > 0 && edible(item) && std::find(foods.begin(), foods.end(), item) == foods.end())
-                        {
-                            foods.push_back(item);
-                            value.push_back(double(nourishment(item)) / double(std::max<std::int64_t>(1, catalogPrice(item))));
-                        }
+                for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
+                {
+                    for (const auto* s : *list)
+                        for (const auto& [item, n] : account(s->till)->stock)
+                            if (n > 0 && edible(item) && std::find(foods.begin(), foods.end(), item) == foods.end())
+                            {
+                                foods.push_back(item);
+                                value.push_back(double(nourishment(item)) / double(std::max<std::int64_t>(1, catalogPrice(item))));
+                            }
+                    if (!foods.empty())
+                        break;                      // (Its own community's food, where it has some; else anywhere open.)
+                }
                 const auto key = m + "|" + std::to_string(day) + "|" + std::to_string(hod) + "|" + std::to_string(k);
                 const int pick = weighted(value, roll(key));
                 if (pick < 0)
@@ -640,6 +661,26 @@ void Society::payWages()
                                                        excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
                 loopToday_.profit += excess;
         }
+    }
+}
+
+void Society::giveAlms()
+{
+    // The city's alms (doc 68, 4): after the day's wages, a household still holding less than a day's food money a head
+    // (the old who have retired, orphans, the out of work, a family whose shop couldn't pay) is given what makes it up,
+    // from what the treasury holds over its float. Paid to the member with the least; whoever buys, buys for all.
+    for (const auto& [home, members] : households())
+    {
+        std::int64_t held = 0;
+        for (const auto& m : members)
+            held += cash(m);
+        const auto want = AlmsADay * std::int64_t(members.size()) - held;
+        const auto can = cash("treasury") - TreasuryFloat;
+        if (want <= 0 || can <= 0)
+            continue;
+        const auto poorest = *std::min_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) { return cash(a) < cash(b); });
+        if (const auto coins = std::min(want, can); shift("treasury", poorest, "", 0, coins, "alms"))
+            loopToday_.alms += coins;
     }
 }
 
