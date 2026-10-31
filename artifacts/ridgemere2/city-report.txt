@@ -2,7 +2,7 @@ Ridgemere 2.0: the city (doc 67), the generator's report
 
 12 cells; 845 interiors (219 new); 301 structures placed; links {'stairs': 187, 'door': 340, 'passage': 28}
 People: 559 placed, 524 unplaced {'a Minor House not kept': 62, 'a town': 262, 'the country': 200}; roles {'merchant': 108, 'civilian': 421, 'guard': 30}
-Posts: {'stallkeeper': 14, 'staff': 81, 'kept': 57, 'pool': 55, 'clergy': 18, 'food': 2, 'hallkeeper': 6, 'keeper': 88, 'at lessons': 67, 'help': 64, 'retired': 29, 'a child at home': 4, 'guard': 5, 'patrol': 16, 'gate': 9, 'hands': 44}
+Posts: {'stallkeeper': 14, 'staff': 84, 'kept': 54, 'pool': 55, 'clergy': 18, 'food': 2, 'hallkeeper': 6, 'keeper': 88, 'at lessons': 67, 'help': 64, 'retired': 29, 'a child at home': 4, 'guard': 5, 'patrol': 16, 'gate': 9, 'hands': 44}
 Evenings: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 197, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 20, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 23, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
 Homes: 225; most in one structure 2; structures by homes {1: 159, 2: 33}; 10 living alone
 
@@ -18,8 +18,8 @@ By district:
   keep: beds 15, buildings 2, homes 1, kind:hall 1, kind:lodging 1, posts 7
   none: posts 16
   northgate: beds 40, buildings 12, business:bakery 1, business:butcher 1, business:carpenter 1, business:fletcher 1, business:general 1, homes 12, kind:home 7, kind:shop 5, posts 10
-  outdoors: business:chandlery 1, business:fishmonger 1, business:general 2, business:herbalist 1, business:pottery 1, business:rag_and_bone 1, business:stall 4, business:tinker 2, business:weaver 1, posts 81
-  palace: beds 9, buildings 3, homes 2, kind:hall 2, kind:seat 1, posts 19
+  outdoors: business:chandlery 1, business:fishmonger 1, business:general 2, business:herbalist 1, business:pottery 1, business:rag_and_bone 1, business:stall 4, business:tinker 2, business:weaver 1, posts 78
+  palace: beds 9, buildings 3, homes 2, kind:hall 2, kind:seat 1, posts 22
   rise: beds 29, buildings 5, homes 10, kind:villa 5, posts 26
   sump: beds 230, buildings 104, business:fishmonger 1, business:general 1, business:inn 4, business:pawnbroker 1, business:provisioner 1, business:rag_and_bone 1, business:tinker 1, homes 77, kind:flats 54, kind:hall 4, kind:home 36, kind:shop 5, kind:tavern 3, kind:works 2, posts 36
   wharf: beds 12, buildings 16, business:chandlery 1, business:cooperage 1, business:fishmonger 1, business:inn 3, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 2, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 39
@@ -30,14 +30,14 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   apothecary: making linen_cloth, resin, wormwood; resale -
   armory: making charcoal, iron_bar, leather, linen_cloth, steel_bar, wool; resale -
   bakery: making firewood, flour, honey; resale -
-  barber: making -; resale -
+  barber: making -; resale bandages
   brewery: making apples, grapes; resale -
   brickworks: making clay, firewood, limestone; resale -
   builders_works: making charcoal, iron_bar, timber; resale -
   builders_yard: making -; resale beam, bricks, cut_stone, glass_pane, lime, mortar, nails, paint, planks, plaster, roof_tiles, whitewash
   butcher: making firewood, mutton, pig, rabbit, raw_meat, salt, sheep; resale bones, leather, raw_meat, tallow
   carpenter: making iron_hoops, planks, timber; resale -
-  cartographer: making -; resale -
+  cartographer: making ink, paper; resale -
   cartwright: making iron_bar, iron_hoops, planks, timber; resale -
   chandlery: making beeswax, cord, hemp, resin, tallow; resale -
   charcoal: making timber; resale -
@@ -45,7 +45,7 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   dairy: making milk; resale -
   distillery: making berries, cider, firewood, honey, wine; resale -
   fishmonger: making firewood, fish, salt; resale fish
-  fletcher: making -; resale -
+  fletcher: making cord, iron_bar, iron_wire, planks, steel_bar; resale -
   foundry: making bronze_bar, charcoal, copper_bar, copper_ore, iron_ore, timber, tin_bar, tin_ore; resale -
   general: making bones, cord, hemp, straw; resale charm, clay, cord, fine_soap, firewood, flour, glass_beads, linen_cloth, nails, oats, pamphlet, perfume_cedar, planks, plaster, straw, tallow, whitewash, wool
   glassworks: making firewood, limestone, sand, tin_bar; resale -
@@ -73,7 +73,7 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   shipwright: making -; resale -
   smithy: making bronze_bar, charcoal, iron_bar, leather, timber; resale -
   smokehouse: making firewood, fish, mutton, rabbit, raw_meat, salt; resale -
-  stables: making -; resale -
+  stables: making -; resale hay, horse_tack, oats
   stall: making -; resale apples, flour, milk, oats, vegetables
   tailor: making linen_cloth, wool; resale -
   tannery: making hide, leather, oak_bark, sheepskin, small_pelt; resale -
@@ -106,7 +106,7 @@ Checks:
   [ok] R34    resources empty and no game spawns
   [ok] R7-R9  built coverage of at least 55% of the Sump: 71.7% (buildings and infill blocks alone: 51.1%)
   [ok] R7-R9  no open space wider than 12 tiles (bar the Rag Market, the Gut, Tarry Lane and the courts): widest 6
-  [ok] R7-R9  at least 60% of outdoor walkable tiles in alleys 2 wide or less: 66.4%
+  [ok] R7-R9  at least 60% of outdoor walkable tiles in alleys 2 wide or less: 66.5%
   [ok] R7-R9  at least 10 dead ends: 51 alley stubs ending blind (of 57 laid)
   [ok] R7-R9  at least 12 distinct footprint sizes and 8 L-shapes: 28 sizes, 12 L-shaped
   [ok] R7-R9  every home and work door on a passage at least 2 wide
@@ -287,7 +287,7 @@ Labels (npc, role, label, business):
   rm_gudrun_rustwick             civilian  working at the Greatly works               builders_works
   rm_gudrun_targate              merchant  weaver at Greywool                         weaver
   rm_gudrun_wickby               civilian  at lessons                                 None
-  rm_gunnar_harrowgate           civilian  buying Timberland iron                     None
+  rm_gunnar_harrowgate           civilian  reigning at the Great Palace               None
   rm_gunnar_mudstack             civilian  works at The Greatly Masons' Yard          mason
   rm_gunnar_wetcot               civilian  works at The Ropewalk                      ropewalk
   rm_gwen_brineby                civilian  working the cranes                         None
@@ -408,7 +408,7 @@ Labels (npc, role, label, business):
   rm_njal_ashford                merchant  carpenter at Cedar Row Joiners             carpenter
   rm_njal_stanmore               civilian  drafting the Council's letters             None
   rm_oda_greywell                merchant  rag-and-bone dealer, Rag Market            rag_and_bone
-  rm_oda_harrowgate              civilian  at home in the Heights                     None
+  rm_oda_harrowgate              civilian  the Queen, at the King's Residence         None
   rm_oda_kelpridge               civilian  serving at Greatly House                   None
   rm_oda_kelpworth               civilian  keeping the Greatly stables                stables
   rm_oda_slagby                  civilian  at lessons                                 None
@@ -431,7 +431,7 @@ Labels (npc, role, label, business):
   rm_osric_ropeworth             merchant  tailor at Vane & Daughters                 tailor
   rm_osric_slagstack             civilian  helping at The Cough Jar                   None
   rm_osric_wetford               merchant  runs The Rag Mill                          papermill
-  rm_ottilie_harrowgate          civilian  at home in the Heights                     None
+  rm_ottilie_harrowgate          civilian  the King's daughter, at the Residence      None
   rm_ottilie_nailmarsh           civilian  carrying from Sump Stairs                  None
   rm_ottilie_sootdale            civilian  helping at Wetink Lane Scriveners          None
   rm_palle_bilgemarsh            merchant  tinker on Market Square                    tinker

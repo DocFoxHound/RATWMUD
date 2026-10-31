@@ -95,11 +95,15 @@
     {"id": "paper", "makers": ["papermill", "scriptorium"], "seconds": 240, "hours": 1.76, "in": {"linen_cloth": 1}, "out": {"paper": 3}},
     {"id": "ink", "makers": ["scriptorium", "printing_house"], "seconds": 120, "hours": 1.81, "in": {"charcoal": 1}, "out": {"ink": 2}},
     {"id": "ledger", "makers": ["scriptorium", "printing_house"], "seconds": 600, "hours": 4.006, "in": {"paper": 4, "leather": 1}, "out": {"ledger": 1}},
+    {"id": "map", "makers": ["cartographer"], "seconds": 1800, "hours": 13.89, "in": {"paper": 1, "ink": 1}, "out": {"map": 1}},
     {"id": "steel_bar", "makers": ["smithy", "armory", "ironworks"], "seconds": 300, "hours": 2.292, "in": {"iron_bar": 1, "charcoal": 1}, "out": {"steel_bar": 1}},
     {"id": "fittings", "makers": ["smithy", "builders_works"], "seconds": 180, "hours": 3.84, "in": {"iron_bar": 1}, "out": {"fittings": 2}},
     {"id": "chain", "makers": ["smithy"], "seconds": 240, "hours": 1.59, "in": {"iron_bar": 1}, "out": {"chain": 1}},
     {"id": "rivets", "makers": ["smithy", "armory"], "seconds": 120, "hours": 2.154, "in": {"iron_bar": 1}, "out": {"rivets": 6}},
     {"id": "buckles", "makers": ["smithy", "saddlery"], "seconds": 120, "hours": 1.903, "in": {"iron_bar": 1}, "out": {"buckles": 5}},
+    {"id": "snare", "makers": ["fletcher"], "seconds": 300, "hours": 1.179, "in": {"iron_wire": 1, "cord": 1}, "out": {"snare": 5}},
+    {"id": "emplacement_bolts", "makers": ["fletcher"], "seconds": 600, "hours": 5.016, "in": {"planks": 1, "iron_bar": 1}, "out": {"emplacement_bolts": 1}},
+    {"id": "siege_bolts", "makers": ["fletcher"], "seconds": 900, "hours": 3.42, "in": {"planks": 2, "steel_bar": 1}, "out": {"siege_bolts": 1}},
     {"id": "cookpot", "makers": ["smithy", "tinker"], "seconds": 300, "hours": 2.144, "in": {"iron_bar": 1}, "out": {"cookpot": 1}},
     {"id": "lock", "makers": ["smithy", "tinker"], "seconds": 300, "hours": 2.82, "in": {"iron_bar": 1}, "out": {"lock": 1}},
     {"id": "iron_sword", "makers": ["smithy", "armory"], "seconds": 600, "hours": 19.367, "in": {"iron_bar": 1, "leather": 1}, "out": {"iron_sword": 1}},
@@ -234,6 +238,8 @@
     "saltworks": ["salt"],
     "herbalist": ["wormwood"],
     "vintner": ["wine", "cider", "mead", "aqua_vitae", "brandy", "apple_brandy", "berry_cordial"],
-    "rag_and_bone": ["clay_pot", "cookpot", "blanket", "cushion", "floor_bowl_wood", "oil_lamp", "sack", "crate", "wool_scarf"]
+    "rag_and_bone": ["clay_pot", "cookpot", "blanket", "cushion", "floor_bowl_wood", "oil_lamp", "sack", "crate", "wool_scarf"],
+    "stables": ["hay", "oats", "horse_tack"],
+    "barber": ["bandages"]
   }
 }

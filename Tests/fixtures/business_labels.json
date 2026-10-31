@@ -420,6 +420,45 @@
         "meal",
         "herbs"
       ]
+    },
+    {
+      "keeper": "rm_imogen_nailridge",
+      "label": "cartographer at Soundings",
+      "making": [
+        "ink",
+        "paper"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_clemence_rustham",
+      "label": "fletcher at The Grey Goose",
+      "making": [
+        "cord",
+        "iron_bar",
+        "iron_wire",
+        "planks",
+        "steel_bar"
+      ],
+      "resale": []
+    },
+    {
+      "keeper": "rm_ragnar_roperidge",
+      "label": "runs The Eastgate Stables",
+      "making": [],
+      "resale": [
+        "hay",
+        "oats",
+        "horse_tack"
+      ]
+    },
+    {
+      "keeper": "rm_corwin_sootstack",
+      "label": "barber at The Barber's Pole",
+      "making": [],
+      "resale": [
+        "bandages"
+      ]
     }
   ]
 }

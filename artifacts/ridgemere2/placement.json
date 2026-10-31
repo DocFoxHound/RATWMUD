@@ -3311,9 +3311,9 @@
 "y": 14
 },
 "work": {
-"cell": "rm_the_hall_of_records",
-"x": 11,
-"y": 3
+"cell": "r2_the_records_office_top",
+"x": 15,
+"y": 10
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
@@ -4709,9 +4709,9 @@
 "y": 21
 },
 "work": {
-"cell": "w_ridgemere_1_2",
-"x": 173,
-"y": 77
+"cell": "r2_the_antechamber",
+"x": 20,
+"y": 3
 },
 "evening": {
 "cell": "r2_the_king_s_residence_up",
@@ -4721,9 +4721,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "kept",
-"template": null,
-"structure": null,
+"post": "staff",
+"template": "reigning at the Great Palace",
+"structure": "r2_palace_antechamber",
 "route": "",
 "homeKept": false
 },
@@ -7902,7 +7902,7 @@
 },
 "work": {
 "cell": "w_ridgemere_1_1",
-"x": 32,
+"x": 34,
 "y": 100
 },
 "evening": {
@@ -7927,9 +7927,9 @@
 "y": 21
 },
 "work": {
-"cell": "w_ridgemere_1_2",
-"x": 174,
-"y": 77
+"cell": "r2_the_king_s_residence_up",
+"x": 24,
+"y": 17
 },
 "evening": {
 "cell": "r2_the_king_s_residence_up",
@@ -7939,9 +7939,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "kept",
-"template": null,
-"structure": null,
+"post": "staff",
+"template": "the Queen, at the King's Residence",
+"structure": "r2_kings_residence",
 "route": "",
 "homeKept": false
 },
@@ -8525,9 +8525,9 @@
 "y": 20
 },
 "work": {
-"cell": "w_ridgemere_1_2",
-"x": 123,
-"y": 87
+"cell": "r2_the_king_s_residence_up",
+"x": 21,
+"y": 17
 },
 "evening": {
 "cell": "r2_the_king_s_residence_up",
@@ -8537,9 +8537,9 @@
 "eveningPlace": "home",
 "business": null,
 "role": "civilian",
-"post": "kept",
-"template": null,
-"structure": null,
+"post": "staff",
+"template": "the King's daughter, at the Residence",
+"structure": "r2_kings_residence",
 "route": "",
 "homeKept": false
 },
@@ -10091,9 +10091,9 @@
 "y": 1
 },
 "work": {
-"cell": "rm_the_hall_of_records",
-"x": 3,
-"y": 9
+"cell": "r2_the_records_office",
+"x": 15,
+"y": 3
 },
 "evening": {
 "cell": "rm_the_slate_ledger",
@@ -12811,9 +12811,9 @@
 "y": 7
 },
 "work": {
-"cell": "r2_the_records_office",
-"x": 15,
-"y": 3
+"cell": "r2_the_records_office_up",
+"x": 2,
+"y": 5
 },
 "evening": {
 "cell": "rm_netherby_house_2",
@@ -12886,7 +12886,7 @@
 },
 "work": {
 "cell": "r2_the_records_office_up",
-"x": 2,
+"x": 7,
 "y": 5
 },
 "evening": {
@@ -12964,7 +12964,7 @@
 },
 "work": {
 "cell": "r2_the_records_office_up",
-"x": 7,
+"x": 12,
 "y": 5
 },
 "evening": {
@@ -13086,7 +13086,7 @@
 },
 "work": {
 "cell": "r2_the_records_office_up",
-"x": 12,
+"x": 17,
 "y": 5
 },
 "evening": {
@@ -13112,7 +13112,7 @@
 },
 "work": {
 "cell": "r2_the_records_office_up",
-"x": 17,
+"x": 22,
 "y": 5
 },
 "evening": {

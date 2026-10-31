@@ -134,7 +134,51 @@ class City(unittest.TestCase):
         for x in p['people']:
             b = before[x['id']]
             for key in ('name', 'description', 'backstory', 'personality', 'greeting', 'appearance', 'age', 'voice'):
-                self.assertEqual(x[key], b[key], (x['id'], key))
+                if key in PP.ROYAL_TEXT.get(x['id'], {}):
+                    self.assertEqual(x[key], PP.ROYAL_TEXT[x['id']][key], (x['id'], key))   # The Crown's own text.
+                else:
+                    self.assertEqual(x[key], b[key], (x['id'], key))
+
+    def test_the_king_reigns_at_the_great_palace(self):
+        people = {x['id']: x for x in self.m['project']['people']}
+        king = people['rm_gunnar_harrowgate']
+        self.assertEqual(king['workLabel'], 'reigning at the Great Palace')
+        self.assertEqual(king['work']['cell'], 'r2_the_antechamber')
+        self.assertNotIn('merchant', king['description'])
+        for pid in ('rm_oda_harrowgate', 'rm_ottilie_harrowgate'):
+            self.assertEqual(people[pid]['work']['cell'], 'r2_the_king_s_residence_up')
+            self.assertFalse(PP.label_problems(people[pid]['workLabel']), people[pid]['workLabel'])
+            self.assertNotIn('Heights', people[pid]['greeting'])
+        for pid in ('rm_gunnar_harrowgate', 'rm_oda_harrowgate', 'rm_ottilie_harrowgate'):
+            self.assertTrue(people[pid]['home']['cell'].startswith('r2_the_king_s_residence'))
+
+    def test_the_records_office_and_the_couriers_office(self):
+        p = self.m['project']
+        rooms = {r['id']: r for r in p['rooms']}
+        self.assertEqual(rooms['rm_the_hall_of_records']['name'], "The Couriers' Office")
+        door = next(l for l in p['links'] if l['id'] == 'rm_the_hall_of_records_door')
+        self.assertEqual(door['name'], "The Couriers' Office door")
+        at_hall = [x['workLabel'] for x in p['people'] if x['work'] and x['work']['cell'] == 'rm_the_hall_of_records']
+        self.assertEqual(at_hall, ["carrying for the Couriers' Office"] * 3)
+        records = [x for x in p['people'] if x['work'] and x['work']['cell'].startswith('r2_the_records_office')]
+        self.assertEqual(len(records), 7)
+        self.assertEqual({x['work']['cell'] for x in records if 'rolls' in x['workLabel']}, {'r2_the_records_office_top'})
+
+    def test_six_stalls_in_the_rag_market(self):
+        c = self.m['city'].c
+        keepers = self.m['city'].posts['rag_market']
+        self.assertEqual(len(keepers), 6)
+        for x, y in keepers:
+            self.assertTrue(any(c.at(x + dx, y + dy) == 'u' for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))), (x, y))
+
+    def test_the_houses_claim_their_forges_and_wharf(self):
+        claims = {r['id']: r['territory']['claims'] for r in self.m['project']['rooms']}
+        for rid in ('rm_the_anchor_forge', 'rm_nailers_forge', 'rm_the_rivet_and_rain', 'r2_timberland_s_forge_row'):
+            self.assertEqual(claims[rid], ['house_mossgrave'], rid)
+        for rid in ('rm_the_harbourmaster_s_office', 'rm_the_ropewalk', 'r2_the_grayrock_new_store',
+                    'r2_grayrock_shipwrights'):
+            self.assertEqual(claims[rid], ['house_grayrock'], rid)
+        self.assertEqual(claims['r2_the_keep'], ['council_of_houses', 'ridgemere_watch'])
 
     def test_the_old_interiors_stay(self):
         ids = {r['id'] for r in self.m['project']['rooms']}

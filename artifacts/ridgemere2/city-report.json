@@ -166,7 +166,7 @@
    "business:carpenter": 1
   },
   "outdoors": {
-   "posts": 81,
+   "posts": 78,
    "business:stall": 4,
    "business:herbalist": 1,
    "business:pottery": 1,
@@ -183,7 +183,7 @@
    "kind:hall": 2,
    "homes": 2,
    "beds": 9,
-   "posts": 19
+   "posts": 22
   },
   "rise": {
    "buildings": 5,
@@ -257,8 +257,8 @@
   },
   "posts": {
    "stallkeeper": 14,
-   "staff": 81,
-   "kept": 57,
+   "staff": 84,
+   "kept": 54,
    "pool": 55,
    "clergy": 18,
    "food": 2,
@@ -374,7 +374,9 @@
   },
   "barber": {
    "making": [],
-   "resale": []
+   "resale": [
+    "bandages"
+   ]
   },
   "brewery": {
    "making": [
@@ -442,7 +444,10 @@
    "resale": []
   },
   "cartographer": {
-   "making": [],
+   "making": [
+    "ink",
+    "paper"
+   ],
    "resale": []
   },
   "cartwright": {
@@ -505,7 +510,13 @@
    ]
   },
   "fletcher": {
-   "making": [],
+   "making": [
+    "cord",
+    "iron_bar",
+    "iron_wire",
+    "planks",
+    "steel_bar"
+   ],
    "resale": []
   },
   "foundry": {
@@ -768,7 +779,11 @@
   },
   "stables": {
    "making": [],
-   "resale": []
+   "resale": [
+    "hay",
+    "horse_tack",
+    "oats"
+   ]
   },
   "stall": {
    "making": [],
@@ -1727,7 +1742,7 @@
   [
    "rm_gunnar_harrowgate",
    "civilian",
-   "buying Timberland iron",
+   "reigning at the Great Palace",
    null
   ],
   [
@@ -2453,7 +2468,7 @@
   [
    "rm_oda_harrowgate",
    "civilian",
-   "at home in the Heights",
+   "the Queen, at the King's Residence",
    null
   ],
   [
@@ -2591,7 +2606,7 @@
   [
    "rm_ottilie_harrowgate",
    "civilian",
-   "at home in the Heights",
+   "the King's daughter, at the Residence",
    null
   ],
   [
@@ -4192,10 +4207,10 @@
   "rm_septimus_plankmarsh"
  ],
  "sump": {
-  "coverage": 0.716941899710704,
+  "coverage": 0.7170323047251688,
   "planned": 0.5109992767598843,
   "widest": 6,
-  "narrow": 0.6635792611519217,
+  "narrow": 0.6645367412140575,
   "dead_ends": 51,
   "sizes": 28,
   "lshape": 12,
@@ -4357,7 +4372,7 @@
    "req": "R7-R9",
    "check": "at least 60% of outdoor walkable tiles in alleys 2 wide or less",
    "ok": true,
-   "detail": "66.4%"
+   "detail": "66.5%"
   },
   {
    "req": "R7-R9",

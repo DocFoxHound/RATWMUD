@@ -1370,7 +1370,7 @@
  },
  {
   "id": "rm_the_hall_of_records",
-  "name": "The Hall of Records",
+  "name": "The Couriers' Office",
   "kind": "hall",
   "district": "office",
   "style": "ridgemere",
@@ -1383,7 +1383,7 @@
   "rooms": [
    {
     "id": "rm_the_hall_of_records",
-    "name": "The Hall of Records",
+    "name": "The Couriers' Office",
     "z": 0,
     "beds": [],
     "work": [],

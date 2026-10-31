@@ -547,7 +547,20 @@ REUSE = {
 # Interiors whose House changed (doc 67, section 2, Faction claims).
 CLAIMS_TO = {'rm_the_greatly_bonded_warehouse': ['house_grayrock'], 'rm_the_fell_timber_store': ['house_grayrock'],
              'rm_the_grayrock_ironworks': ['house_mossgrave'], 'rm_the_grayrock_foundry': ['house_mossgrave'],
-             'rm_the_grayrock_iron_store': ['house_mossgrave'], 'rm_the_fell_sawmill': ['house_mossgrave']}
+             'rm_the_grayrock_iron_store': ['house_mossgrave'], 'rm_the_fell_sawmill': ['house_mossgrave'],
+             # Timberland owns the city's forges (R29): the reused smithies, the armourer's and the charcoal store.
+             'rm_the_anchor_forge': ['house_mossgrave'], 'rm_the_anchor_forge_flat': ['house_mossgrave'],
+             'rm_nailers_forge': ['house_mossgrave'], 'rm_nailers_forge_flat': ['house_mossgrave'],
+             'rm_the_rivet_and_rain': ['house_mossgrave'], 'rm_the_rivet_and_rain_flat': ['house_mossgrave'],
+             'rm_the_charcoal_store': ['house_mossgrave'],
+             # Grayrock owns the wharf (R28): its office and the ropewalk.
+             'rm_the_harbourmaster_s_office': ['house_grayrock'], 'rm_the_ropewalk': ['house_grayrock']}
+# Reused interiors renamed for the city (doc 67, section 3): {id: (name, description)}. Their door links take the name.
+ROOM_RENAMES = {
+    'rm_the_hall_of_records': ("The Couriers' Office", "The Couriers' Office: pigeonholes of letters and parcels to the "
+                               "rafters, a bell on the counter, and couriers coming in wet from every quarter of the city "
+                               "with the Records Office's post."),
+}
 
 
 class Spec:
@@ -664,9 +677,12 @@ class RidgemereCity(Ridgemere):
                 r['territory'].setdefault('chapter', '')
                 if rid in CLAIMS_TO:
                     r['territory']['claims'] = list(CLAIMS_TO[rid])
+                elif spec.claims:
+                    r['territory']['claims'] = list(spec.claims)
                 r['worldX'], r['worldY'] = dx + 2 * len(record['rooms']), dy
             self.site.manifest.append(record)
         record['key'] = spec.key
+        record['claims'] = list(spec.claims) if spec.claims else None     # (compose's claims for the new rooms)
         record['block'] = {'x': x0, 'y': y0, 'w': w, 'h': h}
         record['outside'] = {'x': int(outside[0]), 'y': int(outside[1])}
         record['area'] = spec.district
@@ -1368,10 +1384,13 @@ class RidgemereCity(Ridgemere):
         self.put(hall_, 446, 322, 'W')
         # The Rag Market in the Sump: six makeshift stalls round its edges, a pump against a wall.
         stalls = [((280, 343), (280, 344)), ((288, 343), (288, 344)), ((296, 343), (296, 344)),
-                  ((280, 357), (280, 356)), ((288, 357), (288, 356)), ((298, 357), (298, 356))]
+                  ((280, 357), (280, 356)), ((290, 357), (290, 356)), ((298, 357), (298, 356))]
+        # ((290, 357), not (288, 357): a Sump house's door opens north at (288, 359), and needs two open tiles.)
         rag = []
+        self.rag_stalls = np.zeros((H, W), dtype=bool)   # (The Sump's alleys are cut round them, never over them.)
         for (sx, sy), keeper in stalls:
             c.stamp(sx, sy, ['u'], None)
+            self.rag_stalls[sy, sx] = True
             rag.append(keeper)
         c.stamp(302, 345, ['U'], None)
         self.posts['rag_market'] = rag
@@ -1634,6 +1653,7 @@ class RidgemereCity(Ridgemere):
         self.infill['courts'] = made
         self.court_mask = courts
         self.snickets = snickets
+        alleys &= ~self.rag_stalls
         c.paint(alleys & ~self.built, '.', 1.0)
         self.alleys = alleys | snickets
         open_ = (self.alleys | (self.street & S) | courts) & ~self.built
@@ -2070,6 +2090,9 @@ def make_city(project, seed=SEED, report=print):
     from . import ridgemere2_people as people
     baseline = baseline_people(project)
     project = strip_city(project)
+    for r in project['rooms']:
+        if r['id'] in ROOM_RENAMES:
+            r['name'], r['description'] = ROOM_RENAMES[r['id']]
     for x in project['people']:
         x.update(json.loads(json.dumps(baseline[x['id']])))
     old = placements()
@@ -2159,6 +2182,7 @@ def compose(project, world, city, plan, labels, baseline):
         if person['role'] == 'merchant':
             person['route'] = ''
         person['workLabel'] = labels[person['id']]
+        person.update(pl.ROYAL_TEXT.get(person['id'], {}))
     # The Market Square keepers first: the game takes the first merchant of the market's cell as its middle.
     first = [pp for pp in p['people'] if plan.get(pp['id'], {}).get('record') == 'market_square'
              and plan[pp['id']].get('post') == 'stallkeeper']

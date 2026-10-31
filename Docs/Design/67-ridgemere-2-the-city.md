@@ -1946,3 +1946,37 @@ the Greatly works each list and draw, and the fund rises by what they pay. Atlas
 business, then for every maker while vendors still draw. Both are back on (no `business_settings` rows, no `store`
 line); build 39 is the clean one. The walk through the client (section 8, step 7) was not made: the scratch server was
 checked for HTTP and its 559 residents, and the graph walk of A's write covers reachability.
+
+### Verification fixes (2026-10-31)
+
+Branch `r2-city-fix`, from `r2-city` (5973bdd). The verifier found 3 FAILs and 2 minor deviations on revision 40.
+Backup before: `Saved/Backups/ratw_ridgemere2-before-fix.dump`. The write was rerun (revision 40 to 42; build 40).
+
+- **The King (Q3, R19).** `HOUSE_POSTS` gives the Crown its posts: Gunnar Harrowgate is "reigning at the Great Palace"
+  at the Antechamber's dais; Oda is "the Queen, at the King's Residence" and Ottilie "the King's daughter, at the
+  Residence", both upstairs in the Residence. A House post's spot may name its floor, `(x, y, z)`, and a moved post no
+  longer keeps an old "label kept" mark (that mark is why Gunnar was still buying iron). `ROYAL_TEXT` replaces the three
+  NPCs' description, greeting and backstory: the Crown, not an iron merchant's household in the Heights.
+- **The Records Office and the Couriers' Office (R18).** The old Hall of Records' two clerks were placed at the Records
+  Office but kept their spots in the Hall. They now get spots in the Records Office, and the keeper of the rolls works on
+  its top floor (`POST_FLOOR`): 1 on z0, 5 on z1, 1 on z2. The Hall is renamed "The Couriers' Office" (`ROOM_RENAMES`,
+  with a couriers' description), and its door link is "The Couriers' Office door". Its three couriers stay.
+- **Store draws (R35).** `crafts.json` has NPC crafts for `map` (cartographer: paper, ink), `snare` (fletcher: iron
+  wire, cord), `emplacement_bolts` (planks, iron bar) and `siege_bolts` (planks, steel bar). Their hours are the ones
+  `apply_ladder.py` gives them, and nothing else was changed. There are new supply lists for the stables (hay, oats,
+  horse tack) and the barber (bandages). The four keepers are in `Tests/fixtures/business_labels.json`. `/store` on the
+  export draws paper for the cartographer, iron wire and planks for the fletcher, hay for the stables and bandages for
+  the barber. In each case the fund rises by what the till pays.
+- **The Rag Market's six stalls (R13).** The Sump's alleys were painted over three of the stalls. They are now cut
+  round the stalls. The south-middle stall is at (290, 357), not (288, 357): a Sump house's door opens north at
+  (288, 359) and needs two open tiles.
+- **Claims (R28, R29).** A new building's claims were never read: `put` didn't copy the spec's claims to its record,
+  so every new room got its district's default. The record now carries them. Timberland's Forge Row,
+  the Grayrock New Store, Grayrock Shipwrights and the Fell Wine Vaults are now claimed by their Houses. `CLAIMS_TO` also
+  gives these to House Timberland: the Anchor Forge, the Nailers' Forge and the Rivet and Rain (each with its flat), and
+  the Charcoal Store. It gives the Wharf Office and the Ropewalk to House Grayrock.
+- **Results.** All 46 checks pass; 559 placed, 524 unplaced. A second plan from the written world changes no NPC's
+  place, and the rename's dry run finds 0 changes. `world_check` (6:00-8:00, 20 players): 857 places, 0 failures, p99
+  5.1 ms, money conserved, 0 without a route, the same 5 of 559 held at the Commons School at 6:00. A scratch server
+  starts with 559 residents and serves the client. All 68 C++ tests pass (`store_room_behaviors`: 239 checks). The client
+  walk (section 8, step 7) is still not made.

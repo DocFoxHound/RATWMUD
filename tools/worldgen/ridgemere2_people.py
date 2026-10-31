@@ -347,6 +347,9 @@ POSTS = {
     'r2_fell_preserving_house': [k('preserver at the Fell Preserving House', 'preserver'), ('hands', None, 1)],
     'r2_fell_cellars': [('staff', 'keeping the Fell Cellars', 1)],
 }
+# Posts that work on a floor of their own: {(structure key, post label): z}. The keeper of the rolls is at the rolls, at
+# the top of the three-storey Records Office (doc 67, R18).
+POST_FLOOR = {('r2_records_office', 'keeping the rolls at the Records Office'): 2}
 # Shops with a flat: a keeper and a helper, the keeper's word from the label it has (kept) or the trade.
 SHOP_DEFAULT = [('keeper', None, 1, None), ('help', None, 1)]
 # Outdoor posts (doc 67, section 4).
@@ -390,6 +393,32 @@ HOUSE_POSTS = {
     'rm_tobias_grayrock_': ('rm_the_greatly_bonded_warehouse', "keeping the wharf's books", (8, 8)),
     'rm_julian_greatly': ('rm_the_greatly_yard', "keeping the Greatly Yard's books", (3, 2)),
     'rm_corwin_fell_': ('rm_fellhall', 'keeping the Fell cellars', None),
+    # The Crown (doc 67, Q3): the King reigns from the Antechamber's dais (the speaker's seat at (20, 2)); the Queen and
+    # their daughter keep the royal household upstairs in the Residence. (A spot (x, y, z) is on the structure's floor z.)
+    'rm_gunnar_harrowgate': ('r2_palace_antechamber', 'reigning at the Great Palace', (20, 3)),
+    'rm_oda_harrowgate': ('r2_kings_residence', "the Queen, at the King's Residence", (24, 17, 1)),
+    'rm_ottilie_harrowgate': ('r2_kings_residence', "the King's daughter, at the Residence", (21, 17, 1)),
+}
+# The royal family's own text (doc 67, Q3): the Crown, not the Minor House they were (an iron merchant's household in the
+# Heights). Applied by the write to these NPCs' description, greeting and backstory.
+ROYAL_TEXT = {
+    'rm_gunnar_harrowgate': {
+        'description': 'A long-limbed russet timber wolf with a braided cord at the throat: the King of Ridgemere, who '
+                       'reigns from the Great Palace.',
+        'greeting': 'Good day to you. The Crown hears petitions in the Antechamber.',
+        'backstory': 'Gunnar was born in the Sump and wears the Crown now; he has not forgotten the alleys, and the '
+                     'Houses have not let him.'},
+    'rm_oda_harrowgate': {
+        'description': "A stocky sandy arctic wolf with pale, nearly silver eyes: the Queen, the King's wife, of the royal "
+                       'household.',
+        'greeting': 'Looking for someone? The King sits in the Antechamber today.',
+        'backstory': "Oda keeps the royal household's purse herself and counts it, coin by coin."},
+    'rm_ottilie_harrowgate': {
+        'description': "A stocky cream red wolf with amber eyes that miss little: the King's daughter, of the royal "
+                       'household.',
+        'greeting': 'Take your time; there is no hurry. The palace keeps its own hours.',
+        'backstory': "Ottilie carries the Crown's petitions to the City Office herself, and goes back every week to ask "
+                     'after them.'},
 }
 
 
@@ -537,9 +566,13 @@ class Placement:
                 self.taken.discard((w['cell'], w['x'], w['y']))
         for pid, record, label, spot in moving:
             rec = self.records[record]
-            work = self.spot_near(rec['rooms'][0]['id'], *spot) if spot else None
+            room = rec['rooms'][0]['id']
+            if spot and len(spot) == 3:
+                room = next(r['id'] for r in rec['rooms'] if r['z'] == spot[2])
+            work = self.spot_near(room, spot[0], spot[1]) if spot else None
             self.plan[pid].update({'work': work or self.work_spot(rec, 'staff'), 'business': None, 'role': 'civilian',
                                    'post': 'staff', 'template': label, 'record': record, 'route': '', 'kept': False,
+                                   'labelKept': False,
                                    'at': self.at.get(record)})
 
     # -- homes ---------------------------------------------------------------------------------------------------------
@@ -749,6 +782,7 @@ class Placement:
                 rec = None                                  # (Its post moved: a new spot at the new place.)
             if room.startswith('rm_the_hall_of_records'):
                 target = 'r2_records_office'
+                rec = None                                  # (The Hall is the Couriers' Office now: a new spot.)
             if target is None:
                 continue
             spec_posts = by_record.get(target)
@@ -974,7 +1008,11 @@ class Placement:
             route = post['route']
             work = None
         elif work is None and rec is not None:
-            work = self.work_spot(rec, kind)
+            z = POST_FLOOR.get((j.get('record'), post.get('label') if post else None))
+            if z is not None:                           # A post on its own floor (the middle of the room).
+                room = self.rooms[next(r['id'] for r in rec['rooms'] if r['z'] == z)]
+                work = self.spot_near(room['id'], room['width'] // 2, room['height'] // 2)
+            work = work or self.work_spot(rec, kind)
         keeper_word = post.get('label') if post else None
         entry.update({'work': work, 'business': business, 'role': role, 'post': kind, 'template': keeper_word,
                       'record': j.get('record'), 'route': route, 'kept': bool(j.get('kept')),
