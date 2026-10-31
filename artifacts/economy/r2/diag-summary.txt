@@ -1,0 +1,469 @@
+# Ridgemere 2.0 economy diagnosis (doc 68, 'The first simulations'), build 50 from Spring 1; runs in the main repo's artifacts/economy/r2/diag_*
+
+## 60-day what-ifs (days 5-59)
+diag_base60d.jsonl           d5-59 hungry  4.70 ( 0.8%) worst  21 fed>=92.2% wages 81.8% tillsShort 40.8 profit   824 alms  514 treasury  3448-> 6682 country   566 unspent  147 purses 34329->30656 gini 0.50->0.66 conserved True
+diag_w_alms10.jsonl          d5-59 hungry  0.15 ( 0.0%) worst   3 fed>=98.8% wages 82.5% tillsShort 39.8 profit   907 alms  639 treasury  3043-> 2316 country   583 unspent  162 purses 34861->34392 gini 0.50->0.64 conserved True
+Traceback (most recent call last):
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 62, in <module>
+    main()
+    ~~~~^^
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 46, in main
+    summary(path.split('/')[-1], days, a.start)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 25, in summary
+    fed = min(d['households_fed'] / max(1, d['households']) for d in span)
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 25, in <genexpr>
+    fed = min(d['households_fed'] / max(1, d['households']) for d in span)
+              ~^^^^^^^^^^^^^^^^^^
+KeyError: 'households_fed'
+
+## Year runs (days 5-364)
+diag_year.jsonl              d5-364 hungry 16.89 ( 3.0%) worst 109 fed>=72.5% wages 80.2% tillsShort 42.9 profit   697 alms  488 treasury  3448->  213 country   559 unspent   96 purses 34329->39877 gini 0.50->0.82 conserved True
+diag_y_a1_comforts.jsonl     d5-364 hungry  4.10 ( 0.7%) worst  65 fed>=82.9% wages 82.8% tillsShort 38.6 profit   920 alms  533 treasury  6239->18351 country   572 unspent  109 purses 29385->19590 gini 0.45->0.62 conserved True
+diag_y_a2_comforts_food.json d5-364 hungry  0.08 ( 0.0%) worst  49 fed>=90.8% wages 83.7% tillsShort 36.6 profit  1102 alms  654 treasury  5881->14241 country   570 unspent  115 purses 29593->22982 gini 0.44->0.62 conserved True
+diag_y_a3_no_support.jsonl   d5-364 hungry  0.09 ( 0.0%) worst  56 fed>=89.9% wages 86.1% tillsShort 32.1 profit  1082 alms  577 treasury  5766->14251 country   570 unspent  104 purses 29588->23056 gini 0.43->0.59 conserved True
+diag_y_a4_comfort_setting.js d5-364 hungry  9.81 ( 1.8%) worst 111 fed>=71.9% wages 81.7% tillsShort 40.7 profit   791 alms  519 treasury  6026->  214 country   560 unspent  101 purses 29591->39765 gini 0.45->0.85 conserved True
+Traceback (most recent call last):
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 62, in <module>
+    main()
+    ~~~~^^
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 46, in main
+    summary(path.split('/')[-1], days, a.start)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 25, in summary
+    fed = min(d['households_fed'] / max(1, d['households']) for d in span)
+  File "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/agent-afce1bb4c5ae0bf2f/tools/econ_weeks.py", line 25, in <genexpr>
+    fed = min(d['households_fed'] / max(1, d['households']) for d in span)
+              ~^^^^^^^^^^^^^^^^^^
+KeyError: 'households_fed'
+
+## The base 60 days by 10-day blocks
+/home/martinb/Documents/GitHub/MUDProject/artifacts/economy/r2/diag_base60d.jsonl
+days     hungry_mean hungry_most households_ households_ residents_s food_bought country_spe country_uns       drawn  wages_owed  wages_paid tills_short      profit        alms    treasury     country       tills      purses gini_earner
+  0-  9         0.17        0.50         243          20        4636        1089        2442          70        4622        4020        3590          23         763         179        4037         480       11567       34801        0.54
+ 10- 19         1.59        3.10         241          57        4757        1164        2680          97        4917        4068        3321          42         741         404        5723         592       12708       31862        0.58
+ 20- 29         2.21        4.10         239          87        4781        1242        2627         166        4799        4068        3305          42        1017         543        5708         406       12122       32649        0.62
+ 30- 39         5.41        7.80         237         119        4868        1258        2864         103        5174        4068        3289          43         826         592        6345         468       13139       30933        0.63
+ 40- 49           10          14         231         121        4633        1250        2508         288        4658        4064        3276          43         923         556        6004         528       12412       31941        0.65
+ 50- 59         6.57        9.40         233         115        4711        1271        2898          85        5211        4068        3342          41         653         601        6682         497       13050       30656        0.66
+
+## The base year by 28-day blocks
+/home/martinb/Documents/GitHub/MUDProject/artifacts/economy/r2/diag_year.jsonl
+days     hungry_mean hungry_most households_ households_ residents_s food_bought country_spe country_uns       drawn  wages_owed  wages_paid tills_short      profit        alms    treasury     country       tills      purses gini_earner
+  0- 27         1.20        2.39         241          50        4661        1145        2525         117        4722        4051        3406          35         788         359        5384         905       11854       32742        0.59
+ 28- 55         7.14          10         234         118        4767        1260        2745         171        4997        4067        3300          43         855         581        6191         982       12227       31485        0.65
+ 56- 83         7.18          10         230         113        4581        1272        2621          94        4808        4068        3347          41         715         578        5488         826       11881       32690        0.65
+ 84-111         4.65        6.79         230          87        4553        1273        2490          75        4616        4068        3360          40         713         562        3500         597       12067       34721        0.66
+112-139         1.41        2.46         231          40        4550        1270        2216         105        4253        4064        3374          38         820         502         200         944       11073       38668        0.69
+140-167         8.33          13         223         111        4474        1274        2258          76        4282        4063        3322          39         690         458         200         645       11801       38269        0.70
+168-195           11          17         219         134        4369        1273        2130          60        4112        4068        3263          42         690         439         200         587       11532       38596        0.72
+196-223           24          30         212         197        4191        1243        1980          54        3894        4068        3254          42         610         377         200         501       10756       39458        0.72
+224-251           24          32         211         180        4161        1253        2004          77        3938        4068        3179          44         604         403         200         608       10506       39601        0.73
+252-279           19          26         214         177        4304        1260        2265          80        4320        4067        3199          45         628         474         200         822       10854       39039        0.75
+280-307           20          28         209         227        4380        1257        2455          89        4580        4060        3211          45         686         523         200         797       10652       39266        0.79
+308-335           40          51         196         314        4239        1214        2302         122        4361        4058        3140          49         626         509         200         835       10956       38954        0.80
+336-363           47          58         193         351        4190        1198        2345         109        4417        4057        3109          51         618         520         200         757       10932       39116        0.82
+364-364           45          51         195         427        4402        1406        2040          12        3516        4060        3316          40        1680         199         213         433       10482       39877        0.82
+
+## Set 2's year by 28-day blocks
+/home/martinb/Documents/GitHub/MUDProject/artifacts/economy/r2/diag_y_set2.jsonl
+days     hungry_mean hungry_most households_ households_ residents_s food_bought country_spe country_uns       drawn  wages_owed  wages_paid tills_short      profit        alms    treasury     country       tills      purses gini_earner
+  0- 27         0.00        0.00         243        0.29        5751        1101        3347         130        5911        4051        4039          28        1265         303        2834        1027       15207       31817        0.49
+ 28- 55         0.00        0.00         243        3.21        6013        1216        3630         238        6284        4067        4058          32        1529         412        2944        1342       15184       31415        0.52
+ 56- 83         0.00        0.00         238        2.57        5889        1250        3536         137        6113        4068        4061          29        1401         417        3583         955       15237       31110        0.49
+ 84-111         0.00        0.00         236        1.71        5872        1259        3374         102        5886        4068        4060          27        1411         405        3316         718       15630       31221        0.49
+112-139         0.00        0.00         234        1.04        5851        1256        3082         148        5502        4064        4057          23        1495         380        2092        1200       14182       33411        0.50
+140-167         0.00        0.04         233        0.64        5938        1255        3270          98        5720        4063        4056          24        1446         385        2292         773       15859       31991        0.48
+168-195         0.00        0.00         231        1.07        5967        1267        3223          84        5679        4068        4054          25        1546         381        2071         731       15706       32407        0.47
+196-223         0.00        0.00         231        0.36        5972        1266        3188          75        5628        4068        4039          25        1556         378        2127         666       15701       32421        0.48
+224-251         0.57        2.04         229        1.00        5932        1270        3210         119        5663        4068        4021          26        1537         363        2201         704       15911       32099        0.48
+252-279         0.00        0.00         230        0.89        6026        1269        3493         104        6077        4067        4061          27        1548         391        3182         829       15528       31376        0.49
+280-307         0.00        0.00         230        2.96        6031        1254        3589         133        6215        4060        4053          30        1560         393        4342         957       14939       30677        0.51
+308-335         0.38        1.46         230        1.71        6075        1222        3681         208        6349        4058        4047          35        1632         390        3733        1165       15513       30534        0.53
+336-363         0.00        0.00         232        3.04        6140        1219        3786         156        6484        4057        4045          36        1690         397        4063        1072       15499       30371        0.55
+364-364         0.00        0.00         233          28        7901        1819        3395          38        5171        4060        4056          25        4433         539        3760         534       15213       31498        0.59
+
+## Seasons
+diag_year.jsonl
+  spring  hungry  5.38 grain sold  468 (drawn 123/131) fish sold  109 @ 1.99 fruit drawn  459/ 550 preserves sold   97 stock   49 (most 183) meat  89 dairy  45 spent  4662 needs 243
+  summer  hungry  5.80 grain sold  546 (drawn 138/171) fish sold   92 @ 2.15 fruit drawn  451/1166 preserves sold  107 stock  164 (most 320) meat  87 dairy  46 spent  4493 needs 219
+  autumn  hungry 21.16 grain sold  565 (drawn 139/192) fish sold   93 @ 1.98 fruit drawn  413/1255 preserves sold  101 stock  269 (most 365) meat  83 dairy  41 spent  4222 needs 203
+  winter  hungry 34.81 grain sold  473 (drawn 118/126) fish sold  125 @ 1.78 fruit drawn  374/ 447 preserves sold   92 stock   81 (most 296) meat  94 dairy  39 spent  4276 needs 256
+diag_y_set2.jsonl
+  spring  hungry  0.00 grain sold  436 (drawn 125/131) fish sold  105 @ 1.99 fruit drawn  513/ 550 preserves sold   76 stock   11 (most 141) meat  94 dairy  46 spent  5891 needs 299
+  summer  hungry  0.00 grain sold  488 (drawn 137/171) fish sold   97 @ 2.15 fruit drawn  619/1166 preserves sold  112 stock  159 (most 254) meat  92 dairy  47 spent  5910 needs 289
+  autumn  hungry  0.18 grain sold  502 (drawn 139/192) fish sold  100 @ 1.99 fruit drawn  632/1255 preserves sold  115 stock  254 (most 334) meat  90 dairy  43 spent  5966 needs 282
+  winter  hungry  0.12 grain sold  432 (drawn 119/126) fish sold  140 @ 1.77 fruit drawn  427/ 447 preserves sold   67 stock   28 (most 239) meat  99 dairy  39 spent  6078 needs 393
+diag_y_set3.jsonl
+  spring  hungry  0.00 grain sold  433 (drawn 124/131) fish sold  109 @ 1.99 fruit drawn  515/ 550 preserves sold   77 stock   13 (most 150) meat  93 dairy  46 spent  5903 needs 302
+  summer  hungry  0.00 grain sold  489 (drawn 137/171) fish sold   95 @ 2.15 fruit drawn  629/1166 preserves sold  115 stock  407 (most 700) meat  91 dairy  47 spent  5909 needs 289
+  autumn  hungry  0.18 grain sold  500 (drawn 137/192) fish sold  101 @ 1.99 fruit drawn  648/1255 preserves sold  126 stock  885 (most 1039) meat  88 dairy  43 spent  5947 needs 283
+  winter  hungry  0.16 grain sold  427 (drawn 119/126) fish sold  144 @ 1.78 fruit drawn  428/ 447 preserves sold   46 stock  119 (most 747) meat 100 dairy  39 spent  6068 needs 393
+
+## Base, days 40-59: per trade, households, the hungry, the treasury and the Country
+days 40-59 (20)
+
+per trade, pennies a day (all its tills): sales to residents, to the Country, draws+carriage, value added, wages owed, paid, profit; cover = value added / wages owed; short = share of till-days paying less than owed
+trade            n   resid   cntry   draws   added   owes   paid  profit  cover  short   till  stock
+cartographer     1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21     32
+perfumer         1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     20    138
+moneychanger     1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21     14
+shipwright       1     0.0     0.0     0.0     0.0     46    0.0     0.0   0.00   100%     23     32
+stables          1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21    220
+carters          1     0.0     0.0     0.0     0.0     62   62.0    71.0   0.00     0%    453      0
+builders_yard    1     0.9     0.0     0.9     0.0     46    0.0     0.0   0.00   100%     23    168
+barber           1     2.2     0.0     2.2     0.0     22    0.1     0.0   0.00   100%     19     32
+saddlery         1     0.0     5.6     5.4     0.2     22    0.3     0.0   0.01   100%     17     67
+pawnbroker       1     1.8     0.0     1.4     0.4     22    0.8     0.0   0.02   100%     20    485
+press            1     3.5     6.3     9.0     0.7     30    0.8     0.0   0.02   100%     19     35
+herbalist        1     2.5     7.2     8.0     1.8     14    1.8     0.0   0.12   100%     18     89
+armory           1     0.0    21.6    16.1     5.5     22    4.3     0.0   0.25    95%     21   1631
+inn             15   410.9   195.9   494.0   112.9    290  113.5     0.0   0.39    80%     33     59
+dairy            4   220.8     0.0   187.7    33.2     80   32.5     0.0   0.41    88%     49     25
+printing_house   1     0.0    19.6    10.2     9.5     22    9.4     0.0   0.43    90%     21     65
+apothecary       1    10.8    42.0    43.2     9.5     22    9.8     0.0   0.43    65%     28    129
+glassworks       2     0.0    36.7     6.8    29.9     52   29.1     0.0   0.58    57%     30    238
+preserver        5   351.6     0.0   292.5    59.1    102   56.0     0.0   0.58    68%     57     38
+ropewalk         1     0.0    38.5    20.4    18.1     30   17.4     0.0   0.60    70%     31    117
+brewery          3    82.2   171.0   217.6    35.6     58   31.6     0.0   0.61    58%     78     76
+cooperage        2     0.0    70.8    48.4    22.4     36   23.4     0.0   0.62    57%     44     81
+distillery       1     0.0    88.5    68.1    20.5     30   19.4     0.0   0.68    40%     87    141
+builders_works   1     0.9    37.1    17.0    21.1     30   20.5     0.0   0.70    60%     26    114
+charcoal         1     0.0    33.8    17.6    16.1     22   16.1     0.0   0.73    55%     29     52
+brickworks       2     0.0   129.1    85.2    43.8     52   43.6     0.0   0.84    25%     87     83
+smithy           5    20.1   386.8   307.1    99.7    110  101.3     0.0   0.91    12%    106    713
+sawmill          1     0.0    67.5    39.0    28.5     30   30.0     0.0   0.95     0%    106     64
+mason            1     0.0   125.2    95.6    29.7     30   22.7     6.9   0.99    25%    192    153
+butcher          7   573.3     0.0   415.9   157.3    154  146.6    11.2   1.02     5%    137    565
+paintworks       1     0.0    44.2    20.2    24.0     22   22.0     1.2   1.09     0%    159     58
+jeweler          1    14.4    26.6    16.5    24.5     22   22.0     3.4   1.11     0%    163    110
+papermill        1     0.0    57.0    32.3    24.7     22   22.0     3.0   1.12     0%    161     69
+scriptorium      1     0.0    55.7    30.2    25.6     22   22.0     3.8   1.16     0%    166     97
+pottery          1    23.1    20.0    17.4    25.7     22   22.0     3.5   1.17     0%    169     76
+tinker           1    22.8    32.2    28.1    26.9     22   22.0     5.2   1.22     0%    175    239
+ironworks        1     0.0   111.2    53.9    57.3     46   46.0    13.2   1.24     0%    350    145
+tannery          1     0.0    79.8    41.0    38.8     30   30.0     8.9   1.29     0%    228    303
+bakery           8   582.5     0.0   344.4   238.1    168  168.0    70.2   1.42     0%    180     63
+vintner          1   134.8     0.0   102.5    32.3     22   17.8    17.3   1.47    20%    200    534
+plasterworks     1     0.0    80.0    33.9    46.1     30   30.0    15.5   1.54     0%    233     94
+stall            3   299.9     0.0   233.4    66.5     42   32.1    29.6   1.58    27%    124    167
+tailor           1    60.1     0.0    24.8    35.4     22   22.0    13.3   1.61     0%    177    286
+cartwright       1     0.0   115.7    79.5    36.2     22   22.0    13.3   1.64     0%    205    162
+smokehouse       1    97.0     9.5    70.3    36.2     22   22.0    13.2   1.65     0%    208     94
+weaver           1    47.2    14.7    25.2    36.8     22   22.0    14.4   1.67     0%    170    125
+rag_and_bone     1   118.0     0.0    94.2    23.8     14   10.5    13.2   1.70    25%    126    332
+carpenter        3     0.0   189.7    86.8   102.8     58   58.0    45.7   1.77     0%    150    106
+fishmonger       4   317.4    98.5   283.2   132.6     72   71.5    64.7   1.84     1%    173    158
+provisioner      7   766.4   114.2   593.7   286.9    138  138.0   151.4   2.08     0%    208    187
+foundry          1     0.0   133.4    66.4    67.0     30   30.0    38.2   2.23     0%    270    123
+chandlery        2   158.6    25.6    65.4   118.8     52   52.0    66.6   2.28     0%    214    258
+general          1   348.1    11.6   260.4    99.3     22   13.9    90.2   4.52    40%    304    751
+all            110    4672    2703    5013    2362   2468   1711     788
+
+profit to keepers: tills paying any, the share of the profit paid by the top 10 tills
+  51 of 110 tills paid profit; 788p a day; top 10: 52%
+    till:job:rm_josephine_dripgate           general        90.2p a day, on 8 of 20 days
+    till:job:rmx_orm_carlisle                carters        71.0p a day, on 17 of 20 days
+    till:job:rm_emmerich_sootley             chandlery      43.0p a day, on 17 of 20 days
+    till:job:rm_philippa_dripworth           fishmonger     39.5p a day, on 14 of 20 days
+    till:job:rm_runa_coalhand                foundry        38.2p a day, on 13 of 20 days
+    till:job:rm_frida_brineford              provisioner    31.1p a day, on 12 of 20 days
+    till:job:rm_hester_fogstack              provisioner    28.4p a day, on 11 of 20 days
+    till:job:rm_sten_kelpwell                chandlery      23.6p a day, on 17 of 20 days
+    till:job:rm_imogen_cinderwell            carpenter      22.9p a day, on 15 of 20 days
+    till:job:rm_elspet_saltmarsh             provisioner    20.9p a day, on 6 of 20 days
+
+households, a day on average, by class and kind: income (wages by payer, profit, alms), food, other spending, cash at 23:00, hungry hours a member
+class    kind       hh  size in:a child's        in:alms in:inheritanc     in:profit in:restitutio     in:stolen in:wages:coun in:wages:till in:wages:trea out:a child's      out:fine      out:food     out:goods out:restituti    out:stolen   cash  hungryh hungry hh
+lower    keeper     16  3.22          0.00          0.37          0.00          5.28          0.00          0.00          7.50         15.05          3.27          0.00          0.03         21.93          9.94          0.00          0.00    254     0.06       0.3
+lower    no wage    13  1.08          0.00          5.39          0.00          0.00          0.00          0.14          0.00          0.00          0.00          0.00          0.11          5.29          0.02          0.12          0.00      8     0.29       0.5
+lower    waged      83  2.32          0.01          1.81          0.00          0.00          0.00          0.04          5.77          3.96          4.74          0.01          0.11         14.32          2.09          0.04          0.00     79     0.26       3.5
+middle   keeper     61  3.01          0.00          2.75          0.00         11.47          0.10          0.01          0.26         17.40          0.94          0.00          0.05         20.72         11.76          0.01          0.11    299     0.48       5.0
+middle   no wage    20  1.10          0.00          5.43          0.00          0.00          0.00          0.02          0.00          0.00          0.00          0.00          0.04          5.37          0.03          0.01          0.00      8     1.24       2.1
+middle   waged      25  2.16          0.00          0.75          0.00          0.00          0.00          0.01          3.23          0.40         10.58          0.00          0.08         13.25          1.51          0.01          0.00     65     0.22       0.9
+upper    keeper      3  3.67          0.00          3.67          0.00          1.02          0.00          0.00          2.67         10.52          2.67          0.00          0.00         21.33          0.20          0.00          0.00     29     0.35       0.3
+upper    no wage     1  2.00          0.00         10.37          0.42          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00         10.53          0.21          0.00          0.00     14     0.37       0.1
+upper    waged       3  3.98          0.00          7.54          0.00          0.00          0.00          0.07          7.87          0.00          8.00          0.00          0.16         24.31          0.77          0.03          0.00     91     0.67       0.5
+watch    no wage     1  1.00          0.00          5.65          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          5.65          0.00          0.00          0.00      7     0.15       0.1
+watch    waged      14  1.08          0.00          0.45          0.00          0.00          0.00          0.00          0.00          2.63          5.16          0.00          0.00          6.91          1.27          0.00          0.00     18     0.03       0.1
+
+the hungriest households (hungry member-hours over the span), with their posts, size, income a day, cash
+  3981 hungry member-hours in all (199 a day); 51 households ever hungry
+    rm_soundings_flat                            middle  unpaid,keeper,hand             n3   461h  income  13.6 (wages  0.0, alms 13.6) food  13.6 cash 21
+    rm_the_greatly_bank_flat                     middle  keeper,hand,-                  n3   402h  income  14.7 (wages  0.0, alms 14.7) food  14.7 cash 21
+    rm_wetherell_house                           lower   -,hand                         n2   320h  income  10.1 (wages  5.6, alms  4.0) food   7.2 cash 14
+    rm_silver_rain_flat                          middle  -,-,unpaid,keeper              n4   248h  income  25.4 (wages 14.0, alms  7.5) food  23.2 cash 28
+    r2_wet_lane_houses                           middle  unpaid                         n1   213h  income   4.2 (wages  0.0, alms  4.2) food   4.1 cash 7
+    rm_southgate_farriers_flat                   middle  -,unpaid,keeper                n3   205h  income  16.1 (wages 13.3, alms  2.9) food  16.1 cash 21
+    r2_rainford_row_top                          middle  -                              n1   170h  income   4.9 (wages  0.0, alms  4.9) food   4.8 cash 7
+    rm_clearwater_glass_flat                     middle  -,keeper,unpaid                n3   155h  income  16.4 (wages  0.0, alms 16.4) food  16.4 cash 21
+    rm_mallory_house                             middle  public,hand                    n2   147h  income  11.7 (wages 10.0, alms  1.7) food  10.2 cash 14
+    rm_thornham_house                            lower   public,hand                    n2   145h  income  15.2 (wages 13.6, alms  1.6) food  11.7 cash 42
+    r2_rope_end_top                              lower   -,hand                         n2   135h  income  13.4 (wages  5.0, alms  7.5) food  10.1 cash 14
+    r2_drip_row_house                            lower   hand,unpaid,public             n3   134h  income  20.1 (wages 10.7, alms  8.1) food  17.2 cash 21
+    rm_thornbury_house_up                        upper   unpaid,unpaid,public,unpaid    n4   114h  income  23.6 (wages  8.0, alms 15.4) food  23.1 cash 28
+    r2_pitch_corner_top                          lower   public,hand,public             n3    93h  income  17.6 (wages 16.0, alms  1.3) food  16.1 cash 21
+    rm_the_barracks|rm_hilde_dripby              lower   -                              n1    81h  income   8.1 (wages  0.0, alms  6.3) food   5.0 cash 7
+    rm_the_harness_shop_flat                     middle  keeper,hand,-                  n3    71h  income  17.2 (wages  0.3, alms 16.9) food  17.2 cash 21
+    rm_kettlecote_house                          middle  -,country                      n2    70h  income  10.9 (wages  8.0, alms  2.9) food  10.8 cash 15
+    r2_saltgate_row_top                          middle  unpaid                         n1    68h  income   4.2 (wages  0.0, alms  4.2) food   4.2 cash 7
+    rm_the_pawn_and_ledger_flat                  middle  unpaid,unpaid,keeper,-         n4    60h  income  21.7 (wages  0.5, alms 21.2) food  21.3 cash 28
+    rm_tarncote_house                            middle  keeper,keeper,keeper,country   n4    55h  income  20.1 (wages 17.1, alms  3.0) food  26.4 cash 28
+
+the treasury, the Country: in and out by kind, a day
+  treasury: in:draws 1481, in:fine 17, in:inheritance 0, out:alms 578, out:carriage subsidy 33, out:wages 870
+    cash 6332 -> 6682
+  outside:country: in:draws 3456, out:carriage out 23, out:country 2703, out:wages 728
+    cash 470 -> 497
+
+## Base year, days 300-364
+days 300-364 (65)
+
+per trade, pennies a day (all its tills): sales to residents, to the Country, draws+carriage, value added, wages owed, paid, profit; cover = value added / wages owed; short = share of till-days paying less than owed
+trade            n   resid   cntry   draws   added   owes   paid  profit  cover  short   till  stock
+cartographer     1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21     32
+perfumer         1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     20    138
+moneychanger     1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21     14
+shipwright       1     0.0     0.0     0.0     0.0     46    0.0     0.0   0.00   100%     23     32
+stables          1     0.0     0.0     0.0     0.0     22    0.0     0.0   0.00   100%     21    220
+carters          1     0.0     0.0     0.0     0.0     62   62.0    57.5   0.00     0%    451      0
+builders_yard    1     1.0     0.0     1.0     0.0     46    0.0     0.0   0.00   100%     19    168
+barber           1     1.8     0.0     1.6     0.1     22    0.1     0.0   0.01   100%     19     32
+press            1     3.7     7.5    10.8     0.5     30    0.4     0.0   0.02   100%     19     30
+pawnbroker       1     1.5     0.0     1.1     0.4     22    0.4     0.0   0.02   100%     21    486
+saddlery         1     0.0     4.7     4.3     0.4     22    0.4     0.0   0.02   100%     19     65
+herbalist        1     1.6     4.7     5.2     1.0     14    1.0     0.0   0.07   100%     18     88
+armory           1     0.0    19.5    15.4     4.1     22    4.1     0.0   0.19   100%     22   1629
+brewery          3    48.0    69.7   105.9    11.8     58   12.8     0.0   0.20    88%     36     53
+inn             15   389.1   174.1   489.8    73.4    290   73.6     0.0   0.25    91%     32     57
+dairy            4   208.1     0.0   183.0    25.1     80   25.0     0.0   0.31    92%     46     24
+apothecary       1     8.1    38.0    37.8     8.3     22    8.0     0.0   0.38    78%     27    122
+printing_house   1     0.0    17.2     8.7     8.6     22    8.6     0.0   0.39   100%     21     63
+preserver        5   299.0     0.0   257.0    42.0    102   47.1     0.0   0.41    71%     57     46
+builders_works   1     1.4    27.0    15.0    13.4     30   13.4     0.0   0.45    91%     24    112
+ropewalk         1     0.0    31.2    16.9    14.3     30   14.6     0.0   0.48    89%     25    112
+glassworks       2     0.0    32.0     5.8    26.2     52   26.3     0.0   0.50    65%     23    236
+distillery       1     0.0    71.4    54.8    16.6     30   16.5     0.0   0.55    58%     57    125
+cooperage        2     0.0    62.2    41.6    20.6     36   20.7     0.0   0.57    63%     33     80
+charcoal         1     0.0    28.5    15.5    13.0     22   12.8     0.0   0.59    72%     24     58
+smithy           5    14.5   343.1   271.6    86.0    110   88.2     0.0   0.78    29%     74    717
+brickworks       2     0.0   115.3    74.1    41.3     52   41.2     0.0   0.79    32%     62     79
+rag_and_bone     1    54.7     0.0    43.3    11.5     14   11.4     0.7   0.82    22%     83    259
+butcher          7   527.5     0.0   392.4   135.1    154  129.1     6.2   0.88    18%    105   3380
+tinker           1    14.0    27.9    22.2    19.7     22   19.9     0.0   0.90    23%     40    234
+paintworks       1     0.0    38.3    18.1    20.2     22   20.5     0.0   0.92    17%     38     57
+papermill        1     0.0    47.1    25.8    21.3     22   20.3     0.0   0.97    12%     79     61
+sawmill          1     0.0    64.2    34.7    29.5     30   29.3     0.0   0.98     5%     88     63
+mason            1     0.0   119.3    89.6    29.7     30   25.7     3.8   0.99    18%    194    147
+ironworks        1     0.0    89.9    44.0    45.9     46   46.0     0.0   1.00     0%    186    155
+scriptorium      1     0.0    50.4    26.9    23.5     22   22.0     1.6   1.07     0%    159     91
+vintner          1    98.8     0.0    75.0    23.8     22   19.3     4.5   1.08    14%    160    491
+tailor           1    43.3     0.0    17.9    25.4     22   22.0     3.6   1.15     0%    170    296
+jeweler          1    14.3    26.4    15.0    25.8     22   22.0     4.2   1.17     0%    169    114
+tannery          1     0.0    71.0    35.3    35.7     30   30.0     5.8   1.19     0%    229    292
+pottery          1    28.3    16.9    16.4    28.9     22   22.0     6.9   1.31     0%    172     80
+bakery           8   530.2     0.0   307.3   222.8    168  167.7    53.1   1.33     0%    166     74
+cartwright       1     0.0    97.2    67.4    29.8     22   22.0     8.1   1.36     0%    188    160
+plasterworks     1     0.0    59.0    22.6    36.3     26   26.3     9.3   1.38     0%    204     73
+stall            3   264.7     0.0   206.4    58.3     42   27.0    29.3   1.39    45%    100    161
+fishmonger       4   241.1    67.3   202.1   106.2     72   71.0    36.4   1.48     3%    144    161
+weaver           1    47.0    11.3    23.0    35.2     22   22.0    13.4   1.60     0%    176    132
+carpenter        3     0.0   174.2    75.7    98.5     58   58.0    41.3   1.70     0%    154    104
+smokehouse       1   106.3     8.2    76.1    38.4     22   22.0    16.9   1.74     2%    209    132
+chandlery        2   120.6    22.5    50.2    92.8     52   52.0    41.2   1.78     0%    208    241
+foundry          1     0.0   127.4    61.6    65.7     30   30.0    36.3   2.19     0%    265    143
+provisioner      7   800.7   119.2   598.0   321.8    136  135.9   189.7   2.37     0%    208    248
+general          1   340.6     7.8   263.1    85.2     22   16.8    70.7   3.87    25%    327    735
+all            110    4210    2291    4427    2074   2462   1567     641
+
+profit to keepers: tills paying any, the share of the profit paid by the top 10 tills
+  45 of 110 tills paid profit; 641p a day; top 10: 57%
+    till:job:rm_josephine_dripgate           general        70.7p a day, on 30 of 65 days
+    till:job:rmx_orm_carlisle                carters        57.5p a day, on 51 of 65 days
+    till:job:rm_frida_brineford              provisioner    37.2p a day, on 42 of 65 days
+    till:job:rm_runa_coalhand                foundry        36.3p a day, on 45 of 65 days
+    till:job:rm_hester_fogstack              provisioner    34.1p a day, on 39 of 65 days
+    till:job:rm_elspet_saltmarsh             provisioner    32.3p a day, on 39 of 65 days
+    till:job:rm_agnes_millford               stall          27.4p a day, on 26 of 65 days
+    till:job:rm_sten_kelpwell                chandlery      24.5p a day, on 54 of 65 days
+    till:job:rm_ragnar_millmarsh             provisioner    23.4p a day, on 35 of 65 days
+    till:job:rm_gudrun_ropeford              provisioner    22.5p a day, on 34 of 65 days
+
+households, a day on average, by class and kind: income (wages by payer, profit, alms), food, other spending, cash at 23:00, hungry hours a member
+class    kind       hh  size in:a child's        in:alms in:inheritanc in:new reside     in:profit in:restitutio     in:stolen in:wages:coun in:wages:till in:wages:trea out:a child's      out:fine      out:food     out:goods out:restituti    out:stolen   cash  hungryh hungry hh
+lower    keeper     17  3.59          0.00          0.80          0.00          0.00          4.28          0.00          0.00          8.47         15.42          2.29          0.00          0.04         23.12          7.84          0.00          0.00    202     0.23       0.9
+lower    no wage    13  1.08          0.00          4.59          0.00          0.00          0.00          0.00          0.02          0.00          0.00          0.00          0.00          0.23          4.42          0.00          0.01          0.00      6     4.94       4.0
+lower    waged      72  2.58          0.00          1.97          0.00          0.01          0.00          0.00          0.02          6.42          3.73          5.21          0.00          0.15         15.56          1.89          0.01          0.00     65     0.74       8.5
+middle   keeper     58  3.15          0.00          2.31          0.05          0.00          9.79          0.06          0.07          0.28         16.69          0.67          0.00          0.26         19.27          9.41          0.01          0.15    490     2.56      15.4
+middle   no wage    20  1.05          0.00          4.82          0.00          0.00          0.00          0.00          0.09          0.00          0.00          0.00          0.00          0.57          4.34          0.00          0.06          0.00      6     5.41       7.9
+middle   waged      22  2.47          0.00          0.74          0.01          0.02          0.00          0.00          0.04          3.23          0.73         12.80          0.00          0.14         15.24          2.34          0.03          0.00     88     0.50       2.0
+unknown  waged       1  1.28          0.00          0.00          0.00          0.46          0.00          0.00          0.00          2.22          0.00          7.77          0.00          0.00          8.48          1.63          0.00          0.00     18     0.00       0.0
+upper    keeper      3  3.67          0.00          5.62          0.00          0.00          0.00          0.00          0.08          2.67          6.71          2.59          0.00          0.06         17.90          0.08          0.02          0.00     22     4.38       1.7
+upper    no wage     1  2.00          0.00          8.65          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.18          8.66          0.00          0.00          0.00     11     5.47       0.6
+upper    waged       3  3.67          0.00          3.29          0.00          0.00          0.00          0.00          0.06          8.00          0.00          7.77          0.00          0.85         16.95          1.43          0.01          0.00     81     5.91       1.6
+watch    waged      10  1.60          0.00          0.40          0.00          0.00          0.00          0.00          0.00          0.00          3.38          6.99          0.00          0.00          9.25          1.55          0.00          0.00     22     2.29       2.0
+
+the hungriest households (hungry member-hours over the span), with their posts, size, income a day, cash
+  64309 hungry member-hours in all (989 a day); 133 households ever hungry
+    rm_the_pawn_and_ledger_flat                  middle  unpaid,unpaid,keeper,-         n4  3686h  income  10.6 (wages  0.2, alms  9.8) food  10.4 cash 3
+    rm_thornbury_house_up                        upper   unpaid,unpaid,public,unpaid    n4  3500h  income  12.8 (wages  7.8, alms  4.8) food  10.5 cash 10
+    rm_the_cough_jar_flat                        middle  -,unpaid,keeper,hand,unpaid    n5  2823h  income  23.4 (wages 10.9, alms 10.9) food  20.7 cash 4
+    rm_the_greatly_bank_flat                     middle  keeper,hand,-                  n3  2606h  income   8.8 (wages  0.0, alms  8.8) food   8.3 cash 3
+    rm_the_rivet_and_rain_flat                   middle  keeper,hand,unpaid             n3  2423h  income   9.9 (wages  4.1, alms  5.1) food   9.5 cash 6
+    rm_clearwater_glass_flat                     middle  -,keeper,unpaid,hand           n4  2381h  income  17.4 (wages  0.0, alms 17.2) food  16.2 cash 4
+    rm_soundings_flat                            middle  unpaid,keeper,hand             n3  2312h  income  10.6 (wages  0.0, alms 10.6) food  10.9 cash 3
+    rm_vane_daughters_flat                       middle  hand,unpaid,keeper             n3  2063h  income  11.3 (wages  6.9, alms  4.1) food   9.5 cash 23
+    rm_vance_house_up                            upper   keeper,unpaid,unpaid,unpaid    n4  1985h  income  16.5 (wages 12.9, alms  3.5) food  16.6 cash 17
+    rm_the_harness_shop_flat                     middle  keeper,hand                    n2  1920h  income   6.3 (wages  0.4, alms  5.6) food   5.7 cash 3
+    rm_the_council_press_flat                    middle  -,keeper,hand                  n3  1564h  income  13.9 (wages  8.6, alms  5.0) food  11.4 cash 4
+    rm_thackeray_house                           lower   unpaid,-                       n2  1425h  income   7.5 (wages  0.0, alms  7.3) food   6.5 cash 1
+    rm_wetherell_house                           lower   -                              n1  1215h  income   1.2 (wages  0.0, alms  1.2) food   1.3 cash 1
+    rm_the_watch_house|rm_frederick_rainham      watch   hand                           n1  1204h  income   1.9 (wages  0.1, alms  1.8) food   2.0 cash 1
+    rm_tarncote_house                            middle  keeper,keeper,keeper,country   n4  1151h  income  20.4 (wages 15.8, alms  4.6) food  20.6 cash 19
+    rm_fell_cottages                             lower   -,country,hand                 n3  1139h  income  16.8 (wages 13.7, alms  2.9) food  14.9 cash 18
+    rm_kendrick_house                            middle  unpaid,-                       n2  1129h  income   8.3 (wages  0.0, alms  8.1) food   7.5 cash 1
+    r2_slop_rooms_up                             lower   hand,hand                      n2  1073h  income   9.8 (wages  0.0, alms  9.7) food   8.8 cash 1
+    rm_ashcote_house                             lower   hand,hand                      n2  1044h  income   8.7 (wages  0.2, alms  8.5) food   8.2 cash 0
+    rm_the_cedar_phial_flat                      middle  keeper,hand                    n2  1042h  income   6.5 (wages  0.0, alms  6.5) food   6.7 cash 1
+
+the treasury, the Country: in and out by kind, a day
+  treasury: in:draws 1303, in:fine 47, in:inheritance 1, out:alms 500, out:carriage subsidy 11, out:wages 845
+    cash 200 -> 213
+  outside:country: in:draws 3039, out:carriage out 24, out:country 2291, out:wages 726
+    cash 821 -> 433
+
+## Set 2's year, days 5-364
+days 5-364 (360)
+
+per trade, pennies a day (all its tills): sales to residents, to the Country, draws+carriage, value added, wages owed, paid, profit; cover = value added / wages owed; short = share of till-days paying less than owed
+trade            n   resid   cntry   draws   added   owes   paid  profit  cover  short   till  stock
+moneychanger     1     0.0     0.0     0.0     0.0     22    0.1     0.0   0.00   100%     21     14
+shipwright       1     0.0     0.0     0.0     0.0     46    0.0     0.0   0.00   100%     23     32
+stables          1     0.0     0.0     0.0     0.0     22    0.2     0.0   0.00    99%     21    220
+carters          1     0.0     0.0     0.0     0.0     62   62.0    96.3   0.00     0%    452      0
+builders_yard    1     1.4     0.0     1.4     0.0     46    0.0     0.0   0.00   100%     20    168
+barber           1     2.0     0.0     2.0     0.0     22    0.1     0.0   0.00   100%     18     32
+pawnbroker       1     3.2     0.0     2.4     0.8     22    0.9     0.0   0.04    99%     20    486
+herbalist        1     2.5     6.0     7.0     1.4     14    1.5     0.0   0.10    99%     18     89
+armory           1     0.0    26.6    21.1     5.5     22    5.8     0.0   0.25    92%     25   1633
+dairy            4   219.7     0.0   190.2    29.5     80   29.9     0.0   0.37    89%     48     23
+inn             15   434.3   191.8   457.0   169.1    290  148.8    22.1   0.58    67%     52     79
+saddlery         1     0.0    28.9    14.0    14.9     22   15.2     0.0   0.68    57%     30    114
+cooperage        2     0.0    86.2    56.3    29.9     36   29.1     1.0   0.83    37%     69     86
+preserver        5   326.0     0.0   239.2    86.9    102   71.9    15.3   0.85    41%     93    102
+builders_works   1     2.2    48.1    23.4    26.9     30   26.5     0.2   0.90    25%     77    110
+charcoal         1     0.0    47.4    25.8    21.6     22   21.3     0.2   0.99     6%    100     50
+sawmill          1     0.0    75.6    44.9    30.7     30   30.0     0.3   1.02     0%    160     66
+apothecary       1    15.8    64.7    57.6    23.0     22   20.3     2.4   1.05    11%    134    255
+brickworks       2     0.0   156.8   101.1    55.8     52   51.4     3.6   1.08     1%    173     73
+butcher          7   665.8     0.0   495.3   170.5    154  147.8    21.2   1.11     5%    160   2231
+ropewalk         1     0.0    68.5    33.6    35.0     30   29.9     4.6   1.17     1%    212    137
+distillery       1     0.0   113.9    78.6    35.3     30   30.0     5.4   1.18     0%    232    305
+smithy           5    28.8   489.3   388.9   129.2    110  106.5    22.8   1.18     4%    179    732
+mason            1     0.0   152.9   115.9    36.9     30   27.1     9.3   1.23    15%    216    155
+paintworks       1     0.0    52.7    25.0    27.7     22   22.0     5.4   1.26     0%    172     57
+ironworks        1     0.0   124.8    61.0    63.9     46   46.0    17.4   1.39     0%    369    120
+stall            3   269.3     0.0   209.5    59.8     42   32.3    26.9   1.42    27%    108    153
+papermill        1     0.0    71.4    39.5    31.8     22   22.0     9.6   1.45     0%    183     74
+press            1    42.2    55.4    53.4    44.2     30   27.6    16.7   1.47    11%    199     63
+scriptorium      1     0.0    73.5    40.6    32.9     22   22.0    11.0   1.50     0%    183    169
+glassworks       2     0.0    96.5    17.1    79.4     52   52.0    27.2   1.53     0%    197    270
+pottery          1    34.2    22.0    20.5    35.7     22   22.0    13.7   1.62     0%    174     68
+cartwright       1     0.0   121.8    85.8    36.0     22   21.8    14.1   1.64     1%    201    155
+printing_house   1    29.3    40.7    32.9    37.1     22   22.0    15.1   1.69     0%    176    189
+plasterworks     1     0.0    87.0    36.2    50.8     29   28.8    21.7   1.76     0%    238     83
+bakery           8   658.0     0.0   358.3   299.7    168  168.0   131.3   1.78     0%    184    105
+cartographer     1     0.0    47.8     8.4    39.4     22   22.0    17.5   1.79     0%    153    152
+smokehouse       1   106.5    11.6    78.6    39.5     22   22.0    17.5   1.79     0%    214    104
+brewery          3   153.9   187.9   236.8   105.0     58   53.0    52.1   1.81    11%    161    113
+tinker           1    40.6    33.9    33.7    40.8     22   22.0    18.9   1.85     0%    180    176
+tailor           1    71.4     0.0    29.8    41.7     22   22.0    19.7   1.89     0%    183    256
+weaver           1    57.0    15.9    30.6    42.3     22   22.0    20.4   1.92     0%    180    106
+fishmonger       4   319.5   112.2   287.6   144.1     72   71.8    72.1   2.00     0%    177    140
+jeweler          1    38.8    27.8    22.0    44.6     22   22.0    22.5   2.03     0%    174     74
+perfumer         1    43.9    13.4    11.1    46.3     22   22.0    24.2   2.10     0%    172    286
+tannery          1     0.0   117.4    52.8    64.6     30   30.0    34.5   2.15     0%    256    352
+foundry          1     0.0   144.6    77.4    67.2     30   30.0    37.4   2.24     0%    278    105
+carpenter        3     0.0   243.3   112.0   131.3     58   58.0    73.5   2.26     0%    163    121
+provisioner      7   794.1   137.3   615.4   316.0    138  137.5   178.6   2.30     0%    212    189
+chandlery        2   243.6     8.6    94.5   157.6     52   52.0   105.7   3.03     0%    226    164
+vintner          1   355.6     0.0   268.7    86.9     22   13.6    73.3   3.95    39%    270    757
+rag_and_bone     1   277.2     0.0   212.4    64.8     14    8.4    56.3   4.63    42%    196    497
+general          1   725.3     8.8   537.6   196.5     22   13.0   183.8   8.93    42%    458   1144
+all            110    5962    3413    6045    3330   2466   1964    1523
+
+profit to keepers: tills paying any, the share of the profit paid by the top 10 tills
+  86 of 110 tills paid profit; 1523p a day; top 10: 43%
+    till:job:rm_josephine_dripgate           general       183.8p a day, on 170 of 360 days
+    till:job:rmx_orm_carlisle                carters        96.3p a day, on 296 of 360 days
+    till:job:rm_delphine_saltwick            vintner        73.3p a day, on 166 of 360 days
+    till:job:rm_emmerich_sootley             chandlery      64.2p a day, on 354 of 360 days
+    till:job:rm_gerrit_sootgate              rag_and_bone   56.3p a day, on 141 of 360 days
+    till:job:rm_sten_kelpwell                chandlery      41.5p a day, on 342 of 360 days
+    till:job:rm_runa_coalhand                foundry        37.4p a day, on 263 of 360 days
+    till:job:rm_dunstan_greywick             tannery        34.5p a day, on 244 of 360 days
+    till:job:rm_imogen_cinderwell            carpenter      31.1p a day, on 224 of 360 days
+    till:job:rm_corra_coalcot                fishmonger     29.6p a day, on 196 of 360 days
+
+households, a day on average, by class and kind: income (wages by payer, profit, alms), food, other spending, cash at 23:00, hungry hours a member
+class    kind       hh  size in:a child's        in:alms in:inheritanc in:new reside     in:profit in:restitutio     in:stolen in:wage suppo in:wages:coun in:wages:till in:wages:trea out:a child's      out:fine      out:food     out:goods out:restituti    out:stolen   cash  hungryh hungry hh
+lower    keeper     17  3.32          0.00          0.04          0.00          0.00         10.02          0.00          0.00          3.50          7.31         18.02          2.89          0.00          0.00         23.26         18.35          0.00          0.00    249     0.00       0.0
+lower    no wage    15  1.12          0.00          6.65          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          6.36          0.28          0.00          0.00     11     0.00       0.0
+lower    waged      74  2.53          0.00          1.00          0.00          0.00          0.00          0.00          0.00          1.53          6.55          4.66          5.17          0.00          0.00         15.85          3.18          0.00          0.00     87     0.00       0.0
+middle   keeper     60  3.06          0.00          0.25          0.01          0.00         22.08          0.00          0.00          4.97          0.27         20.48          0.84          0.00          0.00         22.28         26.44          0.00          0.00    282     0.00       0.0
+middle   no wage    20  1.07          0.00          6.31          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          6.04          0.27          0.00          0.00     11     0.00       0.0
+middle   waged      23  2.41          0.00          0.96          0.00          0.00          0.00          0.00          0.00          0.24          3.26          0.70         12.72          0.00          0.00         14.95          3.00          0.00          0.00     81     0.01       0.0
+unknown  waged       0  1.00          0.00          0.06          0.00          1.67          0.00          0.00          0.00          0.00          8.00          0.00          0.00          0.00          0.00          6.89          1.78          0.00          0.00     15     0.00       0.0
+upper    keeper      3  3.94          0.00          1.27          0.00          0.00         12.85          0.00          0.00          1.70          2.71         14.53          2.64          0.00          0.00         25.78         10.02          0.00          0.00    168     0.00       0.0
+upper    no wage     1  2.00          0.00         11.79          0.05          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00         11.50          0.33          0.00          0.00     20     0.00       0.0
+upper    waged       3  3.90          0.00          9.13          0.00          0.00          0.00          0.00          0.00          0.47          7.74          0.00          8.00          0.00          0.00         23.73          2.27          0.00          0.00     88     0.00       0.0
+watch    no wage     1  1.00          0.00          5.98          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          5.64          0.35          0.00          0.00     10     0.00       0.0
+watch    waged      11  1.41          0.00          0.21          0.00          0.00          0.00          0.00          0.00          0.84          0.00          3.55          6.58          0.00          0.00          8.78          2.40          0.00          0.00     38     0.01       0.0
+
+the hungriest households (hungry member-hours over the span), with their posts, size, income a day, cash
+  638 hungry member-hours in all (2 a day); 34 households ever hungry
+    rm_pennock_house                             middle  public,public,public,public    n4    44h  income  31.7 (wages 31.6, alms  0.0) food  24.7 cash 225
+    rm_fell_cottages                             lower   -,country,hand                 n3    42h  income  20.6 (wages 17.4, alms  2.7) food  19.8 cash 30
+    r2_oakum_stair_house_up                      lower   country,hand,hand,public       n4    36h  income  31.0 (wages 30.9, alms  0.0) food  23.9 cash 210
+    rm_mossgrave_court_up                        lower   country,country,country,countr n4    35h  income  32.0 (wages 32.0, alms  0.0) food  24.9 cash 217
+    r2_cockle_court_house                        lower   -,country,country              n3    34h  income  24.3 (wages 23.2, alms  1.0) food  22.3 cash 30
+    rm_grayrock_cottages                         lower   keeper,public,public           n3    29h  income  53.8 (wages 30.0, alms  0.0) food  21.7 cash 444
+    rm_kettlecote_house                          middle  -,country                      n2    29h  income  12.0 (wages  8.0, alms  4.0) food  11.7 cash 20
+    rm_tarncote_house                            middle  keeper,keeper,keeper,country   n4    29h  income  54.9 (wages 22.1, alms  0.0) food  27.0 cash 348
+    r2_net_court_house_top                       lower   keeper,hand,hand,unpaid,keeper n5    27h  income  50.6 (wages 31.7, alms  0.0) food  32.5 cash 434
+    rm_oilcloth_wool_flat                        middle  keeper,hand                    n2    26h  income  26.8 (wages 15.8, alms  0.0) food  14.1 cash 130
+    rm_the_greatly_bank_flat                     middle  keeper,hand,-                  n3    25h  income  21.6 (wages  0.1, alms  0.0) food  18.5 cash 76
+    rm_the_rain_pot_flat                         middle  hand,keeper                    n2    25h  income  35.7 (wages 22.0, alms  0.0) food  14.5 cash 227
+    rm_grantham_house                            lower   country,country                n2    24h  income  16.0 (wages 16.0, alms  0.0) food  12.6 cash 87
+    rm_gorringe_house                            middle  country,public,public          n3    20h  income  24.0 (wages 24.0, alms  0.0) food  19.5 cash 73
+    rm_moss_house                                middle  public,public,public,public    n4    20h  income  32.0 (wages 32.0, alms  0.0) food  24.9 cash 231
+    rm_grist_crust_flat                          middle  unpaid,hand,keeper             n3    17h  income  42.5 (wages 22.0, alms  0.0) food  21.4 cash 238
+    rm_mallory_house                             middle  public,hand                    n2    15h  income  15.6 (wages 10.5, alms  0.0) food  12.1 cash 44
+    rm_wetherell_house                           lower   -                              n1    15h  income   7.0 (wages  1.6, alms  5.4) food   6.9 cash 10
+    rm_southgate_farriers_flat                   middle  -,unpaid,keeper                n3    14h  income  20.3 (wages 13.8, alms  0.9) food  18.6 cash 48
+    rm_saltwick_house                            middle  keeper,keeper,keeper,keeper    n4    12h  income  73.8 (wages 30.4, alms  0.0) food  28.9 cash 364
+
+the treasury, the Country: in and out by kind, a day
+  treasury: in:draws 1786, in:fine 0, in:inheritance 0, out:alms 388, out:carriage subsidy 40, out:wage support 488, out:wages 871
+    cash 4380 -> 3760
+  outside:country: in:draws 4168, out:carriage out 28, out:country 3413, out:wages 727
+    cash 603 -> 534
+
+## Cost and pay by class: base days 40-59, base year days 300-364, set 2 days 300-364
+class     hh  size  earn  posted   paid profit  alms   food f/head needs+   cash hungry% hh hungry
+lower    112  2.30  1.96    16.7   14.4    0.8   2.0   14.3   6.23    3.0     96     0.9       4.3
+middle   106  2.45  1.68    18.5   14.1    6.6   2.8   16.1   6.56    7.1    189     2.1       8.1
+upper      7  3.58  1.72    16.3   13.7    0.4   6.3   21.2   5.91    0.5     54     2.1       0.9
+watch     15  1.07  1.01     8.1    7.3    0.0   0.8    6.8   6.35    1.2     17     0.1       0.1
+class     hh  size  earn  posted   paid profit  alms   food f/head needs+   cash hungry% hh hungry
+lower    102  2.55  2.13    18.3   15.2    0.7   2.1   15.4   6.03    2.6     80     3.5      13.4
+middle   100  2.58  1.81    19.6   13.9    5.7   2.5   15.4   5.97    6.0    304     9.8      25.4
+unknown    1  1.28  1.28    10.2   10.0    0.0   0.0    8.5   6.64    1.6     18     0.0       0.0
+upper      7  3.43  1.57    15.1   11.9    0.0   5.1   16.2   4.72    0.6     46    21.5       3.8
+watch     10  1.60  1.50    12.0   10.4    0.0   0.4    9.2   5.78    1.5     22     9.6       2.0
+class     hh  size  earn  posted   paid profit  alms   food f/head needs+   cash hungry% hh hungry
+lower    103  2.53  2.10    18.0   16.0    2.1   1.7   16.2   6.40    5.5     97     0.0       0.2
+middle   101  2.54  1.80    19.5   15.7   14.3   1.6   17.6   6.94   17.4    188     0.0       0.2
+unknown    0  1.00  1.00     8.0    8.0    0.0   0.1    6.9   6.89    1.8     15     0.0       0.0
+upper      7  3.71  1.71    16.3   13.8    2.0   6.4   22.5   6.07    2.3     80     0.0       0.0
+watch     10  1.60  1.50    12.0   10.7    0.0   0.6   10.2   6.36    2.5     35     0.1       0.0

@@ -740,3 +740,371 @@ nobody hungry, every household fed, money conserved every day.
   preserver may lack the crew's hours to stock up (doc 68's table: it was over capacity if everyone ate its make).
 - Restdays and festivals move a day's spending more than the season does (a day-46 festival day drew a third of an
   ordinary day's): compare runs on the same weekday, or over weeks.
+
+### The first simulations: supply and demand, cost and pay (2026-10-31)
+
+The user, 2026-10-31 (verbatim): "start simple and small, and just make sure that the simulation works and things are
+running, then go into figuring out supply and demand, and applying fixes in rulesets that can be managed or tweaked from
+DM. We're trying to find a good supply/demand balance along with cost/pay."
+
+Branch `r2-econ-diag`, from `ridgemere2` (8729094). **Analysis and proposals only: no economy rule or setting is
+changed**; the fixes below are for the user to choose. Build 50's export (`artifacts/economy/r2/export50`, main repo),
+from Spring 1, no player, `--no-check --deterministic --no-profile` (doc 69, 10).
+
+#### The instrument
+
+`world_check ... --economy FILE --economy-detail FILE2` (new, committed) writes a second JSON line a game day, from the
+ledger (every coin is a `shift` or a `sale`, and `World::setEventWatcher` sees each one; only read):
+
+- **per business**: its trade, title, keeper, crew, wages owed a day, till, stock (pieces and catalogue value), and what it
+  took in and paid out by kind: sales to residents (`residents`) and to the Country (`country`), store draws (`draws`, the
+  Country's and the toll's parts), carriage, wages, profit;
+- **per household** (`Society::households()`, made public for it): its posts (keeper, hand, public, watch, country,
+  unpaid or none), members and adults, cash at 23:00, members hungry now and hungry member-hours that day, income by kind
+  (wages by payer, profit, alms, inheritance...), spending on food and on other goods;
+- **the treasury, the Country and `fund:carriage`**: in and out by kind.
+- `RATW_DETAIL_TRACE=HOME,...` adds those households hour by hour (each member's hunger, cash, food and task).
+
+Checks: the `--economy` file is byte-identical with and without the flag (60 days compared, and the same as the first
+60-day run's); every till's and household's cash moves exactly by its recorded flows, every day of every run
+(`tools/econ_detail.py --check`: 0 mismatches). `tools/econ_detail.py` prints per trade, households by class (the class
+of the building they live in, doc 67's rule, from `artifacts/ridgemere2/buildings.json`), the hungriest households, the
+treasury and the Country; `tools/econ_weeks.py` averages economy files by week and summarises runs against section 10's
+gates. A detailed run costs little more (60 days in about 75 s; the file is about 100 KB a day).
+
+#### The runs
+
+| Run | Days | What | Files (main repo, `artifacts/economy/r2/diag_*`) |
+|---|---|---|---|
+| base60d | 60 | the 60-day baseline again, with detail | `diag_base60d*.jsonl` |
+| year | 365 | a full year from Spring 1, with detail | `diag_year*.jsonl` |
+| trace50 | 50 | four hungry households hour by hour | `diag_trace50_detail.jsonl` |
+| w_* | 60 each | 13 what-ifs (A-M), one change each (below) | `diag_w_*.jsonl` |
+| y_set1-3, y_a1-a4 | 365 each | the combined sets and what each part does | `diag_y_*.jsonl` |
+
+Settings that exist were changed in a copy of the export (a `loop`, `comforts`, `season` or `store` record after its
+`store` line); rules that don't exist yet were tried in a **throwaway prototype build** (a copy of the source in the
+session's scratch folder, each rule behind an environment variable, off by default: with all of them off it gives the
+baseline byte for byte; its patches are kept, uncommitted, in the main repo's `artifacts/economy/r2/prototype/`). Nothing
+of the prototype is committed. The summaries of every run are committed in `artifacts/economy/r2/diag-summary.txt`; the
+big jsonl stay in the main repo's ignored `artifacts/economy/r2/`. The prototype with its rules off was run too
+(`diag_w_protobase`): identical to the baseline.
+
+#### 1. The 60-day baseline, again
+
+Money conserved every day; 2 births, 2 deaths; nobody newly placed. By ten-day blocks:
+
+| Days | Hungry (mean) | Worst hour (mean) | Households fed | Residents spent | Country spent | Wages paid of 4,068 | Tills short | Profit | Alms | Treasury | Purses | Gini |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0-9 | 0.2 | 0.5 | 243 | 4,636 | 2,442 | 3,590 | 23 | 763 | 179 | 4,037 | 34,801 | .54 |
+| 10-19 | 1.6 | 3.1 | 241 | 4,757 | 2,680 | 3,321 | 42 | 741 | 404 | 5,723 | 31,862 | .58 |
+| 20-29 | 2.2 | 4.1 | 239 | 4,781 | 2,627 | 3,305 | 42 | 1,017 | 543 | 5,708 | 32,649 | .62 |
+| 30-39 | 5.4 | 7.8 | 237 | 4,868 | 2,864 | 3,289 | 43 | 826 | 592 | 6,345 | 30,933 | .63 |
+| 40-49 | 10 | 14 | 231 | 4,633 | 2,508 | 3,276 | 43 | 923 | 556 | 6,004 | 31,941 | .65 |
+| 50-59 | 6.6 | 9.4 | 233 | 4,711 | 2,898 | 3,342 | 41 | 653 | 601 | 6,682 | 30,656 | .66 |
+
+(Treasury, purses and Gini at each block's end; the rest a day.)
+
+#### 2. The year
+
+The full year from Spring 1 (`diag_year.jsonl`; 11 born, 4 newcomers, 15 died; money conserved every day):
+
+| Days | Season | Hungry (mean) | Households fed | Wages paid | Alms | Treasury | Purses | Gini |
+|---|---|---|---|---|---|---|---|---|
+| 0 | spring | 0 | 243 of 243 | 3,858 | 22 | 1,181 | 36,592 | .49 |
+| 60 | spring | 6.3 | 230 | 3,362 | 587 | 6,610 | 30,839 | .66 |
+| 120 | summer | 2.0 | 231 | 3,372 | 607 | 2,219 | 35,986 | .68 |
+| 150 | summer | 8.6 | 223 | 3,253 | 708 | 329 | 37,595 | .68 |
+| 210 | autumn | 32 | 208 | 3,395 | 7 | 226 | 39,256 | .73 |
+| 270 | autumn | 4.4 | 225 | 3,192 | 537 | 220 | 38,864 | .75 |
+| 330 | winter | 53 | 189 | 3,238 | 712 | 219 | 39,678 | .79 |
+| 364 | winter | 46 | 195 | 3,316 | 199 | 213 | 39,877 | .82 |
+
+Hungry by season (the mean of the hourly samples): spring 5.4, summer 5.8, **autumn 21, winter 35** (6% of 559). The
+treasury rose to 6,700p by day 60, then the alms drained it: it reached its 200p float on day ~126 and stayed there, the
+alms became whatever was left after the public wages (7p one day, 700p another), and hunger climbed. Meanwhile the
+**merchants' purses rose from 14,190p (day 60) to 25,705p with a median of 19p**: a handful of keepers hold most of the
+money, and the Gini of earning households ran .49 to .82.
+
+#### 3. Why hunger rises
+
+Hunger is 199 member-hours a day over days 40-59 (51 households ever hungry), 989 a day over days 300-364 (133
+households). Four causes, in the order they matter:
+
+1. **Families whose wage is never paid.** The hungriest households are keepers' and hands' of businesses that sell
+   nothing or almost nothing (the Soundings cartographer, the Greatly Bank's moneychanger, the Clearwater glassblower,
+   the Harness Shop's saddler, the Pawn and Ledger, the Cedar Phial's perfumer, the Council Press): the till
+   pays its posts nothing once it is down to its float, so a family of three or four lives on the alms. Middle-class
+   keepers' households carry 44% of the hungry hours in days 40-59, though they are the richest class on average (cash 299p):
+   the class is split between the rich (food, provisions, the general store) and the ruined.
+2. **The alms are a day's money with no reserve.** A household holding under 7p a head at 18:00 is topped up to 7p a
+   head; it spends it the next day. A day's food is about 6.2p a head at the prices paid, so the alms just cover a day,
+   and on a Restday or festival (when the household doesn't go to market, or its shops are shut) or when the pick goes
+   wrong (below), the household has nothing in hand. The trace: Sybil Pickering, an orphan at lessons living alone, holds
+   7p, buys one 6p meal at her 17:00 market hour, eats it, and is at hunger 100 the rest of the time, every day.
+3. **Within a household, food goes to the first members, not the hungriest.** At market hour each member in turn is
+   topped up to two days of food; the money runs out before the last. In the Soundings flat Ilse and Imogen hold 100+
+   nourishment each while Yrsa, the hand, holds 1p and nothing to eat, at hunger 100 for days; in Mallory House Cressida
+   (a public wage) holds 88-118 while Dirk (an unpaid hand) sits at 84-100. The money for Yrsa's food was in the house.
+4. **A pick the household can't pay for buys nothing.** The food is picked at random, weighted by nourishment for the
+   price, among everything the open shops hold; if the pick costs more than any member has (a 12p roast with 7p), the
+   purchase stops for that hour. A household whose market hour is 17:00 gets one try a day.
+
+Behind all four: **the treasury runs dry** over a year (below), so the alms stop.
+
+#### 4. Why the treasury hoards, then runs dry
+
+- Its income is the 30% gate toll on draws, **about 1,480p a day** (days 40-59); its posts cost **872p** (the 134 public
+  and watch posts as held now, not the 1,072p planned; some are vacant) and the carriage subsidy 33p. So it gains about
+  575p a day before alms; **the alms grew from 22p to about 600p** as unpaid families ran out of savings, and by day 40
+  the treasury was level, by day 60 falling.
+- Over the year the toll falls with trade (draws 4,500-5,000 a day in spring, 3,900-4,400 from autumn) while the alms
+  keep growing: from day ~60 the treasury loses 100-300p a day and is empty by day ~126.
+- **Where the money goes**: the treasury's 6,000p went as alms to the poor, who spent it on food at the shops, whose
+  tills paid it out as profit to a few keepers, who don't spend it (5). The treasury is not hoarding at the end of the
+  year; the keepers are.
+
+#### 5. Tills, profit and hoarding
+
+**Which trades can't cover their wages** (days 40-59, pennies a day, all the trade's tills; value added = sales to
+residents and the Country less draws and carriage; cover = value added / wages owed):
+
+| Trade (tills) | Residents | Country | Value added | Wages owed | Paid | Cover | Why |
+|---|---|---|---|---|---|---|---|
+| moneychanger, shipwright, stables, builders' yard, barber, pawnbroker (6) | 0-2 | 0 | 0 | 180 | 1 | 0 | nothing anyone buys |
+| cartographer, perfumer (2) | 0 | 0 | 0 | 44 | 0 | 0 | **can make nothing**: every craft takes longer than the two hours a lone crew may bank |
+| saddlery, press, herbalist, armory (4) | 0-4 | 6-22 | 0-6 | 80 | 7 | .01-.25 | few buyers; most crafts too long for the crew |
+| inns (15) | 411 | 196 | 113 | 290 | 114 | .39 | many tills, thin margins (resale 25%, porridge and stew) |
+| dairy (4) | 221 | 0 | 33 | 80 | 33 | .41 | cheese from milk at full price: a thin margin |
+| printing house, apothecary, glassworks, preserver, ropewalk, brewery, cooperage, distillery, builders' works, charcoal (16) | | | | | | .43-.73 | margins under their crews' wages |
+| brickworks, smithy, sawmill, mason, butcher (12) | | | | | | .84-1.02 | about even |
+| bakery, provisioner, fishmonger, carpenter, chandlery, foundry, cartwright, weaver, tailor... (30) | | | | | | 1.1-2.3 | comfortable |
+| general store (1) | 348 | 12 | 99 | 22 | 14 | 4.5 | rich, but short of wages 40% of days (the float, below) |
+| **All 110** | **4,672** | **2,703** | **2,362** | **2,468** | **1,711** | **.96** | |
+
+- **The shops as a whole add less value than their wage bill** (2,362p against 2,468p), and 788p a day of it leaves as
+  profit, so 1,711p is paid (69%). Doc 68's own arithmetic had this gap (2,376p against 2,468p, section 1).
+- **The work bank** (doc 68, 7: "hours left over carry to the next hour, up to two hours' worth"): a craft longer than
+  twice the crew can never be made. Four businesses can make **none** of their goods (the cartographer's 13.9-hour map,
+  the perfumer's 6-16-hour oils and soap, the jeweller's 2.9-8-hour charms and rings for a crew of one (it lives on what
+  it resells), the Clearwater glassblower's 4.2-7.4-hour glass for two), and 30 more can't make some (the smiths' swords and farm gear, the butchers'
+  pig, the provisioners' jerky, the brewers' wine, the armoury's arms). They sell their starting stock and stop.
+- **The float** (section 4: a till keeps back 20p or what it drew yesterday, if more): a reseller that draws 300-500p a
+  day holds all its takings as float and pays nothing above it. The general store, with value added four and a half times
+  its wages, is short of them 40% of days; the vintner and the rag-and-bone yard likewise.
+- **Lumpy profit** is the Restday: on a Restday few sell and few draw, so the next day's shelves (1.25 times yesterday's
+  sales) are low and its float (yesterday's draws) is small; the day after a Restday the tills take in the catch-up
+  shopping, draw little, and pay everything over their float and a week's wages out as profit: **1,600-2,400p on each day
+  after a Restday against 450-900p on other days**. The rest of the week they are short of working money again.
+- **Hoarding**: the profit goes to 51 of 110 tills, half of it to ten (the general store 90p a day, the carters 71p, two
+  chandlers, two provisioners, a fishmonger, the foundry, a carpenter). The comforts rule (a household over 60p a head
+  spends a tenth of the excess a day) **stops at 20 purchases a day** of 1-6p goods, so a keeper holding thousands spends
+  at most 60-100p a day and the rest piles up. This is doc 65's "money settles where it isn't spent" again, through
+  profit rather than wages.
+
+#### 6. The Restday and festival dips
+
+Every seventh day (days 6, 13, 20...) residents spend 2,700-3,000p against 4,800p, and on the festivals (Spring's middle,
+day 46 of the year) 2,100p; 62 households buy no food on a Restday and 106 on a festival day. The tills selling are about
+the same (72 against 75): most households simply have a day's food and don't need to shop, and buy again the next day
+(5,800-6,100p). The Country's makers are fewer at work (57 against 64-70), so it spends 520-1,000p and holds 900-1,400p,
+spent over the next days: it is a dip, not a leak. What it does harm: the next day's profit flush (5), and the households
+with no food reserve (3).
+
+#### 7. The Carters' Yard
+
+It takes 133p a day of carriage (76p in, 23p out, 33p the treasury's subsidy), pays its keeper and six drivers 62p, and
+pays the rest, **71p a day, to Orm Carlisle as profit**; its till sits at its cap, 454p (20p + 7 × 62p), every day. So the
+yard is sound, and the treasury's 33p a day of subsidy goes to its keeper's profit rather than to cheaper carriage.
+
+#### 8. The Country's spending
+
+It takes in about 3,456p a day of draws less the toll and spends 2,703p on the city's goods, 728p on its posts' wages and
+23p on carriage: level (470-500p at 18:00, its reserve 200p; it holds 900-1,400p only on Restdays). Its money reaches the
+smithies (387p a day), the carpenters (190p), the inns (196p, drink), the brewers (171p), the foundry, the brickworks,
+the mason, the provisioners, the ironworks, the cartwright and the fishmongers (98-133p each); none of it reaches the
+trades with nothing it buys (the moneychanger, the shipwright, the stables, the barber, the builders' yard, the
+pawnbroker), nor the four that can make nothing. It is working as designed; its basket can only buy what is made.
+
+#### 9. The seasons over the year
+
+By season (means a day, the base year; set 2 and 3 below behave the same way):
+
+| | Spring | Summer | Autumn | Winter |
+|---|---|---|---|---|
+| bread and porridge sold (grain) | 468 | 546 | 565 | 473 |
+| grain drawn of the Country's cap | 123 of 131 | 138 of 171 | 139 of 192 | **118 of 126** |
+| fresh fish sold (price paid) | 109 (1.99p) | 92 (2.15p) | 93 (1.98p) | **125 (1.78p)** |
+| fresh fruit drawn of cap (all by makers: residents eat none fresh) | 459 of 550 | 451 of 1,166 | 413 of 1,255 | **374 of 447** |
+| preserves sold | 97 | 107 | 101 | 92 |
+| preserves on the shelves (most) | 49 (183) | 164 (320) | 269 (365) | 81 (296) |
+| meat sold (no season) | 89 | 87 | 83 | 94 |
+
+- **More bread in summer and autumn, more fresh fish in winter, livestock level**: as the user asked, by the residents'
+  own choice of food for the price.
+- **Preserved fruit is not eaten more in winter**: the stock-up works (the shelves hold 270 on average in autumn, at most
+  365) but it is three days' sales, not a winter's (90 days at about 100 a day is 9,000 pieces), and in winter fresh fruit
+  is capped (30% supply) and shared with the cider makers, so the preservers can make little. A what-if with the autumn
+  shelf at 10 times and winter's price at 80% (`y_set3`) stocked up to 1,039 pieces but still sold out within about ten days
+  of winter (winter sales 46 a day against autumn's 126).
+- Hunger was worst in autumn and winter in the base year because the treasury was empty by then, not because of the
+  seasons: in the fixed runs (12) hunger is near nil in every season.
+
+#### 10. Cost and pay, by class
+
+A day, by the class of the building a household lives in (doc 67), days 40-59 of the baseline: wages as posted and as
+paid, food at the prices paid, other spending (household needs and comforts):
+
+| Class | Households | Size | Earners | Wages posted | Paid | Profit | Alms | Food | Food a head | Needs and comforts | Cash | Hungry (share of member-hours) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| lower | 112 | 2.30 | 1.96 | 16.7 | 14.4 | 0.8 | 2.0 | 14.3 | 6.2 | 3.0 | 96 | 0.9% |
+| middle | 106 | 2.45 | 1.68 | 18.5 | 14.1 | 6.6 | 2.8 | 16.1 | 6.6 | 7.1 | 189 | 2.1% |
+| upper | 7 | 3.58 | 1.72 | 16.3 | 13.7 | 0.4 | 6.3 | 21.2 | 5.9 | 0.5 | 54 | 2.1% |
+| the Watch's barracks | 15 | 1.07 | 1.01 | 8.1 | 7.3 | 0 | 0.8 | 6.8 | 6.4 | 1.2 | 17 | 0.1% |
+
+- **A day's food is about 6.2p a head, needs about 1.3p**: 7.5p a head. A hand's or a public post's 8p keeps one; a family
+  of 2.3 needs 17p, so **a lower household needs two earners**, and has 1.96 on average: it breaks even (income 17.2p,
+  spending 17.3p) with nothing over, and a lost wage is hunger within days.
+- **Households that can't feed themselves even when every wage is paid** (posted wages under 7.5p a head; day 40): 17
+  lower, 42 middle (a keeper's 14p and children), 6 upper; and 34 with no wage at all (the retired, orphans, the
+  displaced: alms only).
+- **The upper class is poor in this loop**: the Minor Houses' family members hold posts no wage rule pays ("lending",
+  "overseeing the Grayrock wharf", "at leisure"; the Queen and the King's daughter), so a House household of four lives
+  on one public wage and the alms; over days 300-364 its members were hungry 21% of the time. Only Orm Carlisle (the
+  Carters' Yard) has a House income. Also unpaid: "running the City Office" (no rule word catches it).
+- **The middle class splits**: shopkeepers of the profitable trades take 6.6p a day of profit on average (concentrated in
+  a few), while keepers of the trades in 5 have nothing.
+
+#### 11. What-ifs, 60 days each
+
+One change each, days 5-59 (base: `base60d`). Wages = wages paid of wages owed; treasury and Gini start to end.
+
+| What-if | Rule or setting | Hungry (mean) | Worst | Fed (lowest) | Wages | Tills short | Profit | Alms | Treasury | Gini |
+|---|---|---|---|---|---|---|---|---|---|---|
+| base | | 4.70 | 21 | 92.2% | 81.8% | 40.8 | 824 | 514 | 3,448 → 6,682 | .50 → .66 |
+| A. the work bank holds a business's longest craft | prototype | 3.24 | 16 | 94.2% | 84.0% | 37.0 | 803 | 457 | → 7,352 | → .64 |
+| B. fair food in a household | prototype | **1.92** | 15 | 95.5% | 81.9% | 40.5 | 823 | 529 | → 6,161 | → .65 |
+| C. alms 10p a head (not 7p) | prototype (`AlmsADay` is a constant) | **0.15** | 3 | **98.8%** | 82.5% | 39.8 | 907 | 639 | 3,043 → 2,316 | → .64 |
+| D. treasury over 2,000p pays short tills' wages | prototype | 3.31 | 16 | 93.8% | **87.6%** | 39.2 | 910 | 441 | 1,998 → 1,490 | → .66 |
+| E. treasury over 2,000p buys the Country's basket | prototype | 4.30 | 21 | 94.2% | 83.2% | 37.7 | 1,010 | 490 | 1,904 → 1,547 | → .67 |
+| F. the float a 7-day mean of draws | prototype | 4.49 | 17 | 93.4% | 82.5% | 41.6 | 773 | 507 | → 7,330 | → .66 |
+| G. shelves from a 7-day mean of sales too | prototype | 4.00 | 17 | 93.8% | 81.9% | 41.4 | 813 | 515 | → 6,420 | → .65 |
+| H. profit cap 3 days, half to the hands | prototype | 3.49 | 17 | 94.2% | 79.7% | 46.9 | 997 | 493 | → 10,089 | → .62 |
+| I. profit tax 30% to the treasury | prototype | 4.69 | 19 | 93.0% | 81.1% | 42.6 | 500 | 520 | → 13,896 | → .62 |
+| J. comforts above 40p, a fifth, no 20-a-day limit | setting + prototype | 4.35 | 19 | 93.0% | 82.9% | 38.2 | 1,074 | 515 | → 16,959 | .45 → .59 |
+| K. gate toll 27% | setting | 4.00 | 21 | 93.4% | 83.0% | 38.6 | 927 | 496 | 2,829 → 2,632 | → .66 |
+| L. resale markup 65% (not 75%) | setting | 4.06 | 19 | 93.0% | 81.9% | 41.1 | 943 | 515 | 3,164 → 4,191 | → .68 |
+| M. markups making 90%, resale 70% | setting | 4.15 | 21 | 91.8% | 85.0% | 35.3 | 949 | 481 | 2,705 → 2,311 | → .67 |
+
+- **Hunger answers to the household rules** (B, C): ten pennies of alms a head ends it in 60 days; fair food halves it.
+- **Wages answer to support** (D) and to making (A): the treasury paying short tills raises wages to 88%; letting long
+  crafts be made brings the cartographer, perfumer, jeweller and glassblowers back (cover .58-1.60) and frees 60p a day of
+  alms.
+- **The treasury needs an outlet**: alone, a profit tax (I) or more spending (J) only piles it higher (13,900p,
+  17,000p); the toll at 27% (K) holds it level over 60 days (the doc's earlier proposal 1, confirmed), but not over a year
+  once the alms grow.
+- **Markups** (L, M) move money from the Country and the toll to the tills: a few points of wages, more profit.
+- **Not worth it alone**: the 7-day float (F) and shelves (G) smooth the post-Restday flush a little (2,377p → 1,562p)
+  and change little else; profit shared with hands on a 3-day cap (H) starves tills of working money (wages 80%).
+
+#### 12. The combined sets, a year each
+
+| Year run | Rules | Hungry (mean) | Worst hour | Fed (lowest) | Wages | Tills short | Profit | Alms | Treasury (day 5 → 364) | Purses | Gini (day 5 → 364) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| year (base) | | 16.9 (3.0%) | 109 | 72.5% | 80.2% | 42.9 | 697 | 488 | 3,448 → 213 | 34,329 → 39,877 | .50 → .82 |
+| set 1 | A + B + C + D | 15.8 (2.8%) | 81 | 82.6% | 83.0% | 36.9 | 804 | 505 | 1,741 → 214 | 36,083 → 38,590 | .48 → .78 |
+| **set 2** | **set 1 + J** | **0.07 (0.0%)** | 56 | 89.6% | **99.7%** | 28.5 | 1,523 | 388 | 4,380 → 3,760 | 31,108 → 31,498 | **.42 → .59** |
+| set 3 | set 2 + the preserves' season (9) | 0.09 | 52 | 88.3% | 99.8% | 28.7 | 1,519 | 384 | 4,333 → 3,029 | 31,077 → 31,846 | .43 → .58 |
+| a4 | J's setting only (40p, 20%; the 20-a-day limit kept) | 9.81 (1.8%) | 111 | 71.9% | 81.7% | 40.7 | 791 | 519 | 6,026 → 214 | 29,591 → 39,765 | .45 → .85 |
+| a1 | J alone (no limit) | 4.10 (0.7%) | 65 | 82.9% | 82.8% | 38.6 | 920 | 533 | 6,239 → **18,351** | 29,385 → 19,590 | .45 → .62 |
+| a2 | J + B + C | 0.08 | 49 | 90.8% | 83.7% | 36.6 | 1,102 | 654 | 5,881 → 14,241 | 29,593 → 22,982 | .44 → .62 |
+| a3 | J + B + C + A (set 2 without D) | 0.09 | 56 | 89.9% | 86.1% | 32.1 | 1,082 | 577 | 5,766 → 14,251 | 29,588 → 23,056 | .43 → .59 |
+
+What each part does (a1-a4, the same year):
+
+- **The comforts setting alone is not enough** (a4): with the 20-a-day limit kept, 40p and 20% change nothing that
+  lasts. The limit is what binds.
+- **Without the limit (a1)** the keepers' hoard comes back to the shops, but the treasury takes it in as toll and piles
+  it up (18,351p by year's end, a third of the money): the hoard moves from the keepers to the treasury.
+- **Fair food and alms 10p (a2) end hunger**, the work bank (a3) adds 2-3 points of wages, and **the treasury's cap paying
+  the short tills (set 2) brings the pile back as wages**: 99.7% paid, the treasury level.
+
+- **Set 2 holds for a year**: somebody was hungry on only 5 of 365 days, one resident on three of them; the other two
+  are the Autumn and Winter festivals (run days 231 and 322), when 56 and 40 were hungry for some hours (households that
+  don't shop on a festival day and have no reserve). Every wage paid; Gini of earning households .42-.59 (.47-.55 by
+  four-week means); the treasury between 1,405p and 5,543p with no trend; money conserved. Its
+  treasury takes 1,786p a day of toll and pays 871p of wages, 488p of wage support, 388p of alms and 40p of subsidy.
+- **Without the comforts' spend-back (set 1) the year fails as the base does**: the profit piles up with the keepers,
+  the treasury empties by summer and hunger returns. The spend-back is what keeps the money moving; the household rules
+  then keep the poor fed and the wage support keeps the poor trades' families paid.
+- What still doesn't cover itself in set 2: the six trades with nothing to sell, the dairies (.37), the inns (.58), the
+  saddlery (.68), the cooperage and the preservers (.83-.85): the treasury's wage support pays their posts (488p a day).
+
+#### 13. Proposals: rules the DM can tune
+
+Ranked by what they do for the user's three tests (hunger rare; the poor house and feed their families; shops and works
+open). Each: what it changes, its setting and default, the effect expected, and what was measured.
+
+1. **Comforts that actually spend savings** (anti-hoarding). *Change*: drop the 20-purchases-a-day limit (a household
+   buys comforts until its day's budget is spent) and lower the threshold. *Settings*: `comfortsAbove` and
+   `comfortsShare` exist (DM, Economy tab); new `comfortsMost` (purchases a day; default none). *Proposed defaults*: above
+   **40p** a head, share **20%**. *Measured*: the settings alone with the limit kept do nothing over a year (a4); without
+   the limit, over 60 days Gini .66 → .59 and spending +9% (J), and over a year hunger 16.9 → 4.1 and Gini .82 → .62, but
+   the treasury piles up the toll (a1); with the household rules and the treasury's cap the whole year holds (set 2).
+   **The single biggest lever**, and it needs (4) beside it.
+2. **Fair food in a household.** *Change*: at market hour the members with least food first, everyone to `shortDays`
+   (1 day) before anyone to `foodDays` (2), and the food picked among what some member can pay for. *Setting*: none
+   needed (a rule fix); optionally `food.fair` on/off in country.json. *Measured*: hunger 4.7 → 1.9 over 60 days (B), and
+   part of set 2.
+3. **Alms as a setting, and 10p a head.** *Change*: `AlmsADay` (7p, a constant) becomes `almsADay`, DM-tunable;
+   **10p**, so a household on alms keeps a day in hand for Restdays and festivals. *Measured*: hunger 4.7 → 0.15 over 60
+   days (C) at 639p a day of alms (+125p); over a year it needs (4) and (1) to pay for it.
+4. **The treasury's cap: what is over it pays the short tills' wages** (the user's "supplement areas that help
+   businesses"). *Change*: at 18:00, after its own wages, the treasury pays from what it holds over `treasuryCap` what each
+   till could not pay its posts, shared as the till shares. *Settings*: `treasuryCap` (default **2,000p**, about two and a
+   half days of its posts and alms), and which trades it supports (`subsidies.wages`, percent of the shortfall, by trade
+   or all; default 100% for all). *Measured*: wages 82% → 88% over 60 days (D); 99.7% for a year in set 2 (488p a day),
+   the treasury level. The alternative outlet, buying the Country's basket (E), raised profit more than wages.
+5. **The work bank holds the longest craft.** *Change*: a crew's hours in hand keep to its business's longest craft plus
+   an hour (not two hours'), so a lone cartographer makes a map in two days. *Setting*: `workBankHours` (default: the
+   longest craft; 2 is today's). *Measured*: four dead businesses come back, wages +2 points, alms -57p (A). A fix as much
+   as a setting.
+6. **The float: what a till keeps back.** *Change*: the float is the smaller of yesterday's draws and a share of the
+   till's takings, or a running mean (F); either way a busy reseller pays its wages before keeping a day's draws.
+   *Setting*: `floatDays` (days of mean draws; default 1 now). *Measured*: the 7-day mean alone smooths the flush
+   (2,377p → 1,562p) and +0.7 points of wages; the general store, vintner and rag-and-bone still short 40% of days in set
+   2: worth a second look (a float of half a day's draws, say).
+7. **Profit to the hands, and a profit tax**, only with an outlet. *Change*: a share of a till's profit to its hands
+   (`profitHands`, percent) and to the treasury (`profitTax`, percent). *Measured*: neither helps alone (H, I); a tax
+   pays for (3) and (4) once (1) is in. Not in the first set.
+8. **The trades with nothing to sell.** The moneychanger, shipwright, stables, barber, builders' yard and pawnbroker sell
+   nothing to residents or the Country. Choices for the user: (a) public services, their posts paid by the treasury (a
+   wage rule: "the city's services", as the clergy are), (b) give them goods (the stables' hay and tack to the Country's
+   basket, the builders' yard's materials to the treasury's works), or (c) fewer of them in the city. Set 2 pays them
+   through (4), about 180p a day.
+9. **Wages that feed a family**, by class or trade. *Settings*: the four wages exist (keeper 14, hand 8, public 8,
+   Country 8). A lower household needs two 8p earners; the households short even when every wage is paid (65 of 243)
+   are mostly middle keepers with children. Not tested: raising wages without (1) and (4) only moves more money into
+   tills that can't pay it. Revisit after the first set.
+10. **The Minor Houses' income.** Their family members' posts ("lending", "overseeing the Grayrock wharf", the Queen, the
+   King's daughter) and "running the City Office" have no wage rule: add rule words (the Country's estates for the
+   Houses, the treasury for the City Office). A data change in `country.json`'s `wages.rules`.
+11. **Festivals and Restdays.** A household going into a Restday or a festival buys a day more (`food.daysBeforeRest`),
+   or food shops keep their hours on those days. The only hunger left in set 2 is the two festivals.
+12. **The gate toll at 27%** (setting, exists): holds the treasury level over 60 days (K) without the cap; with (4) the
+   cap does it, so the toll can stay at 30%.
+13. **The Carters' Yard**: four more drivers (the loads want ten; it has six), or the carriage subsidy to 0% (it pays Orm
+   Carlisle's profit, 71p a day, not cheaper carriage). Settings exist (`subsidies.carriage`, `carriage`).
+14. **Winter preserves.** The shelf stock-up can't carry a winter. Either the Country's stores send preserved fruit in
+   winter (a `supply` for the preserved group with a `normal`, and the provisioners reselling it), or a reserve of the
+   autumn's fruit for the preservers (a season group's cap kept for makers of a list). Needs a small rule; not tested
+   beyond (9).
+15. **Inns and dairies**: 15 inns and 4 dairies can't cover their wages at resale 25% and cheese at full cost. Either
+   fewer tills, or the store's markups (`store` making 100%, resale 75%; settings exist). Measured over 60 days: resale
+   at 65% (L) changes little (the resellers' extra margin goes to profit); making 90% and resale 70% (M) raises wages to
+   85% and cuts the tills short from 41 to 35, at the cost of a fifth less toll. A cheap second step after the first set.
+
+**The first set to try together** (set 2, measured for a year): **1** (comforts 40p, 20%, no daily limit), **2** (fair
+food), **3** (alms 10p), **4** (treasury cap 2,000p paying short tills' wages) and **5** (the work bank). Then **10**
+(wage rule words), **11** (festivals) and **6** (the float) as small follow-ups, and **8** and **15** as the user's
+choices about the city's trades.
