@@ -185,7 +185,13 @@ struct ResidentRequest
     Spot home;
     std::string positionId;       // Newcomer: the post they come for.
     std::vector<std::string> parents;
+    // Birth: the child's sex, "male" or "female" (characters are male or female only: the user), decided with the
+    // request (birthSex) so a deterministic run repeats; its pronouns follow (Game::pronounsOf). Empty: as the template.
+    std::string sex;
 };
+// A child's sex, half and half, from the couple's key and the day (the world's own deterministic mix, no clock or
+// global random state): "male" or "female".
+std::string birthSex(const std::string& couple, std::int64_t day);
 // Skill families (a placeholder until skills are designed): what a job's skill is mostly about, so that some of it
 // carries to a similar job. "keeping the inn" and "keeping the stall" are both trade; a sawyer and a quarryman labour.
 const char* skillFamily(const std::string& title);

@@ -334,6 +334,23 @@ void strangersAndChildren()
     expect(births[0].age == 0 && births[0].templateId == "wren" && births[0].name.find("Ash") != std::string::npos &&
                births[0].parents.size() == 2 && births[0].home.cell == "ash_house",
            "A child of Wren and Birch, at home: " + births[0].name);
+    for (const auto& b : births)
+        expect(b.sex == "male" || b.sex == "female", "a child is a son or a daughter: " + b.name + " " + b.sex);
+    // Half and half, not the mother's (every child was a daughter before), and the same again for the same couple and
+    // day, so a deterministic run repeats.
+    int sons = 0;
+    for (int n = 0; n < 4000; ++n)
+    {
+        const auto couple = "a" + std::to_string(n % 97) + "|b" + std::to_string(n);
+        const auto sex = birthSex(couple, 100 + n % 365);
+        expect(sex == birthSex(couple, 100 + n % 365), "the same couple and day, the same child");
+        sons += sex == "male";
+    }
+    expect(sons > 1800 && sons < 2200, "about half the children are sons: " + std::to_string(sons) + " of 4000");
+    int sonsOfOne = 0;
+    for (int day = 0; day < 2000; ++day)
+        sonsOfOne += birthSex("birch|wren", day) == "male";
+    expect(sonsOfOne > 900 && sonsOfOne < 1100, "one couple's children too, day by day: " + std::to_string(sonsOfOne));
 }
 
 // Families as authored (doc 62, decision 8): kept by the society as those made in play are.

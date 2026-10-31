@@ -205,6 +205,7 @@ Tally run(const fs::path& root, int days, unsigned threads, bool profile, std::s
         expect(life && spec && e.npc, id + " is a resident");
         expect(!child || e.age == 0 || e.age == 1, id + ", born here, is a child: " + std::to_string(e.age));
         expect(spec->appearance.sex == "male" || spec->appearance.sex == "female", id + " is male or female");
+        expect(e.appearance->sex == spec->appearance.sex, id + "'s body is the sex its record says");
         // (A child at its mother's home; a stranger where the last holder lived, else by the work: here, the market.)
         expect(life->homeCell == (child ? cellId(0) : cellId(1)), id + " lives in the town: " + life->homeCell);
     }

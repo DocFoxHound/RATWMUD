@@ -61,6 +61,12 @@ bool thisWeek(const std::string& id, std::int64_t day)
 }
 } // namespace
 
+std::string birthSex(const std::string& couple, std::int64_t day)
+{
+    // (A high bit of the mix: its lowest bit follows the day's alone.)
+    return (mix(couple + "|sex", day) >> 37) & 1 ? "male" : "female";
+}
+
 bool facilityAccount(const std::string& id)
 {
     for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country)
@@ -881,6 +887,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         r.age = 0;
         r.home = home ? Spot{home->homeCell, home->homeX, home->homeY} : mother->home;
         r.parents = {a, b};
+        r.sex = birthSex(key, today);
         c.lastBirth[key] = now;
         ++c.births[key];
         requests_.push_back(r);

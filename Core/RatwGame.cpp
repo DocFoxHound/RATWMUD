@@ -1499,12 +1499,14 @@ void Game::makeResidents()
             "appearance, route_id, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, home_y, work_area, work_x, work_y, "
             "evening_area, evening_x, evening_y, origin, wander_area, spawn_id) "
             "SELECT world_id, $2, (SELECT coalesce(max(position) + 1, 0) FROM live.npcs WHERE world_id = $1), $3, 'civilian', $4, "
-            "'Hello.', personality, $5, '-', $6::integer, voice, appearance, NULL, false, $7::integer, 0, 1, hours_start, hours_end, "
+            "'Hello.', personality, $5, '-', $6::integer, voice, "
+            // (A child's sex is its own, half and half, not its mother's: $12 empty keeps the template's.)
+            "CASE WHEN $12 = '' THEN appearance ELSE jsonb_set(appearance, '{sex}', to_jsonb($12::text)) END, NULL, false, $7::integer, 0, 1, hours_start, hours_end, "
             "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
             "FROM live.npcs WHERE world_id = $1 AND id = $11",
             {liveWorldId_, id, request.name, description, child ? std::string("Born in the world, not written.") : std::string(),
              std::to_string(request.age), child ? std::string("0") : std::to_string(newcomerPurse(home.cell)), home.cell, x, y,
-             request.templateId});
+             request.templateId, child ? request.sex : std::string()});
         World candidate;
         std::string problem;
         const bool loaded = made.ok && loadWithLivePeople(candidate, problem);

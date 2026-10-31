@@ -3083,6 +3083,8 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
         r.joinable = r.protectedNpc = false;
         r.description = child ? "A young wolf, born here to " + model->name + "'s family." : "A stranger lately come to town.";
         r.backstory = child ? "Born in the world, not written." : std::string();
+        if (child && !request.sex.empty())
+            r.appearance.sex = request.sex;          // (Not the mother's: a son or a daughter, half and half.)
         const auto purse = child ? std::int64_t(0) : Society::NewcomerPurse;
         if (!society_.addResident(r, purse))
             continue;
@@ -3092,6 +3094,7 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
         e.age = r.age;
         e.lastBirthdayDay = calendarDays_;
         e.description = r.description;
+        e.appearance = r.appearance;
         e.activity = r.workLabel;
         e.dead = false;
         e.cellId = r.home.cell;
