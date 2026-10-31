@@ -436,6 +436,10 @@ prints the Country's purse, the treasury, the carters' takings and the economy's
 
 ## 10. Stability gates and how to measure them
 
+**How to run it now:** see `Docs/Design/69-simulation-speed.md`, section 10 (no player, `--no-profile`, `RATW_DATA_DIR`
+set to the checkout's `Data`; 60 days in about a minute, `--fast` opt-in). The runs below were made the old way, with
+world_check's benchmark player.
+
 `world_check EXPORT --simulate 6 HOURS --economy FILE` (new flag) writes one JSON line a game day: residents hungry
 (hunger 80 or more) at each hour, households with a hungry member, shops holding goods and food shops holding food at
 noon, tills short of their float, wages owed and paid, the Country's purse, the treasury, the carters' takings, money in
