@@ -2,17 +2,28 @@
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
-//                                                       [--threads N]]
+//                                                       [--threads N] [--economy FILE] [--sample] [--no-profile] [--no-births]
+//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
-// --players N (default 1) adds walking players: the first at the spawn, the rest beside residents spread over the
-// world, each observed every tick and sent a view five times a second as the server does. --no-check skips loading
-// every place first (the check), which is slow and not needed to measure ticks. --deterministic does the work by counts,
-// never the clock (World::setDeterministic), so a run repeats exactly. --full turns the simulation tiers off, simulating
-// every NPC in full wherever it is (as before tiers), for comparison. --threads N (default 8; 1: the main thread alone)
-// spreads the world's work over threads as the server's pool does (Docs/Design/31, "Fast-forward"); a deterministic run
-// ends the same on any number.
+// --players N (default 1; 0 with --economy) adds walking players: the first at the spawn, the rest beside residents
+// spread over the world, each observed every tick and sent a view five times a second as the server does. --no-check
+// skips loading every place first (the check), which is slow and not needed to measure ticks. --deterministic does the
+// work by counts, never the clock (World::setDeterministic), so a run repeats exactly. --full turns the simulation tiers
+// off, simulating every NPC in full wherever it is (as before tiers), for comparison. --threads N (default 8; 1: the main
+// thread alone) spreads the world's work over threads as the server's pool does (Docs/Design/31, "Fast-forward"); a
+// deterministic run ends the same on any number.
+//
+// An economy run (Docs/Design/69-simulation-speed.md): --economy FILE writes the city's loop, a JSON line a game day
+// (doc 68, 10), and has no player unless --players says. With no player the harness samples nothing tick by tick (the
+// held residents, the road tally, the crowds, each tick's time): --sample keeps them. --no-profile turns World::tick's
+// clocks off (World::setProfiling). Each game day's wall time is printed as it ends. Births and newcomers are made as the
+// game server makes them for a world from files (World::makeRequestedResidents, every tick); --no-births only asks for
+// them, as before. Deaths are the world's own (old age, World::tendOldAge), the same here as on the server.
+// --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
+// each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
+// line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
 #include "RatwItems.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
@@ -238,6 +249,8 @@ struct EconomyWatch
     int hours = 0, hungrySum = 0, hungryMost = 0, fedHouseholds = 0, households = 0, shops = 0, shopsStocked = 0,
         foodShops = 0, foodShopsStocked = 0, residents = 0;
     std::int64_t money0 = -1;
+    int born = 0, newcomers = 0;                    // Made since the last line (the harness counts them: makeRequestedResidents).
+    int deadAtLine = -1, deadNow = 0;               // Residents dead at the last line, and now.
     static double gini(std::vector<double> v)
     {
         if (v.size() < 2)
@@ -260,15 +273,19 @@ struct EconomyWatch
         std::map<std::string, std::vector<std::string>> homes;
         int hungry = 0;
         residents = 0;
+        deadNow = 0;
         for (const auto& [id, life] : society.state().residents)
         {
             const auto* e = server.entity(id);
+            deadNow += e && e->dead;
             if (!e || e->dead)
                 continue;
             ++residents;
             hungry += life.hunger >= 80;
             homes[Society::communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell].push_back(id);
         }
+        if (deadAtLine < 0)
+            deadAtLine = deadNow;
         ++hours;
         hungrySum += hungry;
         hungryMost = std::max(hungryMost, hungry);
@@ -354,9 +371,12 @@ struct EconomyWatch
             << ", \"carters\": " << society.cash(society.carters()) << ", \"tills\": " << tills << ", \"till_median\": "
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
-            << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"hungry_who\": \""
+            << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"births\": " << born
+            << ", \"newcomers\": " << newcomers << ", \"deaths\": " << deadNow - deadAtLine << ", \"hungry_who\": \""
             << who << "\"}" << std::endl;
         hours = hungrySum = hungryMost = 0;
+        born = newcomers = 0;
+        deadAtLine = deadNow;
     }
 };
 } // namespace
@@ -364,7 +384,13 @@ struct EconomyWatch
 int main(int argc, char** argv)
 {
     const bool simulate = argc >= 5 && std::string(argv[2]) == "--simulate";
-    int playerCount = 1;
+    int playerCount = -1;                           // (-1: 1, or 0 for an economy run.)
+    bool sample = false;                            // --sample: the per-tick sampling even with no player.
+    bool profile = true;                            // --no-profile: World::tick's clocks off.
+    bool births = true;                             // --no-births: births and newcomers only asked for.
+    bool fast = false, straight = false, coarse = false;   // --fast, --straight, --coarse-ticks.
+    int unseenStep = 0;                             // --unseen-step N (0: the game's, Society::UnseenStep).
+    bool unseenStepSet = false;
     bool check = true;
     bool full = false;                              // --full: every NPC in full simulation (no tiers).
     bool deterministic = false;                     // --deterministic: work by counts, never the clock (World::setDeterministic).
@@ -376,7 +402,24 @@ int main(int argc, char** argv)
     {
         const std::string flag = argv[i];
         if (flag == "--players" && i + 1 < argc)
-            playerCount = std::max(1, std::atoi(argv[++i]));
+            playerCount = std::max(0, std::atoi(argv[++i]));
+        else if (flag == "--sample")
+            sample = true;
+        else if (flag == "--no-profile")
+            profile = false;
+        else if (flag == "--no-births")
+            births = false;
+        else if (flag == "--fast")
+            fast = true;
+        else if (flag == "--straight")
+            straight = true;
+        else if (flag == "--coarse-ticks")
+            coarse = true;
+        else if (flag == "--unseen-step" && i + 1 < argc)
+        {
+            unseenStep = std::clamp(std::atoi(argv[++i]), 1, 600);
+            unseenStepSet = true;
+        }
         else if (flag == "--no-check")
             check = false;
         else if (flag == "--full")
@@ -394,8 +437,24 @@ int main(int argc, char** argv)
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE] [--threads N] [--economy FILE]]\n";
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic]"
+                     " [--events FILE] [--threads N] [--economy FILE] [--sample] [--no-profile] [--no-births] [--fast]"
+                     " [--unseen-step N] [--straight] [--coarse-ticks]]\n";
         return 2;
+    }
+    if (playerCount < 0)
+        playerCount = economyFile.empty() ? 1 : 0;  // An economy run has nobody watching (doc 69).
+    if (fast)
+    {
+        unseenStep = unseenStepSet ? unseenStep : 30;
+        straight = coarse = true;
+    }
+    // Per-tick sampling (held residents, the road tally, the crowds, each tick's time) when someone plays, or asked.
+    const bool sampling = playerCount > 0 || sample;
+    if (coarse && sampling)
+    {
+        std::cerr << "--coarse-ticks (and --fast) need no player and no --sample: ticking at 0.05 s.\n";
+        coarse = false;
     }
     const fs::path root = argv[1];
     std::map<std::string, std::string> files;
@@ -496,6 +555,13 @@ int main(int argc, char** argv)
     if (full)
         server.setTiered(false);
     server.setDeterministic(deterministic);
+    server.setProfiling(profile);
+    if (unseenStep > 0)
+        Society::setUnseenStep(unseenStep);
+    World::setStraightOffstage(straight);
+    if (unseenStep > 0 || straight || coarse)
+        std::cout << "  fast steps (they change results): unseen step " << Society::unseenStep() << " s" << (straight ? ", straight offstage legs" : "")
+                  << (coarse ? ", 0.5 s ticks while nobody is onstage" : "") << "\n";
     const double from = std::atof(argv[3]), to = std::atof(argv[4]);
     server.setTimeOfDay(from);
     // Players walking about, each of whose views is built five times a second as the server does for each client:
@@ -525,11 +591,16 @@ int main(int argc, char** argv)
             n += e.npc;
         return n;
     };
+    std::set<std::string> deadAtStart;
+    for (const auto& [id, e] : server.entities())
+        if (e.npc && e.dead)
+            deadAtStart.insert(id);
     std::map<std::string, std::string> start;
     for (const auto& [id, e] : server.entities())
         if (e.npc)
             start[id] = e.cellId + " " + std::to_string(int(e.position.x)) + "," + std::to_string(int(e.position.y));
-    const int ticks = int((to - from) * 600.0 / 0.05);      // A game hour is 600 real seconds; the server ticks at 20 Hz.
+    // In 0.05 s steps of world time: a game hour is 600 real seconds; the server ticks at 20 Hz.
+    const int ticks = int((to - from) * 600.0 / 0.05);
     std::vector<ratw::WorldEvent> events;
     struct WorstTick
     {
@@ -549,7 +620,8 @@ int main(int argc, char** argv)
     std::map<int, std::string> biggestCrowd;        // Where each day's biggest crowd stood, and what it was doing.
     std::vector<double> picking;                    // The ambient director's look every five seconds (Phase 10).
     std::size_t picked = 0;
-    times.reserve(std::size_t(ticks));
+    if (sampling)
+        times.reserve(std::size_t(ticks));
     std::size_t mostLoaded = 0;
     // Residents held more than ten game minutes on one tile while bound elsewhere (a game minute is 10 s, 200 ticks).
     struct Held
@@ -562,174 +634,246 @@ int main(int argc, char** argv)
     std::map<std::string, Held> held;
     std::vector<std::string> heldOnce;
     RoadTally roads;
-    roads.load(root);
+    if (sampling)
+        roads.load(root);
     std::ofstream economyOut;
     if (!economyFile.empty())
         economyOut.open(economyFile);
     EconomyWatch watch;
-    for (int i = 0; i < ticks; ++i)
+    // Each game day's wall time (and, with the profile on, its stages), printed as it ends: the cost of a long run by
+    // day, so any growth shows.
+    constexpr int DayTicks = 24 * 12000;            // (A run's days are 24 game hours from its start.)
+    const auto dayOf = [](int at) { return at / DayTicks; };
+    struct DayCost
     {
+        double seconds = 0, stages[7] = {};
+        int ticks = 0;
+    };
+    std::map<int, DayCost> costByDay;
+    const auto runBegun = std::chrono::steady_clock::now();
+    auto dayBegun = runBegun;
+    double stagesAtDay[7];
+    std::copy(std::begin(server.tickProfile().stages), std::end(server.tickProfile().stages), stagesAtDay);
+    int day = dayOf(0), ticksToday = 0, ticksRun = 0, madeBirths = 0, madeNewcomers = 0;
+    std::vector<ResidentRequest> made;
+    const char* streamTrace = std::getenv("RATW_STREAM_TRACE");
+    const char* trace = std::getenv("RATW_TRACE");
+    const bool ambientLook = !std::getenv("RATW_NO_AMBIENT_LOOK");
+    constexpr int CoarseSteps = 10;                 // (--coarse-ticks: half a second, in 0.05 s steps.)
+    // Births and newcomers made as the game server makes them for a world from files (Game::makeResidents), after
+    // each tick; --no-births leaves them asked for.
+    const auto welcome = [&] {
+        if (!births)
+            return;
+        made.clear();
+        server.makeRequestedResidents(&made);
+        for (const auto& r : made)
+        {
+            const bool child = r.kind == "birth";
+            (child ? watch.born : watch.newcomers) += 1;
+            (child ? madeBirths : madeNewcomers) += 1;
+        }
+    };
+    for (int i = 0; i < ticks;)
+    {
+        // Coarser ticks while nobody is onstage, on the half seconds, so the hours fall where they fall in 0.05 s ticks.
+        const int stride = coarse && !server.anyoneOnstage() ? std::min(CoarseSteps - i % CoarseSteps, ticks - i) : 1;
         if (economyOut && i % 12000 == 0)          // Each game hour (12,000 ticks): the economy's samples.
             watch.hour(server, int(std::floor(from + i * 0.05 / 600.0 + 1e-9)), economyOut);
-        const auto begin = std::chrono::steady_clock::now();
-        const auto loadedBefore = server.loadedCells();
-        if (i % 300 == 0)                          // Walk east and west, as a player would.
-            for (const auto& p : players)
-                server.move(p, (i / 300) % 2 ? -1 : 1, 0);
-        const auto profileBefore = server.tickProfile();
-        server.tick(0.05);
-        const auto& profileAfter = server.tickProfile();
-        if (i % 20 == 0)
-            roads.sample(server);
-        if (i % 20 == 0)
+        if (!sampling)
         {
-            // Held (Docs/Design/67-ridgemere2-city.md, 8: the Sump's narrow passages): a resident bound somewhere else
-            // that stays on one tile, sampled every second.
-            for (const auto& [id, e] : server.entities())
-            {
-                const auto* life = e.npc && !e.dead ? server.society().resident(id) : nullptr;
-                auto& h = held[id];
-                const std::tuple<std::string, int, int> at{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
-                const bool bound = life && !life->goalCell.empty() &&
-                                   (e.cellId != life->goalCell || std::hypot(e.position.x - life->goalX, e.position.y - life->goalY) > 1.5) &&
-                                   e.activity.find("route unavailable") == std::string::npos;
-                if (!bound || at != h.at)
-                {
-                    h.at = at;
-                    h.since = i;
-                    continue;
-                }
-                if (i - h.since > HeldTicks && !h.counted)
-                {
-                    h.counted = true;
-                    std::ostringstream where;
-                    where << id << " (in " << e.cellId << " " << std::get<1>(at) << "," << std::get<2>(at) << ", bound for " << life->goalCell
-                          << ", at " << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00)";
-                    heldOnce.push_back(where.str());
-                }
-            }
+            server.tick(0.05 * stride);
+            ++ticksRun;
+            ++ticksToday;
+            welcome();
+            if (!eventsFile.empty() && (i % 20 == 0 || stride > 1))
+                for (auto& e : server.takeEvents())
+                    events.push_back(std::move(e));
+            if (i % 200 == 0)                       // Once a game minute (10 s).
+                mostLoaded = std::max(mostLoaded, server.loadedCells());
         }
-        if (i % 100 == 0 && !std::getenv("RATW_NO_AMBIENT_LOOK"))
+        else
         {
-            // Only looked at, never spoken: the simulation goes on exactly as without it.
-            const auto lookBegin = std::chrono::steady_clock::now();
-            picked += server.ambientPicks(players).size();
-            picking.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lookBegin).count());
-        }
-        if (!eventsFile.empty() && i % 20 == 0)
-            for (auto& e : server.takeEvents())
-                events.push_back(std::move(e));
-        const double tickOnly = (profileAfter.streaming.total - profileBefore.streaming.total) +
-                                (profileAfter.schedules.total - profileBefore.schedules.total) +
-                                (profileAfter.movement.total - profileBefore.movement.total) +
-                                (profileAfter.separation.total - profileBefore.separation.total) +
-                                (profileAfter.views.total - profileBefore.views.total);
-        auto& day = byDay[int(std::floor((from + i * 0.05 / 600.0) / 24.0))];
-        day[0] += tickOnly;
-        day[1] += profileAfter.schedules.total - profileBefore.schedules.total;
-        day[2] += profileAfter.movement.total - profileBefore.movement.total;
-        day[3] += profileAfter.separation.total - profileBefore.separation.total;
-        day[4] += 1;
-        {
-            const int d = int(std::floor((from + i * 0.05 / 600.0) / 24.0));
-            for (int k = 0; k < 7; ++k)
-                stagesByDay[d][std::size_t(k)] += profileAfter.stages[k] - profileBefore.stages[k];
-            searchesByDay[d] += profileAfter.routeSearches - profileBefore.routeSearches;
-            if (i % 600 == 0)
+            const auto begin = std::chrono::steady_clock::now();
+            const auto loadedBefore = server.loadedCells();
+            if (i % 300 == 0)                          // Walk east and west, as a player would.
+                for (const auto& p : players)
+                    server.move(p, (i / 300) % 2 ? -1 : 1, 0);
+            const auto profileBefore = server.tickProfile();
+            server.tick(0.05);
+            ++ticksRun;
+            ++ticksToday;
+            welcome();
+            const auto& profileAfter = server.tickProfile();
+            if (i % 20 == 0)
+                roads.sample(server);
+            if (i % 20 == 0)
             {
-                std::size_t all = 0, onstage = 0, transient = 0, pile = 0;
-                std::map<std::tuple<std::string, int, int>, std::size_t> tiles;
-                std::tuple<std::string, int, int> pileAt;
+                // Held (Docs/Design/67-ridgemere2-city.md, 8: the Sump's narrow passages): a resident bound somewhere else
+                // that stays on one tile, sampled every second.
                 for (const auto& [id, e] : server.entities())
                 {
-                    ++all;
-                    transient += e.transient;
-                    if (e.offstage || e.dead)
-                        continue;
-                    ++onstage;
+                    const auto* life = e.npc && !e.dead ? server.society().resident(id) : nullptr;
+                    auto& h = held[id];
                     const std::tuple<std::string, int, int> at{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
-                    if (++tiles[at] > pile)
+                    const bool bound = life && !life->goalCell.empty() &&
+                                       (e.cellId != life->goalCell || std::hypot(e.position.x - life->goalX, e.position.y - life->goalY) > 1.5) &&
+                                       e.activity.find("route unavailable") == std::string::npos;
+                    if (!bound || at != h.at)
                     {
-                        pile = tiles[at];
-                        pileAt = at;
+                        h.at = at;
+                        h.since = i;
+                        continue;
+                    }
+                    if (i - h.since > HeldTicks && !h.counted)
+                    {
+                        h.counted = true;
+                        std::ostringstream where;
+                        where << id << " (in " << e.cellId << " " << std::get<1>(at) << "," << std::get<2>(at) << ", bound for " << life->goalCell
+                              << ", at " << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00)";
+                        heldOnce.push_back(where.str());
                     }
                 }
-                auto& c = crowdByDay[d];
-                if (pile > c[3])
-                {
-                    // What they were about: each activity (its task, before the reason) and how many.
-                    std::map<std::string, int> doing;
-                    std::size_t moving = 0, routed = 0;
-                    for (const auto& [id, e] : server.entities())
-                        if (!e.offstage && !e.dead && e.cellId == std::get<0>(pileAt) && int(std::floor(e.position.x)) == std::get<1>(pileAt) &&
-                            int(std::floor(e.position.y)) == std::get<2>(pileAt))
-                        {
-                            ++doing[e.activity.substr(0, e.activity.find(" — "))];
-                            moving += std::hypot(e.velocity.x, e.velocity.y) > 1e-6;
-                            routed += !e.path.empty();
-                        }
-                    std::ostringstream where;
-                    where << std::get<0>(pileAt) << " " << std::get<1>(pileAt) << "," << std::get<2>(pileAt) << " at "
-                          << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00, " << moving << " moving, " << routed << " with a route:";
-                    for (const auto& [what, n] : doing)
-                        where << " " << n << "× " << what << ";";
-                    biggestCrowd[d] = where.str();
-                }
-                c = {std::max(c[0], all), std::max(c[1], onstage), std::max(c[2], transient), std::max(c[3], pile)};
             }
-        }
-        if (i >= int(60 / 0.05) && tickOnly > worstSteady.total)
-            worstSteady = {tickOnly,
-                           profileAfter.streaming.total - profileBefore.streaming.total,
-                           profileAfter.schedules.total - profileBefore.schedules.total,
-                           profileAfter.movement.total - profileBefore.movement.total,
-                           profileAfter.separation.total - profileBefore.separation.total,
-                           profileAfter.views.total - profileBefore.views.total,
-                           profileAfter.routeSearches - profileBefore.routeSearches, i};
-        for (const auto& p : players)
-        {
-            // The motion frame the server sends each client every tick: who in the cell it can see.
-            const auto motionBegin = std::chrono::steady_clock::now();
-            const auto* me = server.entity(p);
-            std::size_t seen = 0;
-            for (const auto& [id, e] : server.entities())
-                if (me && e.cellId == me->cellId && id != me->id && server.visionClarity(me->id, id) > 0)
-                    ++seen;
-            motions.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - motionBegin).count());
-            (void)seen;
-        }
-        // Five views a second for each player, a quarter of the players each tick, as the server staggers them;
-        // their sight is worked out together first, as the server does.
-        std::vector<std::string> due;
-        for (std::size_t p = 0; p < players.size(); ++p)
-            if ((std::size_t(i) + p) % 4 == 0)
-                due.push_back(players[p]);
-        {
-            const auto viewBegin = std::chrono::steady_clock::now();
-            server.prepareViews(due);
-            const double shared = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - viewBegin).count();
-            if (!due.empty())
-                views.push_back(shared);
-        }
-        for (std::size_t p = 0; p < players.size(); ++p)
-            if ((std::size_t(i) + p) % 4 == 0)
+            if (i % 100 == 0 && ambientLook)
+            {
+                // Only looked at, never spoken: the simulation goes on exactly as without it.
+                const auto lookBegin = std::chrono::steady_clock::now();
+                picked += server.ambientPicks(players).size();
+                picking.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lookBegin).count());
+            }
+            if (!eventsFile.empty() && i % 20 == 0)
+                for (auto& e : server.takeEvents())
+                    events.push_back(std::move(e));
+            const double tickOnly = (profileAfter.streaming.total - profileBefore.streaming.total) +
+                                    (profileAfter.schedules.total - profileBefore.schedules.total) +
+                                    (profileAfter.movement.total - profileBefore.movement.total) +
+                                    (profileAfter.separation.total - profileBefore.separation.total) +
+                                    (profileAfter.views.total - profileBefore.views.total);
+            auto& dayTotals = byDay[int(std::floor((from + i * 0.05 / 600.0) / 24.0))];
+            dayTotals[0] += tickOnly;
+            dayTotals[1] += profileAfter.schedules.total - profileBefore.schedules.total;
+            dayTotals[2] += profileAfter.movement.total - profileBefore.movement.total;
+            dayTotals[3] += profileAfter.separation.total - profileBefore.separation.total;
+            dayTotals[4] += 1;
+            {
+                const int d = int(std::floor((from + i * 0.05 / 600.0) / 24.0));
+                for (int k = 0; k < 7; ++k)
+                    stagesByDay[d][std::size_t(k)] += profileAfter.stages[k] - profileBefore.stages[k];
+                searchesByDay[d] += profileAfter.routeSearches - profileBefore.routeSearches;
+                if (i % 600 == 0)
+                {
+                    std::size_t all = 0, onstage = 0, transient = 0, pile = 0;
+                    std::map<std::tuple<std::string, int, int>, std::size_t> tiles;
+                    std::tuple<std::string, int, int> pileAt;
+                    for (const auto& [id, e] : server.entities())
+                    {
+                        ++all;
+                        transient += e.transient;
+                        if (e.offstage || e.dead)
+                            continue;
+                        ++onstage;
+                        const std::tuple<std::string, int, int> at{e.cellId, int(std::floor(e.position.x)), int(std::floor(e.position.y))};
+                        if (++tiles[at] > pile)
+                        {
+                            pile = tiles[at];
+                            pileAt = at;
+                        }
+                    }
+                    auto& c = crowdByDay[d];
+                    if (pile > c[3])
+                    {
+                        // What they were about: each activity (its task, before the reason) and how many.
+                        std::map<std::string, int> doing;
+                        std::size_t moving = 0, routed = 0;
+                        for (const auto& [id, e] : server.entities())
+                            if (!e.offstage && !e.dead && e.cellId == std::get<0>(pileAt) && int(std::floor(e.position.x)) == std::get<1>(pileAt) &&
+                                int(std::floor(e.position.y)) == std::get<2>(pileAt))
+                            {
+                                ++doing[e.activity.substr(0, e.activity.find(" — "))];
+                                moving += std::hypot(e.velocity.x, e.velocity.y) > 1e-6;
+                                routed += !e.path.empty();
+                            }
+                        std::ostringstream where;
+                        where << std::get<0>(pileAt) << " " << std::get<1>(pileAt) << "," << std::get<2>(pileAt) << " at "
+                              << int(std::fmod(from + i * 0.05 / 600.0, 24.0)) << ":00, " << moving << " moving, " << routed << " with a route:";
+                        for (const auto& [what, n] : doing)
+                            where << " " << n << "× " << what << ";";
+                        biggestCrowd[d] = where.str();
+                    }
+                    c = {std::max(c[0], all), std::max(c[1], onstage), std::max(c[2], transient), std::max(c[3], pile)};
+                }
+            }
+            if (i >= int(60 / 0.05) && tickOnly > worstSteady.total)
+                worstSteady = {tickOnly,
+                               profileAfter.streaming.total - profileBefore.streaming.total,
+                               profileAfter.schedules.total - profileBefore.schedules.total,
+                               profileAfter.movement.total - profileBefore.movement.total,
+                               profileAfter.separation.total - profileBefore.separation.total,
+                               profileAfter.views.total - profileBefore.views.total,
+                               profileAfter.routeSearches - profileBefore.routeSearches, i};
+            for (const auto& p : players)
+            {
+                // The motion frame the server sends each client every tick: who in the cell it can see.
+                const auto motionBegin = std::chrono::steady_clock::now();
+                const auto* me = server.entity(p);
+                std::size_t seen = 0;
+                for (const auto& [id, e] : server.entities())
+                    if (me && e.cellId == me->cellId && id != me->id && server.visionClarity(me->id, id) > 0)
+                        ++seen;
+                motions.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - motionBegin).count());
+                (void)seen;
+            }
+            // Five views a second for each player, a quarter of the players each tick, as the server staggers them;
+            // their sight is worked out together first, as the server does.
+            std::vector<std::string> due;
+            for (std::size_t p = 0; p < players.size(); ++p)
+                if ((std::size_t(i) + p) % 4 == 0)
+                    due.push_back(players[p]);
             {
                 const auto viewBegin = std::chrono::steady_clock::now();
-                const auto view = server.snapshot(players[p]);
-                views.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - viewBegin).count());
-                (void)view;
+                server.prepareViews(due);
+                const double shared = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - viewBegin).count();
+                if (!due.empty())
+                    views.push_back(shared);
             }
-        if (std::getenv("RATW_STREAM_TRACE") && i % 1200 == 0)
-            std::cerr << "STREAM t=" << i * 0.05 << " loaded=" << server.loadedCells() << " offstage="
-                      << server.offstageCount() << "\n";
-        if (const char* trace = std::getenv("RATW_TRACE"); trace && i % 200 == 0)
-            if (const auto* e = server.entity(trace))
-                std::cerr << "TRACE t=" << i * 0.05 << " " << e->cellId << " (" << e->position.x << "," << e->position.y
-                          << ") path=" << e->path.size() << " state=" << e->state << " activity=" << e->activity << "\n";
-        times.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begin).count());
-        if (server.loadedCells() <= loadedBefore)
-            steady.push_back(times.back());
-        mostLoaded = std::max(mostLoaded, server.loadedCells());
+            for (std::size_t p = 0; p < players.size(); ++p)
+                if ((std::size_t(i) + p) % 4 == 0)
+                {
+                    const auto viewBegin = std::chrono::steady_clock::now();
+                    const auto view = server.snapshot(players[p]);
+                    views.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - viewBegin).count());
+                    (void)view;
+                }
+            if (streamTrace && i % 1200 == 0)
+                std::cerr << "STREAM t=" << i * 0.05 << " loaded=" << server.loadedCells() << " offstage="
+                          << server.offstageCount() << "\n";
+            if (trace && i % 200 == 0)
+                if (const auto* e = server.entity(trace))
+                    std::cerr << "TRACE t=" << i * 0.05 << " " << e->cellId << " (" << e->position.x << "," << e->position.y
+                              << ") path=" << e->path.size() << " state=" << e->state << " activity=" << e->activity << "\n";
+            times.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - begin).count());
+            if (server.loadedCells() <= loadedBefore)
+                steady.push_back(times.back());
+            mostLoaded = std::max(mostLoaded, server.loadedCells());
+        }
+        i += stride;
+        if (const int now = dayOf(i); now != day || i >= ticks)
+        {
+            // A game day done (or the run): its wall time, and its stages where the profile is kept.
+            const auto at = std::chrono::steady_clock::now();
+            auto& cost = costByDay[day];
+            cost.seconds = std::chrono::duration<double>(at - dayBegun).count();
+            cost.ticks = ticksToday;
+            for (int k = 0; k < 7; ++k)
+                cost.stages[k] = (server.tickProfile().stages[k] - stagesAtDay[k]) / 1000.0;
+            std::copy(std::begin(server.tickProfile().stages), std::end(server.tickProfile().stages), stagesAtDay);
+            std::cout << "  run day " << day + 1 << (i % DayTicks ? " (part)" : "") << ": " << cost.seconds << " s wall, " << ticksToday
+                      << " ticks; " << std::chrono::duration<double>(at - runBegun).count() << " s so far" << std::endl;
+            dayBegun = at;
+            day = now;
+            ticksToday = 0;
+        }
     }
     {
         const auto& profile = server.tickProfile();
@@ -774,10 +918,29 @@ int main(int argc, char** argv)
                   << " ms, p99.9 " << after[std::min(after.size() - 1, std::size_t(.999 * after.size()))]
                   << " ms, worst " << afterWorst << " ms (first minute worst " << warmWorst << " ms; worst tick "
                   << worstAt << ")\n";
-    std::cout << npcs() << " residents, " << players.size() << " player" << (players.size() == 1 ? "" : "s") << ", " << ticks << " ticks from " << from << ":00 to " << to << ":00 ("
-              << total / 1000.0 << " s of work): mean " << total / ticks << " ms, p99 " << pct(.99) << " ms, p99.9 "
-              << pct(.999) << " ms, worst " << sorted.back() << " ms; " << moved << " residents moved; at most "
-              << mostLoaded << " places in memory; " << threads << " thread" << (threads == 1 ? "" : "s") << "\n";
+    const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - runBegun).count();
+    if (sampling)
+        std::cout << npcs() << " residents, " << players.size() << " player" << (players.size() == 1 ? "" : "s") << ", " << ticks << " ticks from " << from << ":00 to " << to << ":00 ("
+                  << total / 1000.0 << " s of work): mean " << total / ticks << " ms, p99 " << pct(.99) << " ms, p99.9 "
+                  << pct(.999) << " ms, worst " << sorted.back() << " ms; " << moved << " residents moved; at most "
+                  << mostLoaded << " places in memory; " << threads << " thread" << (threads == 1 ? "" : "s") << "\n";
+    else
+        std::cout << npcs() << " residents, no player, " << ticksRun << " ticks (" << ticks << " of 0.05 s) from " << from << ":00 to " << to
+                  << ":00: " << wall << " s wall, " << wall / std::max(1e-9, (to - from) / 24.0) << " s a game day, mean "
+                  << 1000.0 * wall / std::max(1, ticksRun) << " ms a tick; " << moved << " residents moved; at most " << mostLoaded
+                  << " places in memory; " << threads << " thread" << (threads == 1 ? "" : "s") << "\n";
+    if (costByDay.size() > 1 || !sampling)
+    {
+        std::cout << "  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands"
+                     " streaming routes):\n";
+        for (const auto& [d, c] : costByDay)
+        {
+            std::cout << "    day " << d + 1 << ": " << c.seconds << "; " << c.ticks << ";";
+            for (const double sec : c.stages)
+                std::cout << " " << sec;
+            std::cout << "\n";
+        }
+    }
     // Who is where their day says they should be, and who could find no way there.
     std::size_t arrived = 0, underway = 0;
     std::vector<std::string> lost;
@@ -879,18 +1042,23 @@ int main(int argc, char** argv)
         for (const auto& [id, e] : server.entities())
             if (e.npc && !e.dead && server.society().resident(id))
                 ++living, oldest = std::max(oldest, e.age);
-        int births = 0, newcomers = 0;
+        int asked = 0, askedNewcomers = 0, died = 0;
         for (const auto& r : server.takeResidentRequests())
-            (r.kind == "birth" ? births : newcomers) += 1;
+            (r.kind == "birth" ? asked : askedNewcomers) += 1;
+        for (const auto& [id, e] : server.entities())
+            died += e.npc && e.dead && server.society().resident(id) && !deadAtStart.count(id);
         std::cout << "  people: " << living << " residents living (the oldest " << oldest << "), "
-                  << server.society().state().careers.spouses.size() / 2 << " married couples; " << births
-                  << " children and " << newcomers << " newcomers asked for\n";
+                  << server.society().state().careers.spouses.size() / 2 << " married couples; " << madeBirths << " born, "
+                  << madeNewcomers << " newcomers come and " << died << " died in the run" << (births ? "" : " (--no-births)") << "; "
+                  << asked << " children and " << askedNewcomers << " newcomers asked for and not made\n";
     }
-    roads.report();
+    if (sampling)
+        roads.report();
     std::cout << "  at their scheduled place: " << arrived << ", on their way: " << underway << ", without a route: "
               << lost.size() << '\n';
     for (const auto& who : lost)
         std::cout << "    " << who << '\n';
+    if (sampling)
     {
         std::size_t placed = 0;
         for (const auto& [id, e] : server.entities())
@@ -946,6 +1114,38 @@ int main(int argc, char** argv)
             mixText(life->task);
     }
     const auto people = digest;
+    // And the society's state (doc 69: the people digest above can't tell apart runs whose economies differ): every
+    // account's cash and goods, every life's needs, work and goal, the posts' holders, and the legs under way.
+    digest = 1469598103934665603ULL;
+    for (const auto& [id, account] : server.society().state().accounts)
+    {
+        mixText(id);
+        mix(&account.cash, sizeof account.cash);
+        for (const auto& [item, n] : account.stock)
+        {
+            mixText(item);
+            mix(&n, sizeof n);
+        }
+    }
+    for (const auto& [id, life] : server.society().state().residents)
+    {
+        mixText(id);
+        for (const double v : {life.hunger, life.fatigue, life.progress, life.goalX, life.goalY, life.homeX, life.homeY})
+            mix(&v, sizeof v);
+        mixText(life.task);
+        mixText(life.reason);
+        mixText(life.goalCell);
+        mixText(life.homeCell);
+    }
+    for (const auto& [id, post] : server.society().state().careers.positions)
+    {
+        mixText(id);
+        mixText(post.holder);
+        mixText(post.apprentice);
+    }
+    const std::uint64_t legs = server.legsDigest();
+    mix(&legs, sizeof legs);
+    const auto societyDigest = digest;
     digest = 1469598103934665603ULL;
     std::size_t remembered = 0;
     for (const auto& p : players)
@@ -959,8 +1159,8 @@ int main(int argc, char** argv)
                 remembered += seen;
             }
         }
-    std::cout << "  digest: people " << std::hex << people << ", map memory " << digest << std::dec << " ("
-              << remembered << " tiles remembered)\n";
+    std::cout << "  digest: people " << std::hex << people << ", society " << societyDigest << ", map memory " << digest << std::dec
+              << " (" << remembered << " tiles remembered)\n";
     std::sort(steady.begin(), steady.end());
     if (!steady.empty())
         std::cout << "  without loading a place: p99 " << steady[std::min(steady.size() - 1, std::size_t(.99 * steady.size()))]

@@ -7,8 +7,9 @@ The user, 2026-10-31 (verbatim):
 > measure places that we can make the simulation faster. Whether that's code efficiency, database retrieval, walking
 > and pathing searching, we need to get the simulation WAY down so we can really crank on the speed
 
-This is measurement and a plan only. Nothing in `Core/` or the harnesses changed; the instrumentation used lives in a
-scratch copy of the code and is described under "How it was measured".
+Sections 1-8 are the measurement and the plan (nothing in `Core/` or the harnesses changed for them; the instrumentation
+lived in a scratch copy of the code, described under "How it was measured"). **Built 2026-10-31 on `r2-sim-fast`**:
+section 9 says what, and how fast it runs now; section 10 is how to run an economy simulation.
 
 ## 1. The short answer
 
@@ -351,3 +352,188 @@ loading (0.4 s), the economy loop, and route searches (none without a player).
 5. **Checkpoints**: a run that saves the world at day N and starts from it (doc 64's econ_watch had `--from`) would
    let several variants share their first days. Wanted?
 6. Growth over long runs is unmeasured here (three-day limit). The first 30-day run of step 1 will show it.
+
+## 9. Progress: built (2026-10-31, branch `r2-sim-fast`)
+
+The user's decisions (2026-10-31, verbatim): "No player in the economy runs. We don't need the player at this point."
+Long runs in the harness (world_check), as recommended, "but I do want to simulate births and deaths." "You can build
+out all of the suggestions for speed that you found."
+
+Branch `r2-sim-fast`: `r2-country` (d4dd755) with `ridgemere2` (this doc) merged, then the work. Measured on the build-45
+export (559 residents), `RATW_DATA_DIR` the branch's `Data` (the Country present), deterministic, each run pinned to its
+own P-core (the 8-thread runs to CPUs 0-11, one at a time), the machine otherwise idle.
+
+### What was built
+
+| Flag (`world_check`) | Does | Results |
+|---|---|---|
+| `--players N` | 0 allowed; **`--economy` without `--players` means 0** (a city check without `--economy` keeps its 1) | the spawn's residents are unseen like the rest |
+| *(no player)* | nothing sampled tick by tick: no held sampler, road tally, crowds, per-tick times or `loadedCells()` (the most in memory once a game minute); the trace `getenv`s read once; the road tally's map not loaded | exact: the same economy file and digests as with `--sample` |
+| `--sample` | the per-tick sampling back without a player (the old behaviour, for the city's checks) | |
+| *(each run day)* | its wall time printed as it ends (`run day N: S s wall, T ticks; S s so far`), and a table of them at the end, with the stages' seconds while the profile is on | |
+| *(births, newcomers)* | made after every tick by `World::makeRequestedResidents`, the game server's own path for a world from files (`Game::makeResidents`); `--no-births` only asks for them, as before | changes results once anyone is born or sent for |
+| *(deaths)* | nothing to add: old age (`World::tendOldAge`, daily, in `tendBonds`) is the world's, run the same in the harness and the server; the game has no death by hunger or illness, and a fight's deaths need a player | |
+| *(economy file)* | `births`, `newcomers`, `deaths` each day | |
+| *(digest)* | a second digest, **society**: every account's cash and goods, every life's needs, task, goal and home, the posts' holders, and the legs under way (`World::legsDigest`) | it tells apart runs the people digest can't (step 30, coarse ticks) |
+| `--no-profile` | `World::setProfiling(false)`: `World::tick`'s and the schedules' clocks off (with `--deterministic` nothing reads the clock at all) | exact |
+| `--unseen-step N` | `Society::setUnseenStep` (back from Phase 5): the unseen decide every N s, each decision N s' worth | changes results |
+| `--straight` | `World::setStraightOffstage(true)`: offstage legs timed by their straight line and the detour, no road way | changes results (none in three days' economy, by chance: below) |
+| `--coarse-ticks` | while nobody is onstage (`World::anyoneOnstage`), the harness ticks half a second at a time (on the half seconds, so the hours fall where they did) | changes results (positions; three days' economy came out the same) |
+| **`--fast`** | `--unseen-step 30 --straight --coarse-ticks` (an explicit `--unseen-step` wins). Opt-in, never a default | changes results |
+
+The server (`ratw_server`): **`--speed max`** (and `/speed max` in the Dev Console) lifts `Game::MaxSpeed` while nobody is
+connected: the game thread ticks back to back in 20 ms batches between the network's turns and tells the game each second
+how fast that is (`Game::setMeasuredSpeed`), so what keeps to real time (saves, polls, the director, voices) still does. A
+client connecting brings it to 1000x; leaving lifts it again; `/speed N` ends max. On the export, nobody connected
+(`ratw_server --world-export b45 --scratch --speed max`, 45 s): **225,000 ticks a second, about 11,000x: a game day in
+1.3 s** (14.4 s at `--speed 1000`). (Tried on the export with `--scratch`, not through `tools/scratch.sh ridgemere2`,
+which needs the database's passwords from the main checkout's `Database/.env`.)
+
+Core, exact (the economy file byte for byte, and both digests, over three days at 1 and 8 threads):
+
+- **`placeOnStage` (item 4)**: with no stage anywhere, only an NPC onstage or keeping with a leader is looked at.
+- **`World::errand` (item 7)**: out at once when nobody is seated at a table, no occasion is on and no contract is taken
+  (1.6 million calls a day, each two hash lookups and string compares).
+- **The hourly shopping (items 7, 12)**: the open shops' till accounts kept with them through `householdsShop` (436,000
+  account lookups by name a day, about half the hourly loop).
+- **`--no-profile` (item 5)**, above.
+
+### The speedups, item by item
+
+| # | Item | Status |
+|---|---|---|
+| 1 | No player, no per-tick sampling | **built**, the economy run's default |
+| 2 | The server's cap | **built**: `--speed max` |
+| 3 | `stepsCache_` kept across cell loads | **nothing to build**: counted over one day and over three, the cache is cleared 6 times, all as the worlds load; cell loads don't clear it (`indexSeams` keeps it; only a seam leading somewhere new, or a dead end found or forgotten, does). Its misses are cold ones: 330 the first day (each starting cell's first ask), 14 a day after. Section 4's "cleared whenever a cell loads" was wrong |
+| 4 | `placeOnStage` only when the stage can change | **built**, exact |
+| 5 | The profile's clocks off | **built**, exact: `--no-profile` |
+| 6 | A cheaper `roadWay` | **dropped**: no cheaper search gives the same ways. Its result depends on more than the tiles: the straight runs start from the walker's exact point, and the cache (by tile) keeps the first walker's, so even the cache's order is part of the result; a junction graph or A* breaks ties differently. `--straight` (in `--fast`) does without it |
+| 7 | Number keys in the society's second | **in part**, exact: the errand's way out and the till accounts (above). The rest left: the costliest (catalog lookups in `hasFood`, 1.6 million a day; `skyAt`, 1.8 million) are in the threads' half already, and the accounts by name can't change container without changing the ledger's order |
+| 8 | The unseen step | **built**: `--unseen-step`, 30 under `--fast` |
+| 9 | Straight walking | **built**: `--straight` (existed), under `--fast` |
+| 10 | Coarser ticks while nobody is onstage | **built**: `--coarse-ticks`, under `--fast` |
+| 11 | More on the threads | **dropped** (nothing new): what is left on the main thread must go in order: the doing half (the ledger's order), the errand pass (its `roadWay` misses, about 1.3 a pass, whose cache order is part of their result: 6), the hourly sales. A pool round costs 50-100 µs, 2,880 times a day, against a miss of about 0.2 ms. The existing parallel half pays better than section 5 measured, now the rest has shrunk: 8 threads take a day from 1.52 to 1.17 s |
+| 12 | The Country's hourly loop indexed | **built**, exact: the till accounts |
+
+### Time a game day, by stage
+
+Three game days (06:00 to 06:00), the mean a day (the first includes the start: 0.4 s loading, the first day's cold
+caches); then the 30-day runs.
+
+| Stage | 1 thread | 8 threads | 60 days | Basis |
+|---|---:|---:|---:|---|
+| as it was: the harness's player, sampling every tick | **84.6 s** | | 85 min | one day (98 s in section 3, with two other runs going) |
+| 1. no player, no per-tick sampling | 1.68 s | 1.37 s | 1.4 min (8 threads) | 3 days |
+| 2. + the exact speedups and `--no-profile` | **1.52 s** | **1.17 s** | **1.2 min** (8 threads) | 3 days; two game days on one thread: 29.1 billion instructions against 32.8 (-11%) |
+| 2, a 30-day run (4 threads) | | 1.02 s | 61 s | 31.0 s for 30 days |
+| 3. `--fast` | **0.51 s** | **0.40 s** | **24 s** (8 threads) | 3 days |
+| 3, a 30-day run (4 threads) | | 0.37 s | 22 s | 11.4 s for 30 days |
+| (`--straight` alone) | 1.39 s | | | 3 days |
+| the server, `--speed max`, nobody connected | 1.3 s | | 1.3 min | 45 s measured |
+
+A year: about 6 minutes (stage 2, 4 threads) and 2.3 minutes (`--fast`). **Growth over 30 days: none**: the run days of
+the 30-day runs cost 0.85-1.31 s (stage 2; the first 1.52) and 0.30-0.40 s (`--fast`; the first 0.53), flat. The day
+with the player (84.6 s) is what the city's checks still cost.
+
+### Byte-identity checks (three game days, `--simulate 6 78`)
+
+| Run | Economy file (md5) | Digest: people, society |
+|---|---|---|
+| no player (stage 1), 1 thread | `abc255643162` | `ba95b9e62ed86fb`, `3a3afb83d45699f0` |
+| the same on 8 threads; with `--sample`; with `--no-profile` | the same | the same |
+| stage 2 (the exact speedups), 1 and 8 threads, with and without `--no-profile` | **the same** | **the same** |
+| `--straight` | the same (by chance: no leg's time moved a purchase in three days) | the same |
+| `--coarse-ticks` | the same | `b1cb00d83460aa8d`, `a72c74a2b89d2d44`: differ |
+| `--unseen-step 30` | `3a6c68e9143d`: differs | `ba95b9e62ed86fb`, `4b01486ccfe2d722` |
+| `--fast` | `cdcb5f10f851`: differs | `b1cb00d83460aa8d`, `d0ea20e3bdaf68ef` |
+
+The no-player run's first days are those of section 5's base without the player (day 1 profit 659, purses 36,701; day 2
+profit 289).
+
+### Births and deaths
+
+- **Births and newcomers**: `Society::tendCareers` asks for them (a stranger for a post empty eight days in a town under
+  its number; a child to a couple at home while the town is short); the game server makes them every tick
+  (`Game::makeResidents`: for a world from files `World::makeRequestedResidents`, from the database its own rows for the
+  same). world_check now calls `World::makeRequestedResidents` after each tick, so a harness run makes the ones the
+  server would from the export. `sim_fast_tests` runs it on a small town: two of 100 die of old age the first day, a
+  stranger comes for the smithy after eight days, a child is born to the married couple, deterministically, the same on
+  1 and 4 threads and with the clocks off.
+- **Deaths**: old age only (`World::tendOldAge`: the yearly Gompertz chance, a day's share, by a fixed lot for each
+  resident and day), the same code in both. There is no death by hunger or illness in the game; deaths in fights need
+  a player. **None fell in the 30-day runs**: by the deterministic lots the first two fall on calendar days 41 and 56
+  (Gunnar Harrowgate, 62; Aud Kemp, 80), 20 in the first 400 days (1.5 expected in 30 days from the ages). A 60-day run
+  is the first to show deaths, and the births and newcomers that follow them.
+- **Found, not changed**: a child is made from its mother's record (`ResidentSpec r = *model`; the database path copies
+  her appearance), so **every child born is female**, on the server as in the harness. Choosing a child's sex (male or
+  female) is a rule for the user.
+
+### 30 days, normal against `--fast`
+
+`n30`: stage 2 (no player, births on, the exact speedups); `f30`: `--fast`; `r30c`: the r2-country agent's own run of
+d4dd755 with the harness player (no births made), for reference. Selected days, and the mean of days 1-29.
+
+| field | day 1: n30 / f30 / r30c | day 10 | day 20 | day 29 | mean of days 1-29 | f30 against n30 |
+|---|---|---|---|---|---|---|
+| residents_spent | 4,941 / 4,944 / 5,003 | 4,797 / 4,842 / 4,827 | 2,992 / 3,045 / 3,013 | 5,246 / 5,227 / 5,298 | 4,859 / 4,858 / 4,859 | -0.0% |
+| food_bought | 1,101 / 1,098 / 1,097 | 1,127 / 1,151 / 1,142 | 865 / 877 / 867 | 1,308 / 1,322 / 1,329 | 1,189 / 1,190 / 1,186 | +0.2% |
+| needs_bought | 431 / 431 / 432 | 330 / 326 / 331 | 105 / 103 / 103 | 292 / 294 / 298 | 295 / 294 / 296 | -0.4% |
+| wages_paid | 3,917 / 3,896 / 3,912 | 3,420 / 3,454 / 3,448 | 3,459 / 3,347 / 3,395 | 3,427 / 3,523 / 3,410 | 3,551 / 3,553 / 3,552 | +0.1% |
+| profit | 659 / 685 / 675 | 715 / 566 / 613 | 814 / 914 / 899 | 742 / 761 / 881 | 929 / 926 / 927 | -0.3% |
+| purses | 36,701 / 36,703 / 36,650 | 36,141 / 35,852 / 36,081 | 36,686 / 36,539 / 36,569 | 36,090 / 35,998 / 36,142 | 36,196 / 36,056 / 36,174 | -0.4% |
+| tills | 13,722 / 13,732 / 13,786 | 12,640 / 12,867 / 12,635 | 12,212 / 12,162 / 12,333 | 11,942 / 11,910 / 11,959 | 12,707 / 12,741 / 12,690 | +0.3% |
+| gini_earners | .494 / .495 / .495 | .540 / .541 / .540 | .584 / .585 / .581 | .627 / .627 / .624 | .563 / .564 / .562 | +0.1% |
+| households_short | 0 / 0 / 0 | 13 / 9 / 7 | 7 / 10 / 12 | 28 / 13 / 48 | 16 / 16 / 15 | +2.0% |
+| tills_short | 5 / 6 / 5 | 29 / 31 / 30 | 36 / 38 / 35 | 34 / 29 / 36 | 27 / 26 / 26 | -3.0% |
+| hungry_mean | 0 / 0 / 0 | 0 / 0 / 0 | 0 / .125 / 1.208 | 1.542 / 1.333 / 1.333 | .351 / .378 / .366 | +7.8% |
+| drawn | 5,880 / 5,881 / 5,887 | 4,670 / 4,616 / 4,485 | 1,733 / 1,872 / 1,694 | 7,104 / 7,386 / 7,543 | 4,532 / 4,531 / 4,535 | -0.0% |
+| treasury | 1,811 / 1,813 / 1,800 | 3,538 / 3,634 / 3,617 | 3,416 / 3,571 / 3,400 | 4,183 / 4,317 / 4,121 | 3,424 / 3,521 / 3,439 | +2.8% |
+| births, newcomers, deaths | 0 in all | | | | | |
+
+The money fields' 30-day means agree to half a percent; day by day they differ by 1-3% (more on the small counts:
+households short, tills short, the hungry, a handful each), in no direction, as the run with the player differs from
+both. Whether that is close enough for `--fast` to stand in is the user's call (section 7). (The earners' Gini climbs
+from .49 to .63 over the 30 days in all three: the economy's, not the mode's.)
+
+### Answers to section 8
+
+1. No player in economy runs: done (the user). City checks keep theirs (`--players 1`, the default without `--economy`).
+2. The harness, with births and newcomers made as the server makes them (the user). Letters, chapters, factions, estates,
+   camps, projects and storylines stay the server's (`Game::tick`); `--speed max` runs them all at about 1.3 s a day.
+3. 30 under `--fast` (doc 64's); any other with `--unseen-step`.
+4. Built: `--coarse-ticks`, under `--fast`.
+5. Checkpoints: not built.
+6. Growth: none over 30 days (above).
+
+### Tests
+
+`sim_fast_tests` (new; in ctest as `sim_fast_behaviors`, given world_check's path it runs the harness too): births, a
+newcomer and deaths on the harness's path; one thread, four, and the clocks off end the same; world_check with no player
+(an economy line a day, deaths counted, the same file on 1 and 4 threads), with `--players 1`, and with `--fast`.
+`game_tests`: `--speed max` (the cap while anyone is connected, the measured speed only while uncapped, connecting and
+leaving, `/speed N` ending it). All 70 tests pass (`build-fast2`).
+
+## 10. Running an economy simulation
+
+The default way, from a checkout of the branch (nothing is written to any database; the export is only read):
+
+    python3 tools/world_build.py export EXPORT --world ridgemere2     # the build to run (reads the database: Database/.env)
+    cmake --build build --target world_check
+    export RATW_DATA_DIR=$PWD/Data                                     # (else the Country may be missing: section 2)
+    taskset -c 0-5 build/world_check EXPORT --simulate 6 1446 --no-check --deterministic --threads 4 --no-profile \
+        --economy run60.jsonl > run60.out
+
+- `--simulate 6 HOURS`: from 06:00 for HOURS - 6 game hours (30 days: `6 726`; 60: `6 1446`; a year: `6 8766`). A game
+  day takes about 1 s on 4 threads: 60 days in about a minute, a year in about 6.
+- **No player and no per-tick sampling** come with `--economy`. **Births and newcomers are made, and the old die**, as on
+  the server; the economy line counts them (`births`, `newcomers`, `deaths`).
+- `--fast` (opt-in: results change; compare it with a normal run before trusting it): 60 days in about 25 s.
+- Each run day's wall time is printed as it ends (`run day N: ...`): a long run's cost by day.
+- **Side by side**: 8 threads buy about 1.3x over one; runs pinned to their own P-cores (`taskset`, CPUs 0-11 here) don't
+  slow each other, and six at once use the machine.
+- Compare runs by the economy file (and the two digests): byte for byte for a change that should change nothing; field
+  by field by day for one that changes results: `python3 tools/econ_diff.py A.jsonl B.jsonl` (the fields that differ,
+  by day) and `python3 tools/econ_table.py profit,purses,gini_earners A.jsonl B.jsonl` (a table), section 2's scripts,
+  kept in `tools/` now.
+- With the game's own systems too (letters, chapters, estates...): `ratw_server --world-export EXPORT --save F --scratch
+  --speed max` with nobody connected, about 1.3 s a game day; it writes no economy file.

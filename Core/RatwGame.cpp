@@ -277,6 +277,7 @@ Game::Game(Options options) : options_(std::move(options)), random_(std::random_
         return (at != operatorActivity_.end() && now() - at->second < 300) || (e && e->lastPoseAt >= 0 && world_.time() - e->lastPoseAt < 300);
     };
     setSpeed(options_.speed);
+    setSpeedMax(options_.speedMax);
 }
 
 Game::~Game()
@@ -1736,6 +1737,8 @@ void Game::connect(Connection* c)
     if (!c || std::find(clients_.begin(), clients_.end(), c) != clients_.end())
         return;
     clients_.push_back(c);
+    if (speedMax_)
+        speed_ = MaxSpeed;                          // Someone here: back to the cap (setSpeedMax).
     lobby(c);
 }
 
@@ -2521,7 +2524,22 @@ void Game::login(Connection* c, const Value& j)
 
 void Game::setSpeed(double speed)
 {
+    speedMax_ = false;
     speed_ = std::isfinite(speed) ? std::clamp(speed, 1.0, MaxSpeed) : 1.0;
+}
+
+void Game::setSpeedMax(bool on)
+{
+    speedMax_ = on;
+    if (on)
+        speed_ = MaxSpeed;                          // (Until the host measures the uncapped speed.)
+}
+
+void Game::setMeasuredSpeed(double speed)
+{
+    // Only while uncapped: with anyone connected the cap holds (connect() set it back).
+    if (uncapped() && std::isfinite(speed) && speed >= 1)
+        speed_ = speed;
 }
 
 void Game::tick(double dt)

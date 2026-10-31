@@ -253,6 +253,7 @@ struct OpenShop
 {
     std::string till, community;
     const items::Business* business = nullptr;
+    const EconomyAccount* account = nullptr;        // The till's (no account is opened or closed while households shop).
 };
 } // namespace
 
@@ -302,9 +303,10 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             continue;
         const auto* life = resident(held->second.holder);
         const auto till = "till:" + p.id;
-        if (!life || life->task != "trade" || !account(till))
+        const auto* tillAccount = life && life->task == "trade" ? account(till) : nullptr;
+        if (!tillAccount)
             continue;
-        open.push_back({till, day_.communityOf ? day_.communityOf(p.work.cell) : std::string(), items::businessFor(p.title)});
+        open.push_back({till, day_.communityOf ? day_.communityOf(p.work.cell) : std::string(), items::businessFor(p.title), tillAccount});
     }
     if (open.empty())
         return;
@@ -317,23 +319,23 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
     for (const auto& s : open)
         all.push_back(&s);
     // Who holds a good: the household's own community's open shops, or, where none of them has it, every open shop.
-    const auto sellersOf = [&](const std::vector<const OpenShop*>& shops, const std::string& item, std::vector<const std::string*>& out,
+    const auto sellersOf = [&](const std::vector<const OpenShop*>& shops, const std::string& item, std::vector<const OpenShop*>& out,
                                std::vector<double>& weights) {
         for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
         {
             out.clear();
             weights.clear();
             for (const auto* s : *list)
-                if (const int n = stock(*account(s->till), item); n > 0)
+                if (const int n = stock(*s->account, item); n > 0)
                 {
-                    out.push_back(&s->till);
+                    out.push_back(s);
                     weights.push_back(n);
                 }
             if (!out.empty())
                 return;
         }
     };
-    std::vector<const std::string*> tills;
+    std::vector<const OpenShop*> tills;
     std::vector<double> weights;
     // Pays from whichever member has the most and can pay (keeping `keep` back across the household), or "" for none.
     const auto payerFor = [&](const std::vector<std::string>& members, std::int64_t price, std::int64_t keep) {
@@ -357,8 +359,8 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             const int pick = weighted(weights, roll(key + "|seller|" + std::to_string(lot)));
             if (pick < 0)
                 break;
-            const auto& till = *tills[std::size_t(pick)];
-            int n = std::min({want - got, stock(*account(till), item), 99});
+            const auto& till = tills[std::size_t(pick)]->till;
+            int n = std::min({want - got, stock(*tills[std::size_t(pick)]->account, item), 99});
             std::string payer;
             while (n > 0 && (payer = payerFor(members, price * n, keep)).empty())
                 n = payerFor(members, price, keep).empty() ? 0 : std::max(1, n / 2);
@@ -399,7 +401,7 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
                 {
                     for (const auto* s : *list)
-                        for (const auto& [item, n] : account(s->till)->stock)
+                        for (const auto& [item, n] : s->account->stock)
                             if (n > 0 && edible(item) && std::find(foods.begin(), foods.end(), item) == foods.end())
                             {
                                 foods.push_back(item);

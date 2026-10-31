@@ -880,6 +880,9 @@ Caravan* World::sendCaravan(const Town& from, const Town& to, const std::map<std
 bool World::errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                    std::string& goalCell, Vec2& goal) const
 {
+    // (Nobody seated, no occasion, no contract taken: no errand for anyone. Asked of every resident every pass.)
+    if (seated_.empty() && occasions_.empty() && errandContracts_.empty())
+        return false;
     // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
     // errand never starves it.
     if (life.task == "eat" || ((life.task == "buy food" || life.task == "fetch food") && life.hunger >= 55))

@@ -871,6 +871,10 @@ class World
     void setTiered(bool on) { tieredSet_ = true; tiered_ = on; }
     bool tiered() const { return tieredSet_ ? tiered_ : streamed(); }
     std::size_t offstageCount() const;
+    // Whether anyone alive, player or resident, is onstage (world_check's coarser ticks wait for nobody: doc 69).
+    bool anyoneOnstage() const;
+    // A fingerprint of the offstage legs under way: who, bound where, and when they arrive (world_check's digest).
+    std::uint64_t legsDigest() const;
     // The event log. The world records deaths, revivals, relocations and every economy ledger entry; a host adds
     // its own (arrivals, conversations, spawns...) with recordEvent. takeEvents() hands over everything since the
     // last call, oldest first. Uncollected, at most EventsKept are kept (the oldest are dropped and counted).
@@ -945,8 +949,10 @@ class World
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
     // A world without a database (a world from files, tests) makes the residents asked for itself, each like its
     // template (the mother, the last holder of the post): a child with nothing, a newcomer with Society::NewcomerPurse.
-    // Returns how many it made.
-    int makeRequestedResidents();
+    // Returns how many it made, and adds each request it fulfilled to `made` when given. The game server calls it every
+    // tick for a world from files (Game::makeResidents), and world_check after each of its ticks (doc 69), so a harness
+    // run has the server's births and newcomers.
+    int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr);
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.
     const std::vector<Town>& towns() const { return towns_; }
@@ -1275,6 +1281,11 @@ class World
         std::size_t slowestRouteNodes = 0, slowestRouteWaypoints = 0;
     };
     const TickProfile& tickProfile() const { return profile_; }
+    // Whether tick() keeps the profile's clocks (on: the server and checks; off: a long run that wants every step,
+    // world_check's --no-profile, doc 69). Off, the profile's times stay 0; nothing the world does changes, as long as
+    // it runs deterministic (the schedules' budgets are then by count, never by the clock).
+    void setProfiling(bool on) { profiling_ = on; }
+    bool profiling() const { return profiling_; }
     void resetTickProfile() { profile_ = {}; }
     Result move(const std::string& id, double dx, double dy);
     // Free movement (doc 31, Phase 3). Whether a client walks this wolf itself; and a pose it sends, checked from where
@@ -2348,6 +2359,7 @@ class World
     mutable RouteWorkerSlot routes_;
     mutable bool routeAsync_ = false, routePending_ = false;
     bool deterministic_ = false;
+    bool profiling_ = true;                         // (setProfiling.)
     // The ground of each cell as the route thread reads it: a copy, kept while the ground (its checksum) is unchanged.
     mutable std::map<std::string, std::pair<std::uint64_t, std::shared_ptr<const Cell>>> routeCells_;
     void takeRoutes();

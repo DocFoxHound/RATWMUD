@@ -3055,7 +3055,7 @@ std::vector<ResidentRequest> World::takeResidentRequests()
     return requests;
 }
 
-int World::makeRequestedResidents()
+int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
 {
     int made = 0;
     for (const auto& request : takeResidentRequests())
@@ -3102,6 +3102,8 @@ int World::makeRequestedResidents()
         index_.dirty = true;
         welcomeResident(request, id);
         ++made;
+        if (madeOnes)
+            madeOnes->push_back(request);
     }
     return made;
 }
@@ -3776,6 +3778,40 @@ void World::gatherAwake()
             awake_.push_back(&entry);
 }
 
+bool World::anyoneOnstage() const
+{
+    for (const auto& entry : onstage())
+        if (!entry.second.offstage && !entry.second.dead)
+            return true;
+    return false;
+}
+
+std::uint64_t World::legsDigest() const
+{
+    std::uint64_t h = 1469598103934665603ULL;
+    const auto mix = [&](const void* data, std::size_t size) {
+        for (std::size_t b = 0; b < size; ++b)
+            h = (h ^ static_cast<const unsigned char*>(data)[b]) * 1099511628211ULL;
+    };
+    const auto text = [&](const std::string& t) { mix(t.data(), t.size() + 1); };
+    for (const auto& [id, leg] : legs_)
+    {
+        text(id);
+        text(leg.goalCell);
+        text(leg.intoCell);
+        mix(&leg.crossing, 1);
+        for (const double v : {leg.goal.x, leg.goal.y, leg.to.x, leg.to.y, leg.arrival.x, leg.arrival.y, leg.arriveAt, leg.from.x,
+                               leg.from.y, leg.setOff})
+            mix(&v, sizeof v);
+        for (const auto& p : leg.way)
+        {
+            mix(&p.x, sizeof p.x);
+            mix(&p.y, sizeof p.y);
+        }
+    }
+    return h;
+}
+
 void World::keepLists() const
 {
     const auto generation = entities_.generation();
@@ -4128,7 +4164,9 @@ void World::updateSchedules()
 bool World::continueSchedules(double budgetMs)
 {
     using Clock = std::chrono::steady_clock;
-    const auto begun = Clock::now();
+    // (No clock at all when nothing needs it: deterministic, by count, with the profile's clocks off.)
+    const bool clocked = !deterministic_ || profiling_;
+    const auto begun = clocked ? Clock::now() : Clock::time_point{};
     const auto spent = [&] {
         return !deterministic_ && std::chrono::duration<double, std::milli>(Clock::now() - begun).count() >= budgetMs;
     };
@@ -4137,13 +4175,18 @@ bool World::continueSchedules(double budgetMs)
         if (scheduleStage_ > 0 && spent())
             return false;                           // The rest next step.
         const int stage = std::min(scheduleStage_, 5);
-        const auto stageBegun = Clock::now();
+        const auto stageBegun = profiling_ ? Clock::now() : Clock::time_point{};
         struct StageTime
         {
             double& into;
             Clock::time_point begun;
-            ~StageTime() { into += std::chrono::duration<double, std::milli>(Clock::now() - begun).count(); }
-        } stageTime{profile_.stages[stage], stageBegun};
+            bool timed;
+            ~StageTime()
+            {
+                if (timed)
+                    into += std::chrono::duration<double, std::milli>(Clock::now() - begun).count();
+            }
+        } stageTime{profile_.stages[stage], stageBegun, profiling_};
         switch (scheduleStage_)
         {
         case 0:
@@ -4244,9 +4287,17 @@ bool World::continueSchedules(double budgetMs)
                 // cells anyone on the stage stands in: elsewhere a goal is nobody else's (spotNear, spotTaken), and is
                 // not asked about.
                 if (tiered())
+                {
+                    // With nobody's stage anywhere (no player: an economy run), an NPC offstage stays offstage unless
+                    // it keeps with a leader: those alone are looked at (placeOnStage would leave the rest as they are).
+                    const bool noStage = errandStage_.empty();
                     for (auto& entry : entities_.inOrder())
-                        if (entry.second.npc)
-                            placeOnStage(entry.second, errandStage_);
+                    {
+                        auto& e = entry.second;
+                        if (e.npc && !(noStage && e.offstage && e.leaderId.empty() && e.state != "following"sv))
+                            placeOnStage(e, errandStage_);
+                    }
+                }
                 standing_.clear();
                 errandsOnstage_ = false;
                 for (const auto& entry : onstage())
@@ -5079,10 +5130,13 @@ void World::tick(double dt)
     struct Done { bool& flag; ~Done() { flag = false; } } done{ticking_};
     using Clock = std::chrono::steady_clock;
     double tickStreaming = 0, tickSchedules = 0, tickMovement = 0, tickSeparation = 0, tickViews = 0;
-    const auto since = [](Clock::time_point start) {
-        return std::chrono::duration<double, std::milli>(Clock::now() - start).count();
+    // (The profile's clocks, unless they are off: setProfiling.)
+    const bool timed = profiling_;
+    const auto stamp = [timed] { return timed ? Clock::now() : Clock::time_point{}; };
+    const auto since = [timed](Clock::time_point start) {
+        return timed ? std::chrono::duration<double, std::milli>(Clock::now() - start).count() : 0.0;
     };
-    auto mark = Clock::now();
+    auto mark = stamp();
     stream();
     tickStreaming += since(mark);
     bool regather = true;                           // (gatherAwake: at the first step, and after any schedules.)
@@ -5100,7 +5154,7 @@ void World::tick(double dt)
         {
             // A new half hour of schedules: the last one's chain finished first (never left behind), then this one
             // begun, as far as the step's budget goes (doc 31, Phase 5).
-            mark = Clock::now();
+            mark = stamp();
             if (scheduleStage_ >= 0)
                 continueSchedules(1e18);
             scheduleStage_ = 0;
@@ -5111,19 +5165,19 @@ void World::tick(double dt)
         }
         else if (scheduleStage_ >= 0)
         {
-            mark = Clock::now();
+            mark = stamp();
             continueSchedules(ScheduleBudgetMs);
             tickSchedules += since(mark);
             regather = true;
         }
         else if (!routeWanted_.empty())
         {
-            mark = Clock::now();
+            mark = stamp();
             planWantedRoutes();
             tickSchedules += since(mark);
             regather = true;
         }
-        mark = Clock::now();
+        mark = stamp();
         if (regather)
             gatherAwake();                          // (The schedules may have changed who; nothing below does.)
         regather = false;
@@ -5152,7 +5206,7 @@ void World::tick(double dt)
             integrate(entry.second, step);
         }
         tickMovement += since(mark);
-        mark = Clock::now();
+        mark = stamp();
         separate(step);
         tickSeparation += since(mark);
         dt -= step;
@@ -5169,7 +5223,7 @@ void World::tick(double dt)
     tendAwareness();                                // Residents noticing players near them (doc 40, RatwBattle.cpp).
     tendWear();                                     // Clothes wearing with the days (RatwDurability.cpp).
     tendMarks();                                    // Noses catching a maker's scent on stolen goods (RatwMarks.cpp).
-    mark = Clock::now();
+    mark = stamp();
     // A player's map memory takes in what they see as they go. A view is thousands of sight rays, so it is taken
     // on arriving in each tile rather than every tick; the server's snapshots (five a second) also observe from
     // exactly where the player stands, so everything a player is shown is remembered.
