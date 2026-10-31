@@ -60,12 +60,11 @@ export function TopBar() {
     useEffect(() => { void atlasWorld().then(setWorld).catch(() => setWorld(null)); }, []);
     return (
         <header className="topbar">
-            <div className="brand"><span className="mark">W<i>›</i></span><div><b>ATLAS WORKSHOP</b><small>Runs Against the World</small></div></div>
             <MenuBar />
             <WorkspaceTabs />
             <div className="doc-title">
                 <strong>{name}</strong>
-                {world && <small className="atlas-world" title={`Atlas's world: ${world.key} (python3 tools/world_db.py use KEY to switch)`}>
+                {world && <small className="atlas-world" title={`Atlas's world: ${world.key} (switch it in the studio's top bar)`}>
                     {world.name} · {world.key}</small>}
                 <LiveStatusLine />
             </div>
@@ -73,7 +72,6 @@ export function TopBar() {
                 <EditorsOnline />
                 <button className={checks.errors.length ? 'status-chip bad' : 'status-chip ok'} onClick={() => setState({selection: null})}
                     title="Open the Problems panel">{checks.errors.length ? `${checks.errors.length} problem${checks.errors.length > 1 ? 's' : ''}` : 'Ready to play'}</button>
-                <button className="publish" onClick={() => setState({dialog: 'publish'})} title="Publish the DEV world to PROD (password needed)">⇪ Push to live</button>
                 <button className="play" onClick={() => setState({dialog: 'play'})} title="Ctrl+Enter">▶ Play</button>
             </div>
         </header>
@@ -84,10 +82,10 @@ export function TopBar() {
 function LiveStatusLine() {
     const live = useStore(s => s.live);
     const me = useStore(s => s.identity);
-    const text = live.state === 'connecting' ? 'Connecting to the DEV database…'
+    const text = live.state === 'connecting' ? 'Connecting to Atlas\'s world…'
         : live.state === 'offline' ? `Offline, retrying${live.pending ? ` · ${live.pending} change${live.pending > 1 ? 's' : ''} waiting` : ''}`
         : live.state === 'saving' ? `Saving${live.pending > 1 ? ` ${live.pending} changes` : ''}…` : 'All changes saved';
-    return <small className={`live-line ${live.state}`} title={live.error || 'Every edit is saved to the DEV database as you make it.'}>
+    return <small className={`live-line ${live.state}`} title={live.error || 'Every edit is saved to Atlas\'s world\'s database as you make it.'}>
         <i />{text}{me ? ` · editing as ${me.name}` : ''}</small>;
 }
 

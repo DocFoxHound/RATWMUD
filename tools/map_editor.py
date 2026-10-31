@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Local-only Atlas editor host and validated, non-destructive world exporter.
+"""Atlas: the local-only editor's routes, and the validated, non-destructive world exporter.
 
-`serve` edits the one world and the character roster live in Atlas's world's
+Atlas edits the one world and the character roster live in Atlas's world's
 PostgreSQL database (a dev world: python3 tools/world_db.py use KEY, or
 --world KEY; tools/live_edit.py), shared with everyone else editing it.
-Exports and playtests never touch the game's save database.
+It is the Atlas suite of the one tool (tools/studio.py, Docs/Design/66-worlds-atlas-and-dm.md
+section 3), which hosts make_handler's Handler under /api/atlas/; `serve` starts that tool on
+its Atlas suite. Exports and playtests never touch the game's save database.
 """
 from __future__ import annotations
 
@@ -874,8 +876,9 @@ PLAYTESTS = ROOT / 'Saved' / 'Playtests'
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
         '.png': 'image/png', '.json': 'application/json', '.woff2': 'font/woff2', '.ttf': 'font/ttf',
         '.ico': 'image/x-icon'}
-NOT_BUILT = (b'<!doctype html><meta charset=utf-8><title>Atlas Workshop</title><body style="font:15px system-ui;'
-             b'background:#0d1413;color:#ded5c3;padding:40px"><h1>Atlas Workshop is not built yet</h1><p>Run once:</p>'
+NOT_BUILT = (b'<!doctype html><meta charset=utf-8><title>RATW Studio</title><body style="font:15px system-ui;'
+             b'background:#0d1413;color:#ded5c3;padding:40px"><h1>The studio (Atlas and the DM) is not built yet</h1>'
+             b'<p>Start it with <code>bash tools/studio.sh</code>, or run once:</p>'
              b'<pre>npm --prefix Editor install\nnpm --prefix Editor run build</pre><p>Then reload this page.</p>')
 
 
@@ -1000,8 +1003,19 @@ def tile_count(project) -> int:
 
 def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_path=None, world=None, publisher=None,
                 live_launcher=launch_live, push_unavailable=None):
-    """`world` is the live world (live_edit.LiveWorld) and `publisher` Push to live (publish.Publisher);
-    without them only the roster file and exports work. `push_unavailable` says why there is no publisher."""
+    """Atlas on its own (the tests); the tool itself is tools/studio.py, which hosts make_handler's Handler."""
+    server = ThreadingHTTPServer(('127.0.0.1', port), make_handler(
+        roster_path=roster_path, launcher=launcher, ai_config_path=ai_config_path, world=world, publisher=publisher,
+        live_launcher=live_launcher, push_unavailable=push_unavailable))
+    server.daemon_threads = True
+    return server
+
+
+def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, world=None, publisher=None,
+                 live_launcher=launch_live, push_unavailable=None):
+    """Atlas's request handler. `world` is Atlas's world (live_edit.LiveWorld) and `publisher` Push to live
+    (publish.Publisher); without them only the roster file and exports work. `push_unavailable` says why there is no
+    publisher. Every write needs this handler's session token (GET /api/session), new each time it is made."""
     token = secrets.token_urlsafe(24)
     atlas_world = None
     if world is not None and getattr(world, 'key', None):
@@ -1224,9 +1238,7 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
             except (ValueError, TypeError, KeyError, RecursionError):
                 return self.reply(400, {'error': 'Malformed request JSON.'})
 
-    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
-    server.daemon_threads = True
-    return server
+    return Handler
 
 
 def main():
@@ -1238,31 +1250,9 @@ def main():
     parser.add_argument('--world', help="serve: the dev world to edit (default Atlas's: python3 tools/world_db.py use KEY)")
     args = parser.parse_args()
     if args.command == 'serve':
-        # live_edit imports this module by name; run as a script it is __main__, and a second
-        # copy would have its own HostError that this server's handlers do not catch.
-        sys.modules.setdefault('map_editor', sys.modules[__name__])
-        import live_edit
-        import publish
-        import world_db
-        try:
-            key = world_db.resolve(args.world or 'atlas', 'dev')
-            source, target = world_db.push_worlds()
-        except world_db.DatabaseError as error:
-            parser.error(str(error))
-        # Push to live (until doc 66 Phase 4) is from the dev world with an upstream: offered only when Atlas is on it.
-        publisher, why = (publish.Publisher(worlds=(source, target)), None) if source == key else (
-            None, f'Push to live is from {source} to {target}; Atlas is on {key} ({world_db.world(key)["name"]}).')
-        server = make_server(args.port, world=live_edit.LiveWorld(key=key), publisher=publisher, push_unavailable=why)
-        print(f'RATW Atlas editor: http://127.0.0.1:{server.server_port}\n'
-              f'Editing the world live in {key} ("{world_db.world(key)["name"]}", {world_db.world(key)["database"]}). '
-              'Local-only. Ctrl+C to stop.', flush=True)
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            server.server_close()
-        return 0
+        # One tool, two suites (doc 66, section 3): Atlas is the studio's Atlas suite now.
+        import studio
+        return studio.main(['serve', '--suite', 'atlas', '--port', str(args.port)] + (['--world', args.world] if args.world else []))
     if not args.project or args.project.stat().st_size > MAX_BODY:
         parser.error('Choose a project JSON file of at most 64 MB.')
     try:

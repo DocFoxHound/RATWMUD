@@ -1,4 +1,5 @@
-// Calls to the Dungeon Master host (tools/dungeon_master.py). The session token lives in this tab only.
+// Calls to the studio's DM suite (tools/studio.py: /api/dm/, tools/dungeon_master.py), and to the DM methods Atlas's NPC
+// pages use (/api/atlas/layers/). The session token lives in this tab only.
 import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
@@ -77,13 +78,18 @@ export interface Players { target: Target; world: {id: string; name: string} | n
 const KEY = 'ratw-dm-session';
 let token = (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { return ''; } })();
 export const signedIn = () => !!token;
+/** The DM account's sign-in, for every call to the studio (doc 66, 3: one sign-in for both suites). */
+export const authHeaders = (): Record<string, string> => (token ? {Authorization: `Bearer ${token}`} : {});
+/** Which suite's routes a world's calls go to (tools/studio.py): a live world's to the DM's, a dev world's to Atlas's
+ *  NPC pages (the same methods, on Atlas's world only). */
+const at = (target: Target) => (isLive(target) ? 'api/dm/' : 'api/atlas/layers/');
 
 export class DmError extends Error { constructor(message: string, readonly status: number) { super(message); } }
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
     const response = await fetch(path, {
         method: body === undefined ? 'GET' : 'POST',
-        headers: {...(token ? {Authorization: `Bearer ${token}`} : {}), ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
+        headers: {...authHeaders(), ...(body === undefined ? {} : {'Content-Type': 'application/json'})},
         body: body === undefined ? undefined : JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
@@ -254,90 +260,102 @@ export interface Orchestrator {
 export interface EconomyLevers { taxRate: number; mint: boolean }
 
 export const dmApi = {
-    login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/login', {username, password}); setToken(r.token); return r as Me; },
-    logout: async () => { try { await call('api/logout', {}); } finally { setToken(''); } },
-    me: () => call<Me>('api/me'),
-    worlds: () => call<Worlds>('api/worlds'),
-    players: (target: Target) => call<Players>(`api/players?target=${target}`),
-    health: (target: Target, hours: number) => call<Health>(`api/health?target=${target}&hours=${hours}`),
-    money: (target: Target) => call<Money>(`api/money?target=${target}`),
+    login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/dm/login', {username, password}); setToken(r.token); return r as Me; },
+    logout: async () => { try { await call('api/dm/logout', {}); } finally { setToken(''); } },
+    me: () => call<Me>('api/dm/me'),
+    worlds: () => call<Worlds>('api/dm/worlds'),
+    players: (target: Target) => call<Players>(`${at(target)}players?target=${target}`),
+    health: (target: Target, hours: number) => call<Health>(`${at(target)}health?target=${target}&hours=${hours}`),
+    money: (target: Target) => call<Money>(`${at(target)}money?target=${target}`),
     /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
-    world: (target: Target) => call<Project>(`api/world?target=${target}&lean=1`),
+    world: (target: Target) => call<Project>(`${at(target)}world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>
-        call<{seq?: number; cells: Record<string, SentGround>}>(`api/ground?target=${target}&cells=${ids.map(encodeURIComponent).join(',')}`),
+        call<{seq?: number; cells: Record<string, SentGround>}>(`${at(target)}ground?target=${target}&cells=${ids.map(encodeURIComponent).join(',')}`),
     act: (target: Target, kind: string, characterId: string, reason: string, payload?: Record<string, unknown>) =>
-        call<{id: number}>('api/actions', {target, kind, characterId, reason, ...(payload ? {payload} : {})}),
-    npcs: (target: Target) => call<Npcs>(`api/npcs?target=${target}`),
+        call<{id: number}>(`${at(target)}actions`, {target, kind, characterId, reason, ...(payload ? {payload} : {})}),
+    npcs: (target: Target) => call<Npcs>(`${at(target)}npcs?target=${target}`),
     /** Asking keeps this account watching: the game server writes frames only while someone is. */
-    live: (target: Target) => call<Live>(`api/live?target=${target}`),
+    live: (target: Target) => call<Live>(`${at(target)}live?target=${target}`),
     move: (target: Target, kind: 'npc.move' | 'character.move', id: string, place: Place, reason = '') =>
-        call<{id: number}>('api/live/move', {target, kind, id, cell: place.cell, x: place.x, y: place.y, reason}),
+        call<{id: number}>(`${at(target)}live/move`, {target, kind, id, cell: place.cell, x: place.x, y: place.y, reason}),
     /** A temporary visitor on a tile for `minutes`, perhaps looking like a resident (`like`). */
     visit: (target: Target, name: string, place: Place, minutes: number, like = '') =>
-        call<{id: number; visitor: string}>('api/live/visit', {target, name, cell: place.cell, x: place.x, y: place.y, minutes, like}),
-    leave: (target: Target, id: string) => call<{id: number}>('api/live/leave', {target, id}),
-    rumours: (target: Target) => call<{target: Target; rumours: Rumour[]}>(`api/live/rumours?target=${target}`),
-    fame: (target: Target) => call<{target: Target; day: number; deeds: FameDeed[]}>(`api/live/fame?target=${target}`),
-    projects: (target: Target) => call<{target: Target; projects: TownProject[]; kinds: {id: string; name: string}[]}>(`api/live/projects?target=${target}`),
+        call<{id: number; visitor: string}>(`${at(target)}live/visit`, {target, name, cell: place.cell, x: place.x, y: place.y, minutes, like}),
+    leave: (target: Target, id: string) => call<{id: number}>(`${at(target)}live/leave`, {target, id}),
+    rumours: (target: Target) => call<{target: Target; rumours: Rumour[]}>(`${at(target)}live/rumours?target=${target}`),
+    fame: (target: Target) => call<{target: Target; day: number; deeds: FameDeed[]}>(`${at(target)}live/fame?target=${target}`),
+    projects: (target: Target) => call<{target: Target; projects: TownProject[]; kinds: {id: string; name: string}[]}>(`${at(target)}live/projects?target=${target}`),
     /** A live action on something other than a character (doc 57: town projects; deeds, nicknames, notices, places to let). */
     liveAction: (target: Target, kind: string, id: string, payload?: Record<string, unknown>, reason = '') =>
-        call<{id: number}>('api/live/action', {target, kind, id, reason, ...(payload ? {payload} : {})}),
-    saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>('api/npcs/save', {target, person}),
-    deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>('api/npcs/delete', {target, id}),
-    npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>('api/npcs/life', {target, id, dead}),
-    saveRoute: (target: Target, route: Route) => call<{id: string; action: number}>('api/routes/save', {target, route}),
-    deleteRoute: (target: Target, id: string) => call<{id: string; action: number}>('api/routes/delete', {target, id}),
-    saveArea: (target: Target, area: NpcArea) => call<{id: string; action: number}>('api/areas/save', {target, area}),
-    deleteArea: (target: Target, id: string) => call<{id: string; action: number}>('api/areas/delete', {target, id}),
-    saveSpawn: (target: Target, rule: Omit<SpawnRule, 'alive' | 'dead'>) => call<{id: string}>('api/spawns/save', {target, rule}),
-    deleteSpawn: (target: Target, id: string) => call<{id: string}>('api/spawns/delete', {target, id}),
-    setWander: (target: Target, id: string, area: string | null) => call<{id: string; action: number}>('api/npcs/wander', {target, id, area}),
-    factions: (target: Target) => call<Factions>(`api/factions?target=${target}`),
+        call<{id: number}>(`${at(target)}live/action`, {target, kind, id, reason, ...(payload ? {payload} : {})}),
+    saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>(`${at(target)}npcs/save`, {target, person}),
+    deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>(`${at(target)}npcs/delete`, {target, id}),
+    npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>(`${at(target)}npcs/life`, {target, id, dead}),
+    saveRoute: (target: Target, route: Route) => call<{id: string; action: number}>(`${at(target)}routes/save`, {target, route}),
+    deleteRoute: (target: Target, id: string) => call<{id: string; action: number}>(`${at(target)}routes/delete`, {target, id}),
+    saveArea: (target: Target, area: NpcArea) => call<{id: string; action: number}>(`${at(target)}areas/save`, {target, area}),
+    deleteArea: (target: Target, id: string) => call<{id: string; action: number}>(`${at(target)}areas/delete`, {target, id}),
+    saveSpawn: (target: Target, rule: Omit<SpawnRule, 'alive' | 'dead'>) => call<{id: string}>(`${at(target)}spawns/save`, {target, rule}),
+    deleteSpawn: (target: Target, id: string) => call<{id: string}>(`${at(target)}spawns/delete`, {target, id}),
+    setWander: (target: Target, id: string, area: string | null) => call<{id: string; action: number}>(`${at(target)}npcs/wander`, {target, id, area}),
+    factions: (target: Target) => call<Factions>(`${at(target)}factions?target=${target}`),
     relationHistory: (target: Target, faction: string, other: string) =>
-        call<RelationChange[]>(`api/factions/history?target=${target}&faction=${encodeURIComponent(faction)}&other=${encodeURIComponent(other)}`),
-    saveFaction: (target: Target, faction: Faction) => call<{id: string; action: number}>('api/factions/save', {target, faction}),
-    deleteFaction: (target: Target, id: string) => call<{id: string; action: number}>('api/factions/delete', {target, id}),
-    claim: (target: Target, faction: string, area: string, tiles: [number, number][]) => call<{action: number}>('api/factions/claim', {target, faction, area, tiles}),
-    unclaim: (target: Target, faction: string, area: string) => call<{action: number}>('api/factions/unclaim', {target, faction, area}),
+        call<RelationChange[]>(`${at(target)}factions/history?target=${target}&faction=${encodeURIComponent(faction)}&other=${encodeURIComponent(other)}`),
+    saveFaction: (target: Target, faction: Faction) => call<{id: string; action: number}>(`${at(target)}factions/save`, {target, faction}),
+    deleteFaction: (target: Target, id: string) => call<{id: string; action: number}>(`${at(target)}factions/delete`, {target, id}),
+    claim: (target: Target, faction: string, area: string, tiles: [number, number][]) => call<{action: number}>(`${at(target)}factions/claim`, {target, faction, area, tiles}),
+    unclaim: (target: Target, faction: string, area: string) => call<{action: number}>(`${at(target)}factions/unclaim`, {target, faction, area}),
     relate: (target: Target, faction: string, other: string, disposition: number, stance: Stance, reason: string) =>
-        call<unknown>('api/factions/relation', {target, faction, other, disposition, stance, reason}),
-    member: (target: Target, faction: string, npc: string, rank: string | null) => call<unknown>('api/factions/member', {target, faction, npc, rank}),
+        call<unknown>(`${at(target)}factions/relation`, {target, faction, other, disposition, stance, reason}),
+    member: (target: Target, faction: string, npc: string, rank: string | null) => call<unknown>(`${at(target)}factions/member`, {target, faction, npc, rank}),
     /** Someone's life from the event log, their story if one was written, and what they carry in mind (Phase 8). */
-    chronicle: (target: Target, id: string) => call<Chronicle>(`api/chronicle?target=${target}&id=${encodeURIComponent(id)}`),
+    chronicle: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle?target=${target}&id=${encodeURIComponent(id)}`),
     /** Has their life story written from the chronicle (one call to the NPC model) and kept. */
-    writeStory: (target: Target, id: string) => call<Chronicle>('api/chronicle/story', {target, id}),
-    calendar: (target: Target) => call<WorldCalendar>(`api/calendar?target=${target}`),
+    writeStory: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle/story`, {target, id}),
+    calendar: (target: Target) => call<WorldCalendar>(`${at(target)}calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
-        call<{id: number}>('api/festivals/call', {target, community, name, inDays}),
+        call<{id: number}>(`${at(target)}festivals/call`, {target, community, name, inDays}),
     /** The economy's levers (doc 64, decision 5), each queued for the game and logged in its ledger: the tax rate from the
      *  next reckoning, the mint on or off, and a one-off relief grant from the capital's treasury to a town's. */
-    setTaxRate: (target: Target, rate: number) => call<{id: number}>('api/economy/tax', {target, rate}),
-    setMint: (target: Target, on: boolean) => call<{id: number}>('api/economy/mint', {target, on}),
-    reliefGrant: (target: Target, town: string, coins: number) => call<{id: number}>('api/economy/relief', {target, town, coins}),
-    artwork: (target: Target) => call<Portraits>(`api/artwork?target=${target}`),
-    reports: (target: Target) => call<Reports>(`api/reports?target=${target}`),
-    storytellers: (target: Target) => call<Storytellers>(`api/storytellers?target=${target}`),
+    setTaxRate: (target: Target, rate: number) => call<{id: number}>(`${at(target)}economy/tax`, {target, rate}),
+    setMint: (target: Target, on: boolean) => call<{id: number}>(`${at(target)}economy/mint`, {target, on}),
+    reliefGrant: (target: Target, town: string, coins: number) => call<{id: number}>(`${at(target)}economy/relief`, {target, town, coins}),
+    artwork: (target: Target) => call<Portraits>(`${at(target)}artwork?target=${target}`),
+    reports: (target: Target) => call<Reports>(`${at(target)}reports?target=${target}`),
+    storytellers: (target: Target) => call<Storytellers>(`${at(target)}storytellers?target=${target}`),
     // Talk (Docs/Design/62-talk.md, phase 6): a resident's voice and family, the dialects, figures.
-    talk: (target: Target, npc: string) => call<Talk>(`api/talk?target=${target}&npc=${encodeURIComponent(npc)}`),
-    saveVoice: (target: Target, npc: string, voice: Voice) => call<{id: number}>('api/talk/voice', {target, npc, voice}),
+    talk: (target: Target, npc: string) => call<Talk>(`${at(target)}talk?target=${target}&npc=${encodeURIComponent(npc)}`),
+    saveVoice: (target: Target, npc: string, voice: Voice) => call<{id: number}>(`${at(target)}talk/voice`, {target, npc, voice}),
     saveKin: (target: Target, npc: string, other: string, kind: 'spouse' | 'parent', remove = false) =>
-        call<{id: number}>('api/talk/kin', {target, npc, other, kind, remove}),
-    dialects: (target: Target) => call<{name: string; grammar: string}[]>(`api/talk/dialects?target=${target}`),
-    saveDialect: (target: Target, name: string, grammar: string) => call<{id: number}>('api/talk/dialect', {target, name, grammar}),
-    figures: (target: Target) => call<Figure[]>(`api/talk/figures?target=${target}`),
-    saveFigure: (target: Target, figure: Partial<Figure> & {id: string}, remove = false) => call<{id: number}>('api/talk/figure', {target, figure, remove}),
+        call<{id: number}>(`${at(target)}talk/kin`, {target, npc, other, kind, remove}),
+    dialects: (target: Target) => call<{name: string; grammar: string}[]>(`${at(target)}talk/dialects?target=${target}`),
+    saveDialect: (target: Target, name: string, grammar: string) => call<{id: number}>(`${at(target)}talk/dialect`, {target, name, grammar}),
+    figures: (target: Target) => call<Figure[]>(`${at(target)}talk/figures?target=${target}`),
+    saveFigure: (target: Target, figure: Partial<Figure> & {id: string}, remove = false) => call<{id: number}>(`${at(target)}talk/figure`, {target, figure, remove}),
     saveStoryVisitor: (target: Target, visitor: {id: string; name: string; description: string; like: string; enabled: boolean}) =>
-        call<{id: number}>('api/storytellers/visitor', {target, visitor}),
+        call<{id: number}>(`${at(target)}storytellers/visitor`, {target, visitor}),
     creditMilestone: (target: Target, story: string, milestone: string, weight: string, rule: Record<string, unknown>, main: string[] = []) =>
-        call<{id: number; people: {id: string; lines: string[]}[]}>('api/milestone', {target, story, milestone, weight, rule, main}),
+        call<{id: number; people: {id: string; lines: string[]}[]}>(`${at(target)}milestone`, {target, story, milestone, weight, rule, main}),
     /** Upholds (with a note, a warning or a silence) or dismisses a player's report (doc 50). */
     decideReport: (target: Target, id: string, decision: 'uphold' | 'dismiss', outcome: string, hours: number, reason: string) =>
-        call<{id: number}>('api/reports/decide', {target, id, decision, outcome, hours, reason}),
+        call<{id: number}>(`${at(target)}reports/decide`, {target, id, decision, outcome, hours, reason}),
     reviewArtwork: (target: Target, id: string, decision: 'approve' | 'reject', reason: string) =>
-        call<{id: number}>('api/artwork/review', {target, id, decision, reason}),
-    chapters: (target: Target) => call<Chapters>(`api/chapters?target=${target}`),
+        call<{id: number}>(`${at(target)}artwork/review`, {target, id, decision, reason}),
+    chapters: (target: Target) => call<Chapters>(`${at(target)}chapters?target=${target}`),
     /** Approves or refuses a pending treaty (its ID) or House request (the Chapter's ID and the faction). */
     decide: (target: Target, what: 'treaty' | 'house', id: string, approve: boolean, faction = '', reason = '') =>
-        call<{id: number}>('api/chapters/decide', {target, what, id, approve, faction, reason}),
-    action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`api/actions/${id}?target=${target}`),
+        call<{id: number}>(`${at(target)}chapters/decide`, {target, what, id, approve, faction, reason}),
+    action: (target: Target, id: number) => call<{id: number; status: Action['status']; result: string}>(`${at(target)}actions/${id}?target=${target}`),
+    /** The studio (tools/studio.py): who is signed in, the suite to open on, each suite's worlds. */
+    studio: () => call<StudioSession>('api/studio/session'),
+    /** Switches Atlas's world (a dev world), as `world_db.py use KEY` does. */
+    useAtlasWorld: (key: Target) => call<{world: World}>('api/studio/atlas-world', {key}),
+};
+
+/** What the studio's top bar shows (doc 66, 3). Atlas is for dm and admin accounts (`available`); the DM shows the live
+ *  worlds and the one the live server runs (switching it is Phase 4's: `switch` says so). */
+export interface StudioSession {
+    me: Me; suite: 'atlas' | 'dm';
+    atlas: {available: boolean; world: World; worlds: World[]};
+    dm: {live: Target | null; worlds: World[]; switch: string};
 };

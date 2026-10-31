@@ -93,13 +93,19 @@ Portable tests: `Tests/town_tests.cpp`.
 
 ## Atlas Workshop — world editor
 
+Atlas and the Dungeon Master are one tool with two suites, **RATW Studio**
+(Docs/Design/66-worlds-atlas-and-dm.md, section 3):
+
 ```bash
-bash tools/editor.sh
+bash tools/studio.sh        # or: bash tools/editor.sh (opens on Atlas), bash tools/dungeon-master.sh (on the DM)
 ```
 
-Open http://127.0.0.1:8765. The first run installs and builds the React UI
-(Node.js required); later runs only rebuild when its sources changed. The
-server listens on this computer only.
+Open http://127.0.0.1:8765 and sign in with a Dungeon Master account (below):
+one sign-in for both suites; Atlas is for `dm` and `admin` accounts. The top bar
+switches suite (Atlas | DM), shows the suite's world (Atlas's dev world, which
+it switches; the live server's world, read only) and who is signed in. The first
+run installs and builds the React UI (Node.js required); later runs only rebuild
+when its sources changed. The server listens on this computer only.
 
 **There is one world, and everyone edits it live.** The editor opens straight
 into the world in the DEV database, so start PostgreSQL first
@@ -327,12 +333,14 @@ someone with access to the database server can change it). Schema changes are ne
 
 ## Dungeon Master — running the living world
 
-Atlas builds the world; **Dungeon Master** runs everything alive in it, in PROD
-(the live world, marked red) or DEV (rehearsal). The plan is in
+Atlas builds the world (the map, buildings, NPCs and their homes, jobs,
+routes and areas, factions, talk); **Dungeon Master** runs everything alive in
+it, in the live world (marked red). The plan is in
 [the Dungeon Master design](Docs/Design/21-dungeon-master.md); phases 1–4 are built.
+It is the studio's DM suite (Docs/Design/66-worlds-atlas-and-dm.md, section 3):
 
 ```bash
-bash tools/dungeon-master.sh        # http://127.0.0.1:8766 (local only)
+bash tools/dungeon-master.sh        # the studio on its DM suite, http://127.0.0.1:8765 (local only)
 ```
 
 Sign in with a Dungeon Master account. These are separate from player
@@ -581,8 +589,8 @@ motion retains static weather cues without changing perception. For development
 playtests, start the server with `--dev-tools` and use Settings' weather/time/lighting presets;
 ordinary players cannot change them. See [weather and daylight](Docs/Design/10-interactions-environment.md).
 
-If Atlas Workshop was already running before an update, save your work, restart
-`bash tools/editor.sh`, and reload the page. The Python host does not hot-reload.
+If the studio was already running before an update, restart `bash tools/studio.sh`
+(or `editor.sh`), and reload the page. The Python host does not hot-reload.
 
 ## NPC voices and what they cost
 

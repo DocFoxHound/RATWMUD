@@ -1,22 +1,29 @@
-// Calls to the local Python host (tools/map_editor.py). Every write carries the
-// per-launch session token; the host only listens on loopback.
+// Calls to the studio's Atlas suite (tools/studio.py: /api/atlas/, tools/map_editor.py). Every call carries the DM
+// account's sign-in (one sign-in for the tool, doc 66, 3) and every write Atlas's own session token; the host only
+// listens on loopback.
 import type {Project} from '../model/model.mjs';
 import type {Character, Roster, SlotPreview} from './roster';
 import * as M from '../model/model.mjs';
 import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
+import {authHeaders} from '../dm/api';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
 let info: Promise<{token: string; world?: AtlasWorld | null}> | null = null;
-const sessionInfo = () => (info ??= fetch('api/session').then(r => r.json()));
+const ATLAS = 'api/atlas/';
+const get = (path: string) => fetch(ATLAS + path, {headers: authHeaders()});
+const sessionInfo = () => (info ??= get('session').then(async r => {
+    if (!r.ok) { info = null; throw new Error((await r.json().catch(() => ({}))).error ?? `Host replied ${r.status}.`); }
+    return r.json();
+}));
 const session = () => sessionInfo().then(j => j.token);
 export const atlasWorld = () => sessionInfo().then(j => j.world ?? null);
 
 async function post(path: string, body: unknown): Promise<Response> {
-    return fetch(path, {
+    return fetch(ATLAS + path, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-RATW-Editor': await session()},
+        headers: {...authHeaders(), 'Content-Type': 'application/json', 'X-RATW-Editor': await session()},
         body: JSON.stringify(body),
     });
 }
@@ -68,30 +75,30 @@ const stampOf = (o: object | null) => { if (!o) return 0; let n = stamps.get(o);
 export interface CampBuilding { cell: string; x: number; y: number; kind: string; built: boolean; condition: number; site: string; chapter: string; colour: string }
 
 export const api = {
-    validate: async (project: Project) => json<HostValidation>(await post('api/validate', forHost(project))),
+    validate: async (project: Project) => json<HostValidation>(await post('validate', forHost(project))),
     exportZip: async (project: Project): Promise<Blob> => {
-        const response = await post('api/export', forHost(project));
+        const response = await post('export', forHost(project));
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             throw new Error((data.errors ?? [data.error ?? 'Export failed.']).join('\n'));
         }
         return response.blob();
     },
-    demo: async () => json<Project>(await fetch('api/demo')),
+    demo: async () => json<Project>(await get('demo')),
     /** The one world, edited live (tools/live_edit.py). */
     live: {
         /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view. */
-        load: async () => json<{project: Project; seq: number}>(await fetch('api/live/world?lean=1')),
+        load: async () => json<{project: Project; seq: number}>(await get('live/world?lean=1')),
         ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
-            await fetch(`api/live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
-        edit: (body: unknown) => post('api/live/edit', body),
+            await get(`live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
+        edit: (body: unknown) => post('live/edit', body),
         /** What the players' Chapters have built, as the DEV game server last saved it (read-only). */
-        camps: async () => json<{buildings: CampBuilding[]}>(await fetch('api/live/camps')),
-        sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>(await post('api/live/sync', body)),
+        camps: async () => json<{buildings: CampBuilding[]}>(await get('live/camps')),
+        sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>(await post('live/sync', body)),
     },
-    roster: async () => json<Roster>(await fetch('api/roster')),
+    roster: async () => json<Roster>(await get('roster')),
     saveRoster: async (roster: Roster) => {
-        const data = await json<Roster & {errors?: string[]}>(await post('api/roster', roster));
+        const data = await json<Roster & {errors?: string[]}>(await post('roster', roster));
         if (data.errors?.length) throw new Error(data.errors.join('\n'));
         return data as Roster;
     },
@@ -103,7 +110,7 @@ export const api = {
         const request = slotPlanRequest(project), key = stable(request) + '|' + stampOf(options.roster ?? null);
         if (!options.force && lastPlan?.key === key) return lastPlan.answer;
         const answer = (async () => {
-            const data = await json<SlotPreview & {errors?: string[]}>(await post('api/roster/plan', request));
+            const data = await json<SlotPreview & {errors?: string[]}>(await post('roster/plan', request));
             if (data.errors?.length) throw new Error(data.errors.join('\n'));
             return data as SlotPreview;
         })();
@@ -113,26 +120,26 @@ export const api = {
     },
     /** Push to live (tools/publish.py). */
     publish: {
-        preview: async () => json<PublishPreview>(await fetch('api/publish')),
-        push: async (body: {password: string; note: string; editor: string}) => published(await post('api/publish/push', body)),
-        rollback: async (body: {release: number; password: string; note: string; editor: string}) => published(await post('api/publish/rollback', body)),
+        preview: async () => json<PublishPreview>(await get('publish')),
+        push: async (body: {password: string; note: string; editor: string}) => published(await post('publish/push', body)),
+        rollback: async (body: {release: number; password: string; note: string; editor: string}) => published(await post('publish/rollback', body)),
         /** Copies PROD's NPCs and their running state into DEV (no password: it only writes DEV). */
         pull: async (body: {editor: string}) => {
-            const response = await post('api/publish/pull', body);
+            const response = await post('publish/pull', body);
             const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
             if (!response.ok) throw new PublishRefusal(data.error ?? 'Refused.', data.errors ?? [], response.status);
             return data as NpcCopy;
         },
     },
-    ai: async () => json<{available: boolean; model: string; error: string}>(await fetch('api/ai')),
+    ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {
-        const response = await post('api/roster/generate', {count, favor, theme});
+        const response = await post('roster/generate', {count, favor, theme});
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error((data.errors ?? [data.error ?? `Generation failed (${response.status}).`]).join('\n'));
         return data.characters as Character[];
     },
     playtest: async (project: Project, quickStart: boolean) => {
-        const data = await json<PlaytestResult & {errors?: string[]}>(await post('api/playtest', {project: forHost(project), quickStart}));
+        const data = await json<PlaytestResult & {errors?: string[]}>(await post('playtest', {project: forHost(project), quickStart}));
         if (data.errors?.length) throw new Error(data.errors.join('\n'));
         return data;
     },

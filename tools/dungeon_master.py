@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dungeon Master: run the living world (Docs/Design/21-dungeon-master.md).
 
-  bash tools/dungeon-master.sh                          build the UI and serve it on http://127.0.0.1:8766
+  bash tools/dungeon-master.sh                          the one tool (tools/studio.py) on its DM suite
   python3 tools/dungeon_master.py accounts create-defaults   the three DM accounts (passwords written once
                                                              to Database/dm-accounts.txt, owner-only)
   python3 tools/dungeon_master.py accounts list
@@ -14,7 +14,10 @@ roles: viewer sees everything and changes nothing; dm runs the live world;
 admin also manages DM accounts. Live changes are queued in the target
 database (dm.actions); the game server applies each one within a second and
 writes back what happened. Every request to change something is audited.
-Local-only: the host listens on this computer.
+Local-only: the host listens on this computer. The DM is the DM suite of the one tool
+(tools/studio.py, doc 66 section 3), which hosts make_handler's Handler under /api/dm/; building
+the map, NPCs, their areas, routes, factions and talk is Atlas's suite (the same DM methods, on
+Atlas's world).
 """
 from __future__ import annotations
 
@@ -2043,6 +2046,16 @@ def deed_words(conn, ids: list[str]) -> dict:
 # --------------------------------------------------------------------------- HTTP
 
 def make_server(port=8766, dm=None):
+    """The DM on its own (the tests); the tool itself is tools/studio.py, which hosts make_handler's Handlers."""
+    server = ThreadingHTTPServer(('127.0.0.1', port), make_handler(dm))
+    server.daemon_threads = True
+    return server
+
+
+def make_handler(dm=None, offers=None, world=None, kinds=None):
+    """The DM's request handler. `offers(method, path)`: whether it offers a route (404 otherwise; every route without
+    it). `world()`: the one world it works on (the studio's Atlas suite: Atlas's world), a request naming another
+    refused. `kinds`: the kinds of world a request may name (the studio's DM suite: live worlds only)."""
     dm = dm or DungeonMaster()
 
     class Handler(BaseHTTPRequestHandler):
@@ -2075,8 +2088,24 @@ def make_server(port=8766, dm=None):
         def who(self):
             return dm.session(self.token())
 
+        def pick(self, asked):
+            """The world a request works on: the one it names, else the default (the live world, or `world()`)."""
+            if world is not None:
+                key = world()
+                if asked and asked != key:
+                    raise DMError(f'This works on Atlas\'s world, {key}, not {asked}.', 409)
+                return key
+            key = asked or default_target()
+            if kinds is not None and key in targets() and world_db.kind(key) not in kinds:
+                raise DMError(f'{key} is a {world_db.kind(key)} world; this works on {" and ".join(kinds)} worlds '
+                              f'({", ".join(k for k in targets() if world_db.kind(k) in kinds) or "none registered"}).', 400)
+            return key
+
         def target(self, query):
-            return (query.get('target') or [default_target()])[0]
+            return self.pick((query.get('target') or [''])[0])
+
+        def posted(self, data):
+            return self.pick(str(data.get('target') or ''))
 
         def body(self):
             size = int(self.headers.get('Content-Length', '-1'))
@@ -2089,11 +2118,11 @@ def make_server(port=8766, dm=None):
             return data
 
         def static(self, path):
-            relative = 'dm.html' if path in ('/', '/dm.html') else path.lstrip('/')
+            relative = 'index.html' if path in ('/', '/index.html') else path.lstrip('/')
             file = (DIST / relative).resolve()
             if DIST.resolve() not in file.parents or not file.is_file() or file.suffix not in MIME:
-                if relative == 'dm.html':
-                    return self.reply(200, b'<!doctype html><title>Dungeon Master</title><p>Not built yet: run bash tools/dungeon-master.sh',
+                if relative == 'index.html':
+                    return self.reply(200, b'<!doctype html><title>RATW Studio</title><p>Not built yet: run bash tools/studio.sh',
                                       'text/html')
                 return self.reply(404, {'error': 'Not found.'})
             return self.reply(200, file.read_bytes(), MIME[file.suffix])
@@ -2101,6 +2130,8 @@ def make_server(port=8766, dm=None):
         def handle_api(self, method):
             parts = urlsplit(self.path)
             path, query = parts.path, parse_qs(parts.query)
+            if offers is not None and not offers(method, path):
+                raise DMError('Not found.', 404)
             if method == 'POST' and path == '/api/login':
                 data = self.body()
                 return self.reply(200, dm.login(str(data.get('username', '')), str(data.get('password', ''))))
@@ -2128,14 +2159,14 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.ground(self.target(query), [i for i in ','.join(query.get('cells', [])).split(',') if i]))
             if method == 'POST' and path == '/api/actions':
                 data = self.body()
-                return self.reply(200, dm.request(who, str(data.get('target') or default_target()), str(data.get('kind', '')),
+                return self.reply(200, dm.request(who, self.posted(data), str(data.get('kind', '')),
                                                   str(data.get('characterId', '')), str(data.get('reason', '')),
                                                   data.get('payload')))
             if method == 'GET' and path == '/api/live':
                 return self.reply(200, dm.live(who, self.target(query)))
             if method == 'POST' and path == '/api/live/move':
                 data = self.body()
-                return self.reply(200, dm.move(who, str(data.get('target') or default_target()), str(data.get('kind', '')), str(data.get('id', '')),
+                return self.reply(200, dm.move(who, self.posted(data), str(data.get('kind', '')), str(data.get('id', '')),
                                                str(data.get('cell', '')), data.get('x'), data.get('y'), str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/live/rumours':
                 return self.reply(200, dm.rumours(self.target(query)))
@@ -2151,70 +2182,70 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.figures(self.target(query)))
             if method == 'POST' and path == '/api/talk/voice':
                 data = self.body()
-                return self.reply(200, dm.save_voice(who, str(data.get('target') or default_target()), str(data.get('npc', '')), data.get('voice')))
+                return self.reply(200, dm.save_voice(who, self.posted(data), str(data.get('npc', '')), data.get('voice')))
             if method == 'POST' and path == '/api/talk/kin':
                 data = self.body()
-                return self.reply(200, dm.save_kin(who, str(data.get('target') or default_target()), str(data.get('npc', '')), str(data.get('other', '')),
+                return self.reply(200, dm.save_kin(who, self.posted(data), str(data.get('npc', '')), str(data.get('other', '')),
                                                    str(data.get('kind', '')), bool(data.get('remove', False))))
             if method == 'POST' and path == '/api/talk/dialect':
                 data = self.body()
-                return self.reply(200, dm.save_dialect(who, str(data.get('target') or default_target()), data.get('name'), data.get('grammar')))
+                return self.reply(200, dm.save_dialect(who, self.posted(data), data.get('name'), data.get('grammar')))
             if method == 'POST' and path == '/api/talk/figure':
                 data = self.body()
-                return self.reply(200, dm.save_figure(who, str(data.get('target') or default_target()), data.get('figure'), bool(data.get('remove', False))))
+                return self.reply(200, dm.save_figure(who, self.posted(data), data.get('figure'), bool(data.get('remove', False))))
             if method == 'POST' and path == '/api/storytellers/visitor':
                 data = self.body()
-                return self.reply(200, dm.save_story_visitor(who, str(data.get('target') or default_target()), data.get('visitor')))
+                return self.reply(200, dm.save_story_visitor(who, self.posted(data), data.get('visitor')))
             if method == 'POST' and path == '/api/milestone':
                 data = self.body()
-                return self.reply(200, dm.credit_milestone(who, str(data.get('target') or default_target()), data.get('story'), data.get('milestone'),
+                return self.reply(200, dm.credit_milestone(who, self.posted(data), data.get('story'), data.get('milestone'),
                                                            data.get('weight', 'great'), data.get('rule'), data.get('people'), data.get('main')))
             if method == 'GET' and path == '/api/live/projects':
                 return self.reply(200, dm.projects(self.target(query)))
             if method == 'POST' and path == '/api/live/action':
                 data = self.body()
-                return self.reply(200, dm.live_action(who, str(data.get('target') or default_target()), str(data.get('kind', '')),
+                return self.reply(200, dm.live_action(who, self.posted(data), str(data.get('kind', '')),
                                                       data.get('id', ''), data.get('payload'), str(data.get('reason', ''))))
             if method == 'POST' and path == '/api/live/visit':
                 data = self.body()
-                return self.reply(200, dm.visit(who, str(data.get('target') or default_target()), data.get('name', ''), str(data.get('cell', '')),
+                return self.reply(200, dm.visit(who, self.posted(data), data.get('name', ''), str(data.get('cell', '')),
                                                 data.get('x'), data.get('y'), data.get('minutes'), str(data.get('like', '')),
                                                 str(data.get('description', ''))))
             if method == 'POST' and path == '/api/live/leave':
                 data = self.body()
-                return self.reply(200, dm.leave(who, str(data.get('target') or default_target()), str(data.get('id', ''))))
+                return self.reply(200, dm.leave(who, self.posted(data), str(data.get('id', ''))))
             if method == 'GET' and path == '/api/money':
                 return self.reply(200, dm.money(self.target(query)))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':
                 data = self.body()
-                return self.reply(200, dm.call_festival(who, str(data.get('target') or default_target()), data.get('community', ''),
+                return self.reply(200, dm.call_festival(who, self.posted(data), data.get('community', ''),
                                                         data.get('name', ''), data.get('inDays', 0)))
             if method == 'POST' and path == '/api/economy/tax':
                 data = self.body()
-                return self.reply(200, dm.set_tax_rate(who, str(data.get('target') or default_target()), data.get('rate')))
+                return self.reply(200, dm.set_tax_rate(who, self.posted(data), data.get('rate')))
             if method == 'POST' and path == '/api/economy/holdings':
                 data = self.body()
-                return self.reply(200, dm.set_holdings_tax(who, str(data.get('target') or default_target()), data.get('rate')))
+                return self.reply(200, dm.set_holdings_tax(who, self.posted(data), data.get('rate')))
             if method == 'POST' and path == '/api/economy/mint':
                 data = self.body()
-                return self.reply(200, dm.set_mint(who, str(data.get('target') or default_target()), data.get('on')))
+                return self.reply(200, dm.set_mint(who, self.posted(data), data.get('on')))
             if method == 'POST' and path == '/api/economy/relief':
                 data = self.body()
-                return self.reply(200, dm.relief_grant(who, str(data.get('target') or default_target()), data.get('town', ''), data.get('coins')))
+                return self.reply(200, dm.relief_grant(who, self.posted(data), data.get('town', ''), data.get('coins')))
             if method == 'GET' and path == '/api/artwork':
                 return self.reply(200, dm.artwork(self.target(query)))
             if method == 'POST' and path == '/api/artwork/review':
                 data = self.body()
-                return self.reply(200, dm.review_artwork(who, str(data.get('target') or default_target()), str(data.get('id', '')),
+                return self.reply(200, dm.review_artwork(who, self.posted(data), str(data.get('id', '')),
                                                          str(data.get('decision', '')), str(data.get('reason', ''))))
             if method == 'GET' and path == '/api/reports':
                 return self.reply(200, dm.reports(self.target(query)))
             if method == 'POST' and path == '/api/reports/decide':
                 data = self.body()
                 hours = data.get('hours', 0)
-                return self.reply(200, dm.decide_report(who, str(data.get('target') or default_target()), str(data.get('id', '')),
+                return self.reply(200, dm.decide_report(who, self.posted(data), str(data.get('id', '')),
                                                         str(data.get('decision', '')), str(data.get('outcome', '')),
                                                         hours if isinstance(hours, int) and not isinstance(hours, bool) else 0,
                                                         str(data.get('reason', ''))))
@@ -2222,29 +2253,29 @@ def make_server(port=8766, dm=None):
                 return self.reply(200, dm.chronicle(self.target(query), query.get('id', [''])[0]))
             if method == 'POST' and path == '/api/chronicle/story':
                 data = self.body()
-                return self.reply(200, dm.write_story(who, str(data.get('target') or default_target()), str(data.get('id', ''))))
+                return self.reply(200, dm.write_story(who, self.posted(data), str(data.get('id', ''))))
             if method == 'GET' and path == '/api/npcs':
                 return self.reply(200, dm.npcs(self.target(query)))
             if method == 'POST' and path == '/api/npcs/save':
                 data = self.body()
-                return self.reply(200, dm.save_npc(who, str(data.get('target') or default_target()), data.get('person')))
+                return self.reply(200, dm.save_npc(who, self.posted(data), data.get('person')))
             if method == 'POST' and path == '/api/npcs/delete':
                 data = self.body()
-                return self.reply(200, dm.delete_npc(who, str(data.get('target') or default_target()), str(data.get('id', ''))))
+                return self.reply(200, dm.delete_npc(who, self.posted(data), str(data.get('id', ''))))
             if method == 'POST' and path == '/api/npcs/life':
                 data = self.body()
-                return self.reply(200, dm.npc_life(who, str(data.get('target') or default_target()), str(data.get('id', '')), bool(data.get('dead'))))
+                return self.reply(200, dm.npc_life(who, self.posted(data), str(data.get('id', '')), bool(data.get('dead'))))
             layer_posts = {
-                '/api/routes/save': lambda d: dm.save_route(who, str(d.get('target') or default_target()), d.get('route')),
-                '/api/routes/delete': lambda d: dm.delete_route(who, str(d.get('target') or default_target()), str(d.get('id', ''))),
-                '/api/areas/save': lambda d: dm.save_area(who, str(d.get('target') or default_target()), d.get('area')),
-                '/api/areas/delete': lambda d: dm.delete_area(who, str(d.get('target') or default_target()), str(d.get('id', ''))),
-                '/api/spawns/save': lambda d: dm.save_spawn(who, str(d.get('target') or default_target()), d.get('rule')),
-                '/api/spawns/delete': lambda d: dm.delete_spawn(who, str(d.get('target') or default_target()), str(d.get('id', ''))),
-                '/api/npcs/wander': lambda d: dm.set_wander(who, str(d.get('target') or default_target()), str(d.get('id', '')),
+                '/api/routes/save': lambda d: dm.save_route(who, self.posted(d), d.get('route')),
+                '/api/routes/delete': lambda d: dm.delete_route(who, self.posted(d), str(d.get('id', ''))),
+                '/api/areas/save': lambda d: dm.save_area(who, self.posted(d), d.get('area')),
+                '/api/areas/delete': lambda d: dm.delete_area(who, self.posted(d), str(d.get('id', ''))),
+                '/api/spawns/save': lambda d: dm.save_spawn(who, self.posted(d), d.get('rule')),
+                '/api/spawns/delete': lambda d: dm.delete_spawn(who, self.posted(d), str(d.get('id', ''))),
+                '/api/npcs/wander': lambda d: dm.set_wander(who, self.posted(d), str(d.get('id', '')),
                                                             str(d['area']) if d.get('area') else None),
             }
-            target = lambda d: str(d.get('target') or default_target())
+            target = self.posted
             layer_posts.update({
                 '/api/factions/save': lambda d: dm.save_faction(who, target(d), d.get('faction')),
                 '/api/factions/delete': lambda d: dm.delete_faction(who, target(d), str(d.get('id', ''))),
@@ -2290,9 +2321,7 @@ def make_server(port=8766, dm=None):
         def do_POST(self):
             self.dispatch('POST')
 
-    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
-    server.daemon_threads = True
-    return server
+    return Handler
 
 
 # --------------------------------------------------------------------------- Command line
@@ -2311,7 +2340,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command')
     serve = sub.add_parser('serve')
-    serve.add_argument('--port', type=int, default=8766)
+    serve.add_argument('--port', type=int, help='default: the studio\'s (tools/studio.py)')
     accounts = sub.add_parser('accounts')
     accounts.add_argument('action', choices=('create-defaults', 'list', 'set-password'))
     accounts.add_argument('username', nargs='?')
@@ -2339,15 +2368,10 @@ def main(argv=None) -> int:
                     set_password(conn, args.username, first)
                     print(f'Password changed; {args.username} is signed out everywhere.')
             return 0
-        server = make_server(getattr(args, 'port', 8766))
-        print(f'Dungeon Master: http://127.0.0.1:{server.server_port}  (local only; Ctrl+C to stop)', flush=True)
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            server.server_close()
-        return 0
+        # One tool, two suites (doc 66, section 3): the DM is the studio's DM suite now.
+        import studio
+        port = getattr(args, 'port', None)
+        return studio.main(['serve', '--suite', 'dm'] + (['--port', str(port)] if port else []))
     except (DMError, world_db.DatabaseError) as error:
         print(error, file=sys.stderr)
         return 1

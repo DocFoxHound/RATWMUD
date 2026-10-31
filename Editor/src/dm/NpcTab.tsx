@@ -1,5 +1,9 @@
-// NPC Management: create, place, change, kill, revive and delete NPCs in PROD or DEV, and the layers they live by:
-// patrol routes, painted areas (wander, spawn, plan) and spawn rules.
+// NPCs and the layers they live by: patrol routes, painted areas (wander, spawn, plan) and spawn rules, in one of two
+// suites (Docs/Design/66-worlds-atlas-and-dm.md, section 3):
+//   atlas  (Atlas's NPC page, on Atlas's world) creates, places, changes and deletes NPCs and edits their layers, with
+//          their voices, the dialects and the figures;
+//   dm     (the DM's NPC Life, on the live world) shows them and their layers, view only, and kills and revives them,
+//          with each one's life and the calendar.
 // NPCs are shown at their spawn points (home, work and evening places), never where they happen to be walking;
 // that is the LIVE tab's job. Saving writes the row and syncs it into a running game server.
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -19,7 +23,7 @@ import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaC
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
 type Pick = 'new' | 'home' | 'work' | 'evening' | null;
 
-export function NpcTab({me, target}: {me: Me; target: Target}) {
+export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atlas' | 'dm'}) {
     const [data, setData] = useState<Npcs | null>(null);
     const [problem, setProblem] = useState('');
     const world = useWorld(target, setProblem);
@@ -38,6 +42,9 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
     const [busy, setBusy] = useState(false);
     const [query, setQuery] = useState('');
     const canAct = me.role !== 'viewer';
+    const building = suite === 'atlas';
+    const canEdit = canAct && building;           // Making and changing NPCs and layers: Atlas's.
+    const canLive = canAct && !building;          // Killing and reviving: the DM's.
     useEffect(() => {
         const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { setPick(null); setAddingPosts(false); } };
         window.addEventListener('keydown', esc);
@@ -129,14 +136,14 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         return out;
     }, [surface, data, layer, areaDraft, routeDraft, spawnDraft, draft]);
 
-    const mode: Mode = !canAct ? 'select' : layer === 'areas' && areaDraft ? 'paint' : pick || addingPosts ? 'pick' : 'select';
+    const mode: Mode = !canEdit ? 'select' : layer === 'areas' && areaDraft ? 'paint' : pick || addingPosts ? 'pick' : 'select';
     const onMapClick = (place: Place | null, marker: Marker | null) => {
         if (layer === 'routes' && addingPosts && routeDraft) {
             if (!place) { setProblem('Choose open ground inside a cell or interior.'); return; }
             setRouteDraft({...routeDraft, posts: [...routeDraft.posts, place]}); setProblem('');
             return;
         }
-        if (pick && canAct) {
+        if (pick && canEdit) {
             if (!place) { setProblem('Choose open ground inside a cell or interior.'); return; }
             if (pick === 'new' && world) {
                 const person = M.newPerson({...world, people: data?.people ?? []}, role, place);
@@ -225,7 +232,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
     const match = (...t: string[]) => !q || t.some(x => x.toLowerCase().includes(q));
     const places = world ? [...world.cells.map(c => ({id: c.id, name: c.name, room: false})), ...world.rooms.map(r => ({id: r.id, name: r.name, room: true}))] : [];
     const actions = (data?.actions ?? []).filter(a => a.target === selected);
-    const common = {target, canAct, busy, dirty, isNew, onRevert: revert};
+    const common = {target, canAct: canEdit, busy, dirty, isNew, onRevert: revert};
     const peopleNamed = (ids: string[]) => ids.map(id => data?.people.find(p => p.id === id)?.name ?? data?.holders.find(h => h.id === id)?.name ?? id);
     const help: Record<Layer, string> = {
         npcs: 'NPCs are shown at their spawn points: where they work, and home and evening for the selected one. Double-click a place to open it.',
@@ -244,7 +251,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                 {places.filter(p => match(p.name, p.id)).map(p => <button key={p.id} className={view.kind === 'cell' && view.id === p.id ? 'tree-item active' : 'tree-item'}
                     onClick={() => setView({kind: 'cell', id: p.id})}><span className="tree-icon">{p.room ? '▣' : '▦'}</span><span className="tree-label">{p.name}</span></button>)}
                 {layer === 'npcs' && <>
-                    <p className="dm-group">Named NPCs {canAct && <button className="icon" title="Place a new NPC on the map" onClick={() => setPick('new')}>+</button>}</p>
+                    <p className="dm-group">Named NPCs {canEdit && <button className="icon" title="Place a new NPC on the map" onClick={() => setPick('new')}>+</button>}</p>
                     {(data?.people ?? []).filter(p => match(p.name, p.id, p.role, p.workLabel)).map(p => <button key={p.id}
                         className={selected === p.id ? 'tree-item active' : 'tree-item'} onClick={() => choose(p.id, (p.work ?? p.home)?.cell)}>
                         <span className="tree-icon" style={{color: ROLE_INFO[p.role].color}}>{dead.has(p.id) ? '✝' : ROLE_INFO[p.role].icon}</span>
@@ -257,20 +264,20 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                     {data && !data.holders.length && <p className="tree-empty">Nobody holds a profession slot yet.</p>}
                 </>}
                 {layer === 'routes' && <>
-                    <p className="dm-group">Patrol routes {canAct && <button className="icon" title="New patrol route" onClick={newRoute}>+</button>}</p>
+                    <p className="dm-group">Patrol routes {canEdit && <button className="icon" title="New patrol route" onClick={newRoute}>+</button>}</p>
                     {(data?.routes ?? []).filter(r => match(r.name, r.id)).map(r => <button key={r.id} className={selected === r.id ? 'tree-item active' : 'tree-item'}
                         onClick={() => choose(r.id, r.posts[0]?.cell)}><span className="tree-icon" style={{color: '#e0b85a'}}>⤳</span>
                         <span className="tree-label">{r.name}</span><small>{r.posts.length} posts</small></button>)}
                     {data && !data.routes.length && <p className="tree-empty">No patrol routes yet.</p>}
                 </>}
                 {layer === 'areas' && AREA_KINDS.map(k => <div key={k.id}>
-                    <p className="dm-group">{k.label} areas {canAct && k.id === 'wander' && <button className="icon" title="Paint a new area" onClick={newArea}>+</button>}</p>
+                    <p className="dm-group">{k.label} areas {canEdit && k.id === 'wander' && <button className="icon" title="Paint a new area" onClick={newArea}>+</button>}</p>
                     {(data?.areas ?? []).filter(a => a.kind === k.id && match(a.name, a.id)).map(a => <button key={a.id} className={selected === a.id ? 'tree-item active' : 'tree-item'}
                         onClick={() => choose(a.id, a.cell)}><span className="tree-icon" style={{color: k.color}}>▦</span>
                         <span className="tree-label">{a.name}</span><small>{a.tiles.length} tiles</small></button>)}
                 </div>)}
                 {layer === 'spawns' && <>
-                    <p className="dm-group">Spawn rules {canAct && <button className="icon" title="New spawn rule" onClick={newRule}>+</button>}</p>
+                    <p className="dm-group">Spawn rules {canEdit && <button className="icon" title="New spawn rule" onClick={newRule}>+</button>}</p>
                     {(data?.spawns ?? []).filter(r => match(r.name, r.id)).map(r => <button key={r.id} className={selected === r.id ? 'tree-item active' : 'tree-item'}
                         onClick={() => choose(r.id, data?.areas.find(a => a.id === r.area)?.cell)}>
                         <span className="tree-icon" style={{color: r.enabled ? '#d98b5f' : 'var(--faint)'}}>✺</span>
@@ -291,10 +298,10 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                         <span className="tool-help">Click open ground on the map · Esc to cancel</span>
                         <button onClick={() => setPick(null)}>Cancel</button></>
                         : <><span className="tool-help">{help[layer]}</span>
-                            {canAct && layer === 'npcs' && <button className="primary" onClick={() => setPick('new')}>+ Place new NPC</button>}
-                            {canAct && layer === 'routes' && <button className="primary" onClick={newRoute}>+ New route</button>}
-                            {canAct && layer === 'areas' && <button className="primary" onClick={newArea}>+ Paint new area</button>}
-                            {canAct && layer === 'spawns' && <button className="primary" onClick={newRule}>+ New spawn rule</button>}</>}
+                            {canEdit && layer === 'npcs' && <button className="primary" onClick={() => setPick('new')}>+ Place new NPC</button>}
+                            {canEdit && layer === 'routes' && <button className="primary" onClick={newRoute}>+ New route</button>}
+                            {canEdit && layer === 'areas' && <button className="primary" onClick={newArea}>+ Paint new area</button>}
+                            {canEdit && layer === 'spawns' && <button className="primary" onClick={newRule}>+ New spawn rule</button>}</>}
                 </div>
             </div>
             {surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={selected} mode={mode}
@@ -302,26 +309,27 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
         </main>
         <aside className="inspector" aria-label="Inspector">
             {problem && <p className="hint dm-note">{problem}</p>}
-            {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canAct={canAct} busy={busy}
+            {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canEdit={canEdit} canLive={canLive} busy={busy}
                 dirty={dirty} isNew={isNew} dead={dead.has(draft.id)} target={target} actions={actions} areas={data?.areas ?? []}
                 wander={data?.wanders[draft.id] ?? ''} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
-                {!isNew && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
-                {!isNew && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
+                {!isNew && building && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
+                {!isNew && !building && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
                 : holder ? <div className="dm-panel"><header><div><small>JOB HOLDER</small><h2>{holder.name}</h2></div>
                     {dead.has(holder.id) && <span className="dm-status dead">✝ dead</span>}</header>
-                    <Hint>Holds the “{holder.slot}” profession slot. Their details come from the character roster and the slot; edit those in Atlas for now.</Hint>
-                    {canAct && <div className="button-grid"><button className="danger" disabled={busy || dead.has(holder.id)} onClick={() => life(holder.id, holder.name, true)}>✝ Kill</button>
+                    <Hint>Holds the “{holder.slot}” profession slot. Their details come from the character roster and the slot; edit those in {building ? 'the Workshop (People and Characters)' : 'Atlas'}.</Hint>
+                    {canLive && <div className="button-grid"><button className="danger" disabled={busy || dead.has(holder.id)} onClick={() => life(holder.id, holder.name, true)}>✝ Kill</button>
                         <button disabled={busy || !dead.has(holder.id)} onClick={() => life(holder.id, holder.name, false)}>Revive</button></div>}
                     <ActionList actions={actions} target={target} />
-                    <LifePanel me={me} target={target} id={holder.id} name={holder.name} /></div>
+                    {!building && <LifePanel me={me} target={target} id={holder.id} name={holder.name} />}</div>
                 : <Overview title="NPC MANAGEMENT" target={target}>
                     <Hint>{data ? `${data.people.length} named NPCs and ${data.holders.length} job holders; ${data.dead.length} dead.` : 'Loading…'}</Hint>
-                    <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to the {target.toUpperCase()} database and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint>
-                    <CalendarPanel me={me} target={target} />
-                    <DialectsPanel me={me} target={target} />
-                    <FiguresPanel me={me} target={target} /></Overview>)}
+                    {building ? <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to {worldName(target)} and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint>
+                        : <Hint>Select an NPC on the map or in the list to see them, kill or revive them, or read their life. Making and changing NPCs, their routes and areas, is Atlas’s.</Hint>}
+                    {!building && <CalendarPanel me={me} target={target} />}
+                    {building && <DialectsPanel me={me} target={target} />}
+                    {building && <FiguresPanel me={me} target={target} />}</Overview>)}
             {layer === 'routes' && world && (routeDraft ? <><RouteInspector {...common} route={routeDraft} setRoute={setRouteDraft} world={world}
                 users={peopleNamed((data?.people ?? []).filter(p => p.route === routeDraft.id).map(p => p.id))} adding={addingPosts} setAdding={setAddingPosts}
                 onSave={saveRoute} onDelete={() => deleteLayer('the route', routeDraft.name, () => dmApi.deleteRoute(target, routeDraft.id))} />
@@ -347,8 +355,8 @@ function Overview({title, target, children}: {title: string; target: Target; chi
     return <div className="dm-panel"><header><div><small>{title}</small><h2>{isLive(target) ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>{children}</div>;
 }
 
-function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onPick, onSave, onRevert, onDelete, onLife}: {
-    draft: Person; setDraft: (p: Person) => void; routes: {id: string; name: string}[]; world: Project; canAct: boolean; busy: boolean;
+function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onPick, onSave, onRevert, onDelete, onLife}: {
+    draft: Person; setDraft: (p: Person) => void; routes: {id: string; name: string}[]; world: Project; canEdit: boolean; canLive: boolean; busy: boolean;
     dirty: boolean; isNew: boolean; dead: boolean; target: Target; actions: Action[]; areas: NpcArea[]; wander: string; spawnedBy: string;
     onWander: (area: string) => void; onPick: (p: Pick) => void; onSave: () => void; onRevert: () => void; onDelete: () => void; onLife: (kill: boolean) => void;
 }) {
@@ -361,7 +369,7 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
         <header><div><small>{isNew ? 'NEW NPC · NOT SAVED' : info.label.toUpperCase()}</small><h2>{draft.name}</h2></div>
             {dead ? <span className="dm-status dead">✝ dead</span> : <span className="role-chip" style={{borderColor: info.color, color: info.color}}>{info.icon}</span>}</header>
         {spawnedBy && <Hint>Spawned by the rule “{spawnedBy}”. When they fall, the rule clears them and brings someone new.</Hint>}
-        <fieldset disabled={!canAct} className="dm-fields">
+        <fieldset disabled={!canEdit} className="dm-fields">
             <Row><TextField label="Name" value={draft.name} max={120} onCommit={v => set({name: v})} />
                 <NumberField label="Age" value={draft.age} min={0} max={200} onCommit={v => set({age: v})} /></Row>
             <SelectField label="Role" value={draft.role} hint={info.blurb} options={M.ROLES.map(r => ({value: r, label: ROLE_INFO[r as Role].label}))}
@@ -374,11 +382,11 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
                 options={[{value: '', label: 'Hold the work post'}, ...routes.map(r => ({value: r.id, label: r.name}))]} />}
             <div className="field"><span>Spawn points</span>
                 {(['work', 'home', 'evening'] as const).map(k => <div key={k} className="place-row"><div><small>{k}</small><span>{placeName(draft[k], {home: 'unplaced', work: 'no work', evening: 'at home'}[k])}</span></div>
-                    <button onClick={() => onPick(k)}>Pick</button></div>)}</div>
+                    {canEdit && <button onClick={() => onPick(k)}>Pick</button>}</div>)}</div>
             {!isNew && draft.role === 'civilian' && <SelectField label="Wanders in" value={wander}
                 hint={dirty ? 'Save or revert the other changes first.' : 'Roams this area during work hours and evenings instead of standing at one spot. Applies at once.'}
                 options={[{value: '', label: 'Keeps to their spots'}, ...wanderAreas.map(a => ({value: a.id, label: a.name}))]}
-                onChange={v => { if (!dirty && !busy) onWander(v); }} />}
+                onChange={v => { if (canEdit && !dirty && !busy) onWander(v); }} />}
             <Row><NumberField label="Purse" value={draft.purse} min={0} max={100000} onCommit={v => set({purse: v})} />
                 <NumberField label="Meals" value={draft.meals} min={0} max={10000} onCommit={v => set({meals: v})} />
                 <NumberField label="Herbs" value={draft.herbs} min={0} max={10000} onCommit={v => set({herbs: v})} /></Row>
@@ -392,17 +400,19 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
             <Row><SelectField label="Stature" value={look.stature} options={M.STATURES.map(v => ({value: v, label: v}))} onChange={v => set({appearance: {...look, stature: v}})} />
                 <SelectField label="Pattern" value={look.pattern} options={M.PATTERNS.map(v => ({value: v, label: v}))} onChange={v => set({appearance: {...look, pattern: v}})} /></Row>
         </fieldset>
-        {canAct && <>
+        {canEdit && <>
             <div className="button-grid">
                 <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy || !dirty} onClick={onSave}>{busy ? 'Saving…' : `Save to ${worldName(target)}`}</button>
                 <button disabled={busy || !dirty} onClick={onRevert}>{isNew ? 'Discard' : 'Revert'}</button>
             </div>
             {!isNew && <div className="button-grid">
-                <button className="danger" disabled={busy || dead} onClick={() => onLife(true)}>✝ Kill</button>
-                <button disabled={busy || !dead} onClick={() => onLife(false)}>Revive</button>
                 <button className="danger" disabled={busy} onClick={onDelete}>Delete</button>
             </div>}
         </>}
+        {canLive && !isNew && <div className="button-grid">
+            <button className="danger" disabled={busy || dead} onClick={() => onLife(true)}>✝ Kill</button>
+            <button disabled={busy || !dead} onClick={() => onLife(false)}>Revive</button>
+        </div>}
         <ActionList actions={actions} target={target} />
     </div>;
 }

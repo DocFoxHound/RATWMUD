@@ -94,7 +94,7 @@ export const COMMANDS: Command[] = [
         download(`${safeName()}.atlas.json`, JSON.stringify(getState().project, null, 2) + '\n'); toast('Downloaded a copy of the world.', 'success');
     }},
     {id: 'file.export', label: 'Export world ZIP', menu: 'File', group: 'c', keys: 'Ctrl+E', match: ctrl('e'), run: exportZip},
-    {id: 'file.publish', label: 'Push to live…', menu: 'File', group: 'c', run: () => setState({dialog: 'publish'})},
+    // Push to live has left Atlas: it becomes the DM's Import from dev (doc 66, Phase 4).
     {id: 'file.play', label: 'Play in game…', menu: 'File', group: 'c', keys: 'Ctrl+Enter', match: e => (e.ctrlKey || e.metaKey) && e.key === 'Enter', run: () => setState({dialog: 'play'})},
 
     {id: 'edit.undo', label: 'Undo', menu: 'Edit', group: 'a', keys: 'Ctrl+Z', match: ctrl('z'), run: undo, enabled: () => getState().past.length > 0},

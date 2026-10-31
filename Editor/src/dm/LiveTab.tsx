@@ -38,7 +38,8 @@ const CRIMES = new Set(['theft', 'attempted theft', 'warrant', 'arrest', 'report
 const POLL_MS = 2000;
 
 type Pick = {kind: 'move'; who: LivePerson} | {kind: 'revive'; who: LivePerson} | {kind: 'spawn'} | null;
-/** Who is spawned: a named NPC who stays (saved like any other), or a temporary visitor for some minutes. */
+/** Who is spawned: a temporary visitor for some minutes. (A named NPC who stays is made in Atlas now, doc 66, 3:
+ *  `stays` is always false in the DM.) */
 interface SpawnDraft { place: Place; name: string; role: Role; copy: string; stays: boolean; minutes: number }
 
 export function LiveTab({me, target}: {me: Me; target: Target}) {
@@ -250,7 +251,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 reviveAt(pick.who, place);
             } else {
                 setPick(null);
-                setSpawn({place, name: '', role: 'civilian', copy: '', stays: true, minutes: 30});
+                setSpawn({place, name: '', role: 'civilian', copy: '', stays: false, minutes: 30});
                 setSelected(null);
             }
             return;
@@ -414,7 +415,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                     {pick ? <><b className="tool-name">{pick.kind === 'move' ? `Move ${pick.who[1]}` : pick.kind === 'revive' ? `Bring ${pick.who[1]} back at…` : 'Spawn an NPC'}</b>
                         <span className="tool-help">Click a tile on the map · Esc to cancel</span><button onClick={() => setPick(null)}>Cancel</button></>
                         : <><span className="tool-help">Wheel zooms · drag pans · drag someone to move them · double-click a place to open it</span>
-                            {canAct && <button className="primary" onClick={() => { setSelected(null); setPick({kind: 'spawn'}); }}>+ Spawn NPC</button>}
+                            {canAct && <button className="primary" onClick={() => { setSelected(null); setPick({kind: 'spawn'}); }}>+ Bring a visitor</button>}
                             <button onClick={() => setRail(r => !r)} title="Show or hide the side panel">{rail ? 'Hide panel ▸' : '◂ Panel'}</button></>}
                 </div>
             </div>
@@ -426,10 +427,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             {(note || problem) && <p className="hint dm-note">{note || problem}</p>}
             {spawn ? <div className="dm-panel"><header><div><small>SPAWN</small><h2>{placeName(spawn.place.cell)} · {spawn.place.x}, {spawn.place.y}</h2></div></header>
                 <label className="field"><span>Name</span><input autoFocus value={spawn.name} onChange={e => setSpawn({...spawn, name: e.target.value})} placeholder={spawn.copy ? 'As the copy, if left empty' : 'Their name'} /></label>
-                <div className="segmented">
-                    <button className={spawn.stays ? 'on' : ''} onClick={() => setSpawn({...spawn, stays: true})} title="Saved like any NPC; lives here">Stays</button>
-                    <button className={spawn.stays ? '' : 'on'} onClick={() => setSpawn({...spawn, stays: false})} title="Never saved; leaves when the time is up">Visits for a while</button>
-                </div>
+                <Hint>A visitor for a while. NPCs who stay are made in Atlas.</Hint>
                 {!spawn.stays && <label className="field"><span>Minutes</span><input type="number" min={1} max={1440} value={spawn.minutes}
                     onChange={e => setSpawn({...spawn, minutes: Math.max(1, Math.min(1440, Math.round(Number(e.target.value) || 1)))})} /></label>}
                 <label className="field"><span>{spawn.stays ? 'A copy of' : 'Looks like'}</span><select value={spawn.copy} onChange={e => setSpawn({...spawn, copy: e.target.value})}>
