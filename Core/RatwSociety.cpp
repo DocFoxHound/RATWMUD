@@ -374,7 +374,9 @@ void Society::addPlayer(const std::string& id)
 bool Society::transfer(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
                        std::int64_t price, const std::string& kind)
 {
-    if (seller == buyer || quantity < 1 || quantity > 99 || !itemValid(item) || price < 1 || price > PieceMost)
+    // No cap on what a piece costs (the user, 2026-10-30): only a price whose total would overflow is refused.
+    if (seller == buyer || quantity < 1 || quantity > 99 || !itemValid(item) || price < 1 ||
+        price > std::numeric_limits<std::int64_t>::max() / quantity)
         return false;
     const auto* from = account(seller);
     const auto* to = account(buyer);
@@ -432,6 +434,8 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(double(each) * .9)))
                                : buy                  ? each
                                                       : std::max<std::int64_t>(1, std::llround(double(each) * SellBackShare));
+    if (price > std::numeric_limits<std::int64_t>::max() / quantity)
+        return {false, "That trade exceeds safe account capacity.", price, 0};
     const std::int64_t total = price * quantity;
     if (!buy && held + quantity > cap)
         return {false, "The trader already has enough of those goods.", price, total};

@@ -21,8 +21,8 @@ using json::Value;
 
 namespace
 {
-// A stall's rent for the morning, and the dearest price laid on it, in pennies (under the ledger's dearest piece,
-// Society::PieceMost, so a price a stall takes is one the ledger moves).
+// A stall's rent for the morning, and the dearest price laid on it, in pennies (the stall's own limit: the ledger has
+// none on what a piece costs).
 constexpr std::int64_t StallFee = 3, PriceMost = 999;
 constexpr int SquareMost = 6, WareKinds = 10;
 constexpr double RentReach = 1.5, BuyReach = 2, KeeperReach = 3, KeeperQuietSeconds = 600;

@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -43,13 +44,13 @@ ResidentSpec person(const std::string& id, const std::string& work, Spot job, co
 }
 
 // A baker, a tanner, a smith, and two townsfolk.
-Society town()
+Society town(std::int64_t treasury = 500)
 {
     AuthoredRoster roster;
     roster.residents = {person("baker", "baker at The Loaf", {"bakery", 2.5, 2.5}), person("tanner", "tanner at The Hide Yard", {"yard", 2.5, 2.5}),
                         person("smith", "the smith at the forge", {"forge", 2.5, 2.5}), person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian"),
                         person("idler", "-", {"square", 3.5, 3.5}, "civilian")};
-    roster.economy.treasury = 500;
+    roster.economy.treasury = treasury;
     Society s(Roster::None);
     s.configure(roster);
     return s;
@@ -121,6 +122,23 @@ void shopsHoldTheirStock()
     expect(s.conserved(), "money is conserved");
 }
 
+// No cap on what a single piece costs (the user, 2026-10-30): a dear price is paid when the buyer can pay; only a total
+// that would overflow is refused.
+void noCapOnAPiece()
+{
+    auto s = town(100000);
+    s.addPlayer("player-ada");
+    expect(s.shift("treasury", "player-ada", "", 0, 20000, "test: a purse") && s.create("smith", "sword", 3, "test: forged"),
+           "Ada has 20,000p and the smith three swords");
+    const auto before = s.account("player-ada")->cash;
+    expect(s.sale("smith", "player-ada", "sword", 1, 12000, "test: dear") && s.account("player-ada")->cash == before - 12000,
+           "a piece at 12,000p, paid: she can pay");
+    expect(!s.sale("smith", "player-ada", "sword", 2, 12000, "test: dearer"), "not what she can't pay");
+    expect(!s.sale("smith", "player-ada", "sword", 2, std::numeric_limits<std::int64_t>::max() / 2 + 1, "test: overflow"),
+           "a price whose total would overflow is refused");
+    expect(s.conserved(), "money is conserved");
+}
+
 void residentsGoAboutTheirDays()
 {
     auto s = town();
@@ -187,6 +205,7 @@ int main()
     {
         theCatalogue();
         shopsHoldTheirStock();
+        noCapOnAPiece();
         residentsGoAboutTheirDays();
         anOlderSaveLoads();
     }

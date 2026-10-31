@@ -513,7 +513,9 @@ Kept with a change: a player's farm or bench work beside a resident (doc 53) sti
 pays nothing and brings nothing in; the Hold's workshops and fields are built but make nothing; a talk speaker's
 `on_dole` is "no" and `business` "none"; a trouble's household is reckoned in days of `troubles::PlainFoodADay` (5p) at
 catalogue prices; the hungry thief marks a shop whose till holds meals. A town project's placement now loads its cell
-first (no caravan walks a road to load it any more).
+first (no caravan walks a road to load it any more). No cap on what a single piece costs (the user, 2026-10-30): the
+ledger's 5,000p cap, `Society::PieceMost`, is gone, from trades and story prizes alike (a trade refuses only a price
+whose total would overflow, and what the buyer can't pay; a market stall keeps its own 999p limit).
 
 **Paused.** Needs that buying met: `Society::NeedsPaused` (true). A resident's hunger neither grows nor sends it
 anywhere (no shopping, larders, alms, rations or kitchens); one hungry from a save still eats what it carries. Home

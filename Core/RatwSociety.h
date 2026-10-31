@@ -486,9 +486,6 @@ class Society
     // A new player's own meals to start with (doc 36), and its welcome grant from the treasury, in pennies.
     static constexpr int StartingMeals = 3;
     static constexpr std::int64_t PlayerWelcome = 20;
-    // The dearest piece the ledger moves (a masterwork siege crossbow is 4,500p), in pennies: every cap under it (a
-    // stall's price, a story's prize) keeps to it.
-    static constexpr std::int64_t PieceMost = 5000;
     static const char* itemName(const std::string& id);
     // The capital is the community whose treasury is "treasury" (the world sets it; empty in a world of one town).
     void setCapital(std::string community) { capital_ = std::move(community); }
