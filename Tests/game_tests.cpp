@@ -1653,6 +1653,28 @@ void fastForward()
     expect(!ash.last("devResult")->boolean("ok") && g.speed() == 8, "a speed out of range is refused");
     g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed"}}));
     expect(ash.last("devResult")->string("text").find("8x") != std::string::npos, "/speed alone says the speed");
+    // Max speed (doc 69): the cap is lifted only while nobody is connected; anyone here holds it at MaxSpeed.
+    g.command(&ash, cmd({{"type", "dev"}, {"command", "/speed max"}}));
+    expect(ash.last("devResult")->boolean("ok") && g.speedMax() && g.speed() == game::Game::MaxSpeed && !g.uncapped(),
+           "/speed max: with someone connected, MaxSpeed");
+    expect(ash.last("devResult")->string("text").find("max") != std::string::npos, "and it says so");
+    g.setMeasuredSpeed(9000);
+    expect(g.speed() == game::Game::MaxSpeed, "a measured speed is ignored while anyone is connected");
+    g.disconnect(&ash);
+    expect(g.uncapped(), "nobody connected: uncapped");
+    g.setMeasuredSpeed(9000);
+    expect(g.speed() == 9000, "the host says how fast it really goes, for what keeps to real time");
+    const double at = g.world().time();
+    g.tick(.05);
+    expect(std::abs(g.world().time() - at - .05) < 1e-9, "each tick is still the world's 0.05 s");
+    Client bo;
+    bo.id = 2;
+    g.connect(&bo);
+    expect(!g.uncapped() && g.speed() == game::Game::MaxSpeed, "someone connects: back to the cap");
+    g.disconnect(&bo);
+    expect(g.uncapped(), "and they leave: uncapped again");
+    g.setSpeed(8);
+    expect(!g.speedMax() && !g.uncapped() && g.speed() == 8, "a speed set ends max");
 }
 
 void theDevConsole()

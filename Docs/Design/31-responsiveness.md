@@ -766,6 +766,11 @@ The user wants to put the game into fast-forward, to get through tests that take
 
 - **`ratw_server --speed N`**, or `/speed N` in the Dev Console (a Dungeon Master's), runs the world N times as fast
   (1 to 1000). `tools/scratch.sh dev --speed 16` passes it on.
+- **`--speed max`** (or `/speed max`; doc 69, 2026-10-31) lifts the cap while nobody is connected: the server ticks back
+  to back (about 11,000x on Ridgemere 2.0's export, a game day in 1.3 s) and measures how fast that is, so what keeps to
+  real time still does; anyone connecting brings it back to 1000x, and leaving lifts it again.
+- **Economy runs** (months of the residents' economy) are a harness's job: `world_check --economy` with no player, as
+  Docs/Design/69-simulation-speed.md, "Running an economy simulation", says.
 - **Nothing is skipped.** Every tick is still the world's 0.05 s; the server ticks N times as often, and as fast as the
   machine can if it can't keep up.
 - **What belongs to real time keeps to it** (`Game::tick`'s `real`):

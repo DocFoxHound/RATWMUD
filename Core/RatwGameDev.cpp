@@ -172,15 +172,21 @@ void Game::devCommand(Connection* c, const json::Value& j)
         if (command.size() > 6)
         {
             const double asked = std::atof(command.c_str() + 6);
-            if (!(asked >= 1 && asked <= MaxSpeed))
-                result = {false, "A speed from 1 to " + std::to_string(int(MaxSpeed)) + ".", {}};
+            if (command.substr(6) == "max")
+                setSpeedMax(true);
+            else if (!(asked >= 1 && asked <= MaxSpeed))
+                result = {false, "A speed from 1 to " + std::to_string(int(MaxSpeed)) + ", or max.", {}};
             else
                 setSpeed(asked);
         }
         if (result.message.empty())
         {
             std::ostringstream said;
-            said << "The world runs at " << speed_ << "x" << (speed_ > 1 ? " (a game day in " + std::to_string(int(std::round(240 / speed_))) + " real minutes, if the machine keeps up)." : ", as ever.");
+            if (speedMax_)
+                said << "The world runs at max: as fast as the machine goes while nobody is connected, " << int(MaxSpeed)
+                     << "x while anyone is (now " << int(std::round(speed_)) << "x).";
+            else
+                said << "The world runs at " << speed_ << "x" << (speed_ > 1 ? " (a game day in " + std::to_string(int(std::round(240 / speed_))) + " real minutes, if the machine keeps up)." : ", as ever.");
             result = {true, said.str(), {}};
         }
     }

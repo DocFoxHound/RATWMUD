@@ -16,6 +16,8 @@
 //            --port 0 (any free port, printed as it starts),
 //            --speed N (fast-forward: N ticks where there was one, 1 to 1000; nothing is skipped, the world just runs
 //            faster, as fast as the machine can if it can't keep up; /speed in the Dev Console changes it; Game::setSpeed)
+//            --speed max (no cap while nobody is connected: ticks back to back, as fast as the machine goes; 1000 while
+//            anyone is; /speed max in the Dev Console; Game::setSpeedMax, doc 69)
 //   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
 //            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
 //            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
@@ -39,6 +41,7 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <chrono>
+#include <cmath>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -534,7 +537,7 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database KEY [--world-kind dev|live] | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
-                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N] [--scratch [--idle-exit SECONDS]]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n";
 }
 
 void blocking(int fd, bool on)
@@ -587,7 +590,14 @@ int main(int argc, char** argv)
         else if (a == "--scratch") options.scratch = true;
         else if (a == "--refound-economy") options.refoundEconomy = true;   // Doc 64, Phase 1: the economy afresh.
         else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
-        else if (a == "--speed") options.speed = std::atof(next().c_str());
+        else if (a == "--speed")
+        {
+            const auto asked = next();
+            if (asked == "max")
+                options.speedMax = true;
+            else
+                options.speed = std::atof(asked.c_str());
+        }
         else
         {
             usage();
@@ -651,7 +661,10 @@ int main(int argc, char** argv)
     network.start();
     std::cout << "RATW server listening on port " << port << " (" << bind << "); ready in "
               << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() << " s" << std::endl;
-    if (g.speed() > 1)
+    if (g.speedMax())
+        std::cout << "RATW speed max: as fast as the machine goes while nobody is connected, " << game::Game::MaxSpeed
+                  << "x while anyone is" << std::endl;
+    else if (g.speed() > 1)
         std::cout << "RATW speed " << g.speed() << "x: the world runs " << g.speed() << " times as fast as real time" << std::endl;
 
     using Clock = std::chrono::steady_clock;
@@ -701,6 +714,9 @@ int main(int argc, char** argv)
     // When a client was last connected (or the server started): with --idle-exit, a server left idle stops.
     auto lastPlayed = Clock::now();
     bool idleStop = false;
+    // Max speed (Game::uncapped): ticks since it last measured, and when.
+    std::size_t uncappedTicks = 0;
+    auto uncappedSince = Clock::now();
     while (!stopping && g.exitRequested() < 0 && Clock::now() < until)
     {
         if (playing > 0)
@@ -732,7 +748,31 @@ int main(int argc, char** argv)
             else if (c.playing && !c.closing)
                 receive(c, m.kind, m.payload);
         }
-        if (Clock::now() >= nextTick)
+        if (g.uncapped())
+        {
+            // Max speed with nobody connected (Game::setSpeedMax): ticks back to back for a few milliseconds, then the
+            // network again; and, each real second, how fast that is, for what keeps to real time.
+            ticked = true;
+            const auto batchEnd = Clock::now() + std::chrono::milliseconds(20);
+            do
+            {
+                const auto begin = Clock::now();
+                g.tick(0.05);
+                const double took = std::chrono::duration<double, std::milli>(Clock::now() - begin).count();
+                slowest = std::max(slowest, took);
+                total += took;
+                ++ticks;
+                ++uncappedTicks;
+            } while (g.uncapped() && Clock::now() < batchEnd && !stopping);
+            if (const double seconds = std::chrono::duration<double>(Clock::now() - uncappedSince).count(); seconds >= 1)
+            {
+                g.setMeasuredSpeed(double(uncappedTicks) * 0.05 / seconds);   // (20 ticks a real second is 1x.)
+                uncappedTicks = 0;
+                uncappedSince = Clock::now();
+            }
+            nextTick = Clock::now();
+        }
+        else if (Clock::now() >= nextTick)
         {
             ticked = true;
             const auto begin = Clock::now();
@@ -745,6 +785,8 @@ int main(int argc, char** argv)
             nextTick += std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(0.05 / g.speed()));
             if (Clock::now() - nextTick > std::chrono::seconds(1))
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
+            uncappedTicks = 0;
+            uncappedSince = Clock::now();
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
         if (ticked)
@@ -764,6 +806,9 @@ int main(int argc, char** argv)
             for (const auto& line : perf::report(window, playing))
                 std::cout << line << '\n';
             std::cout << perf::worldLine(g.world().tickProfile()) << std::endl;
+            if (g.speedMax())
+                std::cout << "RATW_SPEED " << int(std::round(g.speed())) << "x" << (g.uncapped() ? " (max: nobody connected)" : " (max: capped while anyone is connected)")
+                          << std::endl;
             game::Game::Backlog backlog;
             for (const auto& c : live)
             {

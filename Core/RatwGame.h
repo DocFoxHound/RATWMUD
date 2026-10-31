@@ -190,6 +190,8 @@ struct Options
     double recapModelSeconds = -1;
     // How fast the world runs (Game::setSpeed): 1 as ever, 16 sixteen times as fast.
     double speed = 1;
+    // --speed max (Game::setSpeedMax): as fast as the machine goes while nobody is connected, MaxSpeed while anyone is.
+    bool speedMax = false;
 };
 
 class Game
@@ -235,8 +237,15 @@ class Game
     // belongs to real time keeps to it: frames and snapshots to the clients, saves, the database polls, the Dungeon
     // Master's director and the NPC Mind's ambient voices (so no more model calls an hour). 1 to MaxSpeed.
     static constexpr double MaxSpeed = 1000;
-    void setSpeed(double speed);
+    void setSpeed(double speed);                    // (Ends setSpeedMax.)
     double speed() const { return speed_; }
+    // Max speed (--speed max, /speed max; doc 69): while nobody is connected the cap is lifted and the host ticks as fast
+    // as it can (uncapped()), telling the game how fast that really is (setMeasuredSpeed), so what keeps to real time
+    // still does; anyone connecting brings it back to MaxSpeed, and leaving it uncapped again.
+    void setSpeedMax(bool on);
+    bool speedMax() const { return speedMax_; }
+    bool uncapped() const { return speedMax_ && clients_.empty(); }
+    void setMeasuredSpeed(double speed);
     void save();                                              // Stored before returning.
     // Waits for the journal's records to be written and sends the replies waiting for them (tests and tools; the
     // tick does this as it goes, without waiting).
@@ -421,6 +430,7 @@ class Game
     // The worker pool, and whether the views due this tick are being built on it (they then only read the world).
     std::unique_ptr<Pool> pool_;
     std::uint64_t frameTick_ = 0;
+    bool speedMax_ = false;                         // (setSpeedMax.)
     double speed_ = 1, frameDebt_ = 0;              // (setSpeed: a frame to the clients each 1/speed of a tick.)
     bool batching_ = false;
     void finishSnapshot(Connection* c, json::Value root, double revision);
