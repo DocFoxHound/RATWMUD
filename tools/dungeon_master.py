@@ -44,6 +44,13 @@ import talk_files
 import world_db
 import world_store as S
 
+
+def served_hosts(port: int) -> tuple[str, ...]:
+    """The other names this server answers to, as Host headers (RATW_SERVE_HOSTS, comma-separated: set by the studio's
+    --host when it serves the local network), besides 127.0.0.1 and localhost."""
+    return tuple(f'{h}:{port}' for h in os.environ.get('RATW_SERVE_HOSTS', '').split(',') if h)
+
+
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'Editor' / 'dist'
 ACCOUNTS_FILE = ROOT / 'Database' / 'dm-accounts.txt'
@@ -1998,8 +2005,9 @@ def make_handler(dm=None, offers=None, world=None, kinds=None):
             pass     # Never log bodies, passwords or tokens.
 
         def trusted(self):
-            hosts = (f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}')
-            dev = ('127.0.0.1:5173', 'localhost:5173')                        # Vite dev server.
+            hosts = ((f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}')
+                     + served_hosts(self.server.server_port))
+            dev =('127.0.0.1:5173', 'localhost:5173')                        # Vite dev server.
             return (self.headers.get('Host') in hosts + dev
                     and self.headers.get('Origin', 'http://' + hosts[0]) in tuple(f'http://{h}' for h in hosts + dev))
 

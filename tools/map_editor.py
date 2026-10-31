@@ -15,6 +15,7 @@ import copy
 import io
 import json
 import math
+import os
 from pathlib import Path
 import re
 import secrets
@@ -30,6 +31,13 @@ import roster as roster_lib
 import terrain_catalog
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
+
+
+def served_hosts(port: int) -> tuple[str, ...]:
+    """The other names this server answers to, as Host headers (RATW_SERVE_HOSTS, comma-separated: set by the studio's
+    --host when it serves the local network), besides 127.0.0.1 and localhost."""
+    return tuple(f'{h}:{port}' for h in os.environ.get('RATW_SERVE_HOSTS', '').split(',') if h)
+
 
 ROOT = Path(__file__).resolve().parent.parent
 # Terrain codes, solid tiles and default heights all come from the one catalog (Data/Terrain/terrain.json).
@@ -1142,7 +1150,7 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
 
         def trusted(self):
             port_ = self.server.server_port
-            hosts = (f'127.0.0.1:{port_}', f'localhost:{port_}')
+            hosts = (f'127.0.0.1:{port_}', f'localhost:{port_}') + served_hosts(port_)
             origins = tuple(f'http://{h}' for h in hosts) + ('http://127.0.0.1:5173', 'http://localhost:5173')
             forwarded = self.headers.get('Host') in ('127.0.0.1:5173', 'localhost:5173')  # Vite dev proxy.
             return ((self.headers.get('Host') in hosts or forwarded)

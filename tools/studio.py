@@ -5,7 +5,7 @@
   python3 tools/studio.py serve [--port N] [--suite atlas|dm] [--world KEY]
   bash tools/editor.sh / bash tools/dungeon-master.sh   the same, opening on the Atlas / DM suite
 
-One host on one port (default 8765, local only) serves one app (Editor/index.html) with a switch between:
+One host on one port (default 8765, local only unless --host 0.0.0.0) serves one app (Editor/index.html) with a switch between:
 
   Atlas  builds worlds, on dev worlds (its world picker switches Atlas's world, as `world_db.py use KEY` does): the
          map and terrain, cells, interiors, doors, places, the roster and NPCs, their homes and jobs, and (moved from
@@ -52,6 +52,9 @@ import copy
 import errno
 import http.client
 import json
+import os
+import socket
+import subprocess
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -676,8 +679,18 @@ def make_handler(studio: Studio):
     return Handler
 
 
-def make_server(port=PORT, studio=None):
-    server = ThreadingHTTPServer(('127.0.0.1', port), make_handler(studio or Studio()))
+def lan_names() -> list[str]:
+    """This computer's names on the local network: its IPv4 addresses (not loopback), its host name and name.local."""
+    try:
+        found = subprocess.run(['hostname', '-I'], capture_output=True, text=True, timeout=5).stdout.split()
+    except OSError:
+        found = []
+    host = socket.gethostname()
+    return [a for a in found if '.' in a and not a.startswith('127.')] + [host, f'{host}.local']
+
+
+def make_server(port=PORT, studio=None, host='127.0.0.1'):
+    server = ThreadingHTTPServer((host, port), make_handler(studio or Studio()))
     server.daemon_threads = True
     return server
 
@@ -699,7 +712,13 @@ def main(argv=None) -> int:
     parser.add_argument('--port', type=int, default=PORT)
     parser.add_argument('--suite', choices=SUITES, default='atlas', help='the suite the app opens on')
     parser.add_argument('--world', help="Atlas's world for this run (default: Atlas's, python3 tools/world_db.py use KEY)")
+    parser.add_argument('--host', default='127.0.0.1',
+                        help='the address to serve on: 127.0.0.1 (this computer only, the default) or 0.0.0.0 (the '
+                             'local network too; sign-in is still required, but the connection is not encrypted)')
     args = parser.parse_args(argv)
+    shared = args.host not in ('127.0.0.1', 'localhost')
+    if shared:
+        os.environ['RATW_SERVE_HOSTS'] = ','.join(lan_names() if args.host == '0.0.0.0' else [args.host])
     try:
         key = world_db.resolve(args.world or 'atlas', 'dev')
         studio = Studio(atlas_key=key, suite=args.suite)
@@ -707,7 +726,7 @@ def main(argv=None) -> int:
         parser.error(str(error))
     url = f'http://127.0.0.1:{args.port}/?suite={args.suite}'
     try:
-        server = make_server(args.port, studio)
+        server = make_server(args.port, studio, args.host)
     except OSError as error:
         if error.errno == errno.EADDRINUSE and running_here(args.port):
             print(f'RATW Studio is already running: {url}', flush=True)
@@ -720,7 +739,10 @@ def main(argv=None) -> int:
         live = str(error)
     print(f'RATW Studio: {url}\n'
           f'Atlas on {key} ("{world_db.world(key)["name"]}", {world_db.world(key)["database"]}); the DM on live worlds '
-          f'({live}). Sign in with a DM account. Local-only. Ctrl+C to stop.', flush=True)
+          f'({live}). Sign in with a DM account. '
+          + (f'On the local network too: '
+             + ', '.join(f'http://{h}:{args.port}/' for h in os.environ['RATW_SERVE_HOSTS'].split(','))
+             if shared else 'Local-only.') + ' Ctrl+C to stop.', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
