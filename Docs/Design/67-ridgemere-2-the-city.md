@@ -1874,3 +1874,75 @@ from the world as it is then, so lane C's renames are kept. A second write of th
 - The dead-end check counts the alley stubs laid that still end blind (51), not every corner.
 - A's branch resolves labels with a stub of B's new business types (`STUB_BUSINESSES`); with B's
   `businesses.json` merged the real ones are read instead.
+
+### Lane B: built (2026-10-31)
+
+Branch `r2-city-store`, from `ridgemere2` (94e025d): `5315f00` (Core, `Data/Items`, migration 0055, the tools), `cbd044a`
+(Atlas's Economy page, the Editor model's store keys, the old "Town economy" panel replaced by a note), `7129211` (a
+game test for `/store`). `ratw_ridgemere2` was only read.
+
+- **Core:** section 6's API, plus `storeClosed(keeper)` (why a keeper can't draw). `fund:store` is opened when a world
+  starts and when an older save loads. Draws are checked in full before any money moves, and refunded if the goods
+  can't be added. `store` and `nostore` lines parsed (`nostore` checked once every resident is known; an unplaced
+  founder's is ignored); `withoutPeople` strips both. The restocking rule is behind `storeRule`, off. `/store` works only
+  on a dev world and for a Dungeon Master, with a 120-character limit; the server learns its world's kind from a new
+  `--world-kind` flag, which `tools/server.sh` passes. `world_check` prints the fund and the residents held over ten
+  game minutes. Tests: `store_room_behaviors` (228 checks) and a `/store` test in `game_tests`.
+- **`Data/Items`:** the 10 business types in the plan's order, the 5 new items with recipes and crafts, the aqua_vitae
+  craft, the vintner's and rag-and-bone's supply lists, a pawnbroker `buys` list.
+- **Resale goods** are the supply list plus the founder's starting wares that the business's own crafts don't make (a
+  smithy draws its inputs, never its finished goods). `item_catalog.store_goods` copies Core's ware-picking; the shared
+  fixture `Tests/fixtures/business_labels.json` checks 17 keepers on both sides.
+- **Found on the way:** the Editor model dropped the store settings when it tidied a project's economy (fixed); sync kept
+  table layouts per table name only, so one world's layout was reused for another (now per database). Only one current
+  label changes business: "helping at The Pawn and Ledger" now resolves to `pawnbroker`, as intended.
+- **Not tested:** a missing founder spec (Core can't produce that state; the code counts it as on).
+- **Businesses that buy from players:** herbalist, apothecary, general, provisioner, stall, inn, butcher, tannery,
+  tailor, chandlery, fishmonger and the new pawnbroker.
+
+### Lane C: built (2026-10-31)
+
+Branch `r2-city-houses`, from `ridgemere2` (94e025d), `d0d7ebb`. `tools/rename_house.py` (`--dry-run`; `--apply --world
+ridgemere2` in one transaction, the revision raised once, `tell_editors`; refuses `dev`, `prod` and live worlds;
+whole-word, case-sensitive; "Fell" alone is never matched), its tests `tools/test_rename_house.py`, the reviewed dry run
+`artifacts/ridgemere2/rename-report.txt` (423 changes on the world before the city).
+
+- Mossgrave becomes Timberland in the text; the trades follow section 7 (Timberland's forges, Grayrock's wharf, Fell's
+  wines and fruit, Greatly's building). The Southgate ironmongers and farriers become Eastgate (from section 4).
+- Three House work moves: Tobias Grayrock to the Grayrock Bonded Warehouse ("keeping the wharf's books"), Julian Greatly
+  to the Greatly Yard ("keeping the Greatly Yard's books"), Corwin Fell to Fellhall ("keeping the Fell cellars").
+- The Charcoal Store's label is "working the Timberland Charcoal Store" (the old one passed 40 characters and hit the
+  charcoal-burning producer).
+- `Data/Talk`: 132 edits in 30 files; the six `self.house=mossgrave_court` keys widened to
+  `mossgrave_court|timberland_court`. Other Houses' talk lines reworded to their new trades (DEV and PROD share them).
+- Left as they are: docs 25, 35, 42, 60, 61, 64 and `RATW_Factions.md`; unplaced stock that isn't built (the Quarry Office,
+  the Fell Timber Office, the logging camps); rule ids such as `x7_struck_mossgrave`.
+
+### Integration (2026-10-31)
+
+Branch `r2-city`, from 94e025d: `r2-city-map`, `r2-city-store` and `r2-city-houses` merged in that order, with no
+conflicts (doc 66 is untouched by all three; doc 67 came only from A). A's `tools/test_ridgemere2.py` passes with B's
+real `businesses.json` (its stub stands aside; the order of the new types is the same).
+
+On `ratw_ridgemere2` (backup before: `Saved/Backups/ratw_ridgemere2-before-integration.dump`): migration 0055 applied;
+`rename_house.py --apply` (432 changes on the written city: 330 NPC fields, 70 interior fields, 25 link names, the
+faction, 3 voice fields, the 3 work moves); A's write rerun (it renders labels from the renamed rooms and real
+catalogue); then the rename and the write once more, until the rename's dry run found nothing (0 changes).
+
+**Fixed at integration** (`2426eb7`): the rewrite undid three of C's changes. Reused doors took their names from the
+old map's placements (19 renamed door links came back), now "<the ground room's current name> door", as every old door
+was; kept keepers' labels came from `people-before-city.json` (10 came back), now from the world as it is; and C's three
+work moves were overruled by the plan, now `HOUSE_POSTS` in `ridgemere2_people.py`, applied after the evenings so nothing
+else moves.
+
+**Results.** All 46 of A's checks pass. 559 placed (108 merchants, 30 guards), 524 unplaced; 1,083 voices and 329
+relations kept; no whole-word "Mossgrave" in any name, label, text or link, and no "dog". `world_check` (6:00-8:00, 20
+players): 857 places, 0 failures, p99 5.4 ms, money conserved, 0 residents without a route, 5 of 559 (0.89%) held over
+ten minutes (all on one tile of the Commons School, `0,9`, at 6:00), `fund:store` 0p with the rule off. `/store` on the
+world's own export (a dev world, a Dungeon Master): a Timberland smith, a Market Square stall, the Fell Wine Vaults and
+the Greatly works each list and draw, and the fund rises by what they pay. Atlas's Economy controls (the studio's
+`Economy`, the routes' code): one business off, then the world's making switch off; the manifest carries the
+`nostore` and `store off ...` lines, scratch servers start on it, and the export shows the store closed for that
+business, then for every maker while vendors still draw. Both are back on (no `business_settings` rows, no `store`
+line); build 39 is the clean one. The walk through the client (section 8, step 7) was not made: the scratch server was
+checked for HTTP and its 559 residents, and the graph walk of A's write covers reachability.
