@@ -4,7 +4,8 @@
   python3 tools/world_db.py up                    start PostgreSQL (first run creates Database/.env)
   python3 tools/world_db.py list                  the worlds: kind, upstream, database, Atlas's and the live one
   python3 tools/world_db.py use KEY               Atlas's world (a dev world): Atlas, builds, local servers, tools
-  python3 tools/world_db.py serve-world KEY --yes the live server's world (a live world; rarely wise)
+  python3 tools/world_db.py serve-world KEY --yes the live server's world (a live world; rarely wise; only while the
+                                                  live world is in maintenance: tools/world_sync.py)
   python3 tools/world_db.py new KEY --name NAME [--kind dev|live] [--upstream KEY] [--from KEY [--without-map]]
                                                   a new world: an empty database with every migration, or a copy
   python3 tools/world_db.py migrate               apply Database/migrations to every world (--db KEY: one)
@@ -633,6 +634,16 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
                     log(f'{database}: applied {len(applied)} migrations.')
                 if of_kind == 'live' and seed_publish_password(conn):
                     log(f'{database}: publish password set to "{DEFAULT_PUBLISH_PASSWORD}".')
+                if source_db and _has_table(conn, 'admin.server_state'):
+                    # (A copy of a world closed for maintenance is not closed itself.)
+                    conn.execute("UPDATE admin.server_state SET state = 'running', changed_by = 'world_db new', "
+                                 "changed_at = now(), note = ''")
+                if source_db and upstream_key == source and _has_table(conn, 'admin.sync_base'):
+                    # A working copy of its upstream starts with the copy as its base (doc 66, section 4); taken before
+                    # --without-map, so taking the map away is the copy's own change.
+                    import world_sync
+                    rows = world_sync.base_from_copy(conn, upstream_key, 'world_db new')
+                    log(f'{database}: its base is {source} as copied ({rows} rows); pull and import compare against it.')
                 if without_map:
                     took = take_map_away(conn, key, placements)
                     log(f'{database}: the map taken away ({took["cells"]} cells); what stood on it saved in '
@@ -650,6 +661,10 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
 
 def _rows(conn, query: str, params=()) -> list:
     return conn.execute(f'SELECT coalesce(json_agg(row_to_json(t)), \'[]\') FROM ({query}) t', params).fetchone()[0]
+
+
+def _has_table(conn, table: str) -> bool:
+    return conn.execute('SELECT to_regclass(%s) IS NOT NULL', (table,)).fetchone()[0]
 
 
 def _nullable(conn, table: str, column: str) -> bool:
@@ -785,10 +800,15 @@ def cmd_serve_world(args) -> int:
         print(f'Nothing changed. To make {key} the live world: python3 tools/world_db.py serve-world {key} --yes',
               file=sys.stderr)
         return 1
-    before = local_choice()['live']
-    set_local(live=key)
-    print(f'The live world is now {key} ("{world(key)["name"]}"), was {before}. The live server starts on it next time '
-          '(bash tools/live.sh server).')
+    import world_sync                       # (Refused unless the live world is in maintenance: doc 66, section 4.)
+    try:
+        done = world_sync.switch_live(key, getpass.getuser())
+    except world_sync.S.StoreError as error:
+        print(f'Nothing changed: {error}', file=sys.stderr)
+        return 1
+    print(f'The live world is now {key} ("{world(key)["name"]}"), was {done["was"]}. It is in maintenance: open it '
+          f'(python3 tools/world_sync.py maintenance {key} off, or the DM) and a waiting launcher starts its server '
+          '(else bash tools/live.sh server).')
     return 0
 
 

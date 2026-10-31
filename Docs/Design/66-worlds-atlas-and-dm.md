@@ -277,3 +277,114 @@ written), it exports, and the game's own loader (`world_check`), with the NPC re
 reads them, loads all 626 interiors and 1,083 residents; half an hour simulated runs (125 residents find no way to a
 place in another building: there is no map between them). Once a spawn is set (in a cell or any interior), it
 should build and load on a scratch server; nothing else stood in the way.
+
+### Phase 4 engine: built (2026-10-30)
+
+Section 4 without its screens: `tools/world_sync.py` (library and command line), migration 0054, the game server's
+maintenance exit, `tools/live.sh`'s wait, and `tools/publish.py` turned into a thin layer over the import.
+
+**Migration 0054** (every world). `admin.sync_base` (one row: upstream key, world, the upstream release seen, taken
+at, by, how: init, copy, pull or import, row count) and `admin.sync_base_rows` (table, key as a JSON array without the
+world, sha1 digest, the row as JSON): the base, a row per synced row rather than one value, as DEV's terrain alone is
+some 50 MB. `admin.server_state` (one row: running | maintenance, who, when, a note), whose trigger NOTIFYs
+`ratw_maintenance` on a change. Releases and password attempts take the kind `import`. Grants: ratw_publisher (pull,
+import, maintenance) reads and writes the base and updates the state; ratw_editor reads and writes the base and reads the
+state; the game and the DM read the state (USAGE on admin for the three; admin.settings stays the publisher's).
+
+**What is synced**, by each table's primary key (the world column left out): `world.worlds` (one row, never inserted
+over or removed; `revision` and every `updated_at` not compared), cells, interiors (their `world.areas` rows follow
+them), terrain chunks (cx, cy), links, places, resources, chapters; `live.professions` and `live.characters` (no world
+column), patrol routes with their posts (one unit: the row's `posts`), NPC areas, spawn rules, factions, faction claims,
+NPCs, profession slots, faction members, faction relations, NPC voices, families (`npc_relations`), dialects, figures,
+story visitors. Left out: NPCs a spawn rule made (`spawn_id` set: each server's rules make their own) and their voices
+and families; `world.minimaps` (unused; still in a release's rollback content); and, as asked, `game.*`, `live.economy`,
+`live.npc_state`, `dm.*`, `admin.releases` (only written by recording a release).
+
+**The comparison** is section 4's table on row digests. A field-by-field choice (any row both sides have, not only
+NPCs) need only name the fields both sides changed: a field only one side changed goes that side's way unless chosen.
+Conflict ids are `table/key` (`live.npcs/wren`, `world.terrain_chunks/0/1`, `world.worlds`; `/` and `%` in a key
+%-escaped). A plan carries a `digest`; pull and import take it back as `expect` and refuse if the worlds moved since.
+
+**Pull** writes the dev world directly (one transaction, holding the publish lock and the world row Atlas's edits take
+turns on), checks references (`publish.orphans`, doors into removed places, every deferred constraint), raises the
+world's revision and logs one edit with the key `reload`: `live_edit.sync` answers `reload: true` and open Atlas
+sessions reload, as they already do when the world is replaced. (Going through the keyed edit log instead was
+impractical: most synced tables have no edit key.)
+
+**Import** refuses unless the live world is in maintenance; checks the password (Push to live's, attempts and lock as
+before); validates the dev world; then in one live transaction takes the game server's own lock (`pg_try_advisory_
+xact_lock(1380013143, 1)`: refused while a server still holds the world, so none can start mid-import either) and the
+publish lock, compares again against the stored base, applies, checks references, records the release (number, who,
+note, summary `{world: {label: {added, changed, removed}}, live: {...}}`, the authored content for rollback), builds and
+NOTIFYs `ratw_release`. **Decided:** afterwards the dev world is brought level with live (every row nobody edited in dev
+during the import takes live's version: live's own changes and the conflicts chosen "live"), so "becomes the dev
+world's new base" holds without later diffs showing live's changes as dev's undoing them. A row edited in dev during the
+import keeps the edit and its old base row (still compared three ways next time). If that second step fails, live keeps
+its release, dev keeps its rows and its old base, and the next pull brings live's changes in (the result says so).
+
+**Maintenance.** `world_sync.py maintenance KEY on|off`. The game server (`Game::watchMaintenance`, Core/RatwGame.cpp)
+listens on `ratw_maintenance` and reads the table once a minute anyway; on maintenance it tells everyone connected "The
+world is closing for maintenance in 60 seconds (note)...", again at 10 seconds, then saves and asks the host to exit
+with 76 (at once if nobody is connected); called off before then, it says so and play goes on. At start
+(`loadFromDatabase`), a world in maintenance is refused with a clear message and status 76. A scratch server ignores
+maintenance (it writes nothing). `tools/live.sh server` on 76 waits (every `RATW_MAINTENANCE_POLL`, 5 s) until
+`world_sync.py status KEY --state` says running, re-resolving `live` each time, and starts the server on the live
+choice then (rebuilding a dev world first). **The live switch**, `world_db.py serve-world KEY --yes` (warning kept), is
+refused unless the current live world is in maintenance; the new one is put in maintenance, so the launcher waits until
+the DM opens it.
+
+**The first base.** `world_db.py new KEY --upstream LIVE --from LIVE` takes the copy as its base (before
+`--without-map`, so taking the map away is the copy's own change) and sets the copy running. DEV has no base yet:
+`python3 tools/world_sync.py init-base dev` takes PROD's snapshot as it is then, so every difference between them at that
+moment counts as DEV's change (an import would put DEV's versions live, including over anything PROD's NPCs did since
+DEV was copied); `--prefer live` takes DEV's own instead, so every difference counts as PROD's and a pull makes DEV equal
+PROD. Not run on DEV (left to the user, after `migrate`).
+
+**`publish.py`** keeps `Publisher` (preview, push, pull, rollback) for Atlas's Push to live dialog and its command line:
+push is an import (`choices` and `expect` may be passed; without maintenance it is refused), preview is `plan_import`
+with the old keys (`release`, `summary` = what the import changes on live, `changed`), pull is a pull (with the old
+dialog's `copied`/`skipped`). The release, password, rollback and table helpers moved into `world_sync` and are
+re-exported. `plan_seeds`, `pull_npcs` and `copy_faction_details` are gone.
+
+**The API the screens call** (`world_sync.Sync(connect=None)`, or the module functions of the same names; every world
+reached as ratw_publisher unless `connect(key)` is given; errors are `PublishError` (422, `.errors` a list),
+`WrongPassword` 401, `Locked` 429, `Unresolved` 409 (`.conflicts`: the plan items left), `NotInMaintenance` 409,
+`S.Unavailable`):
+
+- `status(key)` → `{key, name, kind, upstream, world, server: {state, by, at, note}, serverRunning, base: {upstream,
+  world, release, takenAt, by, how, rows} | null, release}`.
+- `diff(dev_key)` → the plan: `{dev, live, world, base, liveRelease, counts: {live, dev, conflicts}, summary: {live:
+  {world: {label: {added, changed, removed}}, live: {...}}, dev: {...}}, liveChanges: [item], devChanges: [item],
+  conflicts: [item], digest, warnings}`; an item is `{id, table, label, part: world|live, key, name, side:
+  live|dev|conflict, dev: added|changed|removed|unchanged|absent, live: (the same), fields: [{field, base, dev, live,
+  changed: dev|live|same|conflict|null}], fieldChoices}`; a long value (terrain glyphs) is `{"$long": length, digest}`.
+- `pull(dev_key, choices={}, editor='', expect=None)` → `{dev, live, world, release, applied: {world: {...}, live:
+  {...}}, conflicts, kept, warnings}`.
+- `plan_import(dev_key)` → the plan plus `{devRevision, errors, warnings, server, serverRunning, blocked: [why],
+  releases: [{number, at, by, note, kind, restored, summary}]}`.
+- `import_(dev_key, choices={}, password, editor, note, expect=None)` → `{release, summary, conflicts, dev: {updated,
+  editedMeanwhile: [id]} | {updated: 0, error}}`.
+- `init_base(dev_key, editor, prefer='dev')` → `{dev, live, world, release, rows, prefer}`.
+- `maintenance(key, on, editor, note)` → `status(key)`; `switch_live(key, editor)` → `{live, was, name, server}`.
+- `Sync.releases(live_key)`, `Sync.rollback(live_key, number, password, editor, note)` → `{release, summary}`.
+- Choices: `{conflict id: "dev" | "live" | {field: "dev" | "live"}}`.
+
+**Command line:** `world_sync.py status KEY [--state] [--json]`, `diff DEV [--json]`, `pull DEV [--choices FILE]`,
+`plan-import DEV [--json]`, `import DEV [--choices FILE] --note ...` (asks for the password), `init-base DEV [--prefer
+dev|live]`, `maintenance KEY on|off [--note ...]`.
+
+**Tests.** `tools/test_world_sync.py`: the table row by row, removed against changed, field-by-field choices (and stale,
+missing and impossible ones), ids and stored-row round trips; on throwaway worlds (a live Greyfen and its copy): the
+copy's base, a pull (live's changes in, dev's kept, the economy, NPC state and players' data untouched, Atlas told to
+reload), conflicts field by field, removed against changed both ways, a first base both ways, routes with their posts,
+an import (refused outside maintenance, with a wrong password, while a game server holds the world, and when it would
+strand a live NPC; the release, its build, the notification, players' data untouched, rollback), conflicts at import
+and dev level after it, maintenance announced on and off; a real `ratw_server` closing for maintenance with 76 and
+refusing to start in it; and `live.sh` (with a stand-in server) waiting through maintenance and a live switch, then
+starting the new live world. `tools/test_publish.py` rewritten for the import. `Tests/maintenance_tests.cpp`
+(`maintenance_behaviors`): the grace, the reminders, at once with nobody connected, called off.
+
+Not done: the screens (Atlas's Update from live, the DM's Import from dev, maintenance and the switch), and on the real
+worlds `world_db.py migrate` (0054) and `world_sync.py init-base dev` (the user's to run). Atlas's old Push to live
+dialog still works but cannot pass conflict choices or set maintenance: until the screens come, conflicts are chosen
+with `world_sync.py import DEV --choices FILE`.

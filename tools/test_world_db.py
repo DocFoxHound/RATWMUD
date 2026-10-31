@@ -507,12 +507,8 @@ class RegistryTests(ScratchRegistry, unittest.TestCase):
         self.assertIn('rarely wise', err)
         self.assertFalse(self.local.exists(), 'without --yes nothing is written')
         self.assertEqual(self.run_quietly('serve-world', 'dev', '--yes')[0], 1, 'a dev world is never the live one')
-        W.register({'key': 'second', 'name': 'Second', 'database': 'ratw_second_test', 'kind': 'live'})
-        status, out, err = self.run_quietly('serve-world', 'second', '--yes')
-        self.assertEqual(status, 0, err)
-        self.assertIn('rarely wise', err, 'the warning is given even when it goes ahead')
-        self.assertEqual(W.live_world(), 'second')
-        self.assertEqual(W.atlas_world(), 'ridgemere2', 'the other choice is kept')
+        self.assertFalse(self.local.exists())
+        # (Switching, refused outside maintenance: NewWorldTests, on throwaway live worlds.)
 
     def test_a_chosen_world_that_is_gone_is_reported_not_swapped(self):
         self.local.parent.mkdir(parents=True)
@@ -700,6 +696,24 @@ class NewWorldTests(ScratchRegistry, unittest.TestCase):
         self.assertNotIn(key, W.keys())
         with superuser() as su:
             self.assertIsNone(su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (f'ratw_{key}',)).fetchone())
+
+    def test_switching_the_live_world_needs_maintenance(self):
+        import world_sync
+        one, two = f't{self.tag}_one', f't{self.tag}_two'
+        self.new(one, 'One', 'live')
+        self.new(two, 'Two', 'live')
+        W.set_local(live=one)
+        status, _, err = self.run_quietly('serve-world', two, '--yes')
+        self.assertEqual(status, 1)
+        self.assertIn('not in maintenance', err)
+        self.assertEqual(W.live_world(), one, 'refused: nothing changed')
+        world_sync.maintenance(one, True, 'Ada')
+        status, _, err = self.run_quietly('serve-world', two, '--yes')
+        self.assertEqual(status, 0, err)
+        self.assertIn('rarely wise', err, 'the warning is given even when it goes ahead')
+        self.assertEqual(W.live_world(), two)
+        self.assertEqual(world_sync.status(two)['server']['state'], 'maintenance', 'the new one waits until the DM opens it')
+        self.assertEqual(W.atlas_world(), 'ridgemere2', 'the other choice is kept')
 
     def test_without_map_needs_a_world_to_copy(self):
         with self.assertRaisesRegex(W.DatabaseError, '--from'):

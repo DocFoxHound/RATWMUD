@@ -618,7 +618,8 @@ int main(int argc, char** argv)
     if (!g.start(problem))
     {
         std::cerr << "RATW_WORLD_REJECTED: " << problem << '\n';
-        return 2;
+        // (Closed for maintenance: tools/live.sh waits for it to open, then starts the server again.)
+        return g.exitRequested() == game::Game::MaintenanceExit ? game::Game::MaintenanceExit : 2;
     }
 
     const int listener = ::socket(AF_INET, SOCK_STREAM, 0);

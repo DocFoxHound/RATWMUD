@@ -149,44 +149,46 @@ every action is saved as it happens, shared with everyone else editing.
 
 ## Push to live
 
-Implemented in `tools/publish.py` (the editor's **⇪ Push to live** dialog and
-`python3 tools/publish.py` use the same functions). A push:
+Replaced 2026-10-30 by **pull and import with conflicts** (Docs/Design/66-worlds-atlas-and-dm.md, section 4, and its
+"Phase 4 engine" progress note), in `tools/world_sync.py`; `tools/publish.py` is kept as a thin compatibility layer
+(Atlas's **⇪ Push to live** dialog and its command line) over it. The add-only seeds and the "copy NPCs back" of
+before are gone.
 
-1. Checks the publish password against the salted scrypt hash in PROD
-   `admin.settings` (initially `password`). Every attempt is recorded in
-   `admin.publish_attempts`; five failures within 15 minutes lock pushing and
-   rollback for the rest of that window.
-2. Reads one consistent snapshot of DEV and validates it completely (the same
-   checks as Play/Export, including the game's current size limits). Any error
-   blocks the push; the dialog lists them.
-3. In one PROD transaction, holding an advisory lock so pushes take turns:
-   makes PROD's authored content (`world.worlds` and every `world.*` content
-   table) equal DEV's, writing only rows that differ; then applies live-data
-   seeds. Named NPCs, profession slots and roster characters that already exist
-   in PROD are never updated or removed (player interactions, events and deaths
-   shape them there); only new ones are added. The profession catalog follows
-   DEV. Patrol routes, NPC areas and spawn rules are add-only too (Dungeon Master phase 3).
-   The economy is only created if PROD has none.
-4. Refuses, with names, if any NPC, profession slot, patrol post or NPC area in PROD would
-   stand in a cell or interior the release removes, then checks every deferred
-   constraint before committing.
-5. Records release N in `admin.releases` with the note, who pushed, a summary
-   of what changed, and the exact world content it published; and
-   `NOTIFY ratw_release, '{"world": ..., "release": N, "kind": "push"}'`, which
-   PostgreSQL delivers to listeners when the transaction commits. The game
-   server will listen for it in step 6 and reload at a safe point.
+- **The base.** A dev world with an upstream keeps a snapshot of its upstream as of its last pull or import
+  (`admin.sync_base` and `admin.sync_base_rows`, migration 0054): every synced row by (table, key). A world copied from
+  its upstream (`world_db.py new KEY --upstream LIVE --from LIVE`) starts with the copy as its base; any other (DEV
+  today) takes one with `python3 tools/world_sync.py init-base KEY`: the upstream as it is then, so every difference
+  there is at that moment counts as the dev world's (`--prefer live`: as live's).
+- **Synced**, row by row: the world row (not its revision), cells, interiors (and `world.areas` with them), terrain
+  chunks, links, places, resources, chapters; NPCs (not those spawn rules made), profession slots, professions, roster
+  characters, patrol routes with their posts, NPC areas, spawn rules, factions with their claims, members and
+  relations, NPC voices, families, dialects, figures, story visitors. Never: `game.*` (players' data, the save, the
+  event log, memories), `live.economy`, `live.npc_state`, `dm.*`. Timestamps are not compared.
+- **Three-way**, per key: base B, dev D, live L. D = L: nothing; only live changed: live's; only dev changed: dev's;
+  both changed differently, or removed on one side and changed on the other: a **conflict**, shown field by field,
+  which the user resolves as dev's or live's (or, for a row both sides have, field by field: a field only one side
+  changed goes that way).
+- **Pull** (Atlas's Update from live, `world_sync.py pull DEV`): every live-only change and the chosen side of each
+  conflict into the dev world in one transaction, references and deferred constraints checked; live's snapshot becomes
+  the base; open Atlas sessions reload (a `reload` entry in the edit log); warns while the live server runs.
+- **Import** (the DM's Import from dev, `world_sync.py import DEV`): only while the live world is in **maintenance**
+  (`admin.server_state`, below) and its game server has let go of the world. It checks the publish password (as
+  before: `admin.settings`, every attempt in `admin.publish_attempts`, five failures in 15 minutes lock imports and
+  rollbacks for the rest of that window), validates the dev world as Play/Export does, compares again, and in one
+  transaction on live (holding the publish lock and the game server's own lock) applies every dev-only change and the
+  chosen side of each conflict, refuses (with names) if live data would be left in a removed cell or interior, checks
+  every deferred constraint, records release N (`admin.releases`, kind `import`: who, note, summary, the authored
+  content for rollback), compiles its game build and `NOTIFY ratw_release`. Then the dev world takes live's version of
+  every row nobody edited in it meanwhile, and that becomes its base: after an import dev and live are level.
+- **Maintenance**: `world_sync.py maintenance KEY on|off` (the DM through it). The game server hears it
+  (`NOTIFY ratw_maintenance`), tells its players, gives them a minute, saves and exits with status 76; it refuses to
+  start while its world is in maintenance (76 too); `tools/live.sh` waits for the world to open and starts it again,
+  on whichever world is the live one by then (`world_db.py serve-world`, refused unless the live world is in
+  maintenance; the new one starts in maintenance).
 
-After a push commits, DEV **copies the live NPCs back** (`pull_npcs`): PROD's
-named NPCs and profession slots replace DEV's through the live-edit log (so open
-editors see them change; NPCs whose places or route DEV lacks are skipped and
-listed), and roster characters, the economy and `live.npc_state` are copied.
-DEV-only NPCs are left alone. The editor's **Copy NPC state from live** button
-and `python3 tools/publish.py pull` do the same on demand.
-
-**Rollback** re-publishes an earlier release's stored world content through
-steps 3 (authored content only), 4 and 5, as a new release of kind `rollback`.
-Live data is left as it is, and DEV is not touched, so the next push brings
-DEV's newer world back.
+**Rollback** is as it was: an earlier release's stored world content (authored content only) put back live as a new
+release of kind `rollback`, through the same checks; live data is left as it is. The next pull brings the rollback to
+the dev world as live's change.
 
 Admins change the password with `python3 tools/world_db.py set-publish-password`,
 which needs the database owner login; the publisher role can read the hash but
@@ -421,5 +423,5 @@ the design and its Progress section what was built.
 - The launchers take a key and default to the local choice: `live.sh server [KEY]` (the live world), `live.sh play
   [KEY]` and `scratch.sh [KEY]` (Atlas's world), `server.sh --database KEY`; so do `world_build.py`, Atlas
   (`map_editor.py serve [--world KEY]`), the DM (every world, the live one first) and the other tools.
-- Push to live (`publish.py`) is still DEV to PROD, now read from the registry as the dev world with an upstream and
-  that live world; doc 66's Phase 4 replaces it.
+- Push to live is now pull and import with conflicts between a dev world and its upstream (`world_sync.py`, Push to
+  live above; doc 66, Phase 4).
