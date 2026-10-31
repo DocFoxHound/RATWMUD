@@ -637,6 +637,42 @@ class NpcTests(NpcFixture):
         self.assertTrue(any('"free_hand"' in l for l in sql), 'the job holder is a resident')
         self.assertEqual(sql, python)
 
+    def test_npcs_without_a_map_in_the_manifest_and_the_dm(self):
+        # Doc 66, 2: an unplaced NPC, a jobless one and a job holder without a home, as the exporter writes them.
+        import map_editor as E
+        import roster as R
+        with W.connect('dev', 'editor', dbname=self.names['dev']) as editor:
+            roster = R.load()
+            free = {**roster['characters'][0], 'id': 'free_hand', 'name': 'Free Hand', 'assignment': None, 'profession': ''}
+            S.save_roster(editor, {**roster, 'characters': roster['characters'] + [free]})
+            project, revision = S.load_world(editor, 'greyfen')
+            people = {p['id']: p for p in project['people']}
+            people['rook'].update(home=None, work=None, evening=None)
+            people['linden'].update(work=None, evening=None)
+            project['slots'] = [{'id': 'gate', 'name': 'Gate guard', 'profession': 'guard', 'workLabel': '', 'route': '', 'paid': True,
+                                 'purse': 3, 'herbs': 0, 'meals': 1, 'hours': {'start': 6.5, 'end': 18.25},
+                                 'home': None, 'work': project['spawn'], 'evening': None}]
+            walked = next(p for p in project['people'] if p['route'])
+            route = next(r for r in project['routes'] if r['id'] == walked['route'])
+            route['posts'] = []                   # Not laid out (a map taken away): its walkers hold their posts.
+            S.save_world(editor, project, revision)
+            import world_build
+            world_build.build(editor, 'test')
+            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
+        python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in ('economy', 'route', 'resident', 'story')]
+        self.assertEqual(sql, python)
+        rook = next(l for l in sql if l.startswith('resident "rook"'))
+        self.assertTrue(rook.endswith('"-" 0 0 "-" 0 0 "-" 0 0'), rook)
+        self.assertFalse(any(l.startswith(f'route "{route["id"]}"') for l in sql))
+        guard = next(l for l in sql if l.startswith(f'resident "{walked["id"]}"'))
+        self.assertNotIn(f'"{route["id"]}"', guard)
+        hand = next(l for l in sql if l.startswith('resident "free_hand"'))
+        self.assertTrue(hand.endswith('"-" 0 0 "town" 27.5 21.5 "-" 0 0'), hand)
+        data = self.dm.npcs('dev')
+        self.assertIsNone(next(p for p in data['people'] if p['id'] == 'rook')['home'])
+        self.assertEqual([(h['id'], h['home']) for h in data['holders']], [('free_hand', None)])
+
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')

@@ -98,11 +98,15 @@ def to_v3(p: dict) -> dict:
     return p
 
 
-def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]]:
+def check_project(value: object, for_game: bool = True, playable: bool = True) -> tuple[dict, list[str]]:
     """Validate shape first, then topology. Never mutate the caller's project. Returns the project as atlas v3.
 
     for_game also applies what the game can load today (256 cells and interiors, 262,144 of their tiles); the
     editor and the database hold worlds of any size.
+
+    playable (exports and builds) requires what the game server needs to load a world at all: at least one cell or
+    interior and a player spawn in one (doc 66, 2: a world of interiors only is fine). Without it (saving, and checking
+    an NPC edit), a world with neither is kept, and the missing spawn is a warning.
     """
     errors: list[str] = []
     warnings: list[str] = []
@@ -270,7 +274,8 @@ def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]
         errors.append(f'World cells {a["id"]} and {b["id"]} overlap.')
     if errors:
         raise ValidationError(errors[:100])
-    require(bool(p['cells']), 'Add at least one world cell before exporting.')
+    if playable:
+        require(bool(p['cells'] or p['rooms']), 'Add at least one world cell or interior before exporting.')
     by_id = {c['id']: c for c in p['cells'] + p['rooms']}
     rows_by_id = {cid: cell_rows(p, c) for cid, c in by_id.items()}
     used = set()
@@ -320,8 +325,10 @@ def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]
             if not arrival_tile(p, by_id[end['cell']], end, used, link['kind']):
                 errors.append(f'{link["id"]}: {side} has no clear, height-compatible neighboring arrival tile.')
     spawn = p.get('spawn')
-    if not isinstance(spawn, dict) or not isinstance(spawn.get('cell'), str) or spawn.get('cell') not in by_id:
-        errors.append('Choose a player spawn in an existing cell.')
+    if spawn is None and not playable:
+        warnings.append('There is no player spawn: the game server cannot load this world until one is chosen.')
+    elif not isinstance(spawn, dict) or not isinstance(spawn.get('cell'), str) or spawn.get('cell') not in by_id:
+        errors.append('Choose a player spawn in an existing cell or interior.')
     else:
         c = by_id[spawn['cell']]
         if not number(spawn.get('x'), 0, c['width'] - 1, integer=True) or not number(spawn.get('y'), 0, c['height'] - 1, integer=True):
@@ -347,7 +354,9 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         if not condition:
             errors.append(message)
 
-    def place(value, label):
+    def place(value, label, optional=False):
+        if optional and value is None:
+            return False                            # An NPC's unset place (doc 66, 2).
         ok = (isinstance(value, dict) and set(value) == {'cell', 'x', 'y'} and value.get('cell') in by_id
               and number(value.get('x'), 0, by_id[value['cell']]['width'] - 1, integer=True)
               and number(value.get('y'), 0, by_id[value['cell']]['height'] - 1, integer=True))
@@ -379,7 +388,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         name = route.get('name')
         require(isinstance(name, str) and text(name, 120) and bool(name.strip()), f'Route {rid}: invalid name.')
         posts = route.get('posts')
-        require(isinstance(posts, list) and 1 <= len(posts) <= 64, f'Route {rid}: needs 1 to 64 posts.')
+        # (No posts: a route not laid out, as when a world's map is taken away; its walkers hold their posts: doc 66, 2.)
+        require(isinstance(posts, list) and len(posts) <= 64, f'Route {rid}: has at most 64 posts.')
         for index, post in enumerate(posts if isinstance(posts, list) else []):
             place(post, f'Route {rid} post {index + 1}')
     people = p.get('people', [])
@@ -423,8 +433,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         require(route == '' or (person['role'] != 'merchant' and route in route_ids),
                 f'{label}: only guards (on patrol) and civilians (travelling) walk routes, and the route must exist.')
         for key in ('home', 'work', 'evening'):
-            place(person[key], f'{label} {key}')
-        if person['role'] == 'merchant' and person['work'].get('cell') in by_id:
+            place(person[key], f'{label} {key}', optional=True)
+        if person['role'] == 'merchant' and isinstance(person['work'], dict) and person['work'].get('cell') in by_id:
             w = person['work']
             rows = rows_by_id[w['cell']]
             c = by_id[w['cell']]
@@ -459,7 +469,7 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
                 and number(hours.get('end'), 0, 23.75) and hours.get('start') != hours.get('end'), f'{label}: invalid hours.')
         require(slot['route'] == '' or slot['route'] in route_ids, f'{label}: the patrol route must exist.')
         for key in ('home', 'work', 'evening'):
-            place(slot[key], f'{label} {key}')
+            place(slot[key], f'{label} {key}', optional=True)
     if people and not any(isinstance(x, dict) and x.get('role') == 'merchant' for x in people):
         warnings.append('No merchant: residents will have nowhere to buy food.')
     if herbs is None and people:
@@ -550,7 +560,7 @@ def resolve_slots(p, roster_data, glyph_at=None):
         prof = professions.get(slot['profession'])
         if prof and slot['route'] and prof['behavior'] != 'guard':
             errors.append(f'Slot {slot["name"]}: only guard professions walk patrol routes.')
-        if prof and prof['behavior'] == 'merchant':
+        if prof and prof['behavior'] == 'merchant' and slot['work']:
             w = slot['work']
             if glyph_at is None:
                 rows = cell_rows(p, next(c for c in p['cells'] + p['rooms'] if c['id'] == w['cell']))
@@ -582,7 +592,7 @@ def slot_plan(request, roster_data):
     place = lambda v: isinstance(v, dict) and isinstance(v.get('cell'), str) and all(isinstance(v.get(k), int) for k in ('x', 'y'))
     if (not isinstance(slots, list) or len(slots) > MAX_SLOTS or not isinstance(people, list) or not isinstance(ground, dict)
             or not all(isinstance(s_, dict) and all(isinstance(s_.get(k), str) for k in ('id', 'name', 'profession', 'route'))
-                       and place(s_.get('work')) for s_ in slots)
+                       and (s_.get('work') is None or place(s_.get('work'))) for s_ in slots)
             or not all(isinstance(i, str) for i in people)
             or not all(isinstance(k, str) and isinstance(v, str) and len(v) == 1 for k, v in ground.items())):
         raise ValueError('Malformed slot plan request.')
@@ -716,10 +726,14 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         e = p.get('economy', DEFAULT_ECONOMY)
         manifest.append(f'economy {e["treasury"]} {e["storeHerbs"]} {e["storeMeals"]} {e["dailyHerbs"]} {e["dailyMeals"]}')
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
+    npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.
     if p.get('herbPatch'):
         manifest.append('herbs ' + at(p['herbPatch']))
+    # A route with no posts is not laid out (doc 66, 2): not written, and whoever walks it holds their post, as live.people_manifest.
+    laid_out = {route['id'] for route in p.get('routes', []) if route['posts']}
     for route in p.get('routes', []):
-        manifest.append(f'route {quote(route["id"])} {len(route["posts"])} ' + ' '.join(at(post) for post in route['posts']))
+        if route['id'] in laid_out:
+            manifest.append(f'route {quote(route["id"])} {len(route["posts"])} ' + ' '.join(at(post) for post in route['posts']))
     for r in p.get('people', []):
         look = r['appearance']
         fold = lambda value: value.replace('\n', ' ')
@@ -728,8 +742,8 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             quote(fold(r['description'])), quote(fold(r['greeting'])), str(r['age']),
             quote(look['species']), quote(look['sex']), quote(look['stature']), quote(look['pattern']),
             str(look['baseColor']), str(look['gradientColor']), str(look['markingColor']), str(r['voice']),
-            str(int(r['paid'])), f'{r["hours"]["start"]:g}', f'{r["hours"]["end"]:g}', quote(r['route'] or '-'),
-            str(r['purse']), str(r['herbs']), str(r['meals']), at(r['home']), at(r['work']), at(r['evening'])]))
+            str(int(r['paid'])), f'{r["hours"]["start"]:g}', f'{r["hours"]["end"]:g}', quote(r['route'] if r['route'] in laid_out else '-'),
+            str(r['purse']), str(r['herbs']), str(r['meals']), npc_at(r['home']), npc_at(r['work']), npc_at(r['evening'])]))
         if r.get('personality') or r.get('backstory'):
             manifest.append(f'story {quote(r["id"])} {quote(fold(r.get("personality", "")))} {quote(fold(r.get("backstory", "")))}')
         if r.get('joinable'):
@@ -1120,7 +1134,7 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                     data['project'] = live().fill(data['project'])
                 if path == '/api/validate':
                     # A world edited live in the database is streamed, so its size is a note, not an error.
-                    _, warnings = check_project(data, for_game=world is None)
+                    _, warnings = check_project(data, for_game=world is None, playable=world is None)
                     if world is not None and tile_count(data) > MAX_TILES:
                         warnings.append(f'Cells plus interiors cover {tile_count(data)} tiles, more than a ▶ Play '
                                         f'export holds ({MAX_TILES}); ▶ Play runs it from the {getattr(world, "key", "DEV")} database instead.')
@@ -1161,7 +1175,7 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                 if path == '/api/roster/preview':
                     with lock:
                         current = rosters.load()
-                    p, _ = check_project(data, for_game=world is None)
+                    p, _ = check_project(data, for_game=world is None, playable=False)
                     _, plan, _, warnings = resolve_slots(p, current)
                     names = {c['id']: c['name'] for c in current['characters']}
                     return self.reply(200, {'plan': [{**e, 'name': names.get(e['character'], e['character'])} for e in plan], 'warnings': warnings})

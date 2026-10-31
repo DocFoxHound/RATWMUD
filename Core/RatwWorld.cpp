@@ -2024,21 +2024,29 @@ Result World::adoptResident(const World& candidate, const std::string& id)
         return {false, "No such NPC.", {}};
     if (!spec)
     {
-        const std::string name = it != entities_.end() ? it->second.name : id;
+        // Gone from the world, or unplaced (doc 66, 2): no body either way; an unplaced NPC is still in the roster.
+        const auto* away = candidate.society_.unplaced(id);
+        const std::string name = it != entities_.end() ? it->second.name : away ? away->name : id;
         if (it != entities_.end())
             entities_.erase(it);
         index_.dirty = true;
         pendingPortals_.erase(id);
         travels_.erase(id);
-        bonds_.forget(id);
-        return {true, name + " has left the world.", {}};
+        if (!away)
+            bonds_.forget(id);
+        return {true, away ? name + " is unplaced: off the map until given a home." : name + " has left the world.", {}};
     }
     const auto* fresh = candidate.entity(id);
     if (!fresh)
         return {false, "The candidate world has no body for " + id + ".", {}};
     if (it == entities_.end())
     {
-        entities_[id] = *fresh;
+        // A newcomer, or an unplaced NPC given a home (doc 66, 2): they arrive at home, whatever the hour.
+        auto e = *fresh;
+        e.cellId = spec->home.cell;
+        e.position = {spec->home.x, spec->home.y};
+        entities_[id] = std::move(e);
+        index_.dirty = true;
         return {true, spec->name + " has joined the world.", {}};
     }
     auto& e = it->second;
@@ -6118,6 +6126,15 @@ Result World::restore(const PersistedWorld& saved)
         e.speakingUntil = 0;
         entities_[e.id] = std::move(e);
     }
+    // A resident new since the save (written since, or an unplaced NPC given a home: doc 66, 2) arrives at home.
+    if (state.hasSociety)
+        for (const auto& [id, life] : restoredSociety.state().residents)
+            if (!state.society.residents.count(id) && !ids.count(id) && !rebuilt.count(id))
+                if (const auto e = entities_.find(id); e != entities_.end() && e->second.npc && cell(life.homeCell))
+                {
+                    e->second.cellId = life.homeCell;
+                    e->second.position = {life.homeX, life.homeY};
+                }
     for (const auto& d : state.doorStates)
         if (doors_.count(d.first))
             doors_[d.first].open = d.second;

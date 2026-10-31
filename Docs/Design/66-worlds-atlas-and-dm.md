@@ -224,3 +224,56 @@ Phases 1, 2 and 5 can be built side by side; 3 needs 1; 4 needs 1 and 3.
 - Tests: `tools/test_world_db.py` (the registry, `use`, `serve-world`'s refusal, `list`, `push_worlds`, connection
   settings, and `new` on throwaway databases: empty dev and live worlds, a copy, a copy without its map, a copy refused
   while the source is in use), `test_map_editor.py` (the session's world), `test_dungeon_master.py` (targets).
+
+### Phase 2: built (2026-10-30)
+
+**The database.** Migration 0052 makes `home_area`, `work_area` and `evening_area` optional on `live.npcs` and
+`live.profession_slots`; their foreign keys stay (a set place still names an area of the world). The coordinates stay
+NOT NULL and mean nothing while their area is unset (the tools write 0, 0). The NPC records (`live.people_manifest`)
+write an unset place as `"-" 0 0` (no area ID can be `-`), as the editor's exporter does. Nothing else in the schema
+assumed them set; Push to live's orphan check (`publish.orphans`) now skips an unset place.
+
+**The build.** `world_store` reads and writes an unset place as `null` in the editor's NPC (`home`, `work`, `evening`).
+`map_editor`'s checks take `null` for an NPC's or slot's place (a merchant's counter is checked only when there is one).
+Its exporter writes them as `"-" 0 0`. `check_project` has a `playable` switch: saving a world (and the DM's checks of an
+NPC or layer edit) no longer needs a spawn or any cell (a missing spawn is a warning), while exports and builds still
+need a spawn, in a cell **or an interior**: a world of interiors only builds.
+
+**The game server.** An NPC with no home is **unplaced**: the world keeps it in `AuthoredRoster::unplaced`
+(`Society::unplaced(id)`), with its job label, talk, story and families, but it has no entity, no `ResidentLife`, no
+account, no job position, and nothing ticks for it (`spec()` never finds it, so no system can treat it as a resident).
+Families naming an unplaced NPC are kept; the society takes them in only once both are residents. An NPC with a home and
+no work is **placed without work**: it starts at home, its work place is its home, its work label `-` (no job of its own,
+as one born here), unpaid, with no patrol, and in the game a civilian (no counter, no post); with no evening place it
+spends evenings at home. The database keeps its authored role and label, so giving it work again restores them.
+
+- Placing: a push or a DM's `npc.sync` that gives an unplaced NPC a home (`World::adoptResident`) brings it in **at
+  home**, whatever the hour; so does a new build restored from a save made before (`World::restore`: any resident new
+  since the save now arrives at home, not at the noon rule's work place). Unplacing live takes the body away and keeps
+  the roster entry; its coins go to the town, as for one who leaves.
+- Saves: unplaced NPCs are never in a checkpoint (it holds the society and bodies only); a save restores into a build
+  that has placed or unplaced them since (tests: `town_tests`, `unplacedResidents`, through the checkpoint document).
+
+**Atlas.** The people workspace's explorer has a filter (all, unplaced, without work, with counts) and notes each NPC
+and slot as "unplaced" or "no work"; the inspector's Places section has Clear beside Pick for the home, work place (the
+business: its area and the post or counter in it) and evening place, and says what an unset home or work place means.
+An NPC without work is drawn on the map at home. A new NPC in a world with nowhere to put it starts unplaced.
+
+**The DM.** Its NPC list, job holders and NPC panel show "unplaced" / "no work" for unset places (`holders` carry
+`null`), and its money view counts only placed NPCs' homes.
+
+**Differs from section 2.**
+
+- Routes not laid out (migration 0053): Ridgemere 2.0's ten patrol routes lost all their posts with the map, and twelve
+  placed NPCs still walk them. A route may now have no posts (Atlas and the checks); it is left out of the NPC records,
+  and whoever walks it holds their work post until its posts are laid out again.
+- "Placing an NPC later" in Atlas is the same Pick as before; the live server sees it at the next build or `npc.sync`.
+
+**Ridgemere 2.0.** Migrated (0052, 0053, nothing else). In one transaction: 556 work and 128 evening places that named
+`r2_unplaced` unset (no home was there, so none of its 1,083 NPCs is unplaced: 556 are placed without work), the room
+deleted, the world's revision raised. `python3 tools/world_build.py ridgemere2` refuses it for one reason: **it has no
+player spawn** ("Choose a player spawn in an existing cell or interior."). With a spawn chosen in memory only (nothing
+written), it exports, and the game's own loader (`world_check`), with the NPC records from the database as the server
+reads them, loads all 626 interiors and 1,083 residents; half an hour simulated runs (125 residents find no way to a
+place in another building: there is no map between them). Once a spawn is set (in a cell or any interior), it
+should build and load on a scratch server; nothing else stood in the way.

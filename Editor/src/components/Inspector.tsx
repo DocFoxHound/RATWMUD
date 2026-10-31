@@ -51,16 +51,26 @@ function Header({eyebrow, title, onClose, children}: {eyebrow: string; title: st
 }
 const close = () => setState({selection: null});
 
-function PickButton({refTo, label, place}: {refTo: PlaceRef; label: string; place: Place | null}) {
+/** `clearable`: an NPC's place, which may be unset (doc 66, 2); `none` names it unset. */
+function PickButton({refTo, label, place, clearable = false, none = 'not set'}: {refTo: PlaceRef; label: string; place: Place | null; clearable?: boolean; none?: string}) {
     const pending = useStore(s => s.pending);
     const active = pending?.kind === 'place' && JSON.stringify(pending.ref) === JSON.stringify(refTo);
     return (
         <div className="place-row">
-            <div><small>{label}</small><span>{placeLabel(getState().project, place)}</span></div>
+            <div><small>{label}</small><span>{place ? placeLabel(getState().project, place) : none}</span></div>
             <button className={active ? 'active' : ''} onClick={() => setState({pending: active ? null : {kind: 'place', ref: refTo, label: label.toLowerCase()}})}>{active ? 'Cancel' : 'Pick'}</button>
             <button onClick={() => focusPlace(place)} disabled={!place} title="Show on map">Go</button>
+            {clearable && <button onClick={() => commit(`Cleared ${label.toLowerCase()}.`, p => M.movePlace(p, refTo, null))} disabled={!place} title="Unset this place">Clear</button>}
         </div>
     );
+}
+
+/** What an NPC's places make them (doc 66, 2), for the Places section. */
+function PlacementHint({who}: {who: {home: Place | null; work: Place | null}}) {
+    const placement = M.placement(who);
+    return placement === 'unplaced' ? <Hint>Unplaced: no home, so no body in the world. They keep their job, talk and family; pick a home to place them.</Hint>
+        : placement === 'jobless' ? <Hint>No work place: they live at home, idle (no job, no wage). Pick a work place to give them their business.</Hint>
+        : null;
 }
 
 // --------------------------------------------------------------------------- World
@@ -174,7 +184,7 @@ function MultiCellInspector({cells}: {cells: AnyCell[]}) {
 function CellInspector({project, cell, pinned = false}: {project: Project; cell: AnyCell; pinned?: boolean}) {
     const room = isRoom(cell) ? cell as Room : null;
     const update = (fields: Partial<Room>, label = 'Updated cell details.') => commit(label, p => M.updateCell(p, cell.id, fields), true);
-    const inside = project.people.filter(p => [p.home, p.work, p.evening].some(x => x.cell === cell.id));
+    const inside = project.people.filter(p => [p.home, p.work, p.evening].some(x => x?.cell === cell.id));
     const doors = project.links.filter(l => l.a.cell === cell.id || l.b.cell === cell.id);
     const viewing = useStore(s => s.view.kind === 'cell' && s.view.id === cell.id);
     return (<>
@@ -218,7 +228,7 @@ function CellInspector({project, cell, pinned = false}: {project: Project; cell:
         <Section title={`Residents here (${inside.length})`}>
             {inside.map(p => <button key={p.id} className="list-item" onClick={() => setState({selection: {kind: 'person', id: p.id}})}>
                 <span className="badge" style={{color: ROLE_INFO[p.role].color}}>{ROLE_INFO[p.role].icon}</span>{p.name}
-                <small>{[p.home.cell === cell.id && 'lives', p.work.cell === cell.id && 'works', p.evening.cell === cell.id && 'evenings'].filter(Boolean).join(' · ')}</small></button>)}
+                <small>{[p.home?.cell === cell.id && 'lives', p.work?.cell === cell.id && 'works', p.evening?.cell === cell.id && 'evenings'].filter(Boolean).join(' · ')}</small></button>)}
             <Hint>To move someone in, select them and use Pick next to Home or Work. Or right-click a tile here to add a new resident.</Hint>
         </Section>
         <Section title="Territory" open={false}><TerritoryEditor ids={[cell.id]} territory={cell.territory} /></Section>
@@ -331,9 +341,10 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
                 onChange={v => update({protected: v || undefined})} />
         </Section>
         <Section title="Places">
-            <PickButton refTo={{kind: 'person', id: person.id, slot: 'home'}} label="Home · sleeps here" place={person.home} />
-            <PickButton refTo={{kind: 'person', id: person.id, slot: 'work'}} label={person.role === 'merchant' ? 'Counter · customers stand beside it' : person.role === 'guard' ? 'Post · used without a route' : 'Work place'} place={person.work} />
-            <PickButton refTo={{kind: 'person', id: person.id, slot: 'evening'}} label="Evening place" place={person.evening} />
+            <PlacementHint who={person} />
+            <PickButton refTo={{kind: 'person', id: person.id, slot: 'home'}} label="Home · sleeps here" place={person.home} clearable none="unplaced" />
+            <PickButton refTo={{kind: 'person', id: person.id, slot: 'work'}} label={person.role === 'merchant' ? 'Counter · customers stand beside it' : person.role === 'guard' ? 'Post · used without a route' : 'Work place'} place={person.work} clearable none="no work" />
+            <PickButton refTo={{kind: 'person', id: person.id, slot: 'evening'}} label="Evening place" place={person.evening} clearable none="at home" />
             <Hint>On the map: W is their work place; ⌂ home and ☾ evening appear while selected. Drag any of them to move it.</Hint>
         </Section>
         <Section title="Appearance">
@@ -444,9 +455,10 @@ function SlotInspector({project, slot}: {project: Project; slot: M.Slot}) {
             <Toggle label="Paid by the treasury" checked={slot.paid} onChange={v => update({paid: v})} />
         </Section>
         <Section title="Places">
-            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'home'}} label="Home · sleeps here" place={slot.home} />
-            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'work'}} label={behavior === 'merchant' ? 'Counter' : behavior === 'guard' ? 'Post' : 'Work place'} place={slot.work} />
-            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'evening'}} label="Evening place" place={slot.evening} />
+            <PlacementHint who={slot} />
+            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'home'}} label="Home · sleeps here" place={slot.home} clearable none="unplaced" />
+            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'work'}} label={behavior === 'merchant' ? 'Counter' : behavior === 'guard' ? 'Post' : 'Work place'} place={slot.work} clearable none="no work" />
+            <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'evening'}} label="Evening place" place={slot.evening} clearable none="at home" />
         </Section>
         <Section title="Starting purse" open={false}>
             <Row><NumberField label="Silver" value={slot.purse} min={0} max={100000} onCommit={v => update({purse: v})} />

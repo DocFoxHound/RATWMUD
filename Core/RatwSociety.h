@@ -508,6 +508,10 @@ struct Kin
 struct AuthoredRoster
 {
     std::vector<ResidentSpec> residents;
+    // NPCs without a home (Docs/Design/66-worlds-atlas-and-dm.md, 2): in the roster, with their job if they have one,
+    // their talk and their families, but with no body, no needs, no work and no money: residents who are away. Never
+    // in `residents`, the society's state or its ledger; a build or a push that gives one a home makes them a resident.
+    std::vector<ResidentSpec> unplaced;
     std::vector<Kin> kin;
     std::map<std::string, PatrolRoute> routes;
     EconomySpec economy;
@@ -531,6 +535,8 @@ class Society
     Roster roster() const { return roster_; }
     const AuthoredRoster& authored() const { return authored_; }
     const ResidentSpec* spec(const std::string& id) const;
+    // An unplaced NPC as authored (doc 66, 2), or null: not a resident (spec() never finds one).
+    const ResidentSpec* unplaced(const std::string& id) const;
     // Careers (see Position): the town's positions, the one a resident holds (or null), and what holds each.
     const std::vector<Position>& positions() const;
     const Position* position(const std::string& id) const;

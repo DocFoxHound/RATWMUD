@@ -28,6 +28,8 @@ export function Explorer() {
     const openRoom = view.kind === 'cell' && project.rooms.some(r => r.id === view.id) ? view.id : null;
     const selection = useStore(s => s.selection);
     const [query, setQuery] = useState('');
+    // NPCs without a map (doc 66, 2): everyone, only the unplaced (no home), or only those without work.
+    const [placing, setPlacing] = useState<'all' | 'unplaced' | 'jobless'>('all');
     const q = query.trim().toLowerCase();
     const match = (...text: string[]) => !q || text.some(t => t.toLowerCase().includes(q));
     const viewing = (id: string) => view.kind === 'cell' && view.id === id;
@@ -36,10 +38,15 @@ export function Explorer() {
 
     const cells = project.cells.filter(c => match(c.name, c.id));
     const rooms = project.rooms.filter(c => match(c.name, c.id));
-    const people = project.people.filter(p => match(p.name, p.id, p.role, p.workLabel));
+    const placed = (p: {home: M.Place | null; work: M.Place | null}) => placing === 'all' || M.placement(p) === placing;
+    const people = project.people.filter(p => match(p.name, p.id, p.role, p.workLabel) && placed(p));
+    const unplacedCount = [...project.people, ...project.slots].filter(p => M.placement(p) === 'unplaced').length;
+    const joblessCount = [...project.people, ...project.slots].filter(p => M.placement(p) === 'jobless').length;
+    const placeNote = (p: {home: M.Place | null; work: M.Place | null}, otherwise: string) =>
+        M.placement(p) === 'unplaced' ? 'unplaced' : M.placement(p) === 'jobless' ? 'no work' : otherwise;
     const roster = useStore(s => s.roster);
     const preview = useStore(s => s.preview);
-    const slots = project.slots.filter(s => match(s.name, s.id, s.profession));
+    const slots = project.slots.filter(s => match(s.name, s.id, s.profession) && placed(s));
     const holder = (slotId: string) => preview?.plan.find(e => e.slot === slotId)?.name;
     const routes = project.routes.filter(r => match(r.name, r.id));
     const links = project.links.filter(l => match(l.name, l.id) && (!interiors_ || l.a.cell === openRoom || l.b.cell === openRoom));
@@ -70,15 +77,19 @@ export function Explorer() {
                     {!rooms.length && <p className="tree-empty">Use + for a blank room, or the Building tool (U) on the Map for a building with its interior.</p>}
                 </Group>
                 {people_ && <>
+                <div className="explorer-filter" role="group" aria-label="Show NPCs by placement">
+                    {([['all', 'All'], ['unplaced', `Unplaced (${unplacedCount})`], ['jobless', `No work (${joblessCount})`]] as const).map(([key, label]) =>
+                        <button key={key} className={placing === key ? 'active' : ''} aria-pressed={placing === key} onClick={() => setPlacing(key)}>{label}</button>)}
+                </div>
                 <Group title="Named NPCs" count={people.length} action={<button className="icon" title="Place a named NPC" onClick={() => useTool('person')}>+</button>}>
                     {(['merchant', 'guard', 'civilian'] as Role[]).map(role => people.filter(p => p.role === role).map(p =>
-                        item(p.id, selected('person', p.id), () => { setState({selection: {kind: 'person', id: p.id}}); focusPlace(p.work); },
-                            ROLE_INFO[role].icon, p.name, p.workLabel, ROLE_INFO[role].color)))}
+                        item(p.id, selected('person', p.id), () => { setState({selection: {kind: 'person', id: p.id}}); focusPlace(p.work ?? p.home); },
+                            ROLE_INFO[role].icon, p.name, placeNote(p, p.workLabel), ROLE_INFO[role].color)))}
                     {!people.length && <p className="tree-empty">No residents yet. Press P and click the map.</p>}
                 </Group>
                 <Group title="Profession slots" count={slots.length} action={<button className="icon" title="Place profession slots" onClick={() => useTool('slot')}>+</button>}>
-                    {slots.map(s => item(s.id, selected('slot', s.id), () => { setState({selection: {kind: 'slot', id: s.id}}); focusPlace(s.work); },
-                        '◇', s.name, holder(s.id) ?? roster?.professions.find(p => p.id === s.profession)?.name ?? s.profession, '#b6a3cf'))}
+                    {slots.map(s => item(s.id, selected('slot', s.id), () => { setState({selection: {kind: 'slot', id: s.id}}); focusPlace(s.work ?? s.home); },
+                        '◇', s.name, placeNote(s, holder(s.id) ?? roster?.professions.find(p => p.id === s.profession)?.name ?? s.profession), '#b6a3cf'))}
                     {!slots.length && <p className="tree-empty">Jobs filled from the character roster. Press J and click the map.</p>}
                 </Group>
                 <Group title="Patrol routes" count={routes.length} action={<button className="icon" title="New patrol route" onClick={newRoute}>+</button>}>

@@ -458,7 +458,7 @@ class ContentTests(unittest.TestCase):
         mutate(lambda p: p['people'][0].update(extra=1))
         mutate(lambda p: p['people'][0]['appearance'].update(species='fox'))
         mutate(lambda p: p['people'].append(copy.deepcopy(p['people'][0])))  # duplicate ID
-        mutate(lambda p: p['routes'][0].update(posts=[]))
+        mutate(lambda p: p['routes'][0].update(posts=p['routes'][0]['posts'][:1] * 65))   # (None is a route not laid out: doc 66.)
         mutate(lambda p: p['economy'].update(treasury=-1))
         mutate(lambda p: p.update(herbPatch={'cell': 'town', 'x': 0, 'y': 0}))
 

@@ -46,7 +46,8 @@ export interface Person {
     id: string; name: string; role: Role; description: string; greeting: string; workLabel: string;
     age: number; appearance: Appearance; voice: number; hours: {start: number; end: number};
     route: string; paid: boolean; purse: number; herbs: number; meals: number;
-    home: Place; work: Place; evening: Place;
+    /** Unset (null): no home is unplaced (no body in the world), no work is idle at home (Docs/Design/66, 2). */
+    home: Place | null; work: Place | null; evening: Place | null;
     personality: string; backstory: string;
     /** May travel with a player's party, at any hour (Docs/Design/32, 2.3). */
     joinable?: boolean;
@@ -57,7 +58,7 @@ export interface Person {
 export interface Slot {
     id: string; name: string; profession: string; workLabel: string; hours: {start: number; end: number};
     route: string; paid: boolean; purse: number; herbs: number; meals: number;
-    home: Place; work: Place; evening: Place;
+    home: Place | null; work: Place | null; evening: Place | null;
 }
 export interface Route { id: string; name: string; posts: Place[] }
 export interface Economy { treasury: number; storeHerbs: number; storeMeals: number; dailyHerbs: number; dailyMeals: number }
@@ -157,7 +158,10 @@ export function upsertRoute(project: Project, route: Partial<Route>): Route;
 export function removeRoute(project: Project, id: string): Project;
 export function setEconomy(project: Project, economy: Partial<Economy>): Economy;
 export function setHerbPatch(project: Project, place: Place | null): Project;
-export function movePlace(project: Project, ref: PlaceRef, place: Place): Project;
+/** `place` null clears a person's or slot's home, work or evening place (doc 66, 2). */
+export function movePlace(project: Project, ref: PlaceRef, place: Place | null): Project;
+/** Where an NPC stands (doc 66, 2): no home, unplaced; a home and no work, jobless; else placed. */
+export function placement(person: {home: Place | null; work: Place | null}): 'placed' | 'jobless' | 'unplaced';
 export function worldIdFor(name: string): string;
 export function newSlot(project: Project, profession: {id: string; name: string; hours?: {start: number; end: number}; paid?: boolean}, place?: Place | null): Slot;
 export function upsertSlot(project: Project, slot: Slot): Slot;

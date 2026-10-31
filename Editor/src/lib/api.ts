@@ -48,8 +48,8 @@ export interface PlaytestResult { folder: string; manifest: string; command: str
 export function slotPlanRequest(project: Project) {
     const ground: Record<string, string> = {};
     for (const slot of project.slots) {
-        const c = M.getCell(project, slot.work.cell);
-        if (!c) continue;
+        const c = slot.work && M.getCell(project, slot.work.cell);
+        if (!slot.work || !c) continue;                          // (A slot without a work place: doc 66, 2.)
         if (groundPending(c.id)) want(c.id);                     // Placeholder ground until it comes; asked again then.
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
             const x = slot.work.x + dx, y = slot.work.y + dy, g = c.terrain[y]?.[x];
@@ -57,7 +57,7 @@ export function slotPlanRequest(project: Project) {
         }
     }
     return {id: project.id, name: project.name, slots: project.slots, people: project.people.map(p => p.id), ground,
-        waiting: project.slots.some(s => groundPending(s.work.cell))};
+        waiting: project.slots.some(s => !!s.work && groundPending(s.work.cell))};
 }
 let lastPlan: {key: string; answer: Promise<SlotPreview>} | null = null;
 const stamps = new WeakMap<object, number>();

@@ -643,6 +643,8 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 if (!quoted(fields, spot->cell))
                     return reject("Malformed resident place.");
                 fields >> spot->x >> spot->y;
+                if (spot->cell == "-")
+                    *spot = {};                     // Unset (doc 66, 2): "-" 0 0, never an area ID.
             }
             r.route = route == "-" ? "" : route;
             r.paid = paid == 1;
@@ -658,15 +660,39 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 roster.residents.size() >= MaxResidents || residentIds.count(r.id))
                 return reject("Invalid or duplicate resident: " + r.id);
             residentIds.insert(r.id);
-            for (const auto* spot : {&r.home, &r.work, &r.evening})
-                places.push_back({"resident " + r.id, *spot});
-            roster.residents.push_back(std::move(r));
+            roster.residents.push_back(std::move(r));   // (Its places are checked below, once it is known to be placed.)
         }
         else
             return reject("Unknown manifest record.");
     }
     if (!input.eof() || !header || !spawn || candidate.cells_.empty())
         return reject("World must contain cells and exactly one spawn.");
+    // NPCs without a map (Docs/Design/66-worlds-atlas-and-dm.md, 2). No home: unplaced, an off-map resident with no body,
+    // kept aside (roster.unplaced) for when a build or a push gives them one. A home but no work: placed without work,
+    // living at home, idle: no job of their own (as one born here), no wage, no patrol; no evening place: home.
+    for (auto it = roster.residents.begin(); it != roster.residents.end();)
+    {
+        auto& r = *it;
+        if (r.home.cell.empty())
+        {
+            roster.unplaced.push_back(std::move(r));
+            it = roster.residents.erase(it);
+            continue;
+        }
+        if (r.work.cell.empty())
+        {
+            r.work = r.home;
+            r.workLabel = "-";
+            r.paid = false;
+            r.route.clear();
+            r.role = "civilian";                    // No counter to keep, no post to hold.
+        }
+        if (r.evening.cell.empty())
+            r.evening = r.home;
+        for (const auto* spot : {&r.home, &r.work, &r.evening})
+            places.push_back({"resident " + r.id, *spot});
+        ++it;
+    }
     for (const auto& [id, to] : candidate.exits_)
         for (const auto& next : to)
             if (!candidate.cells_.count(id) || !candidate.cells_.count(next))
@@ -854,7 +880,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         e.position = {start.x, start.y};
         candidate.entities_[e.id] = e;
     }
-    if (!roster.residents.empty())
+    if (!roster.residents.empty() || !roster.unplaced.empty())
         candidate.society_.configure(roster);
     candidate.rebuildFixtureIndex();
     *this = std::move(candidate);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createProject, cutGrid, splitCell, mergeCells, normalizeProject, validate, newPerson, upsertPerson,
     removePerson, upsertRoute, removeRoute, setEconomy, setHerbPatch, movePlace, addBuilding, paintTiles, stamp,
-    resizeRoom, removeRoom, updateCell, addRoom, addLink, updateLink, getCell, cellTerrain} from './model.mjs';
+    resizeRoom, removeRoom, updateCell, addRoom, addLink, updateLink, getCell, cellTerrain, placement} from './model.mjs';
 import {BUILDINGS, buildingById} from './templates.mjs';
 
 const greyfen = () => JSON.parse(readFileSync(new URL('../../../Data/Worlds/Greyfen/greyfen.atlas.json', import.meta.url)));
@@ -174,4 +174,28 @@ test('profession slots follow cuts, validate, and free routes when removed', asy
     assert.deepEqual(p.slots.map(s => s.id), ['guard_2']);
     assert.throws(() => upsertSlot(p, {id: 'x'}), /missing/);
     assert.equal(normalizeProject(p).id, 'test', 'every atlas has a stable world ID');
+});
+
+test('NPCs without a map: no home is unplaced, no work is idle at home; both round-trip and validate (doc 66, 2)', () => {
+    const p = normalizeProject(greyfen());
+    const [a, b] = p.people;
+    movePlace(p, {kind: 'person', id: a.id, slot: 'home'}, null);
+    movePlace(p, {kind: 'person', id: a.id, slot: 'work'}, null);
+    movePlace(p, {kind: 'person', id: a.id, slot: 'evening'}, null);
+    movePlace(p, {kind: 'person', id: b.id, slot: 'work'}, null);
+    const people = Object.fromEntries(p.people.map(x => [x.id, x]));
+    assert.equal(placement(people[a.id]), 'unplaced');
+    assert.equal(placement(people[b.id]), 'jobless');
+    assert.equal(placement(p.people[2]), 'placed');
+    const errors = validate(p).errors.filter(e => e.includes(a.name) || e.includes(b.name));
+    assert.deepEqual(errors, [], 'unset places are not errors');
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))), p, 'round-trips with its unset places');
+    assert.throws(() => movePlace(p, {kind: 'spawn'}, null), /cleared/);
+    movePlace(p, {kind: 'person', id: a.id, slot: 'home'}, p.spawn);
+    assert.equal(placement(p.people.find(x => x.id === a.id)), 'jobless', 'given a home, then work');
+    const empty = createProject(32, 24, 'Empty');
+    empty.cells = [];
+    empty.spawn = null;
+    const nobody = newPerson(empty, 'civilian');
+    assert.equal(placement(nobody), 'unplaced', 'a new NPC in a world with nowhere to put them is unplaced');
 });
