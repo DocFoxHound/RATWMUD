@@ -952,7 +952,8 @@ class ChapterTests(Fixture):
 
 
 class MoneyTests(Fixture):
-    """The Money view (Docs/Design/42-money-in-circulation.md, Phase 8): where the money is, from the last save."""
+    """The Money view: where the money is, from the last save (the economy's levers and monitor went with its rules: doc
+    66, Phase 5)."""
 
     def test_where_the_money_is(self):
         someone = greyfen()['people'][0]['id']
@@ -966,79 +967,18 @@ class MoneyTests(Fixture):
             game.execute('INSERT INTO game.events (world_id, game_time, kind, actor, target, cell, game_day, detail) '
                          "VALUES ('greyfen', 1, 'reckoning', 'treasury', 'town:x:church', '', 28, %s)", ("X's reckoning",))
         money = self.dm.money('dev')
-        self.assertEqual((562, 500, 1), (money['total'], money['capital'], money['month']))
+        self.assertEqual((562, 500), (money['total'], money['capital']))
         self.assertEqual([{'id': 'house:fell', 'cash': 40}], money['houses'])
         self.assertEqual({'count': 1, 'total': 12}, money['tills'])
         self.assertEqual(7, money['road']['caravans'])
         self.assertEqual((1, 1), (money['residents']['count'], money['residents']['shortOfFood']))
-        self.assertEqual(['reckoning'], [e['kind'] for e in money['events']])
-        self.assertIsNone(money['orchestrator'])                                  # Older saves have none.
+        for gone in ('month', 'events', 'orchestrator', 'levers'):
+            self.assertNotIn(gone, money)
 
-    ORCHESTRATOR = {'day': 12, 'memory': {'distress': {'saltreach': 0.2}, 'day': 12, 'decided': 7},
-                    'brief': {'day': 12, 'landDistress': 0.12, 'gini': 0.41, 'bottomShare': 0.22, 'median': 300,
-                              'towns': [{'id': 'saltreach', 'people': 40, 'distress': 0.2, 'kind': 'no work'}]},
-                    'decision': {'day': 7, 'decided': True, 'towns': []}}
-
-    def save_orchestrator(self, memory=None):
-        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
-            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
-                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 12.5,
-                                                 'society': {'accounts': {}, 'orchestrator': self.ORCHESTRATOR,
-                                                             **({'memory': memory} if memory is not None else {})}})))
-
-    def test_the_monitors_measures(self):
-        self.save_orchestrator()
-        money = self.dm.money('dev')
-        self.assertEqual(self.ORCHESTRATOR, money['orchestrator'])
-        self.assertEqual({'taxRate': 0.08, 'mint': True, 'holdingsTax': 0.01}, money['levers'])   # A save from before the levers.
-        self.save_orchestrator({'taxRate': 0.1, 'mint': {'on': False}, 'holdingsTax': 0})
-        self.assertEqual({'taxRate': 0.1, 'mint': False, 'holdingsTax': 0}, self.dm.money('dev')['levers'])
-
-    def lever_rows(self, ids):
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            return conn.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions WHERE id = ANY(%s) ORDER BY id',
-                                (ids,)).fetchall()
-
-    def test_the_economys_levers(self):
-        master = self.sign_in('dm-master')
-        queued = [self.dm.set_tax_rate(master, 'dev', 0.1), self.dm.set_tax_rate(master, 'dev', 0),
-                  self.dm.set_mint(master, 'dev', False), self.dm.relief_grant(master, 'dev', 'greyfen', 500),
-                  self.dm.set_holdings_tax(master, 'dev', 0.02)]
-        self.assertEqual([('economy.tax', 'land', {'rate': 0.1}, 'dm-master'), ('economy.tax', 'land', {'rate': 0.0}, 'dm-master'),
-                          ('economy.mint', 'land', {'on': False}, 'dm-master'),
-                          ('economy.relief', 'greyfen', {'coins': 500}, 'dm-master'),
-                          ('economy.holdings', 'land', {'rate': 0.02}, 'dm-master')], self.lever_rows([q['id'] for q in queued]))
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            audited = conn.execute("SELECT action, detail FROM dm.audit WHERE action LIKE 'economy.%%' ORDER BY sequence").fetchall()
-        self.assertEqual(['economy.tax', 'economy.tax', 'economy.mint', 'economy.relief', 'economy.holdings'], [a for a, _ in audited])
-        self.assertIn('relief grant of 500p', audited[-2][1])
-        self.assertIn('holdings tax set to 2% a week', audited[-1][1])
-        for bad in (lambda: self.dm.set_tax_rate(master, 'dev', 0.6),
-                    lambda: self.dm.set_tax_rate(master, 'dev', -0.01),
-                    lambda: self.dm.set_tax_rate(master, 'dev', True),
-                    lambda: self.dm.set_tax_rate(master, 'dev', '0.1'),
-                    lambda: self.dm.set_tax_rate(master, 'dev', float('nan')),
-                    lambda: self.dm.set_mint(master, 'dev', 1),
-                    lambda: self.dm.set_mint(master, 'dev', None),
-                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', 0),
-                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', 2.5),
-                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', True),
-                    lambda: self.dm.relief_grant(master, 'dev', 'greyfen', D.MOST_RELIEF + 1),
-                    lambda: self.dm.relief_grant(master, 'dev', 'nowhere', 10),
-                    lambda: self.dm.relief_grant(master, 'dev', '', 10),
-                    lambda: self.dm.set_holdings_tax(master, 'dev', D.MOST_HOLDINGS_TAX + 0.01),
-                    lambda: self.dm.set_holdings_tax(master, 'dev', -0.01),
-                    lambda: self.dm.set_holdings_tax(master, 'dev', False)):
-            with self.assertRaises(D.DMError):
-                bad()
-        with W.connect('dev', 'dm', dbname=self.names['dev']) as conn:
-            self.assertEqual(5, conn.execute("SELECT count(*) FROM dm.actions WHERE kind LIKE 'economy.%%'").fetchone()[0])
-        viewer = self.sign_in('dm-viewer')
-        for refused in (lambda: self.dm.set_tax_rate(viewer, 'dev', 0.1), lambda: self.dm.set_mint(viewer, 'dev', True),
-                        lambda: self.dm.relief_grant(viewer, 'dev', 'greyfen', 10), lambda: self.dm.set_holdings_tax(viewer, 'dev', 0)):
-            with self.assertRaises(D.DMError) as raised:
-                refused()
-            self.assertEqual(403, raised.exception.status)
+    def test_no_economy_levers(self):
+        for gone in ('set_tax_rate', 'set_mint', 'relief_grant', 'set_holdings_tax'):
+            self.assertFalse(hasattr(self.dm, gone))
+        self.assertFalse([k for k in D.ACTIONS if k.startswith('economy.')])
 
 if __name__ == '__main__':
     unittest.main()

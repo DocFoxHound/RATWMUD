@@ -74,11 +74,12 @@ export class FightPanel {
             const r = row();
             r.classList.add('work-row');
             const others = arr(work, 'members').filter(isObject).filter(m => str(m, 'name') !== 'you');
-            // Farm work (doc 53, 2.6) also says what it has paid, and when the next spell is counted.
+            // Farm work (doc 53, 2.6) also says when the next spell is counted (nothing is paid for it since the economy's
+            // rules were erased: Docs/Design/66-worlds-atlas-and-dm.md, Phase 5).
         const farm = str(work, 'farmer') !== '';
         const left = Math.max(0, Math.round(num(work, 'nextBeat')));
-        const pay = farm ? ` · ${num(work, 'earned')}p earned · next spell in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '';
-        el('span', 'label', r, `${str(work, 'name')} with ${others.map(m => str(m, 'name')).join(', ')} · ×${num(work, 'rate').toFixed(1)}${pay}`);
+        const next = farm ? ` · next spell in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '';
+        el('span', 'label', r, `${str(work, 'name')} with ${others.map(m => str(m, 'name')).join(', ')} · ×${num(work, 'rate').toFixed(1)}${next}`);
             el('span', 'muted small', r, arr(work, 'members').filter(isObject).map(m => `${str(m, 'name')} ${str(m, 'role')}`).join(' · '));
             // Keep watch (doc 53, 4): out in the wild, one may watch over the others instead of working.
         if (str(work, 'kind') === 'forage') {
