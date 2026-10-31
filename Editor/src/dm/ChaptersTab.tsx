@@ -5,7 +5,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {surfaceFor} from '../lib/surface';
 import {Hint} from '../components/fields';
 import {useWorld} from './world';
-import {dmApi, type CampSite, type Chapter, type Chapters, type HouseRequest, type Me, type Target, type Treaty} from './api';
+import {isLive, worldName, dmApi, type CampSite, type Chapter, type Chapters, type HouseRequest, type Me, type Target, type Treaty} from './api';
 import {MapView, type Marker, type Overlay} from './MapView';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
@@ -57,7 +57,7 @@ export function ChaptersTab({me, target}: {me: Me; target: Target}) {
     }, [surface, data, selected]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const decide = async (what: 'treaty' | 'house', id: string, approve: boolean, faction = '', words = '') => {
-        if (target === 'prod' && !window.confirm(`${approve ? 'Approve' : 'Refuse'} ${words} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${approve ? 'Approve' : 'Refuse'} ${words} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.decide(target, what, id, approve, faction, reason.trim()); setReason(''); await load(); setProblem('Sent to the game server.'); }
         catch (error) { setProblem((error as Error).message); }
@@ -122,7 +122,7 @@ export function ChaptersTab({me, target}: {me: Me; target: Target}) {
                 {!canAct && <p className="hint">Your account can view but not decide.</p>}
             </div>}
             {chapter ? <ChapterPanel chapter={chapter} data={data!} /> : <div className="dm-panel">
-                <header><div><small>CHAPTERS</small><h2>{target === 'prod' ? 'PROD: the players’ world' : 'DEV: the rehearsal world'}</h2></div></header>
+                <header><div><small>CHAPTERS</small><h2>{isLive(target) ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>
                 <Hint>{data ? `${data.chapters.length} Chapters, ${data.sites.length} camps, ${data.treaties.filter(t => t.state === 'active').length} treaties in force.` : 'Loading…'}</Hint>
                 <Hint>Chapters are made and run by players in the game; this shows them as the game server last saved them (every few seconds).</Hint></div>}
             {data && data.actions.length > 0 && <ol className="dm-actions">{data.actions.slice(0, 8).map(a => <li key={a.id} className={a.status}>

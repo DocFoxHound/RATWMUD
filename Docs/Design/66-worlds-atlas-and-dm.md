@@ -165,3 +165,62 @@ them.
 5. The economy rules erased.
 
 Phases 1, 2 and 5 can be built side by side; 3 needs 1; 4 needs 1 and 3.
+
+## Progress
+
+### Phase 1: built (2026-10-30)
+
+- **The registry**, `Database/worlds.json`, as section 1 shows it. `tools/world_db.py` reads it (read again when the
+  file changes, so a running host sees a new world) and checks it: unique keys and databases, kind dev or live, an
+  upstream only on a dev world and only to a live one, keys lowercase and none of the words the tools take in their
+  place (`atlas`, `live`, `all`, `town`, `latest`, `export`, `demo`, `none`). `DATABASES` ({key: database}) is derived
+  from it and kept up to date in place. Helpers: `worlds()`, `world(key)`, `kind(key)`, `upstream(key)`, `keys([kind])`,
+  `atlas_world()`, `live_world()`, `local_choice()`, `resolve(name[, kind])` (`atlas` and `live` are the local
+  choices), `push_worlds()`, `register(entry)`, `set_local(...)`. `WORKING` is gone; the name still answers (Atlas's
+  world) for code on other branches.
+- **Local choices**, `Saved/Config/worlds.local.json` (`/Saved/` is ignored), `{"atlas": "ridgemere2", "live": "prod"}`
+  while it is missing. A choice naming a world that isn't registered, or of the wrong kind, is an error that says how
+  to choose again, never silently swapped for another world.
+- **Commands:** `list`, `use KEY` (dev worlds only), `serve-world KEY` (live worlds only; always prints the warning,
+  changes nothing without `--yes`), `new`, `resolve atlas|live|KEY [--kind] [--with-kind]` (for the launchers),
+  `migrate [--db KEY|all]` and `status` over every registered world, `conninfo`/`psql` with any key (or atlas, live),
+  `set-publish-password [--db KEY]` (default Push to live's live world). The publish password is seeded on every live
+  world (was: on prod).
+- **`new`** uses the superuser from `Database/.env` (as `ensure_roles` and `up` do; `ensure_roles` now grants the DM
+  every registered world). It creates `ratw_KEY` owned by ratw_owner, revokes PUBLIC and grants CONNECT, then applies
+  every migration (empty) or copies with `CREATE DATABASE ... TEMPLATE` (refused, naming who, while anyone else is
+  connected to the source); a failure drops the new database again. Differs: a **live** world grants CONNECT to
+  ratw_publisher, game and dm but not ratw_editor, as PROD has always been (doc 20: Atlas never reaches a live world);
+  a dev world grants all four.
+- **`--without-map`** is the Ridgemere 2.0 recipe in one transaction as ratw_owner, saving
+  `artifacts/<key>/old-map-placements.json` first. Differs from the hand recipe, as the schema needs: NPC areas
+  (`live.npc_areas`) on cells are what wander areas point at, so an NPC whose wander area was an NPC area on a cell has
+  it cleared and the spawn rules in those areas go with them (cascade); profession slots' home, work and evening on
+  cells are treated like NPCs'; the placements also keep the NPC areas, spawn rules, places and resources removed.
+  With migration 0052 (nullable areas) present the places are unset and no holding room is made.
+- **Launchers:** `live.sh server [KEY]` (default the live world) and `live.sh play [KEY]` (default Atlas's), building
+  dev-kind worlds first; `scratch.sh [KEY|town]` (default Atlas's; any registered world); `server.sh --database KEY`
+  resolves the key and makes `RATW_DATABASE_URL` itself when no launcher gave it; `mind.sh` gives the Mind any world's
+  history (was: only dev and prod); `play.sh` passes it on.
+- **Tools:** `world_build.py [KEY]` and `export --world KEY` (any dev world, default Atlas's; `latest` lists every
+  world), `world_store.py --world`, `apply_terrain.py --world`, `talk_seed.py --world` and `voice_tables.py --world`
+  (their `talk_check` runs read the same world they write; they read `dev` and wrote the working world before),
+  `chronicle.py KEY`, `perf_report.py --database KEY`, `npc_mind.py --database KEY`, `dm_service.py --database KEY`
+  (default Atlas's world, as it was the working world), `game_run.GameServer(database=KEY)` (makes the connection) and
+  `client_frame_smoke.py --database KEY`. `Tests/talk_check.cpp --world KEY|EXPORT_DIR`: a directory is an export,
+  anything else is resolved by `world_db.py resolve`.
+- **Atlas** (`map_editor.py serve [--world KEY]`, `live_edit.LiveWorld(key=...)`) edits Atlas's world (it edited DEV
+  until now); `/api/session` returns `world` ({key, name, kind, upstream}) and the top bar shows it under the world's
+  name; its big-world playtest plays that world. Push to live is offered only while Atlas is on Push to live's source
+  world (DEV); on another world the dialog says why.
+- **The DM**: `targets()` is every registered world, live ones first; requests without a target go to the live world
+  (the local choice); the accounts stay in PROD (`ACCOUNTS`). `GET /api/worlds` lists them, and the DM front-end's
+  world switcher, its confirmations ("... on Ridgemere (live)?") and its headings come from it instead of
+  'prod' | 'dev'.
+- **Push to live** (`publish.Publisher`) reads its two worlds from the registry (`push_worlds()`: Atlas's world if it
+  has an upstream, else the first dev world with one: DEV and PROD now); its logic is untouched.
+- **The game server** takes any non-empty database key (`Game::loadFromDatabase`); there was no prod-only behaviour to
+  key on kind.
+- Tests: `tools/test_world_db.py` (the registry, `use`, `serve-world`'s refusal, `list`, `push_worlds`, connection
+  settings, and `new` on throwaway databases: empty dev and live worlds, a copy, a copy without its map, a copy refused
+  while the source is in use), `test_map_editor.py` (the session's world), `test_dungeon_master.py` (targets).

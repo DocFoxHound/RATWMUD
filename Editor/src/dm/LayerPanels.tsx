@@ -3,7 +3,7 @@
 import type {Person, Project, Route} from '../model/model.mjs';
 import {placeLabel} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
-import type {AreaKind, NpcArea, SpawnRule, Target} from './api';
+import {isLive, worldName, type AreaKind, type NpcArea, type SpawnRule, type Target} from './api';
 
 export type Layer = 'npcs' | 'routes' | 'areas' | 'spawns';
 export const LAYERS: {id: Layer; label: string; icon: string}[] = [
@@ -34,7 +34,7 @@ interface Common { target: Target; canAct: boolean; busy: boolean; dirty: boolea
 function Buttons({target, canAct, busy, dirty, isNew, onSave, onRevert, onDelete, ready = true}: Common & {ready?: boolean}) {
     if (!canAct) return null;
     return <div className="button-grid">
-        <button className={target === 'prod' ? 'publish' : 'primary'} disabled={busy || !dirty || !ready} onClick={onSave}>{busy ? 'Saving…' : `Save to ${target.toUpperCase()}`}</button>
+        <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy || !dirty || !ready} onClick={onSave}>{busy ? 'Saving…' : `Save to ${worldName(target)}`}</button>
         <button disabled={busy || !dirty} onClick={onRevert}>{isNew ? 'Discard' : 'Revert'}</button>
         {!isNew && <button className="danger" disabled={busy} onClick={onDelete}>Delete</button>}
     </div>;

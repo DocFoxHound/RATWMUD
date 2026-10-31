@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Compile the world in a database into a build the game server loads.
 
-  python3 tools/world_build.py [WORLD]  build a world's current state (for a local server): ridgemere2 (the
-                                        working world, Ridgemere 2.0) or dev, unless the newest build was made
-                                        from exactly what it is now (--force: build anyway)
-  python3 tools/world_build.py latest   show the newest build in DEV and PROD
+  python3 tools/world_build.py [WORLD]  build a dev world's current state (for a local server): Atlas's world
+                                        (python3 tools/world_db.py list) unless WORLD names another, unless the
+                                        newest build was made from exactly what it is now (--force: build anyway)
+  python3 tools/world_build.py latest   show the newest build in every world
   python3 tools/world_build.py export DIR [--world WORLD]
-                                        write the working world's (or WORLD's) newest build to DIR as files (world_check and game_load read it)
+                                        write Atlas's world's (or WORLD's) newest build to DIR as files (world_check and game_load read it)
 
-PROD builds are made by Push to live (tools/publish.py), one per release.
+Live worlds' builds are made by Push to live (tools/publish.py), one per release.
 A build is what the game server loads, produced by the same exporter as
 Play/Export, so seams, door arrivals and profession-slot residents are resolved
 exactly once, in one place. It is streamed: world.builds holds the manifest
@@ -126,14 +126,17 @@ def export(conn, build_id, directory: Path) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('command', nargs='?', default=world_db.WORKING,
-                        choices=(*(d for d in world_db.DATABASES if d != 'prod'), 'latest', 'export'))
+    parser.add_argument('command', nargs='?', default='atlas',
+                        help="a dev world's key (default atlas: Atlas's world), latest or export")
     parser.add_argument('directory', nargs='?', type=Path, help='export: where to write the build')
     parser.add_argument('--force', action='store_true', help='build even if nothing has changed since the last build')
-    parser.add_argument('--world', default=world_db.WORKING, choices=tuple(d for d in world_db.DATABASES if d != 'prod'),
-                        help='export: the world to export')
+    parser.add_argument('--world', default='atlas', help="export: the dev world to export (default Atlas's)")
     args = parser.parse_args(argv)
     try:
+        if args.command == 'export':
+            args.world = world_db.resolve(args.world, 'dev')
+        elif args.command != 'latest':
+            args.command = world_db.resolve(args.command, 'dev')
         if args.command == 'export':
             if not args.directory:
                 parser.error('export needs a directory')
@@ -155,7 +158,7 @@ def main(argv=None) -> int:
                 build_id, count = build(conn, 'world_build.py')
             print(f'{name} build {build_id}: {count} cells.')
         else:
-            for database in world_db.DATABASES:
+            for database in world_db.keys():
                 with world_db.connect(database, 'publisher') as conn:
                     info = latest(conn)
                 print(f'{database.upper()}: ' + (f'build {info["id"]} of {info["world"]}, {info["files"]} files, '

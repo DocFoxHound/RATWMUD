@@ -12,6 +12,21 @@ from test_world_db import database_available, superuser
 from test_world_store import greyfen
 
 
+class TargetTests(unittest.TestCase):
+    """The worlds the DM works on come from the registry (doc 66): the live ones first, the live server's by default."""
+
+    def test_every_registered_world_live_ones_first(self):
+        self.assertEqual(D.targets(), W.keys('live') + W.keys('dev'))
+        self.assertEqual(D.targets()[:1], ['prod'])
+        self.assertIn('ridgemere2', D.targets())
+
+    def test_the_default_is_the_live_world_and_unknown_worlds_are_refused(self):
+        self.assertEqual(D.default_target(), W.live_world())
+        dm = D.DungeonMaster(connect=lambda target: self.fail('never connects to an unknown world'))
+        with self.assertRaisesRegex(D.DMError, 'Choose a world'):
+            dm.connect('atlantis')
+
+
 def save_with_player(conn, dead=False):
     town = next(c for c in greyfen()['cells'])
     payload = {'schema': 1, 'players': [{'id': 'player-ada', 'name': 'Ada', 'cell': town['id'], 'x': 10.5, 'y': 12.5, 'age': 21,

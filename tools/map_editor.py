@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Local-only Atlas editor host and validated, non-destructive world exporter.
 
-`serve` edits the one world and the character roster live in the DEV
-PostgreSQL database (tools/live_edit.py), shared with everyone else editing
-it. Exports and playtests never touch the game's save database.
+`serve` edits the one world and the character roster live in Atlas's world's
+PostgreSQL database (a dev world: python3 tools/world_db.py use KEY, or
+--world KEY; tools/live_edit.py), shared with everyone else editing it.
+Exports and playtests never touch the game's save database.
 """
 from __future__ import annotations
 
@@ -134,7 +135,7 @@ def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]
     if errors:
         raise ValidationError(errors)
     if for_game:
-        require(len(p['cells']) + len(p['rooms']) <= 256, '▶ Play and file exports load at most 256 cells and interiors; Push to live and DEV servers (tools/live.sh) stream any number.')
+        require(len(p['cells']) + len(p['rooms']) <= 256, '▶ Play and file exports load at most 256 cells and interiors; Push to live and database servers (tools/live.sh) stream any number.')
     require(len(p['cells']) + len(p['rooms']) <= 65536, 'At most 65536 cells and interiors are supported.')
     require(len(p['links']) <= 2048, 'At most 2048 explicit links are supported.')
 
@@ -261,7 +262,7 @@ def check_project(value: object, for_game: bool = True) -> tuple[dict, list[str]
                 c['x'], c['y'] = int(c['x']), int(c['y'])
     if for_game:
         require(total_tiles <= MAX_TILES, f'Cells plus interiors cover {total_tiles} tiles; ▶ Play and file exports load at most '
-                f'{MAX_TILES}. Push to live and DEV servers (tools/live.sh) stream any number.')
+                f'{MAX_TILES}. Push to live and database servers (tools/live.sh) stream any number.')
     if errors:
         raise ValidationError(errors[:100])
 
@@ -931,7 +932,7 @@ PLAYTEST_IDLE = 300
 
 def wait_until_listening(process, log: Path, seconds: float = 240.0):
     """Waits for the launched server to say it is listening, so a server that is refused or fails is reported, not
-    announced as started. Still building after `seconds` (DEV's world can take a while): left to carry on."""
+    announced as started. Still building after `seconds` (a big world can take a while): left to carry on."""
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         text = log.read_text(errors='replace') if log.exists() else ''
@@ -958,11 +959,11 @@ def launch_game(manifest: Path, save: Path, quick: bool, log: Path):
     return command
 
 
-def launch_live(quick: bool, log: Path):
-    """Plays DEV's world as the DEV server would: builds it, then streams it from the database (no size limit). As a
-    scratch server (Docs/Design/20-world-database.md): it reads DEV's world and save but writes nothing back, so it runs
-    beside the real DEV server, and the playtest never touches the game's save database."""
-    command = ['bash', str(ROOT / 'tools' / 'live.sh'), 'play', 'dev', '--scratch', '--idle-exit', str(PLAYTEST_IDLE)]
+def launch_live(quick: bool, log: Path, key: str = 'atlas'):
+    """Plays Atlas's world (or the dev world `key`) as its local server would: builds it, then streams it from the
+    database (no size limit). As a scratch server (Docs/Design/20-world-database.md): it reads the world and its save
+    but writes nothing back, so it runs beside the real server, and the playtest never touches the game's save."""
+    command = ['bash', str(ROOT / 'tools' / 'live.sh'), 'play', key, '--scratch', '--idle-exit', str(PLAYTEST_IDLE)]
     if quick:
         command += ['--identity', 'tester', '--name', 'Tester']
     with open(log, 'wb') as out:
@@ -984,22 +985,29 @@ def tile_count(project) -> int:
 
 
 def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_path=None, world=None, publisher=None,
-                live_launcher=launch_live):
+                live_launcher=launch_live, push_unavailable=None):
     """`world` is the live world (live_edit.LiveWorld) and `publisher` Push to live (publish.Publisher);
-    without them only the roster file and exports work."""
+    without them only the roster file and exports work. `push_unavailable` says why there is no publisher."""
     token = secrets.token_urlsafe(24)
+    atlas_world = None
+    if world is not None and getattr(world, 'key', None):
+        import world_db
+        try:
+            atlas_world = {k: v for k, v in world_db.world(world.key).items() if k != 'database'}
+        except world_db.DatabaseError:
+            atlas_world = {'key': world.key, 'name': world.key, 'kind': 'dev'}
     rosters = world.roster if world else RosterFile(roster_path)
 
     def live():
         if world is None:
-            error = HostError('Live editing needs the DEV database; start the editor with tools/editor.sh.')
+            error = HostError("Live editing needs Atlas's world's database; start the editor with tools/editor.sh.")
             error.status = 503
             raise error
         return world
 
     def publishing():
         if publisher is None:
-            error = HostError('Push to live needs the DEV and PROD databases; start the editor with tools/editor.sh.')
+            error = HostError(push_unavailable or 'Push to live needs the DEV and PROD databases; start the editor with tools/editor.sh.')
             error.status = 503
             raise error
         return publisher
@@ -1073,7 +1081,8 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
             path = urlsplit(self.path).path
             query = parse_qs(urlsplit(self.path).query)
             if path == '/api/session':
-                return self.reply(200, {'token': token})
+                # Which world Atlas is on (doc 66: the UI shows it), from the registry.
+                return self.reply(200, {'token': token, 'world': atlas_world})
             if path == '/api/demo':
                 return self.reply(200, demo_project())
             try:
@@ -1110,11 +1119,11 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                 if world is not None and path == '/api/playtest' and isinstance(data, dict) and lacks_ground(data.get('project')):
                     data['project'] = live().fill(data['project'])
                 if path == '/api/validate':
-                    # A world edited live in DEV is streamed, so its size is a note, not an error.
+                    # A world edited live in the database is streamed, so its size is a note, not an error.
                     _, warnings = check_project(data, for_game=world is None)
                     if world is not None and tile_count(data) > MAX_TILES:
                         warnings.append(f'Cells plus interiors cover {tile_count(data)} tiles, more than a ▶ Play '
-                                        f'export holds ({MAX_TILES}); ▶ Play runs it from the DEV database instead.')
+                                        f'export holds ({MAX_TILES}); ▶ Play runs it from the {getattr(world, "key", "DEV")} database instead.')
                     return self.reply(200, {'valid': True, 'errors': [], 'warnings': warnings})
                 if path == '/api/export':
                     with lock:
@@ -1173,11 +1182,11 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
                     name = world_id(data['project']) + '-' + stamp
                     folder = PLAYTESTS / name
                     if world is not None and tile_count(data['project']) > MAX_TILES:
-                        # Too big for a single-file playtest: the world being edited is DEV's, so play DEV's build.
+                        # Too big for a single-file playtest: the world being edited is Atlas's world, so play its build.
                         folder.mkdir(parents=True, exist_ok=True)
-                        command = live_launcher(bool(data.get('quickStart', True)), folder / 'game.log')
+                        command = live_launcher(bool(data.get('quickStart', True)), folder / 'game.log', getattr(world, 'key', 'atlas'))
                         shown = folder.relative_to(ROOT) if ROOT in folder.parents else folder
-                        return self.reply(200, {'folder': str(shown), 'manifest': 'DEV database (streamed build)',
+                        return self.reply(200, {'folder': str(shown), 'manifest': f'{getattr(world, "key", "DEV")} database (streamed build)',
                                                 'command': ' '.join(shlex.quote(c) for c in command)})
                     with lock:
                         manifest = write_export(data['project'], folder, rosters)
@@ -1212,6 +1221,7 @@ def main():
     parser.add_argument('project', nargs='?', type=Path)
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--world', help="serve: the dev world to edit (default Atlas's: python3 tools/world_db.py use KEY)")
     args = parser.parse_args()
     if args.command == 'serve':
         # live_edit imports this module by name; run as a script it is __main__, and a second
@@ -1219,9 +1229,19 @@ def main():
         sys.modules.setdefault('map_editor', sys.modules[__name__])
         import live_edit
         import publish
-        server = make_server(args.port, world=live_edit.LiveWorld(), publisher=publish.Publisher())
+        import world_db
+        try:
+            key = world_db.resolve(args.world or 'atlas', 'dev')
+            source, target = world_db.push_worlds()
+        except world_db.DatabaseError as error:
+            parser.error(str(error))
+        # Push to live (until doc 66 Phase 4) is from the dev world with an upstream: offered only when Atlas is on it.
+        publisher, why = (publish.Publisher(worlds=(source, target)), None) if source == key else (
+            None, f'Push to live is from {source} to {target}; Atlas is on {key} ({world_db.world(key)["name"]}).')
+        server = make_server(args.port, world=live_edit.LiveWorld(key=key), publisher=publisher, push_unavailable=why)
         print(f'RATW Atlas editor: http://127.0.0.1:{server.server_port}\n'
-              'Editing the world live in the DEV database. Local-only. Ctrl+C to stop.', flush=True)
+              f'Editing the world live in {key} ("{world_db.world(key)["name"]}", {world_db.world(key)["database"]}). '
+              'Local-only. Ctrl+C to stop.', flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

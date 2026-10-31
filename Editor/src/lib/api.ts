@@ -6,8 +6,12 @@ import * as M from '../model/model.mjs';
 import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 
-let token: Promise<string> | null = null;
-const session = () => (token ??= fetch('api/session').then(r => r.json()).then(j => j.token as string));
+/** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
+export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
+let info: Promise<{token: string; world?: AtlasWorld | null}> | null = null;
+const sessionInfo = () => (info ??= fetch('api/session').then(r => r.json()));
+const session = () => sessionInfo().then(j => j.token);
+export const atlasWorld = () => sessionInfo().then(j => j.world ?? null);
 
 async function post(path: string, body: unknown): Promise<Response> {
     return fetch(path, {

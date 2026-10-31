@@ -506,17 +506,18 @@ def sync(conn, client_id, editor, color, since, state, world=None):
 
 
 class LiveWorld:
-    """The editor host's backend: the one world in DEV, edited live."""
+    """The editor host's backend: the one world in a dev world's database (Atlas's, tools/world_db.py), edited live."""
 
-    def __init__(self, connect=None):
-        self._connect = connect or world_db.pooled('dev', 'editor')   # The host asks several times a second.
+    def __init__(self, connect=None, key=None):
+        self.key = key or ('dev' if connect else world_db.atlas_world())
+        self._connect = connect or world_db.pooled(self.key, 'editor')   # The host asks several times a second.
         self.roster = S.DbRoster(self.connect)
 
     def connect(self):
         try:
             return self._connect()
         except world_db.DatabaseError as error:
-            raise S.Unavailable(f'The DEV database is not reachable. Start it with `python3 tools/world_db.py up`. ({error})') from error
+            raise S.Unavailable(f'The {self.key} database is not reachable. Start it with `python3 tools/world_db.py up`. ({error})') from error
 
     def load(self, lean=False):
         with self.connect() as conn:

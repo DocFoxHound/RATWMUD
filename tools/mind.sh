@@ -5,7 +5,7 @@
 #
 # The key and model come from Saved/Config/RATWNPCAI.local.json (gitignored, owner-only), or RATW_AI_CONFIG.
 # RATW_AI=off plays with the authored lines only; RATW_AI=fixture uses the Mind's offline replies (no cost).
-# A server started with --database dev|prod gives the Mind that database's event log for NPCs' history.
+# A server started with --database KEY (any registered world) gives the Mind that world's event log for NPCs' history.
 # RATW_MIND_PORT picks the port (default 18766). The Mind's log: Saved/Logs/npc-mind.log (no dialogue in it).
 ratw_mind_args=()
 ratw_mind_pid=""
@@ -21,7 +21,7 @@ ratw_start_mind() {
   local mode="${RATW_AI:-on}" port="${RATW_MIND_PORT:-18766}" database="" arg previous=""
   [[ "$mode" == off ]] && { echo "RATW: NPC conversation uses authored lines (RATW_AI=off)." >&2; return 0; }
   for arg in "$@"; do
-    [[ "$previous" == --database && ( "$arg" == dev || "$arg" == prod ) ]] && database="$arg"
+    [[ "$previous" == --database && -n "$arg" ]] && database="$arg"
     previous="$arg"
   done
   local endpoint="http://127.0.0.1:$port/dialogue"

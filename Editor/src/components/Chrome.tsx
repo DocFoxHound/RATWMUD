@@ -9,6 +9,7 @@ import {useGlyphRender} from '../lib/glyphFont';
 import {formatHeight, tileHeight} from '../lib/elevation';
 import {getState, isRosterDirty, openView, selectThing, setState, setWorkspace, TOOL_SPACE, useStore, useTool, type MapSpace, type Tool, type Workspace} from '../lib/store';
 import {placeLabel, surfaceFor} from '../lib/surface';
+import {atlasWorld, type AtlasWorld} from '../lib/api';
 
 // --------------------------------------------------------------------------- Menu bar
 
@@ -55,6 +56,8 @@ export function TopBar() {
     const name = useStore(s => s.project.name);
     const problems = useStore(s => s.project);
     const checks = useMemo(() => M.validate(problems), [problems]);
+    const [world, setWorld] = useState<AtlasWorld | null>(null);
+    useEffect(() => { void atlasWorld().then(setWorld).catch(() => setWorld(null)); }, []);
     return (
         <header className="topbar">
             <div className="brand"><span className="mark">W<i>›</i></span><div><b>ATLAS WORKSHOP</b><small>Runs Against the World</small></div></div>
@@ -62,6 +65,8 @@ export function TopBar() {
             <WorkspaceTabs />
             <div className="doc-title">
                 <strong>{name}</strong>
+                {world && <small className="atlas-world" title={`Atlas's world: ${world.key} (python3 tools/world_db.py use KEY to switch)`}>
+                    {world.name} · {world.key}</small>}
                 <LiveStatusLine />
             </div>
             <div className="top-actions">

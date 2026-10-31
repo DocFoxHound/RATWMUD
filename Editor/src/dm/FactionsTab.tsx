@@ -6,7 +6,7 @@ import type {Place} from '../model/model.mjs';
 import {surfaceFor} from '../lib/surface';
 import {Row, SelectField, Slider, TextField, Hint} from '../components/fields';
 import {useWorld} from './world';
-import {dmApi, type Action, type Claim, type Faction, type FactionKind, type Factions, type Me, type RelationChange, type Stance, type Target} from './api';
+import {isLive, worldName, dmApi, type Action, type Claim, type Faction, type FactionKind, type Factions, type Me, type RelationChange, type Stance, type Target} from './api';
 import {MapView, type Overlay} from './MapView';
 import {idFrom, type Brush} from './LayerPanels';
 
@@ -86,8 +86,8 @@ export function FactionsTab({me, target}: {me: Me; target: Target}) {
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
-    const live = target === 'prod';
-    const sure = (what: string) => !live || window.confirm(`${what} on PROD?`);
+    const live = isLive(target);
+    const sure = (what: string) => !live || window.confirm(`${what} on ${worldName(target)}?`);
     const choose = (id: string) => { if (painting && !window.confirm('Discard the unsaved painting?')) return; setPainting(null); setIsNew(false); setSelected(id); setPair(null); };
     const newFaction = () => {
         if (dirty && !window.confirm('Discard the unsaved changes?')) return;
@@ -100,7 +100,7 @@ export function FactionsTab({me, target}: {me: Me; target: Target}) {
         const faction = isNew ? {...draft, id: idFrom(draft.name, data?.factions.map(f => f.id) ?? [], 'faction')} : draft;
         return finish(async () => { await dmApi.saveFaction(target, faction); setSelected(faction.id); }, `Saved ${faction.name}.`);
     };
-    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ' from PROD' : ''}? Its claims, members and relations go with it.`) &&
+    const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ` from ${worldName(target)}` : ''}? Its claims, members and relations go with it.`) &&
         finish(() => dmApi.deleteFaction(target, draft.id).then(() => setSelected(null)), `Deleted ${draft.name}.`);
     const claimWhole = () => selected && place && sure(`${nameOf(selected)} claims all of ${place.name}`) &&
         finish(() => dmApi.claim(target, selected, place.id, []), `${nameOf(selected)} claims all of ${place.name}.`);
@@ -187,7 +187,7 @@ export function FactionsTab({me, target}: {me: Me; target: Target}) {
                     <TextField label="Description" multiline value={draft.description} max={4000} onCommit={v => setDraft({...draft, description: v})} />
                 </fieldset>
                 {canAct && <div className="button-grid">
-                    <button className={live ? 'publish' : 'primary'} disabled={busy || !dirty} onClick={save}>{busy ? 'Saving…' : `Save to ${target.toUpperCase()}`}</button>
+                    <button className={live ? 'publish' : 'primary'} disabled={busy || !dirty} onClick={save}>{busy ? 'Saving…' : `Save to ${worldName(target)}`}</button>
                     <button disabled={busy || !dirty} onClick={() => { if (isNew) { setIsNew(false); setDraft(null); } else setDraft(saved ? {...saved} : null); }}>{isNew ? 'Discard' : 'Revert'}</button>
                     {!isNew && <button className="danger" disabled={busy} onClick={remove}>Delete</button>}</div>}
                 {!isNew && data && world && <>
@@ -214,7 +214,7 @@ export function FactionsTab({me, target}: {me: Me; target: Target}) {
                 </>}
                 <ActionList actions={actions} target={target} />
             </div>
-            : <div className="dm-panel"><header><div><small>FACTIONS</small><h2>{live ? 'PROD: the players’ world' : 'DEV: the rehearsal world'}</h2></div></header>
+            : <div className="dm-panel"><header><div><small>FACTIONS</small><h2>{live ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>
                 <Hint>{data ? `${data.factions.length} factions claiming ${new Set(data.claims.map(c => c.area)).size} places; ${data.relations.length} relations set.` : 'Loading…'}</Hint>
                 <Hint>Select a faction, or make one. Factions and their claims reach a running game server at once, and Atlas shows them; members and relations are kept for the Dungeon Master and stories.</Hint></div>}
         </aside>
@@ -284,8 +284,8 @@ function RelationEditor({data, pair, target, canAct, busy, onSave, onClose}: {da
                 placeholder="Why they feel this way (kept in the history)" /></label>
             <label className="toggle-row"><input type="checkbox" checked={both} onChange={e => setBoth(e.target.checked)} /> Also set how {name(b)} regards {name(a)}</label>
         </fieldset>
-        {canAct && <div className="button-grid"><button className={target === 'prod' ? 'publish' : 'primary'} disabled={busy || (!changed && !both)}
-            onClick={() => (target !== 'prod' || window.confirm('Save this relation on PROD?')) && onSave(both, disposition, stance, reason.trim())}>Save to {target.toUpperCase()}</button></div>}
+        {canAct && <div className="button-grid"><button className={isLive(target) ? 'publish' : 'primary'} disabled={busy || (!changed && !both)}
+            onClick={() => (!isLive(target) || window.confirm(`Save this relation on ${worldName(target)}?`)) && onSave(both, disposition, stance, reason.trim())}>Save to {worldName(target)}</button></div>}
         {history.length > 0 && <div className="field"><span>History</span><ol className="dm-actions">{history.map((h, i) => <li key={i}>
             <b><StanceChip stance={h.stance as Stance} disposition={h.disposition} /></b> by {h.by} · {new Date(h.at).toLocaleString()}
             {h.reason && <span>{h.reason}</span>}</li>)}</ol></div>}

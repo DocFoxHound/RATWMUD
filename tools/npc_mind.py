@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The NPC Mind: the game server's conversation service (Docs/Design/26-living-npcs.md, Phase 3).
 
-  python3 tools/npc_mind.py --config RATWNPCAI.local.json [--database dev] [--port 18766]
+  python3 tools/npc_mind.py --config RATWNPCAI.local.json [--database KEY] [--port 18766]
   python3 tools/npc_mind.py --fixture                       offline replies, for tests and rehearsal
 
 The game server posts what an NPC perceived (-RatwDialogueEndpoint=http://127.0.0.1:18766/dialogue) and never waits
@@ -869,7 +869,7 @@ def main() -> int:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--config", type=Path, help="Existing server-side RATW NPC config (see npc_bridge.py)")
     source.add_argument("--fixture", action="store_true", help="Offline replies (no provider, no cost)")
-    parser.add_argument("--database", choices=("dev", "prod", "ridgemere2"), help="Read the pair's history from this event log")
+    parser.add_argument("--database", help="Read the pair's history from this world's event log (a world key, atlas or live)")
     parser.add_argument("--port", type=int, default=18766)
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--per-hour", type=int, default=600, help="Replies an hour, overall")
@@ -889,6 +889,10 @@ def main() -> int:
         history = None
         if args.database:
             import world_db
+            try:
+                args.database = world_db.resolve(args.database)
+            except world_db.DatabaseError as error:
+                parser.error(str(error))
             history = History(world_db.pooled(args.database, "game"))
         audit = None
         if args.ledger:

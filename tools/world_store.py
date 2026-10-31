@@ -5,9 +5,10 @@ Converts between the editor's project JSON and database rows. Saving compares
 with what is stored and writes only the rows that changed, in one transaction,
 and refuses if someone else saved the world since it was opened.
 
-  python3 tools/world_store.py import             import Data/Characters and Data/Worlds into DEV
+  python3 tools/world_store.py import             import Data/Characters and Data/Worlds into Atlas's world
   python3 tools/world_store.py import --replace   ...replacing worlds already there
-  python3 tools/world_store.py list               worlds in DEV
+  python3 tools/world_store.py list               the world in Atlas's world's database
+  (--world KEY: another dev world; python3 tools/world_db.py list)
 """
 from __future__ import annotations
 
@@ -638,9 +639,10 @@ def save_roster(conn, roster: dict) -> dict:
 
 
 class DbRoster:
-    """The shared roster in DEV, with the same load/save interface as a roster file."""
+    """The shared roster in a dev world (Atlas's unless told otherwise), with the same load/save interface as a
+    roster file."""
 
-    def __init__(self, connect=lambda: world_db.connect(world_db.WORKING, 'editor')):
+    def __init__(self, connect=lambda: world_db.connect(world_db.atlas_world(), 'editor')):
         self.connect = connect
 
     def load(self) -> dict:
@@ -684,9 +686,10 @@ def main(argv=None) -> int:
     i = sub.add_parser('import', help='import the roster and bundled worlds into DEV')
     i.add_argument('--replace', action='store_true', help='overwrite worlds already in the database')
     sub.add_parser('list', help='list worlds in DEV')
+    parser.add_argument('--world', default='atlas', help="the dev world (default Atlas's)")
     args = parser.parse_args(argv)
     try:
-        with world_db.connect(world_db.WORKING, 'editor') as conn:
+        with world_db.connect(world_db.resolve(args.world, 'dev'), 'editor') as conn:
             if args.command == 'import':
                 import_files(conn, args.replace)
             else:

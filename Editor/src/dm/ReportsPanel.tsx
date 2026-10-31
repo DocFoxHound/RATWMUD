@@ -3,7 +3,7 @@
 // how many accounts block it (a count, never who); upheld with a note, a warning or a silence, or dismissed. The game
 // server applies the decision and tells the player.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Me, type PlayerReport, type Reports, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type PlayerReport, type Reports, type Target} from './api';
 
 const Categories: Record<string, string> = {harassment: 'Harassment', hateful: 'Hateful content', spam: 'Spam', cheating: 'Cheating', other: 'Other'};
 
@@ -19,7 +19,7 @@ export function ReportsPanel({me, target}: {me: Me; target: Target}) {
     const decide = async (r: PlayerReport, decision: 'uphold' | 'dismiss') => {
         const c = pick(r.id);
         const words = decision === 'dismiss' ? 'Dismiss' : `Uphold (${c.outcome}${c.outcome === 'silence' ? `, ${c.hours} h` : ''})`;
-        if (target === 'prod' && !window.confirm(`${words} the report against ${r.reportedName} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${words} the report against ${r.reportedName} on ${worldName(target)}?`)) return;
         setBusy(r.id); setProblem('');
         try { await dmApi.decideReport(target, r.id, decision, c.outcome, c.hours, c.reason); await load(); }
         catch (error) { setProblem((error as Error).message); }

@@ -1,24 +1,35 @@
 #!/usr/bin/env bash
-# Runs the game on the one world in the database.
+# Runs the game on a world in the database (the worlds: python3 tools/world_db.py list; Docs/Design/66-worlds-atlas-and-dm.md).
 #
-#   bash tools/live.sh server prod   the server on PROD (what players join, at http://HOST:7788/)
-#   bash tools/live.sh server dev    the server on DEV, after building DEV's current world
-#   bash tools/live.sh play dev      DEV on this machine, opened in the browser
+#   bash tools/live.sh server [KEY]   the server on a world (default the live world: what players join, at http://HOST:7788/)
+#   bash tools/live.sh play [KEY]     a world on this machine, opened in the browser (default Atlas's world)
 #
-# Extra arguments go to the server (e.g. --port 7790). DEV's build is brought up to date
-# first (skipped when nothing changed since the last one; RATW_NO_BUILD=1 skips the
-# check too). A server restarts itself when Push to live publishes a new release (it
-# exits with status 75 once nobody is connected); any other exit ends it.
+# KEY is a registered world (or atlas, live: the local choices). A dev world's build is brought up to date first
+# (skipped when nothing changed since the last one; RATW_NO_BUILD=1 skips the check too); a live world's builds come
+# from Push to live. Extra arguments go to the server (e.g. --port 7790). A server restarts itself when Push to live
+# publishes a new release (it exits with status 75 once nobody is connected); any other exit ends it.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-mode="${1:-}"; database="${2:-}"
-if [[ "$mode" != server && "$mode" != play ]] || [[ "$database" != prod && "$database" != dev ]]; then
-  sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
+usage() { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; }
+mode="${1:-}"
+if [[ "$mode" != server && "$mode" != play ]]; then
+  usage
   exit 2
 fi
-shift 2
-if [[ "$database" == dev && "${RATW_NO_BUILD:-0}" != 1 ]]; then
-  python3 "$ratw_root/tools/world_build.py" dev
+shift
+choice=""
+if [[ $# -gt 0 && "$1" != -* ]]; then
+  choice="$1"
+  shift
+fi
+[[ -z "$choice" ]] && { [[ "$mode" == server ]] && choice=live || choice=atlas; }
+if ! resolved="$(python3 "$ratw_root/tools/world_db.py" resolve "$choice" --with-kind)"; then
+  usage
+  exit 2
+fi
+database="${resolved% *}"; kind="${resolved#* }"
+if [[ "$kind" == dev && "${RATW_NO_BUILD:-0}" != 1 ]]; then
+  python3 "$ratw_root/tools/world_build.py" "$database"
 fi
 RATW_DATABASE_URL="$(python3 "$ratw_root/tools/world_db.py" conninfo "$database" --role game)"
 export RATW_DATABASE_URL

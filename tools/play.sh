@@ -2,7 +2,7 @@
 # Plays on this machine: starts a game server (tools/server.sh) on a free port and opens it in the browser. Stops the
 # server when this script stops (Ctrl+C).
 #
-#   bash tools/play.sh                          the demo world (--town, --world MANIFEST, --database dev: as server.sh)
+#   bash tools/play.sh                          the demo world (--town, --world MANIFEST, --database KEY: as server.sh)
 #   bash tools/play.sh --identity tester        signs straight in as a development identity (implies --dev-identity)
 #
 # Other options go to server.sh.

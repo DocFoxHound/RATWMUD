@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""World database: migrations, schema rules, role permissions and the publish password.
+"""World database: the world registry, new worlds, migrations, schema rules, role permissions and the publish password.
 
 Database tests run against the local PostgreSQL (`python3 tools/world_db.py up`)
 in a scratch database that is dropped afterwards; they are skipped when it is
 not running. DEV and PROD are never touched, except to check who may connect.
 """
+import json
 import os
 from pathlib import Path
 import secrets
@@ -444,6 +445,265 @@ class DatabaseTests(unittest.TestCase):
     def test_editor_cannot_reach_prod(self):
         with self.assertRaisesRegex(W.DatabaseError, 'ratw_prod'):
             W.connect('prod', 'editor').close()
+
+
+class ScratchRegistry:
+    """A copy of Database/worlds.json and an empty local choice in a temporary folder, for one test."""
+
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.registry = Path(self.folder.name) / 'worlds.json'
+        self.registry.write_text(W.WORLDS_FILE.read_text(encoding='utf-8'), encoding='utf-8')
+        self.local = Path(self.folder.name) / 'Saved' / 'worlds.local.json'
+        self.saved_env = dict(os.environ)
+        os.environ.update({'RATW_WORLDS_FILE': str(self.registry), 'RATW_WORLDS_LOCAL': str(self.local)})
+
+    def tearDown(self):
+        os.environ.clear()
+        os.environ.update(self.saved_env)
+        self.folder.cleanup()
+        W.worlds()                                   # (Back to the real registry for the next test.)
+
+    def run_quietly(self, *argv):
+        import contextlib
+        import io
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            status = W.main(list(argv))
+        return status, out.getvalue(), err.getvalue()
+
+
+class RegistryTests(ScratchRegistry, unittest.TestCase):
+    def test_the_registry_lists_the_three_worlds(self):
+        self.assertEqual(W.keys(), ['prod', 'dev', 'ridgemere2'])
+        self.assertEqual(W.keys('live'), ['prod'])
+        self.assertEqual((W.kind('dev'), W.upstream('dev'), W.upstream('ridgemere2')), ('dev', 'prod', None))
+        self.assertEqual(W.world('ridgemere2')['name'], 'Ridgemere 2.0')
+        self.assertEqual(W.DATABASES, {'prod': 'ratw_prod', 'dev': 'ratw_dev', 'ridgemere2': 'ratw_ridgemere2'})
+        with self.assertRaisesRegex(W.DatabaseError, 'Unknown world'):
+            W.world('atlantis')
+
+    def test_without_a_local_choice_atlas_is_ridgemere2_and_live_is_prod(self):
+        self.assertFalse(self.local.exists())
+        self.assertEqual((W.atlas_world(), W.live_world()), ('ridgemere2', 'prod'))
+        self.assertEqual(W.WORKING, 'ridgemere2', 'the old name still answers')
+        self.assertEqual((W.resolve('atlas'), W.resolve('live'), W.resolve('dev')), ('ridgemere2', 'prod', 'dev'))
+        with self.assertRaisesRegex(W.DatabaseError, 'dev world'):
+            W.resolve('prod', 'dev')
+
+    def test_use_chooses_atlass_world_among_dev_worlds_only(self):
+        self.assertEqual(self.run_quietly('use', 'dev')[0], 0)
+        self.assertEqual(json.loads(self.local.read_text()), {'atlas': 'dev', 'live': 'prod'})
+        self.assertEqual(W.atlas_world(), 'dev')
+        status, _, err = self.run_quietly('use', 'prod')
+        self.assertEqual(status, 1)
+        self.assertIn('dev world', err)
+        self.assertEqual(W.atlas_world(), 'dev', 'refused: nothing changed')
+        self.assertEqual(self.run_quietly('use', 'nowhere')[0], 1)
+
+    def test_serve_world_needs_yes_and_a_live_world(self):
+        status, _, err = self.run_quietly('serve-world', 'prod')
+        self.assertEqual(status, 1)
+        self.assertIn('rarely wise', err)
+        self.assertFalse(self.local.exists(), 'without --yes nothing is written')
+        self.assertEqual(self.run_quietly('serve-world', 'dev', '--yes')[0], 1, 'a dev world is never the live one')
+        W.register({'key': 'second', 'name': 'Second', 'database': 'ratw_second_test', 'kind': 'live'})
+        status, out, err = self.run_quietly('serve-world', 'second', '--yes')
+        self.assertEqual(status, 0, err)
+        self.assertIn('rarely wise', err, 'the warning is given even when it goes ahead')
+        self.assertEqual(W.live_world(), 'second')
+        self.assertEqual(W.atlas_world(), 'ridgemere2', 'the other choice is kept')
+
+    def test_a_chosen_world_that_is_gone_is_reported_not_swapped(self):
+        self.local.parent.mkdir(parents=True)
+        self.local.write_text('{"atlas": "vanished"}')
+        with self.assertRaisesRegex(W.DatabaseError, 'vanished.*world_db.py use'):
+            W.atlas_world()
+        self.assertEqual(W.live_world(), 'prod')
+
+    def test_registering_a_world_rewrites_the_file_and_the_map(self):
+        W.register({'key': 'side', 'name': 'Side project', 'database': 'ratw_side', 'kind': 'dev'})
+        self.assertIn('side', W.DATABASES)
+        lines = self.registry.read_text().splitlines()
+        self.assertEqual(lines[0], '{"worlds": [')
+        self.assertEqual(len(lines), 6, 'one world a line')
+        self.assertEqual(W.world('side')['database'], 'ratw_side')
+        status, out, _ = self.run_quietly('list')
+        self.assertEqual(status, 0)
+        self.assertIn('Side project', out)
+        self.assertIn('[atlas]', out)
+
+    def test_the_registry_is_checked(self):
+        good = W.worlds()
+        bad = [
+            good + [dict(good[0])],                                                          # A key twice.
+            good + [{'key': 'x', 'name': 'X', 'database': 'ratw_prod', 'kind': 'dev'}],      # A database twice.
+            good + [{'key': 'x', 'name': 'X', 'database': 'ratw_x', 'kind': 'staging'}],
+            good + [{'key': 'x', 'name': 'X', 'database': 'ratw_x', 'kind': 'dev', 'upstream': 'dev'}],   # Not a live one.
+            good + [{'key': 'x', 'name': 'X', 'database': 'ratw_x', 'kind': 'live', 'upstream': 'prod'}],
+            good + [{'key': 'atlas', 'name': 'X', 'database': 'ratw_x', 'kind': 'dev'}],     # Reserved.
+            good + [{'key': 'Big World', 'name': 'X', 'database': 'ratw_x', 'kind': 'dev'}],
+            [],
+        ]
+        for entries in bad:
+            with self.assertRaises(W.DatabaseError, msg=entries[-1:] if entries else 'empty'):
+                W.check_registry(entries)
+
+    def test_push_to_live_is_from_the_dev_world_with_an_upstream(self):
+        self.assertEqual(W.push_worlds(), ('dev', 'prod'))
+        W.register({'key': 'copy', 'name': 'Copy', 'database': 'ratw_copy_test', 'kind': 'dev', 'upstream': 'prod'})
+        self.assertEqual(W.push_worlds(), ('dev', 'prod'), 'the first, while Atlas is on a side project')
+        W.set_local(atlas='copy')
+        self.assertEqual(W.push_worlds(), ('copy', 'prod'), "Atlas's own, when it has an upstream")
+
+    def test_connection_settings_follow_the_registry(self):
+        os.environ['RATW_GAME_PASSWORD'] = 'x'
+        self.assertEqual(W.conninfo('ridgemere2', 'game')['dbname'], 'ratw_ridgemere2')
+        self.assertIn("dbname='ratw_dev'", W.libpq_conninfo('dev', 'game'))
+        self.assertEqual(self.run_quietly('conninfo', 'atlas')[0], 0)
+        self.assertIn("dbname='ratw_ridgemere2'", self.run_quietly('conninfo', 'atlas')[1])
+        with self.assertRaisesRegex(W.DatabaseError, 'Unknown world'):
+            W.conninfo('nowhere', 'game')
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class NewWorldTests(ScratchRegistry, unittest.TestCase):
+    """`new`, against throwaway databases (ratw_t...), dropped afterwards. DEV and PROD are never touched."""
+
+    def setUp(self):
+        super().setUp()
+        self.tag = secrets.token_hex(3)
+        self.made = []
+
+    def tearDown(self):
+        with superuser() as su:
+            for database in self.made:
+                su.execute(f'DROP DATABASE IF EXISTS {database} WITH (FORCE)')
+        super().tearDown()
+
+    def new(self, key, *args, **kwargs):
+        self.made.append(f'ratw_{key}')
+        return W.new_world(key, *args, log=lambda *_: None, **kwargs)
+
+    def owner(self, key):
+        return W.connect(key, 'owner')
+
+    def can_connect(self, key, role):
+        try:
+            W.connect(key, role).close()
+            return True
+        except W.DatabaseError:
+            return False
+
+    def test_an_empty_world_has_every_migration_and_is_registered(self):
+        key = f't{self.tag}_empty'
+        entry = self.new(key, 'Empty', 'dev')
+        self.assertEqual(entry['database'], f'ratw_{key}')
+        self.assertEqual(W.world(key)['kind'], 'dev')
+        self.assertIn(key, json.loads(self.registry.read_text())['worlds'][-1]['key'])
+        with self.owner(key) as conn:
+            self.assertEqual(set(W.applied_migrations(conn)), {v for v, _, _ in W.migration_files()})
+            self.assertEqual(conn.execute('SELECT count(*) FROM world.worlds').fetchone()[0], 0)
+        for role in ('editor', 'publisher', 'game', 'dm'):
+            self.assertTrue(self.can_connect(key, role), role)
+        with superuser() as su:
+            acl = su.execute('SELECT datacl::text FROM pg_database WHERE datname = %s', (f'ratw_{key}',)).fetchone()[0]
+        self.assertNotIn('=Tc/', acl, 'PUBLIC may not connect')
+        with self.assertRaisesRegex(W.DatabaseError, 'already a world'):
+            W.new_world(key, 'Again', log=lambda *_: None)
+
+    def test_a_live_world_is_out_of_the_editors_reach_and_has_a_publish_password(self):
+        key = f't{self.tag}_live'
+        self.new(key, 'Live', 'live')
+        self.assertFalse(self.can_connect(key, 'editor'))
+        with W.connect(key, 'publisher') as conn:
+            self.assertTrue(W.verify_publish_password(conn, W.DEFAULT_PUBLISH_PASSWORD))
+        with self.assertRaisesRegex(W.DatabaseError, 'upstream'):
+            W.new_world(f't{self.tag}_bad', 'Bad', 'dev', upstream_key='dev', log=lambda *_: None)
+
+    def make_source(self):
+        """A small world: a cell with a door into a house, a watch post and a claim on the cell, and two people."""
+        key = f't{self.tag}_src'
+        self.new(key, 'Source', 'dev')
+        with self.owner(key) as conn, conn.transaction():
+            conn.execute("INSERT INTO world.worlds (id, name) VALUES ('w', 'Test world')")
+            conn.execute("INSERT INTO world.areas (world_id, id, kind) VALUES ('w', 'town', 'cell'), ('w', 'house', 'interior')")
+            conn.execute("INSERT INTO world.cells (world_id, id, name, x, y, width, height) VALUES ('w', 'town', 'Town', 0, 0, 32, 24)")
+            conn.execute("INSERT INTO world.interiors (world_id, id, name, width, height, glyphs) VALUES ('w', 'house', 'House', 4, 4, %s)",
+                         ('.' * 16,))
+            conn.execute("UPDATE world.worlds SET spawn_area = 'town', spawn_x = 2, spawn_y = 2, revision = 5")
+            conn.execute("INSERT INTO world.terrain_chunks (world_id, cx, cy, size, glyphs) VALUES ('w', 0, 0, 128, %s)",
+                         ('.' * 128 * 128,))
+            conn.execute("""INSERT INTO world.links (world_id, id, name, kind, a_area, a_x, a_y, b_area, b_x, b_y)
+                            VALUES ('w', 'door', 'Door', 'door', 'town', 3, 3, 'house', 1, 1)""")
+            conn.execute("INSERT INTO live.patrol_routes (world_id, id, name) VALUES ('w', 'watch', 'Watch')")
+            conn.execute("INSERT INTO live.patrol_posts (world_id, route_id, seq, area, x, y) VALUES ('w', 'watch', 0, 'town', 1, 1)")
+            conn.execute("INSERT INTO live.factions (world_id, id, name) VALUES ('w', 'guild', 'Guild')")
+            conn.execute("INSERT INTO live.faction_claims (world_id, faction_id, area) VALUES ('w', 'guild', 'town')")
+            conn.execute("INSERT INTO live.npc_areas (world_id, id, name, kind, area) VALUES ('w', 'square', 'Square', 'wander', 'town')")
+            for npc, work, wander in (('wren', 'town', 'square'), ('ada', 'house', None)):
+                conn.execute("""INSERT INTO live.npcs (world_id, id, name, role, age, voice, appearance, hours_start, hours_end,
+                                    home_area, home_x, home_y, work_area, work_x, work_y, evening_area, evening_x, evening_y, wander_area)
+                                VALUES ('w', %s, %s, 'civilian', 30, 1, '{}', 8, 17, 'house', 1, 1, %s, 2, 2, 'town', 3, 3, %s)""",
+                             (npc, npc.title(), work, wander))
+            conn.execute("INSERT INTO live.economy (world_id, treasury) VALUES ('w', 50)")
+        return key
+
+    def test_a_copy_without_its_map_keeps_the_people_and_the_buildings(self):
+        source = self.make_source()
+        key = f't{self.tag}_bare'
+        saved = Path(self.folder.name) / 'placements.json'
+        self.new(key, 'Bare', 'dev', source=source, without_map=True, placements=saved)
+        holding = f'{key}_unplaced'
+        with self.owner(key) as conn:
+            count = lambda sql: conn.execute(sql).fetchone()[0]
+            self.assertEqual(count("SELECT count(*) FROM world.areas WHERE kind = 'cell'"), 0)
+            self.assertEqual(count("SELECT count(*) FROM world.interiors WHERE id = 'house'"), 1, 'the buildings stay')
+            for table in ('world.links', 'world.terrain_chunks', 'live.patrol_posts', 'live.faction_claims', 'live.economy',
+                          'live.npc_areas'):
+                self.assertEqual(count(f'SELECT count(*) FROM {table}'), 0, table)
+            self.assertEqual(count('SELECT count(*) FROM live.patrol_routes'), 1, 'routes stay, without posts')
+            self.assertEqual(conn.execute('SELECT spawn_area, revision FROM world.worlds').fetchone(), (None, 6))
+            people = {r[0]: r[1:] for r in conn.execute(
+                'SELECT id, home_area, work_area, evening_area, wander_area FROM live.npcs ORDER BY id').fetchall()}
+            nullable = W._nullable(conn, 'live.npcs', 'home_area')
+            unset = None if nullable else holding
+            self.assertEqual(people, {'ada': ('house', 'house', unset, None), 'wren': ('house', unset, unset, None)})
+            self.assertEqual(count(f"SELECT count(*) FROM world.interiors WHERE id = '{holding}'"), 0 if nullable else 1)
+        with self.owner(source) as conn:
+            self.assertEqual(conn.execute("SELECT count(*) FROM world.areas WHERE kind = 'cell'").fetchone()[0], 1,
+                             'the world copied from is untouched')
+        placements = json.loads(saved.read_text())
+        self.assertEqual([c['id'] for c in placements['cells']], ['town'])
+        self.assertEqual({n['id']: n['work_area'] for n in placements['npcs']}, {'ada': 'house', 'wren': 'town'})
+        self.assertEqual([d['id'] for d in placements['doors']], ['door'])
+        self.assertEqual(placements['patrol_posts'][0]['route'], 'watch')
+        self.assertEqual(placements['faction_claims'][0]['faction'], 'guild')
+        self.assertEqual(placements['spawn'], ['town', 2, 2])
+        self.assertEqual([(a['id'], a['area']) for a in placements['npc_areas']], [('square', 'town')])
+        self.assertEqual({n['id']: n['wander_area'] for n in placements['npcs']}, {'ada': None, 'wren': 'square'})
+
+    def test_a_plain_copy_is_the_same_world(self):
+        source = self.make_source()
+        key = f't{self.tag}_copy'
+        self.new(key, 'Copy', 'dev', source=source)
+        with self.owner(key) as conn:
+            self.assertEqual(conn.execute("SELECT count(*) FROM world.areas").fetchone()[0], 2)
+            self.assertEqual(conn.execute("SELECT count(*) FROM live.npcs").fetchone()[0], 2)
+
+    def test_a_copy_is_refused_while_someone_uses_the_world(self):
+        source = self.make_source()
+        key = f't{self.tag}_busy'
+        with self.owner(source):
+            with self.assertRaisesRegex(W.DatabaseError, 'other session'):
+                self.new(key, 'Busy', 'dev', source=source)
+        self.assertNotIn(key, W.keys())
+        with superuser() as su:
+            self.assertIsNone(su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (f'ratw_{key}',)).fetchone())
+
+    def test_without_map_needs_a_world_to_copy(self):
+        with self.assertRaisesRegex(W.DatabaseError, '--from'):
+            W.new_world(f't{self.tag}_none', 'None', without_map=True, log=lambda *_: None)
 
 
 if __name__ == '__main__':

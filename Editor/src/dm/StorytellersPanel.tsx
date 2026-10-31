@@ -3,7 +3,7 @@
 // (narration and story characters' lines, 30 days), the approved visitors, and the DM's own hand: give a character a
 // storyline, credit a world story's milestone (its lines built from the ledger by the DM host).
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Me, type Storytellers, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type Storytellers, type Target} from './api';
 
 export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<Storytellers | null>(null);
@@ -16,7 +16,7 @@ export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
     useEffect(() => { void load(); }, [load]);
     const canAct = me.role !== 'viewer';
     const run = async (what: string, job: () => Promise<unknown>) => {
-        if (target === 'prod' && !window.confirm(`${what} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${what} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem('');
         try { await job(); setNote(`${what}: sent; the game applies it within seconds.`); setTimeout(() => void load(), 1500); }
         catch (e) { setProblem((e as Error).message); }

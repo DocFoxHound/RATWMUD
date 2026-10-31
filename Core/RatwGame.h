@@ -124,7 +124,7 @@ std::unique_ptr<Store> scratchStore(std::unique_ptr<Store> inner);
 
 struct Options
 {
-    // A world from the database: "prod" or "dev", read with `conninfo` (a libpq connection string). Else a world
+    // A world from the database: its key in the world registry (Database/worlds.json: "prod", "dev"...), read with `conninfo` (a libpq connection string). Else a world
     // file (RATW_WORLD manifest, absolute path), else the built-in demo world.
     std::string database, conninfo, worldFile;
     // A world build exported as files (world.ratw and the rest, cells/ID.cell, seams/ID: what tools/world_build.py

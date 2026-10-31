@@ -89,9 +89,9 @@ def talk_check() -> Path:
     return talk_files.talk_check()
 
 
-def residents() -> dict[str, dict]:
+def residents(world: str) -> dict[str, dict]:
     """Every resident's facts, as the game works them out, after a game day (families taken in at its turn)."""
-    run = subprocess.run([str(talk_check()), '--world', 'dev', '--run', '24', '--residents', '--json'], capture_output=True,
+    run = subprocess.run([str(talk_check()), '--world', world, '--run', '24', '--residents', '--json'], capture_output=True,
                          text=True, timeout=900, check=True)
     return {f['id']: f for f in (json.loads(l) for l in run.stdout.splitlines() if l.startswith('{'))}
 
@@ -188,14 +188,16 @@ def main() -> int:
     pick.add_argument('--all', action='store_true', help='everyone (with --yes)')
     parser.add_argument('--missing', action='store_true', help='only those without a personality yet')
     parser.add_argument('--dry-run', action='store_true', help='print what would be asked; call nothing')
-    parser.add_argument('--write', action='store_true', help='keep the tables in DEV (live.npc_voice)')
+    parser.add_argument('--write', action='store_true', help='keep the tables in the world (live.npc_voice)')
+    parser.add_argument('--world', default='atlas', help="the dev world (default Atlas's)")
     parser.add_argument('--yes', action='store_true', help='needed with --all: a paid call for every resident')
     parser.add_argument('--model', choices=('story', 'light', 'voice'), default='story')
     args = parser.parse_args()
     if args.all and not (args.yes or args.dry_run):
         parser.error('--all makes a paid call for every resident: add --yes')
-    people = residents()
-    with world_db.connect(world_db.WORKING, 'editor') as conn:
+    world_key = world_db.resolve(args.world, 'dev')
+    people = residents(world_key)
+    with world_db.connect(world_key, 'editor') as conn:
         world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
         rows = {r[0]: dict(zip(('id', 'description', 'personality', 'backstory', 'greeting', 'work_label', 'persona'), r))
                 for r in conn.execute('SELECT n.id, n.description, n.personality, n.backstory, n.greeting, n.work_label, '
@@ -237,7 +239,7 @@ def main() -> int:
                 kept += 1
             print(f'  {npc}: {len(persona)} characters, {grammar.count(chr(10))} words, {rules.count("rule ")} lines'
                   + (f' (table refused: {why.splitlines()[-1][:120]})' if why else ''))
-        print(f'{kept} kept in DEV, {refused} tables refused (personality kept alone); drafts in {DRAFTS}')
+        print(f'{kept} kept in {world_key}, {refused} tables refused (personality kept alone); drafts in {DRAFTS}')
     return 0
 
 

@@ -4,7 +4,7 @@
 The server keeps a record each minute, and one for every tick that ran long: in dm.health for a world in the
 database (migration 0032), else in a JSON-lines file beside the save (<save>.health.jsonl). This reads them back.
 
-    python3 tools/perf_report.py --database dev              the last 24 hours of DEV's server
+    python3 tools/perf_report.py --database dev              the last 24 hours of DEV's server (any world key; atlas, live)
     python3 tools/perf_report.py --database dev --hours 2    the last two
     python3 tools/perf_report.py --file Saved/ratw-town.json.health.jsonl
 
@@ -103,10 +103,16 @@ def report(records, hours: float, out=sys.stdout):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument('--database', choices=['dev', 'prod', 'ridgemere2'])
+    source.add_argument('--database', help='a world key (atlas, live: the local choices)')
     source.add_argument('--file', type=Path)
     parser.add_argument('--hours', type=float, default=24)
     args = parser.parse_args(argv)
+    if args.database:
+        import world_db
+        try:
+            args.database = world_db.resolve(args.database)
+        except world_db.DatabaseError as error:
+            parser.error(str(error))
     records = from_database(args.database, args.hours) if args.database else from_file(args.file, args.hours)
     report(records, args.hours)
     return 0

@@ -4,7 +4,9 @@
 #   bash tools/server.sh                        the demo world, saved to Saved/ratw-world.json
 #   bash tools/server.sh --town                 Greyfen Crossing (Data/Worlds/Greyfen), saved to Saved/ratw-town.json
 #   bash tools/server.sh --world MANIFEST       an exported Atlas world, saved to Saved/Atlas/<its name>.json
-#   bash tools/server.sh --database dev|prod    the world in the database (tools/live.sh sets RATW_DATABASE_URL)
+#   bash tools/server.sh --database KEY         a world in the database: a registered key, or atlas or live (the local
+#                                               choices; python3 tools/world_db.py list). RATW_DATABASE_URL, which
+#                                               tools/live.sh and scratch.sh set, else made from Database/.env
 #
 # --save FILE picks another save. Everything else goes to ratw_server (see Server/ratw_server.cpp): --port N (default
 # 7788), --dev-identity, --dev-tools, --dm-directory DIR... RATW_BIND chooses the interface (default 127.0.0.1: this
@@ -25,6 +27,14 @@ while [[ $# -gt 0 ]]; do
     *) args+=("$1"); shift ;;
   esac
 done
+if [[ -n "$database" ]]; then
+  # A registered world (doc 66): the server takes any key; the registry says which there are.
+  database="$(python3 "$ratw_root/tools/world_db.py" resolve "$database")" || exit 2
+  if [[ -z "${RATW_DATABASE_URL:-}" ]]; then
+    RATW_DATABASE_URL="$(python3 "$ratw_root/tools/world_db.py" conninfo "$database" --role game)"
+    export RATW_DATABASE_URL
+  fi
+fi
 ratw_build
 command=("$ratw_server_binary" --port "$port" --bind "${RATW_BIND:-127.0.0.1}" --web "$ratw_root/Client/dist")
 # The talk library (Docs/Design/62-talk.md): residents' written talk to each other, and their calls.

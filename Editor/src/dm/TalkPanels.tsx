@@ -3,7 +3,7 @@
 // and their family; the regional dialects; the figures residents know of who aren't in the game yet. Each is checked by
 // the game's own loader before it is saved (the host runs talk_check), and a running server reads it again at once.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Figure, type Me, type Talk, type Target, type Voice} from './api';
+import {isLive, worldName, dmApi, type Figure, type Me, type Talk, type Target, type Voice} from './api';
 
 // The values Data/Talk/facts.json allows (the host checks them again).
 const REGIONS = ['', 'ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow'];
@@ -20,7 +20,7 @@ const EMPTY: Voice = {from: '', accent: '', quarter: '', traits: {}, quirk: '', 
 function useRun(target: Target, after: () => void) {
     const [busy, setBusy] = useState(false), [problem, setProblem] = useState(''), [note, setNote] = useState('');
     const run = async (what: string, job: () => Promise<unknown>) => {
-        if (target === 'prod' && !window.confirm(`${what} on PROD?`)) return;
+        if (isLive(target) && !window.confirm(`${what} on ${worldName(target)}?`)) return;
         setBusy(true); setProblem(''); setNote('');
         try { await job(); setNote(`${what}: saved; a running game server reads it again within seconds.`); after(); }
         catch (e) { setProblem((e as Error).message); }
@@ -71,8 +71,8 @@ export function VoicePanel({me, target, npc, name}: {me: Me; target: Target; npc
                 <textarea rows={8} maxLength={8000} className="mono" value={voice.rules} onChange={e => set({rules: e.target.value})} /></label>
         </fieldset>
         {canAct && <div className="button-grid">
-            <button className={target === 'prod' ? 'publish' : 'primary'} disabled={busy}
-                onClick={() => void run(`Save ${name}'s voice`, () => dmApi.saveVoice(target, npc, voice))}>{busy ? 'Checking…' : `Save to ${target.toUpperCase()}`}</button>
+            <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy}
+                onClick={() => void run(`Save ${name}'s voice`, () => dmApi.saveVoice(target, npc, voice))}>{busy ? 'Checking…' : `Save to ${worldName(target)}`}</button>
             <button disabled={busy} onClick={() => setVoice({...EMPTY, ...(talk?.voice ?? {})})}>Revert</button></div>}
         <p className="dm-group">Family</p>
         <ul className="dm-reports-list">{(talk?.family ?? []).map(f => <li key={`${f.npc}-${f.other}-${f.kind}`}>

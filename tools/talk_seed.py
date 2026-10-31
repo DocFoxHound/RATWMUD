@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seeds the talk library's live tables in DEV (Docs/Design/62-talk.md, phase 6): written once, then edited in Atlas
+"""Seeds the talk library's live tables in a dev world (Atlas's, or --world KEY) (Docs/Design/62-talk.md, phase 6): written once, then edited in Atlas
 and by the Dungeon Master. Rows already there are kept (an edit is never overwritten) unless --replace names them.
 
   live.dialects       the regional grammars, from Data/Talk/grammar/*.grammar (plain stays a file)
@@ -12,7 +12,7 @@ and by the Dungeon Master. Rows already there are kept (an edit is never overwri
                       his parent. With no couple, the eldest is the parent of those at least sixteen years younger.
                       Communal homes are left out.
 
-    python3 tools/talk_seed.py [--dry-run] [--replace dialects,voices,relations]
+    python3 tools/talk_seed.py [--dry-run] [--replace dialects,voices,relations] [--world KEY]
 """
 from __future__ import annotations
 
@@ -91,12 +91,12 @@ def quarters() -> dict[str, str]:
     return out
 
 
-def origins() -> dict[str, dict]:
+def origins(world: str) -> dict[str, dict]:
     """Every resident's facts as the game works them out (origin and accent: World::talkOrigin)."""
     candidates = sorted(ROOT.glob('build*/talk_check'), key=lambda p: p.stat().st_mtime, reverse=True)
     if not candidates:
         sys.exit('No talk_check built: cmake --build <a build dir> --target talk_check')
-    run = subprocess.run([str(candidates[0]), '--world', 'dev', '--residents', '--json'], capture_output=True, text=True,
+    run = subprocess.run([str(candidates[0]), '--world', world, '--residents', '--json'], capture_output=True, text=True,
                          timeout=600, check=True)
     out = {}
     for line in run.stdout.splitlines():
@@ -142,12 +142,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--dry-run', action='store_true', help='count what would be written, write nothing')
     parser.add_argument('--replace', default='', help='comma-separated: dialects, voices, relations (overwrite those)')
+    parser.add_argument('--world', default='atlas', help="the dev world (default Atlas's)")
     args = parser.parse_args()
+    args.world = world_db.resolve(args.world, 'dev')
     replace = {r for r in args.replace.split(',') if r}
-    with world_db.connect(world_db.WORKING, 'editor') as conn:
+    with world_db.connect(args.world, 'editor') as conn:
         worlds = [r[0] for r in conn.execute('SELECT id FROM world.worlds').fetchall()]
         if len(worlds) != 1:
-            sys.exit(f'Expected one world in DEV, found {worlds}')
+            sys.exit(f'Expected one world in {args.world}, found {worlds}')
         world = worlds[0]
         npcs = [{'id': r[0], 'name': r[1], 'age': r[2], 'sex': (r[3] or {}).get('sex', ''), 'home_area': r[4] or '',
                  'personality': r[5] or ''}
@@ -156,7 +158,7 @@ def main() -> int:
         # The dialects.
         dialects = [(f.stem, i, f.read_text()) for i, f in enumerate(sorted(GRAMMARS.glob('*.grammar'))) if f.stem != 'plain']
         # Each resident's voice.
-        facts = origins()
+        facts = origins(args.world)
         where = quarters()
         voices, outside = [], 0
         for n in npcs:
