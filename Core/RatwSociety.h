@@ -432,7 +432,11 @@ class Society
     // Whether tick(seconds) would decide anything: the bodies it is given go unread otherwise.
     bool decidesWithin(double seconds) const { return state_.enabled && state_.decisionRemainder + seconds + 1e-8 >= 1.; }
     // Unseen residents decide every UnseenStep seconds, a step's worth at a time; those a player may see, every second.
+    // A harness may lengthen it (setUnseenStep: world_check's --unseen-step and --fast, an economy run's fewer, longer
+    // decisions; doc 69). The game keeps UnseenStep.
     static constexpr int UnseenStep = 5;
+    static int unseenStep() { return unseenStep_; }
+    static void setUnseenStep(int seconds) { unseenStep_ = std::clamp(seconds, 1, 600); }
     // Whether tick(seconds) at absoluteDay needs the bodies at all: anyone seen (`anySeen`), the unseen's step, a new day,
     // or the society's first decisions. Otherwise it is given none, and nothing happens to anyone that second.
     bool needsBodies(double seconds, double absoluteDay, bool anySeen) const;
@@ -700,6 +704,7 @@ class Society
     double* skillSlot(const std::string& resident, const std::string& position, bool make);
     std::int64_t secondsDecided_ = 0;               // Seconds decided since this society began (for UnseenStep; not saved).
     bool unseenDecided_ = false;
+    static inline int unseenStep_ = UnseenStep;     // (setUnseenStep.)
     std::set<std::string> atStall_;                 // Merchants trading from a market stall right now.
     std::map<std::string, std::string> friendGroups_;   // Child -> its group (made each day: groupChildren).
     std::int64_t groupsDay_ = -1;

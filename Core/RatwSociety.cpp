@@ -528,14 +528,14 @@ bool Society::needsBodies(double seconds, double absoluteDay, bool anySeen) cons
 {
     if (!decidesWithin(seconds))
         return false;
-    return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % UnseenStep == 0 ||
+    return anySeen || roster_ != Roster::Authored || (secondsDecided_ + 1) % unseenStep_ == 0 ||
            std::int64_t(std::floor(absoluteDay)) > state_.budgetDay;
 }
 
 void Society::decide(double absoluteDay, int season, const std::map<std::string, LifeBody>& bodies)
 {
     decidingAt_ = absoluteDay;
-    unseenDecided_ = ++secondsDecided_ % UnseenStep == 0;
+    unseenDecided_ = ++secondsDecided_ % unseenStep_ == 0;
     const auto day = std::int64_t(std::floor(absoluteDay));
     if (day > state_.budgetDay)
     {

@@ -244,6 +244,10 @@ target_compile_definitions(practice_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT
 # Not a test: loads a streamed world export the way the server does (see Tests/world_check.cpp).
 add_executable(world_check Tests/world_check.cpp)
 target_link_libraries(world_check PRIVATE ratw_core)
+# The fast economy run (Docs/Design/69): births, deaths and determinism on the harness's path, and world_check itself.
+add_executable(sim_fast_tests Tests/sim_fast_tests.cpp)
+target_link_libraries(sim_fast_tests PRIVATE ratw_core)
+add_test(NAME sim_fast_behaviors COMMAND sim_fast_tests $<TARGET_FILE:world_check>)
 # Not a test either: the whole game under load, the gate of Docs/Design/31-responsiveness.md (see Tests/game_load.cpp).
 add_executable(game_load Tests/game_load.cpp)
 target_link_libraries(game_load PRIVATE ratw_core ${RATW_FAST_MALLOC})
