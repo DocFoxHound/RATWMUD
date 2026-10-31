@@ -34,8 +34,8 @@ b?[healer] : Dry them by the fire the day you buy them. Or you'll lose them.
 
 scene em_rm_pr_cheap_ship
 when topic=prices topic.dir=down here.region=ridgemere
-a : A ship came up the Sound full of grain. Prices dropped by dusk. | #topic.what# for #topic.price#. The wharf's busy for once. | Greatly's new hull brought a hold full of food.
-b : Long may the ships come. | For once. | Good old Greatly.
+a : A ship came up the Sound full of grain. Prices dropped by dusk. | #topic.what# for #topic.price#. The wharf's busy for once. | Grayrock's new hull brought a hold full of food.
+b : Long may the ships come. | For once. | Good old Grayrock.
 a : Long may they. | Enjoy it. | For once.
 b?[sailor] : Rough crossing for that cargo. Eat it slow and think of us.
 

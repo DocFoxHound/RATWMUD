@@ -19,7 +19,7 @@ a : The Council won't. | Lucky city. | He never has.
 
 scene em_rm2_fell_timber
 when topic=caravan topic.kind=arrived|left here.region=ridgemere a.job=woodcutter|laborer|carter
-a : House Fell sent forty logs by wagon and lost three on the hill. | The timber carts block the gate every morning. | Fellhall's timber caravan pays well and kills mules.
+a : House Timberland sent forty logs by wagon and lost three on the hill. | The timber carts block the gate every morning. | Timberland Court's timber caravan pays well and kills mules.
 b : Lost them where? | Every single morning. | Pays well, at least.
 a : Down the gorge. Gone. | And the Watch shouts at us. | Not the mules.
 

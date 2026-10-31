@@ -272,7 +272,7 @@ scene m7_place_barracks
 when topic=day here.place=barracks
 a : Bunk's harder than the floor. | Who left the boots there? | Sergeant's in a mood. | Ration bread's like slate.
 b[job=guard|soldier] #guard : Welcome to the Watch.
-b : Swap with the floor. | Not me. | Sergeant's always in a mood. | Like Grayrock's slate.
+b : Swap with the floor. | Not me. | Sergeant's always in a mood. | Like a roof slate.
 a@guard : Some welcome.
 a : Might. | Somebody. | Always. | Cheaper.
 
@@ -417,6 +417,6 @@ a : That's shouting. | Big and loud. | No. | We'll see.
 
 scene m7_fest_today_house
 when topic=festival topic.when=today here.region=ridgemere
-a : House Greatly's paying for lanterns all along the wharf. | The Houses have sent wine to Office Square. | Mossgrave's put on a wool fair. | Fell's given a tree for the square.
-b : Buying friends. | Free wine is free wine. | Of course they have. | Cedar. Smells lovely.
-a : Works on me. | Drink up. | Wool for the winter. | Fell knows trees.
+a : House Grayrock's paying for lanterns all along the wharf. | The Houses have sent wine to Office Square. | Timberland's lit every forge for the fair. | Fell's given a cask for the square.
+b : Buying friends. | Free wine is free wine. | Of course they have. | Brandy. Smells lovely.
+a : Works on me. | Drink up. | Warm for the winter. | Fell knows wine.

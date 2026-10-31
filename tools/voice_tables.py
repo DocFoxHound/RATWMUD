@@ -50,8 +50,9 @@ RULES = """You write the people of Runs Against the World, a text-first roleplay
 of seven regions: Ridgemere, the rain city on its hills above Ridgemere Sound, its Heights for the rich and great Houses,
 its Commons, its Wharf and Docks, and the Sump at the bottom where the poor live; Frosthollow, mining in a high snowy
 valley; Coldwater, fishers on the lake Glasswater; Oakhaven in the Warmwood; Mirebridge in the Sallow Fens; Larkfield,
-market town of the downs; Southmeadow, grain fields and orchards in the far south. Four great Houses (Greatly, Fell,
-Grayrock, Mossgrave) own most trades.
+market town of the downs; Southmeadow, grain fields and orchards in the far south. Four great Houses: Greatly, the
+builders (brick, lime, plaster, stone; they built the city's walls); Fell, fine wines, liquors and fruit goods; Grayrock,
+the wharf and its ships; Timberland, the city's forges.
 
 The user JSON is everything the world knows of one resident: background, not a checklist. Weave in only what shapes
 them, in their own world's terms (never "standing" or "civilian", never counts of days). Write who they are, consistent

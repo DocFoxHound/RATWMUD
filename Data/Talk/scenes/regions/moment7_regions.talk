@@ -43,16 +43,16 @@ a : Or all week. | Creak, creak. | Ha. Poor beast. | Ghost ships.
 scene m7_rg_wharf_dawn
 when topic=day|weather here.region=ridgemere here.place=shore|work here.time=dawn
 a : Boats coming in. | Gulls already at the Fish Hall. | Tar and herring and wet rope, all at once. | Somebody's singing on the Ropewalk.
-b[job=fisher|sailor] #sea : Good catch tonight, by the look of the boats. | Bad night out there. Half the boats are riding high. | Greatly boats first in, as ever.
+b[job=fisher|sailor] #sea : Good catch tonight, by the look of the boats. | Bad night out there. Half the boats are riding high. | Grayrock boats first in, as ever.
 b : Breakfast arriving. | Before the buyers. | Smell of the wharf. | Always someone.
 a@sea : I'll have a herring off one of them. | Poor souls. | Of course they are.
 a : Cheaper at the Sump Market. | Gulls are early birds. | And home. | Rope song.
 
 scene m7_rg_storm_sound
 when topic=weather here.region=ridgemere here.weather=storm
-a : Waves over the wharf wall. | They've closed the water gates. | The Greatly Yard's lashing everything down. | Somebody's boat's slipped her mooring.
+a : Waves over the wharf wall. | They've closed the water gates. | The shipwrights are lashing everything down. | Somebody's boat's slipped her mooring.
 b[quarter=wharf|docks] #wharf : My door's under it. Again.
-b : Sound's angry. | Good. Keeps the sea out. | Hull'll be fine. Greatly builds well. | Hope she comes back.
+b : Sound's angry. | Good. Keeps the sea out. | Hull'll be fine. Grayrock builds well. | Hope she comes back.
 a@wharf : Come uphill to ours. Bring whoever's yours.
 a : Very. | And us in. | They'd better. | Boats know the way.
 
@@ -96,21 +96,21 @@ a : The Chapel of the Tide was full this morning. | Restday bells from every qua
 b[quarter=heights] #heights : One hears the bells best from the Heights, of course.
 b : Tide waits for no one, but it waits for that. | Bells from every quarter, and no two together. | Strange, without the hammering. | Mostly.
 a@heights : Of course one does.
-a : Sermon was long. | Like a quarrel in brass. | Peaceful. | Greatly's ships still sail.
+a : Sermon was long. | Like a quarrel in brass. | Peaceful. | Grayrock's ships still sail.
 
 scene m7_rg_fest_wharf
 when topic=festival here.region=ridgemere topic.when=today here.place=shore|street
 a : Every boat in the harbour's hung with lanterns. | They're racing skiffs across the Sound at noon. | The Fish Hall's giving out herring. Free. | House colours on every mast.
-b[job=sailor|fisher] #sea : There's skiff racing later. My cousin's rowing for the Greatly Yard.
-b : Pretty on the water. | Who's favourite? | Free herring, best festival. | Greatly blue wins on numbers.
+b[job=sailor|fisher] #sea : There's skiff racing later. My cousin's rowing for the Grayrock shipwrights.
+b : Pretty on the water. | Who's favourite? | Free herring, best festival. | Grayrock grey wins on numbers.
 a@sea : A penny on your cousin, then.
 a : Prettier at night. | The Ropewalk lads. | I'll take two. | Always does.
 
 scene m7_rg_fest_soon_houses
 when topic=festival here.region=ridgemere topic.when=soon
-a : The Houses are each swearing to outdo the others for #here.festival#. | Mossgrave's promised woollen favours for every child. | Greatly wants a lantern on every boat in the harbour. | The Council's voting on the feast. They'll vote for themselves.
-b : And we'll pay for it, somehow. | Itchy favours. | Every boat? Even the leaky ones? | Always do.
-a : Always us. | Warm, though. | Especially those. They'll sink prettily. | Like cats at a bowl.
+a : The Houses are each swearing to outdo the others for #here.festival#. | Timberland's promised an iron whistle for every child. | Grayrock wants a lantern on every boat in the harbour. | The Council's voting on the feast. They'll vote for themselves.
+b : And we'll pay for it, somehow. | Shrill favours. | Every boat? Even the leaky ones? | Always do.
+a : Always us. | Loud, though. | Especially those. They'll sink prettily. | Like cats at a bowl.
 
 scene m7_rg_from_away_city
 when topic=weather|day here.region=ridgemere a.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow pair.same_from=yes
@@ -138,11 +138,11 @@ b?@local : True as the rain.
 
 scene m7_rg_lore_houses_feud
 when topic=lore here.region=ridgemere
-a : Why do Fell and Grayrock hate each other? | They say a Greatly once married a fishwife, and the city's never got over it. | Mossgrave was a shepherd's name, once. Now look. | Every House started with one stubborn wolf.
+a : Why do Fell and Grayrock hate each other? | They say a Greatly once married a fishwife, and the city's never got over it. | Timberland was a charcoal burner's name, once. Now look. | Every House started with one stubborn wolf.
 b[b.house] #house : We don't speak of it. House business.
-b : A tree fell on a quarry. Or a quarry fell on a tree. | Best thing Greatly ever did. | Wool's money. | And ended with a lot of them.
+b : A cask fell off a ship. Or a ship fell on a cask. | Best thing Greatly ever did. | Iron's money. | And ended with a lot of them.
 a@house : Of course not.
-a : Depends who you ask. | Shame they don't do it more. | Sheep make lords. | Ha.
+a : Depends who you ask. | Shame they don't do it more. | Iron makes lords. | Ha.
 
 # ================================================================ Frosthollow: the high valley
 
@@ -396,9 +396,9 @@ scene m7_lf_shearing
 when topic=day|weather here.region=larkfield here.season=spring|summer
 a : Shearing starts Hearthday. | Fleeces piled to the rafters. | Sheep look naked and cross. | My arms ache from the shears.
 b[job=herder|farmer] #shep : Shear in the cold and they shiver. Shear in the heat and you do.
-b : Good year for wool? | Mossgrave'll want them all. | Naked and cross, like me in the morning. | Rest them.
+b : Good year for wool? | The wool merchants'll want them all. | Naked and cross, like me in the morning. | Rest them.
 a@shep : I'll shear in the middle.
-a : Heavy fleeces. | Mossgrave wants everything. | Ha. | Can't.
+a : Heavy fleeces. | The city wants everything. | Ha. | Can't.
 
 scene m7_lf_lore_chalk
 when topic=lore here.region=larkfield

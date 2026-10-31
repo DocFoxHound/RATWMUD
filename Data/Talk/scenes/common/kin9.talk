@@ -39,15 +39,15 @@ a : Fine. The table. | Stubborn wolf. | Hush. Ask her, then.
 
 scene kn_rg_rm_house_rivals
 when topic=quarrel here.region=ridgemere
-a : Your lot always sided with Grayrock. | Greatly wolves think they own the wharf. | The smokehouse has ruined my washing twice this week.
-b : Grayrock pays wages. Your House pays promises. | We built the wharf. | Then wash it somewhere that isn't downwind of work.
-a : Wages that buy soot. | You built it crooked. | It's my yard! It was here first.
-b : Better soot than hunger. | It's lasted a hundred years. | So was the smokehouse.
+a : Your lot always sided with Grayrock. | Greatly wolves think they built the whole city. | The smokehouse has ruined my washing twice this week.
+b : Grayrock pays wages. Your House pays promises. | We built the walls. | Then wash it somewhere that isn't downwind of work.
+a : Wages that buy soot. | You built them crooked. | It's my yard! It was here first.
+b : Better soot than hunger. | They've lasted a hundred years. | So was the smokehouse.
 a : Soot is hunger with a roof. | Crooked for a hundred years. | Smoke and liars.
 
 scene kn_rg_rm_friends_quay
 when topic=friends here.region=ridgemere
-a : Coming to watch the boats come in? | My cousin's on a Greatly ship down the coast. | Dice on the wharf tonight?
+a : Coming to watch the boats come in? | My cousin's on a Grayrock ship down the coast. | Dice on the wharf tonight?
 b : If the rain holds off. | Long voyage. Rough water. | If the Watch keeps off.
 a : It won't. Come anyway. | She'll be sick the whole way. | They're busy with the Sump.
 b : Rain it is. | Sick and paid. | Then dice it is.

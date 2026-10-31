@@ -49,7 +49,7 @@ a : Then the neighbours complain of the ringing. | Two. I counted. | The river's
 
 scene tr_smith_cinderbrook
 when topic=work a.job=smith|miner here.region=frosthollow
-a : Ridgemere wants picks by the cartload and pays by the spoonful. | The Grayrock buyer weighed my iron short again. | Ore's richer from the north seam. Better iron.
+a : Ridgemere wants picks by the cartload and pays by the spoonful. | The Timberland buyer weighed my iron short again. | Ore's richer from the north seam. Better iron.
 b : The city always does. | Scales are crooked. | North seam's cursed, they say.
 a : And we always sell. | Everyone knows. Nobody says. | Cursed or not, it rings true.
 
@@ -115,7 +115,7 @@ a : That was me. You're welcome. | Only a stump. | Next year I'll be cold, too.
 
 scene tr_wood_harness
 when topic=work a.job=woodcutter
-a : Dragged three logs home in harness today. My shoulders. | The saw's too blunt to cut butter. | The wolves from House Fell are cutting in our wood again.
+a : Dragged three logs home in harness today. My shoulders. | The saw's too blunt to cut butter. | The wolves from House Timberland are cutting in our wood again.
 b[carter] : I'll take them on the cart, for a cut.
 b : Rest them. | Sharpen it. | Our wood? It's the lord's.
 a : Rest them, then drag three more. | I did. That was sharp. | The lord's never set paw in it.
@@ -134,9 +134,9 @@ a : I went the long way home. | Maybe. Maybe just winter. | Somebody old.
 
 scene tr_wood_ridgemere
 when topic=work a.job=woodcutter|laborer here.region=ridgemere
-a : House Fell's foremen want twenty logs a wolf a day. | Floated the timber down to the yard. Lost two in the rapids. | The shipyard takes every straight trunk we cut.
+a : House Timberland's foremen want twenty logs a wolf a day. | Floated the timber down to the yard. Lost two in the rapids. | The shipyard takes every straight trunk we cut.
 b : Twenty! | Lost to the sea now. | Ships need masts.
-a : Twenty. And they count. | House Fell will dock me for them. | Masts and more masts.
+a : Twenty. And they count. | House Timberland will dock me for them. | Masts and more masts.
 
 scene tr_wood_carpenter
 when topic=work a.job=woodcutter|crafter b.job=crafter|woodcutter

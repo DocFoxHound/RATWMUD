@@ -28,15 +28,15 @@ b?[servant] : I'm to carry it all up to the Heights by dusk.
 
 scene em_rm_cv_left
 when topic=caravan topic.kind=left here.region=ridgemere
-a : The caravan to #topic.where# went off with iron and smoked fish. | Grayrock's iron is on the road to #topic.where#. | Wagons left for #topic.where#, loaded with glass from the glassworks.
+a : The caravan to #topic.where# went off with iron and smoked fish. | Timberland's iron is on the road to #topic.where#. | Wagons left for #topic.where#, loaded with glass from the glassworks.
 b : What does #topic.where# send back? | Heavy road, that. | Glass on these roads? Brave.
 a : Coin, if we're lucky. | And slow. | Packed in straw. Pray.
 
 scene em_sf_cv_left
 when topic=caravan topic.kind=left here.region=ridgemere
-a : Wagons went out the gate for #topic.where#, full of Mossgrave wool. | The caravan to #topic.where# is carrying Foundry ironware. Crates and crates. | Off to #topic.where# with bolts of cloth from the Blue Vats.
-b : Wool on a wet road. | Grayrock's iron, travelling. | Ridgemere blue, they'll call it.
-a : It'll arrive as felt. | Rattling all the way. | They always do.
+a : Wagons went out the gate for #topic.where#, full of Timberland nails. | The caravan to #topic.where# is carrying Foundry ironware. Crates and crates. | Off to #topic.where# with bolts of cloth from the Blue Vats.
+b : Nails on a wet road. | Timberland's iron, travelling. | Ridgemere blue, they'll call it.
+a : It'll arrive as rust. | Rattling all the way. | They always do.
 
 scene em_sr_cv_salt_out
 when topic=caravan topic.kind=left here.region=ridgemere
@@ -60,8 +60,8 @@ b?[guard] : Careful. Talk like that gets wolves into the Sound.
 
 scene em_rm_bd_camp
 when topic=bandits topic.kind=camp here.region=ridgemere
-a : There's a camp at #topic.where#. In this rain, even. | They say the bandits at #topic.where# sell to the smugglers on the wharf. | Fell's loggers saw a camp near #topic.where#.
-b : Wet bandits. Miserable ones. | Everyone sells to the smugglers. | Then House Fell will hear of it.
+a : There's a camp at #topic.where#. In this rain, even. | They say the bandits at #topic.where# sell to the smugglers on the wharf. | Timberland's charcoal burners saw a camp near #topic.where#.
+b : Wet bandits. Miserable ones. | Everyone sells to the smugglers. | Then House Timberland will hear of it.
 a : Miserable and armed. | Everyone. | And do nothing.
 
 scene em_sf_bd_camp

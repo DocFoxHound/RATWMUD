@@ -630,7 +630,7 @@ then other: land.react
 rule e5_land_miner_ridgemere
 when concept=land.answer self.job=miner here.region=ridgemere
 cooldown 1d
-say The Rainward Hills are honeycombed with Grayrock's tunnels. Wet ones. | Good stone, poor ore. And water in every shaft. | Grayrock's mine goes deeper every year. The hill doesn't like it.
+say The Rainward Hills are honeycombed with old tunnels. Wet ones. | Good stone, poor ore. And water in every shaft. | The mine goes deeper every year. The hill doesn't like it.
 then other: land.react
 
 rule e5_land_fisher_coldwater
@@ -666,7 +666,7 @@ then other: land.react
 rule e5_land_woodcutter_ridgemere
 when concept=land.answer self.job=woodcutter here.region=ridgemere
 cooldown 1d
-say The Rainwood's cedar. Smells like a chapel when you cut it. | Fell's camps have most of the Rainwood. We just swing the axes. | Moss on everything. Even the axe handles grow it if you leave them.
+say The Rainwood's cedar. Smells like a chapel when you cut it. | Timberland's camps have most of the Rainwood. We just swing the axes. | Moss on everything. Even the axe handles grow it if you leave them.
 then other: land.react
 
 # What the asker makes of it (self is the asker again).

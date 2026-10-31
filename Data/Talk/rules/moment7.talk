@@ -1453,7 +1453,7 @@ remember pair: m7o=tale 2m
 rule m7_lore_open_houses
 when concept=talk.lore here.region=ridgemere
 cooldown 2d
-say They say the first Greatly came ashore with a boat and a bag of salt. | They say the cellars under Grayrock Hall go down into the old mine and never stop. | They say there was a fifth House once, and the other four swore never to speak its name.
+say They say the first Greatly came down from the hills with a trowel and a bag of lime. | They say the cellars under Grayrock Hall go down under the sea and never stop. | They say there was a fifth House once, and the other four swore never to speak its name.
 then other: moment.reply_lore
 remember pair: m7o=tale 2m
 

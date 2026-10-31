@@ -184,7 +184,7 @@ a : The owner's not the one drowning. | With two wolves? | I've asked no more fo
 
 scene tr_sail_ridgemere
 when topic=work a.job=sailor|laborer here.region=ridgemere
-a : The Greatly Yard's launched a new hull. Three masts. | The southern crews cheat at dice and sing all night. | Fog on the Sound. Ships blowing horns like lost cows.
+a : The Grayrock shipwrights launched a new hull. Three masts. | The southern crews cheat at dice and sing all night. | Fog on the Sound. Ships blowing horns like lost cows.
 b : Who's crewing it? | Win back what they took. | Wait for it to lift.
 a : Anyone who'll sign. Me, maybe. | I'm trying. They cheat better. | Lifts by noon, rolls back by dusk.
 
@@ -234,7 +234,7 @@ a : Three days each way? | One. And four buyers. | And the road charges extra fo
 
 scene tr_merch_ridgemere_sump
 when topic=work a.role=merchant here.region=ridgemere
-a : Somebody stole the shutters off my shop. The shutters! | Sump folk can't pay a full penny, so I cut bread in eighths. | House Greatly's factor wants first refusal on all my salt.
+a : Somebody stole the shutters off my shop. The shutters! | Sump folk can't pay a full penny, so I cut bread in eighths. | House Grayrock's factor wants first refusal on all my salt.
 b : The Sump strips everything. | Eighths? | And you said?
 a : Next it'll be the walls. | Eighths, and they still owe me. | Yes, my lord. What else?
 

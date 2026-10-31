@@ -45,8 +45,8 @@ a : All the way. | Every one. | Always.
 
 scene em_dp_rm_glass
 when topic=caravan topic.kind=left here.region=ridgemere
-a : Glass from the glassworks went to #topic.where# packed in straw and prayers. | Rope from the Ropewalk's off to #topic.where#. Miles of it. | Mossgrave wool to #topic.where#, three wagons' worth.
-b : Prayers break too. | Enough rope to hang the Council. | The roads will smell of sheep for a week.
+a : Glass from the glassworks went to #topic.where# packed in straw and prayers. | Rope from the Ropewalk's off to #topic.where#. Miles of it. | Timberland iron to #topic.where#, three wagons' worth.
+b : Prayers break too. | Enough rope to hang the Council. | The axles will groan for a week.
 a : Fewer than glass. | Don't say that out loud. | Longer.
 
 scene em_dp_sf_wine

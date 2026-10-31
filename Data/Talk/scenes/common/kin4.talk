@@ -261,7 +261,7 @@ a : Then let's dance with it. | Fine. Home. | That explains the singing.
 
 scene kn_fr_regional_ridgemere
 when topic=friends here.region=ridgemere
-a : The Sump's flooded again. | Did you hear a smokehouse on the wharf burned? | They say Grayrock's cutting wages at the quarry.
+a : The Sump's flooded again. | Did you hear a smokehouse on the wharf burned? | They say Grayrock's cutting wages on the wharf.
 b : Then the rats are swimming. | They'll smell it for a month. | Lord Grayrock needs another carriage, I suppose.
 a : Rats swim better than us. | The whole city will. | A gold one.
 b : They've had the practice. | Bright One spare us. | With House colours on the wheels.

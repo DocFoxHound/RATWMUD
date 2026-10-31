@@ -451,18 +451,18 @@ a : Rather you than me. | Still. I like it, this late. | Last one, then.
 
 scene w7s_houses_own
 when topic=work|smalltalk here.region=ridgemere
-a : Is there anything in Ridgemere the Houses don't own? | Everything I touch belongs to a House. | Brick's Greatly's, timber's Fell's, iron's Grayrock's. And me?
-b[self.house=greatly_house] : Not much. Greatly owns the walls you're leaning on. | Greatly pays me. I'll not complain. Out loud. | You? You're Greatly's too, if you live in a brick house.
+a : Is there anything in Ridgemere the Houses don't own? | Everything I touch belongs to a House. | Brick's Greatly's, wine's Fell's, iron's Timberland's. And me?
+b[self.house=greatly_house] : Not much. Greatly built the walls you're leaning on. | Greatly pays me. I'll not complain. Out loud. | You? You're Greatly's too, if you live in a brick house.
 b[self.house] : Little enough. And they pay on time. | My House feeds me. I'll not bite the paw. | You're your own, if you're lucky.
 b[wealth=poor|destitute] : The dirt in the Sump. Nobody wants that. | Yes, and they let us look at it. | You're nobody's. Nor me.
-b : The weather. They're working on it. | Feels that way. | Mossgrave's wool on your back, at least.
+b : The weather. They're working on it. | Feels that way. | Timberland's nails in your boots, at least.
 a : Give them time. | Hm. | Ha.
 
 scene w7s_greatly_rich
 when topic=work|smalltalk here.region=ridgemere
 a : House Greatly's building again. Another wall. | They say Greatly's got more coin than the Council. | Every new house in town is Greatly brick.
 b[self.house=greatly_house] : And I'm the one carrying the bricks. | More than the Council? More than sense. | Good brick, too. I'd know.
-b[self.house=house_fell|grayrock_hall|mossgrave_court] : Brick and paint. Showy stuff. My House makes what lasts. | Coin isn't everything. | Brick needs timber and iron. Remember that.
+b[self.house=house_fell|grayrock_hall|mossgrave_court|timberland_court] : Brick and paint. Showy stuff. My House makes what lasts. | Coin isn't everything. | Brick needs iron and a ship to carry it. Remember that.
 b[wealth=rich] : They're good neighbours to have. And to owe. | Easily. | Sound brick, mind.
 b : Walls and walls. | I'd believe it. | Somebody's getting rich.
 a : Well, somebody's paying for it. | Must be nice. | Hm. Maybe.
