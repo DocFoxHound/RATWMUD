@@ -276,6 +276,22 @@ struct EconomySpec
     bool storeResale = true;
     int resaleMarkup = 75;
     bool storeRule = false;
+    // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md; the world's "loop" and "countryoff" records,
+    // live.economy): residents' needs (needsPaused: doc 66 Phase 5's pause, off by default), the Country spending back
+    // what the store room takes in (country, keeping countryReserve), the gate toll (gateToll percent of each draw's cost
+    // to the treasury), carriage (pennies a wagon load of CarriageLoad weight, in and out), the day's wages by kind of post,
+    // and the goods the Country no longer supplies (countryOff: their real producers' now).
+    bool needsPaused = false;
+    bool country = true;
+    std::int64_t countryReserve = 200;
+    int gateToll = 25;
+    int carriage = 6;
+    int wageKeeper = 14, wageHand = 8, wagePublic = 8, wageCountry = 8;
+    std::set<std::string> countryOff;
+    // Services the treasury pays a share of (doc 68, 5: the city's taxes helping its businesses), by service, in percent:
+    // "carriage" (a share of every delivery's carriage, in and out, paid to the carters). Only from what the treasury
+    // holds over its float and tonight's public wages, and at most a twentieth of its money a day (SubsidyDay).
+    std::map<std::string, int> subsidies{{"carriage", 25}};
 };
 // A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
 struct Kin
@@ -469,11 +485,11 @@ class Society
     static std::string bestFood(const EconomyAccount& account);
     static std::string eatFirst(const EconomyAccount& account);
     static bool hasFood(const EconomyAccount& account);   // !bestFood(account).empty(), without building it.
-    // Needs paused (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5; the user, 2026-10-30): a resident's hunger, which its
-    // buying met, neither grows nor sends it anywhere while this is true; a hungry one (a save's) still eats what it
-    // carries. The user's economy rules replace it (where hunger would grow: the first half of decideAuthored, in
-    // RatwResidents.cpp).
-    static constexpr bool NeedsPaused = true;
+    // Needs paused (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5): a resident's hunger neither grows nor sends it
+    // anywhere, nobody buys, nobody is paid and the Country doesn't spend; a hungry one (a save's) still eats what it
+    // carries. A switch since doc 68 (EconomySpec::needsPaused), off by default: the city's loop runs. Always paused
+    // outside an authored world.
+    bool needsPaused() const { return roster_ != Roster::Authored || authored_.economy.needsPaused; }
     // Goods made (not bought: a grant, a player's work): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -498,7 +514,10 @@ class Society
     // draw: the keeper of a merchant position with a till, whose business has goods to draw, while the world's switch
     // for that kind of good is on and the business's own (its founder's ResidentSpec::internalStore; a founder whose
     // spec is gone counts as on).
+    // Since doc 68 the coins go to the Country (CountryFund), less the gate toll (to the treasury); carriage on the goods
+    // goes to the carters. StoreFund is the old account, read only to move an older save's coins to the Country.
     static constexpr const char* StoreFund = "fund:store";
+    static constexpr const char* CountryFund = "outside:country";
     static constexpr int StoreDrawMost = 1000;        // The most of one good a draw takes.
     enum class StoreUse
     {
@@ -522,6 +541,52 @@ class Society
     std::vector<std::string> restockFromStore(const std::string& keeper, double absoluteDay);
     // For tests: the next draw's goods fail to arrive after it is paid for (its money must come back).
     void failNextStoreCreate() { failStoreCreate_ = true; }
+
+    // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, RatwCityLoop.cpp). Each game hour: households
+    // buy food, needs and comforts (8:00-18:00), the Country buys its basket (8:00-18:00), wages are paid (18:00), shelves
+    // are reckoned from the day's sales (0:00). Runs from decide() while !needsPaused().
+    static constexpr int ShopOpen = 8, ShopShut = 18, PayHour = 18;
+    static constexpr std::int64_t TillFloat = 20, TreasuryFloat = 200;
+    static constexpr int CarriageLoad = 1000;         // A wagon load, in items.json's weight.
+    static constexpr const char* CarriageFund = "fund:carriage";   // Carriage where a world has no carters' yard.
+    // A market's purse ("outside:<id>"), and which market supplies a good (the first in country.json: one for now).
+    static std::string marketFund(const std::string& market) { return "outside:" + market; }
+    std::string marketFor(const std::string& item) const;
+    // Who pays a post: its kind ("keeper", "hand", "watch", "public", "country"; "" for none), the paying account and the
+    // wage. A shop's keeper and its hands (a post whose work room holds exactly one shop): its till; the watch: the
+    // treasury; otherwise the first country.json wage rule with a word in its title; otherwise nobody.
+    struct Pay
+    {
+        std::string kind, payer;
+        int wage = 0;
+    };
+    Pay payOf(const Position& post) const;
+    // A shop's crew (its keeper and hands): the hours an hour it can give to making.
+    int crewOf(const std::string& till) const;
+    // The carters' till that takes carriage now (the one holding least), or CarriageFund where there is none.
+    std::string carters() const;
+    // Carriage on so much of a good, in whole pennies, owed by `payer` (fractions kept against it until they make a penny).
+    std::int64_t carriageOn(const std::string& payer, const std::string& item, int quantity, bool commit, double share = 1);
+    // The subsidised services (doc 68, 5), and what the treasury may still give to them today: at most SubsidyDay of its
+    // money at the day's turn, and never into its float or tonight's public wages (the subsidy shrinks first).
+    static constexpr const char* Subsidised[] = {"carriage"};
+    static constexpr double SubsidyDay = 1. / 20;
+    int subsidyShare(const std::string& service) const;
+    std::int64_t subsidyRoom();
+    // Carriage on a delivery, split: what `payer` pays and what the treasury's subsidy pays (both whole pennies).
+    std::pair<std::int64_t, std::int64_t> carriageSplit(const std::string& payer, const std::string& item, int quantity, bool commit);
+    // A ware's shelf (doc 68, 7): its starting stock, or a quarter more than sold of it yesterday, at most StoreDrawMost.
+    int shelfOf(const std::string& till, const std::string& ware) const;
+    // What the loop did, for reports (world_check --economy): since the day began, and the day before's.
+    struct LoopDay
+    {
+        std::int64_t day = -1;
+        std::int64_t residentsSpent = 0, countrySpent = 0, countryUnspent = 0, drawn = 0, toll = 0, carriage = 0;
+        std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0;
+        int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
+    };
+    const LoopDay& loopToday() const { return loopToday_; }
+    const LoopDay& loopYesterday() const { return loopYesterday_; }
     // A ware's starting stock on a new shop's shelves (resetAuthored): GoodsKept, or SmithSwords of swords.
     static int startingStock(const std::string& ware);
     static constexpr int SmithSwords = 3;
@@ -656,6 +721,23 @@ class Society
     mutable std::unordered_map<std::string, StoreList> storeCache_;
     const StoreList& storeList(const std::string& keeper) const;
     std::unordered_map<std::string, std::int64_t> restockedAt_;   // Keeper -> the game hour it last restocked (not saved).
+    // The city's loop (doc 68; none of it saved: after a restart the shelves start again from the starting stock).
+    std::int64_t loopHour_ = -1;                    // The last game hour the loop ran (-1: not yet; the first is not run).
+    void loopHourly(std::int64_t hour, int season);
+    void householdsShop(int hourOfDay, std::int64_t day, int season);
+    void countryBuys(int hourOfDay);
+    void payWages();
+    void turnShelves();
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_, shelf_;   // Till -> ware -> pieces.
+    std::unordered_map<std::string, std::int64_t> drawnToday_, drawnYesterday_;              // Till -> pennies drawn.
+    std::unordered_map<std::string, double> workBank_;                                         // Till -> crew hours in hand.
+    std::unordered_map<std::string, double> carriageOwed_, tollOwed_;                          // Payer -> pennies owed.
+    std::int64_t subsidyLeft_ = -1, treasuryOwed_ = -1;  // Today's subsidy still to give, and tonight's public wages.
+    std::int64_t gateToll(const std::string& till, std::int64_t cost, bool commit);
+    mutable std::unordered_map<std::string, int> crews_;                                       // Till -> crew (with the records).
+    mutable std::uint64_t crewsRevision_ = 0;
+    LoopDay loopToday_, loopYesterday_;
+    std::set<std::string> dead_;                    // Residents who have died (died, revived): nobody feeds or pays them.
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
     std::unordered_map<std::string, std::size_t> positionIndex_;
     mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).

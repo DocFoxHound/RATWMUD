@@ -19,7 +19,13 @@ One host on one port (default 8765, local only) serves one app (Editor/index.htm
                                  room's switches and every placed merchant's business, what it would draw and whether
                                  it may), POST economy/store {internalStore?, storeMarkup?, storeResale?, resaleMarkup?,
                                  storeRule?}, POST economy/businesses {set: {npc: bool}} or {all: bool, business?,
-                                 district?}; reads for anyone signed in, writes for dm and admin with Atlas's token.
+                                 district?}; and the city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9):
+                                 POST economy/loop {needsPaused?, country?, countryReserve?, gateToll?, carriage?,
+                                 wageKeeper?, wageHand?, wagePublic?, wageCountry?, subsidies?}, POST economy/goods
+                                 {set: {item: bool}} or {all: bool}; reads for anyone signed in, writes for dm and admin
+                                 with Atlas's token.
+         /api/dm/economy         the city's loop on a live world (GET ?world=KEY; POST economy/loop {world, ...}): the
+                                 treasury's and the Country's levers, for dm and admin.
   DM     runs live worlds: the server, live NPC life (kill, revive, move, visit), players, reports, artwork, the
          calendar, money, health, storytellers, chapters. Its routes: /api/dm/... (tools/dungeon_master.py's Handler)
          without the map and NPC authoring that moved to Atlas, and only on live worlds; and the server and imports
@@ -83,7 +89,13 @@ SERVER_ROUTES = frozenset({('GET', '/api/server/status'), ('POST', '/api/server/
 SYNC_ROUTES = frozenset({('GET', '/api/sync/diff'), ('POST', '/api/sync/pull')})
 # Atlas's Economy controls (Docs/Design/67-ridgemere2-city.md, 6): the store room's switches, on Atlas's world. Reads for
 # any signed-in account; writes for dm and admin with Atlas's session token, through live_edit's economy entity.
-ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses')})
+ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses'),
+                            ('POST', '/api/economy/loop'), ('POST', '/api/economy/goods')})
+# The DM's view of the city's loop on a live world (Docs/Design/68-the-country-and-the-city-loop.md, 9): the treasury's
+# levers (the gate toll, wages, the subsidies) and the Country's, read by anyone signed in, changed by dm and admin.
+DM_ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/loop')})
+LOOP_KEYS = tuple(k for k in map_editor.LOOP_DEFAULTS if k != 'countryOff')
+NO_RULE = 'The loop needs the restocking rule on, or shops sell out and stay empty.'
 ECONOMY_NOTE = 'Per world; not carried by Update from live or Import from dev (each world\'s own lever).'
 TAKES_EFFECT = 'Takes effect when a server next starts on this world.'
 
@@ -92,12 +104,21 @@ class Economy:
     """The store room's settings of a dev world (doc 67, 6): the world's switches and markups, and each placed
     merchant's business with what it would draw, as the game reckons it (tools/item_catalog.py mirrors Core)."""
 
-    def __init__(self, connect=None):
+    def __init__(self, connect=None, connect_live=None):
         self._connect = connect or (lambda key: world_db.connect(key, 'editor'))
+        # A live world is the DM's (doc 68, 9: its loop's levers): its own role, not Atlas's.
+        self._connect_live = connect_live or (connect if connect else (lambda key: world_db.connect(key, 'dm')))
+
+    @staticmethod
+    def live(key) -> bool:
+        try:
+            return world_db.kind(key) == 'live'
+        except world_db.DatabaseError:
+            return False
 
     def connect(self, key):
         try:
-            return self._connect(key)
+            return (self._connect_live if self.live(key) else self._connect)(key)
         except world_db.DatabaseError as error:
             raise S.Unavailable(f'Cannot reach the {key} world\'s database: {error}') from error
 
@@ -126,6 +147,7 @@ class Economy:
                 raise D.DMError(f'{key} has no world yet.', 409)
             w = world[0]
             supported = S.store_supported(conn)
+            loop_ok = supported and S.loop_supported(conn)
             economy = S.economy_value(conn, w) or S.default_economy()
             rows = S.dict_rows(conn, '''
                 SELECT n.id, n.name, n.work_label, n.work_area, coalesce(i.name, c.name, n.work_area) AS interior,
@@ -156,17 +178,46 @@ class Economy:
             businesses.append({'npc': r['id'], 'name': r['name'], 'label': r['work_label'], 'business': business,
                                'district': districts.get(r['work_area']) or r['region'] or '', 'interior': r['interior'] or '',
                                'making': making, 'resale': resale, 'internalStore': own, 'effective': effective, 'why': why})
+        # The city's loop (doc 68): its settings, the Country's basket (Data/Items/country.json) with its makers here, and
+        # every good the listed businesses draw, with whether the Country supplies it.
+        import pathlib
+        country = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'Data/Items/country.json').read_text(encoding='utf-8'))
+        present = {b['business'] for b in businesses if b['business']}
+        market = (country.get('markets') or [{}])[0]
+        basket = []
+        for item, share in (market.get('basket') or {}).items():
+            makers = sorted({m for k in C.CRAFTS if item in k['out'] for m in k['makers'] if m in present})
+            basket.append({'item': item, 'name': C.ITEMS.get(item, {}).get('name', item), 'share': share,
+                           'price': C.store_price(item), 'makers': makers})
+        total = sum(b['share'] for b in basket) or 1
+        for b in basket:
+            b['percent'] = round(100 * b['share'] / total, 1)
+        drawn = {}
+        for b in businesses:
+            for g in b['making'] + b['resale']:
+                drawn[g['item']] = drawn.get(g['item'], 0) + 1
+        off = set(economy.get('countryOff') or [])
+        goods = [{'item': g, 'name': C.ITEMS.get(g, {}).get('name', g), 'businesses': n, 'supplied': g not in off}
+                 for g, n in sorted(drawn.items())]
         return {'world': w, 'supported': supported, **{k: economy[k] for k in S.STORE_DEFAULTS}, 'businesses': businesses,
                 'note': ECONOMY_NOTE, 'takesEffect': TAKES_EFFECT,
-                'problem': '' if supported else 'This world lacks migration 0055: the store is on at its defaults and can\'t be changed here.'}
+                'problem': '' if supported else 'This world lacks migration 0055: the store is on at its defaults and can\'t be changed here.',
+                'loop': {k: economy[k] for k in LOOP_KEYS}, 'countryOff': sorted(off), 'loopSupported': loop_ok,
+                'loopProblem': '' if loop_ok else 'This world lacks migration 0056: the city\'s loop runs at its defaults and can\'t be changed here.',
+                'market': {'id': market.get('id', 'country'), 'name': market.get('name', 'the Country'), 'people': market.get('people', '')},
+                'basket': basket, 'goods': goods, 'ruleWarning': '' if economy['storeRule'] else NO_RULE}
 
-    def _edit(self, key, editor, label, change):
-        """One keyed edit of the economy entity (live_edit: logged, so open Atlas sessions follow it)."""
+    def _edit(self, key, editor, label, change, loop=False):
+        """One keyed edit of the economy entity (live_edit: logged, so open Atlas sessions follow it). `loop`: the city
+        loop's settings, which need migration 0056."""
         import live_edit
         with self.connect(key) as conn:
             if not S.store_supported(conn):
                 raise D.DMError('This world lacks migration 0055: the store is on at its defaults and can\'t be changed here '
                                 f'(python3 tools/world_db.py migrate --db {key}).', 409)
+            if loop and not S.loop_supported(conn):
+                raise D.DMError('This world lacks migration 0056: the city\'s loop runs at its defaults and can\'t be changed '
+                                f'here (python3 tools/world_db.py migrate --db {key}).', 409)
             world = conn.execute('SELECT id FROM world.worlds').fetchone()
             if not world:
                 raise D.DMError(f'{key} has no world yet.', 409)
@@ -174,6 +225,19 @@ class Economy:
             after = change(copy.deepcopy(before) if before is not None else S.default_economy())
             if before is not None and live_edit.canonical(before) == live_edit.canonical(after):
                 return {'changed': False}
+            if self.live(key):
+                # A live world has no Workshop sessions to keep current: the row itself, as the DM's role writes it.
+                problems = map_editor.check_economy(after)
+                if problems:
+                    raise D.DMError(' '.join(problems), 400)
+                tables = S.tables_for(conn)
+                keys, columns = tables['live.economy']
+                row = S.economy_row_for(world[0], after, tables)
+                with conn.transaction():
+                    conn.execute(f'INSERT INTO live.economy ({", ".join(columns)}) VALUES ({", ".join(["%s"] * len(columns))}) '
+                                 'ON CONFLICT (world_id) DO UPDATE SET ' + ', '.join(f'{c} = excluded.{c}' for c in columns if c not in keys),
+                                 [S.Jsonb(v) if c in S.JSON_COLUMNS else v for c, v in zip(columns, row)])
+                return {'changed': True}
             seq = live_edit.apply_edit(conn, 'studio-economy', editor, label, [{'key': 'economy', 'before': before, 'after': after}])
         return {'changed': True, 'seq': seq}
 
@@ -187,6 +251,54 @@ class Economy:
         said = ', '.join(f'{k} {"on" if v is True else "off" if v is False else v}' for k, v in data.items())
         result = self._edit(key, editor, f'The store room: {said}', lambda e: {**e, **data})
         return {**result, 'detail': f'The store room: {said}.'}
+
+    def set_loop(self, key, data, editor) -> dict:
+        """The city's loop (doc 68, 9): {needsPaused?, country?, countryReserve?, gateToll?, carriage?, wageKeeper?,
+        wageHand?, wagePublic?, wageCountry?, subsidies?: {service: percent}}."""
+        if not isinstance(data, dict) or not data or set(data) - set(LOOP_KEYS):
+            raise D.DMError('Send any of: ' + ', '.join(LOOP_KEYS) + '.', 400)
+        if 'subsidies' in data and isinstance(data['subsidies'], dict):
+            data = {**data, 'subsidies': {**map_editor.LOOP_DEFAULTS['subsidies'], **data['subsidies']}}
+        problems = map_editor.check_economy({**S.default_economy(), **data})
+        if problems:
+            raise D.DMError(' '.join(problems), 400)
+        def told(k, v):
+            if isinstance(v, bool):
+                return f'{k} {"on" if v else "off"}'
+            if isinstance(v, dict):
+                return f'{k} ' + ', '.join(f'{a} {b}%' for a, b in sorted(v.items()))
+            return f'{k} {v}'
+        said = ', '.join(told(k, v) for k, v in data.items())
+        result = self._edit(key, editor, f'The city\'s loop: {said}', lambda e: {**e, **data}, loop=True)
+        return {**result, 'detail': f'The city\'s loop: {said}.'}
+
+    def set_goods(self, key, data, editor) -> dict:
+        """Which goods the Country supplies (doc 68, 2): {set: {item: bool}} or {all: bool}; a good switched off is its
+        real producers' (the store room refuses it)."""
+        if not isinstance(data, dict):
+            raise D.DMError('Send {"set": {item: true|false}} or {"all": true|false}.', 400)
+        listed = {g['item'] for g in self.read(key)['goods']}
+        if 'set' in data:
+            wanted = data['set']
+            if not isinstance(wanted, dict) or not wanted or not all(isinstance(v, bool) for v in wanted.values()):
+                raise D.DMError('set is {item id: true or false}.', 400)
+            unknown = sorted(set(wanted) - listed)
+            if unknown:
+                raise D.DMError(f'No business here draws: {", ".join(unknown[:8])}.', 400)
+        elif isinstance(data.get('all'), bool):
+            wanted = {g: data['all'] for g in listed}
+        else:
+            raise D.DMError('Send {"set": {item: true|false}} or {"all": true|false}.', 400)
+
+        def change(e):
+            off = set(e.get('countryOff') or [])
+            for item, on in wanted.items():
+                (off.discard if on else off.add)(item)
+            return {**e, 'countryOff': sorted(off)}
+        on = sum(1 for v in wanted.values() if v)
+        detail = f'The Country supplies {on} of {len(wanted)} good{"s" if len(wanted) != 1 else ""} set.'
+        result = self._edit(key, editor, detail, change, loop=True) if wanted else {'changed': False}
+        return {**result, 'count': len(wanted), 'detail': detail}
 
     def set_businesses(self, key, data, editor) -> dict:
         """Per business ({set: {npc: bool}}), or every listed business at once ({all: bool, business?, district?})."""
@@ -350,6 +462,8 @@ def make_handler(studio: Studio):
                 if suite == 'dm':
                     if (method, inner) in SERVER_ROUTES:
                         return self.server_routes(method, inner, parse_qs(parts.query))
+                    if (method, inner) in DM_ECONOMY_ROUTES:
+                        return self.dm_economy(method, parse_qs(parts.query))
                     return self.as_(studio.dm_suite).dispatch(method)
                 if suite == 'atlas' and (method, inner) in SYNC_ROUTES:
                     return self.update_from_live(method)
@@ -445,11 +559,33 @@ def make_handler(studio: Studio):
             if path == '/api/economy/store':
                 result = studio.economy.set_store(key, data, who['username'])
                 action, target = 'economy.store', 'store room'
+            elif path == '/api/economy/loop':
+                result = studio.economy.set_loop(key, data, who['username'])
+                action, target = 'economy.loop', 'city loop'
+            elif path == '/api/economy/goods':
+                result = studio.economy.set_goods(key, data, who['username'])
+                action, target = 'economy.goods', 'the Country\'s goods'
             else:
                 result = studio.economy.set_businesses(key, data, who['username'])
                 action, target = 'economy.businesses', next(iter(data.get('set') or {}), '') if isinstance(data.get('set'), dict) and len(data['set']) == 1 else 'businesses'
             if result.get('changed'):
                 result = self.audited(who, key, action, target, result['detail'], result)
+            return self.reply(200, {**result, **studio.economy.read(key)})
+
+        def dm_economy(self, method, query):
+            """The city's loop on a live world (doc 68, 9): read by anyone signed in, its levers changed by dm and admin
+            (the gate toll, the wages, the subsidies, the Country's switch and reserve), audited; it takes effect when the
+            game server next starts on the world."""
+            who = self.signed_in()
+            if method == 'GET':
+                key = self.live_key(str((query.get('world') or [''])[0]))
+                return self.reply(200, {**studio.economy.read(key), 'worldInfo': shown(key)})
+            self.writer(who)
+            data = self.as_(studio.dm_suite).body()
+            key = self.live_key(str(data.pop('world', '') or ''))
+            result = studio.economy.set_loop(key, data, who['username'])
+            if result.get('changed'):
+                result = self.audited(who, key, 'economy.loop', 'city loop', result['detail'], result)
             return self.reply(200, {**result, **studio.economy.read(key)})
 
         def server_routes(self, method, path, query):

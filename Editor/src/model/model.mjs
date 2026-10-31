@@ -95,7 +95,18 @@ export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeal
 // The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults when absent, and
 // `businesses` ({npc id: {internalStore: false}}, the businesses switched off). tools/map_editor.py checks the same.
 export const STORE_DEFAULTS = {internalStore: true, storeMarkup: 100, storeResale: true, resaleMarkup: 75, storeRule: false};
-const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses'];
+// The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9): optional economy keys at these defaults, as
+// tools/map_editor.py's LOOP_DEFAULTS.
+export const LOOP_DEFAULTS = {needsPaused: false, country: true, countryReserve: 200, gateToll: 25, carriage: 6,
+    wageKeeper: 14, wageHand: 8, wagePublic: 8, wageCountry: 8, countryOff: [], subsidies: {carriage: 25}};
+const LOOP_LIMITS = {countryReserve: 100000, gateToll: 90, carriage: 1000, wageKeeper: 1000, wageHand: 1000, wagePublic: 1000, wageCountry: 1000};
+export const SUBSIDISED = ['carriage'];
+const loopSettingsOk = e => ['needsPaused', 'country'].every(k => !own(e, k) || typeof e[k] === 'boolean')
+    && Object.entries(LOOP_LIMITS).every(([k, max]) => !own(e, k) || integer(e[k], 0, max))
+    && (!own(e, 'countryOff') || (Array.isArray(e.countryOff) && new Set(e.countryOff).size === e.countryOff.length
+        && e.countryOff.every(g => typeof g === 'string' && /^[a-z0-9_]{1,48}$/.test(g))))
+    && (!own(e, 'subsidies') || (object(e.subsidies) && Object.entries(e.subsidies).every(([k, v]) => SUBSIDISED.includes(k) && integer(v, 0, 100))));
+const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS)];
 const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
     && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
     && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
@@ -295,9 +306,11 @@ function checkShape(value) {
         check(object(e) && Object.keys(e).every(k => k in ECONOMY_LIMITS || STORE_KEYS.includes(k))
             && Object.entries(ECONOMY_LIMITS).every(([k, max]) => integer(e[k], 0, max)),
             'Economy requires whole-number treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals within their limits '
-            + '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule and businesses).');
+            + '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses and the loop\'s settings).');
         check(!object(e) || storeSettingsOk(e), "The store room's switches are true or false, its markups whole numbers from 0 to 1000, "
             + 'and each business {internalStore: true or false}.');
+        check(!object(e) || loopSettingsOk(e), "The city's loop: its switches true or false, its numbers whole and within their limits "
+            + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), countryOff distinct item ids, subsidies {carriage: 0-100}.');
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');

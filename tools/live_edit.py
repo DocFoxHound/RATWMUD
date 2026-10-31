@@ -325,10 +325,10 @@ class Batch:
             if problems:
                 raise ValueError(' '.join(problems))
             tables = S.tables_for(self.conn)
-            if tables is S.LEGACY_TABLES and S.store_differs(value):
-                raise ValueError(f'The store room\'s settings can\'t be changed: {S.NO_STORE}.')
-            self.upsert('live.economy', S.economy_row(w, value, store=tables is S.TABLES), tables)
-            if tables is S.TABLES:
+            if refused := S.loop_refused(tables, value):
+                raise ValueError(f'The economy\'s settings can\'t be changed: {refused}.')
+            self.upsert('live.economy', S.economy_row_for(w, value, tables), tables)
+            if tables is not S.LEGACY_TABLES:
                 off = {row[1] for row in S.business_rows(w, value)}
                 self.conn.execute('DELETE FROM live.business_settings WHERE world_id = %s AND NOT (npc_id = ANY(%s))', (w, sorted(off)))
                 for npc in sorted(off):

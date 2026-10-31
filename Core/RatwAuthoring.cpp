@@ -306,8 +306,9 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false, store = false;
+    bool economy = false, herbs = false, store = false, loop = false;
     std::set<std::string> noStore;                 // Businesses kept out of the store room (nostore records), by founder.
+    std::set<std::string> subsidised;              // Services given a subsidy record (doc 68, 5).
     std::vector<std::pair<std::string, Spot>> places;
     std::size_t cellFiles = 0;
     std::map<std::string, std::tuple<std::string, std::string, std::vector<std::string>>> territories;
@@ -520,6 +521,57 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             e.resaleMarkup = resaleMarkup;
             e.storeRule = rule == "on";
             store = true;
+        }
+        else if (command == "loop")
+        {
+            // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9), once:
+            // loop needs on|off country on|off reserve N toll N carriage N wages K H P C. Without it, the defaults.
+            auto& e = roster.economy;
+            std::string w[6], needs, country;
+            long long reserve = -1;
+            int toll = -1, carriage = -1, keeper = -1, hand = -1, publicWage = -1, countryWage = -1;
+            fields >> w[0] >> needs >> w[1] >> country >> w[2] >> reserve >> w[3] >> toll >> w[4] >> carriage >> w[5] >> keeper >>
+                hand >> publicWage >> countryWage;
+            const auto onOff = [](const std::string& word) { return word == "on" || word == "off"; };
+            const auto wage = [](int n) { return n >= 0 && n <= 1000; };
+            if (loop || !fields || !end(fields) || w[0] != "needs" || w[1] != "country" || w[2] != "reserve" || w[3] != "toll" ||
+                w[4] != "carriage" || w[5] != "wages" || !onOff(needs) || !onOff(country) || reserve < 0 || reserve > 100000 ||
+                toll < 0 || toll > 90 || carriage < 0 || carriage > 1000 || !wage(keeper) || !wage(hand) || !wage(publicWage) ||
+                !wage(countryWage))
+                return reject("Invalid or duplicate loop record.");
+            e.needsPaused = needs == "off";
+            e.country = country == "on";
+            e.countryReserve = reserve;
+            e.gateToll = toll;
+            e.carriage = carriage;
+            e.wageKeeper = keeper;
+            e.wageHand = hand;
+            e.wagePublic = publicWage;
+            e.wageCountry = countryWage;
+            loop = true;
+        }
+        else if (command == "subsidy")
+        {
+            // A service the treasury pays a share of (doc 68, 5): subsidy "carriage" PERCENT, once a service.
+            std::string service;
+            int share = -1;
+            if (!quoted(fields, service))
+                return reject("Malformed subsidy record.");
+            fields >> share;
+            const bool known = std::any_of(std::begin(Society::Subsidised), std::end(Society::Subsidised),
+                                           [&](const char* s) { return service == s; });
+            if (!fields || !end(fields) || !known || share < 0 || share > 100 || !subsidised.insert(service).second)
+                return reject("Invalid or duplicate subsidy record.");
+            roster.economy.subsidies[service] = share;
+        }
+        else if (command == "countryoff")
+        {
+            // A good the Country no longer supplies (doc 68, 2): its real producers' now.
+            std::string id;
+            if (!quoted(fields, id) || !end(fields) || !identifier(id, 48) || !itemValid(id))
+                return reject("Malformed countryoff record.");
+            if (!roster.economy.countryOff.insert(id).second)
+                return reject("Duplicate countryoff record: " + id);
         }
         else if (command == "nostore")
         {

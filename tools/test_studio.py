@@ -537,6 +537,14 @@ class StandInEconomy:
         self.calls.append(('set_businesses', key, data, editor))
         return {'changed': True, 'detail': 'The store room for 1 business: 0 on, 1 off.'}
 
+    def set_loop(self, key, data, editor):
+        self.calls.append(('set_loop', key, data, editor))
+        return {'changed': True, 'detail': 'The city\'s loop: gateToll 30.'}
+
+    def set_goods(self, key, data, editor):
+        self.calls.append(('set_goods', key, data, editor))
+        return {'changed': True, 'detail': 'The Country supplies 0 of 1 good set.'}
+
 
 class EconomyRouteTests(unittest.TestCase):
     """Doc 67, 6: the Economy controls' routes with a stand-in: reads for anyone signed in, writes for dm and admin with
@@ -572,7 +580,22 @@ class EconomyRouteTests(unittest.TestCase):
         self.assertEqual([(who['username'], world, action, target) for who, world, action, target, _ in logged],
                          [('dm-user', 'ridgemere2', 'economy.store', 'store room'), ('admin-user', 'ridgemere2', 'economy.businesses', 'rm_smith'),
                           ('dm-user', 'ridgemere2', 'economy.businesses', 'businesses')])
-        self.assertNotEqual(self.call('GET', '/api/dm/economy', token='dm-token')[0], 200, 'not the DM suite\'s')
+        # Doc 68, 9: the loop's levers in Atlas, and the DM's view of a live world's (dm and admin change it, no Atlas token).
+        status, data = self.call('POST', '/api/atlas/economy/loop', {'gateToll': 30}, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertIn(('set_loop', 'ridgemere2', {'gateToll': 30}, 'dm-user'), self.economy.calls)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/goods', {'set': {'fish': False}}, token='dm-token', headers=editor)[0], 200)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/loop', {'gateToll': 30}, token='dm-token')[0], 403, 'Atlas\'s token')
+        live = W.live_world()
+        status, data = self.call('GET', '/api/dm/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.economy.calls[-1], ('read', live))
+        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'subsidies': {'carriage': 10}}, token='viewer-token')[0], 403)
+        status, data = self.call('POST', '/api/dm/economy/loop', {'subsidies': {'carriage': 10}}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertIn(('set_loop', live, {'subsidies': {'carriage': 10}}, 'dm-user'), self.economy.calls)
+        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'ridgemere2', 'gateToll': 1}, token='dm-token')[0], 400,
+                         'the DM works on live worlds')
 
     def test_route_sets_are_apart(self):
         self.assertFalse(ST.ECONOMY_ROUTES & ST.SYNC_ROUTES)
@@ -646,6 +669,41 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         actions = [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit ORDER BY at')]
         self.assertEqual(actions.count('economy.businesses'), 4)
         self.assertEqual(actions.count('economy.store'), 2)
+
+    def test_the_city_loop_and_the_countrys_goods(self):
+        # Doc 68, 9: the loop's settings and the per-good supply, what reaches the NPC records; the DM's levers on the
+        # live world.
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['loopSupported'])
+        self.assertEqual(data['loop'], {k: v for k, v in ST.map_editor.LOOP_DEFAULTS.items() if k != 'countryOff'})
+        self.assertTrue(data['basket'] and all({'item', 'share', 'percent', 'makers'} <= set(b) for b in data['basket']))
+        self.assertIn('restocking rule', data['ruleWarning'], 'the rule is off in this world')
+        goods = {g['item']: g for g in data['goods']}
+        self.assertTrue(goods['iron_bar']['supplied'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/loop', {'gateToll': 20, 'wageHand': 9, 'subsidies': {'carriage': 50}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual((data['loop']['gateToll'], data['loop']['wageHand'], data['loop']['subsidies']), (20, 9, {'carriage': 50}))
+        status, data = self.call('POST', '/api/atlas/economy/goods', {'set': {'iron_bar': False}}, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(data['countryOff'], ['iron_bar'])
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertIn('loop needs on country on reserve 200 toll 20 carriage 6 wages 14 9 8 8', lines)
+        self.assertIn('countryoff "iron_bar"', lines)
+        self.assertIn('subsidy "carriage" 50', lines)
+        for bad in ({'gateToll': 95}, {'subsidies': {'roads': 5}}, {'treasury': 1}):
+            self.assertEqual(self.call('POST', '/api/atlas/economy/loop', bad, token='dm-token', headers=editor)[0], 400, bad)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/goods', {'set': {'nothing_at_all': False}}, token='dm-token',
+                                   headers=editor)[0], 400)
+        status, data = self.call('POST', '/api/atlas/economy/goods', {'all': True}, token='dm-token', headers=editor)
+        self.assertEqual(data['countryOff'], [])
+        # The DM, on the live world: the treasury's levers.
+        status, data = self.call('POST', '/api/dm/economy/loop', {'world': self.live, 'subsidies': {'carriage': 10}}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertIn('subsidy "carriage" 10', self.one(self.live, "SELECT live.people_manifest('greyfen')").split('\n'))
+        self.assertIn('economy.loop', [r[0] for r in self.sql(self.live, 'SELECT action FROM dm.audit')])
 
     def test_a_world_without_migration_0055(self):
         from test_world_sync import unmigrate

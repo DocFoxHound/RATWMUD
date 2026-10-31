@@ -237,8 +237,10 @@ export interface MoneyGroup { count: number; total: number; median: number }
 export interface Money {
     target: Target; day: number | null; total: number; capital: number | null;
     towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
-    /** Facility funds (fund:...): the store room's, fund:store, holds what its draws paid (doc 67, 6). */
+    /** Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2). */
     funds?: {id: string; cash: number}[];
+    /** The carters' yards' tills: what carriage paid them (doc 68, 6). */
+    carters?: {id: string; name: string; label: string; cash: number}[];
     residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;
         shortOfFood: number; byRole: Record<string, MoneyGroup>};
     road: {caravans: number; contracts: number; bandits: number}; players: number;

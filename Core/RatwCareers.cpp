@@ -63,7 +63,7 @@ bool thisWeek(const std::string& id, std::int64_t day)
 
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects)
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country)
         if (id.rfind(prefix, 0) == 0)
             return id.size() <= 80 && id.size() > std::string(prefix).size();
     return false;
@@ -446,6 +446,7 @@ std::vector<CareerNote> Society::died(const std::string& resident, double day)
     }
     if (state_.accounts.count(resident) && !playerAccountId(resident))
         c.estates[resident] = day;
+    dead_.insert(resident);
     forgetCareers();
     return notes;
 }
@@ -455,6 +456,7 @@ std::vector<CareerNote> Society::revived(const std::string& resident)
     std::vector<CareerNote> notes;
     auto& c = state_.careers;
     c.estates.erase(resident);
+    dead_.erase(resident);
     if (!jobOf(resident))
         for (auto& [id, ps] : c.positions)
             if (ps.holder.empty() && ps.lastHolder == resident)

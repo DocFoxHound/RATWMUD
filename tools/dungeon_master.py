@@ -965,8 +965,13 @@ class DungeonMaster:
                            'buyers': buyers}
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
-        # Facility funds (fund:...), the store room's among them (Docs/Design/67-ridgemere2-city.md, 6: what its draws paid).
-        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('fund:')]
+        # Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2): what the
+        # store room's draws paid; and the carters' takings (doc 68, 6), their yards' tills.
+        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith(('fund:', 'outside:'))]
+        import item_catalog
+        carters = [{'id': f'till:job:{n["id"]}', 'name': n['name'], 'label': n['workLabel'], 'cash': accounts[f'till:job:{n["id"]}']}
+                   for n in project.get('people', []) if n.get('role') == 'merchant' and f'till:job:{n["id"]}' in accounts
+                   and item_catalog.business_for(n.get('workLabel', '')) == 'carters']
         purses = sorted(v for k, v in accounts.items() if k in people)
         by_role = defaultdict(list)
         for k, v in accounts.items():
@@ -985,7 +990,8 @@ class DungeonMaster:
                 'bandits': sum(v for k, v in accounts.items() if k.startswith('bandits:'))}
         return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
                 'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
-                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'funds': funds, 'residents': residents, 'road': road,
+                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'funds': funds, 'carters': carters,
+                'residents': residents, 'road': road,
                 'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-')))}
 
     def call_festival(self, who, target, community, name='', in_days=0):

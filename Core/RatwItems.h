@@ -122,6 +122,44 @@ struct Ladder
     double catalogueDay = 12;
 };
 const Ladder& ladder();
+// A household's need besides food (crafts.json `households`, doc 35, Part 7): one of `any`, every `everyDays` (in winter
+// every `winterDays` where that is more than 0), once a home, or once a grown head (`perPerson`).
+struct HouseholdNeed
+{
+    std::vector<std::string> any;
+    double everyDays = 1, winterDays = 0;
+    bool perPerson = false;
+};
+struct Households
+{
+    int reserve = 6;                                // Pennies a head a household keeps back for food before its needs.
+    std::vector<HouseholdNeed> needs;
+};
+const Households& households();
+// The Country and the city's loop (Data/Items/country.json, Docs/Design/68-the-country-and-the-city-loop.md): the
+// markets outside the city (one, the Country, for now), each with its purse ("outside:<id>") and its basket (shares of
+// its day's spending, by good); who pays a post that is neither a shop's nor the watch's (the first rule with a word in
+// the post's title, lower case: a market's id or "treasury"); and the residents' buying.
+struct Market
+{
+    std::string id, name;
+    std::vector<std::pair<std::string, int>> basket;
+};
+struct WageRule
+{
+    std::string payer;
+    std::vector<std::string> words;
+};
+struct Country
+{
+    std::vector<Market> markets;
+    std::vector<WageRule> wages;
+    double foodDays = 2, shortDays = 1;             // A household tops each member up to foodDays; under shortDays it tries again.
+    int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,
+    double comfortsShare = .1;                      // and the share of what is over it spent a day,
+    std::vector<std::string> comforts;              // on these (used up at once).
+};
+const Country& country();
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

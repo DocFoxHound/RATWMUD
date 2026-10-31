@@ -392,6 +392,8 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.cash -= total;
     s.cash += total;
     record(kind, buyer, seller, item, quantity, total);
+    if (seller.rfind("till:", 0) == 0)
+        soldToday_[seller][item] += quantity;      // (A shop's shelves follow its sales: doc 68, 7.)
     return true;
 }
 std::int64_t Society::catalogPrice(const std::string& item)
@@ -547,7 +549,22 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         state_.herbPatch = std::min(60, state_.herbPatch + recovery[season]);
     }
     if (roster_ == Roster::Authored)
+    {
+        // The city's loop (doc 68), each game hour as it turns: hours missed run once each, at most a day of them; the
+        // first hour a society decides (a fresh world, a restore) is not run, so nothing is paid twice.
+        if (!needsPaused())
+        {
+            const auto hour = std::int64_t(std::floor(absoluteDay * 24));
+            if (loopHour_ < 0 || hour < loopHour_)
+                loopHour_ = hour;
+            for (auto h = std::max(loopHour_ + 1, hour - 23); h <= hour; ++h)
+                loopHourly(h, season);
+            loopHour_ = hour;
+        }
+        else
+            loopHour_ = -1;
         return decideAuthored(absoluteDay, bodies);
+    }
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
     const bool night = hour < 6 || hour >= 22;
     const auto available = [&](const std::string& id) {
@@ -1037,8 +1054,18 @@ bool Society::restore(const SocietyState& saved)
         else
             reconcileCareers();
         foundShops();                               // (A save from before tills: its shops' own, once.)
-        if (!state_.accounts.count(StoreFund))
-            openAccount(StoreFund);                 // (A save from before the store room: its fund, empty.)
+        for (const auto& market : items::country().markets)
+            if (!state_.accounts.count(marketFund(market.id)))
+                openAccount(marketFund(market.id)); // (A save from before the Country: its purse, empty.)
+        // (A save from before doc 68: what the store room's fund took in is the Country's now.)
+        if (const auto* old = account(StoreFund))
+        {
+            if (old->cash > 0)
+                shift(StoreFund, marketFund(items::country().markets.front().id), "", 0, old->cash, "fund:store is the Country's now");
+            if (account(StoreFund)->cash == 0 && account(StoreFund)->stock.empty())
+                closeAccount(StoreFund);
+        }
+        loopHour_ = -1;
     }
     return true;
 }
@@ -1379,38 +1406,64 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         return {false, "The store room holds no " + item + " for this business."};
     if (quantity < 1 || quantity > StoreDrawMost)
         return {false, "Draw a whole quantity from 1 to " + std::to_string(StoreDrawMost) + "."};
-    // Exactly what shift and create will check, before either: a draw is whole or nothing.
+    if (authored_.economy.countryOff.count(items::baseOf(item)))
+        return {false, "The Country no longer supplies " + item + ": the city's own producers do."};
+    // Exactly what shift and create will check, before either: a draw is whole or nothing. Its cost is split between the
+    // Country (the market that supplies the good) and the treasury (the gate toll, doc 68, 5); carriage on its weight goes
+    // to the carters (doc 68, 6).
     const auto till = tillOf(keeper);
     const auto& shelves = *account(till);
     const auto cost = storeCost(keeper, item, quantity);
+    const auto toll = gateToll(till, cost, false);
     const auto unit = catalogPrice(item);
+    const auto country = marketFund(marketFor(item));
+    const auto carter = carters();
+    // Carriage in (the carters carry their own free), less the treasury's share of it (doc 68, 5).
+    const auto [carriage, subsidy] = carter == till ? std::pair<std::int64_t, std::int64_t>{0, 0} : carriageSplit(till, item, quantity, false);
     if (!itemValid(item))
         return {false, "No such goods: " + item + "."};
     if (stock(shelves, item) > StockCap - quantity)
         return {false, "The till can't hold that many " + item + ".", unit, cost};
     if (!shelves.stock.count(item) && shelves.stock.size() >= MaxGoodsKinds)
         return {false, "The till holds as many kinds of goods as it may.", unit, cost};
-    if (shelves.cash < cost)
-        return {false, "The till can't pay " + std::to_string(cost) + "p for it.", unit, cost};
-    if (cost > 0)
-    {
-        const auto* fund = account(StoreFund);
-        if (!fund)
-            return {false, "The store room's fund is missing.", unit, cost};
-        if (fund->cash > MoneyCap - cost)
-            return {false, "The store room's fund can hold no more money.", unit, cost};
-        if (!shift(till, StoreFund, "", 0, cost, why))
-            return {false, "The store room could not be paid.", unit, cost};
-    }
+    if (shelves.cash < cost + carriage)
+        return {false, "The till can't pay " + std::to_string(cost + carriage) + "p for it.", unit, cost};
+    const auto fits = [&](const std::string& to, std::int64_t coins) {
+        const auto* a = account(to);
+        return coins == 0 || (a && a->cash <= MoneyCap - coins);
+    };
+    if (cost - toll > 0 && !account(country))
+        return {false, "The Country's purse is missing.", unit, cost};
+    if (carriage + subsidy > 0 && carter == CarriageFund && !account(CarriageFund))
+        openAccount(CarriageFund);
+    if (!fits(country, cost - toll) || !fits("treasury", toll) || !fits(carter, carriage + subsidy))
+        return {false, "The Country, the treasury or the carters can hold no more money.", unit, cost};
+    const auto pay = [&](const std::string& to, std::int64_t coins, const std::string& kind) { return coins == 0 || shift(till, to, "", 0, coins, kind); };
+    if (!pay(country, cost - toll, why) || !pay("treasury", toll, "gate toll: " + why) || !pay(carter, carriage, "carriage in"))
+        return {false, "The store room could not be paid.", unit, cost};   // (Not reached: every check was made above.)
     if (failStoreCreate_ || !create(till, item, quantity, why))
     {
         failStoreCreate_ = false;
-        if (cost > 0)
-            shift(StoreFund, till, "", 0, cost, "refunded: " + why);   // (Paid back: nothing changed.)
+        // (Paid back: nothing changed.)
+        if (cost - toll > 0)
+            shift(country, till, "", 0, cost - toll, "refunded: " + why);
+        if (toll > 0)
+            shift("treasury", till, "", 0, toll, "refunded: gate toll");
+        if (carriage > 0)
+            shift(carter, till, "", 0, carriage, "refunded: carriage");
         return {false, "The goods could not be put in the till; the money was paid back.", unit, cost};
     }
+    gateToll(till, cost, true);
+    if (carter != till)
+        carriageSplit(till, item, quantity, true);
+    if (subsidy > 0 && shift("treasury", carter, "", 0, subsidy, "carriage subsidy"))
+        loopToday_.subsidy += subsidy;
+    drawnToday_[till] += cost + carriage;
+    loopToday_.drawn += cost;
+    loopToday_.toll += toll;
+    loopToday_.carriage += carriage + subsidy;
     return {true, "Drew " + std::to_string(quantity) + " " + itemName(item) + " from the store room for " + std::to_string(cost) +
-                      "p (" + (use == StoreUse::Make ? "making" : "resale") + ").",
+                      "p (" + (use == StoreUse::Make ? "making" : "resale") + (carriage ? ", " + std::to_string(carriage) + "p carriage" : "") + ").",
             unit, cost};
 }
 
@@ -1419,75 +1472,7 @@ int Society::startingStock(const std::string& ware)
     return ware == "sword" ? SmithSwords : GoodsKept;
 }
 
-std::vector<std::string> Society::restockFromStore(const std::string& keeper, double absoluteDay)
-{
-    std::vector<std::string> done;
-    const auto hour = std::int64_t(std::floor(absoluteDay * 24));
-    if (const auto [last, fresh] = restockedAt_.emplace(keeper, hour); !fresh)
-    {
-        if (last->second == hour)
-            return done;                            // At most once a game hour.
-        last->second = hour;
-    }
-    if (!storeOpen(keeper))
-        return done;
-    const auto* job = jobOf(keeper);
-    const auto* business = items::businessFor(job->title);
-    const auto till = tillOf(keeper);
-    const auto sold = spec(job->founder) ? wares(job->founder) : std::vector<std::string>{};
-    for (const auto& ware : sold)
-    {
-        const int start = startingStock(ware);
-        const int have = stock(*account(till), ware);
-        if (have >= start)
-            continue;
-        const items::Craft* craft = nullptr;
-        if (business)
-            for (const auto* k : items::craftsFor(business->id))
-                if (!craft && std::any_of(k->out.begin(), k->out.end(), [&](const auto& o) { return o.first == ware; }))
-                    craft = k;
-        if (craft)
-        {
-            // One batch: what's lacking of its inputs drawn, the inputs used, its goods made (Common quality).
-            const auto& shelves = *account(till);
-            std::int64_t cost = 0;
-            bool can = true;
-            for (const auto& [item, n] : craft->in)
-            {
-                const int lack = std::max(0, n - stock(shelves, item));
-                can = can && (lack == 0 || storeUse(keeper, item) == StoreUse::Make);
-                cost += storeCost(keeper, item, lack);
-            }
-            std::size_t kinds = shelves.stock.size();
-            for (const auto& [item, n] : craft->out)
-            {
-                can = can && itemValid(item) && stock(shelves, item) <= StockCap - n;
-                kinds += shelves.stock.count(item) ? 0 : 1;
-            }
-            for (const auto& [item, n] : craft->in)
-                kinds += shelves.stock.count(item) ? 0 : 1;
-            if (!can || shelves.cash < cost || kinds > MaxGoodsKinds)
-                continue;
-            bool drawn = true;
-            for (const auto& [item, n] : craft->in)
-                if (const int lack = std::max(0, n - stock(*account(till), item)); lack > 0 && drawn)
-                    drawn = drawFromStore(keeper, item, lack, "drawn for a batch of " + craft->id).ok;
-            if (!drawn)
-                continue;                           // (What was drawn stays on the shelves for the next batch.)
-            for (const auto& [item, n] : craft->in)
-                consume(till, item, n, "made into " + craft->id);
-            for (const auto& [item, n] : craft->out)
-                create(till, item, n, "made from the store room");
-            done.push_back("made " + craft->id);
-        }
-        else if (storeUse(keeper, ware) == StoreUse::Resell)
-        {
-            if (drawFromStore(keeper, ware, std::min(StoreDrawMost, start - have), "restocked from the store room").ok)
-                done.push_back("restocked " + ware);
-        }
-    }
-    return done;
-}
+// restockFromStore: RatwCityLoop.cpp (doc 68, 7).
 
 // A Gift or a paw lent to a maker (docs 43 and 53), kept for the economy rules to come.
 void Society::lendGift(const std::string& maker, double lift, double untilDay)

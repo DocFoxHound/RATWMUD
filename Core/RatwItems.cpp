@@ -32,6 +32,8 @@ struct Catalog
     std::vector<Producer> producers;
     std::map<std::string, std::vector<std::string>> supplies, buys;
     Ladder ladder;
+    Households households;
+    Country country;
 };
 
 bool readJson(const std::filesystem::path& path, json::Value& out, std::string& error)
@@ -253,7 +255,65 @@ Catalog build()
             for (const auto& g : goods.items())
                 if (known(g.asString({})))
                     c.supplies[business].push_back(g.asString({}));
+        // Households' needs (doc 35, Part 7; bought again by the city's loop, doc 68).
+        const auto& h = crafts.object("households");
+        c.households.reserve = std::clamp(int(h.number("reserve", 6)), 0, 1000);
+        for (const auto& n : h.array("needs"))
+        {
+            HouseholdNeed need;
+            for (const auto& g : n.array("any"))
+                if (known(g.asString({})))
+                    need.any.push_back(g.asString({}));
+            need.everyDays = n.number("everyDays", 0);
+            need.winterDays = n.number("winterDays", 0);
+            need.perPerson = n.boolean("perPerson");
+            if (!need.any.empty() && need.everyDays > 0 && need.everyDays <= 3650 && need.winterDays >= 0 && need.winterDays <= 3650)
+                c.households.needs.push_back(std::move(need));
+        }
     }
+    // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
+    json::Value country;
+    std::string countryError;
+    if (readJson(dir / "country.json", country, countryError))
+    {
+        const auto known = [&](const std::string& id) {
+            return std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == id; });
+        };
+        for (const auto& m : country.array("markets"))
+        {
+            Market market;
+            market.id = m.string("id");
+            market.name = m.string("name", market.id);
+            for (const auto& [item, share] : m.object("basket").fields())
+                if (known(item) && share.asNumber(0) >= 1 && share.asNumber(0) <= 1000000)
+                    market.basket.push_back({item, int(share.asNumber(0))});
+            const bool idOk = !market.id.empty() && market.id.size() <= 40 &&
+                              std::all_of(market.id.begin(), market.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
+            if (idOk && std::none_of(c.country.markets.begin(), c.country.markets.end(), [&](const Market& x) { return x.id == market.id; }))
+                c.country.markets.push_back(std::move(market));
+        }
+        for (const auto& r : country.object("wages").array("rules"))
+        {
+            WageRule rule;
+            rule.payer = r.string("payer");
+            for (const auto& w : r.array("words"))
+                if (!w.asString({}).empty())
+                    rule.words.push_back(w.asString({}));
+            if (!rule.payer.empty() && !rule.words.empty())
+                c.country.wages.push_back(std::move(rule));
+        }
+        const auto& food = country.object("food");
+        c.country.foodDays = std::clamp(food.number("days", 2), .5, 10.);
+        c.country.shortDays = std::clamp(food.number("shortDays", 1), .1, c.country.foodDays);
+        const auto& comforts = country.object("comforts");
+        c.country.comfortsAbove = std::clamp(int(comforts.number("above", 60)), 0, 1000000);
+        c.country.comfortsShare = std::clamp(comforts.number("share", .1), 0., 1.);
+        for (const auto& g : comforts.array("goods"))
+            if (known(g.asString({})))
+                c.country.comforts.push_back(g.asString({}));
+    }
+    if (c.country.markets.empty())
+        c.country.markets.push_back({"country", "the Country", {}});
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
         c.error = "no wearables in " + (dir / "items.json").string();
@@ -512,6 +572,16 @@ std::vector<std::string> goodsSold(const Business& business, int maxPrice)
 const Ladder& ladder()
 {
     return catalog().ladder;
+}
+
+const Households& households()
+{
+    return catalog().households;
+}
+
+const Country& country()
+{
+    return catalog().country;
 }
 
 const Producer* producerFor(const std::string& workLabel)

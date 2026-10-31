@@ -9,6 +9,20 @@ const p = (n: number | null | undefined) => n === null || n === undefined ? '—
 const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 /** (`me` is taken for the tabs' sake; the money view is the same for every role.) */
+// The funds' names (docs 67, 68): the Country's purse, carriage where a world has no carters' yard, the old store fund.
+function fundName(id: string) {
+    if (id === 'outside:country') return 'The Country\'s purse';
+    if (id.startsWith('outside:')) return `Outside market: ${id.slice(8)}`;
+    if (id === 'fund:carriage') return 'Carriage (no carters\' yard)';
+    if (id === 'fund:store') return 'The store room\'s old fund';
+    return id;
+}
+function fundTitle(id: string) {
+    if (id.startsWith('outside:')) return 'What the store room\'s draws paid it, less the gate toll; it spends it back on the city\'s goods (doc 68)';
+    if (id === 'fund:carriage') return 'Carriage paid where the world has no carters\' yard to take it (doc 68, 6)';
+    return id;
+}
+
 export function MoneyTab({target}: {target: Target; me?: Me}) {
     const [data, setData] = useState<Money | null>(null);
     const [problem, setProblem] = useState('');
@@ -57,8 +71,9 @@ export function MoneyTab({target}: {target: Target; me?: Me}) {
                     <tr><td>Contracts' rewards held</td><td className="num">{p(data.road.contracts)}</td></tr>
                     <tr><td>Bandits' hoards</td><td className="num">{p(data.road.bandits)}</td></tr>
                     <tr><td>Players</td><td className="num">{p(data.players)}</td></tr>
-                    {(data.funds ?? []).map(f => <tr key={f.id}><td title={f.id === 'fund:store' ? 'What the store room\'s draws paid (doc 67): kept in the world, out of circulation' : f.id}>
-                        {f.id === 'fund:store' ? 'The store room\'s fund' : f.id}</td><td className="num">{p(f.cash)}</td></tr>)}
+                    {(data.funds ?? []).map(f => <tr key={f.id}><td title={fundTitle(f.id)}>{fundName(f.id)}</td><td className="num">{p(f.cash)}</td></tr>)}
+                    {(data.carters ?? []).map(c => <tr key={c.id}><td title={`${c.label}: what carriage paid the yard (doc 68)`}>Carters: {c.name}</td>
+                        <td className="num">{p(c.cash)}</td></tr>)}
                 </tbody></table>
             </div>
         </div>}

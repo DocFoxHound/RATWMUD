@@ -46,7 +46,7 @@ SUPPLIES = ic.SUPPLIES
 COUNTRY = json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
 HOUSEHOLDS = ic._CRAFTS_FILE['households']
 # The game's defaults (EconomySpec; Atlas's Economy page changes them per world).
-DEFAULTS = {'storeMarkup': 100, 'resaleMarkup': 75, 'toll': 32, 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8,
+DEFAULTS = {'storeMarkup': 100, 'resaleMarkup': 75, 'toll': 25, 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8,
             'wageCountry': 8, 'carriage': 6, 'reserve': 200}
 HUNGER_A_DAY = .0035 * 14400                 # Hunger a game day (Society: .0035 a second).
 NOURISH_A_DAY = HUNGER_A_DAY / 1.1           # A food's nourishment counts 1.1 times when eaten.
