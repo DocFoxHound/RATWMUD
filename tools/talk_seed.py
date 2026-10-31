@@ -4,8 +4,9 @@ and by the Dungeon Master. Rows already there are kept (an edit is never overwri
 
   live.dialects       the regional grammars, from Data/Talk/grammar/*.grammar (plain stays a file)
   live.npc_voice      each resident's origin and accent (as the game works them out: talk_check --residents --json),
-                      Ridgemere quarter (worldgen's artifacts/realm/buildings.json), traits (from the personality's two
-                      adjectives: TRAITS below, decision 4) and quirk (decision 5)
+                      Ridgemere quarter (the world's artifacts/<world key>/buildings.json, else worldgen's
+                      artifacts/realm/buildings.json), traits (from the personality's two adjectives: TRAITS below,
+                      decision 4) and quirk (decision 5)
   live.npc_relations  families, by rule from each household (decision 8): the eldest man and woman of age within
                       fifteen years of each other are spouses; those at least sixteen years younger than both are their
                       children; one at least eighteen years older than the husband (the household's surname is his) is
@@ -78,12 +79,20 @@ def quarter_of(district: str) -> str:
     return ''
 
 
-def quarters() -> dict[str, str]:
+def manifest(world: str = '') -> Path:
+    """The world's building manifest: artifacts/<world key>/buildings.json (Ridgemere 2.0's, doc 67), else the old
+    realm's."""
+    own = ROOT / 'artifacts' / world / 'buildings.json' if world else None
+    return own if own and own.exists() else BUILDINGS
+
+
+def quarters(world: str = '') -> dict[str, str]:
     """Room (a home's cell) -> its quarter."""
-    if not BUILDINGS.exists():
+    path = manifest(world)
+    if not path.exists():
         return {}
     out = {}
-    for b in json.loads(BUILDINGS.read_text()):
+    for b in json.loads(path.read_text()):
         q = quarter_of(b.get('district') or '')
         for room in b.get('rooms', []):
             if q:
@@ -159,7 +168,7 @@ def main() -> int:
         dialects = [(f.stem, i, f.read_text()) for i, f in enumerate(sorted(GRAMMARS.glob('*.grammar'))) if f.stem != 'plain']
         # Each resident's voice.
         facts = origins(args.world)
-        where = quarters()
+        where = quarters(args.world)
         voices, outside = [], 0
         for n in npcs:
             traits, quirk = traits_of(n['personality'])

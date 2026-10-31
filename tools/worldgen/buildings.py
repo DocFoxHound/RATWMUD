@@ -38,6 +38,7 @@ class Room:
     work: list = dc_field(default_factory=list)       # (x, y) tiles where someone works.
     door: tuple | None = None                          # (x, y) of the street door, for the ground floor.
     stations: list = dc_field(default_factory=list)   # (x, y, station id): work stations (Data/Items/stations.json).
+    back: tuple | None = None                          # (x, y) of a second door on the top edge (doc 67), if any.
 
     @property
     def width(self):
@@ -122,7 +123,28 @@ class Plan:
     def room(self, key, name, description, **kw):
         r = Room(key, name, description, self.g, beds=self.beds, work=self.work, door=self.door,
                  stations=self.stations, **kw)
+        if getattr(self, 'back', None):
+            r.back = self.back
         return r
+
+    # Doc 67 (Ridgemere 2.0): L-shaped plans and a second door. Plans that don't call them are unchanged.
+    def notch(self, corner, w, h):
+        """An L-shape: the `corner` ('NE', 'NW'; the street door's side is S) w x h tiles become solid wall, outside
+        the room, which wraps round them."""
+        xs = range(0, w) if 'W' in corner else range(self.w - w, self.w)
+        ys = range(0, h) if 'N' in corner else range(self.h - h, self.h)
+        for y in ys:
+            for x in xs:
+                self.g[y][x] = self.wall
+        # The notch's inner corner gets its own wall line: the tiles beside it stay walls only where they bound floor.
+        self.notched = (corner, w, h)
+
+    def back_door(self, x=None):
+        """A second door on the top edge, onto another alley (a through-building)."""
+        x = self.w // 2 if x is None else x
+        self.g[0][x] = '+'
+        self.back = (x, 0)
+        self.keep |= {(x, 1), (x, 2)}
 
 
 # The terrain tile each station is drawn with until the engine places stations as objects with their own glyphs
@@ -842,3 +864,321 @@ def palace(rng, style, royals, servants):
     stairs_between(court, royal, 3, h - 3)
     stairs_between(court, below, w - 4, h - 3)
     return court, royal, below, [(('', 3, h - 3), ('up', 3, h - 3)), (('', w - 4, h - 3), ('down', w - 4, h - 3))]
+
+
+# -- doc 67: Ridgemere 2.0's pieces --------------------------------------------------------------------------------
+# New recipes and works kinds only: nothing above changes its output (the old map is made exactly as before).
+
+WORKS.update({
+    'distillery': ((18, 12), 'copper stills over slow fires, a worm-tub of cold water and casks of spirit ageing in rows'),
+    'preserving_house': ((18, 12), 'preserving pans on the hearths, racks of apple rings drying, and crocks sealed with '
+                         'wax'),
+    'builders_works': ((24, 14), 'a forge for hinges, nails and cramps at one end, joiners\' benches at the other, and '
+                       'stacked timber, stone and tile between'),
+    'washhouse': ((22, 13), 'coppers steaming over their fires, tubs and wringers in rows, and wet linen hung from every '
+                  'beam'),
+    'rag_and_bone': ((16, 12), 'heaps of rags, old iron, bottles and broken chairs, sorted into piles nobody else could '
+                     'read'),
+    'bathhouse': ((24, 16), 'a hot pool and a cold, benches round the walls and a stove that roars all day'),
+})
+WORKS_STATIONS.update({
+    'distillery': [('still', 3), ('workbench', 1)],
+    'preserving_house': [('hearth', 2), ('drying_rack', 3), ('workbench', 1)],
+    'builders_works': [('forge', 2), ('workbench', 3)],
+    'washhouse': [],
+    'rag_and_bone': [],
+    'bathhouse': [],
+})
+WORKS_TRADE.update({
+    'distillery': 'distiller', 'preserving_house': 'preserver', 'builders_works': 'builder', 'washhouse': 'launderer',
+    'rag_and_bone': 'rag-and-bone dealer', 'bathhouse': 'bath keeper',
+})
+
+
+def plain_works(p: Plan, kind):
+    """Doc 67's works without stations: their furniture, and the places their hands work."""
+    w, h = p.w, p.h
+    if kind == 'washhouse':                      # Coppers along the back, tubs in rows.
+        for x in range(2, w - 2, 3):
+            p.put(x, 1, 'h')
+        spots = []
+        for y in range(4, h - 4, 3):
+            for x in range(3, w - 4, 4):
+                p.put(x, y, 'O')
+                p.put(x + 1, y, 'O')
+                spots.append((x + 2, y))
+        return spots
+    if kind == 'bathhouse':                      # Two pools of shallow water, benches below them, a stove.
+        for y in range(3, h // 2 - 1):
+            for x in range(3, w // 2 - 2):
+                p.g[y][x] = '~'
+            for x in range(w // 2 + 2, w - 3):
+                p.g[y][x] = '~'
+        p.run(2, h // 2 + 1, 1, 0, w // 2 - 3, 'p')
+        p.run(w // 2 + 2, h // 2 + 1, 1, 0, w // 2 - 4, 'p')
+        p.put(1, 1, 'h')
+        return [(w // 2, 3), (w // 2, h // 2), (3, h - 3)]
+    # rag_and_bone: heaps of crates and barrels.
+    for y in range(2, h - 4, 3):
+        for x in range(2, w - 2):
+            if x % 5 != 0:
+                p.put(x, y, 'x' if (x + y) % 3 else 'O')
+    return [(5, 3), (w - 6, 3), (w // 2, h - 3)]
+
+
+def works_kit(rng, style, kind, workers=4, size=None):
+    """A works of doc 67 (or any laid-out WORKS kind at another size): its stations laid out, its hands' places."""
+    s = STYLES[style]
+    (w, h), _ = WORKS[kind]
+    if size:
+        w, h = size
+    p = Plan(w, h, s['wall'], s['floor'], rng)
+    if WORKS_STATIONS.get(kind):
+        spots = laid_out(p, kind)
+    else:
+        spots = plain_works(p, kind)
+    for x, y in spots[:max(1, workers)]:
+        p.worker(x, y)
+    if not p.work:
+        p.worker(w // 2, h - 3)
+    return p
+
+
+def home_floor(p: Plan, beds, rng):
+    """A family's room: a hearth, a table and a stool, beds along the walls (as many as asked that fit)."""
+    w, h = p.w, p.h
+    p.put(w // 2, 1, 'h')
+    if w >= 8 and h >= 7:
+        p.run(w // 2 - 1, h // 2, 1, 0, 2, 'T')
+        p.put(w // 2 - 2, h // 2, 'c')
+    spots = [(1, 1), (w - 2, 1), (1, 3), (w - 2, 3), (1, 5), (w - 2, 5), (3, 1), (w - 4, 1), (1, 7), (w - 2, 7)]
+    n = 0
+    for x, y in spots:
+        if n >= beds:
+            break
+        if 0 < x < w - 1 and 0 < y < h - 1 and p.free(x, y):
+            p.bed(x, y, rng.choice('bbz'))
+            n += 1
+    if rng.random() < .6:
+        p.put(w - 2, h - 2, rng.choice('xOk'))
+    return n
+
+
+def flats(rng, style, homes=2, beds=(3, 3, 3), size=(12, 10), notch=None, back=False):
+    """Up to three homes stacked in one house (doc 67): a home on each floor at z 0, 1 and 2, each its own interior with
+    its own beds, joined by stairs on different tiles; the ground floor holds the street door (and a back door for a
+    through-building). Returns (plans, stair pairs); the floors' keys are '', 'up' and 'top'."""
+    s = STYLES[style]
+    w, h = size
+    homes = max(1, min(3, homes))
+    plans = []
+    for i in range(homes):
+        p = Plan(w, h, s['wall'], s['home_floor'], rng)
+        if i > 0:
+            p.g[h - 1][w // 2] = s['wall']            # Upstairs has no street door.
+            p.keep = set()
+        if notch:
+            p.notch(*notch)
+        if i == 0 and back:
+            p.back_door()
+        plans.append(p)
+    pairs = []
+    keys = ['', 'up', 'top']
+    # Stairs: floor 0 to 1 by one side wall, 1 to 2 by the other, both clear of the doors.
+    for i in range(1, homes):
+        sx, sy = (w - 2, h - 3) if i == 1 else (1, h - 3)
+        stairs_between(plans[i - 1], plans[i], sx, sy)
+        pairs.append(((keys[i - 1], sx, sy), (keys[i], sx, sy)))
+    for i, p in enumerate(plans):
+        home_floor(p, beds[i] if i < len(beds) else beds[-1], rng)
+    return plans, pairs
+
+
+def market_hall(rng, style, w=20, h=48, counters=6):
+    """A covered market hall, drawn with its long side up the page (its doors on both short ends, the bottom and the
+    top): six stall counters along the long walls, each with its keeper's place behind it and an open tile before it,
+    and the warden's post by the street door. No player places: those are on the square (doc 67, Q8)."""
+    s = STYLES[style]
+    p = Plan(w, h, s['wall'], s['floor'], rng)
+    p.back_door()
+    keepers = []
+    rows = [h // 4, h // 2, 3 * h // 4]
+    for y in rows:
+        for x_counter, x_keeper in ((3, 2), (w - 4, w - 3)):
+            if len(keepers) >= counters:
+                break
+            p.run(x_counter, y - 1, 0, 1, 3, '=')
+            p.put(x_keeper, y - 2, 'x')
+            p.put(x_keeper, y + 2, 'O')
+            keepers.append((x_keeper, y))
+    for x, y in keepers:
+        p.worker(x, y)
+    p.worker(w // 2 + 2, h - 3)                      # The warden, by the street door.
+    for y in range(5, h - 5, 6):
+        p.put(w // 2 - 3, y, 'I')                     # The roof's posts.
+        p.put(w // 2 + 3, y, 'I')
+    return p
+
+
+def gaol_cells(rng, style, w=22, h=20, cells=8):
+    """The cells beneath the Keep: a corridor between two rows of 3 x 3 cells, each fronted by bars (|) with a one-tile
+    opening and a bench at the back, the gaoler's post at the corridor's end. (Links have no lock and nothing closes:
+    the bars are cosmetic.) It has no street door: the stairs come down into the corridor."""
+    s = STYLES[style]
+    p = Plan(w, h, s['wall'], s['floor'], rng)
+    p.g[h - 1][w // 2] = s['wall']
+    p.keep = set()
+    per_row = max(1, cells // 2)
+    for top in (True, False):
+        y0 = 1 if top else h - 4                       # The cell's three rows of floor.
+        bars = y0 + 3 if top else y0 - 1
+        for i in range(per_row):
+            x0 = 2 + i * 4
+            if x0 + 3 >= w - 1:
+                break
+            for y in range(y0, y0 + 3):
+                p.g[y][x0 - 1] = s['wall']
+                p.g[y][x0 + 3] = s['wall']
+            for x in range(x0, x0 + 3):
+                p.g[bars][x] = '|'
+            p.g[bars][x0 + 1] = '+'                   # The cell's opening.
+            p.g[y0 if top else y0 + 2][x0 + 1] = 'p'   # The bench, at the back.
+    p.worker(w - 3, h // 2)
+    p.put(w - 2, h // 2 - 1, 'T')
+    return p
+
+
+def office_floor(rng, style, w, h, desks=6, door=True):
+    """A floor of desks: rows of tables, each with a lectern and a clerk's place, cabinets along the back wall."""
+    s = STYLES[style]
+    p = Plan(w, h, s['wall'], s['floor'], rng)
+    if not door:
+        p.g[h - 1][w // 2] = s['wall']
+        p.keep = set()
+    for x in range(1, w - 1):
+        if x % 4:
+            p.put(x, 1, 'k')
+    n = 0
+    for y in range(4, h - 3, 3):
+        for x in range(2, w - 3, 5):
+            if n >= desks:
+                break
+            if p.free(x, y) and p.free(x + 1, y) and p.free(x, y + 1):
+                p.put(x, y, 'T')
+                p.put(x + 1, y, 'l')
+                p.worker(x, y + 1)
+                n += 1
+    return p
+
+
+def keep_tower(rng, style, w=22, h=20):
+    """The Keep's tower: the Watch Office on the courtyard (desks, the duty sergeant's table, racks by the door), the
+    captain's rooms and the Watch's weapon racks above, and the cells below. Returns (plans, stair pairs): '', 'up',
+    'down'."""
+    s = STYLES[style]
+    office = office_floor(rng, style, w, h, desks=4)
+    office.put(1, h - 2, 'y')
+    office.put(w - 2, h - 2, 'y')
+    office.worker(w // 2 + 2, 3)
+    up = Plan(w, h, s['wall'], s['floor'], rng)
+    up.g[h - 1][w // 2] = s['wall']
+    up.keep = set()
+    up.partition(x=w // 2, gap=h // 2)
+    for y in range(2, h - 2, 2):
+        up.put(w - 2, y, 'y')                          # The Watch's weapon racks.
+    up.put(4, 2, 'k')
+    up.run(3, 5, 1, 0, 4, 'T')
+    up.worker(5, 6)
+    up.worker(w - 4, h // 2)
+    cells = gaol_cells(rng, style, w, h)
+    stairs_between(office, up, 2, h - 3)
+    stairs_between(office, cells, w - 3, h // 2)
+    return [office, up, cells], [(('', 2, h - 3), ('up', 2, h - 3)), (('', w - 3, h // 2), ('down', w - 3, h // 2))]
+
+
+def palace_antechamber(rng, style, w, h):
+    """The Great Palace's antechamber: the court and senate where the Council of Houses sits, the senate hall's layout
+    scaled to the block: benches, a dais, and the great door on the forecourt."""
+    return hall(rng, style, w, h, 'senate')
+
+
+def palace_wing(rng, style, w, h, desks):
+    """The Administrative Wing: two floors of offices. Returns (plans, stair pairs)."""
+    low = office_floor(rng, style, w, h, desks=desks)
+    up = office_floor(rng, style, w, h, desks=desks, door=False)
+    stairs_between(low, up, w - 3, h - 3)
+    return [low, up], [(('', w - 3, h - 3), ('up', w - 3, h - 3))]
+
+
+def palace_residence(rng, style, w, h, royals, servants):
+    """The King's Residence: the receiving rooms on the forecourt, the royal bedchambers above, and the kitchens and the
+    servants' hall beneath (as palace() lays them). Returns (plans, stair pairs): '', 'up', 'down'."""
+    s = STYLES[style]
+    court = Plan(w, h, s['wall'], s['floor'], rng)
+    for x in range(2, w - 2, 3):
+        court.g[0][x] = 'n'
+    court.put(w // 2, 2, 'e')
+    for x in (5, w - 6):
+        for y in range(4, h - 3, 3):
+            court.put(x, y, 'I')
+    for y in range(3, h - 1):
+        if court.g[y][w // 2] == court.floor:
+            court.g[y][w // 2] = 'R'
+    court.worker(w // 2 + 2, 3)
+    court.worker(w // 2 - 3, 4)
+    royal = Plan(w, h, s['wall'], s['home_floor'], rng)
+    royal.g[h - 1][w // 2] = s['wall']
+    royal.keep = set()
+    royal.partition(x=w // 3, gap=h // 2)
+    royal.partition(x=2 * w // 3, gap=h // 2)
+    for x, y in [(2, 2), (w // 3 + 2, 2), (2 * w // 3 + 2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3)][:max(2, royals)]:
+        royal.bed(x, y)
+    royal.put(w // 2, h - 4, 'F')
+    below = Plan(w, h, s['wall'], s['home_floor'], rng)
+    below.g[h - 1][w // 2] = s['wall']
+    below.keep = set()
+    below.run(1, 1, 1, 0, 8, 'v')
+    below.station(9, 1, 'hearth', 'h')
+    below.run(2, 4, 1, 0, 10, 'T')
+    below.worker(5, 3)
+    below.worker(8, 5)
+    for i in range(max(2, servants)):
+        below.bed(w - 3 - 2 * (i % 8), 1 + 3 * (i // 8), 'z')
+    below.run(1, h - 3, 1, 0, 8, 'O')
+    stairs_between(court, royal, 3, h - 3)
+    stairs_between(court, below, w - 4, h - 3)
+    return [court, royal, below], [(('', 3, h - 3), ('up', 3, h - 3)), (('', w - 4, h - 3), ('down', w - 4, h - 3))]
+
+
+def dorter(rng, style, cells=10, w=20, h=12):
+    """The abbey's dorter: a dormitory of cells, a pallet in each, along both long walls."""
+    s = STYLES[style]
+    p = Plan(w, h, s['wall'], s['home_floor'], rng)
+    n = 0
+    for x in range(2, w - 2, 2):
+        for y in (1, h - 3):
+            if n < cells and p.free(x, y):
+                p.bed(x, y, 'z')
+                n += 1
+    p.run(w // 2 - 2, h // 2, 1, 0, 4, 'T')
+    p.put(1, h // 2, 'k')
+    p.worker(w // 2, h // 2 + 1)
+    return p
+
+
+def shed(w, h):
+    """A shed, privy or lean-to on the outdoor map: solid, with no interior (rows to stamp)."""
+    if h <= 2:
+        return ['#' * w] * h
+    return ['#' * w] + ['#' + 'L' * (w - 2) + '#' for _ in range(h - 2)] + ['#' * w]
+
+
+def boarded(w, h):
+    """A boarded-up house on the outdoor map: walls with boarded windows round a fallen roof, solid, no interior."""
+    rows = []
+    for y in range(h):
+        if y in (0, h - 1):
+            rows.append(''.join('|' if 0 < x < w - 1 and x % 3 == 1 else '#' for x in range(w)))
+        else:
+            rows.append('#' + ''.join('Z' if (x * 7 + y * 3) % 5 else 'L' for x in range(1, w - 1)) + '#')
+    return rows

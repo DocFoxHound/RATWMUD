@@ -11,6 +11,7 @@ from .canvas import Canvas
 # Door side -> quarter turns that carry a bottom-edge door there.
 TURNS = {'S': 0, 'W': 1, 'N': 2, 'E': 3}
 STEP = {'S': (0, 1), 'N': (0, -1), 'E': (1, 0), 'W': (-1, 0)}
+OPPOSITE = {'S': 'N', 'N': 'S', 'E': 'W', 'W': 'E'}
 LIGHT = {
     'house': {'artificial': .7, 'daylightAccess': .4, 'tone': 'warm'},
     'shop': {'artificial': .9, 'daylightAccess': .5, 'tone': 'warm'},
@@ -60,14 +61,28 @@ class Site:
         self.ids.add(bid)
         return bid
 
-    def place(self, b: Building, x0: int, y0: int, facing: str, region: str, open_door=True):
-        """Stamp the building's block with its door on `facing`, and add its interiors and links."""
+    def place(self, b: Building, x0: int, y0: int, facing: str, region: str, open_door=True, mask=None, ground=None):
+        """Stamp the building's block with its door on `facing`, and add its interiors and links.
+
+        Doc 67: `mask` (a boolean array the block's size, as placed) stamps only its True tiles, for an L-shaped block;
+        a ground floor with a back door (Room.back) gets a second door on the opposite side, `{id}_door_2`, with its own
+        link; `ground` gives the block's height (else the ground under its middle)."""
         c = self.canvas
         w, h = footprint_size(b, facing)
-        ground = float(c.heights[y0 + h // 2, x0 + w // 2])
-        c.rect(x0, y0, w, h, STYLES[b.style]['outer'], ground)
-        if w > 2 and h > 2:
-            c.rect(x0 + 1, y0 + 1, w - 2, h - 2, b.roof or STYLES[b.style]['roof'][0], ground)
+        if ground is None:
+            ground = float(c.heights[y0 + h // 2, x0 + w // 2])
+        if mask is None:
+            c.rect(x0, y0, w, h, STYLES[b.style]['outer'], ground)
+            if w > 2 and h > 2:
+                c.rect(x0 + 1, y0 + 1, w - 2, h - 2, b.roof or STYLES[b.style]['roof'][0], ground)
+        else:
+            whole = np.zeros_like(c.locked)
+            whole[y0:y0 + h, x0:x0 + w] = mask
+            c.paint(whole, STYLES[b.style]['outer'], ground)
+            inner = whole.copy()
+            for dy_, dx_ in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                inner &= np.roll(whole, (dy_, dx_), (0, 1))
+            c.paint(inner, b.roof or STYLES[b.style]['roof'][0], ground)
         (dx, dy), outside = door_tile(x0, y0, w, h, facing)
         c.codes[dy, dx] = ord('+')
         bid = self.unique(b.name)
@@ -99,6 +114,16 @@ class Site:
                 cid, lx, ly = self.cell_at(dx, dy)
                 self.links.append({'id': f'{bid}_door', 'name': f'{b.name} door', 'kind': 'door', 'open': open_door,
                                    'a': {'cell': cid, 'x': lx, 'y': ly}, 'b': {'cell': rid, 'x': ix, 'y': iy}})
+                if getattr(room, 'back', None):
+                    (bx_, by_), back_out = door_tile(x0, y0, w, h, OPPOSITE[facing])
+                    c.codes[by_, bx_] = ord('+')
+                    jx, jy = turn(room.back)
+                    cid, lx, ly = self.cell_at(bx_, by_)
+                    self.links.append({'id': f'{bid}_door_2', 'name': f'{b.name} back door', 'kind': 'door',
+                                       'open': open_door, 'a': {'cell': cid, 'x': lx, 'y': ly},
+                                       'b': {'cell': rid, 'x': jx, 'y': jy}})
+                    record['door2'] = {'x': bx_, 'y': by_}
+                    record['outside2'] = {'x': back_out[0], 'y': back_out[1]}
         keys = {room.key: (bid if not room.key else f'{bid}_{room.key}', room) for room in b.rooms}
         for n, ((ka, xa, ya), (kb, xb, yb)) in enumerate(b.stairs):
             (ra, room_a), (rb, room_b) = keys[ka], keys[kb]
