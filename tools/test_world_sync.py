@@ -665,10 +665,38 @@ def free_port():
 class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
     """The game server closes for maintenance (status 76) and will not start while its world is in it."""
 
-    def start(self, key):
-        return subprocess.Popen([str(SERVER), '--database', key, '--port', str(free_port()), '--for', '60'],
+    def start(self, key, *extra, port=None):
+        return subprocess.Popen([str(SERVER), '--database', key, '--port', str(port or free_port()), '--for', '60', *extra],
                                 env={**os.environ, 'RATW_DATABASE_URL': W.libpq_conninfo(key, 'game'), 'RATW_AI': 'off'},
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+    def test_a_dev_world_s_new_build_restarts_its_server_and_not_a_scratch_one(self):
+        # (DEV run as the server: Atlas's edits reach it as a new build, announced like a release; doc 66, Progress.)
+        with W.connect(self.dev, 'editor') as editor:
+            world_build.build(editor, 'test')
+        port = free_port()
+        server, scratch = self.start(self.dev, port=port), self.start(self.dev, '--scratch')
+        try:
+            for process in (server, scratch):
+                for line in process.stdout:
+                    if 'listening on port' in line:
+                        break
+            holder = WS.status(self.dev)['serverHolder']
+            self.assertEqual((holder['port'], holder['local'], holder['pid']), (port, True, server.pid), holder)
+            with W.connect(self.dev, 'editor') as editor:
+                build, _ = world_build.build(editor, 'test')
+            out, _ = server.communicate(timeout=30)
+            self.assertEqual(server.returncode, 75, out)
+            self.assertIn(f'RATW_RELEASE_RESTART build={build}', out)
+            time.sleep(3)
+            self.assertIsNone(scratch.poll(), 'a scratch server stays on the build it loaded')
+            scratch.kill()
+            self.assertIn('RATW_RELEASE_IGNORED', scratch.communicate()[0])
+        finally:
+            for process in (server, scratch):
+                if process.poll() is None:
+                    process.kill()
+                    process.communicate()
 
     def test_the_server_closes_for_maintenance_and_waits_for_it_to_end(self):
         with W.connect(self.dev, 'editor') as editor:

@@ -57,12 +57,15 @@ archive `dev-old`: Progress, "DEV is Ridgemere 2.0; the same map".
   from live or be imported into it. Side projects have none.
 - Each database holds one world, as now. Schemas never drift: `world_db.py migrate` covers every registered world.
 
-**Local choices**, `Saved/Config/worlds.local.json` (not in git): `{"atlas": "dev", "live": "prod"}` (was
-`"ridgemere2"`, the same world since 2026-10-31).
+**Local choices**, `Saved/Config/worlds.local.json` (not in git): `{"atlas": "dev", "live": "dev"}` while it is
+missing (since 2026-10-31, DEV is the only server: Progress, "DEV as the server"; was `"live": "prod"`).
 
 - `atlas`: the dev world Atlas, the world builder, local and scratch servers and the talk/voice tools use by default.
   Switched in Atlas (or `world_db.py use KEY`).
-- `live`: the world the live game server runs. Switched in the DM only, only during maintenance, with a warning.
+- `live`: the world the live game server runs (`tools/live.sh server` without a key): a live world, or a dev world
+  run as the server. Switched in the DM only, only during maintenance, with a warning.
+- `dm` (optional): the DM suite's world, any world, chosen in the DM's top bar (or `world_db.py dm KEY`); while unset,
+  the live server's.
 
 **Commands** (`tools/world_db.py`):
 
@@ -738,3 +741,117 @@ it: `World::makeRequestedResidents` (files, the fast run) sets the record's and 
 placeholder names were never one sex's. Tests: `careers_behaviors` (each child a son or a daughter; 4,000 couples about
 half and half; one couple's days about half and half; the same couple and day give the same child), `sim_fast_behaviors`
 (a made resident's body is the sex its record says).
+
+### DEV as the server: the DM on any world, Play, the local network (2026-10-31)
+
+The user, 2026-10-31: "make sure dm is pointed to the dev server and can run it like a live server"; "I want this to be
+a default thing ... restart Dev as our only server, with atlas and DM touching it, and reachable over my network"; and
+"the Play button on Atlas should launch the browser to connect with the server its working on (Dev) ... You can set
+Atlas and [the DM] to point to different servers at the same time, or even the same server at the same time." Branch
+`r2-dm-dev`. PROD stays shut down (in maintenance) and selectable.
+
+**The defaults.** With no local file, `{"atlas": "dev", "live": "dev"}`: `bash tools/live.sh server` runs DEV, the DM
+works on DEV, Atlas edits DEV. The live choice (`world_db.live_world()`) may now be any registered world, a dev one
+included (`world_db.py serve-world KEY --yes`, and the DM's switch, list every other world; a dev world is "run as the
+server"); `world_db.served(key)`. Switching to the world already live changes nothing (it used to put it in maintenance).
+
+**Each suite its own world.** Atlas's world (a dev world, its picker as before) and the DM's world (any world: a new
+local choice `dm`, the DM's top-bar picker, `POST /api/studio/dm-world`, `world_db.py dm KEY`, `world_db.dm_world()`;
+unset, the live server's) are chosen apart: the same world or two. Every DM page acts on the DM's world (its requests
+name it; the DM handler's default is it too: `make_handler(..., allowed=, default=)`), every Atlas edit on Atlas's. The
+choices are this computer's, so they hold across restarts and for every browser; a page already open keeps acting on
+the world its header names (calls carry their world) until it is reloaded, and the picker asks first. The front end
+routes the DM components' calls by suite (`api.ts` `setSuite`), not by the world's kind, so the DM suite reaches its
+routes on a dev world while Atlas's NPC pages keep theirs; in the DM, its world counts as one players are in (the
+confirmations).
+
+**What the DM does on a dev world**: everything it does on a live one (players, NPC life, storylines and chapters, the
+calendar, reports, artwork, money, health, storytellers; the server's state and maintenance). Factions, NPC and area
+authoring and talk stay Atlas's (section 3), on the same world when both point at it. **Refused, with why**: Import from
+dev (the Server tab shows "Atlas's edits to the server" instead: "{name} is a dev world: Atlas edits it directly, so
+there is nothing to import into it ..."), releases and rollback ("it has builds, not releases"); `POST /api/dm/import`
+and `/api/dm/rollback` answer 409. Pointing the DM at PROD brings Import from dev back.
+
+**What `--world-kind` changes in the game server**: only the store room's console (`/store`, dev worlds' DMs, doc 67);
+nothing about saving, players' progress, the DM's actions, the NPC Mind, maintenance, ownership or restarts. A dev world
+run as the server (not `--scratch`) saves its checkpoint and journal, holds the one-server lock, applies the DM's queued
+actions, runs the Mind and spawn rules, and closes for maintenance, as a live one does.
+
+**How Atlas's edits reach the running server.**
+
+| Edit | Reaches the running server |
+|---|---|
+| Atlas's NPC pages (NPCs & areas, factions, talk: the DM's methods, `/api/atlas/layers/`), the DM's kill/revive and visitors | at once: they queue `npc.sync` and the like in `dm.actions`, which the server applies |
+| The Workshop (map, cells, interiors, doors, places, its people and slots), Update from live | with a new build: the DM's Server tab **⟳ Rebuild from Atlas's edits** (`POST /api/dm/server/rebuild`), or `python3 tools/world_build.py dev` |
+
+A dev world's new build is now announced like a release (`world_build.build` NOTIFYs `ratw_release` with `{build,
+release: null}`; `world_build.announce` re-announces a current one). The game server (`Game::watchReleases`) takes a
+newer build as a new version: it tells connected players "A new version of the world (build N) has been made", and once
+nobody is connected saves and exits 75; `tools/live.sh` brings the build up to date (`prepare`) and starts it again.
+Saves, players' progress and the DM's actions carry over (the same start-up path as a release). **A scratch server
+stays on the build it loaded** (`RATW_RELEASE_IGNORED`; it used to exit 75 on a release too). The Server tab shows the
+newest build and whether it is current with Atlas's edits (`world_build.status`).
+
+**Atlas and the DM on one world: conflicts checked.**
+
+- Keyed edits (Atlas's Workshop, its NPC pages, the economy controls, from either suite) carry "before" values and
+  raise the world's revision: two editors never overwrite each other silently (refused, naming who).
+- The DM's own writes are `dm.*` (its queue, stories, audit), `live.npc_state` (kill and revive) and story visitors:
+  nothing in Atlas, a build or a whole-world save writes them. A build writes only `world.builds`/`build_cells` and the
+  roster's slot assignments.
+- **Found and guarded**: a whole-world save (`world_store.save_world`: the Ridgemere 2.0 generator's write,
+  `apply_terrain.py`) deleted every NPC row its project didn't list. The game server's births, newcomers and spawn
+  rules' NPCs are inserted into `live.npcs` without raising the world's revision, so a project read before them (the
+  generator runs for minutes) would have removed them silently. Now `world_store.keep_made_by_the_server` keeps NPCs
+  with `origin = 'runtime'` or a `spawn_id` the save doesn't list; removing one is a keyed edit (Atlas's delete).
+- Not guarded (reported): Atlas's open Workshop session doesn't learn of NPCs the server makes until it reloads (it
+  can't edit what it doesn't show, so nothing is lost); a pull (Update from live) into DEV while its server runs moves
+  live data under it (warned already; refused today anyway, the maps differ).
+
+**Starting a server from the studio.** `POST /api/dm/server/start {world}` (the Server tab's **▶ Start its game
+server**) and Atlas's Play start `bash tools/live.sh server KEY --port N` in the background (`studio.Servers`; the first
+free port of 7788-7799; log `Saved/Logs/server-KEY.log`), once (a second press while it starts is told so); refused
+while a server holds the world. It runs as if started by hand (restarts onto builds, maintenance), and outlives the
+studio.
+
+**Play.** Atlas's ▶ Play opens, in the user's own browser, the game of the server running Atlas's world, at the address
+the studio was reached by (`http://192.168.0.121:7788/` from another computer; `gameUrl`), not a playtest on the studio's
+computer. The game server now names its port in its claim on the world (`application_name` "ratw_server pid N on HOST
+port P", " local" when bound to 127.0.0.1; `Options::webPort`/`webBind`); `world_sync.server_holder` reads it (also in
+`status()` as `serverHolder`) and `GET /api/atlas/play/server` answers `{play: {port, host, local}, why, canStart, build}`
+(host set only when the server runs on another computer). With none running it says why ("No game server is running
+... Start it here, or on the studio's computer: bash tools/live.sh server dev") and offers **▶ Start its server**
+(`POST /api/atlas/play/server/start`), then waits for it. The old playtest of an exported copy stays, folded away as
+"Or playtest a copy on the studio's computer". The DM's Server tab has **▶ Open its game** too.
+
+**The local network by default.** `bash tools/studio.sh` serves 0.0.0.0 (`--host 127.0.0.1` for this computer only;
+the LAN names it trusts as before, 863f66a) and prints the addresses. The game server through `tools/live.sh server`
+and `tools/server.sh` binds 0.0.0.0 (`RATW_BIND=127.0.0.1` for local only) and prints its LAN addresses; scratch servers
+(`--scratch`), servers with `--dev-identity` and `tools/play.sh` (this machine's playtests) stay on 127.0.0.1, as do the
+test harnesses (they run `ratw_server` directly). The game server has no Host check that refuses another computer: a
+WebSocket's Origin must match its Host (`web::originAllowed`), which a page served by the server always does, and the
+client connects to the page's own host (`gameUrl` in `Client/src/net/connection.ts`).
+
+Start, for the user (from the repository; the studio and the server are separate processes):
+
+    bash tools/studio.sh               # Atlas and the DM: http://THIS-COMPUTER:8765/ (both on DEV)
+    bash tools/live.sh server          # DEV's game server: http://THIS-COMPUTER:7788/ (or the DM's ▶ Start)
+
+**Found running DEV for real: its save didn't load.** The first real DEV server ran, saved on a new build and exited
+75; `live.sh` started it again on the new build, and the restore was refused ("Invalid saved society or money ledger"):
+a saved resident's task may be at most 40 characters, and an apprentice's is "apprenticed: " and its master's title
+("apprenticed: cooking for the King's household", 45). Every restart of DEV after its first save would have failed. The
+limit is now `MaxTaskText` (160; `society_tests`: a long apprentice's task restores, one past the limit is refused);
+with it the saved checkpoint loads (checked on a scratch server). DEV's game data was put back as it was before that
+run (it had no checkpoint; one stale `game.characters` row, which the first real save will drop, as any fresh start's
+does).
+
+Not changed: the DM accounts stay in PROD's database (`dungeon_master.ACCOUNTS`), so signing in reads and writes
+`dm.sessions` there while PROD's game server is shut down.
+
+Tests: `test_world_db` (the defaults, any world served, a dev world served and switched back, the DM's own choice,
+`dm` reserved), `test_studio` (`ServedDevRouteTests`: the DM on DEV, import and rollback refused with why, Rebuild,
+starting a server once, Play's address and its refusals; the DM's picker apart from Atlas's; the PROD flow as before with
+the live choice on PROD), `test_world_store` (a whole-world save keeps a newborn), `test_world_sync` (a real server on a
+dev world restarts on a new build with 75 and names its port; a scratch one stays), `Editor/src/lib/sync.test.ts`
+(`gameUrl`).

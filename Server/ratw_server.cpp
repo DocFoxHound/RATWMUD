@@ -615,6 +615,8 @@ int main(int argc, char** argv)
     if (options.scratch && runFor <= 0)
         runFor = 3600;                              // A scratch server forgotten stops within the hour (--for to change it).
     options.connectionLabel = "Standalone server · 20 Hz";
+    options.webPort = port;                         // (Named in its claim on the world: the studio's Play opens it.)
+    options.webBind = bind;
     std::string problem;
     if (!sys::zlibAvailable(problem) || !sys::cryptoAvailable(problem))
     {

@@ -76,6 +76,21 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(S.save_world(self.conn, loaded, revision), revision + 1)
         self.assertEqual(S.load_world(self.conn, 'greyfen')[0]['cells'][0]['terrain'][3][5], '~')
 
+    def test_a_whole_world_save_keeps_npcs_the_game_server_made_since_it_was_read(self):
+        # (A dev world run as the server, doc 66: births and newcomers land in live.npcs without raising the world's
+        # revision, so a project read before them, e.g. the generator's or apply_terrain's, must not delete them.)
+        self.create(greyfen())
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        columns = [c for c in S.TABLES['live.npcs'][1] if c not in ('id',)]
+        self.conn.execute(f"INSERT INTO live.npcs (id, origin, {', '.join(columns)}) SELECT 'born_x', 'runtime', "
+                          f"{', '.join(columns)} FROM live.npcs WHERE id = 'wren'")
+        gone = next(p['id'] for p in loaded['people'] if p['id'] != 'wren')
+        loaded['people'] = [p for p in loaded['people'] if p['id'] != gone]       # An authored NPC removed on purpose.
+        S.save_world(self.conn, loaded, revision)
+        ids = {r[0] for r in self.conn.execute('SELECT id FROM live.npcs').fetchall()}
+        self.assertIn('born_x', ids, 'born while the project was open: kept')
+        self.assertNotIn(gone, ids, 'an authored NPC the save leaves out still goes')
+
     def test_loads_after_the_first_reuse_the_ground_but_never_a_stale_one(self):
         self.create(greyfen())
         first, revision = S.load_world(self.conn, 'greyfen')

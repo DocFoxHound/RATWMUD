@@ -9,6 +9,7 @@
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ratw_root/tools/game.sh"
+export RATW_BIND="${RATW_BIND:-127.0.0.1}"    # (This machine's game: not the local network, as server.sh is by default.)
 args=() identity="" name="" port=""
 while [[ $# -gt 0 ]]; do
   case "$1" in

@@ -223,7 +223,9 @@ from `RATW_DATABASE_URL`, which `live.sh` builds from `Database/.env`.
   connected it saves and exits with status 75; `live.sh` restarts it at once, and
   start-up loads the new build and restores the save. Reusing start-up rather
   than swapping worlds inside a running server keeps one tested path for loading
-  and restoring.
+  and restoring. A dev world's new build (`world_build.py`, the DM's Rebuild) is
+  announced the same way (2026-10-31: DEV run as the server, doc 66 Progress);
+  a scratch server stays on the build it loaded.
 - **libpq** is loaded at run time (`Core/RatwPg.cpp`, `dlopen`), not linked: the
   engine's toolchain uses its own older C library, and a server that does not use
   the database never needs PostgreSQL installed.
@@ -415,7 +417,7 @@ There are no longer only DEV and PROD: every world is listed in a registry, `Dat
 one database each, and is a **dev** world (edited in Atlas, run on local and scratch servers) or a **live** one (what
 players join). A dev world may name an **upstream** live world it is a working copy of (DEV's is PROD). Which world
 Atlas and the tools use, and which one the live server runs, is each computer's choice, `Saved/Config/worlds.local.json`
-(never committed; DEV and PROD while it is missing). Docs/Design/66-worlds-atlas-and-dm.md, section 1, has
+(never committed; DEV for both while it is missing, since 2026-10-31). Docs/Design/66-worlds-atlas-and-dm.md, section 1, has
 the design and its Progress section what was built.
 
 **Since 2026-10-31 DEV is Ridgemere 2.0** (the user: "this map and all of these changes should definitely touch Dev"):
@@ -442,5 +444,15 @@ the design and its Progress section what was built.
   other tools.
 - Atlas and the DM are one tool, `bash tools/studio.sh` (`editor.sh` and `dungeon-master.sh` open it on their suite),
   on http://127.0.0.1:8765, signed in with a DM account (doc 66, section 3).
+- **DEV is the only server** (2026-10-31; doc 66, Progress, "DEV as the server"): with no local file the live choice is
+  `dev` too, so `bash tools/live.sh server` runs DEV and the DM works on it while Atlas edits it. The DM's world is its
+  own choice (`world_db.py dm KEY`, the DM's top bar), apart from Atlas's; PROD is shut down (in maintenance) and stays
+  selectable (`world_db.py serve-world prod --yes`, during maintenance).
+- **On the local network by default**: the studio serves 0.0.0.0 (`bash tools/studio.sh`; `--host 127.0.0.1` for this
+  computer only) and so does the game server through `tools/live.sh server` / `tools/server.sh` (`RATW_BIND=127.0.0.1`
+  for this computer only); both print their LAN addresses. Another computer opens `http://THIS-COMPUTER:8765/` (sign in)
+  and `http://THIS-COMPUTER:7788/` (play). The game server takes any Host whose WebSocket Origin matches it, and the
+  client connects to its page's own host. Scratch servers, `--dev-identity` servers, `tools/play.sh` and the tests stay
+  on 127.0.0.1. The connection isn't encrypted: a home network only.
 - Push to live is now pull and import with conflicts between a dev world and its upstream (`world_sync.py`, Push to
   live above; doc 66, Phase 4).

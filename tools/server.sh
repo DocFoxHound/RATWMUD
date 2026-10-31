@@ -9,16 +9,20 @@
 #                                               tools/live.sh and scratch.sh set, else made from Database/.env
 #
 # --save FILE picks another save. Everything else goes to ratw_server (see Server/ratw_server.cpp): --port N (default
-# 7788), --dev-identity, --dev-tools, --dm-directory DIR... RATW_BIND chooses the interface (default 127.0.0.1: this
-# machine only). RATW_AI=off|fixture: see tools/mind.sh. RATW_VOICE=off: no speech router (residents' talk, Data/Talk, stays).
+# 7788), --dev-identity, --dev-tools, --dm-directory DIR... RATW_BIND chooses the interface: by default 0.0.0.0, this
+# computer and the local network (players on another computer open http://THIS-COMPUTER:7788/; the addresses are
+# printed), except a scratch server (--scratch) or one with --dev-identity, which stay on 127.0.0.1 (this computer
+# only); RATW_BIND=127.0.0.1 keeps any server local. RATW_AI=off|fixture: see tools/mind.sh. RATW_VOICE=off: no speech
+# router (residents' talk, Data/Talk, stays).
 # The server and client are built first if their sources changed.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ratw_root/tools/game.sh"
 source "$ratw_root/tools/mind.sh"
-args=() world="" save="" database="" port=7788
+args=() world="" save="" database="" port=7788 local_only=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --scratch|--dev-identity) local_only=1; args+=("$1"); shift ;;
     --town) world="$ratw_root/Data/Worlds/Greyfen/world.ratw"; save="${save:-$ratw_root/Saved/ratw-town.json}"; shift ;;
     --world) world="$(realpath "$2")"; shift 2 ;;
     --save) save="$2"; shift 2 ;;
@@ -36,8 +40,10 @@ if [[ -n "$database" ]]; then
     export RATW_DATABASE_URL
   fi
 fi
+bind="${RATW_BIND:-}"
+[[ -z "$bind" ]] && { [[ "$local_only" == 1 ]] && bind=127.0.0.1 || bind=0.0.0.0; }
 ratw_build
-command=("$ratw_server_binary" --port "$port" --bind "${RATW_BIND:-127.0.0.1}" --web "$ratw_root/Client/dist")
+command=("$ratw_server_binary" --port "$port" --bind "$bind" --web "$ratw_root/Client/dist")
 # The talk library (Docs/Design/62-talk.md): residents' written talk to each other, and their calls.
 command+=(--talk-data "$ratw_root/Data/Talk")
 # Cheaper voices (Docs/Design/28-ai-cost.md): the game answers what it knows, and keeps a ledger of who answered each
@@ -63,8 +69,16 @@ fi
 ratw_start_mind --database "$database"
 if [[ "$port" == 0 ]]; then
   echo "RATW: the server takes a free port and prints it as it starts (\"listening on port N\")." >&2
+elif [[ "$bind" == 0.0.0.0 ]]; then
+  # The local network too: the client connects back to the address its page came from, and the server takes any Host
+  # whose Origin matches it, so another computer opens this one's address.
+  lan=""
+  for address in $(hostname -I 2>/dev/null); do
+    [[ "$address" == *.* && "$address" != 127.* ]] && lan+=" http://$address:$port/"
+  done
+  echo "RATW: players join at http://127.0.0.1:$port/ (this computer) and on the local network at${lan:- http://THIS-COMPUTER:$port/}" >&2
 else
-  echo "RATW: players join at http://${RATW_BIND:-127.0.0.1}:$port/" >&2
+  echo "RATW: players join at http://$bind:$port/" >&2
 fi
 status=0
 "${command[@]}" "${ratw_mind_args[@]}" "${args[@]}" || status=$?

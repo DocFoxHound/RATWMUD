@@ -8,7 +8,10 @@
   python3 tools/world_build.py export DIR [--world WORLD]
                                         write Atlas's world's (or WORLD's) newest build to DIR as files (world_check and game_load read it)
 
-Live worlds' builds are made by Push to live (tools/publish.py), one per release.
+Live worlds' builds are made by their imports (tools/world_sync.py), one per release. A dev world's new build is
+announced (NOTIFY ratw_release, as a release is): a server running that world (a dev world served as the live server:
+Docs/Design/66-worlds-atlas-and-dm.md, Progress, "A dev world as the live server") restarts onto it once nobody is
+connected (exit 75; tools/live.sh starts it again). Scratch servers stay on the build they loaded.
 A build is what the game server loads, produced by the same exporter as
 Play/Export, so seams, door arrivals and profession-slot residents are resolved
 exactly once, in one place. It is streamed: world.builds holds the manifest
@@ -30,6 +33,7 @@ import world_db
 import world_store as S
 
 KEEP_CELLS = 3          # Builds whose cell rows are kept (the server loads the newest; a restart mid-push the one before).
+ANNOUNCE = 'ratw_release'   # The game server listens here for a newer build (a release's, or a dev world's).
 
 
 # Everything a build is made from besides the world's own tables (whose revision rises with every edit): the live
@@ -96,7 +100,29 @@ def build(conn, created_by='', release=None):
             cur.executemany('INSERT INTO world.build_cells (build_id, cell_id, header, body, seams) VALUES (%s, %s, %s, %s, %s)', rows)
         conn.execute('''DELETE FROM world.build_cells WHERE build_id NOT IN
                         (SELECT id FROM world.builds ORDER BY id DESC LIMIT %s)''', (KEEP_CELLS,))
+        if release is None:
+            # A dev world's new build is announced as a release is (at commit): a real server on this world (a dev world
+            # served as the live server, doc 66) restarts onto it once nobody is connected (exit 75, tools/live.sh
+            # starts it again); scratch servers stay on theirs. A release's build is announced by its release.
+            conn.execute('SELECT pg_notify(%s, %s)', (ANNOUNCE, json.dumps({'world': world_id[0], 'release': None,
+                                                                             'kind': 'build', 'build': build_id})))
     return build_id, len(rows)
+
+
+def announce(conn, build_id, world_id):
+    """Announces a build again (the DM's Rebuild when the newest build is already current: a server started on an
+    older one restarts onto it once nobody is connected)."""
+    conn.execute('SELECT pg_notify(%s, %s)', (ANNOUNCE, json.dumps({'world': world_id, 'release': None, 'kind': 'build',
+                                                                     'build': build_id})))
+
+
+def status(conn) -> dict:
+    """The newest build and whether it is current (made from exactly what the world is now): {build, at, by, release,
+    current}. `build` None while the world has none."""
+    info = latest(conn)
+    kept = current(conn)
+    return {'build': info['id'] if info else None, 'at': info['at'] if info else None, 'by': info['by'] if info else '',
+            'release': info['release'] if info else None, 'current': bool(kept and info and kept[0] == info['id'])}
 
 
 def game_files(conn, build_id) -> dict[str, str]:

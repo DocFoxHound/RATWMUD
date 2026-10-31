@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allFrom, buildChoices, differentMapText, groupByLabel, letGoText, prunePicks, replaceMapText, rowChangeText, sideChangeText,
+import {allFrom, buildChoices, differentMapText, gameUrl, groupByLabel, letGoText, prunePicks, replaceMapText, rowChangeText, sideChangeText,
     summaryLine, summaryRows, summaryTotal, valueText,
     type SyncField, type SyncItem} from './sync.ts';
 
@@ -92,4 +92,11 @@ test('what a new map lets go of, in a line', () => {
     assert.equal(letGoText({npcs: 2, slots: 1, posts: 3, claims: 1, npcAreas: 0, names: ['Briar', 'Rook']}),
         '2 NPCs and 1 profession slot unplaced (Briar, Rook); 3 patrol posts and 1 territory claim let go');
     assert.equal(letGoText({npcs: 0, slots: 0, posts: 0, claims: 2, npcAreas: 1}), '2 territory claims and 1 NPC area let go');
+});
+
+test('Play opens the running server at the address the studio was reached by, or at its own computer', () => {
+    assert.equal(gameUrl({port: 7788, host: null}, {hostname: '192.168.0.121'}), 'http://192.168.0.121:7788/',
+        'from another computer on the network: the studio computer\'s address, not 127.0.0.1');
+    assert.equal(gameUrl({port: 7789, host: null}, {hostname: '127.0.0.1'}), 'http://127.0.0.1:7789/');
+    assert.equal(gameUrl({port: 7788, host: 'tower'}, {hostname: '192.168.0.121'}), 'http://tower:7788/', 'a server on another computer');
 });

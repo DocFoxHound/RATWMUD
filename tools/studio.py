@@ -5,7 +5,8 @@
   python3 tools/studio.py serve [--port N] [--suite atlas|dm] [--world KEY]
   bash tools/editor.sh / bash tools/dungeon-master.sh   the same, opening on the Atlas / DM suite
 
-One host on one port (default 8765, local only unless --host 0.0.0.0) serves one app (Editor/index.html) with a switch between:
+One host on one port (default 8765, on this computer and the local network: --host 0.0.0.0, the default; --host
+127.0.0.1 for this computer only) serves one app (Editor/index.html) with a switch between:
 
   Atlas  builds worlds, on dev worlds (its world picker switches Atlas's world, as `world_db.py use KEY` does): the
          map and terrain, cells, interiors, doors, places, the roster and NPCs, their homes and jobs, and (moved from
@@ -33,6 +34,11 @@ One host on one port (default 8765, local only unless --host 0.0.0.0) serves one
          GET  /api/dm/server/status?world=KEY     a live world's state (running or maintenance), its game server, release
          POST /api/dm/server/maintenance          {world, on, note}: close it (players get a minute) or turn it back on
          POST /api/dm/server/switch               {world, confirm: the world's key again}: the live world, in maintenance
+                                                  (any registered world: a dev world is served as live)
+         POST /api/dm/server/rebuild              {world}: a dev world served as live: a new build of Atlas's edits,
+                                                  announced (its server restarts onto it once nobody is connected)
+       The DM works on the live worlds and on the world the live server runs, which may be a dev world served as live
+       (DEV while PROD is shut down: doc 66, Progress); there Import from dev and rollback are refused with why.
          GET  /api/dm/import/plan?dev=KEY         the dev worlds copied from the live world, and what importing one does
          POST /api/dm/import                      {dev, choices, password, note, expect}: a release, in maintenance
          GET  /api/dm/releases?world=KEY, POST /api/dm/rollback {number, password, note}
@@ -87,9 +93,12 @@ PUSH_MOVED = ('Push to live has gone: Atlas updates its copy from live (Update f
 LIVE_SWITCH = 'Switching the live server\'s world is done in the DM\'s Server & import tab, during maintenance only.'
 # The DM suite's server and import routes (doc 66, section 4), answered by the studio itself over tools/world_sync.py.
 SERVER_ROUTES = frozenset({('GET', '/api/server/status'), ('POST', '/api/server/maintenance'), ('POST', '/api/server/switch'),
-                           ('GET', '/api/import/plan'), ('POST', '/api/import'), ('GET', '/api/releases'),
-                           ('POST', '/api/rollback')})
+                           ('POST', '/api/server/rebuild'), ('POST', '/api/server/start'), ('GET', '/api/import/plan'),
+                           ('POST', '/api/import'),
+                           ('GET', '/api/releases'), ('POST', '/api/rollback')})
 SYNC_ROUTES = frozenset({('GET', '/api/sync/diff'), ('POST', '/api/sync/pull')})
+# Atlas's Play: the running game server of Atlas's world (its address), and starting one.
+PLAY_ROUTES = frozenset({('GET', '/api/play/server'), ('POST', '/api/play/server/start')})
 # Atlas's Economy controls (Docs/Design/67-ridgemere2-city.md, 6): the store room's switches, on Atlas's world. Reads for
 # any signed-in account; writes for dm and admin with Atlas's session token, through live_edit's economy entity.
 ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses'),
@@ -363,10 +372,128 @@ def shown(key: str) -> dict:
     return {k: v for k, v in world_db.world(key).items() if k != 'database'}
 
 
+def dm_worlds() -> list[str]:
+    """The worlds the DM suite may work on: every registered world (a live one, or a dev world run as a server: DEV
+    while PROD is shut down, doc 66, Progress, "DEV as the server"), the DM's chosen world first."""
+    out = world_db.keys()
+    try:
+        chosen = world_db.dm_world()
+    except world_db.DatabaseError:
+        return out
+    return [chosen] + [k for k in out if k != chosen]
+
+
+def dm_world() -> str:
+    """The DM suite's world: its own choice (the DM's top bar, `world_db.py dm KEY`), else the live server's."""
+    return world_db.dm_world()
+
+
+SERVED_DEV = ('{name} ({key}) is a dev world: Atlas edits it directly, so there is nothing to import into it. Atlas\'s '
+              'edits reach its running server with a new build (Rebuild, on this tab), which the server restarts onto once '
+              'nobody is connected. Import from dev is for a live world (choose one in the DM\'s world picker).')
+NO_RELEASES = ('{name} ({key}) is a dev world: it has builds, not releases, and nothing to roll back (Atlas\'s edits '
+               'and undo are its history).')
+
+
+class Builds:
+    """A dev world's builds, for the DM when it serves one as the live server: the newest, whether it is current, and
+    a new one made and announced (tools/world_build.py)."""
+
+    def __init__(self, connect=None):
+        self._connect = connect or (lambda key: world_db.connect(key, 'editor'))
+
+    def connect(self, key):
+        try:
+            return self._connect(key)
+        except world_db.DatabaseError as error:
+            raise S.Unavailable(f'Cannot reach the {key} world\'s database: {error}') from error
+
+    def status(self, key) -> dict:
+        import world_build
+        with self.connect(key) as conn:
+            return world_build.status(conn)
+
+    def rebuild(self, key, editor) -> dict:
+        """A new build when the world changed since the newest (announced: its server restarts onto it once nobody is
+        connected); else the newest announced again. {build, made, cells, ...status}."""
+        import world_build
+        with self.connect(key) as conn:
+            kept = world_build.current(conn)
+            if kept:
+                world_build.announce(conn, kept[0], conn.execute('SELECT id FROM world.worlds').fetchone()[0])
+                made, cells = False, kept[1]
+            else:
+                _, cells = world_build.build(conn, f'DM: {editor}'[:60])
+                made = True
+            return {**world_build.status(conn), 'made': made, 'cells': cells}
+
+
+GAME_PORTS = range(7788, 7800)   # The ports a server the studio starts may take (7788 first, as tools/live.sh's).
+
+
+def free_game_port() -> int:
+    for port in GAME_PORTS:
+        with socket.socket() as s:
+            try:
+                s.bind(('0.0.0.0', port))
+                return port
+            except OSError:
+                continue
+    raise D.DMError(f'Every game port ({GAME_PORTS.start}-{GAME_PORTS.stop - 1}) is taken on this computer.', 409)
+
+
+class Servers:
+    """Starting a world's game server from the studio (the DM's Server tab, Atlas's Play): `tools/live.sh server KEY`
+    in the background, on the local network (tools/server.sh's default), its log in Saved/Logs/server-KEY.log. It runs
+    as if started by hand: it restarts onto new builds and releases, closes for maintenance and opens again."""
+
+    def __init__(self, spawn=None):
+        self._spawn = spawn or self._launch
+        self._started: dict[str, object] = {}       # {key: Popen} of launchers this studio started.
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def _launch(key, port):
+        log = D.ROOT / 'Saved' / 'Logs' / f'server-{key}.log'
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with open(log, 'ab') as out:
+            return subprocess.Popen(['bash', str(D.ROOT / 'tools' / 'live.sh'), 'server', key, '--port', str(port)],
+                                    cwd=D.ROOT, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                    start_new_session=True)
+
+    def starting(self, key) -> bool:
+        """A launcher this studio started for the world is still up (building, or waiting for maintenance to end)."""
+        process = self._started.get(key)
+        return process is not None and getattr(process, 'poll', lambda: 0)() is None
+
+    def start(self, key, holder) -> dict:
+        with self._lock:
+            if holder:
+                named = holder.get('name') if isinstance(holder, dict) else ''
+                raise D.DMError(f'A game server already runs {key} ({named or "another server"}).', 409)
+            if self.starting(key):
+                return {'world': key, 'started': False, 'starting': True}
+            port = free_game_port()
+            self._started[key] = self._spawn(key, port)
+        return {'world': key, 'started': True, 'starting': True, 'port': port,
+                'log': f'Saved/Logs/server-{key}.log'}
+
+
+def play_address(holder, here=None) -> dict:
+    """Where a browser reaches the running server's game: {port, host (None: the host the studio was reached by),
+    local (it serves its own computer only)}; None without one."""
+    if not holder or not holder.get('port'):
+        return None
+    here = here or socket.gethostname()
+    other = holder.get('host') and holder['host'] not in (here, f'{here}.local')
+    return {'port': holder['port'], 'host': holder['host'] if other else None, 'local': holder.get('local', False)}
+
+
 class Studio:
     """The tool's state: the DM (accounts, the live worlds), Atlas's world and its Handler, the suite to open on."""
 
-    def __init__(self, dm=None, atlas=atlas_suite, atlas_key=None, suite='atlas', choose=None, sync=None, economy=None):
+    def __init__(self, dm=None, atlas=atlas_suite, atlas_key=None, suite='atlas', choose=None, sync=None, economy=None,
+                 builds=None, servers=None, choose_dm=None):
         if suite not in SUITES:
             raise ValueError(f'A suite is one of: {", ".join(SUITES)}.')
         self.dm = dm or D.DungeonMaster()
@@ -375,11 +502,14 @@ class Studio:
             sync = world_sync.Sync()
         self.sync = sync                       # Pull, import, maintenance, the live switch (tools/world_sync.py).
         self.economy = economy or Economy()    # Atlas's Economy controls: the store room (doc 67, 6).
+        self.builds = builds or Builds()       # A dev world's builds, when one runs as a server.
+        self.servers = servers or Servers()    # Starting a world's game server (the DM's Server tab, Atlas's Play).
         self.suite = suite
         self._make_atlas = atlas
         self._choose = choose or (lambda key: world_db.set_local(atlas=key))   # Saved/Config/worlds.local.json
+        self._choose_dm = choose_dm or (lambda key: world_db.set_local(dm=key))
         self._lock = threading.Lock()
-        self.dm_suite = D.make_handler(self.dm, offers=dm_offers, kinds=('live',))
+        self.dm_suite = D.make_handler(self.dm, offers=dm_offers, allowed=dm_worlds, default=dm_world)
         self.layers = D.make_handler(self.dm, offers=layer_offers, world=lambda: self.atlas_key)
         self.atlas_key = world_db.canonical(atlas_key) if atlas_key else world_db.atlas_world()
         self.atlas = atlas(self.atlas_key)
@@ -395,16 +525,29 @@ class Studio:
             self.atlas, self.atlas_key = handler, key
         return key
 
+    def use_dm(self, key: str) -> str:
+        """Chooses the DM suite's world (any registered world), apart from Atlas's: this computer's choice."""
+        key = world_db.canonical(key)
+        if key not in world_db.keys():
+            raise D.DMError(f'Choose a world: {", ".join(world_db.keys())}.', 400)
+        self._choose_dm(key)
+        return key
+
     def session(self, who: dict) -> dict:
-        """Who is signed in, the suite to open on, and each suite's worlds."""
+        """Who is signed in, the suite to open on, and each suite's worlds: Atlas's (a dev world) and the DM's (any),
+        chosen apart; and the live server's (what `tools/live.sh server` runs by default)."""
         try:
             live = world_db.live_world()
         except world_db.DatabaseError:
             live = None
+        try:
+            dm = world_db.dm_world()
+        except world_db.DatabaseError:
+            dm = live
         return {'me': who, 'suite': self.suite,
                 'atlas': {'available': D.RANK[who['role']] >= D.RANK['dm'], 'world': shown(self.atlas_key),
                           'worlds': [shown(k) for k in world_db.keys('dev')]},
-                'dm': {'live': live, 'worlds': [shown(k) for k in world_db.keys('live')], 'switch': LIVE_SWITCH}}
+                'dm': {'world': dm, 'live': live, 'worlds': [shown(k) for k in world_db.keys()], 'switch': LIVE_SWITCH}}
 
     def copies_of(self, live: str) -> list[str]:
         """The dev worlds whose upstream is this live world: what can be imported into it. Atlas's world first."""
@@ -471,6 +614,8 @@ def make_handler(studio: Studio):
                     return self.as_(studio.dm_suite).dispatch(method)
                 if suite == 'atlas' and (method, inner) in SYNC_ROUTES:
                     return self.update_from_live(method)
+                if suite == 'atlas' and (method, inner) in PLAY_ROUTES:
+                    return self.play(method)
                 if suite == 'atlas' and (method, inner) in ECONOMY_ROUTES:
                     return self.economy_routes(method, inner)
                 self.builder()
@@ -511,10 +656,9 @@ def make_handler(studio: Studio):
             return result
 
         def live_key(self, asked=''):
-            """A live world: the one asked for, else the live server's."""
-            key = asked or world_db.live_world()
-            if world_db.kind(key) != 'live':
-                raise D.DMError(f'{key} is a dev world; the DM works on live worlds ({", ".join(world_db.keys("live"))}).', 400)
+            """A world the DM works on: the one asked for (any registered world), else the DM's chosen world."""
+            key = world_db.canonical(asked) if asked else world_db.dm_world()
+            world_db.world(key)                        # (An unknown world: 400, naming the registered ones.)
             return key
 
         def copy_of(self, live, dev):
@@ -600,14 +744,34 @@ def make_handler(studio: Studio):
 
             def asked(name):
                 return str((query.get(name) or [''])[0])
+            def is_dev(key):
+                return world_db.kind(key) == 'dev'
+
+            def said(text, key):
+                return text.format(name=world_db.world(key)['name'], key=key)
             if method == 'GET':
                 if path == '/api/server/status':
                     key = self.live_key(asked('world'))
-                    return self.reply(200, {**studio.sync.status(key), 'live': world_db.live_world(), 'warning': SWITCH_WARNING})
+                    answer = {**studio.sync.status(key), 'live': world_db.live_world(), 'warning': SWITCH_WARNING,
+                              'kind': world_db.kind(key), 'switchTo': [shown(k) for k in world_db.keys() if k != world_db.live_world()],
+                              'starting': studio.servers.starting(key)}
+                    answer['play'] = play_address(answer.get('serverHolder'))
+                    if is_dev(key):                       # A dev world run as a server: its builds, not releases.
+                        try:
+                            answer['build'] = studio.builds.status(key)
+                        except S.StoreError as error:
+                            answer['build'] = {'problem': str(error)}
+                        answer['servedDev'] = said(SERVED_DEV, key)
+                    return self.reply(200, answer)
                 if path == '/api/releases':
                     key = self.live_key(asked('world'))
+                    if is_dev(key):
+                        return self.reply(200, {'world': key, 'releases': [], 'note': said(NO_RELEASES, key)})
                     return self.reply(200, {'world': key, 'releases': studio.sync.releases(key)})
-                live = self.live_key()                                         # /api/import/plan
+                live = self.live_key(asked('world'))                           # /api/import/plan
+                if is_dev(live):
+                    return self.reply(200, {'live': shown(live), 'candidates': [], 'dev': None, 'plan': None,
+                                            'problem': said(SERVED_DEV, live), 'errors': [], 'servedDev': True})
                 copies = studio.copies_of(live)
                 dev = asked('dev') or (copies[0] if copies else '')
                 answer = {'live': shown(live), 'candidates': [shown(k) for k in copies], 'dev': dev or None, 'plan': None,
@@ -630,10 +794,30 @@ def make_handler(studio: Studio):
                 return self.reply(200, self.audited(who, key, 'server.maintenance' if on else 'server.running', key,
                                                     ('Started maintenance' if on else 'Ended maintenance') + (f': {note}' if note else '.'),
                                                     result))
+            if path == '/api/server/rebuild':
+                # A dev world served as live: Atlas's edits to its server (a new build, announced: it restarts onto it
+                # once nobody is connected, and tools/live.sh starts it again).
+                key = self.live_key(str(data.get('world') or ''))
+                if not is_dev(key):
+                    raise D.DMError(f'{key} is a live world: its builds come from its imports (Import from dev).', 409)
+                result = studio.builds.rebuild(key, who['username'])
+                return self.reply(200, self.audited(who, key, 'server.rebuild', key,
+                                                    (f'Made build {result["build"]} ({result["cells"]} cells)' if result['made']
+                                                     else f'Announced build {result["build"]} again (nothing changed)')
+                                                    + ': the server restarts onto it once nobody is connected.', result))
+            if path == '/api/server/start':
+                # Starts the world's game server (tools/live.sh server KEY, on the local network) when none holds it.
+                key = self.live_key(str(data.get('world') or ''))
+                status = studio.sync.status(key)
+                result = studio.servers.start(key, status.get('serverHolder') or status.get('serverRunning'))
+                if status['server']['state'] == 'maintenance':
+                    result['note'] = 'It is in maintenance: its launcher waits, and starts the server when you end maintenance.'
+                if result.get('started'):
+                    result = self.audited(who, key, 'server.start', key, f'Started its game server (port {result["port"]}).', result)
+                return self.reply(200, result)
             if path == '/api/server/switch':
-                key = str(data.get('world') or '')
-                if world_db.kind(key) != 'live':
-                    raise D.DMError(f'{key} is a dev world; the live server runs live worlds.', 400)
+                key = world_db.canonical(str(data.get('world') or ''))
+                world_db.world(key)                    # (Any registered world: a live one, or a dev world served as live.)
                 if str(data.get('confirm') or '') != key:
                     raise D.DMError(f'{SWITCH_WARNING} To switch anyway, type the world\'s key ({key}) to confirm.', 400)
                 was = world_db.live_world()
@@ -642,11 +826,14 @@ def make_handler(studio: Studio):
                 result = studio.sync.switch_live(key, who['username'])
                 result = self.audited(who, was, 'server.switch', key, f'Switched the live world from {was} to {key}.', result)
                 return self.reply(200, self.audited(who, key, 'server.switch', key, f'Became the live world (was {was}).', result))
+            served = self.live_key(str(data.get('world') or ''))
+            if is_dev(served):                         # (A dev world: no imports, no releases.)
+                raise D.DMError(said(SERVED_DEV if path == '/api/import' else NO_RELEASES, served), 409)
             password = data.get('password')
             if not isinstance(password, str) or not password:
                 raise D.DMError('Enter the publish password.', 400)
             if path == '/api/import':
-                live = self.live_key()
+                live = served
                 dev = self.copy_of(live, str(data.get('dev') or ''))
                 expect = data.get('expect') or None
                 replace = data.get('replaceMap') is True               # The replace-the-map confirmation (two maps).
@@ -674,7 +861,43 @@ def make_handler(studio: Studio):
                 self.builder()
                 data = self.as_(studio.dm_suite).body()
                 return self.reply(200, {'world': shown(studio.use(str(data.get('key', ''))))})
+            if method == 'POST' and path == '/api/dm-world':
+                self.writer(self.signed_in())
+                data = self.as_(studio.dm_suite).body()
+                return self.reply(200, {'world': shown(studio.use_dm(str(data.get('key', ''))))})
             raise D.DMError('Not found.', 404)
+
+        def play(self, method):
+            """Atlas's Play: the game of the server running Atlas's world, at the address the browser reached the studio
+            by (another computer on the network included); with none running, why, and (POST, dm and admin) starting
+            one, as the DM's Server tab does."""
+            who = self.builder()
+            key = studio.atlas_key
+            if method == 'POST':
+                status = studio.sync.status(key)
+                result = studio.servers.start(key, status.get('serverHolder') or status.get('serverRunning'))
+                if result.get('started'):
+                    result = self.audited(who, key, 'server.start', key, f'Started its game server from Atlas\'s Play (port {result["port"]}).', result)
+                return self.reply(200, result)
+            status = studio.sync.status(key)
+            holder = status.get('serverHolder')
+            address = play_address(holder)
+            state = status['server']['state']
+            why = ('' if address else
+                   f'{world_db.world(key)["name"]}\'s game server is starting (building first if Atlas changed it).' if studio.servers.starting(key)
+                   else f'A game server holds {key} but doesn\'t say its port (started before the studio could tell): open it at '
+                        f'http://THIS-COMPUTER:7788/, or restart it.' if holder or status.get('serverRunning')
+                   else f'No game server is running {world_db.world(key)["name"]} ({key})'
+                        + (', and it is in maintenance (end it in the DM\'s Server tab).' if state == 'maintenance' else '.')
+                        + f' Start it here, or on the studio\'s computer: bash tools/live.sh server {key}')
+            build = None
+            try:
+                build = studio.builds.status(key)
+            except S.StoreError:
+                pass
+            return self.reply(200, {'world': shown(key), 'play': address, 'why': why, 'state': state,
+                                    'starting': studio.servers.starting(key), 'build': build,
+                                    'canStart': D.RANK[who['role']] >= D.RANK['dm'] and not address and not holder})
 
     return Handler
 
@@ -712,9 +935,10 @@ def main(argv=None) -> int:
     parser.add_argument('--port', type=int, default=PORT)
     parser.add_argument('--suite', choices=SUITES, default='atlas', help='the suite the app opens on')
     parser.add_argument('--world', help="Atlas's world for this run (default: Atlas's, python3 tools/world_db.py use KEY)")
-    parser.add_argument('--host', default='127.0.0.1',
-                        help='the address to serve on: 127.0.0.1 (this computer only, the default) or 0.0.0.0 (the '
-                             'local network too; sign-in is still required, but the connection is not encrypted)')
+    parser.add_argument('--host', default='0.0.0.0',
+                        help='the address to serve on: 0.0.0.0 (this computer and the local network, the default; '
+                             'sign-in is still required, but the connection is not encrypted) or 127.0.0.1 (this '
+                             'computer only)')
     args = parser.parse_args(argv)
     shared = args.host not in ('127.0.0.1', 'localhost')
     if shared:
@@ -734,12 +958,14 @@ def main(argv=None) -> int:
         print(f'Port {args.port} is taken ({error.strerror}); choose another with --port N.', file=sys.stderr)
         return 1
     try:
-        live = f'the live server runs {world_db.live_world()}'
+        served = world_db.live_world()
+        live = (f'the DM on the live server\'s world, {served}'
+                + (' (a dev world served as live)' if world_db.kind(served) == 'dev' else ''))
     except world_db.DatabaseError as error:
-        live = str(error)
+        live = f'the DM: {error}'
     print(f'RATW Studio: {url}\n'
-          f'Atlas on {key} ("{world_db.world(key)["name"]}", {world_db.world(key)["database"]}); the DM on live worlds '
-          f'({live}). Sign in with a DM account. '
+          f'Atlas on {key} ("{world_db.world(key)["name"]}", {world_db.world(key)["database"]}); {live}. '
+          f'Sign in with a DM account. '
           + (f'On the local network too: '
              + ', '.join(f'http://{h}:{args.port}/' for h in os.environ['RATW_SERVE_HOSTS'].split(','))
              if shared else 'Local-only.') + ' Ctrl+C to stop.', flush=True)

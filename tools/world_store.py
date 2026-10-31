@@ -484,6 +484,20 @@ def list_worlds(conn) -> list[dict]:
             for r in rows]
 
 
+def keep_made_by_the_server(conn, world_id: str, desired: dict, current: dict) -> list[str]:
+    """NPCs the game server made (births and newcomers, origin 'runtime'; a spawn rule's, spawn_id set) that a
+    whole-world save doesn't list are kept as they are, never deleted: the save's project was read before the server
+    made them, and the world's revision (which every keyed edit raises) doesn't move when it does. Matters once a dev
+    world is served as the live server (doc 66, Progress): the generator's or apply_terrain's save would otherwise
+    silently remove residents born meanwhile. Removing one is a keyed edit (Atlas's delete). The ids kept."""
+    made = {r[0] for r in conn.execute("SELECT id FROM live.npcs WHERE world_id = %s AND (origin = 'runtime' OR spawn_id IS NOT NULL)",
+                                       (world_id,)).fetchall()}
+    listed = {r[1] for r in desired['live.npcs']}
+    kept = [r for r in current['live.npcs'] if r[1] in made and r[1] not in listed]
+    desired['live.npcs'].extend(kept)
+    return [r[1] for r in kept]
+
+
 def save_world(conn, project: dict, revision: int | None, create: bool = False) -> int:
     """Validates and stores a project. `revision` is the one it was opened at (None to create).
 
@@ -513,7 +527,9 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False) 
         tables = tables_for(conn)
         if refused := loop_refused(tables, p.get('economy')):
             raise StoreError(f'The economy\'s settings can\'t be saved: {refused}.')
-        write_rows(conn, project_rows(p, chunk_size, tables), stored_rows(conn, p['id'], tables), tables)
+        desired, current = project_rows(p, chunk_size, tables), stored_rows(conn, p['id'], tables)
+        keep_made_by_the_server(conn, p['id'], desired, current)
+        write_rows(conn, desired, current, tables)
         conn.execute('DELETE FROM live.faction_claims WHERE world_id = %s AND NOT (area = ANY(%s))',
                      (p['id'], [a['id'] for a in p['cells'] + p['rooms']]))
         for area in p['cells'] + p['rooms']:

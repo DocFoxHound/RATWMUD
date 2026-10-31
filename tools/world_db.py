@@ -4,8 +4,10 @@
   python3 tools/world_db.py up                    start PostgreSQL (first run creates Database/.env)
   python3 tools/world_db.py list                  the worlds: kind, upstream, database, Atlas's and the live one
   python3 tools/world_db.py use KEY               Atlas's world (a dev world): Atlas, builds, local servers, tools
-  python3 tools/world_db.py serve-world KEY --yes the live server's world (a live world; rarely wise; only while the
-                                                  live world is in maintenance: tools/world_sync.py)
+  python3 tools/world_db.py serve-world KEY --yes the live server's world, which the DM manages: a live world, or a
+                                                  dev world served as live (DEV, while PROD is closed); rarely wise;
+                                                  only while the live world is in maintenance (tools/world_sync.py)
+  python3 tools/world_db.py dm KEY                the DM suite's world (any world; default the live server's)
   python3 tools/world_db.py new KEY --name NAME [--kind dev|live] [--upstream KEY] [--from KEY [--without-map]]
                                                   a new world: an empty database with every migration, or a copy
   python3 tools/world_db.py migrate               apply Database/migrations to every world (--db KEY: one)
@@ -17,7 +19,7 @@
 
 The worlds (Docs/Design/66-worlds-atlas-and-dm.md, section 1) are listed in Database/worlds.json (in git). Which one
 is Atlas's and which one the live server runs is this computer's choice, in Saved/Config/worlds.local.json (not in
-git; {"atlas": "dev", "live": "prod"} while it is missing). RATW_WORLDS_FILE and RATW_WORLDS_LOCAL point
+git; {"atlas": "dev", "live": "dev"} while it is missing: DEV served as the live server while PROD is shut down). RATW_WORLDS_FILE and RATW_WORLDS_LOCAL point
 elsewhere (tests use scratch ones). A world may have other names ("aliases": ridgemere2 is DEV, the Ridgemere 2.0
 database): every tool takes them and means that world.
 
@@ -54,12 +56,15 @@ ARTIFACTS = ROOT / 'artifacts'
 WORLDS_FILE = DATABASE_DIR / 'worlds.json'
 LOCAL_FILE = ROOT / 'Saved' / 'Config' / 'worlds.local.json'
 # With no local choice: Atlas, the builds, the local and scratch servers and the talk and voice tools on DEV, which is
-# Ridgemere 2.0 since 2026-10-31 (the user: "this map and all of these changes should definitely touch Dev"); the live
-# server on PROD.
-DEFAULT_LOCAL = {'atlas': 'dev', 'live': 'prod'}
+# Ridgemere 2.0 since 2026-10-31 (the user: "this map and all of these changes should definitely touch Dev"); and the
+# live server (tools/live.sh server, the DM) on DEV too, served as live while PROD is shut down (the user, 2026-10-31:
+# "restart Dev as our only server, with atlas and DM touching it"). PROD stays selectable: serve-world prod.
+DEFAULT_LOCAL = {'atlas': 'dev', 'live': 'dev'}
+# The choices the local file may hold: 'dm', the DM suite's world, follows 'live' until chosen (dm_world()).
+LOCAL_KEYS = ('atlas', 'live', 'dm')
 KINDS = ('dev', 'live')
 # Words the tools take in place of a world key (or beside one), so no world may be called them.
-RESERVED_KEYS = frozenset({'all', 'atlas', 'live', 'town', 'latest', 'export', 'demo', 'none'})
+RESERVED_KEYS = frozenset({'all', 'atlas', 'live', 'dm', 'town', 'latest', 'export', 'demo', 'none'})
 KEY_PATTERN = re.compile(r'^[a-z][a-z0-9_-]{0,30}$')
 # {key: database name} of every registered world, and of each of its aliases. Kept up to date in place (worlds()), so
 # callers may hold on to it.
@@ -186,7 +191,8 @@ def keys(of_kind: str | None = None) -> list[str]:
 
 
 def local_choice() -> dict[str, str]:
-    """This computer's choice, {'atlas': KEY, 'live': KEY}: the defaults for whatever the local file doesn't say."""
+    """This computer's choice, {'atlas': KEY, 'live': KEY} (and 'dm': KEY once the DM's world is chosen apart from
+    the live server's): the defaults for whatever the local file doesn't say."""
     choice = dict(DEFAULT_LOCAL)
     path = local_file()
     if path.is_file():
@@ -195,15 +201,15 @@ def local_choice() -> dict[str, str]:
         except ValueError as error:
             raise DatabaseError(f'{path} is not valid JSON: {error}') from error
         if isinstance(data, dict):
-            choice.update({k: v for k, v in data.items() if k in DEFAULT_LOCAL and isinstance(v, str) and v})
+            choice.update({k: v for k, v in data.items() if k in LOCAL_KEYS and isinstance(v, str) and v})
     return choice
 
 
-def _chosen(which: str, of_kind: str, command: str) -> str:
+def _chosen(which: str, of_kind: str | None, command: str) -> str:
     key = canonical(local_choice()[which])
     if key not in keys(of_kind):
-        raise DatabaseError(f'The {which} world is {key}, which is not a registered {of_kind} world. Choose one: '
-                            f'python3 tools/world_db.py {command} KEY')
+        raise DatabaseError(f'The {which} world is {key}, which is not a registered {of_kind + " " if of_kind else ""}world. '
+                            f'Choose one: python3 tools/world_db.py {command} KEY')
     return key
 
 
@@ -214,14 +220,34 @@ def atlas_world() -> str:
 
 
 def live_world() -> str:
-    """The world the live game server runs (a live world). Switched only from the DM, rarely."""
-    return _chosen('live', 'live', 'serve-world --yes')
+    """The world the live game server runs (`tools/live.sh server`) and the DM manages: a live world, or a dev world
+    served as the live server (doc 66, Progress, "A dev world as the live server": DEV, while PROD is closed). Switched
+    only from the DM (or `serve-world`), rarely."""
+    return _chosen('live', None, 'serve-world --yes')
+
+
+def dm_world() -> str:
+    """The world the DM suite works on (any registered world: a live one, or a dev world): its own choice ('dm', picked
+    in the DM's top bar or `world_db.py dm KEY`), else the live server's world. Atlas's world is chosen apart from it:
+    the two may be the same world or different ones."""
+    if 'dm' not in local_choice():
+        return live_world()
+    return _chosen('dm', None, 'dm')
+
+
+def served(key: str) -> bool:
+    """Whether this world is the one the live server runs (the local "live" choice)."""
+    try:
+        return canonical(key) == live_world()
+    except DatabaseError:
+        return False
 
 
 def resolve(name: str, of_kind: str | None = None) -> str:
     """A world key from what a user typed: `atlas` and `live` are the local choices, anything else a registered key
     (of that kind, if given)."""
-    key = atlas_world() if name == 'atlas' else live_world() if name == 'live' else world(name)['key']
+    key = (atlas_world() if name == 'atlas' else live_world() if name == 'live' else dm_world() if name == 'dm'
+           else world(name)['key'])
     if of_kind and kind(key) != of_kind:
         raise DatabaseError(f'{key} is a {kind(key)} world; this needs a {of_kind} world '
                             f'({", ".join(keys(of_kind)) or "none registered"}).')
@@ -808,13 +834,24 @@ def cmd_list(args) -> int:
     choice = local_choice()
     rows = [(w['key'], w['name'] + (f' (also {", ".join(w["aliases"])})' if w.get('aliases') else ''), w['kind'],
              w.get('upstream', ''), w['database'],
-             ' '.join(f'[{which}]' for which in ('atlas', 'live') if canonical(choice[which]) == w['key'])) for w in worlds()]
+             ' '.join(f'[{which}]' for which in ('atlas', 'live', 'dm') if which in choice and canonical(choice[which]) == w['key']))
+            for w in worlds()]
     widths = [max(len(str(r[i])) for r in rows + [('KEY', 'NAME', 'KIND', 'UPSTREAM', 'DATABASE', '')]) for i in range(5)]
     for r in [('KEY', 'NAME', 'KIND', 'UPSTREAM', 'DATABASE', '')] + rows:
         print('  '.join(str(v).ljust(widths[i]) for i, v in enumerate(r[:5])) + ('  ' + r[5] if r[5] else ''))
-    for which in ('atlas', 'live'):
-        if canonical(choice[which]) not in keys():
+    for which in ('atlas', 'live', 'dm'):
+        if which in choice and canonical(choice[which]) not in keys():
             print(f'(The {which} choice, {choice[which]}, is not a registered world.)')
+    if 'dm' not in choice:
+        print('(The DM works on the live server\'s world: python3 tools/world_db.py dm KEY to choose another.)')
+    return 0
+
+
+def cmd_dm(args) -> int:
+    key = resolve(args.key)
+    set_local(dm=key)
+    print(f'The DM\'s world is now {key} ("{world(key)["name"]}", a {kind(key)} world). The DM suite works on it; the live '
+          'server keeps running its own (serve-world).')
     return 0
 
 
@@ -827,10 +864,14 @@ def cmd_use(args) -> int:
 
 
 def cmd_serve_world(args) -> int:
-    key = resolve(args.key, 'live')
+    key = resolve(args.key)
     print('Warning: switching the live world is rarely wise. Players join whatever world the live server runs; their '
           'characters, saves and the world they knew are in the old one. Switch only during maintenance, with the '
           'live server stopped.', file=sys.stderr)
+    if kind(key) == 'dev':
+        print(f'{key} is a dev world: served as the live server, players play it while Atlas edits it. Atlas\'s edits '
+              'reach the server with a new build (python3 tools/world_build.py, or the DM\'s Server & import tab), which '
+              'it restarts onto once nobody is connected.', file=sys.stderr)
     if not args.yes:
         print(f'Nothing changed. To make {key} the live world: python3 tools/world_db.py serve-world {key} --yes',
               file=sys.stderr)
@@ -935,7 +976,10 @@ def main(argv=None) -> int:
     u = sub.add_parser('use', help="choose Atlas's world (a dev world)")
     u.add_argument('key')
     u.set_defaults(run=cmd_use)
-    s = sub.add_parser('serve-world', help="choose the live server's world (a live world; rarely wise)")
+    d = sub.add_parser('dm', help="choose the DM suite's world (any world; apart from Atlas's and the live server's)")
+    d.add_argument('key')
+    d.set_defaults(run=cmd_dm)
+    s = sub.add_parser('serve-world', help="choose the live server's world (a live world, or a dev world served as live; rarely wise)")
     s.add_argument('key')
     s.add_argument('--yes', action='store_true', help='really switch it')
     s.set_defaults(run=cmd_serve_world)

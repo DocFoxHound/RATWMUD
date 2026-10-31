@@ -502,17 +502,21 @@ class RegistryTests(ScratchRegistry, unittest.TestCase):
         with self.assertRaisesRegex(W.DatabaseError, 'already a world called ridgemere2'):
             W.new_world('ridgemere2', 'Again', log=lambda *_: None)
 
-    def test_without_a_local_choice_atlas_is_dev_and_live_is_prod(self):
+    def test_without_a_local_choice_atlas_live_and_the_dm_are_dev(self):
+        # (DEV as the only server while PROD is shut down: the user, 2026-10-31. PROD stays selectable.)
         self.assertFalse(self.local.exists())
-        self.assertEqual((W.atlas_world(), W.live_world()), ('dev', 'prod'))
+        self.assertEqual((W.atlas_world(), W.live_world(), W.dm_world()), ('dev', 'dev', 'dev'))
         self.assertEqual(W.WORKING, 'dev', 'the old name still answers')
-        self.assertEqual((W.resolve('atlas'), W.resolve('live'), W.resolve('dev-old')), ('dev', 'prod', 'dev-old'))
+        self.assertEqual((W.resolve('atlas'), W.resolve('live'), W.resolve('dev-old')), ('dev', 'dev', 'dev-old'))
+        self.assertTrue(W.served('ridgemere2'))
         with self.assertRaisesRegex(W.DatabaseError, 'dev world'):
             W.resolve('prod', 'dev')
+        W.set_local(live='prod')
+        self.assertEqual(W.live_world(), 'prod', 'PROD selectable again')
 
     def test_use_chooses_atlass_world_among_dev_worlds_only(self):
         self.assertEqual(self.run_quietly('use', 'dev')[0], 0)
-        self.assertEqual(json.loads(self.local.read_text()), {'atlas': 'dev', 'live': 'prod'})
+        self.assertEqual(json.loads(self.local.read_text()), {'atlas': 'dev', 'live': 'dev'})
         self.assertEqual(W.atlas_world(), 'dev')
         status, _, err = self.run_quietly('use', 'prod')
         self.assertEqual(status, 1)
@@ -520,21 +524,40 @@ class RegistryTests(ScratchRegistry, unittest.TestCase):
         self.assertEqual(W.atlas_world(), 'dev', 'refused: nothing changed')
         self.assertEqual(self.run_quietly('use', 'nowhere')[0], 1)
 
-    def test_serve_world_needs_yes_and_a_live_world(self):
+    def test_serve_world_needs_yes_and_takes_any_world(self):
         status, _, err = self.run_quietly('serve-world', 'prod')
         self.assertEqual(status, 1)
         self.assertIn('rarely wise', err)
         self.assertFalse(self.local.exists(), 'without --yes nothing is written')
-        self.assertEqual(self.run_quietly('serve-world', 'dev', '--yes')[0], 1, 'a dev world is never the live one')
+        status, _, err = self.run_quietly('serve-world', 'dev-old')
+        self.assertEqual(status, 1)
+        self.assertIn('dev world', err, 'a dev world may be served as the live one: said so')
         self.assertFalse(self.local.exists())
-        # (Switching, refused outside maintenance: NewWorldTests, on throwaway live worlds.)
+        self.assertEqual(self.run_quietly('serve-world', 'nowhere', '--yes')[0], 1, 'an unknown world')
+        # (Switching, refused outside maintenance: NewWorldTests, on throwaway worlds.)
 
     def test_a_chosen_world_that_is_gone_is_reported_not_swapped(self):
         self.local.parent.mkdir(parents=True)
         self.local.write_text('{"atlas": "vanished"}')
         with self.assertRaisesRegex(W.DatabaseError, 'vanished.*world_db.py use'):
             W.atlas_world()
-        self.assertEqual(W.live_world(), 'prod')
+        self.assertEqual(W.live_world(), 'dev')
+        self.local.write_text('{"live": "prod", "dm": "vanished"}')
+        with self.assertRaisesRegex(W.DatabaseError, 'vanished.*world_db.py dm'):
+            W.dm_world()
+
+    def test_the_dm_s_world_follows_the_live_server_s_until_chosen(self):
+        self.assertEqual(W.dm_world(), 'dev', 'the live server\'s (DEV, by default)')
+        W.set_local(live='prod')
+        self.assertEqual((W.live_world(), W.dm_world()), ('prod', 'prod'))
+        self.assertEqual(self.run_quietly('dm', 'dev-old')[0], 0)
+        self.assertEqual((W.atlas_world(), W.live_world(), W.dm_world(), W.resolve('dm')), ('dev', 'prod', 'dev-old', 'dev-old'))
+        self.assertEqual(json.loads(self.local.read_text()), {'atlas': 'dev', 'live': 'prod', 'dm': 'dev-old'})
+        self.assertIn('[dm]', self.run_quietly('list')[1])
+        self.assertEqual(self.run_quietly('dm', 'ridgemere2')[0], 0)
+        self.assertEqual(W.dm_world(), 'dev', 'an alias names its world')
+        with self.assertRaisesRegex(W.DatabaseError, 'reserved'):
+            W.check_registry([{'key': 'dm', 'database': 'a', 'kind': 'dev'}])
 
     def test_registering_a_world_rewrites_the_file_and_the_map(self):
         W.register({'key': 'side', 'name': 'Side project', 'database': 'ratw_side', 'kind': 'dev'})
@@ -747,6 +770,21 @@ class NewWorldTests(ScratchRegistry, unittest.TestCase):
         self.assertEqual(W.live_world(), two)
         self.assertEqual(world_sync.status(two)['server']['state'], 'maintenance', 'the new one waits until the DM opens it')
         self.assertEqual(W.atlas_world(), 'dev', 'the other choice is kept')
+
+    def test_a_dev_world_may_be_served_as_the_live_one(self):
+        import world_sync
+        one, side = f't{self.tag}_one', f't{self.tag}_side'
+        self.new(one, 'One', 'live')
+        self.new(side, 'Side', 'dev')
+        W.set_local(live=one)
+        world_sync.maintenance(one, True, 'Ada')
+        status, _, err = self.run_quietly('serve-world', side, '--yes')
+        self.assertEqual(status, 0, err)
+        self.assertIn('dev world', err)
+        self.assertEqual((W.live_world(), W.kind(W.live_world())), (side, 'dev'))
+        self.assertEqual(world_sync.status(side)['server']['state'], 'maintenance', 'it waits until the DM opens it')
+        world_sync.maintenance(side, True, 'Ada')
+        self.assertEqual(world_sync.switch_live(one, 'Ada')['live'], one, 'and back to the live world')
 
     def test_without_map_needs_a_world_to_copy(self):
         with self.assertRaisesRegex(W.DatabaseError, '--from'):

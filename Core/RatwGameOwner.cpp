@@ -42,9 +42,12 @@ bool Game::takeOwnership(std::string& problem)
             problem = "cannot reach the " + options_.database + " database: " + error;
             return false;
         }
-        // Named, so a refused server can say who holds the world.
+        // Named, so a refused server can say who holds the world, and the studio's Play where its game is: "ratw_server
+        // pid N on HOST port P" (" local" when it serves this computer only).
+        const bool local = options_.webBind.rfind("127.", 0) == 0 || options_.webBind == "localhost";
         ownerPg_->exec("SELECT set_config('application_name', $1, false)",
-                       {"ratw_server pid " + std::to_string(::getpid()) + " on " + hostName()});
+                       {"ratw_server pid " + std::to_string(::getpid()) + " on " + hostName() +
+                        (options_.webPort > 0 ? " port " + std::to_string(options_.webPort) + (local ? " local" : "") : std::string())});
         const auto taken = ownerPg_->exec(std::string("SELECT pg_try_advisory_lock(") + OwnerSpace + ", " + OwnerKey + ")");
         if (taken.ok && !taken.rows.empty() && taken.rows[0][0] && *taken.rows[0][0] == "t")
             return true;

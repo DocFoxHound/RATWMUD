@@ -1994,10 +1994,12 @@ def make_server(port=8766, dm=None):
     return server
 
 
-def make_handler(dm=None, offers=None, world=None, kinds=None):
+def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, default=None):
     """The DM's request handler. `offers(method, path)`: whether it offers a route (404 otherwise; every route without
     it). `world()`: the one world it works on (the studio's Atlas suite: Atlas's world), a request naming another
-    refused. `kinds`: the kinds of world a request may name (the studio's DM suite: live worlds only)."""
+    refused. `kinds`: the kinds of world a request may name. `allowed()`: the worlds a request may name (the studio's DM
+    suite: every world). `default()`: the world a request naming none works on (default: the live server's; the
+    studio's DM suite: the DM's chosen world)."""
     dm = dm or DungeonMaster()
 
     class Handler(BaseHTTPRequestHandler):
@@ -2038,10 +2040,13 @@ def make_handler(dm=None, offers=None, world=None, kinds=None):
                 if asked and world_db.canonical(asked) != key:
                     raise DMError(f'This works on Atlas\'s world, {key}, not {asked}.', 409)
                 return key
-            key = world_db.canonical(asked) if asked else default_target()
+            key = world_db.canonical(asked) if asked else (default or default_target)()
             if kinds is not None and key in targets() and world_db.kind(key) not in kinds:
                 raise DMError(f'{key} is a {world_db.kind(key)} world; this works on {" and ".join(kinds)} worlds '
                               f'({", ".join(k for k in targets() if world_db.kind(k) in kinds) or "none registered"}).', 400)
+            if allowed is not None and key in targets() and key not in (worlds := allowed()):
+                raise DMError(f'{key} is a {world_db.kind(key)} world the live server doesn\'t run; the DM works on '
+                              f'{", ".join(worlds) or "no world"} (Atlas edits dev worlds).', 400)
             return key
 
         def target(self, query):

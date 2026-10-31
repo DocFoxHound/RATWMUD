@@ -418,6 +418,16 @@ void persistenceAndReplay()
     Society replay(false);
     expect(replay.restore(saved) && replay.conserved() && near(replay.state().decisionRemainder, .4),
            "Accounts, tasks, budgets, and partial decision interval restore atomically");
+    {
+        // An apprentice's task is "apprenticed: " and its master's title: a long title's save loads (DEV, 2026-10-31).
+        auto apprenticed = saved;
+        apprenticed.residents.begin()->second.task = "apprenticed: cooking for the King's household";
+        Society again(false);
+        expect(again.restore(apprenticed), "A resident apprenticed to a long title restores");
+        apprenticed.residents.begin()->second.task = std::string(MaxTaskText + 1, 'x');
+        Society refused(false);
+        expect(!refused.restore(apprenticed), "A task past the limit is still refused");
+    }
     std::map<std::string, LifeBody> bodies = {{"npc_keeper", {"tavern", 9.5, 6.5, false}},
                                               {"npc_cook", {"tavern", 26.5, 6.5, false}},
                                               {"npc_porter", {"exterior", 17.5, 7.5, false}}};

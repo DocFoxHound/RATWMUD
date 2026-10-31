@@ -4,7 +4,8 @@
 // (the launcher, tools/live.sh server, starts the server again on the live world). Also: switching the live world
 // (rarely wise; maintenance only, typed confirmation), and the releases with rollback of the authored content.
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {dmApi, DmError, isLive, type Me, type Target, type World} from './api';
+import {dmApi, DmError, type Me, type Target, type World} from './api';
+import {gameUrl} from '../lib/api';
 import {buildChoices, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
@@ -20,7 +21,8 @@ export function ServerTab({me, target}: {me: Me; target: Target}) {
         .catch(e => { setProblem((e as Error).message); return null; }), [target]);
     useEffect(() => { void loadStatus(); }, [loadStatus]);
     // While the world is closing (maintenance asked, its game server still up), watch for the server to stop.
-    const closing = status?.server.state === 'maintenance' && status.serverRunning;
+    // (And while its server is starting.)
+    const closing = (status?.server.state === 'maintenance' && status.serverRunning) || (!!status?.starting && !status.serverRunning);
     useEffect(() => { if (!closing) return; const t = setInterval(() => void loadStatus(), 5000); return () => clearInterval(t); }, [closing, loadStatus]);
 
     if (!status) return <div className="dm-center"><p className="hint">{problem || 'Reading the server\'s state…'}</p></div>;
@@ -34,9 +36,11 @@ export function ServerTab({me, target}: {me: Me; target: Target}) {
         {problem && <p className="error">{problem}</p>}
         <div className="sync-body">
             <ServerPanel status={status} canAct={canAct} onChanged={setStatus} />
-            <ImportPanel live={status} maintenance={maintenance} stopped={!status.serverRunning} canAct={canAct} onImported={() => void loadStatus()} />
+            {status.kind === 'dev'
+                ? <BuildPanel status={status} canAct={canAct} onBuilt={() => void loadStatus()} />
+                : <ImportPanel live={status} maintenance={maintenance} stopped={!status.serverRunning} canAct={canAct} onImported={() => void loadStatus()} />}
             <SwitchPanel status={status} maintenance={maintenance} canAct={canAct} />
-            <ReleasesPanel world={status.key} release={status.release} canAct={canAct} onRolledBack={() => void loadStatus()} />
+            {status.kind !== 'dev' && <ReleasesPanel world={status.key} release={status.release} canAct={canAct} onRolledBack={() => void loadStatus()} />}
         </div>
     </div>;
 }
@@ -56,6 +60,15 @@ function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct:
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
+    const startServer = async () => {
+        setBusy(true); setProblem('');
+        try {
+            const r = await dmApi.startServer(status.key);
+            if (r.note) setProblem(r.note);
+            onChanged({...status, starting: true});
+        } catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
     return <section className="sync-card">
         <h3>The server</h3>
         <p><b>{status.name}</b> <span className="meta">({status.key}){status.key === status.live ? ' · the live server\'s world' : ''}</span></p>
@@ -68,6 +81,11 @@ function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct:
                 : 'A game server holds this world: players can be in it.')
             : (maintenance ? 'No game server holds this world: it is closed, safe to import or switch.'
                 : 'No game server holds this world right now (its launcher may be starting it, or it isn\'t running).')}</p>
+        {status.play && <p><a className="button play" href={gameUrl(status.play)} target="_blank" rel="noopener">▶ Open its game</a>
+            <span className="meta"> {gameUrl(status.play)}</span></p>}
+        {!status.serverRunning && !status.starting && <p><button disabled={!canAct || busy} onClick={() => void startServer()}
+            title="Starts tools/live.sh server for this world on the studio's computer, on the local network">▶ Start its game server</button></p>}
+        {status.starting && !status.serverRunning && <p className="meta">Its game server is starting (building first if Atlas changed it)…</p>}
         {problem && <Problems title={problem} items={[]} />}
         {!maintenance ? <>
             <label className="field"><span>Note for players and the log (optional)</span>
@@ -79,6 +97,40 @@ function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct:
             <p className="hint">The launcher (<code>tools/live.sh server</code>) waits while the world is in maintenance and starts the server again
                 once it is running, on whichever world is live by then.</p>
         </>}
+    </section>;
+}
+
+// --------------------------------------------------------------------------- A dev world served as live: its builds
+
+/** Instead of Import from dev, when the live server runs a dev world (DEV while PROD is closed: doc 66, Progress):
+ *  Atlas edits this very world, and its edits reach the server with a new build. */
+function BuildPanel({status, canAct, onBuilt}: {status: ServerStatus; canAct: boolean; onBuilt: () => void}) {
+    const [busy, setBusy] = useState(false), [problem, setProblem] = useState(''), [done, setDone] = useState('');
+    const build = status.build;
+    const run = async () => {
+        if (!window.confirm(`Make a new build of ${status.name} from Atlas's edits?\n\nThe game server restarts onto it as soon as nobody is connected (players connected now are told, and it waits for them to leave).`)) return;
+        setBusy(true); setProblem(''); setDone('');
+        try {
+            const r = await dmApi.rebuild(status.key);
+            setDone(r.made ? `Build ${r.build} made (${r.cells} cells): the server restarts onto it once nobody is connected.`
+                : `Build ${r.build} was already current: announced again, so a server on an older build restarts onto it once nobody is connected.`);
+            onBuilt();
+        } catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    return <section className="sync-card wide">
+        <h3>⟳ Atlas's edits to the server</h3>
+        <p className="hint">{status.servedDev}</p>
+        <p className="meta">NPCs &amp; areas, factions and talk changed in Atlas's NPC pages reach a running server at once. The map, buildings,
+            interiors and the Workshop's people need a new build: the server restarts onto it once nobody is connected
+            (<code>tools/live.sh server</code> starts it again, and saves, players' progress and the DM's actions carry over).</p>
+        {build?.problem ? <Problems title={build.problem} items={[]} />
+            : <p className={build?.current ? 'sync-state running' : 'sync-state maintenance'}>
+                {!build?.build ? 'No build yet.' : build.current ? `Build ${build.build} is current with Atlas's edits` : `Build ${build.build} is behind Atlas's edits`}
+                {build?.build ? <span className="meta"> · made {when(build.at)}{build.by ? ` by ${build.by}` : ''}</span> : null}</p>}
+        {problem && <Problems title={problem} items={[]} />}
+        {done && <p className="publish-done">{done}</p>}
+        <button className="publish" disabled={!canAct || busy} onClick={() => void run()}>{busy ? 'Building…' : '⟳ Rebuild from Atlas\'s edits'}</button>
     </section>;
 }
 
@@ -97,13 +149,13 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
     const load = useCallback(async (which: Target | null) => {
         setLoading(true);
         try {
-            const next = await dmApi.importPlan(which ?? undefined);
+            const next = await dmApi.importPlan(live.key, which ?? undefined);
             setData(next); setDev(next.dev);
             if (!next.plan?.replacesMap) setReplace(false);
             setPicks(p => prunePicks(p, next.plan?.conflicts ?? []));
         } catch (error) { setProblem({message: (error as Error).message, errors: []}); }
         finally { setLoading(false); }
-    }, []);
+    }, [live.key]);
     // Compared again whenever the server's state changes (live may have moved; maintenance unblocks it).
     useEffect(() => { void load(dev); }, [load, live.server.state, live.serverRunning, live.release]);   // eslint-disable-line react-hooks/exhaustive-deps
     const plan: ImportPlan | null = data?.plan ?? null;
@@ -118,7 +170,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
         if (!window.confirm(ask)) return;
         setBusy(true); setProblem(null); setDone(null);
         try {
-            const result = await dmApi.importDev({dev, choices, password, note, expect: plan.digest, ...(replacing ? {replaceMap: replace} : {})});
+            const result = await dmApi.importDev({world: live.key, dev, choices, password, note, expect: plan.digest, ...(replacing ? {replaceMap: replace} : {})});
             setDone(result); setPassword(''); setNote(''); setPicks({}); setReplace(false);
             onImported();
             await load(dev);
@@ -205,11 +257,10 @@ const worldLabel = (worlds: SyncWorld[] | undefined, key: Target) => worlds?.fin
 // --------------------------------------------------------------------------- The live world switch
 
 function SwitchPanel({status, maintenance, canAct}: {status: ServerStatus; maintenance: boolean; canAct: boolean}) {
-    const [worlds, setWorlds] = useState<World[]>([]);
+    // Every other registered world: the live ones, and dev worlds (served as live: DEV while PROD is closed).
+    const others: World[] = status.switchTo ?? [];
     const [chosen, setChosen] = useState(''), [typed, setTyped] = useState('');
     const [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
-    useEffect(() => { dmApi.worlds().then(w => setWorlds(w.worlds.filter(x => x.kind === 'live' || isLive(x.key)))).catch(() => undefined); }, []);
-    const others = worlds.filter(w => w.kind === 'live' && w.key !== status.live);
     const run = async () => {
         setBusy(true); setProblem('');
         try {
@@ -219,15 +270,18 @@ function SwitchPanel({status, maintenance, canAct}: {status: ServerStatus; maint
         } catch (error) { setProblem((error as Error).message); setBusy(false); }
     };
     return <section className="sync-card">
-        <h3>Switch the live world</h3>
+        <h3>Switch the live server's world</h3>
+        <p className="meta">The live server's world is <b>{status.live}</b>: what <code>tools/live.sh server</code> runs when given no world.
+            (The DM's own world is chosen in the top bar, apart from it and from Atlas's.)</p>
         <p className="sync-warning">{status.warning || 'Switching the live world is rarely wise: players\' characters and progress belong to each world.'}</p>
-        {!others.length ? <p className="meta">There is no other live world to switch to (python3 tools/world_db.py new KEY --kind live ...).</p>
+        {!others.length ? <p className="meta">There is no other world to switch to (python3 tools/world_db.py new KEY --kind live ...).</p>
+            : status.key !== status.live ? <p className="meta">Switched from the live server's own world: choose {status.live} in the DM's world picker.</p>
             : !maintenance ? <p className="meta">Only during maintenance: start maintenance on {status.name} first.</p>
             : <>
                 <label className="field"><span>New live world</span>
                     <select value={chosen} disabled={busy} onChange={e => { setChosen(e.target.value); setTyped(''); }}>
                         <option value="">Choose…</option>
-                        {others.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key}</option>)}</select></label>
+                        {others.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key}{w.kind === 'dev' ? ' (a dev world, served as live)' : ''}</option>)}</select></label>
                 {chosen && <label className="field"><span>Type <code>{chosen}</code> to confirm</span>
                     <input value={typed} autoComplete="off" onChange={e => setTyped(e.target.value)} /></label>}
                 {problem && <Problems title={problem} items={[]} />}

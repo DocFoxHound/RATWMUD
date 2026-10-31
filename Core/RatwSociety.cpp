@@ -1007,7 +1007,7 @@ bool Society::restore(const SocietyState& saved)
             !fresh.state_.residents.count(l.first) || fresh.state_.residents.at(l.first).role != l.second.role ||
             !validNumber(l.second.hunger, 0, 100) || !validNumber(l.second.fatigue, 0, 100) ||
             !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > PaidSpells ||
-            !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > 40 ||
+            !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > MaxTaskText ||
             l.second.reason.size() > 256 || l.second.goalCell.size() > 80 ||
             l.second.homeCell.size() > 80 || l.second.relocationCell.size() > 80 ||
             !validNumber(l.second.homeX, 0, 256) || !validNumber(l.second.homeY, 0, 256) ||

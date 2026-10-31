@@ -48,7 +48,7 @@ class StandInSync:
     """tools/world_sync.py's Sync: every call recorded and answered, or refused with `fail`."""
 
     def __init__(self):
-        self.calls, self.fail = [], None
+        self.calls, self.fail, self.holder = [], None, None
 
     def __getattr__(self, name):
         def method(*args):
@@ -56,26 +56,46 @@ class StandInSync:
             if self.fail is not None:
                 raise self.fail
             if name == 'status':
-                return {'key': args[0], 'server': {'state': 'running', 'by': '', 'at': None, 'note': ''}, 'serverRunning': False,
-                        'release': 4}
+                return {'key': args[0], 'server': {'state': 'running', 'by': '', 'at': None, 'note': ''},
+                        'serverRunning': bool(self.holder), 'serverHolder': self.holder, 'release': 4}
             return {'called': name, 'release': 5, 'applied': {'world': {}, 'live': {'NPCs': {'added': 1, 'changed': 2, 'removed': 0}}},
                     'conflicts': 0}
         return method
 
 
+class StandInBuilds:
+    """A dev world's builds (studio.Builds): build 7, current until a rebuild makes 8."""
+
+    def __init__(self):
+        self.calls, self.current = [], True
+
+    def status(self, key):
+        return {'build': 7 if self.current else 8, 'at': None, 'by': '', 'release': None, 'current': self.current}
+
+    def rebuild(self, key, editor):
+        self.calls.append(('rebuild', key, editor))
+        return {'build': 7, 'at': None, 'by': '', 'release': None, 'current': True, 'made': not self.current, 'cells': 12}
+
+
 class Running:
     """A studio on a free port; Atlas without a database (a roster file of its own)."""
 
-    def __init__(self, dm, atlas_key, sync=None, economy=None):
+    def __init__(self, dm, atlas_key, sync=None, economy=None, builds=None):
         self.temp = tempfile.TemporaryDirectory()
         roster = Path(self.temp.name) / 'roster.json'
         map_editor.roster_lib.save({**map_editor.roster_lib.load(), 'characters': []}, roster)
-        self.made, self.chosen, self.dm = [], [], dm
+        self.made, self.chosen, self.dm_chosen, self.dm = [], [], [], dm
+        self.spawned = []
 
         def atlas(key):
             self.made.append(key)
             return map_editor.make_handler(roster_path=roster, ai_config_path=Path(self.temp.name) / 'missing.json')
-        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append, sync=sync, economy=economy)
+
+        def spawn(key, port):
+            self.spawned.append((key, port))
+            return type('Launcher', (), {'poll': lambda _: None})()
+        self.studio = ST.Studio(dm=dm, atlas=atlas, atlas_key=atlas_key, choose=self.chosen.append, sync=sync, economy=economy,
+                                builds=builds, servers=ST.Servers(spawn), choose_dm=self.dm_chosen.append)
         self.server = ST.make_server(0, self.studio)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -135,8 +155,8 @@ class StudioTests(Host):
         self.assertTrue(data['atlas']['available'])
         self.assertEqual(data['atlas']['world']['key'], 'dev-old')
         self.assertEqual([w['key'] for w in data['atlas']['worlds']], W.keys('dev'))
-        self.assertEqual([w['key'] for w in data['dm']['worlds']], W.keys('live'))
-        self.assertEqual(data['dm']['live'], W.live_world())
+        self.assertEqual([w['key'] for w in data['dm']['worlds']], W.keys(), 'the DM may work on any world')
+        self.assertEqual((data['dm']['live'], data['dm']['world']), (W.live_world(), W.dm_world()))
         self.assertNotIn('database', json.dumps(data), 'no database names leave the host')
         self.assertFalse(self.call('GET', '/api/studio/session', token='viewer-token')[1]['atlas']['available'])
 
@@ -190,16 +210,22 @@ class StudioTests(Host):
         status, data = self.call('POST', '/api/dm/npcs/life', {'id': 'npc_ada', 'dead': True}, token='dm-token')
         self.assertEqual(status, 200, data)
         self.assertEqual(self.dm.calls[-1][0], 'npc_life')
-        self.assertEqual(self.dm.calls[-1][1][1], W.live_world(), 'the live world by default')
+        self.assertEqual(self.dm.calls[-1][1][1], W.dm_world(), 'the DM\'s world by default')
         for path in ('players', 'storytellers', 'chapters', 'calendar', 'npcs', 'world'):
             self.assertEqual(self.call('GET', '/api/dm/' + path, token='viewer-token')[0], 200, path)
 
-    def test_the_dm_suite_works_on_live_worlds(self):
-        status, data = self.call('GET', '/api/dm/players?target=dev-old', token='admin-token')
-        self.assertEqual(status, 400, data)
-        self.assertIn('live', data['error'])
-        status, data = self.call('GET', f'/api/dm/players?target={W.live_world()}', token='admin-token')
-        self.assertEqual((status, data['target']), (200, W.live_world()))
+    def test_the_dm_suite_works_on_its_own_world_chosen_apart_from_atlas(self):
+        # Any world: a live one, a dev one (DEV run as the server, the same world Atlas edits, or another).
+        for key in ('prod', 'dev', 'dev-old'):
+            status, data = self.call('GET', f'/api/dm/players?target={key}', token='admin-token')
+            self.assertEqual((status, data['target']), (200, key))
+        # Choosing the DM's world: dm and admin; Atlas's stays as it was.
+        self.assertEqual(self.call('POST', '/api/studio/dm-world', {'key': 'prod'}, token='viewer-token')[0], 403)
+        self.assertEqual(self.call('POST', '/api/studio/dm-world', {'key': 'nowhere'}, token='dm-token')[0], 400)
+        status, data = self.call('POST', '/api/studio/dm-world', {'key': 'prod'}, token='dm-token')
+        self.assertEqual((status, data['world']['key']), (200, 'prod'), data)
+        self.assertEqual((self.host.dm_chosen, self.chosen), (['prod'], []))
+        self.assertEqual(self.call('POST', '/api/studio/dm-world', {'key': 'ridgemere2'}, token='admin-token')[1]['world']['key'], 'dev')
 
     def test_atlas_npc_pages_work_on_atlas_world_only(self):
         status, data = self.call('GET', '/api/atlas/layers/npcs', token='dm-token')
@@ -218,7 +244,7 @@ class StudioTests(Host):
 
     def test_switching_atlas_world(self):
         self.assertEqual(self.call('POST', '/api/studio/atlas-world', {'key': 'dev'}, token='viewer-token')[0], 403)
-        status, data = self.call('POST', '/api/studio/atlas-world', {'key': W.live_world()}, token='dm-token')
+        status, data = self.call('POST', '/api/studio/atlas-world', {'key': 'prod'}, token='dm-token')
         self.assertEqual(status, 400, data)
         self.assertEqual(self.chosen, [])
         old = self.atlas_token()
@@ -280,7 +306,7 @@ class SignInTests(Fixture):
         self.assertIn('studio_meadow', [a['id'] for a in data['areas']])
 
 
-class SyncRouteTests(unittest.TestCase):
+class RouteHost:
     """The new routes with stand-ins: who may call them, what reaches the engine, and its errors as HTTP. Atlas on DEV
     (in name only: its upstream is PROD); a scratch registry adds a second live world for the switch."""
 
@@ -293,9 +319,12 @@ class SyncRouteTests(unittest.TestCase):
         self.saved = {k: os.environ.get(k) for k in ('RATW_WORLDS_FILE', 'RATW_WORLDS_LOCAL')}
         os.environ.update({'RATW_WORLDS_FILE': str(registry), 'RATW_WORLDS_LOCAL': str(Path(self.folder.name) / 'local.json')})
         W.worlds()
-        self.sync = StandInSync()
-        self.host = Running(StandInDM(), 'dev', self.sync)
+        W.set_local(live=self.LIVE)
+        self.sync, self.builds = StandInSync(), StandInBuilds()
+        self.host = Running(StandInDM(), 'dev', self.sync, builds=self.builds)
         self.dm, self.call = self.host.dm, self.host.call
+
+    LIVE = 'prod'          # (PROD as the live server: the import flow. ServedDevRouteTests: DEV, the default now.)
 
     def tearDown(self):
         self.host.stop()
@@ -309,6 +338,10 @@ class SyncRouteTests(unittest.TestCase):
 
     def logged(self):
         return [args for name, args in self.dm.calls if name == 'log']
+
+
+class SyncRouteTests(RouteHost, unittest.TestCase):
+    """PROD as the live server (selectable): the import flow."""
 
     def test_update_from_live_needs_an_upstream_a_builder_and_atlas_token_to_pull(self):
         self.assertEqual(self.call('GET', '/api/atlas/sync/diff')[0], 401)
@@ -346,7 +379,7 @@ class SyncRouteTests(unittest.TestCase):
         self.assertEqual((data['key'], data['live']), ('prod', 'prod'))
         self.assertIn('rarely wise', data['warning'])
         self.assertEqual(self.call('GET', '/api/dm/server/status?world=other', token='viewer-token')[1]['key'], 'other')
-        self.assertEqual(self.call('GET', '/api/dm/server/status?world=dev', token='viewer-token')[0], 400, 'live worlds only')
+        self.assertEqual(self.call('GET', '/api/dm/server/status?world=dev', token='viewer-token')[1]['kind'], 'dev', 'a dev world too')
         self.assertEqual(self.call('GET', '/api/dm/server/status?world=nowhere', token='viewer-token')[0], 400)
         self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': True}, token='viewer-token')[0], 403)
         self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': 'yes'}, token='dm-token')[0], 400)
@@ -359,7 +392,7 @@ class SyncRouteTests(unittest.TestCase):
 
     def test_switching_the_live_world_asks_twice(self):
         for body, why in (({'world': 'other'}, 'no confirmation'), ({'world': 'other', 'confirm': 'yes'}, 'not the key'),
-                          ({'world': 'dev', 'confirm': 'dev'}, 'a dev world'), ({'world': 'prod', 'confirm': 'prod'}, 'already live')):
+                          ({'world': 'nowhere', 'confirm': 'nowhere'}, 'no such world'), ({'world': 'prod', 'confirm': 'prod'}, 'already live')):
             status, data = self.call('POST', '/api/dm/server/switch', body, token='admin-token')
             self.assertEqual(status, 400, (why, data))
         self.assertIn('rarely wise', self.call('POST', '/api/dm/server/switch', {'world': 'other'}, token='admin-token')[1]['error'])
@@ -428,6 +461,100 @@ class SyncRouteTests(unittest.TestCase):
 
     def test_the_session_says_where_switching_is(self):
         self.assertIn('Server & import', self.call('GET', '/api/studio/session', token='dm-token')[1]['dm']['switch'])
+
+
+class ServedDevRouteTests(RouteHost, unittest.TestCase):
+    """DEV run as the only server (the default since 2026-10-31: the live choice and the DM on DEV, Atlas on DEV too):
+    the DM's server routes on a dev world, what makes no sense there refused with why, Atlas's edits to the server
+    (Rebuild), starting a server, and Atlas's Play."""
+
+    LIVE = 'dev'
+
+    def test_the_dm_runs_dev_as_the_server(self):
+        session = self.call('GET', '/api/studio/session', token='dm-token')[1]
+        self.assertEqual((session['dm']['world'], session['dm']['live'], session['atlas']['world']['key']), ('dev', 'dev', 'dev'))
+        status, data = self.call('GET', '/api/dm/server/status', token='viewer-token')
+        self.assertEqual((status, data['key'], data['kind'], data['live']), (200, 'dev', 'dev', 'dev'), data)
+        self.assertEqual(data['build'], {'build': 7, 'at': None, 'by': '', 'release': None, 'current': True})
+        self.assertIn('nothing to import', data['servedDev'])
+        self.assertIn('prod', [w['key'] for w in data['switchTo']], 'PROD stays selectable')
+        # Maintenance works as on a live world.
+        self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': True}, token='dm-token')[0], 200)
+        self.assertEqual(self.sync.calls[-1], ('maintenance', ('dev', True, 'dm-user', '')))
+        # The DM's NPC life and players go to DEV.
+        self.assertEqual(self.call('POST', '/api/dm/npcs/life', {'id': 'wren', 'dead': True}, token='dm-token')[0], 200)
+        self.assertEqual(self.dm.calls[-1][1][1], 'dev')
+
+    def test_import_and_rollback_are_refused_on_dev_with_why(self):
+        status, data = self.call('GET', '/api/dm/import/plan', token='viewer-token')
+        self.assertEqual((status, data['candidates'], data['plan']), (200, [], None))
+        self.assertIn('nothing to import', data['problem'])
+        status, data = self.call('POST', '/api/dm/import', {'dev': 'dev', 'password': 'p'}, token='dm-token')
+        self.assertEqual(status, 409, data)
+        self.assertIn('nothing to import', data['error'])
+        status, data = self.call('GET', '/api/dm/releases', token='viewer-token')
+        self.assertEqual((status, data['releases']), (200, []))
+        self.assertIn('builds, not releases', data['note'])
+        status, data = self.call('POST', '/api/dm/rollback', {'number': 2, 'password': 'p'}, token='dm-token')
+        self.assertEqual(status, 409, data)
+        self.assertEqual([c for c in self.sync.calls if c[0] in ('import_', 'rollback', 'plan_import')], [], 'nothing reached the engine')
+        # Into PROD (the DM pointed at it), the import is offered again.
+        status, data = self.call('GET', '/api/dm/import/plan?world=prod', token='viewer-token')
+        self.assertEqual(([c['key'] for c in data['candidates']], data['live']['key']), (['dev'], 'prod'))
+
+    def test_rebuild_sends_atlas_s_edits_to_the_server(self):
+        self.assertEqual(self.call('POST', '/api/dm/server/rebuild', {}, token='viewer-token')[0], 403)
+        status, data = self.call('POST', '/api/dm/server/rebuild', {'world': 'prod'}, token='dm-token')
+        self.assertEqual(status, 409, 'a live world\'s builds come from its imports')
+        self.builds.current = False
+        status, data = self.call('POST', '/api/dm/server/rebuild', {}, token='dm-token')
+        self.assertEqual((status, data['made'], data['build']), (200, True, 7), data)
+        self.assertEqual(self.builds.calls, [('rebuild', 'dev', 'dm-user')])
+        self.assertEqual(self.logged()[-1][1:3], ('dev', 'server.rebuild'))
+
+    def test_switching_the_live_server_to_a_dev_world_and_back(self):
+        W.set_local(live='prod')
+        status, data = self.call('POST', '/api/dm/server/switch', {'world': 'dev', 'confirm': 'dev'}, token='admin-token')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.sync.calls[-1], ('switch_live', ('dev', 'admin-user')))
+
+    def test_starting_a_world_s_server(self):
+        self.assertEqual(self.call('POST', '/api/dm/server/start', {}, token='viewer-token')[0], 403)
+        status, data = self.call('POST', '/api/dm/server/start', {}, token='dm-token')
+        self.assertEqual((status, data['started'], data['world']), (200, True, 'dev'), data)
+        self.assertEqual(self.host.spawned[0][0], 'dev')
+        self.assertIn(self.host.spawned[0][1], ST.GAME_PORTS)
+        status, data = self.call('POST', '/api/dm/server/start', {}, token='dm-token')
+        self.assertEqual((status, data['started'], data['starting']), (200, False, True), 'once: it is still starting')
+        self.assertEqual(len(self.host.spawned), 1)
+        self.assertTrue(self.call('GET', '/api/dm/server/status', token='viewer-token')[1]['starting'])
+
+    def test_play_opens_the_running_server_of_atlas_s_world(self):
+        self.assertEqual(self.call('GET', '/api/atlas/play/server', token='viewer-token')[0], 403)
+        status, data = self.call('GET', '/api/atlas/play/server', token='dm-token')
+        self.assertEqual((status, data['play'], data['canStart'], data['world']['key']), (200, None, True, 'dev'), data)
+        self.assertIn('No game server is running', data['why'])
+        self.assertIn('bash tools/live.sh server dev', data['why'])
+        holder = {'pid': 4, 'host': 'elsewhere-not-here', 'port': 7790, 'local': False, 'name': 'ratw_server pid 4 on elsewhere-not-here port 7790'}
+        self.sync.holder = holder
+        status, data = self.call('GET', '/api/atlas/play/server', token='dm-token')
+        self.assertEqual(data['play'], {'port': 7790, 'host': 'elsewhere-not-here', 'local': False}, 'a server on another computer')
+        self.sync.holder = {**holder, 'host': ST.socket.gethostname()}
+        status, data = self.call('GET', '/api/atlas/play/server', token='dm-token')
+        self.assertEqual(data['play'], {'port': 7790, 'host': None, 'local': False}, 'this computer: the page\'s own host')
+        self.assertFalse(data['canStart'])
+        status, data = self.call('POST', '/api/atlas/play/server/start', {}, token='dm-token')
+        self.assertEqual(status, 409, 'already running')
+        self.sync.holder = None
+        status, data = self.call('POST', '/api/atlas/play/server/start', {}, token='dm-token')
+        self.assertEqual((status, data['started']), (200, True), data)
+        self.assertEqual(self.host.spawned[-1][0], 'dev')
+
+    def test_play_addresses(self):
+        self.assertIsNone(ST.play_address(None))
+        self.assertIsNone(ST.play_address({'port': None, 'host': 'h'}), 'a server that doesn\'t say its port')
+        self.assertEqual(ST.play_address({'port': 7788, 'host': 'h', 'local': True}, here='h'), {'port': 7788, 'host': None, 'local': True})
+        self.assertEqual(ST.play_address({'port': 7788, 'host': 'h.local'}, here='h')['host'], None)
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
@@ -610,8 +737,8 @@ class EconomyRouteTests(unittest.TestCase):
         status, data = self.call('POST', '/api/dm/economy/loop', {'subsidies': {'carriage': 10}}, token='dm-token')
         self.assertEqual(status, 200, data)
         self.assertIn(('set_loop', live, {'subsidies': {'carriage': 10}}, 'dm-user'), self.economy.calls)
-        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'dev-old', 'gateToll': 1}, token='dm-token')[0], 400,
-                         'the DM works on live worlds')
+        self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'nowhere', 'gateToll': 1}, token='dm-token')[0], 400,
+                         'a registered world (the DM works on any, its own by default)')
 
     def test_route_sets_are_apart(self):
         self.assertFalse(ST.ECONOMY_ROUTES & ST.SYNC_ROUTES)

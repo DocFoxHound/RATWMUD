@@ -766,9 +766,12 @@ void Game::readNotifications()
         std::string error;
         if (channel != "ratw_release" || !json::parse(payload, v, error) || !v.isObject())
             continue;
+        // A live world's release (an import, a rollback: its build is the release's), or a dev world's new build
+        // (tools/world_build.py: no release), for a dev world served as the live server (doc 66, "DEV as the live server").
         const auto build = std::int64_t(v.number("build"));
-        if (build > loadedBuild_)
+        if (build > loadedBuild_ && build > pendingBuild_)
         {
+            pendingBuild_ = build;
             pendingRelease_ = std::int64_t(v.number("release"));
             releaseAnnounced_ = false;
             note("info", "RATW_RELEASE_PUBLISHED release=" + std::to_string(pendingRelease_) + " build=" + std::to_string(build));
@@ -856,21 +859,30 @@ void Game::watchReleases(double dt)
         return;
     releaseAccumulator_ = 0;
     readNotifications();
-    if (!pendingRelease_ || closingForMaintenance() || exit_ >= 0)
+    if (!pendingBuild_ || closingForMaintenance() || exit_ >= 0)
         return;
+    const std::string which = pendingRelease_ ? "release " + std::to_string(pendingRelease_) : "build " + std::to_string(pendingBuild_);
+    if (options_.scratch)
+    {
+        // A scratch server stays on the build it loaded: it is someone's look at something, and writes nothing.
+        note("info", "RATW_RELEASE_IGNORED " + which + ": a scratch server stays on build " + std::to_string(loadedBuild_) + ".");
+        pendingBuild_ = pendingRelease_ = 0;
+        return;
+    }
     if (clients_.empty())
     {
         save();
-        note("info", "RATW_RELEASE_RESTART release=" + std::to_string(pendingRelease_) + "; saved, exiting so the new world loads.");
-        pendingRelease_ = 0;
+        note("info", "RATW_RELEASE_RESTART " + (pendingRelease_ ? "release=" + std::to_string(pendingRelease_) : "build=" + std::to_string(pendingBuild_)) +
+                         "; saved, exiting so the new world loads.");
+        pendingBuild_ = pendingRelease_ = 0;
         exit_ = 75;
     }
     else if (!releaseAnnounced_)
     {
         releaseAnnounced_ = true;
         for (auto* c : clients_)
-            system(c, "A new version of the world (release " + std::to_string(pendingRelease_) +
-                          ") has been published. It takes effect after a short restart once everyone has left.");
+            system(c, "A new version of the world (" + which + (pendingRelease_ ? ") has been published." : ") has been made.") +
+                          " It takes effect after a short restart once everyone has left.");
     }
 }
 

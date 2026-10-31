@@ -39,6 +39,14 @@ export interface HostValidation { valid: boolean; errors: string[]; warnings: st
 import type {Change, Editor} from './live';
 
 export interface PlaytestResult { folder: string; manifest: string; command: string }
+/** Where the running game server of Atlas's world is (GET api/atlas/play/server): its port, and its host when it runs
+ *  on another computer than the studio's (null: the host this page came from); `local`: it serves its own computer only. */
+export interface PlayAddress { port: number; host: string | null; local: boolean }
+export interface PlayServer {
+    world: AtlasWorld; play: PlayAddress | null; why: string; state: 'running' | 'maintenance'; starting: boolean; canStart: boolean;
+    build: {build: number | null; current: boolean} | null;
+}
+export {gameUrl} from './sync';
 
 /** What "who fills each profession slot" depends on: the slots, who is already named, and the ground beside each
  *  slot's work spot (customers need an open tile by a counter). A few kilobytes, however large the world. */
@@ -138,6 +146,10 @@ export const api = {
         if (!response.ok) throw new Error((data.errors ?? [data.error ?? `Generation failed (${response.status}).`]).join('\n'));
         return data.characters as Character[];
     },
+    /** The game server running Atlas's world (tools/studio.py): where to open its game, or why there is none. */
+    playServer: async () => json<PlayServer>(await get('play/server')),
+    /** Starts the game server of Atlas's world (tools/live.sh server KEY, on the local network). */
+    startPlayServer: async () => json<{started: boolean; starting: boolean; port?: number}>(await post('play/server/start', {})),
     playtest: async (project: Project, quickStart: boolean) => {
         const data = await json<PlaytestResult & {errors?: string[]}>(await post('playtest', {project: forHost(project), quickStart}));
         if (data.errors?.length) throw new Error(data.errors.join('\n'));

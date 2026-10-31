@@ -78,6 +78,9 @@ bool facilityAccount(const std::string& id);
 bool itemValid(const std::string& item);
 // The most kinds of goods one account holds (a wardrobe of clothes, a jeweller's counter).
 constexpr std::size_t MaxGoodsKinds = 64;
+// The longest task a saved resident may have: its job's title, or "apprenticed: " and its master's (was 40, which a
+// long title such as "apprenticed: cooking for the King's household" passed, so the save it made would not load).
+constexpr std::size_t MaxTaskText = 160;
 
 struct Spot
 {

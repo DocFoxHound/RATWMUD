@@ -3,7 +3,7 @@
 import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
-import type {Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
+import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -13,8 +13,14 @@ export interface Worlds { worlds: World[]; live: Target }
 let known: World[] = [{key: 'prod', name: 'PROD', kind: 'live'}];
 /** The registry as the host gave it (DmApp sets it once signed in). */
 export const setWorlds = (worlds: World[]) => { if (worlds.length) known = worlds; };
-/** A live world: what players are in, so changes there are confirmed first. */
-export const isLive = (target: Target) => known.find(w => w.key === target)?.kind === 'live';
+/** This page's suite (Studio sets it): the DM suite's calls go to the DM's routes, Atlas's NPC pages' to Atlas's. */
+let suite: 'atlas' | 'dm' | null = null;
+/** The world the live server runs (doc 66): a live world, or a dev world served as live (DEV while PROD is closed). */
+let served: Target | null = null;
+export const setSuite = (which: 'atlas' | 'dm', live: Target | null) => { suite = which; served = live; };
+/** A world players are in, so changes there are confirmed first: a live world, or in the DM suite the dev world the
+ *  live server runs. */
+export const isLive = (target: Target) => known.find(w => w.key === target)?.kind === 'live' || (suite === 'dm' && target === served);
 /** A world's name, for headings. */
 export const worldName = (target: Target) => known.find(w => w.key === target)?.name ?? target.toUpperCase();
 export type Role = 'viewer' | 'dm' | 'admin';
@@ -81,9 +87,10 @@ let token = (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { r
 export const signedIn = () => !!token;
 /** The DM account's sign-in, for every call to the studio (doc 66, 3: one sign-in for both suites). */
 export const authHeaders = (): Record<string, string> => (token ? {Authorization: `Bearer ${token}`} : {});
-/** Which suite's routes a world's calls go to (tools/studio.py): a live world's to the DM's, a dev world's to Atlas's
- *  NPC pages (the same methods, on Atlas's world only). */
-const at = (target: Target) => (isLive(target) ? 'api/dm/' : 'api/atlas/layers/');
+/** Which suite's routes a world's calls go to (tools/studio.py): the DM suite's to the DM's (a live world, or the dev
+ *  world the live server runs), Atlas's NPC pages' to Atlas's (the same methods, on Atlas's world only). Without a
+ *  suite set: by the world's kind. */
+const at = (target: Target) => ((suite ? suite === 'dm' : isLive(target)) ? 'api/dm/' : 'api/atlas/layers/');
 
 /** A refusal from the studio: its message and status, and from the sync engine (tools/world_sync.py) the problems
  *  behind it (`errors`) and the conflicts left to choose (`conflicts`, on a 409). */
@@ -335,18 +342,25 @@ export const dmApi = {
     studio: () => call<StudioSession>('api/studio/session'),
     /** Switches Atlas's world (a dev world), as `world_db.py use KEY` does. */
     useAtlasWorld: (key: Target) => call<{world: World}>('api/studio/atlas-world', {key}),
+    /** Chooses the DM suite's world (any world), apart from Atlas's: as `world_db.py dm KEY` does. */
+    useDmWorld: (key: Target) => call<{world: World}>('api/studio/dm-world', {key}),
+    /** Starts a world's game server (tools/live.sh server KEY, on the local network) when none runs it. */
+    startServer: (world: Target) => call<{started: boolean; starting: boolean; port?: number; note?: string}>('api/dm/server/start', {world}),
     // The server and imports (doc 66, section 4; tools/studio.py over tools/world_sync.py), on live worlds.
     /** A live world's state (running or maintenance), whether a game server holds it, its release; and the live choice. */
     serverStatus: (world?: Target) => call<ServerStatus>(`api/dm/server/status${world ? `?world=${encodeURIComponent(world)}` : ''}`),
     /** Closes a live world for maintenance (its players get a minute) or turns it back on (the launcher restarts it). */
     maintenance: (world: Target, on: boolean, note = '') => call<ServerStatus>('api/dm/server/maintenance', {world, on, note}),
+    /** A dev world served as live: a new build of Atlas's edits, announced (its server restarts onto it once nobody is
+     *  connected); the newest announced again when nothing changed. */
+    rebuild: (world: Target) => call<BuildStatus & {made: boolean; cells: number}>('api/dm/server/rebuild', {world}),
     /** Switches the live server's world: during maintenance, with the world's key typed again as `confirm`. */
     switchLive: (world: Target, confirm: string) =>
         call<{live: Target; was: Target; name: string; server: ServerStatus['server']}>('api/dm/server/switch', {world, confirm}),
     /** The dev worlds copied from the live world, and what importing one (`dev`, else the first) would do. */
-    importPlan: (dev?: Target) => call<{live: SyncWorld; candidates: SyncWorld[]; dev: Target | null; plan: ImportPlan | null;
-        problem: string; errors: string[]}>(`api/dm/import/plan${dev ? `?dev=${encodeURIComponent(dev)}` : ''}`),
-    importDev: (body: {dev: Target; choices: Record<string, Choice>; password: string; note: string; expect: string; replaceMap?: boolean}) =>
+    importPlan: (world: Target, dev?: Target) => call<{live: SyncWorld; candidates: SyncWorld[]; dev: Target | null; plan: ImportPlan | null;
+        problem: string; errors: string[]}>(`api/dm/import/plan?world=${encodeURIComponent(world)}${dev ? `&dev=${encodeURIComponent(dev)}` : ''}`),
+    importDev: (body: {world: Target; dev: Target; choices: Record<string, Choice>; password: string; note: string; expect: string; replaceMap?: boolean}) =>
         call<ImportResult>('api/dm/import', body),
     releases: (world?: Target) => call<{world: Target; releases: Release[]}>(`api/dm/releases${world ? `?world=${encodeURIComponent(world)}` : ''}`),
     rollback: (world: Target, number: number, password: string, note: string) =>
@@ -358,5 +372,6 @@ export const dmApi = {
 export interface StudioSession {
     me: Me; suite: 'atlas' | 'dm';
     atlas: {available: boolean; world: World; worlds: World[]};
-    dm: {live: Target | null; worlds: World[]; switch: string};
+    /** The DM's world (its own choice; else the live server's), the live server's world, and every world. */
+    dm: {world: Target | null; live: Target | null; worlds: World[]; switch: string};
 };

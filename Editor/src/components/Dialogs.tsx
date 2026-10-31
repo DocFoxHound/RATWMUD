@@ -1,6 +1,6 @@
-import {useEffect, useRef, useState, type ReactNode} from 'react';
+import {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
 import * as M from '../model/model.mjs';
-import {api, type PlaytestResult} from '../lib/api';
+import {api, gameUrl, type PlaytestResult, type PlayServer} from '../lib/api';
 import {COMMANDS} from '../lib/commands';
 import {EDITOR_COLORS} from '../lib/live';
 import {setIdentity} from '../lib/session';
@@ -153,29 +153,68 @@ function PoliticsDialog() {
     </Modal>;
 }
 
+/** Play: the game of the server running Atlas's world (tools/studio.py: play/server), opened in this browser at the
+ *  address this page came from (another computer on the network included); with none running, why, and Start. A local
+ *  playtest of a copy, on the studio's own computer, is still offered below. */
 function PlayDialog() {
     const project = useStore(s => s.project);
     const {errors} = M.validate(project);
+    const [server, setServer] = useState<PlayServer | null>(null);
+    const [problem, setProblem] = useState('');
+    const [starting, setStarting] = useState(false);
     const [quick, setQuick] = useState(true);
     const [busy, setBusy] = useState(false);
     const [result, setResult] = useState<PlaytestResult | null>(null);
+    const look = useCallback(() => api.playServer().then(s => { setServer(s); setProblem(''); return s; })
+        .catch(e => { setProblem((e as Error).message); return null; }), []);
+    useEffect(() => { void look(); }, [look]);
+    // While its server is starting (building first, perhaps), look again every two seconds.
+    useEffect(() => {
+        if (!(starting || server?.starting) || server?.play) return;
+        const t = setInterval(() => void look(), 2000);
+        return () => clearInterval(t);
+    }, [starting, server, look]);
+    const open = () => { if (server?.play) window.open(gameUrl(server.play), '_blank', 'noopener'); };
+    const start = async () => {
+        setStarting(true); setProblem('');
+        try { await api.startPlayServer(); toast('Starting the game server…', 'success'); await look(); }
+        catch (error) { setProblem((error as Error).message); setStarting(false); }
+    };
     const launch = async () => {
         setBusy(true);
-        try { setResult(await api.playtest(project, quick)); toast('Launching the game…', 'success'); }
+        try { setResult(await api.playtest(project, quick)); toast('Launching a playtest on the studio\'s computer…', 'success'); }
         catch (error) { toast((error as Error).message, 'error'); }
         finally { setBusy(false); }
     };
-    return <Modal eyebrow="PLAYTEST" title="Walk around your world">
-        {errors.length ? <>
-            <Hint>Fix these first:</Hint>
-            <ul className="problem-list">{errors.slice(0, 8).map((e, i) => <li key={i}>{e}</li>)}</ul>
+    const name = server?.world.name ?? 'this world';
+    const remote = server?.play?.local && !['localhost', '127.0.0.1'].includes(window.location.hostname);
+    return <Modal eyebrow="PLAY" title={`Play ${name}`}>
+        {!server ? <Hint>{problem || 'Looking for its game server…'}</Hint> : server.play ? <>
+            <Hint>{name}'s game server is running: the game opens in a new tab here, at <code>{gameUrl(server.play)}</code>. Everything
+                you do there is played on the server Atlas is editing.{server.build && !server.build.current
+                    ? ' Atlas has changed the map since its build: the DM\'s Server tab rebuilds it (the server restarts onto it once nobody is connected).' : ''}</Hint>
+            {remote && <p className="hint error-text">It serves its own computer only (RATW_BIND=127.0.0.1): restart it without that to reach it from here.</p>}
         </> : <>
-            <Hint>Exports a fresh copy of this world into Saved/Playtests with its own save file, then starts the game on it. Your atlas and other saves are never touched.</Hint>
-            <Toggle label="Quick start as a test character" hint="Skips login and character creation" checked={quick} onChange={setQuick} />
-            {result && <div className="launch-note"><b>Started.</b> The game opens in your browser in a few seconds.<small>{result.folder}</small><code>{result.command}</code></div>}
+            <Hint>{server.why}</Hint>
+            {problem && <p className="hint error-text">{problem}</p>}
         </>}
+        <details className="play-local"><summary>Or playtest a copy on the studio's computer</summary>
+            {errors.length ? <>
+                <Hint>Fix these first:</Hint>
+                <ul className="problem-list">{errors.slice(0, 8).map((e, i) => <li key={i}>{e}</li>)}</ul>
+            </> : <>
+                <Hint>Exports a fresh copy of this world into Saved/Playtests with its own save file, then starts the game on it on the studio's
+                    computer (its browser opens there, not here). Your world and the server's saves are never touched.</Hint>
+                <Toggle label="Quick start as a test character" hint="Skips login and character creation" checked={quick} onChange={setQuick} />
+                {result && <div className="launch-note"><b>Started.</b> The game opens in the studio computer's browser in a few seconds.<small>{result.folder}</small><code>{result.command}</code></div>}
+                <button disabled={busy} onClick={launch}>{busy ? 'Starting…' : 'Playtest a copy'}</button>
+            </>}
+        </details>
         <div className="modal-actions"><button onClick={done}>Close</button>
-            <button className="play" disabled={!!errors.length || busy} onClick={launch}>{busy ? 'Starting…' : result ? '▶ Launch again' : '▶ Play'}</button></div>
+            {server?.play ? <button className="play" onClick={open}>▶ Open the game</button>
+                : <button className="play" disabled={!server?.canStart || starting || server.starting} onClick={() => void start()}
+                    title={server?.canStart ? `Starts ${name}'s game server on the studio's computer, on the local network` : ''}>
+                    {starting || server?.starting ? 'Starting the server…' : '▶ Start its server'}</button>}</div>
     </Modal>;
 }
 
@@ -201,7 +240,7 @@ function AboutDialog() {
             <li><b>Cut</b> the canvas into cells: the game shows one cell at a time and crosses open edges automatically.</li>
             <li><b>Build</b>: the Building tool stamps walls and a street door and creates a matching interior, already connected.</li>
             <li><b>Populate</b>: residents need a home (bed), a work place and an evening place. Merchants run shops; guards walk patrol routes; civilians work and socialize, or travel a route. Wages come from the town treasury.</li>
-            <li><b>Play</b>: ▶ exports a fresh copy and starts the game on it. <b>Save</b> happens as you edit: every change goes straight to the one world in the DEV database, and everyone else editing sees it within seconds.</li>
+            <li><b>Play</b>: ▶ opens the game of the server running this world (or starts it); a copy can still be playtested on the studio's computer. <b>Save</b> happens as you edit: every change goes straight to the one world in the DEV database, and everyone else editing sees it within seconds.</li>
         </ol>
         <Hint>The editor, the Python exporter and the game each validate the world independently, so a problem is caught before it can reach a player.</Hint>
     </Modal>;

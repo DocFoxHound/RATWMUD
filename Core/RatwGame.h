@@ -130,6 +130,10 @@ struct Options
     // The registry's kind for `database` ("dev" or "live"; the launcher passes it: --world-kind), "" when unknown or a
     // world from files. A dev world's Dungeon Masters may draw from the store room by hand (/store: doc 67, 6).
     std::string worldKind;
+    // The port and address its players connect to (ratw_server's --port, --bind), named in its claim on a database
+    // world, so the studio's Play can open the running server's game (0, "": not said).
+    int webPort = 0;
+    std::string webBind;
     // A world build exported as files (world.ratw and the rest, cells/ID.cell, seams/ID: what tools/world_build.py
     // export writes), played offline with its residents as built: the load test's world. In place of worldFile.
     std::string worldExport;
@@ -1567,7 +1571,7 @@ class Game
     void keepOwnership(double dt);
     void letGoOfOwnership();
     perf::Meter* meter_ = nullptr;
-    std::int64_t loadedBuild_ = 0, pendingRelease_ = 0;
+    std::int64_t loadedBuild_ = 0, pendingBuild_ = 0, pendingRelease_ = 0;   // (A newer build announced; its release, if any.)
     std::map<std::string, std::string> worldFiles_, cellHeaders_;
     std::map<std::string, std::pair<std::string, std::string>> exportCells_;   // A world export's cells: body, seams.
     std::string liveWorldId_;

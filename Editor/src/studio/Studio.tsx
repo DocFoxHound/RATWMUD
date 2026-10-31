@@ -12,7 +12,7 @@ import {App} from '../App';
 import {DmSuite, SignIn} from '../dm/DmApp';
 import {NpcTab} from '../dm/NpcTab';
 import {FactionsTab} from '../dm/FactionsTab';
-import {dmApi, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
+import {dmApi, setSuite, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
 import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
 import {UpdateFromLive} from './UpdateFromLive';
 import {EconomyControls} from './EconomyControls';
@@ -62,6 +62,17 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
     const page = ATLAS_PAGES.find(p => p.id === url.get('page'))?.id ?? 'workshop';
     const atlasKey = session.atlas.world.key;
     const live = session.dm.live;
+    const dmKey = session.dm.world ?? live;          // The DM's world: its own choice, else the live server's.
+    // (Where the DM components' calls go; in the DM, its world counts as one players are in.) This page keeps acting on
+    // the worlds its header names, whatever another browser picks meanwhile; a reload takes up the new choice.
+    setSuite(suite, dmKey);
+    const switchDm = async (key: Target) => {
+        const name = session.dm.worlds.find(w => w.key === key)?.name ?? key;
+        if (key === dmKey || !window.confirm(`Point the DM at ${name}? Every DM page then works on it: players, NPC life, storylines and its server. (This computer's choice: other browsers take it up when they reload.)`)) return;
+        setBusy(true);
+        try { await dmApi.useDmWorld(key); window.location.reload(); }
+        catch (error) { setProblem((error as Error).message); setBusy(false); }
+    };
     const switchAtlas = async (key: Target) => {
         const name = session.atlas.worlds.find(w => w.key === key)?.name ?? key;
         if (key === atlasKey || !window.confirm(`Switch Atlas to ${name}? Atlas's world changes for everyone using this studio (and for local and scratch servers, as world_db.py use does).`)) return;
@@ -91,21 +102,21 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                     <button key={p.id} role="tab" aria-selected={page === p.id} className={page === p.id ? 'on' : ''}
                         title={p.id === 'sync' && !session.atlas.world.upstream ? `${session.atlas.world.name} has no upstream live world: a side project, with nothing to update from` : p.title}
                         onClick={() => page !== p.id && go('atlas', p.id)}>{p.label}</button>)}</div>
-            </> : <div className="studio-world" title={session.dm.switch}>
-                <span>Live world</span>
-                <div className="segmented" role="radiogroup" aria-label="Live world (read only)">{session.dm.worlds.map(w =>
-                    <button key={w.key} role="radio" aria-checked={w.key === live} className={w.key === live ? 'on prod' : ''} disabled>
-                        {w.name}{w.key === live ? ' · the live server' : ''}</button>)}</div>
-                <small>Switched in Server &amp; import, during maintenance</small>
-            </div>}
+            </> : <label className="studio-world" title="The DM's world: every DM page (players, NPC life, storylines, the server) works on it. Chosen apart from Atlas's world.">
+                <span>DM world</span>
+                <select value={dmKey ?? ''} disabled={busy || me.role === 'viewer'} onChange={e => void switchDm(e.target.value)}>
+                    {session.dm.worlds.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key} ({w.kind}){w.key === live ? ' · the live server\'s' : ''}</option>)}
+                </select>
+                <small>{dmKey === atlasKey ? 'Atlas edits this world too' : `Atlas: ${session.atlas.world.name}`}</small>
+            </label>}
             {problem && <span className="hint error-text">{problem}</span>}
             <div className="top-actions">
                 <span className="dm-me" title={`Signed in as ${me.username}`}>{me.username}<small>{me.role}</small></span>
                 <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>
             </div>
         </header>
-        {suite === 'dm' ? (live ? <DmSuite me={me} target={live} />
-            : <div className="dm-center"><p className="hint">No live world is chosen (python3 tools/world_db.py list).</p></div>)
+        {suite === 'dm' ? (dmKey ? <DmSuite me={me} target={dmKey} />
+            : <div className="dm-center"><p className="hint">No world is chosen for the DM (python3 tools/world_db.py list).</p></div>)
             : page === 'workshop' ? <Workshop me={me} />
             : page === 'sync' ? <div className="app dm dev"><UpdateFromLive me={me} onWorkshop={() => go('atlas')} /></div>
             : page === 'economy' ? <div className="app dm dev"><EconomyControls me={me} /></div>

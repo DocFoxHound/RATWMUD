@@ -69,6 +69,7 @@ import datetime
 import getpass
 import hashlib
 import json
+import re
 import secrets
 import sys
 from pathlib import Path
@@ -771,6 +772,20 @@ def server_running(conn) -> bool:
                              OWNER_LOCK).fetchone())
 
 
+def server_holder(conn) -> dict | None:
+    """The game server holding this world, as its claim names it ("ratw_server pid N on HOST port P", " local" when it
+    serves its own computer only): {pid, host, port, local, name}; None when none does. (The studio's Play opens it.)"""
+    row = conn.execute('''SELECT a.application_name FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid
+                          WHERE l.locktype = 'advisory' AND l.classid = %s::int::oid AND l.objid = %s::int::oid AND l.objsubid = 2
+                          AND l.database = (SELECT oid FROM pg_database WHERE datname = current_database())''', OWNER_LOCK).fetchone()
+    if not row:
+        return None
+    name = row[0] or ''
+    found = re.match(r'ratw_server pid (\d+) on (\S+)(?: port (\d+))?( local)?', name)
+    return {'pid': int(found[1]) if found else None, 'host': found[2] if found else None,
+            'port': int(found[3]) if found and found[3] else None, 'local': bool(found and found[4]), 'name': name}
+
+
 def set_state(conn, state, editor='', note=''):
     if state not in STATES:
         raise PublishError(f'A server state is running or maintenance, not {state!r}.')
@@ -1094,7 +1109,7 @@ class Sync:
                     header = {'upstream': row[0], 'world': row[1], 'release': row[2], 'takenAt': row[3].isoformat(),
                               'by': row[4], 'how': row[5], 'rows': row[6]}
             return {'key': key, 'name': entry['name'], 'kind': entry['kind'], 'upstream': entry.get('upstream'), 'world': world_id,
-                    'server': server_state(conn), 'serverRunning': server_running(conn), 'base': header,
+                    'server': server_state(conn), 'serverRunning': server_running(conn), 'serverHolder': server_holder(conn), 'base': header,
                     'release': release_of(conn, world_id), 'map': map_identity(conn, entry['kind'], world_id)}
 
     def diff(self, dev_key):
@@ -1319,10 +1334,15 @@ class Sync:
 
     def switch_live(self, key, editor=''):
         """The live server's world (world_db.py serve-world): only while the current live world is in maintenance (its
-        server stopped). The new one is put in maintenance too, so the launcher waits until the DM opens it."""
-        target = world_db.resolve(key, 'live')
-        current = world_db.local_choice()['live']
-        if current in world_db.keys('live') and current != target:
+        server stopped). The new one is put in maintenance too, so the launcher waits until the DM opens it. It may be a
+        dev world, served as the live server (DEV while PROD is closed: doc 66, Progress, "A dev world as the live
+        server")."""
+        target = world_db.resolve(key)
+        current = world_db.canonical(world_db.local_choice()['live'])
+        if current == target:                  # (Already the live one: nothing to switch, nothing closed.)
+            world_db.set_local(live=target)
+            return {'live': target, 'was': current, **{k: v for k, v in self.status(target).items() if k in ('server', 'name')}}
+        if current in world_db.keys() and current != target:
             with self.connect(current) as conn:
                 if server_state(conn)['state'] != 'maintenance':
                     raise NotInMaintenance(f'The live world {current} is not in maintenance: close it first, so its players '

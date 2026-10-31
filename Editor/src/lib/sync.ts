@@ -55,9 +55,24 @@ export interface ImportResult {
     dev: {updated: number; editedMeanwhile?: string[]; error?: string}; warnings?: string[];
 }
 export interface ServerStatus {
-    key: string; name: string; kind: 'live'; world: string | null; server: ServerState; serverRunning: boolean;
+    key: string; name: string; kind: 'live' | 'dev'; world: string | null; server: ServerState; serverRunning: boolean;
     release: number; live: string; warning: string;
+    /** The worlds the live server could switch to (every other registered world: live ones, or a dev world served as live). */
+    switchTo?: {key: string; name: string; kind: 'live' | 'dev'; upstream?: string}[];
+    /** A dev world served as live (doc 66, Progress): its newest build, and why it has no imports or releases. */
+    build?: BuildStatus;
+    servedDev?: string;
+    /** Where its running game server's game is (its port; its host when on another computer), and whether the studio
+     *  is starting one. */
+    play?: {port: number; host: string | null; local: boolean} | null;
+    starting?: boolean;
 }
+/** A running game server's game, for a browser on this page's computer: at the host the page came from (the studio
+ *  may be reached over the local network), unless the server runs on another computer; the game is plain http. */
+export const gameUrl = (play: {port: number; host: string | null}, here: {hostname: string} = globalThis.location) =>
+    `http://${play.host ?? here.hostname}:${play.port}/`;
+/** A dev world's newest build (tools/world_build.py): whether it is current with Atlas's edits. */
+export interface BuildStatus { build: number | null; at: string | null; by: string; release: number | null; current: boolean; problem?: string }
 
 /** What the user picked for one conflict: the whole row from one side, or (rows both sides have) field by field. */
 export interface Pick { whole?: Side; byField?: boolean; fields?: Record<string, Side> }
