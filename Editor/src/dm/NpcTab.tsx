@@ -78,7 +78,7 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
     const markers = useMemo((): Marker[] => {
         if (!surface || !data || (layer !== 'npcs' && layer !== 'spawns')) return [];
         const out: Marker[] = [];
-        const add = (id: string, place: Place | undefined, color: string, glyph: string, label: string, editable: boolean) => {
+        const add = (id: string, place: Place | null | undefined, color: string, glyph: string, label: string, editable: boolean) => {
             const at = place && surface.fromPlace(place);
             if (at) out.push({id, x: at[0] + .5, y: at[1] + .5, color, glyph, label, dead: dead.has(id), editable});
         };
@@ -246,13 +246,14 @@ export function NpcTab({me, target}: {me: Me; target: Target}) {
                 {layer === 'npcs' && <>
                     <p className="dm-group">Named NPCs {canAct && <button className="icon" title="Place a new NPC on the map" onClick={() => setPick('new')}>+</button>}</p>
                     {(data?.people ?? []).filter(p => match(p.name, p.id, p.role, p.workLabel)).map(p => <button key={p.id}
-                        className={selected === p.id ? 'tree-item active' : 'tree-item'} onClick={() => choose(p.id, p.work.cell)}>
+                        className={selected === p.id ? 'tree-item active' : 'tree-item'} onClick={() => choose(p.id, (p.work ?? p.home)?.cell)}>
                         <span className="tree-icon" style={{color: ROLE_INFO[p.role].color}}>{dead.has(p.id) ? '✝' : ROLE_INFO[p.role].icon}</span>
-                        <span className="tree-label">{p.name}</span>{data?.spawned[p.id] ? <small className="spawned">spawned</small> : <small>{p.workLabel}</small>}</button>)}
+                        <span className="tree-label">{p.name}</span>{data?.spawned[p.id] ? <small className="spawned">spawned</small>
+                            : !p.home ? <small>unplaced</small> : !p.work ? <small>no work</small> : <small>{p.workLabel}</small>}</button>)}
                     <p className="dm-group">Job holders</p>
                     {(data?.holders ?? []).filter(h => match(h.name, h.id, h.slot)).map(h => <button key={h.id} className={selected === h.id ? 'tree-item active' : 'tree-item'}
-                        onClick={() => choose(h.id, h.work.cell)}>
-                        <span className="tree-icon" style={{color: '#b6a3cf'}}>{dead.has(h.id) ? '✝' : '◇'}</span><span className="tree-label">{h.name}</span><small>{h.slot}</small></button>)}
+                        onClick={() => choose(h.id, (h.work ?? h.home)?.cell)}>
+                        <span className="tree-icon" style={{color: '#b6a3cf'}}>{dead.has(h.id) ? '✝' : '◇'}</span><span className="tree-label">{h.name}</span><small>{h.home ? h.slot : `${h.slot} · unplaced`}</small></button>)}
                     {data && !data.holders.length && <p className="tree-empty">Nobody holds a profession slot yet.</p>}
                 </>}
                 {layer === 'routes' && <>
@@ -354,7 +355,7 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
     const set = (fields: Partial<Person>) => setDraft({...draft, ...fields});
     const look = draft.appearance;
     const info = ROLE_INFO[draft.role];
-    const placeName = (p: Place) => `${M.getCell(world, p.cell)?.name ?? p.cell} · ${p.x}, ${p.y}`;
+    const placeName = (p: Place | null, none = 'unplaced') => p ? `${M.getCell(world, p.cell)?.name ?? p.cell} · ${p.x}, ${p.y}` : none;
     const wanderAreas = areas.filter(a => a.kind === 'wander' || a.id === wander);
     return <div className="dm-panel">
         <header><div><small>{isNew ? 'NEW NPC · NOT SAVED' : info.label.toUpperCase()}</small><h2>{draft.name}</h2></div>
@@ -372,7 +373,7 @@ function NpcInspector({draft, setDraft, routes, world, canAct, busy, dirty, isNe
             {draft.role === 'guard' && <SelectField label="Patrol route" value={draft.route} onChange={v => set({route: v})}
                 options={[{value: '', label: 'Hold the work post'}, ...routes.map(r => ({value: r.id, label: r.name}))]} />}
             <div className="field"><span>Spawn points</span>
-                {(['work', 'home', 'evening'] as const).map(k => <div key={k} className="place-row"><div><small>{k}</small><span>{placeName(draft[k])}</span></div>
+                {(['work', 'home', 'evening'] as const).map(k => <div key={k} className="place-row"><div><small>{k}</small><span>{placeName(draft[k], {home: 'unplaced', work: 'no work', evening: 'at home'}[k])}</span></div>
                     <button onClick={() => onPick(k)}>Pick</button></div>)}</div>
             {!isNew && draft.role === 'civilian' && <SelectField label="Wanders in" value={wander}
                 hint={dirty ? 'Save or revert the other changes first.' : 'Roams this area during work hours and evenings instead of standing at one spot. Applies at once.'}

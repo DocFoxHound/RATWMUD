@@ -144,6 +144,11 @@ def place(anchor):
     return anchor['cell'], anchor['x'], anchor['y']
 
 
+def npc_place(anchor):
+    """An NPC's home, work or evening place as its row's (area, x, y): an unset one (None) is (NULL, 0, 0) (doc 66, 2)."""
+    return place(anchor) if anchor else (None, 0, 0)
+
+
 def cell_bounds(cells) -> tuple[int, int, int, int]:
     """The rectangle (x, y, width, height) that holds every world cell; zeros without cells. Kept on the world row
     for information: the world has no edge, only cells."""
@@ -178,13 +183,13 @@ def npc_row(w, n, position):
     return (w, n['id'], position, n['name'], n['role'], n['description'], n['greeting'], n.get('personality', ''),
             n.get('backstory', ''), n['workLabel'], n['age'], n['voice'], dict(n['appearance']), n['route'] or None,
             n['paid'], n['purse'], n['herbs'], n['meals'], n['hours']['start'], n['hours']['end'],
-            *place(n['home']), *place(n['work']), *place(n['evening']), bool(n.get('joinable', False)), bool(n.get('protected', False)))
+            *npc_place(n['home']), *npc_place(n['work']), *npc_place(n['evening']), bool(n.get('joinable', False)), bool(n.get('protected', False)))
 
 
 def slot_row(w, s, position):
     return (w, s['id'], position, s['name'], s['profession'], s['workLabel'], s['route'] or None, s['paid'], s['purse'],
             s['herbs'], s['meals'], s['hours']['start'], s['hours']['end'],
-            *place(s['home']), *place(s['work']), *place(s['evening']))
+            *npc_place(s['home']), *npc_place(s['work']), *npc_place(s['evening']))
 
 
 def economy_row(w, economy):
@@ -201,6 +206,11 @@ def _details(r):
 
 def _anchor(r, k):
     return {'cell': r[f'{k}_area'], 'x': r[f'{k}_x'], 'y': r[f'{k}_y']}
+
+
+def _npc_anchor(r, k):
+    """An NPC's place, or None where it is unset (doc 66, 2: an NPC may have no home, work or evening place)."""
+    return _anchor(r, k) if r[f'{k}_area'] is not None else None
 
 
 def cell_entity(r):
@@ -227,7 +237,7 @@ def link_entity(r):
 def _resident(r):
     return {'workLabel': r['work_label'], 'route': r['route_id'] or '', 'paid': r['paid'], 'purse': r['purse'],
             'herbs': r['herbs'], 'meals': r['meals'], 'hours': {'start': num(r['hours_start']), 'end': num(r['hours_end'])},
-            'home': _anchor(r, 'home'), 'work': _anchor(r, 'work'), 'evening': _anchor(r, 'evening')}
+            'home': _npc_anchor(r, 'home'), 'work': _npc_anchor(r, 'work'), 'evening': _npc_anchor(r, 'evening')}
 
 
 def person_entity(r):
@@ -359,7 +369,7 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False) 
 
     Returns the new revision. Raises ConflictError if the world changed since it was opened.
     """
-    p, _ = map_editor.check_project(project, for_game=False)
+    p, _ = map_editor.check_project(project, for_game=False, playable=False)
     p['id'] = map_editor.world_id(p)
     with conn.transaction():
         row = conn.execute('SELECT revision, chunk_size FROM world.worlds WHERE id = %s FOR UPDATE', (p['id'],)).fetchone()

@@ -844,8 +844,10 @@ class DungeonMaster:
             if not world:
                 raise DMError(f'The {target.upper()} database has no world yet.', 404)
             project, _ = S.load_world(conn, world[0])
-            holders = [{'id': r[0], 'name': r[1], 'role': r[2], 'slot': r[3], 'work': {'cell': r[4], 'x': r[5], 'y': r[6]},
-                        'home': {'cell': r[7], 'x': r[8], 'y': r[9]}}
+            # (An unset place is None: an unplaced or jobless NPC, doc 66, 2.)
+            holders = [{'id': r[0], 'name': r[1], 'role': r[2], 'slot': r[3],
+                        'work': {'cell': r[4], 'x': r[5], 'y': r[6]} if r[4] is not None else None,
+                        'home': {'cell': r[7], 'x': r[8], 'y': r[9]} if r[7] is not None else None}
                        for r in conn.execute('''SELECT c.id, c.name, p.behavior, s.name, s.work_area, s.work_x, s.work_y,
                                                        s.home_area, s.home_x, s.home_y
                                                 FROM live.profession_slots s JOIN live.professions p ON p.id = s.profession
@@ -935,7 +937,7 @@ class DungeonMaster:
         accounts = {k: int(v.get('cash', 0)) for k, v in (society.get('accounts') or {}).items()}
         region = {a['id']: a.get('territory', {}).get('region', '') for a in project['cells'] + project['rooms']}
         people = {p['id']: p for p in project.get('people', [])}
-        living = Counter(region.get(p['home']['cell'], '') for p in people.values())
+        living = Counter(region.get(p['home']['cell'], '') for p in people.values() if p['home'])   # (Not the unplaced: doc 66, 2.)
         towns = {}
         for town, n in sorted(living.items(), key=lambda kv: -kv[1]):
             if not town or n < 5:
@@ -1309,7 +1311,7 @@ class DungeonMaster:
             before = next((p for p in project['people'] if p['id'] == person['id']), None)
             project['people'] = [p for p in project['people'] if p['id'] != person['id']] + [person]
             try:
-                map_editor.check_project(project, for_game=False)
+                map_editor.check_project(project, for_game=False, playable=False)
             except map_editor.ValidationError as error:
                 raise DMError(' '.join(error.errors[:6])) from error
             try:
@@ -1364,7 +1366,7 @@ class DungeonMaster:
         """One change through the live-edit log, after checking the whole world with it applied."""
         if check is not None:
             try:
-                map_editor.check_project(check, for_game=False)
+                map_editor.check_project(check, for_game=False, playable=False)
             except map_editor.ValidationError as error:
                 raise DMError(' '.join(error.errors[:6])) from error
         try:

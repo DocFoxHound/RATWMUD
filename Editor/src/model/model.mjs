@@ -270,6 +270,8 @@ function checkShape(value) {
         id(a.cell, `${label} cell`);
         check(integer(a.x, 0, 255) && integer(a.y, 0, 255), `${label} coordinates must be tile integers from 0 to 255.`);
     };
+    // An NPC's home, work or evening place may be unset (null): no home is unplaced, no work is idle (doc 66, 2).
+    const npcPlace = (a, label) => { if (a !== null) anchor(a, label); };
     for (const [i, link] of value.links.entries()) {
         if (!object(link)) { errors.push(`Link ${i} must be an object.`); continue; }
         id(link.id, `Link ${i} ID`); text(link.name, `Link ${i} name`, 120);
@@ -290,7 +292,8 @@ function checkShape(value) {
         for (const [i, r] of (Array.isArray(value.routes) ? value.routes : []).entries()) {
             if (!object(r)) { errors.push(`Route ${i} must be an object.`); continue; }
             id(r.id, `Route ${i} ID`); text(r.name, `Route ${i} name`, 120);
-            check(Array.isArray(r.posts) && r.posts.length >= 1 && r.posts.length <= 64, `Route ${i} needs 1 to 64 posts.`);
+            // (No posts: a route not laid out; its walkers hold their posts in the game: doc 66, 2.)
+            check(Array.isArray(r.posts) && r.posts.length <= 64, `Route ${i} has at most 64 posts.`);
             for (const [n, post] of (Array.isArray(r.posts) ? r.posts : []).entries()) anchor(post, `Route ${i} post ${n + 1}`);
         }
     }
@@ -320,7 +323,7 @@ function checkShape(value) {
                 `${label} appearance is invalid.`);
             const h = p.hours, hour = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 23.75;
             check(object(h) && hour(h.start) && hour(h.end) && h.start !== h.end, `${label} hours need different start and end times from 0 to 23.75.`);
-            for (const k of ['home', 'work', 'evening']) anchor(p[k], `${label} ${k}`);
+            for (const k of ['home', 'work', 'evening']) npcPlace(p[k], `${label} ${k}`);
         }
     }
     if (own(value, 'slots')) {
@@ -336,7 +339,7 @@ function checkShape(value) {
                 check(integer(s[k], 0, max), `${label} ${k} must be a whole number from 0 to ${max}.`);
             const h = s.hours, hour = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 23.75;
             check(object(h) && hour(h.start) && hour(h.end) && h.start !== h.end, `${label} hours need different start and end times.`);
-            for (const k of ['home', 'work', 'evening']) anchor(s[k], `${label} ${k}`);
+            for (const k of ['home', 'work', 'evening']) npcPlace(s[k], `${label} ${k}`);
         }
     }
     return errors;
@@ -344,6 +347,7 @@ function checkShape(value) {
 
 function canonical(value) {
     const anchor = a => ({cell: a.cell, x: a.x, y: a.y});
+    const npcPlace = a => a ? anchor(a) : null;
     const metadata = c => ({id: c.id, name: c.name, description: c.description,
         width: c.width, height: c.height, z: c.z, outdoors: c.outdoors, weather: c.weather,
         lighting: {...(c.lighting ?? defaultLighting())},
@@ -355,12 +359,12 @@ function canonical(value) {
         appearance: {species: p.appearance.species, sex: p.appearance.sex, stature: p.appearance.stature,
             pattern: p.appearance.pattern, baseColor: p.appearance.baseColor, gradientColor: p.appearance.gradientColor,
             markingColor: p.appearance.markingColor},
-        home: anchor(p.home), work: anchor(p.work), evening: anchor(p.evening),
+        home: npcPlace(p.home), work: npcPlace(p.work), evening: npcPlace(p.evening),
         personality: p.personality ?? '', backstory: p.backstory ?? '', ...(p.joinable ? {joinable: true} : {}),
         ...(p.protected ? {protected: true} : {})});
     const slot = s => ({id: s.id, name: s.name, profession: s.profession, workLabel: s.workLabel, route: s.route, paid: s.paid,
         purse: s.purse, herbs: s.herbs, meals: s.meals, hours: {start: s.hours.start, end: s.hours.end},
-        home: anchor(s.home), work: anchor(s.work), evening: anchor(s.evening)});
+        home: npcPlace(s.home), work: npcPlace(s.work), evening: npcPlace(s.evening)});
     const economy = value.economy ?? defaultEconomy();
     const ox = value.origin?.x ?? 0, oy = value.origin?.y ?? 0;
     const cellGround = value.version === 3
@@ -468,7 +472,7 @@ function relationships(project, requireExport = false) {
         // Game servers stream cells from the database (no limit); ▶ Play runs a local game that loads every cell.
         if (tiles > GAME_TILES) warnings.push(`Cells and interiors cover ${tiles} tiles, more than a file export holds (${GAME_TILES}); ▶ Play runs this world from the DEV database instead, as Push to live does.`);
         if (all.length > GAME_AREAS) warnings.push(`The world has ${all.length} cells and interiors, more than a file export holds (${GAME_AREAS}); ▶ Play runs this world from the DEV database instead, as Push to live does.`);
-        if (!project.cells.length) errors.push('Add at least one world cell before playing.');
+        if (!project.cells.length && !project.rooms.length) errors.push('Add at least one world cell or interior before playing.');
     }
     const endpoints = new Set(), linkIds = new Set();
     for (const link of project.links) {
@@ -517,8 +521,8 @@ function relationships(project, requireExport = false) {
         if (reservedPersonId(p.id)) errors.push(`Person ID ${p.id} is reserved; choose another.`);
         personIds.add(p.id);
         if (p.route && (p.role === 'merchant' || !routeIds.has(p.route))) errors.push(`${p.name}: only guards (on patrol) and civilians (travelling) walk routes, and the route must exist.`);
-        for (const k of ['home', 'work', 'evening']) place(p[k], `${p.name}'s ${k}`);
-        if (p.role === 'merchant') {
+        for (const k of ['home', 'work', 'evening']) if (p[k]) place(p[k], `${p.name}'s ${k}`);
+        if (p.role === 'merchant' && p.work) {
             const c = getCell(project, p.work.cell);
             if (c && !NEIGHBORS8.some(([dx, dy]) => walkable(glyphAt(project, c, p.work.x + dx, p.work.y + dy))))
                 errors.push(`${p.name}: customers need an open tile beside the shop counter place.`);
@@ -529,7 +533,7 @@ function relationships(project, requireExport = false) {
         if (slotIds.has(s.id)) errors.push(`Duplicate profession slot ID: ${s.id}.`);
         slotIds.add(s.id);
         if (s.route && !routeIds.has(s.route)) errors.push(`${s.name}: the patrol route must exist.`);
-        for (const k of ['home', 'work', 'evening']) place(s[k], `${s.name}'s ${k}`);
+        for (const k of ['home', 'work', 'evening']) if (s[k]) place(s[k], `${s.name}'s ${k}`);
     }
     if (project.people.length && !project.people.some(p => p.role === 'merchant'))
         warnings.push('No merchant: residents will have nowhere to buy food.');
@@ -992,7 +996,7 @@ export function updateCell(project, id, fields) {
 const anchorsIn = (project, cellId) => [
     ...project.links.flatMap(l => [l.a, l.b]), ...(project.spawn ? [project.spawn] : []),
     ...[...project.people, ...project.slots].flatMap(p => [p.home, p.work, p.evening]), ...project.routes.flatMap(r => r.posts),
-    ...(project.herbPatch ? [project.herbPatch] : [])].filter(a => a.cell === cellId);
+    ...(project.herbPatch ? [project.herbPatch] : [])].filter(a => a && a.cell === cellId);
 
 /** Resizes a detached room, keeping its top-left terrain. New area is walled floor. */
 export function resizeRoom(project, id, width, height) {
@@ -1057,15 +1061,21 @@ const ROLE_DEFAULTS = {
     guard: {workLabel: 'on watch', hours: {start: 6, end: 18}, paid: true, purse: 30, herbs: 0, meals: 1},
     civilian: {workLabel: 'working', hours: {start: 8, end: 17}, paid: true, purse: 30, herbs: 0, meals: 1},
 };
-/** A new, unsaved person with sensible defaults for a role, placed at one spot. */
+/** Where an NPC stands (doc 66, 2): 'unplaced' (no home: no body in the world), 'jobless' (a home, no work: idle at
+ *  home), or 'placed'. */
+export function placement(person) {
+    return !person.home ? 'unplaced' : !person.work ? 'jobless' : 'placed';
+}
+
+/** A new, unsaved person with sensible defaults for a role, placed at one spot (unplaced in a world with nowhere). */
 export function newPerson(project, role = 'civilian', place = null, name = null) {
     if (!ROLES.includes(role)) fail('Unknown role.');
-    const spot = place ?? project.spawn ?? {cell: project.cells[0]?.id ?? '', x: 0, y: 0};
+    const spot = place ?? project.spawn ?? (project.cells[0] ? {cell: project.cells[0].id, x: 0, y: 0} : null);
     const title = name ?? {merchant: 'New shopkeeper', guard: 'New guard', civilian: 'New resident'}[role];
     return {id: freshIn(project.people, slug(title)), name: title, role, description: '', greeting: '',
         ...clone(ROLE_DEFAULTS[role]), age: 30, voice: project.people.length % 32, route: '', personality: '', backstory: '',
         appearance: {species: 'timber', sex: 'female', stature: 'average', pattern: 'saddle', baseColor: 3, gradientColor: 1, markingColor: 5},
-        home: {...spot}, work: {...spot}, evening: {...spot}};
+        home: spot && {...spot}, work: spot && {...spot}, evening: spot && {...spot}};
 }
 
 export function upsertPerson(project, person) {
@@ -1119,10 +1129,12 @@ export function setHerbPatch(project, place) {
     return project;
 }
 
-/** Moves one placed thing: spawn, herb patch, a person's home/work/evening, or a route post. */
+/** Moves one placed thing: spawn, herb patch, a person's home/work/evening, or a route post. A person's or slot's
+ *  place may be cleared (null): no home leaves them unplaced, no work idle at home (doc 66, 2). */
 export function movePlace(project, ref, place) {
     atomic(project, next => {
-        const spot = clone(place);
+        if (place === null && ref.kind !== 'person' && ref.kind !== 'slot') fail('Only an NPC\'s places can be cleared.');
+        const spot = place === null ? null : clone(place);
         if (ref.kind === 'spawn') next.spawn = spot;
         else if (ref.kind === 'herbPatch') next.herbPatch = spot;
         else if (ref.kind === 'person') {

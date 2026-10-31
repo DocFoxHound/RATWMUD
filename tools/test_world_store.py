@@ -134,6 +134,54 @@ class StoreTests(unittest.TestCase):
         self.assertNotIn(room['id'], [r['id'] for r in again['rooms']])
         self.assertEqual(len(again['links']), len(loaded['links']))
 
+    def test_npcs_without_a_map_round_trip_and_export(self):
+        # Doc 66, 2: no home (unplaced), a home and no work (jobless), a job without a workplace, in rows and the manifest.
+        p = greyfen()
+        people = {x['id']: x for x in p['people']}
+        people['rook'].update(home=None, work=None, evening=None)
+        people['linden'].update(work=None, evening=None)
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        again = {x['id']: x for x in loaded['people']}
+        self.assertEqual((again['rook']['home'], again['rook']['work'], again['rook']['evening']), (None, None, None))
+        self.assertEqual((again['linden']['work'], again['linden']['evening']), (None, None))
+        self.assertEqual(again['linden']['home'], people['linden']['home'])
+        rows = dict(self.conn.execute("SELECT id, home_area FROM live.npcs WHERE id IN ('rook', 'linden')").fetchall())
+        self.assertEqual(rows, {'rook': None, 'linden': 'cottage'})
+        manifest = E.export_files(loaded, R.load())['world.ratw']
+        rook = next(l for l in manifest.split('\n') if l.startswith('resident "rook"'))
+        self.assertTrue(rook.endswith(' "-" 0 0 "-" 0 0 "-" 0 0'), rook)
+        linden = next(l for l in manifest.split('\n') if l.startswith('resident "linden"'))
+        self.assertTrue(linden.endswith(' "cottage" 9.5 7.5 "-" 0 0 "-" 0 0'), linden)
+        # Given a home again.
+        again['rook']['home'] = dict(people['linden']['home'])
+        S.save_world(self.conn, loaded, revision)
+        self.assertEqual(self.conn.execute("SELECT home_area FROM live.npcs WHERE id = 'rook'").fetchone()[0], 'cottage')
+
+    def test_a_world_of_interiors_without_a_spawn_saves_but_does_not_export(self):
+        # Ridgemere 2.0 (doc 66): every building kept, no map and no spawn yet.
+        p = greyfen()
+        for person in p['people']:
+            for k in ('home', 'work', 'evening'):
+                if person[k]['cell'] == 'town':
+                    person[k] = None
+        p['herbPatch'] = None
+        p['routes'] = []
+        for person in p['people']:
+            person['route'] = ''
+        p['links'] = [l for l in p['links'] if 'town' not in (l['a']['cell'], l['b']['cell'])]
+        p['cells'], p['spawn'] = [], None
+        _, warnings = E.check_project(p, for_game=False, playable=False)
+        self.assertTrue(any('no player spawn' in w for w in warnings), warnings)
+        self.create(p)
+        loaded, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual((loaded['cells'], loaded['spawn']), ([], None))
+        with self.assertRaisesRegex(E.ValidationError, 'spawn'):
+            E.export_files(loaded, R.load(), stream=True)
+        loaded['spawn'] = {'cell': 'longhouse', 'x': 2, 'y': 9}       # A spawn indoors is enough: no outdoor cell needed.
+        files = E.export_files(loaded, R.load(), stream=True)
+        self.assertIn('spawn "longhouse" 2.5 9.5', files['world.ratw'])
+
     def test_larger_terrain_blocks(self):
         self.conn.execute("INSERT INTO world.worlds (id, name, chunk_size) VALUES ('big', 'Big', 512)")
         demo = {**E.demo_project(), 'id': 'big'}

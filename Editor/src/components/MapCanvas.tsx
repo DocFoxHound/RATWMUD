@@ -613,7 +613,8 @@ function buildMarkers(project: Project, surface: Surface, selection: EditorState
             add(s.home, {kind: 'home', ref: {kind: 'slot', id: s.id, slot: 'home'}, label: `${s.name}: home`, color: '#b6a3cf', glyph: '⌂', r: .55, select});
             add(s.evening, {kind: 'evening', ref: {kind: 'slot', id: s.id, slot: 'evening'}, label: `${s.name}: evening`, color: '#b6a3cf', glyph: '☾', r: .55, select});
         }
-        add(s.work, {kind: active ? 'slot-active' : 'slot', ref: {kind: 'slot', id: s.id, slot: 'work'}, label: `${s.name} (profession slot)`, color: '#b6a3cf', glyph: '◇', r: .7, select});
+        add(s.work ?? s.home, {kind: active ? 'slot-active' : 'slot', ref: {kind: 'slot', id: s.id, slot: s.work ? 'work' : 'home'},
+            label: `${s.name} (profession slot${s.work ? '' : ', no work place'})`, color: '#b6a3cf', glyph: '◇', r: .7, select});
     }
     if (overlays.people || selection?.kind === 'person') for (const p of project.people) {
         const active = selection?.kind === 'person' && selection.id === p.id;
@@ -622,7 +623,9 @@ function buildMarkers(project: Project, surface: Surface, selection: EditorState
             add(p.home, {kind: 'home', ref: {kind: 'person', id: p.id, slot: 'home'}, label: `${p.name}'s home`, color, glyph: '⌂', r: .55, select});
             add(p.evening, {kind: 'evening', ref: {kind: 'person', id: p.id, slot: 'evening'}, label: `${p.name}'s evening place`, color, glyph: '☾', r: .55, select});
         }
-        add(p.work, {kind: active ? 'person-active' : 'person', ref: {kind: 'person', id: p.id, slot: 'work'}, label: `${p.name}'s work place`, color, glyph: 'W', r: .7, select});
+        // Without work (doc 66, 2) they are shown at home; unplaced, nowhere.
+        add(p.work ?? p.home, {kind: active ? 'person-active' : 'person', ref: {kind: 'person', id: p.id, slot: p.work ? 'work' : 'home'},
+            label: p.work ? `${p.name}'s work place` : `${p.name}'s home (no work)`, color, glyph: p.work ? 'W' : '⌂', r: .7, select});
     }
     // What players' Chapters have built in the game: not part of the world Atlas edits, so drawn but never selected.
     if (overlays.camps) for (const b of camps) {

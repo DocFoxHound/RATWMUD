@@ -131,8 +131,19 @@ bool Society::adoptResident(const Society& from, const std::string& id)
     const ResidentSpec* incoming = from.spec(id);
     const auto current = std::find_if(authored_.residents.begin(), authored_.residents.end(),
                                       [&](const ResidentSpec& r) { return r.id == id; });
+    // Unplaced (doc 66, 2): kept aside as the candidate has them, a body or not. One given a home joins below as a
+    // newcomer; one whose home is taken away leaves the society below, as one who left the world (their coins go back
+    // to the town: an unplaced NPC holds none).
+    const ResidentSpec* away = from.unplaced(id);
+    const auto parked = std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
+                                     [&](const ResidentSpec& r) { return r.id == id; });
+    const bool wasAway = parked != authored_.unplaced.end();
+    if (wasAway)
+        authored_.unplaced.erase(parked);
+    if (away)
+        authored_.unplaced.push_back(*away);
     if (!incoming && current == authored_.residents.end())
-        return false;
+        return away || wasAway;
     authored_.routes = from.authored_.routes;
     if (!incoming)
     {

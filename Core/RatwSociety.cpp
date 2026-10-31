@@ -196,6 +196,14 @@ void Society::configure(const AuthoredRoster& roster)
     buildPositions();
     reset(Roster::Authored);
 }
+const ResidentSpec* Society::unplaced(const std::string& id) const
+{
+    if (roster_ != Roster::Authored)
+        return nullptr;
+    const auto found = std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
+                                    [&](const ResidentSpec& r) { return r.id == id; });
+    return found == authored_.unplaced.end() ? nullptr : &*found;
+}
 const ResidentSpec* Society::spec(const std::string& id) const
 {
     if (roster_ != Roster::Authored)
@@ -1231,7 +1239,7 @@ bool Society::restore(const SocietyState& saved)
     // A checkpoint is validated against this society's own population; a
     // society without one (None) accepts the legacy demo population.
     const Roster roster = !saved.enabled ? roster_ : roster_ == Roster::Authored ? Roster::Authored : Roster::Demo;
-    if (roster == Roster::Authored && authored_.residents.empty())
+    if (roster == Roster::Authored && authored_.residents.empty() && authored_.unplaced.empty())
         return false;
     Society fresh(Roster::None);
     fresh.authored_ = authored_;

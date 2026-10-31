@@ -308,7 +308,8 @@ def orphans(prod, world_id):
     for table, what in (('live.npcs', 'NPC'), ('live.profession_slots', 'profession slot')):
         for id_, name, area in prod.execute(f'''SELECT t.id, t.name, a.area FROM {table} t,
                 LATERAL (VALUES (t.home_area), (t.work_area), (t.evening_area)) AS a(area)
-                WHERE t.world_id = %s AND NOT EXISTS (SELECT 1 FROM world.areas w WHERE w.world_id = t.world_id AND w.id = a.area)''',
+                WHERE t.world_id = %s AND a.area IS NOT NULL   -- (An unset place stands nowhere: doc 66, 2.)
+                AND NOT EXISTS (SELECT 1 FROM world.areas w WHERE w.world_id = t.world_id AND w.id = a.area)''',
                                             (world_id,)).fetchall():
             found.append(f'{what} {name} ({id_}) is placed in {area}, which this release removes.')
     for route, area in prod.execute('''SELECT DISTINCT p.route_id, p.area FROM live.patrol_posts p WHERE p.world_id = %s

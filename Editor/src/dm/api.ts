@@ -97,7 +97,8 @@ export interface Voice {
 }
 export interface Talk { npc: string; voice: Voice | null; family: {npc: string; npcName: string; other: string; otherName: string; kind: string}[] }
 export interface Figure { id: string; name: string; title: string; role: string; knownIn: string; about: string; npc: string }
-export interface Holder { id: string; name: string; role: string; slot: string; work: Place; home: Place }
+/** A job holder; `work` or `home` null when unset (an unplaced or jobless NPC: doc 66, 2). */
+export interface Holder { id: string; name: string; role: string; slot: string; work: Place | null; home: Place | null }
 export type AreaKind = 'wander' | 'spawn' | 'plan';
 /** A painted NPC area: tiles of one cell or interior (cell-local). */
 export interface NpcArea { id: string; name: string; kind: AreaKind; cell: string; tiles: [number, number][] }

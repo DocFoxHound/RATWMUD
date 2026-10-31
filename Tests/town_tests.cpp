@@ -1,4 +1,5 @@
 #include "RatwWorld.h"
+#include "RatwCheckpoint.h"
 #include "RatwStep.h"
 
 #include <cmath>
@@ -474,6 +475,110 @@ void residentsChangeLive()
     expect(restored.restore(saved).ok, "And its save restores into it");
 }
 
+// A resident's line with its home, work and evening places replaced (each `"cell" x y`, or `"-" 0 0` for none).
+std::string withPlaces(const std::string& line, const std::string& home, const std::string& work, const std::string& evening)
+{
+    auto at = line.size();
+    for (int spaces = 0; spaces < 9; ++spaces)
+        at = line.rfind(' ', at - 1);
+    return line.substr(0, at) + " " + home + " " + work + " " + evening;
+}
+void replaceLine(std::string& manifest, const std::string& start, const std::string& with)
+{
+    const auto line = lineOf(manifest, start);
+    manifest.replace(manifest.find(line), line.size(), with);
+}
+
+// NPCs without a map (Docs/Design/66-worlds-atlas-and-dm.md, 2): with no home, a resident is unplaced: in the roster
+// with its job and family, but no body, no life, no needs and no money. With a home and no work, it lives at home,
+// idle, with no job and no wage. Giving an unplaced NPC a home (a push, or a new build) brings them in at home.
+void unplacedResidents()
+{
+    const auto placed = greyfenFiles();
+    auto files = placed;
+    auto& manifest = files["world.ratw"];
+    const std::string none = "\"-\" 0 0";
+    replaceLine(manifest, "resident \"rook\"", withPlaces(lineOf(manifest, "resident \"rook\""), none, none, none));
+    replaceLine(manifest, "resident \"linden\"",
+                withPlaces(lineOf(manifest, "resident \"linden\""), "\"cottage\" 9.5 7.5", none, none));
+    manifest += "kin \"rook\" \"linden\" spouse\n";      // A family across the map's edge.
+    World world;
+    const auto loaded = world.loadWorldFiles(files, "unplaced");
+    expect(loaded.ok, "A world with an unplaced and a jobless resident loads: " + loaded.message);
+
+    const auto* away = world.society().unplaced("rook");
+    expect(away && away->name == "Rook" && away->workLabel == "hauling crates on the high street",
+           "The unplaced resident is in the roster, with their job");
+    expect(!world.entity("rook"), "An unplaced resident has no body");
+    expect(!world.society().spec("rook") && !world.society().resident("rook") && !world.society().account("rook"),
+           "Nor a life, needs or money in the society");
+    expect(world.society().kin().size() == 1, "Their family is kept");
+
+    const auto* linden = world.entity("linden");
+    expect(linden && linden->cellId == "cottage" && linden->position.x == 9.5 && linden->position.y == 7.5,
+           "A resident with a home and no work starts at home, even at noon");
+    const auto* spec = world.society().spec("linden");
+    expect(spec && spec->workLabel == "-" && !spec->paid && spec->evening.cell == "cottage",
+           "Without work: no job of their own, no wage, evenings at home");
+    expect(!world.society().position("job:linden") && !world.society().jobOf("linden"), "They hold no job");
+    world.setTimeOfDay(11);
+    run(world, 120);
+    expect(!world.entity("rook") && !world.society().resident("rook") && !world.society().account("rook"),
+           "The unplaced resident stays off the map as the world runs");
+    expect(world.society().resident("linden")->wagesToday == 0, "The idle resident earns no wage");
+
+    // Saved (as the server's checkpoint document) and restored, both stay as they are.
+    const auto saved = world.save();
+    {
+        const auto doc = checkpoint::encode(saved, checkpoint::ServerState{}, saved.npcs, world.time());
+        json::Value parsed;
+        std::string error;
+        PersistedWorld back;
+        checkpoint::ServerState server;
+        expect(json::parse(json::dump(doc), parsed, error) && checkpoint::decode(parsed, back, server, error),
+               "The checkpoint document reads back: " + error);
+        World again;
+        expect(again.loadWorldFiles(files, "restart").ok, "The world loads again");
+        const auto restored = again.restore(back);
+        expect(restored.ok, "Its save restores: " + restored.message + " " + restored.targetId);
+        expect(again.society().unplaced("rook") && !again.entity("rook") && again.entity("linden") &&
+                   !again.society().jobOf("linden"),
+               "Unplaced and idle as saved");
+    }
+
+    // Given a home live (a push): Rook arrives at home, not at work.
+    World candidate;
+    expect(candidate.loadWorldFiles(placed, "placed").ok, "The world with Rook placed loads");
+    const auto supply = world.society().moneySupply();
+    const auto adopted = world.adoptResident(candidate, "rook");
+    expect(adopted.ok, "The unplaced NPC is placed live: " + adopted.message);
+    const auto* rook = world.entity("rook");
+    expect(rook && rook->npc && rook->cellId == "longhouse" && rook->position.x == 6.5 && rook->position.y == 9.5,
+           "And spawns at home");
+    expect(world.society().resident("rook") && world.society().account("rook") && !world.society().unplaced("rook"),
+           "With a life and a purse, out of the unplaced");
+    expect(world.society().conserved() && world.society().moneySupply() == supply + world.society().account("rook")->cash,
+           "Only their authored purse is new money");
+    run(world, 30);
+    // And unplaced again: the body goes, the roster entry stays.
+    World unplacedAgain;
+    expect(unplacedAgain.loadWorldFiles(files, "unplaced again").ok, "The unplaced world loads as a candidate");
+    const auto left = world.adoptResident(unplacedAgain, "rook");
+    expect(left.ok && !world.entity("rook") && !world.society().resident("rook") && world.society().unplaced("rook"),
+           "An NPC unplaced live loses their body and keeps their place in the roster: " + left.message);
+    expect(world.society().conserved(), "Money stays conserved");
+
+    // Given a home by a new build: the old save restores into it, and Rook is there, at home.
+    World rebuilt;
+    expect(rebuilt.loadWorldFiles(placed, "rebuilt").ok, "The rebuilt world loads");
+    const auto restored = rebuilt.restore(saved);
+    expect(restored.ok, "The save from before restores into it: " + restored.message + " " + restored.targetId);
+    expect(rebuilt.entity("rook") && rebuilt.entity("rook")->cellId == "longhouse" && rebuilt.society().resident("rook"),
+           "Rook is placed, at home");
+    expect(rebuilt.society().spec("linden")->workLabel != "-", "Linden has their job back");
+    run(rebuilt, 30);
+}
+
 // A dead NPC keeps no schedule: no walking, no work, and the town's books still balance.
 void deadNpcsRest()
 {
@@ -583,6 +688,7 @@ int main()
         wanderAreas();
         factionClaims();
         residentsChangeLive();
+        unplacedResidents();
         deadNpcsRest();
         loadsFromMemory();
         routesCrossDoors();

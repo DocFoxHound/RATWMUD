@@ -212,6 +212,21 @@ class LiveTests(unittest.TestCase):
             self.edit(('cell:clash', None, {**cell, 'id': 'clash', 'x': -8}))
         self.assertIn('overlap', str(raised.exception))
 
+    def test_an_npc_home_work_and_evening_can_be_cleared_and_set(self):
+        # Doc 66, 2: no home is unplaced, no work idle at home.
+        person = dict(self.project['people'][0])
+        home = person['home']['cell']
+        unplaced = {**person, 'home': None, 'work': None, 'evening': None}
+        self.edit((f'person:{person["id"]}', person, unplaced))
+        again = next(p for p in L.load(self.conn)[0]['people'] if p['id'] == person['id'])
+        self.assertEqual((again['home'], again['work'], again['evening']), (None, None, None))
+        placed = {**unplaced, 'home': person['home']}
+        self.edit((f'person:{person["id"]}', unplaced, placed))
+        again = next(p for p in L.load(self.conn)[0]['people'] if p['id'] == person['id'])
+        self.assertEqual((again['home'], again['work']), (person['home'], None))
+        self.assertEqual(self.conn.execute('SELECT home_area, work_area FROM live.npcs WHERE id = %s', (person['id'],)).fetchone(),
+                         (home, None))
+
     def test_removing_a_place_someone_uses_is_refused(self):
         project = self.project
         home = project['people'][0]['home']['cell']
