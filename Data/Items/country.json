@@ -1,0 +1,43 @@
+{
+  "format": "ratw-country",
+  "version": 1,
+  "about": "The Country and the city's loop (Docs/Design/68-the-country-and-the-city-loop.md). The Country stands for the farms, mines, woods and villages beyond the walls until they are built: what a keeper draws from the store room is bought from it (its purse is the account outside:<market id>), and every day it spends what it took in on the city's goods, keeping a reserve. `markets` is a list so that the smaller towns can each become a market with its own purse and basket later; there is one for now. A market's `basket` is what its people buy in the city, as shares of its day's spending (any whole numbers; they are scaled to the money it has), weighted toward the trades with time to spare (tools/city_loop.py checks it against the city's makers). `wages` says who pays a post that is neither a shop's keeper nor its hand (those are paid by their shop's till) nor the watch (the treasury): the first rule with a word in the post's title, in lower case. `food` and `comforts` are the residents' buying. The numbers are placeholders; the per-world settings (on and off, the reserve, the toll, the wages, carriage, goods the Country no longer supplies) are the world's own, in live.economy and Atlas's Economy page.",
+  "markets": [
+    {
+      "id": "country",
+      "name": "the Country",
+      "people": "the country folk not yet placed (Docs/Design/66-worlds-atlas-and-dm.md, 2): when they are given farms, their farms take over the goods they grow",
+      "basket": {"cider": 398, "salt_fish": 206, "cart_wheel": 194, "smoked_fish": 163, "steel_bar": 131, "bandages": 112, "iron_hoops": 100, "snare": 95, "buckles": 93, "linen_neckerchief": 92, "wine": 86, "barrel": 83, "mortar": 78, "paper": 76, "iron_bar": 70, "lime": 68, "leather": 66, "bricks": 65, "canvas": 65, "fang_charm": 63, "cut_stone": 62, "nails": 62, "charcoal": 61, "planks": 55, "leather_bindings": 53, "rivets": 52, "draw_saw": 46, "cookpot": 43, "beam": 42, "lock": 41, "roof_tiles": 39, "sack": 38, "glass_pane": 37, "ledger": 36, "handbell": 36, "axle": 35, "straw_hat": 34, "fittings": 33, "map": 32, "masking_oil": 32, "copper_bar": 31, "plaster": 31, "apple_brandy": 30, "ink": 29, "glass_beads": 29, "berry_cordial": 29, "aqua_vitae": 26, "charm": 25, "rope": 25, "bronze_bar": 24, "chain": 24, "mining_pick": 21, "brandy": 21, "whitewash": 20, "sickle": 20, "clay_pot": 17, "ear_ring": 17, "tin_bar": 17, "farm_gear": 15, "fishing_net": 14, "linseed_oil": 14, "paint": 12}
+    }
+  ],
+  "wages": {
+    "rules": [
+      {
+        "payer": "country",
+        "about": "Carriage by sea and the Country's warehouses: the ships' unloading, the cranes, the carrying up from the wharf, the stores' tallies.",
+        "words": ["unloading ships", "working the cranes", "carrying from", "tallying in the", "keeping the iron store", "keeping the long store", "keeping the new store", "keeping the wharf's books", "wharf office"]
+      },
+      {
+        "payer": "country",
+        "about": "The Great and Minor Houses' people, kept by their estates in the Country: heads, stewards, servants, the Houses' own trades.",
+        "words": ["ruling house", "keeping greatly house", "keeping grayrock hall", "keeping timberland court", "stewarding", "serving at greatly house", "serving in the hall", "in service to the", "keeping the fell", "running the house's", "on house business", "keeping the greatly stables", "counting house", "at home in the heights", "reading in the gardens", "walking the gardens", "visiting the sick"]
+      },
+      {
+        "payer": "treasury",
+        "about": "Public posts: the Crown and the Council, the courts, the offices, the Records Office, the customs, the lamps, the markets' hands, the washhouse and baths, the teachers, the abbey, the cathedral and the chapels.",
+        "words": ["reigning", "the crown's", "royal secretary", "herald", "usher", "the king's household", "keeping the chambers", "chancellor", "the council", "hearing cases", "pleading cases", "keeping order in court", "magistrate", "clerking", "copying", "keeping the rolls", "records office", "customs", "couriers", "lamps", "warden of the market", "watch", "minding the shop door", "portering", "crying wares", "washhouse", "bathhouse", "teaching", "abbey", "abbot", "cathedral", "chapel", "priest", "deacon", "sexton", "choir"]
+      }
+    ]
+  },
+  "food": {
+    "about": "Each household goes to market once a day at its own hour, and tops every member up to `days` days of food; one still short of `shortDays` tries again each hour until the shops shut. Food is picked among what the open shops have, the better the nourishment for the price the likelier. Whoever in the household has the money pays.",
+    "days": 2,
+    "shortDays": 1
+  },
+  "comforts": {
+    "about": "A household holding more than `above` pennies a head spends `share` of what is over it a day on comforts from the city's shops, used up at once: the better-off buy drink, candles, cloth and treats, so that savings come back to the shops.",
+    "above": 60,
+    "share": 0.1,
+    "goods": ["ale", "cider", "wine", "candle_tallow", "honey_cake", "cheese", "wool_scarf", "linen_neckerchief", "fine_soap", "fang_charm", "pamphlet", "clay_pot"]
+  }
+}
