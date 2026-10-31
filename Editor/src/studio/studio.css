@@ -58,3 +58,12 @@
     font: 12px var(--mono); }
 .sync-apply { display: flex; gap: 12px; align-items: center; justify-content: flex-end; }
 .sync-card ol.releases { list-style: none; padding: 0; margin: 4px 0 0; }
+/* Atlas's Economy controls (doc 67, 6). */
+.economy-switches { display: grid; grid-template-columns: minmax(280px, max-content) 1fr; gap: 6px 18px; align-items: center; }
+.economy-switches .hint { grid-column: 1 / -1; }
+.economy-markup { display: flex; gap: 8px; align-items: center; }
+.economy-markup input { width: 5em; }
+.economy-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.economy-table td { vertical-align: top; }
+.economy-table tr.muted td { opacity: .55; }
+.economy-goods { max-width: 420px; font-size: 12px; }

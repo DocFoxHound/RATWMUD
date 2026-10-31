@@ -92,6 +92,14 @@ export const COATS = [['ivory', '#E1D9C6'], ['silver', '#ADB3B2'], ['ash', '#777
     ['sable', '#65513F'], ['charcoal', '#303534'], ['rust', '#A26843'], ['sand', '#BEAA84']];
 const ECONOMY_LIMITS = {treasury: 1000000, storeHerbs: 10000, storeMeals: 10000, dailyHerbs: 1000, dailyMeals: 1000};
 export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeals: 50, dailyHerbs: 10, dailyMeals: 12});
+// The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults when absent, and
+// `businesses` ({npc id: {internalStore: false}}, the businesses switched off). tools/map_editor.py checks the same.
+export const STORE_DEFAULTS = {internalStore: true, storeMarkup: 100, storeResale: true, resaleMarkup: 75, storeRule: false};
+const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses'];
+const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
+    && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
+    && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
+        object(b) && Object.keys(b).length === 1 && typeof b.internalStore === 'boolean')));
 const PERSON_KEYS = ['id', 'name', 'role', 'description', 'greeting', 'workLabel', 'age', 'appearance', 'voice',
     'hours', 'route', 'paid', 'purse', 'herbs', 'meals', 'home', 'work', 'evening', 'personality', 'backstory'];
 const SLOT_KEYS = ['id', 'name', 'profession', 'workLabel', 'hours', 'route', 'paid', 'purse', 'herbs', 'meals', 'home', 'work', 'evening'];
@@ -284,8 +292,12 @@ function checkShape(value) {
     if (own(value, 'herbPatch') && value.herbPatch !== null) anchor(value.herbPatch, 'Herb patch');
     if (own(value, 'economy')) {
         const e = value.economy;
-        check(object(e) && Object.keys(e).length === 5 && Object.entries(ECONOMY_LIMITS).every(([k, max]) => integer(e[k], 0, max)),
-            'Economy requires whole-number treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals within their limits.');
+        check(object(e) && Object.keys(e).every(k => k in ECONOMY_LIMITS || STORE_KEYS.includes(k))
+            && Object.entries(ECONOMY_LIMITS).every(([k, max]) => integer(e[k], 0, max)),
+            'Economy requires whole-number treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals within their limits '
+            + '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule and businesses).');
+        check(!object(e) || storeSettingsOk(e), "The store room's switches are true or false, its markups whole numbers from 0 to 1000, "
+            + 'and each business {internalStore: true or false}.');
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');
@@ -385,7 +397,8 @@ function canonical(value) {
         people: (value.people ?? []).map(person),
         slots: (value.slots ?? []).map(slot),
         routes: (value.routes ?? []).map(r => ({id: r.id, name: r.name, posts: r.posts.map(anchor)})),
-        economy: Object.fromEntries(Object.keys(ECONOMY_LIMITS).map(k => [k, economy[k]])),
+        economy: {...Object.fromEntries(Object.keys(ECONOMY_LIMITS).map(k => [k, economy[k]])),
+            ...Object.fromEntries(STORE_KEYS.filter(k => own(economy, k)).map(k => [k, clone(economy[k])]))},   // (Doc 67's, kept.)
         herbPatch: value.herbPatch ? anchor(value.herbPatch) : null};
 }
 

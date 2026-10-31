@@ -57,6 +57,8 @@ export function MoneyTab({target}: {target: Target; me?: Me}) {
                     <tr><td>Contracts' rewards held</td><td className="num">{p(data.road.contracts)}</td></tr>
                     <tr><td>Bandits' hoards</td><td className="num">{p(data.road.bandits)}</td></tr>
                     <tr><td>Players</td><td className="num">{p(data.players)}</td></tr>
+                    {(data.funds ?? []).map(f => <tr key={f.id}><td title={f.id === 'fund:store' ? 'What the store room\'s draws paid (doc 67): kept in the world, out of circulation' : f.id}>
+                        {f.id === 'fund:store' ? 'The store room\'s fund' : f.id}</td><td className="num">{p(f.cash)}</td></tr>)}
                 </tbody></table>
             </div>
         </div>}

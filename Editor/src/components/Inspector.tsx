@@ -114,7 +114,7 @@ function WorldInspector({project}: {project: Project}) {
             <button onClick={() => setWorkspace('interiors')}>Open Interiors (Alt+2)</button>
         </Section>
         <Section title="People" open={false}>
-            <Hint>{counts.merchant + counts.guard + counts.civilian} named NPCs and {project.slots.length} profession slots. Residents, jobs, patrols and the economy are edited in the People workspace.</Hint>
+            <Hint>{counts.merchant + counts.guard + counts.civilian} named NPCs and {project.slots.length} profession slots. Residents, jobs and patrols are edited in the People workspace; the store room on Atlas's Economy page.</Hint>
             <button onClick={() => setWorkspace('people')}>Open People (Alt+3)</button>
         </Section>
     </>);
@@ -132,8 +132,6 @@ function InteriorsOverview({project}: {project: Project}) {
 }
 
 function PeopleOverview({project}: {project: Project}) {
-    const e = project.economy;
-    const setE = (k: keyof M.Economy) => (v: number) => commit('Updated the economy.', p => M.setEconomy(p, {[k]: Math.round(v)}), true);
     const counts = {
         merchant: project.people.filter(p => p.role === 'merchant').length,
         guard: project.people.filter(p => p.role === 'guard').length,
@@ -156,13 +154,10 @@ function PeopleOverview({project}: {project: Project}) {
             <Hint>A patrol route is an ordered loop of posts. A guard on watch stands at one post and moves on to the next every 15 game minutes (about 2½ real minutes); several guards on one route are spread out. Guards without a route hold their work post.</Hint>
             <button onClick={newRoute}>+ New patrol route</button>
         </Section>
-        <Section title="Town economy">
-            <Hint>The treasury pays wages to guards and working civilians. Shopkeepers restock from the town stores and pay market dues back, so money is never created from nothing. A daily carter refills the stores with goods.</Hint>
-            <Row><NumberField label="Treasury (silver)" value={e.treasury} min={0} max={1000000} onCommit={setE('treasury')} />
-                <NumberField label="Stored meals" value={e.storeMeals} min={0} max={10000} onCommit={setE('storeMeals')} /></Row>
-            <Row><NumberField label="Stored herbs" value={e.storeHerbs} min={0} max={10000} onCommit={setE('storeHerbs')} />
-                <NumberField label="Daily meal delivery" value={e.dailyMeals} min={0} max={1000} onCommit={setE('dailyMeals')} /></Row>
-            <NumberField label="Daily herb delivery" value={e.dailyHerbs} min={0} max={1000} onCommit={setE('dailyHerbs')} />
+        <Section title="Economy">
+            <Hint>The economy's rules were erased (doc 66, Phase 5): nothing pays wages or restocks from the town stores any more.
+                The store room that shops draw their goods from, its switches and markups, and each business's own switch are on
+                Atlas's <a href="?suite=atlas&amp;page=economy">Economy</a> page (doc 67).</Hint>
         </Section>
     </>);
 }

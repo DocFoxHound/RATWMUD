@@ -8,6 +8,7 @@ import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 import {authHeaders, studioCall} from '../dm/api';
 import type {Choice, PullPlan, PullResult} from './sync';
+import type {BusinessesBody, EconomyChange, EconomyControls, StoreSwitches} from './economy';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
@@ -114,6 +115,15 @@ export const api = {
         diff: () => studioCall<PullPlan>(ATLAS + 'sync/diff'),
         pull: async (choices: Record<string, Choice>, expect: string) =>
             studioCall<PullResult>(ATLAS + 'sync/pull', {choices, expect}, {'X-RATW-Editor': await session()}),
+    },
+    /** The Economy controls (doc 67, 6; tools/studio.py): the store room's switches and every placed merchant's
+     *  business on Atlas's world. Reading is anyone's; changing needs a dm or admin account and Atlas's token. */
+    economy: {
+        read: () => studioCall<EconomyControls>(ATLAS + 'economy'),
+        setStore: async (changes: Partial<StoreSwitches>) =>
+            studioCall<EconomyChange>(ATLAS + 'economy/store', changes, {'X-RATW-Editor': await session()}),
+        setBusinesses: async (body: BusinessesBody) =>
+            studioCall<EconomyChange>(ATLAS + 'economy/businesses', body, {'X-RATW-Editor': await session()}),
     },
     ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {
