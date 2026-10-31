@@ -687,7 +687,9 @@ businesses).
 a `comforts ABOVE SHARE` line ("-" for country.json's) and a `season "<group>" supply .. price .. shelf .. normal N` line
 a changed group. Core parses both (`RatwAuthoring.cpp`); `Game::withoutPeople` strips them. A world without 0057 reads
 country.json's; the tools refuse a season or comforts setting there ("this world lacks migration 0057", `world_store`'s
-`LOOP_TABLES` and `NO_SEASONS`, the studio's 409), while its loop settings still change. Status: see below.
+`LOOP_TABLES` and `NO_SEASONS`, the studio's 409), while its loop settings still change. **Applied to DEV
+(`ratw_ridgemere2`) only**, 2026-10-31, after `Saved/Backups/ratw_ridgemere2-before-seasons.dump` and with no other
+writer running: DEV reads the defaults (no new records); PROD is untouched (still at 0054).
 
 **The economy file** (`world_check --economy`) gains, a day: `season` and `year_day`, and per group `G_supply`, `G_price`
 and `G_shelf` (the factors), `G_cap` (today's cap; -1 for none), `G_drawn` (pieces drawn from the Country), `G_sold`
@@ -699,7 +701,8 @@ the middles, between them and across the year's turn; a winter draw at twice the
 refused past it, the next day's supply, autumn's plenty, money conserved; a day of the loop in winter and in autumn:
 residents paying the season's price and eating more bread in autumn; the preserver's shelf three times fuller in
 autumn, making more then and only its usual in winter; the season and comforts records and their refusals,
-`withoutPeople`; `adoptEconomy` changing the rules at once. All 71 C++ tests pass. Python: `test_world_store` (the
+`withoutPeople`; `adoptEconomy` changing the rules at once. All 71 C++ tests pass. `test_world_sync` (a real server on
+a throwaway dev world applies a queued economy.sync: "applied"). Python: `test_world_store` (the
 seasons and comforts round trip, records from both the export and the database's manifest; a world with 0056 but not
 0057 saving its loop settings and refusing a season setting, naming 0057), `test_studio` (the DM's five routes, audited,
 each queueing economy.sync, Atlas's too; for real on a scratch world: the manifest lines, `dm.actions`, back to
@@ -710,8 +713,8 @@ economy check takes the new keys (`content.test.mjs`); `economy.test.ts` (four p
 Core reckons it, a change sent only when it changes something, the comforts' text); `npm test` fails only the same
 Greyfen count.
 
-**Short runs** (build 48's export, `--no-check --deterministic --threads 4 --no-profile`; the coordinator runs the long
-ones). Three days from Spring 1, and one day near each season's middle on the same weekday and off the festival
+**Short runs** (build 49's export, ridgemere2's jobs by class merged; `--no-check --deterministic --threads 4
+--no-profile`; the coordinator runs the long ones). Three days from Spring 1, and one day near each season's middle on the same weekday and off the festival
 (`--day 44, 142, 226, 324`; the middles themselves, days 46 of Autumn and Winter, are festivals, and a day 140 Restday):
 nobody hungry, every household fed, money conserved every day.
 
