@@ -47,7 +47,7 @@ COUNTRY = json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-
 HOUSEHOLDS = ic._CRAFTS_FILE['households']
 # The game's defaults (EconomySpec; Atlas's Economy page changes them per world).
 DEFAULTS = {'storeMarkup': 100, 'resaleMarkup': 75, 'toll': 25, 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8,
-            'wageCountry': 8, 'carriage': 6, 'reserve': 200}
+            'wageCountry': 8, 'carriage': 6, 'reserve': 200, 'subsidy': 25}
 HUNGER_A_DAY = .0035 * 14400                 # Hunger a game day (Society: .0035 a second).
 NOURISH_A_DAY = HUNGER_A_DAY / 1.1           # A food's nourishment counts 1.1 times when eaten.
 HOURS = 8                                    # A crew's working day, for the trades' hours.
@@ -237,7 +237,9 @@ def reckon(export: Path, s: dict, basket_override=None):
         'residents_spend': round(residents_spend), 'food': round(food_p), 'needs': round(needs_p),
         'unsold': {g: round(v) for g, v in unsold.items()},
         'draws_residents': round(d_res), 'country_margin': round(margin, 3), 'country_buys': round(P),
-        'draws_country': round(d_country), 'draws': round(D), 'toll': round(toll), 'treasury_net': round(toll - wages['treasury']),
+        'draws_country': round(d_country), 'draws': round(D), 'toll': round(toll),
+        'subsidy': round((carriage_in + carriage_out) * s['subsidy'] / 100),
+        'treasury_net': round(toll - wages['treasury'] - (carriage_in + carriage_out) * s['subsidy'] / 100),
         'country_intake': round((1 - tau) * D), 'country_pays_posts': w_country, 'carriage_in': round(carriage_in),
         'carriage_out': round(carriage_out), 'weight_in': round(weight_in), 'weight_out': round(weight_out),
         'wagon_loads': round(loads, 1), 'drivers': math.ceil(loads / TRIPS),
@@ -299,7 +301,8 @@ def main(argv):
     print(f"residents spend {r['residents_spend']}p a day (food {r['food']}, needs {r['needs']}); unsold {r['unsold']}")
     print(f"shops draw for the residents' goods {r['draws_residents']}p; the Country buys {r['country_buys']}p "
           f"(margin {r['country_margin']}), its goods' inputs {r['draws_country']}p; all draws {r['draws']}p")
-    print(f"toll {r['toll']}p against the treasury's wages {r['wages']['treasury']}p (net {r['treasury_net']}p); "
+    print(f"toll {r['toll']}p against the treasury's wages {r['wages']['treasury']}p and its carriage subsidy {r['subsidy']}p "
+          f"(net {r['treasury_net']}p); "
           f"the Country takes in {r['country_intake']}p, pays its posts {r['country_pays_posts']}p")
     print(f"carriage in {r['carriage_in']}p ({r['weight_in']} weight), out {r['carriage_out']}p ({r['weight_out']} weight): "
           f"{r['wagon_loads']} wagon loads, {r['drivers']} drivers")

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <functional>
 #include <map>
 
 namespace ratw
@@ -270,11 +271,34 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
     }
     if (open.empty())
         return;
-    // A household: the residents sharing a home (in a communal home, each alone).
-    std::map<std::string, std::vector<std::string>> homes;
+    // A household: the residents sharing a home (in a communal home, each alone), with a child under 16 and a spouse who
+    // live elsewhere (a child given a room of its own upstairs): whoever earns feeds the family.
+    std::map<std::string, std::string> keyOf;          // Resident -> its home's key.
     for (const auto& [id, life] : state_.residents)
         if (spec(id) && !dead_.count(id) && !life.homeCell.empty())
-            homes[communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell].push_back(id);
+            keyOf[id] = communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell;
+    std::map<std::string, std::string> joined;         // Home key -> the key it shops with (union by kin).
+    const std::function<std::string(const std::string&)> root = [&](const std::string& k) {
+        const auto found = joined.find(k);
+        return found == joined.end() || found->second == k ? k : (joined[k] = root(found->second));
+    };
+    const auto join = [&](const std::string& a, const std::string& b) {
+        const auto ka = keyOf.find(a), kb = keyOf.find(b);
+        if (ka == keyOf.end() || kb == keyOf.end())
+            return;
+        const auto ra = root(ka->second), rb = root(kb->second);
+        if (ra != rb)
+            joined[std::max(ra, rb)] = std::min(ra, rb);
+    };
+    for (const auto& [child, parents] : state_.careers.parents)
+        if (const auto* c = spec(child); c && c->age < 16)
+            for (const auto& parent : parents)
+                join(child, parent);
+    for (const auto& [a, b] : state_.careers.spouses)
+        join(a, b);
+    std::map<std::string, std::vector<std::string>> homes;
+    for (const auto& [id, key] : keyOf)
+        homes[root(key)].push_back(id);
     // The shops a household buys from: its community's open ones, or every open one where its community has none.
     std::map<std::string, std::vector<const OpenShop*>> byCommunity;
     for (const auto& s : open)

@@ -99,6 +99,7 @@ AuthoredRoster roster(bool carters = true)
                    person("guard", "guard", "keeping the watch", {"gate", 2.5, 2.5}, "watch_house_barracks"),
                    person("clerk", "civilian", "clerking at the City Office", {"office", 2.5, 2.5}, "home_clerk"),
                    person("child", "civilian", "at lessons", {"school", 2.5, 2.5}, "home_clerk", 8, 0),
+                   person("upstairs", "civilian", "at lessons", {"school", 4.5, 2.5}, "home_clerk_up", 12, 0),
                    person("docker", "civilian", "unloading ships at the piers", {"piers", 2.5, 2.5}, "home_docker"),
                    person("elder", "civilian", "sits and watches the world", {"square", 2.5, 2.5}, "home_docker", 70, 10)};
     if (carters)
@@ -106,7 +107,7 @@ AuthoredRoster roster(bool carters = true)
         r.residents.push_back(person("carter", "merchant", "running the Carters' Yard", {"yard", 2.5, 2.5}, "home_carter"));
         r.residents.push_back(person("driver", "civilian", "driving for the Carters' Yard", {"yard", 4.5, 2.5}, "home_carter"));
     }
-    r.kin = {{"clerk", "child", "parent"}};
+    r.kin = {{"clerk", "child", "parent"}, {"clerk", "upstairs", "parent"}};   // (One child in a room of its own upstairs.)
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
     return r;
@@ -122,6 +123,12 @@ Society city(const std::function<void(AuthoredRoster&)>& change = {}, bool carte
     LifeDay day;
     day.communityOf = [](const std::string&) { return std::string("city"); };
     s.setDay(day);
+    // The families as authored, taken in at the day's turn as the world does it.
+    CareerWorld world;
+    world.alive = [](const std::string&) { return true; };
+    world.age = [&s](const std::string& id) { return s.spec(id) ? s.spec(id)->age : 30; };
+    world.regard = [](const std::string&, const std::string&) { return 50.; };
+    s.tendCareers(1, world);
     return s;
 }
 
@@ -155,7 +162,8 @@ void whoPays()
     expect(pay("guard").kind == "watch" && pay("guard").payer == "treasury", "the watch: the treasury");
     expect(pay("clerk").kind == "public" && pay("clerk").payer == "treasury", "a clerk: the treasury (country.json's rules)");
     expect(pay("docker").kind == "country" && pay("docker").payer == Society::CountryFund, "a docker: the Country");
-    expect(pay("child").kind.empty() && pay("elder").kind.empty(), "a child at lessons and the retired: nobody");
+    expect(pay("child").kind.empty(), "a child at lessons: nobody");
+    expect(pay("elder").kind == "public" && pay("elder").payer == "treasury", "the old who sit and watch: the city's pension");
     expect(s.crewOf("till:job:smith") == 2 && s.crewOf("till:job:baker") == 1, "a crew: its keeper and hands");
     expect(s.carters() == "till:job:carter", "carriage goes to the carters' yard");
     expect(city({}, false).carters() == Society::CarriageFund, "and without one, to fund:carriage");
@@ -276,6 +284,8 @@ void aDayOfTheLoop()
     }
     expect(Society::hasFood(*s.account("child")) || s.resident("child")->hunger < 60, "the child was fed though it holds no money");
     expect(s.cash("child") == 0, "and paid nothing");
+    expect((Society::hasFood(*s.account("upstairs")) || s.resident("upstairs")->hunger < 60) && s.cash("upstairs") == 0,
+           "a child living upstairs, apart from its parent, is fed by the family too");
     // Wages: the clerk from the treasury, the docker from the Country, the hand from the smith's till.
     const auto journal = s.takeJournal();
     const auto paid = [&](const std::string& from, const std::string& to) {
