@@ -66,7 +66,11 @@ export interface Economy {
     // The store room (doc 67, 6): optional, at STORE_DEFAULTS when absent; businesses switched off by founder.
     internalStore?: boolean; storeMarkup?: number; storeResale?: boolean; resaleMarkup?: number; storeRule?: boolean;
     businesses?: Record<string, {internalStore: boolean}>;
+    // The seasons and the comforts (doc 68, Progress; migration 0057): optional, null comforts country.json's.
+    comfortsAbove?: number | null; comfortsShare?: number | null;
+    seasons?: Record<string, {supply: number[]; price: number[]; shelf: number[]; normal: number}>;
 }
+export const SEASON_DEFAULTS: {comfortsAbove: null; comfortsShare: null; seasons: Record<string, never>};
 export const STORE_DEFAULTS: {internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean};
 export interface Faction { id: string; name: string; color: string }
 export interface Chapter { id: string; name: string }

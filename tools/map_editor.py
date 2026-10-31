@@ -77,6 +77,37 @@ LOOP_SWITCHES = ('needsPaused', 'country')
 LOOP_NUMBERS = {'countryReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wageKeeper': 1000, 'wageHand': 1000,
                 'wagePublic': 1000, 'wageCountry': 1000}
 SUBSIDISED = ('carriage',)                           # Society::Subsidised
+# The seasons in the Country's supply and the residents' comforts (doc 68, Progress, "Seasons and the DM's rules";
+# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for country.json's (60p a head, 10%);
+# seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
+# listed is as country.json says), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
+SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
+SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
+SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
+
+
+def season_groups() -> list[dict]:
+    """country.json's season groups (Core's items::Country::seasons), as the file has them."""
+    try:
+        country = json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    return [g for g in (country.get('seasons') or {}).get('groups') or [] if isinstance(g, dict) and g.get('id')]
+
+
+def check_season(group, setting) -> list[str]:
+    """One season group's setting's problems."""
+    if not isinstance(setting, dict) or set(setting) != {'supply', 'price', 'shelf', 'normal'}:
+        return [f'economy.seasons.{group} must be {{supply, price, shelf: four percents each (Spring, Summer, Autumn, '
+                'Winter), normal: pieces a day}}.']
+    errors = []
+    for key, (low, high) in SEASON_LIMITS.items():
+        v = setting[key]
+        if not isinstance(v, list) or len(v) != 4 or any(not number(x, low, high, integer=True) for x in v):
+            errors.append(f'economy.seasons.{group}.{key} must be four whole percents from {low} to {high}.')
+    if not number(setting['normal'], 0, 1000000, integer=True):
+        errors.append(f'economy.seasons.{group}.normal must be a whole number of pieces a day from 0 to 1000000.')
+    return errors
 
 
 def loop_defaults() -> dict:
@@ -90,10 +121,24 @@ def check_economy(economy, person_ids=None) -> list[str]:
         return ['economy must be an object.']
     errors = []
     keys = set(economy)
-    if not set(ECONOMY_KEYS) <= keys <= set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS):
+    if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
+                                         | set(SEASON_DEFAULTS)):
         errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
-                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses '
-                      'and the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ').')
+                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses, '
+                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ' and ' + ', '.join(SEASON_DEFAULTS) + ').')
+    for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
+        value = economy.get(key)
+        if value is not None and not number(value, 0, high, integer=True):
+            errors.append(f'economy.{key} must be a whole number from 0 to {high}, or null for country.json\'s.')
+    seasons = economy.get('seasons', {})
+    if not isinstance(seasons, dict):
+        errors.append('economy.seasons must be {group: {supply, price, shelf, normal}}.')
+    else:
+        for group, setting in seasons.items():
+            if not isinstance(group, str) or not re.fullmatch(r'[a-z0-9_]{1,40}', group):
+                errors.append(f'economy.seasons names no season group: {group}.')
+            else:
+                errors += check_season(group, setting)
     for key in LOOP_SWITCHES:
         if type(economy.get(key, LOOP_DEFAULTS[key])) is not bool:
             errors.append(f'economy.{key} must be true or false.')
@@ -152,6 +197,20 @@ def loop_lines(economy) -> list[str]:
     out += [f'countryoff {quote(g)}' for g in sorted(e['countryOff'])]
     defaults = LOOP_DEFAULTS['subsidies']
     out += [f'subsidy {quote(k)} {v}' for k, v in sorted(e['subsidies'].items()) if defaults.get(k) != v]
+    return out
+
+
+def season_lines(economy) -> list[str]:
+    """The NPC records' comforts and season lines (live.people_manifest's since 0057): a "comforts" line when either is
+    set ("-" for country.json's), a "season" line a group this world has changed."""
+    e = {**SEASON_DEFAULTS, **(economy or {})}
+    out = []
+    if e['comfortsAbove'] is not None or e['comfortsShare'] is not None:
+        word = lambda v: '-' if v is None else str(v)
+        out.append(f'comforts {word(e["comfortsAbove"])} {word(e["comfortsShare"])}')
+    for group, g in sorted((e['seasons'] or {}).items()):
+        out.append(f'season {quote(group)} supply {" ".join(map(str, g["supply"]))} price {" ".join(map(str, g["price"]))} '
+                   f'shelf {" ".join(map(str, g["shelf"]))} normal {g["normal"]}')
     return out
 
 
@@ -827,6 +886,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         if store_line(e):
             manifest.append(store_line(e))          # The store room's switches, when not at their defaults (doc 67, 6).
         manifest += loop_lines(e)                   # The city's loop's, likewise (doc 68, 9).
+        manifest += season_lines(e)                 # The comforts' and the seasons' (doc 68, Progress).
     off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.

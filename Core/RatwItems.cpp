@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <unordered_map>
 
@@ -311,6 +312,33 @@ Catalog build()
         for (const auto& g : comforts.array("goods"))
             if (known(g.asString({})))
                 c.country.comforts.push_back(g.asString({}));
+        // The seasons (a group of goods each; a good in the first group that names it).
+        std::set<std::string> grouped;
+        for (const auto& g : country.object("seasons").array("groups"))
+        {
+            SeasonGroup group;
+            group.id = g.string("id");
+            group.name = g.string("name", group.id);
+            const bool idOk = !group.id.empty() && group.id.size() <= 40 &&
+                              std::all_of(group.id.begin(), group.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
+            if (!idOk || std::any_of(c.country.seasons.begin(), c.country.seasons.end(), [&](const SeasonGroup& x) { return x.id == group.id; }))
+                continue;
+            for (const auto& item : g.array("goods"))
+                if (known(item.asString({})) && grouped.insert(item.asString({})).second)
+                    group.goods.push_back(item.asString({}));
+            const auto four = [&](const char* key, std::array<int, 4>& into, int low, int high) {
+                const auto& values = g.array(key);
+                if (values.size() == 4)
+                    for (std::size_t i = 0; i < 4; ++i)
+                        into[i] = std::clamp(int(std::lround(values[i].asNumber(100))), low, high);
+            };
+            four("supply", group.supply, 0, 1000);
+            four("price", group.price, 10, 1000);
+            four("shelf", group.shelf, 0, 1000);
+            group.normal = std::clamp(int(g.number("normal", 0)), 0, 1000000);
+            if (!group.goods.empty())
+                c.country.seasons.push_back(std::move(group));
+        }
     }
     if (c.country.markets.empty())
         c.country.markets.push_back({"country", "the Country", {}});

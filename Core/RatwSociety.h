@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <algorithm>
@@ -14,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include "RatwAppearance.h"
+#include "RatwItems.h"
 
 // The residents' society: their lives (schedules, posts, careers, families), and the money and goods they hold.
 //
@@ -301,6 +303,18 @@ struct EconomySpec
     // "carriage" (a share of every delivery's carriage, in and out, paid to the carters). Only from what the treasury
     // holds over its float and tonight's public wages, and at most a twentieth of its money a day (SubsidyDay).
     std::map<std::string, int> subsidies{{"carriage", 25}};
+    // The residents' comforts (doc 68, 3; the world's "comforts" record): pennies a head a household holds before it buys
+    // them, and the percent of what is over that it spends a day. -1: country.json's (60, a tenth).
+    int comfortsAbove = -1, comfortsShare = -1;
+    // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"), a
+    // group at a time as this world has changed them ("season" records): supply, price and shelf by season in percent,
+    // and the group's normal pieces a day. A group not listed is as country.json says.
+    struct Season
+    {
+        std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
+        int normal = 0;
+    };
+    std::map<std::string, Season> seasons;
 };
 // A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
 struct Kin
@@ -592,6 +606,32 @@ class Society
     std::pair<std::int64_t, std::int64_t> carriageSplit(const std::string& payer, const std::string& item, int quantity, bool commit);
     // A ware's shelf (doc 68, 7): its starting stock, or a quarter more than sold of it yesterday, at most StoreDrawMost.
     int shelfOf(const std::string& till, const std::string& ware) const;
+    // The seasons in the Country's supply (doc 68, Progress, "Seasons and the DM's rules"): country.json's groups as this
+    // world has them (EconomySpec::seasons), and where in the year the society is (0 at Spring's first day, up to 365;
+    // -1 until it first decides, when no season applies: every factor 1, no cap). A factor is the group's percent for
+    // the season whose middle day is nearest on either side, blended in a straight line, as a fraction (1: normal).
+    const std::vector<items::SeasonGroup>& seasonTable() const { return seasons_; }
+    const items::SeasonGroup* seasonGroup(const std::string& item) const;
+    double yearDay() const { return yearDay_; }
+    void setYearDay(double absoluteDay);           // (decide() does it; for tests and harnesses.)
+    static double seasonal(const std::array<int, 4>& percentBySeason, double yearDay);
+    double priceFactor(const std::string& item) const;
+    double shelfFactor(const std::string& item) const;
+    double supplyFactor(const items::SeasonGroup& group) const;
+    // What the Country can still supply of a good's group today (its normal × the supply factor, less what was drawn of
+    // the group today); a large number for a good outside every capped group.
+    int countryLeft(const std::string& item) const;
+    int groupCap(const items::SeasonGroup& group) const;
+    int groupDrawn(const std::string& group) const;
+    // The most `quantity` of a good costs a resident in a shop now (for whether it can pay): the catalogue's price, or the
+    // season's (times its price factor) rounded up if dearer. What is paid: the catalogue's, then the difference.
+    std::int64_t seasonalCost(const std::string& item, int quantity) const;
+    // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
+    // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
+    void adoptEconomy(const EconomySpec& economy);
+    // The residents' comforts as this world has them (EconomySpec, else country.json).
+    int comfortsAbove() const;
+    double comfortsShare() const;
     // What the loop did, for reports (world_check --economy): since the day began, and the day before's.
     struct LoopDay
     {
@@ -599,6 +639,14 @@ class Society
         std::int64_t residentsSpent = 0, countrySpent = 0, countryUnspent = 0, drawn = 0, toll = 0, carriage = 0;
         std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0, alms = 0;
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
+        // By season group (doc 68, Progress, "Seasons"): pieces drawn from the Country, pieces sold to residents and
+        // what they paid for them.
+        struct Group
+        {
+            int drawn = 0, sold = 0;
+            std::int64_t spent = 0;
+        };
+        std::map<std::string, Group> groups;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     const LoopDay& loopYesterday() const { return loopYesterday_; }
@@ -756,6 +804,16 @@ class Society
     mutable std::unordered_map<std::string, int> crews_;                                       // Till -> crew (with the records).
     mutable std::uint64_t crewsRevision_ = 0;
     LoopDay loopToday_, loopYesterday_;
+    // The seasons (seasonTable): the groups as this world has them, a good's group by its index, where in the year it is
+    // (yearDay_) and on which day (seasonDay_), and the pieces drawn of each group that day (not saved: after a restart
+    // the day's supply starts again).
+    std::vector<items::SeasonGroup> seasons_;
+    std::unordered_map<std::string, std::size_t> seasonOf_;
+    double yearDay_ = -1;
+    std::int64_t seasonDay_ = -1;
+    std::unordered_map<std::string, int> seasonDrawn_;
+    std::unordered_map<std::string, double> priceCarry_;   // A payer's fraction of a penny of the season's prices.
+    void buildSeasons();
     std::set<std::string> dead_;                    // Residents who have died (died, revived): nobody feeds or pays them.
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
     std::unordered_map<std::string, std::size_t> positionIndex_;

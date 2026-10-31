@@ -1,7 +1,8 @@
 // Atlas's Economy page, the city's loop and the Country (Docs/Design/68-the-country-and-the-city-loop.md, 9): the
 // residents' needs, the wages, the gate toll (the city's tax), carriage and the treasury's subsidy of it, the Country's
 // switch and reserve, its basket (Data/Items/country.json) and which goods it supplies. Each world's own, in live.economy;
-// the game reads them when a server next starts on the world.
+// sent to a server running the world at once (economy.sync), and read by any started later. On Atlas's Economy page and
+// the DM's Economy tab alike.
 import {useEffect, useMemo, useState} from 'react';
 import {basketRows, goodsBulk, goodsShown, LOOP_NUMBERS, wholeOf, type EconomyControls, type GoodsBody,
     type LoopSettings} from '../lib/economy';

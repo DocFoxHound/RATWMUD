@@ -604,3 +604,139 @@ The coordinator asked for no further runs: these are the tuning I would make nex
    come back to the shops faster.
 5. **Four more drivers** at the Carters' Yard (it has 6; the loads want about 10), or carriage at 4p a load.
 6. **A locksmith and a cobbler** (section 12), if the smithy and foundry stay near 70%.
+
+### Seasons and the DM's rules (2026-10-31)
+
+The user, 2026-10-31 (verbatim): "One thing we're going to have to keep in mind is harvest seasons, and there should be a
+fluctuation in specific food types throughout the year. Not to say they always all go to zero, but there may be more
+dried and preserved fruits and fresh fish in the winter and more bread in the summer. Etc etc. Livestock should probably
+be a year-round sort of thing. I want to start simple and small, and just make sure that the simulation works and things
+are running, then go into figuring out supply and demand, and applying fixes in rulesets that can be managed or tweaked
+from DM. We're trying to find a good supply/demand balance along with cost/pay."
+
+Branch `r2-seasons`, from `ridgemere2` (4863fb6).
+
+**The seasonal table** (`Data/Items/country.json`, `seasons.groups`; Core `items::SeasonGroup`, `Society::seasonTable`).
+Each group lists its goods and, for Spring, Summer, Autumn and Winter, in percent of normal: `supply` (how much the
+Country can send a day, of the group's `normal` pieces a day), `price` (what its goods cost) and `shelf` (how full the
+shops keep their shelves of them). Each season's value stands at its middle day (0-based days 46, 138, 229.5 and 320 of the
+365: `RatwCalendar.h`'s 92/92/91/90); the days between blend in a straight line, Winter's running on into Spring's across
+the year's turn (`Society::seasonal`). A good is in one group at most (the first that names it); goods made of a group's
+goods sit in it where their price should follow it (bread with the grain). Placeholders, each world's to change:
+
+| Group | Goods | Supply % (Sp/Su/Au/Wi) | Price % | Shelf % | Normal a day |
+|---|---|---|---|---|---|
+| grain and flour | wheat, flour, oats, bread, fine bread, porridge | 85 / 115 / 140 / 75 | 110 / 95 / 85 / 115 | 100 | 150 |
+| fresh fruit | apples, berries, grapes | 50 / 130 / 150 / 30 | 120 / 90 / 80 / 140 | 100 | 950 |
+| vegetables | vegetables, mushrooms | 70 / 140 / 130 / 40 | 110 / 85 / 90 / 130 | 100 | 0 (no cap) |
+| fresh fish | fish, shellfish | 100 / 85 / 100 / 140 | 100 / 110 / 100 / 85 | 100 | 300 |
+| livestock and meat | raw meat, mutton, pig, sheep, rabbit, offal, eggs | 100 | 100 | 100 | 330 |
+| milk and dairy | milk, butter, cheese | 105 / 110 / 100 / 85 | 100 / 95 / 100 / 110 | 100 | 260 |
+| honey | honey | 80 / 120 / 115 / 60 | 105 / 95 / 95 / 115 | 100 | 75 |
+| dried and preserved fruit | dried apples, fruit preserves | 100 | 100 | 100 / 120 / 250 / 150 | 0 (no cap) |
+
+`normal` is about what build 48's city drew of the group a day with no cap (days 2-3 of a 3-day run); vegetables are
+drawn by nobody (no resident eats them as they are), so they have no cap.
+
+**What the table does:**
+
+- **Supply: a cap on store draws.** All the shops together may draw at most `normal × supply` pieces of a group a day
+  (`Society::countryLeft`, `groupCap`); a draw past it is refused ("The Country has only 12 grain and flour to send
+  today (the season)"), and the restocking rule draws only what is left (resale and makers' inputs alike). The day's
+  count starts again at the day's turn (not saved: a restart starts the day's supply again). A supply of 0 sends none;
+  a `normal` of 0 is no cap.
+- **Price: draws and the shops' prices.** A store draw of a group's good costs its catalogue price × markup × the price
+  factor (`storeCost`); a resident buying it pays the catalogue price × the factor: the sale at the catalogue's price,
+  then the difference shifted (to the till when dearer, back to the buyer when cheaper), each payer's fractions of a
+  penny carried until they make one (`priceCarry_`, starting at half a penny), so a 1p loaf costs its season's price over
+  many buys. Residents' choice of food already weighs nourishment for the price, now the season's: they buy what is in
+  season. The Country's purchases and players' trade stay at catalogue prices.
+- **Shelf: stocking up.** A ware's shelf (`shelfOf`: its starting stock or 1.25 × yesterday's sales) times the group's
+  shelf factor, at most 1,000.
+- **The preserver's winter stock** (the simplest workable rule): dried apples and fruit preserves don't follow the season
+  themselves (supply and price 100%), but their shelf does: 120% in summer, 250% at autumn's middle, 150% at winter's,
+  100% by spring. So the preserver makes up to two and a half times its sales while fruit is cheap and plentiful, its
+  stock carries into the winter (they keep 180 and 365 days), and as the shelf falls through the winter it sells the
+  stock down before making more, while fresh fruit is short (30% supply) and dear (140%). No look-ahead and nothing
+  saved: a seasonal shelf target.
+- **Before the date is known** (a society that hasn't decided yet, a test drawing straight away) no season applies.
+
+**The DM's rules.** Everything the loop and the store room have as settings is editable in the DM suite's new
+**Economy** tab (`Editor/src/dm/EconomyTab.tsx`) on the DM's chosen world, as on Atlas's Economy page (which stays, with
+the same settings and a new seasons panel, `Editor/src/studio/SeasonsPanel.tsx`, shared by both): the store room's
+switches and markups and the restocking rule; residents' needs; the four wages; the Country on or off, its reserve,
+the gate toll, carriage and its subsidy; the per-good Country supply; **the seasonal table** (a group's supply, price
+and shelf by season, and its normal; "As country.json" puts it back); and **the comforts** (the threshold a head and the
+share a day; empty: country.json's). A business's own store-room switch stays Atlas's (it travels with the world's
+businesses).
+
+- Routes (`tools/studio.py`): `GET /api/dm/economy?world=KEY`; `POST /api/dm/economy/store`, `/loop`, `/goods`,
+  `/seasons` `{world, set: {group: {supply?, price?, shelf?, normal?} | null}}`, `/comforts` `{world, comfortsAbove?,
+  comfortsShare?}`; for dm and admin, audited in the world's DM audit (`economy.store`, `economy.loop`, `economy.goods`,
+  `economy.seasons`, `economy.comforts`). Atlas: `POST /api/atlas/economy/seasons` and `/comforts`, as its others.
+- **Applied live.** Every economy change, the DM's and Atlas's, queues `economy.sync` in the world's `dm.actions`; the
+  world's running game server (DEV run as the server included) reads its `live.economy` again (`loadWithLivePeople`) and
+  applies it at once (`Society::adoptEconomy`: every rule the loop and the store room read; the treasury's and stores'
+  starting amounts kept). With no server running the action expires unapplied after ten minutes, and a server started
+  later reads the row. Scratch servers ignore DM actions (as for every DM action). **Not live:** a business's own switch
+  (Atlas's; on the next start) and `Data/Items/country.json` itself (the groups, their goods and the defaults: on the next
+  start).
+
+**Migration 0057** (`Database/migrations/0057_seasons.sql`): `live.economy.comforts_above` and `comforts_share`
+(nullable: country.json's), `seasons jsonb` (`{}`: the groups as country.json has them), and `live.people_manifest` with
+a `comforts ABOVE SHARE` line ("-" for country.json's) and a `season "<group>" supply .. price .. shelf .. normal N` line
+a changed group. Core parses both (`RatwAuthoring.cpp`); `Game::withoutPeople` strips them. A world without 0057 reads
+country.json's; the tools refuse a season or comforts setting there ("this world lacks migration 0057", `world_store`'s
+`LOOP_TABLES` and `NO_SEASONS`, the studio's 409), while its loop settings still change. **Applied to DEV
+(`ratw_ridgemere2`) only**, 2026-10-31, after `Saved/Backups/ratw_ridgemere2-before-seasons.dump` and with no other
+writer running: DEV reads the defaults (no new records); PROD is untouched (still at 0054).
+
+**The economy file** (`world_check --economy`) gains, a day: `season` and `year_day`, and per group `G_supply`, `G_price`
+and `G_shelf` (the factors), `G_cap` (today's cap; -1 for none), `G_drawn` (pieces drawn from the Country), `G_sold`
+(pieces sold to residents), `G_stock` (on the shops' shelves at 23:00) and `G_paid` (residents' mean price a piece).
+`world_check --day N` starts a run on day N of the year (1-365) without ageing anyone.
+
+**Tests.** `Tests/season_tests.cpp` (110 checks; a catalogue whose seasons are the test's own): the factors by day, at
+the middles, between them and across the year's turn; a winter draw at twice the price and capped at the season's five,
+refused past it, the next day's supply, autumn's plenty, money conserved; a day of the loop in winter and in autumn:
+residents paying the season's price and eating more bread in autumn; the preserver's shelf three times fuller in
+autumn, making more then and only its usual in winter; the season and comforts records and their refusals,
+`withoutPeople`; `adoptEconomy` changing the rules at once. All 71 C++ tests pass. `test_world_sync` (a real server on
+a throwaway dev world applies a queued economy.sync: "applied"). Python: `test_world_store` (the
+seasons and comforts round trip, records from both the export and the database's manifest; a world with 0056 but not
+0057 saving its loop settings and refusing a season setting, naming 0057), `test_studio` (the DM's five routes, audited,
+each queueing economy.sync, Atlas's too; for real on a scratch world: the manifest lines, `dm.actions`, back to
+country.json's, refusals, a world without 0057 refused by both suites); `test_live_edit`, `test_dungeon_master`,
+`test_world_sync`, `test_world_build`, `test_item_catalog`, `test_city_capacity`, `test_world_db` pass;
+`test_map_editor` fails only its Greyfen resident count (11, not 10), as before. Editor: `tsc` clean; the model's
+economy check takes the new keys (`content.test.mjs`); `economy.test.ts` (four percents typed in, the factor by day as
+Core reckons it, a change sent only when it changes something, the comforts' text); `npm test` fails only the same
+Greyfen count.
+
+**Short runs** (build 49's export, ridgemere2's jobs by class merged; `--no-check --deterministic --threads 4
+--no-profile`; the coordinator runs the long ones). Three days from Spring 1, and one day near each season's middle on the same weekday and off the festival
+(`--day 44, 142, 226, 324`; the middles themselves, days 46 of Autumn and Winter, are festivals, and a day 140 Restday):
+nobody hungry, every household fed, money conserved every day.
+
+| | Spring 44 | Summer 142 | Autumn 226 | Winter 324 |
+|---|---|---|---|---|
+| grain supply / price | .85 / 1.10 | 1.16 / .95 | 1.39 / .85 | .75 / 1.15 |
+| grain drawn of cap | 121 of 127 | 141 of 174 | 134 of 208 | **113 of 113** |
+| grain sold (bread, porridge) | 430 | 499 | 502 | 412 |
+| fresh fruit drawn of cap | 436 of 470 | 370 of 1,243 | 440 of 1,417 | **293 of 293** |
+| fresh fish supply / price, sold | 1.01 / 1.00, 160 | .86 / 1.10, 117 | .99 / 1.00, 167 | 1.38 / .86, **190** |
+| fresh fish paid a piece | 2.00p | 2.20p | 2.00p | 1.76p |
+| honey drawn of cap | 58 of 59 | 55 of 89 | 53 of 86 | **45 of 45** |
+| preserves: shelf factor, sold, on shelves | 1.01, 142, 38 | 1.26, 93, 51 | 2.45, 153, 39 | 1.48, 150, 6 |
+
+- The factors move with the season and the caps bind in the lean ones (grain, fruit and honey in winter, fruit and honey
+  in spring), not in the plentiful ones. More bread is eaten in summer and autumn, and the most fresh fish in winter, by
+  the residents' own choice.
+- The price paid follows the factor but lags it in a one-day run (grain 1.06p in winter against 1.15): each payer's
+  carried fraction starts at half a penny and most buys are of 1p bread; over a run it comes to the factor.
+- The preserver's stock-up shows only over a run from autumn into winter (a one-day run starting in winter starts with
+  no autumn stock): its stock fell to 0 by day 3 of the three-day spring run, with fruit capped at 40% and the cider
+  makers drawing it too. Watch `preserved_stock` across autumn and winter, and `fruit_drawn` against `fruit_cap`; the
+  preserver may lack the crew's hours to stock up (doc 68's table: it was over capacity if everyone ate its make).
+- Restdays and festivals move a day's spending more than the season does (a day-46 festival day drew a third of an
+  ordinary day's): compare runs on the same weekday, or over weeks.

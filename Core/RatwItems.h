@@ -2,6 +2,7 @@
 // The item catalog in the game (Docs/Design/35-items-crafting-industry.md): what of Data/Items the server knows. The
 // wearables (Phase 4), every good a shop may sell (its name, kind and price: Docs/Design/39), and the kinds of shop;
 // herbs, meals and the sword keep their old hard-coded ways.
+#include <array>
 #include <cstddef>
 #include <map>
 #include <string>
@@ -150,9 +151,23 @@ struct WageRule
     std::string payer;
     std::vector<std::string> words;
 };
+// The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"): a
+// group of goods (grain and its bread, fresh fruit, fresh fish, ...) with, by season (Spring, Summer, Autumn, Winter, each
+// the value at the season's middle day, days between blended in a straight line), in percent of normal: how much the
+// Country can supply a day (`supply`, of `normal` pieces a day for the whole group; 0 pieces: no cap), what its goods
+// cost (`price`: store draws and the shops' prices to residents), and how full the shops keep their shelves of them
+// (`shelf`: a maker stocking up ahead of a lean season). A good is in one group at most (the first that names it).
+struct SeasonGroup
+{
+    std::string id, name;
+    std::vector<std::string> goods;
+    std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
+    int normal = 0;
+};
 struct Country
 {
     std::vector<Market> markets;
+    std::vector<SeasonGroup> seasons;
     std::vector<WageRule> wages;
     double foodDays = 2, shortDays = 1;             // A household tops each member up to foodDays; under shortDays it tries again.
     int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,

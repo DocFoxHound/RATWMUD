@@ -39,5 +39,42 @@
     "above": 60,
     "share": 0.1,
     "goods": ["ale", "cider", "wine", "candle_tallow", "honey_cake", "cheese", "wool_scarf", "linen_neckerchief", "fine_soap", "fang_charm", "pamphlet", "clay_pot"]
+  },
+  "seasons": {
+    "about": "The seasons in the Country's supply (Docs/Design/68-the-country-and-the-city-loop.md, Progress, \"Seasons and the DM's rules\"): each group's goods, and for Spring, Summer, Autumn and Winter (the value at each season's middle day; the days between blend in a straight line), in percent of normal: `supply`, how much the Country can send the city a day, of `normal` pieces a day for the whole group (0 pieces: no cap; a supply of 0 sends none); `price`, what the group's goods cost, both the shops' draws from the store room and the shops' prices to residents (the residents weigh nourishment for the price, so they buy what is in season); `shelf`, how full the shops keep their shelves of the group's goods (a maker stocking up ahead of a lean season). Goods made of a group's goods sit in it when their price should follow it (bread with the grain). The numbers are placeholders, each world's to change in the DM (its Economy tab) or Atlas's Economy page; `normal` is about what the city drew a day without a cap (build 48).",
+    "groups": [
+      {"id": "grain", "name": "grain and flour",
+       "about": "Harvested late summer into autumn: plentiful and cheap then, so more bread; dearer and short in winter and spring until the next harvest.",
+       "goods": ["wheat", "flour", "oats", "bread", "fine_bread", "porridge"],
+       "supply": [85, 115, 140, 75], "price": [110, 95, 85, 115], "shelf": [100, 100, 100, 100], "normal": 150},
+      {"id": "fruit", "name": "fresh fruit",
+       "about": "Apples, berries and grapes: plentiful from high summer to the autumn's end, scarce in winter.",
+       "goods": ["apples", "berries", "grapes"],
+       "supply": [50, 130, 150, 30], "price": [120, 90, 80, 140], "shelf": [100, 100, 100, 100], "normal": 950},
+      {"id": "vegetables", "name": "vegetables",
+       "about": "Fresh from the fields from summer into autumn; little in winter.",
+       "goods": ["vegetables", "mushrooms"],
+       "supply": [70, 140, 130, 40], "price": [110, 85, 90, 130], "shelf": [100, 100, 100, 100], "normal": 0},
+      {"id": "fish", "name": "fresh fish",
+       "about": "More fresh fish in winter (the user's call, 2026-10-31): the cold months' catch.",
+       "goods": ["fish", "shellfish"],
+       "supply": [100, 85, 100, 140], "price": [100, 110, 100, 85], "shelf": [100, 100, 100, 100], "normal": 300},
+      {"id": "meat", "name": "livestock and meat",
+       "about": "Kept the year round: no season.",
+       "goods": ["raw_meat", "mutton", "pig", "sheep", "rabbit", "offal", "eggs"],
+       "supply": [100, 100, 100, 100], "price": [100, 100, 100, 100], "shelf": [100, 100, 100, 100], "normal": 330},
+      {"id": "dairy", "name": "milk and dairy",
+       "about": "The year round, a little less (and dearer) in winter.",
+       "goods": ["milk", "butter", "cheese"],
+       "supply": [105, 110, 100, 85], "price": [100, 95, 100, 110], "shelf": [100, 100, 100, 100], "normal": 260},
+      {"id": "honey", "name": "honey",
+       "about": "Taken from summer into autumn; scarcer in winter and spring.",
+       "goods": ["honey"],
+       "supply": [80, 120, 115, 60], "price": [105, 95, 95, 115], "shelf": [100, 100, 100, 100], "normal": 75},
+      {"id": "preserved", "name": "dried and preserved fruit",
+       "about": "The preserver's goods keep for months and don't follow the season themselves: their makers stock up in autumn, while fruit is cheap and plentiful (their shelves run to 2.5 times their sales), so there is more of them through the winter, when fresh fruit is scarce (their shelves fall back to normal by spring, so the stock is sold down before more is made).",
+       "goods": ["dried_apples", "fruit_preserves"],
+       "supply": [100, 100, 100, 100], "price": [100, 100, 100, 100], "shelf": [100, 120, 250, 150], "normal": 0}
+    ]
   }
 }

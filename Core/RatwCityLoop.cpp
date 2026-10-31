@@ -3,6 +3,7 @@
 // the Country spends what it takes in on the city's goods; tills, the treasury and the Country pay their posts' wages.
 // Every coin moves by shift or sale, so the money is conserved; goods come only from the store room and leave by being
 // eaten, used up at home or carried away to the Country.
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
@@ -10,6 +11,7 @@
 #include <cctype>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <map>
 #include <set>
 
@@ -201,10 +203,146 @@ std::pair<std::int64_t, std::int64_t> Society::carriageSplit(const std::string& 
 
 int Society::shelfOf(const std::string& till, const std::string& ware) const
 {
+    int shelf = startingStock(ware);
     if (const auto t = shelf_.find(till); t != shelf_.end())
         if (const auto w = t->second.find(ware); w != t->second.end())
-            return std::max(startingStock(ware), w->second);
-    return startingStock(ware);
+            shelf = std::max(shelf, w->second);
+    // A season's shelf (a maker stocking up ahead of a lean season): the shelf times its group's factor.
+    if (const double f = shelfFactor(ware); f != 1)
+        shelf = std::clamp(int(std::ceil(shelf * f - 1e-9)), 1, StoreDrawMost);
+    return shelf;
+}
+
+// The seasons in the Country's supply (doc 68, Progress, "Seasons and the DM's rules").
+void Society::buildSeasons()
+{
+    seasons_ = items::country().seasons;
+    for (auto& g : seasons_)
+        if (const auto own = authored_.economy.seasons.find(g.id); own != authored_.economy.seasons.end())
+        {
+            g.supply = own->second.supply;
+            g.price = own->second.price;
+            g.shelf = own->second.shelf;
+            g.normal = own->second.normal;
+        }
+    seasonOf_.clear();
+    for (std::size_t i = 0; i < seasons_.size(); ++i)
+        for (const auto& item : seasons_[i].goods)
+            seasonOf_.emplace(item, i);
+}
+
+const items::SeasonGroup* Society::seasonGroup(const std::string& item) const
+{
+    const auto found = seasonOf_.find(items::baseOf(item));
+    return found == seasonOf_.end() ? nullptr : &seasons_[found->second];
+}
+
+void Society::setYearDay(double absoluteDay)
+{
+    if (!std::isfinite(absoluteDay) || absoluteDay < 0)
+        return;
+    const auto day = std::int64_t(std::floor(absoluteDay));
+    if (day != seasonDay_)
+    {
+        seasonDay_ = day;
+        seasonDrawn_.clear();                       // (A new day: the Country's supply starts again.)
+    }
+    yearDay_ = std::fmod(absoluteDay, double(calendar::DaysPerYear));
+}
+
+double Society::seasonal(const std::array<int, 4>& by, double yearDay)
+{
+    // Each season's value stands at its middle day (Spring 92 days, Summer 92, Autumn 91, Winter 90: RatwCalendar.h);
+    // between two middles, a straight line; Winter's middle runs on to Spring's across the year's turn.
+    static constexpr double Middle[4] = {46, 92 + 46, 184 + 45.5, 275 + 45};
+    if (yearDay < 0)
+        return 1;
+    const double d = std::fmod(yearDay, double(calendar::DaysPerYear));
+    int a = 3;
+    for (int i = 0; i < 4; ++i)
+        if (d >= Middle[i])
+            a = i;
+    const int b = (a + 1) % 4;
+    const double from = Middle[a], to = b == 0 ? Middle[0] + calendar::DaysPerYear : Middle[b];
+    const double at = d < from ? d + calendar::DaysPerYear : d;
+    const double t = std::clamp((at - from) / (to - from), 0., 1.);
+    return (by[std::size_t(a)] + (by[std::size_t(b)] - by[std::size_t(a)]) * t) / 100.;
+}
+
+double Society::priceFactor(const std::string& item) const
+{
+    const auto* g = yearDay_ < 0 ? nullptr : seasonGroup(item);
+    return g ? seasonal(g->price, yearDay_) : 1.;
+}
+
+double Society::shelfFactor(const std::string& item) const
+{
+    const auto* g = yearDay_ < 0 ? nullptr : seasonGroup(item);
+    return g ? seasonal(g->shelf, yearDay_) : 1.;
+}
+
+double Society::supplyFactor(const items::SeasonGroup& group) const
+{
+    return yearDay_ < 0 ? 1. : seasonal(group.supply, yearDay_);
+}
+
+int Society::groupCap(const items::SeasonGroup& group) const
+{
+    if (yearDay_ < 0 || group.normal <= 0)
+        return std::numeric_limits<int>::max();
+    return int(std::floor(group.normal * supplyFactor(group) + 1e-9));
+}
+
+int Society::groupDrawn(const std::string& group) const
+{
+    const auto found = seasonDrawn_.find(group);
+    return found == seasonDrawn_.end() ? 0 : found->second;
+}
+
+int Society::countryLeft(const std::string& item) const
+{
+    const auto* g = seasonGroup(item);
+    if (!g || yearDay_ < 0 || g->normal <= 0)
+        return std::numeric_limits<int>::max();
+    return std::max(0, groupCap(*g) - groupDrawn(g->id));
+}
+
+std::int64_t Society::seasonalCost(const std::string& item, int quantity) const
+{
+    const auto each = catalogPrice(item);
+    if (quantity < 1)
+        return 0;
+    const double f = priceFactor(item);
+    if (f == 1)
+        return each * quantity;
+    // (The most it may come to: the catalogue's price is paid first and the difference after, its fractions carried.)
+    return std::max<std::int64_t>(each * quantity, std::int64_t(std::ceil(double(each) * quantity * f - 1e-9)));
+}
+
+int Society::comfortsAbove() const
+{
+    const int own = authored_.economy.comfortsAbove;
+    return own >= 0 ? own : items::country().comfortsAbove;
+}
+
+double Society::comfortsShare() const
+{
+    const int own = authored_.economy.comfortsShare;
+    return own >= 0 ? std::clamp(own, 0, 100) / 100. : items::country().comfortsShare;
+}
+
+void Society::adoptEconomy(const EconomySpec& economy)
+{
+    auto next = economy;
+    const auto& now = authored_.economy;
+    next.treasury = now.treasury;                   // (Starting amounts: spent long ago.)
+    next.storeHerbs = now.storeHerbs;
+    next.storeMeals = now.storeMeals;
+    authored_.economy = std::move(next);
+    buildSeasons();
+    storeCache_.clear();                            // (What each keeper may draw follows the world's switches.)
+    crews_.clear();
+    treasuryOwed_ = -1;                             // (Tonight's public wages, at the new rates; today's subsidy left stands.)
 }
 
 void Society::loopHourly(std::int64_t hour, int season)
@@ -349,10 +487,12 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         return best && held - price >= keep ? *best : std::string();
     };
     // Buys `want` of `item` from the shops (sellers by stock), paid by the household; returns how many came.
+    // What a lot costs a resident: the catalogue's price, times the season's for a good of a season group (doc 68,
+    // Progress, "Seasons"), in whole pennies for the lot; paid as a sale at its whole pennies a piece and the odd pennies.
     const auto buy = [&](const std::vector<const OpenShop*>& shops, const std::vector<std::string>& members, const std::string& to,
                          const std::string& item, int want, std::int64_t keep, const std::string& key) {
         int got = 0;
-        const auto price = catalogPrice(item);
+        const auto* group = seasonGroup(item);
         for (int lot = 0; lot < 4 && got < want; ++lot)
         {
             sellersOf(shops, item, tills, weights);
@@ -362,14 +502,37 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             const auto& till = tills[std::size_t(pick)]->till;
             int n = std::min({want - got, stock(*tills[std::size_t(pick)]->account, item), 99});
             std::string payer;
-            while (n > 0 && (payer = payerFor(members, price * n, keep)).empty())
-                n = payerFor(members, price, keep).empty() ? 0 : std::max(1, n / 2);
-            if (n < 1 || !sale(till, payer, item, n, price, "market"))
+            while (n > 0 && (payer = payerFor(members, seasonalCost(item, n), keep)).empty())
+                n = payerFor(members, seasonalCost(item, 1), keep).empty() ? 0 : std::max(1, n / 2);
+            if (n < 1)
                 break;
+            // At the catalogue's price, then the season's difference: the payer's fractions of a penny kept against it
+            // until they make one (as the gate toll's are), so a penny's good costs its season's price over many buys.
+            const auto base = catalogPrice(item) * n;
+            if (!sale(till, payer, item, n, catalogPrice(item), "market"))
+                break;
+            auto cost = base;
+            if (const double f = priceFactor(item); f != 1)
+            {
+                double& carry = priceCarry_.try_emplace(payer, .5).first->second;   // (From half a penny: fair rounding.)
+                const double owed = carry + double(base) * f;
+                cost = std::max<std::int64_t>(0, std::int64_t(std::floor(owed + 1e-9)));
+                if (cost > base && !shift(payer, till, "", 0, std::min(cost - base, cash(payer)), "market: the season's price"))
+                    cost = base;
+                else if (cost < base)
+                    shift(till, payer, "", 0, base - cost, "market: the season's price");
+                carry = std::clamp(owed - double(cost), 0., 1.);
+            }
             if (payer != to && !shift(payer, to, item, n, 0, "for the household"))
                 consume(payer, item, n, "used at home");   // (Not reached: the member's purse has room.)
             got += n;
-            loopToday_.residentsSpent += price * n;
+            loopToday_.residentsSpent += cost;
+            if (group)
+            {
+                auto& g = loopToday_.groups[group->id];
+                g.sold += n;
+                g.spent += cost;
+            }
         }
         return got;
     };
@@ -405,7 +568,7 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                             if (n > 0 && edible(item) && std::find(foods.begin(), foods.end(), item) == foods.end())
                             {
                                 foods.push_back(item);
-                                value.push_back(double(nourishment(item)) / double(std::max<std::int64_t>(1, catalogPrice(item))));
+                                value.push_back(double(nourishment(item)) / (double(std::max<std::int64_t>(1, catalogPrice(item))) * priceFactor(item)));
                             }
                     if (!foods.empty())
                         break;                      // (Its own community's food, where it has some; else anywhere open.)
@@ -453,7 +616,7 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             if (options.empty())
                 continue;
             const auto& item = options[fnv(home + "|" + std::to_string(day) + "|" + std::to_string(i)) % options.size()];
-            const auto payer = payerFor(members, catalogPrice(item) * count, keep);
+            const auto payer = payerFor(members, seasonalCost(item, count), keep);
             if (payer.empty())
                 continue;
             if (const int got = buy(shops, members, payer, item, count, keep, home + "|need|" + std::to_string(day) + "|" + std::to_string(i)); got > 0)
@@ -466,12 +629,12 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         std::int64_t held = 0;
         for (const auto& m : members)
             held += cash(m);
-        auto budget = std::int64_t(std::floor((held - std::int64_t(cfg.comfortsAbove) * std::int64_t(members.size())) * cfg.comfortsShare));
+        auto budget = std::int64_t(std::floor((held - std::int64_t(comfortsAbove()) * std::int64_t(members.size())) * comfortsShare()));
         for (int k = 0; k < 20 && budget > 0 && !cfg.comforts.empty(); ++k)
         {
             std::vector<std::string> options;
             for (const auto& g : cfg.comforts)
-                if (catalogPrice(g) <= budget)
+                if (seasonalCost(g, 1) <= budget)
                 {
                     sellersOf(shops, g, tills, weights);
                     if (!tills.empty())
@@ -480,11 +643,11 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             if (options.empty())
                 break;
             const auto& item = options[fnv(home + "|comfort|" + std::to_string(day) + "|" + std::to_string(k)) % options.size()];
-            const auto payer = payerFor(members, catalogPrice(item), 0);
+            const auto payer = payerFor(members, seasonalCost(item, 1), 0);
             if (payer.empty() || buy(shops, members, payer, item, 1, 0, home + "|comfort|" + std::to_string(day) + "|" + std::to_string(k)) < 1)
                 break;
             consume(payer, item, 1, "used at home");
-            budget -= catalogPrice(item);
+            budget -= seasonalCost(item, 1);
             ++loopToday_.comfortsBought;
         }
     }
@@ -736,7 +899,9 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
     {
         if (!w.craft)
         {
-            if (drawFromStore(keeper, w.ware, std::min(StoreDrawMost, w.lack), "restocked from the store room").ok)
+            // (Within what the Country can still supply of it today: a season's cap.)
+            if (const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
+                n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok)
                 done.push_back("restocked " + w.ware);
             continue;
         }
@@ -765,7 +930,7 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
         if (!can || kinds > MaxGoodsKinds)
             continue;
         for (const auto& [item, n] : k.in)
-            if (const int lack = n * batches - stock(*account(till), item); lack > 0)
+            if (const int lack = std::min(n * batches - stock(*account(till), item), countryLeft(item)); lack > 0)
                 drawFromStore(keeper, item, std::min(StoreDrawMost, lack), "drawn for " + k.id);
         // As many batches as the inputs on the shelves now allow (a refused draw leaves the rest for the next hour).
         for (const auto& [item, n] : k.in)

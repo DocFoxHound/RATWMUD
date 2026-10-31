@@ -680,7 +680,8 @@ std::string Game::withoutPeople(const std::string& manifest)
         else if (line.rfind("economy ", 0) == 0 || line.rfind("route ", 0) == 0 || line.rfind("resident ", 0) == 0 ||
                  line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0 ||
                  line.rfind("kin ", 0) == 0 || line.rfind("store ", 0) == 0 || line.rfind("nostore ", 0) == 0 ||
-                 line.rfind("loop ", 0) == 0 || line.rfind("countryoff ", 0) == 0 || line.rfind("subsidy ", 0) == 0)
+                 line.rfind("loop ", 0) == 0 || line.rfind("countryoff ", 0) == 0 || line.rfind("subsidy ", 0) == 0 ||
+                 line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0)
             continue;                              // (The store room's and the loop's records come with the people's: docs 67, 68.)
         else if (line.rfind("territory ", 0) == 0)
         {
@@ -931,6 +932,20 @@ void Game::applyDmActions(double dt)
             }
             else
                 outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+        }
+        else if (kind == "economy.sync")
+        {
+            // The economy's rules (doc 68, Progress, "Seasons and the DM's rules"): the world's live.economy read again
+            // after the DM or Atlas changed it, and applied at once (the loop, the store room, wages, the seasons...).
+            World candidate;
+            std::string problem;
+            if (loadWithLivePeople(candidate, problem))
+            {
+                world_.society().adoptEconomy(candidate.society().authored().economy);
+                outcome = {true, "The economy's rules are read again and in force.", target};
+            }
+            else
+                outcome = {false, "The economy's rules could not be read: " + problem, target};
         }
         else if (kind == "voice.sync")
         {

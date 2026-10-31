@@ -187,6 +187,7 @@ void Society::configure(const AuthoredRoster& roster)
     authored_ = roster;
     forgetSpecs();
     buildPositions();
+    buildSeasons();
     reset(Roster::Authored);
 }
 const ResidentSpec* Society::unplaced(const std::string& id) const
@@ -550,6 +551,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     }
     if (roster_ == Roster::Authored)
     {
+        setYearDay(absoluteDay);                    // (The seasons in the Country's supply: doc 68, Progress.)
         // The city's loop (doc 68), each game hour as it turns: hours missed run once each, at most a day of them; the
         // first hour a society decides (a fresh world, a restore) is not run, so nothing is paid twice.
         if (!needsPaused())
@@ -1394,6 +1396,9 @@ std::int64_t Society::storeCost(const std::string& keeper, const std::string& it
     if (markup == 0)
         return 0;                                   // Free: the goods move, no money does.
     const std::int64_t scaled = catalogPrice(item) * std::int64_t(std::min(quantity, StoreDrawMost)) * markup;
+    // The season's price for a good of a season group (doc 68, Progress, "Seasons"): dearer out of season.
+    if (const double f = priceFactor(item); f != 1)
+        return std::max<std::int64_t>(1, std::int64_t(std::ceil(double(scaled) * f / 100. - 1e-9)));
     return std::max<std::int64_t>(1, (scaled + 99) / 100);
 }
 
@@ -1408,6 +1413,10 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         return {false, "Draw a whole quantity from 1 to " + std::to_string(StoreDrawMost) + "."};
     if (authored_.economy.countryOff.count(items::baseOf(item)))
         return {false, "The Country no longer supplies " + item + ": the city's own producers do."};
+    // The season's supply (doc 68, Progress, "Seasons"): so much of a group a day, shared by every shop.
+    if (const int left = countryLeft(item); quantity > left)
+        return {false, "The Country has " + (left ? "only " + std::to_string(left) : std::string("no more")) + " " +
+                           seasonGroup(item)->name + " to send today (the season)."};
     // Exactly what shift and create will check, before either: a draw is whole or nothing. Its cost is split between the
     // Country (the market that supplies the good) and the treasury (the gate toll, doc 68, 5); carriage on its weight goes
     // to the carters (doc 68, 6).
@@ -1459,6 +1468,11 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     if (subsidy > 0 && shift("treasury", carter, "", 0, subsidy, "carriage subsidy"))
         loopToday_.subsidy += subsidy;
     drawnToday_[till] += cost + carriage;
+    if (const auto* group = seasonGroup(item))
+    {
+        seasonDrawn_[group->id] += quantity;
+        loopToday_.groups[group->id].drawn += quantity;
+    }
     loopToday_.drawn += cost;
     loopToday_.toll += toll;
     loopToday_.carriage += carriage + subsidy;

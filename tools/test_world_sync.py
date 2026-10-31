@@ -698,6 +698,32 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
                     process.kill()
                     process.communicate()
 
+    def test_the_economys_rules_reach_the_running_server(self):
+        # Doc 68, Progress, "Seasons and the DM's rules": a change of the economy's rules (here the seasons, written as
+        # the studio writes them) queues economy.sync, which the running server applies at once.
+        import studio
+        with W.connect(self.dev, 'editor') as editor:
+            world_build.build(editor, 'test')
+        server = self.start(self.dev)
+        try:
+            for line in server.stdout:
+                if 'listening on port' in line:
+                    break
+            economy = studio.Economy()
+            result = economy.set_seasons(self.dev, {'set': {'grain': {'normal': 40}}}, 'Ada')
+            self.assertTrue(result['changed'], result)
+            action = economy.queue_sync(self.dev, 'Ada')
+            for _ in range(60):
+                with W.connect(self.dev, 'dm') as dm:
+                    status, said = dm.execute('SELECT status, result FROM dm.actions WHERE id = %s', (action,)).fetchone()
+                if status != 'queued':
+                    break
+                time.sleep(.5)
+            self.assertEqual((status, said), ('applied', 'The economy\'s rules are read again and in force.'))
+        finally:
+            server.kill()
+            server.communicate()
+
     def test_the_server_closes_for_maintenance_and_waits_for_it_to_end(self):
         with W.connect(self.dev, 'editor') as editor:
             world_build.build(editor, 'test')
