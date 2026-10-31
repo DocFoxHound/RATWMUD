@@ -1713,6 +1713,60 @@ void theDevConsole()
     expect(!wire::entity(saved->second, 0).has("dungeonMaster"), "but never shown to others");
 }
 
+// The store room by hand (Docs/Design/67-ridgemere2-city.md, 6): /store, for a dev world's Dungeon Masters only, lists a
+// keeper's goods and draws them into its till.
+void theStoreRoomConsole()
+{
+    namespace fs = std::filesystem;
+    const fs::path from = RATW_SOURCE_DIR "/Data/Worlds/Greyfen";
+    const fs::path dir = fs::temp_directory_path() / ("ratw-store-" + std::to_string(::getpid()));
+    fs::remove_all(dir);
+    fs::create_directories(dir / "cells");
+    for (const auto& f : fs::directory_iterator(from / "cells"))
+        fs::copy_file(f.path(), dir / "cells" / f.path().filename());
+    fs::copy_file(from / "world.ratw", dir / "world.ratw");
+    for (const std::string kind : {"", "dev"})
+    {
+        game::Options o;
+        o.tiesOptional = true;
+        o.devIdentity = true;
+        o.worldFile = (dir / "world.ratw").string();
+        o.worldKind = kind;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "Greyfen starts: " + problem);
+        Client ada;
+        ada.id = 3;
+        g.connect(&ada);
+        g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+        run(g, ada, .2);
+        g.world().entity(ada.entityId)->dungeonMaster = true;
+        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann"}}));
+        const auto* reply = ada.last("devResult");
+        if (kind.empty())
+        {
+            expect(reply && !reply->boolean("ok") && reply->string("text").find("dev worlds only") != std::string::npos,
+                   "/store is refused on a world that isn't a dev world: " + (reply ? reply->string("text") : ""));
+            continue;
+        }
+        expect(reply && reply->boolean("ok") && reply->string("text").find("iron_bar (making)") != std::string::npos &&
+                   reply->string("text").find("fund:store") != std::string::npos,
+               "/store brann lists the smith's goods and the fund: " + (reply ? reply->string("text") : ""));
+        const auto till = g.world().society().tillOf("brann");
+        const auto cash = g.world().society().cash(till);
+        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar 2"}}));
+        reply = ada.last("devResult");
+        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::StoreFund) == 2 * Society::catalogPrice("iron_bar") &&
+                   g.world().society().cash(till) == cash - 2 * Society::catalogPrice("iron_bar"),
+               "/store brann iron_bar 2 draws them: " + (reply ? reply->string("text") : ""));
+        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann flour 1"}}));
+        expect(!ada.last("devResult")->boolean("ok"), "not what the smithy doesn't use");
+        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar"}}));
+        expect(!ada.last("devResult")->boolean("ok"), "a draw needs its count");
+    }
+    fs::remove_all(dir);
+}
+
 // Restday's sermon (Docs/Design/42-money-in-circulation.md, Phase 6): in Greyfen with Maple keeping a chapel in the Long
 // House, a player in the chapel on Restday morning hears this week's sermon from her, a line at a time.
 void aSermonOnRestday()
@@ -1996,6 +2050,7 @@ int main()
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
         aSermonOnRestday();
+        theStoreRoomConsole();
         huntsTogether();
         worksTogether();
     }
