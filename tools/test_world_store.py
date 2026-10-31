@@ -222,7 +222,7 @@ class StoreTests(unittest.TestCase):
                         'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS})
+        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS})
         self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
         lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
         self.assertIn('store off 120 resale on 60 rule on', lines)
@@ -271,6 +271,35 @@ class StoreTests(unittest.TestCase):
         self.assertFalse(any(l.startswith(('loop ', 'countryoff ', 'subsidy ')) for l in lines), 'at the defaults: no loop records')
         for bad in ({'gateToll': 91}, {'carriage': -1}, {'needsPaused': 'no'}, {'countryOff': ['fish', 'fish']},
                     {'subsidies': {'roads': 10}}, {'subsidies': {'carriage': 101}}, {'wageKeeper': 1001}):
+            with self.assertRaises(E.ValidationError, msg=str(bad)):
+                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+
+    def test_seasons_and_comforts_round_trip(self):
+        # Doc 68, Progress, "Seasons and the DM's rules" (migration 0057): the seasons and the comforts in live.economy
+        # and in the export's records ("comforts", "season" after the loop's); back at country.json's, no records.
+        p = greyfen()
+        grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
+        p['economy'] = {**p['economy'], 'comfortsAbove': 40, 'comfortsShare': None, 'seasons': {'grain': grain}}
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        wanted = ['comforts 40 -', 'season "grain" supply 50 100 150 40 price 120 100 80 130 shelf 100 100 100 100 normal 90']
+        at = lines.index(wanted[0])
+        self.assertEqual(lines[at:at + 2], wanted)
+        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+        self.assertEqual(manifest[manifest.index(wanted[0]):manifest.index(wanted[0]) + 2], wanted, 'the database writes the same')
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.SEASON_DEFAULTS)}
+        S.save_world(self.conn, loaded, revision)
+        again, _ = S.load_world(self.conn, 'greyfen')
+        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
+        self.assertFalse(any(l.startswith(('comforts ', 'season ')) for l in lines), 'as country.json has them: no records')
+        for bad in ({'comfortsAbove': -1}, {'comfortsShare': 101}, {'seasons': {'grain': {**grain, 'supply': [1, 2, 3]}}},
+                    {'seasons': {'grain': {**grain, 'price': [9, 100, 100, 100]}}}, {'seasons': {'Grain!': grain}},
+                    {'seasons': {'grain': {**grain, 'colour': 1}}}, {'seasons': []}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
 
@@ -326,7 +355,7 @@ class WithoutMigration55Tests(unittest.TestCase):
         source = greyfen()
         S.save_world(self.conn, source, None, create=True)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS}, 'the defaults, read')
+        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS}, 'the defaults, read')
         roster = R.load()
         before, after = E.export_files(source, roster), E.export_files(loaded, roster)
         del before['atlas.json'], after['atlas.json']
@@ -380,6 +409,47 @@ class WithoutMigration56Tests(unittest.TestCase):
         self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'storeRule': True}}, revision), revision + 1)
         for change in ({'gateToll': 10}, {'countryOff': ['fish']}, {'subsidies': {'carriage': 0}}):
             with self.assertRaisesRegex(S.StoreError, '0056'):
+                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration57Tests(unittest.TestCase):
+    """A world with 0056 but not 0057 loads and saves as before, its loop's settings too, reading country.json's seasons
+    and comforts; a season or comforts setting is refused, naming 0057."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+        with W.connect('dev', 'owner', dbname=cls.name) as owner:
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0057'])
+        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
+        S.save_roster(cls.conn, R.load())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
+
+    def test_loads_and_saves_and_refuses_a_season_setting(self):
+        self.assertTrue(S.loop_supported(self.conn))
+        self.assertFalse(S.seasons_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.LOOP_TABLES)
+        source = greyfen()
+        S.save_world(self.conn, source, None, create=True)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.LOOP_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'gateToll': 12}}, revision), revision + 1)
+        grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
+        for change in ({'comfortsAbove': 30}, {'comfortsShare': 5}, {'seasons': {'grain': grain}}):
+            with self.assertRaisesRegex(S.StoreError, '0057'):
                 S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
 
 

@@ -4,6 +4,7 @@ import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
+import type {ComfortsBody, EconomyChange, EconomyControls, GoodsBody, LoopSettings, SeasonsBody, StoreSwitches} from '../lib/economy';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -365,6 +366,17 @@ export const dmApi = {
     releases: (world?: Target) => call<{world: Target; releases: Release[]}>(`api/dm/releases${world ? `?world=${encodeURIComponent(world)}` : ''}`),
     rollback: (world: Target, number: number, password: string, note: string) =>
         call<{release: number; summary: Release['summary']}>('api/dm/rollback', {world, number, password, note}),
+    /** The economy's rules on the DM's world (Docs/Design/68, 9 and Progress, "Seasons and the DM's rules"): the store
+     *  room's switches, the loop, the Country's goods, the seasons and the comforts; each change audited and sent to the
+     *  world's running server (economy.sync). */
+    economy: {
+        read: (world: Target) => call<EconomyControls>(`api/dm/economy?world=${encodeURIComponent(world)}`),
+        setStore: (world: Target, changes: Partial<StoreSwitches>) => call<EconomyChange>('api/dm/economy/store', {world, ...changes}),
+        setLoop: (world: Target, changes: Partial<LoopSettings>) => call<EconomyChange>('api/dm/economy/loop', {world, ...changes}),
+        setGoods: (world: Target, body: GoodsBody) => call<EconomyChange>('api/dm/economy/goods', {world, ...body}),
+        setSeasons: (world: Target, body: SeasonsBody) => call<EconomyChange>('api/dm/economy/seasons', {world, ...body}),
+        setComforts: (world: Target, body: ComfortsBody) => call<EconomyChange>('api/dm/economy/comforts', {world, ...body}),
+    },
 };
 
 /** What the studio's top bar shows (doc 66, 3). Atlas is for dm and admin accounts (`available`); the DM shows the live

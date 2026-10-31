@@ -19,11 +19,71 @@ export interface LoopSettings {
 export interface BasketGood { item: string; name: string; share: number; percent: number; price: number; makers: string[] }
 /** A good some business here draws, and whether the Country supplies it (off: its real producers'). */
 export interface CountryGood { item: string; name: string; businesses: number; supplied: boolean }
-export interface EconomyControls extends StoreSwitches {
+export interface EconomyControls extends StoreSwitches, SeasonControls {
     world: string; supported: boolean; problem: string; note: string; takesEffect: string; businesses: StoreBusiness[];
     worldInfo?: {key: string; name: string; kind: string; upstream?: string};
     loop: LoopSettings; countryOff: string[]; loopSupported: boolean; loopProblem: string; ruleWarning: string;
     market: {id: string; name: string; people: string}; basket: BasketGood[]; goods: CountryGood[];
+}
+
+// The seasons in the Country's supply and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md,
+// Progress, "Seasons and the DM's rules"; migration 0057): country.json's season groups with this world's changes.
+/** A group's numbers: percent of normal by season (Spring, Summer, Autumn, Winter), and its normal pieces a day. */
+export interface SeasonValues { supply: number[]; price: number[]; shelf: number[]; normal: number }
+/** A season group as the world has it (`changed`: away from country.json's, which `file` holds). */
+export interface SeasonGroup extends SeasonValues { id: string; name: string; about: string; goods: string[]; changed: boolean; file: SeasonValues }
+/** The comforts (null: country.json's, `fileAbove` pennies a head and `fileShare` percent). */
+export interface Comforts { comfortsAbove: number | null; comfortsShare: number | null; fileAbove: number; fileShare: number }
+export interface SeasonControls {
+    seasonsSupported: boolean; seasonsProblem: string; seasonNames: string[]; seasons: SeasonGroup[]; comforts: Comforts;
+}
+export type SeasonsBody = {set: Record<string, Partial<SeasonValues> | null>};
+export type ComfortsBody = Partial<Pick<Comforts, 'comfortsAbove' | 'comfortsShare'>>;
+export type SeasonRow = 'supply' | 'price' | 'shelf';
+/** The three rows of a group, their limits and what the page calls them. */
+export const SEASON_ROWS: {key: SeasonRow; label: string; low: number; high: number; hint: string}[] = [
+    {key: 'supply', label: 'Supply', low: 0, high: 1000, hint: '% of its normal pieces a day the Country can send (0: none)'},
+    {key: 'price', label: 'Price', low: 10, high: 1000, hint: '% of the catalogue price: store draws and the shops\' prices to residents'},
+    {key: 'shelf', label: 'Shelf', low: 0, high: 1000, hint: '% of their usual shelf the shops keep of these goods (stocking up)'},
+];
+/** Four percents typed in ("50 100 150 40", "50/100/150/40", "50, 100, ..."), each within low..high, or null. */
+export function percentsOf(text: string, low: number, high: number): number[] | null {
+    const parts = text.trim().split(/[\s,/]+/).filter(Boolean).map(p => p.replace(/%$/, ''));
+    if (parts.length !== 4) return null;
+    const n = parts.map(Number);
+    return n.every(v => Number.isInteger(v) && v >= low && v <= high) ? n : null;
+}
+export const percentsText = (values: number[]) => values.join(' / ');
+/** Core's Society::seasonal: a group's percent on a day of the year (0 at Spring's first day), each season's value at
+ *  its middle day (46, 138, 229.5, 320) and a straight line between, across the year's turn too; as a fraction. */
+export function seasonal(values: number[], yearDay: number): number {
+    const middle = [46, 138, 229.5, 320];
+    const d = ((yearDay % 365) + 365) % 365;
+    let a = 3;
+    for (let i = 0; i < 4; ++i) if (d >= middle[i]) a = i;
+    const b = (a + 1) % 4;
+    const from = middle[a], to = b === 0 ? middle[0] + 365 : middle[b];
+    const at = d < from ? d + 365 : d;
+    const t = Math.min(1, Math.max(0, (at - from) / (to - from)));
+    return (values[a] + (values[b] - values[a]) * t) / 100;
+}
+/** The body that changes one row (or the normal) of a group; null when it is what the group has already. */
+export function seasonChange(group: SeasonGroup, key: SeasonRow | 'normal', value: number[] | number): SeasonsBody | null {
+    const now = group[key];
+    const same = Array.isArray(value) ? Array.isArray(now) && now.every((v, i) => v === value[i]) : now === value;
+    return same ? null : {set: {[group.id]: {[key]: value}}};
+}
+/** How the comforts read: the world's own, or country.json's. */
+export function comfortsText(c: Comforts): string {
+    const above = c.comfortsAbove ?? c.fileAbove, share = c.comfortsShare ?? c.fileShare;
+    const whose = c.comfortsAbove === null && c.comfortsShare === null ? ' (country.json\'s)' : '';
+    return `A household holding more than ${above}p a head spends ${share}% of what is over it a day on comforts${whose}.`;
+}
+/** A comforts value typed in: "" (back to country.json's) is null, else a whole number within 0..max; undefined if neither. */
+export function comfortOf(text: string, max: number): number | null | undefined {
+    if (text.trim() === '') return null;
+    const n = wholeOf(text, max);
+    return n === null ? undefined : n;
 }
 export type GoodsBody = {set: Record<string, boolean>} | {all: boolean};
 

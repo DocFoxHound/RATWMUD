@@ -106,7 +106,17 @@ const loopSettingsOk = e => ['needsPaused', 'country'].every(k => !own(e, k) || 
     && (!own(e, 'countryOff') || (Array.isArray(e.countryOff) && new Set(e.countryOff).size === e.countryOff.length
         && e.countryOff.every(g => typeof g === 'string' && /^[a-z0-9_]{1,48}$/.test(g))))
     && (!own(e, 'subsidies') || (object(e.subsidies) && Object.entries(e.subsidies).every(([k, v]) => SUBSIDISED.includes(k) && integer(v, 0, 100))));
-const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS)];
+// The seasons in the Country's supply and the comforts (doc 68, Progress, "Seasons and the DM's rules"; migration 0057):
+// optional economy keys, as tools/map_editor.py's SEASON_DEFAULTS (null comforts: country.json's; seasons: the groups
+// this world has changed, {group: {supply, price, shelf: four percents, normal: pieces a day}}).
+export const SEASON_DEFAULTS = {comfortsAbove: null, comfortsShare: null, seasons: {}};
+const four = (v, low, high) => Array.isArray(v) && v.length === 4 && v.every(x => integer(x, low, high));
+const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === null || integer(e.comfortsAbove, 0, 1000000))
+    && (!own(e, 'comfortsShare') || e.comfortsShare === null || integer(e.comfortsShare, 0, 100))
+    && (!own(e, 'seasons') || (object(e.seasons) && Object.entries(e.seasons).every(([g, s]) => /^[a-z0-9_]{1,40}$/.test(g)
+        && object(s) && Object.keys(s).length === 4 && four(s.supply, 0, 1000) && four(s.price, 10, 1000) && four(s.shelf, 0, 1000)
+        && integer(s.normal, 0, 1000000))));
+const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS), ...Object.keys(SEASON_DEFAULTS)];
 const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
     && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
     && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
@@ -311,6 +321,8 @@ function checkShape(value) {
             + 'and each business {internalStore: true or false}.');
         check(!object(e) || loopSettingsOk(e), "The city's loop: its switches true or false, its numbers whole and within their limits "
             + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), countryOff distinct item ids, subsidies {carriage: 0-100}.');
+        check(!object(e) || seasonSettingsOk(e), 'The seasons and comforts: comfortsAbove 0-1000000 and comfortsShare 0-100 (or null '
+            + "for country.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');

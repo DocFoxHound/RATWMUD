@@ -2,13 +2,17 @@
 // a business's craft inputs and resale goods without end at the catalogue's price times a markup, on Atlas's world.
 // The world's switches (making, vendors' restocking, the restocking rule) and markups, and each business's own switch:
 // on, off, or every business shown at once. Per world: Update from live and Import from dev don't carry the world's
-// switches (each world's own lever), only the businesses'. The game reads them when a server next starts on the world.
+// switches (each world's own lever), only the businesses'. A change reaches a game server running the world at once
+// (economy.sync), and any server started on it later; a business's own switch when a server next starts. The seasons and
+// the comforts (doc 68, Progress) too: the DM's Economy tab has the same settings.
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {api} from '../lib/api';
 import type {Me} from '../dm/api';
-import {ANY, bulk, choices, filtered, goodsText, markupOf, percent, switchText, wouldChange, type EconomyControls as Controls,
-    type Filter, type GoodsBody, type LoopSettings, type StoreSwitches} from '../lib/economy';
+import {ANY, bulk, choices, filtered, goodsText, markupOf, percent, switchText, wouldChange, type ComfortsBody,
+    type EconomyControls as Controls, type Filter, type GoodsBody, type LoopSettings, type SeasonsBody,
+    type StoreSwitches} from '../lib/economy';
 import {CountryPanel} from './CountryPanel';
+import {SeasonsPanel} from './SeasonsPanel';
 
 const KEPT = 'ratw.economy.filter';
 const savedFilter = (): Filter => {
@@ -47,6 +51,8 @@ export function EconomyControls({me}: {me: Me}) {
     const setStore = (changes: Partial<StoreSwitches>) => change(() => api.economy.setStore(changes));
     const setLoop = (changes: Partial<LoopSettings>) => void change(() => api.economy.setLoop(changes));
     const setGoods = (body: GoodsBody) => void change(() => api.economy.setGoods(body));
+    const setSeasons = (body: SeasonsBody) => void change(() => api.economy.setSeasons(body));
+    const setComforts = (body: ComfortsBody) => void change(() => api.economy.setComforts(body));
     const setOne = (npc: string, on: boolean) => change(() => api.economy.setBusinesses({set: {[npc]: on}}));
     const setShown = (on: boolean) => {
         const n = wouldChange(shown, on);
@@ -102,6 +108,7 @@ export function EconomyControls({me}: {me: Me}) {
                     : 'With the rule off, no NPC uses the store room: only the Dev Console\'s /store does.'} {data.takesEffect}</p>
             </section>
             <CountryPanel data={data} locked={!canChange || busy} setLoop={setLoop} setGoods={setGoods} />
+            <SeasonsPanel data={data} locked={!canChange || busy} setSeasons={setSeasons} setComforts={setComforts} />
             <h3>The store room, business by business</h3>
             <div className="economy-filters">
                 <label>Business <select value={filter.business} onChange={e => setFilter(f => ({...f, business: e.target.value}))}>

@@ -306,7 +306,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false, store = false, loop = false;
+    bool economy = false, herbs = false, store = false, loop = false, comforts = false;
     std::set<std::string> noStore;                 // Businesses kept out of the store room (nostore records), by founder.
     std::set<std::string> subsidised;              // Services given a subsidy record (doc 68, 5).
     std::vector<std::pair<std::string, Spot>> places;
@@ -563,6 +563,54 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             if (!fields || !end(fields) || !known || share < 0 || share > 100 || !subsidised.insert(service).second)
                 return reject("Invalid or duplicate subsidy record.");
             roster.economy.subsidies[service] = share;
+        }
+        else if (command == "comforts")
+        {
+            // The residents' comforts (doc 68, 3; migration 0057), once: comforts ABOVE SHARE, either "-" for
+            // country.json's: pennies a head held before a household buys them, and the percent of the excess a day.
+            std::string above, share;
+            fields >> above >> share;
+            const auto read = [](const std::string& word, int high, int& into) {
+                if (word == "-")
+                    return true;
+                if (word.empty() || word.size() > 7 || !std::all_of(word.begin(), word.end(), [](unsigned char c) { return std::isdigit(c); }))
+                    return false;
+                into = std::stoi(word);
+                return into <= high;
+            };
+            auto& e = roster.economy;
+            if (comforts || !end(fields) || !read(above, 1000000, e.comfortsAbove) || !read(share, 100, e.comfortsShare))
+                return reject("Invalid or duplicate comforts record.");
+            comforts = true;
+        }
+        else if (command == "season")
+        {
+            // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group:
+            // season "<group>" supply SP SU AU WI price SP SU AU WI shelf SP SU AU WI normal N (percent by season; N
+            // pieces a day). A group country.json no longer has is kept and does nothing.
+            std::string group, w[4];
+            EconomySpec::Season season;
+            if (!quoted(fields, group) || !identifier(group, 40))
+                return reject("Malformed season record.");
+            fields >> w[0];
+            for (auto& v : season.supply)
+                fields >> v;
+            fields >> w[1];
+            for (auto& v : season.price)
+                fields >> v;
+            fields >> w[2];
+            for (auto& v : season.shelf)
+                fields >> v;
+            fields >> w[3] >> season.normal;
+            const auto within = [](const std::array<int, 4>& a, int low, int high) {
+                return std::all_of(a.begin(), a.end(), [&](int v) { return v >= low && v <= high; });
+            };
+            if (!fields || !end(fields) || w[0] != "supply" || w[1] != "price" || w[2] != "shelf" || w[3] != "normal" ||
+                !within(season.supply, 0, 1000) || !within(season.price, 10, 1000) || !within(season.shelf, 0, 1000) ||
+                season.normal < 0 || season.normal > 1000000)
+                return reject("Invalid season record.");
+            if (!roster.economy.seasons.emplace(group, season).second)
+                return reject("Duplicate season record: " + group);
         }
         else if (command == "countryoff")
         {

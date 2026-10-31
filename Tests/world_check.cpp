@@ -2,7 +2,7 @@
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
-//                                                       [--threads N] [--economy FILE] [--sample] [--no-profile] [--no-births]
+//                                                       [--threads N] [--economy FILE] [--day N] [--sample] [--no-profile] [--no-births]
 //                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
@@ -20,10 +20,13 @@
 // held residents, the road tally, the crowds, each tick's time): --sample keeps them. --no-profile turns World::tick's
 // clocks off (World::setProfiling). Each game day's wall time is printed as it ends. Births and newcomers are made as the
 // game server makes them for a world from files (World::makeRequestedResidents, every tick); --no-births only asks for
-// them, as before. Deaths are the world's own (old age, World::tendOldAge), the same here as on the server.
+// them, as before. Deaths are the world's own (old age, World::tendOldAge), the same here as on the server. --day N starts
+// the run on day N of the year (1-365: Spring 1-92, Summer 93-184, Autumn 185-275, Winter 276-365), for the seasons in
+// the Country's supply; the economy line names the season and the day, and each season group's supply and price.
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
+#include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
@@ -38,6 +41,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <tuple>
 #include <sstream>
@@ -357,7 +361,31 @@ struct EconomyWatch
                 who += (who.empty() ? "" : "; ") + id + " (" + (job ? job->title : std::string("no post")) + ", " +
                        std::to_string(society.cash(id)) + "p, home " + life.homeCell + ")";
             }
+        // The seasons (doc 68, Progress, "Seasons and the DM's rules"): where in the year, and by season group the
+        // Country's supply and price factors, its cap today, the pieces drawn, sold to residents, on the shops' shelves
+        // now, and the mean price residents paid a piece.
+        std::map<std::string, std::int64_t> onShelves;
+        for (const auto& [id, a] : society.state().accounts)
+            if (id.rfind("till:", 0) == 0)
+                for (const auto& [item, n] : a.stock)
+                    if (const auto* g = society.seasonGroup(item); g && n > 0)
+                        onShelves[g->id] += n;
+        const auto date = calendar::calendarAt(server.calendarDays());
+        std::ostringstream seasons;
+        seasons << ", \"season\": \"" << calendar::seasonName(date.season) << "\", \"year_day\": " << date.dayOfYear;
         const auto& d = society.loopToday();
+        for (const auto& g : society.seasonTable())
+        {
+            const auto found = d.groups.find(g.id);
+            const auto day = found == d.groups.end() ? Society::LoopDay::Group{} : found->second;
+            const int cap = society.groupCap(g);
+            seasons << ", \"" << g.id << "_supply\": " << society.supplyFactor(g) << ", \"" << g.id << "_price\": "
+                    << Society::seasonal(g.price, society.yearDay()) << ", \"" << g.id << "_shelf\": "
+                    << Society::seasonal(g.shelf, society.yearDay()) << ", \"" << g.id << "_cap\": "
+                    << (cap == std::numeric_limits<int>::max() ? -1 : cap) << ", \"" << g.id << "_drawn\": " << day.drawn
+                    << ", \"" << g.id << "_sold\": " << day.sold << ", \"" << g.id << "_stock\": " << onShelves[g.id]
+                    << ", \"" << g.id << "_paid\": " << (day.sold ? double(day.spent) / day.sold : 0);
+        }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
             << ", \"households_fed\": " << fedHouseholds << ", \"shops\": " << shops << ", \"shops_stocked\": " << shopsStocked
@@ -372,7 +400,7 @@ struct EconomyWatch
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
             << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"births\": " << born
-            << ", \"newcomers\": " << newcomers << ", \"deaths\": " << deadNow - deadAtLine << ", \"hungry_who\": \""
+            << ", \"newcomers\": " << newcomers << ", \"deaths\": " << deadNow - deadAtLine << seasons.str() << ", \"hungry_who\": \""
             << who << "\"}" << std::endl;
         hours = hungrySum = hungryMost = 0;
         born = newcomers = 0;
@@ -397,6 +425,7 @@ int main(int argc, char** argv)
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     unsigned threads = 8;                           // --threads N.
     std::string economyFile;                        // --economy FILE: the city's loop, a JSON line a game day (doc 68, 10).
+    int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -432,13 +461,18 @@ int main(int argc, char** argv)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else if (flag == "--economy" && i + 1 < argc)
             economyFile = argv[++i];
+        else if (flag == "--day" && i + 1 < argc)
+        {
+            startDay = std::atoi(argv[++i]);
+            usage = usage || startDay < 1 || startDay > calendar::DaysPerYear;
+        }
         else
             usage = true;
     }
     if (usage)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic]"
-                     " [--events FILE] [--threads N] [--economy FILE] [--sample] [--no-profile] [--no-births] [--fast]"
+                     " [--events FILE] [--threads N] [--economy FILE] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
                      " [--unseen-step N] [--straight] [--coarse-ticks]]\n";
         return 2;
     }
@@ -564,6 +598,15 @@ int main(int argc, char** argv)
                   << (coarse ? ", 0.5 s ticks while nobody is onstage" : "") << "\n";
     const double from = std::atof(argv[3]), to = std::atof(argv[4]);
     server.setTimeOfDay(from);
+    if (startDay > 0)
+    {
+        // --day N: the run starts on that day of the year (a season's seasons: doc 68, Progress). Nobody ages: an
+        // entity's first birthday is reckoned from the day it is first seen.
+        server.advanceCalendar(double(startDay - 1) - std::floor(server.calendarDays()));
+        const auto date = calendar::calendarAt(server.calendarDays());
+        std::cout << "  starting on day " << date.dayOfYear << " of the year (" << calendar::seasonName(date.season) << ", day "
+                  << date.dayOfSeason << ")\n";
+    }
     // Players walking about, each of whose views is built five times a second as the server does for each client:
     // the first at the spawn, the others beside residents taken evenly through the population.
     std::vector<std::string> players;

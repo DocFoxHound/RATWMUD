@@ -1,7 +1,49 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {basketRows, bulk, choices, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent, switchText, wholeOf, wouldChange,
-    type BasketGood, type CountryGood, type StoreBusiness} from './economy.ts';
+import {basketRows, bulk, choices, comfortOf, comfortsText, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent,
+    percentsOf, percentsText, seasonal, seasonChange, switchText, wholeOf, wouldChange, type BasketGood, type CountryGood,
+    type SeasonGroup, type StoreBusiness} from './economy.ts';
+
+// The seasons (doc 68, Progress, "Seasons and the DM's rules"): what the DM's and Atlas's panels read and send.
+const grain: SeasonGroup = {id: 'grain', name: 'grain and flour', about: '', goods: ['flour', 'bread'], changed: false,
+    supply: [85, 115, 140, 75], price: [110, 95, 85, 115], shelf: [100, 100, 100, 100], normal: 150,
+    file: {supply: [85, 115, 140, 75], price: [110, 95, 85, 115], shelf: [100, 100, 100, 100], normal: 150}};
+
+test('four percents are typed in any of the usual ways, within their limits', () => {
+    assert.deepEqual(percentsOf('50 100 150 40', 0, 1000), [50, 100, 150, 40]);
+    assert.deepEqual(percentsOf('50/100/150/40', 0, 1000), [50, 100, 150, 40]);
+    assert.deepEqual(percentsOf(' 50%, 100%, 150%, 40% ', 0, 1000), [50, 100, 150, 40]);
+    assert.equal(percentsOf('50 100 150', 0, 1000), null, 'four, one a season');
+    assert.equal(percentsOf('5 100 100 100', 10, 1000), null, 'a price under 10%');
+    assert.equal(percentsOf('50 100 150 4.5', 0, 1000), null);
+    assert.equal(percentsText([50, 100, 150, 40]), '50 / 100 / 150 / 40');
+});
+
+test('a group\'s factor by day, as the game reckons it (Society::seasonal)', () => {
+    const v = [10, 20, 30, 40];
+    assert.equal(seasonal(v, 46), .1);
+    assert.equal(seasonal(v, 138), .2);
+    assert.equal(seasonal(v, 229.5), .3);
+    assert.equal(seasonal(v, 320), .4);
+    assert.ok(Math.abs(seasonal(v, 92) - .15) < 1e-9, 'halfway between two middles');
+    assert.ok(Math.abs(seasonal(v, 0) - (.4 + (.1 - .4) * 45 / 91)) < 1e-9, 'winter runs on to spring across the year\'s turn');
+});
+
+test('a change is sent only when it changes something', () => {
+    assert.equal(seasonChange(grain, 'supply', [85, 115, 140, 75]), null);
+    assert.deepEqual(seasonChange(grain, 'supply', [85, 115, 140, 50]), {set: {grain: {supply: [85, 115, 140, 50]}}});
+    assert.equal(seasonChange(grain, 'normal', 150), null);
+    assert.deepEqual(seasonChange(grain, 'normal', 0), {set: {grain: {normal: 0}}});
+});
+
+test('the comforts: the world\'s own, or country.json\'s', () => {
+    const file = {comfortsAbove: null, comfortsShare: null, fileAbove: 60, fileShare: 10};
+    assert.match(comfortsText(file), /more than 60p a head spends 10% .* \(country\.json's\)/);
+    assert.match(comfortsText({...file, comfortsAbove: 40}), /more than 40p a head spends 10%/);
+    assert.equal(comfortOf('', 100), null, 'empty: back to country.json\'s');
+    assert.equal(comfortOf('25', 100), 25);
+    assert.equal(comfortOf('101', 100), undefined);
+});
 
 const shop = (npc: string, business: string | null, district: string, over: Partial<StoreBusiness> = {}): StoreBusiness => ({
     npc, name: npc, label: `${business} keeper`, business, district, interior: 'A shop', making: [], resale: [], internalStore: true,

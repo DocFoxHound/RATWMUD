@@ -662,6 +662,17 @@ class SyncFlowTests(ScratchWorlds, unittest.TestCase):
                 su.execute(f'DROP DATABASE IF EXISTS ratw_{other} WITH (FORCE)')
 
 
+def unmigrate_seasons(key):
+    """Takes migration 0057 back off a throwaway world (0056 kept): as a world is until it is migrated."""
+    sql = (W.MIGRATIONS / '0056_country.sql').read_text(encoding='utf-8')
+    manifest = sql[sql.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute('ALTER TABLE live.economy DROP COLUMN comforts_above, DROP COLUMN comforts_share, DROP COLUMN seasons')
+            conn.execute(manifest)
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0057'")
+
+
 class StandInEconomy:
     """Atlas's Economy controls (studio.Economy): every call recorded and answered."""
 
@@ -687,6 +698,18 @@ class StandInEconomy:
     def set_goods(self, key, data, editor):
         self.calls.append(('set_goods', key, data, editor))
         return {'changed': True, 'detail': 'The Country supplies 0 of 1 good set.'}
+
+    def set_seasons(self, key, data, editor):
+        self.calls.append(('set_seasons', key, data, editor))
+        return {'changed': True, 'detail': 'The seasons: grain supply 50/100/150/40.'}
+
+    def set_comforts(self, key, data, editor):
+        self.calls.append(('set_comforts', key, data, editor))
+        return {'changed': True, 'detail': 'The comforts: comfortsAbove 40.'}
+
+    def queue_sync(self, key, who):
+        self.calls.append(('queue_sync', key, who))
+        return 7
 
 
 class EconomyRouteTests(unittest.TestCase):
@@ -739,6 +762,32 @@ class EconomyRouteTests(unittest.TestCase):
         self.assertIn(('set_loop', live, {'subsidies': {'carriage': 10}}, 'dm-user'), self.economy.calls)
         self.assertEqual(self.call('POST', '/api/dm/economy/loop', {'world': 'nowhere', 'gateToll': 1}, token='dm-token')[0], 400,
                          'a registered world (the DM works on any, its own by default)')
+
+    def test_the_dms_rules_reach_the_running_server(self):
+        # Doc 68, Progress, "Seasons and the DM's rules": every setting from the DM, on the DM's world, audited, each
+        # change queued as economy.sync for its running server; Atlas's changes too.
+        live = W.live_world()
+        bodies = {'store': {'resaleMarkup': 60}, 'loop': {'gateToll': 25}, 'goods': {'set': {'fish': False}},
+                  'seasons': {'set': {'grain': {'supply': [50, 100, 150, 40]}}}, 'comforts': {'comfortsAbove': 40}}
+        for route, body in bodies.items():
+            self.assertEqual(self.call('POST', f'/api/dm/economy/{route}', body, token='viewer-token')[0], 403, route)
+            status, data = self.call('POST', f'/api/dm/economy/{route}', dict(body), token='dm-token')
+            self.assertEqual(status, 200, (route, data))
+            self.assertEqual(data['sync'], 7, 'queued for the running server')
+        named = {'store': 'set_store', 'loop': 'set_loop', 'goods': 'set_goods', 'seasons': 'set_seasons', 'comforts': 'set_comforts'}
+        for route, body in bodies.items():
+            self.assertIn((named[route], live, body, 'dm-user'), self.economy.calls, route)
+        self.assertEqual([c for c in self.economy.calls if c[0] == 'queue_sync'], [('queue_sync', live, 'dm-user')] * 5)
+        logged = [(world, action, target) for name, (who, world, action, target, _) in self.dm.calls if name == 'log']
+        self.assertEqual(logged, [(live, 'economy.store', 'store room'), (live, 'economy.loop', 'city loop'),
+                                  (live, 'economy.goods', 'the Country\'s goods'), (live, 'economy.seasons', 'grain'),
+                                  (live, 'economy.comforts', 'comforts')])
+        self.assertEqual(self.call('POST', '/api/dm/economy/businesses', {'set': {'x': False}}, token='dm-token')[0], 404,
+                         'a business\'s own switch stays Atlas\'s')
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': None}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('sync')), (200, 7), data)
+        self.assertIn(('queue_sync', 'dev-old', 'dm-user'), self.economy.calls, 'Atlas\'s edits reach a server running its world')
 
     def test_route_sets_are_apart(self):
         self.assertFalse(ST.ECONOMY_ROUTES & ST.SYNC_ROUTES)
@@ -847,6 +896,68 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(status, 200, data)
         self.assertIn('subsidy "carriage" 10', self.one(self.live, "SELECT live.people_manifest('greyfen')").split('\n'))
         self.assertIn('economy.loop', [r[0] for r in self.sql(self.live, 'SELECT action FROM dm.audit')])
+
+    def test_the_seasons_and_the_comforts(self):
+        # Doc 68, Progress: country.json's groups with the world's changes; what reaches the NPC records; economy.sync
+        # queued for a running server; back to country.json's; refusals.
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['seasonsSupported'])
+        groups = {g['id']: g for g in data['seasons']}
+        self.assertTrue({'grain', 'fruit', 'fish', 'meat', 'preserved'} <= set(groups), groups)
+        self.assertFalse(groups['grain']['changed'])
+        self.assertEqual(groups['grain']['supply'], groups['grain']['file']['supply'])
+        self.assertEqual(data['comforts']['comfortsAbove'], None)
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': {'supply': [50, 100, 150, 40], 'normal': 90}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        grain = next(g for g in data['seasons'] if g['id'] == 'grain')
+        self.assertEqual((grain['changed'], grain['supply'], grain['normal'], grain['price']),
+                         (True, [50, 100, 150, 40], 90, grain['file']['price']), 'the rest of the group as the file has it')
+        status, data = self.call('POST', '/api/atlas/economy/comforts', {'comfortsAbove': 40}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['comforts']['comfortsAbove'], data['comforts']['comfortsShare']), (200, 40, None), data)
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        price = ' '.join(map(str, grain['file']['price']))
+        self.assertIn(f'season "grain" supply 50 100 150 40 price {price} shelf 100 100 100 100 normal 90', lines)
+        self.assertIn('comforts 40 -', lines)
+        queued = self.sql(self.dev, "SELECT kind, target_id, requested_by FROM dm.actions WHERE kind = 'economy.sync'")
+        self.assertEqual(queued, [('economy.sync', 'economy', 'dm-user')] * 2, 'each change sent to the running server')
+        # The DM, on the same dev world (doc 66: the DM works on any world).
+        status, data = self.call('POST', '/api/dm/economy/seasons', {'world': self.dev, 'set': {'fish': {'price': [100, 120, 100, 70]}}},
+                                 token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertIn('economy.seasons', [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')])
+        # Back to country.json's: no record, no row of it kept.
+        status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': None, 'fish': None}}, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.one(self.dev, 'SELECT seasons FROM live.economy'), {})
+        self.call('POST', '/api/atlas/economy/comforts', {'comfortsAbove': None}, token='dm-token', headers=editor)
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertFalse([l for l in lines if l.startswith(('season ', 'comforts '))], lines)
+        for bad in ({'set': {'grain': {'supply': [50, 100, 150]}}}, {'set': {'grain': {'price': [5, 100, 100, 100]}}},
+                    {'set': {'nowhere': {'normal': 5}}}, {'set': {'grain': {'colour': 1}}}, {'grain': {}}):
+            self.assertEqual(self.call('POST', '/api/atlas/economy/seasons', bad, token='dm-token', headers=editor)[0], 400, bad)
+        self.assertEqual(self.call('POST', '/api/atlas/economy/comforts', {'comfortsShare': 101}, token='dm-token', headers=editor)[0], 400)
+
+    def test_a_world_without_migration_0057(self):
+        unmigrate_seasons(self.dev)
+        status, data = self.call('GET', '/api/atlas/economy', token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['loopSupported'])
+        self.assertFalse(data['seasonsSupported'])
+        self.assertIn('lacks migration 0057', data['seasonsProblem'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        for route, body in (('seasons', {'set': {'grain': {'normal': 5}}}), ('comforts', {'comfortsAbove': 30})):
+            status, data = self.call('POST', f'/api/atlas/economy/{route}', body, token='dm-token', headers=editor)
+            self.assertEqual(status, 409, data)
+            self.assertIn('0057', data['error'])
+            status, data = self.call('POST', f'/api/dm/economy/{route}', {'world': self.dev, **body}, token='dm-token')
+            self.assertEqual(status, 409, data)
+            self.assertIn('0057', data['error'])
+        status, data = self.call('POST', '/api/atlas/economy/loop', {'gateToll': 22}, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(data['loop']['gateToll'], 22, 'the loop\'s settings still change on a world with 0056')
 
     def test_a_world_without_migration_0055(self):
         from test_world_sync import unmigrate

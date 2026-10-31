@@ -106,6 +106,19 @@ test('the city loop\'s economy keys are optional, checked and kept (doc 68, 9)',
     assert.equal(p.economy.gateToll, 30, 'unchanged after a rejected edit');
 });
 
+test('the seasons\' and comforts\' economy keys are optional, checked and kept (doc 68, Progress; migration 0057)', () => {
+    const p = world();
+    const grain = {supply: [50, 100, 150, 40], price: [120, 100, 80, 130], shelf: [100, 100, 100, 100], normal: 90};
+    setEconomy(p, {comfortsAbove: 40, comfortsShare: null, seasons: {grain}});
+    assert.deepEqual(validate(p).errors, []);
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
+    for (const bad of [{comfortsAbove: -1}, {comfortsShare: 101}, {seasons: []}, {seasons: {grain: {...grain, supply: [1, 2, 3]}}},
+                       {seasons: {grain: {...grain, price: [5, 100, 100, 100]}}}, {seasons: {'Grain!': grain}},
+                       {seasons: {grain: {...grain, colour: 1}}}])
+        assert.throws(() => setEconomy(p, bad), /seasons|Economy requires/, JSON.stringify(bad));
+    assert.equal(p.economy.comfortsAbove, 40, 'unchanged after a rejected edit');
+});
+
 test('economy, herb patch and movePlace validate atomically', () => {
     const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
     setEconomy(p, {treasury: 500});
