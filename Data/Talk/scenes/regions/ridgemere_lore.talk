@@ -1,10 +1,10 @@
 # Ridgemere, more of its own: the four Houses and their colours, the Council of Houses in the leaking Rain Hall, the
-# Watch, the Sump and its stairs, the wharf and the Greatly Yard, the smokehouses and the Fish Hall, the Sound, the
+# Watch, the Sump and its stairs, the wharf and its shipwrights, the smokehouses and the Fish Hall, the Sound, the
 # terraces up to the Heights, and the rain that never stops.
 
 scene rg_rm_colours
 when topic=lore|smalltalk here.region=ridgemere
-a : Greatly blue, Grayrock grey, Fell green, Mossgrave brown. My pup learned them all today. | Saw two House liveries cross the street without a nod. | Greatly servants wear blue even to funerals.
+a : Greatly blue, Grayrock grey, Fell green, Timberland brown. My pup learned them all today. | Saw two House liveries cross the street without a nod. | Greatly servants wear blue even to funerals.
 b[noble] : The colours are older than the city walls. Wear them with care.
 b[servant] : Wear the wrong colour in the wrong street and you'll know it.
 b : Clever pup. | Feud's on again, then. | Blue suits them.
@@ -12,17 +12,17 @@ a : Cleverer than me. | When isn't it? | It does.
 
 scene rg_rm_grayrock_quarry
 when topic=lore|work here.region=ridgemere
-a : Grayrock's quarry face in the Rainward Hills came down after the rain. | Half the city's built from Grayrock stone. | They're cutting a new face at the quarry. You can hear the wedges from the North Gate.
+a : Greatly's quarry face in the Rainward Hills came down after the rain. | Half the city's built from Greatly stone. | They're cutting a new face at the quarry. You can hear the wedges from the North Gate.
 b[miner] : Wet stone splits wrong. They should wait. They never wait.
-b[noble] : House Grayrock built Ridgemere. The city should remember it.
+b[noble] : House Greatly built Ridgemere's walls. The city should remember it.
 b : Anyone under it? | And the other half's leaking. | All day and night.
 a : Two, they say. | Most of it. | All day.
 
 scene rg_rm_fell_timber
 when topic=lore|work here.region=ridgemere
-a : Fell's log rafts came down the Rainrun this morning. | The Fell Sawmill's working by lamplight now. | House Fell owns every cedar in the Rainwood.
-b[laborer] : I rafted for Fell one season. Lost two toes to the cold.
-b[crafter] : Fell timber's the best there is. Pricey, but straight.
+a : Timberland's log rafts came down the Rainrun this morning. | The Timberland Sawmill's working by lamplight now. | House Timberland owns every cedar in the Rainwood.
+b[laborer] : I rafted for Timberland one season. Lost two toes to the cold.
+b[crafter] : Timberland timber's the best there is. Pricey, but straight.
 b : Big ones? | They must have an order. | And charges for the shade.
 a : Big as towers. | The Greatly Yard's, I'd bet. | For the shade, yes.
 
@@ -36,9 +36,9 @@ a : The hottest. | Very proud. | Thicker.
 
 scene rg_rm_greatly_launch
 when topic=lore|smalltalk here.region=ridgemere
-a : The Greatly Yard's launching the big hull at high tide tomorrow. | The whole wharf turned out to watch the launch. | Greatly named their new ship after Lady Celestine. Of course they did.
+a : The Grayrock shipwrights are launching the big hull at high tide tomorrow. | The whole wharf turned out to watch the launch. | Grayrock named their new ship after Lady Maren. Of course they did.
 b[sailor] : Launch at high tide or not at all. She'll float or she won't.
-b[noble] : House Greatly knows how to make a show.
+b[noble] : House Grayrock knows how to make a show.
 b[child] : Can we watch? I want to see the splash!
 b : I'll be there. | Grand sight. | Shameless.
 a : Come early. | It was. | Shameless and sweet.
@@ -76,7 +76,7 @@ a : Slower too. | He went into the Sump. | Of course.
 
 scene rg_rm_council_heads
 when topic=lore here.region=ridgemere
-a : Lord Greatly walked the wharf today, umbrella and all. | They say the Council always ends up doing what Greatly wants. | Lady Fell spoke first in the Council this season, they say. First time in years.
+a : Lord Greatly walked the walls today, umbrella and all. | They say the Council always ends up doing what Greatly wants. | Lady Fell spoke first in the Council this season, they say. First time in years.
 b[official] : The Council serves the city, not a House. In principle.
 b[noble] : The richest House has the loudest voice. That's what a council is.
 b : An umbrella in Ridgemere? Optimist. | Everyone says that. | High time.
@@ -116,7 +116,7 @@ a : They are. | Nearly. | Very funny.
 
 scene rg_rm_shipyard
 when topic=work here.region=ridgemere a.job=crafter|laborer|apprentice|sailor
-a : Caulked seams all day in the Greatly Yard. My paws are black with pitch. | The Greatly Yard is hiring sawyers. | They laid a new keel this morning. Fell cedar.
+a : Caulked seams all day at the Grayrock slipway. My paws are black with pitch. | The Grayrock shipwrights are hiring sawyers. | They laid a new keel this morning. Timberland cedar.
 b[crafter] : Pitch comes off with butter. Old shipwright's trick.
 b : Hard trade. | Good pay? | A big one?
 a : Sticky trade. | Fair enough. | Big as a hall.
@@ -139,7 +139,7 @@ a : Every week. | Always. | Always.
 
 scene rg_rm_house_feud
 when topic=lore here.region=ridgemere
-a : Grayrock and Fell came to blows over a boundary stone, they say. | Greatly won't buy Mossgrave wool for its sailcloth this year. | The feud's been quiet a month. That worries me.
+a : Grayrock and Fell came to blows over a boundary stone, they say. | Greatly won't buy Timberland iron for its scaffolds this year. | The feud's been quiet a month. That worries me.
 b[noble] : A boundary stone is never only a stone.
 b[servant] : We're told not to speak to their servants. We speak anyway.
 b : Over a stone? | Petty. | Me too.
@@ -223,10 +223,10 @@ a : Very loud. | Sour. Then sweet. | A little.
 
 scene rg_rm_council_vote
 when topic=lore here.region=ridgemere
-a : Council voted three Houses to one on the new harbour wall. | Mossgrave walked out of the Council again. | They say Mossgrave holds the deciding vote this season.
+a : Council voted three Houses to one on the new harbour wall. | Timberland walked out of the Council again. | They say Timberland holds the deciding vote this season.
 b[official] : Three to one is a majority. Majorities pass.
 b[noble] : Walking out is a vote too, in its way.
-b : Who lost? | Again? | Lucky Mossgrave.
+b : Who lost? | Again? | Lucky Timberland.
 a : Fell. | Again. | Lucky and loud.
 
 scene rg_rm_snow_rain
@@ -247,14 +247,14 @@ a : Too quick. | Very wise. | Every day.
 
 scene rg_rm_house_weddings
 when topic=lore here.region=ridgemere
-a : They say Greatly and Mossgrave are making a match. | A House wedding means a week of free bread at the gates. | The last House wedding ended the Fell feud. For a year.
+a : They say Greatly and Timberland are making a match. | A House wedding means a week of free bread at the gates. | The last House wedding ended the Fell feud. For a year.
 b[noble] : A marriage between Houses is a treaty with flowers.
 b : That'll shift the Council. | Can't wait. | Only a year?
 a : It will. | Nor me. | A year.
 
 scene rg_rm_estate_grounds
 when topic=lore|smalltalk here.region=ridgemere
-a : Delivered to Mossgrave Court. They've a temple on an island in the pond. | Fellhall's drive is lined with cedars a mile long. | Lady Maren hasn't left Grayrock Hall in years, they say.
+a : Delivered to Timberland Court. They've a temple on an island in the pond. | Fellhall's drive is lined with cedars a mile long. | Lady Maren hasn't left Grayrock Hall in years, they say.
 b[servant] : The fountains run all day there. In this city. As if we needed more water.
 b[noble] : Grounds like that take three generations to grow.
 b : An island temple? | I've walked it. | Not once?

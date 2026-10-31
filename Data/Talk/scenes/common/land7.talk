@@ -101,12 +101,12 @@ a : Somebody should. | Me too. | Usually badly.
 
 scene e5_la_quarry
 when topic=land here.region=ridgemere
-a : Grayrock's quarry has eaten half the hill since I was a pup. | They were splitting stone at the quarry all day. You could hear the wedges ringing from here. | Where do you think all that stone goes?
+a : Greatly's quarry has eaten half the hill since I was a pup. | They were splitting stone at the quarry all day. You could hear the wedges ringing from here. | Where do you think all that stone goes?
 b[laborer] #lab : Somebody has to cut it. Pays better than the fields.
-b[house=grayrock_hall] #gr : Into walls, roads and bridges. Into the realm.
+b[house=greatly_house] #gr : Into walls, roads and bridges. Into the realm.
 b : It'll eat the rest. | Every day, that ringing. | Into the walls, and the Heights' new houses.
 a@lab : And breaks your back quicker, too.
-a@gr : And into Grayrock's purse, on the way.
+a@gr : And into Greatly's purse, on the way.
 a : And then us. | I hear it in my sleep. | The Heights get everything.
 
 scene e5_la_springs

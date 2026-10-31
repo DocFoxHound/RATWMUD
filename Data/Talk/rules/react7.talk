@@ -288,7 +288,7 @@ say Bright One, give me strength. | Bright One, hold my temper. Hold it tight. |
 
 rule x7_struck_rich
 when concept=react.struck self.wealth=rich
-say Do you know who I am? | My coat! This is Mossgrave wool! | You'll answer for that, you guttersnipe!
+say Do you know who I am? | My coat! This is the best wool in Ridgemere! | You'll answer for that, you guttersnipe!
 
 rule x7_struck_house
 when concept=react.struck self.house
@@ -296,19 +296,19 @@ say My House will hear of this! | You'd strike a House's own? You'll learn. | Ma
 
 rule x7_struck_greatly
 when concept=react.struck self.house=greatly_house
-say Lord Greatly will hear of this, and half the harbour with him! | You've struck Greatly House. Enjoy the gaol. | Greatly's people don't forget. Ask anyone on the wharf.
+say Lord Greatly will hear of this, and every mason in the city with him! | You've struck Greatly House. Enjoy the gaol. | Greatly's people don't forget. Ask anyone on the scaffolds.
 
 rule x7_struck_fell
 when concept=react.struck self.house=house_fell
-say Lady Fell will hear of this! | Strike Fell's own? You'll be splitting logs in the Rainwood till you're grey. | Fell remembers. Fell always remembers.
+say Lady Fell will hear of this! | Strike Fell's own? You'll be treading grapes for Fell till you're grey. | Fell remembers. Fell always remembers.
 
 rule x7_struck_grayrock
 when concept=react.struck self.house=grayrock_hall
-say Lord Aldric's on the road, but Lady Maren isn't. She'll hear of this! | Grayrock's own, and you strike them? | You'll be breaking stone for Grayrock by the month's end.
+say Lord Aldric's on the road, but Lady Maren isn't. She'll hear of this! | Grayrock's own, and you strike them? | You'll be hauling cargo on Grayrock's wharf by the month's end.
 
 rule x7_struck_mossgrave
-when concept=react.struck self.house=mossgrave_court
-say Lord Halvard will have your hide for a fleece! | Mossgrave's own, struck in the street! | You'll answer to Mossgrave Court for that.
+when concept=react.struck self.house=mossgrave_court|timberland_court
+say Lord Halvard will have you in irons for this! | Timberland's own, struck in the street! | You'll answer to Timberland Court for that.
 
 rule x7_struck_light
 when concept=react.struck self.injured=light

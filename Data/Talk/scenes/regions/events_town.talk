@@ -66,8 +66,8 @@ a : Quick, I hope. | Poor soul. | Cruel.
 
 scene et_rm_death_furnace
 when topic=life topic.kind=death here.region=ridgemere
-a : #topic.subject# died at the Grayrock Ironworks. | A crucible tipped at the Foundry. That's how #topic.subject# went. | They say #topic.subject# breathed too much of the smoke, all those years.
-b[smith] : Grayrock'll pay a widow's purse and light the furnace again by nightfall.
+a : #topic.subject# died at the Timberland Ironworks. | A crucible tipped at the Foundry. That's how #topic.subject# went. | They say #topic.subject# breathed too much of the smoke, all those years.
+b[smith] : Timberland'll pay a widow's purse and light the furnace again by nightfall.
 b : That place eats wolves. | Bright One. | The smoke takes us all slow.
 a : Every year. | Terrible way. | Slow and sure.
 

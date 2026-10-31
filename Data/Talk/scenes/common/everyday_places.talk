@@ -117,10 +117,10 @@ a : Wise. | Never to be seen again. | Something always has.
 
 scene ev_rg_ridgemere_houses
 when topic=smalltalk here.region=ridgemere
-a : Greatly's wolves were strutting about the wharf. | Did you see House Mossgrave's banner over the wool shed? | The House wolves think the rain falls only on us.
+a : Grayrock's wolves were strutting about the wharf. | Did you see House Timberland's banner over the Ironworks? | The House wolves think the rain falls only on us.
 b[noble] : The Houses keep this city alive. Mind your tongue.
-b : Strutting like gulls. | Wool and more wool, everywhere. | It does fall only on us. Have you seen their roofs?
-a : Gulls with purses. | Mossgrave wants every fleece in the Folds. | Slate. Fine slate.
+b : Strutting like gulls. | Iron and more iron, everywhere. | It does fall only on us. Have you seen their roofs?
+a : Gulls with purses. | Timberland wants every forge in the city. | Slate. Fine slate.
 
 scene ev_rg_saltreach_tide
 when topic=smalltalk here.region=ridgemere here.place=shore|street|work|market
@@ -166,7 +166,7 @@ a : Porridge and pride. | So did I. I stopped breathing. | Most things are.
 
 scene ev_new_rm_works
 when topic=smalltalk here.region=ridgemere here.place=street|work|tavern
-a : The Blue Vats have turned the gutter blue again. | Grayrock's foundry ran all night. I felt it through the floor. | The Fell Sawmill's been screaming since dawn.
+a : The Blue Vats have turned the gutter blue again. | Timberland's foundry ran all night. I felt it through the floor. | The Timberland Sawmill's been screaming since dawn.
 b[laborer] : Work's work. A loud city's a fed city.
 b[smith] : That's iron for half the country. Sleep through it.
 b : Blue as a jay. | Like a heartbeat. | Plenty of logs coming down the Rainrun.
@@ -174,10 +174,10 @@ a : Bluer every week. | A hot one. | Plenty of noise, too.
 
 scene ev_new_rm_grayrock_lord
 when topic=smalltalk here.region=ridgemere
-a : Lord Grayrock's off up the High Road again. | They say Lady Maren hasn't left Grayrock Hall in years. | Young Tobias Grayrock was in the Slate & Ledger, buying rounds.
-b[noble] : Lord Aldric goes where the iron is. The mines above Frosthollow, this time.
-b : Again? He's never home. | Can't say I blame her. | Spending his father's iron.
-a : Never. | Rain all day, why would she? | Iron melts quick, in a tavern.
+a : Lord Grayrock's off down the coast again. | They say Lady Maren hasn't left Grayrock Hall in years. | Young Tobias Grayrock was in the Slate & Ledger, buying rounds.
+b[noble] : Lord Aldric goes where the ships go. Down the coast, this time.
+b : Again? He's never home. | Can't say I blame her. | Spending his father's cargoes.
+a : Never. | Rain all day, why would she? | Cargo sinks quick, in a tavern.
 
 scene ev_new_rm_commons
 when topic=smalltalk here.region=ridgemere here.place=street|market|home

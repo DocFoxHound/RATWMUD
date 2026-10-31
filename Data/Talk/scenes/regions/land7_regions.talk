@@ -29,10 +29,10 @@ a : Always. | I haven't. | Louder every year.
 scene e5_rg_rm_rainwood
 when topic=land here.region=ridgemere
 a : Went up into the Rainwood. Moss on the trees, moss on the stones, moss on me. | The cedars up past the Houses' lands are as tall as the Rain Hall. | It never stops dripping in the Rainwood, even when it's not raining.
-b[woodcutter] #wood : Fell's cedar. Every one of them counted, and every one of them worth a purse.
+b[woodcutter] #wood : Timberland's cedar. Every one of them counted, and every one of them worth a purse.
 b[young] #young : Are there bears? Gran says there's bears.
 b : Did you get lost? | Taller, I'd say. | That's the city all over.
-a@wood : Then Fell's welcome to count them. I'll just look.
+a@wood : Then Timberland's welcome to count them. I'll just look.
 a@young : Only in your gran's stories, pup.
 a : Nearly. Everything's green. | Probably. | Wet to the root.
 
@@ -58,12 +58,12 @@ a : Bad for my temper. | Always has been. | Always will.
 
 scene e5_rg_rm_ships
 when topic=travel here.region=ridgemere
-a : A boat came in from down the coast this morning. Sails all patched. | They're loading the Greatly ship with wool and iron. | I watched a ship go round the headland till I couldn't see it.
+a : A boat came in from down the coast this morning. Sails all patched. | They're loading the Grayrock ship with glass and iron. | I watched a ship go round the headland till I couldn't see it.
 b[sailor] #sailor : She came through weather. You can see it in the rigging.
-b[house=greatly_house] #greatly : Our ships carry half the realm's goods. Somebody has to.
+b[house=grayrock_hall] #grayrock : Our ships carry half the realm's goods. Somebody has to.
 b : Rough passage, then. | Back with wine, I hope. | Where was she bound?
 a@sailor : And in the crew, I'd guess.
-a@greatly : And take a fair cut of it.
+a@grayrock : And take a fair cut of it.
 a : Looked it. | And oranges. | Nobody would say.
 
 scene e5_rg_rm_gates

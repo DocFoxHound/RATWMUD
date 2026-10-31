@@ -909,7 +909,7 @@ class Ridgemere(City):
         S, rng = 'ridgemere', self.rng
         b = []
         extra = {'southgate': [self.a_tavern('The Bridge Lamp', 'A tavern on the Rainrun bridge: carters, drovers off '
-                                             'the Southway and the smell of wet dogs.', f'{sid}_gate', S),
+                                             'the Southway and the smell of wet wolves.', f'{sid}_gate', S),
                                self.a_shop('smith', 'Southgate Farriers', 'Horseshoes, cart iron and a fire that never '
                                            'goes out.', f'{sid}_gate', S),
                                self.a_shop('provisioner', 'Bridge Stores', 'Sacks, rope and road food for the Southway.',
@@ -1258,7 +1258,7 @@ SUBURB_FAMILIES = ['Ash', 'Barrow', 'Cotton', 'Dale', 'Esk', 'Ford', 'Gale', 'He
                    'Dunn', 'Frith', 'Gill', 'Holt', 'Kemp', 'Lowe', 'Moss', 'Nash', 'Pike', 'Reed', 'Stone', 'Toft',
                    'Wren']
 SUBURB_PROSE = ['A cottage outside the walls: cheaper rent, a patch of garden and a long walk to work.',
-                'A low house by the road, its roof green with moss and a dog asleep in the door.',
+                'A low house by the road, its roof green with moss and a pup asleep in the door.',
                 'Two rooms and a lean-to, the family\'s goat tethered at the back.']
 
 

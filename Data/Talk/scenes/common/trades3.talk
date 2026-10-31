@@ -147,7 +147,7 @@ a : I had them checked. The checker's the steward's cousin. | I can't afford not
 scene tr_noble_houses
 when topic=work|smalltalk a.job=noble b.job=noble
 a : House Greatly's been courting the Fells. | Your cousin snubbed me at the feast. | The council seat goes to whoever pays most.
-b : Let them. Fell timber, Greatly hulls. It suits. | She snubs everyone. | That's how it's always gone.
+b : Let them. Fell wine, Greatly walls. It suits. | She snubs everyone. | That's how it's always gone.
 a : It suits them. It doesn't suit us. | Not with her teeth showing. | Then we'll pay most.
 
 scene tr_noble_hunting

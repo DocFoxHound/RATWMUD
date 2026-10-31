@@ -269,7 +269,7 @@ remember pair: k=want 1m
 rule tell_flush
 when concept=talk.smalltalk|talk.day wealth=rich
 cooldown 2d
-say Bought a new coat. Mossgrave wool. Feel that. | Had the roof done. Finally. | We're thinking of taking on another servant. | I've put by enough for three winters. I sleep like a pup.
+say Bought a new coat. Best wool in Ridgemere. Feel that. | Had the roof done. Finally. | We're thinking of taking on another servant. | I've put by enough for three winters. I sleep like a pup.
 then other: keeping.glad
 remember pair: k=good 1m
 

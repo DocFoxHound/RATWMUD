@@ -1,15 +1,17 @@
 # Ridgemere: the rain city on its terraced hills above Ridgemere Sound, and the only city there is. The works and the
 # Sump low by the docks; the City Office quarter, the Rain Hall where the Council of Houses sits, the Watch House and
 # the Commons in the middle; the Heights at the top. The wharf, the docks and the smokehouses outside the west wall.
-# Four Houses: Greatly (ships, the wharf, the bank), Fell (timber), Grayrock (stone and iron), Mossgrave (wool).
+# Four Houses (doc 67): Greatly (building: brick, tile, lime, plaster, stone; they built the walls; the bank), Fell (fine
+# wines, liquors and fruit goods), Grayrock (the wharf, its ships and warehouses), Timberland (the city's forges and
+# its timber; it keeps the old map's ids, such as house_mossgrave and mossgrave_court).
 
 scene rm_st_soot
 when topic=smalltalk here.region=ridgemere
-a : Soot on my washing again. | Can't tell if it's fog or smoke today. | The Grayrock Ironworks were roaring all night.
+a : Soot on my washing again. | Can't tell if it's fog or smoke today. | The Timberland Ironworks were roaring all night.
 b[old] : Soot and rain. Ridgemere's two seasons.
 b[miner] : That's the smell of wages, that is.
-b : Grayrock's furnaces. | Both, probably. | Never stops, does it.
-a : Always Grayrock. | Probably. | Never.
+b : Timberland's furnaces. | Both, probably. | Never stops, does it.
+a : Always Timberland. | Probably. | Never.
 
 scene rm_st_leaks
 when topic=smalltalk here.region=ridgemere here.place=home|tavern|work
@@ -21,7 +23,7 @@ a : Wonderful. | I've run out of buckets. | Especially the Rain Hall.
 
 scene rm_st_ship
 when topic=smalltalk here.region=ridgemere
-a : A southern ship came in. Smell the spices on the wharf? | They say there's a ship from beyond the Sound at the piers. | The Greatly Yard launched a new hull today.
+a : A southern ship came in. Smell the spices on the wharf? | They say there's a ship from beyond the Sound at the piers. | The Grayrock shipwrights launched a new hull today.
 b[sailor] : Southern crews. Loud, and they cheat at dice.
 b[child] : Can I see the ship? Can I go on it?
 b : I'd love to taste one. | Beyond the Sound? Never. | Another one?
@@ -29,7 +31,7 @@ a : Me too. | So they say. | Every season.
 
 scene rm_st_estates
 when topic=smalltalk|lore here.region=ridgemere
-a : Lord Grayrock's off up the High Road again, to the mines above Frosthollow. Lady Maren runs everything, really. | Fellhall's hiring loggers for the Rainwood. Hard work, fair coin. | There's glass from the works in every window in the Heights.
+a : Lord Grayrock's off down the coast again, with the ships. Lady Maren runs everything, really. | Fellhall's hiring pickers for the vintage. Hard work, fair coin. | There's glass from the works in every window in the Heights.
 b[noble] : The Houses' affairs aren't street talk.
 b[laborer] : Fair coin? From House Fell? First time for everything.
 b : Always travelling, that one. | I might go. | And none in the Sump.
@@ -38,7 +40,7 @@ a : Always. | Do. | None.
 scene rm_wk_ironworks
 when topic=work here.region=ridgemere a.job=smith|miner|laborer
 a : Pig iron's stacked to the rafters at the Foundry. | Lost a day's work when the furnace cracked. | The quarry face in the Rainward Hills is unstable after the rain.
-b[smith] : Good iron, Grayrock's. Say what you like about them.
+b[smith] : Good iron, Timberland's. Say what you like about them.
 b[miner] : Shore it up. Don't wait for the foreman.
 b : Somebody's buying it all. | Unpaid? | Stay off it.
 a : The Council, I hear. | Unpaid. | I will.
@@ -52,7 +54,7 @@ a : For the Fish Hall. | Doesn't help. | Very bad.
 
 scene rm_wk_rope
 when topic=work here.region=ridgemere
-a : Walked the ropewalk end to end forty times today. | The Greatly Yard wants a cable as thick as my leg. | Hemp's damp. It'll rot.
+a : Walked the ropewalk end to end forty times today. | The Grayrock shipwrights want a cable as thick as my leg. | Hemp's damp. It'll rot.
 b[sailor] : Good rope's the difference between port and the bottom of the sea.
 b : Your poor legs. | For what ship? | Then dry it.
 a : Gone numb. | A big one. | In this rain?
@@ -106,8 +108,8 @@ a : It is. | Always is. | Always.
 
 scene rm_qr_houses
 when topic=quarrel here.region=ridgemere
-a : Your House cut my wages. | You Fell folk think you own the Rainwood. | Still running errands for Grayrock?
-b : Not my doing. | We do own the Rainwood. | It pays better than yours.
+a : Your House cut my wages. | You Fell folk think you own every vineyard. | Still running errands for Grayrock?
+b : Not my doing. | We do own every vineyard. | It pays better than yours.
 a : Same House. | That's the trouble. | Barely.
 
 scene rm_st_three_markets
@@ -119,11 +121,11 @@ b : Just looked? | Always by noon. | It's cheap, though.
 a : Just looked. It looked back. | Always. | Cheap and grey.
 
 scene rm_wk_wool_shed
-when topic=work here.region=ridgemere a.job=laborer|crafter|herder|merchant
-a : Three wagons of fleece in from the Folds this morning. | Wenna Mossgrave counted every bale at the Wool Shed herself. | The wool's so wet it weighs double.
-b[herder] : Good fleeces this year. The Folds grass was sweet.
-b : Busy shed, then. | She does that. | Sell it by weight, then.
-a : Busy and smelly. | Every bale. Twice. | Mossgrave's clerks aren't that daft.
+when topic=work here.region=ridgemere a.job=laborer|crafter|smith|merchant
+a : Three wagons of charcoal in from the hills this morning. | Wenna Timberland counted every bar at the Ironworks herself. | The charcoal's so wet it won't take.
+b[smith] : Good charcoal this year. It burns clean.
+b : Busy forges, then. | She does that. | Burn it anyway, then.
+a : Busy and loud. | Every bar. Twice. | Timberland's smiths aren't that daft.
 
 scene rm_st_dyeworks
 when topic=smalltalk|work here.region=ridgemere
@@ -170,9 +172,9 @@ b : Who's at fault? | About time. | Is it gone?
 a : Everyone else. | Not for the bargemen. | Gone with the tide.
 
 scene rm_wk_greatly_yard
-when topic=work here.region=ridgemere a.job=crafter|laborer|sailor|apprentice
-a : The new hull at the Greatly Yard's got her keel down. | Tar on every hair I own from the Greatly Yard. | Greatly wants the ship off the slip by autumn.
-b[sailor] : She'll be a fine ship if they don't rush her.
-b : She'll be a beauty. | Smells like work. | Will it be?
+when topic=work here.region=ridgemere a.job=crafter|laborer|apprentice
+a : The Greatly Yard's sending lime and tile up to the Rise. | Lime on every hair I own from the Greatly Yard. | Greatly wants the new wall up by autumn.
+b[laborer] : It'll be a fine wall if they don't rush it.
+b : It'll be a sight. | Smells like work. | Will it be?
 a : She will. | Smells like supper's late. | Not without more hands.
 

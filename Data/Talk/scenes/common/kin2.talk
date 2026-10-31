@@ -246,7 +246,7 @@ b : I know. Be clever too. | Nobody does. Just get far. | You are. Kind as well.
 
 scene kn_family_regional_estate
 when topic=family pair.band=family a.job=noble b.job=noble here.region=ridgemere
-a : Your match has been arranged. House Mossgrave. | You've been seen at the tavern on the wharf. Again. | The estate accounts are a disgrace this season.
+a : Your match has been arranged. House Timberland. | You've been seen at the tavern on the wharf. Again. | The estate accounts are a disgrace this season.
 b : Arranged without asking me. | The tavern's warmer than this hall. | Then let the steward answer for them.
 a : You're asked now. | A noble isn't seen in taverns. | The steward answers to you. And you answer to me.
 b : And if I say no? | Then I'll go unseen. | Then I answer: rain ruined the harvest.

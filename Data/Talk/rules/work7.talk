@@ -381,21 +381,21 @@ then other: work.reply
 
 rule w7_ans_fell
 when concept=work.answer self.house=house_fell working=yes job!=noble
-say Sawdust in everything. House Fell's got orders stacked to the roof. | Planks, staves, wheels. Fell wants all of it yesterday. | Timber's wet. Fell says cut it anyway.
+say Must in everything. House Fell's got casks stacked to the roof. | Wine, brandy, cordial. Fell wants all of it yesterday. | Fruit's wet. Fell says press it anyway.
 remember pair: w7_tone=plain 30m
 remember pair: w7_from=b 30m
 then other: work.reply
 
 rule w7_ans_grayrock
 when concept=work.answer self.house=grayrock_hall working=yes job!=noble
-say Grayrock's furnaces don't sleep. Nor do we, much. | Iron in, iron out. Grayrock counts every bar. | Hot, loud, and Grayrock's steward watching.
+say Grayrock's wharf doesn't sleep. Nor do we, much. | Cargo in, cargo out. Grayrock counts every bale. | Wet, loud, and Grayrock's steward watching.
 remember pair: w7_tone=plain 30m
 remember pair: w7_from=b 30m
 then other: work.reply
 
 rule w7_ans_mossgrave
-when concept=work.answer self.house=mossgrave_court working=yes job!=noble
-say Dye to the elbows. Mossgrave blue, this week. | The tannery stinks and Mossgrave pays. That's the deal. | Wool, wool and more wool. Mossgrave's never short of sheep.
+when concept=work.answer self.house=mossgrave_court|timberland_court working=yes job!=noble
+say Soot to the elbows. Timberland iron, this week. | The forges roar and Timberland pays. That's the deal. | Iron, iron and more iron. Timberland's never short of work.
 remember pair: w7_tone=plain 30m
 remember pair: w7_from=b 30m
 then other: work.reply

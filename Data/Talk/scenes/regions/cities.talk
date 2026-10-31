@@ -13,7 +13,7 @@ a : I know, I know. | Nobody can. | I never will.
 
 scene rm_houses
 when topic=lore here.region=ridgemere
-a : House Grayrock's carts are on every road this week. | They say Greatly and Mossgrave aren't speaking again. | House Fell's bringing the last of the cedar down out of the Rainwood.
+a : House Grayrock's ships are in every berth this week. | They say Greatly and Timberland aren't speaking again. | House Fell's bringing the last of the vintage in.
 b[noble] : The Houses' business is not for the street.
 b[laborer] : Whatever the Houses do, we pay for it.
 b[old] : The Houses have feuded since before my grandmother's grandmother.

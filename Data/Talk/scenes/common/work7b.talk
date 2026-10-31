@@ -19,8 +19,8 @@ a : I hope so. | I'll wait, then. | Knives. Maybe.
 
 scene w7b_smiths_iron
 when topic=work a.job=smith b.job=smith here.region=frosthollow|ridgemere
-a : This new iron's full of slag. | Grayrock's bars are getting worse. | Feel the weight of this. Light. They're cheating us.
-b[self.house=grayrock_hall] : Mind how you talk of Grayrock. I eat their bread. | It's the ore, not the House. | Nobody's cheating. It's just poor ore.
+a : This new iron's full of slag. | Timberland's bars are getting worse. | Feel the weight of this. Light. They're cheating us.
+b[self.house=mossgrave_court|timberland_court] : Mind how you talk of Timberland. I eat their bread. | It's the ore, not the House. | Nobody's cheating. It's just poor ore.
 b : Fold it more. It'll come right. | They know we've nowhere else to buy. | Weigh it next time, in front of them.
 a : Hm. If you say so. | That's the truth of it. | I'll weigh the next lot, all the same.
 
@@ -274,10 +274,10 @@ a : Twenty, then. | Thirty it is. | Tomorrow. Without fail.
 
 scene w7b_woodcutter_crafter
 when topic=work a.job=woodcutter b.job=crafter
-a : Got some good seasoned oak. Want it? | Fell's foreman bought up all the ash. | Bring you the knotty stuff cheap.
-b[self.house=house_fell] #fell : Fell buys yours, and Fell sells me mine. | Of course. We're Fell. | No knots. Fell's standards.
+a : Got some good seasoned oak. Want it? | Timberland's foreman bought up all the ash. | Bring you the knotty stuff cheap.
+b[self.house=mossgrave_court|timberland_court] #tim : Timberland buys yours, and Timberland sells me mine. | Of course. We're Timberland. | No knots. Timberland's standards.
 b : Yes, please! How much? | Again! | Cheap? Fine.
-a@fell : Then buy from me direct. | Of course you are. | Standards. Ha.
+a@tim : Then buy from me direct. | Of course you are. | Standards. Ha.
 a : Fair price. | Every time. | Knots and all.
 
 scene w7b_fisher_cook
@@ -289,9 +289,9 @@ a : Ten. | Penny a fish. | Eels it is.
 scene w7b_herder_crafter
 when topic=work a.job=herder b.job=crafter
 a : Shearing's done. Wool's good. | Hides for you. Three. | Want some fleece?
-b[self.house=mossgrave_court] #moss : Mossgrave will want it all. | Mossgrave buys hides, not me. | I'll tell Mossgrave.
+b[self.house=mossgrave_court|timberland_court] #moss : Not for Timberland. They want leather for the bellows. | Timberland buys hides for its bellows, not me. | I'll tell Timberland. They're short of bellows leather.
 b : I'll take it. | Good hides. | Yes.
-a@moss : Then I'll go to Mossgrave. | Then I'll take them there. | Do.
+a@moss : Then I'll go elsewhere. | Then I'll take them there. | Do.
 a : Good. | The best this year. | I'll bring a sack.
 
 scene w7b_carter_merchant
@@ -441,11 +441,11 @@ b : Yesterday. | Same. | Never.
 a : Lucky. | Every month. | No.
 
 scene w7b_house_rivals
-when topic=work a.house=greatly_house b.house=house_fell|grayrock_hall|mossgrave_court
+when topic=work a.house=greatly_house b.house=house_fell|grayrock_hall|mossgrave_court|timberland_court
 a : Greatly's building the new hall. | Your House sells to ours. Remember who's buying. | Greatly's richer than yours.
-b[self.house=house_fell] : With our timber. | And who'd you buy from instead? | Richer? Showier.
-b[self.house=grayrock_hall] : With our iron in every hinge. | And who'd you buy iron from instead? | Richer? Showier.
-b : And who'll hang the hall? Us, in Mossgrave wool. | And who'd you dress in, instead? | Richer? Showier.
+b[self.house=house_fell] : With our wine at the opening. | And who'd you buy from instead? | Richer? Showier.
+b[self.house=grayrock_hall] : Off our ships, every stone of it. | And who'd ship it in for you instead? | Richer? Showier.
+b : And who'll forge its hinges? Timberland. | And who'd you buy iron from instead? | Richer? Showier.
 a : With our money. | We'd find someone. | Same thing.
 
 scene w7b_house_same

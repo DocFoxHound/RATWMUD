@@ -6,7 +6,7 @@
 
 scene tr_cb_ore_price
 when topic=work|prices here.region=frosthollow
-a : The Grayrock buyer knocked a penny off the ore again. | Ridgemere wants iron and won't pay for the mountain it comes out of. | They weighed my cart wet and paid me dry.
+a : The Timberland buyer knocked a penny off the ore again. | Ridgemere wants iron and won't pay for the mountain it comes out of. | They weighed my cart wet and paid me dry.
 b[miner] : We should stop digging for a week. See how they like it.
 b : Thieves in good cloth. | Cities never do. | Classic.
 a : Thieves with a House seal. | They'll pay when the mountain stops giving. | Next time I'll weigh it in the snow.
@@ -51,7 +51,7 @@ a : Grease and salt. Stings worse. | Rain coast, rain salt, no salt. | Good for 
 
 scene tr_sr_vesk
 when topic=work here.region=ridgemere a.job=laborer|fisher|merchant
-a : The Customs House clerk came by. He counted every sack. | Owe the Pawn and Ledger more than a season's salt. | Greatly ships our salt and calls it theirs.
+a : The Customs House clerk came by. He counted every sack. | Owe the Pawn and Ledger more than a season's salt. | Grayrock ships our salt and calls it theirs.
 b : He always counts. | Everyone does. | Their stamp, our sweat.
 a : And always comes up one short. | And next season too. | Their stamp, their coin, our sweat.
 

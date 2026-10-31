@@ -1155,7 +1155,7 @@ bool Society::houseHead(const std::string& title)
         return found->second;
     std::string t = title;
     std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return char(std::tolower(c)); });
-    // (Keeping a house's own seat: "keeping Grayrock Hall", "keeping Mossgrave Court"; not a caretaker of a public
+    // (Keeping a house's own seat: "keeping Grayrock Hall", "keeping Timberland Court"; not a caretaker of a public
     // hall, "keeping the Rain Hall".)
     bool seat = false;
     for (const char* word : {" Hall", " House", " Manor", " Court"})

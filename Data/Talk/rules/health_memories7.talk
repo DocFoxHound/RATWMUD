@@ -799,7 +799,7 @@ remember pair: mk=home 2m
 rule e3_mr_ridgemere_old
 when concept=talk.memories here.region=ridgemere stage=old
 cooldown 2d
-say When I was a pup there were fields where the suburbs are. | I remember when the Rainrun had no bridge. You waded, or you swam. | I remember the wharf when it was half the length, and the old Greatly lord walking it every morning.
+say When I was a pup there were fields where the suburbs are. | I remember when the Rainrun had no bridge. You waded, or you swam. | I remember the wharf when it was half the length, and the old Grayrock lord walking it every morning.
 then other: memories.answer
 
 rule e3_mr_town_old

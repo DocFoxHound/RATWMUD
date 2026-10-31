@@ -132,7 +132,7 @@ then other: town.station
 rule n7_st_works
 when concept=talk.smalltalk|talk.lore self.quarter=works here.region=ridgemere
 cooldown 3d
-say We make the bricks for the Heights and live in the dust of them. | Greatly's kilns, Grayrock's furnaces, and us in between, coughing. | Every House in the city has its paw in the works, and not one of them lives here.
+say We make the bricks for the Heights and live in the dust of them. | Greatly's kilns, Timberland's furnaces, and us in between, coughing. | Every House in the city has its paw in the works, and not one of them lives here.
 remember pair: st=works 1h
 remember pair: on=station 1h
 then other: town.station
@@ -156,7 +156,7 @@ then other: town.station
 rule n7_st_greatly
 when concept=talk.smalltalk|talk.lore|talk.work self.house=greatly_house !other.house here.region=ridgemere
 cooldown 3d
-say Greatly built half this city. Folk forget that. | Every brick, every tile, every lick of whitewash. Ours. | The Yard's never been busier. Say what you like about the House, it builds.
+say Greatly built the walls of this city. Folk forget that. | Every brick, every tile, every lick of whitewash. Ours. | The Yard's never been busier. Say what you like about the House, it builds.
 remember pair: st=house 1h
 remember pair: on=station 1h
 then other: town.station
@@ -164,7 +164,7 @@ then other: town.station
 rule n7_st_grayrock
 when concept=talk.smalltalk|talk.lore|talk.work self.house=grayrock_hall !other.house
 cooldown 3d
-say Without Grayrock iron this city'd be held up with string. | The foundry ran all night. That's the House's heart beating. | Grayrock: stone and iron. Not pretty. Lasts.
+say Without Grayrock's wharf this city'd starve by spring. | Six ships in last night. That's the House's heart beating. | Grayrock: the wharf and all on it. Not pretty. Lasts.
 remember pair: st=house 1h
 remember pair: on=station 1h
 then other: town.station
@@ -172,15 +172,15 @@ then other: town.station
 rule n7_st_fell
 when concept=talk.smalltalk|talk.lore|talk.work self.house=house_fell !other.house
 cooldown 3d
-say Every beam over every head in Ridgemere came through the Fell mill. | The House is buying up the whole Rainwood stand. Mark me. | Timber's honest. Fell's honest. More or less.
+say Every glass raised in Ridgemere was filled from a Fell cask. | The House is buying up the whole apple harvest. Mark me. | Wine's honest. Fell's honest. More or less.
 remember pair: st=house 1h
 remember pair: on=station 1h
 then other: town.station
 
 rule n7_st_mossgrave
-when concept=talk.smalltalk|talk.lore|talk.work self.house=mossgrave_court !other.house
+when concept=talk.smalltalk|talk.lore|talk.work self.house=mossgrave_court|timberland_court !other.house
 cooldown 3d
-say That coat of yours. Mossgrave wool, I'd bet. | The Blue Vats are dyeing for the festival. The whole street's blue to the knee. | Mossgrave clothes the city. Somebody has to.
+say Every nail in your boots came off a Timberland anvil, I'd bet. | The Ironworks ran all night for the festival. The whole Cinders glowed. | Timberland keeps the city in iron. Somebody has to.
 remember pair: st=house 1h
 remember pair: on=station 1h
 then other: town.station
