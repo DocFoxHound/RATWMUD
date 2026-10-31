@@ -1,0 +1,4477 @@
+{
+ "world": {
+  "cells": 12,
+  "interiors": 845,
+  "newInteriors": 219,
+  "links": {
+   "stairs": 187,
+   "door": 340,
+   "passage": 28
+  },
+  "structures": 301
+ },
+ "districts": {
+  "abbey": {
+   "buildings": 8,
+   "kind:hall": 6,
+   "kind:lodging": 1,
+   "kind:works": 1,
+   "posts": 31,
+   "business:brewery": 1
+  },
+  "admin": {
+   "buildings": 14,
+   "kind:hall": 4,
+   "kind:tavern": 1,
+   "kind:home": 8,
+   "kind:shop": 1,
+   "homes": 9,
+   "beds": 30,
+   "posts": 22,
+   "business:inn": 1,
+   "business:scriptorium": 1
+  },
+  "cinders": {
+   "buildings": 25,
+   "kind:works": 11,
+   "kind:store": 1,
+   "kind:tavern": 1,
+   "kind:shop": 4,
+   "kind:home": 8,
+   "homes": 11,
+   "beds": 43,
+   "posts": 45,
+   "business:inn": 1,
+   "business:smithy": 3,
+   "business:armory": 1,
+   "business:ironworks": 1,
+   "business:foundry": 1,
+   "business:sawmill": 1,
+   "business:glassworks": 1,
+   "business:brickworks": 2,
+   "business:brewery": 1,
+   "business:papermill": 1,
+   "business:cartwright": 1,
+   "business:charcoal": 1,
+   "business:plasterworks": 1
+  },
+  "commons": {
+   "buildings": 85,
+   "kind:hall": 3,
+   "kind:inn": 1,
+   "kind:works": 3,
+   "kind:tavern": 2,
+   "kind:shop": 33,
+   "kind:home": 33,
+   "kind:flats": 10,
+   "homes": 86,
+   "beds": 285,
+   "posts": 142,
+   "business:provisioner": 3,
+   "business:inn": 3,
+   "business:saddlery": 3,
+   "business:printing_house": 1,
+   "business:cartographer": 1,
+   "business:chandlery": 1,
+   "business:apothecary": 2,
+   "business:bakery": 3,
+   "business:cooperage": 2,
+   "business:weaver": 2,
+   "business:general": 1,
+   "business:pottery": 1,
+   "business:carpenter": 2,
+   "business:brewery": 1,
+   "business:herbalist": 1,
+   "business:butcher": 1,
+   "business:smithy": 2,
+   "business:tailor": 3,
+   "business:jeweler": 2,
+   "business:perfumer": 1,
+   "business:glassworks": 1,
+   "business:moneychanger": 1,
+   "business:fishmonger": 1,
+   "business:dairy": 1,
+   "business:vintner": 1,
+   "business:barber": 1,
+   "business:builders_yard": 1,
+   "business:stables": 1
+  },
+  "estate_fell": {
+   "buildings": 9,
+   "kind:seat": 1,
+   "kind:store": 1,
+   "kind:works": 4,
+   "kind:home": 3,
+   "homes": 4,
+   "beds": 17,
+   "posts": 15,
+   "business:press": 1,
+   "business:preserver": 1,
+   "business:distillery": 1
+  },
+  "estate_grayrock": {
+   "buildings": 6,
+   "kind:seat": 1,
+   "kind:works": 1,
+   "kind:home": 3,
+   "kind:hall": 1,
+   "homes": 4,
+   "beds": 17,
+   "posts": 6
+  },
+  "estate_mossgrave": {
+   "buildings": 6,
+   "kind:seat": 1,
+   "kind:works": 1,
+   "kind:home": 3,
+   "kind:hall": 1,
+   "homes": 4,
+   "beds": 17,
+   "posts": 7
+  },
+  "greatly": {
+   "buildings": 6,
+   "kind:works": 4,
+   "kind:seat": 1,
+   "kind:hall": 1,
+   "homes": 2,
+   "beds": 10,
+   "posts": 24,
+   "business:builders_works": 1,
+   "business:paintworks": 1,
+   "business:mason": 1
+  },
+  "keep": {
+   "buildings": 2,
+   "kind:hall": 1,
+   "kind:lodging": 1,
+   "homes": 1,
+   "beds": 15,
+   "posts": 7
+  },
+  "none": {
+   "posts": 16
+  },
+  "northgate": {
+   "buildings": 12,
+   "kind:shop": 5,
+   "kind:home": 7,
+   "homes": 12,
+   "beds": 40,
+   "posts": 10,
+   "business:butcher": 1,
+   "business:fletcher": 1,
+   "business:general": 1,
+   "business:bakery": 1,
+   "business:carpenter": 1
+  },
+  "outdoors": {
+   "posts": 81,
+   "business:stall": 4,
+   "business:herbalist": 1,
+   "business:pottery": 1,
+   "business:chandlery": 1,
+   "business:weaver": 1,
+   "business:tinker": 2,
+   "business:general": 2,
+   "business:fishmonger": 1,
+   "business:rag_and_bone": 1
+  },
+  "palace": {
+   "buildings": 3,
+   "kind:seat": 1,
+   "kind:hall": 2,
+   "homes": 2,
+   "beds": 9,
+   "posts": 19
+  },
+  "rise": {
+   "buildings": 5,
+   "kind:villa": 5,
+   "homes": 10,
+   "beds": 29,
+   "posts": 26
+  },
+  "sump": {
+   "buildings": 104,
+   "kind:hall": 4,
+   "kind:works": 2,
+   "kind:tavern": 3,
+   "kind:shop": 5,
+   "kind:flats": 54,
+   "kind:home": 36,
+   "homes": 77,
+   "beds": 230,
+   "posts": 36,
+   "business:inn": 4,
+   "business:general": 1,
+   "business:pawnbroker": 1,
+   "business:fishmonger": 1,
+   "business:provisioner": 1,
+   "business:tinker": 1,
+   "business:rag_and_bone": 1
+  },
+  "wharf": {
+   "buildings": 16,
+   "kind:hall": 2,
+   "kind:works": 5,
+   "kind:inn": 1,
+   "kind:store": 3,
+   "kind:tavern": 2,
+   "kind:shop": 2,
+   "kind:lodging": 1,
+   "homes": 3,
+   "beds": 12,
+   "posts": 39,
+   "business:inn": 3,
+   "business:cooperage": 1,
+   "business:chandlery": 1,
+   "business:shipwright": 1,
+   "business:tannery": 1,
+   "business:ropewalk": 1,
+   "business:fishmonger": 1,
+   "business:smokehouse": 1
+  }
+ },
+ "homes": {
+  "total": 225,
+  "perStructureMax": 2,
+  "perStructure": {
+   "1": 159,
+   "2": 33
+  },
+  "aloneHomes": 10
+ },
+ "people": {
+  "placed": 559,
+  "unplaced": 524,
+  "unplacedWhy": {
+   "a Minor House not kept": 62,
+   "a town": 262,
+   "the country": 200
+  },
+  "roles": {
+   "merchant": 108,
+   "civilian": 421,
+   "guard": 30
+  },
+  "posts": {
+   "stallkeeper": 14,
+   "staff": 79,
+   "kept": 57,
+   "pool": 55,
+   "hands": 46,
+   "clergy": 18,
+   "food": 2,
+   "hallkeeper": 6,
+   "keeper": 88,
+   "at lessons": 67,
+   "help": 64,
+   "retired": 29,
+   "a child at home": 4,
+   "guard": 5,
+   "patrol": 16,
+   "gate": 9
+  },
+  "evenings": {
+   "rm_the_last_lamp": 40,
+   "rm_the_grey_gull_inn": 40,
+   "rm_the_rainbarrel": 40,
+   "r2_the_knucklebones": 40,
+   "home": 197,
+   "rm_the_black_tun": 40,
+   "rm_the_slate_ledger": 20,
+   "r2_cathedral": 18,
+   "rm_the_bilge": 40,
+   "rm_the_slag_anchor": 23,
+   "rm_the_drowned_lantern": 10,
+   "rm_the_watch_house": 30,
+   "rm_the_soup_kitchen": 21
+  }
+ },
+ "businesses": {
+  "apothecary": 2,
+  "armory": 1,
+  "bakery": 4,
+  "barber": 1,
+  "brewery": 3,
+  "brickworks": 2,
+  "builders_works": 1,
+  "builders_yard": 1,
+  "butcher": 2,
+  "carpenter": 3,
+  "cartographer": 1,
+  "cartwright": 1,
+  "chandlery": 3,
+  "charcoal": 1,
+  "cooperage": 3,
+  "dairy": 1,
+  "distillery": 1,
+  "fishmonger": 4,
+  "fletcher": 1,
+  "foundry": 1,
+  "general": 5,
+  "glassworks": 2,
+  "herbalist": 2,
+  "inn": 12,
+  "ironworks": 1,
+  "jeweler": 2,
+  "mason": 1,
+  "moneychanger": 1,
+  "paintworks": 1,
+  "papermill": 1,
+  "pawnbroker": 1,
+  "perfumer": 1,
+  "plasterworks": 1,
+  "pottery": 2,
+  "preserver": 1,
+  "press": 1,
+  "printing_house": 1,
+  "provisioner": 4,
+  "rag_and_bone": 2,
+  "ropewalk": 1,
+  "saddlery": 3,
+  "sawmill": 1,
+  "scriptorium": 1,
+  "shipwright": 1,
+  "smithy": 5,
+  "smokehouse": 1,
+  "stables": 1,
+  "stall": 4,
+  "tailor": 3,
+  "tannery": 1,
+  "tinker": 3,
+  "vintner": 1,
+  "weaver": 3
+ },
+ "draws": {
+  "apothecary": {
+   "making": [
+    "linen_cloth",
+    "resin",
+    "wormwood"
+   ],
+   "resale": []
+  },
+  "armory": {
+   "making": [
+    "charcoal",
+    "iron_bar",
+    "leather",
+    "linen_cloth",
+    "steel_bar",
+    "wool"
+   ],
+   "resale": []
+  },
+  "bakery": {
+   "making": [
+    "firewood",
+    "flour",
+    "honey"
+   ],
+   "resale": []
+  },
+  "barber": {
+   "making": [],
+   "resale": []
+  },
+  "brewery": {
+   "making": [
+    "apples",
+    "grapes"
+   ],
+   "resale": []
+  },
+  "brickworks": {
+   "making": [
+    "clay",
+    "firewood",
+    "limestone"
+   ],
+   "resale": []
+  },
+  "builders_works": {
+   "making": [],
+   "resale": []
+  },
+  "builders_yard": {
+   "making": [],
+   "resale": [
+    "beam",
+    "bricks",
+    "cut_stone",
+    "glass_pane",
+    "lime",
+    "mortar",
+    "nails",
+    "paint",
+    "planks",
+    "plaster",
+    "roof_tiles",
+    "whitewash"
+   ]
+  },
+  "butcher": {
+   "making": [
+    "firewood",
+    "mutton",
+    "pig",
+    "rabbit",
+    "raw_meat",
+    "salt",
+    "sheep"
+   ],
+   "resale": [
+    "bones",
+    "leather",
+    "raw_meat",
+    "tallow"
+   ]
+  },
+  "carpenter": {
+   "making": [
+    "iron_hoops",
+    "planks",
+    "timber"
+   ],
+   "resale": []
+  },
+  "cartographer": {
+   "making": [],
+   "resale": []
+  },
+  "cartwright": {
+   "making": [
+    "iron_bar",
+    "iron_hoops",
+    "planks",
+    "timber"
+   ],
+   "resale": []
+  },
+  "chandlery": {
+   "making": [
+    "beeswax",
+    "cord",
+    "hemp",
+    "resin",
+    "tallow"
+   ],
+   "resale": []
+  },
+  "charcoal": {
+   "making": [
+    "timber"
+   ],
+   "resale": []
+  },
+  "cooperage": {
+   "making": [
+    "iron_bar",
+    "iron_hoops",
+    "planks"
+   ],
+   "resale": []
+  },
+  "dairy": {
+   "making": [
+    "milk"
+   ],
+   "resale": []
+  },
+  "distillery": {
+   "making": [],
+   "resale": []
+  },
+  "fishmonger": {
+   "making": [
+    "firewood",
+    "fish",
+    "salt"
+   ],
+   "resale": [
+    "fish"
+   ]
+  },
+  "fletcher": {
+   "making": [],
+   "resale": []
+  },
+  "foundry": {
+   "making": [
+    "bronze_bar",
+    "charcoal",
+    "copper_bar",
+    "copper_ore",
+    "iron_ore",
+    "timber",
+    "tin_bar",
+    "tin_ore"
+   ],
+   "resale": []
+  },
+  "general": {
+   "making": [
+    "bones",
+    "cord",
+    "hemp",
+    "straw"
+   ],
+   "resale": [
+    "charm",
+    "clay",
+    "cord",
+    "fine_soap",
+    "firewood",
+    "flour",
+    "glass_beads",
+    "linen_cloth",
+    "nails",
+    "oats",
+    "pamphlet",
+    "perfume_cedar",
+    "planks",
+    "plaster",
+    "straw",
+    "tallow",
+    "whitewash",
+    "wool"
+   ]
+  },
+  "glassworks": {
+   "making": [
+    "firewood",
+    "limestone",
+    "sand",
+    "tin_bar"
+   ],
+   "resale": []
+  },
+  "herbalist": {
+   "making": [
+    "linen_cloth"
+   ],
+   "resale": [
+    "wormwood"
+   ]
+  },
+  "inn": {
+   "making": [
+    "apples",
+    "milk",
+    "oats",
+    "raw_meat",
+    "vegetables"
+   ],
+   "resale": []
+  },
+  "ironworks": {
+   "making": [
+    "charcoal",
+    "iron_bar",
+    "iron_ore",
+    "timber"
+   ],
+   "resale": []
+  },
+  "jeweler": {
+   "making": [
+    "bones",
+    "bronze_bar",
+    "copper_bar",
+    "cord"
+   ],
+   "resale": []
+  },
+  "mason": {
+   "making": [
+    "firewood",
+    "lime",
+    "limestone",
+    "sand",
+    "stone"
+   ],
+   "resale": []
+  },
+  "moneychanger": {
+   "making": [],
+   "resale": []
+  },
+  "paintworks": {
+   "making": [
+    "clay",
+    "flax",
+    "lime",
+    "linseed_oil"
+   ],
+   "resale": []
+  },
+  "papermill": {
+   "making": [
+    "linen_cloth"
+   ],
+   "resale": []
+  },
+  "pawnbroker": {
+   "making": [],
+   "resale": []
+  },
+  "perfumer": {
+   "making": [
+    "beeswax",
+    "herbs",
+    "resin",
+    "tallow",
+    "wormwood"
+   ],
+   "resale": []
+  },
+  "plasterworks": {
+   "making": [
+    "firewood",
+    "lime",
+    "limestone",
+    "sand",
+    "sheepskin",
+    "small_pelt"
+   ],
+   "resale": []
+  },
+  "pottery": {
+   "making": [
+    "clay",
+    "firewood"
+   ],
+   "resale": []
+  },
+  "preserver": {
+   "making": [],
+   "resale": []
+  },
+  "press": {
+   "making": [
+    "apples",
+    "grapes"
+   ],
+   "resale": []
+  },
+  "printing_house": {
+   "making": [
+    "charcoal",
+    "ink",
+    "leather",
+    "paper"
+   ],
+   "resale": []
+  },
+  "provisioner": {
+   "making": [
+    "firewood",
+    "fish",
+    "rabbit",
+    "raw_meat",
+    "salt"
+   ],
+   "resale": [
+    "apples",
+    "firewood",
+    "fish",
+    "flour",
+    "milk",
+    "oats",
+    "raw_meat",
+    "vegetables"
+   ]
+  },
+  "rag_and_bone": {
+   "making": [],
+   "resale": []
+  },
+  "ropewalk": {
+   "making": [
+    "cord",
+    "hemp"
+   ],
+   "resale": []
+  },
+  "saddlery": {
+   "making": [
+    "iron_bar",
+    "leather"
+   ],
+   "resale": []
+  },
+  "sawmill": {
+   "making": [
+    "timber"
+   ],
+   "resale": []
+  },
+  "scriptorium": {
+   "making": [
+    "charcoal",
+    "leather",
+    "linen_cloth",
+    "paper"
+   ],
+   "resale": []
+  },
+  "shipwright": {
+   "making": [],
+   "resale": []
+  },
+  "smithy": {
+   "making": [
+    "bronze_bar",
+    "charcoal",
+    "iron_bar",
+    "leather",
+    "timber"
+   ],
+   "resale": []
+  },
+  "smokehouse": {
+   "making": [
+    "firewood",
+    "fish",
+    "mutton",
+    "rabbit",
+    "raw_meat",
+    "salt"
+   ],
+   "resale": []
+  },
+  "stables": {
+   "making": [],
+   "resale": []
+  },
+  "stall": {
+   "making": [],
+   "resale": [
+    "apples",
+    "flour",
+    "milk",
+    "oats",
+    "vegetables"
+   ]
+  },
+  "tailor": {
+   "making": [
+    "linen_cloth",
+    "wool"
+   ],
+   "resale": []
+  },
+  "tannery": {
+   "making": [
+    "hide",
+    "leather",
+    "oak_bark",
+    "sheepskin",
+    "small_pelt"
+   ],
+   "resale": []
+  },
+  "tinker": {
+   "making": [
+    "bones",
+    "charcoal",
+    "cord",
+    "iron_bar"
+   ],
+   "resale": []
+  },
+  "vintner": {
+   "making": [],
+   "resale": []
+  },
+  "weaver": {
+   "making": [
+    "flax",
+    "hemp",
+    "linen_cloth",
+    "straw",
+    "wool"
+   ],
+   "resale": []
+  }
+ },
+ "labels": [
+  [
+   "rm_ada_greyhand",
+   "merchant",
+   "carpenter in the Market Hall",
+   "carpenter"
+  ],
+  [
+   "rm_ada_rainmore",
+   "civilian",
+   "playing in the streets",
+   null
+  ],
+  [
+   "rm_agna_bilgecot",
+   "merchant",
+   "jeweller in the Market Hall",
+   "jeweler"
+  ],
+  [
+   "rm_agna_dripgate",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_agna_dripridge",
+   "merchant",
+   "provisioner in the Market Hall",
+   "provisioner"
+  ],
+  [
+   "rm_agna_tarham",
+   "merchant",
+   "fishmonger at The Wet Slab",
+   "fishmonger"
+  ],
+  [
+   "rm_agnes_millford",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_agnes_wetley",
+   "civilian",
+   "priest at the cathedral",
+   null
+  ],
+  [
+   "rm_aldric_fogwell",
+   "civilian",
+   "priest at the cathedral",
+   null
+  ],
+  [
+   "rm_aldric_grayrock_",
+   "civilian",
+   "deacon at the cathedral",
+   null
+  ],
+  [
+   "rm_aldric_rainmarsh",
+   "civilian",
+   "helping at The Wet Loaf",
+   null
+  ],
+  [
+   "rm_aldric_rustgate",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_ambrose_greatly",
+   "civilian",
+   "clerking at the Counting House",
+   null
+  ],
+  [
+   "rm_ansel_tarley",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_ansel_wickdale",
+   "merchant",
+   "runs The Greatly Masons' Yard",
+   "mason"
+  ],
+  [
+   "rm_arne_ashton",
+   "civilian",
+   "working at The Charcoal Store",
+   "charcoal"
+  ],
+  [
+   "rm_arne_wetworth",
+   "civilian",
+   "keeping the chambers",
+   null
+  ],
+  [
+   "rm_arne_wickdale",
+   "merchant",
+   "brewer at the abbey brewhouse",
+   "brewery"
+  ],
+  [
+   "rm_aud_dripgate",
+   "civilian",
+   "helping at Sump Sundries",
+   null
+  ],
+  [
+   "rm_beatha_foggate",
+   "guard",
+   "on patrol",
+   null
+  ],
+  [
+   "rm_beatha_millgate",
+   "civilian",
+   "works at The Fell Sawmill",
+   "sawmill"
+  ],
+  [
+   "rm_beatha_millley",
+   "merchant",
+   "armourer at The Rivet and Rain",
+   "armory"
+  ],
+  [
+   "rm_berit_coalworth",
+   "civilian",
+   "sexton of the cathedral",
+   null
+  ],
+  [
+   "rm_berit_kelpwick",
+   "merchant",
+   "builder at the Greatly works",
+   "builders_works"
+  ],
+  [
+   "rm_berit_mudton",
+   "merchant",
+   "runs The Ropewalk",
+   "ropewalk"
+  ],
+  [
+   "rm_berit_wickton",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_bertil_grantham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_bertil_slagley",
+   "civilian",
+   "singing in the cathedral choir",
+   null
+  ],
+  [
+   "rm_bettany_nailley",
+   "guard",
+   "sergeant of the Watch",
+   null
+  ],
+  [
+   "rm_bettany_ropegate",
+   "civilian",
+   "clerking at the Watch Office",
+   null
+  ],
+  [
+   "rm_bo_rainmarsh",
+   "merchant",
+   "baker at The Wet Loaf",
+   "bakery"
+  ],
+  [
+   "rm_brand_cindermore",
+   "civilian",
+   "helping at Southgate Ironmongers",
+   null
+  ],
+  [
+   "rm_brand_fogworth",
+   "civilian",
+   "playing in the streets",
+   null
+  ],
+  [
+   "rm_brand_mudridge",
+   "civilian",
+   "keeping the Watch's weapon racks",
+   null
+  ],
+  [
+   "rm_brenna_greyworth",
+   "merchant",
+   "ladling soup",
+   "inn"
+  ],
+  [
+   "rm_brenna_milldale",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_brenna_ropehand",
+   "civilian",
+   "helping at Southgate Farriers",
+   null
+  ],
+  [
+   "rm_brenna_slaggate",
+   "merchant",
+   "vintner at The Fell Wine Vaults",
+   "vintner"
+  ],
+  [
+   "rm_cedric_ashcot",
+   "guard",
+   "walking the wall",
+   null
+  ],
+  [
+   "rm_cedric_mudley",
+   "guard",
+   "holding the north gate",
+   null
+  ],
+  [
+   "rm_celestine_greatly",
+   "civilian",
+   "keeping Greatly House",
+   null
+  ],
+  [
+   "rm_clemence_rustham",
+   "merchant",
+   "fletcher at The Grey Goose",
+   "fletcher"
+  ],
+  [
+   "rm_corra_coalcot",
+   "merchant",
+   "runs The Fish Hall",
+   "fishmonger"
+  ],
+  [
+   "rm_corra_greyby",
+   "civilian",
+   "playing in the streets",
+   null
+  ],
+  [
+   "rm_corra_ropewell",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_corra_ropewick",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_corra_slagmore",
+   "guard",
+   "commanding the Watch",
+   null
+  ],
+  [
+   "rm_corwin_bilgestack",
+   "merchant",
+   "runs The Greatly Yard",
+   "builders_yard"
+  ],
+  [
+   "rm_corwin_fell_",
+   "civilian",
+   "working at The Fell Sawmill",
+   "sawmill"
+  ],
+  [
+   "rm_corwin_kelpby",
+   "civilian",
+   "singing in the cathedral choir",
+   null
+  ],
+  [
+   "rm_corwin_sootstack",
+   "merchant",
+   "barber at The Barber's Pole",
+   "barber"
+  ],
+  [
+   "rm_corwin_sootton",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_cressida_carlisle",
+   "civilian",
+   "pleading cases",
+   null
+  ],
+  [
+   "rm_cressida_dripmore",
+   "civilian",
+   "helping at The Rain Pot",
+   null
+  ],
+  [
+   "rm_cressida_millstack",
+   "merchant",
+   "perfumer at The Cedar Phial",
+   "perfumer"
+  ],
+  [
+   "rm_cressida_tarham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_dagfinn_brineley",
+   "guard",
+   "on patrol on the wharf",
+   null
+  ],
+  [
+   "rm_dagfinn_gullham",
+   "merchant",
+   "tailor at Needle & Drip",
+   "tailor"
+  ],
+  [
+   "rm_dagfinn_ropeby",
+   "civilian",
+   "works at The Lime Kilns",
+   "brickworks"
+  ],
+  [
+   "rm_dagny_pitchley",
+   "civilian",
+   "brother at the abbey brewhouse",
+   null
+  ],
+  [
+   "rm_dagny_pitchton",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_dagny_ropeley",
+   "guard",
+   "sergeant of the Watch",
+   null
+  ],
+  [
+   "rm_dagny_rustcot",
+   "civilian",
+   "harbourmaster of the Wharf Office",
+   null
+  ],
+  [
+   "rm_dagny_slaghand",
+   "merchant",
+   "cheesemaker in the Commons",
+   "dairy"
+  ],
+  [
+   "rm_delphine_dripham",
+   "civilian",
+   "scribe of the abbey",
+   "scriptorium"
+  ],
+  [
+   "rm_delphine_mudwick",
+   "civilian",
+   "scribe of the abbey",
+   "scriptorium"
+  ],
+  [
+   "rm_delphine_saltwick",
+   "merchant",
+   "smith at Timberland's Forge Row",
+   "smithy"
+  ],
+  [
+   "rm_desmond_ashwick",
+   "civilian",
+   "works at The Rainwater Brewery",
+   "brewery"
+  ],
+  [
+   "rm_desmond_bilgeridge",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_desmond_cindermore",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_desmond_dripcot",
+   "guard",
+   "keeping the cells",
+   null
+  ],
+  [
+   "rm_desmond_grantham",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_dirk_rainmore",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_disa_millley",
+   "civilian",
+   "helping at The Rivet and Rain",
+   null
+  ],
+  [
+   "rm_disa_raincot",
+   "civilian",
+   "porter of the abbey",
+   null
+  ],
+  [
+   "rm_disa_sootley",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_dorcas_rainford",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_dunstan_greywick",
+   "civilian",
+   "keeping the Greatly stables",
+   "stables"
+  ],
+  [
+   "rm_dunstan_slagley",
+   "civilian",
+   "works at The Greatly Plasterworks",
+   "plasterworks"
+  ],
+  [
+   "rm_ebba_pitchworth",
+   "civilian",
+   "works at The Ropewalk",
+   "ropewalk"
+  ],
+  [
+   "rm_ebba_slagstack",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_edda_bilgeridge",
+   "civilian",
+   "helping at The Hook and Cleaver",
+   null
+  ],
+  [
+   "rm_edda_gullford",
+   "merchant",
+   "runs The Cinder Glassworks",
+   "glassworks"
+  ],
+  [
+   "rm_edda_mudmore",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_edda_ropeton",
+   "merchant",
+   "shipwright at Grayrock Shipwrights",
+   "shipwright"
+  ],
+  [
+   "rm_edmund_kelpstack",
+   "merchant",
+   "brewer at The Hopyard",
+   "brewery"
+  ],
+  [
+   "rm_edmund_saltham",
+   "civilian",
+   "keeping the chambers",
+   null
+  ],
+  [
+   "rm_edmund_sootcot",
+   "civilian",
+   "running the City Office",
+   null
+  ],
+  [
+   "rm_edmund_sootdale",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_edric_cindermarsh",
+   "civilian",
+   "works at The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_edric_kelpham",
+   "civilian",
+   "stewarding Greatly House",
+   null
+  ],
+  [
+   "rm_edric_millton",
+   "merchant",
+   "cooper at Staves & Hoops",
+   "cooperage"
+  ],
+  [
+   "rm_edric_saltby",
+   "civilian",
+   "almoner of the abbey",
+   null
+  ],
+  [
+   "rm_egil_brineham",
+   "civilian",
+   "works at The Fish Hall",
+   "fishmonger"
+  ],
+  [
+   "rm_egil_grantham",
+   "civilian",
+   "visiting the sick of the Heights",
+   null
+  ],
+  [
+   "rm_egil_targate",
+   "civilian",
+   "helping at Greywool",
+   "weaver"
+  ],
+  [
+   "rm_eleanor_mudworth",
+   "civilian",
+   "keeping the rolls at the Records Office",
+   null
+  ],
+  [
+   "rm_eleanor_saltcot",
+   "merchant",
+   "moneychanger at The Greatly Bank",
+   "moneychanger"
+  ],
+  [
+   "rm_eleanor_vance",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_eleanor_wetby",
+   "civilian",
+   "teaching at the abbey school",
+   null
+  ],
+  [
+   "rm_eleanor_wickhand",
+   "civilian",
+   "works at The Fell Sawmill",
+   "sawmill"
+  ],
+  [
+   "rm_elspet_ropewick",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_elspet_saltmarsh",
+   "merchant",
+   "provisioner at Bridge Stores",
+   "provisioner"
+  ],
+  [
+   "rm_elspet_sootley",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_emmerich_greyridge",
+   "civilian",
+   "in service to the Harrowgates",
+   null
+  ],
+  [
+   "rm_emmerich_sootley",
+   "merchant",
+   "chandler at The Lamp & Wick",
+   "chandlery"
+  ],
+  [
+   "rm_erland_ashworth",
+   "civilian",
+   "hearing cases",
+   null
+  ],
+  [
+   "rm_erland_cinderridge",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_erland_fogley",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_erland_millley",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_erland_millstack",
+   "civilian",
+   "helping at The Cedar Phial",
+   null
+  ],
+  [
+   "rm_erland_plankwell",
+   "civilian",
+   "in service to the Granthams",
+   null
+  ],
+  [
+   "rm_fenwick_millmarsh",
+   "civilian",
+   "helping at Commons Sundries",
+   null
+  ],
+  [
+   "rm_finn_saltwell",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_finn_slagmarsh",
+   "civilian",
+   "works at The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_finn_wickby",
+   "civilian",
+   "helping at Moss & Marrow",
+   null
+  ],
+  [
+   "rm_florence_millhand",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_florence_millmarsh",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_florence_ropeworth",
+   "civilian",
+   "helping at Vane & Daughters",
+   null
+  ],
+  [
+   "rm_frederick_foghand",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_frederick_nailgate",
+   "civilian",
+   "healer of the abbey",
+   null
+  ],
+  [
+   "rm_frederick_pitchcot",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_frederick_rainham",
+   "guard",
+   "on patrol",
+   null
+  ],
+  [
+   "rm_frida_bilgewell",
+   "guard",
+   "keeping the cells",
+   null
+  ],
+  [
+   "rm_frida_brineford",
+   "merchant",
+   "cooper at The Bung Hole",
+   "cooperage"
+  ],
+  [
+   "rm_frida_kelpford",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_frida_rainhand",
+   "civilian",
+   "working at the Greatly works",
+   "builders_works"
+  ],
+  [
+   "rm_frida_wickwell",
+   "merchant",
+   "tinker at Mend & Make Do",
+   "tinker"
+  ],
+  [
+   "rm_gerrit_gullham",
+   "civilian",
+   "helping at Needle & Drip",
+   null
+  ],
+  [
+   "rm_gerrit_mudhand",
+   "civilian",
+   "chancellor of the Council",
+   null
+  ],
+  [
+   "rm_gerrit_nailford",
+   "merchant",
+   "rag-and-bone dealer at Rag-and-Bone Yard",
+   "rag_and_bone"
+  ],
+  [
+   "rm_gerrit_ropewick",
+   "civilian",
+   "works at The Greatly Masons' Yard",
+   "mason"
+  ],
+  [
+   "rm_gerrit_sootgate",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_gerrit_tarmore",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_godfrey_dripmore",
+   "merchant",
+   "potter at The Rain Pot",
+   "pottery"
+  ],
+  [
+   "rm_gorm_pitchmarsh",
+   "civilian",
+   "works at The Wharf Tannery",
+   "tannery"
+  ],
+  [
+   "rm_gorm_plankgate",
+   "civilian",
+   "infirmarian of the abbey",
+   null
+  ],
+  [
+   "rm_gorm_plankworth",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_gorm_rustmarsh",
+   "merchant",
+   "pressing at the Fell press",
+   "press"
+  ],
+  [
+   "rm_gorm_slagworth",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rm_gorm_tarton",
+   "civilian",
+   "works at The Wharf Tannery",
+   "tannery"
+  ],
+  [
+   "rm_greta_gullton",
+   "civilian",
+   "working the cranes",
+   null
+  ],
+  [
+   "rm_grete_gullhand",
+   "civilian",
+   "works at The Greatly Yard",
+   "builders_yard"
+  ],
+  [
+   "rm_gudrun_fell_",
+   "civilian",
+   "keeping the Fell accounts",
+   null
+  ],
+  [
+   "rm_gudrun_pitchridge",
+   "civilian",
+   "works at The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_gudrun_ropeford",
+   "merchant",
+   "shopkeeper at Rainford's Store",
+   "general"
+  ],
+  [
+   "rm_gudrun_rustwick",
+   "civilian",
+   "working at the Greatly works",
+   "builders_works"
+  ],
+  [
+   "rm_gudrun_targate",
+   "merchant",
+   "weaver at Greywool",
+   "weaver"
+  ],
+  [
+   "rm_gudrun_wickby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_gunnar_harrowgate",
+   "civilian",
+   "buying Grayrock iron",
+   null
+  ],
+  [
+   "rm_gunnar_mudstack",
+   "civilian",
+   "works at The Greatly Masons' Yard",
+   "mason"
+  ],
+  [
+   "rm_gunnar_wetcot",
+   "civilian",
+   "works at The Ropewalk",
+   "ropewalk"
+  ],
+  [
+   "rm_gwen_brineby",
+   "civilian",
+   "working the cranes",
+   null
+  ],
+  [
+   "rm_gwen_cinderdale",
+   "civilian",
+   "clerking at the City Office",
+   null
+  ],
+  [
+   "rm_gwen_fogstack",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_gwen_pitchcot",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_gwen_pitchdale",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_gwen_sootmore",
+   "civilian",
+   "works at The Rag Mill",
+   "papermill"
+  ],
+  [
+   "rm_hakon_grantham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_halvard_ashley",
+   "merchant",
+   "saddler at The Harness Shop",
+   "saddlery"
+  ],
+  [
+   "rm_halvard_mossgrave",
+   "civilian",
+   "walking the gardens",
+   null
+  ],
+  [
+   "rm_hanne_coalton",
+   "guard",
+   "holding the Harbour Gate",
+   null
+  ],
+  [
+   "rm_hanne_sootham",
+   "merchant",
+   "soup stall in the Rag Market",
+   "stall"
+  ],
+  [
+   "rm_hanne_thornbury",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_hanne_wickworth",
+   "guard",
+   "walking the wall",
+   null
+  ],
+  [
+   "rm_hester_bilgeham",
+   "guard",
+   "holding the south gate",
+   null
+  ],
+  [
+   "rm_hester_fogstack",
+   "merchant",
+   "provisioner at Harbour Provisions",
+   "provisioner"
+  ],
+  [
+   "rm_hilde_bilgegate",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_hilde_dripby",
+   "civilian",
+   "works at The Rag Mill",
+   "papermill"
+  ],
+  [
+   "rm_hilde_greyby",
+   "merchant",
+   "glassblower at Clearwater Glass",
+   "glassworks"
+  ],
+  [
+   "rm_hilde_rainmore",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_hilde_wetwick",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_hjalte_sootby",
+   "civilian",
+   "works at The Greatly Yard",
+   "builders_yard"
+  ],
+  [
+   "rm_hjalte_wetdale",
+   "civilian",
+   "healer of the abbey",
+   null
+  ],
+  [
+   "rm_hollis_greydale",
+   "civilian",
+   "works at The Grayrock Foundry",
+   "foundry"
+  ],
+  [
+   "rm_hollis_gullmore",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_hollis_nailwick",
+   "civilian",
+   "stewarding Mossgrave Court",
+   null
+  ],
+  [
+   "rm_hollis_slagford",
+   "civilian",
+   "in service to the Thornburys",
+   null
+  ],
+  [
+   "rm_hollis_slagwick",
+   "civilian",
+   "in service to the Harrowgates",
+   null
+  ],
+  [
+   "rm_ilse_cindercot",
+   "civilian",
+   "clerking at the City Office",
+   null
+  ],
+  [
+   "rm_ilse_coalley",
+   "merchant",
+   "runs The Fell Sawmill",
+   "sawmill"
+  ],
+  [
+   "rm_ilse_fogridge",
+   "merchant",
+   "runs The Charcoal Store",
+   "charcoal"
+  ],
+  [
+   "rm_ilse_nailridge",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_ilse_saltley",
+   "merchant",
+   "distiller at the Fell Distillery",
+   "distillery"
+  ],
+  [
+   "rm_imogen_ashby",
+   "civilian",
+   "teaching letters",
+   null
+  ],
+  [
+   "rm_imogen_cinderwell",
+   "merchant",
+   "carpenter at Pennock & Sons",
+   "carpenter"
+  ],
+  [
+   "rm_imogen_nailridge",
+   "merchant",
+   "cartographer at Soundings",
+   "cartographer"
+  ],
+  [
+   "rm_imogen_tarcot",
+   "civilian",
+   "works at The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_ingrid_ashwell",
+   "civilian",
+   "works at The Cinder Glassworks",
+   "glassworks"
+  ],
+  [
+   "rm_ingrid_grayrock_",
+   "civilian",
+   "at her lessons in the Hall",
+   null
+  ],
+  [
+   "rm_ingrid_millton",
+   "civilian",
+   "helping at Staves & Hoops",
+   null
+  ],
+  [
+   "rm_ingrid_saltstack",
+   "merchant",
+   "preserver at the Fell Preserving House",
+   "preserver"
+  ],
+  [
+   "rm_isolde_brineton",
+   "merchant",
+   "pie stall on Market Square",
+   "stall"
+  ],
+  [
+   "rm_isolde_fell_",
+   "civilian",
+   "ruling House Fell",
+   null
+  ],
+  [
+   "rm_isolde_ropehand",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_ivar_cinderford",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_ivar_nailham",
+   "civilian",
+   "works at The Rainwater Brewery",
+   "brewery"
+  ],
+  [
+   "rm_ivar_pitchwick",
+   "civilian",
+   "clerking at the Counting House",
+   null
+  ],
+  [
+   "rm_ivo_cinderham",
+   "civilian",
+   "working the cranes",
+   null
+  ],
+  [
+   "rm_ivo_dripford",
+   "guard",
+   "holding the north gate",
+   null
+  ],
+  [
+   "rm_ivo_dripworth",
+   "civilian",
+   "helping at Gullgut Fish",
+   null
+  ],
+  [
+   "rm_ivo_fogstack",
+   "civilian",
+   "working the cranes",
+   null
+  ],
+  [
+   "rm_ivo_slagby",
+   "merchant",
+   "smith at The Anchor Forge",
+   "smithy"
+  ],
+  [
+   "rm_ivo_tarmarsh",
+   "merchant",
+   "cheese stall on Market Square",
+   "stall"
+  ],
+  [
+   "rm_ivo_wickgate",
+   "civilian",
+   "serving at Greatly House",
+   null
+  ],
+  [
+   "rm_jarl_greyford",
+   "civilian",
+   "serving at Greatly House",
+   null
+  ],
+  [
+   "rm_jarl_saltcot",
+   "civilian",
+   "helping at The Greatly Bank",
+   "moneychanger"
+  ],
+  [
+   "rm_jasper_bilgeford",
+   "civilian",
+   "collecting the Crown's customs",
+   null
+  ],
+  [
+   "rm_jorunn_cindermore",
+   "merchant",
+   "smith at Southgate Ironmongers",
+   "smithy"
+  ],
+  [
+   "rm_jorunn_ropewick",
+   "merchant",
+   "pawnbroker at The Pawn and Ledger",
+   "pawnbroker"
+  ],
+  [
+   "rm_jorunn_saltdale",
+   "merchant",
+   "porridge stall in the Rag Market",
+   "stall"
+  ],
+  [
+   "rm_jorunn_tarham",
+   "civilian",
+   "helping at The Wet Slab",
+   null
+  ],
+  [
+   "rm_josephine_brineford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_josephine_dripgate",
+   "merchant",
+   "shopkeeper at Sump Sundries",
+   "general"
+  ],
+  [
+   "rm_josephine_wetmore",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_julian_greatly",
+   "civilian",
+   "keeping the Bonded Warehouse",
+   null
+  ],
+  [
+   "rm_kari_bilgehand",
+   "merchant",
+   "keeping the inn",
+   "inn"
+  ],
+  [
+   "rm_karin_ashgate",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_karin_sootdale",
+   "merchant",
+   "scribe at Wetink Lane Scriveners",
+   "scriptorium"
+  ],
+  [
+   "rm_karin_stanmore",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_karin_thornbury",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_karin_wetridge",
+   "merchant",
+   "fishmonger in the Rag Market",
+   "fishmonger"
+  ],
+  [
+   "rm_kjell_cinderley",
+   "merchant",
+   "tailor at Oilcloth & Wool",
+   "weaver"
+  ],
+  [
+   "rm_kjell_cinderwell",
+   "civilian",
+   "helping at Pennock & Sons",
+   null
+  ],
+  [
+   "rm_kjell_saltcot",
+   "civilian",
+   "playing in the streets",
+   null
+  ],
+  [
+   "rm_kjell_saltton",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_kjell_wickmore",
+   "civilian",
+   "works at The Cinder Glassworks",
+   "glassworks"
+  ],
+  [
+   "rm_lars_wickwell",
+   "civilian",
+   "helping at Mend & Make Do",
+   null
+  ],
+  [
+   "rm_lavinia_ashford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_lavinia_bilgedale",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_lavinia_brinemarsh",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_lavinia_plankwick",
+   "civilian",
+   "stewarding Grayrock Hall",
+   null
+  ],
+  [
+   "rm_leif_fogcot",
+   "merchant",
+   "runs The Lime Kilns",
+   "brickworks"
+  ],
+  [
+   "rm_lionel_dripworth",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_lionel_pitchdale",
+   "civilian",
+   "helping at Mutton Lane Butchers",
+   "butcher"
+  ],
+  [
+   "rm_lionel_ropestack",
+   "civilian",
+   "abbot of the cathedral",
+   null
+  ],
+  [
+   "rm_liv_cinderby",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_liv_kelpmarsh",
+   "guard",
+   "holding the east gate",
+   null
+  ],
+  [
+   "rm_liv_pitchhand",
+   "merchant",
+   "baker at The Sugar Loaf",
+   "bakery"
+  ],
+  [
+   "rm_liv_slagstack",
+   "merchant",
+   "apothecary at The Cough Jar",
+   "apothecary"
+  ],
+  [
+   "rm_lotte_ashford",
+   "civilian",
+   "helping at Cedar Row Joiners",
+   null
+  ],
+  [
+   "rm_lotte_bilgeton",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_lotte_greyley",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_mab_carlisle",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_mab_coalridge",
+   "merchant",
+   "runs The Grayrock Foundry",
+   "foundry"
+  ],
+  [
+   "rm_mab_pitchcot",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_mab_saltgate",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_magda_rainmarsh",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_magda_rustham",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_magnus_greycot",
+   "merchant",
+   "runs The Greatly Colour Works",
+   "paintworks"
+  ],
+  [
+   "rm_magnus_stanmore",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_maren_brineford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_maren_grayrock_",
+   "civilian",
+   "keeping Grayrock Hall",
+   null
+  ],
+  [
+   "rm_maren_tarhand",
+   "civilian",
+   "serving at Greatly House",
+   null
+  ],
+  [
+   "rm_maren_tarworth__",
+   "civilian",
+   "keeping the chambers",
+   null
+  ],
+  [
+   "rm_mathis_plankham",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_mathis_saltton",
+   "civilian",
+   "helping at Grist & Crust",
+   null
+  ],
+  [
+   "rm_mathis_slagwell",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_millicent_rustwell",
+   "civilian",
+   "stewarding Fellhall",
+   null
+  ],
+  [
+   "rm_mogens_ashley",
+   "civilian",
+   "helping at The Harness Shop",
+   null
+  ],
+  [
+   "rm_mogens_dripley",
+   "merchant",
+   "weaver on Market Square",
+   "weaver"
+  ],
+  [
+   "rm_mogens_greycot",
+   "civilian",
+   "works at The Tileworks",
+   "brickworks"
+  ],
+  [
+   "rm_moll_dripdale",
+   "merchant",
+   "tinker in the Rag Market",
+   "tinker"
+  ],
+  [
+   "rm_moll_millton",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_montague_millcot",
+   "civilian",
+   "serving at Greatly House",
+   null
+  ],
+  [
+   "rm_montague_pitchhand",
+   "civilian",
+   "helping at The Sugar Loaf",
+   null
+  ],
+  [
+   "rm_nessa_fogton",
+   "civilian",
+   "helping at Hollis Physic",
+   null
+  ],
+  [
+   "rm_njal_ashford",
+   "merchant",
+   "carpenter at Cedar Row Joiners",
+   "carpenter"
+  ],
+  [
+   "rm_njal_stanmore",
+   "civilian",
+   "drafting the Council's letters",
+   null
+  ],
+  [
+   "rm_oda_greywell",
+   "merchant",
+   "rag-and-bone dealer, Rag Market",
+   "rag_and_bone"
+  ],
+  [
+   "rm_oda_harrowgate",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_oda_kelpridge",
+   "civilian",
+   "serving at Greatly House",
+   null
+  ],
+  [
+   "rm_oda_kelpworth",
+   "civilian",
+   "keeping the Greatly stables",
+   "stables"
+  ],
+  [
+   "rm_oda_slagby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_oda_sootdale",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_olaf_fogstack",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_olaf_pitchmore",
+   "civilian",
+   "clerking at the City Office",
+   null
+  ],
+  [
+   "rm_orla_rainworth",
+   "merchant",
+   "potter on Market Square",
+   "pottery"
+  ],
+  [
+   "rm_orla_ropeworth",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_orla_wickby",
+   "merchant",
+   "herbalist at Moss & Marrow",
+   "herbalist"
+  ],
+  [
+   "rm_orm_fogmore",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_orm_wickcot",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_orm_wickwick",
+   "merchant",
+   "shopkeeper in the Rag Market",
+   "general"
+  ],
+  [
+   "rm_oskar_gullworth",
+   "civilian",
+   "clerking at the City Office",
+   null
+  ],
+  [
+   "rm_oskar_kelpwell",
+   "civilian",
+   "helping at Wickham's Chandlery",
+   "chandlery"
+  ],
+  [
+   "rm_oskar_millwell",
+   "merchant",
+   "provisioner at Southway Provisions",
+   "provisioner"
+  ],
+  [
+   "rm_oskar_sootwick",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_oskar_wickmarsh",
+   "civilian",
+   "in service to the Granthams",
+   null
+  ],
+  [
+   "rm_osric_mossgrave",
+   "civilian",
+   "riding out to the Folds",
+   null
+  ],
+  [
+   "rm_osric_plankford",
+   "guard",
+   "on patrol on the wharf",
+   null
+  ],
+  [
+   "rm_osric_ropeworth",
+   "merchant",
+   "tailor at Vane & Daughters",
+   "tailor"
+  ],
+  [
+   "rm_osric_slagstack",
+   "civilian",
+   "helping at The Cough Jar",
+   null
+  ],
+  [
+   "rm_osric_wetford",
+   "merchant",
+   "runs The Rag Mill",
+   "papermill"
+  ],
+  [
+   "rm_ottilie_harrowgate",
+   "civilian",
+   "at home in the Heights",
+   null
+  ],
+  [
+   "rm_ottilie_nailmarsh",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_ottilie_sootdale",
+   "civilian",
+   "helping at Wetink Lane Scriveners",
+   null
+  ],
+  [
+   "rm_palle_bilgemarsh",
+   "merchant",
+   "tinker on Market Square",
+   "tinker"
+  ],
+  [
+   "rm_palle_plankmore",
+   "guard",
+   "holding the Cinder Gate",
+   null
+  ],
+  [
+   "rm_percival_rustford",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_percival_thornbury",
+   "civilian",
+   "pleading cases",
+   null
+  ],
+  [
+   "rm_petra_plankhand",
+   "civilian",
+   "works at The Fish Hall",
+   "fishmonger"
+  ],
+  [
+   "rm_petra_vance",
+   "civilian",
+   "lending",
+   null
+  ],
+  [
+   "rm_philippa_dripworth",
+   "merchant",
+   "fishmonger at Gullgut Fish",
+   "fishmonger"
+  ],
+  [
+   "rm_philippa_fogwick",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_philippa_rustton",
+   "merchant",
+   "runs The Wharf Tannery",
+   "tannery"
+  ],
+  [
+   "rm_piet_muddale",
+   "civilian",
+   "working at Cinder Wheelwrights",
+   "cartwright"
+  ],
+  [
+   "rm_piet_slagcot",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_piet_wickridge",
+   "civilian",
+   "carrying from Sump Stairs",
+   null
+  ],
+  [
+   "rm_ragnar_brineford",
+   "civilian",
+   "helping at The Bung Hole",
+   null
+  ],
+  [
+   "rm_ragnar_cinderwell",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_ragnar_millmarsh",
+   "merchant",
+   "shopkeeper at Commons Sundries",
+   "general"
+  ],
+  [
+   "rm_ragnar_roperidge",
+   "merchant",
+   "runs The Eastgate Stables",
+   "stables"
+  ],
+  [
+   "rm_ragnar_vance",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_roald_wickstack",
+   "civilian",
+   "in service to the Vances",
+   null
+  ],
+  [
+   "rm_rosalind_greatly",
+   "civilian",
+   "reading in the gardens",
+   null
+  ],
+  [
+   "rm_rosamund_coalford",
+   "merchant",
+   "runs The North Wharf Smokehouse",
+   "smokehouse"
+  ],
+  [
+   "rm_rosamund_saltmarsh",
+   "civilian",
+   "helping at Bridge Stores",
+   null
+  ],
+  [
+   "rm_rosamund_slagstack",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_rosamund_sootmarsh",
+   "guard",
+   "holding the Customs Pier",
+   null
+  ],
+  [
+   "rm_rosamund_tarridge",
+   "merchant",
+   "keeping the inn",
+   "inn"
+  ],
+  [
+   "rm_runa_ashridge",
+   "merchant",
+   "saddler in the Market Hall",
+   "saddlery"
+  ],
+  [
+   "rm_runa_coalhand",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_runa_gullley",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_runa_nailton",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_runa_ropemarsh",
+   "civilian",
+   "works at The Greatly Plasterworks",
+   "plasterworks"
+  ],
+  [
+   "rm_rune_cinderwick",
+   "civilian",
+   "works at The Tileworks",
+   "brickworks"
+  ],
+  [
+   "rm_rune_fogworth",
+   "merchant",
+   "printer at The Council Press",
+   "printing_house"
+  ],
+  [
+   "rm_rune_greyby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_rune_gullwell",
+   "civilian",
+   "clerking at the Counting House",
+   null
+  ],
+  [
+   "rm_rune_pitchhand",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_rune_wickwell",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_rupert_cindergate",
+   "merchant",
+   "runs The Tileworks",
+   "brickworks"
+  ],
+  [
+   "rm_rupert_fogton",
+   "merchant",
+   "apothecary at Hollis Physic",
+   "apothecary"
+  ],
+  [
+   "rm_rupert_pitchford",
+   "merchant",
+   "herbalist on Market Square",
+   "herbalist"
+  ],
+  [
+   "rm_rupert_ropehand",
+   "merchant",
+   "smith at Southgate Farriers",
+   "smithy"
+  ],
+  [
+   "rm_rupert_sootley",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_septimus_plankmarsh",
+   "civilian",
+   "works at The Eastgate Stables",
+   "stables"
+  ],
+  [
+   "rm_septimus_slagby",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_signe_ashstack",
+   "civilian",
+   "serving in the King's household",
+   null
+  ],
+  [
+   "rm_signe_brineworth",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rm_signe_dripworth",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_signe_mossgrave",
+   "civilian",
+   "keeping Mossgrave Court",
+   null
+  ],
+  [
+   "rm_signe_sootwell",
+   "merchant",
+   "runs The Rainwater Brewery",
+   "brewery"
+  ],
+  [
+   "rm_sigrun_kelphand",
+   "merchant",
+   "cooper in the Market Hall",
+   "cooperage"
+  ],
+  [
+   "rm_sigrun_thornbury",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_silas_brinegate",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_silas_brinemore",
+   "civilian",
+   "in service to the Thornburys",
+   null
+  ],
+  [
+   "rm_silas_sootworth",
+   "civilian",
+   "helping at Nailers' Forge",
+   "smithy"
+  ],
+  [
+   "rm_silas_wickford",
+   "guard",
+   "on patrol",
+   null
+  ],
+  [
+   "rm_solveig_cinderton",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_solveig_tarwell",
+   "civilian",
+   "priest of the Chapel of the Tide",
+   null
+  ],
+  [
+   "rm_soren_coaldale",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_soren_kelpcot",
+   "civilian",
+   "clerking at the Records Office",
+   null
+  ],
+  [
+   "rm_soren_kelpstack",
+   "civilian",
+   "helping at The Hopyard",
+   null
+  ],
+  [
+   "rm_soren_millwell",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_soren_ropewick",
+   "civilian",
+   "helping at The Pawn and Ledger",
+   "pawnbroker"
+  ],
+  [
+   "rm_sten_kelpwell",
+   "merchant",
+   "chandler at Wickham's Chandlery",
+   "chandlery"
+  ],
+  [
+   "rm_sten_ropeford",
+   "civilian",
+   "helping at Rainford's Store",
+   null
+  ],
+  [
+   "rm_sybil_bilgeby",
+   "civilian",
+   "cooking for the King's household",
+   "inn"
+  ],
+  [
+   "rm_sybil_tardale",
+   "civilian",
+   "works at The Grayrock Foundry",
+   "foundry"
+  ],
+  [
+   "rm_theodora_bilgeridge",
+   "merchant",
+   "butcher at The Hook and Cleaver",
+   "butcher"
+  ],
+  [
+   "rm_theodora_driphand",
+   "civilian",
+   "keeping order in court",
+   null
+  ],
+  [
+   "rm_theodora_fogdale",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rm_theodora_ropemarsh",
+   "merchant",
+   "chandler on Market Square",
+   "chandlery"
+  ],
+  [
+   "rm_theodora_wickley",
+   "civilian",
+   "nursing for the abbey",
+   null
+  ],
+  [
+   "rm_thyra_ashley",
+   "civilian",
+   "minding the shop door",
+   null
+  ],
+  [
+   "rm_thyra_carlisle",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_thyra_plankridge",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_thyra_wetmarsh",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_tilde_nailby",
+   "guard",
+   "holding the south gate",
+   null
+  ],
+  [
+   "rm_tobias_grayrock_",
+   "civilian",
+   "working at The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_tobias_kelpton",
+   "civilian",
+   "working at The North Wharf Smokehouse",
+   "smokehouse"
+  ],
+  [
+   "rm_tobias_saltton",
+   "merchant",
+   "baker at Grist & Crust",
+   "bakery"
+  ],
+  [
+   "rm_torvald_slagton",
+   "merchant",
+   "shopkeeper on Market Square",
+   "general"
+  ],
+  [
+   "rm_tove_brinegate",
+   "merchant",
+   "baker at The Morning Oven",
+   "bakery"
+  ],
+  [
+   "rm_tove_wetgate",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_tristram_rainley",
+   "civilian",
+   "portering in Market Square",
+   null
+  ],
+  [
+   "rm_ulf_cinderley",
+   "civilian",
+   "helping at Oilcloth & Wool",
+   "weaver"
+  ],
+  [
+   "rm_ulf_pitchham",
+   "civilian",
+   "in service to the Carlisles",
+   null
+  ],
+  [
+   "rm_ulf_stanmore",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_ulla_greymore",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rm_ulla_rustham",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rm_una_pitchcot",
+   "merchant",
+   "saddler at Collar and Trace",
+   "saddlery"
+  ],
+  [
+   "rm_una_plankton",
+   "civilian",
+   "cooking for the King's household",
+   "inn"
+  ],
+  [
+   "rm_una_rustridge",
+   "civilian",
+   "works at The North Wharf Smokehouse",
+   "smokehouse"
+  ],
+  [
+   "rm_vidar_ashhand",
+   "civilian",
+   "serving in the hall",
+   null
+  ],
+  [
+   "rm_vidar_dripmarsh",
+   "guard",
+   "holding the east gate",
+   null
+  ],
+  [
+   "rm_vidar_gullwick",
+   "civilian",
+   "works at The Greatly Yard",
+   "builders_yard"
+  ],
+  [
+   "rm_vidar_vance",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_vigdis_millley",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rm_vigdis_pitchmarsh",
+   "civilian",
+   "works at The Greatly Colour Works",
+   "paintworks"
+  ],
+  [
+   "rm_vigdis_rainmore",
+   "merchant",
+   "jeweler at Silver & Rain",
+   "jeweler"
+  ],
+  [
+   "rm_wenna_mossgrave",
+   "civilian",
+   "running the wool shed",
+   "weaver"
+  ],
+  [
+   "rm_wenna_naildale",
+   "merchant",
+   "wheelwright at Cinder Wheelwrights",
+   "cartwright"
+  ],
+  [
+   "rm_wenna_tarford",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_winifred_cinderworth",
+   "merchant",
+   "keeping the taproom",
+   "inn"
+  ],
+  [
+   "rm_winifred_pitchdale",
+   "merchant",
+   "butcher at Mutton Lane Butchers",
+   "butcher"
+  ],
+  [
+   "rm_wynn_fogworth",
+   "civilian",
+   "printing at The Council Press",
+   "printing_house"
+  ],
+  [
+   "rm_wynn_pitchwell",
+   "civilian",
+   "in service to the Stanmores",
+   null
+  ],
+  [
+   "rm_wynn_rustworth",
+   "merchant",
+   "tailor in the Market Hall",
+   "tailor"
+  ],
+  [
+   "rm_wynn_sootridge",
+   "civilian",
+   "usher in the Antechamber",
+   null
+  ],
+  [
+   "rm_wynn_sootworth",
+   "merchant",
+   "smith at Nailers' Forge",
+   "smithy"
+  ],
+  [
+   "rm_wynn_tarhand",
+   "merchant",
+   "runs The Greatly Plasterworks",
+   "plasterworks"
+  ],
+  [
+   "rm_wystan_coalmarsh",
+   "merchant",
+   "runs The Grayrock Ironworks",
+   "ironworks"
+  ],
+  [
+   "rm_wystan_mudcot",
+   "guard",
+   "walking the wall",
+   null
+  ],
+  [
+   "rm_wystan_tarstack",
+   "civilian",
+   "keeping the chambers",
+   null
+  ],
+  [
+   "rm_yrsa_nailridge",
+   "civilian",
+   "helping at Soundings",
+   null
+  ],
+  [
+   "rm_yrsa_nailwell",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rm_yrsa_tarwick",
+   "civilian",
+   "weighing at the Customs House",
+   null
+  ],
+  [
+   "rmx_aldric_thackeray",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_ansel_kelpford",
+   "civilian",
+   "helping at The Black Tun",
+   null
+  ],
+  [
+   "rmx_arne_rainworth",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_aud_kemp",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_aud_saltridge",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rmx_bartholomew_sootmore",
+   "civilian",
+   "usher in the Antechamber",
+   null
+  ],
+  [
+   "rmx_bertil_coalley",
+   "guard",
+   "walking the wall",
+   null
+  ],
+  [
+   "rmx_bertil_saltcot",
+   "guard",
+   "on patrol",
+   null
+  ],
+  [
+   "rmx_bertil_slagwick",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_bettany_bilgehand",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_bo_gilbey",
+   "civilian",
+   "lighting the lamps at dusk",
+   null
+  ],
+  [
+   "rmx_brenna_abbot",
+   "civilian",
+   "herald of the Great Palace",
+   null
+  ],
+  [
+   "rmx_cedric_rook",
+   "civilian",
+   "royal secretary",
+   null
+  ],
+  [
+   "rmx_corra_coldridge",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rmx_corra_gullford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_corra_pennock",
+   "civilian",
+   "the Crown's treasurer",
+   null
+  ],
+  [
+   "rmx_cressida_cotton",
+   "guard",
+   "on patrol in the Sump",
+   null
+  ],
+  [
+   "rmx_cressida_mallory",
+   "civilian",
+   "washing at the Washhouse",
+   "laundry"
+  ],
+  [
+   "rmx_cressida_wetherell",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_dagfinn_kettlecote",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_dagfinn_thornham",
+   "guard",
+   "on patrol in the Sump",
+   null
+  ],
+  [
+   "rmx_dagfinn_wainwright",
+   "civilian",
+   "keeping the Washhouse",
+   "laundry"
+  ],
+  [
+   "rmx_dagny_catterick",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_delphine_birch",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_delphine_brackwick",
+   "civilian",
+   "clerking in the Administrative Wing",
+   null
+  ],
+  [
+   "rmx_delphine_redfern",
+   "civilian",
+   "clerking in the Administrative Wing",
+   null
+  ],
+  [
+   "rmx_desmond_farrow",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_desmond_hollis",
+   "guard",
+   "guarding the Great Palace",
+   null
+  ],
+  [
+   "rmx_desmond_rook",
+   "civilian",
+   "clerking in the Administrative Wing",
+   null
+  ],
+  [
+   "rmx_desmond_toft",
+   "civilian",
+   "lighting the lamps at dusk",
+   null
+  ],
+  [
+   "rmx_dirk_langstead",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_dirk_mallory",
+   "civilian",
+   "helping at The Rainbarrel",
+   null
+  ],
+  [
+   "rmx_disa_bilgemarsh",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_disa_nettleby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_disa_slagwick",
+   "civilian",
+   "clerking in the Administrative Wing",
+   null
+  ],
+  [
+   "rmx_dorcas_brineley",
+   "civilian",
+   "clerking in the Administrative Wing",
+   null
+  ],
+  [
+   "rmx_dunstan_plankham",
+   "guard",
+   "guarding the Great Palace",
+   null
+  ],
+  [
+   "rmx_dunstan_sallow",
+   "guard",
+   "guarding the Great Palace",
+   null
+  ],
+  [
+   "rmx_ebba_heath",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_ebba_netherby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_edda_muddale",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_edmund_sootford",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_egil_blackcombe",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_egil_dunn",
+   "guard",
+   "guarding the Great Palace",
+   null
+  ],
+  [
+   "rmx_fenwick_mossdale",
+   "civilian",
+   "warden of the Market Hall",
+   null
+  ],
+  [
+   "rmx_finn_dripwick",
+   "civilian",
+   "helping at The Sailors' Rest",
+   null
+  ],
+  [
+   "rmx_florence_gullworth",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_florence_pennock",
+   "civilian",
+   "carrying for the Couriers' Office",
+   null
+  ],
+  [
+   "rmx_frida_marrowby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_frida_netherby",
+   "civilian",
+   "clerking at the Records Office",
+   null
+  ],
+  [
+   "rmx_gerrit_hollis",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_gorm_halford",
+   "civilian",
+   "lighting the lamps at dusk",
+   null
+  ],
+  [
+   "rmx_gorm_saltstack",
+   "civilian",
+   "clerking at the Records Office",
+   null
+  ],
+  [
+   "rmx_greta_thornworth",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_grete_dimmock",
+   "civilian",
+   "carrying for the Couriers' Office",
+   null
+  ],
+  [
+   "rmx_grete_dunn",
+   "civilian",
+   "clerking at the Records Office",
+   null
+  ],
+  [
+   "rmx_gudrun_mossdale",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_gunnar_farrow",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_halvard_fenworth",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_hanne_ash",
+   "civilian",
+   "carrying for the Couriers' Office",
+   null
+  ],
+  [
+   "rmx_harriet_pennock",
+   "civilian",
+   "copying at the Records Office",
+   null
+  ],
+  [
+   "rmx_harriet_platt",
+   "civilian",
+   "copying at the Records Office",
+   null
+  ],
+  [
+   "rmx_hester_greyby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_hollis_kendrick",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_hollis_shaw",
+   "civilian",
+   "clerking for the magistrate",
+   null
+  ],
+  [
+   "rmx_humphrey_sootton",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_ilse_netherby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_ingrid_kendrick",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_ivar_netherworth",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_ivo_pitchridge",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_ivo_wainwright",
+   "civilian",
+   "helping at The Slate & Ledger",
+   null
+  ],
+  [
+   "rmx_jarl_greywell",
+   "civilian",
+   "crying wares in the Rag Market",
+   null
+  ],
+  [
+   "rmx_jasper_brackham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_jasper_coalcot",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_jorunn_wetcombe",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_josephine_fenwick",
+   "civilian",
+   "helping at The Grey Gull Inn",
+   null
+  ],
+  [
+   "rmx_josephine_wickwick",
+   "civilian",
+   "helping at The Grey Gull Inn",
+   null
+  ],
+  [
+   "rmx_kari_wickworth",
+   "civilian",
+   "keeping the Bathhouse",
+   "bathhouse"
+  ],
+  [
+   "rmx_karin_bilgeford",
+   "civilian",
+   "working at the Bathhouse",
+   "bathhouse"
+  ],
+  [
+   "rmx_kjell_coalham",
+   "civilian",
+   "working at the Bathhouse",
+   "bathhouse"
+  ],
+  [
+   "rmx_knut_sootley",
+   "civilian",
+   "helping at The Last Lamp",
+   null
+  ],
+  [
+   "rmx_lionel_lowe",
+   "civilian",
+   "helping at The Fell Wine Vaults",
+   "vintner"
+  ],
+  [
+   "rmx_lionel_platt",
+   "civilian",
+   "lighting the lamps at dusk",
+   null
+  ],
+  [
+   "rmx_liv_tarmarsh",
+   "civilian",
+   "helping at Clearwater Glass",
+   null
+  ],
+  [
+   "rmx_lothar_abbot",
+   "civilian",
+   "helping at The Barber's Pole",
+   "barber"
+  ],
+  [
+   "rmx_mab_fogham",
+   "civilian",
+   "helping at The Round and Rind",
+   null
+  ],
+  [
+   "rmx_mab_plankridge",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_magda_orme",
+   "civilian",
+   "keeping the Iron Store",
+   null
+  ],
+  [
+   "rmx_magnus_millley",
+   "civilian",
+   "tallying in the Iron Store",
+   null
+  ],
+  [
+   "rmx_magnus_saltford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_magnus_tarton",
+   "civilian",
+   "helping at The Slag & Anchor",
+   null
+  ],
+  [
+   "rmx_magnus_wetherell",
+   "civilian",
+   "helping at Timberland's Forge Row",
+   "smithy"
+  ],
+  [
+   "rmx_maren_hatherley",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_millicent_wickwick",
+   "civilian",
+   "weighing at the Customs House",
+   null
+  ],
+  [
+   "rmx_moll_coldharbour",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_montague_kettlecote",
+   "civilian",
+   "working at Grayrock Shipwrights",
+   "shipwright"
+  ],
+  [
+   "rmx_montague_kettlewick",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_nessa_slagmarsh",
+   "civilian",
+   "working at Grayrock Shipwrights",
+   "shipwright"
+  ],
+  [
+   "rmx_oda_cinderby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_oda_cotton",
+   "civilian",
+   "working at Grayrock Shipwrights",
+   "shipwright"
+  ],
+  [
+   "rmx_oda_marrowby",
+   "civilian",
+   "working at Grayrock Shipwrights",
+   "shipwright"
+  ],
+  [
+   "rmx_olaf_stoneley",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_orla_wetridge",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_orm_blackwood",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_orm_carlisle",
+   "civilian",
+   "helping at The Sailors' Rest",
+   null
+  ],
+  [
+   "rmx_orm_nailhand",
+   "civilian",
+   "keeping the New Store",
+   null
+  ],
+  [
+   "rmx_ottilie_dripdale",
+   "civilian",
+   "tallying in the New Store",
+   null
+  ],
+  [
+   "rmx_ottilie_slagley",
+   "civilian",
+   "tallying in the Bonded Warehouse",
+   null
+  ],
+  [
+   "rmx_palle_brinewell",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_palle_mireby",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_percival_thornham",
+   "civilian",
+   "helping at The Tarred Rope",
+   null
+  ],
+  [
+   "rmx_petra_ashgate",
+   "civilian",
+   "keeping the Long Store",
+   null
+  ],
+  [
+   "rmx_philippa_coldby",
+   "civilian",
+   "tallying in the Long Store",
+   null
+  ],
+  [
+   "rmx_philippa_pitchstack",
+   "civilian",
+   "helping at The Drowned Lantern",
+   null
+  ],
+  [
+   "rmx_philippa_rainford",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_piet_lumley",
+   "civilian",
+   "lights the lamps at dusk",
+   null
+  ],
+  [
+   "rmx_pim_pitchham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_rika_gullwell",
+   "civilian",
+   "clerking at the Wharf Office",
+   null
+  ],
+  [
+   "rmx_rika_tarnham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_roald_greyham",
+   "civilian",
+   "clerking at the Wharf Office",
+   null
+  ],
+  [
+   "rmx_roald_toft",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_rosamund_ash",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_rupert_greyley",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_rupert_hatherley",
+   "civilian",
+   "helping at The Soup Kitchen",
+   null
+  ],
+  [
+   "rmx_septimus_ives",
+   "civilian",
+   "helping at The Bilge",
+   null
+  ],
+  [
+   "rmx_signe_bilgewell",
+   "civilian",
+   "helping at The Morning Oven",
+   null
+  ],
+  [
+   "rmx_sigrun_mudmore",
+   "civilian",
+   "helping at The Knucklebones",
+   null
+  ],
+  [
+   "rmx_sigrun_mudworth",
+   "civilian",
+   "working at The Rag-and-Bone Yard",
+   "rag_and_bone"
+  ],
+  [
+   "rmx_sigrun_wickham",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_solveig_nailstack",
+   "civilian",
+   "keeping the Fell Cellars",
+   null
+  ],
+  [
+   "rmx_soren_ashcote",
+   "civilian",
+   "working at The Fell Press House",
+   "press"
+  ],
+  [
+   "rmx_soren_cindermarsh",
+   "civilian",
+   "working at The Fell Press House",
+   "press"
+  ],
+  [
+   "rmx_sybil_pickering",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_tage_slagworth",
+   "civilian",
+   "working at The Fell Distillery",
+   "distillery"
+  ],
+  [
+   "rmx_theodora_pitchwick",
+   "civilian",
+   "working at The Fell Distillery",
+   "distillery"
+  ],
+  [
+   "rmx_tilde_slagwell",
+   "civilian",
+   "working at The Fell Preserving House",
+   "preserver"
+  ],
+  [
+   "rmx_tobias_blackford",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_tobias_dunley",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_tobias_rainley",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_tove_mossdale",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_ulf_kelpmarsh",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_ulla_brindle",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_una_brineridge",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_una_thackeray",
+   "civilian",
+   "sits and watches the world",
+   null
+  ],
+  [
+   "rmx_una_toft",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_vidar_kettleham",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_wenna_sootham",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_winifred_nailton",
+   "civilian",
+   "unloading ships at the piers",
+   null
+  ],
+  [
+   "rmx_wystan_wethand",
+   "civilian",
+   "at lessons",
+   null
+  ],
+  [
+   "rmx_yrsa_kelpstack",
+   "civilian",
+   "at lessons",
+   null
+  ]
+ ],
+ "stables": [
+  "rm_dunstan_greywick",
+  "rm_oda_kelpworth",
+  "rm_ragnar_roperidge",
+  "rm_septimus_plankmarsh"
+ ],
+ "sump": {
+  "coverage": 0.716941899710704,
+  "planned": 0.5109992767598843,
+  "widest": 6,
+  "narrow": 0.6635792611519217,
+  "dead_ends": 51,
+  "sizes": 28,
+  "lshape": 12,
+  "through": 38,
+  "passages": 26,
+  "chains": [
+   5,
+   4,
+   4,
+   4,
+   3,
+   3
+  ],
+  "courts": 8,
+  "homes": 90,
+  "infill": {
+   "sheds": 410,
+   "boarded": 34,
+   "yards": 174,
+   "courts": 8,
+   "dead_ends": 57,
+   "passages": 26
+  }
+ },
+ "checks": [
+  {
+   "req": "R2",
+   "check": "12 cells, all rain, region ridgemere",
+   "ok": true,
+   "detail": "12 cells"
+  },
+  {
+   "req": "R2",
+   "check": "every placed interior has region ridgemere",
+   "ok": true,
+   "detail": "446 placed interiors"
+  },
+  {
+   "req": "R1",
+   "check": "no cell overlaps another",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R4",
+   "check": "water lies west of x = 168 between the headlands",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R5",
+   "check": "the sea wall runs along the quay (x 168-172)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R5",
+   "check": "the wharf, its 8 piers and arches, the cranes and the slipway lie within the wall's span (y 150-620)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R6",
+   "check": "the Sump meets the wharf with no wall between",
+   "ok": true,
+   "detail": "162 open crossings, 0 wall tiles on the line"
+  },
+  {
+   "req": "R6",
+   "check": "the Sump holds at least 50% of the wharf frontage",
+   "ok": true,
+   "detail": "52%"
+  },
+  {
+   "req": "R5",
+   "check": "the 5 gates and the 2 guarded pier arches are cut and reached",
+   "ok": true,
+   "detail": "gates {'N': True, 'E': True, 'S': True, 'cinder': True, 'harbour': True}, arches {470: np.True_, 335: np.True_}"
+  },
+  {
+   "req": "R10",
+   "check": "the districts partition the inside of the wall",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R15",
+   "check": "the Rise's area is at most half the middle class's",
+   "ok": true,
+   "detail": "rise 15720, middle class 81380 (0.19)"
+  },
+  {
+   "req": "R20",
+   "check": "the abbey close is in the north-west corner, touching the Sump and the middle class",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R16",
+   "check": "the Keep is at one height, straddles y = 470, with four walls, a courtyard and one gate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R24",
+   "check": "the Greatly compound sits against the city wall, no public tile between",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R23",
+   "check": "the Greatly fountain is in the south yard, the forge and workshop in the north yard",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R2",
+   "check": "gates joining heights more than 0.5 apart have their half step and ^ run",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R2",
+   "check": "no tier edge or stair within 2 tiles of a cell seam (an edge may cross a seam at right angles)",
+   "ok": true,
+   "detail": "0 tiles: []"
+  },
+  {
+   "req": "R26",
+   "check": "the three estates are outside the wall, each within one cell",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R34",
+   "check": "no field, orchard, vineyard or pen glyphs (crop fields) anywhere",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R34",
+   "check": "resources empty and no game spawns",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R7-R9",
+   "check": "built coverage of at least 55% of the Sump",
+   "ok": true,
+   "detail": "71.7% (buildings and infill blocks alone: 51.1%)"
+  },
+  {
+   "req": "R7-R9",
+   "check": "no open space wider than 12 tiles (bar the Rag Market, the Gut, Tarry Lane and the courts)",
+   "ok": true,
+   "detail": "widest 6"
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 60% of outdoor walkable tiles in alleys 2 wide or less",
+   "ok": true,
+   "detail": "66.4%"
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 10 dead ends",
+   "ok": true,
+   "detail": "51 alley stubs ending blind (of 57 laid)"
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 12 distinct footprint sizes and 8 L-shapes",
+   "ok": true,
+   "detail": "28 sizes, 12 L-shaped"
+  },
+  {
+   "req": "R7-R9",
+   "check": "every home and work door on a passage at least 2 wide",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 14 through-buildings",
+   "ok": true,
+   "detail": "38"
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 25 passages, in 4-6 chains of 3-5 buildings",
+   "ok": true,
+   "detail": "26 passages, chains [5, 4, 4, 4, 3, 3]"
+  },
+  {
+   "req": "R7-R9",
+   "check": "at least 6 courts",
+   "ok": true,
+   "detail": "8"
+  },
+  {
+   "req": "R18",
+   "check": "the Records Office has three floors (z 0, 1, 2), two stair pairs on distinct tiles",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R19",
+   "check": "the palace's three parts touch, joined by passages, the Residence west and the Wing east",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R32",
+   "check": "no structure has more than 3 homes",
+   "ok": true,
+   "detail": "most 2: [('r2_ladle_corner', 2)]"
+  },
+  {
+   "req": "R32",
+   "check": "every home has at least ceil(people / 2) beds, and at least 2",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "",
+   "check": "links number 2,048 or fewer",
+   "ok": true,
+   "detail": "555 links"
+  },
+  {
+   "req": "R31",
+   "check": "480-580 placed, every one with a home",
+   "ok": true,
+   "detail": "559 placed"
+  },
+  {
+   "req": "R33",
+   "check": "every placed NPC aged 16-59 has work",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R33",
+   "check": "every label is at most 40 characters and breaks none of the label rules",
+   "ok": true,
+   "detail": "0: "
+  },
+  {
+   "req": "R31",
+   "check": "no family is split",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R35",
+   "check": "exactly one merchant per till business; every business that uses the store has its keeper",
+   "ok": true,
+   "detail": "two or more: {}; none: []"
+  },
+  {
+   "req": "R33",
+   "check": "30 guards, with posts on every route in use",
+   "ok": true,
+   "detail": "30 guards; routes in use ['r2_palace_round', 'r2_sump_patrol', 'rm_street_patrol', 'rm_wall_walk', 'rm_wharf_patrol']"
+  },
+  {
+   "req": "",
+   "check": "clergy have clergy words, and nobody else has them",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "req": "R34",
+   "check": "no placed NPC works a food or raw-resource producer (stables listed)",
+   "ok": true,
+   "detail": "stables: ['rm_dunstan_greywick', 'rm_oda_kelpworth', 'rm_ragnar_roperidge', 'rm_septimus_plankmarsh']; bad: []"
+  },
+  {
+   "req": "R13",
+   "check": "the Rag Market is more than 40 tiles from Market Square",
+   "ok": true,
+   "detail": "180"
+  },
+  {
+   "req": "R14",
+   "check": "Market Square has more merchants than the Market Hall; the Hall's doors within 40 of its stalls",
+   "ok": true,
+   "detail": "square 8, hall 6, doors 20 from the stalls"
+  },
+  {
+   "req": "",
+   "check": "no evening place takes more than 40",
+   "ok": true,
+   "detail": "{'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 197, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 20, 'r2_cathedral': 18, 'rm_the_bilge': 40, 'rm_the_slag_anchor': 23, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+  },
+  {
+   "req": "R1",
+   "check": "every link end, home, work spot, evening place and route post is reached from the spawn",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "issues": [
+  "rm_vance_house: straw bedding added for 1",
+  "rm_stanmore_house: straw bedding added for 1"
+ ],
+ "notes": [
+  "The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is off (doc 67, Q2).",
+  "House Timberland keeps the ids of House Mossgrave (house_mossgrave, rm_mossgrave_court...): only the text changes (lane C), and the ids still read \"mossgrave\" in Atlas and the DM."
+ ]
+}
