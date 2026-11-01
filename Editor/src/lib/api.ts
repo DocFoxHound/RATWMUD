@@ -87,13 +87,13 @@ export const api = {
     /** The one world, edited live (tools/live_edit.py). */
     live: {
         /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view. */
-        load: async () => json<{project: Project; seq: number}>(await get('live/world?lean=1')),
+        load: async () => json<{project: Project; seq: number; gameSeq?: number}>(await get('live/world?lean=1')),
         ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
             await get(`live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
         edit: (body: unknown) => post('live/edit', body),
         /** What the players' Chapters have built, as the DEV game server last saved it (read-only). */
         camps: async () => json<{buildings: CampBuilding[]}>(await get('live/camps')),
-        sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>(await post('live/sync', body)),
+        sync: async (body: unknown) => json<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]; gameSeq?: number}>(await post('live/sync', body)),
     },
     roster: async () => json<Roster>(await get('roster')),
     saveRoster: async (roster: Roster) => {

@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allFrom, buildChoices, differentMapText, gameUrl, groupByLabel, letGoText, prunePicks, replaceMapText, rowChangeText, sideChangeText,
+import {allFrom, buildChoices, defaultPicks, differentMapText, fieldSide, gameUrl, goneText, groupByLabel, letGoText, middleOf, prunePicks,
+    replaceMapText, rowChangeText, sideChangeText,
     summaryLine, summaryRows, summaryTotal, valueText,
     type SyncField, type SyncItem} from './sync.ts';
 
@@ -90,7 +91,7 @@ test('what a new map lets go of, in a line', () => {
     assert.equal(letGoText(undefined), '');
     assert.equal(letGoText({npcs: 0, slots: 0, posts: 0, claims: 0, npcAreas: 0}), '');
     assert.equal(letGoText({npcs: 2, slots: 1, posts: 3, claims: 1, npcAreas: 0, names: ['Briar', 'Rook']}),
-        '2 NPCs and 1 profession slot unplaced (Briar, Rook); 3 patrol posts and 1 territory claim let go');
+        '2 NPCs and 1 profession slot without a place on the new map (Briar, Rook), a decision each; 3 patrol posts and 1 territory claim let go');
     assert.equal(letGoText({npcs: 0, slots: 0, posts: 0, claims: 2, npcAreas: 1}), '2 territory claims and 1 NPC area let go');
 });
 
@@ -99,4 +100,48 @@ test('Play opens the running server at the address the studio was reached by, or
         'from another computer on the network: the studio computer\'s address, not 127.0.0.1');
     assert.equal(gameUrl({port: 7789, host: null}, {hostname: '127.0.0.1'}), 'http://127.0.0.1:7789/');
     assert.equal(gameUrl({port: 7788, host: 'tower'}, {hostname: '192.168.0.121'}), 'http://tower:7788/', 'a server on another computer');
+});
+
+// The live world's truth (doc 66, Progress): the game's fields start on live's; a new map's missing places need a decision.
+const game = (name: string, changed: SyncField['changed'], dflt: SyncField['default']): SyncField =>
+    ({...field(name, changed), owner: 'game', default: dflt});
+// Maple: DEV moved her home and changed her words; PROD's game moved her too.
+const maple = item('live.npcs/maple', [game('home_area', 'conflict', 'live'), game('home_y', 'conflict', 'live'),
+    {...field('greeting', 'dev'), owner: 'authored', default: 'dev'}], {default: {home_area: 'live', home_y: 'live'}});
+// Linden: removed in dev, moved by live's game: live's by default, a whole-row choice.
+const linden = item('live.npcs/linden', [game('home_area', null, null)], {dev: 'removed', fieldChoices: false, default: 'live'});
+// Clover, born live in a cottage the new map hasn't: no default, a decision for each place.
+const clover = item('live.npcs/born_c', [], {dev: 'absent', live: 'added', fieldChoices: false, default: null, placeChoices: true,
+    gone: [{place: 'home', area: 'cottage', dev: null}, {place: 'work', area: 'cottage', dev: null}]});
+// Rook: his evenings in the cottage live; dev has him, with his evenings in the town square.
+const rook = item('live.npcs/rook', [], {dev: 'unchanged', live: 'changed', fieldChoices: false, default: null, placeChoices: true,
+    gone: [{place: 'evening', area: 'cottage', dev: {cell: 'town', x: 4, y: 5}}]});
+
+test("conflicts over the game's fields start on live's and need no pick", () => {
+    assert.deepEqual(defaultPicks([maple, linden, wren, clover]),
+        {'live.npcs/maple': {byField: true, fields: {home_area: 'live', home_y: 'live'}}, 'live.npcs/linden': {whole: 'live'}},
+        'wren (an authored field both changed) and clover (a place gone) start unpicked');
+    assert.deepEqual(buildChoices([maple, linden], {}), {choices: {}, missing: []}, 'no pick: the engine takes the default');
+    assert.deepEqual(buildChoices([maple], defaultPicks([maple])).choices, {'live.npcs/maple': {home_area: 'live', home_y: 'live'}});
+    assert.deepEqual(buildChoices([maple], {'live.npcs/maple': {byField: true, fields: {home_area: 'dev', home_y: 'dev'}}}).choices,
+        {'live.npcs/maple': {home_area: 'dev', home_y: 'dev'}}, "dev's, chosen");
+    assert.deepEqual(buildChoices([maple], {'live.npcs/maple': {byField: true}}), {choices: {'live.npcs/maple': {}}, missing: []},
+        "an unchosen field of the game's goes live's way");
+    assert.equal(fieldSide(maple.fields[0], {byField: true}), 'live');
+    assert.equal(fieldSide(wren.fields[0], {byField: true}), undefined, 'an authored field both changed waits for the user');
+});
+
+test("a place the new map hasn't needs a decision: unplace, dev's, or a new place", () => {
+    assert.deepEqual(buildChoices([clover, rook], {}).missing, ['live.npcs/born_c', 'live.npcs/rook']);
+    assert.deepEqual(buildChoices([rook], {'live.npcs/rook': {whole: 'live'}}).missing, ['live.npcs/rook'], "live's place is gone");
+    assert.deepEqual(buildChoices([clover], {'live.npcs/born_c': {places: {home: {cell: 'shop', x: 3, y: 3}}}}).missing, ['live.npcs/born_c'],
+        'every gone place');
+    assert.deepEqual(buildChoices([clover, rook], {'live.npcs/born_c': {places: {home: {cell: 'shop', x: 3, y: 3}, work: 'unset'}},
+        'live.npcs/rook': {places: {evening: 'dev'}}}).choices,
+        {'live.npcs/born_c': {home: {cell: 'shop', x: 3, y: 3}, work: 'unset'}, 'live.npcs/rook': {evening: 'dev'}});
+    assert.deepEqual(buildChoices([clover], {'live.npcs/born_c': {whole: 'unplace'}}).choices, {'live.npcs/born_c': 'unplace'});
+    assert.deepEqual(prunePicks({'live.npcs/born_c': {places: {home: 'unset', evening: 'unset'}}}, [clover]),
+        {'live.npcs/born_c': {places: {home: 'unset'}}}, 'a place no longer gone is forgotten');
+    assert.equal(goneText(clover), 'home (cottage), work (cottage)');
+    assert.deepEqual(middleOf({id: 'shop', name: 'Shop', kind: 'interior', width: 20, height: 12}), {cell: 'shop', x: 10, y: 6});
 });

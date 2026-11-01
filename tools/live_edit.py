@@ -355,6 +355,74 @@ def label_for(key, value):
             }.get(key, key)
 
 
+# --------------------------------------------------------------------------- The game's changes
+# Doc 66, Progress, "The live world's truth": on a world a game server runs, the game changes NPCs (an arrival's home)
+# without the edit log, so an open Atlas holds the value it replaced. live.game_changes (migration 0059) says which rows
+# and fields the game changed, and to what.
+
+def _entity_value(field, row):
+    """A logged row's (JSON, as the table has it) value of an entity field: a place as {cell, x, y} or None."""
+    if row is None:
+        return None
+    if field in S.PLACES:
+        return {'cell': row.get(f'{field}_area'), 'x': row.get(f'{field}_x'), 'y': row.get(f'{field}_y')} \
+            if row.get(f'{field}_area') is not None else None
+    return row.get(field)
+
+
+def games_change(conn, world_id, key, now):
+    """Which game-owned fields of `key`'s entity (person: or slot:) are as the game left them, and the values the game
+    replaced: ({field: [values it replaced, oldest first]}, the newest logged row), or ({}, None) when the game never
+    changed it (or the world doesn't log the game's changes)."""
+    kind, _, rid = key.partition(':')
+    if kind not in S.GAME_FIELDS or now is None:
+        return {}, None
+    if not S.game_log_supported(conn):
+        return {}, None
+    rows = conn.execute('SELECT before, after FROM live.game_changes WHERE world_id = %s AND table_name = %s AND row_key = %s '
+                        'ORDER BY seq', (world_id, S.GAME_TABLE_OF[kind], S.Jsonb([rid]))).fetchall()
+    if not rows:
+        return {}, None
+    last = rows[-1][1]
+    replaced = {}
+    for field in S.GAME_FIELDS[kind]:
+        if last is None or canonical(_entity_value(field, last)) != canonical(now.get(field)):
+            continue                   # (Not as the game left it: someone changed it since, or the game never did.)
+        olds = [_entity_value(field, before) for before, _ in rows if before is not None]
+        olds = [v for v in olds if canonical(v) != canonical(now.get(field))]
+        if olds:
+            replaced[field] = olds
+    return replaced, last
+
+
+def merge_games_change(conn, world_id, key, before, now, after):
+    """An edit made on a view older than the game's change (its `before` isn't the row now): ('merged', the row to
+    write: the edit's own changes on the game's row) when the two differ only in game-owned fields the game changed;
+    ('conflict', [{field, base, mine, game}]) when the edit changed one of those fields too, differently; None when
+    it isn't the game's change (another editor's: refused as ever)."""
+    if not (isinstance(before, dict) and isinstance(now, dict) and isinstance(after, dict)):
+        return None
+    differs = [f for f in sorted(set(before) | set(now)) if canonical(before.get(f)) != canonical(now.get(f))]
+    replaced, _ = games_change(conn, world_id, key, now)
+    if not differs or any(f not in replaced for f in differs):
+        return None
+    mine = [f for f in sorted(set(before) | set(after)) if canonical(before.get(f)) != canonical(after.get(f))]
+    both = [f for f in differs if f in mine and canonical(after.get(f)) != canonical(now.get(f))]
+    if both:
+        return 'conflict', [{'field': f, 'base': before.get(f), 'mine': after.get(f), 'game': now.get(f)} for f in both]
+    return 'merged', {**now, **{f: after.get(f) for f in mine if f in after}}
+
+
+def keep_games_fields(conn, world_id, key, now, after):
+    """An entity sent whole without what its sender saw (the NPCs & areas page's save): its game-owned fields that hold
+    a value the game has since replaced take the game's again. Returns (the entity to write, [fields kept])."""
+    if not isinstance(after, dict):
+        return after, []
+    replaced, _ = games_change(conn, world_id, key, now)
+    kept = [f for f, olds in replaced.items() if canonical(after.get(f)) in {canonical(v) for v in olds}]
+    return ({**after, **{f: now.get(f) for f in kept}} if kept else after), kept
+
+
 def world_row(conn, lock=False):
     rows = S.dict_rows(conn, 'SELECT * FROM world.worlds' + (' FOR UPDATE' if lock else ''), ())
     if not rows:
@@ -366,14 +434,15 @@ def latest_seq(conn):
     return conn.execute('SELECT coalesce(max(seq), 0) FROM world.edits').fetchone()[0]
 
 
-def load(conn, lean=False):
+def load(conn, lean=False, with_game=False):
     """The whole world for an editor that is starting, and the edit it is current to. Lean, each world cell comes as
     its outline and a preview (S.load_world), and its ground is asked for as it comes into view (ground())."""
     with conn.transaction():
         conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
         world = world_row(conn)
         project, _ = S.load_world(conn, world['id'], ground=not lean)
-        return project, latest_seq(conn)
+        # (With the newest game change the project holds, read in the same snapshot: the heartbeat brings the rest.)
+        return (project, latest_seq(conn), S.game_seen(conn)) if with_game else (project, latest_seq(conn))
 
 
 def camps(conn):
@@ -433,8 +502,13 @@ def fill_ground(conn, project):
     return project
 
 
-def apply_edit(conn, client_id, editor, label, ops):
-    """Applies one batch. Returns the new seq; raises Conflict or Rejected with the current values."""
+def apply_edit(conn, client_id, editor, label, ops, merged=None):
+    """Applies one batch. Returns the new seq; raises Conflict or Rejected with the current values.
+
+    An NPC or slot the game server changed since the editor saw it (doc 66, Progress, "The live world's truth") is not
+    refused for that: the edit's own changes are made on the game's row, and `merged` (a dict, if given) gets the row
+    written for each such key. Where the edit changed a field the game changed too, the batch is refused with those
+    in `conflicts` (`game: true`, each field's base, mine and game's): the game's stays until the editor chooses."""
     if not isinstance(ops, list) or not ops or len(ops) > MAX_OPS:
         raise ValueError('An edit needs 1 to 250000 changes.')
     keys = [op.get('key') if isinstance(op, dict) else None for op in ops]
@@ -444,10 +518,18 @@ def apply_edit(conn, client_id, editor, label, ops):
     try:
         with conn.transaction():
             batch = Batch(conn, world_row(conn, lock=True))
-            conflicts = []
+            conflicts, games = [], {}
             for op in ops:
                 now = current[op['key']] = batch.current(op['key'])
                 if canonical(now) != canonical(op.get('before')):
+                    found = merge_games_change(conn, batch.w, op['key'], op.get('before'), now, op.get('after'))
+                    if found and found[0] == 'merged':
+                        games[op['key']] = found[1]
+                        continue
+                    if found:
+                        conflicts.append({'key': op['key'], 'label': label_for(op['key'], now), 'editor': 'The game',
+                                          'at': None, 'game': True, 'fields': found[1]})
+                        continue
                     last = conn.execute('SELECT editor, at FROM world.edits WHERE world_id = %s AND key = %s ORDER BY seq DESC LIMIT 1',
                                         (batch.w, op['key'])).fetchone()
                     conflicts.append({'key': op['key'], 'label': label_for(op['key'], now or op.get('before')),
@@ -455,6 +537,9 @@ def apply_edit(conn, client_id, editor, label, ops):
             if conflicts:
                 who = sorted({c['editor'] for c in conflicts if c['editor']})
                 raise Conflict(f'Changed by {", ".join(who) or "someone else"} since you last saw it.', conflicts, current)
+            ops = [{**op, 'before': current[op['key']], 'after': games[op['key']]} if op['key'] in games else op for op in ops]
+            if merged is not None:
+                merged.update(games)
             for op in ops:
                 batch.set(op['key'], op.get('after'))
             batch.flush()
@@ -499,10 +584,35 @@ def change_claims(conn, client_id, editor, label, change):
         return result
 
 
-def sync(conn, client_id, editor, color, since, state, world=None):
+def game_feed(conn, world, game_since):
+    """The NPCs and slots the game server changed after game change `game_since` (live.game_changes), as edits of their
+    keys with their values now (the editor applies them as anyone's): ([change], the newest game change)."""
+    if not isinstance(game_since, int) or not S.game_log_supported(conn):
+        return [], game_since
+    rows = conn.execute('''SELECT max(seq), table_name, row_key->>0, (array_agg(op ORDER BY seq))[1] FROM live.game_changes
+                           WHERE world_id = %s AND seq > %s AND table_name IN ('live.npcs', 'live.profession_slots')
+                           AND jsonb_array_length(row_key) = 1 GROUP BY table_name, row_key ORDER BY 1 LIMIT %s''',
+                        (world['id'], game_since, MAX_CHANGES)).fetchall()
+    if not rows:
+        return [], game_since
+    batch = Batch(conn, world)
+    kinds = {table: kind for kind, table in S.GAME_TABLE_OF.items()}
+    changes = []
+    for _, table, rid, op in rows:
+        key = f'{kinds[table]}:{rid}'
+        after = batch.current(key)
+        what = 'born' if op == 'insert' else 'gone' if after is None else 'placed' if kinds[table] == 'person' else 'changed'
+        changes.append({'clientId': 'game', 'editor': 'The game', 'label': f'{label_for(key, after)} {what} by the game',
+                        'key': key, 'after': after})
+    return changes, max(r[0] for r in rows)
+
+
+def sync(conn, client_id, editor, color, since, state, world=None, game_since=None):
     """Heartbeat: records where this editor is, returns everyone else's edits after `since` and who is online.
 
     `world` is the world the editor holds; if DEV now holds a different one (it was replaced), the editor reloads.
+    `game_since`: the game server's changes after that one come too (doc 66, Progress, "The live world's truth"), as
+    edits of their keys, and `gameSeq` says the newest.
     """
     if world and world != world_row(conn)['id']:
         return {'reload': True, 'seq': since, 'changes': [], 'editors': []}
@@ -521,7 +631,11 @@ def sync(conn, client_id, editor, color, since, state, world=None):
     if len(rows) > MAX_CHANGES or any(r[4] == RELOAD for r in rows):
         return {'reload': True, 'seq': rows[-1][0], 'changes': [], 'editors': editors}
     changes = [{'seq': r[0], 'clientId': r[1], 'editor': r[2], 'label': r[3], 'key': r[4], 'after': r[5]} for r in rows]
-    return {'seq': rows[-1][0] if rows else since, 'changes': changes, 'editors': editors}
+    seq = rows[-1][0] if rows else since
+    with conn.transaction():
+        made, game_seq = game_feed(conn, world_row(conn), game_since)
+    changes += [{'seq': seq, **c} for c in made]
+    return {'seq': seq, 'changes': changes, 'editors': editors, **({'gameSeq': game_seq} if isinstance(game_seq, int) else {})}
 
 
 class LiveWorld:
@@ -540,8 +654,8 @@ class LiveWorld:
 
     def load(self, lean=False):
         with self.connect() as conn:
-            project, seq = load(conn, lean)
-        return {'project': project, 'seq': seq}
+            project, seq, game_seq = load(conn, lean, with_game=True)
+        return {'project': project, 'seq': seq, 'gameSeq': game_seq}
 
     def ground(self, ids):
         with self.connect() as conn:
@@ -557,10 +671,12 @@ class LiveWorld:
             return fill_ground(conn, project)
 
     def edit(self, data):
+        merged = {}
         with self.connect() as conn:
             seq = apply_edit(conn, str(data.get('clientId', ''))[:64], str(data.get('editor', '')).strip()[:60] or 'Someone',
-                             str(data.get('label', '')), data.get('ops'))
-        return {'seq': seq}
+                             str(data.get('label', '')), data.get('ops'), merged)
+        # (Rows written as the edit's changes on the game's: the editor shows them as written.)
+        return {'seq': seq, **({'merged': merged} if merged else {})}
 
     def sync(self, data):
         since = data.get('since')
@@ -571,4 +687,5 @@ class LiveWorld:
         with self.connect() as conn:
             return sync(conn, str(data.get('clientId', ''))[:64], str(data.get('editor', '')).strip()[:60] or 'Someone',
                         color if len(color) == 7 else '#a8c7ad', since, state,
-                        data.get('world') if isinstance(data.get('world'), str) else None)
+                        data.get('world') if isinstance(data.get('world'), str) else None,
+                        data.get('gameSince') if isinstance(data.get('gameSince'), int) and not isinstance(data.get('gameSince'), bool) else None)

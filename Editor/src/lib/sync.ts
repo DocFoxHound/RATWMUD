@@ -2,19 +2,42 @@
 // engine's plans look like, and the pure logic the screens need (Atlas's Update from live, the DM's Import from dev).
 // The central piece is buildChoices: the user's picks in the UI turned into the engine's choices JSON,
 // {conflict id: "dev" | "live" | {field: "dev" | "live"}}. Kept free of React so node can test it.
+//
+// The live world's truth (doc 66, Progress): the live game owns its NPCs' live state (their homes and posts, what they
+// carry; a row it made, whole). A conflict over such a field starts on live's (the plan's `default`), and the user can
+// choose dev's. A map-replacing import lists the NPCs whose places the new map hasn't (`gone`): a decision each.
 
 export type Side = 'dev' | 'live';
 export type RowChange = 'added' | 'changed' | 'removed' | 'unchanged' | 'absent';
 /** A value too long to show (terrain glyphs, heights): its size and a digest. */
 export interface LongValue { $long: number; digest: string }
 /** One field of a row in a plan: its base, dev and live values, and which side changed it (rows on both sides only). */
-export interface SyncField { field: string; base: unknown; dev: unknown; live: unknown; changed: 'dev' | 'live' | 'same' | 'conflict' | null }
+export interface SyncField {
+    field: string; base: unknown; dev: unknown; live: unknown; changed: 'dev' | 'live' | 'same' | 'conflict' | null;
+    /** The live game's (its live value is the truth) or Atlas's (authored). */
+    owner?: 'game' | 'authored';
+    /** The side the field goes with no choice (null: the user chooses). */
+    default?: Side | 'same' | null;
+}
+export type PlaceName = 'home' | 'work' | 'evening';
+export interface PlaceRef { cell: string; x: number; y: number }
+/** A place (home, work, evening) an NPC would keep that the new map hasn't, and dev's place for it if dev has one. */
+export interface GonePlace { place: PlaceName; area: string | null; dev: PlaceRef | null }
+/** A decision for a gone place: dev's place, unset, or a new place on the new map. */
+export type PlaceChoice = 'dev' | 'unset' | PlaceRef;
+/** One of the new map's places, to pick a new home or post from. */
+export interface AreaRef { id: string; name: string; kind: 'cell' | 'interior'; width: number | null; height: number | null }
 /** One row (by its key) that differs between dev and live. */
 export interface SyncItem {
     id: string; table: string; label: string; part: 'world' | 'live'; key: unknown[]; name: string;
     side: Side | 'conflict'; dev: RowChange; live: RowChange; fields: SyncField[];
     /** A conflict on a row both sides have: it can be chosen field by field. */
     fieldChoices: boolean;
+    /** The choice taken when none is sent (the live game's truth); null or missing: the user must choose. */
+    default?: Choice | null;
+    /** A map-replacing import: the places the new map hasn't, a decision each. */
+    gone?: GonePlace[];
+    placeChoices?: boolean;
 }
 export interface Counts { added: number; changed: number; removed: number }
 /** {part: {table label: counts}}. */
@@ -39,20 +62,24 @@ export interface SyncPlan {
     digest: string; warnings: string[];
     /** The two maps (always on a plan from the engine); `replacesMap` on an import's plan between two maps. */
     maps?: MapPair; replacesMap?: boolean; letGo?: LetGo;
+    /** The conflicts' defaults, by id; the new map's places (when some NPC's place is gone); live's economy settings
+     *  that differ from dev's (kept: never imported). */
+    defaults?: Record<string, Choice>; areas?: AreaRef[];
+    economy?: {fields: string[]; dev: Record<string, unknown>; live: Record<string, unknown>};
 }
 /** Atlas's Update from live: the plan, the two worlds, and the live server's state (null when it can't be read). */
 export interface PullPlan extends SyncPlan {
     devWorld: SyncWorld; liveWorld: SyncWorld;
     liveServer: {state: ServerState; running: boolean; release: number} | null;
 }
-export interface PullResult { dev: string; live: string; release: number; applied: Summary; conflicts: number; kept: number; warnings: string[] }
+export interface PullResult { dev: string; live: string; release: number; applied: Summary; conflicts: number; kept: number; warnings: string[]; defaulted?: string[] }
 /** What Import from dev would do (world_sync.plan_import), and what blocks it now. */
 export interface ImportPlan extends SyncPlan {
     devRevision: number; errors: string[]; server: ServerState; serverRunning: boolean; blocked: string[]; releases: Release[];
 }
 export interface ImportResult {
     release: number; summary: Summary & {letGo?: LetGo}; conflicts: number; replacedMap?: boolean; map?: MapIdentity;
-    dev: {updated: number; editedMeanwhile?: string[]; error?: string}; warnings?: string[];
+    dev: {updated: number; editedMeanwhile?: string[]; error?: string}; warnings?: string[]; defaulted?: string[];
 }
 export interface ServerStatus {
     key: string; name: string; kind: 'live' | 'dev'; world: string | null; server: ServerState; serverRunning: boolean;
@@ -74,10 +101,11 @@ export const gameUrl = (play: {port: number; host: string | null}, here: {hostna
 /** A dev world's newest build (tools/world_build.py): whether it is current with Atlas's edits. */
 export interface BuildStatus { build: number | null; at: string | null; by: string; release: number | null; current: boolean; problem?: string }
 
-/** What the user picked for one conflict: the whole row from one side, or (rows both sides have) field by field. */
-export interface Pick { whole?: Side; byField?: boolean; fields?: Record<string, Side> }
+/** What the user picked for one conflict: the whole row from one side (or, for an NPC whose place the new map hasn't,
+ *  unplaced), or (rows both sides have) field by field; and a decision for each gone place. */
+export interface Pick { whole?: Side | 'unplace'; byField?: boolean; fields?: Record<string, Side>; places?: Partial<Record<PlaceName, PlaceChoice>> }
 export type Picks = Record<string, Pick>;
-export type Choice = Side | Record<string, Side>;
+export type Choice = Side | 'unplace' | Record<string, Side | PlaceChoice>;
 
 /** The fields of a conflicting row in which dev and live differ: the ones a field-by-field choice is about. */
 export const differingFields = (item: SyncItem) => item.fields.filter(f => f.changed !== 'same');
@@ -87,8 +115,28 @@ export const differingFields = (item: SyncItem) => item.fields.filter(f => f.cha
 export function fieldSide(field: SyncField, pick: Pick | undefined): Side | undefined {
     const chosen = pick?.fields?.[field.field];
     if (chosen) return chosen;
-    return field.changed === 'dev' || field.changed === 'live' ? field.changed : undefined;
+    if (field.changed === 'dev' || field.changed === 'live') return field.changed;
+    return field.default === 'dev' || field.default === 'live' ? field.default : undefined;    // (The game's: live's.)
 }
+
+/** The picks a plan starts with: each conflict's default (the live game's truth), so the user sees it chosen and can
+ *  change it. Conflicts without a default (authored fields changed on both sides, places the new map hasn't) start
+ *  unpicked. */
+export function defaultPicks(conflicts: SyncItem[]): Picks {
+    const out: Picks = {};
+    for (const item of conflicts) {
+        const d = item.default;
+        if (d === 'dev' || d === 'live') out[item.id] = {whole: d};
+        else if (d && typeof d === 'object') {
+            const fields = Object.fromEntries(Object.entries(d).filter(([, v]) => v === 'dev' || v === 'live')) as Record<string, Side>;
+            out[item.id] = item.fieldChoices ? {byField: true, fields} : {whole: 'live'};
+        }
+    }
+    return out;
+}
+
+/** Whether a conflict's every gone place has a decision. */
+const placesChosen = (item: SyncItem, pick: Pick | undefined) => (item.gone ?? []).every(g => pick?.places?.[g.place] !== undefined);
 
 /** The engine's choices from the UI's picks, and the conflicts still without a full choice. A field-by-field choice
  *  names the fields both sides changed, and a field only one side changed only when the user took the other side's
@@ -97,13 +145,23 @@ export function buildChoices(conflicts: SyncItem[], picks: Picks): {choices: Rec
     const choices: Record<string, Choice> = {}, missing: string[] = [];
     for (const item of conflicts) {
         const pick = picks[item.id];
-        if (pick?.byField && item.fieldChoices) {
-            const map: Record<string, Side> = {};
-            let complete = true;
-            for (const field of differingFields(item)) {
+        const gone = item.gone ?? [];
+        if (gone.length && pick?.whole === 'unplace') {
+            choices[item.id] = 'unplace';
+        } else if (gone.length && pick?.whole === 'live') {
+            missing.push(item.id);              // (Live's place is gone: a decision is needed.)
+        } else if ((pick?.byField && item.fieldChoices) || (gone.length && pick?.places && !pick.whole)) {
+            const map: Record<string, Side | PlaceChoice> = {};
+            let complete = placesChosen(item, pick);
+            for (const g of gone) {
+                const decided = pick?.places?.[g.place];
+                if (decided !== undefined) map[g.place] = decided;
+            }
+            if (pick?.byField && item.fieldChoices) for (const field of differingFields(item)) {
                 const chosen = pick.fields?.[field.field];
                 if (field.changed === 'conflict' || field.changed === null) {
-                    if (chosen) map[field.field] = chosen; else complete = false;
+                    if (chosen) map[field.field] = chosen;
+                    else if (field.default !== 'dev' && field.default !== 'live') complete = false;   // (The game's: live's.)
                 } else if (chosen && chosen !== field.changed) {
                     map[field.field] = chosen;
                 }
@@ -111,6 +169,8 @@ export function buildChoices(conflicts: SyncItem[], picks: Picks): {choices: Rec
             if (complete) choices[item.id] = map; else missing.push(item.id);
         } else if (pick?.whole) {
             choices[item.id] = pick.whole;
+        } else if (item.default != null && !gone.length) {
+            // (No pick: the engine takes the default, the live game's truth.)
         } else {
             missing.push(item.id);
         }
@@ -128,13 +188,26 @@ export function prunePicks(picks: Picks, conflicts: SyncItem[]): Picks {
         if (pick.byField && !item.fieldChoices) { if (pick.whole) out[item.id] = {whole: pick.whole}; continue; }
         const names = new Set(differingFields(item).map(f => f.field));
         const fields = Object.fromEntries(Object.entries(pick.fields ?? {}).filter(([name]) => names.has(name)));
-        out[item.id] = {...pick, ...(pick.fields ? {fields} : {})};
+        const gone = new Set((item.gone ?? []).map(g => g.place));
+        const places = Object.fromEntries(Object.entries(pick.places ?? {}).filter(([name]) => gone.has(name as PlaceName)));
+        out[item.id] = {...pick, ...(pick.fields ? {fields} : {}), ...(pick.places ? {places} : {})};
+        if (pick.whole === 'unplace' && !gone.size) delete out[item.id].whole;
     }
     return out;
 }
 
 /** Every conflict taken whole from one side. */
 export const allFrom = (conflicts: SyncItem[], side: Side): Picks => Object.fromEntries(conflicts.map(c => [c.id, {whole: side}]));
+
+/** "home (cottage), evening (cottage)": a conflict's gone places, for the screens. */
+export const goneText = (item: SyncItem) => (item.gone ?? []).map(g => `${g.place} (${g.area ?? '?'})`).join(', ');
+
+/** A place as the screens show it: "shop 3, 4". */
+export const placeText = (place: PlaceRef | null | undefined) => (place ? `${place.cell} ${place.x}, ${place.y}` : 'none');
+
+/** The middle tile of one of the new map's places: where a new place picked in it starts. */
+export const middleOf = (area: AreaRef): PlaceRef =>
+    ({cell: area.id, x: Math.max(1, Math.floor((area.width ?? 2) / 2)), y: Math.max(1, Math.floor((area.height ?? 2) / 2))});
 
 export const isLong = (value: unknown): value is LongValue =>
     typeof value === 'object' && value !== null && '$long' in value && typeof (value as LongValue).$long === 'number';
@@ -222,5 +295,5 @@ export function letGoText(letGo: LetGo | undefined): string {
     const gone = [letGo.posts ? plural(letGo.posts, 'patrol post') : '', letGo.claims ? plural(letGo.claims, 'territory claim') : '',
         letGo.npcAreas ? plural(letGo.npcAreas, 'NPC area') : ''].filter(Boolean);
     const goneText = gone.length > 1 ? `${gone.slice(0, -1).join(', ')} and ${gone[gone.length - 1]}` : gone[0] ?? '';
-    return [unplaced ? `${unplaced} unplaced${names}` : '', goneText ? `${goneText} let go` : ''].filter(Boolean).join('; ');
+    return [unplaced ? `${unplaced} without a place on the new map${names}, a decision each` : '', goneText ? `${goneText} let go` : ''].filter(Boolean).join('; ');
 }

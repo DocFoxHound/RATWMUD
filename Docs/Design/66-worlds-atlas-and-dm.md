@@ -888,3 +888,143 @@ world still on `map-20261031-6b080cecb7f6`.
   `MapTests.test_a_generators_write_keeps_its_map_while_its_layout_is_the_same` (on scratch worlds: a first write stamps,
   a people-only write keeps, `--same-map` keeps a changed layout and records it, a changed layout is a new map,
   `--new-map` always is).
+
+### The live world's truth: NPCs and markets in conflicts (2026-11-01)
+
+Branch `r2-live-truth`, from `ridgemere2` (0ac680c). The user, 2026-11-01: **"We need to fix that Atlas issue so that
+when we do get around to updating maps and porting them from dev to prod, that prod retains the truth of NPC's and
+market data. This should be a conflict resolution thing."**
+
+**The issue.** Since doc 68's arrivals from the Country, the game server writes an authored NPC's row: an unplaced NPC
+who comes in for an empty post is given a home (`Game::makeResidents`, `UPDATE live.npcs SET home_area ...`). Births
+insert rows (origin `runtime`), as they did. None of it raises the world's revision or goes through the edit log, so an
+Atlas that read the world before the arrival still held the NPC unplaced: a whole-world save
+(`world_store.save_world`: the generator's write, `apply_terrain.py`) put the old value back and unplaced it again; the
+NPCs & areas page (it sends an NPC whole) would too; a keyed edit was refused as "someone else's", losing the author's
+own change. An import or pull had no idea which side's fields were the live game's.
+
+#### Who owns what
+
+The live game owns its NPCs' live state and the market; Atlas, dev authoring, owns the map, the buildings and the NPCs
+as written. In the tables both write, by column (`world_store.GAME_COLUMNS`, `GAME_FIELDS`; `world_sync.owner`):
+
+| Table | The live game's | Atlas's (authored) |
+|---|---|---|
+| `live.npcs` | the home and the post: `home_area/x/y`, `work_area/x/y`, `evening_area/x/y`; what it carries: `purse`, `herbs`, `meals`; `age`; `origin`. **A row the game made** (origin `runtime`: a birth) is the game's whole | `name`, `role`, `description`, `greeting`, `personality`, `backstory`, `work_label`, `voice`, `appearance`, `route_id`, `paid`, `hours_start/end`, `joinable`, `protected`, `wander_area`, `position` |
+| `live.profession_slots` | its three places, `purse`, `herbs`, `meals`, `character_id` (the roster character a build gave it), `origin` | `name`, `profession`, `work_label`, `route_id`, `paid`, the hours, `position` |
+| `live.characters` (the roster) | `status`, `assignment`, `origin` | `name`, `age`, `profession`, `profile` |
+| `live.npc_relations`, `faction_members`, `factions`, `faction_claims`, `faction_relations` | rows the game made (origin `runtime`), whole | the rest |
+| `world.*` (cells, interiors, terrain, doors, places, resources, chapters, the world row), `live.npc_voice`, `dialects`, `figures`, patrol routes and posts, NPC areas, spawn rules, `business_settings`, story visitors | | all |
+
+And the game's alone, in tables no save of Atlas's, no pull and no import ever writes:
+
+| Where | What |
+|---|---|
+| `game.checkpoints` (the save) | households and their purses, marriages and the relations the game made, births owed, every till, its stock and shelves, the drifting prices and smoothed sales, the wage steps, the toll and alms moved, the treasury's level, the loop (`society.loop`), each resident's post (successions, arrivals) |
+| `live.npc_state` | alive or dead (the DM's kill and revive too), cash, stock, position, task |
+| `live.economy` | the rules' current values (`rules`, `services`, `seasons`, the comforts), the wages, the gate toll, carriage, subsidies, the Country's switch and reserve, the store room's switches, the treasury's start: each world's own (doc 67 and 68), never synced |
+
+#### How a game change is detected: migration 0059, the game's own log
+
+`Database/migrations/0059_game_changes.sql`: **`live.game_changes`**, written by a trigger on `live.npcs`,
+`live.profession_slots`, `live.npc_relations` and `live.faction_members` whenever the role writing is `ratw_game` (the
+game server): the table, the row's key, insert, update or delete, the row before and after (JSON, without
+`updated_at`), and the world's revision then. Spawned NPCs (`spawn_id` set) are left out, as the sync leaves them out.
+Read by the editor, the publisher, the game and the DM; written by the trigger only (`SECURITY DEFINER`).
+
+**Why a log the database keeps, and not a revision the game raises, or a marker column.** Raising the world's revision
+on every game write would refuse every whole-world save outright whenever the game placed anyone (the generator's write
+takes minutes) and say nothing about which row or field. A "changed by the game" marker on the row says that it changed
+but not what it replaced, which is what tells "the game moved it" from "you moved it". The trigger catches every write
+of the game, whatever code makes it (an arrival today, a marriage or a death written tomorrow), with no change in the
+C++; each change keeps the value it replaced, the base of a three-way merge. The game's writes are rare (arrivals and
+births, a few a year of game time), so the log stays small; it is never pruned.
+
+For pulls and imports nothing new was needed to *detect*: the three-way comparison already sees the live game's
+changes as live's. What they lacked was the ownership above, for the defaults.
+
+#### Atlas's saves on a world the game changed since it opened
+
+- **Keyed edits** (the Workshop, `live_edit.apply_edit`). When an edit's `before` isn't the row now and every field
+  that differs is one the game changed (its log's last `after` is the value now), it is not refused: the edit's own
+  changes are made on the game's row (`merge_games_change`), and the reply's `merged` gives the editor the row as
+  written. Where the edit changed a field the game changed too, differently, the batch is refused with those fields as
+  a conflict (`game: true`, each field's base, mine and the game's); **the game's stays** until the editor chooses.
+  Another editor's change is refused as ever.
+- **The NPCs & areas page** (`DungeonMaster.save_npc`, which gets the NPC whole and no "before"): a home or post it holds
+  that the game has since replaced is the game's again (`live_edit.keep_games_fields`).
+- **A whole-world save** (`world_store.save_world(..., seen=, choices=, outcome=)`; `keep_the_games_truth`): for each NPC
+  or slot the game changed after `seen` (`world_store.game_seen()` when the project was read; without it, every game
+  change at the project's revision or later), each game-owned field (a place's area, x and y together) the save would
+  put back is the game's: silently where the save still held the value the game replaced, and as a conflict, **by
+  default the game's**, where both changed it. `choices` `{"live.npcs/ID": "atlas" | {field: "atlas"}}` keep the
+  save's; `outcome` gets `{kept, conflicts}` for the caller to print. Authored fields are the save's. A birth the game
+  took back is not brought back. (The Ridgemere 2.0 generator and `apply_terrain.py` call it as before: they get the
+  protection without `seen`; passing `seen` and printing `outcome` is a line each, left to their owners.)
+- **The heartbeat** (`live_edit.sync(..., game_since=)`; `load` gives `gameSeq`): the game's changes come to every open
+  Atlas as edits of their keys (`person:ID`, `slot:ID`, editor "The game", the row as it is now), so the map shows an
+  arrival at home at its next heartbeat (1.5 s) and a later edit starts from it.
+
+**What the user sees in Atlas.** Most of the time nothing: their edit saves and the NPC stays where the game put it.
+When both changed one field, the dialog **"The game server moved what you changed"**: for each NPC and field, what
+they saw, theirs and the game's, with **The game's** (picked) or **Yours**; **Keep the game's, save the rest** or
+**Save with my choices** (the edit made again on the values there now: `againWithChoices`, `store.saveAgain`). The
+map shows the game's values meanwhile.
+
+#### Pull and import: the live game's truth by default
+
+- **Defaults** (`world_sync.default_choice`, `field_default`): a conflict whose every field changed on both sides is
+  the game's takes **live's** for those fields (each other field the side that changed it: dev's new words come across,
+  PROD's placement stays); a row dev removed that live's game changed, or a row the game made, is **live's** whole. A
+  conflict over an authored field changed on both sides still needs a choice. With no choice sent, the default is taken
+  (`defaulted` in the result); the plan lists every conflict with its `default`, each field with its `owner` and
+  `default`, and `defaults` by id. **A place is one field**: its area, x and y are never half dev's and half live's
+  (`place_columns`).
+- **What was there already, checked**: DEV's authored changes (map, buildings, NPC definitions) come across as dev's
+  changes; PROD's game's (arrivals placed, births) are live's changes, kept by an import and taken by a pull. A birth is
+  an addition on the live side (`added` live, `absent` in dev): pulled into dev, then in the base, never removed by an
+  import, and its later changes default to live's.
+- **The market** is never compared or written: `game.checkpoints`, `live.npc_state`, `live.economy`. The import's plan
+  now says where the two economies differ (`economy`: the columns, both values) and warns "DEV's economy settings
+  differ from PROD's (...): PROD keeps its own (the live game's; never imported)."
+
+**What the user sees in the DM's Import from dev and Atlas's Update from live.** The conflicts start picked as their
+defaults ("starts on the game's"; a **game** tag on each of the game's fields in the base / dev / live table) and the
+user can change any to dev's, whole or field by field; **The game's truth** puts them all back. Only authored fields
+changed on both sides are left to choose (`lib/sync.ts` `defaultPicks`, `buildChoices`).
+
+#### A map-replacing import: NPCs whose places the new map hasn't
+
+`--replace-map` (the DM's "Replace PROD's map ..."): the map is dev's whole as before, live data is compared three ways
+as before, and nothing live has is removed. What changed: an NPC or profession slot whose home, work or evening place,
+as live has it (or as its conflict ends by default), isn't on the new map is **a conflict needing a decision for each
+such place** (`gone`; `replacing(items, areas)`), never unset unasked as before. Per NPC: **Unplace** (`"unplace"`:
+each such place unset; it keeps its name, talk, relations and memories), **dev's** (`"dev"`, its whole row, when dev has
+it), or per place `{"home": "dev" | "unset" | {"cell", "x", "y"}}` (dev's place, unset, or **a new place** on the new
+map; the plan lists the new map's places as `areas`). Choosing live's for a place that isn't there is refused, and
+the import is refused while any is left. NPCs keep their live state wherever their places still exist.
+
+Let go without a decision, as before: spawned NPCs' places (each server's own), the old map's patrol posts, territory
+claims and NPC areas. The release's `letGo` now counts the NPCs and slots the user unplaced (`npcs`, `slots`) and the
+spawned (`spawned`). On the DM's screen: "not on the new map: home (cottage)" on the conflict, with Dev's / Unset / New
+place (a list of the new map's cells and interiors, and the tile), and **Unplace the N without a place**.
+
+**Kept**: maintenance and the game server's lock, the map identity and its refusals, and the refusal of a new map
+while live lacks migrations dev has (with 0059 in DEV, PROD lacks `live.game_changes` too, and is told so). A same-map
+import where dev removed a place live's game has put someone in is still refused by name (pull first, then move them in
+Atlas).
+
+**Migration 0059** is written and applied only to the test suites' throwaway worlds; **not applied to DEV or PROD**
+(`python3 tools/world_db.py migrate --db dev` when the map work allows). Until then DEV behaves as before.
+
+**Tests.** `tools/test_world_sync.LiveTruthTests`, on throwaway worlds with the game's writes made as `ratw_game`: a
+whole-world save after an arrival keeps the placement and Atlas's own edit, conflicts where both changed (the game's by
+default, Atlas's chosen), and without `seen`; keyed edits merged on the game's row, the heartbeat bringing the game's
+change, a conflict naming base / mine / game's and the game's kept, saved again with "mine", another editor still
+refused, the NPCs & areas page's whole NPC; an import keeping PROD's arrival, birth, save, NPC state and economy
+settings while DEV's authored changes come across (and DEV brought level); conflicts defaulting to live on pull and
+import (a moved home, a removed NPC the game moved) and dev's when chosen; a birth as a live addition, in the base,
+never removed, the game's whole; a new map listing the NPCs whose places it hasn't (a birth in the removed cottage,
+someone's evenings, a home both moved), refusing live's, and taking unplace, dev's and a new place.
+`MapTests.test_an_import_of_another_map...` now chooses unplace for its two. `Editor/src/lib/sync.test.ts` (defaults,
+places) and `live.test.ts` (`againWithChoices`).

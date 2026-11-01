@@ -7,7 +7,7 @@ import type {Roster, SlotPreview} from './roster';
 import type {ElevationMode} from './elevation';
 import type {HeightBrush} from './glyphs';
 import type {CampBuilding} from './api';
-import {applyChanges, diff, inverse, type Batch, type Change, type ConflictNotice, type Editor, type Identity, type LiveStatus} from './live';
+import {againWithChoices, applyChanges, diff, inverse, stable, type Batch, type Change, type ConflictNotice, type Editor, type Identity, type LiveStatus} from './live';
 import {blockedBy, groundPending, lateFor, noteRemote, settleCell, want, type Ground} from './lazyGround';
 
 export type View = {kind: 'world'} | {kind: 'cell'; id: string};
@@ -246,6 +246,30 @@ export function refuseBatch(batch: Batch, notice: ConflictNotice, current: Recor
     setState(s => ({project, conflict: notice, dialog: s.dialog ?? 'conflict',
         past: s.past.filter(b => b.id !== batch.id), future: s.future.filter(b => b.id !== batch.id)}));
     repairView();
+}
+
+/** A saved batch as the host wrote it: this editor's changes on what the game server changed meanwhile (an arrival's
+ *  home kept). Shown as written; history is left as it is. */
+export function adoptWritten(values: Record<string, unknown>) {
+    const project = {...state.project};
+    applyChanges(project, Object.entries(values).map(([key, after]) => ({key, after})));
+    setState({project});
+}
+
+/** A batch the game server's changes refused, made again on the values there now with the editor's choices (`mine`:
+ *  per key, the fields to take the editor's value for; the game's stays for the rest). */
+export function saveAgain(notice: ConflictNotice, mine: Record<string, Record<string, boolean>>) {
+    const ops = againWithChoices(notice, mine);
+    if (!ops) return false;
+    const changed = ops.filter(op => stable(op.before) !== stable(op.after));
+    setState({conflict: null, dialog: null});
+    if (!changed.length) return true;
+    const project = {...state.project};
+    applyChanges(project, changed);
+    const batch = send(notice.action, changed);
+    setState(s => ({project, past: [...s.past.slice(-99), batch], future: []}));
+    repairView();
+    return true;
 }
 
 /** After undo/redo the viewed cell or selected thing may no longer exist. */

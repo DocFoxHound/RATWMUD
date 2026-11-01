@@ -562,10 +562,153 @@ def keep_made_by_the_server(conn, world_id: str, desired: dict, current: dict) -
     return [r[1] for r in kept]
 
 
-def save_world(conn, project: dict, revision: int | None, create: bool = False) -> int:
+# --------------------------------------------------------------------------- The live world's truth
+# Doc 66, Progress, "The live world's truth: NPCs and markets in conflicts". The live game owns its NPCs' live state and
+# the market; Atlas owns the map, the buildings and the NPCs as written. Of the rows both write, these columns are the
+# game's (an arrival's home and post, what it carries, its age; on a profession slot, also the roster character the
+# build gave it, on a roster character its assignment); a row the game made (origin 'runtime': a birth) is the game's
+# whole. Everything else in them is authored. (The rest of the game's truth, the households, purses, tills, stock,
+# shelves, prices, wages, the toll and alms, the treasury and the loop, is in its save, game.checkpoints, and
+# live.npc_state, which no save of Atlas's and no pull or import ever writes; live.economy is each world's own.)
+PLACES = ('home', 'work', 'evening')
+PLACE_COLUMNS = tuple(f'{p}_{c}' for p in PLACES for c in ('area', 'x', 'y'))
+GAME_COLUMNS = {
+    'live.npcs': (*PLACE_COLUMNS, 'purse', 'herbs', 'meals', 'age', 'origin'),
+    'live.profession_slots': (*PLACE_COLUMNS, 'purse', 'herbs', 'meals', 'character_id', 'origin'),
+    'live.characters': ('status', 'assignment', 'origin'),
+}
+# The same, as the editor's entities carry them (live_edit's person: and slot: keys).
+GAME_FIELDS = {'person': (*PLACES, 'purse', 'herbs', 'meals', 'age'), 'slot': (*PLACES, 'purse', 'herbs', 'meals')}
+GAME_TABLE_OF = {'person': 'live.npcs', 'slot': 'live.profession_slots'}
+
+
+def game_owned(table, column, row=None) -> bool:
+    """Whether a column of a live table is the live game's (or the whole row is: one the game made)."""
+    return column in GAME_COLUMNS.get(table, ()) or (isinstance(row, dict) and row.get('origin') == 'runtime')
+
+
+def game_log_supported(conn) -> bool:
+    """Whether this world logs the game server's changes (migration 0059)."""
+    return bool(conn.execute("SELECT to_regclass('live.game_changes') IS NOT NULL").fetchone()[0])
+
+
+def game_seen(conn) -> int:
+    """The newest game change this world has logged (0 for none, or a world without migration 0059): what a reader
+    has seen, for later saves to compare against."""
+    if not game_log_supported(conn):
+        return 0
+    return conn.execute('SELECT coalesce(max(seq), 0) FROM live.game_changes').fetchone()[0]
+
+
+def game_changes(conn, world_id, table=None, since=None, revision=None) -> dict[str, dict]:
+    """{row id: {'before': the row before the game's first change since, 'after': as the game left it (None:
+    removed), 'op': the first change's, 'seq': the last's}} for the rows the game changed after game change `since`
+    (or, without it, while the world's revision was `revision` or later), in one table (or every one, keyed
+    'table/id'). Only rows keyed by one id (NPCs, slots)."""
+    if not game_log_supported(conn):
+        return {}
+    where, params = ['world_id = %s', 'jsonb_array_length(row_key) = 1'], [world_id]
+    if table:
+        where.append('table_name = %s')
+        params.append(table)
+    if since is not None:
+        where.append('seq > %s')
+        params.append(since)
+    elif revision is not None:
+        where.append('revision >= %s')
+        params.append(revision)
+    out = {}
+    for seq, name, key, op, before, after in conn.execute(
+            f'SELECT seq, table_name, row_key, op, before, after FROM live.game_changes WHERE {" AND ".join(where)} ORDER BY seq',
+            params).fetchall():
+        rid = key[0] if table else f'{name}/{key[0]}'
+        if rid not in out:
+            out[rid] = {'before': before, 'op': op}
+        out[rid].update(after=after, seq=seq)
+    return out
+
+
+def _same(a, b) -> bool:
+    return comparable(num(a) if isinstance(a, float) else a) == comparable(num(b) if isinstance(b, float) else b)
+
+
+def keep_the_games_truth(conn, world_id, desired: dict, current: dict, revision=None, seen=None, choices=None, tables=None):
+    """A whole-world save over a world a game server changes (doc 66, Progress, "The live world's truth"): for each NPC or
+    profession slot the game changed since the save's project was read (its log, after game change `seen`; without it,
+    at the project's revision or later), each game-owned field (a place: area, x and y together; purse, stock, age)
+    the save would change back is the game's again: the save's value where the save hadn't changed it (it still holds the
+    value the game replaced), and by default where both changed it, a conflict. `choices` {conflict id: 'atlas' |
+    'game' | {field: 'atlas' | 'game'}} keep the save's instead. Authored fields are the save's. Returns {'kept': [row
+    ids kept as the game left them], 'conflicts': [{id, table, name, fields: [{field, base, atlas, game, chosen}]}]}."""
+    tables = tables or TABLES
+    choices = choices or {}
+    kept, conflicts = [], []
+    for table in GAME_TABLE_OF.values():
+        if table not in tables:
+            continue
+        changed = game_changes(conn, world_id, table, since=seen, revision=None if seen is not None else revision)
+        if not changed:
+            continue
+        _, columns = tables[table]
+        at = {c: i for i, c in enumerate(columns)}
+        have = {r[1]: r for r in current[table]}
+        want = {r[1]: i for i, r in enumerate(desired[table])}
+        for rid, change in changed.items():
+            if rid not in want:
+                continue                      # (Not in the save: kept by keep_made_by_the_server, or Atlas removed it.)
+            row = list(desired[table][want[rid]])
+            now = have.get(rid)
+            cid = f'{table}/{rid}'
+            if now is None:
+                # The game removed it (a birth it couldn't make): the save doesn't bring it back unless chosen.
+                if change['op'] == 'insert' and choices.get(cid) != 'atlas':
+                    desired[table].pop(want[rid])
+                    want = {r[1]: i for i, r in enumerate(desired[table])}
+                    kept.append(cid)
+                continue
+            base = change['before'] or {}
+            groups = [(p, [f'{p}_area', f'{p}_x', f'{p}_y']) for p in PLACES] + \
+                     [(c, [c]) for c in GAME_COLUMNS[table] if c not in PLACE_COLUMNS and c in at]
+            fields, touched = [], False
+            for field, cols in groups:
+                if not all(c in at for c in cols):
+                    continue
+                mine, game = [row[at[c]] for c in cols], [now[at[c]] for c in cols]
+                before = [base.get(c) for c in cols] if change['op'] != 'insert' else None
+                if all(_same(m, g) for m, g in zip(mine, game)):
+                    continue
+                if before is not None and all(_same(m, b) for m, b in zip(mine, before)):
+                    for c, g in zip(cols, game):       # (The save still holds what the game replaced: the game's.)
+                        row[at[c]] = g
+                    touched = True
+                    continue
+                if before is not None and all(_same(g, b) for g, b in zip(game, before)):
+                    continue                           # (The game put it back as it was: the save's change stands.)
+                choice = choices.get(cid)
+                pick = choice.get(field) if isinstance(choice, dict) else choice
+                shown = lambda v: None if v is None else v[0] if len(cols) == 1 else \
+                    {'cell': v[0], 'x': v[1], 'y': v[2]} if v[0] is not None else None
+                fields.append({'field': field, 'base': shown(before), 'atlas': shown(mine), 'game': shown(game),
+                               'chosen': 'atlas' if pick == 'atlas' else 'game'})
+                if pick != 'atlas':
+                    for c, g in zip(cols, game):
+                        row[at[c]] = g
+                    touched = True
+            if fields:
+                conflicts.append({'id': cid, 'table': table, 'name': row[at['name']] if 'name' in at else rid, 'fields': fields})
+            if touched:
+                desired[table][want[rid]] = tuple(row)
+                kept.append(cid)
+    return {'kept': kept, 'conflicts': conflicts}
+
+
+def save_world(conn, project: dict, revision: int | None, create: bool = False, *, seen: int | None = None,
+               choices: dict | None = None, outcome: dict | None = None) -> int:
     """Validates and stores a project. `revision` is the one it was opened at (None to create).
 
-    Returns the new revision. Raises ConflictError if the world changed since it was opened.
+    Returns the new revision. Raises ConflictError if the world changed since it was opened. What a game server changed
+    meanwhile (doc 66, Progress, "The live world's truth": `seen`, game_seen() when the project was read) is kept as
+    the game left it (keep_the_games_truth, with `choices`); `outcome`, a dict, is given what was kept and the conflicts.
     """
     p, _ = map_editor.check_project(project, for_game=False, playable=False)
     p['id'] = map_editor.world_id(p)
@@ -593,6 +736,10 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False) 
             raise StoreError(f'The economy\'s settings can\'t be saved: {refused}.')
         desired, current = project_rows(p, chunk_size, tables), stored_rows(conn, p['id'], tables)
         keep_made_by_the_server(conn, p['id'], desired, current)
+        truth = keep_the_games_truth(conn, p['id'], desired, current, revision, seen, choices, tables) if row else \
+            {'kept': [], 'conflicts': []}
+        if outcome is not None:
+            outcome.update(truth)
         write_rows(conn, desired, current, tables)
         conn.execute('DELETE FROM live.faction_claims WHERE world_id = %s AND NOT (area = ANY(%s))',
                      (p['id'], [a['id'] for a in p['cells'] + p['rooms']]))

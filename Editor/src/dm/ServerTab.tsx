@@ -6,7 +6,7 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {dmApi, DmError, type Me, type Target, type World} from './api';
 import {gameUrl} from '../lib/api';
-import {buildChoices, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
+import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
 
@@ -152,7 +152,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
             const next = await dmApi.importPlan(live.key, which ?? undefined);
             setData(next); setDev(next.dev);
             if (!next.plan?.replacesMap) setReplace(false);
-            setPicks(p => prunePicks(p, next.plan?.conflicts ?? []));
+            setPicks(p => ({...defaultPicks(next.plan?.conflicts ?? []), ...prunePicks(p, next.plan?.conflicts ?? [])}));   // (The game's truth to start.)
         } catch (error) { setProblem({message: (error as Error).message, errors: []}); }
         finally { setLoading(false); }
     }, [live.key]);
@@ -220,7 +220,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
                         {' '}{plan.base.how} by {plan.base.by || 'someone'} {when(plan.base.takenAt)}</p>
                     {replacing && <div className="sync-warning">
                         <p><b>A different map.</b> {replacing.warning}</p>
-                        {letGoText(plan.letGo) && <p className="meta">Kept, but standing on the old map: {letGoText(plan.letGo)}.</p>}
+                        {letGoText(plan.letGo) && <p className="meta">Kept, but standing on the old map: {letGoText(plan.letGo)} (below, under Conflicts).</p>}
                         <label><input type="checkbox" checked={replace} disabled={busy} onChange={e => setReplace(e.target.checked)} /> {replacing.confirm}</label>
                     </div>}
                     {plan.errors.length > 0 && <Problems title="Fix these in Atlas before importing:" items={plan.errors} />}
@@ -230,7 +230,7 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
                     <SummaryTable summary={plan.summary.dev} empty="Nothing from dev." />
                     <ChangeGroups items={plan.devChanges} side="dev" empty="Dev changed nothing that live didn't." />
                     <h4>Conflicts <span className="meta">changed on both sides since the last pull: choose for each</span></h4>
-                    <ConflictList conflicts={plan.conflicts} picks={picks} onPicks={setPicks} labels={LABELS} disabled={busy} />
+                    <ConflictList conflicts={plan.conflicts} picks={picks} onPicks={setPicks} labels={LABELS} disabled={busy} areas={plan.areas} />
                     <details className="sync-kept-list"><summary>Live's own changes, kept ({plan.counts.live})</summary>
                         <ChangeGroups items={plan.liveChanges} side="live" empty="None." /></details>
                     <div className="sync-row">

@@ -13,10 +13,37 @@ export interface Change { seq: number; clientId: string; editor: string; label: 
 export interface Editor { clientId: string; editor: string; color: string; idle: number; state: Presence }
 export interface Presence { workspace?: string; view?: string; place?: Place | null; doing?: string }
 export interface Identity { name: string; color: string }
+/** A field the game server changed since this editor saw it, and this editor changed too (doc 66, Progress, "The live
+ *  world's truth"): what it was, what this editor wanted, and the game's (kept until the editor chooses theirs). */
+export interface GameField { field: string; base: unknown; mine: unknown; game: unknown }
 export interface ConflictNotice {
     action: string;
     message: string;
-    conflicts: {key: string; label: string; editor: string; at: string | null}[];
+    conflicts: {key: string; label: string; editor: string; at: string | null; game?: boolean; fields?: GameField[]}[];
+    /** The refused batch's changes and the values now, for saving it again with the editor's choices. */
+    ops?: Op[];
+    current?: Record<string, unknown>;
+}
+
+/** A refused batch made again on the values there now, with the editor's choice for each field the game changed too:
+ *  'mine' takes the editor's value, otherwise the game's stays. Every other change of the batch is made as it was
+ *  (on an entity, only the fields the editor changed). Null when a refusal wasn't only the game's. */
+export function againWithChoices(notice: ConflictNotice, mine: Record<string, Record<string, boolean>>): Op[] | null {
+    if (!notice.ops || !notice.current || !notice.conflicts.length || notice.conflicts.some(c => !c.game)) return null;
+    const games = new Map(notice.conflicts.map(c => [c.key, new Set((c.fields ?? []).map(f => f.field))]));
+    return notice.ops.map(op => {
+        const now = notice.current![op.key] ?? null;
+        const contested = games.get(op.key);
+        if (!contested || !op.after || typeof op.after !== 'object' || !now || typeof now !== 'object') return {key: op.key, before: now, after: op.after};
+        const before = (op.before ?? {}) as Record<string, unknown>, after = op.after as Record<string, unknown>;
+        const merged: Record<string, unknown> = {...now as Record<string, unknown>};
+        for (const field of new Set([...Object.keys(before), ...Object.keys(after)])) {
+            if (stable(before[field]) === stable(after[field])) continue;           // (Not this editor's change.)
+            if (contested.has(field) && !mine[op.key]?.[field]) continue;          // (The game's, kept.)
+            merged[field] = after[field];
+        }
+        return {key: op.key, before: now, after: merged};
+    });
 }
 
 // --------------------------------------------------------------------------- Keys and values
@@ -253,9 +280,9 @@ export function colorFor(name: string) {
 export const clientId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 export interface Host {
-    load(): Promise<{project: Project; seq: number}>;
+    load(): Promise<{project: Project; seq: number; gameSeq?: number}>;
     edit(body: unknown): Promise<Response>;
-    sync(body: unknown): Promise<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]}>;
+    sync(body: unknown): Promise<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]; gameSeq?: number}>;
 }
 
 export interface Batch { id: number; label: string; ops: Op[] }
@@ -272,15 +299,19 @@ export interface LiveCallbacks {
     reload(): void;
     /** The ID of the world this tab holds; the host asks for a reload if DEV now holds another. */
     world?(): string | undefined;
+    /** A saved batch's rows as the host wrote them: its changes on what the game server had changed meanwhile. */
+    written?(values: Record<string, unknown>): void;
 }
 export interface LiveStatus { state: 'connecting' | 'saved' | 'saving' | 'offline'; pending: number; error: string }
 
-export function startLive(host: Host, seq: number, cb: LiveCallbacks) {
+export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: number) {
     const outbox: Batch[] = [];
     // The edit number of this tab's own latest saved change per key: an older change to the same key
     // arriving later (e.g. after a refusal showed the current value) must not replace a newer one.
     const own = new Map<string, number>();
     let since = seq, sending = false, stopped = false, offline = '';
+    // The game server's changes (an arrival's home, a birth) come with the heartbeat after this one: doc 66, Progress.
+    let gameSince = gameSeq;
     const report = () => cb.status({state: offline ? 'offline' : outbox.length ? 'saving' : 'saved', pending: outbox.length, error: offline});
 
     async function pump() {
@@ -294,10 +325,12 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks) {
             if (response.ok) {
                 outbox.shift(); offline = '';
                 for (const op of batch.ops) own.set(op.key, data.seq);
+                if (data.merged && Object.keys(data.merged).length) cb.written?.(data.merged);
             }
             else if (response.status === 409 || response.status === 422) {
                 outbox.shift(); offline = '';
-                cb.refused(batch, {action: batch.label, message: data.error ?? 'Refused.', conflicts: data.conflicts ?? []}, data.current ?? {});
+                cb.refused(batch, {action: batch.label, message: data.error ?? 'Refused.', conflicts: data.conflicts ?? [],
+                    ops: batch.ops, current: data.current ?? {}}, data.current ?? {});
             } else throw new Error(data.error ?? `Host replied ${response.status}.`);
         } catch (error) {
             offline = (error as Error).message || 'The editor host is not reachable.';
@@ -315,10 +348,12 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks) {
         if (stopped) return;
         try {
             const me = cb.identity();
-            const data = await host.sync({clientId, editor: me.name, color: me.color, since, state: cb.presence(), world: cb.world?.()});
+            const data = await host.sync({clientId, editor: me.name, color: me.color, since, state: cb.presence(), world: cb.world?.(),
+                ...(gameSince !== undefined ? {gameSince} : {})});
             if (data.reload) { stopped = true; cb.reload(); return; }
             const theirs = data.changes.filter(c => c.clientId !== clientId && !((own.get(c.key) ?? 0) > c.seq));
             since = data.seq;
+            if (typeof data.gameSeq === 'number') gameSince = data.gameSeq;
             if (theirs.length) cb.remote(theirs);
             cb.editors(data.editors);
             if (offline && !outbox.length) offline = '';

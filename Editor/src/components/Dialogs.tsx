@@ -4,7 +4,7 @@ import {api, gameUrl, type PlaytestResult, type PlayServer} from '../lib/api';
 import {COMMANDS} from '../lib/commands';
 import {EDITOR_COLORS} from '../lib/live';
 import {setIdentity} from '../lib/session';
-import {commit, getState, openView, setState, toast, useStore} from '../lib/store';
+import {commit, getState, openView, saveAgain, setState, toast, useStore} from '../lib/store';
 import {Hint, NumberField, Row, TextField, Toggle} from './fields';
 import {GenerateDialog} from './Characters';
 
@@ -67,6 +67,7 @@ function ConflictDialog() {
         const s = Math.max(0, Math.round((Date.now() - Date.parse(at)) / 1000));
         return s < 60 ? `${s} s ago` : s < 3600 ? `${Math.round(s / 60)} min ago` : new Date(at).toLocaleString();
     };
+    if (notice.conflicts.length && notice.conflicts.every(c => c.game)) return <GameConflictDialog notice={notice} />;
     const people = [...new Set(notice.conflicts.map(c => c.editor).filter(Boolean))];
     return <Modal eyebrow="EDIT CONFLICT" title={people.length ? `${people.join(' and ')} got there first` : 'Your change was not saved'}
         onClose={() => setState({conflict: null})}>
@@ -77,6 +78,43 @@ function ConflictDialog() {
         </ul> : <p className="hint error-text">{notice.message}</p>}
         <Hint>The map now shows the current version. Make your change again if it still makes sense.</Hint>
         <div className="modal-actions"><button className="primary" onClick={done}>OK</button></div>
+    </Modal>;
+}
+
+/** A place or value as the conflict shows it. */
+function gameValue(value: unknown): string {
+    if (value === null || value === undefined) return 'none (unplaced)';
+    if (typeof value === 'object' && value !== null && 'cell' in value) {
+        const p = value as {cell: string; x: number; y: number};
+        return `${p.cell} ${p.x}, ${p.y}`;
+    }
+    return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+/** The game server changed what this edit changed too (doc 66, Progress, "The live world's truth": an arrival's home,
+ *  a birth): field by field, the game's (kept, the live world's truth) or yours. The rest of the edit saves either way. */
+function GameConflictDialog({notice}: {notice: NonNullable<ReturnType<typeof getState>['conflict']>}) {
+    const [mine, setMine] = useState<Record<string, Record<string, boolean>>>({});
+    const pick = (key: string, field: string, yours: boolean) => setMine(m => ({...m, [key]: {...m[key], [field]: yours}}));
+    const yours = Object.values(mine).some(fields => Object.values(fields).some(Boolean));
+    return <Modal eyebrow="THE GAME CHANGED THIS" title="The game server moved what you changed" wide
+        onClose={() => setState({conflict: null})}>
+        <p>While you had <b>“{notice.action}”</b> open, the game running this world changed the same thing. The game's is the live
+            world's truth and is kept unless you choose yours; the rest of your change saves either way.</p>
+        {notice.conflicts.map(c => <section key={c.key} className="game-conflict"><h4>{c.label}</h4>
+            <table className="dm-table sync-fields"><thead><tr><th>Field</th><th>You saw</th><th>Yours</th><th>The game's</th><th>Keep</th></tr></thead>
+                <tbody>{(c.fields ?? []).map(f => {
+                    const taken = !!mine[c.key]?.[f.field];
+                    return <tr key={f.field}><th>{f.field}</th><td>{gameValue(f.base)}</td>
+                        <td className={taken ? 'sync-kept' : ''}>{gameValue(f.mine)}</td><td className={taken ? '' : 'sync-kept'}>{gameValue(f.game)}</td>
+                        <td><div className="segmented small" role="radiogroup" aria-label={`Keep for ${f.field}`}>
+                            <button role="radio" aria-checked={!taken} className={!taken ? 'on' : ''} onClick={() => pick(c.key, f.field, false)}>The game's</button>
+                            <button role="radio" aria-checked={taken} className={taken ? 'on' : ''} onClick={() => pick(c.key, f.field, true)}>Yours</button></div></td></tr>;
+                })}</tbody></table></section>)}
+        <Hint>The map shows the game's values now. Choosing yours puts your value back over the game's.</Hint>
+        <div className="modal-actions">
+            <button onClick={() => { if (!saveAgain(notice, {})) setState({conflict: null, dialog: null}); }}>Keep the game's, save the rest</button>
+            <button className="primary" disabled={!yours} onClick={() => saveAgain(notice, mine)}>Save with my choices</button></div>
     </Modal>;
 }
 

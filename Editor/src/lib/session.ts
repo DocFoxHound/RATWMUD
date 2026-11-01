@@ -4,7 +4,7 @@ import * as M from '../model/model.mjs';
 import {api} from './api';
 import {colorFor, saveIdentity, startLive, type Identity, type Presence} from './live';
 import {adoptLean, startGround} from './lazyGround';
-import {applyRemote, connectLive, getState, installGround, loadProject, refuseBatch, setState, toast} from './store';
+import {adoptWritten, applyRemote, connectLive, getState, installGround, loadProject, refuseBatch, setState, toast} from './store';
 
 let starting = false;
 let campsTimer: ReturnType<typeof setTimeout> | null = null;
@@ -21,13 +21,13 @@ export async function startSession() {
     if (!identity) { setState({dialog: 'identity'}); return; }
     if (starting) return;
     starting = true;
-    let seq: number;
+    let seq: number, gameSeq: number | undefined;
     try {
         // Cell outlines and previews now; each cell's ground as it comes into view (lib/lazyGround.ts).
         const world = await api.live.load();
         startGround(api.live.ground, installGround);
         if (!loadProject(adoptLean(world.project as never))) throw new Error('The world from the database could not be read.');
-        seq = world.seq;
+        seq = world.seq; gameSeq = world.gameSeq;
         refreshCamps();
     } catch (error) {
         starting = false;
@@ -41,6 +41,7 @@ export async function startSession() {
         presence,
         remote: changes => applyRemote(changes, c => getState().editors.find(e => e.clientId === c.clientId)?.color ?? colorFor(c.editor)),
         refused: refuseBatch,
+        written: adoptWritten,
         status: live => setState({live}),
         editors: editors => setState({editors}),
         reload: () => {
@@ -49,7 +50,7 @@ export async function startSession() {
             toast('A lot changed while this editor was away; reloading the world.');
             void startSession();
         },
-    });
+    }, gameSeq);
     connectLive(link);
 }
 

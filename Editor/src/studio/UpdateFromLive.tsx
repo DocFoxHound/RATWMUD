@@ -7,7 +7,7 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {api} from '../lib/api';
 import {DmError, type Me} from '../dm/api';
-import {buildChoices, prunePicks, summaryLine, summaryTotal, type MapPair, type Picks, type PullPlan, type PullResult} from '../lib/sync';
+import {buildChoices, defaultPicks, prunePicks, summaryLine, summaryTotal, type MapPair, type Picks, type PullPlan, type PullResult} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from './SyncViews';
 
 const LABELS = {dev: 'Keep dev\'s', live: 'Take live\'s'} as const;
@@ -24,7 +24,7 @@ export function UpdateFromLive({me, onWorkshop}: {me: Me; onWorkshop: () => void
         try {
             const next = await api.sync.diff();
             setPlan(next); setRefusal(null);
-            setPicks(p => prunePicks(p, next.conflicts));
+            setPicks(p => ({...defaultPicks(next.conflicts), ...prunePicks(p, next.conflicts)}));   // (The game's truth to start.)
             return next;
         } catch (error) {
             setRefusal({message: (error as Error).message, status: error instanceof DmError ? error.status : 0,

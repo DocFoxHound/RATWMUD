@@ -57,6 +57,14 @@ data is compared three ways as ever (against the base, or live as it is when the
 ever removed: an NPC or profession slot in a place the new map hasn't is unplaced, and the old map's NPC areas, claims
 and patrol posts go with it. Afterwards both worlds share the identity and pull works again.
 
+The live world's truth (doc 66, Progress, "The live world's truth: NPCs and markets in conflicts"). The live game owns
+its NPCs' live state (world_store.GAME_COLUMNS: an NPC's home and post, what it carries, its age; a row it made, whole)
+and the market (the save, live.npc_state, live.economy: never synced). A conflict over a game-owned field defaults to
+live's (the plan's `default`, taken when no choice is sent; `defaulted` in the result); authored fields changed on both
+sides still need a choice. A place's area, x and y are one field. A map-replacing import lists every NPC or profession
+slot whose place the new map hasn't as a conflict needing a decision for that place ("unplace", dev's place, or a new
+place {cell, x, y}: `{"home": "dev" | "unset" | {...}}` in a field-by-field choice); none is unplaced unasked.
+
 A world's server state (admin.server_state): running or maintenance. The game server hears a change (NOTIFY
 ratw_maintenance), tells its players, gives them a minute, saves and exits with status 76; it refuses to start while
 its world is in maintenance (also 76); tools/live.sh waits and starts it again (on the live choice) once it is running.
@@ -554,6 +562,8 @@ class Item(NamedTuple):
     base: dict | None
     dev: dict | None
     live: dict | None
+    gone: tuple = ()                # A map-replacing import: the places (home, work, evening) live's row would keep that
+                                    # the new map hasn't (a decision each: dev's, unset, or a new place).
 
     @property
     def id(self):
@@ -599,9 +609,30 @@ def differing(a, b, column=None):
     return [f for f in sorted(set(a) | set(b)) if f != column and canonical(a.get(f)) != canonical(b.get(f))]
 
 
+def place_columns(table, field):
+    """(area, x, y) columns of the place a column belongs to, on an NPC or profession slot; () for any other column."""
+    if table not in ('live.npcs', 'live.profession_slots'):
+        return ()
+    place, _, part = field.rpartition('_')
+    return (f'{place}_area', f'{place}_x', f'{place}_y') if place in PLACED and part in ('area', 'x', 'y') else ()
+
+
 def field_side(item: Item, field) -> str:
     """Which side changed one field of a row both sides have: 'same', 'dev', 'live' or 'conflict' (both, differently,
-    or the row is new on both)."""
+    or the row is new on both). A place's area and tile (an NPC's or slot's home_area, home_x, home_y) are one field:
+    each of them is the place's side, so a place is never half dev's and half live's."""
+    group = place_columns(item.spec.table, field)
+    if group and field != group[0]:
+        return field_side(item, group[0])
+    if group:
+        pick = lambda row: canonical([(row or {}).get(c) for c in group])
+        d, l = pick(item.dev), pick(item.live)
+        if d == l:
+            return 'same'
+        if item.base is None:
+            return 'conflict'
+        b = pick(item.base)
+        return 'live' if d == b else 'dev' if l == b else 'conflict'
     d, l = canonical((item.dev or {}).get(field)), canonical((item.live or {}).get(field))
     if d == l:
         return 'same'
@@ -609,6 +640,70 @@ def field_side(item: Item, field) -> str:
         return 'conflict'
     b = canonical(item.base.get(field))
     return 'live' if d == b else 'dev' if l == b else 'conflict'
+
+
+# --------------------------------------------------------------------------- The live world's truth
+# Doc 66, Progress, "The live world's truth: NPCs and markets in conflicts". Which side a conflict defaults to: the live
+# game owns its NPCs' live state (world_store.GAME_COLUMNS: an NPC's home and post, what it carries, its age; a row the
+# game made, whole), so where both sides changed such a field, live's is kept unless the user chooses dev's. Authored
+# fields changed on both sides have no default: the user chooses. A field only one side changed goes that side's way.
+
+def game_made(item: Item) -> bool:
+    """A row the live game made (origin 'runtime': a birth), on any side."""
+    return any(isinstance(r, dict) and r.get('origin') == 'runtime' for r in (item.base, item.live, item.dev))
+
+
+def owner(item: Item, field) -> str:
+    """'game' (the live game's: its value on live is the truth) or 'authored' (Atlas's)."""
+    return 'game' if S.game_owned(item.spec.table, field) or game_made(item) else 'authored'
+
+
+def field_default(item: Item, field):
+    """The side a field of a row both sides have goes by default: the one that changed it, or for one both changed,
+    live's when it is the game's; None when the user must choose."""
+    side = field_side(item, field)
+    if side in ('dev', 'live', 'same'):
+        return side
+    return 'live' if owner(item, field) == 'game' else None
+
+
+def default_choice(item: Item):
+    """A conflict's default choice, as the user would send it, or None when it needs one: field by field (live's for
+    the game's fields both changed, each other field the side that changed it) when every field both changed is the
+    game's; 'live' for a row removed on one side when live's side is the game's (it changed a game field, or made the
+    row); None for a map-replacing import's row whose place the new map hasn't (a decision each)."""
+    if item.side != 'conflict' or item.gone:
+        return None
+    column = world_column(item.spec.table)
+    if item.dev is not None and item.live is not None:
+        both = [f for f in differing(item.dev, item.live, column) if field_side(item, f) == 'conflict']
+        if any(field_default(item, f) is None for f in both):
+            return None
+        return {f: 'live' for f in both}
+    if game_made(item):
+        return 'live'
+    if item.dev is None and item.live is not None and item.base is not None:
+        if any(owner(item, f) == 'game' for f in differing(item.base, item.live, column)):
+            return 'live'                      # (Dev removed it; the live game changed it since: live's.)
+    return None
+
+
+def merged_row(item: Item, picked: dict) -> dict:
+    """Live's row with dev's value of each field picked 'dev'."""
+    return {**item.live, **{f: item.dev[f] for f, side in picked.items() if side == 'dev' and f in item.dev}}
+
+
+def outcome_row(item: Item):
+    """The row a conflict ends with by default (or live's, with no default): what a map-replacing import checks
+    against the new map."""
+    choice = default_choice(item._replace(gone=()))
+    if item.side == 'live' or choice is None:
+        return item.live
+    if choice == 'live':
+        return item.live
+    column = world_column(item.spec.table)
+    picked = {f: field_default(item, f) for f in differing(item.dev, item.live, column)}
+    return merged_row(item, {**picked, **choice})
 
 
 def describe(item: Item) -> dict:
@@ -625,9 +720,18 @@ def describe(item: Item) -> dict:
                         'dev': shown((item.dev or {}).get(f)) if item.dev else None,
                         'live': shown((item.live or {}).get(f)) if item.live else None,
                         # (Rows on both sides: which side changed the field, 'same' or 'conflict'; else null.)
-                        'changed': field_side(item, f) if item.dev is not None and item.live is not None else None}
+                        'changed': field_side(item, f) if item.dev is not None and item.live is not None else None,
+                        'owner': owner(item, f),
+                        'default': field_default(item, f) if item.dev is not None and item.live is not None else None}
                        for f in fields],
-            'fieldChoices': item.side == 'conflict' and item.dev is not None and item.live is not None}
+            'fieldChoices': item.side == 'conflict' and item.dev is not None and item.live is not None,
+            # The choice taken when the user makes none (the game's truth); null: the user must choose.
+            'default': default_choice(item),
+            # A map-replacing import: the places the new map hasn't, each needing a decision (dev's, unset, a new place).
+            'gone': [{'place': p, 'area': (outcome_row(item) or {}).get(f'{p}_area'),
+                      'dev': {'cell': item.dev[f'{p}_area'], 'x': item.dev[f'{p}_x'], 'y': item.dev[f'{p}_y']}
+                      if item.dev and item.dev.get(f'{p}_area') is not None else None} for p in item.gone],
+            'placeChoices': bool(item.gone)}
 
 
 def summarize(items, side_of):
@@ -648,8 +752,29 @@ def plan_digest(items) -> str:
     return h.hexdigest()
 
 
-def resolve(items, choices) -> dict[str, dict | None]:
-    """The row each conflict ends with on both sides, from the user's choices. Refuses missing or stale choices."""
+def defaulted(items, choices) -> list[str]:
+    """The conflicts no choice was sent for that take their default (the game's truth)."""
+    choices = choices if isinstance(choices, dict) else {}
+    return [i.id for i in items if i.side == 'conflict' and i.id not in choices and default_choice(i) is not None]
+
+
+def place_of(row, place):
+    return {'cell': row[f'{place}_area'], 'x': row[f'{place}_x'], 'y': row[f'{place}_y']} \
+        if row and row.get(f'{place}_area') is not None else None
+
+
+def set_place(row, place, value):
+    row[f'{place}_area'], row[f'{place}_x'], row[f'{place}_y'] = \
+        (value['cell'], value['x'], value['y']) if value else (None, 0, 0)
+
+
+def resolve(items, choices, areas=None) -> dict[str, dict | None]:
+    """The row each conflict ends with on both sides, from the user's choices; a conflict without one takes its
+    default (default_choice: the live game's truth) if it has one. Refuses missing or stale choices.
+
+    `areas` (a map-replacing import: the new map's cells and interiors): a row whose place the new map hasn't needs a
+    decision for it, as `{place: "dev" | "unset" | {cell, x, y}}` in a field-by-field choice (place: home, work or
+    evening), or "unplace" (the row by default, each such place unset), or "dev"; never left standing nowhere."""
     choices = choices or {}
     if not isinstance(choices, dict):
         raise PublishError('Choices must be an object: {conflict id: "dev" | "live" | {field: "dev" | "live"}}.')
@@ -657,32 +782,71 @@ def resolve(items, choices) -> dict[str, dict | None]:
     stale = sorted(set(choices) - set(conflicts))
     if stale:
         raise Moved('Some choices are for conflicts that are no longer there (the worlds changed): look again.', stale)
-    missing = [conflicts[c] for c in conflicts if c not in choices]
+    missing = [conflicts[c] for c in conflicts if c not in choices and default_choice(conflicts[c]) is None]
     if missing:
-        raise Unresolved(f'{len(missing)} conflict{"s" if len(missing) != 1 else ""} to resolve: choose dev or live for each.',
-                         [describe(i) for i in missing])
+        raise Unresolved(f'{len(missing)} conflict{"s" if len(missing) != 1 else ""} to resolve: choose dev or live for each'
+                         + (', and where the new map hasn\'t their place, unplace or a new place.' if any(i.gone for i in missing)
+                            else '.'), [describe(i) for i in missing])
     out, problems = {}, []
     for cid, item in conflicts.items():
-        choice = choices[cid]
-        if choice in ('dev', 'live'):
+        choice = choices[cid] if cid in choices else default_choice(item)
+        places = {}
+        if choice == 'unplace' and item.gone:
+            out[cid] = dict(outcome_row(item) or item.live)
+            places = {p: 'unset' for p in item.gone}
+        elif choice == 'dev' and item.gone and item.dev is None:
+            # (A map-replacing import never removes what live has: a row dev lacks is placed or unplaced, not taken away.)
+            problems.append(f'{cid}: {item.spec.label} dev hasn\'t: choose "unplace" or a new place.')
+            continue
+        elif choice in ('dev', 'live'):
             out[cid] = item.dev if choice == 'dev' else item.live
         elif isinstance(choice, dict):
+            places = {p: v for p, v in choice.items() if p in PLACED and item.gone}
+            choice = {f: v for f, v in choice.items() if f not in places}
             if item.dev is None or item.live is None:
-                problems.append(f'{cid}: removed on one side; choose "dev" or "live" for the whole row.')
-                continue
-            fields = differing(item.dev, item.live, world_column(item.spec.table))
-            # A field only one side changed goes that side's way unless chosen; one both changed must be chosen.
-            auto = {f: s for f in fields if (s := field_side(item, f)) != 'conflict'}
-            bad = [f for f in choice if f not in fields or choice[f] not in ('dev', 'live')]
-            unchosen = [f for f in fields if f not in choice and f not in auto]
-            if bad or unchosen:
-                problems.append(f'{cid}: choose "dev" or "live" for each of {", ".join(unchosen or fields)}'
-                                + (f' (not {", ".join(bad)})' if bad else ''))
-                continue
-            picked = {**auto, **choice}
-            out[cid] = {**item.live, **{f: item.dev[f] for f in fields if picked[f] == 'dev'}}
+                if not item.gone or choice:
+                    problems.append(f'{cid}: removed on one side; choose "dev" or "live" for the whole row.')
+                    continue
+                out[cid] = dict(item.live)
+            else:
+                fields = differing(item.dev, item.live, world_column(item.spec.table))
+                # (A place's area, x and y go together: the side chosen for one is the side of all three.)
+                choice = {**choice, **{c: side for f, side in choice.items()
+                                       for c in place_columns(item.spec.table, f) if c in fields}}
+                # A field only one side changed goes that side's way unless chosen; one both changed must be chosen,
+                # but for the game's (live's: the live world's truth).
+                auto = {f: s for f in fields if (s := field_default(item, f)) is not None}
+                bad = [f for f in choice if f not in fields or choice[f] not in ('dev', 'live')]
+                unchosen = [f for f in fields if f not in choice and f not in auto]
+                if bad or unchosen:
+                    problems.append(f'{cid}: choose "dev" or "live" for each of {", ".join(unchosen or fields)}'
+                                    + (f' (not {", ".join(bad)})' if bad else ''))
+                    continue
+                out[cid] = merged_row(item, {**auto, **choice})
         else:
             problems.append(f'{cid}: choose "dev", "live" or a field-by-field map.')
+            continue
+        row = out[cid]
+        if areas is None or row is None or item.spec.table not in ('live.npcs', 'live.profession_slots'):
+            continue
+        row = out[cid] = dict(row)
+        for place, how in places.items():
+            if how == 'dev' and item.dev is not None:
+                set_place(row, place, place_of(item.dev, place))
+            elif how == 'unset':
+                set_place(row, place, None)
+            elif isinstance(how, dict) and isinstance(how.get('cell'), str) and all(
+                    isinstance(how.get(k), int) and not isinstance(how.get(k), bool) for k in ('x', 'y')):
+                if how['cell'] not in areas:
+                    problems.append(f'{cid}: {how["cell"]} is not on the new map.')
+                    continue
+                set_place(row, place, how)
+            else:
+                problems.append(f'{cid}: the {place} is "dev", "unset" or a place {{cell, x, y}} on the new map.')
+        lost = [f'{p} ({row[f"{p}_area"]})' for p in PLACED if row.get(f'{p}_area') is not None and row[f'{p}_area'] not in areas]
+        if lost:
+            problems.append(f'{cid} ({row.get("name") or item.key[0]}): not on the new map: {", ".join(lost)}. Choose dev\'s place, '
+                            'unset it (unplace) or a new place.')
     if problems:
         raise PublishError('Some choices cannot be used.', problems)
     return out
@@ -961,19 +1125,21 @@ PLACED = ('home', 'work', 'evening')
 
 
 def let_go_of_old_map(conn, world_id):
-    """After a map-replacing import's rows are written (inside its transaction): whatever live kept that stands in a
-    place the new map hasn't is let go, never removed with its people. An NPC or profession slot (spawned NPCs too) has
-    each such place unset (unplaced or without work: doc 66, 2); patrol posts, faction claims and NPC areas (with
-    their spawn rules; who wandered one wanders nowhere) there go. Returns the counts."""
+    """After a map-replacing import's rows are written (inside its transaction): what live kept that stands in a place
+    the new map hasn't and that no one decides about is let go, never removed with its people: a spawned NPC (each
+    server's own) has each such place unset (doc 66, 2); patrol posts, faction claims and NPC areas (with their spawn
+    rules; who wandered one wanders nowhere) there go. Returns the counts. (Every other NPC and profession slot in such
+    a place was a conflict the user decided: resolve(), with the new map's areas. One still there is refused by
+    finish(), naming it.)"""
     gone = 'NOT EXISTS (SELECT 1 FROM world.areas a WHERE a.world_id = t.world_id AND a.id = t.{})'
     counts = {}
-    for table, label in (('live.npcs', 'npcs'), ('live.profession_slots', 'slots')):
-        ids = set()
-        for place in PLACED:
-            ids |= {r[0] for r in conn.execute(
-                f'UPDATE {table} t SET {place}_area = NULL, {place}_x = 0, {place}_y = 0 WHERE t.world_id = %s AND '
-                f't.{place}_area IS NOT NULL AND ' + gone.format(f'{place}_area') + ' RETURNING t.id', (world_id,)).fetchall()}
-        counts[label] = len(ids)
+    ids = set()
+    for place in PLACED:
+        ids |= {r[0] for r in conn.execute(
+            f'UPDATE live.npcs t SET {place}_area = NULL, {place}_x = 0, {place}_y = 0 WHERE t.world_id = %s AND '
+            f't.spawn_id IS NOT NULL AND t.{place}_area IS NOT NULL AND ' + gone.format(f'{place}_area') + ' RETURNING t.id',
+            (world_id,)).fetchall()}
+    counts['spawned'] = len(ids)
     for table, label in (('live.patrol_posts', 'posts'), ('live.faction_claims', 'claims'), ('live.npc_areas', 'npcAreas')):
         counts[label] = conn.execute(f'DELETE FROM {table} t WHERE t.world_id = %s AND ' + gone.format('area'),
                                      (world_id,)).rowcount
@@ -981,23 +1147,22 @@ def let_go_of_old_map(conn, world_id):
 
 
 def preview_let_go(items, dev_snap):
-    """What a map-replacing import would let go of, from the plan: live's rows that stay as live has them (the live part's
-    'live' side) and stand in places dev's map hasn't. ({counts}, [NPC names unplaced, at most 30])."""
-    areas = set()
-    for table in AREAS_OF:
-        areas |= {k[0] for k in dev_snap.get(table, {})}
+    """What a map-replacing import would let go of, from the plan: the NPCs and profession slots whose place the new map
+    hasn't (each a conflict for the user: dev's place, unset, or a new place), and live's patrol posts, claims and NPC
+    areas that stay as live has them and stand in places dev's map hasn't. ({counts}, [NPC names, at most 30])."""
+    areas = map_areas(dev_snap)
     counts, names = {'npcs': 0, 'slots': 0, 'posts': 0, 'claims': 0, 'npcAreas': 0}, []
     for item in items:
         row = item.live
+        table = item.spec.table
+        if item.gone:
+            counts['npcs' if table == 'live.npcs' else 'slots'] += 1
+            if table == 'live.npcs' and len(names) < 30:
+                names.append(str((row or {}).get('name') or item.key[0]))
+            continue
         if item.side != 'live' or item.spec.part != 'live' or row is None:
             continue
-        table = item.spec.table
-        if table in ('live.npcs', 'live.profession_slots'):
-            if any(row.get(f'{p}_area') is not None and row[f'{p}_area'] not in areas for p in PLACED):
-                counts['npcs' if table == 'live.npcs' else 'slots'] += 1
-                if table == 'live.npcs' and len(names) < 30:
-                    names.append(str(row.get('name') or row.get('id')))
-        elif table == 'live.patrol_routes':
+        if table == 'live.patrol_routes':
             counts['posts'] += sum(1 for post in row.get('posts', []) if post.get('area') not in areas)
         elif table == 'live.faction_claims' and row.get('area') not in areas:
             counts['claims'] += 1
@@ -1006,17 +1171,29 @@ def preview_let_go(items, dev_snap):
     return counts, names
 
 
-def replacing(items):
+def map_areas(snap):
+    """The cells' and interiors' ids of a snapshot's map."""
+    return {k[0] for table in AREAS_OF for k in snap.get(table, {})}
+
+
+def replacing(items, areas=None):
     """A map-replacing import's plan from the three-way one: the map (the world part) is dev's whole, and nothing live
-    has is removed (a row dev lacks stays as live has it; let_go_of_old_map unsets what stood on the old map)."""
+    has is removed (a row dev lacks stays as live has it). An NPC or profession slot that would keep, as live has it (or
+    as its conflict ends by default), a home, work or evening place the new map (`areas`) hasn't is a conflict needing a
+    decision for each such place (doc 66, Progress, "The live world's truth"): never unplaced unasked. (Spawned NPCs,
+    patrol posts, claims and NPC areas there are let go: let_go_of_old_map.)"""
     out = []
     for item in items:
         if item.spec.part == 'world':
-            out.append(item._replace(side='dev'))
+            item = item._replace(side='dev')
         elif item.dev is None and item.live is not None:
-            out.append(item._replace(side='live'))
-        else:
-            out.append(item)
+            item = item._replace(side='live')
+        if areas is not None and item.side in ('live', 'conflict') and item.spec.table in ('live.npcs', 'live.profession_slots'):
+            row = outcome_row(item)
+            gone = tuple(p for p in PLACED if row and row.get(f'{p}_area') is not None and row[f'{p}_area'] not in areas)
+            if gone:
+                item = item._replace(side='conflict', gone=gone)
+        out.append(item)
     return out
 
 
@@ -1098,18 +1275,42 @@ def plan(dev, live, dev_key, live_key, replace=False):
     world_id = same_world(dev_id, live_id)
     items = three_way(base, snap_dev, snap_live)
     if not maps['same']:
-        items = replacing(items)
+        items = replacing(items, map_areas(snap_dev))
     by_side = {s: [describe(i) for i in items if i.side == s] for s in ('live', 'dev', 'conflict')}
     info = {'dev': dev_key, 'live': live_key, 'world': world_id, 'base': header, 'liveRelease': release,
             'counts': {'live': len(by_side['live']), 'dev': len(by_side['dev']), 'conflicts': len(by_side['conflict'])},
             'summary': {'live': summarize(items, lambda its: [(i, i.base, i.live) for i in its if i.side == 'live']),
                         'dev': summarize(items, lambda its: [(i, i.base, i.dev) for i in its if i.side == 'dev'])},
             'liveChanges': by_side['live'], 'devChanges': by_side['dev'], 'conflicts': by_side['conflict'],
-            'digest': plan_digest(items), 'maps': maps, 'replacesMap': not maps['same']}
+            'digest': plan_digest(items), 'maps': maps, 'replacesMap': not maps['same'],
+            # (Conflicts taken as their default, the live game's truth, unless the user chooses: doc 66, Progress.)
+            'defaults': {i.id: default_choice(i) for i in items if i.side == 'conflict' and default_choice(i) is not None}}
     if not maps['same']:
         counts, names = preview_let_go(items, snap_dev)
         info['letGo'] = {**counts, 'names': names}
+        if any(i.gone for i in items):
+            # The new map's places, for the user to pick a new home or post from.
+            info['areas'] = sorted(({'id': k[0], 'name': row.get('name') or k[0], 'kind': AREAS_OF[table],
+                                     'width': row.get('width'), 'height': row.get('height')}
+                                    for table in AREAS_OF for k, (_, row) in snap_dev.get(table, {}).items()),
+                                   key=lambda a: (a['kind'], str(a['name']).lower(), a['id']))
+    info['economy'] = economy_kept(dev, live, dev_id, live_id)
     return info, items, (base, snap_dev, snap_live, world_id, release, header)
+
+
+def economy_kept(dev, live, dev_id, live_id):
+    """The live world's economy settings (live.economy: its rules, wages, toll, treasury's start, the store room's
+    switches) where they differ from the dev world's: never synced, each world's own, so live keeps them whatever dev
+    has (the live game's truth, doc 66, Progress). {'fields': [column], 'dev': {column: value}, 'live': {...}}."""
+    try:
+        d = read(dev, 'live.economy', dev_id, skip=NOT_CONTENT) if dev_id else {}
+        l = read(live, 'live.economy', live_id, skip=NOT_CONTENT) if live_id else {}
+    except psycopg.Error:
+        return {'fields': [], 'dev': {}, 'live': {}}
+    d, l = next(iter(d.values()), {}), next(iter(l.values()), {})
+    fields = [c for c in sorted(set(d) & set(l)) if c != 'world_id' and canonical(normalized({c: d[c]})) != canonical(normalized({c: l[c]}))]
+    return {'fields': fields, 'dev': {c: shown(normalized({c: d[c]})[c]) for c in fields},
+            'live': {c: shown(normalized({c: l[c]})[c]) for c in fields}}
 
 
 def check_expected(info, expect):
@@ -1189,6 +1390,10 @@ class Sync:
             blocked.append(f'{live_key} is not in maintenance: close it first (the DM, or python3 tools/world_sync.py maintenance {live_key} on).')
         elif running:
             blocked.append(f'{live_key}\'s game server has not stopped yet (it closes within a minute of maintenance).')
+        if info['economy']['fields']:
+            warnings = [*warnings, f'{dev_key.upper()}\'s economy settings differ from {live_key.upper()}\'s '
+                        f'({", ".join(info["economy"]["fields"][:8])}{"..." if len(info["economy"]["fields"]) > 8 else ""}): '
+                        f'{live_key.upper()} keeps its own (the live game\'s; never imported).']
         if errors:
             blocked.append('The dev world has problems that block publishing.')
         if not info['counts']['dev'] and not info['counts']['conflicts']:
@@ -1250,6 +1455,7 @@ class Sync:
             pass
         return {'dev': dev_key, 'live': live_key, 'world': world_id, 'release': release, 'applied': counts_of(changes, snap_dev),
                 'conflicts': sum(1 for i in items if i.side == 'conflict'), 'kept': sum(1 for i in items if i.side == 'dev'),
+                'defaulted': defaulted(items, choices),
                 'warnings': ['The live server is running: live data may still move; the import compares again.'] if running else []}
 
     # -- import ------------------------------------------------------------------
@@ -1304,10 +1510,11 @@ class Sync:
                     base = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
                 missing = unshared(dev, live, base, snap_dev, snap_live)
                 items = three_way(base, snap_dev, snap_live)
-                if not maps['same']:
-                    items = replacing(items)
+                areas = None if maps['same'] else map_areas(snap_dev)
+                if areas is not None:
+                    items = replacing(items, areas)
                 check_expected({'digest': plan_digest(items)}, expect)
-                chosen = resolve(items, choices)
+                chosen = resolve(items, choices, areas)
                 changes = [(i.spec, i.key, i.dev) for i in items if i.side == 'dev']
                 changes += [(i.spec, i.key, chosen[i.id]) for i in items if i.side == 'conflict' and
                             canonical(chosen[i.id]) != canonical(i.live)]
@@ -1315,6 +1522,12 @@ class Sync:
                     raise PublishError('There is nothing to import: live already has every change made in dev.')
                 apply_rows(live, world_id, changes, snap_live)
                 let_go = None if maps['same'] else let_go_of_old_map(live, world_id)
+                if let_go is not None:
+                    # (Unplaced by the user's decision, each, where the new map hasn't their place.)
+                    unset = [i for i in items if i.gone and chosen.get(i.id) is not None
+                             and any(chosen[i.id].get(f'{p}_area') is None for p in i.gone)]
+                    let_go.update(npcs=sum(1 for i in unset if i.spec.table == 'live.npcs'),
+                                  slots=sum(1 for i in unset if i.spec.table == 'live.profession_slots'))
                 finish(live, world_id)
                 summary = counts_of(changes, snap_live)
                 # The release records the map live is on now (the dev world's): a live world's identity (map_identity).
@@ -1328,7 +1541,7 @@ class Sync:
                 unshared(dev, live, after)
             level = self._level(dev, dev_key, live_key, world_id, number, base, snap_dev, after, editor, missing)
         return {'release': number, 'summary': summary, 'conflicts': sum(1 for i in items if i.side == 'conflict'), 'dev': level,
-                'replacedMap': not maps['same'], 'map': maps['dev']}
+                'replacedMap': not maps['same'], 'map': maps['dev'], 'defaulted': defaulted(items, choices)}
 
     def _level(self, dev, dev_key, live_key, world_id, number, base, planned, after, editor, missing=()):
         """After an import: dev takes live's version of every row nobody edited in dev meanwhile, and the base
@@ -1491,9 +1704,17 @@ def print_plan(info):
     print(f'  dev changed ({info["counts"]["dev"]}): taken by an import\n{counts_line(info["summary"]["dev"])}')
     print(f'  conflicts ({info["counts"]["conflicts"]}):')
     for c in info['conflicts']:
-        print(f'    {c["id"]} ({c["name"]}): dev {c["dev"]}, live {c["live"]}')
+        default = c.get('default')
+        print(f'    {c["id"]} ({c["name"]}): dev {c["dev"]}, live {c["live"]}; '
+              + ('needs a choice' if default is None else "default: live's (the game's truth)" if default == 'live'
+                 else f'default: field by field, {", ".join(f"{k} live" for k in default) or "each field the side that changed it"}'))
         for f in c['fields'][:12]:
-            print(f'      {f["field"]}: base {short(f["base"])} | dev {short(f["dev"])} | live {short(f["live"])}')
+            print(f'      {f["field"]}: base {short(f["base"])} | dev {short(f["dev"])} | live {short(f["live"])}'
+                  + (' (the game\'s)' if f.get('owner') == 'game' else ''))
+        for g in c.get('gone', []):
+            print(f'      {g["place"]} in {g["area"]}, not on the new map: "unplace", dev\'s ({short(g["dev"])}) or a new place')
+    if info.get('economy', {}).get('fields'):
+        print(f'  economy settings kept live (never imported): {", ".join(info["economy"]["fields"])}')
     for w in info.get('warnings', []):
         print(f'  warning: {w}')
 

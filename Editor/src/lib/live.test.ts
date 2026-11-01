@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as M from '../model/model.mjs';
-import {applyChanges, diff, inverse, stable} from './live.ts';
+import {againWithChoices, applyChanges, diff, inverse, stable} from './live.ts';
 
 const world = () => { const p = M.createProject(64, 48, 'Test world'); M.cutGrid(p, 32, 24); return p; };
 const glyphAt = (p: M.Project, x: number, y: number) => {
@@ -77,4 +77,18 @@ test('people, routes and the world settings', () => {
     const b = M.clone(a); M.upsertPerson(b, person);
     roundTrip(b, p => { M.upsertRoute(p, {id: 'watch', name: 'Watch', posts: [{cell: p.cells[0].id, x: 6, y: 6}]}); });
     roundTrip(b, p => { p.name = 'Renamed'; M.setSpawn(p, {cell: p.cells[1].id, x: 3, y: 3}); });
+});
+
+test("a batch the game's changes refused is made again on the game's values, with the editor's choices", () => {
+    const seen = {id: 'maple', name: 'Maple', greeting: 'Hi.', home: {cell: 'longhouse', x: 17, y: 9}};
+    const now = {...seen, home: {cell: 'cottage', x: 3, y: 3}};
+    const after = {...seen, greeting: 'Hello there.', home: {cell: 'shop', x: 1, y: 1}};
+    const notice = {action: 'Move Maple', message: '', ops: [{key: 'person:maple', before: seen, after}, {key: 'name', before: 'W', after: 'V'}],
+        current: {'person:maple': now, name: 'W'},
+        conflicts: [{key: 'person:maple', label: 'NPC Maple', editor: 'The game', at: null, game: true,
+            fields: [{field: 'home', base: seen.home, mine: after.home, game: now.home}]}]};
+    assert.deepEqual(againWithChoices(notice, {}), [{key: 'person:maple', before: now, after: {...now, greeting: 'Hello there.'}},
+        {key: 'name', before: 'W', after: 'V'}], "the game's home kept, the rest of the edit made");
+    assert.deepEqual(againWithChoices(notice, {'person:maple': {home: true}})?.[0].after, {...now, greeting: 'Hello there.', home: after.home});
+    assert.equal(againWithChoices({...notice, conflicts: [{...notice.conflicts[0], game: false}]}, {}), null, "another editor's: not made again");
 });

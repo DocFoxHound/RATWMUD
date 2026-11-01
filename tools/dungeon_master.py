@@ -1279,6 +1279,9 @@ class DungeonMaster:
             world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
             project, _ = S.load_world(conn, world)
             before = next((p for p in project['people'] if p['id'] == person['id']), None)
+            # The page sends the NPC whole: a home or post it shows from before the game moved it is the game's
+            # (doc 66, Progress, "The live world's truth").
+            person, _ = L.keep_games_fields(conn, world, f'person:{person["id"]}', before, person)
             project['people'] = [p for p in project['people'] if p['id'] != person['id']] + [person]
             try:
                 map_editor.check_project(project, for_game=False, playable=False)

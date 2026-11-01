@@ -123,6 +123,35 @@ class ThreeWayTests(unittest.TestCase):
             WS.resolve([removed], {'live.npcs/wren': {'purse': 'live'}})
         self.assertIn('whole row', whole.exception.errors[0])
 
+    def test_the_live_games_fields_default_to_live_and_a_place_is_one_field(self):
+        # (Doc 66, Progress, "The live world's truth".) Dev moved Wren's home and wrote her new words; live's game moved her.
+        home = lambda area, x, y: {'home_area': area, 'home_x': x, 'home_y': y}
+        item = self.plan(npc() | home('a', 1, 1), npc(greeting='Hi.') | home('b', 1, 2), npc() | home('c', 1, 3))
+        self.assertEqual(WS.default_choice(item), {'home_area': 'live', 'home_y': 'live'}, 'x is the same on both')
+        self.assertEqual({f: WS.field_side(item, f) for f in ('home_area', 'home_x', 'home_y')},
+                         dict.fromkeys(('home_area', 'home_x', 'home_y'), 'conflict'), 'a place is one field')
+        row = WS.resolve([item], {})['live.npcs/wren']
+        self.assertEqual((row['home_area'], row['home_y'], row['greeting']), ('c', 3, 'Hi.'), "live's place, dev's words")
+        row = WS.resolve([item], {'live.npcs/wren': {'home_area': 'dev'}})['live.npcs/wren']
+        self.assertEqual((row['home_area'], row['home_y']), ('b', 2), 'the place goes whole')
+        self.assertIsNone(WS.default_choice(self.plan(npc(), npc(name='A'), npc(name='B'))), 'an authored field: the user chooses')
+        born = self.plan(None, npc(name='A') | {'origin': 'runtime'}, npc(name='B') | {'origin': 'runtime'})
+        self.assertEqual(WS.default_choice(born), {'name': 'live'})
+        self.assertEqual(WS.owner(born, 'name'), 'game', 'a row the game made is the game\'s whole')
+        self.assertEqual(WS.default_choice(self.plan(npc(), None, npc(purse=4))), 'live', 'dev removed it, the game changed it')
+        self.assertIsNone(WS.default_choice(self.plan(npc(), None, npc(greeting='Kept.'))))
+        # A new map without live's place: a decision, never the default.
+        gone = WS.replacing([self.plan(None, None, npc() | home('cottage', 1, 1))], areas={'town'})[0]
+        self.assertEqual((gone.side, gone.gone, WS.default_choice(gone)), ('conflict', ('home',), None))
+        with self.assertRaises(WS.Unresolved):
+            WS.resolve([gone], {}, {'town'})
+        self.assertIsNone(WS.resolve([gone], {'live.npcs/wren': 'unplace'}, {'town'})['live.npcs/wren']['home_area'])
+        moved = WS.resolve([gone], {'live.npcs/wren': {'home': {'cell': 'town', 'x': 2, 'y': 3}}}, {'town'})['live.npcs/wren']
+        self.assertEqual((moved['home_area'], moved['home_x'], moved['home_y']), ('town', 2, 3))
+        for bad in ('live', 'dev', {'home': {'cell': 'cottage', 'x': 1, 'y': 1}}):
+            with self.assertRaisesRegex(WS.PublishError, 'cannot be used'):
+                WS.resolve([gone], {'live.npcs/wren': bad}, {'town'})
+
     def test_ids_and_long_values(self):
         self.assertEqual(WS.item_id('world.terrain_chunks', (0, -1)), 'world.terrain_chunks/0/-1')
         self.assertEqual(WS.item_id('live.dialects', ('a/b%',)), 'live.dialects/a%2Fb%25')
@@ -602,7 +631,14 @@ class MapTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.one(self.live, 'SELECT count(*) FROM admin.releases'), 0, 'nothing imported')
         with self.assertRaises(WS.WrongPassword):
             WS.import_(self.dev, {}, 'guess', 'Ada', replace_map=True)
-        result = WS.import_(self.dev, {}, 'password', 'Ada', 'The new map', expect=plan['digest'], replace_map=True)
+        # (Their places on the old map: a decision each, never let go unasked; doc 66, Progress, "The live world's truth".)
+        homeless = {c['id']: [g['place'] for g in c['gone']] for c in plan['conflicts'] if c['gone']}
+        self.assertEqual(homeless, {'live.npcs/born_x': ['home', 'work', 'evening'], 'live.npcs/rook': ['evening']})
+        with self.assertRaises(WS.Unresolved) as unresolved:
+            WS.import_(self.dev, {}, 'password', 'Ada', replace_map=True)
+        self.assertEqual(sorted(c['id'] for c in unresolved.exception.conflicts), ['live.npcs/born_x', 'live.npcs/rook'])
+        result = WS.import_(self.dev, {'live.npcs/born_x': 'unplace', 'live.npcs/rook': 'unplace'}, 'password', 'Ada',
+                            'The new map', expect=plan['digest'], replace_map=True)
         self.assertTrue(result['replacedMap'])
         self.assertGreaterEqual(result['summary']['letGo']['npcs'], 2)
         self.assertEqual(self.one(self.live, "SELECT count(*) FROM world.interiors WHERE id = 'cottage'"), 0, 'the old map is gone')
@@ -646,6 +682,250 @@ class MapTests(ScratchWorlds, unittest.TestCase):
         stamp = self.new_map(self.dev)
         with W.connect(self.dev, 'owner') as conn:
             self.assertEqual(WS.map_identity(conn, 'dev'), stamp, "a dev world's own stamp")
+
+
+ARRIVE = ("UPDATE live.npcs SET home_area = %s, home_x = %s, home_y = %s WHERE world_id = 'greyfen' AND id = %s "
+          "AND home_area IS NULL RETURNING id")               # (As Game::makeResidents places an arrival from the Country.)
+MOVE = "UPDATE live.npcs SET home_area = %s, home_x = %s, home_y = %s WHERE world_id = 'greyfen' AND id = %s RETURNING id"
+BIRTH = ("INSERT INTO live.npcs (world_id, id, position, name, role, description, greeting, personality, backstory, work_label, "
+         "age, voice, appearance, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, home_y, work_area, work_x, "
+         "work_y, evening_area, evening_x, evening_y, origin) SELECT world_id, %s, 900, %s, 'civilian', 'A young wolf, born here.', "
+         "'Hello.', personality, 'Born in the world, not written.', '-', 0, voice, appearance, false, 0, 0, 1, hours_start, "
+         "hours_end, %s, 1, 1, %s, 1, 1, %s, 1, 1, 'runtime' FROM live.npcs WHERE id = 'wren' RETURNING id")
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class LiveTruthTests(ScratchWorlds, unittest.TestCase):
+    """The live world's truth (doc 66, Progress): the game's NPCs and markets survive Atlas's saves, pulls and imports;
+    conflicts default to live; a new map lists the NPCs whose places it hasn't. The game's writes are made as the game
+    server makes them, as ratw_game (migration 0059 logs them)."""
+
+    def game(self, key, query, params=()):
+        with W.connect(key, 'game') as conn:
+            return conn.execute(query, params).fetchall()
+
+    def npc(self, key, npc_id, columns='home_area, home_x, home_y'):
+        return self.sql(key, f"SELECT {columns} FROM live.npcs WHERE id = %s", (npc_id,))[0]
+
+    # -- Atlas on a world the game runs ------------------------------------------
+    def test_atlas_whole_world_save_keeps_a_placement_the_game_made_and_conflicts_where_both_changed(self):
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = NULL, home_x = 0, home_y = 0 WHERE id = 'maple'")   # (Unplaced.)
+        editor = self.conn(self.dev, 'editor')
+        project, revision = S.load_world(editor, 'greyfen')
+        seen = S.game_seen(editor)
+        self.assertEqual(self.game(self.dev, ARRIVE, ('longhouse', 17, 9, 'maple')), [('maple',)], 'the arrival')
+        self.assertEqual(S.game_seen(editor), seen + 1, 'logged by the database')
+        maple = next(p for p in project['people'] if p['id'] == 'maple')
+        self.assertIsNone(maple['home'], 'Atlas read it unplaced')
+        maple['greeting'] = 'Atlas wrote this.'
+        outcome = {}
+        revision = S.save_world(editor, project, revision, seen=seen, outcome=outcome)
+        self.assertEqual(self.npc(self.dev, 'maple', 'home_area, home_x, home_y, greeting'), ('longhouse', 17, 9, 'Atlas wrote this.'),
+                         "the game's placement kept, Atlas's own edit saved")
+        self.assertEqual(outcome, {'kept': ['live.npcs/maple'], 'conflicts': []})
+        # Both changed the home: a conflict, the game's by default; then Atlas's, chosen.
+        place = lambda cell, x, y: {'cell': cell, 'x': x, 'y': y}
+        for choices, game, want, chosen in (({}, place('cottage', 3, 3), ('cottage', 3, 3), 'game'),
+                                            ({'live.npcs/maple': 'atlas'}, place('wren_house', 4, 4), ('barracks', 1, 1), 'atlas')):
+            project, revision = S.load_world(editor, 'greyfen')
+            seen = S.game_seen(editor)
+            base = next(p for p in project['people'] if p['id'] == 'maple')['home']
+            self.game(self.dev, MOVE, (game['cell'], game['x'], game['y'], 'maple'))
+            next(p for p in project['people'] if p['id'] == 'maple')['home'] = place('barracks', 1, 1)
+            outcome = {}
+            S.save_world(editor, project, revision, seen=seen, choices=choices, outcome=outcome)
+            self.assertEqual(self.npc(self.dev, 'maple'), want)
+            self.assertEqual([(c['id'], [(f['field'], f['base'], f['atlas'], f['game'], f['chosen']) for f in c['fields']])
+                              for c in outcome['conflicts']],
+                             [('live.npcs/maple', [('home', base, place('barracks', 1, 1), game, chosen)])])
+        # Without what the save had seen, the game's changes at the project's revision count as after it.
+        project, revision = S.load_world(editor, 'greyfen')
+        self.game(self.dev, MOVE, ('wren_house', 2, 2, 'maple'))
+        next(p for p in project['people'] if p['id'] == 'maple')['description'] = 'Moved again.'
+        S.save_world(editor, project, revision)
+        self.assertEqual(self.npc(self.dev, 'maple', 'home_area, description'), ('wren_house', 'Moved again.'))
+
+    def test_atlas_edits_after_a_game_placement_save_and_conflict_where_both_changed(self):
+        editor = self.conn(self.dev, 'editor')
+        project, seq, game_seq = L.load(editor, with_game=True)
+        seen = next(p for p in project['people'] if p['id'] == 'maple')
+        self.game(self.dev, MOVE, ('cottage', 3, 3, 'maple'))          # (The game moves Maple; Atlas still shows her old home.)
+        # Atlas's own change to an authored field saves on the game's row.
+        merged = {}
+        L.apply_edit(editor, 'atlas-tab', 'Ada', 'Greeting', [{'key': 'person:maple', 'before': seen,
+                                                               'after': {**seen, 'greeting': 'Atlas hello.'}}], merged)
+        self.assertEqual(self.npc(self.dev, 'maple', 'home_area, home_x, greeting'), ('cottage', 3, 'Atlas hello.'))
+        self.assertEqual(merged['person:maple']['home'], {'cell': 'cottage', 'x': 3, 'y': 3}, 'the editor is told what was written')
+        # The heartbeat brings the game's change to every open Atlas.
+        beat = L.sync(editor, 'other-tab', 'Bo', '#aabbcc', seq, {}, game_since=game_seq)
+        game = [c for c in beat['changes'] if c['clientId'] == 'game']
+        self.assertEqual([(c['key'], c['editor'], c['after']['home']) for c in game],
+                         [('person:maple', 'The game', {'cell': 'cottage', 'x': 3, 'y': 3})])
+        self.assertGreater(beat['gameSeq'], game_seq)
+        # Both changed the home: refused, naming the game's and Atlas's values; the game's stays.
+        seen = L.Batch(editor, L.world_row(editor)).current('person:maple')
+        self.game(self.dev, MOVE, ('wren_house', 2, 2, 'maple'))
+        with self.assertRaises(L.Conflict) as refused:
+            L.apply_edit(editor, 'atlas-tab', 'Ada', 'Move Maple', [{'key': 'person:maple', 'before': seen,
+                                                                   'after': {**seen, 'home': {'cell': 'barracks', 'x': 1, 'y': 1}}}])
+        conflict = refused.exception.conflicts[0]
+        self.assertEqual((conflict['key'], conflict['game'], conflict['editor']), ('person:maple', True, 'The game'))
+        self.assertEqual(conflict['fields'], [{'field': 'home', 'base': {'cell': 'cottage', 'x': 3, 'y': 3},
+                                               'mine': {'cell': 'barracks', 'x': 1, 'y': 1},
+                                               'game': {'cell': 'wren_house', 'x': 2, 'y': 2}}])
+        self.assertEqual(self.npc(self.dev, 'maple'), ('wren_house', 2, 2), "the game's, until Atlas's is chosen")
+        # Chosen "mine" in the conflict: the edit again, on what is there now.
+        now = refused.exception.current['person:maple']
+        L.apply_edit(editor, 'atlas-tab', 'Ada', 'Move Maple', [{'key': 'person:maple', 'before': now,
+                                                                'after': {**now, 'home': {'cell': 'barracks', 'x': 1, 'y': 1}}}])
+        self.assertEqual(self.npc(self.dev, 'maple'), ('barracks', 1, 1))
+        # Another editor's change is refused as ever (not the game's).
+        stale = L.Batch(editor, L.world_row(editor)).current('person:maple')
+        L.apply_edit(editor, 'bo-tab', 'Bo', 'Name', [{'key': 'person:maple', 'before': stale, 'after': {**stale, 'name': 'Maple Bo'}}])
+        with self.assertRaises(L.Conflict) as other:
+            L.apply_edit(editor, 'atlas-tab', 'Ada', 'Greeting', [{'key': 'person:maple', 'before': stale,
+                                                                   'after': {**stale, 'greeting': 'Again.'}}])
+        self.assertEqual(other.exception.conflicts[0]['editor'], 'Bo')
+        # The NPCs & areas page sends an NPC whole: a home it shows from before the game's move is the game's.
+        now = L.Batch(editor, L.world_row(editor)).current('person:maple')
+        self.game(self.dev, MOVE, ('longhouse', 5, 5, 'maple'))
+        game_now = L.Batch(editor, L.world_row(editor)).current('person:maple')
+        sent, kept = L.keep_games_fields(editor, 'greyfen', 'person:maple', game_now, {**now, 'greeting': 'From the page.'})
+        self.assertEqual((sent['home'], sent['greeting'], kept), ({'cell': 'longhouse', 'x': 5, 'y': 5}, 'From the page.', ['home']))
+
+    # -- Import and pull ----------------------------------------------------------
+    def test_import_keeps_prods_live_npc_and_market_state(self):
+        # PROD's game: an arrival from the Country placed, a birth, its save (the households, tills, stock, prices,
+        # the loop), each NPC's running state; its own economy settings.
+        self.sql(self.live, "UPDATE live.npcs SET home_area = NULL, home_x = 0, home_y = 0 WHERE id = 'maple'")
+        self.game(self.live, ARRIVE, ('cottage', 4, 4, 'maple'))
+        self.game(self.live, BIRTH, ('born_t', 'Thistle', 'longhouse', 'longhouse', 'longhouse'))
+        save = '{"society": {"tills": {"till:job:brann": 412}, "loop": {"prices": {"bread": 1.2}}, "households": 3}}'
+        self.game(self.live, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES "
+                             "('greyfen', 1, 9, %s) RETURNING world_id", (save,))
+        self.game(self.live, "INSERT INTO live.npc_state (world_id, npc_id, state) VALUES ('greyfen', 'brann', "
+                             "'{\"cash\": 41, \"stock\": {\"meal\": 3}}') RETURNING npc_id")
+        self.sql(self.live, "UPDATE live.economy SET treasury = 5500, gate_toll = 31, rules = '{\"treasuryTarget\": 5500}'")
+        market = self.sql(self.live, 'SELECT payload::text FROM game.checkpoints UNION ALL SELECT state::text FROM live.npc_state '
+                                     'UNION ALL SELECT row_to_json(e)::text FROM live.economy e')
+        # DEV's authored changes: a building renamed, an NPC's words, its own economy settings.
+        self.sql(self.dev, "UPDATE world.interiors SET name = 'The Corner Shop' WHERE id = 'shop'")
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'sloe'")
+        self.sql(self.dev, 'UPDATE live.economy SET gate_toll = 10')
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        plan = WS.plan_import(self.dev)
+        self.assertEqual(self.ids(plan['liveChanges']), ['live.npcs/born_t', 'live.npcs/maple'])
+        self.assertEqual([c['live'] for c in plan['liveChanges']], ['added', 'changed'], 'the birth an addition live')
+        self.assertEqual(plan['conflicts'], [])
+        self.assertIn('gate_toll', plan['economy']['fields'])
+        self.assertTrue(any('keeps its own' in w for w in plan['warnings']))
+        result = WS.import_(self.dev, {}, 'password', 'Ada', 'A corner shop')
+        self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
+        self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Corner Shop')
+        self.assertEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Dev words.')
+        self.assertEqual(self.npc(self.live, 'maple'), ('cottage', 4, 4), "PROD's arrival kept")
+        self.assertEqual(self.npc(self.live, 'born_t', 'name, origin'), ('Thistle', 'runtime'), "PROD's birth kept")
+        self.assertEqual(self.sql(self.live, 'SELECT payload::text FROM game.checkpoints UNION ALL SELECT state::text FROM live.npc_state '
+                                             'UNION ALL SELECT row_to_json(e)::text FROM live.economy e'), market,
+                         "the market, the save and the economy's settings untouched")
+        # DEV is brought level: it has PROD's birth and arrival now, and nothing left to compare.
+        self.assertEqual(self.npc(self.dev, 'maple'), ('cottage', 4, 4))
+        self.assertEqual(self.npc(self.dev, 'born_t', 'name'), ('Thistle',))
+        self.assertEqual(self.one(self.dev, 'SELECT gate_toll FROM live.economy'), 10, "DEV's economy its own")
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+
+    def test_conflicts_default_to_live(self):
+        # DEV moves Maple's home and writes her new words; PROD's game moves her too.
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = 'shop', home_x = 3, home_y = 4, greeting = 'Dev words.' WHERE id = 'maple'")
+        self.game(self.live, MOVE, ('cottage', 3, 3, 'maple'))
+        # DEV removes Linden; PROD's game moved him meanwhile.
+        self.sql(self.dev, "DELETE FROM live.npcs WHERE id = 'linden'")
+        self.game(self.live, MOVE, ('cottage', 7, 7, 'linden'))
+        plan = WS.diff(self.dev)
+        conflicts = {c['id']: c for c in plan['conflicts']}
+        self.assertEqual(sorted(conflicts), ['live.npcs/linden', 'live.npcs/maple'])
+        maple = conflicts['live.npcs/maple']
+        self.assertEqual(maple['default'], {'home_area': 'live', 'home_y': 'live'}, 'the fields that differ (x is the same)')
+        self.assertEqual({f['field']: (f['owner'], f['changed'], f['default']) for f in maple['fields']},
+                         {'home_area': ('game', 'conflict', 'live'), 'home_x': ('game', 'conflict', 'live'),
+                          'home_y': ('game', 'conflict', 'live'), 'greeting': ('authored', 'dev', 'dev')})
+        self.assertEqual(conflicts['live.npcs/linden']['default'], 'live', "removed in dev, moved by live's game: live's")
+        self.assertEqual(plan['defaults'], {'live.npcs/maple': maple['default'], 'live.npcs/linden': 'live'})
+        # An Update from live with no choices: the game's home, dev's words, Linden back.
+        result = WS.pull(self.dev, {}, 'Ada', expect=plan['digest'])
+        self.assertEqual(sorted(result['defaulted']), ['live.npcs/linden', 'live.npcs/maple'])
+        self.assertEqual(self.npc(self.dev, 'maple', 'home_area, home_x, greeting'), ('cottage', 3, 'Dev words.'))
+        self.assertEqual(self.npc(self.dev, 'linden'), ('cottage', 7, 7))
+        # Import: the same both ways. By default PROD's; chosen, dev's.
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = 'shop', home_x = 3, home_y = 4 WHERE id = 'maple'")
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = 'shop', home_x = 6, home_y = 6 WHERE id = 'rook'")
+        WS.maintenance(self.live, True, 'Ada')
+        self.game(self.live, MOVE, ('wren_house', 1, 1, 'maple'))
+        self.game(self.live, MOVE, ('wren_house', 5, 1, 'rook'))
+        plan = WS.plan_import(self.dev)
+        self.assertEqual(sorted(plan['defaults']), ['live.npcs/maple', 'live.npcs/rook'])
+        self.assertEqual(plan['errors'], [])
+        result = WS.import_(self.dev, {'live.npcs/rook': 'dev'}, 'password', 'Ada', expect=plan['digest'])
+        self.assertEqual(result['defaulted'], ['live.npcs/maple'])
+        self.assertEqual(self.npc(self.live, 'maple'), ('wren_house', 1, 1), "PROD's by default")
+        self.assertEqual(self.npc(self.live, 'rook'), ('shop', 6, 6), "dev's, chosen")
+        self.assertEqual(self.npc(self.live, 'maple', 'greeting'), ('Dev words.',), "dev's own words came across")
+
+    def test_rows_the_game_made_are_additions_on_the_live_side(self):
+        self.game(self.live, BIRTH, ('born_b', 'Bramble', 'longhouse', 'longhouse', 'longhouse'))
+        plan = WS.diff(self.dev)
+        self.assertEqual([(c['id'], c['side'], c['live'], c['dev']) for c in plan['liveChanges']],
+                         [('live.npcs/born_b', 'live', 'added', 'absent')])
+        WS.pull(self.dev, {}, 'Ada')
+        self.assertEqual(self.npc(self.dev, 'born_b', 'name, origin'), ('Bramble', 'runtime'))
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0}, 'in the base now')
+        # A row the game made is the game's whole: renamed in dev and moved live, live's by default.
+        self.sql(self.dev, "UPDATE live.npcs SET name = 'Bramble Dev' WHERE id = 'born_b'")
+        self.game(self.live, "UPDATE live.npcs SET name = 'Bramble Live' WHERE id = 'born_b' RETURNING id")
+        conflict = WS.diff(self.dev)['conflicts'][0]
+        self.assertEqual((conflict['id'], conflict['default']), ('live.npcs/born_b', {'name': 'live'}))
+        self.assertEqual({f['owner'] for f in conflict['fields']}, {'game'})
+        WS.maintenance(self.live, True, 'Ada')
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev.' WHERE id = 'sloe'")
+        WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(self.npc(self.live, 'born_b', 'name'), ('Bramble Live',), 'never removed, never renamed by default')
+
+    def test_a_new_map_lists_the_npcs_whose_places_it_hasnt_and_takes_each_decision(self):
+        MapTests.new_map(self, self.dev)
+        MapTests.take_the_cottage_away(self)
+        # PROD's game: a birth in the cottage, Rook's evenings there; Maple moved there while DEV moved her to the shop.
+        self.game(self.live, BIRTH, ('born_c', 'Clover', 'cottage', 'cottage', 'cottage'))
+        self.game(self.live, "UPDATE live.npcs SET evening_area = 'cottage', evening_x = 1, evening_y = 1 WHERE id = 'rook' RETURNING id")
+        self.game(self.live, MOVE, ('cottage', 2, 2, 'maple'))
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = 'shop', home_x = 3, home_y = 3 WHERE id = 'maple'")
+        WS.maintenance(self.live, True, 'Ada', 'A new map')
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(plan['replacesMap'])
+        gone = {c['id']: ([(g['place'], g['area']) for g in c['gone']], c['default']) for c in plan['conflicts'] if c['gone']}
+        self.assertEqual(gone, {'live.npcs/born_c': ([('home', 'cottage'), ('work', 'cottage'), ('evening', 'cottage')], None),
+                                'live.npcs/rook': ([('evening', 'cottage')], None),
+                                'live.npcs/maple': ([('home', 'cottage')], None)}, 'a decision each, no default')
+        maple = next(c for c in plan['conflicts'] if c['id'] == 'live.npcs/maple')
+        self.assertEqual(maple['gone'][0]['dev'], {'cell': 'shop', 'x': 3, 'y': 3}, "dev's place offered")
+        self.assertNotIn('cottage', [a['id'] for a in plan['areas']])
+        self.assertIn('longhouse', [a['id'] for a in plan['areas']], 'the new map\'s places to pick from')
+        with self.assertRaises(WS.Unresolved) as unresolved:
+            WS.import_(self.dev, {}, 'password', 'Ada', replace_map=True)
+        self.assertEqual(sorted(c['id'] for c in unresolved.exception.conflicts),
+                         ['live.npcs/born_c', 'live.npcs/maple', 'live.npcs/rook'])
+        choices = {'live.npcs/born_c': {'home': {'cell': 'longhouse', 'x': 3, 'y': 3}, 'work': 'unset', 'evening': 'unset'},
+                   'live.npcs/rook': 'unplace', 'live.npcs/maple': {'home': 'dev'}}
+        with self.assertRaisesRegex(WS.PublishError, 'cannot be used') as refused:
+            WS.import_(self.dev, {**choices, 'live.npcs/rook': 'live'}, 'password', 'Ada', replace_map=True)
+        self.assertTrue(any('not on the new map' in e and 'rook' in e for e in refused.exception.errors), refused.exception.errors)
+        with self.assertRaisesRegex(WS.PublishError, 'cannot be used'):
+            WS.import_(self.dev, {**choices, 'live.npcs/born_c': 'dev'}, 'password', 'Ada', replace_map=True)
+        result = WS.import_(self.dev, choices, 'password', 'Ada', 'The new map', expect=plan['digest'], replace_map=True)
+        self.assertEqual((result['summary']['letGo']['npcs'], result['summary']['letGo']['slots']), (2, 0))
+        self.assertEqual(self.npc(self.live, 'born_c', 'home_area, home_x, home_y, work_area, evening_area'),
+                         ('longhouse', 3, 3, None, None), 'a new home picked; no work, no evenings')
+        self.assertEqual(self.npc(self.live, 'rook', 'home_area, evening_area'), ('longhouse', None), 'his evenings unset, the rest kept')
+        self.assertEqual(self.npc(self.live, 'maple'), ('shop', 3, 3), "dev's place taken")
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
