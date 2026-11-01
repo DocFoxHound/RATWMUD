@@ -1098,7 +1098,7 @@ def main(argv=None):
     parser.add_argument('--only', help='Comma-separated settlement IDs')
     parser.add_argument('--preview', type=Path, help='Write a picture of each place built into this folder')
     args = parser.parse_args(argv)
-    project, revision = dev_project()
+    project, revision, seen = dev_project()
     only = set(args.only.split(',')) if args.only else None
     merged, results = build_all(project, only)
     if not results:
@@ -1132,9 +1132,12 @@ def main(argv=None):
     backup = folder / f'{project["id"]}_dev_r{revision}_before_towns_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
     backup.write_text(json.dumps(project, ensure_ascii=False), encoding='utf-8')
     print(f'DEV revision {revision} backed up to {backup}.')
+    outcome = {}
     with world_db.connect('dev', 'editor') as conn:
-        new = world_store.save_world(conn, merged, revision)
+        new = world_store.save_world(conn, merged, revision, seen=seen, outcome=outcome)
     print(f'Saved to DEV at revision {new}.')
+    for line in world_store.truth_lines(outcome):            # (What the game server changed meanwhile: doc 66, Progress.)
+        print(f'  {line}')
     return 0
 
 

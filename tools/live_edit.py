@@ -84,8 +84,11 @@ class Batch:
         'slot': ('live.profession_slots', S.slot_entity, S.slot_row),
     }
 
-    def __init__(self, conn, world):
+    def __init__(self, conn, world, lock=False):
         self.conn, self.w, self.world = conn, world['id'], world
+        # (An edit's NPCs and slots are read FOR UPDATE: the game server writes them too, and its write waits for the
+        # edit's, never lost under it. Doc 66, Progress, "The live world's truth".)
+        self.lock = lock
         self.size = world['chunk_size']
         self.chunks = {}      # (cx, cy) -> {'glyphs': list, 'heights': dict, 'dirty': bool}
         self.rooms = {}       # id -> {'meta': dict | None, 'tiles': {(x, y): glyph}, 'heights': {(x, y): h}, 'dirty': bool}
@@ -140,7 +143,8 @@ class Batch:
             return self.room(rest)['meta']
         if kind in self.ENTITIES:
             table, reader, _ = self.ENTITIES[kind]
-            found = self.rows(f'SELECT * FROM {table} WHERE world_id = %s AND id = %s', rest)
+            locked = ' FOR UPDATE' if self.lock and table in S.GAME_TABLE_OF.values() else ''
+            found = self.rows(f'SELECT * FROM {table} WHERE world_id = %s AND id = %s{locked}', rest)
             if found and kind == 'cell':
                 found[0]['claims'] = self.claims(rest)
             return reader(found[0]) if found else None
@@ -360,16 +364,6 @@ def label_for(key, value):
 # without the edit log, so an open Atlas holds the value it replaced. live.game_changes (migration 0059) says which rows
 # and fields the game changed, and to what.
 
-def _entity_value(field, row):
-    """A logged row's (JSON, as the table has it) value of an entity field: a place as {cell, x, y} or None."""
-    if row is None:
-        return None
-    if field in S.PLACES:
-        return {'cell': row.get(f'{field}_area'), 'x': row.get(f'{field}_x'), 'y': row.get(f'{field}_y')} \
-            if row.get(f'{field}_area') is not None else None
-    return row.get(field)
-
-
 def games_change(conn, world_id, key, now):
     """Which game-owned fields of `key`'s entity (person: or slot:) are as the game left them, and the values the game
     replaced: ({field: [values it replaced, oldest first]}, the newest logged row), or ({}, None) when the game never
@@ -386,9 +380,9 @@ def games_change(conn, world_id, key, now):
     last = rows[-1][1]
     replaced = {}
     for field in S.GAME_FIELDS[kind]:
-        if last is None or canonical(_entity_value(field, last)) != canonical(now.get(field)):
+        if last is None or canonical(S.entity_value(field, last)) != canonical(now.get(field)):
             continue                   # (Not as the game left it: someone changed it since, or the game never did.)
-        olds = [_entity_value(field, before) for before, _ in rows if before is not None]
+        olds = [S.entity_value(field, before) for before, _ in rows if before is not None]
         olds = [v for v in olds if canonical(v) != canonical(now.get(field))]
         if olds:
             replaced[field] = olds
@@ -411,16 +405,6 @@ def merge_games_change(conn, world_id, key, before, now, after):
     if both:
         return 'conflict', [{'field': f, 'base': before.get(f), 'mine': after.get(f), 'game': now.get(f)} for f in both]
     return 'merged', {**now, **{f: after.get(f) for f in mine if f in after}}
-
-
-def keep_games_fields(conn, world_id, key, now, after):
-    """An entity sent whole without what its sender saw (the NPCs & areas page's save): its game-owned fields that hold
-    a value the game has since replaced take the game's again. Returns (the entity to write, [fields kept])."""
-    if not isinstance(after, dict):
-        return after, []
-    replaced, _ = games_change(conn, world_id, key, now)
-    kept = [f for f, olds in replaced.items() if canonical(after.get(f)) in {canonical(v) for v in olds}]
-    return ({**after, **{f: now.get(f) for f in kept}} if kept else after), kept
 
 
 def world_row(conn, lock=False):
@@ -517,7 +501,7 @@ def apply_edit(conn, client_id, editor, label, ops, merged=None):
     current = {}
     try:
         with conn.transaction():
-            batch = Batch(conn, world_row(conn, lock=True))
+            batch = Batch(conn, world_row(conn, lock=True), lock=True)
             conflicts, games = [], {}
             for op in ops:
                 now = current[op['key']] = batch.current(op['key'])
@@ -586,7 +570,9 @@ def change_claims(conn, client_id, editor, label, change):
 
 def game_feed(conn, world, game_since):
     """The NPCs and slots the game server changed after game change `game_since` (live.game_changes), as edits of their
-    keys with their values now (the editor applies them as anyone's): ([change], the newest game change)."""
+    keys with their values now (the editor applies them as anyone's): ([change], the newest game change). Each carries
+    `seq`, the newest edit its value holds (read in the caller's snapshot), so an editor's own later edit of the key
+    is newer than it and an earlier one older."""
     if not isinstance(game_since, int) or not S.game_log_supported(conn):
         return [], game_since
     rows = conn.execute('''SELECT max(seq), table_name, row_key->>0, (array_agg(op ORDER BY seq))[1] FROM live.game_changes
@@ -597,12 +583,13 @@ def game_feed(conn, world, game_since):
         return [], game_since
     batch = Batch(conn, world)
     kinds = {table: kind for kind, table in S.GAME_TABLE_OF.items()}
+    seq = latest_seq(conn)
     changes = []
     for _, table, rid, op in rows:
         key = f'{kinds[table]}:{rid}'
         after = batch.current(key)
         what = 'born' if op == 'insert' else 'gone' if after is None else 'placed' if kinds[table] == 'person' else 'changed'
-        changes.append({'clientId': 'game', 'editor': 'The game', 'label': f'{label_for(key, after)} {what} by the game',
+        changes.append({'seq': seq, 'clientId': 'game', 'editor': 'The game', 'label': f'{label_for(key, after)} {what} by the game',
                         'key': key, 'after': after})
     return changes, max(r[0] for r in rows)
 
@@ -633,8 +620,11 @@ def sync(conn, client_id, editor, color, since, state, world=None, game_since=No
     changes = [{'seq': r[0], 'clientId': r[1], 'editor': r[2], 'label': r[3], 'key': r[4], 'after': r[5]} for r in rows]
     seq = rows[-1][0] if rows else since
     with conn.transaction():
+        # (One snapshot: the game's rows as they are and the newest edit they hold, its seq; edits are numbered as they
+        # commit, under the world row's lock.)
+        conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
         made, game_seq = game_feed(conn, world_row(conn), game_since)
-    changes += [{'seq': seq, **c} for c in made]
+    changes += made
     return {'seq': seq, 'changes': changes, 'editors': editors, **({'gameSeq': game_seq} if isinstance(game_seq, int) else {})}
 
 

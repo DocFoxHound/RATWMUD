@@ -60,6 +60,8 @@ PERSON_KEYS = {'id', 'name', 'role', 'description', 'greeting', 'workLabel', 'ag
 SLOT_KEYS = {'id', 'name', 'profession', 'workLabel', 'hours', 'route', 'paid', 'purse', 'herbs', 'meals',
              'home', 'work', 'evening'}
 APPEARANCE_KEYS = {'species', 'sex', 'stature', 'pattern', 'baseColor', 'gradientColor', 'markingColor'}
+# A resident's (an NPC's or a profession slot's) counts, 0 to these; an NPC's age too.
+RESIDENT_LIMITS = {'purse': 100000, 'herbs': 10000, 'meals': 10000, 'age': 200}
 ECONOMY_KEYS = {'treasury': 1000000, 'storeHerbs': 10000, 'storeMeals': 10000, 'dailyHerbs': 1000, 'dailyMeals': 1000}
 DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12}
 # The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults, and `businesses`
@@ -530,8 +532,7 @@ def check_project(value: object, for_game: bool = True, playable: bool = True) -
         raise ValidationError(errors[:100])
     if playable:
         require(bool(p['cells'] or p['rooms']), 'Add at least one world cell or interior before exporting.')
-    by_id = {c['id']: c for c in p['cells'] + p['rooms']}
-    rows_by_id = {cid: cell_rows(p, c) for cid, c in by_id.items()}
+    by_id, rows_by_id = area_index(p)
     used = set()
     link_ids = set()
     valid_links = []
@@ -611,14 +612,11 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     def place(value, label, optional=False):
         if optional and value is None:
             return False                            # An NPC's unset place (doc 66, 2).
-        ok = (isinstance(value, dict) and set(value) == {'cell', 'x', 'y'} and value.get('cell') in by_id
-              and number(value.get('x'), 0, by_id[value['cell']]['width'] - 1, integer=True)
-              and number(value.get('y'), 0, by_id[value['cell']]['height'] - 1, integer=True))
-        require(ok, f'{label}: choose a tile inside an existing cell.')
-        if ok:
+        problem = place_problem(value, by_id, rows_by_id)
+        require(problem is None, f'{label}: {problem}')
+        if problem != OUTSIDE:
             value['x'], value['y'] = int(value['x']), int(value['y'])
-            require(rows_by_id[value['cell']][value['y']][value['x']] not in SOLID, f'{label}: tile is solid.')
-        return ok
+        return problem != OUTSIDE
 
     economy = p.get('economy', DEFAULT_ECONOMY)
     people_list = p.get('people', [])
@@ -666,11 +664,11 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         require(text(person['greeting'], 1024) if isinstance(person['greeting'], str) else False, f'{label}: invalid greeting.')
         require(isinstance(person['personality'], str) and text(person['personality'], 2000, True), f'{label}: invalid personality.')
         require(isinstance(person['backstory'], str) and text(person['backstory'], 6000, True), f'{label}: invalid backstory.')
-        require(number(person['age'], 0, 200, integer=True), f'{label}: age must be 0-200.')
+        require(number(person['age'], 0, RESIDENT_LIMITS['age'], integer=True), f'{label}: age must be 0-200.')
         require(number(person['voice'], 0, 31, integer=True), f'{label}: voice color must be 0-31.')
         require(type(person['paid']) is bool, f'{label}: paid must be true or false.')
-        for key, limit in (('purse', 100000), ('herbs', 10000), ('meals', 10000)):
-            require(number(person[key], 0, limit, integer=True), f'{label}: {key} must be 0-{limit}.')
+        for key in ('purse', 'herbs', 'meals'):
+            require(number(person[key], 0, RESIDENT_LIMITS[key], integer=True), f'{label}: {key} must be 0-{RESIDENT_LIMITS[key]}.')
         look = person['appearance']
         require(isinstance(look, dict) and set(look) == APPEARANCE_KEYS and look.get('species') in SPECIES
                 and look.get('sex') in ('female', 'male') and look.get('stature') in ('short', 'average', 'tall')
@@ -687,13 +685,7 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         for key in ('home', 'work', 'evening'):
             place(person[key], f'{label} {key}', optional=True)
         if person['role'] == 'merchant' and isinstance(person['work'], dict) and person['work'].get('cell') in by_id:
-            w = person['work']
-            rows = rows_by_id[w['cell']]
-            c = by_id[w['cell']]
-            require(any(0 <= w['x'] + dx < c['width'] and 0 <= w['y'] + dy < c['height']
-                        and rows[w['y'] + dy][w['x'] + dx] not in SOLID
-                        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1))),
-                    f'{label}: customers need an open tile beside the counter.')
+            require(counter_open(person['work'], by_id, rows_by_id), f'{label}: customers need an open tile beside the counter.')
     for area in p.get('cells', []) + p.get('rooms', []):
         letting = area.get('letting') if isinstance(area, dict) else None
         if isinstance(letting, dict) and isinstance(letting.get('landlord'), str):
@@ -714,8 +706,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         require(isinstance(slot['profession'], str) and ID.fullmatch(slot['profession']), f'{label}: choose a profession.')
         require(isinstance(slot['workLabel'], str) and text(slot['workLabel'], 40), f'{label}: activity label is at most 40 characters.')
         require(type(slot['paid']) is bool, f'{label}: paid must be true or false.')
-        for key, limit in (('purse', 100000), ('herbs', 10000), ('meals', 10000)):
-            require(number(slot[key], 0, limit, integer=True), f'{label}: {key} must be 0-{limit}.')
+        for key in ('purse', 'herbs', 'meals'):
+            require(number(slot[key], 0, RESIDENT_LIMITS[key], integer=True), f'{label}: {key} must be 0-{RESIDENT_LIMITS[key]}.')
         hours = slot['hours']
         require(isinstance(hours, dict) and set(hours) == {'start', 'end'} and number(hours.get('start'), 0, 23.75)
                 and number(hours.get('end'), 0, 23.75) and hours.get('start') != hours.get('end'), f'{label}: invalid hours.')
@@ -753,6 +745,49 @@ def overlapping_cells(cells):
 
 def cell_rows(p, c):
     return list(c['terrain'])
+
+
+OUTSIDE = 'choose a tile inside an existing cell.'
+
+
+def place_problem(value, by_id, rows_by_id):
+    """Why a place {cell, x, y} is not an open tile of one of the cells and interiors (by id, and their terrain rows), or
+    None: OUTSIDE, or 'tile is solid.'."""
+    if not (isinstance(value, dict) and set(value) == {'cell', 'x', 'y'} and value.get('cell') in by_id
+            and number(value.get('x'), 0, by_id[value['cell']]['width'] - 1, integer=True)
+            and number(value.get('y'), 0, by_id[value['cell']]['height'] - 1, integer=True)):
+        return OUTSIDE
+    return 'tile is solid.' if rows_by_id[value['cell']][int(value['y'])][int(value['x'])] in SOLID else None
+
+
+def counter_open(work, by_id, rows_by_id):
+    """Whether a merchant's counter (its work place, an open tile) has an open tile beside it for customers."""
+    rows, c, x, y = rows_by_id[work['cell']], by_id[work['cell']], int(work['x']), int(work['y'])
+    return any(0 <= x + dx < c['width'] and 0 <= y + dy < c['height'] and rows[y + dy][x + dx] not in SOLID
+               for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)))
+
+
+def resident_problem(p, entity, field, value, areas=None):
+    """Why a value of one of a resident's fields the game server sets (home, work or evening: a place, or None unset;
+    purse, herbs, meals, age) can't stand in a checked atlas v3 project, or None: check_content's own checks, one field
+    at a time (world_store.keep_the_games_truth puts the game's values into a save with it: doc 66, Progress, "The live
+    world's truth"). `areas`: (by id, terrain rows) of p's cells and interiors, area_index(p), to reuse."""
+    if field in ('home', 'work', 'evening'):
+        if value is None:
+            return None
+        by_id, rows_by_id = areas or area_index(p)
+        problem = place_problem(value, by_id, rows_by_id)
+        if problem is None and field == 'work' and entity.get('role') == 'merchant' and not counter_open(value, by_id, rows_by_id):
+            problem = 'customers need an open tile beside the counter.'
+        return problem
+    limit = RESIDENT_LIMITS.get(field)
+    return None if limit is None or number(value, 0, limit, integer=True) else f'{field} must be 0-{limit}.'
+
+
+def area_index(p):
+    """({id: cell or interior}, {id: its terrain rows}) of a checked atlas v3 project."""
+    by_id = {c['id']: c for c in p['cells'] + p['rooms']}
+    return by_id, {cid: cell_rows(p, c) for cid, c in by_id.items()}
 
 
 def tile_height(p, c, x, y):

@@ -1312,7 +1312,7 @@ def dev_project():
     import world_store
     with world_db.connect('dev', 'editor') as conn:
         wid = world_store.list_worlds(conn)[0]['id']
-        return world_store.load_world(conn, wid)
+        return world_store.load_world(conn, wid, with_seen=True)       # (Project, revision, the game's changes seen.)
 
 
 def render_project(project, folder: Path):
@@ -1354,7 +1354,7 @@ def main(argv=None):
         render(world, cells, args.preview)
     if args.land:
         return 0
-    base, revision = dev_project() if args.import_dev else ({'id': 'upper_accord'}, None)
+    base, revision, seen = dev_project() if args.import_dev else ({'id': 'upper_accord'}, None, None)
     project = assemble(base, world, cells)
     roles = {}
     for person in project['people']:
@@ -1414,9 +1414,12 @@ def main(argv=None):
         backup = folder / f'{base["id"]}_dev_r{revision}_before_realm_{time.strftime("%Y%m%d-%H%M%S")}.atlas.json'
         backup.write_text(json.dumps(base, ensure_ascii=False), encoding='utf-8')
         print(f'DEV revision {revision} backed up to {backup}.')
+        outcome = {}
         with world_db.connect('dev', 'editor') as conn:
-            new = world_store.save_world(conn, project, revision)
+            new = world_store.save_world(conn, project, revision, seen=seen, outcome=outcome)
         print(f'Saved to DEV, revision {new}.')
+        for line in world_store.truth_lines(outcome):        # (What the game server changed meanwhile: doc 66, Progress.)
+            print(f'  {line}')
         ids_file.parent.mkdir(parents=True, exist_ok=True)
         ids_file.write_text(json.dumps({f"{p['id'].rstrip('_')}|{p['name']}": p['id'] for p in project['people']}, indent=0),
                             encoding='utf-8')

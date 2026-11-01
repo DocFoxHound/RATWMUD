@@ -183,7 +183,8 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
     const save = () => {
         if (!draft || !sure(`Save ${draft.name}`)) return;
         const person = isNew ? {...draft, id: idFrom(draft.name, taken(), 'npc')} : draft;
-        return finish(async () => { await dmApi.saveNpc(target, person); setSelected(person.id); }, `Saved ${person.name}.`);
+        // (With the NPC as loaded: what the game server changed since and this page didn't is kept, doc 66, Progress.)
+        return finish(async () => { await dmApi.saveNpc(target, person, isNew ? null : saved); setSelected(person.id); }, `Saved ${person.name}.`);
     };
     const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ` from ${worldName(target)}` : ''}? They leave the world entirely.`) &&
         (!live || window.confirm(`Really delete ${draft.name}? This cannot be undone.`)) &&

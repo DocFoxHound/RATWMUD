@@ -1,9 +1,9 @@
 // Every edit an editor makes must reproduce exactly on everyone else's copy:
 // applying diff(a, b) to a copy of a gives b, and the inverse gives a back.
-import test from 'node:test';
+import test, {mock} from 'node:test';
 import assert from 'node:assert/strict';
 import * as M from '../model/model.mjs';
-import {againWithChoices, applyChanges, diff, inverse, stable} from './live.ts';
+import {againWithChoices, applyChanges, diff, inverse, queueRefusal, stable, startLive, type Batch, type Change, type ConflictNotice} from './live.ts';
 
 const world = () => { const p = M.createProject(64, 48, 'Test world'); M.cutGrid(p, 32, 24); return p; };
 const glyphAt = (p: M.Project, x: number, y: number) => {
@@ -91,4 +91,60 @@ test("a batch the game's changes refused is made again on the game's values, wit
         {key: 'name', before: 'W', after: 'V'}], "the game's home kept, the rest of the edit made");
     assert.deepEqual(againWithChoices(notice, {'person:maple': {home: true}})?.[0].after, {...now, greeting: 'Hello there.', home: after.home});
     assert.equal(againWithChoices({...notice, conflicts: [{...notice.conflicts[0], game: false}]}, {}), null, "another editor's: not made again");
+});
+
+test("a key the host merged with the game's change is made again on the game's row, not the editor's stale one", () => {
+    // Rook's home both changed (the conflict); Maple, in the same batch, the game moved and the host merged.
+    const maple = {id: 'maple', greeting: 'Hi.', home: {cell: 'longhouse', x: 17, y: 9}}, rook = {id: 'rook', greeting: 'Yo.', home: null};
+    const mapleNow = {...maple, home: {cell: 'cottage', x: 3, y: 3}}, rookNow = {...rook, home: {cell: 'shop', x: 1, y: 1}};
+    const notice: ConflictNotice = {action: 'Greet', message: '', current: {'person:maple': mapleNow, 'person:rook': rookNow},
+        ops: [{key: 'person:maple', before: maple, after: {...maple, greeting: 'Hello.'}},
+              {key: 'person:rook', before: rook, after: {...rook, home: {cell: 'barracks', x: 2, y: 2}}}],
+        conflicts: [{key: 'person:rook', label: 'NPC Rook', editor: 'The game', at: null, game: true,
+            fields: [{field: 'home', base: null, mine: {cell: 'barracks', x: 2, y: 2}, game: rookNow.home}]}]};
+    for (const mine of [{}, {'person:rook': {home: true}}]) {
+        const again = againWithChoices(notice, mine)!;
+        assert.deepEqual(again[0], {key: 'person:maple', before: mapleNow, after: {...mapleNow, greeting: 'Hello.'}}, "the game's home kept");
+    }
+});
+
+test('a refusal while another is open waits its turn', () => {
+    const one = {action: 'One', message: '', conflicts: []}, two = {action: 'Two', message: '', conflicts: []};
+    const first = queueRefusal(null, [], one);
+    assert.deepEqual(first, {shown: one, waiting: []});
+    assert.deepEqual(queueRefusal(first.shown, first.waiting, two), {shown: one, waiting: [two]});
+});
+
+test("the game's change to a key with an unsaved batch waits for it, and the newer of the two stands", async () => {
+    mock.timers.enable({apis: ['setTimeout']});
+    try {
+        const flush = () => new Promise(resolve => setImmediate(resolve));
+        for (const [reply, applied] of [[{seq: 9, merged: {'person:maple': {id: 'maple', greeting: 'Hello.', home: 'game'}}}, false],
+                                        [{seq: 3}, true]] as const) {
+            const beats: {seq: number; changes: Change[]; editors: never[]; gameSeq: number}[] = [
+                {seq: 0, changes: [], editors: [], gameSeq: 0},
+                {seq: 0, changes: [{seq: 5, clientId: 'game', editor: 'The game', label: 'Maple placed', key: 'person:maple',
+                                    after: {id: 'maple', greeting: 'Hi.', home: 'game'}}], editors: [], gameSeq: 1}];
+            let answer: (value: Response) => void = () => {};
+            const remote: Change[][] = [], written: unknown[] = [];
+            const host = {load: async () => ({project: {} as never, seq: 0}), sync: async () => beats.shift() ?? {seq: 0, changes: [], editors: []},
+                edit: () => new Promise<Response>(resolve => { answer = resolve; })};
+            const link = startLive(host, 0, {identity: () => ({name: 'Ada', color: '#aabbcc'}), presence: () => ({}), remote: c => remote.push(c),
+                refused: () => {}, status: () => {}, editors: () => {}, reload: () => {}, written: v => written.push(v)}, 0);
+            await flush();
+            const batch: Batch = {id: 1, label: 'Greet', ops: [{key: 'person:maple', before: {id: 'maple', greeting: 'Hi.', home: null},
+                after: {id: 'maple', greeting: 'Hello.', home: null}}]};
+            link.push(batch);
+            mock.timers.tick(1500);                      // (The heartbeat with the game's move, while the batch is unsaved.)
+            await flush();
+            assert.deepEqual(remote, [], "held: the editor's own values stand while its batch is out");
+            answer(new Response(JSON.stringify(reply), {status: 200}));
+            await flush(); await flush();
+            assert.equal(remote.length, applied ? 1 : 0, applied ? 'newer than the batch: applied after it' : 'the merged reply is newer');
+            assert.equal(written.length, applied ? 0 : 1);
+            link.stop();
+        }
+    } finally {
+        mock.timers.reset();
+    }
 });

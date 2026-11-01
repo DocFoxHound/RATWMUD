@@ -287,7 +287,10 @@ export const dmApi = {
     /** A live action on something other than a character (doc 57: town projects; deeds, nicknames, notices, places to let). */
     liveAction: (target: Target, kind: string, id: string, payload?: Record<string, unknown>, reason = '') =>
         call<{id: number}>(`${at(target)}live/action`, {target, kind, id, reason, ...(payload ? {payload} : {})}),
-    saveNpc: (target: Target, person: Person) => call<{id: string; action: number}>(`${at(target)}npcs/save`, {target, person}),
+    /** `before`: the NPC as the page loaded it (null: a new one), so a change the game server made since to what the page
+     *  left alone is kept (doc 66, Progress, "The live world's truth"); `written`, the NPC as saved, when it was. */
+    saveNpc: (target: Target, person: Person, before?: Person | null) => call<{id: string; action: number; written?: Person}>(
+        `${at(target)}npcs/save`, {target, person, ...(before !== undefined ? {before} : {})}),
     deleteNpc: (target: Target, id: string) => call<{id: string; action: number}>(`${at(target)}npcs/delete`, {target, id}),
     npcLife: (target: Target, id: string, dead: boolean) => call<{id: string; action: number}>(`${at(target)}npcs/life`, {target, id, dead}),
     saveRoute: (target: Target, route: Route) => call<{id: string; action: number}>(`${at(target)}routes/save`, {target, route}),

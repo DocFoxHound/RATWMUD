@@ -66,7 +66,7 @@ def main(argv=None) -> int:
                 for a, b in zip(r1, r2))
     with world_db.connect(world_db.resolve(args.world, 'dev'), 'editor') as conn:
         world_id = world_store.list_worlds(conn)[0]['id']
-        dev, revision = world_store.load_world(conn, world_id)
+        dev, revision, seen = world_store.load_world(conn, world_id, with_seen=True)
         if args.revision is not None and revision != args.revision:
             sys.exit(f'DEV is at revision {revision}, not {args.revision}: not touching it.')
         old = {c['id']: c for c in base['cells']}
@@ -86,8 +86,12 @@ def main(argv=None) -> int:
         for c in dev['cells']:
             if c['id'] in changes:
                 c['terrain'] = changes[c['id']]
-        saved = world_store.save_world(conn, dev, revision)
+        # (What the game server changed meanwhile is kept, and said: doc 66, Progress, "The live world's truth".)
+        outcome = {}
+        saved = world_store.save_world(conn, dev, revision, seen=seen, outcome=outcome)
     print(f'DEV revision {saved}; the cells\' old terrain saved to {backup.relative_to(ROOT)}.')
+    for line in world_store.truth_lines(outcome):
+        print(f'  {line}')
     if args.base.resolve() == (ROOT / 'artifacts/realm/project.json').resolve():
         for name in ('project.json', 'roads.json', 'buildings.json'):
             if (args.new.parent / name).exists():

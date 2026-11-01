@@ -53,15 +53,17 @@ the newest release that records one (summary 'map': every import records the dev
 its original map ('original:<world id>'). Pull (and Atlas's Update from live) refuses when the identities differ. An
 import of a different map replaces live's map: only with the replace-the-map confirmation on top of the password, and
 only while the live world has every migration the dev world has. Its map (the world part) becomes dev's whole; its live
-data is compared three ways as ever (against the base, or live as it is when there is none), but nothing live has is
-ever removed: an NPC or profession slot in a place the new map hasn't is unplaced, and the old map's NPC areas, claims
-and patrol posts go with it. Afterwards both worlds share the identity and pull works again.
+data is compared three ways as ever (against the base, or with none, live as it is with the live game's fields as dev
+has them: baseless()), but nothing live has is ever removed: an NPC or profession slot in a place the new map hasn't is
+a decision (below), and the old map's NPC areas, claims and patrol posts go. Afterwards both worlds share the identity
+and pull works again.
 
 The live world's truth (doc 66, Progress, "The live world's truth: NPCs and markets in conflicts"). The live game owns
 its NPCs' live state (world_store.GAME_COLUMNS: an NPC's home and post, what it carries, its age; a row it made, whole)
 and the market (the save, live.npc_state, live.economy: never synced). A conflict over a game-owned field defaults to
 live's (the plan's `default`, taken when no choice is sent; `defaulted` in the result); authored fields changed on both
-sides still need a choice. A place's area, x and y are one field. A map-replacing import lists every NPC or profession
+sides still need a choice. A place's area, x and y are one field. Rows hanging on an NPC (its voice, family, factions)
+that one side removed with it go as the conflict over the NPC ends. A map-replacing import lists every NPC or profession
 slot whose place the new map hasn't as a conflict needing a decision for that place ("unplace", dev's place, or a new
 place {cell, x, y}: `{"home": "dev" | "unset" | {...}}` in a field-by-field choice); none is unplaced unasked.
 
@@ -694,20 +696,79 @@ def merged_row(item: Item, picked: dict) -> dict:
 
 
 def outcome_row(item: Item):
-    """The row a conflict ends with by default (or live's, with no default): what a map-replacing import checks
-    against the new map."""
-    choice = default_choice(item._replace(gone=()))
-    if item.side == 'live' or choice is None:
-        return item.live
-    if choice == 'live':
+    """The row a conflict ends with by default: on a row both sides have, each field the side that changed it (one
+    both changed: live's, the game's by default, an authored one still to choose); live's for a row one side removed.
+    What a map-replacing import checks against the new map, and what "unplace" keeps."""
+    if item.side == 'live' or item.dev is None or item.live is None:
         return item.live
     column = world_column(item.spec.table)
-    picked = {f: field_default(item, f) for f in differing(item.dev, item.live, column)}
-    return merged_row(item, {**picked, **choice})
+    return merged_row(item, {f: field_default(item, f) or 'live' for f in differing(item.dev, item.live, column)})
 
 
-def describe(item: Item) -> dict:
-    """One row of the plan, for the screens and the command line."""
+def undecided(item: Item) -> list[str]:
+    """The fields of a conflicting row both sides have that have no default (authored, changed on both): the user's."""
+    if item.dev is None or item.live is None:
+        return []
+    return [f for f in differing(item.dev, item.live, world_column(item.spec.table)) if field_default(item, f) is None]
+
+
+# Rows that hang on an NPC (their foreign keys cascade from it): removed in a world with the NPC, so such a removal is
+# the NPC's, not theirs.
+NPC_DEPENDENTS = {'live.npc_voice': ('npc_id',), 'live.npc_relations': ('npc_id', 'other_id'),
+                  'live.faction_members': ('npc_id',), 'live.business_settings': ('npc_id',)}
+
+
+def removed_with(item: Item, side) -> list[str]:
+    """The NPCs a row hanging on them (NPC_DEPENDENTS) names, when `side` ('dev' or 'live') removed it: the ones its
+    removal may have come with."""
+    if item.spec.table not in NPC_DEPENDENTS or getattr(item, side) is not None:
+        return []
+    row = item.live if side == 'dev' else item.dev
+    return [row[c] for c in NPC_DEPENDENTS[item.spec.table] if row and row.get(c) is not None]
+
+
+def follows(items) -> dict[str, str]:
+    """{id of a row removed with its NPC: the id of the conflict over that NPC}: where one side removed an NPC the other
+    changed (a conflict), the rows hanging on it removed with it go as that conflict ends, never on their own."""
+    npcs = {i.key[0]: i for i in items if i.spec.table == 'live.npcs' and i.side == 'conflict'}
+    out = {}
+    for item in items:
+        for side in ('dev', 'live'):
+            if item.side != side:
+                continue
+            gone = [npcs[n] for n in removed_with(item, side) if n in npcs and getattr(npcs[n], side) is None]
+            if gone:
+                out[item.id] = gone[0].id
+    return out
+
+
+def with_their_npcs(items, chosen, onto) -> set[str]:
+    """The removals of rows hanging on an NPC that are left out of a write onto one side (`onto`: 'live' for an import,
+    'dev' for a pull): the other side removed them with the NPC, and the NPC stays on `onto` as its conflict ended
+    (`chosen`: resolve()'s rows), so it keeps its voice, family, factions and business (doc 66, Progress, "The live
+    world's truth"). Where the NPC goes, they go with it."""
+    other = 'dev' if onto == 'live' else 'live'
+    npcs = {i.key[0]: i for i in items if i.spec.table == 'live.npcs'}
+
+    def stays(npc_id):
+        item = npcs.get(npc_id)
+        if item is None:
+            return True                 # (The same on both sides: nothing this write changes.)
+        if item.side == 'conflict':
+            return chosen.get(item.id) is not None
+        return getattr(item, onto if item.side == onto else other) is not None
+    held = set()
+    for item in items:
+        if item.side != other:
+            continue
+        names = removed_with(item, other)
+        if any(n in npcs and getattr(npcs[n], other) is None for n in names) and all(stays(n) for n in names):
+            held.add(item.id)
+    return held
+
+
+def describe(item: Item, followed=None) -> dict:
+    """One row of the plan, for the screens and the command line. `followed`: follows(items), for its NPC."""
     table, column = item.spec.table, world_column(item.spec.table)
     fields = sorted(set(differing(item.base, item.dev, column)) | set(differing(item.base, item.live, column))
                     | set(differing(item.dev, item.live, column)))
@@ -731,7 +792,9 @@ def describe(item: Item) -> dict:
             'gone': [{'place': p, 'area': (outcome_row(item) or {}).get(f'{p}_area'),
                       'dev': {'cell': item.dev[f'{p}_area'], 'x': item.dev[f'{p}_x'], 'y': item.dev[f'{p}_y']}
                       if item.dev and item.dev.get(f'{p}_area') is not None else None} for p in item.gone],
-            'placeChoices': bool(item.gone)}
+            'placeChoices': bool(item.gone),
+            # A row one side removed with its NPC, the NPC a conflict: it goes as that conflict ends (with_their_npcs).
+            'follows': (followed or {}).get(item.id)}
 
 
 def summarize(items, side_of):
@@ -792,7 +855,13 @@ def resolve(items, choices, areas=None) -> dict[str, dict | None]:
         choice = choices[cid] if cid in choices else default_choice(item)
         places = {}
         if choice == 'unplace' and item.gone:
-            out[cid] = dict(outcome_row(item) or item.live)
+            # (The row as it ends by default, each field the side that changed it, with each gone place unset: never
+            # an authored field both changed settled unasked.)
+            if left := undecided(item):
+                problems.append(f'{cid}: {", ".join(left)} changed on both sides: choose dev or live for each, field by '
+                                f'field with "unset" for {", ".join(item.gone)}.')
+                continue
+            out[cid] = dict(outcome_row(item))
             places = {p: 'unset' for p in item.gone}
         elif choice == 'dev' and item.gone and item.dev is None:
             # (A map-replacing import never removes what live has: a row dev lacks is placed or unplaced, not taken away.)
@@ -810,9 +879,19 @@ def resolve(items, choices, areas=None) -> dict[str, dict | None]:
                 out[cid] = dict(item.live)
             else:
                 fields = differing(item.dev, item.live, world_column(item.spec.table))
-                # (A place's area, x and y go together: the side chosen for one is the side of all three.)
-                choice = {**choice, **{c: side for f, side in choice.items()
-                                       for c in place_columns(item.spec.table, f) if c in fields}}
+                # (A place's area, x and y are one field: one side for the three. A pick on any of them is the place's,
+                # one the two sides happen to agree on too; two sides picked for one place are refused.)
+                sides = {}
+                for f, side in choice.items():
+                    if group := place_columns(item.spec.table, f):
+                        sides.setdefault(group, set()).add(side)
+                split = [g[0].rpartition('_')[0] for g, picked in sides.items() if len(picked) > 1]
+                if split:
+                    problems.append(f'{cid}: a place is one field: choose one side for all of its area, x and y '
+                                    f'({", ".join(split)}).')
+                    continue
+                choice = {**{f: side for f, side in choice.items() if not place_columns(item.spec.table, f)},
+                          **{c: next(iter(picked)) for g, picked in sides.items() for c in g if c in fields}}
                 # A field only one side changed goes that side's way unless chosen; one both changed must be chosen,
                 # but for the game's (live's: the live world's truth).
                 auto = {f: s for f in fields if (s := field_default(item, f)) is not None}
@@ -1235,16 +1314,37 @@ def base_or_refuse(dev, dev_key, live_key):
     return header, base
 
 
-def replacing_base(dev, live_key, snap_live):
+def replacing_base(dev, live_key):
     """The base a map-replacing import compares live data against: the dev world's own base of this upstream if it
-    has one (so live's changes since are live's), else live as it is now (every difference counts as dev's; what dev
-    lacks is kept all the same). The header says which."""
+    has one (so live's changes since are live's), else None, for baseless() once both worlds are read. The header
+    says which."""
     header, base = load_base(dev)
     if header is not None and header['upstream'] == live_key:
         return header, base
-    copy = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
     return {'upstream': live_key, 'world': None, 'release': 0, 'takenAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'by': '', 'how': 'none (live as it is now)', 'rows': copy.count()}, copy
+            'by': '', 'how': "none (live as it is now, with the live game's fields as dev has them)", 'rows': 0}, None
+
+
+def baseless(snap_dev, snap_live) -> Snapshot:
+    """The base of a map-replacing import whose dev world has none of its upstream (the real port: a new map made in
+    DEV, imported into PROD, which was never DEV's upstream): live as it is now, but for the live game's fields of each
+    live row dev has too (world_store.game_owned: an NPC's home and post, what it carries, its age; a row the game made,
+    whole), there dev's. So an authored difference counts as dev's (DEV's words come across) and a game-owned one as
+    live's (PROD keeps where its game put everyone, and what they carry), each defaulting as ever (doc 66, Progress, "The
+    live world's truth"); a base of live as it is would make every difference dev's, and DEV's rows overwrite PROD's."""
+    out = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
+    for table, rows in snap_live.items():
+        if table not in SPECS or SPECS[table].part != 'live':
+            continue
+        theirs = snap_dev.get(table, {})
+        for key, (_, row) in rows.items():
+            found = theirs.get(key)
+            if found is None:
+                continue
+            mixed = {c: found[1].get(c, v) if S.game_owned(table, c, row) or S.game_owned(table, c, found[1]) else v
+                     for c, v in row.items()}
+            out[table][key] = (digest_of(mixed), mixed)
+    return out
 
 
 def same_map_or_refuse(dev, live, dev_key, live_key):
@@ -1268,15 +1368,19 @@ def plan(dev, live, dev_key, live_key, replace=False):
         if maps['same']:
             header, base = base_or_refuse(dev, dev_key, live_key)
         else:
-            header, base = replacing_base(dev, live_key, snap_live)
+            header, base = replacing_base(dev, live_key)
         dev_id = the_world(dev, 'The dev world')
         snap_dev = snapshot(dev, dev_id)
+    if base is None:
+        base = baseless(snap_dev, snap_live)
+        header['rows'] = base.count()
     unshared(dev, live, base, snap_dev, snap_live)
     world_id = same_world(dev_id, live_id)
     items = three_way(base, snap_dev, snap_live)
     if not maps['same']:
         items = replacing(items, map_areas(snap_dev))
-    by_side = {s: [describe(i) for i in items if i.side == s] for s in ('live', 'dev', 'conflict')}
+    followed = follows(items)
+    by_side = {s: [describe(i, followed) for i in items if i.side == s] for s in ('live', 'dev', 'conflict')}
     info = {'dev': dev_key, 'live': live_key, 'world': world_id, 'base': header, 'liveRelease': release,
             'counts': {'live': len(by_side['live']), 'dev': len(by_side['dev']), 'conflicts': len(by_side['conflict'])},
             'summary': {'live': summarize(items, lambda its: [(i, i.base, i.live) for i in its if i.side == 'live']),
@@ -1438,7 +1542,8 @@ class Sync:
                 items = three_way(base, snap_dev, snap_live)
                 check_expected({'digest': plan_digest(items)}, expect)
                 chosen = resolve(items, choices)
-                changes = [(i.spec, i.key, i.live) for i in items if i.side == 'live']
+                held = with_their_npcs(items, chosen, 'dev')       # (An NPC dev keeps keeps what hangs on it.)
+                changes = [(i.spec, i.key, i.live) for i in items if i.side == 'live' and i.id not in held]
                 changes += [(i.spec, i.key, chosen[i.id]) for i in items if i.side == 'conflict' and
                             canonical(chosen[i.id]) != canonical(i.dev)]
                 apply_rows(dev, world_id, changes, snap_dev)
@@ -1507,7 +1612,7 @@ class Sync:
                     raise Moved('The live world\'s map changed since: look at the new plan and choose again.')
                 snap_live = snapshot(live, live_id)
                 if base is None:
-                    base = Snapshot({table: dict(rows) for table, rows in snap_live.items()})
+                    base = baseless(snap_dev, snap_live)          # (Live as it is, the game's fields as dev has them.)
                 missing = unshared(dev, live, base, snap_dev, snap_live)
                 items = three_way(base, snap_dev, snap_live)
                 areas = None if maps['same'] else map_areas(snap_dev)
@@ -1515,7 +1620,8 @@ class Sync:
                     items = replacing(items, areas)
                 check_expected({'digest': plan_digest(items)}, expect)
                 chosen = resolve(items, choices, areas)
-                changes = [(i.spec, i.key, i.dev) for i in items if i.side == 'dev']
+                held = with_their_npcs(items, chosen, 'live')      # (An NPC live keeps keeps what hangs on it.)
+                changes = [(i.spec, i.key, i.dev) for i in items if i.side == 'dev' and i.id not in held]
                 changes += [(i.spec, i.key, chosen[i.id]) for i in items if i.side == 'conflict' and
                             canonical(chosen[i.id]) != canonical(i.live)]
                 if not changes:

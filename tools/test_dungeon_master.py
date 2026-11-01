@@ -583,6 +583,33 @@ class NpcTests(NpcFixture):
         self.assertEqual(self.dm.figures('prod'), [])
         self.assertTrue(all(kind == 'voice.sync' for kind, _ in self.queued()) and len(self.queued()) == 6, 'each read again by the game')
 
+    def test_the_page_saves_over_what_it_saw_keeping_the_games_moves(self):
+        # The live world's truth (doc 66, Progress): the page sends the NPC whole with the NPC as it loaded it.
+        master = self.sign_in('dm-master')
+        place = lambda x, y: {'cell': 'longhouse', 'x': x, 'y': y}
+
+        def game_moves(x, y):
+            with W.connect('prod', 'game', dbname=self.names['prod']) as game:
+                game.execute("UPDATE live.npcs SET home_area = 'longhouse', home_x = %s, home_y = %s WHERE id = 'fennel'", (x, y))
+        fennel = lambda: next(p for p in self.world()['people'] if p['id'] == 'fennel')
+        saw = fennel()
+        game_moves(5, 5)
+        written = self.dm.save_npc(master, 'prod', {**saw, 'greeting': 'From the page.'}, saw)['written']
+        self.assertEqual((fennel()['home'], fennel()['greeting'], written['home']), (place(5, 5), 'From the page.', place(5, 5)),
+                         "the game's move kept, the page's words saved")
+        # The DM puts her back where she was before the game moved her, on purpose: saved, not taken for a stale page.
+        saw = fennel()
+        self.dm.save_npc(master, 'prod', {**saw, 'home': place(2, 9)}, saw)
+        self.assertEqual(fennel()['home'], place(2, 9))
+        # Both moved her: refused, naming the field; the game's stays.
+        saw = fennel()
+        game_moves(3, 3)
+        with self.assertRaises(D.DMError) as refused:
+            self.dm.save_npc(master, 'prod', {**saw, 'home': place(17, 9)}, saw)
+        self.assertEqual(refused.exception.status, 409)
+        self.assertIn('home', str(refused.exception))
+        self.assertEqual(fennel()['home'], place(3, 3))
+
     def test_bad_placements_are_refused_with_the_reason(self):
         master = self.sign_in('dm-master')
         wren = next(p for p in self.world()['people'] if p['id'] == 'wren')

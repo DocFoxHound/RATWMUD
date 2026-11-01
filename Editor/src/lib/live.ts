@@ -23,18 +23,21 @@ export interface ConflictNotice {
     /** The refused batch's changes and the values now, for saving it again with the editor's choices. */
     ops?: Op[];
     current?: Record<string, unknown>;
+    /** This tab's number for the refusal (the dialog shows one at a time). */
+    serial?: number;
 }
 
 /** A refused batch made again on the values there now, with the editor's choice for each field the game changed too:
- *  'mine' takes the editor's value, otherwise the game's stays. Every other change of the batch is made as it was
- *  (on an entity, only the fields the editor changed). Null when a refusal wasn't only the game's. */
+ *  'mine' takes the editor's value, otherwise the game's stays. Every other change of the batch is made again on the
+ *  value there now: on an entity, only the fields the editor changed (one the host had merged with the game's change
+ *  keeps the game's fields), anything else whole. Null when a refusal wasn't only the game's. */
 export function againWithChoices(notice: ConflictNotice, mine: Record<string, Record<string, boolean>>): Op[] | null {
     if (!notice.ops || !notice.current || !notice.conflicts.length || notice.conflicts.some(c => !c.game)) return null;
     const games = new Map(notice.conflicts.map(c => [c.key, new Set((c.fields ?? []).map(f => f.field))]));
     return notice.ops.map(op => {
         const now = notice.current![op.key] ?? null;
-        const contested = games.get(op.key);
-        if (!contested || !op.after || typeof op.after !== 'object' || !now || typeof now !== 'object') return {key: op.key, before: now, after: op.after};
+        const contested = games.get(op.key) ?? new Set<string>();
+        if (!op.after || typeof op.after !== 'object' || !now || typeof now !== 'object') return {key: op.key, before: now, after: op.after};
         const before = (op.before ?? {}) as Record<string, unknown>, after = op.after as Record<string, unknown>;
         const merged: Record<string, unknown> = {...now as Record<string, unknown>};
         for (const field of new Set([...Object.keys(before), ...Object.keys(after)])) {
@@ -44,6 +47,12 @@ export function againWithChoices(notice: ConflictNotice, mine: Record<string, Re
         }
         return {key: op.key, before: now, after: merged};
     });
+}
+
+/** The conflict to show and those waiting, after another refusal (`notice`): one is shown at a time, and a refusal
+ *  arriving while one is open waits its turn rather than replacing it (its batch's other changes would be lost). */
+export function queueRefusal(shown: ConflictNotice | null, waiting: ConflictNotice[], notice: ConflictNotice) {
+    return shown ? {shown, waiting: [...waiting, notice]} : {shown: notice, waiting};
 }
 
 // --------------------------------------------------------------------------- Keys and values
@@ -312,6 +321,21 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
     let since = seq, sending = false, stopped = false, offline = '';
     // The game server's changes (an arrival's home, a birth) come with the heartbeat after this one: doc 66, Progress.
     let gameSince = gameSeq;
+    // The game's change to a key with a batch still unsaved waits for it: the host makes the batch on the game's row and
+    // says so (`merged`), and the editor's own edits are diffed against its own values meanwhile. Applied after if
+    // it is newer than the batch (own), dropped if the batch's reply or refusal brought newer.
+    const held = new Map<string, Change>();
+    const pending = (key: string) => outbox.some(b => b.ops.some(op => op.key === key));
+    const release = (keys: Iterable<string>, newer: boolean) => {
+        const due: Change[] = [];
+        for (const key of keys) {
+            const change = held.get(key);
+            if (!change || pending(key)) continue;
+            held.delete(key);
+            if (!newer && !((own.get(key) ?? 0) > change.seq)) due.push(change);
+        }
+        if (due.length) cb.remote(due);
+    };
     const report = () => cb.status({state: offline ? 'offline' : outbox.length ? 'saving' : 'saved', pending: outbox.length, error: offline});
 
     async function pump() {
@@ -326,11 +350,13 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
                 outbox.shift(); offline = '';
                 for (const op of batch.ops) own.set(op.key, data.seq);
                 if (data.merged && Object.keys(data.merged).length) cb.written?.(data.merged);
+                release(batch.ops.map(op => op.key), false);
             }
             else if (response.status === 409 || response.status === 422) {
                 outbox.shift(); offline = '';
                 cb.refused(batch, {action: batch.label, message: data.error ?? 'Refused.', conflicts: data.conflicts ?? [],
                     ops: batch.ops, current: data.current ?? {}}, data.current ?? {});
+                release(batch.ops.map(op => op.key), true);          // (The refusal showed the values now.)
             } else throw new Error(data.error ?? `Host replied ${response.status}.`);
         } catch (error) {
             offline = (error as Error).message || 'The editor host is not reachable.';
@@ -351,7 +377,12 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
             const data = await host.sync({clientId, editor: me.name, color: me.color, since, state: cb.presence(), world: cb.world?.(),
                 ...(gameSince !== undefined ? {gameSince} : {})});
             if (data.reload) { stopped = true; cb.reload(); return; }
-            const theirs = data.changes.filter(c => c.clientId !== clientId && !((own.get(c.key) ?? 0) > c.seq));
+            const theirs: Change[] = [];
+            for (const c of data.changes) {
+                if (c.clientId === clientId || (own.get(c.key) ?? 0) > c.seq) continue;
+                if (c.clientId === 'game' && pending(c.key)) held.set(c.key, c);       // (After its batch: release().)
+                else theirs.push(c);
+            }
             since = data.seq;
             if (typeof data.gameSeq === 'number') gameSince = data.gameSeq;
             if (theirs.length) cb.remote(theirs);

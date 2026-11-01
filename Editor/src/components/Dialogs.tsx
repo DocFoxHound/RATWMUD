@@ -4,7 +4,7 @@ import {api, gameUrl, type PlaytestResult, type PlayServer} from '../lib/api';
 import {COMMANDS} from '../lib/commands';
 import {EDITOR_COLORS} from '../lib/live';
 import {setIdentity} from '../lib/session';
-import {commit, getState, openView, saveAgain, setState, toast, useStore} from '../lib/store';
+import {closeConflict, closeDialog, commit, getState, openView, saveAgain, setState, toast, useStore} from '../lib/store';
 import {Hint, NumberField, Row, TextField, Toggle} from './fields';
 import {GenerateDialog} from './Characters';
 
@@ -14,7 +14,7 @@ function Modal({title, eyebrow, children, wide = false, required = false, onClos
     const ref = useRef<HTMLDialogElement>(null);
     useEffect(() => { ref.current?.showModal(); }, []);
     return (
-        <dialog ref={ref} className={wide ? 'modal wide' : 'modal'} onClose={() => { onClose?.(); setState({dialog: null}); }}
+        <dialog ref={ref} className={wide ? 'modal wide' : 'modal'} onClose={() => { closeDialog(); onClose?.(); }}
             onCancel={e => { if (required) e.preventDefault(); }}
             onPointerDown={e => { if (!required && e.target === ref.current) ref.current?.close(); }}>
             <div className="modal-head"><small>{eyebrow}</small><h2>{title}</h2>
@@ -23,7 +23,7 @@ function Modal({title, eyebrow, children, wide = false, required = false, onClos
         </dialog>
     );
 }
-const done = () => setState({dialog: null});
+const done = closeDialog;
 
 export function Dialogs() {
     const dialog = useStore(s => s.dialog);
@@ -67,17 +67,18 @@ function ConflictDialog() {
         const s = Math.max(0, Math.round((Date.now() - Date.parse(at)) / 1000));
         return s < 60 ? `${s} s ago` : s < 3600 ? `${Math.round(s / 60)} min ago` : new Date(at).toLocaleString();
     };
-    if (notice.conflicts.length && notice.conflicts.every(c => c.game)) return <GameConflictDialog notice={notice} />;
+    // (One refusal at a time, each its own dialog: the next waits until this one is answered.)
+    if (notice.conflicts.length && notice.conflicts.every(c => c.game)) return <GameConflictDialog key={notice.serial} notice={notice} />;
     const people = [...new Set(notice.conflicts.map(c => c.editor).filter(Boolean))];
-    return <Modal eyebrow="EDIT CONFLICT" title={people.length ? `${people.join(' and ')} got there first` : 'Your change was not saved'}
-        onClose={() => setState({conflict: null})}>
+    return <Modal key={notice.serial} eyebrow="EDIT CONFLICT" title={people.length ? `${people.join(' and ')} got there first` : 'Your change was not saved'}
+        onClose={closeConflict}>
         <p>Your change <b>“{notice.action}”</b> was not saved{notice.conflicts.length ? ', because it would have overwritten someone else\'s work:' : '.'}</p>
         {notice.conflicts.length ? <ul className="conflicts">
             {notice.conflicts.slice(0, 8).map(c => <li key={c.key}><b>{c.editor || 'Someone'}</b> changed {c.label} {ago(c.at)}</li>)}
             {notice.conflicts.length > 8 && <li>…and {notice.conflicts.length - 8} more</li>}
         </ul> : <p className="hint error-text">{notice.message}</p>}
         <Hint>The map now shows the current version. Make your change again if it still makes sense.</Hint>
-        <div className="modal-actions"><button className="primary" onClick={done}>OK</button></div>
+        <div className="modal-actions"><button className="primary" onClick={closeConflict}>OK</button></div>
     </Modal>;
 }
 
@@ -92,15 +93,16 @@ function gameValue(value: unknown): string {
 }
 
 /** The game server changed what this edit changed too (doc 66, Progress, "The live world's truth": an arrival's home,
- *  a birth): field by field, the game's (kept, the live world's truth) or yours. The rest of the edit saves either way. */
+ *  a birth): field by field, the game's (kept, the live world's truth) or yours. The rest of the edit saves either way:
+ *  closing the dialog keeps the game's and saves the rest, as its first button does. */
 function GameConflictDialog({notice}: {notice: NonNullable<ReturnType<typeof getState>['conflict']>}) {
     const [mine, setMine] = useState<Record<string, Record<string, boolean>>>({});
     const pick = (key: string, field: string, yours: boolean) => setMine(m => ({...m, [key]: {...m[key], [field]: yours}}));
     const yours = Object.values(mine).some(fields => Object.values(fields).some(Boolean));
-    return <Modal eyebrow="THE GAME CHANGED THIS" title="The game server moved what you changed" wide
-        onClose={() => setState({conflict: null})}>
+    const keepTheGames = () => { if (!saveAgain(notice, {})) closeConflict(); };
+    return <Modal eyebrow="THE GAME CHANGED THIS" title="The game server moved what you changed" wide onClose={keepTheGames}>
         <p>While you had <b>“{notice.action}”</b> open, the game running this world changed the same thing. The game's is the live
-            world's truth and is kept unless you choose yours; the rest of your change saves either way.</p>
+            world's truth and is kept unless you choose yours; the rest of your change saves either way (closing this keeps the game's).</p>
         {notice.conflicts.map(c => <section key={c.key} className="game-conflict"><h4>{c.label}</h4>
             <table className="dm-table sync-fields"><thead><tr><th>Field</th><th>You saw</th><th>Yours</th><th>The game's</th><th>Keep</th></tr></thead>
                 <tbody>{(c.fields ?? []).map(f => {
@@ -113,7 +115,7 @@ function GameConflictDialog({notice}: {notice: NonNullable<ReturnType<typeof get
                 })}</tbody></table></section>)}
         <Hint>The map shows the game's values now. Choosing yours puts your value back over the game's.</Hint>
         <div className="modal-actions">
-            <button onClick={() => { if (!saveAgain(notice, {})) setState({conflict: null, dialog: null}); }}>Keep the game's, save the rest</button>
+            <button onClick={keepTheGames}>Keep the game's, save the rest</button>
             <button className="primary" disabled={!yours} onClick={() => saveAgain(notice, mine)}>Save with my choices</button></div>
     </Modal>;
 }

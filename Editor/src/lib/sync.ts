@@ -38,6 +38,8 @@ export interface SyncItem {
     /** A map-replacing import: the places the new map hasn't, a decision each. */
     gone?: GonePlace[];
     placeChoices?: boolean;
+    /** A row one side removed with its NPC, that NPC a conflict: the conflict's id; it goes as that ends. */
+    follows?: string | null;
 }
 export interface Counts { added: number; changed: number; removed: number }
 /** {part: {table label: counts}}. */
@@ -135,47 +137,103 @@ export function defaultPicks(conflicts: SyncItem[]): Picks {
     return out;
 }
 
-/** Whether a conflict's every gone place has a decision. */
-const placesChosen = (item: SyncItem, pick: Pick | undefined) => (item.gone ?? []).every(g => pick?.places?.[g.place] !== undefined);
+/** Whether dev has the row (a row it lacks, never had or removed, can't be taken from dev). */
+export const devHas = (item: SyncItem) => item.dev !== 'absent' && item.dev !== 'removed';
+
+/** The whole-row sides a conflict offers: both, or for an NPC whose place the new map hasn't, dev's alone (live's place
+ *  is gone) and only when dev has the row. */
+export const wholeSides = (item: SyncItem): Side[] => (item.gone?.length ? (devHas(item) ? ['dev'] : []) : ['dev', 'live']);
+
+/** "All conflicts" from one side: each conflict that offers it taken whole from it; the rest keep their picks. */
+export const allPicks = (conflicts: SyncItem[], picks: Picks, side: Side): Picks =>
+    ({...picks, ...Object.fromEntries(conflicts.filter(c => wholeSides(c).includes(side)).map(c => [c.id, {whole: side}]))});
+
+/** The columns of the place a field belongs to (an NPC's or a profession slot's home, work or evening: its area, x and
+ *  y), or the field alone: a place is one field, never half dev's and half live's. */
+export function placeGroup(item: SyncItem, field: string): string[] {
+    const found = /^(home|work|evening)_(area|x|y)$/.exec(field);
+    if (!found || (item.table !== 'live.npcs' && item.table !== 'live.profession_slots')) return [field];
+    return ['area', 'x', 'y'].map(c => `${found[1]}_${c}`);
+}
+
+/** A pick with one field on one side, field by field (a place's column: the whole place). */
+export const pickField = (item: SyncItem, pick: Pick | undefined, field: string, side: Side): Pick =>
+    ({...pick, byField: true, fields: {...pick?.fields, ...Object.fromEntries(placeGroup(item, field).map(f => [f, side]))}});
+
+/** The columns of a conflict's gone places: their decision, not a side, says where they end. */
+export const goneColumns = (item: SyncItem) => new Set((item.gone ?? []).flatMap(g => ['area', 'x', 'y'].map(c => `${g.place}_${c}`)));
+
+/** A conflict's field-by-field part: the fields both sides changed (an unchosen one of the game's goes live's way, an
+ *  authored one leaves it incomplete), and a field only one side changed only when taken from the other side. A place
+ *  is chosen by any of its columns. */
+function fieldMap(item: SyncItem, pick: Pick | undefined, skip = new Set<string>()) {
+    const map: Record<string, Side> = {};
+    let complete = true;
+    for (const field of differingFields(item)) {
+        if (skip.has(field.field)) continue;
+        const chosen = pick?.fields?.[field.field] ?? placeGroup(item, field.field).map(f => pick?.fields?.[f]).find(Boolean);
+        if (field.changed === 'conflict' || field.changed === null) {
+            if (chosen) map[field.field] = chosen;
+            else if (field.default !== 'dev' && field.default !== 'live') complete = false;    // (The game's: live's.)
+        } else if (chosen && chosen !== field.changed) {
+            map[field.field] = chosen;
+        }
+    }
+    return {map, complete};
+}
 
 /** The engine's choices from the UI's picks, and the conflicts still without a full choice. A field-by-field choice
  *  names the fields both sides changed, and a field only one side changed only when the user took the other side's
- *  (the engine takes the changing side's otherwise). Picks for conflicts no longer in the plan are left out. */
+ *  (the engine takes the changing side's otherwise). An NPC whose place the new map hasn't needs a decision for each
+ *  such place ("unplace": unset, each) and, on a row both sides have, a choice for each authored field both changed,
+ *  as any other. Picks for conflicts no longer in the plan are left out. */
 export function buildChoices(conflicts: SyncItem[], picks: Picks): {choices: Record<string, Choice>; missing: string[]} {
     const choices: Record<string, Choice> = {}, missing: string[] = [];
     for (const item of conflicts) {
         const pick = picks[item.id];
         const gone = item.gone ?? [];
-        if (gone.length && pick?.whole === 'unplace') {
-            choices[item.id] = 'unplace';
-        } else if (gone.length && pick?.whole === 'live') {
-            missing.push(item.id);              // (Live's place is gone: a decision is needed.)
-        } else if ((pick?.byField && item.fieldChoices) || (gone.length && pick?.places && !pick.whole)) {
-            const map: Record<string, Side | PlaceChoice> = {};
-            let complete = placesChosen(item, pick);
-            for (const g of gone) {
-                const decided = pick?.places?.[g.place];
-                if (decided !== undefined) map[g.place] = decided;
-            }
-            if (pick?.byField && item.fieldChoices) for (const field of differingFields(item)) {
-                const chosen = pick.fields?.[field.field];
-                if (field.changed === 'conflict' || field.changed === null) {
-                    if (chosen) map[field.field] = chosen;
-                    else if (field.default !== 'dev' && field.default !== 'live') complete = false;   // (The game's: live's.)
-                } else if (chosen && chosen !== field.changed) {
-                    map[field.field] = chosen;
-                }
-            }
+        if (gone.length) {
+            if (pick?.whole === 'dev' && devHas(item)) { choices[item.id] = 'dev'; continue; }
+            const places: Partial<Record<PlaceName, PlaceChoice>> = pick?.whole === 'unplace'
+                ? Object.fromEntries(gone.map(g => [g.place, 'unset'])) : pick?.places ?? {};
+            const fields = item.fieldChoices ? fieldMap(item, pick, goneColumns(item)) : {map: {}, complete: true};
+            if (!gone.every(g => places[g.place] !== undefined) || !fields.complete) { missing.push(item.id); continue; }
+            choices[item.id] = pick?.whole === 'unplace' && !Object.keys(fields.map).length ? 'unplace' : {...places, ...fields.map};
+        } else if (pick?.byField && item.fieldChoices) {
+            const {map, complete} = fieldMap(item, pick);
             if (complete) choices[item.id] = map; else missing.push(item.id);
-        } else if (pick?.whole) {
+        } else if (pick?.whole === 'dev' || pick?.whole === 'live') {
             choices[item.id] = pick.whole;
-        } else if (item.default != null && !gone.length) {
-            // (No pick: the engine takes the default, the live game's truth.)
-        } else {
+        } else if (item.default == null) {
             missing.push(item.id);
         }
+        // (No pick on a conflict with a default: the engine takes it, the live game's truth.)
     }
     return {choices, missing};
+}
+
+/** "The game's truth": each conflict's fields the live game changed (live alone or both) back on live's, whatever was
+ *  picked; the authored fields as the user picked them (a whole-row pick turned field by field); a conflict with no
+ *  pick, or a row one side removed, on its default (defaultPicks). Gone places keep their decisions. */
+export function gameTruthPicks(conflicts: SyncItem[], picks: Picks): Picks {
+    const out: Picks = {...picks}, starts = defaultPicks(conflicts);
+    for (const item of conflicts) {
+        const pick = picks[item.id];
+        if (!pick || !item.fieldChoices) {
+            if (starts[item.id]) out[item.id] = starts[item.id];
+            continue;
+        }
+        const skip = goneColumns(item);
+        const shown = differingFields(item).filter(f => !skip.has(f.field));
+        const games = shown.filter(f => f.owner === 'game' && f.changed !== 'dev');
+        const whole = !pick.byField && (pick.whole === 'dev' || pick.whole === 'live') ? pick.whole : undefined;
+        if (!games.length || whole === 'live') continue;
+        const fields: Record<string, Side> = whole ? Object.fromEntries(shown.map(f => [f.field, whole])) : {...pick.fields};
+        for (const f of games) fields[f.field] = 'live';
+        const places = whole === 'dev' && item.gone?.length ? Object.fromEntries(item.gone.map(g => [g.place, 'dev'])) : pick.places;
+        out[item.id] = {...pick, whole: pick.whole === 'unplace' ? 'unplace' : undefined, byField: true, fields, ...(places ? {places} : {})};
+    }
+    return out;
 }
 
 /** The picks that still apply after the plan was made again (the worlds moved): those for conflicts still there,

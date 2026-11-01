@@ -2,8 +2,9 @@
 // and the conflicts side by side (base, dev, live), field by field, with a choice for each (lib/sync.ts builds the
 // engine's choices from them).
 import {useState} from 'react';
-import {buildChoices, defaultPicks, differingFields, fieldSide, goneText, groupByLabel, middleOf, placeText, rowChangeText, sideChangeText,
-    summaryRows, valueText, type AreaRef, type GonePlace, type PlaceChoice, type Picks, type Side, type Summary, type SyncItem} from '../lib/sync';
+import {allPicks, buildChoices, differingFields, fieldSide, gameTruthPicks, goneColumns, goneText, groupByLabel, middleOf, pickField, placeText, rowChangeText,
+    sideChangeText, summaryRows, valueText, wholeSides, type AreaRef, type GonePlace, type PlaceChoice, type Picks, type Side, type Summary,
+    type SyncItem} from '../lib/sync';
 
 const SHOWN = 200;              // Rows listed per table before "…and N more" (DEV's terrain alone has thousands).
 
@@ -19,15 +20,16 @@ export function ChangeGroups({items, side, empty}: {items: SyncItem[]; side: Sid
     return <div className="sync-groups">{groupByLabel(items).map(group => <details key={group.label} className="sync-group">
         <summary><b>{group.label}</b> <span className="meta">{group.items.length} row{group.items.length === 1 ? '' : 's'} · {group.part === 'world' ? 'the map' : 'live data'}</span></summary>
         <ul>{group.items.slice(0, SHOWN).map(item => <li key={item.id}>
-            <details><summary>{item.name} <span className="meta">{sideChangeText(item, side)}</span></summary>
+            <details><summary>{item.name} <span className="meta">{sideChangeText(item, side)}{item.follows
+                ? ` · goes as ${item.follows.split('/').pop()}'s conflict ends (kept if they are)` : ''}</span></summary>
                 <FieldTable item={item} />
             </details></li>)}
             {group.items.length > SHOWN && <li className="meta">…and {group.items.length - SHOWN} more</li>}</ul>
     </details>)}</div>;
 }
 
-function FieldTable({item, pick, whole, onField, labels}: {item: SyncItem; pick?: Picks[string]; whole?: Side; onField?: (field: string, side: Side) => void;
-        labels?: Record<Side, string>}) {
+function FieldTable({item, pick, whole, onField, labels, fixed}: {item: SyncItem; pick?: Picks[string]; whole?: Side; onField?: (field: string, side: Side) => void;
+        labels?: Record<Side, string>; fixed?: Set<string>}) {
     if (!item.fields.length) return <p className="meta">No fields differ.</p>;
     return <table className="dm-table sync-fields"><thead><tr><th>Field</th><th>Base</th><th>Dev</th><th>Live</th>
         <th>{onField ? 'Keep' : 'Changed by'}</th></tr></thead>
@@ -39,7 +41,7 @@ function FieldTable({item, pick, whole, onField, labels}: {item: SyncItem; pick?
                 <td><Value value={f.base} /></td>
                 <td className={side === 'dev' ? 'sync-kept' : ''}><Value value={f.dev} /></td>
                 <td className={side === 'live' ? 'sync-kept' : ''}><Value value={f.live} /></td>
-                <td>{onField && differs && labels ? <div className="segmented">{(['dev', 'live'] as const).map(s =>
+                <td>{onField && differs && labels && !fixed?.has(f.field) ? <div className="segmented">{(['dev', 'live'] as const).map(s =>
                     <button key={s} className={side === s ? 'on' : ''} aria-pressed={side === s} onClick={() => onField(f.field, s)}
                         title={f.changed === 'conflict' ? 'Both changed this field' : f.changed === s ? `Only ${s} changed it` : ''}>{labels[s]}</button>)}</div>
                     : <span className="meta">{f.changed === 'conflict' ? 'both' : f.changed === 'same' ? 'same now' : f.changed ?? '—'}</span>}</td>
@@ -79,43 +81,48 @@ function PlaceDecision({gone, choice, areas, onChoose, disabled}: {gone: GonePla
  *  `labels` name the choices for the screen ("Keep dev's" / "Take live's" in Atlas; "Import dev's" / "Keep live's" in
  *  the DM). A conflict over the live game's fields starts on live's (its default, the game's truth: lib/sync.ts
  *  defaultPicks); an NPC whose place a new map hasn't (`gone`, the import's `areas` to pick a new one from) needs a
- *  decision for each such place. */
+ *  decision for each such place, and a choice for each authored field both sides changed. A place's area, x and y are
+ *  picked together. */
 export function ConflictList({conflicts, picks, onPicks, labels, disabled = false, areas = []}: {conflicts: SyncItem[]; picks: Picks;
         onPicks: (picks: Picks) => void; labels: Record<Side, string>; disabled?: boolean; areas?: AreaRef[]}) {
     const [open, setOpen] = useState<Record<string, boolean>>({});
     if (!conflicts.length) return <p className="meta">No conflicts: nothing was changed on both sides.</p>;
     const set = (id: string, pick: Picks[string]) => onPicks({...picks, [id]: pick});
     const homeless = conflicts.filter(c => c.gone?.length);
-    // (Live's place gone, or dev without the row: those keep their own decision.)
-    const all = (side: Side) => onPicks({...picks, ...Object.fromEntries(conflicts
-        .filter(c => !c.gone?.length || (side === 'dev' && c.dev !== 'absent')).map(c => [c.id, {whole: side}]))});
     return <div className="sync-conflicts">
         <div className="sync-bulk"><span className="meta">All conflicts:</span>
-            <button disabled={disabled} onClick={() => all('dev')}>{labels.dev}</button>
-            <button disabled={disabled} onClick={() => all('live')}>{labels.live}</button>
-            <button disabled={disabled} onClick={() => onPicks({...picks, ...defaultPicks(conflicts)})}
-                title="Each conflict over the live game's fields back on live's (the game's truth)">The game's truth</button>
-            {homeless.length > 0 && <button disabled={disabled} onClick={() => onPicks({...picks, ...Object.fromEntries(homeless.map(c => [c.id, {whole: 'unplace' as const}]))})}
+            <button disabled={disabled} onClick={() => onPicks(allPicks(conflicts, picks, 'dev'))}
+                title="Those whose place the new map hasn't, and dev hasn't either, keep their own decision">{labels.dev}</button>
+            <button disabled={disabled} onClick={() => onPicks(allPicks(conflicts, picks, 'live'))}>{labels.live}</button>
+            <button disabled={disabled} onClick={() => onPicks(gameTruthPicks(conflicts, picks))}
+                title="Every field the live game changed back on live's (the game's truth); your other choices kept">The game's truth</button>
+            {homeless.length > 0 && <button disabled={disabled} onClick={() => onPicks({...picks, ...Object.fromEntries(homeless.map(c => [c.id, {...picks[c.id], whole: 'unplace' as const}]))})}
                 title="Each place the new map hasn't unset: they are kept, unplaced or without work">Unplace the {homeless.length} without a place</button>}</div>
         {conflicts.map(item => {
             const pick = picks[item.id];
             const gone = item.gone ?? [];
-            const byField = !!pick?.byField && item.fieldChoices;
-            const shown = open[item.id] ?? byField;
+            const byField = !!pick?.byField && item.fieldChoices && pick?.whole !== 'unplace';
+            const ask = gone.length > 0 && item.fieldChoices && pick?.whole !== 'dev'
+                && differingFields(item).some(f => f.changed === 'conflict' && f.default !== 'dev' && f.default !== 'live');
+            const shown = open[item.id] ?? (byField || ask);
             const both = differingFields(item).filter(f => f.changed === 'conflict' || f.changed === null).length;
-            const sides = (['dev', 'live'] as const).filter(s => !gone.length || (s === 'dev' && item.dev !== 'absent'));
             const chosen = gone.length ? buildChoices([item], picks).missing.length === 0 : !!(pick?.whole || byField);
             const defaulted = item.default != null && !gone.length;
+            // (A field picked, a place's column the whole place; beside a gone place's decision, the rest of the row.)
+            const onField = (field: string, side: Side) => set(item.id, gone.length ? {...pick, fields: pickField(item, pick, field, side).fields}
+                : pickField(item, pick, field, side));
+            const editable = !disabled && (byField || (gone.length > 0 && item.fieldChoices && pick?.whole !== 'dev'));
             return <section key={item.id} className={`sync-conflict${chosen ? ' chosen' : ''}`}>
                 <header>
                     <div><b>{item.name}</b> <span className="meta">{item.label} · {rowChangeText(item)}{both ? ` · ${both} field${both === 1 ? '' : 's'} changed on both` : ''}</span>
                         {defaulted && <span className="sync-owner" title="The live game's fields: live's unless you choose dev's">starts on the game's</span>}
-                        {gone.length > 0 && <span className="sync-owner warn" title="The new map hasn't this place: decide for each">not on the new map: {goneText(item)}</span>}</div>
+                        {gone.length > 0 && <span className="sync-owner warn" title="The new map hasn't this place: decide for each">not on the new map: {goneText(item)}</span>}
+                        {ask && <span className="sync-owner warn" title="Changed on both sides: choose dev's or live's below">and fields to choose</span>}</div>
                     <div className="segmented" role="radiogroup" aria-label={`Choice for ${item.name}`}>
-                        {sides.map(s => <button key={s} role="radio" disabled={disabled} aria-checked={!byField && pick?.whole === s}
+                        {wholeSides(item).map(s => <button key={s} role="radio" disabled={disabled} aria-checked={!byField && pick?.whole === s}
                             className={!byField && pick?.whole === s ? 'on' : ''} onClick={() => set(item.id, {...pick, whole: s, byField: false})}>{labels[s]}</button>)}
                         {gone.length > 0 && <button role="radio" disabled={disabled} aria-checked={pick?.whole === 'unplace'} className={pick?.whole === 'unplace' ? 'on' : ''}
-                            title="Live's, with each place the new map hasn't unset" onClick={() => set(item.id, {...pick, whole: 'unplace', byField: false})}>Unplace</button>}
+                            title="As it ends by default, with each place the new map hasn't unset" onClick={() => set(item.id, {...pick, whole: 'unplace', byField: false})}>Unplace</button>}
                         {item.fieldChoices && <button role="radio" disabled={disabled} aria-checked={byField} className={byField ? 'on' : ''}
                             onClick={() => { set(item.id, {...pick, whole: undefined, byField: true}); setOpen({...open, [item.id]: true}); }}>Field by field</button>}
                     </div>
@@ -125,9 +132,9 @@ export function ConflictList({conflicts, picks, onPicks, labels, disabled = fals
                 {gone.length > 0 && pick?.whole !== 'unplace' && pick?.whole !== 'dev' && <div className="sync-places">
                     {gone.map(g => <PlaceDecision key={g.place} gone={g} choice={pick?.places?.[g.place]} areas={areas} disabled={disabled}
                         onChoose={c => set(item.id, {...pick, whole: undefined, places: {...pick?.places, [g.place]: c}})} />)}</div>}
-                {shown && <FieldTable item={item} pick={byField ? pick : undefined}
-                    whole={byField || pick?.whole === 'unplace' ? undefined : pick?.whole as Side | undefined} labels={labels}
-                    onField={byField && !disabled ? (field, side) => set(item.id, {...pick, byField: true, fields: {...pick?.fields, [field]: side}}) : undefined} />}
+                {shown && <FieldTable item={item} pick={byField || editable ? pick : undefined}
+                    whole={byField || editable || pick?.whole === 'unplace' ? undefined : pick?.whole as Side | undefined} labels={labels}
+                    onField={editable ? onField : undefined} fixed={goneColumns(item)} />}
             </section>;
         })}
     </div>;

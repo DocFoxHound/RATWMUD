@@ -208,6 +208,9 @@ class DMError(RuntimeError):
         self.status = status
 
 
+SAME = object()         # save_npc without what the page saw: as the NPC is now (the page's NPC written whole).
+
+
 def token_hash(token: str) -> str:
     return hashlib.sha256(token.encode('utf-8')).hexdigest()
 
@@ -1269,9 +1272,12 @@ class DungeonMaster:
                 self.audit(conn, who['username'], 'story.write', subject, f'{target.upper()}: the story of {life["name"]}')
         return self.chronicle(target, subject)
 
-    def save_npc(self, who, target, person):
+    def save_npc(self, who, target, person, saw=SAME):
         """Creates or changes a named NPC: checked against the whole world, written through the live-edit log,
-        then synced into a running server."""
+        then synced into a running server. `saw`: the NPC as the page loaded it (None: a new one), so what changed
+        since is told from the page's own change (doc 66, Progress, "The live world's truth": the game server's move of
+        a field the page left alone is kept, one the page changed too refused, naming it); without it the page's NPC
+        is written whole."""
         self.allowed(who, 'npc.sync')
         if not isinstance(person, dict) or not isinstance(person.get('id'), str):
             raise DMError('Send the NPC as an object with an id.')
@@ -1279,24 +1285,29 @@ class DungeonMaster:
             world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
             project, _ = S.load_world(conn, world)
             before = next((p for p in project['people'] if p['id'] == person['id']), None)
-            # The page sends the NPC whole: a home or post it shows from before the game moved it is the game's
-            # (doc 66, Progress, "The live world's truth").
-            person, _ = L.keep_games_fields(conn, world, f'person:{person["id"]}', before, person)
             project['people'] = [p for p in project['people'] if p['id'] != person['id']] + [person]
             try:
                 map_editor.check_project(project, for_game=False, playable=False)
             except map_editor.ValidationError as error:
                 raise DMError(' '.join(error.errors[:6])) from error
+            merged = {}
             try:
                 L.apply_edit(conn, 'dungeon-master', who['username'], f'{"Changed" if before else "Created"} {person["name"]}',
-                             [{'key': f'person:{person["id"]}', 'before': before, 'after': person}])
+                             [{'key': f'person:{person["id"]}', 'before': before if saw is SAME else saw, 'after': person}], merged)
             except L.Conflict as conflict:
+                shown = lambda v: f'{v["cell"]} {v["x"]}, {v["y"]}' if isinstance(v, dict) and 'cell' in v else 'none' if v is None else v
+                game = [f'{f["field"]} (yours {shown(f["mine"])}, the game\'s {shown(f["game"])})' for c in conflict.conflicts
+                        if c.get('game') for f in c.get('fields', [])]
+                if game:
+                    raise DMError(f'The game server changed {person["name"]} since you opened them: {"; ".join(game)}. '
+                                  'Reload to see the game\'s, and save again to put yours over it.', 409) from conflict
                 raise DMError(f'{conflict} Reload and try again.', 409) from conflict
             except L.Rejected as rejected:
                 raise DMError(str(rejected)) from rejected
             with conn.transaction():
                 action = self.queue(conn, who, target, 'npc.sync', person['id'], f'{"changed" if before else "created"} NPC {person["name"]}')
-        return {'id': person['id'], 'action': action}
+        # (Saved on the game's row where the game server changed what the page left alone: the NPC as written.)
+        return {'id': person['id'], 'action': action, **({'written': merged[f'person:{person["id"]}']} if merged else {})}
 
     def delete_npc(self, who, target, npc_id):
         self.allowed(who, 'npc.sync')
@@ -2197,7 +2208,8 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 return self.reply(200, dm.npcs(self.target(query)))
             if method == 'POST' and path == '/api/npcs/save':
                 data = self.body()
-                return self.reply(200, dm.save_npc(who, self.posted(data), data.get('person')))
+                return self.reply(200, dm.save_npc(who, self.posted(data), data.get('person'),
+                                                   *([data['before']] if 'before' in data else [])))
             if method == 'POST' and path == '/api/npcs/delete':
                 data = self.body()
                 return self.reply(200, dm.delete_npc(who, self.posted(data), str(data.get('id', ''))))

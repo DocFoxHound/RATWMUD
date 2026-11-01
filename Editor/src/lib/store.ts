@@ -7,7 +7,8 @@ import type {Roster, SlotPreview} from './roster';
 import type {ElevationMode} from './elevation';
 import type {HeightBrush} from './glyphs';
 import type {CampBuilding} from './api';
-import {againWithChoices, applyChanges, diff, inverse, stable, type Batch, type Change, type ConflictNotice, type Editor, type Identity, type LiveStatus} from './live';
+import {againWithChoices, applyChanges, diff, inverse, queueRefusal, stable, type Batch, type Change, type ConflictNotice, type Editor, type Identity,
+    type LiveStatus} from './live';
 import {blockedBy, groundPending, lateFor, noteRemote, settleCell, want, type Ground} from './lazyGround';
 
 export type View = {kind: 'world'} | {kind: 'cell'; id: string};
@@ -239,13 +240,28 @@ export function installGround(arrived: Map<string, Ground>, seq: number): string
     return taken;
 }
 
+// Refusals waiting while another is shown (one at a time: each is answered, none replaced).
+let waiting: ConflictNotice[] = [], serial = 0;
+
 /** A refused batch: show the true values, forget the action, and tell the editor who got there first. */
 export function refuseBatch(batch: Batch, notice: ConflictNotice, current: Record<string, unknown>) {
     const project = {...state.project};
     applyChanges(project, Object.entries(current).map(([key, after]) => ({key, after})));
-    setState(s => ({project, conflict: notice, dialog: s.dialog ?? 'conflict',
+    const queued = queueRefusal(state.conflict, waiting, {...notice, serial: ++serial});
+    waiting = queued.waiting;
+    setState(s => ({project, conflict: queued.shown, dialog: s.dialog ?? 'conflict',
         past: s.past.filter(b => b.id !== batch.id), future: s.future.filter(b => b.id !== batch.id)}));
     repairView();
+}
+
+/** Another dialog closed: a refusal that came while it was open is shown now, never left unanswered. */
+export const closeDialog = () => setState(s => ({dialog: s.conflict && s.dialog !== 'conflict' ? 'conflict' : null}));
+
+/** The conflict shown is answered: the next refusal waiting, if any, is shown. */
+export function closeConflict() {
+    const [next, ...rest] = waiting;
+    waiting = rest;
+    setState({conflict: next ?? null, dialog: next ? 'conflict' : null});
 }
 
 /** A saved batch as the host wrote it: this editor's changes on what the game server changed meanwhile (an arrival's
@@ -262,7 +278,7 @@ export function saveAgain(notice: ConflictNotice, mine: Record<string, Record<st
     const ops = againWithChoices(notice, mine);
     if (!ops) return false;
     const changed = ops.filter(op => stable(op.before) !== stable(op.after));
-    setState({conflict: null, dialog: null});
+    closeConflict();
     if (!changed.length) return true;
     const project = {...state.project};
     applyChanges(project, changed);

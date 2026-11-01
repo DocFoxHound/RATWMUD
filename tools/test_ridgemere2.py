@@ -256,7 +256,7 @@ def project_for_checks():
         return data.get('project', data)
     from worldgen import ridgemere2 as R
     try:
-        project, _ = R.load('ridgemere2')
+        project, _, _ = R.load('ridgemere2')
     except Exception as error:                        # No database here.
         raise unittest.SkipTest(f'ridgemere2 is not reachable: {error}')
     return project

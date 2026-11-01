@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {allFrom, buildChoices, defaultPicks, differentMapText, fieldSide, gameUrl, goneText, groupByLabel, letGoText, middleOf, prunePicks,
-    replaceMapText, rowChangeText, sideChangeText,
+import {allFrom, allPicks, buildChoices, defaultPicks, differentMapText, fieldSide, gameTruthPicks, gameUrl, goneText, groupByLabel, letGoText,
+    middleOf, pickField, prunePicks, replaceMapText, rowChangeText, sideChangeText, wholeSides,
     summaryLine, summaryRows, summaryTotal, valueText,
     type SyncField, type SyncItem} from './sync.ts';
 
@@ -144,4 +144,50 @@ test("a place the new map hasn't needs a decision: unplace, dev's, or a new plac
         {'live.npcs/born_c': {places: {home: 'unset'}}}, 'a place no longer gone is forgotten');
     assert.equal(goneText(clover), 'home (cottage), work (cottage)');
     assert.deepEqual(middleOf({id: 'shop', name: 'Shop', kind: 'interior', width: 20, height: 12}), {cell: 'shop', x: 10, y: 6});
+});
+
+test('a place is one field: a pick on any of its columns is the whole place', () => {
+    // Both moved Maple's home; her x is the same on both, shown changed on both all the same (the place's side).
+    const home = item('live.npcs/maple', [game('home_area', 'conflict', 'live'), game('home_x', 'conflict', 'live'), game('home_y', 'conflict', 'live')],
+        {default: {home_area: 'live', home_y: 'live'}});
+    const picked = pickField(home, defaultPicks([home])['live.npcs/maple'], 'home_area', 'dev');
+    assert.deepEqual(picked.fields, {home_area: 'dev', home_x: 'dev', home_y: 'dev'}, 'the screen picks the whole place');
+    assert.deepEqual(buildChoices([home], {'live.npcs/maple': picked}).choices, {'live.npcs/maple': {home_area: 'dev', home_x: 'dev', home_y: 'dev'}});
+    assert.deepEqual(buildChoices([home], {'live.npcs/maple': {byField: true, fields: {home_area: 'dev'}}}).choices,
+        {'live.npcs/maple': {home_area: 'dev', home_x: 'dev', home_y: 'dev'}}, 'one column picked: never half the place');
+    assert.deepEqual(pickField(wren, undefined, 'name', 'live').fields, {name: 'live'}, 'any other field alone');
+});
+
+test("an NPC whose place is gone is offered dev's only when dev has her, and asked for what both changed", () => {
+    const born = {...clover, dev: 'absent' as const}, gone = {...clover, id: 'live.npcs/gone', dev: 'removed' as const};
+    assert.deepEqual([wholeSides(born), wholeSides(gone), wholeSides(rook), wholeSides(wren)], [[], [], ['dev'], ['dev', 'live']]);
+    assert.deepEqual(allPicks([gone, rook, wren], {'live.npcs/gone': {whole: 'unplace'}}, 'dev'),
+        {'live.npcs/gone': {whole: 'unplace'}, 'live.npcs/rook': {whole: 'dev'}, 'live.npcs/wren': {whole: 'dev'}}, "the bulk dev's skips her");
+    assert.deepEqual(buildChoices([gone], {'live.npcs/gone': {whole: 'dev'}}).missing, ['live.npcs/gone']);
+    // Wren, both sides have her, the new map not her cottage: her greeting changed on both sides is still the user's.
+    const homeless = item('live.npcs/wren', [game('home_area', 'live', 'live'), {...field('greeting', 'conflict'), owner: 'authored', default: null},
+        {...field('description', 'dev'), owner: 'authored', default: 'dev'}], {default: null, placeChoices: true,
+        gone: [{place: 'home', area: 'cottage', dev: null}]});
+    const placed = {places: {home: {cell: 'shop', x: 3, y: 3}}};
+    assert.deepEqual(buildChoices([homeless], {'live.npcs/wren': placed}).missing, ['live.npcs/wren'], 'a place alone is not enough');
+    assert.deepEqual(buildChoices([homeless], {'live.npcs/wren': {whole: 'unplace'}}).missing, ['live.npcs/wren'], 'nor unplace alone');
+    assert.deepEqual(buildChoices([homeless], {'live.npcs/wren': {...placed, fields: {greeting: 'live'}}}).choices,
+        {'live.npcs/wren': {home: {cell: 'shop', x: 3, y: 3}, greeting: 'live'}});
+    assert.deepEqual(buildChoices([homeless], {'live.npcs/wren': {whole: 'unplace', fields: {greeting: 'dev', home_area: 'dev'}}}).choices,
+        {'live.npcs/wren': {home: 'unset', greeting: 'dev'}}, "the gone place's own columns go by its decision");
+});
+
+test("the game's truth puts every field the live game changed back on live's, the user's other picks kept", () => {
+    // Wren: both moved her home (the game's) and both changed her greeting (authored); the user took dev's, whole.
+    const both = item('live.npcs/wren', [game('home_area', 'conflict', 'live'), game('purse', 'live', 'live'), game('age', 'dev', 'dev'),
+        {...field('greeting', 'conflict'), owner: 'authored', default: null}], {default: null});
+    const reset = gameTruthPicks([both, maple, linden], {'live.npcs/wren': {whole: 'dev'}, 'live.npcs/maple': {whole: 'dev'}});
+    assert.deepEqual(reset['live.npcs/wren'], {whole: undefined, byField: true,
+        fields: {home_area: 'live', purse: 'live', age: 'dev', greeting: 'dev'}}, "the game's live's, dev's greeting and dev's own age kept");
+    assert.deepEqual(buildChoices([both], reset).choices, {'live.npcs/wren': {home_area: 'live', greeting: 'dev'}},
+        "purse and age go the way their one side changed them: not named");
+    assert.deepEqual(reset['live.npcs/linden'], {whole: 'live'}, 'no pick: its default');
+    assert.deepEqual(reset['live.npcs/maple'].fields, {home_area: 'live', home_y: 'live', greeting: 'dev'},
+        "Maple's whole dev's turned field by field: dev's words, the game's home");
+    assert.deepEqual(gameTruthPicks([both], {'live.npcs/wren': {whole: 'live'}}), {'live.npcs/wren': {whole: 'live'}}, "live's already");
 });

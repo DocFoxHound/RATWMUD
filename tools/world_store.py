@@ -490,11 +490,13 @@ def project_rows(p: dict, chunk_size: int, tables=None) -> dict[str, list[tuple]
     return rows
 
 
-def stored_rows(conn, world_id: str, tables=None) -> dict[str, list[tuple]]:
+def stored_rows(conn, world_id: str, tables=None, lock=()) -> dict[str, list[tuple]]:
+    """Every row a world stores, per table; the tables in `lock` read FOR UPDATE (inside the caller's transaction)."""
     out = {}
     for table, (_, columns) in (tables_for(conn) if tables is None else tables).items():
         out[table] = [tuple(r) for r in conn.execute(
-            f'SELECT {", ".join(columns)} FROM {table} WHERE world_id = %s', (world_id,)).fetchall()]
+            f'SELECT {", ".join(columns)} FROM {table} WHERE world_id = %s' + (' FOR UPDATE' if table in lock else ''),
+            (world_id,)).fetchall()]
     return out
 
 
@@ -602,8 +604,9 @@ def game_seen(conn) -> int:
 
 def game_changes(conn, world_id, table=None, since=None, revision=None) -> dict[str, dict]:
     """{row id: {'before': the row before the game's first change since, 'after': as the game left it (None:
-    removed), 'op': the first change's, 'seq': the last's}} for the rows the game changed after game change `since`
-    (or, without it, while the world's revision was `revision` or later), in one table (or every one, keyed
+    removed), 'op': the first change's, 'seq': the last's, 'rows': the row as the game held it all along, first
+    `before` then each change's `after` (None where it had none)}} for the rows the game changed after game change
+    `since` (or, without it, while the world's revision was `revision` or later), in one table (or every one, keyed
     'table/id'). Only rows keyed by one id (NPCs, slots)."""
     if not game_log_supported(conn):
         return {}
@@ -623,42 +626,69 @@ def game_changes(conn, world_id, table=None, since=None, revision=None) -> dict[
             params).fetchall():
         rid = key[0] if table else f'{name}/{key[0]}'
         if rid not in out:
-            out[rid] = {'before': before, 'op': op}
+            out[rid] = {'before': before, 'op': op, 'rows': [before]}
         out[rid].update(after=after, seq=seq)
+        out[rid]['rows'].append(after)
     return out
+
+
+def entity_value(field, row):
+    """A row's (a dict by column: as stored, or logged as JSON) value of an editor entity's field: a place as {cell, x, y}
+    or None (unset), anything else as the column has it. None for no row."""
+    if row is None:
+        return None
+    if field in PLACES:
+        return {'cell': row.get(f'{field}_area'), 'x': row.get(f'{field}_x'), 'y': row.get(f'{field}_y')} \
+            if row.get(f'{field}_area') is not None else None
+    return row.get(field)
 
 
 def _same(a, b) -> bool:
     return comparable(num(a) if isinstance(a, float) else a) == comparable(num(b) if isinstance(b, float) else b)
 
 
-def keep_the_games_truth(conn, world_id, desired: dict, current: dict, revision=None, seen=None, choices=None, tables=None):
-    """A whole-world save over a world a game server changes (doc 66, Progress, "The live world's truth"): for each NPC or
-    profession slot the game changed since the save's project was read (its log, after game change `seen`; without it,
-    at the project's revision or later), each game-owned field (a place: area, x and y together; purse, stock, age)
-    the save would change back is the game's again: the save's value where the save hadn't changed it (it still holds the
-    value the game replaced), and by default where both changed it, a conflict. `choices` {conflict id: 'atlas' |
-    'game' | {field: 'atlas' | 'game'}} keep the save's instead. Authored fields are the save's. Returns {'kept': [row
-    ids kept as the game left them], 'conflicts': [{id, table, name, fields: [{field, base, atlas, game, chosen}]}]}."""
+def keep_the_games_truth(conn, p, desired: dict, current: dict, tables=None, revision=None, seen=None, choices=None):
+    """A whole-world save over a world a game server changes (doc 66, Progress, "The live world's truth"), inside the
+    save's transaction, `current` read with the game's rows locked: for each NPC or profession slot the game changed
+    since the save's project was read, each game-owned field (a place, the purse, the stock, the age) the save would
+    change back is the game's again where the save still holds a value the game replaced, and, where the save changed it
+    too, a conflict.
+
+    With `seen` (game_seen() in the snapshot the project was read in), what the reader saw is known: the value before
+    the game's first change after `seen`. A conflict is then a field both changed, and it is the game's unless `choices`
+    {conflict id: 'atlas' | 'game' | {field: 'atlas' | 'game'}} say 'atlas'. Without it (a caller that didn't say), the
+    game's changes at the project's revision or later are those that may have come after the read; a field holding any
+    value the game held meanwhile is taken as untouched (the game's), and one the save changed to something else is the
+    save's (its author's, made after or before the game's: the save can't tell), listed as a conflict unless chosen
+    'game'.
+
+    Every value of the game's put back is checked against the save's map and limits (map_editor.resident_problem): a
+    place the save's map hasn't (a cottage the generator took away), a solid tile, a count out of range, is not put back
+    and the save's stands, listed as a conflict with its `problem`. A birth the game took back is not brought back
+    unless chosen 'atlas'. Authored fields are the save's. Edits p's people and slots and `desired`'s rows. Returns
+    {'kept': [ids kept as the game left them], 'conflicts': [{id, table, name, fields: [{field, base, atlas, game,
+    chosen[, problem]}]}]}."""
     tables = tables or TABLES
     choices = choices or {}
     kept, conflicts = [], []
-    for table in GAME_TABLE_OF.values():
+    areas = None
+    for kind, table in GAME_TABLE_OF.items():
         if table not in tables:
             continue
-        changed = game_changes(conn, world_id, table, since=seen, revision=None if seen is not None else revision)
+        changed = game_changes(conn, p['id'], table, since=seen, revision=None if seen is not None else revision)
         if not changed:
             continue
         _, columns = tables[table]
-        at = {c: i for i, c in enumerate(columns)}
-        have = {r[1]: r for r in current[table]}
+        have = {r[1]: dict(zip(columns, r)) for r in current[table]}
         want = {r[1]: i for i, r in enumerate(desired[table])}
+        listed = p.get('people' if kind == 'person' else 'slots', [])
+        at = {e['id']: i for i, e in enumerate(listed)}
+        build = npc_row if kind == 'person' else slot_row
         for rid, change in changed.items():
-            if rid not in want:
-                continue                      # (Not in the save: kept by keep_made_by_the_server, or Atlas removed it.)
-            row = list(desired[table][want[rid]])
-            now = have.get(rid)
             cid = f'{table}/{rid}'
+            if rid not in want or rid not in at:
+                continue                      # (Not in the save: kept by keep_made_by_the_server, or Atlas removed it.)
+            now = have.get(rid)
             if now is None:
                 # The game removed it (a birth it couldn't make): the save doesn't bring it back unless chosen.
                 if change['op'] == 'insert' and choices.get(cid) != 'atlas':
@@ -666,40 +696,58 @@ def keep_the_games_truth(conn, world_id, desired: dict, current: dict, revision=
                     want = {r[1]: i for i, r in enumerate(desired[table])}
                     kept.append(cid)
                 continue
-            base = change['before'] or {}
-            groups = [(p, [f'{p}_area', f'{p}_x', f'{p}_y']) for p in PLACES] + \
-                     [(c, [c]) for c in GAME_COLUMNS[table] if c not in PLACE_COLUMNS and c in at]
+            entity, choice = dict(listed[at[rid]]), choices.get(cid)
             fields, touched = [], False
-            for field, cols in groups:
-                if not all(c in at for c in cols):
+            for field in GAME_FIELDS[kind]:
+                mine, game = entity.get(field), entity_value(field, now)
+                if _same(mine, game):
                     continue
-                mine, game = [row[at[c]] for c in cols], [now[at[c]] for c in cols]
-                before = [base.get(c) for c in cols] if change['op'] != 'insert' else None
-                if all(_same(m, g) for m, g in zip(mine, game)):
+                held = [entity_value(field, r) for r in change['rows'] if r is not None]
+                # What the reader may have seen: with `seen`, the value before the game's first change since; without
+                # it, any the game held meanwhile. (A row the game made since: whichever it held.)
+                saw = held[:1] if seen is not None and change['op'] != 'insert' else held
+                if any(_same(mine, v) for v in saw):
+                    pick = 'game'                        # (The save still holds what the game replaced: the game's.)
+                elif change['op'] != 'insert' and _same(game, held[0]):
+                    continue                             # (The game put it back as it was: the save's change stands.)
+                else:
+                    asked = choice.get(field) if isinstance(choice, dict) else choice
+                    pick = asked if asked in ('atlas', 'game') else 'game' if seen is not None else 'atlas'
+                    fields.append({'field': field, 'base': saw[0] if saw else None, 'atlas': mine, 'game': game, 'chosen': pick})
+                if pick != 'game':
                     continue
-                if before is not None and all(_same(m, b) for m, b in zip(mine, before)):
-                    for c, g in zip(cols, game):       # (The save still holds what the game replaced: the game's.)
-                        row[at[c]] = g
-                    touched = True
+                areas = areas or map_editor.area_index(p)
+                problem = map_editor.resident_problem(p, entity, field, game, areas)
+                if problem:
+                    # (Not on the save's map, or out of its limits: the save's stands, and the caller is told.)
+                    entry = {'field': field, 'base': saw[0] if saw else None, 'atlas': mine, 'game': game, 'chosen': 'atlas',
+                             'problem': f"the game's {field} can't stand in this save: {problem}"}
+                    fields = [f for f in fields if f['field'] != field] + [entry]
                     continue
-                if before is not None and all(_same(g, b) for g, b in zip(game, before)):
-                    continue                           # (The game put it back as it was: the save's change stands.)
-                choice = choices.get(cid)
-                pick = choice.get(field) if isinstance(choice, dict) else choice
-                shown = lambda v: None if v is None else v[0] if len(cols) == 1 else \
-                    {'cell': v[0], 'x': v[1], 'y': v[2]} if v[0] is not None else None
-                fields.append({'field': field, 'base': shown(before), 'atlas': shown(mine), 'game': shown(game),
-                               'chosen': 'atlas' if pick == 'atlas' else 'game'})
-                if pick != 'atlas':
-                    for c, g in zip(cols, game):
-                        row[at[c]] = g
-                    touched = True
+                entity[field] = game
+                touched = True
             if fields:
-                conflicts.append({'id': cid, 'table': table, 'name': row[at['name']] if 'name' in at else rid, 'fields': fields})
+                conflicts.append({'id': cid, 'table': table, 'name': entity.get('name') or rid, 'fields': fields})
             if touched:
-                desired[table][want[rid]] = tuple(row)
+                listed[at[rid]] = entity
+                desired[table][want[rid]] = build(p['id'], entity, desired[table][want[rid]][2])
                 kept.append(cid)
     return {'kept': kept, 'conflicts': conflicts}
+
+
+def truth_lines(outcome: dict) -> list[str]:
+    """A whole-world save's outcome (save_world's `outcome`) for a tool to print: what it kept as the game server left
+    it, and each conflict with the side taken."""
+    lines = []
+    if outcome.get('kept'):
+        lines.append(f'Kept as the game server left them: {len(outcome["kept"])} '
+                     f'({", ".join(i.split("/", 1)[1] for i in outcome["kept"][:12])}{"..." if len(outcome["kept"]) > 12 else ""}).')
+    for c in outcome.get('conflicts', []):
+        for f in c['fields']:
+            lines.append(f'{c["name"]} ({c["id"]}) {f["field"]}: the save\'s {f["atlas"]!r}, the game\'s {f["game"]!r}: '
+                         + (f['problem'] if f.get('problem') else
+                            f'{"the game" if f["chosen"] == "game" else "the save"}\'s kept (choose with choices).'))
+    return lines
 
 
 def save_world(conn, project: dict, revision: int | None, create: bool = False, *, seen: int | None = None,
@@ -707,8 +755,10 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False, 
     """Validates and stores a project. `revision` is the one it was opened at (None to create).
 
     Returns the new revision. Raises ConflictError if the world changed since it was opened. What a game server changed
-    meanwhile (doc 66, Progress, "The live world's truth": `seen`, game_seen() when the project was read) is kept as
-    the game left it (keep_the_games_truth, with `choices`); `outcome`, a dict, is given what was kept and the conflicts.
+    meanwhile (doc 66, Progress, "The live world's truth": `seen`, from load_world(..., with_seen=True)) is kept as the
+    game left it (keep_the_games_truth, with `choices`); `outcome`, a dict, is given what was kept and the conflicts
+    (truth_lines prints them). The rows the game writes are locked from the moment they are read: a game write made
+    meanwhile waits for the save and is made on what it wrote, never lost under it.
     """
     p, _ = map_editor.check_project(project, for_game=False, playable=False)
     p['id'] = map_editor.world_id(p)
@@ -734,9 +784,12 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False, 
         tables = tables_for(conn)
         if refused := loop_refused(tables, p.get('economy')):
             raise StoreError(f'The economy\'s settings can\'t be saved: {refused}.')
-        desired, current = project_rows(p, chunk_size, tables), stored_rows(conn, p['id'], tables)
+        desired = project_rows(p, chunk_size, tables)
+        # (The NPCs and slots locked as read, the game's log read after: the two agree, and nothing the game writes
+        # meanwhile is overwritten. Doc 66, Progress, "The live world's truth".)
+        current = stored_rows(conn, p['id'], tables, lock=GAME_TABLE_OF.values())
         keep_made_by_the_server(conn, p['id'], desired, current)
-        truth = keep_the_games_truth(conn, p['id'], desired, current, revision, seen, choices, tables) if row else \
+        truth = keep_the_games_truth(conn, p, desired, current, tables, revision, seen, choices) if row else \
             {'kept': [], 'conflicts': []}
         if outcome is not None:
             outcome.update(truth)
@@ -870,12 +923,25 @@ def load_ground(conn, world_id: str, ids) -> dict:
     return {c['id']: {**c, 'terrain': ground[c['id']][0], 'heights': ground[c['id']][1]} for c in cells}
 
 
-def load_world(conn, world_id: str, ground: bool = True) -> tuple[dict, int]:
+def load_world(conn, world_id: str, ground: bool = True, with_seen: bool = False) -> tuple:
     """The project as the editor edits it (atlas v3: every world cell with its own ground), and its revision.
 
     Without `ground`, each world cell comes as its outline: `terrain` and `heights` are None, and `preview` holds every
     PREVIEW_STEP-th tile of every PREVIEW_STEP-th row, enough to draw it zoomed out. Its ground is fetched as it comes
-    into view (load_ground). Interiors always come whole."""
+    into view (load_ground). Interiors always come whole.
+
+    `with_seen`: (project, revision, seen), seen the newest game change the project holds (game_seen(), read in the
+    same snapshot), for save_world to tell the game server's changes made after it from those the project already has
+    (doc 66, Progress, "The live world's truth")."""
+    if with_seen:
+        from psycopg.pq import TransactionStatus
+        if conn.info.transaction_status != TransactionStatus.IDLE:
+            seen = game_seen(conn)             # (Read first: a change between counts as unseen, never as seen.)
+            return (*load_world(conn, world_id, ground), seen)
+        with conn.transaction():
+            conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+            seen = game_seen(conn)
+            return (*load_world(conn, world_id, ground), seen)
     head = conn.execute('''SELECT name, spawn_area, spawn_x, spawn_y, chunk_size, revision, updated_at
                            FROM world.worlds WHERE id = %s''', (world_id,)).fetchone()
     if head is None:

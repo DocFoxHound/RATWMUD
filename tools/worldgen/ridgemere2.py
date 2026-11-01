@@ -4050,8 +4050,8 @@ def load(world_key):
     import world_store
     with world_db.connect(world_key, 'editor') as conn:
         wid = world_store.list_worlds(conn)[0]['id']
-        project, revision = world_store.load_world(conn, wid)
-    return project, revision
+        # (With the newest game change it holds: the save keeps what the game server changed after. Doc 66, Progress.)
+        return world_store.load_world(conn, wid, with_seen=True)
 
 
 def backup(world_key, project, revision):
@@ -4089,7 +4089,7 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
     if entry['kind'] != 'dev' or entry['database'] == 'ratw_dev':
         raise SystemExit('Ridgemere 2.0 is written only into its own world (dev, also called ridgemere2), never a live '
                          'world or the old map\'s archive dev-old.')
-    project, revision = load(world_key)
+    project, revision, seen = load(world_key)
     m = make_all(project, seed, report)
     failed = [c for c in m['checks'] if not c['ok']]
     rep = write_outputs(m)
@@ -4119,7 +4119,8 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
     # fingerprint; --new-map or --same-map say so outright).
     with world_db.connect(world_key, 'owner') as conn:
         with conn.transaction():
-            new = world_store.save_world(conn, p, revision)
+            outcome = {}
+            new = world_store.save_world(conn, p, revision, seen=seen, outcome=outcome)
             # A new map identity only when the layout changed (or --new-map): a write of people alone stays on its map.
             ident, kept = world_sync.stamp_for_layout(conn, world_sync.layout_fingerprint(p),
                                                       'Ridgemere 2.0: the city (doc 67)', 'worldgen.ridgemere2', 'generated',
@@ -4133,6 +4134,8 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
     report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; ' +
            (f'the same map, {ident["id"]} (its layout unchanged).' if kept == 'kept' else
             f'a new map identity, {ident["id"]} (the layout changed; pull and import with a world on the old map are refused).'))
+    for line in world_store.truth_lines(outcome):
+        report(f'  {line}')
     return 0
 
 
@@ -4175,7 +4178,7 @@ def main(argv=None):
         data = json.loads(args.from_file.read_text(encoding='utf-8'))
         project = data.get('project', data)
     else:
-        project, _ = load(args.world)
+        project, _, _ = load(args.world)
     m = make_all(project, args.seed)
     rep = write_outputs(m, images=args.command == 'preview')
     failed = [c for c in m['checks'] if not c['ok']]
