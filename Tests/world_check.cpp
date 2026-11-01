@@ -667,6 +667,30 @@ struct EconomyWatch
             const auto day = found == d.worksTrades.end() ? Society::LoopDay::Trade{} : found->second;
             seasons << ", \"works_" << w.business << "_pieces\": " << day.sold << ", \"works_" << w.business << "_spent\": " << day.spent;
         }
+        // The city's people (doc 68, Progress, "the long runs"): by age, pups (under 16), of working age (16 to their own
+        // age to retire) and the retired; their mean age; the posts and those held; the largest household.
+        {
+            int pups = 0, working = 0, retired = 0, posts = 0, held = 0;
+            double ages = 0;
+            for (const auto& [id, life] : society.state().residents)
+                if (const auto* e = server.entity(id); e && !e->dead)
+                {
+                    ages += e->age;
+                    (e->age < 16 ? pups : e->age >= Society::retireAge(id) ? retired : working) += 1;
+                }
+            for (const auto& p : society.positions())
+            {
+                ++posts;
+                const auto h = society.state().careers.positions.find(p.id);
+                held += h != society.state().careers.positions.end() && !h->second.holder.empty();
+            }
+            std::size_t most = 0;
+            for (const auto& [home, members] : homes)
+                most = std::max(most, members.size());
+            seasons << ", \"pups\": " << pups << ", \"working_age\": " << working << ", \"retired\": " << retired
+                    << ", \"age_mean\": " << (residents ? ages / residents : 0) << ", \"posts\": " << posts
+                    << ", \"posts_held\": " << held << ", \"household_most\": " << most;
+        }
         // The self-correcting rules (doc 68, Progress, "Self-correcting rules"), where they stand tonight: the shops' price
         // factors (those not 1: how many, their mean, spread and range; and the price level, those factors weighted by their
         // wares' smoothed sales), the shelves the sales give (their mean and spread), the tills' wage steps and the mean wage of
@@ -710,7 +734,7 @@ struct EconomyWatch
                         (pay.kind == "keeper" ? keepers : hands).push_back(pay.wage);
                         paying.insert(pay.payer);
                     }
-            int up = 0, down = 0;
+            int up = 0, down = 0, top = 0, foot = 0;
             for (const auto& till : paying)
             {
                 const auto found = loop.wages.find(till);
@@ -718,6 +742,9 @@ struct EconomyWatch
                 steps.push_back(step);
                 up += step > 0;
                 down += step < 0;
+                const int bound = society.wageAtBound(till);   // (At the top bound, or the foot: the floor or the bound.)
+                top += bound > 0;
+                foot += bound < 0;
             }
             const auto [priceMean, priceSd] = spread(factors);
             const auto [shelfMean, shelfSd] = spread(shelves);
@@ -727,7 +754,9 @@ struct EconomyWatch
                     << ", \"price_level\": " << (weights > 0 ? weighted / weights : 1) << ", \"shelves\": " << shelves.size()
                     << ", \"shelf_mean\": " << shelfMean << ", \"shelf_sd\": " << shelfSd << ", \"wage_step_mean\": " << stepMean
                     << ", \"wage_step_sd\": " << stepSd << ", \"wage_up\": " << up << ", \"wage_down\": " << down
-                    << ", \"wage_keeper\": " << spread(keepers).first << ", \"wage_hand\": " << spread(hands).first
+                    << ", \"wage_top\": " << top << ", \"wage_foot\": " << foot << ", \"wage_keeper\": " << spread(keepers).first
+                    << ", \"wage_keeper_sd\": " << spread(keepers).second << ", \"wage_hand\": " << spread(hands).first
+                    << ", \"wage_hand_sd\": " << spread(hands).second
                     << ", \"toll_now\": " << society.gateTollNow() << ", \"alms_now\": " << society.almsNow()
                     << ", \"treasury_level\": " << loop.level;
         }

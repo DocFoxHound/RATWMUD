@@ -518,8 +518,10 @@ class Society
     using Parallel = std::function<void(std::size_t, const std::function<void(std::size_t)>&)>;
     void setParallel(Parallel run) { parallel_ = std::move(run); }
     bool atStall(const std::string& merchant) const { return atStall_.count(merchant) > 0; }
-    // A player's trade with a shop (its keeper `merchant`, keeping it): its goods (wares) at the catalogue's price, a
-    // tenth off at a market stall; and what it buys from a player at SellBackShare of that.
+    // A player's trade with a shop (its keeper `merchant`, keeping it): its goods (wares) at the shop's price now (the
+    // catalogue's times shopFactor: the season's and the shop's from its stock; doc 68, Progress, "Players in the shifting
+    // market"), in whole pennies a piece, a tenth off at a market stall; and what it buys from a player at SellBackShare
+    // of that price. What the shop's list, the keeper's word and the trade itself say is this one price.
     EconomyResult quote(const std::string& player, const std::string& merchant, const std::string& item,
                         int quantity, bool buy) const;
     EconomyResult trade(const std::string& player, const std::string& merchant, const std::string& item,
@@ -671,12 +673,18 @@ class Society
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules"), as they stand now: a shop's price factor for
     // a ware from its stock (1 with the rule off), times the season's for what `quantity` of it costs a resident there;
     // the gate toll in percent and the alms a head, with what the treasury's level has moved them by; a till's wage with
-    // its wage step (the floor kept).
+    // its wage step (the floor kept), within the keeper's bound (wageDriftMost) or a hand's (wageDriftHandMost).
     double stockFactor(const std::string& till, const std::string& ware) const;
     std::int64_t shopCost(const std::string& till, const std::string& item, int quantity) const;
     double gateTollNow() const;
     std::int64_t almsNow() const;
-    int driftedWage(const std::string& till, int wage) const;
+    int driftedWage(const std::string& till, int wage, bool hand = false) const;
+    // A shop's price for a ware now, as a factor of the catalogue's: the season's times the shop's own from its stock (a
+    // quality of a ware at the ware's). What residents pay there, and what players pay and are offered (quote).
+    double shopFactor(const std::string& till, const std::string& item) const;
+    // Where a till's wage step stands against its bounds: 1 at the top (no post can rise further), -1 at the foot (none
+    // can fall further: the floor or the bound), 0 between.
+    int wageAtBound(const std::string& till) const;
     static constexpr int DriftStepDays = 14;          // The toll and the alms are judged a fortnight apart.
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).

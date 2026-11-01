@@ -1861,3 +1861,144 @@ and its level taken over half a year (not 120 days) to stop a slow oscillation o
   catalogue's (as with the season's price). Whether players meet the shop's price is the user's call.
 - Shock tests (a town added, a Country good passed to a city maker) are on hold, as asked: the rules are built for them, not yet
   shown against them.
+
+### Players in the shifting market; wider wages; the long runs (2026-11-01)
+
+Branch `r2-econ-long`, from `ridgemere2` (ef796c1). The user's decisions on two of the self-correcting rules' open questions,
+2026-11-01 (verbatim): on players' prices, **"Yeah of course, players should experience the economy shifts as well."**; on the
+wage bounds, **"Yeah let the wage limit spread more."**; and the runs: **"Make those changes, and then let's run a 6 year test.
+If the 6 year test looks stable, run a 12 year test."**
+
+#### What changed
+
+**Players pay the shop's price.** `Society::quote` (which the shop's list in the client, the keeper's word when asked about
+trade, and `trade` itself all use) prices a player's trade at the catalogue's price times `shopFactor`: the season's price
+factor times the shop's own factor for the ware from its stock (rule 1; a quality of a ware at the ware's factor). The lot is
+priced, to the nearest penny and never under a penny a piece; a market stall a tenth off, rounded down, as before. A shop's offer
+for what a player sells is `SellBackShare` (55%) of that same price, so a scarce ware fetches more and a glutted one less and
+the shop keeps its margin. `trade` takes exactly the quote: the lot at its whole pennies a piece and the odd pennies after
+(`local trade: the odd pennies`). The client shows `buyPrice`/`sellPrice` from the quote of one piece, so a piece shown is a
+piece paid; its buttons trade one at a time.
+
+- Why the lot, not the piece: most food is 1-5p, and a piece rounded to the penny hardly moves (fish at 2p is 2p from 0.75 to
+  1.24). A lot shows the shift (ten fish at 1.2 are 24p, not 20p); one bread at 1p stays 1p, as a coin must.
+- **Players' trade feeds the rules as residents' does, which it already did.** A player's purchase is a sale from the till
+  (`transfer`): it counts in the day's sales (the shelf follows it) and, emptying the shelf, as selling out (the price rises
+  at the day's turn). A player's sale to a shop goes on its shelf, where the day's-end glut test sees it; a shop takes only a
+  few of a good from a player (`GoodsKept`, 4; a store's 40 of what it supplies or buys), so a player can't glut a ware alone.
+  Nothing else was needed: players' purchases and sell-outs count, their sales count through the stock.
+- **The Country's purchases** stay at the catalogue's price (its code is unchanged).
+- A note: with prices that move with the seasons, a player who buys a ware in its cheap season and sells it back in its dear
+  one can gain where the season's swing is more than about 1.1 times (0.75 × 1.0 against 0.55 × 1.25 × the dear season's).
+  It's trade, bounded by what a shop takes from a player; left as it is.
+
+**The wage bounds**, rule 3: `wageDriftMost` (the keeper's) from 6p to **12p** either way, and a new `wageDriftHandMost` (a
+hand's) at **12p**, both in `country.json` `rules`, a world's own in `live.economy.rules`, on the DM's Economy tab and Atlas's
+Economy page (RulesPanel). The 7p floor and the penny a 28-day window are unchanged. A till keeps one step; each post's wage
+is within its own bound, and the step moves only while it moves some post (down: while one is over the floor and inside its
+bound). Separate bounds, the same by default: a keeper takes the till's profit as well as its wage, so how far a keeper's wage
+rises changes little; a hand's raise is what moves a rich till's profit to its many posts, so the hands' bound should not be
+the narrower. The DM can hold the hands' lower (or higher) on its own. Downward the floor stops a post first: a 14p keeper at
+-7 (7p), an 8p hand at -1, so the poorest tills sit at the floor, not the bound. `Society::wageAtBound(till)`: 1 at the top
+(no post can rise), -1 at the foot (none can fall).
+
+**Reports.** `world_check --economy` gains, a day: `wage_top` and `wage_foot` (tills at a bound), `wage_keeper_sd`,
+`wage_hand_sd`; and the people: `pups` (under 16), `working_age` (16 to their own age to retire), `retired`, `age_mean`,
+`posts`, `posts_held`, `household_most`.
+
+**Tests**: `selfcorrect_tests` 1,088 checks (from 939): the new defaults; wages to +12p (26p and 20p paid) and the barber's
+keeper to the 7p floor at -7, the step stopping there; at the top and the foot as `wageAtBound` says; the hands' bound apart
+from the keeper's (a hand stopping at 11p while its keeper goes on to 26p); each bound narrowed by the DM at once. Players: a
+fish at 1.2 and salt fish at 0.8, on and off: one piece and a lot of ten as the quote says, the shop's offer for three salt
+fish, the trade taking exactly the quote (the odd pennies too) and saying so, money conserved; a player buying a shelf out
+making the ware dearer the next day and counted in its sales. All 75 C++ tests pass after a clean build of `build-core`.
+Python: `test_studio`, `test_world_store`, `test_world_sync` (once a transient error, then clean), `test_live_edit`,
+`test_dungeon_master`, `test_world_build`, `test_item_catalog`, `test_city_capacity`, `test_world_db` pass, `test_map_editor`
+but for the known Greyfen 11-vs-10. Editor: `tsc` clean; the lib tests 54 of 54, the model's 78 of 79 (Greyfen).
+
+#### The runs
+
+DEV build 52 (its export; nothing written), from Spring 1, `--simulate 6 8766` (a year, the check) and `6 52596` (six years),
+`--no-check --deterministic --threads 4 --no-profile --loop-state`, pinned to six CPUs (taskset 0-5); no `--economy-detail`.
+Six years took 50 minutes (about 1.4 s a game day); the economy file is 9 MB, the loop's 2.8 MB (twelve years would be about
+18 and 6). The harness copes: the day and the calendar run on (day 2190 is Spring 1 of year 7), birthdays age everyone, the old
+die by age (8-19 a year), pups grow into working age, newcomers come for vacant posts and births follow deaths. The year check
+is the six years' first year exactly (deterministic). Summaries committed in `artifacts/economy/r2/long-summary.txt`; the
+jsonl in `artifacts/economy/r2/long_*` (not committed).
+
+**Money**: conserved every day (the ledger's `conserved`). The money supply grows only by the newcomers' purses (30p each,
+made: 57 newcomers, 1,710p over six years), and that ends in the tills (below).
+
+| Year | Hungry mean / worst | Wages paid | Treasury, 4 wk (low) | Purses, 4 wk | Gini, 4 wk | Owners' share | Residents / households / earning | Births / newcomers / deaths | Pups / working / retired, mean age | Keeper / hand wage | Tills at top / foot | Price sd (end); toll / alms |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | .009 / 5 | 99.74% | 5,193 → 5,940 (1,763) | 29,414 → 25,456 | .484 → .512 | 16.4% | 559 / 233 / 196 | 11 / 4 / 15 | 93 / 425 / 41, 36.5 | 15.34 / 9.89 | 3 / 6 | .107; 30.5 / 10 |
+| 2 | .003 / 3 | 99.84% | 5,913 → 5,954 (3,569) | 25,896 → 25,464 | .503 → .507 | 11.6% | 559 / 238 / 202 | 9 / 10 / 19 | 97 / 420 / 42, 35.9 | 15.54 / 10.15 | 6 / 6 | .105; 30.5 / 10 |
+| 3 | .002 / 2 | 99.87% | 5,942 → 5,962 (4,116) | 25,897 → 25,505 | .501 → .514 | 11.3% | 559 / 241 / 207 | 4 / 9 / 13 | 83 / 436 / 40, 36.2 | 15.53 / 10.32 | 6 / 9 | .111; 30.5 / 10 |
+| 4 | .003 / 5 | 99.91% | 5,957 → 5,787 (4,690) | 25,594 → 25,915 | .504 → .519 | 11.4% | 559 / 250 / 218 | 2 / 14 / 16 | 83 / 432 / 44, 36.4 | 15.48 / 10.45 | 6 / 10 | .112; 28.5 / 12 |
+| 5 | .005 / 3 | 99.93% | 5,621 → 5,798 (2,126) | 26,188 → 25,910 | .515 → .532 | 12.3% | 559 / 256 / 224 | 0 / 8 / 8 | 77 / 428 / 54, 37.2 | 15.69 / 10.54 | 7 / 10 | .112; 28.5 / 12 |
+| 6 | .002 / 2 | 99.91% | 5,643 → 5,963 (1,930) | 26,340 → 25,480 | .524 → .543 | 12.4% | 559 / 261 / 230 | 2 / 12 / 14 | 66 / 443 / 50, 37.5 | 15.64 / 10.53 | 7 / 9 | .122; 29.5 / 10 |
+
+(Years of days 5-364, then whole years; 4-week means the year's first and last 28 days; the people, the wages, the bounds and
+the price spread at the year's end. Profit 859, 597, 583, 588, 646, 658p a day against wages paid 4,372-4,635p. The tills, 4
+weeks at each year's end: 18,353, 18,672, 18,843, 19,039, 19,269, 19,923p.)
+
+**What settles.**
+
+- **Hunger, wages paid, purses**: hunger .002-.009 (a worst hour of 2-5), wages paid 99.74-99.93% and rising, the purses'
+  end-of-year means 25,456-25,915p with no trend.
+- **The wages** (this change): the steps spread through year 1 (the old bound's 42 of 102 tills at ±6p by year 3) and settle
+  by year 3: a keeper's mean wage 15.3 → 15.5 → 15.5 → 15.5 → 15.7 → 15.6p, a hand's 9.9 → 10.2 → 10.3 → 10.5 → 10.5 → 10.5p.
+  **At a bound: 7 tills at +12p and 9 at the foot (their keepers at the 7p floor) at the end, 16 of 102** (from 42); 86
+  between, spread over every step from -7 to +12. The owners' share of profit and wages falls from 16.4% to 11-12% (13.6% with
+  the old bound) and holds. The covers converge as before. **Settles.**
+- **Prices**: the price level 0.992-1.001 every day of six years; 263-270 factors moved; the spread at each year's end .105-.122
+  (its year's mean .079, .091, .095, .097, .097, .103: still widening a little in year 6); 0-12 at the band's top, 6-21 at its
+  foot, moving with the seasons. **Settles, nearly**: the spread's slow widening is worth watching.
+- **Shelves**: 418-423 wares, a mean of 11.3-11.5 a shelf, every year. **Settles.**
+- **The tills** gain about 300p a year (1,570p in six), as much as the newcomers' purses add to the money: their floats and a
+  week of their wages hold the money the new arrivals bring. Not a leak; a slow growth of the money supply that comes with the
+  population's turnover.
+
+**What doesn't: two drifts, neither from these changes. So the twelve-year run was not started.**
+
+1. **Gini rises from year 4**: the end-of-year means .512, .507, .514, then **.519, .532, .543**; the start-of-year .484, .503,
+   .501, .504, .515, .524 (the same seasons: about +.012 a year from year 4). Years 1-3 match the old bound's three-year run
+   (.515, .515, .512), and the wages, the steps and the owners' share hardly move after year 3, so the wider bound isn't it.
+   Two things move with it:
+   - **The households multiply and the births stop** (demography). The population is held at 559, but births fall 11, 9,
+     4, 2, 0, 2 a year and newcomers rise 4, 10, 9, 14, 8, 12: when a wolf with a post dies, the post's vacancy sends for a
+     stranger first, and a stranger counts against the town's number, so the children a short town asks for are crowded out
+     (`tendCareers`: newcomers are asked before births, both from the same shortfall). A newcomer whose predecessor's house
+     still has family in it lodges at the work (`r.home = p.work`), a household of its own: households 233 → 261 and earning
+     households 196 → 230 in six years, each a single young wolf with a 30p purse. Pups fall from 93 to 66, the retired rise
+     from 41 to 50-54, the mean age from 36.5 to 37.5. The posts stay held (508 of 509), and the working age grows as the last
+     pups come of age (425 → 443), so there is no shortage of workers yet; over twelve years the pups would keep falling and
+     the city would run on strangers. More, poorer, one-wolf households over the same money raise the Gini of earning
+     households by itself.
+   - **The treasury rule's trim, a year's swing behind** (rule 4). The treasury's level rose year by year (4,828, 5,301, 5,575
+     at the year ends; the wage support it pays falls as fewer tills run short), crossed the band's top (5,750p) in year 4, and
+     the rule eased the toll two points (30.5 → 28.5) and raised the alms two pennies (10 → 12) over four fortnights, while
+     the slow mean still read high. The treasury then ran lower: its lows 4,690p (year 4), **2,126p and 1,930p** (years 5 and
+     6, under the 2,000p cap, so the wage support waited a few days), its level back to 4,356p, and the toll firming again
+     (29.5 by year 6's end, the alms back to 10). One slow swing in six years, larger than the season's; the twelve-year run
+     would show whether it damps. It moves the Gini too: the surplus to the poorest (80% of the surplus, up to 40p a head)
+     fell from 117p a day in year 4 to 19p and 52p in years 5 and 6, and the flat 2p more alms gave back less than that.
+
+**Proposed fixes (none applied; each needs a run):**
+
+- **Births not crowded out by newcomers**: count the strangers sent for against the town's working posts, not its number,
+  so that births still follow deaths (the user's rule, 2026-10-14: "births follow deaths"); or keep a town's number of pups,
+  as it was made, with births. And **a newcomer lodges with a household** where there's room (or in the town's lodgings,
+  communal), not as a home of its own at the work. Either holds the households near 233-241 and the age structure.
+- **The treasury rule's target where the treasury sits**: its level settles at 5,300-5,700p under the surplus's 6,000p ceiling,
+  so a 5,000p target's band top (5,750p) sits just over it and a small rise trips it. A target of 5,500p (band 4,675-6,325p,
+  under the ceiling only in its top), or judging it every 28 days rather than 14 (so the 182-day mean answers a step before
+  the next), would keep it watching rather than swinging.
+- Then the six years again, and the twelve if they hold.
+
+#### Left for the user
+
+- The two fixes above, and whether to run the six years again with them (about 50 minutes) and then the twelve (about 100).
+- The wage bounds: 12p each, 16 tills at a bound in year 6. The DM can narrow the hands' alone (`wageDriftHandMost`).
+- Players' prices move with the shop's; a lot is priced, a piece never under a penny. Whether a shop should take more than a
+  few of a good from a player (so players can glut a ware) is open; today they can't.

@@ -67,6 +67,15 @@ double roll(const std::string& key)
 {
     return double(fnv(key) % 1000003ULL) / 1000003.;
 }
+// Whether a till's wage step lowered a penny lowers some post (the third self-correcting rule): a keeper's within
+// wageDriftMost, a hand's within wageDriftHandMost, neither under wageDriftFloor.
+bool wageFalls(const Society& s, int step)
+{
+    const auto& e = s.authored().economy;
+    const int floor = s.rule("wageDriftFloor");
+    const auto falls = [&](int wage, const char* most) { return step > -s.rule(most) && wage + step - 1 >= floor; };
+    return falls(e.wageKeeper, "wageDriftMost") || falls(e.wageHand, "wageDriftHandMost");
+}
 } // namespace
 
 std::string Society::marketFor(const std::string& item) const
@@ -106,7 +115,7 @@ Society::Pay Society::payOf(const Position& p) const
         if (q.role == "merchant" && q.work.cell == p.work.cell)
             ++shops, shop = &q;
     if (shops == 1)
-        return {"hand", "till:" + shop->id, driftedWage("till:" + shop->id, e.wageHand)};
+        return {"hand", "till:" + shop->id, driftedWage("till:" + shop->id, e.wageHand, true)};
     for (const auto& rule : items::country().wages)
         for (const auto& word : rule.words)
             if (title.find(word) != std::string::npos)
@@ -1732,17 +1741,35 @@ std::int64_t Society::almsNow() const
     return std::max(0, base + std::clamp(state_.loop.alms, 0, most));
 }
 
-int Society::driftedWage(const std::string& till, int wage) const
+double Society::shopFactor(const std::string& till, const std::string& item) const
+{
+    return priceFactor(item) * stockFactor(till, items::baseOf(item));
+}
+
+int Society::driftedWage(const std::string& till, int wage, bool hand) const
 {
     if (rule("wageDrift") <= 0)
         return wage;
     const auto found = state_.loop.wages.find(till);
     if (found == state_.loop.wages.end() || found->second.step == 0)
         return wage;
-    const int most = rule("wageDriftMost");
+    // The till's step, within the keeper's bound or a hand's (the user, 2026-11-01: "Yeah let the wage limit spread
+    // more"; doc 68, Progress, "Players in the shifting market; wider wages; the long runs").
+    const int most = rule(hand ? "wageDriftHandMost" : "wageDriftMost");
     const int step = std::clamp(found->second.step, -most, most);
     // Lowered no further than the floor (a day's food), and the floor never raises a wage the world set under it.
     return step > 0 ? wage + step : std::max(std::min(wage, rule("wageDriftFloor")), wage + step);
+}
+
+int Society::wageAtBound(const std::string& till) const
+{
+    if (rule("wageDrift") <= 0)
+        return 0;
+    const auto found = state_.loop.wages.find(till);
+    const int step = found == state_.loop.wages.end() ? 0 : found->second.step;
+    if (step > 0 && step >= rule("wageDriftMost") && step >= rule("wageDriftHandMost"))
+        return 1;
+    return wageFalls(*this, step) ? 0 : -1;         // (At the foot: no post can fall, by its bound or the floor.)
 }
 
 void Society::followStock(bool restDay)
@@ -1770,8 +1797,10 @@ void Society::followStock(bool restDay)
     const double band = rule("stockPriceBand") / 100., step = rule("stockPriceStep") / 1000.;
     const double making = std::clamp(authored_.economy.storeMarkup, 0, 1000) / 100.;
     const double resale = std::clamp(authored_.economy.resaleMarkup, 0, 1000) / 100.;
-    // (Only what residents buy has a price of the shop's own: food, needs, comforts. A maker's inputs and by-products go
-    // till to till, and the Country's purchases and players' trade, at the catalogue's price.)
+    // (Only what residents buy has a price of the shop's own: food, needs, comforts; players pay it too, and are offered
+    // their share of it, quote. A maker's inputs and by-products go till to till, and the Country's purchases, at the
+    // catalogue's price. A player's purchase is a sale like a resident's, counted in the day's sales and selling out; a
+    // player's sale to the shop is on its shelf at the day's end, where a glut tells.)
     const auto& needs = items::households().needs;
     const auto& comforts = items::country().comforts;
     const auto residentsBuy = [&](const std::string& ware) {
@@ -1881,7 +1910,8 @@ void Society::judgeWages(const std::string& till, std::int64_t owed, std::int64_
     // A till's wages follow its cover (the third rule), a penny a post at a time: over wageDriftDays days, a till that paid
     // all its posts every day, its keeper's profit at least wageDriftSpare percent of their wages, raises each post's wage
     // a penny; one short of them on more than half the days lowers it a penny (only while that lowers some post: none
-    // under wageDriftFloor); at most wageDriftMost pennies either way. Between the two (paid, with little to spare; short
+    // under wageDriftFloor); at most wageDriftMost pennies either way on a keeper's, wageDriftHandMost on a hand's (12p
+    // each, from 6p: the user, 2026-11-01, "Yeah let the wage limit spread more"). Between the two (paid, with little to spare; short
     // now and then) it stays: a band, so a till settles where its takings pay its posts rather than see-saw. Counted
     // before the treasury's wage support: what the till itself could pay.
     if (rule("wageDrift") <= 0 || owed <= 0)
@@ -1893,11 +1923,12 @@ void Society::judgeWages(const std::string& till, std::int64_t owed, std::int64_
     w.profit += profit;
     if (w.days < rule("wageDriftDays"))
         return;
-    const int most = rule("wageDriftMost");
+    // (The step within the wider of the keeper's bound and a hand's: each post's wage within its own.)
+    const int most = std::max(rule("wageDriftMost"), rule("wageDriftHandMost"));
     if (w.shortDays * 2 > w.days)
     {
-        if (w.step > -most && authored_.economy.wageKeeper + w.step - 1 >= rule("wageDriftFloor"))
-            --w.step;                               // (A keeper's is a till's highest wage.)
+        if (wageFalls(*this, w.step))
+            --w.step;                               // (Only while that lowers some post.)
     }
     else if (w.shortDays == 0 && w.profit * 100 >= w.owed * rule("wageDriftSpare") && w.step < most)
         ++w.step;

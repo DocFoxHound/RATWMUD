@@ -195,7 +195,8 @@ inline constexpr RuleInfo Rules[] = {
     {"wageDrift", 0, 1, 1},              // 3. A till's wages follow its cover: a penny a post every so many days,
     {"wageDriftDays", 1, 365, 28},       // judged over this many days:
     {"wageDriftSpare", 0, 1000, 50},     // up when it paid every wage and its keeper's profit was this percent of them;
-    {"wageDriftMost", 0, 100, 6},        // down when short on most days; never more than this many pennies either way,
+    {"wageDriftMost", 0, 100, 12},       // down when short on most days; never more than this many pennies either way on
+    {"wageDriftHandMost", 0, 100, 12},   // a keeper's wage, nor more than this many on a hand's,
     {"wageDriftFloor", 0, 1000, 7},      // nor a post lowered under this (a day's food).
     {"treasuryDrift", 0, 1, 1},          // 4. The gate toll and the alms follow the treasury's level:
     {"treasuryTarget", 0, 100000000, 5000},  // its slow mean against this,

@@ -429,9 +429,23 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
         return {false, "This trader is unavailable."};
     const auto& m = *account(tillOf(seller));          // The shop's shelves and money (its till).
     const auto& p = *account(player);
-    // The catalogue's price; market stalls sell a little cheaper (a tenth off, rounded down); and a shop buys at
-    // SellBackShare of it.
+    // The shop's price now (doc 68, Progress, "Players in the shifting market"; the user, 2026-11-01: "players should
+    // experience the economy shifts as well"): the catalogue's times the season's and the shop's own from its stock, for
+    // the lot to the nearest penny and never under a penny a piece; market stalls sell a little cheaper (a tenth off,
+    // rounded down); and a shop buys at SellBackShare of it, so a scarce ware fetches more and a glutted one less, its
+    // margin kept. (A lot's, not a piece's rounded: a penny's bread at a quarter over is 1p alone, 5p for four.)
+    const double f = shopFactor(tillOf(seller), item);
     const auto each = catalogPrice(item);
+    const bool stall = buy && atStall(seller);
+    const double share = !buy ? SellBackShare : stall ? .9 : 1.;
+    if (each > std::numeric_limits<std::int64_t>::max() / 2 / quantity)
+        return {false, "That trade exceeds safe account capacity.", each, 0};
+    const auto lot = [&](int n) {
+        if (f == 1 && share == 1)
+            return each * n;
+        const double x = double(each) * f * share * n;
+        return std::max<std::int64_t>(n, stall ? std::int64_t(std::floor(x + 1e-9)) : std::llround(x));
+    };
     // What it takes from a player is as much as it keeps of a good: a supplier's or buyer's store of what it supplies or
     // buys (crafts.json), a few of anything else.
     const auto* business = spec(seller) ? items::businessFor(spec(seller)->workLabel) : nullptr;
@@ -439,12 +453,7 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     const bool stocked = business && (dealsIn(items::suppliesFor(business->id)) || dealsIn(items::buysFor(business->id)));
     const int held = stock(m, item);
     const int cap = stocked ? SuppliesKept : items::wearable(item) ? 4 : item == "meal" ? 24 : item == "sword" ? 4 : item == "herbs" ? 20 : GoodsKept;
-    const std::int64_t price = buy && atStall(seller) ? std::max<std::int64_t>(1, std::int64_t(std::floor(double(each) * .9)))
-                               : buy                  ? each
-                                                      : std::max<std::int64_t>(1, std::llround(double(each) * SellBackShare));
-    if (price > std::numeric_limits<std::int64_t>::max() / quantity)
-        return {false, "That trade exceeds safe account capacity.", price, 0};
-    const std::int64_t total = price * quantity;
+    const std::int64_t price = lot(1), total = lot(quantity);   // (A piece's, for the list; the lot's, paid.)
     if (!buy && held + quantity > cap)
         return {false, "The trader already has enough of those goods.", price, total};
     if (stock(buy ? m : p, item) < quantity)
@@ -462,8 +471,13 @@ EconomyResult Society::trade(const std::string& player, const std::string& trade
     auto result = quote(player, trader, item, quantity, buy);
     if (!result.ok)
         return result;
+    // The lot's price (quote): its whole pennies a piece in the sale, and the odd pennies after.
     const auto till = tillOf(trader);
-    result.ok = transfer(buy ? till : player, buy ? player : till, item, quantity, result.unitPrice, "local trade");
+    const auto& seller = buy ? till : player;
+    const auto& buyer = buy ? player : till;
+    const auto each = result.total / quantity, odd = result.total - each * quantity;
+    result.ok = transfer(seller, buyer, item, quantity, each, "local trade") &&
+                (odd == 0 || shift(buyer, seller, "", 0, odd, "local trade: the odd pennies"));
     result.message = result.ok ? std::string(buy ? "Bought " : "Sold ") + std::to_string(quantity) + " " +
                                      itemName(item) + " for " + std::to_string(result.total) + " silver pennies."
                                : "The trade could not be completed.";

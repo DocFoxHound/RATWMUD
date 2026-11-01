@@ -53,7 +53,7 @@ const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {alm
         servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7,
         subsidyToNeed: 1, surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
         stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
-        wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 6, wageDriftFloor: 7, treasuryDrift: 1,
+        wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 12, wageDriftHandMost: 12, wageDriftFloor: 7, treasuryDrift: 1,
         treasuryTarget: 5000, treasuryBand: 15, treasuryDays: 182, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2}, serviceList: [trim]};
 
 test('a rule is the world\'s own or country.json\'s, and a change is sent only when it changes something', () => {

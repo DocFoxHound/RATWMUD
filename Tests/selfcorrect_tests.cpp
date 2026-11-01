@@ -158,8 +158,8 @@ void theDefaults()
     expect(s.rule("shelfFollow") == 1 && s.rule("shelfDays") == 7 && s.rule("shelfCover") == 125 && s.rule("shelfGrow") == 25,
            "shelves follow sales: on, over a week, a quarter over them, a quarter more on selling out");
     expect(s.rule("wageDrift") == 1 && s.rule("wageDriftDays") == 28 && s.rule("wageDriftSpare") == 50 &&
-               s.rule("wageDriftMost") == 6 && s.rule("wageDriftFloor") == 7,
-           "wages follow cover: on, every 28 days, half to spare, at most 6p, never under 7p");
+               s.rule("wageDriftMost") == 12 && s.rule("wageDriftHandMost") == 12 && s.rule("wageDriftFloor") == 7,
+           "wages follow cover: on, every 28 days, half to spare, at most 12p a keeper and 12p a hand, never under 7p");
     expect(s.rule("treasuryDrift") == 1 && s.rule("treasuryTarget") == 5000 && s.rule("treasuryBand") == 15 &&
                s.rule("treasuryDays") == 182 && s.rule("tollStep") == 5 && s.rule("tollDriftMost") == 5 && s.rule("almsDriftMost") == 2,
            "the toll and the alms follow the treasury: on, 5,000p within 15%, over 182 days, half a point a fortnight, 5 points, 2p");
@@ -312,6 +312,79 @@ void residentsPayTheShopsPrice()
     }
 }
 
+void playersPayTheShopsPrice()
+{
+    // Players in the shifting market (doc 68, Progress, "Players in the shifting market; wider wages; the long runs"; the
+    // user, 2026-11-01: "players should experience the economy shifts as well"): a fishmonger with fish at 1.2 times the
+    // price and salt fish at 0.8. A player pays the season's price times the shop's for a lot, to the nearest penny and
+    // never under a penny a piece, and the shop offers SellBackShare of that; what the quote says is what the trade
+    // takes. Off, the season's price alone.
+    for (const bool on : {true, false})
+    {
+        auto t = Town(city({person("fish", "merchant", "fishmonger at the Fish Hall", {"hall", 2.5, 2.5}, "home_fish", 30, 0)}, 10000,
+                           {{"stockPrices", on ? 1 : 0}, {"wageSupport", 0}}));
+        const auto till = t.s.tillOf("fish");
+        const std::string ada = "player-ada";
+        t.s.addPlayer(ada);
+        t.s.shift("treasury", ada, "", 0, 500, "test: a purse");
+        t.s.shift("treasury", till, "", 0, 500, "test: a till");
+        t.s.create(till, "fish", 40, "test: fish in");
+        t.s.create(ada, "salt_fish", 3, "test: her salt fish");
+        t.until(1 + 1. / 24);                       // (A society restores once it has begun its days.)
+        auto saved = t.s.state();
+        saved.loop.prices[till]["fish"] = 1.2;
+        saved.loop.prices[till]["salt_fish"] = .8;
+        expect(t.s.restore(saved), "restored with factors");
+        if (const int n = Society::stock(*t.s.account(till), "salt_fish"); n > 0)
+            t.s.consume(till, "salt_fish", n, "test: room for hers");   // (A shop takes a few of a good: GoodsKept.)
+        const auto money = t.s.moneySupply();
+        const double fish = t.s.priceFactor("fish") * (on ? 1.2 : 1), salt = t.s.priceFactor("salt_fish") * (on ? .8 : 1);
+        expect(near(t.s.shopFactor(till, "fish"), fish) && near(t.s.shopFactor(till, "salt_fish"), salt),
+               "the shop's price: the season's times its own: " + str(t.s.shopFactor(till, "fish")));
+        const auto lot = [](std::int64_t each, double f, int n) { return std::max<std::int64_t>(n, std::llround(double(each) * f * n)); };
+        const auto one = t.s.quote(ada, "fish", "fish", 1, true), ten = t.s.quote(ada, "fish", "fish", 10, true);
+        expect(one.ok && one.unitPrice == lot(Society::catalogPrice("fish"), fish, 1) && one.total == one.unitPrice,
+               std::string(on ? "on" : "off") + ": a fish is " + std::to_string(one.unitPrice) + "p");
+        expect(ten.ok && ten.total == lot(Society::catalogPrice("fish"), fish, 10) && ten.unitPrice == one.unitPrice,
+               std::string(on ? "on" : "off") + ": ten fish are " + std::to_string(ten.total) + "p");
+        if (on)
+            expect(ten.total > Society::catalogPrice("fish") * 10 * t.s.priceFactor("fish") - 1, "scarce: dearer than the season's");
+        const auto offer = t.s.quote(ada, "fish", "salt_fish", 3, false);
+        expect(offer.ok && offer.total == lot(Society::catalogPrice("salt_fish"), salt * Society::SellBackShare, 3),
+               std::string(on ? "on" : "off") + ": three salt fish fetch " + std::to_string(offer.total) + "p: " + offer.message);
+        // The trade takes what the quote says, the odd pennies too.
+        const auto before = t.s.cash(ada), shop = t.s.cash(till);
+        const auto bought = t.s.trade(ada, "fish", "fish", 10, true);
+        expect(bought.ok && t.s.cash(ada) == before - ten.total && t.s.cash(till) == shop + ten.total &&
+                   Society::stock(*t.s.account(ada), "fish") == 10,
+               "bought ten fish for the quote's " + std::to_string(ten.total) + "p: " + bought.message);
+        expect(bought.message.find(std::to_string(ten.total) + " silver pennies") != std::string::npos, "and says so");
+        const auto sold = t.s.trade(ada, "fish", "salt_fish", 3, false);
+        expect(sold.ok && t.s.cash(ada) == before - ten.total + offer.total && Society::stock(*t.s.account(till), "salt_fish") >= 3,
+               "sold three salt fish for the offer's " + std::to_string(offer.total) + "p: " + sold.message);
+        expect(t.s.conserved() && t.s.moneySupply() == money, "conserved");
+    }
+    // A player's purchase is a sale like a resident's: buying the shelf out makes the ware dearer at the day's turn (and
+    // the shop's shelf counts it).
+    {
+        auto t = fishmonger({{"stockPrices", 1}, {"shelfFollow", 1}});
+        const auto till = t.s.tillOf("fish");
+        const std::string ada = "player-ada";
+        t.s.addPlayer(ada);
+        t.s.shift("treasury", ada, "", 0, 500, "test: a purse");
+        int day = 1;
+        while (restDay(day) || restDay(day + 1))
+            ++day;
+        evening(t, day, 6, 0);
+        saltFish(t);
+        const auto bought = t.s.trade(ada, "fish", "fish", 6, true);
+        expect(bought.ok, "she buys the shelf out: " + bought.message);
+        t.until(day + 1 + 1. / 24);
+        expect(t.s.stockFactor(till, "fish") > 1, "sold out to a player: dearer the next day: " + str(t.s.stockFactor(till, "fish")));
+        expect(t.s.state().loop.sales.at(till).at("fish") >= 6, "her six counted in the shop's sales");
+    }
+}
+
 void shelvesFollowSales()
 {
     auto t = fishmonger({{"shelfFollow", 1}});
@@ -449,34 +522,54 @@ Wages wages(std::map<std::string, int> rules, std::int64_t takings, int wageHand
 void wagesFollowCover()
 {
     // Every two days: the forge pays every wage with plenty of profit (a penny up a post), the barber's shop never pays
-    // (a penny down), the clerk the treasury's 8p throughout.
+    // (a penny down), the clerk the treasury's 8p throughout. The bounds 12p either way (from 6p: doc 68, Progress, "the
+    // long runs"): the forge to 26p and 20p, the barber's keeper to the floor, 7p (14 less 7: the floor before the bound).
     auto w = wages({{"wageDriftDays", 2}}, 200);
     const auto money = w.t.s.moneySupply();
+    const auto forge = w.t.s.tillOf("smith"), barbers = w.t.s.tillOf("barber");
     expect(w.wageOf("smith") == 14 && w.wageOf("hand") == 8 && w.wageOf("barber") == 14 && w.wageOf("helper") == 8, "as the world sets them");
-    for (int d = 1; d <= 20; ++d)
+    expect(w.t.s.wageAtBound(forge) == 0 && w.t.s.wageAtBound(barbers) == 0, "neither at a bound");
+    for (int d = 1; d <= 30; ++d)
     {
         w.day(d);
         const int windows = d / 2;
-        expect(w.wageOf("smith") == 14 + std::min(6, windows) && w.wageOf("hand") == 8 + std::min(6, windows),
-               "day " + std::to_string(d) + ": the forge's a penny a window, at most 6: " + std::to_string(w.wageOf("smith")) + ", " +
+        expect(w.wageOf("smith") == 14 + std::min(12, windows) && w.wageOf("hand") == 8 + std::min(12, windows),
+               "day " + std::to_string(d) + ": the forge's a penny a window, at most 12: " + std::to_string(w.wageOf("smith")) + ", " +
                    std::to_string(w.wageOf("hand")));
-        expect(w.wageOf("barber") == 14 - std::min(6, windows) && w.wageOf("helper") == std::max(7, 8 - windows),
-               "day " + std::to_string(d) + ": the short shop's a penny down a window, at most 6, its hand never under 7p: " +
+        expect(w.wageOf("barber") == std::max(7, 14 - windows) && w.wageOf("helper") == std::max(7, 8 - windows),
+               "day " + std::to_string(d) + ": the short shop's a penny down a window, never under 7p: " +
                    std::to_string(w.wageOf("barber")) + ", " + std::to_string(w.wageOf("helper")));
+        expect(w.t.s.wageAtBound(forge) == (windows >= 12 ? 1 : 0) && w.t.s.wageAtBound(barbers) == (windows >= 7 ? -1 : 0),
+               "day " + std::to_string(d) + ": at the top once at 12p, at the foot once the keeper is at the floor");
         expect(w.wageOf("clerk") == 8, "the treasury's post keeps its wage");
         expect(w.t.s.conserved() && w.t.s.moneySupply() == money, "conserved");
     }
-    // What the wages are is what is paid: the forge's 20p and 14p tonight.
-    w.t.until(21 + 17.9 / 24);
-    w.t.s.shift("treasury", w.t.s.tillOf("smith"), "", 0, 200, "test: takings");
+    expect(w.t.s.state().loop.wages.at(barbers).step == -7, "the step stops where it no longer lowers a post: " +
+                                                                std::to_string(w.t.s.state().loop.wages.at(barbers).step));
+    // What the wages are is what is paid: the forge's 26p and 20p tonight.
+    w.t.until(31 + 17.9 / 24);
+    w.t.s.shift("treasury", forge, "", 0, 200, "test: takings");
     w.t.s.takeJournal();
-    w.t.until(21 + 18.5 / 24);
+    w.t.until(31 + 18.5 / 24);
     std::map<std::string, std::int64_t> paid;
     for (const auto& e : w.t.s.takeJournal())
         if (e.kind == "wages")
             paid[e.to] += e.coins;
-    expect(paid["smith"] == 20 && paid["hand"] == 14, "paid at the drifted wage: " + std::to_string(paid["smith"]) + ", " +
+    expect(paid["smith"] == 26 && paid["hand"] == 20, "paid at the drifted wage: " + std::to_string(paid["smith"]) + ", " +
                                                           std::to_string(paid["hand"]));
+
+    // The hands' bound apart from the keeper's (the DM's wageDriftHandMost): at 3p, the forge's hand stops at 11p while
+    // its keeper goes on to 26p; at the top only when both are.
+    auto apart = wages({{"wageDriftDays", 2}, {"wageDriftHandMost", 3}}, 200);
+    for (int d = 1; d <= 26; ++d)
+    {
+        apart.day(d);
+        const int windows = d / 2;
+        expect(apart.wageOf("smith") == 14 + std::min(12, windows) && apart.wageOf("hand") == 8 + std::min(3, windows),
+               "day " + std::to_string(d) + ": the keeper within 12p, the hand within 3p: " + std::to_string(apart.wageOf("smith")) +
+                   ", " + std::to_string(apart.wageOf("hand")));
+        expect(apart.t.s.wageAtBound(apart.t.s.tillOf("smith")) == (windows >= 12 ? 1 : 0), "at the top only with both at theirs");
+    }
 
     // In the band (every wage paid, nothing to spare): it stays.
     auto even = wages({{"wageDriftDays", 2}}, 22);
@@ -499,7 +592,11 @@ void wagesFollowCover()
     auto economy = low.t.s.authored().economy;
     economy.rules["wageDriftMost"] = 2;
     low.t.s.adoptEconomy(economy);
-    expect(low.wageOf("smith") == 16 && low.wageOf("barber") == 12, "the bound narrowed: at most 2p either way");
+    expect(low.wageOf("smith") == 16 && low.wageOf("barber") == 12 && low.wageOf("hand") == 11,
+           "the keeper's bound narrowed: at most 2p either way; the hand's still 12p");
+    economy.rules["wageDriftHandMost"] = 1;
+    low.t.s.adoptEconomy(economy);
+    expect(low.wageOf("hand") == 6 && low.wageOf("smith") == 16, "the hand's narrowed too: at most 1p");
     economy.rules["wageDrift"] = 0;
     low.t.s.adoptEconomy(economy);
     expect(low.wageOf("smith") == 14 && low.wageOf("hand") == 5 && low.wageOf("barber") == 14, "off: the world's wages, whatever was saved");
@@ -682,6 +779,7 @@ int main()
         theDefaults();
         pricesFollowStock();
         residentsPayTheShopsPrice();
+        playersPayTheShopsPrice();
         shelvesFollowSales();
         wagesFollowCover();
         tollAndAlmsFollowTheTreasury();
