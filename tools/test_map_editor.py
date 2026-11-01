@@ -307,7 +307,7 @@ class ExportTests(unittest.TestCase):
                      lambda p: p.update(name='   '),
                      lambda p: p.update(width=10**500), lambda p: p.update(height=257),
                      lambda p: p.update(rooms={}), lambda p: p['terrain'].pop(),
-                     lambda p: p['terrain'].__setitem__(0, '?' * 64),
+                     lambda p: p['terrain'].__setitem__(0, '`' * 64),
                      lambda p: p['cells'][0].update(id='../evil'),
                      lambda p: p['cells'][1].update(id='field_1'),
                      lambda p: p['cells'][0].update(terrain=['.' * 32] * 24),

@@ -978,8 +978,8 @@ changes as live's. What they lacked was the ownership above, for the defaults.
   `check_project` makes, one field at a time): a place the save's map hasn't (a cottage the generator took away), a
   solid tile, a count out of range is not put back, the save's stands, and the conflict says why (`problem`). It works
   on the save's people and slots and their rows, after the project was checked. A birth the game took back is not
-  brought back. The Ridgemere 2.0 generator, `realm.py`, `towns.py` and `apply_terrain.py` load with `with_seen`, pass
-  it, and print the outcome.
+  brought back. The Ridgemere 2.0 generator, its realm (`realm2.py`, doc 70), `realm.py`, `towns.py` and
+  `apply_terrain.py` load with `with_seen`, pass it, and print the outcome.
 - **The heartbeat** (`live_edit.sync(..., game_since=)`; `load` gives `gameSeq`): the game's changes come to every open
   Atlas as edits of their keys (`person:ID`, `slot:ID`, editor "The game", the row as it is now), so the map shows an
   arrival at home at its next heartbeat (1.5 s) and a later edit starts from it. Each is read in one snapshot with, as

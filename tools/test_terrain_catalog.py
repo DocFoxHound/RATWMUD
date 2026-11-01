@@ -42,7 +42,7 @@ class TerrainCatalogTests(unittest.TestCase):
         p['terrain'] = ['.' * 64 for _ in range(48)]
         p['terrain'][20] = '.' * 10 + 'kbPS_m' + '.' * 48
         self.assertIn('kbPS_m', editor.export_files(p)['cells/field_1.cell'])
-        p['terrain'][20] = '.' * 10 + '?' + '.' * 53
+        p['terrain'][20] = '.' * 10 + '`' + '.' * 53
         with self.assertRaises(editor.ValidationError):
             editor.export_files(p)
 

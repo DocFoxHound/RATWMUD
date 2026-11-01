@@ -834,7 +834,7 @@ void terrainElevation()
         expect(terrainInfo(info.code) == &info && tileFromGlyph(info.code).glyph == info.code &&
                    info.glyph != u'W' && (!info.opaque || info.solid),
                "Every catalog tile is found by its code and is internally consistent");
-    expect(!terrainInfo('?') && !terrainInfo(' ') && !terrainInfo(char(0xC3)), "Unknown codes are not tiles");
+    expect(!terrainInfo('`') && !terrainInfo(' ') && !terrainInfo(char(0xC3)), "Unknown codes are not tiles");
 
     // A goal walled off from the walker has no route, and the search says so without exploring everything.
     for (int x = 10; x <= 24; ++x)

@@ -2549,3 +2549,10 @@ place**; three posts change trade in place.
   DEV revision 57 to 58 (build 52), the same map (`map-20261031-6b080cecb7f6`); every check passes. The export against
   build 51 differs in these three residents (label, description, greeting, a backstory line), the Harness Shop's two
   doors' names and its room.
+
+### The realm round the city (2026-11-01)
+
+Doc 70: the map grows from the city's 3 x 3 cells to 16 x 16, the city in the north-west corner. Every built tile of
+the nine cells is kept; the wild moor round the walls and the Houses' grounds is remade as the rain coast's cleared
+ground and woods (two cells renamed "The Rainward Woods", Fellhall's and Timberland Court's descriptions to match).
+`write` lays the realm round the city after its checks (`realm2.expand`), so the map it writes is the whole realm.

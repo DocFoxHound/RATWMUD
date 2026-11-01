@@ -1192,8 +1192,8 @@ bool World::visiblePoint(const Entity& o, Vec2 p, double range) const
 std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double range) const
 {
     std::vector<char> out(c.tiles.size(), 0);
-    if (!(range > 0))
-        return out;
+    if (!(range > 0) || c.tiles.size() != std::size_t(c.width) * std::size_t(c.height))
+        return out;                                // (A cell whose tiles are not loaded shows nothing.)
     const int x0 = std::max(0, int(std::floor(o.position.x - range))), x1 = std::min(c.width - 1, int(std::ceil(o.position.x + range)));
     const int y0 = std::max(0, int(std::floor(o.position.y - range))), y1 = std::min(c.height - 1, int(std::ceil(o.position.y + range)));
     const Cell* sightCell = o.cellId == c.id ? &c : cell(o.cellId);

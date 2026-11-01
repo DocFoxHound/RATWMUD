@@ -12,7 +12,9 @@ and writes the city into DEV (ratw_ridgemere2, also called ridgemere2), keeping 
                                                                    ridgemere2; a new map identity: doc 66)
 
 (python3 tools/worldgen/ridgemere2.py ... works too.) The seed is fixed, so every run makes the same city; a write loads
-the world fresh and rewrites only the map and the placed NPCs' places, so it can be run again.
+the world fresh and rewrites only the map and the placed NPCs' places, so it can be run again. Since doc 70 the write
+lays the realm round the city too (worldgen.realm2.expand: the city's 3 x 3 cells kept in the north-west corner of
+16 x 16, their wild ground remade), so the map it writes is the whole realm.
 
 The old generator (realm.py, cities.py) is not used to lay anything out here and its output is unchanged: this module
 subclasses its Ridgemere for the helpers (ring, gate, compound, gardens) and keeps its own copies of realm.py's helpers
@@ -4095,6 +4097,10 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
     rep = write_outputs(m)
     p = m['project']
     p.pop('relations', None)
+    # The realm round the city (doc 70): its cells added and the city's wild ground remade, every built tile kept.
+    from . import realm2
+    realm = realm2.expand(p, report=report, city_cells=p['cells'])
+    failed += [c for c in realm.result if not c['ok']]
     try:
         map_editor.check_project(p, for_game=False, playable=True)
     except map_editor.ValidationError as error:

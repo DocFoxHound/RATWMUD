@@ -259,7 +259,7 @@ class LiveTests(unittest.TestCase):
 
     def test_bad_values_are_refused(self):
         with self.assertRaises(L.Rejected):
-            self.edit(('tile:1,1', self.t(1, 1), '?'))
+            self.edit(('tile:1,1', self.t(1, 1), '`'))
         with self.assertRaises(L.Rejected):
             self.edit(('cell:town', meta(self.project['cells'][0]), {**meta(self.project['cells'][0]), 'id': 'other'}))
         with self.assertRaises(ValueError):

@@ -158,7 +158,7 @@ test('shape painting and stamps', () => {
     const room = addRoom(p, 6, 6);
     paintTiles(p, [[2, 2]], 'T', room.id);
     assert.equal(cellTerrain(p, room.id)[2][2], 'T');
-    assert.throws(() => paintTiles(p, [[0, 0]], '@'), /catalog/);   // Not a terrain code ('X' and 'W' are tiles now).
+    assert.throws(() => paintTiles(p, [[0, 0]], '`'), /catalog/);   // Not a terrain code ('X' and 'W' are tiles now).
 });
 
 test('rooms can be edited, resized and removed with their doors', () => {

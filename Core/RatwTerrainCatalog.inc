@@ -87,3 +87,7 @@ RATW_TERRAIN(0x74, Feature, true, false, 0.0, 1.5, 1.0, false, false, 0x25ce, 0x
 RATW_TERRAIN(0x4e, Feature, true, false, 0.0, 1.4, 1.0, false, false, 0x2020, 0x74, 0xb89c72, 0x2a2219, "Training dummy")
 RATW_TERRAIN(0x79, Feature, true, false, 0.0, 1.2, 1.0, false, false, 0x2021, 0x59, 0xa9a39a, 0x25231f, "Weapon rack")
 RATW_TERRAIN(0x71, Feature, true, false, 0.0, 0.8, 1.0, false, false, 0x253c, 0x2b, 0xa88a60, 0x281f16, "Ring rail")
+RATW_TERRAIN(0x28, Floor, false, false, 0.0, 0.0, 1.1, false, false, 0x259e, 0x3a, 0xc98a5c, 0x33201a, "Sandstone")
+RATW_TERRAIN(0x29, Floor, false, false, 0.0, 0.0, 1.0, false, false, 0x22ef, 0x5f, 0xe6e0cf, 0x3a3730, "Salt flat")
+RATW_TERRAIN(0x3f, Feature, true, false, 0.0, 1.4, 1.0, false, false, 0x2366, 0x69, 0x7fae62, 0x2c2617, "Cactus")
+RATW_TERRAIN(0x40, Feature, true, false, 0.0, 2.5, 1.0, false, false, 0x03ab, 0x59, 0xa3c46e, 0x18261a, "Willow")

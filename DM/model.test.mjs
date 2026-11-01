@@ -84,8 +84,8 @@ test('terrain draws from the catalog: glyph, colours and plain ASCII; unknown co
     assert.equal(drawn.fg, tile.fg); assert.equal(drawn.bg, tile.bg);
   }
   assert.equal(terrainDraw(lookup, 'h').text, '♨︎');            // Text presentation, never emoji.
-  assert.equal(terrainDraw(lookup, '?').text, '?');
-  assert.equal(terrainDraw(lookup, '?').name, 'Unknown terrain');
+  assert.equal(terrainDraw(lookup, '`').text, '`');
+  assert.equal(terrainDraw(lookup, '`').name, 'Unknown terrain');
   assert.equal(terrainDraw(new Map(), '#').text, '#');              // No catalog loaded: the stored code.
   assert.equal(terrainLookup(null).size, 0);
 });
