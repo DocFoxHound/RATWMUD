@@ -16,6 +16,8 @@ Read only. From the placed residents of a world export (those with a home) and D
   makes it, to those whose supply list resells it. A maker's work is its own last step: the craft's hours for the
   batches wanted, its inputs coming from the store room (at the making markup, 100%); a vendor's margin is what is left
   of the resale markup (75%).
+- A trade the city has none of (its dairies, for now: doc 67, Progress, "A few inns, dairies later") sells nothing: its
+  food is not on offer, so the wolves eat as much of the rest and its share of the demand goes to the foods sold.
 - Keeper-days: those hours over 8, a one-keeper business's worth of work. "Staffed" (when known) is the keepers and
   hands a trade has, a day's work each.
 

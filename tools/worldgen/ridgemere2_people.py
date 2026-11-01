@@ -254,6 +254,48 @@ def k(word, business=None):
     return ('keeper', word, 1, business)
 
 
+# --- A few inns, dairies later (doc 67, Progress, "A few inns, dairies later") ----------------------------------------
+# The user (2026-10-31), on doc 68's thin margins (15 inns at .39 of their wages, 4 dairies at .41): "Have a few inns, we
+# will put in dairies later".
+#
+# Inns: five tills, one to a quarter (INNS), each a keeper and INN_HELP helpers (the city's hot food goes to fewer
+# kitchens). The other taverns keep their buildings and stay the evening places of their streets without a till
+# (GATHERING: nobody keeps the tap; the residents still spend their evenings there); their old posts are in GATHERING too,
+# for putting a till back (move the key into POSTS). The two soup stalls sell other food (OUTDOOR).
+INNS = ('r2_the_knucklebones', 'rm_the_sailors_rest', 'rm_the_grey_gull_inn', 'rm_the_grey_goose', 'rm_the_slag_anchor')
+INN_HELP = 2
+GATHERING = {
+    'rm_the_drowned_lantern': [k('keeping the taproom', 'inn')],
+    'rm_the_tarred_rope': [k('keeping the taproom', 'inn')],
+    'rm_the_bilge': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_rainbarrel': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_soup_kitchen': [k('ladling soup', 'inn'), ('help', None, 1)],
+    'rm_the_black_tun': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_last_lamp': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_slate_ledger': [k('keeping the taproom', 'inn')],
+}
+# Dairies: none for now. DAIRIES = True puts the four back as they were (two shops, a Market Square stall and a Market
+# Hall counter: the dairy's own posts, labels and the shops' names and text in worldgen.ridgemere2.DAIRY_SHOPS); False
+# gives each place its stand-in: the two shops are provisioners (their presses stand idle; the rooms are not refitted, so
+# the map stays the same), the stall a butcher's and the counter a baker's. Nobody's food depends on them: residents buy
+# among the foods the city sells, so cheese drops out and its share goes to the rest (tools/city_capacity.py), and the
+# Country's basket has no dairy good.
+DAIRIES = False
+DAIRY = {      # place: (the dairy, its stand-in)
+    'r2_cheesemonger': ([k('cheesemaker in the Commons', 'dairy'), ('help', None, 2)],
+                        [k('provisioner', 'provisioner'), ('help', None, 2)]),
+    'rm_vane_daughters': ([k('cheesemaker', 'dairy'), ('help', None, 1)],
+                          [k('provisioner', 'provisioner'), ('help', None, 1)]),
+    'market_square': ('cheesemaker on Market Square', 'sausage butcher on Market Square'),
+    'r2_market_hall': (('cheesemaker in the Market Hall', 'dairy'), ('baker in the Market Hall', 'bakery')),
+}
+
+
+def dairy(place):
+    """A dairy's posts or label (DAIRY), or its stand-in's while there are no dairies."""
+    return DAIRY[place][0 if DAIRIES else 1]
+
+
 POSTS = {
     # The wharf.
     'rm_the_harbourmaster_s_office': [('staff', 'harbourmaster of the Wharf Office', 1), ('staff', 'clerking at the Wharf Office', 2)],
@@ -268,9 +310,7 @@ POSTS = {
     'rm_the_fish_hall': [k('fishmonger', 'fishmonger'), ('hands', None, 1)],
     'rm_the_north_wharf_smokehouse': [k('runs', 'smokehouse'), ('hands', None, 1)],
     'rm_the_wharf_tannery': [k('tanner', 'tannery'), ('hands', None, 2)],
-    'rm_the_sailors_rest': [k('keeping the inn', 'inn'), ('help', None, 1)],
-    'rm_the_drowned_lantern': [k('keeping the taproom', 'inn')],
-    'rm_the_tarred_rope': [k('keeping the taproom', 'inn')],
+    'rm_the_sailors_rest': [k('keeping the inn', 'inn'), ('help', None, INN_HELP)],
     # The Cinders.
     'rm_the_grayrock_ironworks': [k('runs', 'ironworks'), ('hands', None, 5)],
     'rm_the_grayrock_foundry': [k('runs', 'foundry'), ('hands', None, 2)],
@@ -288,7 +328,7 @@ POSTS = {
     'rm_the_cinder_glassworks': [k('runs', 'glassworks'), ('hands', None, 2)],
     'rm_the_rag_mill': [k('runs', 'papermill'), ('hands', None, 1)],
     'rm_the_rainwater_brewery': [k('runs', 'brewery'), ('hands', None, 1)],
-    'rm_the_slag_anchor': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_slag_anchor': [k('keeping the taproom', 'inn'), ('help', None, INN_HELP)],
     'r2_cinder_butchers': [k('butcher', 'butcher'), ('help', None, 2)],
     # The Sump.
     'rm_sump_sundries': [k('shopkeeper', 'general'), ('help', None, 1)],
@@ -298,11 +338,8 @@ POSTS = {
     'rm_the_pawn_and_ledger': [k('pawnbroker', 'pawnbroker'), ('help', None, 1)],
     'r2_penny_loaf': [k('baker', 'bakery'), ('help', None, 2)],
     'r2_the_washhouse': [('staff', 'keeping the Washhouse', 1), ('staff', 'washing at the Washhouse', 5)],
-    'rm_the_bilge': [k('keeping the taproom', 'inn'), ('help', None, 1)],
-    'rm_the_rainbarrel': [k('keeping the taproom', 'inn'), ('help', None, 1)],
-    'r2_the_knucklebones': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'r2_the_knucklebones': [k('keeping the taproom', 'inn'), ('help', None, INN_HELP)],
     'rm_the_sump_infirmary': [('clergy', "infirmarian of the abbey", 1), ('clergy', 'nursing for the abbey', 1)],
-    'rm_the_soup_kitchen': [k('ladling soup', 'inn'), ('help', None, 1)],
     'rm_the_chapel_of_the_tide': [('clergy', 'priest of the Chapel of the Tide', 1)],
     'r2_lamp_store': [('staff', 'lighting the lamps at dusk', 4)],
     # The abbey.
@@ -317,25 +354,23 @@ POSTS = {
     'r2_market_hall': [('staff', 'warden of the Market Hall', 1)],
     'r2_barber': [k('barber', 'barber'), ('help', None, 1)],
     'r2_fell_wine_vaults': [k('vintner', 'vintner'), ('help', None, 1)],
-    'r2_cheesemonger': [k('cheesemaker in the Commons', 'dairy'), ('help', None, 2)],
+    'r2_cheesemonger': dairy('r2_cheesemonger'),
     'r2_bathhouse': [('staff', 'keeping the Bathhouse', 1), ('staff', 'working at the Bathhouse', 2)],
     'rm_the_eastgate_stables': [k('runs', 'stables'), ('hands', None, 1)],
     'rm_the_commons_school': [('staff', 'teaching letters', 1)],
     'rm_the_house_of_mending': [('clergy', 'healer of the abbey', 2)],
-    'rm_the_grey_gull_inn': [k('keeping the inn', 'inn'), ('help', None, 1)],
-    'rm_the_black_tun': [k('keeping the taproom', 'inn'), ('help', None, 1)],
-    'rm_the_last_lamp': [k('keeping the taproom', 'inn'), ('help', None, 1)],
+    'rm_the_grey_gull_inn': [k('keeping the inn', 'inn'), ('help', None, INN_HELP)],
     'rm_the_greatly_yard': [k('runs', 'builders_yard'), ('hands', None, 3)],
     # The food rebalance (doc 67, Progress): reused shops given over to food (worldgen.ridgemere2.REFIT refits their
     # rooms), the food shops' hands, and the Carters' Yard.
     'rm_commons_sundries': [k('provisioner', 'provisioner'), ('help', None, 1)],
     'rm_moss_marrow': [k('butcher', 'butcher'), ('help', None, 1)],
-    'rm_vane_daughters': [k('cheesemaker', 'dairy'), ('help', None, 1)],
+    'rm_vane_daughters': dairy('rm_vane_daughters'),
     'rm_the_cough_jar': [k('preserver', 'preserver'), ('help', None, 1)],
     'rm_oilcloth_wool': [k('preserver', 'preserver'), ('help', None, 1)],
     'rm_collar_and_trace': [k('baker', 'bakery'), ('help', None, 1)],
     'rm_rainford_s_store': [k('provisioner', 'provisioner'), ('help', None, 1)],
-    'rm_the_grey_goose': [k('cooking for Northgate', 'inn'), ('help', None, 1)],
+    'rm_the_grey_goose': [k('cooking for Northgate', 'inn'), ('help', None, INN_HELP)],
     'rm_the_hook_and_cleaver': [k('butcher', 'butcher'), ('help', None, 2)],
     'rm_mutton_lane_butchers': [k('butcher', 'butcher'), ('help', None, 2)],
     'rm_the_wet_slab': [k('fishmonger', 'fishmonger')],
@@ -358,7 +393,6 @@ POSTS = {
                                   ('staff', "clerking for the magistrate", 1)],
     'rm_the_hall_of_records': [('staff', "carrying for the Couriers' Office", 3)],
     'rm_wetink_lane_scriveners': [k('scribe', 'scriptorium'), ('help', None, 1)],
-    'rm_the_slate_ledger': [k('keeping the taproom', 'inn')],
     # The Great Palace.
     'r2_palace_antechamber': [('staff', 'chancellor of the Council', 1), ('staff', 'usher in the Antechamber', 2),
                               ('staff', 'herald of the Great Palace', 1)],
@@ -385,17 +419,19 @@ OUTDOOR = {
     # The food rebalance: Market Square's and the Rag Market's stalls sell food (bread, meat, cheese, preserves, greens and
     # fruit, fish, hot soup); the herbalist (for players) and the Rag Market's second-hand dealer stay.
     # (Each stall in its old place: the pie stall's keeper bakes, the cheese stall's makes cheese, the soup stall's
-    # ladles soup, the porridge stall's bakes.)
-    'market_square': ['baker on Market Square', 'cheesemaker on Market Square', 'greens stall on Market Square',
+    # ladles soup, the porridge stall's bakes.) A few inns, dairies later: the cheese stall is a sausage butcher's while
+    # there are no dairies (DAIRY), and the two soup stalls bake pies (Market Square) and sell provisions (the Rag Market).
+    'market_square': ['baker on Market Square', dairy('market_square'), 'greens stall on Market Square',
                       'fruit stall on Market Square', 'preserver on Market Square', 'herbalist on Market Square',
-                      'butcher on Market Square', 'ladling soup on Market Square'],
-    'rag_market': ['ladling soup in the Rag Market', 'baker in the Rag Market', 'fishmonger in the Rag Market',
+                      'butcher on Market Square', 'pie baker on Market Square'],
+    'rag_market': ['provisioner in the Rag Market', 'baker in the Rag Market', 'fishmonger in the Rag Market',
                    'greens stall in the Rag Market', 'rag-and-bone dealer, Rag Market', 'butcher in the Rag Market'],
 }
 OUTDOOR_BUSINESS = {'greens stall': 'stall', 'fruit stall': 'stall', 'baker': 'bakery', 'cheesemaker': 'dairy',
                     'preserver': 'preserver', 'ladling soup': 'inn', 'butcher': 'butcher', 'herbalist': 'herbalist',
+                    'pie baker': 'bakery', 'sausage butcher': 'butcher', 'provisioner': 'provisioner',
                     'fishmonger': 'fishmonger', 'rag-and-bone dealer': 'rag_and_bone'}
-HALL_KEEPERS = [('butcher in the Market Hall', 'butcher'), ('cheesemaker in the Market Hall', 'dairy'),
+HALL_KEEPERS = [('butcher in the Market Hall', 'butcher'), dairy('r2_market_hall'),
                 ('cooper in the Market Hall', 'cooperage'), ('carpenter in the Market Hall', 'carpenter'),
                 ('preserver in the Market Hall', 'preserver'), ('provisioner in the Market Hall', 'provisioner')]
 GATE_POSTS = {'N': 2, 'E': 2, 'S': 2, 'harbour': 1, 'cinder': 1, 'customs': 1}
@@ -510,6 +546,7 @@ LEISURE = ('at home in the heights', 'reading in the gardens', 'walking the gard
 # Rag Market stalls should be run by middle class adults before sump adults"), and they come first: a Sump keeper there
 # counts against the plan more than one at another counter, so the class pass gives them to the Commons before any other
 # till it can't fill from the middle class. (The tray sellers crying wares beside them are waged street work, lower.)
+# (Since a few inns, the Soup Kitchen has no till (GATHERING); it stays listed for when it has one again.)
 RAG_FIRST = ('rag_market', 'rm_the_soup_kitchen')
 CLASS_SCORE = {('upper', 'upper'): 1, ('middle', 'middle'): 1, ('lower', 'lower'): 1, ('upper', 'lower'): -1,
                ('lower', 'upper'): -2}
@@ -731,6 +768,11 @@ class Placement:
             room = rec['rooms'][0]['id']
             if spot and len(spot) == 3:
                 room = next(r['id'] for r in rec['rooms'] if r['z'] == spot[2])
+            now = self.current.get(pid) or {}
+            if not spot and now.get('workLabel') == label and (now.get('work') or {}).get('cell') in \
+                    {r['id'] for r in rec['rooms']}:
+                spot = (now['work']['x'], now['work']['y'])             # (Their post now: the spot they work at.)
+                room = now['work']['cell']
             work = self.spot_near(room, spot[0], spot[1]) if spot else None
             self.plan[pid].update({'work': work or self.work_spot(rec, 'staff'), 'business': None, 'role': 'civilian',
                                    'post': 'staff', 'template': label, 'record': record, 'route': '', 'kept': False,
@@ -1201,8 +1243,9 @@ class Placement:
                 (rec is not None and rec.get('kindOf') in ('villa', 'seat'))
             if seat or (rec is not None and not spec_posts and p['role'] != 'merchant'):
                 # A House's own people keep their posts at home (heads, family, servants), and so does anyone whose
-                # workplace is kept and has no list of posts (the estates' stables, the summerhouses).
-                if rec is not None and not label_problems(p['workLabel'], None, clergy=is_clergy(p['workLabel']),
+                # workplace is kept and has no list of posts (the estates' stables, the summerhouses); not a tavern
+                # without its till (GATHERING), whose helpers' work is gone.
+                if rec is not None and target not in GATHERING and not label_problems(p['workLabel'], None, clergy=is_clergy(p['workLabel']),
                                                           head=house_head(p['workLabel'])):
                     jobs[pid] = {'kind': 'kept', 'record': target, 'role': p['role'] if p['role'] != 'merchant'
                                  else 'civilian', 'work': self.keep_spot(p['work'])}
@@ -1251,6 +1294,9 @@ class Placement:
                                                                            'running errands', 'sweeping'))]
         recruits += [pid for pid in adults if idle(pid) and 18 <= self.people[pid]['age'] <= 45 and
                      not self.people[pid]['work'] and self.people[pid]['role'] == 'civilian' and pid not in recruits]
+        # Those of the Watch in the world as it is now first, in the same order, so a rewrite keeps them in it (a few
+        # inns: a tavern's helper whose work went is not taken into the Watch in a guard's place).
+        recruits.sort(key=lambda pid: (self.current.get(pid) or {}).get('role') != 'guard')
         for q in list(guard_posts):
             if not recruits:
                 break
@@ -1337,7 +1383,9 @@ class Placement:
         # Those of a House's grounds keep their work outdoors there (its gardens and gate).
         grounds = {'estate_mossgrave': 'estate_mossgrave', 'estate_fell': 'estate_fell', 'estate_grayrock':
                    'estate_grayrock', 'greatly': 'greatly', 'rise': 'mansion', 'palace': 'palace'}
-        for pid in [x for x in adults if idle(x) and self.people[x]['age'] <= 69]:
+        # (Not those in a pool now: the class pass put them there, and they are kept there below.)
+        for pid in [x for x in adults if idle(x) and self.people[x]['age'] <= 69
+                    and (self.current.get(x) or {}).get('workLabel') not in pool_labels]:
             home = self.plan[pid]['home']['cell']
             area = self.room_record[home]['area'] if home in self.room_record else None
             label = self.people[pid]['workLabel']
@@ -1571,7 +1619,10 @@ class Placement:
             if ev:
                 room = self.records[ev]['rooms'][0]['id'] if ev in self.records else ev
                 load[ev] += 1
-                entry['evening'] = self.floor(room)
+                now = (self.current.get(pid) or {}).get('evening')
+                # (The same place as now: the spot they spend it at, so a rewrite keeps the evenings as they are.)
+                entry['evening'] = (now and now['cell'] == room and self.spot_near(room, now['x'], now['y'])) or \
+                    self.floor(room)
                 entry['eveningPlace'] = ev
             else:
                 entry['evening'] = dict(home) if home else None
@@ -1922,6 +1973,24 @@ def gerund(verb):
     return base + 'ing'
 
 
+def job_lines():
+    """Every line of backstory the people's-text passes write for a job (TRADE_TEXT's, CLASS_BACK's, the Watch's, the
+    abbey's and GENERIC_BACK), as templates."""
+    out = [line for t in TRADE_TEXT.values() for line in t[5]] + [line for v in CLASS_BACK.values() for line in v]
+    return out + list(GENERIC_BACK) + ["{first} took the Watch's coat when the city wanted guards, and has kept it on.",
+                                       "{first} came to the abbey's work when it wanted hands, and stayed."]
+
+
+def old_job_lines(story, first, keep=None):
+    """A backstory without the lines the people's-text passes wrote for an earlier job (`keep` stays)."""
+    for t in job_lines():
+        pattern = re.escape(t).replace(re.escape('{first}'), re.escape(first)).replace(re.escape('{name}'), r"[^.]+?")
+        for m in list(re.finditer(r'(?:^|\s)(' + pattern + ')', story)):
+            if m.group(1) != keep:
+                story = story.replace(m.group(1), '', 1)
+    return re.sub(r'\s{2,}', ' ', story).strip()
+
+
 def person_text(person, entry, label, before_label, names):
     """A placed NPC's description, greeting and backstory for their post: ({field: new text} for what changes, why):
     'job' when their job changed in this write, 'stale' when the work in their text no longer fits it, 'grammar' for a
@@ -1952,10 +2021,15 @@ def person_text(person, entry, label, before_label, names):
             out['description'] = f'{desc[0]}, {phrase}.'
         out['greeting'] = f'{greet[0] if greet else "Good day to you."} {line}'
         if changed:
-            extra = back[hash_pick(person['id'], len(back))].format(first=person['name'].split()[0],
+            first = person['name'].split()[0]
+            extra = back[hash_pick(person['id'], len(back))].format(first=first,
                                                                     name=names.get(entry.get('record'), '') or 'it')
-            if extra not in person['backstory']:
-                out['backstory'] = f'{person["backstory"].rstrip()} {extra}'.strip()
+            # (A few inns, dairies later: the lines these passes wrote for an earlier job go, so a cheesemaker turned
+            # docker no longer "keeps the cheeses turned to the day"; the NPC's own backstory stays.)
+            story = old_job_lines(person['backstory'], first, keep=extra)
+            if extra not in story:
+                story = f'{story.rstrip()} {extra}'.strip()
+            out['backstory'] = story
     elif broken:
         why = 'grammar'
         out['greeting'] = f'{greet[0]} {line}'

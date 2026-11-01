@@ -2423,3 +2423,100 @@ write keeps its map").
   a server build), `test_rename_house.py`, `test_city_capacity.py` pass; `test_map_editor.py` fails only the known
   Greyfen 11-vs-10. `world_check` on build 50 (6:00-8:00, no player): 828 places, 0 failures, money conserved, 0
   without a route.
+
+### A few inns, dairies later (2026-10-31)
+
+Branch `r2-inns-dairies`, from `ridgemere2` (f9ef617). Doc 68 ("The first simulations", 5 and 13.15): the 15 inns cover
+.39 of their wages and the 4 dairies .41, so either fewer tills or dearer goods. The user (verbatim): "Have a few inns, we
+will put in dairies later". Backup before: `Saved/Backups/ratw_ridgemere2-before-inns.dump` (main repo). The write moved
+DEV from revision 55 to 56 (57 with the editors' reload; build 51), **on the same map** (`map-20261031-6b080cecb7f6`:
+no room was refitted, so the layout's fingerprint is unchanged).
+
+**Inns: five, one to a quarter** (`ridgemere2_people.INNS`), each a keeper and two helpers (`INN_HELP`; one before): the
+Knucklebones (the Sump; the Mercy, kept), the Sailors' Rest (the wharf; Mab Carlisle's), the Grey Gull Inn (the Commons),
+the Grey Goose cookshop (Northgate) and the Slag & Anchor (the Cinders). The other ten inn tills:
+
+| Was (an inn) | Now |
+|---|---|
+| the Drowned Lantern, the Tarred Rope (the wharf), the Bilge, the Rainbarrel, the Soup Kitchen (the Sump), the Black Tun, the Last Lamp (the Commons), the Slate & Ledger (the administrative sector) | **evening places without a till** (`GATHERING`, with their old posts for putting a till back): nobody keeps the tap; each has a new description (`ridgemere2.GATHERING_TEXT`: the regulars bring their own jugs, the soup pot gone cold); the residents spend their evenings there as before (the same 40 a place, the same streets) |
+| "ladling soup on Market Square" | "pie baker on Market Square" (a bakery) |
+| "ladling soup in the Rag Market" | "provisioner in the Rag Market" (still a Rag Market stall: middle class first) |
+
+Kept as evening places rather than refitted: the city needs its evening rooms (the eight hold 215 of an evening; the five
+inns 129), a tavern's room is not a shop's (`refit_shop` fits a shopfront), and refitting would change the map.
+
+**No dairies for now** (`ridgemere2_people.DAIRIES = False`; `True` puts the four back as they were: `DAIRY` holds each
+place's dairy posts or label and its stand-in, `ridgemere2.DAIRY_SHOPS` the two shops' trade and text):
+
+| Was (a dairy) | Now |
+|---|---|
+| The Round and Rind (Commons, a new shop laid out as a provisioner's) | a provisioner: "Sacks of oats and flour, smoked fish and sides of bacon with the rind on" (the name kept) |
+| Vane & Daughters (Commons, refitted a cheesemonger's in the food rebalance) | a provisioner, not refitted: its press stands idle "until the dairies send again" |
+| "cheesemaker on Market Square" | "sausage butcher on Market Square" |
+| "cheesemaker in the Market Hall" | "baker in the Market Hall" |
+
+**Nobody's food depends on them.** Residents buy among the foods the city sells, so cheese drops out of the choice and
+its share goes to the rest (`city_capacity.py` already worked so; documented, and a test: without a dairy the other food
+trades sell more and the food spending stays about the same). The Country's basket has no dairy good; the comforts'
+`cheese` (`country.json`) is skipped while nobody sells it (`Society`'s comforts buy only what a till has), and the
+Watch's 0.2 cheese a day goes unsold (30p a day, listed). **`country.json` is unchanged.**
+
+**People.** The same 559 placed, the same homes and families (no household moved), the Watch and the clergy as they
+were. 26 labels changed: six in place (the two dairy shops' keepers, the two dairy stalls' and counter's, the two soup
+stalls'), and 20 NPCs changed post:
+
+- the eight taverns' keepers and helpers: Piet Slagcot (the Drowned Lantern) bakes in the Market Hall, Runa Gullley
+  (the Last Lamp) is its carpenter, Thyra Plankridge (the Slate & Ledger) its provisioner, Winifred Cinderworth (the
+  Bilge) a baker on Market Square, Karin Ashgate (the Soup Kitchen) keeps the Knucklebones' taproom and Hollis Gullmore
+  (the Black Tun) the Slag & Anchor's; Lavinia Bilgedale (the Tarred Rope) and Ottilie Dripdale (the Rainbarrel), lower
+  class, and the helpers Hanne Sootham, Orm Nailhand, Ottilie Slagley and Ansel Kelpford go to the piers; Dirk Mallory,
+  the Rainbarrel's 15-year-old helper, to lessons;
+- the class pass then gave the Commons keepers the tills the Sump, the Cinders and the wharf had (Rag Market first):
+  Ada Greyhand, Agna Dripridge and Runa Ashridge (the Market Hall) and Isolde Brineton (Market Square) to the piers;
+  Ansel Wickdale and Lotte Greyley, who kept the Knucklebones' and the Slag & Anchor's taprooms, help there now;
+- the inns' second helpers, from the piers: Berit Mudton (the Sailors' Rest), Leif Fogcot (the Grey Gull), Osric
+  Wetford (the Grey Goose).
+
+Each took the post's text (description, greeting, a backstory line; no pronouns, no "dog"), and the lines these passes
+wrote for an earlier job are taken out of the backstory first (`old_job_lines`: Ivo Tarmarsh no longer "keeps the
+cheeses turned to the day" as a sausage butcher); the NPC's own backstory stays. **A post's hours go with it**
+(`ridgemere2.post_hours`): whoever takes another post takes the hours its holders keep (a counter by its spot, a pool by
+its label, a till or a helper by the building), so Piet bakes 6-16 and Karin keeps the taproom 10-23.30.
+
+**Results.** 65 generator checks pass (a new one: five inns, one to a quarter, each with its helpers; no dairy while
+`DAIRIES` is off; the taverns without a till have no post and are still evening places).
+
+| | Before (build 50) | After (build 51) |
+|---|---|---|
+| Inns (keepers + hands) / keeper-days | 15 + 9 / 15.8 | 5 + 10 / 16.1 |
+| Dairies | 4 + 3 / 9.2 | 0 / 0 |
+| Bakery, butcher, provisioner | 8 + 6, 7 + 7, 7 + 5 | 10 + 6, 8 + 7, 10 + 8 |
+| Food trades | 58 businesses, 99 staffed for 83.2 keeper-days (119%) | 50, 92 for 77.9 (118%); none below half |
+| Merchants (tills) | 110 | 102 |
+| Jobs by class | 366/396 (92.4%) | 374/396 (94.4%): upper 25/26, middle 168/179, lower 181/191 |
+| Wages (`city_loop.py`) | 110 keepers, 116 hands, 30 watch, 104 public, 91 the Country's | 102, 116, 30, 104, 98 (the eight keepers now dockers, the Country's) |
+| A day's wages | tills 2,468p, treasury 1,072p, the Country 728p | 2,356p, 1,072p, 784p |
+
+Minor Houses without an upper job, and larger businesses kept from the Sump, the Cinders or the wharf: none; the Rag
+Market's stalls all middle class. (The food demand fell from 83.2 to 77.9 keeper-days: some of the cheese's share goes
+to goods resold, not made: fish, raw meat.)
+
+**Rewrites keep it** (fixed here; each found by the second plan): a tavern's helper whose work went is not taken into
+the Watch in a guard's place (the recruits who are of the Watch now come first); an estate's resident the class pass
+sent to the piers stays there instead of going back to the grounds; the House posts and the evenings keep the spot they
+have now. A second plan from the written world changes nothing (labels, homes, work and evening tiles, text, hours);
+`rename_house.py --dry-run` 0 changes.
+
+**Checks:** `test_ridgemere2.py` (33; new: a few inns and the dairies switch, a post's hours go with it, an old job's
+line dropped), `test_city_capacity.py` (7), `test_rename_house.py` pass; `test_map_editor.py` fails only the known
+Greyfen 11-vs-10. `world_check` on build 51 (6:00-8:00, no player, `--economy`, `RATW_DATA_DIR`): 828 places, 0
+failures, money conserved, 0 without a route (497 at their place at 8:00, 62 on their way).
+
+**For the user and the economy runs:**
+
+- `city_loop.py` puts the five inns at 122% of their crews' hours (residents' meals 130 h and the Country's cider 17 h
+  against 120): they will sell out and the residents eat elsewhere, which is the point; a sixth inn (the Slate & Ledger,
+  for the administrative sector) or a third helper each would bring them under 100% if the runs show hunger at the
+  inns' hours.
+- To bring the dairies back: `DAIRIES = True` in `ridgemere2_people.py`, then the write (Vane & Daughters is refitted
+  again, so the map changes then).

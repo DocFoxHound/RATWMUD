@@ -163,6 +163,64 @@ class PeoplesText(unittest.TestCase):
         self.assertIn(added.strip(), [x.format(first='Hanne', name='The Records Office')
                                       for x in PP.CLASS_BACK['middle/office']])
 
+    def test_a_job_changed_again_drops_the_old_jobs_line(self):
+        # A few inns, dairies later: a cheesemaker who goes to the piers no longer keeps the cheeses turned.
+        cheese = PP.TRADE_TEXT['dairy'][5][1].format(first='Hanne')
+        person = dict(self.PERSON, backstory=f'{self.PERSON["backstory"]} {cheese}')
+        entry = {'post': 'pool', 'record': 'pier', 'template': 'unloading ships at the piers'}
+        out, why = PP.person_text(person, entry, 'unloading ships at the piers', 'cheesemaker in the Market Hall', {})
+        self.assertEqual(why, 'job')
+        self.assertNotIn(cheese, out['backstory'])
+        self.assertTrue(out['backstory'].startswith(self.PERSON['backstory']))
+        self.assertEqual(PP.old_job_lines(person['backstory'], 'Hanne'), self.PERSON['backstory'])
+
+    def test_a_few_inns_and_the_dairies_switch(self):
+        from worldgen import ridgemere2 as R
+        inns = {k for k, v in PP.POSTS.items() if any(it[0] == 'keeper' and it[3] == 'inn' for it in v)}
+        self.assertEqual(inns, set(PP.INNS))
+        self.assertFalse(set(PP.GATHERING) & set(PP.POSTS))
+        self.assertTrue(set(PP.GATHERING) <= set(R.GATHERING_TEXT))
+        stalls = [b for v in PP.OUTDOOR.values() for b in (PP.OUTDOOR_BUSINESS[x.split(' on ')[0].split(' in ')[0]
+                                                                                 .split(',')[0]] for x in v)]
+        self.assertNotIn('inn', stalls)
+        self.assertFalse(PP.DAIRIES)
+        businesses = {it[3] for v in PP.POSTS.values() for it in v if it[0] == 'keeper'} | set(stalls) | \
+            {b for _, b in PP.HALL_KEEPERS}
+        self.assertNotIn('dairy', businesses)
+        for key, (on, off) in PP.DAIRY.items():
+            self.assertEqual(PP.dairy(key), off)
+        try:
+            PP.DAIRIES = True                                  # Put back, every place is a dairy's again.
+            for key, (on, off) in PP.DAIRY.items():
+                self.assertEqual(PP.dairy(key), on)
+            self.assertEqual(R.dairy_business(), 'dairy')
+            self.assertEqual(R.dairy_shop('rm_vane_daughters')[0], 'cheesemaker')
+            self.assertEqual(PP.business_for(PP.DAIRY['market_square'][0]), 'dairy')
+        finally:
+            PP.DAIRIES = False
+        self.assertIsNone(R.dairy_shop('rm_vane_daughters')[0])  # (Not refitted while a provisioner: the map stays.)
+
+    def test_a_posts_hours_go_with_it(self):
+        from types import SimpleNamespace
+        from worldgen import ridgemere2 as R
+        city = SimpleNamespace(records=[{'key': 'tap', 'rooms': [{'id': 'tap_r'}]},
+                                        {'key': 'r2_market_hall', 'rooms': [{'id': 'hall_r'}]}])
+
+        def npc(i, role, label, cell, x, y, start, end):
+            return {'id': i, 'role': role, 'workLabel': label, 'home': {'cell': 'h'},
+                    'work': {'cell': cell, 'x': x, 'y': y}, 'hours': {'start': start, 'end': end}}
+        now = [npc('a', 'merchant', 'keeping the taproom', 'tap_r', 1, 1, 10, 23.5),
+               npc('b', 'civilian', 'helping at The Tap', 'tap_r', 2, 2, 7, 18),
+               npc('c', 'merchant', 'baker in the Market Hall', 'hall_r', 5, 5, 6, 16),
+               npc('d', 'civilian', 'unloading ships at the piers', 'w_ridgemere_0_1', 9, 9, 6, 18)]
+        held = R.post_hours(now, city)
+        self.assertEqual(held.hours(dict(now[2], id='e', work={'cell': 'hall_r', 'x': 6, 'y': 5})),
+                         {'start': 6, 'end': 16})                     # A counter by its spot.
+        self.assertEqual(held.hours(dict(now[3], id='a')), {'start': 6, 'end': 18})     # A pool by its label.
+        self.assertEqual(held.hours(dict(now[1], id='f', workLabel='helping at The Tap')), {'start': 7, 'end': 18})
+        self.assertEqual(held.hours(dict(now[0], id='g')), {'start': 10, 'end': 23.5})  # The till.
+        self.assertNotEqual(held.key(now[0]), held.key(now[1]))
+
     def test_the_minor_houses_text(self):
         for pid, text in PP.MINOR_TEXT.items():
             self.assertIn(pid, PP.MINOR_POSTS)
@@ -237,7 +295,9 @@ class City(unittest.TestCase):
                     if key == 'description':
                         self.assertEqual(PP.split_description(x[key])[0], PP.split_description(b[key])[0])
                     if key == 'backstory':
-                        self.assertTrue(x[key].startswith(b[key].rstrip()), x['id'])
+                        # (Less the lines these passes wrote for an earlier job: a few inns, dairies later.)
+                        own = PP.old_job_lines(b[key], b['name'].split()[0])
+                        self.assertTrue(x[key].startswith(own.rstrip()), x['id'])
                 else:
                     self.assertEqual(x[key], b[key], (x['id'], key))
         self.assertTrue(all(x['home'] for x in p['people'] if x['id'] in fixed))     # (Only the placed.)
