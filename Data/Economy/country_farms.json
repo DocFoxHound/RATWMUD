@@ -62,7 +62,7 @@
    "price": "year",
    "priceFactor": 101,
    "revenueADay": [208.6, 197.5, 224.7, 201.2],
-   "wolvesItCanPay": 20,
+   "wolvesItCanPay": 24,
    "farms": [
     {
      "id": "grain_farm_1",
@@ -150,7 +150,7 @@
    "price": "season",
    "priceFactor": null,
    "revenueADay": [523.7, 391.0, 431.7, 565.1],
-   "wolvesItCanPay": 44,
+   "wolvesItCanPay": 52,
    "farms": [
     {
      "id": "orchard_1",
@@ -385,7 +385,7 @@
    "price": "season",
    "priceFactor": null,
    "revenueADay": [973.4, 975.6, 941.7, 983.3],
-   "wolvesItCanPay": 91,
+   "wolvesItCanPay": 110,
    "farms": [
     {
      "id": "cattle_and_dairy_farm_1",
@@ -794,7 +794,7 @@
    "price": "season",
    "priceFactor": null,
    "revenueADay": [379.3, 373.7, 375.5, 428.1],
-   "wolvesItCanPay": 35,
+   "wolvesItCanPay": 42,
    "farms": [
     {
      "id": "eel_and_fowl_marsh_1",
@@ -1030,7 +1030,7 @@
    "price": "season",
    "priceFactor": null,
    "revenueADay": [150.5, 142.5, 140.8, 130.8],
-   "wolvesItCanPay": 12,
+   "wolvesItCanPay": 15,
    "farms": [
     {
      "id": "beekeeper_1",
@@ -1144,7 +1144,7 @@
    "price": "season",
    "priceFactor": null,
    "revenueADay": [116.1, 106.8, 105.8, 114.3],
-   "wolvesItCanPay": 10,
+   "wolvesItCanPay": 13,
    "farms": [
     {
      "id": "salt_works_1",

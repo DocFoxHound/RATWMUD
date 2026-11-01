@@ -58,14 +58,26 @@ game pays and feeds a wolf):
 - **Only the granary sells at a price a year**; fruit keeps the season's price, which steadies the orchards' takings
   (apples are fewest when dearest; at a price a year the plain orchards' winter would be 37p against 36p of wages).
 - **The switch's other costs are counted**: the money the farms' floats and the crews' purses hold (section 3), and the
-  wage support the trades that lose the Country's orders would draw from the treasury (2.6). The toll without the farms'
-  basket is solved again (the Country's basket falls with it).
+  wage support the trades that lose the Country's orders would draw from the treasury (2.6).
 - Salt scales with the fish and meat it is salted for (107p, not 74p); each season is priced at its own mean factor;
   the residents eat NourishADay.
 - Every works site of the other industries has a crew (the woods are 8 sites, not 13; the herbs have none of their
   own; the fibre is a field at each grain farm); per-area wages and crew controls; vegetables are out of the draws after
   the switch; the opening stock is created, not handed over; the NPC pool after the arrivals is counted by working age;
   the old map's names are gone; the footprints are re-derived to the user's scale.
+
+**And the third check's corrections** (all applied):
+
+- **The treasury after the switch** is worked out on the settled years' trades (their wage steps and orders: the short
+  runs are the founding world) and night by night with its surplus and alms (2.6). It costs far more than the last draft
+  said: the trades only the Country's basket kept reach the wage floor still short, so their support never ends.
+- **The wolves the food can pay** on wages alone are solved with the extra crews' own food and spending: 256, not 212.
+- **Without the farms' basket** the comparison keeps the money circulating (every penny on wages instead). The Country
+  then about breaks even, so its margin rests on the farms spending their takings in the city.
+- **The season caps**: after the switch the city draws more meat and grain than the caps allow. A farm's goods are
+  limited by its stock, not by the caps, and an area's goods go into `country_off`, with no fallback to the Country
+  (section 4).
+- The other industries' wolves are whole wolves (30, 14, 7, 7), as `country_farms.json` has them.
 
 Analysis only: no game rule, setting or world is changed, DEV is only read, no simulation was run for this draft.
 Builds on doc 68 (the Country and the city's loop, all its Progress sections), doc 61 (industry of the realm) and doc 60
@@ -79,29 +91,32 @@ Builds on doc 68 (the Country and the city's loop, all its Progress sections), d
 What each food area pays for, its farms, their crews and yields. A day, the 12-year run's settled years. **Revenue** is
 the farms' takings after the switch: the Country's part of what the city's shops pay for the area's goods (the cost of
 the draw less the gate toll; the shop pays the carriage on top), the crews' own food and spending included (2.2).
-**Wolves it can pay**: at the city's wages (a keeper 16p, a hand 10p) if every penny went on wages. **Crew**: what about
+**Wolves it can pay**: at the city's wages (a keeper 16p, a hand 10p) if every penny of its takings went on wages,
+solved with the extra crews' own food and spending, which come back as takings. **Crew**: what about
 half the takings pay, never under a sensible crew for the kind; the other half is the farm's basket of the city's goods
 (2.6). **Yield**: a farm's pieces a day, all its goods but the herds' by-products, season means (each good: 2.4).
 
 | Area | Farm | Revenue a day (all its farms) | Wolves it can pay | Farms | Crew a farm | Yield a farm a day, Sp / Su / Au / Wi | Region (distance) |
 |---|---|---|---|---|---|---|---|
-| grain and flour | grain farm with a water mill | 208p | 20 | **2** | 1 + 4 | 94 / 111 / 114 / 90 | the central plains, each on its own river east of the city (middle) |
-| orchards and vines | orchard with a drying house | 174p | 16 | **2** | 1 + 3 | 102 / 87 / 89 / 126 | a south-facing slope of the central hills (middle); the sheltered valleys of the coast south of the city, cider country (near) |
-| | orchard | 153p | 13 | **3** | 1 + 2 | 71 / 86 / 87 / 57 | a river valley of the central hills, and a valley where the hills meet the plains (middle); the coast's valleys south of the city (near) |
-| | vineyard | 151p | 15 | **1** | 1 + 6 | 44 / 46 / 51 / 36 | the warm south-facing hills at the desert's edge (far) |
-| meat, milk and the herds | cattle and dairy farm | 325p | 31 | **3** | 1 + 4 | 77 / 83 / 81 / 71 | the wet coastal pasture just south of the city (2), the meadows just east of it (1) (near) |
-| | pig farm | 342p | 32 | **3** | 1 + 4 | 36 / 35 / 33 / 34 | the central hills' oak and beech woods, on the mast (middle) |
-| | sheep and goat run | 192p | 18 | **2** | 1 + 3 | 24 / 27 / 24 / 26 | the central hills' downs; the foothills of the northern mountains, with the goats (middle) |
-| | rabbit warren | 110p | 10 | **2** | 1 + 1 | 98 / 94 / 102 / 104 | the dunes and sandy heath of the marsh's coast (middle); the desert's sandy edge (far) |
-| fish and shellfish | sea fishing boat | 269p | 24 | **4** | 1 + 2 | 70 / 57 / 60 / 82 | the sea off the city's wharf (2), a fishing cove on the coast south of the city (near); the marsh's coast (middle) |
-| | lake and river boat | 72p | 6 | **2** | 1 + 1 | 30 / 29 / 28 / 35 | a lake under the northern mountains; the largest river of the plains (middle) |
-| | eel and fowl marsh | 48p | 4 | **1** | 1 + 1 | 40 / 38 / 37 / 46 | the marsh south of the city (middle) |
-| honey | beekeeper | 141p | 12 | **3** | 1 + 1 | 25 / 29 / 28 / 22 | among the orchards of the central hills (middle) and of the southern coast (near); the desert edge's thyme scrub (far) |
-| salt | salt works | 111p | 10 | **1** | 1 + 4 | 103 / 96 / 97 / 104 | the marsh's coast: sea pans, sun in summer, boiled over peat the rest of the year (middle) |
+| grain and flour | grain farm with a water mill | 208p | 24 | **2** | 1 + 4 | 94 / 111 / 114 / 90 | the central plains, each on its own river east of the city (middle) |
+| orchards and vines | orchard with a drying house | 174p | 19 | **2** | 1 + 3 | 102 / 87 / 89 / 126 | a south-facing slope of the central hills (middle); the sheltered valleys of the coast south of the city, cider country (near) |
+| | orchard | 153p | 15 | **3** | 1 + 2 | 71 / 86 / 87 / 57 | a river valley of the central hills, and a valley where the hills meet the plains (middle); the coast's valleys south of the city (near) |
+| | vineyard | 151p | 18 | **1** | 1 + 6 | 44 / 46 / 51 / 36 | the warm south-facing hills at the desert's edge (far) |
+| meat, milk and the herds | cattle and dairy farm | 325p | 36 | **3** | 1 + 4 | 77 / 83 / 81 / 71 | the wet coastal pasture just south of the city (2), the meadows just east of it (1) (near) |
+| | pig farm | 342p | 39 | **3** | 1 + 4 | 36 / 35 / 33 / 34 | the central hills' oak and beech woods, on the mast (middle) |
+| | sheep and goat run | 192p | 22 | **2** | 1 + 3 | 24 / 27 / 24 / 26 | the central hills' downs; the foothills of the northern mountains, with the goats (middle) |
+| | rabbit warren | 110p | 12 | **2** | 1 + 1 | 98 / 94 / 102 / 104 | the dunes and sandy heath of the marsh's coast (middle); the desert's sandy edge (far) |
+| fish and shellfish | sea fishing boat | 269p | 30 | **4** | 1 + 2 | 70 / 57 / 60 / 82 | the sea off the city's wharf (2), a fishing cove on the coast south of the city (near); the marsh's coast (middle) |
+| | lake and river boat | 72p | 7 | **2** | 1 + 1 | 30 / 29 / 28 / 35 | a lake under the northern mountains; the largest river of the plains (middle) |
+| | eel and fowl marsh | 48p | 5 | **1** | 1 + 1 | 40 / 38 / 37 / 46 | the marsh south of the city (middle) |
+| honey | beekeeper | 141p | 15 | **3** | 1 + 1 | 25 / 29 / 28 / 22 | among the orchards of the central hills (middle) and of the southern coast (near); the desert edge's thyme scrub (far) |
+| salt | salt works | 111p | 13 | **1** | 1 + 4 | 103 / 96 / 97 / 104 | the marsh's coast: sea pans, sun in summer, boiled over peat the rest of the year (middle) |
 
-**In all: 2,295p a day of takings, about 212 wolves they could pay on wages alone. 29 farms with crews of 105 (29
-keepers, 76 hands) cost 1,224p a day in wages; their basket is the other 1,071p: 1,059p of the city's goods and 12p of
-carriage out.** The yields feed the city, the crews, the Country's own 92 who stay in the Country, and 10% slack (2.4).
+**In all: 2,295p a day of takings. On wages alone the food areas could pay about 256 wolves, their takings and wages
+then 2,730p a day** (the extra crews' own food and spending come back as takings; today's 2,295p split at 105 crew would
+pay 212). **The recommended 29 farms with crews of 105 (29 keepers, 76 hands) cost 1,224p a day in wages; their basket
+is the other 1,071p: 1,059p of the city's goods and 12p of carriage out.** The yields feed the city, the crews, the
+Country's own 92 who stay in the Country, and 10% slack (2.4).
 Every farm pays its crew in every season, and none has a lean season (section 3).
 
 ## Headline numbers
@@ -113,7 +128,8 @@ Every farm pays its crew in every season, and none has a lean season (section 3)
 - **A wolf costs its farm its wage** (the model, below): 16p a keeper, 10p a hand. The wolf buys its food out of it in
   the city's shops (6.47p a day), and the shops draw that food from the farms: 2.66p of every crew wolf's wage comes
   back to the farms.
-- **The food can pay about 212 wolves** at those wages. **Recommended: 29 farms and 105 crew**, each farm's wages about
+- **The food can pay about 256 wolves** at those wages if every penny went on wages (their takings then 2,730p a day:
+  the extra crews' food and spending come back). **Recommended: 29 farms and 105 crew**, each farm's wages about
   half its takings or its smallest sensible crew; the other half, **1,071p a day, is the farms' basket**: tools, carts,
   barrels, rope, nets and building goods from the city's makers.
 - **How many farms**: a kind keeps its farms while each pays its smallest sensible crew in every season (the user's
@@ -122,9 +138,10 @@ Every farm pays its crew in every season, and none has a lean season (section 3)
   source (sea boats, lake and river boats, the eel marsh).
 - **The Country after the switch** (2.6): it keeps its other goods (woods, mines and metals, stone, fibre, herbs, its
   workshops: 1,158p a day), the Houses' estates and their 100 posts (824p), its patrons (51p). That pays its posts in
-  every season, and 281p is left for its basket: **11% of today's basket survives**, and of its food and drink (cider,
-  salt and smoked fish, wine, brandy) 66p of 598p. The farms' basket is what keeps the Country solvent: its makers draw
-  iron, timber and stone from the Country (361p of its 1,158p).
+  every season (+214p to +359p over them), and 281p is left for its basket: **11% of today's basket survives**, and of
+  its food and drink (cider, salt and smoked fish, wine, brandy) 66p of 598p. The margin rests on the farms spending
+  their takings in the city: their basket's makers draw iron, timber and stone from the Country (361p of its 1,158p).
+  With every penny on wages instead, the Country would be about +17p a day (6p short in summer).
 - **The makers' order book** (2.6): the Country's basket falls by 2,246p a day; the farms' basket (1,059p of goods),
   the crews' food (679p) and the crews' other spending (545p) bring 2,283p, +37p in all. The trades the farms buy from
   keep their orders within 5% (the carpenters, cartwrights, masons, brickworks, plasterers, coopers, sawmills,
@@ -132,12 +149,18 @@ Every farm pays its crew in every season, and none has a lean season (section 3)
   about 18%; the general shop, the chandlers, the vintner and the rag and bone shop 28-31%. The trades only the
   Country's basket kept (the foundry, the ironworks, the distillery, the scriptorium, the paper mill, the charcoal
   burners, the cartographer) lose 89%, the brewery 39%.
-- **The treasury** (2.6): the toll is 1,595p now and 1,607p after (+0.8%); without the farms' basket it would fall to
-  about 1,380p (-13%), and the Country could not pay its posts (725p against 875p). But the trades that lose the
-  Country's orders would go short of wages, and the treasury's wage support would make it up: **-143p a day at once**
-  (toll +12p, the crews' services' share +10p, wage support +164p). Switched all at once, the treasury would fall about
-  7,200p deep, twice what it holds over its cap; **switched an area at a time over about six months, about 90p** (their
-  wages drift down as fast as their orders go), and with the Country's basket re-weighted it gains over the year.
+- **The treasury** (2.6): the toll is 1,595p now and 1,607p after (+0.8%; with every penny on wages instead of the
+  basket, 1,685p). But the trades that lose the Country's orders go short of wages, and the treasury's wage support
+  makes it up: **-248p a day at once** (toll +12p, the crews' services' share +10p, wage support +269p). Their wages
+  drift down a penny a post every 28 days, but most of the trades only the Country's basket kept (the foundry, the
+  ironworks, the distillery, the scriptorium and the paper mill, the charcoal burners, the apothecary, the cartographer,
+  the paintworks, the armoury) reach the wage floor still short: **-61p a day for good**. Replayed night by night over
+  each settled year, switching all at once leaves 11,000-36,000p of the first year's surplus unpaid (the alms to the
+  poorest households and the works: half to nine tenths of it), runs the treasury 1,400-2,200p under its path, and
+  leaves 3,900-29,100p of the losers' support unpaid. **Recommended: re-weight the Country's basket and switch an area
+  at a time** (open questions 3 and 5): -201p a day once every area is on, -11p once the wages have drifted; in the
+  first year 1,700-4,900p less surplus (7-12% of it), the treasury 120-770p under its path, and up to 3,190p of support
+  unpaid in the years it touches its cap.
 - **The money the switch holds** (section 3): the farms' floats (2,448p) and the crews' purses once settled (6,280p,
   60p a head: a household buys comforts and services only from what is over 40p a head): **8,728p, 17% of the realm's
   money**, more than the treasury holds. Taken from the city's circulation it would push the residents' purses under the
@@ -173,7 +196,10 @@ One model throughout, as the code has it:
   the basket). A farm's basket built the same way pays it too.
 - **The treasury makes up short tills.** `supportWages` (about line 1117) pays `wageSupport` (100%) of what each till
   could not pay its posts tonight, from what the treasury holds over `treasuryCap` (2,000p); `judgeWages` lowers a till's
-  wages a penny a post every `wageDriftDays` (28) it was short on most days, to the floor at most.
+  wage step a penny every `wageDriftDays` (28) it was short on most days, each post to the floor at most (so once a
+  till's hands are at the floor, a step lowers only its keeper). Its own posts and the alms (`giveAlms`) are paid from
+  what it holds over its float (200p), not its cap; last each night, what it holds over `treasuryCap` and `surplusKeep`
+  (6,000p in all) goes out as its surplus (`spendSurplus`: 80% to the poorest households, 20% to public works).
 
 So a farm's crew are paid wages and are households in the city's loop. Their food (6.47p a wolf a day at the shops'
 prices, the residents' diet) comes back to the farms as the shops' draws (2.66p a wolf after the toll), with 0.16p to
@@ -218,6 +244,12 @@ solves it season by season (`solve`), and each farm's basket over the year from 
 - **Who each draw ends with** (`streams`): a draw ends in its product (the good, resold; else the craft's output), and
   the product's buyers share it by their pieces: the residents' food, the residents' other buying, the Country's basket;
   a product neither buys is the city's (the treasury's works, the patrons, a maker's stock).
+- **The trades as they stand in the settled years** (the treasury, 2.6): the short runs are the founding world (559
+  residents, every till's wage step about nought), so each trade's posts are paid at its mean wage step over the
+  settled years (the loop file's per-till records, every 28 days; their running sums of wages owed and profit are empty
+  at those snapshots, which fall on the tills' judgement days), and its tills pay them from their margin on its orders
+  now (the order book's sales, scaled, times the short runs' margin on a penny). **The treasury's nights**: the long
+  run's economy lines, day by day (`replay`; with nothing switched it gives the long run back to the penny).
 - `python3 tools/country_industry.py measure ... --world EXPORT/world.ratw --out MEASURED.json`, then `report MEASURED
   ECONOMY.jsonl --unplaced U.json --units Data/Economy/country_farms.json` prints every table below (the loop file is
   found beside the economy file, or `--loop`), and `--real-check` the real-yield cross-check (2.5). The measured file
@@ -256,9 +288,12 @@ intake (after the toll); the swing of the season's pennies against the year's me
 - **The pennies follow the season prices more than the pieces do**: grain and fruit are cheapest at harvest (summer and
   autumn, 89-96%) and dearest in winter and spring (109-130%), so the orchards take 805p in winter for fewer apples than
   the 532p of autumn. Meat (no season) and fish (more in winter, cheaper then) are nearly flat.
-- **Where the season caps bind** (the settled years): meat draws 317-330 a day against a cap of 330 all year; fish
-  binds in spring, grain in winter and spring, honey and fruit in winter. The farms' yields carry 10% slack, so they can
-  send a little more than the caps allow today (raise meat's `normal` with them).
+- **Where the season caps bind** (the settled years): meat draws 317-330 a day against a cap of 330 all year; fish binds
+  in spring, grain in winter and spring, honey and fruit in winter. **After the switch the city draws well over the
+  caps**, the crews' food among it: meat 376-388 a day against 330 in every season (14-18% over, before the yields'
+  slack), grain 148 against 131 in spring, 177 against 171 in summer and 142 against 126 in winter; the preserved goods
+  in spring, honey in winter and fish in spring and summer come right to theirs. So a farm's goods are limited by its
+  stock, not by the caps, which stay for the Country's own goods (section 4, Phase B).
 - **Wine is drawn all year** (17-20 a day in every season), the autumn short run's gap filled in from the long run (How
   it was measured); the city's own press and brewery make another 7-12 a day from grapes.
 
@@ -511,11 +546,14 @@ Houses' estates and their 100 posts in the city, its patrons, and its carriage. 
 | herbs | 7p | 8p |
 | country workshops' goods (the cart wheels' and barrels' iron hoops among them) | 340p | 420p |
 
-Its takings over its posts and patrons are +214p to +359p in every season, so it pays its posts all year. **The farms'
-basket is what keeps it solvent**: 361p of its 1,158p comes from the farms' basket's makers (the cart wheels, barrels,
-nails, planks, stone and lime draw iron, timber and stone from the Country). Without the farms' basket (solved again,
-every basket drawing again) the Country takes in only 725p against 875p of posts and patrons, its basket falls to
-nothing, and it could not pay its posts.
+Its takings over its posts and patrons are +214p to +359p in every season, so it pays its posts all year. **That
+margin rests on the farms spending their takings in the city**: 361p of its 1,158p comes from the farms' basket's
+makers (the cart wheels, barrels, nails, planks, stone and lime draw iron, timber and stone from the Country). If the
+farms spent every penny on wages instead (about 256 crew, solved with their food and spending), the crews' buying
+would draw less from the Country: it would take in 892p against 875p of posts and patrons (+6p, -6p, +61p and +9p by
+season), so about 6p short in summer, its basket about 19p. The basket keeps the margin comfortable. (Farms that kept
+what is over their wages, 105 crew and no basket, are not a steady state: about 1,016p a day would pile up in their
+tills, out of circulation.)
 
 **The farms' basket**: each farm spends what its till holds over its crew's wages and its reserve (section 3) on the
 city's goods a farm uses: cart wheels and axles, barrels and iron hoops, sickles, farm gear, saws, nails, fittings,
@@ -591,59 +629,99 @@ the cartographer (89%), the paintworks (58%), the armoury (47%), and the brewery
 smaller basket is the lever (open question 3): **re-weighted to the goods the farms don't buy and no food or drink**,
 its 299p goes to those trades, their worst losses fall to 50-60% (the distillery loses all its Country orders: its
 brandies are drink, which the re-weighted basket doesn't buy), and the farm goods' trades give up the Country's last
-11-16%.
+11-16%. It also keeps most of those trades off the treasury's wage support for good (below).
 
 **The treasury**. The toll is 1,595p now (1,135p on the residents' and the city's draws, 459p behind the Country's
 basket). After: **1,607p (+0.8%)**: the residents' 1,135p, the Country's smaller basket 51p, the crews' food 138p and
 other spending 107p, the farms' basket 176p. The farms' goods still pass the gates as store draws do, so they pay the
 toll; the farms' basket draws the same kinds of goods the Country's did (timber, iron hoops, stone, lime) and puts most
-of the toll back. **Without the farms' basket the toll would fall to about 1,380p (-13%), and the Country could not
-pay its posts.** The crews' services bring the treasury its 30% share (`servicesCityShare`): 10p a day.
+of the toll back. With every penny on wages instead of the basket (about 256 crew) the toll would be about 1,685p
+(+6%): the crews' own food and spending pass the gates too. The crews' services bring the treasury its 30% share
+(`servicesCityShare`): 10p a day.
 
 But the toll is not the treasury's whole change. The losing trades' tills go short of wages, and `supportWages` makes up
-100% of each till's shortfall from what the treasury holds over its cap. By trade (the short runs' wages, keepers'
-profit and wage support, the year's mean; a lost penny of orders costs a till its margin on it, its draws, carriage,
-city inputs and services' share off):
+100% of each till's shortfall from what the treasury holds over its cap. **Each trade as it stands in the settled
+years** (the short runs are the founding world: 559 residents, every wage step at nought): its posts' wages at its wage
+step there (the loop file: the brewery +9.7p a post, the foundry +6, the smithy -2.2, the apothecary and the charcoal
+burners -5.2), and what its tills can pay them, its margin on its orders now (the order book's sales times the short
+runs' margin on a penny: in the short runs a trade's wages and keepers' profit were its margin, 2,958p against 3,091p in
+all). By the trades' sums they are short 143p a day and have 457p to spare, against the long run's own wage support of
+117p and keepers' profit of 535p (within a trade, one till's spare and another's shortfall net). A lost penny of orders
+costs a trade its margin on it. A loser short on most days lowers its wage step a penny every 28 days, each post to the
+floor (7p) at most, so once its hands are there a step lowers only its keepers (the switch all at once, over its first
+year):
 
-| Trade | Tills / posts | Wages paid now | Keepers' profit now | Wage support now | Orders, change | Of it its margin | Wage support: change at once | Once its wages have drifted down | Months to drift |
-|---|---|---|---|---|---|---|---|---|---|
-| brewery | 3 / 5 | 55p | 36p | 3p | -121p | 29% | +2p | +0p | 1 |
-| foundry | 1 / 3 | 30p | 27p | 0p | -103p | 48% | +22p | +13p | 3 |
-| smithy | 5 / 10 | 82p | 10p | 23p | -83p | 18% | +15p | -13p | 3 |
-| ironworks | 1 / 5 | 43p | 0p | 3p | -81p | 47% | +38p | +27p | 3 |
-| distillery | 1 / 3 | 30p | 0p | 0p | -69p | 29% | +20p | +11p | 3 |
-| scriptorium | 1 / 2 | 22p | 7p | 0p | -56p | 42% | +16p | +8p | 4 |
-| paper mill | 1 / 2 | 22p | 0p | 0p | -42p | 41% | +17p | +9p | 4 |
-| inn | 5 / 15 | 135p | 15p | 12p | -35p | 33% | +9p | +0p | 1 |
-| charcoal burners | 1 / 2 | 22p | 0p | 0p | -30p | 40% | +12p | +4p | 4 |
-| apothecary | 3 / 5 | 57p | 2p | 1p | -30p | 42% | +11p | +0p | 3 |
-| glassworks | 2 / 5 | 52p | 8p | 0p | -28p | 81% | +15p | +0p | 4 |
-| cartographer | 1 / 2 | 22p | 4p | 0p | -25p | 82% | +16p | +8p | 4 |
-| paintworks | 1 / 2 | 19p | 0p | 2p | -21p | 49% | +10p | +3p | 4 |
-| armoury | 1 / 2 | 22p | 3p | 0p | -19p | 49% | +7p | +0p | 4 |
+| Trade | Tills / posts | Wage step now | Its posts' wages | Its margin on its orders now | Orders, change | Of it its margin | Wage support, change at once | Once its wages have drifted down | Months to drift | Wages the drift takes |
+|---|---|---|---|---|---|---|---|---|---|---|
+| brewery | 3 / 5 | +9.7p | 106p | 87p | -121p | 29% | +34p | -1p | 7 | 35p |
+| foundry | 1 / 3 | +6.0p | 48p | 55p | -103p | 48% | +42p | +15p | 12 | 27p |
+| smithy | 5 / 10 | -2.2p | 94p | 67p | -83p | 18% | +15p | 0p | 3 | 15p |
+| ironworks | 1 / 5 | -1.0p | 41p | 43p | -81p | 47% | +36p | +30p | 6 | 6p |
+| distillery | 1 / 3 | -2.5p | 25p | 23p | -69p | 29% | +20p | +16p | 4 | 4p |
+| scriptorium | 1 / 2 | +1.0p | 24p | 27p | -56p | 42% | +21p | +11p | 7 | 10p |
+| paper mill | 1 / 2 | -1.3p | 20p | 19p | -42p | 41% | +17p | +12p | 5 | 5p |
+| charcoal burners | 1 / 2 | -5.2p | 16p | 14p | -30p | 40% | +12p | +11p | 1 | 1p |
+| apothecary | 3 / 5 | -5.2p | 40p | 42p | -30p | 42% | +11p | +8p | 1 | 3p |
+| glassworks | 2 / 5 | +0.4p | 54p | 58p | -28p | 81% | +19p | +1p | 7 | 18p |
+| tannery | 1 / 3 | +6.7p | 50p | 58p | -28p | 57% | +8p | 0p | 3 | 9p |
+| cartographer | 1 / 2 | +3.2p | 28p | 23p | -25p | 82% | +20p | +6p | 9 | 14p |
+| press | 1 / 3 | +5.3p | 46p | 36p | -24p | 37% | +9p | 0p | 3 | 9p |
+| paintworks | 1 / 2 | -1.6p | 19p | 18p | -21p | 49% | +10p | +5p | 5 | 5p |
+| armoury | 1 / 2 | -2.6p | 18p | 20p | -19p | 49% | +8p | +4p | 4 | 4p |
+| printing house | 1 / 2 | +4.8p | 32p | 32p | -16p | 58% | +9p | 0p | 5 | 10p |
+| jeweller | 1 / 2 | +5.0p | 32p | 30p | -9p | 66% | +6p | 0p | 3 | 6p |
+| cooperage | 2 / 3 | -3.5p | 28p | 24p | -3p | 31% | +1p | -1p | 1 | 2p |
 
-The gainers' tills go short less (the preservers and butchers, short by about 37p and 25p a day now), which the totals
-net:
+**Most of the trades only the Country's basket kept can't drift far enough.** The ironworks' four hands are at the floor
+already and its keeper at 13p, so its wages can fall 6p against a shortfall of 36p; the foundry, the distillery, the
+scriptorium and the paper mill, the charcoal burners, the apothecary, the cartographer, the paintworks and the armoury
+likewise reach the floor still short, and stay on the treasury's support for good (about 120p a day). The brewery, the
+smithy, the tannery, the glassworks, the press, the printing house and the jeweller drift clear (the brewery in 7
+months, its wages from +9.7p). The gainers' tills go short a little less (31p a day: the tailor, the perfumer, the
+builders' yard, the shipwright, the weaver and the small services). In all:
 
 | The treasury's flows a day | The Country's basket as it is | Re-weighted |
 |---|---|---|
 | the toll | +12p | +3p |
 | the crews' services' share | +10p | +10p |
-| the wage support, at once | -164p | -124p |
-| **in all, at once** | **-143p** | **-111p** |
-| once the losers' wages have drifted down (2-4 months) | +26p | +74p |
-| the wages the drift takes from the losers' posts | 169p a day | 186p a day |
-| switched all at once: the treasury's deepest fall over the year | 7,200p | 3,850p |
-| switched an area at a time over six months: its deepest fall | 88p | 85p |
+| the wage support, at once | -269p | -214p |
+| **in all, at once** | **-248p** | **-201p** |
+| the wage support once the losers' wages have drifted down (up to a year) | -82p | -24p |
+| **in all, once drifted** | **-61p** | **-11p** |
+| the wages the drift takes from the losers' posts | 189p a day | 198p a day |
+| the extra support the switch wants in its first year (all at once) | 47,800p | 25,800p |
 
-The treasury holds about 3,370p over its cap (5,367p on average, the cap 2,000p). **Switched all at once, the wage
-support would empty that in about three weeks**; after that the losers' posts are paid short and the treasury sits at
-its cap until their wages have drifted down. **Switched an area at a time over about six months** (open question 5),
-the losers' wages drift down as fast as their orders go and the treasury barely moves; with the Country's basket
-re-weighted it gains over the year (the gainers' smaller shortfalls outweigh the losers'). Either way the drift moves
-about 170-190p a day of wages from the losers' posts to the gainers' (whose keepers' profit rises with their orders):
-that is what the switch does to the city's trades. The toll drifts with the treasury's level (`treasuryDrift`, within
-5 points), so a change of +12p is within its trim.
+**The treasury night by night.** It holds 5,367p on average, about 3,370p over its cap, but the switch's cost is not
+taken from that first: each night, last, what it holds over its cap and `surplusKeep` (6,000p in all) goes out as its
+surplus (in the settled years 106p a day: 85p of alms to the poorest households and 21p of public works), and the alms
+(388p a day) and its own posts are paid from what is over its float (200p), not its cap, so it can fall under the cap;
+only the wage support stops there. So each settled year of the long run is replayed night by night from its first day
+(spring) with the switch added (`replay`: the day's toll and services' share, then the wage support from what is over
+the cap, what it can't pay going unpaid, the alms, then the surplus). Over the nine settled years, the least to the
+most:
+
+| Switched | The surplus not paid out in the first year | The treasury under its own path (the year's mean) | The most under it | Its lowest | The losers' support unpaid |
+|---|---|---|---|---|---|
+| all at once | 10,909-36,065p | 1,359-2,197p | 3,487-4,708p | 216-1,313p | 3,907-29,084p |
+| all at once, re-weighted | 5,597-21,178p | 140-1,681p | 703-4,653p | 216-4,445p | 0-15,573p |
+| an area at a time over six months | 4,023-16,047p | 763-1,626p | 2,835-3,940p | 216-1,955p | 1,557-10,342p |
+| **an area at a time, re-weighted** | **1,698-4,888p** | **118-768p** | **924-2,811p** | **998-4,227p** | **0-3,190p** |
+
+(The long run's own surplus paid out 15,676-66,280p a year, and its lowest was 1,942-4,942p.)
+
+- **Switched all at once**, the extra support lands first on the surplus: half to nine tenths of the year's alms to
+  the poorest households and works orders aren't paid out. The rest takes the treasury 1,400-2,200p under its path on
+  average, to its float in the weak years, and the losers' posts go 3,900-29,100p short of their support.
+- **An area at a time over about six months** (open question 5) lets the losers' wages drift while their orders go.
+  With the Country's basket as it is, the trades only it kept still sit on support: the surplus 4,000-16,000p less, up
+  to 10,300p unpaid.
+- **An area at a time with the basket re-weighted** (open question 3) keeps those trades some orders: the first year's
+  surplus 1,700-4,900p less (7-12% of it), the treasury 120-770p under its path, and 0-3,190p of support unpaid in the
+  years it touches its cap; then -11p a day for good.
+- Either way the drift moves about 190-200p a day of wages from the losers' posts to the gainers' (whose keepers'
+  profit rises with their orders): that is what the switch does to the city's trades. The treasury's own trim
+  (`treasuryDrift`: while its slow level is under 4,675p the toll firms half a point every 28 days; a point of toll is
+  about 50p a day) is not in the replay; it would take up a lasting -11p a day, and part of -61p.
 
 ## 3. Labour and money (item 10)
 
@@ -775,10 +853,11 @@ defaults.**
   them, so the wage drift would never move them), `basketShare` (50: the crew rule's split), `floatDays` (2), `slack`
   (10), `estatePeople` (24) and `otherWorkers` (68: the Country's own table), `openingStockDays` (7), and the `basket`'s
   goods and shares.
-- **Per area**: its goods, `on` (off: the Country still supplies them), `yieldScale` (percent on all its farms' yields),
-  `crewScale` (percent on all its farms' hands, rounded half up), `wages` (`keeper`, `hand`; null: the defaults'),
-  `price` ("year" with a `priceFactor` in whole percent: the granary; or "season": the season groups' price, as
-  now). A percent factor is how a price is moved between whole pennies: no catalogue price changes.
+- **Per area**: its goods, `on` (on: its goods go into `country_off` and only its farms sell them; off: the Country
+  supplies them), `yieldScale` (percent on all its farms' yields), `crewScale` (percent on all its farms' hands, rounded
+  half up), `wages` (`keeper`, `hand`; null: the defaults'), `price` ("year" with a `priceFactor` in whole percent: the
+  granary; or "season": the season groups' price, as now). A percent factor is how a price is moved between whole
+  pennies: no catalogue price changes.
 - **Per farm**: its id, kind, area and place (unset until the map places it); `crew` (keepers, hands) and `minHands`
   (the smallest sensible crew); `wages` (null: the area's, then the defaults'); `basketADay` (the design's mean, its
   carriage out included, for the reports: the basket itself is what is over the reserve); `reserve`; `yield` (pieces a
@@ -790,7 +869,8 @@ defaults.**
   applied live by `economy.sync` (doc 68, "Seasons and the DM's rules"); both audited. The DM sees each farm's till,
   stock, last week's sales, wages and basket.
 - **Tests**: the yields blend by day; a farm's yield scales with its area; a farm's crew scales with its area; wages
-  fall through farm, area, defaults; a farm off returns its goods to the Country.
+  fall through farm, area, defaults; an area switched on puts its goods in `country_off` and its farms sell them past
+  the season's cap; an area switched off takes them out again and the Country supplies them.
 
 **Phase B: modelled producers with virtual crews (the simulation).** Each farm runs without NPCs:
 
@@ -803,10 +883,14 @@ defaults.**
 - **Production**: at the day's turn each farm adds its yield to its stock (`create`, "grown at <farm>"); the Country's
   table takes its share (`consume`, "eaten in the Country": `estatePeople` and `otherWorkers` at the residents' diet);
   stock over its cap spoils (`consume`, "spoiled").
-- **Selling**: the store draw (`drawFromStore`) buys a good first from the farms that hold it (spread by stock, as the
-  Country's purchases are), at the store's markup and the area's price (the year's factor or the season's), the toll and
-  the carriage as now (the shop pays the carriage); the Country only where no farm has it ("Country when short", the
-  per-good switch doc 68, 2 left for "the first farm"). An area's goods go into `country_off` once its farms are on.
+- **Selling**: the store draw (`drawFromStore`) sells a farm-supplied good from the farms that hold it (spread by
+  stock, as the Country's purchases are), at the store's markup and the area's price (the year's factor or the
+  season's), the toll and the carriage as now (the shop pays the carriage). It is limited by the farms' stock, not by
+  the season's cap (`countryLeft`, which stays for the Country's own goods): after the switch the city draws well over
+  today's caps (meat 376-388 a day against 330, grain 148 against 131 in spring: 1a). Once an area is on, its goods go
+  into `country_off` and the Country no longer sends them: the farm draw comes before that refusal, and a farm that runs
+  out leaves the shops without until its stock comes back (the slack and the opening stock guard it, and the gate below
+  counts it). Doc 68's third setting, "Country when short", is not needed and stays unbuilt.
 - **The farms' basket**: like `countryBuys`: each hour the shops are open, what the till holds over its reserve and
   tonight's wages, spread over the basket's goods by their shares, from the makers holding them, a piece at a time; it
   pays its carriage out, as the Country does.
@@ -840,12 +924,12 @@ need at the game's own rates (`crafts.json` producers and the city's crafts' hou
 counted (what it can pay, at most the plausible) are the ones the farms' yields feed (2.4), spread over its works by
 each kind's share of the work, at least one a site (`crew_sites`).
 
-| Industry | Drawn a day | The Country's takings now | After | Wolves it can pay | Workers, the game's rates | Plausible | Counted | Works (where): workers at each |
+| Industry | Drawn a day | The Country's takings now | After | Wolves it can pay (whole) | Workers, the game's rates | Plausible | Counted | Works (where): workers at each |
 |---|---|---|---|---|---|---|---|---|
-| woods: timber, firewood, bark, charcoal | firewood 366, timber 57, planks 24, charcoal 12, bark 10 | 373p | 354p | 31 | 68 | 11 | 11 | 2 logging camps (the conifer forests of the northern mountains' foothills; the central hills' oak woods): 1 + 1; 2 coppices with woodcutters' huts (beside the grain farms' villages; the woods nearest the city: it burns 340-460 firewood a day): 2 + 2; 2 charcoal hearths (the foothill forests, one beside each bloomery): 1 + 1; 2 water sawmills (one below each logging camp): 2 + 1 |
+| woods: timber, firewood, bark, charcoal | firewood 366, timber 57, planks 24, charcoal 12, bark 10 | 373p | 354p | 30 | 68 | 11 | 11 | 2 logging camps (the conifer forests of the northern mountains' foothills; the central hills' oak woods): 1 + 1; 2 coppices with woodcutters' huts (beside the grain farms' villages; the woods nearest the city: it burns 340-460 firewood a day): 2 + 2; 2 charcoal hearths (the foothill forests, one beside each bloomery): 1 + 1; 2 water sawmills (one below each logging camp): 2 + 1 |
 | mining and metals | iron bars 36, iron ore 16, copper ore 5, tin ore 4 | 255p | 187p | 14 | 38 | 38 | 14 | 2 iron mines (two valleys of the northern mountains): 4 + 4; 2 bloomeries (beside them): 2 + 1; 2 copper pits (the northern foothills; the central hills): 1 + 1; 1 tin streams (a stream of the central hills): 1 |
-| stone, lime, clay, sand | clay 51, limestone 28, stone 24, sand 22 | 104p | 102p | 8 | 18 | 18 | 7 | 2 quarries (the central hills' limestone; building stone in the nearest hills east of the city): 3 + 2; 2 clay pits and sand banks (the plains' rivers; the coast south of the city): 1 + 1 |
-| fibre: hemp, flax, linen | hemp 39, cord 28, linen 22, flax 11 | 129p | 87p | 8 | 37 | 18 | 7 | 2 hemp and flax fields (a field of each grain farm, its retting pond on the farm's river): 4 + 3 |
+| stone, lime, clay, sand | clay 51, limestone 28, stone 24, sand 22 | 104p | 102p | 7 | 18 | 18 | 7 | 2 quarries (the central hills' limestone; building stone in the nearest hills east of the city): 3 + 2; 2 clay pits and sand banks (the plains' rivers; the coast south of the city): 1 + 1 |
+| fibre: hemp, flax, linen | hemp 39, cord 28, linen 22, flax 11 | 129p | 87p | 7 | 37 | 18 | 7 | 2 hemp and flax fields (a field of each grain farm, its retting pond on the farm's river): 4 + 3 |
 | herbs | 8 | 7p | 8p | 0 | 1 | 1 | 0 | no works of its own (8p a day pays no one): gathered at the marsh's edge by the eel and fowl marsh's crew and in the central hills' woods; the pennies stay the Country's |
 | country workshops' goods | clay pots 34, wool scarves 29, soap 25, pamphlets 25, iron hoops 10, paper 4 | 340p | 420p | 37 | 29 | 29 | 29 | 2 village potteries (by the plains' clay pits and the southern coast's): 2 + 2; 3 weavers' and soap boilers' cottages (the farm villages: scarves, soap, bandages): 5 + 5 + 4; 2 country presses and paper mills (on the plains' rivers, one nearer the city): 5 + 5; 1 village smithy and tanyard (the grain farms' village: iron hoops, nails, cookpots, a little leather): 1 |
 
@@ -916,22 +1000,23 @@ in the Country; the fields' scale; the map's geography. Still the user's call:
    Recommended: **two vineyards and two salt works**, so neither is a single source ("I don't want it all from single
    sources"), and keep two grain farms. Or keep one, one and two as decided (this doc's numbers).
 2. **The split between crew and basket.** Recommended: half and half (105 crew, a 1,071p basket), so the trades the
-   Country's basket kept busy keep most of their orders. More crew (up to the 212 the takings could pay on wages alone)
-   would take orders from the makers and give them to the food and comfort shops.
+   Country's basket kept busy keep most of their orders. More crew (up to about 256 on wages alone) would move orders
+   from the makers to the food and comfort shops and leave the Country about even (6p short in summer).
 3. **The Country's smaller basket (281p).** Recommended: **re-weight it** to the goods the farms don't buy and no food
    or drink (iron and steel bars, paper, ledgers, maps, ink, charcoal, glass beads, handbells, paint, bandages): the
-   foundry's, ironworks', scriptorium's, paper mill's, charcoal burners' and cartographer's losses fall from 89% to
-   50-60%, the treasury's wage support at once from 164p to 124p a day, and the farm goods' trades give up 11-16% they
-   would otherwise keep (the distillery loses its last 11%). Or leave its shares as they are.
+   trades only it kept lose 50-60% of their Country orders, not 89%, and draw 24p a day of wage support for good, not
+   82p (their wages can't fall under the floor); the farm goods' trades give up the 11-16% they would keep. Or leave
+   its shares as they are.
 4. **The money the switch holds (8,728p).** Recommended: **found it at the switch**: each farm's float and each crew's
    settled purse created when its area is switched on, as the world's money was founded, so the city's purses, tills and
    comforts stay where they are (the realm's money grows 17% for 18% more people). Or keep money never made and let the
    crews fill their purses from their wages, the city's purses about 8p a head thinner, under the 40p comforts line on
    average.
 5. **How to switch.** Recommended: **an area at a time, about a month apart, from spring** (six areas over about six
-   months), so the losing trades' wages drift down as fast as their orders go and the treasury barely moves (its deepest
-   fall about 90p, against 7,200p switched at once, twice what it holds over its cap). Or all at once, with the
-   treasury's cap or its wage support raised for the first months.
+   months), with the basket re-weighted (3): in the first year the surplus pays the poorest households and the works
+   7-12% less (1,700-4,900p), the treasury runs 120-770p under its path, and up to 3,190p of support goes unpaid in a
+   year it touches its cap. All at once would cost half to nine tenths of the year's surplus and up to 29,100p of the
+   losers' support (2.6).
 6. **The farms' wages.** Recommended: fixed at the city tills' settled means in whole pennies (a keeper 16p, a hand
    10p), editable per farm and per area. Or let them drift, which needs the farm's basket counted as its keeper's spare
    (the drift raises a till's wages only when its keeper's profit is at least half its wages).
