@@ -1108,3 +1108,177 @@ open). Each: what it changes, its setting and default, the effect expected, and 
 food), **3** (alms 10p), **4** (treasury cap 2,000p paying short tills' wages) and **5** (the work bank). Then **10**
 (wage rule words), **11** (festivals) and **6** (the float) as small follow-ups, and **8** and **15** as the user's
 choices about the city's trades.
+
+### First fixes (2026-10-31)
+
+Branch `r2-econ-fix1`, from `ridgemere2` (f9ef617), with `ridgemere2` merged at 8c7692c (a few inns, dairies later). The
+first set of section 13 (set 2: proposals 1-5), the wage rule words (10) and the user's decision on the trades that sell
+nothing (8), each a rule with a setting the DM can tune, its default as set 2 measured. The diagnosis's prototype (its
+patches in the main repo's `artifacts/economy/r2/prototype/`) was the starting point; nothing of it is behind an
+environment variable now.
+
+The user, 2026-10-31 (verbatim), on the moneychanger, shipwright, stables, barber, builders' yard and pawnbroker: "Make
+them public services that NPC's have the occasional need to purchase from, but make it items that NPC's buy when they
+have excess money that isn't needed for other things. The money goes partly to the shop owner and to the city."
+
+#### The rules
+
+`Data/Items/country.json`'s new `rules` (the defaults; Core `items::Rules`, its range and a fallback each), a world's own in
+`live.economy.rules` (migration 0058) and its `rule "<name>" N` records; `Society::rule(name)`:
+
+| Rule | Setting | Default | Was | What it does |
+|---|---|---|---|---|
+| 1. Comforts that spend savings | `comfortsMost` (0-100,000), with `comforts.above` and `share` | 200 a day; above **40p** a head, share **20%** | 20 a day; 60p, 10% | A household buys comforts until its day's budget is spent, not stopping at 20 purchases. |
+| 2. Fair food in a household | `fairFood` (0/1) | on | (the old order) | At market the members with least food buy first, everyone to `food.shortDays` (1 day) before anyone to `food.days` (2; that only at the household's market hour), and only foods some member can pay for are picked. |
+| 3. Alms | `almsADay` (0-1,000) | **10p** a head | 7 (a constant, `AlmsADay`, gone) | After the day's wages a household holding less is made up to it, from what the treasury holds over its 200p float. |
+| 4. The treasury's cap | `treasuryCap` (0-100,000,000), `wageSupport` (0-100%) | **2,000p**, 100% | none | At 18:00, after every payer has paid, what the treasury holds over the cap pays `wageSupport` percent of what each short till could not pay its posts, each post the same share of its wage; when it can't cover them all, every short till the same share of its shortfall (the prototype went till by till). Counted as `wage_support`, and in `wages_paid`. Only short tills: a till that pays its posts gets nothing. |
+| 5. The work bank | `workBankHours` (0-1,000) | 0: the business's longest craft and an hour of the crew (at least two hours' worth) | 2 hours' worth | A bug fix: a lone cartographer's 13.9-hour map, the perfumer's oils, the jeweller's rings and the glassblowers' glass can be made (over two days). N > 0: N hours of the crew. `Society::workBankMost`. |
+| 8. The city's services | `services` (0/1), `servicesCityShare` (0-100%), per service on/off, price and frequency | on, **30%** | none | Below. |
+
+#### The city's services
+
+Twelve catalogue items (`items.json`, category `service`, weight 0, source `service`), two for each of the six trades,
+listed in `country.json`'s `services.list` with their business and how often (`every`: a household buys one about once
+every so many days, a fixed roll of the home, the service and the day: nothing saved):
+
+| Business | Service | Price | Every |
+|---|---|---|---|
+| barber | A groom and trim | 1p | 4 days |
+| barber | A tooth drawn | 3p | 60 days |
+| moneychanger | Coin changed | 1p | 7 days |
+| moneychanger | A letter of credit | 5p | 30 days |
+| pawnbroker | A pledge redeemed | 2p | 10 days |
+| pawnbroker | A small loan's fee | 2p | 20 days |
+| stables | A cart hired for a day | 4p | 20 days |
+| stables | A night's stabling | 2p | 20 days |
+| shipwright | A skiff patched | 4p | 20 days |
+| shipwright | Oars mended | 2p | 20 days |
+| builders' yard | A roof patched | 5p | 30 days |
+| builders' yard | A wall limewashed | 3p | 20 days |
+
+- **Only from what is left over.** At the household's market hour, after its food and its needs, the comforts budget
+  (a fifth of what it holds over 40p a head) pays for the services first, each when its roll falls and the budget covers
+  its price, then comforts with the rest. A household at or under 40p a head buys none.
+- **From an open shop of its trade**, the household's community's or else any open one (a roll among them); paid by the
+  member with most.
+- **Done at once, never kept**: the till makes the item, sells it and the buyer uses it up in the same moment ("a service
+  done", "a service", "a service, done at once"), so nothing piles up on a shelf or at home.
+- **The split**: `servicesCityShare` percent of the price from the till to the treasury ("the city's share of a
+  service"; the till's fraction of a penny kept until it makes one), the rest stays in the till, which pays its keeper
+  and hands as any till does (keeper and hands: the posts in its room). The cap's wage support covers them only when the
+  till is short.
+- **A world's own**: `live.economy.services` (0058) and `service "<id>" on|off price N every DAYS` records; a service
+  country.json no longer lists is kept and does nothing.
+
+#### Wage rules: the upper posts
+
+A wage rule may now say which of the world's four wages it pays (`wage`: keeper, hand, public or country; else its
+payer's). Two new rules, first in the list:
+
+- **The treasury, at a keeper's wage (14p)**: "the queen", "the king's daughter", "running the city office". The Crown's
+  household is the treasury's already ("the king's household"), and the City Office is a public office; their heads are
+  paid as heads, not clerks.
+- **The Country (the Houses' estates), at a keeper's wage**: "lending" (Petra Vance) and "overseeing the grayrock wharf"
+  (Aldric Grayrock). The Minor Houses' people are kept by their estates, as the Houses' rule already says; the Grayrock
+  wharf is the House's, like the Wharf Office the Country pays.
+- **No owner was left unpaid**: every House member who keeps a business (Orm Carlisle at the Carters' Yard) is its
+  keeper, paid by its till, and takes its profit. The other upper posts in the city with homes are children ("at her
+  lessons in the Hall") and the retired ("sits and watches the world"), who are fed by their households and the alms.
+- The harbourmaster, the Counting House's overseer and the like stay at a public or Country wage (8p): a head's wage for
+  them is the user's call.
+
+Over the year the upper class's waged households take 21p a day in wages (13p of it the treasury's) and hold 115p; they
+were hungry 21% of the time over the base year's last 65 days, and are not now.
+
+#### The settings: the DM's Economy tab and Atlas's Economy page
+
+- **Migration 0058** (`Database/migrations/0058_rules.sql`): `live.economy.rules` (`{name: N}`, `{}`: country.json's) and
+  `services` (`{id: {on, price, every}}`, stored whole); `live.people_manifest` with a `rule` line a rule and a `service`
+  line a service. `Game::withoutPeople` strips both. **Applied to DEV (`ratw_ridgemere2`) only**, 2026-10-31, after
+  `Saved/Backups/ratw_ridgemere2-before-econ-fix1.dump` and with no server or other writer running: DEV reads the defaults
+  (no records; its export is unchanged). PROD is untouched (at 0054).
+- **Tools** (`tools/world_store.py`, `map_editor.py`): a tier for a world with 0057 but not 0058, whose rule or service
+  settings are refused ("this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and
+  services stay as Data/Items/country.json has them"); its other settings still save. A project's export carries the
+  records.
+- **Routes** (`tools/studio.py`): `GET /api/dm/economy?world=KEY` gains `rules`, `services`, `ruleDefaults` (country.json's)
+  and `serviceList` (each service with its name, price, business and frequency); `POST /api/dm/economy/rules` `{world,
+  set: {name: N | null}}` and `/services` `{world, set: {id: {on?, price?, every?} | null}}` (null: back to
+  country.json's), for dm and admin, audited (`economy.rules`, `economy.services`), each queueing `economy.sync`: the
+  running server applies them at once (`adoptEconomy`). Atlas: `POST /api/atlas/economy/rules` and `/services`. A world
+  without 0058: 409, naming it.
+- **Editor**: `Editor/src/studio/RulesPanel.tsx`, in both the DM's Economy tab and Atlas's Economy page: the eight rules
+  (empty: country.json's, shown as the placeholder; fair food and services as switches) and the services (on, price,
+  every N days, "As country.json" a row).
+- **`world_check --economy`** gains `wage_support`, `services_sold`, `services_spent`, `services_city` and per trade
+  `svc_<business>_sold` and `_spent`; the detail file counts `services`, `services city` and `wages:support` apart.
+
+**Tests.** `Tests/econ_fix_tests.cpp` (new, 549 checks, the real catalogue): the rules' defaults, records and refusals,
+`withoutPeople`, `adoptEconomy`; fair food (a family of three with money for everyone's first day: every member a day's
+food, where the old order gives the first two members two days' and the last none; only food someone can pay for, in a
+hall of roasts); the alms at 10p and at a world's 13p a head; the cap's wage support (none under the cap, the till's whole
+shortfall over it shared by wage, half at 50%, never into the cap, none to a till that pays); the work bank (maps made
+with the default, none at two hours); the heads' posts and their payers; the services (bought by the household with
+savings, never by one under its reserve, at the world's price, 30% to the treasury, 100% at a share of 100, none off or
+when one is off, none ever kept); comforts no longer stopped at 20. Money conserved in each. `country_tests` changed
+where the rules changed what it saw (a child given the household's alms "paid nothing" by the ledger now). All 72 C++
+tests pass. Python: `test_world_store`, `test_studio`, `test_world_sync` (96, a real server applying a rule and a
+service from `economy.sync`), `test_map_editor`, `test_world_build`, `test_dungeon_master`, `test_item_catalog`,
+`test_city_capacity`, `test_world_db`, `test_live_edit` pass but for `test_map_editor`'s Greyfen resident count (11, not
+10), as before. Editor: `tsc` clean, the lib tests 53 of 53, the model's 78 of 79 (the same Greyfen count).
+
+#### The runs
+
+DEV build 51 (the 5 inns, no dairies; its export, nothing written), from Spring 1, `--no-check --deterministic
+--threads 4 --no-profile`, pinned four CPUs a run. Summaries committed in `artifacts/economy/r2/fix1-summary.txt`; the
+jsonl in the main repo's `artifacts/economy/r2/fix1_*`. A year, days 5-364:
+
+| Year | City | Hungry (mean) | Days anyone hungry | Worst hour | Fed (lowest) | Wages paid | Tills short | Profit | Alms | Wage support | Services (city's) | Treasury (5 → 364; low-high) | Gini (5 → 364) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base (the old rules) | build 50 | 16.9 (3.0%) | 351 | 109 | 72.5% | 80.2% | 42.9 | 697 | 488 | - | - | 3,448 → 213 (200-6,725) | .50 → .82 |
+| set 2 (the prototype) | build 50 | 0.07 | 5 | 56 | 89.6% | 99.7% | 28.5 | 1,523 | 388 | 488 | - | 4,380 → 3,760 (1,405-5,543) | .42 → .59 |
+| the old rules | build 51 | 23.8 (4.3%) | 356 | 109 | 72.0% | 82.6% | 33.4 | 656 | 408 | - | - | 2,817 → 217 (200-4,440) | .50 → .81 |
+| **first fixes (every default)** | build 51 | **0.09** | 5 | 70 | 89.7% | **99.6%** | 18.5 | 1,230 | 376 | 287 | 123p (37p) | 4,077 → 6,999 (2,534-7,972) | **.43 → .58** |
+| the services off | build 51 | 0.08 | 5 | 59 | 88.8% | 99.6% | 18.2 | 1,380 | 375 | 353 | - | 4,040 → 5,012 (965-5,933) | .43 → .58 |
+
+(Pennies a day but the treasury; 559 residents at the end of each; 11 born, 15 died; money conserved every day of every
+run. Set 2's wage support is the doc's 488p, its file not having the field.)
+
+- **The fixes hold the year as set 2 did.** On the new city the old rules fail as the base year did (hunger 23.8, the
+  treasury empty by summer, Gini .81); with the fixes, somebody was hungry on 5 days of 360: the Autumn and Winter
+  festivals (run days 231 and 322: 70 and 55 for some hours, households that don't shop on a festival with no reserve,
+  as in set 2) and one resident on each of three other days. Wages 99.6% paid in every season, every household fed but
+  on the festivals, Gini .47-.54 by four-week means.
+- **The treasury**: no trend, a season's swing: it rises in spring and winter and falls in summer and autumn (by
+  four-week blocks 3,638-7,203p; at the seasons' ends 6,424, 4,286, 4,401 and 6,999p). Its day: 1,583p of toll and 37p of
+  the services in; 913p of its posts' wages, 376p of alms, 287p of wage support and 35p of the carriage subsidy out.
+  It holds more than set 2's: fewer tills are short (18.5 against 28.5, the 5 inns and no dairies), so less support.
+- **60 days** (days 5-59): nobody hungry at any hour, every household fed every day, wages 99.6%, Gini .43 → .53 (the base
+  60 days: hunger 4.7, 52 days with someone hungry, wages 81.8%, Gini .50 → .66).
+- **The six trades now sell**: 63 services a day, 123p, of which 37p the city's: the barber 20 a day (23p), the
+  moneychanger 13 (21p), the pawnbroker 11 (23p), the stables 7 (20p), the shipwright 6 (18p), the builders' yard 5 (18p).
+  Their tills pay 13-17p a day of their posts' 22p (a keeper and a hand) and 13p of the shipwright's and builders' yard's
+  46p (a keeper and four hands); the cap's wage support pays the rest. What the services add (against the year with them
+  off): the treasury's 37p a day and 66p less wage support (it ends 2,000p higher, and its low is 2,534p, not 965p); the
+  money comes out of the comforts budget (comforts 373 a day against 432, profit 1,230 against 1,380), so the comfortable
+  households' spending moves from the profitable shops' keepers to the six trades' posts and the city. Hunger, wages and
+  Gini are the same.
+- **The work bank**: the cartographer (cover 1.49), the perfumer (2.07), the jeweller (1.99) and the glassworks (1.27) now
+  make their goods and pay their posts.
+- **Still short of their wages** (cover = value added / wages owed, the year): the herbalist (.09), the armoury (.19), the
+  saddlery (.53), the cooperage (.70), the apothecary (.87), the preservers (.88) and the 5 inns (.98, short on 29% of
+  till-days; no hunger at inn hours). The general store, the vintner and the rag-and-bone yard are rich (cover 3-7) but
+  short on a third of their days (the float, proposal 6).
+
+#### Left for the user
+
+- **The services' frequencies**: the defaults pay the barber's, moneychanger's, pawnbroker's and stables' posts about
+  three quarters from their tills, the shipwright's and builders' yard's (four hands each) about a quarter; the DM can
+  make them more often or dearer (the Economy tab), or the two yards could have fewer hands.
+- **A head's wage** for the harbourmaster, the Counting House's overseer and the other heads of offices (8p now), as for
+  the Queen and the City Office (14p).
+- The smaller follow-ups of section 13: buying a day ahead before a Restday or festival (11: the only hunger left), the
+  float (6: the general store, vintner and rag-and-bone short a third of days), the Carters' Yard (13: its keeper's 76p a
+  day of profit is the treasury's subsidy), winter preserves (14), and the inns and preserver (the five inns cover .98,
+  the preservers .88; city_loop.py puts them at 122% and 120% of their crews' hours). Wage support by trade (a share
+  per trade rather than all at `wageSupport`) is not built.
