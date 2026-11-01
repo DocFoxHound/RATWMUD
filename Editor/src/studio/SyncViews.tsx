@@ -14,14 +14,16 @@ function Value({value}: {value: unknown}) {
     return <span className="sync-value" title={text}>{text}</span>;
 }
 
-/** Changes one side made, grouped by table label, each group collapsible; a row opens to its fields. */
+/** Changes one side made, grouped by table label, each group collapsible; a row opens to its fields. A row removed with
+ *  an NPC whose removal is a conflict goes as that ends, on a pull and an import alike: kept (or back) with the NPC. */
 export function ChangeGroups({items, side, empty}: {items: SyncItem[]; side: Side; empty: string}) {
     if (!items.length) return <p className="meta">{empty}</p>;
+    const npc = (id: string) => decodeURIComponent(id.split('/').pop() ?? id);
     return <div className="sync-groups">{groupByLabel(items).map(group => <details key={group.label} className="sync-group">
         <summary><b>{group.label}</b> <span className="meta">{group.items.length} row{group.items.length === 1 ? '' : 's'} · {group.part === 'world' ? 'the map' : 'live data'}</span></summary>
         <ul>{group.items.slice(0, SHOWN).map(item => <li key={item.id}>
             <details><summary>{item.name} <span className="meta">{sideChangeText(item, side)}{item.follows
-                ? ` · goes as ${item.follows.split('/').pop()}'s conflict ends (kept if they are)` : ''}</span></summary>
+                ? ` · goes as ${npc(item.follows)}'s conflict ends (kept if ${npc(item.follows)} is)` : ''}</span></summary>
                 <FieldTable item={item} />
             </details></li>)}
             {group.items.length > SHOWN && <li className="meta">…and {group.items.length - SHOWN} more</li>}</ul>

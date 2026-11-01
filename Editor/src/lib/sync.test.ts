@@ -182,12 +182,25 @@ test("the game's truth puts every field the live game changed back on live's, th
     const both = item('live.npcs/wren', [game('home_area', 'conflict', 'live'), game('purse', 'live', 'live'), game('age', 'dev', 'dev'),
         {...field('greeting', 'conflict'), owner: 'authored', default: null}], {default: null});
     const reset = gameTruthPicks([both, maple, linden], {'live.npcs/wren': {whole: 'dev'}, 'live.npcs/maple': {whole: 'dev'}});
+    const home = {home_area: 'live', home_x: 'live', home_y: 'live'};
     assert.deepEqual(reset['live.npcs/wren'], {whole: undefined, byField: true,
-        fields: {home_area: 'live', purse: 'live', age: 'dev', greeting: 'dev'}}, "the game's live's, dev's greeting and dev's own age kept");
+        fields: {...home, purse: 'live', age: 'dev', greeting: 'dev'}}, "the game's live's, dev's greeting and dev's own age kept");
     assert.deepEqual(buildChoices([both], reset).choices, {'live.npcs/wren': {home_area: 'live', greeting: 'dev'}},
         "purse and age go the way their one side changed them: not named");
     assert.deepEqual(reset['live.npcs/linden'], {whole: 'live'}, 'no pick: its default');
-    assert.deepEqual(reset['live.npcs/maple'].fields, {home_area: 'live', home_y: 'live', greeting: 'dev'},
+    assert.deepEqual(reset['live.npcs/maple'].fields, {...home, greeting: 'dev'},
         "Maple's whole dev's turned field by field: dev's words, the game's home");
     assert.deepEqual(gameTruthPicks([both], {'live.npcs/wren': {whole: 'live'}}), {'live.npcs/wren': {whole: 'live'}}, "live's already");
+});
+
+test("the game's truth takes a place back whole, the column the two sides agree on too", () => {
+    // Dev's home picked (all three columns); her y the same on both sides, so not shown. Then the game's truth, and later
+    // the plan made again with her y differing too: the place is live's whole, never half dev's.
+    const now = item('live.npcs/maple', [game('home_area', 'conflict', 'live'), game('home_x', 'conflict', 'live')], {default: null});
+    const picked = gameTruthPicks([now], {'live.npcs/maple': pickField(now, undefined, 'home_area', 'dev')});
+    assert.deepEqual(picked['live.npcs/maple'].fields, {home_area: 'live', home_x: 'live', home_y: 'live'});
+    const later = item('live.npcs/maple', [game('home_area', 'conflict', 'live'), game('home_x', 'conflict', 'live'),
+        game('home_y', 'conflict', 'live')], {default: null});
+    assert.deepEqual(buildChoices([later], prunePicks(picked, [later])).choices,
+        {'live.npcs/maple': {home_area: 'live', home_x: 'live', home_y: 'live'}});
 });

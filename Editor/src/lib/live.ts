@@ -315,15 +315,20 @@ export interface LiveStatus { state: 'connecting' | 'saved' | 'saving' | 'offlin
 
 export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: number) {
     const outbox: Batch[] = [];
-    // The edit number of this tab's own latest saved change per key: an older change to the same key
-    // arriving later (e.g. after a refusal showed the current value) must not replace a newer one.
-    const own = new Map<string, number>();
+    // The edit number of the newest change this tab holds per key: its own saved edits, and the changes from the feed
+    // it applied (a game change's is the newest edit its value holds). An older change to the same key arriving later
+    // (e.g. after a refusal showed the current value, or a batch's reply after another tab's newer edit) must not
+    // replace a newer one. An edit as old as a game change applied is in that change's value already.
+    const newest = new Map<string, number>();
+    const hold = (key: string, at: number) => { if (at > (newest.get(key) ?? 0)) newest.set(key, at); };
+    const older = (c: Change) => (newest.get(c.key) ?? 0) > c.seq || (c.clientId !== 'game' && newest.get(c.key) === c.seq);
     let since = seq, sending = false, stopped = false, offline = '';
     // The game server's changes (an arrival's home, a birth) come with the heartbeat after this one: doc 66, Progress.
     let gameSince = gameSeq;
     // The game's change to a key with a batch still unsaved waits for it: the host makes the batch on the game's row and
     // says so (`merged`), and the editor's own edits are diffed against its own values meanwhile. Applied after if
-    // it is newer than the batch (own), dropped if the batch's reply or refusal brought newer.
+    // it is newer than what the tab holds of the key by then (the batch, another tab's edit come meanwhile), dropped if
+    // not, or if the batch's refusal brought the values now.
     const held = new Map<string, Change>();
     const pending = (key: string) => outbox.some(b => b.ops.some(op => op.key === key));
     const release = (keys: Iterable<string>, newer: boolean) => {
@@ -332,7 +337,7 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
             const change = held.get(key);
             if (!change || pending(key)) continue;
             held.delete(key);
-            if (!newer && !((own.get(key) ?? 0) > change.seq)) due.push(change);
+            if (!newer && !older(change)) { due.push(change); hold(key, change.seq); }
         }
         if (due.length) cb.remote(due);
     };
@@ -348,8 +353,10 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
             const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
             if (response.ok) {
                 outbox.shift(); offline = '';
-                for (const op of batch.ops) own.set(op.key, data.seq);
-                if (data.merged && Object.keys(data.merged).length) cb.written?.(data.merged);
+                // (The rows as written, but for a key another tab's newer edit has reached this tab since.)
+                const merged = Object.fromEntries(Object.entries(data.merged ?? {}).filter(([key]) => !((newest.get(key) ?? 0) > data.seq)));
+                for (const op of batch.ops) hold(op.key, data.seq);
+                if (Object.keys(merged).length) cb.written?.(merged);
                 release(batch.ops.map(op => op.key), false);
             }
             else if (response.status === 409 || response.status === 422) {
@@ -379,9 +386,9 @@ export function startLive(host: Host, seq: number, cb: LiveCallbacks, gameSeq?: 
             if (data.reload) { stopped = true; cb.reload(); return; }
             const theirs: Change[] = [];
             for (const c of data.changes) {
-                if (c.clientId === clientId || (own.get(c.key) ?? 0) > c.seq) continue;
+                if (c.clientId === clientId || older(c)) continue;
                 if (c.clientId === 'game' && pending(c.key)) held.set(c.key, c);       // (After its batch: release().)
-                else theirs.push(c);
+                else { theirs.push(c); hold(c.key, c.seq); }
             }
             since = data.seq;
             if (typeof data.gameSeq === 'number') gameSince = data.gameSeq;

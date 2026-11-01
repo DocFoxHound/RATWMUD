@@ -214,7 +214,8 @@ export function buildChoices(conflicts: SyncItem[], picks: Picks): {choices: Rec
 
 /** "The game's truth": each conflict's fields the live game changed (live alone or both) back on live's, whatever was
  *  picked; the authored fields as the user picked them (a whole-row pick turned field by field); a conflict with no
- *  pick, or a row one side removed, on its default (defaultPicks). Gone places keep their decisions. */
+ *  pick, or a row one side removed, on its default (defaultPicks). Gone places keep their decisions. A place goes
+ *  whole: all of its area, x and y, the one the two sides agree on too, so no earlier pick of it is left half. */
 export function gameTruthPicks(conflicts: SyncItem[], picks: Picks): Picks {
     const out: Picks = {...picks}, starts = defaultPicks(conflicts);
     for (const item of conflicts) {
@@ -228,8 +229,9 @@ export function gameTruthPicks(conflicts: SyncItem[], picks: Picks): Picks {
         const games = shown.filter(f => f.owner === 'game' && f.changed !== 'dev');
         const whole = !pick.byField && (pick.whole === 'dev' || pick.whole === 'live') ? pick.whole : undefined;
         if (!games.length || whole === 'live') continue;
-        const fields: Record<string, Side> = whole ? Object.fromEntries(shown.map(f => [f.field, whole])) : {...pick.fields};
-        for (const f of games) fields[f.field] = 'live';
+        const columns = (fields: SyncField[]) => fields.flatMap(f => placeGroup(item, f.field));
+        const fields: Record<string, Side> = whole ? Object.fromEntries(columns(shown).map(f => [f, whole])) : {...pick.fields};
+        for (const f of columns(games)) fields[f] = 'live';
         const places = whole === 'dev' && item.gone?.length ? Object.fromEntries(item.gone.map(g => [g.place, 'dev'])) : pick.places;
         out[item.id] = {...pick, whole: pick.whole === 'unplace' ? 'unplace' : undefined, byField: true, fields, ...(places ? {places} : {})};
     }

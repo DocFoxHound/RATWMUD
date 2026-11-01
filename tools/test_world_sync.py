@@ -164,6 +164,11 @@ class ThreeWayTests(unittest.TestCase):
         with self.assertRaisesRegex(WS.PublishError, 'cannot be used') as split:
             WS.resolve([item], {'live.npcs/wren': {'home_area': 'dev', 'home_x': 'live', 'home_y': 'live'}})
         self.assertIn('one field', split.exception.errors[0])
+        # A side that isn't one, on any column (one of a place the two sides agree on too), is refused by name.
+        for bad in ({'home_x': {'cell': 'b', 'x': 1, 'y': 1}}, {'home_area': ['dev']}, {'work_x': 'nope'}, {'name': None}):
+            with self.assertRaisesRegex(WS.PublishError, 'cannot be used') as refused:
+                WS.resolve([item], {'live.npcs/wren': bad})
+            self.assertIn(f'(not {next(iter(bad))})', refused.exception.errors[0])
 
     def test_unplacing_keeps_each_sides_own_changes_and_asks_for_what_both_changed(self):
         home = lambda area: {'home_area': area, 'home_x': 1, 'home_y': 1}
@@ -206,9 +211,27 @@ class ThreeWayTests(unittest.TestCase):
         self.assertEqual(WS.follows(items), {'live.npc_voice/linden': 'live.npcs/linden',
                                              'live.npc_relations/sorrel%2Flinden': 'live.npcs/linden'})
         kept = WS.resolve(items, {})
-        self.assertEqual(WS.with_their_npcs(items, kept, 'live'), {'live.npc_voice/linden', 'live.npc_relations/sorrel%2Flinden'},
+        self.assertEqual(WS.with_their_npcs(items, kept, 'live'), ({'live.npc_voice/linden', 'live.npc_relations/sorrel%2Flinden'}, []),
                          "Linden kept on live keeps hers; Sorrel's own voice, removed in dev, goes")
-        self.assertEqual(WS.with_their_npcs(items, WS.resolve(items, {'live.npcs/linden': 'dev'}), 'live'), set(), 'she goes, they go')
+        gone = WS.resolve(items, {'live.npcs/linden': 'dev'})
+        self.assertEqual(WS.with_their_npcs(items, gone, 'live'), (set(), []), 'she goes, they go')
+        # A pull, onto dev, where dev removed her: back in dev by default, and hers back with her (from live, the base's).
+        self.assertEqual(WS.with_their_npcs(items, kept, 'dev'),
+                         (set(), [(WS.SPECS['live.npc_voice'], ('linden',), voice), (WS.SPECS['live.npc_relations'], ('sorrel/linden',), wed)]))
+        self.assertEqual(WS.with_their_npcs(items, gone, 'dev'), (set(), []), "dev's removal chosen: she stays gone, and they")
+        # An import onto live where live removed her and dev's is chosen: the same, from dev's.
+        flipped = WS.three_way(base, live, dev)
+        self.assertEqual(WS.with_their_npcs(flipped, WS.resolve(flipped, {'live.npcs/linden': 'dev'}), 'live')[1],
+                         [(WS.SPECS['live.npc_voice'], ('linden',), voice), (WS.SPECS['live.npc_relations'], ('sorrel/linden',), wed)])
+        # A member of a faction the write removes as well goes with the faction.
+        watch = {'world_id': 'w', 'id': 'watch', 'name': 'The Watch'}
+        sworn = {'world_id': 'w', 'faction_id': 'watch', 'npc_id': 'linden'}
+        rows = lambda *npcs, factions=(), members=(): snap(live__npcs={n['id']: n for n in npcs}, live__factions={f['id']: f for f in factions},
+                                                           live__faction_members={'watch/linden': m for m in members})
+        for dev_factions, back in (((watch,), [(WS.SPECS['live.faction_members'], ('watch/linden',), sworn)]), ((), [])):
+            items = WS.three_way(rows(linden, factions=(watch,), members=(sworn,)), rows(factions=dev_factions),
+                                 rows({**linden, 'home_area': 'b'}, factions=(watch,), members=(sworn,)))
+            self.assertEqual(WS.with_their_npcs(items, WS.resolve(items, {}), 'dev')[1], back)
 
     def test_ids_and_long_values(self):
         self.assertEqual(WS.item_id('world.terrain_chunks', (0, -1)), 'world.terrain_chunks/0/-1')
@@ -1036,8 +1059,11 @@ class LiveTruthTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.npc(self.live, 'rook'), ('shop', 6, 6), "dev's, chosen")
         self.assertEqual(self.npc(self.live, 'maple', 'greeting'), ('Dev words.',), "dev's own words came across")
 
-    def test_an_npc_dev_removed_and_live_kept_keeps_her_voice_family_and_factions(self):
-        # Linden's voice, her marriage to Sorrel (both ways) and her place in the watch, in both worlds and the base.
+    HERS = ("SELECT (SELECT count(*) FROM live.npc_voice WHERE npc_id = 'linden'), (SELECT count(*) FROM live.npc_relations "
+            "WHERE 'linden' IN (npc_id, other_id)), (SELECT count(*) FROM live.faction_members WHERE npc_id = 'linden')")
+
+    def give_linden_hers(self):
+        """Linden's voice, her marriage to Sorrel (both ways) and her place in the watch, in both worlds and the base."""
         for key in (self.live, self.dev):
             self.sql(key, "INSERT INTO live.npc_voice (world_id, npc_id, accent) VALUES ('greyfen', 'linden', 'broad')")
             self.sql(key, "INSERT INTO live.npc_relations (world_id, npc_id, other_id, kind) VALUES "
@@ -1046,11 +1072,13 @@ class LiveTruthTests(ScratchWorlds, unittest.TestCase):
                           "ON CONFLICT DO NOTHING")
             self.sql(key, "INSERT INTO live.faction_members (world_id, faction_id, npc_id) VALUES ('greyfen', 'watch', 'linden')")
         WS.init_base(self.dev, 'Ada')
+        return self.HERS
+
+    def test_an_npc_dev_removed_and_live_kept_keeps_her_voice_family_and_factions(self):
+        hers = self.give_linden_hers()
         self.sql(self.dev, "DELETE FROM live.npcs WHERE id = 'linden'")              # (Her rows go with her in dev.)
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'sloe'")
         self.game(self.live, MOVE, ('cottage', 7, 7, 'linden'))
-        hers = ("SELECT (SELECT count(*) FROM live.npc_voice WHERE npc_id = 'linden'), (SELECT count(*) FROM live.npc_relations "
-                "WHERE 'linden' IN (npc_id, other_id)), (SELECT count(*) FROM live.faction_members WHERE npc_id = 'linden')")
         WS.maintenance(self.live, True, 'Ada')
         plan = WS.plan_import(self.dev)
         self.assertEqual(plan['defaults'].get('live.npcs/linden'), 'live')
@@ -1068,14 +1096,64 @@ class LiveTruthTests(ScratchWorlds, unittest.TestCase):
         WS.import_(self.dev, {'live.npcs/linden': 'dev'}, 'password', 'Ada', 'Linden goes')
         self.assertEqual(self.sql(self.live, hers)[0], (0, 0, 0))
 
+    def test_an_npc_dev_removed_and_live_kept_comes_back_to_dev_with_her_voice_family_and_factions(self):
+        # The same, by an Update from live: Linden comes back to dev by default, and hers with her, so a later import
+        # never takes them from PROD.
+        hers = self.give_linden_hers()
+        self.sql(self.dev, "DELETE FROM live.npcs WHERE id = 'linden'")
+        self.game(self.live, MOVE, ('cottage', 7, 7, 'linden'))
+        WS.maintenance(self.live, True, 'Ada')
+        with self.assertRaisesRegex(WS.PublishError, 'Update from live brings dev level'):
+            WS.import_(self.dev, {}, 'password', 'Ada', 'Nothing')     # (Dev's only change ends as live has it.)
+        plan = WS.diff(self.dev)
+        self.assertEqual({c['id']: c['follows'] for c in plan['devChanges'] if c['follows']},
+                         {i: 'live.npcs/linden' for i in ('live.npc_voice/linden', 'live.npc_relations/linden/sorrel/spouse',
+                                                          'live.npc_relations/sorrel/linden/spouse', 'live.faction_members/watch/linden')})
+        result = WS.pull(self.dev, {}, 'Ada', expect=plan['digest'])
+        self.assertEqual(result['applied']['live'], {'NPCs': {'added': 1, 'changed': 0, 'removed': 0},
+                                                     'faction members': {'added': 1, 'changed': 0, 'removed': 0},
+                                                     'NPC voices': {'added': 1, 'changed': 0, 'removed': 0},
+                                                     'families': {'added': 2, 'changed': 0, 'removed': 0}})
+        self.assertEqual(self.npc(self.dev, 'linden'), ('cottage', 7, 7))
+        self.assertEqual(self.sql(self.dev, hers)[0], (1, 2, 1), 'back in dev with her')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'sloe'")
+        WS.import_(self.dev, {}, 'password', 'Ada', 'Words')
+        self.assertEqual(self.sql(self.live, hers)[0], (1, 2, 1), 'and never taken from PROD after')
+        # Chosen dev's in the pull: she stays gone from dev, and they with her.
+        self.sql(self.dev, "DELETE FROM live.npcs WHERE id = 'linden'")
+        self.game(self.live, MOVE, ('cottage', 8, 7, 'linden'))
+        WS.pull(self.dev, {'live.npcs/linden': 'dev'}, 'Ada')
+        self.assertEqual(self.sql(self.dev, hers)[0], (0, 0, 0))
+
+    def test_an_npc_live_removed_and_dev_chosen_comes_back_to_live_with_her_voice_family_and_factions(self):
+        # The other way round: PROD removed Linden (her rows went with her there), DEV rewrote her words; DEV's is
+        # chosen: she comes back to PROD with her voice, marriage and faction, and DEV keeps them.
+        hers = self.give_linden_hers()
+        self.sql(self.live, "DELETE FROM live.npcs WHERE id = 'linden'")
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'linden'")
+        WS.maintenance(self.live, True, 'Ada')
+        plan = WS.plan_import(self.dev)
+        self.assertIsNone(plan['defaults'].get('live.npcs/linden'), 'an authored change against a removal: the user chooses')
+        self.assertEqual(sorted(c['id'] for c in plan['liveChanges'] if c['follows']),
+                         ['live.faction_members/watch/linden', 'live.npc_relations/linden/sorrel/spouse',
+                          'live.npc_relations/sorrel/linden/spouse', 'live.npc_voice/linden'])
+        WS.import_(self.dev, {'live.npcs/linden': 'dev'}, 'password', 'Ada', 'Linden back')
+        self.assertEqual(self.npc(self.live, 'linden', 'greeting'), ('Dev words.',))
+        self.assertEqual(self.sql(self.live, hers)[0], (1, 2, 1), 'back in PROD with her')
+        self.assertEqual(self.sql(self.dev, hers)[0], (1, 2, 1), 'and kept in dev, brought level')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+
     def test_a_new_map_with_no_base_keeps_what_prods_game_made(self):
         # The real port: DEV's new map imported into PROD, which DEV has no base of. PROD's game placed Maple and filled
-        # Rook's purse; DEV rewrote Sloe's words. The live game's fields are PROD's, the authored ones DEV's.
+        # Rook's purse; DEV rewrote Sloe's words and re-homed Rook on its new map. Who changed a field of the live game's
+        # can't be known: a conflict, PROD's by default and DEV's when chosen; the authored ones are DEV's.
         for key in (self.live, self.dev):
             self.sql(key, "UPDATE live.npcs SET home_area = NULL, home_x = 0, home_y = 0 WHERE id = 'maple'")
         self.game(self.live, ARRIVE, ('longhouse', 3, 3, 'maple'))
         self.game(self.live, "UPDATE live.npcs SET purse = 77 WHERE id = 'rook' RETURNING id")
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'sloe'")
+        self.sql(self.dev, "UPDATE live.npcs SET home_area = 'wren_house', home_x = 5, home_y = 5 WHERE id = 'rook'")
         MapTests.new_map(self, self.dev)
         self.sql(self.dev, 'DELETE FROM admin.sync_base_rows')
         self.sql(self.dev, 'DELETE FROM admin.sync_base')
@@ -1083,13 +1161,22 @@ class LiveTruthTests(ScratchWorlds, unittest.TestCase):
         plan = WS.plan_import(self.dev)
         self.assertTrue(plan['replacesMap'])
         self.assertTrue(plan['base']['how'].startswith('none'))
-        self.assertEqual(self.ids(plan['liveChanges']), ['live.npcs/maple', 'live.npcs/rook'], "the game's: live's")
+        self.assertEqual(plan['liveChanges'], [])
         self.assertIn('live.npcs/sloe', self.ids(plan['devChanges']))
-        self.assertEqual(plan['conflicts'], [])
-        WS.import_(self.dev, {}, 'password', 'Ada', 'The new map', expect=plan['digest'], replace_map=True)
+        home = dict.fromkeys(('home_area', 'home_x', 'home_y'), 'live')
+        self.assertEqual(plan['defaults'], {'live.npcs/maple': home, 'live.npcs/rook': {**home, 'purse': 'live'}}, "the game's: live's")
+        rook = next(c for c in plan['conflicts'] if c['id'] == 'live.npcs/rook')
+        self.assertEqual({f['field']: (f['base'], f['dev'], f['live'], f['changed']) for f in rook['fields']},
+                         {'home_area': (None, 'wren_house', 'longhouse', 'conflict'), 'home_x': (None, 5, 6, 'conflict'),
+                          'home_y': (None, 5, 9, 'conflict'), 'purse': (None, 30, 77, 'conflict')}, 'no base to show')
+        # Rook's new home DEV's, chosen; his purse PROD's, and Maple's arrival, by default.
+        WS.import_(self.dev, {'live.npcs/rook': {'home_area': 'dev'}}, 'password', 'Ada', 'The new map', expect=plan['digest'],
+                   replace_map=True)
         self.assertEqual(self.npc(self.live, 'maple'), ('longhouse', 3, 3), "PROD's arrival kept")
-        self.assertEqual(self.npc(self.live, 'rook', 'purse'), (77,))
+        self.assertEqual(self.npc(self.live, 'rook', 'home_area, home_x, home_y, purse'), ('wren_house', 5, 5, 77))
         self.assertEqual(self.npc(self.live, 'sloe', 'greeting'), ('Dev words.',), "DEV's words came across")
+        self.assertEqual(self.npc(self.dev, 'rook', 'home_area, purse'), ('wren_house', 77), 'DEV brought level')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
 
     def test_rows_the_game_made_are_additions_on_the_live_side(self):
         self.game(self.live, BIRTH, ('born_b', 'Bramble', 'longhouse', 'longhouse', 'longhouse'))

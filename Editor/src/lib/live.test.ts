@@ -148,3 +148,36 @@ test("the game's change to a key with an unsaved batch waits for it, and the new
         mock.timers.reset();
     }
 });
+
+test("a change older than what the tab holds of its key never replaces it: a held game change, a late reply, an edit in the game's", async () => {
+    mock.timers.enable({apis: ['setTimeout']});
+    try {
+        const flush = () => new Promise(resolve => setImmediate(resolve));
+        const change = (seq: number, clientId: string, greeting: string): Change =>
+            ({seq, clientId, editor: clientId, label: 'Maple', key: 'person:maple', after: {id: 'maple', greeting}});
+        // The batch (saved as edit 5) is out; the game's change, tagged 5, waits for it; another tab's edit 7 comes; the
+        // batch's reply comes last. Then a game change tagged 9 and, a beat later, edit 9 it already holds.
+        const beats = [[], [change(5, 'game', 'Game.')], [change(7, 'bo-tab', 'Bo.')], [change(9, 'game', 'Game, with Bo.')],
+            [change(9, 'bo-tab', 'Bo again.'), change(10, 'bo-tab', 'Bo, newest.')]]
+            .map((changes, i) => ({seq: i, changes, editors: [] as never[], gameSeq: i}));
+        let answer: (value: Response) => void = () => {};
+        const remote: string[] = [], written: unknown[] = [];
+        const host = {load: async () => ({project: {} as never, seq: 0}), sync: async () => beats.shift() ?? {seq: 0, changes: [], editors: []},
+            edit: () => new Promise<Response>(resolve => { answer = resolve; })};
+        const link = startLive(host, 0, {identity: () => ({name: 'Ada', color: '#aabbcc'}), presence: () => ({}),
+            remote: c => remote.push(...c.map(x => (x.after as {greeting: string}).greeting)),
+            refused: () => {}, status: () => {}, editors: () => {}, reload: () => {}, written: v => written.push(v)}, 0);
+        await flush();
+        link.push({id: 1, label: 'Greet', ops: [{key: 'person:maple', before: {id: 'maple', greeting: 'Hi.'}, after: {id: 'maple', greeting: 'Ada.'}}]});
+        for (let beat = 0; beat < 2; beat++) { mock.timers.tick(1500); await flush(); }
+        assert.deepEqual(remote, ['Bo.'], "the game's waits; Bo's newer edit is taken");
+        answer(new Response(JSON.stringify({seq: 5, merged: {'person:maple': {id: 'maple', greeting: 'Ada.'}}}), {status: 200}));
+        await flush(); await flush();
+        assert.deepEqual([remote, written], [['Bo.'], []], "neither the batch's rows nor the game's change, older, replace Bo's");
+        for (let beat = 0; beat < 2; beat++) { mock.timers.tick(1500); await flush(); }
+        assert.deepEqual(remote, ['Bo.', 'Game, with Bo.', 'Bo, newest.'], "edit 9 is in the game's change already");
+        link.stop();
+    } finally {
+        mock.timers.reset();
+    }
+});

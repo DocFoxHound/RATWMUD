@@ -709,8 +709,10 @@ replacing PROD's map)." Atlas's page shows that and the two maps; `world_sync.py
 - **The map** (the world part: the world row, cells, interiors, terrain, doors, places, resources, chapters) becomes
   dev's whole; there are no map conflicts.
 - **Live data** is compared three ways as ever, against the dev world's base of this upstream, or, with none (DEV has
-  none: it was copied from the old DEV before bases existed), against live as it is (every difference counts as dev's).
-  Conflicts are chosen as usual. **Nothing live has is ever removed:** a row dev lacks (an NPC born in PROD, the eight
+  none: it was copied from the old DEV before bases existed), against live as it is, where a difference in an authored
+  field counts as dev's and one in a field of the live game's is a conflict, live's by default (2026-11-01: "No base:
+  the real port", in "The live world's truth" below; before, every difference counted as dev's). Conflicts are chosen
+  as usual. **Nothing live has is ever removed:** a row dev lacks (an NPC born in PROD, the eight
   NPCs PROD got in release 3, a faction, a family) stays as live has it. Whatever it kept that stands in a place the new
   map hasn't is let go, in the same transaction: an NPC's or profession slot's home, work or evening place there is
   unset (unplaced or without work, section 2: it keeps its name, talk, relations and memories; spawned NPCs too); the
@@ -982,11 +984,13 @@ changes as live's. What they lacked was the ownership above, for the defaults.
   Atlas as edits of their keys (`person:ID`, `slot:ID`, editor "The game", the row as it is now), so the map shows an
   arrival at home at its next heartbeat (1.5 s) and a later edit starts from it. Each is read in one snapshot with, as
   its `seq`, the newest edit its value holds (edits are numbered as they commit, under the world row's lock), so the
-  editor's rule "an edit older than my own of the key is dropped" never drops a game change whose value has the
-  editor's edit in it. A game change to a key with a batch still unsaved in the editor's outbox **waits for it**
-  (`startLive`'s `held`): the editor's own later edits are diffed against its own values; once the batch is saved, the
-  newer of the two stands (the batch's `merged` reply, or the game's change if it came after), and a refusal's values
-  replace it.
+  editor's rule "a change older than the newest I hold of the key is dropped" never drops a game change whose value
+  has the editor's edit in it. The newest the editor holds of a key (`startLive`'s `newest`) is its own saved edits'
+  and every change it applied from the feed: an edit as old as a game change applied is in that change's value already
+  (dropped), and another tab's edit older than one applied never replaces it. A game change to a key with a batch still
+  unsaved in the editor's outbox **waits for it** (`held`): the editor's own later edits are diffed against its own
+  values; once the batch is saved, the newest stands (the batch's `merged` reply, the game's change if it came after,
+  or another tab's edit come meanwhile, over both), and a refusal's values replace it.
 
 **What the user sees in Atlas.** Most of the time nothing: their edit saves and the NPC stays where the game put it.
 When both changed one field, the dialog **"The game server moved what you changed"**: for each NPC and field, what
@@ -1007,12 +1011,20 @@ game's values meanwhile.
   `default`, and `defaults` by id. **A place is one field**: its area, x and y are never half dev's and half live's
   (`place_columns`). A choice on any of its columns is the place's, one the two sides happen to agree on too (shown as
   changed on both, as the place); two sides chosen for one place are refused ("a place is one field"). The screens
-  pick the three together (`lib/sync.ts` `pickField`, `placeGroup`).
+  pick the three together (`lib/sync.ts` `pickField`, `placeGroup`, and **The game's truth**). A field's choice is
+  "dev" or "live", whatever the field: anything else (a place `{cell, x, y}` on a column, a list, a side for a field
+  that doesn't differ) is refused, naming it, never ignored.
 - **Rows hanging on an NPC go with it** (`world_sync.NPC_DEPENDENTS`: its voice, its family both ways, its faction
   memberships, its business setting). Where one side removed an NPC the other changed (a conflict), the rows the
   removal took with it are not removed on their own: they go as that conflict ends (`with_their_npcs`; the plan marks
-  them `follows`). Dev removed Linden, PROD's game moved her: by default she stays in PROD **with** her voice, spouse and
-  faction; chosen dev's, she goes and they with her. The same for a pull.
+  them `follows`), whichever side removed her and whichever way the write goes. Where she stays on the side written,
+  the other side's removals of them are left out (`held`); where that side had removed her and she comes back, its own
+  removals are undone (`back`: written with her, as the other side and the base have them; a faction member only while
+  its faction stays too). Dev removed Linden, PROD's game moved her: an import keeps her in PROD **with** her voice,
+  spouse and faction, an Update from live brings her back to DEV with them; chosen dev's, she goes and they with her,
+  either way. PROD removed her and DEV's is chosen: she comes back to PROD with hers. An import whose every change ends
+  as live has it (Linden kept, dev's only change her removal) is refused, saying so: "every change made in dev ends as
+  live has it ... Update from live brings dev level with it".
 - **What was there already, checked**: DEV's authored changes (map, buildings, NPC definitions) come across as dev's
   changes; PROD's game's (arrivals placed, births) are live's changes, kept by an import and taken by a pull. A birth is
   an addition on the live side (`added` live, `absent` in dev): pulled into dev, then in the base, never removed by an
@@ -1025,9 +1037,10 @@ game's values meanwhile.
 defaults ("starts on the game's"; a **game** tag on each of the game's fields in the base / dev / live table) and the
 user can change any to dev's, whole or field by field; **The game's truth** puts every field the live game changed
 (live alone or both) back on live's, in every conflict, a whole-row dev's pick turned field by field, and keeps the
-user's choices for the authored fields (`gameTruthPicks`). Only authored fields changed on both sides are left to
-choose (`lib/sync.ts` `defaultPicks`, `buildChoices`). A row removed with its NPC says "goes as Linden's conflict
-ends".
+user's choices for the authored fields (`gameTruthPicks`; a place whole, its column the two sides agree on too, so an
+earlier pick of dev's place is never left half). Only authored fields changed on both sides are left to choose
+(`lib/sync.ts` `defaultPicks`, `buildChoices`). A row removed with its NPC says "goes as linden's conflict ends (kept
+if linden is)", on an Update from live as on an import.
 
 #### A map-replacing import: NPCs whose places the new map hasn't
 
@@ -1047,10 +1060,15 @@ still exist.
 
 **No base: the real port.** DEV's new map imported into PROD has no base of PROD (PROD was never DEV's upstream).
 Compared against live as it is, every difference would count as dev's and DEV's rows overwrite PROD's whole. Instead the
-base is live as it is but for the live game's fields of each row both have, there dev's (`world_sync.baseless`): an
-authored difference is dev's (DEV's new words come across), a game-owned one live's (PROD keeps where its game put
-everyone and what they carry, and where the new map hasn't the place, the decision above, dev's place offered), each
-defaulting as ever. The plan's base says "none (live as it is now, with the live game's fields as dev has them)".
+base is live as it is but for each field of the live game's that differs on a row both have, whose base is not known
+(`world_sync.baseless`, `UNKNOWN`; the plan shows no base for it): an authored difference is dev's (DEV's new words
+come across), a game-owned one a **conflict, live's by default** (PROD keeps where its game put everyone and what they
+carry) **and dev's when chosen** (DEV's generator re-homed someone on its new map, in a cell id the old map has too:
+"Reused interiors keep their IDs"), and where the new map hasn't the place, the decision above, dev's place offered.
+(The first fix took the game's fields as dev has them for the base, which made each such difference live's outright:
+DEV's re-homing dropped, unchoosable.) A place kept on the new map is still checked tile by tile when the release is
+compiled (`check_project`): one on a solid tile refuses the import, naming the NPC, until dev's place is chosen for
+it. The plan's base says "none (live as it is now; where the live game's fields differ, not known)".
 
 Let go without a decision, as before: spawned NPCs' places (each server's own), the old map's patrol posts, territory
 claims and NPC areas. The release's `letGo` now counts the NPCs and slots the user unplaced (`npcs`, `slots`) and the
@@ -1073,6 +1091,15 @@ for a row dev hasn't, and calling a homeless conflict ready while an authored fi
 leaving a whole dev's pick over the game's fields; a no-base map import overwriting PROD's live state; an NPC kept
 losing her voice, family and factions to dev's cascade.
 
+**Round 2 of review (2026-11-01)** fixed, each with a test: an Update from live bringing back an NPC dev removed
+without her voice, family and factions (then saved as the base, so the next import removed them from PROD unwarned),
+and the same for an NPC PROD removed and an import chose DEV's (`with_their_npcs`' `back`); an import whose only change
+ended as live has it refused as though dev had changed nothing; a no-base map import taking every difference of the
+live game's as live's outright, DEV's re-homing dropped and unchoosable (`UNKNOWN`); a malformed side in a
+field-by-field choice failing with a TypeError, or ignored, instead of refused by name; **The game's truth** leaving a
+place half dev's where one of its columns was the same on both sides; a held game change, or a batch's late reply,
+applied over another tab's newer edit, and another tab's edit applied over a game change that already held it.
+
 **Migration 0059** is written and applied only to the test suites' throwaway worlds; **not applied to DEV or PROD**
 (`python3 tools/world_db.py migrate --db dev` when the map work allows). Until then DEV behaves as before.
 
@@ -1093,4 +1120,10 @@ PROD's arrival and purse; `ThreeWayTests` for a place chosen by any column and n
 changed, rows following their NPC; `test_dungeon_master.NpcTests.test_the_page_saves_over_what_it_saw_...`.
 `Editor/src/lib/sync.test.ts` (defaults, places, `pickField`, `wholeSides`, `allPicks`, a homeless row's authored
 fields, `gameTruthPicks`) and `live.test.ts` (`againWithChoices` on a merged key, `queueRefusal`, a game change held
-for an unsaved batch).
+for an unsaved batch). Round 2: an NPC dev removed and live's game moved coming back to DEV with hers on an Update from
+live (and the import after keeping them in PROD; dev's chosen, they stay gone), an NPC PROD removed coming back to PROD
+with hers when DEV's is chosen, the import of nothing but such a removal refused with what to do; a no-base map import
+listing the game's differences as conflicts with no base shown, live's by default and DEV's re-homing taken when
+chosen; `ThreeWayTests` for rows coming back with their NPC (a member of a faction removed too not) and malformed
+sides refused; `sync.test.ts` for The game's truth on a place with a column the same on both; `live.test.ts` for a
+change older than what the tab holds (a held game change, a late reply, an edit in a game change's value).
