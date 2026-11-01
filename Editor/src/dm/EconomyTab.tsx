@@ -1,14 +1,16 @@
 // The DM's Economy tab (Docs/Design/68-the-country-and-the-city-loop.md, 9 and Progress, "Seasons and the DM's rules"):
 // every rule of the city's loop and the store room on the DM's world, the same settings as Atlas's Economy page: the
 // store room's switches and markups, the residents' needs, the wages, the gate toll, carriage and its subsidy, the
-// Country's switch, reserve and goods, the seasons in its supply and the comforts. Each change is audited in the world's
+// Country's switch, reserve and goods, the seasons in its supply and the comforts, the loop's rules and the city's
+// services (doc 68, Progress, "First fixes"). Each change is audited in the world's
 // DM audit and sent to its running game server (economy.sync), which applies it at once; a server started later reads it
 // too. A business's own store-room switch stays Atlas's (it travels with the world's businesses).
 import {useCallback, useEffect, useState} from 'react';
 import {dmApi, type Me, type Target} from './api';
 import {markupOf, percent, switchText, type ComfortsBody, type EconomyChange, type EconomyControls, type GoodsBody,
-    type LoopSettings, type SeasonsBody, type StoreSwitches} from '../lib/economy';
+    type LoopSettings, type RulesBody, type SeasonsBody, type ServicesBody, type StoreSwitches} from '../lib/economy';
 import {CountryPanel} from '../studio/CountryPanel';
+import {RulesPanel} from '../studio/RulesPanel';
 import {SeasonsPanel} from '../studio/SeasonsPanel';
 
 export function EconomyTab({me, target}: {me: Me; target: Target}) {
@@ -41,6 +43,8 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
     const setGoods = (body: GoodsBody) => void change(() => dmApi.economy.setGoods(target, body));
     const setSeasons = (body: SeasonsBody) => void change(() => dmApi.economy.setSeasons(target, body));
     const setComforts = (body: ComfortsBody) => void change(() => dmApi.economy.setComforts(target, body));
+    const setRules = (body: RulesBody) => void change(() => dmApi.economy.setRules(target, body));
+    const setServices = (body: ServicesBody) => void change(() => dmApi.economy.setServices(target, body));
     const commitMarkup = (key: 'storeMarkup' | 'resaleMarkup') => {
         if (!data) return;
         const value = markupOf(markups[key]);
@@ -89,6 +93,7 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
             </section>
             <CountryPanel data={data} locked={locked} setLoop={setLoop} setGoods={setGoods} />
             <SeasonsPanel data={data} locked={locked} setSeasons={setSeasons} setComforts={setComforts} />
+            <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} />
         </div>
     </div>;
 }

@@ -69,8 +69,13 @@ export interface Economy {
     // The seasons and the comforts (doc 68, Progress; migration 0057): optional, null comforts country.json's.
     comfortsAbove?: number | null; comfortsShare?: number | null;
     seasons?: Record<string, {supply: number[]; price: number[]; shelf: number[]; normal: number}>;
+    // The rules and the services (doc 68, Progress, "First fixes"; migration 0058): optional, only what this world changed.
+    rules?: Record<string, number>;
+    services?: Record<string, {on: boolean; price: number; every: number}>;
 }
 export const SEASON_DEFAULTS: {comfortsAbove: null; comfortsShare: null; seasons: Record<string, never>};
+export const RULE_DEFAULTS: {rules: Record<string, never>; services: Record<string, never>};
+export const RULE_LIMITS: Record<string, number>;
 export const STORE_DEFAULTS: {internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean};
 export interface Faction { id: string; name: string; color: string }
 export interface Chapter { id: string; name: string }

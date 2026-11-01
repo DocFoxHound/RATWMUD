@@ -284,11 +284,18 @@ void aDayOfTheLoop()
         expect(life && (life->hunger < 80 || Society::hasFood(*s.account(r.id))), r.id + " is fed (hunger " + std::to_string(life->hunger) + ")");
     }
     expect(Society::hasFood(*s.account("child")) || s.resident("child")->hunger < 60, "the child was fed though it holds no money");
-    expect(s.cash("child") == 0, "and paid nothing");
-    expect((Society::hasFood(*s.account("upstairs")) || s.resident("upstairs")->hunger < 60) && s.cash("upstairs") == 0,
-           "a child living upstairs, apart from its parent, is fed by the family too");
     // Wages: the clerk from the treasury, the docker from the Country, the hand from the smith's till.
     const auto journal = s.takeJournal();
+    // (The children's pennies, if any, are the household's alms, paid to its poorest member: neither paid for anything.)
+    const auto spent = [&](const std::string& who) {
+        for (const auto& e : journal)
+            if (e.from == who && e.coins > 0)
+                return true;
+        return false;
+    };
+    expect(!spent("child"), "and paid nothing");
+    expect((Society::hasFood(*s.account("upstairs")) || s.resident("upstairs")->hunger < 60) && !spent("upstairs"),
+           "a child living upstairs, apart from its parent, is fed by the family too");
     const auto paid = [&](const std::string& from, const std::string& to) {
         for (const auto& e : journal)
             if (e.kind == "wages" && e.from == from && e.to == to && e.coins > 0)
@@ -301,7 +308,7 @@ void aDayOfTheLoop()
     for (const auto& e : journal)
         alms = alms || (e.kind == "alms" && e.from == "treasury" && e.to == "orphan" && e.coins > 0);
     expect(alms, "the city's alms keep a child whose household runs short");
-    expect(Society::hasFood(*s.account("orphan")) || s.resident("orphan")->hunger < 60 || s.cash("orphan") >= Society::AlmsADay,
+    expect(Society::hasFood(*s.account("orphan")) || s.resident("orphan")->hunger < 60 || s.cash("orphan") >= s.rule("almsADay"),
            "and it eats, or holds a day's food money for tomorrow");
     expect(paid("till:job:smith", "hand") && paid("till:job:smith", "smith"), "the smithy paid its hand and keeper");
     // The Country spent on the city's goods, spread over both smithies (never the first in a list).

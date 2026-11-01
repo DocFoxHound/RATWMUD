@@ -13,6 +13,18 @@
   "wages": {
     "rules": [
       {
+        "payer": "treasury",
+        "wage": "keeper",
+        "about": "The heads of the Crown's household and of the city's offices (doc 68, Progress, \"First fixes\"): the Queen, the King's daughter, the City Office's head. Paid by the treasury at a keeper's wage (a head's), not a clerk's.",
+        "words": ["the queen", "the king's daughter", "running the city office"]
+      },
+      {
+        "payer": "country",
+        "wage": "keeper",
+        "about": "The Minor Houses' family members who run a House's own affairs (doc 68, Progress, \"First fixes\"): a House's lending, the Grayrock wharf. Kept by their House's estates in the Country (as the Houses' other people), at a keeper's wage.",
+        "words": ["lending", "overseeing the grayrock wharf"]
+      },
+      {
         "payer": "country",
         "about": "Carriage by sea and the Country's warehouses: the ships' unloading, the cranes, the carrying up from the wharf, the stores' tallies.",
         "words": ["unloading ships", "working the cranes", "carrying from", "tallying in the", "keeping the iron store", "keeping the long store", "keeping the new store", "keeping the wharf's books", "wharf office"]
@@ -35,10 +47,38 @@
     "shortDays": 1
   },
   "comforts": {
-    "about": "A household holding more than `above` pennies a head spends `share` of what is over it a day on comforts from the city's shops, used up at once: the better-off buy drink, candles, cloth and treats, so that savings come back to the shops.",
-    "above": 60,
-    "share": 0.1,
+    "about": "A household holding more than `above` pennies a head spends `share` of what is over it a day on comforts from the city's shops, used up at once: the better-off buy drink, candles, cloth and treats, so that savings come back to the shops. (Doc 68, Progress, \"First fixes\": 40p and a fifth, as set 2 measured; at most `rules.comfortsMost` purchases a day.) The day's budget pays for the city's services first (`services`), then comforts.",
+    "above": 40,
+    "share": 0.2,
     "goods": ["ale", "cider", "wine", "candle_tallow", "honey_cake", "cheese", "wool_scarf", "linen_neckerchief", "fine_soap", "fang_charm", "pamphlet", "clay_pot"]
+  },
+  "rules": {
+    "about": "The loop's rules the DM can tune (Docs/Design/68-the-country-and-the-city-loop.md, Progress, \"First fixes\"; each world's own in live.economy.rules, migration 0058, the DM's Economy tab and Atlas's Economy page). comfortsMost: the most comforts a household buys a day (it was 20, which kept the rich from spending their savings). almsADay: pennies a head the city's alms make a household up to after the day's wages (was 7: a day's food with nothing over for a Restday). treasuryCap: pennies the treasury keeps; what it holds over this at 18:00, after its own posts, pays what the shops' tills could not pay their posts (wageSupport percent of each till's shortfall; each post the same share of its wage). workBankHours: the crew's hours a shop may bank for a long craft, in hours of the whole crew's work; 0 (the default): as long as the business's longest craft and an hour more (at least two), so a lone cartographer can make a map over two days (was 2, which no 13.9-hour map could fit). fairFood: 1 = at market the members with least food buy first, everyone to `food.shortDays` before anyone to `food.days`, and only foods some member can pay for are picked; 0 = the old order. services: 1 = households buy the city's services (`services`) from their comforts budget; 0 = none. servicesCityShare: the percent of each service's price that goes to the treasury (the city); the rest stays in the shop's till.",
+    "comfortsMost": 200,
+    "almsADay": 10,
+    "treasuryCap": 2000,
+    "wageSupport": 100,
+    "workBankHours": 0,
+    "fairFood": 1,
+    "services": 1,
+    "servicesCityShare": 30
+  },
+  "services": {
+    "about": "The city's services (the user, 2026-10-31: \"Make them public services that NPC's have the occasional need to purchase from, but make it items that NPC's buy when they have excess money that isn't needed for other things. The money goes partly to the shop owner and to the city.\"). Each is a catalogue item (category service, items.json: its name and its price) a business does for a household: bought only from the household's comforts budget (what is over `comforts.above` a head, after food, needs and their reserve), at its market hour, about once every `every` days (a fixed roll of the household and the day: nothing saved), from an open shop of `business` in its community (else anywhere open). Done at once: nothing is kept on a shelf or at home. Of its price `rules.servicesCityShare` percent goes to the treasury, the rest to the shop's till. Each world may turn one off or change its price and frequency (live.economy.services).",
+    "list": [
+      {"id": "groom_and_trim", "business": "barber", "every": 4},
+      {"id": "tooth_drawn", "business": "barber", "every": 60},
+      {"id": "coin_changed", "business": "moneychanger", "every": 7},
+      {"id": "letter_of_credit", "business": "moneychanger", "every": 30},
+      {"id": "pledge_redeemed", "business": "pawnbroker", "every": 10},
+      {"id": "small_loan_fee", "business": "pawnbroker", "every": 20},
+      {"id": "cart_hire", "business": "stables", "every": 20},
+      {"id": "stabling", "business": "stables", "every": 20},
+      {"id": "skiff_patched", "business": "shipwright", "every": 20},
+      {"id": "oars_mended", "business": "shipwright", "every": 20},
+      {"id": "roof_patched", "business": "builders_yard", "every": 30},
+      {"id": "wall_limewashed", "business": "builders_yard", "every": 20}
+    ]
   },
   "seasons": {
     "about": "The seasons in the Country's supply (Docs/Design/68-the-country-and-the-city-loop.md, Progress, \"Seasons and the DM's rules\"): each group's goods, and for Spring, Summer, Autumn and Winter (the value at each season's middle day; the days between blend in a straight line), in percent of normal: `supply`, how much the Country can send the city a day, of `normal` pieces a day for the whole group (0 pieces: no cap; a supply of 0 sends none); `price`, what the group's goods cost, both the shops' draws from the store room and the shops' prices to residents (the residents weigh nourishment for the price, so they buy what is in season); `shelf`, how full the shops keep their shelves of the group's goods (a maker stocking up ahead of a lean season). Goods made of a group's goods sit in it when their price should follow it (bread with the grain). The numbers are placeholders, each world's to change in the DM (its Economy tab) or Atlas's Economy page; `normal` is about what the city drew a day without a cap (build 48).",

@@ -304,8 +304,20 @@ struct EconomySpec
     // holds over its float and tonight's public wages, and at most a twentieth of its money a day (SubsidyDay).
     std::map<std::string, int> subsidies{{"carriage", 25}};
     // The residents' comforts (doc 68, 3; the world's "comforts" record): pennies a head a household holds before it buys
-    // them, and the percent of what is over that it spends a day. -1: country.json's (60, a tenth).
+    // them, and the percent of what is over that it spends a day. -1: country.json's (40, a fifth).
     int comfortsAbove = -1, comfortsShare = -1;
+    // The loop's rules as this world has changed them (doc 68, Progress, "First fixes"; "rule" records, migration 0058),
+    // by name (items::Rules); a rule not listed is as country.json says.
+    std::map<std::string, int> rules;
+    // The city's services as this world has changed them ("service" records): on or off, the price, about once every
+    // `every` days a household. A service not listed is as country.json and items.json say; one they no longer have is
+    // kept and does nothing.
+    struct Service
+    {
+        bool on = true;
+        int price = 1, every = 30;
+    };
+    std::map<std::string, Service> services;
     // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"), a
     // group at a time as this world has changed them ("season" records): supply, price and shelf by season in percent,
     // and the group's normal pieces a day. A group not listed is as country.json says.
@@ -574,8 +586,7 @@ class Society
     // are reckoned from the day's sales (0:00). Runs from decide() while !needsPaused().
     static constexpr int ShopOpen = 8, ShopShut = 18, PayHour = 18;
     static constexpr std::int64_t TillFloat = 20, TreasuryFloat = 200;
-    // The city's alms (doc 68, 4): a day's food money a head for a household with no paid post and less than that.
-    static constexpr std::int64_t AlmsADay = 7;
+    // (The city's alms, doc 68, 4: the rule "almsADay" now, a day's food money a head and some over; it was 7.)
     static constexpr int CarriageLoad = 1000;         // A wagon load, in items.json's weight.
     static constexpr const char* CarriageFund = "fund:carriage";   // Carriage where a world has no carters' yard.
     // A market's purse ("outside:<id>"), and which market supplies a good (the first in country.json: one for now).
@@ -635,13 +646,40 @@ class Society
     // The residents' comforts as this world has them (EconomySpec, else country.json).
     int comfortsAbove() const;
     double comfortsShare() const;
+    // The loop's rules as this world has them (doc 68, Progress, "First fixes"): EconomySpec::rules, else country.json's,
+    // else items::Rules' own; -1 for a name that isn't a rule.
+    int rule(const std::string& name) const;
+    // The city's services as this world has them (country.json's list, with this world's changes; the price items.json's
+    // unless changed), in country.json's order.
+    struct ServiceNow
+    {
+        std::string id, business;
+        bool on = true;
+        std::int64_t price = 1;
+        int every = 30;
+    };
+    const std::vector<ServiceNow>& services() const { return services_; }
+    // The crew's hours a till may hold in hand (workBankHours: that many hours of the crew; 0: the business's longest
+    // craft and an hour more, at least two hours' worth).
+    double workBankMost(const std::string& till, const items::Business* business) const;
     // What the loop did, for reports (world_check --economy): since the day began, and the day before's.
     struct LoopDay
     {
         std::int64_t day = -1;
         std::int64_t residentsSpent = 0, countrySpent = 0, countryUnspent = 0, drawn = 0, toll = 0, carriage = 0;
         std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0, alms = 0;
+        // The treasury's wage support (paid to the posts of tills short of their wages; counted in wagesPaid too), and
+        // the city's services: done, what households paid, and the treasury's share of it (doc 68, "First fixes").
+        std::int64_t wageSupport = 0, servicesSpent = 0, servicesCity = 0;
+        int servicesSold = 0;
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
+        // By business (the services' trades): services done and what they took in, the city's share included.
+        struct Trade
+        {
+            int sold = 0;
+            std::int64_t spent = 0;
+        };
+        std::map<std::string, Trade> serviceTrades;
         // By season group (doc 68, Progress, "Seasons"): pieces drawn from the Country, pieces sold to residents and
         // what they paid for them.
         struct Group
@@ -795,7 +833,12 @@ class Society
     void giveAlms();
     void countryBuys(int hourOfDay);
     void payWages();
+    void supportWages();                            // The treasury over its cap pays the short tills' posts (18:00).
     void turnShelves();
+    std::map<std::string, std::int64_t> tillsShort_;   // Till -> what it could not pay its posts tonight (payWages).
+    std::vector<ServiceNow> services_;              // (buildSeasons, with the rules.)
+    std::map<std::string, int> rules_;              // Every rule by name as this world has it (buildSeasons).
+    std::unordered_map<std::string, double> serviceOwed_;   // Till -> the city's fraction of a penny of its services.
     std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_, shelf_;   // Till -> ware -> pieces.
     std::unordered_map<std::string, std::int64_t> drawnToday_, drawnYesterday_;              // Till -> pennies drawn.
     std::unordered_map<std::string, double> workBank_;                                         // Till -> crew hours in hand.

@@ -149,7 +149,33 @@ struct Market
 struct WageRule
 {
     std::string payer;
+    std::string wage;                               // Which of the world's wages it pays ("keeper"...); "" for its payer's.
     std::vector<std::string> words;
+};
+// The loop's rules a world may tune (country.json `rules`, a world's `rule` records; doc 68, Progress, "First fixes"):
+// each by name, its range and the value used where country.json has none.
+struct RuleInfo
+{
+    const char* name;
+    int low, high, fallback;
+};
+inline constexpr RuleInfo Rules[] = {
+    {"comfortsMost", 0, 100000, 200},    // The most comforts a household buys a day.
+    {"almsADay", 0, 1000, 10},           // Pennies a head the alms make a household up to.
+    {"treasuryCap", 0, 100000000, 2000}, // What the treasury holds over this pays the short tills' wages,
+    {"wageSupport", 0, 100, 100},        // this percent of each till's shortfall.
+    {"workBankHours", 0, 1000, 0},       // A crew's banked hours, in hours of the crew; 0: its longest craft and an hour.
+    {"fairFood", 0, 1, 1},               // Food in a household: the least fed first, and only what someone can pay for.
+    {"services", 0, 1, 1},               // Households buy the city's services from their comforts budget.
+    {"servicesCityShare", 0, 100, 30},   // The percent of a service's price that goes to the treasury.
+};
+const RuleInfo* ruleInfo(const std::string& name);
+// A city service (country.json `services.list`): a catalogue item a business does for a household, bought from its
+// comforts budget about once every `every` days; done at once (nothing is kept).
+struct ServiceDef
+{
+    std::string id, business;
+    int every = 30;
 };
 // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"): a
 // group of goods (grain and its bread, fresh fruit, fresh fish, ...) with, by season (Spring, Summer, Autumn, Winter, each
@@ -173,6 +199,8 @@ struct Country
     int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,
     double comfortsShare = .1;                      // and the share of what is over it spent a day,
     std::vector<std::string> comforts;              // on these (used up at once).
+    std::map<std::string, int> rules;               // Every rule (Rules) by name, as country.json gives it.
+    std::vector<ServiceDef> services;
 };
 const Country& country();
 // What a kind of shop makes, in file order (none if it makes nothing yet).

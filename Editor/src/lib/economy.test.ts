@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {basketRows, bulk, choices, comfortOf, comfortsText, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent,
-    percentsOf, percentsText, seasonal, seasonChange, switchText, wholeOf, wouldChange, type BasketGood, type CountryGood,
-    type SeasonGroup, type StoreBusiness} from './economy.ts';
+    percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, seasonal, seasonChange, serviceChange, serviceText,
+    serviceValue, switchText, wholeOf, wouldChange, type BasketGood, type CountryGood, type RuleControls, type SeasonGroup,
+    type StoreBusiness} from './economy.ts';
 
 // The seasons (doc 68, Progress, "Seasons and the DM's rules"): what the DM's and Atlas's panels read and send.
 const grain: SeasonGroup = {id: 'grain', name: 'grain and flour', about: '', goods: ['flour', 'bread'], changed: false,
@@ -43,6 +44,38 @@ test('the comforts: the world\'s own, or country.json\'s', () => {
     assert.equal(comfortOf('', 100), null, 'empty: back to country.json\'s');
     assert.equal(comfortOf('25', 100), 25);
     assert.equal(comfortOf('101', 100), undefined);
+});
+
+// The rules and the services (doc 68, Progress, "First fixes"; migration 0058).
+const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber', price: 1, every: 4};
+const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {almsADay: 12}, services: {},
+    ruleDefaults: {comfortsMost: 200, almsADay: 10, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
+        servicesCityShare: 30}, serviceList: [trim]};
+
+test('a rule is the world\'s own or country.json\'s, and a change is sent only when it changes something', () => {
+    assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of country.json listed');
+    assert.equal(ruleValue(rules, 'almsADay'), 12);
+    assert.equal(ruleValue(rules, 'treasuryCap'), 2000);
+    assert.equal(ruleChange(rules, 'almsADay', 12), null);
+    assert.deepEqual(ruleChange(rules, 'almsADay', 7), {set: {almsADay: 7}});
+    assert.deepEqual(ruleChange(rules, 'almsADay', null), {set: {almsADay: null}}, 'back to country.json\'s');
+    assert.equal(ruleChange(rules, 'treasuryCap', null), null, 'already country.json\'s');
+    assert.equal(ruleChange(rules, 'treasuryCap', 2000), null, 'country.json\'s value typed in: nothing to change');
+    assert.deepEqual(ruleChange(rules, 'fairFood', 0), {set: {fairFood: 0}});
+    assert.equal(ruleOf('', 1000), null);
+    assert.equal(ruleOf('15', 1000), 15);
+    assert.equal(ruleOf('1001', 1000), undefined);
+});
+
+test('a service: country.json\'s until changed, one of its three at a time', () => {
+    assert.deepEqual(serviceValue(rules, trim), {on: true, price: 1, every: 4});
+    assert.equal(serviceChange(rules, trim, 'price', 1), null);
+    assert.deepEqual(serviceChange(rules, trim, 'on', false), {set: {groom_and_trim: {on: false}}});
+    assert.match(serviceText(rules, trim), /barber, 1p, about once every 4 days .*\(country\.json's\)/);
+    const changed = {...rules, services: {groom_and_trim: {on: false, price: 2, every: 1}}};
+    assert.deepEqual(serviceValue(changed, trim), {on: false, price: 2, every: 1});
+    assert.match(serviceText(changed, trim), /2p, about once every 1 day a .* \(off\)$/);
+    assert.equal(serviceChange(changed, trim, 'every', 1), null);
 });
 
 const shop = (npc: string, business: string | null, district: string, over: Partial<StoreBusiness> = {}): StoreBusiness => ({

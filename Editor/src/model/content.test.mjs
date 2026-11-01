@@ -119,6 +119,20 @@ test('the seasons\' and comforts\' economy keys are optional, checked and kept (
     assert.equal(p.economy.comfortsAbove, 40, 'unchanged after a rejected edit');
 });
 
+test('the rules\' and services\' economy keys are optional, checked and kept (doc 68, Progress, "First fixes"; migration 0058)', () => {
+    const p = world();
+    const trim = {on: false, price: 2, every: 5};
+    setEconomy(p, {rules: {almsADay: 12, fairFood: 0, treasuryCap: 3000}, services: {groom_and_trim: trim}});
+    assert.deepEqual(validate(p).errors, []);
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
+    for (const bad of [{rules: []}, {rules: {luck: 1}}, {rules: {almsADay: 1001}}, {rules: {fairFood: 2}}, {rules: {treasuryCap: -1}},
+                       {services: {groom_and_trim: {...trim, price: 0}}}, {services: {groom_and_trim: {...trim, every: 3651}}},
+                       {services: {groom_and_trim: {...trim, on: 1}}}, {services: {groom_and_trim: {on: true}}},
+                       {services: {'Trim!': trim}}])
+        assert.throws(() => setEconomy(p, bad), /rules|Economy requires/, JSON.stringify(bad));
+    assert.equal(p.economy.rules.almsADay, 12, 'unchanged after a rejected edit');
+});
+
 test('economy, herb patch and movePlace validate atomically', () => {
     const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
     setEconomy(p, {treasury: 500});

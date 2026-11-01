@@ -681,7 +681,8 @@ std::string Game::withoutPeople(const std::string& manifest)
                  line.rfind("story ", 0) == 0 || line.rfind("faction ", 0) == 0 || line.rfind("joinable ", 0) == 0 ||
                  line.rfind("kin ", 0) == 0 || line.rfind("store ", 0) == 0 || line.rfind("nostore ", 0) == 0 ||
                  line.rfind("loop ", 0) == 0 || line.rfind("countryoff ", 0) == 0 || line.rfind("subsidy ", 0) == 0 ||
-                 line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0)
+                 line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0 || line.rfind("rule ", 0) == 0 ||
+                 line.rfind("service ", 0) == 0)
             continue;                              // (The store room's and the loop's records come with the people's: docs 67, 68.)
         else if (line.rfind("territory ", 0) == 0)
         {

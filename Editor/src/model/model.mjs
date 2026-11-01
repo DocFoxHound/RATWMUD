@@ -116,7 +116,18 @@ const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === n
     && (!own(e, 'seasons') || (object(e.seasons) && Object.entries(e.seasons).every(([g, s]) => /^[a-z0-9_]{1,40}$/.test(g)
         && object(s) && Object.keys(s).length === 4 && four(s.supply, 0, 1000) && four(s.price, 10, 1000) && four(s.shelf, 0, 1000)
         && integer(s.normal, 0, 1000000))));
-const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS), ...Object.keys(SEASON_DEFAULTS)];
+// The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys, as
+// tools/map_editor.py's RULE_DEFAULTS (rules: {name: N}, the rules this world has changed; services: {id: {on, price,
+// every}}, the services it has changed; {}: all as Data/Items/country.json has them).
+export const RULE_DEFAULTS = {rules: {}, services: {}};
+export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 100000000, wageSupport: 100, workBankHours: 1000,
+    fairFood: 1, services: 1, servicesCityShare: 100};
+const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
+        own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
+    && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)
+        && object(s) && Object.keys(s).length === 3 && typeof s.on === 'boolean' && integer(s.price, 1, 100000) && integer(s.every, 1, 3650))));
+const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS), ...Object.keys(SEASON_DEFAULTS),
+    ...Object.keys(RULE_DEFAULTS)];
 const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
     && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
     && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
@@ -323,6 +334,9 @@ function checkShape(value) {
             + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), countryOff distinct item ids, subsidies {carriage: 0-100}.');
         check(!object(e) || seasonSettingsOk(e), 'The seasons and comforts: comfortsAbove 0-1000000 and comfortsShare 0-100 (or null '
             + "for country.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
+        check(!object(e) || ruleSettingsOk(e), 'The rules and services: each rule a whole number within its limit ('
+            + Object.entries(RULE_LIMITS).map(([k, max]) => `${k} 0-${max}`).join(', ')
+            + '), each service {on: true or false, price: 1-100000 pennies, every: 1-3650 days}.');
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');

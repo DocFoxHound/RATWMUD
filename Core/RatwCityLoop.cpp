@@ -91,11 +91,16 @@ Society::Pay Society::payOf(const Position& p) const
     if (shops == 1)
         return {"hand", "till:" + shop->id, e.wageHand};
     const auto title = lower(p.title);
+    // A rule may pay another of the world's wages than its payer's (a head's post: a keeper's; doc 68, "First fixes").
+    const auto wageOf = [&](const std::string& kind, int otherwise) {
+        return kind == "keeper" ? e.wageKeeper : kind == "hand" ? e.wageHand : kind == "public" ? e.wagePublic
+               : kind == "country" ? e.wageCountry : otherwise;
+    };
     for (const auto& rule : items::country().wages)
         for (const auto& word : rule.words)
             if (title.find(word) != std::string::npos)
-                return rule.payer == "treasury" ? Pay{"public", "treasury", e.wagePublic}
-                                                : Pay{"country", marketFund(rule.payer), e.wageCountry};
+                return rule.payer == "treasury" ? Pay{"public", "treasury", wageOf(rule.wage, e.wagePublic)}
+                                                : Pay{"country", marketFund(rule.payer), wageOf(rule.wage, e.wageCountry)};
     return {};
 }
 
@@ -229,6 +234,54 @@ void Society::buildSeasons()
     for (std::size_t i = 0; i < seasons_.size(); ++i)
         for (const auto& item : seasons_[i].goods)
             seasonOf_.emplace(item, i);
+    // The loop's rules and the city's services as this world has them (doc 68, Progress, "First fixes").
+    rules_.clear();
+    for (const auto& info : items::Rules)
+    {
+        int value = info.fallback;
+        if (const auto c = items::country().rules.find(info.name); c != items::country().rules.end())
+            value = c->second;
+        if (const auto own = authored_.economy.rules.find(info.name); own != authored_.economy.rules.end())
+            value = own->second;
+        rules_[info.name] = std::clamp(value, info.low, info.high);
+    }
+    services_.clear();
+    for (const auto& def : items::country().services)
+    {
+        ServiceNow s{def.id, def.business, true, catalogPrice(def.id), def.every};
+        if (const auto own = authored_.economy.services.find(def.id); own != authored_.economy.services.end())
+        {
+            s.on = own->second.on;
+            s.price = std::max(1, own->second.price);
+            s.every = std::max(1, own->second.every);
+        }
+        services_.push_back(std::move(s));
+    }
+}
+
+int Society::rule(const std::string& name) const
+{
+    if (const auto found = rules_.find(name); found != rules_.end())
+        return found->second;
+    const auto* info = items::ruleInfo(name);
+    if (!info)
+        return -1;
+    const auto c = items::country().rules.find(name);
+    return c != items::country().rules.end() ? c->second : info->fallback;
+}
+
+double Society::workBankMost(const std::string& till, const items::Business* business) const
+{
+    const int crew = crewOf(till);
+    if (const int hours = rule("workBankHours"); hours > 0)
+        return double(hours) * crew;
+    // The business's longest craft and an hour of the crew more (at least two hours' worth, as it always was): so a
+    // craft longer than two hours of its crew can be made over two days.
+    double most = 2. * crew;
+    if (business)
+        for (const auto* k : items::craftsFor(business->id))
+            most = std::max(most, k->hours + crew);
+    return most;
 }
 
 const items::SeasonGroup* Society::seasonGroup(const std::string& item) const
@@ -363,6 +416,7 @@ void Society::loopHourly(std::int64_t hour, int season)
     if (hod == PayHour)
     {
         payWages();
+        supportWages();                             // (What the treasury holds over its cap, to the short tills' posts.)
         giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
     }
 }
@@ -537,6 +591,52 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         return got;
     };
     const auto& households = items::households();
+    const bool fairFood = rule("fairFood") > 0;
+    const int comfortsMost = rule("comfortsMost");
+    const bool servicesOn = rule("services") > 0 && !services_.empty();
+    const int cityShare = rule("servicesCityShare");
+    // A city service done for a household (doc 68, "First fixes"): by an open shop of its business (the household's
+    // community's, else any open one; one picked by a fixed roll), paid by the member with most, done at once (made,
+    // sold and used up: nothing kept); the city's share of its price from the till to the treasury, the fraction of a
+    // penny kept against the till until it makes one. False if there is no such shop or nobody can pay.
+    const auto doService = [&](const std::vector<const OpenShop*>& shops, const std::vector<std::string>& members, const ServiceNow& s,
+                               const std::string& key) {
+        std::vector<const OpenShop*> by;
+        for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
+        {
+            for (const auto* o : *list)
+                if (o->business && o->business->id == s.business)
+                    by.push_back(o);
+            if (!by.empty())
+                break;
+        }
+        if (by.empty())
+            return false;
+        const auto& till = by[std::size_t(roll(key + "|shop") * double(by.size())) % by.size()]->till;
+        const auto payer = payerFor(members, s.price, 0);
+        if (payer.empty() || !create(till, s.id, 1, "a service done"))
+            return false;
+        if (!sale(till, payer, s.id, 1, s.price, "a service"))
+        {
+            consume(till, s.id, 1, "a service not done");
+            return false;
+        }
+        consume(payer, s.id, 1, "a service, done at once");
+        auto& owed = serviceOwed_[till];
+        owed += double(s.price) * cityShare / 100.;
+        const auto city = std::min<std::int64_t>(s.price, std::int64_t(std::floor(owed + 1e-9)));
+        if (city > 0 && account("treasury") && shift(till, "treasury", "", 0, city, "the city's share of a service"))
+        {
+            owed -= double(city);
+            loopToday_.servicesCity += city;
+        }
+        ++loopToday_.servicesSold;
+        loopToday_.servicesSpent += s.price;
+        auto& trade = loopToday_.serviceTrades[s.business];
+        ++trade.sold;
+        trade.spent += s.price;
+        return true;
+    };
     for (const auto& [home, members] : homes)
     {
         const int marketHour = ShopOpen + int(fnv(home + "|market") % std::uint64_t(ShopShut - ShopOpen));
@@ -548,24 +648,27 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         const auto& shops = here != byCommunity.end() && !here->second.empty() ? here->second : all;
         // Food: every member topped up to foodDays; one under shortDays again each hour until the shops shut.
         bool shortHere = false;
-        for (const auto& m : members)
-        {
-            const auto* wallet = account(m);
-            if (!wallet)
-                continue;
-            double have = onHand(*wallet);
-            if (!(first ? have < cfg.foodDays * NourishADay : have < cfg.shortDays * NourishADay))
-                continue;
-            for (int k = 0; k < 6 && have < cfg.foodDays * NourishADay; ++k)
+        const bool fair = fairFood;
+        // Tops `m` up to `target` nourishment (at most six buys). The food: among what these shops hold (under the fair
+        // rule, only what some member can pay for), the better nourishment for the price the likelier.
+        const auto topUp = [&](const std::string& m, double& have, double target, const std::string& tag) {
+            for (int k = 0; k < 6 && have < target; ++k)
             {
-                // The food: among what these shops hold, the better nourishment for the price the likelier.
+                std::int64_t most = std::numeric_limits<std::int64_t>::max();
+                if (fair)
+                {
+                    most = 0;
+                    for (const auto& x : members)
+                        most = std::max(most, cash(x));
+                }
                 std::vector<std::string> foods;
                 std::vector<double> value;
                 for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
                 {
                     for (const auto* s : *list)
                         for (const auto& [item, n] : s->account->stock)
-                            if (n > 0 && edible(item) && std::find(foods.begin(), foods.end(), item) == foods.end())
+                            if (n > 0 && edible(item) && (!fair || seasonalCost(item, 1) <= most) &&
+                                std::find(foods.begin(), foods.end(), item) == foods.end())
                             {
                                 foods.push_back(item);
                                 value.push_back(double(nourishment(item)) / (double(std::max<std::int64_t>(1, catalogPrice(item))) * priceFactor(item)));
@@ -573,19 +676,52 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                     if (!foods.empty())
                         break;                      // (Its own community's food, where it has some; else anywhere open.)
                 }
-                const auto key = m + "|" + std::to_string(day) + "|" + std::to_string(hod) + "|" + std::to_string(k);
+                const auto key = m + "|" + std::to_string(day) + "|" + std::to_string(hod) + "|" + std::to_string(k) + tag;
                 const int pick = weighted(value, roll(key));
                 if (pick < 0)
                     break;
                 const auto& food = foods[std::size_t(pick)];
-                const int pieces = int(std::ceil((cfg.foodDays * NourishADay - have) / std::max(1, nourishment(food))));
+                const int pieces = int(std::ceil((target - have) / std::max(1, nourishment(food))));
                 const int got = buy(shops, members, m, food, std::max(1, pieces), 0, key);
                 if (got < 1)
                     break;
                 loopToday_.foodBought += got;
                 have += double(got) * nourishment(food);
             }
-            shortHere = shortHere || have < cfg.shortDays * NourishADay;
+        };
+        if (!fair)
+            for (const auto& m : members)
+            {
+                const auto* wallet = account(m);
+                if (!wallet)
+                    continue;
+                double have = onHand(*wallet);
+                if (!(first ? have < cfg.foodDays * NourishADay : have < cfg.shortDays * NourishADay))
+                    continue;
+                topUp(m, have, cfg.foodDays * NourishADay, "");
+                shortHere = shortHere || have < cfg.shortDays * NourishADay;
+            }
+        else
+        {
+            // Fair food (doc 68, "First fixes"): the members with least food first, everyone to shortDays before anyone
+            // to foodDays (that only at the household's market hour; later hours, only the short again).
+            std::vector<std::pair<double, std::string>> order;
+            for (const auto& m : members)
+                if (const auto* wallet = account(m))
+                    order.push_back({onHand(*wallet), m});
+            std::stable_sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+            for (const double target : {cfg.shortDays * NourishADay, cfg.foodDays * NourishADay})
+            {
+                if (!first && target > cfg.shortDays * NourishADay)
+                    break;
+                for (const auto& [unused, m] : order)
+                {
+                    double have = onHand(*account(m));
+                    topUp(m, have, target, "|" + std::to_string(int(target)));
+                }
+            }
+            for (const auto& [unused, m] : order)
+                shortHere = shortHere || onHand(*account(m)) < cfg.shortDays * NourishADay;
         }
         if (shortHere)
             ++loopToday_.householdsShort;
@@ -625,12 +761,26 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 loopToday_.needsBought += got;
             }
         }
-        // Comforts: a tenth a day of what is over `above` pennies a head, used up at once.
+        // The day's comforts budget: a share of what is over `above` pennies a head (after food and needs).
         std::int64_t held = 0;
         for (const auto& m : members)
             held += cash(m);
         auto budget = std::int64_t(std::floor((held - std::int64_t(comfortsAbove()) * std::int64_t(members.size())) * comfortsShare()));
-        for (int k = 0; k < 20 && budget > 0 && !cfg.comforts.empty(); ++k)
+        // The city's services first, each about once every `every` days (a fixed roll of the home and the day: nothing
+        // saved), when the budget covers it (doc 68, "First fixes": only from money nothing else needs).
+        if (servicesOn)
+            for (const auto& s : services_)
+            {
+                if (budget <= 0)
+                    break;
+                const auto key = home + "|service|" + s.id + "|" + std::to_string(day);
+                if (!s.on || s.price > budget || roll(key) * double(s.every) >= 1.)
+                    continue;
+                if (doService(shops, members, s, key))
+                    budget -= s.price;
+            }
+        // Comforts with the rest, used up at once: at most comfortsMost a day.
+        for (int k = 0; k < comfortsMost && budget > 0 && !cfg.comforts.empty(); ++k)
         {
             std::vector<std::string> options;
             for (const auto& g : cfg.comforts)
@@ -816,7 +966,10 @@ void Society::payWages()
         loopToday_.wagesOwed += owed;
         loopToday_.wagesPaid += paid;
         if (paid < owed && payer.rfind("till:", 0) == 0)
+        {
             ++loopToday_.tillsShort;
+            tillsShort_[payer] = owed - paid;       // (For the treasury's wage support, after every payer has paid.)
+        }
         // A till over its float and a week of its wages pays its keeper the rest, as profit.
         if (payer.rfind("till:", 0) == 0)
         {
@@ -829,17 +982,63 @@ void Society::payWages()
     }
 }
 
+void Society::supportWages()
+{
+    // The treasury's cap (doc 68, "First fixes"; the user's "supplement areas that help businesses"): after every payer
+    // has paid tonight, what the treasury holds over treasuryCap pays wageSupport percent of what each short till could
+    // not pay its posts, each post the same share of its wage; when it can't cover them all, every till the same share
+    // of its shortfall.
+    std::map<std::string, std::int64_t> shorts;
+    shorts.swap(tillsShort_);
+    const int percent = rule("wageSupport");
+    const auto room = cash("treasury") - std::int64_t(rule("treasuryCap"));
+    if (percent <= 0 || room <= 0 || shorts.empty() || !account("treasury"))
+        return;
+    std::int64_t want = 0;
+    for (auto& [till, short_] : shorts)
+        want += (short_ = short_ * percent / 100);
+    if (want <= 0)
+        return;
+    // Each short till's posts held now, as payWages found them.
+    std::map<std::string, std::vector<std::pair<const std::string*, int>>> posts;
+    for (const auto& p : positions_)
+    {
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty() || dead_.count(held->second.holder) ||
+            !account(held->second.holder))
+            continue;
+        if (const auto pay = payOf(p); pay.wage > 0 && shorts.count(pay.payer))
+            posts[pay.payer].push_back({&held->second.holder, pay.wage});
+    }
+    const auto give = std::min(room, want);
+    for (const auto& [till, short_] : shorts)
+    {
+        const auto share = give >= want ? short_ : short_ * give / want;
+        int owed = 0;
+        for (const auto& [holder, wage] : posts[till])
+            owed += wage;
+        for (const auto& [holder, wage] : posts[till])
+            if (const auto coins = share * wage / std::max(1, owed);
+                coins > 0 && shift("treasury", *holder, "", 0, coins, "wage support"))
+            {
+                loopToday_.wagesPaid += coins;
+                loopToday_.wageSupport += coins;
+            }
+    }
+}
+
 void Society::giveAlms()
 {
     // The city's alms (doc 68, 4): after the day's wages, a household still holding less than a day's food money a head
     // (the old who have retired, orphans, the out of work, a family whose shop couldn't pay) is given what makes it up,
     // from what the treasury holds over its float. Paid to the member with the least; whoever buys, buys for all.
+    const std::int64_t level = rule("almsADay");     // (Pennies a head: doc 68, "First fixes"; it was 7.)
     for (const auto& [home, members] : households())
     {
         std::int64_t held = 0;
         for (const auto& m : members)
             held += cash(m);
-        const auto want = AlmsADay * std::int64_t(members.size()) - held;
+        const auto want = level * std::int64_t(members.size()) - held;
         const auto can = cash("treasury") - TreasuryFloat;
         if (want <= 0 || can <= 0)
             continue;
@@ -866,10 +1065,11 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
     const auto* business = items::businessFor(job->title);
     const auto till = tillOf(keeper);
     const auto sold = spec(job->founder) ? wares(job->founder) : std::vector<std::string>{};
-    // The crew's hours this hour, with what was left from the last (at most two hours' worth).
+    // The crew's hours this hour, with what was left from the last (at most workBankMost: by default the business's
+    // longest craft and an hour more, so a long craft is made over two days; doc 68, "First fixes").
     const int crew = crewOf(till);
     auto& bank = workBank_[till];
-    bank = std::min(2. * crew, bank + crew);
+    bank = std::min(workBankMost(till, business), bank + crew);
     struct Want
     {
         std::string ware;

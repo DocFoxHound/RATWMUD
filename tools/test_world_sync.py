@@ -752,7 +752,8 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
 
     def test_the_economys_rules_reach_the_running_server(self):
         # Doc 68, Progress, "Seasons and the DM's rules": a change of the economy's rules (here the seasons, written as
-        # the studio writes them) queues economy.sync, which the running server applies at once.
+        # the studio writes them, and the rules and the services) queues economy.sync, which the running server applies
+        # at once.
         import studio
         with W.connect(self.dev, 'editor') as editor:
             world_build.build(editor, 'test')
@@ -763,6 +764,11 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
                     break
             economy = studio.Economy()
             result = economy.set_seasons(self.dev, {'set': {'grain': {'normal': 40}}}, 'Ada')
+            self.assertTrue(result['changed'], result)
+            # (Doc 68, Progress, "First fixes", migration 0058: the rules' and the services' records are read live too.)
+            result = economy.set_rules(self.dev, {'set': {'almsADay': 12, 'fairFood': 0}}, 'Ada')
+            self.assertTrue(result['changed'], result)
+            result = economy.set_services(self.dev, {'set': {'groom_and_trim': {'on': False, 'every': 9}}}, 'Ada')
             self.assertTrue(result['changed'], result)
             action = economy.queue_sync(self.dev, 'Ada')
             for _ in range(60):

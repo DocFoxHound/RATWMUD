@@ -19,7 +19,7 @@ export interface LoopSettings {
 export interface BasketGood { item: string; name: string; share: number; percent: number; price: number; makers: string[] }
 /** A good some business here draws, and whether the Country supplies it (off: its real producers'). */
 export interface CountryGood { item: string; name: string; businesses: number; supplied: boolean }
-export interface EconomyControls extends StoreSwitches, SeasonControls {
+export interface EconomyControls extends StoreSwitches, SeasonControls, RuleControls {
     world: string; supported: boolean; problem: string; note: string; takesEffect: string; businesses: StoreBusiness[];
     worldInfo?: {key: string; name: string; kind: string; upstream?: string};
     loop: LoopSettings; countryOff: string[]; loopSupported: boolean; loopProblem: string; ruleWarning: string;
@@ -86,6 +86,54 @@ export function comfortOf(text: string, max: number): number | null | undefined 
     return n === null ? undefined : n;
 }
 export type GoodsBody = {set: Record<string, boolean>} | {all: boolean};
+
+// The loop's rules and the city's services (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "First fixes";
+// migration 0058): this world's changes ({} for none) beside Data/Items/country.json's.
+/** A service as a world has it (stored whole once changed). */
+export interface ServiceValues { on: boolean; price: number; every: number }
+/** A country.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
+export interface ServiceListed { id: string; name: string; business: string; price: number; every: number }
+export interface RuleControls {
+    rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
+    ruleDefaults: Record<string, number>; serviceList: ServiceListed[];
+}
+export type RulesBody = {set: Record<string, number | null>};
+export type ServicesBody = {set: Record<string, Partial<ServiceValues> | null>};
+/** The rules the page lists, their limits, whether each is an on/off switch, and what the page calls them. */
+export const RULES: {key: string; label: string; max: number; unit: string; onOff?: boolean}[] = [
+    {key: 'comfortsMost', label: 'Comforts a day, at most', max: 100000, unit: 'purchases a household makes a day (it was 20)'},
+    {key: 'almsADay', label: 'Alms', max: 1000, unit: 'p a head a household is made up to after the day\'s wages'},
+    {key: 'treasuryCap', label: 'Treasury cap', max: 100000000, unit: 'p kept; what is over it pays the shops\' short wages'},
+    {key: 'wageSupport', label: 'Wage support', max: 100, unit: '% of a till\'s shortfall the treasury pays (from over the cap)'},
+    {key: 'workBankHours', label: 'Work bank', max: 1000, unit: 'hours of the crew\'s work a shop may bank (0: its longest craft\'s)'},
+    {key: 'fairFood', label: 'Fair food in a household', max: 1, unit: 'the members with least food buy first', onOff: true},
+    {key: 'services', label: 'The city\'s services', max: 1, unit: 'households buy them from their comforts budget', onOff: true},
+    {key: 'servicesCityShare', label: 'The city\'s share', max: 100, unit: '% of each service\'s price to the treasury'},
+];
+/** A rule as it stands: the world's own, else country.json's. */
+export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
+/** The body that sets a rule (null: back to country.json's); null when it changes nothing. */
+export function ruleChange(c: RuleControls, key: string, value: number | null): RulesBody | null {
+    const own = c.rules[key];
+    if (value === null) return own === undefined ? null : {set: {[key]: null}};
+    return (own ?? c.ruleDefaults[key]) === value ? null : {set: {[key]: value}};
+}
+/** A rule typed in: "" (back to country.json's) is null, else a whole number within 0..max; undefined if neither. */
+export const ruleOf = (text: string, max: number): number | null | undefined => comfortOf(text, max);
+/** A service as it stands: the world's own, else country.json's (on, at its catalogue price and frequency). */
+export function serviceValue(c: RuleControls, s: ServiceListed): ServiceValues {
+    return c.services[s.id] ?? {on: true, price: s.price, every: s.every};
+}
+/** The body that changes one of a service's three; null when it is what the service has already. */
+export function serviceChange(c: RuleControls, s: ServiceListed, key: keyof ServiceValues, value: boolean | number): ServicesBody | null {
+    return serviceValue(c, s)[key] === value ? null : {set: {[s.id]: {[key]: value}}};
+}
+/** How a service reads: "barber, 1p, about once every 4 days a household (off)". */
+export function serviceText(c: RuleControls, s: ServiceListed): string {
+    const v = serviceValue(c, s);
+    return `${s.business}, ${v.price}p, about once every ${v.every} day${v.every === 1 ? '' : 's'} a household with money to spare`
+        + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (country.json\'s)');
+}
 
 /** The loop's numbers, with their limits and what the page calls them. */
 export const LOOP_NUMBERS: {key: keyof LoopSettings; label: string; max: number; unit: string}[] = [

@@ -662,8 +662,20 @@ class SyncFlowTests(ScratchWorlds, unittest.TestCase):
                 su.execute(f'DROP DATABASE IF EXISTS ratw_{other} WITH (FORCE)')
 
 
+def unmigrate_rules(key):
+    """Takes migration 0058 back off a throwaway world (0057 kept): as a world is until it is migrated."""
+    sql = (W.MIGRATIONS / '0057_seasons.sql').read_text(encoding='utf-8')
+    manifest = sql[sql.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute('ALTER TABLE live.economy DROP COLUMN rules, DROP COLUMN services')
+            conn.execute(manifest)
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0058'")
+
+
 def unmigrate_seasons(key):
-    """Takes migration 0057 back off a throwaway world (0056 kept): as a world is until it is migrated."""
+    """Takes migrations 0058 and 0057 back off a throwaway world (0056 kept): as a world is until it is migrated."""
+    unmigrate_rules(key)
     sql = (W.MIGRATIONS / '0056_country.sql').read_text(encoding='utf-8')
     manifest = sql[sql.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
     with W.connect(key, 'owner') as conn:
@@ -706,6 +718,14 @@ class StandInEconomy:
     def set_comforts(self, key, data, editor):
         self.calls.append(('set_comforts', key, data, editor))
         return {'changed': True, 'detail': 'The comforts: comfortsAbove 40.'}
+
+    def set_rules(self, key, data, editor):
+        self.calls.append(('set_rules', key, data, editor))
+        return {'changed': True, 'detail': 'The rules: almsADay 12.'}
+
+    def set_services(self, key, data, editor):
+        self.calls.append(('set_services', key, data, editor))
+        return {'changed': True, 'detail': 'The services: groom_and_trim on false.'}
 
     def queue_sync(self, key, who):
         self.calls.append(('queue_sync', key, who))
@@ -768,25 +788,32 @@ class EconomyRouteTests(unittest.TestCase):
         # change queued as economy.sync for its running server; Atlas's changes too.
         live = W.live_world()
         bodies = {'store': {'resaleMarkup': 60}, 'loop': {'gateToll': 25}, 'goods': {'set': {'fish': False}},
-                  'seasons': {'set': {'grain': {'supply': [50, 100, 150, 40]}}}, 'comforts': {'comfortsAbove': 40}}
+                  'seasons': {'set': {'grain': {'supply': [50, 100, 150, 40]}}}, 'comforts': {'comfortsAbove': 40},
+                  'rules': {'set': {'almsADay': 12}}, 'services': {'set': {'groom_and_trim': {'on': False}, 'stabling': None}}}
         for route, body in bodies.items():
             self.assertEqual(self.call('POST', f'/api/dm/economy/{route}', body, token='viewer-token')[0], 403, route)
             status, data = self.call('POST', f'/api/dm/economy/{route}', dict(body), token='dm-token')
             self.assertEqual(status, 200, (route, data))
             self.assertEqual(data['sync'], 7, 'queued for the running server')
-        named = {'store': 'set_store', 'loop': 'set_loop', 'goods': 'set_goods', 'seasons': 'set_seasons', 'comforts': 'set_comforts'}
+        named = {'store': 'set_store', 'loop': 'set_loop', 'goods': 'set_goods', 'seasons': 'set_seasons', 'comforts': 'set_comforts',
+                 'rules': 'set_rules', 'services': 'set_services'}
         for route, body in bodies.items():
             self.assertIn((named[route], live, body, 'dm-user'), self.economy.calls, route)
-        self.assertEqual([c for c in self.economy.calls if c[0] == 'queue_sync'], [('queue_sync', live, 'dm-user')] * 5)
+        self.assertEqual([c for c in self.economy.calls if c[0] == 'queue_sync'], [('queue_sync', live, 'dm-user')] * 7)
         logged = [(world, action, target) for name, (who, world, action, target, _) in self.dm.calls if name == 'log']
         self.assertEqual(logged, [(live, 'economy.store', 'store room'), (live, 'economy.loop', 'city loop'),
                                   (live, 'economy.goods', 'the Country\'s goods'), (live, 'economy.seasons', 'grain'),
-                                  (live, 'economy.comforts', 'comforts')])
+                                  (live, 'economy.comforts', 'comforts'), (live, 'economy.rules', 'almsADay'),
+                                  (live, 'economy.services', 'services')])
         self.assertEqual(self.call('POST', '/api/dm/economy/businesses', {'set': {'x': False}}, token='dm-token')[0], 404,
                          'a business\'s own switch stays Atlas\'s')
         editor = {'X-RATW-Editor': self.host.atlas_token()}
         status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': None}}, token='dm-token', headers=editor)
         self.assertEqual((status, data.get('sync')), (200, 7), data)
+        for route, body in (('rules', {'set': {'treasuryCap': None}}), ('services', {'set': {'cart_hire': {'every': 30}}})):
+            status, data = self.call('POST', f'/api/atlas/economy/{route}', body, token='dm-token', headers=editor)
+            self.assertEqual((status, data.get('sync')), (200, 7), (route, data))
+            self.assertIn((f'set_{route}', 'dev-old', body, 'dm-user'), self.economy.calls)
         self.assertIn(('queue_sync', 'dev-old', 'dm-user'), self.economy.calls, 'Atlas\'s edits reach a server running its world')
 
     def test_route_sets_are_apart(self):
@@ -939,6 +966,69 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                     {'set': {'nowhere': {'normal': 5}}}, {'set': {'grain': {'colour': 1}}}, {'grain': {}}):
             self.assertEqual(self.call('POST', '/api/atlas/economy/seasons', bad, token='dm-token', headers=editor)[0], 400, bad)
         self.assertEqual(self.call('POST', '/api/atlas/economy/comforts', {'comfortsShare': 101}, token='dm-token', headers=editor)[0], 400)
+
+    def test_the_rules_and_the_services(self):
+        # Doc 68, Progress, "First fixes" (migration 0058): country.json's rules and services beside the world's changes;
+        # what reaches the NPC records; economy.sync queued; back to country.json's; refusals.
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['rulesSupported'])
+        self.assertEqual((data['rules'], data['services']), ({}, {}))
+        self.assertEqual(set(data['ruleDefaults']), set(map_editor.RULE_LIMITS))
+        listed = {s['id']: s for s in data['serviceList']}
+        self.assertEqual((listed['groom_and_trim']['business'], listed['groom_and_trim']['name']), ('barber', 'A groom and trim'))
+        trim = listed['groom_and_trim']
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12, 'fairFood': 0}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['rules']), (200, {'almsADay': 12, 'fairFood': 0}), data)
+        status, data = self.call('POST', '/api/atlas/economy/services', {'set': {'groom_and_trim': {'on': False}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(data['services'], {'groom_and_trim': {'on': False, 'price': trim['price'], 'every': trim['every']}},
+                         'stored whole: the rest as country.json has it')
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertIn('rule "almsADay" 12', lines)
+        self.assertIn('rule "fairFood" 0', lines)
+        self.assertIn(f'service "groom_and_trim" off price {trim["price"]} every {trim["every"]}', lines)
+        queued = self.sql(self.dev, "SELECT kind FROM dm.actions WHERE kind = 'economy.sync'")
+        self.assertEqual(len(queued), 2, 'each change sent to the running server')
+        # The DM, on the same dev world.
+        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'treasuryCap': 3000}}, token='dm-token')
+        self.assertEqual((status, data['rules'].get('treasuryCap')), (200, 3000), data)
+        actions = [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')]
+        self.assertTrue({'economy.rules', 'economy.services'} <= set(actions), actions)
+        # Back to country.json's: no record, nothing kept.
+        self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': None, 'fairFood': None, 'treasuryCap': None}},
+                  token='dm-token', headers=editor)
+        status, data = self.call('POST', '/api/atlas/economy/services', {'set': {'groom_and_trim': {'on': True}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual((status, data['services']), (200, {}), 'back at country.json\'s: no entry kept')
+        self.assertEqual((self.one(self.dev, 'SELECT rules FROM live.economy'), self.one(self.dev, 'SELECT services FROM live.economy')), ({}, {}))
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertFalse([l for l in lines if l.startswith(('rule ', 'service '))], lines)
+        for route, bad in (('rules', {'set': {'luck': 1}}), ('rules', {'set': {'almsADay': 1001}}), ('rules', {'set': {'fairFood': 2}}),
+                           ('rules', {'almsADay': 1}), ('services', {'set': {'haircut': {'on': False}}}),
+                           ('services', {'set': {'groom_and_trim': {'price': 0}}}), ('services', {'set': {'groom_and_trim': {'colour': 1}}}),
+                           ('services', {'set': {'groom_and_trim': {'on': 'no'}}})):
+            self.assertEqual(self.call('POST', f'/api/atlas/economy/{route}', bad, token='dm-token', headers=editor)[0], 400, (route, bad))
+
+    def test_a_world_without_migration_0058(self):
+        unmigrate_rules(self.dev)
+        status, data = self.call('GET', '/api/atlas/economy', token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['seasonsSupported'])
+        self.assertFalse(data['rulesSupported'])
+        self.assertIn('lacks migration 0058', data['rulesProblem'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        for route, body in (('rules', {'set': {'almsADay': 12}}), ('services', {'set': {'groom_and_trim': {'on': False}}})):
+            status, data = self.call('POST', f'/api/atlas/economy/{route}', body, token='dm-token', headers=editor)
+            self.assertEqual(status, 409, data)
+            self.assertIn('0058', data['error'])
+            status, data = self.call('POST', f'/api/dm/economy/{route}', {'world': self.dev, **body}, token='dm-token')
+            self.assertEqual(status, 409, data)
+            self.assertIn('0058', data['error'])
+        status, data = self.call('POST', '/api/atlas/economy/comforts', {'comfortsAbove': 30}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['comforts']['comfortsAbove']), (200, 30), 'the comforts still change on a world with 0057')
 
     def test_a_world_without_migration_0057(self):
         unmigrate_seasons(self.dev)

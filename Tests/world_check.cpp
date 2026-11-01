@@ -271,6 +271,10 @@ struct EconomyDetail
             return "food";                          // (The seasons' groups are all food.)
         if (reason == "to the Country")
             return "country";
+        if (reason == "a service")
+            return "services";
+        if (reason == "the city's share of a service")
+            return "services city";
         if (reason == "restocked from the store room" || reason.rfind("drawn for ", 0) == 0 || reason.rfind("gate toll: ", 0) == 0)
             return "draws";
         if (reason.rfind("refunded", 0) == 0)
@@ -297,6 +301,12 @@ struct EconomyDetail
         {
             out[e.actor]["wages"] += e.coins;
             in[e.target]["wages:" + payerKind(e.actor)] += e.coins;
+            return;
+        }
+        if (k == "wage support")
+        {
+            out[e.actor]["wage support"] += e.coins;
+            in[e.target]["wages:support"] += e.coins;
             return;
         }
         out[e.actor][k] += e.coins;
@@ -610,6 +620,18 @@ struct EconomyWatch
                     << (cap == std::numeric_limits<int>::max() ? -1 : cap) << ", \"" << g.id << "_drawn\": " << day.drawn
                     << ", \"" << g.id << "_sold\": " << day.sold << ", \"" << g.id << "_stock\": " << onShelves[g.id]
                     << ", \"" << g.id << "_paid\": " << (day.sold ? double(day.spent) / day.sold : 0);
+        }
+        // The first fixes (doc 68, Progress): the treasury's wage support, and the city's services by trade.
+        seasons << ", \"wage_support\": " << d.wageSupport << ", \"services_sold\": " << d.servicesSold << ", \"services_spent\": "
+                << d.servicesSpent << ", \"services_city\": " << d.servicesCity;
+        std::set<std::string> trades;
+        for (const auto& s : society.services())
+            trades.insert(s.business);
+        for (const auto& t : trades)
+        {
+            const auto found = d.serviceTrades.find(t);
+            const auto day = found == d.serviceTrades.end() ? Society::LoopDay::Trade{} : found->second;
+            seasons << ", \"svc_" << t << "_sold\": " << day.sold << ", \"svc_" << t << "_spent\": " << day.spent;
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households

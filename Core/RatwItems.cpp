@@ -297,6 +297,7 @@ Catalog build()
         {
             WageRule rule;
             rule.payer = r.string("payer");
+            rule.wage = r.string("wage");
             for (const auto& w : r.array("words"))
                 if (!w.asString({}).empty())
                     rule.words.push_back(w.asString({}));
@@ -312,6 +313,17 @@ Catalog build()
         for (const auto& g : comforts.array("goods"))
             if (known(g.asString({})))
                 c.country.comforts.push_back(g.asString({}));
+        // The loop's rules and the city's services (doc 68, Progress, "First fixes").
+        for (const auto& info : Rules)
+            c.country.rules[info.name] =
+                std::clamp(int(std::lround(country.object("rules").number(info.name, info.fallback))), info.low, info.high);
+        for (const auto& s : country.object("services").array("list"))
+        {
+            ServiceDef def{s.string("id"), s.string("business"), std::clamp(int(s.number("every", 30)), 1, 3650)};
+            if (known(def.id) && !def.business.empty() &&
+                std::none_of(c.country.services.begin(), c.country.services.end(), [&](const ServiceDef& x) { return x.id == def.id; }))
+                c.country.services.push_back(std::move(def));
+        }
         // The seasons (a group of goods each; a good in the first group that names it).
         std::set<std::string> grouped;
         for (const auto& g : country.object("seasons").array("groups"))
@@ -610,6 +622,14 @@ const Households& households()
 const Country& country()
 {
     return catalog().country;
+}
+
+const RuleInfo* ruleInfo(const std::string& name)
+{
+    for (const auto& info : Rules)
+        if (name == info.name)
+            return &info;
+    return nullptr;
 }
 
 const Producer* producerFor(const std::string& workLabel)

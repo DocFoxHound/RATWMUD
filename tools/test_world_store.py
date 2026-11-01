@@ -222,7 +222,7 @@ class StoreTests(unittest.TestCase):
                         'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS})
+        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS})
         self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
         lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
         self.assertIn('store off 120 resale on 60 rule on', lines)
@@ -303,6 +303,41 @@ class StoreTests(unittest.TestCase):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
 
+    def test_rules_and_services_round_trip(self):
+        # Doc 68, Progress, "First fixes" (migration 0058): the rules and the services in live.economy and in the
+        # export's records ("rule", "service" after the comforts' and seasons'); back at country.json's, no records.
+        p = greyfen()
+        p['economy'] = {**p['economy'], 'comfortsAbove': 50, 'rules': {'almsADay': 12, 'treasuryCap': 3000, 'fairFood': 0},
+                        'services': {'groom_and_trim': {'on': False, 'price': 2, 'every': 5}}}
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        wanted = ['rule "almsADay" 12', 'rule "fairFood" 0', 'rule "treasuryCap" 3000',
+                  'service "groom_and_trim" off price 2 every 5']
+        at = lines.index(wanted[0])
+        self.assertEqual(lines[at - 1], 'comforts 50 -', 'after the comforts')
+        self.assertEqual(lines[at:at + 4], wanted)
+        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['comforts 50 -', *wanted],
+                         'the database writes the same')
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.RULE_DEFAULTS)}
+        S.save_world(self.conn, loaded, revision)
+        again, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual((again['economy']['rules'], again['economy']['services']), ({}, {}))
+        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
+        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as country.json has them: no records')
+        trim = {'on': True, 'price': 1, 'every': 4}
+        for bad in ({'rules': {'almsADay': 1001}}, {'rules': {'fairFood': 2}}, {'rules': {'luck': 1}}, {'rules': {'treasuryCap': -1}},
+                    {'rules': {'servicesCityShare': 101}}, {'rules': []}, {'services': {'haircut': trim}},
+                    {'services': {'groom_and_trim': {**trim, 'price': 0}}}, {'services': {'groom_and_trim': {**trim, 'every': 3651}}},
+                    {'services': {'groom_and_trim': {'on': 1, 'price': 1, 'every': 4}}}, {'services': {'groom_and_trim': {'on': True}}}):
+            with self.assertRaises(E.ValidationError, msg=str(bad)):
+                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+
     def test_a_missing_economy_row_is_made_from_the_defaults(self):
         # Ridgemere 2.0 has no live.economy row: its first save makes one from DEFAULT_ECONOMY (1000p), never the
         # table's column defaults (a treasury of 0).
@@ -355,7 +390,7 @@ class WithoutMigration55Tests(unittest.TestCase):
         source = greyfen()
         S.save_world(self.conn, source, None, create=True)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS}, 'the defaults, read')
+        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS}, 'the defaults, read')
         roster = R.load()
         before, after = E.export_files(source, roster), E.export_files(loaded, roster)
         del before['atlas.json'], after['atlas.json']
@@ -450,6 +485,47 @@ class WithoutMigration57Tests(unittest.TestCase):
         grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
         for change in ({'comfortsAbove': 30}, {'comfortsShare': 5}, {'seasons': {'grain': grain}}):
             with self.assertRaisesRegex(S.StoreError, '0057'):
+                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration58Tests(unittest.TestCase):
+    """A world with 0057 but not 0058 loads and saves as before, its seasons' and comforts' settings too, reading
+    country.json's rules and services; a rule or service setting is refused, naming 0058."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+        with W.connect('dev', 'owner', dbname=cls.name) as owner:
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0058'])
+        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
+        S.save_roster(cls.conn, R.load())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
+
+    def test_loads_and_saves_and_refuses_a_rule(self):
+        self.assertTrue(S.seasons_supported(self.conn))
+        self.assertFalse(S.rules_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.SEASON_TABLES)
+        source = greyfen()
+        S.save_world(self.conn, source, None, create=True)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.SEASON_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'gateToll': 12, 'comfortsAbove': 30}},
+                                      revision), revision + 1)
+        for change in ({'rules': {'almsADay': 12}}, {'services': {'groom_and_trim': {'on': False, 'price': 1, 'every': 4}}}):
+            with self.assertRaisesRegex(S.StoreError, '0058'):
                 S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
 
 

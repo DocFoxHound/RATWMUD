@@ -78,12 +78,78 @@ LOOP_NUMBERS = {'countryReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wag
                 'wagePublic': 1000, 'wageCountry': 1000}
 SUBSIDISED = ('carriage',)                           # Society::Subsidised
 # The seasons in the Country's supply and the residents' comforts (doc 68, Progress, "Seasons and the DM's rules";
-# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for country.json's (60p a head, 10%);
-# seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
+# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for country.json's (40p a head, 20% since
+# doc 68's first fixes); seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
 # listed is as country.json says), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
 SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
 SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
 SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
+# The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys.
+# rules: {name: whole number}, the rules this world has changed (a rule not listed is as country.json's `rules`);
+# services: {service id: {on, price, every}}, the services this world has changed (stored whole; a service not listed is
+# as country.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
+RULE_DEFAULTS = {'rules': {}, 'services': {}}
+RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 100000000, 'wageSupport': 100,
+               'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100}
+RULE_SWITCHES = ('fairFood', 'services')            # 0 or 1: off or on.
+SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
+
+
+def country_file() -> dict:
+    """Data/Items/country.json as the file has it ({} if it can't be read)."""
+    try:
+        return json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
+def rule_defaults() -> dict:
+    """country.json's rules ({name: N}, without its `about`)."""
+    rules = country_file().get('rules') or {}
+    return {k: v for k, v in rules.items() if k in RULE_LIMITS}
+
+
+def service_list() -> list[dict]:
+    """country.json's services, each with its item's name and catalogue price (items.json): {id, name, business, price,
+    every}."""
+    try:
+        items = {i['id']: i for i in json.loads((ROOT / 'Data/Items/items.json').read_text(encoding='utf-8'))['items']}
+    except (OSError, ValueError, KeyError):
+        items = {}
+    out = []
+    for s in (country_file().get('services') or {}).get('list') or []:
+        if isinstance(s, dict) and s.get('id'):
+            item = items.get(s['id'], {})
+            out.append({'id': s['id'], 'name': item.get('name', s['id']), 'business': s.get('business', ''),
+                        'price': item.get('price', 1), 'every': s.get('every', 1)})
+    return out
+
+
+def check_rules(rules, services) -> list[str]:
+    """The rules' and the services' problems."""
+    errors = []
+    if not isinstance(rules, dict):
+        errors.append('economy.rules must be {rule: whole number}.')
+    else:
+        for name, value in rules.items():
+            if name not in RULE_LIMITS:
+                errors.append(f'economy.rules names no rule: {name} (the rules: {", ".join(RULE_LIMITS)}).')
+            elif not number(value, 0, RULE_LIMITS[name], integer=True):
+                errors.append(f'economy.rules.{name} must be a whole number from 0 to {RULE_LIMITS[name]}.')
+    if not isinstance(services, dict):
+        errors.append('economy.services must be {service: {on, price, every}}.')
+        return errors
+    known = {s['id'] for s in service_list()}
+    for sid, s in services.items():
+        if sid not in known:
+            errors.append(f'economy.services names no service of country.json: {sid}.')
+        elif not isinstance(s, dict) or set(s) != {'on', 'price', 'every'} or type(s['on']) is not bool:
+            errors.append(f'economy.services.{sid} must be {{on: true or false, price: pennies, every: days}}.')
+        else:
+            for key, (low, high) in SERVICE_LIMITS.items():
+                if not number(s[key], low, high, integer=True):
+                    errors.append(f'economy.services.{sid}.{key} must be a whole number from {low} to {high}.')
+    return errors
 
 
 def season_groups() -> list[dict]:
@@ -122,10 +188,12 @@ def check_economy(economy, person_ids=None) -> list[str]:
     errors = []
     keys = set(economy)
     if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
-                                         | set(SEASON_DEFAULTS)):
+                                         | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS)):
         errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
                       '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses, '
-                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ' and ' + ', '.join(SEASON_DEFAULTS) + ').')
+                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ' and '
+                      + ', '.join(RULE_DEFAULTS) + ').')
+    errors += check_rules(economy.get('rules', {}), economy.get('services', {}))
     for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
         value = economy.get(key)
         if value is not None and not number(value, 0, high, integer=True):
@@ -211,6 +279,17 @@ def season_lines(economy) -> list[str]:
     for group, g in sorted((e['seasons'] or {}).items()):
         out.append(f'season {quote(group)} supply {" ".join(map(str, g["supply"]))} price {" ".join(map(str, g["price"]))} '
                    f'shelf {" ".join(map(str, g["shelf"]))} normal {g["normal"]}')
+    return out
+
+
+def rule_lines(economy) -> list[str]:
+    """The NPC records' rule and service lines (live.people_manifest's since 0058): a "rule" line a rule this world has
+    changed, a "service" line a service."""
+    e = {**RULE_DEFAULTS, **(economy or {})}
+    out = [f'rule {quote(name)} {value}' for name, value in sorted((e['rules'] or {}).items())]
+    word = lambda on: 'on' if on else 'off'
+    out += [f'service {quote(sid)} {word(s["on"])} price {s["price"]} every {s["every"]}'
+            for sid, s in sorted((e['services'] or {}).items())]
     return out
 
 
@@ -887,6 +966,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(store_line(e))          # The store room's switches, when not at their defaults (doc 67, 6).
         manifest += loop_lines(e)                   # The city's loop's, likewise (doc 68, 9).
         manifest += season_lines(e)                 # The comforts' and the seasons' (doc 68, Progress).
+        manifest += rule_lines(e)                   # The rules' and the services' (doc 68, Progress, "First fixes").
     off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.

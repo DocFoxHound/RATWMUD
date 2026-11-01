@@ -583,6 +583,36 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Invalid or duplicate comforts record.");
             comforts = true;
         }
+        else if (command == "rule")
+        {
+            // One of the loop's rules as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a rule:
+            // rule "<name>" N, a name of items::Rules within its range.
+            std::string name;
+            long long value = -1;
+            if (!quoted(fields, name))
+                return reject("Malformed rule record.");
+            fields >> value;
+            const auto* info = items::ruleInfo(name);
+            if (!fields || !end(fields) || !info || value < info->low || value > info->high)
+                return reject("Invalid rule record: " + name);
+            if (!roster.economy.rules.emplace(name, int(value)).second)
+                return reject("Duplicate rule record: " + name);
+        }
+        else if (command == "service")
+        {
+            // A city service as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a service:
+            // service "<id>" on|off price N every DAYS. One country.json no longer lists is kept and does nothing.
+            std::string id, onOff, w[2];
+            long long price = -1, every = -1;
+            if (!quoted(fields, id) || !identifier(id, 48))
+                return reject("Malformed service record.");
+            fields >> onOff >> w[0] >> price >> w[1] >> every;
+            if (!fields || !end(fields) || (onOff != "on" && onOff != "off") || w[0] != "price" || w[1] != "every" || price < 1 ||
+                price > 100000 || every < 1 || every > 3650)
+                return reject("Invalid service record: " + id);
+            if (!roster.economy.services.emplace(id, EconomySpec::Service{onOff == "on", int(price), int(every)}).second)
+                return reject("Duplicate service record: " + id);
+        }
         else if (command == "season")
         {
             // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group:
