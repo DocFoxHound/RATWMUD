@@ -69,9 +69,10 @@ Society city(std::vector<ResidentSpec> residents, std::vector<Kin> kin, const st
     r.kin = std::move(kin);
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
-    // The first fixes' loop: the later rules as they were (trades_tests and treasury_tests have theirs; doc 68, "Trades",
-    // "The treasury's surplus").
-    r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0}};
+    // The first fixes' loop: the later rules as they were (trades_tests, treasury_tests and selfcorrect_tests have theirs;
+    // doc 68, "Trades", "The treasury's surplus", "Self-correcting rules").
+    r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0},
+                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
     if (change)
         change(r);
     Society s(Roster::None);

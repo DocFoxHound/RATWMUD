@@ -242,6 +242,12 @@ add_executable(treasury_tests Tests/treasury_tests.cpp)
 target_link_libraries(treasury_tests PRIVATE ratw_core)
 target_compile_definitions(treasury_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME treasury_behaviors COMMAND treasury_tests)
+# The self-correcting rules (doc 68, Progress, "Self-correcting rules"): prices follow stock, shelves sales, wages cover,
+# the toll and the alms the treasury's level; their bounds, rates, saves and switches, money conserved.
+add_executable(selfcorrect_tests Tests/selfcorrect_tests.cpp)
+target_link_libraries(selfcorrect_tests PRIVATE ratw_core)
+target_compile_definitions(selfcorrect_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME selfcorrect_behaviors COMMAND selfcorrect_tests)
 add_executable(hunt_tests Tests/hunt_tests.cpp)
 target_link_libraries(hunt_tests PRIVATE ratw_core)
 add_test(NAME hunt_behaviors COMMAND hunt_tests)

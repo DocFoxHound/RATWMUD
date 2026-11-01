@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {basketRows, bulk, choices, comfortOf, comfortsText, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent,
+import {basketRows, bulk, choices, comfortOf, comfortsText, driftLines, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent,
     percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, seasonal, seasonChange, serviceChange, serviceText,
     serviceValue, switchText, wholeOf, wouldChange, type BasketGood, type CountryGood, type RuleControls, type SeasonGroup,
     type StoreBusiness} from './economy.ts';
@@ -51,7 +51,10 @@ const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber'
 const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {almsADay: 12}, services: {},
     ruleDefaults: {comfortsMost: 200, almsADay: 10, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
         servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7,
-        subsidyToNeed: 1, surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40}, serviceList: [trim]};
+        subsidyToNeed: 1, surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
+        stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
+        wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 6, wageDriftFloor: 7, treasuryDrift: 1,
+        treasuryTarget: 5000, treasuryBand: 15, treasuryDays: 182, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2}, serviceList: [trim]};
 
 test('a rule is the world\'s own or country.json\'s, and a change is sent only when it changes something', () => {
     assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of country.json listed');
@@ -66,6 +69,18 @@ test('a rule is the world\'s own or country.json\'s, and a change is sent only w
     assert.equal(ruleOf('', 1000), null);
     assert.equal(ruleOf('15', 1000), 15);
     assert.equal(ruleOf('1001', 1000), undefined);
+});
+
+test('where the self-correcting rules stand: a line each, nothing before the world has a save', () => {
+    assert.deepEqual(driftLines(undefined), []);
+    assert.deepEqual(driftLines({saved: null, problem: 'The world has no save yet: nothing has drifted.', tollBase: 30, almsBase: 10}), []);
+    const lines = driftLines({saved: '2026-11-01 10:00', problem: '', tollBase: 30, almsBase: 10, toll: 28.5, alms: 11, level: 5612,
+        target: 5000, prices: {on: true, moved: 120, mean: 1.02, low: 0.8, high: 1.25}, shelves: {on: true, wares: 400, mean: 12.5},
+        wages: {on: false, tills: 110, up: 30, down: 5, mean: 0.9, moved: []}});
+    assert.equal(lines.length, 4);
+    assert.match(lines[0], /toll 28\.5% \(the world's 30%\), the alms 11p a head \(10p\): the treasury's level 5612p against its target 5000p/);
+    assert.match(lines[1], /120 wares .* mean 1\.02, from 0\.8 to 1\.25\.$/);
+    assert.match(lines[3], /30 tills up, 5 down of 110, mean 0\.9p a post \(the rule is off\)\.$/);
 });
 
 test('a service: country.json\'s until changed, one of its three at a time', () => {

@@ -111,9 +111,10 @@ AuthoredRoster roster(bool carters = true)
     r.kin = {{"clerk", "child", "parent"}, {"clerk", "upstairs", "parent"}};   // (One child in a room of its own upstairs.)
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
-    // The loop as doc 68 first built it: the later rules as they were (trades_tests and treasury_tests have theirs; doc
-    // 68, "Trades", "The treasury's surplus").
-    r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0}};
+    // The loop as doc 68 first built it: the later rules as they were (trades_tests, treasury_tests and selfcorrect_tests
+    // have theirs; doc 68, "Trades", "The treasury's surplus", "Self-correcting rules").
+    r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0},
+                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
     return r;
 }
 

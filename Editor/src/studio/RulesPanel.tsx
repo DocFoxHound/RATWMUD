@@ -5,8 +5,8 @@
 // off with its price and how often a household with money to spare buys it. On Atlas's Economy page and the DM's
 // Economy tab alike.
 import {useEffect, useState} from 'react';
-import {RULES, ruleChange, ruleOf, serviceChange, serviceText, serviceValue, wholeOf, type RuleControls, type RulesBody,
-    type ServiceListed, type ServicesBody} from '../lib/economy';
+import {RULES, driftLines, ruleChange, ruleOf, serviceChange, serviceText, serviceValue, wholeOf, type RuleControls,
+    type RulesBody, type ServiceListed, type ServicesBody} from '../lib/economy';
 
 type Typed = Record<string, string>;
 
@@ -50,8 +50,18 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
             (shown faintly). The treasury's cap pays the shops' short wages only from what it holds over the cap, after its own
             posts. Then what it still holds over the cap and its reserve (the surplus) goes out: a share to public works
             orders from the city's trades, a share to the poorest households up to so much a head (doc 68, "The treasury's
-            surplus").</p>
+            surplus"). The self-correcting rules (doc 68, "Self-correcting rules") move a shop's prices with its stock, its
+            shelves with its sales, a till's wages with what it can pay, and the gate toll and the alms with the treasury's level,
+            each gently and within its bounds; where they stand now is below, as the world's last save has it.</p>
         {!data.rulesSupported && <p className="publish-error">{data.rulesProblem}</p>}
+        <div className="drift-now"><b>Where the self-correcting rules stand</b>
+            {data.drift?.saved && <small className="hint"> (saved {data.drift.saved})</small>}
+            {data.drift?.saved
+                ? <><ul>{driftLines(data.drift).map(l => <li key={l}>{l}</li>)}</ul>
+                    {(data.drift.wages?.moved.length ?? 0) > 0 && <details><summary>Tills whose wages have moved</summary>
+                        <ul>{data.drift.wages!.moved.map(w => <li key={w.till}>{w.name}: {w.step > 0 ? '+' : ''}{w.step}p a post</li>)}</ul>
+                    </details>}</>
+                : <p className="hint">{data.drift?.problem || 'Nothing to show yet.'}</p>}</div>
         {RULES.map(r => r.onOff
             ? <div key={r.key}><label className="toggle-row"><input type="checkbox"
                 checked={(data.rules[r.key] ?? data.ruleDefaults[r.key]) === 1} disabled={off}

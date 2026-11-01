@@ -215,6 +215,33 @@ struct CareerWorld
     std::function<bool(const std::string& workCell, const std::string& homeCell)> near;
 };
 
+// What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), saved with the society (its
+// save's "loop", only when there is any): each shop's price factors from its stock and its wares' sales a day, smoothed;
+// each till's wage step and the days it is being judged on; the treasury's slow level, and the toll and alms it has
+// moved. Nothing here is money: the coins stay in the accounts.
+struct LoopState
+{
+    std::map<std::string, std::map<std::string, double>> prices;   // Till -> ware -> its price factor (only those not 1).
+    std::map<std::string, std::map<std::string, double>> sales;    // Till -> ware -> pieces sold a day, smoothed.
+    struct Wages
+    {
+        int step = 0;                               // Pennies on each of its posts' wages (the floor aside).
+        int days = 0, shortDays = 0;                // The days judged so far, and those it could not pay its posts;
+        std::int64_t owed = 0, profit = 0;          // what it owed them, and its keeper's profit, over those days.
+    };
+    std::map<std::string, Wages> wages;             // Till -> its wage step and its window.
+    double level = -1;                              // The treasury's slow mean at 18:00 (-1: not begun),
+    int levelDays = 0;                              // over so many nights (its first treasuryDays: their plain mean).
+    double levelThen = -1;                          // The mean when the toll and alms were last judged,
+    std::int64_t judged = -1;                       // and that day.
+    double toll = 0;                                // Points on the world's gate toll.
+    int alms = 0;                                   // Pennies a head on almsADay.
+    bool empty() const
+    {
+        return prices.empty() && sales.empty() && wages.empty() && level < 0 && levelDays == 0 && judged < 0 && toll == 0 &&
+               alms == 0;
+    }
+};
 struct SocietyState
 {
     bool enabled = false;
@@ -225,6 +252,7 @@ struct SocietyState
     int exportsRemaining = 8, importsRemaining = 4, herbPatch = 40;   // (The demo roster's.)
     double decisionRemainder = 0;
     CareerState careers;
+    LoopState loop;
 };
 struct EconomyResult
 {
@@ -640,6 +668,16 @@ class Society
     // The most `quantity` of a good costs a resident in a shop now (for whether it can pay): the catalogue's price, or the
     // season's (times its price factor) rounded up if dearer. What is paid: the catalogue's, then the difference.
     std::int64_t seasonalCost(const std::string& item, int quantity) const;
+    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"), as they stand now: a shop's price factor for
+    // a ware from its stock (1 with the rule off), times the season's for what `quantity` of it costs a resident there;
+    // the gate toll in percent and the alms a head, with what the treasury's level has moved them by; a till's wage with
+    // its wage step (the floor kept).
+    double stockFactor(const std::string& till, const std::string& ware) const;
+    std::int64_t shopCost(const std::string& till, const std::string& item, int quantity) const;
+    double gateTollNow() const;
+    std::int64_t almsNow() const;
+    int driftedWage(const std::string& till, int wage) const;
+    static constexpr int DriftStepDays = 14;          // The toll and the alms are judged a fortnight apart.
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
@@ -865,6 +903,15 @@ class Society
     std::int64_t topUpPoorest(std::int64_t budget);     // The poorest households topped up, per head, from `budget`.
     std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.
     void turnShelves();
+    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): at the day's turn the shops' wares' sales a
+    // day and price factors follow the day's sales and stock (the day ended a Restday or festival: sales never lowered,
+    // prices kept); at 18:00 a till's day is counted toward its wage step, and the treasury's level moves the toll and
+    // the alms (after the surplus).
+    void followStock(bool restDay);
+    const std::map<std::string, double>* priceFactors(const std::string& till) const;   // (Null: none but 1.)
+    void judgeWages(const std::string& till, std::int64_t owed, std::int64_t paid, std::int64_t profit);
+    void followTreasury(std::int64_t day);
+    std::unordered_map<std::string, std::set<std::string>> soldOut_;   // Till -> wares its shelves ran out of today.
     std::map<std::string, std::int64_t> tillsShort_;   // Till -> what it could not pay its posts tonight (payWages).
     std::vector<ServiceNow> services_;              // (buildSeasons, with the rules.)
     std::map<std::string, int> rules_;              // Every rule by name as this world has it (buildSeasons).

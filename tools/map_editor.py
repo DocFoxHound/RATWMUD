@@ -95,8 +95,15 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
                'floatWagesDays': 60, 'subsidyToNeed': 1,
                # The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): no migration.
-               'surplus': 1, 'surplusKeep': 100000000, 'surplusWorks': 100, 'surplusAlms': 100, 'surplusAlmsTo': 1000}
-RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus')   # 0 or 1: off or on.
+               'surplus': 1, 'surplusKeep': 100000000, 'surplusWorks': 100, 'surplusAlms': 100, 'surplusAlmsTo': 1000,
+               # The self-correcting rules (doc 68, Progress, "Self-correcting rules"): no migration (what they drift to is
+               # the game's save, not live.economy).
+               'stockPrices': 1, 'stockPriceBand': 90, 'stockPriceStep': 1000, 'shelfFollow': 1, 'shelfDays': 365,
+               'shelfCover': 1000, 'shelfGrow': 500, 'wageDrift': 1, 'wageDriftDays': 365, 'wageDriftSpare': 1000,
+               'wageDriftMost': 100, 'wageDriftFloor': 1000, 'treasuryDrift': 1, 'treasuryTarget': 100000000,
+               'treasuryBand': 100, 'treasuryDays': 3650, 'tollStep': 100, 'tollDriftMost': 90, 'almsDriftMost': 1000}
+RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
+                 'wageDrift', 'treasuryDrift')   # 0 or 1: off or on.
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
 
 

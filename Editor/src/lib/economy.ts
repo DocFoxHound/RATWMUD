@@ -95,7 +95,29 @@ export interface ServiceValues { on: boolean; price: number; every: number }
 export interface ServiceListed { id: string; name: string; business: string; price: number; every: number; for?: string }
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
-    ruleDefaults: Record<string, number>; serviceList: ServiceListed[];
+    ruleDefaults: Record<string, number>; serviceList: ServiceListed[]; drift?: DriftView;
+}
+/** Where the self-correcting rules stand on the world's game, as its last save has them (doc 68, Progress,
+ * "Self-correcting rules"): read only; the rules move it, never a setting. */
+export interface DriftView {
+    saved: string | null; problem: string; tollBase: number; almsBase: number;
+    toll?: number; alms?: number; level?: number | null; target?: number;
+    prices?: {on: boolean; moved: number; mean: number; low: number; high: number};
+    shelves?: {on: boolean; wares: number; mean: number | null};
+    wages?: {on: boolean; tills: number; up: number; down: number; mean: number; moved: {till: string; name: string; step: number}[]};
+}
+/** The drift in a line each, for the page (empty when the world has no save). */
+export function driftLines(d: DriftView | undefined): string[] {
+    if (!d || !d.saved) return [];
+    const off = (on: boolean | undefined) => on ? '' : ' (the rule is off)';
+    const out = [`The gate toll ${d.toll?.toFixed(1)}% (the world's ${d.tollBase}%), the alms ${d.alms}p a head (${d.almsBase}p)`
+        + `: the treasury's level ${d.level ?? '-'}p against its target ${d.target}p.`];
+    if (d.prices) out.push(`Price factors: ${d.prices.moved} wares off the catalogue's price, mean ${d.prices.mean}, from ${d.prices.low} to `
+        + `${d.prices.high}${off(d.prices.on)}.`);
+    if (d.shelves) out.push(`Shelves from sales: ${d.shelves.wares} wares, ${d.shelves.mean ?? '-'} on a shelf on average${off(d.shelves.on)}.`);
+    if (d.wages) out.push(`Wage steps: ${d.wages.up} tills up, ${d.wages.down} down of ${d.wages.tills}, mean ${d.wages.mean}p a post`
+        + `${off(d.wages.on)}.`);
+    return out;
 }
 export type RulesBody = {set: Record<string, number | null>};
 export type ServicesBody = {set: Record<string, Partial<ServiceValues> | null>};
@@ -123,6 +145,27 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'surplusWorks', label: 'Surplus to public works', max: 100, unit: '% of the surplus a day: orders from the city\'s trades, till to till'},
     {key: 'surplusAlms', label: 'Surplus to the poorest', max: 100, unit: '% of the surplus a day: the poorest households, per head, poorest first'},
     {key: 'surplusAlmsTo', label: 'The poorest raised to', max: 1000, unit: 'p a head, at most, the surplus brings the poorest households up to'},
+    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): each drifts gently within its bounds; where
+    // each stands now is the running game's (RuleControls.drift), shown beside them, read only.
+    {key: 'stockPrices', label: 'Prices follow stock', max: 1, unit: 'a shop\'s price for a ware rises when it sells out and falls on a glut, the city\'s prices as a whole kept at the catalogue\'s', onOff: true},
+    {key: 'stockPriceBand', label: 'Price band', max: 90, unit: '% either side of the catalogue\'s (the season\'s) price, at most'},
+    {key: 'stockPriceStep', label: 'Price step', max: 1000, unit: 'thousandths of the price a day (a quarter of it back toward the catalogue\'s on a quiet day)'},
+    {key: 'shelfFollow', label: 'Shelves follow sales', max: 1, unit: 'a shelf follows its ware\'s sales a day, smoothed (off: a quarter over yesterday\'s)', onOff: true},
+    {key: 'shelfDays', label: 'Sales smoothed over', max: 365, unit: 'days, about'},
+    {key: 'shelfCover', label: 'Shelf', max: 1000, unit: '% of the smoothed sales a day on the shelf (never under its starting stock)'},
+    {key: 'shelfGrow', label: 'Grows on selling out', max: 500, unit: '% more than its shelf a day it sells out counts as sold'},
+    {key: 'wageDrift', label: 'Wages follow cover', max: 1, unit: 'a till\'s posts\' wages rise a penny when it pays them with plenty to spare, fall a penny when it keeps falling short', onOff: true},
+    {key: 'wageDriftDays', label: 'Wages judged every', max: 365, unit: 'days'},
+    {key: 'wageDriftSpare', label: 'Plenty to spare', max: 1000, unit: '% of its wages its keeper\'s profit is, over those days, for a raise'},
+    {key: 'wageDriftMost', label: 'Wage drift, at most', max: 100, unit: 'p a post either way'},
+    {key: 'wageDriftFloor', label: 'Wage floor', max: 1000, unit: 'p a day: no post lowered under it (a day\'s food)'},
+    {key: 'treasuryDrift', label: 'Toll and alms follow the treasury', max: 1, unit: 'over its target the toll eases and the alms rise; under it the toll firms and the alms tighten', onOff: true},
+    {key: 'treasuryTarget', label: 'Treasury target', max: 100000000, unit: 'p, its level (a slow mean at 18:00) is judged against'},
+    {key: 'treasuryBand', label: 'Target band', max: 100, unit: '% either side of the target in which nothing moves'},
+    {key: 'treasuryDays', label: 'Level over', max: 3650, unit: 'days, about (the slow mean)'},
+    {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point a fortnight'},
+    {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
+    {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny a fortnight; never under them)'},
 ];
 /** A rule as it stands: the world's own, else country.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

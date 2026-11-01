@@ -1012,6 +1012,37 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                            ('services', {'set': {'groom_and_trim': {'on': 'no'}}})):
             self.assertEqual(self.call('POST', f'/api/atlas/economy/{route}', bad, token='dm-token', headers=editor)[0], 400, (route, bad))
 
+    def test_where_the_self_correcting_rules_stand(self):
+        # Doc 68, Progress, "Self-correcting rules": what they have drifted to, read only, from the world's save.
+        self.sql(self.dev, 'DELETE FROM game.checkpoints')
+        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertIsNone(data['drift']['saved'])
+        self.assertIn('no save', data['drift']['problem'])
+        keeper = next(n for n in self.sql(self.dev, "SELECT id, name FROM live.npcs WHERE role = 'merchant' AND home_area IS NOT NULL "
+                                                    'AND spawn_id IS NULL ORDER BY id'))
+        loop = {'prices': {'till:job:x': {'bread': 1.2, 'fish': 0.9}}, 'sales': {'till:job:x': {'bread': 10, 'fish': 2}},
+                'wages': {f'till:job:{keeper[0]}': {'step': 2, 'days': 3, 'shortDays': 0, 'owed': 66, 'profit': 90},
+                          'till:job:y': {'step': 0, 'days': 3, 'shortDays': 3, 'owed': 66, 'profit': 0}},
+                'level': 5612.4, 'levelDays': 120, 'levelThen': 5600, 'judged': 400, 'toll': -1.5, 'alms': 1}
+        self.sql(self.dev, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES ('greyfen', 1, 1, %s)",
+                 (json.dumps({'society': {'loop': loop}}),))
+        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        drift = data['drift']
+        self.assertTrue(drift['saved'])
+        self.assertEqual((drift['toll'], drift['tollBase'], drift['alms'], drift['almsBase'], drift['level'], drift['target']),
+                         (28.5, 30, 11, 10, 5612, 5000))
+        self.assertEqual((drift['prices']['moved'], drift['prices']['low'], drift['prices']['high']), (2, 0.9, 1.2))
+        self.assertEqual((drift['shelves']['wares'], drift['shelves']['mean']), (2, 8.5), 'ceil(10 x 1.25) = 13 and the least, 4')
+        self.assertEqual((drift['wages']['tills'], drift['wages']['up'], drift['wages']['down']), (2, 1, 0))
+        self.assertEqual(drift['wages']['moved'], [{'till': f'till:job:{keeper[0]}', 'name': keeper[1], 'step': 2}])
+        # A rule off: the world's own toll and alms, whatever the save holds.
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        self.call('POST', '/api/atlas/economy/rules', {'set': {'treasuryDrift': 0}}, token='dm-token', headers=editor)
+        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
+        self.assertEqual((data['drift']['toll'], data['drift']['alms']), (30.0, 10))
+
     def test_a_world_without_migration_0058(self):
         unmigrate_rules(self.dev)
         status, data = self.call('GET', '/api/atlas/economy', token='dm-token')

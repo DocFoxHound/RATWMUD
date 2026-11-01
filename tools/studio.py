@@ -67,6 +67,7 @@ import copy
 import errno
 import http.client
 import json
+import math
 import os
 import socket
 import subprocess
@@ -251,7 +252,53 @@ class Economy:
                 'loopProblem': '' if loop_ok else 'This world lacks migration 0056: the city\'s loop runs at its defaults and can\'t be changed here.',
                 'market': {'id': market.get('id', 'country'), 'name': market.get('name', 'the Country'), 'people': market.get('people', '')},
                 'basket': basket, 'goods': goods, 'ruleWarning': '' if economy['storeRule'] else NO_RULE,
-                **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok)}
+                **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok),
+                'drift': self.drift(key, w, economy, {r['id']: r['name'] for r in rows})}
+
+    def drift(self, key, world, economy, names) -> dict:
+        """Where the self-correcting rules stand on the world's game (doc 68, Progress, "Self-correcting rules"), as its
+        last save has them (the society's "loop"), read only: the gate toll and the alms as the treasury's level has moved
+        them, that level; the shops' price factors and shelves (how many, their mean and range); the tills' wage steps
+        (each one not 0, by its keeper's name). `names`: {merchant id: name}. None of it is a setting: the rules move it."""
+        rules = {**map_editor.rule_defaults(), **dict(economy.get('rules') or {})}
+        out = {'saved': None, 'problem': '', 'tollBase': economy.get('gateToll', 30), 'almsBase': rules.get('almsADay', 10)}
+        try:
+            with self._connect_dm(key) as conn:
+                row = conn.execute("SELECT payload::jsonb->'society'->'loop', saved_at::text FROM game.checkpoints "
+                                   'WHERE world_id = %s', (world,)).fetchone()
+        except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
+            return {**out, 'problem': f'The world\'s save could not be read: {error}'}
+        if not row:
+            return {**out, 'problem': 'The world has no save yet: nothing has drifted.'}
+        loop = row[0] if isinstance(row[0], dict) else json.loads(row[0]) if row[0] else {}
+        out['saved'] = row[1]
+
+        def on(name):
+            return int(rules.get(name, 1)) > 0
+        toll, alms = float(loop.get('toll') or 0), int(loop.get('alms') or 0)
+        most = float(rules.get('tollDriftMost', 5))
+        out['toll'] = (min(90.0, max(0.0, out['tollBase'] + max(-most, min(most, toll)))) if on('treasuryDrift')
+                       else float(out['tollBase']))
+        out['alms'] = (max(0, out['almsBase'] + max(-int(rules.get('almsDriftMost', 2)), min(int(rules.get('almsDriftMost', 2)), alms)))
+                       if on('treasuryDrift') else out['almsBase'])
+        level = loop.get('level')
+        out['level'] = round(level) if isinstance(level, (int, float)) and level >= 0 else None
+        out['target'] = int(rules.get('treasuryTarget', 5000))
+        factors = [f for wares in (loop.get('prices') or {}).values() for f in wares.values()]
+        out['prices'] = {'on': on('stockPrices'), 'moved': len(factors),
+                         'mean': round(sum(factors) / len(factors), 3) if factors else 1,
+                         'low': round(min(factors), 3) if factors else 1, 'high': round(max(factors), 3) if factors else 1}
+        cover = int(rules.get('shelfCover', 125)) / 100
+        shelves = [max(4, math.ceil(m * cover - 1e-9)) for wares in (loop.get('sales') or {}).values() for m in wares.values()]
+        out['shelves'] = {'on': on('shelfFollow'), 'wares': len(shelves),
+                          'mean': round(sum(shelves) / len(shelves), 1) if shelves else None}
+        steps = {t: int(w.get('step') or 0) for t, w in (loop.get('wages') or {}).items() if isinstance(w, dict)}
+        moved = sorted(({'till': t, 'name': names.get(t.removeprefix('till:job:'), t), 'step': s} for t, s in steps.items() if s),
+                       key=lambda w: (-w['step'], w['name']))
+        out['wages'] = {'on': on('wageDrift'), 'tills': len(steps), 'up': sum(1 for s in steps.values() if s > 0),
+                        'down': sum(1 for s in steps.values() if s < 0),
+                        'mean': round(sum(steps.values()) / len(steps), 2) if steps else 0, 'moved': moved}
+        return out
 
     @staticmethod
     def rules_view(economy, supported) -> dict:

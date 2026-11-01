@@ -78,8 +78,10 @@ std::string Society::marketFor(const std::string& item) const
 Society::Pay Society::payOf(const Position& p) const
 {
     const auto& e = authored_.economy;
+    // A till's posts (its keeper and hands) at its wage step (doc 68, Progress, "Self-correcting rules"); the treasury's
+    // and the Country's posts keep their fixed wages.
     if (p.role == "merchant")
-        return {"keeper", "till:" + p.id, e.wageKeeper};
+        return {"keeper", "till:" + p.id, driftedWage("till:" + p.id, e.wageKeeper)};
     const auto title = lower(p.title);
     // A rule may pay another of the world's wages than its payer's (a head's post: a keeper's; doc 68, "First fixes").
     const auto wageOf = [&](const std::string& kind, int otherwise) {
@@ -104,7 +106,7 @@ Society::Pay Society::payOf(const Position& p) const
         if (q.role == "merchant" && q.work.cell == p.work.cell)
             ++shops, shop = &q;
     if (shops == 1)
-        return {"hand", "till:" + shop->id, e.wageHand};
+        return {"hand", "till:" + shop->id, driftedWage("till:" + shop->id, e.wageHand)};
     for (const auto& rule : items::country().wages)
         for (const auto& word : rule.words)
             if (title.find(word) != std::string::npos)
@@ -165,7 +167,7 @@ std::int64_t Society::carriageOn(const std::string& payer, const std::string& it
 std::int64_t Society::gateToll(const std::string& till, std::int64_t cost, bool commit)
 {
     // The gate toll on a draw's cost, its fraction of a penny kept against the till until it makes one.
-    const double owed = (tollOwed_.count(till) ? tollOwed_[till] : 0.) + double(cost) * std::clamp(authored_.economy.gateToll, 0, 90) / 100.;
+    const double owed = (tollOwed_.count(till) ? tollOwed_[till] : 0.) + double(cost) * gateTollNow() / 100.;
     const auto whole = std::min(cost, std::int64_t(std::floor(owed + 1e-9)));
     if (commit)
         tollOwed_[till] = std::min(1., owed - double(whole));
@@ -236,7 +238,15 @@ std::pair<std::int64_t, std::int64_t> Society::carriageSplit(const std::string& 
 int Society::shelfOf(const std::string& till, const std::string& ware) const
 {
     int shelf = startingStock(ware);
-    if (const auto t = shelf_.find(till); t != shelf_.end())
+    if (rule("shelfFollow") > 0)
+    {
+        // Shelves follow sales (doc 68, Progress, "Self-correcting rules"): shelfCover percent of the ware's smoothed sales
+        // a day, never under its starting stock.
+        if (const auto t = state_.loop.sales.find(till); t != state_.loop.sales.end())
+            if (const auto w = t->second.find(ware); w != t->second.end())
+                shelf = std::max(shelf, int(std::min<double>(StoreDrawMost, std::ceil(w->second * rule("shelfCover") / 100. - 1e-9))));
+    }
+    else if (const auto t = shelf_.find(till); t != shelf_.end())
         if (const auto w = t->second.find(ware); w != t->second.end())
             shelf = std::max(shelf, w->second);
     // A season's shelf (a maker stocking up ahead of a lean season): the shelf times its group's factor.
@@ -447,6 +457,7 @@ void Society::loopHourly(std::int64_t hour, int season)
         supportWages();                             // (What the treasury holds over its cap, to the short tills' posts.)
         giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
         spendSurplus();                             // (Last: what the treasury still holds over its cap and reserve.)
+        followTreasury(day);                        // (Its level tonight moves the toll and the alms, slowly.)
     }
 }
 
@@ -463,6 +474,10 @@ void Society::turnShelves()
             for (const auto& [ware, n] : sold)
                 if (auto& now = soldToday_[till][ware]; now < n)
                     now = n;
+    // The self-correcting rules' shelves and prices (doc 68, Progress, "Self-correcting rules"), from the day's sales.
+    if (ended >= 0)
+        followStock(calendar::weekdayOf(double(ended) + .5) == calendar::Restday || calendar::festivalDay(double(ended) + .5));
+    soldOut_.clear();
     shelf_.clear();
     for (const auto& [till, sold] : soldToday_)
         for (const auto& [ware, n] : sold)
@@ -606,17 +621,18 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             const auto& till = tills[std::size_t(pick)]->till;
             int n = std::min({want - got, stock(*tills[std::size_t(pick)]->account, item), 99});
             std::string payer;
-            while (n > 0 && (payer = payerFor(members, seasonalCost(item, n), keep)).empty())
-                n = payerFor(members, seasonalCost(item, 1), keep).empty() ? 0 : std::max(1, n / 2);
+            while (n > 0 && (payer = payerFor(members, shopCost(till, item, n), keep)).empty())
+                n = payerFor(members, shopCost(till, item, 1), keep).empty() ? 0 : std::max(1, n / 2);
             if (n < 1)
                 break;
-            // At the catalogue's price, then the season's difference: the payer's fractions of a penny kept against it
-            // until they make one (as the gate toll's are), so a penny's good costs its season's price over many buys.
+            // At the catalogue's price, then the season's difference (and the shop's, from its stock: doc 68, Progress,
+            // "Self-correcting rules"): the payer's fractions of a penny kept against it until they make one (as the gate
+            // toll's are), so a penny's good costs its season's price over many buys.
             const auto base = catalogPrice(item) * n;
             if (!sale(till, payer, item, n, catalogPrice(item), "market"))
                 break;
             auto cost = base;
-            if (const double f = priceFactor(item); f != 1)
+            if (const double f = priceFactor(item) * stockFactor(till, item); f != 1)
             {
                 double& carry = priceCarry_.try_emplace(payer, .5).first->second;   // (From half a penny: fair rounding.)
                 const double owed = carry + double(base) * f;
@@ -642,6 +658,7 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
     };
     const auto& households = items::households();
     const bool fairFood = rule("fairFood") > 0;
+    const bool stockPricing = rule("stockPrices") > 0;
     const int comfortsMost = rule("comfortsMost");
     const bool servicesOn = rule("services") > 0 && !services_.empty();
     const int cityShare = rule("servicesCityShare");
@@ -719,20 +736,41 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                         most = std::max(most, cash(x));
                 }
                 std::vector<std::string> foods;
-                std::vector<double> value;
+                std::vector<double> value, held, priced;   // (Pieces on offer, and pieces times their shop's stock factor.)
                 for (const std::vector<const OpenShop*>* list : {&shops, static_cast<const std::vector<const OpenShop*>*>(&all)})
                 {
                     for (const auto* s : *list)
+                    {
+                        const auto* factors = stockPricing ? priceFactors(s->till) : nullptr;
                         for (const auto& [item, n] : s->account->stock)
-                            if (n > 0 && edible(item) && (!fair || seasonalCost(item, 1) <= most) &&
-                                std::find(foods.begin(), foods.end(), item) == foods.end())
+                        {
+                            double f = 1.;
+                            if (factors)
+                                if (const auto own = factors->find(item); own != factors->end())
+                                    f = own->second;
+                            if (n <= 0 || !edible(item) || (fair && (f == 1 ? seasonalCost(item, 1) : shopCost(s->till, item, 1)) > most))
+                                continue;
+                            auto at = std::find(foods.begin(), foods.end(), item);
+                            if (at == foods.end())
                             {
                                 foods.push_back(item);
-                                value.push_back(double(nourishment(item)) / (double(std::max<std::int64_t>(1, catalogPrice(item))) * priceFactor(item)));
+                                held.push_back(0);
+                                priced.push_back(0);
+                                at = foods.end() - 1;
                             }
+                            const auto i = std::size_t(at - foods.begin());
+                            held[i] += n;
+                            priced[i] += n * f;
+                        }
+                    }
                     if (!foods.empty())
                         break;                      // (Its own community's food, where it has some; else anywhere open.)
                 }
+                // The better nourishment for the price the likelier: the season's price, times its shops' stock factors
+                // (their mean, by what each holds; doc 68, Progress, "Self-correcting rules"), so cheaper food sells more.
+                for (std::size_t i = 0; i < foods.size(); ++i)
+                    value.push_back(double(nourishment(foods[i])) /
+                                    (double(std::max<std::int64_t>(1, catalogPrice(foods[i]))) * priceFactor(foods[i]) * (priced[i] / held[i])));
                 const auto key = m + "|" + std::to_string(day) + "|" + std::to_string(hod) + "|" + std::to_string(k) + tag;
                 const int pick = weighted(value, roll(key));
                 if (pick < 0)
@@ -1037,9 +1075,11 @@ void Society::payWages()
         {
             const auto held = state_.careers.positions.find(payer.substr(5));
             const auto cap = float_ + wagesDays * owed;
+            std::int64_t profit = 0;
             if (const auto excess = cash(payer) - cap; held != state_.careers.positions.end() && !held->second.holder.empty() &&
                                                        excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
-                loopToday_.profit += excess;
+                loopToday_.profit += (profit = excess);
+            judgeWages(payer, owed, paid, profit);  // (Its wage step, from its days: doc 68, "Self-correcting rules".)
         }
     }
 }
@@ -1115,7 +1155,8 @@ void Society::giveAlms()
     // The city's alms (doc 68, 4): after the day's wages, a household still holding less than a day's food money a head
     // (the old who have retired, orphans, the out of work, a family whose shop couldn't pay) is given what makes it up,
     // from what the treasury holds over its float. Paid to the member with the least; whoever buys, buys for all.
-    const std::int64_t level = rule("almsADay");     // (Pennies a head: doc 68, "First fixes"; it was 7.)
+    const std::int64_t level = almsNow();            // (Pennies a head: doc 68, "First fixes"; it was 7. The treasury's
+                                                     // level moves it: "Self-correcting rules".)
     for (const auto& [home, members] : households())
     {
         std::int64_t held = 0;
@@ -1637,5 +1678,282 @@ void Society::patronsBuy(int hod, std::int64_t day)
             }
         }
     }
+}
+
+// The self-correcting rules (doc 68, Progress, "Self-correcting rules"; the user, 2026-11-01: "It's looking good and
+// balanced right now, but it doesn't seem robust enough to survive us adding additional towns and converting the
+// 'country' into actual businesses just yet."): a shop's prices follow its stock, its shelves its sales, a till's wages
+// its cover, and the gate toll and the alms the treasury's level. Each moves gently, within its bounds, by its own rule
+// and switch; what each has drifted to is the society's (LoopState, saved with it). None moves money of itself: the
+// prices are paid as the season's are, the wages and the toll by the payers they always had.
+const std::map<std::string, double>* Society::priceFactors(const std::string& till) const
+{
+    const auto found = state_.loop.prices.find(till);
+    return found == state_.loop.prices.end() ? nullptr : &found->second;
+}
+
+double Society::stockFactor(const std::string& till, const std::string& ware) const
+{
+    if (rule("stockPrices") <= 0)
+        return 1;
+    if (const auto* factors = priceFactors(till))
+        if (const auto found = factors->find(ware); found != factors->end())
+            return found->second;
+    return 1;
+}
+
+std::int64_t Society::shopCost(const std::string& till, const std::string& item, int quantity) const
+{
+    // As seasonalCost, times the shop's own factor: the most it may come to (the catalogue's price is paid first).
+    const auto each = catalogPrice(item);
+    if (quantity < 1)
+        return 0;
+    const double f = priceFactor(item) * stockFactor(till, item);
+    if (f == 1)
+        return each * quantity;
+    return std::max<std::int64_t>(each * quantity, std::int64_t(std::ceil(double(each) * quantity * f - 1e-9)));
+}
+
+double Society::gateTollNow() const
+{
+    const int base = std::clamp(authored_.economy.gateToll, 0, 90);
+    if (rule("treasuryDrift") <= 0 || state_.loop.toll == 0)
+        return base;
+    const double most = rule("tollDriftMost");      // (The DM may have narrowed the bounds since it moved.)
+    return std::clamp(base + std::clamp(state_.loop.toll, -most, most), 0., 90.);
+}
+
+std::int64_t Society::almsNow() const
+{
+    const int base = rule("almsADay");
+    if (rule("treasuryDrift") <= 0 || state_.loop.alms == 0)
+        return base;
+    const int most = rule("almsDriftMost");
+    return std::max(0, base + std::clamp(state_.loop.alms, 0, most));
+}
+
+int Society::driftedWage(const std::string& till, int wage) const
+{
+    if (rule("wageDrift") <= 0)
+        return wage;
+    const auto found = state_.loop.wages.find(till);
+    if (found == state_.loop.wages.end() || found->second.step == 0)
+        return wage;
+    const int most = rule("wageDriftMost");
+    const int step = std::clamp(found->second.step, -most, most);
+    // Lowered no further than the floor (a day's food), and the floor never raises a wage the world set under it.
+    return step > 0 ? wage + step : std::max(std::min(wage, rule("wageDriftFloor")), wage + step);
+}
+
+void Society::followStock(bool restDay)
+{
+    // At the day's turn, for each shop open today (it sold something), each ware it sells:
+    //  - its sales a day, smoothed over about shelfDays days (the second rule's shelf is shelfCover percent of them, at
+    //    most StoreDrawMost): a day it sold out having sold at least its shelf counts as shelfGrow percent more than its
+    //    shelf, so a shelf too small to show what would sell grows rather than shrinking with its sales (the small shelf's
+    //    spiral; a maker that sold out short of its shelf was short of hands, not of shelf); a Restday's or festival's few
+    //    sales never lower it (as buying ahead's fix keeps yesterday's shelves);
+    //  - its price factor (the first rule, for what residents buy): up stockPriceStep a day when it sold out, down when
+    //    what is left at the day's end is more than GlutDays of the day's sales (the season's stock-up allowed for) and
+    //    over its starting stock, and else back toward 1 by a quarter step. Then every factor moved today is scaled so
+    //    that their mean, weighted by sales, is 1: what is scarce grows dearer against what is plentiful while the city's
+    //    prices as a whole stay the catalogue's (the season's). Without it the food every maker makes as fast as its hands
+    //    allow (sold out each day, wherever residents turn) climbs to the band's top together and households pay a
+    //    quarter more for the same food: a level that ratchets, where only the prices between goods should move. Within
+    //    stockPriceBand of 1, and a ware the store room supplies never under what it charges and a little carriage;
+    //    kept as they were over a Restday or festival.
+    const bool shelves = rule("shelfFollow") > 0, prices = rule("stockPrices") > 0;
+    if (!shelves && !prices)
+        return;
+    constexpr double GlutDays = 3;
+    const double days = rule("shelfDays"), grow = 1 + rule("shelfGrow") / 100., cover = rule("shelfCover") / 100.;
+    const double band = rule("stockPriceBand") / 100., step = rule("stockPriceStep") / 1000.;
+    const double making = std::clamp(authored_.economy.storeMarkup, 0, 1000) / 100.;
+    const double resale = std::clamp(authored_.economy.resaleMarkup, 0, 1000) / 100.;
+    // (Only what residents buy has a price of the shop's own: food, needs, comforts. A maker's inputs and by-products go
+    // till to till, and the Country's purchases and players' trade, at the catalogue's price.)
+    const auto& needs = items::households().needs;
+    const auto& comforts = items::country().comforts;
+    const auto residentsBuy = [&](const std::string& ware) {
+        return edible(ware) || std::find(comforts.begin(), comforts.end(), ware) != comforts.end() ||
+               std::any_of(needs.begin(), needs.end(), [&](const auto& n) { return std::find(n.any.begin(), n.any.end(), ware) != n.any.end(); });
+    };
+    struct Priced
+    {
+        std::string till, ware;
+        double f, low, high, weight;                // (Its factor before the scaling, its bounds, its sales a day.)
+    };
+    std::vector<Priced> moved;
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto till = "till:" + p.id;
+        const auto* onShelves = account(till);
+        const auto sold = soldToday_.find(till);
+        if (!onShelves || sold == soldToday_.end() || sold->second.empty())
+            continue;                               // (Shut all day: nothing to go on.)
+        const auto held = state_.careers.positions.find(p.id);
+        const std::string keeper = held != state_.careers.positions.end() ? held->second.holder : std::string();
+        const auto out = soldOut_.find(till);
+        for (const auto& ware : wares(p.founder))
+        {
+            const auto s = sold->second.find(ware);
+            const int n = s == sold->second.end() ? 0 : s->second;
+            const bool ranOut = out != soldOut_.end() && out->second.count(ware) > 0;
+            auto& means = state_.loop.sales[till];
+            const auto mean = means.find(ware);
+            const int least = startingStock(ware);
+            const double shelf = std::min<double>(StoreDrawMost, mean == means.end() ? least
+                                                                   : std::max<double>(least, std::ceil(mean->second * cover - 1e-9)));
+            double x = n;
+            if (ranOut && n >= shelf)
+                x = std::max(x, shelf * grow);
+            double weight = 0;
+            if (mean == means.end())
+            {
+                if (x > 0)
+                    means[ware] = weight = std::min<double>(StoreDrawMost, x);   // (Its first day: what it sold.)
+            }
+            else
+            {
+                if (restDay)
+                    x = std::max(x, mean->second);
+                weight = mean->second = std::min<double>(StoreDrawMost, mean->second + (x - mean->second) / days);
+                if (mean->second < .05)
+                    means.erase(mean);
+            }
+            if (means.empty())
+                state_.loop.sales.erase(till);
+            if (!prices || restDay || !residentsBuy(ware))
+                continue;
+            double f = stockFactor(till, ware);
+            // (Never under what the store room charges the shop for it, and a little for carriage: a ware it resells at
+            // resaleMarkup, an input of its crafts it also sells as it is, the fishmonger's fish, at storeMarkup.)
+            const auto use = keeper.empty() ? StoreUse::None : storeUse(keeper, ware);
+            const double charged = use == StoreUse::Resell ? resale + .05 : use == StoreUse::Make ? making + .05 : 0.;
+            const double low = std::min(1., std::max(1 - band, charged));
+            const int have = stock(*onShelves, ware);
+            if (ranOut)
+                f += step;
+            else if (have > least && have > GlutDays * n * shelfFactor(ware))
+                f -= step;
+            else
+                f = f > 1 ? std::max(1., f - step / 4) : std::min(1., f + step / 4);
+            moved.push_back({till, ware, f, low, 1 + band, weight});
+        }
+    }
+    if (moved.empty())
+        return;
+    // The city's price level held: today's factors scaled so that, each within its bounds, their mean by sales is 1 (the
+    // scale found by halving, the bounds being where a factor stops).
+    const auto levelAt = [&](double scale) {
+        double level = 0, weights = 0;
+        for (const auto& m : moved)
+        {
+            level += std::clamp(m.f * scale, m.low, m.high) * m.weight;
+            weights += m.weight;
+        }
+        return weights > 0 ? level / weights : 1.;
+    };
+    double scale = 1;
+    if (levelAt(1) != 1)
+    {
+        double low = .25, high = 4;
+        for (int i = 0; i < 60; ++i)
+            (levelAt(scale = (low + high) / 2) < 1 ? low : high) = scale;
+    }
+    for (const auto& m : moved)
+    {
+        const double f = std::clamp(m.f * scale, m.low, m.high);
+        auto& factors = state_.loop.prices[m.till];
+        if (std::abs(f - 1) < 1e-9)
+            factors.erase(m.ware);
+        else
+            factors[m.ware] = f;
+        if (factors.empty())
+            state_.loop.prices.erase(m.till);
+    }
+}
+
+void Society::judgeWages(const std::string& till, std::int64_t owed, std::int64_t paid, std::int64_t profit)
+{
+    // A till's wages follow its cover (the third rule), a penny a post at a time: over wageDriftDays days, a till that paid
+    // all its posts every day, its keeper's profit at least wageDriftSpare percent of their wages, raises each post's wage
+    // a penny; one short of them on more than half the days lowers it a penny (only while that lowers some post: none
+    // under wageDriftFloor); at most wageDriftMost pennies either way. Between the two (paid, with little to spare; short
+    // now and then) it stays: a band, so a till settles where its takings pay its posts rather than see-saw. Counted
+    // before the treasury's wage support: what the till itself could pay.
+    if (rule("wageDrift") <= 0 || owed <= 0)
+        return;
+    auto& w = state_.loop.wages[till];
+    ++w.days;
+    w.shortDays += paid < owed;
+    w.owed += owed;
+    w.profit += profit;
+    if (w.days < rule("wageDriftDays"))
+        return;
+    const int most = rule("wageDriftMost");
+    if (w.shortDays * 2 > w.days)
+    {
+        if (w.step > -most && authored_.economy.wageKeeper + w.step - 1 >= rule("wageDriftFloor"))
+            --w.step;                               // (A keeper's is a till's highest wage.)
+    }
+    else if (w.shortDays == 0 && w.profit * 100 >= w.owed * rule("wageDriftSpare") && w.step < most)
+        ++w.step;
+    w.step = std::clamp(w.step, -most, most);
+    w.days = w.shortDays = 0;
+    w.owed = w.profit = 0;
+}
+
+void Society::followTreasury(std::int64_t day)
+{
+    // The gate toll and the alms follow the treasury's level (the fourth rule), after the surplus each night: its level is
+    // a slow mean of what it holds at 18:00 (over about treasuryDays days: a season's swing mostly smoothed away), judged
+    // each DriftStepDays days against treasuryTarget. Over the target and its band and not falling: the toll eases by
+    // tollStep tenths of a point and the alms rise a penny a head; under it and not rising: the toll firms and the alms
+    // tighten; inside the band, or already moving back toward it, nothing (so a change has time to tell before the next).
+    // The toll within tollDriftMost points of the world's; the alms up to almsDriftMost pennies over almsADay, never under
+    // it (the world's alms are the line under hunger: tightened, they come back down to it and no further).
+    //
+    // How it shares the work with the surplus (spendSurplus): the surplus is the ceiling, each night, at once (what is
+    // over the cap and its reserve goes out); this rule is the slow trim of the flows under it, so the treasury sits about
+    // its target with the surplus clipping only a good season's top. A treasury that keeps reaching its ceiling eases the
+    // toll (less taken in) and raises the alms (more given out) until it no longer does; one that keeps falling short
+    // (a shrinking toll as the Country's goods move to the city's own makers) firms the toll before the cap's wage support
+    // and the alms run dry.
+    if (rule("treasuryDrift") <= 0 || !account("treasury"))
+        return;
+    auto& loop = state_.loop;
+    const double now = double(cash("treasury"));
+    if (loop.level < 0 || loop.judged < 0 || day + 3650 < loop.judged)
+    {
+        // Its first night: the level begins at what it holds, is the plain mean of its nights until it has treasuryDays of
+        // them (so a new world's treasury, starting low and filling in its first weeks, weighs no more than any other
+        // night), and is first judged once it has had them: not a fall to correct.
+        loop.level = loop.levelThen = now;
+        loop.levelDays = 1;
+        loop.judged = day + std::max(0, rule("treasuryDays") - DriftStepDays);
+        return;
+    }
+    loop.levelDays = std::min(loop.levelDays + 1, 3650);
+    loop.level += (now - loop.level) / std::min(loop.levelDays, rule("treasuryDays"));
+    if (day - loop.judged < DriftStepDays)
+        return;
+    const double target = rule("treasuryTarget"), band = target * rule("treasuryBand") / 100.;
+    int toward = 0;                                 // -1: the toll eases, the alms rise; 1: the toll firms, the alms tighten.
+    if (loop.level > target + band && loop.level >= loop.levelThen)
+        toward = -1;
+    else if (loop.level < target - band && loop.level <= loop.levelThen)
+        toward = 1;
+    if (toward != 0)
+    {
+        const double most = rule("tollDriftMost");
+        loop.toll = std::clamp(loop.toll + toward * rule("tollStep") / 10., -most, most);
+        const int almsMost = rule("almsDriftMost");
+        loop.alms = std::clamp(loop.alms - toward, 0, almsMost);
+    }
+    loop.judged = day;
+    loop.levelThen = loop.level;
 }
 } // namespace ratw

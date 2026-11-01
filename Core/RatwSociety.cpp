@@ -387,14 +387,19 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
         return false;
     auto& s = state_.accounts.at(seller);
     auto& b = state_.accounts.at(buyer);
-    if ((s.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
+    const int left = s.stock[item] -= quantity;
+    if (left == 0 && item != "herbs" && item != "meal" && item != "sword")
         s.stock.erase(item);                                // (Room for other kinds; the old three keep their place.)
     b.stock[item] += quantity;
     b.cash -= total;
     s.cash += total;
     record(kind, buyer, seller, item, quantity, total);
     if (seller.rfind("till:", 0) == 0)
+    {
         soldToday_[seller][item] += quantity;      // (A shop's shelves follow its sales: doc 68, 7.)
+        if (left == 0)
+            soldOut_[seller].insert(item);          // (And its prices its stock: doc 68, "Self-correcting rules".)
+    }
     return true;
 }
 std::int64_t Society::catalogPrice(const std::string& item)

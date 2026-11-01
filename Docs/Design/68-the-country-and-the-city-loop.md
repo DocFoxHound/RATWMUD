@@ -1690,3 +1690,174 @@ the vintner 2.52 → 2.98, the rag-and-bone yard 3.11 → 3.45, the general stor
   toll needs its own.
 - **The works' trades and weights** are a line of data each (`country.json` `works`): the glassworks' lamp panes, the
   carpenters, the sawmill and the plasterworks could join.
+
+### Self-correcting rules (2026-11-01)
+
+Branch `r2-econ-selfcorrect`, from `ridgemere2` (37ab96f). The user, 2026-11-01 (verbatim): "It's looking good and balanced
+right now, but it doesn't seem robust enough to survive us adding additional towns and converting the 'country' into
+actual businesses just yet." The user approved building rules that correct themselves, so that the economy rebalances
+itself rather than being retuned by hand when the city changes; shock tests are on hold (none built or run).
+
+Four rules, each gentle, each its own switch and rate in `country.json` `rules` (Core `items::Rules`; a world's own in
+`live.economy.rules`, the DM's Economy tab and Atlas's Economy page, `RulesPanel`, applied live by `economy.sync`). What each
+has drifted to is the society's (`LoopState`, below), not a setting: the DM sees it, read only, beside the rules.
+
+#### The rules
+
+| Rule | Settings (defaults) | What it does |
+|---|---|---|
+| 1. Prices follow stock | `stockPrices` (on), `stockPriceBand` (25%), `stockPriceStep` (10: a hundredth a day) | At the day's turn, each ware residents buy (food, needs, comforts) at each shop open that day: its price factor up a step when it sold out, down a step when what is left is more than three days of the day's sales and over its starting stock (the season's stock-up allowed for), else a quarter step back toward 1. Then every factor moved that day is scaled so that their mean, weighted by sales, is 1. Within the band of 1, and never under what the store room charges the shop for the ware and a twentieth (a resold ware 0.80; an input of its crafts it also sells as it is, such as the fishmonger's fish, drawn at the making price, 1.05, so 1). Kept as they were over a Restday or festival. |
+| 2. Shelves follow sales | `shelfFollow` (on), `shelfDays` (7), `shelfCover` (125%), `shelfGrow` (25%) | Each ware's sales a day, smoothed over about a week (a running mean, its first day its first day's sales); the shelf is 125% of it, never under its starting stock, at most a draw's worth (1,000). A day it sold out having sold at least its shelf counts as a quarter more than its shelf, so a shelf too small to show its demand grows (the small shelf's spiral); a maker that sold out short of its shelf was short of hands, not of shelf, and its shelf doesn't grow for it. A Restday's or festival's few sales never lower it (buying ahead's fix: the day before's count). Off: a quarter over yesterday's sales, as it was. |
+| 3. Wages follow cover | `wageDrift` (on), `wageDriftDays` (28), `wageDriftSpare` (50%), `wageDriftMost` (6p), `wageDriftFloor` (7p) | Every 28 days a till that paid all its posts every day, its keeper's profit at least half their wages, raises each of its posts' wages a penny (keeper and hands alike); one short of them on more than half the days lowers them a penny, never a post under 7p (a day's food) and never one the world set lower; at most 6p either way. Between the two it stays. Judged on what the till itself paid, before the treasury's wage support. The treasury's and the Country's posts keep their fixed wages (they are the city's and the Houses' rates, not a business's takings). |
+| 4. The toll and the alms follow the treasury | `treasuryDrift` (on), `treasuryTarget` (5,000p), `treasuryBand` (15%), `treasuryDays` (182), `tollStep` (5: half a point), `tollDriftMost` (5 points), `almsDriftMost` (2p) | The treasury's level is a slow mean of what it holds at 18:00, after the surplus (over about half a year, 182 nights; a plain mean of its first 182, so a new world's low start weighs no more than any other night), judged each fortnight once it has its 182 nights. Over 5,750p and not falling: the gate toll eases half a point and the alms rise a penny a head; under 4,250p and not rising: the toll firms half a point and the alms tighten a penny; inside the band, or already moving back toward it, nothing. The toll within 5 points of the world's; the alms up to 2p over `almsADay`, never under it (the line under hunger: tightened, they come back down to it and no further). |
+
+**How the fourth shares the work with the surplus.** `spendSurplus` is the ceiling, each night, at once: whatever the
+treasury holds over its cap and reserve (6,000p) goes to the poorest and the public works. The fourth rule is the slow trim
+of the flows under it: a treasury that keeps reaching the ceiling (the surplus spending most nights) eases the toll and
+raises the alms until it no longer does, and one that keeps running low (a toll shrinking as the Country's goods pass to the
+city's own makers, or new towns' posts on it) firms the toll before the cap's wage support and the alms run dry. Its target
+sits under the ceiling (5,000p against 6,000p), so the two never pull against each other: over 5,750p the trim eases while
+the surplus clips; under 4,250p the surplus is already silent. The slow mean and the "not already moving back" test keep it
+from chasing the season's swing (the treasury falls every summer and autumn and fills every winter and spring).
+
+**Why the price level is held.** The first build let each factor move by itself. Over a year the city's food makers, every
+one making as fast as its hands allow and selling out each day wherever residents turn, all climbed to the band's top
+together: the price level, weighted by sales, rose to 1.25 (year a, below) and the households paid a quarter more for the
+same food. Food is bought for nourishment, not by choice, so dearer food everywhere sells as much: a level that ratchets.
+Holding the mean at 1 leaves what the rule is for: what is scarce dearer against what is plentiful, so the residents'
+choice of food (nourishment for the price) moves them from the makers short of hands to the resellers the Country keeps
+stocked.
+
+**Money.** None of it makes money: a shop's price is paid as the season's is (the catalogue's in the sale, the difference
+after, each payer's fraction of a penny carried), the wages by the payers they always had, the toll and alms by the draws
+and the treasury. Players' trade and the Country's purchases stay at the catalogue's price.
+
+**Saved.** `SocietyState::loop` (`LoopState`): by till and ware the price factors (only those not 1) and the smoothed sales;
+by till the wage step and the days of its window (counted, short, owed, profit); the treasury's level, its nights, the level
+and day it was last judged, and the toll and alms moved. It is the save's `society.loop` (only when there is any:
+`wire::society`, `readSociety`, which keeps what is sound and drops the rest), so it rides in the game's checkpoint
+(`game.checkpoints`, the save document's rest), which the game's snapshots write. **No migration**: the checkpoint is a
+document, and the rules are keys of 0058's `live.economy.rules`. A save from before reads as nothing drifted; a world with all
+four off writes no `loop` (its save as before). DEV was not written.
+
+**The DM's view.** `GET /api/dm/economy` (and Atlas's) gains `drift` (`studio.Economy.drift`, from the world's save): the gate
+toll and alms now against the world's, the treasury's level against its target, the price factors (how many, mean, range),
+the shelves (how many, mean), the wage steps (up, down, mean, and each till moved by its keeper's name). RulesPanel shows it
+under the rules ("Where the self-correcting rules stand"), read only.
+
+**Reports.** `world_check --economy` gains, a day: `price_moved`, `price_mean`, `price_sd`, `price_low`, `price_high`,
+`price_level` (the factors weighted by their wares' sales), `shelves`, `shelf_mean`, `shelf_sd`, `wage_step_mean`,
+`wage_step_sd`, `wage_up`, `wage_down`, `wage_keeper`, `wage_hand` (the mean wage of a till's keeper and hand),
+`toll_now`, `alms_now`, `treasury_level`. `--loop-state FILE` writes the society's `loop` every 28 days and on the last day.
+
+**Tests**: `Tests/selfcorrect_tests.cpp` (new, 939 checks, the real catalogue): the defaults; prices (a ware sold out each
+evening dearer each day by at most a step, none over a Restday or festival, to the band's top and no further; the price level
+held at 1 while nothing is at a bound; quiet days back toward 1; a glutted ware of its own make to the band's foot, one drawn
+at the making price never under 1; applied live; off, the season's price whatever the save holds; a resident paying the
+season's price times the shop's over a day's buys, and only the season's with the rule off); shelves (a week's smoothing, a
+seventh of the way a day, a Restday never lowering it, a full shelf sold out each day growing, never under its starting stock,
+at most 1,000; off, a quarter over yesterday's whatever the save holds); wages (a penny a window up for a till with plenty of
+profit, down for one never paying, at most 6p, a hand never under 7p, none in the band, the wage paid the drifted one, a
+world's wage under the floor never raised to it, a narrower bound at once, the treasury's post untouched, off the world's);
+the toll and the alms (eased and raised a step a fortnight to their bounds, the eased toll on a draw, nothing while falling
+back toward the target, firmed under it, the alms tightened from 12 to the world's 10 and no further, nothing inside the band,
+off the world's); a save (every drifted value through `wire::society`, `json::dump`, `parse`, `readSociety` and `restore`, the
+same save again; an older save reads as nothing drifted; a value out of range dropped, the rest kept; all four off writing no
+`loop`); money conserved in each. `country_tests` and `econ_fix_tests` run with the four off (the loop as they test it).
+**The switches off are the old rules exactly**: on DEV build 52, 30 days with all four off are field for field the treasury
+branch's run (every field of its economy file, every day). All 75 C++ tests pass after a clean build of `build-core`. Python:
+`test_studio` (new: the DM's view from a world's save, and a rule off showing the world's own), `test_world_store`,
+`test_world_sync`, `test_live_edit`, `test_dungeon_master`, `test_world_build`, `test_item_catalog`, `test_city_capacity`,
+`test_world_db` pass, and `test_map_editor` but for the known Greyfen 11-vs-10. Editor: `tsc` clean; the lib tests 54 of 54
+(new: the drift's lines), the model's 78 of 79 (the same Greyfen count).
+
+#### The runs
+
+DEV build 52 (its export; nothing written), from Spring 1, `--simulate 6 8766` (a year) and `6 26298` (three), `--no-check
+--deterministic --threads 4 --no-profile`, pinned to six CPUs; the three years with `--economy-detail` and `--loop-state`.
+Summaries committed in `artifacts/economy/r2/selfcorrect-summary.txt`; the jsonl in the main repo's
+`artifacts/economy/r2/selfcorrect_*`. Money conserved every day of every run. Years of days 5-364; pennies a day but the
+treasury, the purses and Gini; 4-week means: the year's first and last 28 days.
+
+| Run | What |
+|---|---|
+| year a | a year, all four on, the first build: each price factor by itself, the treasury's level a plain slow mean from the first night |
+| year b | a year, all on, the price level held at 1 |
+| year ps, year wt | a year each on the first build's treasury rule: prices and shelves only; wages and the treasury only |
+| 3 years a | all on, the treasury's level over 120 days, its band 10% |
+| 3 years b | the level over 182 days, band 10% |
+| **3 years c** | **the level over 182 days, band 15%: the defaults** |
+
+**Three years, the defaults (c) against the treasury run (its defaults: every rule here off):**
+
+| Year | Run | Hungry (mean) | Worst hour | Wages paid | Treasury, 4-week means | Household purses, 4-week means | Gini (earners), 4-week means | Owners' share | Profit, wages paid | Alms, wage support, surplus |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | treasury | 0.005 | 5 | 99.76% | 5,053 → 5,961 | 29,476 → 26,802 | .488 → .554 | 22.4% | 1,201, 4,158 | 340, 184, 81 |
+| 1 | **self-correcting** | 0.005 | 4 | 99.71% | 5,193 → 5,925 | 29,414 → 25,561 | **.484 → .515** | **16.8%** | 879, 4,364 | 340, 171, 50 |
+| 2 | treasury | 0.003 | 2 | 99.75% | 5,966 → 5,964 | 27,273 → 26,962 | .544 → .571 | 23.0% | 1,238, 4,151 | 292, 179, 157 |
+| 2 | **self-correcting** | 0.001 | 1 | 99.79% | 5,921 → 5,956 | 25,960 → 25,795 | **.505 → .515** | **13.7%** | 707, 4,454 | 305, 129, 101 |
+| 3 | treasury | 0.006 | 5 | 99.78% | 5,965 → 5,972 | 27,194 → 27,232 | .560 → .577 | 23.5% | 1,270, 4,138 | 262, 180, 207 |
+| 3 | **self-correcting** | 0.002 | 2 | 99.82% | 5,952 → 5,961 | 25,998 → 25,955 | **.504 → .512** | **13.6%** | 703, 4,467 | 280, 127, 132 |
+
+Tills short a day: 14.2, 14.5, 14.1 (the treasury run) against 15.4, 12.2, 12.3. The treasury's low: 2,487, 4,274, 4,707
+against 1,896, 3,568, 4,223 (year 1's start under the cap for a few days: the wage support waited). Residents spent
+5,651-5,726p a day in the treasury run, 5,408-5,496p here: the money not spent sits in the tills (18,496p at the third year's
+end against 17,571p: their working floats and a week of their higher wages), not lost. The purses hold about 1,300p less and,
+after the first year, hold level as the treasury run's do.
+
+**Where each settles** (the third year of run c; the loop's state every 28 days is in the summary):
+
+- **Prices**: the price level, weighted by sales, 0.994-1.000 every day; the factors' spread (sd) .08-.11, with 1-9 wares at
+  the band's top (cider at four of its makers, the weaver's neckerchiefs: makers short of hands) and 7-21 at its foot (the
+  apothecaries' slow medicines, smoked and salt fish, nails); the mean change between dumps .008-.026 (the larger in winter, as
+  the seasons move supply). **Settles**, moving with the seasons. Without the held level (year a) every maker's food climbed to
+  the top together: the level 1.25 by the year's end.
+- **Shelves**: 10.0-12.5 on a shelf on average (sd about 23: the busy wares' hundreds), no runaway. **Settles.** (The first
+  build counted any sold-out day as more than its shelf: the weaver, whose neckerchiefs the Country buys as fast as they are
+  made, grew its count past a trillion in a year. Now a sold-out day grows only a shelf it emptied, and a count is at most
+  1,000.)
+- **Wages**: changes per 28-day window fall from 37-47 of 102 tills in the first months to 1-10 in years 2 and 3. At the end 27
+  tills at +6p (eight provisioners, the general store, the vintner, the rag-and-bone yard, the foundry, a tannery, chandlers,
+  carpenters, brewers, bakers, the Carters' Yard...), 15 at -6p (keepers at 8p, hands at the 7p floor: two inns, two stalls,
+  two preservers, the builders' works, the shipwright, the cooperage, the moneychanger, the stables, a smithy, a bakery, a
+  butcher), 11 at 0 and 49 between. Mean step +0.9p, sd 4.1-4.4; a keeper's mean wage 14.9p, a hand's 9.8p (from 14 and 8).
+  **Settles**, each till where its takings pay its posts or at a bound; 42 of 102 at a bound, so the rich would raise further
+  and the poor lower further if allowed.
+- **The toll and the alms**: never moved in run c (the level 4,254-5,610 after its first 182 nights, inside 4,250-5,750). In
+  runs a and b (band 10%) they **oscillated slowly**: the toll 30 → 32 → 31 → 29.5 → 30.5 in run a and 30 → 31.5 → 30.5 →
+  28.5 → 30 in run b, the alms 10 → 12 → 10, a season behind the treasury's own swing (the first year's deep autumn, the
+  surplus's spring ceiling); hence the wider band and the longer mean. In this city the rule watches; it acts when the level
+  leaves the season's swing, as a changed city's would (a toll base that shrinks, posts that grow).
+- **Covers** (value added / wages owed, year 3 against the treasury run's; 36 of 50 trades moved more than .05): down where
+  wages rose, the rich most (the general store 7.20 → 3.60, the vintner 2.98 → 1.19, the rag-and-bone yard 3.45 → 1.74, the
+  tanneries 2.28 → 1.30, the foundry 2.24 → 1.39, the chandlery 3.04 → 2.27; carpenters, provisioners, jewellers, weavers,
+  tinkers, brewers, perfumers .5-.7 lower; the bakers 1.52 → 1.11; and the builders' yard .89 → .77, the shipwright .70 → .63,
+  the smithies 1.01 → .95), up where they fell (the stalls 1.07 → 1.24, the charcoal burners .87 → 1.00, the cooperage .79 →
+  .88, the butchers .88 → .96, the sawmill 1.06 → 1.12). From year 2 to year 3 of run c only 16 trades moved more than .05 (35
+  from year 1 to 2): the covers converge toward 1 from both sides.
+
+**Gini.** The wage rule does most of it: the year with wages and the treasury only ended at .532 against the treasury run's
+.554, prices and shelves only at .548, all four .505-.515. Over three years the 4-week means at each year's start are .484,
+.505, .504 and at each year's end .515, .515, .512 (the treasury run's .488, .544, .560 and .554, .571, .577): **about .05
+lower and flat after the first year**, where it rose about .016 a year. The owners' share of profit and wages falls from
+22-24% to 13.6-16.8%: a rich till's profit becomes its hands' and keeper's wages, and the poor tills lower theirs, so the wage
+support they need falls (127-129p a day against 179-180p).
+
+**Nothing is switched off by default.** All four settle at their defaults in run c; the fourth needed its band widened to 15%
+and its level taken over half a year (not 120 days) to stop a slow oscillation of a point and a half.
+
+#### Left for the user
+
+- **The wage bounds.** 42 of 102 tills are at ±6p: the rich would pay more and the poor less. Wider bounds would move more of
+  the profit to wages (and lower Gini further) and leave the poorest trades' keepers nearer the floor. The floor is a day's
+  food (7p); a hand's 8p is a penny over it.
+- **The treasury's target** (5,000p, within 15%) is this city's; a city with more towns or a larger toll needs its own (as the
+  surplus's reserve, `surplusKeep`, does). The rule acts only outside the season's swing.
+- **Purses and tills.** The households hold about 1,300p less than in the treasury run and the tills about as much more (a week
+  of the higher wages is kept before profit): `floatWagesDays` (7) is the lever if the tills should keep less.
+- **The fishmonger's fish** (and any input a shop also sells as it is) is drawn at the making price, 100% of the catalogue's:
+  it sells at no margin, and the price rule can't take it lower. The store room's rule, not this one's.
+- **Players' prices** stay the catalogue's: a shop's price for residents follows its stock, a player buying there pays the
+  catalogue's (as with the season's price). Whether players meet the shop's price is the user's call.
+- Shock tests (a town added, a Country good passed to a city maker) are on hold, as asked: the rules are built for them, not yet
+  shown against them.

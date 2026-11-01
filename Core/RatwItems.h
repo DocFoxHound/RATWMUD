@@ -183,6 +183,27 @@ inline constexpr RuleInfo Rules[] = {
     {"surplusWorks", 0, 100, 20},        // Percent of the surplus to public works orders (`works`), till to till;
     {"surplusAlms", 0, 100, 80},         // percent to the poorest households, per head, poorest first,
     {"surplusAlmsTo", 0, 1000, 40},      // up to this many pennies a head.
+    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): values that drift, gently and within bounds,
+    // so that the economy rebalances itself. Each has its switch; what each has drifted to is saved with the society.
+    {"stockPrices", 0, 1, 1},            // 1. A shop's price for a ware follows its stock: up when it sells out, down on a glut,
+    {"stockPriceBand", 0, 90, 25},       // within this percent of the catalogue's (the season's) price,
+    {"stockPriceStep", 0, 1000, 10},     // by this many thousandths a day (a quarter of it back toward 1 on a quiet day).
+    {"shelfFollow", 0, 1, 1},            // 2. A shelf follows its ware's sales, smoothed (off: a quarter over yesterday's),
+    {"shelfDays", 1, 365, 7},            // over about this many days,
+    {"shelfCover", 25, 1000, 125},       // this percent of the smoothed sales a day on the shelf,
+    {"shelfGrow", 0, 500, 25},           // and a day it sells out counted as this percent more than its shelf.
+    {"wageDrift", 0, 1, 1},              // 3. A till's wages follow its cover: a penny a post every so many days,
+    {"wageDriftDays", 1, 365, 28},       // judged over this many days:
+    {"wageDriftSpare", 0, 1000, 50},     // up when it paid every wage and its keeper's profit was this percent of them;
+    {"wageDriftMost", 0, 100, 6},        // down when short on most days; never more than this many pennies either way,
+    {"wageDriftFloor", 0, 1000, 7},      // nor a post lowered under this (a day's food).
+    {"treasuryDrift", 0, 1, 1},          // 4. The gate toll and the alms follow the treasury's level:
+    {"treasuryTarget", 0, 100000000, 5000},  // its slow mean against this,
+    {"treasuryBand", 0, 100, 15},        // outside this percent of it (inside: no change; the season's swing),
+    {"treasuryDays", 1, 3650, 182},      // the mean over about this many days (half a year);
+    {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point a fortnight,
+    {"tollDriftMost", 0, 90, 5},         // at most this many points from the world's gate toll;
+    {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head a fortnight, up to this many over almsADay (never under).
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A city service (country.json `services.list`): a catalogue item a business does for a household, bought from its

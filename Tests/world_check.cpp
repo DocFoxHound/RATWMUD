@@ -34,7 +34,9 @@
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
 #include "RatwCalendar.h"
 #include "RatwItems.h"
+#include "RatwJsonDoc.h"
 #include "RatwPool.h"
+#include "RatwWire.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -507,6 +509,10 @@ struct EconomyWatch
     }
     EconomyDetail* detail = nullptr;                // --economy-detail: per business and household (EconomyDetail).
     std::ostream* detailOut = nullptr;
+    // --loop-state FILE: what the self-correcting rules have drifted to (the society's saved "loop": each shop's price
+    // factors and smoothed sales, each till's wage step, the treasury's level), a JSON line every 28 days and the last.
+    std::ostream* loopOut = nullptr;
+    int lastDay = -1;
     void hour(const World& server, int absoluteHour, std::ostream& out)
     {
         const auto& society = server.society();
@@ -661,6 +667,70 @@ struct EconomyWatch
             const auto day = found == d.worksTrades.end() ? Society::LoopDay::Trade{} : found->second;
             seasons << ", \"works_" << w.business << "_pieces\": " << day.sold << ", \"works_" << w.business << "_spent\": " << day.spent;
         }
+        // The self-correcting rules (doc 68, Progress, "Self-correcting rules"), where they stand tonight: the shops' price
+        // factors (those not 1: how many, their mean, spread and range; and the price level, those factors weighted by their
+        // wares' smoothed sales), the shelves the sales give (their mean and spread), the tills' wage steps and the mean wage of
+        // a keeper and a hand, the gate toll and the alms as the treasury's level has moved them, and that level.
+        {
+            const auto& loop = society.state().loop;
+            const auto spread = [](const std::vector<double>& xs) {
+                double sum = 0, squares = 0;
+                for (const double x : xs)
+                    sum += x;
+                const double mean = xs.empty() ? 0 : sum / double(xs.size());
+                for (const double x : xs)
+                    squares += (x - mean) * (x - mean);
+                return std::pair{mean, xs.empty() ? 0 : std::sqrt(squares / double(xs.size()))};
+            };
+            std::vector<double> factors, shelves;
+            double low = 1, high = 1, weighted = 0, weights = 0;
+            for (const auto& [till, byWare] : loop.prices)
+                for (const auto& [ware, f] : byWare)
+                {
+                    factors.push_back(f);
+                    low = std::min(low, f);
+                    high = std::max(high, f);
+                    if (const auto t = loop.sales.find(till); t != loop.sales.end())
+                        if (const auto m = t->second.find(ware); m != t->second.end())
+                        {
+                            weighted += m->second * society.stockFactor(till, ware);
+                            weights += m->second;
+                        }
+                }
+            for (const auto& [till, byWare] : loop.sales)
+                for (const auto& [ware, m] : byWare)
+                    shelves.push_back(society.shelfOf(till, ware));
+            std::vector<double> steps, keepers, hands;
+            std::set<std::string> paying;
+            for (const auto& p : society.positions())
+                if (const auto held = society.state().careers.positions.find(p.id);
+                    held != society.state().careers.positions.end() && !held->second.holder.empty())
+                    if (const auto pay = society.payOf(p); pay.payer.rfind("till:", 0) == 0)
+                    {
+                        (pay.kind == "keeper" ? keepers : hands).push_back(pay.wage);
+                        paying.insert(pay.payer);
+                    }
+            int up = 0, down = 0;
+            for (const auto& till : paying)
+            {
+                const auto found = loop.wages.find(till);
+                const int step = found == loop.wages.end() ? 0 : found->second.step;
+                steps.push_back(step);
+                up += step > 0;
+                down += step < 0;
+            }
+            const auto [priceMean, priceSd] = spread(factors);
+            const auto [shelfMean, shelfSd] = spread(shelves);
+            const auto [stepMean, stepSd] = spread(steps);
+            seasons << ", \"price_moved\": " << factors.size() << ", \"price_mean\": " << (factors.empty() ? 1 : priceMean)
+                    << ", \"price_sd\": " << priceSd << ", \"price_low\": " << low << ", \"price_high\": " << high
+                    << ", \"price_level\": " << (weights > 0 ? weighted / weights : 1) << ", \"shelves\": " << shelves.size()
+                    << ", \"shelf_mean\": " << shelfMean << ", \"shelf_sd\": " << shelfSd << ", \"wage_step_mean\": " << stepMean
+                    << ", \"wage_step_sd\": " << stepSd << ", \"wage_up\": " << up << ", \"wage_down\": " << down
+                    << ", \"wage_keeper\": " << spread(keepers).first << ", \"wage_hand\": " << spread(hands).first
+                    << ", \"toll_now\": " << society.gateTollNow() << ", \"alms_now\": " << society.almsNow()
+                    << ", \"treasury_level\": " << loop.level;
+        }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
             << ", \"households_fed\": " << fedHouseholds << ", \"shops\": " << shops << ", \"shops_stocked\": " << shopsStocked
@@ -679,6 +749,11 @@ struct EconomyWatch
             << who << "\"}" << std::endl;
         if (detail && detailOut)
             detail->day(server, int(absoluteHour / 24), *detailOut);
+        if (const int day = int(absoluteHour / 24); loopOut && (day % 28 == 27 || day == lastDay))
+        {
+            const auto saved = wire::society(society.state());
+            *loopOut << "{\"day\": " << day << ", \"loop\": " << json::dump(saved["loop"]) << "}" << std::endl;
+        }
         hours = hungrySum = hungryMost = 0;
         born = newcomers = 0;
         deadAtLine = deadNow;
@@ -702,6 +777,7 @@ int main(int argc, char** argv)
     std::string eventsFile;                         // --events FILE: what happened, and everyone's names, as JSON.
     unsigned threads = 8;                           // --threads N.
     std::string economyFile;                        // --economy FILE: the city's loop, a JSON line a game day (doc 68, 10).
+    std::string loopFile;                           // --loop-state FILE: the self-correcting rules' drift (doc 68, Progress).
     std::string detailFile;                         // --economy-detail FILE: per business and household a day (with --economy).
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     bool usage = argc != 2 && !simulate;
@@ -741,6 +817,8 @@ int main(int argc, char** argv)
             economyFile = argv[++i];
         else if (flag == "--economy-detail" && i + 1 < argc)
             detailFile = argv[++i];
+        else if (flag == "--loop-state" && i + 1 < argc)
+            loopFile = argv[++i];
         else if (flag == "--day" && i + 1 < argc)
         {
             startDay = std::atoi(argv[++i]);
@@ -964,6 +1042,13 @@ int main(int argc, char** argv)
         economyOut.open(economyFile);
     EconomyWatch watch;
     EconomyDetail detail;
+    std::ofstream loopOut;
+    if (!loopFile.empty() && economyOut)
+    {
+        loopOut.open(loopFile);
+        watch.loopOut = &loopOut;
+        watch.lastDay = (int(to) - 24) / 24;       // (The last day whose line is written, at 23:00.)
+    }
     std::ofstream detailOut;
     if (!detailFile.empty() && economyOut)
     {

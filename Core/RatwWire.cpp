@@ -8,6 +8,7 @@
 #include <initializer_list>
 #include <cmath>
 #include <set>
+#include <tuple>
 
 namespace ratw::wire
 {
@@ -964,7 +965,68 @@ Value society(const SocietyState& s)
         population.add(town, n);
     careers.add("population", population);
     o.add("careers", careers);
+    // What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), when there is any: a save
+    // without it reads as nothing drifted yet.
+    if (!s.loop.empty())
+    {
+        const auto& l = s.loop;
+        auto loop = Value::object(), prices = Value::object(), sales = Value::object(), wages = Value::object();
+        for (const auto& [from, to] : {std::pair{&l.prices, &prices}, std::pair{&l.sales, &sales}})
+            for (const auto& [till, byWare] : *from)
+            {
+                auto j = Value::object();
+                for (const auto& [ware, v] : byWare)
+                    j.add(ware, v);
+                to->add(till, j);
+            }
+        for (const auto& [till, w] : l.wages)
+        {
+            auto j = Value::object();
+            j.add("step", w.step); j.add("days", w.days); j.add("shortDays", w.shortDays); j.add("owed", w.owed);
+            j.add("profit", w.profit);
+            wages.add(till, j);
+        }
+        loop.add("prices", prices); loop.add("sales", sales); loop.add("wages", wages);
+        loop.add("level", l.level); loop.add("levelDays", l.levelDays); loop.add("levelThen", l.levelThen);
+        loop.add("judged", l.judged);
+        loop.add("toll", l.toll); loop.add("alms", l.alms);
+        o.add("loop", loop);
+    }
     return o;
+}
+
+LoopState readLoop(const Value& o)
+{
+    // Only what is sound is kept (a number in range for a till and ware the save may still have): the rest reads as not
+    // drifted, which the rules start again from.
+    LoopState l;
+    if (!o.isObject())
+        return l;
+    const auto inRange = [](const Value& v, double low, double high) { return v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= low && v.asNumber() <= high; };
+    for (const auto& [key, into, low, high] : {std::tuple{"prices", &l.prices, .01, 10.}, std::tuple{"sales", &l.sales, 0., 1e6}})
+        for (const auto& [till, byWare] : o.object(key).fields())
+            if (till.size() <= 80 && byWare.isObject() && byWare.size() <= MaxGoodsKinds)
+                for (const auto& [ware, v] : byWare.fields())
+                    if (ware.size() <= 80 && inRange(v, low, high))
+                        (*into)[till][ware] = v.asNumber();
+    for (const auto& [till, w] : o.object("wages").fields())
+        if (till.size() <= 80 && w.isObject() && inRange(w["step"], -1000, 1000) && inRange(w["days"], 0, 3650) &&
+            inRange(w["shortDays"], 0, 3650) && inRange(w["owed"], 0, 1e12) && inRange(w["profit"], 0, 1e12))
+            l.wages[till] = {int(w["step"].asNumber()), int(w["days"].asNumber()), int(w["shortDays"].asNumber()),
+                             std::int64_t(w["owed"].asNumber()), std::int64_t(w["profit"].asNumber())};
+    if (inRange(o["level"], -1, 1e12) && inRange(o["levelThen"], -1, 1e12) && inRange(o["judged"], -1, 1e12) &&
+        inRange(o["levelDays"], 0, 3650))
+    {
+        l.level = o["level"].asNumber();
+        l.levelDays = int(o["levelDays"].asNumber());
+        l.levelThen = o["levelThen"].asNumber();
+        l.judged = std::int64_t(o["judged"].asNumber());
+    }
+    if (inRange(o["toll"], -90, 90))
+        l.toll = o["toll"].asNumber();
+    if (inRange(o["alms"], -1000, 1000))
+        l.alms = int(o["alms"].asNumber());
+    return l;
 }
 
 CareerState readCareers(const Value& o)
@@ -1013,7 +1075,7 @@ SocietyState readSociety(const Value& o)
     }
     // Twelve fields; careers since Phase 4. A save from before doc 66's Phase 5 also has the economy's (craftingStocked,
     // books, houses, memory, orchestrator): read past, and dropped with the rules they kept.
-    std::size_t fields = o.size() - (o.has("careers") ? 1 : 0);
+    std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("loop") ? 1 : 0);
     for (const char* gone : {"craftingStocked", "books", "houses", "memory", "orchestrator"})
         fields -= o.has(gone) ? 1 : 0;
     bool valid = fields == 12;
@@ -1077,6 +1139,7 @@ SocietyState readSociety(const Value& o)
             s.ledger.push_back(e);
         }
     s.careers = readCareers(o["careers"]);
+    s.loop = readLoop(o["loop"]);                   // (doc 68, Progress, "Self-correcting rules"; none in an older save.)
     if (!valid)
         s.minted = -1;
     return s;
