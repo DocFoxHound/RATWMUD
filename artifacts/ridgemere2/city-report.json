@@ -450,8 +450,7 @@
    "kind:shop": 1,
    "homes": 9,
    "beds": 33,
-   "posts": 21,
-   "business:inn": 1,
+   "posts": 20,
    "business:scriptorium": 1
   },
   "cinders": {
@@ -463,12 +462,12 @@
    "kind:home": 8,
    "homes": 11,
    "beds": 45,
-   "posts": 45,
+   "posts": 46,
    "business:plasterworks": 1,
    "business:foundry": 1,
-   "business:inn": 1,
    "business:papermill": 1,
    "business:brewery": 1,
+   "business:inn": 1,
    "business:smithy": 3,
    "business:armory": 1,
    "business:butcher": 1,
@@ -490,26 +489,25 @@
    "kind:flats": 12,
    "homes": 82,
    "beds": 255,
-   "posts": 142,
-   "business:provisioner": 4,
-   "business:inn": 3,
+   "posts": 140,
+   "business:bakery": 5,
+   "business:provisioner": 6,
+   "business:inn": 1,
+   "business:carpenter": 2,
    "business:saddlery": 1,
    "business:printing_house": 1,
    "business:cartographer": 1,
    "business:chandlery": 1,
    "business:preserver": 3,
-   "business:bakery": 4,
    "business:cooperage": 2,
    "business:weaver": 1,
    "business:pottery": 1,
-   "business:carpenter": 2,
    "business:brewery": 1,
    "business:butcher": 3,
    "business:smithy": 2,
    "business:tailor": 1,
    "business:jeweler": 1,
    "business:perfumer": 1,
-   "business:dairy": 3,
    "business:glassworks": 1,
    "business:moneychanger": 1,
    "business:apothecary": 1,
@@ -584,7 +582,7 @@
    "kind:flats": 3,
    "homes": 18,
    "beds": 53,
-   "posts": 11,
+   "posts": 12,
    "business:butcher": 1,
    "business:inn": 1,
    "business:provisioner": 1,
@@ -592,15 +590,14 @@
    "business:carpenter": 1
   },
   "outdoors": {
-   "posts": 75,
-   "business:dairy": 1,
+   "posts": 82,
+   "business:butcher": 3,
    "business:herbalist": 1,
    "business:stall": 3,
    "business:preserver": 1,
-   "business:bakery": 2,
-   "business:inn": 2,
-   "business:butcher": 2,
+   "business:bakery": 3,
    "business:rag_and_bone": 1,
+   "business:provisioner": 1,
    "business:fishmonger": 1
   },
   "palace": {
@@ -628,8 +625,8 @@
    "kind:home": 3,
    "homes": 74,
    "beds": 218,
-   "posts": 37,
-   "business:inn": 4,
+   "posts": 32,
+   "business:inn": 1,
    "business:general": 1,
    "business:pawnbroker": 1,
    "business:fishmonger": 1,
@@ -648,9 +645,9 @@
    "kind:lodging": 1,
    "homes": 3,
    "beds": 12,
-   "posts": 36,
+   "posts": 35,
    "business:tannery": 1,
-   "business:inn": 3,
+   "business:inn": 1,
    "business:ropewalk": 1,
    "business:provisioner": 1,
    "business:chandlery": 1,
@@ -678,21 +675,21 @@
    "the country": 200
   },
   "roles": {
-   "merchant": 110,
-   "civilian": 419,
+   "merchant": 102,
+   "civilian": 427,
    "guard": 30
   },
   "posts": {
    "stallkeeper": 14,
+   "pool": 59,
    "help": 64,
    "staff": 91,
    "kept": 50,
-   "pool": 52,
-   "keeper": 90,
+   "keeper": 82,
    "food": 2,
    "clergy": 17,
    "hallkeeper": 6,
-   "at lessons": 67,
+   "at lessons": 68,
    "retired": 30,
    "a child at home": 4,
    "hands": 42,
@@ -702,9 +699,9 @@
   },
   "evenings": {
    "rm_the_last_lamp": 40,
-   "rm_the_rainbarrel": 40,
    "rm_the_grey_gull_inn": 40,
    "rm_the_slag_anchor": 28,
+   "rm_the_rainbarrel": 40,
    "r2_the_knucklebones": 40,
    "home": 167,
    "rm_the_black_tun": 40,
@@ -720,13 +717,13 @@
  "businesses": {
   "apothecary": 1,
   "armory": 1,
-  "bakery": 8,
+  "bakery": 10,
   "barber": 1,
   "brewery": 3,
   "brickworks": 2,
   "builders_works": 1,
   "builders_yard": 1,
-  "butcher": 7,
+  "butcher": 8,
   "carpenter": 3,
   "carters": 1,
   "cartographer": 1,
@@ -734,14 +731,13 @@
   "chandlery": 2,
   "charcoal": 1,
   "cooperage": 2,
-  "dairy": 4,
   "distillery": 1,
   "fishmonger": 4,
   "foundry": 1,
   "general": 1,
   "glassworks": 2,
   "herbalist": 1,
-  "inn": 15,
+  "inn": 5,
   "ironworks": 1,
   "jeweler": 1,
   "mason": 1,
@@ -755,7 +751,7 @@
   "preserver": 5,
   "press": 1,
   "printing_house": 1,
-  "provisioner": 7,
+  "provisioner": 10,
   "rag_and_bone": 1,
   "ropewalk": 1,
   "saddlery": 1,
@@ -912,12 +908,6 @@
     "iron_bar",
     "iron_hoops",
     "planks"
-   ],
-   "resale": []
-  },
-  "dairy": {
-   "making": [
-    "milk"
    ],
    "resale": []
   },
@@ -1269,9 +1259,9 @@
  "labels": [
   [
    "rm_ada_greyhand",
-   "merchant",
-   "carpenter in the Market Hall",
-   "carpenter"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_ada_rainmore",
@@ -1293,9 +1283,9 @@
   ],
   [
    "rm_agna_dripridge",
-   "merchant",
-   "provisioner in the Market Hall",
-   "provisioner"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_agna_tarham",
@@ -1353,9 +1343,9 @@
   ],
   [
    "rm_ansel_wickdale",
-   "merchant",
-   "keeping the taproom",
-   "inn"
+   "civilian",
+   "helping at The Knucklebones",
+   null
   ],
   [
    "rm_arne_ashton",
@@ -1414,7 +1404,7 @@
   [
    "rm_berit_mudton",
    "civilian",
-   "unloading ships at the piers",
+   "helping at The Sailors' Rest",
    null
   ],
   [
@@ -1774,8 +1764,8 @@
   [
    "rm_edda_ropeton",
    "merchant",
-   "cheesemaker in the Commons",
-   "dairy"
+   "provisioner at The Round and Rind",
+   "provisioner"
   ],
   [
    "rm_edmund_kelpstack",
@@ -2242,7 +2232,7 @@
   [
    "rm_hanne_sootham",
    "civilian",
-   "helping at The Soup Kitchen",
+   "unloading ships at the piers",
    null
   ],
   [
@@ -2421,9 +2411,9 @@
   ],
   [
    "rm_isolde_brineton",
-   "merchant",
-   "baker on Market Square",
-   "bakery"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_isolde_fell_",
@@ -2488,8 +2478,8 @@
   [
    "rm_ivo_tarmarsh",
    "merchant",
-   "cheesemaker on Market Square",
-   "dairy"
+   "sausage butcher on Market Square",
+   "butcher"
   ],
   [
    "rm_ivo_wickgate",
@@ -2572,7 +2562,7 @@
   [
    "rm_karin_ashgate",
    "merchant",
-   "ladling soup",
+   "keeping the taproom",
    "inn"
   ],
   [
@@ -2643,9 +2633,9 @@
   ],
   [
    "rm_lavinia_bilgedale",
-   "merchant",
-   "keeping the taproom",
-   "inn"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_lavinia_brinemarsh",
@@ -2662,7 +2652,7 @@
   [
    "rm_leif_fogcot",
    "civilian",
-   "unloading ships at the piers",
+   "helping at The Grey Gull Inn",
    null
   ],
   [
@@ -2721,9 +2711,9 @@
   ],
   [
    "rm_lotte_greyley",
-   "merchant",
-   "keeping the taproom",
-   "inn"
+   "civilian",
+   "helping at The Slag & Anchor",
+   null
   ],
   [
    "rm_mab_carlisle",
@@ -3010,8 +3000,8 @@
   [
    "rm_osric_ropeworth",
    "merchant",
-   "cheesemaker at Vane & Daughters",
-   "dairy"
+   "provisioner at Vane & Daughters",
+   "provisioner"
   ],
   [
    "rm_osric_slagstack",
@@ -3022,7 +3012,7 @@
   [
    "rm_osric_wetford",
    "civilian",
-   "unloading ships at the piers",
+   "helping at The Grey Goose",
    null
   ],
   [
@@ -3106,8 +3096,8 @@
   [
    "rm_piet_slagcot",
    "merchant",
-   "keeping the taproom",
-   "inn"
+   "baker in the Market Hall",
+   "bakery"
   ],
   [
    "rm_piet_wickridge",
@@ -3189,9 +3179,9 @@
   ],
   [
    "rm_runa_ashridge",
-   "merchant",
-   "cheesemaker in the Market Hall",
-   "dairy"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rm_runa_coalhand",
@@ -3202,8 +3192,8 @@
   [
    "rm_runa_gullley",
    "merchant",
-   "keeping the taproom",
-   "inn"
+   "carpenter in the Market Hall",
+   "carpenter"
   ],
   [
    "rm_runa_nailton",
@@ -3472,8 +3462,8 @@
   [
    "rm_thyra_plankridge",
    "merchant",
-   "keeping the taproom",
-   "inn"
+   "provisioner in the Market Hall",
+   "provisioner"
   ],
   [
    "rm_thyra_wetmarsh",
@@ -3634,14 +3624,14 @@
   [
    "rm_wenna_tarford",
    "merchant",
-   "ladling soup in the Rag Market",
-   "inn"
+   "provisioner in the Rag Market",
+   "provisioner"
   ],
   [
    "rm_winifred_cinderworth",
    "merchant",
-   "keeping the taproom",
-   "inn"
+   "baker on Market Square",
+   "bakery"
   ],
   [
    "rm_winifred_pitchdale",
@@ -3730,7 +3720,7 @@
   [
    "rmx_ansel_kelpford",
    "civilian",
-   "helping at The Black Tun",
+   "unloading ships at the piers",
    null
   ],
   [
@@ -3910,7 +3900,7 @@
   [
    "rmx_dirk_mallory",
    "civilian",
-   "helping at The Rainbarrel",
+   "at lessons",
    null
   ],
   [
@@ -4324,8 +4314,8 @@
   [
    "rmx_oda_marrowby",
    "merchant",
-   "ladling soup on Market Square",
-   "inn"
+   "pie baker on Market Square",
+   "bakery"
   ],
   [
    "rmx_olaf_stoneley",
@@ -4354,19 +4344,19 @@
   [
    "rmx_orm_nailhand",
    "civilian",
-   "helping at The Last Lamp",
+   "unloading ships at the piers",
    null
   ],
   [
    "rmx_ottilie_dripdale",
-   "merchant",
-   "keeping the taproom",
-   "inn"
+   "civilian",
+   "unloading ships at the piers",
+   null
   ],
   [
    "rmx_ottilie_slagley",
    "civilian",
-   "helping at The Bilge",
+   "unloading ships at the piers",
    null
   ],
   [
@@ -5006,13 +4996,13 @@
    "req": "",
    "check": "no evening place takes more than 40",
    "ok": true,
-   "detail": "{'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
+   "detail": "{'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}"
   },
   {
    "req": "R35",
    "check": "the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their own crafts, tools/city_capacity.py), and no food trade below half of its own",
    "ok": true,
-   "detail": "99 staffed for 83.2 keeper-days (119%); below half: none; keepers+hands/demand: bakery 8+6/14.0, butcher 7+7/17.4, inn 15+9/15.8, provisioner 7+5/12.4, preserver 5+4/10.2, dairy 4+3/9.2, fishmonger 4+2/1.9, smokehouse 1+1/1.4, brewery 3+2/0.6, press 1+2/0.2, stall 3+0/0.0"
+   "detail": "92 staffed for 77.9 keeper-days (118%); below half: none; keepers+hands/demand: bakery 10+6/14.7, butcher 8+7/18.1, inn 5+10/16.1, provisioner 10+8/14.2, preserver 5+4/10.8, dairy 0+0/0.0, fishmonger 4+2/1.6, smokehouse 1+1/1.1, brewery 3+2/1.0, press 1+2/0.3, stall 3+0/0.0"
   },
   {
    "req": "",
@@ -5024,7 +5014,7 @@
    "req": "",
    "check": "at least 85% of earners hold a job of their household's class (the Watch and the clergy apart)",
    "ok": true,
-   "detail": "366/396 (92.4%): upper 25/26, middle 168/179, lower 173/191"
+   "detail": "374/396 (94.4%): upper 25/26, middle 168/179, lower 181/191"
   },
   {
    "req": "",
@@ -5040,9 +5030,15 @@
   },
   {
    "req": "",
-   "check": "the Rag Market's stalls and the Soup Kitchen are kept by middle-class households",
+   "check": "the Rag Market's stalls (and the Soup Kitchen, when it has a till) are kept by middle-class households",
    "ok": true,
    "detail": ""
+  },
+  {
+   "req": "",
+   "check": "a few inns, one to a quarter (INNS: the Sump, the wharf, the Commons, Northgate, the Cinders), each with its helpers; no dairy while DAIRIES is off; the taverns without a till have no post and are still the evening places of their streets",
+   "ok": true,
+   "detail": "inns {'rm_the_sailors_rest': 1, 'rm_the_grey_gull_inn': 1, 'rm_the_slag_anchor': 1, 'r2_the_knucklebones': 1, 'rm_the_grey_goose': 1} in ['commons', 'commons_northgate', 'sump', 'wharf', 'works']; dairies 0; evenings at the taverns without a till {'rm_the_drowned_lantern': 10, 'rm_the_tarred_rope': 0, 'rm_the_bilge': 40, 'rm_the_rainbarrel': 40, 'rm_the_soup_kitchen': 21, 'rm_the_black_tun': 40, 'rm_the_last_lamp': 40, 'rm_the_slate_ledger': 24}"
   },
   {
    "req": "R1",
@@ -5055,81 +5051,81 @@
   "before": {
    "ok": true,
    "food": {
-    "demand": 83.16294412922561,
-    "staffed": 99,
-    "ratio": 1.190434045314286,
+    "demand": 77.90408203669105,
+    "staffed": 92,
+    "ratio": 1.1809394013098067,
     "short": []
    },
    "rows": [
     [
      "bakery",
-     8,
-     8,
+     10,
+     10,
      6,
-     14.03418778708134
+     14.690245527734977
     ],
     [
      "butcher",
+     8,
+     8,
      7,
-     7,
-     7,
-     17.449740424121075
+     18.11854298560989
     ],
     [
      "inn",
-     15,
-     15,
-     9,
-     15.848447056376118
+     5,
+     5,
+     10,
+     16.085881698339325
     ],
     [
      "provisioner",
-     7,
-     7,
-     5,
-     12.425562320337765
+     10,
+     10,
+     8,
+     14.219207181124881
     ],
     [
      "preserver",
      5,
      5,
      4,
-     10.212710214270855
+     10.806184899845917
     ],
     [
      "dairy",
-     4,
-     4,
-     3,
-     9.195835313085084
+     0,
+     0,
+     0,
+     0
     ],
     [
      "fishmonger",
      4,
      4,
      2,
-     1.8822127342700985
+     1.5518240424829406
     ],
     [
      "smokehouse",
      1,
      1,
      1,
-     1.3519111777095905
+     1.0983966112753518
     ],
     [
      "brewery",
      3,
      3,
      2,
-     0.5717528264802632
+     1.0003493177083331
     ],
     [
      "press",
      1,
      1,
      2,
-     0.19058427549342102
+     0.3334497725694444
     ],
     [
      "stall",
@@ -5210,20 +5206,21 @@
     ]
    ],
    "businesses": {
-    "dairy": 4,
+    "butcher": 8,
     "herbalist": 1,
     "stall": 3,
-    "butcher": 7,
     "preserver": 5,
-    "bakery": 8,
-    "inn": 15,
+    "bakery": 10,
     "plasterworks": 1,
     "foundry": 1,
     "tannery": 1,
-    "provisioner": 7,
     "papermill": 1,
+    "inn": 5,
     "brewery": 3,
+    "rag_and_bone": 1,
+    "provisioner": 10,
     "ropewalk": 1,
+    "carpenter": 3,
     "smithy": 5,
     "armory": 1,
     "saddlery": 1,
@@ -5237,7 +5234,6 @@
     "cooperage": 2,
     "weaver": 1,
     "pottery": 1,
-    "carpenter": 3,
     "tinker": 1,
     "paintworks": 1,
     "tailor": 1,
@@ -5252,7 +5248,6 @@
     "vintner": 1,
     "distillery": 1,
     "shipwright": 1,
-    "rag_and_bone": 1,
     "cartwright": 1,
     "charcoal": 1,
     "smokehouse": 1,
@@ -5264,87 +5259,87 @@
     "carters": 1,
     "builders_yard": 1
    },
-   "foodBusinesses": 58,
+   "foodBusinesses": 50,
    "householdBusinesses": 15
   },
   "after": {
    "ok": true,
    "food": {
-    "demand": 83.16294412922561,
-    "staffed": 99,
-    "ratio": 1.190434045314286,
+    "demand": 77.90408203669105,
+    "staffed": 92,
+    "ratio": 1.1809394013098067,
     "short": []
    },
    "rows": [
     [
      "bakery",
-     8,
-     8,
+     10,
+     10,
      6,
-     14.03418778708134
+     14.690245527734977
     ],
     [
      "butcher",
+     8,
+     8,
      7,
-     7,
-     7,
-     17.449740424121075
+     18.11854298560989
     ],
     [
      "inn",
-     15,
-     15,
-     9,
-     15.848447056376118
+     5,
+     5,
+     10,
+     16.085881698339325
     ],
     [
      "provisioner",
-     7,
-     7,
-     5,
-     12.425562320337765
+     10,
+     10,
+     8,
+     14.219207181124881
     ],
     [
      "preserver",
      5,
      5,
      4,
-     10.212710214270855
+     10.806184899845917
     ],
     [
      "dairy",
-     4,
-     4,
-     3,
-     9.195835313085084
+     0,
+     0,
+     0,
+     0
     ],
     [
      "fishmonger",
      4,
      4,
      2,
-     1.8822127342700985
+     1.5518240424829406
     ],
     [
      "smokehouse",
      1,
      1,
      1,
-     1.3519111777095905
+     1.0983966112753518
     ],
     [
      "brewery",
      3,
      3,
      2,
-     0.5717528264802632
+     1.0003493177083331
     ],
     [
      "press",
      1,
      1,
      2,
-     0.19058427549342102
+     0.3334497725694444
     ],
     [
      "stall",
@@ -5425,21 +5420,21 @@
     ]
    ],
    "businesses": {
-    "dairy": 4,
+    "butcher": 8,
     "herbalist": 1,
     "stall": 3,
     "preserver": 5,
-    "bakery": 8,
-    "inn": 15,
-    "butcher": 7,
+    "bakery": 10,
     "plasterworks": 1,
     "foundry": 1,
     "tannery": 1,
-    "provisioner": 7,
     "papermill": 1,
+    "inn": 5,
     "brewery": 3,
     "rag_and_bone": 1,
+    "provisioner": 10,
     "ropewalk": 1,
+    "carpenter": 3,
     "smithy": 5,
     "armory": 1,
     "saddlery": 1,
@@ -5453,7 +5448,6 @@
     "cooperage": 2,
     "weaver": 1,
     "pottery": 1,
-    "carpenter": 3,
     "tinker": 1,
     "paintworks": 1,
     "tailor": 1,
@@ -5479,98 +5473,11 @@
     "carters": 1,
     "builders_yard": 1
    },
-   "foodBusinesses": 58,
+   "foodBusinesses": 50,
    "householdBusinesses": 15
   },
-  "textFixes": {
-   "job": 21
-  },
-  "textFixed": [
-   [
-    "rm_theodora_ropemarsh",
-    "job"
-   ],
-   [
-    "rm_lavinia_bilgedale",
-    "job"
-   ],
-   [
-    "rm_lotte_greyley",
-    "job"
-   ],
-   [
-    "rm_brenna_greyworth",
-    "job"
-   ],
-   [
-    "rm_gerrit_sootgate",
-    "job"
-   ],
-   [
-    "rm_wenna_tarford",
-    "job"
-   ],
-   [
-    "rm_agnes_millford",
-    "job"
-   ],
-   [
-    "rm_karin_ashgate",
-    "job"
-   ],
-   [
-    "rm_jorunn_tarham",
-    "job"
-   ],
-   [
-    "rm_dagny_slaghand",
-    "job"
-   ],
-   [
-    "rm_jorunn_saltdale",
-    "job"
-   ],
-   [
-    "rm_karin_wetridge",
-    "job"
-   ],
-   [
-    "rm_orm_wickwick",
-    "job"
-   ],
-   [
-    "rm_oda_greywell",
-    "job"
-   ],
-   [
-    "rm_hanne_sootham",
-    "job"
-   ],
-   [
-    "rm_moll_dripdale",
-    "job"
-   ],
-   [
-    "rm_egil_brineham",
-    "job"
-   ],
-   [
-    "rmx_ottilie_dripdale",
-    "job"
-   ],
-   [
-    "rmx_gorm_saltstack",
-    "job"
-   ],
-   [
-    "rmx_ivo_wainwright",
-    "job"
-   ],
-   [
-    "rm_ansel_wickdale",
-    "job"
-   ]
-  ]
+  "textFixes": {},
+  "textFixed": []
  },
  "classes": {
   "before": {
@@ -5587,60 +5494,44 @@
     },
     "lower": {
      "earners": 191,
-     "matched": 173,
-     "rate": 0.906
+     "matched": 181,
+     "rate": 0.948
     }
    },
    "earners": 396,
-   "matched": 366,
-   "rate": 0.924,
+   "matched": 374,
+   "rate": 0.944,
    "ownCases": {
     "clergy": 18,
     "watch": 30
    },
    "unmatched": [
-    "rm_ada_greyhand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): carpenter in the Market Hall",
-    "rm_agna_dripridge: a lower household (an estate's gatehouse or cottages, Grayrock Cottages) in a middle job (keeps a shop, stall or counter): provisioner in the Market Hall",
-    "rm_brenna_greyworth: a lower household (the sump) in a middle job (keeps a shop, stall or counter): ladling soup",
     "rm_corra_coalcot: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): fishmonger",
     "rm_corwin_sootstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher",
     "rm_dagny_rustcot: a middle household (admin) in an upper job (high office): harbourmaster of the Wharf Office",
     "rm_dunstan_greywick: a middle household (commons) in an upper job (owns a large business): tanner",
     "rm_edmund_sootcot: a middle household (admin) in an upper job (high office): running the City Office",
+    "rm_egil_brineham: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): smith",
     "rm_eleanor_mudworth: a middle household (admin) in an upper job (high office): keeping the rolls at the Records Office",
     "rm_erland_ashworth: a middle household (admin) in an upper job (high office): hearing cases",
     "rm_gerrit_mudhand: a middle household (admin) in an upper job (high office): chancellor of the Council",
-    "rm_hanne_sootham: a lower household (the sump) in a middle job (keeps a shop, stall or counter): ladling soup in the Rag Market",
     "rm_ilse_fogridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs",
-    "rm_isolde_brineton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker on Market Square",
     "rm_jasper_bilgeford: a middle household (admin) in an upper job (high office): collecting the Crown's customs",
-    "rm_jorunn_saltdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker in the Rag Market",
-    "rm_karin_wetridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): fishmonger in the Rag Market",
-    "rm_moll_dripdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): greens stall in the Rag Market",
-    "rm_oda_greywell: a lower household (the sump) in a middle job (keeps a shop, stall or counter): rag-and-bone dealer, Rag Market",
-    "rm_orm_wickwick: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher in the Rag Market",
     "rm_oskar_gullworth: a middle household (admin) in an upper job (high office): Chancellor of Ridgemere",
     "rm_rosalind_greatly: an upper household (of the House, at Greatly House) in a leisure job (at leisure): reading in the gardens",
     "rm_rosamund_coalford: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs",
     "rm_rosamund_tarridge: a middle household (commons) in an upper job (owns a large business): keeping the inn",
-    "rm_runa_ashridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cheesemaker in the Market Hall",
     "rm_sigrun_kelphand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cooper in the Market Hall",
     "rm_wenna_naildale: a lower household (the wharf) in a middle job (keeps a shop, stall or counter): wheelwright",
     "rmx_cedric_rook: a middle household (admin) in an upper job (high office): royal secretary",
     "rmx_fenwick_mossdale: a middle household (commons) in an upper job (high office): warden of the Market Hall",
+    "rmx_gorm_saltstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker",
+    "rmx_ivo_wainwright: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): butcher on Market Square",
     "rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store"
    ],
    "minorWithoutUpper": [],
    "largeLower": [],
-   "ragNotMiddle": [
-    "rm_brenna_greyworth (lower, the sump): ladling soup",
-    "rm_hanne_sootham (lower, the sump): ladling soup in the Rag Market",
-    "rm_jorunn_saltdale (lower, the sump): baker in the Rag Market",
-    "rm_karin_wetridge (lower, the sump): fishmonger in the Rag Market",
-    "rm_moll_dripdale (lower, the sump): greens stall in the Rag Market",
-    "rm_oda_greywell (lower, the sump): rag-and-bone dealer, Rag Market",
-    "rm_orm_wickwick (lower, the sump): butcher in the Rag Market"
-   ]
+   "ragNotMiddle": []
   },
   "after": {
    "classes": {
@@ -5656,21 +5547,18 @@
     },
     "lower": {
      "earners": 191,
-     "matched": 173,
-     "rate": 0.906
+     "matched": 181,
+     "rate": 0.948
     }
    },
    "earners": 396,
-   "matched": 366,
-   "rate": 0.924,
+   "matched": 374,
+   "rate": 0.944,
    "ownCases": {
     "clergy": 18,
     "watch": 30
    },
    "unmatched": [
-    "rm_ada_greyhand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): carpenter in the Market Hall",
-    "rm_agna_dripridge: a lower household (an estate's gatehouse or cottages, Grayrock Cottages) in a middle job (keeps a shop, stall or counter): provisioner in the Market Hall",
-    "rm_ansel_wickdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): keeping the taproom",
     "rm_corra_coalcot: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): runs The Fish Hall",
     "rm_corwin_sootstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher at Cinder Butchers",
     "rm_dagny_rustcot: a middle household (admin) in an upper job (high office): harbourmaster of the Wharf Office",
@@ -5681,51 +5569,24 @@
     "rm_erland_ashworth: a middle household (admin) in an upper job (high office): hearing cases",
     "rm_gerrit_mudhand: a middle household (admin) in an upper job (high office): chancellor of the Council",
     "rm_ilse_fogridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The Timberland Charcoal Store",
-    "rm_isolde_brineton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker on Market Square",
     "rm_jasper_bilgeford: a middle household (admin) in an upper job (high office): collecting the Crown's customs",
-    "rm_lavinia_bilgedale: a lower household (in service at Fellhall) in a middle job (keeps a shop, stall or counter): keeping the taproom",
-    "rm_lotte_greyley: a lower household (in service at Timberland Court) in a middle job (keeps a shop, stall or counter): keeping the taproom",
     "rm_oskar_gullworth: a middle household (admin) in an upper job (high office): Chancellor of Ridgemere",
     "rm_rosalind_greatly: an upper household (of the House, at Greatly House) in a leisure job (at leisure): reading in the gardens",
     "rm_rosamund_coalford: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The North Wharf Smokehouse",
     "rm_rosamund_tarridge: a middle household (commons) in an upper job (owns a large business): keeping the inn",
-    "rm_runa_ashridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cheesemaker in the Market Hall",
     "rm_sigrun_kelphand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cooper in the Market Hall",
     "rm_wenna_naildale: a lower household (the wharf) in a middle job (keeps a shop, stall or counter): wheelwright at Cinder Wheelwrights",
     "rmx_cedric_rook: a middle household (admin) in an upper job (high office): royal secretary",
     "rmx_fenwick_mossdale: a middle household (commons) in an upper job (high office): warden of the Market Hall",
     "rmx_gorm_saltstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker at The Penny Loaf",
     "rmx_ivo_wainwright: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): butcher on Market Square",
-    "rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store",
-    "rmx_ottilie_dripdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): keeping the taproom"
+    "rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store"
    ],
    "minorWithoutUpper": [],
    "largeLower": [],
    "ragNotMiddle": []
   },
-  "moves": [
-   "rm_agnes_millford (Rag Market first): middle, now greens stall in the Rag Market",
-   "rm_ansel_wickdale (Rag Market first): lower, now keeping the taproom",
-   "rm_brenna_greyworth (Rag Market first): lower, now helping at The Knucklebones",
-   "rm_dagny_slaghand (Rag Market first): middle, now fishmonger in the Rag Market",
-   "rm_egil_brineham (Rag Market first): lower, now smith at Timberland's Forge Row",
-   "rm_gerrit_sootgate (Rag Market first): middle, now rag-and-bone dealer, Rag Market",
-   "rm_hanne_sootham (Rag Market first): lower, now helping at The Soup Kitchen",
-   "rm_jorunn_saltdale (Rag Market first): lower, now helping at The Penny Loaf",
-   "rm_jorunn_tarham (Rag Market first): middle, now baker in the Rag Market",
-   "rm_karin_ashgate (Rag Market first): middle, now ladling soup",
-   "rm_karin_wetridge (Rag Market first): lower, now working at The Fish Hall",
-   "rm_lavinia_bilgedale (Rag Market first): lower, now keeping the taproom",
-   "rm_lotte_greyley (Rag Market first): lower, now keeping the taproom",
-   "rm_moll_dripdale (Rag Market first): lower, now carrying from Sump Stairs",
-   "rm_oda_greywell (Rag Market first): lower, now carrying from Sump Stairs",
-   "rm_orm_wickwick (Rag Market first): lower, now helping at Cinder Butchers",
-   "rm_theodora_ropemarsh (Rag Market first): middle, now butcher in the Rag Market",
-   "rm_wenna_tarford (Rag Market first): middle, now ladling soup in the Rag Market",
-   "rmx_gorm_saltstack (Rag Market first): lower, now baker at The Penny Loaf",
-   "rmx_ivo_wainwright (Rag Market first): lower, now butcher on Market Square",
-   "rmx_ottilie_dripdale (Rag Market first): lower, now keeping the taproom"
-  ]
+  "moves": []
  },
  "issues": [],
  "notes": [

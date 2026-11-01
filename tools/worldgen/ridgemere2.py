@@ -613,8 +613,6 @@ REFIT = {
                          'sailing days.'),
     'rm_moss_marrow': ('butcher', None, 'Moss & Marrow, butcher. Marrow bones, mutton and rabbit on hooks, sausages in '
                        'loops, and a block scrubbed white every evening.'),
-    'rm_vane_daughters': ('cheesemaker', None, 'Vane & Daughters, cheesemongers. Rounds ripening on slatted shelves, '
-                          'butter in crocks, and the press creaking in the back.'),
     'rm_the_cough_jar': ('preserver', 'The Honey Crock', 'The Honey Crock, preserving shop. Preserving pans on the '
                          'hearth, crocks of apple jam sealed with wax, and apple rings drying on racks by the window.'),
     'rm_oilcloth_wool': ('preserver', 'The Apple Loft', 'The Apple Loft, preserving shop. Dried apples in strings, '
@@ -624,6 +622,55 @@ REFIT = {
     'rm_commons_sundries': ('provisioner', 'Commons Provisions', 'Commons Provisions, provisioner. Flour and oats by '
                             'the sack, smoked fish and salt pork by the pound, milk in the mornings.'),
 }
+
+
+# A few inns, dairies later (doc 67, Progress; worldgen.ridgemere2_people.DAIRIES): the two dairy shops as dairies, and
+# as the provisioners they are while there are none. {id: (dairy, stand-in)}, each (refit trade or None, name or None,
+# description). The stand-ins are not refitted: their presses and shelves stay, idle, so the rooms (and the map) are as
+# they were and the dairies can come back. (The Round and Rind is a new shop, laid out as a provisioner's either way.)
+DAIRY_SHOPS = {
+    'rm_vane_daughters': (('cheesemaker', None, 'Vane & Daughters, cheesemongers. Rounds ripening on slatted shelves, '
+                           'butter in crocks, and the press creaking in the back.'),
+                          (None, None, 'Vane & Daughters, provisioner. Oats and flour by the sack where the rounds used '
+                           'to ripen, salt fish and smoked rabbit by the pound, and the cheese press idle in the back '
+                           'until the dairies send again.')),
+    'r2_cheesemonger': ((None, None, "A cheesemonger's: rounds ripening on cool shelves, butter in crocks and a wire for "
+                         'cutting.'),
+                        (None, None, 'Sacks of oats and flour, smoked fish and sides of bacon with the rind on, sold by '
+                         'the pound over a scrubbed counter.')),
+}
+# The taverns without a till (worldgen.ridgemere2_people.GATHERING): still their streets' evening places. {id: description}.
+GATHERING_TEXT = {
+    'rm_the_drowned_lantern': 'Low beams black with smoke, a fire that smells of wet wool, and dockhands shouting over '
+                              'one another. Nobody keeps the tap now: the dockhands bring their own jugs of an evening '
+                              'and keep the fire in between them.',
+    'rm_the_tarred_rope': 'A dock tavern built half on the wharf and half on old pilings; the floor tilts and nobody '
+                          'minds. The tap has been dry since its keeper gave it up, and the wharf still meets here of an '
+                          'evening with whatever it brings.',
+    'rm_the_bilge': 'A cellar room where the floor is always wet. The tap is long dry; the Sump comes down of an evening '
+                    'all the same, with its own jugs and its own dice.',
+    'rm_the_rainbarrel': "A gentlefolk's tavern once: dark panelling and a fire nobody has to pay for. Nobody keeps the "
+                         'tap now; the neighbours bring their own bottles of an evening.',
+    'rm_the_soup_kitchen': 'Long tables and a great pot gone cold. The Houses stopped paying for the soup; the Sump still '
+                           'comes in of an evening, for the tables and the warmth.',
+    'rm_the_black_tun': "A brewers' room: thick dark ale fetched by the jug from the brewery, since nobody keeps the tap "
+                        'any more, and drunk here of an evening by half the street.',
+    'rm_the_last_lamp': 'The last tavern before the High Road once: a long bar with nobody behind it now, a bench for '
+                        'whoever falls asleep, and drovers and neighbours meeting there of an evening.',
+    'rm_the_slate_ledger': 'Long tables where the clerks bring their own ale and pies of an evening, and every rumour '
+                           'from the City Office by noon; nobody keeps the tap.',
+}
+
+
+def dairy_shop(key):
+    """A dairy shop's (refit trade, name, description), or its stand-in's while there are no dairies."""
+    from .ridgemere2_people import DAIRIES
+    return DAIRY_SHOPS[key][0 if DAIRIES else 1]
+
+
+def dairy_business():
+    from .ridgemere2_people import DAIRIES
+    return 'dairy' if DAIRIES else 'provisioner'
 
 
 class Spec:
@@ -1859,9 +1906,9 @@ class RidgemereCity(Ridgemere):
                  make=lambda: self.new_shop('provisioner', 'The Fell Wine Vaults', 'House Fell\'s wine merchant in the '
                                             'city: casks of Fellhall wine and brandy racked to the ceiling, cordials '
                                             'and preserves on the counter.')),
-            Spec('r2_cheesemonger', 'The Round and Rind', 'commons', 'shop', homes=1, near=(350, 330), business='dairy',
-                 make=lambda: self.new_shop('provisioner', 'The Round and Rind', 'A cheesemonger\'s: rounds ripening '
-                                            'on cool shelves, butter in crocks and a wire for cutting.')),
+            Spec('r2_cheesemonger', 'The Round and Rind', 'commons', 'shop', homes=1, near=(350, 330),
+                 business=dairy_business(),
+                 make=lambda: self.new_shop('provisioner', 'The Round and Rind', dairy_shop('r2_cheesemonger')[2])),
             Spec('r2_bathhouse', 'The Bathhouse', 'commons', 'works', near=(312, 318), business='bathhouse',
                  make=lambda: self.new_works('bathhouse', 'The Bathhouse', 'The public bathhouse on the Sump\'s edge, fed '
                                              'from the Cisterns: a penny for the hot pool, two for a towel, and steam '
@@ -2833,19 +2880,26 @@ def refit_shop(room, trade):
 
 
 def refit_rooms(project):
-    """REFIT: each reused shop given over to another trade, its name (and its flat's), description and furniture."""
+    """REFIT: each reused shop given over to another trade, its name (and its flat's), description and furniture (and
+    the dairy shops, DAIRY_SHOPS: a stand-in without a trade keeps its furniture). The taverns without a till take their
+    GATHERING_TEXT."""
     rooms = {r['id']: r for r in project['rooms']}
-    for rid, (trade, name, text) in REFIT.items():
+    shops = {**REFIT, **{rid: dairy_shop(rid) for rid in DAIRY_SHOPS if rid.startswith('rm_')}}
+    for rid, (trade, name, text) in shops.items():
         r = rooms.get(rid)
         if r is None:
             continue
-        refit_shop(r, trade)
+        if trade:
+            refit_shop(r, trade)
         r['description'] = text
         if name:
             r['name'] = name
             flat = rooms.get(f'{rid}_flat')
             if flat is not None:
                 flat['name'] = f'{name}, the flat above'
+    for rid, text in GATHERING_TEXT.items():
+        if rid in rooms:
+            rooms[rid]['description'] = text
 
 
 def make_city(project, seed=SEED, report=print):
@@ -2896,6 +2950,58 @@ def default_claims(district, key):
     return ['council_of_houses']
 
 
+class post_hours:
+    """The hours of each post as its holders keep them in the world now (a few inns, dairies later: whoever takes
+    another post takes its hours, as the jobs by class's swaps do; a till opens when its keeper is at it). A post is its
+    building and kind (its keeper, a helper, or the label of any other post), or, for a market stall and a Market Hall
+    counter, its spot; a post nobody holds now takes the hours of its building's others of the same role."""
+    HELPING = ('helping', 'working', 'printing', 'works at', 'minding')
+
+    def __init__(self, people, city):
+        self.building = {room['id']: rec['key'] for rec in city.records for room in rec['rooms']}
+        self.by_key, self.by_building, self.spots = defaultdict(list), defaultdict(list), []
+        for x in people:
+            k = self.key(x) if x['home'] else None
+            if k is None:
+                continue
+            h = dict(x['hours'])
+            if k[0] == 'spot':
+                self.spots.append((k, x['id'], h))
+            else:
+                self.by_key[k].append((x['id'], h))
+            self.by_building[(self.building.get(x['work']['cell']), x['role'])].append((x['id'], h))
+
+    def key(self, x):
+        w = x.get('work')
+        if not w:
+            return None
+        b = self.building.get(w['cell'])
+        if x['role'] == 'merchant' and (w['cell'].startswith('w_') or b == 'r2_market_hall'):
+            return ('spot', w['cell'], w['x'], w['y'])
+        if w['cell'].startswith('w_'):
+            return ('label', x['workLabel'])
+        if x['role'] == 'merchant':
+            return (b, 'keeper')
+        return (b, 'help') if x['workLabel'].startswith(self.HELPING) else (b, x['workLabel'])
+
+    def hours(self, x):
+        k = self.key(x)
+        if k is None:
+            return None
+        if k[0] == 'spot':
+            got = [h for (_, cell, sx, sy), pid, h in self.spots
+                   if pid != x['id'] and cell == k[1] and abs(sx - k[2]) <= 2 and abs(sy - k[3]) <= 2]
+        else:
+            got = [h for pid, h in self.by_key.get(k, []) if pid != x['id']]
+        if not got:
+            got = [h for pid, h in self.by_building.get((self.building.get(x['work']['cell']), x['role']), [])
+                   if pid != x['id']]
+        if not got:
+            return None
+        common = Counter(json.dumps(h, sort_keys=True) for h in got).most_common()
+        return json.loads(min(common, key=lambda c: (-c[1], c[0]))[0])
+
+
 def compose(project, world, city, plan, labels, baseline, place_names=None):
     """The world as a project: the 12 cells, every interior (new ones added), the links, the spawn, the routes' posts,
     and the people's places (doc 67, section 8 A, the write's step 2)."""
@@ -2933,12 +3039,14 @@ def compose(project, world, city, plan, labels, baseline, place_names=None):
             r['posts'] = [x for x in (snap.outdoor(*pt, share=True) for pt in pts) if x]
     # The people.
     city.text_fixes, city.text_fixed = Counter(), []
+    held = post_hours(p['people'], city)
     for person in p['people']:
         e = plan.get(person['id'])
         if not e or not e.get('placed'):
             person['home'] = person['work'] = person['evening'] = None
             continue
         before = person['workLabel'] if person['home'] else None       # (the label as the world has it now)
+        was = held.key(person) if person['home'] else None
         person['home'] = e['home']
         person['work'] = e['work']
         person['evening'] = e['evening']
@@ -2948,7 +3056,11 @@ def compose(project, world, city, plan, labels, baseline, place_names=None):
         if person['role'] == 'merchant':
             person['route'] = ''
         person['workLabel'] = labels[person['id']]
-        if e.get('hours'):                                  # (A post the jobs by class moved: its hours with it.)
+        # A post's hours go with it: another post than the world has them in takes the hours its holders keep now (or,
+        # one nobody holds now, the jobs by class's: those of whoever the plan had in it before the swap).
+        if was is not None and held.key(person) != was:
+            person['hours'] = held.hours(person) or dict(e.get('hours') or person['hours'])
+        elif e.get('hours'):
             person['hours'] = dict(e['hours'])
         person.update(pl.ROYAL_TEXT.get(person['id'], {}))
         person.update(pl.MINOR_TEXT.get(person['id'], {}) if e.get('record') == pl.MINOR_POSTS.get(person['id'], ('',))[0]
@@ -3390,8 +3502,22 @@ def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
               not c_['minorWithoutUpper'], ', '.join(c_['minorWithoutUpper']))
         check('', 'nobody from the Sump, the Cinders or the wharf keeps a larger business', not c_['largeLower'],
               '; '.join(c_['largeLower'][:6]))
-        check('', "the Rag Market's stalls and the Soup Kitchen are kept by middle-class households",
+        check('', "the Rag Market's stalls (and the Soup Kitchen, when it has a till) are kept by middle-class households",
               not c_.get('ragNotMiddle'), '; '.join(c_.get('ragNotMiddle', [])[:7]))
+    # -- a few inns, dairies later (doc 67, Progress) --
+    inn_at = Counter(plan[x['id']].get('record') for x in placed
+                     if x['role'] == 'merchant' and plan[x['id']].get('business') == 'inn')
+    quarters = sorted({city.named[k]['district'] for k in inn_at if k in city.named})
+    dairy_n = sum(1 for x in placed if x['role'] == 'merchant' and pp.business_for(x['workLabel']) == 'dairy')
+    gathering = {k: ev.get(k, 0) for k in pp.GATHERING}
+    check('', 'a few inns, one to a quarter (INNS: the Sump, the wharf, the Commons, Northgate, the Cinders), each with '
+          'its helpers; no dairy while DAIRIES is off; the taverns without a till have no post and are still the evening '
+          'places of their streets', sorted(inn_at) == sorted(pp.INNS) and set(inn_at.values()) == {1} and len(quarters) == len(pp.INNS)
+          and (dairy_n == 4 if pp.DAIRIES else dairy_n == 0) and sum(gathering.values()) > 0
+          and not any(plan[x['id']].get('record') in pp.GATHERING or (x['work'] or {}).get('cell') in
+                      {room['id'] for k in pp.GATHERING if k in city.named for room in city.named[k]['rooms']}
+                      for x in placed),
+          f'inns {dict(inn_at)} in {quarters}; dairies {dairy_n}; evenings at the taverns without a till {gathering}')
     # -- the graph walk --
     miss = walk['missing']
     check('R1', 'every link end, home, work spot, evening place and route post is reached from the spawn',

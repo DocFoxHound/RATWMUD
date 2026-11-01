@@ -1,30 +1,30 @@
 Ridgemere 2.0: the city (doc 67), the generator's report
 
 9 cells; 819 interiors (193 new); 240 structures placed; links {'stairs': 206, 'door': 264, 'passage': 43}
-People: 559 placed, 524 unplaced {'a Minor House not kept': 62, 'a town': 262, 'the country': 200}; roles {'merchant': 110, 'civilian': 419, 'guard': 30}
-Posts: {'stallkeeper': 14, 'help': 64, 'staff': 91, 'kept': 50, 'pool': 52, 'keeper': 90, 'food': 2, 'clergy': 17, 'hallkeeper': 6, 'at lessons': 67, 'retired': 30, 'a child at home': 4, 'hands': 42, 'guard': 5, 'patrol': 16, 'gate': 9}
-Evenings: {'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
+People: 559 placed, 524 unplaced {'a Minor House not kept': 62, 'a town': 262, 'the country': 200}; roles {'merchant': 102, 'civilian': 427, 'guard': 30}
+Posts: {'stallkeeper': 14, 'pool': 59, 'help': 64, 'staff': 91, 'kept': 50, 'keeper': 82, 'food': 2, 'clergy': 17, 'hallkeeper': 6, 'at lessons': 68, 'retired': 30, 'a child at home': 4, 'hands': 42, 'guard': 5, 'patrol': 16, 'gate': 9}
+Evenings: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
 Homes: 224; most in one structure 3; structures by homes {1: 94, 3: 36, 2: 11}; 10 living alone
 
 By district:
   abbey: buildings 8, business:brewery 1, kind:hall 6, kind:lodging 1, kind:works 1, posts 37
-  admin: beds 33, buildings 14, business:inn 1, business:scriptorium 1, homes 9, kind:hall 4, kind:home 8, kind:shop 1, kind:tavern 1, posts 21
-  cinders: beds 45, buildings 26, business:armory 1, business:brewery 1, business:brickworks 2, business:butcher 1, business:cartwright 1, business:charcoal 1, business:foundry 1, business:glassworks 1, business:inn 1, business:ironworks 1, business:papermill 1, business:plasterworks 1, business:sawmill 1, business:smithy 3, homes 11, kind:home 8, kind:shop 5, kind:store 1, kind:tavern 1, kind:works 11, posts 45
-  commons: beds 255, buildings 76, business:apothecary 1, business:bakery 4, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 3, business:carpenter 2, business:carters 1, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:dairy 3, business:fishmonger 1, business:glassworks 1, business:inn 3, business:jeweler 1, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:preserver 3, business:printing_house 1, business:provisioner 4, business:saddlery 1, business:smithy 2, business:stables 1, business:tailor 1, business:vintner 1, business:weaver 1, homes 82, kind:flats 12, kind:hall 4, kind:home 20, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 4, posts 142
+  admin: beds 33, buildings 14, business:scriptorium 1, homes 9, kind:hall 4, kind:home 8, kind:shop 1, kind:tavern 1, posts 20
+  cinders: beds 45, buildings 26, business:armory 1, business:brewery 1, business:brickworks 2, business:butcher 1, business:cartwright 1, business:charcoal 1, business:foundry 1, business:glassworks 1, business:inn 1, business:ironworks 1, business:papermill 1, business:plasterworks 1, business:sawmill 1, business:smithy 3, homes 11, kind:home 8, kind:shop 5, kind:store 1, kind:tavern 1, kind:works 11, posts 46
+  commons: beds 255, buildings 76, business:apothecary 1, business:bakery 5, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 3, business:carpenter 2, business:carters 1, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:fishmonger 1, business:glassworks 1, business:inn 1, business:jeweler 1, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:preserver 3, business:printing_house 1, business:provisioner 6, business:saddlery 1, business:smithy 2, business:stables 1, business:tailor 1, business:vintner 1, business:weaver 1, homes 82, kind:flats 12, kind:hall 4, kind:home 20, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 4, posts 140
   estate_fell: beds 17, buildings 9, business:distillery 1, business:preserver 1, business:press 1, homes 4, kind:home 3, kind:seat 1, kind:store 1, kind:works 4, posts 17
   estate_grayrock: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 6
   estate_mossgrave: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 7
   greatly: beds 10, buildings 6, business:builders_works 1, business:mason 1, business:paintworks 1, homes 2, kind:hall 1, kind:seat 1, kind:works 4, posts 24
   keep: beds 15, buildings 2, homes 1, kind:hall 1, kind:lodging 1, posts 7
   none: posts 16
-  northgate: beds 53, buildings 13, business:bakery 1, business:butcher 1, business:carpenter 1, business:inn 1, business:provisioner 1, homes 18, kind:flats 3, kind:hall 1, kind:home 4, kind:shop 5, posts 11
-  outdoors: business:bakery 2, business:butcher 2, business:dairy 1, business:fishmonger 1, business:herbalist 1, business:inn 2, business:preserver 1, business:rag_and_bone 1, business:stall 3, posts 75
+  northgate: beds 53, buildings 13, business:bakery 1, business:butcher 1, business:carpenter 1, business:inn 1, business:provisioner 1, homes 18, kind:flats 3, kind:hall 1, kind:home 4, kind:shop 5, posts 12
+  outdoors: business:bakery 3, business:butcher 3, business:fishmonger 1, business:herbalist 1, business:preserver 1, business:provisioner 1, business:rag_and_bone 1, business:stall 3, posts 82
   palace: beds 9, buildings 3, homes 2, kind:hall 2, kind:seat 1, posts 22
   rise: beds 29, buildings 5, homes 10, kind:villa 5, posts 22
-  sump: beds 218, buildings 49, business:bakery 1, business:fishmonger 1, business:general 1, business:inn 4, business:pawnbroker 1, business:provisioner 1, business:tinker 1, homes 74, kind:flats 31, kind:hall 5, kind:home 3, kind:shop 5, kind:tavern 3, kind:works 2, posts 37
-  wharf: beds 12, buildings 17, business:chandlery 1, business:fishmonger 1, business:inn 3, business:provisioner 1, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 3, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 36
+  sump: beds 218, buildings 49, business:bakery 1, business:fishmonger 1, business:general 1, business:inn 1, business:pawnbroker 1, business:provisioner 1, business:tinker 1, homes 74, kind:flats 31, kind:hall 5, kind:home 3, kind:shop 5, kind:tavern 3, kind:works 2, posts 32
+  wharf: beds 12, buildings 17, business:chandlery 1, business:fishmonger 1, business:inn 1, business:provisioner 1, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 3, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 35
 
-Businesses with a till (merchants): apothecary 1, armory 1, bakery 8, barber 1, brewery 3, brickworks 2, builders_works 1, builders_yard 1, butcher 7, carpenter 3, carters 1, cartographer 1, cartwright 1, chandlery 2, charcoal 1, cooperage 2, dairy 4, distillery 1, fishmonger 4, foundry 1, general 1, glassworks 2, herbalist 1, inn 15, ironworks 1, jeweler 1, mason 1, moneychanger 1, paintworks 1, papermill 1, pawnbroker 1, perfumer 1, plasterworks 1, pottery 1, preserver 5, press 1, printing_house 1, provisioner 7, rag_and_bone 1, ropewalk 1, saddlery 1, sawmill 1, scriptorium 1, shipwright 1, smithy 5, smokehouse 1, stables 1, stall 3, tailor 1, tannery 1, tinker 1, vintner 1, weaver 1
+Businesses with a till (merchants): apothecary 1, armory 1, bakery 10, barber 1, brewery 3, brickworks 2, builders_works 1, builders_yard 1, butcher 8, carpenter 3, carters 1, cartographer 1, cartwright 1, chandlery 2, charcoal 1, cooperage 2, distillery 1, fishmonger 4, foundry 1, general 1, glassworks 2, herbalist 1, inn 5, ironworks 1, jeweler 1, mason 1, moneychanger 1, paintworks 1, papermill 1, pawnbroker 1, perfumer 1, plasterworks 1, pottery 1, preserver 5, press 1, printing_house 1, provisioner 10, rag_and_bone 1, ropewalk 1, saddlery 1, sawmill 1, scriptorium 1, shipwright 1, smithy 5, smokehouse 1, stables 1, stall 3, tailor 1, tannery 1, tinker 1, vintner 1, weaver 1
 
 Draws (generated: item_catalog.store_goods, from crafts.json):
   apothecary: making linen_cloth, resin, wormwood; resale -
@@ -43,7 +43,6 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   chandlery: making beeswax, cord, hemp, resin, tallow; resale -
   charcoal: making timber; resale -
   cooperage: making iron_bar, iron_hoops, planks; resale -
-  dairy: making milk; resale -
   distillery: making berries, cider, firewood, honey, wine; resale -
   fishmonger: making firewood, fish, salt; resale fish
   foundry: making bronze_bar, charcoal, copper_bar, copper_ore, iron_ore, timber, tin_bar, tin_ore; resale -
@@ -114,16 +113,16 @@ The Sump: coverage 66.4% (planned 56.4%), widest open 6, narrow 67%, dead ends 2
 
 The trades against what the placed residents buy a day (tools/city_capacity.py; keeper-days: the hours of each trade's own last step over 8), before and after this write:
   trade               businesses       keepers       hands     keeper-days
-  bakery              8 -> 8          8 -> 8       6 -> 6      14.0 -> 14.0 
-  butcher             7 -> 7          7 -> 7       7 -> 7      17.4 -> 17.4 
-  inn                15 -> 15        15 -> 15      9 -> 9      15.8 -> 15.8 
-  provisioner         7 -> 7          7 -> 7       5 -> 5      12.4 -> 12.4 
-  preserver           5 -> 5          5 -> 5       4 -> 4      10.2 -> 10.2 
-  dairy               4 -> 4          4 -> 4       3 -> 3       9.2 -> 9.2  
-  fishmonger          4 -> 4          4 -> 4       2 -> 2       1.9 -> 1.9  
-  smokehouse          1 -> 1          1 -> 1       1 -> 1       1.4 -> 1.4  
-  brewery             3 -> 3          3 -> 3       2 -> 2       0.6 -> 0.6  
-  press               1 -> 1          1 -> 1       2 -> 2       0.2 -> 0.2  
+  bakery             10 -> 10        10 -> 10      6 -> 6      14.7 -> 14.7 
+  butcher             8 -> 8          8 -> 8       7 -> 7      18.1 -> 18.1 
+  inn                 5 -> 5          5 -> 5      10 -> 10     16.1 -> 16.1 
+  provisioner        10 -> 10        10 -> 10      8 -> 8      14.2 -> 14.2 
+  preserver           5 -> 5          5 -> 5       4 -> 4      10.8 -> 10.8 
+  dairy               0 -> 0          0 -> 0       0 -> 0       0.0 -> 0.0  
+  fishmonger          4 -> 4          4 -> 4       2 -> 2       1.6 -> 1.6  
+  smokehouse          1 -> 1          1 -> 1       1 -> 1       1.1 -> 1.1  
+  brewery             3 -> 3          3 -> 3       2 -> 2       1.0 -> 1.0  
+  press               1 -> 1          1 -> 1       2 -> 2       0.3 -> 0.3  
   stall               3 -> 3          3 -> 3       0 -> 0       0.0 -> 0.0  
   chandlery           2 -> 2          2 -> 2       3 -> 3       5.8 -> 5.8  
   smithy              5 -> 5          5 -> 5       5 -> 5       3.9 -> 3.9  
@@ -135,17 +134,14 @@ The trades against what the placed residents buy a day (tools/city_capacity.py; 
   general             1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   armory              1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   tailor              1 -> 1          1 -> 1       1 -> 1       0.4 -> 0.4  
-  before: food 58 businesses, 99 keepers and hands for 83.2 keeper-days (119%), below half: none; household goods 15 businesses
-  after: food 58 businesses, 99 keepers and hands for 83.2 keeper-days (119%), below half: none; household goods 15 businesses
-  People's text written again: {'job': 21}
+  before: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 15 businesses
+  after: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 15 businesses
+  People's text written again: {}
 
 Jobs by class (doc 67, Progress): earners whose job is of their household's class (the Watch and the clergy apart), before and after the class pass:
-  before: 366/396 (92.4%); upper 25/26 (96%), middle 168/179 (94%), lower 173/191 (91%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 7
-  after: 366/396 (92.4%); upper 25/26 (96%), middle 168/179 (94%), lower 173/191 (91%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 0
+  before: 374/396 (94.4%); upper 25/26 (96%), middle 168/179 (94%), lower 181/191 (95%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 0
+  after: 374/396 (94.4%); upper 25/26 (96%), middle 168/179 (94%), lower 181/191 (95%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 0
   Not of their class (after):
-    - rm_ada_greyhand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): carpenter in the Market Hall
-    - rm_agna_dripridge: a lower household (an estate's gatehouse or cottages, Grayrock Cottages) in a middle job (keeps a shop, stall or counter): provisioner in the Market Hall
-    - rm_ansel_wickdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): keeping the taproom
     - rm_corra_coalcot: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): runs The Fish Hall
     - rm_corwin_sootstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): butcher at Cinder Butchers
     - rm_dagny_rustcot: a middle household (admin) in an upper job (high office): harbourmaster of the Wharf Office
@@ -156,15 +152,11 @@ Jobs by class (doc 67, Progress): earners whose job is of their household's clas
     - rm_erland_ashworth: a middle household (admin) in an upper job (high office): hearing cases
     - rm_gerrit_mudhand: a middle household (admin) in an upper job (high office): chancellor of the Council
     - rm_ilse_fogridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The Timberland Charcoal Store
-    - rm_isolde_brineton: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker on Market Square
     - rm_jasper_bilgeford: a middle household (admin) in an upper job (high office): collecting the Crown's customs
-    - rm_lavinia_bilgedale: a lower household (in service at Fellhall) in a middle job (keeps a shop, stall or counter): keeping the taproom
-    - rm_lotte_greyley: a lower household (in service at Timberland Court) in a middle job (keeps a shop, stall or counter): keeping the taproom
     - rm_oskar_gullworth: a middle household (admin) in an upper job (high office): Chancellor of Ridgemere
     - rm_rosalind_greatly: an upper household (of the House, at Greatly House) in a leisure job (at leisure): reading in the gardens
     - rm_rosamund_coalford: a lower household (the sump) in a middle job (keeps a shop, stall or counter): runs The North Wharf Smokehouse
     - rm_rosamund_tarridge: a middle household (commons) in an upper job (owns a large business): keeping the inn
-    - rm_runa_ashridge: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cheesemaker in the Market Hall
     - rm_sigrun_kelphand: a lower household (the sump) in a middle job (keeps a shop, stall or counter): cooper in the Market Hall
     - rm_wenna_naildale: a lower household (the wharf) in a middle job (keeps a shop, stall or counter): wheelwright at Cinder Wheelwrights
     - rmx_cedric_rook: a middle household (admin) in an upper job (high office): royal secretary
@@ -172,29 +164,7 @@ Jobs by class (doc 67, Progress): earners whose job is of their household's clas
     - rmx_gorm_saltstack: a lower household (the sump) in a middle job (keeps a shop, stall or counter): baker at The Penny Loaf
     - rmx_ivo_wainwright: a lower household (the cinders) in a middle job (keeps a shop, stall or counter): butcher on Market Square
     - rmx_nessa_slagmarsh: a lower household (the sump) in a middle job (lower office): tallying in the Iron Store
-    - rmx_ottilie_dripdale: a lower household (the sump) in a middle job (keeps a shop, stall or counter): keeping the taproom
-  Moved by the class pass (21):
-    - rm_agnes_millford (Rag Market first): middle, now greens stall in the Rag Market
-    - rm_ansel_wickdale (Rag Market first): lower, now keeping the taproom
-    - rm_brenna_greyworth (Rag Market first): lower, now helping at The Knucklebones
-    - rm_dagny_slaghand (Rag Market first): middle, now fishmonger in the Rag Market
-    - rm_egil_brineham (Rag Market first): lower, now smith at Timberland's Forge Row
-    - rm_gerrit_sootgate (Rag Market first): middle, now rag-and-bone dealer, Rag Market
-    - rm_hanne_sootham (Rag Market first): lower, now helping at The Soup Kitchen
-    - rm_jorunn_saltdale (Rag Market first): lower, now helping at The Penny Loaf
-    - rm_jorunn_tarham (Rag Market first): middle, now baker in the Rag Market
-    - rm_karin_ashgate (Rag Market first): middle, now ladling soup
-    - rm_karin_wetridge (Rag Market first): lower, now working at The Fish Hall
-    - rm_lavinia_bilgedale (Rag Market first): lower, now keeping the taproom
-    - rm_lotte_greyley (Rag Market first): lower, now keeping the taproom
-    - rm_moll_dripdale (Rag Market first): lower, now carrying from Sump Stairs
-    - rm_oda_greywell (Rag Market first): lower, now carrying from Sump Stairs
-    - rm_orm_wickwick (Rag Market first): lower, now helping at Cinder Butchers
-    - rm_theodora_ropemarsh (Rag Market first): middle, now butcher in the Rag Market
-    - rm_wenna_tarford (Rag Market first): middle, now ladling soup in the Rag Market
-    - rmx_gorm_saltstack (Rag Market first): lower, now baker at The Penny Loaf
-    - rmx_ivo_wainwright (Rag Market first): lower, now butcher on Market Square
-    - rmx_ottilie_dripdale (Rag Market first): lower, now keeping the taproom
+  Moved by the class pass (0):
 
 Checks:
   [ok] R2     9 cells, all rain, region ridgemere: 9 cells
@@ -253,13 +223,14 @@ Checks:
   [ok] R34    no placed NPC works a food or raw-resource producer (stables listed): stables: ['rm_oda_kelpworth', 'rm_philippa_rustton', 'rm_ragnar_roperidge', 'rmx_lionel_lowe']; bad: []
   [ok] R13    the Rag Market is more than 40 tiles from Market Square: 116
   [ok] R14    Market Square has more merchants than the Market Hall; the Hall's doors within 40 of its stalls: square 8, hall 6, doors 18 from the stalls
-  [ok]        no evening place takes more than 40: {'rm_the_last_lamp': 40, 'rm_the_rainbarrel': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
-  [ok] R35    the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their own crafts, tools/city_capacity.py), and no food trade below half of its own: 99 staffed for 83.2 keeper-days (119%); below half: none; keepers+hands/demand: bakery 8+6/14.0, butcher 7+7/17.4, inn 15+9/15.8, provisioner 7+5/12.4, preserver 5+4/10.2, dairy 4+3/9.2, fishmonger 4+2/1.9, smokehouse 1+1/1.4, brewery 3+2/0.6, press 1+2/0.2, stall 3+0/0.0
+  [ok]        no evening place takes more than 40: {'rm_the_last_lamp': 40, 'rm_the_grey_gull_inn': 40, 'rm_the_slag_anchor': 28, 'rm_the_rainbarrel': 40, 'r2_the_knucklebones': 40, 'home': 167, 'rm_the_black_tun': 40, 'rm_the_slate_ledger': 24, 'r2_cathedral': 18, 'rm_the_grey_goose': 21, 'rm_the_bilge': 40, 'rm_the_drowned_lantern': 10, 'rm_the_watch_house': 30, 'rm_the_soup_kitchen': 21}
+  [ok] R35    the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their own crafts, tools/city_capacity.py), and no food trade below half of its own: 92 staffed for 77.9 keeper-days (118%); below half: none; keepers+hands/demand: bakery 10+6/14.7, butcher 8+7/18.1, inn 5+10/16.1, provisioner 10+8/14.2, preserver 5+4/10.8, dairy 0+0/0.0, fishmonger 4+2/1.6, smokehouse 1+1/1.1, brewery 3+2/1.0, press 1+2/0.3, stall 3+0/0.0
   [ok]        the Carters' Yard has its keeper and drivers
-  [ok]        at least 85% of earners hold a job of their household's class (the Watch and the clergy apart): 366/396 (92.4%): upper 25/26, middle 168/179, lower 173/191
+  [ok]        at least 85% of earners hold a job of their household's class (the Watch and the clergy apart): 374/396 (94.4%): upper 25/26, middle 168/179, lower 181/191
   [ok]        every Minor House household has an upper job (a large business, a merchant's, high office)
   [ok]        nobody from the Sump, the Cinders or the wharf keeps a larger business
-  [ok]        the Rag Market's stalls and the Soup Kitchen are kept by middle-class households
+  [ok]        the Rag Market's stalls (and the Soup Kitchen, when it has a till) are kept by middle-class households
+  [ok]        a few inns, one to a quarter (INNS: the Sump, the wharf, the Commons, Northgate, the Cinders), each with its helpers; no dairy while DAIRIES is off; the taverns without a till have no post and are still the evening places of their streets: inns {'rm_the_sailors_rest': 1, 'rm_the_grey_gull_inn': 1, 'rm_the_slag_anchor': 1, 'r2_the_knucklebones': 1, 'rm_the_grey_goose': 1} in ['commons', 'commons_northgate', 'sump', 'wharf', 'works']; dairies 0; evenings at the taverns without a till {'rm_the_drowned_lantern': 10, 'rm_the_tarred_rope': 0, 'rm_the_bilge': 40, 'rm_the_rainbarrel': 40, 'rm_the_soup_kitchen': 21, 'rm_the_black_tun': 40, 'rm_the_last_lamp': 40, 'rm_the_slate_ledger': 24}
   [ok] R1     every link end, home, work spot, evening place and route post is reached from the spawn
 
 Stables (stock_breeding, horses not food): rm_oda_kelpworth, rm_philippa_rustton, rm_ragnar_roperidge, rmx_lionel_lowe
@@ -269,11 +240,11 @@ Notes:
   - House Timberland keeps the ids of House Mossgrave (house_mossgrave, rm_mossgrave_court...): only the text changes (lane C), and the ids still read "mossgrave" in Atlas and the DM.
 
 Labels (npc, role, label, business):
-  rm_ada_greyhand                merchant  carpenter in the Market Hall               carpenter
+  rm_ada_greyhand                civilian  unloading ships at the piers               None
   rm_ada_rainmore                civilian  playing in the streets                     None
   rm_agna_bilgecot               civilian  working at The Fell Preserving House       preserver
   rm_agna_dripgate               civilian  at lessons                                 None
-  rm_agna_dripridge              merchant  provisioner in the Market Hall             provisioner
+  rm_agna_dripridge              civilian  unloading ships at the piers               None
   rm_agna_tarham                 merchant  fishmonger at The Wet Slab                 fishmonger
   rm_agnes_millford              merchant  greens stall in the Rag Market             stall
   rm_agnes_wetley                civilian  priest at the cathedral                    None
@@ -283,7 +254,7 @@ Labels (npc, role, label, business):
   rm_aldric_rustgate             civilian  at lessons                                 None
   rm_ambrose_greatly             civilian  overseeing the Counting House              None
   rm_ansel_tarley                civilian  serving in the hall                        None
-  rm_ansel_wickdale              merchant  keeping the taproom                        inn
+  rm_ansel_wickdale              civilian  helping at The Knucklebones                None
   rm_arne_ashton                 civilian  working at The Timberland Charcoal Store   charcoal
   rm_arne_wetworth               civilian  keeping the chambers                       None
   rm_arne_wickdale               merchant  brewer at the abbey brewhouse              brewery
@@ -293,7 +264,7 @@ Labels (npc, role, label, business):
   rm_beatha_millley              merchant  armourer at The Rivet and Rain             armory
   rm_berit_coalworth             civilian  sexton of the cathedral                    None
   rm_berit_kelpwick              merchant  builder at the Greatly works               builders_works
-  rm_berit_mudton                civilian  unloading ships at the piers               None
+  rm_berit_mudton                civilian  helping at The Sailors' Rest               None
   rm_berit_wickton               civilian  serving in the hall                        None
   rm_bertil_grantham             civilian  at lessons                                 None
   rm_bertil_slagley              civilian  singing in the cathedral choir             None
@@ -353,7 +324,7 @@ Labels (npc, role, label, business):
   rm_edda_bilgeridge             civilian  helping at The Hook and Cleaver            None
   rm_edda_gullford               civilian  lighting the lamps at dusk                 None
   rm_edda_mudmore                civilian  unloading ships at the piers               None
-  rm_edda_ropeton                merchant  cheesemaker in the Commons                 dairy
+  rm_edda_ropeton                merchant  provisioner at The Round and Rind          provisioner
   rm_edmund_kelpstack            merchant  brewer at The Hopyard                      brewery
   rm_edmund_saltham              civilian  keeping the chambers                       None
   rm_edmund_sootcot              civilian  running the City Office                    None
@@ -431,7 +402,7 @@ Labels (npc, role, label, business):
   rm_halvard_ashley              merchant  saddler at The Harness Shop                saddlery
   rm_halvard_mossgrave           civilian  walking the gardens                        None
   rm_hanne_coalton               guard     holding the Harbour Gate                   None
-  rm_hanne_sootham               civilian  helping at The Soup Kitchen                None
+  rm_hanne_sootham               civilian  unloading ships at the piers               None
   rm_hanne_thornbury             civilian  at lessons                                 None
   rm_hanne_wickworth             guard     walking the wall                           None
   rm_hester_bilgeham             guard     holding the south gate                     None
@@ -461,7 +432,7 @@ Labels (npc, role, label, business):
   rm_ingrid_grayrock_            civilian  at her lessons in the Hall                 None
   rm_ingrid_millton              civilian  helping at Staves & Hoops                  None
   rm_ingrid_saltstack            merchant  preserver at the Fell Preserving House     preserver
-  rm_isolde_brineton             merchant  baker on Market Square                     bakery
+  rm_isolde_brineton             civilian  unloading ships at the piers               None
   rm_isolde_fell_                civilian  ruling House Fell                          None
   rm_isolde_ropehand             civilian  at lessons                                 None
   rm_ivar_cinderford             civilian  serving in the hall                        None
@@ -472,7 +443,7 @@ Labels (npc, role, label, business):
   rm_ivo_dripworth               civilian  helping at Gullgut Fish                    None
   rm_ivo_fogstack                civilian  keeping the Washhouse                      laundry
   rm_ivo_slagby                  merchant  smith at Timberland's Anchor Forge         smithy
-  rm_ivo_tarmarsh                merchant  cheesemaker on Market Square               dairy
+  rm_ivo_tarmarsh                merchant  sausage butcher on Market Square           butcher
   rm_ivo_wickgate                civilian  serving at Greatly House                   None
   rm_jarl_greyford               civilian  serving at Greatly House                   None
   rm_jarl_saltcot                civilian  helping at The Greatly Bank                moneychanger
@@ -486,7 +457,7 @@ Labels (npc, role, label, business):
   rm_josephine_wetmore           civilian  at lessons                                 None
   rm_julian_greatly              civilian  keeping the Greatly Yard's books           builders_yard
   rm_kari_bilgehand              merchant  ropemaker at the ropewalk                  ropewalk
-  rm_karin_ashgate               merchant  ladling soup                               inn
+  rm_karin_ashgate               merchant  keeping the taproom                        inn
   rm_karin_sootdale              merchant  scribe at Wetink Lane Scriveners           scriptorium
   rm_karin_stanmore              civilian  the Crown's treasurer                      None
   rm_karin_thornbury             civilian  at lessons                                 None
@@ -498,10 +469,10 @@ Labels (npc, role, label, business):
   rm_kjell_wickmore              civilian  works at The Cinder Glassworks             glassworks
   rm_lars_wickwell               civilian  helping at Mend & Make Do                  None
   rm_lavinia_ashford             civilian  at lessons                                 None
-  rm_lavinia_bilgedale           merchant  keeping the taproom                        inn
+  rm_lavinia_bilgedale           civilian  unloading ships at the piers               None
   rm_lavinia_brinemarsh          civilian  carrying from Sump Stairs                  None
   rm_lavinia_plankwick           civilian  stewarding Grayrock Hall                   None
-  rm_leif_fogcot                 civilian  unloading ships at the piers               None
+  rm_leif_fogcot                 civilian  helping at The Grey Gull Inn               None
   rm_lionel_dripworth            civilian  minding the shop door                      None
   rm_lionel_pitchdale            civilian  helping at Mutton Lane Butchers            butcher
   rm_lionel_ropestack            civilian  abbot of the cathedral                     None
@@ -511,7 +482,7 @@ Labels (npc, role, label, business):
   rm_liv_slagstack               merchant  preserver at The Honey Crock               preserver
   rm_lotte_ashford               civilian  helping at Cedar Row Joiners               None
   rm_lotte_bilgeton              civilian  carrying from Sump Stairs                  None
-  rm_lotte_greyley               merchant  keeping the taproom                        inn
+  rm_lotte_greyley               civilian  helping at The Slag & Anchor               None
   rm_mab_carlisle                merchant  keeping the inn                            inn
   rm_mab_coalridge               civilian  serving in the King's household            None
   rm_mab_pitchcot                civilian  keeping the New Store                      None
@@ -559,9 +530,9 @@ Labels (npc, role, label, business):
   rm_oskar_wickmarsh             civilian  in service to the Granthams                None
   rm_osric_mossgrave             civilian  riding out on House business               None
   rm_osric_plankford             guard     on patrol on the wharf                     None
-  rm_osric_ropeworth             merchant  cheesemaker at Vane & Daughters            dairy
+  rm_osric_ropeworth             merchant  provisioner at Vane & Daughters            provisioner
   rm_osric_slagstack             civilian  helping at The Cough Jar                   None
-  rm_osric_wetford               civilian  unloading ships at the piers               None
+  rm_osric_wetford               civilian  helping at The Grey Goose                  None
   rm_ottilie_harrowgate          civilian  the King's daughter, at the Residence      None
   rm_ottilie_nailmarsh           civilian  carrying from Sump Stairs                  None
   rm_ottilie_sootdale            civilian  helping at Wetink Lane Scriveners          None
@@ -575,7 +546,7 @@ Labels (npc, role, label, business):
   rm_philippa_fogwick            civilian  serving in the King's household            None
   rm_philippa_rustton            civilian  keeping the Greatly stables                stables
   rm_piet_muddale                civilian  working at Cinder Wheelwrights             cartwright
-  rm_piet_slagcot                merchant  keeping the taproom                        inn
+  rm_piet_slagcot                merchant  baker in the Market Hall                   bakery
   rm_piet_wickridge              civilian  carrying from Sump Stairs                  None
   rm_ragnar_brineford            civilian  helping at The Bung Hole                   None
   rm_ragnar_cinderwell           civilian  at lessons                                 None
@@ -589,9 +560,9 @@ Labels (npc, role, label, business):
   rm_rosamund_slagstack          civilian  at lessons                                 None
   rm_rosamund_sootmarsh          guard     holding the Customs Pier                   None
   rm_rosamund_tarridge           merchant  keeping the inn                            inn
-  rm_runa_ashridge               merchant  cheesemaker in the Market Hall             dairy
+  rm_runa_ashridge               civilian  unloading ships at the piers               None
   rm_runa_coalhand               merchant  runs The Timberland Foundry                foundry
-  rm_runa_gullley                merchant  keeping the taproom                        inn
+  rm_runa_gullley                merchant  carpenter in the Market Hall               carpenter
   rm_runa_nailton                civilian  serving in the King's household            None
   rm_runa_ropemarsh              civilian  works at The Greatly Plasterworks          plasterworks
   rm_rune_cinderwick             civilian  works at The Greatly Tileworks             brickworks
@@ -636,7 +607,7 @@ Labels (npc, role, label, business):
   rm_theodora_wickley            civilian  nursing for the abbey                      None
   rm_thyra_ashley                civilian  minding the shop door                      None
   rm_thyra_carlisle              civilian  at lessons                                 None
-  rm_thyra_plankridge            merchant  keeping the taproom                        inn
+  rm_thyra_plankridge            merchant  provisioner in the Market Hall             provisioner
   rm_thyra_wetmarsh              civilian  portering in Market Square                 None
   rm_tilde_nailby                guard     holding the south gate                     None
   rm_tobias_grayrock_            civilian  keeping the wharf's books                  None
@@ -663,8 +634,8 @@ Labels (npc, role, label, business):
   rm_vigdis_rainmore             merchant  jeweler at Silver & Rain                   jeweler
   rm_wenna_mossgrave             civilian  running the House's iron trade             None
   rm_wenna_naildale              merchant  wheelwright at Cinder Wheelwrights         cartwright
-  rm_wenna_tarford               merchant  ladling soup in the Rag Market             inn
-  rm_winifred_cinderworth        merchant  keeping the taproom                        inn
+  rm_wenna_tarford               merchant  provisioner in the Rag Market              provisioner
+  rm_winifred_cinderworth        merchant  baker on Market Square                     bakery
   rm_winifred_pitchdale          merchant  butcher at Mutton Lane Butchers            butcher
   rm_wynn_fogworth               civilian  printing at The Council Press              printing_house
   rm_wynn_pitchwell              civilian  in service to the Stanmores                None
@@ -679,7 +650,7 @@ Labels (npc, role, label, business):
   rm_yrsa_nailwell               civilian  washing at the Washhouse                   laundry
   rm_yrsa_tarwick                civilian  weighing at the Customs House              None
   rmx_aldric_thackeray           civilian  at lessons                                 None
-  rmx_ansel_kelpford             civilian  helping at The Black Tun                   None
+  rmx_ansel_kelpford             civilian  unloading ships at the piers               None
   rmx_arne_rainworth             civilian  at lessons                                 None
   rmx_aud_kemp                   civilian  sits and watches the world                 None
   rmx_aud_saltridge              civilian  driving for the carters                    carters
@@ -709,7 +680,7 @@ Labels (npc, role, label, business):
   rmx_desmond_rook               civilian  clerking in the Administrative Wing        None
   rmx_desmond_toft               merchant  runs The Greatly Yard                      builders_yard
   rmx_dirk_langstead             civilian  crying wares in the Rag Market             None
-  rmx_dirk_mallory               civilian  helping at The Rainbarrel                  None
+  rmx_dirk_mallory               civilian  at lessons                                 None
   rmx_disa_bilgemarsh            civilian  sits and watches the world                 None
   rmx_disa_nettleby              civilian  at lessons                                 None
   rmx_disa_slagwick              civilian  clerking in the Administrative Wing        None
@@ -778,14 +749,14 @@ Labels (npc, role, label, business):
   rmx_nessa_slagmarsh            civilian  tallying in the Iron Store                 None
   rmx_oda_cinderby               civilian  at lessons                                 None
   rmx_oda_cotton                 civilian  keeping the Long Store                     None
-  rmx_oda_marrowby               merchant  ladling soup on Market Square              inn
+  rmx_oda_marrowby               merchant  pie baker on Market Square                 bakery
   rmx_olaf_stoneley              civilian  at lessons                                 None
   rmx_orla_wetridge              civilian  at lessons                                 None
   rmx_orm_blackwood              civilian  sits and watches the world                 None
   rmx_orm_carlisle               merchant  keeping the Carters' Yard                  carters
-  rmx_orm_nailhand               civilian  helping at The Last Lamp                   None
-  rmx_ottilie_dripdale           merchant  keeping the taproom                        inn
-  rmx_ottilie_slagley            civilian  helping at The Bilge                       None
+  rmx_orm_nailhand               civilian  unloading ships at the piers               None
+  rmx_ottilie_dripdale           civilian  unloading ships at the piers               None
+  rmx_ottilie_slagley            civilian  unloading ships at the piers               None
   rmx_palle_brinewell            civilian  at lessons                                 None
   rmx_palle_mireby               civilian  at lessons                                 None
   rmx_percival_thornham          civilian  driving for the carters                    carters
